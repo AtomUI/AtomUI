@@ -418,6 +418,9 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
 
+10.10d 执行校准（方案优先的实际身份分类）：SplitButton 的两个 public Button 保留独立 Button palette/motion，与 SearchEdit 一致，不替换私有按钮部件；Dropdown/Submit/Reset 自身终端已隔离。深层共享模板使用 212 个具体内部继承样式输入，不新增 Token/resource alias 或 OwnerTokenResource 语义；多关注点 terminal 使用少量显式字段 + 单份纯公式。CandidateList/Item 保持无 Own 的宿主部件；内部 MentionTextArea/AutoCompleteTextAreaBox/TreeSelect 树跟随宿主，独立公开 TextArea/TreeView 不变。完整理由及代价统一见[执行台账](../progress/2026-11-08-theme-customization-precision.md)。
+
+
 ---
 
 ### Task 11: `AtomUI.Themes.PrimeNG` 主题包（Aura、Lara、Nora）
@@ -643,6 +646,7 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | 10.10a Form / Descriptions / Upload / Mentions / OTP / Segmented / CandidateList | 221 / 1 / 0 / 0 / 6 / 1 / 0 | 对应家族路径全部 0 | `4bf2f1032`；240 生效隔离、205 现有定向、287 门禁全过；52 Own Active，评审通过 |
 | 10.10b Transfer / Drawer / Spin / Result / Empty / QRCode / Text / BorderBeam / Adorner | 68 / 0 / 0 / 1 / 5 / 5 / 0 | 对应家族路径全部 0 | `7dcd4cdee` 主验收 213 / 136 / 310；`6160a423b` 默认透明修复后 7 / 310 定向通过并范围复审；58 Active / 1 Reserved |
 | 10.10c Window / TitleBar / Scroll / Flyout / Icon / Embedding / Splash / shared | 62（含原漏扫 Splash 12） / 6 / 1 / 0 / 3 / 4 / 0 | 对应家族路径全部 0 | `f071b5978` 主验收 169 / 145 / 348 / 3；`0070c62e9` Flyout 修复后 19 / 21 定向与范围复审通过；65 Active、5 删除，原生/瞬态绘制限制见台账 |
+| 10.10d 终端 Own / 共享部件一致性 | 本轮相关已迁移路径原有 041–045/047/048 为 0；继承叶另复现 Semantic 032×10 | 对应路径与新终端全部 0；Semantic 继承修复通过 | `10b58893d`：2198 渲染、43 合同、37 Unit、350 门禁；`86ad4b636`：Lunar 100 / 350 定向与范围复审通过；51 终端当前 800 Active / 12 Reserved / 0 Unreferenced |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 
@@ -674,7 +678,7 @@ Task 6 实测共 125 个字段；10.10b 另发现 TreeTransfer.ListWidthLG 的�
 | Desktop | NavMenu | CollapsedWidth, DangerItemActiveBg, DangerItemColor, DangerItemHoverColor, DangerItemSelectedBg, DangerItemSelectedColor, DarkDangerItemActiveBg, DarkDangerItemColor, DarkDangerItemHoverColor, DarkDangerItemSelectedBg, DarkDangerItemSelectedColor, HorizontalItemBorderRadius, HorizontalItemHoverBg, HorizontalItemHoverColor, HorizontalItemSelectedBg, HorizontalItemSelectedColor, ItemBackgroundMotionEasing, KeyGestureColor, MenuSubMenuBg, SubMenuItemBorderRadius, TopLevelItemPopupMarginToAnchor | 10.7 | Active 16（危险项新增 `IsDanger` API、水平顶层项、子菜单圆角、弹层间距）；Reserved 3：CollapsedWidth、MenuSubMenuBg、HorizontalItemHoverColor（antd 6.7 样式未读取）；删除 2：ItemBackgroundMotionEasing、KeyGestureColor |
 | Desktop | Menu | DangerItemColor, DangerItemHoverColor, ItemIconMarginInlineEnd, MenuTearOffHeight, TopLevelItemBg, TopLevelItemColor, TopLevelItemSelectedBg, TopLevelItemSelectedColor | 10.7 | Active 7（`MenuItem.IsDanger`、顶层项色、ItemIconMarginInlineEnd）；删除 MenuTearOffHeight；新增 Own GroupTitlePadding 取代字面量 |
 | Desktop | TabControl | HorizontalMargin | 10.7 | Reserved（antd horizontalMargin，此处由 TabAndContentGutter 承担） |
-| Desktop | Pagination | InputOutlineOffset, ItemInputBg, ItemLinkBg, PaginationMiniQuickJumperInputWidth | 10.7 | Active：ItemInputBg、PaginationMiniQuickJumperInputWidth；Reserved：ItemLinkBg（antd 仅 bordered 变体）、InputOutlineOffset（antd 内部焦点阴影偏移） |
+| Desktop | Pagination | InputOutlineOffset, ItemInputBg, ItemLinkBg, PaginationMiniQuickJumperInputWidth | 10.7 / 10.10d | ItemInputBg → SimplePagination Own（Active）；PaginationMiniQuickJumperInputWidth → Pagination Active；ItemLinkBg/InputOutlineOffset → 原 Pagination Reserved，未复制 Simple |
 | Desktop | Card | ActionsSpacing, CardHeadPadding, CardPaddingBase, ExtraColor, TabsMarginBottom | 10.8 | ExtraColor → Active；ActionsSpacing、TabsMarginBottom、CardHeadPadding、CardPaddingBase → Reserved（结构差异，各注明 antd 名称）；新增 Own RestingShadows（静止阴影，供预设表达常驻阴影） |
 | Desktop | Expander | LeftExpandButtonVMargin, RightExpandButtonVMargin | 10.8 | 删除（无 antd 对应） |
 | Desktop | GroupBox | OrientationMarginPercent, TextPaddingInline, VerticalMarginInline | 10.8 | 删除（复制自 antd Divider，GroupBox 无对应组件） |
@@ -683,13 +687,17 @@ Task 6 实测共 125 个字段；10.10b 另发现 TreeTransfer.ListWidthLG 的�
 | Desktop | ListView | ItemDisabledColor | 10.9 | Active |
 | Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | Reserved |
 | Desktop | Timeline | LastItemContentMinHeight | 10.9 | 删除 |
-| Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 | Active：ButtonsMargin、PeriodHostWidth；删除：RangePickerArrowMargin、RangePickerIndicatorThickness（与 InfoPickerInput Token 重复，antd 无对应组件 Token，Breaking）；10.9b 评审已确认（`485ef3ba7`） |
+| Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 / 10.10d | ButtonsMargin/PeriodHostWidth → 实际时间终端 Active；TimePicker 的重复 Range 两字段仍删除。InfoPickerInput 的范围 Own 已迁到 RangeDatePicker/RangeTimePicker，各终端独立，不再引用原基元 Own；见各 token.md |
 | Desktop | Carousel | ArrowOffset | 10.9 | Active |
 | Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | Active；新增 AtomUI 扩展 ImageColor；Skeleton 标为 owner 透明 |
 | Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | Reserved；新增 AtomUI 扩展 ErrorIconSize |
 | Desktop | Form | VerticalLabelPadding | 10.10a | Active（垂直标签内容下间距，默认 paddingXS；取消水平 ControlHeight 最小值；`4bf2f1032` 已评审） |
 | Desktop | WindowTitleBar | CloseHoverBackgroundColor, ClosePressedBackgroundColor, ForegroundColor, HoverBackgroundColor, PressedBackgroundColor | 10.10c | 删除（无直接/派生/跨包消费者，无 antd 对应保留理由；现有 Active*/Inactive*/WindowsClose* 是平台状态路径，非一一别名；Breaking 与 token.md 已记） |
 | Desktop | TreeTransfer | ListWidthLG（家族实测追加，原消费在不支持的分页状态） | 10.10b | Reserved（保留字段/默认值；TreeTransfer 不支持分页，移除不可达消费；ListTransfer 的同名字段仍 Active） |
+| Desktop | Space → CompactSpaceAddOn | AddonBg, AddOnPadding, AddOnPaddingSM, AddOnPaddingLG | 10.10d | 专属 4 字段移到 CompactSpaceAddOn Active（Breaking）；Space 只留 3 gap 字段 |
+| Desktop | Statistic / Timer / StatisticCountUp | ContentFontSize / TitleFontSize | 10.10d | 各终端独立 Active；CountUp 只承诺实际值字号一字段，宿主以公开字号属性显式投射 |
+| Desktop | Calendar / LunarCalendar | ItemActiveBg, YearMonthCellWidth | 10.10d | ItemActiveBg 为两终端实际 Active（含 Lunar 全屏 Year 选中月份）；YearMonthCellWidth 只 Calendar，Lunar 使用 MiniMonthCellWidth；`86ad4b636` 已范围复审 |
+| Desktop | DateViewer → RangeDateViewer | PanelSpacing / FooterBorderThickness | 10.10d | PanelSpacing 归 Range；FooterBorderThickness 归 DateViewer；公共 cell/header 字段独立终端 Active |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
 | DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |
 

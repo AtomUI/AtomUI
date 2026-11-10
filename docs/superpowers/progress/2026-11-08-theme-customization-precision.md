@@ -36,7 +36,7 @@
 | 10.10a | 录入类剩余控件 | 完成并评审通过，`4bf2f1032`；240 / 205 / 287 定向检查通过，52 Own Active |
 | 10.10b | 展示类剩余控件 | 完成并评审通过：`7dcd4cdee` + `6160a423b`；58 Active / 1 Reserved，透明默认修复 7 / 310 定向通过 |
 | 10.10c | 窗口、滚动、共享基元与 Controls 包 | 实现与定向评审完成：`f071b5978` + `0070c62e9`；665 主验收 + 40 修复覆盖通过；当前平台窗口/波纹视觉待 15，原生跨平台限制造册 |
-| 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
+| 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 完成并评审通过：`10b58893d` + `86ad4b636`；2198 主渲染 + 43 合同 + 37 Unit + 350 门禁，Lunar 修复 100 / 350；性能/既定视觉留 15 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
 | 12 | Gallery 主题预设页 | 未开始 |
 | 13 | Shadcn / Bootstrap / Material | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；下一任务为 10.10d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；下一任务为 11（PrimeNG）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -430,3 +430,26 @@ Ruling: Flyout 已打开时切换 placement target 必须释放旧会话并在�
 Task 10.10c: fix round 1/5（2 addressed，0 open；`f071b5978..0070c62e9`）：仅已知 FlyoutHostTokenKind 归一化 Own，6 种键保持作用域语义；不同目标先以既有非可取消 HideCore 释放旧会话再获取新会话。真实 fixture RED 3 failed / 7 passed → GREEN 10/10；最终 lifecycle/Pinned 19/19、实际 Flyout/TreeFlyout 21/21，产品构建 0 warnings/errors；源与产物哈希匹配，未重跑不受影响 665 项。
 Task 10.10c: 范围复审 PASS（I1/I2 ADDRESSED，无新增问题，未重复跑测试）；修复 6 路径明确排除控制者文档。主实现误带控制者记录已如实更正，不改历史；65 Active / 5 删除的裁决和基线由控制者另记。
 Task 10.10c: complete（commits `1d7d8c54c..0070c62e9`，review clean；67 存量布局及原生/瞬态/触摸覆盖限制保留）。当前平台可执行 Window/fullscreen/Wave 视觉项交 Task 15；无 Win10/原生嵌入宿主/触摸硬件的绘制不作通过声明、不新增全平台门槛。10.10d 继续核对 Scroll/Caption 部件的明确宿主 Own 读取及 TreeFlyoutPresenter→Popup，真实宿主部件不机械复制独立身份。
+Ruling: 不采用抽象 explicit-hook 或新 analyzer/API；各终端首句 base 后使用自身 TokenKind 守卫依赖基值，再以显式参数/返回值调用单份共享派生公式 — Own slot 按各 terminal 字段排序而不同，抽象层不能复用另一 terminal 枚举；现有 024 要求 base 首句，048 仍应看见终端 read-after-assign，避免重演显式基值被覆盖的 A′ — 错了的代价：保留少量重复赋值胶水，若阶段或多级依赖处理不当仍会派生错误，须用不同 slot/显式零/派生链的回归纠正。
+Ruling: 允许内部部件声明具体可继承 StyledProperty/AttachedProperty 样式输入，由各终端 AXAML 读取自身 Own 值并由部件模板消费 — 这是纯 Avalonia 属性数据流，可解决跨多层共享模板的静态 Own 键问题，不引入运行时 Token/resource alias、OwnerTokenResource 新语义或公开 API — 错了的代价：增加数十个内部输入及继承/布局通知成本；必须守住嵌套公开控件边界、实际命中与释放，最终性能仍受 5% 验收约束，跨视觉根仅在真实边界明确转发。
+Ruling: SplitButton 的两个实际 public Button 保留独立 Button 颜色与动效身份，Split 仅管理接缝、尺寸及 flyout，不换成私有按钮部件 — 方案的 nested-public-controls 独立契约优先于计划对 Split→Button 的宽泛借用表述，此结构与 SearchEdit 嵌套 Button 同义；Dropdown 本体的独立 Own 泄漏仍修复 — 错了的代价：Controls[SplitButton] 不宣称单独控制两个 Button 的 palette，用户需配置 Button 或显式视觉属性；若未来需要独立 Split palette，须另行设计私有部件身份并处理模板兼容。
+Ruling: 仅由独立公共 CompactSpaceAddOn 渲染的专属 Own 从 Space 迁移到该 terminal，Space 不继续承诺无自身消费者的 Addon 字段 — 消费者归属是实际公开渲染身份，和既有 AvatarGroup 专属字段迁移原则一致，不能靠共同抽象层让无渲染字段假 Active — 错了的代价：外部 Space 旧字段 XML/TokenKind 引用需迁移到 CompactSpaceAddOn；若仍有 Space 自身消费者被漏认，须恢复对应契约并补真实场景。
+Task 10.10d: 首批 272 精确 effect 中 265 passed / 7 failed，剩余为 Numeric 新 handle Own/pressed 消费，原 ButtonSpinner 与 Dropdown 新 23 variant Own 已通过；Statistic/AutoComplete/Space 原身份回归通过，Select/Cascader/TreeSelect 正在验证具体内部继承输入。未宣称家族验收完成。
+Ruling: NumericUpDown Small 保留基础 FontSize（默认 14），Large 使用 FontSizeLG；删除覆盖 EmbeddedTextBox 默认 IsCustomFontSize=True 的多余 relay，不为尺寸对称改成 Small=FontSizeSM — 原真实 Small editor 已为 14 且显式 FontSize=23 有效，本地 antd InputNumber 的 inputFontSizeSM 也回落 mergedFontSize；错误 relay 导致 Custom→Middle trigger 覆盖 Large 宿主字号，才是根因 — 错了的代价：若误识宿主与实际 editor 字号，可能仍覆盖用户值或意外改变小号字体；以三尺寸真实 editor、显式字号及真实浮动滑块场景纠正，不新增字体 API。
+Task 10.10d: Numeric 的真实 Headless MouseMove 与 HandleOpacity=1 已证明浮动效果，不靠只写内部 hover 标志；独立身份/字号/handle 9 项定向回归通过。Select 16 个具体继承输入已编译；Cascader Small 空多选误用 Middle padding 的既有可见差异修复待合批验收登记。
+Task 10.10d: 本地 antd dropdown-button.tsx 已核对为两个 public Button + Space.Compact + Dropdown，支持 Split 的现有嵌套公共身份裁决。
+Ruling: TreeSelect 及 Picker 等多关注点 terminal 允许显式声明另一组实际渲染字段，以内部纯返回值函数复用公式，不新增 generator 组合机制 — C# 单继承不能同时承载输入与树/日期与时间/范围两套抽象层，强串层会让其他 terminal 获得不可渲染字段，违背承诺面；计算必须来自本 terminal 有效全局及正确守卫的基值 — 错了的代价：保留少量字段声明/赋值胶水重复，若字段语义或阶段不清会漂移，需各 terminal 真实状态、不同 slot 显式值及来源隔离验证，不能读来源控件 snapshot 充当复用。
+Ruling: CandidateList/Item 保持无 Own 的透明宿主部件，以宿主有效全局的具体样式输入替换 ListBox Own 借用，不给每个宿主复制 13 个新 Own — 内部候选列表不是独立公开承诺面，字段按原默认公式逐项等价映射，现有 Mentions.OptionHeight/PopupContentPadding 等宿主 Own 继续有效，真实选中/禁用/分组/空态保留 — 错了的代价：若默认映射或优先级错误，会改候选项颜色、尺寸或使宿主 Own 失效；需宿主正向、ListBox Own 负向及 standalone ListBox 契约纠正，新增专属 Own 须另有真实产品语义。
+Ruling: MentionTextArea、AutoCompleteTextAreaBox 作为内部派生编辑器跟随宿主有效值，公开独立 TextArea 仍拥有自身身份；内部移除借用的 TextArea StyleKey 并用 internal BasedOn 主题，公共 TextArea 主题以明确 owner 读法支持两种场景 — 内部类无独立外部身份，主输入是 Mentions/AutoCompleteTextArea 的真实部件，旧 a 的 TextArea 身份断言是旧路由证据而非永久架构豁免，与 TreeSelect 内部树同类 — 错了的代价：此前 Controls[TextArea] 或旧 StyleKey 选择器影响内部编辑器的用法需转到宿主/专用语义样式；必须保留显式用户优先级、滚动输入行为，并修正专用 Semantic Part route 的实际命中，原公开 TextArea 的独有 Own 不复制为虚假宿主承诺。
+Ruling: SemanticPartTemplateValidator 在最派生叶主题无自模板且未 OverridesBaseTemplate 时复用现有 ResolveTemplates，修正三处直接 Templates 枚举，不改变显式覆盖边界 — 内部 textarea 继承主题运行时正确，但 CollectCrossNestedOwnerMarkers 忽略 BasedOn 导致真实构建 10 个 032，不能靠改 route、抑制诊断或新增模板组合机制绕过 — 错了的代价：若展开边界错误可能误接受失效语义部件或误报其他继承主题，须继承叶/显式覆盖正反测试和专用 AXAML Style 实际命中纠正；不引入运行时机制。
+Task 10.10d: 源迁移已覆盖主要 Menu/Tab/Pagination/Dialog/List/Tree/Image/Picker/Titlebar 组；最新 Navigation/Feedback 合批 522=408 passed/114 failed，待复用原 source 真实状态验收新增 terminal。未把失败归入完成；完整有限 pair 清单在会话 scratch notes，当前无未答架构裁决。
+Task 10.10d: 主体合批已收敛至 825/826；唯一旧 Menu 借用正向断言按新身份契约改为来源隔离负例。四种 Picker、四种 Tab、Image 两终端和 Dialog/MessageBox 原生终点均已通过；Simple 页码 padding 与 RangeDate 无消费者 header 字段收回真正渲染的源 terminal，不造 UI 消费。
+Ruling: 将 StatisticCountUp 的单一 ContentFontSize 借用读点纳入本组，新增最小独立 terminal/共享 value 层，Statistic/Timer 以内嵌公开字号属性显式传值 — public CountUp 有独立注册身份但原主题直接读 Statistic Own，属于本任务同一来源泄漏；只处理已发现的一项字段，不复制其他 Statistic 字段或另建框架 — 错了的代价：多一个 Own 承诺、旧借用配置需迁移；需证明 standalone 来源负例、自身 Own 正例、宿主既有字号和用户显式优先级，保持原动画行为并避免动态数值假阳性。
+Task 10.10d: implementer DONE，`10b58893d`（300 明确路径，无控制者文件）；最终受改渲染 2198/2198、恢复后配对 43/43、既有 Unit 37/37、当前门禁 350/350，Semantic/gate 420/420 凭证有效，构建 0 warnings/errors。212 个具体继承输入、7 个普通 spinner 输入及少量候选输入均列报告；独立最强模型评审中，未宣称任务最终验收。
+Task 10.10d: minor (deferred): 35 文件/33 控件布局审计初始 428；仅新输入 region 与新增内部块修正，最终 230 条存量组织问题保留，新增 ThemeInputs/CandidateListItem 为 0，不扩为结构重排。
+Task 10.10d: 独立最强评审 Request changes（0 Critical / 1 Important / 2 Minor）。I1 已实测：Lunar Fullscreen+Year 的 selected :month 仍读 Calendar.ItemActiveBg，来源改红导致约 98.9% 像素变化；Month 的 :date 对照为 0，YearMonthCellWidth 已证明隔离正确。原实现者续修第 1 轮，不扩大模式/平台矩阵。
+Task 10.10d: minor (deferred): 同一 Unreleased 的旧 InfoPickerInput/候选列表/TextArea 借用迁移文字与新记录矛盾，及少数历史控制 changelog 借用叙述；Task15/终审统一整理。报告 before readcount 的 Button 应 55（非56）、Popup 应38（非39），最终数和其他49行一致，记为文案计数小问题。
+Ruling: ItemActiveBg 属于 Lunar 年视图选中月份的真实 Active Own，共享公式/具体输入必须提供 Lunar terminal-local 值，保留其年视图浅蓝与月视图日期主色默认 — 真实公开 Mode=Year 场景已证明 Calendar 来源泄漏，不能只看默认 :date 就判 Gregorian-only，也不能扩大 :date 选择器改掉年视图默认掩盖缺口 — 错了的代价：多一个真实 Lunar Own 承诺；若映射或状态范围错误会改变选中月份/日期外观，须精确来源负例、Lunar 正例和原默认对照纠正，月宽已隔离不纳入修复。
+Task 10.10d: fix round 1/5（1 addressed，0 open；`10b58893d..86ad4b636`）：ItemActiveBg 回归真正共享字段，由 Lunar 自己的既有输入取自身 Own；原 Year 浅蓝与 Month 日期主色保留，来源负例/自身正例已验证。原场景 RED 3/3 → Calendar/Lunar 100/100，当前门禁 350/350；8 个明确文件，无新增输入/订阅/别名。原有 2198 / 43 / 37 等有效凭证复用，不冒充已覆盖新增反例。
+Task 10.10d: 最强范围复审 PASS（I1 ADDRESSED，新增 Critical/Important 0）；100 / 350 凭证与 11 项哈希已核对，未重跑。51 终端当前 800 Active / 12 Reserved / 0 Unreferenced；212 继承输入签名/访问器已独立核对。两项 minor 和 230 存量组织问题留 Task15/终审，不形成修复循环。
+Task 10.10d: complete（commits `fc7b0bc26..86ad4b636`，review clean；M1/M2 deferred）。Task10 全部家族实现及任务评审完成；当前平台可执行视觉与性能、可选包、完整分支终审仍未完成，不计入本项验证。计划由控制者同步迁移摘要和最终基线。

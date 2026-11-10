@@ -527,7 +527,7 @@ Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
 
 ### Task 14: 可选控件包家族（DataGrid、ColorPicker、Extras）
 
-按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮，完成定义同 Task 9。DataGrid 已完成并评审（`f4e226b21`）：真实列/Group scoped resource、生成 text/editor、live owner 替换及释放取代已不存在的旧命名主题/RowMetrics 机制；新增像素/隔离测试复用现有 Rendering.Tests，单一 DataGrid fixture source-link，模块资源生命周期与原指针测试保留在 DataGrid.Tests 原宿主。ColorPicker/Extras 尚待执行，不新建验收框架。
+按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮，完成定义同 Task 9。DataGrid 已完成并评审（`f4e226b21`）：真实列/Group scoped resource、生成 text/editor、live owner 替换及释放取代已不存在的旧命名主题/RowMetrics 机制；新增像素/隔离测试复用现有 Rendering.Tests，单一 DataGrid fixture source-link，模块资源生命周期与原指针测试保留在 DataGrid.Tests 原宿主。ColorPicker 已完成并评审（`a26dbc9b8` + `9f393f9a5`）：四终端 Own 按真实消费拆分，深层具体输入和现有 Rendering.Tests 复用，动态渐变文字与 popup View 动效优先级经原流程修复。Extras 尚待执行，不新建验收框架。
 
 ---
 
@@ -658,6 +658,7 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | 10.10c Window / TitleBar / Scroll / Flyout / Icon / Embedding / Splash / shared | 62（含原漏扫 Splash 12） / 6 / 1 / 0 / 3 / 4 / 0 | 对应家族路径全部 0 | `f071b5978` 主验收 169 / 145 / 348 / 3；`0070c62e9` Flyout 修复后 19 / 21 定向与范围复审通过；65 Active、5 删除，原生/瞬态绘制限制见台账 |
 | 10.10d 终端 Own / 共享部件一致性 | 本轮相关已迁移路径原有 041–045/047/048 为 0；继承叶另复现 Semantic 032×10 | 对应路径与新终端全部 0；Semantic 继承修复通过 | `10b58893d`：2198 渲染、43 合同、37 Unit、350 门禁；`86ad4b636`：Lunar 100 / 350 定向与范围复审通过；51 终端当前 800 Active / 12 Reserved / 0 Unreferenced |
 | 14 DataGrid | 40 / 21 / 0 / 0 / 31 / 0 / 0（本轮当前分析器实测） | 对应家族路径全部 0 | `f4e226b21`；Rendering117、原模块52、门禁19、OwnKind2 全过并评审；67 Active / 11 Reserved；原自动列宽/排序交互保留 |
+| 14 ColorPicker | 59 / 2 / 0 / 23 / 16 / 8 / 0（本轮当前分析器实测） | 对应家族路径全部 0 | `a26dbc9b8`：177/19/23/3；`9f393f9a5`：原流程RED6→GREEN6、最终相关9/门禁19/Pinned9及范围复审通过；四终端54 Active |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 
@@ -709,7 +710,7 @@ Task 6 实测共 125 个字段；10.10b 另发现 TreeTransfer.ListWidthLG 的�
 | Desktop | Statistic / Timer / StatisticCountUp | ContentFontSize / TitleFontSize | 10.10d | 各终端独立 Active；CountUp 只承诺实际值字号一字段，宿主以公开字号属性显式投射 |
 | Desktop | Calendar / LunarCalendar | ItemActiveBg, YearMonthCellWidth | 10.10d | ItemActiveBg 为两终端实际 Active（含 Lunar 全屏 Year 选中月份）；YearMonthCellWidth 只 Calendar，Lunar 使用 MiniMonthCellWidth；`86ad4b636` 已范围复审 |
 | Desktop | DateViewer → RangeDateViewer | PanelSpacing / FooterBorderThickness | 10.10d | PanelSpacing 归 Range；FooterBorderThickness 归 DateViewer；公共 cell/header 字段独立终端 Active |
-| ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
+| ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | 均 Active，迁到两种公开 View 的独立 Own；Alpha 默认48保留原实际布局（旧未用字段44），handle16作用于真实hover手柄。四终端54 Active/0 Reserved/0 Unreferenced；旧24字段逐项迁移见 token.md（Breaking，无别名）；`9f393f9a5` 已范围复审 |
 | DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | Active 10：ExpandIconBg、FilterDropdownMenuBg、HeaderFilterHoverBg、SortIndicatorLayoutMargin、TableBodySortBg、TableExpandIconBg、TableHeaderCellSplitColor、TableHeaderFilterActiveBg、TableHeaderSortBg、TableHeaderSortHoverBg；其余 11 Reserved（CSS expander/sticky header/filter search 无对应结构；三个 selection/detail width 保持 auto UX）；无删除，`f4e226b21` 已评审 |
 
 Task 9 另删除 HyperLinkButton.BorderColorDisabled（该控件不绘制边框），不在原清单中。

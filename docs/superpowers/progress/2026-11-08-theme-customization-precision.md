@@ -43,14 +43,14 @@
 | 13 Bootstrap | Bootstrap | 完成并评审通过，`04c193e06`；Themes7/Gallery3、Core-only 包检查、官方 focus ARGB 验证 |
 | 13 Material | Material | 完成并评审通过，`8af56690d`；Themes7/Gallery3、四 profile/完整阴影/包检查通过，1 文档 minor 留收尾 |
 | 14 DataGrid | DataGrid 家族 | 完成并评审通过，`f4e226b21`；117/52/19/2，67 Active / 11 Reserved，原自动列宽与排序交互保持 |
-| 14 ColorPicker | ColorPicker 家族 | 未开始（独立实例） |
+| 14 ColorPicker | ColorPicker 家族 | 完成并评审通过，`a26dbc9b8` + `9f393f9a5`；54 Active，177/19/23/3，修复后9/19/9及原流程RED/GREEN通过 |
 | 14 Extras | Extras 家族 | 未开始（独立实例） |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
 | 终审 | 整分支评审 | 未开始 |
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；14 DataGrid 已完成并评审通过（`f4e226b21`）；下一任务为 14 ColorPicker→Extras（各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；14 DataGrid 已完成并评审通过（`f4e226b21`）；14 ColorPicker 已完成并评审通过（`9f393f9a5`）；下一任务为 14 Extras（独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -512,3 +512,22 @@ Task 14 DataGrid: implementer DONE `f4e226b21` (35 owned paths); 67 Active / 11 
 Task 14 DataGrid: independent Spec/Quality APPROVED (0 Critical / 0 Important / 2 Minor); 35-file scope, actual owner bridge and Column/Group complete owner-chain/release risks checked, final117/52/19/2 receipts accepted without rerun. Cleanup6 is within52.
 Task 14 DataGrid: minor (deferred): effect-region/fixture branches include unreachable ColorBgTextHover/Active filter alternatives; current114 matrix is correct, remove confusing dead branches in final triage if worthwhile. Initial GalleryBase/Rendering build warnings were pre-existing and not catalogued by ID; Task15 aggregate build must record/resolve actual remaining warnings rather than call earlier run pristine.
 Task 14 DataGrid: complete (commits `5dee60477..f4e226b21`, review clean). Controller separately updates all21 Own decisions and actual diagnostic baseline40/21/0/0/31/0/0; historical initial baseline remains historical. ColorPicker and Extras remain unstarted.
+
+Ruling: ColorPicker 生效/像素合同直接复用既有 Rendering.Tests，行为回归留既有 Controls.Tests/ColorPicker，不新建计划字面要求的独立包测试项目 — 当前没有 ColorPicker.Tests，Rendering 已注册该包和真实 Skia/harness，DataGrid 已证明为复用像素而修改整个模块宿主会破坏原输入 fixture — 错了的代价：ColorPicker effect 仍承受既有 Gallery/PerTest 宿主成本，测试物理位置与计划旧文不同；必须覆盖真实终端、嵌入编辑器、popup owner 与完整生成消费图，不以位置调整省略承诺面。
+
+Ruling: ColorPicker / GradientColorPicker 与公开 ColorPickerView / GradientColorPickerView 按真实终端拆分 Own，抽象层只共享实际字段/纯公式，深层部件用既有具体继承样式输入 — 当前四个已注册 identity 却只有 ColorPicker 一份 24 Own，派生值仍取 ColorPicker globals；直接保留家族借用会重现 10.10d 已修的跨控件污染，公开嵌套 View 必须保留自身边界 — 错了的代价：原 ColorPicker 的 popup/editor Own 需迁到对应 View（Breaking，无旧键别名）；触发器仅保留真实五项、View 只保留真实 editor/spectrum/palette/slider 消费字段（含共享色块两项），逐终端若不消费必须 Reserved/移除而非假 Active，默认外观及嵌套公开编辑器隔离需真实验证。
+
+Task 14 ColorPicker: valid original popup RED2/2 (both042 widths produce zero pixel delta after correct overlay hosting); fresh diagnostics041=59 /042=2 /044=23 /045=16 /047=8. Initial fixture overlay error is not counted as RED. Four terminal ownership split is in progress; palette Collapse boundary, actual public editors and independent popup/View isolation remain required.
+
+Ruling: ColorPicker 的 s_textBox 依真实公开 NumericUpDown 内 EmbeddedTextBox 身份验收，不能追加为 View 全局消费；View 仅登记实际读取，并锁定原父样式 11px 字体的显式投射 — 实际输入子树是公开 LineEdit/NumericUpDown/ComboBox，EmbeddedTextBox owner=NumericUpDown；公共嵌套身份独立，父明确指定的字体按优先级存在，伪造 View 像素行会掩盖串用 — 错了的代价：Numeric 字体 Token 在原父 11px 指定场景仍不穿透，需文档如实说明并验证 View.EditorFontSize 的真实作用及用户本地优先级；真实 editor 的选择/前景/owner/live publish 合同与 s_textBox drift guard 必须保留，既有 Numeric 全字段合同可复用而不重复假矩阵。
+
+Task 14 ColorPicker: implementer DONE `a26dbc9b8` (51 owned files), four terminals54 Active/0 Reserved/0 Unreferenced; both original042 widths Active on Views. Final cleaned Rendering177 (168 effect=54Own+114global,160pixel/8bool-duration + drift1 +contracts8), gate19, existingbehavior/OwnKind23, GalleryCustomSize3 all passed. Public editor/View/popup boundaries, font local priority and original48/262 geometry are verified. 89 existing member-organization findings remain for final triage; no native/AOT/performance claim. Independent task review dispatched.
+
+Ruling: ColorPicker 弹层的公开 View 应以自身 EnableMotion 为默认，触发器 IsMotionEnabled=False 作为宿主禁用门控，保留用户本地属性优先级；替换无条件直绑 View.IsMotionEnabled 的旧转发 — 已核对两处 CreatePresenter 将触发器默认 True 以 LocalValue 绑定覆盖 View owner 的 False，独立终端承诺不能仅对 standalone 成立；宿主显式关闭动画的原 UX 同时必须保留 — 错了的代价：增加一个局部内部宿主输入和 AXAML 条件 Setter（运行时 Content 绑定仍需代码兜底理由），优先级若错误会使原禁用或用户覆盖失效；需同真实弹层逐项 RED/GREEN 验证 View-only False、host False、默认 True、live 切换及用户本地值，不扩大公共 API/共享机制。
+
+Task 14 ColorPicker: task review Needs fixes (0 Critical / 2 Important / 1 Minor). I1 actual gradient stop-index/open-close history leaves copied label brushes stale across token publish/disabled transitions; I2 unconditional host motion relay masks popup View owner default (controller ruling above). Same implementer fix round1/5 dispatched; prior177/19/23/3 outside these paths remain valid, not repeated.
+Task 14 ColorPicker: minor (deferred): reused builds include pre-existing CS0649 SelectFamilyEffectTests:69 / xUnit1051 ButtonFocusVisualRenderingTests:75 and unrelated cancellation warnings; no ColorPicker diagnostic. Task15 aggregate build must resolve/report actual warnings, not call earlier receipts pristine.
+
+Task 14 ColorPicker: fix round1/5 (I1/I2 addressed,0 open; `a26dbc9b8..9f393f9a5`). Original actual thumb click/state history RED6/6 ->GREEN6/6; cleaned relatedRendering9/9, gate19/19, Pinned9/9; prior177/19/23/3 outside changed paths reused. Gradient code only updates state class; existing WrapPanel AXAML compiled binding paints selected text and releases inheritance on close. Internal host motion input/conditional setter preserves View default, hostfalse and local priority.
+Task 14 ColorPicker: scoped re-review APPROVED (0 Critical /0 Important /0 new Minor); all6 RED/GREEN and final9/19/9 receipts checked without rerun; dynamic TextBlock subclasses retained, no template-parent mutation/new node/per-label lifecycle. M1 warning noise remains Task15.
+Task 14 ColorPicker: complete (`48bbe3469..9f393f9a5`, review clean). 2 original042 Active on real Views; four terminals54 Active/0 Reserved/0 Unreferenced, old24 names each mapped in user docs. Controller separately updates plan/current baseline; native/performance/full remain later authorized acceptance.

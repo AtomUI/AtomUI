@@ -8,11 +8,11 @@ namespace AtomUI.Generator.Tests.ThemeAssets;
 
 /// <summary>
 /// Error gate for control families whose theme migration is complete. The control-code analyzers (ATOMUIGEN043/044/047)
-/// are raised to errors per directory in <c>src/AtomUI.Desktop.Controls/.editorconfig</c>; the generator-reported
+/// are raised to errors by the migrated directories' or optional packages' <c>.editorconfig</c>; the generator-reported
 /// diagnostics (ATOMUIGEN041/042/045) do not take path-scoped <c>.editorconfig</c> severities, so this test fails
 /// the build for them instead: it runs the theme-asset analysis over the family's real AXAML with the package's real
 /// Token identities, and reads the generated consumption map for Unreferenced Own Tokens. The test project references
-/// AtomUI.Controls and AtomUI.Desktop.Controls for build order only, so those generated files are current whenever the
+/// the control packages for build order only, so those generated files are current whenever the
 /// tests are built.
 /// </summary>
 public class MigratedFamilyAnalyzerGateTests
@@ -21,6 +21,7 @@ public class MigratedFamilyAnalyzerGateTests
     private const string Controls = "src/AtomUI.Controls";
     private const string ColorPicker = "src/AtomUI.Desktop.Controls.ColorPicker";
     private const string DataGrid = "src/AtomUI.Desktop.Controls.DataGrid";
+    private const string Extras = "src/AtomUI.Desktop.Controls.Extras";
 
     /// <summary>Directories (relative to the package) of migrated families.</summary>
     private static readonly string[] s_familyDirectories =
@@ -120,6 +121,8 @@ public class MigratedFamilyAnalyzerGateTests
             .Concat(s_familyFiles.Select(static file => Path.Combine(RepositoryRoot, DesktopControls, file)))
             .Concat(s_controlsFamilyDirectories.SelectMany(directory => Directory.EnumerateFiles(
                 Path.Combine(RepositoryRoot, Controls, directory), "*.axaml", SearchOption.AllDirectories)))
+            // Extras currently has no assets. Discover future additions without inventing an empty theory row.
+            .Concat(Directory.EnumerateFiles(Path.Combine(RepositoryRoot, Extras), "*.axaml", SearchOption.AllDirectories))
             .Select(path => Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/'))
             .Order(StringComparer.Ordinal)
             .Select(static path => new object[] { path });
@@ -167,6 +170,7 @@ public class MigratedFamilyAnalyzerGateTests
         var text = new FileText(Path.Combine(RepositoryRoot, relativePath));
         var package = relativePath.StartsWith(ColorPicker + "/", StringComparison.Ordinal) ? ColorPicker
             : relativePath.StartsWith(DataGrid + "/", StringComparison.Ordinal) ? DataGrid
+            : relativePath.StartsWith(Extras + "/", StringComparison.Ordinal) ? Extras
             : relativePath.StartsWith(Controls + "/", StringComparison.Ordinal) ? Controls : DesktopControls;
         var asset = ThemeAssetInfo.Create(text, Path.Combine(RepositoryRoot, package), null,
             TestContext.Current.CancellationToken, out var root);
@@ -361,7 +365,8 @@ public class MigratedFamilyAnalyzerGateTests
             "No Active Own Token entries of the family were found in the AtomUI.Desktop.Controls consumption map.");
         controlsEntries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0,
             "No Active Own Token entries of the family were found in the AtomUI.Controls consumption map.");
-        var familyEntries = desktopEntries.Concat(controlsEntries).ToArray();
+        // The registration-only Extras package may have zero Own entries; any future ones still enter the gate.
+        var familyEntries = desktopEntries.Concat(controlsEntries).Concat(OwnTokenEntries(Extras)).ToArray();
 
         var unreferenced = familyEntries
                            .Where(static match => match.Groups["state"].Value == "Unreferenced")
@@ -370,14 +375,14 @@ public class MigratedFamilyAnalyzerGateTests
         unreferenced.ShouldBeEmpty("ATOMUIGEN042: consume, [ReservedToken], or delete these Own Tokens.");
     }
 
-    /// <summary>The Own Token entries of the given controls in a package's generated consumption map.</summary>
-    private static IEnumerable<Match> OwnTokenEntries(string package, string[] controls)
+    /// <summary>The Own Token entries of selected controls, or all controls, in a package's generated consumption map.</summary>
+    private static IEnumerable<Match> OwnTokenEntries(string package, string[]? controls = null)
     {
         var map = File.ReadAllText(Path.Combine(RepositoryRoot, package,
             "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeConsumption.g.cs"));
         return Regex.Matches(map,
                         @"new OwnTokenEntry\(""AtomUI"", ""(?<control>\w+)"", ""(?<token>\w+)"", OwnTokenState\.(?<state>\w+)")
-                    .Where(match => controls.Contains(match.Groups["control"].Value));
+                    .Where(match => controls is null || controls.Contains(match.Groups["control"].Value));
     }
 
     /// <summary>
@@ -387,7 +392,7 @@ public class MigratedFamilyAnalyzerGateTests
     private static readonly Lazy<HashSet<string>> IdentityControls = new(static () =>
     {
         var result = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var package in new[] { DesktopControls, Controls, DataGrid, ColorPicker })
+        foreach (var package in new[] { DesktopControls, Controls, DataGrid, ColorPicker, Extras })
         {
             var contracts = File.ReadAllText(Path.Combine(RepositoryRoot, package,
                 "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeBuildContracts.g.cs"));

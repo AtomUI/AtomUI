@@ -22,6 +22,7 @@
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" ReferenceOutputAssembly="false" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" ReferenceOutputAssembly="false" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="../../src/AtomUI.Desktop.Controls.Extras/AtomUI.Desktop.Controls.Extras.csproj" ReferenceOutputAssembly="false" />
         <AssemblyMetadata Include="FixtureBuildTasksAssembly"
                           Value="$([System.IO.Path]::GetFullPath('$(AtomUIBuildTasksAssembly)'))" />
     </ItemGroup>

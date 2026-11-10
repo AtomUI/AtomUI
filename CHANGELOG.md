@@ -109,7 +109,7 @@ All notable changes to AtomUI are documented in this file.
 - Display remainder
   - When QRCode.Color is explicitly null, rasterization falls back to that QRCode's effective ColorText (including its alpha) and refreshes on local theme changes, rather than using fixed black; an explicit non-null Color keeps precedence.
   - Transfer frames, filter decorations and spacing, Drawer overlays, Spin indicators / tips / masks, Result text / content, Empty preset images / descriptions, QRCode borders, link / selection text, BorderBeam and default focus adorners now use their effective control globals. Drawer overlays refresh after local theme publishes and release their resource bridge on close; registered nested controls keep their own identities.
-  - Visible changes: HyperLinkTextBlock now paints its declared default ColorBgContainer and application Background on its existing text visual. Transfer search icon colour and filter margins follow the transfer host; existing geometry and animation endpoints remain unchanged.
+  - Visible changes: HyperLinkTextBlock keeps its transparent default so tinted, hovered and selected table-row surfaces remain visible; an explicit application Background paints on its existing text visual. Its default theme does not consume ColorBgContainer. Transfer search icon colour and filter margins follow the transfer host; existing geometry and animation endpoints remain unchanged.
 
 ## 6.2.14
 

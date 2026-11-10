@@ -111,7 +111,7 @@ AtomUI 的重要变更记录在此文件中。
 - 展示类剩余控件
   - 仅当显式设置 QRCode.Color=null 时，点阵回退到该二维码的有效 ColorText（含透明度）并随局部主题更新，不再固定为纯黑；显式非空 Color 仍优先，正常主题设置的非空默认画刷保持原有路径。
   - Transfer 装饰框、筛选图标和间距，Drawer 覆盖层，Spin 指示器/提示/遮罩，Result 文本与内容，Empty 预设图形和描述，QRCode 边框，链接/选区文字，BorderBeam 及默认焦点装饰读取各自有效全局 Token。Drawer 局部主题发布会即时刷新覆盖层，关闭时释放资源桥接；嵌套已注册控件保留自身身份。
-  - 可见变化：HyperLinkTextBlock 将默认 ColorBgContainer 与应用 Background 绘制到已有文本节点。Transfer 搜索图标颜色及筛选框外间距跟随穿梭宿主；既有几何与动画端点保持不变。
+  - 可见变化：HyperLinkTextBlock 保持透明默认背景，使着色、悬停和选中表格行的底色可见；仅显式应用 Background 绘制到已有文本节点，默认主题不消费 ColorBgContainer。Transfer 搜索图标颜色及筛选框外间距跟随穿梭宿主；既有几何与动画端点保持不变。
 
 ## 6.2.14
 

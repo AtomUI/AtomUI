@@ -18,7 +18,6 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="{atom:HyperLinkTextBlockTokenResource ColorBgContainer}" />
         <Setter Property="IsMotionEnabled" Value="{atom:HyperLinkTextBlockTokenResource EnableMotion}" />
         
         <Style Selector="^[IsEnabled=True]">

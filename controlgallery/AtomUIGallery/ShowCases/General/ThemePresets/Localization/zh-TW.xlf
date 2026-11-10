@@ -49,6 +49,12 @@
         <target state="translated">主題 XML 已複製</target>
       </segment>
     </unit>
+    <unit id="CopyFailed">
+      <segment>
+        <source>Unable to copy theme XML. Try again.</source>
+        <target state="translated">無法複製主題 XML，請重試。</target>
+      </segment>
+    </unit>
     <unit id="Preview">
       <segment>
         <source>Preview</source>

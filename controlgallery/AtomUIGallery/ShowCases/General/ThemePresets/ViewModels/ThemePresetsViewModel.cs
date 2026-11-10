@@ -8,6 +8,7 @@ using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 
@@ -37,6 +38,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     private ThemeConfig? _previewConfig;
     private bool _active;
     private bool _copySucceeded;
+    private bool _copyFailed;
     private DataGridLocalSource<PreviewRow>? _previewSource;
 
     public IReadOnlyList<AtomUI.Desktop.Controls.SelectOption> People { get; } =
@@ -75,6 +77,11 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         get => _copySucceeded;
         private set => this.RaiseAndSetIfChanged(ref _copySucceeded, value);
     }
+    public bool CopyFailed
+    {
+        get => _copyFailed;
+        private set => this.RaiseAndSetIfChanged(ref _copyFailed, value);
+    }
     public ReactiveCommand<Unit, Unit> CopyThemeXml { get; }
     internal Func<string, Task<bool>>? CopyText { get; set; }
 
@@ -85,11 +92,34 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         HostScreen = screen;
         _manager = manager;
         _catalog = new ThemePresetCatalog((ThemeManager)manager);
-        CopyThemeXml = ReactiveCommand.CreateFromTask(async () =>
-        {
-            CopySucceeded = CopyText is { } copy && await copy(ExportThemeXml());
-        }, outputScheduler: AvaloniaScheduler.Instance);
+        CopyThemeXml = ReactiveCommand.CreateFromTask(CopyThemeXmlAsync, outputScheduler: AvaloniaScheduler.Instance);
         Refresh();
+    }
+
+    private async Task CopyThemeXmlAsync()
+    {
+        var config = _previewConfig;
+        CopySucceeded = false;
+        CopyFailed = false;
+        var xml = ExportThemeXml();
+        bool copied;
+        try
+        {
+            copied = CopyText is { } copy && await copy(xml);
+        }
+        catch (Exception)
+        {
+            // Clipboard backend writes are a recoverable page operation, not an unhandled command error.
+            copied = false;
+        }
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (ReferenceEquals(config, _previewConfig))
+            {
+                CopySucceeded = copied;
+                CopyFailed = !copied;
+            }
+        });
     }
 
     internal void Activate()
@@ -163,6 +193,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         this.RaiseAndSetIfChanged(ref _previewThemeId, id, nameof(PreviewThemeId));
         this.RaiseAndSetIfChanged(ref _previewConfig, _catalog.CreateConfig(id, algorithms), nameof(PreviewConfig));
         CopySucceeded = false;
+        CopyFailed = false;
     }
 
     public string ExportThemeXml() => ThemePresetCatalog.Export(_previewThemeId!,

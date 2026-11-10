@@ -49,6 +49,12 @@
         <target state="translated">XML do tema copiado</target>
       </segment>
     </unit>
+    <unit id="CopyFailed">
+      <segment>
+        <source>Unable to copy theme XML. Try again.</source>
+        <target state="translated">Não foi possível copiar o XML do tema. Tente novamente.</target>
+      </segment>
+    </unit>
     <unit id="Preview">
       <segment>
         <source>Preview</source>

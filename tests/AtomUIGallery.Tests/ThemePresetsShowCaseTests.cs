@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Reactive.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using AtomUI;
@@ -144,6 +145,64 @@ public class ThemePresetsShowCaseTests
             model.IsDark = false; Pump(); model.CopySucceeded.ShouldBeFalse();
         }
         finally { window.Close(); Pump(); }
+    }
+
+    [Fact]
+    public void Copy_Command_Contains_Asynchronous_Write_Failure_And_Allows_A_Successful_Retry()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!);
+        var page = new ThemePresetsShowCase { DataContext = model };
+        var window = new Window { Width = 1200, Height = 900, Content = page };
+        var errors = new List<Exception>();
+        using var exceptions = model.CopyThemeXml.ThrownExceptions.Subscribe(errors.Add);
+        try
+        {
+            window.Show(); Pump();
+            var button = page.FindControl<Button>("CopyThemeButton")!;
+            var failure = page.FindControl<Avalonia.Controls.TextBlock>("CopyFailureFeedback")!;
+            var writeClipboard = model.CopyText!;
+            button.Command!.Execute(button.CommandParameter);
+            WaitUntil(() => model.CopySucceeded);
+
+            var pending = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            model.CopyText = _ => pending.Task;
+            button.Command.Execute(button.CommandParameter);
+            Pump();
+            model.CopySucceeded.ShouldBeFalse();
+            model.CopyFailed.ShouldBeFalse();
+            pending.SetException(new IOException("clipboard write failed"));
+            WaitUntil(() => model.CopyFailed && button.Command.CanExecute(button.CommandParameter));
+            model.CopySucceeded.ShouldBeFalse();
+            failure.IsVisible.ShouldBeTrue();
+            string.IsNullOrWhiteSpace(failure.Text).ShouldBeFalse();
+            errors.ShouldBeEmpty("The command must contain the write fault before ReactiveUI's exception pipeline.");
+
+            model.CopyText = writeClipboard;
+            button.Command.Execute(button.CommandParameter);
+            WaitUntil(() => model.CopySucceeded);
+            model.CopyFailed.ShouldBeFalse();
+            failure.IsVisible.ShouldBeFalse();
+            ReadClipboard(window).ShouldBe(model.ExportThemeXml());
+
+            // Feedback belongs to the copied configuration, including completion after a mode change.
+            var previousProfileCopy = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            model.CopyText = _ => previousProfileCopy.Task;
+            button.Command.Execute(button.CommandParameter);
+            model.IsDark = true;
+            previousProfileCopy.SetResult(true);
+            WaitUntil(() => button.Command.CanExecute(button.CommandParameter));
+            model.CopySucceeded.ShouldBeFalse();
+            model.CopyFailed.ShouldBeFalse();
+            errors.ShouldBeEmpty();
+        }
+        finally { window.Close(); Pump(); }
+    }
+
+    private static void WaitUntil(Func<bool> predicate)
+    {
+        for (var i = 0; i < 200 && !predicate(); i++) { Pump(); Thread.Sleep(5); }
+        predicate().ShouldBeTrue("Copy feedback or command availability did not settle within one second.");
     }
 
     [Fact]

@@ -41,6 +41,11 @@
         <source>Theme XML copied</source>
       </segment>
     </unit>
+    <unit id="CopyFailed">
+      <segment>
+        <source>Unable to copy theme XML. Try again.</source>
+      </segment>
+    </unit>
     <unit id="Preview">
       <segment>
         <source>Preview</source>

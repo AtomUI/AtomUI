@@ -11,6 +11,7 @@ public enum ThemePresetsShowCaseLangResourceKind
     Compact,
     CopyTheme,
     Copied,
+    CopyFailed,
     Preview,
     Primary,
     Default,

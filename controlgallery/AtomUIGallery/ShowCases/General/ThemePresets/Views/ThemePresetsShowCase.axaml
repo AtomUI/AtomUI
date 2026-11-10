@@ -36,7 +36,8 @@
                     <atom:CheckBox Name="DarkMode" Content="{vm:ThemePresetsShowCaseLangResource Dark}" IsChecked="{Binding IsDark, Mode=TwoWay}" Margin="0,0,20,8" />
                     <atom:CheckBox Name="CompactMode" Content="{vm:ThemePresetsShowCaseLangResource Compact}" IsChecked="{Binding IsCompact, Mode=TwoWay}" Margin="0,0,20,8" />
                     <atom:Button Name="CopyThemeButton" Content="{vm:ThemePresetsShowCaseLangResource CopyTheme}" Command="{Binding CopyThemeXml}" />
-                    <TextBlock Margin="12,6,0,0" Text="{vm:ThemePresetsShowCaseLangResource Copied}" IsVisible="{Binding CopySucceeded}" />
+                    <TextBlock Name="CopySuccessFeedback" Margin="12,6,0,0" Text="{vm:ThemePresetsShowCaseLangResource Copied}" IsVisible="{Binding CopySucceeded}" />
+                    <TextBlock Name="CopyFailureFeedback" Margin="12,6,0,0" Text="{vm:ThemePresetsShowCaseLangResource CopyFailed}" IsVisible="{Binding CopyFailed}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding PreviewThemeId}" />
                 <theme:ThemeConfigProvider Name="PreviewProvider" Config="{Binding PreviewConfig}">

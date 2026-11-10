@@ -25,6 +25,8 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+候选弹层内的 `CandidateList` / `CandidateListItem` 为 Token owner 透明部件，其基础主题的 Global Token 和过渡时长跟随实际 AutoComplete 宿主。候选项颜色、padding 等 Own Token 当前仍读取 ListBox。注册的输入控件保持自己的 identity。
+
 AutoComplete 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

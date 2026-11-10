@@ -5,9 +5,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+// Token-owner transparent part: the default drag area has no Own Tokens; its theme reads the Upload TokenResource.
+[TokenOwnerTransparent]
 public class UploadDefaultDropArea : TemplatedControl, IMotionAwareControl
 {
     #region 公共属性定义

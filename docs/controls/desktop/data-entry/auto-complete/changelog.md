@@ -9,6 +9,11 @@
 - Tests
   - `AutoCompleteFocusTests` 的 Filled 用例改为断言聚焦边框存在且无 `BoxShadow`。
 
+## 2026-11-10
+
+- Theme
+  - CandidateList / CandidateListItem 透传 AutoComplete owner；候选列表 Own Token 仍复用 ListBox。
+
 ## 2026-11-08
 
 - Changed

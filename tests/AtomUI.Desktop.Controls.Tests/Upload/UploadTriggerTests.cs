@@ -91,7 +91,7 @@ public class UploadTriggerTests
 
         rootTheme.ShouldContain("StackPanel Name=\"RootLayout\"");
         rootTheme.ShouldContain("Orientation=\"Vertical\"");
-        rootTheme.ShouldContain("Spacing=\"{atom:SharedTokenResource SpacingXS}\"");
+        rootTheme.ShouldContain("Spacing=\"{atom:UploadTokenResource SpacingXS}\"");
         rootTheme.ShouldNotContain("ControlTokenScope.Identity");
         rootTheme.ShouldNotContain("<DockPanel Name=\"RootLayout\"");
         rootTheme.ShouldNotContain("DockPanel.Dock=\"Top\"");

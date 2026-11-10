@@ -26,7 +26,7 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+        <Setter Property="ItemSpacing" Value="{atom:FormTokenResource SpacingXS}" />
         
     </ControlTheme>
 </ResourceDictionary>

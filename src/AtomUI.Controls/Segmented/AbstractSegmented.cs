@@ -143,8 +143,11 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     {
         OrientationProperty.OverrideDefaultValue<AbstractSegmented>(Orientation.Horizontal);
         AffectsMeasure<AbstractSegmented>(OrientationProperty, IsExpandingProperty, SizeTypeProperty);
+        // The track (Background, CornerRadius) is drawn in Render, so a Token change of TrackBg or the radius must redraw it.
         AffectsRender<AbstractSegmented>(
-            SelectedThumbCornerRadiusProperty, 
+            BackgroundProperty,
+            CornerRadiusProperty,
+            SelectedThumbCornerRadiusProperty,
             SelectedThumbBgProperty,
             SelectedThumbBoxShadowsProperty,
             SelectedThumbSizeProperty, 

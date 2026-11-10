@@ -25,6 +25,8 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+`Controls[Upload].Tokens` 覆盖文本、图片、卡片列表与拖拽区域的有效 Global Token。`UploadTrigger`、`UploadDropZone`、`UploadDefaultDropArea` 为 Token owner 透明部件，其过渡时长跟随 Upload。内嵌 ProgressBar 与 IconButton 保留自己的 identity；Upload 模板显式提供的进度颜色、厚度与动作图标属性由 Upload 决定。`TextListProgressLineHeight` 在主题变化后重新计算实际线宽。
+
 Upload 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

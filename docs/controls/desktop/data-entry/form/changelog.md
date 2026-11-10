@@ -3,6 +3,11 @@
 本文档记录 Form 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme
+  - FormItem / FormItemDecorator 跟随 Form 的有效全局 Token；垂直标签启用 VerticalLabelPadding，并取消水平标签行的 control-height 最小高度。
+
 ## 2026-09-01
 
 - Theme

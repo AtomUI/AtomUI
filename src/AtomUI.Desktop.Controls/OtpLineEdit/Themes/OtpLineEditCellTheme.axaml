@@ -3,6 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- Underlined cells draw only the bottom edge of the BorderThickness Token. -->
+    <atom:BorderThicknessFilterConverter x:Key="OtpCellUnderlineThicknessConverter" Left="False" Top="False" Right="False" />
+
     <ControlTheme x:Key="{x:Type atom:OtpLineEditCell}" TargetType="atom:OtpLineEditCell">
         <ControlTheme.BasedOn>
             <atom:InputControlFrameTheme TargetType="atom:OtpLineEditCell" />
@@ -32,6 +35,7 @@
                             显隐由 OtpLineEditCell 依据 IsActive 与内容驱动，
                             闪烁为标准 1s 步进动画；颜色/高度跟随 cell 字体。
                         -->
+                        <!-- layout: the caret is 1 px wide, as the text box caret it replaces -->
                         <Rectangle
                             Name="PART_Caret"
                             Width="1"
@@ -47,35 +51,35 @@
 
         <Style Selector="^:is(atom|OtpLineEditCell)">
             <Setter Property="Width" Value="{atom:OtpLineEditTokenResource CellWidth}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:OtpLineEditTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-            <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+            <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainer}" />
+            <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorBorder}" />
+            <Setter Property="BorderThickness" Value="{atom:OtpLineEditTokenResource BorderThickness}" />
+            <Setter Property="CornerRadius" Value="{atom:OtpLineEditTokenResource BorderRadius}" />
+            <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorText}" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+            <Setter Property="IsMotionEnabled" Value="{atom:OtpLineEditTokenResource EnableMotion}" />
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="Width" Value="{atom:OtpLineEditTokenResource CellWidthLG}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
+                <Setter Property="Height" Value="{atom:OtpLineEditTokenResource ControlHeightLG}" />
+                <Setter Property="FontSize" Value="{atom:OtpLineEditTokenResource FontSizeLG}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:OtpLineEditTokenResource FontSize}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="Width" Value="{atom:OtpLineEditTokenResource CellWidthSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+                <Setter Property="Height" Value="{atom:OtpLineEditTokenResource ControlHeightSM}" />
+                <Setter Property="FontSize" Value="{atom:OtpLineEditTokenResource FontSizeSM}" />
             </Style>
 
             <Style Selector="^[StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorFillTertiary}" />
                 <Setter Property="BorderBrush" Value="Transparent" />
             </Style>
 
@@ -86,107 +90,123 @@
             </Style>
 
             <Style Selector="^[StyleVariant=Underlined]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-                <Setter Property="BorderThickness" Value="0 0 0 1" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainer}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorBorder}" />
                 <Setter Property="CornerRadius" Value="0" />
+                <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_Frame">
+                    <Setter Property="BorderThickness"
+                            Value="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource OtpCellUnderlineThicknessConverter}}" />
+                </Style>
             </Style>
 
             <Style Selector="^:pointerover[StyleVariant=Outlined], ^:pointerover[StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorPrimaryHover}" />
             </Style>
 
             <Style Selector="^:pointerover[StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorFillSecondary}" />
             </Style>
 
             <Style Selector="^:pressed[StyleVariant=Outlined], ^:pressed[StyleVariant=Filled], ^:pressed[StyleVariant=Underlined], ^[IsActive=True][StyleVariant=Outlined], ^[IsActive=True][StyleVariant=Filled], ^[IsActive=True][StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorPrimary}" />
             </Style>
             <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
             <Style Selector="^:pressed[StyleVariant=Outlined], ^[IsActive=True][StyleVariant=Outlined]">
-                <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputActiveShadow}" />
+                <Setter Property="BoxShadow" Value="{atom:OtpLineEditTokenResource InputActiveShadow}" />
             </Style>
 
             <Style Selector="^[IsActive=True][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainer}" />
             </Style>
 
             <Style Selector="^[Status=Error][StyleVariant=Outlined], ^[Status=Error][StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorError}" />
             </Style>
 
             <Style Selector="^[Status=Error][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorErrorBg}" />
                 <Setter Property="BorderBrush" Value="Transparent" />
             </Style>
 
             <Style Selector="^[Status=Error][StyleVariant=Filled], ^[Status=Error][StyleVariant=Borderless]">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorErrorText}" />
+                <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorErrorText}" />
             </Style>
 
             <Style Selector="^:pointerover[Status=Error][StyleVariant=Outlined], ^:pointerover[Status=Error][StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorErrorBorderHover}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorErrorBorderHover}" />
             </Style>
 
             <Style Selector="^:pointerover[Status=Error][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBgHover}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorErrorBgHover}" />
             </Style>
 
             <Style Selector="^[Status=Error]:pressed, ^[Status=Error][IsActive=True]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorError}" />
             </Style>
             <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
             <Style Selector="^[Status=Error]:pressed[StyleVariant=Outlined], ^[Status=Error][IsActive=True][StyleVariant=Outlined]">
-                <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
+                <Setter Property="BoxShadow" Value="{atom:OtpLineEditTokenResource InputErrorActiveShadow}" />
             </Style>
 
             <Style Selector="^[Status=Error][IsActive=True][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainer}" />
             </Style>
 
             <Style Selector="^[Status=Warning][StyleVariant=Outlined], ^[Status=Warning][StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorWarning}" />
             </Style>
 
             <Style Selector="^[Status=Warning][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorWarningBg}" />
                 <Setter Property="BorderBrush" Value="Transparent" />
             </Style>
 
             <Style Selector="^[Status=Warning][StyleVariant=Filled], ^[Status=Warning][StyleVariant=Borderless]">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
+                <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorWarningText}" />
             </Style>
 
             <Style Selector="^:pointerover[Status=Warning][StyleVariant=Outlined], ^:pointerover[Status=Warning][StyleVariant=Underlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarningBorderHover}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorWarningBorderHover}" />
             </Style>
 
             <Style Selector="^:pointerover[Status=Warning][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBgHover}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorWarningBgHover}" />
             </Style>
 
             <Style Selector="^[Status=Warning]:pressed, ^[Status=Warning][IsActive=True]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorWarning}" />
             </Style>
             <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
             <Style Selector="^[Status=Warning]:pressed[StyleVariant=Outlined], ^[Status=Warning][IsActive=True][StyleVariant=Outlined]">
-                <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
+                <Setter Property="BoxShadow" Value="{atom:OtpLineEditTokenResource InputWarningActiveShadow}" />
             </Style>
 
             <Style Selector="^[Status=Warning][IsActive=True][StyleVariant=Filled]">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainer}" />
             </Style>
 
             <Style Selector="^:disabled">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+                <Setter Property="Foreground" Value="{atom:OtpLineEditTokenResource ColorTextDisabled}" />
+                <Setter Property="Background" Value="{atom:OtpLineEditTokenResource ColorBgContainerDisabled}" />
+                <Setter Property="BorderBrush" Value="{atom:OtpLineEditTokenResource ColorBorder}" />
             </Style>
 
             <Style Selector="^:disabled[StyleVariant=Borderless]">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderBrush" Value="Transparent" />
+            </Style>
+
+            <!-- A nullable owner width overrides the size preset at StyleTrigger priority; clearing it restores the Token.
+                 The ancestor is outside this cell's template, so the binding reads the public OtpLineEdit directly. -->
+            <Style Selector="^.custom-cell-width">
+                <Setter Property="Width" Value="{Binding $parent[atom:OtpLineEdit].CellWidth}" />
+            </Style>
+
+            <!-- The OtpLineEdit root BorderBrush (or CellBorderBrush) is projected into HostBorderBrush by the cell and wins
+                 over every state brush above, like the root brushes of the input family; unset hands the border back. -->
+            <Style Selector="^:host-border-brush">
+                <Setter Property="BorderBrush"
+                        Value="{Binding (atom:InputControlFrame).HostBorderBrush, RelativeSource={RelativeSource Self}}" />
             </Style>
 
         </Style>

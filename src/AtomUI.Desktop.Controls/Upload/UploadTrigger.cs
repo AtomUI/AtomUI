@@ -8,9 +8,13 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+// Token-owner transparent part: a trigger belongs to one Upload and has no Own Tokens; its theme reads the Upload
+// TokenResource, so Controls[Upload] reaches it and its transitions.
+[TokenOwnerTransparent]
 public class UploadTrigger : ContentControl, IMotionAwareControl
 {
     #region 公共属性定义
@@ -126,6 +130,8 @@ public class UploadTrigger : ContentControl, IMotionAwareControl
             return;
         }
 
+        // The trigger is supplied as runtime Upload content and can be detached/reparented outside a ControlTemplate.
+        // ControlTheme cannot express that owner lifecycle; ClearOwnerBindings releases both relays before rebinding/detach.
         _ownerBindings = new CompositeDisposable
         {
             BindUtils.RelayBind(owner, Upload.ListTypeProperty, this, ListTypeProperty, priority: BindingPriority.Template),

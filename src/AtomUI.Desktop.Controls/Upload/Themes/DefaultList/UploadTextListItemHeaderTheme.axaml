@@ -31,25 +31,25 @@
         </Setter>
         
         <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorIcon}" />
+            <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorIcon}" />
         </Style>
         <Setter Property="RelativeLineHeight"
-                Value="{atom:SharedTokenResource RelativeLineHeight}" />
+                Value="{atom:UploadTokenResource RelativeLineHeight}" />
         <Setter Property="Margin" Value="{atom:UploadTokenResource TextListItemMargin}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:UploadTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+        <Setter Property="Background" Value="{atom:UploadTokenResource ColorFillSecondary}" />
 
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IconBrush" Value="{atom:UploadTokenResource ActionsColor}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconWidth" Value="{atom:UploadTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:UploadTokenResource IconSize}" />
         </Style>
         
         <Style Selector="^[Status=Uploading]">
             <Style Selector="^ /template/ atom|Icon#LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[Status=Uploading])">
@@ -59,12 +59,12 @@
         </Style> 
         
         <Style Selector="^[Status=Failed]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorError}" />
             <Style Selector="^ /template/ atom|Icon">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorError}" />
             </Style>
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorError}" />
                 <Setter Property="IsVisible" Value="True" />
             </Style>
             <Setter Property="atom:ToolTip.Tip" Value="{Binding ErrorMessage, RelativeSource={RelativeSource Self}}" />
@@ -72,21 +72,21 @@
         </Style>
 
         <Style Selector="^ /template/ TextBlock#FileName">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorLink}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorLink}" />
             <Setter Property="Padding" Value="{atom:UploadTokenResource TextListNamePadding}" />
         </Style>
 
         <Style Selector="^[Status=Failed] /template/ TextBlock#FileName">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorError}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ControlItemBgHover}" />
+                    Value="{atom:UploadTokenResource ControlItemBgHover}" />
         </Style>
 
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgHover}" />
+            <Setter Property="Background" Value="{atom:UploadTokenResource ControlItemBgHover}" />
 
             <Style Selector="^ /template/ atom|IconButton#DeleteAction">
                 <Setter Property="IsVisible" Value="True" />

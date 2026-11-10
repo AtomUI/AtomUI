@@ -38,7 +38,7 @@
         </Style>
 
         <Style Selector="^ /template/ StackPanel#UploadingContentLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:UploadTokenResource SpacingXXS}" />
         </Style>
         
         <Style Selector="^[ListType=PictureCircle]">

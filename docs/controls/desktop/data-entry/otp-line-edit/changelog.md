@@ -14,6 +14,11 @@
 - Fixed
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
 
+## 2026-11-10
+
+- Theme
+  - OTP cell 状态和清除按钮读取 OtpLineEdit 的有效全局 Token；根边框画刷通过内部投射保持状态优先级；separator 间距跟随 CellGap；CellWidth 改为条件主题绑定，清除后恢复尺寸 Token。
+
 ## 2026-11-05
 
 - 实现结构

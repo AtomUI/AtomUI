@@ -52,19 +52,19 @@
 
         <Style Selector="^[Status=Failed]">
             <Style Selector="^ /template/ atom|Icon">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[Status=Cancelled]">
             <Style Selector="^ /template/ atom|Icon">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[Status=Success]">
             <Style Selector="^ /template/ atom|Icon">
-                <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorPrimary}" />
             </Style>
         </Style>
                 

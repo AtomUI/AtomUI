@@ -8,9 +8,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
+// Token-owner transparent part: the candidate list of AutoComplete and Mentions has no Own Tokens; its ListBox base theme
+// reads the owner's globals, so the hosting control's Controls[X] reaches the candidates (their ListBox Own Tokens are
+// borrowed, see the mentions / auto-complete token.md).
+[TokenOwnerTransparent]
 public class CandidateList : ListBox, ICandidateList
 {
     /// <summary>

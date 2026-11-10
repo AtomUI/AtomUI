@@ -46,9 +46,11 @@ FormToken 不承载以下状态：
 - `VerticalLabelPadding`
 - `VerticalLabelMargin`
 
-这些 Token 描述垂直布局下标签区域的 padding 和 margin。当前主题使用 `VerticalLabelMargin`，`VerticalLabelPadding` 属于 FormToken 稳定契约，调整时需要同步验证主题引用和 Token 类型、生成数据和 token.md。
+这些 Token 描述垂直布局下标签区域的 padding 和 margin。`VerticalLabelPadding` 为 Active，作用于标签内容的内侧布局间距（以 DockPanel 的 Margin 实现）；`VerticalLabelMargin` 控制标签行外侧间距。垂直标签行随文本自然高度，默认下边距为 `UniformlyPaddingXS`（8px），不再保留水平标签行的 ControlHeight 最小高度。
 
 ## 3. 控件专项模型中的 Token 使用
+
+`Controls[Form].Tokens` 覆盖标签、校验图标、说明文字、尺寸与间距的有效 Global Token。`FormItem` 和 `FormItemDecorator` 为 Token owner 透明部件，跟随 Form；嵌套 LineEdit 等输入控件保留自己的 identity。`SubmitButton` / `ResetButton` 的按钮样式仍读取 Button Token。
 
 FormToken 使用路径：
 
@@ -69,6 +71,7 @@ SharedToken
 | `LabelColonMargin` | `TextBlock#PART_Colon.Margin`。 |
 | `FormItemSpacing` | `PART_ContentLayout.Spacing` 和辅助信息区域最小高度。 |
 | `InlineItemSpacing` | `FormLayout=Inline` 时 Form 根 items panel spacing。 |
+| `VerticalLabelPadding` | `Layout=Vertical` 时标签内容布局间距。 |
 | `VerticalLabelMargin` | `Layout=Vertical` 时标签区域 margin。 |
 
 运行状态与 Token 分离：

@@ -575,6 +575,13 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             UpdatePseudoClasses();
         }
 
+        // An explicit indicator thickness (a host Token such as Upload.TextListProgressLineHeight) replaces the size preset;
+        // a later change must recompute the stroke, not wait for the next size or metrics change.
+        if (change.Property == IndicatorThicknessProperty)
+        {
+            CalculateStrokeThickness();
+        }
+
         if (change.Property == IsProgressInfoVisibleProperty ||
             change.Property == ProgressInfoContentProperty)
         {

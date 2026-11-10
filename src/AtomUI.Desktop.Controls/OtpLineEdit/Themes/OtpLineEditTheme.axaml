@@ -9,7 +9,7 @@
                 <Grid Name="PART_RootPanel">
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center"
-                                Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                Spacing="{atom:OtpLineEditTokenResource UniformlyPaddingXXS}">
                         <ItemsControl
                             Name="PART_CellsHost"
                             ClipToBounds="False"
@@ -23,11 +23,14 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="atom:OtpLineEditCellInfo">
+                                    <!-- The separator sits CellGap after its cell, the same gap as between cells (antd columnGap). -->
                                     <StackPanel Orientation="Horizontal"
                                                 VerticalAlignment="Center"
+                                                Spacing="{atom:OtpLineEditTokenResource CellGap}"
                                                 Classes.semantic-scope-cell="True">
                                         <atom:OtpLineEditCell
                                             Classes.semantic-cell="True"
+                                            Classes.custom-cell-width="{Binding $parent[atom:OtpLineEdit].CellWidth, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             DisplayText="{Binding DisplayText}"
                                             PlaceholderText="{Binding PlaceholderText}"
                                             IsActive="{Binding IsActive}"
@@ -51,11 +54,8 @@
                                                 IsTabStop="False"
                                                 Foreground="{Binding $parent[atom:OtpLineEditCell].Foreground}"
                                                 FontSize="{Binding $parent[atom:OtpLineEditCell].FontSize}"
-                                                CaretBrush="{atom:SharedTokenResource ColorText}"
-                                                SelectionBrush="{atom:SharedTokenResource SelectionBackground}"
-                                                SelectionForegroundBrush="{atom:SharedTokenResource SelectionForeground}"
                                                 SourcePlaceholderText="{Binding PlaceholderText}"
-                                                PlaceholderForeground="{atom:SharedTokenResource ColorTextPlaceholder}"
+                                                PlaceholderForeground="{atom:OtpLineEditTokenResource ColorTextPlaceholder}"
                                                 IsCellActive="{Binding IsActive}"
                                                 Text="{Binding DisplayText}" />
                                         </atom:OtpLineEditCell>
@@ -66,7 +66,6 @@
                                             与 cell 中心对齐（测试锁定）。
                                         -->
                                         <Border
-                                            Margin="4,0,0,0"
                                             VerticalAlignment="Center"
                                             Classes.semantic-separator="True"
                                             IsVisible="{Binding IsSeparatorVisible}">
@@ -102,7 +101,7 @@
              outside the cells, so neither the host nor the cells host may clip (TemplatedControl clips by default). -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OtpLineEditTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     </ControlTheme>
 </ResourceDictionary>

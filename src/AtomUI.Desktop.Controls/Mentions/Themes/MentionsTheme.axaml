@@ -67,7 +67,7 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:MentionsTokenResource EnableMotion}" />
         <Setter Property="ItemHeight" Value="{atom:MentionsTokenResource OptionHeight}" />
         <Setter Property="PopupContentPadding" Value="{atom:MentionsTokenResource PopupContentPadding}" />
         <Setter Property="MinPopupWidth" Value="{atom:MentionsTokenResource MinPopupWidth}" />
@@ -77,13 +77,13 @@
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:MentionsTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
         
         <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginLG}" />
+            <Setter Property="Margin" Value="{atom:MentionsTokenResource MarginLG}" />
         </Style>
         
         <Setter Property="OptionTemplate">

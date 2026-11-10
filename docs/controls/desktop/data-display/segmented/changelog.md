@@ -3,6 +3,11 @@
 本文档记录 Segmented 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme
+  - SegmentedItem 透传 Segmented owner 与过渡时长；轨道背景和圆角的 Token 变更触发重绘。
+
 ## 2026-10-20
 
 - Fixed

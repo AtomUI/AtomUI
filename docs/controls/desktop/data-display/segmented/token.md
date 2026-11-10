@@ -65,6 +65,8 @@ render 层的选中滑块背景：选中背景在任何时刻都由滑块独占�
 
 ## 3. 控件专项模型中的 Token 使用
 
+`Controls[Segmented].Tokens` 覆盖轨道、滑块、选项、图标和过渡时长的有效 Global Token。`SegmentedItem` 为 Token owner 透明部件，随 Segmented；轨道 Background 和 CornerRadius 变化使自绘轨道失效并重绘。
+
 SegmentedToken 使用路径：
 
 ```text

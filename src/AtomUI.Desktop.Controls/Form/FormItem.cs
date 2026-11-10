@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -20,6 +21,9 @@ public enum FormItemLayout
     Vertical
 }
 
+// Token-owner transparent part: a FormItem belongs to one Form and has no Own Tokens; its theme reads the Form
+// TokenResource, so Controls[Form] reaches the items, their transitions and the identity-less parts inside them.
+[TokenOwnerTransparent]
 public partial class FormItem : TemplatedControl, IFormItem
 {
     public static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent =
@@ -672,6 +676,8 @@ public partial class FormItem : TemplatedControl, IFormItem
             throw new Exception($"Form item content: {change.NewValue?.GetType().FullName} not implement IFormItemAware interface");
         }
         
+        // Content is supplied at runtime and can be any form-aware control, outside this ControlTemplate. ControlTheme
+        // cannot bind these interface-selected targets; replacing Content disposes the previous bindings.
         _disposables = new CompositeDisposable();
         if (Content is not null)
         {

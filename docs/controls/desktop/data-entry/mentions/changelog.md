@@ -15,6 +15,11 @@
 - Fixed
   - 清除按钮（内部 TextArea 的停靠点）按 Enter / Space 或被点击清除后，焦点回到文本域；此前按钮随文本清空隐藏，焦点丢失。
 
+## 2026-11-10
+
+- Theme
+  - 候选列表和条目透传 Mentions owner；输入编辑器保留 TextArea identity，候选项 Own Token 仍复用 ListBox。
+
 ## 2026-11-05
 
 - 实现结构

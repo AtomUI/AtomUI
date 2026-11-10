@@ -9,6 +9,7 @@ AtomUI 的重要变更记录在此文件中。
 ## Unreleased
 
 - Breaking Changes
+  - 录入类主题作用域：FormItem / FormItemDecorator、Upload 触发器与拖拽区域、SegmentedItem、CandidateList / CandidateListItem 为 Token owner 透明部件；有效全局值经宿主 Form、Upload、Segmented、Mentions 或 AutoComplete 设置，部件自身的控件级全局覆盖不再生效。嵌套的注册输入框与动作控件保留各自 identity。
   - Theme Tokens：删除 Button 家族中没有消费者的 Own Token。请从主题配置中移除 `Button.ExtraContentItemSpacing`、`Button.ExtraContentMargin`、`Button.ExtraContentMarginLG`、`Button.ExtraContentMarginSM`、`Button.GutterToFlyout`、`HyperLinkButton.BorderColorDisabled`、`FloatButton.SquareBadgeOffset` 和 `FloatButton.CircleBadgeOffset`；改用 `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`、`SplitButton.GutterToFlyout` 或 `FloatButton.BadgeOffset`。
   - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
   - Theme Tokens：各进度控件拥有各自的 Own Token。`ProgressBar.CircleTextColor`、`ProgressBar.CircleMinimumTextFontSize`、`ProgressBar.CircleMinimumIconSize` 移到 `CircleProgress` / `DashboardProgress`，`ProgressBar.ProgressStepMarginInlineEnd` / `ProgressBar.ProgressStepMinWidth` 移到 `StepsProgressBar`（`ProgressStepMarginInlineEnd` 改为 `double` 间距）；`Controls[ProgressBar]` 不再改变步骤、圆形与仪表盘进度条。
@@ -22,6 +23,9 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
   - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（与范围 Picker 实际读取的 InfoPickerInput Token 重复；antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 设置。
+- 录入类剩余控件
+  - Form、Descriptions、Upload、Mentions、OtpLineEdit、Segmented 的主题与透明部件读取控件有效全局值；候选弹层全局值跟随 Mentions / AutoComplete，候选 Own Token 仍复用 ListBox，Mentions 编辑器使用 TextArea。
+  - 可见变化：垂直 Form 标签按文本自然高度加 `VerticalLabelPadding`（默认下方 8px）布局，不再保留水平布局的控件高度下限；Descriptions 纵向带边框分隔线跟随 `LineWidth`，不再固定为 1px 边框；OTP separator 跟随 `CellGap`（默认仍为 4px），OTP 状态样式及根边框画刷投射生效且不写 cell 本地画刷；Upload 进度线厚度随 Token 变化刷新；Segmented 轨道背景与圆角随 Token 变化重绘。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
   - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。

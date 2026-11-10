@@ -23,7 +23,7 @@ DescriptionsToken 不承载以下状态：
 - `ContentColor`
 - `ExtraColor`
 
-这些 Token 控制普通模式 label、标题、内容和 Extra 的文本颜色。边框模式 label cell 的 foreground 当前使用 SharedToken `ColorTextSecondary`，label 背景使用 `LabelBg`。
+这些 Token 控制普通模式 label、标题、内容和 Extra 的文本颜色。边框模式 label cell 的 foreground 使用 Descriptions 有效 Global Token `ColorTextSecondary`，label 背景使用 `LabelBg`。
 
 ### 2.2 Label 背景 Token
 
@@ -52,6 +52,8 @@ DescriptionsToken 不承载以下状态：
 `ColonMargin` 用于普通 horizontal 和 vertical 非边框模板中的冒号 TextBlock。`IsShowColon=false` 时冒号节点隐藏，但 Token 语义不改变。
 
 ## 3. 控件专项模型中的 Token 使用
+
+`Controls[Descriptions].Tokens` 覆盖标题、条目、边框、字号、行高与行距的有效 Global Token。默认和带边框的 label/content 部件没有独立 Token identity，统一读取 Descriptions Token。纵向带边框模式的 label/content 分隔线以 `ColorSplit` 填充，高度为有效 `LineWidth`。
 
 DescriptionsToken 使用路径：
 

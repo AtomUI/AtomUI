@@ -35,6 +35,8 @@ MentionsToken 不承载以下状态：
 
 ## 3. 控件专项模型中的 Token 使用
 
+`Controls[Mentions].Tokens` 覆盖候选弹层背景、内边距、加载区域间距，以及候选列表基础主题的 owner Global Token。`CandidateList` / `CandidateListItem` 为 Token owner 透明部件，跨 Popup 继承 Mentions identity。候选项颜色、padding 等 Own Token 当前仍读取 ListBox；候选列表默认无边框、无选中指示器，条目 BorderThickness 为零，因此基础主题的 LineWidth 不绘制分隔线。内部 `MentionTextArea` 使用 TextArea 的 StyleKey 与 Token identity，输入框自身通过 `Controls[TextArea]` 设置；它不使用 EmbeddedTextBox 或 TextBoxTheme。
+
 MentionsToken 使用路径：
 
 ```text

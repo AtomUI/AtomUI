@@ -44,7 +44,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Data family (first half)
         "ListBox", "ListView", "TreeView", "Skeleton", "Avatar", "Timeline", "Statistic", "Carousel", "ImagePreviewer",
         // Data family (second half; the shared date panel and the picker input base)
-        "Calendar", "DateViewer", "DatePicker", "TimePicker", "Primitives/InfoPickerInput"
+        "Calendar", "DateViewer", "DatePicker", "TimePicker", "Primitives/InfoPickerInput",
+        // Data-entry remainder
+        "Form", "Descriptions", "Upload", "Mentions", "OtpLineEdit", "Segmented", "Primitives/CandidateList"
     ];
 
     /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
@@ -89,7 +91,9 @@ public class MigratedFamilyAnalyzerGateTests
         "SkeletonParagraph", "AvatarGroup", "Timeline", "TimelineItem", "AbstractStatistic", "Statistic", "TimerStatistic",
         "StatisticCountUp", "Carousel", "CarouselNavButton", "CarouselPage", "ImagePreviewer", "ImageGroupPreviewer",
         "Calendar", "LunarCalendar", "DateViewer", "RangeDateViewer", "DatePicker", "RangeDatePicker", "TimePicker",
-        "RangeTimePicker", "TimeViewCell", "InfoPickerInput", "RangeInfoPickerInput"
+        "RangeTimePicker", "TimeViewCell", "InfoPickerInput", "RangeInfoPickerInput",
+        "Form", "FormItem", "FormItemDecorator", "Descriptions", "Upload", "UploadTrigger", "UploadDropZone",
+        "UploadDefaultDropArea", "Mentions", "OtpLineEdit", "Segmented", "SegmentedItem", "CandidateList", "CandidateListItem"
     ];
 
     /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>

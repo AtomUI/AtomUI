@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,6 +16,8 @@ namespace AtomUI.Desktop.Controls;
     UploadDropZonePseudoClass.DragAccepting,
     UploadDropZonePseudoClass.DragRejecting,
     UploadDropZonePseudoClass.DropProcessing)]
+// Token-owner transparent part: the drop zone wraps the Upload's drag content and has no Tokens of its own.
+[TokenOwnerTransparent]
 public sealed class UploadDropZone : ContentControl
 {
     #region 公共属性定义

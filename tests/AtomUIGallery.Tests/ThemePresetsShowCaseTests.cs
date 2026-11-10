@@ -39,7 +39,18 @@ public class ThemePresetsShowCaseTests
         var families = new[] { "ShadcnZinc", "ShadcnSlate", "ShadcnStone" };
         model.Presets.Where(item => item.ThemeId.StartsWith("Shadcn", StringComparison.Ordinal))
             .Select(item => item.ThemeId).ShouldBe(families, ignoreOrder: true);
+        model.Presets.Where(item => item.ThemeId.StartsWith("Bootstrap", StringComparison.Ordinal))
+            .Select(item => item.ThemeId).ShouldBe(new[] { "Bootstrap" });
         var catalog = ((ThemeManager)Application.Current!.GetThemeManager()!).CompiledThemeCatalog;
+        var bootstrap = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Bootstrap");
+        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
+        {
+            bootstrap.Definitions.ShouldContain(entry => entry.Info.Id == "Bootstrap" + suffix && entry.Revision.ProgramDigest != null);
+            model.SelectedPresetId = "Bootstrap";
+            model.IsDark = suffix.Contains("Dark");
+            model.IsCompact = suffix.Contains("Compact");
+            model.PreviewThemeId.ShouldBe("Bootstrap" + suffix);
+        }
         var package = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Shadcn");
         foreach (var id in families)
         {
@@ -133,6 +144,39 @@ public class ThemePresetsShowCaseTests
                 tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(32);
                 AssertIndependentProfile(button, (ThemeManager)manager, id + ".DarkCompact");
                 page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
+            }
+            model.SelectedPresetId = "Bootstrap";
+            foreach (var (dark, compact, suffix) in new[]
+            {
+                (false, false, ""), (true, false, ".Dark"),
+                (false, true, ".Compact"), (true, true, ".DarkCompact")
+            })
+            {
+                model.IsDark = dark; model.IsCompact = compact; Pump();
+                var tokens = ControlTokenAccessor.Capture(button);
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(dark ? "#212529" : "#FFFFFF"));
+                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(compact ? 34 : 38);
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.FromArgb(0x40, 0x0D, 0x6E, 0xFD));
+                AssertIndependentProfile(button, (ThemeManager)manager, "Bootstrap" + suffix);
+                page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
+                var check = provider.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.CheckBox>().Single();
+                var radio = provider.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.RadioButton>().Single();
+                var mark = check.GetVisualDescendants().OfType<AtomUI.Controls.Icon>().Single(icon => icon.Name == "CheckedMark");
+                var dot = radio.GetVisualDescendants().OfType<TemplatedControl>().Single(control => control.Name == "Indicator");
+                var dotBrush = AvaloniaPropertyRegistry.Instance.GetRegistered(dot.GetType()).Single(property => property.Name == "RadioInnerBackground");
+                ((ISolidColorBrush)mark.StrokeBrush!).Color.ShouldBe(Colors.White);
+                ((ISolidColorBrush)dot.GetValue(dotBrush)!).Color.ShouldBe(Colors.White);
+                check.Foreground = Brushes.Magenta;
+                radio.Foreground = Brushes.Magenta;
+                check.IsEnabled = false; radio.IsEnabled = false; Pump();
+                check.Foreground.ShouldBeSameAs(Brushes.Magenta);
+                radio.Foreground.ShouldBeSameAs(Brushes.Magenta);
+                var disabled = ControlTokenAccessor.Capture(check).GetGlobal<Color>(SharedTokenKind.ColorTextDisabled);
+                ((ISolidColorBrush)mark.StrokeBrush!).Color.ShouldBe(disabled);
+                ((ISolidColorBrush)dot.GetValue(dotBrush)!).Color.ShouldBe(disabled);
+                check.ClearValue(TemplatedControl.ForegroundProperty);
+                radio.ClearValue(TemplatedControl.ForegroundProperty);
+                check.IsEnabled = true; radio.IsEnabled = true; Pump();
             }
             publications.ShouldBe(0);
             manager.CurrentTheme.ShouldBeSameAs(root);

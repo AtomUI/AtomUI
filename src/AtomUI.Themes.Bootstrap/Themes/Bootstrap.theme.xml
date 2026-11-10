@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Bootstrap" Name="Bootstrap" Appearance="Light" IsDefault="false">
+  <Algorithms>
+    <Algorithm Id="Default" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#0D6EFD" />
+    <Token Name="ColorSuccess" Value="#198754" />
+    <Token Name="ColorWarning" Value="#FFC107" />
+    <Token Name="ColorError" Value="#DC3545" />
+    <Token Name="FontSize" Value="16" />
+    <Token Name="ControlHeight" Value="38" />
+    <Token Name="BorderRadius" Value="6" />
+    <Token Name="ControlOutlineWidth" Value="4" />
+    <Token Name="ColorControlOutline" Value="#400D6EFD" />
+    <Token Name="ColorTextLightSolid" Value="#FFFFFF" />
+    <Token Name="ColorBgBase" Value="#FFFFFF" />
+    <Token Name="ColorTextBase" Value="#212529" />
+    <Token Name="ColorText" Value="#212529" />
+    <Token Name="ColorBgContainer" Value="#FFFFFF" />
+    <Token Name="ColorBgLayout" Value="#F8F9FA" />
+    <Token Name="ColorBgElevated" Value="#FFFFFF" />
+    <Token Name="ColorBorder" Value="#DEE2E6" />
+    <Token Name="ColorBorderSecondary" Value="#E9ECEF" />
+    <Token Name="PaddingContentHorizontal" Value="12" />
+  </Tokens>
+</Theme>

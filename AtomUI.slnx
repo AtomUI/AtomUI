@@ -27,6 +27,9 @@
     <Project Path="src/LanguagePacks/pt-BR/AtomUI.Desktop.Controls.I18n.PtBR/AtomUI.Desktop.Controls.I18n.PtBR.csproj" />
     <Project Path="src/LanguagePacks/pt-BR/AtomUI.I18n.PtBR/AtomUI.I18n.PtBR.csproj" />
   </Folder>
+  <Folder Name="/Themes/">
+    <Project Path="src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
+  </Folder>
   <Folder Name="/Fonts/">
     <Project Path="src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj" />
     <Project Path="src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj" />
@@ -41,6 +44,7 @@
     <Project Path="src/AtomUI.Toolchain/AtomUI.Toolchain.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="tests/AtomUI.Themes.Tests/AtomUI.Themes.Tests.csproj" />
     <Project Path="tests/AtomUI.Build.Tasks.Tests/AtomUI.Build.Tasks.Tests.csproj" />
     <Project Path="tests/AtomUI.Controls.Tests/AtomUI.Controls.Tests.csproj" />
     <Project Path="tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj" />

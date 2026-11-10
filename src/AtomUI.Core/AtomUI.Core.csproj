@@ -46,6 +46,7 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Themes.Tests"/>
         <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
         <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>

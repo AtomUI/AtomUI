@@ -42,13 +42,15 @@
 | 13 Shadcn | Zinc / Slate / Stone | 完成并评审通过，`753cd119d`；Themes8/Gallery3、原生三状态、Light/Dark/disabled/user 对比边界验证 |
 | 13 Bootstrap | Bootstrap | 完成并评审通过，`04c193e06`；Themes7/Gallery3、Core-only 包检查、官方 focus ARGB 验证 |
 | 13 Material | Material | 完成并评审通过，`8af56690d`；Themes7/Gallery3、四 profile/完整阴影/包检查通过，1 文档 minor 留收尾 |
-| 14 | DataGrid / ColorPicker / Extras 家族 | 未开始 |
+| 14 DataGrid | DataGrid 家族 | 完成并评审通过，`f4e226b21`；117/52/19/2，67 Active / 11 Reserved，原自动列宽与排序交互保持 |
+| 14 ColorPicker | ColorPicker 家族 | 未开始（独立实例） |
+| 14 Extras | Extras 家族 | 未开始（独立实例） |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
 | 终审 | 整分支评审 | 未开始 |
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；下一任务为 14 DataGrid→ColorPicker→Extras（各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；14 DataGrid 已完成并评审通过（`f4e226b21`）；下一任务为 14 ColorPicker→Extras（各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -491,3 +493,22 @@ Task 13 Material: implementer DONE `8af56690d`（15 明确任务路径），四�
 Task 13 Material: 独立评审 Spec/Quality PASS（0 Critical / 0 Important / 1 Minor）；15 文件、最终测试/注册哈希与 Themes7/Gallery3 的 RED/GREEN 及 nuspec Core+Desktop/无 XML 检查核对，未重跑；未修改产品或控制者文件。
 Task 13 Material: minor (deferred): README 使用示例缺 `using AtomUI;`，Task15 文档/终审统一整理，不独立进修复循环。
 Task 13 Material: complete（commits `2e82311bb..8af56690d`，review clean）。四静态 profiles、完整阴影 equality、当前 actual marks/disabled/user 与 root0 preview、临时包清理已验收；无 native/AOT/full 声明，控件/Core共享机制未改。Task13 全部完成，Task14 可选包仍待执行。
+Ruling: DataGrid.Tests 链接复用现有 Effect/FrameCapture 源码及必要 test-only 依赖，不为验收新建共享框架/重复项目 — 原 harness 位于 Rendering.Tests，DataGrid 原宿主无 Skia 捕获，实际家族仍需自己的真实渲染测试；复用保持一份实现 — 错了的代价：测试项目多一个必要 optional 依赖与宿主绘制成本，需报告实际影响并验证对应既有代表性模块，生产依赖不变。
+Ruling: 不恢复当前 DataGrid 已不存在的旧 named-theme/RowMetrics 机制，E3 以现有生成 text/editor、Column/ColumnGroupItem 资源宿主全链验证为准 — 起点源码无旧命名主题读取，92631f292 所指文件也已不存在；owner-first 不能代替 scope-first，当前 Application fallback 若真旁路仍须修 — 错了的代价：若仅凭旧机制不存在误判 N/A 会漏掉实际资源旁路，必须真实 localProvider/livepublish/owner列容器替换与释放证据，不能引入假主题或过时接口。
+Task 14 DataGrid: 有效 RED effect102（46 failed/56 passed）、家族门禁15 failed/4 passed与21 Unreferenced 已记录。真实树发现整表 Spin 使 rows/cells/expanders 的 inherited TokenOwner=Spin；不得把 Shared→Owner 文本迁移当生效。
+Ruling: 仅在 DataGrid 既有 Spin 内容容器恢复 DataGrid owner，Spin 自身和嵌套公开控件保持自身身份；单宿主部件读取可显式 DataGridTokenResource — 真实 owner 阻断影响动画/共享基元，局部内容边界才是宿主责任，不应全局把 Spin 透明或改布局 — 错了的代价：桥接若取错 TemplatedParent 或跨过注册控件会造成 palette/motion 串用，需实际 owner/transition/livepublish、重模板及释放的正负验证；节点结构/尺寸不变。
+Ruling: DataGrid 内容 owner 桥接使用现有 TokenOwnerForwarding，OnApplyTemplate/attach 重建、detach/retemplate Dispose，并注释 AXAML 不可行的原编译错误 — AXAML 已实际报 AVLN2000 无法解析 ThemeScope.TokenOwner（内部 AttachedProperty 无可见 setter），不是为省事先写代码绑定 — 错了的代价：多一个受现有绑定组管理的订阅，若重复创建或不释放会保留宿主/旧容器，需生命周期合同纠正，不向 code-behind 直接写视觉颜色。
+Ruling: DataGrid SelectionColumnWidth/TableSelectionColumnWidth/TableExpandColumnWidth 本轮保留为 Reserved，维持原 auto 测量和显式 Column.Width 路径，不接通默认固定宽度 — 当前 Token32 会把典型 check16+双侧CellPadding16 的旧约48列变窄，expand Token48 也不完全等于旧auto49；不能为假 Active 改 padding、压图标或暗改成 minimum 语义 — 错了的代价：三字段仍不可调，文档必须如实 Reserved、不算消费完成；未来只有证明默认尺寸/主题等价且显式Token确有正确语义时再接通，不降低当前网格UX。
+Task 14 DataGrid: 原128批次其余已通过，真实scope像素、Spin/body/nestedButton owner、row motion publish/detach/remount、Column/Group provider资源与实际LineEdit编辑/字体/live资源/owner替换及弱引用释放已取得证据。global消费复核发现现有 OwnTokenReferenceAnalysis 已支持只喂Active字段；仅旧Reserved expand局部变量保守登记残留，用局部等价表达式/纯返回值公式恢复准确图，不改生成器、不测试手删、不造effect，默认/显式值契约需验证。
+
+Task 14 DataGrid: cleaned representative batch 169 = 167 passed / 2 failed; separator BorderBrush/one-sided stroke contract and Sorting454 original sorted visual-state timeout remain open, not waived. OwnTokenKind optional identities 2/2 and DataGrid gate19/19 are separate valid receipts. Implementer is restoring the original separator contract and diagnosing the unchanged sorting fixture with single-variable host checks before completion.
+
+Ruling: DataGrid 新增像素/effect/scope 两类改放现成 Rendering.Tests，DataGrid.Tests 恢复原 Headless 宿主；仅 source-link 一个 DataGrid 场景工厂，列资源生命周期仍在原模块测 — 同一 Sorting454 原 fixture 仅切 UseHeadlessDrawing 即由 2 失败变 2 通过，额外渲染 tick 无效且现有 Mouse API 已含泵；不应为复用 harness 改坏整项目输入宿主或改生产事件，现成 Rendering 已有 DataGrid 依赖、友元与真实 Skia — 错了的代价：偏离计划各包测试位置，新增 effect 按 Rendering 的 PerTest 冷启动成本较高且依赖既有 Gallery；保持同一原场景、114 承诺面、真实隔离与原排序输入验证，不新增框架/项目/API/友元。此裁决取代前述 DataGrid.Tests 全局绘制宿主方案，保留其调查证据。
+
+Task 14 DataGrid: final-position Rendering117/117 (114 effect + owner-read drift1 + scope2), original DataGrid host52/52 (resource/lifecycle6 + existing representative46), DataGrid gate19/19 and OwnKind2/2 passed. Original Sorting454 and separator contracts remain unchanged and pass; no unresolved failure at this point. Shared-fixture cleanup receipt/report/commit and independent task review remain required, so task is not yet complete.
+
+Task 14 DataGrid: implementer DONE `f4e226b21` (35 owned paths); 67 Active / 11 Reserved, original21 = 10 Active / 11 Reserved / 0 deleted. Final-position117/52/19/2 and post-cleanup overlapping lifecycle6 receipts are recorded; original host/Sorting fixture restored, media/probes/raw dedicated logs removed. Independent task review dispatched; completion awaits its verdict.
+
+Task 14 DataGrid: independent Spec/Quality APPROVED (0 Critical / 0 Important / 2 Minor); 35-file scope, actual owner bridge and Column/Group complete owner-chain/release risks checked, final117/52/19/2 receipts accepted without rerun. Cleanup6 is within52.
+Task 14 DataGrid: minor (deferred): effect-region/fixture branches include unreachable ColorBgTextHover/Active filter alternatives; current114 matrix is correct, remove confusing dead branches in final triage if worthwhile. Initial GalleryBase/Rendering build warnings were pre-existing and not catalogued by ID; Task15 aggregate build must record/resolve actual remaining warnings rather than call earlier run pristine.
+Task 14 DataGrid: complete (commits `5dee60477..f4e226b21`, review clean). Controller separately updates all21 Own decisions and actual diagnostic baseline40/21/0/0/31/0/0; historical initial baseline remains historical. ColorPicker and Extras remain unstarted.

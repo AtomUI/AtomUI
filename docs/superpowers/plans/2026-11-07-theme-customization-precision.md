@@ -527,7 +527,7 @@ Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
 
 ### Task 14: 可选控件包家族（DataGrid、ColorPicker、Extras）
 
-按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮；生效测试放各自测试项目并复用 Task 8 的 harness（harness 若需共享，提取到 `tests/AtomUI.Registration.Fixtures` 或新建 `tests/AtomUI.Theme.Testing` 共享项目）。完成定义同 Task 9。
+按 Task 9 模板对 `src/AtomUI.Desktop.Controls.DataGrid`（`DataGridRowGroupHeader` 11 处字面量、`DataGridColumn` 的 Application 回落、借鉴 `92631f292`）、`src/AtomUI.Desktop.Controls.ColorPicker`、`src/AtomUI.Desktop.Controls.Extras` 各做一轮，完成定义同 Task 9。DataGrid 已完成并评审（`f4e226b21`）：真实列/Group scoped resource、生成 text/editor、live owner 替换及释放取代已不存在的旧命名主题/RowMetrics 机制；新增像素/隔离测试复用现有 Rendering.Tests，单一 DataGrid fixture source-link，模块资源生命周期与原指针测试保留在 DataGrid.Tests 原宿主。ColorPicker/Extras 尚待执行，不新建验收框架。
 
 ---
 
@@ -657,6 +657,7 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 | 10.10b Transfer / Drawer / Spin / Result / Empty / QRCode / Text / BorderBeam / Adorner | 68 / 0 / 0 / 1 / 5 / 5 / 0 | 对应家族路径全部 0 | `7dcd4cdee` 主验收 213 / 136 / 310；`6160a423b` 默认透明修复后 7 / 310 定向通过并范围复审；58 Active / 1 Reserved |
 | 10.10c Window / TitleBar / Scroll / Flyout / Icon / Embedding / Splash / shared | 62（含原漏扫 Splash 12） / 6 / 1 / 0 / 3 / 4 / 0 | 对应家族路径全部 0 | `f071b5978` 主验收 169 / 145 / 348 / 3；`0070c62e9` Flyout 修复后 19 / 21 定向与范围复审通过；65 Active、5 删除，原生/瞬态绘制限制见台账 |
 | 10.10d 终端 Own / 共享部件一致性 | 本轮相关已迁移路径原有 041–045/047/048 为 0；继承叶另复现 Semantic 032×10 | 对应路径与新终端全部 0；Semantic 继承修复通过 | `10b58893d`：2198 渲染、43 合同、37 Unit、350 门禁；`86ad4b636`：Lunar 100 / 350 定向与范围复审通过；51 终端当前 800 Active / 12 Reserved / 0 Unreferenced |
+| 14 DataGrid | 40 / 21 / 0 / 0 / 31 / 0 / 0（本轮当前分析器实测） | 对应家族路径全部 0 | `f4e226b21`；Rendering117、原模块52、门禁19、OwnKind2 全过并评审；67 Active / 11 Reserved；原自动列宽/排序交互保留 |
 
 ## 待裁决 Own Token（Task 6 执行后填写）
 
@@ -709,7 +710,7 @@ Task 6 实测共 125 个字段；10.10b 另发现 TreeTransfer.ListWidthLG 的�
 | Desktop | Calendar / LunarCalendar | ItemActiveBg, YearMonthCellWidth | 10.10d | ItemActiveBg 为两终端实际 Active（含 Lunar 全屏 Year 选中月份）；YearMonthCellWidth 只 Calendar，Lunar 使用 MiniMonthCellWidth；`86ad4b636` 已范围复审 |
 | Desktop | DateViewer → RangeDateViewer | PanelSpacing / FooterBorderThickness | 10.10d | PanelSpacing 归 Range；FooterBorderThickness 归 DateViewer；公共 cell/header 字段独立终端 Active |
 | ColorPicker | ColorPicker | ColorPickerAlphaInputWidth, ColorPickerInputNumberHandleWidth | 14 | |
-| DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | |
+| DataGrid | DataGrid | ExpandIconBg, ExpandIconHalfInner, ExpandIconMargin, ExpandIconScale, ExpandIconSize, FilterDropdownMenuBg, FixedHeaderSortActiveBg, HeaderFilterHoverBg, SelectionColumnWidth, SortIndicatorLayoutMargin, TableBodySortBg, TableExpandColumnWidth, TableExpandIconBg, TableFilterDropdownHeight, TableFilterDropdownSearchWidth, TableFixedHeaderSortActiveBg, TableHeaderCellSplitColor, TableHeaderFilterActiveBg, TableHeaderSortBg, TableHeaderSortHoverBg, TableSelectionColumnWidth | 14 | Active 10：ExpandIconBg、FilterDropdownMenuBg、HeaderFilterHoverBg、SortIndicatorLayoutMargin、TableBodySortBg、TableExpandIconBg、TableHeaderCellSplitColor、TableHeaderFilterActiveBg、TableHeaderSortBg、TableHeaderSortHoverBg；其余 11 Reserved（CSS expander/sticky header/filter search 无对应结构；三个 selection/detail width 保持 auto UX）；无删除，`f4e226b21` 已评审 |
 
 Task 9 另删除 HyperLinkButton.BorderColorDisabled（该控件不绘制边框），不在原清单中。
 

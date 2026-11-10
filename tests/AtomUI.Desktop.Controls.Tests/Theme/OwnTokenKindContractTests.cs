@@ -7,10 +7,12 @@ namespace AtomUI.Desktop.Controls.Tests.Theme;
 
 public class OwnTokenKindContractTests
 {
-    [Fact]
-    public void Own_Token_Kind_Enum_Values_Match_Descriptor_Slots()
+    [Theory]
+    [InlineData(typeof(Button))]
+    [InlineData(typeof(global::AtomUI.Desktop.Controls.DataGrid))]
+    public void Own_Token_Kind_Enum_Values_Match_Descriptor_Slots(Type controlType)
     {
-        var descriptors = CreateGeneratedControlDescriptors(typeof(Button).Assembly)
+        var descriptors = CreateGeneratedControlDescriptors(controlType.Assembly)
                           .Where(static descriptor => descriptor.OwnTokens.Count > 0)
                           .ToArray();
         descriptors.Length.ShouldBeGreaterThan(0);

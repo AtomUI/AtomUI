@@ -4,7 +4,13 @@
               x:Class="AtomUI.Desktop.Controls.Themes.DataGridColumnHeaderTheme"
               x:ClassModifier="internal"
               xmlns:atom="https://atomui.net"
+              xmlns:converters="using:AtomUI.Controls.Converters"
               >
+    <ControlTheme.Resources>
+        <converters:BorderThicknessFilterConverter x:Key="RightSeparatorThicknessConverter"
+            Left="False" Top="False" Bottom="False" />
+    </ControlTheme.Resources>
+    <Setter Property="BorderThickness" Value="{atom:DataGridTokenResource BorderThickness}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DataGridColumnHeader">
             <Panel Name="RootFrame">
@@ -18,6 +24,7 @@
                                             IsVisible="{TemplateBinding IndicatorLayoutVisible}">
                                     <atom:DataGridSortIndicator
                                         Name="{x:Static atom:DataGridColumnHeaderThemeConstants.SortIndicatorPart}"
+                                        Margin="{atom:DataGridTokenResource SortIndicatorLayoutMargin}"
                                         VerticalAlignment="Center"
                                         IsVisible="{TemplateBinding CanUserSort}"
                                         SupportedSortDirections="{TemplateBinding SupportedSortDirections}" />
@@ -35,8 +42,8 @@
                             </DockPanel>
                         </Border>
                         <atom:PixelAlignedBorder Name="PART_VerticalSeparator"
-                                                 Width="1.0"
-                                                 BorderThickness="0,0,1,0"
+                                                 BorderThickness="{TemplateBinding BorderThickness, Converter={StaticResource RightSeparatorThicknessConverter}}"
+                                                 Width="{atom:DataGridTokenResource LineWidth}"
                                                  HorizontalAlignment="Right"
                                                  IsVisible="{TemplateBinding IsSeparatorsVisible}" />
                         <Panel Name="PART_FocusVisual"
@@ -47,17 +54,17 @@
                                        VerticalAlignment="Stretch"
                                        Fill="Transparent"
                                        IsHitTestVisible="False"
-                                       StrokeThickness="2" />
+                                       StrokeThickness="{atom:DataGridTokenResource LineWidthBold}" />
                             <Rectangle Name="FocusVisualSecondary"
                                        HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"
                                        Fill="Transparent"
                                        IsHitTestVisible="False"
-                                       StrokeThickness="1" />
+                                       StrokeThickness="{atom:DataGridTokenResource LineWidth}" />
                         </Panel>
                     </Panel>
                 </Border>
-                <!-- 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
+                <!-- layout: 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
                 <atom:DataGridFrozenColumnShadow Name="FrozenShadow"
                                                  Width="30"
                                                  IsVisible="False"
@@ -68,7 +75,7 @@
 
     <Style Selector="^:is(atom|DataGridColumnHeader)">
         <Setter Property="Foreground" Value="{atom:DataGridTokenResource TableHeaderTextColor}" />
-        <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
+        <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}" />
         <Setter Property="atom:ToolTip.Placement" Value="Top" />
         <Setter Property="atom:ToolTip.ShowDelay" Value="1000" />
         <Setter Property="atom:ToolTip.ServiceEnabled" Value="False" />
@@ -113,9 +120,9 @@
         </Style>
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_VerticalSeparator">
-            <Setter Property="BorderBrush" Value="{atom:DataGridTokenResource HeaderSplitColor}" />
+            <Setter Property="BorderBrush" Value="{atom:DataGridTokenResource TableHeaderCellSplitColor}" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource FontHeight}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource FontHeight}" />
         </Style>
 
         <Style Selector="^[IsSeparatorFullHeight=True] /template/ atom|PixelAlignedBorder#PART_VerticalSeparator">
@@ -124,11 +131,11 @@
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IndicatorsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource UniformlyMarginXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource UniformlyMarginXXS}" />
         </Style>
 
         <Style Selector="^ /template/ DockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource UniformlyMarginXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource UniformlyMarginXS}" />
         </Style>
         <Style Selector="^:sort-ascending">
             <Style Selector="^ /template/ atom|DataGridSortIndicator#PART_SortIndicator">
@@ -149,7 +156,7 @@
         <Style Selector="^[CanUserSort=True]">
             <Style Selector="^:sort-ascending, ^:sort-descending">
                 <Setter Property="Background"
-                        Value="{atom:DataGridTokenResource HeaderSortActiveBg}" />
+                        Value="{atom:DataGridTokenResource TableHeaderSortBg}" />
             </Style>
 
             <Style Selector="^ /template/ Border#PART_Frame">
@@ -158,12 +165,12 @@
 
             <Style Selector="^:pointerover">
                 <Setter Property="Background"
-                        Value="{atom:DataGridTokenResource HeaderSortHoverBg}" />
+                        Value="{atom:DataGridTokenResource TableHeaderSortHoverBg}" />
             </Style>
         </Style>
 
         <Style Selector="^:drag-indicator">
-            <Setter Property="Background" Value="#808080" />
+            <Setter Property="Background" Value="{atom:DataGridTokenResource ColumnReorderActiveBg}" />
         </Style>
 
         <Style Selector="^[HeaderDragMode=Reorder]">
@@ -175,7 +182,7 @@
 
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableHeaderBg}" />
 
-            <!-- 阴影条带伸出表头，需绘制在相邻滚动列表头之上 -->
+            <!-- layout: 阴影条带伸出表头，需绘制在相邻滚动列表头之上 -->
             <Setter Property="ZIndex" Value="1" />
             <Style Selector="^ /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="IsVisible" Value="True" />

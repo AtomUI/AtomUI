@@ -14,7 +14,7 @@
                                               ContentTemplate="{TemplateBinding ContentTemplate}" />
                         </atom:PixelAlignedBorder>
                     </Border>
-                    <!-- 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
+                    <!-- layout: 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
                     <atom:DataGridFrozenColumnShadow Name="FrozenShadow"
                                                      Width="30"
                                                      IsVisible="False"
@@ -30,6 +30,8 @@
 
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^[IsFrozen=True]">
+
+            <!-- layout: fixed relative ordering for frozen columns and dragging overlays. -->
 
             <Setter Property="ZIndex" Value="1000" />
             <!-- 左冻结列末列：阴影条带位于表头右外侧 -->

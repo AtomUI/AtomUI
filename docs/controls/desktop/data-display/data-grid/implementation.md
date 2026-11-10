@@ -563,7 +563,20 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 
 ## 9. 资源、性能与 AOT 边界
 
-### 9.1 热路径
+### 9.1 主题资源与作用域
+
+DataGrid 的 ControlTheme 读取自身有效全局值。行、单元格、行头与分组头为 Token owner 透明的实现容器；
+无独立身份的指示器继承实际 DataGrid owner。内置 Spin 的 `GridContent` 容器通过既有 `TokenOwnerForwarding`
+恢复表格 owner，Spin 本体继续拥有遮罩与加载指示器。该绑定在模板重建、视觉 detach 时释放，在重挂载时重建；
+嵌套公开控件的身份在其自身主题处重新建立。
+
+DataGridColumn / DataGridColumnGroupItem 是非 Visual 资源宿主。资源查询从 OwningGrid 的完整资源链开始，
+因此包含局部 ThemeConfigProvider 的命名资源与 Token；未命中时保留 Application fallback。
+owner 更换前释放旧资源事件订阅，再转发新 owner 的资源与主题变体事件。生成的文本和编辑器从当前列同步属性，
+当前编辑器通过表格已有刷新路径接收列资源更新。该路径不恢复已不存在的命名文本/编辑主题，也不在逻辑 attach 时
+提前捕获主题快照。
+
+### 9.2 热路径
 
 - Scroll input 只更新/合并 DesiredViewport，handler 返回后由 coordinator 调度 request。
 - 每次不同的 DesiredViewport 只替换一个 active scope；旧排队项不会作为无界 task 留在 semaphore 前等待。
@@ -573,7 +586,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - Ready 模板不增加 visual node；prefetch 不触发布局。
 - 同步 Source/cache hit 不发布瞬时 Loading/Refreshing；异步首次加载驱动 Spin，已有 snapshot 的异步刷新不启动自动遮罩。
 
-### 9.2 复杂度与资源上限
+### 9.3 复杂度与资源上限
 
 | 路径 | 上限 |
 | --- | --- |
@@ -591,7 +604,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 所有 request、cache、pool、subscription 和 sparse state 必须在长时间往返滚动后达到稳态，不能随滚动次数或曾访问 row 数持续
 增长。
 
-### 9.3 AOT
+### 9.4 AOT
 
 - Query/Source public 类型只位于 DataGrid package，不引入 Core/Shared 反向依赖。
 - LocalSource 使用静态泛型 descriptor，并把 typed getter 显式投影为 schema `DisplayAccessor`；generated

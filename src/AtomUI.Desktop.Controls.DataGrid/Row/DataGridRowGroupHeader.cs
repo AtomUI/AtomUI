@@ -15,8 +15,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 
+using AtomUI.Theme;
+
 namespace AtomUI.Desktop.Controls;
 
+// Visual container follows the DataGrid owner, including TokenTransitions in its template.
+[TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Current, StdPseudoClass.Expanded)]
 public class DataGridRowGroupHeader : TemplatedControl
 {
@@ -89,6 +93,25 @@ public class DataGridRowGroupHeader : TemplatedControl
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<Thickness> ExpanderMarginProperty =
+        AvaloniaProperty.Register<DataGridRowGroupHeader, Thickness>(nameof(ExpanderMargin));
+
+    internal static readonly StyledProperty<Thickness> PropertyMarginProperty =
+        AvaloniaProperty.Register<DataGridRowGroupHeader, Thickness>(nameof(PropertyMargin));
+
+    internal Thickness ExpanderMargin
+    {
+        get => GetValue(ExpanderMarginProperty);
+        set => SetValue(ExpanderMarginProperty, value);
+    }
+
+    internal Thickness PropertyMargin
+    {
+        get => GetValue(PropertyMarginProperty);
+        set => SetValue(PropertyMarginProperty, value);
+    }
+
 
     internal DataGridRowHeader? HeaderCell => _headerElement;
 

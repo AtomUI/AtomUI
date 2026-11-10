@@ -2,6 +2,7 @@
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
+              xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
               x:Class="AtomUI.Desktop.Controls.Themes.DataGridTheme"
 >
     <Setter Property="Template">
@@ -23,7 +24,8 @@
                                CustomIndicatorTemplate="{TemplateBinding CustomOperatingIndicatorTemplate}"
                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                                VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                        <DockPanel LastChildFill="True">
+                        <!-- The content belongs to DataGrid; Spin owns its mask/indicator, not the grid's visual parts. -->
+                        <DockPanel LastChildFill="True" Name="GridContent">
                         <DockPanel Name="{x:Static atom:DataGridThemeConstants.TopPaginationPanelPart}"
                                    DockPanel.Dock="Top"
                                    LastChildFill="True"
@@ -114,11 +116,12 @@
                             </Border>
                             <atom:PixelAlignedBorder
                                 Name="ColumnHeadersAndRowsSeparator"
+                                BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static atom:DataGridTheme.TitleSeparatorThicknessConverter}}"
                                 VerticalAlignment="Bottom"
                                 Grid.Row="0"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="3"
-                                BorderThickness="0,0,0,1"
+
                                 Height="{TemplateBinding BorderThickness, Converter={x:Static atom:DataGridTheme.UniformBorderThicknessToScalarConverter}}" />
 
                             <atom:DataGridRowsPresenter
@@ -200,10 +203,10 @@
         <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="SelectionMode" Value="None" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:DataGridTokenResource BorderThickness}" />
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="CornerRadius" Value="{atom:DataGridTokenResource TableRadius}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:DataGridTokenResource EnableMotion}" />
         <Setter Property="OperatingMsg"
                 Value="{atom:DataGridLangResource Operating}" />
 
@@ -256,7 +259,7 @@
 
         <Style Selector="^ /template/ ContentPresenter#EmptyIndicator">
             <Setter Property="Padding"
-                    Value="{atom:SharedTokenResource PaddingXL}" />
+                    Value="{atom:DataGridTokenResource PaddingXL}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">

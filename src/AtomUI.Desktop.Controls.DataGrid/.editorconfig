@@ -1,0 +1,9 @@
+# DataGrid family; keep package membership in step with MigratedFamilyAnalyzerGateTests.DataGridFamilyAssets.
+[**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error
+dotnet_diagnostic.ATOMUIGEN048.severity = error

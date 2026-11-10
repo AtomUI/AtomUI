@@ -5,6 +5,11 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
+        <!-- Share the one real DataGrid scenario factory; keep the original unit-test host unchanged. -->
+        <Compile Include="../AtomUI.Desktop.Controls.DataGrid.Tests/Theme/Support/DataGridThemeTestFixture.cs"
+                 Link="Effect/Support/DataGridThemeTestFixture.cs" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Avalonia.Headless" />
         <PackageReference Include="Avalonia.Headless.XUnit" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />

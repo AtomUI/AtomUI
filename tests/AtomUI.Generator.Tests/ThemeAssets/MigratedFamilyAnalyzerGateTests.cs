@@ -19,6 +19,7 @@ public class MigratedFamilyAnalyzerGateTests
 {
     private const string DesktopControls = "src/AtomUI.Desktop.Controls";
     private const string Controls = "src/AtomUI.Controls";
+    private const string DataGrid = "src/AtomUI.Desktop.Controls.DataGrid";
 
     /// <summary>Directories (relative to the package) of migrated families.</summary>
     private static readonly string[] s_familyDirectories =
@@ -122,12 +123,31 @@ public class MigratedFamilyAnalyzerGateTests
             .Order(StringComparer.Ordinal)
             .Select(static path => new object[] { path });
 
+    public static IEnumerable<object[]> DataGridFamilyAssets() => Directory.EnumerateFiles(
+            Path.Combine(RepositoryRoot, DataGrid, "Themes"), "*.axaml", SearchOption.AllDirectories)
+        .Select(path => new object[] { Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/') });
+
+    [Theory]
+    [MemberData(nameof(DataGridFamilyAssets))]
+    public void DataGrid_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath) =>
+        Family_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(relativePath);
+
+    [Fact]
+    public void DataGrid_Own_Tokens_Are_Active_Or_Reserved()
+    {
+        var entries = OwnTokenEntries(DataGrid, ["DataGrid"]).ToArray();
+        entries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0);
+        entries.Where(static match => match.Groups["state"].Value == "Unreferenced")
+            .Select(static match => match.Groups["token"].Value).ShouldBeEmpty();
+    }
+
     [Theory]
     [MemberData(nameof(FamilyAssets))]
     public void Family_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath)
     {
         var text = new FileText(Path.Combine(RepositoryRoot, relativePath));
-        var package = relativePath.StartsWith(Controls + "/", StringComparison.Ordinal) ? Controls : DesktopControls;
+        var package = relativePath.StartsWith(DataGrid + "/", StringComparison.Ordinal) ? DataGrid
+            : relativePath.StartsWith(Controls + "/", StringComparison.Ordinal) ? Controls : DesktopControls;
         var asset = ThemeAssetInfo.Create(text, Path.Combine(RepositoryRoot, package), null,
             TestContext.Current.CancellationToken, out var root);
         root.ShouldNotBeNull($"{relativePath} is not well-formed AXAML.");
@@ -347,7 +367,7 @@ public class MigratedFamilyAnalyzerGateTests
     private static readonly Lazy<HashSet<string>> IdentityControls = new(static () =>
     {
         var result = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var package in new[] { DesktopControls, "src/AtomUI.Controls" })
+        foreach (var package in new[] { DesktopControls, Controls, DataGrid })
         {
             var contracts = File.ReadAllText(Path.Combine(RepositoryRoot, package,
                 "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeBuildContracts.g.cs"));

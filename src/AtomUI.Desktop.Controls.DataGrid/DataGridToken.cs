@@ -139,6 +139,7 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     /// 固定表头排序激活态背景色
     /// Background color of fixed table header when sorted
     /// </summary>
+    [ReservedToken("Reserved for a separate sticky header surface; AtomUI renders its header once in the grid viewport.")]
     public Color FixedHeaderSortActiveBg { get; set; }
     
     /// <summary>
@@ -169,6 +170,7 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     /// 选择列宽度
     /// Width of selection column
     /// </summary>
+    [ReservedToken("Reserved: selection columns auto-measure their real selector and CellPadding; the legacy default width would narrow or clip that layout.")]
     public double SelectionColumnWidth { get; set; }
     
     /// <summary>
@@ -208,9 +210,13 @@ internal sealed class DataGridToken : AbstractControlDesignToken
 
     #region 内部 Token
 
+    [ReservedToken("Reserved for the Ant Design inline row-indent expander layout; AtomUI uses a dedicated detail column.")]
     internal Thickness ExpandIconMargin { get; set; }
+    [ReservedToken("Reserved for the Ant Design CSS expander positioning model; AtomUI centers fixed plus/minus glyphs in a Canvas.")]
     internal double ExpandIconHalfInner { get; set; }
+    [ReservedToken("Reserved for the Ant Design unscaled CSS expander box; AtomUI uses SizeMS for its final box size.")]
     internal double ExpandIconSize { get; set; }
+    [ReservedToken("Reserved for the Ant Design CSS expander transform; AtomUI sizes its centered expander directly.")]
     internal double ExpandIconScale { get; set; }
     internal double SortIconSize { get; set; }
     internal double RowReorderIndicatorSize { get; set; }
@@ -237,6 +243,7 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     internal Color TableHeaderSortBg { get; set; }
     internal Color TableHeaderSortHoverBg { get; set; }
     internal Color TableBodySortBg { get; set; }
+    [ReservedToken("Reserved alias for the separate sticky header surface that AtomUI does not create.")]
     internal Color TableFixedHeaderSortActiveBg { get; set; }
     internal Color TableHeaderFilterActiveBg { get; set; }
     internal Color TableFilterDropdownBg { get; set; }
@@ -244,9 +251,11 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     internal Thickness TableFilterButtonContainerMargin { get; set; }
     internal Thickness TableFilterButtonLayoutSeparatorMargin { get; set; }
 
+    [ReservedToken("Reserved for a constrained filter dropdown viewport; the current flyout measures its actual items.")]
     internal double TableFilterDropdownHeight { get; set; }
     internal double TableFilterDropdownWidth { get; set; }
     internal Thickness TableFilterDropdownPadding { get; set; }
+    [ReservedToken("Reserved for a filter search editor; the current filter flyout has no search editor.")]
     internal double TableFilterDropdownSearchWidth { get; set; }
     
     internal Color TableRowHoverBg { get; set; }
@@ -254,8 +263,10 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     internal Color TableSelectedRowHoverBg { get; set; }
     internal double TableFontSizeMiddle { get; set; }
     internal double TableFontSizeSmall { get; set; }
+    [ReservedToken("Reserved alias: selection column width follows automatic selector and CellPadding measurement, or the explicit column Width.")]
     internal double TableSelectionColumnWidth { get; set; }
     internal Color TableExpandIconBg { get; set; }
+    [ReservedToken("Reserved: detail columns auto-measure the expander and CellPadding; applying the legacy fixed width changes the existing layout.")]
     internal double TableExpandColumnWidth { get; set; }
     internal Color TableExpandedRowBg { get; set; }
     
@@ -273,8 +284,6 @@ internal sealed class DataGridToken : AbstractControlDesignToken
         var baseColorAction      = EffectiveGlobalToken.ColorIcon;
         var baseColorActionHover = EffectiveGlobalToken.ColorIconHover;
         
-        var expandIconHalfInner = EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth;
-        var expandIconSize      = expandIconHalfInner * 2 + EffectiveGlobalToken.LineWidth * 3;
 
         if (!IsExplicit(DataGridTokenKind.HeaderBg))
         {
@@ -422,13 +431,18 @@ internal sealed class DataGridToken : AbstractControlDesignToken
             baseColorAction.GetBlueF());
         HeaderIconHoverColor = ColorUtils.FromRgbF(
             baseColorActionHover.GetAlphaF() * EffectiveGlobalToken.OpacityLoading,
-            baseColorAction.GetRedF(),
-            baseColorAction.GetGreenF(),
-            baseColorAction.GetBlueF());
-        ExpandIconHalfInner       = expandIconHalfInner;
-        ExpandIconSize            = expandIconSize;
+            baseColorActionHover.GetRedF(),
+            baseColorActionHover.GetGreenF(),
+            baseColorActionHover.GetBlueF());
+        // Reserved geometry is independent, as in the original local calculations. Keep direct field-fed
+        // expressions so globals used only by these non-rendered slots are not advertised as consumed.
+        ExpandIconHalfInner = EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth;
+        ExpandIconSize = (EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth) * 2 +
+                         EffectiveGlobalToken.LineWidth * 3;
         RowReorderIndicatorSize   = EffectiveGlobalToken.SizeMD; // TODO 需要根据 SizeType 做一定的调整
-        ExpandIconScale           = EffectiveGlobalToken.ControlInteractiveSize / expandIconSize;
+        ExpandIconScale = EffectiveGlobalToken.ControlInteractiveSize /
+                          ((EffectiveGlobalToken.ControlInteractiveSize / 2 - EffectiveGlobalToken.LineWidth) * 2 +
+                           EffectiveGlobalToken.LineWidth * 3);
         SortIconSize              = EffectiveGlobalToken.FontHeight / 2.5;
         SortIndicatorLayoutMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
         FilterIndicatorPadding    = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.UniformlyPaddingXS);

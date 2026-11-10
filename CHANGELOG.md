@@ -6,7 +6,15 @@ All notable changes to AtomUI are documented in this file.
 
 ## Unreleased
 
+- DataGrid
+  - Grid parts and filter flyouts now honor DataGrid-effective globals; the Spin content forwards the grid owner while nested public controls retain their identities. Scoped named resources continue updating real column text/editors after publish and owner replacement.
+  - Activate expand-button and menu-filter backgrounds, filter-hover aliases and sort-indicator margin; the default sort icon gains its existing 8px margin, and dragged-header background uses ColumnReorderActiveBg instead of fixed #808080. Expand-button background is now opaque by default, including over hovered/selected rows.
+  - Header hover icons use ColorIconHover RGB; group-header dimensions/inline margins and separators follow existing globals with original default sizes and scrolling/layout behavior preserved.
+  - Keep 11 unsupported CSS-expander/sticky-header/filter-search/height and automatic column-width fields Reserved; selection/detail columns retain automatic measurement and explicit Column.Width behavior.
+
+
 - Breaking Changes
+  - DataGrid row, cell, row-header and group-header implementation containers now use the hosting DataGrid's effective globals and transition durations. Configure them through Controls[DataGrid]; nested public editors, selectors, buttons and pagination retain their own scopes.
   - LunarCalendar: full-screen Year selected-month backgrounds use LunarCalendar.ItemActiveBg independently of Calendar. The default light-blue month selection and primary-blue date selection are preserved.
   - Theme Own scopes are independent for DropdownButton, SubmitButton/ResetButton, NumericUpDown, AutoComplete variants, Cascader/TreeSelect, MessageBox, ContextMenu/MenuFlyoutPresenter, card/strip tabs, SimplePagination, Transfer views, TimerStatistic/StatisticCountUp, ImageGroupPreviewer, LunarCalendar, RangeDateViewer and date/time picker variants. Move overrides that previously targeted a source control to the actual control; shared abstract token layers reuse calculations, not resource identities. SplitButton's two public Buttons and SearchEdit's search Button keep Button colour/motion ownership.
   - Moved Own keys: `Space.AddonBg`/`AddOnPadding*` → `CompactSpaceAddOn`; `Menu.ContextMenuOffsetX/Y` → `ContextMenu`; `Pagination.ItemInputBg` → `SimplePagination`; `DateViewer.PanelSpacing` → `RangeDateViewer`; `DatePicker.RangePanelSpacing` → `RangeDatePicker`; `TimePicker.HeaderMargin` → `DatePicker`/`RangeDatePicker`; `InfoPickerInput.RangePickerArrowMargin`/`RangePickerIndicatorThickness` → the actual range picker and `RangeMarginToAnchor` → `RangeTimePicker`. Move TabControl card/add-button/vertical-card-padding keys to CardTabControl/CardTabStrip, and `WindowTitleBar.CaptionButtonCornerRadius` to the public title-bar Button/ToggleButton. Source-only/Reserved fields are not copied into unrelated terminals.

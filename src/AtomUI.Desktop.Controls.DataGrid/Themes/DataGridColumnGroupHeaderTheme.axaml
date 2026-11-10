@@ -22,16 +22,16 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="Foreground" Value="{atom:DataGridTokenResource TableHeaderTextColor}"/>
-        <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}"/>
+        <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}"/>
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_Frame">
             <Setter Property="BorderBrush" Value="{atom:DataGridTokenResource TableBorderColor}"/>
         </Style>
-        
+
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_Frame">
                 <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}"/>
@@ -50,6 +50,6 @@
             </Style>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSizeSmall}"/>
         </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

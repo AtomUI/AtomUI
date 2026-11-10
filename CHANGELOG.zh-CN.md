@@ -8,7 +8,15 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
+- DataGrid
+  - 表格部件与筛选弹层读取 DataGrid 有效全局值；Spin 内容恢复表格 owner，嵌套公开控件保持各自身份。局部命名资源在发布及 owner 替换后持续更新实际列文本与编辑器。
+  - 接通展开按钮/菜单筛选背景、筛选悬停别名和排序图标 margin；默认排序图标增加已有 8px margin，拖动表头背景由固定 #808080 改为 ColumnReorderActiveBg。展开按钮默认背景改为不透明，包含悬停/选中行背景之上的状态。
+  - 表头悬停图标使用 ColorIconHover 的 RGB；分组头尺寸/单侧 margin 与分隔线读取既有全局 Token，保留默认尺寸、滚动和布局行为。
+  - CSS 展开几何、独立 sticky 表头、筛选搜索/高度及自动列宽共 11 字段保留为 Reserved；选择列和详情列保持自动测量与显式 Column.Width 行为。
+
+
 - Breaking Changes
+  - DataGrid 行、单元格、行头和分组头实现容器的有效全局值与动效时长改随宿主 DataGrid，请经 Controls[DataGrid] 配置；嵌套公开编辑器、选择器、按钮和分页器保持各自作用域。
   - LunarCalendar：Fullscreen Year 的选中月份背景使用独立的 LunarCalendar.ItemActiveBg，不再受 Calendar 同名 Own 覆盖；保留月份默认浅蓝色及日期主色。
   - Theme Own 作用域独立：DropdownButton、SubmitButton/ResetButton、NumericUpDown、AutoComplete 派生控件、Cascader/TreeSelect、MessageBox、ContextMenu/MenuFlyoutPresenter、卡片/条形页签、SimplePagination、Transfer 视图、TimerStatistic/StatisticCountUp、ImageGroupPreviewer、LunarCalendar、RangeDateViewer 与日期/时间范围选择器均通过实际控件身份配置。原来源控件的覆盖不再传播到其他终端；抽象层只共享计算。SplitButton 的两个公开 Button 与 SearchEdit 搜索 Button 保持 Button 颜色/动效身份。
   - Own 键迁移：`Space.AddonBg`/`AddOnPadding*` → `CompactSpaceAddOn`；`Menu.ContextMenuOffsetX/Y` → `ContextMenu`；`Pagination.ItemInputBg` → `SimplePagination`；`DateViewer.PanelSpacing` → `RangeDateViewer`；`DatePicker.RangePanelSpacing` → `RangeDatePicker`；`TimePicker.HeaderMargin` → `DatePicker`/`RangeDatePicker`；`InfoPickerInput.RangePickerArrowMargin`/`RangePickerIndicatorThickness` → 实际 range 控件，`RangeMarginToAnchor` → `RangeTimePicker`。TabControl 的卡片/添加按钮/垂直卡片 padding 键移到 CardTabControl/CardTabStrip；`WindowTitleBar.CaptionButtonCornerRadius` 移到公开标题栏 Button/ToggleButton。仅来源可渲染或 Reserved 的字段不复制到无关终端。

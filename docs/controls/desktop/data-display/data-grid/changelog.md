@@ -29,6 +29,14 @@
   - 新增 `DataGridRowExpanderFocusTests`。
   - `DataGridRangeMutationTests` 新增滚轮滚出源行后松开仍落在指针下行的用例；两处 capture 断言改为 RowsPresenter。
 
+## 2026-11-10
+
+- 表格家族读取实际 DataGrid 的有效全局 Token；Spin 内容恢复表格 owner，嵌套公开控件保持独立身份。
+- 接通排序/分割线/筛选悬停别名、详情展开器背景、菜单筛选背景与排序图标 margin，修正 hover 图标颜色使用普通图标 RGB 的派生错误。
+- 分组头和分隔线的尺寸、间距、线宽改读 Token；保持分组头单侧 margin 和原有滚动、分页、编辑及虚拟化结构。
+- 将 CSS 展开图标几何、独立 sticky 表头背景和尚未提供的筛选搜索/高度槽及维持自动测量的专用列宽共 11 字段标记为 Reserved。
+- 生效契约在既有 Rendering 测试宿主复用渲染 harness，DataGrid 原 Headless 宿主保留输入与生命周期验证；两者复用单一 typed-source 场景工厂，覆盖真实 typed source、局部主题发布、owner 替换、资源释放和嵌套隔离。
+
 ## 2026-11-06
 
 - API

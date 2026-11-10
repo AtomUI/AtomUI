@@ -41,8 +41,9 @@
                         </StackPanel>
 
                         <atom:PixelAlignedBorder Name="ButtonLayoutSeparator"
-                                                 Height="1.0"
-                                                 BorderThickness="0,0,0,1"
+                                                 BorderThickness="{TemplateBinding BorderThickness, Converter={x:Static themes:DataGridTheme.TitleSeparatorThicknessConverter}}"
+                                                 Height="{atom:DataGridTokenResource LineWidth}"
+
                                                  VerticalAlignment="Center"
                                                  HorizontalAlignment="Stretch"
                                                  DockPanel.Dock="Bottom" />
@@ -68,11 +69,12 @@
                     Value="{atom:DataGridTokenResource TableFilterButtonLayoutSeparatorMargin}" />
         </Style>
 
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="BorderThickness" Value="{atom:DataGridTokenResource BorderThickness}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Setter Property="Background" Value="{atom:DataGridTokenResource TableFilterDropdownBg}" />
         <Setter Property="Padding"
                 Value="{atom:DataGridTokenResource TableFilterDropdownPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
 
     </ControlTheme>
 </ResourceDictionary>

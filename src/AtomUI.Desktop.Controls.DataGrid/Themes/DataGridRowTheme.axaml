@@ -28,7 +28,7 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             Grid.RowSpan="3"
-                            atom:DataGridFrozenGrid.IsFrozen="True" 
+                            atom:DataGridFrozenGrid.IsFrozen="True"
                             Background="{TemplateBinding Background}"
                             SizeType="{TemplateBinding SizeType}"
                             />
@@ -79,8 +79,8 @@
         </Style>
 
         <Style Selector="^ /template/ Rectangle#PART_DropBeforeIndicator, ^ /template/ Rectangle#PART_DropAfterIndicator">
-            <Setter Property="Fill" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Height" Value="2" />
+            <Setter Property="Fill" Value="{atom:DataGridTokenResource ColorPrimary}" />
+            <Setter Property="Height" Value="{atom:DataGridTokenResource LineWidthBold}" />
         </Style>
         <Style Selector="^[DropPosition=Before] /template/ Rectangle#PART_DropBeforeIndicator">
             <Setter Property="IsVisible" Value="True" />
@@ -88,13 +88,14 @@
         <Style Selector="^[DropPosition=After] /template/ Rectangle#PART_DropAfterIndicator">
             <Setter Property="IsVisible" Value="True" />
         </Style>
-        
+
         <Style Selector="^[IsDragging=True]">
+            <!-- layout: fixed relative ordering for frozen columns and dragging overlays. -->
             <Setter Property="ZIndex" Value="1000" />
             <Setter Property="Background"
                     Value="{atom:DataGridTokenResource TableRowHoverBg}" />
         </Style>
-        
+
         <Style Selector="^[IsDragging=False]">
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableBg}" />
 
@@ -129,7 +130,7 @@
                         Value="{atom:DataGridTokenResource TableSelectedRowBg}" />
             </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ Border#DetailsPresenterFrame">
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableExpandedRowBg}" />
         </Style>

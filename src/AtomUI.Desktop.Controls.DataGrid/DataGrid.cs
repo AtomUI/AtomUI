@@ -6,6 +6,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -1305,6 +1306,7 @@ public partial class DataGrid : TemplatedControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        ConfigureContentTokenOwner();
         AttachRangeSource();
 
         if (_topPagination != null)
@@ -1323,6 +1325,8 @@ public partial class DataGrid : TemplatedControl,
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _contentTokenOwnerBinding?.Dispose();
+        _contentTokenOwnerBinding = null;
         DetachRangeSource();
         CancelRowReorder();
         SuspendPopupPinnedOpenFilterTarget();
@@ -1611,6 +1615,20 @@ public partial class DataGrid : TemplatedControl,
         }
     }
 
+    private Control? _contentTokenOwnerHost;
+    private IDisposable? _contentTokenOwnerBinding;
+
+    private void ConfigureContentTokenOwner()
+    {
+        _contentTokenOwnerBinding?.Dispose();
+        // Spin owns its mask and indicator; the content remains the DataGrid's implementation subtree.
+        // ControlTheme cannot bind ThemeScope.TokenOwner because the attached property is internal to Core
+        // (AXAML reports AVLN2000). Reuse the scoped forwarding helper and release on detach/re-template.
+        _contentTokenOwnerBinding = _contentTokenOwnerHost is null
+            ? null
+            : TokenOwnerForwarding.Forward(this, _contentTokenOwnerHost);
+    }
+
     /// <summary>
     /// Builds the visual tree for the column header when a new template is applied.
     /// </summary>
@@ -1619,6 +1637,9 @@ public partial class DataGrid : TemplatedControl,
     {
         CancelRowReorder();
         SuspendPopupPinnedOpenFilterTarget();
+
+        _contentTokenOwnerHost = e.NameScope.Find<Control>("GridContent");
+        ConfigureContentTokenOwner();
 
         // The template has changed, so we need to refresh the visuals
         _measured = false;

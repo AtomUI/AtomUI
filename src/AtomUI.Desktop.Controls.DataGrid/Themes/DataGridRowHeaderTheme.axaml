@@ -24,13 +24,13 @@
                                Grid.Row="2"
                                Grid.Column="0"
                                Grid.ColumnSpan="2"
-                               HorizontalAlignment="Stretch" 
+                               HorizontalAlignment="Stretch"
                                Fill="{TemplateBinding SeparatorBrush}"
                                IsVisible="{TemplateBinding IsSeparatorsVisible}"/>
-                    
+
                     <ContentPresenter Grid.Row="0"
                                       Grid.Column="1"
-                                      Grid.RowSpan="2" 
+                                      Grid.RowSpan="2"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       Content="{TemplateBinding Content}"
@@ -39,10 +39,10 @@
                 </Grid>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="SeparatorBrush" Value="{atom:DataGridTokenResource TableBorderColor}" />
         <Setter Property="Background" Value="{atom:DataGridTokenResource TableHeaderBg}" />
-        
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePadding}"/>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSize}"/>
@@ -55,6 +55,6 @@
             <Setter Property="Padding" Value="{atom:DataGridTokenResource TablePaddingSmall}"/>
             <Setter Property="FontSize" Value="{atom:DataGridTokenResource TableFontSizeSmall}"/>
         </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

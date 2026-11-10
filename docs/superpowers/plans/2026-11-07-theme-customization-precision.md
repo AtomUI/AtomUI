@@ -413,7 +413,7 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 | 10.6 | Feedback | `Alert`、`Dialog` / `OverlayDialog`（`OverlayDialogResizer` 12 处字面量）、`Notification`、`Message`、`ToolTip`、`Popconfirm`、`Popup` | 借鉴 `daa17c067`（ToolTip 预设色 P4/P5）、`33534c625`（Popup） |
 | 10.7 | Navigation | `NavMenu`（E3：`Application.Current.TryGetResource(MotionDurationMid)` 与 200ms 回落删除）、`Menu`、`TabControl` / `TabItem` / `TabStripItem`（E3）、`Breadcrumb`、`Pagination`、`Tour` | 借鉴 `473c43b1f`（NavMenu 分组标题 P1）、`9c01e0cc7`（Tour 间距绑定随 Gap 重建） |
 | 10.8 | Layout / Container | `Card`、`Collapse`、`Splitter`（借鉴 `b1a6fc37a`：尺寸挂载期绑定 + `AffectsMeasure`）、`SplitView`（分隔线 `Width="1"` → `LineWidth`）、`Separator`、`Space`、`Masonry` | |
-| 10.9 | Data | `Table`（基础）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | 补 LunarCalendar `WorkdayMarkerColor` 生效测试（Task 18 解除遮蔽）；Skeleton 作为已注册控件截断对话框内容的 owner 链：若其自身视觉都显式读 SkeletonTokenResource，则标为 owner 透明 |
+| 10.9 | Data | `Table`（基础；当前仓库无对应实现，已核对）、`List`、`Tree`、`Avatar`、`Timeline`、`Calendar`（E2 `CalendarRangeBarPanel` 字号 12 / 高度 20 / 内边距 8 → Own Token）、`DatePicker` / `TimePicker`、`Carousel`、`Statistic` | 补 LunarCalendar `WorkdayMarkerColor` 生效测试（Task 18 解除遮蔽）；Skeleton 作为已注册控件截断对话框内容的 owner 链：若其自身视觉都显式读 SkeletonTokenResource，则标为 owner 透明 |
 | 10.10 | 其余 | `ScrollBar`、`Icon`、`Window` 装饰、`FloatButton` 之外的剩余控件；以及 Button 家族遗留的 DropdownButton / SplitButton 变体色 | 以 `ATOMUIGEN041`–`047` 报告为清单。DropdownButton、SplitButton 的变体色绑定的是 Button 的 Own Token，这些值由 Button 的有效全局 Token 派生，所以 `Controls[DropdownButton].Tokens[ColorText]` 不改变它们的默认文字色：把变体相关 Own Token 提取到一个抽象 `[ControlDesignToken]` 层，由 `ButtonToken` 与新的 `DropdownButtonToken` 终端分别继承，变体绑定改用各自 identity 的键，并补隔离测试。同一模式另见 Input 家族：NumericUpDown 借用 ButtonSpinner 的手柄 Own Token，AutoCompleteSearchEdit / AutoCompleteTextArea 借用 AutoComplete 的 Own Token；SearchEdit 的搜索按钮颜色跟随 Button、动效时长跟随 SearchEdit，需统一；Select 家族中 Cascader、TreeSelect 读取 SelectToken，因而跟随 `Controls[Select]`，同样提取抽象层；FloatButton 徽标颜色在主题切换时不重算（Task 10.5 已修复）；Feedback 家族中 MessageBox 读取 Dialog 的 Own Token（`Controls[Dialog]` 的 Own 覆盖会到达 MessageBox），同样提取抽象层；DialogWindow 经 Window 的 StyleKey 使 owner 解析为 Window，当前无可见影响，一并核对；Navigation 家族中 ContextMenu / MenuFlyoutPresenter 读取 Menu、卡片与条形页签宿主读取 TabControl、SimplePagination 读取 Pagination 的 Own Token，同样提取抽象层；Data 家族中 CandidateList、Transfer、TreeSelect、TimerStatistic、ImageGroupPreviewer 借用其他控件 Own Token，TreeSelect 的树经 StyleKey 以 TreeView 为 owner，CandidateListItem 与 Transfer 条目容器未设 owner 透明，同样核对。拆分为四个子任务：10.10a 录入类（Form、Descriptions、Upload、Mentions、OtpLineEdit、Segmented、Primitives/CandidateList）；10.10b 展示类（Transfer、Drawer、Spin、Result、Empty、QRCode、TextBlock、HeaderedContentControl、BorderBeam、AdornerLayer）；10.10c 窗口、滚动与共享基元及 AtomUI.Controls 包（Window、WindowTitleBar、ScrollViewer、IndicatorScrollViewer、ArrowDecoratedBox、FeedbackStack、WaveSpirit、Flyouts 其余主题、Icon、AsyncImage、ItemsControl、TransitioningContentControl、TextSelectionHandle、Embedding、Splash）；10.10d 抽象 Token 层与一致性汇总（本行列出的全部借用对，加上 Data 家族后半的 LunarCalendar→Calendar、RangeDateViewer→DateViewer、RangeDatePicker→DatePicker、日期时间 TimeView→TimePicker、范围 Picker→InfoPickerInput，以及 NumericUpDown 内嵌编辑器 SizeType 固定为 Custom 导致大小号字号不随尺寸变化） |
 
 每个家族完成的定义：该家族生效测试全绿；`Controls[X]` 隔离测试通过；分析器对该家族目录转错误；`token.md` 更新；一个或多个 commit。
@@ -633,6 +633,14 @@ Task 9 修正后 045 覆盖 `Spacing`、`ZIndex`、`*Offset` 与带符号数值�
 
 043/044/047 为 Task 7 实测。043 只覆盖 Token 键读取：NavMenu 的 `Application.Current.TryGetResource(MotionDurationMid)` 与 200 ms 回落、Window 的 `this.TryFindResource(WindowTokenKind.DefaultBackground)`。TabItem、TabStripItem、Menu 经 `Application.Current` 按字符串键查命名 ControlTheme，DataGridColumn 转发运行时键，这些是 E3 的命名主题作用域旁路，不在 043 范围内，在 Task 10.7 与 Task 14 手工修复。044 只按精确视觉成员名匹配，`CalendarRangeBarPanel` 的字号 12 / 高度 20 / 内边距 8 与 `SwitchKnob` 笔宽 1 经局部变量或复合名传入，不被报告，在 Task 10.9、10.3 手工修复（E2）。
 
+### 已完成家族的验收增量（历史初始值见上表）
+
+迁移前数量引用执行台账原报告；迁移后只表示对应路径的门禁结果，不推算尚未迁移目录的剩余总量。控件 Own Token 的裁决见下表。
+
+| 家族 | 041 / 042 / 043 / 044 / 045 / 047 / 048 迁移前 | 迁移后 | 最新验收 |
+| --- | --- | --- | --- |
+| 10.9b Calendar / DateViewer / Picker | 105 / 4 / 0 / 1 / 14 / 5 / 0 | 对应家族路径全部 0（046 已退役） | `485ef3ba7`；定向渲染 410、控件 360、现有门禁 250 全过；范围复审 I1/I2 通过 |
+
 ## 待裁决 Own Token（Task 6 执行后填写）
 
 按控件分组列出 `ATOMUIGEN042` 报告的字段，每行裁决为 Active / Reserved（理由）/ 删除，随家族任务勾销。
@@ -672,7 +680,7 @@ Task 6 实测共 125 个字段。被同一 `CalculateTokenValues` 用来派生�
 | Desktop | ListView | ItemDisabledColor | 10.9 | Active |
 | Desktop | TreeView | DirectoryNodeSelectedBg, DirectoryNodeSelectedColor | 10.9 | Reserved |
 | Desktop | Timeline | LastItemContentMinHeight | 10.9 | 删除 |
-| Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 | Active：ButtonsMargin、PeriodHostWidth；删除：RangePickerArrowMargin、RangePickerIndicatorThickness（与 InfoPickerInput Token 重复，antd 无对应组件 Token，Breaking）|
+| Desktop | TimePicker | ButtonsMargin, PeriodHostWidth, RangePickerArrowMargin, RangePickerIndicatorThickness | 10.9 | Active：ButtonsMargin、PeriodHostWidth；删除：RangePickerArrowMargin、RangePickerIndicatorThickness（与 InfoPickerInput Token 重复，antd 无对应组件 Token，Breaking）；10.9b 评审已确认（`485ef3ba7`） |
 | Desktop | Carousel | ArrowOffset | 10.9 | Active |
 | Desktop | Skeleton | GradientToColor, TitleHeight | 10.9 | Active；新增 AtomUI 扩展 ImageColor；Skeleton 标为 owner 透明 |
 | Desktop | ImagePreviewer | ImagePreviewSwitchSize | 10.9 | Reserved；新增 AtomUI 扩展 ErrorIconSize |

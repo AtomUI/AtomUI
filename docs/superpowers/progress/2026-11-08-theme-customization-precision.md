@@ -32,8 +32,11 @@
 | 10.7 | Navigation 家族 | 完成 |
 | 10.8 | Layout / Container 家族 | 完成 |
 | 10.9a | Data 家族前半（List/Tree/Avatar/Timeline/Skeleton/Statistic/Carousel/ImagePreviewer） | 完成，最后提交 `eb8d42c85` |
-| 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **实现完成、待评审**：提交 `2537e72cb`、`de8fb1004`、`56755dfc4`（基于 `eb8d42c85`）；评审要点见第 4 节台账最后一条 |
-| 10.10 | 其余控件 + 抽象 Token 层一致性汇总（见计划 10.10 行） | 未开始 |
+| 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **完成并评审通过**：原实现及后续修复至 `3e55b3883`；本轮覆盖修复 `485ef3ba7`，定向渲染 410 / 控件 360 / 门禁 250 全过 |
+| 10.10a | 录入类剩余控件 | 已有未提交实现与生效测试，保留并等待接续验收 |
+| 10.10b | 展示类剩余控件 | 未开始 |
+| 10.10c | 窗口、滚动、共享基元与 Controls 包 | 未开始 |
+| 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
 | 12 | Gallery 主题预设页 | 未开始 |
 | 13 | Shadcn / Bootstrap / Material | 未开始 |
@@ -43,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已实现并提交（`eb8d42c85..56755dfc4`），尚未评审：先用评审包 `eb8d42c85..56755dfc4` 派评审子代理（实现报告已不在仓库内，评审以提交、计划、第 3 节规则和第 4 节台账最后一条为准），再按评审结果续派修复（新开实现子代理，带上评审发现）。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。下一任务为 10.10a，接续保留的未提交实现与生效测试；不要重派已完成的 10.9b。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -376,3 +379,14 @@ Task 10.9a: complete (commits 303c6740f..eb8d42c85, review clean)
 Task 10.9b: dispatched implementer (opus)
 Task 10.9b: implementer DONE_WITH_CONCERNS, commits 2537e72cb de8fb1004 56755dfc4 (Data effect 619; Rendering 2997; Desktop.Controls 4198; Generator 921; family 041 105, 042 4, 044 1, 045 14, 047 5 → 0). Scope added DateViewer + Primitives/InfoPickerInput; no basic Table exists. 042: TimePicker ButtonsMargin/PeriodHostWidth Active; RangePickerArrowMargin/RangePickerIndicatorThickness deleted (Breaking). New AtomUI-extension tokens: Calendar.FullCell*, RangeBarGap, RangeBarLabelPadding; LunarCalendar.Marker*; DateViewer Header/FooterBorderThickness, WeekNumberOpacity; DatePicker.HeaderBorderThickness; TimePicker.ItemMargin.
 Task 10.9b: REVIEW PENDING (not yet dispatched at handoff). Reviewer must judge: (1) new `Primitives/TokenOwnerForwarding` mechanism (picker→popup presenter inside registered ArrowDecoratedBox; TimeView→columns inside registered ScrollViewers; Calendar→DateViewer) — document as pattern vs alternative; (2) visible change: picker input text ColorTextTertiary while popup open — antd does not dim it → likely remove unless antd evidence; (3) borrowed Own tokens LunarCalendar→Calendar, RangeDateViewer→DateViewer, RangeDatePicker→DatePicker, date-time TimeView→TimePicker, range pickers→InfoPickerInput → 10.10; (4) pre-existing clipped picker focus shadow (range picker shadow rows excluded) → decide fix vs defer.
+
+## 2026-11-10 接续核对
+
+Task 10.9b: 本轮评审已派发（实现范围 `eb8d42c85..21628b4fa`，最后代码提交 `3e55b3883`）；后续修复已覆盖弹层日期面板 owner、输入预览色、焦点阴影与范围条释放。先前交接只记录至 `56755dfc4`，不作为最新状态。
+Task 10.10a: 接手时保留 37 个已修改源文件与 7 个未跟踪 DataEntryFamilyEffectTests 文件；`AbstractGeneralProgressBar.IndicatorThickness` 重算属于 Upload 的前置修复。尚无完成或评审结论。
+Ruling: 10.9b 本轮评审覆盖全部已提交修复 `eb8d42c85..21628b4fa`，10.10a 未提交实现独立接续 — Git 历史证实原交接后的两轮代码与当前录入类修改分属不同任务 — 错了的代价：若归属误判，需要重新划分评审或提交范围，不丢弃现有改动。
+Task 10.9b: 本轮评审 Needs fixes，0 Critical / 2 Important / 2 Minor。I1：Picker 的 BorderRadiusSM 生效行被全局过滤；I2：RangeDateViewer / RangeTimePicker 缺少完整控件覆盖、无关兄弟与根覆盖隔离。新实现者修复第 1 轮，并补后续代码提交的 focused 验证凭证。
+Task 10.9b: minor (deferred): 动效测试对空 Transitions 集合可能 vacuous；Calendar/TimePicker 用户文档内部任务引用、DateViewer 的 SharedToken 术语不清。归终审与 Task 15 文档整理。
+Task 10.9b: fix round 1/5（2 addressed，0 open；`21628b4fa..485ef3ba7`）：恢复四类 Picker 的 BorderRadiusSM 生效行，增加不可空覆盖守卫；新增 RangeDateViewer / RangeTimePicker 的正向、无关兄弟和根覆盖隔离。有效 RED 1 passed / 5 failed，GREEN 10/10；清理后定向 Rendering 410/410、Controls 360/360、Generator gate 250/250，0 failed / skipped。只提交两个测试文件；接手时 45 个未提交路径逐字节保持不变。
+Task 10.9b: 范围复审通过（I1/I2 ADDRESSED，0 新 Critical/Important/Minor）；未重复运行相同测试。历史原始 RED/原始报告未恢复，不冒充本轮验证记录。新门禁属于计划批准的常驻生效/契约测试，未留临时测试代码；原有 xUnit1051 和可选 DataGrid 警告留相应任务与收尾处置。
+Task 10.9b: complete（commits `eb8d42c85..485ef3ba7`，review clean；两个 deferred minor 见前条记录）。计划中的 TimePicker 裁决已核准，存量基线补家族验收增量。

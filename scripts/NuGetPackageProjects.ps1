@@ -8,6 +8,7 @@ $AtomUIReleasePackages = @(
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Native"; ProjectPath = "src/AtomUI.Native/AtomUI.Native.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Localization"; ProjectPath = "src/AtomUI.Localization/AtomUI.Localization.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Themes.PrimeNG"; ProjectPath = "src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" },
+    [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Themes.Shadcn"; ProjectPath = "src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Core"; ProjectPath = "src/AtomUI.Core/AtomUI.Core.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Fonts.AlibabaSans"; ProjectPath = "src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj" },
     [PSCustomObject]@{ Group = "Base"; PackageRole = "RuntimeProduct"; PackageId = "AtomUI.Fonts.AlibabaPuHuiTi"; ProjectPath = "src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj"; AllowUnpublishedBaseline = $true },

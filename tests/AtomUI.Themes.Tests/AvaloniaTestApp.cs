@@ -1,5 +1,6 @@
 using AtomUI.Desktop.Controls;
 using AtomUI.Themes.PrimeNG;
+using AtomUI.Themes.Shadcn;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -17,7 +18,7 @@ public static class TestAppBuilder
         .UseAtomUI(builder =>
         {
             builder.UseDesktopControls();
-            builder.Theme.UsePrimeNGThemes();
+            builder.Theme.UsePrimeNGThemes().UseShadcnThemes();
         });
 }
 

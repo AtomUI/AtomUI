@@ -29,14 +29,29 @@ namespace AtomUIGallery.Tests;
 public class ThemePresetsShowCaseTests
 {
     [Fact]
-    public void Package_Profiles_Are_Grouped_Into_Three_Families_Without_Gallery_Palettes()
+    public void Package_Profiles_Are_Grouped_By_Family_And_Compiled_Package_Origin()
     {
         AvaloniaTestApp.EnsureInitialized();
         using var model = new ThemePresetsViewModel(null!);
         model.Presets.Where(item => item.ThemeId.StartsWith("PrimeNG", StringComparison.Ordinal)).Select(item => item.ThemeId).ShouldBe(["PrimeNGAura", "PrimeNGLara", "PrimeNGNora"]);
         model.Presets.Where(item => item.ThemeId.StartsWith("PrimeNG", StringComparison.Ordinal)).ShouldAllBe(item => item.Icon != null);
         model.Presets.Single(item => item.ThemeId == "GalleryPreviewFixture").Icon.ShouldBeNull();
-        Application.Current!.GetThemeManager()!.AvailableThemes.Count(item => item.Id.StartsWith("PrimeNG", StringComparison.Ordinal)).ShouldBe(12);
+        var families = new[] { "ShadcnZinc", "ShadcnSlate", "ShadcnStone" };
+        model.Presets.Where(item => item.ThemeId.StartsWith("Shadcn", StringComparison.Ordinal))
+            .Select(item => item.ThemeId).ShouldBe(families, ignoreOrder: true);
+        var catalog = ((ThemeManager)Application.Current!.GetThemeManager()!).CompiledThemeCatalog;
+        var package = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Shadcn");
+        foreach (var id in families)
+        {
+            foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
+            {
+                package.Definitions.ShouldContain(entry => entry.Info.Id == id + suffix && entry.Revision.ProgramDigest != null);
+                model.SelectedPresetId = id;
+                model.IsDark = suffix.Contains("Dark");
+                model.IsCompact = suffix.Contains("Compact");
+                model.PreviewThemeId.ShouldBe(id + suffix);
+            }
+        }
     }
 
     [Fact]
@@ -100,6 +115,25 @@ public class ThemePresetsShowCaseTests
             }
             model.SelectedPresetId = "PrimeNGNora"; Pump();
             ControlTokenAccessor.Capture(button).GetOwn<FontWeight, ButtonTokenKind>(ButtonTokenKind.FontWeight).ShouldBe((FontWeight)700);
+            foreach (var (id, primary) in new[]
+            {
+                ("ShadcnZinc", "#18181B"), ("ShadcnSlate", "#0F172A"), ("ShadcnStone", "#1C1917")
+            })
+            {
+                model.SelectedPresetId = id;
+                model.IsDark = false; model.IsCompact = false; Pump();
+                var tokens = ControlTokenAccessor.Capture(button);
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse(primary));
+                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(36);
+                tokens.GetGlobal<bool>(SharedTokenKind.EnableWaveSpirit).ShouldBeFalse();
+                AssertIndependentProfile(button, (ThemeManager)manager, id);
+                model.IsDark = true; model.IsCompact = true; Pump();
+                tokens = ControlTokenAccessor.Capture(button);
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(primary));
+                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(32);
+                AssertIndependentProfile(button, (ThemeManager)manager, id + ".DarkCompact");
+                page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
+            }
             publications.ShouldBe(0);
             manager.CurrentTheme.ShouldBeSameAs(root);
         }

@@ -18,7 +18,8 @@ public class PrimeNGThemePackageTests
         var expected = new[] { "PrimeNGAura", "PrimeNGLara", "PrimeNGNora" }
             .SelectMany(id => new[] { id, id + ".Dark", id + ".Compact", id + ".DarkCompact" })
             .Append("DaybreakBlue");
-        manager.AvailableThemes.Select(theme => theme.Id).ShouldBe(expected, ignoreOrder: true);
+        manager.AvailableThemes.Where(theme => theme.Id == "DaybreakBlue" || theme.Id.StartsWith("PrimeNG", StringComparison.Ordinal))
+            .Select(theme => theme.Id).ShouldBe(expected, ignoreOrder: true);
         manager.AvailableThemes.Single(theme => theme.IsDefault).Id.ShouldBe("DaybreakBlue");
         manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
         manager.ThemeCatalogDiagnostics.ShouldBeEmpty();

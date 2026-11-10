@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnStone" Name="Shadcn Stone" Appearance="Light" IsDefault="false">
+  <Algorithms>
+    <Algorithm Id="Default" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#1C1917" />
+    <Token Name="ColorPrimaryHover" Value="#292524" />
+    <Token Name="ColorPrimaryActive" Value="#44403C" />
+    <Token Name="ColorTextLightSolid" Value="#FAFAFA" />
+    <Token Name="ColorPrimaryBg" Value="#F5F5F4" />
+    <Token Name="ColorPrimaryBgHover" Value="#E7E5E4" />
+    <Token Name="ColorPrimaryBorder" Value="#D6D3D1" />
+    <Token Name="ColorPrimaryBorderHover" Value="#A8A29E" />
+    <Token Name="ColorPrimaryText" Value="#1C1917" />
+    <Token Name="ColorPrimaryTextHover" Value="#292524" />
+    <Token Name="ColorPrimaryTextActive" Value="#44403C" />
+    <Token Name="ColorText" Value="#1C1917" />
+    <Token Name="ColorTextSecondary" Value="#78716C" />
+    <Token Name="ColorTextTertiary" Value="#A8A29E" />
+    <Token Name="ColorTextQuaternary" Value="#D6D3D1" />
+    <Token Name="ColorTextDescription" Value="#78716C" />
+    <Token Name="ColorTextPlaceholder" Value="#A8A29E" />
+    <Token Name="ColorTextDisabled" Value="#A8A29E" />
+    <Token Name="ColorBgBase" Value="#FFFFFF" />
+    <Token Name="ColorTextBase" Value="#1C1917" />
+    <Token Name="ColorBgLayout" Value="#FAFAF9" />
+    <Token Name="ColorBgContainer" Value="#FFFFFF" />
+    <Token Name="ColorBgElevated" Value="#FFFFFF" />
+    <Token Name="ColorBgContainerDisabled" Value="#F5F5F4" />
+    <Token Name="ColorBorder" Value="#E7E5E4" />
+    <Token Name="ColorBorderSecondary" Value="#F5F5F4" />
+    <Token Name="ColorFill" Value="#E7E5E4" />
+    <Token Name="ColorFillSecondary" Value="#F5F5F4" />
+    <Token Name="ColorFillTertiary" Value="#F5F5F4" />
+    <Token Name="ColorFillQuaternary" Value="#FAFAF9" />
+    <Token Name="BorderRadius" Value="6" />
+    <Token Name="ControlHeight" Value="36" />
+    <Token Name="ControlHeightSM" Value="32" />
+    <Token Name="ControlHeightLG" Value="40" />
+    <Token Name="PaddingContentHorizontal" Value="12" />
+    <Token Name="LineWidth" Value="1" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+    <Token Name="BoxShadows" Value="0 1 2 0 #0D000000" />
+    <Token Name="BoxShadowsSecondary" Value="0 1 2 0 #0D000000" />
+  </Tokens>
+</Theme>

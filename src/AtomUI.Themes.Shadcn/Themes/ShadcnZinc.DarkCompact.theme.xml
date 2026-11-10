@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnZinc.DarkCompact" Name="Shadcn Zinc DarkCompact" Appearance="Dark" IsDefault="false">
+  <Algorithms>
+    <Algorithm Id="Dark" />
+    <Algorithm Id="Compact" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#FAFAFA" />
+    <Token Name="ColorPrimaryHover" Value="#F4F4F5" />
+    <Token Name="ColorPrimaryActive" Value="#E4E4E7" />
+    <Token Name="ColorTextLightSolid" Value="#18181B" />
+    <Token Name="ColorPrimaryBg" Value="#27272A" />
+    <Token Name="ColorPrimaryBgHover" Value="#3F3F46" />
+    <Token Name="ColorPrimaryBorder" Value="#3F3F46" />
+    <Token Name="ColorPrimaryBorderHover" Value="#52525B" />
+    <Token Name="ColorPrimaryText" Value="#FAFAFA" />
+    <Token Name="ColorPrimaryTextHover" Value="#F4F4F5" />
+    <Token Name="ColorPrimaryTextActive" Value="#E4E4E7" />
+    <Token Name="ColorText" Value="#FAFAFA" />
+    <Token Name="ColorTextSecondary" Value="#A1A1AA" />
+    <Token Name="ColorTextTertiary" Value="#71717A" />
+    <Token Name="ColorTextQuaternary" Value="#52525B" />
+    <Token Name="ColorTextDescription" Value="#A1A1AA" />
+    <Token Name="ColorTextPlaceholder" Value="#71717A" />
+    <Token Name="ColorTextDisabled" Value="#52525B" />
+    <Token Name="ColorBgBase" Value="#18181B" />
+    <Token Name="ColorTextBase" Value="#FAFAFA" />
+    <Token Name="ColorBgLayout" Value="#18181B" />
+    <Token Name="ColorBgContainer" Value="#18181B" />
+    <Token Name="ColorBgElevated" Value="#27272A" />
+    <Token Name="ColorBgContainerDisabled" Value="#27272A" />
+    <Token Name="ColorBorder" Value="#27272A" />
+    <Token Name="ColorBorderSecondary" Value="#3F3F46" />
+    <Token Name="ColorFill" Value="#3F3F46" />
+    <Token Name="ColorFillSecondary" Value="#27272A" />
+    <Token Name="ColorFillTertiary" Value="#27272A" />
+    <Token Name="ColorFillQuaternary" Value="#18181B" />
+    <Token Name="BorderRadius" Value="6" />
+    <Token Name="ControlHeight" Value="36" />
+    <Token Name="ControlHeightSM" Value="28" />
+    <Token Name="ControlHeightLG" Value="36" />
+    <Token Name="PaddingContentHorizontal" Value="8" />
+    <Token Name="LineWidth" Value="1" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+    <Token Name="BoxShadows" Value="0 1 2 0 #0D000000" />
+    <Token Name="BoxShadowsSecondary" Value="0 1 2 0 #0D000000" />
+  </Tokens>
+  <Controls>
+    <Control Catalog="AtomUI" Id="CheckBox">
+      <Tokens>
+        <Token Name="ColorWhite" Value="#18181B" />
+      </Tokens>
+    </Control>
+    <Control Catalog="AtomUI" Id="RadioButton">
+      <Tokens>
+        <Token Name="RadioColor" Value="#18181B" />
+      </Tokens>
+    </Control>
+  </Controls>
+</Theme>

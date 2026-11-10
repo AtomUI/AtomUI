@@ -18,5 +18,6 @@
     <ItemGroup>
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
     </ItemGroup>
 </Project>

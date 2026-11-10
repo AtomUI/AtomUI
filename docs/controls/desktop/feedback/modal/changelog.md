@@ -2,6 +2,12 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Fix
+  - Overlay Dialog 激活不再在 pointer 隧道阶段强制聚焦 Surface，保留时间、日期及范围选择器等内容弹层的点击与确认语义。
+  - 调整多个 Dialog 的叠放顺序时移动现有 presenter，不再移除并重新挂载，避免内容失焦和 Popup owner 提前 detach。
+
 ## 2026-10-29
 
 - Performance

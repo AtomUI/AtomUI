@@ -41,14 +41,14 @@
 | 12 | Gallery 主题预设页 | 完成并评审通过，`61125ea54` + `413d0a951`；根0发布/四语言/复制/实际原生往返与用户 Steps 回归已验收 |
 | 13 Shadcn | Zinc / Slate / Stone | 完成并评审通过，`753cd119d`；Themes8/Gallery3、原生三状态、Light/Dark/disabled/user 对比边界验证 |
 | 13 Bootstrap | Bootstrap | 完成并评审通过，`04c193e06`；Themes7/Gallery3、Core-only 包检查、官方 focus ARGB 验证 |
-| 13 Material | Material | 未开始（独立实例） |
+| 13 Material | Material | 完成并评审通过，`8af56690d`；Themes7/Gallery3、四 profile/完整阴影/包检查通过，1 文档 minor 留收尾 |
 | 14 | DataGrid / ColorPicker / Extras 家族 | 未开始 |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
 | 终审 | 整分支评审 | 未开始 |
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；下一任务为 13 Material；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；13 Bootstrap 已完成并评审通过（`04c193e06`）；13 Material 已完成并评审通过（`8af56690d`），Task13 三包完成；下一任务为 14 DataGrid→ColorPicker→Extras（各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -487,3 +487,7 @@ Task 13 Shadcn: complete（commits `441347322..753cd119d`，review clean）。12
 Ruling: Bootstrap ColorControlOutline 采用官方 primary rgba(13,110,253,.25) 的 Avalonia ARGB #400D6EFD，修正计划 #409DFF40 — 后者在 Avalonia 为 alpha40/R9D/GFF/B40 的绿色，按 CSS RRGGBBAA 解释也不是 Bootstrap primary；方案基础蓝色与官方 focus 语义优先，不能把编码误差当刻意视觉设计 — 错了的代价：与计划字面值不同，但保留错误会交付绿色焦点环；需实际 ARGB/primary 配对断言和 README 官方来源，其他固定值不变。
 Task 13 Bootstrap: 独立评审 Spec/Quality PASS（0 Critical / 0 Important / 0 Minor）；15 文件、hash-matched package7/Gallery3 与 pack/BuildToolchain 凭证核对，未重跑。Compact 保留 base FontSize 的说明由现有 CalculatorUtils/Compact 源码核实，无实际缺陷/无需 probe。
 Task 13 Bootstrap: complete（commits `7462d3ae2..04c193e06`，review clean）。四静态 profiles、Core-only typed root 注册与 Gallery 接线、临时 nupkg 清理完备；未声称 native/AOT/full，实际 preview 画刷/disabled/user 优先级有 headless 端点证据。计划 focus 字面值由控制者纠正并另提交。
+Task 13 Material: implementer DONE `8af56690d`（15 明确任务路径），四静态 profiles、精确基础值和完整 BoxShadows、真实 Dark/Compact 及 actual preview 勾点/disabled/user 优先级已过；最终 Themes7/Gallery3、registration-removal hash-matched RED/GREEN 和 NuGet Core+Desktop/无 XML 检查有效。深色类型化覆盖复用 Shadcn 已裁定边界，无新 Core/控件/算法机制。未作 native/AOT/full 声明；独立评审中。
+Task 13 Material: 独立评审 Spec/Quality PASS（0 Critical / 0 Important / 1 Minor）；15 文件、最终测试/注册哈希与 Themes7/Gallery3 的 RED/GREEN 及 nuspec Core+Desktop/无 XML 检查核对，未重跑；未修改产品或控制者文件。
+Task 13 Material: minor (deferred): README 使用示例缺 `using AtomUI;`，Task15 文档/终审统一整理，不独立进修复循环。
+Task 13 Material: complete（commits `2e82311bb..8af56690d`，review clean）。四静态 profiles、完整阴影 equality、当前 actual marks/disabled/user 与 root0 preview、临时包清理已验收；无 native/AOT/full 声明，控件/Core共享机制未改。Task13 全部完成，Task14 可选包仍待执行。

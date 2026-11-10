@@ -520,7 +520,7 @@ git commit -m "gallery(ThemePresets): 新增主题预设页展示 PrimeNG 等主
 
 每包测试：注册、四种算法组合可应用、关键值断言各 3 个、README"不支持"清单存在。
 
-**实例状态**：Shadcn 已于 `753cd119d` 完成并评审（0 问题），三家族×四 mode 共12静态定义，Themes8/Gallery3及真实原生三状态/root0发布有效。固定 Map/Alias 同 Task11 使用通用 profile 规则，默认 Daybreak 不变；Dark CheckBox 局部 ColorWhite 与 RadioColor Own 配对深色标记，根 White/Light/disabled/用户优先级已在现有程序集的临时精确 probe 验证。此类型化覆盖使本包实际依赖 Core+Desktop，未改控件/API。Bootstrap 已于 `04c193e06` 完成并评审（0 问题）：Core-only 四 profiles，Themes7/Gallery3、NuGet 依赖/无 XML 检查通过；focus rgba primary,.25 的 ARGB 为 #400D6EFD，原字面绿色已纠正。Material 待独立实例。
+**实例状态**：Shadcn 已于 `753cd119d` 完成并评审（0 问题），三家族×四 mode 共12静态定义，Themes8/Gallery3及真实原生三状态/root0发布有效。固定 Map/Alias 同 Task11 使用通用 profile 规则，默认 Daybreak 不变；Dark CheckBox 局部 ColorWhite 与 RadioColor Own 配对深色标记，根 White/Light/disabled/用户优先级已在现有程序集的临时精确 probe 验证。此类型化覆盖使本包实际依赖 Core+Desktop，未改控件/API。Bootstrap 已于 `04c193e06` 完成并评审（0 问题）：Core-only 四 profiles，Themes7/Gallery3、NuGet 依赖/无 XML 检查通过；focus rgba primary,.25 的 ARGB 为 #400D6EFD，原字面绿色已纠正。Material 已于 `8af56690d` 完成并评审（无阻塞、README using 小问题留收尾）：Core+Desktop 四 profiles，Themes7/Gallery3、完整阴影与包依赖检查通过；Dark 既有 CheckBox/Radio 对比映射复用，不改共享机制。Task13 三包实例均完成。
 Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
 
 ---

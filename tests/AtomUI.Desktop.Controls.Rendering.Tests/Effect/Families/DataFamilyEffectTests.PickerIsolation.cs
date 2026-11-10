@@ -29,8 +29,10 @@ public partial class DataFamilyEffectTests
         return calendar;
     }
 
-    [Fact]
-    public void Controls_X_Colours_Change_Only_X_For_Calendars_Viewers_And_Pickers()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Controls_X_Colours_Change_Only_X_For_Calendars_Viewers_And_Pickers(bool rangeMembers)
     {
         var calendar   = MiniCalendar(lunar: false);
         var lunar      = MiniCalendar(lunar: true);
@@ -41,18 +43,36 @@ public partial class DataFamilyEffectTests
         var top     = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { calendar, lunar, viewer } };
         var pickers = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { datePicker, timePicker } };
         var root = new StackPanel { Spacing = 12, Children = { top, pickers, range } };
-        WithIsolationWindow(root, (provider, capture) =>
+        (ControlTokenIdentity Identity, string Token, Control Control)[] members =
+        [
+            (CalendarTokens.Identity, "ColorPrimary", calendar),
+            (LunarCalendarTokens.Identity, "ColorPrimary", lunar),
+            (DateViewerTokens.Identity, "ColorPrimary", viewer),
+            (DatePickerTokens.Identity, "ColorText", datePicker),
+            (TimePickerTokens.Identity, "ColorText", timePicker),
+            (RangeDatePickerTokens.Identity, "ColorText", range)
+        ];
+        if (rangeMembers)
         {
-            AssertReachesOnly(provider, capture,
+            // The range viewer keeps both panels at their natural dimensions in a separate finite arrangement.
+            // These two members are unrelated siblings for each other's control-only override.
+            var rangeViewer = CreateRangeDateViewer();
+            var rangeTime   = CreatePicker(PickerKind.RangeTime);
+            root.Children.Clear();
+            root.Children.Add(rangeViewer);
+            root.Children.Add(rangeTime);
+            members =
             [
-                (CalendarTokens.Identity, "ColorPrimary", calendar),
-                (LunarCalendarTokens.Identity, "ColorPrimary", lunar),
-                (DateViewerTokens.Identity, "ColorPrimary", viewer),
-                (DatePickerTokens.Identity, "ColorText", datePicker),
-                (TimePickerTokens.Identity, "ColorText", timePicker),
-                (RangeDatePickerTokens.Identity, "ColorText", range)
-            ]);
-        });
+                (RangeDateViewerTokens.Identity, "ColorPrimary", rangeViewer),
+                (RangeTimePickerTokens.Identity, "ColorText", rangeTime)
+            ];
+            members.ShouldContain(member => member.Identity == RangeDateViewerTokens.Identity,
+                "The range arrangement must exercise RangeDateViewer isolation.");
+            members.ShouldContain(member => member.Identity == RangeTimePickerTokens.Identity,
+                "The range arrangement must exercise RangeTimePicker isolation.");
+        }
+
+        WithIsolationWindow(root, (provider, capture) => AssertReachesOnly(provider, capture, members));
     }
 
     [Fact]

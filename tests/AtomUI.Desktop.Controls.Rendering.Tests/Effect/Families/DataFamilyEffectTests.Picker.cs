@@ -107,7 +107,6 @@ public partial class DataFamilyEffectTests
     {
         ["BorderRadius"]        = "the embedded editor has no frame of its own; the input surface draws the radius (TextBox renders it)",
         ["BorderRadiusLG"]      = "the embedded editor has no frame of its own; the input surface draws the radius (TextBox renders it)",
-        ["BorderRadiusSM"]      = "the embedded editor has no frame of its own; the input surface draws the radius (TextBox renders it)",
         ["UniformlyPaddingXXS"] = "spaces the TextBox inner right content; the embedded editor has none (TextBox renders it)",
         ["SpacingXXS"]          = "spaces the TextBox / frame inner add-ons; the picker suffix uses SpacingXS (LineEdit renders it)",
         ["InputContentMargin"]  = "the picker lays out its own suffix instead of the frame's content add-ons (LineEdit renders it)"
@@ -161,6 +160,18 @@ public partial class DataFamilyEffectTests
     public static IEnumerable<object[]> RangeDatePickerRows() => PickerRows("RangeDatePicker");
     public static IEnumerable<object[]> TimePickerRows() => PickerRows("TimePicker");
     public static IEnumerable<object[]> RangeTimePickerRows() => PickerRows("RangeTimePicker");
+
+    [Theory]
+    [InlineData("DatePicker")]
+    [InlineData("RangeDatePicker")]
+    [InlineData("TimePicker")]
+    [InlineData("RangeTimePicker")]
+    public void Picker_Rows_Include_The_Rendered_Time_Cell_Radius(string controlId)
+    {
+        // The editor has no frame, but the popup time cells consume this global for every picker identity.
+        PickerRows(controlId).Any(static row => (string)row[0] == "BorderRadiusSM" && !(bool)row[1]).ShouldBeTrue(
+            $"{controlId} must exercise its time cell's owner-global BorderRadiusSM.");
+    }
 
     [Theory]
     [MemberData(nameof(DatePickerRows))]

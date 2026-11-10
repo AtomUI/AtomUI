@@ -518,7 +518,10 @@ git commit -m "gallery(ThemePresets): 新增主题预设页展示 PrimeNG 等主
 | `AtomUI.Themes.Bootstrap` | `Bootstrap` | `ColorPrimary #0D6EFD`、`ColorSuccess #198754`、`ColorWarning #FFC107`、`ColorError #DC3545`、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6`、`ControlOutlineWidth 4`、`ColorControlOutline #409DFF40` |
 | `AtomUI.Themes.Material` | `Material` | `ColorPrimary #6750A4`、`ColorTextLightSolid #FFFFFF`、`BorderRadius 4`、`ControlHeight 40`、`BoxShadowsSecondary` / `BoxShadows` 近似 elevation 1 / 3（`"0 1 3 0 #33000000"`、`"0 4 8 3 #26000000"`）、`FontWeightStrong 500` |
 
-每包测试：注册、四种算法组合可应用、关键值断言各 3 个、README"不支持"清单存在。Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
+每包测试：注册、四种算法组合可应用、关键值断言各 3 个、README"不支持"清单存在。
+
+**实例状态**：Shadcn 已于 `753cd119d` 完成并评审（0 问题），三家族×四 mode 共12静态定义，Themes8/Gallery3及真实原生三状态/root0发布有效。固定 Map/Alias 同 Task11 使用通用 profile 规则，默认 Daybreak 不变；Dark CheckBox 局部 ColorWhite 与 RadioColor Own 配对深色标记，根 White/Light/disabled/用户优先级已在现有程序集的临时精确 probe 验证。此类型化覆盖使本包实际依赖 Core+Desktop，未改控件/API。Bootstrap、Material 各待独立实例。
+Commit：`feat(Themes): 新增 AtomUI.Themes.<Name> 主题包`。
 
 ---
 

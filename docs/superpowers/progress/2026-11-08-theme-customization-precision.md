@@ -39,14 +39,16 @@
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 完成并评审通过：`10b58893d` + `86ad4b636`；2198 主渲染 + 43 合同 + 37 Unit + 350 门禁，Lunar 修复 100 / 350；性能/既定视觉留 15 |
 | 11 | `AtomUI.Themes.PrimeNG` | 完成并评审通过，`88306562a`；3 家族/12 profiles，最终 8 / 1 定向通过及实际五控件视觉对照；已知差异如实记 README |
 | 12 | Gallery 主题预设页 | 完成并评审通过，`61125ea54` + `413d0a951`；根0发布/四语言/复制/实际原生往返与用户 Steps 回归已验收 |
-| 13 | Shadcn / Bootstrap / Material | 未开始 |
+| 13 Shadcn | Zinc / Slate / Stone | 完成并评审通过，`753cd119d`；Themes8/Gallery3、原生三状态、Light/Dark/disabled/user 对比边界验证 |
+| 13 Bootstrap | Bootstrap | 未开始（独立实例） |
+| 13 Material | Material | 未开始（独立实例） |
 | 14 | DataGrid / ColorPicker / Extras 家族 | 未开始 |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 未开始 |
 | 终审 | 整分支评审 | 未开始 |
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；下一任务为 13（Shadcn→Bootstrap→Material，各独立实例）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；12（Gallery 预设页）已完成并评审通过（`413d0a951`）；13 Shadcn 已完成并评审通过（`753cd119d`）；下一任务为 13 Bootstrap，再 Material；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -478,3 +480,7 @@ Task 12: minor (deferred): Copy 在等待期间切 profile，旧任务完成可�
 Task 12: fix round 1/5（I1 addressed、M1 自然一并 addressed，0 open；`61125ea54..413d0a951`）：异常仅围 terminal clipboard 委托，export 不吞错；本页四语言失败反馈、UI dispatcher 终态、重试与 captured PreviewConfig 身份保护。真实 ICommand 默认 handler 投递 1→0，清理后本页/locale 8/8，未重跑无关 62/46/Nora/native 凭证。
 Task 12: 范围复审 Spec/Quality APPROVED（0 Critical / 0 Important / 0 新 Minor），同评审核对失败/重试与过时请求反馈，无重复测试。原用户 Steps native/paint 回归有效，Nora 两暗黑 profile 专用 Own 保持，默认 Steps 算法/ControlTheme 未改。
 Task 12: complete（commits `44a7cc43d..413d0a951`，review clean）。本任务 Gallery 7 + locale2 / GalleryBase62 / Generator46 / Nora1 / 原生场景及修复后8 的凭证按各 scope 复用；临时驱动/测试/媒体/进程清理。Core 内部友元维护成本已裁定，计划校准由控制者另提交。
+Ruling: Shadcn Dark profiles 用既有 CheckBox 局部 ColorWhite 与 RadioButton.RadioColor Own 配对深色选中标记，仅为这些类型化控制覆盖增加 Desktop 依赖 — 同一原生页已见白勾/白圆点落浅 primary，ColorTextLightSolid 对比正确但消费者分别读 ColorWhite/Radio Own，不能为新设计语言改通用控件 — 错了的代价：主题包不再 Core-only，局部 ColorWhite 名称被用于该消费者对比映射需 README 说清；根 ColorWhite 及其他控件不变，需 Dark 实值/勾点/disabled/Light/显式用户优先级验证，不扩新 Token/schema。
+Task 13 Shadcn: 初始注册 RED 7 项 → 12 Core-only profiles 的 7/7，随后原生勾点对比暴露实际漏点，3 Dark 理论 RED 为 White，局部覆盖后 7/7；因此补实际 Desktop typed contracts，不冒充最初 Core-only 产物仍为最终。通用 Gallery 分组原缺 Shadcn 的 RED 已确认并接线，相关检查与同一原生三状态复验中。
+Task 13 Shadcn: 独立评审 APPROVED（0 Critical / 0 Important / 0 Minor）。24 文件、源与四产物哈希匹配；Themes8/Gallery3/清理 Desktop0警告与原生凭证复用。另一个授权 scratch-only headless probe 在现有程序集实际验证：Light mark/dot White，Light disabled #A1A1AA；Dark mark/dot #18181B，Dark disabled #52525B；typed 用户覆盖 #123456/#345678 生效，恢复 Light White。无仓库写入/新构建/重复 suite/native，probe 已清理。
+Task 13 Shadcn: complete（commits `441347322..753cd119d`，review clean）。12 静态 profiles、公共注册/打包/解决方案/Gallery 接线到位，focus ring/Command 弹层等差异明确；不作已完成其他主题包或全平台视觉声明。

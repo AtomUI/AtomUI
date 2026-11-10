@@ -37,7 +37,7 @@
 | 10.10b | 展示类剩余控件 | 完成并评审通过：`7dcd4cdee` + `6160a423b`；58 Active / 1 Reserved，透明默认修复 7 / 310 定向通过 |
 | 10.10c | 窗口、滚动、共享基元与 Controls 包 | 实现与定向评审完成：`f071b5978` + `0070c62e9`；665 主验收 + 40 修复覆盖通过；当前平台窗口/波纹视觉待 15，原生跨平台限制造册 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 完成并评审通过：`10b58893d` + `86ad4b636`；2198 主渲染 + 43 合同 + 37 Unit + 350 门禁，Lunar 修复 100 / 350；性能/既定视觉留 15 |
-| 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
+| 11 | `AtomUI.Themes.PrimeNG` | 完成并评审通过，`88306562a`；3 家族/12 profiles，最终 8 / 1 定向通过及实际五控件视觉对照；已知差异如实记 README |
 | 12 | Gallery 主题预设页 | 未开始 |
 | 13 | Shadcn / Bootstrap / Material | 未开始 |
 | 14 | DataGrid / ColorPicker / Extras 家族 | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；下一任务为 11（PrimeNG）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；10.10d 已完成并经最强任务评审及范围复审（`86ad4b636`）；11（PrimeNG）已完成并评审通过（`88306562a`）；下一任务为 12（Gallery 通用主题预设页）；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -453,3 +453,12 @@ Ruling: ItemActiveBg 属于 Lunar 年视图选中月份的真实 Active Own，�
 Task 10.10d: fix round 1/5（1 addressed，0 open；`10b58893d..86ad4b636`）：ItemActiveBg 回归真正共享字段，由 Lunar 自己的既有输入取自身 Own；原 Year 浅蓝与 Month 日期主色保留，来源负例/自身正例已验证。原场景 RED 3/3 → Calendar/Lunar 100/100，当前门禁 350/350；8 个明确文件，无新增输入/订阅/别名。原有 2198 / 43 / 37 等有效凭证复用，不冒充已覆盖新增反例。
 Task 10.10d: 最强范围复审 PASS（I1 ADDRESSED，新增 Critical/Important 0）；100 / 350 凭证与 11 项哈希已核对，未重跑。51 终端当前 800 Active / 12 Reserved / 0 Unreferenced；212 继承输入签名/访问器已独立核对。两项 minor 和 230 存量组织问题留 Task15/终审，不形成修复循环。
 Task 10.10d: complete（commits `fc7b0bc26..86ad4b636`，review clean；M1/M2 deferred）。Task10 全部家族实现及任务评审完成；当前平台可执行视觉与性能、可选包、完整分支终审仍未完成，不计入本项验证。计划由控制者同步迁移摘要和最终基线。
+Ruling: AtomUI.Themes.Tests 仅获 Core 内部可见性，主题包直接引用 Desktop.Controls 以使用现有类型化控制契约 — 新测试需检查内部 snapshot；编译主题包 writer 必须引用每个 Control 的 owner/key 类型，Core-only 项目无法编译计划中的逐控件覆盖，不应改 compiler 放弃校验 — 错了的代价：增加一个测试友元维护点和主题 NuGet 的 Desktop 运行时依赖；不新增运行时 API，Core 内置主题仍仅 DaybreakBlue。
+Ruling: 三个 PrimeNG 预设家族保留原 base IDs，并增加有界 Dark/Compact/DarkCompact 显式 XML profiles，Task12 用通用 profile 命名选择而非厂商分支 — 现有 XML v1 的 Map/Alias 在闭合 Default/Dark/Compact 算法后覆盖，真实三个 Dark 容器仍为白色；无算法注册/变体派发 API，不能假称正常 Dark 或用 initializer 隐藏改写，方案已允许独立 Dark 定义 — 错了的代价：catalog 最多多 9 个辅助定义，外部调用需按文档选择 profile ID；baseID+算法仍遵守原覆盖优先级而非自动派发。页面按通用规则实现模式正交，不修改 Core/ThemeConfig/XML 或新增设计语言运行时层。
+Ruling: PrimeNG 的 Select 选项圆角/2px 列表 gap 在 README 明确为 XML-only 不支持差异，不修改控件或写无效 Token 宣称实现 — 实际 SelectCandidateListItem/ListViewItem 模板仅传公开 CornerRadius，缺可由现有 Token 设置的消费者，闭合 Select 及 OptionPadding 可真实实现；任务边界是只用主题定义模拟 — 错了的代价：Aura/Lara/Nora 选项形状/间距与原品有可见近似差异，需如实展示和说明，若未来要精确需另作有真实 API/生效测试的控件工作。
+Task 11: 真实官方 v22 Aura 演示的 button/input/select 约 35px、checkbox18px，当前固定方案为 40px/20px；保留计划值并在 README 记密度/版本差异，官方视觉及 AtomUI 五控件 Skia 场景已取得证据。Dark 正例不以仅 Committed 代替容器/文字实值验收。
+Ruling: Lara full Light/Dark 的 Select.OptionPadding 取 16,10、PopupContentPadding 取 0,8，Compact 使用已明确定义的紧凑 profile 值 — 方案未钉死 Lara 这两项数值，官方 list.option.padding=.625rem 1rem、list.padding=.5rem 0 已核对，不能交付无来源的 Aura 横向 12 与 Lara 纵向 10 混搭 — 错了的代价：Lara 选项横向留白/列表上下留白较 Aura 继承值更大，需 README 标明来源与密度版本差异；仅相关 profile 断言复验，不重跑 Aura 无关视觉。
+Task 11: 12 XML profiles 已验证 3 家族×4 模式的实际 appearance/height/Dark 容器与文字；profile 缺失 RED 10 failed/4 passed → 14/14。清理后常驻精确包测试归并 8/8、既有 ButtonFocusVisualRendering 1/1 通过，媒体/探针删除；Lara 两值最终修正后提交，未宣称任务已评审。
+Task 11: review APPROVED（0 Critical / 0 Important / 1 Minor）；完整 21 文件、最终 Lara 值后 8/8 与清理后 1/1 凭证、包 DLL/源哈希已核对，未重跑。3 家族/12 mode 定义、default Daybreak 不变、实际 Dark/Compact 与所有固定路径已验证；五控件观察与官方源、密度差异及媒体清理链已审阅，未冒充第二次图片检查。
+Task 11: minor (deferred): PrimeNGThemePackageTests 的 BoxShadows 仅断言两层，当前值正确；终审分拣是否在原廉价合同锁定完整 offsets/blur/spread/alpha，不建新框架。
+Task 11: complete（commits `05149f49f..88306562a`，review clean）。控制者另提交 profile/依赖/选项差异执行校准及 Task12 通用分组规则；Task12 UI 集成尚未实现，不计入本包已验收内容。

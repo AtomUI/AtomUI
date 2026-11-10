@@ -425,8 +425,11 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 
 ### Task 11: `AtomUI.Themes.PrimeNG` 主题包（Aura、Lara、Nora）
 
+
+**执行校准（`88306562a` 已实现并评审）**：三个 required base ID 是三种预设家族，另以通用 `.Dark` / `.Compact` / `.DarkCompact` 提供组合 profile，总计 12 个 XML 定义；同一 base ID 直接加算法仍遵守 Map/Alias 后覆盖优先级，不宣称自动派发。Exact Light 保持原表，Dark 容器/文字与 Compact 下降按实际 profile 验证；Task12 通用分组选择。为现有类型化控制契约增加 Desktop 直接依赖，Core 仅增测试友元；不新增算法注册、Core 模型/XML 格式或 initializer 改写。Select 选项圆角/2px gap 明确为 XML-only 差异，不造无效字段。Lara full 的 OptionPadding 16,10 / popup 0,8 依据官方源；当前演示密度与固定方案差异记 README。
+
 **Files:**
-- Create: `src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj`（以 `src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj` 为模板：`TargetFrameworks=$(AtomUITargetFrameworks)`、引用 `AtomUI.Core` 与 Generator analyzer；`<AtomUIThemeDefinition Include="Themes/*.theme.xml" />`）
+- Create: `src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj`（以 `src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj` 为模板：`TargetFrameworks=$(AtomUITargetFrameworks)`、引用 `AtomUI.Core`、`AtomUI.Desktop.Controls` 与 Generator analyzer；`<AtomUIThemeDefinition Include="Themes/*.theme.xml" />`）
 - Create: `src/AtomUI.Themes.PrimeNG/Themes/PrimeNGAura.theme.xml`、`PrimeNGLara.theme.xml`、`PrimeNGNora.theme.xml`
 - Create: `src/AtomUI.Themes.PrimeNG/PrimeNGThemes.cs`：`public static class PrimeNGThemeManagerBuilderExtensions { public static IThemeManagerBuilder UsePrimeNGThemes(this IThemeManagerBuilder builder) }` 调用生成的 `AtomUI.Generated.AtomUIThemesPrimeNG.GeneratedThemePackageRegistration.Register(builder)`（生成命名空间以实际生成结果为准）
 - Create: `src/AtomUI.Themes.PrimeNG/README.md`
@@ -440,8 +443,8 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 - [ ] **Step 1: 写失败测试**
 
 ```csharp
-[Fact] public void UsePrimeNGThemes_Registers_Three_Themes()   // AvailableThemes 含 PrimeNGAura/Lara/Nora，默认主题仍是 DaybreakBlue
-[Theory] [InlineData("PrimeNGAura")] ... public async Task Each_Preset_Applies_Light_Dark_Compact(string id)  // ApplyThemeAsync 四种算法组合均 Committed
+[Fact] public void UsePrimeNGThemes_Registers_Three_Themes()   // AvailableThemes 含 3 base+9 mode profiles，默认主题仍是 DaybreakBlue
+[Theory] [InlineData("PrimeNGAura")] ... public async Task Each_Preset_Applies_Light_Dark_Compact(string id)  // 3家族×4实际profile请求均Committed，另断言Dark实色/文字和Compact实降，非仅状态
 [Fact] public async Task Aura_Maps_Semantic_Tokens()
 // 应用 PrimeNGAura 后 snapshot 全局值：ColorPrimary #10B981、ColorPrimaryHover #059669、ColorPrimaryActive #047857、
 // ColorText #334155、ColorBorder #CBD5E1、BorderRadius 6、BorderRadiusXS 2、BorderRadiusSM 4、BorderRadiusLG 8、
@@ -457,9 +460,9 @@ git commit -m "test(Button): Button 家族 Token 生效测试全绿并转分析�
 - [ ] **Step 3: 写 Aura XML**
 
 `<Tokens>` 按 spec §3.5.1 映射表逐行：`ColorPrimary #10B981`、`ColorPrimaryHover #059669`、`ColorPrimaryActive #047857`、`ColorTextLightSolid #FFFFFF`、`ColorPrimaryBg #ECFDF5`、`ColorPrimaryText #047857`、`ColorText #334155`、`ColorTextSecondary #64748B`、`ColorTextDescription #64748B`、`ColorBgContainer #FFFFFF`、`ColorFillTertiary #F1F5F9`、`ColorBorderSecondary #E2E8F0`、`ColorBorder #CBD5E1`、`ColorTextPlaceholder #64748B`、`ColorError #F87171`、`BorderRadiusXS 2`、`BorderRadiusSM 4`、`BorderRadius 6`、`BorderRadiusLG 8`、`PaddingContentHorizontal 12`、`ControlHeight 40`、`ControlHeightSM 36`、`ControlHeightLG 48`、`FontSizeSM 12`、`FontSizeLG 16`、`FocusVisualBorderThickness 1`、`ColorFocusBorder #10B981`、`ControlOutlineWidth 0`、`MotionDurationMid 00:00:00.2000000`、`BoxShadowsSecondary "0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000"`、`BoxShadows "0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000"`、`ColorBgMask #66000000`。
-`<Controls>`：Button `FontWeight 500`；CheckBox `CheckIndicatorSize 20`；Select `OptionPadding "12,8"`、`PopupContentPadding "4"`；Card `BodyPadding "20"`、`CardShadows "0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"`；ToolTip `ToolTipBackground #334155`、`ToolTipCornerRadius 6`、`ContentPadding "12,8"`；Dialog 的圆角与内边距按 `src/AtomUI.Desktop.Controls/Dialog/DialogToken.cs` 实际 Own 字段名写（12 / 20）。Binder 对不存在的名字报错，构建即校验。
+`<Controls>`：Button `FontWeight 500`；CheckBox `CheckIndicatorSize 20`；Select `OptionPadding "12,8"`、`PopupContentPadding "4"`；Card `BodyPadding "20"`、`RestingShadows "0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"`；ToolTip `ToolTipBackground #334155`、`ToolTipCornerRadius 6`、`ContentPadding "12,8"`；Dialog 的圆角与内边距按 `src/AtomUI.Desktop.Controls/Dialog/DialogToken.cs` 实际 Own 字段名写（12 / 20）。Binder 对不存在的名字报错，构建即校验。
 
-- [ ] **Step 4: 写 Lara、Nora XML**（差异按 spec §3.5.1 表：Lara `ControlHeight 44`（paddingY 10）、Checkbox 24、Button `FontWeight 600`、`ControlOutlineWidth 3`、`ColorControlOutline #A7F3D0`、`FocusVisualBorderThickness 0`、Select `OptionPadding` 圆角 0、`BoxShadowsSecondary "0 2 12 0 #1A000000"`；Nora `BorderRadius*` 全 2、Button `FontWeight 700`、`ColorText #0F172A`、`ColorBorder #64748B`、`ColorPrimary #059669`（Hover `#047857`、Active `#065F46`）、`FocusVisualBorderThickness 2`、`EnableMotion false`、`ColorBorderSecondary #00000000`）。
+- [ ] **Step 4: 写 Lara、Nora XML**（差异按 spec §3.5.1 表：Lara `ControlHeight 44`（paddingY 10）、Checkbox 24、Button `FontWeight 600`、`ControlOutlineWidth 3`、`ColorControlOutline #A7F3D0`、`FocusVisualBorderThickness 0`、Select `OptionPadding "16,10"`、`PopupContentPadding "0,8"`（选项圆角 0 为 XML-only 不支持差异）、`BoxShadowsSecondary "0 2 12 0 #1A000000"`；Nora `BorderRadius*` 全 2、Button `FontWeight 700`、`ColorText #0F172A`、`ColorBorder #64748B`、`ColorPrimary #059669`（Hover `#047857`、Active `#065F46`）、`FocusVisualBorderThickness 2`、`EnableMotion false`、`ColorBorderSecondary #00000000`）。
 
 - [ ] **Step 5: 项目、扩展方法、slnx、打包脚本、README**（README 列映射表出处 `@primeuix/themes` 预设源码与 primeng.dev v22、"不支持"清单：ripple、浮动标签、disabledOpacity、Filled、rem 缩放；已知差异：输入框悬停边框色）。
 
@@ -487,7 +490,9 @@ git commit -m "feat(Themes): 新增 AtomUI.Themes.PrimeNG 主题包（Aura、Lar
 
 **Interfaces:**
 - Consumes: `IThemeManager.AvailableThemes`（`ThemeInfo`：Id、Name、声明主色）、`ThemeConfigProvider`、Task 11 的主题包。
-- Produces: `ThemePresetsViewModel { IReadOnlyList<ThemePresetItem> Presets; string? SelectedPresetId; bool IsDark; bool IsCompact; ReactiveCommand CopyThemeXml; }`，`record ThemePresetItem(string ThemeId, string Name, Color Accent, AntDesignIconKind? Icon)`；预设条只列 `ThemeInfo` 来源为主题包的主题（排除用户目录与 Gallery 自带色板），图标按 `ThemeId` 前缀映射（`PrimeNG*`、`Shadcn*`、`Bootstrap`、`Material`），无映射画主色圆点。
+- Produces: `ThemePresetsViewModel { IReadOnlyList<ThemePresetItem> Presets; string? SelectedPresetId; bool IsDark; bool IsCompact; ReactiveCommand CopyThemeXml; }`，`record ThemePresetItem(string ThemeId, string Name, Color Accent, AntDesignIconKind? Icon)`；预设条只列 `ThemeInfo` 来源为主题包的基础家族（有 base 的通用 mode profile 合并到其家族）（排除用户目录与 Gallery 自带色板），图标按 `ThemeId` 前缀映射（`PrimeNG*`、`Shadcn*`、`Bootstrap`、`Material`），无映射画主色圆点。
+
+**通用 mode profile 选择**：基于同 compiled package、存在 base ID 的 `.Dark` / `.Compact` / `.DarkCompact` 规则选择当前预览 ID；辅助定义不另显示图标，找不到 profile 时才走现有 seed-only 算法请求。不可写 PrimeNG 专有分支或改变 Core 模型；复制当前实际选中 profile 的 XML。
 
 - [ ] **Step 1: 写失败测试**（`AtomUIGallery.Tests` 现有 Headless 模式）：`Presets` 含 3 个 PrimeNG 项且不含 `PolarGreen`；选中 `PrimeNGAura` 后预览区 `ThemeConfigProvider` 的 snapshot `ColorPrimary == #10B981` 而根主题不变；切 `IsDark` 后 Provider 算法含 Dark；`CopyThemeXml` 输出含 `Id="PrimeNGAura"` 的 XML v1 文本。
 - [ ] **Step 2: 运行确认失败。**

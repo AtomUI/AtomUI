@@ -35,7 +35,7 @@
 | 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **完成并评审通过**：原实现及后续修复至 `3e55b3883`；本轮覆盖修复 `485ef3ba7`，定向渲染 410 / 控件 360 / 门禁 250 全过 |
 | 10.10a | 录入类剩余控件 | 完成并评审通过，`4bf2f1032`；240 / 205 / 287 定向检查通过，52 Own Active |
 | 10.10b | 展示类剩余控件 | 完成并评审通过：`7dcd4cdee` + `6160a423b`；58 Active / 1 Reserved，透明默认修复 7 / 310 定向通过 |
-| 10.10c | 窗口、滚动、共享基元与 Controls 包 | 执行中（起点 `1d7d8c54c`），Icon/WindowTitleBar/Splash 消费与分析入口已定位 |
+| 10.10c | 窗口、滚动、共享基元与 Controls 包 | 实现与定向评审完成：`f071b5978` + `0070c62e9`；665 主验收 + 40 修复覆盖通过；当前平台窗口/波纹视觉待 15，原生跨平台限制造册 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
 | 12 | Gallery 主题预设页 | 未开始 |
@@ -46,7 +46,7 @@
 
 ## 2. 接手步骤
 
-1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；下一任务为 10.10c，之后 10.10d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
+1. 10.9b 已完成本轮评审及覆盖修复 `485ef3ba7`（I1/I2 已通过范围复审）。10.10a 已接续完成并评审通过（`4bf2f1032`）；10.10b 已实现并完成透明默认修复及范围复审（`6160a423b`）；10.10c 已完成实现与定向评审（`0070c62e9`）；下一任务为 10.10d；不要重派已完成家族。两项 minor 与原始历史 RED 凭证丢失的限制见台账，终审统一分拣。
 2. 按第 3 节的家族上下文为每个家族派发实现子代理，评审后修复，直到 Task 10 全部完成，再按计划顺序做 11、12、13、14、15 与整分支终审。
 3. 每个家族完成后由控制者更新计划的"待裁决 Own Token"表与"存量基线"，单独提交；实现子代理不改计划文件，并且只显式暂存自己的文件。
 4. 提交信息单行、无任何署名尾注。
@@ -421,3 +421,12 @@ Ruling: TextSelectionHandle 仅补 Avalonia 12 必需的透明 Border PART_Indic
 Ruling: WaveSpirit 若现有测试设施无可用确定性时钟，先验证真实 painter 画刷、实际生成的关键帧/范围/透明度/时长及播放取消释放，瞬态像素交当前平台真实视觉核对 — Avalonia 12 时钟不可直接访问，不应为测试另建时钟框架或伪造 Token 派生绘制副作用，现有动画/帧设施须先做一次核查 — 错了的代价：生成与消费终点正确仍可能隐藏实际动画绘制问题，因此不宣称未运行的冻结像素验收，最终真实波纹视觉项保持显式未完成。
 Task 10.10c: 完整矩阵 133/133、生成器门禁 347/347 已通过；Indicator 保留原 2px/8px 裁剪几何，真实指针保持不变，非对称圆角扰动可见，移除发布后额外交互仍通过，未改产品 Indicator。Embedding 的 SystemBarColor 具体画刷终点另经 4/4 验证。
 Ruling: Embedding 通过既有 EmbeddingThemeConstants 的最小画刷转换器声明式适配严格 SolidColorBrush 终点，不放宽公开属性类型 — 真实 EmbeddableControlRoot 初始化正常，SystemBarColor 为 null 的原因是不可变画刷投射被具体类型拒绝，不能用假 Theme 探针或错误初始化模型掩盖 — 错了的代价：有效输入变化时可能多创建一画刷，若颜色/透明度转换错误会影响原生终点；需真实根、类型、发布/恢复契约纠正，资源查询热路径不新增此转换。
+Task 10.10c: implementer DONE，`f071b5978`（58 路径，含误暂存的控制者进度记录），最终 665 项通过：渲染/骨架 169、现有模块 145、生成器 348、启动 3，0 failed/skip；独立评审已派发。65 Own Active，Icon.FallbackColor 生效，WindowTitleBar 五旧字段删除，Native/瞬态/触摸覆盖限制明确保留。
+Task 10.10c: minor (deferred): 只读成员布局审计 67 个存量问题（ArrowIndicator 8、FeedbackStackPanel 19、Window 40），无新增方法/大括号问题，终审按价值分拣，不在本轮结构扫除。
+Ruling: 保留 `f071b5978` 的现有提交历史，登记控制者进度记录误随源码暂存，计划裁决/基线仍由控制者另提交 — 已核对混入内容均为控制者本轮原有记录，计划文件未混入；用户禁止未经明确指令 amend/rebase，不能为提交粒度重写历史 — 错了的代价：此提交混有过程文档、粒度不理想；若将来需要拆分，须取得明确改写授权，当前内容与审查范围可追溯。
+Ruling: Flyout 的 object 资源键契约保持兼容，仅已知 FlyoutHost Own 枚举归一化为对应 Own 键，SharedTokenKind、自定义枚举及已类型化键按原语义在 placement-target 作用域解析 — 作用域迁移不能把任意 Enum 重新解释为 FlyoutHost Own，当前审查已发现错误包装会让全局/自定义键触发不属于 FlyoutHost 的异常 — 错了的代价：若键分类或作用域回退处理错误，外部派生 Flyout 的偏移绑定仍可能失效，需全局/自定义/Own 键的真实打开与发布契约纠正。
+Task 10.10c: review Needs fixes（0 Critical / 2 Important/P2 / 0 新 Minor）：I1 通用枚举键被误包为 FlyoutHost Own，真实 Shared.SizeUnit 打开异常；I2 同一 MenuFlyout 活跃切换两个 provider 目标，偏移 16→0，手动 Hide 后重开才 32。原实现者续修第 1 轮；其余 665 凭证与原生/瞬态边界已审阅，不重复整组测试。
+Ruling: Flyout 已打开时切换 placement target 必须释放旧会话并在正确开闭阶段建立新目标作用域绑定，不能以旧排序问题豁免本轮承诺 — 实际两个 provider 为 16/32，同一 MenuFlyout ShowAt(B) 得到 0，而 Hide 后重开 B 得到 32，已排除 Token 计算和首次查找，缺口在开闭会话顺序 — 错了的代价：调整阶段可能影响开闭取消、同目标重开或资源释放，须用真实复用、B 发布、A 隔离、关闭重开与已有生命周期契约纠正。
+Task 10.10c: fix round 1/5（2 addressed，0 open；`f071b5978..0070c62e9`）：仅已知 FlyoutHostTokenKind 归一化 Own，6 种键保持作用域语义；不同目标先以既有非可取消 HideCore 释放旧会话再获取新会话。真实 fixture RED 3 failed / 7 passed → GREEN 10/10；最终 lifecycle/Pinned 19/19、实际 Flyout/TreeFlyout 21/21，产品构建 0 warnings/errors；源与产物哈希匹配，未重跑不受影响 665 项。
+Task 10.10c: 范围复审 PASS（I1/I2 ADDRESSED，无新增问题，未重复跑测试）；修复 6 路径明确排除控制者文档。主实现误带控制者记录已如实更正，不改历史；65 Active / 5 删除的裁决和基线由控制者另记。
+Task 10.10c: complete（commits `1d7d8c54c..0070c62e9`，review clean；67 存量布局及原生/瞬态/触摸覆盖限制保留）。当前平台可执行 Window/fullscreen/Wave 视觉项交 Task 15；无 Win10/原生嵌入宿主/触摸硬件的绘制不作通过声明、不新增全平台门槛。10.10d 继续核对 Scroll/Caption 部件的明确宿主 Own 读取及 TreeFlyoutPresenter→Popup，真实宿主部件不机械复制独立身份。

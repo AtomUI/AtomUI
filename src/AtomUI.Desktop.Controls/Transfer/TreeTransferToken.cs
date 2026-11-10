@@ -8,6 +8,7 @@ internal sealed class TreeTransferToken : AbstractControlDesignToken
 {
     public double ListWidth { get; set; }
 
+    [ReservedToken("TreeTransfer does not support pagination; the pagination-only large list width has no reachable rendering state.")]
     public double ListWidthLG { get; set; }
 
     public double ListHeight { get; set; }

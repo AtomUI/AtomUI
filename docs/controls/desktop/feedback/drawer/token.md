@@ -56,3 +56,10 @@ Drawer 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+面板、遮罩、标题排版、关闭按钮装饰和内边距显式读取 `DrawerTokenResource`，使用 `Controls[Drawer]`
+的有效值。运行时创建的容器在覆盖层边界桥接 Drawer 的主题上下文，打开期间的局部 Publish 会刷新同一面板；
+关闭/脱离时移除并释放桥接，重新打开按当前上下文重建。嵌套的已注册内容控件保留自己的 Token 身份。
+`PushOffsetPercent` 在同方向的父子 Drawer 同时打开时设置父面板推移比例；三档尺寸和四边阴影只在对应大小/方向验收。

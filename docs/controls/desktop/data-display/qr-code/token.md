@@ -56,3 +56,12 @@ QRCode 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+有边框状态的边线、圆角、内边距使用 QRCode 的有效全局 Token。二维码文本色始终消费；遮罩背景色在
+Expired、Loading、Scanned 状态消费。内置刷新 Button 与加载 Spin 保留各自身份，QRCode 覆盖不替代其独立主题。
+两项 Own Token 保持 Active，无字段删除。
+
+显式 `Color=null` 时，点阵计算通过 ControlTokenAccessor 读取该实例有效的 `ColorText`，并在局部主题发布时重算；
+非空 `Color` 优先，不因无关主题发布重复生成点阵。无颜色且尚未挂树时推迟计算，挂树后使用实际作用域，脱离时释放订阅。

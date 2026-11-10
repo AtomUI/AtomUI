@@ -7,6 +7,7 @@ All notable changes to AtomUI are documented in this file.
 ## Unreleased
 
 - Breaking Changes
+  - Display theme scopes: TransferListItem / TransferTreeViewItem and SpinIndicator are Token-owner transparent; configure their globals through their actual view / Spin host. TreeTransfer.ListWidthLG is Reserved because TreeTransfer has no pagination mode; use ListWidth.
   - Data-entry theme scopes: FormItem / FormItemDecorator, Upload trigger / drop areas, SegmentedItem and CandidateList / CandidateListItem are Token-owner transparent. Set their effective globals through the hosting Form, Upload, Segmented, Mentions or AutoComplete; their own control-scoped globals no longer apply. Nested registered input and action controls keep their own identities.
   - Theme Tokens: remove Button-family Own Tokens that had no consumer. Delete `Button.ExtraContentItemSpacing`, `Button.ExtraContentMargin`, `Button.ExtraContentMarginLG`, `Button.ExtraContentMarginSM`, `Button.GutterToFlyout`, `HyperLinkButton.BorderColorDisabled`, `FloatButton.SquareBadgeOffset`, and `FloatButton.CircleBadgeOffset` from theme configurations; use `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`, `SplitButton.GutterToFlyout` or `FloatButton.BadgeOffset` instead.
   - Theme Tokens: `Button.FontWeight` is now a `FontWeight` value (`500` or `Medium`) and sets the Button font weight; `Button.GroupBorderColor` is reserved and has no visual effect yet.
@@ -104,6 +105,11 @@ All notable changes to AtomUI are documented in this file.
   - Token reads written on ControlTemplate elements (`{atom:XxxTokenResource}`, `{atom:SharedTokenResource}`) now use Template priority like `DynamicResource`, so triggered styles (`:pointerover`, `:disabled`, classes, property selectors), including application styles, override them; plain style setters still do not, and reads outside templates keep their priority.
   - Transform Token values (`ImmutableTransform`, for example `RibbonBadge.CornerTransform`) are formatted as their matrix (`1,0,0,0.75,0,0`), so distinct transforms no longer share one canonical text and override values round-trip.
   - Visible changes: state styles that these reads masked now apply. Dark-style NavMenu group titles use `NavMenu.DarkGroupTitleColor` instead of `GroupTitleColor`, and LunarCalendar workday markers use `LunarCalendar.WorkdayMarkerColor` instead of `HolidayMarkerColor`.
+
+- Display remainder
+  - When QRCode.Color is explicitly null, rasterization falls back to that QRCode's effective ColorText (including its alpha) and refreshes on local theme changes, rather than using fixed black; an explicit non-null Color keeps precedence.
+  - Transfer frames, filter decorations and spacing, Drawer overlays, Spin indicators / tips / masks, Result text / content, Empty preset images / descriptions, QRCode borders, link / selection text, BorderBeam and default focus adorners now use their effective control globals. Drawer overlays refresh after local theme publishes and release their resource bridge on close; registered nested controls keep their own identities.
+  - Visible changes: HyperLinkTextBlock now paints its declared default ColorBgContainer and application Background on its existing text visual. Transfer search icon colour and filter margins follow the transfer host; existing geometry and animation endpoints remain unchanged.
 
 ## 6.2.14
 

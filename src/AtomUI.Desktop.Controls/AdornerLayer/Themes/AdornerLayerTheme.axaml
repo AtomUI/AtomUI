@@ -7,8 +7,8 @@
     <ControlTheme x:Key="{x:Type AdornerLayer}" TargetType="AdornerLayer">
         <Setter Property="DefaultFocusAdorner">
             <FocusAdornerTemplate>
-                <atom:FocusOutlineAdorner OutlineBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                          OutlineThickness="{atom:SharedTokenResource LineWidthFocus}"
+                <atom:FocusOutlineAdorner OutlineBrush="{atom:AdornerLayerTokenResource ColorFocusBorder}"
+                                          OutlineThickness="{atom:AdornerLayerTokenResource LineWidthFocus}"
                                           OutlineOffset="{atom:AdornerLayerTokenResource FocusOutlineOffset}" />
             </FocusAdornerTemplate>
         </Setter>

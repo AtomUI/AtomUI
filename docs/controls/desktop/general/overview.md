@@ -25,3 +25,7 @@
 - [SplitButton 桌面版实现原理](split-button/implementation.md)
 - [SplitButton Semantic Part 契约](split-button/semantic-part.md)
 - [SplitButton Changelog](split-button/changelog.md)
+
+- [TextBlock 主题边界](text-block/overview.md)
+- [TextBlock Token 设计](text-block/token.md)
+- [TextBlock Changelog](text-block/changelog.md)

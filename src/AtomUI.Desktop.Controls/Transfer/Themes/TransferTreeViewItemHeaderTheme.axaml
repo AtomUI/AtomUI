@@ -103,9 +103,10 @@
             </Style>
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
+                <!-- layout: fixed masked-node dimming, matching the disabled indicator state. -->
                 <Setter Property="Opacity" Value="0.3" />
             </Style>
 
@@ -113,7 +114,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="ContentFrameBackground"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>
@@ -122,7 +123,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>

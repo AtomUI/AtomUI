@@ -72,11 +72,11 @@
         
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="BorderColor" Value="{atom:SharedTokenResource ColorFill}"/>
-        <Setter Property="BorderColorSecondary" Value="{atom:SharedTokenResource ColorBorderSecondary}"/>
-        <Setter Property="ShadowColor" Value="{atom:SharedTokenResource ColorFillTertiary}"/>
-        <Setter Property="ContentColor" Value="{atom:SharedTokenResource ColorFillQuaternary}"/>
-        <Setter Property="BgColor" Value="{atom:SharedTokenResource ColorBgElevated}"/>
+        <Setter Property="BorderColor" Value="{atom:EmptyTokenResource ColorFill}"/>
+        <Setter Property="BorderColorSecondary" Value="{atom:EmptyTokenResource ColorBorderSecondary}"/>
+        <Setter Property="ShadowColor" Value="{atom:EmptyTokenResource ColorFillTertiary}"/>
+        <Setter Property="ContentColor" Value="{atom:EmptyTokenResource ColorFillQuaternary}"/>
+        <Setter Property="BgColor" Value="{atom:EmptyTokenResource ColorBgElevated}"/>
         
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ ContentPresenter#Description">
@@ -97,7 +97,7 @@
         </Style>
         
         <Style Selector="^ /template/ ContentPresenter#Description">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
+            <Setter Property="Foreground" Value="{atom:EmptyTokenResource ColorTextDescription}"/>
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#Footer">

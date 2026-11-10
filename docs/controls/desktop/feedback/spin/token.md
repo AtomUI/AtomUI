@@ -56,3 +56,11 @@ Spin 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+`SpinTokenResource` 同时驱动 Spin 和内置 SpinIndicator 的尺寸、圆点颜色及周期。SpinIndicator 对宿主的
+Token owner 透明，使其动效声明沿用宿主上下文；单独使用时尺寸和圆点仍显式读取 Spin Token。
+提示颜色、提示间距及启用的遮罩背景读取 Spin 的有效全局值；提示须显式开启 `IsTipVisible`，遮罩背景须开启
+`IsMaskBackgroundEnabled`。内嵌按钮等已注册内容保留自己的身份。
+圆点的 0.3 透明度是循环动画固定端点，保持既有节奏；重置使用可撤销的当前值，不写本地视觉属性。

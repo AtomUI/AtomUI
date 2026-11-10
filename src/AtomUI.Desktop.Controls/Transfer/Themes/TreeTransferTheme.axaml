@@ -11,9 +11,6 @@
         <Setter Property="ListHeight" Value="{atom:TreeTransferTokenResource ListHeight}" />
         <Style Selector="^[IsStretchView=False]">
             <Setter Property="ListWidth" Value="{atom:TreeTransferTokenResource ListWidth}" />
-            <Style Selector="^[IsPaginationEnabled=True]">
-                <Setter Property="ListWidth" Value="{atom:TreeTransferTokenResource ListWidthLG}" />
-            </Style>
         </Style>
 
         <Setter Property="Template">

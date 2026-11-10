@@ -95,3 +95,9 @@ BorderBeamToken 变更要求：
 | 修改 `MaxVisibleStopPercent` | 验证单色、多 stop 渐变和透明尾迹连续性。 |
 | 修改 `Count` 或 hover 组合 | 验证实例属性与 Style 行为，并确认 BorderBeamToken 和默认资源键没有变化。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
+
+## 7. 有效 Token 与作用域边界
+
+颜色、线宽与圆角通过 `BorderBeamTokenResource` 读取 BorderBeam 的有效全局 Token；局部覆盖只影响该装饰，
+不改变内部已注册内容的身份。四项 Own Token 均保持 Active；周期验证采用绑定读回，像素验收固定动画相位，
+透明度验证使用可见范围内的值以避免 0–1 限制掩盖效果。实例 `IsMotionEnabled` 仍独立控制光束开关。

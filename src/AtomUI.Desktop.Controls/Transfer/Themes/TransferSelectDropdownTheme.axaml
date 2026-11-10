@@ -9,8 +9,8 @@
         </ControlTheme.BasedOn>
   
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="IconWidth" Value="{atom:SharedTokenResource FontSizeIcon}" />
-        <Setter Property="IconHeight" Value="{atom:SharedTokenResource FontSizeIcon}" />
+        <Setter Property="IconWidth" Value="{atom:OwnerTokenResource FontSizeIcon}" />
+        <Setter Property="IconHeight" Value="{atom:OwnerTokenResource FontSizeIcon}" />
         <Setter Property="SelectAllText" Value="{atom:TransferLangResource SelectAll}" />
         <Setter Property="DeSelectAllText" Value="{atom:TransferLangResource DeSelectAll}" />
         <Setter Property="InvertSelectCurrentPageText" Value="{atom:TransferLangResource InvertSelectCurrentPage}" />

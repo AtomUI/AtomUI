@@ -159,3 +159,14 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Display remainder: transparent Transfer items and SpinIndicator; identity-less transfer / drawer parts;
+# Result, Empty, QRCode, text blocks, HeaderedContentControl, BorderBeam and AdornerLayer.
+# Keep in step with MigratedFamilyAnalyzerGateTests.
+[{Transfer,Drawer,Spin,Result,Empty,QRCode,TextBlock,HeaderedContentControl,BorderBeam,AdornerLayer}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

@@ -7,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -15,6 +16,32 @@ internal class TransferItemDecorator : TemplatedControl,
                                        IInputControlStatusAware,
                                        ICustomizableSizeTypeAware
 {
+    // These values belong to the transfer host, while the filter editor and dropdown keep their registered identities.
+    internal static readonly StyledProperty<IBrush?> FilterIconBrushProperty =
+        AvaloniaProperty.Register<TransferItemDecorator, IBrush?>(nameof(FilterIconBrush));
+    internal static readonly StyledProperty<Thickness> FilterMarginProperty =
+        AvaloniaProperty.Register<TransferItemDecorator, Thickness>(nameof(FilterMargin));
+    internal static readonly StyledProperty<double> SelectionIconSizeProperty =
+        AvaloniaProperty.Register<TransferItemDecorator, double>(nameof(SelectionIconSize));
+
+    internal IBrush? FilterIconBrush
+    {
+        get => GetValue(FilterIconBrushProperty);
+        set => SetValue(FilterIconBrushProperty, value);
+    }
+
+    internal Thickness FilterMargin
+    {
+        get => GetValue(FilterMarginProperty);
+        set => SetValue(FilterMarginProperty, value);
+    }
+
+    internal double SelectionIconSize
+    {
+        get => GetValue(SelectionIconSizeProperty);
+        set => SetValue(SelectionIconSizeProperty, value);
+    }
+
     #region 公共属性定义
 
     public static readonly StyledProperty<object?> TitleProperty =
@@ -575,6 +602,8 @@ internal class TransferItemDecorator : TemplatedControl,
             transferView.SetItemTemplate(ItemTemplate);
         }
 
+        // ControlTheme cannot name an arbitrary runtime ITransferView supplied through Content; it can live outside
+        // the template tree. Release this relay with the rest of the current view subscriptions when Content changes.
         _disposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, transferControl, IsMotionEnabledProperty));
     }
 

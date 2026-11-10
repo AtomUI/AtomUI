@@ -66,3 +66,9 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+预设图形的五个颜色输入与描述文字颜色使用 `EmptyTokenResource`，因此 `Controls[Empty]` 可独立覆盖图形
+和描述。Default 图片消费边框和次级边框，Simple 图片消费四级填充；背景参与颜色合成。自定义图片不受预设图形颜色
+Token 重绘。三档图片高度、描述间距与页脚间距保持 Active，默认尺寸及布局不变。

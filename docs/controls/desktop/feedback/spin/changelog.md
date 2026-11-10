@@ -9,6 +9,11 @@
 - Design
   - 确认运动 Token 范围：Spin 的 `IsMotionEnabled` 跟随 `EnableMotion`，只控制遮罩过渡；内部 `SpinIndicator` 不接收该开关，关闭全局运动时仍旋转以表达加载中（与 Ant Design 的旋转动画不依赖 motion Token 一致）。
 
+## 2026-11-10
+
+- Theme
+  - 控件主题读取自身有效全局 Token，局部覆盖与嵌套已注册控件保持隔离；消费范围见 [Token 设计](token.md#7-有效-token-与作用域边界)。
+
 ## 2026-11-07
 
 - API

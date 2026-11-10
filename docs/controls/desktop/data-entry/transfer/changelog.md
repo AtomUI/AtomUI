@@ -2,6 +2,14 @@
 
 本文档记录 Transfer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Compatibility
+  - `TreeTransfer.ListWidthLG` 保留为 Reserved；树穿梭视图无分页加宽状态，普通宽度使用 `ListWidth`。
+  - Transfer 条目对 Token owner 透明，跟随实际列表或树视图。
+- Theme
+  - 控件主题读取自身有效全局 Token，局部覆盖与嵌套已注册控件保持隔离；消费范围见 [Token 设计](token.md#7-有效-token-与作用域边界)。
+
 ## 2026-09-01
 
 - Semantic Part（方向限定对齐）

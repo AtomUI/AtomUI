@@ -8,7 +8,8 @@ Transfer Token 只表达组件级视觉变量，例如尺寸、间距、颜色�
 
 当前 Token scope：
 
-- `TransferToken`，scope id 为 `Transfer`，源码位于 `src/AtomUI.Desktop.Controls/Transfer/TransferToken.cs`。
+- `ListTransferToken` / `TreeTransferToken`：分别对应 `ListTransfer` / `TreeTransfer`。
+- `TransferListViewToken`：对应独立列表视图 `TransferListView` 的分页边距。
 
 ## 2. Token 分类
 
@@ -36,8 +37,8 @@ Transfer 的控件专项模型通过 Theme 消费 Token：
 
 调整 Transfer Token 时必须评估以下范围：
 
-- `Transfer`
-- `TransferListBox`
+- `ListTransfer`、`TreeTransfer`
+- `TransferListView` / `TransferTreeView` 及其条目
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 
@@ -57,3 +58,14 @@ Transfer 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+`ListTransfer` 与 `TreeTransfer` 分别拥有列表宽高、标题高度和内边距；`TransferListView` 拥有分页边距。
+共享装饰框和操作间距通过 `OwnerTokenResource` 读取宿主的有效全局 Token。筛选框外边距、搜索图标颜色和
+选择菜单图标尺寸先在无身份装饰框读取，再由 AXAML 绑定投射到内嵌控件；LineEdit 本身保留独立身份。
+`TransferListItem` / `TransferTreeViewItem` 对 Token owner 透明，继承实际 TransferListView / TransferTreeView 的全局与动效。
+列表和树的 Own Token 仍分别来自 ListView / TreeView；宿主、视图和供体三种覆盖范围不可混同。
+
+`TreeTransfer.ListWidthLG` 为 Reserved：树穿梭视图不支持分页，没有可达的分页加宽状态。字段与默认值保留以维持配置兼容；
+普通宽度使用 `TreeTransfer.ListWidth`。`ListTransfer.ListWidthLG` 仍用于分页列表。

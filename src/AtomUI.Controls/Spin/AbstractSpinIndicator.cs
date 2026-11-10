@@ -538,7 +538,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
                 break;
             }
 
-            dot.Opacity = DOT_START_OPACITY;
+            dot.SetCurrentValue(OpacityProperty, DOT_START_OPACITY);
             index++;
         }
     }

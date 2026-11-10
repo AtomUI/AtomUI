@@ -9,6 +9,7 @@ AtomUI 的重要变更记录在此文件中。
 ## Unreleased
 
 - Breaking Changes
+  - 展示类主题作用域：TransferListItem / TransferTreeViewItem 与 SpinIndicator 对 Token owner 透明，全局值通过实际视图或 Spin 宿主配置。TreeTransfer 不支持分页，ListWidthLG 保留为 Reserved，普通宽度使用 ListWidth。
   - 录入类主题作用域：FormItem / FormItemDecorator、Upload 触发器与拖拽区域、SegmentedItem、CandidateList / CandidateListItem 为 Token owner 透明部件；有效全局值经宿主 Form、Upload、Segmented、Mentions 或 AutoComplete 设置，部件自身的控件级全局覆盖不再生效。嵌套的注册输入框与动作控件保留各自 identity。
   - Theme Tokens：删除 Button 家族中没有消费者的 Own Token。请从主题配置中移除 `Button.ExtraContentItemSpacing`、`Button.ExtraContentMargin`、`Button.ExtraContentMarginLG`、`Button.ExtraContentMarginSM`、`Button.GutterToFlyout`、`HyperLinkButton.BorderColorDisabled`、`FloatButton.SquareBadgeOffset` 和 `FloatButton.CircleBadgeOffset`；改用 `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`、`SplitButton.GutterToFlyout` 或 `FloatButton.BadgeOffset`。
   - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
@@ -106,6 +107,11 @@ AtomUI 的重要变更记录在此文件中。
   - 写在 ControlTemplate 元素上的 Token 读取（`{atom:XxxTokenResource}`、`{atom:SharedTokenResource}`）现在与 `DynamicResource` 一样取 Template 优先级，触发样式（`:pointerover`、`:disabled`、类与属性选择器，包括应用样式）可以覆盖它们；非触发的样式 Setter 仍不能覆盖，模板外的读取优先级不变。
   - 变换类 Token 值（`ImmutableTransform`，例如 `RibbonBadge.CornerTransform`）按矩阵格式化（`1,0,0,0.75,0,0`），不同变换不再共用同一规范文本，覆盖值可往返解析。
   - 可见变化：原先被这些读取遮蔽的状态样式生效。暗色 NavMenu 的分组标题使用 `NavMenu.DarkGroupTitleColor`，不再是 `GroupTitleColor`；LunarCalendar 的调休上班标记使用 `LunarCalendar.WorkdayMarkerColor`，不再是 `HolidayMarkerColor`。
+
+- 展示类剩余控件
+  - 仅当显式设置 QRCode.Color=null 时，点阵回退到该二维码的有效 ColorText（含透明度）并随局部主题更新，不再固定为纯黑；显式非空 Color 仍优先，正常主题设置的非空默认画刷保持原有路径。
+  - Transfer 装饰框、筛选图标和间距，Drawer 覆盖层，Spin 指示器/提示/遮罩，Result 文本与内容，Empty 预设图形和描述，QRCode 边框，链接/选区文字，BorderBeam 及默认焦点装饰读取各自有效全局 Token。Drawer 局部主题发布会即时刷新覆盖层，关闭时释放资源桥接；嵌套已注册控件保留自身身份。
+  - 可见变化：HyperLinkTextBlock 将默认 ColorBgContainer 与应用 Background 绘制到已有文本节点。Transfer 搜索图标颜色及筛选框外间距跟随穿梭宿主；既有几何与动画端点保持不变。
 
 ## 6.2.14
 

@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Animations;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -219,6 +220,7 @@ internal class DrawerContainer : ContentControl
     private bool _presentationPending;
     private int _lifecycleVersion;
     private int _pushTransformVersion;
+    private ThemeContextResourceBridge? _resourceBridge;
     private CompositeDisposable? _drawerBindingDisposables;
     private IDisposable? _hostMarginSubscription;
     private IDisposable? _drawnChromeOverlaySuppression;
@@ -262,6 +264,9 @@ internal class DrawerContainer : ContentControl
         {
             PrepareOpenVisualState(drawer.IsMotionEnabled);
         }
+        // The overlay's visual inheritance chain reaches the layer host, outside the Drawer provider. Bridge the
+        // originating context at this boundary so AXAML resources and subsequent local publishes follow the Drawer.
+        ConfigureThemeResources(drawer);
         ScopeAwareAdornerLayer.SetAdornedElement(this, drawer.OpenOn);
         ConfigureHostMargin(drawer.OpenOn);
         AttachToLayer(layer);
@@ -538,6 +543,45 @@ internal class DrawerContainer : ContentControl
         TryCleanup(() => infoContainer.ExtraTemplate   = null, ref failures);
     }
 
+    private void ConfigureThemeResources(Drawer drawer)
+    {
+        var context = ThemeScope.ResolveContext(drawer) ??
+                      throw new InvalidOperationException("An attached Drawer requires a theme context.");
+        if (_resourceBridge is not null && ReferenceEquals(_resourceBridge.OwnerContext, context))
+        {
+            return;
+        }
+        ReleaseThemeResources();
+        var bridge = new ThemeContextResourceBridge(context);
+        try
+        {
+            Resources.MergedDictionaries.Add(bridge);
+            _resourceBridge = bridge;
+        }
+        catch
+        {
+            bridge.Dispose();
+            throw;
+        }
+    }
+
+    private void ReleaseThemeResources()
+    {
+        var bridge = _resourceBridge;
+        _resourceBridge = null;
+        if (bridge is not null)
+        {
+            try
+            {
+                Resources.MergedDictionaries.Remove(bridge);
+            }
+            finally
+            {
+                bridge.Dispose();
+            }
+        }
+    }
+
     private void AttachToLayer(ScopeAwareAdornerLayer layer)
     {
         if (this.GetVisualParent() is Panel currentParent)
@@ -576,6 +620,7 @@ internal class DrawerContainer : ContentControl
             TryCleanup(() => layer?.Children.Remove(this), ref failures);
         }
 
+        TryCleanup(ReleaseThemeResources, ref failures);
         TryCleanup(() => ((ISetLogicalParent)this).SetParent(null), ref failures);
         TryCleanup(() => ScopeAwareAdornerLayer.SetAdornedElement(this, null), ref failures);
         TryCleanup(ClearHostMargin, ref failures);
@@ -608,8 +653,8 @@ internal class DrawerContainer : ContentControl
         Thickness margin,
         CornerRadius cornerRadius)
     {
-        Margin       = margin;
-        CornerRadius = cornerRadius;
+        SetCurrentValue(MarginProperty, margin);
+        SetCurrentValue(CornerRadiusProperty, cornerRadius);
     }
 
     private void ClearHostMargin()
@@ -621,8 +666,8 @@ internal class DrawerContainer : ContentControl
         List<Exception>? failures = null;
         TryCleanup(() => subscription?.Dispose(), ref failures);
         TryCleanup(() => suppression?.Dispose(), ref failures);
-        TryCleanup(() => Margin = default, ref failures);
-        TryCleanup(() => CornerRadius = default, ref failures);
+        TryCleanup(() => SetCurrentValue(MarginProperty, default(Thickness)), ref failures);
+        TryCleanup(() => SetCurrentValue(CornerRadiusProperty, default(CornerRadius)), ref failures);
         if (failures is not null)
         {
             throw new AggregateException("Drawer host geometry cleanup failed.", failures);

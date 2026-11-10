@@ -16,6 +16,11 @@
 - Fix
   - Desktop 模板渲染 `Image`/`ImageTemplate`（对应 Ant Design `Empty.image` 节点）：新增 `ContentPresenter#ImageContent`，高度沿用内置插画的 `EmptyImgHeight*` Token，`Image` 非空时隐藏 `PART_SvgImage`。此前设置 `Image` 会清空插画且不显示任何图片。`image` Semantic Part 仍只标记 `PART_SvgImage`。
 
+## 2026-11-10
+
+- Theme
+  - 控件主题读取自身有效全局 Token，局部覆盖与嵌套已注册控件保持隔离；消费范围见 [Token 设计](token.md#7-有效-token-与作用域边界)。
+
 ## 2026-11-07
 
 - Breaking API（二进制不兼容）

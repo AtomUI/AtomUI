@@ -46,14 +46,18 @@ public class MigratedFamilyAnalyzerGateTests
         // Data family (second half; the shared date panel and the picker input base)
         "Calendar", "DateViewer", "DatePicker", "TimePicker", "Primitives/InfoPickerInput",
         // Data-entry remainder
-        "Form", "Descriptions", "Upload", "Mentions", "OtpLineEdit", "Segmented", "Primitives/CandidateList"
+        "Form", "Descriptions", "Upload", "Mentions", "OtpLineEdit", "Segmented", "Primitives/CandidateList",
+        // Display remainder
+        "Transfer", "Drawer", "Spin", "Result", "Empty", "QRCode", "TextBlock", "HeaderedContentControl", "BorderBeam", "AdornerLayer"
     ];
 
     /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
     private static readonly string[] s_controlsFamilyDirectories =
     [
         // Data family: Avatar (its AvatarGroup lives in AtomUI.Desktop.Controls)
-        "Avatar"
+        "Avatar",
+        // Display remainder: shared Spin / QRCode implementation (themes and Token identities live in Desktop.Controls).
+        "Spin", "QRCode"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
@@ -93,7 +97,10 @@ public class MigratedFamilyAnalyzerGateTests
         "Calendar", "LunarCalendar", "DateViewer", "RangeDateViewer", "DatePicker", "RangeDatePicker", "TimePicker",
         "RangeTimePicker", "TimeViewCell", "InfoPickerInput", "RangeInfoPickerInput",
         "Form", "FormItem", "FormItemDecorator", "Descriptions", "Upload", "UploadTrigger", "UploadDropZone",
-        "UploadDefaultDropArea", "Mentions", "OtpLineEdit", "Segmented", "SegmentedItem", "CandidateList", "CandidateListItem"
+        "UploadDefaultDropArea", "Mentions", "OtpLineEdit", "Segmented", "SegmentedItem", "CandidateList", "CandidateListItem",
+        "ListTransfer", "TreeTransfer", "TransferListView", "TransferTreeView", "TransferListItem", "TransferTreeViewItem",
+        "Drawer", "Spin", "SpinIndicator", "Result", "Empty", "QRCode", "HyperLinkTextBlock", "SelectableTextBlock",
+        "BorderBeam", "AdornerLayer"
     ];
 
     /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>
@@ -266,6 +273,23 @@ public class MigratedFamilyAnalyzerGateTests
         IdentityControls.Value.ShouldNotContain("TimePickerPresenter");
         IdentityControls.Value.ShouldNotContain("TimeView");
         IdentityControls.Value.ShouldNotContain("PickerClearUpButton");
+        // Display remainder: view items and the SpinIndicator keep registrations but are owner-transparent.
+        IdentityControls.Value.ShouldContain("TransferListView");
+        IdentityControls.Value.ShouldContain("TransferTreeView");
+        IdentityControls.Value.ShouldContain("TransferListItem");
+        IdentityControls.Value.ShouldContain("TransferTreeViewItem");
+        IdentityControls.Value.ShouldContain("SpinIndicator");
+        IdentityControls.Value.ShouldContain("HyperLinkTextBlock");
+        IdentityControls.Value.ShouldContain("SelectableTextBlock");
+        IdentityControls.Value.ShouldContain("AdornerLayer");
+        IdentityControls.Value.ShouldNotContain("TransferItemDecorator");
+        IdentityControls.Value.ShouldNotContain("TransferSelectDropdown");
+        IdentityControls.Value.ShouldNotContain("DrawerContainer");
+        IdentityControls.Value.ShouldNotContain("DrawerInfoContainer");
+        IdentityControls.Value.ShouldNotContain("HeaderedContentControl");
+        IdentityControls.Value.ShouldNotContain("TextBlock");
+        IdentityControls.Value.ShouldNotContain("HighlightableTextBlock");
+
     }
 
     [Fact]

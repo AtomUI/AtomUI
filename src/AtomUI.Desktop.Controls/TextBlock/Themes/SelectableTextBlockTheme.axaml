@@ -4,8 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SelectableTextBlock}" TargetType="atom:SelectableTextBlock">
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="SelectionForegroundBrush" Value="{atom:SharedTokenResource SelectionForeground}" />
+        <Setter Property="SelectionBrush" Value="{atom:SelectableTextBlockTokenResource SelectionBackground}" />
+        <Setter Property="SelectionForegroundBrush" Value="{atom:SelectableTextBlockTokenResource SelectionForeground}" />
         <Setter Property="Cursor" Value="IBeam" />
     </ControlTheme>
 </ResourceDictionary>

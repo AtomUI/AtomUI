@@ -8,18 +8,18 @@
 
     <Style Selector="^:is(atom|AbstractTransfer)">
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         </Style>
 
         <Style Selector="^ /template/ Grid#RootLayout">
-            <Setter Property="ColumnSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="ColumnSpacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
 
         <Setter Property="SelectionsIcon">

@@ -1,4 +1,4 @@
-﻿<ResourceDictionary
+<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:ClassModifier="internal"
@@ -97,14 +97,14 @@
         
         <Setter Property="IconBgColor" Value="Transparent" />
         <Setter Property="BorderThickness"
-                Value="{atom:SharedTokenResource BorderThickness}" />
+                Value="{atom:QRCodeTokenResource BorderThickness}" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+        <Setter Property="CornerRadius" Value="{atom:QRCodeTokenResource BorderRadiusLG}" />
         <Setter Property="Padding" Value="0" />
 
         <Style Selector="^[IsBordered=True]">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+            <Setter Property="BorderBrush" Value="{atom:QRCodeTokenResource ColorSplit}" />
+            <Setter Property="Padding" Value="{atom:QRCodeTokenResource PaddingSM}" />
         </Style>
 
         <Style Selector="^ /template/ Border#Cover">

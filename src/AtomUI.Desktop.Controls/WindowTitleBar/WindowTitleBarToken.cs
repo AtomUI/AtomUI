@@ -9,32 +9,6 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 internal sealed class WindowTitleBarToken : AbstractControlDesignToken
 {
-    
-    /// <summary>
-    /// Hover 的背景色
-    /// </summary>
-    public Color HoverBackgroundColor { get; set; }
-
-    /// <summary>
-    /// 鼠标按下的背景色
-    /// </summary>
-    public Color PressedBackgroundColor { get; set; }
-
-    /// <summary>
-    /// 关闭按钮的背景颜色
-    /// </summary>
-    public Color CloseHoverBackgroundColor { get; set; }
-
-    /// <summary>
-    /// 关闭按钮鼠标按下的背景颜色
-    /// </summary>
-    public Color ClosePressedBackgroundColor { get; set; }
-
-    /// <summary>
-    /// 按钮的前景色
-    /// </summary>
-    public Color ForegroundColor { get; set; }
-    
     /// <summary>
     /// 应用程序 Logo 和 标题之间的间距
     /// </summary>
@@ -170,11 +144,6 @@ internal sealed class WindowTitleBarToken : AbstractControlDesignToken
     public override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        CloseHoverBackgroundColor   = EffectiveGlobalToken.ColorErrorTextActive;
-        ClosePressedBackgroundColor = EffectiveGlobalToken.ColorErrorTextHover;
-        ForegroundColor             = EffectiveGlobalToken.ColorTextSecondary;
-        HoverBackgroundColor        = EffectiveGlobalToken.ColorBgTextHover;
-        PressedBackgroundColor      = EffectiveGlobalToken.ColorBgTextActive;
 
         if (!IsExplicit(WindowTitleBarTokenKind.LogoAndTitleSpacing))
         {

@@ -48,7 +48,9 @@ public class MigratedFamilyAnalyzerGateTests
         // Data-entry remainder
         "Form", "Descriptions", "Upload", "Mentions", "OtpLineEdit", "Segmented", "Primitives/CandidateList",
         // Display remainder
-        "Transfer", "Drawer", "Spin", "Result", "Empty", "QRCode", "TextBlock", "HeaderedContentControl", "BorderBeam", "AdornerLayer"
+        "Transfer", "Drawer", "Spin", "Result", "Empty", "QRCode", "TextBlock", "HeaderedContentControl", "BorderBeam", "AdornerLayer",
+        "Window", "WindowTitleBar", "ScrollViewer", "Primitives/IndicatorScrollViewer",
+        "Primitives/ArrowDecoratedBox", "Primitives/FeedbackStack", "Flyouts"
     ];
 
     /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
@@ -57,14 +59,15 @@ public class MigratedFamilyAnalyzerGateTests
         // Data family: Avatar (its AvatarGroup lives in AtomUI.Desktop.Controls)
         "Avatar",
         // Display remainder: shared Spin / QRCode implementation (themes and Token identities live in Desktop.Controls).
-        "Spin", "QRCode"
+        "Spin", "QRCode", "Icon", "ImageLoading", "ItemsControl", "TransitioningContentControl",
+        "TextSelectionHandle", "Embedding", "Splash"
     ];
 
     /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
     private static readonly string[] s_familyFiles =
     [
-        // Navigation family: the drop-down flyout menu presenter (Flyouts also holds FlyoutHost and the TreeView flyout).
-        "Flyouts/Themes/MenuFlyoutPresenterTheme.axaml"
+        // Identity-less WaveSpirit part; Flyouts is now entirely covered by the family directories.
+        "Primitives/Themes/WaveSpiritDecoratorTheme.axaml"
     ];
 
     /// <summary>Token identities declared in those directories.</summary>
@@ -100,11 +103,13 @@ public class MigratedFamilyAnalyzerGateTests
         "UploadDefaultDropArea", "Mentions", "OtpLineEdit", "Segmented", "SegmentedItem", "CandidateList", "CandidateListItem",
         "ListTransfer", "TreeTransfer", "TransferListView", "TransferTreeView", "TransferListItem", "TransferTreeViewItem",
         "Drawer", "Spin", "SpinIndicator", "Result", "Empty", "QRCode", "HyperLinkTextBlock", "SelectableTextBlock",
-        "BorderBeam", "AdornerLayer"
+        "BorderBeam", "AdornerLayer", "Window", "WindowTitleBar", "WindowTitleBarButton",
+        "WindowTitleBarToggleButton", "ScrollViewer", "ScrollBar", "ScrollBarThumb", "ArrowDecoratedBox",
+        "FlyoutHost", "TreeViewFlyoutPresenter"
     ];
 
     /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>
-    private static readonly string[] s_controlsFamilyControls = ["Avatar"];
+    private static readonly string[] s_controlsFamilyControls = ["Avatar", "Icon", "IconPresenter", "AsyncImage"];
 
     public static IEnumerable<object[]> FamilyAssets() =>
         s_familyDirectories
@@ -132,6 +137,20 @@ public class MigratedFamilyAnalyzerGateTests
 
         diagnostics.Select(static d => $"{d.Id} {d.Location.GetLineSpan().StartLinePosition}: {d.GetMessage()}")
                    .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Linked_Startup_Splash_Is_Analyzed_Without_Becoming_A_Runtime_Theme_Asset()
+    {
+        FamilyAssets().Select(static row => (string)row[0]).ShouldContain(
+            Controls + "/Splash/Themes/SplashDefaultTheme.axaml");
+        var project = File.ReadAllText(Path.Combine(RepositoryRoot, Controls, "AtomUI.Controls.csproj"));
+        project.ShouldContain("Link=\"Splash/SplashDefaultTheme.axaml\"");
+        var registration = File.ReadAllText(Path.Combine(RepositoryRoot, Controls,
+            "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedTypeMapRegistration.g.cs"));
+        // Read the real package's generated ContainsAsset cases; the synthetic diagnostic fixture has no startup ABI.
+        registration.ShouldContain("case \"AtomUI.Controls.Common:Icon/Themes/IconTheme.axaml\":");
+        registration.ShouldNotContain("case \"AtomUI.Controls.Common:Splash/");
     }
 
     [Fact]

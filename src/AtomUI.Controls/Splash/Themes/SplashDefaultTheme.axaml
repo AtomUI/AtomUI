@@ -21,6 +21,7 @@
         </Setter>
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <!-- 给卡片阴影留出的透明边距。 -->
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="Margin" Value="48"/>
         </Style>
     </ControlTheme>
@@ -59,10 +60,11 @@
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ Border#Card">
+            <!-- layout: fixed startup card width; custom startup themes may replace this layout. -->
             <Setter Property="Width" Value="420"/>
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}"/>
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}"/>
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer}"/>
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}"/>
+            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadowsSecondary}"/>
         </Style>
         <Style Selector="^ /template/ Border#Shadow">
             <Setter Property="Background" Value="Transparent"/>
@@ -77,36 +79,40 @@
             </Setter>
         </Style>
         <Style Selector="^ /template/ StackPanel#Content">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource PaddingLG}"/>
-            <Setter Property="Spacing" Value="12"/>
+            <Setter Property="Margin" Value="{atom:OwnerTokenResource PaddingLG}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingSM}"/>
         </Style>
         <Style Selector="^ /template/ Image#Logo">
+            <!-- layout: fixed logo asset slot inside the startup card. -->
             <Setter Property="Width" Value="64"/>
+            <!-- layout: fixed logo asset slot inside the startup card. -->
             <Setter Property="Height" Value="64"/>
         </Style>
         <Style Selector="^ /template/ TextBlock#Title">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeHeading4}"/>
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}"/>
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeHeading4}"/>
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}"/>
         </Style>
         <Style Selector="^ /template/ TextBlock#Message">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}"/>
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+            <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}"/>
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}"/>
         </Style>
         <Style Selector="^ /template/ atom|SplashProgressBar#Progress">
+            <!-- layout: fixed startup progress lane height. -->
             <Setter Property="Height" Value="4"/>
+            <!-- layout: pill end is half the fixed4px startup progress lane. -->
             <Setter Property="CornerRadius" Value="2"/>
-            <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
-            <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorFillSecondary}"/>
+            <Setter Property="IndicatorBrush" Value="{atom:OwnerTokenResource ColorPrimary}"/>
+            <Setter Property="TrackBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}"/>
         </Style>
         <Style Selector="^ /template/ Path#PART_CloseButton">
-            <Setter Property="Width" Value="12"/>
-            <Setter Property="Height" Value="12"/>
-            <Setter Property="Margin" Value="16"/>
-            <Setter Property="Stroke" Value="{atom:SharedTokenResource ColorIcon}"/>
-            <Setter Property="StrokeThickness" Value="1.5"/>
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSizeSM}"/>
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSizeSM}"/>
+            <Setter Property="Margin" Value="{atom:OwnerTokenResource Margin}"/>
+            <Setter Property="Stroke" Value="{atom:OwnerTokenResource ColorIcon}"/>
+            <Setter Property="StrokeThickness" Value="{atom:OwnerTokenResource LineWidth}"/>
         </Style>
         <Style Selector="^:error /template/ TextBlock#Message">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}"/>
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorError}"/>
         </Style>
         <Style Selector="^:error /template/ atom|SplashProgressBar#Progress">
             <Setter Property="IsVisible" Value="False"/>
@@ -115,6 +121,7 @@
             <Setter Property="IsVisible" Value="True"/>
         </Style>
         <Style Selector="^:opaque /template/ Border#Card">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0"/>
             <Setter Property="BoxShadow" Value="0 0 0 0 Transparent"/>
         </Style>

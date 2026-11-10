@@ -1,5 +1,10 @@
 # WindowTitleBar Changelog
 
+## 2026-11-10
+
+- 全局外观读取 WindowTitleBar 有效值；删除五个从未消费的通用颜色 Own Token，改用现有按平台与状态划分的 Active / Inactive / WindowsClose Token。
+
+
 本文档记录 WindowTitleBar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-09-25

@@ -216,6 +216,7 @@
 
         <Style Selector="^[OsType=Windows]">
             <Style Selector="^ /template/ StackPanel#RootLayout">
+                <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                 <Setter Property="Spacing" Value="0" />
             </Style>
         </Style>

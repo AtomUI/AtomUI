@@ -1,5 +1,10 @@
 # Icon Changelog
 
+## 2026-11-10
+
+- 默认主题启用 `FallbackColor` → `FallbackBrush`，支持 fallback 绘制指令随主题发布更新；Icon / IconPresenter 与 PathIcon 的全局 Token 分别按自身身份或所属控件读取。
+
+
 本文档记录 Icon 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-10-13

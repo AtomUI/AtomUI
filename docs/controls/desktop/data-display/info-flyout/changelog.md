@@ -1,5 +1,10 @@
 # InfoFlyout Changelog
 
+## 2026-11-10
+
+- FlyoutHost 与树形 flyout presenter 读取有效全局 Token；pointer offsets 改用 placement target 的作用域资源并保留 open/close 释放生命周期。树形 presenter 默认背景接通 PopupBgColor，显式根背景保持优先。
+
+
 本文档记录 InfoFlyout 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-11-04

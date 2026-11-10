@@ -74,20 +74,24 @@ public static class TokenEffectHarness
             EnsureMatches(root, target, identity);
         }
 
+        var initialTopLevelContent = (root as AvaloniaWindow)?.Content;
+        if (root is AvaloniaWindow initialTopLevel)
+        {
+            initialTopLevel.Content = null;
+        }
         var provider = new ThemeConfigProvider { Config = CreateConfig(comparesPixels, null) };
         provider.Child = new AvaloniaBorder
         {
             Padding             = new Thickness(24),
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment   = VerticalAlignment.Top,
-            Child               = root
+            Child               = root is AvaloniaWindow topLevel
+                ? initialTopLevelContent as Control ?? new ContentControl { Content = initialTopLevelContent }
+                : root
         };
-        var window = new AvaloniaWindow
-        {
-            Width   = WindowWidth,
-            Height  = WindowHeight,
-            Content = provider
-        };
+        var window = root as AvaloniaWindow ?? new AvaloniaWindow { Width = WindowWidth, Height = WindowHeight };
+        window.Content = provider;
+        ThemeContextLease? topLevelLease = null;
 
         ThemeChangeFailedEventArgs? failure = null;
         EventHandler<ThemeChangeFailedEventArgs> onFailed = (_, args) => failure = args;
@@ -96,6 +100,12 @@ public static class TokenEffectHarness
         {
             window.Show();
             FrameCapture.Refresh(window);
+            if (root is AvaloniaWindow)
+            {
+                topLevelLease = ThemeContextLease.Attach(window, ThemeScope.ResolveContext(provider)
+                    ?? throw new InvalidOperationException("Top-level effect fixture has no scoped context."));
+                FrameCapture.Refresh(window);
+            }
             failure.ShouldBeNull(DescribeFailure(failure));
             // Hosted members (items containers, popups) exist only once the root is shown.
             var control = options?.Target?.Invoke(root) ?? root;
@@ -145,6 +155,7 @@ public static class TokenEffectHarness
         finally
         {
             provider.ThemeChangeFailed -= onFailed;
+            topLevelLease?.Dispose();
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
@@ -220,6 +231,12 @@ public static class TokenEffectHarness
             throw new ArgumentException($"Token identity '{identity}' is not registered.", nameof(identity));
         }
 
+        // Real icon classes and owner-transparent parts derive from the registered control type.
+        var capture = typeof(ControlTokenAccessor).GetMethods()
+            .Single(static method => method.Name == nameof(ControlTokenAccessor.Capture) && method.IsGenericMethod)
+            .MakeGenericMethod(descriptor.ControlType)
+            .CreateDelegate<Func<Control, ControlTokenAccessor>>();
+
         foreach (var own in descriptor.OwnTokens)
         {
             if (own.Name == token)
@@ -228,7 +245,7 @@ public static class TokenEffectHarness
                 return new TokenTarget(
                     descriptor.ControlType,
                     own.ValueType,
-                    owner => ControlTokenAccessor.Capture(owner).GetOwn<object>(kind));
+                    owner => capture(owner).GetOwn<object>(kind));
             }
         }
 
@@ -238,7 +255,7 @@ public static class TokenEffectHarness
             return new TokenTarget(
                 descriptor.ControlType,
                 global.ValueType,
-                owner => ControlTokenAccessor.Capture(owner).GetEffectiveGlobal<object>(kind));
+                owner => capture(owner).GetEffectiveGlobal<object>(kind));
         }
 
         throw new ArgumentException(

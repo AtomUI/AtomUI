@@ -477,7 +477,7 @@ internal sealed class FeedbackStackPanel : Panel
         {
             item.IsStackVisible = isVisible;
         }
-        child.Opacity = isVisible ? 1 : 0;
+        child.SetCurrentValue(OpacityProperty, isVisible ? 1d : 0d);
         child.IsHitTestVisible = isHitTestVisible ?? isVisible;
     }
 

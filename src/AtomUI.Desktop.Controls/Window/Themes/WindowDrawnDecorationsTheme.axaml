@@ -197,14 +197,17 @@
         </Style>
 
         <Style Selector="^:has-border /template/ ContentPresenter#PART_TitleBarPresenter">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="Margin" Value="1,1,1,0" />
         </Style>
 
         <Style Selector="^:has-border /template/ ContentPresenter#PART_TitleBar">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="Margin" Value="1,1,1,0" />
         </Style>
 
         <Style Selector="^:maximized /template/ Border#PART_WindowFrame">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0" />
         </Style>
 
@@ -231,7 +234,7 @@
         </Style>
         
         <Style Selector="^:fullscreen /template/ atom|CaptionButton">
-            <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+            <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
             <Setter Property="IsWindowActive" Value="True" />
             <Setter Property="IconWidth" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />
             <Setter Property="IconHeight" Value="{atom:WindowTitleBarTokenResource CaptionButtonIconSize}" />

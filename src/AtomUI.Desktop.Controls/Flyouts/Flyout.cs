@@ -500,7 +500,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
                 MotionDurationProperty,
                 SharedTokenKind.MotionDurationMid)
         };
-        ConfigurePointerPlacementOffsets();
+        ConfigurePointerPlacementOffsets(context);
     }
 
     private Popup CreatePopup()
@@ -640,7 +640,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             IsLightDismissEnabled);
     }
 
-    private void ConfigurePointerPlacementOffsets()
+    private void ConfigurePointerPlacementOffsets(Control? context = null)
     {
         _pointerHorizontalOffsetBinding?.Dispose();
         _pointerVerticalOffsetBinding?.Dispose();
@@ -656,10 +656,21 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             _pointerHorizontalOffsetTokenKey != null &&
             _pointerVerticalOffsetTokenKey != null)
         {
-            _pointerHorizontalOffsetBinding = TokenResourceBinder.CreateGlobalResourceBinding(
-                this, HorizontalOffsetProperty, _pointerHorizontalOffsetTokenKey, BindingPriority.Style);
-            _pointerVerticalOffsetBinding = TokenResourceBinder.CreateGlobalResourceBinding(
-                this, VerticalOffsetProperty, _pointerVerticalOffsetTokenKey, BindingPriority.Style);
+            context ??= _popupControl?.PlacementTarget ?? _motionConfigurationOwner as Control;
+            if (context is null)
+            {
+                return;
+            }
+            // Pointer offsets are configured on this non-visual Flyout, so AXAML cannot bind them to
+            // the runtime placement target. The open-session bindings are released on close / detach.
+            var horizontalKey = _pointerHorizontalOffsetTokenKey is Enum horizontalToken
+                ? ControlTokenResourceKey.Own(typeof(FlyoutHost), horizontalToken) : _pointerHorizontalOffsetTokenKey;
+            var verticalKey = _pointerVerticalOffsetTokenKey is Enum verticalToken
+                ? ControlTokenResourceKey.Own(typeof(FlyoutHost), verticalToken) : _pointerVerticalOffsetTokenKey;
+            _pointerHorizontalOffsetBinding = this.Bind(HorizontalOffsetProperty,
+                context.GetResourceObservable(horizontalKey), BindingPriority.Style);
+            _pointerVerticalOffsetBinding = this.Bind(VerticalOffsetProperty,
+                context.GetResourceObservable(verticalKey), BindingPriority.Style);
         }
     }
 

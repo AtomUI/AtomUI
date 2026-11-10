@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Runtime.Versioning;
 using System.Reactive.Disposables;
 using System.Windows.Input;
@@ -785,21 +786,8 @@ public partial class Window : AvaloniaWindow,
     private CompositeDisposable CreateInitialSurfaceThemeValues()
     {
         var values = new CompositeDisposable();
-        if (!this.TryFindResource(WindowTokenKind.DefaultBackground, out var resource))
-        {
-            return values;
-        }
-
-        IBrush? background = resource switch
-        {
-            IBrush brush => brush,
-            Color color  => new SolidColorBrush(color),
-            _            => null
-        };
-        if (background is null)
-        {
-            return values;
-        }
+        var background = new SolidColorBrush(ControlTokenAccessor.Capture<Window>(this)
+            .GetOwn<Color, WindowTokenKind>(WindowTokenKind.DefaultBackground));
 
         // WindowOpenedEvent precedes ApplyStyling. Prime only the synchronous show interval;
         // local values still win, and WindowTheme owns the surface after these frames are removed.
@@ -881,11 +869,11 @@ public partial class Window : AvaloniaWindow,
 
         var shadow = FrameShadowThickness;
         _windowResizer.GripThickness = gripThickness;
-        _windowResizer.Margin = new Thickness(
+        _windowResizer.SetCurrentValue(MarginProperty, new Thickness(
             Math.Max(0, shadow.Left - gripThickness.Left),
             Math.Max(0, shadow.Top - gripThickness.Top),
             Math.Max(0, shadow.Right - gripThickness.Right),
-            Math.Max(0, shadow.Bottom - gripThickness.Bottom));
+            Math.Max(0, shadow.Bottom - gripThickness.Bottom)));
     }
 
     private void HandleFrameShadowPropertyChanged(BoxShadows frameShadow)
@@ -1794,7 +1782,7 @@ public partial class Window : AvaloniaWindow,
             // TopLevel writes this part's Background as a local value when applying the template
             // or changing transparency, overriding ControlTheme setters and TemplateBinding.
             // Mirror later fallback changes here; TopLevel still owns transparency transitions.
-            _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+            _transparencyFallbackBorder.SetCurrentValue(BackgroundProperty, TransparencyBackgroundFallback);
         }
         if (change.Property == WindowStateProperty)
         {

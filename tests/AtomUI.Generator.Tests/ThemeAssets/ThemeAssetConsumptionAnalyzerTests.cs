@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Shouldly;
 using Xunit;
 
@@ -10,6 +11,39 @@ public class ThemeAssetConsumptionAnalyzerTests
 {
     private const string SharedRead = "ATOMUIGEN041";
     private const string VisualLiteral = "ATOMUIGEN045";
+
+    [Fact]
+    public void Linked_Physical_Theme_Outside_Logical_Themes_Is_Analyzed()
+    {
+        var source = Theme("atom:Button", "<Setter Property=\"Foreground\" Value=\"{atom:SharedTokenResource ColorPrimary}\" /><Setter Property=\"Background\" Value=\"{atom:OwnerTokenResource ColorPrimary}\" />");
+        var references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
+            .Split(Path.PathSeparator).Select(static path => MetadataReference.CreateFromFile(path));
+        var compilation = CSharpCompilation.Create("LinkedTheme", [CSharpSyntaxTree.ParseText(TokenSource + "\nnamespace AtomUI.Theme.Resources { public enum SharedTokenKind { ColorPrimary } }"),
+            CSharpSyntaxTree.ParseText(ThemeSchemaGeneratorTests.AtomUIStubs)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var theme = new InMemoryAdditionalText("Splash/Themes/SplashDefaultTheme.axaml", source);
+        var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],
+            [theme], optionsProvider: new BuiltinCatalogOptionsProvider(new LinkedThemeOptions()));
+        var run = driver.RunGenerators(compilation, TestContext.Current.CancellationToken).GetRunResult();
+        run.Diagnostics.ShouldContain(static diagnostic => diagnostic.Id == SharedRead);
+        var consumption = run.GeneratedTrees.Single(static tree => tree.FilePath.EndsWith("GeneratedThemeConsumption.g.cs")).ToString();
+        consumption.ShouldContain("ColorPrimary");
+    }
+
+    private sealed class LinkedThemeOptions : AnalyzerConfigOptionsProvider
+    {
+        public override AnalyzerConfigOptions GlobalOptions { get; } = new LinkedValues(false);
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => GlobalOptions;
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => new LinkedValues(true);
+        private sealed class LinkedValues(bool linked) : AnalyzerConfigOptions
+        {
+            public override bool TryGetValue(string key, out string value)
+            {
+                value = linked && key == "build_metadata.AdditionalFiles.Link" ? "Splash/SplashDefaultTheme.axaml" : "";
+                return value.Length != 0;
+            }
+        }
+    }
 
     // ---- ATOMUIGEN041 -------------------------------------------------------------------
 

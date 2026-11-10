@@ -14,10 +14,10 @@ public class SplashDefaultThemeTests
 {
     // 契约：Splash 在内核提交之前显示，默认主题只能依赖全局 Token 与基础元素。
     // 运行时资源查找无法守住这一点（测试应用已提交，应用级资源里什么都有），因此直接检查主题源文件：
-    // 只允许 SharedTokenResource、只允许 Splash 自有的 atom 类型，并核对每个全局 Token 都在 Prepare 结果中。
+    // 只允许 Shared/Owner 全局读取（启动无 owner 时回落 Prepare 表）、只允许 Splash 自有的 atom 类型，并核对每个全局 Token 都在 Prepare 结果中。
     private static readonly HashSet<string> AllowedAtomTypes = new(StringComparer.Ordinal)
     {
-        "Splash", "SplashWindow", "SplashProgressBar", "SharedTokenResource"
+        "Splash", "SplashWindow", "SplashProgressBar", "SharedTokenResource", "OwnerTokenResource"
     };
 
     [Fact]
@@ -26,14 +26,14 @@ public class SplashDefaultThemeTests
         var source = File.ReadAllText(ThemeSourcePath());
         var atomTypes = Regex.Matches(source, @"atom[:|](\w+)").Select(match => match.Groups[1].Value).ToHashSet();
         atomTypes.Except(AllowedAtomTypes).ShouldBeEmpty();
-        // 只允许 SharedTokenResource；控件 Token 扩展（任何不以 Shared 开头的 *TokenResource）一律不许出现。
-        Regex.Matches(source, @"(?<!Shared)TokenResource ").Count.ShouldBe(0);
+        // 控件 Own Token 扩展一律不许出现；Owner 无 owner 的读取仍必须由 Prepare 全局表满足。
+        Regex.Matches(source, @"(?<!(?:Shared|Owner))TokenResource ").Count.ShouldBe(0);
         source.ShouldNotContain("FontFamily");
 
         var prepared = ThemeStartupPreparation.Prepare(
             new ThemeManagerBuilder(typeof(Avalonia.Application)).CaptureStartupInputs());
         var resources = prepared.GlobalResources(ThemeAppearance.Light);
-        var used = Regex.Matches(source, @"SharedTokenResource (\w+)").Select(match => match.Groups[1].Value).Distinct();
+        var used = Regex.Matches(source, @"(?:Shared|Owner)TokenResource (\w+)").Select(match => match.Groups[1].Value).Distinct();
         used.Where(name => !resources.ContainsKey(Enum.Parse<SharedTokenKind>(name))).ShouldBeEmpty();
     }
 
@@ -47,7 +47,7 @@ public class SplashDefaultThemeTests
         templates.Count.ShouldBe(2);
         foreach (Match template in templates)
         {
-            template.Value.ShouldNotContain("SharedTokenResource");
+            template.Value.ShouldNotContain("TokenResource");
             Regex.Matches(template.Value,
                      @"\s(Width|Height|Margin|Padding|Spacing|Background|Foreground|FontSize|CornerRadius|BoxShadow|Stroke|StrokeThickness|IndicatorBrush|TrackBrush)=""")
                  .Select(match => match.Groups[1].Value)

@@ -35,7 +35,7 @@
 | 10.9b | Data 家族后半（Calendar/LunarCalendar、DateViewer、DatePicker/TimePicker；无基础 Table） | **完成并评审通过**：原实现及后续修复至 `3e55b3883`；本轮覆盖修复 `485ef3ba7`，定向渲染 410 / 控件 360 / 门禁 250 全过 |
 | 10.10a | 录入类剩余控件 | 完成并评审通过，`4bf2f1032`；240 / 205 / 287 定向检查通过，52 Own Active |
 | 10.10b | 展示类剩余控件 | 完成并评审通过：`7dcd4cdee` + `6160a423b`；58 Active / 1 Reserved，透明默认修复 7 / 310 定向通过 |
-| 10.10c | 窗口、滚动、共享基元与 Controls 包 | 未开始 |
+| 10.10c | 窗口、滚动、共享基元与 Controls 包 | 执行中（起点 `1d7d8c54c`），Icon/WindowTitleBar/Splash 消费与分析入口已定位 |
 | 10.10d | 抽象 Token 层与一致性汇总（见计划 10.10 行） | 未开始 |
 | 11 | `AtomUI.Themes.PrimeNG` | 未开始 |
 | 12 | Gallery 主题预设页 | 未开始 |
@@ -411,3 +411,13 @@ Task 10.10b: minor (deferred): TransferItemDecorator 新增三个 internal 投�
 Task 10.10b: fix round 1/5（1 addressed，0 open；`7dcd4cdee..6160a423b`）：仅移除 HyperLink 默认 ColorBgContainer Setter，保留显式 Background 到 PART_Text 的投射。真实 Gallery BasicCaseGrid 原 5 列/4 链接/15 间距/1100×720，16 个链接×行状态严格比较默认与显式透明像素一致，并证明显式 Lime 生效；最终契约对坏 Setter 单变量回退为 RED 1/1，恢复后覆盖 7/7、门禁 310/310 通过。
 Task 10.10b: 范围复审 PASS，P2 已解决，无新增阻塞；P3 留台账。原主验收 213 / 136 记录复用，不冒充修改后重跑；最终公开消费图 HyperLink 6→5 行（移除过时背景消费），58 Own Active / 1 Reserved 不变，无临时源/探针残留。
 Task 10.10b: complete（commits `9b01a7fd2..6160a423b`，review clean；1 deferred minor）。计划基线与追加 TreeTransfer 裁决单独登记；Transfer Own 借用继续由 10.10d 负责。
+Task 10.10c: 起点 `1d7d8c54c` 干净。Icon.FallbackColor 对应实际 FallbackBrush 路径但当前硬编码 White；WindowTitleBar 五个旧字段与现有 Active*/WindowsClose* 消费路径重叠且无独立语义；Splash 受链接逻辑路径过滤而未进入资产分析。
+Ruling: Icon.FallbackColor 接入真实 FallbackBrush 消费并随有效主题更新，保留正常与显式用户绘制优先级 — 当前回退画刷硬编码 White，已有 Own 字段的意义就是该真实回退视觉，不能以空消费标记规避 — 错了的代价：若回退路径或优先级识别不当，会误改正常图标或用户颜色，需由真实回退画刷指令与显式颜色的因果/隔离测试纠正。
+Ruling: WindowTitleBar 五个旧 Own 字段经直接、派生、跨包消费者核查为死字段后删除，使用现有 Active*/WindowsClose* 平台状态路径写迁移说明 — 无独立消费者或 antd 同控件保留理由，不为旧字段新增竞争 Setter；平台/状态并非一一对应时不伪造替代关系 — 错了的代价：引用旧 XML 名称或生成 TokenKind 的外部应用需迁移；若误删实际有效字段，必须恢复其契约与消费者。
+Ruling: Splash 的物理主题源文件进入现有资产分析，逻辑资源键与启动注册行为保持原契约 — 现有链接逻辑路径过滤漏掉主题内 12 个 Shared 读取，修正分析输入而非新建运行时扫描机制 — 错了的代价：若物理/逻辑路径映射或去重错误，会重复诊断或误改主题注册，需链接资产的精确生成器契约纠正。
+Ruling: 生效测试 harness 按描述符的已注册类型使用现有泛型 Capture<T>，支持真实派生 Icon — 非泛型访问器要求精确运行时注册，CheckOutlined 等实际派生图标会在读取前失败，不应为测试另造注册近似控件 — 错了的代价：若注册类型选择错误，会测到错误身份的值，需以真实派生图标与原控件身份契约纠正；产品注册行为不变。
+Ruling: 真实原生专用 Window Token 保持 Active，以实际消费终点属性或既有原生适配调用验证绑定/局部发布/恢复生命周期，原生绘制未覆盖单列记账 — 当前 headless 不绘制 SystemBarColor、Win10 专用边框与部分原生全屏表面，不能伪造像素通过或因本机不可见把真实平台 Token 降为 Reserved，也不增加未经授权的全平台矩阵 — 错了的代价：即使绑定终点正确，原生 API/绘制行为仍可能有未验证问题；当前平台可见窗口/全屏项交最终视觉核对，未覆盖项不冒充已验证。
+Ruling: TextSelectionHandle 仅补 Avalonia 12 必需的透明 Border PART_Indicator，并将原有选择器对齐 :caret/:start/:end，保留 32px 可见形状与位置 — 实际 OnApplyTemplate 因缺 PART_Indicator 抛 KeyNotFoundException，当前 PathIcon-only 模板无法渲染，此处是既有框架契约修复而非模板重构 — 错了的代价：新增必需部件可能改变指针/触摸热点或形状，必须以真实模板、指示部件边界与 owner 颜色契约纠正；原生触摸拖动未验证需单列。
+Ruling: WaveSpirit 若现有测试设施无可用确定性时钟，先验证真实 painter 画刷、实际生成的关键帧/范围/透明度/时长及播放取消释放，瞬态像素交当前平台真实视觉核对 — Avalonia 12 时钟不可直接访问，不应为测试另建时钟框架或伪造 Token 派生绘制副作用，现有动画/帧设施须先做一次核查 — 错了的代价：生成与消费终点正确仍可能隐藏实际动画绘制问题，因此不宣称未运行的冻结像素验收，最终真实波纹视觉项保持显式未完成。
+Task 10.10c: 完整矩阵 133/133、生成器门禁 347/347 已通过；Indicator 保留原 2px/8px 裁剪几何，真实指针保持不变，非对称圆角扰动可见，移除发布后额外交互仍通过，未改产品 Indicator。Embedding 的 SystemBarColor 具体画刷终点另经 4/4 验证。
+Ruling: Embedding 通过既有 EmbeddingThemeConstants 的最小画刷转换器声明式适配严格 SolidColorBrush 终点，不放宽公开属性类型 — 真实 EmbeddableControlRoot 初始化正常，SystemBarColor 为 null 的原因是不可变画刷投射被具体类型拒绝，不能用假 Theme 探针或错误初始化模型掩盖 — 错了的代价：有效输入变化时可能多创建一画刷，若颜色/透明度转换错误会影响原生终点；需真实根、类型、发布/恢复契约纠正，资源查询热路径不新增此转换。

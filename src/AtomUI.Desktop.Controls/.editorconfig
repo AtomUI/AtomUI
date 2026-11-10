@@ -170,3 +170,19 @@ dotnet_diagnostic.ATOMUIGEN043.severity = error
 dotnet_diagnostic.ATOMUIGEN044.severity = error
 dotnet_diagnostic.ATOMUIGEN045.severity = error
 dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+# Windows, scrolling and shared primitives remainder. Keep in step with MigratedFamilyAnalyzerGateTests.
+[{Window,WindowTitleBar,ScrollViewer,Primitives/IndicatorScrollViewer,Primitives/ArrowDecoratedBox,Primitives/FeedbackStack,Flyouts}/**]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN042.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error
+
+[Primitives/Themes/WaveSpiritDecoratorTheme.axaml]
+dotnet_diagnostic.ATOMUIGEN041.severity = error
+dotnet_diagnostic.ATOMUIGEN043.severity = error
+dotnet_diagnostic.ATOMUIGEN044.severity = error
+dotnet_diagnostic.ATOMUIGEN045.severity = error
+dotnet_diagnostic.ATOMUIGEN047.severity = error

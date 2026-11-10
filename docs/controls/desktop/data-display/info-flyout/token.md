@@ -9,7 +9,7 @@ InfoFlyout Token 只表达组件级视觉变量，例如尺寸、间距、颜色
 当前 Token scope：
 
 - `FlyoutHostToken`，scope id 为 `FlyoutHost`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHostToken.cs`。
-- `TreeFlyoutToken`，scope id 为 `TreeFlyout`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeFlyoutToken.cs`。
+- `TreeViewFlyoutPresenterToken`，scope id 为 `TreeViewFlyoutPresenter`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyoutPresenterToken.cs`。
 
 ## 2. Token 分类
 
@@ -60,3 +60,5 @@ InfoFlyout 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+FlyoutHost 的全局动效读取自身有效值；MenuFlyout / TreeViewFlyout 的 pointer placement offset 在打开会话内读取 placement target 作用域中的 FlyoutHost Own Token，关闭、detach 时释放绑定。TreeViewFlyoutPresenter 的 `PopupBgColor` 设置 presenter 默认背景，经现有 TemplateBinding 传到箭头容器；显式根 Background 保持优先。

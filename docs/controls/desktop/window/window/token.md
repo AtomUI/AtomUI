@@ -25,6 +25,8 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
+窗口初始显示与后续主题发布均读取当前上下文的 Window Token；局部 Provider 经现有顶层 lease 传递到窗口。窗口内部的注册子控件（如 WindowTitleBar）保持自己的身份。
+
 ## 3. 控件专项模型中的 Token 使用
 
 Window 的控件专项模型通过 Theme 消费 Token：

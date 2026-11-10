@@ -22,7 +22,8 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             .Where(static input =>
             {
                 input.Right.GetOptions(input.Left).TryGetValue("build_metadata.AdditionalFiles.Link", out var link);
-                return ThemeAssetInfo.IsThemeAssetPath(string.IsNullOrWhiteSpace(link) ? input.Left.Path : link!);
+                return ThemeAssetInfo.IsThemeAssetPath(input.Left.Path) ||
+                       ThemeAssetInfo.IsThemeAssetPath(string.IsNullOrWhiteSpace(link) ? input.Left.Path : link!);
             })
             .Select(static (input, token) =>
             {
@@ -121,8 +122,9 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 info.AvailableGlobalTokenNames, context.ReportDiagnostic).ToList();
             var hasSemanticRuntime = compilation.GetTypeByMetadataName("AtomUI.Theme.Schema.ControlSemanticDescriptor") is not null;
             var resourceFacts = new RegistrationModelBuilder(compilation, packageId, catalog, context.ReportDiagnostic);
-            resourceFacts.ReadResources(assets, documents, semanticDeclarations);
-            var semanticControls = hasSemanticRuntime ? SemanticPartModelBuilder.Build(compilation, semanticDeclarations, assets, resourceFacts, context.ReportDiagnostic) : Array.Empty<SemanticControlDeclaration>();
+            var registrationAssets = assets.Where(static asset => ThemeAssetInfo.IsThemeAssetPath(asset.AssetPath)).ToArray();
+            resourceFacts.ReadResources(registrationAssets, documents, semanticDeclarations);
+            var semanticControls = hasSemanticRuntime ? SemanticPartModelBuilder.Build(compilation, semanticDeclarations, registrationAssets, resourceFacts, context.ReportDiagnostic) : Array.Empty<SemanticControlDeclaration>();
             RegistrationPackage? ownRegistration = null;
             if (compilation.GetTypeByMetadataName("AtomUI.Registration.ControlPackageMarkerAttribute") is not null)
             {

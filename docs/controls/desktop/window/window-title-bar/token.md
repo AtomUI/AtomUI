@@ -72,17 +72,9 @@ active/inactive 是控件实例状态。Token 只提供对应颜色，实际选�
 
 关闭按钮危险态只应用于 `WindowsCaptionButton.IsCloseButton=True`。其他 caption action 不消费该组颜色。
 
-### 2.5 通用兼容颜色
+### 2.5 旧颜色字段迁移
 
-| Token | 语义 |
-| --- | --- |
-| `ForegroundColor` | 通用标题栏前景色。 |
-| `HoverBackgroundColor` | 通用文本操作 hover 背景。 |
-| `PressedBackgroundColor` | 通用文本操作 pressed 背景。 |
-| `CloseHoverBackgroundColor` | 通用 close action hover 背景。 |
-| `ClosePressedBackgroundColor` | 通用 close action pressed 背景。 |
-
-这些变量属于生成的 WindowTitleBar Token 契约。内置 caption themes 使用更精确的 active/inactive 与 Windows close 变量；通用兼容颜色仍保持可生成、可覆盖和不可随意重命名。
+五个无消费者的通用兼容颜色已移除，迁移入口见下方兼容性要求。内置 caption themes 使用更精确的 active/inactive 与 Windows close 变量。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -107,7 +99,7 @@ SharedToken
 | `FullscreenPopoverLayerTheme.axaml` | 非 CSD 全屏弹出标题栏。 |
 | `ImagePreviewerTitleBarTheme.axaml` | 预览图标/标题间距和操作区间距；背景由 ImagePreviewer Token 覆盖。 |
 
-标题栏默认背景来自 SharedToken `ColorBgContainer`；ImagePreviewer 标题栏背景来自 `ImagePreviewerToken.TitleBarBackgroundColor`。背景 ownership 不改变 WindowTitleBar 的内容与 caption Token scope。
+标题栏默认背景来自 WindowTitleBar 的有效全局 Token `ColorBgContainer`；ImagePreviewer 标题栏背景来自 `ImagePreviewerToken.TitleBarBackgroundColor`。背景 ownership 不改变 WindowTitleBar 的内容与 caption Token scope。
 
 ## 4. 控件家族影响
 
@@ -123,7 +115,7 @@ SharedToken
 
 ## 5. 兼容性要求
 
-- 不删除或重命名既有 TokenKind、TokenResource key 和 AXAML 消费名。
+- 已删除从未被消费的 `ForegroundColor`、`HoverBackgroundColor`、`PressedBackgroundColor`、`CloseHoverBackgroundColor`、`ClosePressedBackgroundColor`。请从 XML / Own Token 配置中移除；状态前景使用 `ActiveColor` / `InactiveColor`，普通 caption 背景使用 `ActiveBgColor` / `ActiveHoverBgColor` / `ActivePressedBgColor` / `InactiveBgColor` / `InactiveHoverBgColor`，Windows 关闭按钮使用 `WindowsCloseButtonHoverColor` / `WindowsCloseButtonHoverBgColor` / `WindowsCloseButtonPressedBgColor`。这些按平台和状态划分的 Token 不是旧字段的一对一别名。
 - 不把运行时状态、effective visibility 或 platform metrics 写入 Token。
 - `LogoAndLeftAddOnSpacing`、`LogoAndTitleSpacing` 和 `HeaderHorizontalSpacing` 保持独立语义，不因当前默认值相近而复用同一个 Own Token。
 - Token 默认值变化不得改变 caption button 命中区域与布局占用之间的约定。

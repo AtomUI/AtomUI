@@ -50,7 +50,7 @@ public class ArrowIndicator : Control
     static ArrowIndicator()
     {
         AffectsMeasure<ArrowIndicator>(ArrowSizeProperty);
-        AffectsRender<ArrowIndicator>(FilledColorProperty, StrokeBrushProperty, StrokeThicknessProperty);
+        AffectsRender<ArrowIndicator>(ArrowSizeProperty, FilledColorProperty, StrokeBrushProperty, StrokeThicknessProperty);
         HorizontalAlignmentProperty.OverrideDefaultValue<ArrowIndicator>(HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<ArrowIndicator>(VerticalAlignment.Top);
     }
@@ -69,6 +69,15 @@ public class ArrowIndicator : Control
     {
         base.ApplyTemplate();
         BuildGeometry();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ArrowSizeProperty)
+        {
+            BuildGeometry(true);
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)

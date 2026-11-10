@@ -16,10 +16,10 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-        <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
+        <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorIcon}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorIcon}" />
         
     </ControlTheme>
 </ResourceDictionary>

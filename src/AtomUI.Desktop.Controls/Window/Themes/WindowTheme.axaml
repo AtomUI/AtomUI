@@ -198,6 +198,7 @@
         </Style>
 
         <Setter Property="Cursor" Value="Arrow" />
+        <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
         <Setter Property="Margin" Value="0" />
         <Setter Property="TransparencyLevelHint" Value="Transparent" />
         <Setter Property="Background" Value="{atom:WindowTokenResource DefaultBackground}" />
@@ -206,8 +207,8 @@
         <Setter Property="TopLevel.SystemBarColor"
                 Value="{atom:WindowTokenResource SystemBarColor}" />
         <Setter Property="Foreground" Value="{atom:WindowTokenResource DefaultForeground}" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="FontFamily" Value="{atom:SharedTokenResource FontFamily}" />
+        <Setter Property="FontSize" Value="{atom:WindowTokenResource FontSize}" />
+        <Setter Property="FontFamily" Value="{atom:WindowTokenResource FontFamily}" />
         <Setter Property="ExtendClientAreaTitleBarHeightHint" Value="-1" />
         <Setter Property="ExtendClientAreaToDecorationsHint" Value="True" />
         <Setter Property="WindowDecorations" Value="Full" />
@@ -217,6 +218,7 @@
 
         <Style Selector="^[OsType=macOS]">
             <Setter Property="atom:MacStandardWindowButtons.OffsetX" Value="15" />
+            <!-- layout: native macOS caption button spacing. -->
             <Setter Property="atom:MacStandardWindowButtons.Spacing" Value="20" />
         </Style>
 
@@ -225,9 +227,11 @@
         </Style>
 
         <Style Selector="^[WindowState=FullScreen]">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0" />
         </Style>
         <Style Selector="^[WindowState=Maximized]">
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0" />
         </Style>
 
@@ -237,10 +241,12 @@
         </Style>
         <Style Selector="^[OsType=Linux][WindowState=Maximized]">
             <Setter Property="FrameShadow" Value="0 0 0 0 #00000000" />
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0" />
         </Style>
         <Style Selector="^[OsType=Linux][WindowState=FullScreen]">
             <Setter Property="FrameShadow" Value="0 0 0 0 #00000000" />
+            <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="CornerRadius" Value="0" />
         </Style>
         <Style Selector="^[OsType=Linux][IsCsdEnabled=True]">
@@ -264,10 +270,12 @@
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             <Style Selector="^ /template/ Border#WindowFrame">
+                <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                 <Setter Property="Margin" Value="0" />
                 <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
             </Style>
             <Style Selector="^ /template/ VisualLayerManager#PART_VisualLayerManager">
+                <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                 <Setter Property="Margin" Value="0" />
             </Style>
         </Style>

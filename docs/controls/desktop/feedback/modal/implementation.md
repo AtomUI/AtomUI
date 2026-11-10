@@ -167,7 +167,7 @@ Overlay presenter 在外层 Surface 与内容层的关闭任务全部完成后�
   Window 宿主不使用该开关（由原生窗口关闭流程负责）。
 - Enter/Escape 由栈顶 Overlay presenter 或当前 Window 转发给 Surface 的有效按钮序列。
 - modal mask 只在左键、真实 mask visual subtree、且 presenter 为栈顶时请求关闭；`IsMaskClosable=false` 时该输入被吞掉且不发起任何关闭请求。该门控只存在于 Overlay presenter 的 mask 输入路径，不复制到 mask 控件或 Session veto 层。
-- modeless presenter 在 Surface 外不阻断 pointer hit-test；点击 Surface 会把整个 presenter 激活到栈顶。
+- modeless presenter 在 Surface 外不阻断 pointer hit-test；点击 Surface 或其逻辑关联内容弹层会把整个 presenter 激活到栈顶。激活只移动现有集合位置，不 detach/re-attach 内容。隧道阶段不强制聚焦 Surface，焦点由框架按真实输入目标分配，避免内容弹层在选择前经历额外失焦。
 - Overlay 标题栏拖动通过复用的 render-only translation 更新 Surface，并同步 Dialog offset 作为持久化状态；resize 修改 offset 或 Surface 正文尺寸。resize handle 按下后捕获 pointer，即使指针离开细小 handle，release/capture lost 仍会清理 origin 与 dragging state。Surface 正文受 Window visible frame 与有效 drawn frame thickness 共同约束，BoxShadow 不参与定位。
 - Window caption close 先请求 Session 关闭；Session commit 后 `DialogWindowCloseState.Closing` 放行一次真实 native close。`OwnerWindowClosing` 始终放行，随后由 owner closed 强制 teardown。
 - Window presenter 禁用 Surface 内隐藏 header 的 `TitleIcon`，由原生 Window 标题栏唯一承载该图标，避免两个 presenter 争用同一个 `PathIcon` visual parent。

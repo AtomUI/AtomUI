@@ -1167,7 +1167,8 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
 
         _dialogLayer?.Activate(this);
-        _surface.Focus(NavigationMethod.Pointer);
+        // Content popups route through their logical Dialog ancestors. Let the
+        // framework focus the actual pointer target instead of interrupting it here.
     }
 
 }

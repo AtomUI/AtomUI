@@ -82,6 +82,14 @@ Dialog 内容的模板可以正常创建任意 Popup，只要 placement target �
 
 Avalonia 的固定层序为 Overlay、LightDismiss、Popup。Dialog 位于 Overlay，透明 light-dismiss 层覆盖 Dialog 的外部点击区域，popup host 位于最上层。点击 popup item 命中 popup；点击 popup 外部先触发 light-dismiss，再按 Popup 的 pass-through 配置决定是否继续传递。Dialog mask 的 `IsMaskClosable` 不接管 Popup 的关闭逻辑。
 
+内容弹层可通过逻辑祖先把 pointer 事件路由到所属 `OverlayDialogPresenter`，即使其视觉分支位于独立的
+`PopupOverlayLayer`。Presenter 的隧道 pointer handler 只激活 Dialog 的叠放顺序，不提前聚焦 Surface；
+实际焦点由 Avalonia 根据命中目标和视觉祖先分配。否则内容会先经历一次与用户目标无关的失焦，破坏 Picker 的
+候选值、确认与弹层关闭语义。点击 Surface 空白区时仍由框架把焦点分配给可聚焦的 Surface。
+
+激活只移动已有 presenter 的集合位置，保持逻辑/视觉挂载、内容焦点和 Popup owner 生命周期；不得以移除再添加
+presenter 的方式调整层序。DialogSession 打开时的初始聚焦与关闭时的焦点恢复保持独立。
+
 ### 7.3 关闭与重叠
 
 - presenter close 或 dispose 时先从 `DialogOverlayLayer` 移除，再释放 chrome suppression lease和逻辑/资源 parent。

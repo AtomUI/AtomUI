@@ -1059,9 +1059,16 @@ public class OverlayDialogPresenterTests
             var layer = first.Parent.ShouldBeOfType<DialogOverlayLayer>();
             layer.Children.ShouldBe(new Control[] { first, second });
 
+            var detachCount = 0;
+            first.DetachedFromVisualTree += (_, _) => detachCount++;
+            first.FocusScope.Focus().ShouldBeTrue();
+            var focused = window.FocusManager.GetFocusedElement();
+
             layer.Activate(first);
 
             layer.Children.ShouldBe(new Control[] { second, first });
+            detachCount.ShouldBe(0, "activation changes z-order without unloading Dialog content.");
+            window.FocusManager.GetFocusedElement().ShouldBeSameAs(focused);
 
             WaitWithDispatcherPump(first.CloseAsync().AsTask());
             WaitWithDispatcherPump(second.CloseAsync().AsTask());

@@ -97,8 +97,7 @@ internal sealed class DialogOverlayLayer : Canvas
             return;
         }
 
-        Children.RemoveAt(index);
-        Children.Add(presenter);
+        Children.Move(index, Children.Count - 1);
     }
 
     internal bool IsTopmost(OverlayDialogPresenter presenter)

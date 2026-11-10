@@ -2,6 +2,15 @@
 
 本文档记录 ColorPicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme
+  - 四个公开终端读取各自有效全局值，共享基元跟随实际 owner；预设项跨 Collapse 只转发自身 owner，公开嵌套编辑器与 Popup View 保持独立。
+  - 空色斜线改用 ColorError / LineWidthBold，预设勾选图标的 FillBrush / StrokeBrush 接通真实明暗对比色，浅色勾选改用 ColorTextSecondary；默认 Alpha 48px、数值按钮16px及紧凑字号11px保留。
+- Token
+  - 面板 Own 从 ColorPicker 移至两个 View，trigger 五项由两个 trigger 分别拥有；逐字段迁移见 token.md。
+  - Alpha 输入宽度及数字按钮宽度接通真实消费者，新增 View.EditorFontSize；显式基础尺寸参与默认派生。
+
 ## 2026-11-04
 
 - Changed

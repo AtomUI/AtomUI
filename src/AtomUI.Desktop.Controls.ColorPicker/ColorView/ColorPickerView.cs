@@ -7,12 +7,14 @@ namespace AtomUI.Desktop.Controls;
 
 public class ColorPickerView : AbstractColorPickerView
 {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     #region 公共属性定义
     public static readonly StyledProperty<Color> ValueProperty =
         AvaloniaProperty.Register<ColorPickerView, Color>(nameof(Value),
             Colors.White,
             defaultBindingMode: BindingMode.TwoWay,
             coerce: CoerceColor);
+#pragma warning restore ATOMUIGEN044
 
     public Color Value
     {
@@ -29,8 +31,10 @@ public class ColorPickerView : AbstractColorPickerView
 
     internal void ResetDraft(Color? value)
     {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
         SetCurrentValue(ValueProperty, value ?? Colors.White);
         SetCurrentValue(HsvValueProperty, (value ?? Colors.White).ToHsv());
+#pragma warning restore ATOMUIGEN044
         DraftValue = value;
         SetCurrentValue(IsEmptyDraftProperty, IsNeedConfirm && value == null);
         BeginEdit();

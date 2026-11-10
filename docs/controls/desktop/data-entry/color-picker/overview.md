@@ -233,6 +233,9 @@ ColorPicker 弹层遵循其 Popover 承载语义：ZoomBig、MotionDurationMid�
 
 ### 8.5 视觉选项模型
 
+ColorPicker、GradientColorPicker 和两种公开 View 分别拥有独立 Token 身份。trigger 设置不会隐式覆盖嵌套的公开 View；面板范围通过对应 View 配置。面板中的 NumericUpDown / LineEdit 等公开编辑器保留自身 palette 与动效，View 只明确提供紧凑编辑器字号及输入装配尺寸。字段迁移和默认值见 [Token 设计](token.md)。
+
+
 ColorPicker 的视觉选项通过 public API 归一为 theme variables、伪类或模板绑定。Token 保存组件语义值，不能保存实例运行时状态或业务色值。
 
 ## 9. 文档导航与验证策略

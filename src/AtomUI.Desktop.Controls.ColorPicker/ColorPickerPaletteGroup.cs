@@ -8,6 +8,8 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ColorPickerPaletteGroup : TemplatedControl
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<List<ColorPickerPalette>?> PaletteGroupProperty =
         AvaloniaProperty.Register<ColorPickerPaletteGroup, List<ColorPickerPalette>?>(
             nameof(PaletteGroup));
@@ -18,9 +20,19 @@ internal class ColorPickerPaletteGroup : TemplatedControl
         set => SetValue(PaletteGroupProperty, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
     public event EventHandler<ColorPickerPaletteColorSelectedEventArgs>? ColorSelected;
 
+    #endregion
+
     #region 内部属性定义
+
+    internal static readonly StyledProperty<double> PaletteSpacingProperty =
+        AvaloniaProperty.Register<ColorPickerPaletteGroup, double>(nameof(PaletteSpacing));
+
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ColorPickerPaletteGroup>();
@@ -31,6 +43,12 @@ internal class ColorPickerPaletteGroup : TemplatedControl
             o => o.GroupName,
             (o, v) => o.GroupName = v);
 
+    internal double PaletteSpacing
+    {
+        get => GetValue(PaletteSpacingProperty);
+        set => SetValue(PaletteSpacingProperty, value);
+    }
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -38,13 +56,18 @@ internal class ColorPickerPaletteGroup : TemplatedControl
     }
 
     private string? _groupNameProperty;
-    private IDisposable? _colorSelectedDisposable;
 
     internal string? GroupName
     {
         get => _groupNameProperty;
         set => SetAndRaise(GroupNameProperty, ref _groupNameProperty, value);
     }
+
+    #endregion
+
+    #region 运行时字段
+
+    private IDisposable? _colorSelectedDisposable;
 
     #endregion
 

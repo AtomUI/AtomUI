@@ -2,19 +2,15 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 {
-    private static readonly IPen EmptyColorPen = new ImmutablePen(Colors.Red.ToUInt32(), 2);
-
     #region 公共属性定义
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
@@ -46,7 +42,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 
     #endregion
 
-    #region 公共属性定义
+    #region 公共事件定义
 
     public static readonly RoutedEvent<RoutedEventArgs> ClearRequestEvent =
         RoutedEvent.Register<ColorBlock, RoutedEventArgs>(
@@ -62,6 +58,11 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<IBrush?> EmptyColorBrushProperty =
+        AvaloniaProperty.Register<ColorBlock, IBrush?>(nameof(EmptyColorBrush));
+    internal static readonly StyledProperty<double> EmptyLineWidthProperty =
+        AvaloniaProperty.Register<ColorBlock, double>(nameof(EmptyLineWidth));
 
     internal static readonly DirectProperty<ColorBlock, IBrush?> TransparentBgBrushProperty =
         AvaloniaProperty.RegisterDirect<ColorBlock, IBrush?>(
@@ -80,6 +81,17 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             nameof(IsCustomSize),
             o => o.IsCustomSize,
             (o, v) => o.IsCustomSize = v);
+
+    internal IBrush? EmptyColorBrush
+    {
+        get => GetValue(EmptyColorBrushProperty);
+        set => SetValue(EmptyColorBrushProperty, value);
+    }
+    internal double EmptyLineWidth
+    {
+        get => GetValue(EmptyLineWidthProperty);
+        set => SetValue(EmptyLineWidthProperty, value);
+    }
 
     private IBrush? _transparentBgBrush;
 
@@ -102,8 +114,6 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     }
 
     private bool _isCustomSize;
-    private IDisposable? _widthValue;
-    private IDisposable? _heightValue;
 
     internal bool IsCustomSize
     {
@@ -113,9 +123,15 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 
     #endregion
 
+    #region 运行时字段
+
+    private readonly Pen _emptyColorPen = new();
+
+    #endregion
+
     static ColorBlock()
     {
-        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty);
+        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty, EmptyColorBrushProperty, EmptyLineWidthProperty);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -137,9 +153,14 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             }
         }
 
+        if (change.Property == EmptyColorBrushProperty || change.Property == EmptyLineWidthProperty)
+        {
+            _emptyColorPen.Brush = EmptyColorBrush;
+            _emptyColorPen.Thickness = EmptyLineWidth;
+        }
+
         if (change.Property == SizeProperty)
         {
-            ConfigureSize();
             IsCustomSize = !double.IsNaN(Size);
         }
     }
@@ -159,21 +180,6 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
         }
     }
 
-    private void ConfigureSize()
-    {
-        _widthValue?.Dispose();
-        _widthValue = null;
-        _heightValue?.Dispose();
-        _heightValue = null;
-
-        if (!double.IsNaN(Size))
-        {
-            // 不影响模板设置
-            _widthValue  = SetValue(WidthProperty, Size, BindingPriority.Template);
-            _heightValue = SetValue(HeightProperty, Size, BindingPriority.Template);
-        }
-    }
-
     public override void Render(DrawingContext context)
     {
         if (IsEmptyColorMode)
@@ -184,7 +190,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             });
             var startPoint = new Point(2, Bounds.Height - 2);
             var endPoint = new Point(Bounds.Width - 2, 2);
-            context.DrawLine(EmptyColorPen, startPoint, endPoint);
+            context.DrawLine(_emptyColorPen, startPoint, endPoint);
         }
     }
 

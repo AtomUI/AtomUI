@@ -53,7 +53,9 @@ internal static class ColorPickerHelpers
         {
             int pixelDataIndex = 0;
             double componentStep;
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
             Color baseRgbColor = Colors.White;
+#pragma warning restore ATOMUIGEN044
             Color rgbColor;
             int bgraPixelDataHeight;
             int bgraPixelDataWidth;
@@ -212,7 +214,9 @@ internal static class ColorPickerHelpers
 
             Color GetColor(double componentValue)
             {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                 Color newRgbColor = Colors.White;
+#pragma warning restore ATOMUIGEN044
 
                 switch (component)
                 {

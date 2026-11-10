@@ -5,6 +5,12 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorPicker}" TargetType="atom:ColorPicker">
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockDisabledOpacity" Value="{atom:ColorPickerTokenResource ColorBlockDisabledOpacity}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows" Value="{atom:ColorPickerTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTransparentBgSize" Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerPadding" Value="{atom:ColorPickerTokenResource TriggerPadding}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerTextMargin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
+
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerTheme TargetType="atom:ColorPicker" />
         </ControlTheme.BasedOn>

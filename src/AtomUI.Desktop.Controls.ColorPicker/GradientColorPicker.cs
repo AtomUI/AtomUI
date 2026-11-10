@@ -312,11 +312,12 @@ public partial class GradientColorPicker : AbstractColorPicker
                 {
                     if (i == index)
                     {
-                        textBlock.Foreground = InactiveStopTextColor;
+                        // Per-stop active state is calculated at runtime for labels created in the content subtree.
+                        textBlock.SetCurrentValue(TextBlock.ForegroundProperty, InactiveStopTextColor);
                     }
                     else
                     {
-                        textBlock.Foreground = Foreground;
+                        textBlock.SetCurrentValue(TextBlock.ForegroundProperty, Foreground);
                     }
                 }
             }

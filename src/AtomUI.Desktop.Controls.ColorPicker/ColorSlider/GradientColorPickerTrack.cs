@@ -251,7 +251,9 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
         position = Math.Max(0.0, Math.Min(1.0, position));
         if (GradientValue == null || GradientValue.GradientStops.Count == 0)
         {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
             return Colors.Black;
+#pragma warning restore ATOMUIGEN044
         }
 
         var colorStops = CopyGradientStopsByOffset(GradientValue.GradientStops);

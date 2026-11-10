@@ -9,6 +9,7 @@ public class OwnTokenKindContractTests
 {
     [Theory]
     [InlineData(typeof(Button))]
+    [InlineData(typeof(global::AtomUI.Desktop.Controls.ColorPicker))]
     [InlineData(typeof(global::AtomUI.Desktop.Controls.DataGrid))]
     public void Own_Token_Kind_Enum_Values_Match_Descriptor_Slots(Type controlType)
     {

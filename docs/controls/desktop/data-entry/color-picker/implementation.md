@@ -12,6 +12,8 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 
 ## 2. 源码文件结构
 
+Token 实现包括 `AbstractColorPickerToken`（trigger 公共字段）、`AbstractColorPickerViewToken`（面板字段）、四个终端 Token 和 `ColorPickerThemeInputs`（具体可继承样式输入）。终端只拥有真实可渲染字段，显式基值的默认守卫使用终端自己的 TokenKind。
+
 主要源码文件：
 
 - `src/AtomUI.Desktop.Controls.ColorPicker`：代表文件包括 `AbstractColorPicker.cs`、`AtomUIColorPickerThemesProvider.cs`、`ThemeManagerBuilderExtensions.cs`、`ColorBlock.cs`、`ColorChangedEventArgs.cs` 等。
@@ -173,6 +175,13 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
 ## 8. 资源、性能与 AOT 边界
+
+四个公开终端从自身 TokenResource 读取 Own，经 `ColorPickerThemeInputs` 的具体可继承属性传给共享模板；抽象 Token 层只复用公式。Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立身份，View 明确指定数值编辑器的紧凑字号及布局。
+
+预设项位于公开 Collapse 之后：Collapse 保留自身身份，`PaletteColorItem` 在 attach 时复用 `TokenOwnerForwarding` 跟随 PaletteGroup，detach 时释放并清除转发值。ThemeScope 的 internal attached setter 无法从 AXAML 访问。WrapPanel 间距通过 PaletteGroup 的普通 PaletteSpacing 属性声明式传入。勾选 Icon 保持自身身份，前景由 PaletteColorItem.CheckedMarkForeground 明确投射；分隔线保留 BorderBrush，厚度经既有过滤转换器只取左边。
+
+ColorBlock 的 Size 由 ControlTheme 状态 Setter 投射至 Width/Height。色谱 bitmap、选中颜色和测量半径属于运行时数据，代码写入使用 SetCurrentValue。RGB/HSV 数据端点的诊断说明只围绕相应语句，不豁免主题 chrome。空色斜线使用每实例缓存 Pen，资源值变化更新画笔，无非 Visual 资源订阅。
+
 
 资源和 AOT 约束：
 

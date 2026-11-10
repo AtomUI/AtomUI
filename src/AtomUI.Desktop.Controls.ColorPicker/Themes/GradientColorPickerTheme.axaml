@@ -5,6 +5,12 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:GradientColorPicker}" TargetType="atom:GradientColorPicker">
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockDisabledOpacity" Value="{atom:GradientColorPickerTokenResource ColorBlockDisabledOpacity}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows" Value="{atom:GradientColorPickerTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTransparentBgSize" Value="{atom:GradientColorPickerTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerPadding" Value="{atom:GradientColorPickerTokenResource TriggerPadding}" />
+        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerTextMargin" Value="{atom:GradientColorPickerTokenResource TriggerTextMargin}" />
+
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerTheme TargetType="atom:GradientColorPicker" />
         </ControlTheme.BasedOn>
@@ -59,17 +65,17 @@
         </Setter>
 
         <Setter Property="InactiveStopTextColor"
-                Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                Value="{atom:GradientColorPickerTokenResource ColorTextDisabled}" />
         <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
             <Setter Property="TextElement.Foreground"
-                    Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="Margin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
+                    Value="{atom:GradientColorPickerTokenResource ColorText}" />
+            <Setter Property="Margin" Value="{Binding (atom:ColorPickerThemeInputs.ThemeTriggerTextMargin), RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ TextBlock#PART_ColorTextPanel">
-                <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
+                <Setter Property="TextElement.Foreground"
+                        Value="{atom:GradientColorPickerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
     </ControlTheme>

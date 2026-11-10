@@ -184,12 +184,14 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
     #region 内部属性定义
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     internal static readonly StyledProperty<HsvColor> HsvValueProperty =
         AvaloniaProperty.Register<AbstractColorPickerView, HsvColor>(
             nameof(HsvValue),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay,
             coerce: CoerceHsvColor);
+#pragma warning restore ATOMUIGEN044
 
     internal static readonly DirectProperty<AbstractColorPickerView, bool> IsAlphaEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<AbstractColorPickerView, bool>(
@@ -214,8 +216,10 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
 
     private bool _isAlphaEffectiveVisible;
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     private readonly SolidColorBrush _hsvColorBrush = new(Colors.White);
     private readonly SolidColorBrush _hsvColorWithoutAlphaBrush = new(Colors.White);
+#pragma warning restore ATOMUIGEN044
 
     internal bool IsAlphaEffectiveVisible
     {

@@ -19,6 +19,7 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ColorSpectrum : TemplatedControl
 {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     /// <summary>
     /// Defines the <see cref="Color"/> property.
     /// </summary>
@@ -27,6 +28,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(Color),
             Colors.White,
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Defines the <see cref="Components"/> property.
@@ -36,6 +38,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(Components),
             ColorSpectrumComponents.HueSaturation);
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     /// <summary>
     /// Defines the <see cref="HsvColor"/> property.
     /// </summary>
@@ -44,6 +47,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(HsvColor),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Defines the <see cref="MaxHue"/> property.
@@ -306,7 +310,9 @@ internal class ColorSpectrum : TemplatedControl
     private int _minValueFromLastBitmapCreation;
     private int _maxValueFromLastBitmapCreation;
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     private Color _oldColor = Color.FromArgb(255, 255, 255, 255);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
@@ -1603,9 +1609,9 @@ internal class ColorSpectrum : TemplatedControl
             return;
         }
 
-        _spectrumOverlayRectangle.Opacity = overlayOpacity;
-        _spectrumRectangle.Fill = spectrumBrush;
-        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+        _spectrumOverlayRectangle.SetCurrentValue(OpacityProperty, overlayOpacity);
+        _spectrumRectangle.SetCurrentValue(Avalonia.Controls.Shapes.Shape.FillProperty, spectrumBrush);
+        _spectrumOverlayRectangle.SetCurrentValue(Avalonia.Controls.Shapes.Shape.FillProperty, spectrumOverlayBrush);
     }
 
     private bool TryUseFastSaturationValueSpectrum(
@@ -1665,10 +1671,12 @@ internal class ColorSpectrum : TemplatedControl
                 EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                     new(Colors.White, 0),
                     _saturationValueHueStop
                 }
             };
+#pragma warning restore ATOMUIGEN044
         }
         else
         {
@@ -1681,10 +1689,12 @@ internal class ColorSpectrum : TemplatedControl
             EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
             GradientStops = new GradientStops
             {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                 new(Colors.Transparent, 0),
                 new(Colors.Black, 1)
             }
         };
+#pragma warning restore ATOMUIGEN044
 
         SetSpectrumBrushes(_saturationValueSpectrumBrush, _saturationValueOverlayBrush, 1.0);
         return true;

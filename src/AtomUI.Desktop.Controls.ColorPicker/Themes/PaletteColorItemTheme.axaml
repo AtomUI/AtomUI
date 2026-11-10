@@ -11,14 +11,17 @@
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                         Padding="1">
+                                         Padding="{atom:OwnerTokenResource LineWidth}">
                     <Border Name="ColorPreview"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Background="{TemplateBinding Background}"
-                            BoxShadow="{atom:ColorPickerTokenResource ColorBlockInnerShadows}">
+                            BoxShadow="{Binding (atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows), RelativeSource={RelativeSource Self}}">
                         <antdicons:CheckBoldOutlined Name="PART_CheckedMark"
                                                      HorizontalAlignment="Center"
                                                      VerticalAlignment="Center"
+                                                     Foreground="{TemplateBinding CheckedMarkForeground}"
+                                                     FillBrush="{TemplateBinding CheckedMarkForeground}"
+                                                     StrokeBrush="{TemplateBinding CheckedMarkForeground}"
                                                      IsVisible="False" 
                                                      RenderTransform="{TemplateBinding CheckedMarkRenderTransform}"
                                                      RenderTransformOrigin="{x:Static RelativePoint.Center}"/>
@@ -29,18 +32,18 @@
 
         <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
             <Setter Property="Width"
-                    Value="{atom:ColorPickerTokenResource ColorPickerPresetColorSize}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorSize), RelativeSource={RelativeSource Self}}" />
             <Setter Property="Height"
-                    Value="{atom:ColorPickerTokenResource ColorPickerPresetColorSize}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorSize), RelativeSource={RelativeSource Self}}" />
         </Style>
 
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
 
         <Style Selector="^:pointerover">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFill}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFill}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -55,8 +58,8 @@
         </Style>
 
         <Style Selector="^ /template/ atom|Icon#PART_CheckedMark">
-            <Setter Property="Width" Value="{atom:ColorPickerTokenResource CheckedMarkSize}" />
-            <Setter Property="Height" Value="{atom:ColorPickerTokenResource CheckedMarkSize}" />
+            <Setter Property="Width" Value="{Binding (atom:ColorPickerThemeInputs.ThemeCheckedMarkSize), RelativeSource={RelativeSource Self}}" />
+            <Setter Property="Height" Value="{Binding (atom:ColorPickerThemeInputs.ThemeCheckedMarkSize), RelativeSource={RelativeSource Self}}" />
         </Style>
         
         <Setter Property="CheckedMarkRenderTransform" Value="scale(0.1)"/>
@@ -69,15 +72,11 @@
         </Style>
         
         <Style Selector="^[IsLightColor=True]">
-            <Style Selector="^ /template/ atom|Icon#PART_CheckedMark">
-                <Setter Property="Foreground" Value="rgba(0, 0, 0, 0.45)" />
-            </Style>
+            <Setter Property="CheckedMarkForeground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
         </Style>
         
         <Style Selector="^[IsLightColor=False]">
-            <Style Selector="^ /template/ atom|Icon#PART_CheckedMark">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWhite}" />
-            </Style>
+            <Setter Property="CheckedMarkForeground" Value="{atom:OwnerTokenResource ColorWhite}" />
         </Style>
 
     </ControlTheme>

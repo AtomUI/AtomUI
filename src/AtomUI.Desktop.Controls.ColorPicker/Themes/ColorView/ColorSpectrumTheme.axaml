@@ -10,6 +10,7 @@
     <ControlTheme x:Key="{x:Type atom:ColorSpectrum}" TargetType="atom:ColorSpectrum">
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type atom:ColorSpectrum}">
+                <!-- layout: fixed raster inset, hit target or compact editor packing. -->
                 <Border Name="PART_Frame" ClipToBounds="True"
                         Padding="0.5"
                         CornerRadius="{TemplateBinding CornerRadius}">
@@ -38,7 +39,7 @@
                                     VerticalAlignment="Stretch">
                                 <Panel Name="PART_SelectionEllipsePanel">
                                     <Ellipse x:Name="SelectionEllipse"
-                                             StrokeThickness="2"
+                                             StrokeThickness="{atom:OwnerTokenResource LineWidthBold}"
                                              IsHitTestVisible="False"
                                              HorizontalAlignment="Stretch"
                                              VerticalAlignment="Stretch" />
@@ -50,11 +51,11 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="BoxShadow"
-                    Value="{atom:ColorPickerTokenResource ColorPickerInsetShadow}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow), RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <!-- Focus -->
@@ -68,12 +69,12 @@
         <!-- Selector Color -->
         <Style Selector="^ /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerDarkColor}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor), RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^:light-selector /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerLightColor}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor), RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <!-- Selector Size -->
@@ -81,16 +82,16 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Width"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerSize}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize), RelativeSource={RelativeSource Self}}" />
             <Setter Property="Height"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerSize}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize), RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^:large-selector /template/ Panel#PART_SelectionEllipsePanel">
             <Setter Property="Width"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerSizeLG}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG), RelativeSource={RelativeSource Self}}" />
             <Setter Property="Height"
-                    Value="{atom:ColorPickerTokenResource ColorPickerHandlerSizeLG}" />
+                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG), RelativeSource={RelativeSource Self}}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

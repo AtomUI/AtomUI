@@ -8,6 +8,10 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
+- ColorPicker
+  - ColorPicker、GradientColorPicker及两个公开View使用独立有效Token；Popup View与嵌套公开编辑器保持各自作用域，预设色项跨Collapse跟随View。
+  - Alpha输入宽度和数值按钮宽度接通真实编辑器；保留原48px Alpha、16px按钮、11px紧凑字号和262px输入行。预设勾选图标通过FillBrush/StrokeBrush绘制明暗对比色（原Foreground未参与图标绘制）。空色斜线改用ColorError/LineWidthBold，浅色预设项勾选改用ColorTextSecondary（原固定rgba(0,0,0,.45)）。
+
 - DataGrid
   - 表格部件与筛选弹层读取 DataGrid 有效全局值；Spin 内容恢复表格 owner，嵌套公开控件保持各自身份。局部命名资源在发布及 owner 替换后持续更新实际列文本与编辑器。
   - 接通展开按钮/菜单筛选背景、筛选悬停别名和排序图标 margin；默认排序图标增加已有 8px margin，拖动表头背景由固定 #808080 改为 ColumnReorderActiveBg。展开按钮默认背景改为不透明，包含悬停/选中行背景之上的状态。
@@ -16,6 +20,7 @@ AtomUI 的重要变更记录在此文件中。
 
 
 - Breaking Changes
+  - ColorPicker Own：19项editor/palette/spectrum/slider字段移到Controls[ColorPickerView] / Controls[GradientColorPickerView]；trigger保留TriggerPadding、TriggerTextMargin、ColorBlockDisabledOpacity、ColorBlockInnerShadows与TransparentBgSize，后两项也由各View独立拥有。旧ColorPicker覆盖不再传入GradientColorPicker或公开View。逐字段迁移见color-picker/token.md；旧无效Alpha字段默认44，新View保持实际原48。
   - DataGrid 行、单元格、行头和分组头实现容器的有效全局值与动效时长改随宿主 DataGrid，请经 Controls[DataGrid] 配置；嵌套公开编辑器、选择器、按钮和分页器保持各自作用域。
   - LunarCalendar：Fullscreen Year 的选中月份背景使用独立的 LunarCalendar.ItemActiveBg，不再受 Calendar 同名 Own 覆盖；保留月份默认浅蓝色及日期主色。
   - Theme Own 作用域独立：DropdownButton、SubmitButton/ResetButton、NumericUpDown、AutoComplete 派生控件、Cascader/TreeSelect、MessageBox、ContextMenu/MenuFlyoutPresenter、卡片/条形页签、SimplePagination、Transfer 视图、TimerStatistic/StatisticCountUp、ImageGroupPreviewer、LunarCalendar、RangeDateViewer 与日期/时间范围选择器均通过实际控件身份配置。原来源控件的覆盖不再传播到其他终端；抽象层只共享计算。SplitButton 的两个公开 Button 与 SearchEdit 搜索 Button 保持 Button 颜色/动效身份。

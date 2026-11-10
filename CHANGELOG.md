@@ -6,6 +6,10 @@ All notable changes to AtomUI are documented in this file.
 
 ## Unreleased
 
+- ColorPicker
+  - ColorPicker, GradientColorPicker and both public Views use independent effective tokens. Public popup Views and nested editors retain their own scopes; palette swatches follow their View across Collapse.
+  - Alpha input width and numeric handle width now affect their real editors; preserve the existing 48px alpha, 16px handle, 11px compact font and 262px row. Preset check marks now paint their intended light/dark contrast brush through FillBrush/StrokeBrush (Foreground alone did not paint the icon). The empty-colour slash now uses ColorError/LineWidthBold; the light-swatch check uses ColorTextSecondary instead of fixed rgba(0,0,0,.45).
+
 - DataGrid
   - Grid parts and filter flyouts now honor DataGrid-effective globals; the Spin content forwards the grid owner while nested public controls retain their identities. Scoped named resources continue updating real column text/editors after publish and owner replacement.
   - Activate expand-button and menu-filter backgrounds, filter-hover aliases and sort-indicator margin; the default sort icon gains its existing 8px margin, and dragged-header background uses ColumnReorderActiveBg instead of fixed #808080. Expand-button background is now opaque by default, including over hovered/selected rows.
@@ -14,6 +18,7 @@ All notable changes to AtomUI are documented in this file.
 
 
 - Breaking Changes
+  - ColorPicker Own: move the 19 editor/palette/spectrum/slider fields to Controls[ColorPickerView] / Controls[GradientColorPickerView]; trigger scopes retain TriggerPadding, TriggerTextMargin, ColorBlockDisabledOpacity, ColorBlockInnerShadows and TransparentBgSize. The latter two also belong independently to each View. Old ColorPicker overrides no longer affect GradientColorPicker or either public View. See docs/controls/desktop/data-entry/color-picker/token.md for every field; the formerly ineffective alpha default 44 becomes the preserved real 48 in the new View scope.
   - DataGrid row, cell, row-header and group-header implementation containers now use the hosting DataGrid's effective globals and transition durations. Configure them through Controls[DataGrid]; nested public editors, selectors, buttons and pagination retain their own scopes.
   - LunarCalendar: full-screen Year selected-month backgrounds use LunarCalendar.ItemActiveBg independently of Calendar. The default light-blue month selection and primary-blue date selection are preserved.
   - Theme Own scopes are independent for DropdownButton, SubmitButton/ResetButton, NumericUpDown, AutoComplete variants, Cascader/TreeSelect, MessageBox, ContextMenu/MenuFlyoutPresenter, card/strip tabs, SimplePagination, Transfer views, TimerStatistic/StatisticCountUp, ImageGroupPreviewer, LunarCalendar, RangeDateViewer and date/time picker variants. Move overrides that previously targeted a source control to the actual control; shared abstract token layers reuse calculations, not resource identities. SplitButton's two public Buttons and SearchEdit's search Button keep Button colour/motion ownership.

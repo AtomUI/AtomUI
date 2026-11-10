@@ -19,6 +19,7 @@ public class MigratedFamilyAnalyzerGateTests
 {
     private const string DesktopControls = "src/AtomUI.Desktop.Controls";
     private const string Controls = "src/AtomUI.Controls";
+    private const string ColorPicker = "src/AtomUI.Desktop.Controls.ColorPicker";
     private const string DataGrid = "src/AtomUI.Desktop.Controls.DataGrid";
 
     /// <summary>Directories (relative to the package) of migrated families.</summary>
@@ -127,6 +128,24 @@ public class MigratedFamilyAnalyzerGateTests
             Path.Combine(RepositoryRoot, DataGrid, "Themes"), "*.axaml", SearchOption.AllDirectories)
         .Select(path => new object[] { Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/') });
 
+    public static IEnumerable<object[]> ColorPickerFamilyAssets() => Directory.EnumerateFiles(
+            Path.Combine(RepositoryRoot, ColorPicker, "Themes"), "*.axaml", SearchOption.AllDirectories)
+        .Select(path => new object[] { Path.GetRelativePath(RepositoryRoot, path).Replace('\\', '/') });
+
+    [Theory]
+    [MemberData(nameof(ColorPickerFamilyAssets))]
+    public void ColorPicker_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath) =>
+        Family_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(relativePath);
+
+    [Fact]
+    public void ColorPicker_Own_Tokens_Are_Active_Or_Reserved()
+    {
+        var entries = OwnTokenEntries(ColorPicker, ["ColorPicker", "GradientColorPicker", "ColorPickerView", "GradientColorPickerView"]).ToArray();
+        entries.Count(static match => match.Groups["state"].Value == "Active").ShouldBeGreaterThan(0);
+        entries.Where(static match => match.Groups["state"].Value == "Unreferenced")
+            .Select(static match => match.Groups["token"].Value).ShouldBeEmpty();
+    }
+
     [Theory]
     [MemberData(nameof(DataGridFamilyAssets))]
     public void DataGrid_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath) =>
@@ -146,7 +165,8 @@ public class MigratedFamilyAnalyzerGateTests
     public void Family_Theme_Assets_Have_No_Theme_Consumption_Diagnostics(string relativePath)
     {
         var text = new FileText(Path.Combine(RepositoryRoot, relativePath));
-        var package = relativePath.StartsWith(DataGrid + "/", StringComparison.Ordinal) ? DataGrid
+        var package = relativePath.StartsWith(ColorPicker + "/", StringComparison.Ordinal) ? ColorPicker
+            : relativePath.StartsWith(DataGrid + "/", StringComparison.Ordinal) ? DataGrid
             : relativePath.StartsWith(Controls + "/", StringComparison.Ordinal) ? Controls : DesktopControls;
         var asset = ThemeAssetInfo.Create(text, Path.Combine(RepositoryRoot, package), null,
             TestContext.Current.CancellationToken, out var root);
@@ -367,7 +387,7 @@ public class MigratedFamilyAnalyzerGateTests
     private static readonly Lazy<HashSet<string>> IdentityControls = new(static () =>
     {
         var result = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var package in new[] { DesktopControls, Controls, DataGrid })
+        foreach (var package in new[] { DesktopControls, Controls, DataGrid, ColorPicker })
         {
             var contracts = File.ReadAllText(Path.Combine(RepositoryRoot, package,
                 "GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator/GeneratedThemeBuildContracts.g.cs"));

@@ -27,11 +27,13 @@ internal class GradientColorSlider : AbstractColorSlider
 
     #region 内部属性定义
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     internal static readonly StyledProperty<HsvColor> ActivatedHsvValueProperty =
         AvaloniaProperty.Register<GradientColorSlider, HsvColor>(
             nameof(ActivatedHsvValue),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     internal static readonly DirectProperty<GradientColorSlider, int?> ActivatedStopIndexProperty =
         AvaloniaProperty.RegisterDirect<GradientColorSlider, int?>(

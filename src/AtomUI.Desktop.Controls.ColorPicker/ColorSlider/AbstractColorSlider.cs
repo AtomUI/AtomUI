@@ -87,7 +87,8 @@ internal abstract class AbstractColorSlider : RangeBase
 
     protected void ConfigureCornerRadius(Size size)
     {
-        CornerRadius = new CornerRadius(size.Height / 2);
+        // Runtime measured radius cannot be expressed by a static ControlTheme setter.
+        SetCurrentValue(CornerRadiusProperty, new CornerRadius(size.Height / 2));
     }
 
     protected override void UpdateDataValidation(

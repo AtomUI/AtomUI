@@ -221,7 +221,9 @@ public partial class ColorPicker : AbstractColorPicker
             {
                 _presenter.ResetDraft(Value);
             }
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
             var effectiveColor = Value ?? DefaultValue ?? Colors.White;
+#pragma warning restore ATOMUIGEN044
             if (!IsNeedConfirm)
             {
                 _presenter.SetCurrentValue(ColorPickerView.ValueProperty, effectiveColor);

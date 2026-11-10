@@ -4,6 +4,12 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorBlock}" TargetType="atom:ColorBlock">
+        <Setter Property="EmptyColorBrush" Value="{atom:OwnerTokenResource ColorError}" />
+        <Setter Property="EmptyLineWidth" Value="{atom:OwnerTokenResource LineWidthBold}" />
+        <Style Selector="^[IsCustomSize=True]">
+            <Setter Property="Width" Value="{Binding Size, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="Height" Value="{Binding Size, RelativeSource={RelativeSource Self}}" />
+        </Style>
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -15,7 +21,7 @@
                                 Classes.semantic-content="True"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                BoxShadow="{atom:ColorPickerTokenResource ColorBlockInnerShadows}"/>
+                                BoxShadow="{Binding (atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows), RelativeSource={RelativeSource Self}}"/>
                     </Border>
                     <atom:PixelAlignedBorder Name="PART_EmptyColorFrame"
                                              CornerRadius="{TemplateBinding CornerRadius}"
@@ -27,53 +33,53 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="TransparentBgIntervalColor" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-        <Setter Property="TransparentBgSize" Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="TransparentBgIntervalColor" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
+        <Setter Property="TransparentBgSize" Value="{Binding (atom:ColorPickerThemeInputs.ThemeTransparentBgSize), RelativeSource={RelativeSource Self}}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
         <Style Selector="^[IsEmptyColorMode=True]">
             <Setter Property="Cursor" Value="Hand" />
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_EmptyColorFrame">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
             </Style>
             
             <Style Selector="^:pointerover">
                 <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_EmptyColorFrame">
-                    <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+                    <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
                 </Style>
             </Style>
         </Style>
         
         <Style Selector="^[IsCustomSize=False]">
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeight}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeight}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeight}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightXS}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightXS}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
+                <Setter Property="Width" Value="{atom:OwnerTokenResource ControlHeightXS}" />
+                <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightXS}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusXS}" />
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusXS}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -15,6 +15,8 @@
 
 ## 2026-11-10
 
+- Theme：LunarCalendar.ItemActiveBg 独立控制 Fullscreen Year 的选中月份背景，Calendar 同名 Own 不再泄漏；保留选中月份默认浅蓝色和 Month 选中日期主色。
+
 - Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
 
 ## 2026-11-09

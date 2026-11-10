@@ -24,6 +24,7 @@ internal abstract class AbstractCalendarToken : AbstractControlDesignToken
     /// <summary>
     /// 完整模式选中日期/月单元背景，派生自 active item 背景。
     /// </summary>
+    public Color ItemActiveBg { get; set; }
 
     /// <summary>
     /// Year Select 最小宽度。
@@ -90,6 +91,7 @@ internal abstract class AbstractCalendarToken : AbstractControlDesignToken
 
         FullBg = EffectiveGlobalToken.ColorBgContainer;
         FullPanelBg = EffectiveGlobalToken.ColorBgContainer;
+        ItemActiveBg = EffectiveGlobalToken.ControlItemBgActive;
         YearControlWidth = 80;
         MonthControlWidth = 70;
         WeekHeaderHeight = EffectiveGlobalToken.ControlHeightSM * 0.75 +

@@ -157,6 +157,56 @@ public partial class DataFamilyEffectTests
         Run(scenario.Create, scenario.Arrange, LunarCalendarTokens.Identity, token, scenario.Options);
     }
 
+    [Theory]
+    [InlineData(CalendarMode.Year, DateViewerCellType.Month, "#ffe6f4ff")]
+    [InlineData(CalendarMode.Month, DateViewerCellType.Date, "#ff1677ff")]
+    public void Lunar_Fullscreen_Selection_Isolates_ItemActiveBg_And_Preserves_Mode_Colours(
+        CalendarMode mode, DateViewerCellType kind, string defaultColour)
+    {
+        var lunar = CreateCalendar(fullscreen: true, lunar: true, mode: mode, value: new DateTime(2026, 7, 15));
+        WithIsolationWindow(lunar, (provider, capture) =>
+        {
+            using var before = capture();
+            var cell = lunar.GetVisualDescendants().OfType<DateViewerCell>()
+                .Single(cell => cell.Model is { IsInView: true } model && model.Kind == kind && cell.Classes.Contains(":selected"));
+            var inner = (Avalonia.Controls.Border)CellInnerOf(cell);
+            var expected = Color.Parse(defaultColour);
+            inner.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(expected);
+
+            provider.Config = IsolationConfig(control: (CalendarTokens.Identity, "ItemActiveBg", "#ffff0000"));
+            using var sourceOverride = capture();
+            inner.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(expected,
+                "Calendar Own must not paint the actual selected Lunar cell.");
+            ChangedRatioOf(before, sourceOverride, inner).ShouldBe(0d);
+
+            provider.Config = IsolationConfig(control: (LunarCalendarTokens.Identity, "ItemActiveBg", "#ff00b96b"));
+            using var lunarOverride = capture();
+            inner.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(
+                mode == CalendarMode.Year ? Color.Parse("#ff00b96b") : expected);
+            if (mode == CalendarMode.Year)
+            {
+                ChangedRatioOf(before, lunarOverride, inner).ShouldBeGreaterThan(0.005);
+            }
+            else
+            {
+                ChangedRatioOf(before, lunarOverride, inner).ShouldBe(0d,
+                    "The existing lunar date-primary selector must remain distinct from the selected month surface.");
+            }
+        });
+    }
+
+    [Fact]
+    public void Lunar_Fullscreen_Year_ItemActiveBg_Has_Own_Effect()
+    {
+        Run(() => CreateCalendar(fullscreen: true, lunar: true, mode: CalendarMode.Year, value: new DateTime(2026, 7, 15)),
+            null, LunarCalendarTokens.Identity, "ItemActiveBg",
+            new EffectOptions { Region = SelectedLunarMonthSurface });
+    }
+
+    private static Control SelectedLunarMonthSurface(Control lunar) =>
+        CellInnerOf(lunar.GetVisualDescendants().OfType<DateViewerCell>()
+            .Single(static cell => cell.Model is { Kind: DateViewerCellType.Month, IsInView: true } && cell.Classes.Contains(":selected")));
+
     private static Scenario CalendarScenario(string token, bool lunar)
     {
         Scenario Mini(Action<Control>? arrange = null, CalendarMode mode = CalendarMode.Month, DateTime? value = null,
@@ -257,6 +307,10 @@ public partial class DataFamilyEffectTests
 
         switch (token)
         {
+            case "ItemActiveBg" or "ControlItemBgActive":
+                // The full-screen year view selects a month; date cells retain the lunar primary-colour override.
+                return new Scenario(static () => Lunar(fullscreen: true, mode: CalendarMode.Year), null,
+                    new EffectOptions { Region = SelectedLunarMonthSurface });
             case "MiniDateCellSize" or "MiniContentHeight":
                 return new Scenario(static () => Lunar(fullscreen: false));
             case "MiniMonthCellWidth":

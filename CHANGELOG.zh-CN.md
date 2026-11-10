@@ -9,6 +9,7 @@ AtomUI 的重要变更记录在此文件中。
 ## Unreleased
 
 - Breaking Changes
+  - LunarCalendar：Fullscreen Year 的选中月份背景使用独立的 LunarCalendar.ItemActiveBg，不再受 Calendar 同名 Own 覆盖；保留月份默认浅蓝色及日期主色。
   - Theme Own 作用域独立：DropdownButton、SubmitButton/ResetButton、NumericUpDown、AutoComplete 派生控件、Cascader/TreeSelect、MessageBox、ContextMenu/MenuFlyoutPresenter、卡片/条形页签、SimplePagination、Transfer 视图、TimerStatistic/StatisticCountUp、ImageGroupPreviewer、LunarCalendar、RangeDateViewer 与日期/时间范围选择器均通过实际控件身份配置。原来源控件的覆盖不再传播到其他终端；抽象层只共享计算。SplitButton 的两个公开 Button 与 SearchEdit 搜索 Button 保持 Button 颜色/动效身份。
   - Own 键迁移：`Space.AddonBg`/`AddOnPadding*` → `CompactSpaceAddOn`；`Menu.ContextMenuOffsetX/Y` → `ContextMenu`；`Pagination.ItemInputBg` → `SimplePagination`；`DateViewer.PanelSpacing` → `RangeDateViewer`；`DatePicker.RangePanelSpacing` → `RangeDatePicker`；`TimePicker.HeaderMargin` → `DatePicker`/`RangeDatePicker`；`InfoPickerInput.RangePickerArrowMargin`/`RangePickerIndicatorThickness` → 实际 range 控件，`RangeMarginToAnchor` → `RangeTimePicker`。TabControl 的卡片/添加按钮/垂直卡片 padding 键移到 CardTabControl/CardTabStrip；`WindowTitleBar.CaptionButtonCornerRadius` 移到公开标题栏 Button/ToggleButton。仅来源可渲染或 Reserved 的字段不复制到无关终端。
   - Mentions/AutoCompleteTextArea 内部编辑器和 TreeSelect 内部树跟随实际宿主；CandidateList 部件使用宿主 globals，不再借用 ListBox Own；TabItem/TabStripItem 动效跟随实际页签宿主。独立公开控件保持各自身份，Dialog surface 在 Window/Overlay 下均跟随真实 Dialog/MessageBox。

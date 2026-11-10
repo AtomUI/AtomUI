@@ -11,6 +11,7 @@
     x:ClassModifier="internal">
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:LunarCalendarTokenResource FullBg}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:LunarCalendarTokenResource FullPanelBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:LunarCalendarTokenResource ItemActiveBg}" />
 
         <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:LunarCalendarTokenResource YearControlWidth}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:LunarCalendarTokenResource MonthControlWidth}" />
@@ -30,7 +31,7 @@
             <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
         </ResourceDictionary.MergedDictionaries>
         <!-- The cells take the LunarCalendar's Token owner (the Calendar forwards it to its DateViewer); this lunar-only cell
-             theme reads the LunarCalendar's Tokens explicitly, and its base reads the Calendar Own Tokens (borrowed). -->
+             theme reads LunarCalendar's Tokens explicitly; its base consumes terminal-supplied presentation inputs. -->
         <ControlTheme x:Key="LunarDateCellTheme" TargetType="viewer:DateViewerCell" BasedOn="{StaticResource CalendarDateCellTheme}">
             <Style Selector="^[Presentation=Content]:date:selected:not(:disabled) /template/ Border#PART_CellInner">
                 <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ColorPrimary}" />

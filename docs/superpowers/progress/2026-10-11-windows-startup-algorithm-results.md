@@ -11,7 +11,7 @@ preexisting 24-line Desktop project Debug exclusions are preserved (SHA-256
 `0FC7E633D66F61B06FC9525AABE5EFAEC552CF82DBB9FD521AE26E4FFADB167B`). Tasks 2–9 received independent scoped
 reviews, including compatibility repairs. The final whole-change architectural review approved source quality and passed specification compliance for the retained implementation/evidence. Overall readiness is user review; integrated acceptance remains incomplete under the repository lifecycle gate.
 
-The linked [compact raw evidence](2026-10-11-windows-startup-algorithm-evidence.json) preserves all 60 samples,
+The linked [compact raw evidence](../../engineering/evidence/2026-10-11-windows-startup-algorithm-evidence.json) preserves all 60 samples,
 binary manifests, diagnostic phase records, API comparison identities, consuming-app checks and source inventory.
 It is the durable companion to this report; temporary SDD logs are not its sole evidence source.
 

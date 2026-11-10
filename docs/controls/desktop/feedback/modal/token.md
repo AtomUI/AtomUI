@@ -35,7 +35,7 @@ Modal 的控件专项模型通过 Theme 消费 Token：
 - `MessageBoxToken.MinWidth` 可以提高 MessageBox 的有效最小宽度，但不能降低 Dialog 的结构性最小高度。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
-### 主题读取（Task 10.6）
+### 主题读取
 
 - `Dialog`、`MessageBox`、`DialogButtonBox` 是注册控件，主题以各自的 `XxxTokenResource` 读取全局 Token（动效开关等）。
 - Surface 部件（`DialogSurface`、`OverlayDialogHeader`、`DialogCaptionButton`、`OverlayDialogMask`、`OverlayDialogPresenter`）

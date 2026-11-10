@@ -9,6 +9,9 @@
 - Docs
   - 澄清离树前景契约：从未挂到 owner 为 `Brushes.Black`，离开 owner 后保留最后的主题前景（与实现和测试一致）。
 
+- 未显式指定的文本字形前景与字号随作用域 ColorTextBase/FontSizeLG 更新；显式值、0.3 透明度和未挂载元数据默认值保持。
+- 默认绑定随现有活动 owner 会话释放，MarkupExtension 不再以默认本地值遮蔽主题。
+
 ## 2026-11-07
 
 - API

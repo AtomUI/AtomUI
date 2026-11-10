@@ -65,9 +65,9 @@
             <Setter Property="CalculatedBorderBrush" Value="{atom:TagTokenResource ColorBorder}" />
         </Style>
         <Style Selector="^[Variant=Outline]:not(:preset-color):not(:status-color):not(:custom-color)">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="CalculatedBackground" Value="Transparent" />
+            <Setter Property="CalculatedBorderBrush" Value="{atom:TagTokenResource ColorPrimary}" />
+            <Setter Property="CalculatedForeground" Value="{atom:TagTokenResource ColorPrimary}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">

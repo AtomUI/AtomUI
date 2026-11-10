@@ -42,7 +42,9 @@ public sealed class VisualLiteralAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(static compilationContext =>
         {
-            var scope = ControlCodeScope.TryCreate(compilationContext);
+            var scope = ControlCodeScope.TryCreate(
+                compilationContext.Compilation, compilationContext.Options.AnalyzerConfigOptionsProvider,
+                compilationContext.CancellationToken);
             if (scope is null)
             {
                 return;

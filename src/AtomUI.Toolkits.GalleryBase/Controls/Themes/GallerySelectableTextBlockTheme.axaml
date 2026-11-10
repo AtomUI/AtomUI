@@ -4,9 +4,9 @@
                     xmlns:gallery="https://atomui.net/toolkits/gallery-base">
     <ControlTheme x:Key="{x:Type gallery:GallerySelectableTextBlock}"
                   TargetType="gallery:GallerySelectableTextBlock">
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="SelectionForegroundBrush" Value="{atom:SharedTokenResource SelectionForeground}" />
-        <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
+        <Setter Property="SelectionBrush" Value="{gallery:GallerySelectableTextBlockTokenResource SelectionBackground}" />
+        <Setter Property="SelectionForegroundBrush" Value="{gallery:GallerySelectableTextBlockTokenResource SelectionForeground}" />
+        <Setter Property="LineHeight" Value="{gallery:GallerySelectableTextBlockTokenResource FontHeight}" />
         <Setter Property="Cursor" Value="IBeam" />
     </ControlTheme>
 </ResourceDictionary>

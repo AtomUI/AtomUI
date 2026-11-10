@@ -53,7 +53,9 @@ public sealed class LocalValueVisualWriteAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(static compilationContext =>
         {
-            var scope = ControlCodeScope.TryCreate(compilationContext);
+            var scope = ControlCodeScope.TryCreate(
+                compilationContext.Compilation, compilationContext.Options.AnalyzerConfigOptionsProvider,
+                compilationContext.CancellationToken);
             var avaloniaObject = compilationContext.Compilation.GetTypeByMetadataName("Avalonia.AvaloniaObject");
             var avaloniaProperty = compilationContext.Compilation.GetTypeByMetadataName("Avalonia.AvaloniaProperty`1");
             var control = compilationContext.Compilation.GetTypeByMetadataName("Avalonia.Controls.Control");

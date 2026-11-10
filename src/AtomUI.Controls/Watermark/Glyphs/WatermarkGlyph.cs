@@ -117,7 +117,10 @@ public abstract partial class WatermarkGlyph : AvaloniaObject
             // 避免外层 Attach 返回后覆盖内层已经接管的 attachment。
             var attachment = new SingleAssignmentDisposable();
             _resourceOwnerAttachment = attachment;
-            attachment.Disposable = AttachResourceHost(owner.Value);
+            var scopedHost = AttachResourceHost(owner.Value);
+            attachment.Disposable = this is TextGlyph textGlyph
+                ? new CompositeDisposable(textGlyph.CreateThemeDefaultBindings(), scopedHost)
+                : scopedHost;
         }
         else
         {

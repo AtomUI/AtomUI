@@ -30,12 +30,12 @@
   - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览时间（`:choosing`）时，预览写入的输入框文字为
     `ColorTextPlaceholder`。禁用文字仍为 `ColorTextDisabled`。
   - Picker 不再裁剪输入框的焦点阴影：焦点环完整显示，RangeTimePicker 也一样（此前完全不可见）。
-  - RangeTimePicker 的时间单元借用 `TimePicker.ItemMargin` 等 Own Token（已登记）。
+  - RangeTimePicker 的时间单元使用自身 `ItemMargin` 等 Own Token，共享公式不传播 TimePicker 的显式覆盖。
 
 ## 2026-11-08
 
 - Token
-  - Breaking：删除从未消费的 `TimePicker.RangePickerArrowMargin`、`RangePickerIndicatorThickness`，改用 `InfoPickerInput` 同名 Token。
+  - Breaking：删除从未消费的 `TimePicker.RangePickerArrowMargin`、`RangePickerIndicatorThickness`，配置实际 RangeDatePicker / RangeTimePicker 的同名 Own Token。
   - `ButtonsMargin`、`PeriodHostWidth` 接通消费；新增 `ItemMargin` 替换时间单元 `4,0` 字面量。
 - Theme
   - TimeViewCell 标为 Token owner 透明，TimeView 把所属 Picker 的 owner 转发给各列；单元颜色改读所属 Picker 的全局 Token（不再借读

@@ -78,6 +78,8 @@ public partial class DisplayFamilyEffectTests
             text.Background.ShouldBe(Brushes.Red);
             provider.Config = FeedbackFamilyEffectTests.WithControlToken(HyperLinkTextBlockTokens.Identity, "MotionDurationMid", "00:00:00.4000000");
             AssertDuration(link, TimeSpan.FromMilliseconds(400));
+            EffectTestData.For("AtomUI", "HyperLinkTextBlock")
+                          .Any(row => (string)row[0] == "MotionDurationMid" && !(bool)row[1]).ShouldBeTrue();
         });
     }
 

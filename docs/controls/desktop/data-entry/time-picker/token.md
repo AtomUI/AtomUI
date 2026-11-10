@@ -20,7 +20,7 @@ Token 按控件语义分类维护：
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ItemPadding`、`ItemMargin`、`ButtonsMargin`、`HeaderMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 读所属 Picker 的有效全局 Token |
 
-Task 10.9b 裁决：
+字段状态：
 
 - `ButtonsMargin`（Now / OK 按钮区与时间列的间距）与 `PeriodHostWidth`（上午/下午列宽，默认等于 `ItemWidth`）接通消费（Active）。
   按钮区原先借读 `DatePicker.ButtonsPanelMargin`，默认值相同。
@@ -59,7 +59,7 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 ## 5. 兼容性要求
 
 - 删除或重命名已生成的 TokenKind、TokenResource key 属于 Breaking 变更，必须经裁决并登记到本文档与根 CHANGELOG 的 Breaking 段（如
-  Task 10.9b 删除的 `RangePickerArrowMargin`、`RangePickerIndicatorThickness`）。
+  已删除的 `RangePickerArrowMargin`、`RangePickerIndicatorThickness`）。
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
 - 不在 Token 中展开颜色、variant 和状态的组合矩阵；组合关系应由 Theme selector 表达。
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。

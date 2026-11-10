@@ -1,5 +1,7 @@
 # AtomUI.Themes.Bootstrap
 
+Status: implemented and validated locally; not published to NuGet.
+
 A compiled token preset approximating Bootstrap 5.3 through AtomUI's existing Ant Design control structure. Registration preserves the `DaybreakBlue` default.
 
 ```csharp

@@ -8,6 +8,9 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
+- 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
+- Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
+
 - ColorPicker
   - 渐变 stop 文本在实时 Token 发布及禁用/启用往返后持续更新；关闭后恢复面板 ColorText 继承，不再保留拷贝的 trigger 画刷，并保留本地前景。Popup View 默认采用自身 EnableMotion，trigger false 作为关闭门控，显式 View 本地值优先。
   - ColorPicker、GradientColorPicker及两个公开View使用独立有效Token；Popup View与嵌套公开编辑器保持各自作用域，预设色项跨Collapse跟随View。
@@ -42,7 +45,7 @@ AtomUI 的重要变更记录在此文件中。
   - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
   - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
   - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
-  - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（与范围 Picker 实际读取的 InfoPickerInput Token 重复；antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经 `Controls[InfoPickerInput].RangePickerArrowMargin` / `RangePickerIndicatorThickness` 设置。
+  - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经实际 `RangeDatePicker` / `RangeTimePicker` 终端 Own Token 设置。
 - 主题一致性
   - 主题一致性：NumericUpDown Large 字号使用 FontSizeLG（默认16），Small/Middle 保持 FontSize（默认14）；Small 空多选 Cascader 使用小号 padding；公开标题栏 AddOn 按钮在非激活窗口中使用非激活悬停色。
 
@@ -53,7 +56,7 @@ AtomUI 的重要变更记录在此文件中。
   - TreeViewFlyoutPresenter 现绘制 PopupBgColor（原来被空 TemplateBinding 遮蔽）；菜单/树形 pointer offsets 遵循局部 Own 覆盖。TextSelectionHandle 补齐 Avalonia12 必需的透明 indicator 与 caret/start/end 选择器，保留32px可见形状并读取 owner 选区色。Splash 关闭图标描边改随 LineWidth（默认1px，原为1.5px）；间距、关闭图标尺寸和内缩遵循现有全局 Token。
 
 - 录入类剩余控件
-  - Form、Descriptions、Upload、Mentions、OtpLineEdit、Segmented 的主题与透明部件读取控件有效全局值；候选弹层全局值跟随 Mentions / AutoComplete，候选 Own Token 仍复用 ListBox，Mentions 编辑器使用 TextArea。
+  - Form、Descriptions、Upload、Mentions、OtpLineEdit、Segmented 的主题与透明部件读取控件有效全局值；候选弹层全局值跟随 Mentions / AutoComplete，候选部件使用宿主全局值，内部 Mentions 编辑器跟随 Mentions，独立公开 TextArea 保持自身身份。
   - 可见变化：垂直 Form 标签按文本自然高度加 `VerticalLabelPadding`（默认下方 8px）布局，不再保留水平布局的控件高度下限；Descriptions 纵向带边框分隔线跟随 `LineWidth`，不再固定为 1px 边框；OTP separator 跟随 `CellGap`（默认仍为 4px），OTP 状态样式及根边框画刷投射生效且不写 cell 本地画刷；Upload 进度线厚度随 Token 变化刷新；Segmented 轨道背景与圆角随 Token 变化重绘。
 - Button 家族
   - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
@@ -124,7 +127,7 @@ AtomUI 的重要变更记录在此文件中。
   - 未设置 `IndicatorColor` 的时间轴节点在主题或 `Controls[Timeline]` 变化时跟随 `ColorPrimary`（默认色此前在模板应用时一次性复制），`Timeline.ItemPaddingBottom*` 变化后条目立即重新测量。
   - 可见变化：走马灯前后切换箭头与边缘的距离改为 `Carousel.ArrowOffset`（8px，antd `arrowOffset`），此前为 `PaginationOffset`（12px）；分页位置变化时箭头边距也会刷新（此前变更通知发给了错误的属性）。
 - Data 家族（日历、日期面板、日期与时间选择器）
-  - 控件级覆盖（`Controls[Calendar]`、`Controls[LunarCalendar]`、`Controls[DateViewer]`、`Controls[RangeDateViewer]`、`Controls[DatePicker]`、`Controls[RangeDatePicker]`、`Controls[TimePicker]`、`Controls[RangeTimePicker]`）现在作用于该控件的全部主题读取（借用的 Own Token 除外，见 token.md：RangeDatePicker、RangeTimePicker 与 LunarCalendar 读取 DatePicker / TimePicker / Calendar 的部分 Own Token，DatePicker / RangeDatePicker 弹层的日期面板读取 DateViewer 的 Own Token）。Calendar 把 Token owner 转发给模板中的 DateViewer，日期格、面板和业务条跟随 `Controls[Calendar]` / `Controls[LunarCalendar]`；Picker 把 owner 转发给弹层 Presenter（位于注册控件 ArrowDecoratedBox 内），日期 Presenter 再转发给其 DateViewer / RangeDateViewer，TimeView 再转发给各列（位于注册控件 ScrollViewer 内），弹层日期面板（日期格、头部、面板文字）、按钮区、TimeView 与改为 Token owner 透明的 TimeViewCell 跟随 Picker：`Controls[DatePicker].ColorPrimary` 与 antd `components.DatePicker.colorPrimary` 一样改变选中日期格的颜色，`Controls[DateViewer]` 的全局 Token 不再作用于 Picker 弹层。弹层外框与 Calendar Header 的选择框保持各自身份。共享的 InfoPickerInput 主题读取具体 Picker 的全局 Token；范围箭头与激活条的 Own Token 经 `Controls[InfoPickerInput]` 设置。
+  - 控件级覆盖（`Controls[Calendar]`、`Controls[LunarCalendar]`、`Controls[DateViewer]`、`Controls[RangeDateViewer]`、`Controls[DatePicker]`、`Controls[RangeDatePicker]`、`Controls[TimePicker]`、`Controls[RangeTimePicker]`）现在作用于该控件的全部主题读取。Calendar 把 Token owner 转发给模板中的 DateViewer，日期格、面板和业务条跟随 `Controls[Calendar]` / `Controls[LunarCalendar]`；Picker 把 owner 转发给弹层 Presenter（位于注册控件 ArrowDecoratedBox 内），日期 Presenter 再转发给其 DateViewer / RangeDateViewer，TimeView 再转发给各列（位于注册控件 ScrollViewer 内），弹层日期面板（日期格、头部、面板文字）、按钮区、TimeView 与改为 Token owner 透明的 TimeViewCell 跟随 Picker：`Controls[DatePicker].ColorPrimary` 与 antd `components.DatePicker.colorPrimary` 一样改变选中日期格的颜色，`Controls[DateViewer]` 的全局 Token 不再作用于 Picker 弹层。弹层外框与 Calendar Header 的选择框保持各自身份。共享的 InfoPickerInput 主题读取具体 Picker 的全局 Token；范围箭头与激活条的 Own Token 经实际 `RangeDatePicker` / `RangeTimePicker` 终端设置。
   - `TimePicker.ButtonsMargin` 现在设置时间选择器按钮区的间距（此前借读 `DatePicker.ButtonsPanelMargin`，默认值相同），`TimePicker.PeriodHostWidth` 设置上午/下午列宽；时间单元读取所属 Picker 的全局 Token，不再借读 ListView 的 Own Token（默认值相同）。新增以下 AtomUI 扩展取代主题与代码中的字面量，默认值均不变：`Calendar.FullCellMargin`、`FullCellPadding`、`FullCellBorderThickness`、`RangeBarGap`、`RangeBarLabelPadding`；`LunarCalendar.MarkerSize`、`MarkerMargin`、`MarkerCornerRadius`；`DateViewer.HeaderBorderThickness`、`FooterBorderThickness`、`WeekNumberOpacity`；`DatePicker.HeaderBorderThickness`；`TimePicker.ItemMargin`。Calendar 业务条标签使用 `FontSizeSM` 与 `ColorTextLightSolid`，不再写死 12px 白色文字。
   - Picker 的根 `BorderBrush` 经 `HostBorderBrush` 投射到输入框，不再写入本地值；范围箭头的尺寸与颜色取自 Picker；激活条厚度变化后重新定位到输入框底边；禁用时间单元的样式改为指向单元的内容呈现器；Calendar 业务条移除后不再被保留（此前每个业务条与标签都绑定在业务条面板上）。
   - 可见变化：Picker 不再裁剪输入框的焦点阴影，聚焦时的焦点环（`InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`）完整显示在 Picker 四周，范围 Picker 也一样（此前 DatePicker / TimePicker 只露出一小段，范围 Picker 完全不可见）。指针在弹层中预览日期或时间时，预览写入的输入框文字为 `ColorTextPlaceholder`（对应 antd `-input-placeholder`）；其余情况下弹层打开期间输入框保持 `ColorText`，禁用文字与此前一样为 `ColorTextDisabled`。

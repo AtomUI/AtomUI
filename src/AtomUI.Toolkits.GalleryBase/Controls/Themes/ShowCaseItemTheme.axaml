@@ -12,7 +12,7 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type gallery:ShowCaseItem}">
                 <Border x:Name="PART_RootBorder"
-                        Background="{atom:SharedTokenResource ColorBgContainer}"
+                        Background="{gallery:ShowCaseItemTokenResource ColorBgContainer}"
                         BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                         Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                         CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -27,8 +27,8 @@
                                            MinHeight="{TemplateBinding DeferredPlaceholderHeight}"
                                            HorizontalAlignment="Stretch"
                                            VerticalAlignment="Stretch"
-                                           BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
-                                           BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                           BorderBrush="{gallery:ShowCaseItemTokenResource ColorFillTertiary}"
+                                           BorderThickness="{gallery:ShowCaseItemTokenResource BorderThickness}"
                                            CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
                                            ClipToBounds="True" />
                             <ContentPresenter Name="PART_ContentPresenter"
@@ -40,6 +40,7 @@
                                             Grid.Column="0"
                                             FontWeight="{gallery:ShowCaseItemTokenResource TitleFontWeight}"
                                             Title="{TemplateBinding Title}" />
+                            <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                             <atom:IconButton Name="PART_ZoomButton"
                                              Grid.Column="1"
                                              Width="28"
@@ -53,6 +54,7 @@
                                     <antdicons:ExpandOutlined />
                                 </atom:IconButton.Icon>
                             </atom:IconButton>
+                            <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                             <atom:IconButton Name="PART_ShowSourceButton"
                                              Grid.Column="2"
                                              Width="28"
@@ -83,7 +85,7 @@
                                       RibbonColor="{TemplateBinding BadgeColor}"
                                       BadgeIsVisible="True">
                         <Border x:Name="PART_RootBorder"
-                                Background="{atom:SharedTokenResource ColorBgContainer}"
+                                Background="{gallery:ShowCaseItemTokenResource ColorBgContainer}"
                                 BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                                 Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                                 CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -98,8 +100,8 @@
                                                    MinHeight="{Binding DeferredPlaceholderHeight, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
                                                    HorizontalAlignment="Stretch"
                                                    VerticalAlignment="Stretch"
-                                                   BorderBrush="{atom:SharedTokenResource ColorFillTertiary}"
-                                                   BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                                                   BorderBrush="{gallery:ShowCaseItemTokenResource ColorFillTertiary}"
+                                                   BorderThickness="{gallery:ShowCaseItemTokenResource BorderThickness}"
                                                    CornerRadius="{gallery:ShowCaseItemTokenResource DeferredPlaceholderCornerRadius}"
                                                    ClipToBounds="True" />
                                     <ContentPresenter Name="PART_ContentPresenter"
@@ -112,6 +114,7 @@
                                                     Grid.Column="0"
                                                     FontWeight="{gallery:ShowCaseItemTokenResource TitleFontWeight}"
                                                     Title="{Binding Title, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}" />
+                                    <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                     <atom:IconButton Name="PART_ZoomButton"
                                                      Grid.Column="1"
                                                      Width="28"
@@ -121,10 +124,12 @@
                                                      VerticalAlignment="Center"
                                                      IsVisible="{Binding IsZoomActionVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
                                                      atom:ToolTip.Tip="Zoom">
+                                        <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                         <atom:IconButton.Icon>
                                             <antdicons:ExpandOutlined />
                                         </atom:IconButton.Icon>
                                     </atom:IconButton>
+                                    <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                     <atom:IconButton Name="PART_ShowSourceButton"
                                                      Grid.Column="2"
                                                      Width="28"
@@ -134,6 +139,7 @@
                                                      VerticalAlignment="Center"
                                                      IsVisible="{Binding IsCodeActionVisible, RelativeSource={RelativeSource AncestorType=gallery:ShowCaseItem}}"
                                                      atom:ToolTip.Tip="View source">
+                                        <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                         <atom:IconButton.Icon>
                                             <antdicons:CodeOutlined />
                                         </atom:IconButton.Icon>

@@ -248,6 +248,60 @@ public class OwnTokenReferenceAnalysisTests
         run.Consumers.ShouldContain(("AtomUI", "shared-primitive", "ColorPrimary", "axaml"));
     }
 
+    [Theory]
+    [InlineData("<DoubleTransition Property=\"Opacity\" atom:TokenTransitions.Duration=\"MotionDurationMid\" />")]
+    [InlineData("<DoubleTransition Property=\"Opacity\"><atom:TokenTransitions.Duration>MotionDurationMid</atom:TokenTransitions.Duration></DoubleTransition>")]
+    public void TokenTransitions_Duration_Is_An_Owner_Global_Consumer(string transition)
+    {
+        var run = Run(DemoTokens, ButtonTheme($"<Setter Property=\"Transitions\"><atom:TokenTransitions><Transitions>{transition}</Transitions></atom:TokenTransitions></Setter>"));
+
+        run.Consumers.ShouldContain(("AtomUI", "Button", "MotionDurationMid", "axaml"));
+        run.Consumers.Count(static consumer => consumer.Item3 == "MotionDurationMid").ShouldBe(1);
+    }
+
+    [Fact]
+    public void TokenTransitions_Without_A_Registered_Theme_Owner_Is_A_Shared_Primitive_Read()
+    {
+        var run = Run(DemoTokens, new Asset("Frame/Themes/FrameTheme.axaml", """
+            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo" TargetType="atom:Frame">
+                <Setter Property="Transitions"><atom:TokenTransitions><Transitions>
+                    <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions></atom:TokenTransitions></Setter>
+            </ControlTheme>
+            """));
+
+        run.Consumers.ShouldContain(("AtomUI", "shared-primitive", "MotionDurationMid", "axaml"));
+        run.Consumers.ShouldNotContain(static consumer => consumer.Item2 == "Frame");
+    }
+
+    [Fact]
+    public void TokenTransitions_On_An_Owner_Transparent_Control_Follow_The_Shared_Host()
+    {
+        var run = Run(DemoTokens.Replace("public sealed class Label", "[TokenOwnerTransparent] public sealed class Label"),
+            LabelTheme("""
+                <Setter Property="Transitions"><atom:TokenTransitions><Transitions>
+                    <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions></atom:TokenTransitions></Setter>
+                """));
+
+        run.Consumers.ShouldContain(("AtomUI", "shared-primitive", "MotionDurationMid", "axaml"));
+        run.Consumers.ShouldNotContain(("AtomUI", "Label", "MotionDurationMid", "axaml"));
+    }
+
+    [Fact]
+    public void Ordinary_Durations_And_Unknown_Kinds_Are_Not_TokenTransitions_Consumers()
+    {
+        var run = Run(DemoTokens, ButtonTheme("""
+            <Setter Property="Transitions"><atom:TokenTransitions><Transitions>
+                <DoubleTransition Property="Opacity" Duration="00:00:00.2" />
+                <DoubleTransition Property="Opacity" atom:TokenTransitions.Delay="MotionDurationMid" />
+                <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="NotAToken" />
+            </Transitions></atom:TokenTransitions></Setter>
+            """));
+
+        run.Consumers.Where(static consumer => consumer.Item4 == "axaml").ShouldBeEmpty();
+    }
+
     [Fact]
     public void Own_Token_Reads_Are_Not_Global_Consumers()
     {
@@ -573,6 +627,7 @@ public class OwnTokenReferenceAnalysisTests
             public partial class GlobalToken : AbstractDesignToken
             {
                 public double ControlHeight { get; set; }
+                public System.TimeSpan MotionDurationMid { get; set; }
                 public string ColorPrimary { get; set; } = string.Empty;
                 public string ColorText { get; set; } = string.Empty;
             }

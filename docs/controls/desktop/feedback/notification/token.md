@@ -23,7 +23,7 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
-### 主题读取与裁决（Task 10.6）
+### 主题读取与裁决
 
 - NotificationCard 主题的全局 Token 一律经 `NotificationCardTokenResource` 读取，包括关闭按钮（注册控件 IconButton，保留
   自身 identity）的圆角、图标尺寸与默认 / 悬停 / 按下颜色；WindowNotificationManager 的 `EnableMotion` 读

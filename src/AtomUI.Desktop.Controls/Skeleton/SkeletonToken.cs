@@ -26,8 +26,16 @@ internal sealed class SkeletonToken : AbstractSkeletonToken
     public CornerRadius ParagraphLineRoundCornerRadius { get; set; }
     
     // 流光动画背景定义，背景按 400% 宽度平移形成扫光效果。
+    [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
+                   "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public IBrush? LoadingBackgroundStart { get; set; }
+
+    [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
+                   "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public IBrush? LoadingBackgroundMiddle { get; set; }
+
+    [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
+                   "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public IBrush? LoadingBackgroundEnd { get; set; }
     
     /// <summary>

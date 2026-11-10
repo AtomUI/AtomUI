@@ -33,7 +33,7 @@ CoreLib、runtime、jitinterface、clrjit、objwriter 使用匹配的官方 .NET
 1. 仅隔离 obj 而共享 bin/native 会误复用其他场景的二进制。修正后所有矩阵按完整输出域隔离，早期结果不计入证明。
 2. 静态构造函数预初始化会把中性空入口提前执行掉。加入仅针对该入口的解释屏障后，直接和经 helper/传递依赖的 cctor 场景通过。
 
-正式比较摘要见 [prototype-results.json](prototype-results.json)。这份摘要可以独立阅读，不依赖临时目录存在。
+正式比较摘要见 [prototype-results.json](../../../engineering/evidence/2026-10-05-aot-dependency-analysis-prototype-results.json)。这份摘要可以独立阅读，不依赖临时目录存在。
 
 ## 3. Managed trimming 结果
 

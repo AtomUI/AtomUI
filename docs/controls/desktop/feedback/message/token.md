@@ -23,7 +23,7 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
-### 主题读取与裁决（Task 10.6）
+### 主题读取与裁决
 
 - MessageCard 主题的全局 Token 一律经 `MessageCardTokenResource` 读取（状态色、圆角、阴影、文本与选区色、动效）。
 - WindowMessageManager 的折叠背板模拟被压住的卡片，背景、圆角、阴影（`BoxShadowsTertiary`）读 `MessageCardTokenResource`，

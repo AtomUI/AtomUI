@@ -25,7 +25,7 @@ DateViewer 提供共享面板和独立默认资源；Calendar 通过完整产品
 CalendarToken 持有根/正文背景、Header 宽度、月份内容宽度、Mini 高度、Fullscreen 周标题高度与内边距、完整内容最小高度与范围条高度；
 LunarCalendarToken 持有双行内容尺寸、文字/标记颜色与范围条避让。
 
-Task 10.9b 新增的 Own Token（AtomUI 扩展，替换主题与代码中的字面量，默认值与原渲染一致）：
+新增的 Own Token（AtomUI 扩展，替换主题与代码中的字面量，默认值与原渲染一致）：
 
 | Token | 默认 | 语义 |
 | --- | --- | --- |

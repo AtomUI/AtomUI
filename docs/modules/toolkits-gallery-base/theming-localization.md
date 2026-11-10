@@ -287,3 +287,11 @@ Browser 使用同一套主题 Provider，但要避免：
 - 主题文件不包含 `AtomUIGallery/Assets` 或产品 URI。
 - Browser 构建时能解析 GalleryBase theme provider。
 - 语言切换后 Shell 菜单状态和文案刷新。
+
+## 控件有效 Token 与参考展示边界
+
+GalleryBase ControlTheme 使用所属控件的有效全局 Token，支持 Controls[控件] 与局部作用域。
+普通标签字号、字重、padding、边框读取现有全局 Token；ShowCase/Inspector 的 viewport、参考 swatch 行、图标 tile 与工具栏点击区域保持固定布局。
+`IconInfoItem.IconNameFontSize`（13px）、`ColorItemControl.HexFontSize`（10px）与 `HexOpacity`（0.8）是实际标签 Own Token，
+保持原默认值而允许独立覆盖；它们不是色板内容数据，也不以新字体派生公式猜测已有设计关系。`ColorItemControl` 名称默认字号仍12px、字重600。
+包级 WarningsAsErrors 对活跃主题消费诊断生效，参考尺寸豁免仅在对应布局节点说明。

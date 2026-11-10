@@ -34,7 +34,7 @@
 - Theme
   - 日期 Presenter 把 Picker 的 Token owner 转发给弹层 DateViewer / RangeDateViewer（与 Calendar 相同）：日期格、面板文字与 Header 的
     全局 Token 跟随 `Controls[DatePicker]` / `Controls[RangeDatePicker]`（antd `components.DatePicker.colorPrimary` 改变选中日期格），
-    `Controls[DateViewer]` 的全局 Token 不再作用于弹层；DateViewer 的 Own Token 仍按 DateViewer 身份读取（借用）。Header 模板的
+    `Controls[DateViewer]` 的全局 Token 不再作用于弹层；弹层日期面板的 Own 值由实际 Picker 终端通过内部样式输入提供，独立 DateViewer 保持自身 Own。Header 模板的
     `ColorBorderSecondary` / `ControlHeight` 改为 `OwnerTokenResource`。
   - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览日期或时间（`:choosing`）时，预览写入的输入框
     文字为 `ColorTextPlaceholder`（antd `-input-placeholder`）。禁用文字仍为 `ColorTextDisabled`。

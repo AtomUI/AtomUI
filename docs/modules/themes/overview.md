@@ -8,10 +8,13 @@
 
 | 项目 | 主题 | 依赖 |
 |---|---|---|
-| `src/AtomUI.Themes.PrimeNG` | `PrimeNGAura`（默认）、`PrimeNGLara`、`PrimeNGNora`；按需 `*Dark` 独立定义 | `AtomUI.Core` |
-| `src/AtomUI.Themes.Shadcn` | `ShadcnZinc`、`ShadcnSlate`、`ShadcnStone` | `AtomUI.Core` |
-| `src/AtomUI.Themes.Bootstrap` | `Bootstrap` | `AtomUI.Core` |
-| `src/AtomUI.Themes.Material` | `Material` | `AtomUI.Core` |
+| `src/AtomUI.Themes.PrimeNG` | `PrimeNGAura`、`PrimeNGLara`、`PrimeNGNora`，各有四种 profile | Core + Desktop.Controls |
+| `src/AtomUI.Themes.Shadcn` | `ShadcnZinc`、`ShadcnSlate`、`ShadcnStone`，各有四种 profile | Core + Desktop.Controls |
+| `src/AtomUI.Themes.Bootstrap` | `Bootstrap`，四种 profile | Core |
+| `src/AtomUI.Themes.Material` | `Material`，四种 profile | Core + Desktop.Controls |
+
+四包均已实现并在本地验证，尚未发布到 NuGet。四种 profile 为基础 ID 与 `.Dark`、`.Compact`、`.DarkCompact`；
+注册不改变默认 DaybreakBlue，不自动启用 Desktop 控件。
 
 Gallery 现有的 4 个色板主题（PolarGreen、SunsetOrange、GoldenPurple、Magenta）保留在 Gallery 项目；是否迁成
 `AtomUI.Themes.AntColors` 包另行决定。
@@ -32,7 +35,7 @@ AtomUI.Themes.PrimeNG/
 
 - XML 只使用 Core 与已启用控件包登记的 Control 与 Token；预设包不自动启用控件包。
 - 每个预设的值来自原设计语言的公开 Token 源码或文档，README 记录映射表的出处与版本。
-- 暗色首版由 Dark 算法从 Seed 派生；对照不可接受时增加 `Appearance="Dark"` 独立定义。
+- 选择实际静态 profile ID；直接给基础 ID 加算法不会自动选择 profile，也不会消除定义中的 Map/Alias 覆盖。
 - README 的"不支持"清单是验收项，必须与实际行为一致。
 - 包的生效以主题系统的生效测试为前提：预设只是值表，值表写了但没效果属于主题系统缺陷，不在预设包里打补丁。
 

@@ -4,6 +4,8 @@ AtomUI 自始至终是 Ant Design 设计语言。预设主题包用 Ant Design �
 一行代码换一种"看起来像 PrimeNG / shadcn / Bootstrap / Material"的外观。它们不复刻细节，也不改变任何控件。
 机制见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md#11-预设主题包)。
 
+当前四个预设包已实现并在本地验证，尚未发布到 NuGet。以下包引用示例适用于发布后，当前可引用本地项目。
+
 ## 1. 引用并启用
 
 ```xml
@@ -22,11 +24,12 @@ AtomUI 自始至终是 Ant Design 设计语言。预设主题包用 Ant Design �
 和 DaybreakBlue、用户目录主题一样切换：
 
 ```csharp
-await themeManager.ApplyThemeAsync(new ThemeRequest { ThemeId = "PrimeNGAura" });
+await themeManager.ApplyThemeAsync(new ThemeRequest("PrimeNGAura", null, ThemeTransitionReason.UserRequest));
 ```
 
-暗色与紧凑是正交的算法，和预设自由组合。预设包不自动启用控件包；它的 `<Control>` 覆盖要求对应控件包已经
-`UseXxxControls()`。
+每个基础 ID 都有 `.Dark`、`.Compact`、`.DarkCompact` 静态 profile，例如 `PrimeNGAura.DarkCompact`。
+选择精确 ID 得到相应外观与密度；基础 ID 直接叠加算法仍保留其显式 Map/Alias 覆盖，不会自动派发 profile。
+预设包不自动启用控件包；它的 `<Control>` 覆盖要求对应控件包已经 `UseXxxControls()`。
 
 ## 2. 首批包与每个包的边界
 
@@ -45,14 +48,8 @@ await themeManager.ApplyThemeAsync(new ThemeRequest { ThemeId = "PrimeNGAura" })
 预设只是一个主题定义，应用的 `ThemeConfig` 照常叠加在它之上：
 
 ```csharp
-await themeManager.ApplyThemeAsync(new ThemeRequest
-{
-    ThemeId = "PrimeNGAura",
-    Config = new ThemeConfig
-    {
-        Tokens = { [GlobalTokens.ColorPrimary] = Color.Parse("#0ea5e9") },
-    },
-});
+var overrides = new ThemeConfigBuilder().WithToken("ColorPrimary", "#0ea5e9").Build();
+await themeManager.ApplyThemeAsync(new ThemeRequest("PrimeNGAura", overrides, ThemeTransitionReason.UserRequest));
 ```
 
 局部 `ThemeConfigProvider` 同样有效。预设里的 `<Control>` 覆盖与应用的 `Controls` 配置按

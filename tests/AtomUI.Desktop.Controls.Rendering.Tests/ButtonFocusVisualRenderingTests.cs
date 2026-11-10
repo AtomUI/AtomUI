@@ -79,7 +79,7 @@ public class ButtonFocusVisualRenderingTests
         finally
         {
             window.Close();
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background, TestContext.Current.CancellationToken);
         }
     }
 }

@@ -23,7 +23,7 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
-### 主题读取与裁决（Task 10.6）
+### 主题读取与裁决
 
 - PopupConfirm 主题的动效时长与开关读 `PopupConfirmTokenResource`；确认框容器 `PopupConfirmContainer` 没有 Token 身份且只属于
   PopupConfirm，以 `PopupConfirmTokenResource` 显式读取标题色、标题字重（`FontWeightStrong`，此前为字面量 SemiBold，值相同）、

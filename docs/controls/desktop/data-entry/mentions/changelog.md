@@ -21,7 +21,7 @@
 
 
 - Theme
-  - 候选列表和条目透传 Mentions owner；输入编辑器保留 TextArea identity，候选项 Own Token 仍复用 ListBox。
+  - 候选列表和条目透传 Mentions owner；内部输入编辑器跟随 Mentions，独立 TextArea 保持自身 identity；候选部件读取宿主 globals，不借用 ListBox Own。
 
 ## 2026-11-05
 

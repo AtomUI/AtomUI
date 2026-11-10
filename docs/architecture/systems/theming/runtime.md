@@ -1069,24 +1069,27 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
   - 转发：宿主拥有的部件位于一个共享的注册控件之后，而该注册控件有自己的视觉与 Token（ArrowDecoratedBox、ScrollViewer），
     不能标记为透明；转发只改变部件子树的 owner，注册控件自身的视觉仍按自己的身份读取（弹层外框仍跟随 ArrowDecoratedBox）。
   - 转发到注册的公开控件（Calendar → DateViewer、Picker → DateViewer）：只在宿主接管该控件全局 Token 时使用（宿主提供该控件的
-    面板 / 单元主题或 Header，产品上属于宿主）。被转发控件的 Own Token 仍以显式 `XxxTokenResource` 按它自己的身份读取，是借用的
-    Own Token，必须在宿主的 token.md 登记。
+    面板 / 单元主题或 Header，产品上属于宿主）。实际宿主 Own 值通过具体内部样式输入投射到共享模板，不能继续借用另一公开
+    控件的 Own snapshot；独立 DateViewer 等控件仍读取自己的 Own 值。
   - 每一处转发都要有 owner 断言（`ThemeScope.GetTokenOwner`）与像素隔离测试：`Controls[宿主]` 到达部件，`Controls[被越过的注册控件]`
     的全局 Token 不再到达部件。
 - 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer 等）携带自己的 identity，Setter 目标或模板节点
   位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
   读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。
-- 以显式 `Theme` 赋值且不 `BasedOn` 已解析默认主题的注册控件不经过注入，继承外层 owner：SearchEdit 的搜索按钮使用
-  `SearchButtonTheme`，它的视觉经 `ButtonTokenResource` 读取 Button 有效值，过渡时长等 owner 解析的值跟随 SearchEdit。
-- `OwnerTokenResource` 产出一个绑定：输入是继承到的 owner identity 与 Token kind，输出是当前作用域 Provider 对
-  `ControlTokenResourceKey.Global(identity, kind)` 的查询结果；owner 变化或主题发布都触发重取。
+- 显式 Theme 若未接入默认主题的 owner 注入，需核对实际 owner 路由；不能仅凭它是注册类型就假设已经注入。
+  SearchEdit 内的公开 Button 使用 Button 的独立颜色与动效身份；私有输入与候选部件则跟随其实际宿主。
+- `OwnerTokenResource` 返回以目标 `$self` 为根的公开 `CompiledBinding`，通过 `IPropertyAccessor` 为每个目标创建
+  `OwnerTokenBinding`；没有反射绑定或运行时跳链观察。访问器订阅目标的 `PropertyChanged`（仅处理 TokenOwner）、
+  `ResourcesChanged` 与 `ActualThemeVariantChanged`，用目标当前 variant 经 `TryFindResource` 查询 owner 的有效全局键。
+  owner 改变时创建并缓存键，资源刷新复用键；当前 registry 不登记该 owner 时用共享键，合法 owner 的求值失败不吞掉。
+  Unsubscribe/Dispose 成对移除三个事件，清空目标、listener、owner、键与缓存值。
 - 没有继承到 owner（基元被单独使用或放在应用内容中）时回落为共享全局值。
 - 嵌套的公开 Control 以自己的 TokenResource 读自己的有效值，不读外层 Control 的值（SearchEdit 模板里的 Button 读
   `ButtonTokenResource`；AutoComplete 模板里的 LineEdit 由默认主题注入 LineEdit identity）。
 
 `ThemeScope.TokenOwner` 只携带 identity，不携带 snapshot、Token 值或 Provider 引用；基于 snapshot attached value 的
 父级订阅仍属于禁止的旁路。继承属性由 Avalonia 原生传播，`OwnerTokenResource` 不沿 `TemplatedParent` 或
-`Parent` 跳链观察，每个绑定只多一个对继承属性的订阅。
+`Parent` 跳链观察。每个活动绑定拥有一个访问器及上述三个目标事件订阅；它们随绑定释放，不订阅 Application 来保活目标。
 
 Transition 时长使用 `atom:TokenTransitions`。Avalonia 的 `<Setter Property="Transitions"><Transitions>…` 只生成一个
 `Transitions` 实例并交给该样式的全部目标，`TransitionBase.Duration` 在过渡开始时从这个共享对象读取；Transition 不在
@@ -1095,13 +1098,16 @@ Transition 时长使用 `atom:TokenTransitions`。Avalonia 的 `<Setter Property
 键 `SharedTokenKind`）声明时长 Token，标记本身返回按目标实例化的绑定（与 `OwnerTokenResource` 同一机制）：在接收
 `Transitions` 的 Control 上按继承到的 owner 解析各声明 Token 的 Effective Global 值，订阅 `ResourcesChanged`、
 `ActualThemeVariantChanged` 与 owner 变化，并发布按该时长向量构建的 `Transitions`。时长相同的目标共享同一个构建实例
-（每个标记最多缓存 8 个时长向量，默认主题只需 1 个），重取命中已发布向量时零分配、不重新发布；工厂只属于主题，
-不持有任何目标。根主题切换（含 `EnableMotion=false` 把全部标准时长规范化为 `TimeSpan.Zero`）、
+（每个标记最多缓存 8 个时长向量，默认主题通常只需 1 个）。命中缓存且与已发布实例相同时不重新发布；声明数不超过 8 时
+刷新使用栈上时长向量。超过缓存容量的新向量会重新构建，超过 8 个声明还会分配时长数组，不能泛称所有刷新都零分配。
+每个活动目标有一个访问器及三个目标事件订阅，释放时全部解除；工厂缓存时长与 owner 键，不持有目标。根主题切换（含 `EnableMotion=false` 把全部标准时长规范化为 `TimeSpan.Zero`）、
 `Controls[X].Tokens[MotionDuration*]` 与局部 ThemeConfigProvider 作用域都经同一条资源查询到达过渡。
 未声明 Token 的过渡保留 AXAML 中写的时长。
 
 无 Control 级覆盖时 `XxxTokenResource` 走 `UsesRootSharedResources` 直接读全局表，成本与 `SharedTokenResource`
-相同；`OwnerTokenResource` 只用于共享基元，数量约为控件主题读取总量的十分之一。
+相同。`OwnerTokenResource` 绑定建立与 owner 改变有分配成本；已建立绑定的热资源查询零分配由专项合同验证，
+不能据此推导整个主题发布或页面挂载零分配。全局消费图也登记 `TokenTransitions.Duration` 的实际读取；透明或无身份
+目标归为 shared-primitive，由宿主场景验证。当前没有 TokenTransitions.Delay API。
 
 ### 13.1 AXAML 访问契约
 

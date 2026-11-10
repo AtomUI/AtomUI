@@ -187,6 +187,8 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 预设不进入 Core，也不引入设计语言抽象层。这些包证明的命题是：Ant Design 的 Token 词汇足以表达其他设计语言的大致
 观感；表达不了的部分写进包的 README，不改控件结构或代码。
 
+当前四包均已实现并在本地验证，尚未发布到 NuGet；不将本地构建/测试等同于发布。
+
 | 包 | 内容 | 明确不支持（写进 README） |
 | --- | --- | --- |
 | `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；primary emerald、surface slate / zinc、直接给值的语义层逐项映射到 AtomUI 全局 Token，少量 `<Control>` 覆盖 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
@@ -196,7 +198,7 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 
 包名不带 `Like` 等后缀。PrimeNG 的 Material 预设与 `AtomUI.Themes.Material` 重叠，不重复做。
 
-每个包是一个只引用 `AtomUI.Core` 的小项目：
+每个包引用 `AtomUI.Core`；PrimeNG、Shadcn、Material 还引用 `AtomUI.Desktop.Controls` 以生成类型化控件覆盖，Bootstrap 仅依赖 Core。生成器仅为构建依赖：
 
 ```text
 AtomUI.Themes.PrimeNG/
@@ -212,8 +214,8 @@ AtomUI.Themes.PrimeNG/
 
 - 生成器把 XML 编译为类型化注册，运行时不读 XML；注册进同一 Catalog，出现在 `AvailableThemes`，与用户目录主题和
   DaybreakBlue 走同一事务；Theme.Id 跨包不得重复。
-- 暗色首版由现有 Dark 算法从该预设的 Seed 派生；对照原设计语言的暗色值表后差异不可接受时，同包增加
-  `Appearance="Dark"` 的独立定义（例如 `PrimeNGAuraDark`），不改算法。
+- 每个基础 ID 均有 `.Dark`、`.Compact`、`.DarkCompact` 静态 profile，合计 PrimeNG 12、Shadcn 12、Bootstrap 4、Material 4。
+  应用选择精确 ID；基础 ID 叠加算法仍保留显式 Map/Alias 覆盖，不自动派发 profile。Gallery 使用通用后缀规则选择。
 - 预设 XML 里的 `<Control>` 覆盖只能引用 Core 与已启用控件包中登记的 Control 与 Token；预设包不自动启用控件包。
 - 预设包不含 C# 运行时逻辑、不含 ControlTheme、不含控件代码；只有 XML、生成的注册与一个 `UseXxxThemes()` 入口。
 - README 的"不支持"清单与实际行为一致，属于验收项；首版 PrimeNG 的 Aura / Lara / Nora 对映射表逐项核对，并与

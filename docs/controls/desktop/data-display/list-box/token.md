@@ -90,15 +90,15 @@ ListBoxToken 主要参与以下专项模型：
 - selected indicator：`SelectedIndicatorMargin` 控制右侧选中图标与内容之间的间距，图标尺寸（`IconSize`）和颜色（`ColorPrimary`）来自宿主的有效全局 Token。
 - hover / selected：`ItemHoverBgColor` 和 `ItemSelectedBgColor` 通过 public property 默认值传递给 ListBoxItem。
 - filter：`FilterHighlightColor` 通过 `FilterHighlightForeground` 传递到 `HighlightableTextBlock`。
-- CandidateList：CandidateList 基于 ListBoxTheme 和 ListBoxItemTheme，继承 ListBoxToken 的条目色彩、间距和过滤高亮语义。
+- CandidateList：CandidateList 基于共享列表结构，条目色彩、间距和过滤高亮通过宿主有效全局值的内部样式输入提供，不借用 ListBox Own。
 
 Token 不参与 selection 更新、CandidateList commit、filter 计算、container recycling 或 empty indicator 判定。
 
 ### 3.1 主题读法与 Token owner
 
-- `ListBoxTheme` 与 `ListBoxItemTheme` 也是 CandidateList（自有 identity）与无 identity 的 Cascader 过滤列表的基础主题，因此全局 Token 以
-  `OwnerTokenResource` 读取（主题前有 `<!-- owner: -->` 标记）：在 ListBox 上 owner 是 ListBox，在 CandidateList 上是 CandidateList，
-  在 Cascader 过滤列表上是 Cascader。ListBox Own Token 仍以 `ListBoxTokenResource` 读取。
+- `ListBoxTheme` 与 `ListBoxItemTheme` 也供透明 CandidateList 和 Cascader 过滤列表复用，因此全局 Token 以
+  `OwnerTokenResource` 读取（主题前有 `<!-- owner: -->` 标记）。独立 ListBox 使用 ListBox owner 和 Own；透明候选部件
+  跟随 Mentions / AutoComplete / Cascader 等实际宿主，宿主内部样式输入覆盖基础列表默认值。
 - `ListBoxItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），条目继承宿主列表的 owner：`Controls[ListBox]` 作用于条目的
   颜色、高度、选中标记与过渡时长，`Controls[ListBoxItem]` 不作用于条目。
 - 选中标记的样式选择器此前指向 `IconPresenter`，与模板中的 `IconTemplatePresenter` 不匹配，`ColorPrimary` / `IconSize` /
@@ -106,13 +106,13 @@ Token 不参与 selection 更新、CandidateList commit、filter 计算、contai
 
 ## 4. 控件家族影响
 
-ListBoxToken 影响 ListBox 与 CandidateList 体系：
+ListBoxToken 影响独立 ListBox；共享结构的部件边界如下：
 
 - `ListBox` root theme 使用 `ContentPadding` 和 `FilterHighlightColor`。
 - `ListBoxItem` theme 使用条目文字、背景、padding、margin 和 selected indicator margin。
-- `CandidateList` 通过 BasedOn `ListBoxTheme` 继承 root 结构和条目 Token。
-- `CandidateListItem` 通过 BasedOn `ListBoxItemTheme` 继承条目 Token，并补充 candidate selected 背景规则。
-- `CascaderViewFilterList` 基于 ListBox，用于过滤结果展示时继承 ListBoxToken 语义。
+- `CandidateList` 通过 BasedOn `ListBoxTheme` 复用 root 结构，颜色和条目输入由实际宿主提供。
+- `CandidateListItem` 通过 BasedOn `ListBoxItemTheme` 复用条目结构，并以实际宿主输入提供 candidate selected 背景。
+- `CascaderViewFilterList` 基于 ListBox，用于过滤结果展示时采用 Cascader 宿主的样式输入。
 
 ListBoxToken 不影响 ListViewToken。ListView 和 ListBox 有相似的列表条目语义，但它们各自拥有独立 Token ID 和 resource scope。
 

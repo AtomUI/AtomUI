@@ -1,5 +1,7 @@
 # AtomUI.Themes.Shadcn
 
+Status: implemented and validated locally; not published to NuGet.
+
 Compiled Zinc, Slate and Stone presets that approximate shadcn/ui through AtomUI's existing global tokens. Registration preserves the `DaybreakBlue` default.
 
 ```csharp

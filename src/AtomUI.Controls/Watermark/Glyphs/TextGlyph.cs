@@ -1,12 +1,10 @@
 using System.Globalization;
-using AtomUI.Theme;
-using AtomUI.Theme.Compilation;
+using System.Reactive.Disposables;
+using AtomUI.Data;
 using AtomUI.Theme.Resources;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 
 namespace AtomUI.Controls;
 
@@ -36,8 +34,12 @@ public class TextGlyph : WatermarkGlyph
         set => SetValue(ForegroundProperty, value);
     }
 
+    // Preserve the unattached glyph's public metadata default. Attached watermark consumers use scoped
+    // ColorTextBase below; this is not a failed-resource-lookup fallback.
+#pragma warning disable ATOMUIGEN044
     public static readonly StyledProperty<IBrush> ForegroundProperty = AvaloniaProperty
         .Register<TextGlyph, IBrush>(nameof(Foreground), Brushes.Black);
+#pragma warning restore ATOMUIGEN044
 
     public FontFamily FontFamily
     {
@@ -67,16 +69,6 @@ public class TextGlyph : WatermarkGlyph
         .Register<TextGlyph, FontStyle>(nameof(FontStyle), FontStyle.Normal);
 
     protected FormattedText? FormattedText { get; private set; }
-
-    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
-
-    private IDisposable? _themeSubscription;
-    private IDisposable? _themeForeground;
-    // Writing Foreground raises property callbacks that may move this shared glyph to another owner re-entrantly.
-    // The versions let an outer call see that a newer one took over, so it neither overwrites the newer handles
-    // nor leaks its own.
-    private int _ownerVersion;
-    private int _themeForegroundVersion;
 
     static TextGlyph()
     {
@@ -108,51 +100,6 @@ public class TextGlyph : WatermarkGlyph
         };
     }
 
-    // The default foreground is the owner's ColorText, applied below any explicit value so that setting or
-    // clearing Foreground behaves as usual. Theme subscriptions neither fire on subscribe nor survive a
-    // detach, so the value is resolved again every time an owner attaches.
-    private protected override void OnResourceOwnerChanged(IResourceHost? owner)
-    {
-        var ownerVersion = ++_ownerVersion;
-        _themeSubscription?.Dispose();
-        _themeSubscription = null;
-        if (owner is not StyledElement styledOwner)
-        {
-            return;
-        }
-
-        ApplyThemeForeground(ThemeScope.ResolveContext(styledOwner)?.Snapshot);
-        if (ownerVersion != _ownerVersion)
-        {
-            // An owner change during the foreground write already subscribed for the newer owner.
-            return;
-        }
-
-        _themeSubscription = s_themeTokenResolver.Subscribe(styledOwner, ApplyThemeForeground);
-    }
-
-    private void ApplyThemeForeground(ThemeSnapshot? snapshot)
-    {
-        if (snapshot is null)
-        {
-            return;
-        }
-
-        var color = s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)SharedTokenKind.ColorText);
-        var version = ++_themeForegroundVersion;
-        var previous = _themeForeground;
-        var handle = SetValue(ForegroundProperty, new ImmutableSolidColorBrush(color), BindingPriority.Template);
-        if (version != _themeForegroundVersion)
-        {
-            // A newer write replaced the previous entry during the callbacks; this one is already stale.
-            handle?.Dispose();
-            return;
-        }
-
-        _themeForeground = handle;
-        previous?.Dispose();
-    }
-
     private void UpdateFormatText()
     {
         if (FormattedText == null)
@@ -179,6 +126,19 @@ public class TextGlyph : WatermarkGlyph
         return FormattedText == null ? new Size() : new Size(FormattedText.Width, FormattedText.Height);
     }
 
+    #region 内部协作 API
+
+    internal IDisposable CreateThemeDefaultBindings()
+    {
+        // A glyph is a non-Visual resource-hosted drawing object, not a ControlTheme target. The owning
+        // WatermarkGlyph attachment disposes these bindings before its scoped host is released.
+        return new CompositeDisposable(
+            TokenResourceBinder.CreateGlobalTokenBinding(this, FontSizeProperty, SharedTokenKind.FontSizeLG,
+                BindingPriority.Style),
+            TokenResourceBinder.CreateGlobalTokenBinding(this, ForegroundProperty, SharedTokenKind.ColorTextBase,
+                BindingPriority.Style));
+    }
+
     // FormattedText 的布局尺寸不包含字形越界。此方法只用于确切的内置 TextGlyph，
     // 自定义子类的 Render 不受该边界约束。
     internal Rect GetDrawingBounds()
@@ -194,4 +154,6 @@ public class TextGlyph : WatermarkGlyph
             Math.Max(0, text.Width - text.OverhangTrailing - text.OverhangLeading), text.Extent);
         return bounds.Union(inkBounds);
     }
+
+    #endregion
 }

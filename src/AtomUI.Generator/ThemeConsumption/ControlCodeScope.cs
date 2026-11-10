@@ -8,7 +8,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// <summary>
 /// Decides where the control-code analyzers (ATOMUIGEN043/044/047) apply. They only run in control packages
 /// (assemblies that consume <c>AtomUI.Theme.Resources.SharedTokenKind</c> and either declare a Token type or build
-/// theme assets); the assembly that defines
+/// explicitly opt in with AtomUIThemeConsumptionAnalysis); the assembly that defines
 /// the Token infrastructure (AtomUI.Core) and any code inside a <c>[ControlDesignToken]</c> type are exempt, because
 /// Token definitions legitimately contain concrete values.
 /// </summary>
@@ -33,9 +33,11 @@ internal sealed class ControlCodeScope
     /// <c>[ControlDesignToken]</c> type or opt in with the compiler-visible MSBuild property
     /// <c>AtomUIThemeConsumptionAnalysis=true</c>. Plain applications referencing AtomUI.Core match neither.
     /// </summary>
-    public static ControlCodeScope? TryCreate(CompilationStartAnalysisContext context)
+    public static ControlCodeScope? TryCreate(
+        Compilation compilation,
+        AnalyzerConfigOptionsProvider optionsProvider,
+        CancellationToken cancellationToken)
     {
-        var compilation = context.Compilation;
         var sharedTokenKind = compilation.GetTypeByMetadataName(SharedTokenKindMetadataName);
         if (sharedTokenKind is null ||
             SymbolEqualityComparer.Default.Equals(sharedTokenKind.ContainingAssembly, compilation.Assembly))
@@ -45,10 +47,10 @@ internal sealed class ControlCodeScope
 
         var attribute = compilation.GetTypeByMetadataName(TargetMarkConstants.ControlDesignTokenAttribute);
         var isControlPackage =
-            (context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue(
+            (optionsProvider.GlobalOptions.TryGetValue(
                  ThemeConsumptionAnalysisOption, out var enabled) &&
              string.Equals(enabled?.Trim(), "true", StringComparison.OrdinalIgnoreCase)) ||
-            (attribute is not null && DeclaresAttributedType(compilation.Assembly.GlobalNamespace, attribute, context.CancellationToken));
+            (attribute is not null && DeclaresAttributedType(compilation.Assembly.GlobalNamespace, attribute, cancellationToken));
         return isControlPackage ? new ControlCodeScope(sharedTokenKind, attribute) : null;
     }
 

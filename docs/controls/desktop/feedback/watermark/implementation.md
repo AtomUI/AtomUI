@@ -161,3 +161,7 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 Watermark 专项测试覆盖 `WatermarkTileRenderer` 的网格位置与数量、旋转与镜像、矩阵缓存重建次数、cell 大于字形时的居中，以及 `TextGlyph` 的字体属性、文本方向和前景随主题的行为（含离树期间切换、显式值优先、离开 owner 后不再跟随）。
+
+文本字形的默认主题绑定由既有 owner attachment 持有；绑定以 Style 优先级读取字形自身 scoped resource host，
+先释放绑定再释放对应宿主。字形不是 ControlTheme 目标，因此此关系在代码声明；无构造期 Application 订阅。
+`TextGlyphExtension` 独立记录属性是否显式设置，不能通过与 Black/16 比值来推断。

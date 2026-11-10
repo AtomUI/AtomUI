@@ -1,5 +1,7 @@
 # AtomUI.Themes.PrimeNG
 
+Status: implemented and validated locally; not published to NuGet.
+
 Compiled Aura, Lara and Nora presets for AtomUI desktop controls. Register the package once; the default remains `DaybreakBlue`.
 
 ```csharp

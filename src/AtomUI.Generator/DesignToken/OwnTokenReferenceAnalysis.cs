@@ -103,13 +103,14 @@ internal static class OwnTokenReferenceAnalysis
             }
         }
 
+        var roots = compilation.SyntaxTrees.Select(tree => tree.GetRoot(cancellationToken)).ToList();
         var collector = new Collector(catalog, ownByControl, globalTokenNames, tokenIdentityControls);
+        collector.CollectOwnerTransparentControls(roots);
         foreach (var root in themeRoots)
         {
             collector.CollectAxaml(root);
         }
 
-        var roots = compilation.SyntaxTrees.Select(tree => tree.GetRoot(cancellationToken)).ToList();
         collector.CollectTokenLayers(roots);
         foreach (var root in roots)
         {
@@ -332,6 +333,21 @@ internal static class OwnTokenReferenceAnalysis
             return target is not null && own.Contains(target) ? target : null;
         }
 
+        private readonly HashSet<string> _ownerTransparentControls = new(StringComparer.Ordinal);
+
+        internal void CollectOwnerTransparentControls(IEnumerable<SyntaxNode> roots)
+        {
+            foreach (var declaration in roots.SelectMany(static root => root.DescendantNodes().OfType<ClassDeclarationSyntax>()))
+            {
+                if (declaration.AttributeLists.SelectMany(static list => list.Attributes)
+                               .Any(static attribute => GetRightmostTypeName(attribute.Name) is
+                                   "TokenOwnerTransparent" or "TokenOwnerTransparentAttribute"))
+                {
+                    _ownerTransparentControls.Add(declaration.Identifier.ValueText);
+                }
+            }
+        }
+
         // ---- AXAML ------------------------------------------------------------------------
 
         internal void CollectAxaml(XElement root)
@@ -339,6 +355,11 @@ internal static class OwnTokenReferenceAnalysis
             foreach (var element in root.DescendantsAndSelf())
             {
                 var localName = element.Name.LocalName;
+                if (localName == "TokenTransitions.Duration")
+                {
+                    AddTransitionDurationReference(element.Value.Trim(), element);
+                }
+
                 if (TrySplitTokenResource(localName, out var elementKind))
                 {
                     var name = ThemeAssetConsumptionAnalyzer.AttributeValue(element, "Kind")?.Trim();
@@ -350,6 +371,11 @@ internal static class OwnTokenReferenceAnalysis
 
                 foreach (var attribute in element.Attributes())
                 {
+                    if (attribute.Name.LocalName == "TokenTransitions.Duration")
+                    {
+                        AddTransitionDurationReference(attribute.Value.Trim(), element);
+                    }
+
                     if (attribute.IsNamespaceDeclaration || attribute.Value.IndexOf("TokenResource", StringComparison.Ordinal) < 0)
                     {
                         continue;
@@ -361,6 +387,24 @@ internal static class OwnTokenReferenceAnalysis
                     }
                 }
             }
+        }
+
+        private void AddTransitionDurationReference(string name, XElement element)
+        {
+            // The attached marker is consumed only by the TokenTransitions factory. A plain Transitions
+            // collection does not read it. Delay is not a supported TokenTransitions attached property.
+            if (!_globals.Contains(name) ||
+                !element.Ancestors().Any(static ancestor => ancestor.Name.LocalName == "TokenTransitions"))
+            {
+                return;
+            }
+
+            var scope = GetScope(element);
+            var owner = scope is { HasIdentity: true, TargetTypeName: not null } &&
+                        !_ownerTransparentControls.Contains(scope.TargetTypeName)
+                ? scope.TargetTypeName
+                : SharedPrimitive;
+            _consumers.Add(new GlobalConsumerAnalysisEntry(_catalog, owner, name, AxamlSource));
         }
 
         private static bool TrySplitTokenResource(string localName, out string kind)

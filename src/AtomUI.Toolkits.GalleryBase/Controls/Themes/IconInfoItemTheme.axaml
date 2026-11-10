@@ -18,46 +18,52 @@
                             <atom:IconPresenter
                                 HorizontalAlignment="Center"
                                 Icon="{TemplateBinding Icon}"/>
+                            <!-- layout: Keep the icon preview and its name separated by the reference tile gutter. -->
                             <atom:TextBlock
                                 Margin="0,20, 0, 0"
-                                Padding="8"
-                                FontSize="13"
+                                Padding="{gallery:IconInfoItemTokenResource PaddingXS}"
+                                FontSize="{gallery:IconInfoItemTokenResource IconNameFontSize}"
                                 HorizontalAlignment="Center"
                                 Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding IconName}" />
                         </StackPanel>
                     </Border>
                     <Border Name="FocusVisual"
-                            BorderBrush="{atom:SharedTokenResource ColorPrimaryBorder}"
-                            BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                            BorderBrush="{gallery:IconInfoItemTokenResource ColorPrimaryBorder}"
+                            BorderThickness="{gallery:IconInfoItemTokenResource BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
                             IsHitTestVisible="False"
                             IsVisible="False" />
                 </Panel>
             </ControlTemplate>
         </Setter>
+        <!-- layout: Fixed icon-browser reference tile geometry. -->
         <Setter Property="Height" Value="150" />
+        <!-- layout: Fixed icon-browser reference tile geometry. -->
         <Setter Property="Width" Value="150" />
+        <!-- layout: Fixed gap between icon reference tiles. -->
         <Setter Property="Margin" Value="10" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{gallery:IconInfoItemTokenResource BorderRadius}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="AutomationProperties.Name"
                 Value="{Binding IconName, RelativeSource={RelativeSource Self}}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{gallery:IconInfoItemTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ atom|IconPresenter">
+            <!-- layout: Uniform reference icon preview size, independent of the surrounding application control size. -->
             <Setter Property="Height" Value="48" />
+            <!-- layout: Uniform reference icon preview size, independent of the surrounding application control size. -->
             <Setter Property="Width" Value="48" />
         </Style>
 
         <Style Selector="^:pointerover:not(:disabled)">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="Background" Value="{gallery:IconInfoItemTokenResource ColorBgTextHover}" />
         </Style>
 
         <Style Selector="^:pressed:not(:disabled)">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}" />
+            <Setter Property="Background" Value="{gallery:IconInfoItemTokenResource ColorBgTextActive}" />
         </Style>
 
         <Style Selector="^:focus-visible /template/ Border#FocusVisual">
@@ -66,11 +72,11 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Cursor" Value="Arrow" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{gallery:IconInfoItemTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^:disabled /template/ atom|IconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="IconBrush" Value="{gallery:IconInfoItemTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">

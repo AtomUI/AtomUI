@@ -300,9 +300,12 @@ identity/slot 的 AOT-safe 映射；基类 Effective Global 读取使用注册�
    （伪类、类选择器）；但 Template 优先级高于非触发的 Style Setter，同节点同属性若还有普通 Style Setter 默认值，
    会被模板节点属性盖过。因此同一节点同一属性的默认值只写一处，推荐写成 Style Setter 与状态 Setter 同级，便于对照
    （原 ATOMUIGEN046 已退役，不再有 analyzer 检查）。模板外写在元素属性上仍是 LocalValue，写在 Setter 里取该样式的优先级。
-6. 代码写入控件或子节点的值用 `SetCurrentValue`，或可撤销的 Template 优先级值；不得以本地值覆盖用户与主题的绑定。
-7. 代码算出的视觉值写入 internal 属性，由主题 Setter 投射到公开视觉属性；公开属性留给用户与应用样式，应用样式与
-   本地值保持更高优先级。
+6. 代码更新当前状态可用 `SetCurrentValue` 保留既有绑定；不得以 LocalValue 覆盖用户与主题的绑定。向嵌套控件写入
+   计算后的视觉默认值时，优先采用下一条的 internal 属性投射。Avalonia 的子控件 ControlTheme Setter 可以胜过外部
+   Template 优先级写入，不能把 Template 优先级当作跨控件默认值传递的通用方案。
+7. 代码算出的视觉值写入 internal 属性，由目标 ControlTheme 的 Setter 投射到公开视觉属性；应用 Style、触发样式与
+   本地值按 Avalonia 的优先级覆盖主题默认值。可由 ControlTheme 等价表达的绑定直接在 AXAML 声明，代码绑定仅限
+   动态目标、非 Visual 资源宿主等无法声明式表达的边界，并注明原因与释放位置。
 
 Button 是参考实现：`ControlTokenAccessor.Capture<Button>` 读控件有效值，`ThemeTokenResolver.Subscribe` 在主题
 变化时重算变体画刷，变体画刷经资源键写入以支持作用域覆盖。

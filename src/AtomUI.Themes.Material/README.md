@@ -1,8 +1,11 @@
 # AtomUI.Themes.Material
 
+Status: implemented and validated locally; not published to NuGet.
+
 A compiled preset approximating baseline Material 3 colors, density and elevation through AtomUI's existing Ant Design controls. Registration preserves the `DaybreakBlue` default.
 
 ```csharp
+using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Themes.Material;
 using AtomUI.Theme;

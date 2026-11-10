@@ -182,7 +182,7 @@ public class NavMenuInlineCollapsedTests
 
             menu.IsInlineCollapsed = true;
             Dispatcher.UIThread.RunJobs();
-            await Task.Delay(20);
+            await Task.Delay(20, TestContext.Current.CancellationToken);
             Dispatcher.UIThread.RunJobs();
 
             menu.Bounds.Width.ShouldBeGreaterThan(menu.InlineCollapsedWidth,
@@ -198,7 +198,7 @@ public class NavMenuInlineCollapsedTests
 
             menu.IsInlineCollapsed = false;
             Dispatcher.UIThread.RunJobs();
-            await Task.Delay(20);
+            await Task.Delay(20, TestContext.Current.CancellationToken);
             Dispatcher.UIThread.RunJobs();
 
             menu.Bounds.Width.ShouldBeLessThan(300);

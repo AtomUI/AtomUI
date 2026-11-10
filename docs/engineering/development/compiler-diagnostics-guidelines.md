@@ -149,7 +149,9 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 分别对应消息中的 `ATOMUIREG005`、`ATOMUIREG006`、`ATOMUIREG007`。REG 保持统一语义编号；不得通过私有 API 改写 ILLink 前缀。
 
 `ATOMUIGEN040`–`ATOMUIGEN048`（`046` 已退役，见下文）属于主题消费精确性检查，保证"声称可定制的 Token 设置后一定有效果"。除 `040`、`048` 外
-默认 Warning：存量控件主题分家族迁移，每个家族迁移完成后由控件包 `.editorconfig` 把该家族范围升级为 Error。
+默认 Warning；仓库五个控件包与 GalleryBase 在项目 `WarningsAsErrors` 中将 041、042、043、044、045、047 统一提升为 Error。
+生成器在外部 AXAML/生成位置报告的诊断不受目录 `.editorconfig` 可靠控制，因此包级编译器门禁与现有消费合同共同验证；
+046 已退役且不进入活跃严重级别清单，040/048 本身仍为 Error。
 `042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`047` 只报告可静态证明的
 写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。
 `043`、`044`、`047` 检查控件代码，只在控件包内运行：编译单元引用 `SharedTokenKind` 且不是其定义程序集，并且声明了

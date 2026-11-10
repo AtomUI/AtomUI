@@ -18,8 +18,8 @@ public class ThemeAssetConsumptionAnalyzerTests
         var source = Theme("atom:Button", "<Setter Property=\"Foreground\" Value=\"{atom:SharedTokenResource ColorPrimary}\" /><Setter Property=\"Background\" Value=\"{atom:OwnerTokenResource ColorPrimary}\" />");
         var references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
             .Split(Path.PathSeparator).Select(static path => MetadataReference.CreateFromFile(path));
-        var compilation = CSharpCompilation.Create("LinkedTheme", [CSharpSyntaxTree.ParseText(TokenSource + "\nnamespace AtomUI.Theme.Resources { public enum SharedTokenKind { ColorPrimary } }"),
-            CSharpSyntaxTree.ParseText(ThemeSchemaGeneratorTests.AtomUIStubs)], references,
+        var compilation = CSharpCompilation.Create("LinkedTheme", [CSharpSyntaxTree.ParseText(TokenSource + "\nnamespace AtomUI.Theme.Resources { public enum SharedTokenKind { ColorPrimary } }", cancellationToken: TestContext.Current.CancellationToken),
+            CSharpSyntaxTree.ParseText(ThemeSchemaGeneratorTests.AtomUIStubs, cancellationToken: TestContext.Current.CancellationToken)], references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var theme = new InMemoryAdditionalText("Splash/Themes/SplashDefaultTheme.axaml", source);
         var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],

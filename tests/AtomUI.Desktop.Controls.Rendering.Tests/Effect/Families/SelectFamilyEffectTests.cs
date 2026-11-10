@@ -66,7 +66,7 @@ public partial class SelectFamilyEffectTests
         public readonly List<Action<Control>> Arrange = [];
         public bool Popup;
         public Func<Control, Control>? Region;
-        public double RegionInflation;
+        public double RegionInflation = 0;
         public Func<object, object>? Perturb;
 
         public void Hover() => Arrange.Add(static c => FrameOf(c).IsInnerBoxHover = true);

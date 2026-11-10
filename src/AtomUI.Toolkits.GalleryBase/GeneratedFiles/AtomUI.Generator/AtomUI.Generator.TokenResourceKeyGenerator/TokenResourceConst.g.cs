@@ -4,6 +4,12 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
 {
+    public enum ColorItemControlTokenKind
+    {
+        HexFontSize,
+        HexOpacity,
+    }
+
     public enum ColorItemControlTokenKey
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
@@ -261,6 +267,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
+        HexFontSize = -1,
+        HexOpacity = -2,
     }
 
     public static class ColorItemControlTokens
@@ -291,6 +299,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
                 return ControlTokenResourceKey.Global(ColorItemControlTokens.Identity, (SharedTokenKind)slot);
             }
             var ownSlot = -1 - slot;
+            if ((uint)ownSlot < 2u)
+            {
+                return (ColorItemControlTokenKind)ownSlot;
+            }
             throw new global::System.ArgumentOutOfRangeException(nameof(kind));
         }
     }
@@ -2404,6 +2416,11 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         }
     }
 
+    public enum IconInfoItemTokenKind
+    {
+        IconNameFontSize,
+    }
+
     public enum IconInfoItemTokenKey
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
@@ -2661,6 +2678,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
+        IconNameFontSize = -1,
     }
 
     public static class IconInfoItemTokens
@@ -2691,6 +2709,10 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
                 return ControlTokenResourceKey.Global(IconInfoItemTokens.Identity, (SharedTokenKind)slot);
             }
             var ownSlot = -1 - slot;
+            if ((uint)ownSlot < 1u)
+            {
+                return (IconInfoItemTokenKind)ownSlot;
+            }
             throw new global::System.ArgumentOutOfRangeException(nameof(kind));
         }
     }

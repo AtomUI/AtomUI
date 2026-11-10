@@ -36,6 +36,7 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|SearchEdit#PART_SearchInput">
+            <!-- layout: Fixed search-toolbar gutter aligned with the icon reference grid. -->
             <Setter Property="Margin" Value="10" />
         </Style>
     </ControlTheme>

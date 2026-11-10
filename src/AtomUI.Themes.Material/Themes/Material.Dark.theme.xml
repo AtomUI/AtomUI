@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Material.Dark" Name="Material Dark" Appearance="Dark" IsDefault="false">
+  <Algorithms>
+    <Algorithm Id="Dark" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#D0BCFF" />
+    <Token Name="ColorTextLightSolid" Value="#381E72" />
+    <Token Name="BorderRadius" Value="4" />
+    <Token Name="ControlHeight" Value="40" />
+    <Token Name="FontWeightStrong" Value="500" />
+    <Token Name="BoxShadowsSecondary" Value="0 1 3 0 #33000000" />
+    <Token Name="BoxShadows" Value="0 4 8 3 #26000000" />
+    <Token Name="ColorBgBase" Value="#1C1B1F" />
+    <Token Name="ColorTextBase" Value="#E6E1E5" />
+    <Token Name="ColorText" Value="#E6E1E5" />
+    <Token Name="ColorTextSecondary" Value="#CAC4D0" />
+    <Token Name="ColorTextDescription" Value="#CAC4D0" />
+    <Token Name="ColorBgContainer" Value="#1C1B1F" />
+    <Token Name="ColorBgLayout" Value="#1C1B1F" />
+    <Token Name="ColorBgElevated" Value="#313033" />
+    <Token Name="ColorBorder" Value="#938F99" />
+    <Token Name="ColorBorderSecondary" Value="#49454F" />
+    <Token Name="PaddingContentHorizontal" Value="12" />
+  </Tokens>
+  <Controls>
+    <Control Catalog="AtomUI" Id="CheckBox">
+      <Tokens>
+        <Token Name="ColorWhite" Value="#381E72" />
+      </Tokens>
+    </Control>
+    <Control Catalog="AtomUI" Id="RadioButton">
+      <Tokens>
+        <Token Name="RadioColor" Value="#381E72" />
+      </Tokens>
+    </Control>
+  </Controls>
+</Theme>

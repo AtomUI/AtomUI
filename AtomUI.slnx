@@ -31,6 +31,7 @@
     <Project Path="src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
     <Project Path="src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
     <Project Path="src/AtomUI.Themes.Bootstrap/AtomUI.Themes.Bootstrap.csproj" />
+    <Project Path="src/AtomUI.Themes.Material/AtomUI.Themes.Material.csproj" />
   </Folder>
   <Folder Name="/Fonts/">
     <Project Path="src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj" />

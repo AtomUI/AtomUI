@@ -17,7 +17,7 @@
                     Description="{gallery:SkeletonShowCaseLangResource PageDescription}"
                     Namespace="AtomUI.Desktop.Controls"
                     Package="AtomUI.Desktop.Controls"
-                    BaseClass="AbstractSkeleton" />
+                    BaseClass="AtomUI.Controls.Commons.AbstractCompositeSkeleton" />
             </gallery:GalleryShowCaseHost.Header>
 
             <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>

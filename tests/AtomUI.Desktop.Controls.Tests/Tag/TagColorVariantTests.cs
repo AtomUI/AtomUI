@@ -50,6 +50,21 @@ public class TagColorVariantTests
     }
 
     [Fact]
+    public void Outline_Variant_Without_Color_Uses_The_Primary_Color()
+    {
+        var tag = new AtomUITag { Text = "Outline", Variant = TagVariant.Outline };
+
+        ShowInWindow(tag, () =>
+        {
+            var primary = GetThemeColor(SharedTokenKind.ColorPrimary);
+
+            GetBrushColor(tag.Background).ShouldBe(Colors.Transparent);
+            GetBrushColor(tag.BorderBrush).ShouldBe(primary);
+            GetBrushColor(tag.Foreground).ShouldBe(primary);
+        });
+    }
+
+    [Fact]
     public void Default_Background_Composites_ColorFillTertiary_On_Container()
     {
         var tag = new AtomUITag { Text = "Default" };

@@ -21,6 +21,9 @@ internal interface IImageLoadControllerHost
 
     (int Width, int Height)? GetDecodePixelSize();
 
+    // True when the presentation fills its box (Fill/UniformToFill), so the decode must cover the box, not fit inside it.
+    bool DecodeToCover => false;
+
     ImageLoadError? GetConfigurationError();
 
     void SetLoadedImage(IImage? image);
@@ -40,6 +43,7 @@ internal sealed class ImageLoadController : IDisposable
     private ImageLoadResult? _currentResult;
     private string? _currentSourceIdentity;
     private (int Width, int Height)? _lastDecodeSize;
+    private bool _lastDecodeToCover;
     private long _generation;
     private bool _disposed;
 
@@ -66,12 +70,17 @@ internal sealed class ImageLoadController : IDisposable
     {
         _scalingSubscription?.Dispose();
         _scalingSubscription = null;
-        CancelCurrentRequest();
-        ReleaseCurrentResult();
-        _currentSourceIdentity = null;
-        _lastDecodeSize = null;
-        _host.SetLoadedImage(null);
-        _host.SetLoadState(ImageLoadState.Idle, null, null, false);
+        ResetLoad();
+    }
+
+    // Cancels the in-flight request and releases the image lease while staying attached, so a later restart loads again.
+    internal void Release()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+        ResetLoad();
     }
 
     internal void SourceConfigurationChanged()
@@ -94,7 +103,7 @@ internal sealed class ImageLoadController : IDisposable
         {
             return;
         }
-        if (decodeSize == _lastDecodeSize)
+        if (decodeSize == _lastDecodeSize && ResolveDecodeToCover(decodeSize) == _lastDecodeToCover)
         {
             return;
         }
@@ -118,6 +127,20 @@ internal sealed class ImageLoadController : IDisposable
         _scalingSubscription = null;
         CancelCurrentRequest();
         ReleaseCurrentResult();
+    }
+
+    // Cover only differs from contain when both sizes bound the box.
+    private bool ResolveDecodeToCover((int Width, int Height)? decodeSize) =>
+        decodeSize is { Width: > 0, Height: > 0 } && _host.DecodeToCover;
+
+    private void ResetLoad()
+    {
+        CancelCurrentRequest();
+        ReleaseCurrentResult();
+        _currentSourceIdentity = null;
+        _lastDecodeSize = null;
+        _host.SetLoadedImage(null);
+        _host.SetLoadState(ImageLoadState.Idle, null, null, false);
     }
 
     private void Restart(bool reload, bool configurationChanged)
@@ -182,6 +205,8 @@ internal sealed class ImageLoadController : IDisposable
             return;
         }
         _lastDecodeSize = decodeSize;
+        var decodeToCover = ResolveDecodeToCover(decodeSize);
+        _lastDecodeToCover = decodeToCover;
         CancelCurrentRequest();
         var cancellation = new ImageCancellationState();
         _requestCancellation = cancellation;
@@ -196,6 +221,7 @@ internal sealed class ImageLoadController : IDisposable
             options,
             priority,
             decodeSize.Value,
+            decodeToCover,
             generation,
             reload,
             cancellation));
@@ -207,6 +233,7 @@ internal sealed class ImageLoadController : IDisposable
         ImageRequestOptions? requestOptions,
         ImageRequestPriority priority,
         (int Width, int Height) decodeSize,
+        bool decodeToCover,
         long generation,
         bool reload,
         ImageCancellationState cancellation)
@@ -232,6 +259,7 @@ internal sealed class ImageLoadController : IDisposable
                     Options = options,
                     DecodePixelWidth = decodeSize.Width,
                     DecodePixelHeight = decodeSize.Height,
+                    DecodeToCover = decodeToCover,
                     Priority = priority,
                     Progress = progress
                 },
@@ -252,6 +280,7 @@ internal sealed class ImageLoadController : IDisposable
                         Options = options,
                         DecodePixelWidth = decodeSize.Width,
                         DecodePixelHeight = decodeSize.Height,
+                        DecodeToCover = decodeToCover,
                         Priority = priority,
                         Progress = progress
                     },

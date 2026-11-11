@@ -1,6 +1,12 @@
 using System.Globalization;
+using AtomUI.Theme;
+using AtomUI.Theme.Compilation;
+using AtomUI.Theme.Resources;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace AtomUI.Controls;
 
@@ -33,11 +39,51 @@ public class TextGlyph : WatermarkGlyph
     public static readonly StyledProperty<IBrush> ForegroundProperty = AvaloniaProperty
         .Register<TextGlyph, IBrush>(nameof(Foreground), Brushes.Black);
 
+    public FontFamily FontFamily
+    {
+        get => GetValue(FontFamilyProperty);
+        set => SetValue(FontFamilyProperty, value);
+    }
+
+    public static readonly StyledProperty<FontFamily> FontFamilyProperty = AvaloniaProperty
+        .Register<TextGlyph, FontFamily>(nameof(FontFamily), FontFamily.Default);
+
+    public FontWeight FontWeight
+    {
+        get => GetValue(FontWeightProperty);
+        set => SetValue(FontWeightProperty, value);
+    }
+
+    public static readonly StyledProperty<FontWeight> FontWeightProperty = AvaloniaProperty
+        .Register<TextGlyph, FontWeight>(nameof(FontWeight), FontWeight.Normal);
+
+    public FontStyle FontStyle
+    {
+        get => GetValue(FontStyleProperty);
+        set => SetValue(FontStyleProperty, value);
+    }
+
+    public static readonly StyledProperty<FontStyle> FontStyleProperty = AvaloniaProperty
+        .Register<TextGlyph, FontStyle>(nameof(FontStyle), FontStyle.Normal);
+
     protected FormattedText? FormattedText { get; private set; }
+
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
+
+    private IDisposable? _themeSubscription;
+    private IDisposable? _themeForeground;
+    // Writing Foreground raises property callbacks that may move this shared glyph to another owner re-entrantly.
+    // The versions let an outer call see that a newer one took over, so it neither overwrites the newer handles
+    // nor leaks its own.
+    private int _ownerVersion;
+    private int _themeForegroundVersion;
 
     static TextGlyph()
     {
         TextProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.RebuildFormatText());
+        FontFamilyProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.RebuildFormatText());
+        FontWeightProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.RebuildFormatText());
+        FontStyleProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.RebuildFormatText());
         FontSizeProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.UpdateFormatText());
         ForegroundProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.UpdateFormatText());
     }
@@ -53,13 +99,58 @@ public class TextGlyph : WatermarkGlyph
         FormattedText = new FormattedText(
             Text,
             CultureInfo.CurrentCulture,
-            FlowDirection.RightToLeft,
-            Typeface.Default,
+            FlowDirection.LeftToRight,
+            new Typeface(FontFamily, FontStyle, FontWeight),
             FontSize,
             Foreground)
         {
             TextAlignment = TextAlignment.Center
         };
+    }
+
+    // The default foreground is the owner's ColorText, applied below any explicit value so that setting or
+    // clearing Foreground behaves as usual. Theme subscriptions neither fire on subscribe nor survive a
+    // detach, so the value is resolved again every time an owner attaches.
+    private protected override void OnResourceOwnerChanged(IResourceHost? owner)
+    {
+        var ownerVersion = ++_ownerVersion;
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+        if (owner is not StyledElement styledOwner)
+        {
+            return;
+        }
+
+        ApplyThemeForeground(ThemeScope.ResolveContext(styledOwner)?.Snapshot);
+        if (ownerVersion != _ownerVersion)
+        {
+            // An owner change during the foreground write already subscribed for the newer owner.
+            return;
+        }
+
+        _themeSubscription = s_themeTokenResolver.Subscribe(styledOwner, ApplyThemeForeground);
+    }
+
+    private void ApplyThemeForeground(ThemeSnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return;
+        }
+
+        var color = s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)SharedTokenKind.ColorText);
+        var version = ++_themeForegroundVersion;
+        var previous = _themeForeground;
+        var handle = SetValue(ForegroundProperty, new ImmutableSolidColorBrush(color), BindingPriority.Template);
+        if (version != _themeForegroundVersion)
+        {
+            // A newer write replaced the previous entry during the callbacks; this one is already stale.
+            handle?.Dispose();
+            return;
+        }
+
+        _themeForeground = handle;
+        previous?.Dispose();
     }
 
     private void UpdateFormatText()

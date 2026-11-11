@@ -24,6 +24,8 @@
   - 更新 `implementation.md` 源码结构、键盘导航流、键盘与焦点处理、§7.8 活动项维护、维护不变量与验证范围；更新 `token.md` 的活动项 Token 使用说明。
 - Docs
   - `implementation.md` 增加维护约束：替换节点 Template 的派生主题必须把 `IsKeyboardActive` 投射到 header。
+- Fix
+  - Shift+方向键扩展多选范围时只同步差量：保留仍在范围内的已选项，移除范围外的项并一次加入新增项，`SelectionChanged` 不再先报告清空再逐项加入的中间状态。
 
 ## 2026-10-28
 

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -10,14 +11,21 @@ public partial class TreeSelect
 {
     private static void ConfigureKeyboardNavigation()
     {
-        // Filter inputs consume navigation keys themselves, so keys from a TextBox are routed on tunnel.
+        // Filter inputs consume navigation keys themselves, so keys from them are routed on tunnel. Only this
+        // control's own filter input qualifies: a TextBox in an add-on or an item template keeps its keys.
         KeyDownEvent.AddClassHandler<TreeSelect>((treeSelect, e) =>
         {
-            if (e.Source is TextBox)
+            if (treeSelect.IsOwnFilterInput(e.Source))
             {
                 treeSelect.HandleKeyDownCore(e);
             }
         }, RoutingStrategies.Tunnel);
+    }
+
+    private bool IsOwnFilterInput(object? source)
+    {
+        return source is SelectFilterTextBox input &&
+               ReferenceEquals(input.FindAncestorOfType<TreeSelect>(), this);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

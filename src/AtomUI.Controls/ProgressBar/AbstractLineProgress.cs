@@ -61,6 +61,13 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     internal static readonly StyledProperty<IBrush?> PercentageLabelColorProperty =
         AvaloniaProperty.Register<AbstractLineProgress, IBrush?>(nameof(PercentageLabelColor));
 
+    /// <summary>
+    /// 填充比例（0–1），随 <see cref="AbstractProgressBar.Percentage"/> 写入。只影响绘制与填充部件的排布，
+    /// 不使测量失效，主题可以直接对它设置过渡。
+    /// </summary>
+    internal static readonly StyledProperty<double> IndicatorRatioProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(IndicatorRatio));
+
     internal double LineProgressPadding
     {
         get => GetValue(LineProgressPaddingProperty);
@@ -85,6 +92,12 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         set => SetValue(PercentageLabelColorProperty, value);
     }
 
+    internal double IndicatorRatio
+    {
+        get => GetValue(IndicatorRatioProperty);
+        set => SetValue(IndicatorRatioProperty, value);
+    }
+
     #endregion
 
     private protected SizeTypeThresholdValue _largeSizeTypeThresholdValue;
@@ -94,18 +107,28 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     protected Size _extraInfoSize = Size.Infinity;
     protected Rect _grooveRect;
 
+    static AbstractLineProgress()
+    {
+        AffectsRender<AbstractLineProgress>(IndicatorRatioProperty);
+    }
+
     // 根据当前的状态进行计算
     protected virtual Size CalculateExtraInfoSize(double fontSize)
     {
-        if (IsProgressInfoVisible)
+        if (IsProgressInfoPresented)
         {
-            if (Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum))
+            if (MeasureProgressInfoContent() is { } contentSize)
+            {
+                return contentSize;
+            }
+
+            if (Status == ProgressStatus.Exception || MathUtils.AreClose(Percentage, 100))
             {
                 // 只要图标
                 return new Size(LineInfoIconSize, LineInfoIconSize);
             }
 
-            return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            return TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Percentage), fontSize, FontFamily);
         }
         return default;
     }
@@ -120,6 +143,11 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     {
         base.NotifyPropertyChanged(change);
 
+        if (change.Property == PercentageProperty)
+        {
+            IndicatorRatio = Math.Clamp(Percentage / 100, 0, 1);
+        }
+
         if (this.IsAttachedToVisualTree())
         {
             if ((change.Property == WidthProperty && Orientation == Orientation.Vertical) ||
@@ -129,7 +157,8 @@ public abstract class AbstractLineProgress : AbstractProgressBar
                 CalculateStrokeThickness();
             }
             else if (change.Property == EffectiveSizeTypeProperty ||
-                     change.Property == IsProgressInfoVisibleProperty)
+                     change.Property == IsProgressInfoVisibleProperty ||
+                     change.Property == ProgressInfoContentTemplateProperty)
             {
                 _extraInfoSize = CalculateExtraInfoSize(FontSize);
             }
@@ -176,6 +205,30 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         {
             SetValue(SuccessCompletedIconProperty, new CheckCircleFilled(), BindingPriority.Template);
         }
+    }
+
+    protected override void NotifyProgressInfoContentChanged()
+    {
+        base.NotifyProgressInfoContentChanged();
+        _extraInfoSize = CalculateExtraInfoSize(FontSize);
+        InvalidateMeasure();
+        InvalidateArrange();
+    }
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        // Custom info content can change size after it was set; the info area follows its current desired size.
+        if (ProgressInfoContent is not null)
+        {
+            RefreshProgressInfoContentSize();
+        }
+
+        return base.MeasureOverride(availableSize);
+    }
+
+    private protected virtual void RefreshProgressInfoContentSize()
+    {
+        _extraInfoSize = CalculateExtraInfoSize(FontSize);
     }
 
     protected virtual void NotifyOrientationChanged()

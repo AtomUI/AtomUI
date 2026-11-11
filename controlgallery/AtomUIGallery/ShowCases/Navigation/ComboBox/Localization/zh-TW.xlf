@@ -199,6 +199,12 @@
         <target state="translated">示例</target>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button that resets selection and editable text.</source>
+        <target state="translated">清除選取值與編輯文字的按鈕。</target>
+      </segment>
+    </unit>
     <unit id="SemanticContentDescription">
       <segment>
         <source>Input content panel hosting the placeholder, the non-editable selection and the editable input.</source>

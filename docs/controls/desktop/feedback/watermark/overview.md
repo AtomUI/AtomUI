@@ -44,7 +44,7 @@ Watermark 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | --- | --- | --- |
 | 内容与数据 | `Source`、`Text` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 交互与状态 | `IsCrossUsed`、`IsMirrorUsed` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
-| 视觉与布局 | `FontSize`、`Foreground`、`Height`、`HorizontalOffset`、`HorizontalSpace`、`VerticalOffset`、`VerticalSpace` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 视觉与布局 | `FontFamily`、`FontSize`、`FontStyle`、`FontWeight`、`Foreground`、`Height`、`HorizontalOffset`、`HorizontalSpace`、`VerticalOffset`、`VerticalSpace` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。`TextGlyph.Foreground` 未显式设置时取资源 owner 的主题 `ColorText`，文本方向固定为从左到右。 |
 | 其他稳定入口 | `Opacity`、`Rotate` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。

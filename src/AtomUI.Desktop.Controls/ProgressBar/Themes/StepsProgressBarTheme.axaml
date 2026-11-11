@@ -23,7 +23,7 @@
 
                     <Canvas Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"
-                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                            IsVisible="{TemplateBinding IsProgressInfoPresented}">
                         <LayoutTransformControl Name="PART_LayoutTransformControl">
                             <Label Name="PART_PercentageLabel"
                                    Padding="0"
@@ -41,6 +41,8 @@
                             Name="PART_SuccessCompletedIconPresenter"
                             Icon="{TemplateBinding SuccessCompletedIcon}"
                             HorizontalAlignment="Left" />
+                        <atomc:ProgressInfoPresenter Name="PART_ProgressInfoContentPresenter"
+                                          IsVisible="False" />
                     </Canvas>
                 </atomc:StepsProgressPanel>
             </ControlTemplate>

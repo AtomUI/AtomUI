@@ -151,7 +151,9 @@ generation 和 attach 状态，再提交结果。成功时先保存 lease、状�
 Font、Gap 或控件尺寸变化通过 Avalonia measure/arrange 自动重新计算。
 
 `Size` 非 `NaN` 时保存原 SizeType 并切换到 Custom；恢复 `NaN` 后回到原 SizeType。Circle 形状把最终宽度的一半写入模板
-CornerRadius。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而不是 Token 名称或逻辑像素直接值。
+CornerRadius；`Width`、`Size`、`SizeType` 或 `Shape` 任一变化都会重新计算该圆角，`Width` 非有限时跳过。`Size`
+在首次赋值之后再次变化时同样重新配置 `Width`、`Height` 与图标尺寸。`Stretch` 只由模板 `ImagePresenter` 通过
+`TemplateBinding` 消费，不进入加载请求。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而不是 Token 名称或逻辑像素直接值。
 
 ## 9. 资源、性能与 AOT 边界
 
@@ -173,6 +175,7 @@ CornerRadius。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而
 - `Compatible`/`Strict` 差异只能来自 Shared `SvgContentValidator`；Avatar 不按 Asset/File/HTTP 或单次请求改写该结论。
 - Template reapply、detach、group rebuild 和 Application dispose 都有明确的取消、解绑和释放路径。
 - 文字的自然尺寸、可用宽度、缩放和居中必须由同一个模板布局路径完成；不得恢复独立文字测量或补偿平移。
+- Circle 圆角始终等于当前有限 `Width` 的一半；改变尺寸的任一入口都必须触发圆角重算。
 - 单头像和 Token 只存在于 `AtomUI.Controls`，Desktop 包只拥有 AvatarGroup 组合能力。
 
 ## 11. 测试与验证
@@ -186,5 +189,6 @@ CornerRadius。图片请求尺寸来自 Bounds 与 TopLevel render scaling，而
 - AvatarTheme 独立于 Desktop 类型，AvatarGroup 仍能消费同一 Token。
 - 短文本不放大；临界宽度与长文本缩小后保持水平居中，宽度不超过 `Width - 2 * Gap`；运行时 Gap 变化重新布局。
 - Gallery 示例只使用 `Source`/`ImageSource`。
+- `Stretch` 默认值与模板绑定；Circle 圆角随 `Width`、`Size`、`SizeType` 的运行时变化更新。
 - 默认 Application `Compatible` 模式加载含重复 id 的本地 SVG；`Strict` 下同一来源报告 `InvalidImageData`，并继续验证
   FallbackSource、`ImageFailed`、伪类和 generation 语义。两种模式对不安全或超预算 SVG 的结果完全相同。

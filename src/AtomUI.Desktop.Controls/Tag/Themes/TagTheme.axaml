@@ -57,6 +57,11 @@
         <Style Selector="^[Variant=Outlined]:not(:preset-color):not(:status-color):not(:custom-color)">
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
         </Style>
+        <Style Selector="^[Variant=Outline]:not(:preset-color):not(:status-color):not(:custom-color)">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+        </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="Width"

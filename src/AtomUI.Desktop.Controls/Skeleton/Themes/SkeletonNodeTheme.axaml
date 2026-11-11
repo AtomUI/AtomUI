@@ -22,13 +22,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
-                        <Border Name="PART_ActiveAnimationLayer"
-                                Classes.semantic-content="True"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{TemplateBinding CornerRadius}"
-                                IsVisible="{TemplateBinding IsActive}" />
+                                atom:AbstractSkeleton.IsShimmerBlock="True" />
                         <ContentPresenter Name="ContentPresenter"
                                           HorizontalAlignment="Center"
                                           VerticalAlignment="Center"

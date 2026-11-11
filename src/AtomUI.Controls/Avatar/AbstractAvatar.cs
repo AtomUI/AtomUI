@@ -49,6 +49,9 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
     public static readonly StyledProperty<AvatarShape> ShapeProperty =
         AvaloniaProperty.Register<AbstractAvatar, AvatarShape>(nameof(Shape), AvatarShape.Circle);
 
+    public static readonly StyledProperty<Stretch> StretchProperty =
+        AvaloniaProperty.Register<AbstractAvatar, Stretch>(nameof(Stretch), Stretch.Uniform);
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractAvatar>();
 
@@ -87,6 +90,13 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
 
     private readonly ImageLoadController _controller;
     private CustomizableSizeType? _originSizeType;
+    // Each derived value keeps one replaceable Template-priority entry. Repeated SetValue at that priority would add a
+    // new value frame per call, and discarding the handle could never release the value when its condition ends.
+    private IDisposable? _customWidthValue;
+    private IDisposable? _customHeightValue;
+    private IDisposable? _customIconSizeValue;
+    private IDisposable? _textPaddingValue;
+    private IDisposable? _circleRadiusValue;
     private AvatarContentType _contentType = AvatarContentType.Icon;
     private IImage? _loadedImage;
     private ImageLoadState _loadState;
@@ -164,6 +174,12 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         set => SetValue(ShapeProperty, value);
     }
 
+    public Stretch Stretch
+    {
+        get => GetValue(StretchProperty);
+        set => SetValue(StretchProperty, value);
+    }
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -219,7 +235,14 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         base.OnPropertyChanged(change);
         if (change.Property == SizeProperty)
         {
+            var sizeType = SizeType;
             ConfigureCustomSize();
+            // A SizeType change already re-ran the size configuration; SizeType stays Custom across consecutive Size
+            // changes, so those run it here.
+            if (SizeType == sizeType)
+            {
+                ConfigureIconSize();
+            }
         }
         else if (change.Property == SizeTypeProperty)
         {
@@ -232,6 +255,11 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         {
             _controller.SourceConfigurationChanged();
         }
+        else if (change.Property == StretchProperty)
+        {
+            // Fill/UniformToFill decode to cover the avatar box, Uniform/None fit inside it.
+            _controller.RefreshSize();
+        }
         if (change.Property == IconProperty || change.Property == TextProperty)
         {
             ConfigureContentType();
@@ -240,8 +268,9 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         {
             ConfigureTextPadding();
         }
-        else if (change.Property == ShapeProperty)
+        else if (change.Property == ShapeProperty || change.Property == WidthProperty)
         {
+            // Width follows Size and SizeType (style or template values), so tracking it keeps the circle radius exact.
             ConfigureShape();
         }
     }
@@ -287,6 +316,8 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
         var height = Quantize(arrangedSize.Height * scaling);
         return width == 0 && height == 0 ? null : (width, height);
     }
+
+    bool IImageLoadControllerHost.DecodeToCover => Stretch is Stretch.Fill or Stretch.UniformToFill;
 
     ImageLoadError? IImageLoadControllerHost.GetConfigurationError() => null;
 
@@ -339,17 +370,19 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
 
     private void ConfigureIconSize()
     {
-        if (SizeType != CustomizableSizeType.Custom)
+        if (SizeType != CustomizableSizeType.Custom || double.IsNaN(Size))
         {
+            ReleaseTemplateValue(ref _customWidthValue);
+            ReleaseTemplateValue(ref _customHeightValue);
+            ReleaseTemplateValue(ref _customIconSizeValue);
             return;
         }
-        Debug.Assert(!double.IsNaN(Size));
-        SetValue(WidthProperty, Size, BindingPriority.Template);
-        SetValue(HeightProperty, Size, BindingPriority.Template);
-        SetValue(
+        SetTemplateValue(WidthProperty, Size, ref _customWidthValue);
+        SetTemplateValue(HeightProperty, Size, ref _customHeightValue);
+        SetTemplateValue(
             EffectiveIconSizeProperty,
             Icon is not null || Source is not null ? Size / 2 : 18,
-            BindingPriority.Template);
+            ref _customIconSizeValue);
     }
 
     private void ConfigureContentType()
@@ -362,14 +395,33 @@ public abstract class AbstractAvatar : TemplatedControl, IMotionAwareControl, II
     }
 
     private void ConfigureTextPadding() =>
-        SetValue(TextPaddingProperty, new Thickness(Gap, 0), BindingPriority.Template);
+        SetTemplateValue(TextPaddingProperty, new Thickness(Gap, 0), ref _textPaddingValue);
 
     private void ConfigureShape()
     {
-        if (Shape == AvatarShape.Circle)
+        if (Shape == AvatarShape.Circle && double.IsFinite(Width))
         {
-            SetValue(CornerRadiusProperty, new CornerRadius(Width / 2), BindingPriority.Template);
+            SetTemplateValue(CornerRadiusProperty, new CornerRadius(Width / 2), ref _circleRadiusValue);
         }
+        else
+        {
+            ReleaseTemplateValue(ref _circleRadiusValue);
+        }
+    }
+
+    // The new entry goes in before the old one is released, so the effective value never falls back in between.
+    private void SetTemplateValue<T>(StyledProperty<T> property, T value, ref IDisposable? handle)
+    {
+        var previous = handle;
+        handle = SetValue(property, value, BindingPriority.Template);
+        previous?.Dispose();
+    }
+
+    private static void ReleaseTemplateValue(ref IDisposable? handle)
+    {
+        var previous = handle;
+        handle = null;
+        previous?.Dispose();
     }
 
     private static int Quantize(double value)

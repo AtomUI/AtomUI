@@ -2,6 +2,27 @@
 
 本文档记录 Tag 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-07
+
+- API
+  - `TagVariant` 末尾新增 `Outline`（值 3；`Filled`、`Solid`、`Outlined` 仍为 0、1、2）。有 `TagColor` 时背景透明，边框和文字取主色（预设色取调色板第 6 色，状态色取语义色，自定义色取原色）。
+  - `TagColor` 接受 `primary`（`ColorPrimary`、`ColorPrimaryBg`、`ColorPrimaryBorder`）与 `danger`（等同 `error`），行为与其他状态名一致，设置 `:status-color` 伪类。
+  - `AbstractTag` 新增 `protected virtual AbstractIconButton? CreateCloseButton()`，以及受保护常量 `CloseButtonPartName`、`CloseButtonHostPartName`。
+  - 模板契约：模板不含 `PART_CloseButton` 但含名为 `PART_CloseButtonHost` 的 `Decorator` 时，基类在 `IsClosable=true` 期间通过 `CreateCloseButton()` 按需创建关闭按钮并放入该宿主，`IsClosable=false` 时移除。按钮命名为 `PART_CloseButton`，设置 `TemplatedParent`，`Icon` 绑定 `CloseIcon`，`Click` 触发 `Closed`。
+- Theme
+  - Desktop `TagTheme.axaml` 为无 `TagColor` 的 `Variant=Outline` 增加样式：透明背景，主色边框与文字。
+- Performance
+  - 新增 `TagColorTable`，按 `ThemeSnapshot` 构建一次并缓存，持有预设色、五个状态色和 Solid 文字色，取代每个实例各自持有的字典。1000 个空颜色 Tag 的创建加布局分配约 17.9 MB 降至 14.9 MB。
+  - `TagColor` 为空、空白或 `default` 时不订阅主题、不解析快照；设置颜色时才订阅，清除颜色时释放。`OnApplyTemplate` 不再重复构建快照。
+  - 重新挂树时按当前主题重新解析颜色表，离树期间的主题切换在挂回后生效。
+- Desktop 影响
+  - Desktop 模板声明 `PART_CloseButton`，沿用静态关闭按钮，行为不变；按需创建只对声明 `PART_CloseButtonHost` 的模板生效。
+  - 现有三种 Variant、预设色与状态色的取值不变；`primary`、`danger` 与 `Outline` 为新增能力。
+  - 已知边界：在已应用模板且已离树的 Tag 上把 `IsClosable` 设为 `true` 时，按需创建的关闭按钮此刻没有 `CloseIcon`，因为默认关闭图标只在挂树期间设置。
+- Tests
+  - 新增 `TagExtensionTests`：枚举值与既有变体颜色、Outline 颜色、`primary`/`danger`、空颜色不解析快照、颜色表按快照共享、挂树与离树期间的主题切换、按需创建关闭按钮、静态关闭按钮保持可用。
+  - `TagColorVariantTests` 新增无颜色 Outline 使用主色的用例。
+
 ## 2026-08-19
 
 - Design

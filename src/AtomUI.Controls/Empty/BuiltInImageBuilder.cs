@@ -1,10 +1,57 @@
-﻿using AtomUI.Media;
+﻿using System.Collections.Concurrent;
+using AtomUI.Media;
 using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// The five theme colours a preset image is derived from, as resolved from the control's brushes
+/// (before they are composited onto <see cref="Background"/>).
+/// </summary>
+internal readonly record struct PresetImageColors(
+    Color Border,
+    Color BorderSecondary,
+    Color Shadow,
+    Color Content,
+    Color Background);
+
 internal static class BuiltInImageBuilder
 {
+    // Keyed by (preset, colours): every Empty under the same theme shares one built svg string.
+    // Colours are part of the key, so a theme switch simply produces new entries.
+    private const int MaxCachedPresetImages = 32;
+
+    private static readonly ConcurrentDictionary<(PresetEmptyImage Preset, PresetImageColors Colors), string> s_presetImages = new();
+
+    public static string GetPresetImage(PresetEmptyImage preset, in PresetImageColors colors)
+    {
+        var key = (preset, colors);
+        if (s_presetImages.TryGetValue(key, out var cached))
+        {
+            return cached;
+        }
+
+        var built = BuildPresetImage(preset, colors);
+        if (s_presetImages.Count >= MaxCachedPresetImages)
+        {
+            // Bounded in case colours are animated or user-generated.
+            s_presetImages.Clear();
+        }
+        return s_presetImages.GetOrAdd(key, built);
+    }
+
+    private static string BuildPresetImage(PresetEmptyImage preset, in PresetImageColors colors)
+    {
+        var background = colors.Background;
+        var border = ColorUtils.OnBackground(colors.Border, background);
+        var borderSecondary = ColorUtils.OnBackground(colors.BorderSecondary, background);
+        var shadow = ColorUtils.OnBackground(colors.Shadow, background);
+        var content = ColorUtils.OnBackground(colors.Content, background);
+        return preset == PresetEmptyImage.Default
+            ? BuildDefaultImage(shadow, border, borderSecondary)
+            : BuildSimpleImage(content, border, shadow);
+    }
+
     public static string BuildSimpleImage(Color contentColor, Color borderColor, Color shadowColor)
     {
         var source =

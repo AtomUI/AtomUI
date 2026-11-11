@@ -1,4 +1,5 @@
-﻿using AtomUI.Utils;
+﻿using AtomUI.Theme.Resources;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -42,6 +43,12 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
 
     public static readonly StyledProperty<CountBadgeSize> SizeProperty =
         AvaloniaProperty.Register<AbstractCountBadge, CountBadgeSize>(nameof(Size));
+
+    public static readonly StyledProperty<object?> ContentProperty =
+        AvaloniaProperty.Register<AbstractCountBadge, object?>(nameof(Content));
+
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractCountBadge, bool>(nameof(IsBordered), true);
 
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<AbstractCountBadge, bool>(nameof(BadgeIsVisible), true);
@@ -92,6 +99,18 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         set => SetValue(SizeProperty, value);
     }
 
+    public object? Content
+    {
+        get => GetValue(ContentProperty);
+        set => SetValue(ContentProperty, value);
+    }
+
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
+    }
+
     public bool BadgeIsVisible
     {
         get => GetValue(BadgeIsVisibleProperty);
@@ -113,11 +132,14 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     private int _adornerLayerRetryCount;
     private IDisposable? _motionBinding;
     private AncestorVisibilityTracker? _ancestorVisibilityTracker;
+    private IDisposable? _themeSubscription;
     private Panel? _standaloneContentHost;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     static AbstractCountBadge()
     {
         AffectsMeasure<AbstractCountBadge>(DecoratedTargetProperty,
+            ContentProperty,
             CountProperty,
             OverflowCountProperty,
             SizeProperty);
@@ -127,6 +149,9 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         HorizontalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.VerticalAlignment.Top);
     }
+
+    // Live ancestor-visibility subscriptions; 0 when the tracker is not active.
+    internal int TrackedAncestorCount => _ancestorVisibilityTracker?.SubscriptionCount ?? 0;
 
     private protected abstract AbstractCountBadgeAdorner CreateBadgeAdorner();
 
@@ -149,6 +174,7 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             _adornerLayerRetryCount     = 0;
             _adornerLayerRetryScheduled = false;
             badgeAdorner.ApplyToTarget(_adornerLayer, this);
+            UpdateAncestorVisibilityTracking();
             SyncLayerAdornerVisibility();
         }
         else
@@ -255,14 +281,65 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
         _adornerLayerRetryCount = 0;
+        // 目标挂载与指示器可见性无关：初始隐藏（零计数、空内容、BadgeIsVisible=false）时也必须挂上目标
+        SyncDecoratedTargetChild(null);
         SetupShowZero();
         if (BadgeIsVisible)
         {
             PrepareAdorner();
         }
 
-        _ancestorVisibilityTracker?.Dispose();
-        _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility);
+        UpdateAncestorVisibilityTracking();
+        UpdateThemeSubscription();
+    }
+
+    // Only a layer adorner can drift when an ancestor is hidden; an inline adorner is a plain child
+    // of this control and hides with it, so inline mode needs no subscriptions at all.
+    private void UpdateAncestorVisibilityTracking()
+    {
+        if (DecoratedTarget is not null && this.IsAttachedToVisualTree())
+        {
+            // The adorner layer's host hides the layer with its adorners, so tracking stops below it.
+            var boundary = _adornerLayer?.GetVisualParent();
+            if (_ancestorVisibilityTracker is null || !ReferenceEquals(_ancestorVisibilityTracker.Boundary, boundary))
+            {
+                _ancestorVisibilityTracker?.Dispose();
+                _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility, boundary);
+            }
+        }
+        else
+        {
+            _ancestorVisibilityTracker?.Dispose();
+            _ancestorVisibilityTracker = null;
+        }
+    }
+
+    // Named colors (presets and statuses) depend on the theme snapshot; a hex value or no color needs no subscription.
+    private void UpdateThemeSubscription()
+    {
+        if (this.IsAttachedToVisualTree() && BadgeColorUtils.IsThemeDependent(BadgeColor))
+        {
+            if (_themeSubscription is null)
+            {
+                _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => RefreshThemeColor());
+                // Subscribing does not report the current snapshot, and a theme switch while detached was
+                // missed. A reused adorner still carries the old color, so resolve once on (re)subscription.
+                RefreshThemeColor();
+            }
+        }
+        else
+        {
+            _themeSubscription?.Dispose();
+            _themeSubscription = null;
+        }
+    }
+
+    private void RefreshThemeColor()
+    {
+        if (_badgeAdorner is not null && BadgeColor is { } badgeColor)
+        {
+            ConfigureDotColor(badgeColor);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -272,6 +349,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         _motionBinding = null;
         _ancestorVisibilityTracker?.Dispose();
         _ancestorVisibilityTracker = null;
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
         Loaded -= HandleAdornerLayerRetryLoaded;
         _adornerLayerRetryScheduled = false;
         _adornerLayerRetryCount     = 0;
@@ -345,6 +424,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             _badgeAdorner[!AbstractCountBadgeAdorner.SizeProperty]          = this[!SizeProperty];
             _badgeAdorner[!AbstractCountBadgeAdorner.OverflowCountProperty] = this[!OverflowCountProperty];
             _badgeAdorner[!AbstractCountBadgeAdorner.CountProperty]         = this[!CountProperty];
+            _badgeAdorner[!AbstractCountBadgeAdorner.ContentProperty]       = this[!ContentProperty];
+            _badgeAdorner[!AbstractCountBadgeAdorner.IsBorderedProperty]    = this[!IsBorderedProperty];
             _badgeAdorner[!AbstractCountBadgeAdorner.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         }
     }
@@ -452,6 +533,22 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         _adornerLayer = null;
     }
 
+    // 目标的挂载与替换独立于指示器：指示器未创建或处于隐藏时，旧目标仍要移除、新目标仍要挂上。
+    private void SyncDecoratedTargetChild(Control? oldDecoratedTarget)
+    {
+        if (oldDecoratedTarget is not null &&
+            !ReferenceEquals(oldDecoratedTarget, DecoratedTarget) &&
+            oldDecoratedTarget.GetVisualParent() == this)
+        {
+            DetachChild(oldDecoratedTarget);
+        }
+
+        if (DecoratedTarget is not null && this.IsAttachedToVisualTree())
+        {
+            AttachChild(DecoratedTarget);
+        }
+    }
+
     private protected virtual void NotifyDecoratedTargetChanged(Control? oldDecoratedTarget = null)
     {
         if (_badgeAdorner is not null)
@@ -491,6 +588,11 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             }
         }
 
+        if (change.Property == DecoratedTargetProperty)
+        {
+            SyncDecoratedTargetChild(change.GetOldValue<Control?>());
+        }
+
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == DecoratedTargetProperty)
@@ -500,12 +602,20 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
                 {
                     PrepareAdorner();
                 }
+
+                UpdateAncestorVisibilityTracking();
             }
 
             if (change.Property == BadgeColorProperty)
             {
                 ConfigureDotColor(change.GetNewValue<string>());
+                UpdateThemeSubscription();
             }
+        }
+
+        if (change.Property == ContentProperty)
+        {
+            SetupShowZero();
         }
 
         if (change.Property == CountProperty ||
@@ -531,7 +641,17 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
 
     private void SetupShowZero()
     {
-        if (Count == 0 && !IsZeroVisible)
+        // Explicit content decides on its own: an empty string means nothing to show, any other value is
+        // always shown whatever the count says. Null falls through to the count logic.
+        if (Content is string { Length: 0 })
+        {
+            BadgeIsVisible = false;
+        }
+        else if (Content is not null)
+        {
+            BadgeIsVisible = true;
+        }
+        else if (Count == 0 && !IsZeroVisible)
         {
             BadgeIsVisible = false;
         }
@@ -543,6 +663,9 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     
     private protected virtual void ConfigureDotColor(string colorStr)
     {
-        _badgeAdorner!.BadgeColor = BadgeColorUtils.CalculateColor(colorStr);
+        if (_badgeAdorner is not null)
+        {
+            _badgeAdorner.BadgeColor = BadgeColorUtils.CalculateColor(this, colorStr);
+        }
     }
 }

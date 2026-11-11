@@ -16,6 +16,8 @@
                            VerticalContentAlignment="Center"
                            IsEnabled="{TemplateBinding IsEnabled}" />
                 </LayoutTransformControl>
+                <atomc:ProgressInfoPresenter Name="PART_ProgressInfoContentPresenter"
+                                  IsVisible="False" />
             </Canvas>
         </ControlTemplate>
     </Setter>

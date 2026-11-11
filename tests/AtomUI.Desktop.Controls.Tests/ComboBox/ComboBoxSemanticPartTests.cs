@@ -33,6 +33,7 @@ public class ComboBoxSemanticPartTests
     private const string InputClass = "semantic-input";
     private const string SuffixClass = "semantic-suffix";
     private const string IndicatorClass = "semantic-indicator";
+    private const string ClearClass = "semantic-clear";
     private const string PopupRootClass = "semantic-popup-root";
     private const string PopupListClass = "semantic-popup-list";
     private const string PopupListItemClass = "semantic-popup-list-item";
@@ -52,7 +53,7 @@ public class ComboBoxSemanticPartTests
     /// </summary>
     private static readonly string[] ApprovedPartNames =
     [
-        "root", "content", "frame", "indicator", "input", "placeholder",
+        "root", "clear", "content", "frame", "indicator", "input", "placeholder",
         "popup.empty", "popup.list", "popup.listItem", "popup.root", "prefix", "suffix"
     ];
 
@@ -73,6 +74,9 @@ public class ComboBoxSemanticPartTests
         descriptor.Parts.Select(static part => part.Name).ShouldBe(ApprovedPartNames);
 
         AssertRoot(descriptor, typeof(AtomUIComboBox));
+        AssertPart(descriptor, "clear", ClearClass, typeof(IconButton),
+            "/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear",
+            since: "6.2.13");
         AssertPart(descriptor, "prefix", PrefixClass, typeof(ContentPresenter),
             "/template/ .semantic-scope-input /template/ .semantic-scope-prefix > .semantic-prefix");
         // frame 的物理节点在共享 AddOnDecoratedBox 模板内，因此声明 CrossNestedOwners。
@@ -118,6 +122,9 @@ public class ComboBoxSemanticPartTests
             "Classes.semantic-content:Panel",
             "Classes.semantic-placeholder:TextBlock",
             "Classes.semantic-suffix:StackPanel",
+            "Classes.semantic-scope-actions:StackPanel",
+            "Classes.semantic-scope-clear:Panel",
+            "Classes.semantic-clear:InputClearIconButton",
             "Classes.semantic-input:ComboBoxTextBox",
             "Classes.semantic-popup-root:Border",
             "Classes.semantic-popup-list:ScrollViewer",
@@ -206,6 +213,7 @@ public class ComboBoxSemanticPartTests
             FindSemanticControl<AvaloniaTextBox>(comboBox, InputClass).Tag.ShouldBe("input");
             FindSemanticControl<StackPanel>(comboBox, SuffixClass).Tag.ShouldBe("suffix");
             FindSemanticControl<IconButton>(comboBox, IndicatorClass).Tag.ShouldBe("indicator");
+            FindSemanticControl<IconButton>(comboBox, ClearClass).Tag.ShouldBe("clear");
         }
         finally
         {
@@ -483,8 +491,9 @@ public class ComboBoxSemanticPartTests
             var input       = FindSemanticControl<AvaloniaTextBox>(comboBox, InputClass);
             var suffix      = FindSemanticControl<StackPanel>(comboBox, SuffixClass);
             var indicator   = FindSemanticControl<IconButton>(comboBox, IndicatorClass);
+            var clear       = FindSemanticControl<IconButton>(comboBox, ClearClass);
 
-            foreach (var control in new Control[] { prefix, content, placeholder, input, suffix, indicator })
+            foreach (var control in new Control[] { prefix, content, placeholder, input, suffix, indicator, clear })
             {
                 control.Classes.Count(candidate => candidate.StartsWith("semantic-", StringComparison.Ordinal))
                        .ShouldBe(1);
@@ -553,7 +562,8 @@ public class ComboBoxSemanticPartTests
         SemanticPartCardinality cardinality = SemanticPartCardinality.Single,
         bool crossVisualRoot = false,
         bool runtimeCreated = false,
-        bool crossNestedOwners = false)
+        bool crossNestedOwners = false,
+        string since = "6.2.0")
     {
         var part = descriptor.Parts.Single(candidate => candidate.Name == name);
         part.Path.ShouldBe(name);
@@ -565,7 +575,7 @@ public class ComboBoxSemanticPartTests
         part.CrossVisualRoot.ShouldBe(crossVisualRoot);
         part.RuntimeCreated.ShouldBe(runtimeCreated);
         part.CrossNestedOwners.ShouldBe(crossNestedOwners);
-        part.Since.ShouldBe("6.2.0");
+        part.Since.ShouldBe(since);
         part.Theme.ShouldBeNull();
         part.StyleType.ShouldNotBeNull();
         part.StyleType!.Name.ShouldBe($"ComboBox{ToPascalCase(name)}Style");

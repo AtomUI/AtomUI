@@ -2,6 +2,21 @@
 
 本文档记录 Alert 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Fix
+  - `MarqueeLabel` 的启动统一检查溢出、挂树、运动门控与悬停暂停：`IsPausedOnPointerOver=false` 时指针停在文本上也能在运动门控重新开启后恢复滚动；`IsPausedOnPointerOver=true` 且悬停时，重新布局与延迟计时器都不会启动滚动。
+
+## 2026-11-07
+
+- API
+  - `MarqueeLabel`（`AbstractMarqueeLabel`）新增 `StartDelay`（`TimeSpan`，默认 `TimeSpan.Zero`）：滚动动画每次从静止状态（重新）启动前先等待该时长，等待期间文字保持静止、内部 `IsMarqueeAnimating` 为 `false`；门控关闭或脱离视觉树时取消尚未触发的延迟。
+  - `MarqueeLabel` 新增 `IsPausedOnPointerOver`（`bool`，默认 `true`）：为 `false` 时忽略指针悬停变化，滚动不因悬停暂停。
+- Desktop 影响
+  - 默认不变：`StartDelay` 为零时启动路径与此前一致，`IsPausedOnPointerOver` 默认保持悬停暂停；Desktop 唯一使用者 Alert 不设置这两个属性。
+- Tests
+  - 新增 `MarqueeStartTests`（共享层）：默认值、零延迟立即启动、延迟推迟首个周期、门控关闭与脱离视觉树取消待定延迟、悬停默认暂停、关闭悬停暂停后忽略悬停、悬停离开后的恢复同样经过延迟。
+
 ## 2026-08-19
 
 - Gallery

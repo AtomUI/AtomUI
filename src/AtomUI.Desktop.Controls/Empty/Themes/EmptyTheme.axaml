@@ -16,14 +16,28 @@
                         <Svg Name="PART_SvgImage"
                              Classes.semantic-image="True"
                              HorizontalAlignment="Center"
-                             VerticalAlignment="Center"/>
+                             VerticalAlignment="Center"
+                             IsVisible="{TemplateBinding Image, Converter={x:Static ObjectConverters.IsNull}}"/>
+                        <!-- Image（Ant Design 的 image 节点）放在与内置插画同高的容器中 -->
+                        <ContentPresenter Name="ImageContent"
+                                          HorizontalAlignment="Center"
+                                          VerticalContentAlignment="Center"
+                                          Content="{TemplateBinding Image}"
+                                          ContentTemplate="{TemplateBinding ImageTemplate}"
+                                          IsVisible="{TemplateBinding Image, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                         <atom:TextBlock Name="Description"
                                         Classes.semantic-description="True"
                                         HorizontalAlignment="Center"
                                         TextWrapping="Wrap"
-                                        Text="{TemplateBinding Description}"
-                                        IsVisible="{TemplateBinding IsDescriptionVisible}"/>
-                        <ContentPresenter Classes.semantic-footer="True"
+                                        Text="{TemplateBinding DescriptionText}"
+                                        IsVisible="{TemplateBinding IsDescriptionTextVisible}"/>
+                        <ContentPresenter Name="DescriptionContent"
+                                          HorizontalAlignment="Center"
+                                          TextWrapping="Wrap"
+                                          Content="{TemplateBinding DescriptionContent}"
+                                          IsVisible="{TemplateBinding IsDescriptionContentVisible}"/>
+                        <ContentPresenter Name="Footer"
+                                          Classes.semantic-footer="True"
                                           HorizontalAlignment="Center"
                                           Content="{TemplateBinding Footer}"
                                           ContentTemplate="{TemplateBinding FooterTemplate}"
@@ -36,19 +50,19 @@
         <Setter Property="Description" Value="{atom:CommonLangResource NoData}"/>
         
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ Svg#PART_SvgImage">
+            <Style Selector="^ /template/ Svg#PART_SvgImage, ^ /template/ ContentPresenter#ImageContent">
                 <Setter Property="Height" Value="{atom:EmptyTokenResource EmptyImgHeight}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ Svg#PART_SvgImage">
+            <Style Selector="^ /template/ Svg#PART_SvgImage, ^ /template/ ContentPresenter#ImageContent">
                 <Setter Property="Height" Value="{atom:EmptyTokenResource EmptyImgHeightMD}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ Svg#PART_SvgImage">
+            <Style Selector="^ /template/ Svg#PART_SvgImage, ^ /template/ ContentPresenter#ImageContent">
                 <Setter Property="Height" Value="{atom:EmptyTokenResource EmptyImgHeightSM}"/>
             </Style>
         </Style>
@@ -62,19 +76,19 @@
         <Setter Property="BgColor" Value="{atom:SharedTokenResource ColorBgElevated}"/>
         
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ atom|TextBlock#Description">
+            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMargin}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ atom|TextBlock#Description">
+            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMarginSM}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ atom|TextBlock#Description">
+            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMarginSM}"/>
             </Style>
         </Style>
@@ -83,7 +97,11 @@
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
         </Style>
 
-        <Style Selector="^ /template/ ContentPresenter">
+        <Style Selector="^ /template/ ContentPresenter#DescriptionContent">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
+        </Style>
+
+        <Style Selector="^ /template/ ContentPresenter#Footer">
             <Setter Property="Margin" Value="{atom:EmptyTokenResource FooterMargin}"/>
         </Style>
         

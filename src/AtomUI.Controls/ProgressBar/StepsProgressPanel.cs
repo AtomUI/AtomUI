@@ -176,7 +176,8 @@ internal sealed class StepsProgressPanel : Panel
             e.Property == AbstractProgressBar.EffectiveSizeTypeProperty ||
             e.Property == AbstractLineProgress.OrientationProperty ||
             e.Property == AbstractGeneralStepsProgressBar.PercentPositionProperty ||
-            e.Property == AbstractProgressBar.IsProgressInfoVisibleProperty)
+            e.Property == AbstractProgressBar.IsProgressInfoVisibleProperty ||
+            e.Property == AbstractProgressBar.ProgressInfoContentProperty)
         {
             InvalidateMeasure();
             InvalidateArrange();

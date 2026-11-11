@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -299,10 +300,32 @@ public partial class TreeView : ICustomKeyboardNavigation
         _keyboardSelectionAnchor = anchor;
         var start = Math.Min(anchorIndex, targetIndex);
         var end   = Math.Max(anchorIndex, targetIndex);
-        SelectedItems.Clear();
+        var range = new List<object>(end - start + 1);
         for (var i = start; i <= end; i++)
         {
-            SelectedItems.Add(GetTreeItem(items[i]));
+            range.Add(GetTreeItem(items[i]));
+        }
+
+        // Only the delta is synchronized: clearing and refilling would let SelectionChanged subscribers
+        // and form bindings observe an empty and then a partial selection.
+        var rangeSet = new HashSet<object>(range);
+        var removed  = SelectedItems.Cast<object>().Where(item => !rangeSet.Contains(item)).ToList();
+        var added    = range.Where(item => !SelectedItems.Contains(item)).ToList();
+        if (SelectedItems is AvaloniaList<object> selectedItems)
+        {
+            selectedItems.RemoveAll(removed);
+            selectedItems.AddRange(added);
+            return;
+        }
+
+        foreach (var item in removed)
+        {
+            SelectedItems.Remove(item);
+        }
+
+        foreach (var item in added)
+        {
+            SelectedItems.Add(item);
         }
     }
 

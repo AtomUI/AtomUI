@@ -39,6 +39,9 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractDotBadgeAdorner, Point>(
             nameof(Offset));
 
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractDotBadgeAdorner, bool>(nameof(IsBordered));
+
     public IBrush? BadgeDotColor
     {
         get => GetValue(BadgeDotColorProperty);
@@ -73,6 +76,13 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     {
         get => GetValue(OffsetProperty);
         set => SetValue(OffsetProperty, value);
+    }
+
+    // Selector hook for themes that draw a ring around the dot; the shared dot draws none.
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
     }
 
     #endregion

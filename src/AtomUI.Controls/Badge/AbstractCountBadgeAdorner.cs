@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -9,6 +10,7 @@ using Avalonia.Media;
 namespace AtomUI.Controls.Commons;
 
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
+[TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
 internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 {
     #region 公共属性定义
@@ -28,6 +30,12 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, CountBadgeSize>(
             nameof(Size));
     
+    public static readonly StyledProperty<object?> ContentProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, object?>(nameof(Content));
+
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, bool>(nameof(IsBordered), true);
+
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractCountBadgeAdorner>();
 
@@ -61,6 +69,18 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetValue(CountProperty, value);
     }
     
+    public object? Content
+    {
+        get => GetValue(ContentProperty);
+        set => SetValue(ContentProperty, value);
+    }
+
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
+    }
+
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
@@ -88,6 +108,11 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             nameof(CountText),
             o => o.CountText,
             (o, v) => o.CountText = v);
+
+    internal static readonly DirectProperty<AbstractCountBadgeAdorner, object?> PresentedContentProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, object?>(
+            nameof(PresentedContent),
+            o => o.PresentedContent);
 
     internal static readonly StyledProperty<int> CountProperty =
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, int>(
@@ -120,12 +145,23 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetAndRaise(BoxShadowProperty, ref _boxShadow, value);
     }
 
+    private object? _presentedContent;
+
+    // The content the template shows: explicit Content when set, otherwise the count text.
+    internal object? PresentedContent => _presentedContent;
+
     private string? _countText;
 
     internal string? CountText
     {
         get => _countText;
-        set => SetAndRaise(CountTextProperty, ref _countText, value);
+        set
+        {
+            if (SetAndRaise(CountTextProperty, ref _countText, value))
+            {
+                UpdatePresentedContent();
+            }
+        }
     }
 
     internal IBrush? BadgeShadowColor
@@ -188,9 +224,19 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         _motion.Detach();
     }
 
+    private void UpdatePresentedContent()
+    {
+        SetAndRaise(PresentedContentProperty, ref _presentedContent, Content ?? _countText);
+    }
+
     private void BuildBoxShadow()
     {
-        if (BadgeShadowColor is not null)
+        // The border ring is rendered as a shadow; without a border there is nothing to draw.
+        if (!IsBordered)
+        {
+            BoxShadow = default;
+        }
+        else if (BadgeShadowColor is not null)
         {
             BoxShadow = new BoxShadows(new BoxShadow
             {
@@ -212,9 +258,15 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         }
 
         if (change.Property == BadgeShadowSizeProperty ||
-            change.Property == BadgeShadowColorProperty)
+            change.Property == BadgeShadowColorProperty ||
+            change.Property == IsBorderedProperty)
         {
             BuildBoxShadow();
+        }
+
+        if (change.Property == ContentProperty)
+        {
+            UpdatePresentedContent();
         }
 
         if (change.Property == CountProperty || change.Property == OverflowCountProperty)

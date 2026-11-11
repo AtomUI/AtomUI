@@ -41,7 +41,7 @@ Result 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `Header`、`HeaderTemplate`、`SubHeader`、`SubHeaderTemplate`、`Extra`、`ExtraTemplate`、`Content`、`ContentTemplate` | 定义标题、副标题、操作区域和正文内容入口。 |
-| 状态与图标 | `Status`、`Icon` | 选择普通反馈图标或 403/404/500 异常图，并允许普通状态使用自定义 `PathIcon`。 |
+| 状态与图标 | `Status`、`Icon` | 选择普通反馈图标（含 `Waiting`）或 403/404/500 异常图；`Icon` 为 `object?`，普通状态可使用任意控件或对象作为自定义图标。 |
 | 排版 | `HeaderFontSize`、`SubHeaderFontSize` | 覆盖标题与副标题字号；行高仍由控件根据相对行高计算。 |
 | 根表面 | 继承的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius`、`Padding` 与 `StrokeDashArray` | 由根 owner Style 控制 Result 的背景、边框、圆角、内边距和虚线节奏。 |
 
@@ -57,7 +57,7 @@ Result 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
 | `PART_ErrorCodeImage` | `Svg` | 承载 403、404、500 的异常状态图像。 |
-| `PART_StatusIconPresenter` | `ContentPresenter` | 承载 Info、Success、Warning、Error 的默认或自定义状态图标。 |
+| `PART_StatusIconPresenter` | `ContentPresenter` | 承载 Info、Success、Warning、Error、Waiting 的默认或自定义状态图标。 |
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
@@ -75,8 +75,8 @@ Public API / inherited command / item source / user input
 
 状态维护规则：
 
-- `Status` 是状态视觉的唯一 owner。Info、Success、Warning、Error 显示普通图标 presenter，403、404、500 显示异常 SVG。
-- `Icon` 只替换四种普通反馈状态的图标内容，不改变 `icon` Semantic Part 的 target 身份或数量。
+- `Status` 是状态视觉的唯一 owner。Info、Success、Warning、Error、Waiting 显示普通图标 presenter，403、404、500 显示异常 SVG。
+- `Icon` 只替换五种普通反馈状态（Info、Success、Warning、Error、Waiting）的图标内容，不改变 `icon` Semantic Part 的 target 身份或数量。
 - `Header`、`SubHeader` 和 `Content` 的空值只改变对应 presenter 的可见性；`Extra` 为空时保留空 presenter。
 - 模板重套用时重新获取两个图标 template part，并把当前状态、图标尺寸、画刷和文本行高回放到新模板。
 

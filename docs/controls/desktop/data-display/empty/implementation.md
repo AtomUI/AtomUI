@@ -55,7 +55,9 @@ PresetImage / ImageSource / ImagePath
 
 源码中的状态入口按以下语义维护：
 
-- 内容与数据：`Description`、`Footer`、`FooterTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`。
+- 内容与数据：`Description`（`object?`）、`Footer`、`FooterTemplate`、`Image`、`ImageTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`、`Title`、`TitleTemplate`。
+- 描述的投影：`Empty` 由 `Description` 与 `IsDescriptionVisible` 派生内部属性 `DescriptionText`、`DescriptionContent` 及两个可见性属性；字符串绑定到 `semantic-description` 文本节点，
+  非字符串对象绑定到 `ContentPresenter#DescriptionContent`。
 - 视觉与布局：`SizeType`、`StrokeDashArray` 以及继承的 root 表面属性。
 
 维护要求：
@@ -144,13 +146,17 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 
 来源和内部颜色属性是输入，renderer 的 `Source` / `Path` 是输出。计算和提交必须分开，遵守下列顺序：
 
-1. 执行图片来源互斥校验；模板 part 尚不存在时不写入 renderer。
+1. 执行图片来源互斥校验（`Image`、`PresetImage`、`ImagePath`、`ImageSource`，只统计本地值、样式值、模板值与绑定提供的非空值，默认值不计）；模板 part 尚不存在或模板不含 `PART_SvgImage` 时不写入 renderer。
+   提交优先级为 `Image`（由模板渲染，清空 svg）、`ImagePath`、`ImageSource`、`PresetImage`。
 2. 对预设图形，先检查 `BorderColor`、`BorderColorSecondary`、`ShadowColor`、`ContentColor`、`BgColor` 是否齐备。
    任一资源暂缺时保留已有 `Source` / `Path`，首次没有结果时保持无图，不把暂缺转换成取消图片。
 3. 资源齐备后完成背景叠色计算，由 `BuiltInImageBuilder` 生成完整 SVG 字符串，再清理旧 `Path` 并提交到 `Source`。
    禁止先把 `Source` 设为 `null` 再检查画刷或生成结果。
 4. 对 `ImageSource` 或 `ImagePath`，使用调用方指定的内容或路径，清理另一个来源字段，不要求预设颜色资源齐备。
 5. 三种来源均为 `null` 时清空 `Source` 与 `Path`，保证主动取消图片后不残留旧图。
+
+预设图形的 SVG 字符串由 `BuiltInImageBuilder.GetPresetImage(preset, colors)` 按（预设，五个画刷颜色）缓存，容量 32 项，满时清空；叠色与拼接只在未命中时执行。
+缓存键取同步时控件持有的颜色，不订阅主题；挂树时重新同步，保证主题切换后挂回的实例使用当前颜色。
 
 提交必须幂等：目标 `Source` / `Path` 与当前结果相同时不写入，也不经过 `Source=null` 的中间状态。同步不替换模板节点，
 不额外保存图片来源副本，不引入计时器、Dispatcher 延时、重试或强制刷新入口。
@@ -191,6 +197,8 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 同一实例摘挂后，图片必须与最新来源及主题一致，描述、Footer、尺寸与 Semantic target 身份符合各自契约。
 - 颜色资源暂缺时保留已有图片，来源明确全部为空时清空；重复同步相同结果不先清空再重建。
+- `description` Semantic Part 仍是 `TextBlock`；非字符串描述由独立内容节点展示，不改变该 Part 的类型与 selector。
+- `Description` 的 `object?` 类型是稳定契约；Footer 的 `ContentPresenter` 样式限定在 `#Footer`，不得退回无限定的 `ContentPresenter` selector。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
 ## 11. 测试与验证
@@ -203,7 +211,7 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
-Empty 专项测试必须覆盖 descriptor 字段、静态 marker、三种图片来源、描述可见性、Footer 内容/模板替换、三档 SizeType、
+Empty 专项测试必须覆盖 descriptor 字段、静态 marker、三种图片来源及 `Image` 的互斥与优先级、字符串与对象描述、预设缓存、描述可见性、Footer 内容/模板替换、三档 SizeType、
 re-template 和应用级生成 Style 命中。Empty 不涉及 Popup、跨 VisualRoot、运行时 marker 或反射发现，单控件阶段不要求额外
 NativeAOT publish；批次收尾仍执行 Gallery NativeAOT 验证。
 

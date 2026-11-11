@@ -14,22 +14,16 @@
             <ControlTemplate TargetType="atom:CircleProgress">
                 <atomc:CircleProgressPanel Classes.semantic-body="True">
                     <Path Name="PART_ProgressRail"
-                          Stroke="{TemplateBinding GrooveBrush}"
                           StrokeThickness="{TemplateBinding StrokeThickness}"
-                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
                           Classes.semantic-rail="True" />
                     <Path Name="PART_ProgressTrack"
-                          Stroke="{TemplateBinding StrokeBrush}"
                           StrokeThickness="{TemplateBinding StrokeThickness}"
-                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}"
                           Classes.semantic-track="True" />
                     <Path Name="PART_ProgressSuccess"
-                          Stroke="{TemplateBinding SuccessStrokeBrush}"
-                          StrokeThickness="{TemplateBinding StrokeThickness}"
-                          StrokeLineCap="{TemplateBinding ShapeStrokeLineCap}" />
+                          StrokeThickness="{TemplateBinding StrokeThickness}" />
                     <Canvas Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"
-                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                            IsVisible="{TemplateBinding IsProgressInfoPresented}">
                         <LayoutTransformControl Name="PART_LayoutTransformControl">
                             <Label Name="PART_PercentageLabel"
                                    Padding="0"
@@ -52,6 +46,8 @@
                             Icon="{TemplateBinding SuccessCompletedIcon}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center" />
+                        <atomc:ProgressInfoPresenter Name="PART_ProgressInfoContentPresenter"
+                                          IsVisible="False" />
                     </Canvas>
                 </atomc:CircleProgressPanel>
             </ControlTemplate>

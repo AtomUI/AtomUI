@@ -91,12 +91,17 @@
 - Reload 保留同来源旧图直到原子替换，但单次请求使用 `CacheRead=RefreshSource`。
 - owned cache image 与 `new BorrowedImageSource(image)` 的释放责任。
 - Theme loading/error content 不改写 loader 状态，Template 清除不会遗留 controller 订阅。
+- `AsyncImage.IsLazy`：默认值、视口之外不请求、进入视口后只请求一次、滚出后保留结果、零尺寸与折叠父级永不请求；
+  `ReleaseLoad()` 取消并在下一次可见或 `Source` 变化时重新加载，非 lazy 行为保持不变。
 
 Avatar 额外断言成功 Source、成功 FallbackSource、Text、Icon 的固定优先级，以及加载中继续显示 Text/Icon；首次 Window Arrange
 即可启动 HTTP raster/SVG，网络 SVG、本地 SVG 和 raster 使用同一个 Source 属性。默认 Application `Compatible` 模式下，含重复
 id 的本地 SVG 成功成为 Image；`Strict` 模式下主 Source 以 `InvalidImageData` 失败并继续遵守现有 fallback/最终失败语义。Avatar
 和 `ImageRequestOptions` 均不能覆盖应用模式。`AsyncImage` 额外断言 Auto/Original/Explicit、Stretch、SVG 尺寸无关复用和
-loading/error template。Masonry 的 `AsyncImage` 在 raster/SVG 请求完成前都必须保持 skeleton。
+loading/error template；Auto 下 `Fill`/`UniformToFill` 整宽限高时解码宽度不低于显示物理宽度，宽图按高度覆盖，`Uniform` 仍落在框内，
+纵向 StackPanel 中只有 `MaxHeight` 约束的铺满图片加载后不重启、只解码一次且宽图仍按 `MaxHeight` 覆盖，
+切换 `Stretch` 重新解码，极大 `Height`/`MaxHeight` 不抛出；raster codec 的 contain/cover 目标尺寸与不放大约束有独立表驱动断言，
+Avatar `UniformToFill` 同样按覆盖解码。Masonry 的 `AsyncImage` 在 raster/SVG 请求完成前都必须保持 skeleton。
 
 ## Previewer 测试
 

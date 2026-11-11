@@ -20,6 +20,8 @@
   - 焦点样式对齐 Ant Design：`TreeSelect` 设置空 `FocusAdorner` 与 `ClipToBounds=False`；`Outlined` 聚焦时 frame 叠加 `InputActiveShadow`（Error / Warning 对应状态外发光），`Filled` 不叠加；嵌入式搜索框不再绘制内部方框。
 - Tests
   - `TreeSelectKeyboardNavigationTests` 断言弹层活动项 header 带 `:keyboard-active`。
+- Fix
+  - 隧道阶段的键盘转发只接收 TreeSelect 自身的过滤输入框；附加区或项模板中的输入框保留自己的按键，按 Enter 不再提交活动节点并关闭下拉。
 
 ## 2026-11-04
 

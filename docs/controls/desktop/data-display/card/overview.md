@@ -107,8 +107,8 @@ Card.Actions changed
 
 加载状态：
 
-- `IsLoading=true` 时，根模板中的 Skeleton 负责展示加载占位，并保留内容区域的主题边界。
-- `IsLoading=false` 时显示实际 `Content` 和 `ContentTemplate`。
+- `IsLoading=true` 时，内容区隐藏，`PART_LoadingHost` 中按需创建一个 Skeleton（四行段落、无标题、微光激活）展示加载占位，内容区的主题边界保持不变。
+- `IsLoading=false` 时 Skeleton 被移除并丢弃，显示实际 `Content` 和 `ContentTemplate`；不加载的 Card 不持有任何 Skeleton 视觉元素。
 
 悬停和动效：
 
@@ -122,7 +122,7 @@ Card 的默认视觉由根 Card 主题和多个子控件主题组成。
 
 | 主题文件 | 职责 |
 | --- | --- |
-| `CardTheme.axaml` | 根模板、Header/Extra、Cover、Content、Skeleton、ActionPanel 接入和 Card 状态样式。 |
+| `CardTheme.axaml` | 根模板、Header/Extra、Cover、Content（含加载宿主 `PART_LoadingHost`）、ActionPanel 接入和 Card 状态样式。 |
 | `CardActionPanelTheme.axaml` | 底部操作区背景、边框、圆角、最小高度和文字颜色过渡。 |
 | `CardActionButtonTheme.axaml` | Card 操作按钮的拉伸布局、图标尺寸和图标颜色。 |
 | `CardGridContentTheme.axaml` | 栅格内容 ItemsPresenter 和 Grid items panel。 |
@@ -162,7 +162,7 @@ Card 属于 Data Display 分类，常与 Grid、Image、Avatar、TabControl、Sk
 集成关系：
 
 - Token 系统：根 Card 通过 `CardToken.ScopeProvider` 注册控件 Token 资源作用域。
-- Skeleton：`IsLoading` 通过模板内 Skeleton 表达加载占位。
+- Skeleton：`IsLoading` 为真期间，Card 在加载宿主中按需创建 Skeleton 表达加载占位。
 - TabControl：`CardTabsContent` 将 Card 的 `SizeType` 和 `IsMotionEnabled` 传递给内部 TabControl。
 - ItemsControl：`CardGridContent` 通过 ItemsControl 生成 `CardGridItem` 容器。
 - Gallery：Card ShowCase 覆盖基础尺寸、无边框、简单卡片、封面/Meta、栅格、内部卡片、Loading、Tabs 和更多配置。
@@ -228,8 +228,8 @@ others/null -> Default
 | 层次 | 验证内容 |
 | --- | --- |
 | Public API | `Extra`、`StyleVariant`、`SizeType`、`IsLoading`、`IsInnerMode`、`IsHoverable`、`Cover`、`Actions`、`BoxShadow`、`IsMotionEnabled` 和子控件 API。 |
-| 状态行为 | ContentType 切换、Headerless、Actions 增删改移、Grid 行列定义、GridItem row/column/span、Loading 和 hover。 |
-| AXAML / Template | `PART_ActionPanel`、`PART_ItemsPresenter`、`PART_TabControl`、Header/Cover/Content/Action 区域、Skeleton 包裹关系。 |
+| 状态行为 | ContentType 切换、Headerless、Actions 增删改移、Grid 行列定义、GridItem row/column/span、Loading（Skeleton 按需创建与移除、内容恢复）和 hover。 |
+| AXAML / Template | `PART_ActionPanel`、`PART_ItemsPresenter`、`PART_TabControl`、`PART_LoadingHost`、Header/Cover/Content/Action 区域、Skeleton 按需创建与移除。 |
 | Token | Header、Body、Actions、Tabs、Extra、Shadow、Grid item 和 action icon Token。 |
 | Gallery | Basic、NoBorder、Simple、CustomizedContent、CardInColumn、GridCard、InnerCard、LoadingCard、WithTabs、MoreContentConfiguration 示例。 |
 | 文档 | 运行 `git diff --check`，检查相对链接存在。 |

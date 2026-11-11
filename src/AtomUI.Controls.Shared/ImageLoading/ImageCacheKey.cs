@@ -23,7 +23,7 @@ internal readonly record struct ImageContentId(string Value)
 
 internal readonly record struct ImageEncodedContentKey(string PartitionHash, ImageContentId ContentId);
 
-internal readonly record struct ImageDecodeSpec(int PixelWidth, int PixelHeight, string CodecScope);
+internal readonly record struct ImageDecodeSpec(int PixelWidth, int PixelHeight, string CodecScope, bool Cover = false);
 
 internal readonly record struct ImageDecodeKey(
     string PartitionHash,
@@ -53,6 +53,7 @@ internal sealed record NormalizedImageRequest(
     ImageRequestPriorityState PriorityState,
     int DecodePixelWidth,
     int DecodePixelHeight,
+    bool DecodeToCover,
     IProgress<ImageLoadProgress>? Progress,
     ImageLoadTimingTracker Timing,
     ImageSourceKey SourceKey,
@@ -139,6 +140,7 @@ internal static class ImageCacheKey
             request.PriorityState ?? new ImageRequestPriorityState(request.Priority),
             request.DecodePixelWidth,
             request.DecodePixelHeight,
+            request.DecodeToCover && request.DecodePixelWidth > 0 && request.DecodePixelHeight > 0,
             progress,
             timing,
             sourceKey,

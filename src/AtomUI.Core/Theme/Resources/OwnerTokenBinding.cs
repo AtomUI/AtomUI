@@ -48,6 +48,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     private ControlTokenIdentity? _owner;
     private object? _ownerKey;
     private object? _value = AvaloniaProperty.UnsetValue;
+    private bool _published;
 
     private OwnerTokenBinding(WeakReference<object?> reference, SharedTokenKind kind)
     {
@@ -110,10 +111,11 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
             _target                          =  null;
         }
 
-        _listener = null;
-        _owner    = null;
-        _ownerKey = null;
-        _value    = AvaloniaProperty.UnsetValue;
+        _listener  = null;
+        _owner     = null;
+        _ownerKey  = null;
+        _value     = AvaloniaProperty.UnsetValue;
+        _published = false;
     }
 
     public void Dispose()
@@ -144,13 +146,31 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
         Refresh();
     }
 
-    private void Refresh()
+    /// <summary>Re-resolves the owner value and publishes it only if it differs from the published one.</summary>
+    /// <remarks>
+    /// A theme publish refreshes every owner binding in the tree while most tokens keep their value; the resolved
+    /// values are immutable or per-consumer frozen copies that compare by value, so an equal result is the same value
+    /// and republishing it would only make Avalonia re-evaluate the property for no change.
+    /// </remarks>
+    internal void Refresh()
     {
-        if (_target is { } target)
+        if (_target is not { } target)
         {
-            Publish(FindValue(target));
+            return;
         }
+
+        var value = FindValue(target);
+        if (_published && Equals(value, _value))
+        {
+            return;
+        }
+
+        Publish(value);
     }
+
+    /// <summary>Creates a standalone accessor for <paramref name="target"/>; contract tests drive it directly.</summary>
+    internal static OwnerTokenBinding CreateAccessor(object target, SharedTokenKind kind) =>
+        new(new WeakReference<object?>(target), kind);
 
     private object? FindValue(StyledElement target)
     {
@@ -168,7 +188,8 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
 
     private void Publish(object? value)
     {
-        _value = value;
+        _value     = value;
+        _published = true;
         _listener?.Invoke(value);
     }
 }

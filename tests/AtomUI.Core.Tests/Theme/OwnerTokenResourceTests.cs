@@ -288,6 +288,43 @@ public class OwnerTokenResourceTests
         });
     }
 
+    [Fact]
+    public void Refresh_With_Unchanged_Owner_Value_Does_Not_Republish()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(LineEditBorderConfig("#FF0000"));
+            var primitive = fixture.CreatePrimitive();
+            fixture.Show(fixture.CreateOwner(typeof(LineEditThemeTestControl), primitive));
+
+            var accessor = OwnerTokenBinding.CreateAccessor(primitive, SharedTokenKind.ColorBorder);
+            var published = new List<object?>();
+            accessor.Subscribe(published.Add);
+            published.Count.ShouldBe(1, "the accessor publishes its initial value once");
+            published[0].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Color.Parse("#FF0000"));
+
+            // A theme publish that changes another owner token but leaves the border colour alone, and explicit
+            // refreshes, republish nothing.
+            fixture.Apply(new ThemeConfigBuilder()
+                          .WithControl(s_lineEditIdentity, new ControlThemeConfigBuilder()
+                                                           .WithToken("ColorBorder", "#FF0000")
+                                                           .WithToken("ColorText", "#00FF00")
+                                                           .Build())
+                          .Build(),
+                ThemeTransitionReason.UserRequest);
+            for (var index = 0; index < 100; index++)
+            {
+                accessor.Refresh();
+            }
+            published.Count.ShouldBe(1, "an equal owner value must not be republished");
+
+            fixture.Apply(LineEditBorderConfig("#0000FF"), ThemeTransitionReason.UserRequest);
+            published.Count.ShouldBe(2, "a changed owner value is published once");
+            published[1].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Color.Parse("#0000FF"));
+            accessor.Dispose();
+        });
+    }
+
     private const string ThrowingEvaluatorMessage = "LineEdit Token evaluator failed.";
 
     /// <summary>

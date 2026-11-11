@@ -138,7 +138,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PlaceholderText`（`atom:TextBlock`，基类为 `Avalonia.Controls.TextBlock`） |
 | 职责 | 未选择任何项且非编辑态时显示的占位符文本。 |
 | 相关 API | `PlaceholderText` |
-| 相关 Token | SharedToken（节点以 `Opacity=0.3` 弱化，见定制边界） |
+| 相关 Token | SharedToken `ColorTextPlaceholder`（经 `PlaceholderForeground` 投影，见定制边界） |
 | 稳定性 | stable since 6.2.0 |
 
 #### `input`
@@ -366,8 +366,10 @@ disabled、`Status`/`FormStatus`、`IsDropDownOpen`、集合空与非空、过�
 嵌套 `<Style Selector="^ atom|Icon">` 设置 `StrokeBrush` 着色（与 `Select` 一致，上游 `prefix.color` 依赖
 `currentColor`，AtomUI 图标尚未桥接 `TextElement.Foreground` 到 `StrokeBrush`）。
 
-`placeholder` 的 `Opacity=0.3` 与 `suffix` 容器的 `TextElement.Foreground` 默认值来自内置主题：用户
-Semantic Style 在目标节点上以更高优先级覆写，不需要也不应修改内置主题来定制。
+`placeholder` 与编辑态内嵌输入框的占位文本都以 `TemplateBinding` 消费宿主 `PlaceholderForeground`，其默认值
+`ColorTextPlaceholder` 与 `suffix` 容器的 `TextElement.Foreground` 默认值一样来自内置主题：整体换色优先设置
+`ComboBox.PlaceholderForeground`（两种模式同时生效），只定制非编辑态节点时用 `ComboBoxPlaceholderStyle` 以更高
+优先级覆写，不需要也不应修改内置主题来定制。
 
 不得使用以下写法：
 

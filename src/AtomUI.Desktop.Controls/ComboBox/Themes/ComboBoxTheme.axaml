@@ -66,9 +66,9 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
-                                Opacity="0.3"
                                 IsVisible="{TemplateBinding SelectingItemsControl.SelectedItem, Converter={x:Static ObjectConverters.IsNull}}"
-                                Text="{TemplateBinding PlaceholderText}" />
+                                Text="{TemplateBinding PlaceholderText}"
+                                Foreground="{TemplateBinding PlaceholderForeground}" />
                             <ContentPresenter
                                 Name="SelectedContentPresenter"
                                 HorizontalAlignment="Left"
@@ -168,6 +168,7 @@
         <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
         <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />

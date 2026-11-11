@@ -9,6 +9,8 @@
 - Fixed
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
   - `InfoPickerInputTheme`、`RangeInfoPickerInputTheme`、`RangeDatePickerTheme` 设置 `ClipToBounds=False`，`Outlined` focus 外发光不再被宿主裁剪。
+- Fixed
+  - DatePicker / RangeDatePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`），7e40bc14a 只覆盖了宿主，遗漏了外框。
 
 ## 2026-11-04
 

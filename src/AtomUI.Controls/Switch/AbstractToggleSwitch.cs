@@ -23,6 +23,7 @@ namespace AtomUI.Controls;
 
 [TemplatePart("PART_SwitchKnob", typeof(SwitchKnob))]
 public abstract class AbstractToggleSwitch : ToggleButton,
+                                             IFocusOutlineShapeProvider,
                                              ICustomizableSizeTypeAware,
                                              ICustomHitTest,
                                              IWaveSpiritAwareControl,
@@ -452,6 +453,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         
         return finalSize;
     }
+
+    // The groove is a pill over the whole bounds.
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
+        new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
     public sealed override void Render(DrawingContext context)
     {

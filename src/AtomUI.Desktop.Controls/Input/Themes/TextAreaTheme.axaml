@@ -35,6 +35,7 @@
                             DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                             Focusable="True"
+                            IsTabStop="False"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
                             IsResizable="{TemplateBinding IsResizable}"

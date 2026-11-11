@@ -64,13 +64,6 @@
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -135,13 +128,6 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -206,13 +192,6 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -243,7 +222,6 @@
                 Value="{atom:SharedTokenResource EnableWaveSpirit}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="FocusAdorner" Value="{x:Null}" />
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
@@ -365,12 +343,6 @@
             <Setter Property="Padding" Value="{atom:ButtonTokenResource CirclePadding}" />
         </Style>
 
-        <Style Selector="^ /template/ Border#FocusVisual">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector="^:focus-visible /template/ Border#FocusVisual">
-            <Setter Property="IsVisible" Value="True" />
-        </Style>
 
 
 

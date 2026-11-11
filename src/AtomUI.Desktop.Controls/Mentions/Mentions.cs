@@ -560,6 +560,8 @@ public partial class Mentions : TemplatedControl,
     static Mentions()
     {
         FocusableProperty.OverrideDefaultValue<Mentions>(true);
+        // The inner text area is the keyboard stop; the host would only add a stop with no visual.
+        IsTabStopProperty.OverrideDefaultValue<Mentions>(false);
         LinesProperty.OverrideDefaultValue<Mentions>(1);
         
         IsDropDownOpenProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleIsDropDownOpenChanged(e));

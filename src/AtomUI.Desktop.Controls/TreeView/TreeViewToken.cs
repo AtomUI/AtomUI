@@ -89,7 +89,7 @@ internal sealed class TreeViewToken : AbstractControlDesignToken
         TreeNodeSwitcherMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingXS / 2, 0);
         TreeNodeIconMargin     = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS / 2, 0, 0, 0);
         FilterHighlightColor   = EffectiveGlobalToken.ColorError;
-        DragIndicatorLineWidth = EffectiveGlobalToken.LineWidthFocus;
+        DragIndicatorLineWidth = EffectiveGlobalToken.LineWidthBold;
     }
     
 }

@@ -14,6 +14,7 @@
                     <DockPanel Name="PART_MainLayout"
                                LastChildFill="True">
                         <atom:PixelAlignedBorder Name="PART_HeaderDecorator"
+                                                 TemplatedControl.IsTemplateFocusTarget="True"
                                                  Classes.semantic-header="True"
                                                  DockPanel.Dock="Top"
                                                  CornerRadius="{TemplateBinding HeaderCornerRadius}"

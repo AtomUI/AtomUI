@@ -31,7 +31,7 @@ internal sealed class InfoPickerInputToken : AbstractControlDesignToken
     {
         base.CalculateTokenValues(isDarkMode);
         RangePickerArrowMargin        = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);
-        RangePickerIndicatorThickness = EffectiveGlobalToken.LineWidthFocus;
+        RangePickerIndicatorThickness = EffectiveGlobalToken.LineWidthBold;
         RangeMarginToAnchor           = EffectiveGlobalToken.UniformlyMarginXS;
     }
     

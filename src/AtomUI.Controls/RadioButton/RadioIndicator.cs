@@ -12,7 +12,7 @@ using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
-internal class RadioIndicator : TemplatedControl
+internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
@@ -244,6 +244,10 @@ internal class RadioIndicator : TemplatedControl
 
         return targetValue;
     }
+
+    // Without an explicit CornerRadius the indicator renders as a circle.
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
+        IsSet(CornerRadiusProperty) ? CornerRadius : new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
     public sealed override void Render(DrawingContext context)
     {

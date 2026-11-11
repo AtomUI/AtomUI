@@ -11,6 +11,7 @@
                         Padding="0, 1, 0, 1">
                     <DockPanel LastChildFill="True">
                         <atom:CheckBoxIndicator Name="Indicator"
+                                                TemplatedControl.IsTemplateFocusTarget="True"
                                                 Classes.semantic-icon="True"
                                                 DockPanel.Dock="Left"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

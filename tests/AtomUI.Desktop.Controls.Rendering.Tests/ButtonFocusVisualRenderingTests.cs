@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -34,13 +35,18 @@ public class ButtonFocusVisualRenderingTests
         {
             Width   = 240,
             Height  = 120,
-            Content = new Border
+            // The keyboard focus outline is an adorner, so the host must provide the adorner layer
+            // (atom:Window does this through its VisualLayerManager).
+            Content = new VisualLayerManager
             {
-                Background = Brushes.White,
-                Padding    = new Thickness(40),
-                Child      = new StackPanel
+                Child = new Border
                 {
-                    Children = { button, focusSink }
+                    Background = Brushes.White,
+                    Padding    = new Thickness(40),
+                    Child      = new StackPanel
+                    {
+                        Children = { button, focusSink }
+                    }
                 }
             }
         };

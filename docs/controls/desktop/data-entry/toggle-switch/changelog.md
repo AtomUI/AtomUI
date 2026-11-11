@@ -2,6 +2,11 @@
 
 本文档记录 ToggleSwitch 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）。`AbstractToggleSwitch` 实现 `IFocusOutlineShapeProvider`，按胶囊轨道给出半高圆角，描边是包围开关的胶囊形，不再是方角框。
+
 ## 2026-10-20
 
 - Fixed

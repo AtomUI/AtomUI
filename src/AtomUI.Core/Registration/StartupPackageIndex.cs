@@ -463,8 +463,14 @@ internal sealed class StartupControlEntry
     internal int Slot { get; set; } = -1;
     internal ControlTokenIdentity Identity => new(Data.Catalog, Data.Id);
 
+    // Descriptors are immutable and published once with release semantics; a warm query reads them
+    // without the gate. The first materialization, its failure and recursion detection stay locked.
     internal ControlTokenDescriptor GetDescriptor()
     {
+        if (Volatile.Read(ref _descriptor) is { } published)
+        {
+            return published;
+        }
         lock (_gate)
         {
             if (_descriptor is not null)
@@ -478,18 +484,30 @@ internal sealed class StartupControlEntry
             {
                 throw new InvalidOperationException("Registration proxy does not satisfy its Control manifest: " + Data.Identity);
             }
-            return _descriptor = descriptor.Slot == Slot ? descriptor : descriptor.Bind(Slot);
+            var bound = descriptor.Slot == Slot ? descriptor : descriptor.Bind(Slot);
+            Volatile.Write(ref _descriptor, bound);
+            return bound;
         }
     }
 
     internal ControlSemanticDescriptor GetSemantic()
     {
+        if (Volatile.Read(ref _semantic) is { } published)
+        {
+            return published;
+        }
         lock (_gate)
         {
-            return _semantic ??= Materialize().Semantics.SingleOrDefault(semantic =>
+            if (_semantic is not null)
+            {
+                return _semantic;
+            }
+            var semantic = Materialize().Semantics.SingleOrDefault(semantic =>
                 semantic.Identity == Identity && semantic.ControlType.FullName == Data.TypeName &&
                 semantic.ControlType.Assembly.GetName().Name == AssemblyName) ??
                 throw new InvalidOperationException("Registration proxy does not satisfy its semantic manifest: " + Data.Identity);
+            Volatile.Write(ref _semantic, semantic);
+            return semantic;
         }
     }
 

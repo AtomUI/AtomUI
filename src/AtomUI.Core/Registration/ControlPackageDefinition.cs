@@ -268,6 +268,12 @@ internal sealed class EnabledControlPackage
 
     internal void FirstUse()
     {
+        // Terminal state: once the first-use initializers completed, nothing can fail, recurse or
+        // wait for the lifecycle context any more, and a released package returns early as well.
+        if (Volatile.Read(ref _used))
+        {
+            return;
+        }
         lock (_firstUseGate)
         {
             if (_released)
@@ -299,7 +305,7 @@ internal sealed class EnabledControlPackage
                 {
                     initialize(new ControlPackageContext(application, themeManager, Own));
                 }
-                _used = true;
+                Volatile.Write(ref _used, true);
             }
             catch (Exception error)
             {

@@ -8,6 +8,9 @@
 - Fixed
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
   - TextArea：`TextAreaDecoratedBox` 的裁剪下移到 `Border#TextAreaContentFrame`，`TextArea` 宿主设置 `ClipToBounds=False`；内容仍被裁剪，frame 外侧的 focus 外发光可见。
+- Theme
+  - `InputControlFrameTheme` 统一设置空 `FocusAdorner`：模板为接收内边距点击而把外框设为可聚焦时，键盘到达外框也不会叠加焦点描边，焦点仍由 `:focus-within` 外框表达。
+  - TextArea：内部 `TextAreaDecoratedBox` 设 `IsTabStop=False`，只保留指针聚焦，不再是额外的 Tab 停靠点。
 
 ## 2026-11-05
 

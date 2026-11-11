@@ -2,6 +2,12 @@
 
 本文档记录 RadioButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - `RadioIndicator#Indicator` 标记 `TemplatedControl.IsTemplateFocusTarget`，并实现 `IFocusOutlineShapeProvider`（未显式设置 CornerRadius 时按自身尺寸给出正圆），描边为包围圆点的圆形。
+
 ## 2026-10-20
 
 - Fixed

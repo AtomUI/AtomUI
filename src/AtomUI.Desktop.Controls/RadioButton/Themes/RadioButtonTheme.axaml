@@ -15,6 +15,7 @@
                                          CornerRadius="{TemplateBinding CornerRadius}">
                     <DockPanel LastChildFill="True">
                         <atomc:RadioIndicator Name="Indicator"
+                                              TemplatedControl.IsTemplateFocusTarget="True"
                                               Classes.semantic-icon="True"
                                               VerticalAlignment="Center"
                                               DockPanel.Dock="Left"

@@ -4,6 +4,8 @@
               x:Class="AtomUI.Desktop.Controls.Themes.ComboBoxTextBoxTheme"
               x:ClassModifier="internal"
               TargetType="atom:ComboBoxTextBox">
+    <!-- Embedded in the ComboBox frame, which already shows the focus state. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ComboBoxTextBox">
             <ScrollViewer

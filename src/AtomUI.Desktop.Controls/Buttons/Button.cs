@@ -84,7 +84,8 @@ public partial class Button : AvaloniaButton,
                       ICustomizableSizeTypeAware,
                       IWaveSpiritAwareControl,
                       ICompactSpaceAware,
-                      IFormItemAware
+                      IFormItemAware,
+                      IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
@@ -426,6 +427,9 @@ public partial class Button : AvaloniaButton,
         get => _effectiveCornerRadius;
         set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
     }
+
+    // Round and circle shapes are expressed by the effective radius, not by CornerRadius.
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius => EffectiveCornerRadius;
     
     internal SpaceItemPosition? CompactSpaceItemPosition
     {

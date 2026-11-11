@@ -71,13 +71,6 @@
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>

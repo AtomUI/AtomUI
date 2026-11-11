@@ -117,7 +117,7 @@ public partial class DesignToken : AbstractDesignToken
         IconSizeLG = (int)FontSizeLG;
 
         // Line
-        LineWidthFocus             = LineWidth * 2;
+        LineWidthFocus             = LineWidth * 3;
         FocusVisualBorderThickness = new Thickness(LineWidthFocus);
         ColorFocusBorder           = ColorPrimaryBorder;
         WaveAnimationRange         = LineWidth * 6;

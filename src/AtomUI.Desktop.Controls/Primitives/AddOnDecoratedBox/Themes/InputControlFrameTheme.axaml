@@ -4,6 +4,9 @@
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InputControlFrameTheme"
               TargetType="atom:InputControlFrame"
               x:ClassModifier="internal">
+    <!-- The frame expresses focus through :focus-within (border and outline shadow). Templates make frames
+         focusable for pointer hits on padding; they must never add an adorner frame. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:InputControlFrame">
             <atom:PixelAlignedBorder

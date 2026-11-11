@@ -60,7 +60,7 @@ internal sealed class TimePickerToken : AbstractControlDesignToken
         ItemPadding                   = new Thickness((ItemWidth - ItemHeight) / 2, 0, 0, 0);
         ButtonsMargin                 = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
         RangePickerArrowMargin        = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0);
-        RangePickerIndicatorThickness = EffectiveGlobalToken.LineWidthFocus;
+        RangePickerIndicatorThickness = EffectiveGlobalToken.LineWidthBold;
         HeaderMargin                  = new Thickness(0, 0, 0, 3);
     }
     

@@ -8,6 +8,14 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - 移除三套按钮模板与 DropdownButton 模板中画在边框内侧的 `Border#FocusVisual` 及其 `:focus-visible` 样式，`FocusAdorner` 不再置空；`Button` 通过 `IFocusOutlineShapeProvider` 提供 `EffectiveCornerRadius`，圆形 / 胶囊按钮的描边保持对应形状。
+- Tests
+  - `ButtonKeyboardNavigationTests` 改为断言键盘聚焦挂上 `FocusOutlineAdorner`；`ButtonFocusVisualRenderingTests` 宿主补充 `VisualLayerManager`（AdornerLayer 由窗口视觉层提供）。
+
 ## 2026-08-31
 
 - Fix

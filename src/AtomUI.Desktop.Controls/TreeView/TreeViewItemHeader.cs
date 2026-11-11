@@ -10,7 +10,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
+[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio, TreeViewPseudoClass.KeyboardActive)]
 internal class TreeViewItemHeader : ContentControl
 {
     public static readonly StyledProperty<bool> IsExpandedProperty =
@@ -179,6 +179,11 @@ internal class TreeViewItemHeader : ContentControl
             o => o.IsDragging,
             (o, v) => o.IsDragging = v);
 
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsKeyboardActiveProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsKeyboardActive),
+            o => o.IsKeyboardActive,
+            (o, v) => o.IsKeyboardActive = v);
+
     internal static readonly DirectProperty<TreeViewItemHeader, bool> IsDragOverProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsDragOver),
             o => o.IsDragOver,
@@ -299,6 +304,14 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(IsDraggingProperty, ref _isDragging, value);
     }
 
+    private bool _isKeyboardActive;
+
+    internal bool IsKeyboardActive
+    {
+        get => _isKeyboardActive;
+        set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
+    }
+
     private bool _isDragOver;
 
     internal bool IsDragOver
@@ -415,6 +428,10 @@ internal class TreeViewItemHeader : ContentControl
         else if (change.Property == ToggleTypeProperty)
         {
             HandleToggleTypeChanged(change);
+        }
+        else if (change.Property == IsKeyboardActiveProperty)
+        {
+            PseudoClasses.Set(TreeViewPseudoClass.KeyboardActive, IsKeyboardActive);
         }
         else if (change.Property == FilterHighlightWordsProperty ||
                  change.Property == IsFilterMatchProperty ||

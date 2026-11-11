@@ -76,6 +76,7 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 TreeView Token 主要参与以下专项模型：
 
 - hover mode：`NodeHoverBg` 和 `NodeSelectedBg` 同时服务 `Default`、`Block`、`WholeLine` 三种 hover 背景范围。
+- 键盘活动项：`:keyboard-active` 复用 `NodeHoverBg`，背景范围随 `NodeHoverMode`，与 `NodeSelectedBg` 叠加时 selected 优先；不新增专属 Token。设计见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
 - switcher：`HeaderHeight` 控制 switcher hit size，`TreeNodeSwitcherMargin` 控制 toggle 模式下 switcher 间距。
 - icon：`TreeNodeIconMargin` 控制节点 icon 与 header 内容间距，icon 尺寸来自 SharedToken。
 - drag/drop：`DragIndicatorLineWidth` 控制 drop indicator 线宽，颜色来自 SharedToken 主色。

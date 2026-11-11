@@ -21,7 +21,7 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTreeItem = Avalonia.Controls.TreeViewItem;
 
-[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
+[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio, TreeViewPseudoClass.KeyboardActive)]
 public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNode
 {
     #region 公共属性定义
@@ -180,6 +180,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             o => o.IsDragging,
             (o, v) => o.IsDragging = v);
 
+    internal static readonly DirectProperty<TreeViewItem, bool> IsKeyboardActiveProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsKeyboardActive),
+            o => o.IsKeyboardActive,
+            (o, v) => o.IsKeyboardActive = v);
+
     internal static readonly DirectProperty<TreeViewItem, bool> IsDragOverProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsDragOver),
             o => o.IsDragOver,
@@ -300,6 +305,14 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         get => _isDragging;
         set => SetAndRaise(IsDraggingProperty, ref _isDragging, value);
+    }
+
+    private bool _isKeyboardActive;
+
+    internal bool IsKeyboardActive
+    {
+        get => _isKeyboardActive;
+        set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
     }
 
     private bool _isDragOver;
@@ -523,6 +536,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         ++_childrenRequestVersion;
         base.OnDetachedFromVisualTree(e);
+        OwnerTreeView?.NotifyTreeViewItemDetached(this);
         OwnerTreeView = null;
     }
 
@@ -583,6 +597,14 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         else if (change.Property == IsExpandedProperty || change.Property == IsMotionEnabledProperty)
         {
             HandleExpandedChanged();
+            if (change.Property == IsExpandedProperty && !IsExpanded)
+            {
+                OwnerTreeView?.NotifyTreeViewItemCollapsed(this);
+            }
+        }
+        else if (change.Property == IsKeyboardActiveProperty)
+        {
+            PseudoClasses.Set(TreeViewPseudoClass.KeyboardActive, IsKeyboardActive);
         }
 
         if (change.Property == IsSelectedProperty)
@@ -692,6 +714,46 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         ConfigureIsLeaf();
         HandleExpandedChanged(true);
     }
+
+    /// <summary>
+    /// Shared expand entry for the switcher and keyboard: requests an async load for an
+    /// unloaded data-loader node, otherwise toggles <see cref="AvaloniaTreeItem.IsExpanded"/>.
+    /// </summary>
+    internal bool RequestToggleExpand()
+    {
+        if (IsLoading)
+        {
+            return false;
+        }
+
+        if (HasTreeItemDataLoader && !AsyncLoaded)
+        {
+            RaiseEvent(new TreeViewItemLoadRequestEventArgs(this)
+            {
+                RoutedEvent = NodeSwitcherButton.NodeLoadRequestEvent
+            });
+            return true;
+        }
+
+        SetCurrentValue(IsExpandedProperty, !IsExpanded);
+        return true;
+    }
+
+    internal void BringHeaderIntoView()
+    {
+        if (_header is not null)
+        {
+            _header.BringIntoView();
+        }
+        else
+        {
+            this.BringIntoView();
+        }
+    }
+
+    internal bool IsHeaderEffectivelyEnabled => _header?.IsEffectivelyEnabled ?? IsEffectivelyEnabled;
+
+    internal bool IsExpandable() => ItemCount > 0 || (HasTreeItemDataLoader && !AsyncLoaded);
 
     internal bool IsEffectiveCheckable()
     {
@@ -831,6 +893,12 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        // Keyboard navigation is owned by TreeView; let keys bubble without Avalonia's
+        // focus-based item handling.
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)

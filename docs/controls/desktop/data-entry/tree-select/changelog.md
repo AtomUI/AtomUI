@@ -3,6 +3,17 @@
 本文档记录 TreeSelect 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Behavior
+  - 新增键盘操作：焦点留在 TreeSelect，导航键转发给下拉树；`F4` / `Alt+↓↑` 切换下拉，↓ / ↑ / Enter 打开下拉，`Escape` 关闭；方向键只移动活动项，Enter / Space 提交，单选提交后关闭下拉。
+- Implementation
+  - 新增 `TreeSelect.KeyboardNavigation.cs`；下拉树设置 `Focusable=False` 与 `IsKeyboardMoveSelectionEnabled=False`，关闭浮层时清除活动项。
+- Docs
+  - 更新 `overview.md` 键盘行为与兼容性不变量，更新 `implementation.md` 源码结构、键盘路径、维护不变量与验证。
+- Tests
+  - 新增 `TreeSelectKeyboardNavigationTests`。
+
 ## 2026-11-04
 
 - Changed

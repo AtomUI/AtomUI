@@ -815,6 +815,7 @@ public partial class TreeView : AvaloniaTreeView,
     {
         FinishDrag();
         base.OnDetachedFromVisualTree(e);
+        ClearKeyboardActiveItem();
         CancelItemsSourceReplay();
         InteractionHandler.Detach(this);
         
@@ -1005,6 +1006,7 @@ public partial class TreeView : AvaloniaTreeView,
             var point = e.GetCurrentPoint(source);
             if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
             {
+                NotifyTreeViewItemPointerPressed(container);
                 if (IsSelectable)
                 {
                     UpdateSelectionFromEvent(container, e);

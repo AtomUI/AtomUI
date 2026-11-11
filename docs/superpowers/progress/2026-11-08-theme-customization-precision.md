@@ -626,3 +626,19 @@ Ruling: 接受 internal virtual `Dialog.UsesWholeFrameMinimum` 作为每个终�
 Ruling: 更正修复轮1 Minor #2 的登记文字：独立部件位于无关但带 owner 的祖先下且未转发时，按修复后的实际行为是不映射、保留默认值，而不是“按该祖先解析” — 范围复审核对了修复后代码，上一条裁决的措辞早于修复轮2 — 错了的代价：无行为影响，只是记录准确性；两个部件都是 internal。
 
 Task 15: complete（commits `c744fcfab..926f6a71e`；独立评审 Needs fixes → 修复轮1、修复轮2 → 范围复审 PASS）。验收：最终全量 11868 全部通过、解决方案0警告、生成注册表热查询零分配；性能两项门槛未达成（Publish +126.07%，style +137.26%），按裁决原样带入整分支终审。带入终审：Important #3 窗口托管作用域对话框回退全局、Minor #3/#4、M1/M2、MessageBox 410 对 antd 416、owned 全屏 FAIL 与主 Workspace 全屏像素未验证、10.10d 未跑包测试的流程缺口。
+
+Whole-branch final review (Fable, report final-review-report.md, range reviewed ae5ac0a32..f3a14bc9f; the 41 release/6.0 catch-up commits 9f81593ff..ae5ac0a32 declared out of scope): Ready to merge — With fixes; Critical 0 / Important 4 / Minor 12; passes A core runtime, B generator/analyzers, C control families (sampled plus all Primitives/), D presets/Gallery/docs, E carry-forward triage. Important: I1 performance gate unmet (design-level owner/transition binding fan-out; disposition R1 steps 1–3); I2 removed public `SharedTokenResourceValue` and the new public surface have no CHANGELOG entries; I3 the branch is rooted at release/6.0 ae5ac0a32, not main; I4 window-hosted scoped dialog falls back to global (pre-existing lease semantics). Carry-forward triage of 78 items: fix-now 1, accept-as-is 58 (20 resolved by later tasks with cited evidence), follow-up 19.
+
+Ruling: 统一修复轮包含 R1 的第2、3步（按发布的变更键提前退出 Refresh、IsKnownUnregistered 按快照与 owner 在上下文上缓存、owner 订阅改为只观察 TokenOwnerProperty、未变化的有效全局与 Own 资源值在发布间保留引用以便 Avalonia 短路），不包含第1步（以每个注册控件的资源提供者替换每元素 owner 绑定）；修复后按审计过的 guard 与驱动复测一次，仍超5%则在收尾报告中如实记为未达成 — 第2、3步保留现有 owner 来源语义，只削减重复工作，适合一次修复轮；第1步替换规格定义的 owner 读取机制，需要单独的设计修订、计划任务和完整评审，不能塞进只有范围复审的收尾修复 — 错了的代价：分支可能仍以未满足的5%门槛收尾，第1步作为后续任务；若第2、3步的提前退出判断漏键，会出现主题切换后部分控件不刷新，必须用实时发布、作用域、变体切换与动画的既有 effect 测试和新增合同守住。
+
+Ruling: I2 在统一修复轮补齐双语 CHANGELOG：SharedTokenResourceValue 删除的 Breaking 条目与迁移指引（改用 atom:TokenTransitions 与 TokenTransitions.Duration）、新增公共 API（OwnerTokenResourceExtension、TokenTransitions、ReservedTokenAttribute、AbstractControlDesignToken.IsExplicit）、按精确类型注入 owner 的说明、ProgressBar.LineBorderRadius 默认值变化 — 规格把资源扩展列为不改动，删除公共类型必须给第三方主题迁移指引 — 错了的代价：只是文档工作量；漏记会让第三方主题升级后编译失败且没有提示。
+
+Ruling: 集成目标是 release/6.0（各远端 HEAD 均指向 release/6.0，基线 ae5ac0a32 只在 release/6.0 上），本轮不推送、不合并、不开 PR，收尾时保留本地分支与工作树并在报告中写明目标 — 用户明确禁止推送和合并；终审已按 ae5ac0a32..HEAD 评审了实际范围 — 错了的代价：若用户实际想并入 main，需要先让 main 接收 release/6.0，再处理这次重构。
+
+Ruling: I4 窗口托管作用域对话框回退全局值不在本轮修代码，统一修复轮在 modal/token.md 与 runtime.md 写明这一已知限制，代码修复与 RED 测试作为后续任务 — 根因是 Window 租约语义，本分支没有改动租约解析，而修复需要改变窗口租约如何选择作用域上下文 — 错了的代价：在后续任务落地前，局部主题与窗口托管对话框组合使用时对话框显示全局主题。
+
+Ruling: 终审 Minor 处置：M3（TokenResourceExtension 依赖 Avalonia 版本的注释）、M4（TokenOwnerForwarding 无 owner 时改 ClearValue）、M6（超过8种时长向量的重建行为写入文档）、M9（OwnerThemeInputs 对转发 owner 的有意处理写注释）、M10（modal/token.md HostMin* 措辞）、M11（ProgressActiveMotionDuration 改为 TimeSpan 并记 CHANGELOG）在统一修复轮完成；M1、M2 随 R1 第2步完成；M5（未启用包的 ControlTheme 抛出改为启动诊断）、M7（045 layout 豁免收紧与属性元素扫描）、M8/R4（生成器 IDE 成本）、M12/R5（家族 brief 要求包级测试）作为后续 — 修复项都是局部改动或文档，后续项需要分析器/生成器设计或流程变更 — 错了的代价：生成器 IDE 延迟与 045 漏报在后续前保持现状。
+
+Ruling: 结转项中“后续”的三项测试加固并入统一修复轮：DataEntryFamilyEffectTests.MapRows 对必需 Own 行快速失败、FirstChanceException 测试按线程过滤、10.9b 动效 theory 增加非空守卫；文档清扫并入：toggle-switch SwitchOpacity、expander/semantic-part.md 与用户文档中的内部任务引用；其余后续项（047/048 覆盖面、T2 控件级显式测试、主 Workspace 全屏像素、选择器宽度、LanguageResourceExtension）保持后续 — MapRows 是唯一有真实假绿风险的测试基础设施问题，另两项是低成本的抖动与空测试防护 — 错了的代价：统一修复轮稍大，需在复审范围内一并核对。
+
+Ruling: 统一修复轮派给新的实现者（Fable），不续用 Task15 实现者 — 终审修复是一次跨主题的派发而不是 Task15 的修复轮，原实现者上下文已超过75万 token，新实现者从简报和文件读取所需上下文更可靠 — 错了的代价：新实现者需要重新阅读性能 guard/驱动的前置条件，可能多花一次准备。

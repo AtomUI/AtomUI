@@ -1,0 +1,4 @@
+interface:
+  display_name: "AtomUI Visual Acceptance"
+  short_description: "Scripted screenshot acceptance of AtomUI controls in an AtomUI window"
+  default_prompt: "Use $atomui-visual-acceptance to run a scripted visual acceptance of the current AtomUI control change."

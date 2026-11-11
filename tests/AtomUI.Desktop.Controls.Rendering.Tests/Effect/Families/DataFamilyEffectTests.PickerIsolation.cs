@@ -375,14 +375,18 @@ public partial class DataFamilyEffectTests
             });
         }
 
-        // LunarCalendar reuses the Calendar cell theme, which reads the Calendar Own Tokens explicitly.
+        // LunarCalendar reuses the Calendar cell theme through its own AbstractCalendarToken fields: Controls[Calendar]
+        // no longer reaches it, Controls[LunarCalendar] does.
         var lunar = CreateCalendar(fullscreen: true, lunar: true);
         WithIsolationWindow(lunar, (provider, capture) =>
         {
             using var before = capture();
             provider.Config = IsolationConfig(control: (CalendarTokens.Identity, "FullCellPadding", "16"));
-            using var after = capture();
-            ChangedRatioOf(before, after, lunar).ShouldBeGreaterThan(0.001, "Controls[Calendar].FullCellPadding (LunarCalendar)");
+            using var byCalendar = capture();
+            ChangedRatioOf(before, byCalendar, lunar).ShouldBe(0d, "Controls[Calendar].FullCellPadding leaked into LunarCalendar");
+            provider.Config = IsolationConfig(control: (LunarCalendarTokens.Identity, "FullCellPadding", "16"));
+            using var byLunar = capture();
+            ChangedRatioOf(before, byLunar, lunar).ShouldBeGreaterThan(0.001, "Controls[LunarCalendar].FullCellPadding (LunarCalendar)");
         });
     }
 }

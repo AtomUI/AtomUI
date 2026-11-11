@@ -49,7 +49,8 @@ public class ShowCasePanelStructureTests
         panelTheme.ShouldContain("VerticalScrollBarVisibility=\"Auto\"");
         panelTheme.ShouldContain("Selector=\"^[IsScrollEnabled=False]\"");
         itemTheme.ShouldContain("ShowCaseItemTokenResource");
-        itemTheme.ShouldContain("{atom:SharedTokenResource ");
+        // Globals are read as the item's effective tokens, never as root shared tokens.
+        itemTheme.ShouldNotContain("{atom:SharedTokenResource ");
         itemTheme.ShouldNotContain("ControlTokenScope.Identity");
         itemTheme.ShouldNotContain("TokenSharedTokenResource");
         itemTheme.ShouldContain("ShowCaseItemTokenResource BadgePreviewMargin");
@@ -97,7 +98,8 @@ public class ShowCasePanelStructureTests
         headerToken.ShouldContain("MetadataValueWidth");
 
         headerTheme.ShouldContain("GalleryShowCaseHeaderTokenResource");
-        headerTheme.ShouldContain("{atom:SharedTokenResource ");
+        // Globals are read as the header's effective tokens, never as root shared tokens.
+        headerTheme.ShouldNotContain("{atom:SharedTokenResource ");
         headerTheme.ShouldNotContain("ControlTokenScope.Identity");
         headerTheme.ShouldNotContain("TokenSharedTokenResource");
         headerTheme.ShouldContain("GalleryShowCaseHeaderLangResource");
@@ -156,7 +158,9 @@ public class ShowCasePanelStructureTests
     {
         var fileName     = Path.GetFileNameWithoutExtension(path);
         var controlName  = Directory.GetParent(path)?.Parent?.Name;
-        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal);
+        // ThemePresets is an interactive theme page with its own preview card, not a control showcase.
+        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal) &&
+               !string.Equals(controlName, "ThemePresets", StringComparison.Ordinal);
     }
 
     [Fact]

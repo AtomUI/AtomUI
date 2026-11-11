@@ -175,11 +175,12 @@ public partial class LayoutFamilyEffectTests
             var lineEdit = Descendant<LineEdit>(root);
             using var before = capture();
 
-            // The add-on fill is a Space Own Token; the add-on border a CompactSpaceAddOn global.
-            provider.Config = IsolationConfig(control: (SpaceTokens.Identity, "AddonBg", IsolationColor));
-            using var bySpace = capture();
-            ChangedRatioOf(before, bySpace, addOn).ShouldBeGreaterThan(0d, "Controls[Space].AddonBg did not reach the add-on.");
-            ChangedRatioOf(before, bySpace, lineEdit).ShouldBe(0d, "Controls[Space].AddonBg leaked into the LineEdit.");
+            // The add-on fill is a CompactSpaceAddOn Own Token (moved from Space, which no longer declares AddonBg);
+            // the add-on border a CompactSpaceAddOn global.
+            provider.Config = IsolationConfig(control: (CompactSpaceAddOnTokens.Identity, "AddonBg", IsolationColor));
+            using var byAddOnBg = capture();
+            ChangedRatioOf(before, byAddOnBg, addOn).ShouldBeGreaterThan(0d, "Controls[CompactSpaceAddOn].AddonBg did not reach the add-on.");
+            ChangedRatioOf(before, byAddOnBg, lineEdit).ShouldBe(0d, "Controls[CompactSpaceAddOn].AddonBg leaked into the LineEdit.");
 
             provider.Config = IsolationConfig(control: (CompactSpaceAddOnTokens.Identity, "ColorBorder", IsolationColor));
             using var byAddOn = capture();

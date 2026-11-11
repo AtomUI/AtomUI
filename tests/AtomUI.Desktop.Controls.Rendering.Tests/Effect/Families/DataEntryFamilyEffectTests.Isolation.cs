@@ -152,10 +152,10 @@ public partial class DataEntryFamilyEffectTests
     }
 
     [Fact]
-    public void Form_Submit_And_Reset_Buttons_Borrow_The_Button_Tokens()
+    public void Form_Submit_And_Reset_Buttons_Use_Their_Own_Terminal_Tokens()
     {
-        // SubmitButton / ResetButton are registered Button subclasses based on ButtonTheme, which reads ButtonTokenResource
-        // explicitly: Controls[Button] styles them (documented borrowing, Task 10.10d).
+        // SubmitButton / ResetButton are independent terminals (AbstractStandardButtonToken): their shared ButtonTheme
+        // reads the terminal's own effective globals, so Controls[Button] no longer styles them.
         var submit = new SubmitButton();
         var reset  = new ResetButton();
         var root   = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { submit, reset } };
@@ -166,10 +166,17 @@ public partial class DataEntryFamilyEffectTests
             using var before = capture();
             provider.Config = IsolationConfig(control: (ButtonTokens.Identity, "ColorPrimary", IsolationColor));
             using var byButton = capture();
-            ChangedRatioOf(before, byButton, submit).ShouldBeGreaterThan(0d, "Controls[Button] no longer reaches SubmitButton.");
+            ChangedRatioOf(before, byButton, submit).ShouldBe(0d, "Controls[Button] leaked into SubmitButton.");
+            provider.Config = IsolationConfig(control: (SubmitButtonTokens.Identity, "ColorPrimary", IsolationColor));
+            using var bySubmit = capture();
+            ChangedRatioOf(before, bySubmit, submit).ShouldBeGreaterThan(0d, "Controls[SubmitButton] did not reach SubmitButton.");
+            ChangedRatioOf(before, bySubmit, reset).ShouldBe(0d, "Controls[SubmitButton] leaked into ResetButton.");
             provider.Config = IsolationConfig(control: (ButtonTokens.Identity, "ColorBorder", IsolationColor));
             using var byButtonBorder = capture();
-            ChangedRatioOf(before, byButtonBorder, reset).ShouldBeGreaterThan(0d, "Controls[Button] no longer reaches ResetButton.");
+            ChangedRatioOf(before, byButtonBorder, reset).ShouldBe(0d, "Controls[Button] leaked into ResetButton.");
+            provider.Config = IsolationConfig(control: (ResetButtonTokens.Identity, "ColorBorder", IsolationColor));
+            using var byReset = capture();
+            ChangedRatioOf(before, byReset, reset).ShouldBeGreaterThan(0d, "Controls[ResetButton] did not reach ResetButton.");
         });
     }
 

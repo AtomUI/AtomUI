@@ -123,8 +123,12 @@ public class ImagePreviewerTitleBarThemeTests
                                            (string?)element.Attribute("Property") == "Background");
 
         backgroundSetter.ShouldNotBeNull();
+        // The shared title bar reads the owner's TitleBarBackgroundColor through the ImageViewer theme input,
+        // which the ImagePreviewer theme maps from its Token.
         backgroundSetter.Attribute("Value")?.Value.ShouldBe(
-            "{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}");
+            "{Binding $self.(atom:ImageViewer.ThemeTitleBarBackgroundColor)}");
+        File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/Themes/ImagePreviewerTheme.axaml"))
+            .ShouldContain("<Setter Property=\"atom:ImageViewer.ThemeTitleBarBackgroundColor\" Value=\"{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}\" />");
     }
 
     [Fact]

@@ -607,3 +607,13 @@ Ruling: 独立使用的部件（无宿主 owner）以其设计 owner 的注册�
 Ruling: 从有作用域的放置位置打开、且 Dialog 本身未附加时，窗口托管对话框经对话框窗口上下文解析（依赖租约），目前没有断言；交 Task15 评审核对，评审未解决则带入终审 — 修复轮已覆盖覆盖层托管与独立路径，这一路径属于作用域租约语义，需要独立判断而不是由实现者自证 — 错了的代价：作用域主题在窗口托管对话框中可能静默回退到全局值。
 
 Ruling: 性能验收记为未达成（Publish +126.07%，style +137.26%，均超5%门槛），三次有界实验已用完，不再追加实验，原样带入整分支终审 — 剩余成本是设计要求的每控件 owner/作用域/动画绑定在 Avalonia 内的扇出，不改语义的 AtomUI 侧削减（等值不重发）已落地并只把 Publish 从1.64降到1.40 ms；用户要求保持5%门槛 — 错了的代价：分支带着未满足的已声明性能约束进入终审，需要终审或后续设计（例如合并刷新）给出处置。
+
+Task15 independent review (Fable, c744fcfab..d19fe525d, report task-15-review-report.md): Needs fixes, Critical 0 / Important 3 / Minor 7. Warm path, identity index, equal-republish suppression, analyzer gates, TokenTransitions metadata, JSON moves and all test adjudications verified correct. Important: (1) OwnerThemeInputs reads ThemeContext.ResourceProvider directly (skips element-level Resources overrides, a fourth code-side read form), masks the owner's setters when a hostless part is hosted in-tree, disposes before setting so each refresh publishes a transient 0/null, undocumented; (2) whole-frame minimum shrinks Dialog's default minimum frame from main's 248 to 200 with no CHANGELOG and contradicts modal/token.md; (3) window-hosted dialog from a scoped placement with an unattached Dialog silently resolves global values (pre-existing lease semantics).
+
+Ruling: OwnerThemeInputs 的取值改走 TokenResourceBinder.CreateTokenResourceBinding（Style 优先级，仅在 owner 标识变化时重建），先设新值再释放旧值，并且只在部件没有已附加 owner 祖先提供这些输入时才映射（独立部件、脱离 owner 样式树的托管部件）；runtime.md §13 补写注册标识回退与输入映射，修正 XML 注释位置 — 全局约束只允许 ControlTokenAccessor/TokenResourceBinder/TokenResource 三种代码侧读取，直接查 ResourceProvider 会漏掉元素级 Resources 覆盖并与其他读取不一致；在 owner 树内覆盖 owner 的 setter 会让 owner 主题失效，先释放后设置会重演 OverflowTip 的瞬时零值崩溃 — 错了的代价：多一轮修复和受影响家族的聚焦复测；若“已附加 owner 祖先”的判定写错，托管部件会重新拿到0/null，必须用已有四个作用域 effect 测试加一个 owner 树内保留 owner setter 的测试守住。
+
+Ruling: Dialog 恢复 main 的内容视口最小值语义（框宽 = Token + 内边距 + 边框，默认248），MessageBox 保持整框语义（410，与 main 和 antd ConfirmDialog 的整框宽一致）；两个终端各自用自己的语义 — Dialog 的 Token 在 main 上本来就是视口最小值，改成整框会造成未登记的可见变化并与 modal/token.md 矛盾；修复轮1的裁决前提只对 MessageBox 成立 — 错了的代价：Dialog 与 MessageBox 的 MinWidth 语义不一致，需要在两份 token.md 中分别写明。
+
+Ruling: 窗口托管对话框在有作用域的放置位置且 Dialog 未附加时静默使用全局值，作为既有缺陷带入整分支终审，不在 Task15 修复 — 根因是 Window 租约使用 owner 窗口的上下文，这是窗口/租约语义而非本任务的托管部件输入传递；覆盖层托管路径已正确 — 错了的代价：在终审处置前，窗口托管对话框不跟随局部主题，用户可见。
+
+Ruling: Task15 评审 Minor 处置：#1 门禁测试过时注释、#7 CHANGELOG“分配为零”措辞随修复轮2一并改正；#5、#6 由 Important #1 的修复消解；#2 按修复后的实际行为记录（独立部件位于无关但带 owner 的祖先下且未转发时，按该祖先解析）；#3 WatermarkGlyph 基类判断 TextGlyph 与 #4 OwnerTokenBinding 内部测试接缝停放交终审 — 改正项都是一两行的局部改动，停放项行为正确只是结构偏好 — 错了的代价：终审需再看两项结构 minor。

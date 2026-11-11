@@ -2,6 +2,12 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme
+  - 主题为 `PlaceholderForeground` 提供 `ColorTextPlaceholder` 默认值，修复编辑态占位文字因画刷为空而不绘制的问题。#534
+  - 非编辑态占位符改为同样消费 `PlaceholderForeground`，不再以 `Opacity=0.3` 弱化；两种模式的占位颜色与 Select 家族一致，设置 `PlaceholderForeground` 同时作用于两种模式。
+
 ## 2026-11-05
 
 - 实现结构

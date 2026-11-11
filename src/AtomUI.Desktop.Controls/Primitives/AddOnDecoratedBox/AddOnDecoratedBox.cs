@@ -887,6 +887,10 @@ internal class AddOnDecoratedBoxContentFrame : PixelAlignedBorder
 
 internal class AddOnContentPresenter : ContentPresenter
 {
+    // Templates wrap an inner presenter as the add-on content; an empty inner presenter hides itself,
+    // and the wrapper must follow it so that its margin and the panel spacing are not reserved.
+    private Control? _observedContent;
+
     public AddOnContentPresenter()
     {
         UpdateVisibility();
@@ -895,8 +899,40 @@ internal class AddOnContentPresenter : ContentPresenter
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ContentProperty)
+        {
+            ObserveContentVisibility(Content as Control);
+        }
+
         if (change.Property == ContentProperty ||
             change.Property == ContentTemplateProperty)
+        {
+            UpdateVisibility();
+        }
+    }
+
+    private void ObserveContentVisibility(Control? content)
+    {
+        if (ReferenceEquals(_observedContent, content))
+        {
+            return;
+        }
+
+        if (_observedContent is not null)
+        {
+            _observedContent.PropertyChanged -= HandleContentPropertyChanged;
+        }
+
+        _observedContent = content;
+        if (_observedContent is not null)
+        {
+            _observedContent.PropertyChanged += HandleContentPropertyChanged;
+        }
+    }
+
+    private void HandleContentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == IsVisibleProperty)
         {
             UpdateVisibility();
         }
@@ -913,7 +949,9 @@ internal class AddOnContentPresenter : ContentPresenter
 
     private void UpdateVisibility()
     {
-        var isVisible = Content is not null || ContentTemplate is not null;
+        var isVisible = Content is Control content
+            ? content.IsVisible
+            : Content is not null || ContentTemplate is not null;
         if (IsVisible != isVisible)
         {
             SetCurrentValue(IsVisibleProperty, isVisible);

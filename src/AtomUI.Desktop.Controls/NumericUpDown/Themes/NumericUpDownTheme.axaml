@@ -5,6 +5,9 @@
     x:ClassModifier="internal">
 
     <ControlTheme x:Key="{x:Type atom:NumericUpDown}" TargetType="atom:NumericUpDown">
+        <!-- Focus is shown by the spinner input frame; its outline shadow must not be clipped by the host. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:NumericUpDownSpinner

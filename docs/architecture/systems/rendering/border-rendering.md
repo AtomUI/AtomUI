@@ -78,6 +78,8 @@ DashStyle / BoxShadow
 
 AtomUI 自绘边框控件必须在调用 `BorderRenderHelper` 或构建几何之前，把 `BorderThickness` 转换为 `RenderThickness`。
 
+`BorderRenderHelper` 有两条绘制路径：边框粗细与圆角均一致且 `BackgroundSizing=CenterBorder` 时走 `DrawRectangle`；否则走背景/边框几何路径。两条路径都必须绘制外侧 `BoxShadow`：几何路径先以外边框边缘的圆角矩形（透明填充）绘制外阴影，再绘制背景和边框几何。输入家族的 frame 固定使用 `InnerBorderEdge` / `OuterBorderEdge`，focus shadow 走的就是几何路径。
+
 ### 3.4 自绘边框的样式类型
 
 `PixelAlignedBorder` 和 `DashedBorder` 是 AtomUI 自绘控件，不是 Avalonia `Border`。模板样式必须按真实类型选择：

@@ -13,6 +13,13 @@
   - 更新 `overview.md` 键盘行为与兼容性不变量，更新 `implementation.md` 源码结构、键盘路径、维护不变量与验证。
 - Tests
   - 新增 `TreeSelectKeyboardNavigationTests`。
+- Fixed
+  - 候选树节点模板 `TreeSelectTreeViewItemTheme` 未把 `IsKeyboardActive` 投射到 header，键盘浏览时弹层没有活动项背景；现已投射并固定 header `Focusable=False`。
+  - 多选（含可勾选）标签前多出的 11 DIP 空白：空前缀 add-on 不再保留缩进与面板间距。
+- Theme
+  - 焦点样式对齐 Ant Design：`TreeSelect` 设置空 `FocusAdorner` 与 `ClipToBounds=False`；`Outlined` 聚焦时 frame 叠加 `InputActiveShadow`（Error / Warning 对应状态外发光），`Filled` 不叠加；嵌入式搜索框不再绘制内部方框。
+- Tests
+  - `TreeSelectKeyboardNavigationTests` 断言弹层活动项 header 带 `:keyboard-active`。
 
 ## 2026-11-04
 

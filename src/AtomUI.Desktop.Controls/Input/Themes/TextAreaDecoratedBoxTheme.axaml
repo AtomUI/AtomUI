@@ -18,7 +18,9 @@
                                                     Background="{TemplateBinding Background}"
                                                     BoxShadow="{TemplateBinding BoxShadow}"
                                                     BackgroundSizing="InnerBorderEdge">
+                    <!-- Content is clipped inside the frame so the frame's outer focus shadow stays visible. -->
                     <Border Name="TextAreaContentFrame"
+                            ClipToBounds="True"
                             Padding="{TemplateBinding TextAreaFramePadding, Converter={StaticResource TextAreaFramePaddingConverter}}">
                         <DockPanel Name="ContentLayout" LastChildFill="True">
                             <atom:AddOnContentPresenter
@@ -64,7 +66,6 @@
             <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="ResizeIndicatorLineBrush"
                     Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
             <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">

@@ -63,10 +63,13 @@ public class AutoCompleteFocusTests
             GetSolidColor(contentFrame.Background).ShouldBe(
                 Colors.Transparent,
                 "Filled AutoComplete should keep the focus background after the first click.");
+            GetSolidColor(contentFrame.BorderBrush).ShouldNotBe(
+                Colors.Transparent,
+                "Filled AutoComplete should show the focus border after the first click.");
+            // Ant Design: only the outlined variant draws the focus outline shadow.
             contentFrame.BoxShadow.Count.ShouldBe(
-                1,
-                "Filled AutoComplete should render the token-defined focus shadow when focused.");
-            contentFrame.BoxShadow[0].Spread.ShouldBeGreaterThan(0);
+                0,
+                "Filled AutoComplete should not render a focus outline shadow.");
         }
         finally
         {

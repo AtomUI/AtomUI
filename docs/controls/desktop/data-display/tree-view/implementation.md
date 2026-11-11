@@ -302,7 +302,7 @@ TreeView pointer 流程：
 键盘与焦点：
 
 - TreeView 主题设置 `Focusable=True` 与空 `FocusAdorner`；`TreeViewItem`、`TreeViewItemHeader#Header`、`PART_NodeSwitcherButton`、`ToggleCheckbox` / `ToggleRadio` 固定 `Focusable=False`。指针按下节点时焦点落到 TreeView 自身。
-- `TreeViewItem.IsKeyboardActive` 通过 `TemplateBinding` 投射到 `TreeViewItemHeader.IsKeyboardActive`，二者各自维护 `:keyboard-active` 伪类；默认主题在 header 的 hover 背景样式中合并 `:keyboard-active`，并排在 selected 样式之前，使 selected 优先。
+- `TreeViewItem.IsKeyboardActive` 通过 `TemplateBinding` 投射到 `TreeViewItemHeader.IsKeyboardActive`，二者各自维护 `:keyboard-active` 伪类；默认主题在 header 的 hover 背景样式中合并 `:keyboard-active`，并排在 selected 样式之前，使 selected 优先。派生节点模板（例如 TreeSelect 候选树的 `TreeSelectTreeViewItemTheme`）替换整个 Template 时，必须同样把 `IsKeyboardActive` 投射到 header，并保持 header `Focusable=False`，否则节点有伪类而绘制层没有活动项背景。
 - TreeView 重写 `OnKeyDown`，不调用 Avalonia `TreeView.OnKeyDown`：后者依赖把焦点移到节点容器，并在无选择时直接写 `SelectedItem`，与 AtomUI 的不可聚焦节点和 `IsSelectable` 约束冲突。平台 SelectAll 手势由 AtomUI 自己处理。
 - TreeView 重新实现 Tab 导航的 `ICustomKeyboardNavigation` 钩子：Tab 进入时落在 TreeView 自身，从 TreeView 出发时交给默认 Tab 顺序。Avalonia 基类的实现会把 Tab 焦点导向节点容器，不可沿用。
 - TreeView 重写 `OnGotFocus`，不走 Avalonia 基于节点焦点的方向导航选择更新。

@@ -8,6 +8,14 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-11
+
+- Theme
+  - ButtonSpinner / NumericUpDown 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - `ButtonSpinnerDecoratedBoxTheme` 的 content frame 补上 `BoxShadow` 模板绑定；`ButtonSpinner` / `NumericUpDown` 宿主设置空 `FocusAdorner` 与 `ClipToBounds=False`，`Outlined` focus 外发光可见。
+
 ## 2026-10-18
 
 - Implementation

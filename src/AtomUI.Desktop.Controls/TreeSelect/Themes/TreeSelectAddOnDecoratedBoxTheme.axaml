@@ -87,6 +87,8 @@
                 <Style Selector="^:focus-within">
                     <Setter Property="BorderBrush"
                             Value="{atom:TreeSelectTokenResource ColorPrimary}" />
+                    <Setter Property="BoxShadow"
+                            Value="{atom:SharedTokenResource InputActiveShadow}" />
                 </Style>
 
                 <Style Selector="^:pressed">
@@ -111,6 +113,8 @@
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
                                 Value="{atom:SharedTokenResource ColorError}" />
+                        <Setter Property="BoxShadow"
+                                Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
                     </Style>
 
                     <Style Selector="^:pressed">
@@ -136,6 +140,8 @@
                     <Style Selector="^:focus-within">
                         <Setter Property="BorderBrush"
                                 Value="{atom:SharedTokenResource ColorWarning}" />
+                        <Setter Property="BoxShadow"
+                                Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
                     </Style>
 
                     <Style Selector="^:pressed">

@@ -125,8 +125,50 @@ Avalonia `TreeView` / `TreeViewItem` 的键盘模型：
 - 关键帧已人工查看：Default 只在内容框、Block 拉伸到剩余宽度、WholeLine 覆盖整行，与 hover 分层一致。
 - 证据（截图与 results.md）保存在会话临时目录，未放入仓库。
 
+## TreeSelect 弹层验收与输入家族焦点样式（2026-11-11）
+
+### 发现
+
+对 TreeSelect 下拉弹层补做脚本视觉验收，并按反馈对齐 Ant Design 的焦点样式。过程中发现五个问题：
+
+1. **弹层活动项不显示**：`TreeSelectTreeViewItemTheme` 替换了节点 Template，没有把 `IsKeyboardActive` 投射到 header。节点上有 `:keyboard-active`，但负责绘制的 header 没有，所以弹层里看不到活动项背景。原有无头测试只断言了 `KeyboardActiveItem`，没有覆盖到这一点。
+2. **全局方框**：输入家族宿主 `Focusable=True` 又没有关闭 `FocusAdorner`，Tab 聚焦时全局 `DefaultFocusAdorner` 会画一个方角框；嵌入式 `SelectFilterTextBox` 也会在外框内部画一个。Ant Design 的输入控件没有这类框。
+3. **focus 外发光从未显示**：`BorderRenderHelper` 的几何路径丢弃了 `BoxShadow`，而输入 frame 固定使用 `InnerBorderEdge` / `OuterBorderEdge`，一定走这条路径。即使阴影画出来，Avalonia 12 中 `TemplatedControl` 默认 `ClipToBounds=True`，宿主也会把 frame 外侧的阴影裁掉。NumericUpDown 的 content frame 甚至没有绑定 `BoxShadow`。
+4. **修复渲染后暴露出多余阴影**：主题给 `Filled` / `Underlined`、内嵌（Borderless）文本框和 OTP Borderless 格子都配了 focus 阴影，以前因为画不出来没有暴露。Ant Design 只给 `Outlined` 加 `activeShadow`。
+5. **多选标签前多出 11 DIP**：模板把内层 `AddOnContentPresenter` 作为外层 add-on 的内容。外层只判断 Content 是否为 null，所以即使内层是空的，外层仍然可见，于是多选前缀缩进（7）加上面板间距（4）被保留下来。Select 同样受影响。
+
+### 修复
+
+- `TreeSelectTreeViewItemTheme` 投射 `IsKeyboardActive`，header 设为 `Focusable=False`。`TreeSelectKeyboardNavigationTests` 新增 header 伪类断言：去掉修复时该断言失败，加上修复后通过。
+- `BorderRenderHelper` 的几何路径先以外边框边缘圆角矩形绘制外阴影。
+- focus 阴影只在 `Outlined` 下设置，涉及 InputControlFrame、LineEdit、SearchEdit、TextArea、TextBox 和 OTP。
+- 输入家族宿主设空 `FocusAdorner` 和 `ClipToBounds=False`，涉及 TextBox、LineEdit、SearchEdit、TextArea、Select、TreeSelect、Cascader、ComboBox、InfoPickerInput、RangeInfoPickerInput、RangeDatePicker、RangeTimePicker、ButtonSpinner、NumericUpDown。`SelectFilterTextBox` 也设空 `FocusAdorner`。
+- `TextAreaDecoratedBox` 的裁剪下移到 `Border#TextAreaContentFrame`。
+- `ButtonSpinnerDecoratedBox` 的 content frame 补上 `BoxShadow` 绑定。
+- `AddOnContentPresenter` 的可见性跟随作为内容的控件的 `IsVisible`。
+
+### 脚本视觉验收
+
+两套验收都使用 atom:Window 宿主和原生 `screencapture -l` 截图，并且都满足以下条件：
+
+- 运行期间窗口保持激活。中途有其他应用抢走焦点的轮次已判为无效：系统 `Deactivated` 会关闭下拉弹层，导致后续按键错位。
+- 运行时 DLL 的 SHA256 与仓库产物一致。
+- Demo 已删除。
+
+1. **TreeSelect 弹层**：52/52 PASS。
+   - 门禁：A/A=0，扰动 28189，还原 0。
+   - 覆盖 Single、Checkable、Filter 三种模式，亮色和暗色：打开时无残留活动项；第一次 ↓ 建立活动项并显示 `NodeHoverBg`；浏览不提交；Enter 提交并关闭，或 Space 勾选且下拉保持打开；重开后恢复到已选或已勾选节点，单选时 selected 优先；Esc 关闭并清除活动项。
+   - 焦点：Outlined 和 Error 外发光为 `#E6F4FF` / `#FFF2F0`（亮）、`#15325B` / `#2C1618`（暗），3–8 DIP 外为背景，无方框；搜索框外侧没有第二圈；LineEdit Outlined 有外发光，Filled 无外发光。
+   - 标签：左偏移从 16 DIP 降到 5 DIP（1 边框 + 4 内边距）。
+2. **输入家族聚焦矩阵**：20/20 PASS。Select、Cascader、DatePicker、TimePicker、NumericUpDown、SearchEdit、TextArea、TreeSelect、LineEdit 在亮暗两种主题下，外侧 2 DIP 都是 `ColorControlOutline` 合成色，3–8 DIP 外都是背景。
+
+证据保存在会话 scratchpad 的 `issue535-treeselect-acceptance-evidence` 和 `issue535-focus-matrix-evidence` 中。
+
 ## 风险
 
 - `TreeView` 改为可聚焦后会进入 Tab 顺序，可能影响已有页面的 Tab 行为；应用可通过 `Focusable=False` / `IsTabStop=False` 退出。需要在 changelog 和发布说明中注明。
 - `Enter` 不再切换展开（Avalonia 原行为）；由于此前键盘导航完全不可用，实际影响有限。
 - 勾选框改为不可聚焦后，依赖 Tab 到勾选框再按空格的用法失效，由 TreeView 的 Space 提交代替。
+- 共享渲染修复会让所有走几何路径、且设置了 `BoxShadow` 的 `DashedBorder` 开始显示阴影。排查范围内只有输入 frame 和 `ContentType=Grid` 的 Card 受影响；两者都是主题本来想要的效果，但 Card 尚未做视觉确认。
+- 输入家族宿主改为 `ClipToBounds=False`。如果应用依赖宿主裁剪来截断溢出的自定义 add-on 内容，现在需要自行裁剪。
+- ComboBox、AutoComplete、Mentions、RangeDatePicker、RangeTimePicker、OTP 没有进入聚焦矩阵，结论依据的是共享主题推断，尚未截图确认。

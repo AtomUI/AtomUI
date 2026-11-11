@@ -155,6 +155,8 @@ KeyDown（来源是 TextBox 时走 tunnel，否则走 bubble）
 - 搜索框会自己消费 ↑ / ↓ / Enter 等按键，因此来源为 `TextBox` 的按键在 tunnel 阶段处理，其余在 `OnKeyDown` 处理，同一事件只处理一次。
 - `EnsurePopupContent` 创建的下拉树设置 `Focusable=False` 与 `IsKeyboardMoveSelectionEnabled=False`；`PopupClosed` 调用 `ClearKeyboardActiveItem`。树内语义见 [TreeView 键盘导航设计](../../data-display/tree-view/keyboard-navigation-design.md)。
 - 达到最大选择数时，`TreeSelectTreeViewItemTheme` 禁用未选中节点的 header，TreeView 的键盘提交检查 header 可用性，因此键盘与指针受同一限制。
+- `TreeSelectTreeViewItemTheme` 替换了 TreeView 节点 Template，必须把 `IsKeyboardActive` 投射到 `TreeViewItemHeader#Header` 并固定 header `Focusable=False`；否则转发的键盘浏览只更新节点伪类，弹层中没有活动项背景。
+- 触发区的焦点只由 `TreeSelectAddOnDecoratedBox` 表达（主色边框，`Outlined` 叠加 `InputActiveShadow` 系列外发光）；`TreeSelect` 主题设置空 `FocusAdorner` 与 `ClipToBounds=False`，后者保证 frame 外侧的外发光不被宿主裁剪。
 
 tag 关闭路径：
 

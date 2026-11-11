@@ -53,6 +53,7 @@
                                                             CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
                                                             BorderBrush="{TemplateBinding BorderBrush}"
                                                             Background="{TemplateBinding Background}"
+                                                            BoxShadow="{TemplateBinding BoxShadow}"
                                                             BackgroundSizing="InnerBorderEdge">
                             <atom:ButtonSpinnerContentPanel Name="ContentLayout"
                                                             LastChildFill="True"

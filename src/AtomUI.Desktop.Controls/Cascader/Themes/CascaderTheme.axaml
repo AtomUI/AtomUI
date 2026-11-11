@@ -7,6 +7,10 @@
     <ControlTheme x:Key="{x:Type atom:Cascader}" TargetType="atom:Cascader">
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>

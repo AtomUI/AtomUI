@@ -232,12 +232,39 @@ internal sealed partial class DialogSurface : ContentControl, IDisposable
         AffectsMeasure<DialogSurface>(ContentViewportMinWidthProperty, ContentViewportMinHeightProperty);
     }
 
+    // The dialog terminals (Dialog, MessageBox) declare these AbstractDialogToken fields; the surface maps them itself
+    // because a dialog opened through a placement target is never styled in a tree and cannot pass them down.
+    private static OwnerThemeInput[]? s_ownerInputs;
+
+    // Built on first use: the input properties live in another partial file, so a static initializer cannot see them as assigned.
+    private static OwnerThemeInput[] OwnerInputs => s_ownerInputs ??=
+    [
+        new(ThemeHeaderBgProperty, "HeaderBg"),
+        new(ThemeHeaderMarginBottomProperty, "HeaderMarginBottom"),
+        new(ThemeLogoSizeProperty, "LogoSize"),
+        new(ThemeHeaderFontSizeProperty, "HeaderFontSize"),
+        new(ThemeHeaderColorProperty, "HeaderColor"),
+        new(ThemeContentBgProperty, "ContentBg"),
+        new(ThemeHeaderPaddingProperty, "HeaderPadding"),
+        new(ThemeContentPaddingProperty, "ContentPadding"),
+        new(ThemeWindowContentPaddingProperty, "WindowContentPadding"),
+        new(ThemeFooterBgProperty, "FooterBg"),
+        new(ThemeFooterPaddingProperty, "FooterPadding"),
+        new(ThemeFooterMarginTopProperty, "FooterMarginTop"),
+        new(ThemeCloseBtnSizeProperty, "CloseBtnSize"),
+        new(ThemeMinHeightProperty, "MinHeight"),
+        new(ThemeMinWidthProperty, "MinWidth"),
+        new(ThemeButtonGroupSpacingProperty, "ButtonGroupSpacing"),
+        new(ThemeLoadingIndicatorMarginProperty, "LoadingIndicatorMargin")
+    ];
+
     internal DialogSurface(Dialog dialog)
     {
         _dialog = dialog;
         // Presenters create this surface across visual roots at runtime; AXAML cannot reference that Dialog instance.
         // The existing lifetime owner releases this forwarding together with the other presenter bindings.
         _bindings.Add(TokenOwnerForwarding.Forward(dialog, this));
+        _bindings.Add(OwnerThemeInputs.Bind(this, dialog, null, OwnerInputs));
         Focusable = true;
         _bindings.Add(Bind(
             ContentProperty,
@@ -484,14 +511,16 @@ internal sealed partial class DialogSurface : ContentControl, IDisposable
             }
         }
 
+        // The terminal MinWidth / MinHeight Tokens size the content frame as a whole, like antd's confirm `width`
+        // (416, padding included): the frame is never smaller than the Token or than its own padding and border.
         var contentPadding = _contentFrame?.Padding ?? default;
         var contentBorder = _contentFrame?.BorderThickness ?? default;
-        var contentWidth = NormalizeViewportMinimum(ContentViewportMinWidth) +
-                           contentPadding.Left + contentPadding.Right +
-                           contentBorder.Left + contentBorder.Right;
-        var contentHeight = NormalizeViewportMinimum(ContentViewportMinHeight) +
-                            contentPadding.Top + contentPadding.Bottom +
-                            contentBorder.Top + contentBorder.Bottom;
+        var contentWidth = Math.Max(
+            NormalizeViewportMinimum(ContentViewportMinWidth),
+            contentPadding.Left + contentPadding.Right + contentBorder.Left + contentBorder.Right);
+        var contentHeight = Math.Max(
+            NormalizeViewportMinimum(ContentViewportMinHeight),
+            contentPadding.Top + contentPadding.Bottom + contentBorder.Top + contentBorder.Bottom);
 
         return new Size(
             Math.Max(contentWidth, Math.Max(headerSize.Width, footerSize.Width)),

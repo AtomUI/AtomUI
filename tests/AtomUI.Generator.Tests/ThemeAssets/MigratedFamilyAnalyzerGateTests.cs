@@ -8,7 +8,8 @@ namespace AtomUI.Generator.Tests.ThemeAssets;
 
 /// <summary>
 /// Error gate for control families whose theme migration is complete. The control-code analyzers (ATOMUIGEN043/044/047)
-/// are raised to errors by the migrated directories' or optional packages' <c>.editorconfig</c>; the generator-reported
+/// are raised to errors by each migrated package's <c>WarningsAsErrors</c> (the directory-level <c>.editorconfig</c>
+/// overrides were removed); the generator-reported
 /// diagnostics (ATOMUIGEN041/042/045) do not take path-scoped <c>.editorconfig</c> severities, so this test fails
 /// the build for them instead: it runs the theme-asset analysis over the family's real AXAML with the package's real
 /// Token identities, and reads the generated consumption map for Unreferenced Own Tokens. The test project references

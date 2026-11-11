@@ -1073,6 +1073,19 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
     控件的 Own snapshot；独立 DateViewer 等控件仍读取自己的 Own 值。
   - 每一处转发都要有 owner 断言（`ThemeScope.GetTokenOwner`）与像素隔离测试：`Controls[宿主]` 到达部件，`Controls[被越过的注册控件]`
     的全局 Token 不再到达部件。
+  - 注册标识回退：转发值是宿主自己的 `TokenOwner`；宿主未在任何样式树中（经放置目标打开的 Dialog、单独展示弹层 Presenter 的
+    Picker）时没有注入值，转发改用宿主类型（沿基类向上）在 registry 中的注册标识，即默认 ControlTheme 本会注入的同一身份；
+    部件挂接到逻辑树后重新求值。转发仍是 LocalValue 写入，释放时清除。
+- 托管与独立部件的主题输入映射（`Primitives/OwnerThemeInputs.Bind(part, host, fallbackOwnerType, inputs)`）：共享部件的可继承
+  主题输入（`DialogSurface.Theme*`、`TimeView.Theme*`、`ImageViewer.Theme*`）由 owner 的 ControlTheme Setter 沿继承链提供；当
+  部件不在 owner 的样式树内（运行时对话框 surface、单独展示的 TimePickerPresenter、单独创建的 ImagePreviewerCover），部件按
+  Token 名从自己 `TokenOwner` 的 descriptor 取 Own 键（否则 owner 有效全局键），用 `TokenResourceBinder.CreateTokenResourceBinding`
+  以 Style 优先级绑定到自身——与 AXAML TokenResource 相同的解析链（元素级 Resources、作用域 Provider、发布与 variant 都生效），
+  部件上的本地值仍优先。绑定集只在 owner 身份变化时重建，先建新绑定再释放旧绑定，不会让观察者看到附加属性的 0/null 默认值。
+  映射只在没有已附加 owner 提供输入时进行：部件从已附加祖先继承到 owner（位于 owner 样式树内）或其运行时宿主（surface 的
+  Dialog）已附加时，owner 的 Setter 为准，不做映射。单独创建的部件没有 owner 时取 `fallbackOwnerType` 的注册标识作为
+  `TokenOwner`（Style 优先级）——同一注入身份——使其 `OwnerTokenResource` 读取与输入同属该 owner；若这样的部件被放在一个无关但
+  带 owner 的祖先之下且未被转发，它继承该祖先的 owner，按"owner 已附加"规则不做映射，Own 输入保持默认值。
 - 注册控件作为模板部件（IconPresenter、IconButton、ScrollViewer 等）携带自己的 identity，Setter 目标或模板节点
   位于这类部件之上或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层（宿主本身或无身份部件）上
   读取后向下绑定，或显式读取宿主的 `XxxTokenResource`。

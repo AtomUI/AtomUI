@@ -30,7 +30,8 @@ Modal 的控件专项模型通过 Theme 消费 Token：
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
-- `DialogToken.MinWidth/MinHeight` 定义结构性最小尺寸中的正文 viewport 基线，不直接等同于最终 Surface minimum。最终下限还需要组合可见 Header、Footer、调用方 `HostMin*` 与 host capacity；完整算法见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
+- `DialogToken.MinWidth/MinHeight` 定义结构性最小尺寸中的正文 viewport 基线（框尺寸 = Token + 正文内边距 + 边框，默认 200 + 48 = 248），不直接等同于最终 Surface minimum。最终下限还需要组合可见 Header、Footer、调用方 `HostMin*` 与 host capacity；完整算法见 [Modal 宿主尺寸与 Resize 设计](host-sizing-design.md)。
+- `MessageBoxToken.MinWidth/MinHeight` 的语义不同：它们是整框尺寸（框尺寸 = max(Token, 正文内边距 + 边框)，默认 410，与 antd ConfirmDialog 的整框 `width` 一致），由 `MessageBox` 的 `UsesWholeFrameMinimum` 选择；两个终端各用自己的语义。
 - `WindowContentPadding` 仅由 Window 宿主的正文样式消费：原生标题栏替代 Overlay Header 后，为正文补齐上下留白，同时保持左右 `ContentPadding` 的密度。
 - `MessageBoxToken.MinWidth` 可以提高 MessageBox 的有效最小宽度，但不能降低 Dialog 的结构性最小高度。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
@@ -50,7 +51,7 @@ Modal 的控件专项模型通过 Theme 消费 Token：
 - 主题包定制（PrimeNG 预设）：Dialog 圆角经 `Controls[Dialog].BorderRadiusLG`，正文内边距 `ContentPadding`，标题字号
   `HeaderFontSize`，标题字重 `FontWeightStrong`，均有生效测试。
 
-MessageBox 具有独立的完整 surface Own，MinWidth 默认410（Dialog 默认200），StyleIconSize 为 MessageBox 专属。Window/Overlay surface 都显式跟随真实 Dialog/MessageBox owner；原生窗口装饰继续使用 Window 身份。
+MessageBox 具有独立的完整 surface Own，MinWidth 默认410 且为整框语义（Dialog 默认200 为正文 viewport 基线，框默认 248），StyleIconSize 为 MessageBox 专属。Window/Overlay surface 都显式跟随真实 Dialog/MessageBox owner；原生窗口装饰继续使用 Window 身份。
 
 ## 4. 控件家族影响
 

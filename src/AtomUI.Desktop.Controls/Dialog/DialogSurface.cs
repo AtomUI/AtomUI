@@ -511,16 +511,19 @@ internal sealed partial class DialogSurface : ContentControl, IDisposable
             }
         }
 
-        // The terminal MinWidth / MinHeight Tokens size the content frame as a whole, like antd's confirm `width`
-        // (416, padding included): the frame is never smaller than the Token or than its own padding and border.
+        // Each terminal decides what its MinWidth / MinHeight Tokens size (Dialog.UsesWholeFrameMinimum): the Dialog
+        // Tokens are the content viewport baseline (frame = Token + padding + border, 248 by default); MessageBox sizes the
+        // whole frame (frame = max(Token, padding + border), 410 by default, like antd's confirm `width` 416).
         var contentPadding = _contentFrame?.Padding ?? default;
         var contentBorder = _contentFrame?.BorderThickness ?? default;
-        var contentWidth = Math.Max(
-            NormalizeViewportMinimum(ContentViewportMinWidth),
-            contentPadding.Left + contentPadding.Right + contentBorder.Left + contentBorder.Right);
-        var contentHeight = Math.Max(
-            NormalizeViewportMinimum(ContentViewportMinHeight),
-            contentPadding.Top + contentPadding.Bottom + contentBorder.Top + contentBorder.Bottom);
+        var horizontalChrome = contentPadding.Left + contentPadding.Right + contentBorder.Left + contentBorder.Right;
+        var verticalChrome = contentPadding.Top + contentPadding.Bottom + contentBorder.Top + contentBorder.Bottom;
+        var contentWidth = _dialog.UsesWholeFrameMinimum
+            ? Math.Max(NormalizeViewportMinimum(ContentViewportMinWidth), horizontalChrome)
+            : NormalizeViewportMinimum(ContentViewportMinWidth) + horizontalChrome;
+        var contentHeight = _dialog.UsesWholeFrameMinimum
+            ? Math.Max(NormalizeViewportMinimum(ContentViewportMinHeight), verticalChrome)
+            : NormalizeViewportMinimum(ContentViewportMinHeight) + verticalChrome;
 
         return new Size(
             Math.Max(contentWidth, Math.Max(headerSize.Width, footerSize.Width)),

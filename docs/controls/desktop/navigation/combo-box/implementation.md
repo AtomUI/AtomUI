@@ -248,6 +248,26 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
 
+### 清除状态与模板接线
+
+`SelectedIndex`、`Text`、`IsEditable` 是可清除状态的输入；内部只投影 `CanClearValue`，不保存第二份选择。ControlTheme 根据 `IsAllowClear`、可清除值、有效禁用态及 hover / focus 设置内部样式属性 `IsEffectiveShowClearButton`，按钮通过编译绑定消费该值。后缀内容不带 ComboBox 的 TemplatedParent，普通 `/template/` 子选择器不能到达该节点；显隐仍由根主题负责，不在代码中建立绑定。此编译绑定显式使用 Template 优先级，使专用语义 Style 可以声明式覆盖预览可见性。后缀 StackPanel 对用户内容、Form 反馈和操作组保留 SpacingXS；清除按钮与箭头在独立操作组内使用 SpacingXXS，避免不同语义层级共用间距。按钮位于操作组的清除入口槽，复用 `InputClearIconButton`；启用 `IsAllowClear` 时槽位预留 SharedToken.IconSize 的最小宽度，避免 Auto Width 在 hover / focus 时伸缩并移动箭头。关闭该属性时槽位退出布局，下拉 handle 保持原结构和交互。
+
+Small 规格的选中内容与占位符使用相同的纵向 margin，清除切换内容时保持输入框高度，不以固定高度裁剪自定义内容。
+
+按钮点击通过 `SetCurrentValue` 清空文本和选择，保留应用绑定。可编辑文本先设为 null，避免 Avalonia 将空字符串匹配为候选项；随后清空索引，保证 null 项与空字符串项均不留下选择。过滤和候选清理由已有属性变化路径完成，不另设清除标记、过滤缓存或延时刷新。点击处理不写入弹层开关。
+
+模板属性变化时立即解除旧清除按钮的 Click 处理（包括模板设为 null 的路径），每次模板应用再接入新节点；不使用全局监听或运行时创建的视觉。`clear` 专用 Style 的 route 通过输入模板的后缀 scope 命中按钮。
+
+### 选中提交与过滤投影
+
+选中提交中的显示文本回填仍同步更新 `Text`、`FilterValue` 和绑定；候选行的过滤投影则在提交与离场期间保持当前视图，避免列表先收缩或切到空态再执行关闭动画。鼠标和键盘提交使用相同的可嵌套提交边界，外部选中值引起的回填也在该边界内协调。既有 SelectionChanged 回调顺序保持。
+
+提交结束后，若物理关闭仍在播放则继续保持投影；收到实际 Popup.Closed 后应用最新查询，即使业务 IsDropDownOpen 已为 false 也要收尾。无动效和零时长关闭由提交调用栈同步收敛。重新打开会在打开前按最新查询准备视图，取消的旧离场不再阻挡刷新。钉住弹层和独立输入/外部查询仍实时过滤。
+
+已呈现的过滤条件以轻量值快照保留；离场期间虚拟化新建/回收的容器仍按旧条件判断，不会闪现不匹配行。默认虚拟化面板复用 Avalonia VirtualizingStackPanel，只在提交/离场期间阻止基类为选中项发起的自动 ScrollIntoView；平时导航与滚动继续由基类处理，并保留原 StyleKey。用户指定 ItemsPanel 的优先级不变。
+
+这一边界不锁定固定高度、不复制视觉树，也不改变通用 Popup 的动画定义。限高、滚动条、viewport/extent/offset 与当前行可见性在正常选中离场过程中保持。
+
 ## 7. 内部算法与关键流程
 
 维护者需要重点关注以下流程：
@@ -310,7 +330,7 @@ ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 S
   一个节点，并断言不存在 code-behind 属性回退。
 - 弹层部件变更需覆盖打开 / 关闭 / 重新打开与模板重应用后 marker 保持（用 public `IsPopupPinnedOpen` 钉住取证）。
 - Gallery Semantic 预览变更运行 `tests/AtomUIGallery.Tests/ShowCases/ComboBoxSemanticPartHighlightTests.cs`。预览按 AtomUI 标准方式钉住
-  模板内 Popup，12 个部件的 marker 全部在场并被断言；钉住状态下还断言**不存在可见的 light-dismiss 遮罩层**，并覆盖
+  模板内 Popup，13 个部件的 marker 全部在场并被断言；钉住状态下还断言**不存在可见的 light-dismiss 遮罩层**，并覆盖
   卡片真实悬停高亮（触发侧 `root` / `frame` / `indicator` 与弹层侧 `popup.root` / `popup.list` / `popup.listItem`）。
   遮罩层若残留会吞掉卡片悬停，使预览高亮整体失效——抑制时机契约见 [语义契约 §6.1](semantic-part.md)。
 - 钉住遮罩或弹层开合变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxPinnedPopupOverlayTests.cs`。

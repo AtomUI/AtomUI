@@ -3,6 +3,16 @@
 本文档记录 ListView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- API
+  - 新增共享抽象 `AtomUI.Controls.Commons.AbstractListItem : ContentControl`，承载 List.Item.Meta 与 extra 语义：`Prefix`、`Title`、`Description`、`Extra`（均为 `StyledProperty<object?>`，默认 `null`）。
+  - 四个区域的值非 `null` 时分别置位伪类 `:has-prefix`、`:has-title`、`:has-description`、`:has-extra`（常量 `HasPrefixPseudoClass` 等），各项独立；值为 `ILogical` 时加入逻辑子元素，替换或清除时移出。
+- Desktop 影响
+  - 共享层新增，Desktop `ListView`、`ListViewItem` 暂不采用，没有 Desktop 影响。
+- Tests
+  - 新增 `AbstractListItemTests`（`AtomUI.Controls.Tests`）：默认值为 `null`、伪类常量、伪类随值独立变化、控件值成为逻辑子元素、非控件值不进入逻辑树。
+
 ## 2026-10-20
 
 - Fixed

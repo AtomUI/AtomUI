@@ -24,9 +24,9 @@ ComboBox 自身就是职责完整、可独立定制的 public owner：
 
 ## 1. Semantic Parts
 
-ComboBox 是唯一 Semantic owner，公开 12 个 Semantic Part：隐式 `root` 加 11 个非 root 部件（`prefix`、`frame`、
+ComboBox 是唯一 Semantic owner，公开 13 个 Semantic Part：隐式 `root` 加 12 个非 root 部件（`clear`、`prefix`、`frame`、
 `content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。
-11 个非 root 部件各生成一个 `ComboBox*Style` 类型，`root` 不生成。声明位于 `ComboBox.SemanticParts.cs` partial 文件。
+12 个非 root 部件各生成一个 `ComboBox*Style` 类型，`root` 不生成。声明位于 `ComboBox.SemanticParts.cs` partial 文件。
 
 触发区部件的 marker 位于 `ComboBoxTheme.axaml` 宿主模板内：`prefix` / `suffix` 借用共享
 `AddOnDecoratedBoxTheme` 的 `.semantic-scope-prefix` / `.semantic-scope-suffix` scope 锚点路由到宿主模板
@@ -56,6 +56,27 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | 相关 API | 全部 ComboBox public API |
 | 相关 Token | ComboBoxToken、SharedToken |
 | 稳定性 | stable since 6.2.0 |
+
+#### `clear`
+
+| 字段 | 值 |
+| --- | --- |
+| Owner | `ComboBox` |
+| Part | `clear` |
+| Selector | `.semantic-clear` |
+| SelectorRoute | `/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear` |
+| Style Type | `ComboBoxClearStyle` |
+| ContractType | `IconButton` |
+| Cardinality | `Single` |
+| Customization | `Selector` |
+| CrossVisualRoot / RuntimeCreated / CrossNestedOwners | `false` / `false` / `false` |
+| AtomUI 节点 | 宿主模板后缀 StackPanel 内的 InputClearIconButton |
+| 职责 | 清空选中值和编辑文本，保留输入焦点与弹层状态。 |
+| 相关 API | `IsAllowClear`、`SelectedIndex`、`SelectedItem`、`Text` |
+| 相关 Token | SharedToken |
+| 稳定性 | since 6.2.13 |
+
+按钮始终存在于模板树，显隐由可清除值、hover / focus、禁用及 `IsAllowClear` 决定。定制使用 `ComboBoxClearStyle`，不通过 code-behind 获取节点改属性。
 
 #### `prefix`
 
@@ -382,10 +403,6 @@ disabled、`Status`/`FormStatus`、`IsDropDownOpen`、集合空与非空、过�
 
 以下区域**不属于** ComboBox Semantic Part：
 
-- **清除按钮**：`IsAllowClear` 虽由 `TextBox.IsAllowClearProperty` 转挂为 ComboBox public API，但 ComboBox
-  全控件**未实现**该能力——模板中没有清除按钮节点，代码中没有清除逻辑（`Select` / `LineEdit` 的清除按钮在各自
-  handle 模板或后缀区内，ComboBox 没有对应节点）。发布该 Part 会产生永不命中的幽灵契约，因此**不发布**。
-  若后续实现清除能力，再作为新增 Part 提交（新增是非破坏性变更）。
 - **非编辑态选中内容节点**（`SelectedContentPresenter`）：不单独发布。它由 `content` 覆盖，需要精确着色时在
   `ComboBoxContentStyle` 内用嵌套 `<Style Selector="^ ContentPresenter">` 定位。当前 `placeholder` 与
   `SelectedContentPresenter` 的可见性互斥由模板的 `IsEditable` 分支管理，未发布独立 Part 以保持 `Select`

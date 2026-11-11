@@ -95,6 +95,8 @@ Group 是业务值 owner。internal wrapper、SelectionModel 和容器状态只�
 稳定 template part 接入点：
 
 - `PART_CloseButton`：承载用户触发入口、导航或关闭动作。
+- `PART_CloseButtonHost`（可选，`Decorator`）：模板不含静态 `PART_CloseButton` 时，`IsClosable=true` 期间基类通过 `protected virtual CreateCloseButton()` 在其中按需创建关闭按钮，
+  `IsClosable=false` 时移除。静态模板声明 `PART_CloseButton` 时保持原行为，不创建按需按钮。
 - `PART_CheckableTagItems`：CheckableTagGroup 的内部选择与容器宿主，part 类型为 `SelectingItemsControl`；默认 internal 派生类型封装受保护的 SelectionModel、`SelectedItems`、`SelectionMode` 和 CheckableTag 容器映射。
 
 Group 模板应用时先解除旧内部 host 的选择事件，再连接新 host 并根据公开值恢复选项、模板和选择状态。Group 不为普通 `ListBox` 提供选择 fallback。容器重新准备或回收时必须覆盖 Content、ContentTemplate、IsChecked 和 IsMotionEnabled，不能保留旧 option 状态。
@@ -168,6 +170,12 @@ TagColor + Variant + ThemeSnapshot
 颜色类别包括 `Default`、`Preset`、`Status` 和 `Custom`。`TagColor` 只改变颜色类别，`Variant` 只改变视觉形态。
 颜色解析不得通过副作用写回 Variant 或边框状态。
 
+颜色计算所需的预设色、状态色（含 `primary`、`danger`）与 Solid 文字色由 `TagColorTable` 提供，它按 `ThemeSnapshot` 构建一次并缓存在
+`ConditionalWeakTable` 中，同一快照下的所有 Tag 共享同一实例。`TagColor` 为空、空白或 `default` 时不订阅主题也不取快照；
+设置颜色时才订阅，每次挂树按 `ThemeScope.ResolveContext` 重新解析，保证离树期间的主题切换在挂回后生效。
+
+`Outline` 变体：有颜色时背景透明，边框和文字取该颜色的主色；无颜色时由 `TagTheme.axaml` 的样式提供透明背景与主色边框和文字。
+
 预设颜色读取调色板序列的第 1、3、6、7 号色；状态颜色读取 Success、Info、Warning、Error 的语义 Token；
 `info` 和 `processing` 共享 Info Token；`default` 使用 Tag 基础 Token。
 
@@ -226,6 +234,8 @@ child IsCheckedChanged
 - `TagColor × Variant` 视觉矩阵、颜色清除后的状态恢复和 Light/Dark 主题响应。
 - Template part 名称、ControlTheme key、伪类和资源 key。
 - `IsBordered`、`bordered` 和 `color="xxx-inverse"` 不得重新成为 Tag 的兼容入口。
+- `TagVariant` 的数值（Filled 0、Solid 1、Outlined 2、Outline 3）是稳定契约，新成员只能追加。
+- 颜色表按快照共享、空颜色不订阅主题；按需关闭按钮的 `CreateCloseButton`、`PART_CloseButtonHost` 契约是 AtomUI.Mobile 依赖的扩展点。
 - CheckableTag 不继承 TagColor、Variant、IsClosable、CloseIcon 或 Closed；其二态选择由 ToggleButton.IsChecked 唯一表达。
 - CheckableTagGroup 默认可取消单选；CheckedItem(s) 始终表达 option Value，internal wrapper 和 SelectionModel 不得泄漏。
 - PART_CheckableTagItems 重应用、Options/CheckedItems 替换和 detach 必须释放旧订阅，容器回收必须清除旧状态。
@@ -245,6 +255,7 @@ child IsCheckedChanged
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
 - Tag 行为测试覆盖 Default、Preset、Status、Custom 四类颜色与 Filled、Solid、Outlined 三种 Variant 的完整矩阵。
 - Tag 行为测试覆盖 `info/processing` 映射、`default`、颜色清除、Variant 动态切换和本地 Brush 优先级。
+- Tag 行为测试覆盖 `Outline` 变体、`primary`/`danger`、空颜色不解析快照、颜色表按快照共享、挂树与离树期间的主题切换，以及按需关闭按钮的创建、点击与移除。
 - Tag 主题测试覆盖默认 Solid 文字对比度、Light/Dark 调色板更新、透明边框保持尺寸和 Icon/CloseIcon 颜色。
 - CheckableTag 测试覆盖 pointer、keyboard、command、disabled、IsChecked TwoWay、Icon、Form 和二态 null 归一。
 - CheckableTagGroup 测试覆盖 option 归一、可取消单选、多选顺序、Default、模式切换、集合通知、事件、Form、模板重应用、detach 和容器回收。

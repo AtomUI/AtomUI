@@ -13,5 +13,7 @@ public enum TagVariant
 {
     Filled,
     Solid,
-    Outlined
+    Outlined,
+    // Transparent background; border and text use the main color.
+    Outline
 }

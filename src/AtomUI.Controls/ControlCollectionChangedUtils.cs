@@ -4,7 +4,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 internal static class ControlCollectionChangedUtils
 {

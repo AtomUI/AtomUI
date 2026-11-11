@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling; 
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
@@ -18,6 +19,22 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     public static readonly StyledProperty<double> MoveSpeedProperty =
         AvaloniaProperty.Register<AbstractMarqueeLabel, double>(nameof(MoveSpeed), 150);
+
+    public static readonly StyledProperty<TimeSpan> StartDelayProperty =
+        AvaloniaProperty.Register<AbstractMarqueeLabel, TimeSpan>(nameof(StartDelay), TimeSpan.Zero);
+
+    public static readonly StyledProperty<bool> IsPausedOnPointerOverProperty =
+        AvaloniaProperty.Register<AbstractMarqueeLabel, bool>(nameof(IsPausedOnPointerOver), true);
+
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractMarqueeLabel>();
+
+    /// <summary>Usually bound to the <c>EnableMotion</c> token; when false overflowing text stays where it stopped.</summary>
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
 
     /// <summary>
     /// 默认的间隔
@@ -35,6 +52,24 @@ public abstract class AbstractMarqueeLabel : TextBlock
     {
         get => GetValue(MoveSpeedProperty);
         set => SetValue(MoveSpeedProperty, value);
+    }
+
+    /// <summary>
+    /// Wait before every (re)start of the scrolling animation; the text stays still meanwhile.
+    /// </summary>
+    public TimeSpan StartDelay
+    {
+        get => GetValue(StartDelayProperty);
+        set => SetValue(StartDelayProperty, value);
+    }
+
+    /// <summary>
+    /// Whether scrolling pauses while the pointer is over the label. Defaults to true.
+    /// </summary>
+    public bool IsPausedOnPointerOver
+    {
+        get => GetValue(IsPausedOnPointerOverProperty);
+        set => SetValue(IsPausedOnPointerOverProperty, value);
     }
 
     #endregion
@@ -56,17 +91,55 @@ public abstract class AbstractMarqueeLabel : TextBlock
     #endregion
     
     private CancellationTokenSource? _cancellationTokenSource;
+    private DispatcherTimer? _startDelayTimer;
     private Animation? _animation;
     private bool _animationRunning;
     private double _lastDesiredWidth;
     private double _lastTextWidth;
     private double _pivotOffsetStartValue;
+    private readonly MotionGate _motionGate;
+
+    /// <summary>True while a scrolling animation is running.</summary>
+    internal bool IsMarqueeAnimating => _cancellationTokenSource is not null;
+
+    /// <summary>True while a delayed start is waiting for its timer.</summary>
+    internal bool HasPendingStartDelay => _startDelayTimer is not null;
 
     static AbstractMarqueeLabel()
     {
+        // Desktop labels keep scrolling unless a theme binds this to EnableMotion.
+        IsMotionEnabledProperty.OverrideDefaultValue<AbstractMarqueeLabel>(true);
         AffectsRender<AbstractMarqueeLabel>(PivotOffsetProperty, CycleSpaceProperty, MoveSpeedProperty);
         HorizontalAlignmentProperty.OverrideDefaultValue<AbstractMarqueeLabel>(HorizontalAlignment.Stretch);
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractMarqueeLabel>(VerticalAlignment.Top);
+    }
+
+    protected AbstractMarqueeLabel()
+    {
+        _motionGate = new MotionGate(this, HandleShouldRunChanged);
+    }
+
+    private void HandleShouldRunChanged(bool shouldRun)
+    {
+        if (shouldRun)
+        {
+            // Resume from where the text stopped, as after a pointer-over pause.
+            if (CanStartMarquee())
+            {
+                ReConfigureAnimation();
+                HandleStartupMarqueeAnimation();
+            }
+        }
+        else if (IsMarqueeAnimating)
+        {
+            _pivotOffsetStartValue = PivotOffset;
+            HandleCleanupMarqueeAnimation();
+        }
+        else
+        {
+            // A closed gate keeps no timer; reopening starts a full delay again.
+            CancelStartDelay();
+        }
     }
     
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -85,25 +158,26 @@ public abstract class AbstractMarqueeLabel : TextBlock
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == IsMotionEnabledProperty)
+        {
+            _motionGate.IsMotionEnabled = IsMotionEnabled;
+        }
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == IsPointerOverProperty)
             {
+                if (IsPausedOnPointerOver)
+                {
+                    HandlePointerOverChanged();
+                }
+            }
+            else if (change.Property == IsPausedOnPointerOverProperty)
+            {
+                // Turning the pause off while hovering resumes; turning it on while hovering pauses.
                 if (IsPointerOver)
                 {
-                    _pivotOffsetStartValue = PivotOffset;
-                    HandleCleanupMarqueeAnimation();
+                    HandlePointerOverChanged();
                 }
-                else
-                {
-                    if (DesiredSize.Width < _lastDesiredWidth ||
-                        MathUtils.AreClose(DesiredSize.Width, _lastDesiredWidth))
-                    {
-                        ReConfigureAnimation();
-                        HandleStartupMarqueeAnimation();
-                    }
-                }
-                // 这里处理暂停事件
             }
             else if (change.Property == CycleSpaceProperty || change.Property == MoveSpeedProperty)
             {
@@ -114,6 +188,21 @@ public abstract class AbstractMarqueeLabel : TextBlock
                     HandleStartupMarqueeAnimation();
                 }
             }
+        }
+    }
+
+    private void HandlePointerOverChanged()
+    {
+        if (IsPausedByPointerOver)
+        {
+            _pivotOffsetStartValue = PivotOffset;
+            HandleCleanupMarqueeAnimation();
+        }
+        else if (DesiredSize.Width < _lastDesiredWidth ||
+                 MathUtils.AreClose(DesiredSize.Width, _lastDesiredWidth))
+        {
+            ReConfigureAnimation();
+            HandleStartupMarqueeAnimation();
         }
     }
 
@@ -136,26 +225,97 @@ public abstract class AbstractMarqueeLabel : TextBlock
         return 4 * Math.Max(1, distance / MoveSpeed * 1000);
     }
 
+    // The single start condition shared by layout, the motion gate, pointer changes and the delay timer:
+    // the text overflows, the label is in the tree, motion may run and no hover pause is in effect.
+    private bool CanStartMarquee()
+    {
+        return _lastDesiredWidth > 0 &&
+               this.IsAttachedToVisualTree() &&
+               _motionGate.ShouldRun &&
+               !IsPausedByPointerOver;
+    }
+
+    private bool IsPausedByPointerOver => IsPointerOver && IsPausedOnPointerOver;
+
     private void HandleStartupMarqueeAnimation()
     {
-        if (_animation is not null)
+        if (_animation is null || !CanStartMarquee())
         {
-            _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
-            var animationTask = _animation!.RunAsync(this, _cancellationTokenSource.Token);
-            _animationRunning = true;
-            this.Dispatcher.InvokeAsync(async () =>
+            return;
+        }
+        if (_startDelayTimer is not null)
+        {
+            // A delayed start is already pending; the timer starts whatever configuration is current by then.
+            return;
+        }
+        var delay = StartDelay;
+        if (delay <= TimeSpan.Zero)
+        {
+            StartMarqueeAnimation();
+            return;
+        }
+        // The text rests during the delay, so a still-running run must stop now.
+        HandleCleanupMarqueeAnimation();
+        var timer = new DispatcherTimer { Interval = delay };
+        timer.Tick += (_, _) =>
+        {
+            if (!ReferenceEquals(_startDelayTimer, timer))
             {
-                await animationTask;
+                return;
+            }
+            CancelStartDelay();
+            if (!CanStartMarquee())
+            {
+                return;
+            }
+            // The completion of the run stopped above may have discarded the animation while the delay was pending.
+            if (_animation is null)
+            {
+                ReConfigureAnimation();
+            }
+            StartMarqueeAnimation();
+        };
+        _startDelayTimer = timer;
+        timer.Start();
+    }
+
+    private void StartMarqueeAnimation()
+    {
+        if (_animation is null)
+        {
+            return;
+        }
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        var cancellation = new CancellationTokenSource();
+        _cancellationTokenSource = cancellation;
+        var animationTask = _animation.RunAsync(this, cancellation.Token);
+        _animationRunning = true;
+        this.Dispatcher.InvokeAsync(async () =>
+        {
+            await animationTask;
+            // A run stopped and immediately replaced completes after its successor started; it must not clear
+            // the successor's state.
+            if (_cancellationTokenSource is null || ReferenceEquals(_cancellationTokenSource, cancellation))
+            {
                 _animationRunning = false;
                 _animation        = null;
-            });
+            }
+        });
+    }
+
+    private void CancelStartDelay()
+    {
+        if (_startDelayTimer is not null)
+        {
+            _startDelayTimer.Stop();
+            _startDelayTimer = null;
         }
     }
 
     private void HandleCleanupMarqueeAnimation()
     {
+        CancelStartDelay();
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Cancel();
@@ -184,7 +344,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
                 }
             }
 
-            if (!_animationRunning)
+            if (!_animationRunning && _startDelayTimer is null)
             {
                 ReConfigureAnimation();
                 HandleStartupMarqueeAnimation();

@@ -260,7 +260,9 @@ internal sealed class ImageRequestCoordinator : IDisposable
         {
             lock (_gate)
             {
-                if (_completed)
+                // A cancel-requested operation is still in flight but can only end canceled; a new waiter must
+                // start fresh work instead of inheriting a cancellation it never asked for.
+                if (_completed || _cancelRequested)
                 {
                     waiterId = 0;
                     return false;

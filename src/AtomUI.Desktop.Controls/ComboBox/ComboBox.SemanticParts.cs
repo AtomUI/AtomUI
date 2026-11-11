@@ -9,6 +9,12 @@ namespace AtomUI.Desktop.Controls;
 // 注意：本命名空间下存在 AtomUI 自有的 TextBox / TextBlock / ScrollViewer，
 // 因此这三个 ContractType 必须显式写 Avalonia 基类名，避免解析到 AtomUI 派生类型。
 [SemanticPart(
+    "clear",
+    SelectorClass = "semantic-clear",
+    SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear",
+    ContractType = typeof(IconButton),
+    Since = "6.2.13")]
+[SemanticPart(
     "prefix",
     SelectorClass = "semantic-prefix",
     SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-scope-prefix > .semantic-prefix",

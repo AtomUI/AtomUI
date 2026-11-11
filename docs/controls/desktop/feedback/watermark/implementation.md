@@ -17,6 +17,7 @@
 - `src/AtomUI.Controls/Watermark/Glyphs/WatermarkGlyph.cs`
 - `src/AtomUI.Controls/Watermark/Glyphs/WatermarkGlyphExtension.cs`
 - `src/AtomUI.Controls/Watermark/Watermark.cs`
+- `src/AtomUI.Controls/Watermark/WatermarkTileRenderer.cs`
 
 职责边界：
 
@@ -32,6 +33,7 @@
 - `TextGlyph`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TextGlyphExtension`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `WatermarkGlyph`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
+- `WatermarkTileRenderer`：internal 平铺绘制单元，持有行列循环、可见区域裁剪、交错与镜像相位和旋转矩阵缓存；`Watermark` 与 AtomUI.Mobile 的 WaterMark 共用。
 - `WatermarkGlyphExtension`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 
 核心协作规则：
@@ -102,6 +104,9 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 
 维护者需要重点关注以下流程：
 
+- 平铺：`Watermark.Render` 以 `Target.Bounds.Size` 为区域、字形自身尺寸为 cell 调用 `WatermarkTileRenderer.Render`。网格步长为 cell 加字形的 `HorizontalSpace`/`VerticalSpace`；
+  调用方传入大于字形的 cell 时必须自行把字形间距设为 0，字形在 cell 内居中。旋转矩阵按（cell 尺寸，`Rotate`）缓存，面积、间距、偏移、透明度、镜像和字形尺寸不属于缓存键；渲染路径无逐帧分配。
+- TextGlyph 前景：字形有 `StyledElement` 资源 owner 时，`ColorText` 全局 Token 以 Template 优先级写入 `Foreground`；每次挂到 owner 时重新解析，因为订阅既不回放当前值也不跨离树保留。
 - API 默认值到 effective state 的归一。
 - Template part 重新应用时的状态回放。
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
@@ -141,6 +146,8 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 - Template part 名称、ControlTheme key、伪类和资源 key。
 - 旧 template part、事件订阅、Popup/Flyout/Window host 和 collection view 的释放路径。
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
+- 平铺的网格、裁剪与相位语义只存在于 `WatermarkTileRenderer`；`Watermark` 不再持有独立的平铺循环或矩阵缓存。
+- `TextGlyph.Foreground` 的显式值优先于主题值，字形离开所有 owner 后释放主题订阅；`AttachToResourceOwner` 是 AtomUI.Mobile 依赖的扩展点。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
 ## 10. 测试与验证
@@ -152,3 +159,5 @@ Watermark 的交互事件应从输入源收敛到控件级语义事件：
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+Watermark 专项测试覆盖 `WatermarkTileRenderer` 的网格位置与数量、旋转与镜像、矩阵缓存重建次数、cell 大于字形时的居中，以及 `TextGlyph` 的字体属性、文本方向和前景随主题的行为（含离树期间切换、显式值优先、离开 owner 后不再跟随）。

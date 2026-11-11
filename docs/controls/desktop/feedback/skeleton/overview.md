@@ -18,7 +18,8 @@ Skeleton 不负责 Spin 加载器、真实数据列表或动画演示控件。�
 
 主要源码入口：
 
-- `src/AtomUI.Desktop.Controls/Skeleton`
+- `src/AtomUI.Controls/Skeleton`：共享抽象（`AbstractSkeleton`、`AbstractSkeletonLine`、`AbstractSkeletonParagraph`、`AbstractCompositeSkeleton`）、共享微光与 Token 抽象。
+- `src/AtomUI.Desktop.Controls/Skeleton`：Desktop 控件、主题与 `SkeletonToken`。
 
 ## 2. 设计语言
 
@@ -43,27 +44,32 @@ Skeleton 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 选择与集合 | `IsActive` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 交互与状态 | `IsBlock`、`IsLoading`、`IsRound`、`IsShowParagraph` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `LastLineWidth`、`LineWidth`、`ParagraphLastLineWidth`、`Shape`、`Size`、`SizeType` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
-| 动效与异步 | `MotionDuration`、`MotionEasingCurve` | 约束动效开关、异步加载、播放速度、超时和任务边界。 |
+| 动效与异步 | `IsMotionEnabled`、`MotionDuration`、`MotionEasingCurve` | 微光开关（主题绑定 `EnableMotion`）、周期与曲线。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
 
 主要公开类型与枚举：
 
-- 类型：`AbstractSkeleton`、`Skeleton`、`SkeletonAvatar`、`SkeletonButton`、`SkeletonElement`、`SkeletonImage`、`SkeletonInput`、`SkeletonLine`、`SkeletonNode`、`SkeletonParagraph`、`SkeletonTitle`。
+- 共享类型：`AbstractSkeleton`（`AtomUI.Controls`）、`AbstractSkeletonLine`、`AbstractSkeletonParagraph`、`AbstractCompositeSkeleton`（`AtomUI.Controls.Commons`）。
+- Desktop 类型：`Skeleton`、`SkeletonAvatar`、`SkeletonButton`、`SkeletonElement`、`SkeletonImage`、`SkeletonInput`、`SkeletonLine`、`SkeletonNode`、`SkeletonParagraph`、`SkeletonTitle`。
 - 枚举：`SkeletonButtonShape`。
 
 稳定 template part：
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_ActiveAnimationLayer` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_Avatar` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_Content` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_ContentLayer` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_LineLayout` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_Paragraph` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_RootLayout` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
-| `PART_Title` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_Avatar` | `SkeletonAvatar` | 占位模板中的头像。 |
+| `PART_Content` | `StackPanel` | 占位模板中承载标题与段落的列。 |
+| `PART_ContentLayer` | `Border` | 元素骨架的底色层与微光块，始终可见。 |
+| `PART_LineLayout` | `Panel` | 段落行的容器。 |
+| `PART_Paragraph` | `SkeletonParagraph` | 占位模板中的段落。 |
+| `PART_PlaceholderHost` | `Panel` | `Skeleton` 中承载内容与按需占位的容器。 |
+| `PART_RootLayout` | `Panel` / `Border` | 承载根视觉、边框、背景或尺寸基线。 |
+| `PART_ShimmerLayer` | `Grid` | `Skeleton` 占位根，组合骨架的微光层。 |
+| `PART_Title` | `SkeletonTitle` | 占位模板中的标题。 |
+
+`Skeleton` 的占位（头像、标题、段落）由 internal `PlaceholderTemplate` 在 `IsLoading` 为真时按需构建，模板父级是 `Skeleton`；
+不加载时占位不存在，`PART_Avatar`、`PART_Title`、`PART_Paragraph` 等部件也不存在。
 
 当前未抽取到控件专属伪类；主题主要依赖 Avalonia 标准伪类、模板绑定和内部 StyledProperty。
 
@@ -160,7 +166,14 @@ Skeleton 的当前项状态必须由单一 owner 推导。public 选择属性、
 
 ### 8.2 动效模型
 
-Skeleton 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+激活的骨架以一道从左向右扫过的亮带表达加载。一组嵌套骨架共享一道亮带：最外层的骨架（微光宿主）在合成层上统一绘制，组合骨架中
+比整行窄的块（标题、末行、头像）与整行对齐；放在组合骨架 `Content` 中的骨架保留自己的亮带。亮带峰值每个周期从 −1.52W 移到 +1.48W
+（W 为微光层宽度），周期取 `MotionDuration`（Token `LoadingMotionDuration`，1.4 s），曲线取 `MotionEasingCurve`，未设置时为
+`SplineEasing(0.25, 0.1, 0.25, 1)`。
+
+亮带只在骨架附着、自身与祖先全部可见、应用处于活动状态、`IsMotionEnabled` 为真（主题绑定 `EnableMotion`）、`IsActive` 为真、
+`MotionDuration` 大于 0 时运行，组合骨架另需 `IsLoading` 为真；条件不满足时块停在主题底色上，与未激活时的静止帧一致。实现见
+[Skeleton 桌面版实现原理 · 共享微光](implementation.md#71-共享微光)。
 
 ### 8.3 视觉选项模型
 

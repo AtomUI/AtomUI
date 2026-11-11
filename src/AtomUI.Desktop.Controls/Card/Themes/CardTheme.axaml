@@ -53,17 +53,13 @@
                         </Border>
                         <Border Name="CardContent"
                                 Classes.semantic-body="True">
-                            <atom:Skeleton IsLoading="{TemplateBinding IsLoading}"
-                                           IsActive="True"
-                                           ParagraphRows="4"
-                                           IsShowTitle="False"
-                                           ClipToBounds = "False"
-                                           Content="{TemplateBinding Content}"
-                                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"
-                                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <Panel Name="PART_LoadingHost">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  IsVisible="{TemplateBinding IsContentVisible}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Panel>
                         </Border>
                     </DockPanel>
                 </atom:PixelAlignedBorder>

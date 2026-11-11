@@ -1,5 +1,4 @@
-﻿using System.Reactive.Disposables;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -28,6 +27,9 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     public static readonly StyledProperty<IDataTemplate?> CustomIndicatorTemplateProperty =
         AbstractSpin.CustomIndicatorTemplateProperty.AddOwner<AbstractSpinIndicator>();
 
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSpinIndicator>();
+
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractSpinIndicator>();
 
@@ -45,6 +47,13 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     /// </summary>
     public static readonly StyledProperty<IBrush?> DotBgBrushProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, IBrush?>(nameof(DotBgBrush));
+
+    /// <summary>
+    /// 动画模式；默认 <see cref="IndicatorAnimationMode.Rotate"/>，<see cref="IndicatorAnimationMode.Custom"/>
+    /// 时由子类通过 <see cref="StartCustomAnimation"/> 与 <see cref="StopCustomAnimation"/> 提供动画。
+    /// </summary>
+    public static readonly StyledProperty<IndicatorAnimationMode> AnimationModeProperty =
+        AvaloniaProperty.Register<AbstractSpinIndicator, IndicatorAnimationMode>(nameof(AnimationMode));
 
     public CustomizableSizeType SizeType
     {
@@ -65,6 +74,13 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         set => SetValue(CustomIndicatorTemplateProperty, value);
     }
 
+    /// <summary>Usually bound to the <c>EnableMotion</c> token; when false the indicator rests on its initial frame.</summary>
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
@@ -75,6 +91,12 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     {
         get => GetValue(MotionEasingCurveProperty);
         set => SetValue(MotionEasingCurveProperty, value);
+    }
+
+    public IndicatorAnimationMode AnimationMode
+    {
+        get => GetValue(AnimationModeProperty);
+        set => SetValue(AnimationModeProperty, value);
     }
 
     public double IndicatorSize
@@ -122,8 +144,20 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
     private SpinIndicatorDotPanel? _builtInIndicatorLayout;
     private ContentPresenter? _customIndicatorPresenter;
+    private Control? _indicatorLayoutPart;
     private Control? _animatedIndicatorTarget;
-    private CompositeDisposable? _effectiveVisibilitySubscriptions;
+    private bool _isCustomAnimationRunning;
+    // A start runs derived code (StartCustomAnimation) that may change a property and request a restart or stop
+    // before the running state is recorded. Such requests are deferred and replayed once the start is recorded, so
+    // every successful start is still paired with exactly one stop.
+    private bool _isStartingIndicatorAnimation;
+    private bool _isIndicatorAnimationStale;
+    private readonly MotionGate _motionGate;
+
+    /// <summary>True while a composition animation runs on the active indicator.</summary>
+    internal bool IsIndicatorAnimationRunning => _animatedIndicatorTarget is not null;
+
+    internal event EventHandler? IndicatorAnimationStarted;
 
     static AbstractSpinIndicator()
     {
@@ -132,6 +166,13 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
             CustomIndicatorTemplateProperty,
             IndicatorSizeProperty,
             DotSizeProperty);
+        // Desktop indicators keep animating unless a theme binds this to EnableMotion.
+        IsMotionEnabledProperty.OverrideDefaultValue<AbstractSpinIndicator>(true);
+    }
+
+    protected AbstractSpinIndicator()
+    {
+        _motionGate = new MotionGate(this, HandleShouldRunChanged);
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -140,16 +181,8 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         StartIndicatorAnimation();
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureEffectiveVisibilityTracking();
-    }
-
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _effectiveVisibilitySubscriptions?.Dispose();
-        _effectiveVisibilitySubscriptions = null;
         StopIndicatorAnimation();
         base.OnDetachedFromVisualTree(e);
     }
@@ -166,9 +199,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
         _builtInIndicatorLayout   = null;
         _customIndicatorPresenter = null;
+        _indicatorLayoutPart      = null;
 
         _builtInIndicatorLayout = e.NameScope.Find<SpinIndicatorDotPanel>("BuiltInIndicatorLayout");
         _customIndicatorPresenter = e.NameScope.Find<ContentPresenter>("PART_CustomIndicatorPresenter");
+        _indicatorLayoutPart      = e.NameScope.Find<Control>("PART_IndicatorLayout");
 
         if (_customIndicatorPresenter is not null)
         {
@@ -186,7 +221,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IndicatorSizeProperty)
+        if (change.Property == IsMotionEnabledProperty)
+        {
+            _motionGate.IsMotionEnabled = IsMotionEnabled;
+        }
+        else if (change.Property == IndicatorSizeProperty)
         {
             UpdateCustomIndicatorSize();
             UpdateAnimatedTargetCenterPoint();
@@ -195,6 +234,10 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
                  change.Property == CustomIndicatorTemplateProperty)
         {
             SyncCustomIndicatorState();
+            RestartIndicatorAnimation();
+        }
+        else if (change.Property == AnimationModeProperty)
+        {
             RestartIndicatorAnimation();
         }
         else if (change.Property == MotionDurationProperty ||
@@ -211,36 +254,102 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
     private void StartIndicatorAnimation()
     {
-        if (!IsEffectivelyVisible || !IsLoaded || !this.IsAttachedToVisualTree())
+        if (_isStartingIndicatorAnimation)
+        {
+            _isIndicatorAnimationStale = true;
+            return;
+        }
+
+        if (!_motionGate.ShouldRun || !IsLoaded)
         {
             return;
         }
 
-        var target = GetActiveAnimationTarget();
+        var isCustomMode = AnimationMode == IndicatorAnimationMode.Custom;
+        var target = isCustomMode
+            ? _indicatorLayoutPart ?? GetActiveAnimationTarget()
+            : GetActiveAnimationTarget();
         if (target is null)
         {
             return;
         }
 
-        if (ReferenceEquals(_animatedIndicatorTarget, target))
+        if (ReferenceEquals(_animatedIndicatorTarget, target) && _isCustomAnimationRunning == isCustomMode)
         {
-            StartTargetAnimation(target);
             return;
         }
 
         StopIndicatorAnimation();
-        if (StartTargetAnimation(target))
+        bool started;
+        _isStartingIndicatorAnimation = true;
+        _isIndicatorAnimationStale    = false;
+        try
         {
-            _animatedIndicatorTarget = target;
+            started = isCustomMode ? StartCustomAnimation(target) : StartTargetAnimation(target);
         }
+        finally
+        {
+            _isStartingIndicatorAnimation = false;
+        }
+
+        if (started)
+        {
+            _animatedIndicatorTarget  = target;
+            _isCustomAnimationRunning = isCustomMode;
+        }
+
+        if (_isIndicatorAnimationStale)
+        {
+            // Replay what was requested during the start against the recorded state.
+            _isIndicatorAnimationStale = false;
+            RestartIndicatorAnimation();
+            return;
+        }
+
+        if (started)
+        {
+            IndicatorAnimationStarted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// <see cref="IndicatorAnimationMode.Custom"/> 模式下在门控放行且已加载时调用；<paramref name="target"/> 为模板部件
+    /// <c>PART_IndicatorLayout</c>，找不到时为内置或自定义指示器目标。返回是否已启动；返回 false 时不视为运行中。
+    /// </summary>
+    protected virtual bool StartCustomAnimation(Visual target)
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// 每次成功的 <see cref="StartCustomAnimation"/> 恰好对应一次调用（门控关闭、脱离、模板重应用、模式切换、重启）。
+    /// </summary>
+    protected virtual void StopCustomAnimation(Visual target)
+    {
     }
 
     private void StopIndicatorAnimation()
     {
+        if (_isStartingIndicatorAnimation)
+        {
+            _isIndicatorAnimationStale = true;
+            return;
+        }
+
         if (_animatedIndicatorTarget is not null)
         {
-            StopTargetAnimation(_animatedIndicatorTarget);
-            _animatedIndicatorTarget = null;
+            var target = _animatedIndicatorTarget;
+            var wasCustom = _isCustomAnimationRunning;
+            _animatedIndicatorTarget  = null;
+            _isCustomAnimationRunning = false;
+            if (wasCustom)
+            {
+                StopCustomAnimation(target);
+            }
+            else
+            {
+                StopTargetAnimation(target);
+            }
             return;
         }
 
@@ -248,23 +357,16 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         StopTargetAnimation(_customIndicatorPresenter);
     }
 
-    private void RestartIndicatorAnimation()
+    /// <summary>几何等变化后由子类调用，先停止再重新开始当前动画。</summary>
+    protected void RestartIndicatorAnimation()
     {
         StopIndicatorAnimation();
         StartIndicatorAnimation();
     }
 
-    private void ConfigureEffectiveVisibilityTracking()
+    private void HandleShouldRunChanged(bool shouldRun)
     {
-        _effectiveVisibilitySubscriptions?.Dispose();
-        var subscriptions = new CompositeDisposable();
-        _effectiveVisibilitySubscriptions = subscriptions;
-        this.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscriptions);
-    }
-
-    private void HandleEffectiveVisibilityChanged(bool isEffectivelyVisible)
-    {
-        if (isEffectivelyVisible)
+        if (shouldRun)
         {
             StartIndicatorAnimation();
         }
@@ -329,7 +431,7 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
     private void UpdateAnimatedTargetCenterPoint()
     {
-        if (_animatedIndicatorTarget is null)
+        if (_animatedIndicatorTarget is null || _isCustomAnimationRunning)
         {
             return;
         }

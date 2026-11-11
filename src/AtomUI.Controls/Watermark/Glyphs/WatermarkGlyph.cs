@@ -125,5 +125,14 @@ public abstract partial class WatermarkGlyph : AvaloniaObject
         }
         // 新宿主接管时生成器先解绑旧宿主；再释放旧 token，避免资源暂时回退到 Application。
         previousAttachment?.Dispose();
+        OnResourceOwnerChanged(_resourceOwners.Last?.Value);
+    }
+
+    /// <summary>
+    /// Called after the active resource owner changed; <paramref name="owner" /> is null once the last owner
+    /// has detached. Subclasses that follow the owner's theme resolve their values here.
+    /// </summary>
+    private protected virtual void OnResourceOwnerChanged(IResourceHost? owner)
+    {
     }
 }

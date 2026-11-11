@@ -2,6 +2,11 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Fix
+  - 指针按下抬升 Overlay Dialog 后，若焦点仍在该 Dialog 之外（按在不可聚焦区域或使用非左键），在按下处理完成后把焦点交给该 Dialog 的 Surface，使输入与 Escape/Enter（仍由最顶层 Dialog 处理）作用于同一个 Dialog；焦点已在该 Dialog 或其内容弹层内时不改变。
+
 ## 2026-11-10
 
 - Fix

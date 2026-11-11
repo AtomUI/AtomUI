@@ -1,8 +1,11 @@
+using System.Xml.Linq;
 using AtomUI.Toolkits.GalleryBase.Controls;
+using AtomUI.Theme.Styling;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -34,6 +37,7 @@ public class ComboBoxSemanticPartHighlightTests
         ("input",          "semantic-input"),
         ("suffix",         "semantic-suffix"),
         ("indicator",      "semantic-indicator"),
+        ("clear",          "semantic-clear"),
         ("popup.root",     "semantic-popup-root"),
         ("popup.list",     "semantic-popup-list"),
         ("popup.listItem", "semantic-popup-list-item"),
@@ -78,8 +82,8 @@ public class ComboBoxSemanticPartHighlightTests
                                  .Where(static card => card.GetType().Name.Contains("SemanticPartPreviewItem"))
                                  .ToArray();
 
-            // 12 个已声明部件（root + 11 个非 root）都必须有预览卡片。
-            cards.Length.ShouldBe(12);
+            // root + 12 个非 root 部件都必须有预览卡片。
+            cards.Length.ShouldBe(13);
 
             var owner = preview.GetVisualDescendants()
                                .OfType<AtomUI.Desktop.Controls.ComboBox>()
@@ -87,6 +91,22 @@ public class ComboBoxSemanticPartHighlightTests
 
             // 按 AtomUI 标准方式钉住弹层：IsPopupPinnedOpen 为 public。
             owner.IsPopupPinnedOpen.ShouldBeTrue();
+
+            var clearStyle = owner.Styles.OfType<Style>()
+                .SelectMany(style => style.Children.OfType<ComboBoxClearStyle>()).Single();
+            clearStyle.Setters.OfType<Setter>().ShouldContain(setter =>
+                setter.Property == Visual.IsVisibleProperty && Equals(setter.Value, true));
+            owner.GetVisualDescendants().OfType<Control>()
+                .Single(control => control.Classes.Contains("semantic-clear"))
+                .IsVisible.ShouldBeTrue();
+
+            const string viewPath = "controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox/Views/ComboBoxShowCase.axaml";
+            XDocument.Load(GetRepoFile(viewPath)).Descendants().Attributes()
+                .ShouldNotContain(attribute => attribute.Name.LocalName == "Loaded" ||
+                                               attribute.Name.LocalName == "Unloaded");
+            var codeBehind = File.ReadAllText(GetRepoFile(viewPath + ".cs"));
+            codeBehind.ShouldNotContain("FindControl");
+            codeBehind.ShouldNotContain("GetVisualDescendants");
 
             // headless 宿主不产生窗口激活事件，控件按契约在失活时关闭弹层；重新打开后 pin 会保持其开启。
             if (!owner.IsDropDownOpen)
@@ -321,6 +341,22 @@ public class ComboBoxSemanticPartHighlightTests
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
+    }
+    private static string GetRepoFile(string relativePath)
+    {
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException(relativePath);
     }
 }
 

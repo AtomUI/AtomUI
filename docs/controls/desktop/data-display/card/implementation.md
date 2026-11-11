@@ -12,7 +12,8 @@ Card 的实现重点是把 Header/Extra/Cover/Content/Actions 组合成一个稳
 
 主要源码：
 
-- `src/AtomUI.Desktop.Controls/Card/Card.cs`：根 Card 公共 API、Actions 集合、内容类型识别、Header/Content 边框和圆角派生状态、Size/Motion 内容同步。
+- `src/AtomUI.Controls/Card/AbstractCard.cs`：共享基类，承载 `Extra`、`Cover`、`IsLoading`、`Actions` 集合、`:headerless` 伪类和按需加载指示器。
+- `src/AtomUI.Desktop.Controls/Card/Card.cs`：根 Card 公共 API、向 `CardActionPanel` 同步 Actions、加载指示器的 Skeleton 创建、内容类型识别、Header/Content 边框和圆角派生状态、Size/Motion 内容同步。
 - `src/AtomUI.Desktop.Controls/Card/CardActionPanel.cs`：内部操作区，承载 Actions，维护 UniformGrid children，并渲染分隔线。
 - `src/AtomUI.Desktop.Controls/Card/CardActionButton.cs`：Card 操作区推荐按钮类型，提供主题 key 边界。
 - `src/AtomUI.Desktop.Controls/Card/CardMetaContent.cs`：头像、标题和描述内容的元信息承载控件。
@@ -25,7 +26,9 @@ Card 的实现重点是把 Header/Extra/Cover/Content/Actions 组合成一个稳
 
 ## 3. 核心类职责
 
-`Card` 是状态协调器。它继承 `HeaderedContentControl`，负责公共属性、Headerless 伪类、Actions 同步、ContentType 派生、CardToken scope 注册和初始动效屏蔽。
+`AbstractCard` 继承 `HeaderedContentControl`，负责 `Extra`、`Cover`、`IsLoading`、`Actions` 的定义，Headerless 伪类（`HasHeaderContent()` 判定），Actions 变化的 `OnActionsChanged` 钩子与 `IsActionsPanelVisible`，以及加载指示器的创建与移除。
+
+`Card` 是状态协调器。它继承 `AbstractCard`，负责桌面独有的公共属性、向 `CardActionPanel` 同步 Actions、ContentType 派生、Header 边框与圆角计算（只服务 Grid 内容类型）、CardToken scope 注册和初始动效屏蔽。
 
 `CardActionPanel` 是内部 action layout 和 render owner。它持有内部 `Actions` 集合，模板接入后将集合写入 `UniformGrid`，并在 `Render` 中绘制操作区顶部边线和纵向分隔线。
 
@@ -106,7 +109,7 @@ CardTabsContent.Items.CollectionChanged
 Card 构造阶段：
 
 - 注册 `CardToken.ScopeProvider`。
-- 订阅 `Actions.CollectionChanged`。`Actions` 是 Card 自身持有的生命周期集合，不需要在普通 detach 中解除。
+- `AbstractCard` 构造函数订阅 `Actions.CollectionChanged`。`Actions` 是 Card 自身持有的生命周期集合，不需要在普通 detach 中解除。
 
 Card 初始化和加载：
 
@@ -115,7 +118,8 @@ Card 初始化和加载：
 
 Card 模板接入：
 
-- `OnApplyTemplate()` 清空旧 `CardActionPanel.Actions`。
+- `AbstractCard.OnApplyTemplate()` 刷新 Headerless 伪类，丢弃旧加载指示器，获取 `PART_LoadingHost`，`IsLoading` 为真时创建指示器。
+- `Card.OnApplyTemplate()` 清空旧 `CardActionPanel.Actions`。
 - 获取 `PART_ActionPanel`。
 - 将当前 `Actions` 复制到新的 action panel。
 - 重新配置 ContentType、Content corner radius 和 Header border。
@@ -192,7 +196,7 @@ Card 自身不处理 keyboard、focus、pointer capture、drag/drop 或 popup �
 - `CardActionPanel` pointer over 改变 Foreground。
 - `CardActionButton` pointer over 改变 IconBrush。
 - Tab 选择由内部 `TabControl` 处理。
-- Loading 状态由 `Skeleton` 处理。
+- Loading 状态由 `AbstractCard` 创建并持有的加载指示器（Desktop 为 `Skeleton`）处理。
 
 集合事件路径：
 
@@ -285,6 +289,7 @@ Card 不依赖运行时反射发现模板结构。模板协作通过固定 part 
   VisualTree。
 - Card 和 CardMetaContent 的 marker 都位于既有静态节点，不创建额外 Visual、Binding、订阅或跨 VisualRoot host。
 - Frame 作为既有边框节点直接承载内容，不新增视觉节点；该结构同时避免内部 Header/Actions 分隔线覆盖外框。
+- 加载指示器只在 `IsLoading` 为真且模板已应用时创建，加载结束或重新应用模板时移除并丢弃；不加载的 Card 在 body 内只有 `PART_LoadingHost` 与内容呈现器两个节点。
 
 AOT 边界：
 
@@ -309,6 +314,7 @@ AOT 边界：
   `root/section/avatar/title/description`。
 - Card 与 CardMetaContent 的同名 title marker 必须由 owner Selector 隔离，不能使用类型前缀编码 Part identity。
 - headerless、空 Cover、空 Actions、Loading 和 ContentType 切换只能改变内容或可见性，不能改变静态 Part cardinality。
+- 加载指示器只能在 `IsLoading` 为真期间存在，默认 Card 的视觉树不得出现 Skeleton；`IsContentVisible` 恒等于 `!IsLoading`。
 - 根 Frame 必须承载 Card 内部 DockPanel，使 Header 与 Actions 分隔线从外框内缘开始；不得恢复为同级覆盖绘制。
 - Borderless 的零边框必须保留为 Theme 默认值，不能在 C# 派生状态中阻止 owner-scoped root style 覆盖 `BorderThickness`。
 - Card actions marker 不能进入 internal CardActionPanel 的第二个模板边界；Grid、Tabs 和 action child 不得被 Card owner 穿透。
@@ -322,6 +328,8 @@ AOT 边界：
 
 - `CardBehaviorTests`：CardGridContent 行列定义 wrapper、ContentType 回退、旧内容 SizeType 绑定释放、GridItem container disposable 释放。
 - `CardBehaviorTests` 还验证 Frame 内缘布局、Borderless 默认无边框，以及 owner-scoped root style 可恢复 Borderless 外框。
+- `CardBehaviorTests` 还验证 Skeleton 仅在加载期间存在、加载切换后内容恢复、Actions 同步与面板可见性、Headerless 随 Header/Extra 变化，以及默认 Card 不含 Skeleton 视觉元素。
+- `AbstractCardTests`（`AtomUI.Controls.Tests`）：验证共享基类的加载指示器按需创建与移除、快速切换无残留、重新应用模板、缺少宿主时不创建、Actions 钩子与可见性、Headerless 判定。
 - `CardSemanticPartTests`：验证 `Card` 与 `CardMetaContent` descriptor、静态 marker、真实模板 cardinality、Headerless、Loading、Meta/Grid/Tabs、动态 Actions 和同名 title owner 隔离。
 - Gallery Card 示例：Basic、NoBorder、Simple、CustomizedContent、CardInColumn、GridCard、InnerCard、LoadingCard、WithTabs、MoreContentConfiguration 和 `v6.1.3` Semantic Part 样例。
 - `CardShowCasePageTests`：Card ShowCase 页面结构、本地化、源码片段、示例 snapshot，以及 Semantic 样例完整尺寸基线。

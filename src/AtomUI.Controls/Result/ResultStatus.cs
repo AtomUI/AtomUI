@@ -8,5 +8,6 @@ public enum ResultStatus
     Warning,
     ErrorCode404,
     ErrorCode403,
-    ErrorCode500
+    ErrorCode500,
+    Waiting
 }

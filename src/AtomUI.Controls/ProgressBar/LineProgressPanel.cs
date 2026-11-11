@@ -5,6 +5,8 @@ namespace AtomUI.Controls.Commons;
 
 internal sealed class LineProgressPanel : Panel
 {
+    private Rect _grooveRect;
+
     protected override Size MeasureOverride(Size availableSize)
     {
         foreach (var child in Children)
@@ -28,6 +30,7 @@ internal sealed class LineProgressPanel : Panel
         }
 
         var grooveRect = owner.GetLineProgressBarRect(finalSize);
+        _grooveRect = grooveRect;
         foreach (var child in Children)
         {
             switch (child.Name)
@@ -36,7 +39,7 @@ internal sealed class LineProgressPanel : Panel
                     child.Arrange(grooveRect);
                     break;
                 case AbstractProgressBar.ProgressTrackPart:
-                    ArrangeTrack(owner, child, grooveRect, owner.Value);
+                    ArrangeFillTrack(child, owner.GetLineTrackRectByRatio(grooveRect, owner.IndicatorRatio), owner);
                     break;
                 case AbstractProgressBar.ProgressSuccessPart:
                     ArrangeSuccessTrack(owner, child, grooveRect);
@@ -53,15 +56,36 @@ internal sealed class LineProgressPanel : Panel
         return finalSize;
     }
 
-    private static void ArrangeTrack(
-        AbstractGeneralProgressBar owner,
-        Control track,
-        Rect grooveRect,
-        double value)
+    /// <summary>
+    /// 只有填充比例变化时，在上次排布的槽内直接按新比例排布填充部件，不使面板或宿主的测量、排布失效。
+    /// 面板排布已失效时什么都不做，随后的排布会读到最新比例。
+    /// </summary>
+    internal void SyncTrackToIndicatorRatio()
     {
-        var trackRect = owner.GetLineTrackRect(grooveRect, value);
-        track.IsVisible = owner.IsLineTrackVisible(trackRect);
-        track.Arrange(trackRect);
+        if (!IsArrangeValid || TemplatedParent is not AbstractGeneralProgressBar owner)
+        {
+            return;
+        }
+
+        foreach (var child in Children)
+        {
+            if (child.Name == AbstractProgressBar.ProgressTrackPart)
+            {
+                ArrangeFillTrack(child, owner.GetLineTrackRectByRatio(_grooveRect, owner.IndicatorRatio), owner);
+            }
+        }
+    }
+
+    // 填充不足最小可见长度时排成空矩形而不切换 IsVisible：可见性翻转会使面板测量失效，
+    // 从 0 起步的过渡因此多出一次布局
+    private static void ArrangeFillTrack(
+        Control track,
+        Rect trackRect,
+        AbstractGeneralProgressBar owner)
+    {
+        track.Arrange(owner.IsLineTrackVisible(trackRect)
+            ? trackRect
+            : new Rect(trackRect.Position, new Size()));
     }
 
     private static void ArrangeSuccessTrack(
@@ -77,6 +101,8 @@ internal sealed class LineProgressPanel : Panel
         }
 
         var threshold = Math.Clamp(owner.SuccessThreshold, owner.Minimum, owner.Maximum);
-        ArrangeTrack(owner, track, grooveRect, threshold);
+        var trackRect = owner.GetLineTrackRect(grooveRect, threshold);
+        track.IsVisible = owner.IsLineTrackVisible(trackRect);
+        track.Arrange(trackRect);
     }
 }

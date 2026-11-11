@@ -8,7 +8,8 @@ public class TextGlyphExtension : WatermarkGlyphExtension
 
     public double FontSize { get; set; } = 16;
 
-    public IBrush Foreground { get; set; } = Brushes.Black;
+    // Null keeps the glyph's theme-driven default foreground.
+    public IBrush? Foreground { get; set; }
 
     public TextGlyphExtension(string text)
     {
@@ -19,10 +20,14 @@ public class TextGlyphExtension : WatermarkGlyphExtension
     {
         var glyph = new TextGlyph
         {
-            Text       = Text,
-            FontSize   = FontSize,
-            Foreground = Foreground
+            Text     = Text,
+            FontSize = FontSize
         };
+
+        if (Foreground is not null)
+        {
+            glyph.Foreground = Foreground;
+        }
 
         SetProperties(glyph);
 

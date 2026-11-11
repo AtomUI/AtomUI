@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace AtomUI.Controls;
@@ -36,6 +37,9 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
 
     public static readonly StyledProperty<ImageRequestPriority> PriorityProperty =
         AvaloniaProperty.Register<AsyncImage, ImageRequestPriority>(nameof(Priority), ImageRequestPriority.Normal);
+
+    public static readonly StyledProperty<bool> IsLazyProperty =
+        AvaloniaProperty.Register<AsyncImage, bool>(nameof(IsLazy));
 
     public static readonly StyledProperty<object?> LoadingContentProperty =
         AvaloniaProperty.Register<AsyncImage, object?>(nameof(LoadingContent));
@@ -81,6 +85,10 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     private bool _isAttached;
     private Size _lastMeasureAvailableSize;
     private bool _hasMeasureAvailableSize;
+    private bool _isViewportGated;
+    private bool _isReleased;
+    private bool _isViewportSubscribed;
+    private Rect? _lastEffectiveViewport;
 
     public AsyncImage()
     {
@@ -141,6 +149,12 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
         set => SetValue(PriorityProperty, value);
     }
 
+    public bool IsLazy
+    {
+        get => GetValue(IsLazyProperty);
+        set => SetValue(IsLazyProperty, value);
+    }
+
     public object? LoadingContent
     {
         get => GetValue(LoadingContentProperty);
@@ -185,9 +199,23 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
 
     Visual IImageLoadControllerHost.Visual => this;
 
-    bool IImageLoadControllerHost.IsImageLoadAttached => _isAttached;
+    bool IImageLoadControllerHost.IsImageLoadAttached => _isAttached && !_isViewportGated;
 
     public void Reload() => _controller.Reload();
+
+    // Drops the current request and image but stays attached: the load resumes when the control next
+    // intersects the viewport or Source changes. List recycling uses this to hand back image memory.
+    internal void ReleaseLoad()
+    {
+        if (!_isAttached)
+        {
+            return;
+        }
+        _isReleased = true;
+        _isViewportGated = true;
+        _controller.Release();
+        SubscribeViewport();
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -200,7 +228,21 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
             change.Property == DecodePixelHeightProperty ||
             change.Property == PriorityProperty)
         {
+            if (_isReleased && change.Property == SourceProperty)
+            {
+                OpenViewportGate();
+                return;
+            }
             _controller.SourceConfigurationChanged();
+        }
+        else if (change.Property == IsLazyProperty)
+        {
+            ConfigureLazy();
+        }
+        else if (change.Property == StretchProperty)
+        {
+            // Fill/UniformToFill decode to cover the box, Uniform/None fit inside it.
+            _controller.RefreshSize();
         }
     }
 
@@ -222,6 +264,12 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     {
         base.OnAttachedToVisualTree(e);
         _isAttached = true;
+        // The gate must be closed before Attach so that the first load waits for the viewport.
+        _isViewportGated = IsLazy;
+        if (_isViewportGated)
+        {
+            SubscribeViewport();
+        }
         _controller.Attach();
     }
 
@@ -229,6 +277,9 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     {
         _isAttached = false;
         _hasMeasureAvailableSize = false;
+        UnsubscribeViewport();
+        _isViewportGated = false;
+        _isReleased = false;
         _controller.Detach();
         base.OnDetachedFromVisualTree(e);
     }
@@ -237,6 +288,10 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     {
         return GetDecodePixelSize(Bounds.Size);
     }
+
+    bool IImageLoadControllerHost.DecodeToCover => DecodeMode == ImageDecodeMode.Auto && IsCoverStretch;
+
+    private bool IsCoverStretch => Stretch is Stretch.Fill or Stretch.UniformToFill;
 
     private (int Width, int Height)? GetDecodePixelSize(Size arrangedSize)
     {
@@ -290,15 +345,114 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     void IImageLoadControllerHost.RaiseImageFailed(ImageFailedEventArgs eventArgs) =>
         ImageLoadEventDispatcher.Dispatch(ImageFailed, this, eventArgs);
 
+    private void ConfigureLazy()
+    {
+        if (!_isAttached || _isReleased)
+        {
+            return;
+        }
+        if (IsLazy)
+        {
+            // An image that already started loading keeps its request; only an idle one waits for the viewport.
+            if (!_isViewportGated && LoadState == ImageLoadState.Idle)
+            {
+                _isViewportGated = true;
+                SubscribeViewport();
+            }
+        }
+        else if (_isViewportGated)
+        {
+            OpenViewportGate();
+        }
+    }
+
+    private void SubscribeViewport()
+    {
+        if (_isViewportSubscribed || !_isAttached)
+        {
+            return;
+        }
+        _isViewportSubscribed = true;
+        EffectiveViewportChanged += OnEffectiveViewportChanged;
+    }
+
+    private void UnsubscribeViewport()
+    {
+        if (!_isViewportSubscribed)
+        {
+            return;
+        }
+        _isViewportSubscribed = false;
+        _lastEffectiveViewport = null;
+        EffectiveViewportChanged -= OnEffectiveViewportChanged;
+    }
+
+    private void OpenViewportGate()
+    {
+        UnsubscribeViewport();
+        _isReleased = false;
+        _isViewportGated = false;
+        _controller.SourceConfigurationChanged();
+    }
+
+    private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
+    {
+        _lastEffectiveViewport = e.EffectiveViewport;
+        TryOpenViewportGate();
+    }
+
+    // A control growing from zero at a fixed origin can keep the same effective viewport, so size changes re-check.
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        TryOpenViewportGate();
+    }
+
+    private void TryOpenViewportGate()
+    {
+        if (_isViewportGated &&
+            _lastEffectiveViewport is { } viewport &&
+            IsEffectivelyVisible &&
+            IntersectsViewport(viewport))
+        {
+            OpenViewportGate();
+        }
+    }
+
+    // An auto-sized axis can measure zero while the image waits, for example width-only in a vertical StackPanel
+    // without a placeholder; its edge still has a position and counts when that position lies inside the viewport.
+    // An explicit zero Width or Height stays invisible.
+    private bool IntersectsViewport(Rect viewport)
+    {
+        var width = Bounds.Width;
+        var height = Bounds.Height;
+        if (viewport.Width <= 0 ||
+            viewport.Height <= 0 ||
+            (width <= 0 && height <= 0) ||
+            (width <= 0 && double.IsFinite(Width)) ||
+            (height <= 0 && double.IsFinite(Height)))
+        {
+            return false;
+        }
+        var horizontal = width > 0
+            ? viewport.X < width && viewport.Right > 0
+            : viewport.X <= 0 && viewport.Right > 0;
+        var vertical = height > 0
+            ? viewport.Y < height && viewport.Bottom > 0
+            : viewport.Y <= 0 && viewport.Bottom > 0;
+        return horizontal && vertical;
+    }
+
     private (int Width, int Height)? GetAutoDecodeSize(Size arrangedSize)
     {
         var scaling = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var width = Quantize(arrangedSize.Width * scaling);
-        var height = Quantize(ResolveDecodeHeight() * scaling);
+        var height = Quantize((IsCoverStretch ? ResolveCoverHeight() : ResolveBoundHeight()) * scaling);
         return width == 0 && height == 0 ? null : (width, height);
     }
 
-    private double ResolveDecodeHeight()
+    // Upper bound of the displayed height for Uniform/None: Height, then MaxHeight, then the measured available height.
+    private double ResolveBoundHeight()
     {
         if (double.IsFinite(Height))
         {
@@ -315,12 +469,38 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
         return 0;
     }
 
+    // Fill/UniformToFill grow to any finite height bound once loaded, so that bound is the box to cover from the first
+    // request; the arranged height before the load is only the placeholder's and would restart the decode afterwards.
+    // The measured available height already includes MaxHeight and the parent's slot. Without a bound the height
+    // follows the image's aspect ratio, so width alone decides.
+    private double ResolveCoverHeight()
+    {
+        if (double.IsFinite(Height))
+        {
+            return Math.Max(0, Height);
+        }
+        if (_hasMeasureAvailableSize && double.IsFinite(_lastMeasureAvailableSize.Height))
+        {
+            return Math.Max(0, _lastMeasureAvailableSize.Height);
+        }
+        if (double.IsFinite(MaxHeight))
+        {
+            return Math.Max(0, MaxHeight);
+        }
+        return 0;
+    }
+
+    // Largest 16 px bucket that fits in an int; huge layout sizes (for example MaxHeight = 1e9) clamp here instead
+    // of overflowing. The codec never upscales, so any bound past the source size behaves the same.
+    private const int MaxDecodePixelSize = int.MaxValue / 16 * 16;
+
     private static int Quantize(double value)
     {
         if (!double.IsFinite(value) || value <= 0)
         {
             return 0;
         }
-        return checked((int)(Math.Ceiling(value / 16) * 16));
+        var bucket = Math.Ceiling(value / 16) * 16;
+        return bucket >= MaxDecodePixelSize ? MaxDecodePixelSize : (int)bucket;
     }
 }

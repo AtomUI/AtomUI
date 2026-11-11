@@ -166,6 +166,11 @@
         <source>Examples</source>
       </segment>
     </unit>
+    <unit id="SemanticClearDescription">
+      <segment>
+        <source>Clear button that resets selection and editable text.</source>
+      </segment>
+    </unit>
     <unit id="SemanticContentDescription">
       <segment>
         <source>Input content panel hosting the placeholder, the non-editable selection and the editable input.</source>

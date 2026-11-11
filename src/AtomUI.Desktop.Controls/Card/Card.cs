@@ -1,11 +1,12 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Commons;
 using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -24,7 +25,7 @@ internal enum CardContentType
     Tabs
 }
 
-public partial class Card : HeaderedContentControl,
+public partial class Card : AbstractCard,
                     ISizeTypeAware,
                     IMotionAwareControl
 {
@@ -33,32 +34,17 @@ public partial class Card : HeaderedContentControl,
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 
         Border.BoxShadowProperty.AddOwner<Card>();
     
-    public static readonly StyledProperty<object?> ExtraProperty = 
-        AvaloniaProperty.Register<Card, object?>(nameof (Extra));
-    
-    public static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty = 
-        AvaloniaProperty.Register<Card, IDataTemplate?>(nameof (ExtraTemplate));
-    
     public static readonly StyledProperty<CardStyleVariant> StyleVariantProperty = 
         AvaloniaProperty.Register<Card, CardStyleVariant>(nameof (StyleVariant));
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty = 
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<Card>();
     
-    public static readonly StyledProperty<bool> IsLoadingProperty = 
-        AvaloniaProperty.Register<Card, bool>(nameof (IsLoading));
-    
     public static readonly StyledProperty<bool> IsInnerModeProperty = 
         AvaloniaProperty.Register<Card, bool>(nameof (IsInnerMode));
     
     public static readonly StyledProperty<bool> IsHoverableProperty = 
         AvaloniaProperty.Register<Card, bool>(nameof (IsHoverable));
-    
-    public static readonly StyledProperty<object?> CoverProperty = 
-        AvaloniaProperty.Register<Card, object?>(nameof (Cover));
-    
-    public static readonly StyledProperty<IDataTemplate?> CoverTemplateProperty = 
-        AvaloniaProperty.Register<Card, IDataTemplate?>(nameof (CoverTemplate));
     
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Card>();
@@ -67,18 +53,6 @@ public partial class Card : HeaderedContentControl,
     {
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
-    }
-    
-    public object? Extra
-    {
-        get => GetValue(ExtraProperty);
-        set => SetValue(ExtraProperty, value);
-    }
-    
-    public IDataTemplate? ExtraTemplate
-    {
-        get => GetValue(ExtraTemplateProperty);
-        set => SetValue(ExtraTemplateProperty, value);
     }
     
     public CardStyleVariant StyleVariant
@@ -93,12 +67,6 @@ public partial class Card : HeaderedContentControl,
         set => SetValue(SizeTypeProperty, value);
     }
     
-    public bool IsLoading
-    {
-        get => GetValue(IsLoadingProperty);
-        set => SetValue(IsLoadingProperty, value);
-    }
-    
     public bool IsInnerMode
     {
         get => GetValue(IsInnerModeProperty);
@@ -110,20 +78,6 @@ public partial class Card : HeaderedContentControl,
         get => GetValue(IsHoverableProperty);
         set => SetValue(IsHoverableProperty, value);
     }
-    
-    public object? Cover
-    {
-        get => GetValue(CoverProperty);
-        set => SetValue(CoverProperty, value);
-    }
-    
-    public IDataTemplate? CoverTemplate
-    {
-        get => GetValue(CoverTemplateProperty);
-        set => SetValue(CoverTemplateProperty, value);
-    }
-
-    public Avalonia.Controls.Controls Actions { get; } = new ();
     
     public bool IsMotionEnabled
     {
@@ -152,12 +106,6 @@ public partial class Card : HeaderedContentControl,
             nameof(EffectiveCornerRadius),
             o => o.EffectiveCornerRadius,
             (o, v) => o.EffectiveCornerRadius = v);
-    
-    internal static readonly DirectProperty<Card, bool> IsActionsPanelVisibleProperty =
-        AvaloniaProperty.RegisterDirect<Card, bool>(
-            nameof(IsActionsPanelVisible),
-            o => o.IsActionsPanelVisible,
-            (o, v) => o.IsActionsPanelVisible = v);
     
     internal static readonly DirectProperty<Card, CardContentType> ContentTypeProperty =
         AvaloniaProperty.RegisterDirect<Card, CardContentType>(
@@ -189,14 +137,6 @@ public partial class Card : HeaderedContentControl,
         set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
     }
     
-    private bool _actionsPanelVisible;
-
-    internal bool IsActionsPanelVisible
-    {
-        get => _actionsPanelVisible;
-        set => SetAndRaise(IsActionsPanelVisibleProperty, ref _actionsPanelVisible, value);
-    }
-    
     private CardContentType _contentType;
 
     internal CardContentType ContentType
@@ -215,11 +155,6 @@ public partial class Card : HeaderedContentControl,
         AffectsMeasure<Card>(SizeTypeProperty, StyleVariantProperty);
     }
     
-    public Card()
-    {
-        Actions.CollectionChanged += HandleActionsChanged;
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -231,13 +166,6 @@ public partial class Card : HeaderedContentControl,
         else if (change.Property == CornerRadiusProperty)
         {
             ConfigureContentCornerRadius();
-        }
-        else if (change.Property == HeaderProperty ||
-                 change.Property == HeaderTemplateProperty ||
-                 change.Property == ExtraProperty ||
-                 change.Property == ExtraTemplateProperty)
-        {
-            UpdatePseudoClasses();
         }
         else if (change.Property == ContentProperty)
         {
@@ -333,7 +261,6 @@ public partial class Card : HeaderedContentControl,
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        UpdatePseudoClasses();
         if (_cardActionPanel != null)
         {
             _cardActionPanel.Actions.Clear();
@@ -351,13 +278,9 @@ public partial class Card : HeaderedContentControl,
         ConfigureHeaderBorderThickness();
     }
 
-    private void UpdatePseudoClasses()
+    protected override void OnActionsChanged(NotifyCollectionChangedEventArgs e)
     {
-        PseudoClasses.Set(CardPseudoClass.Headerless, Header == null && HeaderTemplate == null && Extra == null && ExtraTemplate == null);
-    }
-    
-    private void HandleActionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
+        base.OnActionsChanged(e);
         if (_cardActionPanel != null)
         {
             switch (e.Action)
@@ -383,7 +306,19 @@ public partial class Card : HeaderedContentControl,
                     throw new NotSupportedException();
             }
         }
-        SetCurrentValue(IsActionsPanelVisibleProperty, Actions.Count > 0);
     }
 
+    protected override Control CreateLoadingIndicator()
+    {
+        return new Skeleton
+        {
+            IsLoading           = true,
+            IsActive            = true,
+            ParagraphRows       = 4,
+            IsShowTitle         = false,
+            ClipToBounds        = false,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment   = VerticalAlignment.Stretch
+        };
+    }
 }

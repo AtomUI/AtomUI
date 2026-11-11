@@ -58,6 +58,7 @@ public enum ComboBoxShowCaseLangResourceKind
     SemanticPlaceholderDescription,
     SemanticInputDescription,
     SemanticSuffixDescription,
+    SemanticClearDescription,
     SemanticIndicatorDescription,
     SemanticPopupRootDescription,
     SemanticPopupListDescription,

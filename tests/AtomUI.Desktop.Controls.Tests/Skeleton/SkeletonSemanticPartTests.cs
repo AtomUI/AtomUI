@@ -211,8 +211,9 @@ public class SkeletonSemanticPartTests
                                   .OfType<Border>()
                                   .Where(static border => border.Classes.Contains("semantic-content"))
                                   .ToArray();
-        contentLayers.Length.ShouldBe(2);
-        contentLayers.Count(static border => border.IsVisible).ShouldBe(1);
+        // One content layer serves both states: it is the shimmer block and stays visible while active.
+        contentLayers.Length.ShouldBe(1);
+        contentLayers[0].IsVisible.ShouldBeTrue();
 
         avatar.IsActive = true;
         Dispatcher.UIThread.RunJobs();
@@ -221,7 +222,8 @@ public class SkeletonSemanticPartTests
               .OfType<Border>()
               .Where(static border => border.Classes.Contains("semantic-content"))
               .ShouldBe(contentLayers);
-        contentLayers.Count(static border => border.IsVisible).ShouldBe(1);
+        contentLayers[0].IsVisible.ShouldBeTrue();
+        avatar.ShimmerLayer.ShouldBeSameAs(contentLayers[0]);
     }
 
     private static void AssertRoot(ControlSemanticDescriptor descriptor, Type ownerType)

@@ -10,6 +10,8 @@
 
 主要源码文件：
 
+- `src/AtomUI.Controls/Space/AbstractSpace.cs`（共享布局宿主，命名空间 `AtomUI.Controls.Commons`）
+- `src/AtomUI.Controls/Space/SpaceEnums.cs`（`SpaceItemsAlignment`、`SpaceJustify`，命名空间 `AtomUI.Controls`）
 - `src/AtomUI.Desktop.Controls/Space/CompactSpace.cs`
 - `src/AtomUI.Desktop.Controls/Space/CompactSpaceAddOn.cs`
 - `src/AtomUI.Desktop.Controls/Space/CompactSpaceFiller.cs`
@@ -25,7 +27,7 @@
 
 职责边界：
 
-- 控件主文件保留 public/protected API、Avalonia 属性注册、事件和主要生命周期入口。
+- 控件主文件保留 public/protected API、Avalonia 属性注册、事件和主要生命周期入口。`Space` 继承 `AbstractSpace`：`Children`、`Orientation`、`ItemSpacing`、`LineSpacing`、`ItemsAlignment`、`ItemWidth`、`ItemHeight`、`IsWrap`、`Justify`、子元素同步、测量与排列、子元素索引与键盘导航都在共享基类中，`Space` 只保留 `SizeType`、`SplitTemplate`、背景与边框、尺寸档 Token 绑定和语义标记。
 - 语义声明文件只承载 `Space` 的 runtime semantic contract，不写模板节点或主题样式。
 - Theme 文件负责静态视觉结构、template part、selector 和资源绑定。
 - Token 文件只提供组件视觉变量，不保存实例状态。
@@ -110,7 +112,8 @@ Space 的交互事件应从输入源收敛到控件级语义事件：
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 状态变化时避免创建不必要的视觉对象、订阅或动画对象。
-- Root frame 布局与绘制：`Padding + BorderThickness` 构成 frame inset，`MeasureOverride` 用 inset 收缩测量约束并外扩 desired size，`ArrangeOverride` 用 inset 收缩排布区域，`Render` 通过 `BorderRenderHelper` 绘制背景、边框、圆角与虚线。
+- 行布局：基类逐个处理可见子元素（隐藏子元素不占位、不产生间距）；`IsWrap` 为 `true`（默认）时超出主轴长度的元素换到新行，为 `false` 时全部在同一行、超出部分溢出。行高取行内最大值，`ItemsAlignment` 在本行内对齐，纵向偏移从本行起点开始计算。`Justify` 对每行独立分配剩余主轴空间 `R = max(0, 行主轴长度 − 元素长度之和 − (n − 1) × ItemSpacing)`：`Start` 无变化，`End` 首元素前留 `R`，`Center` 留 `R / 2`，`Between` 在相邻元素间各加 `R / (n − 1)`（`n = 1` 时等同 `Start`），`Around` 首元素前留 `R / (2n)`、相邻间各加 `R / n`，`Evenly` 首元素前与相邻间各留 `R / (n + 1)`。分配不改变元素尺寸；`R` 为 0（填满或溢出）时没有任何移动。测量与排列不分配集合。
+- Root frame 布局与绘制：`Padding + BorderThickness` 构成 frame inset，基类通过 `GetLayoutInset()`（`Space` 返回 `Padding + BorderThickness`）取得 inset，`MeasureOverride` 用 inset 收缩测量约束并外扩 desired size，`ArrangeOverride` 用 inset 收缩排布区域，`Render` 通过 `BorderRenderHelper` 绘制背景、边框、圆角与虚线。
 - Runtime semantic marker：`item` / `separator` 标记由 `Space` 以 ownership set 维护，attach 与 `SplitTemplate` 变化时重建，移除子项时只清理 Space 自己添加的标记。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。

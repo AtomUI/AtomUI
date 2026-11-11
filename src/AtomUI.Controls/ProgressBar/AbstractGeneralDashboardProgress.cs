@@ -54,105 +54,31 @@ public abstract class AbstractGeneralDashboardProgress : AbstractCircleProgress
         _currentGrooveRect = GetProgressBarRect(controlRect).Deflate(StrokeThickness / 2);
         _currentGrooveRect = new Rect(_currentGrooveRect.Position, new Size(Math.Floor(_currentGrooveRect.Size.Width),
             Math.Floor(_currentGrooveRect.Size.Height)));
-        if (StepCount > 0 && StepGap > 0)
-        {
-            DrawGrooveStep(context);
-        }
-        else
-        {
-            DrawGrooveNormal(context);
-        }
-    }
-
-    private void DrawGrooveNormal(DrawingContext context)
-    {
+        // 轨道与成功弧取自共享缓存，进度与角度过渡期间不重新构建
+        var lineCap = IsStepMode ? PenLineCap.Flat : StrokeLineCap;
         PenUtils.TryModifyOrCreate(ref _groovePen,
             GrooveBrush,
             StrokeThickness,
-            lineCap: StrokeLineCap);
-        context.DrawArc(_groovePen, _currentGrooveRect, _anglePair.Item1, _anglePair.Item2);
-    }
-
-    private void DrawGrooveStep(DrawingContext context)
-    {
-        PenUtils.TryModifyOrCreate(ref _groovePen,
-            GrooveBrush,
-            StrokeThickness,
-            lineCap: PenLineCap.Flat);
-        var spanAngle  = (360 - GapDegree - StepGap * StepCount) / StepCount;
-        var startAngle = _anglePair.Item1;
-        for (var i = 0; i < StepCount; ++i)
-        {
-            context.DrawArc(_groovePen, _currentGrooveRect, startAngle, spanAngle);
-            startAngle += StepGap + spanAngle;
-        }
+            lineCap: lineCap);
+        context.DrawGeometry(null, _groovePen, GetRailGeometry(_currentGrooveRect));
     }
 
     protected override void RenderIndicatorBar(DrawingContext context)
     {
-        if (StepCount > 0 && StepGap > 0)
-        {
-            DrawIndicatorBarStep(context);
-        }
-        else
-        {
-            DrawIndicatorBarNormal(context);
-        }
-    }
-
-    private void DrawIndicatorBarNormal(DrawingContext context)
-    {
+        var lineCap = IsStepMode ? PenLineCap.Flat : StrokeLineCap;
         PenUtils.TryModifyOrCreate(ref _indicatorPen,
             StrokeBrush,
             StrokeThickness,
-            lineCap: StrokeLineCap);
-        context.DrawArc(_indicatorPen, _currentGrooveRect, _anglePair.Item1, IndicatorAngle);
+            lineCap: lineCap);
+        context.DrawGeometry(null, _indicatorPen, GetTrackGeometry(_currentGrooveRect));
 
         if (!double.IsNaN(SuccessThreshold))
         {
             PenUtils.TryModifyOrCreate(ref _successPen,
                 SuccessStrokeBrush,
                 StrokeThickness,
-                lineCap: StrokeLineCap);
-            context.DrawArc(_successPen, _currentGrooveRect, _anglePair.Item1, CalculateAngle(SuccessThreshold));
-        }
-    }
-
-    private void DrawIndicatorBarStep(DrawingContext context)
-    {
-        PenUtils.TryModifyOrCreate(ref _indicatorPen,
-            StrokeBrush,
-            StrokeThickness,
-            lineCap: PenLineCap.Flat);
-        var spanAngle  = (360 - GapDegree - StepGap * StepCount) / StepCount;
-        var startAngle = _anglePair.Item1;
-
-        var   filledSteps  = (int)Math.Round(StepCount * Percentage / 100);
-        int?  successSteps = null;
-
-        if (!double.IsNaN(SuccessThreshold))
-        {
-            PenUtils.TryModifyOrCreate(ref _successPen,
-                SuccessStrokeBrush,
-                StrokeThickness,
-                lineCap: PenLineCap.Flat);
-            successSteps = (int)Math.Round(StepCount * CalculateProgressRatio(SuccessThreshold));
-        }
-
-        IPen? currentPen;
-        for (var i = 0; i < filledSteps; ++i)
-        {
-            currentPen = _indicatorPen;
-            if (successSteps.HasValue)
-            {
-                if (i < successSteps)
-                {
-                    currentPen = _successPen;
-                }
-            }
-
-            context.DrawArc(currentPen, _currentGrooveRect, startAngle, spanAngle);
-            startAngle += StepGap + spanAngle;
+                lineCap: lineCap);
+            context.DrawGeometry(null, _successPen, GetSuccessGeometry(_currentGrooveRect));
         }
     }
 
@@ -188,6 +114,7 @@ public abstract class AbstractGeneralDashboardProgress : AbstractCircleProgress
         if (change.Property == GapDegreeProperty || change.Property == DashboardGapPositionProperty)
         {
             _anglePair = CalculateAngle(DashboardGapPosition, GapDegree);
+            InvalidateGeometryCache();
             RefreshTemplateProgressVisuals();
         }
     }

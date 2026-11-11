@@ -1,5 +1,4 @@
-﻿using AtomUI.Media;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -24,8 +23,20 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     public static readonly StyledProperty<string?> ImageSourceProperty =
         AvaloniaProperty.Register<AbstractEmpty, string?>(nameof(ImageSource));
 
-    public static readonly StyledProperty<string?> DescriptionProperty =
-        AvaloniaProperty.Register<AbstractEmpty, string?>(nameof(Description));
+    public static readonly StyledProperty<object?> ImageProperty =
+        AvaloniaProperty.Register<AbstractEmpty, object?>(nameof(Image));
+
+    public static readonly StyledProperty<IDataTemplate?> ImageTemplateProperty =
+        AvaloniaProperty.Register<AbstractEmpty, IDataTemplate?>(nameof(ImageTemplate));
+
+    public static readonly StyledProperty<object?> TitleProperty =
+        AvaloniaProperty.Register<AbstractEmpty, object?>(nameof(Title));
+
+    public static readonly StyledProperty<IDataTemplate?> TitleTemplateProperty =
+        AvaloniaProperty.Register<AbstractEmpty, IDataTemplate?>(nameof(TitleTemplate));
+
+    public static readonly StyledProperty<object?> DescriptionProperty =
+        AvaloniaProperty.Register<AbstractEmpty, object?>(nameof(Description));
 
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractEmpty>();
@@ -60,7 +71,33 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         set => SetValue(ImageSourceProperty, value);
     }
 
-    public string? Description
+    [DependsOn(nameof(ImageTemplate))]
+    public object? Image
+    {
+        get => GetValue(ImageProperty);
+        set => SetValue(ImageProperty, value);
+    }
+
+    public IDataTemplate? ImageTemplate
+    {
+        get => GetValue(ImageTemplateProperty);
+        set => SetValue(ImageTemplateProperty, value);
+    }
+
+    [DependsOn(nameof(TitleTemplate))]
+    public object? Title
+    {
+        get => GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+
+    public IDataTemplate? TitleTemplate
+    {
+        get => GetValue(TitleTemplateProperty);
+        set => SetValue(TitleTemplateProperty, value);
+    }
+
+    public object? Description
     {
         get => GetValue(DescriptionProperty);
         set => SetValue(DescriptionProperty, value);
@@ -152,7 +189,11 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
     static AbstractEmpty()
     {
-        AffectsMeasure<AbstractEmpty>(PresetImageProperty,
+        AffectsMeasure<AbstractEmpty>(ImageProperty,
+            ImageTemplateProperty,
+            TitleProperty,
+            TitleTemplateProperty,
+            PresetImageProperty,
             ImagePathProperty,
             ImageSourceProperty,
             DescriptionProperty,
@@ -167,20 +208,32 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
     }
 
 
+    // Counts only values the app or a style set. Defaults and metadata overrides (a subclass default
+    // preset) are not explicit and must not conflict with an app-set Image.
+    private bool IsExplicitlySet(AvaloniaProperty property)
+    {
+        return IsSet(property) && GetValue(property) is not null;
+    }
+
     private void CheckImageSource()
     {
         var imageSetCount = 0;
-        if (PresetImage is not null)
+        if (IsExplicitlySet(ImageProperty))
         {
             imageSetCount++;
         }
 
-        if (ImagePath is not null)
+        if (IsExplicitlySet(PresetImageProperty))
         {
             imageSetCount++;
         }
 
-        if (ImageSource is not null)
+        if (IsExplicitlySet(ImagePathProperty))
+        {
+            imageSetCount++;
+        }
+
+        if (IsExplicitlySet(ImageSourceProperty))
         {
             imageSetCount++;
         }
@@ -188,7 +241,7 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         if (imageSetCount > 1)
         {
             throw new ApplicationException(
-                "ImagePath, ImageSource and PresetImage cannot be set at the same time.");
+                "Image, ImagePath, ImageSource and PresetImage cannot be set at the same time.");
         }
     }
 
@@ -197,7 +250,8 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         base.OnPropertyChanged(change);
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == PresetImageProperty ||
+            if (change.Property == ImageProperty ||
+                change.Property == PresetImageProperty ||
                 change.Property == ImagePathProperty ||
                 change.Property == ImageSourceProperty)
             {
@@ -214,36 +268,53 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         }
     }
 
+    private bool TryResolvePresetColors(out PresetImageColors colors)
+    {
+        if (BorderColor is ISolidColorBrush border &&
+            BorderColorSecondary is ISolidColorBrush borderSecondary &&
+            ShadowColor is ISolidColorBrush shadow &&
+            ContentColor is ISolidColorBrush content &&
+            BgColor is ISolidColorBrush background)
+        {
+            colors = new PresetImageColors(border.Color, borderSecondary.Color, shadow.Color, content.Color, background.Color);
+            return true;
+        }
+
+        colors = default;
+        return false;
+    }
+
     private void SetupImage()
     {
         CheckImageSource();
+        // Templates may omit the svg part (the image is then rendered through Image).
         if (_svg is null)
         {
             return;
         }
 
+        string? imagePath = null;
         string? imageSource = null;
-        var imagePath = ImagePath;
-        if (PresetImage is not null)
+        if (Image is not null)
         {
-            if (BorderColor is null || BorderColorSecondary is null || ShadowColor is null || ContentColor is null || BgColor is null)
-            {
-                return;
-            }
-
-            var colorBgContainer = ((ISolidColorBrush)BgColor).Color;
-            var borderColor      = ColorUtils.OnBackground(((ISolidColorBrush)BorderColor).Color, colorBgContainer);
-            var borderColorSecondary =
-                ColorUtils.OnBackground(((ISolidColorBrush)BorderColorSecondary).Color, colorBgContainer);
-            var shadowColor  = ColorUtils.OnBackground(((ISolidColorBrush)ShadowColor).Color, colorBgContainer);
-            var contentColor = ColorUtils.OnBackground(((ISolidColorBrush)ContentColor).Color, colorBgContainer);
-            imageSource = PresetImage.Value == PresetEmptyImage.Default
-                ? BuiltInImageBuilder.BuildDefaultImage(shadowColor, borderColor, borderColorSecondary)
-                : BuiltInImageBuilder.BuildSimpleImage(contentColor, borderColor, shadowColor);
+            // Rendered by the template's image presenter; the svg stays empty.
+        }
+        else if (ImagePath is not null)
+        {
+            imagePath = ImagePath;
         }
         else if (ImageSource is not null)
         {
             imageSource = ImageSource;
+        }
+        else if (PresetImage is { } preset)
+        {
+            if (!TryResolvePresetColors(out var colors))
+            {
+                return;
+            }
+
+            imageSource = BuiltInImageBuilder.GetPresetImage(preset, colors);
         }
 
         if (imagePath is not null)

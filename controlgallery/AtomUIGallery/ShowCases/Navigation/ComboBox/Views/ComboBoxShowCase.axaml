@@ -39,11 +39,20 @@
                                            IsMotionEnabled="False"
                                            IsEditable="True"
                                            IsFilterEnabled="True"
+                                           IsAllowClear="True"
+                                           Classes="semantic-clear-preview"
                                            IsPopupPinnedOpen="True"
                                            IsDropDownOpen="True"
                                            ContentLeftAddOn="prefix"
                                            ItemsSource="{Binding SemanticPreviewItems}"
                                            PlaceholderText="{gallery:ComboBoxShowCaseLangResource P2PlaceholderTextPleaseSelect}">
+                                <atom:ComboBox.Styles>
+                                    <Style Selector="atom|ComboBox.semantic-clear-preview">
+                                        <atom:ComboBoxClearStyle x:SetterTargetType="atom:IconButton">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </atom:ComboBoxClearStyle>
+                                    </Style>
+                                </atom:ComboBox.Styles>
                                 <atom:ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <atom:TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
@@ -76,6 +85,9 @@
                             <gallery:SemanticPartDescription
                                 Path="indicator"
                                 Description="{gallery:ComboBoxShowCaseLangResource SemanticIndicatorDescription}" />
+                            <gallery:SemanticPartDescription
+                                Path="clear"
+                                Description="{gallery:ComboBoxShowCaseLangResource SemanticClearDescription}" />
                             <gallery:SemanticPartDescription
                                 Path="popup.root"
                                 Description="{gallery:ComboBoxShowCaseLangResource SemanticPopupRootDescription}" />

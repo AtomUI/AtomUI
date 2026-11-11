@@ -1169,6 +1169,31 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _dialogLayer?.Activate(this);
         // Content popups route through their logical Dialog ancestors. Let the
         // framework focus the actual pointer target instead of interrupting it here.
+        // Raising this Dialog makes it the one Escape and Enter act on, so keyboard focus has to follow. Avalonia only
+        // focuses a focusable target pressed with the left button; once the press is done, focus still outside this
+        // Dialog (a non-focusable spot, another button) moves to its surface.
+        Dispatcher.UIThread.Post(EnsureFocusAfterActivation, DispatcherPriority.Input);
+    }
+
+    private void EnsureFocusAfterActivation()
+    {
+        if (_dialogLayer?.IsTopmost(this) != true ||
+            TopLevel.GetTopLevel(this)?.FocusManager is not { } focusManager ||
+            IsFocusWithin(focusManager.GetFocusedElement()))
+        {
+            return;
+        }
+
+        FocusScope.Focus(NavigationMethod.Pointer);
+    }
+
+    // Content popups live under another visual root and belong to this Dialog through the logical tree.
+    private bool IsFocusWithin(IInputElement? focused)
+    {
+        return focused is Visual visual &&
+               (ReferenceEquals(visual, this) ||
+                this.IsVisualAncestorOf(visual) ||
+                (visual is ILogical logical && this.IsLogicalAncestorOf(logical)));
     }
 
 }

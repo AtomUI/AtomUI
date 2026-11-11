@@ -1,3 +1,5 @@
+using System.Reflection;
+using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
@@ -13,7 +15,8 @@ internal static partial class Program
         VerifySkeletonContentLogicalChildren(failures);
         VerifySkeletonParagraphLineWidths(failures);
         VerifySkeletonParagraphLineRebuildCleanup(failures);
-        VerifyInactiveSkeletonDefersAnimation(failures);
+        VerifyStandaloneLineShimmerLifecycle(failures);
+        VerifyCompositeSharesOneShimmer(failures);
 
         if (failures.Count == 0)
         {
@@ -110,45 +113,114 @@ internal static partial class Program
         Expect(oldLine?.IsActive == false,
             "Removed SkeletonLine should no longer follow SkeletonParagraph IsActive changes.",
             failures);
-        Expect(oldLine is null ||
-               GetPrivateField(oldLine, "AtomUI.Desktop.Controls.AbstractSkeleton", "_followTarget") == null,
-            "Removed SkeletonLine should clear its follow target.",
+        Expect(GetInternalProperty<int>(paragraph, "ShimmerBlockCount") == 3,
+            "SkeletonParagraph should host exactly the shimmer blocks of its current rows after a rebuild.",
+            failures);
+        Expect(GetInternalProperty<bool>(paragraph, "IsShimmerRunning"),
+            "Active standalone SkeletonParagraph should run its own shimmer.",
             failures);
     }
 
-    private static void VerifyInactiveSkeletonDefersAnimation(ICollection<string> failures)
+    private static void VerifyStandaloneLineShimmerLifecycle(ICollection<string> failures)
     {
         var line = new SkeletonLine();
         using var realized = RealizeControl(line);
-        Expect(GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_animation") == null,
-            "Inactive SkeletonLine should not build an Animation during template application.",
+        Expect(GetInternalProperty<bool>(line, "IsShimmerHost"),
+            "Standalone SkeletonLine should be its own shimmer host.",
+            failures);
+        Expect(!GetInternalProperty<bool>(line, "IsShimmerRunning") &&
+               GetInternalProperty<object>(line, "ShimmerVisual") == null,
+            "Inactive SkeletonLine should not create a shimmer visual.",
             failures);
 
         line.IsActive = true;
         RefreshLayout(realized.Window);
-        var firstAnimation = GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_animation");
-        var firstToken = GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_cancellationTokenSource");
-        Expect(firstAnimation != null,
-            "Activating SkeletonLine should lazily create the active Animation.",
+        Expect(GetInternalProperty<bool>(line, "IsShimmerRunning"),
+            "Activating SkeletonLine should start its shimmer.",
             failures);
-        Expect(firstToken != null,
-            "Activating SkeletonLine should start the active Animation.",
+        Expect(GetInternalProperty<int>(line, "ShimmerBlockCount") == 1,
+            "SkeletonLine should register its content layer as its only shimmer block.",
+            failures);
+
+        line.MotionDuration = TimeSpan.Zero;
+        RefreshLayout(realized.Window);
+        Expect(!GetInternalProperty<bool>(line, "IsShimmerRunning"),
+            "SkeletonLine with a zero MotionDuration should stop its shimmer.",
             failures);
 
         line.MotionDuration = TimeSpan.FromMilliseconds(1234);
+        line.IsActive       = false;
         RefreshLayout(realized.Window);
-        Expect(!ReferenceEquals(GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_animation"), firstAnimation),
-            "Materialized SkeletonLine animation should rebuild when MotionDuration changes.",
+        Expect(!GetInternalProperty<bool>(line, "IsShimmerRunning"),
+            "Inactive SkeletonLine should stop its shimmer.",
             failures);
-        Expect(!ReferenceEquals(GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_cancellationTokenSource"), firstToken),
-            "Running SkeletonLine animation should restart when MotionDuration changes.",
+    }
+
+    private static void VerifyCompositeSharesOneShimmer(ICollection<string> failures)
+    {
+        var skeleton = new Skeleton
+        {
+            IsActive     = true,
+            IsShowAvatar = true
+        };
+        using var realized = RealizeControl(skeleton);
+        Expect(GetInternalProperty<object>(skeleton, "Placeholder") == null,
+            "Skeleton that is not loading should not build its placeholder.",
             failures);
 
-        line.IsActive = false;
+        skeleton.IsLoading = true;
         RefreshLayout(realized.Window);
-        Expect(GetPrivateField(line, "AtomUI.Desktop.Controls.AbstractSkeleton", "_cancellationTokenSource") == null,
-            "Inactive SkeletonLine should stop the active Animation.",
+        var skeletons = skeleton.GetSelfAndVisualDescendants().OfType<AbstractSkeleton>().ToList();
+        Expect(GetInternalProperty<object>(skeleton, "Placeholder") != null,
+            "Loading Skeleton should build its placeholder.",
             failures);
+        Expect(skeletons.Count(s => GetInternalProperty<bool>(s, "IsShimmerRunning")) == 1,
+            "Loading Skeleton should run exactly one shimmer for all of its blocks.",
+            failures);
+        Expect(skeletons.Count(s => GetInternalProperty<bool>(s, "IsShimmerHost")) == 1,
+            "Only the outer Skeleton should be a shimmer host.",
+            failures);
+        Expect(GetInternalProperty<int>(skeleton, "ShimmerBlockCount") == 4,
+            "Skeleton with avatar, title and two rows should host four shimmer blocks.",
+            failures);
+
+        skeleton.IsLoading = false;
+        RefreshLayout(realized.Window);
+        Expect(GetInternalProperty<object>(skeleton, "Placeholder") == null &&
+               !GetInternalProperty<bool>(skeleton, "IsShimmerRunning") &&
+               GetInternalProperty<int>(skeleton, "ShimmerBlockCount") == 0,
+            "Skeleton should drop its placeholder and stop its shimmer when loading ends.",
+            failures);
+    }
+
+    // The shimmer state is internal to AtomUI.Controls; read it the way the other suites read private state.
+    private static T GetInternalProperty<T>(object target, string propertyName)
+    {
+        var type = target.GetType();
+        while (type is not null)
+        {
+            var property = type.GetProperty(propertyName,
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            if (property is not null)
+            {
+                var value = property.GetValue(target);
+                if (value is null && default(T) is null)
+                {
+                    return default!;
+                }
+                if (value is T typed)
+                {
+                    return typed;
+                }
+                throw new InvalidOperationException(
+                    $"{target.GetType().Name}.{propertyName} is {value?.GetType().Name ?? "null"}, expected {typeof(T).Name}.");
+            }
+
+            type = type.BaseType;
+        }
+
+        // A renamed or removed internal must fail the verification, not read as a default value.
+        throw new InvalidOperationException($"{target.GetType().Name} has no property {propertyName}.");
     }
 
     private static void ExpectLineWidths(SkeletonParagraph paragraph,

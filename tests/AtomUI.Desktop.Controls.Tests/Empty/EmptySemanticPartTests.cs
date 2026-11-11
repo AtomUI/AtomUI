@@ -90,8 +90,9 @@ public class EmptySemanticPartTests
 
         var description = template.Descendants()
                                   .Single(static element => HasMarker(element, DescriptionClass));
-        description.Attribute("Text")?.Value.ShouldBe("{TemplateBinding Description}");
-        description.Attribute("IsVisible")?.Value.ShouldBe("{TemplateBinding IsDescriptionVisible}");
+        // Description is object-typed: strings reach the TextBlock part through a derived text property.
+        description.Attribute("Text")?.Value.ShouldBe("{TemplateBinding DescriptionText}");
+        description.Attribute("IsVisible")?.Value.ShouldBe("{TemplateBinding IsDescriptionTextVisible}");
 
         var footer = template.Descendants()
                              .Single(static element => HasMarker(element, FooterClass));

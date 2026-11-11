@@ -149,6 +149,54 @@ public class ImageRequestCoordinatorTests
     }
 
     [Fact]
+    public async Task Waiter_Arriving_After_Last_Waiter_Canceled_Starts_A_New_Operation()
+    {
+        using var coordinator = new ImageRequestCoordinator();
+        using var firstCancellation = new CancellationTokenSource();
+        var key = CreateSourceOperationKey("cancel-then-join");
+        var started = NewSignal();
+        var release = NewSignal();
+        var calls = 0;
+
+        // The first factory ignores its token, so the canceled operation stays in flight until released.
+        async Task<ImageValidatedContent> Factory(
+            ImageRequestCoordinator.SharedOperationContext context,
+            CancellationToken cancellationToken)
+        {
+            var call = Interlocked.Increment(ref calls);
+            if (call == 1)
+            {
+                started.TrySetResult();
+                await release.Task;
+            }
+            return CreateValidated([checked((byte)call)]);
+        }
+
+        var first = coordinator.GetSourceAsync(
+            key,
+            new ImageRequestPriorityState(ImageRequestPriority.Normal),
+            Factory,
+            null,
+            firstCancellation.Token);
+        await started.Task;
+        firstCancellation.Cancel();
+        // The waiter leaves before its task completes, so the operation is now cancel-requested.
+        await Should.ThrowAsync<OperationCanceledException>(async () => await first);
+
+        var second = coordinator.GetSourceAsync(
+            key,
+            new ImageRequestPriorityState(ImageRequestPriority.Normal),
+            Factory,
+            null,
+            CancellationToken.None);
+        // Let the canceled operation finish; a waiter that joined it would now observe its cancellation.
+        release.TrySetResult();
+
+        (await second.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken)).Content.Bytes.ShouldBe([2]);
+        calls.ShouldBe(2);
+    }
+
+    [Fact]
     public async Task Completed_Operation_Is_Not_Reused_By_A_New_Waiter()
     {
         using var coordinator = new ImageRequestCoordinator();

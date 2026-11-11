@@ -1,10 +1,13 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Xunit;
 
 [assembly: AvaloniaTestApplication(typeof(AtomUI.Controls.Tests.TestAppBuilder))]
 [assembly: AvaloniaTestFramework]
 [assembly: AvaloniaTestIsolation(AvaloniaTestIsolationLevel.PerTest)]
+// Theme-switching tests mutate the process-wide theme manager; keep the assembly serial like the Desktop test projects.
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace AtomUI.Controls.Tests;
 

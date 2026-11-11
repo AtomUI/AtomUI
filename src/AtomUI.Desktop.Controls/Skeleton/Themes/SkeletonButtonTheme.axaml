@@ -12,15 +12,6 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:SkeletonButton">
                 <Panel Name="PART_RootLayout">
-                    <Border Name="PART_ActiveAnimationLayer"
-                            Classes.semantic-content="True"
-                            Height="{TemplateBinding Height}"
-                            MinWidth="{TemplateBinding MinWidth}"
-                            HorizontalAlignment="Left"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive}" />
                     <Border Name="PART_ContentLayer"
                             Classes.semantic-content="True"
                             Height="{TemplateBinding Height}"
@@ -30,7 +21,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                            atom:AbstractSkeleton.IsShimmerBlock="True" />
                 </Panel>
             </ControlTemplate>
         </Setter>

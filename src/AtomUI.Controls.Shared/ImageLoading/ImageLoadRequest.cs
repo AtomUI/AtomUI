@@ -60,6 +60,10 @@ public sealed class ImageLoadRequest
             : throw new ArgumentOutOfRangeException(nameof(value));
     }
 
+    // When both decode sizes are set, decode so the result covers the box instead of fitting inside it
+    // (Fill/UniformToFill presentation). Has no effect when either size is zero.
+    internal bool DecodeToCover { get; init; }
+
     public ImageRequestPriority Priority { get; init; } = ImageRequestPriority.Normal;
 
     public IProgress<ImageLoadProgress>? Progress { get; init; }

@@ -114,8 +114,11 @@
         <Style Selector="^[Status=Error]">
             <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultErrorIconColor}" />
         </Style>
+        <Style Selector="^[Status=Waiting]">
+            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultSuccessIconColor}" />
+        </Style>
 
-        <Style Selector="^[Status=Info],^[Status=Success], ^[Status=Warning], ^[Status=Error]">
+        <Style Selector="^[Status=Info],^[Status=Success], ^[Status=Warning], ^[Status=Error], ^[Status=Waiting]">
             <Style Selector="^ /template/ ContentPresenter#PART_StatusIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>

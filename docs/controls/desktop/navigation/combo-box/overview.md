@@ -4,7 +4,7 @@
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `ComboBox`，其 `IsPopupPinnedOpen` 为 public（与 `Select` / `AutoComplete` / `Mentions` 等同族控件一致），设置为 true 时在弹层打开前抑制 light-dismiss 并保持 open state（relay 到 template Popup），设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
-ComboBox 公开 12 个 Semantic Part：隐式 `root` 加 11 个非 root 部件（`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。区域分组参考 Ant Design Select 已公开的 Semantic DOM 词汇，只发布 ComboBox 自身确实拥有的区域；完整 Part 表、Selector 用法与定制边界见 [ComboBox Semantic Part 契约](semantic-part.md)。
+ComboBox 公开 13 个 Semantic Part：隐式 `root` 加 12 个非 root 部件（`clear`、`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。区域分组参考 Ant Design Select 已公开的 Semantic DOM 词汇，只发布 ComboBox 自身确实拥有的区域；完整 Part 表、Selector 用法与定制边界见 [ComboBox Semantic Part 契约](semantic-part.md)。
 
 > **准入定性：** ComboBox 的 Semantic Part 纳入**不是 §2.1 准入 Gate 通过**。上游 6.6.0 没有公开 `ComboBox` owner，原排除判定中「`Select` 的 internal combobox mode 不能作为公开 owner」继续有效；本次依据是用户指令加上 ComboBox 自身即职责完整的独立 public owner。范围记录见[全量改造设计 §2.4](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
 
@@ -103,15 +103,22 @@ ComboBox 的公共 Semantic Part 契约如下。契约字段（Selector、Contra
 | `placeholder` | `Avalonia.Controls.TextBlock` | 未选择且非编辑态时的占位符文本。 |
 | `input` | `Avalonia.Controls.TextBox` | `IsEditable=true` 时的编辑 / 过滤输入框。 |
 | `suffix` | `StackPanel` | 右侧后缀区，承载用户后缀内容、Form 反馈与下拉指示器。 |
+| `clear` | `IconButton` | 清空选中值与编辑文本的按钮，位于右侧后缀区。 |
 | `indicator` | `IconButton` | 下拉展开指示器（箭头按钮），位于 `ComboBoxHandle` 自有模板内。 |
 | `popup.root` | `Border` | 弹层框体，承载候选列表与空态。 |
 | `popup.list` | `Avalonia.Controls.ScrollViewer` | 候选列表滚动区，与空态互斥。 |
 | `popup.listItem` | `ComboBoxItem` | 单个候选项容器，运行时容器创建时注入 marker。 |
 | `popup.empty` | `Border` | 数据源为空或有效过滤无可见匹配项时的弹层空态承载区，受 `IsShowEmptyIndicator` 控制。 |
 
-**明确不发布的区域**：清除部件（`frame` 的 hover / focus / 校验态状态色由共享主题驱动，不作为独立部件发布）（`IsAllowClear` 为未实现 API）、非编辑态选中内容节点、Form 反馈节点、内置 AddOn 区、`ComboBoxItem` 作为独立 owner、`atom:Empty` 内部视觉、弹层宿主与定位。逐项理由见 [ComboBox Semantic Part 契约 §5](semantic-part.md)。
+**明确不发布的区域**：`frame` 的 hover / focus / 校验态状态色（由共享主题驱动）、非编辑态选中内容节点、Form 反馈节点、内置 AddOn 区、`ComboBoxItem` 作为独立 owner、`atom:Empty` 内部视觉、弹层宿主与定位。逐项理由见 [ComboBox Semantic Part 契约 §5](semantic-part.md)。
 
 **定制入口**：应用使用生成的语义专用 Style（`ComboBoxFrameStyle`、`ComboBoxPrefixStyle`、`ComboBoxIndicatorStyle`、`ComboBoxPopupRootStyle` 等，命名空间 `AtomUI.Theme.Styling`，AXAML 命名空间 `https://atomui.net`）在 AXAML 中声明式定制。禁止在 code-behind 中获取节点后直接设置 `Background` / `Foreground` / `Padding` / `CornerRadius` 等属性作为定制手段。
+
+### 清除值
+
+`IsAllowClear` 默认 `false`。启用后，有选中项（包括值为 null 的项），或编辑态存在非空文本时，hover 或键盘焦点在控件内会显示清除按钮；禁用、无可清除值或关闭该选项时隐藏。箭头继续用于展开下拉。启用清除时预留入口空间，hover / focus 不移动 Auto Width 控件的下拉箭头。
+
+清除会将 `SelectedIndex` 置为 `-1`、`SelectedItem` 置为 null，并清空 `Text`；应用对这些属性的绑定继续有效。过滤模式通过既有文本流清空 `FilterValue`，恢复候选。点击清除不切换弹层开关，已打开或钉住的弹层保持其状态；焦点回到输入区域。清除按钮支持 `ComboBoxClearStyle` 声明式定制，不改变既有部件的身份。
 
 ### 打开与关闭动效配置
 
@@ -225,6 +232,8 @@ ComboBox 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 ### 8.1 弹层与宿主模型
 
 ComboBox 涉及弹层、窗口或 overlay 宿主时，打开状态、取消事件、定位和宿主释放必须保持一致。重复打开、关闭、窗口失活和 template reapply 都必须释放旧宿主引用。
+
+启用过滤时，选中回填产生的新查询不会重排正在离场的候选视图。业务值和绑定正常提交，列表保持当前自然布局完成关闭；物理关闭后再应用最新过滤结果。鼠标、Enter、零时长关闭与快速重开遵循同一提交与展示边界，钉住弹层继续实时过滤。
 
 ComboBox 的 active candidate 归属于当前 popup 的候选视图。popup 关闭、ItemsSource / filter 重建或容器回收时清除失效候选；重新打开后从当前视图重新建立候选，不继承旧容器的 active 投影。
 

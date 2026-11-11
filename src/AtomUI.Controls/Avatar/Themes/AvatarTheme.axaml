@@ -32,6 +32,7 @@
                                IsVisible="False"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
+                               Stretch="{TemplateBinding Stretch}"
                                Source="{TemplateBinding LoadedImage}" />
                     </Border>
                     <Border Padding="{TemplateBinding TextPadding}">

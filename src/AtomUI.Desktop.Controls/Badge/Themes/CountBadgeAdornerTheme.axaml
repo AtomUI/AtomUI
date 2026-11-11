@@ -13,11 +13,11 @@
                         <Border Name="BadgeIndicator"
                                 BoxShadow="{TemplateBinding BoxShadow}"
                                 Background="{TemplateBinding BadgeColor}" />
-                        <atom:TextBlock
-                            Name="BadgeText"
+                        <ContentPresenter
+                            Name="PART_ContentPresenter"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            Text="{TemplateBinding CountText}" 
+                            Content="{TemplateBinding PresentedContent}"
                             Foreground="{TemplateBinding Foreground}"/>
                     </Panel>
                 </Border>
@@ -43,7 +43,7 @@
             <Setter Property="CornerRadius"
                     Value="{atom:CountBadgeTokenResource CornerRadius}" />
         </Style>
-        <Style Selector="^ /template/ atom|TextBlock#BadgeText">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="FontSize" Value="{atom:CountBadgeTokenResource TextFontSize}" />
             <Setter Property="Padding" Value="{atom:CountBadgeTokenResource TextPadding}" />
         </Style>
@@ -55,7 +55,7 @@
                 <Setter Property="CornerRadius"
                         Value="{atom:CountBadgeTokenResource CornerRadiusSM}" />
             </Style>
-            <Style Selector="^ /template/ atom|TextBlock#BadgeText">
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="FontSize" Value="{atom:CountBadgeTokenResource TextFontSizeSM}" />
             </Style>
         </Style>

@@ -18,7 +18,8 @@ internal abstract class ImageCodec
             new ImageDecodeSpec(
                 IsDecodeSizeDependent ? request.DecodePixelWidth : 0,
                 IsDecodeSizeDependent ? request.DecodePixelHeight : 0,
-                $"{Id}:{Version}:security:{ImageSecurityPolicy.Version}"));
+                $"{Id}:{Version}:security:{ImageSecurityPolicy.Version}",
+                IsDecodeSizeDependent && request.DecodeToCover));
     }
 
     internal abstract bool CanDecode(ImageProbeResult probe, ImageSource source);

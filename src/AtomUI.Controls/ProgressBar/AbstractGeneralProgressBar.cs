@@ -8,6 +8,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -65,7 +66,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         if (Orientation == Orientation.Horizontal)
         {
             targetHeight = StrokeThickness;
-            if (!PercentPosition.IsInner && IsProgressInfoVisible)
+            if (!PercentPosition.IsInner && IsProgressInfoPresented)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
                 {
@@ -85,7 +86,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         else
         {
             targetWidth = StrokeThickness;
-            if (!PercentPosition.IsInner && IsProgressInfoVisible)
+            if (!PercentPosition.IsInner && IsProgressInfoPresented)
             {
                 if (PercentPosition.Alignment == LinePercentAlignment.Center)
                 {
@@ -127,7 +128,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             range = _grooveRect.Height;
         }
 
-        deflateValue = range * (1 - CalculateProgressRatio(Value));
+        deflateValue = range * (1 - IndicatorRatio);
         DrawIndicatorBar(context, deflateValue, StrokeBrush);
 
         // 绘制成功阈值
@@ -219,7 +220,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             strokeThickness = IndicatorThickness;
         }
 
-        if (IsProgressInfoVisible && PercentPosition.IsInner)
+        if (IsProgressInfoPresented && PercentPosition.IsInner)
         {
             if (Orientation == Orientation.Horizontal)
             {
@@ -362,7 +363,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         var    strokeThickness = StrokeThickness;
         if (Orientation == Orientation.Horizontal)
         {
-            if (IsProgressInfoVisible)
+            if (IsProgressInfoPresented)
             {
                 if (!PercentPosition.IsInner)
                 {
@@ -385,7 +386,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
         else
         {
-            if (IsProgressInfoVisible)
+            if (IsProgressInfoPresented)
             {
                 if (!PercentPosition.IsInner)
                 {
@@ -425,7 +426,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         double offsetY      = 0;
         double targetWidth  = 0;
         double targetHeight = 0;
-        if (IsProgressInfoVisible)
+        if (IsProgressInfoPresented)
         {
             targetWidth  = _extraInfoSize.Width;
             targetHeight = _extraInfoSize.Height;
@@ -433,7 +434,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
         if (Orientation == Orientation.Horizontal)
         {
-            if (IsProgressInfoVisible)
+            if (IsProgressInfoPresented)
             {
                 if (PercentPosition.IsInner)
                 {
@@ -522,16 +523,21 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected override Size CalculateExtraInfoSize(double fontSize)
     {
-        if (IsProgressInfoVisible)
+        if (IsProgressInfoPresented)
         {
-            if ((Status == ProgressStatus.Exception || MathUtils.AreClose(Value, Maximum)) &&
+            if (MeasureProgressInfoContent() is { } contentSize)
+            {
+                return contentSize;
+            }
+
+            if ((Status == ProgressStatus.Exception || MathUtils.AreClose(Percentage, 100)) &&
                 !PercentPosition.IsInner)
             {
                 // 只要图标
                 return new Size(LineInfoIconSize, LineInfoIconSize);
             }
 
-            var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Value), fontSize, FontFamily);
+            var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Percentage), fontSize, FontFamily);
             if (PercentPosition.IsInner)
             {
                 if (Orientation == Orientation.Vertical)
@@ -574,7 +580,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             UpdatePseudoClasses();
         }
 
-        if (change.Property == IsProgressInfoVisibleProperty)
+        if (change.Property == IsProgressInfoVisibleProperty ||
+            change.Property == ProgressInfoContentProperty)
         {
             CalculateMinBarThickness();
         }
@@ -587,8 +594,45 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             change.Property == StrokeThicknessProperty ||
             change.Property == StrokeLineCapProperty ||
             change.Property == IsProgressInfoVisibleProperty ||
+            change.Property == ProgressInfoContentProperty ||
             change.Property == PercentPositionProperty)
         {
+            _progressBody?.InvalidateArrange();
+        }
+
+        if ((change.Property == ProgressTextFormatProperty || change.Property == FontSizeProperty) &&
+            _progressBody is not null && this.IsAttachedToVisualTree())
+        {
+            InvalidateExtraInfoSize();
+        }
+
+        if (change.Property == IndicatorRatioProperty)
+        {
+            // 比例单独变化（主题过渡）时只重排填充部件，面板与宿主的测量、排布保持有效
+            _progressBody?.SyncTrackToIndicatorRatio();
+        }
+    }
+
+    /// <summary>
+    /// 信息区尺寸的输入（子类自行决定的尺寸规则）变化后调用：重新计算信息区尺寸与最小厚度，并使测量失效。
+    /// <see cref="AbstractProgressBar.ProgressTextFormat"/> 与 <see cref="Control.FontSize"/> 变化时基类会自动调用。
+    /// </summary>
+    protected void InvalidateExtraInfoSize()
+    {
+        _extraInfoSize = CalculateExtraInfoSize(FontSize);
+        CalculateMinBarThickness();
+        InvalidateMeasure();
+        InvalidateArrange();
+    }
+
+    // 信息内容在设置后改变尺寸时，面板按缓存的信息区排布，尺寸变化后需要重新排布
+    private protected override void RefreshProgressInfoContentSize()
+    {
+        var previous = _extraInfoSize;
+        base.RefreshProgressInfoContentSize();
+        if (previous != _extraInfoSize)
+        {
+            CalculateMinBarThickness();
             _progressBody?.InvalidateArrange();
         }
     }
@@ -694,8 +738,13 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     internal Rect GetLineTrackRect(Rect grooveRect, double value)
     {
+        return GetLineTrackRectByRatio(grooveRect, CalculateProgressRatio(value));
+    }
+
+    internal Rect GetLineTrackRectByRatio(Rect grooveRect, double ratio)
+    {
         var range = Orientation == Orientation.Horizontal ? grooveRect.Width : grooveRect.Height;
-        var deflateValue = range * (1 - CalculateProgressRatio(value));
+        var deflateValue = range * (1 - ratio);
         return Orientation == Orientation.Horizontal
             ? grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0))
             : grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
@@ -703,7 +752,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     internal Rect GetLineProgressIndicatorRect(Size size)
     {
-        return IsProgressInfoVisible
+        return IsProgressInfoPresented
             ? GetExtraInfoRect(new Rect(default, size))
             : default;
     }

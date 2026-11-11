@@ -140,14 +140,16 @@ public static class TokenResourceBinder
         Func<object?, object?>? converter,
         Control? owner = null)
     {
+        // A StyledElement host gets the AtomUI observable, which skips theme publishes that leave the key's value
+        // unchanged; other hosts keep Avalonia's resource observable.
         if (owner is not null)
         {
-            return target.Bind(targetProperty, owner.GetResourceObservable(resourceKey, converter), priority);
+            return target.Bind(targetProperty, new TokenResourceObservable(owner, resourceKey, converter), priority);
         }
 
         if (target is Control control)
         {
-            return target.Bind(targetProperty, control.GetResourceObservable(resourceKey, converter), priority);
+            return target.Bind(targetProperty, new TokenResourceObservable(control, resourceKey, converter), priority);
         }
 
         if (target is IResourceHost resourceHost)

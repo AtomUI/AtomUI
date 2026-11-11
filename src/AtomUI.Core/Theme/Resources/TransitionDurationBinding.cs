@@ -21,13 +21,15 @@ namespace AtomUI.Theme.Resources;
 /// The accessor resolves every declared duration Token on the target: the owner's unbound Effective Global key when the
 /// inherited <see cref="ThemeScope.TokenOwnerProperty"/> names a registered control, the plain
 /// <see cref="SharedTokenKind"/> otherwise. It refreshes on <see cref="StyledElement.ResourcesChanged"/> (theme publish,
-/// local scope changes, attach), <see cref="StyledElement.ActualThemeVariantChanged"/> and owner changes, and publishes
-/// the factory's <see cref="Avalonia.Animation.Transitions"/> for the resolved durations. When a declared Token does not
-/// resolve (the target is not attached yet) no transitions are published. A refresh that resolves the published
-/// durations again does not allocate and does not republish.
+/// local scope changes, attach), <see cref="StyledElement.ActualThemeVariantChanged"/> and owner changes (observed
+/// through <see cref="TokenOwnerListeners"/>), and publishes the factory's <see cref="Avalonia.Animation.Transitions"/>
+/// for the resolved durations. A <c>ResourcesChanged</c> raised by a theme publish whose
+/// <see cref="ThemePublishDelta"/> shows none of the declared durations changed for this owner resolves nothing. When a
+/// declared Token does not resolve (the target is not attached yet) no transitions are published. A refresh that
+/// resolves the published durations again does not allocate and does not republish.
 /// </para>
 /// </remarks>
-internal sealed class TransitionDurationBinding : IPropertyAccessor
+internal sealed class TransitionDurationBinding : IPropertyAccessor, ITokenOwnerListener
 {
     private const int StackDurationCapacity = 8;
 
@@ -44,6 +46,7 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
     private ControlTokenIdentity? _owner;
     private object[]? _ownerKeys;
     private object? _value = AvaloniaProperty.UnsetValue;
+    private ThemePublishTracker _publishes;
 
     private TransitionDurationBinding(WeakReference<object?> reference, TokenTransitionsFactory factory)
     {
@@ -54,6 +57,9 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
     public Type PropertyType => typeof(object);
 
     public object? Value => _value;
+
+    /// <summary>How often the accessor resolved its durations; contract tests pin the publish early-exit with it.</summary>
+    internal int ResolveCount { get; private set; }
 
     internal static BindingBase Create(TokenTransitionsFactory factory, BindingPriority priority)
     {
@@ -87,11 +93,13 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
         }
 
         _target                          =  target;
-        target.PropertyChanged           += OnTargetPropertyChanged;
+        TokenOwnerListeners.Add(target, this);
         target.ResourcesChanged          += OnResourcesChanged;
         target.ActualThemeVariantChanged += OnActualThemeVariantChanged;
         SetOwner(target.GetValue(ThemeScope.TokenOwnerProperty));
-        _value = Resolve(target);
+        var context = ThemeScope.ResolveContext(target);
+        _publishes.MarkCurrent(context);
+        _value = Resolve(target, context);
         _listener(_value);
     }
 
@@ -99,7 +107,7 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
     {
         if (_target is { } target)
         {
-            target.PropertyChanged           -= OnTargetPropertyChanged;
+            TokenOwnerListeners.Remove(target, this);
             target.ResourcesChanged          -= OnResourcesChanged;
             target.ActualThemeVariantChanged -= OnActualThemeVariantChanged;
             _target                          =  null;
@@ -109,6 +117,7 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
         _owner     = null;
         _ownerKeys = null;
         _value     = AvaloniaProperty.UnsetValue;
+        _publishes = default;
     }
 
     public void Dispose()
@@ -122,12 +131,16 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
     /// <summary>Re-resolves the durations and publishes the transitions if they changed.</summary>
     internal void Refresh()
     {
-        if (_target is not { } target)
+        if (_target is { } target)
         {
-            return;
+            Refresh(target, ThemeScope.ResolveContext(target));
         }
+    }
 
-        var value = Resolve(target);
+    private void Refresh(StyledElement target, ThemeContext? context)
+    {
+        _publishes.MarkCurrent(context);
+        var value = Resolve(target, context);
         if (ReferenceEquals(value, _value))
         {
             return;
@@ -137,16 +150,27 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
         _listener?.Invoke(value);
     }
 
-    private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    void ITokenOwnerListener.OnTokenOwnerChanged(ControlTokenIdentity? owner)
     {
-        if (e.Property == ThemeScope.TokenOwnerProperty)
-        {
-            SetOwner((ControlTokenIdentity?)e.NewValue);
-            Refresh();
-        }
+        SetOwner(owner);
+        Refresh();
     }
 
-    private void OnResourcesChanged(object? sender, ResourcesChangedEventArgs e) => Refresh();
+    private void OnResourcesChanged(object? sender, ResourcesChangedEventArgs e)
+    {
+        if (_target is not { } target)
+        {
+            return;
+        }
+
+        var context = ThemeScope.ResolveContext(target);
+        var delta = _publishes.Observe(context);
+        if (delta is not null && !AreKeysChanged(delta, context!))
+        {
+            return;
+        }
+        Refresh(target, context);
+    }
 
     private void OnActualThemeVariantChanged(object? sender, EventArgs e) => Refresh();
 
@@ -156,10 +180,35 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor
         _ownerKeys = owner is { } identity ? _factory.GetOwnerKeys(identity) : null;
     }
 
-    private object Resolve(StyledElement target)
+    private bool AreKeysChanged(ThemePublishDelta delta, ThemeContext context)
     {
+        var globalKeys = _factory.GlobalKeys;
+        if (_ownerKeys is not null && context.TryGetRegisteredOwnerSlot(_owner!.Value, out var slot))
+        {
+            foreach (var key in globalKeys)
+            {
+                if (delta.IsOwnerGlobalChanged(slot, key))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        foreach (var key in globalKeys)
+        {
+            if (delta.IsGlobalChanged(key))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private object Resolve(StyledElement target, ThemeContext? context)
+    {
+        ResolveCount++;
         var kinds = _factory.Kinds;
-        var keys = _ownerKeys is { } ownerKeys && !OwnerTokenBinding.IsKnownUnregistered(target, _owner!.Value)
+        var keys = _ownerKeys is { } ownerKeys && !OwnerTokenBinding.IsKnownUnregistered(context, _owner!.Value)
             ? ownerKeys
             : _factory.GlobalKeys;
         Span<TimeSpan> durations = kinds.Length <= StackDurationCapacity

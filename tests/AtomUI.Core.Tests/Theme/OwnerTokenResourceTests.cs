@@ -17,6 +17,7 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -125,7 +126,8 @@ public class OwnerTokenResourceTests
             panel.Children.Remove(primitive);
             lineEditHost.Child = primitive;
             BorderColor(primitive).ShouldBe(s_lineEditBorder);
-            OwnerBindingHandlerCount(primitive).ShouldBe(3, "retargeting must not accumulate subscriptions");
+            OwnerBindingHandlerCount(primitive).ShouldBe(2, "retargeting must not accumulate subscriptions");
+            TokenOwnerListeners.Count(primitive).ShouldBe(1, "retargeting must not accumulate owner listeners");
         });
     }
 
@@ -137,12 +139,17 @@ public class OwnerTokenResourceTests
             using var fixture = new Fixture(LineEditBorderConfig("#FF0000"));
             var primitive = fixture.CreatePrimitive();
             fixture.Show(fixture.CreateOwner(typeof(LineEditThemeTestControl), primitive));
-            OwnerBindingHandlerCount(primitive).ShouldBe(3);
+            OwnerBindingHandlerCount(primitive).ShouldBe(2, "ResourcesChanged and ActualThemeVariantChanged; the owner is observed through TokenOwnerListeners");
+            TokenOwnerListeners.Count(primitive).ShouldBe(1);
+            EventHandlers(typeof(AvaloniaObject), primitive, "_propertyChanged")
+                .ShouldNotContain(static handler => handler.Target is OwnerTokenBinding,
+                    "an owner binding must not subscribe to every property change of its target");
 
             primitive.Theme = null;
             Dispatcher.UIThread.RunJobs();
 
             OwnerBindingHandlerCount(primitive).ShouldBe(0);
+            TokenOwnerListeners.Count(primitive).ShouldBe(0);
             primitive.BorderBrush.ShouldBeNull();
 
             fixture.Apply(LineEditBorderConfig("#0000FF"), ThemeTransitionReason.UserRequest);
@@ -211,7 +218,16 @@ public class OwnerTokenResourceTests
             var primitive = fixture.CreatePrimitive();
             primitive.SetValue(ThemeScope.TokenOwnerProperty, extraIdentity);
             var exceptions = 0;
-            void CountException(object? sender, FirstChanceExceptionEventArgs e) => exceptions++;
+            // FirstChanceException is process-wide; count only this test's (UI) thread so parallel test hosts
+            // and background work cannot fail or mask the assertion.
+            var threadId = Environment.CurrentManagedThreadId;
+            void CountException(object? sender, FirstChanceExceptionEventArgs e)
+            {
+                if (Environment.CurrentManagedThreadId == threadId)
+                {
+                    exceptions++;
+                }
+            }
             AppDomain.CurrentDomain.FirstChanceException += CountException;
             try
             {
@@ -325,6 +341,147 @@ public class OwnerTokenResourceTests
         });
     }
 
+    [Fact]
+    public void Publish_That_Leaves_The_Owner_Key_Unchanged_Does_Not_Resolve_The_Binding()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            // Button has no Controls[Button] configuration, so its effective ColorBorder is the root value.
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreatePrimitive();
+            fixture.Show(fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive));
+            var accessor = OwnerTokenBinding.CreateAccessor(primitive, SharedTokenKind.ColorBorder);
+            var published = new List<object?>();
+            accessor.Subscribe(published.Add);
+            var resolved = accessor.ResolveCount;
+
+            // A publish that changes other tokens leaves ColorBorder alone: the delta says so and nothing is resolved.
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorPrimary", "#00b96b").Build(),
+                ThemeTransitionReason.UserRequest);
+            accessor.ResolveCount.ShouldBe(resolved, "an unchanged key must not be re-resolved by a publish");
+            published.Count.ShouldBe(1);
+
+            // A publish that changes the key resolves and publishes exactly once.
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorPrimary", "#00b96b").WithToken("ColorBorder", "#0000FF").Build(),
+                ThemeTransitionReason.UserRequest);
+            accessor.ResolveCount.ShouldBe(resolved + 1, "a changed key is resolved once per publish");
+            published.Count.ShouldBe(2);
+            published[1].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Color.Parse("#0000FF"));
+
+            // A non-publish ResourcesChanged (a local resource dictionary change) still resolves fully; the binding
+            // reads the owner key, so that is the key a local override must carry.
+            primitive.Resources[OwnerTokenBinding.GetResourceKey(s_buttonIdentity, SharedTokenKind.ColorBorder)] =
+                new ImmutableSolidColorBrush(Colors.Red);
+            accessor.ResolveCount.ShouldBe(resolved + 2);
+            published[^1].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Colors.Red);
+            accessor.Dispose();
+        });
+    }
+
+    [Fact]
+    public void Publish_That_Changes_The_Owner_Override_Of_An_Unchanged_Global_Still_Refreshes()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreatePrimitive();
+            fixture.Show(fixture.CreateOwner(typeof(LineEditThemeTestControl), primitive));
+            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+
+            fixture.Apply(LineEditBorderConfig("#FF0000"), ThemeTransitionReason.UserRequest);
+            BorderColor(primitive).ShouldBe(s_lineEditBorder);
+
+            fixture.Apply(new ThemeConfigBuilder().Build(), ThemeTransitionReason.UserRequest);
+            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+        });
+    }
+
+    [Fact]
+    public void Variant_Switch_Publish_Refreshes_The_Owner_Value()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreatePrimitive();
+            fixture.Show(fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive));
+            var light = BorderColor(primitive);
+
+            fixture.Apply(new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build(),
+                ThemeTransitionReason.UserRequest);
+
+            fixture.Manager.RootContext.Appearance.ShouldBe(ThemeAppearance.Dark);
+            BorderColor(primitive).ShouldNotBe(light, "a variant switch republishes every owner binding");
+            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+        });
+    }
+
+    [Fact]
+    public void Scoped_Provider_Override_Refreshes_The_Owner_Value()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreatePrimitive();
+            var provider = new ThemeConfigProvider
+            {
+                Child = fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive)
+            };
+            fixture.Show(provider);
+            ((TemplatedControl)provider.Child!).ApplyTemplate();
+            Dispatcher.UIThread.RunJobs();
+            var root = BorderColor(primitive);
+
+            provider.Config = new ThemeConfigBuilder().WithToken("ColorBorder", "#00FF00").Build();
+            Dispatcher.UIThread.RunJobs();
+            BorderColor(primitive).ShouldBe(s_buttonBorder, "a scoped override publish reaches the owner binding");
+
+            provider.Config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#00FF00").Build();
+            Dispatcher.UIThread.RunJobs();
+            BorderColor(primitive).ShouldBe(root, "removing the scoped override publishes the root value again");
+        });
+    }
+
+    [Fact]
+    public void Root_Publish_Reaches_Bindings_Inside_A_Scoped_Provider()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            // Scoped contexts are committed before the root publishes and raise no ResourcesChanged of their own; a
+            // binding under a provider must still refresh from the root's notification when its scoped value changed.
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreatePrimitive();
+            var provider = new ThemeConfigProvider
+            {
+                Config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#00b96b").Build(),
+                Child  = fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive)
+            };
+            fixture.Show(provider);
+            ((TemplatedControl)provider.Child!).ApplyTemplate();
+            Dispatcher.UIThread.RunJobs();
+            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+            var accessor = OwnerTokenBinding.CreateAccessor(primitive, SharedTokenKind.ColorBorder);
+            var published = new List<object?>();
+            accessor.Subscribe(published.Add);
+            var resolved = accessor.ResolveCount;
+
+            // The very first publish after the binding resolved is the one a stale per-context version would misread.
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorBorder", "#0000FF").Build(), ThemeTransitionReason.UserRequest);
+
+            accessor.ResolveCount.ShouldBe(resolved + 1, "the root change reaches the scoped binding once");
+            published[^1].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Color.Parse("#0000FF"));
+            BorderColor(primitive).ShouldBe(Color.Parse("#0000FF"), "the styled binding under the provider follows the root publish");
+
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorBorder", "#0000FF").WithToken("ColorText", "#123456").Build(),
+                ThemeTransitionReason.UserRequest);
+            accessor.ResolveCount.ShouldBe(resolved + 1, "an unrelated root change leaves the scoped ColorBorder alone");
+
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorText", "#123456").Build(), ThemeTransitionReason.UserRequest);
+            accessor.ResolveCount.ShouldBe(resolved + 2, "restoring ColorBorder is a change the scoped binding must see");
+            BorderColor(primitive).ShouldBe(fixture.GlobalBorderColor());
+            accessor.Dispose();
+        });
+    }
+
     private const string ThrowingEvaluatorMessage = "LineEdit Token evaluator failed.";
 
     /// <summary>
@@ -376,14 +533,14 @@ public class OwnerTokenResourceTests
                               .Count(static handler => handler.Target is OwnerTokenBinding);
     }
 
-    private static Delegate[] EventHandlers(Type declaringType, StyledElement target, string fieldName)
+    internal static Delegate[] EventHandlers(Type declaringType, StyledElement target, string fieldName)
     {
         var field = declaringType.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
         field.ShouldNotBeNull();
         return (field.GetValue(target) as Delegate)?.GetInvocationList() ?? [];
     }
 
-    private static Color BorderColor(TemplatedControl primitive) =>
+    internal static Color BorderColor(TemplatedControl primitive) =>
         primitive.BorderBrush.ShouldBeAssignableTo<ISolidColorBrush>()!.Color;
 
     private static long MeasureAllocations(Func<bool> lookup)
@@ -403,7 +560,8 @@ public class OwnerTokenResourceTests
         return allocated;
     }
 
-    private sealed class Fixture : IDisposable
+    /// <summary>Shared with <see cref="TokenResourceBinderPublishTests"/>, which binds through the same manager/window setup.</summary>
+    internal sealed class Fixture : IDisposable
     {
         private readonly Window _window;
         private ThemeSchemaRegistry _registry;

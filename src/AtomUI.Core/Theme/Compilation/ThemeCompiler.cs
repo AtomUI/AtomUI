@@ -243,7 +243,12 @@ internal sealed class ThemeCompiler
         {
             globalBuilder   = CompileGlobalBuilder(input);
             globalValues    = TokenValueTable.Freeze(globalBuilder, input.Registry.GlobalTokens);
-            globalResources = BuildResourceMap(globalBuilder, input.Registry.GlobalTokens, globalValues);
+            // Unchanged global values keep the previous publish's instances (see BuildResourceMap).
+            globalResources = BuildResourceMap(
+                globalBuilder,
+                input.Registry.GlobalTokens,
+                globalValues,
+                input.ReusableParent?.GlobalResources);
             palettes        = FreezePresetPalettes(globalBuilder);
         }
 
@@ -350,9 +355,26 @@ internal sealed class ThemeCompiler
                 global.Resources,
                 global.Palettes,
                 controlCompilationCache);
-            cells[slot] = new ControlSnapshotCell(source, descriptor, config);
+            cells[slot] = new ControlSnapshotCell(source, descriptor, config, FindValueDonor(input, descriptor.Identity, slot));
         }
         return new LazyControlSnapshots(cells);
+    }
+
+    /// <summary>
+    /// The same control's materialized snapshot in the reusable parent, when the parent still numbers the slot
+    /// identically; used only to keep the instances of unchanged resource values (never as a computed result).
+    /// </summary>
+    private static ControlThemeSnapshot? FindValueDonor(ThemeCompileInput input, ControlTokenIdentity identity, int slot)
+    {
+        var parent = input.ReusableParent;
+        if (parent is null ||
+            parent.RegistryRevision != input.Registry.Revision ||
+            (uint)slot >= (uint)parent.Controls.Count ||
+            parent.Registry.GetControlIdentity(slot) != identity)
+        {
+            return null;
+        }
+        return parent.Controls.GetCell(slot).MaterializedValue;
     }
 
     private static LazyControlSnapshots CompileIndexedControls(ThemeCompileInput input, GlobalCompileOutcome global,
@@ -400,7 +422,7 @@ internal sealed class ThemeCompiler
             var registry = input.Registry;
             cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot],
                 () => effectiveConfig.TryGetControl(identity, out var config) ? config : null, !hasConfig,
-                previousValue, previousConfig);
+                previousValue, previousConfig, FindValueDonor(input, identity, slot));
         }
         return new LazyControlSnapshots(cells);
     }
@@ -450,7 +472,8 @@ internal sealed class ThemeCompiler
                (config is null ? parentConfig is null : config.Equals(parentConfig));
     }
 
-    // 由独立 lazy source 在首次查询时执行，不依赖历史快照。
+    // 由独立 lazy source 在首次查询时执行，不依赖历史快照。previous 仅作为值身份复用来源
+    // （同一控件上一次物化的快照），不影响计算结果。
     internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
@@ -459,7 +482,8 @@ internal sealed class ThemeCompiler
         DesignToken globalBuilder,
         TokenValueTable globalValues,
         IReadOnlyDictionary<object, object?> globalResources,
-        IReadOnlyList<TokenDescriptor> globalDescriptors)
+        IReadOnlyList<TokenDescriptor> globalDescriptors,
+        ControlThemeSnapshot? previous = null)
     {
         var effectiveGlobalBuilder = CopyBuilder(globalBuilder, globalDescriptors);
         var appearance = globalAppearance;
@@ -509,7 +533,11 @@ internal sealed class ThemeCompiler
         else
         {
             var effectiveGlobalValues = TokenValueTable.Freeze(effectiveGlobalBuilder, globalDescriptors);
-            var effectiveGlobalResources = BuildResourceMap(effectiveGlobalBuilder, globalDescriptors, effectiveGlobalValues);
+            var effectiveGlobalResources = BuildResourceMap(
+                effectiveGlobalBuilder,
+                globalDescriptors,
+                effectiveGlobalValues,
+                previous?.EffectiveGlobalResourceDelta);
             globalDelta = BuildTokenDelta(globalValues, effectiveGlobalValues);
             globalResourceDelta = BuildDenseResourceDelta(globalResources, effectiveGlobalResources);
         }
@@ -536,7 +564,10 @@ internal sealed class ThemeCompiler
             }
 
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
-            controlResources = BuildResourceMap(controlBuilder, descriptor.OwnTokens);
+            controlResources = BuildResourceMap(
+                controlBuilder,
+                descriptor.OwnTokens,
+                previousResources: previous?.ControlResources);
         }
 
         return new ControlThemeSnapshot(
@@ -860,10 +891,19 @@ internal sealed class ThemeCompiler
 
     private static void NormalizeFinalBehavior(DesignToken builder) => builder.NormalizeFinalBehavior();
 
+    /// <summary>
+    /// Projects and freezes the resource value of every descriptor. A value that equals the one
+    /// <paramref name="previousResources"/> holds for the same key keeps that previous instance, so an unchanged
+    /// Token keeps reference identity across publishes (Avalonia short-circuits an equal republish by
+    /// <c>EqualityComparer&lt;T&gt;.Default</c>, and a same-reference value also skips the equality call) while a
+    /// changed Token gets its new frozen value. Mutable values (a <c>SolidColorBrush</c> Token) compare by reference
+    /// and are therefore always new, as before.
+    /// </summary>
     private static IReadOnlyDictionary<object, object?> BuildResourceMap(
         AbstractDesignToken builder,
         IReadOnlyList<TokenDescriptor> descriptors,
-        TokenValueTable? frozenValues = null)
+        TokenValueTable? frozenValues = null,
+        IReadOnlyDictionary<object, object?>? previousResources = null)
     {
         var reuseValues = frozenValues is not null && IsCanonicalGlobalSchema(descriptors);
         var resources = new Dictionary<object, object?>(descriptors.Count);
@@ -875,9 +915,14 @@ internal sealed class ThemeCompiler
             var projected = reuseValues && (descriptor.ValueType.IsValueType || value is FontFamily)
                 ? ThemeResourceValue.Project(value)
                 : descriptor.ProjectResourceValue(builder);
-            resources.Add(
-                descriptor.ResourceKey,
-                FreezeResourceValue(projected));
+            var frozen = FreezeResourceValue(projected);
+            if (previousResources is not null &&
+                previousResources.TryGetValue(descriptor.ResourceKey, out var previous) &&
+                Equals(previous, frozen))
+            {
+                frozen = previous;
+            }
+            resources.Add(descriptor.ResourceKey, frozen);
         }
 
         return resources.ToFrozenDictionary();

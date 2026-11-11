@@ -64,7 +64,10 @@ internal sealed class LazyControlSnapshotSource
         }
     }
 
-    internal ControlThemeSnapshot Compile(ControlTokenDescriptor descriptor, NormalizedControlThemeConfig? config)
+    internal ControlThemeSnapshot Compile(
+        ControlTokenDescriptor descriptor,
+        NormalizedControlThemeConfig? config,
+        ControlThemeSnapshot? valueDonor = null)
     {
         ControlThemeSnapshot Factory()
         {
@@ -76,7 +79,8 @@ internal sealed class LazyControlSnapshotSource
                 GetGlobalBuilder(),
                 _globalValues,
                 _globalResources,
-                _globalDescriptors);
+                _globalDescriptors,
+                valueDonor);
         }
 
         return _cache?.TryGetTarget(out var cache) == true
@@ -106,6 +110,7 @@ internal sealed class ControlSnapshotCell
     private NormalizedControlThemeConfig? _config;
     private ControlThemeSnapshot? _reuseValue;
     private NormalizedControlThemeConfig? _reuseConfig;
+    private ControlThemeSnapshot? _valueDonor;
     private ControlThemeSnapshot? _value;
     private bool _isCompiling;
 
@@ -116,11 +121,12 @@ internal sealed class ControlSnapshotCell
     }
 
     internal ControlSnapshotCell(LazyControlSnapshotSource source, ControlTokenDescriptor descriptor,
-        NormalizedControlThemeConfig? config)
+        NormalizedControlThemeConfig? config, ControlThemeSnapshot? valueDonor = null)
     {
         _source = source;
         _descriptor = descriptor;
         _config = config;
+        _valueDonor = valueDonor;
         // 与 CompileControl 在 Own evaluator 之前冻结差量的分支相同。
         // Own evaluator 不参与 Shared 值计算，Global/Custom 算法仍走完整路径。
         UsesRootSharedResources = config is null ||
@@ -129,13 +135,15 @@ internal sealed class ControlSnapshotCell
 
     internal ControlSnapshotCell(LazyControlSnapshotSource source, Func<ControlTokenDescriptor> descriptorFactory,
         Func<NormalizedControlThemeConfig?> configFactory, bool usesRootSharedResources,
-        ControlThemeSnapshot? reuseValue = null, NormalizedControlThemeConfig? reuseConfig = null)
+        ControlThemeSnapshot? reuseValue = null, NormalizedControlThemeConfig? reuseConfig = null,
+        ControlThemeSnapshot? valueDonor = null)
     {
         _source = source;
         _descriptorFactory = descriptorFactory;
         _configFactory = configFactory;
         _reuseValue = reuseValue;
         _reuseConfig = reuseConfig;
+        _valueDonor = valueDonor;
         UsesRootSharedResources = usesRootSharedResources;
     }
 
@@ -146,6 +154,12 @@ internal sealed class ControlSnapshotCell
         ? NormalizedControlConfigCacheKey.Create(config).EstimatedInputRetainedBytes
         : 0;
     internal ControlThemeSnapshot? ReuseCandidateValue => Volatile.Read(ref _reuseValue);
+
+    /// <summary>
+    /// The same control's previously materialized snapshot, held until this cell materializes so unchanged
+    /// resource values keep their instances; never returned as the cell's value.
+    /// </summary>
+    internal ControlThemeSnapshot? ValueDonor => Volatile.Read(ref _valueDonor);
 
     internal ControlThemeSnapshot GetValue()
     {
@@ -173,7 +187,7 @@ internal sealed class ControlSnapshotCell
                 var config = _configFactory?.Invoke() ?? _config;
                 snapshot = _reuseValue is { } reusable && Equals(config, _reuseConfig)
                     ? reusable
-                    : source.Compile(_descriptor ?? _descriptorFactory!(), config);
+                    : source.Compile(_descriptor ?? _descriptorFactory!(), config, _valueDonor ?? _reuseValue);
             }
             finally
             {
@@ -186,6 +200,7 @@ internal sealed class ControlSnapshotCell
             _config = null;
             _reuseValue = null;
             _reuseConfig = null;
+            Volatile.Write(ref _valueDonor, null);
             Volatile.Write(ref _source, null);
         }
         // cache 扫描只读已发布值，不持有 cell 锁执行驱逐，避免锁反转。
@@ -230,6 +245,11 @@ internal sealed class LazyControlSnapshots
                 }
                 bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.MaterializedValue?.EstimatedRetainedBytes ?? 0);
                 bytes = ThemeRetainedBytesEstimator.Add(bytes, cell.ReuseCandidateValue?.EstimatedRetainedBytes ?? 0);
+                // The value donor is released on materialization; until then it is retained like the reuse candidate.
+                if (cell.ValueDonor is { } donor && !ReferenceEquals(donor, cell.ReuseCandidateValue))
+                {
+                    bytes = ThemeRetainedBytesEstimator.Add(bytes, donor.EstimatedRetainedBytes);
+                }
             }
             return bytes;
         }

@@ -21,18 +21,25 @@ namespace AtomUI.Theme.Resources;
 /// The accessor mirrors <c>DynamicResourceExpression</c>/<c>ResourceObservable</c>: it re-reads the
 /// resource on <see cref="StyledElement.ResourcesChanged"/> and
 /// <see cref="StyledElement.ActualThemeVariantChanged"/>, and additionally switches the resource key when
-/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes. The key is the owner's unbound
-/// Effective Global key, or the plain <see cref="SharedTokenKind"/> without an owner.
+/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes (observed through
+/// <see cref="TokenOwnerListeners"/>, not through the target's <c>PropertyChanged</c>). The key is the owner's
+/// unbound Effective Global key, or the plain <see cref="SharedTokenKind"/> without an owner.
 /// </para>
 /// <para>
-/// On every refresh the owner is checked against the registry of the target's <see cref="ThemeContext"/>;
-/// an owner that registry does not register uses the plain key, because a primitive must not fail because
-/// of its host. The decision is not cached, so a later snapshot that registers the owner is picked up on
-/// its publish. Without a resolvable context the owner key is used and the provider decides, like any other
-/// resource lookup; lookup failures (e.g. a failing Control snapshot evaluation) propagate unchanged.
+/// A <c>ResourcesChanged</c> raised by a theme publish is checked against the publish's
+/// <see cref="ThemePublishDelta"/> first: when neither the owner's effective value of the Token nor (without a
+/// registered owner) the global value changed, nothing is resolved. Every other notification (attach, a local
+/// resource change, a variant switch, an owner change, a publish whose delta is unknown) resolves fully.
+/// </para>
+/// <para>
+/// On every full refresh the owner is checked against the registry of the target's <see cref="ThemeContext"/>
+/// (cached per snapshot on the context); an owner that registry does not register uses the plain key, because a
+/// primitive must not fail because of its host. A later snapshot that registers the owner is picked up on its
+/// publish. Without a resolvable context the owner key is used and the provider decides, like any other resource
+/// lookup; lookup failures (e.g. a failing Control snapshot evaluation) propagate unchanged.
 /// </para>
 /// </remarks>
-internal sealed class OwnerTokenBinding : IPropertyAccessor
+internal sealed class OwnerTokenBinding : IPropertyAccessor, ITokenOwnerListener
 {
     private static readonly ClrPropertyInfo s_ownerTokenProperty = new(
         "OwnerToken",
@@ -49,6 +56,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     private object? _ownerKey;
     private object? _value = AvaloniaProperty.UnsetValue;
     private bool _published;
+    private ThemePublishTracker _publishes;
 
     private OwnerTokenBinding(WeakReference<object?> reference, SharedTokenKind kind)
     {
@@ -60,6 +68,9 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     public Type PropertyType => typeof(object);
 
     public object? Value => _value;
+
+    /// <summary>How often the accessor resolved its resource; contract tests pin the publish early-exit with it.</summary>
+    internal int ResolveCount { get; private set; }
 
     internal static BindingBase Create(SharedTokenKind kind, BindingPriority priority)
     {
@@ -95,7 +106,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
         }
 
         _target                          =  target;
-        target.PropertyChanged           += OnTargetPropertyChanged;
+        TokenOwnerListeners.Add(target, this);
         target.ResourcesChanged          += OnResourcesChanged;
         target.ActualThemeVariantChanged += OnActualThemeVariantChanged;
         UpdateOwner(target.GetValue(ThemeScope.TokenOwnerProperty));
@@ -105,7 +116,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     {
         if (_target is { } target)
         {
-            target.PropertyChanged           -= OnTargetPropertyChanged;
+            TokenOwnerListeners.Remove(target, this);
             target.ResourcesChanged          -= OnResourcesChanged;
             target.ActualThemeVariantChanged -= OnActualThemeVariantChanged;
             _target                          =  null;
@@ -116,6 +127,7 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
         _ownerKey  = null;
         _value     = AvaloniaProperty.UnsetValue;
         _published = false;
+        _publishes = default;
     }
 
     public void Dispose()
@@ -126,15 +138,23 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
         }
     }
 
-    private void OnTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-    {
-        if (e.Property == ThemeScope.TokenOwnerProperty)
-        {
-            UpdateOwner((ControlTokenIdentity?)e.NewValue);
-        }
-    }
+    void ITokenOwnerListener.OnTokenOwnerChanged(ControlTokenIdentity? owner) => UpdateOwner(owner);
 
-    private void OnResourcesChanged(object? sender, ResourcesChangedEventArgs e) => Refresh();
+    private void OnResourcesChanged(object? sender, ResourcesChangedEventArgs e)
+    {
+        if (_target is not { } target)
+        {
+            return;
+        }
+
+        var context = ThemeScope.ResolveContext(target);
+        var delta = _publishes.Observe(context);
+        if (delta is not null && !IsKeyChanged(delta, context!))
+        {
+            return;
+        }
+        Refresh(target, context);
+    }
 
     private void OnActualThemeVariantChanged(object? sender, EventArgs e) => Refresh();
 
@@ -154,12 +174,16 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     /// </remarks>
     internal void Refresh()
     {
-        if (_target is not { } target)
+        if (_target is { } target)
         {
-            return;
+            Refresh(target, ThemeScope.ResolveContext(target));
         }
+    }
 
-        var value = FindValue(target);
+    private void Refresh(StyledElement target, ThemeContext? context)
+    {
+        _publishes.MarkCurrent(context);
+        var value = FindValue(target, context);
         if (_published && Equals(value, _value))
         {
             return;
@@ -172,9 +196,19 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
     internal static OwnerTokenBinding CreateAccessor(object target, SharedTokenKind kind) =>
         new(new WeakReference<object?>(target), kind);
 
-    private object? FindValue(StyledElement target)
+    private bool IsKeyChanged(ThemePublishDelta delta, ThemeContext context)
     {
-        var key = _ownerKey is { } ownerKey && !IsKnownUnregistered(target, _owner!.Value)
+        if (_ownerKey is not null && context.TryGetRegisteredOwnerSlot(_owner!.Value, out var slot))
+        {
+            return delta.IsOwnerGlobalChanged(slot, _globalKey);
+        }
+        return delta.IsGlobalChanged(_globalKey);
+    }
+
+    private object? FindValue(StyledElement target, ThemeContext? context)
+    {
+        ResolveCount++;
+        var key = _ownerKey is { } ownerKey && !IsKnownUnregistered(context, _owner!.Value)
             ? ownerKey
             : _globalKey;
         return target.TryFindResource(key, target.ActualThemeVariant, out var value)
@@ -182,9 +216,8 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor
             : AvaloniaProperty.UnsetValue;
     }
 
-    internal static bool IsKnownUnregistered(StyledElement target, ControlTokenIdentity owner) =>
-        ThemeScope.ResolveContext(target) is { } context &&
-        !context.Snapshot.Registry.TryGetControl(owner, out _);
+    internal static bool IsKnownUnregistered(ThemeContext? context, ControlTokenIdentity owner) =>
+        context is not null && !context.TryGetRegisteredOwnerSlot(owner, out _);
 
     private void Publish(object? value)
     {

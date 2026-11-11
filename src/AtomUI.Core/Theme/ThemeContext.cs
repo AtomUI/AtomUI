@@ -1,11 +1,19 @@
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Resources;
+using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme;
 
 internal sealed class ThemeContext
 {
+    [ThreadStatic]
+    private static int t_publishDepth;
+
     private ThemeSnapshot _snapshot;
+    private ThemePublishDelta _lastPublish = ThemePublishDelta.Everything;
+    private long _publishVersion;
+    private ThemeSnapshot? _ownerSlotSnapshot;
+    private Dictionary<ControlTokenIdentity, int>? _ownerSlots;
 
     internal ThemeContext(
         ThemeManager manager,
@@ -27,31 +35,83 @@ internal sealed class ThemeContext
     internal ThemeAppearance Appearance => Snapshot.Appearance;
     internal ThemeTokenResourceProvider ResourceProvider { get; }
 
+    /// <summary>True while a context publishes on the current thread, i.e. while the resource/Published notifications of a theme publish run.</summary>
+    internal static bool IsPublishing => t_publishDepth > 0;
+
+    /// <summary>Incremented by every <see cref="Publish"/>; bindings use it to recognise the publish a notification belongs to.</summary>
+    internal long PublishVersion => Volatile.Read(ref _publishVersion);
+
+    /// <summary>
+    /// What the last <see cref="Commit"/> changed relative to the snapshot before it. <see cref="ThemePublishDelta.Everything"/>
+    /// when the current snapshot was not installed by that commit (first snapshot, package read override).
+    /// </summary>
+    internal ThemePublishDelta LastPublish
+    {
+        get
+        {
+            var delta = Volatile.Read(ref _lastPublish);
+            return ReferenceEquals(delta.Current, Snapshot) ? delta : ThemePublishDelta.Everything;
+        }
+    }
+
     internal event EventHandler? Published;
 
     internal void Commit(ThemeSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
+        var previous = Volatile.Read(ref _snapshot);
+        Volatile.Write(ref _lastPublish, ThemePublishDelta.Between(previous, snapshot));
         Volatile.Write(ref _snapshot, snapshot);
+    }
+
+    /// <summary>
+    /// Registered-owner lookup cached per snapshot for the bindings that refresh on every publish (UI thread only,
+    /// like the bindings). <paramref name="slot"/> is the owner's Control slot when it is registered.
+    /// </summary>
+    internal bool TryGetRegisteredOwnerSlot(ControlTokenIdentity owner, out int slot)
+    {
+        var snapshot = Snapshot;
+        var slots = _ownerSlots;
+        if (slots is null || !ReferenceEquals(_ownerSlotSnapshot, snapshot))
+        {
+            slots = new Dictionary<ControlTokenIdentity, int>();
+            _ownerSlots = slots;
+            _ownerSlotSnapshot = snapshot;
+        }
+        if (!slots.TryGetValue(owner, out slot))
+        {
+            slot = snapshot.Registry.TryGetControl(owner, out var descriptor) ? descriptor.Slot : -1;
+            slots.Add(owner, slot);
+        }
+        return slot >= 0;
     }
 
     internal IReadOnlyList<ThemeDiagnostic> Publish(bool notifyResources = true)
     {
         var diagnostics = new List<ThemeDiagnostic>();
-        if (notifyResources)
+        Interlocked.Increment(ref _publishVersion);
+        t_publishDepth++;
+        try
         {
-            ThemePublishBoundary.Dispatch(
-                ResourceProvider.PublishSnapshotChanged,
+            if (notifyResources)
+            {
+                ThemePublishBoundary.Dispatch(
+                    ResourceProvider.PublishSnapshotChanged,
+                    this,
+                    diagnostics,
+                    $"ThemeContext[{RegistrationId}].Resources");
+            }
+            ThemeEventDispatcher.Dispatch(
+                Published,
                 this,
+                EventArgs.Empty,
                 diagnostics,
-                $"ThemeContext[{RegistrationId}].Resources");
+                $"ThemeContext[{RegistrationId}]");
         }
-        ThemeEventDispatcher.Dispatch(
-            Published,
-            this,
-            EventArgs.Empty,
-            diagnostics,
-            $"ThemeContext[{RegistrationId}]");
+        finally
+        {
+            t_publishDepth--;
+        }
         return diagnostics.AsReadOnly();
     }
 }

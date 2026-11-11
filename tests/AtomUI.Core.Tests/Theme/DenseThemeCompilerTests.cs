@@ -1,5 +1,6 @@
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
@@ -395,6 +396,76 @@ public class DenseThemeCompilerTests
 
         changed.Controls[control.Slot].ShouldNotBeSameAs(parent.Controls[control.Slot]);
         changed.Controls[control.Slot].ControlTokenValues.Get<double>(0).ShouldBe(48);
+    }
+
+    [Fact]
+    public void Compile_Keeps_The_Instance_Of_An_Unchanged_Resource_Across_Publishes_And_Replaces_A_Changed_One()
+    {
+        // Avalonia compares a republished property value with EqualityComparer<T>.Default; an unchanged Token that
+        // keeps its instance across publishes short-circuits by reference and allocates nothing new.
+        var control = Control("Button");
+        var registry = CreateRegistry([control]);
+        registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
+        var compiler = new ThemeCompiler();
+        var parent = compiler.Compile(CreateInput(registry)).Snapshot!;
+        var parentButton = parent.Controls[control.Slot];
+        var textKey = registry.GetSharedResourceKey(SharedTokenKind.ColorText);
+        var primaryKey = registry.GetSharedResourceKey(SharedTokenKind.ColorPrimary);
+        var heightKey = control.OwnTokens[0].ResourceKey;
+
+        var changedPrimary = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+            reusableParent: parent)).Snapshot!;
+
+        changedPrimary.GlobalResources.ShouldNotBeSameAs(parent.GlobalResources);
+        changedPrimary.GlobalResources[textKey].ShouldBeSameAs(parent.GlobalResources[textKey],
+            "an unchanged global brush keeps its instance");
+        changedPrimary.GlobalResources[primaryKey].ShouldNotBe(parent.GlobalResources[primaryKey],
+            "a changed global brush gets a new value");
+        changedPrimary.Controls[control.Slot].ShouldNotBeSameAs(parentButton);
+        changedPrimary.Controls[control.Slot].ControlResources[heightKey].ShouldBeSameAs(
+            parentButton.ControlResources[heightKey],
+            "an unchanged Own value keeps its instance although the control was recompiled");
+
+        var changedHeight = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ControlHeight), "48")],
+            reusableParent: changedPrimary)).Snapshot!;
+
+        changedHeight.Controls[control.Slot].ControlResources[heightKey].ShouldBe(48d);
+        changedHeight.Controls[control.Slot].ControlResources[heightKey]
+                     .ShouldNotBeSameAs(parentButton.ControlResources[heightKey]);
+    }
+
+    [Fact]
+    public void Compile_Keeps_The_Instance_Of_An_Unchanged_Effective_Global_Override_Across_Publishes()
+    {
+        var control = Control("Button");
+        var registry = CreateRegistry([control]);
+        registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
+        var compiler = new ThemeCompiler();
+        var borderKey = registry.GetSharedResourceKey(SharedTokenKind.ColorBorder);
+        var buttonConfig = new NormalizedControlThemeConfig(
+            control.Identity,
+            ControlAlgorithmMode.Disabled,
+            Array.Empty<ThemeAlgorithmDescriptor>(),
+            [Token(registry, nameof(DesignToken.ColorBorder), "#ff0000")],
+            Array.Empty<NormalizedTokenValue>());
+        var parent = compiler.Compile(CreateInput(registry, controls: [buttonConfig])).Snapshot!;
+        var parentDelta = parent.Controls[control.Slot].EffectiveGlobalResourceDelta;
+        parentDelta.ShouldContainKey(borderKey);
+
+        var changed = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+            controls: [buttonConfig],
+            reusableParent: parent)).Snapshot!;
+
+        var changedDelta = changed.Controls[control.Slot].EffectiveGlobalResourceDelta;
+        changedDelta.ShouldNotBeSameAs(parentDelta);
+        changedDelta[borderKey].ShouldBeSameAs(parentDelta[borderKey],
+            "an unchanged effective-global override keeps its instance across publishes");
     }
 
     [Fact]

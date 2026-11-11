@@ -191,7 +191,8 @@ public class TransitionDurationTests
             lineEditHost.Child = primitive;
             Dispatcher.UIThread.RunJobs();
             Durations(primitive).Mid.ShouldBe(s_mid);
-            BindingHandlerCount(primitive).ShouldBe(3, "retargeting must not accumulate subscriptions");
+            BindingHandlerCount(primitive).ShouldBe(2, "retargeting must not accumulate subscriptions");
+            TokenOwnerListeners.Count(primitive).ShouldBe(1, "retargeting must not accumulate owner listeners");
         });
     }
 
@@ -219,13 +220,56 @@ public class TransitionDurationTests
             using var fixture = new Fixture(new ThemeConfigBuilder().Build());
             var animated = fixture.CreateAnimated();
             fixture.Show(animated);
-            BindingHandlerCount(animated).ShouldBe(3);
+            BindingHandlerCount(animated).ShouldBe(2, "ResourcesChanged and ActualThemeVariantChanged; the owner is observed through TokenOwnerListeners");
+            TokenOwnerListeners.Count(animated).ShouldBe(1);
 
             animated.Theme = null;
             Dispatcher.UIThread.RunJobs();
 
             BindingHandlerCount(animated).ShouldBe(0);
+            TokenOwnerListeners.Count(animated).ShouldBe(0);
             animated.Transitions.ShouldBeNull();
+        });
+    }
+
+    [Fact]
+    public void Publish_That_Leaves_The_Durations_Unchanged_Does_Not_Resolve_The_Binding()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            using var fixture = new Fixture(new ThemeConfigBuilder().Build());
+            var primitive = fixture.CreateAnimated();
+            fixture.Show(fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive));
+            var binding = Bindings(primitive).ShouldHaveSingleItem();
+            var transitions = primitive.Transitions;
+            var resolved = binding.ResolveCount;
+
+            fixture.Apply(new ThemeConfigBuilder().WithToken("ColorPrimary", "#00b96b").Build(),
+                ThemeTransitionReason.UserRequest);
+
+            binding.ResolveCount.ShouldBe(resolved, "a publish that changes no declared duration must not re-resolve");
+            primitive.Transitions.ShouldBeSameAs(transitions);
+
+            fixture.Apply(RootMotionConfig(), ThemeTransitionReason.UserRequest);
+
+            binding.ResolveCount.ShouldBe(resolved + 1, "a duration change is resolved once per publish");
+            Durations(primitive).Mid.ShouldBe(s_override);
+
+            // Root back to 200ms while Controls[Button] takes 500ms: the primitive's effective duration is unchanged, and the
+            // delta (both Button cells materialized by the owner's own binding) proves it without resolving.
+            fixture.Apply(ButtonMotionConfig(), ThemeTransitionReason.UserRequest);
+
+            binding.ResolveCount.ShouldBe(resolved + 1, "an owner override equal to the previous effective value is not re-resolved");
+            Durations(primitive).Mid.ShouldBe(s_override);
+
+            fixture.Apply(new ThemeConfigBuilder()
+                          .WithControl(s_buttonIdentity,
+                              new ControlThemeConfigBuilder().WithToken("MotionDurationMid", "00:00:00.6000000").Build())
+                          .Build(),
+                ThemeTransitionReason.UserRequest);
+
+            binding.ResolveCount.ShouldBe(resolved + 2, "a Controls[Button] duration change reaches the Button's primitive");
+            Durations(primitive).Mid.ShouldBe(TimeSpan.FromMilliseconds(600));
         });
     }
 

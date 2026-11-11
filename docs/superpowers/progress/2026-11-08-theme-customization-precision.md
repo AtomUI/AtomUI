@@ -45,8 +45,8 @@
 | 14 DataGrid | DataGrid 家族 | 完成并评审通过，`f4e226b21`；117/52/19/2，67 Active / 11 Reserved，原自动列宽与排序交互保持 |
 | 14 ColorPicker | ColorPicker 家族 | 完成并评审通过，`a26dbc9b8` + `9f393f9a5`；54 Active，177/19/23/3，修复后9/19/9及原流程RED/GREEN通过 |
 | 14 Extras | Extras 家族 | 完成并评审通过，`c744fcfab`；空包0 controls/assets/Own/globals，现有注册4/门禁2通过；effects/scope/OwnKind N/A |
-| 15 | 收尾：性能对照、全量回归、文档同步 | 执行中；有限消费图/警告/文档/视觉/性能与最终全量证据，尚未计完成 |
-| 终审 | 整分支评审 | 未开始 |
+| 15 | 收尾：性能对照、全量回归、文档同步 | 完成并评审通过，`926f6a71e`；全量 11868 通过、0 警告、热查询零分配；性能两项门槛未达成，带入终审 |
+| 终审 | 整分支评审 | 进行中 |
 
 ## 2. 接手步骤
 
@@ -617,3 +617,12 @@ Ruling: Dialog 恢复 main 的内容视口最小值语义（框宽 = Token + 内
 Ruling: 窗口托管对话框在有作用域的放置位置且 Dialog 未附加时静默使用全局值，作为既有缺陷带入整分支终审，不在 Task15 修复 — 根因是 Window 租约使用 owner 窗口的上下文，这是窗口/租约语义而非本任务的托管部件输入传递；覆盖层托管路径已正确 — 错了的代价：在终审处置前，窗口托管对话框不跟随局部主题，用户可见。
 
 Ruling: Task15 评审 Minor 处置：#1 门禁测试过时注释、#7 CHANGELOG“分配为零”措辞随修复轮2一并改正；#5、#6 由 Important #1 的修复消解；#2 按修复后的实际行为记录（独立部件位于无关但带 owner 的祖先下且未转发时，按该祖先解析）；#3 WatermarkGlyph 基类判断 TextGlyph 与 #4 OwnerTokenBinding 内部测试接缝停放交终审 — 改正项都是一两行的局部改动，停放项行为正确只是结构偏好 — 错了的代价：终审需再看两项结构 minor。
+
+Task15 fix round 2 (`b33146fdb`, `926f6a71e`): OwnerThemeInputs delivers through TokenResourceBinder (Style priority, rebuilt only on owner identity change, new before old, maps only when no attached owner provides the inputs), runtime.md §13 and XML docs updated, in-tree cover test added; Dialog back to content-viewport minimum (frame 248) and MessageBox whole-frame (410) through internal virtual `Dialog.UsesWholeFrameMinimum`, modal/token.md states both, per-terminal default-frame Theory ×2; Minor #1/#6/#7 fixed. Full regression run 1 had one unrelated flake (UploadSchedulerTests sampled IsCompleted at the Started instant); the assertion became race-free while still proving EnqueueTask returns with the transport blocked, no product code changed. Desktop touched families 1142/1142, Rendering 259/259, Core 34/34, Generator gate 388/388, `dotnet build AtomUI.slnx --no-incremental` 0 warnings/0 errors, final full regression `[SUMMARY] TOTAL: 11868 个测试全部通过, 总耗时 16:00` (integration tests excluded by default).
+Task15 scoped re-review (Fable, d19fe525d..926f6a71e, task-15-rereview-2.md): all findings ADDRESSED, no new Critical/Important. Minor M1: the popup-hosted TimePickerPresenter (forwarded LocalValue owner) is still mapped over the picker's inherited setters — same key and scope, internal-only properties, no visible difference. Minor M2: modal/token.md:73 still states only the Dialog baseline for HostMin*. Both go to the final review.
+
+Ruling: 接受 internal virtual `Dialog.UsesWholeFrameMinimum` 作为每个终端的最小尺寸语义开关（MessageBox 覆盖为整框，Dialog 及外部子类保持视口语义） — 它不改变公共 API，仓库内 MessageBox 是唯一子类，外部子类沿用 main 的语义 — 错了的代价：将来新增需要整框语义的内部子类时必须记得覆盖它，否则默认按视口计算。
+
+Ruling: 更正修复轮1 Minor #2 的登记文字：独立部件位于无关但带 owner 的祖先下且未转发时，按修复后的实际行为是不映射、保留默认值，而不是“按该祖先解析” — 范围复审核对了修复后代码，上一条裁决的措辞早于修复轮2 — 错了的代价：无行为影响，只是记录准确性；两个部件都是 internal。
+
+Task 15: complete（commits `c744fcfab..926f6a71e`；独立评审 Needs fixes → 修复轮1、修复轮2 → 范围复审 PASS）。验收：最终全量 11868 全部通过、解决方案0警告、生成注册表热查询零分配；性能两项门槛未达成（Publish +126.07%，style +137.26%），按裁决原样带入整分支终审。带入终审：Important #3 窗口托管作用域对话框回退全局、Minor #3/#4、M1/M2、MessageBox 410 对 antd 416、owned 全屏 FAIL 与主 Workspace 全屏像素未验证、10.10d 未跑包测试的流程缺口。

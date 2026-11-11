@@ -7,6 +7,8 @@
         <ControlTheme.Resources>
             <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
         </ControlTheme.Resources>
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:AddOnDecoratedBox
@@ -194,6 +196,9 @@
                          ^:focus-within[StyleVariant=Underlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BorderBrush"
                     Value="{atom:LineEditTokenResource ColorPrimary}" />
+        </Style>
+        <!-- Ant Design: only the outlined variant draws the focus outline shadow. -->
+        <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
             <Setter Property="BoxShadow"
                     Value="{atom:LineEditTokenResource InputActiveShadow}" />
         </Style>
@@ -201,8 +206,6 @@
             <Setter Property="BorderBrush"
                     Value="{atom:LineEditTokenResource ColorPrimary}" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:LineEditTokenResource InputActiveShadow}" />
         </Style>
 
     </ControlTheme>

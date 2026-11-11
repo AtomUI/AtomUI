@@ -10,6 +10,10 @@
         </ControlTheme.BasedOn>
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:RangeDatePicker">
                 <Panel>

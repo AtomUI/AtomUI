@@ -2,6 +2,13 @@
 
 本文档记录 AutoComplete 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 继承输入家族焦点样式对齐：`Filled` 聚焦只改变边框与背景，不绘制 focus 外发光；`Outlined` 外发光现在可见。
+- Tests
+  - `AutoCompleteFocusTests` 的 Filled 用例改为断言聚焦边框存在且无 `BoxShadow`。
+
 ## 2026-11-04
 
 - Changed

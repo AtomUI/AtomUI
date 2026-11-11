@@ -102,6 +102,9 @@
 
             <Style Selector="^:pressed[StyleVariant=Outlined], ^:pressed[StyleVariant=Filled], ^:pressed[StyleVariant=Underlined], ^[IsActive=True][StyleVariant=Outlined], ^[IsActive=True][StyleVariant=Filled], ^[IsActive=True][StyleVariant=Underlined]">
                 <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            </Style>
+            <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
+            <Style Selector="^:pressed[StyleVariant=Outlined], ^[IsActive=True][StyleVariant=Outlined]">
                 <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputActiveShadow}" />
             </Style>
 
@@ -132,6 +135,9 @@
 
             <Style Selector="^[Status=Error]:pressed, ^[Status=Error][IsActive=True]">
                 <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+            </Style>
+            <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
+            <Style Selector="^[Status=Error]:pressed[StyleVariant=Outlined], ^[Status=Error][IsActive=True][StyleVariant=Outlined]">
                 <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
             </Style>
 
@@ -162,6 +168,9 @@
 
             <Style Selector="^[Status=Warning]:pressed, ^[Status=Warning][IsActive=True]">
                 <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarning}" />
+            </Style>
+            <!-- Ant Design: only the outlined variant draws the active outline shadow. -->
+            <Style Selector="^[Status=Warning]:pressed[StyleVariant=Outlined], ^[Status=Warning][IsActive=True][StyleVariant=Outlined]">
                 <Setter Property="BoxShadow" Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
             </Style>
 

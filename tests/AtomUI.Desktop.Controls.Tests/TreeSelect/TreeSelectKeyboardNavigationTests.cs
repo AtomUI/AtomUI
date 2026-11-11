@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -37,6 +38,8 @@ public class TreeSelectKeyboardNavigationTests
             treeView.KeyboardActiveItem.ShouldNotBeNull();
             treeView.KeyboardActiveItem!.Header.ShouldBeSameAs(second);
             treeSelect.SelectedItem.ShouldBeNull();
+            // The popup item template must forward the indicator to the header that paints it.
+            GetItemHeader(treeView.KeyboardActiveItem).Classes.ShouldContain(TreeViewPseudoClass.KeyboardActive);
 
             Press(window, Key.Enter);
 
@@ -153,6 +156,11 @@ public class TreeSelectKeyboardNavigationTests
     private static object? GetFocused(AvaloniaWindow window)
     {
         return TopLevel.GetTopLevel(window)?.FocusManager?.GetFocusedElement();
+    }
+
+    private static Desktop.Controls.TreeViewItemHeader GetItemHeader(Desktop.Controls.TreeViewItem item)
+    {
+        return item.GetVisualDescendants().OfType<Desktop.Controls.TreeViewItemHeader>().First();
     }
 
     private static Desktop.Controls.TreeView GetPopupTreeView(Desktop.Controls.TreeSelect treeSelect)

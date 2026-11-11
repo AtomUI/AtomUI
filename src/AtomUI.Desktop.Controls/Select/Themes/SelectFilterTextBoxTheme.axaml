@@ -11,6 +11,8 @@
 
         <Setter Property="Padding" Value="0" />
         <Setter Property="BorderThickness" Value="0" />
+        <!-- Embedded in the select frame, which already shows the focus state. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
 
         <Style Selector="^[IsCustomFontSize=False]">
             <Style Selector="^[SizeType=Large]">

@@ -3,6 +3,15 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 多选标签前留出的 11 DIP 空白：空前缀 add-on 的外层 `AddOnContentPresenter` 现在跟随内层可见性，不再保留前缀缩进与面板间距，标签距边框与 Ant Design 一致。
+  - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`，搜索框聚焦时不在外框内部绘制方框。
+  - 宿主主题设置 `ClipToBounds=False`：`Outlined` focus 外发光绘制在 frame 外侧，此前被 `TemplatedControl` 默认裁剪丢弃。
+
 ## 2026-11-04
 
 - Changed

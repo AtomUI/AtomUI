@@ -83,11 +83,18 @@ Native Error / Form Error
 | `StyleVariant` | frame 语义 |
 | --- | --- |
 | `Outlined` | 边框、圆角、hover/focus shadow 和 CompactSpace 边框折叠。 |
-| `Filled` | 填充背景、无独立外框的状态变化和相邻布局折叠。 |
+| `Filled` | 填充背景、无独立外框的状态变化和相邻布局折叠；focus 只改变边框与背景，不绘制 focus shadow。 |
 | `Borderless` | 透明背景、透明边框、无 focus shadow；适用于嵌入式文本输入。 |
-| `Underlined` | 只保留下划线状态，状态色和动效仍由 frame 统一处理。 |
+| `Underlined` | 只保留下划线状态，状态色和动效仍由 frame 统一处理；不绘制 focus shadow。 |
 
 `EmbeddedTextBox` 使用 `StyleVariant=Borderless` 表达无 chrome 语义：背景透明、边框透明、`BorderThickness=0`、不绘制 focus shadow，也不重复绘制外部 frame。
+
+焦点表现与 Ant Design 一致，只由 frame 表达：
+
+- focus-within 时 frame 边框切换为状态主色；只有 `Outlined` 叠加 `0 0 0 ControlOutlineWidth` 的 `InputActiveShadow`（Error / Warning 对应 `InputErrorActiveShadow` / `InputWarningActiveShadow`）。focus shadow 的 Setter 必须带 `Outlined` 变体条件，嵌入式输入因此天然拿不到阴影。
+- 输入家族宿主（文本输入、选择器、日期/时间选择器、步进输入等）主题把 `FocusAdorner` 设为空，键盘聚焦不叠加全局方框；嵌入式 `SelectFilterTextBox` 同样不绘制 adorner。
+- focus shadow 绘制在 frame 外侧，宿主不得裁剪它：派生自 `TemplatedControl` 的宿主默认 `ClipToBounds=True`，主题需显式设为 `False`。
+- 模板把内层 `AddOnContentPresenter` 作为外层 add-on 内容时，外层可见性跟随内层控件的 `IsVisible`；空的前缀/后缀不保留 margin 和面板间距。
 
 ## 6. 组合控件边界
 

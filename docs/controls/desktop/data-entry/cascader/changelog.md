@@ -3,6 +3,14 @@
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`；空前缀 add-on 不再保留缩进与间距。
+  - 宿主主题设置 `ClipToBounds=False`，`Outlined` focus 外发光不再被宿主裁剪。
+
 ## 2026-11-04
 
 - Changed

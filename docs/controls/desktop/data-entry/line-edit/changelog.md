@@ -1,5 +1,14 @@
 # LineEdit Changelog
 
+## 2026-11-11
+
+- Theme
+  - focus 外发光只作用于 `Outlined`：`InputControlFrameTheme`、`LineEditTheme`、`TextBoxTheme`、`TextAreaTheme` 移除 `Filled` / `Underlined` 的 focus/pressed `BoxShadow`，`TextBoxTheme` 的 focus shadow 增加 `Outlined` 条件，嵌入式（Borderless）文本框不再获得阴影。
+  - LineEdit、TextBox、TextArea 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - TextArea：`TextAreaDecoratedBox` 的裁剪下移到 `Border#TextAreaContentFrame`，`TextArea` 宿主设置 `ClipToBounds=False`；内容仍被裁剪，frame 外侧的 focus 外发光可见。
+
 ## 2026-11-05
 
 - 实现结构

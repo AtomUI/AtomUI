@@ -178,14 +178,10 @@
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorPrimary}" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
         </Style>
         <Style Selector="^:filled:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
         </Style>
 
         <!-- Filled + Error -->
@@ -208,14 +204,10 @@
                     Value="{atom:SharedTokenResource ColorError}" />
             <Setter Property="Background"
                     Value="{atom:SharedTokenResource ColorTransparent}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
         </Style>
         <Style Selector="^:filled[EffectiveStatus=Error]:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
         </Style>
 
         <!-- Filled + Warning -->
@@ -238,14 +230,10 @@
                     Value="{atom:SharedTokenResource ColorWarning}" />
             <Setter Property="Background"
                     Value="{atom:SharedTokenResource ColorTransparent}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
         </Style>
         <Style Selector="^:filled[EffectiveStatus=Warning]:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
         </Style>
 
         <!-- Borderless -->
@@ -269,14 +257,10 @@
         <Style Selector="^:underlined:focus-within">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
         </Style>
         <Style Selector="^:underlined:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
         </Style>
 
         <!-- Underlined + Error -->
@@ -291,14 +275,10 @@
         <Style Selector="^:underlined[EffectiveStatus=Error]:focus-within">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
         </Style>
         <Style Selector="^:underlined[EffectiveStatus=Error]:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
         </Style>
 
         <!-- Underlined + Warning -->
@@ -313,14 +293,10 @@
         <Style Selector="^:underlined[EffectiveStatus=Warning]:focus-within">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
         </Style>
         <Style Selector="^:underlined[EffectiveStatus=Warning]:pressed">
             <Setter Property="BorderBrush"
                     Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
         </Style>
 
         <!-- Disabled -->

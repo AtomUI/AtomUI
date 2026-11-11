@@ -129,6 +129,13 @@ internal class BorderRenderHelper
 
         if (_useComplexRendering)
         {
+            if (boxShadows.Count > 0)
+            {
+                // Geometry drawing has no shadow overload; draw the outer shadows on the outer border edge first.
+                context.DrawRectangle(Brushes.Transparent, null, new RoundedRect(new Rect(_size), _cornerRadius),
+                    boxShadows);
+            }
+
             if (_backgroundGeometryCache != null)
             {
                 context.DrawGeometry(background, null, _backgroundGeometryCache);

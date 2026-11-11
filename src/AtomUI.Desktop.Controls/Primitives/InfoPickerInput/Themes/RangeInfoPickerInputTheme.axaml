@@ -8,6 +8,10 @@
     <ControlTheme.BasedOn>
         <atom:InfoPickerInputTheme TargetType="atom:RangeInfoPickerInput" />
     </ControlTheme.BasedOn>
+    <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:RangeInfoPickerInput">
             <Panel>

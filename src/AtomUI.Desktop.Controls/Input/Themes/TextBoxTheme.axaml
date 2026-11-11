@@ -4,6 +4,8 @@
               x:Class="AtomUI.Desktop.Controls.Themes.TextBoxTheme"
               x:ClassModifier="internal"
               TargetType="atom:TextBox">
+    <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TextBox">
             <atom:InputControlFrame
@@ -192,6 +194,10 @@
         <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame[EffectiveStatus=Default]:focus-within">
             <Setter Property="BorderBrush"
                     Value="{atom:TextBoxTokenResource ColorPrimary}" />
+        </Style>
+        <!-- Ant Design: only the outlined variant draws the focus outline shadow; embedded
+             (borderless) text boxes inside a host input must never show one. -->
+        <Style Selector="^[StyleVariant=Outlined] /template/ atom|InputControlFrame#PART_InputControlFrame[EffectiveStatus=Default]:focus-within">
             <Setter Property="BoxShadow"
                     Value="{atom:TextBoxTokenResource InputActiveShadow}" />
         </Style>

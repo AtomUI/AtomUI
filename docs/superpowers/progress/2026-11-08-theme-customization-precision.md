@@ -46,7 +46,7 @@
 | 14 ColorPicker | ColorPicker 家族 | 完成并评审通过，`a26dbc9b8` + `9f393f9a5`；54 Active，177/19/23/3，修复后9/19/9及原流程RED/GREEN通过 |
 | 14 Extras | Extras 家族 | 完成并评审通过，`c744fcfab`；空包0 controls/assets/Own/globals，现有注册4/门禁2通过；effects/scope/OwnKind N/A |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 完成并评审通过，`926f6a71e`；全量 11868 通过、0 警告、热查询零分配；性能两项门槛未达成，带入终审 |
-| 终审 | 整分支评审 | With fixes（0/4/12）→ 统一修复轮完成 `7e456cfef`，全量 11884 通过、0 警告；性能两项门槛未达成；范围复审进行中 |
+| 终审 | 整分支评审 | 完成：With fixes（0/4/12）→ 统一修复轮与残留修复 `0505c81e6`，范围复审 PASS WITH MINORS；全量 11885 通过、0 警告；性能两项门槛未达成（Publish +130.27%，样式 +43.22%），转后续 |
 
 ## 2. 接手步骤
 
@@ -654,3 +654,13 @@ Ruling: Result 状态图标颜色在图标自身主题绑定重发后丢失（`R
 Ruling: 接受 `7e456cfef` 对 Result 效果场景的修改（内容区放入实心块，让 ContentMargin/ContentPadding/UniformlyPadding 按自身位移度量），并由范围复审核对它没有放宽阈值或掩盖真实失效 — 二分定位显示三行此前依赖错误的状态图标重绘通过，Token 值与布局在复用下正确（Margin 0,24,0,0 → 4,28,4,4），真实效果落在 ColorFillAlter 与窗口背景的8通道容差内 — 错了的代价：若块的放置让任意布局变化都能通过，这三个 Token 的效果测试会失去区分力。
 
 Ruling: 接受实现者附带处置：快照身份追踪器“构造上保守”（冷单元、未知键、不可比快照、非发布通知一律完整刷新）作为提前退出的正确性合同；TokenResourceBinder 改走 AtomUI 自有 `TokenResourceObservable`（复制 Avalonia internal ResourceObservable 并加增量门）；值复用捐献者在新单元物化前暂时保留并计入 EstimatedRetainedBytes；D2 线程过滤随性能提交落地 — 都由 Core 合同与既有 live-publish/作用域/变体/owner 效果测试守住，Avalonia 不开放可子类化的 ResourceObservable — 错了的代价：Avalonia 资源解析行为变化需在此手工同步；追踪器若漏键会表现为发布后控件保留旧值；切主题后冷槽的估算保留字节短暂上升。
+
+Unified fix round scoped re-review (Fable, d6f123bbe..7e456cfef, final-fix-rereview.md): PASS WITH MINORS — 16/16 in-scope findings ADDRESSED, Critical 0 / Important 0 / Minor 3 new (N1 runtime.md:1093-1096 still describes PropertyChanged / “三个事件”; N2 `TokenResourceObservable.Resolve` returns a found-null resource as null where Avalonia's ResourceObservable maps it to UnsetValue; N3 `ThemeContext._lastPublish` keeps the previous snapshot one generation per context, undocumented). Coalescing paths checked (variant, scoped override/removal, root→scope, inherit-only and nested scopes, owner change, local key, lease/bridge, re-entrant, cross-thread, attach between publishes, detach/reattach, registry revision) all refresh or stay value-correct; no detached-element leak; value reuse is identity-only and never reuses mutable brushes; the Result scenario keeps the threshold. Focused re-run 59/59. Residual risks: R1 a ResourcesChanged raised from inside a Published callback is attributed to the publish (no current subscriber mutates resources); R2 reattach during a publish without detach keeps the delta path; R3 the observable is a hand copy of an Avalonia internal type.
+
+Ruling: N2 作为残留修复由统一修复轮的同一实现者完成（找到 null 资源时与 Avalonia ResourceObservable 一致映射为 UnsetValue，并加先失败的合同），N1、N3 同批写入 runtime.md，修复后重跑聚焦测试、0警告构建与一次全量回归，由控制器直接核对这一小段差异，不再派第二次范围复审 — N2 是本分支引入的静默语义偏差（null 值 Token 会以绑定优先级写入 null，遮住低优先级或默认值），修复只有一行且有合同守住；N1/N3 是文档准确性 — 错了的代价：若控制器核对漏掉问题，没有独立评审兜底，只能靠新合同与全量回归。
+
+Ruling: 接受范围复审列出的残留风险 R1–R3 为已知并记录在案：Published 回调内引发的 ResourcesChanged 归属当前发布而被跳过、发布期间无 detach 的重新附着沿用增量路径、TokenResourceObservable 为 Avalonia internal 类型的手工副本须随 Avalonia 升级复核 — 现有 Published 订阅者都不修改资源，概率低，且 Avalonia 不开放可复用的类型 — 错了的代价：将来新增会修改资源的 Published 订阅者或升级 Avalonia 改变资源解析时，可能出现发布后控件保留旧值，需要回到这几处排查。
+
+Residual fix (same implementer, `0505c81e6`): N2 `TokenResourceObservable.Resolve` maps a found-null resource to UnsetValue before the converter (contract `TokenResourceBinderPublishTests.Token_That_Resolves_To_Null_Unsets_The_Binding_Instead_Of_Writing_Null`, RED then GREEN); N1 runtime.md owner bullet now names two subscriptions plus TokenOwnerListeners; N3 runtime.md documents the one-generation previous-snapshot retention per context. Controller verified the diff directly. Core theme suites 137/137, solution build 0 warnings, final full regression `[SUMMARY] TOTAL: 11885 个测试全部通过, 总耗时 16:32` (integration tests excluded by default); tree clean.
+
+终审: complete（With fixes → 统一修复轮 `6da03c8ed..7e456cfef` → 范围复审 PASS WITH MINORS → 残留修复 `0505c81e6`）。分支收尾：集成目标 release/6.0，保留本地分支 feature/design-language 与工作树，不推送、不合并、不开 PR。后续任务：R1 第1步性能重构（性能两项门槛未达成）、Result 状态图标颜色既有缺陷、I4 窗口托管作用域对话框、M5/M7/M8/M12、047/048 覆盖面、T2 控件级显式测试、主 Workspace 全屏像素、选择器显式宽度、LanguageResourceExtension。

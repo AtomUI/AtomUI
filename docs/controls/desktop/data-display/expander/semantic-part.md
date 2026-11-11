@@ -22,8 +22,7 @@ Expander 是单面板折叠容器，与上游 `Collapse` 的单个面板承担�
 
 范围变更（2026-09-15）：Expander 的原排除判定经用户指令撤销。原判定以“上游只有 `Collapse` 一个 owner、`Collapse.Panel`
 没有独立 API”为由拒绝映射，但该理由检验的是 owner 数量而非职责对应关系，与 §2.1 第 4 条不符。Expander 以自身 public
-owner 独立通过准入 Gate，移入第二批计划执行（见
-[第二批任务清单](../../../../superpowers/plans/2026-08-12-semantic-part-batch-2-collections-containers.md)任务 16）。
+owner 独立通过准入 Gate，随第二批（集合与容器）Semantic Part 改造一并执行。
 
 AtomUI 五个 Part 随本次 Semantic Part 改造同时公开，descriptor 的 `Since` 统一为 `6.2.0`。
 

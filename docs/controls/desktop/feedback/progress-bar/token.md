@@ -47,10 +47,11 @@ CircleProgress 的默认进度色，`Controls[ProgressBar].Tokens[DefaultColor]`
 
 ### 2.3 ProgressBar Token
 
-- `LineBorderRadius`：圆头（`StrokeLineCap=Round`）线形进度的 rail / track / success 圆角，默认 100（胶囊形）。
+- `LineBorderRadius`：圆头（`StrokeLineCap=Round`）线形进度的 rail / track / success 圆角，默认 100（胶囊形；此前主题
+  硬编码 `CornerRadius=1000`，对高度小于 200px 的进度条两者都是胶囊）。
 - `LineProgressPadding`：内嵌百分比文本和进度条边缘之间的内部 padding，默认 `UniformlyPaddingXXS / 2`。
-- `ProgressActiveMotionDuration`：Reserved。对应 antd `progressActiveMotionDuration`；Active 状态的轨道闪光动画尚未实现，
-  Active 与 Normal 渲染相同。
+- `ProgressActiveMotionDuration`：Reserved，类型 `TimeSpan`，默认 2.4s（antd `progressActiveMotionDuration: '2.4s'`）。
+  Active 状态的轨道闪光动画尚未实现，Active 与 Normal 渲染相同；类型先与 antd 对齐，激活时不再是破坏性变更。
 
 ### 2.4 StepsProgressBar Token
 
@@ -111,7 +112,8 @@ Token 变更影响范围：
   `CircleProgress` / `DashboardProgress`；`ProgressBar.ProgressStepMarginInlineEnd`、`ProgressBar.ProgressStepMinWidth` 移到
   `StepsProgressBar`，`ProgressStepMarginInlineEnd` 改为 double。
 - `CircleTextColor`、`LineBorderRadius`、`ProgressStepMarginInlineEnd`、`ProgressStepMinWidth` 由未消费改为 Active；
-  `ProgressActiveMotionDuration` 标为 Reserved。
+  圆头线形进度的圆角由主题硬编码 `CornerRadius=1000` 改为消费 `LineBorderRadius`（默认 100）。
+  `ProgressActiveMotionDuration` 标为 Reserved，并由 `double` 改为 `TimeSpan`（默认 2.4s）。
 
 ## 5. 兼容性要求
 

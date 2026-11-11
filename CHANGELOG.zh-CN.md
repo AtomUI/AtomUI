@@ -12,6 +12,8 @@ AtomUI 的重要变更记录在此文件中。
 - 启动注册表的热查询不再逐次进入条目锁或格式化控件身份字符串；生成启动的身份、校验与类型三条路径上，已注册（命中）的查询预热后零分配（未命中仍会格式化诊断键）。
 - 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
 - Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
+- 主题发布开销：未变化的 Token 在发布间保持同一资源实例（全局表、控件有效全局差量与 Own 表），`OwnerTokenResource`、`TokenTransitions` 与 `TokenResourceBinder` 绑定在发布的变更键不含自己的键时跳过解析，不再对每次 `ResourcesChanged` 重新解析；`OwnerTokenResource` / `TokenTransitions` 经一个静态观察者只观察 `ThemeScope.TokenOwner`，不再订阅目标的全部属性变化。变体切换、局部 `ThemeConfigProvider` 变化、运行时 owner 变化、时长变化与局部资源变化照常刷新。
+- 新增公开 API：`AtomUI.Theme.Resources.OwnerTokenResourceExtension`（`{atom:OwnerTokenResource Kind}`，共享基元按 owner 有效全局值读取 Token）、`AtomUI.Theme.Resources.TokenTransitions`（`<atom:TokenTransitions>` 及过渡上的附加属性 `atom:TokenTransitions.Duration`）、`AtomUI.Theme.DesignTokens.ReservedTokenAttribute`（标记已声明但尚未消费的 Own Token）与受保护的 `AbstractControlDesignToken.IsExplicit<TKind>(TKind)`（判断用户是否显式设置了某 Own Token，派生默认值据此跳过）。
 
 - ColorPicker
   - 渐变 stop 文本在实时 Token 发布及禁用/启用往返后持续更新；关闭后恢复面板 ColorText 继承，不再保留拷贝的 trigger 画刷，并保留本地前景。Popup View 默认采用自身 EnableMotion，trigger false 作为关闭门控，显式 View 本地值优先。
@@ -26,6 +28,9 @@ AtomUI 的重要变更记录在此文件中。
 
 
 - Breaking Changes
+  - 删除公开标记扩展 `AtomUI.Data.SharedTokenResourceValue`：它在加载时一次性读取应用级值，无法跟随控件级（`Controls[X]`）或作用域（`ThemeConfigProvider`）的动效 Token。请把 `<Setter Property="Transitions"><Transitions><DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" /></Transitions></Setter>` 改写为 `<Setter Property="Transitions"><atom:TokenTransitions><Transitions><DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" /></Transitions></atom:TokenTransitions></Setter>`；仍引用 `SharedTokenResourceValue` 的主题无法编译，ControlTheme 中出现该名称时 ATOMUIGEN041 报告。
+  - Token owner 注入按注册控件类型精确匹配：注册控件的默认 ControlTheme 带一个嵌套的 `^:OfType(Control)` 样式来设置 `ThemeScope.TokenOwner`，应用子类只有在样式键仍为注册类型（`StyleKeyOverride => typeof(Button)`）时才得到 owner；拥有自己样式键、经 `BasedOn` 复用主题的子类不会得到 owner，需要注册自己的 Token 身份。
+  - ProgressBar：圆头（`StrokeLineCap=Round`）线形进度的 rail/track/success 圆角改为跟随 `ProgressBar.LineBorderRadius` Token（默认 100），不再是主题硬编码的 `CornerRadius="1000"`；对高度小于 200px 的进度条两者都呈胶囊形，只有设置了 `LineBorderRadius` 的主题会看到差别。`ProgressBar.ProgressActiveMotionDuration` 改为 `TimeSpan`（antd `progressActiveMotionDuration`，默认 2.4s），仍为保留 Token（Active 闪光动画尚未实现）；以数字设置过它的主题 XML 需改写为时长（`00:00:02.4`）。
   - ColorPicker Own：19项editor/palette/spectrum/slider字段移到Controls[ColorPickerView] / Controls[GradientColorPickerView]；trigger保留TriggerPadding、TriggerTextMargin、ColorBlockDisabledOpacity、ColorBlockInnerShadows与TransparentBgSize，后两项也由各View独立拥有。旧ColorPicker覆盖不再传入GradientColorPicker或公开View。逐字段迁移见color-picker/token.md；旧无效Alpha字段默认44，新View保持实际原48。
   - DataGrid 行、单元格、行头和分组头实现容器的有效全局值与动效时长改随宿主 DataGrid，请经 Controls[DataGrid] 配置；嵌套公开编辑器、选择器、按钮和分页器保持各自作用域。
   - LunarCalendar：Fullscreen Year 的选中月份背景使用独立的 LunarCalendar.ItemActiveBg，不再受 Calendar 同名 Own 覆盖；保留月份默认浅蓝色及日期主色。

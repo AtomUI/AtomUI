@@ -903,6 +903,12 @@ AtomUI Desktop `Window` 在调用 Avalonia 的 `Show`、`Show(owner)` 或 `ShowD
 带 owner 的重载从 owner 解析 Context；无 owner 的根 Window 使用 Root ThemeContext。若 Avalonia 打开流程同步失败，
 本次新建 lease 必须在异常离开前释放；`OnClosed` 再执行幂等释放，不能依赖外部调用者补清理。
 
+已知限制（后续任务修复）：Window 宿主的对话框（`Dialog.OpenAsync` 走窗口宿主）从位于局部 `ThemeConfigProvider`
+内的 placement target 打开、而 Dialog 实例本身未挂载到逻辑树时，`WindowDialogPresenter` 以未挂载的 Dialog 为 surface
+的继承父级，独立对话框窗口的 lease 从 owner Window 解析上下文，surface 因而解析到根（全局）值而不是作用域值；挂载了的
+Dialog（作用域覆盖经 Dialog 自身的 setter 到达 surface）与 Overlay 宿主不受影响，均有生效测试。修复需要改变窗口 lease
+选择作用域上下文的方式，连同 RED 测试作为后续任务。
+
 `ThemeTokenResourceProvider` 仍是每个 scope 唯一的规范 Provider；ResourceBridge 是独立资源根的非拥有代理，
 不进入 cache，也不形成第二份 Token 状态。无 owner 的静态 API 只能显式租用 Root ThemeContext，并应提供
 diagnostic，不能根据调用栈、当前焦点或全局静态变量猜测局部上下文。
@@ -1102,7 +1108,17 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 
 `ThemeScope.TokenOwner` 只携带 identity，不携带 snapshot、Token 值或 Provider 引用；基于 snapshot attached value 的
 父级订阅仍属于禁止的旁路。继承属性由 Avalonia 原生传播，`OwnerTokenResource` 不沿 `TemplatedParent` 或
-`Parent` 跳链观察。每个活动绑定拥有一个访问器及上述三个目标事件订阅；它们随绑定释放，不订阅 Application 来保活目标。
+`Parent` 跳链观察。每个活动绑定拥有一个访问器、`ResourcesChanged` 与 `ActualThemeVariantChanged` 两个目标事件订阅，以及
+一条 `TokenOwnerListeners` 登记（owner 变化经一个静态的 `ThemeScope.TokenOwner.Changed` 观察者按目标分发，不再逐绑定
+订阅目标的全部 `PropertyChanged`）；它们随绑定释放，不订阅 Application 来保活目标。
+
+发布时的刷新合并：`ThemeContext.Commit` 记录本次提交相对上一个 snapshot 的 `ThemePublishDelta`（全局资源键按值比较；
+控件槽位在两个 snapshot 共享同一 cell 或都读根全局表时跟随全局键，两侧都已物化时比较值，其余情况一律视为变化），
+`ThemeContext.Publish` 递增 `PublishVersion` 并在通知期间标记 `IsPublishing`。`OwnerTokenResource`、`TokenTransitions`
+与 `TokenResourceBinder`（StyledElement 宿主）的每目标绑定在收到发布引发的 `ResourcesChanged` 时先查询自己的键是否
+变化，未变化则不再解析；非发布引发的通知（挂载、局部资源字典变化）、变体切换、owner 变化以及无法比较的发布
+（无上一 snapshot、registry 或 appearance 不同）仍完整刷新。未变化的 Token 值在发布间保持同一实例（编译器在全局表、
+控件有效全局差量与 Own 表构建时复用上一 snapshot 中相等的值），因此即使刷新，Avalonia 也按引用短路。
 
 Transition 时长使用 `atom:TokenTransitions`。Avalonia 的 `<Setter Property="Transitions"><Transitions>…` 只生成一个
 `Transitions` 实例并交给该样式的全部目标，`TransitionBase.Duration` 在过渡开始时从这个共享对象读取；Transition 不在
@@ -1113,7 +1129,11 @@ Transition 时长使用 `atom:TokenTransitions`。Avalonia 的 `<Setter Property
 `ActualThemeVariantChanged` 与 owner 变化，并发布按该时长向量构建的 `Transitions`。时长相同的目标共享同一个构建实例
 （每个标记最多缓存 8 个时长向量，默认主题通常只需 1 个）。命中缓存且与已发布实例相同时不重新发布；声明数不超过 8 时
 刷新使用栈上时长向量。超过缓存容量的新向量会重新构建，超过 8 个声明还会分配时长数组，不能泛称所有刷新都零分配。
-每个活动目标有一个访问器及三个目标事件订阅，释放时全部解除；工厂缓存时长与 owner 键，不持有目标。根主题切换（含 `EnableMotion=false` 把全部标准时长规范化为 `TimeSpan.Zero`）、
+已记录的限制：一个标记出现第 9 个及以后的不同时长向量后，解析到这些向量的目标在每次刷新时都经 `TemplateContent.Load`
+重新构建并发布一个新的 `Transitions` 实例（引用不等于已发布实例，同引用抑制失效），只有大量嵌套作用域各自覆盖动效
+时长才会触及。每个活动目标有一个访问器、两个目标事件订阅（`ResourcesChanged`、`ActualThemeVariantChanged`）和一条
+`TokenOwnerListeners` 登记（owner 变化由一个静态的 `TokenOwner.Changed` 观察者分发，目标上不再有逐绑定的
+`PropertyChanged` 处理器），释放时全部解除；工厂缓存时长与 owner 键，不持有目标。根主题切换（含 `EnableMotion=false` 把全部标准时长规范化为 `TimeSpan.Zero`）、
 `Controls[X].Tokens[MotionDuration*]` 与局部 ThemeConfigProvider 作用域都经同一条资源查询到达过渡。
 未声明 Token 的过渡保留 AXAML 中写的时长。
 

@@ -160,7 +160,7 @@ checked 时 on content 进入可见区域，off content 移到右侧不可见区
 
 ### 7.4 轨道绘制
 
-`AbstractToggleSwitch.Render` 使用 `DrawPilledRect` 绘制轨道，并通过 `SwitchOpacity` 控制 disabled/loading 透明度。轨道背景来自 `GrooveBackground`，通常由主题 selector 设置。
+`AbstractToggleSwitch.Render` 使用 `DrawPilledRect` 绘制轨道。disabled / loading 的整体变暗不再由轨道单独绘制：主题的根样式 `^[IsLoading=True], ^:disabled` 把 `Opacity` 设为 Token `SwitchDisabledOpacity`（默认取全局 `OpacityLoading`），一次作用于整个开关（与 antd 一致，焦点轮廓一同变暗）；`SwitchKnob` 的 `LoadingBgOpacity` 读取同一 Token。轨道背景来自 `GrooveBackground`，通常由主题 selector 设置。
 
 ### 7.5 把手与 loading 绘制
 
@@ -202,7 +202,7 @@ AOT 边界：
 - `MeasureOverride` 必须同时考虑 on/off content 的最大宽度。
 - `SwitchKnob` loading animation detach 时必须取消。
 - `SizeType=Custom` 默认与 Middle 视觉一致。
-- `SwitchOpacity` 只表达 disabled/loading 视觉透明度，不改变 enabled 状态。
+- `SwitchDisabledOpacity` 只表达 disabled/loading 的整体视觉透明度（根样式 `Opacity`），不改变 enabled 状态。
 - WaveSpirit 只作为视觉反馈，不影响 `IsChecked`。
 
 ## 10. 测试与验证

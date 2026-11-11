@@ -46,6 +46,11 @@ Modal 的控件专项模型通过 Theme 消费 Token：
   `Controls[Dialog]` 与 `Controls[MessageBox]` 分别作用于各自的 surface。共享 AbstractDialogToken 的 Own 由 Dialog / MessageBox 各自终端主题读入具体 surface 输入。
 - `MessageBoxContent` 只属于 MessageBox，以 `MessageBoxTokenResource` 显式读取状态色与图标间距。对话框正文位于 surface 的
   `Skeleton` 中；Skeleton 是 Token owner 透明控件，正文内容继承 Dialog（或 MessageBox）为 owner。
+- 已知限制（后续任务修复）：Window 宿主的对话框从位于局部 `ThemeConfigProvider` 内的 placement target 打开、而 Dialog
+  实例本身未挂载到逻辑树时，`WindowDialogPresenter` 以这个未挂载的 Dialog 为 surface 的继承父级，独立对话框窗口经
+  lease 解析的是 owner Window 的上下文，于是 surface 解析到全局（根）值，`ThemeConfigProvider` 的作用域覆盖不会到达
+  它；挂载了的 Dialog 与 Overlay 宿主不受影响（有生效测试）。这是既有的 Window lease 语义，修复需要改变窗口 lease
+  选择作用域上下文的方式，连同 RED 测试作为后续任务（见 [runtime.md §11](../../../../architecture/systems/theming/runtime.md)）。
 - 最大化的 Overlay surface 通过 `^[IsDialogMaximized=True]` 状态 Setter 去掉圆角，不再由 presenter 写本地值；恢复后回到主题圆角。
 - `OverlayDialogResizer` 的 12 处尺寸字面量是透明拖拽热区的布局常量，标注 `<!-- layout -->`。
 - 主题包定制（PrimeNG 预设）：Dialog 圆角经 `Controls[Dialog].BorderRadiusLG`，正文内边距 `ContentPadding`，标题字号
@@ -69,7 +74,7 @@ MessageBox 具有独立的完整 surface Own，MinWidth 默认410 且为整框�
 - 不把实例状态、交互状态或 `EffectiveXxx` 状态写成 Token。
 - 不在 Token 中展开颜色、variant 和状态的组合矩阵；组合关系应由 Theme selector 表达。
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
-- 调用方 `HostMin*` 是实例尺寸请求，不是 Token，也不能把 effective minimum 降低到 `DialogToken.MinWidth/MinHeight` 正文 viewport 基线以下。
+- 调用方 `HostMin*` 是实例尺寸请求，不是 Token；它只能提高、不能降低 effective minimum，而下限按终端各自的语义取值：Dialog 的下限是 `DialogToken.MinWidth/MinHeight` 正文 viewport 基线（框 = Token + 正文内边距 + 边框，默认 248），MessageBox 的下限是 `MessageBoxToken.MinWidth/MinHeight` 整框尺寸（框 = max(Token, 正文内边距 + 边框)，默认 410）。
 - 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
 
 ## 6. 验证策略

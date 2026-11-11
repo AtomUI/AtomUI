@@ -46,7 +46,7 @@
 | 14 ColorPicker | ColorPicker 家族 | 完成并评审通过，`a26dbc9b8` + `9f393f9a5`；54 Active，177/19/23/3，修复后9/19/9及原流程RED/GREEN通过 |
 | 14 Extras | Extras 家族 | 完成并评审通过，`c744fcfab`；空包0 controls/assets/Own/globals，现有注册4/门禁2通过；effects/scope/OwnKind N/A |
 | 15 | 收尾：性能对照、全量回归、文档同步 | 完成并评审通过，`926f6a71e`；全量 11868 通过、0 警告、热查询零分配；性能两项门槛未达成，带入终审 |
-| 终审 | 整分支评审 | 进行中 |
+| 终审 | 整分支评审 | With fixes（0/4/12）→ 统一修复轮完成 `7e456cfef`，全量 11884 通过、0 警告；性能两项门槛未达成；范围复审进行中 |
 
 ## 2. 接手步骤
 
@@ -642,3 +642,15 @@ Ruling: 终审 Minor 处置：M3（TokenResourceExtension 依赖 Avalonia 版本
 Ruling: 结转项中“后续”的三项测试加固并入统一修复轮：DataEntryFamilyEffectTests.MapRows 对必需 Own 行快速失败、FirstChanceException 测试按线程过滤、10.9b 动效 theory 增加非空守卫；文档清扫并入：toggle-switch SwitchOpacity、expander/semantic-part.md 与用户文档中的内部任务引用；其余后续项（047/048 覆盖面、T2 控件级显式测试、主 Workspace 全屏像素、选择器宽度、LanguageResourceExtension）保持后续 — MapRows 是唯一有真实假绿风险的测试基础设施问题，另两项是低成本的抖动与空测试防护 — 错了的代价：统一修复轮稍大，需在复审范围内一并核对。
 
 Ruling: 统一修复轮派给新的实现者（Fable），不续用 Task15 实现者 — 终审修复是一次跨主题的派发而不是 Task15 的修复轮，原实现者上下文已超过75万 token，新实现者从简报和文件读取所需上下文更可靠 — 错了的代价：新实现者需要重新阅读性能 guard/驱动的前置条件，可能多花一次准备。
+
+Final-review unified fix round (fresh Fable implementer, report final-fix-report.md, d6f123bbe..7e456cfef): `6da03c8ed` perf — R1 step 3 value reuse (BuildResourceMap keeps the previous instance for equal frozen values across global, effective-global delta and Own maps) and step 2 refresh coalescing (`ThemePublishDelta` + snapshot-identity `ThemePublishTracker`; OwnerTokenBinding / TransitionDurationBinding / TokenResourceBinder skip unchanged keys; registered-owner slot cached per snapshot on the context; owner listeners through one static TokenOwnerProperty class handler); `5250ea2cb` docs — I2 bilingual CHANGELOG (Breaking: removed SharedTokenResourceValue with before/after AXAML, exact-OfType owner injection, ProgressBar visible corner 1000 → 100, M11; new API list verified, IsExplicit listed as protected), I4 known limitation, M6, M10, sweeps; `789f6eae5` fix — M3, M4 (ClearValue + contract), M9, M11 TimeSpan 2.4s, D1 MapRows fail-fast, D3 non-empty Transitions guard (D2 thread filter landed in the perf commit); `7e456cfef` test(Result) — effect scenario carries a solid block so Margin/Padding rows measure their own shift. Counts on one real OverviewPage publish: owner resolves 33 → 2, transition resolves 17 → 0, provider lookups 298 → 241, equal-value republishes 0 before and after. Remeasure (guard e49788f7, driver daf505ae, OverviewPage 1100x760, 5+20, Release, TieredCompilation=0, host load avg ~99): styling median 5.966 ms (+43.22% vs 4.1657, bimodal, ten samples at baseline level), Publish median 1.431 ms (+130.27% vs 0.621229, tight 1.25–1.78) — both gates FAIL. Full regression run 1: 3 failures `DisplayFamilyEffectTests.Result_Token_Has_Effect` (ContentMargin/ContentPadding/UniformlyPadding, pixel ratio 0.37–0.47% < 0.5%), bisected to global-map reuse; the rows had been passing on a wrong status-icon repaint. Final full regression `[SUMMARY] TOTAL: 11884 个测试全部通过, 总耗时 17:54` (integration tests excluded by default); solution build 0 warnings/0 errors; tree clean, nothing pushed.
+
+Ruling: 性能两项门槛在本分支记为未达成（Publish 1.431 ms，+130.27%；首页样式 5.966 ms，+43.22%），R1 第1步（以每个注册控件的资源提供者替换每元素 owner 绑定，并削减每次发布被 Avalonia 重新查找的约235个生成 Token 资源 DynamicResource）作为后续设计任务，不在收尾范围内开始 — 计数显示第2、3步已把 owner/动效重复解析从50次降到2次且不存在等值重发，剩余成本在 Avalonia 资源观察者扇出与真实变化的值，AtomUI 侧早退无法再拦截；第1步改变规格定义的 owner 读取机制，需要单独设计与完整评审 — 错了的代价：分支带着每次切主题约0.8 ms、首页附着约1.8 ms 的回退收尾，违背规格的5%门槛，直到后续任务落地。
+
+Ruling: 首页样式中位数标注为受宿主负载污染（1分钟平均负载约99，Rider、约570个 Chrome 进程与外部测试宿主在跑；20个样本一半在基线水平），保留原数字、不为寻找更好中位数重跑；Publish 样本紧密，按真实回退对待 — 守则禁止挑样本，负载污染只影响样式这一项 — 错了的代价：台账中的样式回退可能被高估，真实值需在空闲宿主上复测确认。
+
+Ruling: Result 状态图标颜色在图标自身主题绑定重发后丢失（`Result.cs:88-95` 用 SetCurrentValue 推送 StatusIconBrush）是基线既有缺陷（`ae5ac0a32` 同文件同代码），本轮值复用使其从“每次作用域发布都触发”收窄为“只在 ColorIcon 等真实变化时触发”，修复作为后续任务（以 Style 优先级或 TokenResourceBinder 投递状态画刷，带 RED 合同“ColorIcon 变化的发布后状态图标保持颜色”） — 它是控件行为缺陷而不是统一修复轮的范围，且本轮缩小而非扩大了暴露面 — 错了的代价：后续落地前，暗色切换等改变 ColorIcon 的发布会让 Result 的成功/信息/警告/错误图标退回默认图标色。
+
+Ruling: 接受 `7e456cfef` 对 Result 效果场景的修改（内容区放入实心块，让 ContentMargin/ContentPadding/UniformlyPadding 按自身位移度量），并由范围复审核对它没有放宽阈值或掩盖真实失效 — 二分定位显示三行此前依赖错误的状态图标重绘通过，Token 值与布局在复用下正确（Margin 0,24,0,0 → 4,28,4,4），真实效果落在 ColorFillAlter 与窗口背景的8通道容差内 — 错了的代价：若块的放置让任意布局变化都能通过，这三个 Token 的效果测试会失去区分力。
+
+Ruling: 接受实现者附带处置：快照身份追踪器“构造上保守”（冷单元、未知键、不可比快照、非发布通知一律完整刷新）作为提前退出的正确性合同；TokenResourceBinder 改走 AtomUI 自有 `TokenResourceObservable`（复制 Avalonia internal ResourceObservable 并加增量门）；值复用捐献者在新单元物化前暂时保留并计入 EstimatedRetainedBytes；D2 线程过滤随性能提交落地 — 都由 Core 合同与既有 live-publish/作用域/变体/owner 效果测试守住，Avalonia 不开放可子类化的 ResourceObservable — 错了的代价：Avalonia 资源解析行为变化需在此手工同步；追踪器若漏键会表现为发布后控件保留旧值；切主题后冷槽的估算保留字节短暂上升。

@@ -7,8 +7,10 @@ using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Shouldly;
 using Xunit;
@@ -135,6 +137,35 @@ public class TokenResourceBinderPublishTests
             fixture.Apply(new ThemeConfigBuilder().WithToken("ColorBorder", "#0000FF").WithToken("ColorText", "#123456").Build(),
                 ThemeTransitionReason.UserRequest);
             observable.ResolveCount.ShouldBe(resolved + 1, "an unrelated root change leaves the scoped ColorBorder alone");
+        });
+    }
+
+    [Fact]
+    public void Token_That_Resolves_To_Null_Unsets_The_Binding_Instead_Of_Writing_Null()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            // Avalonia's ResourceObservable maps a found-null resource to UnsetValue (FindResource(...) ?? UnsetValue), and
+            // an unset binding value applies the property's default (BindingEntryBase.SetValue), so FontFamily stays
+            // FontFamily.Default; writing null instead would leave the property null.
+            using var fixture = new OwnerTokenResourceTests.Fixture(new ThemeConfigBuilder().Build());
+            var control = new FrameTestPrimitive();
+            control.Resources[SharedTokenKind.FontFamily] = null;
+            fixture.Show(control);
+            control.FontFamily.ShouldBe(FontFamily.Default);
+
+            using var binding = TokenResourceBinder.CreateGlobalTokenBinding(
+                control, TemplatedControl.FontFamilyProperty, SharedTokenKind.FontFamily, BindingPriority.Style);
+
+            control.FontFamily.ShouldNotBeNull("a null resource must unset the binding, not write null");
+            control.FontFamily.ShouldBe(FontFamily.Default);
+
+            // Once the key resolves to a value the binding carries it, and a null again returns the default.
+            var monospace = new FontFamily("monospace");
+            control.Resources[SharedTokenKind.FontFamily] = monospace;
+            control.FontFamily.ShouldBe(monospace);
+            control.Resources[SharedTokenKind.FontFamily] = null;
+            control.FontFamily.ShouldBe(FontFamily.Default);
         });
     }
 

@@ -81,8 +81,10 @@ internal sealed class TokenResourceObservable : IObservable<object?>
     {
         ResolveCount++;
         _publishes.MarkCurrent(context);
+        // As Avalonia's ResourceObservable (FindResource(theme, key) ?? UnsetValue): a missing key and a key whose
+        // value is null both unset the binding, so lower-priority values stay reachable; the converter sees UnsetValue.
         var value = _host.TryFindResource(_key, _host.ActualThemeVariant, out var resolved)
-            ? resolved
+            ? resolved ?? AvaloniaProperty.UnsetValue
             : AvaloniaProperty.UnsetValue;
         return _converter?.Invoke(value) ?? value;
     }

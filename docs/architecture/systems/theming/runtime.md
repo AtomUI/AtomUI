@@ -1098,10 +1098,12 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 - 显式 Theme 若未接入默认主题的 owner 注入，需核对实际 owner 路由；不能仅凭它是注册类型就假设已经注入。
   SearchEdit 内的公开 Button 使用 Button 的独立颜色与动效身份；私有输入与候选部件则跟随其实际宿主。
 - `OwnerTokenResource` 返回以目标 `$self` 为根的公开 `CompiledBinding`，通过 `IPropertyAccessor` 为每个目标创建
-  `OwnerTokenBinding`；没有反射绑定或运行时跳链观察。访问器订阅目标的 `PropertyChanged`（仅处理 TokenOwner）、
-  `ResourcesChanged` 与 `ActualThemeVariantChanged`，用目标当前 variant 经 `TryFindResource` 查询 owner 的有效全局键。
-  owner 改变时创建并缓存键，资源刷新复用键；当前 registry 不登记该 owner 时用共享键，合法 owner 的求值失败不吞掉。
-  Unsubscribe/Dispose 成对移除三个事件，清空目标、listener、owner、键与缓存值。
+  `OwnerTokenBinding`；没有反射绑定或运行时跳链观察。访问器订阅目标的 `ResourcesChanged` 与
+  `ActualThemeVariantChanged` 两个事件，并在 `TokenOwnerListeners` 登记一条 owner 监听（owner 变化由一个静态的
+  `ThemeScope.TokenOwner.Changed` 观察者按目标分发，不订阅目标的 `PropertyChanged`），用目标当前 variant 经
+  `TryFindResource` 查询 owner 的有效全局键。owner 改变时创建并缓存键，资源刷新复用键；当前 registry 不登记该 owner
+  时用共享键（登记结果按 snapshot 缓存在 ThemeContext 上），合法 owner 的求值失败不吞掉。Unsubscribe/Dispose 成对移除
+  两个事件订阅与监听登记，清空目标、listener、owner、键与缓存值。
 - 没有继承到 owner（基元被单独使用或放在应用内容中）时回落为共享全局值。
 - 嵌套的公开 Control 以自己的 TokenResource 读自己的有效值，不读外层 Control 的值（SearchEdit 模板里的 Button 读
   `ButtonTokenResource`；AutoComplete 模板里的 LineEdit 由默认主题注入 LineEdit identity）。
@@ -1113,7 +1115,9 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 订阅目标的全部 `PropertyChanged`）；它们随绑定释放，不订阅 Application 来保活目标。
 
 发布时的刷新合并：`ThemeContext.Commit` 记录本次提交相对上一个 snapshot 的 `ThemePublishDelta`（全局资源键按值比较；
-控件槽位在两个 snapshot 共享同一 cell 或都读根全局表时跟随全局键，两侧都已物化时比较值，其余情况一律视为变化），
+控件槽位在两个 snapshot 共享同一 cell 或都读根全局表时跟随全局键，两侧都已物化时比较值，其余情况一律视为变化）。
+为此每个 ThemeContext 在下一次 `Commit` 之前保留上一个 snapshot（连同其已物化的控件快照）一代：这是每个上下文一份、
+有界的额外保留，不计入 snapshot 的 `EstimatedRetainedBytes`，也不影响旧 snapshot 在再下一次提交后的可回收性；
 `ThemeContext.Publish` 递增 `PublishVersion` 并在通知期间标记 `IsPublishing`。`OwnerTokenResource`、`TokenTransitions`
 与 `TokenResourceBinder`（StyledElement 宿主）的每目标绑定在收到发布引发的 `ResourcesChanged` 时先查询自己的键是否
 变化，未变化则不再解析；非发布引发的通知（挂载、局部资源字典变化）、变体切换、owner 变化以及无法比较的发布

@@ -597,3 +597,13 @@ Ruling: 三项渲染隔离合同改为10.10d之后的终端语义（Button 不�
 Ruling: 真实 generated startup 零分配合同放在 AtomUIGallery.Tests/Theme 而不是 Core.Tests — Core.Tests 没有生成的控件包，UsesStartupIndex 会为 false，测不到真实启动路径 — 错了的代价：以后测试位置可能再移动一次。
 
 Task15 process note for final review: 10.10d `10b58893d` (300 files) landed without running AtomUI.Desktop.Controls.Tests, which is how 36 failures reached Task15; the final review should check that every later task ran the package suites it touched.
+
+Task15 fix round 1 (`ca52a5064`, `d19fe525d`): the 10 remaining failures GREEN through the existing owner sources (TokenOwnerForwarding forwards host owner or the host type's registered identity; Primitives/OwnerThemeInputs maps a hosted/standalone part's inputs from its owner's Own/global tokens at Style priority for DialogSurface, TimePickerPresenter, ImagePreviewerCover); new scoped-owner effect tests for Dialog/MessageBox hosted surface ×2, hostless TimePicker presenter and standalone cover; Desktop focused 1138/1138, Rendering 259/259, Core 44/44. Experiment 3 counted 31/33 OwnerTokenBinding publishes equal to the previous value and 0 transitions on unchanged values; equal republish suppressed with contract (102 → 1 publishes). Final guarded remeasure at d19fe525d (driver daf505ae recreated, verified, deleted): Publish 1.404416 ms vs 0.621229 (+126.07%) FAIL; style 9.8836 ms vs 4.1657 (+137.26%) FAIL, bimodal (9 samples 4.06–4.94 ms, 11 samples 9.7–66.6 ms) under host load (Rider plus four foreign test hosts), not rerun. Full regression `[SUMMARY] TOTAL: 11864 个测试全部通过, 总耗时 17:02` (integration tests excluded by default).
+
+Ruling: Dialog/MessageBox 的 MinWidth 采用整框语义（框宽 = max(Token, 内边距+边框)），保留 MessageBox 默认值410不改为 antd 的416 — antd ConfirmDialog 的 width 416 是整个对话框宽度，10.10d 把 Token 改成了内容视口最小宽度（总宽458），破坏了 main 上已有的公开几何；410 是 main 上原有值，不属于本任务引入的差异 — 错了的代价：Dialog 默认最小框宽比 10.10d 版本收窄48px；与 antd 416 的6px差异作为 minor 交终审决定是否对齐。
+
+Ruling: 独立使用的部件（无宿主 owner）以其设计 owner 的注册标识作为 TokenOwner，并以 Style 优先级设置，显式或宿主转发的 owner 优先 — 这是既有 TokenOwner 注入机制的应用，不是第四种 owner 来源；不这样做独立部件只会拿到附加属性默认值0/null而崩溃或失样 — 错了的代价：独立部件被放进其他宿主但未转发时会显示设计 owner 的 Token，而不是该宿主的。
+
+Ruling: 从有作用域的放置位置打开、且 Dialog 本身未附加时，窗口托管对话框经对话框窗口上下文解析（依赖租约），目前没有断言；交 Task15 评审核对，评审未解决则带入终审 — 修复轮已覆盖覆盖层托管与独立路径，这一路径属于作用域租约语义，需要独立判断而不是由实现者自证 — 错了的代价：作用域主题在窗口托管对话框中可能静默回退到全局值。
+
+Ruling: 性能验收记为未达成（Publish +126.07%，style +137.26%，均超5%门槛），三次有界实验已用完，不再追加实验，原样带入整分支终审 — 剩余成本是设计要求的每控件 owner/作用域/动画绑定在 Avalonia 内的扇出，不改语义的 AtomUI 侧削减（等值不重发）已落地并只把 Publish 从1.64降到1.40 ms；用户要求保持5%门槛 — 错了的代价：分支带着未满足的已声明性能约束进入终审，需要终审或后续设计（例如合并刷新）给出处置。

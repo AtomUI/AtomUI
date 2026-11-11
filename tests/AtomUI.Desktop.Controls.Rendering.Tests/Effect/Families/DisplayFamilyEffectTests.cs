@@ -78,9 +78,21 @@ public partial class DisplayFamilyEffectTests
         Run(scenario, identity, token);
     }
 
+    // The content carries a solid block besides its text: the content area's own background (ColorFillAlter) is
+    // within the capture tolerance of the window background, so a Margin/Padding/UniformlyPadding change must move
+    // something opaque for its effect to be measured on its own merits.
     internal static Result CreateResult(ResultStatus status = ResultStatus.Success) => new()
     {
-        Header = "Completed", SubHeader = "The request has been processed.", Extra = "Continue", Content = "Details", Status = status
+        Header = "Completed", SubHeader = "The request has been processed.", Extra = "Continue", Status = status,
+        Content = new StackPanel
+        {
+            Spacing  = 4,
+            Children =
+            {
+                new TextBlock { Text = "Details" },
+                new Avalonia.Controls.Border { Height = 24, Background = Avalonia.Media.Brushes.DarkSlateGray }
+            }
+        }
     };
 
     private static Scenario ResultScenario(string token)

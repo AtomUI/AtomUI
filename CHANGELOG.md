@@ -6,6 +6,8 @@ All notable changes to AtomUI are documented in this file.
 
 ## Unreleased
 
+- New preset theme packages `AtomUI.Themes.PrimeNG`, `AtomUI.Themes.Shadcn`, `AtomUI.Themes.Bootstrap` and `AtomUI.Themes.Material` are implemented and validated locally; they are not yet published to NuGet. `AtomUI.Core` still ships only DaybreakBlue.
+- Warm startup registry queries no longer take the entry gate or format the Control identity per hit; the generated startup identity, validation and type routes are allocation-free after warm-up.
 - Theme consumption metadata includes actual `TokenTransitions.Duration` reads. Migrated control packages and GalleryBase enforce active consumption diagnostics as compiler errors.
 - Watermark text defaults follow scoped `ColorTextBase` and `FontSizeLG` on attach, theme publish and reattach. Explicit glyph values remain authoritative; default opacity stays 0.3.
 

@@ -8,6 +8,8 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
+- 新增预设主题包 `AtomUI.Themes.PrimeNG`、`AtomUI.Themes.Shadcn`、`AtomUI.Themes.Bootstrap`、`AtomUI.Themes.Material`：已实现并在本地验证，尚未发布到 NuGet；`AtomUI.Core` 仍只内置 DaybreakBlue。
+- 启动注册表的热查询不再逐次进入条目锁或格式化控件身份字符串；生成启动的身份、校验与类型三条路径预热后零分配。
 - 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
 - Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
 

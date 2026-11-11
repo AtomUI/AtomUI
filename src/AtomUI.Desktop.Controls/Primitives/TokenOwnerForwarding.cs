@@ -61,7 +61,15 @@ internal static class TokenOwnerForwarding
             {
                 return;
             }
-            _part.SetValue(ThemeScope.TokenOwnerProperty, ThemeScope.GetTokenOwner(_host) ?? RegisteredIdentity());
+            var owner = ThemeScope.GetTokenOwner(_host) ?? RegisteredIdentity();
+            if (owner is null)
+            {
+                // No host owner and no registered identity: a local null would block the owner the part can still
+                // inherit from its own ancestors, so the part is left to inheritance until a host owner appears.
+                _part.ClearValue(ThemeScope.TokenOwnerProperty);
+                return;
+            }
+            _part.SetValue(ThemeScope.TokenOwnerProperty, owner);
         }
 
         private ControlTokenIdentity? RegisteredIdentity()

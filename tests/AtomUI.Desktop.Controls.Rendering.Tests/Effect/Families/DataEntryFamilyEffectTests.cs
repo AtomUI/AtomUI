@@ -30,11 +30,23 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 /// </remarks>
 public partial class DataEntryFamilyEffectTests
 {
-    private static IEnumerable<object[]> MapRows(string controlId)
+    /// <summary>
+    /// The member's consumption-map rows. A member without any map entry fails fast: a shrinking consumption map
+    /// (a lost consumer, a renamed control) must surface as a failing theory, not as a silently empty one.
+    /// </summary>
+    private static IEnumerable<object[]> MapRows(string controlId) =>
+        EffectTestData.For("AtomUI", controlId).ToArray();
+
+    /// <summary>
+    /// The rows of a Token-owner transparent part. Such a part reads its host's Tokens, so the generated map may
+    /// attribute all of its reads to the host and hold no rows under the part's own id; that is the only case
+    /// where an empty set is legitimate.
+    /// </summary>
+    private static IEnumerable<object[]> TransparentPartRows(string partId)
     {
         try
         {
-            return EffectTestData.For("AtomUI", controlId).ToArray();
+            return EffectTestData.For("AtomUI", partId).ToArray();
         }
         catch (ArgumentException)
         {
@@ -47,7 +59,7 @@ public partial class DataEntryFamilyEffectTests
     {
         var rows = MapRows(controlId).ToList();
         var seen = new HashSet<string>(rows.Select(static row => (string)row[0]), StringComparer.Ordinal);
-        foreach (var token in transparentParts.SelectMany(static part => MapRows(part).Select(static row => (string)row[0]))
+        foreach (var token in transparentParts.SelectMany(static part => TransparentPartRows(part).Select(static row => (string)row[0]))
                                               .Distinct(StringComparer.Ordinal)
                                               .Order(StringComparer.Ordinal))
         {

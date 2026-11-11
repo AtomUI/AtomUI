@@ -337,6 +337,10 @@ public partial class DataFamilyEffectTests
             WaitFor(() => cell.Transitions?.OfType<Avalonia.Animation.TransitionBase>()
                               .All(static transition => transition.Duration == TimeSpan.FromMilliseconds(400)) == true);
             cell.Transitions.ShouldNotBeNull();
+            // Non-empty guard: ShouldAllBe passes vacuously on an empty collection, which would hide a cell that lost
+            // its TokenTransitions.
+            cell.Transitions!.OfType<Avalonia.Animation.TransitionBase>()
+                .ShouldNotBeEmpty("the time cells must carry the picker's duration transitions");
             cell.Transitions!.OfType<Avalonia.Animation.TransitionBase>()
                 .ShouldAllBe(static transition => transition.Duration == TimeSpan.FromMilliseconds(400));
         });

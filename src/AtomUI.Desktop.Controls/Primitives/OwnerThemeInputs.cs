@@ -110,6 +110,10 @@ internal static class OwnerThemeInputs
             if (owner is not null && !_part.IsSet(ThemeScope.TokenOwnerProperty))
             {
                 // Inherited from an attached owner ancestor: that owner's ControlTheme setters provide the inputs.
+                // A forwarded owner (TokenOwnerForwarding writes a LocalValue, so IsSet is true) is intentionally
+                // treated as "not provided by an attached ancestor": the forwarding host sits outside the part's
+                // logical tree (popup presenter, hosted surface), so its ControlTheme setters cannot reach the part
+                // and the mapping below must supply the inputs. Same key and scope, so no visible difference.
                 Release();
                 return;
             }

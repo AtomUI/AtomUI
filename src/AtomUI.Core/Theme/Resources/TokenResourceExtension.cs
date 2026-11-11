@@ -41,6 +41,11 @@ public abstract class TokenResourceExtension<TTokenKind> : MarkupExtension
         {
             // Let DynamicResourceExtension pick Template priority itself; it sees only the template
             // context, so it captures no anchor and no dictionary theme variant, exactly as before.
+            // The synthetic provider answers only IAvaloniaXamlIlControlTemplateProvider and returns null for
+            // IProvideValueTarget and every other service. Verified against Avalonia 12.1.5, whose
+            // DynamicResourceExtension.ProvideValue tolerates both (it only reads the template context and the
+            // optional anchor); TokenResourceExtensionTests.ProvideValue_In_Control_Template_Uses_Template_Priority
+            // is the contract that must go red if an Avalonia upgrade starts requiring either service.
             return extension.ProvideValue(new ControlTemplateContext(templateProvider));
         }
         return extension;

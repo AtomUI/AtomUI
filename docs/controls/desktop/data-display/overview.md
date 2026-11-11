@@ -107,5 +107,6 @@
 - [Tour Changelog](tour/changelog.md)
 - [TreeView 桌面版架构设计](tree-view/overview.md)
 - [TreeView 桌面版实现原理](tree-view/implementation.md)
+- [TreeView 键盘导航设计](tree-view/keyboard-navigation-design.md)
 - [TreeView Token 设计](tree-view/token.md)
 - [TreeView Changelog](tree-view/changelog.md)

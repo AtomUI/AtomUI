@@ -13,6 +13,7 @@ TreeSelect 的实现以 `AbstractSelect` 为选择与弹层基类，输入表面
 主要源码：
 
 - `src/AtomUI.Desktop.Controls/TreeSelect/TreeSelect.cs`：public TreeSelect API、生命周期、弹层树懒创建、选择同步、过滤输入、Form 映射和私有算法。
+- `src/AtomUI.Desktop.Controls/TreeSelect/TreeSelect.KeyboardNavigation.cs`：键盘入口：下拉开关键、`Escape`、按键转发规则和单选提交后关闭下拉。
 - `src/AtomUI.Desktop.Controls/TreeSelect/TreeSelect.SemanticParts.cs`：TreeSelect 的 13 个 Semantic Part 声明（见 [TreeSelect Semantic Part 契约](semantic-part.md)）。
 - `src/AtomUI.Desktop.Controls/TreeSelect/TreeSelectAddOnDecoratedBox.cs`：TreeSelect 输入布局扩展，复用 `InputControlFrame` 并承载多选和选择空状态。
 - `src/AtomUI.Desktop.Controls/TreeSelect/TreeSelectTreeView.cs`：TreeSelect 候选树，使用 TreeView 样式键并创建专用容器。
@@ -139,6 +140,22 @@ OpenDropDown()
 - 单选结果展示态下，过滤输入只读并显示当前选中节点文本。
 - 多选模式下，单选过滤输入不参与编辑，结果由 `SelectedItemsBox` 承载。
 
+键盘路径：
+
+```text
+KeyDown（来源是 TextBox 时走 tunnel，否则走 bubble）
+  → 输入法组合中 → 不处理
+  → F4 / Alt+↓↑ → 切换下拉
+  → 下拉关闭：↓ / ↑ / Enter / 非输入框 Space → 打开
+  → 下拉打开：Escape → 关闭
+               转发规则命中 → TreeSelectTreeView.HandleKeyDown
+               单选且 Enter / Space 已处理并有选中项 → 关闭下拉
+```
+
+- 搜索框会自己消费 ↑ / ↓ / Enter 等按键，因此来源为 `TextBox` 的按键在 tunnel 阶段处理，其余在 `OnKeyDown` 处理，同一事件只处理一次。
+- `EnsurePopupContent` 创建的下拉树设置 `Focusable=False` 与 `IsKeyboardMoveSelectionEnabled=False`；`PopupClosed` 调用 `ClearKeyboardActiveItem`。树内语义见 [TreeView 键盘导航设计](../../data-display/tree-view/keyboard-navigation-design.md)。
+- 达到最大选择数时，`TreeSelectTreeViewItemTheme` 禁用未选中节点的 header，TreeView 的键盘提交检查 header 可用性，因此键盘与指针受同一限制。
+
 tag 关闭路径：
 
 ```text
@@ -225,6 +242,7 @@ AOT 边界：
 - `ShowCheckedStrategy` 只能派生展示集合，不能改写真实选择集合。
 - `ItemsSource` 替换时的选择保留必须继续使用节点路径 identity。
 - popup 内容清理必须断开事件、ItemsSource、TemplatedParent 和 popup child 引用。
+- 下拉树必须保持 `Focusable=False` 与 `IsKeyboardMoveSelectionEnabled=False`；键盘转发不能绕过 TreeView 的提交入口直接写选择。
 - Semantic Part marker 的维护边界：`TreeSelectTheme.axaml` 承载触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-suffix`、`semantic-scope-handle`、`semantic-content`、`semantic-placeholder`、`semantic-input`、`semantic-scope-tags`、`semantic-popup-root`）；共享 `SelectHandleTheme.axaml` 承载清除按钮的 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 SelectHandle 主题链校验）；共享 `TagTheme.axaml` 承载 `itemContent` / `itemRemove` marker。运行时注入点：共享 `SelectTagAwareTextBox` 创建标签时追加 `TagItemClass`、创建搜索框时追加 `TagSearchInputClass`；`TreeSelect.EnsurePopupContent` 创建候选树时追加 `TreeSelectSemanticParts.PopupListClass` 并显式 `SetTemplatedParent(this)`；`TreeViewSelectTreeViewItem` 构造函数追加 `TreeSelectSemanticParts.PopupListItemClass`。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删；`PopupFrame` 以 `Popup.Child` 取回，不在控件中缓存字段。
 
 ### 弹层动效接入约束
@@ -241,6 +259,7 @@ TreeSelect 通过 AbstractSelect 继承根弹层配置，主题默认与用户�
 - `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectBehaviorTests.cs`：模板右侧 AXAML binding 和剩余 sibling relay binding。
 - `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectSelectionBindingTests.cs`：`SelectedItem` / `SelectedItems` 默认双向绑定、data validation metadata、`SelectedItems` 原地变更和 checkable TreeView 同步。
 - `tests/AtomUI.Desktop.Controls.Tests/SizeType/CustomizableSizeTypeContractTests.cs`：TreeSelect 的 `ICustomizableSizeTypeAware` 契约。
+- `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectKeyboardNavigationTests.cs`：下拉树不可聚焦、方向键不改变值、Enter 提交并关闭单选下拉、勾选模式 Space 切换并保持打开、Escape 关闭、关闭后清除活动项。
 - `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectSemanticPartTests.cs`：descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、多选搜索输入 marker、前缀部件内联呈现、popup 部件 marker 暴露。
 - `tests/AtomUIGallery.Tests/ShowCases/TreeSelectShowCasePageTests.cs`：Gallery TreeSelect 页面结构、示例和源码片段约束。
 

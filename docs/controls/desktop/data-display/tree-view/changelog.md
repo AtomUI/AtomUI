@@ -3,6 +3,26 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Design
+  - 新增 `keyboard-navigation-design.md`，定义 TreeView 键盘导航：TreeView 是树内唯一焦点目标和 Tab 停靠点，内部维护键盘活动项；方向键按可见、可用节点的先序移动活动项，左右键展开收起或进入 / 返回层级，RTL 互换左右。
+  - 提交策略由 `IsSelectable`、`SelectionMode`、`ToggleType` 推导：单选且无勾选入口时选择跟随活动项，其余模式由 Enter / Space 提交勾选或选择；不新增公共模式属性。
+  - 键盘与 switcher 共用 `TreeViewItem` 展开请求入口（含异步加载）；TreeSelect 等浮层宿主通过内部 `HandleKeyDown` 转发按键。
+- Theme
+  - 定义 `TreeViewItem` / `TreeViewItemHeader` 的 `:keyboard-active` 伪类，复用 `NodeHoverBg`；TreeView 可聚焦，header、switcher、checkbox / radio indicator 固定不可聚焦。
+- Implementation
+  - 新增 `TreeView.KeyboardNavigation.cs`：重写 `OnKeyDown` / `OnGotFocus` / `OnLostFocus`，重新实现 `ICustomKeyboardNavigation`；新增内部宿主入口 `HandleKeyDown`、`ClearKeyboardActiveItem` 与开关 `IsKeyboardMoveSelectionEnabled`。
+  - `TreeViewItem` 新增统一展开入口 `RequestToggleExpand`，`NodeSwitcherButton.Toggle` 改为调用它；`TreeViewItem.OnKeyDown` 不再处理按键。
+  - TreeView 主题设置 `Focusable=True` 与空 `FocusAdorner`；TreeSelect 下拉树不可聚焦并关闭移动即选择。
+- Gallery
+  - TreeView ShowCase 新增“键盘操作”示例（单选、勾选两棵树）。
+- Tests
+  - 新增 `TreeViewKeyboardNavigationTests`（22 项）与 `TreeSelectKeyboardNavigationTests`（3 项）。
+- Docs
+  - 更新 `overview.md` 键盘行为、伪类、集成关系、兼容性不变量、§8.8 键盘导航模型与验证策略。
+  - 更新 `implementation.md` 源码结构、键盘导航流、键盘与焦点处理、§7.8 活动项维护、维护不变量与验证范围；更新 `token.md` 的活动项 Token 使用说明。
+
 ## 2026-10-28
 
 - Motion

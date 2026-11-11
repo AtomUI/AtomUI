@@ -135,6 +135,14 @@ Form value + MaxCount state
 
 清除行为通过 `SelectHandle.ClearRequestedEvent` 冒泡到 TreeSelect，并调用 `Clear()` 清空当前选择。
 
+键盘行为：
+
+- 键盘焦点始终留在 TreeSelect 或其搜索输入框，下拉树不可聚焦；导航键转发给下拉树，树内的活动项、遍历和提交策略遵守 [TreeView 键盘导航设计](../../data-display/tree-view/keyboard-navigation-design.md)。
+- 下拉关闭时，↓ / ↑ / Enter 打开下拉；焦点不在可编辑输入框时，Space 也打开下拉。`F4` 和 `Alt+↓` / `Alt+↑` 切换下拉，下拉打开时 `Escape` 关闭。
+- 下拉打开时，↑ / ↓ / Enter 总是转发。Space 在可编辑搜索框中输入空格，不转发。← / → / Home / End 在搜索文本非空时留给输入框移动光标，否则转发。输入法组合期间不转发。
+- 方向键只移动活动项，不改变 TreeSelect 的值；Enter / Space 提交。单选提交后关闭下拉，勾选模式切换勾选后下拉保持打开。达到最大选择数时，被禁用的节点不能通过键盘提交。
+- 下拉关闭时清除活动项；再次打开后的第一次导航键从当前选中节点开始。
+
 ## 5. 视觉与主题模型
 
 TreeSelect 的默认视觉由 TreeSelect 专属主题、`InputControlFrame` / Select 家族 AddOnDecoratedBox、TreeView 和 PopupHost 协作完成。
@@ -185,6 +193,7 @@ TreeSelect 属于 Data Entry 选择控件家族，与 Select、Cascader、DatePi
 - `ItemsSource` 变化必须尽量按节点路径 identity 保留已有选择。
 - `Clear()` 必须同时清空单选和多选状态。
 - Popup 打开、关闭和 light-dismiss 语义必须继续由 `AbstractSelect` 管理。
+- 键盘焦点必须留在 TreeSelect；下拉树保持不可聚焦，并关闭移动即选择，只有 Enter / Space 能写入 TreeSelect 的值。
 - 重新套用模板或 detach 时必须释放旧 popup 内容、TreeView 事件订阅和模板 part relay binding。
 - 右侧稳定 template part 优先使用 AXAML binding，不能把可静态表达的绑定重新搬回 C#。
 - `SizeType=Custom` 必须继续以 `Middle` 作为未显式覆盖时的默认视觉基线。

@@ -669,6 +669,75 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
+                    Title="{gallery:TreeViewShowCaseLangResource KeyboardNavigationTitle}"
+                    Description="{gallery:TreeViewShowCaseLangResource KeyboardNavigationDescription}"
+                    BadgeText="{x:Static gallery:GalleryVersionInfo.DisplayVersion}"
+                    Span="Full"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:TreeViewViewModel">
+                            <Grid ColumnDefinitions="*, *"
+                                  RowDefinitions="Auto, *"
+                                  ColumnSpacing="32"
+                                  RowSpacing="8">
+                                <atom:TextBlock Grid.Row="0"
+                                                Grid.Column="0"
+                                                Text="{gallery:TreeViewShowCaseLangResource KeyboardNavigationSingleCaption}" />
+                                <atom:TextBlock Grid.Row="0"
+                                                Grid.Column="1"
+                                                Text="{gallery:TreeViewShowCaseLangResource KeyboardNavigationCheckableCaption}" />
+                                <Border Grid.Row="1" Grid.Column="0">
+                                <atom:TreeView>
+                                    <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
+                                                       ItemKey="0-0"
+                                                       IsExpanded="True">
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N0}"
+                                                           ItemKey="0-0-0">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                               ItemKey="0-0-0-0"
+                                                               IsEnabled="False" />
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                               ItemKey="0-0-0-1" />
+                                        </atom:TreeViewItem>
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N1}"
+                                                           ItemKey="0-0-1">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderSss}"
+                                                               ItemKey="0-0-1-0" />
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderXxx}"
+                                                               ItemKey="0-0-1-1" />
+                                        </atom:TreeViewItem>
+                                    </atom:TreeViewItem>
+                                </atom:TreeView>
+                                </Border>
+                                <Border Grid.Row="1" Grid.Column="1">
+                                <atom:TreeView ToggleType="CheckBox">
+                                    <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1}"
+                                                       ItemKey="0-0"
+                                                       IsExpanded="True">
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N0}"
+                                                           ItemKey="0-0-0">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                               ItemKey="0-0-0-0"
+                                                               IsEnabled="False" />
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderLeaf}"
+                                                               ItemKey="0-0-0-1" />
+                                        </atom:TreeViewItem>
+                                        <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderParentN1N1}"
+                                                           ItemKey="0-0-1">
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderSss}"
+                                                               ItemKey="0-0-1-0" />
+                                            <atom:TreeViewItem Header="{gallery:TreeViewShowCaseLangResource P2HeaderXxx}"
+                                                               ItemKey="0-0-1-1" />
+                                        </atom:TreeViewItem>
+                                    </atom:TreeViewItem>
+                                </atom:TreeView>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
             </gallery:ShowCasePanel>
         </gallery:GalleryShowCaseHost>
     </Grid>

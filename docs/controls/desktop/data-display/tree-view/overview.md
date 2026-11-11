@@ -1,6 +1,6 @@
 # TreeView 桌面版架构设计
 
-本文档定义 `AtomUI.Desktop.Controls.TreeView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [TreeView 桌面版实现原理](implementation.md)，Semantic Part 契约见 [TreeView Semantic Part 契约](semantic-part.md)，TreeView Token 的专项设计见 [TreeView Token 设计](token.md)，设计和契约变化记录见 [TreeView Changelog](changelog.md)。
+本文档定义 `AtomUI.Desktop.Controls.TreeView` 桌面版的最新设计定位、公共契约、行为状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [TreeView 桌面版实现原理](implementation.md)，Semantic Part 契约见 [TreeView Semantic Part 契约](semantic-part.md)，键盘焦点、活动项与按键语义见 [TreeView 键盘导航设计](keyboard-navigation-design.md)，TreeView Token 的专项设计见 [TreeView Token 设计](token.md)，设计和契约变化记录见 [TreeView Changelog](changelog.md)。
 
 该控件的 Popup 钉住打开属于共享弹层契约，详见 [Popup 钉住打开设计](../../other/popup/popup-pinned-open-design.md)。本控件的语义 owner 为 `TreeView`，其 internal `IsPopupPinnedOpen` 只供测试和内部诊断使用；设置为 true 时保持 tree Flyout open state，并 relay 到 `TreeViewFlyout` 及其 Popup，设置为 false 时只解除关闭拦截。控件卸载、锚点失效、TopLevel 改变和模板重建仍按共享生命周期规则清理。
 
@@ -16,7 +16,7 @@
 
 TreeView 是桌面端数据展示类树形结构控件，用于展示具有父子层级的数据、文件目录、组织结构、权限结构、分类结构和可展开节点集合。它以 Avalonia `TreeView` 为基础，扩展 AtomUI 的节点数据模型、图标、连线、选择、勾选、过滤、高亮、异步加载、拖拽、空状态、动效、Form 集成和 Token 体系。
 
-TreeView 的职责是管理树节点容器生成、层级展开、选择、勾选、过滤展示、节点异步加载和节点拖拽重排。它不负责业务路由、文件系统访问、权限计算、搜索数据源请求、远程分页、虚拟化列表、节点详情面板或业务命令编排。
+TreeView 的职责是管理树节点容器生成、层级展开、选择、勾选、过滤展示、节点异步加载、节点拖拽重排和键盘导航。它不负责业务路由、文件系统访问、权限计算、搜索数据源请求、远程分页、虚拟化列表、节点详情面板或业务命令编排。
 
 TreeView 支持两种节点提供方式：
 
@@ -40,6 +40,7 @@ TreeView 表达的是“层级结构 + 当前节点状态”的信息浏览语�
 | 过滤状态 | 搜索或过滤命中的节点。 | 高亮文本、隐藏未命中节点、展开命中路径。 |
 | 加载状态 | 子节点异步加载中。 | loading switcher icon。 |
 | 拖拽状态 | 节点重排的当前目标。 | drag preview、drop indicator、drag-over 状态。 |
+| 键盘活动项 | 键盘操作的当前目标节点。 | 键盘交互时的 active 背景。 |
 
 TreeView 的视觉强度应保持克制。节点 header 是可扫描的信息行，不应被绘制成卡片；连线和 switcher 是层级辅助，不应覆盖选中、禁用、过滤和拖拽状态的可读性。
 
@@ -125,6 +126,7 @@ TreeViewItem 节点 API：
 - `TreeViewItem :toggle` 表示 checkbox 模式。
 - `TreeViewItem :radio` 表示 radio 模式。
 - `TreeViewItemHeader :toggle` / `:radio` 与节点 toggle 模式同步。
+- `TreeViewItem :keyboard-active` / `TreeViewItemHeader :keyboard-active` 表示该节点是键盘活动项且活动项视觉可见，二者同步设置。
 
 ### 3.1 Semantic Part 契约
 
@@ -165,7 +167,7 @@ prepare 路径幂等添加，其余四个 marker 静态声明于 `TreeViewItemHe
 
 ## 4. 行为与状态模型
 
-TreeView 的状态模型由节点状态、选择状态、勾选状态、展开状态、过滤状态、异步加载状态、拖拽状态和空状态组成。
+TreeView 的状态模型由节点状态、选择状态、勾选状态、展开状态、过滤状态、异步加载状态、拖拽状态、键盘活动项和空状态组成。
 
 选择行为：
 
@@ -185,7 +187,7 @@ TreeView 的状态模型由节点状态、选择状态、勾选状态、展开�
 
 展开行为：
 
-- switcher 触发展开收起。
+- switcher 点击和键盘左右键触发展开收起，二者使用同一个展开请求入口。
 - `IsDefaultExpandAll=true` 时加载后展开全部节点，并优先于 `DefaultExpandedPaths`。
 - 默认路径通过 `TreeNodePath` 和 `ItemKey` / `Value` 匹配。
 - 展开收起动效由 `IsMotionEnabled`、`OpenMotion`、`CloseMotion` 和 `MotionDuration` 控制。
@@ -210,9 +212,20 @@ TreeView 的状态模型由节点状态、选择状态、勾选状态、展开�
 异步加载行为：
 
 - `DataLoader` 只在 `ItemsSource` 数据驱动场景下使用。
-- 未加载节点点击 switcher 时触发加载。
+- 未加载节点点击 switcher 或按键盘展开键时触发加载。
 - 加载中节点显示 loading switcher icon。
 - 加载成功后把返回子节点写入目标节点 `Children`，并展开目标节点。
+
+键盘行为：
+
+- TreeView 是树内唯一的键盘焦点目标和 Tab 停靠点；节点容器、header、switcher 和 checkbox / radio 指示器不参与焦点。
+- TreeView 内部维护键盘活动项。方向键 ↑ / ↓ / Home / End 按可见节点的先序顺序移动它；→ 展开节点或进入第一个子节点，← 收起节点或返回父节点；`FlowDirection=RightToLeft` 时左右键互换。
+- 被过滤隐藏、被禁用或位于收起祖先之下的节点不可导航。
+- 单选且 `ToggleType=None` 时，选择跟随活动项；多选、勾选模式或 `IsSelectable=false` 时，方向键只移动活动项，由 Enter / Space 提交勾选或选择。
+- 键盘提交复用指针交互的选择、勾选、展开和异步加载入口，不派发 `ItemClicked`。
+- 焦点留在宿主输入框的浮层场景（TreeSelect 下拉）由宿主把按键转发给 TreeView，按同一套语义执行。
+
+完整按键表、提交策略矩阵和活动项生命周期见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
 
 绑定型节点行为：
 
@@ -255,6 +268,7 @@ NodeSwitcherButtonTheme
 - `NodeHoverMode=Block` 时 header 内容背景横向拉伸到剩余区域。
 - `NodeHoverMode=WholeLine` 时背景由 TreeViewItem 行级绘制，覆盖整行宽度。
 - disabled 节点应使用 disabled 文本色和弱化图标，不应保留可交互 hover 视觉。
+- 键盘活动项使用 `:keyboard-active` 呈现，背景范围与 `NodeHoverMode` 一致；只在键盘交互期间显示，与 selected 背景叠加时 selected 优先。TreeView 获得焦点时不绘制整体焦点框。
 - filter match 时显示 `FilterHighlighter`，未命中时显示普通 `HeaderPresenter`。
 - `IsShowLine=true` 时，TreeViewItem 自绘树形连线。
 - drag indicator 由 TreeView 自绘，不进入节点模板内部。
@@ -267,12 +281,13 @@ TreeView 属于 Data Display 分类，与 List、DataGrid、Card、Descriptions�
 
 集成关系：
 
-- Avalonia `TreeView`：继承 ItemsControl、Selection、容器生成和基础 keyboard / focus 语义。
+- Avalonia `TreeView`：继承 ItemsControl、Selection 和容器生成语义。键盘与焦点模型由 AtomUI 自行定义，不使用 Avalonia 基于节点焦点的方向键导航，见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
 - `TreeViewItem`：节点容器，承载 icon、checked、loading、leaf、value 和 event。
 - `TreeItemNode` / `ITreeItemNode`：数据驱动节点模型。
 - `BindableTreeItemNode`：绑定型节点模型，为 XAML binding target、`DynamicResource` 和动态资源场景提供 Avalonia 属性承载。
 - `NodeSwitcherButton`：节点展开、收起、加载和叶子图标入口。
 - `FloatableTreeView`：TreeView 的浮层变体，用于 TreeViewFlyout 场景。
+- TreeSelect：下拉树复用 TreeView 键盘语义，焦点留在 TreeSelect，由 TreeSelect 转发按键；下拉树关闭移动即选择，只由 Enter / Space 提交。
 - Form：通过 `IFormItemAware` 读取和写入选择值；单选值是 `SelectedItem`，多选值是 `SelectedItems`。
 - Motion：展开收起和背景状态过渡遵守 `IsMotionEnabled`。
 - AsyncLoad：通过 `ITreeItemNodeLoader` 加载子节点。
@@ -305,6 +320,10 @@ TreeView 不实现 CompactSpace、Button 家族或 Popup 菜单导航模型。
 - 跨父级移动后，节点 `ParentNode`、root / child 集合、选中集合、勾选集合和展开状态必须保持一致。
 - Template part 名称和职责不擅自修改。
 - Token 名称和语义不擅自重命名或迁移为实例状态。
+- TreeView 是树内唯一焦点目标；节点容器、header、switcher 和 indicator 保持不可聚焦。
+- 键盘活动项不等于选择、勾选或展开状态；只有单选且无勾选入口时，选择才跟随活动项。
+- `IsSelectable=false` 时，任何键盘路径都不写入节点 `IsSelected`。
+- 键盘展开、加载、选择和勾选必须复用指针交互的同一入口，不能形成第二条状态路径。
 
 如果实现某项能力时无法保持这些不变量，应先停止实现，说明原因、影响范围、替代方案和迁移方式，并获得授权。
 
@@ -356,12 +375,19 @@ TreeView 同时支持 checkbox 和 radio。checkbox 可以按 `IsCheckStrictly` 
 - `Header` 仍遵守 Avalonia TreeView 数据项语义：生成容器的 `Header` 是节点对象，`node.Header` 通过 `TreeDataTemplate` 绑定更新展示内容。
 - 普通 `TreeItemNode`、用户自定义 `ITreeItemNode` 与 `BindableTreeItemNode` 可以在同一个 TreeView 数据源中并存。
 
+### 8.8 键盘导航模型
+
+键盘导航以 TreeView 为唯一焦点目标，用内部的键盘活动项表达键盘位置，而不是移动焦点到节点。活动项只在已实现、可见、可用、祖先全部展开的节点之间按先序移动；
+提交策略由 `IsSelectable`、`SelectionMode` 和 `ToggleType` 推导，不新增公共模式属性。浮层宿主通过内部转发入口复用同一模型。
+完整设计见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
+
 ## 9. 文档导航与验证策略
 
 关联文档：
 
 - [TreeView 桌面版实现原理](implementation.md)
 - [TreeView Semantic Part 契约](semantic-part.md)
+- [TreeView 键盘导航设计](keyboard-navigation-design.md)
 - [TreeView Token 设计](token.md)
 - [TreeView Changelog](changelog.md)
 
@@ -369,7 +395,7 @@ TreeView 同时支持 checkbox 和 radio。checkbox 可以按 `IsCheckStrictly` 
 
 | 层次 | 验证内容 |
 | --- | --- |
-| 文档 | `overview.md`、`implementation.md`、`semantic-part.md`、`token.md`、`changelog.md` 链接有效。 |
+| 文档 | `overview.md`、`implementation.md`、`semantic-part.md`、`keyboard-navigation-design.md`、`token.md`、`changelog.md` 链接有效。 |
 | Public API | TreeView、TreeViewItem、ITreeItemNode、事件参数和默认值与源码一致。 |
 | 状态回放 | 默认选中、默认勾选、默认展开、默认展开全部和 ItemsSource 变化恢复。 |
 | 勾选 | strict / cascading、半选、CheckedItems 同步、radio group。 |
@@ -377,5 +403,6 @@ TreeView 同时支持 checkbox 和 radio。checkbox 可以按 `IsCheckStrictly` 
 | 异步加载 | loading 状态、成功写入子节点、超时 / 取消事件结果和 detach 取消。 |
 | 绑定型节点 | XAML binding target、DynamicResource、owner resource 优先级、属性变化同步容器、container clear 释放。 |
 | 拖拽 | preview、drop indicator、根 / 子级插入、自身后代保护和事件顺序。 |
+| 键盘导航 | 遍历顺序与跳过规则、按键语义、RTL、提交策略矩阵、异步加载、活动项生命周期、Tab 单停靠点和宿主转发，见 [keyboard-navigation-design.md §10](keyboard-navigation-design.md#10-验证要求)。 |
 | Theme / Token | template part、hover mode、selected / disabled、line、switcher、drag indicator 和 token 表。 |
 | Semantic Part | 检查 descriptor 数量/顺序/字段、marker 数量与类型、容器回收后的 marker 身份，见 [semantic-part.md §8](semantic-part.md#8-兼容性与验证)。 |

@@ -109,6 +109,30 @@
         <target state="translated">使用模板生成</target>
       </segment>
     </unit>
+    <unit id="KeyboardNavigationCheckableCaption">
+      <segment>
+        <source>Checkable</source>
+        <target state="translated">勾选</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationDescription">
+      <segment>
+        <source>Click or Tab into the tree, then use ↑ / ↓ / Home / End to move between visible nodes and ← / → to collapse, expand or move between levels. In single selection the selection follows the arrows; with checkboxes the arrows only move, and Space / Enter toggles the check.</source>
+        <target state="translated">点击或用 Tab 进入树后，↑ / ↓ / Home / End 在可见节点间移动，← / → 收起、展开或在层级间移动。单选时选中跟随方向键；勾选模式下方向键只移动，按 Space / Enter 切换勾选。</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationSingleCaption">
+      <segment>
+        <source>Single selection</source>
+        <target state="translated">单选</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationTitle">
+      <segment>
+        <source>Keyboard navigation</source>
+        <target state="translated">键盘操作</target>
+      </segment>
+    </unit>
     <unit id="P2ContentBlock">
       <segment>
         <source>Block</source>

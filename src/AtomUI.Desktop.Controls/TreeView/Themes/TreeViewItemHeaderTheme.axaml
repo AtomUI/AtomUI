@@ -30,6 +30,7 @@
 
                     <atom:CheckBox Name="ToggleCheckbox"
                                    Classes.semantic-item-indicator="True"
+                                   Focusable="False"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
                                    Grid.Column="1"
@@ -46,6 +47,7 @@
                     </atom:CheckBox>
                     <atom:RadioButton Name="ToggleRadio"
                                       Classes.semantic-item-indicator="True"
+                                      Focusable="False"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Center"
                                       Grid.Column="1"
@@ -125,7 +127,7 @@
         </Style>
 
         <Style Selector="^[NodeHoverMode=Default], ^[NodeHoverMode=Block]">
-            <Style Selector="^[IsHover=True]">
+            <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="ContentFrameBackground"
                         Value="{atom:TreeViewTokenResource NodeHoverBg}" />
             </Style>
@@ -148,7 +150,7 @@
             <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
-            <Style Selector="^[IsHover=True]">
+            <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="Background"
                         Value="{atom:TreeViewTokenResource NodeHoverBg}" />
             </Style>

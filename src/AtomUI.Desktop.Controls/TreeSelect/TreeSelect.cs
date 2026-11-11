@@ -348,6 +348,7 @@ public partial class TreeSelect : AbstractSelect
         });
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleSearchInputTextChanged(e));
         SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleTagCloseRequest(e));
+        ConfigureKeyboardNavigation();
         ItemsSourceProperty.Changed.AddClassHandler<TreeSelect>((view, args) => view.HandleItemsSourceChanged(args));
         SelectedItemProperty.Changed.AddClassHandler<TreeSelect>((view, args) =>
             view.HandleSelectedItemChanged(args));
@@ -522,7 +523,10 @@ public partial class TreeSelect : AbstractSelect
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment   = VerticalAlignment.Stretch,
                 NodeHoverMode       = TreeItemHoverMode.Block,
-                ItemsSource         = BuildItemsSourceList(Items)
+                ItemsSource         = BuildItemsSourceList(Items),
+                // Focus stays in TreeSelect; keys are forwarded and only Enter / Space commit.
+                Focusable                      = false,
+                IsKeyboardMoveSelectionEnabled = false
             };
             treeView.Classes.Add(TreeSelectSemanticParts.PopupListClass);
             treeView.SetTemplatedParent(this);
@@ -562,6 +566,7 @@ public partial class TreeSelect : AbstractSelect
     protected override void PopupClosed(object? sender, EventArgs e)
     {
         base.PopupClosed(sender, e);
+        _treeView?.ClearKeyboardActiveItem();
         if (!IsMultiple)
         {
             FilterValue = null;

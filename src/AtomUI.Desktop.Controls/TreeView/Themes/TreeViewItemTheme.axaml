@@ -31,6 +31,7 @@
                                          IsEnabled="{TemplateBinding IsEnabled}"
                                          IsSelected="{TemplateBinding IsSelected}"
                                          IsDragging="{TemplateBinding IsDragging}"
+                                         IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
                                          IsDragOver="{TemplateBinding IsDragOver}"
                                          ToggleType="{TemplateBinding ToggleType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -41,7 +42,7 @@
                                          FilterStrategy="{TemplateBinding FilterStrategy}"
                                          FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                          IsSelectable="{TemplateBinding IsSelectable}"
-                                         Focusable="{TemplateBinding Focusable}"/>
+                                         Focusable="False"/>
                 <atom:ContentViewport
                     Name="PART_ChildrenViewport"
                     ClipToBounds="True"

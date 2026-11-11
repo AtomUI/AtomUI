@@ -282,15 +282,7 @@ internal class NodeSwitcherButton : ToggleButton
     {
         _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
         Debug.Assert(_owningTreeItem != null);
-        if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)
-        {
-            RaiseEvent(new TreeViewItemLoadRequestEventArgs(_owningTreeItem)
-            {
-                RoutedEvent = NodeLoadRequestEvent
-            });
-            return;
-        }
-        base.Toggle();
+        _owningTreeItem.RequestToggleExpand();
     }
 
 }

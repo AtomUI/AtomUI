@@ -91,6 +91,26 @@
         <source>Generate by template</source>
       </segment>
     </unit>
+    <unit id="KeyboardNavigationCheckableCaption">
+      <segment>
+        <source>Checkable</source>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationDescription">
+      <segment>
+        <source>Click or Tab into the tree, then use ↑ / ↓ / Home / End to move between visible nodes and ← / → to collapse, expand or move between levels. In single selection the selection follows the arrows; with checkboxes the arrows only move, and Space / Enter toggles the check.</source>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationSingleCaption">
+      <segment>
+        <source>Single selection</source>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationTitle">
+      <segment>
+        <source>Keyboard navigation</source>
+      </segment>
+    </unit>
     <unit id="P2ContentBlock">
       <segment>
         <source>Block</source>

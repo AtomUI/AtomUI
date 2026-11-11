@@ -109,6 +109,30 @@
         <target state="translated">Generate por template</target>
       </segment>
     </unit>
+    <unit id="KeyboardNavigationCheckableCaption">
+      <segment>
+        <source>Checkable</source>
+        <target state="translated">Com caixas de seleção</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationDescription">
+      <segment>
+        <source>Click or Tab into the tree, then use ↑ / ↓ / Home / End to move between visible nodes and ← / → to collapse, expand or move between levels. In single selection the selection follows the arrows; with checkboxes the arrows only move, and Space / Enter toggles the check.</source>
+        <target state="translated">Clique ou use Tab para entrar na árvore e use ↑ / ↓ / Home / End para mover entre os nós visíveis e ← / → para recolher, expandir ou mover entre níveis. Na seleção única a seleção acompanha as setas; com caixas de seleção as setas apenas movem, e Space / Enter alterna a marcação.</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationSingleCaption">
+      <segment>
+        <source>Single selection</source>
+        <target state="translated">Seleção única</target>
+      </segment>
+    </unit>
+    <unit id="KeyboardNavigationTitle">
+      <segment>
+        <source>Keyboard navigation</source>
+        <target state="translated">Navegação por teclado</target>
+      </segment>
+    </unit>
     <unit id="P2ContentBlock">
       <segment>
         <source>Block</source>

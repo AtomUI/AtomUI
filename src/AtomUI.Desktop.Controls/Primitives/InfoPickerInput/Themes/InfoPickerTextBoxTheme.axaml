@@ -15,4 +15,9 @@
     <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
         <Setter Property="Margin" Value="0" />
     </Style>
+    <!-- The shared input frame sets its own text color, which would cut the picker's text color (for example the
+         dimmed hover preview) off from the text presenter; the frame follows this text box instead. -->
+    <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame">
+        <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+    </Style>
 </ControlTheme>

@@ -133,13 +133,14 @@
                 <Setter Property="Foreground"
                         Value="{atom:SharedTokenResource ColorText}" />
             </Style>
-            <Style Selector="^[RangeActivatedPart=Start]">
+            <!-- Only the hover preview of the active part is dimmed, as in Ant Design. -->
+            <Style Selector="^:previewing[RangeActivatedPart=Start]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                     <Setter Property="Foreground"
                             Value="{atom:SharedTokenResource ColorTextTertiary}" />
                 </Style>
             </Style>
-            <Style Selector="^[RangeActivatedPart=End]">
+            <Style Selector="^:previewing[RangeActivatedPart=End]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_SecondaryInfoInputBox">
                     <Setter Property="Foreground"
                             Value="{atom:SharedTokenResource ColorTextTertiary}" />

@@ -315,6 +315,7 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(_pickerPresenter?.PreviewTime != null);
         var display = _pickerPresenter?.DisplayTime;
         var text = _pickerPresenter?.PreviewTime == null && _pickerPresenter?.InputText != null
             ? _pickerPresenter.InputText

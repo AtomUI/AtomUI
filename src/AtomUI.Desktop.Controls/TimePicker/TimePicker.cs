@@ -227,6 +227,7 @@ public partial class TimePicker : InfoPickerInput
 
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(IsPickerOpen && _pickerPresenter?.PreviewTime != null);
         var displayTime = IsPickerOpen ? _pickerPresenter?.DisplayTime : SelectedTime;
         Text = IsPickerOpen && _pickerPresenter?.PreviewTime == null && _pickerPresenter?.InputText != null
             ? _pickerPresenter.InputText

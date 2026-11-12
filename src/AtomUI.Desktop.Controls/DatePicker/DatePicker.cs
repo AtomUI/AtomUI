@@ -317,6 +317,11 @@ public partial class DatePicker : InfoPickerInput
         if (args.Property == DatePickerPresenter.SelectedDateTimeProperty && !_isApplyingTypedText)
         {
             _typedText = null;
+            // A hover preview keeps the input until it ends; otherwise the input shows the new candidate at once.
+            if (!IsPreviewing)
+            {
+                ClearHoverSelectedInfo();
+            }
         }
     }
 
@@ -441,6 +446,8 @@ public partial class DatePicker : InfoPickerInput
         if (args.Date.HasValue)
         {
             Text = FormatDateTime(args.Date);
+            // Hovering the confirm button shows the candidate itself, which is not dimmed as a preview.
+            SetPreviewing(args.Date != _pickerPresenter?.SelectedDateTime);
             CalculatePreferredWidth();
         }
         else
@@ -459,6 +466,7 @@ public partial class DatePicker : InfoPickerInput
 
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(false);
         Text = _typedText ?? FormatDateTime(_pickerPresenter?.SelectedDateTime ?? SelectedDateTime);
         CalculatePreferredWidth();
     }

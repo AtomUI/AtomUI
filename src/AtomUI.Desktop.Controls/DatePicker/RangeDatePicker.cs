@@ -400,6 +400,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
              args.Property == RangeDatePickerPresenter.SecondarySelectedDateTimeProperty) && !_isApplyingTypedText)
         {
             ResetTypedText();
+            // A hover preview keeps the inputs until it ends; otherwise they show the new candidate at once.
+            if (!IsPreviewing)
+            {
+                ClearHoverSelectedInfo();
+            }
         }
     }
 
@@ -554,6 +559,7 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(false);
         Text          = FormatDateTime(_pickerPresenter?.SelectedDateTime ?? RangeStartSelectedDate);
         SecondaryText = FormatDateTime(_pickerPresenter?.SecondarySelectedDateTime ?? RangeEndSelectedDate);
         if (_typedText is not null)
@@ -592,6 +598,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             (previewStart, previewEnd) = NormalizePreviewRange(previewStart, previewEnd);
             Text          = FormatDateTime(previewStart);
             SecondaryText = FormatDateTime(previewEnd);
+            // Hovering the confirm button shows the candidate itself, which is not dimmed as a preview.
+            var candidate = RangeActivatedPart == RangeActivatedPart.End
+                ? _pickerPresenter?.SecondarySelectedDateTime
+                : _pickerPresenter?.SelectedDateTime;
+            SetPreviewing(args.Date != candidate);
             CalculatePreferredWidth();
         }
         else

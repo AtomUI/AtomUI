@@ -15,9 +15,14 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:RangeInfoPickerInput">
             <Panel>
+                <!-- Keyboard stops follow Ant Design pickers: the input(s), then the clear button. The frame is focusable only
+                     for pointer hits on its padding; it is a local tab group ordered by TabIndex because the clear button
+                     precedes the inputs in the frame's visual tree. -->
                 <atom:AddOnDecoratedBox
                     Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                     Focusable="True"
+                    IsTabStop="False"
+                    KeyboardNavigation.TabNavigation="Local"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     MinWidth="{TemplateBinding MinWidth}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -55,6 +60,7 @@
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <Grid ColumnDefinitions="*, Auto, *">
                         <atom:InfoPickerTextBox Name="PART_InfoInputBox"
+                                                KeyboardNavigation.TabIndex="0"
                                                 Grid.Column="0"
                                                 HorizontalContentAlignment="Stretch"
                                                 VerticalContentAlignment="Center"
@@ -75,6 +81,7 @@
                             Grid.Column="1" />
                         <atom:InfoPickerTextBox
                             Name="PART_SecondaryInfoInputBox"
+                            KeyboardNavigation.TabIndex="1"
                             Grid.Column="2"
                             HorizontalContentAlignment="Stretch"
                             VerticalContentAlignment="Center"
@@ -121,7 +128,6 @@
     <Style Selector="^:is(atom|RangeInfoPickerInput)">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox">
                 <Setter Property="Foreground"

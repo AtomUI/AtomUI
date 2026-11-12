@@ -4,6 +4,12 @@
 
 ## 2026-11-11
 
+- Changed
+  - 键盘停靠点对齐 Ant Design：输入框（范围为开始、结束输入）在前，清除按钮在后；外框、图标与范围箭头不再是停靠点，焦点在控件内时显示清除按钮。
+  - 新增键入解析：文本完整匹配显示格式时成为候选并定位面板；Enter 提交（无需确认按钮）、Escape 回退、Tab 在范围端点间弱提交、焦点离开时按确认规则提交或丢弃。单值 Escape 不再把候选留到下次打开。
+  - 新增导航键转发：弹层打开时方向键、PageUp/PageDown、Home/End 移动面板焦点格（翻页跟随、不越界），焦点格复用悬停外观与范围预览，Enter 提交。日期格 `:hovered` 获得与指针悬停相同的背景。
+- Fixed
+  - 悬停预览结束时输入框恢复候选文本，不再短暂变空。
 - Theme
   - InfoPickerInput / RangeInfoPickerInput / RangeDatePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
 - Fixed

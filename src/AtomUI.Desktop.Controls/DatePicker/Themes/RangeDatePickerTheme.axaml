@@ -17,9 +17,14 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:RangeDatePicker">
                 <Panel>
+                    <!-- Keyboard stops follow Ant Design pickers: the input(s), then the clear button. The frame is focusable only
+                         for pointer hits on its padding; it is a local tab group ordered by TabIndex because the clear button
+                         precedes the inputs in the frame's visual tree. -->
                     <atom:AddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                         Focusable="True"
+                        IsTabStop="False"
+                        KeyboardNavigation.TabNavigation="Local"
                         Classes.semantic-scope-input="True"
                         IsEnabled="{TemplateBinding IsEnabled}"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -68,6 +73,7 @@
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Grid ColumnDefinitions="*, Auto, *">
                             <atom:InfoPickerTextBox Name="PART_InfoInputBox"
+                                                    KeyboardNavigation.TabIndex="0"
                                                     Classes.semantic-input="True"
                                                     Grid.Column="0"
                                                     HorizontalContentAlignment="Stretch"
@@ -89,6 +95,7 @@
                                 Grid.Column="1" />
                             <atom:InfoPickerTextBox
                                 Name="PART_SecondaryInfoInputBox"
+                                KeyboardNavigation.TabIndex="1"
                                 Classes.semantic-secondary-input="True"
                                 Grid.Column="2"
                                 HorizontalContentAlignment="Stretch"

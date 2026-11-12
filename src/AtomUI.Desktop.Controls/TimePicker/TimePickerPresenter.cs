@@ -73,6 +73,7 @@ internal class TimePickerPresenter : PickerPresenterBase
 
     internal void ResetOpenPanelState()
     {
+        _timeView?.ResetKeyboardNavigation();
         IsEditing = true;
         InputText = null;
         PreviewTime = null;
@@ -84,8 +85,12 @@ internal class TimePickerPresenter : PickerPresenterBase
         CandidateChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Steps the time columns for a navigation key pressed in the picker input; false for other keys.</summary>
+    internal bool NavigateByKey(Key key) => IsEditing && _timeView?.HandleForwardedKey(key) == true;
+
     internal TimeSpan? EndEditing()
     {
+        _timeView?.ResetKeyboardNavigation();
         var candidate = IsInputValid ? TempSelectedTime : SelectedTime;
         IsEditing = false;
         InputText = null;

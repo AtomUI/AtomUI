@@ -23,6 +23,7 @@ internal sealed record DatePickerEditInput
 internal abstract record DatePickerEditAction
 {
     public sealed record ChooseDate(DateTime Value) : DatePickerEditAction;
+    public sealed record InputDate(DateTime Value) : DatePickerEditAction;
     public sealed record ChooseTime(TimeSpan? Value) : DatePickerEditAction;
     public sealed record PreviewDate(DateTime? Value) : DatePickerEditAction;
     public sealed record PreviewTime(TimeSpan? Value) : DatePickerEditAction;

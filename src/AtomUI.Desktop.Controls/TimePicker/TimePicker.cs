@@ -6,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -207,7 +206,7 @@ public partial class TimePicker : InfoPickerInput
             _pickerPresenter.CandidateChanged -= HandleCandidateChanged;
             _pickerPresenter.FocusLeft -= HandleFocusLeft;
             var candidate = _pickerPresenter.EndEditing();
-            if (!IsNeedConfirm)
+            if (!IsNeedConfirm && !IsCancelingEdit)
             {
                 SetCurrentValue(SelectedTimeProperty, candidate);
             }
@@ -373,26 +372,10 @@ public partial class TimePicker : InfoPickerInput
         }
     }
 
-    protected override void OnLostFocus(FocusChangedEventArgs e)
-    {
-        base.OnLostFocus(e);
-        HandleFocusLeft(this, EventArgs.Empty);
-    }
-
-    private void HandleFocusLeft(object? sender, EventArgs args)
-    {
-        if (!IsPickerOpen || IsPopupPinnedOpen)
-        {
-            return;
-        }
-        var target = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Visual;
-        if (target != null && (target == this || target.GetVisualAncestors().Contains(this) ||
-            (PickerPresenter is Visual presenter && (target == presenter || target.GetVisualAncestors().Contains(presenter)))))
-        {
-            return;
-        }
-        ClosePickerFlyout();
-    }
+    // The presenter reports focus leaving it, which may happen inside the popup window, where the picker's own
+    // LostFocus does not see the new focus target.
+    private void HandleFocusLeft(object? sender, EventArgs args) =>
+        CloseIfFocusLeftPicker(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
 
     private void ReleaseInputHandlers()
     {
@@ -425,26 +408,21 @@ public partial class TimePicker : InfoPickerInput
         SetCurrentValue(TextProperty, text);
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    private protected override bool HasPendingInputText => _pickerPresenter?.InputText is not null;
+
+    private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
+        modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
+
+    private protected override void NotifyInputSubmit()
     {
-        if (!e.Handled && e.Key == Key.Enter)
+        if (_pickerPresenter?.InputText is { Length: 0 })
         {
-            if (_pickerPresenter?.InputText is { Length: 0 })
-            {
-                Clear();
-            }
-            else
-            {
-                _pickerPresenter?.ConfirmCandidate();
-            }
-            e.Handled = true;
+            Clear();
         }
-        else if (!e.Handled && e.Key == Key.Escape && IsPickerOpen)
+        else
         {
-            ClosePickerFlyout();
-            e.Handled = true;
+            _pickerPresenter?.ConfirmCandidate();
         }
-        base.OnKeyDown(e);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -78,6 +78,8 @@ Popup 隐藏造成的视觉树 detach 不解除仍会复用的模板按钮、日
 | 最终确认 | 校验、按原规则排序、写回并关闭。 |
 | 范围 Cancel/关闭 | 丢弃未确认候选与预览，保留已确认的单端或完整范围；只有显式 Clear 清空范围提交值。 |
 
+键盘由共享基类 `InfoPickerInput` 以 Tunnel 方式接收输入框按键，先于 TextBox 的光标处理：Enter、Escape、Tab 和导航键分别交给子类钩子 `NotifyInputSubmit`、`NotifyEditCanceled`、`NotifyInputTab`、`NotifyNavigationKey`；`OnLostFocus` 在焦点离开控件与弹层时关闭弹层，Escape 关闭期间 `IsCancelingEdit` 为真，子类据此不提交。DatePicker / RangeDatePicker 监听输入框文本：`DatePickerFormattingHelper.TryParseDateTime` 解析，`DatePickerPresenter.InputDate` 经会话动作 `InputDate` 更新活动候选、定位面板并移动面板焦点；Enter 经 `SubmitCandidate`（会话 `Confirm`）提交，Escape 经 `CancelEdit`（`Close(Escape)`）回退。导航键经 `DatePickerPresenter.NavigateByKey` 调用 `DatePanelSession.MoveKeyboardFocus`：它在可见页之外时让宿主翻页，跳过禁用格并受 `MinDate` / `MaxDate` 与尝试次数限制，同时把焦点格设为 Hover，复用悬停外观、范围预览和输入预览；`ActivateKeyboardFocus` 激活焦点格，需要确认时随即提交。
+
 Pointer、键盘、滚轮与 Automation 共用面板算法，事件消费由 Picker 策略决定。
 确认不是 Selected 的直接转发，不能提前关闭或重复提交。
 

@@ -148,14 +148,14 @@ public class FocusOutlineTargetTests
         });
     }
 
-    // Date and time pickers are left out: their frame is still their only keyboard stop, pending the picker
-    // keyboard design (audit item "keyboard P1").
     public static TheoryData<string> InputHosts => new()
     {
         nameof(Desktop.Controls.LineEdit), nameof(Desktop.Controls.SearchEdit), nameof(Desktop.Controls.TextArea),
         "ComboBox", "EditableComboBox", nameof(Desktop.Controls.Select), nameof(Desktop.Controls.TreeSelect),
         nameof(Desktop.Controls.Cascader), nameof(Desktop.Controls.NumericUpDown), nameof(Desktop.Controls.Mentions),
-        nameof(Desktop.Controls.AutoComplete)
+        nameof(Desktop.Controls.AutoComplete), nameof(Desktop.Controls.DatePicker),
+        nameof(Desktop.Controls.RangeDatePicker), nameof(Desktop.Controls.TimePicker),
+        nameof(Desktop.Controls.RangeTimePicker)
     };
 
     // Input frames are focusable only so that a click on their padding focuses the input; they must not add a
@@ -176,6 +176,10 @@ public class FocusOutlineTargetTests
             nameof(Desktop.Controls.Cascader) => new Desktop.Controls.Cascader(),
             nameof(Desktop.Controls.NumericUpDown) => new Desktop.Controls.NumericUpDown(),
             nameof(Desktop.Controls.Mentions) => new Desktop.Controls.Mentions(),
+            nameof(Desktop.Controls.DatePicker) => new Desktop.Controls.DatePicker(),
+            nameof(Desktop.Controls.RangeDatePicker) => new Desktop.Controls.RangeDatePicker(),
+            nameof(Desktop.Controls.TimePicker) => new Desktop.Controls.TimePicker(),
+            nameof(Desktop.Controls.RangeTimePicker) => new Desktop.Controls.RangeTimePicker(),
             _ => new Desktop.Controls.AutoComplete()
         };
         host.Width = 260;

@@ -97,6 +97,7 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
 
     internal void ResetOpenPanelState()
     {
+        _isKeyboardNavigating = false;
         OpenSession();
         _displayDate = ResolveOpenDisplayAnchor() ?? DateTime.Today;
         _panelKind = DateViewer.TargetPanel(ToSelectionUnit(PickerMode));
@@ -213,6 +214,132 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
     };
 
     protected virtual DateTime? ResolveOpenDisplayAnchor() => EditSession.OpenAnchor;
+
+    internal bool RequiresConfirmation => CreateInput().RequiresConfirmation;
+
+    // Navigation keys forwarded from the picker input move the panel's focused cell while keyboard focus stays in
+    // the input; Enter then activates that cell.
+    private bool _isKeyboardNavigating;
+    private bool _activationChoseDate;
+
+    private DatePanelSession? ActivePanelSession => RangeViewer?.PanelSession ?? SingleViewer?.PanelSession;
+
+    /// <summary>Moves the panel focus for a navigation key pressed in the picker input; false for other keys.</summary>
+    internal bool NavigateByKey(Key key)
+    {
+        if (!_sessionOpened || ActivePanelSession is not { } session)
+        {
+            return false;
+        }
+
+        DateKeyboardMove? move = key switch
+        {
+            Key.Left     => DateKeyboardMove.Left,
+            Key.Right    => DateKeyboardMove.Right,
+            Key.Up       => DateKeyboardMove.Up,
+            Key.Down     => DateKeyboardMove.Down,
+            Key.PageUp   => DateKeyboardMove.PreviousPage,
+            Key.PageDown => DateKeyboardMove.NextPage,
+            Key.Home     => DateKeyboardMove.PageStart,
+            Key.End      => DateKeyboardMove.PageEnd,
+            _            => null
+        };
+        if (move is null)
+        {
+            return false;
+        }
+
+        if (session.MoveKeyboardFocus(move.Value))
+        {
+            _isKeyboardNavigating = true;
+        }
+        // The key is consumed even at a bound, so it does not fall through to the input caret.
+        return true;
+    }
+
+    /// <summary>Activates the cell reached by keyboard navigation; false when the keyboard has not moved the panel.</summary>
+    internal bool ActivateKeyboardFocus()
+    {
+        if (!_isKeyboardNavigating || ActivePanelSession is not { } session)
+        {
+            return false;
+        }
+
+        _activationChoseDate = false;
+        session.Apply(new DatePanelAction.ActivateFocused());
+        if (_activationChoseDate)
+        {
+            _isKeyboardNavigating = false;
+            // Keyboard submission needs no confirm button, as in Ant Design.
+            if (RequiresConfirmation)
+            {
+                SubmitCandidate();
+            }
+        }
+        return true;
+    }
+
+    /// <summary>Moves the candidate to a value typed into the picker input; false when the value is not selectable.</summary>
+    internal bool InputDate(DateTime value)
+    {
+        if (!_sessionOpened || !EffectiveDateRange.Contains(value))
+        {
+            return false;
+        }
+
+        ApplyResult(EditSession.Apply(new DatePickerEditAction.InputDate(value)));
+        RevealDate(value);
+        ActivePanelSession?.Apply(new DatePanelAction.Focus(value));
+        _isKeyboardNavigating = false;
+        SyncTimeViewTimeValue();
+        return true;
+    }
+
+    /// <summary>Submits the candidate from the keyboard, which needs no confirm button, as in Ant Design.</summary>
+    internal DatePickerCommitKind SubmitCandidate()
+    {
+        if (!_sessionOpened)
+        {
+            return DatePickerCommitKind.None;
+        }
+
+        var result = EditSession.Apply(new DatePickerEditAction.Confirm());
+        ApplyResult(result);
+        return result.CommitKind;
+    }
+
+    /// <summary>Reverts the candidate of this open session to the committed value.</summary>
+    internal void CancelEdit()
+    {
+        if (_sessionOpened)
+        {
+            ApplyResult(EditSession.Close(DatePickerCloseReason.Escape));
+            SyncTimeViewTimeValue();
+        }
+    }
+
+    private void RevealDate(DateTime value)
+    {
+        var targetPanel = DateViewer.TargetPanel(ToSelectionUnit(PickerMode));
+        if (_panelKind == targetPanel && targetPanel == DateViewerPanelKind.Date)
+        {
+            // Keep the pages when the date is already shown; a dual panel reveals an end date on its right page.
+            var offset = (value.Year - _displayDate.Year) * 12 + value.Month - _displayDate.Month;
+            if (offset >= 0 && offset < PanelCount)
+            {
+                return;
+            }
+
+            _displayDate = EffectiveActiveRangePart == DateRangeActivePart.End
+                ? value.AddMonths(1 - PanelCount) : value;
+        }
+        else
+        {
+            _displayDate = value;
+            _panelKind = targetPanel;
+        }
+        RefreshViewer();
+    }
 
     protected void OpenSession()
     {
@@ -364,6 +491,7 @@ internal class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
             RefreshViewer();
             return;
         }
+        _activationChoseDate = true;
         ApplyResult(EditSession.Apply(new DatePickerEditAction.ChooseDate(selection.Value)));
     }
 

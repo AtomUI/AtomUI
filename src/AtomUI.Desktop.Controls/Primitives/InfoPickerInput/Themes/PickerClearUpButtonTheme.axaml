@@ -7,8 +7,10 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
+                    <!-- After the picker inputs (TabIndex 0 / 1) in the frame's local tab group. -->
                     <atom:InputClearIconButton
                         Name="PART_ClearButton"
+                        KeyboardNavigation.TabIndex="2"
                         Classes.semantic-clear="True"
                         IsVisible="{TemplateBinding IsInClearMode}" />
                     <StackPanel Name="IconLayout"

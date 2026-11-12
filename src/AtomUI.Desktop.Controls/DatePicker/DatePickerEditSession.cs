@@ -71,6 +71,22 @@ internal sealed class DatePickerEditSession
                 _shortcutDate = null;
                 SetActiveValue(Combine(Constraints.Normalize(choice.Value), TimeCursor ?? TimeDisplayValue));
                 return Input.RequiresConfirmation ? Snapshot() : Confirm();
+            case DatePickerEditAction.InputDate typed:
+                // Typed text only moves the candidate; it is committed by Enter, by focus leaving the picker when
+                // no confirmation is required, or by the confirm button.
+                if (!Constraints.Contains(typed.Value))
+                {
+                    return Snapshot();
+                }
+
+                _shortcutDate = null;
+                if (Input.HasTimePanel)
+                {
+                    TimeCursor       = typed.Value.TimeOfDay;
+                    TimeDisplayValue = typed.Value.TimeOfDay;
+                }
+                SetActiveValue(Combine(Constraints.Normalize(typed.Value), typed.Value.TimeOfDay));
+                return Snapshot();
             case DatePickerEditAction.ChooseTime time:
                 TimeCursor = time.Value;
                 // Single time clicks alter the cursor/header, not the previously joined candidate.
@@ -155,6 +171,14 @@ internal sealed class DatePickerEditSession
         {
             Draft = new DateViewerRange(null, null);
             _shortcutDate = null;
+        }
+        else if (reason == DatePickerCloseReason.Escape)
+        {
+            // Escape reverts to the committed value instead of keeping the candidate for the next open.
+            Draft = Input.Committed;
+            _shortcutDate = null;
+            TimeCursor = null;
+            TimeDisplayValue = ActiveValue?.TimeOfDay ?? TimeSpan.Zero;
         }
         return Snapshot();
     }

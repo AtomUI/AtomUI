@@ -9,6 +9,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -424,6 +425,8 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     public InfoPickerInput()
     {
+        // Tunnel, so the picker sees navigation keys before the input's caret handling consumes them.
+        AddHandler(KeyDownEvent, HandleInputKeyDown, RoutingStrategies.Tunnel);
     }
 
     public virtual void Clear()
@@ -542,7 +545,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
         if (DecoratedBox != null)
         {
-            KeyboardNavigation.SetTabOnceActiveElement(this, DecoratedBox);
             DecoratedBox.TemplateApplied += HandleDecoratedBoxTemplateApplied;
             DecoratedBox.PropertyChanged += HandleDecoratedBoxPropertyChanged;
         }
@@ -624,6 +626,115 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
     }
     
+    /// <summary>The element belongs to the picker or to its popup.</summary>
+    private protected bool IsPickerElement(IInputElement? element)
+    {
+        return element is Visual visual &&
+               (ReferenceEquals(visual, this) || this.IsVisualAncestorOf(visual) ||
+                PickerPopup?.IsInsidePopup(visual) == true);
+    }
+
+    #region Keyboard
+
+    // Keyboard semantics follow Ant Design pickers: focus never opens the popup and typing does (each picker parses
+    // its own text), Enter submits, Escape reverts and closes, and focus leaving the picker closes it, committing or
+    // discarding the edit by the picker's confirmation rule. While the popup is open and the input holds no typed
+    // text, navigation keys drive the popup panel instead of the caret; Ant Design has no such forwarding.
+
+    private bool _isCancelingEdit;
+
+    /// <summary>The picker closes because the user reverted the edit (Escape), so nothing is committed.</summary>
+    private protected bool IsCancelingEdit => _isCancelingEdit;
+
+    /// <summary>The input holds text typed in this open session rather than a formatted value.</summary>
+    private protected virtual bool HasPendingInputText => false;
+
+    private protected virtual bool IsPickerInputElement(object? source) =>
+        source is Visual visual && InfoInputBox is not null &&
+        (ReferenceEquals(visual, InfoInputBox) || InfoInputBox.IsVisualAncestorOf(visual));
+
+    private void HandleInputKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || IsReadOnly || !IsPickerInputElement(e.Source))
+        {
+            return;
+        }
+
+        var noModifiers = e.KeyModifiers == KeyModifiers.None;
+        switch (e.Key)
+        {
+            case Key.Enter when noModifiers:
+                if (IsPickerOpen)
+                {
+                    NotifyInputSubmit();
+                }
+                else
+                {
+                    SetPickerOpenIfChanged(true);
+                }
+                e.Handled = true;
+                break;
+            case Key.Escape when noModifiers && IsPickerOpen:
+                CancelPickerEdit();
+                e.Handled = true;
+                break;
+            case Key.Tab:
+                e.Handled = NotifyInputTab(e.KeyModifiers.HasFlag(KeyModifiers.Shift));
+                break;
+            default:
+                if (IsPickerOpen && !HasPendingInputText && NotifyNavigationKey(e.Key, e.KeyModifiers))
+                {
+                    e.Handled = true;
+                }
+                break;
+        }
+    }
+
+    /// <summary>Enter in an open picker. The default closes the popup.</summary>
+    private protected virtual void NotifyInputSubmit() => ClosePickerFlyout();
+
+    /// <summary>Reverts the edit of this open session; the picker closes afterwards.</summary>
+    private protected virtual void NotifyEditCanceled()
+    {
+    }
+
+    /// <summary>Tab in an input; returns true when the picker moved focus itself.</summary>
+    private protected virtual bool NotifyInputTab(bool isBackward) => false;
+
+    /// <summary>A navigation key in an open picker; returns true when the popup panel used it.</summary>
+    private protected virtual bool NotifyNavigationKey(Key key, KeyModifiers modifiers) => false;
+
+    private protected void CancelPickerEdit()
+    {
+        _isCancelingEdit = true;
+        try
+        {
+            NotifyEditCanceled();
+            ClosePickerFlyout();
+        }
+        finally
+        {
+            _isCancelingEdit = false;
+        }
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        CloseIfFocusLeftPicker(e.NewFocusedElement);
+    }
+
+    /// <summary>Closes the popup once focus is outside both the picker and its popup.</summary>
+    private protected void CloseIfFocusLeftPicker(IInputElement? newFocusedElement)
+    {
+        if (IsPickerOpen && !IsPopupPinnedOpen && !IsPickerElement(newFocusedElement))
+        {
+            ClosePickerFlyout();
+        }
+    }
+
+    #endregion
+
     protected bool ClickInClearUpButtonWithClearMode(PointerReleasedEventArgs args)
     {
         if (PickerClearUpButton != null)
@@ -666,12 +777,15 @@ public abstract class InfoPickerInput : TemplatedControl,
         return false;
     }
 
+    // Ant Design shows the clear button on hover and while focus is inside the picker, so keyboard users can reach it.
+    private protected bool IsClearButtonRevealed => DecoratedBox is { IsInnerBoxHover: true } || IsKeyboardFocusWithin;
+
     protected virtual void ConfigureIsClearButtonVisible()
     {
         if (DecoratedBox is not null)
         {
             SetClearButtonVisibleIfChanged(
-                DecoratedBox.IsInnerBoxHover &&
+                IsClearButtonRevealed &&
                 InfoInputBox?.IsReadOnly == false &&
                 InfoInputBox.Text?.Length > 0);
         }
@@ -799,7 +913,15 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private void HandleClearRequest(object? sender, EventArgs args)
     {
+        // The clear button hides once the value is gone; keep keyboard focus in the picker, as Ant Design returns it
+        // to the input.
+        var hadFocus = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is Visual focused &&
+                       PickerClearUpButton?.IsVisualAncestorOf(focused) == true;
         NotifyClearButtonClicked();
+        if (hadFocus)
+        {
+            InfoInputBox?.Focus(NavigationMethod.Tab);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -934,6 +1056,11 @@ public abstract class InfoPickerInput : TemplatedControl,
             change.Property == IsPopupVerticalFlippedProperty)
         {
             ConfigureArrowPosition();
+        }
+
+        if (change.Property == IsKeyboardFocusWithinProperty)
+        {
+            ConfigureIsClearButtonVisible();
         }
 
         if (change.Property == IsPopupPinnedOpenProperty)

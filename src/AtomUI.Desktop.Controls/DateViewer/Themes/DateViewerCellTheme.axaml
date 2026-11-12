@@ -132,7 +132,8 @@
         <Setter Property="Height" Value="{atom:DateViewerTokenResource CellHeight}" />
         <Setter Property="VerticalAlignment" Value="Bottom" />
     </Style>
-    <Style Selector="^:pointerover:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end)">
+    <!-- :hovered also marks the cell a picker input reaches with navigation keys while the pointer is elsewhere. -->
+    <Style Selector="^:pointerover:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end), ^:hovered:not(:week-mode):not(:selected):not(:disabled):not(:navigation-current):not(:range-start):not(:range-middle):not(:range-end):not(:range-preview-start):not(:range-preview-middle):not(:range-preview-end):not(:week-selection-start):not(:week-selection-middle):not(:week-selection-end)">
         <Setter Property="Background" Value="{atom:DateViewerTokenResource CellHoverBg}" />
     </Style>
     <Style Selector="^:outside">

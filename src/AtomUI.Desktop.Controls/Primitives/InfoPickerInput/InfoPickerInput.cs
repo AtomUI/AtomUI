@@ -410,6 +410,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     protected Control? PickerInnerBox;
 
     private protected bool IsChoosing;
+    private bool _isPreviewing;
     private AddOnDecoratedBox? _addOnDecoratedBox;
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
@@ -493,7 +494,22 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     protected virtual void NotifyPickerClosed()
     {
+        SetPreviewing(false);
         NotifyFlyoutClosed();
+    }
+
+    private protected bool IsPreviewing => _isPreviewing;
+
+    /// <summary>Marks whether the input text is a hover preview rather than the candidate, which dims it.</summary>
+    private protected void SetPreviewing(bool isPreviewing)
+    {
+        if (_isPreviewing == isPreviewing)
+        {
+            return;
+        }
+
+        _isPreviewing = isPreviewing;
+        UpdatePseudoClasses();
     }
 
     protected virtual void NotifyFlyoutClosed()
@@ -895,6 +911,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     {
         PseudoClasses.Set(InfoPickerPseudoClass.FlyoutOpen, IsPickerOpen);
         PseudoClasses.Set(InfoPickerPseudoClass.Choosing, IsChoosing);
+        PseudoClasses.Set(InfoPickerPseudoClass.Previewing, _isPreviewing);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

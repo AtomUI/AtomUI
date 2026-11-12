@@ -89,13 +89,9 @@ internal sealed class DatePickerEditSession
                 return Snapshot();
             case DatePickerEditAction.ChooseTime time:
                 TimeCursor = time.Value;
-                // Single time clicks alter the cursor/header, not the previously joined candidate.
-                // Range time clicks join the active date immediately (recorded original host behavior).
-                if (Input.IsRange)
-                {
-                    SetActiveValue(Combine(ActiveValue, time.Value));
-                }
-
+                // A time click joins the active date immediately, so the confirm button commits the clock the panel
+                // shows, as in Ant Design.
+                SetActiveValue(Combine(ActiveValue, time.Value));
                 return Snapshot();
             case DatePickerEditAction.SubmitTime time:
                 TimeDisplayValue = time.Value;
@@ -103,7 +99,11 @@ internal sealed class DatePickerEditSession
             case DatePickerEditAction.PreviewDate preview:
                 return Snapshot() with { HasPreview = true, PreviewValue = Combine(preview.Value, TimeCursor) };
             case DatePickerEditAction.PreviewTime preview:
-                return Snapshot() with { HasPreview = true, PreviewValue = Combine(ActiveValue, preview.Value) };
+                // A null clock means the pointer left the time cells: the preview ends instead of showing the bare date.
+                return Snapshot() with
+                {
+                    HasPreview = true, PreviewValue = preview.Value is null ? null : Combine(ActiveValue, preview.Value)
+                };
             case DatePickerEditAction.PreviewCandidate:
                 return Snapshot() with { HasPreview = true, PreviewValue = Combine(ActiveValue, TimeCursor ?? TimeDisplayValue) };
             case DatePickerEditAction.ActivatePart activation:

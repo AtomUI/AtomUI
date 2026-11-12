@@ -78,3 +78,46 @@
   - 宿主为 atom:Window，原生截图，写法取自 Gallery，Tab / Enter 经框架输入路由驱动，亮暗两种主题；
   - 门禁 A/A=0、扰动 3750、还原 0，DLL 一致，窗口全程激活；
   - 覆盖：两种 ComboBox 的清除按钮被 Tab 到达，描边挂在按钮上，3 DIP 描边色、1 DIP 间隙，带名称 “Clear”；Enter 清除后焦点回到 ComboBox；NumericUpDown 能被 Tab 进入输入框，外框显示焦点态，无叠加描边。
+
+## 第二轮复审修复
+
+对照 `release/6.0` 重新审查本分支全部 6 个提交，按焦点描边、Skeleton/动效/进度条、共享基类、ComboBox/对话框、日期时间选择器分 5 路进行。上一轮修复逐项复核均正确；以下为本分支新引入或复审中确认的问题，均先用临时用例复现为红、修复后转绿，临时用例已删除。
+
+### P2
+
+| 问题 | 修复 |
+| --- | --- |
+| `ManagedFocusOutline.Hide` 直接移除装饰器，AdornerLayer 对目标与全部祖先的订阅不释放，键盘活动项每移动一次泄漏一条（Window 订阅 15→35/20 次） | 移除前先清空 `AdornedElement`；`FocusOutlineAdorner` 在被移出层时兜底清空，覆盖 Avalonia `Control.OnLostFocus` 的同类泄漏（上游缺陷） |
+| `FocusOutlineAdorner` 关闭裁剪后，滚出视口的元素描边仍绘制在视口外 | `IsClipEnabled` 保持关闭，`Render` 按祖先裁剪逐边裁剪：贴身包裹层不裁描边，视口切到的一侧严格裁剪 |
+| CircleProgress 每次改宽高以 Template 优先级写 FontSize 并丢弃句柄，属性帧无上限增长（50 次 17→117） | 新增 internal `HeldValueExtensions.SetHeldValue`，持有句柄替换；默认完成图标同样改为持有句柄 |
+| DatePicker / RangeDatePicker 的 `Clear()` 被当作键入并打开弹层 | 先清值与草稿、同步 `Text`，再清输入框并关闭弹层 |
+| RangeDatePicker Tab 离开控件时丢弃有效键入值 | 只丢弃无效文本，有效值按焦点离开规则提交 |
+| RangeDatePicker 失焦提交单端可产生 Start > End | 所有提交路径统一经 `CommitRange` 按日期排序，未变化端点不写 |
+| NumericUpDown 清除按钮成为首个停靠点，Enter 清除后焦点丢失 | 输入框 `TabIndex=0`、清除按钮 1，替换 Avalonia 的 TabIndex 转发；清除后焦点回到输入框（TextArea、Mentions 基线同类问题一并修复） |
+| NavMenu Vertical/Horizontal 模式 Shift+Tab 回到菜单时出现两道描边 | 项设 `FocusAdorner=null`；Tab/方向键焦点落到项上时收回菜单根 |
+
+### P3
+
+- 描边圆角在形状变化而尺寸不变时不刷新：装饰器订阅目标及其形状提供者的属性变化，圆角变化时重绘。
+- Expander / CollapseItem 点击内容后按 Space/Enter 误切换：隧道阶段记录按下位置，内容区按下屏蔽切换键，键盘聚焦或按 Header 解除。
+- TreeView Shift 范围选择：增量计算改用 HashSet；同步期间的中间 `SelectionChanged` 标为已处理，最后统一发一次。
+- ComboBox：附加区可聚焦内容按视觉顺序参与 Tab 且不再被困住（共享 `AddOnDecoratedBoxTheme` 规则，也修正选择器左右附加顺序）；焦点在清除按钮或附加内容时打开下拉，焦点移到输入；钉住时选择不再重复过滤（5 遍→1 遍）。
+- 清除按钮自动化名称改为 ControlTheme setter 绑定语言资源，应用样式可覆盖，删除代码侧语言监听。
+- Dialog 触控/笔点击改在抬起后交接焦点，不再先聚焦 Surface。
+- AsyncImage：隐藏期间进入视口、再显示时重新判定；懒加载占位改由 internal 属性 `IsViewportPending`（有 Source 且等待视口）控制，不新增公开伪类。
+- MotionGate 在宿主 `OnAttachedToVisualTree` 中创建时不再重复挂载祖先订阅。
+- Skeleton（Button/Input/Avatar/Element）与 Tag 的 Template 优先级写值改为持有句柄（基线已有）。
+- 日期面板导航目标格禁用时不翻页；脱离逻辑树/视觉树或换模板时丢弃键入草稿，不回写；钉住时 Escape 恢复候选与输入文本（TimePicker、RangeTimePicker、DatePicker、RangeDatePicker）。
+
+### 遗留
+
+- 祖先 `ClipToBounds`/`Clip` 单独变化不会触发描边重算；圆角裁剪按外接矩形处理。
+- TreeView 的 `SelectedItems` 集合观察者仍先看到删除再看到添加（Avalonia 无批量 API）。
+- 范围部分确认后、关闭前，提交值可能短暂逆序。TimePicker 生命周期关闭且 `IsNeedConfirm=false` 时仍提交候选（基线行为）。
+- NumericUpDown 附加内容与选择器内附加尚未按视觉顺序排 Tab；SkeletonAvatar 非 Custom 尺寸下 `Size` 被样式覆盖（基线问题）。
+- 新增常驻测试 1 项：`ComboBoxKeyboardNavigationTests.AddOn_Content_Keeps_Visual_Tab_Order_Without_Trapping_Focus`（键盘陷阱属严重可达性故障且无其他覆盖）。焦点描边三项（视口裁剪与贴身包裹、NavMenu 单描边、Expander 形状刷新）已做脚本视觉验收：atom:Window 宿主、原生截图、亮暗两种主题，25/25 PASS，门禁 A/A=0、扰动 160、还原 0。
+
+### 验证
+
+- `python3 scripts/verification/test.py run --scope change --base HEAD`：passed，8 个测试项目共 5314 项、0 失败（Controls.Shared 146、Controls 167、Core 366、DataGrid 325、Rendering 76、Desktop.Controls 3698、GalleryBase 197、Gallery 339）。
+- 没有运行全量回归与 Gallery NativeAOT；视觉验收只覆盖焦点描边三项。

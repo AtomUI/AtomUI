@@ -1,5 +1,5 @@
+using AtomUI.Data;
 using Avalonia;
-using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -24,6 +24,8 @@ public partial class SkeletonButton : SkeletonElement
 
     #endregion
 
+    private IDisposable? _cornerRadiusValue;
+
     public SkeletonButton()
     {
     }
@@ -45,16 +47,16 @@ public partial class SkeletonButton : SkeletonElement
     {
         if (Shape == SkeletonButtonShape.Round)
         {
-            SetValue(CornerRadiusProperty, new CornerRadius(Height / 2), BindingPriority.Template);
+            this.SetHeldValue(CornerRadiusProperty, new CornerRadius(Height / 2), ref _cornerRadiusValue);
         }
         else if (Shape == SkeletonButtonShape.Circle)
         {
-            SetValue(WidthProperty, Height, BindingPriority.Template);
+            SetTemplateWidth(Height);
             if (!double.IsNaN(Height))
             {
-                SetValue(MinWidthProperty, Height, BindingPriority.Template);
+                SetTemplateMinWidth(Height);
             }
-            SetValue(CornerRadiusProperty, new CornerRadius(Height), BindingPriority.Template);
+            this.SetHeldValue(CornerRadiusProperty, new CornerRadius(Height), ref _cornerRadiusValue);
         }
     }
 
@@ -64,10 +66,10 @@ public partial class SkeletonButton : SkeletonElement
         {
             if (Shape != SkeletonButtonShape.Circle)
             {
-                SetValue(WidthProperty, Height * 2, BindingPriority.Template);
+                SetTemplateWidth(Height * 2);
                 if (!double.IsNaN(Height))
                 {
-                    SetValue(MinWidthProperty, Height * 2, BindingPriority.Template);
+                    SetTemplateMinWidth(Height * 2);
                 }
             }
         }

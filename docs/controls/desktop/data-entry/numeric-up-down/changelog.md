@@ -16,6 +16,11 @@
   - NumericUpDown 无法用 Tab 进入：`NumericUpDownSpinnerTheme` 基于 ButtonSpinner 主题，继承了 `KeyboardNavigation.TabNavigation=None`，整个旋钮内部（包括数值输入框）都不在 Tab 顺序中。现在该主题恢复为 `Continue`，输入框是唯一停靠点（Ant Design InputNumber）；外框和步进按钮设为 `IsTabStop=False`，步进仍由输入框内的 Up / Down 完成；清除按钮出现时可 Tab 到达。
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
   - `ButtonSpinnerDecoratedBoxTheme` 的 content frame 补上 `BoxShadow` 模板绑定；`ButtonSpinner` / `NumericUpDown` 宿主设置空 `FocusAdorner` 与 `ClipToBounds=False`，`Outlined` focus 外发光可见。
+  - 允许清除且有值时，Tab 顺序改为“输入 → 清除按钮 → 离开”，与 ComboBox 一致。此前清除按钮在模板中排在输入框之前，Tab 跳过它，从输入框 Shift+Tab 反而停在它上面；按 Enter 清除后按钮隐藏，键盘焦点丢失。
+    - 宿主是 Avalonia NumericUpDown 默认的 `TabNavigation=Local` 分组，模板中输入框 `TabIndex=0`、清除按钮 `TabIndex=1`。
+    - Avalonia 用本地绑定把宿主 `TabIndex` 转给输入框，会盖掉模板值；`OnApplyTemplate` 以一个立即完成的空本地绑定替换并释放它，宿主自身的 `TabIndex` 仍决定整个分组在外部的顺序。
+    - Enter / Space 或点击清除后焦点回到输入框（键盘触发时保持键盘焦点可见），描边在按钮聚焦时挂在按钮上。
+    - 从控件后方 Shift+Tab 进入时，Avalonia NumericUpDown 把首次进入的焦点交给输入框，因此落在输入框，再按 Tab 才到清除按钮。
 
 ## 2026-10-18
 

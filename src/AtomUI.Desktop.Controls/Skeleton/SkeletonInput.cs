@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -22,8 +21,8 @@ public partial class SkeletonInput : SkeletonElement
     {
         if (!double.IsNaN(Height) && !IsBlock)
         {
-            SetValue(WidthProperty, Height * 5, BindingPriority.Template);
-            SetValue(MinWidthProperty, Height * 5, BindingPriority.Template);
+            SetTemplateWidth(Height * 5);
+            SetTemplateMinWidth(Height * 5);
         }
     }
 }

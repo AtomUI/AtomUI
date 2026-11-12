@@ -297,21 +297,31 @@ internal sealed class DatePanelSession
     private bool TryKeyboardFocus(DateTime target, out bool hasCell)
     {
         var cell = FindInViewCell(target);
+        DateTime? targetDisplayDate = null;
         if (cell is null)
         {
+            // The pages that would show the target are probed first, so a disabled target leaves the shown pages
+            // and the focus unchanged.
             var kind = _input.PanelKind;
             var anchor = DatePanelAlgorithms.GetPanelAnchor(target, kind);
             var shown = DatePanelAlgorithms.GetPanelAnchor(_input.DisplayDate, kind);
-            _host.NavigateTo(anchor < shown ? anchor : DatePanelAlgorithms.Navigate(anchor, kind, 1 - _input.PanelCount),
-                kind);
-            UpdateInput();
-            cell = FindInViewCell(target);
+            targetDisplayDate = anchor < shown ? anchor : DatePanelAlgorithms.Navigate(anchor, kind, 1 - _input.PanelCount);
+            var probe = _input with { DisplayDate = targetDisplayDate.Value };
+            cell = Enumerable.Range(0, _input.PanelCount)
+                             .SelectMany(index => DatePanelAlgorithms.Build(probe, index).Cells)
+                             .FirstOrDefault(candidate => IsInViewCellOf(candidate, target));
         }
 
         hasCell = cell is not null;
         if (cell is not { IsFocusable: true, Value: { } value })
         {
             return false;
+        }
+
+        if (targetDisplayDate is { } displayDate)
+        {
+            _host.NavigateTo(displayDate, _input.PanelKind);
+            UpdateInput();
         }
 
         FocusedValue = value;
@@ -330,8 +340,10 @@ internal sealed class DatePanelSession
     }
 
     private DateViewerCellModel? FindInViewCell(DateTime value) =>
-        Models.SelectMany(model => model.Cells).FirstOrDefault(cell =>
-            cell.IsInView && cell.Kind != DateViewerCellType.Week && cell.Period?.Contains(value) == true);
+        Models.SelectMany(model => model.Cells).FirstOrDefault(cell => IsInViewCellOf(cell, value));
+
+    private static bool IsInViewCellOf(DateViewerCellModel cell, DateTime value) =>
+        cell.IsInView && cell.Kind != DateViewerCellType.Week && cell.Period?.Contains(value) == true;
 
     private bool TryAdvance(DateTime value, int step, out DateTime result)
     {

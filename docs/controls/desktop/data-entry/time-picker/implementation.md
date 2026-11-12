@@ -159,7 +159,7 @@ TimePicker 的交互事件应从输入源收敛到控件级语义事件：
 - 非集合控件不应通过隐藏集合状态模拟业务数据。
 - 值提交或命令触发必须保持继承控件的事件顺序。
 
-键盘语义由共享基类 `InfoPickerInput` 统一处理（Tunnel 接收输入框按键，见 DatePicker 实现文档）；TimePicker / RangeTimePicker 只实现钩子：Enter 调用 `TimePickerPresenter.ConfirmCandidate`（空文本清空），导航键经 `TimePickerPresenter.NavigateByKey` 交给 `TimeView.HandleForwardedKey`，后者用 `DateTimePickerPanel.StepByKey` 步进当前列，并以 `IsKeyboardActive` 标记该列选中项。Presenter 的 `FocusLeft` 只调用基类的 `CloseIfFocusLeftPicker`，Escape 关闭时 `IsCancelingEdit` 阻止 `IsNeedConfirm=false` 的提交。RangeTimePicker 在打开时按两端是否都有值初始化端点确认标记，`HandleConfirmed` 据此决定转到另一端还是关闭。
+键盘语义由共享基类 `InfoPickerInput` 统一处理（Tunnel 接收输入框按键，见 DatePicker 实现文档）；TimePicker / RangeTimePicker 只实现钩子：Enter 调用 `TimePickerPresenter.ConfirmCandidate`（空文本清空），导航键经 `TimePickerPresenter.NavigateByKey` 交给 `TimeView.HandleForwardedKey`，后者用 `DateTimePickerPanel.StepByKey` 步进当前列，并以 `IsKeyboardActive` 标记该列选中项。Presenter 的 `FocusLeft` 只调用基类的 `CloseIfFocusLeftPicker`，Escape 关闭时 `IsCancelingEdit` 阻止 `IsNeedConfirm=false` 的提交；`NotifyEditCanceled` 调用 `TimePickerPresenter.ResetOpenPanelState` 把候选与输入文本恢复为提交值，弹层固定打开时同样生效，面板内 Escape（`Dismissed`）也经 `CancelPickerEdit` 处理。RangeTimePicker 在打开时按两端是否都有值初始化端点确认标记，`HandleConfirmed` 据此决定转到另一端还是关闭。
 
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
 

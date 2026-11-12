@@ -1,7 +1,7 @@
 using AtomUI.Controls;
+using AtomUI.Data;
 using Avalonia;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -55,6 +55,11 @@ public partial class SkeletonAvatar : AbstractSkeleton, ICustomizableSizeTypeAwa
 
     #endregion
 
+    // 每次配置都替换持有的句柄，避免累积属性帧
+    private IDisposable? _cornerRadiusValue;
+    private IDisposable? _widthValue;
+    private IDisposable? _heightValue;
+
     public SkeletonAvatar()
     {
     }
@@ -80,7 +85,7 @@ public partial class SkeletonAvatar : AbstractSkeleton, ICustomizableSizeTypeAwa
         if (Shape == AvatarShape.Circle)
         {
             var radius = double.IsNaN(Width) ? Height : Width;
-            SetValue(CornerRadiusProperty, new CornerRadius(radius), BindingPriority.Template);
+            this.SetHeldValue(CornerRadiusProperty, new CornerRadius(radius), ref _cornerRadiusValue);
         }
     }
 
@@ -89,8 +94,8 @@ public partial class SkeletonAvatar : AbstractSkeleton, ICustomizableSizeTypeAwa
         if (!double.IsNaN(Size))
         {
             // 不影响模板设置
-            SetValue(WidthProperty, Size, BindingPriority.Template);
-            SetValue(HeightProperty, Size, BindingPriority.Template);
+            this.SetHeldValue(WidthProperty, Size, ref _widthValue);
+            this.SetHeldValue(HeightProperty, Size, ref _heightValue);
         }
     }
 

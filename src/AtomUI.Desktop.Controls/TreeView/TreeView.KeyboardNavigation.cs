@@ -16,6 +16,7 @@ public partial class TreeView : ICustomKeyboardNavigation
     private TreeViewItem? _keyboardActiveItem;
     private TreeViewItem? _keyboardSelectionAnchor;
     private bool _isKeyboardActiveVisible;
+    private bool _isSyncingKeyboardRangeSelection;
 
     internal TreeViewItem? KeyboardActiveItem => _keyboardActiveItem;
 
@@ -310,26 +311,55 @@ public partial class TreeView : ICustomKeyboardNavigation
             range.Add(GetTreeItem(items[i]));
         }
 
-        // Only the delta is synchronized: clearing and refilling would let SelectionChanged subscribers
-        // and form bindings observe an empty and then a partial selection.
-        var rangeSet = new HashSet<object>(range);
-        var removed  = SelectedItems.Cast<object>().Where(item => !rangeSet.Contains(item)).ToList();
-        var added    = range.Where(item => !SelectedItems.Contains(item)).ToList();
-        if (SelectedItems is AvaloniaList<object> selectedItems)
+        // Only the delta is synchronized, so SelectedItems never passes through an empty selection. Avalonia
+        // TreeView raises SelectionChanged for every SelectedItems notification (AvaloniaList removes one
+        // contiguous run per notification, then adds the rest in one), and offers no batch update: those
+        // intermediate events are suppressed and the whole change is reported once. Collection observers
+        // still see the removal before the addition.
+        var rangeSet    = new HashSet<object>(range);
+        var selectedSet = new HashSet<object>(SelectedItems.Cast<object>());
+        var removed     = SelectedItems.Cast<object>().Where(item => !rangeSet.Contains(item)).ToList();
+        var added       = range.Where(item => !selectedSet.Contains(item)).ToList();
+        if (removed.Count == 0 && added.Count == 0)
         {
-            selectedItems.RemoveAll(removed);
-            selectedItems.AddRange(added);
             return;
         }
 
-        foreach (var item in removed)
+        _isSyncingKeyboardRangeSelection = true;
+        try
         {
-            SelectedItems.Remove(item);
+            if (SelectedItems is AvaloniaList<object> selectedItems)
+            {
+                selectedItems.RemoveAll(removed);
+                selectedItems.AddRange(added);
+            }
+            else
+            {
+                foreach (var item in removed)
+                {
+                    SelectedItems.Remove(item);
+                }
+
+                foreach (var item in added)
+                {
+                    SelectedItems.Add(item);
+                }
+            }
+        }
+        finally
+        {
+            _isSyncingKeyboardRangeSelection = false;
         }
 
-        foreach (var item in added)
+        RaiseEvent(new SelectionChangedEventArgs(
+            Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent, removed, added));
+    }
+
+    private void HandleSelectionChangedDuringKeyboardRangeSync(SelectionChangedEventArgs args)
+    {
+        if (_isSyncingKeyboardRangeSelection && ReferenceEquals(args.Source, this))
         {
-            SelectedItems.Add(item);
+            args.Handled = true;
         }
     }
 

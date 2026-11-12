@@ -199,6 +199,10 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOut
     private Control? _headerDecorator;
     private IconButton? _expandButton;
     private DashedBorder? _frame;
+    // Avalonia focuses the nearest focusable ancestor of a pressed element, so a press on plain content gives
+    // the Expander focus; Ant Design only toggles from the header, so toggle keys stay off until focus comes
+    // from the keyboard or a header press.
+    private bool _isToggleKeySuppressed;
 
     static Expander()
     {
@@ -208,6 +212,7 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOut
 
     public Expander()
     {
+        AddHandler(PointerPressedEvent, HandlePreviewPointerPressed, RoutingStrategies.Tunnel, true);
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -282,10 +287,20 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOut
         e.Handled = true;
     }
 
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && e.NavigationMethod != NavigationMethod.Pointer)
+        {
+            _isToggleKeySuppressed = false;
+        }
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
         if (e.Handled ||
+            _isToggleKeySuppressed ||
             !ReferenceEquals(e.Source, this) ||
             TriggerType != ExpanderTriggerType.Header ||
             e.KeyModifiers != KeyModifiers.None ||
@@ -324,19 +339,27 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOut
         args.Handled = true;
     }
 
+    // Runs in the tunnel phase, before the focus manager focuses the Expander for a content press.
+    private void HandlePreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isToggleKeySuppressed = !IsPointerInHeader(e);
+        }
+    }
+
     private bool CanToggleFromHeaderPointer(PointerPressedEventArgs e)
     {
-        if (TriggerType != ExpanderTriggerType.Header ||
-            e.Pointer.Type != PointerType.Mouse ||
-            !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
-            _headerDecorator is null)
-        {
-            return false;
-        }
+        return TriggerType == ExpanderTriggerType.Header &&
+               e.Pointer.Type == PointerType.Mouse &&
+               e.GetCurrentPoint(this).Properties.IsLeftButtonPressed &&
+               IsPointerInHeader(e);
+    }
 
-        var position = e.GetPosition(_headerDecorator);
-        var bounds   = new Rect(_headerDecorator.Bounds.Size);
-        return bounds.Contains(position);
+    private bool IsPointerInHeader(PointerEventArgs e)
+    {
+        return _headerDecorator is not null &&
+               new Rect(_headerDecorator.Bounds.Size).Contains(e.GetPosition(_headerDecorator));
     }
 
     private void ToggleExpanded()

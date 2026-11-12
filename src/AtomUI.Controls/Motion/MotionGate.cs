@@ -78,6 +78,12 @@ public sealed class MotionGate : IDisposable
 
     private void HandleAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
+        // A gate created inside the owner's OnAttachedToVisualTree already attached in its constructor; the event
+        // Avalonia raises right after that override must not rebuild the ancestor subscriptions.
+        if (_isAttached)
+        {
+            return;
+        }
         Attach();
         Update();
     }

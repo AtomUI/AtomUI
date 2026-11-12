@@ -157,9 +157,7 @@ public class ComboBoxKeyboardNavigationTests
             before.Focus(NavigationMethod.Tab).ShouldBeTrue();
             Dispatcher.UIThread.RunJobs();
             var clearButton = FindClearButton(comboBox);
-            IInputElement input = isEditable
-                ? comboBox.GetVisualDescendants().OfType<Avalonia.Controls.TextBox>().Single(t => t.Name == "PART_EditableTextBox")
-                : comboBox;
+            IInputElement input = GetInput(comboBox, isEditable);
 
             Press(window, Key.Tab).ShouldBeSameAs(input);
             Press(window, Key.Tab).ShouldBeSameAs(clearButton);
@@ -179,6 +177,69 @@ public class ComboBoxKeyboardNavigationTests
             Dispatcher.UIThread.RunJobs();
             return FocusedElement(comboBox);
         }
+    }
+
+    // Focusable add-on content keeps its visual place in the Tab order. The editable ComboBox hands focus inside the
+    // control to its text box; add-on content must be exempt, or Tab cycles between the input, the clear button and
+    // the add-on without ever leaving the control.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AddOn_Content_Keeps_Visual_Tab_Order_Without_Trapping_Focus(bool isEditable)
+    {
+        var before       = new Avalonia.Controls.Button { Content = "Before" };
+        var after        = new Avalonia.Controls.Button { Content = "After" };
+        var leftAddOn    = new Avalonia.Controls.Button { Content = "Left" };
+        var contentRight = new Avalonia.Controls.Button { Content = "ContentRight" };
+        var rightAddOn   = new Avalonia.Controls.Button { Content = "Right" };
+        var comboBox = new AtomUIComboBox
+        {
+            Width             = 300,
+            ItemsSource       = new[] { "Alpha", "Beta" },
+            IsEditable        = isEditable,
+            SelectedIndex     = 0,
+            IsAllowClear      = true,
+            IsMotionEnabled   = false,
+            LeftAddOn         = leftAddOn,
+            ContentRightAddOn = contentRight,
+            RightAddOn        = rightAddOn
+        };
+
+        ShowInWindow(new StackPanel { Children = { before, comboBox, after } }, window =>
+        {
+            before.Focus(NavigationMethod.Tab).ShouldBeTrue();
+            Dispatcher.UIThread.RunJobs();
+            var input = GetInput(comboBox, isEditable);
+            var clearButton = FindClearButton(comboBox);
+            // The non-editable input is the host itself, which precedes its own parts.
+            IInputElement[] stops = isEditable
+                ? [leftAddOn, input, contentRight, clearButton, rightAddOn, after]
+                : [input, leftAddOn, contentRight, clearButton, rightAddOn, after];
+
+            foreach (var stop in stops)
+            {
+                Press(window).ShouldBeSameAs(stop);
+            }
+
+            foreach (var stop in Enumerable.Reverse(stops).Skip(1).Append(before))
+            {
+                Press(window, RawInputModifiers.Shift).ShouldBeSameAs(stop);
+            }
+        });
+
+        IInputElement? Press(AvaloniaWindow window, RawInputModifiers modifiers = RawInputModifiers.None)
+        {
+            window.KeyPress(Key.Tab, modifiers, PhysicalKey.Tab, null);
+            Dispatcher.UIThread.RunJobs();
+            return FocusedElement(comboBox);
+        }
+    }
+
+    private static IInputElement GetInput(AtomUIComboBox comboBox, bool isEditable)
+    {
+        return isEditable
+            ? comboBox.GetVisualDescendants().OfType<Avalonia.Controls.TextBox>().Single(t => t.Name == "PART_EditableTextBox")
+            : comboBox;
     }
 
     [Fact]

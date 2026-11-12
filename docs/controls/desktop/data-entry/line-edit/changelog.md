@@ -9,7 +9,10 @@
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
   - TextArea：`TextAreaDecoratedBox` 的裁剪下移到 `Border#TextAreaContentFrame`，`TextArea` 宿主设置 `ClipToBounds=False`；内容仍被裁剪，frame 外侧的 focus 外发光可见。
 - Accessibility
-  - 共用清除按钮 `InputClearIconButton` 的自动化名称取自通用语言包 `CommonLangResourceKind.Clear`（Ant Design `locale.global.clear`），随语言切换更新；以 Template 优先级设置，应用设置的本地值或绑定优先。输入家族的清除按钮因此都有本地化名称。
+  - 共用清除按钮 `InputClearIconButton` 的自动化名称取自通用语言包 `CommonLangResourceKind.Clear`（Ant Design `locale.global.clear`），随语言切换更新。输入家族的清除按钮因此都有本地化名称。
+  - 该名称由 `InputClearIconButtonTheme` 的 setter 绑定语言资源（`{atom:CommonLangResource Clear}`），处于 ControlTheme 层：应用 Style、本地值或绑定都能覆盖。此前代码以 Template 优先级设值，高于 Style，应用样式无法覆盖。
+- Fixed
+  - 清除按钮按下 Enter / Space 或被点击清除后，焦点回到输入（键盘触发时保持键盘焦点可见）。此前按钮随文本清空隐藏，焦点丢失；TextArea 与 Mentions 的清除按钮是 Tab 停靠点，可直接复现。
 - Theme
   - `InputControlFrameTheme` 统一设置空 `FocusAdorner`：模板为接收内边距点击而把外框设为可聚焦时，键盘到达外框也不会叠加焦点描边，焦点仍由 `:focus-within` 外框表达。
   - TextArea：内部 `TextAreaDecoratedBox` 设 `IsTabStop=False`，只保留指针聚焦，不再是额外的 Tab 停靠点。

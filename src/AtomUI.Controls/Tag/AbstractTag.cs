@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Reflection;
 using AtomUI.Theme;
@@ -138,6 +139,7 @@ public abstract class AbstractTag : TemplatedControl
     private IDisposable? _closeIconBinding;
     private IDisposable? _themeSubscription;
     private CompositeDisposable? _calculatedVisualValues;
+    private IDisposable? _borderThicknessValue;
     private TagColorTable? _colorTable;
 
     // Null while the tag has no color to resolve: tags without a color never touch the theme snapshot.
@@ -268,10 +270,9 @@ public abstract class AbstractTag : TemplatedControl
         }
     }
 
-    private void ConfigureBorderThickness()
-    {
-        SetValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, BindingPriority.Template);
-    }
+    // 每次套模板都会写入，持有句柄替换，避免累积属性帧
+    private void ConfigureBorderThickness() =>
+        this.SetHeldValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, ref _borderThicknessValue);
 
     private void UpdateTagColorVisualState()
     {

@@ -339,6 +339,11 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         base.OnApplyTemplate(e);
         ClearButtonPart = e.NameScope.Find<IconButton>("PART_ClearButton");
         TextBoxPart     = e.NameScope.Find<TextBox>("PART_TextBox");
+        // Avalonia relays the host TabIndex to the text box with a local binding. The host is a local tab group that
+        // carries that index itself; inside it the template order (input 0, then the clear button 1, which precedes
+        // the input in the visual tree) must hold. A new local binding replaces the relay, and an empty one completes
+        // at once, so the text box falls back to its template TabIndex.
+        TextBoxPart?.Bind(KeyboardNavigation.TabIndexProperty, Observable.Empty<int>());
         ConfigureEffectiveShowClearButton();
         if (e.NameScope.Find<ButtonSpinner>("PART_Spinner") is { } buttonSpinner)
         {
@@ -568,7 +573,13 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
     {
+        // Focus returns to the input, as in Ant Design; the button hides once the value is gone.
+        var focusReturnMethod = (sender as InputClearIconButton)?.GetFocusReturnMethod();
         NotifyClearButtonClicked();
+        if (focusReturnMethod is { } navigationMethod)
+        {
+            _textBoxPart?.Focus(navigationMethod);
+        }
     }
 
     private void SetupTemplatePartBindings(TemplateAppliedEventArgs e)

@@ -86,6 +86,8 @@ Avalonia 的固定层序为 Overlay、LightDismiss、Popup。Dialog 位于 Overl
 `PopupOverlayLayer`。Presenter 的隧道 pointer handler 只激活 Dialog 的叠放顺序，不提前聚焦 Surface；
 实际焦点由 Avalonia 根据命中目标和视觉祖先分配。否则内容会先经历一次与用户目标无关的失焦，破坏 Picker 的
 候选值、确认与弹层关闭语义。点击 Surface 空白区时仍由框架把焦点分配给可聚焦的 Surface。
+框架分配之后（鼠标在按下处理之后，触控与笔在同一指针抬起之后，因为它们在抬起时才聚焦目标），若焦点仍在
+该 Dialog 及其内容弹层之外（不可聚焦区域、非左键），才把焦点交给 Surface，使 Escape / Enter 与输入作用于同一个 Dialog。
 
 激活只移动已有 presenter 的集合位置，保持逻辑/视觉挂载、内容焦点和 Popup owner 生命周期；不得以移除再添加
 presenter 的方式调整层序。DialogSession 打开时的初始聚焦与关闭时的焦点恢复保持独立。

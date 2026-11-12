@@ -5,7 +5,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -196,15 +195,7 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         
         ExceptionCompletedIconPresenter = e.NameScope.Find<IconPresenter>(ExceptionCompletedIconPresenterPart);
         SuccessCompletedIconPresenter   = e.NameScope.Find<IconPresenter>(SuccessCompletedIconPresenterPart);
-        if (ExceptionCompletedIcon == null)
-        {
-            SetValue(ExceptionCompletedIconProperty, new CloseCircleFilled(), BindingPriority.Template);
-        }
-        
-        if (SuccessCompletedIcon == null)
-        {
-            SetValue(SuccessCompletedIconProperty, new CheckCircleFilled(), BindingPriority.Template);
-        }
+        SetupDefaultCompletedIcons(static () => new CloseCircleFilled(), static () => new CheckCircleFilled());
     }
 
     protected override void NotifyProgressInfoContentChanged()

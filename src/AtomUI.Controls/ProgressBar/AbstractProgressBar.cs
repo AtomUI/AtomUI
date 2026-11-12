@@ -1,4 +1,5 @@
 using AtomUI.Animations;
+using AtomUI.Data;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -308,6 +309,8 @@ public abstract class AbstractProgressBar : RangeBase,
     private readonly TransitionInitializationSession _transitionInitialization;
     private bool _isMeasuringProgressInfoContent;
     private IDisposable?[]? _infoContentVisibilityOverrides;
+    private IDisposable? _defaultExceptionCompletedIconValue;
+    private IDisposable? _defaultSuccessCompletedIconValue;
 
     static AbstractProgressBar()
     {
@@ -509,6 +512,20 @@ public abstract class AbstractProgressBar : RangeBase,
         }
 
         ReleaseInfoContentVisibilityOverrides();
+    }
+
+    // 默认图标以模板优先级写入，主题或本地图标可替换它；重套模板时替换持有的句柄，避免累积属性帧
+    private protected void SetupDefaultCompletedIcons(Func<PathIcon> createExceptionIcon, Func<PathIcon> createSuccessIcon)
+    {
+        if (ExceptionCompletedIcon == null)
+        {
+            this.SetHeldValue(ExceptionCompletedIconProperty, createExceptionIcon(), ref _defaultExceptionCompletedIconValue);
+        }
+
+        if (SuccessCompletedIcon == null)
+        {
+            this.SetHeldValue(SuccessCompletedIconProperty, createSuccessIcon(), ref _defaultSuccessCompletedIconValue);
+        }
     }
 
     private static IDisposable? HideForInfoContent(Control? part)

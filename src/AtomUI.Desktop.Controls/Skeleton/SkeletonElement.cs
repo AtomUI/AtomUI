@@ -1,6 +1,6 @@
 using AtomUI.Controls;
+using AtomUI.Data;
 using Avalonia;
-using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -28,6 +28,10 @@ public abstract class SkeletonElement : AbstractSkeleton, ICustomizableSizeTypeA
     
     #endregion
 
+    // 基类与派生类都写宽度，共用一个句柄：后写者生效，且始终只占一个属性帧
+    private IDisposable? _widthValue;
+    private IDisposable? _minWidthValue;
+
     static SkeletonElement()
     {
         AffectsMeasure<SkeletonElement>(IsBlockProperty);
@@ -40,9 +44,15 @@ public abstract class SkeletonElement : AbstractSkeleton, ICustomizableSizeTypeA
         {
             if (IsBlock)
             {
-                SetValue(WidthProperty, double.NaN, BindingPriority.Template);
+                SetTemplateWidth(double.NaN);
             }
         }
     }
+
+    private protected void SetTemplateWidth(double width) =>
+        this.SetHeldValue(WidthProperty, width, ref _widthValue);
+
+    private protected void SetTemplateMinWidth(double minWidth) =>
+        this.SetHeldValue(MinWidthProperty, minWidth, ref _minWidthValue);
 
 }

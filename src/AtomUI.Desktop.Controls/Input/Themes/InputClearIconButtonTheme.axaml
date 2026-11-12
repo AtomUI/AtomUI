@@ -8,6 +8,10 @@
             <atom:IconButtonTheme TargetType="{x:Type atom:InputClearIconButton}" />
         </ControlTheme.BasedOn>
         
+        <!-- Ant Design names the clear button from locale.global.clear. A theme setter keeps application styles and
+             local values in control, and the language resource follows language changes. -->
+        <Setter Property="AutomationProperties.Name" Value="{atom:CommonLangResource Clear}" />
+
         <Setter Property="IconWidth"
                 Value="{atom:SharedTokenResource IconSize}" />
         

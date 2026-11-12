@@ -89,6 +89,19 @@
             </DockPanel>
         </ControlTemplate>
     </Setter>
+    <!-- A host that orders its frame parts by TabIndex makes the frame a local tab group. The outer add-ons then keep
+         their visual place: the left one before and the right one after everything in the frame. Each presenter is a
+         group of its own, so a TabIndex set on add-on content stays local to it. -->
+    <Style Selector="^[(KeyboardNavigation.TabNavigation)=Local]">
+        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_LeftAddOnPresenter">
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
+            <Setter Property="KeyboardNavigation.TabIndex" Value="-2147483648" />
+        </Style>
+        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_RightAddOnPresenter">
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
+            <Setter Property="KeyboardNavigation.TabIndex" Value="2147483647" />
+        </Style>
+    </Style>
     <Style Selector="^:is(atom|AddOnDecoratedBox)">
         <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />

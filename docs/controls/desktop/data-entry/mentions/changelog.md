@@ -12,6 +12,8 @@
 
 - Behavior
   - `Mentions` 宿主 `IsTabStop` 默认 `False`（与 AutoComplete 一致），键盘停靠点只有内部文本域，不再多出一个没有视觉的停靠点。
+- Fixed
+  - 清除按钮（内部 TextArea 的停靠点）按 Enter / Space 或被点击清除后，焦点回到文本域；此前按钮随文本清空隐藏，焦点丢失。
 
 ## 2026-11-05
 

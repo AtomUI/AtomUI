@@ -51,7 +51,11 @@ internal sealed class StartupResourceProvider : IResourceProvider
     {
         var resources = ActiveIndex;
         List<int>? known = null;
-        if (StartupPackageIndex.ResourceKey(key) is { } identity)
+        if (key is string name)
+        {
+            resources.KnownNames.TryGetValue(name, out known);
+        }
+        else if (StartupPackageIndex.ResourceKey(key) is { } identity)
         {
             resources.Known.TryGetValue(identity, out known);
         }
@@ -207,17 +211,31 @@ internal sealed class StartupResourceProvider : IResourceProvider
                 }
                 foreach (var key in keys)
                 {
-                    if (!Known.TryGetValue(key, out var matches))
+                    // String resource keys ("s:" + name) are indexed by name so lookups never concatenate.
+                    if (key.StartsWith("s:", StringComparison.Ordinal))
                     {
-                        matches = [];
-                        Known.Add(key, matches);
+                        Add(KnownNames, key.Substring(2), ordinal);
                     }
-                    matches.Add(ordinal);
+                    else
+                    {
+                        Add(Known, key, ordinal);
+                    }
                 }
             }
         }
+
+        private static void Add(Dictionary<string, List<int>> map, string key, int ordinal)
+        {
+            if (!map.TryGetValue(key, out var matches))
+            {
+                matches = [];
+                map.Add(key, matches);
+            }
+            matches.Add(ordinal);
+        }
         internal StartupPackageIndex Index { get; }
         internal Dictionary<string, List<int>> Known { get; } = new(StringComparer.Ordinal);
+        internal Dictionary<string, List<int>> KnownNames { get; } = new(StringComparer.Ordinal);
         internal List<int> Unknown { get; } = [];
     }
 

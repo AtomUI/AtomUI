@@ -285,7 +285,7 @@ public class WatermarkTileRendererTests
     private static Color ThemeText(Control owner)
     {
         var snapshot = ThemeScope.ResolveContext(owner).ShouldNotBeNull().Snapshot;
-        return new ThemeTokenResolver().GetGlobal<Color>(snapshot, (int)SharedTokenKind.ColorText);
+        return new ThemeTokenResolver().GetGlobal<Color>(snapshot, (int)SharedTokenKind.ColorTextBase);
     }
 
     private static Color BrushColor(IBrush? brush)
@@ -310,7 +310,7 @@ public class WatermarkTileRendererTests
     }
 
     [Fact]
-    public async Task Foreground_defaults_to_color_text_and_follows_theme()
+    public async Task Foreground_defaults_to_color_text_base_and_follows_theme()
     {
         await ApplyAppearanceAsync(ThemeAppearance.Light);
         var owner = new Border();

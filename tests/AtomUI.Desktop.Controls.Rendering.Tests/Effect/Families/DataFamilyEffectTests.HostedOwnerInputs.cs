@@ -44,7 +44,15 @@ public partial class DataFamilyEffectTests
     [Fact]
     public void Image_Cover_Created_Alone_Maps_The_ImagePreviewer_Tokens_Onto_Itself()
     {
-        var cover = new ImagePreviewerCover { IsShowCoverMask = true, IsLoading = true, Content = "preview" };
+        // Top-left aligned so the loading presenter's CoverImageWidth minimum, not the host, decides the cover's size.
+        var cover = new ImagePreviewerCover
+        {
+            IsShowCoverMask     = true,
+            IsLoading           = true,
+            Content             = "preview",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Top
+        };
         var host  = new AvaloniaBorder { Width = 420, Height = 420, Child = cover };
         WithIsolationWindow(host, (provider, capture) =>
         {

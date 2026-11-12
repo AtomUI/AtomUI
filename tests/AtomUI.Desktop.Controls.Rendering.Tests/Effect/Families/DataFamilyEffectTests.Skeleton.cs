@@ -24,12 +24,13 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 public partial class DataFamilyEffectTests
 {
     /// <summary>
-    /// Tokens only visible in the running shimmer (keyframe brushes and the highlight colour); asserted by
-    /// <see cref="Skeleton_Shimmer_Follows_The_Gradient_And_Keyframe_Tokens"/>.
+    /// Tokens only visible in the running shimmer (the highlight colour and the global it derives from); asserted by
+    /// <see cref="Skeleton_Shimmer_Follows_The_Gradient_Tokens"/>. The LoadingBackground* keyframe brushes are Reserved:
+    /// the shimmer is drawn from ShimmerFromColor / ShimmerToColor.
     /// </summary>
     private static readonly HashSet<string> s_shimmerTokens = new(StringComparer.Ordinal)
     {
-        "GradientToColor", "ColorFill", "LoadingBackgroundStart", "LoadingBackgroundMiddle", "LoadingBackgroundEnd"
+        "GradientToColor", "ColorFill"
     };
 
     internal static Skeleton CreateSkeleton(bool avatar = false, bool round = false) => new()
@@ -178,11 +179,11 @@ public partial class DataFamilyEffectTests
     }
 
     [Fact]
-    public void Skeleton_Shimmer_Follows_The_Gradient_And_Keyframe_Tokens()
+    public void Skeleton_Shimmer_Follows_The_Gradient_Tokens()
     {
-        // The active shimmer animates the placeholder background through the three keyframe brushes built from the gradient
-        // colours (GradientToColor is the moving highlight, derived from ColorFill). Each override must show up in the running
-        // animation: sample a whole cycle and look for the override colour.
+        // The active shimmer sweeps a highlight band over the placeholder background (GradientToColor is the moving
+        // highlight, derived from ColorFill). Each override must show up in the running animation: sample a whole cycle and
+        // look for the override colour.
         var marker = Color.FromRgb(0xFF, 0x00, 0x00);
         ShimmerShows(null, marker).ShouldBeFalse("The default shimmer must not contain the marker colour.");
         foreach (var token in s_shimmerTokens.Order(StringComparer.Ordinal))

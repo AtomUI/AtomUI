@@ -155,6 +155,18 @@ public partial class SelectFamilyEffectTests
                     b.Init.Add(static c => ((ComboBox)c).ContentLeftAddOn = "$");
                     Selected();
                     break;
+                case "IconSize":
+                    // The clear entry reserves an IconSize slot beside the arrow while clearing is allowed; an auto-width
+                    // ComboBox grows with the slot.
+                    b.Init.Add(static c =>
+                    {
+                        var comboBox = (ComboBox)c;
+                        comboBox.IsAllowClear        = true;
+                        comboBox.Width               = double.NaN;
+                        comboBox.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+                    });
+                    Selected();
+                    break;
                 case "ColorFillSecondary":
                     Variant(InputControlStyleVariant.Filled);
                     b.Hover();

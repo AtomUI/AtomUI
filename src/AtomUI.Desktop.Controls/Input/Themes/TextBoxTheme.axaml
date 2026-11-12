@@ -191,22 +191,5 @@
             <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
         </Style>
 
-        <!-- TextBox keeps its control-local token scope while the shared frame
-             remains the single owner of input surface state. -->
-        <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame[EffectiveStatus=Default][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
-        </Style>
-        <Style Selector="^ /template/ atom|InputControlFrame#PART_InputControlFrame[EffectiveStatus=Default]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:OwnerTokenResource ColorPrimary}" />
-        </Style>
-        <!-- Ant Design: only the outlined variant draws the focus outline shadow; embedded
-             (borderless) text boxes inside a host input must never show one. -->
-        <Style Selector="^[StyleVariant=Outlined] /template/ atom|InputControlFrame#PART_InputControlFrame[EffectiveStatus=Default]:focus-within">
-            <Setter Property="BoxShadow"
-                    Value="{atom:OwnerTokenResource InputActiveShadow}" />
-        </Style>
-
     </Style>
 </ControlTheme>

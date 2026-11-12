@@ -68,7 +68,7 @@ public partial class DataFamilyEffectTests
     internal static readonly OwnerReadList s_timeViewCell = new(TimePickerThemes + "TimeViewCellTheme.axaml",
     [
         "BorderRadiusSM", "ColorBgTextHover", "ColorText", "ColorTextDisabled", "ColorTextSecondary", "ColorTransparent",
-        "ControlItemBgActive"
+        "ControlItemBgActive", "ControlItemBgActiveHover"
     ]);
 
     private static OwnerReadList Input(InputOwnerReadList list) => new(list.Theme, list.Tokens);
@@ -226,7 +226,7 @@ public partial class DataFamilyEffectTests
             // The popup's distance from the input (the range time picker reads it).
             "RangeMarginToAnchor" => ("24", PickerKind.RangeTime, true, false),
             // The active bar under the active input.
-            "RangePickerIndicatorThickness" or "LineWidthFocus" => ("6", PickerKind.RangeDate, false, true),
+            "RangePickerIndicatorThickness" or "LineWidthBold" => ("6", PickerKind.RangeDate, false, true),
             // The gap around the range arrow.
             "RangePickerArrowMargin" => ("24,0,24,0", PickerKind.RangeDate, false, false),
             "UniformlyMarginXS" => ("24", PickerKind.RangeDate, false, false),
@@ -634,6 +634,12 @@ public partial class DataFamilyEffectTests
             case "PeriodHostWidth":
                 b.TimeView();
                 b.Clock12();
+                break;
+            case "ControlItemBgActiveHover":
+                // The selected cell of the column the picker input steps with navigation keys.
+                b.TimeView();
+                b.Arrange.Add(static c => SelectedTimeCell(c).IsKeyboardActive = true);
+                b.Region = static c => SelectedTimeCell(c);
                 break;
             case "ColorBgTextHover":
                 b.TimeView();

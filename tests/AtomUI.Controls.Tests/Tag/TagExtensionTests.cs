@@ -147,16 +147,16 @@ public class TagExtensionTests
             using var context = new TestWindowContext(host);
             Pump(host);
 
-            BrushColor(preset.Background).ShouldBe(variant == TagVariant.Solid ? red[5] : red[0]);
-            BrushColor(preset.Foreground).ShouldBe(
+            BrushColor(preset.CalculatedBackground).ShouldBe(variant == TagVariant.Solid ? red[5] : red[0]);
+            BrushColor(preset.CalculatedForeground).ShouldBe(
                 variant == TagVariant.Solid ? Global(preset, SharedTokenKind.ColorTextLightSolid) : red[6]);
-            BrushColor(preset.BorderBrush).ShouldBe(variant switch
+            BrushColor(preset.CalculatedBorderBrush).ShouldBe(variant switch
             {
                 TagVariant.Solid    => red[5],
                 TagVariant.Outlined => red[2],
                 _                   => Colors.Transparent
             });
-            BrushColor(status.Background).ShouldBe(
+            BrushColor(status.CalculatedBackground).ShouldBe(
                 Global(status, variant == TagVariant.Solid ? SharedTokenKind.ColorInfo : SharedTokenKind.ColorInfoBg));
             preset.Classes.Contains(TagPseudoClass.PresetColor).ShouldBeTrue();
             status.Classes.Contains(TagPseudoClass.StatusColor).ShouldBeTrue();
@@ -183,9 +183,9 @@ public class TagExtensionTests
             using var context = new TestWindowContext(tag);
             Pump(tag);
 
-            BrushColor(tag.Background).ShouldBe(Colors.Transparent, color);
-            BrushColor(tag.BorderBrush).ShouldBe(expected(tag), color);
-            BrushColor(tag.Foreground).ShouldBe(expected(tag), color);
+            BrushColor(tag.CalculatedBackground).ShouldBe(Colors.Transparent, color);
+            BrushColor(tag.CalculatedBorderBrush).ShouldBe(expected(tag), color);
+            BrushColor(tag.CalculatedForeground).ShouldBe(expected(tag), color);
         }
     }
 
@@ -203,17 +203,17 @@ public class TagExtensionTests
         using var context = new TestWindowContext(host);
         Pump(host);
 
-        BrushColor(filled.Background).ShouldBe(Global(filled, background));
-        BrushColor(filled.Foreground).ShouldBe(Global(filled, color));
-        BrushColor(filled.BorderBrush).ShouldBe(Colors.Transparent);
+        BrushColor(filled.CalculatedBackground).ShouldBe(Global(filled, background));
+        BrushColor(filled.CalculatedForeground).ShouldBe(Global(filled, color));
+        BrushColor(filled.CalculatedBorderBrush).ShouldBe(Colors.Transparent);
 
-        BrushColor(solid.Background).ShouldBe(Global(solid, color));
-        BrushColor(solid.Foreground).ShouldBe(Global(solid, SharedTokenKind.ColorTextLightSolid));
-        BrushColor(solid.BorderBrush).ShouldBe(Global(solid, color));
+        BrushColor(solid.CalculatedBackground).ShouldBe(Global(solid, color));
+        BrushColor(solid.CalculatedForeground).ShouldBe(Global(solid, SharedTokenKind.ColorTextLightSolid));
+        BrushColor(solid.CalculatedBorderBrush).ShouldBe(Global(solid, color));
 
-        BrushColor(outlined.Background).ShouldBe(Global(outlined, background));
-        BrushColor(outlined.Foreground).ShouldBe(Global(outlined, color));
-        BrushColor(outlined.BorderBrush).ShouldBe(Global(outlined, border));
+        BrushColor(outlined.CalculatedBackground).ShouldBe(Global(outlined, background));
+        BrushColor(outlined.CalculatedForeground).ShouldBe(Global(outlined, color));
+        BrushColor(outlined.CalculatedBorderBrush).ShouldBe(Global(outlined, border));
 
         filled.Classes.Contains(TagPseudoClass.StatusColor).ShouldBeTrue();
         filled.Classes.Contains(TagPseudoClass.PresetColor).ShouldBeFalse();
@@ -240,7 +240,7 @@ public class TagExtensionTests
         Pump(host);
         empty.Table.ShouldNotBeNull();
         empty.IsTrackingTheme.ShouldBeTrue();
-        BrushColor(empty.Foreground).ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Red).ColorSequence[6]);
+        BrushColor(empty.CalculatedForeground).ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Red).ColorSequence[6]);
 
         empty.TagColor = null;
         Pump(host);
@@ -288,11 +288,11 @@ public class TagExtensionTests
 
         try
         {
-            var light = BrushColor(tag.Foreground);
+            var light = BrushColor(tag.CalculatedForeground);
             light.ShouldBe(Global(tag, SharedTokenKind.ColorSuccess));
 
             await ApplyAppearanceAsync(ThemeAppearance.Dark);
-            var dark = BrushColor(tag.Foreground);
+            var dark = BrushColor(tag.CalculatedForeground);
             dark.ShouldNotBe(light);
             dark.ShouldBe(Global(tag, SharedTokenKind.ColorSuccess));
         }
@@ -311,7 +311,7 @@ public class TagExtensionTests
         var host = new StackPanel { Children = { colored, emptyThenColored } };
         using var context = new TestWindowContext(host);
         Pump(host);
-        var light = BrushColor(colored.Foreground);
+        var light = BrushColor(colored.CalculatedForeground);
 
         try
         {
@@ -328,8 +328,8 @@ public class TagExtensionTests
 
             var dark = Global(colored, SharedTokenKind.ColorSuccess);
             dark.ShouldNotBe(light);
-            BrushColor(colored.Foreground).ShouldBe(dark);
-            BrushColor(emptyThenColored.Foreground).ShouldBe(dark);
+            BrushColor(colored.CalculatedForeground).ShouldBe(dark);
+            BrushColor(emptyThenColored.CalculatedForeground).ShouldBe(dark);
             colored.Table.ShouldBeSameAs(emptyThenColored.Table);
             colored.IsTrackingTheme.ShouldBeTrue();
         }

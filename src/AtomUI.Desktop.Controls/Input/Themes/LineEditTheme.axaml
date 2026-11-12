@@ -199,29 +199,5 @@
             </Style>
         </Style>
 
-        <!-- The visual frame is shared by composite inputs, but control token
-             scopes are keyed by the public input control rather than the
-             internal AddOnDecoratedBox. Keep state colors on that owner. -->
-        <Style Selector="^[StyleVariant=Outlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
-                         ^[StyleVariant=Underlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:LineEditTokenResource ColorPrimaryHover}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default],
-                         ^:focus-within[StyleVariant=Underlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:LineEditTokenResource ColorPrimary}" />
-        </Style>
-        <!-- Ant Design: only the outlined variant draws the focus outline shadow. -->
-        <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BoxShadow"
-                    Value="{atom:LineEditTokenResource InputActiveShadow}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Filled] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:LineEditTokenResource ColorPrimary}" />
-            <Setter Property="Background" Value="Transparent" />
-        </Style>
-
     </ControlTheme>
 </ResourceDictionary>

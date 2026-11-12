@@ -307,9 +307,10 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM).
-        var fontSize   = PresetFontSize;
-        var fontSizeSM = PresetFontSizeSM;
+        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM); a host
+        // without that theme has no presets yet, so the control's own FontSize stands in.
+        var fontSize   = PresetFontSize > 0 ? PresetFontSize : FontSize;
+        var fontSizeSM = PresetFontSizeSM > 0 ? PresetFontSizeSM : FontSize;
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)

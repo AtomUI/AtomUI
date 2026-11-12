@@ -215,15 +215,15 @@ public partial class DataFamilyEffectTests
     [Fact]
     public void Skeleton_Is_Token_Owner_Transparent_For_The_Content_It_Wraps()
     {
-        // Skeleton wraps loaded content; that content keeps the host's owner, so Controls[Host] reaches identity-less parts
-        // inside it. The placeholder parts keep their own identity.
+        // Skeleton is Token-owner transparent: content beside or inside it keeps the host's owner, so Controls[Host] reaches
+        // identity-less parts. The placeholder parts keep their own identity. (A Card creates its loading Skeleton only
+        // while loading, so the loaded content sits directly in the Card.)
         var content = new AvaloniaBorder { Width = 40, Height = 20 };
         var host    = new Card { Width = 300, Header = "Card", Content = content };
         var loading = CreateSkeleton(avatar: true);
         var root    = new StackPanel { Spacing = 12, Children = { host, loading } };
         WithIsolationWindow(root, (_, _) =>
         {
-            Descendant<Skeleton>(host);
             ThemeScope.GetTokenOwner(content).ShouldBe(CardTokens.Identity);
             ThemeScope.GetTokenOwner(loading).ShouldNotBe(SkeletonTokens.Identity);
             ThemeScope.GetTokenOwner(Descendant<SkeletonAvatar>(loading)).ShouldBe(SkeletonAvatarTokens.Identity);

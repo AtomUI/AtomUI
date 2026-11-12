@@ -62,6 +62,8 @@ public partial class TagBadgeFamilyEffectTests
             "SolidTextColor" or "ColorBgSolid" => static t => t.Variant = TagVariant.Solid,
             // The outlined default tag draws its ColorBorder frame.
             "ColorBorder" or "BorderThickness" or "BorderRadiusSM" => static t => t.Variant = TagVariant.Outlined,
+            // The uncoloured outline tag draws its border and text in ColorPrimary.
+            "ColorPrimary" => static t => t.Variant = TagVariant.Outline,
             "TagIconSize" or "FontSizeIcon" => static t => t.Icon = new AtomUI.Icons.AntDesign.UserOutlined(),
             "TagCloseIconSize" or "IconSizeXS" => static t => t.IsClosable = true,
             // Status colours: the solid fill, the light background, the outlined border.

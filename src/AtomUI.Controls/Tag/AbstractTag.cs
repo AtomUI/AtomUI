@@ -297,6 +297,11 @@ public abstract class AbstractTag : TemplatedControl
         {
             UpdateTagColorVisualState();
         }
+        else if (change.Property == RenderScaleAwareBorderThicknessProperty)
+        {
+            // The theme's BorderThickness Token reaches the border through this input; follow Token changes.
+            ConfigureBorderThickness();
+        }
     }
 
     // 每次套模板都会写入，持有句柄替换，避免累积属性帧
@@ -330,10 +335,13 @@ public abstract class AbstractTag : TemplatedControl
         }
 
         // Status and solid text colours are the Tag's effective global Tokens, so Controls[Tag] and scoped overrides
-        // reach them; preset palettes belong to the snapshot.
-        var (snapshot, controlSlot) = s_themeTokenResolver.CaptureControl(this);
-        Color Global(SharedTokenKind kind) =>
-            s_themeTokenResolver.GetEffectiveGlobal<Color>(snapshot, controlSlot, (int)kind);
+        // reach them; preset palettes belong to the snapshot. A subclass without a registered Token identity reads the
+        // snapshot's globals.
+        var snapshot    = s_themeTokenResolver.Capture(this);
+        int? controlSlot = snapshot.Registry.TryGetControl(GetType(), out var descriptor) ? descriptor.Slot : null;
+        Color Global(SharedTokenKind kind) => controlSlot is { } slot
+            ? s_themeTokenResolver.GetEffectiveGlobal<Color>(snapshot, slot, (int)kind)
+            : s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)kind);
 
         var solidTextColor = Global(SharedTokenKind.ColorTextLightSolid);
         if (table.TryGetPreset(colorSpan, out var presetColor))

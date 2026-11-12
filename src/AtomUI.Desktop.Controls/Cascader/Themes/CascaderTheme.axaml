@@ -195,8 +195,6 @@
                 Value="False" />
         <Setter Property="FilterHighlightForeground"
                 Value="{atom:CascaderTokenResource FilterHighlightColor}" />
-        <!-- The input frame paints its focus shadow outside the control bounds. -->
-        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />

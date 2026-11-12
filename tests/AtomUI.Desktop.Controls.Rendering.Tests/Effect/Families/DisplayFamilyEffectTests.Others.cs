@@ -153,10 +153,11 @@ public partial class DisplayFamilyEffectTests
             Child = new Button { Content = "Focus", Width = 120, Height = 40 }
         }, static c =>
         {
-            var layer = (AdornerLayer)c;
-            var focus = layer.DefaultFocusAdorner!.Build();
-            focus.Width = 120;
-            focus.Height = 40;
+            // The FocusOutlineAdorner draws around its adorned element, so it is attached to the button.
+            var layer  = (AdornerLayer)c;
+            var button = layer.GetVisualRoot()!.GetVisualDescendants().OfType<Button>().First();
+            var focus  = layer.DefaultFocusAdorner!.Build();
+            AdornerLayer.SetAdornedElement(focus, button);
             layer.Children.Add(focus);
         }, new EffectOptions
         {

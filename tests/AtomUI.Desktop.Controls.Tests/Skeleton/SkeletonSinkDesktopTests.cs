@@ -65,6 +65,7 @@ public class SkeletonSinkDesktopTests
             "BlockRadius",
             "GradientFromColor",
             "GradientToColor",
+            "ImageColor",
             "ImageContainerMaxSize",
             "ImageContainerSize",
             "ImageSize",

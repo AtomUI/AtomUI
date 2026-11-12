@@ -154,7 +154,7 @@ public partial class DataFamilyEffectTests
                 return new Scenario(() => CreateTreeView(), null,
                     new EffectOptions { Region = static tree => Descendant<NodeSwitcherButton>(HeaderOf(tree, "Parent node")) });
             // The drag indicator line (and the dragged node's border) during a drag.
-            case "DragIndicatorLineWidth" or "LineWidthFocus" or "ColorPrimary":
+            case "DragIndicatorLineWidth" or "LineWidthBold" or "ColorPrimary":
                 return new Scenario(() => CreateTreeView(), static tree => ShowDragIndicator((TreeView)tree));
             case "PaddingXL":
                 return new Scenario(() => CreateTreeView(empty: true));

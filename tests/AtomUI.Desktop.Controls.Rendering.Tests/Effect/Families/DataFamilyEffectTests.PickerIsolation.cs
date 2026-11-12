@@ -219,7 +219,7 @@ public partial class DataFamilyEffectTests
     public void Picker_Input_Keeps_The_Text_Colour_While_Open_And_Previews_In_The_Placeholder_Colour(PickerKind kind)
     {
         // antd 6.7 (date-picker/style/index.ts): the input inherits colorText while the popup is open; only the hover
-        // preview (`-placeholder` > input, AtomUI's :choosing state) shows colorTextPlaceholder, on the active input.
+        // preview (`-placeholder` > input, AtomUI's :previewing state) shows colorTextPlaceholder, on the active input.
         var picker = CreatePicker(kind);
         picker.IsPopupPinnedOpen = true;
         if (picker is RangeInfoPickerInput range)
@@ -249,7 +249,7 @@ public partial class DataFamilyEffectTests
             ChangedRatioOf(before, byTertiary, picker).ShouldBe(0d, $"The open {kind} picker input reads ColorTextTertiary.");
 
             // Previewing: the active input shows the placeholder colour; the other range input keeps the text colour.
-            Pseudo(picker, ":choosing");
+            Pseudo(picker, ":previewing");
             provider.Config = IsolationConfig();
             using var choosing = capture();
             provider.Config = IsolationConfig(control: (identity, "ColorTextPlaceholder", IsolationColor));

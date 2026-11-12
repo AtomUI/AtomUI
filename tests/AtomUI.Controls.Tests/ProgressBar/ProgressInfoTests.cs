@@ -280,25 +280,20 @@ public class ProgressInfoTests
     }
 
     [AvaloniaFact]
-    public void Auto_font_size_still_applies_without_local_value()
+    public void Auto_font_size_follows_the_circle_size()
     {
+        // The computed size is the ExtraInfoFontSize input; the Desktop control theme projects it to FontSize at Style
+        // priority, so a local FontSize or an application Style keeps precedence (covered by the Desktop theme tests).
         var circle = new TestCircle { Width = 100, Height = 100 };
         using var _ = new WindowContext(circle);
 
-        circle.FontSize.ShouldBe(100 * 0.15 + 6);
-        // 主题样式值让位于自动字号
-        circle.Styles.Add(new Style(x => x.OfType<TestCircle>())
-        {
-            Setters = { new Setter(TemplatedControl.FontSizeProperty, 99d) }
-        });
-        Flush();
-        circle.FontSize.ShouldBe(100 * 0.15 + 6);
+        circle.ExtraInfoFontSize.ShouldBe(100 * 0.15 + 6);
 
         circle.Width = 200;
         circle.Height = 200;
         Flush();
 
-        circle.FontSize.ShouldBe(200 * 0.15 + 6);
+        circle.ExtraInfoFontSize.ShouldBe(200 * 0.15 + 6);
     }
 
     [AvaloniaFact]
@@ -344,7 +339,8 @@ public class ProgressInfoTests
         var afterFormat = line.ExtraInfoSize;
         afterFormat.Width.ShouldBeGreaterThan(before.Width);
         afterFormat.ShouldBe(TextUtils.CalculateTextSize("50 percent done", line.FontSize, line.FontFamily));
-        line.MinWidth.ShouldBe(afterFormat.Width, 0.5);
+        // The runtime text minimum is the FallbackMinWidth input; the Desktop theme projects it to MinWidth.
+        line.FallbackMinWidth.ShouldBe(afterFormat.Width, 0.5);
 
         line.FontSize = line.FontSize * 2;
         Flush();

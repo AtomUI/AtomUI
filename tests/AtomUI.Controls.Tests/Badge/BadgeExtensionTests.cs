@@ -222,16 +222,16 @@ public class BadgeExtensionTests
         using var context = new TestWindowContext(badge);
         var adorner = badge.Adorner.ShouldNotBeNull();
         adorner.IsBordered.ShouldBeTrue();
-        adorner.BoxShadow.Count.ShouldBe(1);
+        adorner.IndicatorShadows.Count.ShouldBe(1);
 
         badge.IsBordered = false;
         Pump(badge);
         adorner.IsBordered.ShouldBeFalse();
-        adorner.BoxShadow.Count.ShouldBe(0);
+        adorner.IndicatorShadows.Count.ShouldBe(0);
 
         badge.IsBordered = true;
         Pump(badge);
-        adorner.BoxShadow.Count.ShouldBe(1);
+        adorner.IndicatorShadows.Count.ShouldBe(1);
     }
 
     [Fact]

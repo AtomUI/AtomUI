@@ -7,5 +7,5 @@ namespace AtomUI.Desktop.Controls;
 internal static class RangePickerInputTokenValues
 {
     internal static (Thickness ArrowMargin, double IndicatorThickness) Calculate(DesignToken token) =>
-        (new Thickness(token.UniformlyMarginXS, 0), token.LineWidthFocus);
+        (new Thickness(token.UniformlyMarginXS, 0), token.LineWidthBold);
 }

@@ -196,8 +196,6 @@
 
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <!-- The input frame paints its focus shadow outside the control bounds. -->
-        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{atom:ComboBoxTokenResource EnableMotion}" />

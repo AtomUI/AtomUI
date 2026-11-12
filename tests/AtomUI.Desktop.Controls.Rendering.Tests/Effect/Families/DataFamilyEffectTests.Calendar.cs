@@ -30,7 +30,7 @@ public partial class DataFamilyEffectTests
     internal static readonly OwnerReadList s_calendarDateCell = new(CalendarThemes + "CalendarDateCellTheme.axaml",
     [
         "BorderRadiusSM", "BorderThickness", "ColorBgContainerDisabled", "ColorFillSecondary", "ColorPrimary", "ColorText",
-        "ColorTextDisabled", "ColorTextLightSolid", "ControlHeightSM", "ControlItemBgHover", "FocusVisualBorderThickness"
+        "ColorTextDisabled", "ColorTextLightSolid", "ControlHeightSM", "ControlItemBgHover"
     ]);
 
     /// <summary>
@@ -241,8 +241,6 @@ public partial class DataFamilyEffectTests
                 return Mini(value: TodayMonthValue());
             case "ControlItemBgHover":
                 return Mini(static c => Pseudo(CalendarCell(c, s_calendarDate.AddDays(1)), ":pointerover"));
-            case "FocusVisualBorderThickness":
-                return Mini(static c => Pseudo(CalendarCell(c, s_calendarDate.AddDays(1)), ":focus-visible"));
             case "ColorBgContainerDisabled":
                 return new Scenario(() =>
                 {

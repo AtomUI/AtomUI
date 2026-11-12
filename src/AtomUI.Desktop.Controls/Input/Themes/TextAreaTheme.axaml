@@ -139,8 +139,6 @@
     <Setter Property="TextWrapping" Value="Wrap" />
     <Setter Property="AcceptsReturn" Value="True" />
     <Setter Property="MinLines" Value="1" />
-    <!-- The focus shadow of the input frame paints outside the control. -->
-    <Setter Property="ClipToBounds" Value="False" />
 
     <Style Selector="^ /template/ Panel#ContentLayout">
         <Setter Property="Background" Value="Transparent" />

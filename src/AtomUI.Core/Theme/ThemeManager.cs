@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using AtomUI.Animations;
 using AtomUI.Registration;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme.Compilation;
@@ -71,6 +72,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private Application? _application;
     private IResourceDictionary? _applicationResources;
     private Style? _rootContextStyle;
+    private readonly MotionSettle _motionSettle = new();
     private readonly Dictionary<IControlThemesProvider, List<ControlThemeResourceRegistration>> _stagedThemeResources = new();
     private readonly List<IControlThemesProvider> _registeredControlThemesProviders = [];
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
@@ -377,6 +379,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         long transitionId)
     {
         await EnterTransactionExecutionGateAsync().ConfigureAwait(true);
+        IDisposable? motionSettle = null;
         try
         {
             ThemeScopeCapture scopeCapture;
@@ -493,6 +496,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 _themeCatalogDiagnostics = prepared.Diagnostics;
                 if (prepared.SnapshotChanged)
                 {
+                    motionSettle = BeginCommitMotionSettle();
                     CommitCore(prepared.ThemeTransaction!);
                 }
             }
@@ -515,6 +519,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
         finally
         {
+            EndCommitMotionSettleAfterFrame(motionSettle);
             lock (_transactionGate)
             {
                 _catalogReloadOperationCount--;
@@ -658,6 +663,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeTransaction transaction)
     {
         var committed = false;
+        IDisposable? motionSettle = null;
         try
         {
             transaction.Phase = ThemeTransactionPhase.Prepare;
@@ -731,6 +737,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
 
                 transaction.Phase = ThemeTransactionPhase.CommitCore;
+                motionSettle = BeginCommitMotionSettle();
                 CommitCore(transaction);
                 committed = true;
             }
@@ -776,6 +783,26 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     "$",
                     $"Theme transition failed before commit: {exception.GetBaseException().Message}")],
                 exception);
+        }
+        finally
+        {
+            EndCommitMotionSettleAfterFrame(motionSettle);
+        }
+    }
+
+    // A theme commit lands every animation it starts on its final value, through the first frame laid out and
+    // rendered with the committed theme: the theme changes at once instead of fading control by control. The
+    // startup commit has no UI to settle, and a window it opened would last until the first frame, swallowing
+    // the opening motions of the first windows.
+    private IDisposable? BeginCommitMotionSettle() =>
+        _applicationInitialized && Dispatcher.UIThread.CheckAccess() ? _motionSettle.Begin() : null;
+
+    private void EndCommitMotionSettleAfterFrame(IDisposable? motionSettle)
+    {
+        if (motionSettle is not null)
+        {
+            _motionSettle.SettleStarted();
+            _motionSettle.EndAfterNextFrame(motionSettle);
         }
     }
 
@@ -1471,35 +1498,52 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
         var noOp = preparation.Snapshots.All(static staged =>
             SnapshotsEquivalent(staged.Context.Snapshot, staged.Snapshot));
-        lock (_transactionGate)
+        IDisposable? motionSettle = null;
+        try
         {
-            if (generation != _generation || !_scopeGraph.IsCurrent(capture))
+            lock (_transactionGate)
             {
-                return ThemeScopeUpdateResult.Superseded(
-                    transitionId,
-                    request,
-                    CreateScopeState(node.Context.Snapshot, transitionId));
-            }
+                if (generation != _generation || !_scopeGraph.IsCurrent(capture))
+                {
+                    return ThemeScopeUpdateResult.Superseded(
+                        transitionId,
+                        request,
+                        CreateScopeState(node.Context.Snapshot, transitionId));
+                }
 
-            if (noOp)
-            {
+                if (noOp)
+                {
+                    foreach (var staged in preparation.Snapshots)
+                    {
+                        _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
+                    }
+                    return ThemeScopeUpdateResult.NoOp(
+                        transitionId,
+                        request,
+                        CreateScopeState(node.Context.Snapshot, transitionId));
+                }
+
+                motionSettle = BeginCommitMotionSettle();
                 foreach (var staged in preparation.Snapshots)
                 {
+                    staged.Context.Commit(staged.Snapshot);
                     _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
                 }
-                return ThemeScopeUpdateResult.NoOp(
-                    transitionId,
-                    request,
-                    CreateScopeState(node.Context.Snapshot, transitionId));
             }
 
-            foreach (var staged in preparation.Snapshots)
-            {
-                staged.Context.Commit(staged.Snapshot);
-                _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
-            }
+            return PublishScopeConfig(preparation, request, transitionId);
         }
+        finally
+        {
+            EndCommitMotionSettleAfterFrame(motionSettle);
+        }
+    }
 
+    private ThemeScopeUpdateResult PublishScopeConfig(
+        ScopePreparation preparation,
+        ThemeRequest request,
+        long transitionId)
+    {
         var publishDiagnostics = new List<ThemeDiagnostic>();
         foreach (var staged in preparation.Snapshots)
         {

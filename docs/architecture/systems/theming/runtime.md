@@ -918,6 +918,12 @@ ThemeState 和内部 appearance。它不设置 AvaloniaProperty、不调用 `Rai
 ResourceProvider 通知和结果事件都属于不可回滚 Publish。Publish 开始前所有 context 已指向完整新 snapshot，
 因此 Avalonia 同步回调也只能读取完整新状态。不能再承诺在 `RequestedThemeVariant` 或资源通知之后静默回滚。
 
+Publish 会让绑定 Token 的属性在 Style 优先级上改值，从而为带 `Transitions` 的属性启动过渡。主题替换不表达交互状态，
+这些过渡不应逐帧渐变：应用初始化后，根事务、Catalog 刷新和局部作用域提交在 CommitCore 前开启
+[主题提交动效收束](../motion/theme-commit-settle.md)窗口，在 `finally` 中同步收束一次，并在下一帧布局与提交完成后关闭窗口。
+窗口内新启动的过渡、关键帧动画和 Motion 在启动帧的提交前到达终值，新主题从第一帧起整体呈现。
+启动提交、NoOp、Superseded 和 CommitCore 前失败不开启窗口；收束不可用时只记录 Warning，不影响事务结果。
+
 Publish 的每个外部通知边界必须独立捕获、记录并继续后续通知。观察者异常不把已提交事务改写成 Failed；结果
 仍为 `Committed`，并携带 publish warning diagnostics。只有 Capture、Prepare 或 CommitCore 前的 stamp/invariant
 验证失败可以返回 `Failed` 或 `Superseded`，且此时尚未交换任何已发布引用。
@@ -1612,6 +1618,8 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - 等价并发请求共享一次 Prepare/Commit；单个等待者取消不取消其他等待者或已经开始的 Commit。
 - `ThemeChanged` 或 `ThemeChangeFailed` 的派发先于对应 transition Task 完成。
 - 重入和高频更新不会递归提交，latest request 语义确定。
+- 运行期提交启动的过渡、关键帧动画和 Motion 在首个呈现帧前到达终值，不出现新旧主题逐帧混合；提交前已在运行的
+  动画保持原时长，窗口结束后的状态变化照常过渡。
 - 订阅者异常不阻断提交或其他订阅者。
 - FollowSystem 在首帧前解析初始系统 appearance，运行期切换只发布完整 Light/Dark snapshot 和对应显式
   variant，不出现 `ThemeVariant.Default` 或新旧状态混合帧。

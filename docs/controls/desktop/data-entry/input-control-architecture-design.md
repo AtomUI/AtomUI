@@ -96,6 +96,9 @@ Native Error / Form Error
   - **宿主**：文本输入、选择器、日期 / 时间选择器、步进输入等的主题；
   - **外框**：`InputControlFrameTheme` 统一设置，所以模板为了接收内边距点击而把外框设为可聚焦时，也不会出现焦点框；
   - **嵌入式输入**：`SelectFilterTextBox`、可编辑 ComboBox 的 `ComboBoxTextBox`。
+- 键盘停靠点与 Ant Design 一致：输入本身，以及出现时的清除按钮。
+  - 模板为接收内边距点击而设为可聚焦的 frame 不作停靠点（`IsTabStop=False`）；下拉箭头、数值步进按钮也不作停靠点。日期 / 时间选择器的 frame 目前仍是其唯一停靠点，属于尚未完成的选择器键盘方案。
+  - 清除按钮 `InputClearIconButton` 可聚焦，Enter / Space 触发，自动化名称取自 `CommonLangResourceKind.Clear`。清除按钮在 frame 模板中排在内容之前（DockPanel 顺序），需要“输入 → 清除”顺序的宿主把 frame 设为 `TabNavigation=Local` 并用 `TabIndex` 排序，例如 ComboBox。
 - focus shadow 绘制在 frame 外侧，宿主不得裁剪它：派生自 `TemplatedControl` 的宿主默认 `ClipToBounds=True`，主题需显式设为 `False`。
 - 模板把内层 `AddOnContentPresenter` 作为外层 add-on 内容时，外层可见性跟随内层控件的 `IsVisible`；空的前缀/后缀不保留 margin 和面板间距。
 

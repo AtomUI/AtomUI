@@ -148,6 +148,52 @@ public class FocusOutlineTargetTests
         });
     }
 
+    // Date and time pickers are left out: their frame is still their only keyboard stop, pending the picker
+    // keyboard design (audit item "keyboard P1").
+    public static TheoryData<string> InputHosts => new()
+    {
+        nameof(Desktop.Controls.LineEdit), nameof(Desktop.Controls.SearchEdit), nameof(Desktop.Controls.TextArea),
+        "ComboBox", "EditableComboBox", nameof(Desktop.Controls.Select), nameof(Desktop.Controls.TreeSelect),
+        nameof(Desktop.Controls.Cascader), nameof(Desktop.Controls.NumericUpDown), nameof(Desktop.Controls.Mentions),
+        nameof(Desktop.Controls.AutoComplete)
+    };
+
+    // Input frames are focusable only so that a click on their padding focuses the input; they must not add a
+    // keyboard stop of their own (a Tab press would land on an invisible element). Every host stays reachable.
+    [Theory]
+    [MemberData(nameof(InputHosts))]
+    public void Input_Frames_Are_Not_Tab_Stops(string hostName)
+    {
+        Control host = hostName switch
+        {
+            nameof(Desktop.Controls.LineEdit) => new Desktop.Controls.LineEdit { Text = "text" },
+            nameof(Desktop.Controls.SearchEdit) => new Desktop.Controls.SearchEdit { Text = "text" },
+            nameof(Desktop.Controls.TextArea) => new Desktop.Controls.TextArea { Text = "text" },
+            "ComboBox" => new Desktop.Controls.ComboBox { ItemsSource = new[] { "A", "B" } },
+            "EditableComboBox" => new Desktop.Controls.ComboBox { ItemsSource = new[] { "A", "B" }, IsEditable = true },
+            nameof(Desktop.Controls.Select) => new Desktop.Controls.Select(),
+            nameof(Desktop.Controls.TreeSelect) => new Desktop.Controls.TreeSelect(),
+            nameof(Desktop.Controls.Cascader) => new Desktop.Controls.Cascader(),
+            nameof(Desktop.Controls.NumericUpDown) => new Desktop.Controls.NumericUpDown(),
+            nameof(Desktop.Controls.Mentions) => new Desktop.Controls.Mentions(),
+            _ => new Desktop.Controls.AutoComplete()
+        };
+        host.Width = 260;
+
+        ShowInWindow(host, (_, before) =>
+        {
+            var stops = CollectTabStops(before, host);
+            var description = string.Join(" > ", stops.Select(s => $"{s.GetType().Name}#{(s as Control)?.Name}"));
+            stops.ShouldNotBeEmpty(description);
+            stops.OfType<Control>().Where(s => s is InputControlFrame)
+                 .ShouldBeEmpty($"{hostName}: {description}");
+            // Ant Design: the select arrow and the number step handlers are not focusable either.
+            stops.OfType<Control>()
+                 .Where(s => s.Name is "PART_OpenIndicatorButton" or "PART_IncreaseButton" or "PART_DecreaseButton")
+                 .ShouldBeEmpty($"{hostName}: {description}");
+        });
+    }
+
     public static TheoryData<string> SelfFocusedControls => new()
     {
         nameof(Desktop.Controls.Slider),
@@ -313,6 +359,60 @@ public class FocusOutlineTargetTests
             Focus(before, NavigationMethod.Tab);
             FindFocusOutlines(treeView).Where(a => AdornedBy(a).TemplatedParent is TreeViewItemHeader)
                                        .ShouldBeEmpty();
+        });
+    }
+
+    // The selected background hides the active background, so on a selected row the outline is the only
+    // keyboard position cue; it must be drawn there too.
+    [Fact]
+    public void Tree_View_Outlines_The_Active_Node_When_It_Is_Selected()
+    {
+        var treeView = CreateTreeView(out var first, out var second);
+        first.IsSelected = true;
+
+        ShowInWindow(treeView, (window, before) =>
+        {
+            Focus(treeView, NavigationMethod.Tab);
+            first.IsSelected.ShouldBeTrue();
+            AdornedBy(GetFocusOutline(treeView)).ShouldBeSameAs(GetHeaderContentFrame(first));
+
+            // Single selection follows the active node, so the newly active node is selected as well.
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            Dispatcher.UIThread.RunJobs();
+            second.IsSelected.ShouldBeTrue();
+            AdornedBy(GetFocusOutline(treeView)).ShouldBeSameAs(GetHeaderContentFrame(second));
+
+            // Ctrl + arrow moves only the active node; the outline follows it while the selection stays.
+            window.KeyPress(Key.Up, RawInputModifiers.Control, PhysicalKey.ArrowUp, null);
+            Dispatcher.UIThread.RunJobs();
+            second.IsSelected.ShouldBeTrue();
+            first.IsSelected.ShouldBeFalse();
+            AdornedBy(GetFocusOutline(treeView)).ShouldBeSameAs(GetHeaderContentFrame(first));
+
+            Focus(before, NavigationMethod.Tab);
+            FindFocusOutlines(treeView).Where(a => AdornedBy(a).TemplatedParent is TreeViewItemHeader)
+                                       .ShouldBeEmpty();
+        });
+    }
+
+    // NavMenu hides the active background on the selected item, so the outline must still mark it.
+    [Fact]
+    public void Nav_Menu_Outlines_The_Active_Item_When_It_Is_Selected()
+    {
+        var menu = CreateNavMenu(NavMenuMode.Inline, out _, out var second);
+
+        ShowInWindow(menu, (window, _) =>
+        {
+            Focus(menu, NavigationMethod.Tab);
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            window.KeyPress(Key.Down, RawInputModifiers.None, PhysicalKey.ArrowDown, null);
+            window.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null);
+            Dispatcher.UIThread.RunJobs();
+
+            menu.SelectedItem.ShouldBeSameAs(second);
+            var secondContainer = (NavMenuItem)menu.ContainerFromItem(second)!;
+            secondContainer.IsKeyboardActive.ShouldBeTrue();
+            AdornedBy(GetFocusOutline(menu)).ShouldBeSameAs(secondContainer.ItemHeader);
         });
     }
 

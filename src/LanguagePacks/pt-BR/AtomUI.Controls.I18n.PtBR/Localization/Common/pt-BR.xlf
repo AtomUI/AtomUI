@@ -7,6 +7,12 @@
         <target state="final">Cancelar</target>
       </segment>
     </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear</source>
+        <target state="final">Limpar</target>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>

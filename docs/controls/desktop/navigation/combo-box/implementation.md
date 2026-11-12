@@ -250,7 +250,7 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 
 ### 清除状态与模板接线
 
-`SelectedIndex`、`Text`、`IsEditable` 是可清除状态的输入；内部只投影 `CanClearValue`，不保存第二份选择。ControlTheme 根据 `IsAllowClear`、可清除值、有效禁用态及 hover / focus 设置内部样式属性 `IsEffectiveShowClearButton`，按钮通过编译绑定消费该值。后缀内容不带 ComboBox 的 TemplatedParent，普通 `/template/` 子选择器不能到达该节点；显隐仍由根主题负责，不在代码中建立绑定。此编译绑定显式使用 Template 优先级，使专用语义 Style 可以声明式覆盖预览可见性。后缀 StackPanel 对用户内容、Form 反馈和操作组保留 SpacingXS；清除按钮与箭头在独立操作组内使用 SpacingXXS，避免不同语义层级共用间距。按钮位于操作组的清除入口槽，复用 `InputClearIconButton`；启用 `IsAllowClear` 时槽位预留 SharedToken.IconSize 的最小宽度，避免 Auto Width 在 hover / focus 时伸缩并移动箭头。关闭该属性时槽位退出布局，下拉 handle 保持原结构和交互。
+`SelectedIndex`、`Text`、`IsEditable` 是可清除状态的输入；内部只投影 `CanClearValue`，不保存第二份选择。ControlTheme 根据 `IsAllowClear`、可清除值、有效禁用态及 hover / focus 设置内部样式属性 `IsEffectiveShowClearButton`，按钮通过编译绑定消费该值。后缀内容不带 ComboBox 的 TemplatedParent，普通 `/template/` 子选择器不能到达该节点；显隐仍由根主题负责，不在代码中建立绑定。此编译绑定显式使用 Template 优先级，使专用语义 Style 可以声明式覆盖预览可见性。后缀 StackPanel 对用户内容、Form 反馈和操作组保留 SpacingXS；清除按钮与箭头在独立操作组内使用 SpacingXXS，避免不同语义层级共用间距。按钮可聚焦并是键盘停靠点：外框 `PART_AddOnDecoratedBox` 是 `TabNavigation=Local` 的分组且本身不作停靠点，文本框 `TabIndex=0`、清除按钮 `TabIndex=1`，使 Tab 顺序为输入、清除、离开；可编辑模式下宿主不作停靠点，`OnGotFocus` 对清除按钮不调用基类，避免 Avalonia 把焦点转回文本框；清除后按触发方式（键盘为 Tab，指针为 Pointer）把焦点还给宿主或文本框。按钮位于操作组的清除入口槽，复用 `InputClearIconButton`；启用 `IsAllowClear` 时槽位预留 SharedToken.IconSize 的最小宽度，避免 Auto Width 在 hover / focus 时伸缩并移动箭头。关闭该属性时槽位退出布局，下拉 handle 保持原结构和交互。
 
 Small 规格的选中内容与占位符使用相同的纵向 margin，清除切换内容时保持输入框高度，不以固定高度裁剪自定义内容。
 
@@ -264,7 +264,7 @@ Small 规格的选中内容与占位符使用相同的纵向 margin，清除切�
 
 提交结束后，若物理关闭仍在播放则继续保持投影；收到实际 Popup.Closed 后应用最新查询，即使业务 IsDropDownOpen 已为 false 也要收尾。无动效和零时长关闭由提交调用栈同步收敛。重新打开会在打开前按最新查询准备视图，取消的旧离场不再阻挡刷新。钉住弹层和独立输入/外部查询仍实时过滤。
 
-已呈现的过滤条件以轻量值快照保留；离场期间虚拟化新建/回收的容器仍按旧条件判断，不会闪现不匹配行。默认虚拟化面板复用 Avalonia VirtualizingStackPanel，只在提交/离场期间阻止基类为选中项发起的自动 ScrollIntoView；平时导航与滚动继续由基类处理，并保留原 StyleKey。用户指定 ItemsPanel 的优先级不变。
+已呈现的过滤条件以轻量值快照保留；离场期间虚拟化新建/回收的容器仍按旧条件判断，不会闪现不匹配行。默认虚拟化面板复用 Avalonia VirtualizingStackPanel，只在提交/离场期间阻止基类为选中项发起的自动 ScrollIntoView；平时导航与滚动继续由基类处理，并保留原 StyleKey。用户指定 ItemsPanel 的优先级不变；这一保护挂在内置面板上，调用方显式换成标准 VirtualizingStackPanel 等其他面板时，离场期间不再阻止自动定位，选中未实现的远端项可能出现闪行。这是已知边界：Avalonia 的自动定位不提供与面板无关的挂接点，临时覆盖 `AutoScrollToSelectedItem` 又会经双向绑定写回调用方数据源。
 
 这一边界不锁定固定高度、不复制视觉树，也不改变通用 Popup 的动画定义。限高、滚动条、viewport/extent/offset 与当前行可见性在正常选中离场过程中保持。
 

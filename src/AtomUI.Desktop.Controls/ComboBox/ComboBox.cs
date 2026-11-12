@@ -478,6 +478,8 @@ public partial class ComboBox : AvaloniaComboBox,
     private ComboBoxItem? _candidateSelectedItem;
     private readonly Dictionary<ComboBoxItem, FilterVisibilityState> _filterItemVisibilityContext = new();
     private FilterProjection _presentedFilterProjection;
+    // A refresh requested while the leaving view was frozen; Popup.Closed publishes it.
+    private bool _hasDeferredFilterRefresh;
     private bool _isFrameBorderBrushRelayed;
     private bool _isFrameBackgroundRelayed;
     private EventHandler? _formValueChanged;
@@ -863,6 +865,14 @@ public partial class ComboBox : AvaloniaComboBox,
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
+        // The clear button is a keyboard stop of its own (Ant Design renders it as a button). The base editable
+        // ComboBox hands any focus inside the control to its input text box, so it must not see this one; the
+        // control itself is not focused here, so nothing else in the base handler applies.
+        if (_clearButton is not null && ReferenceEquals(e.NewFocusedElement, _clearButton))
+        {
+            return;
+        }
+
         base.OnGotFocus(e);
         if (e.NewFocusedElement is Visual focusedVisual &&
             _popup?.IsInsidePopup(focusedVisual) == true)
@@ -1039,6 +1049,11 @@ public partial class ComboBox : AvaloniaComboBox,
             return;
         }
 
+        // Keyboard activation keeps focus visible on the restored target; the button hides once cleared.
+        var navigationMethod = _clearButton?.Classes.Contains(":focus-visible") == true
+            ? NavigationMethod.Tab
+            : NavigationMethod.Pointer;
+
         // Null does not match an empty-string option in Avalonia's editable text matching.
         // Clear text first, then selection, while preserving application bindings.
         SetCurrentValue(TextProperty, null);
@@ -1046,11 +1061,11 @@ public partial class ComboBox : AvaloniaComboBox,
 
         if (IsEditable)
         {
-            FocusEditableTextBox(NavigationMethod.Pointer);
+            FocusEditableTextBox(navigationMethod);
         }
         else
         {
-            Focus(NavigationMethod.Pointer);
+            Focus(navigationMethod);
         }
     }
 
@@ -1179,9 +1194,13 @@ public partial class ComboBox : AvaloniaComboBox,
     /// </summary>
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
-        // Business open is already false during exit motion. Always publish the
-        // latest query after the physical host has finished closing.
-        RefreshFilteredItemVisibility();
+        // Business open is already false during exit motion. Publish the latest query after the physical
+        // host has finished closing, but only when one is pending: re-running an unchanged query would call
+        // the filter for every item on each close.
+        if (_hasDeferredFilterRefresh || GetCurrentFilterProjection() != _presentedFilterProjection)
+        {
+            RefreshFilteredItemVisibility();
+        }
         if (!IsDropDownOpen)
         {
             return;
@@ -1727,9 +1746,11 @@ public partial class ComboBox : AvaloniaComboBox,
     {
         if (ShouldDeferFilterProjection)
         {
+            _hasDeferredFilterRefresh = true;
             return;
         }
 
+        _hasDeferredFilterRefresh = false;
         var projection = GetCurrentFilterProjection();
         _presentedFilterProjection = projection;
         var hasVisibleMatch = Items.Count > 0;

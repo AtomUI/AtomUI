@@ -25,17 +25,20 @@
                                           Content="{TemplateBinding Image}"
                                           ContentTemplate="{TemplateBinding ImageTemplate}"
                                           IsVisible="{TemplateBinding Image, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-                        <atom:TextBlock Name="Description"
-                                        Classes.semantic-description="True"
-                                        HorizontalAlignment="Center"
-                                        TextWrapping="Wrap"
-                                        Text="{TemplateBinding DescriptionText}"
-                                        IsVisible="{TemplateBinding IsDescriptionTextVisible}"/>
-                        <ContentPresenter Name="DescriptionContent"
+                        <!-- One description node for text and custom content (Ant Design .ant-empty-description):
+                             text styles set on it inherit to the string text and to text inside custom content. -->
+                        <ContentPresenter Name="Description"
+                                          Classes.semantic-description="True"
                                           HorizontalAlignment="Center"
                                           TextWrapping="Wrap"
-                                          Content="{TemplateBinding DescriptionContent}"
-                                          IsVisible="{TemplateBinding IsDescriptionContentVisible}"/>
+                                          Content="{TemplateBinding EffectiveDescription}"
+                                          IsVisible="{TemplateBinding IsDescriptionVisible}">
+                            <ContentPresenter.DataTemplates>
+                                <DataTemplate x:DataType="x:String">
+                                    <atom:TextBlock Text="{Binding}" />
+                                </DataTemplate>
+                            </ContentPresenter.DataTemplates>
+                        </ContentPresenter>
                         <ContentPresenter Name="Footer"
                                           Classes.semantic-footer="True"
                                           HorizontalAlignment="Center"
@@ -76,28 +79,24 @@
         <Setter Property="BgColor" Value="{atom:SharedTokenResource ColorBgElevated}"/>
         
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
+            <Style Selector="^ /template/ ContentPresenter#Description">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMargin}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
+            <Style Selector="^ /template/ ContentPresenter#Description">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMarginSM}"/>
             </Style>
         </Style>
         
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ atom|TextBlock#Description, ^ /template/ ContentPresenter#DescriptionContent">
+            <Style Selector="^ /template/ ContentPresenter#Description">
                 <Setter Property="Margin" Value="{atom:EmptyTokenResource DescriptionMarginSM}"/>
             </Style>
         </Style>
         
-        <Style Selector="^ /template/ atom|TextBlock#Description">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
-        </Style>
-
-        <Style Selector="^ /template/ ContentPresenter#DescriptionContent">
+        <Style Selector="^ /template/ ContentPresenter#Description">
             <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}"/>
         </Style>
 

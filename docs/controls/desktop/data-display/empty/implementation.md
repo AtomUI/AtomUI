@@ -56,8 +56,8 @@ PresetImage / ImageSource / ImagePath
 源码中的状态入口按以下语义维护：
 
 - 内容与数据：`Description`（`object?`）、`Footer`、`FooterTemplate`、`Image`、`ImageTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`、`Title`、`TitleTemplate`。
-- 描述的投影：`Empty` 由 `Description` 与 `IsDescriptionVisible` 派生内部属性 `DescriptionText`、`DescriptionContent` 及两个可见性属性；字符串绑定到 `semantic-description` 文本节点，
-  非字符串对象绑定到 `ContentPresenter#DescriptionContent`。
+- 描述的投影：`Empty` 由 `Description` 派生内部属性 `EffectiveDescription`（`null` 映射为空字符串），绑定到 `semantic-description` 的 `ContentPresenter#Description`；
+  呈现器的字符串数据模板生成不带本地文本属性的 AtomUI `TextBlock`，可见性直接绑定 `IsDescriptionVisible`。
 - 视觉与布局：`SizeType`、`StrokeDashArray` 以及继承的 root 表面属性。
 
 维护要求：
@@ -78,7 +78,7 @@ Empty
   -> DashedBorder
      -> StackPanel
         -> Svg#PART_SvgImage
-        -> TextBlock#Description
+        -> ContentPresenter#Description（字符串 → TextBlock）
         -> ContentPresenter（Footer）
 ```
 
@@ -87,7 +87,7 @@ Empty
 | `Empty` | 使用方或组合控件 | public；持有来源、描述、Footer 与布局属性。 |
 | `DashedBorder`、`StackPanel` | ControlTemplate | private；负责表面投影和纵向布局，不增加图片状态。 |
 | `Svg#PART_SvgImage` | ControlTemplate；由 `AbstractEmpty` 接入 | template-stable；接收计算后的图片，公开定制使用 `image` Semantic Part。 |
-| `TextBlock#Description`、Footer `ContentPresenter` | ControlTemplate | 分别承载 `description`、`footer` Semantic Part，内容与可见性由模板绑定维护。 |
+| `ContentPresenter#Description`、Footer `ContentPresenter` | ControlTemplate | 分别承载 `description`、`footer` Semantic Part，内容与可见性由模板绑定维护。 |
 
 ## 6. 生命周期与模板接入
 
@@ -119,7 +119,7 @@ Semantic marker 与真实节点映射：
 | --- | --- | --- | --- |
 | `root` | `Empty` owner | 控件实例 | 由 owner 属性控制，不使用 `.semantic-root`。 |
 | `image` | `PART_SvgImage` | ControlTemplate 静态创建 | 始终存在；图片来源变化只更新 renderer。 |
-| `description` | 描述 `TextBlock` | ControlTemplate 静态创建 | `IsDescriptionVisible` 通过 TemplateBinding 控制可见性。 |
+| `description` | 描述 `ContentPresenter#Description` | ControlTemplate 静态创建 | `IsDescriptionVisible` 通过 TemplateBinding 控制可见性。 |
 | `footer` | Footer `ContentPresenter` | ControlTemplate 静态创建 | `Footer=null` 时隐藏，非空时展示内容。 |
 
 三个非 root marker 均使用静态 `Classes.semantic-*="True"`。默认主题不能用这些 class 驱动自身样式；生成的
@@ -197,7 +197,7 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 同一实例摘挂后，图片必须与最新来源及主题一致，描述、Footer、尺寸与 Semantic target 身份符合各自契约。
 - 颜色资源暂缺时保留已有图片，来源明确全部为空时清空；重复同步相同结果不先清空再重建。
-- `description` Semantic Part 仍是 `TextBlock`；非字符串描述由独立内容节点展示，不改变该 Part 的类型与 selector。
+- `description` Semantic Part 是同时承载文字与自定义内容的 `ContentPresenter`；字符串生成的文本不得设置本地文本属性，否则会挡住从该节点继承的样式。
 - `Description` 的 `object?` 类型是稳定契约；Footer 的 `ContentPresenter` 样式限定在 `#Footer`，不得退回无限定的 `ContentPresenter` selector。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 

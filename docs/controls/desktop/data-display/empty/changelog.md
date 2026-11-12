@@ -4,13 +4,22 @@
 
 ## 2026-11-11
 
+- Breaking Theme Contract
+  - `description` Semantic Part 对齐 Ant Design `styles.description`：原文本节点 `TextBlock#Description` 与无 marker 的 `ContentPresenter#DescriptionContent` 合并为一个带 `semantic-description` 的 `ContentPresenter#Description`，`ContractType` 由 `TextBlock` 改为 `ContentPresenter`。`EmptyDescriptionStyle` 现在同时作用于字符串描述和自定义内容。
+  - 兼容性：呈现器复用 `TextBlock` / `TextElement` 的文本属性对象，按原写法设置的 `Foreground`、字体、`TextAlignment`、`TextWrapping`、`TextTrimming`、`LineHeight`、`LetterSpacing`、`MaxLines` 继续有效并继承给文字；`TextBlock` 专有且不继承的属性（如 `TextDecorations`）不再生效，不会报错；以 `TextBlock#Description` 为选择器或在代码中按 `TextBlock` 查找该部件的写法需要迁移。迁移见 [6.2.14 迁移指南](../../../../releases/6.2.14-api-changes.zh-CN.md)。
+  - 内部属性 `DescriptionText`、`DescriptionContent`、`IsDescriptionTextVisible`、`IsDescriptionContentVisible` 由 `EffectiveDescription` 取代；`null` 描述按空字符串呈现，布局不变。
+- Gallery
+  - 语义样式示例的 `EmptyDescriptionStyle` 改为 `x:SetterTargetType="ContentPresenter"`，`description` 部件说明更新为“描述区域，承载文字或自定义内容”。
+- Tests
+  - `EmptyObjectContentTests` 覆盖：描述样式同时作用于文字与自定义内容、按旧写法设置的文本属性继续生效、`null` 描述保留空文本行。
+  - 无头渲染 A/B：默认文案、长文本自动换行（Small / Middle / Large）、空字符串与 `null` 六种描述，改动前后逐像素一致，控件边界相同。
 - Fix
-  - Desktop 模板渲染 `Image`/`ImageTemplate`（对应 Ant Design `Empty.image` 节点）：新增 `ContentPresenter#ImageContent`，高度沿用内置插画的 `EmptyImgHeight*` Token，`Image` 非空时隐藏 `PART_SvgImage`。此前设置 `Image` 会清空插画且不显示任何图片。`image` Semantic Part 仍只标记 `PART_SvgImage`；对象描述的样式入口未变。
+  - Desktop 模板渲染 `Image`/`ImageTemplate`（对应 Ant Design `Empty.image` 节点）：新增 `ContentPresenter#ImageContent`，高度沿用内置插画的 `EmptyImgHeight*` Token，`Image` 非空时隐藏 `PART_SvgImage`。此前设置 `Image` 会清空插画且不显示任何图片。`image` Semantic Part 仍只标记 `PART_SvgImage`。
 
 ## 2026-11-07
 
 - Breaking API（二进制不兼容）
-  - `AbstractEmpty.Description` 与 `DescriptionProperty` 由 `string?` 放宽为 `object?`。字符串的显示不变；非字符串对象通过 `ContentPresenter` 展示。把读取到的 `Description` 当作 `string` 使用的源码需要显式转换，引用旧 `string?` 签名的已编译程序集需要重新编译。
+  - `AbstractEmpty.Description` 与 `DescriptionProperty` 由 `string?` 放宽为 `object?`。字符串的显示不变；非字符串对象通过 `ContentPresenter` 展示。把读取到的 `Description` 当作 `string` 使用的源码需要显式转换，引用旧 `string?` 签名的已编译程序集需要重新编译。迁移见 [6.2.14 迁移指南](../../../../releases/6.2.14-api-changes.zh-CN.md)。
 - API
   - `AbstractEmpty` 新增 `Image`（`object?`）、`ImageTemplate`（`IDataTemplate?`）、`Title`（`object?`）、`TitleTemplate`（`IDataTemplate?`），均参与 `AffectsMeasure`。Desktop 模板不渲染 `Title`，它面向其他产品包的模板；`Image` 自 2026-11-11 起在 Desktop 渲染。
   - 图片来源互斥检查扩展到 `Image`、`PresetImage`、`ImagePath`、`ImageSource`，异常信息同步列出 `Image`。只有本地值、样式值、模板值或绑定提供的非空值才计入冲突；属性默认值和 `OverrideDefaultValue` 元数据不计入，因此子类的默认预设不会与调用方的显式来源冲突。

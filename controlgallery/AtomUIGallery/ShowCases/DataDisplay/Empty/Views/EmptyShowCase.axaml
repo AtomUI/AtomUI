@@ -145,7 +145,7 @@
                                     <Style Selector="atom|Empty.semantic-object-styles">
                                         <Setter Property="Background" Value="#F5F5F5" />
                                         <Setter Property="CornerRadius" Value="8" />
-                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Foreground" Value="#1890FF" />
                                             <Setter Property="FontWeight" Value="Bold" />
                                         </atom:EmptyDescriptionStyle>
@@ -157,7 +157,7 @@
                                         <Setter Property="Background" Value="#E6F7FF" />
                                         <Setter Property="BorderBrush" Value="#91D5FF" />
                                         <Setter Property="StrokeDashArray" Value="{x:Null}" />
-                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Foreground" Value="#1890FF" />
                                             <Setter Property="FontWeight" Value="Bold" />
                                         </atom:EmptyDescriptionStyle>

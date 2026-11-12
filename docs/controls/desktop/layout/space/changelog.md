@@ -13,7 +13,7 @@
   - 新增共享基类 `AtomUI.Controls.Commons.AbstractSpace`，`Space` 改为继承它。`Children`、`IsItemsHost`、`Orientation`、`ItemSpacing`、`LineSpacing`、`ItemsAlignment`、`ItemWidth`、`ItemHeight`、子元素同步、测量与排列、`IChildIndexProvider`、`INavigableContainer` 移入基类，属性的名称、默认值与 `Space` 上的静态字段访问方式不变；`Space` 保留 `SizeType`、`SplitTemplate`、背景与边框（含虚线）、尺寸档 Token 绑定、语义标记与 `Render`。
   - 基类新增 `IsWrap`（默认 `true`，`AffectsMeasure`）：为 `false` 时所有元素在同一行，超出部分溢出，不压缩元素。
   - 基类新增 `Justify`（`SpaceJustify`：`Start`、`End`、`Center`、`Between`、`Around`、`Evenly`，默认 `Start`，`AffectsArrange`）：每行独立分配剩余主轴空间，不改变元素尺寸；`R ≤ 0` 时不移动，`n = 1` 时 `Between` 等同 `Start`。
-  - `SpaceItemsAlignment` 的命名空间由 `AtomUI.Desktop.Controls` 改为 `AtomUI.Controls`，值不变；XAML 仍使用 `https://atomui.net`，只引用 `AtomUI.Desktop.Controls` 的 C# 代码需要补 `using AtomUI.Controls`。
+  - `SpaceItemsAlignment` 的命名空间由 `AtomUI.Desktop.Controls` 改为 `AtomUI.Controls`，值不变；XAML 仍使用 `https://atomui.net`，只引用 `AtomUI.Desktop.Controls` 的 C# 代码需要补 `using AtomUI.Controls`。迁移见 [6.2.14 迁移指南](../../../../releases/6.2.14-api-changes.zh-CN.md)。
   - `Space` 原有的 `protected virtual HandleChildrenChanged` 随子元素同步移入基类，签名不变，`Space` 改为覆盖它以维护语义标记与分隔符；基类另新增 `private protected virtual InvalidateMeasureOnChildrenChanged` 与 `GetLayoutInset`（`Space` 返回 `Padding + BorderThickness`）。
 - Theme
   - 无变化：`Space` 本体没有 ControlTheme，Token 与尺寸档绑定不变。

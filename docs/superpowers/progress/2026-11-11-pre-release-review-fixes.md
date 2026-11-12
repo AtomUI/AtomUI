@@ -49,8 +49,8 @@
 | ComboBox 显式 `VirtualizingStackPanel` 绕过离场保护 | 限制属实，但没有干净的修法：`ItemsControl.ScrollIntoView` 非虚、`ItemsPresenter.ScrollIntoView` 为 internal；临时覆盖 `AutoScrollToSelectedItem` 时，Avalonia 双向绑定会把每次有效值变化写回数据源；在面板之上拦截 `RequestBringIntoView` 也不够，面板在此之前已经围绕目标项重新布局 | 维持“已知边界”，已写入 ComboBox 实现文档 |
 | Spin / MarqueeLabel 全局运动 Token | 原判断成立：antd 的 Spin 旋转时长固定（1.2s / 1s），`motion: false` 只把各种过渡时长清零；桌面端独立与内嵌的 SpinIndicator 都不绑定 `EnableMotion`，表现一致 | 维持 |
 | Empty 相同值预设推迟冲突校验 | 已记录的边界：只有在把派生默认值改写成相同的本地值时才会推迟，Avalonia 对“值不变、优先级变化”不发通知 | 维持 |
-| Empty 对象描述的样式入口 | 缺口属实：antd 的 `styles.description` 作用于外层容器，字符串和节点都生效。但修复要改 6.2.0 起公开的 `description` 语义部件契约（节点类型 `TextBlock`、单节点） | 需要你决策，未改动 |
-| 兼容性变化（Skeleton 基类、`SpaceItemsAlignment`、`Empty.Description` / `Result.Icon`） | 属于发版兼容策略 | 需要你决策，未改动 |
+| Empty 对象描述的样式入口 | 缺口属实：antd 的 `styles.description` 作用于外层容器，字符串和节点都生效 | 用户决定对齐 Ant Design：`description` 部件改为同时承载文字与自定义内容的 `ContentPresenter`，作为本版的主题契约变化写入迁移指南 |
+| 兼容性变化（Skeleton 基类、`SpaceItemsAlignment`、`Empty.Description` / `Result.Icon`） | 属于发版兼容策略 | 用户选择保留并作为破坏性变更发布：新增 [6.2.14 迁移指南](../../releases/6.2.14-api-changes.zh-CN.md) 与英文版，登记到 `docs/releases/overview.md`，各控件 changelog 链接迁移指南 |
 | ComboBox 关闭时重复过滤 | 属实：`HandlePopupClosed` 每次关闭都对全部条目调用一次过滤器 | 已修复：只在离场期间有被推迟的刷新、或过滤条件与已呈现的不同时才刷新 |
 | Space 默认排布多一次遍历 | 只多一次线性计数，影响可以忽略 | 维持 |
 | Watermark 每帧重复计算字形尺寸 | `TextGlyph.GetDesiredSize()` 只读取已缓存的 `FormattedText` 宽高，开销可以忽略 | 维持 |

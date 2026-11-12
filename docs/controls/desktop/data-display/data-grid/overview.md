@@ -168,6 +168,10 @@ Public API / inherited command / Source invalidation / user input
   时仍可在任意 LoadState 显示 Spin。
 - 行拖动状态以当前 `DataGrid` 的单一拖拽会话为 owner；handle 和 RowsPresenter 只投影输入与 ghost row，不能保存
   跨 DataGrid 共享的静态拖拽状态。Pointer capture、源 row key、Source snapshot 和目标邻接 key 必须属于同一个会话。
+- 拖动中滚轮滚动或拖到边界外自动滚动使源行离开视口并被回收时，会话继续有效：会话以源 RowKey 在其已提交 slot 上
+  的数据身份判定，不依赖源行容器仍在显示；滚动生效后插入目标按指针当前位置重新解析，不移动指针直接松开也落在指针下的行。
+- 指针越过行区域顶部或底部时，ghost row 停靠在视口对应边缘，始终可见；指针停在边界外不动也会持续自动滚动，速度随越界
+  距离增大（有上限），指针回到行区域内或拖动结束即停止。
 - `RowReordering` 在超过拖动阈值后且创建 ghost row 前触发一次；事件取消或事件回调改变 DataGrid、源行、
   Source、Query、snapshot 或移动能力时，本次 Pointer 会话保持取消状态，不得在后续移动帧重复开始。
 - `RowReordered` 只在 movable Source 成功提交顺序变化，并且 ghost、capture、动画与会话状态全部清理后触发。
@@ -315,8 +319,10 @@ PointerPressed
 ```
 
 每个 `DataGrid` 同时最多拥有一个行拖动会话。会话跟踪 Pointer、源 handle、源 row、Source identity、snapshot、
-源 RowKey、目标邻接 key 和拖动几何。Pointer 不匹配、capture 丢失、控件禁用、`CanUserReorderRows=false`、
-Source、Query 或 snapshot 替换、行回收、重排列移除、模板重建或 DataGrid detach
+源 RowKey、目标邻接 key 和拖动几何。Pointer capture 由 RowsPresenter 持有，而不是源行内的 handle：源行可能在拖动中被
+滚出视口并回收。超过拖动阈值前源行必须仍在显示；进入 Dragging 后，会话以源 RowKey 在其已提交 slot 上的数据身份判定，
+源行回收不取消会话。Pointer 不匹配、capture 丢失、控件禁用、`CanUserReorderRows=false`、
+Source、Query 或 snapshot 替换、源 slot 不再对应源 RowKey、重排列移除、模板重建或 DataGrid detach
 都会取消会话。取消和完成共用同一个清理边界，必须移除 ghost row、恢复动效、释放 capture 并清除会话引用。
 
 移动提交由 Source 维护自己的数据、snapshot 和 invalidation。DataGrid 不推断 Source 集合结构，也不把 display/window

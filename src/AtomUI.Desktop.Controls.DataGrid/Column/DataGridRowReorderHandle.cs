@@ -63,35 +63,8 @@ internal class DataGridRowReorderHandle : TemplatedControl
         }
     }
 
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-        if (OwningGrid is not { RowsPresenter: { } rowsPresenter } owningGrid)
-        {
-            return;
-        }
-
-        owningGrid.HandleRowReorderPointerMoved(
-            this,
-            e.Pointer,
-            e.GetPosition(rowsPresenter),
-            e.GetCurrentPoint(this).Properties.IsLeftButtonPressed);
-    }
-
-    protected override void OnPointerReleased(PointerReleasedEventArgs e)
-    {
-        base.OnPointerReleased(e);
-        if (e.InitialPressMouseButton == MouseButton.Left)
-        {
-            OwningGrid?.HandleRowReorderPointerReleased(this, e.Pointer);
-        }
-    }
-
-    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-    {
-        OwningGrid?.HandleRowReorderPointerCaptureLost(this, e.Pointer);
-        base.OnPointerCaptureLost(e);
-    }
+    // Moves, release and capture loss of an active drag are handled by DataGridRowsPresenter, which owns the
+    // pointer capture; this row may be recycled while the drag continues, so it must not end the session.
 
     #region 内部协作 API
 
@@ -104,7 +77,6 @@ internal class DataGridRowReorderHandle : TemplatedControl
     {
         if (ReferenceEquals(OwningRow, row))
         {
-            OwningGrid?.CancelRowReorder(this, row);
             OwningRow = null;
         }
     }
@@ -118,14 +90,12 @@ internal class DataGridRowReorderHandle : TemplatedControl
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        OwningGrid?.CancelRowReorder(this);
         base.OnApplyTemplate(e);
         _indicatorButton = e.NameScope.Find<IconButton>(DataGridRowReorderHandleConstants.IndicatorIconButtonPart);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        OwningGrid?.CancelRowReorder(this);
         _indicatorButton = null;
         base.OnDetachedFromVisualTree(e);
     }

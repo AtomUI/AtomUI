@@ -247,7 +247,19 @@ PointerPressed
 ```
 
 每个 DataGrid 只有一个会话。handle 不修改数据，presenter 不决定移动语义，Source 不持有视觉对象。Source、Query、snapshot、
-row、pointer 或 capability 变化均取消会话。完成和取消共用幂等清理入口，释放 capture、ghost、offset、transition 和引用。
+pointer 或 capability 变化，以及源 slot 不再对应源 RowKey，均取消会话。完成和取消共用幂等清理入口，释放 capture、ghost、
+offset、transition 和引用。
+
+handle 只负责按下：按下后 Pointer capture 交给 `DataGridRowsPresenter`，由它把 move、release 和 capture lost 转给会话。
+源行所在的 handle 和行容器会在滚动时被虚拟化回收，因此不再以 handle 卸载、模板重套用或 detach 结束会话；阈值前仍要求源行
+在显示，以便 `RowReordering` 报告真实的行。范围呈现下的滚轮和边界自动滚动都异步生效，presenter 每次 arrange 后若显示视口
+（首个滚动 slot 与 `NegVerticalOffset`）已不同于上次命中插入目标时的视口，就以 Background 优先级按最后指针位置重新解析目标；
+这次解析只更新插入目标，不改 ghost 偏移、不再触发自动滚动；presenter 的布局仍无效时跳过，留给下一次 arrange 重新投递，避免按
+未重排的行边界命中却记录为新视口。
+
+ghost 偏移跟随指针，但夹在 `[0, CellsEstimatedHeight - 源行高]` 内，指针越界时贴住视口边缘。边界自动滚动由会话级
+`DispatcherTimer`（30ms）驱动：指针移动越过边缘时立即滚动一步并启动计时器，之后每次 tick 按越界距离滚动（单次上限 20），
+直至指针回到视口内、无法继续滚动或会话清理；计时器随会话清理停止，不跨会话保留。
 
 拖动提交和 `MoveRowAsync` 共用源移动执行入口。每个 DataGrid 的 `AsyncLocal<DataGridMoveRequest?>` 只在源 `MoveAsync`
 的执行上下文中保存请求身份，finally 恢复原值；异步等待只传递该上下文容器和弱引用，不持有 DataGrid 或行容器。

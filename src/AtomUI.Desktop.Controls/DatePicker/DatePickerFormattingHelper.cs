@@ -111,6 +111,113 @@ internal static class DatePickerFormattingHelper
         };
     }
 
+    /// <summary>
+    /// Parses text typed into a picker input. As in Ant Design, the text must match the display format in full;
+    /// a week may omit its localized suffix. The result is normalized to the picker unit, keeping the clock only
+    /// when the format shows it.
+    /// </summary>
+    internal static bool TryParseDateTime(
+        string? text,
+        string? format,
+        DatePickerMode pickerMode,
+        bool isShowTime,
+        ClockIdentifierType clockIdentifier,
+        DateTimeFormatInfo? formatInfo,
+        out DateTime value)
+    {
+        value = default;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        var trimmed = text.Trim();
+        if (format is null && pickerMode != DatePickerMode.Date)
+        {
+            var parsed = pickerMode switch
+            {
+                DatePickerMode.Week    => TryParseWeek(trimmed, out value),
+                DatePickerMode.Quarter => TryParseQuarter(trimmed, out value),
+                DatePickerMode.Month => DateTime.TryParseExact(trimmed, "yyyy-MM", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out value),
+                _ => DateTime.TryParseExact(trimmed, "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                    out value)
+            };
+            if (parsed)
+            {
+                value = NormalizeDateTime(value, pickerMode);
+            }
+            return parsed;
+        }
+
+        var effectiveFormat = GetEffectiveFormat(format, pickerMode, isShowTime, clockIdentifier);
+        IFormatProvider provider = formatInfo ?? (IFormatProvider)CultureInfo.CurrentCulture;
+        if (!DateTime.TryParseExact(trimmed, effectiveFormat, provider, DateTimeStyles.None, out value))
+        {
+            return false;
+        }
+
+        if (pickerMode != DatePickerMode.Date)
+        {
+            value = NormalizeDateTime(value, pickerMode);
+        }
+        return true;
+    }
+
+    private static bool TryParseQuarter(string text, out DateTime value)
+    {
+        value = default;
+        if (text.Length != 7 || text[4] != '-' || char.ToUpperInvariant(text[5]) != 'Q' ||
+            !int.TryParse(text.AsSpan(0, 4), NumberStyles.None, CultureInfo.InvariantCulture, out var year) ||
+            year < 1 || text[6] is < '1' or > '4')
+        {
+            return false;
+        }
+
+        value = new DateTime(year, (text[6] - '1') * 3 + 1, 1);
+        return true;
+    }
+
+    private static bool TryParseWeek(string text, out DateTime value)
+    {
+        value = default;
+        var digitsEnd = 5;
+        while (digitsEnd < text.Length && char.IsAsciiDigit(text[digitsEnd]))
+        {
+            digitsEnd++;
+        }
+
+        if (text.Length < 6 || text[4] != '-' || digitsEnd == 5 || digitsEnd - 5 > 2 ||
+            !int.TryParse(text.AsSpan(0, 4), NumberStyles.None, CultureInfo.InvariantCulture, out var year) ||
+            !int.TryParse(text.AsSpan(5, digitsEnd - 5), NumberStyles.None, CultureInfo.InvariantCulture, out var week) ||
+            year is < 2 or > 9998)
+        {
+            return false;
+        }
+
+        var culture  = GetFormattingCulture();
+        var firstDay = DatePanelAlgorithms.GetWeekFirstDay(culture);
+        var start    = GetWeekStart(new DateTime(year, 1, 1).AddDays(-7), firstDay);
+        for (var index = 0; index < 55; index++)
+        {
+            var candidate = start.AddDays(index * 7);
+            if (DatePanelAlgorithms.GetWeekIdentity(candidate, culture, firstDay) != (year, week))
+            {
+                continue;
+            }
+
+            if (digitsEnd < text.Length && !string.Equals(FormatWeek(candidate), text, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            value = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
     internal static bool IsFormattedTextAffectingProperty(
         AvaloniaProperty property,
         AvaloniaProperty isShowTimeProperty,

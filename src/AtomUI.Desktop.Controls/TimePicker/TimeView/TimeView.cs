@@ -495,6 +495,62 @@ internal class TimeView : TemplatedControl
             ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
     }
 
+    private int _keyboardColumn = -1;
+
+    /// <summary>
+    /// Handles a navigation key forwarded from a picker input: Up, Down, PageUp, PageDown, Home and End step the
+    /// active column, Left and Right switch it. The first key activates the hour column.
+    /// </summary>
+    internal bool HandleForwardedKey(Key key)
+    {
+        var columns = new[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector }
+                      .Where(selector => selector is { IsEffectivelyVisible: true })
+                      .Select(selector => selector!)
+                      .ToArray();
+        if (columns.Length == 0)
+        {
+            return false;
+        }
+
+        var column = Math.Clamp(_keyboardColumn, 0, columns.Length - 1);
+        if (key is Key.Left or Key.Right)
+        {
+            column = _keyboardColumn < 0 ? 0 : Math.Clamp(column + (key == Key.Left ? -1 : 1), 0, columns.Length - 1);
+            SetKeyboardColumn(columns, column);
+            return true;
+        }
+
+        if (key is not (Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End))
+        {
+            return false;
+        }
+
+        SetKeyboardColumn(columns, column);
+        return columns[column].StepByKey(key);
+    }
+
+    /// <summary>Clears the keyboard-active column, so the next forwarded key starts from the hour column.</summary>
+    internal void ResetKeyboardNavigation()
+    {
+        _keyboardColumn = -1;
+        foreach (var selector in new[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector })
+        {
+            if (selector is not null)
+            {
+                selector.IsKeyboardActive = false;
+            }
+        }
+    }
+
+    private void SetKeyboardColumn(DateTimePickerPanel[] columns, int column)
+    {
+        _keyboardColumn = column;
+        for (var index = 0; index < columns.Length; index++)
+        {
+            columns[index].IsKeyboardActive = index == column;
+        }
+    }
+
     internal void SyncDisplayTimeToPanel(TimeSpan time)
     {
         _pendingDisplayTime = time;

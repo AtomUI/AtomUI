@@ -39,6 +39,11 @@
             <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
             <Setter Property="Background" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
         </Style>
+
+        <!-- The column stepped by navigation keys from the picker input: the selected-and-hovered shade. -->
+        <Style Selector="^:selected:keyboard-active">
+            <Setter Property="Background" Value="{atom:SharedTokenResource ControlItemBgActiveHover}" />
+        </Style>
         
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">

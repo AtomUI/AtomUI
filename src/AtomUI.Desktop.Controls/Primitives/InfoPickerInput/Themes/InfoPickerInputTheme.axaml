@@ -12,9 +12,14 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:InfoPickerInput">
             <Panel>
+                <!-- Keyboard stops follow Ant Design pickers: the input(s), then the clear button. The frame is focusable only
+                     for pointer hits on its padding; it is a local tab group ordered by TabIndex because the clear button
+                     precedes the inputs in the frame's visual tree. -->
                 <atom:AddOnDecoratedBox
                     Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                     Focusable="True"
+                    IsTabStop="False"
+                    KeyboardNavigation.TabNavigation="Local"
                     Classes.semantic-scope-input="True"
                     MinWidth="{TemplateBinding MinWidth}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -60,6 +65,7 @@
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <atom:InfoPickerTextBox Name="PART_InfoInputBox"
+                                          KeyboardNavigation.TabIndex="0"
                                           Classes.semantic-input="True"
                                           HorizontalContentAlignment="Stretch"
                                           VerticalContentAlignment="Center"
@@ -101,7 +107,6 @@
     </Setter>
 
     <Style Selector="^:is(atom|InfoPickerInput)">
-        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsArrowVisible" Value="True" />

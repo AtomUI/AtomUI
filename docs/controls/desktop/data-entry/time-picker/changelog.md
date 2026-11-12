@@ -4,6 +4,11 @@
 
 ## 2026-11-11
 
+- Changed
+  - 键盘停靠点对齐 Ant Design（输入框，然后清除按钮）；Enter / Escape / 失焦处理迁入共享 `InfoPickerInput`，关闭状态按 Enter 打开弹层。
+  - Escape 在 `IsNeedConfirm=false` 时也丢弃候选，不再提交。
+  - RangeTimePicker 端点交接按本次打开确认：完整范围从开始端确认后转到结束端，两端都确认后关闭。
+  - 新增导航键转发：Up/Down、PageUp/PageDown、Home/End 步进当前列，Left/Right 切换列，当前列选中项显示 `:keyboard-active`。
 - Theme
   - RangeTimePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
 - Fixed

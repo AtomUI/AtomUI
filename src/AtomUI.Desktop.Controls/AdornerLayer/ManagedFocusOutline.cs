@@ -41,6 +41,9 @@ internal sealed class ManagedFocusOutline
     {
         if (_adorner?.Parent is Panel adornerLayer)
         {
+            // AdornerLayer tracks the adorned element and all its ancestors, and releases that tracking only
+            // when the adorned element changes while the adorner is still in the layer; removal alone leaks it.
+            AdornerLayer.SetAdornedElement(_adorner, null);
             adornerLayer.Children.Remove(_adorner);
         }
 

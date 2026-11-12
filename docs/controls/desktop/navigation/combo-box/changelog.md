@@ -12,13 +12,22 @@
     - Enter / Space 清除后，焦点回到宿主或文本框；键盘触发时保持键盘焦点可见状态。
   - 外框 `PART_AddOnDecoratedBox` 与下拉箭头 `PART_OpenIndicatorButton` 不再是停靠点。此前不可编辑模式按一次 Tab 会落在看不见的外框上。
   - 清除按钮只在悬停或焦点在控件内时显示，因此从控件后方 Shift+Tab 先回到输入，再按 Tab 到达清除按钮。
+  - 附加内容（`LeftAddOn` / `RightAddOn` / `ContentLeftAddOn` / `ContentRightAddOn`）中的可聚焦控件按视觉顺序参与 Tab，不再被困住：
+    - 此前可编辑模式下焦点落到附加内容的按钮后，`OnGotFocus` 又把它转回文本框，Tab 在“文本框 → 清除按钮 → 附加按钮 → 文本框”之间循环，离不开控件；不可编辑模式的顺序是“宿主 → 清除 → 左附加 → 右附加 → 内左 → 内右”。
+    - 现在可编辑模式为“左附加 → 内左 → 文本框 → 内右 → 清除 → 右附加 → 离开”。不可编辑模式的输入是宿主本身，排在其内部停靠点之前，为“宿主 → 左附加 → 内左 → 内右 → 清除 → 右附加”。
+  - 焦点在清除按钮或附加内容上时用 Alt+Down / F4 打开下拉，焦点移到输入（宿主或文本框）。此前当选中项无法获得焦点（例如禁用，或真实窗口中弹层打开时容器尚未布局）时焦点留在清除按钮上，随后 Enter / Space 先被按钮处理，值被清除而下拉仍开着。
+  - 钉住（`IsPopupPinnedOpen`）时每次选择只在查询变化时过滤一次。此前选择提交、文本回填和钉住重开各自重新过滤，一次选择对全部条目调用过滤器多达五遍。
 - Implementation
   - `OnGotFocus` 在焦点落到清除按钮时不调用基类：Avalonia 可编辑 ComboBox 会把控件内的任何焦点转给输入文本框。
   - 清除按钮在外框模板中排在文本框之前（DockPanel 顺序），外框设为 `TabNavigation=Local` 的分组（本身不作停靠点），文本框与清除按钮分别为 `TabIndex` 0 和 1。
   - 可编辑模式下宿主 `IsTabStop=False`，避免 Shift+Tab 回到宿主后又被转回文本框。
   - 关闭弹层时只在离场期间有被推迟的刷新、或过滤条件与已呈现的不同时才重新过滤，不再每次关闭都对全部条目调用一次过滤器。
+  - 同一判断（`RefreshStaleFilteredItemVisibility`）也用于选择提交结束、`Text` 回填和打开下拉；条目集合、过滤器及过滤值本身的变化仍直接刷新。
+  - 外框分组内的 `TabIndex`：内左附加 0、文本框 1、内右附加 2、清除按钮 3，两个内附加的 presenter 各自是 `TabNavigation=Local` 分组；外框为 `Local` 分组时，`AddOnDecoratedBoxTheme` 让左附加 presenter 成为最小 `TabIndex` 的分组、右附加为最大值的分组。
+  - `OnGotFocus` 对清除按钮及四个附加 presenter 内的焦点都不调用基类，也不转交文本框。
 - Tests
   - `ComboBoxKeyboardNavigationTests` 新增：清除按钮的停靠点、名称与 Enter / Space 清除，两种模式的 Tab 顺序，以及无待应用查询时关闭不调用过滤器。
+  - `ComboBoxKeyboardNavigationTests` 新增两种模式下附加内容的 Tab / Shift+Tab 顺序（不困住焦点）。
 
 ## 2026-11-10
 

@@ -98,7 +98,9 @@ Native Error / Form Error
   - **嵌入式输入**：`SelectFilterTextBox`、可编辑 ComboBox 的 `ComboBoxTextBox`。
 - 键盘停靠点与 Ant Design 一致：输入本身，以及出现时的清除按钮。
   - 模板为接收内边距点击而设为可聚焦的 frame 不作停靠点（`IsTabStop=False`）；下拉箭头、数值步进按钮也不作停靠点。日期 / 时间选择器的 frame 目前仍是其唯一停靠点，属于尚未完成的选择器键盘方案。
-  - 清除按钮 `InputClearIconButton` 可聚焦，Enter / Space 触发，自动化名称取自 `CommonLangResourceKind.Clear`。清除按钮在 frame 模板中排在内容之前（DockPanel 顺序），需要“输入 → 清除”顺序的宿主把 frame 设为 `TabNavigation=Local` 并用 `TabIndex` 排序，例如 ComboBox。
+  - 清除按钮 `InputClearIconButton` 可聚焦，Enter / Space 触发，自动化名称由其 ControlTheme setter 绑定 `CommonLangResourceKind.Clear` 语言资源（应用 Style 与本地值可覆盖）。清除按钮在 frame 模板中排在内容之前（DockPanel 顺序），需要“输入 → 清除”顺序的宿主把 frame 设为 `TabNavigation=Local` 并用 `TabIndex` 排序，例如 ComboBox、日期/时间选择器；NumericUpDown 的宿主本身就是 `Local` 分组。
+  - `AddOnDecoratedBox` 作为 `Local` 分组时，左附加 presenter 成为最小 `TabIndex` 的分组、右附加成为最大值的分组，附加内容的可聚焦控件按视觉位置排在 frame 内停靠点的前后；宿主内附加（ContentLeft / ContentRight）的 presenter 在宿主模板中，由宿主按位置分配 `TabIndex`（ComboBox 已分配；日期/时间选择器尚未分配，其内附加排在清除按钮与右附加之后）。
+  - 清除后焦点回到输入：宿主在按钮点击前取 `InputClearIconButton.GetFocusReturnMethod()`（按钮有焦点时返回键盘或指针方式），清除后据此聚焦输入，避免按钮隐藏导致焦点丢失。
 - focus shadow 绘制在 frame 外侧，宿主不得裁剪它：派生自 `TemplatedControl` 的宿主默认 `ClipToBounds=True`，主题需显式设为 `False`。
 - 模板把内层 `AddOnContentPresenter` 作为外层 add-on 内容时，外层可见性跟随内层控件的 `IsVisible`；空的前缀/后缀不保留 margin 和面板间距。
 

@@ -236,7 +236,8 @@ public partial class TimePicker : InfoPickerInput
 
     private void HandleCandidateChanged(object? sender, EventArgs args) => ClearHoverSelectedInfo();
     private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args) => ClearHoverSelectedInfo();
-    private void HandleDismissed(object? sender, EventArgs args) => ClosePickerFlyout();
+    // Escape inside the popup panel reverts like Escape in the input.
+    private void HandleDismissed(object? sender, EventArgs args) => CancelPickerEdit();
 
     private void HandleConfirmed(object? sender, EventArgs args)
     {
@@ -424,6 +425,10 @@ public partial class TimePicker : InfoPickerInput
             _pickerPresenter?.ConfirmCandidate();
         }
     }
+
+    // The candidate and the input text return to the committed value now, so a pinned popup that stays open shows
+    // the reverted value too.
+    private protected override void NotifyEditCanceled() => _pickerPresenter?.ResetOpenPanelState();
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

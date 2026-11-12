@@ -275,6 +275,10 @@ public class CollapseItem : HeaderedContentControl, ISelectable
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
+    // Avalonia focuses the nearest focusable ancestor of a pressed element, so a press on plain content gives
+    // the item focus; Ant Design only toggles from the header, so toggle keys stay off until focus comes
+    // from the keyboard or a header press.
+    private bool _isToggleKeySuppressed;
 
     static CollapseItem()
     {
@@ -282,6 +286,11 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         PressedMixin.Attach<CollapseItem>();
         FocusableProperty.OverrideDefaultValue(typeof(CollapseItem), true);
         DataContextProperty.Changed.AddClassHandler<CollapseItem>((x, e) => x.UpdateHeader(e));
+    }
+
+    public CollapseItem()
+    {
+        AddHandler(PointerPressedEvent, HandlePreviewPointerPressed, RoutingStrategies.Tunnel, true);
     }
 
     protected override AutomationPeer OnCreateAutomationPeer()
@@ -313,10 +322,20 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         SetupDefaultExpandIcon();
     }
 
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && e.NavigationMethod != NavigationMethod.Pointer)
+        {
+            _isToggleKeySuppressed = false;
+        }
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (TriggerType == CollapseTriggerType.Header &&
+        if (!_isToggleKeySuppressed &&
+            TriggerType == CollapseTriggerType.Header &&
             SelectingItemsControl.ItemsControlFromItemContainer(this) is Collapse collapse)
         {
             e.Handled = collapse.UpdateSelectionFromEvent(this, e);
@@ -335,6 +354,16 @@ public class CollapseItem : HeaderedContentControl, ISelectable
             change.Property == OwnerContentPaddingProperty)
         {
             UpdateEffectivePaddings();
+        }
+    }
+
+    // Runs in the tunnel phase, before the focus manager focuses the item for a content press.
+    private void HandlePreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isToggleKeySuppressed = _headerDecorator is null ||
+                                     !new Rect(_headerDecorator.Bounds.Size).Contains(e.GetPosition(_headerDecorator));
         }
     }
 

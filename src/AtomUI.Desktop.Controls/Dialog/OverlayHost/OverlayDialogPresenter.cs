@@ -128,6 +128,8 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private bool _closeRequested;
     private bool _presentationStarted;
     private OverlayDialogMask? _dialogMask;
+    // A touch or pen press that activated this Dialog; its target is focused on release.
+    private IPointer? _activationPointer;
     private CancellationTokenSource? _openingMotionCancellationSource;
     private Task? _showTask;
     private Task? _closeTask;
@@ -178,6 +180,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.HeaderPointerReleased += HandleHeaderPointerReleased;
         _surface.SizeChanged += HandleSurfaceSizeChanged;
         AddHandler(PointerPressedEvent, HandlePresenterPointerPressed, RoutingStrategies.Tunnel, true);
+        AddHandler(PointerReleasedEvent, HandlePresenterPointerReleased, RoutingStrategies.Tunnel, true);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -484,6 +487,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.HeaderPointerReleased -= HandleHeaderPointerReleased;
         _surface.SizeChanged -= HandleSurfaceSizeChanged;
         RemoveHandler(PointerPressedEvent, HandlePresenterPointerPressed);
+        RemoveHandler(PointerReleasedEvent, HandlePresenterPointerReleased);
         try
         {
             _bindings.Dispose();
@@ -1172,6 +1176,27 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         // Raising this Dialog makes it the one Escape and Enter act on, so keyboard focus has to follow. Avalonia only
         // focuses a focusable target pressed with the left button; once the press is done, focus still outside this
         // Dialog (a non-focusable spot, another button) moves to its surface.
+        // Touch and pen focus their target on release instead, so the check waits for that release; checking after
+        // the press would focus the surface first and the target right after.
+        if (e.Pointer.Type == PointerType.Mouse)
+        {
+            _activationPointer = null;
+            Dispatcher.UIThread.Post(EnsureFocusAfterActivation, DispatcherPriority.Input);
+        }
+        else
+        {
+            _activationPointer = e.Pointer;
+        }
+    }
+
+    private void HandlePresenterPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_activationPointer is null || !ReferenceEquals(e.Pointer, _activationPointer))
+        {
+            return;
+        }
+
+        _activationPointer = null;
         Dispatcher.UIThread.Post(EnsureFocusAfterActivation, DispatcherPriority.Input);
     }
 

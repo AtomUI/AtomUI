@@ -1,18 +1,14 @@
-using AtomUI.Controls.Localization;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Localization;
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Data;
+using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
+// The accessible name (Ant Design locale.global.clear) is a ControlTheme setter bound to the language resource, so
+// application styles and local values override it and language changes update it without code.
 internal class InputClearIconButton : IconButton
 {
-    private ILanguageManager? _subscribedLanguageManager;
-    private IDisposable? _automationName;
-
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -20,19 +16,6 @@ internal class InputClearIconButton : IconButton
         {
             SetCurrentValue(IconProperty, new CloseCircleFilled());
         }
-    }
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        AttachLanguageListener();
-        UpdateAutomationName();
-    }
-
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
-        DetachLanguageListener();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -52,51 +35,18 @@ internal class InputClearIconButton : IconButton
         }
     }
 
-    // Ant Design names the clear button from locale.global.clear. Template priority lets a local value or
-    // binding set by the application win; the previous value is released first so language changes replace
-    // one value instead of stacking property frames.
-    private void UpdateAutomationName()
+    /// <summary>
+    /// Gets how the host should move focus back to its input after this button clears the value, or <c>null</c> when
+    /// the button does not hold focus. The button hides once the value is gone, which would otherwise drop focus.
+    /// </summary>
+    internal NavigationMethod? GetFocusReturnMethod()
     {
-        var localizer = Application.Current is { } application
-            ? global::AtomUI.ApplicationExtensions.GetLocalizer(application)
-            : null;
-        var name = localizer?.Get(CommonLangResourceKind.Clear) ?? "Clear";
-        _automationName?.Dispose();
-        _automationName = SetValue(AutomationProperties.NameProperty, name, BindingPriority.Template);
-    }
-
-    private void AttachLanguageListener()
-    {
-        if (_subscribedLanguageManager is not null)
+        if (!IsFocused)
         {
-            return;
+            return null;
         }
 
-        var languageManager = Application.Current is { } application
-            ? global::AtomUI.ApplicationExtensions.GetLanguageManager(application)
-            : null;
-        if (languageManager is null)
-        {
-            return;
-        }
-
-        languageManager.LanguageChanged += HandleLanguageChanged;
-        _subscribedLanguageManager = languageManager;
-    }
-
-    private void DetachLanguageListener()
-    {
-        if (_subscribedLanguageManager is null)
-        {
-            return;
-        }
-
-        _subscribedLanguageManager.LanguageChanged -= HandleLanguageChanged;
-        _subscribedLanguageManager = null;
-    }
-
-    private void HandleLanguageChanged(object? sender, LanguageChangedEventArgs e)
-    {
-        UpdateAutomationName();
+        // Keyboard activation keeps the focus visual on the input that receives focus.
+        return Classes.Contains(":focus-visible") ? NavigationMethod.Tab : NavigationMethod.Pointer;
     }
 }

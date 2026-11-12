@@ -5,11 +5,18 @@
 ## 2026-11-11
 
 - Changed
+  - 外框是按 `TabIndex` 排序的局部分组，`LeftAddOn` / `RightAddOn` 中的可聚焦内容因此按视觉位置排在输入与清除按钮的前后（共享 `AddOnDecoratedBoxTheme` 规则），不再排在清除按钮之后。内附加（`ContentLeftAddOn` / `ContentRightAddOn`）尚未分配顺序，仍在清除按钮与右附加之后。
   - 键盘停靠点对齐 Ant Design：输入框（范围为开始、结束输入）在前，清除按钮在后；外框、图标与范围箭头不再是停靠点，焦点在控件内时显示清除按钮。
   - 新增键入解析：文本完整匹配显示格式时成为候选并定位面板；Enter 提交（无需确认按钮）、Escape 回退、Tab 在范围端点间弱提交、焦点离开时按确认规则提交或丢弃。单值 Escape 不再把候选留到下次打开。
   - 新增导航键转发：弹层打开时方向键、PageUp/PageDown、Home/End 移动面板焦点格（翻页跟随、不越界），焦点格复用悬停外观与范围预览，Enter 提交。日期格 `:hovered` 获得与指针悬停相同的背景。
 - Fixed
   - 悬停预览结束时输入框恢复候选文本，不再短暂变空。
+  - `Clear()` 与清除按钮不再被当作键入：此前会打开弹层（范围还切换到结束端）；现在清空值与键入草稿并关闭弹层。
+  - RangeDatePicker 从结束端 Tab、从开始端 Shift+Tab 离开时，有效键入端点按焦点离开规则提交，不再被丢弃。
+  - RangeDatePicker 焦点离开提交单端、部分确认后关闭时按日期排序两端，不再留下开始晚于结束的提交值。
+  - 导航键目标格被禁用时不再翻页并静默改变焦点格（此前输入框仍显示旧值，Enter 提交的不是可见焦点）。
+  - 脱离逻辑树/视觉树或更换模板时丢弃键入草稿，不再在拆除期间回写 `SelectedDateTime` 或范围端点。
+  - `IsPopupPinnedOpen` 时 Escape 也把候选和输入框恢复为提交值。
 - Theme
   - InfoPickerInput / RangeInfoPickerInput / RangeDatePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
 - Fixed

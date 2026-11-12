@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.Primitives.Themes;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -460,6 +462,9 @@ public partial class ComboBox : AvaloniaComboBox,
 
     #endregion
 
+    private const string ContentLeftAddOnPresenterPart = "PART_ContentLeftAddOnPresenter";
+    private const string ContentRightAddOnPresenterPart = "PART_ContentRightAddOnPresenter";
+
     private Popup? _popup;
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
@@ -798,8 +803,9 @@ public partial class ComboBox : AvaloniaComboBox,
                 ClearCandidateItemSelection();
                 if (IsDropDownOpen)
                 {
-                    RefreshFilteredItemVisibility();
+                    RefreshStaleFilteredItemVisibility();
                     OpenPopup();
+                    MoveFocusToInputForDropDown();
                 }
                 else
                 {
@@ -832,7 +838,7 @@ public partial class ComboBox : AvaloniaComboBox,
                 SyncFilterValueFromText();
                 ConfigureEditableTextBoxPlaceholderVisibility();
                 ClearCandidateItemSelection();
-                RefreshFilteredItemVisibility();
+                RefreshStaleFilteredItemVisibility();
             }
             else if (change.Property == FilterValueProperty ||
                      change.Property == FilterProperty ||
@@ -858,17 +864,17 @@ public partial class ComboBox : AvaloniaComboBox,
             if (selectionPropertyCommit)
             {
                 _selectionCommitDepth--;
-                RefreshFilteredItemVisibility();
+                RefreshStaleFilteredItemVisibility();
             }
         }
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
-        // The clear button is a keyboard stop of its own (Ant Design renders it as a button). The base editable
-        // ComboBox hands any focus inside the control to its input text box, so it must not see this one; the
-        // control itself is not focused here, so nothing else in the base handler applies.
-        if (_clearButton is not null && ReferenceEquals(e.NewFocusedElement, _clearButton))
+        // The clear button (Ant Design renders it as a button) and focusable add-on content are keyboard stops of
+        // their own. The base editable ComboBox hands any focus inside the control to its input text box, so it must
+        // not see these; the control itself is not focused here, so nothing else in the base handler applies.
+        if (IsOwnKeyboardStop(e.NewFocusedElement))
         {
             return;
         }
@@ -953,7 +959,7 @@ public partial class ComboBox : AvaloniaComboBox,
         finally
         {
             _selectionCommitDepth--;
-            RefreshFilteredItemVisibility();
+            RefreshStaleFilteredItemVisibility();
         }
     }
 
@@ -1030,6 +1036,61 @@ public partial class ComboBox : AvaloniaComboBox,
     private void UpdateCanClearValue()
     {
         CanClearValue = SelectedIndex >= 0 || (IsEditable && !string.IsNullOrEmpty(Text));
+    }
+
+    // Keyboard stops inside the control that are not its input: the clear button and add-on content.
+    private bool IsOwnKeyboardStop(IInputElement? element)
+    {
+        if (element is not Visual visual)
+        {
+            return false;
+        }
+
+        if (_clearButton is not null && ReferenceEquals(visual, _clearButton))
+        {
+            return true;
+        }
+
+        for (var current = visual.GetVisualParent(); current is not null && !ReferenceEquals(current, this);
+             current = current.GetVisualParent())
+        {
+            if (current is ContentPresenter
+                {
+                    Name: AddOnDecoratedBoxThemeConstants.LeftAddOnPresenterPart or
+                          AddOnDecoratedBoxThemeConstants.RightAddOnPresenterPart or
+                          ContentLeftAddOnPresenterPart or
+                          ContentRightAddOnPresenterPart
+                })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The open dropdown's keys (Up / Down / Enter / Escape) are handled by the input. When it opens with focus on the
+    // clear button or add-on content (Alt+Down / F4 bubble up from there), that button would take Enter and Space
+    // first, so focus moves to the input; a keyboard opening keeps the focus visual.
+    private void MoveFocusToInputForDropDown()
+    {
+        if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is not InputElement focused ||
+            !IsOwnKeyboardStop(focused))
+        {
+            return;
+        }
+
+        var navigationMethod = focused.Classes.Contains(":focus-visible")
+            ? NavigationMethod.Tab
+            : NavigationMethod.Unspecified;
+        if (IsEditable)
+        {
+            FocusEditableTextBox(navigationMethod);
+        }
+        else
+        {
+            Focus(navigationMethod);
+        }
     }
 
     private void DetachClearButton()
@@ -1195,12 +1256,8 @@ public partial class ComboBox : AvaloniaComboBox,
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
         // Business open is already false during exit motion. Publish the latest query after the physical
-        // host has finished closing, but only when one is pending: re-running an unchanged query would call
-        // the filter for every item on each close.
-        if (_hasDeferredFilterRefresh || GetCurrentFilterProjection() != _presentedFilterProjection)
-        {
-            RefreshFilteredItemVisibility();
-        }
+        // host has finished closing, but only when one is pending.
+        RefreshStaleFilteredItemVisibility();
         if (!IsDropDownOpen)
         {
             return;
@@ -1658,7 +1715,7 @@ public partial class ComboBox : AvaloniaComboBox,
         finally
         {
             _selectionCommitDepth--;
-            RefreshFilteredItemVisibility();
+            RefreshStaleFilteredItemVisibility();
         }
     }
 
@@ -1758,6 +1815,8 @@ public partial class ComboBox : AvaloniaComboBox,
         if (!projection.IsActive)
         {
             ClearFilteredItemVisibility();
+            // Clearing forgets the projection; keep the inactive one as presented so an unchanged query is not stale.
+            _presentedFilterProjection = projection;
         }
         else
         {
@@ -1781,6 +1840,18 @@ public partial class ComboBox : AvaloniaComboBox,
         IsEffectiveEmptyVisible = IsShowEmptyIndicator && !hasVisibleMatch;
         ConfigureEmptyIndicator();
         EnsureCandidateItemSelectionIsValid();
+    }
+
+    // Selection commits, text echoes and popup open / close re-check the view after the query may have changed.
+    // Re-running an unchanged query would call the filter for every item again (a pinned popup does not defer and
+    // reopens after each selection, so every selection would pay for it several times); only a deferred or changed
+    // query is published.
+    private void RefreshStaleFilteredItemVisibility()
+    {
+        if (_hasDeferredFilterRefresh || GetCurrentFilterProjection() != _presentedFilterProjection)
+        {
+            RefreshFilteredItemVisibility();
+        }
     }
 
     private void ConfigureEmptyIndicator()

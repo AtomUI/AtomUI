@@ -33,8 +33,8 @@
     <Style Selector="^:loading:not(:has-image) /template/ ContentPresenter#PART_LoadingPresenter">
         <Setter Property="IsVisible" Value="True" />
     </Style>
-    <!-- A lazy image waiting for the viewport shows its placeholder too, so the placeholder can size an auto layout -->
-    <Style Selector="^[IsLazy=True][LoadState=Idle]:not(:has-image) /template/ ContentPresenter#PART_LoadingPresenter">
+    <!-- A Source waiting for the viewport shows its placeholder too, so the placeholder can size an auto layout -->
+    <Style Selector="^[IsViewportPending=True]:not(:has-image) /template/ ContentPresenter#PART_LoadingPresenter">
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="^:failed /template/ ContentPresenter#PART_ErrorPresenter">

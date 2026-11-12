@@ -21,6 +21,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Logging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -557,6 +558,16 @@ public partial class NavMenu : ItemsControl,
         base.OnGotFocus(e);
         if (e.NavigationMethod is NavigationMethod.Tab or NavigationMethod.Directional)
         {
+            // Selection and pointer presses focus items, which makes the item the Tab-once active element,
+            // so Tab re-entry lands on it. The menu is the single keyboard stop: take focus back so the
+            // outline is drawn once, on the keyboard active item or on the root.
+            if (!ReferenceEquals(e.Source, this) && e.Source is NavMenuItem item && this.IsVisualAncestorOf(item))
+            {
+                e.Handled = true;
+                Focus(e.NavigationMethod, e.KeyModifiers);
+                return;
+            }
+
             InteractionHandler?.SetKeyboardFocusVisible(true);
         }
 

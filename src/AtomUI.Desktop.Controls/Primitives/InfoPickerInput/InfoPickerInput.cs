@@ -637,14 +637,21 @@ public abstract class InfoPickerInput : TemplatedControl,
     #region Keyboard
 
     // Keyboard semantics follow Ant Design pickers: focus never opens the popup and typing does (each picker parses
-    // its own text), Enter submits, Escape reverts and closes, and focus leaving the picker closes it, committing or
-    // discarding the edit by the picker's confirmation rule. While the popup is open and the input holds no typed
-    // text, navigation keys drive the popup panel instead of the caret; Ant Design has no such forwarding.
+    // its own text), Enter submits, Escape reverts (and closes unless the popup is pinned), and focus leaving the
+    // picker closes it, committing or discarding the edit by the picker's confirmation rule. While the popup is open
+    // and the input holds no typed text, navigation keys drive the popup panel instead of the caret; Ant Design has
+    // no such forwarding.
 
     private bool _isCancelingEdit;
 
     /// <summary>The picker closes because the user reverted the edit (Escape), so nothing is committed.</summary>
     private protected bool IsCancelingEdit => _isCancelingEdit;
+
+    /// <summary>
+    /// The picker closes because it leaves the visual tree or replaces its template; the draft is discarded so
+    /// nothing is written back during teardown.
+    /// </summary>
+    private protected bool IsLifecycleClosing => _popupLifecycleCloseDepth > 0;
 
     /// <summary>The input holds text typed in this open session rather than a formatted value.</summary>
     private protected virtual bool HasPendingInputText => false;
@@ -693,7 +700,10 @@ public abstract class InfoPickerInput : TemplatedControl,
     /// <summary>Enter in an open picker. The default closes the popup.</summary>
     private protected virtual void NotifyInputSubmit() => ClosePickerFlyout();
 
-    /// <summary>Reverts the edit of this open session; the picker closes afterwards.</summary>
+    /// <summary>
+    /// Reverts the edit of this open session, including the input text; the picker closes afterwards unless the
+    /// popup is pinned open.
+    /// </summary>
     private protected virtual void NotifyEditCanceled()
     {
     }
@@ -922,6 +932,14 @@ public abstract class InfoPickerInput : TemplatedControl,
         {
             InfoInputBox?.Focus(NavigationMethod.Tab);
         }
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        // The template popup closes itself when it leaves the logical tree, before the visual detach; close it here
+        // first so that close counts as a lifecycle close.
+        ClosePickerForLifecycle();
+        base.OnDetachedFromLogicalTree(e);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

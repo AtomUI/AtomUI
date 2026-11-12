@@ -274,10 +274,14 @@ public partial class RangeDatePicker : RangeInfoPickerInput
 
     public override void Clear()
     {
-        base.Clear();
-
+        // The values and the picker texts are cleared before the input boxes, so clearing the boxes is not taken for
+        // typing; the draft is dropped and the popup closes, as in Ant Design.
+        ResetTypedText();
         RangeStartSelectedDate = null;
         RangeEndSelectedDate   = null;
+        RefreshRangeTexts();
+        base.Clear();
+        ClosePickerFlyout();
     }
 
     public void Reset()
@@ -355,18 +359,28 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
     {
         // The base clears the activated part here, so a typed endpoint is settled while its part is still known:
-        // kept when no confirmation is required, otherwise discarded with the rest of the draft on close.
-        if (_typedText is not null && _isTypedTextAccepted && !IsCancelingEdit &&
-            _pickerPresenter is { RequiresConfirmation: false })
+        // kept when no confirmation is required, otherwise discarded with the rest of the draft on close. A lifecycle
+        // close (detach, template change) writes nothing back.
+        if (!IsLifecycleClosing)
         {
-            if (RangeActivatedPart == RangeActivatedPart.Start)
+            var rangeStart = RangeStartSelectedDate;
+            var rangeEnd   = RangeEndSelectedDate;
+            if (_typedText is not null && _isTypedTextAccepted && !IsCancelingEdit &&
+                _pickerPresenter is { RequiresConfirmation: false })
             {
-                RangeStartSelectedDate = _pickerPresenter.SelectedDateTime;
+                if (RangeActivatedPart == RangeActivatedPart.Start)
+                {
+                    rangeStart = _pickerPresenter.SelectedDateTime;
+                }
+                else if (RangeActivatedPart == RangeActivatedPart.End)
+                {
+                    rangeEnd = _pickerPresenter.SecondarySelectedDateTime;
+                }
             }
-            else if (RangeActivatedPart == RangeActivatedPart.End)
-            {
-                RangeEndSelectedDate = _pickerPresenter.SecondarySelectedDateTime;
-            }
+
+            // A partial confirmation writes its endpoint at once and may pass the other one, so the range is ordered
+            // when the session ends, as the final confirmation does.
+            CommitRange(rangeStart, rangeEnd);
         }
 
         ResetTypedText();
@@ -499,11 +513,17 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         var leavesToOtherPart = isBackward
             ? RangeActivatedPart == RangeActivatedPart.End
             : RangeActivatedPart == RangeActivatedPart.Start;
-        if (!leavesToOtherPart || !_isTypedTextAccepted)
+        if (!_isTypedTextAccepted)
         {
             // Invalid text is dropped when focus moves on.
             ResetTypedText();
             ClearHoverSelectedInfo();
+            return false;
+        }
+
+        if (!leavesToOtherPart)
+        {
+            // Focus moves on past the range; a valid typed endpoint is settled like any focus loss when it closes.
             return false;
         }
 
@@ -514,7 +534,13 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return true;
     }
 
-    private protected override void NotifyEditCanceled() => _pickerPresenter?.CancelEdit();
+    private protected override void NotifyEditCanceled()
+    {
+        _pickerPresenter?.CancelEdit();
+        // A pinned popup stays open, so the inputs return to the draft here rather than on close.
+        ResetTypedText();
+        ClearHoverSelectedInfo();
+    }
 
     private void HandleChoosingStatusChanged(object? sender, ChoosingStatusEventArgs args)
     {
@@ -604,19 +630,30 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         var rangeEnd   = _pickerPresenter?.SecondarySelectedDateTime;
         if (rangeStart is not null && rangeEnd is not null)
         {
-            if (rangeEnd.Value.Date < rangeStart.Value.Date)
-            {
-                RangeStartSelectedDate = rangeEnd;
-                RangeEndSelectedDate   = rangeStart;
-            }
-            else
-            {
-                RangeStartSelectedDate = rangeStart;
-                RangeEndSelectedDate   = rangeEnd;
-            }
+            CommitRange(rangeStart, rangeEnd);
         }
 
         ClosePickerFlyout();
+    }
+
+    /// <summary>Writes both endpoints ordered by date; endpoints on the same day keep their clock order.</summary>
+    private void CommitRange(DateTime? rangeStart, DateTime? rangeEnd)
+    {
+        if (rangeStart is not null && rangeEnd is not null && rangeEnd.Value.Date < rangeStart.Value.Date)
+        {
+            (rangeStart, rangeEnd) = (rangeEnd, rangeStart);
+        }
+
+        // Unchanged endpoints are not written, so a close does not replace their bindings with local values.
+        if (RangeStartSelectedDate != rangeStart)
+        {
+            RangeStartSelectedDate = rangeStart;
+        }
+
+        if (RangeEndSelectedDate != rangeEnd)
+        {
+            RangeEndSelectedDate = rangeEnd;
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

@@ -5,10 +5,13 @@
 ## 2026-11-11
 
 - Changed
+  - 外框是按 `TabIndex` 排序的局部分组，`LeftAddOn` / `RightAddOn` 中的可聚焦内容因此按视觉位置排在输入与清除按钮的前后（共享 `AddOnDecoratedBoxTheme` 规则），不再排在清除按钮之后。内附加（`ContentLeftAddOn` / `ContentRightAddOn`）尚未分配顺序，仍在清除按钮与右附加之后。
   - 键盘停靠点对齐 Ant Design（输入框，然后清除按钮）；Enter / Escape / 失焦处理迁入共享 `InfoPickerInput`，关闭状态按 Enter 打开弹层。
   - Escape 在 `IsNeedConfirm=false` 时也丢弃候选，不再提交。
   - RangeTimePicker 端点交接按本次打开确认：完整范围从开始端确认后转到结束端，两端都确认后关闭。
   - 新增导航键转发：Up/Down、PageUp/PageDown、Home/End 步进当前列，Left/Right 切换列，当前列选中项显示 `:keyboard-active`。
+- Fixed
+  - `IsPopupPinnedOpen` 时 Escape 回退候选与输入文本（此前不回退，候选在之后关闭时仍可能被提交）；弹层面板内的 Escape 与输入框一致，`IsNeedConfirm=false` 时不再提交候选。
 - Theme
   - RangeTimePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
 - Fixed

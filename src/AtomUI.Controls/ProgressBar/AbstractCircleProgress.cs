@@ -1,10 +1,10 @@
+using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -100,6 +100,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private Geometry? _stepTrackGeometry;
     private FullTextSizeKey? _fullTextSizeKey;
     private Size _fullTextSize;
+    private IDisposable? _extraInfoFontSizeValue;
 
     // 轨道几何只取决于槽矩形、分段与描边；进度变化不重建它
     private readonly record struct RailGeometryKey(
@@ -343,8 +344,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             fontSize = CircleMinimumTextFontSize;
         }
 
-        // 模板优先级：主题样式值让位于它，本地值胜过它
-        SetValue(FontSizeProperty, fontSize, BindingPriority.Template);
+        // 模板优先级：主题样式值让位于它，本地值胜过它；持有句柄替换，避免每次改尺寸累积属性帧
+        this.SetHeldValue(FontSizeProperty, fontSize, ref _extraInfoFontSizeValue);
     }
 
     private void SetupExtraInfoIconSize(double circleSize)
@@ -507,15 +508,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             ? PenLineCap.Flat
             : StrokeLineCap;
         RefreshTemplateProgressVisuals();
-        if (ExceptionCompletedIcon == null)
-        {
-            SetValue(ExceptionCompletedIconProperty, new CloseOutlined(), BindingPriority.Template);
-        }
-        
-        if (SuccessCompletedIcon == null)
-        {
-            SetValue(SuccessCompletedIconProperty, new CheckOutlined(), BindingPriority.Template);
-        }
+        SetupDefaultCompletedIcons(static () => new CloseOutlined(), static () => new CheckOutlined());
     }
 
     private protected abstract Geometry BuildRailGeometry(Rect grooveRect);

@@ -48,9 +48,12 @@
                                     Classes.semantic-suffix="True"
                                     DockPanel.Dock="Right"
                                     Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                            <!-- The suffix group precedes the text box (DockPanel order). The host is a local tab group
+                                 (Avalonia NumericUpDown), so TabIndex keeps the input first and the clear button next. -->
                             <atom:InputClearIconButton
                                 Name="PART_ClearButton"
                                 Classes.semantic-clear="True"
+                                KeyboardNavigation.TabIndex="1"
                                 VerticalAlignment="Center"
                                 Icon="{TemplateBinding ClearIcon}"
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -67,6 +70,7 @@
                         <atom:EmbeddedTextBox
                             Name="PART_TextBox"
                             Classes.semantic-input="True"
+                            KeyboardNavigation.TabIndex="0"
                             VerticalContentAlignment="Center"
                             VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch"
@@ -137,9 +141,11 @@
                                         DockPanel.Dock="Right"
                                         Margin="0,0,8,0"
                                         Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
+                                <!-- Input first, then the clear button: see the default template. -->
                                 <atom:InputClearIconButton
                                     Name="PART_ClearButton"
                                     Classes.semantic-clear="True"
+                                    KeyboardNavigation.TabIndex="1"
                                     VerticalAlignment="Center"
                                     Icon="{TemplateBinding ClearIcon}"
                                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -156,6 +162,7 @@
                             <atom:EmbeddedTextBox
                                 Name="PART_TextBox"
                                 Classes.semantic-input="True"
+                                KeyboardNavigation.TabIndex="0"
                                 VerticalContentAlignment="Center"
                                 VerticalAlignment="Stretch"
                                 HorizontalAlignment="Stretch"

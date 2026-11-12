@@ -6,6 +6,7 @@
 
 - Fix
   - 指针按下抬升 Overlay Dialog 后，若焦点仍在该 Dialog 之外（按在不可聚焦区域或使用非左键），在按下处理完成后把焦点交给该 Dialog 的 Surface，使输入与 Escape/Enter（仍由最顶层 Dialog 处理）作用于同一个 Dialog；焦点已在该 Dialog 或其内容弹层内时不改变。
+  - 触控与笔在抬起时才聚焦目标（Avalonia `FocusManager`），这一检查对它们改为在同一指针抬起之后进行。此前按下后的检查先把焦点交给 Surface，抬起时再交给目标输入框，多出一次 LostFocus / GotFocus。鼠标（含右键）仍在按下之后检查。
 
 ## 2026-11-10
 

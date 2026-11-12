@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -71,6 +72,10 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     public static readonly DirectProperty<AsyncImage, bool> IsFailedProperty =
         AvaloniaProperty.RegisterDirect<AsyncImage, bool>(nameof(IsFailed), control => control.IsFailed);
 
+    // True while a Source waits for the viewport gate, so the theme can show the lazy placeholder.
+    internal static readonly DirectProperty<AsyncImage, bool> IsViewportPendingProperty =
+        AvaloniaProperty.RegisterDirect<AsyncImage, bool>(nameof(IsViewportPending), control => control.IsViewportPending);
+
     internal static readonly DirectProperty<AsyncImage, IImage?> LoadedImageProperty =
         AvaloniaProperty.RegisterDirect<AsyncImage, IImage?>(nameof(LoadedImage), control => control.LoadedImage);
 
@@ -86,8 +91,9 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
     private Size _lastMeasureAvailableSize;
     private bool _hasMeasureAvailableSize;
     private bool _isViewportGated;
+    private bool _isViewportPending;
     private bool _isReleased;
-    private bool _isViewportSubscribed;
+    private CompositeDisposable? _viewportSubscription;
     private Rect? _lastEffectiveViewport;
 
     public AsyncImage()
@@ -181,6 +187,12 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
 
     public ImageLoadState LoadState => _loadState;
 
+    internal bool IsViewportPending
+    {
+        get => _isViewportPending;
+        private set => SetAndRaise(IsViewportPendingProperty, ref _isViewportPending, value);
+    }
+
     public ImageLoadError? LoadError => _loadError;
 
     public ImageLoadProgress? LoadProgress => _loadProgress;
@@ -212,7 +224,7 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
             return;
         }
         _isReleased = true;
-        _isViewportGated = true;
+        SetViewportGated(true);
         _controller.Release();
         SubscribeViewport();
     }
@@ -232,6 +244,10 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
             {
                 OpenViewportGate();
                 return;
+            }
+            if (change.Property == SourceProperty)
+            {
+                UpdateViewportPending();
             }
             _controller.SourceConfigurationChanged();
         }
@@ -265,7 +281,7 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
         base.OnAttachedToVisualTree(e);
         _isAttached = true;
         // The gate must be closed before Attach so that the first load waits for the viewport.
-        _isViewportGated = IsLazy;
+        SetViewportGated(IsLazy);
         if (_isViewportGated)
         {
             SubscribeViewport();
@@ -278,7 +294,7 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
         _isAttached = false;
         _hasMeasureAvailableSize = false;
         UnsubscribeViewport();
-        _isViewportGated = false;
+        SetViewportGated(false);
         _isReleased = false;
         _controller.Detach();
         base.OnDetachedFromVisualTree(e);
@@ -356,7 +372,7 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
             // An image that already started loading keeps its request; only an idle one waits for the viewport.
             if (!_isViewportGated && LoadState == ImageLoadState.Idle)
             {
-                _isViewportGated = true;
+                SetViewportGated(true);
                 SubscribeViewport();
             }
         }
@@ -366,33 +382,58 @@ public class AsyncImage : TemplatedControl, IImageLoadControl, IImageLoadControl
         }
     }
 
+    // Only a pending gate listens: a loaded image keeps no viewport or ancestor visibility handlers.
     private void SubscribeViewport()
     {
-        if (_isViewportSubscribed || !_isAttached)
+        if (_viewportSubscription is not null || !_isAttached)
         {
             return;
         }
-        _isViewportSubscribed = true;
+        var subscription = new CompositeDisposable();
+        _viewportSubscription = subscription;
         EffectiveViewportChanged += OnEffectiveViewportChanged;
+        subscription.Add(Disposable.Create(() => EffectiveViewportChanged -= OnEffectiveViewportChanged));
+        // Showing the image or an ancestor again raises no viewport or size change when the layout stays the same,
+        // so a viewport recorded while hidden is re-checked on every visibility change. Reports the current value
+        // synchronously, before any viewport is known, which is a no-op.
+        this.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscription);
     }
 
     private void UnsubscribeViewport()
     {
-        if (!_isViewportSubscribed)
+        var subscription = _viewportSubscription;
+        if (subscription is null)
         {
             return;
         }
-        _isViewportSubscribed = false;
+        _viewportSubscription = null;
         _lastEffectiveViewport = null;
-        EffectiveViewportChanged -= OnEffectiveViewportChanged;
+        subscription.Dispose();
     }
 
     private void OpenViewportGate()
     {
         UnsubscribeViewport();
         _isReleased = false;
-        _isViewportGated = false;
+        SetViewportGated(false);
         _controller.SourceConfigurationChanged();
+    }
+
+    private void SetViewportGated(bool isGated)
+    {
+        _isViewportGated = isGated;
+        UpdateViewportPending();
+    }
+
+    // Without a Source there is nothing to wait for, so a lazy image shows no placeholder, like a non-lazy one.
+    private void UpdateViewportPending() => IsViewportPending = _isViewportGated && Source is not null;
+
+    private void HandleEffectiveVisibilityChanged(bool isVisible)
+    {
+        if (isVisible)
+        {
+            TryOpenViewportGate();
+        }
     }
 
     private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)

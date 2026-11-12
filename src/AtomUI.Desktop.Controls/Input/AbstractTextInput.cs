@@ -469,7 +469,14 @@ public abstract class AbstractTextInput : AvaloniaTextBox,
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
     {
+        // Where the clear button is a tab stop (TextArea, Mentions), focus returns to the input, as in Ant Design;
+        // the button hides once the text is gone.
+        var focusReturnMethod = (sender as InputClearIconButton)?.GetFocusReturnMethod();
         NotifyClearButtonClicked();
+        if (focusReturnMethod is { } navigationMethod)
+        {
+            Focus(navigationMethod);
+        }
     }
 
     private void ReleaseTemplateResources()

@@ -520,6 +520,8 @@ public partial class TreeView : AvaloniaTreeView,
         TreeViewItem.ClickEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleTreeItemClicked(args));
         RequestBringIntoViewEvent.AddClassHandler<TreeView>((treeView, args) => treeView.HandleDescendantRequestBringIntoView(args));
         Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent.AddClassHandler<TreeView>(
+            (treeView, args) => treeView.HandleSelectionChangedDuringKeyboardRangeSync(args));
+        Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent.AddClassHandler<TreeView>(
             (treeView, args) => treeView.HandleSelectionChangedDuringItemsSourceReplay(args));
         ConfigureFilter();
 

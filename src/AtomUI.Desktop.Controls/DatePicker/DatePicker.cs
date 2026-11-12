@@ -208,8 +208,15 @@ public partial class DatePicker : InfoPickerInput
     /// </summary>
     public override void Clear()
     {
+        // The value and the picker text are cleared before the input box, so clearing the box is not taken for
+        // typing; the draft is dropped and the popup closes, as in Ant Design.
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+        SelectedDateTime     = null;
+        _pickerPresenter?.CancelEdit();
+        Text = FormatDateTime(SelectedDateTime);
         base.Clear();
-        SelectedDateTime = null;
+        ClosePickerFlyout();
     }
 
     /// <summary>
@@ -284,9 +291,10 @@ public partial class DatePicker : InfoPickerInput
             _pickerPresenter.PropertyChanged       -= HandlePresenterPropertyChanged;
             if (_typedText is not null && !IsCancelingEdit)
             {
-                // Focus left or the popup was dismissed: a valid typed value is kept when no confirmation is
-                // required, otherwise the edit is discarded, as in Ant Design.
-                if (_isTypedTextAccepted && !_pickerPresenter.RequiresConfirmation)
+                // Focus left, the window was deactivated or the popup was dismissed: a valid typed value is kept
+                // when no confirmation is required, otherwise the edit is discarded, as in Ant Design. A lifecycle
+                // close (detach, template change) always discards it.
+                if (_isTypedTextAccepted && !IsLifecycleClosing && !_pickerPresenter.RequiresConfirmation)
                 {
                     SelectedDateTime = _pickerPresenter.SelectedDateTime;
                 }
@@ -409,7 +417,14 @@ public partial class DatePicker : InfoPickerInput
     private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
         modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
 
-    private protected override void NotifyEditCanceled() => _pickerPresenter?.CancelEdit();
+    private protected override void NotifyEditCanceled()
+    {
+        _pickerPresenter?.CancelEdit();
+        // A pinned popup stays open, so the input returns to the committed value here rather than on close.
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+        Text                 = FormatDateTime(SelectedDateTime);
+    }
 
     private void HandleChoosingStatusChanged(object? sender, ChoosingStatusEventArgs args)
     {

@@ -670,3 +670,17 @@ Follow-up fix (controller, user request "修复 Result 图标", `83e327265`): Re
 Ruling: Result 状态图标的尺寸与画刷改以 Template 优先级的可撤销值投递（照搬 AddOnDecoratedBox 状态色模式），不改 Icon 主题、不新增 Token 或 API；由控制器直接实现并核对，不另派评审 — Template 优先级高于图标 ControlTheme 的 Style setter、低于本地值与样式触发器，正好表达“状态色覆盖图标默认色、调用方显式值仍优先”；改动局限在一个文件且有先失败的合同与全量回归 — 错了的代价：若有调用方依赖旧行为（状态色覆盖自定义 Icon 的本地 FillBrush/Width），其图标会改为保留自身值；带 IconTheme=TwoTone/MultiColor 触发器的自定义状态图标仍以触发器颜色为准。
 
 Ruling: 首轮全量中 ComboBox 空内容示例的 Padding 断言失败判为与本修复无关的偶发顺序问题，不改测试、以第二次全量绿灯为证据，另记为后续观察项 — 失败点是 ComboBox 空指示器模板 Padding，Result 改动不触及；单独 3/3、整项目 421/421 通过 — 错了的代价：若它是真实的测试间状态泄漏，Gallery 测试会间歇失败，直到有人定位泄漏源。
+
+Rebase onto release/6.0 (controller, user request "rebase 到 release/6.0 上"): pre-rebase tip `1b99fac3a` (recoverable from the reflog), base moved from `ae5ac0a32` to local `release/6.0` `3a9339ddf` (14 upstream commits, not yet on origin: focus outline adorner, keyboard navigation, control base classes moved to AtomUI.Controls, Tag Outline variant and colour table, Badge/Watermark theme colours, picker hover preview, DataGrid drag). Trial merge: 97 conflicting files; 43 of the 220 branch commits touched them and all 220 were replayed one by one with rerere. Integration commit `c69767956` on the rebased tip; final full regression `[SUMMARY] TOTAL: 12253 个测试全部通过, 总耗时 24:03` (integration tests excluded by default); solution build 0 warnings/0 errors. Runs 2–4 each failed on one different test that passes alone (DataGrid group headers — hardened with an explicit layout pass; ImagePreviewer headless cleanup thread check; AsyncImage 5 s request timeout) under host load averages of 22–27. Nothing pushed or merged.
+
+Ruling: 按用户明确要求把 feature/design-language 逐提交变基到本地 release/6.0（覆盖此前“不改写历史”的约束，仅限这一次），不压缩、不合并提交 — 用户点名要 rebase；逐提交重放保留每个任务的评审边界 — 错了的代价：分支历史被改写，旧提交号失效；需要时可从 reflog 的 `1b99fac3a` 恢复。
+
+Ruling: 上游与本分支各自实现同一功能时（Badge 预设/状态色、Tag 色表与 Outline 变体、水印文字默认前景、选择器悬停预览 `:previewing`、焦点描边改由共享 FocusOutlineAdorner 绘制），采用上游实现，再补回本分支语义（控件有效 Token、Tag `Calculated*` 由主题投射、水印以 Style 优先级绑定 `FontSizeLG`/`ColorTextBase`、无快照时 Badge 的固定预设色加窄 044 pragma） — 上游是集成目标的现行实现，本分支的价值在于 Token 作用域与优先级契约 — 错了的代价：若有遗漏的上游行为与本分支语义冲突，只能靠效果测试与全量回归暴露。
+
+Ruling: 中间提交（约第39至第140个）不保证能单独构建 Desktop：Skeleton Token 的 IsExplicit 守卫在 Data 家族提交中才与上游 AbstractSkeletonToken 对齐（GradientFromColor/GradientToColor/ParagraphLineHeight 的默认赋值移到终端守卫，LoadingBackground* 因上游改用 Shimmer 颜色而标为 Reserved）；最终提交构建与全量回归通过 — 修正早期提交需要第二轮改写历史，收益只在 bisect — 错了的代价：在这段区间做 git bisect 会遇到无法构建的提交。
+
+Ruling: 保留本分支语义、改写与之冲突的上游新测试：圆形进度的自动字号断言 `ExtraInfoFontSize`（主题投射，应用样式与本地值仍优先），行进度最小宽度断言 `FallbackMinWidth`，水印默认前景断言 `ColorTextBase`，Tag 颜色断言 `Calculated*`，无主题宿主时预设字号回落到控件自身 FontSize；输入家族删除上游加在控件主题上的悬停/聚焦边框样式，状态色仍由共享输入帧按 owner 读取（上游的“仅 Outlined 有焦点阴影”保留在帧上） — 这些都是本分支已裁决的优先级契约 — 错了的代价：若上游后续依赖“自动字号压过应用样式”的行为，需要重新裁决。
+
+Ruling: 上游把范围选择器激活条与树拖拽指示线的默认值改为 LineWidthBold，随之写入本分支的共享范围 Token 计算与 AbstractTreeViewToken，并更新对应生效测试的场景键 — 跟随集成目标的默认外观 — 错了的代价：无（与上游默认值一致）。
+
+Ruling: 图片预览封面单独创建时的生效测试改为左上对齐，让 CoverImageWidth 的最小尺寸决定封面大小；变基前该测试在拉伸布局下通过的确切原因未查明 — ImagePreviewer 文件自变基前没有变化，测试意图（Token 到达独立封面）仍被验证 — 错了的代价：若封面加载态在拉伸布局下确有布局回退，此测试不会发现。

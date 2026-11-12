@@ -906,6 +906,33 @@ public class OtpLineEditBehaviorTests
         });
     }
 
+    [Fact]
+    public void Active_Cell_Outline_Shadow_Is_Not_Clipped_By_Its_Ancestors()
+    {
+        var otp = new AtomUI.Desktop.Controls.OtpLineEdit { Length = 4 };
+        var window = new AvaloniaWindow { Width = 320, Height = 120, Content = otp };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var cell = otp.GetVisualDescendants().OfType<OtpLineEditCell>().First();
+            // The Outlined active shadow is drawn outside the cell, around all four sides; any clipping
+            // ancestor up to the OTP host would cut it where the cell touches the host edge.
+            var clipping = cell.GetVisualAncestors().OfType<Visual>()
+                               .TakeWhile(visual => !ReferenceEquals(visual, otp.GetVisualParent()))
+                               .Prepend(cell)
+                               .Where(visual => visual.ClipToBounds)
+                               .Select(visual => $"{visual.GetType().Name}#{(visual as Control)?.Name}")
+                               .ToList();
+            clipping.ShouldBeEmpty();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static Rectangle CaretOf(OtpLineEditCell cell)
     {
         return cell.GetVisualDescendants()

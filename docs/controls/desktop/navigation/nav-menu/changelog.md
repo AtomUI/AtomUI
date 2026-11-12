@@ -2,6 +2,16 @@
 
 本文档记录 NavMenu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 新增键盘焦点描边（Ant Design `menu-root:focus-visible` / `menu-item:focus-visible`）：菜单处于键盘焦点可见状态时，没有 active 项则描边菜单根，有 active 项则描边该项 header；指针按下菜单或焦点离开菜单（含弹层子项）后隐藏。
+  - `NavMenuTheme` 设置空 `FocusAdorner`，菜单根不再叠加默认焦点框。
+- Implementation
+  - 交互处理器新增键盘焦点可见状态（`INavMenuInteractionHandler.SetKeyboardFocusVisible`），由导航键、指针按下与 NavMenu 的焦点进出驱动；`NavMenuItem` / `BaseNavMenuItemHeader` 新增内部状态 `IsKeyboardFocusOutlineVisible`，header 与菜单根通过共享的 `ManagedFocusOutline` 绘制，离开视觉树时移除。
+- Tests
+  - `FocusOutlineTargetTests` 覆盖根到活动项的描边转移、指针按下隐藏、弹层子项在弹层装饰层中描边。
+
 ## 2026-11-05
 
 - Fixed

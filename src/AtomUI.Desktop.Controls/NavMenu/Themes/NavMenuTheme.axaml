@@ -83,6 +83,9 @@
             </Setter>
         </Style>
         
+        <!-- Keyboard focus is drawn by NavMenu itself: on the root until navigation reaches an item, then on
+             the item, so the default adorner would duplicate it. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="InlineCollapsedWidth" Value="{atom:NavMenuTokenResource InlineCollapsedWidth}" />
         <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />

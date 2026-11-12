@@ -133,6 +133,8 @@ owner）；建议自定义面板根节点声明 `Classes.semantic-scope-panel="T
 
 Header 模式下，header 区域和展开图标触发 selection；Icon 模式下只有展开图标触发 selection。Enter/Space 和方向键导航复用 `SelectingItemsControl` 的 selection 入口。Disabled item 不进入 selection 操作。
 
+键盘停靠点与触发区域一致，每项只有一个（对应 Ant Design `collapsible`）：Header 模式下 `CollapseItem` 是停靠点，焦点描边落在 `PART_HeaderDecorator`，`PART_ExpandButton` 设 `IsTabStop=False`；Icon 模式下 `CollapseItem` 设 `IsTabStop=False`，只有展开按钮可 Tab 到达，按钮的 Enter / Space 走点击路径。两者都由 `CollapseItemTheme` 的 `TriggerType` 分支设置。
+
 输入处理器只识别目标容器和合法触发区域，不能直接修改其他 item 的 `IsSelected`。普通/手风琴差异由 selection mode 表达，不在 pointer、keyboard 或 button handler 中复制两套算法。
 
 ## 7. 内部算法与关键流程

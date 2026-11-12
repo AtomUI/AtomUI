@@ -147,13 +147,19 @@
             </Style>
         </Style>
 
+        <!-- One keyboard stop per item, on the element that toggles it (Ant Design collapsible / "icon"):
+             the header in Header mode, the expand button in Icon mode. -->
         <Style Selector="^[TriggerType=Header]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
+                <Setter Property="IsTabStop" Value="False" />
+            </Style>
         </Style>
 
         <Style Selector="^[TriggerType=Icon]">
+            <Setter Property="IsTabStop" Value="False" />
             <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>

@@ -33,6 +33,7 @@
                                                            IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"
                                                            IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                                                            IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                                           IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                                            IsPointerHold="{TemplateBinding IsPointerHold}"
                                                            IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}"
                                                            IsTopLevel="{TemplateBinding IsTopLevel}" />
@@ -88,6 +89,7 @@
                                                          IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"
                                                          IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                                                          IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                                         IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                                          IsPointerHold="{TemplateBinding IsPointerHold}"
                                                          IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}"
                                                          atom:ToolTip.Tip="{TemplateBinding EffectiveCollapsedTooltip}"
@@ -148,6 +150,7 @@
                             Focusable="{TemplateBinding Focusable}"
                             IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                             IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                            IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                             IsPointerHold="{TemplateBinding IsPointerHold}"
                             IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}" />
 

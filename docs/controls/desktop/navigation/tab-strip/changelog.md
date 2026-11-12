@@ -2,6 +2,11 @@
 
 本文档记录 TabStrip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 键盘焦点描边对齐 Ant Design：线型 `TabStripItem` 只描边图标与文字所在的按钮行（模板中的行容器标记 `TemplatedControl.IsTemplateFocusTarget`），不再框住带内边距的整个标签；卡片 `TabStripItem` 的 `Frame` 标记焦点目标与 `FocusOutlineAdorner.IsInset`，描边内收在卡片内侧（`genFocusOutline(token, -3)`）。
+
 ## 2026-10-20
 
 - Fixed

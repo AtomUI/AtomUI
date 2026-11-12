@@ -30,8 +30,11 @@
         <Setter Property="Cursor" Value="Hand" />
 
         <Setter Property="FrameOpacity" Value="0.2" />
+        <!-- Ant Design dots draw no outline (outline: none); keyboard focus reuses the hover opacity so the
+             focused dot stays identifiable. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
 
-        <Style Selector="^:pointerover">
+        <Style Selector="^:pointerover, ^:focus-visible">
             <Setter Property="FrameOpacity" Value="0.75" />
         </Style>
 

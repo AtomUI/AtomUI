@@ -2,6 +2,17 @@
 
 本文档记录 Calendar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 日期格键盘焦点按呈现方式区分：
+    - Compact（卡片）模式改用共享焦点描边，`PART_CellInner` 标记为焦点目标，描边包围日期块，与日期选择器面板一致；移除原来的 2px 主色内边框样式，因为它画在选中的主色块上看不出来。
+    - Content（全屏）模式保留格子顶部主色线，`FocusAdorner` 为空，不叠加描边。
+- Fixed
+  - Compact 模式且没有自定义格子内容（`:cell-template`）时，日期数字跨内部网格两行，在 24 DIP 日期块内垂直居中；此前数字位于 `Auto` 行，墨迹上方留白约 3.5 DIP、下方约 10.5 DIP，选中块里明显偏上。
+- Tests
+  - `CalendarRenderTests` 新增 Compact 月 / 年模式数字垂直居中测试；`FocusOutlineTargetTests` 覆盖两种呈现方式的焦点表现。
+
 ## 2026-10-04
 
 - Theme

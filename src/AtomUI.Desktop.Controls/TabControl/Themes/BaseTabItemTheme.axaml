@@ -10,7 +10,9 @@
                     Background="{TemplateBinding Background}"
                     Padding="{TemplateBinding Padding}"
                     Margin="{TemplateBinding Margin}">
-                <StackPanel Orientation="Horizontal">
+                <!-- Ant Design line tabs outline the tab button (icon and label), not the padded tab. -->
+                <StackPanel Orientation="Horizontal"
+                            TemplatedControl.IsTemplateFocusTarget="True">
                     <atom:IconPresenter Name="ItemIconPresenter"
                                         Classes.semantic-icon="True"
                                         Icon="{TemplateBinding Icon}" />

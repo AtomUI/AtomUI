@@ -179,7 +179,14 @@ Header 点击路径：
 - 模板把 `IsEnabled` 传给 `PART_ExpandButton`。
 - 主题通过 `:disabled` 同步 Header 和 ContentPresenter 前景。
 
-Expander 不处理 keyboard、focus、drag/drop、popup 或 command 事件。
+键盘路径：
+
+- Expander 默认可聚焦，模板把 `PART_HeaderDecorator` 标为焦点目标。
+- `OnKeyDown` 只在 `TriggerType=Header`、事件源是 Expander 自身且无修饰键时处理 Enter / Space，调用 `ToggleExpanded()`；Header 中用户放入的可聚焦内容保留自己的按键。
+- 主题按 `TriggerType` 切换停靠点：`Header` 模式下展开按钮 `IsTabStop=False`，`Icon` 模式下 Expander 自身 `IsTabStop=False`。
+- `IFocusOutlineShapeProvider.FocusOutlineCornerRadius` 从 `PART_Frame.CornerRadius` 推导 Header 贴住的角，左右方向按 Header 旋转 90° 后的局部坐标给出。共享描边在焦点目标自身不提供形状时向模板宿主取形状。
+
+Expander 不处理 drag/drop、popup 或 command 事件。
 
 ## 7. 内部算法与关键流程
 

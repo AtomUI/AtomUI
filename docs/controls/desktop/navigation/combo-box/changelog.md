@@ -2,6 +2,11 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 可编辑模式的内部 `ComboBoxTextBox` 设置空 `FocusAdorner`：键盘焦点进入编辑框时不在 Select 外框内部叠画焦点框，焦点仍由外框 `:focus-within` 表达。
+
 ## 2026-11-10
 
 - Interaction

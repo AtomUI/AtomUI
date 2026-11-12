@@ -46,6 +46,34 @@ public class CalendarRenderTests
         }
     }
 
+    [Theory]
+    [InlineData(CalendarMode.Month)]
+    [InlineData(CalendarMode.Year)]
+    public void Compact_Cell_Value_Is_Vertically_Centered_In_The_Cell_Box(CalendarMode mode)
+    {
+        var calendar = new AtomUICalendar { Value = new DateTime(2026, 7, 15), Fullscreen = false, Mode = mode };
+        var window = Show(calendar);
+        try
+        {
+            var cells = calendar.GetVisualDescendants().OfType<CalendarCellControl>()
+                                .Where(cell => !string.IsNullOrEmpty(cell.DisplayText))
+                                .ToList();
+            cells.ShouldNotBeEmpty();
+            foreach (var cell in cells.Take(6))
+            {
+                var inner = GetCellBorder(cell, "PART_CellInner");
+                var value = GetCellValue(cell);
+                var innerCenter = inner.TranslatePoint(new Point(0, inner.Bounds.Height / 2), calendar)!.Value.Y;
+                var valueCenter = value.TranslatePoint(new Point(0, value.Bounds.Height / 2), calendar)!.Value.Y;
+                valueCenter.ShouldBe(innerCenter, 0.5, $"{mode} cell {cell.DisplayText}");
+            }
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [Fact]
     public void Calendar_MonthMode_Generates42CellContainers()
     {

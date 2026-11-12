@@ -41,6 +41,8 @@
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
         
         <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+        <!-- :focus recolors the border and indicator (Ant Design table expand icon), no extra outline. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
         
         <Style Selector="^:focus">
             <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>

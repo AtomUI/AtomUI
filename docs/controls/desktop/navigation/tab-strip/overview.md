@@ -100,6 +100,8 @@ Public API / inherited command / item source / user input
 
 TabStrip 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
+键盘焦点描边与 Ant Design 一致：线型标签只描边标签按钮行（图标与文字，`genFocusOutline` 默认偏移 1px），不包含标签的内边距；卡片标签描边整张卡片并内收（`genFocusOutline(token, -3)`），由卡片 `Frame` 上的 `FocusOutlineAdorner.IsInset` 表达，描边完全落在卡片内侧。
+
 TabStrip 的 Line/Card ControlTheme 位于 `TabControl/Themes/TabStrip`，并复用 TabControl 家族统一的
 `TabScrollViewerTheme` 与 `TabOverflowMenuTheme`。统一主题承载 edge indicator、更多按钮、静态 Popup shell 和默认菜单；
 TabStrip 自身主题只负责 owner 布局与外观映射。

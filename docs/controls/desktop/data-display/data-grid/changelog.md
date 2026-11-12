@@ -2,6 +2,13 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - `DataGridRowExpanderTheme` 设置空 `FocusAdorner`：展开按钮 `:focus` 已改变边框与指示线颜色（Ant Design 表格展开图标），不再叠加共享焦点描边。
+- Tests
+  - 新增 `DataGridRowExpanderFocusTests`。
+
 ## 2026-11-06
 
 - API

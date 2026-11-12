@@ -138,6 +138,17 @@ TreeView 自己实现 Tab 导航的自定义钩子：Tab / Shift+Tab 进入时�
 模式使用整行 header 背景，与 hover 背景范围的分层一致。`TreeViewItem` 上的伪类供应用样式使用。默认主题使用 `NodeHoverBg`
 作为 active indicator 背景；它与 selected 背景叠加时，selected 视觉优先。Token 语义见 [TreeView Token 设计](token.md)。
 
+### 6.3.1 键盘焦点描边
+
+对应 Ant Design 树列表 `:focus-visible` 时给活动节点的 `node-content-wrapper` 加 `genFocusOutline`：
+
+- **显示条件**：active indicator 可见，并且 TreeView 自身持有焦点。TreeView 计算后写入内部状态
+  `TreeViewItem.IsKeyboardFocusOutlineVisible`，经模板投射到 `TreeViewItemHeader`。
+- **宿主转发不描边**：TreeSelect 等宿主的焦点留在输入框，下拉树只显示 active indicator 背景，不显示描边。
+- **描边位置**：header 用共享的 `ManagedFocusOutline` 在 `PART_HeaderContentFrame` 外侧绘制主题的 `DefaultFocusAdorner`，
+  三种 `NodeHoverMode` 都描边内容框，圆角跟随内容框。TreeView 自身的 `FocusAdorner` 仍为空，不画整棵树的焦点框。
+- **生命周期**：header 离开视觉树时移除描边，重新附加或重新应用模板时按当前状态恢复。
+
 ### 6.4 宿主转发契约
 
 焦点留在宿主输入框的场景（TreeSelect 下拉）由宿主把按键转发给 TreeView 的内部入口 `HandleKeyDown(KeyEventArgs)`。
@@ -194,7 +205,7 @@ active indicator 可见；设置 Handled
 | active item 的某个祖先被收起 | active item 立即移到这个被收起的节点。 |
 | active item 被过滤隐藏、被禁用 | 下一次按键时修复为最近的可导航祖先；没有祖先时为空。 |
 | active item 容器离开视觉树（容器清理或回收、ItemsSource 替换、拖拽移动重建容器） | 立即清空引用，不保留旧容器。 |
-| TreeView 失去键盘焦点 | active indicator 隐藏，active item 保留。 |
+| TreeView 失去键盘焦点 | active indicator 与焦点描边隐藏，active item 保留。 |
 | TreeView detach，或宿主关闭浮层 | 清空 active item。 |
 
 active item 以容器引用保存，并只在上述路径中更新。TreeView 不为它订阅额外事件。

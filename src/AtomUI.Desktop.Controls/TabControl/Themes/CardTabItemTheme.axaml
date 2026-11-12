@@ -11,7 +11,10 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
+                    <!-- Ant Design card tabs draw the focus outline just inside the card (offset -lineWidthFocus). -->
                     <atom:PixelAlignedBorder Name="Frame"
+                                             TemplatedControl.IsTemplateFocusTarget="True"
+                                             atom:FocusOutlineAdorner.IsInset="True"
                                              BorderThickness="{TemplateBinding BorderThickness}"
                                              CornerRadius="{TemplateBinding CornerRadius}"
                                              Margin="{TemplateBinding Margin}"

@@ -225,7 +225,8 @@ public partial class TreeView : ICustomKeyboardNavigation
         {
             if (_keyboardActiveItem is not null)
             {
-                _keyboardActiveItem.IsKeyboardActive = false;
+                _keyboardActiveItem.IsKeyboardActive              = false;
+                _keyboardActiveItem.IsKeyboardFocusOutlineVisible = false;
             }
 
             _keyboardActiveItem = treeViewItem;
@@ -245,6 +246,9 @@ public partial class TreeView : ICustomKeyboardNavigation
         if (_keyboardActiveItem is not null)
         {
             _keyboardActiveItem.IsKeyboardActive = _isKeyboardActiveVisible;
+            // Only the tree's own keyboard focus outlines the item; popup hosts that forward keys keep
+            // focus in their input and show the active background alone.
+            _keyboardActiveItem.IsKeyboardFocusOutlineVisible = _isKeyboardActiveVisible && IsFocused;
         }
     }
 

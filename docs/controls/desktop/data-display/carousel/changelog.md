@@ -2,6 +2,11 @@
 
 本文档记录 Carousel 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 指示点设置空 `FocusAdorner`（Ant Design 指示点 `outline: none`），键盘焦点改为复用悬停透明度：未选中的点在 `:focus-visible` 时与 `:pointerover` 一样显示 0.75 透明度。选中点保持不透明，与 Ant Design 选中点悬停时一致。
+
 ## 2026-10-20
 
 - Fixed

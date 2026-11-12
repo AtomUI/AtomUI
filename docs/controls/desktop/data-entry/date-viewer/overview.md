@@ -89,6 +89,7 @@ Sunday 周首与包含元旦的首周，简体中文使用 Monday 周首与包�
 
 DateViewer、RangeDateViewer、DateViewerHeader、DatePanel、DateViewerCell 分别维护自己的 ControlTheme。
 基础 Cell 是内部 TemplatedControl，使用同一激活路径，不要求用户依赖旧 Button 类型。
+基础 Cell 主题没有自身的焦点视觉，键盘焦点使用共享焦点描边，目标是 `PART_ValueFrame`，描边只包围圆角数值框。
 
 DateViewerToken 的十八个资源为独立面板提供默认视觉，状态文字、主色和边框复用 SharedToken。
 Compact 日期网格采用 288 的自然面板宽度、36 的列与行节距、24 的值框和正文左右 18 的留白。

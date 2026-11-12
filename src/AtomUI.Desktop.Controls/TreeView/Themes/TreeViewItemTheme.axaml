@@ -32,6 +32,7 @@
                                          IsSelected="{TemplateBinding IsSelected}"
                                          IsDragging="{TemplateBinding IsDragging}"
                                          IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                         IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                          IsDragOver="{TemplateBinding IsDragOver}"
                                          ToggleType="{TemplateBinding ToggleType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"

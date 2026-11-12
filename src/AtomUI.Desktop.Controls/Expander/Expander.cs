@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
@@ -33,7 +34,7 @@ public enum ExpanderIconPosition
     ExpanderPseudoClass.ExpandDown,
     ExpanderPseudoClass.ExpandLeft,
     ExpanderPseudoClass.ExpandRight)]
-public partial class Expander : AvaloniaExpander, IMotionAwareControl
+public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
@@ -197,6 +198,13 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
+    private DashedBorder? _frame;
+
+    static Expander()
+    {
+        // The header is the keyboard stop (the template marks it as the focus target).
+        FocusableProperty.OverrideDefaultValue<Expander>(true);
+    }
 
     public Expander()
     {
@@ -213,6 +221,7 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
         _headerDecorator = e.NameScope.Find<Control>("PART_HeaderDecorator");
         _expandButton    = e.NameScope.Find<IconButton>("PART_ExpandButton");
+        _frame           = e.NameScope.Find<DashedBorder>("PART_Frame");
 
 
         if (_expandButton is not null)
@@ -271,6 +280,42 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
         ToggleExpanded();
         e.Handled = true;
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled ||
+            !ReferenceEquals(e.Source, this) ||
+            TriggerType != ExpanderTriggerType.Header ||
+            e.KeyModifiers != KeyModifiers.None ||
+            e.Key is not (Key.Enter or Key.Space))
+        {
+            return;
+        }
+
+        ToggleExpanded();
+        e.Handled = true;
+    }
+
+    // The header has no radius of its own; PART_Frame rounds and clips it. Report the frame corners the
+    // header touches, in the header's own space (left / right headers are rotated 90 degrees clockwise).
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius
+    {
+        get
+        {
+            var frame = _frame?.CornerRadius ?? default;
+            return (ExpandDirection, IsExpanded) switch
+            {
+                (ExpandDirection.Down, true) => new CornerRadius(frame.TopLeft, frame.TopRight, 0, 0),
+                (ExpandDirection.Up, true) => new CornerRadius(0, 0, frame.BottomRight, frame.BottomLeft),
+                (ExpandDirection.Left, true) => new CornerRadius(frame.TopRight, frame.BottomRight, 0, 0),
+                (ExpandDirection.Right, true) => new CornerRadius(0, 0, frame.BottomLeft, frame.TopLeft),
+                (ExpandDirection.Left or ExpandDirection.Right, false) =>
+                    new CornerRadius(frame.TopRight, frame.BottomRight, frame.BottomLeft, frame.TopLeft),
+                _ => frame
+            };
+        }
     }
 
     private void HandleExpandButtonClicked(object? sender, RoutedEventArgs args)

@@ -4,10 +4,16 @@
 
 ## 2026-11-11
 
+- Interaction
+  - 修复拖动行时滚轮滚动或拖到顶部/底部边界外自动滚动使源行离开视口后拖动丢失的问题（#536）。Pointer capture 改由
+    `DataGridRowsPresenter` 持有，会话按源 RowKey 判定有效性；滚动生效后插入目标按指针当前位置重新解析。
+  - 指针拖到边界外时 ghost row 停靠在视口边缘保持可见；指针停在边界外不动时持续自动滚动，速度随越界距离增大，回到行区域或
+    拖动结束即停止。
 - Theme
   - `DataGridRowExpanderTheme` 设置空 `FocusAdorner`：展开按钮 `:focus` 已改变边框与指示线颜色（Ant Design 表格展开图标），不再叠加共享焦点描边。
 - Tests
   - 新增 `DataGridRowExpanderFocusTests`。
+  - `DataGridRangeMutationTests` 新增滚轮滚出源行后松开仍落在指针下行的用例；两处 capture 断言改为 RowsPresenter。
 
 ## 2026-11-06
 

@@ -684,3 +684,7 @@ Ruling: 保留本分支语义、改写与之冲突的上游新测试：圆形进
 Ruling: 上游把范围选择器激活条与树拖拽指示线的默认值改为 LineWidthBold，随之写入本分支的共享范围 Token 计算与 AbstractTreeViewToken，并更新对应生效测试的场景键 — 跟随集成目标的默认外观 — 错了的代价：无（与上游默认值一致）。
 
 Ruling: 图片预览封面单独创建时的生效测试改为左上对齐，让 CoverImageWidth 的最小尺寸决定封面大小；变基前该测试在拉伸布局下通过的确切原因未查明 — ImagePreviewer 文件自变基前没有变化，测试意图（Token 到达独立封面）仍被验证 — 错了的代价：若封面加载态在拉伸布局下确有布局回退，此测试不会发现。
+
+Second rebase: release/6.0 advanced by 2 commits during the integration (`cf49134c7` theme-commit motion settle in ThemeManager, `d1b7e5590` Select #537), so the branch was rebased again onto `d1b7e5590` (pre-rebase tip `18c1ce94f`, recoverable from the reflog). One conflict (ThemeManager usings, both kept); solution build 0 warnings/0 errors; full regression `[SUMMARY] TOTAL: 12258 个测试全部通过, 总耗时 16:10` (integration tests excluded by default). Nothing pushed or merged.
+
+Ruling: release/6.0 在整合期间前进后再次变基到新的分支顶端，而不是停在开始时的 `3a9339ddf` — 用户要求的是基于 release/6.0，新增两个提交只冲突一处 — 错了的代价：多一轮全量回归的时间；若上游继续前进，分支会再次落后，需要重复同样的操作。

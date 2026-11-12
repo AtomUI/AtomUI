@@ -253,6 +253,84 @@ public class SelectBehaviorTests
     }
 
     [Fact]
+    public void Responsive_Multiple_Clear_Without_MaxTagCount_Leaves_No_Collapsed_Info_Tag()
+    {
+        var options = Enumerable.Range(1, 8)
+                                .Select(i => (ISelectOption)new SelectOption
+                                {
+                                    Header  = $"Option number {i}",
+                                    Content = $"option{i}"
+                                })
+                                .ToList();
+        var select = new Desktop.Controls.Select
+        {
+            Width               = 240,
+            Mode                = SelectMode.Multiple,
+            IsAllowClear        = true,
+            IsFilterEnabled     = true,
+            IsResponsiveTagMode = true,
+            OptionsSource       = options,
+            SelectedOptions     = options.ToList()
+        };
+
+        ShowInWindow(select, () =>
+        {
+            var maxCountPanel = GetVisualDescendant<SelectMaxTagAwarePanel>(select, "PART_MaxCountAwarePanel");
+            var infoTag = maxCountPanel.Children
+                                       .OfType<SelectRemainInfoTag>()
+                                       .Single();
+
+            // Overflowing selection collapses the remaining tags into the info tag.
+            infoTag.IsVisible.ShouldBeTrue();
+            infoTag.Bounds.Right.ShouldBeLessThanOrEqualTo(maxCountPanel.Bounds.Width + 0.001);
+
+            select.ClearValue();
+            Dispatcher.UIThread.RunJobs();
+
+            infoTag = maxCountPanel.Children
+                                   .OfType<SelectRemainInfoTag>()
+                                   .Single();
+            maxCountPanel.Children.Count(child => child is SelectTag and not SelectRemainInfoTag).ShouldBe(0);
+            infoTag.IsVisible.ShouldBeFalse();
+            var rendersInsidePanel = infoTag.IsEffectivelyVisible && infoTag.Bounds.X < maxCountPanel.Bounds.Width;
+            rendersInsidePanel.ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public void MaxTagAwarePanel_Moves_Info_Tag_Off_Screen_When_Only_Search_Box_Remains()
+    {
+        var panel = new SelectMaxTagAwarePanel
+        {
+            Width       = 200,
+            Orientation = Avalonia.Layout.Orientation.Horizontal
+        };
+        var tags = Enumerable.Range(1, 6)
+                             .Select(i => new SelectTag { Text = $"Option number {i}" })
+                             .ToList();
+        var infoTag   = new SelectRemainInfoTag { IsClosable = false };
+        var searchBox = new SelectFilterTextBox();
+        foreach (var tag in tags)
+        {
+            panel.Children.Add(tag);
+        }
+        panel.Children.Add(infoTag);
+        panel.Children.Add(searchBox);
+
+        ShowInWindow(panel, () =>
+        {
+            infoTag.Bounds.X.ShouldBeLessThan(panel.Bounds.Width);
+
+            // Keep the info tag visible so the panel's own arrange is what has to hide it.
+            panel.Children.RemoveAll(tags);
+            Dispatcher.UIThread.RunJobs();
+
+            infoTag.IsVisible.ShouldBeTrue();
+            infoTag.Bounds.X.ShouldBeGreaterThanOrEqualTo(panel.Bounds.Width);
+        });
+    }
+
+    [Fact]
     public void DefaultValues_Selects_Single_Option_On_Load()
     {
         var lucy = new SelectOption

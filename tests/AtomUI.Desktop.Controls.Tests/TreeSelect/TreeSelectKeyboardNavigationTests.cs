@@ -40,6 +40,8 @@ public class TreeSelectKeyboardNavigationTests
             treeSelect.SelectedItem.ShouldBeNull();
             // The popup item template must forward the indicator to the header that paints it.
             GetItemHeader(treeView.KeyboardActiveItem).Classes.ShouldContain(TreeViewPseudoClass.KeyboardActive);
+            // Focus stays in the select input, so the popup tree shows the active background but no focus outline.
+            GetItemHeader(treeView.KeyboardActiveItem).IsKeyboardFocusOutlineVisible.ShouldBeFalse();
 
             Press(window, Key.Enter);
 

@@ -129,14 +129,22 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
   - 描边画在目标外侧，与目标边缘之间留出 `AdornerLayerToken.FocusOutlineOffset`（`LineWidth`）的间距；
   - 圆角等于目标圆角加外扩量，并夹到外扩后矩形短边的一半，所以圆形目标的描边仍是正圆。
 - **目标圆角的来源**，按以下优先级取：
-  1. `IFocusOutlineShapeProvider`，如 Button 的有效圆角、RadioIndicator 的正圆；
-  2. `TemplatedControl.CornerRadius`；
-  3. `Border.CornerRadius` / `DashedBorder.CornerRadius`。
-- **描边范围**：默认是整个控件。只需描边控件的一部分时，在主题中给该部件设置 `TemplatedControl.IsTemplateFocusTarget="True"`，例如 CheckBox / Radio 的指示器、CollapseItem 的标题。
+  1. 焦点目标自身实现的 `IFocusOutlineShapeProvider`，如 Button 的有效圆角、RadioIndicator 的正圆；
+  2. 焦点目标的模板宿主实现的 `IFocusOutlineShapeProvider`，用于目标自身没有圆角、由宿主外框裁剪的情况，如 Expander 的 Header；
+  3. `TemplatedControl.CornerRadius`；
+  4. `Border.CornerRadius` / `DashedBorder.CornerRadius`。
+- **描边范围**：默认是整个控件。只需描边控件的一部分时，在主题中给该部件设置 `TemplatedControl.IsTemplateFocusTarget="True"`，例如 CheckBox / Radio 的指示器、CollapseItem / Expander 的标题、线型标签的按钮行。
+- **内收**：在焦点目标上设置 `FocusOutlineAdorner.IsInset="True"`，描边画在目标内侧（偏移为负的描边宽度），对应 Ant Design `genFocusOutline(token, -3)`，用于卡片标签。
 - **裁剪**：描边关闭了 `AdornerLayer.IsClipEnabled`。原因是 Avalonia 的装饰器裁剪从目标自身边界开始计算，而 `TemplatedControl` 默认会裁剪，开启后描边会被整个切掉。代价是：焦点元素被滚出可视区时，描边不会随祖先一起被裁剪。
 - **自行表达焦点的控件**：这类控件必须把 `FocusAdorner` 设为空，不再叠加描边。例如：
   - 输入家族用外框的 `:focus-within` 表达焦点（`InputControlFrameTheme` 统一设置）；
-  - TreeView 用键盘活动项表达焦点。
+  - Slider 手柄放大并画外圈、OtpLineEdit 当前格外发光、Calendar 全屏日期格顶部主色线、DataGrid 展开按钮变色；
+  - Carousel 指示点没有描边（Ant Design `outline: none`），键盘焦点复用悬停透明度。
+- **宿主持有焦点的列表**：TreeView、NavMenu 的键盘焦点留在宿主上，键盘位置是内部活动项。它们把 `FocusAdorner` 设为空，改用内部的 `ManagedFocusOutline` 在活动项上显示同一个 `DefaultFocusAdorner`：
+  - `ManagedFocusOutline` 从目标自己的装饰层构建并挂载描边，所以弹层里的项画在弹层的装饰层中；
+  - 显示条件模拟 `:focus-visible`：宿主持有焦点并且最近一次交互是键盘；
+  - 拥有者在目标离开视觉树时必须移除描边。
+- **键盘停靠点**：一个可切换部件只保留一个停靠点，落在实际执行切换的元素上，例如 Collapse / Expander 按 `TriggerType` 在标题与展开按钮之间二选一。
 
 ### ScopeAwareAdornerLayer
 

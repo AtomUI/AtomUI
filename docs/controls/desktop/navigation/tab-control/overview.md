@@ -111,6 +111,8 @@ Public API / inherited command / item source / user input
 
 TabControl 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
+键盘焦点描边与 Ant Design 一致：线型标签只描边标签按钮行（图标与文字，`genFocusOutline` 默认偏移 1px），不包含标签的内边距；卡片标签描边整张卡片并内收（`genFocusOutline(token, -3)`），由卡片 `Frame` 上的 `FocusOutlineAdorner.IsInset` 表达，描边完全落在卡片内侧。
+
 | 主题文件 | 职责 |
 | --- | --- |
 | `BaseTabControlTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |

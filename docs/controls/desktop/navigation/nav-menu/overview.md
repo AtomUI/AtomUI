@@ -223,6 +223,10 @@ NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约
 - `PointerOver` 改变 header 前景和背景，但不能改变选中路径。
 - `PressCandidate` 表示激活事务的待提交项，建立后一直保留到提交或取消；只有指针仍命中该项时才贡献与 selected 相同的背景，文字颜色保持按下前状态，不影响选中状态。
 - `KeyboardActive` 表示键盘漫游中的当前项，只影响键盘导航锚点和 active 视觉，不改变选中路径；pointer-hold 与 keyboard-active 由独立 owner 维护，可以同时存在。
+- 键盘焦点描边对应 Ant Design 的 `menu-root:focus-visible` 与 `menu-item:focus-visible`（`genFocusOutline`），同一时刻只画一处：
+  - **显示条件**：菜单处于键盘焦点可见状态。导航键被菜单处理或 Tab / 方向导航把焦点移入菜单时进入该状态；指针按下菜单、或焦点移到菜单（含弹层子项）之外时退出。
+  - **位置**：还没有 keyboard active 项时描边菜单根，且仅在菜单根自身持有焦点时显示；有 active 项后描边移到该项的 header。弹层中的子项在所在弹层自己的装饰层中绘制。
+  - 菜单根的 `FocusAdorner` 为空，两处描边都由 NavMenu 用共享的 `ManagedFocusOutline` 绘制，不叠加默认装饰器。
 - `Selected` 表示当前叶子节点已提交选中。
 - `IsInSelectedPath` 表示某个祖先位于当前选中路径中。
 - `Open` 表示当前项目子菜单打开。

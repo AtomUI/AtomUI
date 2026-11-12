@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-11
+
+- Theme
+  - `SliderThumbTheme` 设置空 `FocusAdorner`：手柄 `:focus` 已按 Ant Design 放大并绘制外圈，不再叠加共享焦点描边。
+
 ## 2026-10-03
 
 - Implementation

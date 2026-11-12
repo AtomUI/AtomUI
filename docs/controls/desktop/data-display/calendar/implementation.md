@@ -46,7 +46,7 @@ PART_BodyPresenter 叠放 PART_DateViewer 和 PART_RangeBarPanel。CalendarDateC
 LunarCalendarCellContentTheme 只定义农历文本与标记。
 Calendar 在 OnApplyTemplate 已取得 DateViewer 部件，并通过内部只读 EffectiveDateViewer 属性通知模板更换；
 RangeBarPanel 的 LayoutSource 在 ControlTheme 中以 TemplateBinding 连接该属性，沿用面板现有的订阅与解除订阅生命周期。
-Mini 日期值框保持固定尺寸，Today 与键盘可见焦点边框由不参与文字布局的覆盖层绘制；鼠标按下不显示焦点描边，选中状态只改变背景和前景，日期文字保持原位。
+Mini 日期值框保持固定尺寸，没有自定义格子内容时日期数字在整个值框内垂直居中；Today 边框由不参与文字布局的覆盖层绘制。Mini 的键盘可见焦点使用共享焦点描边，`PART_CellInner` 是焦点目标，描边画在值框外侧，选中的主色块上也清晰可见；全屏格子由顶部主色线表达焦点，不叠加描边。鼠标按下不显示焦点描边，选中状态只改变背景和前景，日期文字保持原位。
 Fullscreen 的顶部单元格边界仍由值框所在的视觉表面绘制。
 日期文字通过继承 DateViewerCell 的 Foreground 获取选中、禁用、跨月和周序号颜色；主题只在状态 owner 上声明这些颜色，避免为每种状态重复匹配模板内的文字节点。
 

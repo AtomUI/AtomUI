@@ -185,6 +185,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             o => o.IsKeyboardActive,
             (o, v) => o.IsKeyboardActive = v);
 
+    internal static readonly DirectProperty<TreeViewItem, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
+
     internal static readonly DirectProperty<TreeViewItem, bool> IsDragOverProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(nameof(IsDragOver),
             o => o.IsDragOver,
@@ -313,6 +318,18 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         get => _isKeyboardActive;
         set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
+    }
+
+    private bool _isKeyboardFocusOutlineVisible;
+
+    /// <summary>
+    /// The item is the keyboard active item while the tree itself owns keyboard focus, so its header
+    /// shows the focus outline (Ant Design: list <c>:focus-visible</c> outlines the active node).
+    /// </summary>
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
     }
 
     private bool _isDragOver;

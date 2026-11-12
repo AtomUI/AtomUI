@@ -26,6 +26,11 @@
   - `implementation.md` 增加维护约束：替换节点 Template 的派生主题必须把 `IsKeyboardActive` 投射到 header。
 - Fix
   - Shift+方向键扩展多选范围时只同步差量：保留仍在范围内的已选项，移除范围外的项并一次加入新增项，`SelectionChanged` 不再先报告清空再逐项加入的中间状态。
+- Theme
+  - 键盘活动项新增焦点描边（Ant Design 列表 `:focus-visible` 时给活动节点的内容框加 `genFocusOutline`）：TreeView 自身持有焦点且 active indicator 可见时，描边画在 `PART_HeaderContentFrame` 外侧；TreeSelect 等宿主转发按键时只显示背景，不描边。
+  - `DragIndicatorLineWidth` 改取 `LineWidthBold`（2px）：`LineWidthFocus` 调整为 3px 后，拖拽指示线保持原粗细。
+- Implementation
+  - `TreeViewItem` / `TreeViewItemHeader` 新增内部状态 `IsKeyboardFocusOutlineVisible`；header 通过共享的 `ManagedFocusOutline` 显示 `DefaultFocusAdorner`，离开视觉树时移除。设计见 `keyboard-navigation-design.md` §6.3.1。
 
 ## 2026-10-28
 

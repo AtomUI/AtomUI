@@ -25,7 +25,10 @@
                                 Background="{atom:DateViewerTokenResource CellRangeBg}" />
                         <Border Name="PART_WeekSelection" Grid.ColumnSpan="2" />
                     </Grid>
+                    <!-- The cell has no focus visual of its own, so the shared outline wraps the rounded value
+                         frame instead of the whole column-wide cell. -->
                     <Border Name="PART_ValueFrame" Grid.Row="0"
+                            TemplatedControl.IsTemplateFocusTarget="True"
                             HorizontalAlignment="Center" VerticalAlignment="Center">
                         <atom:TextBlock Name="PART_Value" Text="{TemplateBinding DisplayText}"
                                         HorizontalAlignment="Center" VerticalAlignment="Center"

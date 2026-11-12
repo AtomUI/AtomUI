@@ -340,6 +340,9 @@ public partial class NavMenu : ItemsControl,
         }
     }
     
+    private readonly ManagedFocusOutline _rootFocusOutline = new();
+    private bool _isRootFocusOutlineRequested;
+
     internal INavMenuInteractionHandler? InteractionHandler { get; private set; }
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
@@ -542,10 +545,62 @@ public partial class NavMenu : ItemsControl,
 
         base.OnDetachedFromVisualTree(e);
         _isAttachedToVisualTree = false;
+        _rootFocusOutline.Hide();
         CancelInlineCollapsedWidthMotion();
         ClearInlineCollapsedLayoutWidth();
         InteractionHandler?.Detach(this);
         InteractionHandler = null;
+    }
+
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (e.NavigationMethod is NavigationMethod.Tab or NavigationMethod.Directional)
+        {
+            InteractionHandler?.SetKeyboardFocusVisible(true);
+        }
+
+        UpdateRootFocusOutline();
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        // Focus events of items inside submenu popups bubble here through the logical tree, so the
+        // check is logical as well.
+        if (!IsMenuElement(e.NewFocusedElement))
+        {
+            InteractionHandler?.SetKeyboardFocusVisible(false);
+        }
+
+        UpdateRootFocusOutline();
+    }
+
+    /// <summary>
+    /// Requested by the interaction handler while the menu shows keyboard focus and no item is active;
+    /// drawn only while the menu itself owns focus.
+    /// </summary>
+    internal void SetRootFocusOutlineVisible(bool isVisible)
+    {
+        _isRootFocusOutlineRequested = isVisible;
+        UpdateRootFocusOutline();
+    }
+
+    private void UpdateRootFocusOutline()
+    {
+        if (_isRootFocusOutlineRequested && IsFocused && _isAttachedToVisualTree)
+        {
+            _rootFocusOutline.Show(this);
+        }
+        else
+        {
+            _rootFocusOutline.Hide();
+        }
+    }
+
+    private bool IsMenuElement(IInputElement? element)
+    {
+        return element is ILogical logical && (ReferenceEquals(logical, this) || this.IsLogicalAncestorOf(logical));
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)

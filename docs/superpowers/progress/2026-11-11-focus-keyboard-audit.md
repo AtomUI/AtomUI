@@ -201,3 +201,57 @@ Cascader、ComboBox、Menu/ContextMenu、Collapse、Steps、CheckableTag、Numer
 - 第三部分第 2 条：清理内部按钮的停靠点（Collapse、Expander 和 Tag 的展开、关闭按钮）；SliderThumb、DateViewerCell 等已经有自身焦点视觉的控件，去掉叠加的描边。
 - 卡片式标签需要 -3px 的内收描边；TreeView、NavMenu 的键盘活动项还没有描边。
 - 第三部分第 3–5 条。
+
+## 修复记录：停靠点、重复描边、卡片标签与活动项描边（第 2 步）
+
+对应第三部分第 2 条，以及第 1 步“未覆盖”中的卡片标签和 TreeView / NavMenu 活动项。
+
+### 改动
+
+- **共享描边能力**：
+  - `FocusOutlineAdorner.IsInset` 附加属性：描边画在目标内侧（偏移为负的描边宽度），对应 `genFocusOutline(token, -3)`；负外扩时圆角下限为 0，矩形为空时不绘制。
+  - 圆角来源新增一级：焦点目标自身不提供形状时，向模板宿主的 `IFocusOutlineShapeProvider` 取形状。
+  - 新增 internal `ManagedFocusOutline`：给不持有焦点的元素（宿主持有焦点时的活动项）显示同一个 `DefaultFocusAdorner`，从目标自己的装饰层构建，弹层内的项画在弹层的装饰层中。
+- **停靠点**：
+  - Collapse：按 `TriggerType` 二选一。Header 模式展开按钮 `IsTabStop=False`；Icon 模式 `CollapseItem` 不是停靠点，只保留展开按钮（此模式只有它能切换）。
+  - Expander：Header 成为停靠点并成为焦点目标，Enter / Space 切换；Icon 模式只保留展开按钮。Expander 按展开方向与状态提供 Header 贴住的外框圆角，避免方角描边戳出圆角外框。
+  - Tag：核对 Ant Design 后确认关闭图标本身就是 `role=button`、`tabIndex=0`，Tag 本体不可聚焦，AtomUI 现状已符合，只补测试，不改代码。审计表里“清理 Tag 关闭按钮停靠点”的说法不准确。
+- **去掉重复描边**：
+  - SliderThumb、OtpLineEdit、DataGridRowExpander、Carousel 指示点设置空 `FocusAdorner`；
+  - Carousel 指示点 `:focus-visible` 复用悬停透明度，因为 Ant Design 指示点 `outline: none`，不加的话键盘焦点完全不可见。
+  - 日期格分两种情况：
+    - 默认 `DateViewerCellTheme`（DateViewer 与各日期选择器面板）没有自身焦点视觉，改为把描边收窄到 `PART_ValueFrame`；
+    - Calendar 全屏格保留顶部主色线、不加描边；Calendar 卡片格原本的 2px 主色内边框在选中的主色块上看不出来，改用共享描边包围 `PART_CellInner`。
+- **标签页**：线型标签描边按钮行（图标与文字），卡片标签在 `Frame` 上内收描边；TabControl 与 TabStrip 一致。
+- **活动项描边**：
+  - TreeView：自身持有焦点且活动项可见时描边 `PART_HeaderContentFrame`；TreeSelect 下拉（焦点在输入框）只显示背景。
+  - NavMenu：交互处理器维护“键盘焦点可见”状态（导航键进入；指针按下、焦点离开菜单含弹层后退出）。没有活动项时描边菜单根，有活动项后描边移到该项 header；菜单根 `FocusAdorner` 置空。
+- **验收中发现并修复的既有缺陷**：
+  - Calendar 卡片格日期数字偏上：数字位于内部网格 `Auto` 行，墨迹上方约 3.5 DIP、下方约 10.5 DIP。没有自定义格子内容时改为跨两行居中，修复后上下各 7 DIP。
+  - OtpLineEdit 当前格外发光被裁剪：`OtpLineEdit` 和 `ItemsControl#PART_CellsHost` 默认裁剪，上、下、左三侧外发光被切掉。两者都改为 `ClipToBounds=False`。
+  - 补记第 1 步因工作区冲突没写的 changelog：TreeView `DragIndicatorLineWidth`、ComboBox 内部编辑框空 `FocusAdorner`。
+
+### 验证
+
+- **无头测试**：
+  - 新增 `FocusOutlineTargetTests` 22 项、`DataGridRowExpanderFocusTests` 1 项、Calendar 卡片格居中 2 项、OTP 外发光不裁剪 1 项；TreeSelect 测试补充“下拉不描边”断言。
+  - 停靠点用真实 Tab 键逐站统计。
+  - 抽查了三处修复（Collapse 停靠点、滑块手柄、卡片内收）和日历居中：临时撤掉后对应测试失败，恢复后通过。
+- **测试项目**：在最终代码上串行运行受影响的项目：Desktop.Controls 4243、DataGrid 325、Rendering 77、Gallery 412，全部通过。没有运行全量回归（仓库规定只在明确要求时运行）。
+- **脚本视觉验收**：53/53 PASS。
+  - 宿主为 atom:Window，原生截图，控件写法取自 Gallery，Tab / 方向键经框架输入路由驱动；每个主题重建页面，因为活动项按设计在失焦后保留。
+  - 运行时 DLL 一致，窗口全程激活，门禁 A/A=0、扰动 7022、还原 0。
+  - 亮暗两种主题覆盖：
+    - Collapse 两种模式的停靠点与描边、Expander 描边与圆角及 Enter、Tag 关闭按钮；
+    - 滑块与 OTP 无描边且自身视觉生效、OTP 外发光四边一致；
+    - 线型与卡片标签、走马灯指示点；
+    - TreeView 活动项随方向键移动且旧描边清除；
+    - Calendar 卡片格描边与数字居中、DateViewer 格；
+    - NavMenu 根到活动项的转移、弹层子项描边。
+  - 中途作废过两轮：一轮窗口被失活，一轮运行时 OTP 被点击导致门禁失败；最终结果来自一次无干扰的完整运行。
+
+### 未覆盖
+
+- TabControl / TabStrip 的关闭按钮与滚动菜单按钮仍是独立停靠点（审计第一部分第 2 节），本步未处理。
+- ColorSlider 两个停靠点、ColorSpectrum 无效样式、DataGrid 列头焦点视觉，属于审计中的其他条目。
+- 第三部分第 3–5 条（Calendar 行高、键盘 P1 / P2）。

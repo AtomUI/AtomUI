@@ -7,6 +7,7 @@
 - Theme
   - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
   - `PART_HeaderDecorator` 标记 `TemplatedControl.IsTemplateFocusTarget`，描边只包围标题，不包含展开后的正文。
+  - 键盘停靠点跟随 `TriggerType`：Header 模式下展开按钮不再是额外的 Tab 停靠点；Icon 模式下 `CollapseItem` 不是停靠点，只保留展开按钮，因为此模式下只有它能切换。
 
 ## 2026-10-27
 

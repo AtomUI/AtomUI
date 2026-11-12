@@ -22,6 +22,7 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
                         <Border Name="PART_CellInner"
+                                TemplatedControl.IsTemplateFocusTarget="True"
                                 Background="Transparent"
                                 Cursor="Hand"
                                 ClipToBounds="False"
@@ -100,6 +101,11 @@
             <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_CellInner">
                 <Setter Property="Width" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
             </Style>
+            <!-- Without custom cell content the value is centered in the whole cell box (Ant Design line-height
+                 centering); the Auto row alone would leave it near the top of the box. -->
+            <Style Selector="^[Presentation=Compact]:not(:cell-template) /template/ atom|TextBlock#PART_Value">
+                <Setter Property="Grid.RowSpan" Value="2" />
+            </Style>
 
             <!-- Fullscreen 布局 -->
             <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
@@ -134,10 +140,10 @@
                 <Setter Property="Background" Value="{atom:CalendarTokenResource ItemActiveBg}" />
             </Style>
 
-            <!-- 键盘焦点 -->
-            <Style Selector="^[Presentation=Compact]:focus-visible /template/ Border#PART_CellOutline">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-                <Setter Property="BorderThickness" Value="2" />
+            <!-- 键盘焦点：Compact 使用共享焦点描边包围日期块（与日期选择器面板一致，选中的主色块上也清晰可见）；
+                 Content 由格子顶部主色线表达，不叠加描边。 -->
+            <Style Selector="^[Presentation=Content]">
+                <Setter Property="FocusAdorner" Value="{x:Null}" />
             </Style>
             <Style Selector="^[Presentation=Content]:focus-visible /template/ Border#PART_CellInner">
                 <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />

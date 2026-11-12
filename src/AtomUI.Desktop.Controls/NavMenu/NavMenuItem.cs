@@ -316,6 +316,12 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             o => o.IsKeyboardActive,
             (o, v) => o.IsKeyboardActive = v);
 
+    internal static readonly DirectProperty<NavMenuItem, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<NavMenuItem, bool>(
+            nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
+
     internal static readonly DirectProperty<NavMenuItem, bool> IsPointerHoldProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, bool>(
             nameof(IsPointerHold),
@@ -443,6 +449,18 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     {
         get => _isKeyboardActive;
         set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
+    }
+
+    private bool _isKeyboardFocusOutlineVisible;
+
+    /// <summary>
+    /// The item is the keyboard active item while the menu shows keyboard focus, so its header shows the
+    /// focus outline (Ant Design: <c>.ant-menu-item:focus-visible</c>).
+    /// </summary>
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
     }
 
     private bool _isPointerHold;

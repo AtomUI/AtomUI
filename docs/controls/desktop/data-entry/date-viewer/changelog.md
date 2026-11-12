@@ -2,6 +2,11 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 默认 `DateViewerCellTheme` 把 `PART_ValueFrame` 标记为 `TemplatedControl.IsTemplateFocusTarget`：该格子主题没有自身焦点视觉，共享焦点描边改为只包围圆角数值框，不再框住整列宽的格子。日期选择器的面板共用此主题。
+
 ## 2026-10-04
 
 - API / Token

@@ -143,6 +143,10 @@ PART_ContentViewport.IsVisible
 
 - `TriggerType=Header` 时，鼠标左键按下且命中 `PART_HeaderDecorator` 会切换 `IsExpanded`。
 - `TriggerType=Icon` 时，Header 点击不切换状态，只能通过 `PART_ExpandButton.Click` 切换。
+- 键盘停靠点与触发区域一致，每个 Expander 只有一个（对应 Ant Design Collapse 的 `collapsible`）：
+  - `Header` 模式下 Expander 自身是停靠点，`PART_HeaderDecorator` 是焦点目标，Enter / Space 切换 `IsExpanded`；展开按钮不是停靠点。
+  - `Icon` 模式下 Expander 不是停靠点，只有 `PART_ExpandButton` 可 Tab 到达，按钮的 Enter / Space 切换。
+  - 焦点描边只包围 Header。Header 本身没有圆角、由 `PART_Frame` 裁剪，因此 Expander 实现内部的 `IFocusOutlineShapeProvider`，按展开方向与展开状态给出 Header 实际贴住的外框圆角。
 - 禁用状态下模板将 `IsEnabled` 传递给 `PART_ExpandButton`，主题同步禁用前景。
 
 展开方向：
@@ -249,7 +253,7 @@ Expander 与 Collapse 的边界：
 
 ### 8.2 触发区域模型
 
-`TriggerType` 是行为契约，不只是 cursor 样式。`Header` 分支允许 Header 区域切换状态，`Icon` 分支只允许图标按钮切换状态。测试应覆盖 Header 点击和 Icon 点击的差异。
+`TriggerType` 是行为契约，不只是 cursor 样式。`Header` 分支允许 Header 区域切换状态，`Icon` 分支只允许图标按钮切换状态；键盘停靠点随之落在 Expander 自身或展开按钮上。测试应覆盖 Header 点击、Icon 点击以及两种模式的键盘停靠点差异。
 
 ### 8.3 自定义 padding 模型
 

@@ -13,6 +13,9 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
     private Control? _pressedCaptureTarget;
     private NavMenuItem? _pointerHoldItem;
     private NavMenuItem? _keyboardActiveItem;
+    // Mirrors CSS :focus-visible for the menu: set by keyboard navigation, cleared by pointer input and
+    // when focus leaves the menu.
+    private bool _isKeyboardFocusVisible;
 
     internal INavMenu? Menu { get; private set; }
 
@@ -44,6 +47,18 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
     public void ClearSelection()
     {
         (Menu as NavMenu)?.ClearSelectionState();
+    }
+
+    public void SetKeyboardFocusVisible(bool isVisible)
+    {
+        if (_isKeyboardFocusVisible == isVisible)
+        {
+            return;
+        }
+
+        _isKeyboardFocusVisible = isVisible;
+        UpdateActiveVisual(_keyboardActiveItem);
+        UpdateRootFocusOutline();
     }
 
     public void Forget(NavMenuItem menuItem)
@@ -96,6 +111,8 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         OnDetached(navMenu);
 
         ClearKeyboardActiveItem();
+        _isKeyboardFocusVisible = false;
+        (Menu as NavMenu)?.SetRootFocusOutlineVisible(false);
         Menu = null;
         CancelTransaction();
     }
@@ -114,6 +131,7 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
 
     protected virtual void PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        SetKeyboardFocusVisible(false);
         var sourceControl = e.Source as Control;
         var menuItem      = GetMenuItemCore(sourceControl);
         var itemHeader    = menuItem?.ItemHeader;
@@ -274,6 +292,11 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
                 CloseKeyboardActiveBranch(navMenu);
                 e.Handled = true;
                 break;
+        }
+
+        if (e.Handled)
+        {
+            SetKeyboardFocusVisible(true);
         }
     }
 
@@ -639,6 +662,7 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         _keyboardActiveItem = item;
         UpdateActiveVisual(previousItem);
         UpdateActiveVisual(item);
+        UpdateRootFocusOutline();
     }
 
     private void ClearKeyboardActiveItem()
@@ -646,16 +670,25 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         var previousItem = _keyboardActiveItem;
         _keyboardActiveItem = null;
         UpdateActiveVisual(previousItem);
+        UpdateRootFocusOutline();
     }
 
     private void UpdateActiveVisual(NavMenuItem? item)
     {
         if (item is not null)
         {
-            item.SetCurrentValue(
-                NavMenuItem.IsKeyboardActiveProperty,
-                ReferenceEquals(item, _keyboardActiveItem));
+            var isActive = ReferenceEquals(item, _keyboardActiveItem);
+            item.SetCurrentValue(NavMenuItem.IsKeyboardActiveProperty, isActive);
+            item.SetCurrentValue(NavMenuItem.IsKeyboardFocusOutlineVisibleProperty,
+                isActive && _isKeyboardFocusVisible);
         }
+    }
+
+    // Ant Design outlines the menu root until keyboard navigation reaches an item; the outline then moves
+    // to the item instead of showing both.
+    private void UpdateRootFocusOutline()
+    {
+        (Menu as NavMenu)?.SetRootFocusOutlineVisible(_isKeyboardFocusVisible && _keyboardActiveItem is null);
     }
 
     private static bool IsInteractiveMenuItem(NavMenuItem? item)

@@ -5,6 +5,11 @@
 ## 2026-11-11
 
 - Theme
+  - `OtpLineEditTheme` 设置空 `FocusAdorner`：焦点由当前格的外发光表达（Ant Design Input.OTP），整组外面不再叠加焦点描边。
+- Fixed
+  - 当前格外发光不再被裁剪：`OtpLineEdit` 与 `ItemsControl#PART_CellsHost` 都派生自 `TemplatedControl`，默认裁剪到自身边界，贴着控件边缘的上、下、左（以及末格右侧）外发光被切掉，只有落在格间距里的部分可见；两者现在都设置 `ClipToBounds=False`。
+- Tests
+  - `OtpLineEditBehaviorTests` 新增外发光祖先不裁剪测试。
   - 输入格 pressed / active 外发光（含 Error / Warning）只作用于 `Outlined`；Borderless、Filled、Underlined 输入格不绘制阴影。
 - Fixed
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。

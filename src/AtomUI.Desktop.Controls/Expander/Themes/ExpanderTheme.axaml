@@ -23,6 +23,7 @@
                                LastChildFill="True">
                         <LayoutTransformControl Name="PART_HeaderLayoutTransform">
                             <atom:PixelAlignedBorder Name="PART_HeaderDecorator"
+                                                     TemplatedControl.IsTemplateFocusTarget="True"
                                                      Classes.semantic-header="True"
                                                      Padding="{TemplateBinding HeaderPadding}">
                                 <Grid Name="PART_HeaderLayout"
@@ -276,13 +277,19 @@
             
         </Style>
 
+        <!-- One keyboard stop, on the element that toggles: the header in Header mode, the expand button
+             in Icon mode. -->
         <Style Selector="^[TriggerType=Header]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
+                <Setter Property="IsTabStop" Value="False" />
+            </Style>
         </Style>
 
         <Style Selector="^[TriggerType=Icon]">
+            <Setter Property="IsTabStop" Value="False" />
             <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>

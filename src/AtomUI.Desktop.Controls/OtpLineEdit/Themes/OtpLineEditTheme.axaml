@@ -12,6 +12,7 @@
                                 Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
                         <ItemsControl
                             Name="PART_CellsHost"
+                            ClipToBounds="False"
                             Classes.semantic-cell-list="True"
                             ItemsSource="{TemplateBinding CellItems}">
                             <ItemsControl.ItemsPanel>
@@ -97,6 +98,10 @@
         </Setter>
 
         <Setter Property="Background" Value="Transparent" />
+        <!-- Focus is shown by the active cell's outline shadow, as in Ant Design Input.OTP. The shadow sits
+             outside the cells, so neither the host nor the cells host may clip (TemplatedControl clips by default). -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     </ControlTheme>

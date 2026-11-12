@@ -3,6 +3,17 @@
 本文档记录 Expander 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Behavior
+  - Header 成为键盘停靠点（Ant Design Collapse `collapsible`）：`Header` 模式下 Expander 自身可聚焦，Enter / Space 切换展开，展开按钮不再是额外的 Tab 停靠点；`Icon` 模式下只有展开按钮是停靠点。
+- Theme
+  - `PART_HeaderDecorator` 标记 `TemplatedControl.IsTemplateFocusTarget`，焦点描边只包围 Header。
+- Implementation
+  - Expander 实现内部的 `IFocusOutlineShapeProvider`，按展开方向与展开状态给出 Header 贴住的外框圆角，避免方角描边戳出圆角外框。
+- Tests
+  - `FocusOutlineTargetTests` 覆盖两种触发模式的停靠点、Enter / Space 切换与描边圆角。
+
 ## 2026-10-27
 
 - Implementation

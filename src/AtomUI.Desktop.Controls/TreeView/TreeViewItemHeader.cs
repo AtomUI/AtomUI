@@ -7,6 +7,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -184,6 +185,11 @@ internal class TreeViewItemHeader : ContentControl
             o => o.IsKeyboardActive,
             (o, v) => o.IsKeyboardActive = v);
 
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
+
     internal static readonly DirectProperty<TreeViewItemHeader, bool> IsDragOverProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsDragOver),
             o => o.IsDragOver,
@@ -312,6 +318,14 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
     }
 
+    private bool _isKeyboardFocusOutlineVisible;
+
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
+    }
+
     private bool _isDragOver;
 
     internal bool IsDragOver
@@ -409,6 +423,7 @@ internal class TreeViewItemHeader : ContentControl
     #endregion
     
     private Control? _headerContentFrame;
+    private readonly ManagedFocusOutline _keyboardFocusOutline = new();
     private NodeSwitcherButton? _nodeSwitcherButton;
     private IconPresenter? _iconPresenter;
 
@@ -432,6 +447,10 @@ internal class TreeViewItemHeader : ContentControl
         else if (change.Property == IsKeyboardActiveProperty)
         {
             PseudoClasses.Set(TreeViewPseudoClass.KeyboardActive, IsKeyboardActive);
+        }
+        else if (change.Property == IsKeyboardFocusOutlineVisibleProperty)
+        {
+            UpdateKeyboardFocusOutline();
         }
         else if (change.Property == FilterHighlightWordsProperty ||
                  change.Property == IsFilterMatchProperty ||
@@ -482,6 +501,32 @@ internal class TreeViewItemHeader : ContentControl
         _iconPresenter = e.NameScope.Find<IconPresenter>("PART_IconPresenter");
         _nodeSwitcherButton = e.NameScope.Find<NodeSwitcherButton>("PART_NodeSwitcherButton");
         SetupSwitcherButtonIconMode();
+        UpdateKeyboardFocusOutline();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateKeyboardFocusOutline();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _keyboardFocusOutline.Hide();
+    }
+
+    // The outline wraps the content frame, matching Ant Design's node-content-wrapper.
+    private void UpdateKeyboardFocusOutline()
+    {
+        if (IsKeyboardFocusOutlineVisible && _headerContentFrame is not null && this.IsAttachedToVisualTree())
+        {
+            _keyboardFocusOutline.Show(_headerContentFrame);
+        }
+        else
+        {
+            _keyboardFocusOutline.Hide();
+        }
     }
 
     private void SetHeaderContentFrame(Control? headerContentFrame)

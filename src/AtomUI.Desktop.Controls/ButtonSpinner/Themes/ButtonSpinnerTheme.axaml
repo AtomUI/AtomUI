@@ -32,6 +32,7 @@
                     IsHandleFloatable="{TemplateBinding IsButtonSpinnerFloatable}"
                     ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}"
                     Focusable="True"
+                    IsTabStop="False"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Content="{TemplateBinding Content}"

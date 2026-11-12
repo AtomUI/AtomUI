@@ -7,6 +7,12 @@
         <target state="translated">取消</target>
       </segment>
     </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear</source>
+        <target state="translated">清除</target>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>

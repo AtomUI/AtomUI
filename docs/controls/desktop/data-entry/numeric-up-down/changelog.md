@@ -13,6 +13,7 @@
 - Theme
   - ButtonSpinner / NumericUpDown 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
 - Fixed
+  - NumericUpDown 无法用 Tab 进入：`NumericUpDownSpinnerTheme` 基于 ButtonSpinner 主题，继承了 `KeyboardNavigation.TabNavigation=None`，整个旋钮内部（包括数值输入框）都不在 Tab 顺序中。现在该主题恢复为 `Continue`，输入框是唯一停靠点（Ant Design InputNumber）；外框和步进按钮设为 `IsTabStop=False`，步进仍由输入框内的 Up / Down 完成；清除按钮出现时可 Tab 到达。
   - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
   - `ButtonSpinnerDecoratedBoxTheme` 的 content frame 补上 `BoxShadow` 模板绑定；`ButtonSpinner` / `NumericUpDown` 宿主设置空 `FocusAdorner` 与 `ClipToBounds=False`，`Outlined` focus 外发光可见。
 

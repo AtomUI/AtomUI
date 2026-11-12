@@ -6,6 +6,11 @@
         <source>Cancel</source>
       </segment>
     </unit>
+    <unit id="Clear">
+      <segment>
+        <source>Clear</source>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>

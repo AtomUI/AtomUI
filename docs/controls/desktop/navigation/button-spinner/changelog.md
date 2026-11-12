@@ -2,6 +2,11 @@
 
 本文档记录 ButtonSpinner 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Theme
+  - 基础模板的外框与 `ButtonSpinnerHandle` 的增减按钮设为 `IsTabStop=False`。独立 ButtonSpinner 仍保持 `TabNavigation=None`，行为不变；派生的 NumericUpDown 旋钮恢复 Tab 导航后，这些部件不会成为额外停靠点。
+
 ## 2026-10-03
 
 - Implementation

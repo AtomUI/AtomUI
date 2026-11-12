@@ -6,6 +6,19 @@
 
 - Theme
   - 可编辑模式的内部 `ComboBoxTextBox` 设置空 `FocusAdorner`：键盘焦点进入编辑框时不在 Select 外框内部叠画焦点框，焦点仍由外框 `:focus-within` 表达。
+- Behavior
+  - 清除按钮成为键盘停靠点（Ant Design Select 的清除元素是带本地化名称的按钮）：
+    - Tab 顺序为“输入（宿主或可编辑文本框）→ 清除按钮 → 离开”；
+    - Enter / Space 清除后，焦点回到宿主或文本框；键盘触发时保持键盘焦点可见状态。
+  - 外框 `PART_AddOnDecoratedBox` 与下拉箭头 `PART_OpenIndicatorButton` 不再是停靠点。此前不可编辑模式按一次 Tab 会落在看不见的外框上。
+  - 清除按钮只在悬停或焦点在控件内时显示，因此从控件后方 Shift+Tab 先回到输入，再按 Tab 到达清除按钮。
+- Implementation
+  - `OnGotFocus` 在焦点落到清除按钮时不调用基类：Avalonia 可编辑 ComboBox 会把控件内的任何焦点转给输入文本框。
+  - 清除按钮在外框模板中排在文本框之前（DockPanel 顺序），外框设为 `TabNavigation=Local` 的分组（本身不作停靠点），文本框与清除按钮分别为 `TabIndex` 0 和 1。
+  - 可编辑模式下宿主 `IsTabStop=False`，避免 Shift+Tab 回到宿主后又被转回文本框。
+  - 关闭弹层时只在离场期间有被推迟的刷新、或过滤条件与已呈现的不同时才重新过滤，不再每次关闭都对全部条目调用一次过滤器。
+- Tests
+  - `ComboBoxKeyboardNavigationTests` 新增：清除按钮的停靠点、名称与 Enter / Space 清除，两种模式的 Tab 顺序，以及无待应用查询时关闭不调用过滤器。
 
 ## 2026-11-10
 

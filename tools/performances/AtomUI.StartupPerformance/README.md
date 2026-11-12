@@ -62,6 +62,11 @@ stdout 为机器可读的 `PERF|key=value` 行（毫秒，invariant）。除 `Ep
 | `Mark.FirstUiPump` | UI 线程首次开始服务消息（"界面开始有反应"） |
 | `Mark.MaxUiGap` | UI 线程开始响应之后的最长阻塞 |
 | `Mark.DispatcherIdle` | 到达 `ApplicationIdle` |
+| `Jit.Phase.<name>` / `JitMethods.Phase.<name>` | 该分段在其所在线程上的 JIT 编译耗时（ms）与编译方法数，取自 `JitInfo` 按线程计数 |
+| `Jit.Thread.<mark>` | UI 线程截至 `InitializeEntered`、`FrameworkCompleted`、`WindowOpened`、`FirstRender` 的累计 JIT 耗时（ms） |
+
+`Jit.*` 用于区分 JIT 编译与实际工作：R2R 与 NativeAOT 下接近 0，普通 JIT 下是启动成本的主体。JIT 耗时包含编译期间
+触发的类型与程序集加载，因此小方法也可能因首次引用新程序集而偏大。
 
 `Epoch.MainUnixMicroseconds` 是 `Main` 的墙钟时刻，采样脚本据此换算自"进程启动"起算的 `Launch.*` 指标。
 

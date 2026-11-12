@@ -136,7 +136,21 @@ internal static class StartupImageWriter
             WriteStrings(source, languages.Keys);
             source.AppendLine(",");
             WritePairs(source, languageModules);
-            source.AppendLine(");\n}");
+            source.AppendLine(");");
+            // Packed literals keep this type initializer to a few calls; one IL sequence per entry made
+            // JIT-compiled startup pay several milliseconds for it on the UI thread.
+            source.AppendLine("    private static global::System.Collections.Generic.KeyValuePair<string, string>[] Pairs(int count, string data)\n    {");
+            source.AppendLine("        var fields = Strings(count * 2, data);");
+            source.AppendLine("        var pairs = new global::System.Collections.Generic.KeyValuePair<string, string>[count];");
+            source.AppendLine("        for (var index = 0; index < count; index++)\n        {");
+            source.AppendLine("            pairs[index] = new(fields[2 * index], fields[2 * index + 1]);\n        }");
+            source.AppendLine("        return pairs;\n    }");
+            source.AppendLine("    private static string[] Strings(int count, string data)\n    {");
+            source.AppendLine("        if (count == 0)\n        {\n            return global::System.Array.Empty<string>();\n        }");
+            source.Append("        var fields = data.Split(").Append(L(PackedSeparator.ToString())).AppendLine(");");
+            source.AppendLine("        if (fields.Length != count)\n        {");
+            source.AppendLine("            throw new global::System.InvalidOperationException(\"Corrupt application startup image; rebuild the application.\");\n        }");
+            source.AppendLine("        return fields;\n    }\n}");
             output.AddSource("GeneratedApplicationStartupImage.g.cs", GeneratedSourceText.From(source.ToString()));
             foreach (var app in applications.Where(app => app.IsGenericType || app.ContainingType is not null ||
                          app.DeclaringSyntaxReferences.Any(reference => reference.GetSyntax() is not ClassDeclarationSyntax declaration || !declaration.Modifiers.Any(SyntaxKind.PartialKeyword))))
@@ -180,24 +194,33 @@ internal static class StartupImageWriter
         return false;
     }
 
+    private const char PackedSeparator = '\u001F';
+
     private static void WritePairs(StringBuilder source, IEnumerable<KeyValuePair<string, string>> values)
     {
-        source.AppendLine("        new global::System.Collections.Generic.KeyValuePair<string, string>[]\n        {");
-        foreach (var pair in values)
-        {
-            source.Append("            new(").Append(L(pair.Key)).Append(", ").Append(L(pair.Value)).AppendLine("),");
-        }
-        source.Append("        }");
+        var pairs = values.ToArray();
+        source.Append("        Pairs(").Append(pairs.Length).Append(", ")
+              .Append(L(Pack(pairs.SelectMany(pair => new[] { pair.Key, pair.Value })))).Append(')');
     }
 
     private static void WriteStrings(StringBuilder source, IEnumerable<string> values)
     {
-        source.AppendLine("        new string[]\n        {");
+        var strings = values.ToArray();
+        source.Append("        Strings(").Append(strings.Length).Append(", ").Append(L(Pack(strings))).Append(')');
+    }
+
+    // The generated Strings(count, data) splits on the separator and checks the count, so empty fields stay exact.
+    private static string Pack(IEnumerable<string> fields)
+    {
+        var values = fields.ToArray();
         foreach (var value in values)
         {
-            source.Append("            ").Append(L(value)).AppendLine(",");
+            if (value.IndexOf(PackedSeparator) >= 0)
+            {
+                throw new InvalidDataException("Startup image field '" + value + "' contains the packed separator.");
+            }
         }
-        source.Append("        }");
+        return string.Join(PackedSeparator.ToString(), values);
     }
 
     private static string L(string value) => RegistrationNames.Literal(value);

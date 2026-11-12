@@ -81,11 +81,13 @@ internal sealed class PlainHarnessApplication : Application
     public override void Initialize()
     {
         StartupTimeline.Mark("Mark.InitializeEntered");
+        StartupTimeline.ThreadJit("InitializeEntered");
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         StartupTimeline.Mark("Mark.FrameworkCompleted");
+        StartupTimeline.ThreadJit("FrameworkCompleted");
         HarnessWindows.ShowPlainWindow(this);
         base.OnFrameworkInitializationCompleted();
     }
@@ -115,11 +117,13 @@ internal sealed partial class AtomUIHarnessApplication : Application
     public override void Initialize()
     {
         StartupTimeline.Mark("Mark.InitializeEntered");
+        StartupTimeline.ThreadJit("InitializeEntered");
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         StartupTimeline.Mark("Mark.FrameworkCompleted");
+        StartupTimeline.ThreadJit("FrameworkCompleted");
         if (HarnessOptions.Current.Scenario is HarnessScenario.AtomWindow or HarnessScenario.AtomSplash)
         {
             HarnessWindows.ShowAtomUIWindow(this);
@@ -164,7 +168,11 @@ internal static class HarnessWindows
 
     private static void Attach(Application application, Avalonia.Controls.Window window)
     {
-        window.Opened += static (_, _) => StartupTimeline.Mark("Mark.WindowOpened");
+        window.Opened += static (_, _) =>
+        {
+            StartupTimeline.Mark("Mark.WindowOpened");
+            StartupTimeline.ThreadJit("WindowOpened");
+        };
         StartupTimeline.Mark("Mark.WindowConstructed");
         if (application.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

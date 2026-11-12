@@ -42,7 +42,8 @@ StartWithClassicDesktopLifetime → SetupUnsafe
     2. 捕获不可变输入 → 启动符合后台资格的 Prepare（TypeMap 预热 → 全局 Token）
   后台 Prepare ‖ new App()
   new App() → RegisterServices() → 生成的重写：base.RegisterServices(); ApplicationStartup.Attach(this);
-    Attach：取得本实例的 builder 与 Prepare 结果 → 判定并显示 Splash → 一次性提交
+    Attach：取得本实例的 builder → 判定并显示 Splash（需要时等待 Prepare）→ 一次性提交
+      （不显示 Splash 时，提交在初始化主题前才等待 Prepare，之前的本地化与 ThemeManager 构建与之并行）
   Initialize()                         App.axaml；Prism 在此创建并显示 Shell
   AfterApplicationSetup                守卫：本实例未执行 Attach 则抛出带修复说明的异常
   OnFrameworkInitializationCompleted   传统写法在此创建主窗体

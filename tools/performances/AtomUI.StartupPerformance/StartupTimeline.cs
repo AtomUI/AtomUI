@@ -28,6 +28,10 @@ internal static class StartupTimeline
 
     internal static void Flag(string name) => Set($"Flag.{name}", 1);
 
+    /// <summary>记录调用线程截至此刻的累计 JIT 编译耗时（ms），用于区分 JIT 与实际工作。</summary>
+    internal static void ThreadJit(string key) =>
+        Set($"Jit.Thread.{key}", System.Runtime.JitInfo.GetCompilationTime(currentThread: true).TotalMilliseconds);
+
     internal static void Set(string key, double valueMs)
     {
         lock (Gate)

@@ -133,7 +133,7 @@ public class BadgeExtensionTests
 
     private static async Task ApplyAppearanceAsync(ThemeAppearance appearance)
     {
-        var manager = ((IThemeManager?)AvaloniaLocator.Current.GetService(typeof(ThemeManager))).ShouldNotBeNull();
+        var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
         var algorithms = appearance == ThemeAppearance.Dark
             ? new[] { ThemeAlgorithm.Default, ThemeAlgorithm.Dark }
             : new[] { ThemeAlgorithm.Default };

@@ -67,7 +67,7 @@ public class WindowThemeContextLeaseTests
     public async Task Show_Primes_The_Window_Surface_With_The_Dark_Theme_Before_Styling()
     {
         var application = Application.Current.ShouldNotBeNull();
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
+        var manager = Application.Current!.GetThemeManager()
                                      .ShouldBeOfType<ThemeManager>();
         var darkConfig = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Dark).Build();
         var darkResult = await manager.ApplyThemeAsync(

@@ -775,7 +775,9 @@ FollowSystem 在 Builder 阶段获得 Light 和 Dark 两个完整、不可变的
 
 Root ThemeContext 通过 ThemeManager 中的全局 TopLevel style 把稳定的 `ThemeScope.ContextProperty` 注入每个
 TopLevel；不能假设 inheritable AvaloniaProperty 会从 `Application` 自动传到独立 TopLevel。由 owner lease
-创建的局部 TopLevel 使用 local value 覆盖该根 style 值。
+创建的局部 TopLevel 使用 local value 覆盖该根 style 值。style 尚未作用到 TopLevel 时，`ThemeScope.ResolveContext`
+经 `Application.Current` 的 `ApplicationScope` 取得 Manager，与 `Application.GetThemeManager()` 同一来源；不经进程级
+`AvaloniaLocator`，因此作用域释放或提交失败后不再解析到已释放的 Manager，多个 Application 实例也不会互相取用。
 
 Motion 和 Wave 配置也是 ThemeConfig Token override。任何入口改变这些值时都生成新请求，不直接修改
 `ResourceDictionary`。

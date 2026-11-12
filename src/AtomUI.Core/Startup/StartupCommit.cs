@@ -58,7 +58,6 @@ internal static class StartupCommit
             applicationScope = new ApplicationScope(application, themeManager, localizationHost, ownedServices, process,
                 builder.OwnedServiceRegistrations.Select(registration => registration.Id));
             ownedServices = null;
-            AvaloniaLocator.CurrentMutable.BindToSelf(themeManager);
             applicationScope.InitializeApplication(initialSystemAppearance, resolveStartupGlobalParent?.Invoke());
             StartupEventSource.Log.PhaseStop(StartupPhase.CommitTheme);
             StartupEventSource.Log.PhaseStart(StartupPhase.CommitInitializers);

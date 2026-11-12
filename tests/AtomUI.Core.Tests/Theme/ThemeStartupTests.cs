@@ -224,7 +224,7 @@ public class ThemeStartupTests
         {
             var application = Application.Current!;
             ApplicationStartup.AttachWith(application, static _ => { });
-            var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
+            var manager = Application.Current!.GetThemeManager()
                                          .ShouldBeOfType<ThemeManager>();
             var provider = new ThemeConfigProvider
             {
@@ -253,7 +253,7 @@ public class ThemeStartupTests
         {
             var application = Application.Current!;
             ApplicationStartup.AttachWith(application, static _ => { });
-            var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
+            var manager = Application.Current!.GetThemeManager()
                                          .ShouldBeOfType<ThemeManager>();
             var content = new Border();
             var window = new Window
@@ -265,6 +265,53 @@ public class ThemeStartupTests
                                     .ShouldBeSameAs(manager.RootContext.Snapshot);
             window.GetValue(ThemeScope.ContextProperty)
                   .ShouldBeSameAs(manager.RootContext);
+
+            window.Content = null;
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public void Disposed_Application_Scope_Does_Not_Resolve_A_Root_Context()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var application = Application.Current!;
+            ApplicationStartup.AttachWith(application, static _ => { });
+            ApplicationScopeRegistry.Get(application).ShouldNotBeNull().Dispose();
+            var content = new Border();
+            var window = new Window
+            {
+                Content = content
+            };
+
+            ThemeScope.ResolveContext(content).ShouldBeNull();
+            window.GetValue(ThemeScope.ContextProperty).ShouldBeNull();
+
+            window.Content = null;
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public void Failed_Commit_Does_Not_Leave_Its_ThemeManager_Resolvable()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var application = Application.Current!;
+            Should.Throw<InvalidOperationException>(() => ApplicationStartup.AttachWith(
+                    application,
+                    static builder => builder.AddInitializer(
+                        static _ => throw new InvalidOperationException("Initializer failure."))))
+                  .Message.ShouldBe("Initializer failure.");
+            var content = new Border();
+            var window = new Window
+            {
+                Content = content
+            };
+
+            ThemeScope.ResolveContext(content).ShouldBeNull();
+            window.GetValue(ThemeScope.ContextProperty).ShouldBeNull();
 
             window.Content = null;
             window.Close();

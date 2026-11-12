@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using AtomUI.Startup.Data;
 
 namespace AtomUI.Registration;
@@ -9,6 +10,8 @@ public sealed class StartupImage
 {
     private readonly Dictionary<string, string> _packages;
     private readonly Dictionary<string, string> _resourceOwners;
+    // "s:" owners keyed by the bare resource name, so string key misses check ownership without concatenation.
+    private readonly Dictionary<string, string> _stringResourceOwners = new(StringComparer.Ordinal);
 
     public StartupImage(int version, ulong stamp, IReadOnlyList<KeyValuePair<string, string>> packages,
         IReadOnlyList<string> controlOrder, IEnumerable<KeyValuePair<string, string>>? resourceOwners = null,
@@ -24,6 +27,13 @@ public sealed class StartupImage
         _packages = packages.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
         ControlOrder = controlOrder.ToArray();
         _resourceOwners = resourceOwners?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) ?? new(StringComparer.Ordinal);
+        foreach (var (key, packageId) in _resourceOwners)
+        {
+            if (key.StartsWith("s:", StringComparison.Ordinal))
+            {
+                _stringResourceOwners.Add(key.Substring(2), packageId);
+            }
+        }
         VerifiedLanguages = (verifiedLanguages ?? []).ToHashSet(StringComparer.Ordinal);
         LanguageModules = languageModules?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) ?? new(StringComparer.Ordinal);
     }
@@ -33,6 +43,8 @@ public sealed class StartupImage
     internal IReadOnlySet<string> VerifiedLanguages { get; }
     internal IReadOnlyDictionary<string, string> LanguageModules { get; }
     internal bool TryGetResourceOwner(string key, out string? packageId) => _resourceOwners.TryGetValue(key, out packageId);
+    internal bool TryGetStringResourceOwner(string name, [NotNullWhen(true)] out string? packageId) =>
+        _stringResourceOwners.TryGetValue(name, out packageId);
 
     internal StartupPackageData GetPackage(ControlPackageDefinition definition)
     {

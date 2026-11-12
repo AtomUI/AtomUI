@@ -32,8 +32,10 @@ internal static class ThemeScope
             return rootContext;
         }
 
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)) as ThemeManager;
-        if (manager is null)
+        // Resolve through the application's own scope, which unregisters on disposal and failed commit;
+        // a process-wide locator entry would outlive the manager and serve another application's instance.
+        if (Application.Current is not { } application ||
+            ApplicationScopeRegistry.Get(application)?.ThemeManager is not { } manager)
         {
             return null;
         }

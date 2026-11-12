@@ -93,8 +93,8 @@
     </unit>
     <unit id="SemanticDescriptionDescription">
       <segment>
-        <source>The description text region controlled by Description and IsDescriptionVisible.</source>
-        <target state="translated">由 Description 與 IsDescriptionVisible 控制的描述文字區域。</target>
+        <source>The description region controlled by Description and IsDescriptionVisible; it holds text or custom content.</source>
+        <target state="translated">由 Description 與 IsDescriptionVisible 控制的描述區域，承載文字或自訂內容。</target>
       </segment>
     </unit>
     <unit id="SemanticFooterDescription">

@@ -60,13 +60,13 @@ ControlTemplate 和 Avalonia 样式优先级作为实现事实。
 | Selector | `.semantic-description` |
 | SelectorRoute | `/template/ .semantic-description` |
 | Style Type | `EmptyDescriptionStyle` |
-| ContractType | `TextBlock` |
+| ContractType | `ContentPresenter` |
 | Cardinality | `Single` |
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | 描述 `TextBlock` |
-| 职责 | 展示本地化默认描述或调用方提供的 `Description`。 |
+| AtomUI 节点 | 描述 `ContentPresenter#Description` |
+| 职责 | 展示本地化默认描述或调用方提供的 `Description`，文字与自定义内容都在该节点内（对应 Ant Design `.ant-empty-description`）。 |
 | 相关 API | `Description`、`IsDescriptionVisible`、`SizeType` |
 | 相关 Token | `DescriptionMargin`、`DescriptionMarginSM`、SharedToken 文本颜色 |
 | 稳定性 | stable since 6.2.0 |
@@ -111,9 +111,19 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
 
 ### 2.3 `description`
 
-`description` marker 静态放置在 `TextBlock`。`Description` 为 `null` 或空字符串时节点仍属于模板结构；
-`IsDescriptionVisible=false` 通过 `TemplateBinding` 隐藏节点，不动态创建或删除 Visual。因此 descriptor 按真实模板节点定义为
-`Single`，可见性不改变 marker 数量。
+`description` marker 静态放置在描述 `ContentPresenter` 上，与 Ant Design 一样，一个节点同时承载文字和自定义内容：
+
+- **字符串**：由呈现器内部的字符串数据模板生成 AtomUI `TextBlock`；该文本不设本地文本属性，字体、前景、对齐、换行、行高等从
+  description 节点继承。
+- **其他对象**：显示控件本身，或使用应用的数据模板。`TextElement` 与 `TextBlock` 的可继承文本属性同样继承到自定义内容中的文字。
+- **`null`**：按空字符串呈现，保留一行空文本的布局。
+
+因此 `EmptyDescriptionStyle` 对文字和自定义内容都生效。呈现器复用 `TextBlock` / `TextElement` 的同一组属性对象（`Foreground`、
+字体、`TextAlignment`、`TextWrapping`、`TextTrimming`、`LineHeight`、`LetterSpacing`、`MaxLines`），按原 `TextBlock` 契约
+写的这些设置继续有效；`TextBlock` 专有且不继承的属性（如 `TextDecorations`）不再生效，但也不会报错。
+
+`IsDescriptionVisible=false` 通过 `TemplateBinding` 隐藏节点，不动态创建或删除 Visual。descriptor 按真实模板节点定义为
+`Single`，可见性和内容类型都不改变 marker 数量。
 
 ### 2.4 `footer`
 
@@ -136,7 +146,7 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
             <Setter Property="Opacity" Value="0.72" />
         </atom:EmptyImageStyle>
 
-        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
             <Setter Property="Foreground" Value="DarkSlateBlue" />
         </atom:EmptyDescriptionStyle>
 
@@ -160,7 +170,7 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
 不得使用以下写法：
 
 - `.semantic-root` 或模板外层 `StackPanel` selector。
-- `Svg#PART_SvgImage`、`TextBlock#Description` 或 Footer Presenter Name。
+- `Svg#PART_SvgImage`、`ContentPresenter#Description` 或 Footer Presenter Name。
 - `Control.semantic-image`、`:is(Control).semantic-image` 等类型前缀。
 - 复制 `/template/ .semantic-*` 完整 route 作为主要用户写法。
 - 进入 Footer 用户内容、SVG 内部绘制树或其他嵌套控件模板继续匹配 Empty Part。

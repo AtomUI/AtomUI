@@ -12,7 +12,7 @@ namespace AtomUI.Desktop.Controls;
 [SemanticPart(
     "description",
     SelectorClass = "semantic-description",
-    ContractType = typeof(TextBlock),
+    ContractType = typeof(ContentPresenter),
     Since = "6.2.0")]
 [SemanticPart(
     "footer",

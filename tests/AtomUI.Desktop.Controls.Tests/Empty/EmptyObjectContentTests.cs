@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -34,35 +35,36 @@ public class EmptyObjectContentTests
         return window;
     }
 
-    private static AtomUITextBlock FindText(AtomUIEmpty empty)
-    {
-        return empty.GetVisualDescendants().OfType<AtomUITextBlock>()
-                    .Single(static block => block.Classes.Contains("semantic-description"));
-    }
-
-    private static ContentPresenter FindContent(AtomUIEmpty empty)
+    private static ContentPresenter FindDescription(AtomUIEmpty empty)
     {
         return empty.GetVisualDescendants().OfType<ContentPresenter>()
-                    .Single(static presenter => presenter.Name == "DescriptionContent");
+                    .Single(static presenter => presenter.Classes.Contains("semantic-description"));
+    }
+
+    // String descriptions render through an AtomUI TextBlock generated inside the description presenter.
+    private static AtomUITextBlock FindText(AtomUIEmpty empty)
+    {
+        return FindDescription(empty).GetVisualDescendants().OfType<AtomUITextBlock>().Single();
     }
 
     [Fact]
-    public void String_description_renders_through_the_text_part()
+    public void String_description_renders_as_text_inside_the_description_part()
     {
         var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Description = "Nothing here" };
         var window = Show(empty);
         try
         {
+            var description = FindDescription(empty);
             var text = FindText(empty);
             text.Text.ShouldBe("Nothing here");
-            text.IsVisible.ShouldBeTrue();
+            description.IsVisible.ShouldBeTrue();
+            // Text settings live on the part and inherit to the text, so part styles reach it.
             text.TextWrapping.ShouldBe(TextWrapping.Wrap);
-            FindContent(empty).IsVisible.ShouldBeFalse();
+            ((ISolidColorBrush)text.Foreground!).Color.ShouldBe(((ISolidColorBrush)description.Foreground!).Color);
 
             empty.IsDescriptionVisible = false;
             Dispatcher.UIThread.RunJobs();
-            text.IsVisible.ShouldBeFalse();
-            FindContent(empty).IsVisible.ShouldBeFalse();
+            description.IsVisible.ShouldBeFalse();
         }
         finally
         {
@@ -87,36 +89,14 @@ public class EmptyObjectContentTests
     }
 
     [Fact]
-    public void Object_description_renders_through_the_content_presenter()
+    public void Null_description_keeps_an_empty_text_line()
     {
-        var custom = new Border { Child = new Avalonia.Controls.TextBlock { Text = "custom" }, Tag = "custom" };
-        var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Description = custom };
+        var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Description = null };
         var window = Show(empty);
         try
         {
-            var text = FindText(empty);
-            var content = FindContent(empty);
-            text.IsVisible.ShouldBeFalse();
-            content.IsVisible.ShouldBeTrue();
-            content.Child.ShouldBeSameAs(custom);
-
-            // The presenter shares the description spacing and text colour with the text part.
-            content.Margin.ShouldBe(text.Margin);
-            ((ISolidColorBrush)content.Foreground!).Color.ShouldBe(((ISolidColorBrush)text.Foreground!).Color);
-            content.HorizontalAlignment.ShouldBe(text.HorizontalAlignment);
-
-            empty.IsDescriptionVisible = false;
-            Dispatcher.UIThread.RunJobs();
-            content.IsVisible.ShouldBeFalse();
-            empty.IsDescriptionVisible = true;
-
-            // Switching back to a string restores the text part.
-            empty.Description = "plain";
-            Dispatcher.UIThread.RunJobs();
-            text.IsVisible.ShouldBeTrue();
-            text.Text.ShouldBe("plain");
-            content.IsVisible.ShouldBeFalse();
-            content.Child.ShouldBeNull();
+            FindText(empty).Text.ShouldBe(string.Empty);
+            FindDescription(empty).IsVisible.ShouldBeTrue();
         }
         finally
         {
@@ -125,7 +105,79 @@ public class EmptyObjectContentTests
     }
 
     [Fact]
-    public void Footer_keeps_its_own_margin_after_the_description_presenter_was_added()
+    public void Object_description_renders_inside_the_same_description_part()
+    {
+        var custom = new Border { Child = new Avalonia.Controls.TextBlock { Text = "custom" }, Tag = "custom" };
+        var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Description = custom };
+        var window = Show(empty);
+        try
+        {
+            var description = FindDescription(empty);
+            description.IsVisible.ShouldBeTrue();
+            description.Child.ShouldBeSameAs(custom);
+
+            empty.IsDescriptionVisible = false;
+            Dispatcher.UIThread.RunJobs();
+            description.IsVisible.ShouldBeFalse();
+            empty.IsDescriptionVisible = true;
+
+            empty.Description = "plain";
+            Dispatcher.UIThread.RunJobs();
+            FindDescription(empty).ShouldBeSameAs(description);
+            FindText(empty).Text.ShouldBe("plain");
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    // Ant Design styles.description applies to the description node whatever it contains; text settings written
+    // for the former TextBlock part (TextBlock / TextElement properties) keep working for strings.
+    [Fact]
+    public void Description_part_style_reaches_text_and_custom_content()
+    {
+        var customText = new Avalonia.Controls.TextBlock { Text = "custom" };
+        var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Description = "plain" };
+        empty.Classes.Add("styled");
+        var blue = Color.Parse("#1890FF");
+        var partStyle = new Style(selector => selector.OfType<AtomUIEmpty>().Class("styled").Template()
+                                                      .Class("semantic-description"))
+        {
+            Setters =
+            {
+                new Setter(Avalonia.Controls.TextBlock.ForegroundProperty, new SolidColorBrush(blue)),
+                new Setter(Avalonia.Controls.TextBlock.FontWeightProperty, FontWeight.Bold),
+                new Setter(Avalonia.Controls.TextBlock.LineHeightProperty, 30d),
+                new Setter(Avalonia.Controls.TextBlock.TextAlignmentProperty, TextAlignment.Right),
+                // TextBlock-only, non-inherited: no longer applicable to the part, but must not break styling.
+                new Setter(Avalonia.Controls.TextBlock.TextDecorationsProperty, TextDecorations.Underline)
+            }
+        };
+        empty.Styles.Add(partStyle);
+        var window = Show(empty);
+        try
+        {
+            var text = FindText(empty);
+            ((ISolidColorBrush)text.Foreground!).Color.ShouldBe(blue);
+            text.FontWeight.ShouldBe(FontWeight.Bold);
+            text.LineHeight.ShouldBe(30d);
+            text.TextAlignment.ShouldBe(TextAlignment.Right);
+
+            empty.Description = new Border { Child = customText };
+            Dispatcher.UIThread.RunJobs();
+            ((ISolidColorBrush)customText.Foreground!).Color.ShouldBe(blue);
+            customText.FontWeight.ShouldBe(FontWeight.Bold);
+            customText.LineHeight.ShouldBe(30d);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Footer_keeps_its_own_margin()
     {
         var empty = new AtomUIEmpty { PresetImage = PresetEmptyImage.Simple, Footer = new Button { Content = "go" } };
         var window = Show(empty);
@@ -134,7 +186,7 @@ public class EmptyObjectContentTests
             var footer = empty.GetVisualDescendants().OfType<ContentPresenter>()
                               .Single(static presenter => presenter.Classes.Contains("semantic-footer"));
             footer.Margin.ShouldNotBe(default);
-            footer.Margin.ShouldNotBe(FindText(empty).Margin);
+            footer.Margin.ShouldNotBe(FindDescription(empty).Margin);
         }
         finally
         {

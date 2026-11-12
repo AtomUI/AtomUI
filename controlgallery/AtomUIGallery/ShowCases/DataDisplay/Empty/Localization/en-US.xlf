@@ -78,7 +78,7 @@
     </unit>
     <unit id="SemanticDescriptionDescription">
       <segment>
-        <source>The description text region controlled by Description and IsDescriptionVisible.</source>
+        <source>The description region controlled by Description and IsDescriptionVisible; it holds text or custom content.</source>
       </segment>
     </unit>
     <unit id="SemanticFooterDescription">

@@ -43,7 +43,7 @@ Empty 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `Description`、`Footer`、`FooterTemplate`、`Image`、`ImageTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`、`Title`、`TitleTemplate` | 定义空状态图片、描述和后续操作内容。`Description` 为 `object?`：字符串走文本节点，其他对象走内容节点；`Image`、`Title` 及其模板在 Desktop 上被接受但不渲染。 |
+| 内容与数据 | `Description`、`Footer`、`FooterTemplate`、`Image`、`ImageTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`、`Title`、`TitleTemplate` | 定义空状态图片、描述和后续操作内容。`Description` 为 `object?`：字符串与其他对象都由同一个 description 节点呈现；`Image`、`Title` 及其模板在 Desktop 上被接受但不渲染。 |
 | 视觉与布局 | `SizeType`、`StrokeDashArray` | `SizeType` 选择预设尺寸基线；`StrokeDashArray` 配置 root 边框的虚线节奏。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
@@ -155,7 +155,7 @@ Semantic target。内置 Default/Simple 图形的颜色由 SharedToken 输入和
 
 ### 8.2 描述与 Footer 模型
 
-`Description` 负责本地化默认描述或调用方内容（字符串或任意对象）；`IsDescriptionVisible` 负责显示状态。`Footer` 与 `FooterTemplate` 负责 Empty
+`Description` 负责本地化默认描述或调用方内容（字符串或任意对象）；`IsDescriptionVisible` 负责显示状态。两者都由同一个 description 节点呈现，`EmptyDescriptionStyle` 设置的文本样式继承到字符串文本和自定义内容，与 Ant Design `styles.description` 一致。`Footer` 与 `FooterTemplate` 负责 Empty
 内部的后续操作区域，避免 Gallery 或业务页面通过外部 StackPanel 模拟一个不属于 Empty owner 的 footer。
 
 ## 9. 文档导航与验证策略

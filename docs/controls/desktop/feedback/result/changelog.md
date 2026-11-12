@@ -5,7 +5,7 @@
 ## 2026-11-07
 
 - Breaking API（二进制不兼容）
-  - `AbstractResult.Icon` 与 `IconProperty` 由 `PathIcon?` 放宽为 `object?`；内部的 `StatusIcon` 与 `StatusIconProperty` 同步放宽。赋值 `PathIcon` 的源码仍可编译；把读取到的 `Icon` 当作 `PathIcon` 使用的源码需要显式转换，引用旧签名的已编译程序集需要重新编译。
+  - `AbstractResult.Icon` 与 `IconProperty` 由 `PathIcon?` 放宽为 `object?`；内部的 `StatusIcon` 与 `StatusIconProperty` 同步放宽。赋值 `PathIcon` 的源码仍可编译；把读取到的 `Icon` 当作 `PathIcon` 使用的源码需要显式转换，引用旧签名的已编译程序集需要重新编译。迁移见 [6.2.14 迁移指南](../../../../releases/6.2.14-api-changes.zh-CN.md)。
 - API
   - `ResultStatus` 末尾新增 `Waiting`（值 7；既有 0 至 6 不变）。
   - 新增 `private protected virtual object? CreateDefaultStatusIcon(ResultStatus status)`，供 AtomUI.Mobile 子类替换默认状态图标。基类映射不变：Info 为 `ExclamationCircleFilled`，Success 为 `CheckCircleFilled`，Warning 为 `WarningFilled`，Error 为 `CloseCircleFilled`，Waiting 为 `ClockCircleFilled`，403/404/500 返回 `null`；每次调用返回新实例。

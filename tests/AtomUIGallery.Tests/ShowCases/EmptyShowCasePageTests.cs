@@ -49,7 +49,7 @@ public class EmptyShowCasePageTests
         semanticSource.ShouldContain("<Setter Property=\"FontWeight\" Value=\"Bold\" />");
         semanticSource.ShouldContain("<Setter Property=\"Margin\" Value=\"0,16,0,0\" />");
         source.ShouldContain("<atom:EmptyImageStyle x:SetterTargetType=\"Control\">");
-        semanticSource.ShouldContain("<atom:EmptyDescriptionStyle x:SetterTargetType=\"atom:TextBlock\">");
+        semanticSource.ShouldContain("<atom:EmptyDescriptionStyle x:SetterTargetType=\"ContentPresenter\">");
         semanticSource.ShouldContain("<atom:EmptyFooterStyle x:SetterTargetType=\"ContentPresenter\">");
         semanticSource.ShouldContain("<atom:Empty.Footer>");
         semanticSource.ShouldNotContain("Orientation=\"Horizontal\"");

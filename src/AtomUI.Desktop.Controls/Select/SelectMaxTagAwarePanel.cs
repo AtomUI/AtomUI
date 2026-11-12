@@ -73,6 +73,9 @@ internal class SelectMaxTagAwarePanel : StackPanel
     {
         if (Children.Count == 2)
         {
+            // Only the info tag and the search box remain; move the info tag off-screen so it
+            // does not keep the bounds of a previous overflow arrange.
+            _infoTag?.Arrange(new Rect(int.MaxValue, 0, _infoTag.DesiredSize.Width, _infoTag.DesiredSize.Height));
             _searchTextBox?.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
         }
         else

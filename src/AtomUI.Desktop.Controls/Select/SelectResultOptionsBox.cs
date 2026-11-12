@@ -431,6 +431,10 @@ internal class SelectResultOptionsBox : TemplatedControl
                     _collapsedInfoTag.IsVisible = false;
                 }
             }
+            else
+            {
+                _collapsedInfoTag.IsVisible = SelectedOptions != null && SelectedOptions.Count > 0;
+            }
         }
     }
 

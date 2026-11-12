@@ -69,8 +69,9 @@ public static void ApplicationStartup.Attach(Application application);
 
 1. **取得 builder**：取本次平台服务就绪回调准备的 builder；没有准备结果时，新建 builder 并同步执行回调。
 2. **校验宿主**：配置了 `UseMainWindow` 但 `ApplicationLifetime` 不是 `IClassicDesktopStyleApplicationLifetime` 时抛出。
-3. **取得 Prepare 结果**：已经启动后台任务的，等待完成（上限 30 s）；没有后台任务且输入允许 Prepare 时，只有本次
-   会显示 Splash 才同步执行 Prepare，否则跳过（提交会在 UI 线程自行编译全局层）。
+3. **取得 Prepare 结果**：本次可能显示 Splash 时，已经启动的后台任务在此等待完成（上限 30 s），没有后台任务且输入
+   允许 Prepare 时同步执行 Prepare。不会显示 Splash 时不在此等待：后台任务交给提交，在初始化主题前才等待（§4），
+   没有后台任务则跳过（提交会在 UI 线程自行编译全局层）。
 4. **选外观**：配置了 FollowSystem 时读取平台外观，选浅色或深色全局层；提交使用同一次读取的结果。
 5. **判定并显示 Splash**（见 [Splash](splash.md#2-显示判定)）：显示后驱动 Dispatcher 直到 Splash 首个渲染批次完成，
    上限 5 s。
@@ -89,6 +90,8 @@ public static void ApplicationStartup.Attach(Application application);
 3. 构建 `ThemeManager`：构建已启用包索引，保持片段与资源惰性，使用 Prepare 的全局层与完整主题目录。
 4. 创建自有服务（例如图片加载器）。
 5. `ApplicationScope.InitializeApplication`：挂载资源与样式、初始化主题（复用全局层）、注册作用域、挂接自有服务。
+   §3 未等待的后台 Prepare 在进入本步前才等待（`PrepareWait` 分段，上限与失败退化同 §7）：步骤 1–4 不读取全局层，
+   也不调用主题来源，因此与后台 Prepare 并行，只共享不可变的生成数据与线程安全的惰性缓存。
 6. 执行 initializer（`UseAlibabaSansFont` 等字体注册在此执行：字体在文字排版时才解析，提交期间不排版主窗体内容）。
 
 步骤 5 的主题/语言资源宿主、全局 Style 分离和失败卸载责任由

@@ -122,11 +122,21 @@ internal static class StartupManifestWriter
             : "            return SelectedFragments.Value.Resolve(key);");
         source.AppendLine("        }");
         source.AppendLine("        if (key.Length != 19) { return null; }");
+        // Two hash characters keep each bucket to a few keys: a JIT-compiled first lookup of a control
+        // then compiles a tiny method instead of a string switch over a sixteenth of the package.
         source.AppendLine("        return key[3] switch\n        {");
-        var buckets = keys.GroupBy(key => key.Key[3]).OrderBy(group => group.Key).ToArray();
-        foreach (var bucket in buckets)
+        // Other lengths never pass the runtime length check above.
+        var buckets = keys.Where(key => key.Key.Length == 19)
+                          .GroupBy(key => key.Key.Substring(3, 2), StringComparer.Ordinal)
+                          .OrderBy(group => group.Key, StringComparer.Ordinal).ToArray();
+        foreach (var outer in buckets.GroupBy(bucket => bucket.Key[0]))
         {
-            source.Append("            '").Append(bucket.Key).Append("' => Resolve_").Append(bucket.Key).AppendLine("(key),");
+            source.Append("            '").Append(outer.Key).AppendLine("' => key[4] switch\n            {");
+            foreach (var bucket in outer)
+            {
+                source.Append("                '").Append(bucket.Key[1]).Append("' => Resolve_").Append(bucket.Key).AppendLine("(key),");
+            }
+            source.AppendLine("                _ => null\n            },");
         }
         source.AppendLine("            _ => null\n        };\n    }");
         foreach (var bucket in buckets)

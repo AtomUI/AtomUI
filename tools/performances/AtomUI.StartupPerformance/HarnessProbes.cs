@@ -28,6 +28,7 @@ internal sealed class RenderSentinel : Control
         }
         _reported = true;
         StartupTimeline.Mark("Mark.FirstRender");
+        StartupTimeline.ThreadJit("FirstRender");
         Dispatcher.UIThread.Post(RequestRenderedBatch, DispatcherPriority.Send);
     }
 

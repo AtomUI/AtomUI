@@ -87,7 +87,7 @@ StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
 |---|---|---|
 | `Configure` | UI 线程 | 平台服务就绪后执行配置回调；同步回退宿主在 Attach 中执行 |
 | `Prepare` | 后台 | 仅全局主题准备 |
-| `PrepareWait` | 主线程 | `Attach` 等待后台 Prepare |
+| `PrepareWait` | 主线程 | 等待后台 Prepare：可能显示 Splash 时在 `Attach` 中；否则嵌套在 `Commit.Theme` 内、初始化主题前，此时 `Commit` 包含该等待 |
 | `Splash` | 主线程 | 创建、显示 Splash 并驱动到首帧 |
 | `Commit` | 主线程 | 一次性提交整体 |
 | `Commit.Localization` / `Commit.Theme` / `Commit.OwnedServices` / `Commit.Initializers` | 主线程 | 提交各段 |

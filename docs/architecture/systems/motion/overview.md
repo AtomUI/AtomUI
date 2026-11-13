@@ -68,7 +68,7 @@ AbstractMotion 子类及配置 → 本次几何/参数快照 → 统一播放协
 | [内置轨迹与组件规格](built-in-motion.md) | 端点、原点、曲线控制点、时长及组件实际选择 |
 | [弹层组件动效](popup-motion.md) | 组件规格接入、配置 owner、真实定位与原点、主题覆盖及 native/overlay 宿主边界 |
 | [播放与生命周期](playback-and-lifecycle.md) | 请求、结果、取消、替代、FillMode、终态持有和属性所有权 |
-| [帧流水线](frame-pipeline.md) | 时钟订阅、空帧保活、合成变换通道、按呈现时间采样与平台时间源 |
+| [帧流水线](frame-pipeline.md) | 时钟订阅、空帧保活、合成变换通道、按呈现时间采样、平台时间源与渲染循环节拍源 |
 | [主题提交动效收束](theme-commit-settle.md) | 主题提交窗口、全局时钟观察者收束、收束时机、接入点、覆盖边界与框架依赖 |
 | [目标、布局与控件接入](targets-and-layout.md) | 无 Actor 目标、执行能力、内容视口、裁剪/命中和宿主边界 |
 | [性能与呈现验收](performance.md) | 帧预算、调度/分配约束、场景、测量口径和性能门槛 |

@@ -74,7 +74,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | 职责 | 清空选中值和编辑文本，保留输入焦点与弹层状态。 |
 | 相关 API | `IsAllowClear`、`SelectedIndex`、`SelectedItem`、`Text` |
 | 相关 Token | SharedToken |
-| 稳定性 | since 6.2.13 |
+| 稳定性 | since 6.2.14 |
 
 按钮始终存在于模板树，显隐由可清除值、hover / focus、禁用及 `IsAllowClear` 决定。定制使用 `ComboBoxClearStyle`，不通过 code-behind 获取节点改属性。
 

@@ -76,7 +76,7 @@ public class ComboBoxSemanticPartTests
         AssertRoot(descriptor, typeof(AtomUIComboBox));
         AssertPart(descriptor, "clear", ClearClass, typeof(IconButton),
             "/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear",
-            since: "6.2.13");
+            since: "6.2.14");
         AssertPart(descriptor, "prefix", PrefixClass, typeof(ContentPresenter),
             "/template/ .semantic-scope-input /template/ .semantic-scope-prefix > .semantic-prefix");
         // frame 的物理节点在共享 AddOnDecoratedBox 模板内，因此声明 CrossNestedOwners。

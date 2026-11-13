@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.13-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.14-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -85,10 +85,10 @@ and consumed outputs.
 
 #### Latest Release Notes
 
-AtomUI 6.2.13 upgrades to Avalonia 12.1.5, adds row-click selection to DataGrid, and fixes Masonry layout cycles,
-Select multi-select filtering and menu fade compositing. Upgrade Avalonia to 12.1.5 first, and rebuild generated
-registration consumers after upgrading. See the [6.2.13 migration guide](docs/releases/6.2.13-api-changes.md) and
-[Changelog](./CHANGELOG.md).
+AtomUI 6.2.14 adds keyboard navigation to TreeView, TreeSelect and the date and time pickers, improves focus outlines,
+and keeps DataGrid row dragging active while scrolling. Release packages now also target .NET 11. Upgrading may require changes to Skeleton templates, Space
+alignment types, Empty description styles, and Result icon consumers. Rebuild generated registration consumers after
+upgrading. See the [migration guide](docs/releases/6.2.14-api-changes.md) and [Changelog](./CHANGELOG.md).
 
 #### Incubator
 
@@ -143,10 +143,10 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.13
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.13
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.13
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.13
+dotnet add package AtomUI.Desktop.Controls --version 6.2.14
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.14
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.14
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.14
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -174,10 +174,10 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.13"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.13"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.13"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.13"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.14"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.14"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.14"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.14"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

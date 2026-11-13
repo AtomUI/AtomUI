@@ -4,6 +4,51 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## 6.2.14
+
+`2026-11-13`
+
+- Breaking Changes
+  - Skeleton: Move `AbstractSkeleton` to the shared assembly and replace the old active animation layer with shimmer block markers. Review the changes to custom easing, start and stop hooks, and standalone paragraph width. [Migration guide](docs/releases/6.2.14-api-changes.md#skeleton-base-class-moves-to-the-shared-layer)
+  - Space: Move `SpaceItemsAlignment` to `AtomUI.Controls` and rebuild consumers of `Space.ItemsAlignment`. [Migration guide](docs/releases/6.2.14-api-changes.md#spaceitemsalignment-changes-namespace)
+  - Card: Declare `Extra`, `Cover`, `IsLoading` and related property fields on the shared `AbstractCard` base. Rebuild assemblies compiled against 6.2.13. [Migration guide](docs/releases/6.2.14-api-changes.md#card-property-fields-move-to-abstractcard)
+  - Empty and Result: Widen `Description` and `Icon` respectively to `object?`. Update typed reads and rebuild consumers of the previous signatures. [Migration guide](docs/releases/6.2.14-api-changes.md#emptydescription-and-resulticon-become-object)
+  - Empty: Update `EmptyDescriptionStyle` setters for its new `ContentPresenter` target. [Migration guide](docs/releases/6.2.14-api-changes.md#empty-description-semantic-part-becomes-a-content-presenter)
+  - Keyboard and theme: Update focus token overrides, automated Tab order and date/time picker confirmation steps. [Migration guide](docs/releases/6.2.14-api-changes.md#keyboard-focus-and-picker-interaction)
+  - Watermark and Motion: Text watermarks follow the owner theme by default. Theme-commit transitions settle within the first frame. [Migration guide](docs/releases/6.2.14-api-changes.md#watermark-and-theme-motion)
+  - Registration: Upgrade related packages and Generator together, rebuild generated consumers and republish trimmed/NativeAOT applications. [Migration guide](docs/releases/6.2.14-api-changes.md#generated-registration-identities)
+- TreeView and TreeSelect
+  - Navigate with the keyboard, distinguish the active node from the selection, and extend TreeView selection ranges without clearing and re-adding existing items. TreeSelect can browse the dropdown without committing until Enter or Space. #535
+- Keyboard focus
+  - Use an Ant Design-style focus outline and improve Tab order across input controls. Reach ComboBox clear and NumericUpDown from the keyboard, and preserve focus outlines on selected active tree and menu items.
+- DatePicker and TimePicker
+  - Parse dates typed in the displayed format, navigate popup panels from the input, and handle Enter, Escape and range confirmation from the keyboard.
+  - Commit the time shown in the panel and use muted text only for hover previews.
+- ComboBox, Select and Dialog
+  - Use the placeholder color consistently in ComboBox. Add keyboard-accessible clear, a clear Semantic Part and more stable filtered content while the dropdown closes. #534
+  - Remove the leftover “+ 0 …” tag when clearing a responsive multi-select. #537
+  - Preserve focus when clicking content popups and keep a Dialog mounted when raising it above other overlays. #532
+- DataGrid and Card
+  - Keep row reordering active while scrolling and continue autoscrolling when the drag crosses a viewport edge. #536
+  - Draw frozen-column shadows outside the divider and scale shadow offsets correctly on high-DPI displays.
+  - Create the Card loading skeleton only while loading.
+- Content, layout and motion
+  - Add custom image and description content to Empty, custom icons and a waiting state to Result, and custom information content to ProgressBar.
+  - Add wrapping and main-axis distribution options to Space, content and border options to badges, and an outline variant to Tag.
+  - Share one shimmer per Skeleton group. Add custom SpinIndicator animation hooks and MarqueeLabel start delay and hover controls.
+  - Add theme-aware text color and font options to Watermark.
+- Image loading
+  - Add viewport-based lazy loading to AsyncImage and use a cover-aware decode size for raster images.
+- Startup and theme
+  - Reduce JIT startup waiting and generated code size for language definitions and startup registration. Resolve root theme context from the application scope and reduce allocations during token and resource lookups.
+- TextArea
+  - Fill the available height when stretched by a parent without an explicit `Height`; `Lines` now only sets the natural height. (Gitee IKV2LQ)
+- Windows rendering and Splash
+  - Drive the Windows render loop from DWM composition so Spin, Skeleton and other composition animations no longer skip frames. Advance the indeterminate Splash progress per rendered frame.
+- Build and NativeAOT
+  - Ship `net11.0` assets in Release packages next to net8.0 and net10.0, and support building with SDK 11. The net8 trimming, NativeAOT and compatibility-bridge backends follow the SDK-selected official engines instead of fixed SDK versions. #538
+  - Fix Native8 publishing for generated package definitions, and keep packages built before 6.2.14 compatible with the ILLink8 backend and the bridge.
+
 ## 6.2.13
 
 `2026-11-06`

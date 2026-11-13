@@ -6,6 +6,51 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 6.2.14
+
+`2026-11-13`
+
+- Breaking Changes
+  - Skeleton 将 `AbstractSkeleton` 移到共享程序集，旧活动动画层改用微光块标记。请检查自定义缓动、启停入口和单独段落的默认宽度。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#skeleton-基类移到共享层)
+  - Space 将 `SpaceItemsAlignment` 移到 `AtomUI.Controls`。请重新编译使用 `Space.ItemsAlignment` 的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#spaceitemsalignment-换了命名空间)
+  - Card 将 `Extra`、`Cover`、`IsLoading` 等属性字段改为声明在共享基类 `AbstractCard`。请重新编译按 6.2.13 编译的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#card-属性字段移到-abstractcard)
+  - Empty 和 Result 分别将 `Description`、`Icon` 放宽为 `object?`。请调整按原类型读取的代码，并重新编译依赖旧签名的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#emptydescription-与-resulticon-改为-object)
+  - Empty 的 `EmptyDescriptionStyle` 改为作用于 `ContentPresenter`，请调整 Setter 的目标类型。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#empty-description-semantic-part-改为内容呈现器)
+  - 键盘与主题调整了焦点 Token、Tab 顺序及日期时间选择器的确认规则，请检查自定义主题和键盘自动化。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#键盘焦点和选择器交互)
+  - Watermark 的文字默认跟随宿主主题，主题提交触发的动效在首帧内收束。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#watermark-和主题动效)
+  - 注册组身份随版本变更。请同步升级相关包与 Generator、重新编译生成代码消费方，并重新发布裁剪/NativeAOT 应用。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#生成的注册身份)
+- TreeView 和 TreeSelect
+  - 新增键盘导航，区分活动节点与已选节点。TreeView 扩展选区时保留已选成员，TreeSelect 可先浏览下拉树，再用 Enter 或 Space 提交。#535
+- 键盘焦点
+  - 采用 Ant Design 风格焦点描边，调整输入控件的 Tab 顺序。ComboBox 清除按钮和 NumericUpDown 可通过键盘到达，树和菜单的已选活动项保留描边。
+- DatePicker 和 TimePicker
+  - 按显示格式解析键入日期，支持从输入框导航弹层面板，以及通过 Enter、Escape 和键盘确认范围。
+  - 确认时提交面板显示的时间，仅对悬停预览使用灰色文字。
+- ComboBox、Select 和 Dialog
+  - 统一 ComboBox 占位符颜色，新增键盘清除和清除 Semantic Part，保持下拉离场期间的筛选内容稳定。#534
+  - 清空响应式多选后移除残留的“+ 0 …”标签。#537
+  - 点击 Dialog 内容弹层时保留焦点，提升 Dialog 层级时保持挂载。#532
+- DataGrid 和 Card
+  - 滚动时保留行拖动，拖出视口边缘时继续自动滚动。#536
+  - 在分界线外绘制冻结列阴影，并让阴影偏移随高 DPI 正确缩放。
+  - Card 仅在加载期间创建骨架。
+- 内容、布局和动效
+  - Empty 支持自定义图片和描述，Result 支持自定义图标和等待状态，ProgressBar 支持自定义信息区内容。
+  - Space 支持配置换行和主轴分布，Badge 新增内容和描边选项，Tag 新增描边样式。
+  - 每组 Skeleton 共用一条微光动画。SpinIndicator 增加自定义动画入口，MarqueeLabel 增加启动延迟和悬停控制。
+  - Watermark 支持跟随主题的文字颜色与字体选项。
+- 图片加载
+  - AsyncImage 支持按视口懒加载，栅格图片解码尺寸可按覆盖模式计算。
+- 启动与主题
+  - 减少 JIT 启动等待，缩小语言定义与启动注册的生成代码。从应用作用域解析根主题，减少 Token 和资源查询分配。
+- TextArea
+  - 未设置 `Height` 且被父容器拉伸时填满可用高度，`Lines` 只决定自然高度。（Gitee IKV2LQ）
+- Windows 渲染与 Splash
+  - Windows 渲染循环改按 DWM 合成节拍出帧，Spin、Skeleton 等合成动画不再跳帧。Splash 不确定进度按渲染帧推进。
+- 构建与 NativeAOT
+  - Release 包在 net8.0、net10.0 之外新增 `net11.0` 资产，支持使用 SDK 11 构建。net8 裁剪、NativeAOT 和兼容桥接后端改为跟随 SDK 选定的官方引擎，不再绑定固定 SDK 版本。#538
+  - 修复生成的包定义在 Native8 发布时被阻断，并保持 6.2.14 之前构建的包与 ILLink8 后端及桥接兼容。
+
 ## 6.2.13
 
 `2026-11-06`

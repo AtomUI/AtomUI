@@ -13,7 +13,7 @@ namespace AtomUI.Desktop.Controls;
     SelectorClass = "semantic-clear",
     SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear",
     ContractType = typeof(IconButton),
-    Since = "6.2.13")]
+    Since = "6.2.14")]
 [SemanticPart(
     "prefix",
     SelectorClass = "semantic-prefix",

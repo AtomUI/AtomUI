@@ -168,7 +168,12 @@ Pointer released→ NotifyResizeCompleted()
 
 ### 7.3 TextArea 固定行数测量
 
-TextArea 在 `IsAutoSize=false`、`Lines>0` 且未显式设置 `Height` 时，使用 `TextLayout` 计算指定行数的文本高度，再叠加 scroll viewer 与 text presenter 的垂直空间，写入 scroll viewer 的 `MinHeight` / `MaxHeight`。
+TextArea 在 `IsAutoSize=false`、`Lines>0` 且未显式设置 `Height` 时，使用 `TextLayout` 计算 `max(Lines, MinLines)` 行的文本高度，再叠加 scroll viewer 与 text presenter 的垂直空间，得到固定行数的自然高度：
+
+- 自然高度写入 `TextAreaDecoratedBox` 模板内承载 scroll viewer 与右侧附加内容的 `Panel#ScrollViewerLayout` 的 `MinHeight`，作为下限；内容少于 `Lines` 时控件仍保持该高度。
+- 内容超过 `Lines` 时，`MeasureOverride` 以自然高度为上限重新测量，期望高度不随内容增长，多出的内容在视口内滚动。
+- scroll viewer 自身的 `MinHeight` / `MaxHeight` 只由 Avalonia `TextBox` 按 `MinLines` / `MaxLines` 维护，TextArea 不再改写。父容器分配更高的槽位（Grid `*` 行、`FlexPanel` 的 `Flex.Grow`）时，视口随框体拉伸，首行贴顶；此前 scroll viewer 被钳成 `Lines` 高的一条，在框体中垂直居中（Gitee IKV2LQ）。
+- 显式 `Height`、`IsAutoSize=true` 或 resize 写入 `Height` 后，清除 `ScrollViewerLayout.MinHeight`，高度回到对应模式。
 
 ### 7.4 TextArea resize 边界
 

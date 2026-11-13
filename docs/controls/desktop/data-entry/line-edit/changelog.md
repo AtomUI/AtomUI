@@ -1,5 +1,10 @@
 # LineEdit Changelog
 
+## 2026-11-12
+
+- Fixed
+  - TextArea：未设置 `Height` 且由父容器拉伸（Grid `*` 行、`FlexPanel` + `Flex.Grow`）时，文本视口不再塌缩为 `Lines` 高的一条并垂直居中，现在填满输入框，正文从首行开始，滚动条和 PageDown 作用于整个视口。`Lines` 只决定自然高度，未拉伸时（如 StackPanel 中）仍显示 `Lines` 行。此前期望高度会随内容增长，在 FlexPanel 中可能撑出窗口，现已修复。（Gitee IKV2LQ）
+
 ## 2026-11-11
 
 - Theme

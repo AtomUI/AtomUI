@@ -133,19 +133,34 @@ public partial class TextArea : AbstractTextInput
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var size = base.MeasureOverride(availableSize);
-        if (_scrollViewer != null)
+        var size           = base.MeasureOverride(availableSize);
+        var viewportLayout = _textAreaDecoratedBox?.ScrollViewerLayout;
+        if (viewportLayout is null)
         {
-            if (!IsAutoSize)
-            {
-                if (Lines > 0 && double.IsNaN(Height))
-                {
-                    Lines = Math.Max(Lines, MinLines);
-                    var height = CalculateScrollViewerHeight(Lines);
-                    _scrollViewer.SetCurrentValue(MinHeightProperty, height);
-                    _scrollViewer.SetCurrentValue(MaxHeightProperty, height);
-                }
-            }
+            return size;
+        }
+
+        if (IsAutoSize || Lines <= 0 || !double.IsNaN(Height))
+        {
+            viewportLayout.ClearValue(MinHeightProperty);
+            return size;
+        }
+
+        // Lines only decides the natural height. The scroll viewer's own Min/MaxHeight stay owned by the
+        // MinLines/MaxLines measure of the base TextBox, so a taller arranged slot (Grid star row, Flex grow)
+        // still stretches the viewport instead of centering a Lines-high band inside the frame.
+        var linesHeight = CalculateScrollViewerHeight(Math.Max(Lines, MinLines));
+        if (viewportLayout.MinHeight != linesHeight)
+        {
+            viewportLayout.SetCurrentValue(MinHeightProperty, linesHeight);
+            size = base.MeasureOverride(availableSize);
+        }
+
+        // Content taller than Lines scrolls inside the viewport and must not grow the desired height.
+        var naturalHeight = size.Height - viewportLayout.DesiredSize.Height + linesHeight;
+        if (naturalHeight < size.Height)
+        {
+            size = base.MeasureOverride(availableSize.WithHeight(Math.Min(availableSize.Height, naturalHeight)));
         }
         return size;
     }
@@ -199,8 +214,6 @@ public partial class TextArea : AbstractTextInput
             _maxResizeHeight = MaxLines > 0
                 ? overhead + CalculateScrollViewerHeight(MaxLines)
                 : double.PositiveInfinity;
-            _scrollViewer.ClearValue(MinHeightProperty);
-            _scrollViewer.ClearValue(MaxHeightProperty);
         }
         else
         {

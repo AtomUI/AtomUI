@@ -33,7 +33,7 @@
                                 Focusable="False"
                                 Content="{TemplateBinding ContentLeftAddOn}"
                                 ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}" />
-                            <Panel>
+                            <Panel Name="ScrollViewerLayout">
                                 <atom:ScrollViewer Name="PART_ScrollViewer"
                                                    IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
                                                    AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"

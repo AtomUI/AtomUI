@@ -67,11 +67,6 @@ internal sealed class ConditionalDefinitionBinder
         var selected = Resolve(package.CollectSelected);
         RequireCalls(collector, [full]);
         RequireStub(selected);
-        // Thunks share the collector owner; ILC8 dispatch calls them directly, so the owner keeps no static constructor.
-        if (collector.DeclaringType.Methods.Any(method => method.IsStatic && method.IsConstructor))
-        {
-            throw Invalid("Registration thunk requires a stateless owner in the package module.");
-        }
         var fragments = new List<BoundConditionalRegistrationFragment>();
         var conditionsByFragment = manifest.Conditions.ToLookup(condition => condition.Fragment, StringComparer.Ordinal);
         foreach (var fragment in manifest.Fragments)

@@ -26,14 +26,14 @@ public class Net8EngineToolchainTests
     }
 
     [Theory]
-    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/8.0.27", "8.0.27", true)]
-    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/8.0.34", "8.0.27", true)]
-    [InlineData("/dotnet/packs/runtime.osx-arm64.Microsoft.DotNet.ILCompiler/8.0.34", "8.0.27", true)]
-    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/10.0.15", "8.0.27", false)]
-    [InlineData("/p/runtime.osx-x64.microsoft.dotnet.ilcompiler/8.0.34", "8.0.27", false)]
-    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/not-a-version", "8.0.27", false)]
-    public void Native_compiler_package_requires_official_ilc_major_8(string directory, string bundle, bool accepted)
-        => Net8EngineToolchain.IsSupportedNativeCompilerPackage(directory, bundle).ShouldBe(accepted);
+    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/8.0.27", true)]
+    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/8.0.34", true)]
+    [InlineData("/dotnet/packs/runtime.osx-arm64.Microsoft.DotNet.ILCompiler/8.0.34", true)]
+    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/10.0.15", false)]
+    [InlineData("/p/runtime.osx-x64.microsoft.dotnet.ilcompiler/8.0.34", false)]
+    [InlineData("/p/runtime.osx-arm64.microsoft.dotnet.ilcompiler/not-a-version", false)]
+    public void Native_compiler_package_requires_official_ilc_major_8(string directory, bool accepted)
+        => Net8EngineToolchain.IsSupportedNativeCompilerPackage(directory).ShouldBe(accepted);
 
     [Fact]
     public void Native_compiler_launcher_rolls_forward_by_major()

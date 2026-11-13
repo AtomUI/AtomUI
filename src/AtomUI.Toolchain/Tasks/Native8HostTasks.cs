@@ -75,7 +75,7 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
             {
                 throw new InvalidDataException("Unknown native compiler capability or upstream version.");
             }
-            if (!Net8EngineToolchain.IsSupportedNativeCompilerPackage(nativePackage, info.GetProperty("nativeToolPackageVersion").GetString()!))
+            if (!Net8EngineToolchain.IsSupportedNativeCompilerPackage(nativePackage))
             {
                 throw new InvalidDataException($"Native8 requires SDK-restored runtime.osx-arm64.microsoft.dotnet.ilcompiler 8.x; found {nativePackage}.");
             }

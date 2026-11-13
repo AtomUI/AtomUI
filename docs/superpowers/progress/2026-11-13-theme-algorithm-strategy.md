@@ -89,3 +89,25 @@
   2. 算法成员名撞名的诊断没有源码位置。
   3. 「只追加算法」的 `LoadPackages` 路径只在编译器和注册表层面有测试，新的提前返回条件没有端到端测试。
   4. 启动复用只测了前提（描述符同一实例、注册表可扩展），没有实际跑 `ThemeStartupPreparation.Prepare` 后断言全局快照被复用。这关系到启动性能，Task 7 与 Task 10 的启动耗时对比是它的实测依据。
+
+### Task 4：构建契约携带算法，XML 引用未知算法时构建期报错
+
+- 改动：Core 新增 `ThemeBuildAlgorithmAttribute(version, catalog, id, revision, appearanceEffect)`（程序集级、`EditorBrowsable(Never)`）。`ThemeBuildContracts` 新增 `ThemeBuildAlgorithm` 记录与 `Algorithms`（键 `Catalog\u001fId`）/`LocalAlgorithms`；`Build` 多一个 `IEnumerable<ThemeAlgorithmInfo>` 参数，按 Owner/Token 的写法从直接引用读取（版本 1、参数 5 个、标识符合法、`revision > 0`、效果 0–2，异常转「Invalid Token build metadata in '<asm>': …」），再加本地算法（按 `ThemeAlgorithmInfo.Order` 排序）；重复报「Duplicate algorithm build contract: <Catalog>:<Id>」。`Write` 在 `GeneratedThemeBuildContracts.g.cs` 末尾输出本地算法。`HasAbi` 增加要求 `ThemeBuildAlgorithmAttribute` 存在（否则写出的特性无法编译）。`CompiledThemePackageWriter` 校验主题链与每个已知控件的自定义链，未知算法在该元素行列报 ATOMUITOKEN002「Unknown algorithm '<Catalog>:<Id>'.」，该主题不生成程序。
+- Core 自身编译时特性来自源码：本地算法直接由源码收集，写出的特性绑定到源码声明；实测 Core 的生成文件含 `AtomUI:Compact/Dark/Default` 三条（效果 0/2/1）。
+- 测试：新增 `ThemeDefinitions/CompiledThemeAlgorithmContractTests` 5 个（简报所列）。桩：沿用 `ThemeSchemaGeneratorTests.AtomUIStubs`，把 `TokenDescriptor` 改成 partial 补 7 参数 `CreateGenerated`，加四个契约特性；「Core」测试编译在源码里声明特性与三个内置算法并跑生成器，其输出作为包编译的引用。现有生成器测试的桩都不满足 `HasAbi`，不受新增门槛影响，无需改动。RED：编译失败（`Build` 无 6 参重载、无 `Algorithms`）；另做变异验证——注释掉校验与写出后 3 个失败、恢复后 5/5 通过。
+- 结果：Generator.Tests 1076/1076，Themes.Tests 27/27，Core.Tests 474/474；全量回归 `[SUMMARY] TOTAL: 12360 个测试全部通过, 总耗时 15:40`（上一任务 12355，+5）。
+- 偏差：
+  - 本地重复（同一程序集两个类型同身份，或本地重声明了引用里已有的算法）报 ATOMUITOKEN002（无位置）并跳过该条，不抛出——现有 Owner 的本地 `Add` 不在 try 里，照抄会让生成器崩溃。
+  - 未知控件仍先报「Unknown, repeated or invalid Control」并跳过，不再校验其算法链。
+  - 算法的 Revision/AppearanceEffect 没有计入编译主题程序的摘要字段（简报未要求；摘要仍只计 `Catalog:Id`）。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 3 的提交为 `9d59e3551`。审阅确认：
+  - 编译主题程序的摘要只记 `Catalog:Id`、不记算法修订号，不构成过期风险：摘要唯一的运行时用途是 `ThemeContentFingerprint`，同一个指纹还计入注册表修订号，而注册表修订号和 `AlgorithmCacheKey` 都计入了算法的 `Revision` 与 `AppearanceEffect`。
+  - 四个预设包与 Gallery 的真实构建由 `AtomUI.Themes.Tests`（27/27）和全量回归覆盖，Core 生成的契约含三个内置算法。
+- 留待最终整体审阅统一处理的小项：
+  1. 同一程序集内重复声明算法的报错没有源码位置；「两个本地类型同身份」没有测试。
+  2. 控件本身未知时，它的自定义算法链不再检查，链里的未知算法要等控件修好后的下一次构建才报。
+  3. `ThemeBuildContracts` 把无法识别的 `AppearanceEffect` 文本静默当作 Preserve，改成显式匹配加抛错更严格。
+
+## 阶段一小结
+
+Task 1–4 完成：算法身份开放、XML 接受任意身份、包里的算法进入注册表、构建期校验未知算法。全量回归从基线 12317 增至 12360，全部通过。

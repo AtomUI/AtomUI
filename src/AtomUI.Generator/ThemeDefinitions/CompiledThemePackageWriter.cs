@@ -41,6 +41,12 @@ internal static class CompiledThemePackageWriter
             var tokenId = 0;
             var valid = true;
             var accent = "null";
+            void Check(IEnumerable<ThemeAlgorithmInput> algorithms)
+            {
+                foreach (var algorithm in algorithms.Where(a => !contracts.Algorithms.ContainsKey(a.Catalog + "\u001f" + a.Id)))
+                { Error(output, input.SourcePath, algorithm.Line, algorithm.Column, "Unknown algorithm '" + algorithm.Catalog + ":" + algorithm.Id + "'."); valid = false; }
+            }
+            Check(input.Algorithms);
             void Bind(ThemeLiteralInput literal, int? controlId, ThemeBuildOwner? owner)
             {
                 var globalKey = "\u001f\u001f" + literal.Name;
@@ -83,6 +89,7 @@ internal static class CompiledThemePackageWriter
                 var key = control.Catalog + "\u001f" + control.Id;
                 if (!controlIds.Add(key) || !contracts.Owners.TryGetValue(key, out var owner) || control.Mode < 0 || control.Mode > 3)
                 { Error(output, input.SourcePath, control.Line, control.Column, "Unknown, repeated or invalid Control '" + control.Catalog + ":" + control.Id + "'."); valid = false; continue; }
+                Check(control.Algorithms);
                 currentDescribe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");
                 currentWrite = new StringBuilder();
                 var controlDeclaration = new StringBuilder();

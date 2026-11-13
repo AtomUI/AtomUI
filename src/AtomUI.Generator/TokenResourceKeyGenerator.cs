@@ -149,7 +149,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             AtomUI.Theme.Definitions.Compiled.CompiledThemeManifest? ownTheme = null;
             if (ThemeBuildContracts.HasAbi(compilation))
             {
-                contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, context);
+                contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, algorithms, context);
                 contracts.Write(context);
                 ownTheme = CompiledThemePackageWriter.Write(context, compilation, contracts, themeInputs, assemblyName, packageId);
             }

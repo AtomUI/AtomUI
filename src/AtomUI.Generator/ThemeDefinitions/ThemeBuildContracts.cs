@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using AtomUI.Theme.Build;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -32,6 +33,14 @@ internal sealed class ThemeBuildOwner
     internal string Key => Catalog + "\u001f" + Id;
     internal string[] Fields => new[] { Catalog, Id, OwnerAssembly, OwnerType, IdentityProvider, Digest };
 }
+internal sealed class ThemeBuildAlgorithm
+{
+    internal string Catalog = "";
+    internal string Id = "";
+    internal int Revision;
+    internal int AppearanceEffect;
+    internal string Key => Catalog + "\u001f" + Id;
+}
 internal sealed class ThemeBuildContracts
 {
     private const string Prefix = "AtomUI.Theme.Definitions.Compiled.";
@@ -39,10 +48,13 @@ internal sealed class ThemeBuildContracts
     internal readonly Dictionary<string, ThemeBuildOwner> Owners = new(StringComparer.Ordinal);
     internal readonly List<ThemeBuildToken> LocalTokens = new();
     internal readonly List<ThemeBuildOwner> LocalOwners = new();
+    internal readonly Dictionary<string, ThemeBuildAlgorithm> Algorithms = new(StringComparer.Ordinal);
+    internal readonly List<ThemeBuildAlgorithm> LocalAlgorithms = new();
     internal static bool HasAbi(Compilation compilation) => compilation.GetTypeByMetadataName(Prefix + "ThemeBuildTokenAttribute") is not null &&
+        compilation.GetTypeByMetadataName(Prefix + "ThemeBuildAlgorithmAttribute") is not null &&
         compilation.GetTypeByMetadataName("AtomUI.Theme.Schema.TokenDescriptor")?.GetMembers("CreateGenerated").OfType<IMethodSymbol>().Any(m => m.Parameters.Length == 7) == true;
     internal static ThemeBuildContracts Build(Compilation compilation, string catalog, IEnumerable<SchemaTokenInfo> globalTokens,
-        IEnumerable<ControlThemeInfo> controls, GenerationOutput output)
+        IEnumerable<ControlThemeInfo> controls, IEnumerable<ThemeAlgorithmInfo> algorithms, GenerationOutput output)
     {
         var result = new ThemeBuildContracts();
         foreach (var assembly in compilation.SourceModule.ReferencedAssemblySymbols)
@@ -50,7 +62,7 @@ internal sealed class ThemeBuildContracts
             foreach (var attribute in assembly.GetAttributes())
             {
                 var name = attribute.AttributeClass?.ToDisplayString();
-                if (name != Prefix + "ThemeBuildOwnerAttribute" && name != Prefix + "ThemeBuildTokenAttribute") { continue; }
+                if (name != Prefix + "ThemeBuildOwnerAttribute" && name != Prefix + "ThemeBuildTokenAttribute" && name != Prefix + "ThemeBuildAlgorithmAttribute") { continue; }
                 try
                 {
                     var values = attribute.ConstructorArguments;
@@ -77,6 +89,15 @@ internal sealed class ThemeBuildContracts
                         { throw new InvalidOperationException("Invalid public identity provider: " + owner.IdentityProvider); }
                         result.Add(owner);
                     }
+                    else if (name == Prefix + "ThemeBuildAlgorithmAttribute")
+                    {
+                        if (values.Length != 5) { throw new InvalidOperationException("Invalid algorithm metadata arity."); }
+                        var algorithm = new ThemeBuildAlgorithm { Catalog = S(1), Id = S(2), Revision = N(3), AppearanceEffect = N(4) };
+                        if (!ThemeBuildIdentifier.IsValid(algorithm.Catalog) || !ThemeBuildIdentifier.IsValid(algorithm.Id) || algorithm.Revision <= 0 ||
+                            algorithm.AppearanceEffect < 0 || algorithm.AppearanceEffect > 2)
+                        { throw new InvalidOperationException("Invalid algorithm identity/revision/appearance effect."); }
+                        result.Add(algorithm);
+                    }
                     else
                     {
                         if (values.Length != 11) { throw new InvalidOperationException("Invalid Token metadata arity."); }
@@ -93,6 +114,14 @@ internal sealed class ThemeBuildContracts
                 }
                 catch (Exception error) { CompiledThemePackageWriter.Error(output, null, 0, 0, "Invalid Token build metadata in '" + assembly.Identity + "': " + error.Message); }
             }
+        }
+        // Local algorithms come from source, so this also covers AtomUI.Core, which declares the attribute itself.
+        foreach (var info in ThemeAlgorithmInfo.Order(algorithms))
+        {
+            var algorithm = new ThemeBuildAlgorithm { Catalog = info.Catalog, Id = info.Id, Revision = info.Revision,
+                AppearanceEffect = info.AppearanceEffect switch { "Light" => 1, "Dark" => 2, _ => 0 } };
+            try { result.Add(algorithm); result.LocalAlgorithms.Add(algorithm); }
+            catch (InvalidOperationException error) { CompiledThemePackageWriter.Error(output, null, 0, 0, error.Message); }
         }
         foreach (var token in globalTokens.OrderBy(t => t.Name, StringComparer.Ordinal))
         {
@@ -184,6 +213,11 @@ internal sealed class ThemeBuildContracts
         { throw new InvalidOperationException("Duplicate Token name/resource-key contract: " + token.Key); }
         Tokens.Add(token.Key, token);
     }
+    private void Add(ThemeBuildAlgorithm algorithm)
+    {
+        if (Algorithms.ContainsKey(algorithm.Key)) { throw new InvalidOperationException("Duplicate algorithm build contract: " + algorithm.Catalog + ":" + algorithm.Id); }
+        Algorithms.Add(algorithm.Key, algorithm);
+    }
     private void AddLocal(ThemeBuildToken token) { Add(token); LocalTokens.Add(token); }
     internal void Write(GenerationOutput output)
     {
@@ -193,6 +227,11 @@ internal sealed class ThemeBuildContracts
         {
             source.Append("[assembly: global::").Append(Prefix).Append("ThemeBuildTokenAttribute(1, ").Append(string.Join(", ", token.Fields.Take(8).Select(Literal)))
                 .Append(", ").Append(token.Stage).Append(", ").Append(token.Contract).AppendLine(")]");
+        }
+        foreach (var algorithm in LocalAlgorithms)
+        {
+            source.Append("[assembly: global::").Append(Prefix).Append("ThemeBuildAlgorithmAttribute(1, ").Append(Literal(algorithm.Catalog)).Append(", ")
+                .Append(Literal(algorithm.Id)).Append(", ").Append(algorithm.Revision).Append(", ").Append(algorithm.AppearanceEffect).AppendLine(")]");
         }
         output.AddSource("GeneratedThemeBuildContracts.g.cs", GeneratedSourceText.From(source.ToString()));
     }

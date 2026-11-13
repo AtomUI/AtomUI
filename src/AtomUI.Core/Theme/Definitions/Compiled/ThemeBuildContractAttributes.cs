@@ -37,6 +37,21 @@ public sealed class ThemeBuildTokenAttribute(
     public int ValueContractVersion { get; } = valueContractVersion;
 }
 
+/// <summary>
+/// Publishes one theme algorithm declared by the assembly, so that compiled theme packages referencing it
+/// can verify algorithm identities at build time.
+/// </summary>
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class ThemeBuildAlgorithmAttribute(int version, string catalog, string id, int revision, int appearanceEffect) : Attribute
+{
+    public int Version { get; } = version;
+    public string Catalog { get; } = catalog;
+    public string Id { get; } = id;
+    public int Revision { get; } = revision;
+    public int AppearanceEffect { get; } = appearanceEffect;
+}
+
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class CompiledThemeManifestAttribute(int version, string packageId, string data) : Attribute

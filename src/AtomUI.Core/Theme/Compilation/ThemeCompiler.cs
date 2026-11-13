@@ -588,8 +588,7 @@ internal sealed class ThemeCompiler
         ApplyValues(baseline, overrides, TokenStage.Seed);
         var result = EvaluateAlgorithms(baseline, algorithms, descriptors);
         ApplyValues(result, overrides, TokenStage.Map);
-        result.CalculateAliasTokenValues();
-        ApplyValues(result, overrides, TokenStage.Alias);
+        CalculateAlias(result, overrides);
         NormalizeFinalBehavior(result);
         return result;
     }
@@ -763,10 +762,20 @@ internal sealed class ThemeCompiler
         ApplyValues(seed, input.EffectiveConfig.GlobalTokens, TokenStage.Seed);
         var map = EvaluateAlgorithms(seed, input.EffectiveConfig.Algorithms, input.Registry.GlobalTokens);
         ApplyValues(map, input.EffectiveConfig.GlobalTokens, TokenStage.Map);
-        map.CalculateAliasTokenValues();
-        ApplyValues(map, input.EffectiveConfig.GlobalTokens, TokenStage.Alias);
+        CalculateAlias(map, input.EffectiveConfig.GlobalTokens);
         NormalizeFinalBehavior(map);
         return map;
+    }
+
+    // Explicit Alias values are written and flagged before the default Alias calculation so the Alias
+    // tokens derived from them follow; they are written again afterwards so they still win, and the
+    // flags are cleared so they never leak into copies of the builder.
+    private static void CalculateAlias(DesignToken builder, IReadOnlyList<NormalizedTokenValue> values)
+    {
+        MarkExplicit(builder, values, TokenStage.Alias);
+        builder.CalculateAliasTokenValues();
+        ApplyValues(builder, values, TokenStage.Alias);
+        builder.ResetExplicit();
     }
 
     private static DesignToken EvaluateAlgorithms(
@@ -843,6 +852,21 @@ internal sealed class ThemeCompiler
             if (value.Descriptor.Stage == stage)
             {
                 value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
+            }
+        }
+    }
+
+    private static void MarkExplicit(
+        DesignToken builder,
+        IReadOnlyList<NormalizedTokenValue> values,
+        TokenStage stage)
+    {
+        foreach (var value in values)
+        {
+            if (value.Descriptor.Stage == stage)
+            {
+                value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
+                builder.MarkExplicit(value.Descriptor.Slot);
             }
         }
     }

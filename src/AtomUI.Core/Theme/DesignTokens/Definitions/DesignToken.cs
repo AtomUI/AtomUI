@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using AtomUI.Media;
 using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Resources;
 
 namespace AtomUI.Theme.DesignTokens;
 
@@ -16,6 +17,9 @@ public partial class DesignToken : AbstractDesignToken
     private static readonly Color s_defaultColorError = Color.FromUInt32(0xFFff4d4fu);
     // FontFamily parsing creates an immutable description; font resolution remains with FontManager.
     private static readonly FontFamily DefaultFontFamily = new FontFamily("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
+
+    // Lazily allocated: a token without explicit Alias overrides never allocates the bitmap.
+    private ulong[]? _explicitSlots;
 
     /// <summary>
     /// 现在这里的实现是写死的主色，后面是不是可以读取配置
@@ -69,6 +73,52 @@ public partial class DesignToken : AbstractDesignToken
         return null;
     }
 
+    /// <summary>
+    /// Marks the given global token slot as explicitly overridden so the default Alias calculation
+    /// keeps the written value and derives dependent tokens from it.
+    /// </summary>
+    internal void MarkExplicit(int globalSlot)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(globalSlot);
+        var word = globalSlot >> 6;
+        if (_explicitSlots is null)
+        {
+            _explicitSlots = new ulong[word + 1];
+        }
+        else if (word >= _explicitSlots.Length)
+        {
+            Array.Resize(ref _explicitSlots, word + 1);
+        }
+
+        _explicitSlots[word] |= 1UL << (globalSlot & 63);
+    }
+
+    internal bool IsExplicitSlot(int globalSlot)
+    {
+        if (globalSlot < 0)
+        {
+            return false;
+        }
+
+        var word = globalSlot >> 6;
+        var slots = _explicitSlots;
+        return slots is not null && word < slots.Length && (slots[word] & (1UL << (globalSlot & 63))) != 0;
+    }
+
+    internal void ResetExplicit()
+    {
+        if (_explicitSlots is not null)
+        {
+            Array.Clear(_explicitSlots);
+        }
+    }
+
+    /// <summary>
+    /// Returns whether the global token is explicitly overridden. The ordinal of
+    /// <see cref="SharedTokenKind"/> equals the token's global slot.
+    /// </summary>
+    private bool IsExplicit(SharedTokenKind kind) => IsExplicitSlot((int)kind);
+
     internal void CalculateAliasTokenValues()
     {
         var screenXS  = 480;
@@ -104,8 +154,16 @@ public partial class DesignToken : AbstractDesignToken
         ColorIcon      = ColorTextTertiary;
         ColorIconHover = ColorText;
 
-        ColorErrorOutline   = ColorUtils.CalculateAlphaColor(ColorErrorBg, ColorBgContainer);
-        ColorWarningOutline = ColorUtils.CalculateAlphaColor(ColorWarningBg, ColorBgContainer);
+        // Fields assigned here and read again later in this method are guarded so an explicit value
+        // drives the Alias tokens derived from it.
+        if (!IsExplicit(SharedTokenKind.ColorErrorOutline))
+        {
+            ColorErrorOutline = ColorUtils.CalculateAlphaColor(ColorErrorBg, ColorBgContainer);
+        }
+        if (!IsExplicit(SharedTokenKind.ColorWarningOutline))
+        {
+            ColorWarningOutline = ColorUtils.CalculateAlphaColor(ColorWarningBg, ColorBgContainer);
+        }
 
         // Font
         FontSizeIcon = FontSizeSM;
@@ -117,14 +175,20 @@ public partial class DesignToken : AbstractDesignToken
         IconSizeLG = (int)FontSizeLG;
 
         // Line
-        LineWidthFocus             = LineWidth * 3;
+        if (!IsExplicit(SharedTokenKind.LineWidthFocus))
+        {
+            LineWidthFocus = LineWidth * 3;
+        }
         FocusVisualBorderThickness = new Thickness(LineWidthFocus);
         ColorFocusBorder           = ColorPrimaryBorder;
         WaveAnimationRange         = LineWidth * 6;
         WaveStartOpacity           = 0.4;
 
         // Control
-        ControlOutlineWidth = LineWidth * 2;
+        if (!IsExplicit(SharedTokenKind.ControlOutlineWidth))
+        {
+            ControlOutlineWidth = LineWidth * 2;
+        }
 
         // Checkbox size and expand icon size
         ControlInteractiveSize = ControlHeight / 2;
@@ -133,7 +197,10 @@ public partial class DesignToken : AbstractDesignToken
         ControlItemBgActive         = ColorPrimaryBg;
         ControlItemBgActiveHover    = ColorPrimaryBgHover;
         ControlItemBgActiveDisabled = ColorFill;
-        ColorControlOutline         = ColorUtils.CalculateAlphaColor(ColorPrimaryBg, ColorBgContainer);
+        if (!IsExplicit(SharedTokenKind.ColorControlOutline))
+        {
+            ColorControlOutline = ColorUtils.CalculateAlphaColor(ColorPrimaryBg, ColorBgContainer);
+        }
 
         FontWeightStrong    = FontWeight.SemiBold;
         OpacityLoading      = 0.65;
@@ -141,12 +208,21 @@ public partial class DesignToken : AbstractDesignToken
         LinkHoverDecoration = null;
         LinkFocusDecoration = null;
 
-        ControlPaddingHorizontal   = 12;
-        ControlPaddingHorizontalSM = 8;
+        if (!IsExplicit(SharedTokenKind.ControlPaddingHorizontal))
+        {
+            ControlPaddingHorizontal = 12;
+        }
+        if (!IsExplicit(SharedTokenKind.ControlPaddingHorizontalSM))
+        {
+            ControlPaddingHorizontalSM = 8;
+        }
 
         UniformlyPaddingXXS = SizeXXS;
         UniformlyPaddingXS  = SizeXS;
-        UniformlyPaddingSM  = SizeSM;
+        if (!IsExplicit(SharedTokenKind.UniformlyPaddingSM))
+        {
+            UniformlyPaddingSM = SizeSM;
+        }
         UniformlyPadding    = Size;
         UniformlyPaddingMD  = SizeMD;
         UniformlyPaddingLG  = SizeLG;

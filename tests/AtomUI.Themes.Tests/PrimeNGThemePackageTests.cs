@@ -95,6 +95,7 @@ public class PrimeNGThemePackageTests
         Global<CornerRadius>(snapshot, "BorderRadiusSM").ShouldBe(new CornerRadius(4));
         Global<CornerRadius>(snapshot, "BorderRadiusLG").ShouldBe(new CornerRadius(8));
         Global<Thickness>(snapshot, "FocusVisualBorderThickness").ShouldBe(new Thickness(1));
+        Global<BoxShadows>(snapshot, "InputActiveShadow")[0].Spread.ShouldBe(0);
         Global<TimeSpan>(snapshot, "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(200));
         Global<BoxShadows>(snapshot, "BoxShadowsSecondary").Count.ShouldBe(2);
     }
@@ -147,6 +148,9 @@ public class PrimeNGThemePackageTests
         var snapshot = await Apply("PrimeNGLara");
         Global<double>(snapshot, "ControlOutlineWidth").ShouldBe(3);
         Global<Color>(snapshot, "ColorControlOutline").ShouldBe(Color.Parse("#A7F3D0"));
+        var inputActiveShadow = Global<BoxShadows>(snapshot, "InputActiveShadow")[0];
+        inputActiveShadow.Spread.ShouldBe(3);
+        inputActiveShadow.Color.ShouldBe(Color.Parse("#A7F3D0"));
         Global<Thickness>(snapshot, "FocusVisualBorderThickness").ShouldBe(new Thickness(0));
         Global<double>(snapshot, "ControlHeight").ShouldBe(44);
         Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(24);

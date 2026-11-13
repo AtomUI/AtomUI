@@ -37,6 +37,9 @@ public class BootstrapThemePackageTests
         Global<CornerRadius>(snapshot, "BorderRadius").ShouldBe(new CornerRadius(6));
         Global<double>(snapshot, "ControlOutlineWidth").ShouldBe(4);
         Global<Color>(snapshot, "ColorControlOutline").ShouldBe(Color.FromArgb(0x40, 0x0D, 0x6E, 0xFD));
+        var inputActiveShadow = Global<BoxShadows>(snapshot, "InputActiveShadow")[0];
+        inputActiveShadow.Spread.ShouldBe(4);
+        inputActiveShadow.Color.ShouldBe(Color.FromArgb(0x40, 0x0D, 0x6E, 0xFD));
     }
 
     [AvaloniaTheory]

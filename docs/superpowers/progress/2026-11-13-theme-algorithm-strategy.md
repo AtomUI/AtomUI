@@ -108,6 +108,57 @@
   2. 控件本身未知时，它的自定义算法链不再检查，链里的未知算法要等控件修好后的下一次构建才报。
   3. `ThemeBuildContracts` 把无法识别的 `AppearanceEffect` 文本静默当作 Preserve，改成显式匹配加抛错更严格。
 
+### Task 5：显式 Alias 值带动派生 Alias
+
+- 改动：`DesignToken` 新增按全局槽位记录的显式位图（懒分配的 `ulong[]? _explicitSlots`，`MarkExplicit`/`IsExplicitSlot`/`ResetExplicit`/私有 `IsExplicit(SharedTokenKind)`，做法照 `AbstractControlDesignToken`）。`CalculateAliasTokenValues` 给 8 个「先赋值、后被读取」的字段加守卫：`ColorErrorOutline`、`ColorWarningOutline`、`LineWidthFocus`、`ControlOutlineWidth`、`ColorControlOutline`、`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM`。逐行核对方法体，没有第 9 个。`ThemeCompiler` 新增 `CalculateAlias`：写入并标记 Alias 显式值 → `CalculateAliasTokenValues()` → 再写一次 → `ResetExplicit()`；`CompileGlobalBuilder` 与 `ReevaluateControlGlobal` 都改用它。`CopyBuilder` 新建 `DesignToken`，不复制位图。
+- 测试：新增 `GlobalAliasExplicitOverrideTests`，含简报列出的 10 项（`Without_Explicit_Alias_Values_The_Result_Is_Unchanged` 写成 4 行 Theory），另加 1 个位图单元测试，共 14 个用例。RED：前 6 项、Zero、控件作用域 Global 共 8 个失败，派生值仍按默认公式计算；显式派生值优先、4 条无显式值链按预期通过。GREEN：14/14。新增生效测试 `InputFamilyEffectTests.ControlOutlineWidth_Drives_The_Focused_Input_Outline`，覆盖根作用域与控件 Global 作用域、宽度 0 与 6，共 4 行，比较 LineEdit 聚焦外框周围的一圈像素；宽度 0 时与未聚焦帧相同。临时去掉标记步骤时这 4 行全部失败，恢复后全部通过。
+- 不变性快照：改动前用临时测试（已删除）编译 Default、Dark、Default+Compact、Dark+Compact 四条链，把全部 255 个全局槽位按「名称=`descriptor.Format(值)`」逐行拼接后取 SHA-256，固定在测试里；改动后 4 个哈希都不变。
+- 预设主题变化：用临时测试（已删除）应用全部可用主题，导出全局槽位和每个控件的有效全局值。在临时去掉标记步骤与正常两种状态下各导出一次，差异只有下表 48 项全局值，没有控件作用域独有的差异（控件有效值只是跟随全局）。Material、Shadcn 与内置 DaybreakBlue 不变。格式为 `OffsetX OffsetY [Blur] Spread Color`，「0 0 #…」表示 Spread 为 0。
+
+  | 主题 | Token | 旧值 | 新值 |
+  | --- | --- | --- | --- |
+  | Bootstrap / Bootstrap.Compact | InputActiveShadow | 0 0 0 2 #190591ff | 0 0 0 4 #400d6efd |
+  | Bootstrap / Bootstrap.Compact | InputErrorActiveShadow | 0 0 0 2 #0fff1605 | 0 0 0 4 #0fff1605 |
+  | Bootstrap / Bootstrap.Compact | InputWarningActiveShadow | 0 0 0 2 #19ffeb05 | 0 0 0 4 #19ffeb05 |
+  | Bootstrap.Dark / Bootstrap.DarkCompact | InputActiveShadow | 0 0 0 2 #72003b96 | 0 0 0 4 #400d6efd |
+  | Bootstrap.Dark / Bootstrap.DarkCompact | InputErrorActiveShadow | 0 0 0 2 #752c0002 | 0 0 0 4 #752c0002 |
+  | Bootstrap.Dark / Bootstrap.DarkCompact | InputWarningActiveShadow | 0 0 0 2 #93342200 | 0 0 0 4 #93342200 |
+  | PrimeNGAura / PrimeNGAura.Compact | InputActiveShadow | 0 0 0 2 #1411e682 | 0 0 #1411e682 |
+  | PrimeNGAura / PrimeNGAura.Compact | InputErrorActiveShadow | 0 0 0 2 #0fff2605 | 0 0 #0fff2605 |
+  | PrimeNGAura / PrimeNGAura.Compact | InputWarningActiveShadow | 0 0 0 2 #19ffd705 | 0 0 #19ffd705 |
+  | PrimeNGAura.Dark / PrimeNGAura.DarkCompact | InputActiveShadow | 0 0 0 2 #2934d399 | 0 0 #2934d399 |
+  | PrimeNGAura.Dark / PrimeNGAura.DarkCompact | InputErrorActiveShadow | 0 0 0 2 #23fcada1 | 0 0 #23fcada1 |
+  | PrimeNGAura.Dark / PrimeNGAura.DarkCompact | InputWarningActiveShadow | 0 0 0 2 #23fcb436 | 0 0 #23fcb436 |
+  | PrimeNGLara / PrimeNGLara.Compact | InputActiveShadow | 0 0 0 2 #1411e682 | 0 0 0 3 #ffa7f3d0 |
+  | PrimeNGLara / PrimeNGLara.Compact | InputErrorActiveShadow | 0 0 0 2 #0fff2605 | 0 0 0 3 #0fff2605 |
+  | PrimeNGLara / PrimeNGLara.Compact | InputWarningActiveShadow | 0 0 0 2 #19ffd705 | 0 0 0 3 #19ffd705 |
+  | PrimeNGLara.Dark / PrimeNGLara.DarkCompact | InputActiveShadow | 0 0 0 2 #2934d399 | 0 0 0 3 #3334d399 |
+  | PrimeNGLara.Dark / PrimeNGLara.DarkCompact | InputErrorActiveShadow | 0 0 0 2 #23fcada1 | 0 0 0 3 #23fcada1 |
+  | PrimeNGLara.Dark / PrimeNGLara.DarkCompact | InputWarningActiveShadow | 0 0 0 2 #23fcb436 | 0 0 0 3 #23fcb436 |
+  | PrimeNGNora / PrimeNGNora.Compact | InputActiveShadow | 0 0 0 2 #1411e682 | 0 0 #1411e682 |
+  | PrimeNGNora / PrimeNGNora.Compact | InputErrorActiveShadow | 0 0 0 2 #0fff2605 | 0 0 #0fff2605 |
+  | PrimeNGNora / PrimeNGNora.Compact | InputWarningActiveShadow | 0 0 0 2 #19ffd705 | 0 0 #19ffd705 |
+  | PrimeNGNora.Dark / PrimeNGNora.DarkCompact | InputActiveShadow | 0 0 0 2 #b713fdaf | 0 0 #b713fdaf |
+  | PrimeNGNora.Dark / PrimeNGNora.DarkCompact | InputErrorActiveShadow | 0 0 0 2 #23fc827d | 0 0 #23fc827d |
+  | PrimeNGNora.Dark / PrimeNGNora.DarkCompact | InputWarningActiveShadow | 0 0 0 2 #23fcb436 | 0 0 #23fcb436 |
+
+  原有断言都没有检查派生值，所以没有断言失败。新增 3 条断言：Aura 的 `InputActiveShadow` Spread 为 0；Lara 的为 3，颜色 #A7F3D0；Bootstrap 的为 4，颜色 #400D6EFD。
+- 结果：Core.Tests 488/488，Themes.Tests 27/27，Rendering.Tests 4662/4662；全量回归 `[SUMMARY] TOTAL: 12378 个测试全部通过, 总耗时 15:45`（上一任务 12360，+18 = Core 14 + 生效测试 4）。
+- 偏差与说明：
+  1. Alias 段抽成私有方法 `CalculateAlias`，顺序与简报一致。
+  2. 每个 `DesignToken` 多一个 8 字节引用字段，在「Token 实例数 × 8 字节」的门槛内。没有显式 Alias 值时不分配位图、不多跑默认公式，只多遍历一次配置值列表。
+  3. 按测试生命周期规范，`Without_Explicit_Alias_Values_The_Result_Is_Unchanged` 属于快照对比。它按简报保留为常驻测试，但以后任何合法的公式调整都会让它失败，建议最终审阅时决定是否删除。
+  4. 本任务之前就存在一个问题，未改：控件作用域使用 `Global`/`Custom` 时，`ReevaluateControlGlobal` 以根快照为基线重跑算法与 Alias 计算，只重写控件自己的覆盖值。因此根主题显式写入的 Alias 值（以及 Map 值）在该控件作用域内会被默认公式覆盖。
+
 ## 阶段一小结
 
 Task 1–4 完成：算法身份开放、XML 接受任意身份、包里的算法进入注册表、构建期校验未知算法。全量回归从基线 12317 增至 12360，全部通过。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 4 的提交为 `ba3a6c32f`。审阅确认：
+  - 守卫清单完整：通读 `CalculateAliasTokenValues` 全文，本方法内「先赋值、后面又被读取」的 Alias 字段只有已加守卫的 8 个，没有第 9 个。
+  - 显式标记不会泄漏：计算所用的 Token 对象总是 `CopyBuilder` 新建的副本，方法抛异常时该对象随即不可达。
+  - 没有显式 Alias 值时不分配位图，默认计算仍只跑一次。
+- CHANGELOG：规格 4.5 要求在 CHANGELOG 里说明这次修复。按计划 CHANGELOG 由 Task 23 统一写，届时要列出上表受影响的派生关系（`ControlOutlineWidth`、`ColorControlOutline`、`ColorErrorOutline`、`ColorWarningOutline` → 三个 `Input*ActiveShadow`；`LineWidthFocus` → `FocusVisualBorderThickness`；`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` → `InputPadding*`）。
+- 留待最终整体审阅统一处理的小项：
+  1. `Without_Explicit_Alias_Values_The_Result_Is_Unchanged` 钉的是 255 个槽位的 SHA-256，失败时看不出是哪个槽位变了，以后新增全局 Token 也会让它无故失败。最终审阅时决定：改成钉可逐项对比的文本，或作为本计划的一次性验证删除。
+  2. `ThemeCompiler` 里新增的 `MarkExplicit(DesignToken, …)` 与 `ApplyValues`、控件版 `MarkExplicit` 三段循环近乎重复；显式 Alias 值被深拷贝两次。
+- 记录在案的既有问题（不在本计划范围内，未处理）：控件使用 `Global` 或 `Custom` 算法模式时，`ReevaluateControlGlobal` 从根快照重跑算法与 Alias 计算，只重新写入该控件自己的全局覆盖。主题在根上显式设置的 Map 与 Alias 值在这个控件的作用域里会退回默认公式的结果。本任务前后行为相同，但现在更容易被看见（例如把 Bootstrap 下某个控件设为 `Global` 模式，它作用域内的 `ControlOutlineWidth` 会回到 2）。需要用户决定是否单独立项。

@@ -688,3 +688,13 @@ Ruling: 图片预览封面单独创建时的生效测试改为左上对齐，让
 Second rebase: release/6.0 advanced by 2 commits during the integration (`cf49134c7` theme-commit motion settle in ThemeManager, `d1b7e5590` Select #537), so the branch was rebased again onto `d1b7e5590` (pre-rebase tip `18c1ce94f`, recoverable from the reflog). One conflict (ThemeManager usings, both kept); solution build 0 warnings/0 errors; full regression `[SUMMARY] TOTAL: 12258 个测试全部通过, 总耗时 16:10` (integration tests excluded by default). Nothing pushed or merged.
 
 Ruling: release/6.0 在整合期间前进后再次变基到新的分支顶端，而不是停在开始时的 `3a9339ddf` — 用户要求的是基于 release/6.0，新增两个提交只冲突一处 — 错了的代价：多一轮全量回归的时间；若上游继续前进，分支会再次落后，需要重复同样的操作。
+
+Third rebase (controller, user request "rebase 到 最新 release/6.0"): release/6.0 advanced by 3 commits (`f1dbaf362` JIT startup deferral and generated language/manifest tables, `46bc096de` root context resolves ThemeManager from the application scope and removes per-query allocations, `c6820d19b` DataGrid/Card frozen column shadow strip and DPI-scaled shadow offsets), so the branch was rebased onto `c6820d19b` (pre-rebase tip `b0daa21e1`, recoverable from the reflog). Two commits conflicted: `61501e363` (DataGrid cell and column header themes) and `d418f9681` (`StartupPackageIndex`). Integration commit on the rebased tip updates the tests that still read ThemeManager from `AvaloniaLocator` and the DataGrid frozen shadow effect rows. Solution build 0 warnings/0 errors; full regression `[SUMMARY] TOTAL: 12282 个测试全部通过, 总耗时 15:35` (integration tests excluded by default). Nothing pushed or merged.
+
+Ruling: `StartupPackageIndex` 采用上游按 `(Catalog, Id)` 分量查找的 `_byIdentityParts`，删除本分支同义的 `_byIdentityValue`，保留本分支描述符与语义描述符的 `Volatile` 免锁快读 — 两者解决同一问题（热查询不格式化 "Catalog:Id"），上游是集成目标的现行实现，快读与之正交 — 错了的代价：无行为差异；`StartupWarmPathTests` 与生成注册表零分配合同仍守住热路径。
+
+Ruling: DataGrid 单元格、列头与表头视图项采用上游的冻结列阴影外侧条带（`DataGridFrozenColumnShadow`，宽 30、`translateX(±30px)`），再补回本分支的 Token 读法（`LineWidth`/`LineWidthBold`、`SortIndicatorLayoutMargin`、分隔线 `BorderThickness` 投射）；条带宽度与 `ZIndex` 前的注释加 `layout:` 标记供 045 放行 — 30px 与 antd fixed.ts 的 `::after` 宽度一致，是布局常量而非视觉 Token；阴影本身仍读 `LeftFrozenShadows`/`RightFrozenShadows` — 错了的代价：若条带宽度需要随主题定制，需新增 Own Token 并去掉标记。
+
+Ruling: 上游不再把 ThemeManager 注册进 `AvaloniaLocator`，本分支 5 个测试文件（生效 harness 与 Button / OptionButton / NavMenu / DataGrid 显式覆盖测试）改用 `Application.Current!.GetThemeManager()`，与上游测试写法一致；DataGrid 冻结阴影生效测试按上游语义配对（位置 Left 的首列画 `RightFrozenShadows`，位置 Right 的末列画 `LeftFrozenShadows`），取样区域改为表头模板中的 `FrozenShadow` 条带 — 阴影已移出表头边界，旧区域的像素差为 0 — 错了的代价：若条带再改位置，`ColorSplit` 与两个阴影 Token 的取样需随之调整。
+
+Note: `AtomUI.slnx` 只含 8 个测试项目，Desktop 的 Controls / Rendering / DataGrid 测试项目不在其中；解决方案构建后须单独构建这些项目再跑 `--no-build` 测试，否则会运行过期程序集（Shouldly 的失败表达式从源文件读取，看起来像新代码）。

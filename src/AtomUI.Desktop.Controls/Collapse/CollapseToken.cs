@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CollapseToken : AbstractControlDesignToken
+public sealed partial class CollapseToken : AbstractControlDesignToken
 {
     
     public CollapseToken()
@@ -16,40 +16,40 @@ internal sealed class CollapseToken : AbstractControlDesignToken
     /// <summary>
     /// 折叠面板头部内边距
     /// </summary>
-    public Thickness HeaderPadding { get; set; }
+    public partial Thickness HeaderPadding { get; set; }
 
     /// <summary>
     /// 折叠面板头部背景
     /// </summary>
-    public Color HeaderBg { get; set; }
+    public partial Color HeaderBg { get; set; }
 
     /// <summary>
     /// 折叠面板内容内边距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 折叠面板内容背景
     /// </summary>
-    public Color ContentBg { get; set; }
+    public partial Color ContentBg { get; set; }
 
     #region 内部 Token 定义
 
-    public Thickness CollapseHeaderPaddingSM { get; set; }
-    public Thickness CollapseHeaderPaddingLG { get; set; }
-    public Thickness CollapseContentPaddingSM { get; set; }
-    public Thickness CollapseContentPaddingLG { get; set; }
-    public CornerRadius CollapsePanelBorderRadius { get; set; }
-    public Thickness LeftExpandButtonMarginSM { get; set; }
-    public Thickness LeftExpandButtonMargin { get; set; }
-    public Thickness LeftExpandButtonMarginLG { get; set; }
-    public Thickness RightExpandButtonMarginSM { get; set; }
-    public Thickness RightExpandButtonMargin { get; set; }
-    public Thickness RightExpandButtonMarginLG { get; set; }
+    public partial Thickness CollapseHeaderPaddingSM { get; set; }
+    public partial Thickness CollapseHeaderPaddingLG { get; set; }
+    public partial Thickness CollapseContentPaddingSM { get; set; }
+    public partial Thickness CollapseContentPaddingLG { get; set; }
+    public partial CornerRadius CollapsePanelBorderRadius { get; set; }
+    public partial Thickness LeftExpandButtonMarginSM { get; set; }
+    public partial Thickness LeftExpandButtonMargin { get; set; }
+    public partial Thickness LeftExpandButtonMarginLG { get; set; }
+    public partial Thickness RightExpandButtonMarginSM { get; set; }
+    public partial Thickness RightExpandButtonMargin { get; set; }
+    public partial Thickness RightExpandButtonMarginLG { get; set; }
 
     #endregion
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         HeaderPadding             = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingSM);

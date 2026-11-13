@@ -4,9 +4,9 @@ using AtomUI.Desktop.Controls.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DialogToken : AbstractDialogToken
+public sealed partial class DialogToken : AbstractDialogToken
 {
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(DialogTokenKind.HeaderPadding))

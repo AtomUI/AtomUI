@@ -6,19 +6,19 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractCardTabToken : AbstractTabToken
+public abstract partial class AbstractCardTabToken : AbstractTabToken
 {
-    public Color CardBg { get; set; }
-    public double CardSize { get; set; }
-    public Thickness CardPadding { get; set; }
-    public Thickness CardPaddingSM { get; set; }
-    public Thickness CardPaddingLG { get; set; }
-    public Thickness VerticalItemPadding { get; set; }
-    public double CardGutter { get; set; }
-    public Thickness AddTabButtonMarginHorizontal { get; set; }
-    public Thickness AddTabButtonMarginVertical { get; set; }
+    public partial Color CardBg { get; set; }
+    public partial double CardSize { get; set; }
+    public partial Thickness CardPadding { get; set; }
+    public partial Thickness CardPaddingSM { get; set; }
+    public partial Thickness CardPaddingLG { get; set; }
+    public partial Thickness VerticalItemPadding { get; set; }
+    public partial double CardGutter { get; set; }
+    public partial Thickness AddTabButtonMarginHorizontal { get; set; }
+    public partial Thickness AddTabButtonMarginVertical { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         CardBg = EffectiveGlobalToken.ColorFillAlter;

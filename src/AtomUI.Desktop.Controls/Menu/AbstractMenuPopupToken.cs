@@ -5,30 +5,30 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractMenuPopupToken : AbstractControlDesignToken
+public abstract partial class AbstractMenuPopupToken : AbstractControlDesignToken
 {
-    public Thickness MenuPopupContentPadding { get; set; }
-    public double MenuPopupMinWidth { get; set; }
-    public double MenuPopupMaxWidth { get; set; }
-    public Color MenuPopupBgColor { get; set; }
-    public Color ItemColor { get; set; }
-    public Color KeyGestureColor { get; set; }
-    public Thickness ItemMargin { get; set; }
-    public Color ItemHoverColor { get; set; }
-    public Color ItemDisabledColor { get; set; }
-    public Color DangerItemColor { get; set; }
-    public Color DangerItemHoverColor { get; set; }
-    public Color ItemBg { get; set; }
-    public Color ItemHoverBg { get; set; }
-    public double ItemHeight { get; set; }
-    public double ItemIconSize { get; set; }
-    public double ItemIconMarginInlineEnd { get; set; }
-    public Thickness GroupTitlePadding { get; set; }
-    public CornerRadius ItemBorderRadius { get; set; }
-    public Thickness ItemPaddingInline { get; set; }
-    public double SeparatorItemHeight { get; set; }
+    public partial Thickness MenuPopupContentPadding { get; set; }
+    public partial double MenuPopupMinWidth { get; set; }
+    public partial double MenuPopupMaxWidth { get; set; }
+    public partial Color MenuPopupBgColor { get; set; }
+    public partial Color ItemColor { get; set; }
+    public partial Color KeyGestureColor { get; set; }
+    public partial Thickness ItemMargin { get; set; }
+    public partial Color ItemHoverColor { get; set; }
+    public partial Color ItemDisabledColor { get; set; }
+    public partial Color DangerItemColor { get; set; }
+    public partial Color DangerItemHoverColor { get; set; }
+    public partial Color ItemBg { get; set; }
+    public partial Color ItemHoverBg { get; set; }
+    public partial double ItemHeight { get; set; }
+    public partial double ItemIconSize { get; set; }
+    public partial double ItemIconMarginInlineEnd { get; set; }
+    public partial Thickness GroupTitlePadding { get; set; }
+    public partial CornerRadius ItemBorderRadius { get; set; }
+    public partial Thickness ItemPaddingInline { get; set; }
+    public partial double SeparatorItemHeight { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         KeyGestureColor = EffectiveGlobalToken.ColorTextQuaternary;

@@ -5,44 +5,44 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractSelectInputToken : AbstractControlDesignToken
+public abstract partial class AbstractSelectInputToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 多选标签背景色
     /// Background color of multiple tag
     /// </summary>
-    public Color MultipleItemBg { get; set; }
+    public partial Color MultipleItemBg { get; set; }
 
     /// <summary>
     /// 多选标签高度
     /// Height of multiple tag
     /// </summary>
-    public double MultipleItemHeight { get; set; }
+    public partial double MultipleItemHeight { get; set; }
 
     /// <summary>
     /// 小号多选标签高度
     /// Height of multiple tag with small size
     /// </summary>
-    public double MultipleItemHeightSM { get; set; }
+    public partial double MultipleItemHeightSM { get; set; }
 
     /// <summary>
     /// 大号多选标签高度
     /// Height of multiple tag with large size
     /// </summary>
-    public double MultipleItemHeightLG { get; set; }
+    public partial double MultipleItemHeightLG { get; set; }
 
     /// <summary>
     /// 多选框禁用背景
     /// Background color of multiple selector when disabled
     /// </summary>
-    public Color MultipleSelectorBgDisabled { get; set; }
+    public partial Color MultipleSelectorBgDisabled { get; set; }
 
     /// <summary>
     /// 多选标签禁用文本颜色
     /// Text color of multiple tag when disabled
     /// </summary>
-    public Color MultipleItemColorDisabled { get; set; }
+    public partial Color MultipleItemColorDisabled { get; set; }
 
 
 
@@ -53,7 +53,7 @@ internal abstract class AbstractSelectInputToken : AbstractControlDesignToken
     /// 选项字体大小
     /// Font size of option
     /// </summary>
-    public double OptionFontSize { get; set; }
+    public partial double OptionFontSize { get; set; }
 
 
 
@@ -62,50 +62,50 @@ internal abstract class AbstractSelectInputToken : AbstractControlDesignToken
     /// <summary>
     /// 多选模式下的输入框内边距
     /// </summary>
-    public Thickness MultiModePadding { get; set; }
+    public partial Thickness MultiModePadding { get; set; }
 
     /// <summary>
     /// 多选模式下的小号输入框内边距
     /// </summary>
-    public Thickness MultiModePaddingSM { get; set; }
+    public partial Thickness MultiModePaddingSM { get; set; }
 
     /// <summary>
     /// 多选模式下的大号输入框内边距
     /// </summary>
-    public Thickness MultiModePaddingLG { get; set; }
+    public partial Thickness MultiModePaddingLG { get; set; }
 
     /// <summary>
     /// 输入框内边距
     /// </summary>
-    public Thickness SingleModePadding { get; set; }
+    public partial Thickness SingleModePadding { get; set; }
 
     /// <summary>
     /// 小号输入框内边距
     /// </summary>
-    public Thickness SingleModePaddingSM { get; set; }
+    public partial Thickness SingleModePaddingSM { get; set; }
 
     /// <summary>
     /// 多选模式下的大号输入框内边距
     /// </summary>
-    public Thickness SingleModePaddingLG { get; set; }
+    public partial Thickness SingleModePaddingLG { get; set; }
 
     /// <summary>
     /// 多选模式下前缀（ContentLeftAddOn）的额外左缩进，
     /// 补偿多选内边距与单选水平内边距的差值，使前缀与单选模式左对齐
     /// </summary>
-    public Thickness MultiModePrefixIndent { get; set; }
+    public partial Thickness MultiModePrefixIndent { get; set; }
 
     /// <summary>
     /// 多选模式下的小号前缀额外左缩进
     /// </summary>
-    public Thickness MultiModePrefixIndentSM { get; set; }
+    public partial Thickness MultiModePrefixIndentSM { get; set; }
 
     /// <summary>
     /// 多选模式下的大号前缀额外左缩进
     /// </summary>
-    public Thickness MultiModePrefixIndentLG { get; set; }
+    public partial Thickness MultiModePrefixIndentLG { get; set; }
 
-public override void CalculateTokenValues(bool isDarkMode)
+protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

@@ -4,24 +4,24 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class LineEditToken : AbstractControlDesignToken
+public sealed partial class LineEditToken : AbstractControlDesignToken
 {
     /// <summary>
     /// 字体大小
     /// </summary>
-    public double InputFontSize { get; set; }
+    public partial double InputFontSize { get; set; }
 
     /// <summary>
     /// 大号字体大小
     /// </summary>
-    public double InputFontSizeLG { get; set; }
+    public partial double InputFontSizeLG { get; set; }
 
     /// <summary>
     /// 小号字体大小，默认等于 <see cref="InputFontSize"/>（与 antd 一致）
     /// </summary>
-    public double InputFontSizeSM { get; set; }
+    public partial double InputFontSizeSM { get; set; }
     
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         // antd Input: mergedFontSizeSM = inputFontSizeSM || mergedFontSize, mergedFontSizeLG = inputFontSizeLG || fontSizeLG.

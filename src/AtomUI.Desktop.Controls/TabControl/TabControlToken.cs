@@ -7,15 +7,15 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TabControlToken : AbstractLineTabToken
+public sealed partial class TabControlToken : AbstractLineTabToken
 {
     [ReservedToken("The overflow shadow casters sit outside the viewport; caster thickness has no visible meaning.")]
-    public double MenuEdgeThickness { get; set; }
+    public partial double MenuEdgeThickness { get; set; }
 
-    public double TabAndContentGutter { get; set; }
+    public partial double TabAndContentGutter { get; set; }
     [ReservedToken("antd Tabs horizontalMargin: no outer margin is consumed by the current tab layout.")]
-    public Thickness HorizontalMargin { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial Thickness HorizontalMargin { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         MenuEdgeThickness = EffectiveGlobalToken.ControlHeight;

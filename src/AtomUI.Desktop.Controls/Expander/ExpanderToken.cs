@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ExpanderToken : AbstractControlDesignToken
+public sealed partial class ExpanderToken : AbstractControlDesignToken
 {
     
     public ExpanderToken()
@@ -16,52 +16,52 @@ internal sealed class ExpanderToken : AbstractControlDesignToken
     /// <summary>
     /// 折叠面板头部内边距
     /// </summary>
-    public Thickness HeaderPadding { get; set; }
+    public partial Thickness HeaderPadding { get; set; }
 
     /// <summary>
     /// 折叠面板头部小号内边距
     /// </summary>
-    public Thickness HeaderPaddingSM { get; set; }
+    public partial Thickness HeaderPaddingSM { get; set; }
 
     /// <summary>
     /// 折叠面板头部大号内边距
     /// </summary>
-    public Thickness HeaderPaddingLG { get; set; }
+    public partial Thickness HeaderPaddingLG { get; set; }
 
     /// <summary>
     /// 折叠面板头部背景
     /// </summary>
-    public Color HeaderBg { get; set; }
+    public partial Color HeaderBg { get; set; }
 
     /// <summary>
     /// 折叠面板内容内边距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 折叠面板内容小号内边距
     /// </summary>
-    public Thickness ContentPaddingSM { get; set; }
+    public partial Thickness ContentPaddingSM { get; set; }
 
     /// <summary>
     /// 折叠面板内容大号内边距
     /// </summary>
-    public Thickness ContentPaddingLG { get; set; }
+    public partial Thickness ContentPaddingLG { get; set; }
 
     /// <summary>
     /// 折叠面板内容背景
     /// </summary>
-    public Color ContentBg { get; set; }
+    public partial Color ContentBg { get; set; }
 
     #region 内部 Token 定义
 
-    public CornerRadius ExpanderBorderRadius { get; set; }
-    public Thickness LeftExpandButtonHMargin { get; set; }
-    public Thickness RightExpandButtonHMargin { get; set; }
+    public partial CornerRadius ExpanderBorderRadius { get; set; }
+    public partial Thickness LeftExpandButtonHMargin { get; set; }
+    public partial Thickness RightExpandButtonHMargin { get; set; }
 
     #endregion
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         HeaderPadding            = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingSM);

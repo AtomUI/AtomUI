@@ -5,12 +5,12 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractDatePickerToken : AbstractTimeViewToken
+public abstract partial class AbstractDatePickerToken : AbstractTimeViewToken
 {
-    public Thickness HeaderMargin { get; set; }
-    public Thickness PanelContentPadding { get; set; }
-    public Thickness ButtonsPanelMargin { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial Thickness HeaderMargin { get; set; }
+    public partial Thickness PanelContentPadding { get; set; }
+    public partial Thickness ButtonsPanelMargin { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         HeaderMargin = new Thickness(0, 0, 0, 3);

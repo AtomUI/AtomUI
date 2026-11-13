@@ -7,9 +7,9 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TabStripToken : AbstractLineTabToken
+public sealed partial class TabStripToken : AbstractLineTabToken
 {
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
     }

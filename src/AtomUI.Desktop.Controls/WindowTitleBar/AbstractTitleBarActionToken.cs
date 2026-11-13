@@ -5,20 +5,20 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTitleBarActionToken : AbstractControlDesignToken
+public abstract partial class AbstractTitleBarActionToken : AbstractControlDesignToken
 {
-    public Color ActiveBgColor { get; set; }
-    public Color ActiveColor { get; set; }
-    public Color ActiveHoverBgColor { get; set; }
-    public Color ActivePressedBgColor { get; set; }
-    public Thickness CaptionButtonBackgroundInset { get; set; }
-    public double CaptionButtonIconSize { get; set; }
-    public Thickness CaptionButtonPadding { get; set; }
-    public Color InactiveBgColor { get; set; }
-    public Color InactiveColor { get; set; }
-    public Color InactiveHoverBgColor { get; set; }
+    public partial Color ActiveBgColor { get; set; }
+    public partial Color ActiveColor { get; set; }
+    public partial Color ActiveHoverBgColor { get; set; }
+    public partial Color ActivePressedBgColor { get; set; }
+    public partial Thickness CaptionButtonBackgroundInset { get; set; }
+    public partial double CaptionButtonIconSize { get; set; }
+    public partial Thickness CaptionButtonPadding { get; set; }
+    public partial Color InactiveBgColor { get; set; }
+    public partial Color InactiveColor { get; set; }
+    public partial Color InactiveHoverBgColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ActiveBgColor = EffectiveGlobalToken.ColorFillTertiary;

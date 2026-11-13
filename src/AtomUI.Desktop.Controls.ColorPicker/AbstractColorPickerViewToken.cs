@@ -6,53 +6,53 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractColorPickerViewToken : AbstractControlDesignToken
+public abstract partial class AbstractColorPickerViewToken : AbstractControlDesignToken
 {
-    public double ColorPickerWidth { get; set; }
+    public partial double ColorPickerWidth { get; set; }
 
-    public double ColorSpectrumHeight { get; set; }
+    public partial double ColorSpectrumHeight { get; set; }
 
-    public BoxShadows ColorPickerInsetShadow { get; set; }
+    public partial BoxShadows ColorPickerInsetShadow { get; set; }
 
-    public double ColorPickerHandlerSizeLG { get; set; }
+    public partial double ColorPickerHandlerSizeLG { get; set; }
 
-    public double ColorPickerHandlerSize { get; set; }
+    public partial double ColorPickerHandlerSize { get; set; }
 
-    public double ColorPickerHandlerSizeSM { get; set; }
+    public partial double ColorPickerHandlerSizeSM { get; set; }
 
-    public Color ColorPickerHandlerLightColor { get; set; }
+    public partial Color ColorPickerHandlerLightColor { get; set; }
 
-    public Color ColorPickerHandlerDarkColor { get; set; }
+    public partial Color ColorPickerHandlerDarkColor { get; set; }
 
-    public double ColorPickerSliderSize { get; set; }
+    public partial double ColorPickerSliderSize { get; set; }
 
-    public double ColorPickerSliderTrackSize { get; set; }
+    public partial double ColorPickerSliderTrackSize { get; set; }
 
-    public double ColorPickerSliderThumbSize { get; set; }
+    public partial double ColorPickerSliderThumbSize { get; set; }
 
-    public double ColorPickerPreviewSize { get; set; }
+    public partial double ColorPickerPreviewSize { get; set; }
 
-    public double ColorPickerAlphaInputWidth { get; set; }
+    public partial double ColorPickerAlphaInputWidth { get; set; }
 
-    public double ColorPickerInputNumberHandleWidth { get; set; }
+    public partial double ColorPickerInputNumberHandleWidth { get; set; }
 
-    public double ColorPickerPresetColorSize { get; set; }
+    public partial double ColorPickerPresetColorSize { get; set; }
 
-    public double ColorPickerPresetPanelWidth { get; set; }
+    public partial double ColorPickerPresetPanelWidth { get; set; }
 
-    public double CheckedMarkSize { get; set; }
+    public partial double CheckedMarkSize { get; set; }
 
-    public Thickness ColorPickerPresetColorGroupPadding { get; set; }
+    public partial Thickness ColorPickerPresetColorGroupPadding { get; set; }
 
-    public Thickness SliderContainerMargin { get; set; }
+    public partial Thickness SliderContainerMargin { get; set; }
 
-    public BoxShadows ColorBlockInnerShadows { get; set; }
+    public partial BoxShadows ColorBlockInnerShadows { get; set; }
 
-    public double TransparentBgSize { get; set; }
+    public partial double TransparentBgSize { get; set; }
 
-    public double EditorFontSize { get; set; }
+    public partial double EditorFontSize { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         EditorFontSize = 11;

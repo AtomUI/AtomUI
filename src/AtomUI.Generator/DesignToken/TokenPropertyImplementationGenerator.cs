@@ -65,7 +65,8 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
         var declaration = (ClassDeclarationSyntax)context.TargetNode;
         var attributed = GetAttributedDeclarations(type, attributeName, cancellationToken);
         var isPrimary = attributed.Count == 0 || SameNode(attributed[0], declaration);
-        var hintName = GetHintName(type.Name, isControlToken, declaration, attributed);
+        var namespaceName = type.ContainingNamespace.IsGlobalNamespace ? null : type.ContainingNamespace.ToDisplayString();
+        var hintName = GetHintName(type.Name, namespaceName, isControlToken, declaration, attributed);
         if (type.ContainingType is not null || type.IsGenericType)
         {
             // Nested and generic token types are rejected by the token model diagnostics.
@@ -80,7 +81,6 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (member is not IPropertySymbol { IsStatic: false, IsIndexer: false, IsImplicitlyDeclared: false } property ||
-                HasNotTokenDefinition(property) ||
                 property.DeclaringSyntaxReferences.Length == 0 ||
                 property.DeclaringSyntaxReferences[0].GetSyntax(cancellationToken) is not PropertyDeclarationSyntax syntax ||
                 syntax.Parent is not ClassDeclarationSyntax owner)
@@ -88,7 +88,13 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
                 continue;
             }
 
-            if (SameNode(owner, declaration) || (isPrimary && !attributed.Any(item => SameNode(item, owner))))
+            // Decide ownership from syntax first; attributes are only read for properties this declaration emits.
+            if (!SameNode(owner, declaration) && (!isPrimary || attributed.Any(item => SameNode(item, owner))))
+            {
+                continue;
+            }
+
+            if (!HasNotTokenDefinition(property))
             {
                 candidates.Add((syntax, property));
             }
@@ -124,7 +130,7 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
 
         return new TokenTypeImplementationModel(
             hintName,
-            type.ContainingNamespace.IsGlobalNamespace ? null : type.ContainingNamespace.ToDisplayString(),
+            namespaceName,
             type.Name,
             isControlToken && isPrimary && classIsPartial && type.IsSealed,
             new ValueArray<TokenPropertyImplementation>(properties),
@@ -155,19 +161,22 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
         return result;
     }
 
-    // Control tokens: "<TypeName>.TokenProperties.g.cs". The global token is split over many attributed
-    // declarations, so it gets one file per declaration, named after the declaring source file
-    // ("DesignToken.Seed.cs" -> "DesignToken.Seed.TokenProperties.g.cs").
+    // Control tokens: "<Namespace>.<TypeName>.TokenProperties.g.cs". The global token is split over many
+    // attributed declarations, so it gets one file per declaration, named after the declaring source file
+    // ("DesignToken.Seed.cs" -> "<Namespace>.DesignToken.Seed.TokenProperties.g.cs"). The namespace keeps
+    // same-named token types of one assembly from colliding on the hint name.
     private static string GetHintName(
         string typeName,
+        string? namespaceName,
         bool isControlToken,
         ClassDeclarationSyntax declaration,
         IReadOnlyList<ClassDeclarationSyntax> attributed)
     {
         const string suffix = ".TokenProperties.g.cs";
+        var prefix = namespaceName is null ? string.Empty : Sanitize(namespaceName) + ".";
         if (isControlToken || attributed.Count == 0)
         {
-            return Sanitize(typeName) + suffix;
+            return prefix + Sanitize(typeName) + suffix;
         }
 
         var stems = attributed.Select(item => FileStem(typeName, item)).ToArray();
@@ -187,7 +196,7 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
             stem += "." + stems.Take(index).Count(item => item == stem).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        return stem + suffix;
+        return prefix + stem + suffix;
     }
 
     private static string FileStem(string typeName, ClassDeclarationSyntax declaration)

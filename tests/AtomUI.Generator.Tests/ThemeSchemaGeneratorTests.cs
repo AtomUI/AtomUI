@@ -40,7 +40,7 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("static token =>");
         source.ShouldNotContain("static (token, value) =>");
         source.ShouldContain("static () => new global::Demo.ButtonToken()");
-        source.ShouldContain("((global::Demo.ButtonToken)token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+        source.ShouldContain("((global::Demo.ButtonToken)token).RunDefaultCalculation(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
         source.ShouldContain("new ThemeAlgorithmDescriptor(new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"AtomUI\", \"Dark\"), 1, ThemeAppearanceEffect.Dark");
         source.ShouldContain("new ThemeAlgorithmDescriptor(new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"AtomUI\", \"Default\"), 1, ThemeAppearanceEffect.Light");
         source.ShouldNotContain("(global::AtomUI.Theme.Algorithms.ThemeAlgorithm)");
@@ -109,7 +109,7 @@ public class ThemeSchemaGeneratorTests
                 {
                     public double Height { get; set; }
 
-                    public override void CalculateTokenValues(bool isDark)
+                    protected override void CalculateTokenValues(bool isDark)
                     {
                         _ = EffectiveGlobalToken.ColorPalettes.Count;
                         Height = EffectiveGlobalToken.ControlHeight;
@@ -176,7 +176,7 @@ public class ThemeSchemaGeneratorTests
                 {
                     public double Height { get; set; }
 
-                    public override void CalculateTokenValues(bool isDark)
+                    protected override void CalculateTokenValues(bool isDark)
                     {
                         Height = EffectiveGlobalToken.ControlHeight;
                     }
@@ -326,7 +326,7 @@ public class ThemeSchemaGeneratorTests
                 public string Label { get; set; } = string.Empty;
                 public double Height { get; set; }
 
-                public override void CalculateTokenValues(bool isDark)
+                protected override void CalculateTokenValues(bool isDark)
                 {
                     Height = EffectiveGlobalToken.ControlHeight;
                 }
@@ -379,7 +379,7 @@ public class ThemeSchemaGeneratorTests
                 public double Height { get; set; }
                 public string Label { get; set; } = string.Empty;
 
-                public override void CalculateTokenValues(bool isDark)
+                protected override void CalculateTokenValues(bool isDark)
                 {
                     Height = EffectiveGlobalToken.ControlHeight;
                 }
@@ -646,9 +646,12 @@ public class ThemeSchemaGeneratorTests
             {
                 protected DesignToken EffectiveGlobalToken { get; } = new DesignToken();
 
-                public virtual void CalculateTokenValues(bool isDark)
+                protected virtual void CalculateTokenValues(bool isDark)
                 {
                 }
+
+
+                internal void RunDefaultCalculation(bool isDark) => CalculateTokenValues(isDark);
             }
         }
         """;

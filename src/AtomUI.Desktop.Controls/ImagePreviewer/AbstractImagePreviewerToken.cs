@@ -6,32 +6,32 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractImagePreviewerToken : AbstractControlDesignToken
+public abstract partial class AbstractImagePreviewerToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 预览操作图标大小
     /// Size of preview operation icon
     /// </summary>
-    public double PreviewOperationSize { get; set; }
+    public partial double PreviewOperationSize { get; set; }
 
     /// <summary>
     /// 预览操作图标颜色
     /// Color of preview operation icon
     /// </summary>
-    public Color PreviewOperationColor { get; set; }
+    public partial Color PreviewOperationColor { get; set; }
 
     /// <summary>
     /// 预览操作图标悬浮颜色
     /// Color of hovered preview operation icon
     /// </summary>
-    public Color PreviewOperationHoverColor { get; set; }
+    public partial Color PreviewOperationHoverColor { get; set; }
 
     /// <summary>
     /// 预览操作图标禁用颜色
     /// Disabled color of preview operation icon
     /// </summary>
-    public Color PreviewOperationColorDisabled { get; set; }
+    public partial Color PreviewOperationColorDisabled { get; set; }
 
     /// <summary>
     /// 预览切换按钮尺寸
@@ -42,56 +42,56 @@ internal abstract class AbstractImagePreviewerToken : AbstractControlDesignToken
     /// 加载失败占位图标尺寸（AtomUI 扩展，antd 加载失败时显示 fallback 图片）
     /// Size of the load-failure placeholder icon (an AtomUI extension; antd shows a fallback image)
     /// </summary>
-    public double ErrorIconSize { get; set; }
+    public partial double ErrorIconSize { get; set; }
 
     /// <summary>
     /// 封面的背景颜色
     /// </summary>
-    public Color MaskBgColor { get; set; }
+    public partial Color MaskBgColor { get; set; }
 
     /// <summary>
     /// 预览窗口最小宽度
     /// </summary>
-    public double DialogMinWidth { get; set; }
+    public partial double DialogMinWidth { get; set; }
 
     /// <summary>
     /// 预览窗口最小高度
     /// </summary>
-    public double DialogMinHeight { get; set; }
+    public partial double DialogMinHeight { get; set; }
 
     /// <summary>
     /// 预览窗口标题栏背景色
     /// </summary>
-    public Color TitleBarBackgroundColor { get; set; }
+    public partial Color TitleBarBackgroundColor { get; set; }
 
     /// <summary>
     /// 浮动导航按钮背景颜色
     /// </summary>
-    public Color NavButtonBgColor { get; set; }
+    public partial Color NavButtonBgColor { get; set; }
 
     /// <summary>
     /// 浮动导航按钮 Hover 背景颜色
     /// </summary>
-    public Color NavButtonBgHoverColor { get; set; }
+    public partial Color NavButtonBgHoverColor { get; set; }
 
     /// <summary>
     /// 浮动工具栏内间距
     /// </summary>
-    public Thickness FloatToolbarPadding { get; set; }
+    public partial Thickness FloatToolbarPadding { get; set; }
 
     /// <summary>
     /// 浮动工具栏索引指示器内间距
     /// </summary>
-    public Thickness FloatToolbarIndicatorPadding { get; set; }
+    public partial Thickness FloatToolbarIndicatorPadding { get; set; }
 
     /// <summary>
     /// 封面默认的宽度
     /// </summary>
-    public double CoverImageWidth { get; set; }
+    public partial double CoverImageWidth { get; set; }
 
 
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PreviewOperationColor         = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.65);

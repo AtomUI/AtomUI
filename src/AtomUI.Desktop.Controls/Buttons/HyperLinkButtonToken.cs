@@ -6,26 +6,26 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class HyperLinkButtonToken : AbstractControlDesignToken
+public sealed partial class HyperLinkButtonToken : AbstractControlDesignToken
 {
-    public Thickness ContentPadding { get; set; }
-    public Thickness ContentPaddingLG { get; set; }
-    public Thickness ContentPaddingSM { get; set; }
-    public double OnlyIconSize { get; set; }
-    public double OnlyIconSizeLG { get; set; }
-    public double OnlyIconSizeSM { get; set; }
-    public Thickness IconMargin { get; set; }
-    public double ContentFontSize { get; set; }
-    public double ContentFontSizeLG { get; set; }
-    public double ContentFontSizeSM { get; set; }
-    public double ContentLineHeight { get; set; }
-    public double ContentLineHeightLG { get; set; }
-    public double ContentLineHeightSM { get; set; }
-    public Thickness IconOnyPadding { get; set; }
-    public Thickness IconOnyPaddingLG { get; set; }
-    public Thickness IconOnyPaddingSM { get; set; }
+    public partial Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPaddingLG { get; set; }
+    public partial Thickness ContentPaddingSM { get; set; }
+    public partial double OnlyIconSize { get; set; }
+    public partial double OnlyIconSizeLG { get; set; }
+    public partial double OnlyIconSizeSM { get; set; }
+    public partial Thickness IconMargin { get; set; }
+    public partial double ContentFontSize { get; set; }
+    public partial double ContentFontSizeLG { get; set; }
+    public partial double ContentFontSizeSM { get; set; }
+    public partial double ContentLineHeight { get; set; }
+    public partial double ContentLineHeightLG { get; set; }
+    public partial double ContentLineHeightSM { get; set; }
+    public partial Thickness IconOnyPadding { get; set; }
+    public partial Thickness IconOnyPaddingLG { get; set; }
+    public partial Thickness IconOnyPaddingSM { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

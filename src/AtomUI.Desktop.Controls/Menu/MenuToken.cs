@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MenuToken : AbstractMenuPopupToken
+public sealed partial class MenuToken : AbstractMenuPopupToken
 {
 
     public MenuToken()
@@ -37,102 +37,102 @@ internal sealed class MenuToken : AbstractMenuPopupToken
     /// <summary>
     /// 顶层菜单项颜色
     /// </summary>
-    public Color TopLevelItemColor { get; set; }
+    public partial Color TopLevelItemColor { get; set; }
 
     /// <summary>
     /// 顶层菜单项选中颜色
     /// </summary>
-    public Color TopLevelItemSelectedColor { get; set; }
+    public partial Color TopLevelItemSelectedColor { get; set; }
 
     /// <summary>
     /// 顶层菜单项鼠标放上去的颜色
     /// </summary>
-    public Color TopLevelItemHoverColor { get; set; }
+    public partial Color TopLevelItemHoverColor { get; set; }
 
     /// <summary>
     /// 顶层菜单项背景色
     /// </summary>
-    public Color TopLevelItemBg { get; set; }
+    public partial Color TopLevelItemBg { get; set; }
 
     /// <summary>
     /// 顶层菜单项选中时背景色
     /// </summary>
-    public Color TopLevelItemSelectedBg { get; set; }
+    public partial Color TopLevelItemSelectedBg { get; set; }
 
     /// <summary>
     /// 顶层菜单项鼠标放上去背景色
     /// </summary>
-    public Color TopLevelItemHoverBg { get; set; }
+    public partial Color TopLevelItemHoverBg { get; set; }
 
     /// <summary>
     /// 顶层菜单项小号圆角
     /// </summary>
-    public CornerRadius TopLevelItemBorderRadiusSM { get; set; }
+    public partial CornerRadius TopLevelItemBorderRadiusSM { get; set; }
 
     /// <summary>
     /// 顶层菜单项圆角
     /// </summary>
-    public CornerRadius TopLevelItemBorderRadius { get; set; }
+    public partial CornerRadius TopLevelItemBorderRadius { get; set; }
 
     /// <summary>
     /// 顶层菜单项大号圆角
     /// </summary>
-    public CornerRadius TopLevelItemBorderRadiusLG { get; set; }
+    public partial CornerRadius TopLevelItemBorderRadiusLG { get; set; }
 
     /// <summary>
     /// 顶层菜单项小号内间距
     /// </summary>
-    public Thickness TopLevelItemPaddingSM { get; set; }
+    public partial Thickness TopLevelItemPaddingSM { get; set; }
 
     /// <summary>
     /// 顶层菜单项间距
     /// </summary>
-    public Thickness TopLevelItemPadding { get; set; }
+    public partial Thickness TopLevelItemPadding { get; set; }
 
     /// <summary>
     /// 顶层菜单项大号内间距
     /// </summary>
-    public Thickness TopLevelItemPaddingLG { get; set; }
+    public partial Thickness TopLevelItemPaddingLG { get; set; }
 
     /// <summary>
     /// 顶层菜单项小号字体
     /// </summary>
-    public double TopLevelItemFontSizeSM { get; set; }
+    public partial double TopLevelItemFontSizeSM { get; set; }
 
     /// <summary>
     /// 顶层菜单项字体
     /// </summary>
-    public double TopLevelItemFontSize { get; set; }
+    public partial double TopLevelItemFontSize { get; set; }
 
     /// <summary>
     /// 顶层菜单项大号字体
     /// </summary>
-    public double TopLevelItemFontSizeLG { get; set; }
+    public partial double TopLevelItemFontSizeLG { get; set; }
 
     /// <summary>
     /// 顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeight { get; set; }
+    public partial double TopLevelItemLineHeight { get; set; }
 
     /// <summary>
     /// 大号顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeightLG { get; set; }
+    public partial double TopLevelItemLineHeightLG { get; set; }
 
     /// <summary>
     /// 小号顶层菜单项内容字体行高
     /// </summary>
-    public double TopLevelItemLineHeightSM { get; set; }
+    public partial double TopLevelItemLineHeightSM { get; set; }
 
     /// <summary>
     /// 顶层弹出菜单，距离顶层菜单项的边距
     /// </summary>
-    public double TopLevelItemPopupMarginToAnchor { get; set; }
+    public partial double TopLevelItemPopupMarginToAnchor { get; set; }
 
 
 
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(MenuTokenKind.ItemColor))

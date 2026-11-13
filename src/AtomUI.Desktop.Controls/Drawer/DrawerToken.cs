@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DrawerToken : AbstractControlDesignToken
+public sealed partial class DrawerToken : AbstractControlDesignToken
 {
     
     public DrawerToken()
@@ -17,69 +17,69 @@ internal sealed class DrawerToken : AbstractControlDesignToken
     /// <summary>
     /// 左边缘阴影
     /// </summary>
-    public BoxShadows BoxShadowDrawerLeft { get; set; }
+    public partial BoxShadows BoxShadowDrawerLeft { get; set; }
 
     /// <summary>
     /// 右边缘阴影
     /// </summary>
-    public BoxShadows BoxShadowDrawerRight { get; set; }
+    public partial BoxShadows BoxShadowDrawerRight { get; set; }
 
     /// <summary>
     /// 上边缘阴影
     /// </summary>
-    public BoxShadows BoxShadowDrawerUp { get; set; }
+    public partial BoxShadows BoxShadowDrawerUp { get; set; }
 
     /// <summary>
     /// 下边缘阴影
     /// </summary>
-    public BoxShadows BoxShadowDrawerDown { get; set; }
+    public partial BoxShadows BoxShadowDrawerDown { get; set; }
     
     /// <summary>
     /// 信息显示头内间距
     /// </summary>
-    public Thickness HeaderMargin { get; set; }
+    public partial Thickness HeaderMargin { get; set; }
     
     /// <summary>
     /// Footer 的内间距
     /// </summary>
-    public Thickness FooterPadding { get; set; }
+    public partial Thickness FooterPadding { get; set; }
     
     /// <summary>
     /// 中等尺寸大小的 Drawer
     /// </summary>
-    public Dimension MiddleSize { get; set; }
+    public partial Dimension MiddleSize { get; set; }
     
     /// <summary>
     /// 大尺寸的 Drawer
     /// </summary>
-    public Dimension LargeSize { get; set; }
+    public partial Dimension LargeSize { get; set; }
     
     /// <summary>
     /// 小尺寸的 Drawer
     /// </summary>
-    public Dimension SmallSize { get; set; }
+    public partial Dimension SmallSize { get; set; }
     
     /// <summary>
     /// 关闭按钮内间距
     /// </summary>
-    public Thickness CloseIconPadding { get; set; }
+    public partial Thickness CloseIconPadding { get; set; }
     
     /// <summary>
     /// 关闭按钮外间距
     /// </summary>
-    public Thickness CloseIconMargin { get; set; }
+    public partial Thickness CloseIconMargin { get; set; }
     
     /// <summary>
     /// 内容内间距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
     
     /// <summary>
     /// 子 Drawer push 的 Offset 比率
     /// </summary>
-    public double PushOffsetPercent { get; set; }
+    public partial double PushOffsetPercent { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

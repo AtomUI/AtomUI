@@ -5,13 +5,13 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class RangeTimePickerToken : AbstractTimePickerToken
+public sealed partial class RangeTimePickerToken : AbstractTimePickerToken
 {
-    public Thickness RangePickerArrowMargin { get; set; }
-    public double RangePickerIndicatorThickness { get; set; }
-    public double RangeMarginToAnchor { get; set; }
+    public partial Thickness RangePickerArrowMargin { get; set; }
+    public partial double RangePickerIndicatorThickness { get; set; }
+    public partial double RangeMarginToAnchor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(RangeTimePickerTokenKind.ItemWidth))

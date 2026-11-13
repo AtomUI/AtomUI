@@ -5,21 +5,21 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class PaginationToken : AbstractPaginationToken
+public sealed partial class PaginationToken : AbstractPaginationToken
 {
 
     /// <summary>
     /// 页码选项背景色
     /// Background color of Pagination item
     /// </summary>
-    public Color ItemBg { get; set; }
+    public partial Color ItemBg { get; set; }
     
         
     /// <summary>
     /// 页码激活态背景色
     /// Background color of active Pagination item
     /// </summary>
-    public Color ItemActiveBg { get; set; }
+    public partial Color ItemActiveBg { get; set; }
     
     
     /// <summary>
@@ -28,13 +28,13 @@ internal sealed class PaginationToken : AbstractPaginationToken
     /// </summary>
     [ReservedToken("antd Pagination itemLinkBg: the background of the bordered pagination's previous / next buttons. " +
                    "AtomUI Pagination has no bordered variant, so no element draws it.")]
-    public Color ItemLinkBg { get; set; }
+    public partial Color ItemLinkBg { get; set; }
     
     /// <summary>
     /// 页码激活态禁用状态背景色
     /// Background color of disabled active Pagination item
     /// </summary>
-    public Color ItemActiveBgDisabled { get; set; }
+    public partial Color ItemActiveBgDisabled { get; set; }
     
     
     
@@ -44,7 +44,7 @@ internal sealed class PaginationToken : AbstractPaginationToken
     /// </summary>
     [ReservedToken("antd Pagination inputOutlineOffset (internal): the x offset of the simple pager input's focus " +
                    "box-shadow. The simple pager input here is a LineEdit drawn with the Input family's focus shadow.")]
-    public Thickness InputOutlineOffset { get; set; }
+    public partial Thickness InputOutlineOffset { get; set; }
     
     
     
@@ -56,9 +56,9 @@ internal sealed class PaginationToken : AbstractPaginationToken
     {
     }
     
-    public Thickness PaginationItemPaddingInline { get; set; }
+    public partial Thickness PaginationItemPaddingInline { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PaginationItemPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS * 1.5, 0);

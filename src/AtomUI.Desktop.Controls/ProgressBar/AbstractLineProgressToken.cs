@@ -7,27 +7,27 @@ namespace AtomUI.Desktop.Controls;
 /// percentage / status-icon area next to the bar.
 /// </summary>
 [ControlDesignToken]
-internal abstract class AbstractLineProgressToken : AbstractProgressToken
+public abstract partial class AbstractLineProgressToken : AbstractProgressToken
 {
     /// <summary>
     /// 额外信息和进度条之间的间距
     /// Gap between the progress bar and the percentage / status icon
     /// </summary>
-    public double LineExtraInfoMargin { get; set; }
+    public partial double LineExtraInfoMargin { get; set; }
 
     /// <summary>
     /// 状态图标大小
     /// Size of the status icon
     /// </summary>
-    public double LineInfoIconSize { get; set; }
+    public partial double LineInfoIconSize { get; set; }
 
     /// <summary>
     /// 小号状态图标大小
     /// Size of the status icon of small and middle progress bars
     /// </summary>
-    public double LineInfoIconSizeSM { get; set; }
+    public partial double LineInfoIconSizeSM { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         LineInfoIconSize    = EffectiveGlobalToken.IconSize;

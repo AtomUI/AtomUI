@@ -8,33 +8,33 @@ namespace AtomUI.Desktop.Controls;
 /// Calendar 控件的 Design Token，承载产品视觉语义。
 /// </summary>
 [ControlDesignToken]
-internal abstract class AbstractCalendarToken : AbstractControlDesignToken
+public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
 {
 
 /// <summary>
     /// 完整 Calendar 背景，派生自容器背景。
     /// </summary>
-    public Color FullBg { get; set; }
+    public partial Color FullBg { get; set; }
 
     /// <summary>
     /// 完整 Calendar Panel 背景，派生自容器背景。
     /// </summary>
-    public Color FullPanelBg { get; set; }
+    public partial Color FullPanelBg { get; set; }
 
     /// <summary>
     /// 完整模式选中日期/月单元背景，派生自 active item 背景。
     /// </summary>
-    public Color ItemActiveBg { get; set; }
+    public partial Color ItemActiveBg { get; set; }
 
     /// <summary>
     /// Year Select 最小宽度。
     /// </summary>
-    public double YearControlWidth { get; set; }
+    public partial double YearControlWidth { get; set; }
 
     /// <summary>
     /// Month Select 最小宽度。
     /// </summary>
-    public double MonthControlWidth { get; set; }
+    public partial double MonthControlWidth { get; set; }
 
     /// <summary>
     /// Year 模式月份单元的内容宽度。
@@ -47,8 +47,8 @@ internal abstract class AbstractCalendarToken : AbstractControlDesignToken
     /// <summary>
     /// Fullscreen 周标题的总高度和文字内边距。
     /// </summary>
-    public double WeekHeaderHeight { get; set; }
-    public Thickness WeekHeaderPadding { get; set; }
+    public partial double WeekHeaderHeight { get; set; }
+    public partial Thickness WeekHeaderPadding { get; set; }
 
     /// <summary>
     /// Fullscreen 日期/月单元最小高度。
@@ -57,34 +57,34 @@ internal abstract class AbstractCalendarToken : AbstractControlDesignToken
     /// <summary>
     /// Fullscreen 日期/月单元的水平外边距（antd 全屏单元 margin: 0 marginXS/2）。
     /// </summary>
-    public Thickness FullCellMargin { get; set; }
+    public partial Thickness FullCellMargin { get; set; }
 
     /// <summary>
     /// Fullscreen 日期/月单元的内边距（antd 全屏单元 padding: paddingXS/2 paddingXS 0）。
     /// </summary>
-    public Thickness FullCellPadding { get; set; }
+    public partial Thickness FullCellPadding { get; set; }
 
     /// <summary>
     /// Fullscreen 日期/月单元顶部分隔线的线宽（antd 全屏单元 borderTop: lineWidthBold）。
     /// </summary>
-    public Thickness FullCellBorderThickness { get; set; }
+    public partial Thickness FullCellBorderThickness { get; set; }
 
     /// <summary>
     /// Fullscreen 日期范围条默认高度。
     /// </summary>
-    public double RangeBarHeight { get; set; }
+    public partial double RangeBarHeight { get; set; }
 
     /// <summary>
     /// Fullscreen 同一单元内上下堆叠的日期范围条之间的间距。
     /// </summary>
-    public double RangeBarGap { get; set; }
+    public partial double RangeBarGap { get; set; }
 
     /// <summary>
     /// Fullscreen 日期范围条标签的水平内边距。
     /// </summary>
-    public Thickness RangeBarLabelPadding { get; set; }
+    public partial Thickness RangeBarLabelPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

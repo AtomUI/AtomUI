@@ -3,13 +3,13 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CalendarToken : AbstractCalendarToken
+public sealed partial class CalendarToken : AbstractCalendarToken
 {
-    public double YearMonthCellWidth { get; set; }
-    public double MiniContentHeight { get; set; }
-    public double FullCellMinHeight { get; set; }
+    public partial double YearMonthCellWidth { get; set; }
+    public partial double MiniContentHeight { get; set; }
+    public partial double FullCellMinHeight { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         YearMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;

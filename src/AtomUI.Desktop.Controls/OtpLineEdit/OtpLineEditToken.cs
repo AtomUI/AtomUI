@@ -3,7 +3,7 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class OtpLineEditToken : AbstractControlDesignToken
+public sealed partial class OtpLineEditToken : AbstractControlDesignToken
 {
 
     public OtpLineEditToken()
@@ -11,15 +11,15 @@ internal sealed class OtpLineEditToken : AbstractControlDesignToken
     {
     }
 
-    public double CellWidth { get; set; }
+    public partial double CellWidth { get; set; }
 
-    public double CellWidthLG { get; set; }
+    public partial double CellWidthLG { get; set; }
 
-    public double CellWidthSM { get; set; }
+    public partial double CellWidthSM { get; set; }
 
-    public double CellGap { get; set; }
+    public partial double CellGap { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

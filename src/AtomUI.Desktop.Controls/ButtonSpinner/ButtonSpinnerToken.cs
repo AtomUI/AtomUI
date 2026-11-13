@@ -4,12 +4,12 @@ using AtomUI.Desktop.Controls.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ButtonSpinnerToken : AbstractButtonSpinnerToken
+public sealed partial class ButtonSpinnerToken : AbstractButtonSpinnerToken
 {
     [ReservedToken("No default control width is applied; the input sizes to content or host layout.")]
-    public double ControlWidth { get; set; }
+    public partial double ControlWidth { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ControlWidth = 90;

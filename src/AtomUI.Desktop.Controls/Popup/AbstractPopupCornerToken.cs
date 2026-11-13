@@ -5,10 +5,10 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractPopupCornerToken : AbstractControlDesignToken
+public abstract partial class AbstractPopupCornerToken : AbstractControlDesignToken
 {
-    public CornerRadius PopupCornerRadius { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial CornerRadius PopupCornerRadius { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PopupCornerRadius = EffectiveGlobalToken.BorderRadiusLG;

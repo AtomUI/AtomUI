@@ -6,31 +6,31 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CountBadgeToken : AbstractControlDesignToken
+public sealed partial class CountBadgeToken : AbstractControlDesignToken
 {
-    public double IndicatorHeight { get; set; }
+    public partial double IndicatorHeight { get; set; }
 
-    public double IndicatorHeightSM { get; set; }
+    public partial double IndicatorHeightSM { get; set; }
 
-    public double TextFontSize { get; set; }
+    public partial double TextFontSize { get; set; }
 
-    public double TextFontSizeSM { get; set; }
+    public partial double TextFontSizeSM { get; set; }
 
-    public Color TextColor { get; set; }
+    public partial Color TextColor { get; set; }
 
-    public Color IndicatorColor { get; set; }
+    public partial Color IndicatorColor { get; set; }
 
-    public double ShadowSize { get; set; }
+    public partial double ShadowSize { get; set; }
 
-    public Color ShadowColor { get; set; }
+    public partial Color ShadowColor { get; set; }
 
-    public Thickness TextPadding { get; set; }
+    public partial Thickness TextPadding { get; set; }
 
-    public CornerRadius CornerRadius { get; set; }
+    public partial CornerRadius CornerRadius { get; set; }
 
-    public CornerRadius CornerRadiusSM { get; set; }
+    public partial CornerRadius CornerRadiusSM { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

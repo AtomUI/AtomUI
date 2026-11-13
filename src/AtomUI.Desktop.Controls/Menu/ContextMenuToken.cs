@@ -6,11 +6,11 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ContextMenuToken : AbstractMenuPopupToken
+public sealed partial class ContextMenuToken : AbstractMenuPopupToken
 {
-    public double ContextMenuOffsetX { get; set; }
-    public double ContextMenuOffsetY { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial double ContextMenuOffsetX { get; set; }
+    public partial double ContextMenuOffsetY { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(ContextMenuTokenKind.ItemColor))

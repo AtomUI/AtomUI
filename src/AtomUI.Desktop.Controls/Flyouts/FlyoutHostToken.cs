@@ -4,40 +4,40 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class FlyoutHostToken : AbstractControlDesignToken
+public sealed partial class FlyoutHostToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 默认 Popup 和 PlacementTarget 的间距
     /// </summary>
-    public double MarginToAnchor { get; set; }
+    public partial double MarginToAnchor { get; set; }
     
     /// <summary>
     /// OverlayHost 类型的阴影
     /// </summary>
-    public BoxShadows OverlayHostShadow { get; set; }
+    public partial BoxShadows OverlayHostShadow { get; set; }
     
     /// <summary>
     /// PopupRoot 类型的阴影
     /// </summary>
-    public BoxShadows PopupRootShadow { get; set; }
+    public partial BoxShadows PopupRootShadow { get; set; }
     
     /// <summary>
     /// Flyout 水平偏移
     /// </summary>
-    public double HorizontalOffset { get; set; }
+    public partial double HorizontalOffset { get; set; }
     
     /// <summary>
     /// Flyout 垂直偏移
     /// </summary>
-    public double VerticalOffset { get; set; }
+    public partial double VerticalOffset { get; set; }
 
     public FlyoutHostToken()
 
     {
     }
     
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         MarginToAnchor    = EffectiveGlobalToken.UniformlyMarginXXS;

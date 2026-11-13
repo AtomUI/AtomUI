@@ -5,19 +5,19 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTreePresentationToken : AbstractControlDesignToken
+public abstract partial class AbstractTreePresentationToken : AbstractControlDesignToken
 {
-    public double HeaderHeight { get; set; }
-    public Color NodeHoverBg { get; set; }
-    public Color NodeSelectedBg { get; set; }
-    public Thickness TreeItemMargin { get; set; }
-    public Thickness TreeItemHeaderPadding { get; set; }
-    public Thickness TreeItemHeaderMargin { get; set; }
-    public Thickness TreeNodeSwitcherMargin { get; set; }
-    public Thickness TreeNodeIconMargin { get; set; }
-    public Color FilterHighlightColor { get; set; }
+    public partial double HeaderHeight { get; set; }
+    public partial Color NodeHoverBg { get; set; }
+    public partial Color NodeSelectedBg { get; set; }
+    public partial Thickness TreeItemMargin { get; set; }
+    public partial Thickness TreeItemHeaderPadding { get; set; }
+    public partial Thickness TreeItemHeaderMargin { get; set; }
+    public partial Thickness TreeNodeSwitcherMargin { get; set; }
+    public partial Thickness TreeNodeIconMargin { get; set; }
+    public partial Color FilterHighlightColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var presentation = TreePresentationTokenValues.Calculate(EffectiveGlobalToken);

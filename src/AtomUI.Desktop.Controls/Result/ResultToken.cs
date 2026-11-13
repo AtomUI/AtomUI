@@ -5,48 +5,48 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ResultToken : AbstractControlDesignToken
+public sealed partial class ResultToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 标题字体大小
     /// </summary>
-    public double HeaderFontSize { get; set; }
+    public partial double HeaderFontSize { get; set; }
 
     /// <summary>
     /// 副标题字体大小
     /// </summary>
-    public double SubHeaderFontSize { get; set; }
+    public partial double SubHeaderFontSize { get; set; }
 
     /// <summary>
     /// 图标大小
     /// </summary>
-    public double StatusIconSize { get; set; }
+    public partial double StatusIconSize { get; set; }
 
     /// <summary>
     /// 额外区域外间距
     /// </summary>
-    public Thickness ExtraMargin { get; set; }
+    public partial Thickness ExtraMargin { get; set; }
 
-    public double ImageWidth { get; set; }
-    public double ImageHeight { get; set; }
+    public partial double ImageWidth { get; set; }
+    public partial double ImageHeight { get; set; }
 
-    public Color ResultInfoIconColor { get; set; }
-    public Color ResultSuccessIconColor { get; set; }
-    public Color ResultWarningIconColor { get; set; }
-    public Color ResultErrorIconColor { get; set; }
-    public Thickness FramePadding { get; set; }
-    public Thickness ContentPadding { get; set; }
-    public Thickness ContentMargin { get; set; }
-    public Thickness HeaderMargin { get; set; }
-    public Thickness StatusImageMargin { get; set; }
+    public partial Color ResultInfoIconColor { get; set; }
+    public partial Color ResultSuccessIconColor { get; set; }
+    public partial Color ResultWarningIconColor { get; set; }
+    public partial Color ResultErrorIconColor { get; set; }
+    public partial Thickness FramePadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
+    public partial Thickness ContentMargin { get; set; }
+    public partial Thickness HeaderMargin { get; set; }
+    public partial Thickness StatusImageMargin { get; set; }
 
     public ResultToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         HeaderFontSize    = EffectiveGlobalToken.FontSizeHeading3;

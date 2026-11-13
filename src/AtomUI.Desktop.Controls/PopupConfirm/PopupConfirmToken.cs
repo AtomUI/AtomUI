@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class PopupConfirmToken : AbstractControlDesignToken
+public sealed partial class PopupConfirmToken : AbstractControlDesignToken
 {
     
     public PopupConfirmToken()
@@ -15,29 +15,29 @@ internal sealed class PopupConfirmToken : AbstractControlDesignToken
     /// <summary>
     /// 按钮的外边距
     /// </summary>
-    public double ButtonSpacing { get; set; }
+    public partial double ButtonSpacing { get; set; }
 
     /// <summary>
     /// Icon 外边距
     /// </summary>
-    public Thickness IconMargin { get; set; }
+    public partial Thickness IconMargin { get; set; }
 
     /// <summary>
     /// 主内容区域外边距
     /// </summary>
-    public Thickness ContentContainerMargin { get; set; }
+    public partial Thickness ContentContainerMargin { get; set; }
 
     /// <summary>
     /// 按钮内容区域外边距
     /// </summary>
-    public Thickness ButtonContainerMargin { get; set; }
+    public partial Thickness ButtonContainerMargin { get; set; }
 
     /// <summary>
     /// 标题栏外边距
     /// </summary>
-    public Thickness TitleMargin { get; set; }
+    public partial Thickness TitleMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ButtonSpacing          = EffectiveGlobalToken.UniformlyMarginXS;

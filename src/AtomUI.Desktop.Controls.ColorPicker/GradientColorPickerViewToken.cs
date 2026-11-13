@@ -6,9 +6,9 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class GradientColorPickerViewToken : AbstractColorPickerViewToken
+public sealed partial class GradientColorPickerViewToken : AbstractColorPickerViewToken
 {
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(GradientColorPickerViewTokenKind.ColorPickerHandlerSizeSM))

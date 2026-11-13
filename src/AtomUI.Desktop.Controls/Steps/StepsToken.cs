@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class StepsToken : AbstractControlDesignToken
+public sealed partial class StepsToken : AbstractControlDesignToken
 {
 
     public StepsToken()
@@ -18,186 +18,186 @@ internal sealed class StepsToken : AbstractControlDesignToken
     /// 描述区域最大宽度
     /// Max width of description area
     /// </summary>
-    public double DescriptionMaxWidth { get; set; }
+    public partial double DescriptionMaxWidth { get; set; }
 
     /// <summary>
     /// 自定义图标容器尺寸
     /// Size of custom icon container
     /// </summary>
-    public double CustomIconSize { get; set; }
+    public partial double CustomIconSize { get; set; }
 
     /// <summary>
     /// 自定义图标大小
     /// Font size of custom icon
     /// </summary>
-    public double CustomIconFontSize { get; set; }
+    public partial double CustomIconFontSize { get; set; }
 
     /// <summary>
     /// 图标容器尺寸
     /// Size of icon container
     /// </summary>
-    public double IconContainerSize { get; set; }
+    public partial double IconContainerSize { get; set; }
 
     /// <summary>
     /// 图标容器圆角（默认全圆）
     /// Corner radius of icon container (full circle by default)
     /// </summary>
-    public CornerRadius IconContainerCornerRadius { get; set; }
+    public partial CornerRadius IconContainerCornerRadius { get; set; }
 
     /// <summary>
     /// 图标大小
     /// Size of icon
     /// </summary>
-    public double IconFontSize { get; set; }
+    public partial double IconFontSize { get; set; }
 
     /// <summary>
     /// 点状步骤点大小
     /// Size of dot
     /// </summary>
-    public double DotSize { get; set; }
+    public partial double DotSize { get; set; }
 
     /// <summary>
     /// 点状步骤点当前大小
     /// Current size of dot
     /// </summary>
-    public double DotCurrentSize { get; set; }
+    public partial double DotCurrentSize { get; set; }
 
     /// <summary>
     /// 可跳转步骤条箭头颜色
     /// Color of arrow in nav
     /// </summary>
-    public Color NavArrowColor { get; set; }
+    public partial Color NavArrowColor { get; set; }
 
     /// <summary>
     /// 小号步骤条图标大小
     /// Size of small steps icon
     /// </summary>
-    public double IconContainerSizeSM { get; set; }
+    public partial double IconContainerSizeSM { get; set; }
 
     /// <summary>
     /// Label 水平排列的时候的外间距
     /// External spacing when Label is arranged horizontally
     /// </summary>
-    public Thickness HorizontalHeaderMargin { get; set; }
+    public partial Thickness HorizontalHeaderMargin { get; set; }
 
     /// <summary>
     /// 子标题外间距
     /// External spacing of subtitle
     /// </summary>
-    public Thickness SubHeaderMargin { get; set; }
+    public partial Thickness SubHeaderMargin { get; set; }
 
     /// <summary>
     /// 垂直排列的时候 item 的间距
     /// </summary>
-    public double VerticalItemSpacing { get; set; }
+    public partial double VerticalItemSpacing { get; set; }
 
     /// <summary>
     /// 垂直排列描述的内间距
     /// </summary>
-    public Thickness VerticalDescriptionPadding { get; set; }
+    public partial Thickness VerticalDescriptionPadding { get; set; }
 
     /// <summary>
     /// 垂直标签排列时候内容跟图标之间的外间距
     /// </summary>
-    public Thickness VerticalLabelContentMargin { get; set; }
+    public partial Thickness VerticalLabelContentMargin { get; set; }
 
     /// <summary>
     /// 垂直导航类型箭头的外间距
     /// </summary>
-    public Thickness VerticalNavArrowMargin { get; set; }
+    public partial Thickness VerticalNavArrowMargin { get; set; }
 
     /// <summary>
     /// 垂直导航类型箭头的外间距，小尺寸
     /// </summary>
-    public Thickness VerticalNavArrowMarginSM { get; set; }
+    public partial Thickness VerticalNavArrowMarginSM { get; set; }
 
     /// <summary>
     /// 垂直导航类型 item 内边距
     /// </summary>
-    public Thickness VerticalNavItemPadding { get; set; }
+    public partial Thickness VerticalNavItemPadding { get; set; }
 
     /// <summary>
     /// 垂直导航类型内容和指示线的间距
     /// </summary>
-    public double NavItemGutter { get; set; }
+    public partial double NavItemGutter { get; set; }
 
     #region 内部 Token
 
-    public Color WaitIconColor { get; set; }
-    public Color WaitIconBgColor { get; set; }
-    public Color WaitIconBorderColor { get; set; }
-    public Color FinishIconBgColor { get; set; }
-    public Color FinishIconBorderColor { get; set; }
+    public partial Color WaitIconColor { get; set; }
+    public partial Color WaitIconBgColor { get; set; }
+    public partial Color WaitIconBorderColor { get; set; }
+    public partial Color FinishIconBgColor { get; set; }
+    public partial Color FinishIconBorderColor { get; set; }
 
-    public Color ProcessTailColor { get; set; }
-    public Color ProcessIconColor { get; set; }
-    public Color ProcessTitleColor { get; set; }
-    public Color ProcessDescriptionColor { get; set; }
-    public Color ProcessIconBgColor { get; set; }
-    public Color ProcessIconBorderColor { get; set; }
-    public Color ProcessDotColor { get; set; }
-    public Color WaitTitleColor { get; set; }
-    public Color WaitDescriptionColor { get; set; }
-    public Color WaitTailColor { get; set; }
-    public Color WaitDotColor { get; set; }
-    public Color FinishIconColor { get; set; }
-    public Color FinishTitleColor { get; set; }
-    public Color FinishDescriptionColor { get; set; }
-    public Color FinishTailColor { get; set; }
-    public Color FinishDotColor { get; set; }
-    public Color ErrorIconColor { get; set; }
-    public Color ErrorTitleColor { get; set; }
-    public Color ErrorDescriptionColor { get; set; }
-    public Color ErrorTailColor { get; set; }
-    public Color ErrorIconBgColor { get; set; }
-    public Color ErrorIconBorderColor { get; set; }
-    public Color ErrorDotColor { get; set; }
-    public Color StepsNavActiveColor { get; set; }
+    public partial Color ProcessTailColor { get; set; }
+    public partial Color ProcessIconColor { get; set; }
+    public partial Color ProcessTitleColor { get; set; }
+    public partial Color ProcessDescriptionColor { get; set; }
+    public partial Color ProcessIconBgColor { get; set; }
+    public partial Color ProcessIconBorderColor { get; set; }
+    public partial Color ProcessDotColor { get; set; }
+    public partial Color WaitTitleColor { get; set; }
+    public partial Color WaitDescriptionColor { get; set; }
+    public partial Color WaitTailColor { get; set; }
+    public partial Color WaitDotColor { get; set; }
+    public partial Color FinishIconColor { get; set; }
+    public partial Color FinishTitleColor { get; set; }
+    public partial Color FinishDescriptionColor { get; set; }
+    public partial Color FinishTailColor { get; set; }
+    public partial Color FinishDotColor { get; set; }
+    public partial Color ErrorIconColor { get; set; }
+    public partial Color ErrorTitleColor { get; set; }
+    public partial Color ErrorDescriptionColor { get; set; }
+    public partial Color ErrorTailColor { get; set; }
+    public partial Color ErrorIconBgColor { get; set; }
+    public partial Color ErrorIconBorderColor { get; set; }
+    public partial Color ErrorDotColor { get; set; }
+    public partial Color StepsNavActiveColor { get; set; }
     // Steps inline variable
-    public double InlineDotSize { get; set; }
-    public Thickness InlineHeaderMargin { get; set; }
-    public Thickness InlineHeaderPadding { get; set; }
-    public Thickness InlineItemPadding { get; set; }
-    public Color InlineTitleColor { get; set; }
-    public Color InlineTailColor { get; set; }
-    public double DotLineThickness { get; set; }
+    public partial double InlineDotSize { get; set; }
+    public partial Thickness InlineHeaderMargin { get; set; }
+    public partial Thickness InlineHeaderPadding { get; set; }
+    public partial Thickness InlineItemPadding { get; set; }
+    public partial Color InlineTitleColor { get; set; }
+    public partial Color InlineTailColor { get; set; }
+    public partial double DotLineThickness { get; set; }
 
     /// <summary>
     /// 空心点状步骤点的边框宽度
     /// Border width of the outline dot (antd Steps dot icon border width)
     /// </summary>
-    public Thickness OutlineDotBorderThickness { get; set; }
-    public Thickness ProgressFramePadding { get; set; }
-    public Thickness ProgressFramePaddingSM { get; set; }
-    public Color ProgressGrooveColor { get; set; }
-    public Color ProgressColor { get; set; }
-    public double PanelArrowWidth { get; set; }
-    public double PanelArrowWidthSM { get; set; }
-    public Color PanelWaitBackground { get; set; }
-    public Color PanelProcessBackground { get; set; }
-    public Color PanelFinishBackground { get; set; }
-    public Color PanelErrorBackground { get; set; }
-    public Color PanelWaitActiveBackground { get; set; }
-    public Color PanelProcessActiveBackground { get; set; }
-    public Color PanelFinishActiveBackground { get; set; }
-    public Color PanelErrorActiveBackground { get; set; }
-    public Color PanelWaitTextColor { get; set; }
-    public Color PanelProcessTextColor { get; set; }
-    public Color PanelFinishTextColor { get; set; }
-    public Color PanelErrorTextColor { get; set; }
-    public Color PanelActiveTextColor { get; set; }
-    public Color PanelErrorActiveTextColor { get; set; }
-    public Thickness PanelFirstBorderThickness { get; set; }
-    public Thickness PanelMiddleBorderThickness { get; set; }
-    public Thickness PanelLastBorderThickness { get; set; }
-    public CornerRadius PanelFirstCornerRadius { get; set; }
-    public CornerRadius PanelLastCornerRadius { get; set; }
-    public CornerRadius PanelFirstCornerRadiusSM { get; set; }
-    public CornerRadius PanelLastCornerRadiusSM { get; set; }
+    public partial Thickness OutlineDotBorderThickness { get; set; }
+    public partial Thickness ProgressFramePadding { get; set; }
+    public partial Thickness ProgressFramePaddingSM { get; set; }
+    public partial Color ProgressGrooveColor { get; set; }
+    public partial Color ProgressColor { get; set; }
+    public partial double PanelArrowWidth { get; set; }
+    public partial double PanelArrowWidthSM { get; set; }
+    public partial Color PanelWaitBackground { get; set; }
+    public partial Color PanelProcessBackground { get; set; }
+    public partial Color PanelFinishBackground { get; set; }
+    public partial Color PanelErrorBackground { get; set; }
+    public partial Color PanelWaitActiveBackground { get; set; }
+    public partial Color PanelProcessActiveBackground { get; set; }
+    public partial Color PanelFinishActiveBackground { get; set; }
+    public partial Color PanelErrorActiveBackground { get; set; }
+    public partial Color PanelWaitTextColor { get; set; }
+    public partial Color PanelProcessTextColor { get; set; }
+    public partial Color PanelFinishTextColor { get; set; }
+    public partial Color PanelErrorTextColor { get; set; }
+    public partial Color PanelActiveTextColor { get; set; }
+    public partial Color PanelErrorActiveTextColor { get; set; }
+    public partial Thickness PanelFirstBorderThickness { get; set; }
+    public partial Thickness PanelMiddleBorderThickness { get; set; }
+    public partial Thickness PanelLastBorderThickness { get; set; }
+    public partial CornerRadius PanelFirstCornerRadius { get; set; }
+    public partial CornerRadius PanelLastCornerRadius { get; set; }
+    public partial CornerRadius PanelFirstCornerRadiusSM { get; set; }
+    public partial CornerRadius PanelLastCornerRadiusSM { get; set; }
 
     #endregion
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

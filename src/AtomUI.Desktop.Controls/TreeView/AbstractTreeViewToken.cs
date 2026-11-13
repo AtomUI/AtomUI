@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTreeViewToken : AbstractTreePresentationToken
+public abstract partial class AbstractTreeViewToken : AbstractTreePresentationToken
 {
 
 
@@ -29,10 +29,10 @@ internal abstract class AbstractTreeViewToken : AbstractTreePresentationToken
     /// <summary>
     /// 拖动指示器
     /// </summary>
-    public double DragIndicatorLineWidth { get; set; }
+    public partial double DragIndicatorLineWidth { get; set; }
 
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

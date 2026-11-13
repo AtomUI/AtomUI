@@ -4,27 +4,27 @@ using Avalonia.Media;
 namespace AtomUI.Controls;
 
 [ControlDesignToken]
-internal sealed class AvatarToken : AbstractControlDesignToken
+public sealed partial class AvatarToken : AbstractControlDesignToken
 {
-    public double ContainerSize { get; set; }
+    public partial double ContainerSize { get; set; }
 
-    public double ContainerSizeLG { get; set; }
+    public partial double ContainerSizeLG { get; set; }
 
-    public double ContainerSizeSM { get; set; }
+    public partial double ContainerSizeSM { get; set; }
 
-    public double TextFontSize { get; set; }
+    public partial double TextFontSize { get; set; }
 
-    public double TextFontSizeLG { get; set; }
+    public partial double TextFontSizeLG { get; set; }
 
-    public double TextFontSizeSM { get; set; }
+    public partial double TextFontSizeSM { get; set; }
 
-    public Color GroupBorderColor { get; set; }
+    public partial Color GroupBorderColor { get; set; }
 
-    public Color AvatarBg { get; set; }
+    public partial Color AvatarBg { get; set; }
 
-    public Color AvatarColor { get; set; }
+    public partial Color AvatarColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ContainerSize = EffectiveGlobalToken.ControlHeight;

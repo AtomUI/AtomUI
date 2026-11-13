@@ -5,36 +5,36 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MessageCardToken : AbstractControlDesignToken
+public sealed partial class MessageCardToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 提示框背景色
     /// </summary>
-    public Color ContentBg { get; set; }
+    public partial Color ContentBg { get; set; }
 
     /// <summary>
     /// 提示框内边距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 提醒框图标尺寸
     /// </summary>
-    public double MessageIconSize { get; set; }
+    public partial double MessageIconSize { get; set; }
 
     /// <summary>
     /// 提醒框图标外边距
     /// </summary>
-    public Thickness MessageIconMargin { get; set; }
-    public Thickness MessageTopMargin { get; set; }
+    public partial Thickness MessageIconMargin { get; set; }
+    public partial Thickness MessageTopMargin { get; set; }
 
     public MessageCardToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ContentBg = EffectiveGlobalToken.ColorBgElevated;

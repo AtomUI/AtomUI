@@ -4,11 +4,11 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TransferListViewToken : AbstractListViewToken
+public sealed partial class TransferListViewToken : AbstractListViewToken
 {
-    public Thickness PaginationMargin { get; set; }
+    public partial Thickness PaginationMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

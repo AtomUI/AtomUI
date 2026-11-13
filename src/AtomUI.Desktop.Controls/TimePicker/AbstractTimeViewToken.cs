@@ -5,15 +5,15 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTimeViewToken : AbstractControlDesignToken
+public abstract partial class AbstractTimeViewToken : AbstractControlDesignToken
 {
-    public double ItemHeight { get; set; }
-    public double ItemWidth { get; set; }
-    public double PeriodHostWidth { get; set; }
-    public Thickness ItemPadding { get; set; }
-    public Thickness ItemMargin { get; set; }
+    public partial double ItemHeight { get; set; }
+    public partial double ItemWidth { get; set; }
+    public partial double PeriodHostWidth { get; set; }
+    public partial Thickness ItemPadding { get; set; }
+    public partial Thickness ItemMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ItemMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);

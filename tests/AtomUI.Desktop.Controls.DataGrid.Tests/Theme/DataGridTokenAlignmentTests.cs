@@ -22,7 +22,7 @@ public class DataGridTokenAlignmentTests
         };
         var token = new DataGridToken();
         token.AssignEffectiveGlobalToken(sharedToken);
-        token.CalculateTokenValues(isDarkMode: false);
+        token.RunDefaultCalculation(isDarkMode: false);
 
         // AntD size.ts：middle 单元格 inline=paddingXS(8)、block=paddingSM(12)。
         token.CellPaddingMD.ShouldBe(

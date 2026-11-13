@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SplitterToken : AbstractControlDesignToken
+public sealed partial class SplitterToken : AbstractControlDesignToken
 {
     
     public SplitterToken()
@@ -15,33 +15,33 @@ internal sealed class SplitterToken : AbstractControlDesignToken
     /// <summary>
     /// Draggable indicator size.
     /// </summary>
-    public double SplitBarDraggableSize { get; set; }
+    public partial double SplitBarDraggableSize { get; set; }
 
     /// <summary>
     /// Visible bar size.
     /// </summary>
-    public double SplitBarSize { get; set; }
+    public partial double SplitBarSize { get; set; }
 
     /// <summary>
     /// Drag trigger area size.
     /// </summary>
-    public double SplitTriggerSize { get; set; }
+    public partial double SplitTriggerSize { get; set; }
 
-    public double SplitBarCollapseOffset { get; set; }
-    public double SplitBarCollapseOffsetNegative { get; set; }
-    public double SplitBarCollapseCrossOffset { get; set; }
-    public double SplitBarHandleSize { get; set; }
+    public partial double SplitBarCollapseOffset { get; set; }
+    public partial double SplitBarCollapseOffsetNegative { get; set; }
+    public partial double SplitBarCollapseCrossOffset { get; set; }
+    public partial double SplitBarHandleSize { get; set; }
 
-    public Color HandleLineColor { get; set; }
-    public Color HandleLineHoverColor { get; set; }
-    public Color HandleLineDragColor { get; set; }
-    public Color HandleIconColor { get; set; }
-    public Color HandleIconHoverColor { get; set; }
-    public Color HandleIconPressedColor { get; set; }
-    public double HandleLineThickness { get; set; }
-    public double HandleIconSize { get; set; }
+    public partial Color HandleLineColor { get; set; }
+    public partial Color HandleLineHoverColor { get; set; }
+    public partial Color HandleLineDragColor { get; set; }
+    public partial Color HandleIconColor { get; set; }
+    public partial Color HandleIconHoverColor { get; set; }
+    public partial Color HandleIconPressedColor { get; set; }
+    public partial double HandleLineThickness { get; set; }
+    public partial double HandleIconSize { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

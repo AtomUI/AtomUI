@@ -6,17 +6,17 @@ using Avalonia.Media.Immutable;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class RibbonBadgeToken : AbstractControlDesignToken
+public sealed partial class RibbonBadgeToken : AbstractControlDesignToken
 {
-    public Point Offset { get; set; }
+    public partial Point Offset { get; set; }
 
-    public ImmutableTransform? CornerTransform { get; set; }
+    public partial ImmutableTransform? CornerTransform { get; set; }
 
-    public int CornerDarkenAmount { get; set; }
+    public partial int CornerDarkenAmount { get; set; }
 
-    public Thickness TextPadding { get; set; }
+    public partial Thickness TextPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

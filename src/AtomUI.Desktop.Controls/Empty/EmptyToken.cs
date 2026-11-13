@@ -4,27 +4,27 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class EmptyToken : AbstractControlDesignToken
+public sealed partial class EmptyToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 空图片的高度
     /// </summary>
-    public double EmptyImgHeight { get; set; }
+    public partial double EmptyImgHeight { get; set; }
 
-    public double EmptyImgHeightSM { get; set; }
-    public double EmptyImgHeightMD { get; set; }
+    public partial double EmptyImgHeightSM { get; set; }
+    public partial double EmptyImgHeightMD { get; set; }
     
-    public Thickness DescriptionMargin { get; set; }
-    public Thickness DescriptionMarginSM { get; set; }
-    public Thickness FooterMargin { get; set; }
+    public partial Thickness DescriptionMargin { get; set; }
+    public partial Thickness DescriptionMarginSM { get; set; }
+    public partial Thickness FooterMargin { get; set; }
 
     public EmptyToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;

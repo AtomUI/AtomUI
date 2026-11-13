@@ -7,14 +7,14 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DropdownButtonToken : AbstractButtonGeometryToken
+public sealed partial class DropdownButtonToken : AbstractButtonGeometryToken
 {
-    public Thickness ExtraContentMargin { get; set; }
-    public Thickness ExtraContentMarginLG { get; set; }
-    public Thickness ExtraContentMarginSM { get; set; }
-    public double MarginToAnchor { get; set; }
+    public partial Thickness ExtraContentMargin { get; set; }
+    public partial Thickness ExtraContentMarginLG { get; set; }
+    public partial Thickness ExtraContentMarginSM { get; set; }
+    public partial double MarginToAnchor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(DropdownButtonTokenKind.ContentFontSize))

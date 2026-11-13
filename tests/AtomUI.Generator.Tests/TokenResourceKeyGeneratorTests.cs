@@ -923,7 +923,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     public double ContentHeight { get; set; }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         ContentHeight = isDarkMode ? 40 : 32;
                     }
@@ -934,7 +934,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     public double CornerRadius { get; set; }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         base.CalculateTokenValues(isDarkMode);
                         CornerRadius = isDarkMode ? 8 : 6;
@@ -946,8 +946,8 @@ public class TokenResourceKeyGeneratorTests
         diagnostics.ShouldBeEmpty();
         var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
         schema.ShouldContain(
-            "((global::Demo.ButtonToken)token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
-        schema.ShouldNotContain("CommonButtonToken)token).CalculateTokenValues");
+            "((global::Demo.ButtonToken)token).RunDefaultCalculation(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+        schema.ShouldNotContain("CommonButtonToken)token).RunDefaultCalculation");
     }
 
     [Theory]
@@ -968,7 +968,7 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal abstract class CommonButtonToken : AbstractControlDesignToken
                 {
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                     }
                 }
@@ -978,7 +978,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     {{overloadDeclaration}}
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         base.CalculateTokenValues(isDarkMode);
                     }
@@ -1009,7 +1009,7 @@ public class TokenResourceKeyGeneratorTests
                     {
                     }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                     }
                 }
@@ -1017,7 +1017,7 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal sealed class ButtonToken : CommonButtonToken
                 {
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         base.CalculateTokenValues(isDarkMode);
                         base.CalculateTokenValues(1);
@@ -1030,13 +1030,13 @@ public class TokenResourceKeyGeneratorTests
     }
 
     [Theory]
-    [InlineData("missing", "public override void CalculateTokenValues(bool isDarkMode) { }")]
-    [InlineData("duplicate", "public override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); base.CalculateTokenValues(isDarkMode); }")]
-    [InlineData("not first", "public override void CalculateTokenValues(bool isDarkMode) { CornerRadius = 4; base.CalculateTokenValues(isDarkMode); }")]
-    [InlineData("conditional", "public override void CalculateTokenValues(bool isDarkMode) { if (isDarkMode) { base.CalculateTokenValues(isDarkMode); } }")]
-    [InlineData("wrong argument", "public override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(!isDarkMode); }")]
-    [InlineData("expression body", "public override void CalculateTokenValues(bool isDarkMode) => base.CalculateTokenValues(isDarkMode);")]
-    [InlineData("nested local function", "public override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); void Recalculate() { base.CalculateTokenValues(isDarkMode); } }")]
+    [InlineData("missing", "protected override void CalculateTokenValues(bool isDarkMode) { }")]
+    [InlineData("duplicate", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); base.CalculateTokenValues(isDarkMode); }")]
+    [InlineData("not first", "protected override void CalculateTokenValues(bool isDarkMode) { CornerRadius = 4; base.CalculateTokenValues(isDarkMode); }")]
+    [InlineData("conditional", "protected override void CalculateTokenValues(bool isDarkMode) { if (isDarkMode) { base.CalculateTokenValues(isDarkMode); } }")]
+    [InlineData("wrong argument", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(!isDarkMode); }")]
+    [InlineData("expression body", "protected override void CalculateTokenValues(bool isDarkMode) => base.CalculateTokenValues(isDarkMode);")]
+    [InlineData("nested local function", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); void Recalculate() { base.CalculateTokenValues(isDarkMode); } }")]
     public void Reports_Diagnostic_For_Invalid_Calculation_Base_Call(
         string expectedReason,
         string methodDeclaration)
@@ -1054,7 +1054,7 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal abstract class CommonButtonToken : AbstractControlDesignToken
                 {
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                     }
                 }
@@ -1114,6 +1114,8 @@ public class TokenResourceKeyGeneratorTests
                 internal sealed class ButtonToken : CommonButtonToken
                 {
                     public double CornerRadius { get; set; }
+
+                    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
                 }
             }
             """,
@@ -1248,7 +1250,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     public double ContentHeight { get; set; }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         ContentHeight = isDarkMode ? 40 : 32;
                     }
@@ -1259,7 +1261,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     public double TerminalValue { get; set; }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         base.CalculateTokenValues(isDarkMode);
                         TerminalValue = isDarkMode ? 2 : 1;
@@ -1271,7 +1273,7 @@ public class TokenResourceKeyGeneratorTests
                 {
                     public double TerminalValue { get; set; }
 
-                    public override void CalculateTokenValues(bool isDarkMode)
+                    protected override void CalculateTokenValues(bool isDarkMode)
                     {
                         base.CalculateTokenValues(isDarkMode);
                         TerminalValue = isDarkMode ? 20 : 10;
@@ -1447,6 +1449,7 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal sealed class ButtonToken : CommonButtonToken
                 {
+                    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
                 }
             }
             """,
@@ -1907,9 +1910,11 @@ public class TokenResourceKeyGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
-                public virtual void CalculateTokenValues(bool isDark)
+                protected virtual void CalculateTokenValues(bool isDark)
                 {
                 }
+
+                internal void RunDefaultCalculation(bool isDark) => CalculateTokenValues(isDark);
             }
         }
 

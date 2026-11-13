@@ -7,6 +7,6 @@ namespace AtomUI.Desktop.Controls;
 /// CheckableTag's own effective global Tokens.
 /// </summary>
 [ControlDesignToken]
-internal sealed class CheckableTagToken : AbstractTagToken
+public sealed partial class CheckableTagToken : AbstractTagToken
 {
 }

@@ -70,7 +70,7 @@ public abstract class AbstractControlDesignToken : AbstractDesignToken
         }
     }
 
-    public virtual void CalculateTokenValues(bool isDarkMode)
+    protected virtual void CalculateTokenValues(bool isDarkMode)
     {
     }
 

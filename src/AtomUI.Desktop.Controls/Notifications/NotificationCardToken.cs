@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class NotificationCardToken : AbstractControlDesignToken
+public sealed partial class NotificationCardToken : AbstractControlDesignToken
 {
 
     public NotificationCardToken()
@@ -16,86 +16,86 @@ internal sealed class NotificationCardToken : AbstractControlDesignToken
     /// <summary>
     /// 提醒框背景色
     /// </summary>
-    public Color NotificationBg { get; set; }
+    public partial Color NotificationBg { get; set; }
 
     /// <summary>
     /// 提醒框内边距
     /// </summary>
-    public Thickness NotificationPadding { get; set; }
+    public partial Thickness NotificationPadding { get; set; }
 
     /// <summary>
     /// 提醒框图标尺寸
     /// </summary>
-    public double NotificationIconSize { get; set; }
+    public partial double NotificationIconSize { get; set; }
 
     /// <summary>
     /// 提醒框图标外边距
     /// </summary>
-    public Thickness NotificationIconMargin { get; set; }
+    public partial Thickness NotificationIconMargin { get; set; }
 
     /// <summary>
     /// 提醒框关闭按钮尺寸
     /// </summary>
-    public double NotificationCloseButtonSize { get; set; }
+    public partial double NotificationCloseButtonSize { get; set; }
     
     /// <summary>
     /// 内容区域标题与描述之间的间距
     /// </summary>
-    public double NotificationSectionSpacing { get; set; }
+    public partial double NotificationSectionSpacing { get; set; }
 
     /// <summary>
     /// 标题与描述的右侧留白，避免文本压到关闭按钮
     /// </summary>
-    public Thickness NotificationTitlePadding { get; set; }
+    public partial Thickness NotificationTitlePadding { get; set; }
 
     /// <summary>
     /// 操作组的上边距
     /// </summary>
-    public Thickness NotificationActionsMargin { get; set; }
+    public partial Thickness NotificationActionsMargin { get; set; }
 
     /// <summary>
     /// 关闭按钮由卡片内容区左上角偏移到内容区右上角的覆盖层外边距
     /// </summary>
-    public Thickness NotificationCloseButtonMargin { get; set; }
+    public partial Thickness NotificationCloseButtonMargin { get; set; }
 
     /// <summary>
     /// 提醒框进度条背景色
     /// </summary>
-    public IImmutableBrush? NotificationProgressBg { get; set; }
+    public partial IImmutableBrush? NotificationProgressBg { get; set; }
 
     /// <summary>
     /// 提醒框进度条底槽色。进度条先以该色铺满整条作为底槽，再叠加彩色进度值；
     /// 缺底槽时剩余时间在卡片背景上不可见。
     /// </summary>
-    public Color NotificationProgressTrackBg { get; set; }
+    public partial Color NotificationProgressTrackBg { get; set; }
 
     /// <summary>
     /// 提醒框进度条高度
     /// </summary>
-    public double NotificationProgressHeight { get; set; }
+    public partial double NotificationProgressHeight { get; set; }
 
     /// <summary>
     /// 进度条外边距
     /// </summary>
-    public Thickness NotificationProgressMargin { get; set; }
+    public partial Thickness NotificationProgressMargin { get; set; }
 
     /// <summary>
     /// 提醒框宽度
     /// </summary>
-    public double NotificationWidth { get; set; }
+    public partial double NotificationWidth { get; set; }
 
 
     /// <summary>
     /// 提醒框上边缘外边距
     /// </summary>
-    public Thickness NotificationTopMargin { get; set; }
+    public partial Thickness NotificationTopMargin { get; set; }
 
     /// <summary>
     /// 提醒框下边缘外边距
     /// </summary>
-    public Thickness NotificationBottomMargin { get; set; }
+    public partial Thickness NotificationBottomMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

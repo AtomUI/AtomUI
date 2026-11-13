@@ -7,54 +7,54 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ScrollViewerToken : AbstractControlDesignToken
+public sealed partial class ScrollViewerToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 极简模式下，滚动条滑块的粗细
     /// </summary>
-    public double LiteModeThumbThickness { get; set; }
+    public partial double LiteModeThumbThickness { get; set; }
     
     /// <summary>
     /// 正常模式下，滚动条滑块的粗细
     /// </summary>
-    public double NormalModeThumbThickness { get; set; }
+    public partial double NormalModeThumbThickness { get; set; }
     
     /// <summary>
     /// 滚动条滑块的圆角大小
     /// </summary>
-    public CornerRadius ThumbCornerRadius { get; set; }
+    public partial CornerRadius ThumbCornerRadius { get; set; }
 
     /// <summary>
     /// 指示器滚动条滑块的圆角大小。
     /// </summary>
-    public CornerRadius IndicatorThumbCornerRadius { get; set; }
+    public partial CornerRadius IndicatorThumbCornerRadius { get; set; }
 
     /// <summary>
     /// 滚动条滑块背景颜色
     /// </summary>
-    public Color ThumbBg { get; set; }
+    public partial Color ThumbBg { get; set; }
 
     /// <summary>
     /// 滚动条滑块鼠标 hover 背景颜色
     /// </summary>
-    public Color ThumbHoverBg { get; set; }
+    public partial Color ThumbHoverBg { get; set; }
     
     /// <summary>
     /// 滚动条滑块鼠标按下的背景颜色
     /// </summary>
-    public Color ThumbActiveBg { get; set; }
+    public partial Color ThumbActiveBg { get; set; }
     
     #region 内部 Token 定义
     /// <summary>
     /// 水平滚动条内间距
     /// </summary>
-    public Thickness ScrollBarContentHPadding { get; set; }
+    public partial Thickness ScrollBarContentHPadding { get; set; }
     
     /// <summary>
     /// 垂直滚动条内间距
     /// </summary>
-    public Thickness ScrollBarContentVPadding { get; set; }
+    public partial Thickness ScrollBarContentVPadding { get; set; }
     #endregion
     
     public ScrollViewerToken()
@@ -62,7 +62,7 @@ internal sealed class ScrollViewerToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

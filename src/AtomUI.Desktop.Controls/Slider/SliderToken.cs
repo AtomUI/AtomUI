@@ -9,7 +9,7 @@ namespace AtomUI.Desktop.Controls;
 // vertical: part   (水平时，垂直方向命名为 part)
 // horizontal: full (水平时，水平方向命名为 full)
 [ControlDesignToken]
-internal sealed class SliderToken : AbstractControlDesignToken
+public sealed partial class SliderToken : AbstractControlDesignToken
 {
     
     public SliderToken()
@@ -23,124 +23,124 @@ internal sealed class SliderToken : AbstractControlDesignToken
     /// </summary>
     [ReservedToken("antd Slider controlSize. The Slider cross size is pinned to ControlHeight by the derived padding and " +
                    "the rail inset follows the thumb size, so this Token has no design-meaningful effect yet.")]
-    public double SliderTrackSize { get; set; }
+    public partial double SliderTrackSize { get; set; }
 
     /// <summary>
     /// 轨道高度
     /// </summary>
-    public double RailSize { get; set; }
+    public partial double RailSize { get; set; }
 
     /// <summary>
     /// Mark 的大小
     /// </summary>
-    public double MarkSize { get; set; }
+    public partial double MarkSize { get; set; }
 
     /// <summary>
     /// Thumb 推荐的大小，方便风格使用，是最大需要的大小
     /// </summary>
-    public double ThumbSize { get; set; }
+    public partial double ThumbSize { get; set; }
 
     /// <summary>
     /// 滑块尺寸
     /// </summary>
-    public double ThumbCircleSize { get; set; }
+    public partial double ThumbCircleSize { get; set; }
 
     /// <summary>
     /// 滑块尺寸（悬浮态）
     /// </summary>
-    public double ThumbCircleSizeHover { get; set; }
+    public partial double ThumbCircleSizeHover { get; set; }
 
     /// <summary>
     /// 滑块边框宽度
     /// </summary>
-    public Thickness ThumbCircleBorderThickness { get; set; }
+    public partial Thickness ThumbCircleBorderThickness { get; set; }
 
     /// <summary>
     /// 滑块边框宽度（悬浮态）
     /// </summary>
-    public Thickness ThumbCircleBorderThicknessHover { get; set; }
+    public partial Thickness ThumbCircleBorderThicknessHover { get; set; }
 
     /// <summary>
     /// 轨道背景色
     /// </summary>
-    public Color RailBg { get; set; }
+    public partial Color RailBg { get; set; }
 
     /// <summary>
     /// 轨道背景色（悬浮态）
     /// </summary>
-    public Color RailHoverBg { get; set; }
+    public partial Color RailHoverBg { get; set; }
 
     /// <summary>
     /// 轨道已覆盖部分背景色
     /// </summary>
-    public Color TrackBg { get; set; }
+    public partial Color TrackBg { get; set; }
 
     /// <summary>
     /// 轨道已覆盖部分背景色（悬浮态）
     /// </summary>
-    public Color TrackHoverBg { get; set; }
+    public partial Color TrackHoverBg { get; set; }
 
     /// <summary>
     /// Mark 的背景颜色
     /// </summary>
-    public Color MarkBorderColor { get; set; }
+    public partial Color MarkBorderColor { get; set; }
 
     /// <summary>
     /// Mark 的背景 hover 效果
     /// </summary>
-    public Color MarkBorderColorHover { get; set; }
+    public partial Color MarkBorderColorHover { get; set; }
 
     /// <summary>
     /// Mark 的背景激活时候效果
     /// </summary>
-    public Color MarkBorderColorActive { get; set; }
+    public partial Color MarkBorderColorActive { get; set; }
 
     /// <summary>
     /// 滑块颜色
     /// </summary>
-    public Color ThumbCircleBorderColor { get; set; }
+    public partial Color ThumbCircleBorderColor { get; set; }
 
     /// <summary>
     /// 滑块颜色 hover
     /// </summary>
-    public Color ThumbCircleBorderHoverColor { get; set; }
+    public partial Color ThumbCircleBorderHoverColor { get; set; }
 
     /// <summary>
     /// 滑块激活态颜色
     /// </summary>
-    public Color ThumbCircleBorderActiveColor { get; set; }
+    public partial Color ThumbCircleBorderActiveColor { get; set; }
 
     /// <summary>
     /// 滑块禁用颜色
     /// </summary>
-    public Color ThumbCircleBorderColorDisabled { get; set; }
+    public partial Color ThumbCircleBorderColorDisabled { get; set; }
 
     /// <summary>
     /// 滑块的 outline 环的颜色
     /// </summary>
-    public Color ThumbOutlineColor { get; set; }
+    public partial Color ThumbOutlineColor { get; set; }
 
     /// <summary>
     /// 滑块的 outline 环的厚度
     /// </summary>
-    public Thickness ThumbOutlineThickness { get; set; }
+    public partial Thickness ThumbOutlineThickness { get; set; }
 
     /// <summary>
     /// 轨道禁用态背景色
     /// </summary>
-    public Color TrackBgDisabled { get; set; }
+    public partial Color TrackBgDisabled { get; set; }
 
-    public Thickness SliderPaddingHorizontal { get; set; }
-    public Thickness SliderPaddingVertical { get; set; }
+    public partial Thickness SliderPaddingHorizontal { get; set; }
+    public partial Thickness SliderPaddingVertical { get; set; }
     /// <summary>
     /// 带刻度时的底部外边距
     /// Bottom margin of a slider with marks
     /// </summary>
     [ReservedToken("antd Slider marginPartWithMark (controlHeightLG - controlSize). SliderTrack measures the mark labels " +
                    "and adds their size to the track height, so no fixed mark margin is applied yet.")]
-    public Thickness MarginPartWithMark { get; set; }
+    public partial Thickness MarginPartWithMark { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         // Thumb line width is always width-er 1px

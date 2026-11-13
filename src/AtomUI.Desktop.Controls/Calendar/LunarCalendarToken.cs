@@ -6,36 +6,36 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class LunarCalendarToken : AbstractCalendarToken
+public sealed partial class LunarCalendarToken : AbstractCalendarToken
 {
-    public double MiniContentHeight { get; set; }
-    public double MiniDateCellSize { get; set; }
-    public double MiniMonthCellWidth { get; set; }
-    public double SecondaryTextFontSize { get; set; }
-    public double SecondaryTextLineHeight { get; set; }
-    public Color SecondaryTextColor { get; set; }
-    public Color WeekendTextColor { get; set; }
-    public Color HolidayMarkerColor { get; set; }
-    public Color WorkdayMarkerColor { get; set; }
+    public partial double MiniContentHeight { get; set; }
+    public partial double MiniDateCellSize { get; set; }
+    public partial double MiniMonthCellWidth { get; set; }
+    public partial double SecondaryTextFontSize { get; set; }
+    public partial double SecondaryTextLineHeight { get; set; }
+    public partial Color SecondaryTextColor { get; set; }
+    public partial Color WeekendTextColor { get; set; }
+    public partial Color HolidayMarkerColor { get; set; }
+    public partial Color WorkdayMarkerColor { get; set; }
 
     /// <summary>
     /// 节假日/调休标记圆点的直径。
     /// </summary>
-    public double MarkerSize { get; set; }
+    public partial double MarkerSize { get; set; }
 
     /// <summary>
     /// 节假日/调休标记圆点与次要文字之间的外边距。
     /// </summary>
-    public Thickness MarkerMargin { get; set; }
+    public partial Thickness MarkerMargin { get; set; }
 
     /// <summary>
     /// 节假日/调休标记圆点的圆角，默认为直径的一半。
     /// </summary>
-    public CornerRadius MarkerCornerRadius { get; set; }
-    public double FullCellMinHeight { get; set; }
-    public double RangeBarTopOffset { get; set; }
+    public partial CornerRadius MarkerCornerRadius { get; set; }
+    public partial double FullCellMinHeight { get; set; }
+    public partial double RangeBarTopOffset { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

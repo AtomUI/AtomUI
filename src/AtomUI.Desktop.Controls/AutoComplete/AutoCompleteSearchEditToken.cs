@@ -3,6 +3,6 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class AutoCompleteSearchEditToken : AbstractAutoCompleteToken
+public sealed partial class AutoCompleteSearchEditToken : AbstractAutoCompleteToken
 {
 }

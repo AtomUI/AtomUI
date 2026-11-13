@@ -5,10 +5,10 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TimePickerToken : AbstractTimePickerToken
+public sealed partial class TimePickerToken : AbstractTimePickerToken
 {
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(TimePickerTokenKind.ItemWidth))

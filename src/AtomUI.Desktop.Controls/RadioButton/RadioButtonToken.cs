@@ -5,46 +5,46 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class RadioButtonToken : AbstractControlDesignToken
+public sealed partial class RadioButtonToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 单选框大小，除去文字部分的
     /// </summary>
-    public double RadioSize { get; set; }
+    public partial double RadioSize { get; set; }
 
     /// <summary>
     /// 单选框圆点大小
     /// </summary>
-    public double DotSize { get; set; }
+    public partial double DotSize { get; set; }
 
     /// <summary>
     /// 单选框圆点禁用颜色
     /// </summary>
-    public Color DotColorDisabled { get; set; }
+    public partial Color DotColorDisabled { get; set; }
 
     /// <summary>
     /// 选中时圆点颜色（内部使用）
     /// Dot color of a checked radio (internal)
     /// </summary>
-    public Color RadioColor { get; set; }
+    public partial Color RadioColor { get; set; }
 
     /// <summary>
     /// 选中时单选框背景色（内部使用）
     /// Background of a checked radio (internal)
     /// </summary>
-    public Color RadioBgColor { get; set; }
+    public partial Color RadioBgColor { get; set; }
 
-    public double DotPadding { get; set; }
+    public partial double DotPadding { get; set; }
 
-    public Thickness TextMargin { get; set; }
+    public partial Thickness TextMargin { get; set; }
 
     public RadioButtonToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var lineWidth        = EffectiveGlobalToken.LineWidth;

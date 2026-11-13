@@ -5,106 +5,106 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractButtonVariantToken : AbstractControlDesignToken
+public abstract partial class AbstractButtonVariantToken : AbstractControlDesignToken
 {
     /// <summary>
     /// 危险按钮文本颜色
     /// </summary>
-    public Color DangerColor { get; set; }
+    public partial Color DangerColor { get; set; }
     /// <summary>
     /// 危险按钮阴影
     /// </summary>
-    public BoxShadows DangerShadow { get; set; }
+    public partial BoxShadows DangerShadow { get; set; }
     /// <summary>
     /// 默认按钮激活态背景色
     /// </summary>
-    public Color DefaultActiveBg { get; set; }
+    public partial Color DefaultActiveBg { get; set; }
     /// <summary>
     /// 默认按钮激活态边框颜色
     /// </summary>
-    public Color DefaultActiveBorderColor { get; set; }
+    public partial Color DefaultActiveBorderColor { get; set; }
     /// <summary>
     /// 默认按钮激活态文字颜色
     /// </summary>
-    public Color DefaultActiveColor { get; set; }
+    public partial Color DefaultActiveColor { get; set; }
     /// <summary>
     /// 默认按钮背景色
     /// </summary>
-    public Color DefaultBg { get; set; }
+    public partial Color DefaultBg { get; set; }
     /// <summary>
     /// 默认按钮边框颜色
     /// </summary>
-    public Color DefaultBorderColor { get; set; }
+    public partial Color DefaultBorderColor { get; set; }
     /// <summary>
     /// 默认按钮文本颜色
     /// </summary>
-    public Color DefaultColor { get; set; }
+    public partial Color DefaultColor { get; set; }
     /// <summary>
     /// 默认幽灵按钮边框颜色
     /// </summary>
-    public Color DefaultGhostBorderColor { get; set; }
+    public partial Color DefaultGhostBorderColor { get; set; }
     /// <summary>
     /// 默认幽灵按钮文本颜色
     /// </summary>
-    public Color DefaultGhostColor { get; set; }
+    public partial Color DefaultGhostColor { get; set; }
     /// <summary>
     /// 默认按钮悬浮态背景色
     /// </summary>
-    public Color DefaultHoverBg { get; set; }
+    public partial Color DefaultHoverBg { get; set; }
     /// <summary>
     /// 默认按钮悬浮态边框颜色
     /// </summary>
-    public Color DefaultHoverBorderColor { get; set; }
+    public partial Color DefaultHoverBorderColor { get; set; }
     /// <summary>
     /// 默认按钮悬浮态文本颜色
     /// </summary>
-    public Color DefaultHoverColor { get; set; }
+    public partial Color DefaultHoverColor { get; set; }
     /// <summary>
     /// 默认按钮阴影
     /// </summary>
-    public BoxShadows DefaultShadow { get; set; }
+    public partial BoxShadows DefaultShadow { get; set; }
     /// <summary>
     /// 幽灵按钮背景色
     /// </summary>
-    public Color GhostBg { get; set; }
+    public partial Color GhostBg { get; set; }
     /// <summary>
     /// 链接按钮悬浮态背景色
     /// </summary>
-    public Color LinkHoverBg { get; set; }
+    public partial Color LinkHoverBg { get; set; }
     /// <summary>
     /// 主要按钮文本颜色
     /// </summary>
-    public Color PrimaryColor { get; set; }
+    public partial Color PrimaryColor { get; set; }
     /// <summary>
     /// 主要按钮阴影
     /// </summary>
-    public BoxShadows PrimaryShadow { get; set; }
+    public partial BoxShadows PrimaryShadow { get; set; }
     /// <summary>
     /// 默认实心按钮的文本色
     /// Default text color for solid buttons.
     /// </summary>
-    public Color SolidTextColor { get; set; }
+    public partial Color SolidTextColor { get; set; }
     /// <summary>
     /// 文本按钮悬浮态背景色
     /// </summary>
-    public Color TextHoverBg { get; set; }
+    public partial Color TextHoverBg { get; set; }
     /// <summary>
     /// 默认文本按钮激活态文字颜色
     /// Default text color for text buttons on active
     /// </summary>
-    public Color TextTextActiveColor { get; set; }
+    public partial Color TextTextActiveColor { get; set; }
     /// <summary>
     /// 默认文本按钮的文本色
     /// Default text color for text buttons on hover
     /// </summary>
-    public Color TextTextColor { get; set; }
+    public partial Color TextTextColor { get; set; }
     /// <summary>
     /// 默认文本按钮悬浮态文本颜色
     /// Default text color for text buttons on hover
     /// </summary>
-    public Color TextTextHoverColor { get; set; }
+    public partial Color TextTextHoverColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var controlOutlineWidth = EffectiveGlobalToken.ControlOutlineWidth;

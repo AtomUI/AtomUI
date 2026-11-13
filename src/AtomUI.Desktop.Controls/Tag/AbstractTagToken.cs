@@ -9,39 +9,39 @@ namespace AtomUI.Desktop.Controls;
 /// <c>Controls[Tag]</c> and <c>Controls[CheckableTag]</c> compute and override these values independently.
 /// </summary>
 [ControlDesignToken]
-internal abstract class AbstractTagToken : AbstractControlDesignToken
+public abstract partial class AbstractTagToken : AbstractControlDesignToken
 {
     /// <summary>
     /// 标签字号
     /// Font size of the tag text
     /// </summary>
-    public double TagFontSize { get; set; }
+    public partial double TagFontSize { get; set; }
 
     /// <summary>
     /// 标签行高
     /// Line height of the tag text
     /// </summary>
-    public double TagLineHeight { get; set; }
+    public partial double TagLineHeight { get; set; }
 
     /// <summary>
     /// 标签图标尺寸
     /// Size of the tag icon
     /// </summary>
-    public double TagIconSize { get; set; }
+    public partial double TagIconSize { get; set; }
 
     /// <summary>
     /// 标签内间距
     /// Padding of the tag
     /// </summary>
-    public Thickness TagPadding { get; set; }
+    public partial Thickness TagPadding { get; set; }
 
     /// <summary>
     /// 标签文字与图标之间的间距
     /// Inline gap between the tag text and its icon
     /// </summary>
-    public Thickness TagTextPaddingInline { get; set; }
+    public partial Thickness TagTextPaddingInline { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         TagFontSize          = EffectiveGlobalToken.FontSizeSM;

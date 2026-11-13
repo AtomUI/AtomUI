@@ -5,18 +5,18 @@ using Avalonia.Media;
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
 [ControlDesignToken]
-internal sealed class GalleryWindowTitleBarToken : AbstractControlDesignToken
+internal sealed partial class GalleryWindowTitleBarToken : AbstractControlDesignToken
 {
 
-    public FontWeight MenuFontWeight { get; set; }
-    public Thickness MenuMargin { get; set; }
+    public partial FontWeight MenuFontWeight { get; set; }
+    public partial Thickness MenuMargin { get; set; }
 
     public GalleryWindowTitleBarToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         MenuFontWeight = FontWeight.Normal;

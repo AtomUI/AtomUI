@@ -6,6 +6,6 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public sealed class ColorPickerToken : AbstractColorPickerToken
+public sealed partial class ColorPickerToken : AbstractColorPickerToken
 {
 }

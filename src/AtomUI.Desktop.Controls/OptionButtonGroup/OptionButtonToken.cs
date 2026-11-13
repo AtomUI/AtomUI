@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class OptionButtonToken : AbstractControlDesignToken
+public sealed partial class OptionButtonToken : AbstractControlDesignToken
 {
     private const string GroupDrawnFrame =
         "OptionButtonGroup draws its separators and the selection border behind the options, so an opaque option " +
@@ -17,106 +17,106 @@ internal sealed class OptionButtonToken : AbstractControlDesignToken
     /// 单选框按钮背景色（antd Radio buttonBg）
     /// </summary>
     [ReservedToken("antd Radio buttonBg. " + GroupDrawnFrame)]
-    public Color ButtonBackground { get; set; }
+    public partial Color ButtonBackground { get; set; }
 
     /// <summary>
     /// 单选框按钮选中背景色（antd Radio buttonCheckedBg）
     /// </summary>
     [ReservedToken("antd Radio buttonCheckedBg. " + GroupDrawnFrame)]
-    public Color ButtonCheckedBackground { get; set; }
+    public partial Color ButtonCheckedBackground { get; set; }
 
     /// <summary>
     /// 单选框按钮文本颜色
     /// </summary>
-    public Color ButtonColor { get; set; }
+    public partial Color ButtonColor { get; set; }
 
     /// <summary>
     /// 单选框按钮水平内间距（antd Radio buttonPaddingInline），作为默认与大号 <see cref="ContentPadding"/> 的左右分量；
     /// 只使用 Left / Right。
     /// </summary>
-    public Thickness ButtonPadding { get; set; }
+    public partial Thickness ButtonPadding { get; set; }
 
     /// <summary>
     /// 单选框按钮选中并禁用时的背景色
     /// </summary>
-    public Color ButtonCheckedBgDisabled { get; set; }
+    public partial Color ButtonCheckedBgDisabled { get; set; }
 
     /// <summary>
     /// 单选框按钮选中并禁用时的文本颜色
     /// </summary>
-    public Color ButtonCheckedColorDisabled { get; set; }
+    public partial Color ButtonCheckedColorDisabled { get; set; }
 
     /// <summary>
     /// 单选框实色按钮选中时的文本颜色
     /// </summary>
-    public Color ButtonSolidCheckedColor { get; set; }
+    public partial Color ButtonSolidCheckedColor { get; set; }
 
     /// <summary>
     /// 单选框实色按钮选中时的背景色
     /// </summary>
-    public Color ButtonSolidCheckedBackground { get; set; }
+    public partial Color ButtonSolidCheckedBackground { get; set; }
 
     /// <summary>
     /// 单选框实色按钮选中时的悬浮态背景色
     /// </summary>
-    public Color ButtonSolidCheckedHoverBackground { get; set; }
+    public partial Color ButtonSolidCheckedHoverBackground { get; set; }
 
     /// <summary>
     /// 单选框实色按钮选中时的激活态背景色
     /// </summary>
-    public Color ButtonSolidCheckedActiveBackground { get; set; }
+    public partial Color ButtonSolidCheckedActiveBackground { get; set; }
 
     /// <summary>
     /// 按钮内容字体大小
     /// </summary>
-    public double ContentFontSize { get; set; }
+    public partial double ContentFontSize { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeLG { get; set; }
+    public partial double ContentFontSizeLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体大小
     /// </summary>
-    public double ContentFontSizeSM { get; set; }
+    public partial double ContentFontSizeSM { get; set; }
 
     /// <summary>
     /// 按钮内容字体行高
     /// </summary>
-    public double ContentLineHeight { get; set; }
+    public partial double ContentLineHeight { get; set; }
 
     /// <summary>
     /// 大号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightLG { get; set; }
+    public partial double ContentLineHeightLG { get; set; }
 
     /// <summary>
     /// 小号按钮内容字体行高
     /// </summary>
-    public double ContentLineHeightSM { get; set; }
+    public partial double ContentLineHeightSM { get; set; }
 
     /// <summary>
     /// 按钮内间距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 大号按钮内间距
     /// </summary>
-    public Thickness ContentPaddingLG { get; set; }
+    public partial Thickness ContentPaddingLG { get; set; }
 
     /// <summary>
     /// 小号按钮内间距
     /// </summary>
-    public Thickness ContentPaddingSM { get; set; }
+    public partial Thickness ContentPaddingSM { get; set; }
 
     public OptionButtonToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ButtonSolidCheckedColor            = EffectiveGlobalToken.ColorTextLightSolid;

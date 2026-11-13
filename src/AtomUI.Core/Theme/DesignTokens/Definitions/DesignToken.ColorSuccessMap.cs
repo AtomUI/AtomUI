@@ -11,7 +11,7 @@ public partial class DesignToken
     /// 1 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessBg { get; set; }
+    public partial Color ColorSuccessBg { get; set; }
 
     /// <summary>
     /// 成功色的浅色背景色悬浮态
@@ -19,7 +19,7 @@ public partial class DesignToken
     /// 2 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessBgHover { get; set; }
+    public partial Color ColorSuccessBgHover { get; set; }
 
     /// <summary>
     /// 成功色的描边色
@@ -27,21 +27,21 @@ public partial class DesignToken
     /// 3 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessBorder { get; set; }
+    public partial Color ColorSuccessBorder { get; set; }
 
     /// <summary>
     /// 成功色的描边色悬浮态
     /// 4 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessBorderHover { get; set; }
+    public partial Color ColorSuccessBorderHover { get; set; }
 
     /// <summary>
     /// 成功色的深色悬浮态
     /// 5 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessHover { get; set; }
+    public partial Color ColorSuccessHover { get; set; }
 
     /// <summary>
     /// 成功色
@@ -55,26 +55,26 @@ public partial class DesignToken
     /// 7 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessActive { get; set; }
+    public partial Color ColorSuccessActive { get; set; }
 
     /// <summary>
     /// 成功色的文本悬浮态
     /// 8 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessTextHover { get; set; }
+    public partial Color ColorSuccessTextHover { get; set; }
 
     /// <summary>
     /// 成功色的文本默认态
     /// 9 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessText { get; set; }
+    public partial Color ColorSuccessText { get; set; }
 
     /// <summary>
     /// 成功色的文本激活态
     /// 10 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorSuccessTextActive { get; set; }
+    public partial Color ColorSuccessTextActive { get; set; }
 }

@@ -6,19 +6,19 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-public abstract class AbstractColorPickerToken : AbstractControlDesignToken
+public abstract partial class AbstractColorPickerToken : AbstractControlDesignToken
 {
-    public double ColorBlockDisabledOpacity { get; set; }
+    public partial double ColorBlockDisabledOpacity { get; set; }
 
-    public BoxShadows ColorBlockInnerShadows { get; set; }
+    public partial BoxShadows ColorBlockInnerShadows { get; set; }
 
-    public double TransparentBgSize { get; set; }
+    public partial double TransparentBgSize { get; set; }
 
-    public Thickness TriggerPadding { get; set; }
+    public partial Thickness TriggerPadding { get; set; }
 
-    public Thickness TriggerTextMargin { get; set; }
+    public partial Thickness TriggerTextMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ColorBlockDisabledOpacity = 0.4;

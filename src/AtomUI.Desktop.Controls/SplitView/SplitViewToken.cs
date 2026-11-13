@@ -4,7 +4,7 @@ using Avalonia.Animation.Easings;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SplitViewToken : AbstractControlDesignToken
+public sealed partial class SplitViewToken : AbstractControlDesignToken
 {
 
     public SplitViewToken()
@@ -12,13 +12,13 @@ internal sealed class SplitViewToken : AbstractControlDesignToken
     {
     }
     
-    public double OpenPaneThemeLength { get; set; }
-    public double CompactPaneThemeLength { get; set; }
-    public TimeSpan PaneOpenMotionDuration { get; set; }
-    public TimeSpan PaneCloseMotionDuration { get; set; }
-    public Easing? PaneMotionEasing { get; set; }
+    public partial double OpenPaneThemeLength { get; set; }
+    public partial double CompactPaneThemeLength { get; set; }
+    public partial TimeSpan PaneOpenMotionDuration { get; set; }
+    public partial TimeSpan PaneCloseMotionDuration { get; set; }
+    public partial Easing? PaneMotionEasing { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         OpenPaneThemeLength     = 320;

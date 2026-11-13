@@ -431,3 +431,64 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   3. `EndRecordingWrites` 在未记账时抛异常，行为合理但没有测试。
   4. 缓存测试用 `ShouldAllBe`，序列为空时也会通过，应先断言非空；只覆盖了控件 Token、无诊断的情形。
   5. 用户手写了实现部分时，生成器仍会再生成一份，得到的是编译器的重复实现错误，而不是清楚的诊断。
+
+### Task 9：全部 Token 改成 partial 属性，控件 Token 类改公开
+
+- 改动：
+  1. 一次性脚本（放在会话临时目录 `scratchpad/codemod/partial_token_properties.py`，不进仓库）只做文本替换，规则：
+     - 作用范围：带 `[ControlDesignToken]`/`[GlobalDesignToken]` 的类，以及同项目里同名的无特性 partial 声明（即 `DesignToken.cs`）。
+     - 改写内容：
+       - 类声明加 `partial`；四个控件包里的类由 `internal` 改为 `public`。
+       - 非 static、无 `[NotTokenDefinition]` 的自动属性，在类型前插入 `partial`。可访问性、特性、初始化器、多余空格原样保留。
+       - `public override void CalculateTokenValues` 改为 `protected`。
+     - 脚本先屏蔽注释、字符串和预处理行，再按大括号匹配成员。默认只报告，`--apply` 才写入。对已改过的代码再跑一遍，报告「0 个文件待改」。
+  2. 改动顺序：先只改 `ToolTipToken.cs`，`dotnet build` 只报 CS0507，原因是基类此时还是 `public virtual`，partial 属性那部分编译通过。然后全量运行脚本。
+  3. 手工改动：
+     - `AbstractControlDesignToken.CalculateTokenValues` 改为 `protected virtual`。
+     - `GeneratedThemeSchemaWriter` 生成的 Evaluate 改调 `RunDefaultCalculation`。
+     - `ATOMUIGEN049` 的 `isEnabledByDefault` 改为 `true`；诊断文档去掉「暂默认关闭」。
+  4. Task 8 审阅带入的两项：
+     - 生成器先按语法判断属性归哪个声明，再读 `[NotTokenDefinition]`。非本声明的属性不再调用 `GetAttributes()`。
+     - 生成文件名带命名空间：控件为 `<Namespace>.<Type>.TokenProperties.g.cs`，全局为 `<Namespace>.DesignToken.Seed.TokenProperties.g.cs`。同一程序集里两个同名 Token 类不再让 `AddSource` 抛异常。新增测试 `Same_Named_Token_Classes_In_Different_Namespaces_Get_Distinct_Files`。
+  5. 测试：
+     - 直接调用 `.CalculateTokenValues(` 的测试改调 `RunDefaultCalculation`（Core 2 处、DataGrid 1 处、Desktop 9 处）。Core.Tests 手写的 3 个 Token 类改为 `protected override`，并各自带一个内部 `RunDefaultCalculation`。
+     - Generator.Tests 用真实 Core 编译的源码桩改为 `protected override`。被生成 Schema 引用的终端桩手写 `RunDefaultCalculation`，因为这些测试只运行 `TokenResourceKeyGenerator`。
+     - 自带基类桩的 `ThemeSchemaGeneratorTests`、`TokenResourceKeyGeneratorTests`：桩基类改为 `protected virtual`，并加内部 `RunDefaultCalculation`；断言 Evaluate 文本的期望串同步修改。跨程序集引用桩基类的 2 个测试在终端类上手写该方法。
+     - `TokenPropertyImplementationGeneratorTests` 去掉「默认关闭」断言和 `enable049` 参数，期望文件名带命名空间。
+     - `TriggerControls.cs` 的 5 个类由脚本转换。
+- 实际数量（脚本报告）：
+
+  | 项目 | 类（sealed/abstract） | 改为 public | 属性 | 重写 |
+  | --- | --- | --- | --- | --- |
+  | AtomUI.Core（`DesignToken`，14 个带特性声明 + `DesignToken.cs`） | 1 个类 | — | 255（初始化器 34，`[NotTokenDefinition]` 跳过 1） | — |
+  | AtomUI.Controls | 3（2/1） | 3 | 21 | 2 |
+  | AtomUI.Desktop.Controls | 140（110/30） | 140 | 1011（`[ReservedToken]` 27） | 129 |
+  | ColorPicker | 6（4/2） | 4（另 2 个原已公开） | 27 | 4 |
+  | DataGrid | 1（1/0） | 1 | 78（`internal` 45 个保持，`[ReservedToken]` 11） | 1 |
+  | AtomUI.Toolkits.GalleryBase | 8（8/0） | 保持 internal | 45（初始化器 1，`[ReservedToken]` 1） | 8 |
+  | Registration.Fixtures/ThirdParty | 5（5/0） | 原已公开 | 5（初始化器 5） | — |
+
+  控件 Token 共 158 个类、148 个改为 public、1182 个属性、144 处重写，`DesignToken` 255 个属性，与变基前的调查完全一致。Skeleton、Card 等基类上游搬到了共享程序集，但数量不受影响。其他：`[ReservedToken]` 39 个，初始化器 35 个（不含夹具），奇异空格 `{  get; set; }` 2 处，全部保留。
+- 可访问性：公开后没有出现 CS0053/CS0050，因为没有任何 Token 属性的类型是内部类型。所以没有需要裁定的项，也没有把属性改成 `internal`。
+- 脚本处理不了、改为手工的：无。干跑时发现脚本把 `#region` 行当成成员头（DataGrid 的 2 个 `internal` 属性会被插错位置），已修正脚本再运行。全量结果逐行核对：每处改动只属于「插入 partial」「internal→public」「public override→protected override」三类之一。
+- 结果：
+  - 三个值哈希与 Task 7 基线逐字相同：Default `80B8BAC5…3875311`、Dark `7CE1950A…FE080A`、Compact `81DBB30D…CDA20A34`。
+  - `dotnet build AtomUI.slnx --no-incremental` 0 错误，除 NU1900 外没有警告，没有 049。
+  - 解决方案外的测试项目（Desktop.Controls/DataGrid/Generator/Rendering/Gallery 等 8 个）与 `ThirdParty` 夹具也都是 0 错误。
+  - `AtomUI.Registration.Fixtures/Complex`、`Minimal` 与 `tools/performances/AtomUI.Performance` 单独构建会报错（`UseAtomUI`、`SpaceItemsAlignment` 命名空间），与本任务无关，是原有问题。
+  - Core.Tests 495/495；Generator.Tests 1095/1095（新增 1 个）；Themes.Tests 27/27（改前改后相同）。
+  - 全量回归：第一轮 1 个失败，`WindowTitleBarTokenTests` 按源码文本断言旧写法 `public double LogoAndLeftAddOnSpacing { get; set; }`，简报没列出这处；断言改为 partial 写法后通过。第二轮 `[SUMMARY] TOTAL: 12405 个测试全部通过, 总耗时 15:40`，比上一任务的 12404 多 1 个新增生成器测试；Desktop.Controls.Tests 为 passed=4397 skipped=1。
+- 遗留给 Task 23 的文档：`docs/guides/theming/third-party-control-packages.md`、`docs/architecture/systems/theming/control-design-token-inheritance.md`、`docs/modules/toolkits-gallery-base/theming-localization.md`、`.github/copilot-instructions.md` 仍写着旧写法（`internal sealed class`、`public override`）。按旧写法写的第三方 Token 现在会报 `ATOMUIGEN049`/CS0507。Task 23 的文件清单只列了 `control-token-guidelines.md`。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 8 的提交为 `058f778f8`。
+  - 主控用脚本对全部改动逐行归类：属性声明仅插入 `partial` 的 1442 处（150 个文件，含测试夹具的 5 处）；类声明改公开并加 `partial` 的 148 处；类声明只加 `partial` 的 15 处（GalleryBase 8、测试夹具 5、原本已公开的 2）；`CalculateTokenValues` 重写改 `protected` 的 165 处（`src` 下 144，其余在生成器测试的源码桩里）；仅空白变化 4 处。其余改动集中在 21 个文件（生成器、基类、测试、文档），没有一个是 Token 类文件。
+  - 审阅读过归类规则并抽查了十多个不同形态的文件（抽象中间层、终端类、`DataGridToken` 的 45 个 internal 属性、带初始化器的 `DesignToken` 分部文件、未改动的 `DesignToken.cs`、GalleryBase、ColorPicker、测试夹具），未发现被归类掩盖的改动。
+  - 完整性：全仓带 `[ControlDesignToken]` 或 `[GlobalDesignToken]` 的声明共 177 个（14 个 `DesignToken` 分部声明加 163 个类），全部是 `partial class`；没有遗漏。仓库里不再有 Token 类之外对 `CalculateTokenValues` 的调用。
+  - 新公开的类只暴露类声明和 Token 属性，没有公开方法、字段或嵌套类型。
+  - 三个单独构建不过的项目（`AtomUI.Registration.Fixtures` 的 Complex 与 Minimal、`tools/performances/AtomUI.Performance`）出错的文件都不在本次 194 个改动文件里，与本任务无关。
+- 需要有意识确认的一项 API 承诺：32 个抽象中间层公开后，外部程序集可以继承它们，它们的 `protected` 辅助方法（例如 `AbstractButtonGeometryToken.CalculateContentPadding`）因此成为外部可达的 API。这与规格一致（规格把 `protected` 成员与 `EffectiveGlobalToken`、`IsExplicit` 同等看待），Task 23 的文档要写明。
+- Task 23 要补的文档（它们还在展示旧的 Token 写法，原计划的文件清单没列）：`docs/guides/theming/third-party-control-packages.md`、`docs/architecture/systems/theming/control-design-token-inheritance.md`、`docs/modules/toolkits-gallery-base/theming-localization.md`、`.github/copilot-instructions.md`。
+- 留待最终整体审阅统一处理的小项：
+  1. 生成器测试的共享桩基类改了签名，但另外 4 个使用它的测试文件里的源码桩仍写 `public override`（`GeneratedThemeConsumptionWriterTests`、`OwnTokenReferenceAnalysisTests`、`ThemeAssetConsumptionAnalyzerTests`、`CompiledThemeAlgorithmContractTests`）。这些测试输入现在带编译错误，只因测试不检查编译错误才通过。
+  2. `AtomUIDiagnosticDescriptors.cs` 里 049 上方「默认关闭」的注释已过时。
+  3. `ThemeSchemaGeneratorTests` 的桩把 `RunDefaultCalculation` 放在抽象基类上，真实生成器只在密封终端类上生成它。
+  4. 全局命名空间里的 Token 的生成文件名没有测试。

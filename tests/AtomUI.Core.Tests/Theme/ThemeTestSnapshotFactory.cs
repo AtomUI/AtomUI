@@ -99,7 +99,7 @@ internal static class ThemeCompilerTests
             [height],
             static () => new CompilerButtonToken(),
             static (token, appearance) =>
-                ((CompilerButtonToken)token).CalculateTokenValues(appearance == ThemeAppearance.Dark));
+                ((CompilerButtonToken)token).RunDefaultCalculation(appearance == ThemeAppearance.Dark));
     }
 }
 
@@ -114,7 +114,9 @@ internal sealed class CompilerButtonToken : AbstractControlDesignToken
 
     public double Height { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
+
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         Height = EffectiveGlobalToken.ControlHeight;
     }

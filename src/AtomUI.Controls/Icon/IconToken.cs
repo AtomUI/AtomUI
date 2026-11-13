@@ -4,38 +4,38 @@ using Avalonia.Media;
 namespace AtomUI.Controls;
 
 [ControlDesignToken]
-internal sealed class IconToken : AbstractControlDesignToken
+public sealed partial class IconToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 次要的描边颜色
     /// </summary>
-    public Color SecondaryStrokeColor { get; set; }
+    public partial Color SecondaryStrokeColor { get; set; }
     
     /// <summary>
     /// 次要的填充颜色
     /// </summary>
-    public Color SecondaryFillColor { get; set; }
+    public partial Color SecondaryFillColor { get; set; }
     
     /// <summary>
     /// 备用颜色
     /// </summary>
-    public Color FallbackColor { get; set; }
+    public partial Color FallbackColor { get; set; }
     
     /// <summary>
     /// 默认的描边笔宽度
     /// </summary>
-    public double StrokeWidth { get; set; }
+    public partial double StrokeWidth { get; set; }
     
     /// <summary>
     /// 默认的描边的 LineCap
     /// </summary>
-    public PenLineCap StrokeLineCap { get; set; }
+    public partial PenLineCap StrokeLineCap { get; set; }
     
     /// <summary>
     /// 默认的描边的 LineJoin
     /// </summary>
-    public PenLineJoin StrokeLineJoin { get; set; }
+    public partial PenLineJoin StrokeLineJoin { get; set; }
     
     public IconToken()
 

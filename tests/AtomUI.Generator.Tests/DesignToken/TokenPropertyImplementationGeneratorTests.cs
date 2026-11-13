@@ -30,7 +30,7 @@ public class TokenPropertyImplementationGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
-        var source = GeneratedSource(output, "ButtonToken.TokenProperties.g.cs");
+        var source = GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs");
         source.ShouldContain("namespace Demo");
         source.ShouldContain("partial class ButtonToken");
         source.ShouldContain("public partial double Height");
@@ -61,7 +61,7 @@ public class TokenPropertyImplementationGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
-        var source = GeneratedSource(output, "DataGridToken.TokenProperties.g.cs");
+        var source = GeneratedSource(output, "Demo.DataGridToken.TokenProperties.g.cs");
         source.ShouldContain("internal partial double RowHeight");
         source.ShouldContain("public partial double HeaderHeight");
         source.ShouldContain("private set { field = value; RecordWrite(nameof(FooterHeight)); }");
@@ -111,9 +111,9 @@ public class TokenPropertyImplementationGeneratorTests
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
         const string entry = "internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);";
-        GeneratedSource(output, "ButtonToken.TokenProperties.g.cs").ShouldContain(entry);
-        GeneratedSource(output, "AbstractButtonToken.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
-        GeneratedSource(output, "DesignToken.Seed.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
+        GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs").ShouldContain(entry);
+        GeneratedSource(output, "Demo.AbstractButtonToken.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
+        GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
     }
 
     [Fact]
@@ -133,7 +133,7 @@ public class TokenPropertyImplementationGeneratorTests
             """)), out var baseDiagnostics);
         baseDiagnostics.ShouldBeEmpty();
         AssertNoErrors(baseOutput);
-        GeneratedSource(baseOutput, "AbstractSkeletonToken.TokenProperties.g.cs")
+        GeneratedSource(baseOutput, "Demo.Controls.AbstractSkeletonToken.TokenProperties.g.cs")
             .ShouldContain("RecordWrite(nameof(BlockRadius));");
 
         var derived = CSharpCompilation.Create(
@@ -157,7 +157,7 @@ public class TokenPropertyImplementationGeneratorTests
         derivedDiagnostics.ShouldBeEmpty();
         AssertNoErrors(derivedOutput);
         var generated = GeneratedTrees(derivedOutput);
-        generated.Select(static tree => Path.GetFileName(tree.FilePath)).ShouldBe(["SkeletonToken.TokenProperties.g.cs"]);
+        generated.Select(static tree => Path.GetFileName(tree.FilePath)).ShouldBe(["Demo.Desktop.Controls.SkeletonToken.TokenProperties.g.cs"]);
         var source = generated[0].GetText(TestContext.Current.CancellationToken).ToString();
         source.ShouldContain("RecordWrite(nameof(TitleHeight));");
         source.ShouldNotContain("BlockRadius");
@@ -216,25 +216,25 @@ public class TokenPropertyImplementationGeneratorTests
                         [NotTokenDefinition] public double Scratch { get; set; }
                     }
                 }
-                """)), out var diagnostics, enable049: true);
+                """)), out var diagnostics);
 
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
         GeneratedTrees(output).Select(static tree => Path.GetFileName(tree.FilePath)).OrderBy(static name => name, StringComparer.Ordinal)
             .ShouldBe([
-                "ButtonToken.TokenProperties.g.cs",
-                "DesignToken.Alias.TokenProperties.g.cs",
-                "DesignToken.Seed.TokenProperties.g.cs"
+                "AtomUI.Theme.DesignTokens.DesignToken.Alias.TokenProperties.g.cs",
+                "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs",
+                "Demo.ButtonToken.TokenProperties.g.cs"
             ]);
-        var seed = GeneratedSource(output, "DesignToken.Seed.TokenProperties.g.cs");
+        var seed = GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs");
         seed.ShouldContain("RecordWrite(nameof(FontSize));");
         seed.ShouldNotContain("LineHeight");
         seed.ShouldNotContain("Helper");
         seed.ShouldNotContain("ColorPalettes");
-        var alias = GeneratedSource(output, "DesignToken.Alias.TokenProperties.g.cs");
+        var alias = GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Alias.TokenProperties.g.cs");
         alias.ShouldContain("RecordWrite(nameof(LineHeight));");
         alias.ShouldNotContain("FontSize");
-        GeneratedSource(output, "ButtonToken.TokenProperties.g.cs").ShouldNotContain("Scratch");
+        GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs").ShouldNotContain("Scratch");
     }
 
     [Fact]
@@ -254,11 +254,7 @@ public class TokenPropertyImplementationGeneratorTests
             }
             """;
 
-        // Disabled by default until every token property in the repository is partial.
-        Run(Compile(("ButtonToken.cs", source)), out var defaultDiagnostics);
-        defaultDiagnostics.ShouldBeEmpty();
-
-        var output = Run(Compile(("ButtonToken.cs", source)), out var diagnostics, enable049: true);
+        var output = Run(Compile(("ButtonToken.cs", source)), out var diagnostics);
 
         var diagnostic = diagnostics.ShouldHaveSingleItem();
         diagnostic.Id.ShouldBe(DiagnosticId);
@@ -267,7 +263,7 @@ public class TokenPropertyImplementationGeneratorTests
             "Token property 'Width' on 'Demo.ButtonToken' must be declared partial, and 'Demo.ButtonToken' must be a partial class");
         diagnostic.Location.GetLineSpan().Path.ShouldEndWith("ButtonToken.cs");
         diagnostic.Location.GetLineSpan().StartLinePosition.Line.ShouldBe(8);
-        var generated = GeneratedSource(output, "ButtonToken.TokenProperties.g.cs");
+        var generated = GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs");
         generated.ShouldContain("RecordWrite(nameof(Height));");
         generated.ShouldNotContain("Width");
     }
@@ -287,7 +283,7 @@ public class TokenPropertyImplementationGeneratorTests
                     public double Width { get; set; }
                 }
             }
-            """)), out var diagnostics, enable049: true);
+            """)), out var diagnostics);
 
         diagnostics.Select(static diagnostic => diagnostic.Id).ShouldBe([DiagnosticId, DiagnosticId]);
         diagnostics.Select(static diagnostic => diagnostic.GetMessage(System.Globalization.CultureInfo.InvariantCulture))
@@ -314,11 +310,46 @@ public class TokenPropertyImplementationGeneratorTests
                     public partial string Label { get; set; } = "OK";
                 }
             }
-            """)), out var diagnostics, enable049: true);
+            """)), out var diagnostics);
 
         diagnostics.ShouldBeEmpty();
         output.GetDiagnostics(TestContext.Current.CancellationToken).ShouldBeEmpty();
-        GeneratedSource(output, "ButtonToken.TokenProperties.g.cs").ShouldNotContain("= 32");
+        GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs").ShouldNotContain("= 32");
+    }
+
+    [Fact]
+    public void Same_Named_Token_Classes_In_Different_Namespaces_Get_Distinct_Files()
+    {
+        var output = Run(Compile(
+            ("Alpha/ButtonToken.cs", """
+                using AtomUI.Theme.DesignTokens;
+
+                namespace Demo.Alpha
+                {
+                    [ControlDesignToken]
+                    public sealed partial class ButtonToken : AbstractControlDesignToken
+                    {
+                        public partial double Height { get; set; }
+                    }
+                }
+                """),
+            ("Beta/ButtonToken.cs", """
+                using AtomUI.Theme.DesignTokens;
+
+                namespace Demo.Beta
+                {
+                    [ControlDesignToken]
+                    public sealed partial class ButtonToken : AbstractControlDesignToken
+                    {
+                        public partial double Width { get; set; }
+                    }
+                }
+                """)), out var diagnostics);
+
+        diagnostics.ShouldBeEmpty();
+        AssertNoErrors(output);
+        GeneratedSource(output, "Demo.Alpha.ButtonToken.TokenProperties.g.cs").ShouldContain("RecordWrite(nameof(Height));");
+        GeneratedSource(output, "Demo.Beta.ButtonToken.TokenProperties.g.cs").ShouldContain("RecordWrite(nameof(Width));");
     }
 
     [Fact]
@@ -398,15 +429,8 @@ public class TokenPropertyImplementationGeneratorTests
         .Select(static path => (MetadataReference)MetadataReference.CreateFromFile(path))
         .ToImmutableArray();
 
-    private static CSharpCompilation Run(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
-                                         bool enable049 = false)
+    private static CSharpCompilation Run(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics)
     {
-        if (enable049)
-        {
-            compilation = compilation.WithOptions(compilation.Options.WithSpecificDiagnosticOptions(
-                compilation.Options.SpecificDiagnosticOptions.SetItem(DiagnosticId, ReportDiagnostic.Error)));
-        }
-
         var driver = CSharpGeneratorDriver.Create([new TokenPropertyImplementationGenerator().AsSourceGenerator()],
             parseOptions: ParseOptions);
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics,

@@ -5,12 +5,12 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DatePickerToken : AbstractDatePickerToken
+public sealed partial class DatePickerToken : AbstractDatePickerToken
 {
 
-    public Thickness HeaderBorderThickness { get; set; }
+    public partial Thickness HeaderBorderThickness { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         HeaderBorderThickness = new Thickness(0, 0, 0, EffectiveGlobalToken.LineWidth);

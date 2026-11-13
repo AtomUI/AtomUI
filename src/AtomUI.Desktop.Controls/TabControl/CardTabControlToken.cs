@@ -7,10 +7,10 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CardTabControlToken : AbstractCardTabToken
+public sealed partial class CardTabControlToken : AbstractCardTabToken
 {
-    public double TabAndContentGutter { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial double TabAndContentGutter { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(CardTabControlTokenKind.CardSize))

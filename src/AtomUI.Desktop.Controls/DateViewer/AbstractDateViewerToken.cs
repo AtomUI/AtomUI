@@ -6,30 +6,30 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractDateViewerToken : AbstractControlDesignToken
+public abstract partial class AbstractDateViewerToken : AbstractControlDesignToken
 {
-    public Color PanelBg { get; set; }
-    public Color CellHoverBg { get; set; }
-    public Color CellRangeBg { get; set; }
-    public double PanelWidth { get; set; }
-    public double CellHeight { get; set; }
-    public double CellWidth { get; set; }
-    public double CellRowHeight { get; set; }
-    public double PeriodCellWidth { get; set; }
-    public Thickness PeriodCellPadding { get; set; }
-    public double ContentCellMinHeight { get; set; }
-    public Thickness ContentCellSurfaceMargin { get; set; }
-    public Thickness ContentCellTopBorderThickness { get; set; }
-    public Thickness ContentCellValueMargin { get; set; }
-    public Thickness ContentCellContentMargin { get; set; }
-    public Thickness PanelPadding { get; set; }
-    public Thickness HeaderHorizontalPadding { get; set; }
-    public Thickness DateBodyPadding { get; set; }
+    public partial Color PanelBg { get; set; }
+    public partial Color CellHoverBg { get; set; }
+    public partial Color CellRangeBg { get; set; }
+    public partial double PanelWidth { get; set; }
+    public partial double CellHeight { get; set; }
+    public partial double CellWidth { get; set; }
+    public partial double CellRowHeight { get; set; }
+    public partial double PeriodCellWidth { get; set; }
+    public partial Thickness PeriodCellPadding { get; set; }
+    public partial double ContentCellMinHeight { get; set; }
+    public partial Thickness ContentCellSurfaceMargin { get; set; }
+    public partial Thickness ContentCellTopBorderThickness { get; set; }
+    public partial Thickness ContentCellValueMargin { get; set; }
+    public partial Thickness ContentCellContentMargin { get; set; }
+    public partial Thickness PanelPadding { get; set; }
+    public partial Thickness HeaderHorizontalPadding { get; set; }
+    public partial Thickness DateBodyPadding { get; set; }
 
     /// <summary>
     /// Bottom divider of the default panel header (antd picker header borderBottom: lineWidth).
     /// </summary>
-    public Thickness HeaderBorderThickness { get; set; }
+    public partial Thickness HeaderBorderThickness { get; set; }
 
     /// <summary>
     /// Top divider of the standalone footer (antd picker footer borderTop: lineWidth).
@@ -38,9 +38,9 @@ internal abstract class AbstractDateViewerToken : AbstractControlDesignToken
     /// <summary>
     /// Opacity of the week numbers in week mode (antd dims the selected row's week number to half alpha).
     /// </summary>
-    public double WeekNumberOpacity { get; set; }
+    public partial double WeekNumberOpacity { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PanelBg = EffectiveGlobalToken.ColorBgContainer;

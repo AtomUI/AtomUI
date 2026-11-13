@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ToggleSwitchToken : AbstractControlDesignToken
+public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
 {
     
     public ToggleSwitchToken()
@@ -18,109 +18,109 @@ internal sealed class ToggleSwitchToken : AbstractControlDesignToken
     /// <summary>
     /// 开关高度
     /// </summary>
-    public double TrackHeight { get; set; }
+    public partial double TrackHeight { get; set; }
 
     /// <summary>
     /// 小号开关高度
     /// </summary>
-    public double TrackHeightSM { get; set; }
+    public partial double TrackHeightSM { get; set; }
 
     /// <summary>
     /// 开关最小宽度
     /// </summary>
-    public double TrackMinWidth { get; set; }
+    public partial double TrackMinWidth { get; set; }
 
     /// <summary>
     /// 小号开关最小宽度
     /// </summary>
-    public double TrackMinWidthSM { get; set; }
+    public partial double TrackMinWidthSM { get; set; }
 
     /// <summary>
     /// 开关内边距
     /// </summary>
-    public double TrackPadding { get; set; }
+    public partial double TrackPadding { get; set; }
 
     /// <summary>
     /// 开关把手背景色
     /// </summary>
-    public Color HandleBg { get; set; }
+    public partial Color HandleBg { get; set; }
 
     /// <summary>
     /// 开关把手阴影
     /// </summary>
-    public BoxShadow HandleShadow { get; set; }
+    public partial BoxShadow HandleShadow { get; set; }
 
     /// <summary>
     /// 开关把手大小
     /// </summary>
-    public Size HandleSize { get; set; }
+    public partial Size HandleSize { get; set; }
 
     /// <summary>
     /// 小号开关把手大小
     /// </summary>
-    public Size HandleSizeSM { get; set; }
+    public partial Size HandleSizeSM { get; set; }
 
     /// <summary>
     /// 内容区域最小边距
     /// </summary>
-    public double InnerMinMargin { get; set; }
+    public partial double InnerMinMargin { get; set; }
 
     /// <summary>
     /// 内容区域最大边距
     /// </summary>
-    public double InnerMaxMargin { get; set; }
+    public partial double InnerMaxMargin { get; set; }
 
     /// <summary>
     /// 小号开关内容区域最小边距
     /// </summary>
-    public double InnerMinMarginSM { get; set; }
+    public partial double InnerMinMarginSM { get; set; }
 
     /// <summary>
     /// 小号开关内容区域最大边距
     /// </summary>
-    public double InnerMaxMarginSM { get; set; }
+    public partial double InnerMaxMarginSM { get; set; }
 
     /// <summary>
     /// 正常状态的图标大小
     /// </summary>
-    public double ContentIconSize { get; set; }
+    public partial double ContentIconSize { get; set; }
 
     /// <summary>
     /// 小号状态的图标大小
     /// </summary>
-    public double ContentIconSizeSM { get; set; }
+    public partial double ContentIconSizeSM { get; set; }
 
     /// <summary>
     /// 开关的颜色
     /// </summary>
-    public Color SwitchColor { get; set; }
+    public partial Color SwitchColor { get; set; }
     
     /// <summary>
     /// 开源禁用状态的透明度
     /// </summary>
-    public double SwitchDisabledOpacity { get; set; }
+    public partial double SwitchDisabledOpacity { get; set; }
     
     /// <summary>
     /// 开关空白区域的字体大小，正常尺寸
     /// </summary>
-    public double ExtraInfoFontSize { get; set; }
+    public partial double ExtraInfoFontSize { get; set; }
     
     /// <summary>
     /// 开关空白区域的字体大小，小尺寸
     /// </summary>
-    public double ExtraInfoFontSizeSM { get; set; }
+    public partial double ExtraInfoFontSizeSM { get; set; }
     
     /// <summary>
     /// 加载动画的周期时长
     /// </summary>
-    public TimeSpan LoadingAnimationDuration { get; set; }
+    public partial TimeSpan LoadingAnimationDuration { get; set; }
     
     /// <summary>
     /// 在关状态下的加载指示器的颜色
     /// </summary>
-    public Color OffStateLoadIndicatorColor { get; set; }
+    public partial Color OffStateLoadIndicatorColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var fontSize      = EffectiveGlobalToken.FontSize;

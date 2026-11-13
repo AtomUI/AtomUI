@@ -7,10 +7,10 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SubmitButtonToken : AbstractStandardButtonToken
+public sealed partial class SubmitButtonToken : AbstractStandardButtonToken
 {
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(SubmitButtonTokenKind.ContentFontSize))

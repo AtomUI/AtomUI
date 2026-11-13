@@ -35,7 +35,7 @@ public class SkeletonBehaviorTests
             UniformlyMarginXXS = 4,
             ControlHeightXS    = 16
         });
-        token.CalculateTokenValues(isDarkMode: false);
+        token.RunDefaultCalculation(isDarkMode: false);
 
         // The band: base colour, highlight at 0.316 of 1.52W, base colour; absolute units so the host width rules.
         var width = 300d;

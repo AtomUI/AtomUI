@@ -7,12 +7,12 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractStandardButtonToken : AbstractButtonGeometryToken
+public abstract partial class AbstractStandardButtonToken : AbstractButtonGeometryToken
 {
-    public FontWeight FontWeight { get; set; }
-    public Color DefaultBorderColorDisabled { get; set; }
+    public partial FontWeight FontWeight { get; set; }
+    public partial Color DefaultBorderColorDisabled { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         FontWeight = FontWeight.Normal;

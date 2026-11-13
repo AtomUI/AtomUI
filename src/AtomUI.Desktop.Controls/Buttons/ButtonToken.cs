@@ -7,13 +7,13 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ButtonToken : AbstractStandardButtonToken
+public sealed partial class ButtonToken : AbstractStandardButtonToken
 {
 
     [ReservedToken("Compact-space primary buttons do not draw a group separator yet.")]
-    public Color GroupBorderColor { get; set; }
+    public partial Color GroupBorderColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         GroupBorderColor = EffectiveGlobalToken.ColorPrimaryHover;

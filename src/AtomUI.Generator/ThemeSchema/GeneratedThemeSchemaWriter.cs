@@ -238,7 +238,7 @@ internal sealed class GeneratedThemeSchemaWriter
         source.Append(indentation).AppendLine("    },");
         source.Append(indentation).Append("    static () => new ").Append(typeName).AppendLine("(),");
         source.Append(indentation).Append("    static (token, appearance) => ((").Append(typeName)
-              .AppendLine(")token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+              .AppendLine(")token).RunDefaultCalculation(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
         source.Append(indentation).Append(')').AppendLine(suffix);
     }
 

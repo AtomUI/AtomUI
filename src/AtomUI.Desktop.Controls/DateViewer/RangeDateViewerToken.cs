@@ -5,11 +5,11 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class RangeDateViewerToken : AbstractDateViewerToken
+public sealed partial class RangeDateViewerToken : AbstractDateViewerToken
 {
-    public double PanelSpacing { get; set; }
+    public partial double PanelSpacing { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(RangeDateViewerTokenKind.CellHeight))

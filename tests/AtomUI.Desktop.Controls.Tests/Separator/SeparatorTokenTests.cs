@@ -19,7 +19,7 @@ public class SeparatorTokenTests
         var separatorToken = new SeparatorToken();
         separatorToken.AssignEffectiveGlobalToken(sharedToken);
 
-        separatorToken.CalculateTokenValues(isDarkMode: false);
+        separatorToken.RunDefaultCalculation(isDarkMode: false);
 
         separatorToken.HorizontalMarginBlockSM.ShouldBe(new Thickness(0, sharedToken.UniformlyMarginXS));
         separatorToken.HorizontalMarginBlock.ShouldBe(new Thickness(0, sharedToken.UniformlyMargin));

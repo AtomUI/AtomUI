@@ -5,7 +5,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CheckBoxToken : AbstractControlDesignToken
+public sealed partial class CheckBoxToken : AbstractControlDesignToken
 {
     
     public CheckBoxToken()
@@ -13,14 +13,14 @@ internal sealed class CheckBoxToken : AbstractControlDesignToken
     {
     }
     
-    public double CheckIndicatorSize { get; set; }
-    public double CheckedMarkSize { get; set; }
+    public partial double CheckIndicatorSize { get; set; }
+    public partial double CheckedMarkSize { get; set; }
 
-    public double IndicatorTristateMarkSize { get; set; }
+    public partial double IndicatorTristateMarkSize { get; set; }
     
-    public Thickness TextMargin { get; set; }
+    public partial Thickness TextMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

@@ -53,7 +53,7 @@ public class LunarCalendarThemeTests
         var token = new LunarCalendarToken();
         token.AssignEffectiveGlobalToken(shared);
 
-        token.CalculateTokenValues(isDarkMode: false);
+        token.RunDefaultCalculation(isDarkMode: false);
 
         token.MiniDateCellSize.ShouldBe(40);
         token.MiniContentHeight.ShouldBe(308);

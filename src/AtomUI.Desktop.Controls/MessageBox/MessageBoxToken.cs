@@ -4,10 +4,10 @@ using AtomUI.Desktop.Controls.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MessageBoxToken : AbstractDialogToken
+public sealed partial class MessageBoxToken : AbstractDialogToken
 {
-    public double StyleIconSize { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial double StyleIconSize { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(MessageBoxTokenKind.HeaderPadding))

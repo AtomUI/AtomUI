@@ -88,7 +88,7 @@ public partial class TypeMapIntegrationTests
             public class DesktopOnly : Avalonia.Controls.Control { }
             [AtomUI.Theme.DesignTokens.ControlDesignToken]
             internal sealed class DesktopOnlyToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
-            { public double Height { get; set; } public override void CalculateTokenValues(bool dark) { } }
+            { public double Height { get; set; } protected override void CalculateTokenValues(bool dark) { } internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark); }
             """, Asset("Any", """
             <ControlTheme x:Key="Any" TargetType="local:Any" xmlns:tokens="using:Demo.DesignTokens">
                 <Setter Property="Tag" Value="{tokens:DesktopOnlyTokenResource Height}" />
@@ -149,7 +149,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class DesktopOnlyToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double Height { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("Mixed", """
             <ControlTheme x:Key="Any" TargetType="local:AnyPlatform" />
@@ -172,7 +173,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         var extensionType = assembly.GetType("Demo.DesignTokens.ButtonTokenResourceExtension")!;
@@ -308,7 +310,8 @@ public partial class TypeMapIntegrationTests
             {
                 [AtomUI.Theme.DesignTokens.ReservedToken("fixture field without a theme asset")]
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         result.Diagnostics.ShouldBeEmpty();
@@ -341,7 +344,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """;
         var builtin = EmitCompilation(Compilation("namespace BuiltIn { " + body + " }", [], "BuiltInControls"), [],
@@ -370,7 +374,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("Button", """
                 <ControlTheme x:Key="Button" TargetType="local:Button" xmlns:wrong="using:Missing.DesignTokens">
@@ -423,7 +428,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class WidgetToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, [asset]).AddReferences(definingReference, facade);
         LoadCore();
@@ -636,7 +642,8 @@ public partial class TypeMapIntegrationTests
             internal sealed class ScrollViewerToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                public override void CalculateTokenValues(bool dark) { }
+                protected override void CalculateTokenValues(bool dark) { }
+                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("ScrollViewer", """
                 <ControlTheme x:Key="Mine" TargetType="local:ScrollViewer" />

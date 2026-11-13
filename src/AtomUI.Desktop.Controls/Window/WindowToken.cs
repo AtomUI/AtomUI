@@ -5,58 +5,58 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class WindowToken : AbstractControlDesignToken
+public sealed partial class WindowToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 窗口默认的背景色
     /// </summary>
-    public Color DefaultBackground { get; set; }
+    public partial Color DefaultBackground { get; set; }
 
     /// <summary>
     /// 窗口默认的前景色
     /// </summary>
-    public Color DefaultForeground { get; set; }
+    public partial Color DefaultForeground { get; set; }
     
     /// <summary>
     /// 窗口圆角，后期可能
     /// </summary>
-    public CornerRadius CornerRadius { get; set; }
+    public partial CornerRadius CornerRadius { get; set; }
     
     /// <summary>
     /// 标题栏高度
     /// </summary>
-    public double TitleBarHeight { get; set; }
+    public partial double TitleBarHeight { get; set; }
     
-    public SolidColorBrush? SystemBarColor { get; set; }
+    public partial SolidColorBrush? SystemBarColor { get; set; }
     
     /// <summary>
     /// 主窗体阴影
     /// </summary>
-    public BoxShadows FrameShadows { get; set; }
+    public partial BoxShadows FrameShadows { get; set; }
     
     /// <summary>
     /// 全屏弹出层的阴影
     /// </summary>
-    public BoxShadows FullscreenPopoverShadows { get; set; }
+    public partial BoxShadows FullscreenPopoverShadows { get; set; }
     
     /// <summary>
     /// 全屏弹出层内容内间距
     /// </summary>
-    public Thickness FullscreenHeaderFramePadding { get; set; }
+    public partial Thickness FullscreenHeaderFramePadding { get; set; }
     
     /// <summary>
     /// Windows 10 CSD 客户区顶边自绘边框（激活态）。Win10 的可见边框来自 DWM
     /// 阴影纹理，顶部在扩展客户区下会被客户区覆盖，需要在客户区内复现同一合成效果。
     /// </summary>
-    public Color FrameBorderActive { get; set; }
+    public partial Color FrameBorderActive { get; set; }
 
     /// <summary>
     /// Windows 10 CSD 客户区顶边自绘边框（非激活态）。
     /// </summary>
-    public Color FrameBorderInactive { get; set; }
+    public partial Color FrameBorderInactive { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         DefaultBackground        = EffectiveGlobalToken.ColorBgContainer;

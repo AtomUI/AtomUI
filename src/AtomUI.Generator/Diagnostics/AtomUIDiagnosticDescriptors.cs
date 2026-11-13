@@ -317,7 +317,7 @@ internal static partial class AtomUIDiagnosticDescriptors
         "Token property '{0}' on '{1}' must be declared partial, and '{1}' must be a partial class",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
-        isEnabledByDefault: false,
+        isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
     public static readonly DiagnosticDescriptor ControlCodeScopedTokenRead = new(

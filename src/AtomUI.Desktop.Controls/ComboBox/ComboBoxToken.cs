@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ComboBoxToken : AbstractControlDesignToken
+public sealed partial class ComboBoxToken : AbstractControlDesignToken
 {
 
     public ComboBoxToken()
@@ -16,59 +16,59 @@ internal sealed class ComboBoxToken : AbstractControlDesignToken
     /// <summary>
     /// 菜单内容边距
     /// </summary>
-    public Thickness PopupContentPadding { get; set; }
+    public partial Thickness PopupContentPadding { get; set; }
 
     /// <summary>
     /// 列表项文字颜色
     /// </summary>
-    public Color ItemColor { get; set; }
+    public partial Color ItemColor { get; set; }
 
     /// <summary>
     /// 列表项文字悬浮颜色
     /// </summary>
-    public Color ItemHoverColor { get; set; }
+    public partial Color ItemHoverColor { get; set; }
 
     /// <summary>
     /// 列表项文字选中颜色
     /// </summary>
-    public Color ItemSelectedColor { get; set; }
+    public partial Color ItemSelectedColor { get; set; }
 
     /// <summary>
     /// 列表项文字禁用颜色
     /// </summary>
-    public Color ItemDisabledColor { get; set; }
+    public partial Color ItemDisabledColor { get; set; }
 
     /// <summary>
     /// 列表项背景色
     /// </summary>
-    public Color ItemBgColor { get; set; }
+    public partial Color ItemBgColor { get; set; }
 
     /// <summary>
     /// 列表项悬浮态背景色
     /// </summary>
-    public Color ItemHoverBgColor { get; set; }
+    public partial Color ItemHoverBgColor { get; set; }
 
     /// <summary>
     /// 列表项选中背景色
     /// </summary>
-    public Color ItemSelectedBgColor { get; set; }
+    public partial Color ItemSelectedBgColor { get; set; }
 
     /// <summary>
     /// 列表项内间距
     /// </summary>
-    public Thickness ItemPadding { get; set; }
+    public partial Thickness ItemPadding { get; set; }
 
     /// <summary>
     /// 列表项外边距
     /// </summary>
-    public Thickness ItemMargin { get; set; }
+    public partial Thickness ItemMargin { get; set; }
 
     /// <summary>
     /// 下拉手柄悬浮颜色。
     /// </summary>
-    public Color HandleHoverColor { get; set; }
+    public partial Color HandleHoverColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         PopupContentPadding  = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);

@@ -3,11 +3,11 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ListTransferToken : AbstractTransferToken
+public sealed partial class ListTransferToken : AbstractTransferToken
 {
-    public double ListWidthLG { get; set; }
+    public partial double ListWidthLG { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ListWidthLG = 250;

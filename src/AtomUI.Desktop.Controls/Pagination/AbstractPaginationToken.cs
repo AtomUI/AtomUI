@@ -5,17 +5,17 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractPaginationToken : AbstractControlDesignToken
+public abstract partial class AbstractPaginationToken : AbstractControlDesignToken
 {
-    public double ItemSize { get; set; }
-    public double ItemSizeSM { get; set; }
-    public Color ItemActiveColorDisabled { get; set; }
-    public double PaginationLayoutSpacing { get; set; }
-    public double PaginationLayoutMiniSpacing { get; set; }
-    public double PaginationQuickJumperInputWidth { get; set; }
-    public double PaginationMiniQuickJumperInputWidth { get; set; }
+    public partial double ItemSize { get; set; }
+    public partial double ItemSizeSM { get; set; }
+    public partial Color ItemActiveColorDisabled { get; set; }
+    public partial double PaginationLayoutSpacing { get; set; }
+    public partial double PaginationLayoutMiniSpacing { get; set; }
+    public partial double PaginationQuickJumperInputWidth { get; set; }
+    public partial double PaginationMiniQuickJumperInputWidth { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ItemSize                  = EffectiveGlobalToken.ControlHeight;

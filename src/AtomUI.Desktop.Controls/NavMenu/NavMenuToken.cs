@@ -7,68 +7,68 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class NavMenuToken : AbstractControlDesignToken
+public sealed partial class NavMenuToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 菜单内容边距
     /// </summary>
-    public Thickness MenuPopupContentPadding { get; set; }
+    public partial Thickness MenuPopupContentPadding { get; set; }
 
     /// <summary>
     /// 菜单 Popup 最小宽度
     /// </summary>
-    public double MenuPopupMinWidth { get; set; }
+    public partial double MenuPopupMinWidth { get; set; }
 
     /// <summary>
     /// 菜单 Popup 最大宽度
     /// </summary>
-    public double MenuPopupMaxWidth { get; set; }
+    public partial double MenuPopupMaxWidth { get; set; }
 
     /// <summary>
     /// 菜单 Popup 最大高度
     /// </summary>
-    public double MenuPopupMaxHeight { get; set; }
+    public partial double MenuPopupMaxHeight { get; set; }
     
     /// <summary>
     /// 顶层弹出菜单，距离顶层菜单项的边距
     /// </summary>
-    public double TopLevelItemPopupMarginToAnchor { get; set; }
+    public partial double TopLevelItemPopupMarginToAnchor { get; set; }
 
     /// <summary>
     /// 分组标题文字颜色
     /// </summary>
-    public Color GroupTitleColor { get; set; }
+    public partial Color GroupTitleColor { get; set; }
     
     /// <summary>
     /// 分组标题文字高度
     /// </summary>
-    public double GroupTitleLineHeight { get; set; }
+    public partial double GroupTitleLineHeight { get; set; }
     
     /// <summary>
     /// 
     /// </summary>
-    public double GroupTitleFontSize { get; set; }
+    public partial double GroupTitleFontSize { get; set; }
     
     /// <summary>
     /// 菜单项的圆角
     /// </summary>
-    public CornerRadius ItemBorderRadius { get; set; }
+    public partial CornerRadius ItemBorderRadius { get; set; }
     
     /// <summary>
     /// 子菜单项的圆角
     /// </summary>
-    public CornerRadius SubMenuItemBorderRadius { get; set; }
+    public partial CornerRadius SubMenuItemBorderRadius { get; set; }
     
     /// <summary>
     /// 菜单项文字颜色
     /// </summary>
-    public Color ItemColor { get; set; }
+    public partial Color ItemColor { get; set; }
     
     /// <summary>
     /// 菜单项文字悬浮颜色
     /// </summary>
-    public Color ItemHoverColor { get; set; }
+    public partial Color ItemHoverColor { get; set; }
     
     /// <summary>
     /// 水平菜单项文字悬浮颜色
@@ -76,147 +76,147 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     [ReservedToken("antd Menu horizontalItemHoverColor. antd 6.7 declares it but its menu style never reads it: " +
                    "horizontal hover text uses itemHoverColor (ItemHoverColor here), so wiring it would diverge from " +
                    "antd's rendering.")]
-    public Color HorizontalItemHoverColor { get; set; }
+    public partial Color HorizontalItemHoverColor { get; set; }
     
     /// <summary>
     /// 菜单项文字选中颜色
     /// </summary>
-    public Color ItemSelectedColor { get; set; }
+    public partial Color ItemSelectedColor { get; set; }
     
     /// <summary>
     /// 水平菜单项文字选中颜色
     /// </summary>
-    public Color HorizontalItemSelectedColor { get; set; }
+    public partial Color HorizontalItemSelectedColor { get; set; }
     
     /// <summary>
     /// 菜单项文字禁用颜色
     /// </summary>
-    public Color ItemDisabledColor { get; set; }
+    public partial Color ItemDisabledColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字颜色
     /// </summary>
-    public Color DangerItemColor { get; set; }
+    public partial Color DangerItemColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字悬浮颜色
     /// </summary>
-    public Color DangerItemHoverColor { get; set; }
+    public partial Color DangerItemHoverColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字选中颜色
     /// </summary>
-    public Color DangerItemSelectedColor { get; set; }
+    public partial Color DangerItemSelectedColor { get; set; }
     
     /// <summary>
     /// 危险菜单项文字激活颜色
     /// </summary>
-    public Color DangerItemActiveBg { get; set; }
+    public partial Color DangerItemActiveBg { get; set; }
     
     /// <summary>
     /// 危险菜单项文字选中颜色
     /// </summary>
-    public Color DangerItemSelectedBg { get; set; }
+    public partial Color DangerItemSelectedBg { get; set; }
     
     /// <summary>
     /// 菜单项背景色
     /// </summary>
-    public Color ItemBg { get; set; }
+    public partial Color ItemBg { get; set; }
     
     /// <summary>
     /// 菜单项悬浮态背景色
     /// </summary>
-    public Color ItemHoverBg { get; set; }
+    public partial Color ItemHoverBg { get; set; }
     
     /// <summary>
     /// 子菜单项背景色
     /// </summary>
-    public Color SubMenuItemBg { get; set; }
+    public partial Color SubMenuItemBg { get; set; }
     
     /// <summary>
     /// 菜单项激活态背景色
     /// </summary>
-    public Color ItemActiveBg { get; set; }
+    public partial Color ItemActiveBg { get; set; }
     
     /// <summary>
     /// 菜单项选中态背景色
     /// </summary>
-    public Color ItemSelectedBg { get; set; }
+    public partial Color ItemSelectedBg { get; set; }
 
     /// <summary>
     /// 图标尺寸
     /// </summary>
-    public double ItemIconSize { get; set; }
+    public partial double ItemIconSize { get; set; }
     
     /// <summary>
     /// 水平菜单项选中态背景色
     /// </summary>
-    public Color HorizontalItemSelectedBg { get; set; }
+    public partial Color HorizontalItemSelectedBg { get; set; }
 
     /// <summary>
     /// 菜单项指示条宽度
     /// </summary>
-    public double ActiveBarScaleX { get; set; }
+    public partial double ActiveBarScaleX { get; set; }
     
     /// <summary>
     /// 菜单项指示条高度
     /// </summary>
-    public double ActiveBarHeight { get; set; }
+    public partial double ActiveBarHeight { get; set; }
     
     /// <summary>
     /// 菜单项外间距
     /// </summary>
-    public Thickness ItemContentMargin { get; set; }
+    public partial Thickness ItemContentMargin { get; set; }
     
     /// <summary>
     /// 菜单项横向内间距
     /// </summary>
-    public Thickness ItemContentPadding { get; set; }
+    public partial Thickness ItemContentPadding { get; set; }
     
     /// <summary>
     /// 垂直面板的元素间距
     /// </summary>
-    public double VerticalItemsPanelSpacing { get; set; }
+    public partial double VerticalItemsPanelSpacing { get; set; }
     
     /// <summary>
     /// 垂直面板的外间距
     /// </summary>
-    public Thickness VerticalChildItemsMargin { get; set; }
+    public partial Thickness VerticalChildItemsMargin { get; set; }
     
     /// <summary>
     /// 垂直面板的内容内间距
     /// </summary>
-    public Thickness VerticalMenuContentPadding { get; set; }
+    public partial Thickness VerticalMenuContentPadding { get; set; }
     
     /// <summary>
     /// 菜单项内部元素边距
     /// </summary>
-    public Thickness ItemMargin { get; set; }
+    public partial Thickness ItemMargin { get; set; }
     
     /// <summary>
     /// 水平菜单项外间距
     /// </summary>
-    public Thickness HorizontalItemMargin { get; set; }
+    public partial Thickness HorizontalItemMargin { get; set; }
     
     /// <summary>
     /// 横向菜单项横悬浮态背景色
     /// </summary>
-    public Color HorizontalItemHoverBg { get; set; }
+    public partial Color HorizontalItemHoverBg { get; set; }
     
     /// <summary>
     /// 横向菜单项圆角
     /// </summary>
-    public CornerRadius HorizontalItemBorderRadius { get; set; }
+    public partial CornerRadius HorizontalItemBorderRadius { get; set; }
     
     /// <summary>
     /// 菜单项高度
     /// </summary>
-    public double ItemHeight { get; set; }
+    public partial double ItemHeight { get; set; }
     
     /// <summary>
     /// 内联菜单项的缩进单位
     /// </summary>
-    public double InlineItemIndentUnit { get; set; }
+    public partial double InlineItemIndentUnit { get; set; }
     
     /// <summary>
     /// 收起后的宽度
@@ -224,124 +224,124 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     [ReservedToken("antd Menu collapsedWidth (controlHeightLG * 2). The inline collapsed width here is " +
                    "InlineCollapsedWidth (48); CollapsedWidth is kept as the antd-named compatibility token and no " +
                    "element reads it.")]
-    public double CollapsedWidth { get; set; }
+    public partial double CollapsedWidth { get; set; }
 
     /// <summary>
     /// 内联折叠后的宽度
     /// </summary>
-    public double InlineCollapsedWidth { get; set; }
+    public partial double InlineCollapsedWidth { get; set; }
     
     /// <summary>
     /// 弹出框背景色
     /// </summary>
-    public Color MenuPopupBg { get; set; }
+    public partial Color MenuPopupBg { get; set; }
     
     /// <summary>
     /// 横向菜单行高
     /// </summary>
-    public double HorizontalLineHeight { get; set; }
+    public partial double HorizontalLineHeight { get; set; }
     
     /// <summary>
     /// 图标与文字间距
     /// </summary>
-    public Thickness IconMargin { get; set; }
+    public partial Thickness IconMargin { get; set; }
     
     /// <summary>
     /// 收起时图标尺寸
     /// </summary>
-    public double CollapsedIconSize { get; set; }
+    public partial double CollapsedIconSize { get; set; }
     
     // Dark
     /// <summary>
     /// 暗色模式下的菜单的背景颜色
     /// </summary>
-    public Color DarkMenuBg { get; set; }
+    public partial Color DarkMenuBg { get; set; }
     /// <summary>
     /// 暗色模式下的浮层菜单的背景颜色
     /// </summary>
-    public Color DarkMenuPopupBg { get; set; }
+    public partial Color DarkMenuPopupBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项文字颜色
     /// </summary>
-    public Color DarkItemColor { get; set; }
+    public partial Color DarkItemColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项文字颜色
     /// </summary>
-    public Color DarkDangerItemColor { get; set; }
+    public partial Color DarkDangerItemColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项背景
     /// </summary>
-    public Color DarkItemBg { get; set; }
+    public partial Color DarkItemBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的子菜单项背景
     /// </summary>
-    public Color DarkSubMenuItemBg { get; set; }
+    public partial Color DarkSubMenuItemBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项选中颜色
     /// </summary>
-    public Color DarkItemSelectedColor { get; set; }
+    public partial Color DarkItemSelectedColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项选中背景
     /// </summary>
-    public Color DarkItemSelectedBg { get; set; }
+    public partial Color DarkItemSelectedBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项悬浮背景
     /// </summary>
-    public Color DarkItemHoverBg { get; set; }
+    public partial Color DarkItemHoverBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的分组标题文字颜色
     /// </summary>
-    public Color DarkGroupTitleColor { get; set; }
+    public partial Color DarkGroupTitleColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项悬浮颜色
     /// </summary>
-    public Color DarkItemHoverColor { get; set; }
+    public partial Color DarkItemHoverColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的菜单项禁用颜色
     /// </summary>
-    public Color DarkItemDisabledColor { get; set; }
+    public partial Color DarkItemDisabledColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项选中背景
     /// </summary>
-    public Color DarkDangerItemSelectedBg { get; set; }
+    public partial Color DarkDangerItemSelectedBg { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项悬浮文字背景
     /// </summary>
-    public Color DarkDangerItemHoverColor { get; set; }
+    public partial Color DarkDangerItemHoverColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项选中文字颜色
     /// </summary>
-    public Color DarkDangerItemSelectedColor { get; set; }
+    public partial Color DarkDangerItemSelectedColor { get; set; }
     
     /// <summary>
     /// 暗色模式下的危险菜单项激活态背景
     /// </summary>
-    public Color DarkDangerItemActiveBg { get; set; }
+    public partial Color DarkDangerItemActiveBg { get; set; }
 
     #region 菜单相关 Token
 
     /// <summary>
     /// 水平菜单高度
     /// </summary>
-    public double MenuHorizontalHeight { get; set; }
+    public partial double MenuHorizontalHeight { get; set; }
     
     /// <summary>
     /// 菜单箭头尺寸
     /// </summary>
-    public double MenuArrowSize { get; set; }
+    public partial double MenuArrowSize { get; set; }
 
     /// <summary>
     /// 子菜单背景色
@@ -349,7 +349,7 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     [ReservedToken("antd Menu menuSubMenuBg (colorBgElevated). In antd the submenu popup's later popupBg rule paints the " +
                    "same element, so the popup surface is popupBg; here that surface is MenuPopupBg and there is no " +
                    "second submenu layer to paint.")]
-    public Color MenuSubMenuBg { get; set; }
+    public partial Color MenuSubMenuBg { get; set; }
 
     #endregion
     
@@ -358,7 +358,7 @@ internal sealed class NavMenuToken : AbstractControlDesignToken
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         

@@ -6,7 +6,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SegmentedToken : AbstractControlDesignToken
+public sealed partial class SegmentedToken : AbstractControlDesignToken
 {
 
     public SegmentedToken()
@@ -17,64 +17,64 @@ internal sealed class SegmentedToken : AbstractControlDesignToken
     /// <summary>
     /// 选项文本颜色
     /// </summary>
-    public Color ItemColor { get; set; }
+    public partial Color ItemColor { get; set; }
 
     /// <summary>
     /// 选项悬浮态文本颜色
     /// </summary>
-    public Color ItemHoverColor { get; set; }
+    public partial Color ItemHoverColor { get; set; }
 
     /// <summary>
     /// 选项悬浮态背景颜色
     /// </summary>
-    public Color ItemHoverBg { get; set; }
+    public partial Color ItemHoverBg { get; set; }
 
     /// <summary>
     /// 选项激活态背景颜色
     /// </summary>
-    public Color ItemActiveBg { get; set; }
+    public partial Color ItemActiveBg { get; set; }
 
     /// <summary>
     /// 选项选中时背景颜色
     /// </summary>
-    public Color ItemSelectedBg { get; set; }
+    public partial Color ItemSelectedBg { get; set; }
 
     /// <summary>
     /// 选项选中时文字颜色
     /// </summary>
-    public Color ItemSelectedColor { get; set; }
+    public partial Color ItemSelectedColor { get; set; }
 
     /// <summary>
     /// Segmented 控件容器的 padding
     /// </summary>
-    public Thickness TrackPadding { get; set; }
+    public partial Thickness TrackPadding { get; set; }
 
     /// <summary>
     /// 大尺寸选项最小高度
     /// </summary>
-    public double ItemMinHeightLG { get; set; }
+    public partial double ItemMinHeightLG { get; set; }
 
     /// <summary>
     /// 选项最小高度
     /// </summary>
-    public double ItemMinHeight { get; set; }
+    public partial double ItemMinHeight { get; set; }
 
     /// <summary>
     /// 小尺寸选项最小高度
     /// </summary>
-    public double ItemMinHeightSM { get; set; }
+    public partial double ItemMinHeightSM { get; set; }
 
     /// <summary>
     /// Segmented 控件容器背景色
     /// </summary>
-    public Color TrackBg { get; set; }
+    public partial Color TrackBg { get; set; }
 
     // 内部 token
-    public Thickness SegmentedItemPadding { get; set; }
-    public Thickness SegmentedItemPaddingSM { get; set; }
-    public Thickness SegmentedItemContentMargin { get; set; }
+    public partial Thickness SegmentedItemPadding { get; set; }
+    public partial Thickness SegmentedItemPaddingSM { get; set; }
+    public partial Thickness SegmentedItemContentMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

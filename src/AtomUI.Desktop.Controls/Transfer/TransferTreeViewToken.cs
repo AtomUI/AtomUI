@@ -5,6 +5,6 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TransferTreeViewToken : AbstractTreeViewToken
+public sealed partial class TransferTreeViewToken : AbstractTreeViewToken
 {
 }

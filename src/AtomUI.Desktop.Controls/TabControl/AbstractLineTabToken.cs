@@ -6,17 +6,17 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractLineTabToken : AbstractTabToken
+public abstract partial class AbstractLineTabToken : AbstractTabToken
 {
-    public Color InkBarColor { get; set; }
-    public double InkBarThickness { get; set; }
-    public double HorizontalItemGutter { get; set; }
-    public Thickness HorizontalItemPadding { get; set; }
-    public Thickness HorizontalItemPaddingLG { get; set; }
-    public Thickness HorizontalItemPaddingSM { get; set; }
-    public double VerticalItemGutter { get; set; }
+    public partial Color InkBarColor { get; set; }
+    public partial double InkBarThickness { get; set; }
+    public partial double HorizontalItemGutter { get; set; }
+    public partial Thickness HorizontalItemPadding { get; set; }
+    public partial Thickness HorizontalItemPaddingLG { get; set; }
+    public partial Thickness HorizontalItemPaddingSM { get; set; }
+    public partial double VerticalItemGutter { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         InkBarColor = EffectiveGlobalToken.ColorPrimary;

@@ -4,12 +4,12 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ListViewToken : AbstractListViewToken
+public sealed partial class ListViewToken : AbstractListViewToken
 {
-    public Thickness GroupHeaderPadding { get; set; }
-    public Thickness SelectedIndicatorMargin { get; set; }
-    public Thickness PaginationMargin { get; set; }
-    public override void CalculateTokenValues(bool isDarkMode)
+    public partial Thickness GroupHeaderPadding { get; set; }
+    public partial Thickness SelectedIndicatorMargin { get; set; }
+    public partial Thickness PaginationMargin { get; set; }
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         GroupHeaderPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingXS);

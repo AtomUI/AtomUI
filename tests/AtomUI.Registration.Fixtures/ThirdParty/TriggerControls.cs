@@ -6,33 +6,33 @@ namespace Fixture.ThirdParty;
 
 public class TokenOnly : Control;
 [ControlDesignToken]
-public sealed class TokenOnlyToken : AbstractControlDesignToken
+public sealed partial class TokenOnlyToken : AbstractControlDesignToken
 {
-    public double FixtureValue { get; set; } = 17;
+    public partial double FixtureValue { get; set; } = 17;
 }
 public class IdentityOnly : Control;
 [ControlDesignToken]
-public sealed class IdentityOnlyToken : AbstractControlDesignToken
+public sealed partial class IdentityOnlyToken : AbstractControlDesignToken
 {
-    public double FixtureValue { get; set; } = 23;
+    public partial double FixtureValue { get; set; } = 23;
 }
 public class EnumOnly : Control;
 [ControlDesignToken]
-public sealed class EnumOnlyToken : AbstractControlDesignToken
+public sealed partial class EnumOnlyToken : AbstractControlDesignToken
 {
-    public double FixtureValue { get; set; } = 31;
+    public partial double FixtureValue { get; set; } = 31;
 }
 public class TokenKeyOnly : Control;
 [ControlDesignToken]
-public sealed class TokenKeyOnlyToken : AbstractControlDesignToken
+public sealed partial class TokenKeyOnlyToken : AbstractControlDesignToken
 {
-    public double FixtureValue { get; set; } = 37;
+    public partial double FixtureValue { get; set; } = 37;
 }
 public class ExtensionOnly : Control;
 [ControlDesignToken]
-public sealed class ExtensionOnlyToken : AbstractControlDesignToken
+public sealed partial class ExtensionOnlyToken : AbstractControlDesignToken
 {
-    public double FixtureValue { get; set; } = 41;
+    public partial double FixtureValue { get; set; } = 41;
 }
 [SemanticPart("leaf", SelectorClass = "semantic-fixture-leaf", ContractType = typeof(Border),
     Cardinality = SemanticPartCardinality.Optional, Customization = SemanticPartCustomization.Selector,

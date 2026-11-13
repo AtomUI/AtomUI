@@ -5,11 +5,11 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SimplePaginationToken : AbstractPaginationToken
+public sealed partial class SimplePaginationToken : AbstractPaginationToken
 {
-    public Color ItemInputBg { get; set; }
+    public partial Color ItemInputBg { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ItemInputBg = EffectiveGlobalToken.ColorBgContainer;

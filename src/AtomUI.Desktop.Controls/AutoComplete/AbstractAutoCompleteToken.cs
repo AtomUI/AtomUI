@@ -4,31 +4,31 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractAutoCompleteToken : AbstractControlDesignToken
+public abstract partial class AbstractAutoCompleteToken : AbstractControlDesignToken
 {
 
     /// <summary>
     /// 菜单内容边距
     /// </summary>
-    public Thickness PopupContentPadding { get; set; }
+    public partial Thickness PopupContentPadding { get; set; }
 
     /// <summary>
     /// 选项高度
     /// Height of option
     /// </summary>
-    public double OptionHeight { get; set; }
+    public partial double OptionHeight { get; set; }
 
     /// <summary>
     /// 候选列表弹窗最小宽度
     /// </summary>
-    public double MinPopupWidth { get; set; }
+    public partial double MinPopupWidth { get; set; }
 
     /// <summary>
     /// 在不跟随 Anchor 宽度时候的 Popup 最大宽度
     /// </summary>
-    public double MaxPopupWidth { get; set; }
+    public partial double MaxPopupWidth { get; set; }
 
-public override void CalculateTokenValues(bool isDarkMode)
+protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         OptionHeight        = EffectiveGlobalToken.ControlHeight;

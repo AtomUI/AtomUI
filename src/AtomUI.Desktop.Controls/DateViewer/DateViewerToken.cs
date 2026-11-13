@@ -5,11 +5,11 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DateViewerToken : AbstractDateViewerToken
+public sealed partial class DateViewerToken : AbstractDateViewerToken
 {
-    public Thickness FooterBorderThickness { get; set; }
+    public partial Thickness FooterBorderThickness { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(DateViewerTokenKind.CellHeight))

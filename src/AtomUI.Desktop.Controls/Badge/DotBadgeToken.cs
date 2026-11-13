@@ -5,19 +5,19 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DotBadgeToken : AbstractControlDesignToken
+public sealed partial class DotBadgeToken : AbstractControlDesignToken
 {
-    public double DotSize { get; set; }
+    public partial double DotSize { get; set; }
 
-    public Color DotColor { get; set; }
+    public partial Color DotColor { get; set; }
 
-    public double ShadowSize { get; set; }
+    public partial double ShadowSize { get; set; }
 
-    public Color ShadowColor { get; set; }
+    public partial Color ShadowColor { get; set; }
 
-    public Thickness LabelMargin { get; set; }
+    public partial Thickness LabelMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

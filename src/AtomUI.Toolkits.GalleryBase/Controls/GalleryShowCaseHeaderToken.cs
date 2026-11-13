@@ -5,36 +5,36 @@ using Avalonia.Media;
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
 [ControlDesignToken]
-internal sealed class GalleryShowCaseHeaderToken : AbstractControlDesignToken
+internal sealed partial class GalleryShowCaseHeaderToken : AbstractControlDesignToken
 {
 
-    public Thickness HeaderMargin { get; set; }
-    public double HeaderSpacing { get; set; }
-    public double SummarySpacing { get; set; }
-    public double TitleFontSize { get; set; }
-    public FontWeight TitleFontWeight { get; set; }
-    public Thickness TagsMargin { get; set; }
-    public double TagItemSpacing { get; set; }
-    public double TagLineSpacing { get; set; }
-    public double SubtitleFontSize { get; set; }
-    public Thickness MetadataPadding { get; set; }
-    public CornerRadius MetadataCornerRadius { get; set; }
-    public double MetadataMinHeight { get; set; }
+    public partial Thickness HeaderMargin { get; set; }
+    public partial double HeaderSpacing { get; set; }
+    public partial double SummarySpacing { get; set; }
+    public partial double TitleFontSize { get; set; }
+    public partial FontWeight TitleFontWeight { get; set; }
+    public partial Thickness TagsMargin { get; set; }
+    public partial double TagItemSpacing { get; set; }
+    public partial double TagLineSpacing { get; set; }
+    public partial double SubtitleFontSize { get; set; }
+    public partial Thickness MetadataPadding { get; set; }
+    public partial CornerRadius MetadataCornerRadius { get; set; }
+    public partial double MetadataMinHeight { get; set; }
     [ReservedToken("Retained for compatibility with horizontal metadata layouts; the current vertical metadata layout has no consumer.")]
-    public double MetadataItemSpacing { get; set; }
-    public double MetadataLineSpacing { get; set; }
-    public double MetadataPairSpacing { get; set; }
-    public double MetadataLabelWidth { get; set; }
-    public double MetadataValueWidth { get; set; }
-    public double MetadataLineHeight { get; set; }
-    public FontFamily MetadataValueFontFamily { get; set; } = FontFamily.Default;
+    public partial double MetadataItemSpacing { get; set; }
+    public partial double MetadataLineSpacing { get; set; }
+    public partial double MetadataPairSpacing { get; set; }
+    public partial double MetadataLabelWidth { get; set; }
+    public partial double MetadataValueWidth { get; set; }
+    public partial double MetadataLineHeight { get; set; }
+    public partial FontFamily MetadataValueFontFamily { get; set; } = FontFamily.Default;
 
     public GalleryShowCaseHeaderToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

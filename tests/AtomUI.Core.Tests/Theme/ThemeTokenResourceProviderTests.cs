@@ -345,7 +345,7 @@ public class ThemeTokenResourceProviderTests
             [brush],
             static () => new BrushControlToken(),
             static (token, appearance) =>
-                ((BrushControlToken)token).CalculateTokenValues(appearance == ThemeAppearance.Dark));
+                ((BrushControlToken)token).RunDefaultCalculation(appearance == ThemeAppearance.Dark));
     }
 
     private static readonly (string ParentControl, string ChildControl)[] CrossControlPairs =
@@ -373,7 +373,9 @@ internal abstract class CrossControlCompilerToken : AbstractControlDesignToken
 {
     public double Height { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
+
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         Height = EffectiveGlobalToken.ControlHeight;
     }
@@ -425,7 +427,9 @@ internal sealed class BrushControlToken : AbstractControlDesignToken
 
     public SolidColorBrush? Brush { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
+
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         Brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
     }

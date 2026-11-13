@@ -3,6 +3,6 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TimerStatisticToken : AbstractStatisticToken
+public sealed partial class TimerStatisticToken : AbstractStatisticToken
 {
 }

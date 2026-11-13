@@ -5,16 +5,16 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class PopupToken : AbstractPopupCornerToken
+public sealed partial class PopupToken : AbstractPopupCornerToken
 {
 
-    public BoxShadows OverlayHostShadow { get; set; }
+    public partial BoxShadows OverlayHostShadow { get; set; }
 
-    public BoxShadows PopupRootShadow { get; set; }
+    public partial BoxShadows PopupRootShadow { get; set; }
 
-    public double MarginToAnchor { get; set; }
+    public partial double MarginToAnchor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

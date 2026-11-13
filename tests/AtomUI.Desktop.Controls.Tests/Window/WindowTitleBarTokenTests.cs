@@ -50,7 +50,7 @@ public class WindowTitleBarTokenTests
         var document = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowTitleBarTheme.axaml"));
 
-        tokenSource.ShouldContain("public double LogoAndLeftAddOnSpacing { get; set; }");
+        tokenSource.ShouldContain("public partial double LogoAndLeftAddOnSpacing { get; set; }");
         tokenSource.ShouldContain(
             "LogoAndLeftAddOnSpacing     = EffectiveGlobalToken.SpacingXXS;");
 

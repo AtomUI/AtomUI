@@ -6,25 +6,25 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTabToken : AbstractControlDesignToken
+public abstract partial class AbstractTabToken : AbstractControlDesignToken
 {
-    public double TitleFontSize { get; set; }
-    public double TitleFontSizeLG { get; set; }
-    public double TitleFontSizeSM { get; set; }
-    public Thickness HorizontalItemMargin { get; set; }
-    public Color ItemColor { get; set; }
-    public Color ItemHoverColor { get; set; }
-    public Color ItemSelectedColor { get; set; }
-    public Thickness ItemIconMargin { get; set; }
-    public Thickness MenuIndicatorPaddingHorizontal { get; set; }
-    public Thickness MenuIndicatorPaddingVertical { get; set; }
-    public BoxShadows BoxShadowTabsOverflowLeft { get; set; }
-    public BoxShadows BoxShadowTabsOverflowRight { get; set; }
-    public BoxShadows BoxShadowTabsOverflowTop { get; set; }
-    public BoxShadows BoxShadowTabsOverflowBottom { get; set; }
-    public Thickness CloseIconMargin { get; set; }
+    public partial double TitleFontSize { get; set; }
+    public partial double TitleFontSizeLG { get; set; }
+    public partial double TitleFontSizeSM { get; set; }
+    public partial Thickness HorizontalItemMargin { get; set; }
+    public partial Color ItemColor { get; set; }
+    public partial Color ItemHoverColor { get; set; }
+    public partial Color ItemSelectedColor { get; set; }
+    public partial Thickness ItemIconMargin { get; set; }
+    public partial Thickness MenuIndicatorPaddingHorizontal { get; set; }
+    public partial Thickness MenuIndicatorPaddingVertical { get; set; }
+    public partial BoxShadows BoxShadowTabsOverflowLeft { get; set; }
+    public partial BoxShadows BoxShadowTabsOverflowRight { get; set; }
+    public partial BoxShadows BoxShadowTabsOverflowTop { get; set; }
+    public partial BoxShadows BoxShadowTabsOverflowBottom { get; set; }
+    public partial Thickness CloseIconMargin { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         TitleFontSize = EffectiveGlobalToken.FontSize;

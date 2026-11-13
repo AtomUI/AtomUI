@@ -3,7 +3,7 @@
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SpinToken : AbstractControlDesignToken
+public sealed partial class SpinToken : AbstractControlDesignToken
 {
     
     public SpinToken()
@@ -14,39 +14,39 @@ internal sealed class SpinToken : AbstractControlDesignToken
     /// <summary>
     /// 加载圆圈尺寸
     /// </summary>
-    public double DotSize { get; set; }
+    public partial double DotSize { get; set; }
 
     /// <summary>
     /// 小号加载圆圈尺寸
     /// </summary>
-    public double DotSizeSM { get; set; }
+    public partial double DotSizeSM { get; set; }
 
     /// <summary>
     /// 大号加载圆圈尺寸
     /// </summary>
-    public double DotSizeLG { get; set; }
+    public partial double DotSizeLG { get; set; }
     
     /// <summary>
     /// 大号加载器尺寸
     /// </summary>
-    public double IndicatorSizeLG { get; set; }
+    public partial double IndicatorSizeLG { get; set; }
     
     /// <summary>
     /// 加载器尺寸
     /// </summary>
-    public double IndicatorSize { get; set; }
+    public partial double IndicatorSize { get; set; }
     
     /// <summary>
     /// 小号加载器尺寸
     /// </summary>
-    public double IndicatorSizeSM { get; set; }
+    public partial double IndicatorSizeSM { get; set; }
 
     /// <summary>
     /// 加载器的周期时间
     /// </summary>
-    public TimeSpan IndicatorDuration { get; set; }
+    public partial TimeSpan IndicatorDuration { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;

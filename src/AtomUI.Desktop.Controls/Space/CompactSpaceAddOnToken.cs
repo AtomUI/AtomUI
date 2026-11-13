@@ -5,29 +5,29 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class CompactSpaceAddOnToken : AbstractControlDesignToken
+public sealed partial class CompactSpaceAddOnToken : AbstractControlDesignToken
 {
     /// <summary>
     /// Add On 背景色
     /// </summary>
-    public Color AddonBg { get; set; }
+    public partial Color AddonBg { get; set; }
 
     /// <summary>
     /// AddOn 内边距
     /// </summary>
-    public Thickness AddOnPadding { get; set; }
+    public partial Thickness AddOnPadding { get; set; }
 
     /// <summary>
     /// AddOn 小号内边距
     /// </summary>
-    public Thickness AddOnPaddingSM { get; set; }
+    public partial Thickness AddOnPaddingSM { get; set; }
 
     /// <summary>
     /// AddOn 大号内边距
     /// </summary>
-    public Thickness AddOnPaddingLG { get; set; }
+    public partial Thickness AddOnPaddingLG { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         AddonBg       = EffectiveGlobalToken.ColorFillAlter;

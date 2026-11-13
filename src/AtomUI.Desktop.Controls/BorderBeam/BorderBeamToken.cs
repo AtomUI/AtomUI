@@ -3,23 +3,23 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class BorderBeamToken : AbstractControlDesignToken
+public sealed partial class BorderBeamToken : AbstractControlDesignToken
 {
 
-    public double BeamSize { get; set; }
+    public partial double BeamSize { get; set; }
 
-    public double BeamOpacity { get; set; }
+    public partial double BeamOpacity { get; set; }
 
-    public TimeSpan MotionDuration { get; set; }
+    public partial TimeSpan MotionDuration { get; set; }
 
-    public double MaxVisibleStopPercent { get; set; }
+    public partial double MaxVisibleStopPercent { get; set; }
 
     public BorderBeamToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         BeamSize              = 100d;

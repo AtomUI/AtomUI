@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TextBoxToken : AbstractControlDesignToken
+public sealed partial class TextBoxToken : AbstractControlDesignToken
 {
 
     public TextBoxToken()
@@ -15,19 +15,19 @@ internal sealed class TextBoxToken : AbstractControlDesignToken
     /// <summary>
     /// 默认内边距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 小号内边距
     /// </summary>
-    public Thickness ContentPaddingSM { get; set; }
+    public partial Thickness ContentPaddingSM { get; set; }
 
     /// <summary>
     /// 大号内边距
     /// </summary>
-    public Thickness ContentPaddingLG { get; set; }
+    public partial Thickness ContentPaddingLG { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

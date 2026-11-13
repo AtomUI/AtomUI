@@ -7,10 +7,10 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ResetButtonToken : AbstractStandardButtonToken
+public sealed partial class ResetButtonToken : AbstractStandardButtonToken
 {
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(ResetButtonTokenKind.ContentFontSize))

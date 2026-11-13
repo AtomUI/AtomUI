@@ -5,32 +5,32 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TreeSelectToken : AbstractSelectInputToken
+public sealed partial class TreeSelectToken : AbstractSelectInputToken
 {
     
     /// <summary>
     /// 最小的弹窗的宽度
     /// </summary>
-    public double HeaderHeight { get; set; }
-    public Color NodeHoverBg { get; set; }
-    public Color NodeSelectedBg { get; set; }
-    public Thickness TreeItemMargin { get; set; }
-    public Thickness TreeItemHeaderPadding { get; set; }
-    public Thickness TreeItemHeaderMargin { get; set; }
-    public Thickness TreeNodeSwitcherMargin { get; set; }
-    public Thickness TreeNodeIconMargin { get; set; }
-    public Color FilterHighlightColor { get; set; }
+    public partial double HeaderHeight { get; set; }
+    public partial Color NodeHoverBg { get; set; }
+    public partial Color NodeSelectedBg { get; set; }
+    public partial Thickness TreeItemMargin { get; set; }
+    public partial Thickness TreeItemHeaderPadding { get; set; }
+    public partial Thickness TreeItemHeaderMargin { get; set; }
+    public partial Thickness TreeNodeSwitcherMargin { get; set; }
+    public partial Thickness TreeNodeIconMargin { get; set; }
+    public partial Color FilterHighlightColor { get; set; }
 
-    public Thickness PopupContentPadding { get; set; }
+    public partial Thickness PopupContentPadding { get; set; }
 
-    public double MinPopupWidth { get; set; }
+    public partial double MinPopupWidth { get; set; }
 
     public TreeSelectToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var presentation = TreePresentationTokenValues.Calculate(EffectiveGlobalToken);

@@ -4,17 +4,17 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractTransferToken : AbstractControlDesignToken
+public abstract partial class AbstractTransferToken : AbstractControlDesignToken
 {
-    public double ListWidth { get; set; }
+    public partial double ListWidth { get; set; }
 
-    public double ListHeight { get; set; }
+    public partial double ListHeight { get; set; }
 
-    public double HeaderHeight { get; set; }
+    public partial double HeaderHeight { get; set; }
 
-    public Thickness HeaderPadding { get; set; }
+    public partial Thickness HeaderPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

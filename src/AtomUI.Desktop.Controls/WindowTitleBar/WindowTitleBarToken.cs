@@ -7,43 +7,43 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class WindowTitleBarToken : AbstractTitleBarActionToken
+public sealed partial class WindowTitleBarToken : AbstractTitleBarActionToken
 {
     /// <summary>
     /// 应用程序 Logo 和 标题之间的间距
     /// </summary>
-    public double LogoAndTitleSpacing { get; set; }
+    public partial double LogoAndTitleSpacing { get; set; }
 
     /// <summary>
     /// Windows/Linux 应用程序 Logo 和左侧附加内容之间的间距
     /// </summary>
-    public double LogoAndLeftAddOnSpacing { get; set; }
+    public partial double LogoAndLeftAddOnSpacing { get; set; }
     
     /// <summary>
     /// 应用程序标题栏
     /// </summary>
-    public Thickness TitleBarPadding { get; set; }
+    public partial Thickness TitleBarPadding { get; set; }
     
     /// <summary>
     /// 窗口标题默认字体
     /// </summary>
-    public double TitleFontSize { get; set; }
+    public partial double TitleFontSize { get; set; }
     
     /// <summary>
     /// 窗口标题默认字体粗细
     /// </summary>
-    public FontWeight TitleFontWeight { get; set; }
+    public partial FontWeight TitleFontWeight { get; set; }
     
 
     /// <summary>
     /// Windows caption glyph size aligned with Avalonia's native-style window decorations.
     /// </summary>
-    public double WindowsCaptionIconSize { get; set; }
+    public partial double WindowsCaptionIconSize { get; set; }
     
     /// <summary>
     /// 应用程序图标大小
     /// </summary>
-    public double LogoSize { get; set; }
+    public partial double LogoSize { get; set; }
     
     
     
@@ -53,17 +53,17 @@ internal sealed class WindowTitleBarToken : AbstractTitleBarActionToken
     /// <summary>
     /// Windows 窗口关闭按钮鼠标 hover 颜色
     /// </summary>
-    public Color WindowsCloseButtonHoverColor { get; set; }
+    public partial Color WindowsCloseButtonHoverColor { get; set; }
     
     /// <summary>
     /// Windows 窗口关闭按钮鼠标 hover 背景色
     /// </summary>
-    public Color WindowsCloseButtonHoverBgColor { get; set; }
+    public partial Color WindowsCloseButtonHoverBgColor { get; set; }
     
     /// <summary>
     /// Windows 窗口关闭按钮鼠标按下背景色
     /// </summary>
-    public Color WindowsCloseButtonPressedBgColor { get; set; }
+    public partial Color WindowsCloseButtonPressedBgColor { get; set; }
     
     
     
@@ -73,29 +73,29 @@ internal sealed class WindowTitleBarToken : AbstractTitleBarActionToken
     /// <summary>
     /// 标题按钮间距
     /// </summary>
-    public double CaptionGroupSpacing { get; set; }
+    public partial double CaptionGroupSpacing { get; set; }
     
     /// <summary>
     /// 标题高度
     /// </summary>
-    public double Height { get; set; }
+    public partial double Height { get; set; }
 
     /// <summary>
     /// 全屏状态下 Caption 按钮的尺寸（与密度算法解耦，取代直引 EffectiveGlobalToken.SizeLG）
     /// </summary>
-    public double FullscreenCaptionButtonSize { get; set; }
+    public partial double FullscreenCaptionButtonSize { get; set; }
 
     /// <summary>
     /// 标题栏水平布局分隔（Linux 模板 DockPanel 用，取代直引 EffectiveGlobalToken.SpacingXS）
     /// </summary>
-    public double HeaderHorizontalSpacing { get; set; }
+    public partial double HeaderHorizontalSpacing { get; set; }
     
     public WindowTitleBarToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

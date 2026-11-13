@@ -6,11 +6,11 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class WindowTitleBarButtonToken : AbstractTitleBarActionToken
+public sealed partial class WindowTitleBarButtonToken : AbstractTitleBarActionToken
 {
-    public CornerRadius CaptionButtonCornerRadius { get; set; }
+    public partial CornerRadius CaptionButtonCornerRadius { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(WindowTitleBarButtonTokenKind.CaptionButtonIconSize))

@@ -9,21 +9,21 @@ namespace AtomUI.Desktop.Controls;
 /// compute and override these values independently.
 /// </summary>
 [ControlDesignToken]
-internal abstract class AbstractProgressToken : AbstractControlDesignToken
+public abstract partial class AbstractProgressToken : AbstractControlDesignToken
 {
     /// <summary>
     /// 进度条默认颜色
     /// Default color of the progress indicator
     /// </summary>
-    public Color DefaultColor { get; set; }
+    public partial Color DefaultColor { get; set; }
 
     /// <summary>
     /// 进度条剩余部分颜色
     /// Color of the remaining (unfilled) part of the progress bar
     /// </summary>
-    public Color RemainingColor { get; set; }
+    public partial Color RemainingColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         DefaultColor   = EffectiveGlobalToken.ColorInfo;
         RemainingColor = EffectiveGlobalToken.ColorFillSecondary;

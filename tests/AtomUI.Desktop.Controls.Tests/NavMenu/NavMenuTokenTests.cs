@@ -18,7 +18,7 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        navMenuToken.RunDefaultCalculation(isDarkMode: false);
 
         navMenuToken.ItemHeight.ShouldBe(sharedToken.ControlHeightLG);
     }
@@ -33,7 +33,7 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        navMenuToken.RunDefaultCalculation(isDarkMode: false);
 
         navMenuToken.MenuPopupMaxHeight.ShouldBe(navMenuToken.ItemHeight * 8);
     }
@@ -48,7 +48,7 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        navMenuToken.RunDefaultCalculation(isDarkMode: false);
 
         navMenuToken.ItemContentMargin.ShouldBe(new Thickness(4, 0, 4, 4));
         navMenuToken.VerticalMenuContentPadding.ShouldBe(new Thickness(0, 4, 0, 0));
@@ -66,7 +66,7 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        navMenuToken.RunDefaultCalculation(isDarkMode: false);
 
         navMenuToken.InlineCollapsedWidth.ShouldBe(48);
         navMenuToken.CollapsedWidth.ShouldBe(sharedToken.ControlHeight * 2);
@@ -83,7 +83,7 @@ public class NavMenuTokenTests
         var navMenuToken = new NavMenuToken();
         navMenuToken.AssignEffectiveGlobalToken(sharedToken);
 
-        navMenuToken.CalculateTokenValues(isDarkMode: false);
+        navMenuToken.RunDefaultCalculation(isDarkMode: false);
 
         navMenuToken.ItemIconSize.ShouldBe(sharedToken.IconSize);
         navMenuToken.CollapsedIconSize.ShouldBe(sharedToken.IconSizeLG);

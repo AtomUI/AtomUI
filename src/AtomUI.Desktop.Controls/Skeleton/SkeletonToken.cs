@@ -7,53 +7,53 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SkeletonToken : AbstractSkeletonToken
+public sealed partial class SkeletonToken : AbstractSkeletonToken
 {
     /// <summary>
     /// 段落骨架屏上间距
     /// Margin top of paragraph skeleton
     /// </summary>
-    public Thickness ParagraphMarginTop { get; set; }
+    public partial Thickness ParagraphMarginTop { get; set; }
     
     /// <summary>
     /// 头像骨架屏右间距
     /// </summary>
-    public Thickness AvatarMarginRight { get; set; }
+    public partial Thickness AvatarMarginRight { get; set; }
     
     /// <summary>
     /// 段落骨架屏单行胶囊圆角值
     /// </summary>
-    public CornerRadius ParagraphLineRoundCornerRadius { get; set; }
+    public partial CornerRadius ParagraphLineRoundCornerRadius { get; set; }
     
     // 流光动画背景定义，背景按 400% 宽度平移形成扫光效果。
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
-    public IBrush? LoadingBackgroundStart { get; set; }
+    public partial IBrush? LoadingBackgroundStart { get; set; }
 
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
-    public IBrush? LoadingBackgroundMiddle { get; set; }
+    public partial IBrush? LoadingBackgroundMiddle { get; set; }
 
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
-    public IBrush? LoadingBackgroundEnd { get; set; }
+    public partial IBrush? LoadingBackgroundEnd { get; set; }
     
     /// <summary>
     /// 图片占位图标颜色（antd 固定 #bfbfbf）
     /// Fill color of the image placeholder icon (antd fixes #bfbfbf)
     /// </summary>
-    public Color ImageColor { get; set; }
+    public partial Color ImageColor { get; set; }
 
-    public double ImageSize { get; set; }
-    public double ImageContainerSize {  get; set; }
-    public double ImageContainerMaxSize { get; set; }
+    public partial double ImageSize { get; set; }
+    public partial double ImageContainerSize {  get; set; }
+    public partial double ImageContainerMaxSize { get; set; }
 
     public SkeletonToken()
 
     {
     }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         // The gradient colors and the paragraph line height feed the derived values below, so their defaults yield to

@@ -6,59 +6,59 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TimelineToken : AbstractControlDesignToken
+public sealed partial class TimelineToken : AbstractControlDesignToken
 {
     /// <summary>
     /// Timeline 轨迹颜色
     /// </summary>
-    public Color IndicatorTailColor { get; set; }
+    public partial Color IndicatorTailColor { get; set; }
 
     /// <summary>
     /// 轨迹宽度
     /// </summary>
-    public double IndicatorTailWidth { get; set; }
+    public partial double IndicatorTailWidth { get; set; }
 
     /// <summary>
     /// 时间项内间距
     /// </summary>
-    public Thickness ItemPaddingBottom { get; set; }
+    public partial Thickness ItemPaddingBottom { get; set; }
 
     /// <summary>
     /// 时间项下大内间距
     /// </summary>
-    public Thickness ItemPaddingBottomLG { get; set; }
+    public partial Thickness ItemPaddingBottomLG { get; set; }
 
     /// <summary>
     /// 节点指示器的大小
     /// </summary>
-    public double IndicatorSize { get; set; }
+    public partial double IndicatorSize { get; set; }
 
     /// <summary>
     /// 节点指示器内置圆形大小
     /// </summary>
-    public double IndicatorDotSize { get; set; }
+    public partial double IndicatorDotSize { get; set; }
     
     /// <summary>
     /// 指示器在 Start 模式下的外边距
     /// </summary>
-    public Thickness IndicatorStartModeMargin { get; set; }
+    public partial Thickness IndicatorStartModeMargin { get; set; }
     
     /// <summary>
     /// 指示器在 End 模式下的外边距
     /// </summary>
-    public Thickness IndicatorEndModeMargin { get; set; }
+    public partial Thickness IndicatorEndModeMargin { get; set; }
     
     /// <summary>
     /// 指示器在中间的外边距
     /// </summary>
-    public Thickness IndicatorMiddleModeMargin { get; set; }
+    public partial Thickness IndicatorMiddleModeMargin { get; set; }
 
     /// <summary>
     /// 节点边框宽度
     /// </summary>
-    public double IndicatorDotBorderWidth { get; set; }
+    public partial double IndicatorDotBorderWidth { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
 

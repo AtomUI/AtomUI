@@ -5,67 +5,67 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal abstract class AbstractListViewToken : AbstractControlDesignToken
+public abstract partial class AbstractListViewToken : AbstractControlDesignToken
 {
     /// <summary>
     /// List 内边距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// 列表项文字颜色
     /// </summary>
-    public Color ItemColor { get; set; }
+    public partial Color ItemColor { get; set; }
 
     /// <summary>
     /// 列表项文字悬浮颜色
     /// </summary>
-    public Color ItemHoverColor { get; set; }
+    public partial Color ItemHoverColor { get; set; }
 
     /// <summary>
     /// 列表项文字选中颜色
     /// </summary>
-    public Color ItemSelectedColor { get; set; }
+    public partial Color ItemSelectedColor { get; set; }
 
     /// <summary>
     /// 列表项文字禁用颜色
     /// </summary>
-    public Color ItemDisabledColor { get; set; }
+    public partial Color ItemDisabledColor { get; set; }
 
     /// <summary>
     /// 列表项背景色
     /// </summary>
-    public Color ItemBgColor { get; set; }
+    public partial Color ItemBgColor { get; set; }
 
     /// <summary>
     /// 列表项悬浮态背景色
     /// </summary>
-    public Color ItemHoverBgColor { get; set; }
+    public partial Color ItemHoverBgColor { get; set; }
 
     /// <summary>
     /// 列表项选中背景色
     /// </summary>
-    public Color ItemSelectedBgColor { get; set; }
+    public partial Color ItemSelectedBgColor { get; set; }
 
     /// <summary>
     /// 列表项小号内间距
     /// </summary>
-    public Thickness ItemPaddingSM { get; set; }
+    public partial Thickness ItemPaddingSM { get; set; }
 
     /// <summary>
     /// 列表项内间距
     /// </summary>
-    public Thickness ItemPadding { get; set; }
+    public partial Thickness ItemPadding { get; set; }
 
     /// <summary>
     /// 列表项大号内间距
     /// </summary>
-    public Thickness ItemPaddingLG { get; set; }
+    public partial Thickness ItemPaddingLG { get; set; }
 
     /// <summary>
     /// 列表项外边距
     /// </summary>
-    public Thickness ItemMargin { get; set; }
+    public partial Thickness ItemMargin { get; set; }
 
     /// <summary>
     /// 分页器的外边距
@@ -74,7 +74,7 @@ internal abstract class AbstractListViewToken : AbstractControlDesignToken
     /// <summary>
     /// 分组标题的颜色
     /// </summary>
-    public Color GroupHeaderColor { get; set; }
+    public partial Color GroupHeaderColor { get; set; }
 
     /// <summary>
     /// 分组标题的内间距
@@ -84,7 +84,7 @@ internal abstract class AbstractListViewToken : AbstractControlDesignToken
     /// 列表项选中标记的外间距
     /// </summary>
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;

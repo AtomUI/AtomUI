@@ -5,13 +5,13 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class RangeDatePickerToken : AbstractDatePickerToken
+public sealed partial class RangeDatePickerToken : AbstractDatePickerToken
 {
-    public Thickness RangePickerArrowMargin { get; set; }
-    public double RangePickerIndicatorThickness { get; set; }
-    public double RangePanelSpacing { get; set; }
+    public partial Thickness RangePickerArrowMargin { get; set; }
+    public partial double RangePickerIndicatorThickness { get; set; }
+    public partial double RangePanelSpacing { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         if (!IsExplicit(RangeDatePickerTokenKind.ItemWidth))

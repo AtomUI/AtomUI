@@ -7,7 +7,7 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DataGridToken : AbstractControlDesignToken
+public sealed partial class DataGridToken : AbstractControlDesignToken
 {
     
     public DataGridToken()
@@ -19,262 +19,262 @@ internal sealed class DataGridToken : AbstractControlDesignToken
     /// 表头背景
     /// Background of table header
     /// </summary>
-    public Color HeaderBg { get; set; }
+    public partial Color HeaderBg { get; set; }
     
     /// <summary>
     /// 表头文字颜色
     /// Color of table header text
     /// </summary>
-    public Color HeaderColor { get; set; }
+    public partial Color HeaderColor { get; set; }
     
     /// <summary>
     /// 表头排序激活态背景色
     /// Background color of table header when sorted
     /// </summary>
-    public Color HeaderSortActiveBg { get; set; }
+    public partial Color HeaderSortActiveBg { get; set; }
     
     /// <summary>
     /// 表头排序激活态悬浮背景色
     /// Background color of table header when sorted and hovered
     /// </summary>
-    public Color HeaderSortHoverBg { get; set; }
+    public partial Color HeaderSortHoverBg { get; set; }
     
     /// <summary>
     /// 表格排序列背景色
     /// Background color of table sorted column
     /// </summary>
-    public Color BodySortBg { get; set; }
+    public partial Color BodySortBg { get; set; }
     
     /// <summary>
     /// 表格行悬浮背景色
     /// Background color of table hovered row
     /// </summary>
-    public Color RowHoverBg { get; set; }
+    public partial Color RowHoverBg { get; set; }
     
     /// <summary>
     /// 表格行选中背景色
     /// Background color of table selected row
     /// </summary>
-    public Color RowSelectedBg { get; set; }
+    public partial Color RowSelectedBg { get; set; }
     
     /// <summary>
     /// 表格行选中悬浮背景色
     /// Background color of table selected row when hovered
     /// </summary>
-    public Color RowSelectedHoverBg { get; set; }
+    public partial Color RowSelectedHoverBg { get; set; }
     
     /// <summary>
     /// 表格行展开背景色
     /// Background color of table expanded row
     /// </summary>
-    public Color RowExpandedBg { get; set; }
+    public partial Color RowExpandedBg { get; set; }
     
     /// <summary>
     /// 单元格内间距（默认大尺寸）
     /// Padding of table cell (large size by default)
     /// </summary>
-    public Thickness CellPadding { get; set; }
+    public partial Thickness CellPadding { get; set; }
     
     /// <summary>
     /// 单元格内间距（中等尺寸）
     /// Padding of table cell (middle size)
     /// </summary>
-    public Thickness CellPaddingMD { get; set; }
+    public partial Thickness CellPaddingMD { get; set; }
     
     /// <summary>
     /// 单元格内间距（小尺寸）
     /// Padding of table cell (small size)
     /// </summary>
-    public Thickness CellPaddingSM { get; set; }
+    public partial Thickness CellPaddingSM { get; set; }
     
     /// <summary>
     /// 表格边框/分割线颜色
     /// Border color of table
     /// </summary>
-    public Color BorderColor { get; set; }
+    public partial Color BorderColor { get; set; }
     
     /// <summary>
     /// 表头圆角
     /// Border radius of table header
     /// </summary>
-    public CornerRadius HeaderBorderRadius { get; set; }
+    public partial CornerRadius HeaderBorderRadius { get; set; }
     
     /// <summary>
     /// 表格底部背景色
     /// Background of footer
     /// </summary>
-    public Color FooterBg { get; set; }
+    public partial Color FooterBg { get; set; }
     
     /// <summary>
     /// 表格底部文字颜色
     /// Color of footer text
     /// </summary>
-    public Color FooterColor { get; set; }
+    public partial Color FooterColor { get; set; }
     
     /// <summary>
     /// 单元格文字大小（默认大尺寸）
     /// Font size of table cell (large size by default)
     /// </summary>
-    public double CellFontSize { get; set; }
+    public partial double CellFontSize { get; set; }
     
     /// <summary>
     /// 单元格文字大小（中等尺寸）
     /// Font size of table cell (middle size)
     /// </summary>
-    public double CellFontSizeMD { get; set; }
+    public partial double CellFontSizeMD { get; set; }
     
     /// <summary>
     /// 单元格文字大小（小尺寸）
     /// Font size of table cell (small size)
     /// </summary>
-    public double CellFontSizeSM { get; set; }
+    public partial double CellFontSizeSM { get; set; }
     
     /// <summary>
     /// 表头分割线颜色
     /// Split border color of table header
     /// </summary>
-    public Color HeaderSplitColor { get; set; }
+    public partial Color HeaderSplitColor { get; set; }
     
     /// <summary>
     /// 固定表头排序激活态背景色
     /// Background color of fixed table header when sorted
     /// </summary>
     [ReservedToken("Reserved for a separate sticky header surface; AtomUI renders its header once in the grid viewport.")]
-    public Color FixedHeaderSortActiveBg { get; set; }
+    public partial Color FixedHeaderSortActiveBg { get; set; }
     
     /// <summary>
     /// 表头过滤按钮悬浮背景色
     /// Background color of table header filter button when hovered
     /// </summary>
-    public Color HeaderFilterHoverBg { get; set; }
+    public partial Color HeaderFilterHoverBg { get; set; }
     
     /// <summary>
     /// 过滤下拉菜单选项背景
     /// Background of filter dropdown menu item
     /// </summary>
-    public Color FilterDropdownMenuBg { get; set; }
+    public partial Color FilterDropdownMenuBg { get; set; }
     
     /// <summary>
     /// 过滤下拉菜单颜色
     /// Color of filter dropdown
     /// </summary>
-    public Color FilterDropdownBg { get; set; }
+    public partial Color FilterDropdownBg { get; set; }
     
     /// <summary>
     /// 展开按钮背景色
     /// Background of expand button
     /// </summary>
-    public Color ExpandIconBg { get; set; }
+    public partial Color ExpandIconBg { get; set; }
     
     /// <summary>
     /// 选择列宽度
     /// Width of selection column
     /// </summary>
     [ReservedToken("Reserved: selection columns auto-measure their real selector and CellPadding; the legacy default width would narrow or clip that layout.")]
-    public double SelectionColumnWidth { get; set; }
+    public partial double SelectionColumnWidth { get; set; }
     
     /// <summary>
     /// 左侧列固定阴影
     /// </summary>
-    public BoxShadows LeftFrozenShadows { get; set; }
+    public partial BoxShadows LeftFrozenShadows { get; set; }
     
     /// <summary>
     /// 右侧列固定阴影
     /// </summary>
-    public BoxShadows RightFrozenShadows { get; set; }
+    public partial BoxShadows RightFrozenShadows { get; set; }
     
     /// <summary>
     /// 列拖动排序时候的当前列的背景颜色
     /// </summary>
-    public Color ColumnReorderActiveBg { get; set; }
+    public partial Color ColumnReorderActiveBg { get; set; }
     
     /// <summary>
     /// 分页器的外边距
     /// </summary>
-    public Thickness PaginationMargin { get; set; }
+    public partial Thickness PaginationMargin { get; set; }
     
     /// <summary>
     /// 分页器的外边距（小号）
     /// </summary>
-    public Thickness PaginationMarginSM { get; set; }
+    public partial Thickness PaginationMarginSM { get; set; }
 
     /// <summary>
     /// 分页面板的水平内边距
     /// </summary>
-    public Thickness PaginationPanelMargin { get; set; }
+    public partial Thickness PaginationPanelMargin { get; set; }
 
     /// <summary>
     /// 分页面板的水平内边距（小号）
     /// </summary>
-    public Thickness PaginationPanelMarginSM { get; set; }
+    public partial Thickness PaginationPanelMarginSM { get; set; }
 
     #region 内部 Token
 
     [ReservedToken("Reserved for the Ant Design inline row-indent expander layout; AtomUI uses a dedicated detail column.")]
-    internal Thickness ExpandIconMargin { get; set; }
+    internal partial Thickness ExpandIconMargin { get; set; }
     [ReservedToken("Reserved for the Ant Design CSS expander positioning model; AtomUI centers fixed plus/minus glyphs in a Canvas.")]
-    internal double ExpandIconHalfInner { get; set; }
+    internal partial double ExpandIconHalfInner { get; set; }
     [ReservedToken("Reserved for the Ant Design unscaled CSS expander box; AtomUI uses SizeMS for its final box size.")]
-    internal double ExpandIconSize { get; set; }
+    internal partial double ExpandIconSize { get; set; }
     [ReservedToken("Reserved for the Ant Design CSS expander transform; AtomUI sizes its centered expander directly.")]
-    internal double ExpandIconScale { get; set; }
-    internal double SortIconSize { get; set; }
-    internal double RowReorderIndicatorSize { get; set; }
-    internal Color HeaderIconColor { get; set; }
-    internal Color HeaderIconHoverColor { get; set; }
-    internal Thickness SortIndicatorLayoutMargin { get; set; }
-    internal Thickness FilterIndicatorPadding { get; set; }
+    internal partial double ExpandIconScale { get; set; }
+    internal partial double SortIconSize { get; set; }
+    internal partial double RowReorderIndicatorSize { get; set; }
+    internal partial Color HeaderIconColor { get; set; }
+    internal partial Color HeaderIconHoverColor { get; set; }
+    internal partial Thickness SortIndicatorLayoutMargin { get; set; }
+    internal partial Thickness FilterIndicatorPadding { get; set; }
 
     #endregion
 
     #region 内部别名定义
-    internal double TableFontSize { get; set; }
-    internal Color TableBg { get; set; }
-    internal CornerRadius TableRadius { get; set; }
-    internal Thickness TablePadding { get; set; }
-    internal Thickness TablePaddingMiddle { get; set; }
-    internal Thickness TablePaddingSmall { get; set; }
-    internal Color TableBorderColor { get; set; }
-    internal Color TableHeaderTextColor { get; set; }
-    internal Color TableHeaderBg { get; set; }
-    internal Color TableFooterTextColor { get; set; }
-    internal Color TableFooterBg { get; set; }
-    internal Color TableHeaderCellSplitColor { get; set; }
-    internal Color TableHeaderSortBg { get; set; }
-    internal Color TableHeaderSortHoverBg { get; set; }
-    internal Color TableBodySortBg { get; set; }
+    internal partial double TableFontSize { get; set; }
+    internal partial Color TableBg { get; set; }
+    internal partial CornerRadius TableRadius { get; set; }
+    internal partial Thickness TablePadding { get; set; }
+    internal partial Thickness TablePaddingMiddle { get; set; }
+    internal partial Thickness TablePaddingSmall { get; set; }
+    internal partial Color TableBorderColor { get; set; }
+    internal partial Color TableHeaderTextColor { get; set; }
+    internal partial Color TableHeaderBg { get; set; }
+    internal partial Color TableFooterTextColor { get; set; }
+    internal partial Color TableFooterBg { get; set; }
+    internal partial Color TableHeaderCellSplitColor { get; set; }
+    internal partial Color TableHeaderSortBg { get; set; }
+    internal partial Color TableHeaderSortHoverBg { get; set; }
+    internal partial Color TableBodySortBg { get; set; }
     [ReservedToken("Reserved alias for the separate sticky header surface that AtomUI does not create.")]
-    internal Color TableFixedHeaderSortActiveBg { get; set; }
-    internal Color TableHeaderFilterActiveBg { get; set; }
-    internal Color TableFilterDropdownBg { get; set; }
-    internal double TableFilterButtonSpacing  { get; set; }
-    internal Thickness TableFilterButtonContainerMargin { get; set; }
-    internal Thickness TableFilterButtonLayoutSeparatorMargin { get; set; }
+    internal partial Color TableFixedHeaderSortActiveBg { get; set; }
+    internal partial Color TableHeaderFilterActiveBg { get; set; }
+    internal partial Color TableFilterDropdownBg { get; set; }
+    internal partial double TableFilterButtonSpacing  { get; set; }
+    internal partial Thickness TableFilterButtonContainerMargin { get; set; }
+    internal partial Thickness TableFilterButtonLayoutSeparatorMargin { get; set; }
 
     [ReservedToken("Reserved for a constrained filter dropdown viewport; the current flyout measures its actual items.")]
-    internal double TableFilterDropdownHeight { get; set; }
-    internal double TableFilterDropdownWidth { get; set; }
-    internal Thickness TableFilterDropdownPadding { get; set; }
+    internal partial double TableFilterDropdownHeight { get; set; }
+    internal partial double TableFilterDropdownWidth { get; set; }
+    internal partial Thickness TableFilterDropdownPadding { get; set; }
     [ReservedToken("Reserved for a filter search editor; the current filter flyout has no search editor.")]
-    internal double TableFilterDropdownSearchWidth { get; set; }
+    internal partial double TableFilterDropdownSearchWidth { get; set; }
     
-    internal Color TableRowHoverBg { get; set; }
-    internal Color TableSelectedRowBg { get; set; }
-    internal Color TableSelectedRowHoverBg { get; set; }
-    internal double TableFontSizeMiddle { get; set; }
-    internal double TableFontSizeSmall { get; set; }
+    internal partial Color TableRowHoverBg { get; set; }
+    internal partial Color TableSelectedRowBg { get; set; }
+    internal partial Color TableSelectedRowHoverBg { get; set; }
+    internal partial double TableFontSizeMiddle { get; set; }
+    internal partial double TableFontSizeSmall { get; set; }
     [ReservedToken("Reserved alias: selection column width follows automatic selector and CellPadding measurement, or the explicit column Width.")]
-    internal double TableSelectionColumnWidth { get; set; }
-    internal Color TableExpandIconBg { get; set; }
+    internal partial double TableSelectionColumnWidth { get; set; }
+    internal partial Color TableExpandIconBg { get; set; }
     [ReservedToken("Reserved: detail columns auto-measure the expander and CellPadding; applying the legacy fixed width changes the existing layout.")]
-    internal double TableExpandColumnWidth { get; set; }
-    internal Color TableExpandedRowBg { get; set; }
+    internal partial double TableExpandColumnWidth { get; set; }
+    internal partial Color TableExpandedRowBg { get; set; }
     
-    internal CornerRadius TableTopLeftColumnCornerRadius { get; set; }
+    internal partial CornerRadius TableTopLeftColumnCornerRadius { get; set; }
     
     #endregion
     
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         var colorFillSecondarySolid = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillSecondary, EffectiveGlobalToken.ColorBgContainer);

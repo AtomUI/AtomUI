@@ -4,7 +4,7 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class GroupBoxToken : AbstractControlDesignToken
+public sealed partial class GroupBoxToken : AbstractControlDesignToken
 {
     
     public GroupBoxToken()
@@ -15,24 +15,24 @@ internal sealed class GroupBoxToken : AbstractControlDesignToken
     /// <summary>
     /// 内容区域内间距
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
     /// <summary>
     /// Header 容器外间距
     /// </summary>
-    public Thickness HeaderContainerMargin { get; set; }
+    public partial Thickness HeaderContainerMargin { get; set; }
 
     /// <summary>
     /// 头部图标的外间距
     /// </summary>
-    public Thickness HeaderIconMargin { get; set; }
+    public partial Thickness HeaderIconMargin { get; set; }
 
     /// <summary>
     /// Header 内容区域内间距
     /// </summary>
-    public Thickness HeaderContentPadding { get; set; }
+    public partial Thickness HeaderContentPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         ContentPadding           = EffectiveGlobalToken.PaddingXS;

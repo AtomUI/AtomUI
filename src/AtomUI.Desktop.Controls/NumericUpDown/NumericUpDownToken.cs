@@ -4,9 +4,9 @@ using AtomUI.Desktop.Controls.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class NumericUpDownToken : AbstractButtonSpinnerToken
+public sealed partial class NumericUpDownToken : AbstractButtonSpinnerToken
 {
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         // Explicit slots belong to the terminal identity; shared derivation runs after the base colour is resolved.

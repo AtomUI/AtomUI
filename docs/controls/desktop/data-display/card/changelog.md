@@ -3,6 +3,16 @@
 本文档记录 Card 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-12
+
+- Fix
+  - 修复高 DPI（150% / 200%）下 `CardGridItem` 网格线只有 1 个物理像素、比卡片外边框细一半的问题。网格线由
+    `CardGridItemShadows` 中偏移 `lineWidth` 的外阴影与内阴影绘制，而 Avalonia Skia 后端把阴影偏移按物理像素施加。
+    `CardGridItem` 的 `Frame` 由 Avalonia `Border` 改为 `DashedBorder`，阴影经共享的 `BoxShadowRenderHelper` 绘制，偏移随渲染缩放；
+    1x 下渲染结果不变，Token 未变。
+- Tests
+  - 新增 `CardGridItemShadowRenderingTests`，在 1x / 1.5x / 2x 下断言列间网格线与卡片外边框等宽。
+
 ## 2026-11-11
 
 - Fix

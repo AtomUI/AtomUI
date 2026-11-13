@@ -7,55 +7,62 @@
               >
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DataGridColumnHeader">
-            <Border Name="PART_Frame" Background="{TemplateBinding Background}">
-                <Panel Name="PART_RootLayout">
-                    <Border Name="PART_ContentFrame">
-                        <DockPanel LastChildFill="True" Name="ContentLayout">
-                            <StackPanel Name="IndicatorsLayout"
-                                        Orientation="Horizontal"
-                                        DockPanel.Dock="Right"
-                                        IsVisible="{TemplateBinding IndicatorLayoutVisible}">
-                                <atom:DataGridSortIndicator
-                                    Name="{x:Static atom:DataGridColumnHeaderThemeConstants.SortIndicatorPart}"
-                                    VerticalAlignment="Center"
-                                    IsVisible="{TemplateBinding CanUserSort}"
-                                    SupportedSortDirections="{TemplateBinding SupportedSortDirections}" />
-                                <atom:DataGridFilterIndicator
-                                    Name="{x:Static atom:DataGridColumnHeaderThemeConstants.FilterIndicatorPart}"
-                                    VerticalAlignment="Center"
-                                    IsVisible="{TemplateBinding FilterIndicatorVisible}" />
-                            </StackPanel>
-                            <ContentPresenter
-                                Name="ContentPresenter"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}" />
-                        </DockPanel>
-                    </Border>
-                    <atom:PixelAlignedBorder Name="PART_VerticalSeparator"
-                                             Width="1.0"
-                                             BorderThickness="0,0,1,0"
-                                             HorizontalAlignment="Right"
-                                             IsVisible="{TemplateBinding IsSeparatorsVisible}" />
-                    <Panel Name="PART_FocusVisual"
-                           IsVisible="False"
-                           IsHitTestVisible="False">
-                        <Rectangle Name="FocusVisualPrimary"
-                                   HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch"
-                                   Fill="Transparent"
-                                   IsHitTestVisible="False"
-                                   StrokeThickness="2" />
-                        <Rectangle Name="FocusVisualSecondary"
-                                   HorizontalAlignment="Stretch"
-                                   VerticalAlignment="Stretch"
-                                   Fill="Transparent"
-                                   IsHitTestVisible="False"
-                                   StrokeThickness="1" />
+            <Panel Name="RootFrame">
+                <Border Name="PART_Frame" Background="{TemplateBinding Background}">
+                    <Panel Name="PART_RootLayout">
+                        <Border Name="PART_ContentFrame">
+                            <DockPanel LastChildFill="True" Name="ContentLayout">
+                                <StackPanel Name="IndicatorsLayout"
+                                            Orientation="Horizontal"
+                                            DockPanel.Dock="Right"
+                                            IsVisible="{TemplateBinding IndicatorLayoutVisible}">
+                                    <atom:DataGridSortIndicator
+                                        Name="{x:Static atom:DataGridColumnHeaderThemeConstants.SortIndicatorPart}"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding CanUserSort}"
+                                        SupportedSortDirections="{TemplateBinding SupportedSortDirections}" />
+                                    <atom:DataGridFilterIndicator
+                                        Name="{x:Static atom:DataGridColumnHeaderThemeConstants.FilterIndicatorPart}"
+                                        VerticalAlignment="Center"
+                                        IsVisible="{TemplateBinding FilterIndicatorVisible}" />
+                                </StackPanel>
+                                <ContentPresenter
+                                    Name="ContentPresenter"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                            </DockPanel>
+                        </Border>
+                        <atom:PixelAlignedBorder Name="PART_VerticalSeparator"
+                                                 Width="1.0"
+                                                 BorderThickness="0,0,1,0"
+                                                 HorizontalAlignment="Right"
+                                                 IsVisible="{TemplateBinding IsSeparatorsVisible}" />
+                        <Panel Name="PART_FocusVisual"
+                               IsVisible="False"
+                               IsHitTestVisible="False">
+                            <Rectangle Name="FocusVisualPrimary"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"
+                                       Fill="Transparent"
+                                       IsHitTestVisible="False"
+                                       StrokeThickness="2" />
+                            <Rectangle Name="FocusVisualSecondary"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"
+                                       Fill="Transparent"
+                                       IsHitTestVisible="False"
+                                       StrokeThickness="1" />
+                        </Panel>
                     </Panel>
-                </Panel>
-            </Border>
+                </Border>
+                <!-- 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
+                <atom:DataGridFrozenColumnShadow Name="FrozenShadow"
+                                                 Width="30"
+                                                 IsVisible="False"
+                                                 IsHitTestVisible="False" />
+            </Panel>
         </ControlTemplate>
     </Setter>
 
@@ -166,20 +173,24 @@
 
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableHeaderBg}" />
 
-            <Style Selector="^[FrozenShadowPosition=Left]">
-                <Style Selector="^ /template/ Border#PART_Frame">
-                    <Setter Property="BoxShadow"
-                            Value="{atom:DataGridTokenResource LeftFrozenShadows}" />
-                </Style>
-                <Setter Property="ZIndex" Value="1" />
+            <!-- 阴影条带伸出表头，需绘制在相邻滚动列表头之上 -->
+            <Setter Property="ZIndex" Value="1" />
+            <Style Selector="^ /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="IsVisible" Value="True" />
             </Style>
-
-            <Style Selector="^[FrozenShadowPosition=Right]">
-                <Style Selector="^ /template/ Border#PART_Frame">
-                    <Setter Property="BoxShadow"
-                            Value="{atom:DataGridTokenResource RightFrozenShadows}" />
-                </Style>
-                <Setter Property="ZIndex" Value="1" />
+            <!-- 右冻结列首列：阴影条带位于表头左外侧 -->
+            <Style Selector="^[FrozenShadowPosition=Left] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="RenderTransform" Value="translateX(-30px)" />
+                <Setter Property="BoxShadow"
+                        Value="{atom:DataGridTokenResource RightFrozenShadows}" />
+            </Style>
+            <!-- 左冻结列末列：阴影条带位于表头右外侧 -->
+            <Style Selector="^[FrozenShadowPosition=Right] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="RenderTransform" Value="translateX(30px)" />
+                <Setter Property="BoxShadow"
+                        Value="{atom:DataGridTokenResource LeftFrozenShadows}" />
             </Style>
         </Style>
 

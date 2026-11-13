@@ -123,6 +123,148 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("\"ColorPalettes\"");
     }
 
+    [Fact]
+    public void Generates_Public_Algorithm_Registration_And_Catalog_Identity_Class()
+    {
+        var outputCompilation = RunGenerator(CreatePackageCompilation(PackageAlgorithmSource), out var diagnostics,
+            new Dictionary<string, string> { ["build_property.RootNamespace"] = "Acme.Themes" });
+
+        diagnostics.ShouldBeEmpty();
+        outputCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
+                         .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                         .ShouldBeEmpty();
+        var registration = GetGeneratedSource(outputCompilation, "GeneratedThemeAlgorithmRegistration.g.cs");
+        registration.ShouldContain("namespace AtomUI.Generated.AtomUIThemesPrimeNG;");
+        registration.ShouldContain("public static class GeneratedThemeAlgorithmRegistration");
+        registration.ShouldContain("public static void Register(global::AtomUI.Theme.IThemeManagerBuilder builder)");
+        registration.ShouldContain("builder.AddThemeAlgorithms(GeneratedThemeSchema.GetAlgorithms());");
+        var identities = GetGeneratedSource(outputCompilation, "PrimeNGAlgorithms.g.cs");
+        identities.ShouldContain("namespace Acme.Themes;");
+        identities.ShouldContain("public static class PrimeNGAlgorithms");
+        identities.ShouldContain(
+            "public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm Aura { get; } = new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"PrimeNG\", \"Aura\");");
+        identities.ShouldContain(
+            "public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm AuraDark { get; } = new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"PrimeNG\", \"Aura.Dark\");");
+        GetGeneratedSource(outputCompilation, "AcmeAlgorithms.g.cs")
+            .ShouldContain("public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm FlatV2 { get; }");
+
+        var fallback = RunGenerator(CreatePackageCompilation(PackageAlgorithmSource), out _);
+        GetGeneratedSource(fallback, "PrimeNGAlgorithms.g.cs").ShouldContain("namespace AtomUI.Themes.PrimeNG;");
+    }
+
+    [Fact]
+    public void Reports_Colliding_Algorithm_Member_Names()
+    {
+        var source = PackageAlgorithmSource.Replace("\"Acme\", \"Flat-V2\"", "\"PrimeNG\", \"AuraDark\"", StringComparison.Ordinal);
+
+        RunGenerator(CreatePackageCompilation(source), out var diagnostics);
+
+        diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUITOKEN002" &&
+            diagnostic.GetMessage(null) == "Algorithm ids 'Aura.Dark' and 'AuraDark' in catalog 'PrimeNG' map to the same member name.");
+    }
+
+    [Fact]
+    public void Does_Not_Generate_Algorithm_Registration_For_An_Assembly_Without_Algorithms()
+    {
+        var source = """
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Demo
+            {
+                [ControlDesignToken]
+                internal sealed class ButtonToken : AbstractControlDesignToken
+                {
+                    public double Height { get; set; }
+
+                    public override void CalculateTokenValues(bool isDark)
+                    {
+                        Height = EffectiveGlobalToken.ControlHeight;
+                    }
+                }
+            }
+            """;
+
+        var outputCompilation = RunGenerator(CreatePackageCompilation(source), out var diagnostics);
+
+        diagnostics.ShouldBeEmpty();
+        outputCompilation.SyntaxTrees.ShouldNotContain(tree =>
+            tree.FilePath.EndsWith("GeneratedThemeAlgorithmRegistration.g.cs", StringComparison.Ordinal));
+        outputCompilation.SyntaxTrees.ShouldNotContain(tree =>
+            tree.FilePath.EndsWith("Algorithms.g.cs", StringComparison.Ordinal));
+        // The assembly that defines IThemeManagerBuilder (Core) keeps its algorithms internal.
+        var core = RunGenerator(CreateCompilation(TokenSource + BuilderStub), out _);
+        core.SyntaxTrees.ShouldNotContain(tree =>
+            tree.FilePath.EndsWith("GeneratedThemeAlgorithmRegistration.g.cs", StringComparison.Ordinal));
+        core.SyntaxTrees.ShouldNotContain(tree =>
+            tree.FilePath.EndsWith("AtomUIAlgorithms.g.cs", StringComparison.Ordinal));
+    }
+
+    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
+        IReadOnlyDictionary<string, string> globalOptions)
+    {
+        var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],
+            ImmutableArray<AdditionalText>.Empty, (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
+            new BuiltinCatalogOptionsProvider(new TestAnalyzerConfigOptionsProvider(globalOptions)));
+        driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics, TestContext.Current.CancellationToken);
+        diagnostics = diagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ToImmutableArray();
+        return (CSharpCompilation)output;
+    }
+
+    // A package assembly: the AtomUI runtime (including IThemeManagerBuilder) comes from a referenced assembly.
+    private static CSharpCompilation CreatePackageCompilation(string source)
+    {
+        var references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
+                         .Split(Path.PathSeparator)
+                         .Select(path => MetadataReference.CreateFromFile(path))
+                         .Cast<MetadataReference>()
+                         .ToImmutableArray();
+        var runtime = CSharpCompilation.Create(
+            "AtomUI.Core",
+            [CSharpSyntaxTree.ParseText(AtomUIStubs + BuilderStub)],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        return CSharpCompilation.Create(
+            "AtomUI.Themes.PrimeNG",
+            [CSharpSyntaxTree.ParseText(source, path: "PackageSource.cs")],
+            references.Add(runtime.ToMetadataReference()),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    }
+
+    private const string BuilderStub = """
+
+        namespace AtomUI.Theme
+        {
+            public interface IThemeManagerBuilder
+            {
+                IThemeManagerBuilder AddThemeAlgorithms(
+                    System.Collections.Generic.IEnumerable<AtomUI.Theme.Schema.ThemeAlgorithmDescriptor> algorithms);
+            }
+        }
+        """;
+
+    private const string PackageAlgorithmSource = """
+        using AtomUI.Theme.Algorithms;
+        using AtomUI.Theme.Schema;
+
+        namespace Acme.Themes
+        {
+            [ThemeAlgorithm("PrimeNG", "Aura.Dark", 1, ThemeAppearanceEffect.Dark)]
+            public sealed class AuraDarkAlgorithm : IThemeAlgorithm
+            {
+            }
+
+            [ThemeAlgorithm("PrimeNG", "Aura", 1, ThemeAppearanceEffect.Light)]
+            public sealed class AuraAlgorithm : IThemeAlgorithm
+            {
+            }
+
+            [ThemeAlgorithm("Acme", "Flat-V2", 1, ThemeAppearanceEffect.Preserve)]
+            public sealed class FlatAlgorithm : IThemeAlgorithm
+            {
+            }
+        }
+        """;
+
     private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
         params AdditionalText[] additionalTexts)
     {

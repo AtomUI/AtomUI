@@ -185,6 +185,8 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             {
                 new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, algorithms, ThemeBuildContracts.HasAbi(compilation)).Write();
             }
+            ThemeAlgorithmRegistrationWriter.Write(context, compilation,
+                ThemeGeneratorOptions.GetRootNamespace(options), algorithms);
 
             if (hasSemanticRuntime)
             {

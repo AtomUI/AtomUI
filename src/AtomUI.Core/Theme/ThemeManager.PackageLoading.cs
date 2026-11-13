@@ -43,14 +43,17 @@ internal partial class ThemeManager
         builder.ControlRegistrationState.Freeze();
         var manual = builder.ControlPackages;
         var manualControls = manual.SelectMany(package => package.Controls).ToArray();
+        // Committed algorithms stay by reference (global reuse depends on it); the appended packages add theirs.
+        var algorithms = builder.ThemeAlgorithms.Count == 0 ? _startupRegistry!.Algorithms
+            : _startupRegistry!.Algorithms.Concat(builder.ThemeAlgorithms).ToArray();
         var manualRegistry = manualControls.Length == 0 ? null : new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(), manualControls, GeneratedThemeSchema.GetAlgorithms());
+            GeneratedThemeSchema.GetGlobalTokens(), manualControls, algorithms);
         var newSemantics = manual.SelectMany(package => package.SemanticControls).ToArray();
         var newAssets = manual.SelectMany(package => package.ThemeAssets).ToArray();
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, algorithms);
         var semantics = new SemanticPartRegistry(index);
         _ = new ControlThemeAssetManifest(registry, newAssets);
         foreach (var asset in newAssets)

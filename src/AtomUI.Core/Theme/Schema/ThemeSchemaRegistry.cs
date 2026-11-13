@@ -24,11 +24,13 @@ internal sealed class ThemeSchemaRegistry
     {
         _startupIndex = index;
         Controls = new StartupControlList(index);
-        Revision = index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
+        // Neither the compiled stamp nor Core's global fingerprint sees algorithms registered by packages.
+        Revision = FoldPackageAlgorithms(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
             ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
             index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
                 package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
-                    ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray());
+                    ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray()),
+            Algorithms);
     }
 
     internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
@@ -208,7 +210,8 @@ internal sealed class ThemeSchemaRegistry
         if (combinedRevisionEvidence is { } evidence)
         {
             ArgumentNullException.ThrowIfNull(evidence.Packages);
-            Revision = ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages);
+            Revision = FoldPackageAlgorithms(
+                ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages), algorithmArray);
         }
         else
         {
@@ -242,36 +245,69 @@ internal sealed class ThemeSchemaRegistry
     /// </summary>
     internal bool IsGlobalOnly { get; private init; }
 
-    internal static ThemeSchemaRegistry CreateGlobalOnly() =>
+    internal static ThemeSchemaRegistry CreateGlobalOnly(IReadOnlyList<ThemeAlgorithmDescriptor> packageAlgorithms) =>
         new(Generated.AtomUICore.GeneratedThemeSchema.GetGlobalTokens(),
             Array.Empty<ControlTokenDescriptor>(),
-            Generated.AtomUICore.GeneratedThemeSchema.GetAlgorithms())
+            CombineAlgorithms(packageAlgorithms))
         {
             IsGlobalOnly = true
         };
 
+    /// <summary>
+    /// Returns Core's generated algorithms followed by the package algorithms registered through the builder.
+    /// The descriptor instances are kept as-is so that registries built from the same registrations share them by reference.
+    /// </summary>
+    internal static IReadOnlyList<ThemeAlgorithmDescriptor> CombineAlgorithms(
+        IReadOnlyList<ThemeAlgorithmDescriptor> packageAlgorithms)
+    {
+        ArgumentNullException.ThrowIfNull(packageAlgorithms);
+        var core = Generated.AtomUICore.GeneratedThemeSchema.GetAlgorithms();
+        return packageAlgorithms.Count == 0 ? core : core.Concat(packageAlgorithms).ToArray();
+    }
+
     // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。
     // 使用精确对象身份也覆盖自定义 setter/factory 的行为，不能仅比较名字或版本号。
-    internal bool HasSameGlobalSchema(ThemeSchemaRegistry other)
+    // 新增的算法不影响已编译的全局结果（链上的算法由配置按身份携带），因此只要求 previous 的
+    // 每个算法描述符在这里按引用存在。
+    internal bool ExtendsGlobalSchemaOf(ThemeSchemaRegistry previous)
     {
-        if (ReferenceEquals(this, other))
+        ArgumentNullException.ThrowIfNull(previous);
+        if (ReferenceEquals(this, previous))
         {
             return true;
         }
-        if (GlobalTokens.Count != other.GlobalTokens.Count || Algorithms.Count != other.Algorithms.Count)
+        if (GlobalTokens.Count != previous.GlobalTokens.Count || Algorithms.Count < previous.Algorithms.Count)
         {
             return false;
         }
         for (var index = 0; index < GlobalTokens.Count; index++)
         {
-            if (!ReferenceEquals(GlobalTokens[index], other.GlobalTokens[index]))
+            if (!ReferenceEquals(GlobalTokens[index], previous.GlobalTokens[index]))
             {
                 return false;
             }
         }
-        for (var index = 0; index < Algorithms.Count; index++)
+        if (Algorithms.Count == previous.Algorithms.Count)
         {
-            if (!ReferenceEquals(Algorithms[index], other.Algorithms[index]))
+            // Common case: the same algorithm table, compared in order without lookups.
+            var sameOrder = true;
+            for (var index = 0; index < Algorithms.Count; index++)
+            {
+                if (!ReferenceEquals(Algorithms[index], previous.Algorithms[index]))
+                {
+                    sameOrder = false;
+                    break;
+                }
+            }
+            if (sameOrder)
+            {
+                return true;
+            }
+        }
+        foreach (var algorithm in previous.Algorithms)
+        {
+            if (!_algorithmsByAlgorithm.TryGetValue(algorithm.Algorithm, out var current) ||
+                !ReferenceEquals(current, algorithm))
             {
                 return false;
             }
@@ -665,6 +701,57 @@ internal sealed class ThemeSchemaRegistry
             fingerprint.Add(package.Fingerprint);
         }
         return new ThemeSchemaRevision(fingerprint.Value);
+    }
+
+    // Compile-time revisions (startup image stamp, Core's global fingerprint) only cover Core's
+    // algorithms. Algorithms registered by packages are folded in here; a Core-only table keeps
+    // the original revision unchanged.
+    private static ThemeSchemaRevision FoldPackageAlgorithms(
+        ThemeSchemaRevision revision,
+        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms)
+    {
+        var core = Generated.AtomUICore.GeneratedThemeSchema.GetAlgorithms();
+        var packageCount = 0;
+        foreach (var algorithm in algorithms)
+        {
+            if (!IsCoreAlgorithm(algorithm, core))
+            {
+                packageCount++;
+            }
+        }
+        if (packageCount == 0)
+        {
+            return revision;
+        }
+        var fingerprint = new SchemaFingerprintBuilder();
+        fingerprint.Add("AtomUI.PackageAlgorithmRevision");
+        fingerprint.Add(1);
+        fingerprint.Add(revision.Value);
+        fingerprint.Add(packageCount);
+        foreach (var algorithm in algorithms)
+        {
+            if (IsCoreAlgorithm(algorithm, core))
+            {
+                continue;
+            }
+            fingerprint.Add(algorithm.Algorithm.Catalog);
+            fingerprint.Add(algorithm.Algorithm.Id);
+            fingerprint.Add(algorithm.Revision);
+            fingerprint.Add((byte)algorithm.AppearanceEffect);
+        }
+        return new ThemeSchemaRevision(fingerprint.Value);
+    }
+
+    private static bool IsCoreAlgorithm(ThemeAlgorithmDescriptor algorithm, IReadOnlyList<ThemeAlgorithmDescriptor> core)
+    {
+        for (var index = 0; index < core.Count; index++)
+        {
+            if (ReferenceEquals(core[index], algorithm))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static ThemeSchemaRevision ComputeRevision(

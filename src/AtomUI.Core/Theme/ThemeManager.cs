@@ -121,6 +121,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     // 语义部件描述符登记表（提交时由 BuildCore 一次写入）：SemanticParts 由其按需重建。
     private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
+    // Core's generated algorithms plus the package algorithms handed over by the builder; Core's own list when none.
+    private IReadOnlyList<ThemeAlgorithmDescriptor> _registryAlgorithms = GeneratedThemeSchema.GetAlgorithms();
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
@@ -1925,10 +1927,16 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal ThemeSchemaRevision? StartupRegistryRevision => PackageReadUpdate?.Snapshot.RegistryRevision ?? _startupRegistry?.Revision;
 
+    /// <summary>
+    /// Package algorithms registered through the builder. Must be called before PrepareRegistrationSchema.
+    /// </summary>
+    internal void SetPackageAlgorithms(IReadOnlyList<ThemeAlgorithmDescriptor> packageAlgorithms) =>
+        _registryAlgorithms = ThemeSchemaRegistry.CombineAlgorithms(packageAlgorithms);
+
     internal void ConfigureStartupPackages(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image)
     {
         var manualRegistry = _controlTokenDescriptors.Count == 0 ? null : new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(), _controlTokenDescriptors, GeneratedThemeSchema.GetAlgorithms());
+            GeneratedThemeSchema.GetGlobalTokens(), _controlTokenDescriptors, _registryAlgorithms);
         _startupPackageIndex = StartupPackageIndex.Create(packages, image, manualRegistry, _stagedSemanticControls, _controlThemeAssetDescriptors);
         _startupResourceProvider = new StartupResourceProvider(_startupPackageIndex, this);
     }
@@ -2016,20 +2024,20 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         if (_startupPackageIndex is { } index)
         {
-            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
+            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryAlgorithms);
         }
         var registry = _packageSchemaFingerprints is { } packageFingerprints
             ? new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
-                GeneratedThemeSchema.GetAlgorithms(),
+                _registryAlgorithms,
                 _controlThemeAssetDescriptors,
                 GeneratedThemeSchema.GlobalSchemaFingerprint,
                 packageFingerprints)
             : new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
-                GeneratedThemeSchema.GetAlgorithms(),
+                _registryAlgorithms,
                 _controlThemeAssetDescriptors);
         return registry;
     }

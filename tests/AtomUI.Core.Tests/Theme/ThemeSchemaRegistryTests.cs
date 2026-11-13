@@ -1,4 +1,11 @@
+using AtomUI.Generated.AtomUICore;
+using AtomUI.Registration;
+using AtomUI.Startup.Data;
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Compilation;
+using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Schema;
 using Shouldly;
 using Xunit;
@@ -213,6 +220,111 @@ public class ThemeSchemaRegistryTests
         Revision(new ThemeAlgorithm("PrimeNG", "Aura")).ShouldBe(baseline);
         Revision(new ThemeAlgorithm("PrimeVue", "Aura")).ShouldNotBe(baseline);
         Revision(new ThemeAlgorithm("PrimeNG", "Lara")).ShouldNotBe(baseline);
+    }
+
+    [Fact]
+    public void Registry_Revision_Changes_When_A_Package_Algorithm_Is_Added()
+    {
+        var globals = GeneratedThemeSchema.GetGlobalTokens();
+        var core = GeneratedThemeSchema.GetAlgorithms();
+        var withPackage = core.Append(Algorithm(new ThemeAlgorithm("Test", "Flat"), ThemeAppearanceEffect.Preserve))
+                              .ToArray();
+
+        new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), withPackage).Revision
+            .ShouldNotBe(new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), core).Revision);
+        new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), withPackage, null,
+                GeneratedThemeSchema.GlobalSchemaFingerprint, []).Revision
+            .ShouldNotBe(new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), core, null,
+                GeneratedThemeSchema.GlobalSchemaFingerprint, []).Revision);
+        var index = StartupPackageIndex.Create([]);
+        new ThemeSchemaRegistry(globals, index, withPackage).Revision
+            .ShouldNotBe(new ThemeSchemaRegistry(globals, index, core).Revision);
+        var stamped = StartupPackageIndex.Create([], new StartupImage(StartupManifestCodec.Version, 0x1234UL, [], []));
+        new ThemeSchemaRegistry(globals, stamped, withPackage).Revision
+            .ShouldNotBe(new ThemeSchemaRegistry(globals, stamped, core).Revision);
+        // Core-only registries keep their existing revision values.
+        new ThemeSchemaRegistry(globals, stamped, core).Revision.ShouldBe(new ThemeSchemaRevision(0x1234UL));
+    }
+
+    [Fact]
+    public void ExtendsGlobalSchemaOf_Accepts_Added_Algorithms_And_Rejects_Replaced_Ones()
+    {
+        var token = Token("ColorPrimary", 0, TokenStage.Seed);
+        var defaultAlgorithm = Algorithm(ThemeAlgorithm.Default, ThemeAppearanceEffect.Light);
+        var packageAlgorithm = Algorithm(new ThemeAlgorithm("Test", "Flat"), ThemeAppearanceEffect.Preserve);
+        var previous = new ThemeSchemaRegistry([token], Array.Empty<ControlTokenDescriptor>(), [defaultAlgorithm]);
+
+        var added = new ThemeSchemaRegistry([token], Array.Empty<ControlTokenDescriptor>(),
+            [defaultAlgorithm, packageAlgorithm]);
+        var replaced = new ThemeSchemaRegistry([token], Array.Empty<ControlTokenDescriptor>(),
+            [Algorithm(ThemeAlgorithm.Default, ThemeAppearanceEffect.Light)]);
+        var otherGlobals = new ThemeSchemaRegistry([Token("ColorPrimary", 0, TokenStage.Seed)],
+            Array.Empty<ControlTokenDescriptor>(), [defaultAlgorithm]);
+
+        previous.ExtendsGlobalSchemaOf(previous).ShouldBeTrue();
+        added.ExtendsGlobalSchemaOf(previous).ShouldBeTrue();
+        previous.ExtendsGlobalSchemaOf(added).ShouldBeFalse();
+        replaced.ExtendsGlobalSchemaOf(previous).ShouldBeFalse();
+        otherGlobals.ExtendsGlobalSchemaOf(previous).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Package_Append_With_A_New_Algorithm_Reuses_The_Committed_Global_Snapshot()
+    {
+        var previousRegistry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(),
+            Array.Empty<ControlTokenDescriptor>(), GeneratedThemeSchema.GetAlgorithms());
+        var previous = CompileDefault(previousRegistry);
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(),
+            Array.Empty<ControlTokenDescriptor>(),
+            previousRegistry.Algorithms.Append(Algorithm(new ThemeAlgorithm("Test", "Flat"), ThemeAppearanceEffect.Preserve)));
+
+        var result = new ThemeCompiler().CompilePackageAppend(new ThemeCompileInput(previous.Definition,
+            previous.DefinitionRevision, previous.EffectiveConfig, registry, previous));
+
+        result.Exception.ShouldBeNull();
+        result.Success.ShouldBeTrue();
+        result.Snapshot!.GlobalTokenValues.ShouldBeSameAs(previous.GlobalTokenValues);
+        result.Snapshot.Registry.TryGetAlgorithm(new ThemeAlgorithm("Test", "Flat"), out _).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Package_Append_That_Replaces_An_Existing_Algorithm_Descriptor_Is_Rejected()
+    {
+        var previousRegistry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(),
+            Array.Empty<ControlTokenDescriptor>(), GeneratedThemeSchema.GetAlgorithms());
+        var previous = CompileDefault(previousRegistry);
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(),
+            Array.Empty<ControlTokenDescriptor>(),
+            previousRegistry.Algorithms.Where(static algorithm => algorithm.Algorithm != ThemeAlgorithm.Dark)
+                            .Append(Algorithm(ThemeAlgorithm.Dark, ThemeAppearanceEffect.Dark)));
+
+        var result = new ThemeCompiler().CompilePackageAppend(new ThemeCompileInput(previous.Definition,
+            previous.DefinitionRevision, previous.EffectiveConfig, registry, previous));
+
+        result.Success.ShouldBeFalse();
+        result.Exception.ShouldBeOfType<InvalidOperationException>()
+              .Message.ShouldBe("Package append cannot change committed global theme inputs.");
+    }
+
+    private static ThemeSnapshot CompileDefault(ThemeSchemaRegistry registry)
+    {
+        registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm).ShouldBeTrue();
+        var definition = new PreparedThemeDefinition(
+            "TestTheme",
+            "Test Theme",
+            ThemeAppearance.Light,
+            ThemeAppearance.Light,
+            true,
+            [defaultAlgorithm!],
+            Array.Empty<BoundTokenValue>(),
+            Array.Empty<ControlThemeDefinition>(),
+            new ThemeSourceLocation("test", 1, 1, "/Theme"));
+        var config = new NormalizedThemeConfig(false, true, [defaultAlgorithm!],
+            Array.Empty<NormalizedTokenValue>(), Array.Empty<NormalizedControlThemeConfig>());
+        var result = new ThemeCompiler().Compile(new ThemeCompileInput(definition,
+            new ThemeDefinitionRevision("test", "1", "A1"), config, registry));
+        result.Success.ShouldBeTrue();
+        return result.Snapshot!;
     }
 
     private static TokenDescriptor Token(string name, int slot, TokenStage stage)

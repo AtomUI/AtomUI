@@ -265,7 +265,7 @@ internal sealed class ThemeCompiler
     {
         var parent = input.ReusableParent;
         if (parent is null ||
-            !input.Registry.HasSameGlobalSchema(parent.Registry) ||
+            !input.Registry.ExtendsGlobalSchemaOf(parent.Registry) ||
             parent.Appearance != appearance)
         {
             return false;

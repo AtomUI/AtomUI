@@ -68,6 +68,9 @@ public class ThemeInitialModeTests
         {
         }
 
+        public IThemeManagerBuilder AddThemeAlgorithms(
+            IEnumerable<AtomUI.Theme.Schema.ThemeAlgorithmDescriptor> algorithms) => this;
+
         public void AddControlPackage(ControlPackageRegistration package)
         {
             ControlPackages.Add(package);

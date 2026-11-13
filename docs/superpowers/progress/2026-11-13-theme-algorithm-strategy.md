@@ -72,3 +72,20 @@
   1. 重复算法的测试只断言了行列大于 0，两个条目写在同一行，没有钉住「报在第二个条目上」。
   2. 判重集合全局链是立即创建、控件链是按需创建，写法不一致（无功能影响）。
   3. Toolchain 没有「主题 XML 带外部 `Catalog`」的端到端测试；这条路径由 Task 17–20 的 PrimeNG 主题包真实构建覆盖。
+
+### Task 3：包里的算法进入注册表
+
+- 改动：`IThemeManagerBuilder.AddThemeAlgorithms`（返回 builder）；`ThemeManagerBuilder` 原样保存描述符实例（只做 `ThrowIfUnavailable`，追加包的 builder 也能登记），交给 `ThemeManager.SetPackageAlgorithms` 与 `CaptureStartupInputs`（`ThemeStartupInputs.Algorithms`）。`ThemeSchemaRegistry.CombineAlgorithms` 无包算法时直接返回 Core 的生成列表（默认路径零额外分配）；`ThemeManager` 四处启动注册表、`PreparePackages` 两处（取已提交注册表的算法 + 新 builder 的算法，保持引用）、`CreateGlobalOnly(packageAlgorithms)` 全部改用合并列表。`ExtendsGlobalSchemaOf` 取代 `HasSameGlobalSchema`（全局 Token 按槽位同引用，previous 的每个算法描述符按引用存在；等长时先走顺序比较快路径）。`LoadPackages` 只登记算法时不再提前返回。
+- Revision：普通路径本就计入算法；启动索引（编译期 stamp 或组合指纹）与组合证据构造函数看不到包算法，新增 `FoldPackageAlgorithms` 在运行时把非 Core 描述符（Catalog、Id、Revision、AppearanceEffect，确定性构建器）折入；只有 Core 算法时 Revision 不变。
+- 生成器：新增 `ThemeAlgorithmRegistrationWriter`，程序集声明了算法且 `IThemeManagerBuilder` 来自被引用程序集（即不是 Core）时输出 `GeneratedThemeAlgorithmRegistration` 与每个 Catalog 一个 `<Catalog>Algorithms`（命名空间取 `RootNamespace`，缺省取程序集名；成员名去掉 `.`、`-`，关键字加 `@`）；撞名报 ATOMUITOKEN002。`build/AtomUI.ThemeAssets.targets` 新增 `CompilerVisibleProperty RootNamespace`（原先不可见）。
+- 测试：新增 `ThemeAlgorithmRegistrationTests` 6 个；注册表测试新增 4 个（含控制方追加的 `Registry_Revision_Changes_When_A_Package_Algorithm_Is_Added`，覆盖普通、组合、索引无 stamp、索引有 stamp 四条路径）；生成器新增 3 个；`ThemeInitialModeTests` 的测试替身补接口成员。
+- 结果：Core.Tests 474/474，Generator.Tests 1071/1071，Themes.Tests 27/27；全量回归 `[SUMMARY] TOTAL: 12355 个测试全部通过, 总耗时 15:50`（上一任务 12342，+13）。
+- 偏差：删除无参 `CreateGlobalOnly()` 与 `HasSameGlobalSchema`（唯一调用方已改）。现有 `src` 里的包都还没声明算法，所以没有包调用 `GeneratedThemeAlgorithmRegistration.Register`，留给后续加算法的任务接线。运行时追加的算法不会让已加载的用户目录 XML 主题重新解析（要等目录重载），不在本任务范围。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 2 的提交为 `3c835e1dd`。审阅确认的两点：
+  - `ExtendsGlobalSchemaOf` 是可靠的：全局 Token 按引用逐槽比较，旧注册表的每个算法描述符都必须按引用出现在新注册表里，同身份但被替换的描述符通不过。
+  - 运行时追加的包带来新算法后，此前因缺该算法而加载失败的用户目录主题要等主题目录重新加载才恢复。这与「引用后来才追加的控件」的现有行为相同（`CompiledThemeCatalog.AppendRegistry` 只重绑编译主题包，不重跑解析器），符合规格第 9 节的一致性要求，不是缺口。
+- 留待最终整体审阅统一处理的小项：
+  1. 同一程序集里两个 Catalog 去掉分隔符后撞名（例如 `Prime-NG` 与 `PrimeNG`）会产生同名的生成文件，生成器整体报 CS8785，而不是给出 `ATOMUITOKEN002`。
+  2. 算法成员名撞名的诊断没有源码位置。
+  3. 「只追加算法」的 `LoadPackages` 路径只在编译器和注册表层面有测试，新的提前返回条件没有端到端测试。
+  4. 启动复用只测了前提（描述符同一实例、注册表可扩展），没有实际跑 `ThemeStartupPreparation.Prepare` 后断言全局快照被复用。这关系到启动性能，Task 7 与 Task 10 的启动耗时对比是它的实测依据。

@@ -12,7 +12,8 @@ internal sealed record ThemeStartupInputs(
     IReadOnlyList<ThemeDefinitionRegistration> Resolvers,
     string ApplicationId,
     string ApplicationDataRoot,
-    FontFamily? FontFamily);
+    FontFamily? FontFamily,
+    IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms);
 
 internal sealed class PreparedThemeStartup
 {
@@ -42,7 +43,7 @@ internal static class ThemeStartupPreparation
     internal static PreparedThemeStartup Prepare(ThemeStartupInputs inputs)
     {
         ArgumentNullException.ThrowIfNull(inputs);
-        var registry = ThemeSchemaRegistry.CreateGlobalOnly();
+        var registry = ThemeSchemaRegistry.CreateGlobalOnly(inputs.Algorithms);
         var catalogResult = CompiledThemeCatalog.LoadInitial(
             registry,
             inputs.Resolvers,

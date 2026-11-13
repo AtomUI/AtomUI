@@ -14,6 +14,8 @@
         <!-- Opt-in switch for the control-code analyzers ATOMUIGEN043/044/047; no default, absent means false. -->
         <CompilerVisibleProperty Include="AtomUIThemeConsumptionAnalysis" />
         <CompilerVisibleProperty Include="AtomUIThemeControlCatalog" />
+        <!-- Namespace of the generated public <Catalog>Algorithms identity classes. -->
+        <CompilerVisibleProperty Include="RootNamespace" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Link" />
     </ItemGroup>
 

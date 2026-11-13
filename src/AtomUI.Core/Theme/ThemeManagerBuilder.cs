@@ -13,6 +13,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly List<ThemeDefinitionRegistration> _themeDefinitionResolvers = new();
     private readonly List<Action<IThemeManager>> _initializers = new();
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
+    private readonly List<ThemeAlgorithmDescriptor> _themeAlgorithms = [];
     private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
     private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
@@ -45,6 +46,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal IReadOnlyList<Action<IThemeManager>> Initializers => _initializers;
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
+    internal IReadOnlyList<ThemeAlgorithmDescriptor> ThemeAlgorithms => _themeAlgorithms;
     internal StartupImage? StartupImage => _startupImage;
     internal void AddPackageDeclaration(EnabledControlPackage declaration)
     {
@@ -89,6 +91,24 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             throw new ThemeResourceRegisterException($"Theme definition registration '{package.Id}' is already registered.");
         }
         _themeDefinitionResolvers.Add(new ThemeDefinitionRegistration(package));
+    }
+
+    public IThemeManagerBuilder AddThemeAlgorithms(IEnumerable<ThemeAlgorithmDescriptor> algorithms)
+    {
+        ArgumentNullException.ThrowIfNull(algorithms);
+        // Package append may bring new algorithms, so only a frozen or failed builder rejects them.
+        ControlRegistrationState.ThrowIfUnavailable();
+        var added = algorithms.ToArray();
+        foreach (var algorithm in added)
+        {
+            if (algorithm is null)
+            {
+                throw new ArgumentException("Theme algorithm descriptors cannot contain null.", nameof(algorithms));
+            }
+        }
+        // Descriptor instances are kept as registered: startup global reuse compares them by reference.
+        _themeAlgorithms.AddRange(added);
+        return this;
     }
 
     public void AddControlPackage(ControlPackageRegistration package)
@@ -233,7 +253,8 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             CreateThemeDefinitionRegistrations(),
             ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            FontFamily);
+            FontFamily,
+            _themeAlgorithms.ToArray());
 
     public void UseUserThemeDirectory()
     {
@@ -395,6 +416,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     {
         var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
+        themeManager.SetPackageAlgorithms(_themeAlgorithms.ToArray());
         themeManager.ConfigureStartup(InitialRequest, FollowSystemLightRequest, FollowSystemDarkRequest);
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

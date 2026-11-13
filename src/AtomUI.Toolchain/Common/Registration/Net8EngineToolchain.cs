@@ -35,11 +35,10 @@ internal static class Net8EngineToolchain
         OfficialTypeMapToolchain.TryParseVersion(linkerInformationalVersion, out var linker) &&
         tasks == linker;
 
-    internal static bool IsSupportedNativeCompilerPackage(string packageDirectory, string bundleNativeToolVersion)
+    internal static bool IsSupportedNativeCompilerPackage(string packageDirectory)
     {
         var package = new DirectoryInfo(Path.TrimEndingDirectorySeparator(packageDirectory));
-        return string.Equals(package.Parent?.Name, NativeCompilerPackageId, StringComparison.OrdinalIgnoreCase) && IsEngineVersion(package.Name) &&
-               IsEngineVersion(bundleNativeToolVersion);
+        return string.Equals(package.Parent?.Name, NativeCompilerPackageId, StringComparison.OrdinalIgnoreCase) && IsEngineVersion(package.Name);
     }
 
     internal static bool IsEngineVersion(string informationalVersion) =>

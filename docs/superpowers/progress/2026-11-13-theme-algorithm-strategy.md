@@ -403,3 +403,31 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 - 复现测量的必要说明：辅助脚本 `run_measure.sh` 的默认采样数（201/100/101/20）小于规定值，必须显式传入 `CITER=3001 CWARM=300 ITER=501 WARM=50`。这些脚本和判定脚本 `r2_verdict.py` 只存在于本次会话的临时目录，不在仓库里；以本节前面写明的环境变量和命令为准。
 - 裁决（计划要求的无断言测试）：`ThemeCompileMeasurement` 是测量工具，只在显式指定时运行，不含断言是设计如此 — 它不承担回归职责 — 最终整体审阅可再议。
 - 留待最终整体审阅统一处理的小项：新增的缓存键测试钉的是「描述符实例决定键」这一契约，改动前后都通过，不能单独证明字段已被移除（审阅认为这是合适的常驻契约测试，无需改）。
+
+### Task 8：记账基类 API 与生成器产出 partial 属性的另一半
+
+- 改动：
+  1. `AbstractDesignToken` 只新增一个字段 `TokenWriteLog? _writeLog`（null 即不记账），加上 `[AggressiveInlining] protected RecordWrite`（不记账时只是一次空引用判断，无调用、无分配）、`internal BeginRecordingWrites`（分配记录；重复开启抛 `InvalidOperationException`）、`internal EndRecordingWrites`（返回去重后按首次写入顺序的名称并置空字段；未开启时抛异常）、`internal IsRecordingWrites`。新增 `TokenWriteLog`（`List` + `HashSet`，只在记账时分配）。其他 Token 类型一个字段都没加。
+  2. 新生成器 `TokenPropertyImplementationGenerator`（`RegisterSourceOutput`，IDE 设计期可见）与 `TokenPropertyImplementationWriter`。管线：`ForAttributeWithMetadataName` 分别接 `ControlDesignToken`、`GlobalDesignToken`，转换只产出值相等的记录（字符串、布尔、`ValueArray`、`TextSpan`/`LinePositionSpan`），不含符号、语法节点或 `Compilation`；每个带特性的类型声明一个输出。生成的 getter 恰为 `get => field;`，setter 为 `set { field = value; RecordWrite(nameof(P)); }`；属性与访问器的修饰符原样照抄声明（`internal`、`private set` 等一致），类型用带可空标注的全限定名。
+  3. 属性归属：每个带特性的声明负责自己里面声明的属性；按（文件路径, 位置）排第一的带特性声明另外负责该类型无特性声明里的属性（如 `DesignToken.cs`），保证每个属性只产出一次。规则与现有生成器一致：非 static 实例属性、不带 `[NotTokenDefinition]`、不限可访问性。嵌套或泛型 Token 类型不产出（已有诊断覆盖）。
+  4. 文件名：控件 Token 为 `<TypeName>.TokenProperties.g.cs`；全局 Token 按声明所在源文件命名（`DesignToken.Seed.cs` → `DesignToken.Seed.TokenProperties.g.cs`），同名时追加序号。
+  5. `RunDefaultCalculation` 只在 sealed 且 partial 的控件 Token 上产出。
+  6. `ATOMUIGEN049`（Error，`isEnabledByDefault: false`），按属性报告，位置为属性标识符；类或属性不是 partial 时该属性不产出任何代码。诊断文档已加 049 一行（注明暂默认关闭）。
+- TDD：RED 时 Generator.Tests 编译失败（`TokenPropertyImplementationGenerator` 不存在），Core.Tests 编译失败（`RecordWrite`/`BeginRecordingWrites` 等不存在）。GREEN：新增的 6 + 9 条测试全部通过。
+- 测试：简报列出的 6 条 Core、8 条生成器测试名称照用；另加 1 条 `Pipeline_Output_Is_Cached_When_An_Unrelated_File_Changes`（开启步骤跟踪，改无关文件后模型步骤全部为 Cached/Unchanged），用来钉住管线输出可比较相等。049 的测试同时断言默认不报告。
+- 结果：Core.Tests 495/495，Generator.Tests 1094/1094；`dotnet build AtomUI.slnx` 0 错误，警告只有 NU1900（离线），没有 049、没有 CS8785；全量回归 `[SUMMARY] TOTAL: 12404 个测试全部通过, 总耗时 15:55`（12389 + 15；Desktop.Controls.Tests 仍是 passed=4397 skipped=1）。
+- 偏差与说明：
+  1. 049 用外部文件位置（`Location.Create(path, span, lineSpan)`）报告，以免模型持有语法树；IDE 按路径映射，显示正常。
+  2. `EndRecordingWrites` 在未开启记账时抛异常（简报没写这种情况）。
+  3. 本任务没有转换任何 Token 类，仓库构建与之前完全相同；性能测量留给 Task 10。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 7 的提交为 `596b57b70`（两处性能修复）与 `c0b74a816`（测量工具与基线）。审阅逐条核对了性能硬约束：生成的 getter 是 `get => field;`；setter 只多一句 `RecordWrite(nameof(P))`；不记账时只有一次空引用判断；`AbstractDesignToken` 只新增一个字段；管线模型只含按值比较的数据。`RecordWrite` 跨程序集是否被内联无法从代码确认，由 Task 10 的测量回答。
+- 带入 Task 9 一并处理的两项（Task 9 会让真实代码依赖这个生成器）：
+  1. `DesignToken` 的 14 个带特性的声明，每个都会遍历全部约 255 个成员并读取特性，之后才判断属性归哪个声明。IDE 里每次按键都会跑。改为先判断归属，再读特性。
+  2. 控件 Token 的生成文件名只用类型简单名。同一程序集里两个同名 Token 类在不同命名空间时生成器会整体崩溃，Task 9 之后那会让该程序集所有 partial 属性报「缺少实现」。改为文件名带命名空间，或报诊断。
+- 带入 Task 11 的一项：`BeginRecordingWrites` 与 `EndRecordingWrites` 之间的代码抛异常时 Token 会停在记账状态，下一次 `Begin` 抛出的异常会盖住原始错误。调用方必须在 `finally` 里调用 `EndRecordingWrites`；Task 11 实现时同时把这条约定写进方法注释。
+- 留待最终整体审阅统一处理的小项：
+  1. `ATOMUIGEN049` 的位置没有语法树，`#pragma` 和按文件生效的 `.editorconfig` 对它不起作用，只能用项目级设置；文档里应写明。台账里「IDE 显示正常」是未经验证的说法。
+  2. 全局命名空间、`init`、`required` 等形态代码已处理但没有测试。
+  3. `EndRecordingWrites` 在未记账时抛异常，行为合理但没有测试。
+  4. 缓存测试用 `ShouldAllBe`，序列为空时也会通过，应先断言非空；只覆盖了控件 Token、无诊断的情形。
+  5. 用户手写了实现部分时，生成器仍会再生成一份，得到的是编译器的重复实现错误，而不是清楚的诊断。

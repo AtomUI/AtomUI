@@ -310,6 +310,16 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
+    // Disabled by default while token properties in the repository are still converted to partial properties.
+    public static readonly DiagnosticDescriptor TokenPropertyNotPartial = new(
+        AtomUIDiagnosticIds.TokenPropertyNotPartial,
+        "Token property must be a partial property of a partial class",
+        "Token property '{0}' on '{1}' must be declared partial, and '{1}' must be a partial class",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: false,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
     public static readonly DiagnosticDescriptor ControlCodeScopedTokenRead = new(
         AtomUIDiagnosticIds.ControlCodeScopedTokenRead,
         "Control code must not read Tokens outside the scoped Token pipeline",

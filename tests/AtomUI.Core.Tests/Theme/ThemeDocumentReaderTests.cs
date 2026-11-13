@@ -102,7 +102,7 @@ public class ThemeDocumentReaderTests
                            .Select(element => (string?)element.Attribute("value"))
                            .ToArray();
 
-        values.ShouldBe(Enum.GetNames<ThemeAlgorithm>());
+        values.ShouldBe([ThemeAlgorithm.Default.Id, ThemeAlgorithm.Dark.Id, ThemeAlgorithm.Compact.Id]);
     }
 
     [Fact]

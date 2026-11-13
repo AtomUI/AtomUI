@@ -4,11 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Theme.Algorithms;
 
-[ThemeAlgorithmAttribute(ThemeAlgorithm.Compact, 1, ThemeAppearanceEffect.Preserve)]
+[ThemeAlgorithmAttribute(ThemeAlgorithm.BuiltInCatalog, "Compact", 1, ThemeAppearanceEffect.Preserve)]
 public class CompactThemeVariantCalculator : AbstractThemeVariantCalculator
 {
-    public const ThemeAlgorithm Algorithm = ThemeAlgorithm.Compact;
-
     public CompactThemeVariantCalculator()
     {
     }

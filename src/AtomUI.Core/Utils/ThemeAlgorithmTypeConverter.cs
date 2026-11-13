@@ -4,6 +4,9 @@ using AtomUI.Theme.Algorithms;
 
 namespace AtomUI.Utils;
 
+/// <summary>
+/// Converts <c>Default</c>, <c>Dark</c>, <c>Compact</c> and <c>Catalog:Id</c> strings to <see cref="ThemeAlgorithm"/>.
+/// </summary>
 public class ThemeAlgorithmTypeConverter : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -20,14 +23,21 @@ public class ThemeAlgorithmTypeConverter : TypeConverter
         {
             switch (str)
             {
-                case "DefaultAlgorithm":
+                case "Default":
                     return ThemeAlgorithm.Default;
-                case "DarkAlgorithm":
+                case "Dark":
                     return ThemeAlgorithm.Dark;
-                case "CompactAlgorithm":
+                case "Compact":
                     return ThemeAlgorithm.Compact;
             }
+
+            var separator = str.IndexOf(':');
+            if (separator > 0 && separator == str.LastIndexOf(':'))
+            {
+                return new ThemeAlgorithm(str.Substring(0, separator), str.Substring(separator + 1));
+            }
         }
-        throw new NotSupportedException("ThemeAlgorithm type converter supports only build in variants. For custom variants please use x:Static markup extension.");
+        throw new NotSupportedException(
+            "ThemeAlgorithm type converter supports 'Default', 'Dark', 'Compact' and 'Catalog:Id'.");
     }
 }

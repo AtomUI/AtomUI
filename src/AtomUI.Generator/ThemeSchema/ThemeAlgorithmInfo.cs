@@ -1,3 +1,4 @@
+using AtomUI.Theme.Build;
 using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator;
@@ -7,24 +8,30 @@ internal sealed class ThemeAlgorithmInfo
     private const string ThemeAlgorithmInterface = "global::AtomUI.Theme.Algorithms.IThemeAlgorithm";
 
     internal ThemeAlgorithmInfo(
-        string algorithm,
-        int algorithmValue,
+        string catalog,
+        string id,
         int revision,
         string appearanceEffect,
         string typeName)
     {
-        Algorithm = algorithm;
-        AlgorithmValue = algorithmValue;
+        Catalog = catalog;
+        Id = id;
         Revision = revision;
         AppearanceEffect = appearanceEffect;
         TypeName = typeName;
     }
 
-    public string Algorithm { get; }
-    public int AlgorithmValue { get; }
+    public string Catalog { get; }
+    public string Id { get; }
     public int Revision { get; }
     public string AppearanceEffect { get; }
     public string TypeName { get; }
+
+    // Same order as the runtime ThemeAlgorithm.Compare, so generated registrations arrive sorted.
+    internal static IEnumerable<ThemeAlgorithmInfo> Order(IEnumerable<ThemeAlgorithmInfo> algorithms) =>
+        algorithms.OrderBy(static algorithm => algorithm.Catalog, StringComparer.Ordinal)
+                  .ThenBy(static algorithm => algorithm.Id, StringComparer.Ordinal)
+                  .ThenBy(static algorithm => algorithm.TypeName, StringComparer.Ordinal);
 
     internal static ThemeAlgorithmInfo? Create(GeneratorAttributeSyntaxContext context) =>
         context.TargetSymbol is INamedTypeSymbol type ? Create(type) : null;
@@ -41,31 +48,18 @@ internal sealed class ThemeAlgorithmInfo
 
         var attribute = type.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.ThemeAlgorithmAttribute);
         if (attribute is null ||
-            attribute.ConstructorArguments.Length != 3 ||
-            attribute.ConstructorArguments[0] is not
-            {
-                Kind: TypedConstantKind.Enum,
-                Type: INamedTypeSymbol algorithmType,
-                Value: int algorithmValue
-            } ||
-            attribute.ConstructorArguments[1].Value is not int revision ||
+            attribute.ConstructorArguments.Length != 4 ||
+            attribute.ConstructorArguments[0].Value is not string catalog ||
+            attribute.ConstructorArguments[1].Value is not string id ||
+            !ThemeBuildIdentifier.IsValid(catalog) ||
+            !ThemeBuildIdentifier.IsValid(id) ||
+            attribute.ConstructorArguments[2].Value is not int revision ||
             revision <= 0)
         {
             return null;
         }
 
-        var algorithm = algorithmType.GetMembers()
-                                     .OfType<IFieldSymbol>()
-                                     .SingleOrDefault(field =>
-                                         field.HasConstantValue &&
-                                         field.ConstantValue is int value &&
-                                         value == algorithmValue);
-        if (algorithm is null)
-        {
-            return null;
-        }
-
-        var appearanceValue = attribute.ConstructorArguments[2].Value switch
+        var appearanceValue = attribute.ConstructorArguments[3].Value switch
         {
             byte value  => value,
             short value => value,
@@ -90,8 +84,8 @@ internal sealed class ThemeAlgorithmInfo
         if (parameterless is not null)
         {
             return new ThemeAlgorithmInfo(
-                algorithm.Name,
-                algorithmValue,
+                catalog,
+                id,
                 revision,
                 appearance,
                 type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));

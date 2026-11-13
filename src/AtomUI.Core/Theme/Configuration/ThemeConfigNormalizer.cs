@@ -60,9 +60,9 @@ internal static class ThemeConfigNormalizer
         {
             var algorithm = algorithms[index];
             var itemPath = $"{path}[{index}]";
-            if (!Enum.IsDefined(algorithm))
+            if (algorithm.IsUninitialized)
             {
-                AddError(diagnostics, UnknownAlgorithmCode, itemPath, $"Algorithm value '{(int)algorithm}' is invalid.");
+                AddError(diagnostics, UnknownAlgorithmCode, itemPath, "Algorithm identity is uninitialized.");
                 continue;
             }
 

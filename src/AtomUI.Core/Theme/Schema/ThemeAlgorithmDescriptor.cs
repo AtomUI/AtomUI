@@ -20,9 +20,9 @@ public sealed class ThemeAlgorithmDescriptor
         ThemeAppearanceEffect appearanceEffect,
         Func<IThemeAlgorithm> factory)
     {
-        if (!Enum.IsDefined(algorithm))
+        if (algorithm.IsUninitialized)
         {
-            throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Theme algorithm must be defined.");
+            throw new ArgumentException("Theme algorithm identity is uninitialized.", nameof(algorithm));
         }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(revision);
         ArgumentNullException.ThrowIfNull(factory);

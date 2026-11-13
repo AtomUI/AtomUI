@@ -334,8 +334,7 @@ internal struct ThemeConfigFingerprintBuilder
         builder.Add(config.Algorithms.Count);
         foreach (var algorithm in config.Algorithms)
         {
-            builder.Add((int)algorithm.Algorithm);
-            builder.Add(algorithm.Revision);
+            AddAlgorithm(ref builder, algorithm);
         }
 
         builder.Add(config.GlobalTokens.Count);
@@ -365,8 +364,7 @@ internal struct ThemeConfigFingerprintBuilder
             builder.Add(control.Algorithms.Count);
             foreach (var algorithm in control.Algorithms)
             {
-                builder.Add((int)algorithm.Algorithm);
-                builder.Add(algorithm.Revision);
+                AddAlgorithm(ref builder, algorithm);
             }
 
             AddTokens(ref builder, control.GlobalTokens);
@@ -374,6 +372,14 @@ internal struct ThemeConfigFingerprintBuilder
         }
 
         return new ThemeConfigFingerprint(builder._value);
+    }
+
+    private static void AddAlgorithm(ref ThemeConfigFingerprintBuilder builder, ThemeAlgorithmDescriptor algorithm)
+    {
+        builder.Add(algorithm.Algorithm.Catalog);
+        builder.Add(algorithm.Algorithm.Id);
+        builder.Add(algorithm.Revision);
+        builder.Add((int)algorithm.AppearanceEffect);
     }
 
     private static void AddTokens(ref ThemeConfigFingerprintBuilder builder, IReadOnlyList<NormalizedTokenValue> tokens)

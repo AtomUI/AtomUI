@@ -81,9 +81,9 @@ public sealed class GenerateCompiledThemeInputTask : ITask
             {
                 SourceIdentity = input.SourceIdentity.Replace('\\', '/'), SourcePath = Path.GetFullPath(input.SourcePath), ContentDigest = digest,
                 Id = document.Id, Name = document.Name, Appearance = (int)document.Appearance, IsDefault = document.IsDefault,
-                Algorithms = document.Algorithms.Select(a => (int)a.Algorithm).ToArray(), Tokens = Tokens(document.Tokens),
+                Algorithms = Algorithms(document.Algorithms), Tokens = Tokens(document.Tokens),
                 Controls = document.Controls.Select(c => new ThemeControlInput { Catalog = c.Identity.Catalog, Id = c.Identity.Id,
-                    Mode = (int)c.AlgorithmMode, Algorithms = c.Algorithms.Select(a => (int)a.Algorithm).ToArray(), Tokens = Tokens(c.Tokens), Line = c.Location.Line, Column = c.Location.Column }).ToArray()
+                    Mode = (int)c.AlgorithmMode, Algorithms = Algorithms(c.Algorithms), Tokens = Tokens(c.Tokens), Line = c.Location.Line, Column = c.Location.Column }).ToArray()
             };
             var content = neutral.Encode();
             var output = Path.GetFullPath(input.OutputPath);
@@ -125,6 +125,10 @@ public sealed class GenerateCompiledThemeInputTask : ITask
         return result;
     }
 
+    private static ThemeAlgorithmInput[] Algorithms(IReadOnlyList<ThemeAlgorithmDocument> algorithms) => algorithms.Select(a => new ThemeAlgorithmInput
+    {
+        Catalog = a.Algorithm.Catalog, Id = a.Algorithm.Id, Line = a.Location.Line, Column = a.Location.Column
+    }).ToArray();
     private ThemeLiteralInput[] Tokens(IReadOnlyList<ThemeTokenDocument> tokens) => tokens.Select(t => new ThemeLiteralInput
     { Name = t.Name, Value = t.Value, Values = CompileLiteral(t.Value), Line = t.Location.Line, Column = t.Location.Column, Path = t.Location.Path }).ToArray();
 

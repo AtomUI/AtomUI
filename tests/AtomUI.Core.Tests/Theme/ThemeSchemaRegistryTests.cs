@@ -170,10 +170,49 @@ public class ThemeSchemaRegistryTests
     }
 
     [Fact]
-    public void Algorithm_Descriptor_Rejects_An_Undefined_Algorithm_Value()
+    public void Registry_Revision_Is_Deterministic_For_Algorithm_Identities()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() =>
-            Algorithm((ThemeAlgorithm)999, ThemeAppearanceEffect.Preserve));
+        // No tokens or controls: their CLR assembly-qualified names would tie the pinned value
+        // to framework and test assembly versions instead of to the algorithm identities.
+        var first = new ThemeSchemaRegistry(
+            Array.Empty<TokenDescriptor>(),
+            Array.Empty<ControlTokenDescriptor>(),
+            [
+                Algorithm(ThemeAlgorithm.Default, ThemeAppearanceEffect.Light),
+                Algorithm(ThemeAlgorithm.Dark, ThemeAppearanceEffect.Dark),
+                Algorithm(new ThemeAlgorithm("PrimeNG", "Aura"), ThemeAppearanceEffect.Light)
+            ]);
+        var reordered = new ThemeSchemaRegistry(
+            Array.Empty<TokenDescriptor>(),
+            Array.Empty<ControlTokenDescriptor>(),
+            [
+                Algorithm(new ThemeAlgorithm("PrimeNG", "Aura"), ThemeAppearanceEffect.Light),
+                Algorithm(ThemeAlgorithm.Dark, ThemeAppearanceEffect.Dark),
+                Algorithm(ThemeAlgorithm.Default, ThemeAppearanceEffect.Light)
+            ]);
+
+        reordered.Revision.ShouldBe(first.Revision);
+        first.Algorithms.Select(static descriptor => descriptor.Algorithm.ToString())
+             .ShouldBe(["AtomUI:Dark", "AtomUI:Default", "PrimeNG:Aura"]);
+        // Pins cross-process stability: the revision must never depend on string.GetHashCode().
+        first.Revision.Value.ShouldBe(0x29D0F9BA9FF24C7FUL);
+    }
+
+    [Fact]
+    public void Registry_Revision_Changes_With_Algorithm_Catalog_Or_Id()
+    {
+        var token = Token("ColorPrimary", 0, TokenStage.Seed);
+        var control = Control("AtomUI", "Button");
+        ThemeSchemaRevision Revision(ThemeAlgorithm algorithm) => new ThemeSchemaRegistry(
+            [token],
+            [control],
+            [Algorithm(algorithm, ThemeAppearanceEffect.Light)]).Revision;
+
+        var baseline = Revision(new ThemeAlgorithm("PrimeNG", "Aura"));
+
+        Revision(new ThemeAlgorithm("PrimeNG", "Aura")).ShouldBe(baseline);
+        Revision(new ThemeAlgorithm("PrimeVue", "Aura")).ShouldNotBe(baseline);
+        Revision(new ThemeAlgorithm("PrimeNG", "Lara")).ShouldNotBe(baseline);
     }
 
     private static TokenDescriptor Token(string name, int slot, TokenStage stage)

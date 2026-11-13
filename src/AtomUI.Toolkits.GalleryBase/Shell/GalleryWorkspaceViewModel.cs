@@ -391,7 +391,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             _isCompact = state.Algorithms.Contains(ThemeAlgorithm.Compact);
             _baseAlgorithms = state.Algorithms
                                    .Where(static algorithm =>
-                                       algorithm is not ThemeAlgorithm.Compact and not ThemeAlgorithm.Dark)
+                                       algorithm != ThemeAlgorithm.Compact && algorithm != ThemeAlgorithm.Dark)
                                    .ToArray();
             if (_baseAlgorithms.Length == 0)
             {

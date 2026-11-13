@@ -37,7 +37,7 @@ internal static class CompiledThemePackageWriter
             var controlWrites = new List<string>();
             var fields = new List<string> { "compiled-abi-v1", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
                 input.Id, input.Name, input.Appearance.ToString(CultureInfo.InvariantCulture), input.IsDefault.ToString() };
-            fields.AddRange(input.Algorithms.Select(a => a.ToString(CultureInfo.InvariantCulture)));
+            fields.AddRange(input.Algorithms.Select(a => a.Catalog + ":" + a.Id));
             var tokenId = 0;
             var valid = true;
             var accent = "null";
@@ -94,7 +94,7 @@ internal static class CompiledThemePackageWriter
                 currentDescribe.Append(controlDeclaration);
                 requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id, Catalog = owner.Catalog, ControlId = owner.Id,
                     OwnerAssemblyName = new System.Reflection.AssemblyName(owner.OwnerAssembly).Name!, OwnerMetadataName = owner.OwnerType, Scope = "control" });
-                fields.AddRange(owner.Fields); fields.Add(control.Mode.ToString(CultureInfo.InvariantCulture)); fields.AddRange(control.Algorithms.Select(a => a.ToString(CultureInfo.InvariantCulture)));
+                fields.AddRange(owner.Fields); fields.Add(control.Mode.ToString(CultureInfo.InvariantCulture)); fields.AddRange(control.Algorithms.Select(a => a.Catalog + ":" + a.Id));
                 foreach (var literal in control.Tokens) { Bind(literal, controlId, owner); }
                 controlDescriptions.Add(currentDescribe.ToString());
                 controlWrites.Add(currentWrite.ToString());
@@ -130,7 +130,7 @@ internal static class CompiledThemePackageWriter
         output.AddSource("GeneratedThemePackageRegistration.g.cs", GeneratedSourceText.From(result.ToString()));
         return manifest;
     }
-    private static string Algorithms(IEnumerable<int> values) => "new global::AtomUI.Theme.Algorithms.ThemeAlgorithm[] { " + string.Join(", ", values.Select(v => "(global::AtomUI.Theme.Algorithms.ThemeAlgorithm)" + v)) + " }";
+    private static string Algorithms(IEnumerable<ThemeAlgorithmInput> values) => "new global::AtomUI.Theme.Algorithms.ThemeAlgorithm[] { " + string.Join(", ", values.Select(v => "new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(" + ThemeBuildContracts.Literal(v.Catalog) + ", " + ThemeBuildContracts.Literal(v.Id) + ")")) + " }";
     internal static (string Expression, string Canonical) BindLiteral(Compilation compilation, ThemeBuildToken token, ThemeLiteralInput literal)
     {
         var type = ThemeLiteralCodec.NormalizeType(token.ValueType);

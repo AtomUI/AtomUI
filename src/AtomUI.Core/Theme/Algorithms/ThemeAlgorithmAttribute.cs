@@ -2,22 +2,26 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Algorithms;
 
+/// <summary>
+/// Declares a theme algorithm class to the AtomUI generator under the identity <c>Catalog:Id</c>.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class ThemeAlgorithmAttribute : Attribute
 {
     public ThemeAlgorithmAttribute(
-        ThemeAlgorithm algorithm,
+        string catalog,
+        string id,
         int revision,
         ThemeAppearanceEffect appearanceEffect)
     {
-        if (!Enum.IsDefined(algorithm))
-        {
-            throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, "Theme algorithm must be defined.");
-        }
-        Algorithm        = algorithm;
+        Algorithm        = new ThemeAlgorithm(catalog, id);
         Revision         = revision;
         AppearanceEffect = appearanceEffect;
     }
+
+    public string Catalog => Algorithm.Catalog;
+
+    public string Id => Algorithm.Id;
 
     public ThemeAlgorithm Algorithm { get; }
 

@@ -101,10 +101,10 @@ public class ThemeConfigNormalizerTests
     }
 
     [Fact]
-    public void Normalize_Rejects_An_Undefined_Algorithm_Value()
+    public void Normalize_Rejects_An_Unregistered_Algorithm()
     {
         var input = new ThemeConfigBuilder()
-                    .WithAlgorithms((ThemeAlgorithm)999)
+                    .WithAlgorithms(new ThemeAlgorithm("Test", "Unregistered"))
                     .Build();
 
         var result = ThemeConfigNormalizer.Normalize(input, ThemeConfigTestSchema.Create());
@@ -158,7 +158,7 @@ public class ThemeConfigNormalizerTests
     {
         var schema = ThemeConfigTestSchema.Create();
         var input = new ThemeConfigBuilder()
-                    .WithAlgorithms((ThemeAlgorithm)999)
+                    .WithAlgorithms(new ThemeAlgorithm("Test", "Unregistered"))
                     .WithToken("Alpha", "not-a-number")
                     .WithToken("Missing", "1")
                     .WithControl(
@@ -195,6 +195,21 @@ public class ThemeConfigNormalizerTests
             ThemeConfigTestSchema.Create(defaultAlgorithmRevision: 2)).Config.ShouldNotBeNull();
 
         changed.Fingerprint.ShouldNotBe(first.Fingerprint);
+    }
+
+    [Fact]
+    public void Config_Fingerprint_Is_Deterministic_For_Algorithm_Identities()
+    {
+        var config = new ThemeConfigBuilder()
+                     .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
+                     .Build();
+
+        var first = ThemeConfigNormalizer.Normalize(config, ThemeConfigTestSchema.Create()).Config.ShouldNotBeNull();
+        var second = ThemeConfigNormalizer.Normalize(config, ThemeConfigTestSchema.Create()).Config.ShouldNotBeNull();
+
+        second.Fingerprint.ShouldBe(first.Fingerprint);
+        // Pins cross-process stability: the fingerprint must never depend on string.GetHashCode().
+        first.Fingerprint.Value.ShouldBe(0xE1D2F0E3E24383E2UL);
     }
 
     [Fact]

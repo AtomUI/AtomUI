@@ -104,7 +104,7 @@ internal static class RegistrationFingerprint
     {
         var hash = new Fnv1a();
         hash.Text("AtomUI.GlobalSchema");
-        hash.Number(1);
+        hash.Number(2); // 2: algorithms are identified by Catalog and Id instead of an enum value.
         var orderedTokens = globalTokens.OrderBy(token => token.Name, StringComparer.Ordinal).ToArray();
         hash.Number((ulong)orderedTokens.Length);
         for (var slot = 0; slot < orderedTokens.Length; slot++)
@@ -117,15 +117,12 @@ internal static class RegistrationFingerprint
             hash.Text(token.DeclaringType);
             hash.Text("AtomUI.Theme.Resources.SharedTokenKind." + token.Name);
         }
-        var orderedAlgorithms = algorithms
-            .OrderBy(algorithm => algorithm.AlgorithmValue)
-            .ThenBy(algorithm => algorithm.TypeName, StringComparer.Ordinal)
-            .ToArray();
+        var orderedAlgorithms = ThemeAlgorithmInfo.Order(algorithms).ToArray();
         hash.Number((ulong)orderedAlgorithms.Length);
         foreach (var algorithm in orderedAlgorithms)
         {
-            hash.Text(algorithm.Algorithm);
-            hash.Number((ulong)algorithm.AlgorithmValue);
+            hash.Text(algorithm.Catalog);
+            hash.Text(algorithm.Id);
             hash.Number((ulong)algorithm.Revision);
             hash.Text(algorithm.AppearanceEffect);
             hash.Text(algorithm.TypeName);

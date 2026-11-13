@@ -5,11 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Theme.Algorithms;
 
-[ThemeAlgorithmAttribute(ThemeAlgorithm.Default, 1, ThemeAppearanceEffect.Light)]
+[ThemeAlgorithmAttribute(ThemeAlgorithm.BuiltInCatalog, "Default", 1, ThemeAppearanceEffect.Light)]
 public class DefaultThemeVariantCalculator : AbstractThemeVariantCalculator
 {
-    public const ThemeAlgorithm Algorithm = ThemeAlgorithm.Default;
-    
     public DefaultThemeVariantCalculator()
     {
         _colorBgBase   = Color.FromRgb(255, 255, 255);

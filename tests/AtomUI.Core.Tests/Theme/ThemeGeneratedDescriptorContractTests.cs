@@ -151,16 +151,20 @@ public class ThemeGeneratedDescriptorContractTests
     }
 
     [Fact]
-    public void Algorithm_Attribute_Uses_A_Defined_Enum_Identity()
+    public void Algorithm_Attribute_Uses_A_Valid_Catalog_And_Id_Identity()
     {
         var attribute = new ThemeAlgorithmAttribute(
-            ThemeAlgorithm.Dark,
+            "AtomUI",
+            "Dark",
             revision: 2,
             ThemeAppearanceEffect.Dark);
 
+        attribute.Catalog.ShouldBe("AtomUI");
+        attribute.Id.ShouldBe("Dark");
         attribute.Algorithm.ShouldBe(ThemeAlgorithm.Dark);
-        Should.Throw<ArgumentOutOfRangeException>(() => new ThemeAlgorithmAttribute(
-            (ThemeAlgorithm)999,
+        Should.Throw<ArgumentException>(() => new ThemeAlgorithmAttribute(
+            "AtomUI",
+            "1Bad",
             revision: 1,
             ThemeAppearanceEffect.Preserve));
     }

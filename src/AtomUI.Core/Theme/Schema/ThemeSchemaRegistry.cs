@@ -134,9 +134,10 @@ internal sealed class ThemeSchemaRegistry
                                    .ToArray());
         var algorithmArray = ToOrderedArray(
             algorithms,
-            static descriptor => (int)descriptor.Algorithm,
-            Comparer<int>.Default,
-            static source => source.OrderBy(static descriptor => descriptor.Algorithm).ToArray());
+            static descriptor => descriptor.Algorithm,
+            AlgorithmKeyComparer.Instance,
+            static source => source.OrderBy(static descriptor => descriptor.Algorithm, AlgorithmKeyComparer.Instance)
+                                   .ToArray());
         var assetArray = ToOrderedArray(
             themeAssets,
             static descriptor => descriptor.AssetUri.ToString(),
@@ -638,6 +639,13 @@ internal sealed class ThemeSchemaRegistry
         }
     }
 
+    private sealed class AlgorithmKeyComparer : IComparer<ThemeAlgorithm>
+    {
+        internal static readonly AlgorithmKeyComparer Instance = new();
+
+        public int Compare(ThemeAlgorithm left, ThemeAlgorithm right) => ThemeAlgorithm.Compare(left, right);
+    }
+
     // Combined domain: startup registries whose inputs are entirely compile-time fingerprinted
     // compose the revision from the package constants instead of re-walking every schema field.
     // In-process determinism and content discrimination are the only requirements; combined
@@ -691,7 +699,8 @@ internal sealed class ThemeSchemaRegistry
         fingerprint.Add(algorithms.Count);
         foreach (var algorithm in algorithms)
         {
-            fingerprint.Add((int)algorithm.Algorithm);
+            fingerprint.Add(algorithm.Algorithm.Catalog);
+            fingerprint.Add(algorithm.Algorithm.Id);
             fingerprint.Add(algorithm.Revision);
             fingerprint.Add((byte)algorithm.AppearanceEffect);
         }

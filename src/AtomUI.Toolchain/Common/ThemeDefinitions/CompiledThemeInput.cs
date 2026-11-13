@@ -13,11 +13,13 @@ internal sealed class CompiledThemeInput
     internal string Name = "";
     internal int Appearance;
     internal bool IsDefault;
-    internal int[] Algorithms = Array.Empty<int>();
+    internal ThemeAlgorithmInput[] Algorithms = Array.Empty<ThemeAlgorithmInput>();
     internal ThemeLiteralInput[] Tokens = Array.Empty<ThemeLiteralInput>();
     internal ThemeControlInput[] Controls = Array.Empty<ThemeControlInput>();
 
     internal const string Extension = ".atomuithemeinput";
+    // 5: algorithms are written as Catalog/Id strings with their source location instead of enum values.
+    private const int FormatVersion = 5;
     private const int MaximumBytes = 8 * 1024 * 1024;
     private const int MaximumRecords = 65536;
     internal string Encode()
@@ -25,7 +27,7 @@ internal sealed class CompiledThemeInput
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, new UTF8Encoding(false, true), true))
         {
-            writer.Write(4); writer.Write("atomui-theme-reader-xsd-v1");
+            writer.Write(FormatVersion); writer.Write("atomui-theme-reader-xsd-v1");
             writer.Write(SourceIdentity); writer.Write(SourcePath); writer.Write(ContentDigest);
             writer.Write(Id); writer.Write(Name); writer.Write(Appearance); writer.Write(IsDefault);
             WriteAlgorithms(writer, Algorithms); WriteTokens(writer, Tokens);
@@ -48,7 +50,9 @@ internal sealed class CompiledThemeInput
         if (bytes.Length > MaximumBytes) { throw new InvalidDataException("Compiled theme input exceeds its byte budget."); }
         using var stream = new MemoryStream(bytes, false);
         using var reader = new BinaryReader(stream, new UTF8Encoding(false, true));
-        if (reader.ReadInt32() != 4 || reader.ReadString() != "atomui-theme-reader-xsd-v1") { throw new InvalidDataException("Unsupported compiled theme input version."); }
+        var version = reader.ReadInt32();
+        if (version is > 0 and < FormatVersion) { throw new InvalidDataException("Compiled theme input format is out of date; rebuild the project."); }
+        if (version != FormatVersion || reader.ReadString() != "atomui-theme-reader-xsd-v1") { throw new InvalidDataException("Unsupported compiled theme input version."); }
         var input = new CompiledThemeInput
         {
             SourceIdentity = reader.ReadString(), SourcePath = reader.ReadString(), ContentDigest = reader.ReadString(),
@@ -74,14 +78,19 @@ internal sealed class CompiledThemeInput
         if (count < 0 || count > MaximumRecords) { throw new InvalidDataException("Compiled theme record budget exceeded."); }
         return count;
     }
-    private static void WriteAlgorithms(BinaryWriter writer, int[] values)
+    private static void WriteAlgorithms(BinaryWriter writer, ThemeAlgorithmInput[] values)
     {
-        writer.Write(values.Length); foreach (var value in values) { writer.Write(value); }
+        writer.Write(values.Length);
+        foreach (var value in values) { writer.Write(value.Catalog); writer.Write(value.Id); writer.Write(value.Line); writer.Write(value.Column); }
     }
-    private static int[] ReadAlgorithms(BinaryReader reader)
+    private static ThemeAlgorithmInput[] ReadAlgorithms(BinaryReader reader)
     {
-        var values = new int[ReadCount(reader)];
-        for (var i = 0; i < values.Length; i++) { values[i] = reader.ReadInt32(); if (values[i] < 0 || values[i] > 2) { throw new InvalidDataException("Unknown algorithm."); } }
+        var values = new ThemeAlgorithmInput[ReadCount(reader)];
+        for (var i = 0; i < values.Length; i++)
+        {
+            values[i] = new ThemeAlgorithmInput { Catalog = reader.ReadString(), Id = reader.ReadString(), Line = reader.ReadInt32(), Column = reader.ReadInt32() };
+            if (!ThemeBuildIdentifier.IsValid(values[i].Catalog) || !ThemeBuildIdentifier.IsValid(values[i].Id)) { throw new InvalidDataException("Invalid algorithm identity."); }
+        }
         return values;
     }
     private static void WriteTokens(BinaryWriter writer, ThemeLiteralInput[] tokens)
@@ -105,12 +114,19 @@ internal sealed class ThemeLiteralInput
     internal int Column;
     internal string Path = "";
 }
+internal sealed class ThemeAlgorithmInput
+{
+    internal string Catalog = "";
+    internal string Id = "";
+    internal int Line;
+    internal int Column;
+}
 internal sealed class ThemeControlInput
 {
     internal string Catalog = "";
     internal string Id = "";
     internal int Mode;
-    internal int[] Algorithms = Array.Empty<int>();
+    internal ThemeAlgorithmInput[] Algorithms = Array.Empty<ThemeAlgorithmInput>();
     internal ThemeLiteralInput[] Tokens = Array.Empty<ThemeLiteralInput>();
     internal int Line;
     internal int Column;

@@ -37,3 +37,25 @@
 
 ## 任务记录
 
+
+### Task 1：`ThemeAlgorithm` 改为 `(Catalog, Id)` 结构体（审阅通过）
+
+- 审阅结论：规格符合，质量通过，无严重或重要问题。留待最终整体审阅统一处理的小项：
+  1. `ThemeAlgorithmTypeConverter` 对 `PrimeNG:1Bad` 这类输入抛 `ArgumentException`，其余非法输入抛 `NotSupportedException`，异常类型不一致；对应测试只断言了 `Exception`。
+  2. `ThemeBuildIdentifier` 与 `SchemaIdentifier` 是两份相同的规则，只靠注释保持同步，缺一个对照测试。
+  3. 中间文件「格式过期」的报错路径没有测试。
+  4. 未初始化身份的检查只测了全局链，控件自定义链的路径没测。
+- 裁决：性能基线除了在 Task 7 的提交上量，还要在执行基线 `0bf534726`（Task 1 之前）上用同一套测量再量一次，阶段一、二的改动也要过 4.11 的门槛 — 计划原本只在 Task 7 量基线，阶段一、二对性能的影响会被算进基线而看不出来 — 判断错了的代价是多一次测量。
+- 裁决：生成的主题程序里内置算法现在写成 `new ThemeAlgorithm("AtomUI", "Dark")`，每次绑定多两次短字符串校验，不产生堆分配。先不改；如果上一条的对比测量显示它有影响，改为输出 `ThemeAlgorithm.Dark` 这类静态成员 — 没有测量依据就加特例是多余的复杂度 — 判断错了由 Task 7 的测量暴露。
+
+- 改动：`ThemeAlgorithm` 由枚举改为只读结构体（仿 `ControlTokenIdentity`，`SchemaIdentifier` 校验、序数相等、`ToString()` 为 `Catalog:Id`，内部 `IsUninitialized` 与 `Compare`）；`ThemeAlgorithmAttribute` 改为 `(catalog, id, revision, appearanceEffect)`；三个内置计算器的 `const Algorithm` 删除；描述符与规范化器的 `Enum.IsDefined` 改为未初始化检查（规范化器诊断 ATMTHM4004「Algorithm identity is uninitialized.」）；注册表按 `Catalog`、`Id` 序数排序，修订号与配置指纹改计 `Catalog`、`Id`、`Revision`、`AppearanceEffect`（沿用现有 FNV 构建器逐字符计入）；类型转换器接受 `Default/Dark/Compact` 与 `Catalog:Id`，删掉 `DefaultAlgorithm` 旧拼写。
+- 生成器：`ThemeAlgorithmInfo` 读两个字符串参数，标识符不合法或 `revision <= 0` 静默忽略；排序与 `ComputeGlobalSchema` 改按 `Catalog`、`Id`（全局段格式号 1→2）；输出 `new global::AtomUI.Theme.Algorithms.ThemeAlgorithm("AtomUI", "Dark")`，不再有整数强转。生成的内置算法顺序由 Default/Dark/Compact 变为 Compact/Dark/Default（与运行时排序一致，注册表仍走免排序路径）。
+- Toolchain：链接 `SchemaIdentifier.cs`；中间文件算法项改为 `ThemeAlgorithmInput { Catalog, Id, Line, Column }`，格式号 4→5，读到旧版本抛「Compiled theme input format is out of date; rebuild the project.」；新增 `Common/ThemeDefinitions/ThemeBuildIdentifier.cs`（生成器无法引用 Core，镜像标识符规则，供解码校验与 `ThemeAlgorithmInfo` 使用）。`CompiledThemePackageWriter` 摘要字段改为 `Catalog:Id`。
+- Gallery：`GalleryWorkspaceViewModel` 常量模式改 `!=`；`ThemePresetCatalog` 导出 XML 写 `algorithm.Id`（缓存键本就经 `ToString()`）。
+- 测试：新增 `ThemeAlgorithmIdentityTests`（简报 5 个 + 类型转换器 2 个）；注册表、配置指纹各加一个钉死常量的确定性测试（`0x29D0F9BA9FF24C7F`、`0xE1D2F0E3E24383E2`，两次独立进程取值一致）。
+- 结果：Core.Tests 457/457，Generator.Tests 1068/1068，Themes.Tests 27/27；全量回归 `[SUMMARY] TOTAL: 12334 个测试全部通过, 总耗时 15:35`（基线 12317，+17 为新增用例）。
+- 偏差：
+  - 注册表确定性测试不带 Token 与控件——它们的程序集限定类型名会让钉死的常量随框架/测试程序集版本漂移。
+  - 删除 `Algorithm_Descriptor_Rejects_An_Undefined_Algorithm_Value`（被 `Default_Struct_Is_Rejected_By_Descriptor_And_Normalizer` 覆盖）；`Normalize_Rejects_An_Undefined_Algorithm_Value` 改名为 `Normalize_Rejects_An_Unregistered_Algorithm`，用 `new ThemeAlgorithm("Test", "Unregistered")`。
+  - `ThemeDocumentReader` 无需改动即可编译。
+  - `tools/performances/AtomUI.Performance` 有既存编译错误（`SpaceItemsAlignment` 不存在），与本任务无关，未处理。

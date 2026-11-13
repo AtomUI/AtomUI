@@ -64,7 +64,7 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 #### 运行环境
 
 .NET 8、.NET 10、.NET 11（NuGet 包提供 net8.0 / net10.0 / net11.0）<br>
-Avalonia 12.1.5<br>
+Avalonia 12.1.6<br>
 支持 Windows、macOS 12 及以上、Linux 跨平台<br>
 
 源码构建需要 .NET SDK 10.0.300 或更高版本（含 SDK 11）；Release 三框架打包需要 SDK 11。浏览器版 Gallery 需要原生链接
@@ -76,8 +76,9 @@ net8-only 包兼容桥接面向 .NET 10 及以后，net8 裁剪与 NativeAOT 后
 
 #### 最新版本说明
 
-AtomUI 6.2.14 为 TreeView、TreeSelect 和日期时间选择器新增键盘导航，改进焦点描边，并修复 DataGrid 滚动时行拖动中断。Release 包新增 .NET 11 目标框架。
-升级时请检查 Skeleton 模板、Space 对齐类型、Empty 描述样式和 Result 图标的用法，并重新编译生成的注册元数据消费方。
+AtomUI 6.2.14 升级到 Avalonia 12.1.6，为 TreeView、TreeSelect 和日期时间选择器新增键盘导航，改进焦点描边，
+并修复 DataGrid 滚动时行拖动中断。Release 包新增 .NET 11 目标框架。升级前请先把 Avalonia 升到 12.1.6，
+并检查 Skeleton 模板、Space 对齐类型、Empty 描述样式以及 Card、Result 的用法，重新编译生成的注册元数据消费方。
 详见[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md)和[更新日志](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS

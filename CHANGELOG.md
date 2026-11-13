@@ -9,6 +9,7 @@ All notable changes to AtomUI are documented in this file.
 `2026-11-13`
 
 - Breaking Changes
+  - Dependencies: require Avalonia 12.1.6. Applications pinned to 12.1.5 must upgrade Avalonia before installing AtomUI 6.2.14; see the [migration guide](docs/releases/6.2.14-api-changes.md#avalonia-dependency-advances-to-1216).
   - Skeleton: Move `AbstractSkeleton` to the shared assembly and replace the old active animation layer with shimmer block markers. Review the changes to custom easing, start and stop hooks, and standalone paragraph width. [Migration guide](docs/releases/6.2.14-api-changes.md#skeleton-base-class-moves-to-the-shared-layer)
   - Space: Move `SpaceItemsAlignment` to `AtomUI.Controls` and rebuild consumers of `Space.ItemsAlignment`. [Migration guide](docs/releases/6.2.14-api-changes.md#spaceitemsalignment-changes-namespace)
   - Card: Declare `Extra`, `Cover`, `IsLoading` and related property fields on the shared `AbstractCard` base. Rebuild assemblies compiled against 6.2.13. [Migration guide](docs/releases/6.2.14-api-changes.md#card-property-fields-move-to-abstractcard)

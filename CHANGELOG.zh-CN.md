@@ -11,6 +11,7 @@ AtomUI 的重要变更记录在此文件中。
 `2026-11-13`
 
 - Breaking Changes
+  - Dependencies：要求 Avalonia 12.1.6。固定在 12.1.5 的应用须先升级 Avalonia 再安装 AtomUI 6.2.14，详见[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#avalonia-依赖升级到-1216)。
   - Skeleton 将 `AbstractSkeleton` 移到共享程序集，旧活动动画层改用微光块标记。请检查自定义缓动、启停入口和单独段落的默认宽度。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#skeleton-基类移到共享层)
   - Space 将 `SpaceItemsAlignment` 移到 `AtomUI.Controls`。请重新编译使用 `Space.ItemsAlignment` 的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#spaceitemsalignment-换了命名空间)
   - Card 将 `Extra`、`Cover`、`IsLoading` 等属性字段改为声明在共享基类 `AbstractCard`。请重新编译按 6.2.13 编译的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#card-属性字段移到-abstractcard)

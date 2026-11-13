@@ -70,7 +70,7 @@ requests are welcome.
 #### Requirements
 
 .NET 8, .NET 10 and .NET 11 (NuGet packages ship net8.0 / net10.0 / net11.0)<br>
-Avalonia 12.1.5<br>
+Avalonia 12.1.6<br>
 Windows, macOS 12 or later, and Linux<br>
 
 Building from source requires .NET SDK 10.0.300 or later (SDK 11 included); packing the three Release target
@@ -85,10 +85,11 @@ and consumed outputs.
 
 #### Latest Release Notes
 
-AtomUI 6.2.14 adds keyboard navigation to TreeView, TreeSelect and the date and time pickers, improves focus outlines,
-and keeps DataGrid row dragging active while scrolling. Release packages now also target .NET 11. Upgrading may require changes to Skeleton templates, Space
-alignment types, Empty description styles, and Result icon consumers. Rebuild generated registration consumers after
-upgrading. See the [migration guide](docs/releases/6.2.14-api-changes.md) and [Changelog](./CHANGELOG.md).
+AtomUI 6.2.14 upgrades to Avalonia 12.1.6, adds keyboard navigation to TreeView, TreeSelect and the date and time
+pickers, improves focus outlines, and keeps DataGrid row dragging active while scrolling. Release packages now also
+target .NET 11. Upgrade Avalonia to 12.1.6 first. Upgrading may also require changes to Skeleton templates, Space
+alignment types, Empty description styles, and Card and Result consumers. Rebuild generated registration consumers
+after upgrading. See the [migration guide](docs/releases/6.2.14-api-changes.md) and [Changelog](./CHANGELOG.md).
 
 #### Incubator
 

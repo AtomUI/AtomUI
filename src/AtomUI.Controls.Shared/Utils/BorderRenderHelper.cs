@@ -132,8 +132,8 @@ internal class BorderRenderHelper
             if (boxShadows.Count > 0)
             {
                 // Geometry drawing has no shadow overload; draw the outer shadows on the outer border edge first.
-                context.DrawRectangle(Brushes.Transparent, null, new RoundedRect(new Rect(_size), _cornerRadius),
-                    boxShadows);
+                BoxShadowRenderHelper.DrawRectangle(context, Brushes.Transparent, null,
+                    new RoundedRect(new Rect(_size), _cornerRadius), boxShadows);
             }
 
             if (_backgroundGeometryCache != null)
@@ -161,7 +161,7 @@ internal class BorderRenderHelper
             var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                 _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-            context.DrawRectangle(background, _cachedPen, rrect, boxShadows);
+            BoxShadowRenderHelper.DrawRectangle(context, background, _cachedPen, rrect, boxShadows);
         }
     }
 }

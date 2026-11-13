@@ -2,6 +2,20 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-12
+
+- Theme
+  - 修复冻结列阴影显示不正确：`LeftFrozenShadows` / `RightFrozenShadows` 采用 AntD `inset ±10px 0 8px -8px`，但此前直接设在冻结单元格
+    与表头自身的 Frame 上，阴影落在冻结列内部且方向反向。单元格、表头与分组表头模板新增 30px 的 `FrozenShadow` 条带，
+    像 AntD `::after` 一样伸出到分界线外侧并覆盖滚动到其下方的内容；左冻结列末列使用 `LeftFrozenShadows`，右冻结列首列使用
+    `RightFrozenShadows`，与 Token 文档语义一致。带阴影的单元格提升 `ZIndex`，以绘制在相邻滚动列之上。
+- Implementation
+  - 新增内部控件 `DataGridFrozenColumnShadow` 绘制条带阴影。Avalonia Skia 后端把阴影偏移按物理像素施加，而扩展与模糊随渲染缩放，
+    150% / 200% 缩放下 AntD 阴影的实心带被吞掉几乎不可见；该控件经共享的 `BoxShadowRenderHelper` 把 inset 阴影折算为等价的零偏移
+    inset 阴影，各缩放下阴影一致。
+- Tests
+  - 新增 `DataGridFrozenShadowRenderingTests`，在 1x / 1.5x / 2x 下对真实 Skia 帧断言单元格与表头的阴影位于分界线外侧且清晰可见。
+
 ## 2026-11-11
 
 - Interaction

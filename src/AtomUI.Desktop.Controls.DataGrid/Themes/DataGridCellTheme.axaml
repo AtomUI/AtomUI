@@ -6,33 +6,40 @@
     <ControlTheme x:Key="{x:Type atom:DataGridCell}" TargetType="atom:DataGridCell">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame"
-                        Background="{TemplateBinding Background}">
-                    <Grid Name="RootLayout"
-                          ColumnDefinitions="*, Auto">
-                        <Grid Name="ContentLayout"
-                              Grid.Column="0"
-                              Margin="{TemplateBinding Padding}">
-                            <ContentPresenter Name="ContentPresenter"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Stretch"
-                                              ClipToBounds="{TemplateBinding IsClipContent}"
-                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
-                            <Rectangle Name="InvalidVisualElement"
-                                       IsVisible="False"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"
-                                       IsHitTestVisible="False"
-                                       StrokeThickness="1" />
+                <Panel Name="RootFrame">
+                    <Border Name="Frame"
+                            Background="{TemplateBinding Background}">
+                        <Grid Name="RootLayout"
+                              ColumnDefinitions="*, Auto">
+                            <Grid Name="ContentLayout"
+                                  Grid.Column="0"
+                                  Margin="{TemplateBinding Padding}">
+                                <ContentPresenter Name="ContentPresenter"
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch"
+                                                  ClipToBounds="{TemplateBinding IsClipContent}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                <Rectangle Name="InvalidVisualElement"
+                                           IsVisible="False"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"
+                                           IsHitTestVisible="False"
+                                           StrokeThickness="1" />
+                            </Grid>
+                            <Rectangle Name="{x:Static atom:DataGridCellThemeConstants.RightGridLinePart}"
+                                       Grid.Column="1"
+                                       VerticalAlignment="Stretch" />
                         </Grid>
-                        <Rectangle Name="{x:Static atom:DataGridCellThemeConstants.RightGridLinePart}"
-                                   Grid.Column="1"
-                                   VerticalAlignment="Stretch" />
-                    </Grid>
-                </Border>
+                    </Border>
+                    <!-- 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在单元格外侧 30px 的条带上，覆盖滚动到分界线下的内容 -->
+                    <atom:DataGridFrozenColumnShadow Name="FrozenShadow"
+                                                     Width="30"
+                                                     IsVisible="False"
+                                                     IsHitTestVisible="False" />
+                </Panel>
             </ControlTemplate>
         </Setter>
         
@@ -72,16 +79,22 @@
         </Style>
 
         <Style Selector="^[IsShowFrozenShadow=True]">
-            <Style Selector="^[FrozenShadowPosition=Left]">
-                <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="BoxShadow" Value="{atom:DataGridTokenResource LeftFrozenShadows}"/>
-                </Style>
+            <!-- 阴影条带伸出单元格，需绘制在相邻滚动列单元格之上 -->
+            <Setter Property="ZIndex" Value="1"/>
+            <Style Selector="^ /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="IsVisible" Value="True"/>
             </Style>
-            
-            <Style Selector="^[FrozenShadowPosition=Right]">
-                <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="BoxShadow" Value="{atom:DataGridTokenResource RightFrozenShadows}"/>
-                </Style>
+            <!-- 右冻结列首列：阴影条带位于单元格左外侧 -->
+            <Style Selector="^[FrozenShadowPosition=Left] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="RenderTransform" Value="translateX(-30px)"/>
+                <Setter Property="BoxShadow" Value="{atom:DataGridTokenResource RightFrozenShadows}"/>
+            </Style>
+            <!-- 左冻结列末列：阴影条带位于单元格右外侧 -->
+            <Style Selector="^[FrozenShadowPosition=Right] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+                <Setter Property="RenderTransform" Value="translateX(30px)"/>
+                <Setter Property="BoxShadow" Value="{atom:DataGridTokenResource LeftFrozenShadows}"/>
             </Style>
         </Style>
     </ControlTheme>

@@ -272,7 +272,7 @@ SearchEdit 将搜索按钮视为输入框的一部分。搜索按钮从 `InputCo
 
 ### 8.3 TextArea 高度模型
 
-TextArea 支持固定行数、自动高度和拖拽 resize。固定行数模式下，控件根据字体、line height 和文本 presenter/scroll viewer 的垂直间距计算高度。resize 模式记录拖拽开始时的高度，并把高度限制在 `MinLines` / `MaxLines` 对应的范围内。
+TextArea 支持固定行数、自动高度和拖拽 resize。固定行数模式下，控件根据字体、line height 和文本 presenter/scroll viewer 的垂直间距计算自然高度；`Lines` 只决定未被父容器拉伸时的高度，父容器分配更高的槽位（Grid `*` 行、`Flex.Grow`）时文本视口填满框体，正文从首行开始。resize 模式记录拖拽开始时的高度，并把高度限制在 `MinLines` / `MaxLines` 对应的范围内。
 
 ### 8.4 Semantic Part
 

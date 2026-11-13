@@ -104,6 +104,9 @@ internal class TextAreaDecoratedBox : AddOnDecoratedBox
     
     internal ScrollViewer? ScrollViewer { get; private set; }
 
+    // Hosts the scroll viewer and the right add-on; TextArea puts the Lines natural height on it.
+    internal Panel? ScrollViewerLayout { get; private set; }
+
     private TextArea? _owner;
 
     internal TextArea? Owner
@@ -129,7 +132,8 @@ internal class TextAreaDecoratedBox : AddOnDecoratedBox
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        ScrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        ScrollViewer       = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        ScrollViewerLayout = e.NameScope.Find<Panel>("ScrollViewerLayout");
         
         if (_rightContentAddOn != null)
         {

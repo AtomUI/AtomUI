@@ -2,8 +2,8 @@
 
 This build-only module implements the managed-linker part of the
 [approved design](../../docs/superpowers/specs/2026-10-05-aot-dependency-analysis-design/overview.md).
-It runs on a .NET 10 tool host and binds exactly to ILLink 8.0.27, runtime source commit
-`a6bde67c455f2ac219988c7a66171631090b6f65`. It does not change the target runtime.
+It runs on a .NET 10 or later tool host (major roll-forward) and binds to the SDK-selected official ILLink 8.x engine;
+the ILLink Tasks and engine must come from one servicing release. It does not change the target runtime.
 The module is a packaged build-only tool selected automatically for admitted .NET 8 managed trimming. Target-framework routing and capability admission remain separate.
 Its mechanism evidence does not imply that the complete product/platform rollout matrix has passed.
 

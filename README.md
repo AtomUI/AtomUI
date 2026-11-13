@@ -69,14 +69,17 @@ requests are welcome.
 
 #### Requirements
 
-.NET 10 (the .NET 10 SDK is required to build AtomUI MSBuild integration)<br>
+.NET 8, .NET 10 and .NET 11 (NuGet packages ship net8.0 / net10.0 / net11.0)<br>
 Avalonia 12.1.5<br>
 Windows, macOS 12 or later, and Linux<br>
 
-TypeMap publishing supports .NET 10 and later stable versions by default. Browser trimmed and AOT publishing follows
-the SDK-selected ILLink and WASM toolchain, without SDK or servicing-version allowlists. Publish checks validate the
-converted maps and consumed outputs. The separate net8-only package compatibility bridge retains its documented
-toolchain requirements.
+Building from source requires .NET SDK 10.0.300 or later (SDK 11 included); packing the three Release target
+frameworks requires SDK 11.
+
+Trimmed and AOT publishing follows the SDK-selected official ILLink, ILC and WASM toolchain, without SDK or
+servicing-version allowlists: TypeMap and the net8-only package compatibility bridge target .NET 10 and later, and
+the net8 trimming and NativeAOT backends accept the official 8.x engines. Publish checks validate the converted maps
+and consumed outputs.
 
 #### Latest Release Notes
 

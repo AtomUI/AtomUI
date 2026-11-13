@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using AtomUI.Build.Tasks.Registration;
 using AtomUI.Registration.Shared;
 using Mono.Cecil;
 
@@ -16,7 +17,7 @@ internal sealed record FrameworkBindingSet(
     IReadOnlyDictionary<string, string> Bindings,
     IReadOnlyList<FrameworkBindingEvidence> Evidence);
 
-/// <summary>Explicit net8 platform-reference bindings, confined to the SDK-resolved net10 runtime pack.</summary>
+/// <summary>Explicit net8 platform-reference bindings, confined to the SDK-resolved .NET 10+ runtime pack.</summary>
 internal static class FrameworkBindingPolicy
 {
     internal static void NormalizeReferences(IEnumerable<AssemblyDefinition> owners, IReadOnlyDictionary<string, string> bindings)
@@ -34,6 +35,26 @@ internal static class FrameworkBindingPolicy
         }
     }
 
+    private static readonly Version MinimumFrameworkVersion = new(10, 0);
+
+    // Admission follows the runtime-pack family and framework version, never an SDK or servicing allowlist.
+    // SDK-bundled packs keep their package-id casing; NuGet-restored packs use the lowercase cache layout.
+    internal static bool IsAdmittedRuntimePack(string packName, string packVersion) =>
+        packName.StartsWith("Microsoft.NETCore.App.Runtime.", StringComparison.OrdinalIgnoreCase) &&
+        OfficialTypeMapToolchain.TryParseVersion(packVersion, out var version) && version >= MinimumFrameworkVersion;
+
+    internal static bool IsMatchingRuntimeList(string targetFrameworkVersion, string packVersion) =>
+        Version.TryParse(targetFrameworkVersion, out var framework) && framework >= MinimumFrameworkVersion &&
+        OfficialTypeMapToolchain.TryParseVersion(packVersion, out var pack) &&
+        framework.Major == pack.Major && framework.Minor == pack.Minor;
+
+    // Framework reference assemblies carry the framework's major.minor with zero build and revision.
+    internal static Version FrameworkAssemblyVersion(string targetFrameworkVersion)
+    {
+        var framework = Version.Parse(targetFrameworkVersion);
+        return new Version(framework.Major, framework.Minor, 0, 0);
+    }
+
     internal static FrameworkBindingSet Create(
         string runtimePackDirectory,
         ConditionalInputSnapshot snapshot,
@@ -44,12 +65,9 @@ internal static class FrameworkBindingPolicy
             throw new InvalidDataException("The bridge requires the absolute SDK-resolved runtime-pack directory.");
         }
         var pack = new DirectoryInfo(Path.GetFullPath(runtimePackDirectory));
-        var admitted = pack.Parent is not null &&
-            (pack.Name == "10.0.8" && pack.Parent.Name.StartsWith("Microsoft.NETCore.App.Runtime.", StringComparison.Ordinal) ||
-             pack.Name == "10.0.10" && pack.Parent.Name == "Microsoft.NETCore.App.Runtime.Mono.browser-wasm");
-        if (!admitted)
+        if (pack.Parent is null || !IsAdmittedRuntimePack(pack.Parent.Name, pack.Name))
         {
-            throw new InvalidDataException("The bridge requires an admitted SDK runtime pack (10.0.8, or Mono browser-wasm 10.0.10).");
+            throw new InvalidDataException($"The bridge requires an SDK-resolved Microsoft.NETCore.App runtime pack for .NET 10 or later; found {pack.FullName}.");
         }
         var listPath = snapshot.Format == 2
             ? (snapshot.AdditionalInputs ?? []).Single(input => input.Kind == "configuration" &&
@@ -59,11 +77,12 @@ internal static class FrameworkBindingPolicy
         using var stream = new MemoryStream(bytes, writable: false);
         var list = XDocument.Load(stream).Root;
         if (list?.Name != "FileList" || (string?)list.Attribute("TargetFrameworkIdentifier") != ".NETCoreApp" ||
-            (string?)list.Attribute("TargetFrameworkVersion") != "10.0" ||
+            !IsMatchingRuntimeList((string?)list.Attribute("TargetFrameworkVersion") ?? string.Empty, pack.Name) ||
             (string?)list.Attribute("FrameworkName") != "Microsoft.NETCore.App")
         {
             throw new InvalidDataException("Unexpected target FrameworkReference runtime-pack manifest.");
         }
+        var targetVersion = FrameworkAssemblyVersion((string)list.Attribute("TargetFrameworkVersion")!);
         var managed = list.Elements("File").Where(file => (string?)file.Attribute("Type") == "Managed")
             .ToLookup(file => (string?)file.Attribute("AssemblyName"), StringComparer.Ordinal);
         var inputs = snapshot.Assemblies.ToDictionary(input => input.AssemblyIdentity, StringComparer.Ordinal);
@@ -93,7 +112,7 @@ internal static class FrameworkBindingPolicy
             }
             if (snapshot.Format == 2)
             {
-                var targetIdentity = new AssemblyNameReference(source.Name, new Version(10, 0, 0, 0))
+                var targetIdentity = new AssemblyNameReference(source.Name, targetVersion)
                 {
                     Culture = source.Culture,
                     PublicKeyToken = source.PublicKeyToken
@@ -110,7 +129,7 @@ internal static class FrameworkBindingPolicy
             using var targetStream = new MemoryStream(targetBytes, writable: false);
             using var target = AssemblyDefinition.ReadAssembly(targetStream);
             var name = target.Name;
-            if (name.Name != source.Name || name.Version != new Version(10, 0, 0, 0) ||
+            if (name.Name != source.Name || name.Version != targetVersion ||
                 (name.Culture ?? string.Empty) != (source.Culture ?? string.Empty) ||
                 source.PublicKeyToken.Length != 8 || !source.PublicKeyToken.SequenceEqual(name.PublicKeyToken) ||
                 Convert.ToHexStringLower(name.PublicKeyToken) != (string?)entry.Attribute("PublicKeyToken") ||

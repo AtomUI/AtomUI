@@ -59,7 +59,7 @@
         <PackageReference Include="Microsoft.NET.ILLink.Tasks" VersionOverride="8.0.27" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
         <Reference Include="illink" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net8.0/illink.dll" Private="false" />
         <Reference Include="Mono.Cecil" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net8.0/Mono.Cecil.dll" Private="false" />
-        <Compile Include="Backends/ILLink8/**/*.cs" />
+        <Compile Include="Backends/ILLink8/**/*.cs;Common/Registration/OfficialTypeMapToolchain.cs;Common/Registration/Net8EngineToolchain.cs" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(AtomUIToolchainProfile)' == 'ILLink10'">

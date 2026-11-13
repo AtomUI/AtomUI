@@ -1,4 +1,5 @@
 using System.Reflection;
+using AtomUI.Build.Tasks.Registration;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Linker;
@@ -6,11 +7,14 @@ using Mono.Linker.Steps;
 
 namespace AtomUI.Registration.ILLink8;
 
-/// <summary>Installs the pinned marking mechanism. Metadata parsing, source identity and receipts belong to the build adapter.</summary>
+/// <summary>Installs the marking mechanism on the official ILLink8 engine. Metadata parsing, source identity and receipts belong to the build adapter.</summary>
 public static class ConditionalRegistrationBackend
 {
-    public const string RuntimeSourceCommit = "a6bde67c455f2ac219988c7a66171631090b6f65";
-    public const string LinkerProductVersion = "8.0.27+" + RuntimeSourceCommit;
+    // Read from metadata by the build host; it names the mechanism ABI, not an engine servicing version.
+    public const string LinkerCapability = Net8EngineToolchain.BackendCapability;
+
+    internal static string ActualLinkerVersion =>
+        typeof(MarkStep).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
 
     /// <summary>
     /// Called after definition/collector-template validation and before Mark. The caller must isolate
@@ -51,10 +55,10 @@ public static class ConditionalRegistrationBackend
 
     private static void ValidateToolchain()
     {
-        var actual = typeof(MarkStep).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        if (actual != LinkerProductVersion || Environment.Version.Major != 10)
+        var actual = ActualLinkerVersion;
+        if (!Net8EngineToolchain.IsSupportedLinker(typeof(MarkStep).Assembly.FullName!, actual) || Environment.Version.Major < 10)
         {
-            throw new NotSupportedException($"Conditional registration requires ILLink {LinkerProductVersion} on a .NET10 tool host; found {actual} on {Environment.Version}.");
+            throw new NotSupportedException($"Conditional registration requires official ILLink 8.x on a .NET 10 or later tool host; found {actual} on {Environment.Version}.");
         }
     }
 

@@ -58,11 +58,6 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
             }
             var bundle = Path.GetFullPath(ManagedCompilerBundle);
             var nativePackage = Path.TrimEndingDirectorySeparator(Path.GetFullPath(IlcHostPackagePath));
-            if (Path.GetFileName(nativePackage) != "8.0.27" ||
-                Path.GetFileName(Path.GetDirectoryName(nativePackage)) != "runtime.osx-arm64.microsoft.dotnet.ilcompiler")
-            {
-                throw new InvalidDataException("Native8 requires SDK-restored runtime.osx-arm64.microsoft.dotnet.ilcompiler/8.0.27.");
-            }
             var expectedNames = ManagedFiles.Append("atomui-ilc8-capability.json").ToHashSet(StringComparer.Ordinal);
             if (!Directory.GetFiles(bundle).Select(Path.GetFileName).ToHashSet(StringComparer.Ordinal).SetEquals(expectedNames) ||
                 Directory.GetDirectories(bundle).Length != 0)
@@ -72,13 +67,17 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
             using var capability = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(bundle, "atomui-ilc8-capability.json")));
             var info = capability.RootElement;
             if (info.GetProperty("format").GetInt32() != 1 || info.GetProperty("sourceCommit").GetString() != SourceCommit ||
-                info.GetProperty("nativeToolPackageVersion").GetString() != "8.0.27" ||
+                !Net8EngineToolchain.IsEngineVersion(info.GetProperty("nativeToolPackageVersion").GetString() ?? string.Empty) ||
                 info.GetProperty("hostTargetFramework").GetString() != "net10.0" || info.GetProperty("inputFormat").GetInt32() != 2 ||
                 info.GetProperty("collectorTemplate").GetString() != "atomui.collector.v1" ||
                 info.GetProperty("trimmedSwitchTemplate").GetString() != "atomui.trimmed-switch.v1" ||
                 !info.GetProperty("files").EnumerateObject().Select(entry => entry.Name).ToHashSet(StringComparer.Ordinal).SetEquals(ManagedFiles))
             {
                 throw new InvalidDataException("Unknown native compiler capability or upstream version.");
+            }
+            if (!Net8EngineToolchain.IsSupportedNativeCompilerPackage(nativePackage, info.GetProperty("nativeToolPackageVersion").GetString()!))
+            {
+                throw new InvalidDataException($"Native8 requires SDK-restored runtime.osx-arm64.microsoft.dotnet.ilcompiler 8.x; found {nativePackage}.");
             }
             var files = new SortedDictionary<string, byte[]>(StringComparer.Ordinal);
             foreach (string name in expectedNames)
@@ -103,13 +102,10 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
             var root = Path.GetFullPath(IntermediateRoot);
             PrepareInputsRoot = Path.Combine(root, "inputs");
             ReceiptPointer = invocation.File("receipt.json");
-            string baseLine = "#!/bin/sh\nbase=$(CDPATH= cd -- \"$(dirname -- \"$0\")/..\" && pwd)\n";
-            string cleanup = Quote(Path.GetFullPath(DotNetHostPath)) + " \"$base/host/ilc.dll\" --atomui-cleanup-invocation " +
-                string.Join(" ", new[] { invocation.Root, InvocationId, NativeObject, ExportsFile, NativeBinary }.Select(Quote));
-            string failed = "\nstatus=$?\nif [ \"$status\" -ne 0 ]; then\n  " + cleanup + "\nfi\nexit \"$status\"\n";
-            string launch = baseLine + Quote(Path.GetFullPath(DotNetHostPath)) + " \"$base/host/ilc.dll\" \"$@\"" + failed;
-            files.Add("tools/ilc", Encoding.UTF8.GetBytes(launch));
-            files.Add("tools/native-linker", Encoding.UTF8.GetBytes(baseLine + Quote(NativeLinker) + " \"$@\"" + failed));
+            string[] cleanupArguments = [invocation.Root, InvocationId, NativeObject, ExportsFile, NativeBinary];
+            string failed = FailureCleanup(Path.GetFullPath(DotNetHostPath), cleanupArguments);
+            files.Add("tools/ilc", Encoding.UTF8.GetBytes(CreateCompilerLauncher(Path.GetFullPath(DotNetHostPath), cleanupArguments)));
+            files.Add("tools/native-linker", Encoding.UTF8.GetBytes(LauncherPrologue + Quote(NativeLinker) + " \"$@\"" + failed));
             var state = JsonSerializer.Serialize(new { format = 1, HostRid, TargetRid,
                 files = files.Select(file => new { path = file.Key, sha256 = Hash(file.Value) }).ToArray() });
             HostFingerprint = Hash(Encoding.UTF8.GetBytes(state));
@@ -136,6 +132,19 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
             return Fail("ATOMUIREG008", error);
         }
     }
+
+    private const string LauncherPrologue = "#!/bin/sh\nbase=$(CDPATH= cd -- \"$(dirname -- \"$0\")/..\" && pwd)\n";
+
+    // The managed compiler targets net10.0; Major roll-forward lets hosts with only a newer runtime execute it.
+    private static string CompilerCommand(string dotNetHostPath) =>
+        Quote(dotNetHostPath) + " exec --roll-forward Major \"$base/host/ilc.dll\"";
+
+    private static string FailureCleanup(string dotNetHostPath, IEnumerable<string> cleanupArguments) =>
+        "\nstatus=$?\nif [ \"$status\" -ne 0 ]; then\n  " + CompilerCommand(dotNetHostPath) + " --atomui-cleanup-invocation " +
+        string.Join(" ", cleanupArguments.Select(Quote)) + "\nfi\nexit \"$status\"\n";
+
+    internal static string CreateCompilerLauncher(string dotNetHostPath, IReadOnlyList<string> cleanupArguments) =>
+        LauncherPrologue + CompilerCommand(dotNetHostPath) + " \"$@\"" + FailureCleanup(dotNetHostPath, cleanupArguments);
 
     private static string Quote(string value) => "'" + value.Replace("'", "'\\''", StringComparison.Ordinal) + "'";
 }

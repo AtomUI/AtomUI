@@ -6,7 +6,7 @@
 
 **Architecture:** `ThemeAlgorithm` 从枚举改为 `(Catalog, Id)` 结构体，算法随包注册进 `ThemeSchemaRegistry`。Token 属性改为 partial 属性，生成器补上记录写入的 setter；编译器据此执行「显式值 → 默认公式 → 算法 → 带标记重算」的三步流程。Alias 与控件阶段是两个可选接口，直接写 Token 对象。
 
-**Tech Stack:** .NET 10（SDK 10.0.403，`LangVersion latest`，partial 属性与 `field` 关键字）、Avalonia 12.1.5、Roslyn 增量生成器与 analyzer（`AtomUI.Generator`，netstandard2.0）、MSBuild 任务（`AtomUI.Toolchain`）、xunit v3 + Shouldly。
+**Tech Stack:** .NET 10（SDK 10.0.403，`LangVersion latest`，partial 属性与 `field` 关键字）、Avalonia 12.1.6、Roslyn 增量生成器与 analyzer（`AtomUI.Generator`，netstandard2.0）、MSBuild 任务（`AtomUI.Toolchain`）、xunit v3 + Shouldly。
 
 **Spec:** `docs/superpowers/specs/2026-11-13-theme-algorithm-strategy-design.md`。执行者两份都要读。本计划与规格不一致的地方已在「与规格的差异」登记，并已回写规格。
 
@@ -14,7 +14,8 @@
 
 ## Global Constraints
 
-- 工作分支 `feature/design-language`，基线 `release/6.0`。本计划写成时分支落后本地 `release/6.0` 6 个提交；阶段三（Task 7–10）改动 170 多个 Token 文件，开始前先问用户是否变基。
+- 工作分支 `feature/design-language`，基线 `release/6.0`。执行开始前已按用户决定变基到 `release/6.0` 的 `f11459de0`（含 Avalonia 12.1.6、6.2.14 发版准备、SDK 11 构建支持）。本计划里的文件行号取自变基之前，只作定位提示，以符号名为准。
+- 提交方式（用户确认）：实现者**不提交**；每个任务经审阅通过后由主控按任务里给出的提交信息提交到本分支，不推送。各任务的「提交」步骤由主控执行。
 - 不引入设计语言抽象层，不按语言切换 ControlTheme，不改控件结构，不新增全局 Seed Token，不在主题 XML 里加表达式，不做「暗色对应算法」元数据（规格 1.3）。
 - 不考虑对旧 API 的兼容（用户确认）。破坏性变更写进双语 CHANGELOG 和 `docs/releases` 下的 API 变更文档。
 - 优先级固定：**Ant 默认公式 < 算法 < 主题显式值 < 更内层作用域的显式值**。
@@ -258,8 +259,8 @@ public static class PrimeNGAlgorithms
 [Fact] public void Builder_Algorithms_Reach_The_Startup_Registry()
 // builder.AddThemeAlgorithms([Descriptor("Test","Flat")]) -> manager registry TryGetAlgorithm(new("Test","Flat")) == true
 [Fact] public void Builder_Algorithms_Reach_The_Global_Only_Registry_By_Reference()
-// CaptureStartupInputs().Algorithms contains the same descriptor instance;
-// CreateGlobalOnly(inputs.Algorithms).ExtendsGlobalSchemaOf-compatible with the full registry (startup reuse holds)
+// CaptureStartupInputs().Algorithms contains the same descriptor instance (ReferenceEquals);
+// fullRegistry.ExtendsGlobalSchemaOf(ThemeSchemaRegistry.CreateGlobalOnly(inputs.Algorithms)) == true (startup reuse holds)
 [Fact] public void Duplicate_Algorithm_Identity_Across_Packages_Is_Rejected()
 // ThemeSchemaException, message contains "Duplicate algorithm identity 'Test:Flat'"
 [Fact] public void A_Theme_Using_A_Package_Algorithm_Compiles_And_Passes_It_The_Seed()
@@ -459,7 +460,7 @@ git commit -am "feat(Generator): ATOMUIGEN040 与 048 覆盖全局 Alias 计算�
 - Modify: 台账
 
 **Interfaces:**
-- Produces: 一个显式运行的测量（`[Fact(Explicit = true)]`，不进常规回归），在注册了全部桌面控件包的应用里测量并输出一行 `MEASURE` 文本：
+- Produces: 一个显式运行的测量（`[Fact(Explicit = true)]`，不进常规回归；如果 `AvaloniaFact` 不支持 `Explicit`，改为环境变量 `ATOMUI_RUN_MEASUREMENTS=1` 时才运行，否则跳过）。它是测量工具，不是回归测试，所以不含断言。在注册了全部桌面控件包的应用里测量并输出一行 `MEASURE` 文本：
 
 ```csharp
 [AvaloniaFact(Explicit = true)] public async Task Measure_Default_Theme_Compile_And_Switch()
@@ -560,7 +561,7 @@ Expected: 失败（生成器不存在）。
 
 - [ ] **Step 3: 实现**
 
-此时仓库里的 Token 类还不是 partial，`ATOMUIGEN049` 会让全仓构建失败。本任务里先把它注册为默认关闭（`isEnabledByDefault: false`），Task 9 改完代码后再打开。
+此时仓库里的 Token 类还不是 partial，`ATOMUIGEN049` 会让全仓构建失败。本任务里先把它注册为默认关闭（`isEnabledByDefault: false`），Task 9 改完代码后再打开。生成器只为「类声明是 partial 且属性声明是 partial」的属性输出实现；其余情况只报 `ATOMUIGEN049`、不输出任何代码，所以本任务结束时全仓照常构建。
 
 - [ ] **Step 4: 运行测试并提交**
 
@@ -1055,7 +1056,7 @@ public sealed class PrimeNGAuraAlgorithm : PrimeNGPresetAlgorithm { }
 public sealed class PrimeNGAuraDarkAlgorithm : PrimeNGPresetAlgorithm { }
 ```
 
-`UsePrimeNGThemes` 先调 `GeneratedThemeAlgorithmRegistration.Register(builder)` 再注册主题包。四舍五入必须是「半数向上」（`Math.Floor(x + 0.5)`），不能用 C# 默认的银行家舍入。Tailwind 色板原表（emerald、slate、zinc、red，以及成功、警告、信息家族用到的）从 PrimeUIX 的 primitive Token 转录，README 记下来源包名与版本号。Aura 的映射表取规格 4.7：标「现值」的行是验收基线；标「提议」的行对照 PrimeUIX 的 Aura 预设源码核对后写进 README，核对不了的保留提议值并在 README 标明。暗色算法接在别的算法之后（`previousMap` 非空）时只重算颜色，尺寸沿用前一个 Map。
+`UsePrimeNGThemes` 先调 `GeneratedThemeAlgorithmRegistration.Register(builder)` 再注册主题包。四舍五入必须是「半数向上」（`Math.Floor(x + 0.5)`），不能用 C# 默认的银行家舍入。Tailwind 色板原表（emerald、blue、slate、zinc、red，以及成功、警告、信息家族用到的；blue 是本任务和 Task 22 的测试要用的）从 PrimeUIX 的 primitive Token 转录，README 记下来源包名与版本号。Aura 的映射表取规格 4.7：标「现值」的行是验收基线；标「提议」的行对照 PrimeUIX 的 Aura 预设源码核对后写进 README，核对不了的保留提议值并在 README 标明。暗色算法接在别的算法之后（`previousMap` 非空）时只重算颜色，尺寸沿用前一个 Map。
 
 - [ ] **Step 1: 写失败测试**
 

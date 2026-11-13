@@ -6,12 +6,16 @@
         <AtomUIThemeControlCatalog>AtomUI</AtomUIThemeControlCatalog>
         <AtomUIDevelopTargetFramework>net10.0</AtomUIDevelopTargetFramework>
         <AtomUIProductionTargetFramework>net8.0</AtomUIProductionTargetFramework>
+        <AtomUILatestTargetFramework>net11.0</AtomUILatestTargetFramework>
         <OutputType>Library</OutputType>
         <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
         <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
 
         <AtomUITargetFrameworks>$(AtomUIDevelopTargetFramework)</AtomUITargetFrameworks>
         <AtomUITargetFrameworks Condition="'$(Configuration)' == 'Release'">$(AtomUIDevelopTargetFramework);$(AtomUIProductionTargetFramework)</AtomUITargetFrameworks>
+        <!-- Only SDK 11 and later can compile net11.0; the release packaging gate requires it. SDK 11 defines
+             NETCoreSdkVersion before Directory.Build.props, while SDK 10 defines it later, so empty means SDK 10. -->
+        <AtomUITargetFrameworks Condition="'$(Configuration)' == 'Release' and '$(NETCoreSdkVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '11.0'))">$(AtomUITargetFrameworks);$(AtomUILatestTargetFramework)</AtomUITargetFrameworks>
 
         <IsTestProject Condition="$(MSBuildProjectFullPath.Contains('test')) and ($(MSBuildProjectName.EndsWith('.Tests')) or $(MSBuildProjectName.EndsWith('.TestBase')))">true</IsTestProject>
         <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/GeneratedFiles/**</DefaultItemExcludes>

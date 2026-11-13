@@ -16,8 +16,9 @@
             <AtomUIConditionalBridgeInputsRoot Condition="'$(AtomUIConditionalBridgeInputsRoot)' == ''">$(IntermediateOutputPath)AtomUIRegistration/bridge10</AtomUIConditionalBridgeInputsRoot>
             <_AtomUIBridgeWasmSdkDirectory Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">$([System.IO.Path]::GetFullPath('$([System.IO.Path]::GetDirectoryName('$(WasmAppBuilderTasksAssemblyPath)'))/../../Sdk'))/</_AtomUIBridgeWasmSdkDirectory>
         </PropertyGroup>
-        <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or !(('$(TargetFramework)' == 'net10.0' and '$(RuntimeIdentifier)' == 'osx-arm64') or ('$(TargetFramework)' == 'net10.0-browser' and '$(RuntimeIdentifier)' == 'browser-wasm')) or '$(TrimMode)' != 'full')"
-               Code="ATOMUIREG006" Text="The conditional bridge currently admits SDK 10.0.300, full managed trimming on net10.0/osx-arm64 or net10.0-browser/browser-wasm. Other SDK publish routes require their own acceptance evidence." />
+        <!-- The OfficialTypeMap family already means .NET 10 or later; SDK and runtime servicing versions are not gated. -->
+        <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and (!(('$(_AtomUIRegistrationTargetPlatform)' == '' and '$(RuntimeIdentifier)' == 'osx-arm64') or ('$(_AtomUIRegistrationTargetPlatform)' == 'browser' and '$(RuntimeIdentifier)' == 'browser-wasm')) or '$(TrimMode)' != 'full')"
+               Code="ATOMUIREG006" Text="The conditional bridge admits full managed trimming on osx-arm64 or browser-wasm for .NET 10 and later." />
         <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and ('$(PublishReadyToRun)' == 'true' or '$(PublishSingleFile)' == 'true')" Code="ATOMUIREG006" Text="The conditional bridge managed SDK gate currently verifies ordinary publish copying; post-link transformations are not admitted." />
         <Error Condition="'$(_AtomUIBridgeManagedProbe)' == 'true' and '$(RuntimeIdentifier)' == 'browser-wasm' and '$(WasmEnableWebcil)' != 'false'" Code="ATOMUIREG006" Text="The admitted browser bridge currently requires WasmEnableWebcil=false so its deployed managed identities and bytes can be independently verified." />
         <ItemGroup>
@@ -142,8 +143,8 @@
         <AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)" ProbeOnly="true" Assemblies="@(IlcCompileInput);@(IlcReference);@(IlcSatelliteAssembly)">
             <Output TaskParameter="NeedsBridge" PropertyName="_AtomUIBridgeNativeProbe" />
         </AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask>
-        <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('$(NETCoreSdkVersion)' != '10.0.300' or '$(TargetFramework)' != 'net10.0' or '$(RuntimeIdentifier)' != 'osx-arm64' or '$(RuntimeFrameworkVersion)' != '10.0.8' or '$(IlcMultiModule)' == 'true' or '$(NativeLib)' != '')"
-               Code="ATOMUIREG006" Text="The bridge NativeAOT SDK gate admits SDK 10.0.300/runtime 10.0.8, net10.0 executable osx-arm64 single-module publishing only." />
+        <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('$(_AtomUIRegistrationTargetPlatform)' != '' or '$(RuntimeIdentifier)' != 'osx-arm64' or '$(IlcMultiModule)' == 'true' or '$(NativeLib)' != '')"
+               Code="ATOMUIREG006" Text="The bridge NativeAOT route admits osx-arm64 single-module executables for .NET 10 and later." />
         <Error Condition="'$(_AtomUIBridgeNativeProbe)' == 'true' and ('@(IlcArg)' != '' or '$(IlcOrderFile)' != '' or '$(_ReachabilityInstrumentationFile)' != '')"
                Code="ATOMUIREG006" Text="Raw ILC arguments and extra ordered/reachability input files require a separately audited immutable mapping before this bridge route can consume them." />
         <PropertyGroup>
@@ -184,6 +185,14 @@
             <Output TaskParameter="PreparedAssemblies" ItemName="_AtomUIBridgeNativePrepared" />
             <Output TaskParameter="PreparedAdditionalInputs" ItemName="_AtomUIBridgeNativePreparedAdditional" />
         </AtomUI.Build.Tasks.PrepareConditionalRegistrationBridgeTask>
+        <!-- .NET 11 ILC also lists the application in IlcReference; one prepared copy maps back to each original item. -->
+        <RemoveDuplicates Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Inputs="@(_AtomUIBridgeNativePrepared)">
+            <Output TaskParameter="Filtered" ItemName="_AtomUIBridgeNativePreparedUnique" />
+        </RemoveDuplicates>
+        <ItemGroup Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'">
+            <_AtomUIBridgeNativePrepared Remove="@(_AtomUIBridgeNativePrepared)" />
+            <_AtomUIBridgeNativePrepared Include="@(_AtomUIBridgeNativePreparedUnique)" />
+        </ItemGroup>
         <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeCompile)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedCompile" /></JoinItems>
         <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeReferences)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedReferences" /></JoinItems>
         <JoinItems Condition="'$(_AtomUIBridgeNativeNeeded)' == 'true'" Left="@(_AtomUIBridgeNativeSatellites)" LeftKey="FullPath" LeftMetadata="*" Right="@(_AtomUIBridgeNativePrepared)" RightKey="AtomUIOriginalPath" RightMetadata="AtomUIOriginalPath" ItemSpecToUse="Right"><Output TaskParameter="JoinResult" ItemName="_AtomUIBridgeNativePreparedSatellites" /></JoinItems>

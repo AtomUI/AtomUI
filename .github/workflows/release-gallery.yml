@@ -63,10 +63,12 @@ jobs:
 
                Write-Host "Installed certificates:"
                security find-identity -v -p codesigning
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -146,10 +148,12 @@ jobs:
 
                Write-Host "Installed certificates:"
                security find-identity -v -p codesigning
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -220,10 +224,12 @@ jobs:
                sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zlib1g-dev
                sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev xvfb
                
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Build AppImage for linux-x64
             shell: pwsh
             run: |
@@ -287,10 +293,12 @@ jobs:
                sudo apt-get install -y fuse libfuse2 patchelf desktop-file-utils file clang zlib1g-dev
                sudo apt-get install -y libxcb1 libxcb-shape0 libxcb-shape0-dev xvfb
 
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Build AppImage for linux-arm64
             shell: pwsh
             run: |
@@ -349,10 +357,12 @@ jobs:
                New-Item -ItemType Directory -Path "${{ env.GalleryPublishDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/x64" -Force
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Build Zip package for win-x64
             shell: pwsh
             run: |
@@ -394,10 +404,12 @@ jobs:
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}" -Force
                New-Item -ItemType Directory -Path "${{ env.GalleryArtifactsOutputDir }}/zip/arm64" -Force
 
-         -  name: Setup .NET 10
+         -  name: Setup .NET 10 and 11
             uses: actions/setup-dotnet@v5
             with:
-               dotnet-version: '10.0.x'
+               dotnet-version: |
+                  10.0.x
+                  11.0.x
          -  name: Build Zip package for win-arm64
             shell: pwsh
             run: |

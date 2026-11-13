@@ -1,4 +1,24 @@
 # Shared absolute package contract, independent of a previous (possibly broken) release baseline.
+function Get-AtomUIExpectedProductFrameworks {
+    param([Parameter(Mandatory = $true)][ValidateSet("Debug", "Release")][string]$BuildType)
+    if ($BuildType -eq "Release") { return @("net8.0", "net10.0", "net11.0") }
+    return @("net10.0")
+}
+
+function Get-AtomUIFrameworkMismatchMessage {
+    param(
+        [Parameter(Mandatory = $true)][string]$PackageId,
+        [Parameter(Mandatory = $true)][ValidateSet("Debug", "Release")][string]$BuildType,
+        [Parameter(Mandatory = $true)][string[]]$ExpectedFrameworks,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$ActualFrameworks
+    )
+    $message = "$PackageId $BuildType package must contain lib/ assets for $($ExpectedFrameworks -join ', '); actual: $($ActualFrameworks -join ', ')."
+    if ($BuildType -eq "Release" -and "net11.0" -cnotin $ActualFrameworks) {
+        $message += " Release packages require .NET SDK 11 or later to produce net11.0."
+    }
+    return $message
+}
+
 function Assert-AtomUIPackageFrameworks {
     param(
         [Parameter(Mandatory = $true)][string]$PackagePath,
@@ -35,11 +55,12 @@ function Assert-AtomUIPackageFrameworks {
             return
         }
 
-        [string[]]$expectedFrameworks = if ($BuildType -eq "Release") { @("net8.0", "net10.0") } else { @("net10.0") }
+        [string[]]$expectedFrameworks = Get-AtomUIExpectedProductFrameworks -BuildType $BuildType
         $actualFrameworks = @($libraries | ForEach-Object { $_.FullName.Split('/')[1] } | Sort-Object -Unique)
         if ($actualFrameworks.Count -ne $expectedFrameworks.Count -or
             @($expectedFrameworks | Where-Object { $_ -cnotin $actualFrameworks }).Count -gt 0) {
-            throw "$($Package.PackageId) $BuildType package must contain lib/ assets for $($expectedFrameworks -join ', '); actual: $($actualFrameworks -join ', ')."
+            throw (Get-AtomUIFrameworkMismatchMessage -PackageId $Package.PackageId -BuildType $BuildType `
+                -ExpectedFrameworks $expectedFrameworks -ActualFrameworks $actualFrameworks)
         }
 
         if ($null -eq ("AtomUI.PackageVerification.AssemblyMetadata" -as [type])) {

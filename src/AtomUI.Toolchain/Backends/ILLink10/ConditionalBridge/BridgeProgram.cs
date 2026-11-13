@@ -9,9 +9,9 @@ internal static class BridgeProgram
     {
         try
         {
-            if (Environment.Version.Major != 10 || args.Length != 11 || args[0] != "bridge")
+            if (Environment.Version.Major < 10 || args.Length != 11 || args[0] != "bridge")
             {
-                throw new ArgumentException("Usage on .NET10: bridge --input <snapshot-v2> --runtime-pack <sdk-pack> --application <identity> --output <new-directory> --cecil <frozen-cecil>");
+                throw new ArgumentException("Usage on .NET 10 or later: bridge --input <snapshot-v2> --runtime-pack <sdk-pack> --application <identity> --output <new-directory> --cecil <frozen-cecil>");
             }
             var values = new Dictionary<string, string>(StringComparer.Ordinal);
             var required = new[] { "--input", "--runtime-pack", "--application", "--output", "--cecil" };

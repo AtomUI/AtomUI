@@ -58,7 +58,7 @@ public sealed class InitializeStep : IStep
                 format = 1,
                 stage = "analyzed-materialized",
                 inputHash = input.ContentHash,
-                backend = ConditionalRegistrationBackend.LinkerProductVersion,
+                backend = ConditionalRegistrationBackend.ActualLinkerVersion,
                 runtimeModeNormalization = CoreRegistrationModeNormalizer.TemplateId,
                 result
             };

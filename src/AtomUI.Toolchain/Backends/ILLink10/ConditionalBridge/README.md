@@ -61,9 +61,12 @@ build verifies final assets returned by that nested build.
 
 ## Verification scope
 
-The current acceptance work uses SDK 10.0.300, ILLink/NativeAOT 10.0.8, and osx-arm64 on this machine.
+Admission is not tied to an SDK or runtime servicing version: any SDK-resolved Microsoft.NETCore.App runtime pack for
+.NET 10 or later whose RuntimeList matches the pack is accepted. Recorded acceptance evidence covers SDK 10.0.300 with
+ILLink/NativeAOT 10.0.8, and osx-arm64 trimmed and NativeAOT runs under SDK 11.0.100 (net10.0 and net11.0) and
+SDK 10.0.403 (net10.0). Browser has no SDK 11 run evidence yet.
 The Browser workload is Mono/WASM 10.0.10 with Webcil disabled for independent managed-PE verification.
-Targets reject unaccepted SDK/platform/post-link combinations instead of silently falling back to
+Targets reject unaccepted platform/post-link combinations instead of silently falling back to
 full registration. Runtime checks include precompiled net8 A/B/Off packages, transitive selection,
 unused-candidate removal, and unrequested groups. These are focused compatibility fixtures, not a
 claim that the complete product/platform rollout matrix has passed.

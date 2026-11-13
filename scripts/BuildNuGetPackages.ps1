@@ -106,7 +106,7 @@ if ($unexpectedPackages.Count -gt 0) {
 }
 
 . "$PSScriptRoot/verification/PackageFrameworks.ps1"
-$expectedProductFrameworks = if ($BuildType -eq "Release") { @("net8.0", "net10.0") } else { @("net10.0") }
+$expectedProductFrameworks = Get-AtomUIExpectedProductFrameworks -BuildType $BuildType
 foreach ($package in $AtomUIReleasePackages) {
     $packagePath = Join-Path $PackageOutputDir "$($package.PackageId).$version.nupkg"
     Assert-AtomUIPackageFrameworks -PackagePath $packagePath -Package $package -BuildType $BuildType -Version $version

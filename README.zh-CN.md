@@ -67,7 +67,9 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 Avalonia 12.1.5<br>
 支持 Windows、macOS 12 及以上、Linux 跨平台<br>
 
-源码构建需要 .NET SDK 10.0.300 或更高版本（含 SDK 11）；Release 三框架打包需要 SDK 11。
+源码构建需要 .NET SDK 10.0.300 或更高版本（含 SDK 11）；Release 三框架打包需要 SDK 11。浏览器版 Gallery 需要原生链接
+SkiaSharp 与 HarfBuzz，因此要为当前 SDK 安装 WebAssembly workload：SDK 10 装 `wasm-tools`，SDK 11 装 `wasm-tools-net10`。
+未安装时构建只警告 `NativeFileReference` 不会被链接，产物无法渲染。
 
 裁剪与 AOT 发布使用 SDK 选择的官方 ILLink、ILC 和 WASM 工具链，不设置 SDK 或补丁版本白名单：TypeMap 与
 net8-only 包兼容桥接面向 .NET 10 及以后，net8 裁剪与 NativeAOT 后端接受官方 8.x 引擎；发布时验证映射转换结果和实际消费产物。

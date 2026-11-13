@@ -74,7 +74,9 @@ Avalonia 12.1.5<br>
 Windows, macOS 12 or later, and Linux<br>
 
 Building from source requires .NET SDK 10.0.300 or later (SDK 11 included); packing the three Release target
-frameworks requires SDK 11.
+frameworks requires SDK 11. Building the browser Gallery links SkiaSharp and HarfBuzz natively, so it needs the
+WebAssembly workload for the active SDK: `wasm-tools` on SDK 10, `wasm-tools-net10` on SDK 11. Without it the build
+only warns that `NativeFileReference` won't be linked, and the resulting app cannot render.
 
 Trimmed and AOT publishing follows the SDK-selected official ILLink, ILC and WASM toolchain, without SDK or
 servicing-version allowlists: TypeMap and the net8-only package compatibility bridge target .NET 10 and later, and

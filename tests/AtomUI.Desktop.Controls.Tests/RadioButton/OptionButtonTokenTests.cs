@@ -68,7 +68,7 @@ public class OptionButtonTokenTests
         string? nextFontSize = null,
         Action<ControlTokenAccessor>? nextAssertion = null)
     {
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();
+        var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
         var group   = new OptionButtonGroup();
         var option  = new OptionButton { Content = "Option" };
         group.Items.Add(option);

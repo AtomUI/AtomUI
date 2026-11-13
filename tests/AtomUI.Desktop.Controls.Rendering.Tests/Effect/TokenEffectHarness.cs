@@ -223,7 +223,7 @@ public static class TokenEffectHarness
 
     private static TokenTarget ResolveToken(ControlTokenIdentity identity, string token)
     {
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)) as ThemeManager ??
+        var manager = Application.Current!.GetThemeManager() as ThemeManager ??
                       throw new InvalidOperationException("The test application has no ThemeManager.");
         var registry = manager.RootContext.Snapshot.Registry;
         if (!registry.TryGetControl(identity, out var descriptor))

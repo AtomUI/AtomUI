@@ -20,7 +20,7 @@ public class NavMenuTokenExplicitOverrideTests
     [Fact]
     public async Task Explicit_Zero_ItemContentMargin_Is_Not_Replaced_By_The_Default()
     {
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();
+        var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
         var control = new ControlThemeConfigBuilder().WithToken("ItemContentMargin", "0,0,0,0").Build();
         await Apply(manager, new ThemeConfigBuilder().WithControl(NavMenuTokens.Identity, control).Build());
 
@@ -45,7 +45,7 @@ public class NavMenuTokenExplicitOverrideTests
     [Fact]
     public async Task Unset_ItemContentMargin_Uses_The_Default_Derivation()
     {
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();
+        var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
         await Apply(manager, null);
 
         var menu = new global::AtomUI.Desktop.Controls.NavMenu();

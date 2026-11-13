@@ -20,7 +20,7 @@ public class DataGridBorderColorOverrideTests
     [Fact]
     public async Task Overriding_BorderColor_Reaches_TableBorderColor_And_The_Rendered_Frame()
     {
-        var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();
+        var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
         var red = Color.Parse("#FF0000");
         var control = new ControlThemeConfigBuilder().WithToken("BorderColor", "#FF0000").Build();
         var config = new ThemeConfigBuilder().WithControl(DataGridTokens.Identity, control).Build();

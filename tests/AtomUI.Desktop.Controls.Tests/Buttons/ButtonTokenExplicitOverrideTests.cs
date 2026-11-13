@@ -143,7 +143,7 @@ public class ButtonTokenExplicitOverrideTests
 
     private static ThemeManager GetThemeManager()
     {
-        return AvaloniaLocator.Current.GetService(typeof(ThemeManager)).ShouldBeOfType<ThemeManager>();
+        return Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
     }
 
     private static async Task Apply(ThemeManager manager, ThemeConfig? config)

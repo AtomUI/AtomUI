@@ -82,9 +82,12 @@ public class DataGridFamilyEffectTests
         }
         if (token is "LeftFrozenShadows" or "RightFrozenShadows" or "ColorSplit")
         {
-            return grid.GetVisualDescendants().OfType<DataGridColumnHeader>().First(h =>
+            // The shadow paints on a strip outside the header: the right frozen column's first header (Left position)
+            // carries RightFrozenShadows, the left frozen column's last header (Right position) LeftFrozenShadows.
+            var header = grid.GetVisualDescendants().OfType<DataGridColumnHeader>().First(h =>
                 h.IsShowFrozenShadow && h.FrozenShadowPosition ==
-                    (token == "RightFrozenShadows" ? FrozenColumnShadowPosition.Right : FrozenColumnShadowPosition.Left));
+                    (token == "LeftFrozenShadows" ? FrozenColumnShadowPosition.Right : FrozenColumnShadowPosition.Left));
+            return header.GetVisualDescendants().OfType<Control>().Single(c => c.Name == "FrozenShadow");
         }
         if (token == "LineWidthBold")
         {

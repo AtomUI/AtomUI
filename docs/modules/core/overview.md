@@ -9,6 +9,8 @@
   `WithAtomUIDefaultOptions()` 在 Windows 上固定合成回退顺序为 `RedirectionSurface` → `WinUIComposition` →
   `DirectComposition` → `LowLatencyDxgiSwapChain`，以消除 live resize 对向边缘错帧（见
   [Windows Live Resize 与窗口装饰架构](../../architecture/systems/windowing/windows-live-resize.md)）。
+  该模式下 Avalonia 的渲染循环靠线程睡眠计时，`WindowsRenderPacing` 把它换成按 DWM 合成节拍唤醒的
+  `DwmVsyncRenderTimer`，使动画节拍锁定刷新率；无法替换时退回把进程计时精度提高到 1 ms。
 - 管理唯一运行时 `ThemeManager`、五阶段主题事务、稳定 ThemeContext、局部作用域图以及独立 TopLevel 的
   context lease/resource bridge。
 - 承接类型化主题包注册与默认赋值；保留动态 XML Reader/Binder，派生算法仅由现有运行时执行。

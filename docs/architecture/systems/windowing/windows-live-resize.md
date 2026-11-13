@@ -195,6 +195,67 @@ Gallery Release 构建、不挂调试器。
 - 代价：`RedirectionSurface` 下 `AcrylicBlur`/`Mica` 不可用（`CompositionEffectsSurface` 为空），
   `Transparent` 走 `DwmEnableBlurBehindWindow` 旧式透明。需要材质效果的应用可显式覆盖 `CompositionMode`。
 
+### 渲染节拍
+
+`RedirectionSurface` 的另一项代价是渲染循环的节拍源。Avalonia 12.1.5 在该模式下用 `SleepLoopRenderTimer`（线程带超时
+等待到下一帧）驱动渲染循环：不对齐垂直同步；Windows 默认计时精度约 15.6 ms，等待还会被拉长到下一个系统时钟节拍，
+渲染线程不定期多睡一帧。其余三种合成模式由系统合成器或 DXGI 垂直同步驱动。Spin、Splash 不确定进度等合成动画的节拍
+等于渲染循环的节拍。
+
+**当前做法**（`AtomUI.Core`，`WithAtomUIDefaultOptions()` 在平台服务就绪后调用 `WindowsRenderPacing.Apply`）：
+
+1. 渲染循环实际使用 `SleepLoopRenderTimer` 时，把它换成 `DwmVsyncRenderTimer`：专用线程调用 `DwmFlush()`，每次 DWM
+   完成一次合成后出一个节拍。渲染循环空闲（`Tick` 为空）时线程停在事件上等待，不调用 `DwmFlush()`。
+   `DwmFlush()` 失败或没有等待就返回时按 16 ms 睡眠，避免空转。
+2. 替换通过 `RenderLoopReflection` 改写 Avalonia `DefaultRenderLoop` 的私有字段 `_timer`，并在 `_timerLock` 内把旧计时器的
+   `Tick` 摘下交给新计时器。渲染循环在平台服务就绪时已在运行，只换字段会让两个计时器同时驱动。`DefaultRenderLoop` 只在持有
+   `_timerLock` 时写 `_timer.Tick`（`Wakeup`、`Remove`、`TimerTick` 结尾），同锁内交接不破坏它的状态。
+3. 无法替换（Avalonia 内部布局变化、运行时拒绝写字段）时写一条警告日志，退回 `timeBeginPeriod(1)`：只消除多睡一帧，
+   节拍仍不锁定刷新率。
+4. 渲染循环使用其他计时器（调用者改用 `WinUIComposition` 等）时什么都不做。
+
+维护约束：
+
+- 升级 Avalonia 时 `tests/AtomUI.Core.Tests/RenderLoopReflectionTests.cs` 失败，说明 `_timer`/`_timerLock` 已变化，
+  必须重新核对 `DefaultRenderLoop` 的加锁方式后再修复，不能只改字段名。
+- 不要把节拍源换成 DXGI `WaitForVBlank` 或 `DCompositionWaitForCompositorClock` 而不加相位偏移，原因见下表。
+- 调整节拍源后按本节的两种录屏方法重测，并重做拖动左边缘的对向边缘验证。
+
+2026-11 实测（Windows 11 build 26200，60 Hz，Avalonia 12.1.5，最小窗口里一个方块按合成时钟匀速移动）。渲染线程数据为逐帧
+计时；上屏数据用 `ffmpeg ddagrab` 以 `dup_frames=0` 变帧率录制（每次桌面合成更新得到一帧，时间戳取自 `showinfo`），
+每组 6 秒约 353 次位移，3～4 轮：
+
+| 节拍源 | 渲染线程 | 位移翻倍的帧（跳过一帧内容） | 上屏间隔 |
+|---|---|---|---|
+| `WinUIComposition` | 60.00 fps，标准差 0.41～0.57 ms | 0～2 | 全部 12～21 ms |
+| `RedirectionSurface`，睡眠计时器，默认计时精度 | 50.9～53.8 fps | 57～75（19%～27%） | 每秒只有 47～50 帧不同内容 |
+| `RedirectionSurface`，睡眠计时器，计时精度 1 ms（退路） | 61.5～61.8 fps | 12～15（3.4%～4.2%） | 每秒 58～59 帧不同内容 |
+| `RedirectionSurface` + DXGI `WaitForVBlank` 或合成器时钟 | 60.00 fps，标准差 0.06～0.09 ms | 1～4 | 8%～16% 的帧停留两个刷新周期 |
+| 同上，节拍后移 9 ms | 60.00 fps，标准差 0.05～0.08 ms | 0～1 | 全部规则（至多 2 帧偏离） |
+| `RedirectionSurface` + `DwmVsyncRenderTimer`（当前） | 60.00 fps，标准差 0.25～0.39 ms | 0～1 | 全部 12～21 ms |
+
+- 60 fps 固定帧率录屏在 60 Hz 屏上自带 2%～3% 的重复帧底噪，不能用来比较节拍源；必须用变帧率录法。
+- 节拍锁在垂直同步时刻（`WaitForVBlank`、`DCompositionWaitForCompositorClock`）时，应用的呈现与 DWM 开始合成几乎同时发生，
+  每帧能否赶上本次合成不确定，内容顺序正确但部分帧多停留一个刷新周期。后移 6 ms 以上即消失（3 ms 不够）。
+  `DwmFlush()` 在 DWM 合成完成后返回，相位天然避开这一竞争。
+- 使用 `DwmVsyncRenderTimer` 时进程计时精度保持默认（1 ms 等待实测 9～14 ms）。
+- Gallery（Release）启动正常，空闲 4 秒进程 CPU 时间为 0。
+
+换计时器后的 live resize 对向边缘同步（程序化验证）：在置顶洋红背景上用 `SetWindowPos` 按正弦轨迹往返移动窗口左边缘
+6 秒（右边缘固定），变帧率录制右边缘内侧一条横带，统计露出洋红的帧。
+
+| 配置 | 右边缘缺口帧 | 最大缺口 |
+|---|---|---|
+| `WinUIComposition`（阳性对照） | 23.9%（两轮相同） | 9 px |
+| `RedirectionSurface` + 睡眠计时器 | 0 | 0 |
+| `RedirectionSurface` + `DwmVsyncRenderTimer` | 0（3 轮） | 0 |
+
+未验证：
+
+- 同一方法移动上边缘时三种配置读数相近（6.5%～11% 的帧有 4～6 px），不能区分合成模式，上边缘没有得到有效结论。
+- 程序化移动不经过系统的模态拖动循环；Gallery（AtomUI Window、CSD、`WindowsBackgroundHook`）上的手动拖动没有自动化复核。
+- 高刷新率显示器、多显示器、Windows 10、远程桌面、锁屏或显示器关闭时 `DwmFlush()` 的行为。
+- NativeAOT：ILC 对 `RenderLoopReflection` 没有裁剪告警，但验证机器缺少平台链接器，没有运行 AOT 产物确认替换成功。
 ### 上游与官方立场
 
 - **微软官方承认并承诺平台层修复**：[microsoft-ui-xaml#10820](https://github.com/microsoft/microsoft-ui-xaml/issues/10820)

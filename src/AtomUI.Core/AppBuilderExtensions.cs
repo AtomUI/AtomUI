@@ -1,3 +1,4 @@
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Media;
 
@@ -32,8 +33,11 @@ public static class AppBuilderExtensions
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///     <b>Windows</b>：Windows 10 和 Windows 11 按 Avalonia 的合成回退顺序使用 WinUIComposition、
-    ///     DirectComposition、LowLatencyDxgiSwapChain 和 RedirectionSurface；CSD 窗口保留主题背景配置。
+    ///     <b>Windows</b>：Windows 10 和 Windows 11 的合成回退顺序为 RedirectionSurface、WinUIComposition、
+    ///     DirectComposition、LowLatencyDxgiSwapChain；CSD 窗口保留主题背景配置。RedirectionSurface 下 Avalonia 的
+    ///     渲染循环靠线程睡眠计时，不跟随显示器刷新；实际使用该计时器时，AtomUI 把它换成按 DWM 合成节拍（DwmFlush）
+    ///     唤醒的计时器，使动画节拍锁定刷新率。无法替换时退回把进程计时精度提高到 1 ms（timeBeginPeriod）。
+    ///     调用者覆盖为其他首选合成模式时两者都不做。
     ///     </description>
     ///   </item>
     ///   <item>
@@ -96,6 +100,9 @@ public static class AppBuilderExtensions
                     Win32CompositionMode.LowLatencyDxgiSwapChain
                 ]
             });
+            // RedirectionSurface 下 Avalonia 的渲染循环靠线程睡眠计时，不跟随显示器刷新；换成按 DWM 合成节拍唤醒的计时器。
+            // 推迟到平台服务就绪后按实际创建的计时器判断：调用者之后改用其他合成模式时不替换。
+            appBuilder = appBuilder.AfterPlatformServicesSetup(WindowsRenderPacing.Apply);
         }
         if (OperatingSystem.IsLinux())
         {

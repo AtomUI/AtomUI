@@ -14,6 +14,29 @@ namespace AtomUI.Core.Tests.Theme;
 public class TypedThemeSnapshotCacheTests
 {
     [Fact]
+    public void Algorithm_Cache_Key_Is_Identified_By_The_Descriptor_Instance()
+    {
+        var descriptor = new ThemeAlgorithmDescriptor(
+            ThemeAlgorithm.Dark,
+            1,
+            ThemeAppearanceEffect.Dark,
+            () => new DarkThemeVariantCalculator());
+        var sameShape = new ThemeAlgorithmDescriptor(
+            ThemeAlgorithm.Dark,
+            1,
+            ThemeAppearanceEffect.Dark,
+            () => new DarkThemeVariantCalculator());
+
+        var first = AlgorithmCacheKey.Create(descriptor);
+        var second = AlgorithmCacheKey.Create(descriptor);
+        var other = AlgorithmCacheKey.Create(sameShape);
+
+        first.ShouldBe(second);
+        first.GetHashCode().ShouldBe(second.GetHashCode());
+        first.ShouldNotBe(other, "a different descriptor instance may carry a different factory");
+    }
+
+    [Fact]
     public async Task Equivalent_Typed_Inputs_Reuse_One_Snapshot_And_Compile_Once()
     {
         var evaluations = 0;

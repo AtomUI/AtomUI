@@ -1,13 +1,14 @@
 using System.Runtime.CompilerServices;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Compilation;
 
+// The descriptor's CompilationIdentity is unique per descriptor instance and the descriptor's algorithm
+// identity is immutable, so the identity itself is not stored: it would only add two string comparisons
+// and 16 bytes per key without changing equality.
 internal readonly record struct AlgorithmCacheKey(
-    ThemeAlgorithm Algorithm,
     int Revision,
     ThemeAppearanceEffect AppearanceEffect,
     object CompilationIdentity)
@@ -15,7 +16,6 @@ internal readonly record struct AlgorithmCacheKey(
     internal static AlgorithmCacheKey Create(ThemeAlgorithmDescriptor descriptor)
     {
         return new AlgorithmCacheKey(
-            descriptor.Algorithm,
             descriptor.Revision,
             descriptor.AppearanceEffect,
             descriptor.CompilationIdentity);

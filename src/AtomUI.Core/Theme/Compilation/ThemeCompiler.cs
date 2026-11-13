@@ -861,8 +861,10 @@ internal sealed class ThemeCompiler
         IReadOnlyList<NormalizedTokenValue> values,
         TokenStage stage)
     {
-        foreach (var value in values)
+        // Indexed loop: foreach over the interface would box an enumerator on every compile.
+        for (var index = 0; index < values.Count; index++)
         {
+            var value = values[index];
             if (value.Descriptor.Stage == stage)
             {
                 value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));

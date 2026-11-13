@@ -24,7 +24,10 @@
   窗口会退回带标题栏的普通窗口。
 - **不确定进度不能做布局元素的属性动画**：`Visual.SynchronizeCompositionProperties` 在每次同步时都会改写布局元素合成
   视觉的 `Offset`、`Opacity` 等属性，而直接赋值会移除该属性上正在运行的合成动画，进度块会停在布局原点。
-  `SplashProgressBar` 因此在挂接的 `CompositionCustomVisual` 上由渲染线程按合成时钟绘制不确定进度，不经过布局。
+  `SplashProgressBar` 因此在挂接的 `CompositionCustomVisual` 上由渲染线程绘制不确定进度，不经过布局。
+- **不确定进度按帧推进，不按绝对时钟定位**：进度块按相邻两帧的合成时钟差前进，单帧前进量上限约为 60 Hz 下的两帧；
+  激活后从轨道左侧外进入。启动期渲染线程会停顿（Splash 首帧冷启动、主窗体首帧共用渲染线程），按绝对时钟定位时，
+  停顿后的下一帧会整段瞬移（Windows 实测 Splash 出现后第一步跳约 200 ms 的距离）；限幅后停顿表现为短暂停住再继续。
 
 ## 2. 显示判定
 

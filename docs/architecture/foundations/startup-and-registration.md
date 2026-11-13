@@ -28,6 +28,11 @@ AtomUI Window 从首帧开始使用 CSD，不能先显示 compositor 标题栏�
 
 - Windows 10：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
 - Windows 11+：`AngleEgl/Software` 渲染回退与 `RedirectionSurface`、`WinUIComposition`、`DirectComposition`、`LowLatencyDxgiSwapChain` 顺序的合成回退策略。
+- Windows 渲染节拍：`RedirectionSurface` 下 Avalonia 用线程睡眠计时驱动渲染循环，不跟随显示器刷新。平台服务就绪后，
+  渲染循环实际使用该计时器时，AtomUI 把它换成按 DWM 合成节拍（`DwmFlush()`）唤醒的 `DwmVsyncRenderTimer`；无法替换时
+  退回 `timeBeginPeriod(1)`，把进程计时精度提高到 1 ms 并保持到进程退出。调用者在 `WithAtomUIDefaultOptions()` 之后改用
+  其他合成模式时两者都不做。替换依赖 Avalonia `DefaultRenderLoop` 的私有字段，依据与维护约束见
+  [Windows live resize 与窗口装饰架构](../systems/windowing/windows-live-resize.md#渲染节拍)。
 - macOS Avalonia Native 渲染优先级：Metal、OpenGL、Software。Metal 在渲染线程直接呈现，启动提交占用 UI 线程时 Splash
   动画仍能上屏；早先 Metal live resize 抖动已由 Avalonia 12.1.0（#21588）修复。
 - X11 平台选项：`EnableDrawnDecorations = true`。

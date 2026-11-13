@@ -7,7 +7,7 @@ using Avalonia.Rendering.Composition;
 namespace AtomUI.Controls;
 
 /// <summary>
-/// Splash 专用进度条：无模板，在 Render 中绘制轨道与确定进度；不确定进度由挂在本控件上的自定义合成视觉在渲染线程按时间绘制，
+/// Splash 专用进度条：无模板，在 Render 中绘制轨道与确定进度；不确定进度由挂在本控件上的自定义合成视觉在渲染线程逐帧推进，
 /// 提交期间 UI 线程被占用时照常移动。不能给布局子元素做 Offset 动画：Visual.SynchronizeCompositionProperties 每次同步都会改写
 /// 布局元素合成视觉的 Offset 等属性并移除其上的动画，进度块会停在布局原点。合成视觉的创建与尺寸依赖挂接后的合成器与布局结果，
 /// ControlTheme 无法表达，因此写在代码中。
@@ -31,6 +31,9 @@ public class SplashProgressBar : Control
 
     private const double IndeterminateSegmentRatio = 0.3;
     private static readonly TimeSpan IndeterminateCycle = TimeSpan.FromSeconds(1.2);
+    // 单帧推进上限（约 60 Hz 下两帧）。启动期渲染线程会停顿（Splash 首帧冷启动约 200 ms、主窗体首帧共用渲染线程），
+    // 按绝对时钟定位会让停顿后的下一帧整段瞬移；限幅后停顿表现为短暂停住再继续。
+    private static readonly TimeSpan MaxFrameAdvance = TimeSpan.FromSeconds(1.0 / 30);
 
     private CompositionCustomVisual? _indicatorVisual;
     private CompositeDisposable? _effectiveVisibilitySubscriptions;
@@ -160,12 +163,17 @@ public class SplashProgressBar : Control
 
     private sealed record IndicatorState(bool IsActive, IImmutableBrush? Brush, double Radius);
 
-    /// <summary>运行在渲染线程：按合成时钟计算进度块位置并逐帧重绘，不依赖 UI 线程。</summary>
+    /// <summary>
+    /// 运行在渲染线程：按相邻两帧的合成时钟差推进进度块并逐帧重绘，不依赖 UI 线程。单帧推进不超过
+    /// <see cref="MaxFrameAdvance"/>；激活后的第一帧只记录时钟，进度块从轨道左侧外开始进入。
+    /// </summary>
     private sealed class IndeterminateIndicatorHandler : CompositionCustomVisualHandler
     {
         private bool _isActive;
         private IImmutableBrush? _brush;
         private double _radius;
+        private double _phase;
+        private TimeSpan? _lastFrameTime;
 
         public override void OnMessage(object message)
         {
@@ -180,6 +188,8 @@ public class SplashProgressBar : Control
             Invalidate();
             if (_isActive && !wasActive)
             {
+                // 停用期间的时长不计入推进：重新激活后从停下的位置继续。
+                _lastFrameTime = null;
                 RegisterForNextAnimationFrameUpdate();
             }
         }
@@ -190,6 +200,17 @@ public class SplashProgressBar : Control
             {
                 return;
             }
+            var now = CompositionNow;
+            if (_lastFrameTime is { } last && now > last)
+            {
+                var advance = now - last;
+                if (advance > MaxFrameAdvance)
+                {
+                    advance = MaxFrameAdvance;
+                }
+                _phase = (_phase + advance.Ticks / (double)IndeterminateCycle.Ticks) % 1d;
+            }
+            _lastFrameTime = now;
             Invalidate();
             RegisterForNextAnimationFrameUpdate();
         }
@@ -202,8 +223,7 @@ public class SplashProgressBar : Control
                 return;
             }
             var segmentWidth = size.X * IndeterminateSegmentRatio;
-            var phase = CompositionNow.Ticks % IndeterminateCycle.Ticks / (double)IndeterminateCycle.Ticks;
-            var x = -segmentWidth + (size.X + segmentWidth) * phase;
+            var x = -segmentWidth + (size.X + segmentWidth) * _phase;
             using (context.PushClip(new Rect(0, 0, size.X, size.Y)))
             {
                 context.DrawRectangle(_brush, null, new Rect(x, 0, segmentWidth, size.Y), _radius, _radius);

@@ -202,6 +202,28 @@ public class TypeMapRegistrationGeneratorTests
     }
 
     [Fact]
+    public void Conditional_Collector_Owner_Stays_Stateless_With_Startup_Definition()
+    {
+        var output = new GenerationOutput();
+        var package = CreateStagingPackage() with { SupportsStartupManifest = true };
+        TypeMapRegistrationWriter.Write(output, package, supportsTypeMap: false);
+        var result = output.Freeze();
+        result.Diagnostics.ShouldBeEmpty();
+        var source = result.Files.Single(file => file.HintName == "GeneratedTypeMapRegistration.g.cs").Text;
+        var root = CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)
+            .GetRoot(TestContext.Current.CancellationToken);
+        var collector = root.DescendantNodes().OfType<ClassDeclarationSyntax>()
+            .Single(type => type.Identifier.ValueText == "GeneratedControlPackageRegistration");
+        // ILC8 dispatch calls the thunks directly, so their owner must not gain a static constructor.
+        collector.Members.OfType<FieldDeclarationSyntax>().ShouldBeEmpty();
+        collector.Members.OfType<ConstructorDeclarationSyntax>().ShouldBeEmpty();
+        collector.Members.OfType<PropertyDeclarationSyntax>().ShouldAllBe(property => property.Initializer == null);
+        collector.Members.OfType<MethodDeclarationSyntax>().Count(method => method.Identifier.ValueText.StartsWith("Register_", StringComparison.Ordinal))
+            .ShouldBe(2);
+        source.ShouldContain("internal static global::AtomUI.Registration.ControlPackageDefinition Definition => PackageState.Definition;");
+    }
+
+    [Fact]
     public void Exports_Respect_Lexical_Scope_Named_Keys_And_Multiple_Targets()
     {
         var result = Run("""

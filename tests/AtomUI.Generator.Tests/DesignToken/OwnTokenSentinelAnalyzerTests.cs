@@ -132,6 +132,31 @@ public class OwnTokenSentinelAnalyzerTests
         diagnostics.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Reports_IsNaN_Sentinel_On_A_Global_Token_In_CalculateAliasTokenValues()
+    {
+        var diagnostics = await AnalyzeAsync(OwnTokenDerivationBaseAnalyzerTests.CreateGlobalToken(
+            "if (double.IsNaN(A)) { A = 1; }"));
+
+        var diagnostic = diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe("ATOMUIGEN040");
+        diagnostic.GetMessage().ShouldContain("'A'");
+        diagnostic.GetMessage().ShouldContain("CalculateAliasTokenValues");
+        diagnostic.GetMessage().ShouldContain("IsExplicit(SharedTokenKind.A)");
+        var flagged = diagnostic.Location.SourceTree!.GetText(TestContext.Current.CancellationToken).ToString(diagnostic.Location.SourceSpan);
+        flagged.ShouldBe("double.IsNaN(A)");
+    }
+
+    [Fact]
+    public async Task Does_Not_Report_IsNaN_On_A_Global_Token_Outside_CalculateAliasTokenValues()
+    {
+        var diagnostics = await AnalyzeAsync(OwnTokenDerivationBaseAnalyzerTests.CreateGlobalToken(
+            "A = 1;",
+            "private bool Helper() => double.IsNaN(A);"));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
     private static string CreateToken(string calculateBody, string extraMembers = "")
     {
         return $$"""

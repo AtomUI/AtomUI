@@ -108,6 +108,10 @@
   2. 控件本身未知时，它的自定义算法链不再检查，链里的未知算法要等控件修好后的下一次构建才报。
   3. `ThemeBuildContracts` 把无法识别的 `AppearanceEffect` 文本静默当作 Preserve，改成显式匹配加抛错更严格。
 
+### 阶段一小结（Task 1–4）
+
+Task 1–4 完成：算法身份开放、XML 接受任意身份、包里的算法进入注册表、构建期校验未知算法。全量回归从基线 12317 增至 12360，全部通过。
+
 ### Task 5：显式 Alias 值带动派生 Alias
 
 - 改动：`DesignToken` 新增按全局槽位记录的显式位图（懒分配的 `ulong[]? _explicitSlots`，`MarkExplicit`/`IsExplicitSlot`/`ResetExplicit`/私有 `IsExplicit(SharedTokenKind)`，做法照 `AbstractControlDesignToken`）。`CalculateAliasTokenValues` 给 8 个「先赋值、后被读取」的字段加守卫：`ColorErrorOutline`、`ColorWarningOutline`、`LineWidthFocus`、`ControlOutlineWidth`、`ColorControlOutline`、`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM`。逐行核对方法体，没有第 9 个。`ThemeCompiler` 新增 `CalculateAlias`：写入并标记 Alias 显式值 → `CalculateAliasTokenValues()` → 再写一次 → `ResetExplicit()`；`CompileGlobalBuilder` 与 `ReevaluateControlGlobal` 都改用它。`CopyBuilder` 新建 `DesignToken`，不复制位图。
@@ -149,10 +153,6 @@
   2. 每个 `DesignToken` 多一个 8 字节引用字段，在「Token 实例数 × 8 字节」的门槛内。没有显式 Alias 值时不分配位图、不多跑默认公式，只多遍历一次配置值列表。
   3. 按测试生命周期规范，`Without_Explicit_Alias_Values_The_Result_Is_Unchanged` 属于快照对比。它按简报保留为常驻测试，但以后任何合法的公式调整都会让它失败，建议最终审阅时决定是否删除。
   4. 本任务之前就存在一个问题，未改：控件作用域使用 `Global`/`Custom` 时，`ReevaluateControlGlobal` 以根快照为基线重跑算法与 Alias 计算，只重写控件自己的覆盖值。因此根主题显式写入的 Alias 值（以及 Map 值）在该控件作用域内会被默认公式覆盖。
-
-## 阶段一小结
-
-Task 1–4 完成：算法身份开放、XML 接受任意身份、包里的算法进入注册表、构建期校验未知算法。全量回归从基线 12317 增至 12360，全部通过。
 - 审阅结论：规格符合，质量通过，无严重或重要问题。Task 4 的提交为 `ba3a6c32f`。审阅确认：
   - 守卫清单完整：通读 `CalculateAliasTokenValues` 全文，本方法内「先赋值、后面又被读取」的 Alias 字段只有已加守卫的 8 个，没有第 9 个。
   - 显式标记不会泄漏：计算所用的 Token 对象总是 `CopyBuilder` 新建的副本，方法抛异常时该对象随即不可达。
@@ -162,3 +162,26 @@ Task 1–4 完成：算法身份开放、XML 接受任意身份、包里的算�
   1. `Without_Explicit_Alias_Values_The_Result_Is_Unchanged` 钉的是 255 个槽位的 SHA-256，失败时看不出是哪个槽位变了，以后新增全局 Token 也会让它无故失败。最终审阅时决定：改成钉可逐项对比的文本，或作为本计划的一次性验证删除。
   2. `ThemeCompiler` 里新增的 `MarkExplicit(DesignToken, …)` 与 `ApplyValues`、控件版 `MarkExplicit` 三段循环近乎重复；显式 Alias 值被深拷贝两次。
 - 记录在案的既有问题（不在本计划范围内，未处理）：控件使用 `Global` 或 `Custom` 算法模式时，`ReevaluateControlGlobal` 从根快照重跑算法与 Alias 计算，只重新写入该控件自己的全局覆盖。主题在根上显式设置的 Map 与 Alias 值在这个控件的作用域里会退回默认公式的结果。本任务前后行为相同，但现在更容易被看见（例如把 Bootstrap 下某个控件设为 `Global` 模式，它作用域内的 `ControlOutlineWidth` 会回到 2）。需要用户决定是否单独立项。
+
+### Task 6：ATOMUIGEN040 与 048 覆盖全局 Alias 计算方法
+
+- 改动：新增 `TokenCalculationScope`（生成器内部类），两个分析器共用。范围增加 `[GlobalDesignToken]` 类型的实例方法 `CalculateAliasTokenValues`：只检查带 `[DesignTokenKind(Alias)]` 的属性；守卫须解析到 Token 类型（或基类）声明的 `IsExplicit`，实参为 `AtomUI.Theme.Resources.SharedTokenKind` 中与属性同名的成员。控件范围的判定逻辑不变。两条诊断的消息改为带方法名和 Kind 枚举名（`IsExplicit(SharedTokenKind.X)` / `IsExplicit(ButtonTokenKind.X)`），标题和消息去掉了「Own」。`compiler-diagnostics-guidelines.md` 的 040、048 两行写明新范围。
+- 测试：048 新增 7 条（简报 4 条 + 守卫成员名不符要报、无 `[GlobalDesignToken]` 不报、其它方法不报），040 新增 2 条（简报 1 条 + 方法外不报）。先失败（3 条报告类测试拿到空诊断）后通过。
+- 核对 Task 5：`dotnet build src/AtomUI.Core -warnaserror:ATOMUIGEN048` 0 诊断。临时去掉 `ControlOutlineWidth` 的守卫后，构建在 `DesignToken.cs(188,9)` 报 ATOMUIGEN048，已恢复。Task 5 的 8 个守卫完整，无需补。
+- 结果：Generator.Tests 1085/1085，Core.Tests 488/488；`AtomUI.Desktop.Controls` 构建无 ATOMUIGEN040/048；全量回归 `[SUMMARY] TOTAL: 12387 个测试全部通过, 总耗时 15:40`（上一任务 12378，+9）。
+- 偏差与说明：
+  1. 040 在全局范围也只针对 Alias 属性（与 048 一致）；对 Map/Seed 属性调 `IsNaN` 不报。
+  2. 040/048 的消息参数由 `{1}=控件名` 改为 `{1}=Kind 枚举名, {2}=方法名`，诊断 id 和严重级别不变。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 5 的提交为 `a3eb12765`。审阅确认：
+  - 控件 Token 这条原有路径没有变：方法匹配、属性范围、守卫方法、枚举命名规则、读取顺序判断逐项对比与改动前等价。
+  - 全局范围里，写错成员名（`SharedTokenKind.C` 包住对 `A` 的赋值）或用错枚举的守卫都不被接受。
+  - 诊断文本的措辞变了（指明枚举和方法名），ID 与级别不变；仓库里没有其他地方匹配旧文本。
+- 留待最终整体审阅统一处理的小项：
+  1. 全局范围里 040 只检查 Alias 属性，这个取舍没有反例测试钉住（`IsNaN` 用在 Map 属性上应被忽略）。
+  2. 「同名成员但来自别的枚举」在全局范围被拒绝，代码正确但没有测试。
+  3. `TokenCalculationScope` 里 `"IsExplicit"` 是内联字面量，其余名称都是常量。
+  4. `AnalyzeMethod` 的方法名预筛与 `scope.Match` 重复，可收成一个辅助方法。
+
+### 阶段二小结（Task 5–6）
+
+显式设置的全局 Alias 值现在带动派生值，并由分析器防止以后漏加守卫。内置 Default、Dark、Compact 三条链的编译结果不变；预设主题有 48 个全局值按预期变化（见 Task 5 的表）。全量回归增至 12387，全部通过。

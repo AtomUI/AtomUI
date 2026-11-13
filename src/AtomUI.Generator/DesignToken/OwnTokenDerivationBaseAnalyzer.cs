@@ -8,17 +8,16 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace AtomUI.Generator.DesignToken;
 
 /// <summary>
-/// ATOMUIGEN048: 在 <c>CalculateTokenValues</c> 中，若 Own Token <c>P</c> 的赋值语句没有被
-/// <c>if (!IsExplicit(XxxTokenKind.P))</c> 直接包裹，而 <c>P</c> 在该赋值之后（按源码顺序）又被读取，
-/// 则用户显式覆盖会被这次默认赋值抹掉，导致后续派生值读到默认值。
+/// ATOMUIGEN048: reports a token assignment <c>P = …</c> in a token calculation method that is not directly
+/// wrapped in <c>if (!IsExplicit(Kind.P))</c> while <c>P</c> is read again later in source order; the default
+/// assignment would wipe the user's explicit override and the derived values would read the default.
+/// Scope: <c>CalculateTokenValues</c> on <c>[ControlDesignToken]</c> types (own tokens, <c>XxxTokenKind</c>) and
+/// <c>CalculateAliasTokenValues</c> on <c>[GlobalDesignToken]</c> types (<c>[DesignTokenKind(Alias)]</c> properties,
+/// <c>SharedTokenKind</c>).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
 {
-    private const string CalculateMethodName = "CalculateTokenValues";
-    private const string IsExplicitMethodName = "IsExplicit";
-    private const string TokenSuffix = "Token";
-
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
         AtomUIDiagnosticDescriptors.OwnTokenDerivationBaseUnguarded
@@ -30,49 +29,44 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(static compilationContext =>
         {
-            var attributeSymbol = compilationContext.Compilation.GetTypeByMetadataName(
-                TargetMarkConstants.ControlDesignTokenAttribute);
-            var baseTokenSymbol = compilationContext.Compilation.GetTypeByMetadataName(
-                TargetMarkConstants.AbstractControlDesignToken);
-            if (attributeSymbol is null || baseTokenSymbol is null)
+            var scope = TokenCalculationScope.Create(compilationContext.Compilation, requireControlBaseToken: true);
+            if (scope is null)
             {
                 return;
             }
 
             compilationContext.RegisterSyntaxNodeAction(
-                nodeContext => AnalyzeMethod(nodeContext, attributeSymbol, baseTokenSymbol),
+                nodeContext => AnalyzeMethod(nodeContext, scope),
                 SyntaxKind.MethodDeclaration);
         });
     }
 
-    private static void AnalyzeMethod(
-        SyntaxNodeAnalysisContext context, INamedTypeSymbol attributeSymbol, INamedTypeSymbol baseTokenSymbol)
+    private static void AnalyzeMethod(SyntaxNodeAnalysisContext context, TokenCalculationScope scope)
     {
         var methodSyntax = (MethodDeclarationSyntax)context.Node;
-        if (!string.Equals(methodSyntax.Identifier.ValueText, CalculateMethodName, StringComparison.Ordinal))
+        var methodName   = methodSyntax.Identifier.ValueText;
+        if (!string.Equals(methodName, TokenCalculationScope.GetMethodName(TokenCalculationKind.Control), StringComparison.Ordinal) &&
+            !string.Equals(methodName, TokenCalculationScope.GetMethodName(TokenCalculationKind.Global), StringComparison.Ordinal))
         {
             return;
         }
 
         SyntaxNode? body = methodSyntax.Body ?? (SyntaxNode?)methodSyntax.ExpressionBody;
         if (body is null ||
-            context.SemanticModel.GetDeclaredSymbol(methodSyntax, context.CancellationToken) is not { IsStatic: false } method)
+            context.SemanticModel.GetDeclaredSymbol(methodSyntax, context.CancellationToken) is not { } method ||
+            scope.Match(method) is not { } kind)
         {
             return;
         }
 
         var tokenType = method.ContainingType;
-        if (tokenType is null || !HasAttribute(tokenType, attributeSymbol))
-        {
-            return;
-        }
 
-        // 收集方法体内对 Own 属性的赋值中未被守卫的部分。
+        // 收集方法体内对受检属性的赋值中未被守卫的部分。
         var unguarded = new List<(AssignmentExpressionSyntax Assignment, IPropertySymbol Property)>();
         foreach (var assignment in body.DescendantNodes().OfType<AssignmentExpressionSyntax>())
         {
-            if (GetOwnProperty(context, assignment.Left, tokenType) is not { } property ||
-                IsGuarded(context, assignment, property, tokenType, baseTokenSymbol))
+            if (GetCheckedProperty(context, scope, assignment.Left, tokenType, kind) is not { } property ||
+                IsGuarded(context, scope, assignment, property, tokenType, kind))
             {
                 continue;
             }
@@ -103,6 +97,7 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
             }
         }
 
+        var kindEnumName = TokenCalculationScope.GetKindEnumName(tokenType, kind);
         foreach (var (assignment, property) in unguarded)
         {
             var assignmentEnd = assignment.Span.End;
@@ -113,18 +108,21 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            var controlName = tokenType.Name.EndsWith(TokenSuffix, StringComparison.Ordinal)
-                ? tokenType.Name.Substring(0, tokenType.Name.Length - TokenSuffix.Length)
-                : tokenType.Name;
             context.ReportDiagnostic(Diagnostic.Create(
                 AtomUIDiagnosticDescriptors.OwnTokenDerivationBaseUnguarded,
                 assignment.GetLocation(),
                 property.Name,
-                controlName));
+                kindEnumName,
+                method.Name));
         }
     }
 
-    private static IPropertySymbol? GetOwnProperty(SyntaxNodeAnalysisContext context, ExpressionSyntax left, INamedTypeSymbol tokenType)
+    private static IPropertySymbol? GetCheckedProperty(
+        SyntaxNodeAnalysisContext context,
+        TokenCalculationScope scope,
+        ExpressionSyntax left,
+        INamedTypeSymbol tokenType,
+        TokenCalculationKind kind)
     {
         if (left is not (IdentifierNameSyntax or MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax }))
         {
@@ -132,8 +130,7 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
         }
 
         if (context.SemanticModel.GetSymbolInfo(left, context.CancellationToken).Symbol is not IPropertySymbol property ||
-            property.IsStatic ||
-            !IsOwnTokenOfType(property, tokenType))
+            !scope.IsCheckedToken(property, tokenType, kind))
         {
             return null;
         }
@@ -146,10 +143,11 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
     /// </summary>
     private static bool IsGuarded(
         SyntaxNodeAnalysisContext context,
+        TokenCalculationScope scope,
         AssignmentExpressionSyntax assignment,
         IPropertySymbol property,
         INamedTypeSymbol tokenType,
-        INamedTypeSymbol baseTokenSymbol)
+        TokenCalculationKind kind)
     {
         if (assignment.Parent is not ExpressionStatementSyntax statement)
         {
@@ -187,26 +185,23 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        // 调用必须解析到 AbstractControlDesignToken.IsExplicit<TKind>，同名的其它方法不算守卫。
+        // 控件范围：调用必须解析到 AbstractControlDesignToken.IsExplicit<TKind>；
+        // 全局范围：调用必须解析到 Token 类型（或其基类）声明的 IsExplicit。同名的其它方法不算守卫。
         if (context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol is not IMethodSymbol called ||
-            !string.Equals(called.Name, IsExplicitMethodName, StringComparison.Ordinal) ||
-            !SymbolEqualityComparer.Default.Equals(called.OriginalDefinition.ContainingType, baseTokenSymbol))
+            !scope.IsGuardMethod(called, tokenType, kind))
         {
             return false;
         }
 
-        // 实参必须是 <ControlName>TokenKind 枚举中与属性同名的成员。
+        // 实参必须是该范围的 Kind 枚举中与属性同名的成员。
         if (context.SemanticModel.GetSymbolInfo(invocation.ArgumentList.Arguments[0].Expression, context.CancellationToken).Symbol
-            is not IFieldSymbol { ContainingType.TypeKind: TypeKind.Enum } kindField)
+            is not IFieldSymbol { ContainingType: { TypeKind: TypeKind.Enum } kindEnum } kindField)
         {
             return false;
         }
 
-        var controlName = tokenType.Name.EndsWith(TokenSuffix, StringComparison.Ordinal)
-            ? tokenType.Name.Substring(0, tokenType.Name.Length - TokenSuffix.Length)
-            : tokenType.Name;
         return string.Equals(kindField.Name, property.Name, StringComparison.Ordinal) &&
-               string.Equals(kindField.ContainingType.Name, controlName + "TokenKind", StringComparison.Ordinal);
+               TokenCalculationScope.IsKindEnum(kindEnum, tokenType, kind);
     }
 
     private static bool IsAssignmentTarget(IdentifierNameSyntax identifier)
@@ -219,31 +214,5 @@ public sealed class OwnTokenDerivationBaseAnalyzer : DiagnosticAnalyzer
         }
 
         return node.Parent is AssignmentExpressionSyntax assignment && assignment.Left == node;
-    }
-
-    private static bool HasAttribute(INamedTypeSymbol type, INamedTypeSymbol attributeSymbol)
-    {
-        foreach (var attribute in type.GetAttributes())
-        {
-            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsOwnTokenOfType(IPropertySymbol property, INamedTypeSymbol tokenType)
-    {
-        for (var current = tokenType; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(current, property.ContainingType))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

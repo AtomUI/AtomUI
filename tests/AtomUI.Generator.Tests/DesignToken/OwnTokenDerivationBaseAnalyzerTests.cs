@@ -236,6 +236,185 @@ public class OwnTokenDerivationBaseAnalyzerTests
         diagnostics.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task Reports_Unguarded_Global_Alias_Assignment_Whose_Value_Is_Read_Later()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken("""
+            A = 1;
+            B = A * 2;
+            """));
+
+        var diagnostic = diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe("ATOMUIGEN048");
+        diagnostic.GetMessage().ShouldContain("'A'");
+        diagnostic.GetMessage().ShouldContain("CalculateAliasTokenValues");
+        diagnostic.GetMessage().ShouldContain("IsExplicit(SharedTokenKind.A)");
+        var flagged = diagnostic.Location.SourceTree!.GetText(TestContext.Current.CancellationToken).ToString(diagnostic.Location.SourceSpan);
+        flagged.ShouldBe("A = 1");
+    }
+
+    [Fact]
+    public async Task Accepts_Global_Alias_Assignment_Guarded_By_SharedTokenKind()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken("""
+            if (!IsExplicit(SharedTokenKind.A))
+            {
+                A = 1;
+            }
+            if (!IsExplicit(SharedTokenKind.C)) C = 3;
+            B = A * C;
+            """));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Reports_Global_Alias_Assignment_Guarded_By_A_Different_SharedTokenKind_Member()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken("""
+            if (!IsExplicit(SharedTokenKind.C)) { A = 1; }
+            B = A;
+            """));
+
+        diagnostics.ShouldHaveSingleItem().Id.ShouldBe("ATOMUIGEN048");
+    }
+
+    [Fact]
+    public async Task Ignores_Global_Alias_Assignment_That_Is_Never_Read_Later()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken("""
+            B = A;
+            A = 1;
+            C = M;
+            """));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Ignores_Map_Stage_Properties_Read_In_The_Alias_Method()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken("""
+            M = 1;
+            S = 2;
+            A = M + S;
+            B = M * S;
+            """));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Ignores_Alias_Method_On_Type_Without_GlobalDesignToken_Attribute()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken(
+            """
+            A = 1;
+            B = A;
+            """,
+            withGlobalAttribute: false));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Ignores_Other_Methods_Of_The_Global_Token()
+    {
+        var diagnostics = await AnalyzeAsync(CreateGlobalToken(
+            "A = 1;",
+            "internal void CalculateOther() { A = 1; B = A; }"));
+
+        diagnostics.ShouldBeEmpty();
+    }
+
+    internal const string GlobalStubs = """
+        namespace AtomUI.Theme.DesignTokens
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class)]
+            public sealed class GlobalDesignTokenAttribute : System.Attribute
+            {
+            }
+
+            public enum DesignTokenKind
+            {
+                Seed,
+                Map,
+                Alias
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Property)]
+            public class DesignTokenKindAttribute : System.Attribute
+            {
+                public DesignTokenKindAttribute(DesignTokenKind kind)
+                {
+                    Kind = kind;
+                }
+
+                public DesignTokenKind Kind { get; }
+            }
+
+            public abstract class AbstractDesignToken
+            {
+            }
+        }
+
+        namespace AtomUI.Theme.Resources
+        {
+            public enum SharedTokenKind
+            {
+                S = 0,
+                M = 1,
+                A = 2,
+                B = 3,
+                C = 4,
+            }
+        }
+        """;
+
+    internal static string CreateGlobalToken(string aliasBody, string extraMembers = "", bool withGlobalAttribute = true)
+    {
+        var globalAttribute = withGlobalAttribute ? "[GlobalDesignToken]" : string.Empty;
+        return $$"""
+            {{GlobalStubs}}
+
+            namespace AtomUI.Theme.DesignTokens
+            {
+                using AtomUI.Theme.Resources;
+
+                public partial class DesignToken : AbstractDesignToken
+                {
+                    private bool IsExplicit(SharedTokenKind kind) => false;
+
+                    {{extraMembers}}
+
+                    internal void CalculateAliasTokenValues()
+                    {
+                        {{aliasBody}}
+                    }
+                }
+
+                {{globalAttribute}}
+                public partial class DesignToken
+                {
+                    [DesignTokenKind(DesignTokenKind.Seed)]
+                    public double S { get; set; }
+
+                    [DesignTokenKind(DesignTokenKind.Map)]
+                    public double M { get; set; }
+
+                    [DesignTokenKind(DesignTokenKind.Alias)]
+                    public double A { get; set; }
+
+                    [DesignTokenKind(DesignTokenKind.Alias)]
+                    public double B { get; set; }
+
+                    [DesignTokenKind(DesignTokenKind.Alias)]
+                    public double C { get; set; }
+                }
+            }
+            """;
+    }
+
     private static string CreateToken(string calculateBody, string extraMembers = "")
     {
         return $$"""

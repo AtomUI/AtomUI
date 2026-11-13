@@ -8,15 +8,16 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace AtomUI.Generator.DesignToken;
 
 /// <summary>
-/// ATOMUIGEN040: 禁止在 <c>CalculateTokenValues</c> 中用 <c>double.IsNaN</c>/<c>float.IsNaN</c> 判断 Own Token 是否被显式设置，
-/// 编译器会在求值前写入显式覆盖并标记，应使用 <c>IsExplicit(XxxTokenKind.Field)</c>。
+/// ATOMUIGEN040: forbids <c>double.IsNaN</c>/<c>float.IsNaN</c> on a token property inside a token calculation
+/// method to detect an explicit override; the compiler writes and marks explicit values before evaluation, so
+/// <c>IsExplicit(Kind.Field)</c> must be used instead. Scope: <c>CalculateTokenValues</c> on
+/// <c>[ControlDesignToken]</c> types (own tokens, <c>XxxTokenKind</c>) and <c>CalculateAliasTokenValues</c> on
+/// <c>[GlobalDesignToken]</c> types (<c>[DesignTokenKind(Alias)]</c> properties, <c>SharedTokenKind</c>).
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class OwnTokenSentinelAnalyzer : DiagnosticAnalyzer
 {
-    private const string CalculateMethodName = "CalculateTokenValues";
     private const string IsNaNMethodName = "IsNaN";
-    private const string TokenSuffix = "Token";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
@@ -29,20 +30,19 @@ public sealed class OwnTokenSentinelAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.RegisterCompilationStartAction(static compilationContext =>
         {
-            var attributeSymbol = compilationContext.Compilation.GetTypeByMetadataName(
-                TargetMarkConstants.ControlDesignTokenAttribute);
-            if (attributeSymbol is null)
+            var scope = TokenCalculationScope.Create(compilationContext.Compilation, requireControlBaseToken: false);
+            if (scope is null)
             {
                 return;
             }
 
             compilationContext.RegisterSyntaxNodeAction(
-                nodeContext => AnalyzeInvocation(nodeContext, attributeSymbol),
+                nodeContext => AnalyzeInvocation(nodeContext, scope),
                 SyntaxKind.InvocationExpression);
         });
     }
 
-    private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context, INamedTypeSymbol attributeSymbol)
+    private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context, TokenCalculationScope scope)
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
         if (invocation.ArgumentList.Arguments.Count != 1)
@@ -56,36 +56,26 @@ public sealed class OwnTokenSentinelAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var enclosingMethod = GetEnclosingMethod(context, invocation);
-        if (enclosingMethod is null ||
-            !string.Equals(enclosingMethod.Name, CalculateMethodName, StringComparison.Ordinal) ||
-            enclosingMethod.IsStatic)
+        if (GetEnclosingMethod(context, invocation) is not { } enclosingMethod ||
+            scope.Match(enclosingMethod) is not { } kind)
         {
             return;
         }
 
         var tokenType = enclosingMethod.ContainingType;
-        if (tokenType is null || !HasAttribute(tokenType, attributeSymbol))
-        {
-            return;
-        }
-
-        var argument = invocation.ArgumentList.Arguments[0].Expression;
+        var argument  = invocation.ArgumentList.Arguments[0].Expression;
         if (context.SemanticModel.GetSymbolInfo(argument, context.CancellationToken).Symbol is not IPropertySymbol property ||
-            property.IsStatic ||
-            !IsOwnTokenOfType(property, tokenType))
+            !scope.IsCheckedToken(property, tokenType, kind))
         {
             return;
         }
 
-        var controlName = tokenType.Name.EndsWith(TokenSuffix, StringComparison.Ordinal)
-            ? tokenType.Name.Substring(0, tokenType.Name.Length - TokenSuffix.Length)
-            : tokenType.Name;
         context.ReportDiagnostic(Diagnostic.Create(
             AtomUIDiagnosticDescriptors.OwnTokenSentinel,
             invocation.GetLocation(),
             property.Name,
-            controlName));
+            TokenCalculationScope.GetKindEnumName(tokenType, kind),
+            enclosingMethod.Name));
     }
 
     private static bool IsFloatingPointIsNaN(IMethodSymbol method)
@@ -100,31 +90,5 @@ public sealed class OwnTokenSentinelAnalyzer : DiagnosticAnalyzer
         return methodSyntax is null
             ? null
             : context.SemanticModel.GetDeclaredSymbol(methodSyntax, context.CancellationToken);
-    }
-
-    private static bool HasAttribute(INamedTypeSymbol type, INamedTypeSymbol attributeSymbol)
-    {
-        foreach (var attribute in type.GetAttributes())
-        {
-            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, attributeSymbol))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool IsOwnTokenOfType(IPropertySymbol property, INamedTypeSymbol tokenType)
-    {
-        for (var current = tokenType; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(current, property.ContainingType))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

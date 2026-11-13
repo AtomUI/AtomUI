@@ -294,8 +294,8 @@ internal static partial class AtomUIDiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor OwnTokenSentinel = new(
         AtomUIDiagnosticIds.OwnTokenSentinel,
-        "Own Token explicit override must be detected with IsExplicit",
-        "Own Token '{0}' is checked with IsNaN in CalculateTokenValues; use IsExplicit({1}TokenKind.{0}) instead",
+        "Token explicit override must be detected with IsExplicit",
+        "Token '{0}' is checked with IsNaN in {2}; use IsExplicit({1}.{0}) instead",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,
@@ -303,8 +303,8 @@ internal static partial class AtomUIDiagnosticDescriptors
 
     public static readonly DiagnosticDescriptor OwnTokenDerivationBaseUnguarded = new(
         AtomUIDiagnosticIds.OwnTokenDerivationBaseUnguarded,
-        "Own Token read by a derived value must be assigned under an IsExplicit guard",
-        "Own Token '{0}' is assigned unconditionally in CalculateTokenValues but read afterwards; guard the assignment with if (!IsExplicit({1}TokenKind.{0})) so user overrides survive",
+        "Token read by a derived value must be assigned under an IsExplicit guard",
+        "Token '{0}' is assigned unconditionally in {2} but read afterwards; guard the assignment with if (!IsExplicit({1}.{0})) so user overrides survive",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true,

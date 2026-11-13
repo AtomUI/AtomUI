@@ -13,10 +13,9 @@ ILLink/ILC 依赖图选择注册片段。禁止全包保留、源代码使用清
 不设置 SDK 或补丁版本白名单：托管裁剪接受 SDK 选择的官方 ILLink 8.x（Tasks 与引擎须同一补丁），原生发布接受 SDK
 恢复的官方 ILC 8.x native helper；8.0.27→8.0.34 的 ILC/ILLink 源码与 JIT-EE 接口未变。工具宿主按 Major 前滚，
 只装 .NET 11 运行时也可执行。原生接线仍限定 macOS arm64 工具宿主，以及 osx-arm64 / osx-x64 完整应用目标。
-已验证：SDK 11.0.100 / 10.0.403 下 net8 托管裁剪（ILLink 8.0.34 / 8.0.33）发布并运行。Native8 在两种 SDK 下通过版本准入、
-ILC 8.0.34 / 8.0.33 helper 被接受并启动编译器，但产品包目前被既有问题阻断：自 `c1b950e8e` 起生成的
-`GeneratedControlPackageRegistration` 含静态字段与静态构造器，ILC8 绑定器拒绝（“Registration thunk requires a stateless
-owner”）。修复前 net8 NativeAOT 产品发布不可用，混合 8.0.27 托管编译器与新补丁 helper 也尚无运行产物证据。
+已验证：SDK 11.0.100 / 10.0.403 下 osx-arm64 的 net8 托管裁剪（ILLink 8.0.34 / 8.0.33）与 Native8（8.0.27 托管编译器配
+ILC 8.0.34 / 8.0.33 native helper）均发布并运行。生成的 `GeneratedControlPackageRegistration` 不带静态构造器，包定义等静态
+状态位于嵌套 `PackageState`（见[条件注册契约](../../reference/aot/conditional-registration-contract.md)）。
 Windows/Linux 原生消费和这些平台上的维护者编译器构建尚无验收证据，不能据本机成功宣布支持。
 Browser 仍采用 .NET 10；不新增 net8 Browser 宿主。
 

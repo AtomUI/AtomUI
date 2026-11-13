@@ -10,6 +10,7 @@ using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Resources;
+using AtomUI.Theme.Schema;
 using AtomUIGallery.ShowCases.ThemePresets;
 using Avalonia;
 using Avalonia.Controls;
@@ -250,6 +251,39 @@ public class ThemePresetsShowCaseTests
             model.IsDark = false; Pump(); model.CopySucceeded.ShouldBeFalse();
         }
         finally { window.Close(); Pump(); }
+    }
+
+    [Fact]
+    public void Export_Writes_The_Algorithm_Catalog_Only_Outside_AtomUI()
+    {
+        var external = new ThemeAlgorithm("PrimeNG", "Aura.Dark");
+        var config = new ThemeConfigBuilder()
+                     .WithAlgorithms(ThemeAlgorithm.Default, external)
+                     .WithToken("ColorPrimary", "#1677FF")
+                     .WithControl(new ControlTokenIdentity("AtomUI", "Button"),
+                         new ControlThemeConfigBuilder().WithAlgorithm(ControlAlgorithmMode.Custom)
+                                                        .WithAlgorithms(external, ThemeAlgorithm.Compact)
+                                                        .WithToken("ContentFontSize", "14").Build())
+                     .Build();
+
+        var xml = ThemePresetCatalog.Export("Exported", "Exported", config);
+
+        using (var schema = typeof(IThemeManager).Assembly.GetManifestResourceStream("AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd"))
+        {
+            var settings = new XmlReaderSettings { ValidationType = ValidationType.Schema };
+            using var schemaReader = XmlReader.Create(schema!);
+            settings.Schemas.Add("https://atomui.net/schemas/theme/v1", schemaReader);
+            using var reader = XmlReader.Create(new StringReader(xml), settings);
+            while (reader.Read()) { }
+        }
+        XNamespace ns = "https://atomui.net/schemas/theme/v1";
+        var algorithms = XDocument.Parse(xml).Descendants(ns + "Algorithm")
+                                  .Select(element => ((string?)element.Attribute("Catalog"), element.Attribute("Id")!.Value))
+                                  .ToArray();
+        algorithms.ShouldBe([
+            ((string?)null, "Default"), ("PrimeNG", "Aura.Dark"),
+            ("PrimeNG", "Aura.Dark"), ((string?)null, "Compact")
+        ]);
     }
 
     [Fact]

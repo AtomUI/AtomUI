@@ -59,3 +59,16 @@
   - 删除 `Algorithm_Descriptor_Rejects_An_Undefined_Algorithm_Value`（被 `Default_Struct_Is_Rejected_By_Descriptor_And_Normalizer` 覆盖）；`Normalize_Rejects_An_Undefined_Algorithm_Value` 改名为 `Normalize_Rejects_An_Unregistered_Algorithm`，用 `new ThemeAlgorithm("Test", "Unregistered")`。
   - `ThemeDocumentReader` 无需改动即可编译。
   - `tools/performances/AtomUI.Performance` 有既存编译错误（`SpaceItemsAlignment` 不存在），与本任务无关，未处理。
+
+### Task 2：主题 XML 与 XSD 接受任意算法身份
+
+- 改动：XSD 的 `AlgorithmType` 增加可选 `Catalog`（`IdentifierType`），`Id` 改为新类型 `AlgorithmIdType`（`ThemeAlgorithmType` 与 `IdentifierType` 的 `xs:union`，保留三个内置值的 IDE 补全）；删除 `UniqueControlAlgorithmId`、`UniqueGlobalAlgorithmId`。`ThemeDocumentReader.ReadAlgorithm` 不再按三个 Id 分支：`Catalog` 省略时取 `AtomUI`，用新增的 `SchemaIdentifier.IsValid` 预检后构造 `ThemeAlgorithm`；全局链与每个控件的自定义链各用一个 `HashSet<ThemeAlgorithm>` 判重（控件的集合按需创建）。两条诊断均为 ATMTHM1002：「Theme algorithm identity '{catalog}:{id}' is not a valid identifier.」「Theme algorithm '{catalog}:{id}' is duplicated.」。写了 `Catalog` 的元素路径为 `Algorithm[@Catalog='X'][@Id='Y']`，省略时路径不变。Binder 无需改代码（ATMTHM2001 已经经 `ToString()` 输出 `Catalog:Id`）。`ThemePresetCatalog` 导出时只在 `Catalog` 不是 `AtomUI` 时写 `Catalog` 属性。
+- 测试：Reader 新增简报列出的 6 个（重复、非法标识符两个为 Theory，各覆盖全局链/控件链、`Id`/`Catalog` 非法），`Xsd_Still_Offers_The_Three_BuiltIn_Ids` 取代旧的 XSD 枚举测试并额外校验 union 成员；Binder 新增 1 个；Gallery 新增 `Export_Writes_The_Algorithm_Catalog_Only_Outside_AtomUI`（导出结果按 XSD 校验）。
+- 结果：Core.Tests 464/464，Gallery.Tests 422/422，Themes.Tests 27/27，Build.Tasks.Tests 107/107；全量回归 `[SUMMARY] TOTAL: 12342 个测试全部通过, 总耗时 16:25`（上一任务 12334，+8）。
+- 偏差：
+  - 旧 Theory `Read_Rejects_Non_Canonical_Algorithm_Values_With_Source_Position` 的 `dark`、`Unknown` 现在是合法标识符，阅读器接受、交给 Binder 报 ATMTHM2001；Theory 改名为 `Read_Rejects_Non_Identifier_Algorithm_Values_With_Source_Position`，数据改为 `1`、空串、`a b`。
+  - 非法标识符正常情况下先由 XSD 报 ATMTHM1002，阅读器沿用原有「同一行已有 ATMTHM1002 就不再追加」的去重，所以「is not a valid identifier」文本只在 XSD 未拦截时出现（防御性兜底）；测试断言的是代码、行列与不抛异常，没有断言该文本。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 1 的提交为 `506fd5e73`。留待最终整体审阅统一处理的小项：
+  1. 重复算法的测试只断言了行列大于 0，两个条目写在同一行，没有钉住「报在第二个条目上」。
+  2. 判重集合全局链是立即创建、控件链是按需创建，写法不一致（无功能影响）。
+  3. Toolchain 没有「主题 XML 带外部 `Catalog`」的端到端测试；这条路径由 Task 17–20 的 PrimeNG 主题包真实构建覆盖。

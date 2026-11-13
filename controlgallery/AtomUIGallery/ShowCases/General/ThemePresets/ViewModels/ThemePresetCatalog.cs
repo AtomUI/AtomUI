@@ -69,7 +69,9 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
     {
         XNamespace ns = "https://atomui.net/schemas/theme/v1";
         XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",
-            values.Select(value => new XElement(ns + "Algorithm", new XAttribute("Id", value.Id))));
+            values.Select(value => new XElement(ns + "Algorithm",
+                value.Catalog == ThemeAlgorithm.BuiltInCatalog ? null : new XAttribute("Catalog", value.Catalog),
+                new XAttribute("Id", value.Id))));
         XElement Tokens(IReadOnlyDictionary<string, string> values) => new(ns + "Tokens",
             values.Select(value => new XElement(ns + "Token", new XAttribute("Name", value.Key), new XAttribute("Value", value.Value))));
         var root = new XElement(ns + "Theme", new XAttribute("Id", id), new XAttribute("Name", name),

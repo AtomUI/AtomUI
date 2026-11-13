@@ -142,6 +142,32 @@ public class ThemeDefinitionBinderTests
     }
 
     [Fact]
+    public void Bind_Reports_An_Unregistered_Algorithm_With_Catalog_Id_And_Location()
+    {
+        var document = Read($$"""
+                             <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Light">
+                               <Algorithms>
+                                 <Algorithm Id="Default" />
+                                 <Algorithm Catalog="PrimeNG" Id="Aura" />
+                               </Algorithms>
+                             </Theme>
+                             """);
+
+        var result = ThemeDefinitionBinder.Bind(document, CreateRegistry());
+
+        result.Success.ShouldBeFalse();
+        result.Definition.ShouldBeNull();
+        var diagnostic = result.Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Code.ShouldBe("ATMTHM2001");
+        diagnostic.Message.ShouldContain("PrimeNG:Aura");
+        var location = document.Algorithms[1].Location;
+        location.Line.ShouldBe(4);
+        diagnostic.Line.ShouldBe(location.Line);
+        diagnostic.Column.ShouldBe(location.Column);
+        diagnostic.Path.ShouldBe(location.Path);
+    }
+
+    [Fact]
     public void Bind_Rejects_Algorithm_Attribute_With_A_Custom_Chain()
     {
         var document = Read($$"""

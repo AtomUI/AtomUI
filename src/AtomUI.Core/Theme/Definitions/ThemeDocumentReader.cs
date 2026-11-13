@@ -2,6 +2,7 @@ using System.Xml;
 using System.Xml.Schema;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Definitions;
 
@@ -200,6 +201,7 @@ internal static class ThemeDocumentReader
         private bool _isDefault;
         private ThemeSourceLocation _location;
         private readonly List<ThemeAlgorithmDocument> _algorithms = new();
+        private readonly HashSet<ThemeAlgorithm> _algorithmIdentities = new();
         private readonly List<ThemeTokenDocument> _tokens = new();
         private readonly List<ControlThemeDocument> _controls = new();
         private ControlBuilder? _currentControl;
@@ -291,35 +293,35 @@ internal static class ThemeDocumentReader
 
         private string ReadAlgorithm(XmlReader reader)
         {
+            var declaredCatalog = reader.GetAttribute("Catalog");
+            var catalog = declaredCatalog ?? ThemeAlgorithm.BuiltInCatalog;
             var id = reader.GetAttribute("Id") ?? string.Empty;
-            var path = $"{CurrentContainerPath("Algorithms")}/Algorithm[@Id='{id}']";
+            var path = declaredCatalog is null
+                ? $"{CurrentContainerPath("Algorithms")}/Algorithm[@Id='{id}']"
+                : $"{CurrentContainerPath("Algorithms")}/Algorithm[@Catalog='{declaredCatalog}'][@Id='{id}']";
             var location = Location(reader, path);
-            var algorithm = id switch
+            if (!SchemaIdentifier.IsValid(catalog) || !SchemaIdentifier.IsValid(id))
             {
-                "Default" => ThemeAlgorithm.Default,
-                "Dark"    => ThemeAlgorithm.Dark,
-                "Compact" => ThemeAlgorithm.Compact,
-                _         => (ThemeAlgorithm?)null
-            };
-            if (algorithm is null)
-            {
+                // The XSD normally reports this first; keep one diagnostic per element.
                 if (!_diagnostics.Any(diagnostic =>
                         diagnostic.Code == SchemaValidationCode &&
                         diagnostic.Line == location.Line))
                 {
-                    _diagnostics.Add(new ThemeDefinitionDiagnostic(
-                        SchemaValidationCode,
-                        ThemeDefinitionDiagnosticSeverity.Error,
-                        location.Source,
-                        location.Line,
-                        location.Column,
-                        location.Path,
-                        $"Theme algorithm '{id}' is not a supported value."));
+                    AddSchemaError(location, $"Theme algorithm identity '{catalog}:{id}' is not a valid identifier.");
                 }
                 return path;
             }
 
-            var document = new ThemeAlgorithmDocument(algorithm.Value, location);
+            var algorithm = new ThemeAlgorithm(catalog, id);
+            var seen = _currentControl?.AlgorithmIdentities ?? _algorithmIdentities;
+            if (!seen.Add(algorithm))
+            {
+                // xs:unique ignores an omitted Catalog, so the reader owns duplicate detection.
+                AddSchemaError(location, $"Theme algorithm '{algorithm}' is duplicated.");
+                return path;
+            }
+
+            var document = new ThemeAlgorithmDocument(algorithm, location);
             if (_currentControl is null)
             {
                 _algorithms.Add(document);
@@ -330,6 +332,18 @@ internal static class ThemeDocumentReader
             }
 
             return path;
+        }
+
+        private void AddSchemaError(ThemeSourceLocation location, string message)
+        {
+            _diagnostics.Add(new ThemeDefinitionDiagnostic(
+                SchemaValidationCode,
+                ThemeDefinitionDiagnosticSeverity.Error,
+                location.Source,
+                location.Line,
+                location.Column,
+                location.Path,
+                message));
         }
 
         private string ReadToken(XmlReader reader)
@@ -427,6 +441,7 @@ internal static class ThemeDocumentReader
             internal ThemeSourceLocation Location { get; }
             internal string Path { get; }
             internal List<ThemeAlgorithmDocument> Algorithms { get; } = new();
+            internal HashSet<ThemeAlgorithm> AlgorithmIdentities => field ??= new();
             internal List<ThemeTokenDocument> Tokens { get; } = new();
 
             internal ControlThemeDocument Build()

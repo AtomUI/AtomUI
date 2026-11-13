@@ -68,11 +68,10 @@ public class ThemeDocumentReaderTests
     }
 
     [Theory]
-    [InlineData("dark")]
-    [InlineData("Unknown")]
     [InlineData("1")]
     [InlineData("")]
-    public void Read_Rejects_Non_Canonical_Algorithm_Values_With_Source_Position(string algorithm)
+    [InlineData("a b")]
+    public void Read_Rejects_Non_Identifier_Algorithm_Values_With_Source_Position(string algorithm)
     {
         var result = Read($$"""
                             <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Light">
@@ -88,7 +87,122 @@ public class ThemeDocumentReaderTests
     }
 
     [Fact]
-    public void Xsd_Algorithm_Values_Match_The_ThemeAlgorithm_Enum()
+    public void Read_Maps_Catalog_And_Id_To_Algorithm_Identity()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Dark">
+                              <Algorithms>
+                                <Algorithm Catalog="PrimeNG" Id="Aura.Dark" />
+                              </Algorithms>
+                              <Controls>
+                                <Control Catalog="AtomUI" Id="Button">
+                                  <Algorithms><Algorithm Catalog="PrimeNG" Id="Aura.Dark" /></Algorithms>
+                                </Control>
+                              </Controls>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        result.Document!.Algorithms.Select(static algorithm => algorithm.Algorithm)
+              .ShouldBe([new ThemeAlgorithm("PrimeNG", "Aura.Dark")]);
+        result.Document.Algorithms[0].Location.Path.ShouldBe(
+            "/Theme/Algorithms/Algorithm[@Catalog='PrimeNG'][@Id='Aura.Dark']");
+        result.Document.Controls[0].Algorithms.Select(static algorithm => algorithm.Algorithm)
+              .ShouldBe([new ThemeAlgorithm("PrimeNG", "Aura.Dark")]);
+    }
+
+    [Fact]
+    public void Read_Defaults_Omitted_Catalog_To_AtomUI()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Light">
+                              <Algorithms>
+                                <Algorithm Id="Default" />
+                                <Algorithm Catalog="AtomUI" Id="Compact" />
+                                <Algorithm Id="Custom" />
+                              </Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        result.Document!.Algorithms.Select(static algorithm => algorithm.Algorithm).ShouldBe([
+            ThemeAlgorithm.Default,
+            ThemeAlgorithm.Compact,
+            new ThemeAlgorithm("AtomUI", "Custom")
+        ]);
+        result.Document.Algorithms[0].Location.Path.ShouldBe("/Theme/Algorithms/Algorithm[@Id='Default']");
+    }
+
+    [Theory]
+    [InlineData("<Algorithms><Algorithm Catalog='AtomUI' Id='Dark'/><Algorithm Id='Dark'/></Algorithms>", "")]
+    [InlineData("<Algorithms><Algorithm Id='Default'/></Algorithms>",
+                "<Controls><Control Catalog='AtomUI' Id='Button'><Algorithms><Algorithm Catalog='AtomUI' Id='Dark'/><Algorithm Id='Dark'/></Algorithms></Control></Controls>")]
+    public void Read_Rejects_Duplicate_When_One_Entry_Omits_The_Catalog(string algorithms, string body)
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Light">
+                              {{algorithms}}
+                              {{body}}
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        result.Document.ShouldBeNull();
+        var diagnostic = result.Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Code.ShouldBe("ATMTHM1002");
+        diagnostic.Message.ShouldBe("Theme algorithm 'AtomUI:Dark' is duplicated.");
+        diagnostic.Line.ShouldBeGreaterThan(0);
+        diagnostic.Column.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public void Read_Accepts_Same_Id_Under_Different_Catalogs()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Dark">
+                              <Algorithms>
+                                <Algorithm Id="Dark" />
+                                <Algorithm Catalog="PrimeNG" Id="Dark" />
+                              </Algorithms>
+                              <Controls>
+                                <Control Catalog="AtomUI" Id="Button">
+                                  <Algorithms>
+                                    <Algorithm Id="Dark" />
+                                    <Algorithm Catalog="PrimeNG" Id="Dark" />
+                                  </Algorithms>
+                                </Control>
+                              </Controls>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        ThemeAlgorithm[] expected = [ThemeAlgorithm.Dark, new ThemeAlgorithm("PrimeNG", "Dark")];
+        result.Document!.Algorithms.Select(static algorithm => algorithm.Algorithm).ShouldBe(expected);
+        result.Document.Controls[0].Algorithms.Select(static algorithm => algorithm.Algorithm).ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData("Id='1Bad'")]
+    [InlineData("Catalog='1Bad' Id='Dark'")]
+    public void Read_Rejects_An_Invalid_Identifier_At_The_Reader_Boundary(string attributes)
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="T" Name="T" Appearance="Light">
+                              <Algorithms>
+                                <Algorithm {{attributes}} />
+                              </Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        result.Document.ShouldBeNull();
+        var diagnostic = result.Diagnostics.First(static item => item.Code == "ATMTHM1002");
+        diagnostic.Line.ShouldBe(3);
+        diagnostic.Column.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public void Xsd_Still_Offers_The_Three_BuiltIn_Ids()
     {
         const string resourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd";
         using var stream = typeof(ThemeConfig).Assembly.GetManifestResourceStream(resourceName);
@@ -101,8 +215,19 @@ public class ThemeDocumentReaderTests
                            .Descendants(xs + "enumeration")
                            .Select(element => (string?)element.Attribute("value"))
                            .ToArray();
-
         values.ShouldBe([ThemeAlgorithm.Default.Id, ThemeAlgorithm.Dark.Id, ThemeAlgorithm.Compact.Id]);
+
+        var algorithmType = schema.Descendants(xs + "complexType")
+                                  .Single(element => (string?)element.Attribute("name") == "AlgorithmType");
+        var idType = algorithmType.Elements(xs + "attribute")
+                                  .Single(element => (string?)element.Attribute("name") == "Id")
+                                  .Attribute("type")!.Value;
+        var union = schema.Descendants(xs + "simpleType")
+                          .Single(element => (string?)element.Attribute("name") == idType.Split(':')[1])
+                          .Element(xs + "union");
+        union.ShouldNotBeNull();
+        union!.Attribute("memberTypes")!.Value.Split(' ')
+              .ShouldBe(["theme:ThemeAlgorithmType", "theme:IdentifierType"]);
     }
 
     [Fact]

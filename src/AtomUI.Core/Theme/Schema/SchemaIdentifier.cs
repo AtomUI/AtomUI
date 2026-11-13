@@ -5,18 +5,31 @@ internal static class SchemaIdentifier
     internal static void Validate(string value, string parameterName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
-        if (value.Length > 128 || !IsStart(value[0]))
+        if (!IsValid(value))
         {
             throw new ArgumentException($"'{value}' is not a valid theme schema identifier.", parameterName);
+        }
+    }
+
+    /// <summary>
+    /// Returns whether the value is a theme schema identifier, without throwing.
+    /// </summary>
+    internal static bool IsValid(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length > 128 || !IsStart(value[0]))
+        {
+            return false;
         }
 
         for (var index = 1; index < value.Length; index++)
         {
             if (!IsPart(value[index]))
             {
-                throw new ArgumentException($"'{value}' is not a valid theme schema identifier.", parameterName);
+                return false;
             }
         }
+
+        return true;
     }
 
     private static bool IsStart(char value)

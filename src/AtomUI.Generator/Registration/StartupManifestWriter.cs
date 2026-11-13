@@ -57,7 +57,10 @@ internal static class StartupManifestWriter
         IReadOnlyList<TypeMapRegistrationWriter.TypeMapEntry> keys, bool supportsTypeMap)
     {
         var data = StartupManifestCodec.Encode(Create(package, keys));
-        source.Append("    private static readonly global::AtomUI.Registration.ControlPackageDefinition PackageDefinition = new(")
+        // The collector type also owns the net8 Register_* thunks, which ILC8 dispatch calls
+        // directly; keep every initialized static in this nested holder so the owner has no .cctor.
+        source.AppendLine("    private static class PackageState\n    {");
+        source.Append("        internal static readonly global::AtomUI.Registration.ControlPackageDefinition Definition = new(")
             .Append(L(package.Id)).Append(", ").Append(L(data)).Append(", ResolveFragment, ContainsFragment");
         if (package.HasLanguageModule)
         {
@@ -74,7 +77,12 @@ internal static class StartupManifestWriter
             source.Append(", warmSelection: WarmSelection");
         }
         source.AppendLine(");");
-        source.AppendLine("    internal static global::AtomUI.Registration.ControlPackageDefinition Definition => PackageDefinition;");
+        if (!supportsTypeMap)
+        {
+            WriteSelectedFragments(source, package, keys);
+        }
+        source.AppendLine("    }");
+        source.AppendLine("    internal static global::AtomUI.Registration.ControlPackageDefinition Definition => PackageState.Definition;");
         if (warmSelection)
         {
             source.AppendLine("    private static void WarmSelection()\n    {");
@@ -113,13 +121,13 @@ internal static class StartupManifestWriter
         }
         source.AppendLine("        if (!global::AtomUI.Registration.ControlRegistrationRuntime.IsTrimmed) { return true; }");
         // NativeAOT TypeMapLazyDictionary only implements TryGetValue; its ContainsKey throws.
-        source.AppendLine(supportsTypeMap ? "        return GetSelectionMap().TryGetValue(key, out _);" : "        return SelectedFragments.Value.Contains(key);");
+        source.AppendLine(supportsTypeMap ? "        return GetSelectionMap().TryGetValue(key, out _);" : "        return PackageState.SelectedFragments.Value.Contains(key);");
         source.AppendLine("    }");
         source.AppendLine("    private static global::AtomUI.Registration.ControlRegistrationFragmentAttribute? ResolveFragment(string key)\n    {");
         source.AppendLine("        if (global::AtomUI.Registration.ControlRegistrationRuntime.IsTrimmed)\n        {");
         source.AppendLine(supportsTypeMap
             ? "            return global::AtomUI.Registration.ControlRegistrationRuntime.ResolveFragment(GetSelectionMap(), key);"
-            : "            return SelectedFragments.Value.Resolve(key);");
+            : "            return PackageState.SelectedFragments.Value.Resolve(key);");
         source.AppendLine("        }");
         source.AppendLine("        if (key.Length != 19) { return null; }");
         // Two hash characters keep each bucket to a few keys: a JIT-compiled first lookup of a control
@@ -150,17 +158,19 @@ internal static class StartupManifestWriter
             }
             source.AppendLine("        _ => null\n    };");
         }
-        if (!supportsTypeMap)
+    }
+
+    private static void WriteSelectedFragments(StringBuilder source, RegistrationPackage package,
+        IReadOnlyList<TypeMapRegistrationWriter.TypeMapEntry> keys)
+    {
+        source.AppendLine("        internal static readonly global::System.Lazy<global::AtomUI.Registration.ControlPackageFragmentSet> SelectedFragments = new(static () => new(");
+        source.AppendLine("            Collect, new global::System.Collections.Generic.KeyValuePair<string, string>[]\n            {");
+        foreach (var entry in keys)
         {
-            source.AppendLine("    private static readonly global::System.Lazy<global::AtomUI.Registration.ControlPackageFragmentSet> SelectedFragments = new(static () => new(");
-            source.AppendLine("        Collect, new global::System.Collections.Generic.KeyValuePair<string, string>[]\n        {");
-            foreach (var entry in keys)
-            {
-                source.Append("            new(").Append(L(entry.Key)).Append(", ")
-                    .Append(L(package.Id + ":" + entry.Control.Type.AssemblyQualifiedName)).AppendLine("),");
-            }
-            source.AppendLine("        }));");
+            source.Append("                new(").Append(L(entry.Key)).Append(", ")
+                .Append(L(package.Id + ":" + entry.Control.Type.AssemblyQualifiedName)).AppendLine("),");
         }
+        source.AppendLine("            }));");
     }
 
     private static StartupOwnerData Owner(RegistrationOwner owner) =>

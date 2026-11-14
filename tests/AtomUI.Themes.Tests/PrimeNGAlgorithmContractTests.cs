@@ -14,7 +14,7 @@ namespace AtomUI.Themes.Tests;
 
 /// <summary>
 /// The PrimeNG preset algorithms against the reusable algorithm contract (spec 4.6), and the Aura Map stage against
-/// the values the Aura profiles compile to today (spec 4.7, the "现值" rows).
+/// the values spec 4.7 fixes for it (the "现值" rows: the values the pre-algorithm Aura XML wrote).
 /// </summary>
 public class PrimeNGAlgorithmContractTests
 {
@@ -40,7 +40,7 @@ public class PrimeNGAlgorithmContractTests
     }
 
     [Fact]
-    public void Aura_Map_Matches_The_Baseline_Colours()
+    public void Aura_Map_Matches_The_Spec_Colours()
     {
         var light = Map(AuraSeed, Aura);
         AssertColors(light, new Dictionary<string, string>

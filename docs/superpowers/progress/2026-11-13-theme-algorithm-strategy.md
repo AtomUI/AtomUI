@@ -1096,3 +1096,31 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 - 留待最终整体审阅统一处理的小项：
   1. `PrimeNGShade.Resolve` 单参数重载的保护只在 Debug 构建生效。
   2. Nora 的 `EnableMotion false` 作为常量留在 XML 里（PrimeUIX 的 `transitionDuration: 0s`）；也可以进规则表。
+
+### Task 21：PrimeNG 收尾（未提交，待审阅）
+
+- 改动（只动测试与包 README，无产品代码改动）：
+  - 删除 `PrimeNGPresetMigrationTests.cs` 与 `PrimeNGMigrationSnapshot.cs`。快照工具里常驻测试要用的部分（`Dump`、值格式化、`Diff`、严格的 `Parse`，以及原在测试类里的 `SlotOf`）移到新文件 `ThemeSnapshotDump.cs`（`internal static class ThemeSnapshotDump`）；删掉 `BaselineDirectory`、环境变量常量、`CompareExplicitXmlTokens`、描述记录里的 `XmlTextExceptions` 与 `DarkSeedExceptions`。同文件的 `ThemeSnapshotDumpTests`：原两条 `Diff` 自测（第二条加了 `SlotOf` 的断言），加一条 `Dump_Writes_Every_Global_And_Own_Slot_Once`（从删掉的基线导出用例里保留下来的行数与重复键检查，只跑 `PrimeNGAura`；等价测试比对的是导出，漏导出的槽位永远不会被比到）。
+  - 常驻测试并入 `PrimeNGThemePackageTests`，描述记录改名 `PrimeNGPresetFamily`（预设名、紧凑不等价项、额外规则 Token）。改名：`Swapping_The_Chain_To_The_Dark_Algorithm_Equals_The_Dark_Profile` → `Dark_Profile_Equals_Light_Profile_With_The_Dark_Algorithm`；`Preset_Xml_No_Longer_Contains_Rule_Tokens` → `Preset_Xml_Holds_No_Rule_Tokens`（注释说明它防止把派生值手写回 XML）；`PrimeNGAlgorithmContractTests.Aura_Map_Matches_The_Baseline_Colours` → `Aura_Map_Matches_The_Spec_Colours`。新增 `Global_Dark_Toggle_Yields_A_Readable_Hybrid_Chain`（三个预设，链 `[PrimeNG:<preset>, AtomUI:Dark]`，`ColorText` 对 `ColorBgContainer` ≥ 4.5；实测三者都是 13.31）。契约测试保持六行理论 `Preset_Algorithm_Satisfies_The_Contract`（`standalone: true`），未合成一个 Fact：逐行失败能直接指出是哪个算法。
+  - 去重：`Lara_Keeps_Its_Larger_Control_Height_And_Select_Padding` 删除，三条断言全部已在 `Lara_Uses_Outline_Glow_And_Larger_Controls` 里（`Each_Preset_Applies_Light_Dark_Compact` 也有）；同一 profile 上重复的单条断言各留一处：`Nora_Disables_Motion_And_Uses_Radius_2` 去掉浅色 `ColorPrimary` 与暗色 `FinishIconColor`（分别在 `Nora_Takes_Darker_Primary_Stops`、`Nora_Dark_Steps_Override_Comes_From_The_Control_Stage`），`Nora_Takes_Darker_Primary_Stops` 去掉暗色 `ColorPrimaryBg`/`ColorPrimaryText`（`Nora_Disables_Motion_…` 覆盖两个暗色 profile），`Lara_Focus_Glow_Follows_The_Primary_Seed` 去掉翡翠绿默认值那条（在 `Lara_Uses_Outline_Glow_…`）。禁用文字测试保留在测试里现算的下限，注释写明两种颜色取自 `9a958923f` 的编译快照。
+  - README 重排：Profiles（链 + 种子 + 常量表）→ Preset algorithms（含「换算法不等于选 profile」：换成同族暗色算法 = 选暗色 profile；全局追加 `AtomUI:Dark` 是混合链，不等价，只保证可读，并给出混合链的实际值）→「映射与来源」（来源包与版本表、色阶公式、Aura 默认种子下的值、三个预设的规则表、紧凑不等价项清单）→ Unsupported and known differences（状态色种子、`ControlAlgorithmMode.Global`/`Custom` 漂移、浅色算法后置丢弃前一个 Map、混合链、Nora 暗色的 `DropdownButton`/`ResetButton`/`SubmitButton`、三个预设暗色主色与错误色的前后值表）。去掉对已删测试的引用；改正过时说法（CheckBox 的 `BorderRadiusSM`、Dialog 的 `FontWeightStrong` 已是全局值而非局部覆盖；Nora 暗色按钮已有作用域底色）。
+- 测试：`AtomUI.Themes.Tests` 81/81；`-- xUnit.Explicit=only` 0 个用例（不再有需要环境变量的测试）；`AtomUIGallery.Tests` 422/422。新混合链测试把下限临时改成 1000 时三行都失败并报出 13.31，已还原。
+- 用例对账：HEAD 共 91 个（常规 78 + 显式 13）。删除 14 个：显式 `Tokens_The_Old_Xml_Set_Explicitly_Keep_Their_Values` 12 行与 `Dump_Baseline_For_All_Twelve_Profiles` 1 个（只服务于与基线比对），常规 `Lara_Keeps_…` 1 个（重复）。新增 4 个（混合链 3、导出自检 1）。91 − 14 + 4 = 81。
+- 12 个 profile 用保留的 `ThemeSnapshotDump.Dump` 重新导出（临时测试放在 `tests/AtomUI.Themes.Tests/Temporary/t21/`，跑完即删），与 scratchpad 的 `t20/fix1/` `cmp` 逐字节相同（12/12）。
+- 偏离简报：①按主控决定不删 scratchpad 的基线目录、不跑全量回归。②`Lara_Keeps_…` 没有保留（主控列为保留项），理由是它的断言全部已有，留下即重复用例。③多了一条 `Dump_Writes_Every_Global_And_Own_Slot_Once`，承接被删用例里唯一与基线无关的检查。
+- 留给审阅的一项：`PrimeNGThemeManagerBuilderExtensions.UsePrimeNGThemes` 的 XML 注释仍只写了 Aura 两个算法（产品代码，本任务不改）。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 20 的提交为 `66281af63`。审阅确认：
+  - 改造前的每条常驻断言都还在，且在同一个主题上；被删掉的那个 Lara 用例的三条断言逐字存在于另一个用例里。
+  - 保留下来的快照辅助类（`ThemeSnapshotDump`）与审阅过的工具逐字符相同，基线相关的代码已全部移除，每个成员都有调用方。
+  - 用例数对得上：原 91 个，删 14 个（13 个依赖基线的显式用例、1 个重复用例），新增 4 个，现 81 个。
+  - README 里抽查的 30 处具体说法（种子、各预设规则表的取级、紧凑不等价项、已知差异、暗色主色与错误色的改造前后数值）全部与代码和导出结果一致。审阅把 12 个主题改造前后的导出结果去掉颜色后逐行对比，没有差异，README 里「没有尺寸、内边距、圆角、字体、线宽、动效的值变化」的说法成立。
+- 裁决（与简报的两处不同）：会话临时目录里的基线没有删，留到最终整体审阅结束后由主控删除；全量回归由主控在审阅后运行，不由实现者运行。
+- 留待最终整体审阅统一处理的小项：
+  1. `UsePrimeNGThemes` 的 XML 注释还只写了 Aura 的两个算法，实际注册了六个（产品代码，本任务未动）。
+  2. `Dump_Writes_Every_Global_And_Own_Slot_Once` 按构造不可能失败，可删或换成能失败的检查。
+  3. `Global_Dark_Toggle_Yields_A_Readable_Hybrid_Chain` 与契约校验里的混合链检查大体重复，三个预设都是 13.31（Ant 的暗色算法覆盖了表面色）；可加一条「混合链不等于暗色 profile」的断言让它有预设层面的意义。
+  4. README 一处措辞（明暗文件「只差算法链」，实际还差 profile 元数据）；一行过长的注释。
+
+### 阶段六小结（Task 16–21）
+
+PrimeNG 预设包的三个预设（Aura、Lara、Nora）共 12 个主题，现在由六个算法产出：每份主题 XML 只剩算法链、主色与错误色种子、圆角与控件高度，以及个别规则表达不了的常量。旧 XML 显式写过的值全部保持，例外只有三个预设暗色主题的主色与错误色（旧值是旧算法链对已写成最终值的种子再次推导的副作用）。与改造前相比，12 个主题没有任何尺寸、内边距、圆角、字体、线宽、动效的值变化；颜色的变化逐行记在 Task 18–20 的条目里。算法只用了 `AtomUI.Core` 的公开 API。

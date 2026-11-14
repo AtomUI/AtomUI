@@ -553,6 +553,36 @@ internal sealed class ThemeSchemaRegistry
         return _controlAlgorithmsByKey.TryGetValue((algorithm, control), out descriptor);
     }
 
+    /// <summary>
+    /// Validates the control token stages a package append brings, where this registry is the appended one and
+    /// <paramref name="previous"/> the committed one. A new stage is accepted only if its algorithm or its control
+    /// was not registered in <paramref name="previous"/>; a stage for a registered algorithm and a registered
+    /// control would change committed values.
+    /// </summary>
+    /// <remarks>
+    /// Stages committed earlier are carried forward and not validated again. A stage whose algorithm or control is
+    /// registered nowhere is accepted, as at startup: it cannot be called until a later append registers the
+    /// missing side, which is then a new registration.
+    /// </remarks>
+    internal void ValidateAppendedControlAlgorithms(ThemeSchemaRegistry previous)
+    {
+        ArgumentNullException.ThrowIfNull(previous);
+        foreach (var descriptor in ControlAlgorithms)
+        {
+            if (previous.TryGetControlAlgorithm(descriptor.Algorithm, descriptor.Control, out var committed) &&
+                ReferenceEquals(committed, descriptor))
+            {
+                continue;
+            }
+            if (previous.TryGetAlgorithm(descriptor.Algorithm, out _) && previous.TryGetControl(descriptor.Control, out _))
+            {
+                throw new ThemeLoadException(
+                    $"Package append cannot add a control algorithm for the already registered algorithm " +
+                    $"'{descriptor.Algorithm}' and control '{descriptor.Control}'.");
+            }
+        }
+    }
+
     internal bool TryGetControlResourceSlot(object resourceKey, out int controlSlot)
     {
         if (_startupIndex is not null)

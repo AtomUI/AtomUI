@@ -855,3 +855,30 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   5. 组合路径的修订号断言拿新重载和旧重载互比，两者走同一段折叠，不独立；另外两个锚点已覆盖。
   6. 引用的程序集如果是用旧版 Core 构建的，Token 会被报成「未绑定控件」，信息有误导性；同一文件里 `GetSyntax()` 没传取消标记。
   7. 描述符在静态只读字段的初始化里创建，某个控件阶段类的构造函数抛异常会让整个注册类不可用；可在特性的注释里写明。
+
+### Task 15：运行时追加包对控件阶段实现的接受规则（在 Task 14 之前执行）
+
+- 执行顺序：按 Task 13 之后的裁决，本任务先于 Task 14 执行。编译器目前还不调用控件阶段，所以测试只在注册表和管理器层面断言（接受了什么、拒绝了什么、留下什么状态），无法观察「编译值变化」。
+- 改动：
+  1. `ThemeSchemaRegistry.ValidateAppendedControlAlgorithms(ThemeSchemaRegistry previous)`：在追加后的注册表上调用，`previous` 是已提交的注册表。已提交的实现（`previous` 中同键且同一实例）原样沿用、不再校验；新带来的实现，若它的算法和控件在 `previous` 里都已注册，抛 `ThemeLoadException("Package append cannot add a control algorithm for the already registered algorithm '{algorithm}' and control '{control}'.")`；否则接受。
+  2. `ThemeManager.PreparePackages`：建好追加注册表后、任何提交之前调用该校验；只有本次追加带了控件阶段实现时才调用，启动路径和不带控件阶段的追加没有新开销。
+  3. 简报未列的 `ApplicationScope.PackageLoading.cs`：`LoadPackages` 的「什么都没追加就直接返回」判断漏了 `ControlTokenAlgorithms`（Task 13 遗留）。只带控件阶段实现的追加会被静默丢弃：本该拒绝的不报诊断，休眠的实现也不保留。补上这一条件。
+- 休眠情形的取舍：算法或控件两边都没注册（本次追加也没注册）的实现，与启动时一致，接受并保留。它不会被调用，不可能改变已提交结果；以后某次追加注册了缺的那一边，那一边对那次追加来说是新注册，同样不改变已提交结果。有测试钉住。
+- 测试（`ControlTokenAlgorithmRegistryTests`，新增 5 个，前 4 个名称逐字照简报）：经 `ApplicationScope.LoadPackages` 端到端驱动（简报的方法签名之外，比直接调 `PreparePackages` 更贴近真实路径）。覆盖新算法被接受、已提交实现在下一次追加中沿用不被重复校验、新控件被接受、两边都已存在被拒（异常文本逐字比对，且该追加只带控件阶段实现）、休眠实现被接受并在后来注册控件后可查到、被拒的追加之后已提交快照与注册表是同一引用且状态不变、管理器回到空闲后同一追加去掉被拒项可成功。
+- RED：3 个失败（两个拒绝测试没有抛异常；休眠测试因上面第 3 点的提前返回而失败）；两个「接受」测试在没有规则时本就通过，用于钉住接受行为。GREEN：9/9。
+- 测试结果：`AtomUI.Core.Tests` 533/533（528 + 5）。全量回归第一次 `[SUMMARY] TOTAL: 存在失败, 总耗时 16:11`，1 个失败：`GeneratedStartupQueryTests.Generated_Startup_Hot_Query_Allocates_Zero(route: "identity-resource")`（10000 次热查询分配 2392 字节，期望 0）。它测的是启动索引上的资源查找，本任务的改动只在追加包时执行，不在其路径上；2392 字节远小于 10000，不是每次调用都分配，像是一次性的运行时分配。单独重跑该测试类 3 次，3/3 通过。判断与本任务无关。整套第二次运行在 `AtomUI.Desktop.Controls.DataGrid.Tests` 里卡住（一个与本任务无关的 DataGrid 测试在 `Dispatcher.Invoke` 中阻塞），由控制方在 11872/12448 时终止；此前的 11872 个测试无失败。剩余项目由控制方单独运行。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 13 的提交为 `4a670ee25`。审阅确认：
+  - 校验在准备阶段、任何提交之前执行；被拒的追加之后，快照、注册表与控件阶段表都是原来的引用，管理器回到空闲。
+  - 传入的「已提交注册表」在每次追加提交后都会前移，不会用到过期的那一份。
+  - 启动路径和不带控件阶段实现的追加没有新开销。
+  - `ApplicationScope.PackageLoading.cs` 那一行是 Task 13 留下的缺口，不补的话只带控件阶段实现的追加会绕过整条规则；判定为必要改动，不算超范围。
+  - 第一遍回归里失败的 `Generated_Startup_Hot_Query_Allocates_Zero`：审阅独立核对了该测试（启动一次、预热 200 次、再测 10000 次资源查找的分配，不加载任何包），本任务改动的三处都只在追加包时执行，不在它的路径上。判定与本任务无关。
+- 裁决（休眠情形）：规格 4.4 原文只写了「对应的算法或对应的控件是同一次追加注册的」才接受。实现多接受了一种情形：算法或控件在任何地方都没注册的实现。予以认可 — 它不会被调用，不可能改变已提交的结果；之后某次追加注册了缺的那一边，那一边对那次追加是新注册；且与启动时的行为一致 — 代价是算法或控件身份写错时不会有诊断。规格 4.4 已补一句，Task 23 的指南要写明。
+- 回归的实际覆盖（本任务没有一条完整的 `[SUMMARY]`）：第二遍在 11872/12448 处因一个 DataGrid 测试挂死而被终止，此前无失败；没跑到的 6 个项目加 `AtomUI.Themes.Tests` 由主控单独运行，837 个全部通过（其中 `AtomUI.Desktop.Controls.DataGrid.Tests` 330/330，挂死的那个测试这次通过）。
+- 事故记录：那次回归从 2026-11-13 19:58 挂到 2026-11-14 03:35（太平洋时间），约 7.5 小时，主控一直在等实现者交报告而没有检查。挂死位置：`DataGridFilterDialogPopupTests.DataGrid_Pinned_Filter_Uses_First_Eligible_Column_And_Reopens_After_Detach` 调用 `Dispatcher.Invoke` 后等待，进程内没有线程在跑 Dispatcher 循环；堆栈里没有主题相关代码。回归脚本的停滞检测只打印警告，不终止进程。这是执行以来第三个不稳定的测试（前两个见 Task 12、Task 13），也是第一个会挂死的；另有 `Generated_Startup_Hot_Query_Allocates_Zero` 在整套运行里失败过一次。均未调查，留给用户。
+- 裁决（执行方式，自本任务起）：实现者不再运行全量回归，只跑受影响的测试项目；全量回归由主控在阶段结束时运行（Task 14 之后、Task 21 之后、Task 23 之后），并带超时 — 每个任务省 16 到 32 分钟，且避免无人看管的挂死 — 代价是跨项目的回归最晚要到阶段结束才发现。主控对超过 10 分钟没有动静的子代理主动检查。
+- 留待最终整体审阅统一处理的小项：
+  1. `Rejected_Append_Leaves_The_Committed_Registry_And_Snapshot_Untouched` 只断言异常类型，没有断言消息；别的 `ThemeLoadException` 也能让它通过。
+  2. 休眠测试只走完了「缺控件」那一半，「缺算法、之后追加算法」那一半没有激活。
+  3. 校验遍历全部控件阶段实现再按引用筛掉已提交的；只遍历新追加的更直接（开销可忽略）。
+  4. 测试文件的 `using` 顺序。

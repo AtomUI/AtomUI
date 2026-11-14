@@ -146,5 +146,50 @@
         <source>Role</source>
       </segment>
     </unit>
+    <unit id="PrimaryColor">
+      <segment>
+        <source>Primary color</source>
+      </segment>
+    </unit>
+    <unit id="Emerald">
+      <segment>
+        <source>Emerald</source>
+      </segment>
+    </unit>
+    <unit id="Blue">
+      <segment>
+        <source>Blue</source>
+      </segment>
+    </unit>
+    <unit id="Violet">
+      <segment>
+        <source>Violet</source>
+      </segment>
+    </unit>
+    <unit id="Rose">
+      <segment>
+        <source>Rose</source>
+      </segment>
+    </unit>
+    <unit id="Amber">
+      <segment>
+        <source>Amber</source>
+      </segment>
+    </unit>
+    <unit id="PresetColor">
+      <segment>
+        <source>Preset color</source>
+      </segment>
+    </unit>
+    <unit id="ResetPrimary">
+      <segment>
+        <source>Use preset color</source>
+      </segment>
+    </unit>
+    <unit id="PrimaryFixed">
+      <segment>
+        <source>This preset fixes its primary states explicitly, so they do not follow the seed.</source>
+      </segment>
+    </unit>
   </file>
 </xliff>

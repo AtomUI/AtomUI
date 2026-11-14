@@ -1,4 +1,5 @@
 using System.Reactive;
+using System.Reactive.Subjects;
 using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
@@ -6,8 +7,10 @@ using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
@@ -22,9 +25,56 @@ public sealed record ThemePresetItem(string ThemeId, string Name, Color Accent, 
         ? (Avalonia.Controls.PathIcon)new AntDesignIconProvider(kind).ProvideValue(null!) : null;
 }
 
+/// <summary>
+/// One primary-colour swatch of the theme presets page: the seed colour, its localized name and whether the
+/// preview currently uses it.
+/// </summary>
+public sealed class ThemePrimarySwatch : ReactiveObject
+{
+    private readonly ThemePresetsShowCaseLangResourceKind _nameKind;
+    private readonly string _fallbackName;
+    private string _name;
+    private bool _isSelected;
+
+    internal ThemePrimarySwatch(Color color, ThemePresetsShowCaseLangResourceKind nameKind, string fallbackName)
+    {
+        Color = color;
+        Brush = new ImmutableSolidColorBrush(color);
+        _nameKind = nameKind;
+        _fallbackName = fallbackName;
+        _name = GalleryLocalization.Get(nameKind, fallbackName);
+    }
+
+    public Color Color { get; }
+    public IBrush Brush { get; }
+    public string Name
+    {
+        get => _name;
+        private set => this.RaiseAndSetIfChanged(ref _name, value);
+    }
+    public bool IsSelected
+    {
+        get => _isSelected;
+        internal set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
+
+    internal void RefreshName() => Name = GalleryLocalization.Get(_nameKind, _fallbackName);
+}
+
 public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 {
     public static EntityKey ID = "ThemePresets";
+    // Tailwind 500 stops; a PrimeNG algorithm resolves each to its transcribed Tailwind scale.
+    private static readonly (Color Color, ThemePresetsShowCaseLangResourceKind Name, string Fallback)[] s_swatches =
+    [
+        (Color.FromUInt32(0xFF10B981u), ThemePresetsShowCaseLangResourceKind.Emerald, "Emerald"),
+        (Color.FromUInt32(0xFF3B82F6u), ThemePresetsShowCaseLangResourceKind.Blue, "Blue"),
+        (Color.FromUInt32(0xFF8B5CF6u), ThemePresetsShowCaseLangResourceKind.Violet, "Violet"),
+        (Color.FromUInt32(0xFFF43F5Eu), ThemePresetsShowCaseLangResourceKind.Rose, "Rose"),
+        (Color.FromUInt32(0xFFF59E0Bu), ThemePresetsShowCaseLangResourceKind.Amber, "Amber"),
+    ];
+    // The seed a definition without its own ColorPrimary starts from.
+    private static readonly Color s_defaultPrimary = new DesignToken().ColorPrimary;
     public IScreen HostScreen { get; }
     public string? UrlPathSegment => ID.ToString();
     private readonly IThemeManager _manager;
@@ -40,6 +90,13 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     private bool _copySucceeded;
     private bool _copyFailed;
     private DataGridLocalSource<PreviewRow>? _previewSource;
+    private IReadOnlyList<Color> _primarySwatches = [];
+    private IReadOnlyList<ThemePrimarySwatch> _primarySwatchItems = [];
+    private Color _presetPrimary;
+    private Color? _selectedPrimary;
+    private bool _canChoosePrimary = true;
+    private readonly BehaviorSubject<bool> _canResetPrimary = new(false);
+    private ILanguageManager? _languageManager;
 
     public IReadOnlyList<AtomUI.Desktop.Controls.SelectOption> People { get; } =
         [new() { ItemKey = "ada", Header = "Ada" }, new() { ItemKey = "grace", Header = "Grace" }];
@@ -60,6 +117,49 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
             UpdatePreview();
         }
     }
+    /// <summary>
+    /// The primary seeds offered for the previewed definition: the emerald, blue, violet, rose and amber 500 stops,
+    /// followed by that definition's own <c>ColorPrimary</c> seed when it is not one of them.
+    /// </summary>
+    public IReadOnlyList<Color> PrimarySwatches => _primarySwatches;
+    /// <summary>
+    /// The <see cref="PrimarySwatches"/> as named, selectable items for the swatch bar.
+    /// </summary>
+    public IReadOnlyList<ThemePrimarySwatch> PrimarySwatchItems => _primarySwatchItems;
+    /// <summary>
+    /// Whether the previewed definition lets the derived primary states follow the seed; <c>false</c> when it
+    /// declares any <c>ColorPrimary*</c> token besides <c>ColorPrimary</c> itself.
+    /// </summary>
+    public bool CanChoosePrimary
+    {
+        get => _canChoosePrimary;
+        private set => this.RaiseAndSetIfChanged(ref _canChoosePrimary, value);
+    }
+    /// <summary>
+    /// The primary seed that replaces the previewed definition's own; <c>null</c> keeps the own seed and its
+    /// unchanged preview configuration. Selecting the own seed equals clearing, and nothing can be selected
+    /// while <see cref="CanChoosePrimary"/> is <c>false</c>.
+    /// </summary>
+    public Color? SelectedPrimary
+    {
+        get => _selectedPrimary;
+        set
+        {
+            if (!_canChoosePrimary || value == _presetPrimary)
+            {
+                value = null;
+            }
+            if (value == _selectedPrimary)
+            {
+                return;
+            }
+            this.RaiseAndSetIfChanged(ref _selectedPrimary, value);
+            _canResetPrimary.OnNext(value is not null);
+            UpdateSwatchSelection();
+            UpdatePreview();
+        }
+    }
+    public ReactiveCommand<Unit, Unit> ResetPrimary { get; }
     public bool IsDark
     {
         get => _isDark;
@@ -93,6 +193,8 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         _manager = manager;
         _catalog = new ThemePresetCatalog((ThemeManager)manager);
         CopyThemeXml = ReactiveCommand.CreateFromTask(CopyThemeXmlAsync, outputScheduler: AvaloniaScheduler.Instance);
+        ResetPrimary = ReactiveCommand.Create(() => { SelectedPrimary = null; }, _canResetPrimary,
+            AvaloniaScheduler.Instance);
         Refresh();
     }
 
@@ -131,7 +233,13 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
                 .Field(NameField, row => row.Name).Field(RoleField, row => row.Role));
         this.RaisePropertyChanged(nameof(PreviewSource));
         _manager.ThemeCatalogChanged += HandleCatalogChanged;
+        _languageManager = GalleryLocalization.GetLanguageManager();
+        if (_languageManager is not null)
+        {
+            _languageManager.LanguageChanged += HandleLanguageChanged;
+        }
         Refresh();
+        RefreshSwatchNames();
     }
 
     internal void Deactivate()
@@ -139,6 +247,11 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         if (!_active) { return; }
         _active = false;
         _manager.ThemeCatalogChanged -= HandleCatalogChanged;
+        if (_languageManager is not null)
+        {
+            _languageManager.LanguageChanged -= HandleLanguageChanged;
+            _languageManager = null;
+        }
         _previewSource?.Dispose();
         _previewSource = null;
         this.RaisePropertyChanged(nameof(PreviewSource));
@@ -149,9 +262,61 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     {
         Deactivate();
         CopyThemeXml.Dispose();
+        ResetPrimary.Dispose();
+        _canResetPrimary.Dispose();
     }
 
     private void HandleCatalogChanged(object? sender, ThemeCatalogChangedEventArgs e) => Refresh();
+
+    private void HandleLanguageChanged(object? sender, LanguageChangedEventArgs e) => RefreshSwatchNames();
+
+    private void RefreshSwatchNames()
+    {
+        foreach (var swatch in _primarySwatchItems)
+        {
+            swatch.RefreshName();
+        }
+    }
+
+    // The swatches belong to the previewed definition (the mode profile the preview compiles): its own seed and
+    // whether it fixes the derived primary states can differ between light and dark profiles.
+    private void UpdateSwatches(string previewId)
+    {
+        var presetPrimary = _themes.Single(item => item.Info.Id == previewId).Info.AccentColor ?? s_defaultPrimary;
+        CanChoosePrimary = !_catalog.FixesPrimaryStates(previewId);
+        if (_primarySwatchItems.Count == 0 || presetPrimary != _presetPrimary)
+        {
+            _presetPrimary = presetPrimary;
+            var items = s_swatches.Select(swatch => new ThemePrimarySwatch(swatch.Color, swatch.Name, swatch.Fallback)).ToList();
+            if (!items.Any(item => item.Color == presetPrimary))
+            {
+                items.Add(new ThemePrimarySwatch(presetPrimary, ThemePresetsShowCaseLangResourceKind.PresetColor, "Preset color"));
+            }
+            _primarySwatchItems = items;
+            _primarySwatches = items.Select(item => item.Color).ToArray();
+            this.RaisePropertyChanged(nameof(PrimarySwatches));
+            this.RaisePropertyChanged(nameof(PrimarySwatchItems));
+        }
+        // Only one of the five fixed swatches survives a profile change; a previous profile's own seed, the new
+        // profile's own seed, or any selection on a profile with fixed primary states falls back to null.
+        if (_selectedPrimary is { } selected &&
+            (!_canChoosePrimary || selected == presetPrimary || !s_swatches.Any(swatch => swatch.Color == selected)))
+        {
+            _selectedPrimary = null;
+            _canResetPrimary.OnNext(false);
+            this.RaisePropertyChanged(nameof(SelectedPrimary));
+        }
+        UpdateSwatchSelection();
+    }
+
+    private void UpdateSwatchSelection()
+    {
+        var shown = _selectedPrimary ?? _presetPrimary;
+        foreach (var swatch in _primarySwatchItems)
+        {
+            swatch.IsSelected = swatch.Color == shown;
+        }
+    }
 
     private void Refresh()
     {
@@ -197,8 +362,11 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
             algorithms = [IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default];
             if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
         }
+        UpdateSwatches(id);
         this.RaiseAndSetIfChanged(ref _previewThemeId, id, nameof(PreviewThemeId));
-        this.RaiseAndSetIfChanged(ref _previewConfig, _catalog.CreateConfig(id, algorithms), nameof(PreviewConfig));
+        this.RaiseAndSetIfChanged(ref _previewConfig,
+            _catalog.CreateConfig(id, algorithms, _selectedPrimary is { } primary ? FormatColor(primary) : null),
+            nameof(PreviewConfig));
         CopySucceeded = false;
         CopyFailed = false;
     }
@@ -206,6 +374,10 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     public string ExportThemeXml() => ThemePresetCatalog.Export(_previewThemeId!,
         _themes.Single(item => item.Info.Id == _previewThemeId).Info.Name, _previewConfig!,
         IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light);
+
+    private static string FormatColor(Color color) => color.A == 0xFF
+        ? $"#{color.R:X2}{color.G:X2}{color.B:X2}"
+        : $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
 
     private static AntDesignIconKind? IconFor(string id) => id switch
     {

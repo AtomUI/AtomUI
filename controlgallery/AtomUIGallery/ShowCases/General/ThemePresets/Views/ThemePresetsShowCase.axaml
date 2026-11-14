@@ -39,6 +39,34 @@
                     <TextBlock Name="CopySuccessFeedback" Margin="12,6,0,0" Text="{vm:ThemePresetsShowCaseLangResource Copied}" IsVisible="{Binding CopySucceeded}" />
                     <TextBlock Name="CopyFailureFeedback" Margin="12,6,0,0" Text="{vm:ThemePresetsShowCaseLangResource CopyFailed}" IsVisible="{Binding CopyFailed}" />
                 </WrapPanel>
+                <!-- Swatch fills are seed data, not theme tokens; selecting one replaces the preview's ColorPrimary seed. -->
+                <WrapPanel Orientation="Horizontal" ItemSpacing="{atom:SharedTokenResource Spacing}"
+                           LineSpacing="{atom:SharedTokenResource SpacingSM}">
+                    <TextBlock VerticalAlignment="Center" Text="{vm:ThemePresetsShowCaseLangResource PrimaryColor}" />
+                    <ItemsControl Name="PrimarySwatchBar" ItemsSource="{Binding PrimarySwatchItems}"
+                                  IsEnabled="{Binding CanChoosePrimary}"
+                                  AutomationProperties.Name="{vm:ThemePresetsShowCaseLangResource PrimaryColor}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingSM}" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ThemePrimarySwatch">
+                                <atom:RadioButton VerticalAlignment="Center" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                                  AutomationProperties.Name="{Binding Name}" ToolTip.Tip="{Binding Name}"
+                                                  Click="SelectPrimary">
+                                    <Ellipse Width="{atom:SharedTokenResource ControlHeightXS}" Height="{atom:SharedTokenResource ControlHeightXS}"
+                                             Fill="{Binding Brush}" />
+                                </atom:RadioButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <atom:Button Name="ResetPrimaryButton" ButtonType="Link" Content="{vm:ThemePresetsShowCaseLangResource ResetPrimary}"
+                                 Command="{Binding ResetPrimary}" />
+                    <TextBlock Name="PrimaryFixedNote" VerticalAlignment="Center" TextWrapping="Wrap"
+                               Foreground="{atom:SharedTokenResource ColorTextSecondary}"
+                               Text="{vm:ThemePresetsShowCaseLangResource PrimaryFixed}"
+                               IsVisible="{Binding !CanChoosePrimary}" />
+                </WrapPanel>
                 <TextBlock Text="{Binding PreviewThemeId}" />
                 <theme:ThemeConfigProvider Name="PreviewProvider" Config="{Binding PreviewConfig}">
                     <Border Background="{atom:SharedTokenResource ColorBgContainer}" TextElement.Foreground="{atom:SharedTokenResource ColorText}" Padding="24" CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">

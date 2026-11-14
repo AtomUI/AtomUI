@@ -58,6 +58,14 @@ public partial class ThemePresetsShowCase : GalleryReactiveUserControl<ThemePres
         }
     }
 
+    private void SelectPrimary(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: ThemePrimarySwatch swatch } && DataContext is ThemePresetsViewModel model)
+        {
+            model.SelectedPrimary = swatch.Color;
+        }
+    }
+
     private async Task<bool> CopyAsync(string xml)
     {
         var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;

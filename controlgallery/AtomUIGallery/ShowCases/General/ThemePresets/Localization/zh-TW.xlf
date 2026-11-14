@@ -175,5 +175,59 @@
         <target state="translated">角色</target>
       </segment>
     </unit>
+    <unit id="PrimaryColor">
+      <segment>
+        <source>Primary color</source>
+        <target state="translated">主色</target>
+      </segment>
+    </unit>
+    <unit id="Emerald">
+      <segment>
+        <source>Emerald</source>
+        <target state="translated">翡翠綠</target>
+      </segment>
+    </unit>
+    <unit id="Blue">
+      <segment>
+        <source>Blue</source>
+        <target state="translated">藍色</target>
+      </segment>
+    </unit>
+    <unit id="Violet">
+      <segment>
+        <source>Violet</source>
+        <target state="translated">紫羅蘭</target>
+      </segment>
+    </unit>
+    <unit id="Rose">
+      <segment>
+        <source>Rose</source>
+        <target state="translated">玫瑰紅</target>
+      </segment>
+    </unit>
+    <unit id="Amber">
+      <segment>
+        <source>Amber</source>
+        <target state="translated">琥珀色</target>
+      </segment>
+    </unit>
+    <unit id="PresetColor">
+      <segment>
+        <source>Preset color</source>
+        <target state="translated">預設主色</target>
+      </segment>
+    </unit>
+    <unit id="ResetPrimary">
+      <segment>
+        <source>Use preset color</source>
+        <target state="translated">恢復預設主色</target>
+      </segment>
+    </unit>
+    <unit id="PrimaryFixed">
+      <segment>
+        <source>This preset fixes its primary states explicitly, so they do not follow the seed.</source>
+        <target state="translated">此預設顯式固定了主色的各個狀態色，它們不會跟隨種子變化。</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

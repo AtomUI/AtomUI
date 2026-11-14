@@ -1124,3 +1124,24 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 ### 阶段六小结（Task 16–21）
 
 PrimeNG 预设包的三个预设（Aura、Lara、Nora）共 12 个主题，现在由六个算法产出：每份主题 XML 只剩算法链、主色与错误色种子、圆角与控件高度，以及个别规则表达不了的常量。旧 XML 显式写过的值全部保持，例外只有三个预设暗色主题的主色与错误色（旧值是旧算法链对已写成最终值的种子再次推导的副作用）。与改造前相比，12 个主题没有任何尺寸、内边距、圆角、字体、线宽、动效的值变化；颜色的变化逐行记在 Task 18–20 的条目里。算法只用了 `AtomUI.Core` 的公开 API。
+
+## 阶段七：Gallery 与文档
+
+### Task 22：Gallery 主色色块
+
+- 主题预设页新增主色色块：翡翠绿、蓝、紫罗兰、玫瑰红、琥珀五个 Tailwind 500 级（与 `PrimeNGTailwindPalettes` 核对一致），加上当前预览的那个主题定义自己的 `ColorPrimary` 种子（与五个重复时不列，没有声明时取 Ant 默认 `#1677FF`）。自身种子随预设、暗色、紧凑切换重算（Material 浅色 `#6750A4`、暗色 `#D0BCFF`）。
+- 视图模型新增 `PrimarySwatches`、`PrimarySwatchItems`、`CanChoosePrimary`、`SelectedPrimary`、`ResetPrimary`；`ThemePresetCatalog.CreateConfig` 增加可选的主色参数，只替换 `ColorPrimary` 种子，为空时返回与原先同一个缓存配置；选择等于自身种子即清除；切换主题定义时只保留五个固定色块的选择。
+- 预览的主题定义显式声明了 `ColorPrimary` 以外的 `ColorPrimary*` Token 时（按 Token 判断，目前是 Shadcn 的全部主题），色块行禁用并显示本地化说明，`SelectedPrimary` 不可设置。
+- 色块是 `atom:RadioButton`（可用 Tab 到达、空格选中，自动化名称为颜色名），放在与相邻行一致的 `WrapPanel` 里；9 条新文案进入四种语言；复制的主题 XML 只含一个 `ColorPrimary`，通过 XSD 校验；`docs/gallery/authoring/theme-presets-page.md` 已更新。
+- 测试：新增 5 个用例（Aura 选蓝后悬停 `#2563EB`、按下 `#1D4ED8`、焦点边框等于主色，暗色主色 `#60A5FA`、悬停 `#93C5FD`；清除后恢复同一个配置实例；复制的 XML 含所选主色并通过 XSD；Shadcn 禁用与说明；Material 自身种子跟随模式）。`AtomUIGallery.Tests` 427/427，`AtomUI.Themes.Tests` 81/81。
+- 与简报的出入：三个用例在简报里写作 `async Task`，实际是同步的 `void`（这个测试类在测试线程上手动驱动 headless 调度器，`await` 会离开界面线程），名称不变。
+- 审阅结论：首轮审阅确认 PrimeNG 路径、不选色块时配置为同一实例、订阅与释放、本地化和三个简报用例都正确，指出两个重要问题后退回修正一轮；复审结论为五项全部解决，无新的严重或重要问题。Task 21 的提交为 `2a3d0afcd`。
+  - 重要问题一：在 Shadcn 预设上选色块会得到错乱的预览 — Shadcn 的每个主题都显式写了主色的 9 个派生色，显式值优先于算法，选蓝后按钮悬停变成近黑、选中背景仍是灰；页面文档却写着这些状态由算法重新推导。已修：见上面「色块行禁用」一条。
+  - 重要问题二：「预设自己的主色」色块取的是浅色主题的种子，没有跟着模式变（Material 暗色的种子与浅色不同），点它会把浅色种子强加给暗色主题。已修：自身种子取自实际预览的主题定义。
+- 人工验收（简报第 3 步）：未做。本会话没有桌面控制工具，无法按 `atomui-gallery-local-debug` 的要求绑定到真实的 Gallery 窗口进行点选。改用仓库的脚本化视觉验收流程截图核对（记录见下文）；鼠标悬停与按下的实时观感留给用户，点击清单在实现者的报告里。
+- 留待最终整体审阅统一处理的小项：
+  1. 视图模型释放之后如果还有迟到的点击到达，`_canResetPrimary.OnNext` 会抛 `ObjectDisposedException`。
+  2. 没有覆盖「切换语言后色块名称刷新」的测试。
+  3. `ThemePrimarySwatch` 是视图模型文件里的第二个公开类型，可移到单独文件。
+  4. 页面文档里「复制主题时写入所选主色」那一条放到了「固定主色状态的预设」小节末尾，应放回通用列表。
+  5. `FixesPrimaryStates` 用名称前缀判断；将来如果出现以 `ColorPrimary` 开头但不是派生色的 Token，会被误判（目前没有）。

@@ -175,5 +175,59 @@
         <target state="translated">Função</target>
       </segment>
     </unit>
+    <unit id="PrimaryColor">
+      <segment>
+        <source>Primary color</source>
+        <target state="translated">Cor primária</target>
+      </segment>
+    </unit>
+    <unit id="Emerald">
+      <segment>
+        <source>Emerald</source>
+        <target state="translated">Esmeralda</target>
+      </segment>
+    </unit>
+    <unit id="Blue">
+      <segment>
+        <source>Blue</source>
+        <target state="translated">Azul</target>
+      </segment>
+    </unit>
+    <unit id="Violet">
+      <segment>
+        <source>Violet</source>
+        <target state="translated">Violeta</target>
+      </segment>
+    </unit>
+    <unit id="Rose">
+      <segment>
+        <source>Rose</source>
+        <target state="translated">Rosa</target>
+      </segment>
+    </unit>
+    <unit id="Amber">
+      <segment>
+        <source>Amber</source>
+        <target state="translated">Âmbar</target>
+      </segment>
+    </unit>
+    <unit id="PresetColor">
+      <segment>
+        <source>Preset color</source>
+        <target state="translated">Cor do tema</target>
+      </segment>
+    </unit>
+    <unit id="ResetPrimary">
+      <segment>
+        <source>Use preset color</source>
+        <target state="translated">Usar cor do tema</target>
+      </segment>
+    </unit>
+    <unit id="PrimaryFixed">
+      <segment>
+        <source>This preset fixes its primary states explicitly, so they do not follow the seed.</source>
+        <target state="translated">Este tema fixa explicitamente os estados da cor primária, que não acompanham a semente.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -3,6 +3,7 @@ using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.DesignTokens;
 
 namespace AtomUIGallery.ShowCases.ThemePresets;
 
@@ -31,12 +32,13 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
 
     // A null chain keeps the definition's own chain: a mode profile may run a package algorithm (for example
     // PrimeNG:Aura.Dark) that the built-in Default/Dark/Compact toggles cannot stand in for.
-    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms)
+    // A non-null primary replaces the definition's ColorPrimary seed; null leaves the declarations untouched.
+    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms, string? primary = null)
     {
         _ = Read();
         var definition = _catalog!.Get(themeId).Definition;
         algorithms ??= definition.Algorithms.Select(descriptor => descriptor.Algorithm).ToArray();
-        var key = themeId + ":" + string.Join(",", algorithms);
+        var key = themeId + ":" + string.Join(",", algorithms) + ":" + primary;
         if (_configs.TryGetValue(key, out var cached))
         {
             return cached;
@@ -47,6 +49,10 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         foreach (var token in definition.Tokens)
         {
             builder.WithToken(token.Descriptor.Name, token.CanonicalValue);
+        }
+        if (primary is not null)
+        {
+            builder.WithToken(nameof(DesignToken.ColorPrimary), primary);
         }
         foreach (var control in definition.Controls)
         {
@@ -66,6 +72,19 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         var config = builder.Build();
         _configs.Add(key, config);
         return config;
+    }
+
+    // Explicit theme values beat the algorithm, so a definition that declares any derived primary token
+    // (ColorPrimaryHover, ColorPrimaryBg, ...) keeps those states fixed whatever the ColorPrimary seed is.
+    internal bool FixesPrimaryStates(string themeId)
+    {
+        _ = Read();
+        var definition = _catalog!.Get(themeId).Definition;
+        static bool IsDerivedPrimary(BoundTokenValue token) =>
+            token.Descriptor.Name.StartsWith(nameof(DesignToken.ColorPrimary), StringComparison.Ordinal) &&
+            token.Descriptor.Name != nameof(DesignToken.ColorPrimary);
+        return definition.Tokens.Any(IsDerivedPrimary) ||
+               definition.Controls.Any(control => control.GlobalTokens.Any(IsDerivedPrimary));
     }
 
     internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null)

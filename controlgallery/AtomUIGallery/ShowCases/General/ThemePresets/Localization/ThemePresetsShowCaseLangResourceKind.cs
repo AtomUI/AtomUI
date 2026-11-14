@@ -32,4 +32,13 @@ public enum ThemePresetsShowCaseLangResourceKind
     Notification,
     Name,
     Role,
+    PrimaryColor,
+    Emerald,
+    Blue,
+    Violet,
+    Rose,
+    Amber,
+    PresetColor,
+    ResetPrimary,
+    PrimaryFixed,
 }

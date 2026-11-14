@@ -13,6 +13,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Lara", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Lara.Dark", 1)]
 internal sealed class PrimeNGDialogTokens : IControlTokenAlgorithm<DialogToken>
 {
     /// <inheritdoc />

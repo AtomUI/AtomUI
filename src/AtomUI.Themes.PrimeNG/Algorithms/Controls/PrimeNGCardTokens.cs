@@ -9,11 +9,13 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// <summary>
 /// Card under the PrimeNG presets: the card surface is PrimeUIX <c>content.background</c> (the elevated
 /// background: white, dark neutral 900), the radius <c>border.radius.xl</c> and the PrimeUIX <c>card.shadow</c>, plus
-/// the body padding of the baseline XML (20, the <c>aura-compat</c> value). In dark the header takes the card
-/// surface too.
+/// the body padding of the baseline XML (20 for Aura and Lara; the <c>aura-compat</c> value). In dark the header
+/// takes the card surface too.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Lara", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Lara.Dark", 1)]
 internal sealed class PrimeNGCardTokens : IControlTokenAlgorithm<CardToken>
 {
     /// <inheritdoc />

@@ -24,7 +24,9 @@ public class PrimeNGAlgorithmContractTests
     [Theory]
     [InlineData("Aura")]
     [InlineData("Aura.Dark")]
-    public void Aura_Algorithm_Satisfies_The_Contract(string id)
+    [InlineData("Lara")]
+    [InlineData("Lara.Dark")]
+    public void Preset_Algorithm_Satisfies_The_Contract(string id)
     {
         // A PrimeNG preset algorithm starts its chain, so it is verified standalone: it must write every Map token.
         var violations = ThemeAlgorithmContract.Verify(

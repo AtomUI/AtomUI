@@ -12,7 +12,8 @@ internal static class PrimeNGPresets
 
     /// <summary>
     /// Returns the rule table of the last PrimeNG algorithm in the chain. A control stage is only called for a chain
-    /// that contains one of the algorithms it is declared for.
+    /// that contains one of the algorithms it is declared for. A PrimeNG identity without a rule table here fails
+    /// instead of falling back to another preset.
     /// </summary>
     internal static PrimeNGPreset Resolve(in ThemeAlgorithmContext context)
     {
@@ -24,12 +25,13 @@ internal static class PrimeNGPresets
             {
                 continue;
             }
-            switch (algorithm.Id)
+            return algorithm.Id switch
             {
-                case "Aura":
-                case "Aura.Dark":
-                    return PrimeNGAuraPreset.Table;
-            }
+                "Aura" or "Aura.Dark" => PrimeNGAuraPreset.Table,
+                "Lara" or "Lara.Dark" => PrimeNGLaraPreset.Table,
+                _ => throw new InvalidOperationException(
+                    $"The PrimeNG algorithm '{algorithm.Id}' has no rule table for the control stages.")
+            };
         }
 
         throw new InvalidOperationException("The algorithm chain contains no PrimeNG preset algorithm.");

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using AtomUI.Theme;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -84,13 +85,18 @@ internal sealed record PrimeNGNeutralRule(
 /// Text on the selection background and on solid primary fills (the PrimeUIX primary contrast colour); the Alias
 /// stage also writes it to <c>ColorTextLightSolid</c>.
 /// </param>
+/// <param name="ControlOutline">
+/// The colour of the glow around a focused field (<c>ColorControlOutline</c>), computed in the Alias stage from the
+/// final Map tokens; <see langword="null"/> keeps the Ant Design formula (a preset without a field glow).
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
     PrimeNGFamilyRule Status,
     PrimeNGFamilyRule Error,
     PrimeNGNeutralRule Neutral,
-    PrimeNGShade SelectionForeground);
+    PrimeNGShade SelectionForeground,
+    Func<DesignToken, Color>? ControlOutline);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the
@@ -128,10 +134,18 @@ internal sealed record PrimeNGAliasRule(
 /// <c>aura</c> preset is denser (for example card padding 18, tooltip padding 6/10). Values that follow from other
 /// tokens are computed in the control stages instead.
 /// </summary>
+/// <param name="ButtonPaddingHorizontal">
+/// The button's own <c>ControlPaddingHorizontal</c>; <see langword="null"/> keeps the global value.
+/// </param>
+/// <param name="SelectOptionPadding">The Select option padding, from the control's effective global tokens.</param>
+/// <param name="SelectPopupContentPadding">The Select panel padding, from the control's effective global tokens.</param>
 internal sealed record PrimeNGControlRule(
     FontWeight ButtonFontWeight,
+    double? ButtonPaddingHorizontal,
     double CheckIndicatorSize,
     double CheckedMarkSize,
+    Func<DesignToken, Thickness> SelectOptionPadding,
+    Func<DesignToken, Thickness> SelectPopupContentPadding,
     double CardBodyPadding,
     BoxShadows CardRestingShadows,
     double DialogPadding,

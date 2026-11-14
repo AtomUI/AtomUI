@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Xml.Linq;
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Schema;
@@ -108,6 +109,82 @@ internal static class PrimeNGMigrationSnapshot
             }
         }
         return differences;
+    }
+
+    /// <summary>
+    /// The acceptance check of a migrated profile: every token the pre-change XML of <paramref name="profile"/> set
+    /// explicitly (global and per control) must compile to its baseline value. For the tokens in
+    /// <paramref name="xmlTextExceptions"/> the expected value is the XML text instead, and each of them must really
+    /// differ from the baseline, so the list cannot grow stale. Returns the mismatches; a missing baseline key throws.
+    /// </summary>
+    internal static IReadOnlyList<string> CompareExplicitXmlTokens(
+        ThemeSnapshot snapshot, string profile, IReadOnlyCollection<string> xmlTextExceptions, out int checkedCount)
+    {
+        var directory = BaselineDirectory;
+        var baseline = Parse(File.ReadAllText(Path.Combine(directory, profile + ".txt")));
+        var oldXml = XDocument.Load(Path.Combine(directory, "xml", profile + ".theme.xml")).Root!;
+        XNamespace ns = "https://atomui.net/schemas/theme/v1";
+
+        var current = Parse(Dump(snapshot));
+        var registry = snapshot.Registry;
+        var mismatches = new List<string>();
+        checkedCount = 0;
+
+        foreach (var token in oldXml.Element(ns + "Tokens")!.Elements(ns + "Token"))
+        {
+            var name = token.Attribute("Name")!.Value;
+            var key = "G " + name;
+            registry.TryGetGlobalToken(name, out var descriptor).ShouldBeTrue(name);
+            string expected;
+            if (xmlTextExceptions.Contains(name))
+            {
+                expected = descriptor!.Format(descriptor.Parse(token.Attribute("Value")!.Value));
+                // The exception list must stay minimal: each entry really differs from the baseline.
+                baseline[key].ShouldNotBe(expected, $"{key} no longer needs an exception");
+            }
+            else
+            {
+                expected = baseline[key];
+            }
+            checkedCount++;
+            if (current[key] != expected)
+            {
+                mismatches.Add($"{key}: expected {expected}, got {current[key]}");
+            }
+        }
+
+        foreach (var control in oldXml.Element(ns + "Controls")?.Elements(ns + "Control") ?? [])
+        {
+            var identity = new ControlTokenIdentity(control.Attribute("Catalog")!.Value, control.Attribute("Id")!.Value);
+            registry.TryGetControl(identity, out var owner).ShouldBeTrue(identity.ToString());
+            foreach (var token in control.Element(ns + "Tokens")!.Elements(ns + "Token"))
+            {
+                var name = token.Attribute("Name")!.Value;
+                checkedCount++;
+                if (owner!.OwnTokens.Any(own => own.Name == name))
+                {
+                    var key = $"C {identity.Catalog}:{identity.Id} {name}";
+                    if (current[key] != baseline[key])
+                    {
+                        mismatches.Add($"{key}: expected {baseline[key]}, got {current[key]}");
+                    }
+                    continue;
+                }
+
+                // A control-scoped global override. The dump does not hold effective control globals; the old
+                // compiler applied the override value verbatim, so the XML value is the baseline here.
+                registry.TryGetGlobalToken(name, out var global).ShouldBeTrue(name);
+                var expectedValue = global!.Format(global.Parse(token.Attribute("Value")!.Value));
+                var actual = global.Format(snapshot.Controls[owner.Slot]
+                                                   .GetEffectiveGlobalValue<object?>(snapshot.GlobalTokenValues, global.Slot));
+                if (actual != expectedValue)
+                {
+                    mismatches.Add($"{identity} global {name}: expected {expectedValue}, got {actual}");
+                }
+            }
+        }
+
+        return mismatches;
     }
 
     private static string FormatValue(TokenDescriptor token, object? value)

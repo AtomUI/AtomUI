@@ -74,10 +74,16 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         var surface = rules.Surface.AsSpan();
         var alias   = _preset.Alias;
 
-        // PrimeUIX focus.ring.color is the primary colour, its width one line; fields get no outline glow.
+        // PrimeUIX focus.ring.color is the primary colour; the ring and the field glow widths come from the preset
+        // (Aura: a one-line ring, no glow; Lara: no ring, a three-line glow).
         token.ColorFocusBorder           = token.ColorPrimary;
         token.FocusVisualBorderThickness = new Thickness(token.LineWidth * alias.FocusVisualBorderLineWidths);
         token.ControlOutlineWidth        = token.LineWidth * alias.ControlOutlineLineWidths;
+        if (rules.ControlOutline is { } controlOutline)
+        {
+            // PrimeUIX focus.ring.shadow of a preset that glows focused fields; otherwise the Ant formula stays.
+            token.ColorControlOutline = controlOutline(token);
+        }
 
         // PrimeUIX form.field.placeholder.color and the muted text both use text.muted.color.
         token.ColorTextPlaceholder     = token.ColorTextSecondary;

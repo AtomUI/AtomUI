@@ -39,6 +39,8 @@ internal static class PrimeNGAuraPreset
     private const int White = PrimeNGShade.White;
     private const int Black = PrimeNGShade.Black;
 
+    // The colour rows equal Lara's by design: each preset is transcribed from its own XML and is expected to diverge
+    // (see "Lara rules" in the README).
     internal static readonly PrimeNGPreset Table = new(
         Light: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Slate,
@@ -65,7 +67,8 @@ internal static class PrimeNGAuraPreset
                 BgBlur: new(White, 0), BgSolid: new(900), BgSolidHover: new(800), BgSolidActive: new(950),
                 Border: new(300), BorderSecondary: new(200), BgMask: new(Black, 0.4),
                 BgContainerDisabled: new(200), TextDisabled: new(400)),
-            SelectionForeground: new(White)),
+            SelectionForeground: new(White),
+            ControlOutline: null),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -91,7 +94,8 @@ internal static class PrimeNGAuraPreset
                 BgBlur: new(White, 0.04), BgSolid: new(White), BgSolidHover: new(300), BgSolidActive: new(100),
                 Border: new(600), BorderSecondary: new(700), BgMask: new(Black, 0.6),
                 BgContainerDisabled: new(700), TextDisabled: new(500)),
-            SelectionForeground: new(900)),
+            SelectionForeground: new(900),
+            ControlOutline: null),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
@@ -102,8 +106,13 @@ internal static class PrimeNGAuraPreset
             BoxShadowsSecondary: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")),
         Controls: new PrimeNGControlRule(
             ButtonFontWeight: FontWeight.Medium,
+            ButtonPaddingHorizontal: null,
             CheckIndicatorSize: 20,
             CheckedMarkSize: 14,
+            // A fit to the baseline 12,8 (compact 8,6); PrimeUIX list.padding for the panel.
+            SelectOptionPadding: static global =>
+                new Thickness(global.UniformlyPaddingSM, global.UniformlyPaddingSM / 2 + 2),
+            SelectPopupContentPadding: static global => new Thickness(global.UniformlyPaddingXXS),
             CardBodyPadding: 20,
             CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
             DialogPadding: 20,

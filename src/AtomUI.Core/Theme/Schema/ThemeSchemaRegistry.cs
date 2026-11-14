@@ -1,6 +1,8 @@
 using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using AtomUI.Registration;
@@ -14,8 +16,16 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<ControlTokenIdentity, ControlTokenDescriptor> _controlsByIdentity;
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
     private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
-    private readonly FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>
+    // The control stage state is null when no control stage is registered, so that the generic machinery over the
+    // value-tuple key is never instantiated (nor jitted) for the built-in themes. Set only by AttachControlAlgorithms,
+    // called from the constructor.
+    private FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>?
         _controlAlgorithmsByKey;
+    private ReadOnlyCollection<ControlTokenAlgorithmDescriptor>? _controlAlgorithms;
+    // A field rather than an auto-property's hidden one so that AttachControlAlgorithms and
+    // FoldControlAlgorithmsIntoRevision can fold the stages into it. Constructor-only: written only by the
+    // constructors and those two helpers they call.
+    private ThemeSchemaRevision _revision;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
@@ -30,18 +40,24 @@ internal sealed class ThemeSchemaRegistry
     internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
         IEnumerable<ThemeAlgorithmDescriptor> algorithms,
         IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
-        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms, null, controlAlgorithms)
+        // Chains straight to the private constructor: a forwarding overload in between would be one more jitted
+        // method on every startup.
+        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms, null, null, controlAlgorithms)
     {
         _startupIndex = index;
         Controls = new StartupControlList(index);
         // Neither the compiled stamp nor Core's global fingerprint sees algorithms or control stages registered
         // by packages.
-        Revision = FoldControlAlgorithms(FoldPackageAlgorithms(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
+        _revision = FoldPackageAlgorithms(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
             ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
             index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
                 package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
                     ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray()),
-            Algorithms), ControlAlgorithms);
+            Algorithms);
+        if (HasControlAlgorithms)
+        {
+            FoldControlAlgorithmsIntoRevision();
+        }
     }
 
     internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
@@ -237,26 +253,24 @@ internal sealed class ThemeSchemaRegistry
             static descriptor => descriptor.Algorithm,
             EqualityComparer<ThemeAlgorithm>.Default,
             "algorithm");
-        var controlAlgorithmArray = OrderControlAlgorithms(controlAlgorithms);
+        // Validated and ordered here, where it always was; null for no control stage (null or empty input), which
+        // then never enters the fold or the map (AttachControlAlgorithms below).
+        var controlAlgorithmArray = controlAlgorithms is null ? null : OrderControlAlgorithms(controlAlgorithms);
 
         GlobalTokens          = globalTokensView;
         Controls              = Array.AsReadOnly(controlArray);
         Algorithms            = Array.AsReadOnly(algorithmArray);
         ThemeAssets           = Array.AsReadOnly(assetArray);
-        ControlAlgorithms     = controlAlgorithmArray.Length == 0
-            ? Array.Empty<ControlTokenAlgorithmDescriptor>()
-            : Array.AsReadOnly(controlAlgorithmArray);
         if (combinedRevisionEvidence is { } evidence)
         {
             ArgumentNullException.ThrowIfNull(evidence.Packages);
-            Revision = FoldPackageAlgorithms(
+            _revision = FoldPackageAlgorithms(
                 ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages), algorithmArray);
         }
         else
         {
-            Revision = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
+            _revision = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
         }
-        Revision = FoldControlAlgorithms(Revision, controlAlgorithmArray);
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
         _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
         _controlsByType       = BuildUniqueMap(
@@ -266,7 +280,11 @@ internal sealed class ThemeSchemaRegistry
                                     "Control CLR type")
                                 .ToFrozenDictionary();
         _algorithmsByAlgorithm = algorithmMap.ToFrozenDictionary();
-        _controlAlgorithmsByKey = BuildControlAlgorithmMap(controlAlgorithmArray);
+        if (controlAlgorithmArray is not null)
+        {
+            HasControlAlgorithms = true;
+            AttachControlAlgorithms(controlAlgorithmArray);
+        }
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
         _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
     }
@@ -279,8 +297,15 @@ internal sealed class ThemeSchemaRegistry
     /// The registered control token stages, ordered by algorithm identity and then control identity. A stage whose
     /// algorithm or control is not registered is kept here but never called.
     /// </summary>
-    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlAlgorithms { get; }
-    public ThemeSchemaRevision Revision { get; }
+    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlAlgorithms =>
+        (IReadOnlyList<ControlTokenAlgorithmDescriptor>?)_controlAlgorithms ?? Array.Empty<ControlTokenAlgorithmDescriptor>();
+
+    /// <summary>
+    /// Whether any control token stage is registered. A plain field so that the check costs neither a call nor a
+    /// jitted getter: every no-stage path tests it before calling into the control stage machinery.
+    /// </summary>
+    internal readonly bool HasControlAlgorithms;
+    public ThemeSchemaRevision Revision => _revision;
     // A structural revision does not identify descriptor callbacks or binding ownership.
     // The key carries this small identity instead of retaining the entire registry.
     internal object BindingIdentity { get; } = new();
@@ -550,6 +575,11 @@ internal sealed class ThemeSchemaRegistry
         ControlTokenIdentity control,
         [NotNullWhen(true)] out ControlTokenAlgorithmDescriptor? descriptor)
     {
+        if (_controlAlgorithmsByKey is null)
+        {
+            descriptor = null;
+            return false;
+        }
         return _controlAlgorithmsByKey.TryGetValue((algorithm, control), out descriptor);
     }
 
@@ -827,17 +857,14 @@ internal sealed class ThemeSchemaRegistry
         return new ThemeSchemaRevision(fingerprint.Value);
     }
 
-    private static ControlTokenAlgorithmDescriptor[] OrderControlAlgorithms(
-        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
+    // Null for an empty set: no control stage is represented without any of the stage state.
+    private static ControlTokenAlgorithmDescriptor[]? OrderControlAlgorithms(
+        IEnumerable<ControlTokenAlgorithmDescriptor> controlAlgorithms)
     {
-        if (controlAlgorithms is null)
-        {
-            return Array.Empty<ControlTokenAlgorithmDescriptor>();
-        }
         var array = controlAlgorithms.ToArray();
         if (array.Length == 0)
         {
-            return array;
+            return null;
         }
         foreach (var descriptor in array)
         {
@@ -855,13 +882,26 @@ internal sealed class ThemeSchemaRegistry
         return array;
     }
 
+    // Everything the constructor does for a non-empty stage set, kept out of the constructor, which runs (and is
+    // jitted) at every startup: the read-only view, the revision fold, then the lookup map, which throws on duplicates
+    // at the point where the constructor always built it.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AttachControlAlgorithms(ControlTokenAlgorithmDescriptor[] controlAlgorithms)
+    {
+        _controlAlgorithms      = Array.AsReadOnly(controlAlgorithms);
+        _revision               = FoldControlAlgorithms(_revision, controlAlgorithms);
+        _controlAlgorithmsByKey = BuildControlAlgorithmMap(controlAlgorithms);
+    }
+
+    // The startup-index constructor replaces the revision with one from compile-time stamps; the stages are folded in
+    // again here, out of that constructor.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void FoldControlAlgorithmsIntoRevision() =>
+        _revision = FoldControlAlgorithms(_revision, _controlAlgorithms!);
+
     private static FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>
         BuildControlAlgorithmMap(IReadOnlyList<ControlTokenAlgorithmDescriptor> controlAlgorithms)
     {
-        if (controlAlgorithms.Count == 0)
-        {
-            return FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>.Empty;
-        }
         var map = new Dictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>(
             controlAlgorithms.Count);
         foreach (var descriptor in controlAlgorithms)
@@ -876,15 +916,12 @@ internal sealed class ThemeSchemaRegistry
     }
 
     // Neither compile-time revisions nor the full walk know control stages. They are folded in on every path,
-    // in (algorithm, control) order; with none registered the revision stays exactly what it was.
+    // in (algorithm, control) order. Called only when stages are registered; with none the caller keeps the
+    // revision exactly what it was.
     private static ThemeSchemaRevision FoldControlAlgorithms(
         ThemeSchemaRevision revision,
         IReadOnlyList<ControlTokenAlgorithmDescriptor> controlAlgorithms)
     {
-        if (controlAlgorithms.Count == 0)
-        {
-            return revision;
-        }
         var fingerprint = new SchemaFingerprintBuilder();
         fingerprint.Add("AtomUI.ControlAlgorithmRevision");
         fingerprint.Add(1);

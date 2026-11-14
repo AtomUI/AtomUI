@@ -1196,3 +1196,77 @@ PrimeNG 预设包的三个预设（Aura、Lara、Nora）共 12 个主题，现�
   4. 状态色（信息、成功、警告）的种子是否改用 PrimeUIX 的取值；信息提示框图标的颜色与禁用按钮的外发光（控件模板与代码，不在「不改控件结构」的范围内）；Material 暗色主题的种子被再次推导。
   5. Nora 暗色下还有哪些控件把主色文字画在实色选中背景上（日历、级联选择、组合框、列表框、树的选中项，步骤条面板），需要在屏幕上看，本会话没有做到。
   6. 两个审阅对台账里各任务小项的逐条分类（合并前修的已在本轮完成；其余为「可不处理」或「后续」），其中引擎审阅特别点出：`ControlAlgorithmMode.Global` 下根链带 Alias 阶段的情形没有测试。
+
+### Task 23 第 3 步：最终性能复测（BASE = `3a87bba25`，NOW = `3cb519061`）
+
+**总结论：编译、切换、分配、哈希、NativeAOT 体积都通过；`AtomUI.Core` 体积 +2.00% 超过 1% 门槛；启动分段指标按字面规则不过（约 1 毫秒的 JIT）；冷编译本次分辨率约 8%，分辨不出 2%。**
+
+- 机器与环境：与 Task 7、10 相同（MacBookPro18,2，Apple M1 Max，macOS 26.6.2，.NET SDK 11.0.100，net10.0 运行时 10.0.14，Release），2026-11-14 09:59–11:05（太平洋时间）。机器上其他应用带来的常驻负载约 7–14；采样期间本工作树没有别的构建或测试。
+- 两棵树：BASE 是把提交 `3a87bba25` 导出解包后的 Release 构建，冷编译分配与 NativeAOT 可执行文件字节数都与台账登记的 Task 10 数值相同，构建无误；NOW 是本工作树 `3cb519061`（未提交的只有文档和一个文档示例测试，`src/` 与提交一致）。测量文件 `ThemeCompileMeasurement.cs` 在两棵树里逐字相同。原始数据在会话临时目录，不提交。
+- 时间（命令、采样数、判定脚本同 Task 10；交错测量每棵树 7 轮，按轮分段运行）：
+
+| 指标 | BASE 范围 / 中位数 / 波动 | NOW 范围 / 中位数 / 波动 | NOW − BASE | 判定 | 分辨率 |
+| --- | --- | --- | --- | --- | --- |
+| 冷编译 Default（P25，ms） | 0.7146–0.7838 / 0.7592 / 9.11% | 0.7345–0.7747 / 0.7526 / 5.34% | −0.87% | 在噪声内 | 9.11%，分辨不出 2% |
+| 冷编译 Dark（P25） | 0.7252–0.7891 / 0.7729 / 8.27% | 0.7493–0.7940 / 0.7633 / 5.86% | −1.24% | 在噪声内 | 8.27% |
+| 冷编译 Compact（P25） | 0.7201–0.7824 / 0.7613 / 8.18% | 0.7393–0.7690 / 0.7521 / 3.95% | −1.21% | 在噪声内 | 8.18% |
+| 切换往返 uncached（P25） | 12.0566–12.3071 / 12.1632 / 2.06% | 12.0635–12.2547 / 12.2078 / 1.57% | +0.37%（按台账固定的中位数 +0.18%） | 在噪声内 | 2.06%（中位数 2.33%） |
+| 切换往返 cached（P25） | 10.7017–11.0069 / 10.7937 / 2.83% | 10.7597–10.9849 / 10.8703 / 2.07% | +0.71% | 在噪声内 | 2.83% |
+
+  - 冷编译的分辨率本次只有 8%–9%（Task 10 当天为 2.3%–3.0%）：两批里 BASE 的第 1 轮都明显偏快，冷编译中位数当天约 0.86 ms（前一天约 0.74 ms）。开始负载不高，按既定规则不重测、不剔除。**这一批分辨不出 2%，也分辨不出当初接受的 2.3%–3.7% 那种量级**；「在噪声内」是弱结论。较强的证据是逐轮配对差值的中位数（−0.53%、−0.52%、−1.71%）与逐字相同的分配，没有变慢的迹象。
+  - 参考批（事先定为不影响结论）一致：冷编译 −0.35%、−2.22%、−0.82%，uncached −0.09%（分辨率 1.93%，能分辨 2%），cached +0.15%。
+  - 判定脚本每批按 BASE 的波动重新选统计量，这次 uncached 选了 P25，与 Task 7 固定的中位数不同；两种都列出，结论相同。
+- 分配与哈希：三条链 1,138,032 / 1,143,224 / 1,138,416 字节，`defaultMemoised` 1,121,784，与 BASE 逐字相同（增量 0）；Token 实例数 234 不变；三个值哈希与 Task 7 基线一致。**通过。**
+- 既有性能测试：`tests/AtomUI.Core.Tests/Theme/Performance` 自 `3a87bba25` 起无改动，5/5 通过。
+- 启动（两棵树各自发布启动工具，`atom-window` 与 `atom-splash` 交替各 3 次、每次 10 轮；另有一批确认，其间一批因系统后台进程把负载推到 24 而整批丢弃）：
+  - 启动工具不引用 Gallery 和 PrimeNG 包，控件阶段表在两棵树都为空；测到的是表为空时新代码路径的开销，Gallery 注册了 PrimeNG 控件阶段的情形没有覆盖。
+  - `Launch.*` 六项的 NOW 中位数都在 BASE 范围内。**通过。**
+  - 分段指标按字面规则不过，两批一致：window `Phase.Prepare` 77.1 → 78.4 ms（+1.3；确认批 +1.0；配对全为正）；splash `Phase.Commit` 81.7 → 82.8 ms（+1.1；确认批 +1.6；配对全为正）。window `Phase.Commit` +0.8、`Phase.Commit.Theme` +0.4 与 splash `Phase.Commit.Theme` +0.2 越出 BASE 范围但小于 BASE 的波动。
+  - 原因：`JitMethods.Phase.Prepare` 1655 → 1666（每次都多 11 个）。对比一次启动的 JIT 方法列表，新增的是 `ThemeSchemaRegistry.BuildControlAlgorithmMap`、`FoldControlAlgorithms`、`OrderControlAlgorithms`、`get_ControlAlgorithms`，`ThemeManager.SetPackageControlAlgorithms`，`ThemeCompiler.ResolveControlStages`、`CreateControlStagePlan`，以及以值元组 `(ThemeAlgorithm, ControlTokenIdentity)` 为键的 `FrozenDictionary` 与 `EqualityComparer` 的 7 个泛型实例（值类型键不能共享、没有预编译）。**控件阶段表为空时它们也会运行。**
+- 体积：
+
+| 产物 | BASE（字节） | NOW（字节） | 差 |
+| --- | --- | --- | --- |
+| AtomUI.Core.dll | 1,125,888 | 1,148,416 | **+22,528（+2.00%）** |
+| AtomUI.Controls.dll | 911,360 | 911,872 | +0.06% |
+| AtomUI.Desktop.Controls.dll | 10,830,848 | 10,836,992 | +0.06% |
+| AtomUI.Desktop.Controls.DataGrid.dll | 1,052,672 | 1,053,184 | +0.05% |
+| AtomUI.Desktop.Controls.ColorPicker.dll | 510,976 | 511,488 | +0.10% |
+| AtomUI.Themes.PrimeNG.dll（不设门槛） | 273,920 | 123,392 | −54.95% |
+| AtomUIGallery.dll（不设门槛） | 16,923,648 | 16,940,032 | +0.10% |
+| Gallery NativeAOT 可执行文件（osx-arm64） | 93,237,496 | 93,156,072 | −81,424（−0.09%） |
+
+  - **`AtomUI.Core` +2.00%，超过 1% 门槛。** 来自 Alias 阶段与控件阶段的契约、`StagedTokenEvaluation`、`ThemeCompiler`、`ControlTokenAlgorithmDescriptor`、`ThemeSchemaRegistry` 等新增代码（`src/AtomUI.Core` 自基线起 +1,385 / −52 行）。其余受门槛约束的程序集不超过 0.10%，NativeAOT 可执行文件反而小了 0.09%（PrimeNG 的主题数据瘦身抵消了新增代码）。
+- 新增记录（不设门槛）：PrimeNG 主题的冷编译，用仓库外的一次性程序按同一口径测量（3001 次计时、300 次预热，三次运行）：
+
+| 主题 | P25（ms） | 分配（字节） | 相对同进程的 DaybreakBlue |
+| --- | --- | --- | --- |
+| DaybreakBlue | 0.741–0.748 | 1,138,032 | — |
+| PrimeNGAura | 0.873–0.882 | 1,249,256 | 耗时 +18%，分配 +9.8% |
+| PrimeNGAura.Dark | 0.886–0.897 | 1,254,568 | 耗时 +20%，分配 +10.2% |
+
+  注册了 PrimeNG 的算法与控件阶段但不使用时，DaybreakBlue 的分配仍是 1,138,032 字节。
+- 处置：
+  - 启动的约 1 毫秒：按全局约束「不过门槛先改实现」，派出实现者让「没有注册任何控件阶段」时这些代码完全不执行，随后重测启动（见下一条记录）。
+  - `AtomUI.Core` 的 2.00%：是新增功能代码本身的体积，不是可以靠实现细节消掉的开销。按全局约束，这一项停下来报告给用户决定，不由主控放宽。
+
+### 启动回归的修正：没有控件阶段时不再触发其代码的即时编译（两步）
+
+- 第 1 步（去掉多余的 JIT 方法）：`ThemeSchemaRegistry` 新增普通字段 `HasControlAlgorithms`；没有控件阶段时不做排序、折叠、建表，也不实例化以 `(ThemeAlgorithm, ControlTokenIdentity)` 为键的泛型；启动索引的构造函数直接链到私有构造函数；编译器、延迟快照、构建器、`ThemeManager`、追加包在调用前先判断这个字段（替换原来读 `ControlAlgorithms.Count` 的地方，没有新增判断）。启动时 JIT 的方法数恢复到与 BASE 相同（11,397；修正前 11,413），`JitMethods.Phase.Prepare` 1655（修正前 1666）。这一步之后启动耗时还剩约 0.3–0.8 毫秒，对应已有方法里多出的 973 字节 IL。
+- 第 2 步（把只在有阶段时才运行的代码移出每个主题都要走的方法，冷方法加 `NoInlining`）：`EvaluateAlgorithms` 的异常构造与 Alias 收集移出（`try` 与过滤条件保留，语义不变）；`CompileControl` 里 `Global`/`Custom` 写回的模式判断移进 `RunControlGlobalStage`，Own 阶段并入公共块；`CompileControls` 的阶段判断移进一个新的重载；Alias 用的名称表放进嵌套静态类，不再进入 `ThemeCompiler` 的静态构造；注册表的阶段视图、折叠、建表移入 `AttachControlAlgorithms`，启动索引构造函数的折叠移入 `FoldControlAlgorithmsIntoRevision`；缓存键 `Equals` 的阶段比较移入 `StageIdentityEquals`；构建器的阶段列表改为首次添加时才创建。没有改动任何测试，也没有改动测试用到的签名。
+- IL 大小（字节，BASE → 第 1 步 → 第 2 步）：`EvaluateAlgorithms` 82 → 275 → 158，`CompileControl` 464 → 643 → 534，`CompileControls` 490 → 558 → 520，`ThemeCompiler` 静态构造 31 → 41 → 31，注册表私有构造函数 1073 → 1185 → 1108，启动索引构造函数 208 → 250 → 233，`ThemeManagerBuilder` 构造函数 272 → 283 → 272，`BuildCore` 307 → 337 → 332，缓存键 `Equals` 103 → 132 → 122。启动时 JIT 的 IL 总量比 BASE 多 973 → 579 字节，Tier0 机器码多 3,244 → 2,460 字节。剩余部分各有原因（Map 阶段的 `try` 与过滤条件、Alias 的参数传递、闭包字段读取、为避免多一个转发构造函数而写的三元表达式）；再压缩需要改变异常语义、复制一份 `CompileControl`，或让每次启动多 JIT 一个方法，因此停在这里。
+- 验证：`AtomUI.Core.Tests` 564/564，`AtomUI.Themes.Tests` 100/100，`AtomUI.Generator.Tests` 1107/1107，`AtomUIGallery.Tests` 427/427；测量工具 Default 1,138,032、Dark 1,143,224、Compact 1,138,416，三个哈希不变；PrimeNG 12 个主题的导出与修正前逐字节相同；一次启动的 JIT 方法列表与 BASE 数量相同，控件阶段的方法与新增的辅助方法都不在其中。
+- 启动复测（事先约定第 1 批为正式结果、第 2 批为确认；每次运行前 1 分钟负载 11.4–14.9）：
+
+| 指标 | 修正前 | 正式批 | 确认批 |
+| --- | --- | --- | --- |
+| window `Phase.Prepare` | +1.0 到 +1.3 ms，超出 BASE 范围 | 76.18 ms，BASE 76.23–77.33：低于下限（更快），配对差全为负 | 77.24 ms，BASE 76.10–77.25：范围内，配对差全为正 |
+| splash `Phase.Commit` | +1.1 到 +1.6 ms，超出 BASE 范围 | 82.58 ms，BASE 81.24–82.67：范围内 | 82.04 ms，BASE 81.86–82.74：范围内 |
+| `Jit.Phase.Prepare`（window / splash，ms） | +1.8 / 持平 | 66.2 → 66.0 / 63.4 → 63.9 | 66.2 → 67.0 / 63.3 → 63.7 |
+
+  按门槛的字面规则（中位数落在 BASE 范围内，只看变慢的方向），两批都通过。两批在 window `Phase.Prepare` 上的差值符号相反（−0.3 与 +0.8 毫秒）：剩余的差异低于这台机器约 1 毫秒的分辨能力，没有被证明为零。
+- 审阅结论：逐段核对等价性，没有发现任何行为差异，无严重或重要问题。确认了：有阶段时每段移出的代码输入、副作用顺序、异常的类型与消息与抛出顺序都不变；「空列表」与「没有列表」在注册表的修订号、查找、追加校验各处等价；没有阶段时任何辅助方法都不会进入、没有新增分配，每处判断都是替换而不是新增；`NoInlining` 只加在冷方法上。一处过期的方法摘要与一处字段注释已更正（只改注释）。
+- 留待以后的小项：注册表的三个字段因由构造期的辅助方法写入而不再是 `readonly`，构造后不可变现在只是约定（注释已写明）；`ResolveControlStages` 与 `HasControlStage` 内部对 `HasControlAlgorithms` 的重复判断无害，只在有阶段的路径上执行。
+- `AtomUI.Core.dll`：1,148,928 字节，比基线 1,125,888 多 23,040 字节（+2.05%），这次修正前是 1,148,416（+2.00%）。**超过 1% 的体积门槛，未放宽，等用户决定。**
+- 文档回填：这次复测与修正的结果已写进六处讲性能的文档（`runtime.md` 第 7.2 节、算法作者指南的性能一节、中英两份 API 变更文档、双语 CHANGELOG），其中核心库体积增长记为「超过门槛、尚未决定」，没有写成已接受。
+- 修正后的全量回归（最终代码）：`[SUMMARY] TOTAL: 12491 个测试全部通过, 总耗时 15:31`。不在回归脚本里的 `AtomUI.Themes.Tests` 在同一份代码上 100/100。

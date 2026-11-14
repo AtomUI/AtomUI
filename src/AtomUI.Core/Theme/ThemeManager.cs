@@ -123,7 +123,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeSchemaRegistry? _startupRegistry;
     // Core's generated algorithms plus the package algorithms handed over by the builder; Core's own list when none.
     private IReadOnlyList<ThemeAlgorithmDescriptor> _registryAlgorithms = GeneratedThemeSchema.GetAlgorithms();
-    private IReadOnlyList<ControlTokenAlgorithmDescriptor> _registryControlAlgorithms = [];
+    // Null until the builder registers control stages; a null list keeps registry construction off the stage path.
+    private IReadOnlyList<ControlTokenAlgorithmDescriptor>? _registryControlAlgorithms;
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
@@ -2046,12 +2047,19 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 GeneratedThemeSchema.GlobalSchemaFingerprint,
                 packageFingerprints,
                 _registryControlAlgorithms)
-            : new ThemeSchemaRegistry(
-                GeneratedThemeSchema.GetGlobalTokens(),
-                _controlTokenDescriptors,
-                _registryAlgorithms,
-                _controlThemeAssetDescriptors,
-                _registryControlAlgorithms);
+            : _registryControlAlgorithms is null
+                // Without control stages the overload that never had them is used, so no extra constructor is jitted.
+                ? new ThemeSchemaRegistry(
+                    GeneratedThemeSchema.GetGlobalTokens(),
+                    _controlTokenDescriptors,
+                    _registryAlgorithms,
+                    _controlThemeAssetDescriptors)
+                : new ThemeSchemaRegistry(
+                    GeneratedThemeSchema.GetGlobalTokens(),
+                    _controlTokenDescriptors,
+                    _registryAlgorithms,
+                    _controlThemeAssetDescriptors,
+                    _registryControlAlgorithms);
         return registry;
     }
 

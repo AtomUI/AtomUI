@@ -355,9 +355,7 @@ internal sealed class ThemeCompiler
                 global.Resources,
                 global.Palettes,
                 controlCompilationCache);
-            var hasControlStage = input.Registry.ControlAlgorithms.Count != 0 && descriptor.HasOwnTokens &&
-                                  HasControlStage(input.Registry, descriptor.Identity,
-                                      ControlStageChain(config, input.EffectiveConfig.Algorithms));
+            var hasControlStage = input.Registry.HasControlAlgorithms && HasControlStage(input, descriptor, config);
             cells[slot] = new ControlSnapshotCell(source, descriptor, config, FindValueDonor(input, descriptor.Identity, slot),
                 hasControlStage);
         }
@@ -427,7 +425,7 @@ internal sealed class ThemeCompiler
             // A configured control never uses the root's shared resources directly; an unconfigured one does unless
             // the scope chain runs a control token stage for it (its EvaluateGlobal may write its global copy).
             var usesRootSharedResources = !hasConfig &&
-                (registry.ControlAlgorithms.Count == 0 ||
+                (!registry.HasControlAlgorithms ||
                  !HasControlStage(registry, identity, effectiveConfig.Algorithms));
             cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot],
                 () => effectiveConfig.TryGetControl(identity, out var config) ? config : null, usesRootSharedResources,
@@ -503,7 +501,10 @@ internal sealed class ThemeCompiler
     {
         var globalDescriptors = registry.GlobalTokens;
         // Takes the place of the stage array: still a single reference local, null on the path without stages.
-        var stages = CreateControlStagePlan(registry, descriptor, config, globalAlgorithms);
+        // Checked before the call so that the no-stage path never enters (or jits) the stage machinery.
+        var stages = registry.HasControlAlgorithms
+            ? CreateControlStagePlan(registry, descriptor, config, globalAlgorithms)
+            : null;
         var effectiveGlobalBuilder = CopyBuilder(globalBuilder, globalDescriptors);
         var appearance = globalAppearance;
         var effectiveGlobalMatchesRoot = config is null;
@@ -544,14 +545,8 @@ internal sealed class ThemeCompiler
             }
         }
 
-        // Global and Custom modes re-derive the control's global tokens without the scope's explicit Map/Alias values
-        // (the documented existing exception of spec 4.3), so nothing is written back there either.
         if (stages is not null &&
-            RunControlGlobalStage(stages, config,
-                config is { AlgorithmMode: ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom }
-                    ? null
-                    : scopeGlobalTokens,
-                appearance, effectiveGlobalBuilder))
+            RunControlGlobalStage(stages, config, scopeGlobalTokens, appearance, effectiveGlobalBuilder))
         {
             effectiveGlobalMatchesRoot = false;
         }
@@ -579,31 +574,28 @@ internal sealed class ThemeCompiler
         var controlTokenValues = TokenValueTable.Empty;
         IReadOnlyDictionary<object, object?> controlResources =
             FrozenDictionary<object, object?>.Empty;
-        if (controlBuilder is not null && stages is not null)
+        if (controlBuilder is not null)
         {
             controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder);
-            RunControlOwnStage(descriptor, controlBuilder, config, appearance, effectiveGlobalBuilder, stages);
-            controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
-            controlResources = BuildResourceMap(
-                controlBuilder,
-                descriptor.OwnTokens,
-                previousResources: previous?.ControlResources);
-        }
-        else if (controlBuilder is not null)
-        {
-            controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder);
-            var ownTokens = config?.OwnTokens;
-            if (ownTokens is not null)
+            if (stages is not null)
             {
-                // Explicit overrides are written and flagged before the evaluator runs so default
-                // calculations can see them; they are written again afterwards so they still win.
-                MarkExplicit(controlBuilder, ownTokens);
+                RunControlOwnStage(descriptor, controlBuilder, config, appearance, effectiveGlobalBuilder, stages);
             }
-
-            descriptor.Evaluate(controlBuilder, appearance);
-            if (ownTokens is not null)
+            else
             {
-                ApplyAllValues(controlBuilder, ownTokens);
+                var ownTokens = config?.OwnTokens;
+                if (ownTokens is not null)
+                {
+                    // Explicit overrides are written and flagged before the evaluator runs so default
+                    // calculations can see them; they are written again afterwards so they still win.
+                    MarkExplicit(controlBuilder, ownTokens);
+                }
+
+                descriptor.Evaluate(controlBuilder, appearance);
+                if (ownTokens is not null)
+                {
+                    ApplyAllValues(controlBuilder, ownTokens);
+                }
             }
 
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
@@ -638,13 +630,26 @@ internal sealed class ThemeCompiler
         NormalizedControlThemeConfig? config,
         IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms)
     {
-        if (registry.ControlAlgorithms.Count == 0 || !descriptor.HasOwnTokens)
+        if (!registry.HasControlAlgorithms || !descriptor.HasOwnTokens)
         {
             return null;
         }
 
         return CollectControlStages(registry, descriptor.Identity, ControlStageChain(config, globalAlgorithms));
     }
+
+    /// <summary>
+    /// Whether a control token stage runs for <paramref name="descriptor"/> under <paramref name="input"/>'s scope chain
+    /// (or the control's own chain in Custom mode). Kept out of <see cref="CompileControls"/>, which runs for every
+    /// theme; called only when the registry has control stages.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool HasControlStage(
+        ThemeCompileInput input,
+        ControlTokenDescriptor descriptor,
+        NormalizedControlThemeConfig? config) =>
+        descriptor.HasOwnTokens &&
+        HasControlStage(input.Registry, descriptor.Identity, ControlStageChain(config, input.EffectiveConfig.Algorithms));
 
     /// <summary>
     /// Whether any algorithm of <paramref name="chain"/> has a control stage for <paramref name="control"/>. Allocates
@@ -655,7 +660,7 @@ internal sealed class ThemeCompiler
         ControlTokenIdentity control,
         IReadOnlyList<ThemeAlgorithmDescriptor> chain)
     {
-        if (registry.ControlAlgorithms.Count == 0)
+        if (!registry.HasControlAlgorithms)
         {
             return false;
         }
@@ -687,6 +692,7 @@ internal sealed class ThemeCompiler
         internal ThemeAlgorithmContext Context;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static ControlStagePlan? CreateControlStagePlan(
         ThemeSchemaRegistry registry,
         ControlTokenDescriptor descriptor,
@@ -737,13 +743,18 @@ internal sealed class ThemeCompiler
     /// Runs <c>EvaluateGlobal</c> of every control stage, in chain order, on the control's own copy of its effective
     /// global token. Then, for each token a stage wrote, the scope's explicit value is written back when the theme
     /// sets that token and it is a Map or Alias token (seed tokens are inputs the Map stage already replaced, so an
-    /// explicit seed is not restored); <paramref name="scopeGlobalTokens"/> is <see langword="null"/> in
-    /// <see cref="ControlAlgorithmMode.Global"/> and <see cref="ControlAlgorithmMode.Custom"/> mode, where nothing is
-    /// written back; finally the control-scoped global overrides are written again so they win
+    /// explicit seed is not restored); in <see cref="ControlAlgorithmMode.Global"/> and
+    /// <see cref="ControlAlgorithmMode.Custom"/> mode nothing is written back (see remarks); finally the control-scoped global overrides are written again so they win
     /// over both. The writes take effect directly, as in <see cref="ControlAlgorithmMode.Disabled"/> mode: Map and
     /// Alias are not rerun.
     /// </summary>
     /// <returns>Whether any stage wrote a global token.</returns>
+    /// <remarks>
+    /// Global and Custom modes re-derive the control's global tokens without the scope's explicit Map/Alias values
+    /// (the documented existing exception of spec 4.3), so nothing is written back there either; that mode check is
+    /// made here rather than in <see cref="CompileControl"/>, which runs for every control.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static bool RunControlGlobalStage(
         ControlStagePlan plan,
         NormalizedControlThemeConfig? config,
@@ -751,6 +762,10 @@ internal sealed class ThemeCompiler
         ThemeAppearance appearance,
         DesignToken controlGlobal)
     {
+        if (config is { AlgorithmMode: ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom })
+        {
+            scopeGlobalTokens = null;
+        }
         plan.Context = CreateAlgorithmContext(appearance, plan.Chain);
         IReadOnlyCollection<string> names;
         ControlTokenAlgorithmDescriptor? running = null;
@@ -817,6 +832,7 @@ internal sealed class ThemeCompiler
 
     // Kept separate from CompileControl: the lambdas capture locals, and the closure would otherwise be allocated on
     // entry to CompileControl, on the path without control stages too.
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static void RunControlOwnStage(
         ControlTokenDescriptor descriptor,
         AbstractControlDesignToken controlBuilder,
@@ -1124,7 +1140,7 @@ internal sealed class ThemeCompiler
                 token => instance.EvaluateAlias(in context, (DesignToken)token));
         }
 
-        var tokensByName = GlobalTokenNames.GetValue(descriptors, static list => new GlobalTokenNameIndex(list));
+        var tokensByName = GlobalTokenNames.Table.GetValue(descriptors, static list => new GlobalTokenNameIndex(list));
         StagedTokenEvaluation.Run(
             builder,
             nameof(TokenStage.Alias),
@@ -1144,9 +1160,12 @@ internal sealed class ThemeCompiler
     internal readonly record struct AliasStageAlgorithm(ThemeAlgorithm Algorithm, IThemeAliasAlgorithm Instance);
 
     // Global descriptor lists are registry-owned and immutable; the name index is built only the first time an
-    // Alias stage runs against a list, never on the built-in path.
-    private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, GlobalTokenNameIndex>
-        GlobalTokenNames = new();
+    // Alias stage runs against a list, never on the built-in path. The table sits in its own class so that its
+    // static initialization runs only then too, not in ThemeCompiler's static constructor.
+    private static class GlobalTokenNames
+    {
+        internal static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, GlobalTokenNameIndex> Table = new();
+    }
 
     private sealed class GlobalTokenNameIndex(IReadOnlyList<TokenDescriptor> descriptors)
     {
@@ -1183,18 +1202,12 @@ internal sealed class ThemeCompiler
             }
             catch (Exception exception) when (exception is not ThemeAlgorithmContractException)
             {
-                throw new ThemeAlgorithmContractException(
-                    algorithm.Algorithm,
-                    null,
-                    ThemeAlgorithmContractViolationKind.Failed,
-                    $"Algorithm '{algorithm.Algorithm}' failed in the {nameof(TokenStage.Map)} stage.",
-                    exception);
+                throw CreateMapStageFailure(algorithm.Algorithm, exception);
             }
 
-            if (instance is IThemeAliasAlgorithm aliasInstance)
+            if (instance is IThemeAliasAlgorithm)
             {
-                (aliasAlgorithms ??= new List<AliasStageAlgorithm>()).Add(
-                    new AliasStageAlgorithm(algorithm.Algorithm, aliasInstance));
+                AddAliasAlgorithm(ref aliasAlgorithms, algorithm, instance);
             }
             previousMap = nextMap;
         }
@@ -1202,6 +1215,24 @@ internal sealed class ThemeCompiler
         return previousMap ?? throw new InvalidOperationException(
             "A theme compilation requires at least one algorithm.");
     }
+
+    // The cold parts of EvaluateAlgorithms live in their own methods: it runs for every theme, and every IL byte in it
+    // is jitted at startup, while these run only when an algorithm fails or has an Alias stage.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static ThemeAlgorithmContractException CreateMapStageFailure(ThemeAlgorithm algorithm, Exception exception) =>
+        new(algorithm,
+            null,
+            ThemeAlgorithmContractViolationKind.Failed,
+            $"Algorithm '{algorithm}' failed in the {nameof(TokenStage.Map)} stage.",
+            exception);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void AddAliasAlgorithm(
+        ref List<AliasStageAlgorithm>? aliasAlgorithms,
+        ThemeAlgorithmDescriptor algorithm,
+        IThemeAlgorithm instance) =>
+        (aliasAlgorithms ??= new List<AliasStageAlgorithm>()).Add(
+            new AliasStageAlgorithm(algorithm.Algorithm, (IThemeAliasAlgorithm)instance));
 
     private sealed class CanonicalGlobalSchema
     {

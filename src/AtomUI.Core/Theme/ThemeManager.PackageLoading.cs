@@ -54,7 +54,8 @@ internal partial class ThemeManager
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
         // Committed control stages stay; the appended ones are accepted only where they cannot change committed values.
-        var controlAlgorithms = builder.ControlTokenAlgorithms.Count == 0 ? _startupRegistry.ControlAlgorithms
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms = builder.ControlTokenAlgorithms.Count == 0
+            ? _startupRegistry.HasControlAlgorithms ? _startupRegistry.ControlAlgorithms : null
             : _startupRegistry.ControlAlgorithms.Concat(builder.ControlTokenAlgorithms).ToArray();
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, algorithms,
             controlAlgorithms);

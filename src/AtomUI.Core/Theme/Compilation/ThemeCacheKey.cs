@@ -605,10 +605,15 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
                Appearance == other.Appearance &&
                Identity == other.Identity &&
                (ReferenceEquals(_compilationIdentity, other._compilationIdentity) ||
-                (_compilationIdentity is ControlStageCompilationIdentity stages && stages.Equals(other._compilationIdentity))) &&
+                StageIdentityEquals(_compilationIdentity, other._compilationIdentity)) &&
                _global.Equals(other._global) &&
                Equals(_controlConfig, other._controlConfig);
     }
+
+    // Reached only when the identities are different instances: then equal only as two value-equal stage identities.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool StageIdentityEquals(object identity, object other) =>
+        identity is ControlStageCompilationIdentity stages && stages.Equals(other);
 
     public override bool Equals(object? obj)
     {

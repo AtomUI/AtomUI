@@ -104,7 +104,9 @@ internal sealed class LazyControlSnapshotSource
         // the closure of every control, including those without stages.
         return _cache?.TryGetTarget(out var cache) == true
             ? cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory, EstimatedRetainedBytes,
-                ThemeCompiler.ResolveControlStages(_registry, descriptor, config, _globalAlgorithms))
+                _registry.HasControlAlgorithms
+                    ? ThemeCompiler.ResolveControlStages(_registry, descriptor, config, _globalAlgorithms)
+                    : null)
             : Factory();
     }
 

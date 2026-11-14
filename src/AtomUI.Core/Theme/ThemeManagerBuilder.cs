@@ -14,7 +14,8 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly List<Action<IThemeManager>> _initializers = new();
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
     private readonly List<ThemeAlgorithmDescriptor> _themeAlgorithms = [];
-    private readonly List<ControlTokenAlgorithmDescriptor> _controlTokenAlgorithms = [];
+    // Created by the first AddControlTokenAlgorithms call; null keeps the builder's construction free of it.
+    private List<ControlTokenAlgorithmDescriptor>? _controlTokenAlgorithms;
     private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
     private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
@@ -48,7 +49,8 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
     internal IReadOnlyList<ThemeAlgorithmDescriptor> ThemeAlgorithms => _themeAlgorithms;
-    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlTokenAlgorithms => _controlTokenAlgorithms;
+    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlTokenAlgorithms =>
+        (IReadOnlyList<ControlTokenAlgorithmDescriptor>?)_controlTokenAlgorithms ?? Array.Empty<ControlTokenAlgorithmDescriptor>();
     internal StartupImage? StartupImage => _startupImage;
     internal void AddPackageDeclaration(EnabledControlPackage declaration)
     {
@@ -127,7 +129,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             }
         }
         // Kept by reference: compilation caches identify a control stage by its descriptor instance.
-        _controlTokenAlgorithms.AddRange(added);
+        (_controlTokenAlgorithms ??= []).AddRange(added);
         return this;
     }
 
@@ -437,7 +439,12 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
         themeManager.SetPackageAlgorithms(_themeAlgorithms.ToArray());
-        themeManager.SetPackageControlAlgorithms(_controlTokenAlgorithms.ToArray());
+        // Without control stages the manager keeps no list at all, so registry construction skips the stage path; an
+        // empty list (AddControlTokenAlgorithms with nothing) ends the same way, as the registry treats it as none.
+        if (_controlTokenAlgorithms is not null)
+        {
+            themeManager.SetPackageControlAlgorithms(_controlTokenAlgorithms.ToArray());
+        }
         themeManager.ConfigureStartup(InitialRequest, FollowSystemLightRequest, FollowSystemDarkRequest);
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

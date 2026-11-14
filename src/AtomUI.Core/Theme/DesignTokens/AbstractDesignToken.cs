@@ -15,10 +15,20 @@ public abstract class AbstractDesignToken
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void RecordWrite(string tokenName)
     {
-        if (_writeLog is { } log)
+        if (_writeLog is not null)
         {
-            log.Add(tokenName);
+            AddRecordedWrite(tokenName);
         }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="tokenName"/> to the write log. Kept out of line so that only the null check of
+    /// <see cref="RecordWrite"/> is inlined into every generated setter.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AddRecordedWrite(string tokenName)
+    {
+        _writeLog!.Add(tokenName);
     }
 
     /// <summary>

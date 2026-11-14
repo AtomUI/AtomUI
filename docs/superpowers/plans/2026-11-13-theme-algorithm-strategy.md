@@ -1265,6 +1265,7 @@ git commit -am "feat(Gallery): 主题预设页增加主色色块以演示算法�
 
 **Files:**
 - Modify: `docs/reference/theming/theme-definition-xml-v1.md`（第 5 节：算法集合不再封闭，`Catalog` 属性）、`docs/reference/theming/compiled-theme-abi-v1.md`、`docs/architecture/systems/theming/runtime.md`（编译顺序、三阶段、记账）、`docs/guides/theming/preset-theme-packages.md`、`docs/guides/theming/customization.md`、`docs/modules/themes/overview.md`、`docs/engineering/development/control-token-guidelines.md`（partial 属性、`protected override`）、`docs/engineering/development/compiler-diagnostics-guidelines.md`（`ATOMUIGEN049`，040/048 的新范围）
+- Modify（Task 9 审阅后补入，这四份还在展示旧的 Token 写法）: `docs/guides/theming/third-party-control-packages.md`、`docs/architecture/systems/theming/control-design-token-inheritance.md`、`docs/modules/toolkits-gallery-base/theming-localization.md`、`.github/copilot-instructions.md`。文档要写明：抽象中间层公开后可被外部继承，它们的 `protected` 辅助方法是公开承诺的一部分。
 - Create: `docs/guides/theming/writing-theme-algorithms.md`
 - Modify: `CHANGELOG.md`、`CHANGELOG.zh-CN.md`、`docs/releases/` 下当前版本的 API 变更文档（中英各一）、`README.md:247`、`DESIGN.md:24,512`、`DESIGN.en-US.md:24,512`
 

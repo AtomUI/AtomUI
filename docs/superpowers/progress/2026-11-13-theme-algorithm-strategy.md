@@ -492,3 +492,250 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   2. `AtomUIDiagnosticDescriptors.cs` 里 049 上方「默认关闭」的注释已过时。
   3. `ThemeSchemaGeneratorTests` 的桩把 `RunDefaultCalculation` 放在抽象基类上，真实生成器只在密封终端类上生成它。
   4. 全局命名空间里的 Token 的生成文件名没有测试。
+
+### Task 10：Token 记账改造后的性能门槛验收（BASE = `c0b74a816`；第一次测量的 NOW = `a059c4b01`，第二次测量的 NOW = `a059c4b01` 加补救 A，即本任务的提交）
+
+**总结论：补救 A 之后门槛仍未通过，按第 3 步停止；随后用户裁决按实测结果放行（见本节末尾「用户裁决」）。**
+
+- 第一次测量（改造原样）：冷编译慢了约 6.4%–6.9%（G1–G3 不过），启动分段指标落在 BASE 之外（G8 不过）。
+- 按主控裁定实施「补救 A」（冷路径移出内联）后第二次测量：冷编译仍慢约 2.3%–2.7%，两棵树范围仍不重叠（G1–G3 不过）；G8 按字面规则仍有指标落在 BASE 范围外（见补救 A 一节）。其余门槛都通过。
+- 一次冷编译约 3.16 万次 Token 属性写入，其中 94% 来自全局 Token 复制（`GeneratedThemeSchema.CopyGlobalValues`），剩余差异主要落在那里。
+
+#### 第一次测量（改造原样，NOW = `a059c4b01`）：未通过
+
+结论：冷编译三条链都慢了约 6.4%–6.9%，两棵树的取值范围完全不重叠（G1–G3 不过）；启动的 `Phase.Prepare` 等分段指标落在 BASE 波动之外（G8 不过）。分配、体积、值哈希、既有性能测试都通过。原因见「原因」一节：`RecordWrite` 跨程序集内联了，但它的冷路径（`TokenWriteLog.Add`，含 `HashSet.Add` 与 `List.Add`）也被一起内联进每一个 setter 调用点，编译期代码大幅膨胀，部分 setter 因此不再被内联。这一轮没有改任何生产代码。
+
+- 机器与环境：MacBookPro18,2（Apple M1 Max，10 核，64 GB），macOS 26.6.2（25G83），.NET SDK 11.0.100，测试目标 net10.0（运行时 10.0.x），Release。与 Task 7 同一台机器、同一配置。
+- 取得两棵树：`git archive --format=tar -o <S>/task10/base.tar c0b74a816`，然后 `tar -xf <S>/task10/base.tar -C <S>/task10/base`。NOW 是本工作树。测量文件 `ThemeCompileMeasurement.cs` 在两棵树里逐字相同（`diff` 无输出），`git diff c0b74a816 a059c4b01` 对它也无差异。两棵树都执行 `dotnet build tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj -c Release`，再 `dotnet build-server shutdown`；BASE 的 Default 冷编译分配（1,136,160 字节）与 Task 7 登记的 NOW 完全一致，说明 BASE 构建无误。
+- 原始数据都在临时目录 `<S>/task10/`（`<S>` 为 `scratchpad/perf`），不提交。
+
+**时间（G1–G5）**
+
+- 命令：Task 7 规定的命令，`DOTNET_TieredCompilation=0`，冷编译 3001 次计时 / 300 次预热，切换 501 次 / 50 次。交错脚本 `<S>/task10/scripts/run_measure.sh <out> 7`（BASE、NOW、BASE、NOW…，采样数必须显式传入，脚本缺省会报错），判定脚本仍是 Task 7 的 `<S>/scripts/r2_verdict.py`（脚本里的 `pre` 即 BASE）。数据在 `<S>/task10/runs-a`。
+- 外部负载：开始前约定「某轮开始时 1 分钟负载 > 15 即视为受干扰，整批重测」。本批 14 次运行开始时的 1 分钟负载为 5.78–8.86（逐轮：BASE 8.67/7.96/6.01/5.78/8.86/8.55/6.12，NOW 6.73/7.17/6.65/7.67/7.35/7.69/6.96），没有受干扰的轮次，整批保留，未丢弃任何批次。
+- 统计量只看 BASE 自己的波动选定（与 Task 7 的固定选择一致）：
+
+| 指标 | BASE 波动（每次运行中位数） | BASE 波动（每次运行 P25） | 门槛统计量 |
+| --- | --- | --- | --- |
+| 冷编译 Default | 7.28% | 2.28% | P25 |
+| 冷编译 Dark | 2.83% | 2.70% | P25 |
+| 冷编译 Compact | 3.00% | 2.26% | P25 |
+| 切换往返 uncached | 1.78% | 2.43% | 中位数 |
+| 切换往返 cached | 1.45% | 0.71% | P25 |
+
+按所选统计量，每次运行的数值（ms）：
+
+| 指标 | BASE 七次 | BASE 范围 / 中位数 / 波动 | NOW 七次 | NOW 范围 / 中位数 / 波动 | NOW − BASE |
+| --- | --- | --- | --- | --- | --- |
+| 冷编译 Default（P25） | 0.6924, 0.6947, 0.6928, 0.6872, 0.6898, 0.6946, 0.7030 | 0.6872–0.7030 / 0.6928 / 0.0158（2.28%） | 0.7340, 0.7376, 0.7343, 0.7395, 0.7435, 0.7377, 0.7435 | 0.7340–0.7435 / 0.7377 / 0.0095（1.29%） | +0.0449（+6.48%） |
+| 冷编译 Dark（P25） | 0.7041, 0.6937, 0.7008, 0.6921, 0.6977, 0.6997, 0.7110 | 0.6921–0.7110 / 0.6997 / 0.0189（2.70%） | 0.7442, 0.7486, 0.7409, 0.7422, 0.7544, 0.7442, 0.7583 | 0.7409–0.7583 / 0.7442 / 0.0174（2.34%） | +0.0445（+6.36%） |
+| 冷编译 Compact（P25） | 0.6946, 0.6923, 0.6941, 0.6908, 0.6896, 0.6937, 0.7053 | 0.6896–0.7053 / 0.6937 / 0.0157（2.26%） | 0.7416, 0.7415, 0.7356, 0.7333, 0.7481, 0.7402, 0.7497 | 0.7333–0.7497 / 0.7415 / 0.0164（2.21%） | +0.0478（+6.89%） |
+| 切换往返 uncached（中位数） | 12.0573, 11.9999, 12.0778, 12.0796, 12.0455, 12.0308, 12.2142 | 11.9999–12.2142 / 12.0573 / 0.2143（1.78%） | 12.0528, 12.1706, 12.0613, 12.1347, 12.3158, 12.0895, 12.2787 | 12.0528–12.3158 / 12.1347 / 0.2630（2.17%） | +0.0774（+0.64%） |
+| 切换往返 cached（P25） | 10.3004, 10.2968, 10.3078, 10.2851, 10.2782, 10.3226, 10.2498 | 10.2498–10.3226 / 10.2968 / 0.0728（0.71%） | 10.3070, 10.3026, 10.2135, 10.3210, 10.3894, 10.2557, 10.3405 | 10.2135–10.3894 / 10.3070 / 0.1759（1.71%） | +0.0102（+0.10%） |
+
+判定与分辨率：
+
+| 指标 | 范围重叠 | 差值绝对值 < 较大波动 | 判定 | 本机分辨率（较大波动） |
+| --- | --- | --- | --- | --- |
+| G1 冷编译 Default | 否 | 0.0449 ≥ 0.0158 | **存在 +6.48% 的差异，不过** | 2.28%：本批分辨不出 2%，但 6.5% 远大于它 |
+| G2 冷编译 Dark | 否 | 0.0445 ≥ 0.0189 | **存在 +6.36% 的差异，不过** | 2.70%：分辨不出 2% |
+| G3 冷编译 Compact | 否 | 0.0478 ≥ 0.0164 | **存在 +6.89% 的差异，不过** | 2.36%：分辨不出 2% |
+| G4 切换往返 uncached | 是 | 0.0774 < 0.2630 | 差异在噪声范围内，通过 | 2.18%：分辨不出 2% |
+| G5 切换往返 cached | 是 | 0.0102 < 0.1759 | 差异在噪声范围内，通过（较大波动 < 2%，差值 0.10% ≤ 2%） | 1.71%：本批能分辨 2% |
+
+另一种统计量（不作门槛，仅供参考）：冷编译中位数 Default +7.08%、Dark +7.54%、Compact +7.94%；uncached 切换 P25 +1.20%（波动 2.43% / 1.63%）；cached 切换中位数 +0.64%。`defaultMemoised`（旧口径，不设门槛）P25 +6.71%，范围也不重叠。每次运行的「首次编译」（含 JIT，不设门槛）BASE 中位数 607.8 ms、NOW 702.5 ms（+15.6%）。uncached 切换只有约 +0.6%，与「每次切换编译一次、编译只占切换耗时的一小部分」相符；cached 切换不编译，不受影响。
+
+**分配（G6）**
+
+- Token 实例数是真实计数，不是公式推算：把 `base.tar` 和 `git archive a059c4b01` 分别解到临时目录的两份**独立副本**（`<S>/task10/count-base`、`count-now`），用脚本 `<S>/task10/scripts/patch_counter.py` 给副本里的 `AbstractDesignToken` 加一个受保护构造函数，对静态计数器做 `Interlocked.Increment`，并让副本里的测量在每个计时样本的编译区间（与分配同一区间）前后读计数。两份副本各自 Release 构建、运行 21 次计时样本。计时用的两棵树里没有这个计数器，本工作树也从未改动。
+- 结果：两棵树、四条链、每个样本都恰好构造 **234** 个 Token（118 个 `DesignToken` + 116 个控件 Token，与测量里按公式算出的 `tokenInstances` 一致）；准备有效配置的区间构造 0 个。计数副本的分配数值与计时树逐字相同，说明计数器本身不分配。
+
+| 链 | BASE（字节） | NOW（字节） | 增量 | 预算 234 × 8 = 1,872 | 每实例增量 |
+| --- | --- | --- | --- | --- | --- |
+| Default | 1,136,160 | 1,138,032 | +1,872 | 通过（恰好等于预算） | 8.00 |
+| Dark | 1,141,352 | 1,143,224 | +1,872 | 通过 | 8.00 |
+| Compact | 1,136,544 | 1,138,416 | +1,872 | 通过 | 8.00 |
+| defaultMemoised（不设门槛） | 1,119,912 | 1,121,784 | +1,872 | — | 8.00 |
+
+七次运行的分配完全相同（中位数、最小、最大都一致）。增量正好是每个 Token 实例多一个 8 字节的 `_writeLog` 引用字段，不记账时没有其他分配。
+
+**既有性能测试（G7）**：`git diff c0b74a816 a059c4b01 -- tests/AtomUI.Core.Tests/Theme/Performance` 无输出，断言未改。`dotnet test tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj` 495/495 通过；其中 `Theme.Performance` 下的 5 个测试（`ThemeResourceLookupPerformanceTests`、`ThemeScopeAndTransactionPerformanceTests`）单独运行也是 5/5。通过。
+
+**启动（G8，默认分层，不设 `DOTNET_TieredCompilation`）**
+
+- 命令：两棵树分别 `dotnet publish tools/performances/AtomUI.StartupPerformance/AtomUI.StartupPerformance.csproj -c Release -f net10.0 --self-contained false -o <S>/task10/startup-<base|now>`（两份 `AtomUI.Core.dll` 的 SHA-256 不同；工具对两边可执行文件哈希相同的提示来自 apphost，属正常）。每个场景一份 `<S>/task10/variants-<scenario>.json`，`atom-window`、`atom-splash` 交替各跑 3 次 `python3 tools/performances/AtomUI.StartupPerformance/run_samples.py --config … --output <S>/task10/startup/<scenario>-r<n> --rounds 10 --warmup 1 --timeout 90`。全部样本无失败。
+- 丢弃的一批：第一批（`<S>/task10/startup-discarded1`）第 3 次 `atom-window` 开始时 1 分钟负载为 27.89，超过事先约定的 15，整批丢弃重测。重测时观察到负载在每次 `atom-splash` 运行期间从约 8 升到约 19，而重测前后机器上没有别的任务，所以这很可能是采样本身（每次运行启动 22 个带 UI 的进程）推高的负载，而不是外部负载；重测批的开始负载为 8.93、8.28、18.82、14.24、19.53、16.67，没有再丢弃。工具对所有样本都标了 `highLoadSamples`（负载 > 5），与 README 所说的「提示而非失败」相符。丢弃批的结论与下表一致（`Phase.Prepare` 在 splash 中同样 +1.3 ms 且三次配对都为正）。
+- 结果（3 次运行中位数的中位数与波动）：
+
+| 场景 / 指标 | BASE 三次（ms） | BASE 中位数 / 波动 | NOW 三次（ms） | NOW 中位数 / 波动 | NOW − BASE | NOW 中位数落在 BASE 范围内 | 各次配对 `medianDelta` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| atom-window `Launch.ToWindowOpened` | 667.0, 677.5, 700.8 | 677.5 / 33.8（5.0%） | 700.4, 700.3, 681.6 | 700.3 / 18.8 | +22.8（+3.37%） | 是 | +19.0, +15.5, −0.1 |
+| atom-window `Launch.ToFirstRenderedBatch` | 759.1, 774.8, 803.8 | 774.8 / 44.7（5.8%） | 801.5, 803.4, 777.9 | 801.5 / 25.5 | +26.7（+3.45%） | 是 | +17.3, +15.0, −5.6 |
+| atom-window `Phase.Commit` | 96.7, 96.7, 97.7 | 96.7 / 1.0 | 97.6, 98.4, 96.9 | 97.6 / 1.4 | +0.9（+0.98%） | 是 | +0.2, +1.8, −0.1 |
+| atom-window `Phase.Commit.Theme` | 51.7, 51.7, 52.0 | 51.7 / 0.3 | 52.2, 52.9, 51.7 | 52.2 / 1.2 | +0.5（+0.97%） | **否** | +0.7, +1.0, −0.2 |
+| atom-window `Phase.Prepare` | 73.2, 74.3, 75.5 | 74.3 / 2.2 | 76.0, 76.2, 74.8 | 76.0 / 1.4 | +1.7（+2.28%） | **否** | +2.4, +2.1, −1.3 |
+| atom-splash `Launch.ToSplashFirstFrame` | 680.6, 668.5, 658.4 | 668.5 / 22.3（3.3%） | 669.0, 677.3, 672.4 | 672.4 / 8.4 | +4.0（+0.59%） | 是 | −31.2, −5.3, +14.1 |
+| atom-splash `Launch.ToFirstRenderedBatch` | 993.5, 968.3, 955.0 | 968.3 / 38.5（4.0%） | 967.2, 994.0, 983.9 | 983.9 / 26.8 | +15.6（+1.61%） | 是 | −41.1, +12.7, +7.4 |
+| atom-splash `Launch.ToReady` | 1000.4, 979.9, 956.2 | 979.9 / 44.2（4.5%） | 973.8, 1005.2, 1001.6 | 1001.6 / 31.4 | +21.8（+2.22%） | **否**（超出 1.2 ms） | −40.2, +3.3, +21.6 |
+| atom-splash `Phase.Commit` | 80.7, 81.6, 82.1 | 81.6 / 1.4 | 80.3, 81.4, 81.7 | 81.4 / 1.4 | −0.3 | 是 | −0.7, +0.1, +0.1 |
+| atom-splash `Phase.Commit.Theme` | 49.6, 50.8, 50.4 | 50.4 / 1.1 | 50.0, 50.4, 50.6 | 50.4 / 0.6 | +0.0 | 是 | +0.3, −0.3, +0.3 |
+| atom-splash `Phase.Prepare` | 69.8, 70.5, 70.0 | 70.0 / 0.7 | 71.1, 72.5, 70.9 | 71.1 / 1.6 | +1.1（+1.59%） | **否** | +1.2, +1.8, +0.9 |
+
+`JitMethods.Phase.Prepare` 1654 → 1655（每次都 +1），`JitMethods.Phase.Commit.Theme` 725 → 725。
+
+- 判定：**G8 不过**（按简报「每个指标的中位数落在 BASE 波动范围内」逐项判定）。`Launch.*` 六项里五项落在 BASE 范围内，`Launch.ToReady` 超出 1.2 ms（差值 21.8 ms 仍小于 BASE 波动 44.2 ms，按 Task 7 的写法「差值小于波动」会算通过）；这些指标的分辨率约 20–45 ms，看不出 1–2 ms 的变化。分段指标分辨率高得多，`Phase.Prepare` 在两个场景中都慢了 1.1–1.7 ms，splash 三次配对全为正、丢弃批也同样为正，是真实信号；`atom-window` 的 `Phase.Commit.Theme` +0.5 ms 也超出 BASE 的 0.3 ms 波动。
+
+**体积（G9）**
+
+| 产物 | BASE（字节） | NOW（字节） | 差 |
+| --- | --- | --- | --- |
+| AtomUI.Core.dll | 1,127,424 | 1,125,888 | −1,536（−0.14%） |
+| AtomUI.Controls.dll | 910,848 | 911,872 | +1,024（+0.11%） |
+| AtomUI.Desktop.Controls.dll | 10,841,088 | 10,830,848 | −10,240（−0.09%） |
+| AtomUI.Desktop.Controls.DataGrid.dll | 1,053,184 | 1,052,672 | −512（−0.05%） |
+| AtomUI.Desktop.Controls.ColorPicker.dll | 510,976 | 510,976 | 0 |
+| Gallery NativeAOT 可执行文件（osx-arm64） | 93,121,880 | 93,237,640 | +115,760（+0.12%） |
+| Gallery NativeAOT 发布目录（不含 .pdb/.dSYM） | 113,304,168 | 113,419,928 | +115,760（+0.10%） |
+
+程序集取自 `.artifacts/bin/Release/net10.0`；AOT 命令与 Task 7 相同：`dotnet publish controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj -c Release -r osx-arm64 -p:GalleryPublishTrimmed=true -p:GalleryPublishAot=true -o <S>/task10/gallery-aot-<base|now>`。BASE 的 AOT 可执行文件与 Task 7 登记的 NOW 字节数相同。全部 ≤ 1%，**通过**。
+
+**值哈希（G10）**：两棵树七次运行全部相同，与 Task 7 基线逐字一致——Default `80B8BAC59221D9A22EAD273E73F9A2E595F51B53322121576D311C9293875311`、Dark `7CE1950AA51CA44B2177A39F35CFA000D9AF2D7C1E9E86ED10FDC4BFD2FE080A`、Compact `81DBB30DA0BCB51D7BC1AD40698E1714D4411EA320584472C8FB963BCDA20A34`。**通过**。所有运行的 `sanity.*` 核对项与 Task 7 相同（三条门槛链每个样本的配置对象和缓存键都是新的）。
+
+**原因（诊断，不是门槛）**
+
+- 反汇编：直接运行测试可执行文件 `.artifacts/bin/Release/net10.0/AtomUI.Desktop.Controls.Tests -class …ThemeCompileMeasurement -explicit only`，设 `DOTNET_TieredCompilation=0`、`DOTNET_JitDisasm="*DesignToken:set_ColorPrimaryActive *ToolTipToken:CalculateTokenValues *DesignToken:.ctor"`、`DOTNET_JitStdOutFile=<S>/task10/disasm/now-jit.txt`（经 `dotnet test` 运行时拿不到输出；方法名要带 `*` 前缀才能匹配）。`set_ToolTipBackground`、`set_ColorPrimary` 在测量过程中从未被单独编译——它们在调用点全部被内联——所以改看内联了它们的 `ToolTipToken.CalculateTokenValues`，以及被单独编译的 `DesignToken.set_ColorPrimaryActive`。
+- **`RecordWrite` 跨程序集内联了**：`ToolTipToken.CalculateTokenValues`（控件包）里没有对 `RecordWrite` 的调用，每次写入之后是 `ldr x20, [x19, #0x08]; cbz x20, …`，即一次字段读取加一次空判断。`DesignToken` 的 setter 同样如此。
+- **但冷路径也一起内联了**：`[AggressiveInlining]` 的 `RecordWrite` 把 `log.Add(tokenName)` 带进来，`TokenWriteLog.Add` 又内联了 `HashSet.Add` 的调用和 `List.Add` 的快速路径与扩容调用。于是每次属性写入在调用点展开出约 100 字节的冷路径代码，setter 从 8 字节 IL 的「总是内联」变成 19 字节 IL、180 字节机器码、带栈帧的方法。
+  - `ToolTipToken.CalculateTokenValues` 机器码 1048 字节（6 个属性）。
+  - JIT 摘要（`DOTNET_JitDisasmSummary=1`，同一测量，两棵树对比，文件 `<S>/task10/disasm/summary-measure*.txt`）：两棵树都编译的 AtomUI 方法里有 354 个机器码变大，合计 +239,552 字节。例如 `GeneratedGlobalTokenAccessor.SetValue` 26,924 → 39,980，`DesignToken.CalculateAliasTokenValues` 2,524 → 14,264，`StepsToken.CalculateTokenValues` 1,104 → 11,628，`AbstractThemeVariantCalculator.CalculateColorMapTokenValues` 772 → 10,308，`NavMenuToken.CalculateTokenValues` 1,340 → 10,036，`GeneratedThemeSchema.CopyGlobalValues` 10,968 → 16,900。
+  - 被单独编译（即至少有一处调用点没有内联）的 Token setter 从 44 个增至 208 个（`DesignToken` 192 个、控件 Token 16 个）：setter 变大后，大方法的内联预算耗尽，部分写入变成了真正的调用。
+  - 这些都发生在编译期热路径上（全局公式、调色板、全局 Token 复制、控件公式），与只在冷编译上出现约 6.5% 的退化、`TieredCompilation=0` 下首次编译多出约 95 ms JIT 时间、默认分层下 `Phase.Prepare` 多出 1–2 ms 的现象一致。
+- 规格 4.11 的小样实测（一次计算写 6 个属性）测不出这一点：代码膨胀和内联预算耗尽只在上千次写入、几十 KB 的真实编译方法里才显现。这是推断，本任务没有复现小样。
+- 计划 Task 10 第 3 步列出的两种改法正好针对这里（生成器把空判断直接展开在 setter 里；或者冷路径放进 `NoInlining` 的辅助方法，让 setter 只剩「读字段、判空、调用」）。本任务按简报不做修改，也没有试验这些改法。
+
+**第一次测量门槛汇总**
+
+| 门槛 | 结果 |
+| --- | --- |
+| G1 冷编译 Default（R2，P25） | **不过**：+6.48%，范围不重叠；分辨率 2.28% |
+| G2 冷编译 Dark（R2，P25） | **不过**：+6.36%，范围不重叠；分辨率 2.70% |
+| G3 冷编译 Compact（R2，P25） | **不过**：+6.89%，范围不重叠；分辨率 2.36% |
+| G4 切换往返 uncached（R2，中位数） | 通过：+0.64%，在噪声内；分辨率 2.18%，分辨不出 2% |
+| G5 切换往返 cached（R2，P25） | 通过：+0.10%，在噪声内；分辨率 1.71% |
+| G6 分配增量 ≤ Token 实例数 × 8 | 通过：实测 234 个实例，预算 1,872，三条链增量都是 +1,872（每实例 8.00 字节） |
+| G7 既有性能测试 | 通过：断言未改，Core.Tests 495/495 |
+| G8 启动 | **不过**：`Phase.Prepare` 两个场景 +1.1/+1.7 ms 超出 BASE 范围，window `Phase.Commit.Theme` +0.5 ms 超出，splash `Launch.ToReady` 超出 BASE 范围 1.2 ms；其余五项 `Launch.*` 在范围内 |
+| G9 体积 ≤ 1% | 通过：程序集 −0.14%～+0.11%，AOT +0.12% |
+| G10 值哈希 | 通过：三条链完全相同 |
+
+#### 补救 A（主控裁定）与第二次测量：仍未通过
+
+- 改动（唯一的生产代码改动，只在 `src/AtomUI.Core/Theme/DesignTokens/AbstractDesignToken.cs`）：
+  - `RecordWrite` 仍是 `protected` 且 `[AggressiveInlining]`，函数体只剩「`_writeLog` 非空时调用私有辅助方法」。
+  - 新增 `private`、`[MethodImpl(MethodImplOptions.NoInlining)]` 的 `AddRecordedWrite(string)`，执行原来记账分支的 `Add`。
+  - 字段、`BeginRecordingWrites`/`EndRecordingWrites`/`IsRecordingWrites`、生成器与生成的 setter 文本都不变。
+- 测试：Core.Tests 495/495（含 `TokenWriteRecordingTests`），Generator.Tests 1095/1095。
+- 结构检查（`DOTNET_TieredCompilation=0`，JIT 摘要与反汇编，方法同第一次测量；文件 `<S>/task10/disasm/summary-measure-A.txt`、`nowA-jit.txt`）：
+
+| 项目 | BASE | 改造原样 | 补救 A |
+| --- | --- | --- | --- |
+| `DesignToken.CalculateAliasTokenValues` 机器码（字节） | 2,524 | 14,264 | 7,920 |
+| `StepsToken.CalculateTokenValues` | 1,104 | 11,628 | 5,016 |
+| `NavMenuToken.CalculateTokenValues` | 1,340 | 10,036 | 4,420 |
+| `ToolTipToken.CalculateTokenValues` | 100 | 1,048 | 392 |
+| `AbstractThemeVariantCalculator.CalculateColorMapTokenValues` | 772 | 10,308 | 3,456 |
+| `GeneratedGlobalTokenAccessor.SetValue` | 26,924 | 39,980 | 38,040 |
+| `GeneratedThemeSchema.CopyGlobalValues` | 10,968 | 16,900 | 17,208 |
+| 两棵树都编译的 AtomUI 方法，机器码合计增量 | — | +239,552（354 个方法） | +86,856（345 个方法） |
+| 被单独编译的 Token setter 个数 | 44 | 208 | 138（全是 `DesignToken`） |
+
+  - 反汇编：`DesignToken.set_ControlOutlineWidth`（64 字节）是 `str d0,[x0,#0xF8]; ldr x1,[x0,#8]; cbnz x1, →`，未记账时直接返回，记账时尾调用 `AddRecordedWrite`；仍有一对 `stp/ldp fp,lr` 的帧建立。`ToolTipToken.CalculateTokenValues`（控件包）中每次写入后是 `ldr x0,[x19,#8]; cbz x0`，只在跳转分支里有一次 `blr`（约 36 字节的调用桩），与预期一致。`set_ColorPrimaryActive` 这次没有被单独编译。
+  - 剩余的膨胀来自每个写入点的调用桩；`CopyGlobalValues` 和 `GeneratedGlobalTokenAccessor.SetValue` 这两个大方法几乎没有缩小，被单独编译的 setter 仍比 BASE 多 94 个。
+- 第二次时间测量（G1–G5）：命令、脚本、采样数与第一次相同，数据在 `<S>/task10/runs-b`。BASE 用同一份构建，NOW 重新构建。14 次运行开始时的 1 分钟负载为 5.10–11.30（BASE 8.54/7.76/8.73/5.10/11.30/7.43/8.76，NOW 6.24/7.96/6.95/7.74/7.69/6.22/8.06），都低于 15，整批保留。统计量由 `r2_verdict.py` 只按本批 BASE 的波动选定：
+
+| 指标 | BASE 波动（中位数 / P25） | 门槛统计量 |
+| --- | --- | --- |
+| 冷编译 Default | 2.76% / 2.39% | P25 |
+| 冷编译 Dark | 7.19% / 3.00% | P25 |
+| 冷编译 Compact | 4.38% / 2.31% | P25 |
+| 切换往返 uncached | 1.85% / 2.25% | 中位数 |
+| 切换往返 cached | 5.24% / 4.84% | P25 |
+
+| 指标 | BASE 七次 | BASE 范围 / 中位数 / 波动 | NOW 七次 | NOW 范围 / 中位数 / 波动 | NOW − BASE | 判定 | 分辨率 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| G1 冷编译 Default（P25） | 0.6975, 0.6850, 0.6882, 0.6909, 0.6928, 0.6854, 0.7015 | 0.6850–0.7015 / 0.6909 / 0.0165（2.39%） | 0.7209, 0.7087, 0.7050, 0.7148, 0.7069, 0.7120, 0.7032 | 0.7032–0.7209 / 0.7087 / 0.0177（2.50%） | +0.0178（+2.58%） | **不过**：范围不重叠，差值 ≥ 较大波动 | 2.56%，分辨不出 2% |
+| G2 冷编译 Dark（P25） | 0.7061, 0.6910, 0.6993, 0.7005, 0.6920, 0.7000, 0.7120 | 0.6910–0.7120 / 0.7000 / 0.0210（3.00%） | 0.7250, 0.7162, 0.7154, 0.7253, 0.7136, 0.7212, 0.7125 | 0.7125–0.7253 / 0.7162 / 0.0128（1.79%） | +0.0162（+2.31%） | **不过**：范围不重叠（差值小于较大波动 0.0210，但重叠条件不满足） | 3.00% |
+| G3 冷编译 Compact（P25） | 0.6990, 0.6868, 0.6916, 0.6937, 0.6864, 0.6955, 0.7024 | 0.6864–0.7024 / 0.6937 / 0.0160（2.31%） | 0.7251, 0.7127, 0.7092, 0.7153, 0.7126, 0.7159, 0.7047 | 0.7047–0.7251 / 0.7127 / 0.0204（2.86%） | +0.0190（+2.74%） | **不过**：范围不重叠 | 2.94% |
+| G4 切换往返 uncached（中位数） | 12.0782, 12.0646, 11.9890, 12.0831, 12.0999, 12.1815, 11.9575 | 11.9575–12.1815 / 12.0782 / 0.2240（1.85%） | 12.1774, 12.1495, 12.2238, 11.9864, 12.1119, 12.1717, 12.0452 | 11.9864–12.2238 / 12.1495 / 0.2374（1.95%） | +0.0713（+0.59%） | 通过：在噪声内（较大波动 < 2%，差值 ≤ 2%） | 1.97%，能分辨 2% |
+| G5 切换往返 cached（P25） | 10.1889, 10.2615, 10.3795, 10.2175, 10.2334, 10.6849, 10.2576 | 10.1889–10.6849 / 10.2576 / 0.4960（4.84%） | 10.3610, 10.2657, 10.3065, 10.2010, 10.2665, 10.3341, 10.2283 | 10.2010–10.3610 / 10.2665 / 0.1600（1.56%） | +0.0089（+0.09%） | 通过：在噪声内 | 4.84%（BASE 第 6 轮 10.68 拉大了波动；该轮开始负载 7.43，按事先约定不算受干扰） |
+
+  另一种统计量（不作门槛）：冷编译中位数 Default +3.52%、Dark +3.42%、Compact +3.65%；uncached 切换 P25 +2.08%；cached 切换中位数 +1.66%；`defaultMemoised` P25 +2.68%（范围重叠，BASE 波动 7.94%）。「首次编译」（含 JIT）BASE 619.7 ms、NOW 630.2 ms（+1.7%，第一次测量为 +15.6%）。
+
+- G6 分配：三条链（及 `defaultMemoised`）增量仍是 +1,872 字节，七次运行一致；Token 实例数 234 不变（写入计数副本中再次核对为 234），预算 1,872。**通过**。
+- G8 启动：NOW 重新发布到 `<S>/task10/startup-now`（改造原样的发布移到 `startup-now-preremedy`），BASE 沿用同一份发布。两个场景交替各 3 次、每次 10 轮，数据在 `<S>/task10/startup-A`。开始前等 1 分钟负载降到 10 以下；6 次运行开始时负载为 8.97–12.55，结束时最高 13.82，未丢弃。
+
+| 场景 / 指标 | BASE 三次（ms） | BASE 中位数 / 波动 | NOW 三次（ms） | NOW 中位数 | NOW − BASE | 落在 BASE 范围内 | 配对 `medianDelta` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| window `Launch.ToWindowOpened` | 690.5, 691.9, 694.1 | 691.9 / 3.5 | 680.8, 657.9, 665.1 | 665.1 | −26.8（−3.88%） | 否（更快一侧） | −6.4, −25.0, −18.1 |
+| window `Launch.ToFirstRenderedBatch` | 791.1, 795.5, 792.7 | 792.7 / 4.4 | 777.0, 753.2, 764.1 | 764.1 | −28.6（−3.61%） | 否（更快一侧） | −6.0, −27.8, −18.7 |
+| window `Phase.Commit` | 98.3, 97.7, 98.3 | 98.3 / 0.6 | 97.4, 96.3, 97.8 | 97.4 | −0.9 | 否（更快一侧） | −1.4, −1.5, −1.0 |
+| window `Phase.Commit.Theme` | 52.3, 52.0, 52.6 | 52.3 / 0.6 | 51.7, 50.7, 51.9 | 51.7 | −0.6 | 否（更快一侧） | −0.9, −1.0, −0.5 |
+| window `Phase.Prepare` | 75.03, 75.20, 74.82 | 75.03 / 0.38 | 75.20, 74.59, 75.78 | 75.20 | +0.17 | 否（比 BASE 最大值高 0.005 ms） | +0.4, −0.6, +1.2 |
+| splash `Launch.ToSplashFirstFrame` | 665.0, 657.6, 669.5 | 665.0 / 11.9 | 669.4, 666.5, 653.8 | 666.5 | +1.5 | 是 | +4.4, +19.8, −23.2 |
+| splash `Launch.ToFirstRenderedBatch` | 974.3, 961.3, 984.4 | 974.3 / 23.1 | 975.8, 978.7, 954.3 | 975.8 | +1.5 | 是 | −0.3, +4.0, −28.6 |
+| splash `Launch.ToReady` | 974.6, 975.7, 987.4 | 975.7 / 12.7 | 975.7, 981.4, 963.0 | 975.7 | −0.1 | 是 | −0.1, +12.1, −34.1 |
+| splash `Phase.Commit` | 80.72, 81.04, 80.20 | 80.72 / 0.84 | 82.06, 81.21, 80.89 | 81.21 | +0.49（+0.60%） | 否（高出 0.17 ms；差值小于 BASE 波动） | +1.7, −0.6, +0.7 |
+| splash `Phase.Commit.Theme` | 50.0, 50.3, 49.4 | 50.0 / 0.9 | 50.3, 50.4, 49.7 | 50.3 | +0.2 | 是 | +0.4, −0.0, +0.4 |
+| splash `Phase.Prepare` | 70.2, 70.3, 71.4 | 70.3 / 1.2 | 71.0, 71.2, 70.8 | 71.0 | +0.8（+1.08%） | 是 | +0.9, +1.0, −0.7 |
+
+  `JitMethods.Phase.Prepare` 1654 → 1655，`JitMethods.Phase.Commit.Theme` 725 → 725。判定：**按字面规则（NOW 中位数落在 BASE 范围内）不过**。window 场景 BASE 三次异常集中（波动 0.5%），NOW 在 `Launch.*` 和两个 Commit 分段上落在更快一侧的范围外。变慢一侧落在范围外的只有两项：window `Phase.Prepare` 高 0.005 ms，splash `Phase.Commit` 高 0.17 ms，后者的差值 +0.49 ms 小于 BASE 波动 0.84 ms。第一次测量中 `Phase.Prepare` 在两个场景都明显变慢（+1.7/+1.1 ms），这次是 +0.17/+0.8 ms，都在或几乎在 BASE 范围内。
+- G9 体积：程序集大小与第一次测量相同（只比较了文件大小，没有逐字节比较；Core 1,125,888，−0.14%；Controls +0.11%；Desktop.Controls −0.09%；DataGrid −0.05%；ColorPicker 0）。Gallery NativeAOT 可执行文件 93,237,496（BASE 93,121,880，+115,616，+0.12%），发布目录 113,419,784（+0.10%）。**通过**。
+- G10 值哈希：两棵树七次全部相同，与基线一致。**通过**。
+- G7：补救只改了 `AbstractDesignToken`，没有改性能测试；Core.Tests 495/495。**通过**。
+
+**一次冷编译的 Token 属性写入次数与来源**（只在临时副本 `<S>/task10/count-now` 中计数，脚本 `<S>/task10/scripts/patch_writes.py`：在 `RecordWrite` 里按「当前类别」累加计数，在 `ThemeCompiler` 的各调用点用作用域设定类别，读数区间与分配、计时相同；21 个样本完全一致。副本基于改造原样的代码，写入次数与补救 A 相同，因为补救没有改变哪些属性被写）：
+
+| 来源 | Default | Dark | Compact |
+| --- | --- | --- | --- |
+| (a) 全局 Token 复制 `GeneratedThemeSchema.CopyGlobalValues`（117 次复制 × 255 个属性：算法 1 次 + 116 个控件各 1 份有效全局副本） | 29,835 | 29,835 | 29,835 |
+| (a′) 非规范 Schema 的逐项复制、从冻结表重建（`CreateBuilder`） | 0 | 0 | 0 |
+| (b) 算法求值（`Evaluate`，种子 → Map） | 121 | 202 | 154 |
+| (b) 默认 Alias 计算（`CalculateAliasTokenValues`） | 118 | 118 | 118 |
+| (b) `new DesignToken()` 构造期写入 | 8 | 8 | 8 |
+| (b) `NormalizeFinalBehavior` | 0 | 0 | 0 |
+| (c) 控件 Token 默认公式（`descriptor.Evaluate`） | 1,515 | 1,515 | 1,515 |
+| (d) 显式值写入（`ApplyValues`、`MarkExplicit`、`ApplyAllValues`；测试应用只有默认字体） | 2 | 2 | 2 |
+| 未归类（以上作用域之外） | 6 | 6 | 6 |
+| 合计 | 31,605 | 31,686 | 31,638 |
+
+剩余差异约 0.018 ms，按 31,600 次写入摊算约 0.56 ns/次。94% 的写入来自 (a) 全局复制。`CopyGlobalValues` 的机器码在补救 A 后反而从 16,900 增至 17,208 字节（BASE 10,968），所以如果还要再改，目标应该是全局复制路径，而不是 setter 本身。本任务按裁定没有尝试任何进一步的补救。
+
+**第二次测量门槛汇总（补救 A）**
+
+| 门槛 | 结果 |
+| --- | --- |
+| G1 冷编译 Default | **不过**：+2.58%（P25），范围不重叠；分辨率 2.56% |
+| G2 冷编译 Dark | **不过**：+2.31%，范围不重叠；分辨率 3.00% |
+| G3 冷编译 Compact | **不过**：+2.74%，范围不重叠；分辨率 2.94% |
+| G4 切换往返 uncached | 通过：+0.59%（中位数）；分辨率 1.97% |
+| G5 切换往返 cached | 通过：+0.09%（P25）；分辨率 4.84% |
+| G6 分配 | 通过：+1,872 = 234 × 8 |
+| G7 既有性能测试 | 通过：Core.Tests 495/495 |
+| G8 启动 | **按字面规则不过**：window 的 `Launch.*` 与两个 Commit 分段落在更快一侧的范围外；变慢一侧只有 window `Phase.Prepare`（+0.005 ms 越界）与 splash `Phase.Commit`（+0.17 ms 越界，差值小于 BASE 波动） |
+| G9 体积 | 通过：程序集 −0.14%～+0.11%，AOT +0.12% |
+| G10 值哈希 | 通过 |
+
+- 全量回归（补救 A 之后）：`[SUMMARY] TOTAL: 12405 个测试全部通过, 总耗时 15:35`，与 Task 9 相同；Desktop.Controls.Tests 为 passed=4397 skipped=1（跳过的是显式测量）。
+- 工作树：生产代码只有补救 A 的这一处改动；计数器只存在于临时副本里；`git status` 显示 `AbstractDesignToken.cs`、本台账，以及本任务开始前就已存在的计划文件改动。
+
+#### 用户裁决（2026-11-13）
+
+- 主控在补救 A 之后仍未通过门槛时停止执行，把两次测量的数字、写入次数的分布和三条可选的路（把全局复制从 setter 上拿开后重测；退回写入器方案；接受当前差距）交给用户，并应用户要求补充了启动耗时的逐项数字。
+- 用户的决定：**通过**。保留补救 A 的实现，继续执行后续任务。
+- 这是对规格 4.11「不放宽门槛」的一次明确放宽，由用户作出；门槛本身没有达到。放宽的范围是这次没过的两项：
+  - G1–G3 冷编译：按门槛统计量（25 分位）慢 2.3%–2.7%，约 0.018 毫秒；按中位数慢 3.52%、3.42%、3.65%（默认、暗色、紧凑；这组数字原本就在上文「另一种统计量」一行里）。按 25 分位数两棵树各轮的取值范围不重叠；按中位数两边范围有重叠。
+  - G8 启动：按字面规则不过。越界大多在更快一侧；变慢一侧在登记的 11 个指标里有两项（window `Phase.Prepare` 高出 BASE 最大值 0.005 ms；splash `Phase.Commit` 高出 BASE 最大值 0.17 ms，差值 0.49 ms 小于 BASE 波动 0.84 ms）。未登记的分段指标里，splash `Phase.Commit.Localization` 也高出 BASE 最大值（10.579 对 10.454，差值 +0.279 大于 BASE 波动 0.166），它与 Token 无关，很可能是噪声，但前文「变慢一侧只有两项」只对登记的指标成立。
+- 用户作决定时看到的是冷编译的 25 分位数字和启动的逐项数字。中位数的数字当时已在台账里，但主控没有一并交给用户；审阅指出后，主控随即告知了用户。
+- 规格 4.11 末尾和决策表第 17 条已同步登记。
+- 新的性能基线：本任务提交后的树（含补救 A）。后续任务（Task 11、14、23 的性能复测）与它对比，方法和判定规则不变，不得在此基础上再退化。
+- 未采用的改进记录在案：把 `CopyGlobalValues` 的逐属性复制改成整体克隆，可让约 94% 的写入不再经过 setter。未实测，是否单独立项由用户决定。

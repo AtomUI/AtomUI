@@ -130,7 +130,7 @@ The rule tables below give stops; at the Aura seeds they produce these values (A
 | `ColorErrorHover` / `Active` | E500 / E600 | E200 / E100 | AtomUI (one step on from the base, as the primary states) |
 | Other `ColorError*` | as status | as status | PrimeUIX `message.error` / AtomUI as for status; `BgActive` is E200 / E500@32% (AtomUI) |
 | `ColorText` / `Secondary` | N700 / N500 | white / N400 | XML (baseline); PrimeUIX `text.color` / `text.mutedColor` |
-| `ColorTextTertiary` / `Quaternary` | N400 / N300 | N500 / N600 | AtomUI |
+| `ColorTextTertiary` / `Quaternary` | N500 / N400 | N500 / N600 | AtomUI proposal; PrimeUIX has a single muted level (`text.mutedColor`; N600 / N400 in `nora`). Light keeps tertiary text and `ColorIcon` at 3:1 on white: 4.76 (N400 would give 2.56, the pre-algorithm profiles 3.32); quaternary 2.56 (N300 would give 1.48, the pre-algorithm profiles 1.82). `ColorTextDisabled` N400 equals the quaternary stop, as in Ant Design where both are 25% text. Lara and Nora use the same stops |
 | `ColorBgContainer` | white | N950 | XML (baseline); PrimeUIX `formField.background` |
 | `ColorBgElevated` | white | N900 | Dark XML (baseline); PrimeUIX `overlay.*.background`, `content.background` |
 | `ColorBgLayout` / `Spotlight` | N50 / N700 | N950 / N700 | AtomUI / PrimeUIX `tooltip.background` |
@@ -221,7 +221,6 @@ The Nora rule table (`PrimeNGNoraPreset`) is transcribed from the pre-algorithm 
 | Status `Color*` / `Hover` / `Active` | S600 / S700 / S800 | S500 / S400 / S300 | AtomUI decision: the primary rule, as spec 4.7 proposes for the status families; PrimeUIX `button.{success,info,warn}` and `tag.*` use these stops. The other status rows are the Aura rows |
 | `ColorError` / `Hover` / `Active` | E400 / E500 / E600 | E400 / E300 / E200 | XML (baseline) for the base (`#F87171` in both); the states one stop on, as Aura. PrimeUIX `formField.invalidBorderColor` is E500 / E400 |
 | `ColorText` | N900 | white | XML (baseline); PrimeUIX `text.color` |
-| `ColorTextTertiary` / `Quaternary` | N500 / N400 | N500 / N600 (as Aura) | AtomUI. Light is one stop deeper than Aura so tertiary text and `ColorIcon` keep 3:1 on white (4.76; N400 would give 2.56, the pre-algorithm profile 3.32); quaternary 2.56 (pre-algorithm 1.82). `ColorTextDisabled` N400 equals the quaternary stop, as in Ant Design where both are 25% text. PrimeUIX `nora` has a single muted level, N600 / N400 |
 | `ColorTextSecondary` | N500 | N400 | XML (baseline); PrimeUIX `text.mutedColor` is N600 / N400 |
 | `ColorBorder` | N500 | N500 | XML (baseline); PrimeUIX `formField.borderColor` |
 | `ColorBorderSecondary` | transparent | transparent | XML (baseline) |

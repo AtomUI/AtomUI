@@ -65,7 +65,9 @@ internal static class PrimeNGLaraPreset
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
             Neutral: new PrimeNGNeutralRule(
                 BgBase: new(White), TextBase: new(Black),
-                Text: new(700), TextSecondary: new(500), TextTertiary: new(400), TextQuaternary: new(300),
+                // Tertiary and quaternary are AtomUI's (PrimeUIX has a single muted level): N500 / N400 keep icons and
+                // tertiary text at 3:1 on white and quaternary above the old profiles' 25% black (N400 / N300 would not).
+                Text: new(700), TextSecondary: new(500), TextTertiary: new(500), TextQuaternary: new(400),
                 Fill: new(300), FillSecondary: new(200), FillTertiary: new(100), FillQuaternary: new(50),
                 BgContainer: new(White), BgElevated: new(White), BgLayout: new(50), BgSpotlight: new(700),
                 BgBlur: new(White, 0), BgSolid: new(900), BgSolidHover: new(800), BgSolidActive: new(950),

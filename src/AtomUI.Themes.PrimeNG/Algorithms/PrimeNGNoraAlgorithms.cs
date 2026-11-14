@@ -65,8 +65,8 @@ internal static class PrimeNGNoraPreset
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
             Neutral: new PrimeNGNeutralRule(
                 BgBase: new(White), TextBase: new(Black),
-                // One stop deeper than Aura below the secondary text, so icons and tertiary text keep the 3:1 of the
-                // old profiles on white (PrimeUIX nora has a single muted level, N600).
+                // Tertiary and quaternary are the Aura stops (N500 / N400), so icons and tertiary text keep the 3:1 of
+                // the old profiles on white (PrimeUIX nora has a single muted level, N600).
                 Text: new(900), TextSecondary: new(500), TextTertiary: new(500), TextQuaternary: new(400),
                 Fill: new(300), FillSecondary: new(200), FillTertiary: new(100), FillQuaternary: new(50),
                 BgContainer: new(White), BgElevated: new(White), BgLayout: new(50), BgSpotlight: new(700),

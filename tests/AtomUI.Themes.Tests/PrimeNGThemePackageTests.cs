@@ -314,6 +314,25 @@ public class PrimeNGThemePackageTests
         ratio.ShouldBeGreaterThanOrEqualTo(floor, $"{id}: {ratio:F2} < {floor:F2}");
     }
 
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura")]
+    [InlineData("PrimeNGAura.Compact")]
+    [InlineData("PrimeNGLara")]
+    [InlineData("PrimeNGLara.Compact")]
+    [InlineData("PrimeNGNora")]
+    [InlineData("PrimeNGNora.Compact")]
+    public async Task Light_Tertiary_And_Quaternary_Text_Stay_As_Readable_As_The_Old_Profiles(string id)
+    {
+        // The floors are what the pre-algorithm light profiles had: Ant's 45% and 25% black text on white,
+        // 3.32 and 1.82. ColorIcon follows ColorTextTertiary, so the tertiary floor also keeps icons readable.
+        var snapshot = await Apply(id);
+        var container = Global<Color>(snapshot, "ColorBgContainer");
+        var tertiary = ContrastRatio.Of(Global<Color>(snapshot, "ColorTextTertiary"), container);
+        var quaternary = ContrastRatio.Of(Global<Color>(snapshot, "ColorTextQuaternary"), container);
+        tertiary.ShouldBeGreaterThanOrEqualTo(3.3, $"{id} ColorTextTertiary: {tertiary:F2}");
+        quaternary.ShouldBeGreaterThanOrEqualTo(1.8, $"{id} ColorTextQuaternary: {quaternary:F2}");
+    }
+
     [AvaloniaFact]
     public async Task Lara_Uses_Outline_Glow_And_Larger_Controls()
     {

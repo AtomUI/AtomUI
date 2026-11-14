@@ -929,3 +929,21 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 ### 阶段五小结（Task 13、15、14）
 
 算法的控件阶段已全部就位：契约与注册（Task 13）、运行时追加的接受规则（Task 15）、编译器执行与契约校验的扩展（Task 14）。内置主题的编译结果和分配字节数与阶段三结束时完全相同。实际执行顺序是 13、15、14。
+
+### Task 16：存下 12 个 PrimeNG profile 的编译快照（待审阅）
+
+- 改动：新增一次性工具 `tests/AtomUI.Themes.Tests/PrimeNGMigrationSnapshot.cs`（Task 21 删除）：`Dump(ThemeSnapshot)`、`Diff(baseline, current)`、`BaselineDirectory`（读 `ATOMUI_PRIMENG_BASELINE_DIR`，未设置时抛出说明性异常）。行格式 `G <TokenName> = <值>` / `C <Catalog>:<ControlId> <TokenName> = <值>`；先全部 G 行、再全部 C 行，组内按键（` = ` 之前的文本）序数排序。遍历注册表全部全局槽位与全部控件的 Own 槽位，按槽位索引惰性控件表，未编译的控件被强制编译。显式测试 `Dump_Baseline_For_All_Twelve_Profiles`（`[AvaloniaFact(Explicit = true)]`，与 `ThemeCompileMeasurement` 同一机制）逐个应用 12 个 profile 并写 `<ProfileId>.txt`，同时断言 G 行数 = `registry.GlobalTokens.Count`、C 行数 = 全部控件 `OwnTokens.Count` 之和、无重复键。`src/AtomUI.Themes.PrimeNG` 未改动。
+- 偏离简报：渐变画刷（`NotificationCard.NotificationProgressBg`、`Skeleton.LoadingBackgroundStart/Middle/End`）的描述符 `Format` 只输出类型名，停止点变化会看不出来；工具对 `IGradientBrush` 改写为不透明度、扩展方式、起止点、变换与全部停止点（不变文化）。其余值一律用描述符的 `Format`。
+- 基线（不提交，位于会话 scratchpad 的 `primeng-baseline/`）：12 个文件，每个 255 条 G + 1467 条 C = 1722 行（112 个有 Own Token 的控件）；`xml/` 子目录是 HEAD `95937d226` 的 12 份主题 XML 原样拷贝（`cmp` 逐个相同）。确定性：第二次在 `LANG/LC_ALL=de_DE.UTF-8` 下导出到另一目录，12 个文件 `cmp` 全部字节相同。每个 profile 有 3 个值为 `null` 的全局槽位（`LinkDecoration`、`LinkFocusDecoration`、`LinkHoverDecoration`），属实际值。
+- 测试：`Diff` 两个常驻自测（相同输入为空；改值、新增、删除各按 Token 名报告）。RED：`Diff` 临时直接返回空列表，`Diff_Reports_Changed_Added_And_Removed_Lines_By_Token_Name` 失败；GREEN：`AtomUI.Themes.Tests` 29/29（原 27 + 2），未设环境变量时显式测试不运行。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 14 的提交为 `95937d226`。审阅确认：
+  - 基线目录里的 12 份文件每份 255 条全局、1467 条控件 Token，与实现者报告的数量和校验和一致；延迟编译的控件确实被强制求值。
+  - 「两个不同的值会不会写成同一行」：审阅反编译了 Avalonia 的格式化代码并读了仓库内的格式化器，今天出现在基线里的每种值类型（颜色、边距、圆角、阴影、数值、时长、尺寸、字体、缓动、枚举）都是无损且与区域设置无关的。
+  - `Diff` 对新增、删除的行都会报告；格式错误或重复的行直接抛异常，不会被悄悄丢掉。
+  - 渐变画刷改为自己输出几何与色标是必要的偏离：描述符的 `Format` 对它只返回类型名，颜色变了也看不出来。
+- 审阅无法从改动确认的两项：环境变量未设置时常规运行 29/29（Task 17 的实现者会在同一项目上再跑一次）；换区域设置重跑逐字节相同（格式化路径已逐一核对与区域设置无关）。
+- 基线目录（不提交）：会话临时目录下的 `primeng-baseline`，含 12 份 `<ProfileId>.txt` 和 `xml/` 下 12 份改造前的主题 XML，取自提交 `95937d226`。
+- 留待最终整体审阅统一处理的小项（工具在 Task 21 删除，以下都不影响今天的基线）：
+  1. 纯色画刷的不透明度不进基线（今天只有 `Window.SystemBarColor` 一个，恒为 1）。
+  2. 渐变格式不含 `TransformOrigin`，没有径向与锥形渐变的几何分支（今天 4 个渐变都是线性、无变换）。
+  3. 显式测试结束后没有把主题切回去；与别的测试一起显式运行时会影响后面的测试。

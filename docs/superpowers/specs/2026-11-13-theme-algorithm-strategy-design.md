@@ -277,6 +277,8 @@ internal sealed class PrimeNGToolTipTokens : IControlTokenAlgorithm<ToolTipToken
 2. 运行控件阶段的 `EvaluateGlobal`，再写入用户对该控件的全局 Token 覆盖。`EvaluateGlobal` 写入的值按 `Disabled` 模式的语义直接生效，不触发 Map 和 Alias 重算。
 3. Own Token 阶段，按「三步流程」执行，默认计算是该控件的 `CalculateTokenValues`。
 
+**优先级在控件 `Global` 与 `Custom` 模式下的一个既有例外。** 这两种模式会为该控件从种子重新推导一份全局 Token（`ReevaluateControlGlobal`）：以根主题编译后的全局值为起点重跑算法链和 Alias 计算，然后只写回这个控件自己的全局覆盖。主题在根上显式设置的 Map 与 Alias 值不参与这次重新推导，所以在这个控件的作用域里，它们会被默认公式的结果取代；实现 Alias 阶段之后，也可能被该控件链上算法的 Alias 阶段取代。这是本方案之前就有的行为，本方案没有改动它，上面「算法 < 主题显式值」的顺序在这两种模式下只对该控件自己的覆盖成立。是否改成让根上的显式值也参与重新推导，需要单独决定；它会改变现有主题在这两种模式下的编译结果。
+
 控件阶段使用哪条算法链：`ControlAlgorithmMode.Custom` 用控件自己声明的链，其余三种模式用所在作用域的全局链。`Global` 和 `Custom` 模式重算控件的全局 Token 时（`ReevaluateControlGlobal`），同样要执行 Alias 阶段。
 
 **三步流程**（Alias 阶段与 Own Token 阶段相同）：

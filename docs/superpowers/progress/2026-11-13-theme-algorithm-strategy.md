@@ -739,3 +739,40 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 - 规格 4.11 末尾和决策表第 17 条已同步登记。
 - 新的性能基线：本任务提交后的树（含补救 A）。后续任务（Task 11、14、23 的性能复测）与它对比，方法和判定规则不变，不得在此基础上再退化。
 - 未采用的改进记录在案：把 `CopyGlobalValues` 的逐属性复制改成整体克隆，可让约 94% 的写入不再经过 setter。未实测，是否单独立项由用户决定。
+
+### Task 11：Alias 阶段契约与编译器三步流程（未提交，待审阅）
+
+- 改动：
+  1. 新增公开类型 `IThemeAliasAlgorithm`、`ThemeAlgorithmContext`（只读结构体，内部构造函数；`default` 的 `Algorithms` 返回空数组）、`ThemeAlgorithmContractException`（`InvalidOperationException` 子类，带 `Algorithm` 与 `TokenName`），位于 `src/AtomUI.Core/Theme/Algorithms/`。
+  2. 新增 `src/AtomUI.Core/Theme/Compilation/StagedTokenEvaluation.cs`：Alias 阶段与 Task 14 的 Own Token 阶段共用的三步流程执行器。每个算法单独开关一次记账，`EndRecordingWrites` 放在 `finally` 里；记下的名称逐个解析为描述符并检查阶段；第 3 步先标记算法写过的槽位、再写一次用户显式值、重跑默认计算、再跑各算法、最后写用户显式值；与上一轮比较写入的槽位集合与值（先 `Equals`，否则比较 `Format` 文本），不同则并入新槽位再来一轮，第 3 轮仍不同则抛「未稳定」。标记在所有出口（含异常）都清除。三条异常文本照简报逐字。
+  3. `ThemeCompiler`：`EvaluateAlgorithms` 增加 `out List<AliasStageAlgorithm>?`，复用 Map 阶段创建的实例，实现了 `IThemeAliasAlgorithm` 的才收进列表，列表按需创建；`CalculateAlias` 在列表为空引用时执行与之前逐句相同的四步并返回，否则进入单独的 `RunAliasStage`（闭包只在这里创建，避免闭包类在 `CalculateAlias` 入口就分配）。`ReevaluateControlGlobal` 走同一条路，新增 `globalAppearance` 参数用于算出上下文外观（与 `CompileControl` 里 `ResolveAppearance(globalAppearance, chain)` 一致）。按名称查描述符用以全局描述符列表为键的 `ConditionalWeakTable` + `FrozenDictionary`，只在第一次运行 Alias 阶段时建立。
+  4. `AbstractDesignToken.BeginRecordingWrites` 的 summary 补上「必须在 `finally` 里调用 `EndRecordingWrites`」的契约（Task 8 审阅遗留）。
+  5. 新增 `tests/AtomUI.Core.Tests/Theme/ThemeAliasAlgorithmTests.cs`，简报列出的 12 个测试，名称逐字。
+- 与简报的出入：
+  1. `StagedTokenEvaluation.Run` 在 `token` 之后多一个 `string stage` 参数。简报的签名里没有阶段名，但三条异常文本都含 `{stage}`，Task 14 的 Own Token 阶段需要不同的名字。
+  2. `BuiltIn_Chains_Create_No_Extra_Objects_And_Run_The_Default_Once` 不引用 Task 7 的字节数，改为两条自洽的断言（逐个检查 Default、Dark、Compact）：① 结构：内置算法的 Map 阶段返回的 Alias 算法列表为 `null`；② 分配：Alias 阶段入口在这条路径上的分配字节数（40 次交替采样取最小值）必须等于直接调用一次 `CalculateAliasTokenValues` 的字节数，且后者大于 0。为确认它真的会失败，临时做了两次变异：在内置路径上多跑一遍公式（312 → 624，失败）、多分配一个数组（312 → 352，失败），随后恢复原文件（`cmp` 一致）。没有采用「再注册一个无 Alias 阶段的算法后比较分配」：两次编译走同一条路径，内置路径多了分配也会两边一样多，测不出来。整个编译的分配不变由下面的测量证明。
+  3. 违反契约的报告方式：规格 4.2/4.3 写的是「报编译诊断」，按主控说明改为异常走现有的失败通道。全局编译里异常被 `CompileCore` 捕获，原样放进 `ThemeCompileResult.Exception`，`ThemeManager` 等调用方再把它作为 `ThemeLoadException` 的 `InnerException`；控件编译是惰性的，异常在查询该控件快照时原样抛出，与其他控件编译失败相同。
+- 内置路径核对（读代码）：Default 链编译现在比之前多的只有 `EvaluateAlgorithms` 里每个算法一次 `is IThemeAliasAlgorithm` 类型判断和 `CalculateAlias` 入口一次空引用判断；不创建对象、不打开记账、不查名称、公式只跑一遍。
+- 测量（Task 7 的测量工具，`DOTNET_TieredCompilation=0`，冷编译 21 次 / 预热 10 次，切换 3 / 1 次，Release；只比较分配与哈希，不看耗时）。改动前（HEAD `3a87bba25` 原样）与改动后逐字相同（`diff` 无输出）：
+
+  | 链 | 冷编译分配中位数（前 → 后） | 值哈希（前后相同） |
+  | --- | --- | --- |
+  | Default | 1,138,032 → 1,138,032 | `80B8BAC59221D9A22EAD273E73F9A2E595F51B53322121576D311C9293875311` |
+  | Dark | 1,143,224 → 1,143,224 | `7CE1950AA51CA44B2177A39F35CFA000D9AF2D7C1E9E86ED10FDC4BFD2FE080A` |
+  | Compact | 1,138,416 → 1,138,416 | `81DBB30DA0BCB51D7BC1AD40698E1714D4411EA320584472C8FB963BCDA20A34` |
+
+  最小值、最大值也前后相同（最大值比中位数多 528 字节，前后一样）；`defaultMemoised` 为 1,121,784，前后相同。三个哈希与 Task 7 / Task 10 登记的基线一致。
+- 测试：TDD 先红后绿（实现前 10 个失败，失败原因均为算法的 Alias 阶段没有运行；`Explicit_Theme_Value_Wins_Over_The_Alias_Stage` 与 `BuiltIn_…` 在实现前即通过，前者因为算法不运行时结果本来就是显式值，后者钉的就是原有路径）。`AtomUI.Core.Tests` 507/507，`AtomUI.Themes.Tests` 27/27，全量回归 `[SUMMARY] TOTAL: 12417 个测试全部通过, 总耗时 16:20`（12405 + 本任务新增 12）。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 10 的提交为 `17bc167f5`（冷路径移出内联）与 `3a87bba25`（验收记录与放行裁决）。审阅逐行对照规格 4.3 核对了三步流程：
+  - 优先级的四种情形（只有算法写；算法与主题显式值都写；主题显式值带动派生值；算法写带守卫的字段并带动派生值）结果都符合规格。为了让第二种情形里派生值读到显式值，实现在重跑默认公式之前多写了一次显式值；规格文字里没有这一步，但没有它结果就不对，已有测试钉住。
+  - 显式标记在所有退出路径上都会清除（含提前返回、不稳定抛错、算法自身抛错）；第二遍默认计算用的是「用户显式」与「算法写入」的并集。
+  - 记账只在算法阶段运行期间打开，在 `finally` 里关闭；默认公式和显式值写入都在记账关闭时进行。
+  - 稳定性检查同时比较槽位和值，双向（新增或变化的写入、消失的写入）；上限 3 轮；异常里带算法身份和 Token 名。
+  - 记账按链上每个算法单独进行，违规能归到正确的算法；后面的算法覆盖前面的。
+  - 内置路径相比改动前只多了「每个算法一次类型判断」和「一次空判断」，不分配对象、不记账、不查名称；委托放在单独的方法里，没有算法阶段时不会分配闭包。
+- 裁决（审阅提出的「无法从改动判断」一项）：控件 `Global` 与 `Custom` 模式下，根主题显式设置的 Map 与 Alias 值不参与该控件全局 Token 的重新推导，这是本方案之前就有的行为（见 Task 5 的记录）。实现 Alias 阶段后，这些值在该控件作用域里也可能被控件链上算法的 Alias 阶段取代，与「算法 < 主题显式值」的总顺序不一致。本任务不改这个行为 — 它不在计划范围内，改动会改变现有主题在这两种模式下的编译结果；主控记得 Ant Design 的组件级算法也是只保留组件自己的覆盖，但这一点没有核实 — 判断错了的代价是这两种模式下根显式值在控件作用域内不生效。规格 4.3 已补充说明这个例外，留给用户决定是否单独立项。
+- 留待最终整体审阅统一处理的小项：
+  1. 标记只增不减：算法第一轮写了 {A, W}、之后只写 {A} 时，带守卫的 W 会保留第一轮的值，结果不是「默认公式加最后一次算法写入」的不动点。要么每轮按「用户标记加本轮写入」重置，要么在 `Run` 的注释里写明并集语义。
+  2. `ThemeAlgorithmContext.Algorithms` 暴露的是各步骤共用的数组，算法强转回数组就能改掉后续算法看到的内容；包一层只读视图代价很小。
+  3. 测试缺口：成功或抛错后标记已清除没有直接断言；控件延迟编译路径上的失败如何抛出没有测试；根链带 Alias 算法时的 `ControlAlgorithmMode.Global` 没有测试（规格 4.6 要求四种模式）。
+  4. 内置路径测试的分配断言只覆盖 `CalculateAlias` 入口，整次编译的分配只由一次性的测量覆盖。

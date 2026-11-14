@@ -497,6 +497,7 @@ internal sealed class ThemeCompiler
                         effectiveGlobalBuilder,
                         config.GlobalTokens,
                         globalAlgorithms,
+                        globalAppearance,
                         globalDescriptors);
                     appearance = ResolveAppearance(globalAppearance, globalAlgorithms);
                     break;
@@ -506,6 +507,7 @@ internal sealed class ThemeCompiler
                         effectiveGlobalBuilder,
                         config.GlobalTokens,
                         config.Algorithms,
+                        globalAppearance,
                         globalDescriptors);
                     appearance = ResolveAppearance(globalAppearance, config.Algorithms);
                     break;
@@ -583,12 +585,13 @@ internal sealed class ThemeCompiler
         DesignToken baseline,
         IReadOnlyList<NormalizedTokenValue> overrides,
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
+        ThemeAppearance globalAppearance,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
         ApplyValues(baseline, overrides, TokenStage.Seed);
-        var result = EvaluateAlgorithms(baseline, algorithms, descriptors);
+        var result = EvaluateAlgorithms(baseline, algorithms, descriptors, out var aliasAlgorithms);
         ApplyValues(result, overrides, TokenStage.Map);
-        CalculateAlias(result, overrides);
+        CalculateAlias(result, overrides, aliasAlgorithms, globalAppearance, algorithms, descriptors);
         NormalizeFinalBehavior(result);
         return result;
     }
@@ -760,34 +763,125 @@ internal sealed class ThemeCompiler
     {
         var seed = new DesignToken();
         ApplyValues(seed, input.EffectiveConfig.GlobalTokens, TokenStage.Seed);
-        var map = EvaluateAlgorithms(seed, input.EffectiveConfig.Algorithms, input.Registry.GlobalTokens);
+        var map = EvaluateAlgorithms(
+            seed, input.EffectiveConfig.Algorithms, input.Registry.GlobalTokens, out var aliasAlgorithms);
         ApplyValues(map, input.EffectiveConfig.GlobalTokens, TokenStage.Map);
-        CalculateAlias(map, input.EffectiveConfig.GlobalTokens);
+        CalculateAlias(
+            map,
+            input.EffectiveConfig.GlobalTokens,
+            aliasAlgorithms,
+            ThemeAppearance.Light,
+            input.EffectiveConfig.Algorithms,
+            input.Registry.GlobalTokens);
         NormalizeFinalBehavior(map);
         return map;
     }
 
     // Explicit Alias values are written and flagged before the default Alias calculation so the Alias
     // tokens derived from them follow; they are written again afterwards so they still win, and the
-    // flags are cleared so they never leak into copies of the builder.
-    private static void CalculateAlias(DesignToken builder, IReadOnlyList<NormalizedTokenValue> values)
-    {
-        MarkExplicit(builder, values, TokenStage.Alias);
-        builder.CalculateAliasTokenValues();
-        ApplyValues(builder, values, TokenStage.Alias);
-        builder.ResetExplicit();
-    }
-
-    private static DesignToken EvaluateAlgorithms(
-        DesignToken effectiveSeed,
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
+    // flags are cleared so they never leak into copies of the builder. A chain whose algorithms have no
+    // Alias stage (the built-in ones) stops here: no object is created and the formulas run once.
+    internal static void CalculateAlias(
+        DesignToken builder,
+        IReadOnlyList<NormalizedTokenValue> values,
+        List<AliasStageAlgorithm>? aliasAlgorithms,
+        ThemeAppearance baselineAppearance,
+        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
+        if (aliasAlgorithms is null)
+        {
+            MarkExplicit(builder, values, TokenStage.Alias);
+            builder.CalculateAliasTokenValues();
+            ApplyValues(builder, values, TokenStage.Alias);
+            builder.ResetExplicit();
+            return;
+        }
+
+        RunAliasStage(builder, values, aliasAlgorithms, baselineAppearance, chain, descriptors);
+    }
+
+    // Kept separate from CalculateAlias: the lambdas capture parameters, and the closure would otherwise be
+    // allocated on entry to CalculateAlias, on the built-in path too.
+    private static void RunAliasStage(
+        DesignToken builder,
+        IReadOnlyList<NormalizedTokenValue> values,
+        List<AliasStageAlgorithm> aliasAlgorithms,
+        ThemeAppearance baselineAppearance,
+        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
+        IReadOnlyList<TokenDescriptor> descriptors)
+    {
+        var identities = new ThemeAlgorithm[chain.Count];
+        for (var index = 0; index < identities.Length; index++)
+        {
+            identities[index] = chain[index].Algorithm;
+        }
+
+        var context = new ThemeAlgorithmContext(ResolveAppearance(baselineAppearance, chain), identities);
+        var steps = new StagedAlgorithmStep[aliasAlgorithms.Count];
+        for (var index = 0; index < steps.Length; index++)
+        {
+            var instance = aliasAlgorithms[index].Instance;
+            steps[index] = new StagedAlgorithmStep(
+                aliasAlgorithms[index].Algorithm,
+                token => instance.EvaluateAlias(in context, (DesignToken)token));
+        }
+
+        var tokensByName = GlobalTokenNames.GetValue(descriptors, static list => new GlobalTokenNameIndex(list));
+        StagedTokenEvaluation.Run(
+            builder,
+            nameof(TokenStage.Alias),
+            () => MarkExplicit(builder, values, TokenStage.Alias),
+            builder.CalculateAliasTokenValues,
+            () => ApplyValues(builder, values, TokenStage.Alias),
+            builder.ResetExplicit,
+            steps,
+            tokensByName.Find,
+            static descriptor => descriptor.Stage == TokenStage.Alias,
+            descriptor => builder.MarkExplicit(descriptor.Slot));
+    }
+
+    /// <summary>
+    /// An algorithm of the chain that implements the Alias stage, with the instance that ran its Map stage.
+    /// </summary>
+    internal readonly record struct AliasStageAlgorithm(ThemeAlgorithm Algorithm, IThemeAliasAlgorithm Instance);
+
+    // Global descriptor lists are registry-owned and immutable; the name index is built only the first time an
+    // Alias stage runs against a list, never on the built-in path.
+    private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, GlobalTokenNameIndex>
+        GlobalTokenNames = new();
+
+    private sealed class GlobalTokenNameIndex(IReadOnlyList<TokenDescriptor> descriptors)
+    {
+        private readonly FrozenDictionary<string, TokenDescriptor> _byName =
+            descriptors.ToFrozenDictionary(static descriptor => descriptor.Name, StringComparer.Ordinal);
+
+        internal TokenDescriptor? Find(string name) => _byName.GetValueOrDefault(name);
+    }
+
+    /// <summary>
+    /// Runs the Map stage of every algorithm of the chain. The instances that also implement
+    /// <see cref="IThemeAliasAlgorithm"/> are returned in chain order for the Alias stage; the list is created
+    /// only when there is one, so it stays <see langword="null"/> for the built-in algorithms.
+    /// </summary>
+    internal static DesignToken EvaluateAlgorithms(
+        DesignToken effectiveSeed,
+        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
+        IReadOnlyList<TokenDescriptor> descriptors,
+        out List<AliasStageAlgorithm>? aliasAlgorithms)
+    {
+        aliasAlgorithms = null;
         DesignToken? previousMap = null;
         foreach (var algorithm in algorithms)
         {
             var nextMap = CopyBuilder(previousMap ?? effectiveSeed, descriptors);
-            algorithm.Create().Evaluate(effectiveSeed, previousMap, nextMap);
+            var instance = algorithm.Create();
+            instance.Evaluate(effectiveSeed, previousMap, nextMap);
+            if (instance is IThemeAliasAlgorithm aliasInstance)
+            {
+                (aliasAlgorithms ??= new List<AliasStageAlgorithm>()).Add(
+                    new AliasStageAlgorithm(algorithm.Algorithm, aliasInstance));
+            }
             previousMap = nextMap;
         }
 

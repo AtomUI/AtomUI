@@ -37,7 +37,9 @@ public abstract class AbstractDesignToken
     internal bool IsRecordingWrites => _writeLog is not null;
 
     /// <summary>
-    /// Starts recording the names of the token properties written from now on.
+    /// Starts recording the names of the token properties written from now on. The caller must call
+    /// <see cref="EndRecordingWrites"/> in a <c>finally</c> block: if the code between the two throws and recording
+    /// stays on, the next call to this method throws and hides the original error.
     /// </summary>
     /// <exception cref="InvalidOperationException">Recording is already on.</exception>
     internal void BeginRecordingWrites()

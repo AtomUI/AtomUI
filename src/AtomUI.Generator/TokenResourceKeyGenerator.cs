@@ -15,7 +15,8 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
         var declarations = Declarations(TargetMarkConstants.GlobalDesignTokenAttribute)
             .Combine(Declarations(TargetMarkConstants.ControlDesignTokenAttribute))
             .Combine(Declarations(TargetMarkConstants.ThemeAlgorithmAttribute))
-            .Combine(Declarations(TargetMarkConstants.SemanticPartAttribute));
+            .Combine(Declarations(TargetMarkConstants.SemanticPartAttribute))
+            .Combine(Declarations(TargetMarkConstants.ControlTokenAlgorithmAttribute));
         var assets = initContext.AdditionalTextsProvider
             .Where(static text => text.Path.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase))
             .Combine(initContext.AnalyzerConfigOptionsProvider)
@@ -46,7 +47,8 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             var localization = combined.Right;
             var compilation = input.Left.Left.Left;
             var options = input.Left.Left.Right;
-            var declarations = input.Left.Right;
+            var declarations = input.Left.Right.Left;
+            var controlAlgorithmDeclarations = input.Left.Right.Right;
             var documents = new Dictionary<string, System.Xml.Linq.XElement>(StringComparer.Ordinal);
             var assets = input.Right.Select(asset =>
             {
@@ -185,8 +187,13 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             {
                 new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, algorithms, ThemeBuildContracts.HasAbi(compilation)).Write();
             }
+            // Bound terminal tokens get their IControlToken half; control stages are checked against the same facts.
+            var controlTokenBindings = ControlTokenStageModel.GetBindings(compilation, controlInfos);
+            ControlTokenIdentityWriter.Write(context, controlTokenBindings);
+            var controlAlgorithms = ControlTokenStageModel.Collect(compilation, controlAlgorithmDeclarations,
+                controlTokenBindings, context.ReportDiagnostic, cancellationToken);
             ThemeAlgorithmRegistrationWriter.Write(context, compilation,
-                ThemeGeneratorOptions.GetRootNamespace(options), algorithms);
+                ThemeGeneratorOptions.GetRootNamespace(options), algorithms, controlAlgorithms);
 
             if (hasSemanticRuntime)
             {

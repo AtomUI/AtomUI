@@ -813,3 +813,45 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 ### 阶段四小结（Task 11–12）
 
 算法的 Alias 阶段和编译器的三步求值流程已就位，并有一套可复用的契约校验，内置三算法全部通过。内置主题的编译结果和分配字节数与阶段三结束时完全相同。全量回归增至 12434（含 1 个只在显式指定时运行的测量）。
+
+### Task 13：控件阶段的契约、声明、生成与注册（未提交，待审阅）
+
+- 改动（Core）：
+  1. 新增公开类型 `IControlTokenAlgorithm<TToken>`、`ControlTokenAlgorithmAttribute`（`AllowMultiple`，主构造函数 `(catalog, id, revision)`）、`IControlToken`（静态抽象 `ControlIdentity`）、`ControlTokenAlgorithmDescriptor`。`Create<TToken, TAlgorithm>` 只用泛型约束：控件身份取 `TToken.ControlIdentity`，持有一个 `new TAlgorithm()` 实例，经内部泛型 `Evaluator<TToken>` 调用两个阶段，不用反射，也不用 `Activator`；`EvaluateOwn` 收到类型不符的 Token 时抛 `ArgumentException`。Core 与控件包的目标框架是 net10.0/net8.0，都支持静态抽象接口成员。
+  2. `IThemeManagerBuilder.AddControlTokenAlgorithms`；`ThemeManagerBuilder` 按引用保存描述符，`BuildCore` 交给 `ThemeManager.SetPackageControlAlgorithms`，`CreateStartupRegistry` 的三条路径（启动索引、全部带编译期指纹、逐字段）都传入。
+  3. `ThemeSchemaRegistry`：三个构造函数各加一个带 `controlAlgorithms` 的重载（原签名保留，见出入 2）；按（算法身份，控件身份）序数排序；重复时抛 `Duplicate control algorithm '{algorithm}' for control '{control}'.`；新增 `ControlAlgorithms` 与 `TryGetControlAlgorithm`。算法或控件未注册的实现照样保留，只是编译器（Task 14）永远查不到它的组合。
+  4. 修订号：在三条路径各自算出的修订号之后，`FoldControlAlgorithms` 用现有的 `SchemaFingerprintBuilder` 依次计入 `"AtomUI.ControlAlgorithmRevision"`、版本 1、原修订号、条数，以及排序后每条的算法 `Catalog`/`Id`、控件 `Catalog`/`Id`、`Revision`。没有登记任何控件阶段时直接返回原值，不新建对象（空表用 `Array.Empty` 和 `FrozenDictionary.Empty`）。
+  5. 运行时追加包（`PreparePackages`）：新注册表沿用已提交的控件阶段，并加上这次 builder 登记的。追加时的接受规则留给 Task 15。
+- 改动（生成器）：
+  1. `IControlToken` 的实现由 `TokenResourceKeyGenerator` 输出（与 `<Control>Tokens.Identity` 同一处，绑定事实就是 `controlInfos`），文件 `GeneratedControlTokenIdentities.g.cs`，显式实现 `static ControlTokenIdentity IControlToken.ControlIdentity => <ns>.DesignTokens.<Control>Tokens.Identity;`，Token 类的公开成员不变。输出条件：编译里能找到 `IControlToken`、终端类、绑定了控件、顶层、非泛型、非抽象、所有声明都是 `partial`、类自己没有写这个接口。构建后核对：各包 `GeneratedThemeSchema` 的控件 Token 工厂数与生成的实现数逐包相同（AtomUI.Controls 2、Desktop.Controls 110、ColorPicker 4、DataGrid 1、GalleryBase 8）。
+  2. `[ControlTokenAlgorithm]` 并入同一个生成器的声明收集。`ControlTokenStageModel.Collect` 逐类检查（诊断都是 `ATOMUITOKEN002` 自由文本，位置在类名上）：非抽象、非泛型、程序集内可访问；恰好实现一次 `IControlTokenAlgorithm<T>`；有公开无参构造函数（`'{type}' must have a public parameterless constructor.`）；`T` 是绑定了控件的终端 Token（`'{type}' targets '{token}', which is not bound to a control.`）。判断依据：`T` 在当前编译里时看 `controlInfos` 的绑定结果（此时看不到生成器加的接口），来自引用程序集时看元数据里有没有 `IControlToken`。Attribute 的标识符或修订号不合法时在 Attribute 位置报错。
+  3. `ThemeAlgorithmRegistrationWriter`：有算法或有控件阶段任一项就输出注册类；有算法才输出 `AddThemeAlgorithms` 和 `<Catalog>Algorithms`；有控件阶段时输出一个静态只读数组，每个 Attribute 一条 `ControlTokenAlgorithmDescriptor.Create<Token, Class>(new ThemeAlgorithm("…", "…"), n)`，按（算法，Token 类型，实现类）排序，`Register` 里调用 `builder.AddControlTokenAlgorithms(...)`。数组只建一次，同一进程里的多个 builder 登记的是同一批描述符实例。
+- 测试：
+  - `ControlTokenAlgorithmRegistryTests`（Core，4 个，名称逐字）。包括：经 builder 进入启动注册表后，拿到的仍是同一实例；描述符只持有一个算法实例；重复项的异常文本逐字比对，覆盖注册表与 `Build()` 两个入口；修订号与输入顺序无关，并随修订号、算法身份、条数变化；钉住一个跨进程常量 `0x3C27BB46DFCE54C8`。
+  - 没有控件阶段时修订号不变：逐字段路径传 `null` 和传空表都等于既有常量 `0x29D0F9BA9FF24C7F`；组合路径传空表与不传结果相同；启动印记路径仍是 `0x1234`；有控件阶段时这三条路径的修订号都改变。
+  - `ControlTokenAlgorithmGeneratorTests`（生成器，5 个，名称逐字）。同一编译与引用程序集两种情况都覆盖：引用程序集用真实生成器输出编译。另外覆盖：抽象中间层、未绑定的终端类、缺少 `IControlToken` 的旧运行时都不输出实现；同一编译里的 Token 加控件阶段编译无错，说明泛型约束确实由生成的那一半满足。
+- 与简报的出入：
+  1. 简报列的修改文件里有 `TokenPropertyImplementationWriter.cs`，实际没有改它：那个轻量生成器拿不到控件绑定结果，`IControlToken` 改由 `TokenResourceKeyGenerator` 输出，简报允许这样选。代价是这一半只在完整编译时可见，IDE 设计期看不到。手写代码不会直接用到这个接口（`IControlTokenAlgorithm<TToken>` 没有约束它），生成的注册类同样只在完整编译里出现。
+  2. 注册表构造函数用重载而不是可选参数。第一版用可选参数，`TypeMapIntegrationTests` 的 6 个测试按原参数个数反射调用构造函数，因此失败；改成重载后通过。
+  3. 改了简报未列出的 `ThemeManager.PackageLoading.cs`（追加包时沿用已提交的控件阶段）和 `tests/AtomUI.Desktop.Controls.Tests/Theme/ThemeInitialModeTests.cs`（测试替身补上接口新方法）。
+  4. 「没有 Own Token 类的控件不支持控件阶段」写进了 `IControlTokenAlgorithm` 的 XML 文档。「编写主题算法」指南还不存在，按计划在 Task 23 新建时写入。
+  5. 规格 4.2 要求把（算法，控件，revision）计入所有持久指纹和缓存键。本任务只做到注册表修订号；控件编译缓存键归 Task 14。
+- 测量（Task 7 的测量工具，`DOTNET_TieredCompilation=0`，冷编译 21 次 / 预热 10 次，切换 3 / 1 次，Release；只比较分配与哈希）：改动前（HEAD `a9dc15d00` 原样）与改动后，全部分配与哈希行逐字相同（`diff` 无输出）。冷编译分配中位数 Default 1,138,032、Dark 1,143,224、Compact 1,138,416，`defaultMemoised` 1,121,784；三个哈希与 Task 7/10/11 登记的相同。
+- 测试结果：`AtomUI.Core.Tests` 528/528（524 + 4），`AtomUI.Generator.Tests` 1100/1100（1095 + 5），`AtomUI.Themes.Tests` 27/27，整个解决方案构建 0 错误（警告只有 NU1900）。全量回归第一次 `[SUMMARY] TOTAL: 存在失败, 总耗时 16:10`，1 个失败：`MasonryShowCasePageTests.Masonry_Semantic_Part_Example_Applies_Styles_To_Item_Containers`，`MasonryPanel.OnDetachedFromVisualTree` 第 272 行空引用，与本任务无关；单独重跑 Masonry 15/15 通过。整套重跑一次：`[SUMMARY] TOTAL: 12443 个测试全部通过, 总耗时 16:11`（12434 + 本任务新增 9）。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 12 的提交为 `a9dc15d00`。审阅确认：
+  - 描述符的构造不用反射也不用 `Activator`，NativeAOT 安全；类型不符时抛出的异常指明控件、期望类型和实际类型。
+  - 没有注册任何控件阶段实现时，注册表的修订号与此前逐位相同，测试用独立钉死的常量锚定（无条件折叠会让它失败）；查找在空表上直接返回，不计算哈希。
+  - 每个绑定了控件的终端 Token 恰好实现一次 `IControlToken`；同一编译里的 Token 与来自引用程序集的 Token 分别判定，两种情形都有测试。
+  - 运行时追加包在本任务之后不比之前更糟：重复注册在准备阶段抛错，追加的实现目前只会改变注册表修订号。
+- 全量回归：实现者第一遍有 1 个失败（`MasonryShowCasePageTests.Masonry_Semantic_Part_Example_Applies_Styles_To_Item_Containers`，`MasonryPanel.OnDetachedFromVisualTree` 里的空引用），单独运行通过；第二遍 `[SUMMARY] TOTAL: 12443 个测试全部通过, 总耗时 16:11`。审阅从改动判断与本任务无关。这是执行以来第二次偶发失败，与上一次不是同一个测试；这一次的报错位置在产品代码里，可能是一个偶尔才触发的真实缺陷，不在本计划范围内，未调查，留给用户。
+- 裁决（执行顺序）：先做 Task 15，再做 Task 14 — Task 13 之后追加包会带入控件阶段实现但尚无规格 4.4 的接受规则；Task 14 一旦让编译器调用这些实现，为已存在的算法和已存在的控件追加实现就会改变已提交的结果。Task 15 只依赖注册表，可以先做 — 代价是 Task 15 的测试要在编译器尚未消费控件阶段的情况下，从注册表层面断言。
+- IDE 设计期的已知限制：`IControlToken` 的实现只在完整构建时生成。手写 `ControlTokenAlgorithmDescriptor.Create<某控件Token, X>` 且 Token 在同一项目（审阅认为同一解决方案里的项目引用也一样）时，IDE 会显示一个假的 CS0315 错误，构建是成功的。正常使用由生成器产出这行代码，不需要手写；后续任务里手写它的测试会在 IDE 里显示红色。
+- 带入 Task 23 的一项：「没有 Own Token 类的控件不支持控件阶段」目前只写在 XML 注释里，指南要写明。
+- 留待最终整体审阅统一处理的小项：
+  1. 生成器对多数不规范写法（抽象或泛型类、带特性但没实现接口、为两种 Token 实现接口、非法标识符、修订号不大于 0）都会报 `ATOMUITOKEN002`，但只有两个分支有测试。
+  2. 同一程序集内的重复（一个类带两个相同的特性，或两个类针对同一个算法和 Token）只在运行时报错，错误信息不指明类；生成器报诊断更好。
+  3. 注册表现在有七个构造函数，只是为了让 `TypeMapIntegrationTests` 能继续用反射按旧的参数个数调用；改掉那六处调用后可以收成一个可选参数。
+  4. 启动索引那个构造函数在有控件阶段实现时把修订号折叠了两次（只在启动时，开销可忽略）。
+  5. 组合路径的修订号断言拿新重载和旧重载互比，两者走同一段折叠，不独立；另外两个锚点已覆盖。
+  6. 引用的程序集如果是用旧版 Core 构建的，Token 会被报成「未绑定控件」，信息有误导性；同一文件里 `GetSyntax()` 没传取消标记。
+  7. 描述符在静态只读字段的初始化里创建，某个控件阶段类的构造函数抛异常会让整个注册类不可用；可在特性的注释里写明。

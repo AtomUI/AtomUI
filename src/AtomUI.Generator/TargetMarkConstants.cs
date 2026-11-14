@@ -10,6 +10,9 @@ internal static class TargetMarkConstants
     public const string NotTokenDefinitionAttribute = "AtomUI.Theme.DesignTokens.NotTokenDefinitionAttribute";
     public const string ReservedTokenAttribute = "AtomUI.Theme.DesignTokens.ReservedTokenAttribute";
     public const string ThemeAlgorithmAttribute = "AtomUI.Theme.Algorithms.ThemeAlgorithmAttribute";
+    public const string ControlTokenAlgorithmAttribute = "AtomUI.Theme.Algorithms.ControlTokenAlgorithmAttribute";
+    public const string ControlTokenAlgorithmInterface = "AtomUI.Theme.Algorithms.IControlTokenAlgorithm`1";
+    public const string ControlTokenInterface = "AtomUI.Theme.DesignTokens.IControlToken";
     public const string TokenValueConverterAttribute = "AtomUI.Theme.DesignTokens.TokenValueConverterAttribute";
     public const string GenerateDataMemberAccessorsAttribute = "AtomUI.Controls.Data.GenerateDataMemberAccessorsAttribute";
     public const string GenerateScopedResourceHostAttribute = "AtomUI.Controls.GenerateScopedResourceHostAttribute";

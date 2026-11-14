@@ -14,23 +14,34 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<ControlTokenIdentity, ControlTokenDescriptor> _controlsByIdentity;
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
     private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
+    private readonly FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>
+        _controlAlgorithmsByKey;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
 
     internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
         IEnumerable<ThemeAlgorithmDescriptor> algorithms)
-        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms)
+        : this(globalTokens, index, algorithms, null)
+    {
+    }
+
+    // Overloads instead of optional parameters keep the existing constructor shapes callable by exact signature.
+    internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
+        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms, null, controlAlgorithms)
     {
         _startupIndex = index;
         Controls = new StartupControlList(index);
-        // Neither the compiled stamp nor Core's global fingerprint sees algorithms registered by packages.
-        Revision = FoldPackageAlgorithms(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
+        // Neither the compiled stamp nor Core's global fingerprint sees algorithms or control stages registered
+        // by packages.
+        Revision = FoldControlAlgorithms(FoldPackageAlgorithms(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
             ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
             index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
                 package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
                     ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray()),
-            Algorithms);
+            Algorithms), ControlAlgorithms);
     }
 
     internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
@@ -89,7 +100,17 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlTokenDescriptor> controls,
         IEnumerable<ThemeAlgorithmDescriptor> algorithms,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets = null)
-        : this(globalTokens, controls, algorithms, themeAssets, null)
+        : this(globalTokens, controls, algorithms, themeAssets, null, null)
+    {
+    }
+
+    internal ThemeSchemaRegistry(
+        IEnumerable<TokenDescriptor> globalTokens,
+        IEnumerable<ControlTokenDescriptor> controls,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
+        : this(globalTokens, controls, algorithms, themeAssets, null, controlAlgorithms)
     {
     }
 
@@ -104,7 +125,20 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
         ulong globalSchemaFingerprint,
         IReadOnlyList<PackageSchemaFingerprint> packageFingerprints)
-        : this(globalTokens, controls, algorithms, themeAssets, (globalSchemaFingerprint, packageFingerprints))
+        : this(globalTokens, controls, algorithms, themeAssets, (globalSchemaFingerprint, packageFingerprints), null)
+    {
+    }
+
+    internal ThemeSchemaRegistry(
+        IEnumerable<TokenDescriptor> globalTokens,
+        IEnumerable<ControlTokenDescriptor> controls,
+        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
+        ulong globalSchemaFingerprint,
+        IReadOnlyList<PackageSchemaFingerprint> packageFingerprints,
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
+        : this(globalTokens, controls, algorithms, themeAssets, (globalSchemaFingerprint, packageFingerprints),
+            controlAlgorithms)
     {
     }
 
@@ -113,7 +147,8 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlTokenDescriptor> controls,
         IEnumerable<ThemeAlgorithmDescriptor> algorithms,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
-        (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence)
+        (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence,
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
     {
         ArgumentNullException.ThrowIfNull(globalTokens);
         ArgumentNullException.ThrowIfNull(controls);
@@ -202,11 +237,15 @@ internal sealed class ThemeSchemaRegistry
             static descriptor => descriptor.Algorithm,
             EqualityComparer<ThemeAlgorithm>.Default,
             "algorithm");
+        var controlAlgorithmArray = OrderControlAlgorithms(controlAlgorithms);
 
         GlobalTokens          = globalTokensView;
         Controls              = Array.AsReadOnly(controlArray);
         Algorithms            = Array.AsReadOnly(algorithmArray);
         ThemeAssets           = Array.AsReadOnly(assetArray);
+        ControlAlgorithms     = controlAlgorithmArray.Length == 0
+            ? Array.Empty<ControlTokenAlgorithmDescriptor>()
+            : Array.AsReadOnly(controlAlgorithmArray);
         if (combinedRevisionEvidence is { } evidence)
         {
             ArgumentNullException.ThrowIfNull(evidence.Packages);
@@ -217,6 +256,7 @@ internal sealed class ThemeSchemaRegistry
         {
             Revision = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
         }
+        Revision = FoldControlAlgorithms(Revision, controlAlgorithmArray);
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
         _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
         _controlsByType       = BuildUniqueMap(
@@ -226,6 +266,7 @@ internal sealed class ThemeSchemaRegistry
                                     "Control CLR type")
                                 .ToFrozenDictionary();
         _algorithmsByAlgorithm = algorithmMap.ToFrozenDictionary();
+        _controlAlgorithmsByKey = BuildControlAlgorithmMap(controlAlgorithmArray);
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
         _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
     }
@@ -233,6 +274,12 @@ internal sealed class ThemeSchemaRegistry
     public IReadOnlyList<TokenDescriptor> GlobalTokens { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
     public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
+
+    /// <summary>
+    /// The registered control token stages, ordered by algorithm identity and then control identity. A stage whose
+    /// algorithm or control is not registered is kept here but never called.
+    /// </summary>
+    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlAlgorithms { get; }
     public ThemeSchemaRevision Revision { get; }
     // A structural revision does not identify descriptor callbacks or binding ownership.
     // The key carries this small identity instead of retaining the entire registry.
@@ -498,6 +545,14 @@ internal sealed class ThemeSchemaRegistry
         return _algorithmsByAlgorithm.TryGetValue(algorithm, out descriptor);
     }
 
+    internal bool TryGetControlAlgorithm(
+        ThemeAlgorithm algorithm,
+        ControlTokenIdentity control,
+        [NotNullWhen(true)] out ControlTokenAlgorithmDescriptor? descriptor)
+    {
+        return _controlAlgorithmsByKey.TryGetValue((algorithm, control), out descriptor);
+    }
+
     internal bool TryGetControlResourceSlot(object resourceKey, out int controlSlot)
     {
         if (_startupIndex is not null)
@@ -738,6 +793,80 @@ internal sealed class ThemeSchemaRegistry
             fingerprint.Add(algorithm.Algorithm.Id);
             fingerprint.Add(algorithm.Revision);
             fingerprint.Add((byte)algorithm.AppearanceEffect);
+        }
+        return new ThemeSchemaRevision(fingerprint.Value);
+    }
+
+    private static ControlTokenAlgorithmDescriptor[] OrderControlAlgorithms(
+        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms)
+    {
+        if (controlAlgorithms is null)
+        {
+            return Array.Empty<ControlTokenAlgorithmDescriptor>();
+        }
+        var array = controlAlgorithms.ToArray();
+        if (array.Length == 0)
+        {
+            return array;
+        }
+        foreach (var descriptor in array)
+        {
+            if (descriptor is null)
+            {
+                throw new ArgumentException("Control token algorithm descriptors cannot contain null.",
+                    nameof(controlAlgorithms));
+            }
+        }
+        Array.Sort(array, static (left, right) =>
+        {
+            var result = ThemeAlgorithm.Compare(left.Algorithm, right.Algorithm);
+            return result != 0 ? result : ControlIdentityKeyComparer.Instance.Compare(left.Control, right.Control);
+        });
+        return array;
+    }
+
+    private static FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>
+        BuildControlAlgorithmMap(IReadOnlyList<ControlTokenAlgorithmDescriptor> controlAlgorithms)
+    {
+        if (controlAlgorithms.Count == 0)
+        {
+            return FrozenDictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>.Empty;
+        }
+        var map = new Dictionary<(ThemeAlgorithm Algorithm, ControlTokenIdentity Control), ControlTokenAlgorithmDescriptor>(
+            controlAlgorithms.Count);
+        foreach (var descriptor in controlAlgorithms)
+        {
+            if (!map.TryAdd((descriptor.Algorithm, descriptor.Control), descriptor))
+            {
+                throw new ThemeSchemaException(
+                    $"Duplicate control algorithm '{descriptor.Algorithm}' for control '{descriptor.Control}'.");
+            }
+        }
+        return map.ToFrozenDictionary();
+    }
+
+    // Neither compile-time revisions nor the full walk know control stages. They are folded in on every path,
+    // in (algorithm, control) order; with none registered the revision stays exactly what it was.
+    private static ThemeSchemaRevision FoldControlAlgorithms(
+        ThemeSchemaRevision revision,
+        IReadOnlyList<ControlTokenAlgorithmDescriptor> controlAlgorithms)
+    {
+        if (controlAlgorithms.Count == 0)
+        {
+            return revision;
+        }
+        var fingerprint = new SchemaFingerprintBuilder();
+        fingerprint.Add("AtomUI.ControlAlgorithmRevision");
+        fingerprint.Add(1);
+        fingerprint.Add(revision.Value);
+        fingerprint.Add(controlAlgorithms.Count);
+        foreach (var descriptor in controlAlgorithms)
+        {
+            fingerprint.Add(descriptor.Algorithm.Catalog);
+            fingerprint.Add(descriptor.Algorithm.Id);
+            fingerprint.Add(descriptor.Control.Catalog);
+            fingerprint.Add(descriptor.Control.Id);
+            fingerprint.Add(descriptor.Revision);
         }
         return new ThemeSchemaRevision(fingerprint.Value);
     }

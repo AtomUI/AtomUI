@@ -17,6 +17,14 @@ public interface IThemeManagerBuilder
     /// theme schema registry is built.
     /// </summary>
     IThemeManagerBuilder AddThemeAlgorithms(IEnumerable<ThemeAlgorithmDescriptor> algorithms);
+
+    /// <summary>
+    /// Registers control token stages declared by a package with <c>[ControlTokenAlgorithm]</c>.
+    /// Generated <c>GeneratedThemeAlgorithmRegistration.Register</c> calls this; two stages for the same algorithm and
+    /// control are rejected when the theme schema registry is built. A stage whose algorithm or control is not
+    /// registered is kept but never called.
+    /// </summary>
+    IThemeManagerBuilder AddControlTokenAlgorithms(IEnumerable<ControlTokenAlgorithmDescriptor> algorithms);
     void AddControlPackage(ControlPackageRegistration package);
     void AddInitializer(Action<IThemeManager> initializer);
     void WithInitialTheme(string themeId, ThemeConfig? config = null);

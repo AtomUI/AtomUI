@@ -7,38 +7,44 @@ namespace AtomUI.Generator;
 
 /// <summary>
 /// Emits the public algorithm registration entry point and one typed identity class per algorithm catalog
-/// for package assemblies that declare theme algorithms. Core keeps its algorithms internal: its registry reads
-/// them directly and its identities are exposed through <c>ThemeAlgorithm.Default</c> and friends.
+/// for package assemblies that declare theme algorithms or control token stages. Core keeps its algorithms internal:
+/// its registry reads them directly and its identities are exposed through <c>ThemeAlgorithm.Default</c> and friends.
+/// An assembly that declares only control token stages gets the entry point without identity classes.
 /// </summary>
 internal sealed class ThemeAlgorithmRegistrationWriter
 {
     private const string BuilderMetadataName = "AtomUI.Theme.IThemeManagerBuilder";
     private const string ThemeAlgorithmType = "global::AtomUI.Theme.Algorithms.ThemeAlgorithm";
+    private const string ControlAlgorithmDescriptorType = "global::AtomUI.Theme.Schema.ControlTokenAlgorithmDescriptor";
 
     private readonly GenerationOutput _context;
     private readonly string _generatedNamespace;
     private readonly string _identityNamespace;
     private readonly IReadOnlyList<ThemeAlgorithmInfo> _algorithms;
+    private readonly IReadOnlyList<ControlTokenAlgorithmInfo> _controlAlgorithms;
 
     private ThemeAlgorithmRegistrationWriter(
         GenerationOutput context,
         string? assemblyName,
         string identityNamespace,
-        IReadOnlyList<ThemeAlgorithmInfo> algorithms)
+        IReadOnlyList<ThemeAlgorithmInfo> algorithms,
+        IReadOnlyList<ControlTokenAlgorithmInfo> controlAlgorithms)
     {
         _context = context;
         _generatedNamespace = GeneratedCodeNamespace.ForAssembly(assemblyName);
         _identityNamespace = identityNamespace;
         _algorithms = ThemeAlgorithmInfo.Order(algorithms).ToArray();
+        _controlAlgorithms = ControlTokenAlgorithmInfo.Order(controlAlgorithms).ToArray();
     }
 
     internal static void Write(
         GenerationOutput context,
         Compilation compilation,
         string? rootNamespace,
-        IReadOnlyList<ThemeAlgorithmInfo> algorithms)
+        IReadOnlyList<ThemeAlgorithmInfo> algorithms,
+        IReadOnlyList<ControlTokenAlgorithmInfo> controlAlgorithms)
     {
-        if (algorithms.Count == 0 ||
+        if (algorithms.Count + controlAlgorithms.Count == 0 ||
             compilation.GetTypeByMetadataName(BuilderMetadataName) is not { } builder ||
             SymbolEqualityComparer.Default.Equals(builder.ContainingAssembly, compilation.Assembly))
         {
@@ -48,7 +54,7 @@ internal sealed class ThemeAlgorithmRegistrationWriter
         var identityNamespace = string.IsNullOrWhiteSpace(rootNamespace)
             ? ToNamespace(assemblyName)
             : ToNamespace(rootNamespace!.Trim());
-        new ThemeAlgorithmRegistrationWriter(context, assemblyName, identityNamespace, algorithms).Write();
+        new ThemeAlgorithmRegistrationWriter(context, assemblyName, identityNamespace, algorithms, controlAlgorithms).Write();
     }
 
     private void Write()
@@ -72,8 +78,35 @@ internal sealed class ThemeAlgorithmRegistrationWriter
         source.AppendLine("    public static void Register(global::AtomUI.Theme.IThemeManagerBuilder builder)");
         source.AppendLine("    {");
         source.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(builder);");
-        source.AppendLine("        builder.AddThemeAlgorithms(GeneratedThemeSchema.GetAlgorithms());");
+        if (_algorithms.Count != 0)
+        {
+            source.AppendLine("        builder.AddThemeAlgorithms(GeneratedThemeSchema.GetAlgorithms());");
+        }
+        if (_controlAlgorithms.Count != 0)
+        {
+            source.AppendLine("        builder.AddControlTokenAlgorithms(ControlTokenAlgorithms);");
+        }
         source.AppendLine("    }");
+        if (_controlAlgorithms.Count != 0)
+        {
+            // Created once and shared: compilation caches key a control stage by its descriptor instance, so every
+            // builder of the process registers the same ones.
+            source.AppendLine();
+            source.Append("    private static readonly ").Append(ControlAlgorithmDescriptorType)
+                  .AppendLine("[] ControlTokenAlgorithms =");
+            source.AppendLine("    [");
+            foreach (var algorithm in _controlAlgorithms)
+            {
+                source.Append("        ").Append(ControlAlgorithmDescriptorType).Append(".Create<")
+                      .Append(algorithm.TokenTypeName).Append(", ").Append(algorithm.AlgorithmTypeName)
+                      .Append(">(new ").Append(ThemeAlgorithmType).Append('(')
+                      .Append(SymbolDisplay.FormatLiteral(algorithm.Catalog, quote: true)).Append(", ")
+                      .Append(SymbolDisplay.FormatLiteral(algorithm.Id, quote: true)).Append("), ")
+                      .Append(algorithm.Revision.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                      .AppendLine("),");
+            }
+            source.AppendLine("    ];");
+        }
         source.AppendLine("}");
         return source.ToString();
     }

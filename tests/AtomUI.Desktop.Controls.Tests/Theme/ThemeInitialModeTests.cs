@@ -71,6 +71,9 @@ public class ThemeInitialModeTests
         public IThemeManagerBuilder AddThemeAlgorithms(
             IEnumerable<AtomUI.Theme.Schema.ThemeAlgorithmDescriptor> algorithms) => this;
 
+        public IThemeManagerBuilder AddControlTokenAlgorithms(
+            IEnumerable<AtomUI.Theme.Schema.ControlTokenAlgorithmDescriptor> algorithms) => this;
+
         public void AddControlPackage(ControlPackageRegistration package)
         {
             ControlPackages.Add(package);

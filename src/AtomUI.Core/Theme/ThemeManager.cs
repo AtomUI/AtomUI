@@ -123,6 +123,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeSchemaRegistry? _startupRegistry;
     // Core's generated algorithms plus the package algorithms handed over by the builder; Core's own list when none.
     private IReadOnlyList<ThemeAlgorithmDescriptor> _registryAlgorithms = GeneratedThemeSchema.GetAlgorithms();
+    private IReadOnlyList<ControlTokenAlgorithmDescriptor> _registryControlAlgorithms = [];
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
@@ -1933,6 +1934,15 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     internal void SetPackageAlgorithms(IReadOnlyList<ThemeAlgorithmDescriptor> packageAlgorithms) =>
         _registryAlgorithms = ThemeSchemaRegistry.CombineAlgorithms(packageAlgorithms);
 
+    /// <summary>
+    /// Control token stages registered through the builder. Must be called before PrepareRegistrationSchema.
+    /// </summary>
+    internal void SetPackageControlAlgorithms(IReadOnlyList<ControlTokenAlgorithmDescriptor> controlAlgorithms)
+    {
+        ArgumentNullException.ThrowIfNull(controlAlgorithms);
+        _registryControlAlgorithms = controlAlgorithms;
+    }
+
     internal void ConfigureStartupPackages(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image)
     {
         var manualRegistry = _controlTokenDescriptors.Count == 0 ? null : new ThemeSchemaRegistry(
@@ -2024,7 +2034,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         if (_startupPackageIndex is { } index)
         {
-            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryAlgorithms);
+            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryAlgorithms,
+                _registryControlAlgorithms);
         }
         var registry = _packageSchemaFingerprints is { } packageFingerprints
             ? new ThemeSchemaRegistry(
@@ -2033,12 +2044,14 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 _registryAlgorithms,
                 _controlThemeAssetDescriptors,
                 GeneratedThemeSchema.GlobalSchemaFingerprint,
-                packageFingerprints)
+                packageFingerprints,
+                _registryControlAlgorithms)
             : new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
                 _registryAlgorithms,
-                _controlThemeAssetDescriptors);
+                _controlThemeAssetDescriptors,
+                _registryControlAlgorithms);
         return registry;
     }
 

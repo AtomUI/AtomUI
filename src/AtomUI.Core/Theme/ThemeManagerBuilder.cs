@@ -14,6 +14,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly List<Action<IThemeManager>> _initializers = new();
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
     private readonly List<ThemeAlgorithmDescriptor> _themeAlgorithms = [];
+    private readonly List<ControlTokenAlgorithmDescriptor> _controlTokenAlgorithms = [];
     private StartupImage? _startupImage;
     private readonly HashSet<ControlTokenIdentity> _registeredControlTokenIdentities = new();
     private readonly HashSet<ControlTokenIdentity> _registeredSemanticControlIdentities = new();
@@ -47,6 +48,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
     internal IReadOnlyList<ThemeAlgorithmDescriptor> ThemeAlgorithms => _themeAlgorithms;
+    internal IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlTokenAlgorithms => _controlTokenAlgorithms;
     internal StartupImage? StartupImage => _startupImage;
     internal void AddPackageDeclaration(EnabledControlPackage declaration)
     {
@@ -108,6 +110,24 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         }
         // Descriptor instances are kept as registered: startup global reuse compares them by reference.
         _themeAlgorithms.AddRange(added);
+        return this;
+    }
+
+    public IThemeManagerBuilder AddControlTokenAlgorithms(IEnumerable<ControlTokenAlgorithmDescriptor> algorithms)
+    {
+        ArgumentNullException.ThrowIfNull(algorithms);
+        // Like algorithms, control stages may arrive with an appended package.
+        ControlRegistrationState.ThrowIfUnavailable();
+        var added = algorithms.ToArray();
+        foreach (var algorithm in added)
+        {
+            if (algorithm is null)
+            {
+                throw new ArgumentException("Control token algorithm descriptors cannot contain null.", nameof(algorithms));
+            }
+        }
+        // Kept by reference: compilation caches identify a control stage by its descriptor instance.
+        _controlTokenAlgorithms.AddRange(added);
         return this;
     }
 
@@ -417,6 +437,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
         themeManager.SetPackageAlgorithms(_themeAlgorithms.ToArray());
+        themeManager.SetPackageControlAlgorithms(_controlTokenAlgorithms.ToArray());
         themeManager.ConfigureStartup(InitialRequest, FollowSystemLightRequest, FollowSystemDarkRequest);
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));

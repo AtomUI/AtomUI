@@ -53,7 +53,11 @@ internal partial class ThemeManager
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, algorithms);
+        // Committed control stages stay; acceptance rules for the appended ones belong to package append validation.
+        var controlAlgorithms = builder.ControlTokenAlgorithms.Count == 0 ? _startupRegistry.ControlAlgorithms
+            : _startupRegistry.ControlAlgorithms.Concat(builder.ControlTokenAlgorithms).ToArray();
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, algorithms,
+            controlAlgorithms);
         var semantics = new SemanticPartRegistry(index);
         _ = new ControlThemeAssetManifest(registry, newAssets);
         foreach (var asset in newAssets)

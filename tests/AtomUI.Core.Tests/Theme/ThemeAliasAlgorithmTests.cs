@@ -112,6 +112,38 @@ public class ThemeAliasAlgorithmTests
     }
 
     [Fact]
+    public void Context_Algorithms_Cannot_Be_Mutated_By_A_Stage()
+    {
+        IReadOnlyList<ThemeAlgorithm>? seen = null;
+
+        CompileSuccess([Alias(s_testX, (in context, _) => seen ??= context.Algorithms)]);
+
+        seen.ShouldNotBeNull();
+        seen.ShouldBe([s_testX]);
+        // A stage must not be able to cast the chain back to an array and change what later algorithms see.
+        seen.ShouldNotBeAssignableTo<ThemeAlgorithm[]>();
+        var list = seen.ShouldBeAssignableTo<IList<ThemeAlgorithm>>()!;
+        list.IsReadOnly.ShouldBeTrue();
+        Should.Throw<NotSupportedException>(() => list[0] = ThemeAlgorithm.Dark);
+    }
+
+    [Fact]
+    public void An_Exception_In_The_Map_Stage_Names_The_Algorithm()
+    {
+        var failure = new InvalidOperationException("boom");
+        var throwing = new ThemeAlgorithmDescriptor(s_testX, 1, ThemeAppearanceEffect.Preserve,
+            () => new ThrowingMapAlgorithm(failure));
+
+        var exception = CompileFailure([throwing]);
+
+        exception.Algorithm.ShouldBe(s_testX);
+        exception.TokenName.ShouldBeNull();
+        exception.Violation.ShouldBe(ThemeAlgorithmContractViolationKind.Failed);
+        exception.Message.ShouldBe("Algorithm 'Test:X' failed in the Map stage.");
+        exception.InnerException.ShouldBeSameAs(failure);
+    }
+
+    [Fact]
     public void Writing_A_Map_Token_In_The_Alias_Stage_Fails_With_Algorithm_And_Token()
     {
         var exception = CompileFailure([Alias(s_testX, static (in _, token) =>
@@ -296,6 +328,12 @@ public class ThemeAliasAlgorithmTests
             new ThemeDefinitionRevision("test", "1", "A1"),
             config,
             registry);
+    }
+
+    private sealed class ThrowingMapAlgorithm(Exception failure) : IThemeAlgorithm
+    {
+        public void Evaluate(DesignToken effectiveSeed, DesignToken? previousMap, DesignToken nextMap) =>
+            throw failure;
     }
 
     private sealed class TestAliasAlgorithm(AliasBody body) : IThemeAlgorithm, IThemeAliasAlgorithm

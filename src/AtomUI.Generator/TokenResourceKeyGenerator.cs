@@ -106,7 +106,9 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 ownTokens.Add(walker.ControlTokenInfo);
             }
             var algorithms = declarations.Left.Right.Distinct(StringComparer.Ordinal).Select(compilation.GetTypeByMetadataName)
-                .Where(static symbol => symbol is not null).Select(static symbol => ThemeAlgorithmInfo.Create(symbol!)).Where(static algorithm => algorithm is not null).Select(static algorithm => algorithm!).ToArray();
+                .Where(static symbol => symbol is not null)
+                .Select(symbol => ThemeAlgorithmInfo.Create(symbol!, context.ReportDiagnostic, cancellationToken))
+                .Where(static algorithm => algorithm is not null).Select(static algorithm => algorithm!).ToArray();
             var semanticDeclarations = declarations.Right.Distinct(StringComparer.Ordinal).Select(compilation.GetTypeByMetadataName)
                 .Where(static symbol => symbol is not null).Select(symbol => SemanticControlDeclaration.Create(symbol!, cancellationToken)).ToArray();
             var globalNames = compilation.GetTypeByMetadataName("AtomUI.Theme.Resources.SharedTokenKind")?.GetMembers().OfType<IFieldSymbol>()

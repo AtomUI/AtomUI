@@ -15,6 +15,18 @@ internal sealed class LazyControlSnapshotSource
 {
     private readonly ThemeSchemaRegistry _registry;
     private readonly IReadOnlyList<ThemeAlgorithmDescriptor> _globalAlgorithms;
+    // The scope's explicit global values (the effective config's own list, not the control table). Only a control
+    // stage reads them, to write the explicit Map/Alias values back over its EvaluateGlobal writes.
+    private readonly IReadOnlyList<NormalizedTokenValue> _globalTokens;
+    // Stored as an int, not a long: one source is allocated per compilation, so its object size is part of the
+    // measured per-compile allocation, and the int keeps the object at its size before _globalTokens was added. No
+    // reference this source already holds reaches the scope's explicit token list: the cache key exists only with a
+    // cache and keeps per token only its name, slot, stage and canonical value text, not the typed values the stage
+    // write-back needs; so the field above is needed. The estimate (global values, resources and palettes of one
+    // compilation, a few hundred KB) cannot approach int.MaxValue; the constructor saturates it there anyway. It does
+    // not count _globalTokens: that list belongs to the effective config, which the owning snapshot's estimate
+    // already counts (EstimateSnapshotBase).
+    private readonly int _estimatedRetainedBytes;
     private readonly ThemeAppearance _globalAppearance;
     private readonly object _builderGate = new();
     private DesignToken? _globalBuilder;
@@ -36,6 +48,7 @@ internal sealed class LazyControlSnapshotSource
         ArgumentNullException.ThrowIfNull(input);
         _registry         = input.Registry;
         _globalAlgorithms = input.EffectiveConfig.Algorithms;
+        _globalTokens     = input.EffectiveConfig.GlobalTokens;
         _globalAppearance = globalAppearance;
         _globalBuilder    = globalBuilder;
         _globalValues     = globalValues;
@@ -43,11 +56,11 @@ internal sealed class LazyControlSnapshotSource
         _globalPalettes   = globalPalettes;
         _cache            = cache is null ? null : new WeakReference<ControlCompilationCache>(cache);
         _globalKey        = cache is null ? null : GlobalCompilationCacheKey.Create(input);
-        EstimatedRetainedBytes = ThemeRetainedBytesEstimator.EstimateLazySource(
-            globalValues, globalResources, globalPalettes, _globalAlgorithms.Count, _globalKey?.EstimatedRetainedBytes ?? 0);
+        _estimatedRetainedBytes = (int)Math.Min(int.MaxValue, ThemeRetainedBytesEstimator.EstimateLazySource(
+            globalValues, globalResources, globalPalettes, _globalAlgorithms.Count, _globalKey?.EstimatedRetainedBytes ?? 0));
     }
 
-    internal long EstimatedRetainedBytes { get; }
+    internal long EstimatedRetainedBytes => _estimatedRetainedBytes;
 
     private DesignToken GetGlobalBuilder()
     {
@@ -83,7 +96,8 @@ internal sealed class LazyControlSnapshotSource
                 _globalValues,
                 _globalResources,
                 _registry,
-                valueDonor);
+                valueDonor,
+                _globalTokens);
         }
 
         // The stages are resolved again inside CompileControl rather than captured here: capturing them would grow

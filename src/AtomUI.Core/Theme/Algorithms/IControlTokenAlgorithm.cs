@@ -15,9 +15,10 @@ namespace AtomUI.Theme.Algorithms;
 /// </para>
 /// <para>
 /// The registry keeps one instance per declaration and the compiler may call both methods more than once per
-/// compilation. Like every algorithm stage they must be pure functions of their inputs: no clocks, environment or
-/// static mutable state, no writes to the inputs they only read, and never a token value computed from that
-/// token's own current value.
+/// compilation. Control tokens compile lazily, so that one instance may be called concurrently from different
+/// snapshots and threads. Like every algorithm stage the methods must therefore be pure functions of their inputs:
+/// no clocks, environment, static mutable state or instance state, no writes to the inputs they only read, and never
+/// a token value computed from that token's own current value.
 /// </para>
 /// </remarks>
 /// <typeparam name="TToken">The control's own token class.</typeparam>
@@ -26,6 +27,14 @@ public interface IControlTokenAlgorithm<TToken> where TToken : AbstractControlDe
     /// <summary>
     /// Writes global tokens that apply to this control only.
     /// </summary>
+    /// <remarks>
+    /// When the control uses its scope's global tokens (algorithm mode unspecified or <c>Disabled</c>), the theme's
+    /// explicit Map and Alias values win over these writes: after the stage, the compiler writes them back over the
+    /// tokens it wrote. An explicit seed is an input the Map stage already consumed and is not restored. In
+    /// <c>Global</c> and <c>Custom</c> mode nothing is written back, because those modes re-derive the control's global
+    /// tokens without the theme's explicit Map and Alias values. Control-scoped global overrides are applied last and
+    /// win over all of these.
+    /// </remarks>
     /// <param name="context">The resolved appearance and the effective algorithm chain.</param>
     /// <param name="controlGlobal">The control's own copy of its effective global token.</param>
     void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal);

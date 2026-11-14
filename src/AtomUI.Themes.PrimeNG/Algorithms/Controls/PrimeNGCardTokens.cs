@@ -30,6 +30,7 @@ internal sealed class PrimeNGCardTokens : IControlTokenAlgorithm<CardToken>
         var rules = preset.For(context.Appearance);
         if (rules.CardBorderSecondary is { } border)
         {
+            // Deliberately a different stop than the global ColorBorderSecondary (Nora dark: neutral 700, not transparent).
             controlGlobal.ColorBorderSecondary = border.Resolve(rules.Surface.AsSpan());
         }
     }

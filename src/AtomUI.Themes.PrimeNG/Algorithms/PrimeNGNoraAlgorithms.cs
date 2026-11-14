@@ -49,20 +49,23 @@ internal static class PrimeNGNoraPreset
             Surface: PrimeNGTailwindPalettes.Slate,
             Primary: new PrimeNGFamilyRule(
                 Base: new(600), Hover: new(700), Active: new(800),
-                Bg: new(50), BgHover: new(100), BgActive: new(200),
+                Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(700), Text: new(800), TextActive: new(900)),
+            // Links take deeper stops than the primary fill so link text stays readable on white; hover and active go deeper.
+            Link: new PrimeNGLinkRule(Base: new(700), Hover: new(800), Active: new(900)),
             // PrimeUIX nora-compat button.{success,info,warn}: the 600 / 700 / 800 stops, as the primary.
             Status: new PrimeNGFamilyRule(
                 Base: new(600), Hover: new(700), Active: new(800),
-                Bg: new(50), BgHover: new(100), BgActive: new(200),
+                Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
             Error: new PrimeNGFamilyRule(
                 Base: new(400), Hover: new(500), Active: new(600),
-                Bg: new(50), BgHover: new(100), BgActive: new(200),
+                Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
+            ErrorBgActive: new(200),
             Neutral: new PrimeNGNeutralRule(
                 BgBase: new(White), TextBase: new(Black),
                 // Tertiary and quaternary are the Aura stops (N500 / N400), so icons and tertiary text keep the 3:1 of
@@ -85,20 +88,22 @@ internal static class PrimeNGNoraPreset
             // (ControlItemBgActiveHover), so BgHover departs from PrimeUIX and takes P700.
             Primary: new PrimeNGFamilyRule(
                 Base: new(500), Hover: new(400), Active: new(300),
-                Bg: new(500), BgHover: new(700), BgActive: new(300),
+                Bg: new(500), BgHover: new(700),
                 Border: new(700, 0.36), BorderHover: new(600, 0.36),
                 TextHover: PrimeNGShade.Surface(950), Text: PrimeNGShade.Surface(950),
                 TextActive: PrimeNGShade.Surface(950)),
+            Link: new PrimeNGLinkRule(Base: new(500), Hover: new(400), Active: new(300)),
             Status: new PrimeNGFamilyRule(
                 Base: new(500), Hover: new(400), Active: new(300),
-                Bg: new(500, 0.16), BgHover: new(500, 0.24), BgActive: new(500, 0.32),
+                Bg: new(500, 0.16), BgHover: new(500, 0.24),
                 Border: new(700, 0.36), BorderHover: new(600, 0.36),
                 TextHover: new(400), Text: new(500), TextActive: new(300)),
             Error: new PrimeNGFamilyRule(
                 Base: new(400), Hover: new(300), Active: new(200),
-                Bg: new(500, 0.16), BgHover: new(500, 0.24), BgActive: new(500, 0.32),
+                Bg: new(500, 0.16), BgHover: new(500, 0.24),
                 Border: new(700, 0.36), BorderHover: new(600, 0.36),
                 TextHover: new(400), Text: new(500), TextActive: new(300)),
+            ErrorBgActive: new(500, 0.32),
             Neutral: new PrimeNGNeutralRule(
                 BgBase: new(950), TextBase: new(White),
                 Text: new(White), TextSecondary: new(400), TextTertiary: new(500), TextQuaternary: new(600),

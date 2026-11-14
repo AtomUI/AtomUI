@@ -271,6 +271,142 @@ public class ControlTokenAlgorithmCompilationTests
         button.ShouldBe(root);
     }
 
+    // Spec 4.3, priority "algorithm < theme explicit value < inner-scope explicit value": a theme's explicit Map or
+    // Alias value wins over the EvaluateGlobal write of a control stage. Seed tokens are inputs the Map stage has
+    // already consumed and replaced, so an explicit seed is not restored.
+
+    [Fact]
+    public void Theme_Explicit_Map_Value_Wins_Over_EvaluateGlobal()
+    {
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x)],
+            rootTokens: [(nameof(DesignToken.ColorPrimaryBg), "#0000FF")]);
+
+        snapshot.Global<Color>(nameof(DesignToken.ColorPrimaryBg)).ShouldBe(Colors.Blue);
+        snapshot.EffectiveGlobal<Color>(StageProbeToken.ControlIdentity, nameof(DesignToken.ColorPrimaryBg))
+                .ShouldBe(Colors.Blue);
+    }
+
+    [Fact]
+    public void Theme_Explicit_Alias_Value_Wins_Over_EvaluateGlobal()
+    {
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x)],
+            rootTokens: [(nameof(DesignToken.ControlPaddingHorizontal), "21")]);
+
+        snapshot.Global<double>(nameof(DesignToken.ControlPaddingHorizontal)).ShouldBe(21);
+        snapshot.EffectiveGlobal<double>(StageProbeToken.ControlIdentity, nameof(DesignToken.ControlPaddingHorizontal))
+                .ShouldBe(21);
+    }
+
+    [Fact]
+    public void Theme_Explicit_Seed_Value_Does_Not_Override_EvaluateGlobal()
+    {
+        // A seed is an input of the Map stage, not a final value: the compiled ColorPrimary is the algorithm's result
+        // (PrimeNG dark turns the seed #10B981 into #34D399). Writing the seed back would revert that result for every
+        // control that has a stage, so the stage's write stays.
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x)],
+            rootTokens: [(nameof(DesignToken.ColorPrimary), "#0000FF")]);
+
+        snapshot.Global<Color>(nameof(DesignToken.ColorPrimary)).ShouldBe(Colors.Blue);
+        snapshot.EffectiveGlobal<Color>(StageProbeToken.ControlIdentity, nameof(DesignToken.ColorPrimary))
+                .ShouldBe(Colors.Red);
+    }
+
+    [Fact]
+    public void Control_Scoped_Global_Override_Wins_Over_Theme_Explicit_Value_And_EvaluateGlobal()
+    {
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x)],
+            globalTokens:
+            [
+                (nameof(DesignToken.ColorPrimaryBg), "#008000"),
+                (nameof(DesignToken.ControlPaddingHorizontal), "33")
+            ],
+            rootTokens:
+            [
+                (nameof(DesignToken.ColorPrimaryBg), "#0000FF"),
+                (nameof(DesignToken.ControlPaddingHorizontal), "21")
+            ]);
+
+        snapshot.EffectiveGlobal<Color>(StageProbeToken.ControlIdentity, nameof(DesignToken.ColorPrimaryBg))
+                .ShouldBe(Colors.Green);
+        snapshot.EffectiveGlobal<double>(StageProbeToken.ControlIdentity, nameof(DesignToken.ControlPaddingHorizontal))
+                .ShouldBe(33);
+    }
+
+    [Fact]
+    public void EvaluateGlobal_Write_The_Theme_Did_Not_Set_Keeps_The_Stage_Value()
+    {
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x)],
+            rootTokens: [(nameof(DesignToken.ColorPrimaryBg), "#0000FF")]);
+
+        snapshot.EffectiveGlobal<double>(StageProbeToken.ControlIdentity, nameof(DesignToken.ControlPaddingHorizontal))
+                .ShouldBe(40);
+        snapshot.Global<double>(nameof(DesignToken.ControlPaddingHorizontal)).ShouldNotBe(40);
+    }
+
+    [Theory]
+    [InlineData(ControlAlgorithmMode.Global)]
+    [InlineData(ControlAlgorithmMode.Custom)]
+    public void Global_And_Custom_Modes_Do_Not_Restore_The_Theme_Explicit_Value(ControlAlgorithmMode mode)
+    {
+        // The documented existing exception of spec 4.3: Global and Custom modes re-derive the control's global
+        // tokens without the scope's explicit Map/Alias values, so the write-back does not run there either and the
+        // control keeps the stage's value. The owner decides about these two modes separately.
+        var snapshot = CompileSuccess(
+            [Stage<WritesSeedMapAlias>(s_x), Stage<WritesSeedMapAlias>(s_y)],
+            mode: mode,
+            rootTokens: [(nameof(DesignToken.ColorPrimaryBg), "#0000FF")]);
+
+        snapshot.Global<Color>(nameof(DesignToken.ColorPrimaryBg)).ShouldBe(Colors.Blue);
+        snapshot.EffectiveGlobal<Color>(StageProbeToken.ControlIdentity, nameof(DesignToken.ColorPrimaryBg))
+                .ShouldBe(Colors.Red);
+    }
+
+    [Fact]
+    public void Startup_Index_Path_Keeps_The_Theme_Explicit_Map_Value_Over_EvaluateGlobal()
+    {
+        var manual = CreateRegistry([]);
+        var index = StartupPackageIndex.Create([], null, manual);
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index,
+            manual.Algorithms, [Stage<WritesSeedMapAlias>(s_x)]);
+        registry.UsesStartupIndex.ShouldBeTrue();
+        var result = Compile(registry, [Default(registry), Follower(registry, s_x)], null,
+            [Value(registry.GlobalTokens, (nameof(DesignToken.ColorPrimaryBg), "#0000FF"))]);
+        result.Success.ShouldBeTrue();
+        var provider = new ThemeTokenResourceProvider(result.Snapshot!);
+
+        provider.TryGetResource(ControlTokenResourceKey.Global(StageProbeToken.ControlIdentity,
+            SharedTokenKind.ColorPrimaryBg), null, out var probeBg).ShouldBeTrue();
+        provider.TryGetResource(ControlTokenResourceKey.Global(StageProbeToken.ControlIdentity,
+            SharedTokenKind.ControlPaddingHorizontal), null, out var probePadding).ShouldBeTrue();
+
+        probeBg!.ToString().ShouldBe(Colors.Blue.ToString());
+        probePadding.ShouldBe(40d);
+    }
+
+    [Fact]
+    public void Control_Stage_Context_Algorithms_Cannot_Be_Mutated()
+    {
+        CapturesAlgorithms.Global = null;
+        CapturesAlgorithms.Own = null;
+
+        CompileSuccess([Stage<CapturesAlgorithms>(s_x)]).ProbeSnapshot();
+
+        foreach (var seen in new[] { CapturesAlgorithms.Global, CapturesAlgorithms.Own })
+        {
+            seen.ShouldNotBeNull();
+            seen.ShouldBe([ThemeAlgorithm.Default, s_x]);
+            seen.ShouldNotBeAssignableTo<ThemeAlgorithm[]>();
+            var list = seen.ShouldBeAssignableTo<IList<ThemeAlgorithm>>()!;
+            list.IsReadOnly.ShouldBeTrue();
+            Should.Throw<NotSupportedException>(() => list[0] = s_y);
+        }
+    }
+
     [Fact]
     public void Contract_StageBoundary_Reports_A_Control_Stage_That_Mutates_EffectiveGlobal()
     {
@@ -317,7 +453,8 @@ public class ControlTokenAlgorithmCompilationTests
         (string Name, string Value)[]? globalTokens = null,
         (string Name, string Value)[]? ownTokens = null,
         ControlAlgorithmMode? mode = null,
-        ThemeAlgorithm[]? chain = null)
+        ThemeAlgorithm[]? chain = null,
+        (string Name, string Value)[]? rootTokens = null)
     {
         var registry = CreateRegistry(stages);
         ThemeAlgorithmDescriptor[] algorithms =
@@ -338,7 +475,8 @@ public class ControlTokenAlgorithmCompilationTests
                 (ownTokens ?? []).Select(token => Value(probe!.OwnTokens, token)));
         }
 
-        var result = Compile(registry, algorithms, config);
+        var result = Compile(registry, algorithms, config,
+            (rootTokens ?? []).Select(token => Value(registry.GlobalTokens, token)).ToArray());
         result.Exception.ShouldBeNull();
         result.Success.ShouldBeTrue();
         return result.Snapshot!;
@@ -354,15 +492,17 @@ public class ControlTokenAlgorithmCompilationTests
     private static ThemeCompileResult Compile(
         ThemeSchemaRegistry registry,
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
-        NormalizedControlThemeConfig? control)
+        NormalizedControlThemeConfig? control,
+        IReadOnlyList<NormalizedTokenValue>? rootTokens = null)
     {
-        return new ThemeCompiler().Compile(CreateInput(registry, algorithms, control));
+        return new ThemeCompiler().Compile(CreateInput(registry, algorithms, control, rootTokens));
     }
 
     private static ThemeCompileInput CreateInput(
         ThemeSchemaRegistry registry,
         IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
-        NormalizedControlThemeConfig? control)
+        NormalizedControlThemeConfig? control,
+        IReadOnlyList<NormalizedTokenValue>? rootTokens = null)
     {
         var definition = new PreparedThemeDefinition(
             "TestTheme",
@@ -374,7 +514,7 @@ public class ControlTokenAlgorithmCompilationTests
             Array.Empty<BoundTokenValue>(),
             Array.Empty<ControlThemeDefinition>(),
             new ThemeSourceLocation("test", 1, 1, "/Theme"));
-        var config = new NormalizedThemeConfig(false, true, algorithms, Array.Empty<NormalizedTokenValue>(),
+        var config = new NormalizedThemeConfig(false, true, algorithms, rootTokens ?? Array.Empty<NormalizedTokenValue>(),
             control is null ? Array.Empty<NormalizedControlThemeConfig>() : [control]);
         return new ThemeCompileInput(definition, new ThemeDefinitionRevision("test", "1", "A1"), config, registry);
     }
@@ -483,6 +623,29 @@ public class ControlTokenAlgorithmCompilationTests
     {
         static void IStageBody.Global(in ThemeAlgorithmContext context, DesignToken controlGlobal) =>
             controlGlobal.ColorPrimary = Colors.Red;
+    }
+
+    public sealed class WritesSeedMapAlias : IStageBody
+    {
+        static void IStageBody.Global(in ThemeAlgorithmContext context, DesignToken controlGlobal)
+        {
+            controlGlobal.ColorPrimary             = Colors.Red;
+            controlGlobal.ColorPrimaryBg           = Colors.Red;
+            controlGlobal.ControlPaddingHorizontal = 40;
+        }
+    }
+
+    public sealed class CapturesAlgorithms : IStageBody
+    {
+        // Written by one test only; the tests of a class do not run in parallel.
+        internal static IReadOnlyList<ThemeAlgorithm>? Global;
+        internal static IReadOnlyList<ThemeAlgorithm>? Own;
+
+        static void IStageBody.Global(in ThemeAlgorithmContext context, DesignToken controlGlobal) =>
+            Global = context.Algorithms;
+
+        static void IStageBody.Own(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, StageProbeToken token) =>
+            Own = context.Algorithms;
     }
 
     public sealed class HeightThenCopy : IStageBody

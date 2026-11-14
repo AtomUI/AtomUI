@@ -63,7 +63,7 @@ public class ThemeSchemaGeneratorTests
     }
 
     [Fact]
-    public void Ignores_A_ThemeAlgorithm_Attribute_With_An_Invalid_Identifier()
+    public void Reports_And_Skips_A_ThemeAlgorithm_Attribute_With_An_Invalid_Identifier()
     {
         var invalidSource = TokenSource.Replace(
             "\"AtomUI\", \"Dark\", 1, ThemeAppearanceEffect.Dark",
@@ -72,7 +72,10 @@ public class ThemeSchemaGeneratorTests
 
         var outputCompilation = RunGenerator(CreateCompilation(invalidSource), out var diagnostics);
 
-        diagnostics.ShouldBeEmpty();
+        var diagnostic = diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe("ATOMUITOKEN002");
+        diagnostic.GetMessage(null).ShouldBe(
+            "'Demo.DarkAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.");
         var source = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
         source.ShouldContain("ThemeAlgorithm(\"AtomUI\", \"Default\")");
         source.ShouldNotContain("\"Dark\"");
@@ -161,6 +164,65 @@ public class ThemeSchemaGeneratorTests
 
         diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUITOKEN002" &&
             diagnostic.GetMessage(null) == "Algorithm ids 'Aura.Dark' and 'AuraDark' in catalog 'PrimeNG' map to the same member name.");
+    }
+
+    // An invalid [ThemeAlgorithm] declaration is reported at the attribute instead of being dropped silently, so the
+    // author does not first meet it as "Unknown algorithm" on a theme XML.
+    [Theory]
+    [InlineData("""[ThemeAlgorithm("Bad Catalog", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
+        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Bad Id", 1, ThemeAppearanceEffect.Preserve)]""",
+        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 0, ThemeAppearanceEffect.Preserve)]""",
+        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, (ThemeAppearanceEffect)7)]""",
+        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid appearance effect.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
+        "public sealed class BrokenAlgorithm : IThemeAlgorithm { public BrokenAlgorithm(int seed) { } }",
+        "'Acme.Themes.BrokenAlgorithm' must have a public parameterless constructor.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
+        "public abstract class BrokenAlgorithm : IThemeAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' must be a non-abstract, non-generic class that implements IThemeAlgorithm.")]
+    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
+        "public sealed class BrokenAlgorithm { }",
+        "'Acme.Themes.BrokenAlgorithm' must be a non-abstract, non-generic class that implements IThemeAlgorithm.")]
+    public void Reports_An_Invalid_Theme_Algorithm_Declaration_At_The_Attribute(
+        string attribute, string declaration, string message)
+    {
+        var source = $$"""
+            using AtomUI.Theme.Algorithms;
+            using AtomUI.Theme.Schema;
+
+            namespace Acme.Themes
+            {
+                {{attribute}}
+                {{declaration}}
+
+                [ThemeAlgorithm("Acme", "Valid", 1, ThemeAppearanceEffect.Preserve)]
+                public sealed class ValidAlgorithm : IThemeAlgorithm
+                {
+                }
+            }
+            """;
+
+        var output = RunGenerator(CreatePackageCompilation(source), out var diagnostics);
+
+        var diagnostic = diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe("ATOMUITOKEN002");
+        diagnostic.GetMessage(null).ShouldBe(message);
+        var span = diagnostic.Location.GetLineSpan();
+        span.Path.ShouldBe("PackageSource.cs");
+        span.StartLinePosition.Line.ShouldBe(5);
+        source.Split('\n')[5].Substring(span.StartLinePosition.Character).ShouldStartWith("ThemeAlgorithm(");
+        // The valid declaration next to it is still registered; the broken one is not.
+        var identities = GetGeneratedSource(output, "AcmeAlgorithms.g.cs");
+        identities.ShouldContain("Valid");
+        identities.ShouldNotContain("BrokenAlgorithm");
+        identities.ShouldNotContain("Flat");
     }
 
     [Fact]

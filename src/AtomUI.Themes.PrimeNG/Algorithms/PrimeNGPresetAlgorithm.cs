@@ -125,9 +125,10 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         map.ColorPrimaryText        = p.Text.Resolve(primary, surface);
         map.ColorPrimaryTextActive  = p.TextActive.Resolve(primary, surface);
 
-        map.ColorLink       = p.Base.Resolve(link, surface);
-        map.ColorLinkHover  = p.Hover.Resolve(link, surface);
-        map.ColorLinkActive = p.Active.Resolve(link, surface);
+        var l = rules.Link;
+        map.ColorLink       = l.Base.Resolve(link, surface);
+        map.ColorLinkHover  = l.Hover.Resolve(link, surface);
+        map.ColorLinkActive = l.Active.Resolve(link, surface);
 
         var s = rules.Status;
         map.ColorSuccess            = s.Base.Resolve(success, surface);
@@ -169,7 +170,7 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         map.ColorErrorActive      = e.Active.Resolve(error, surface);
         map.ColorErrorBg          = e.Bg.Resolve(error, surface);
         map.ColorErrorBgHover     = e.BgHover.Resolve(error, surface);
-        map.ColorErrorBgActive    = e.BgActive.Resolve(error, surface);
+        map.ColorErrorBgActive    = rules.ErrorBgActive.Resolve(error, surface);
         map.ColorErrorBorder      = e.Border.Resolve(error, surface);
         map.ColorErrorBorderHover = e.BorderHover.Resolve(error, surface);
         map.ColorErrorTextHover   = e.TextHover.Resolve(error, surface);

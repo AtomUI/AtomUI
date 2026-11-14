@@ -310,7 +310,8 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    // Disabled by default while token properties in the repository are still converted to partial properties.
+    // Enabled by default: the generator implements every token property (getter and write-recording setter), so a
+    // property that is not partial, or a token class that is not partial, cannot be supported.
     public static readonly DiagnosticDescriptor TokenPropertyNotPartial = new(
         AtomUIDiagnosticIds.TokenPropertyNotPartial,
         "Token property must be a partial property of a partial class",

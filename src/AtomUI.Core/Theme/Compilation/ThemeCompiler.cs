@@ -484,8 +484,11 @@ internal sealed class ThemeCompiler
     // 由独立 lazy source 在首次查询时执行，不依赖历史快照。previous 仅作为值身份复用来源
     // （同一控件上一次物化的快照），不影响计算结果。
     // Spec 4.3, control compilation: the effective global token (the four ControlAlgorithmMode cases), then each
-    // control stage's EvaluateGlobal on that copy followed by the control-scoped global overrides, then the Own tokens
-    // through the staged evaluation. A control whose chain has no control stage takes the original path unchanged.
+    // control stage's EvaluateGlobal on that copy, the scope's explicit Map/Alias values written back over the
+    // tokens it wrote (scopeGlobalTokens; read only on the stage path, and not in Global/Custom mode), the
+    // control-scoped global overrides, then the
+    // Own tokens through the staged evaluation. A control whose chain has no control stage takes the original path
+    // unchanged.
     internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
@@ -495,7 +498,8 @@ internal sealed class ThemeCompiler
         TokenValueTable globalValues,
         IReadOnlyDictionary<object, object?> globalResources,
         ThemeSchemaRegistry registry,
-        ControlThemeSnapshot? previous = null)
+        ControlThemeSnapshot? previous = null,
+        IReadOnlyList<NormalizedTokenValue>? scopeGlobalTokens = null)
     {
         var globalDescriptors = registry.GlobalTokens;
         // Takes the place of the stage array: still a single reference local, null on the path without stages.
@@ -540,7 +544,14 @@ internal sealed class ThemeCompiler
             }
         }
 
-        if (stages is not null && RunControlGlobalStage(stages, config, appearance, effectiveGlobalBuilder))
+        // Global and Custom modes re-derive the control's global tokens without the scope's explicit Map/Alias values
+        // (the documented existing exception of spec 4.3), so nothing is written back there either.
+        if (stages is not null &&
+            RunControlGlobalStage(stages, config,
+                config is { AlgorithmMode: ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom }
+                    ? null
+                    : scopeGlobalTokens,
+                appearance, effectiveGlobalBuilder))
         {
             effectiveGlobalMatchesRoot = false;
         }
@@ -718,54 +729,90 @@ internal sealed class ThemeCompiler
             identities[index] = chain[index].Algorithm;
         }
 
-        return new ThemeAlgorithmContext(appearance, identities);
+        // Wrapped read-only so a stage cannot change the chain later algorithms see; this runs only when a stage does.
+        return new ThemeAlgorithmContext(appearance, Array.AsReadOnly(identities));
     }
 
     /// <summary>
     /// Runs <c>EvaluateGlobal</c> of every control stage, in chain order, on the control's own copy of its effective
-    /// global token, then writes the control-scoped global overrides again so they win. The writes take effect
-    /// directly, as in <see cref="ControlAlgorithmMode.Disabled"/> mode: Map and Alias are not rerun.
+    /// global token. Then, for each token a stage wrote, the scope's explicit value is written back when the theme
+    /// sets that token and it is a Map or Alias token (seed tokens are inputs the Map stage already replaced, so an
+    /// explicit seed is not restored); <paramref name="scopeGlobalTokens"/> is <see langword="null"/> in
+    /// <see cref="ControlAlgorithmMode.Global"/> and <see cref="ControlAlgorithmMode.Custom"/> mode, where nothing is
+    /// written back; finally the control-scoped global overrides are written again so they win
+    /// over both. The writes take effect directly, as in <see cref="ControlAlgorithmMode.Disabled"/> mode: Map and
+    /// Alias are not rerun.
     /// </summary>
     /// <returns>Whether any stage wrote a global token.</returns>
     private static bool RunControlGlobalStage(
         ControlStagePlan plan,
         NormalizedControlThemeConfig? config,
+        IReadOnlyList<NormalizedTokenValue>? scopeGlobalTokens,
         ThemeAppearance appearance,
         DesignToken controlGlobal)
     {
         plan.Context = CreateAlgorithmContext(appearance, plan.Chain);
-        var written = false;
-        foreach (var stage in plan.Stages)
+        IReadOnlyCollection<string> names;
+        ControlTokenAlgorithmDescriptor? running = null;
+        // One recording session for the whole chain: its result is the union of the names every stage wrote.
+        controlGlobal.BeginRecordingWrites();
+        try
         {
-            IReadOnlyCollection<string> names;
-            controlGlobal.BeginRecordingWrites();
-            try
+            foreach (var stage in plan.Stages)
             {
+                running = stage;
                 stage.EvaluateGlobal(in plan.Context, controlGlobal);
             }
-            catch (Exception exception)
-            {
-                throw new ThemeAlgorithmContractException(
-                    stage.Algorithm,
-                    null,
-                    ThemeAlgorithmContractViolationKind.Failed,
-                    $"Algorithm '{stage.Algorithm}' failed in the {nameof(TokenStage.Control)} stage.",
-                    exception);
-            }
-            finally
-            {
-                names = controlGlobal.EndRecordingWrites();
-            }
-
-            written |= names.Count != 0;
+        }
+        catch (Exception exception)
+        {
+            throw new ThemeAlgorithmContractException(
+                running!.Algorithm,
+                null,
+                ThemeAlgorithmContractViolationKind.Failed,
+                $"Algorithm '{running.Algorithm}' failed in the {nameof(TokenStage.Control)} stage.",
+                exception);
+        }
+        finally
+        {
+            names = controlGlobal.EndRecordingWrites();
         }
 
+        if (names.Count != 0 && scopeGlobalTokens is { Count: > 0 })
+        {
+            RestoreExplicitDerivedValues(controlGlobal, names, scopeGlobalTokens);
+        }
         if (config is not null)
         {
             ApplyAllValues(controlGlobal, config.GlobalTokens);
         }
         NormalizeFinalBehavior(controlGlobal);
-        return written;
+        return names.Count != 0;
+    }
+
+    // Spec 4.3 priority "algorithm < theme explicit value": the scope's explicit Map and Alias values are exactly the
+    // values the global compilation wrote into the root builder after the algorithms ran (ApplyValues at Map,
+    // CalculateAlias at Alias), so writing them back undoes only what a control stage overwrote. Seed values are
+    // skipped: they were consumed by the Map stage, and the compiled seed slot holds the algorithm's result.
+    private static void RestoreExplicitDerivedValues(
+        DesignToken controlGlobal,
+        IReadOnlyCollection<string> writtenNames,
+        IReadOnlyList<NormalizedTokenValue> scopeGlobalTokens)
+    {
+        foreach (var name in writtenNames)
+        {
+            for (var index = 0; index < scopeGlobalTokens.Count; index++)
+            {
+                var value = scopeGlobalTokens[index];
+                var descriptor = value.Descriptor;
+                if (descriptor.Stage is (TokenStage.Map or TokenStage.Alias) &&
+                    string.Equals(name, descriptor.Name, StringComparison.Ordinal))
+                {
+                    descriptor.SetValue(controlGlobal, descriptor.CopyValue(value.Value));
+                    break;
+                }
+            }
+        }
     }
 
     // Kept separate from CompileControl: the lambdas capture locals, and the closure would otherwise be allocated on
@@ -1125,8 +1172,25 @@ internal sealed class ThemeCompiler
         foreach (var algorithm in algorithms)
         {
             var nextMap = CopyBuilder(previousMap ?? effectiveSeed, descriptors);
-            var instance = algorithm.Create();
-            instance.Evaluate(effectiveSeed, previousMap, nextMap);
+            IThemeAlgorithm instance;
+            // Every algorithm's failure, built-in or not, is reported like a failure of its Alias or control stage:
+            // a ThemeAlgorithmContractException naming the algorithm. The try region costs nothing when no
+            // exception is thrown.
+            try
+            {
+                instance = algorithm.Create();
+                instance.Evaluate(effectiveSeed, previousMap, nextMap);
+            }
+            catch (Exception exception) when (exception is not ThemeAlgorithmContractException)
+            {
+                throw new ThemeAlgorithmContractException(
+                    algorithm.Algorithm,
+                    null,
+                    ThemeAlgorithmContractViolationKind.Failed,
+                    $"Algorithm '{algorithm.Algorithm}' failed in the {nameof(TokenStage.Map)} stage.",
+                    exception);
+            }
+
             if (instance is IThemeAliasAlgorithm aliasInstance)
             {
                 (aliasAlgorithms ??= new List<AliasStageAlgorithm>()).Add(

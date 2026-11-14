@@ -62,6 +62,7 @@ internal readonly record struct PrimeNGShade(int Stop, double Opacity = 1.0, boo
 
 /// <summary>
 /// Which shade of a semantic colour family each of its Map tokens takes (primary, a status family, or error).
+/// Only the error family has an active background token; it is <see cref="PrimeNGAppearanceRules.ErrorBgActive"/>.
 /// </summary>
 internal sealed record PrimeNGFamilyRule(
     PrimeNGShade Base,
@@ -69,12 +70,21 @@ internal sealed record PrimeNGFamilyRule(
     PrimeNGShade Active,
     PrimeNGShade Bg,
     PrimeNGShade BgHover,
-    PrimeNGShade BgActive,
     PrimeNGShade Border,
     PrimeNGShade BorderHover,
     PrimeNGShade TextHover,
     PrimeNGShade Text,
     PrimeNGShade TextActive);
+
+/// <summary>
+/// Which shades of the link seed's family (the primary unless the theme sets <c>ColorLink</c>) the link colours take.
+/// They are separate from the primary row because link text must stay readable on the container: in light the links
+/// take a deeper stop than the primary fill.
+/// </summary>
+internal sealed record PrimeNGLinkRule(
+    PrimeNGShade Base,
+    PrimeNGShade Hover,
+    PrimeNGShade Active);
 
 /// <summary>
 /// Which shade of the surface (neutral) scale each neutral Map token takes. <see cref="BgBase"/> and
@@ -106,10 +116,12 @@ internal sealed record PrimeNGNeutralRule(
     PrimeNGShade TextDisabled);
 
 /// <summary>
-/// The colour rules of one appearance. <see cref="Primary"/> also drives the link colours and the selection
-/// background; <see cref="Status"/> drives the success, warning and info families.
+/// The colour rules of one appearance. <see cref="Primary"/> also drives the selection background;
+/// <see cref="Status"/> drives the success, warning and info families.
 /// </summary>
 /// <param name="Surface">The neutral scale, a constant of the preset (spec 4.7).</param>
+/// <param name="Link">The link colours' stops.</param>
+/// <param name="ErrorBgActive">The error family's active background (<c>ColorErrorBgActive</c>).</param>
 /// <param name="SelectionForeground">
 /// Text on the selection background and on solid primary fills (the PrimeUIX primary contrast colour); the Alias
 /// stage also writes it to <c>ColorTextLightSolid</c>.
@@ -135,8 +147,10 @@ internal sealed record PrimeNGNeutralRule(
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
+    PrimeNGLinkRule Link,
     PrimeNGFamilyRule Status,
     PrimeNGFamilyRule Error,
+    PrimeNGShade ErrorBgActive,
     PrimeNGNeutralRule Neutral,
     PrimeNGShade SelectionForeground,
     Func<DesignToken, Color>? ControlOutline,

@@ -333,6 +333,48 @@ public class PrimeNGThemePackageTests
         quaternary.ShouldBeGreaterThanOrEqualTo(1.8, $"{id} ColorTextQuaternary: {quaternary:F2}");
     }
 
+    [AvaloniaTheory]
+    // Light: the floor is the pre-algorithm link colour, Ant blue #1677FF on white (4.10); hover and active must not be
+    // less readable than the base, so all three share it. The links take the primary 700 / 800 / 900 stops for that.
+    [InlineData("PrimeNGAura", 4.10, 4.10, 4.10)]
+    [InlineData("PrimeNGAura.Compact", 4.10, 4.10, 4.10)]
+    [InlineData("PrimeNGLara", 4.10, 4.10, 4.10)]
+    [InlineData("PrimeNGLara.Compact", 4.10, 4.10, 4.10)]
+    [InlineData("PrimeNGNora", 4.10, 4.10, 4.10)]
+    [InlineData("PrimeNGNora.Compact", 4.10, 4.10, 4.10)]
+    // Dark: the floors are the values of the algorithm profiles (Aura and Lara 400 / 300 / 200, Nora 500 / 400 / 300),
+    // which are already far above the old profiles' 3.83 / 1.98 / 2.75.
+    [InlineData("PrimeNGAura.Dark", 10.35, 13.05, 15.51)]
+    [InlineData("PrimeNGAura.DarkCompact", 10.35, 13.05, 15.51)]
+    [InlineData("PrimeNGLara.Dark", 10.35, 13.05, 15.51)]
+    [InlineData("PrimeNGLara.DarkCompact", 10.35, 13.05, 15.51)]
+    [InlineData("PrimeNGNora.Dark", 7.84, 10.35, 13.05)]
+    [InlineData("PrimeNGNora.DarkCompact", 7.84, 10.35, 13.05)]
+    public async Task Link_Colours_Stay_Readable_On_The_Container(string id, double link, double hover, double active)
+    {
+        var snapshot = await Apply(id);
+        var container = Global<Color>(snapshot, "ColorBgContainer");
+        foreach (var (name, floor) in new[] { ("ColorLink", link), ("ColorLinkHover", hover), ("ColorLinkActive", active) })
+        {
+            // Two decimals, as the floors are written.
+            var ratio = Math.Round(ContrastRatio.Of(Global<Color>(snapshot, name), container), 2);
+            ratio.ShouldBeGreaterThanOrEqualTo(floor, $"{id} {name}: {ratio:F2} < {floor:F2}");
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Explicit_ColorBgSpotlight_Is_The_ToolTip_Background()
+    {
+        // Priority "algorithm < theme explicit value": the ToolTip stage reads the global spotlight background
+        // instead of recomputing the preset's stop, so a theme that sets it explicitly is honoured.
+        var config = new ThemeConfigBuilder().WithToken("ColorBgSpotlight", "#FF123456").Build();
+        var snapshot = await Apply(new ThemeRequest("PrimeNGAura", config, ThemeTransitionReason.UserRequest));
+        Own<Color>(snapshot, "ToolTip", "ToolTipBackground").ShouldBe(Color.Parse("#FF123456"));
+
+        var preset = await Apply("PrimeNGAura");
+        Own<Color>(preset, "ToolTip", "ToolTipBackground").ShouldBe(Global<Color>(preset, "ColorBgSpotlight"));
+    }
+
     [AvaloniaFact]
     public async Task Lara_Uses_Outline_Glow_And_Larger_Controls()
     {

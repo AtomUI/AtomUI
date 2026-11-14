@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
@@ -106,35 +104,37 @@ public class GlobalAliasExplicitOverrideTests
     }
 
     [Theory]
-    [InlineData("Default", "055D31ED995FCB1975559327CCEEBE63AB05061F19477E514733CF69D4160E2D")]
-    [InlineData("Dark", "447D1F42CE75162510242E596BC27FB4D787B502AC75066E5544B2E3BDF4E7E9")]
-    [InlineData("DefaultCompact", "5D61427B4535CBFF8297B898B64A30670689CD898FB26649F876EEC2A9B2A3F3")]
-    [InlineData("DarkCompact", "9E974118BE431D68D6489243433B2348AD3D146A447606136F08448F73FFF5AC")]
-    public void Without_Explicit_Alias_Values_The_Result_Is_Unchanged(string chain, string expectedHash)
+    [InlineData("ControlOutlineWidth", "0",
+        new[] { "ControlOutlineWidth", "InputActiveShadow", "InputErrorActiveShadow", "InputWarningActiveShadow" })]
+    [InlineData("ColorControlOutline", "#FF0000", new[] { "ColorControlOutline", "InputActiveShadow" })]
+    [InlineData("LineWidthFocus", "1", new[] { "FocusVisualBorderThickness", "LineWidthFocus" })]
+    public void Explicit_Alias_Value_Changes_Only_Its_Documented_Derivations(
+        string name, string value, string[] expectedChangedSlots)
     {
-        // Hashes pin every global slot (Name=FormattedValue per line, in slot order) as compiled before
-        // explicit Alias values were applied ahead of the default Alias calculation.
-        ThemeAlgorithm[] algorithms = chain switch
+        // Every global slot is compared one by one with the same chain compiled without the explicit value; the
+        // slots that differ are named, so a failure says which derivation appeared or disappeared.
+        ThemeAlgorithm[][] chains =
+        [
+            [ThemeAlgorithm.Default],
+            [ThemeAlgorithm.Dark],
+            [ThemeAlgorithm.Default, ThemeAlgorithm.Compact],
+            [ThemeAlgorithm.Dark, ThemeAlgorithm.Compact]
+        ];
+        foreach (var chain in chains)
         {
-            "Default"        => [ThemeAlgorithm.Default],
-            "Dark"           => [ThemeAlgorithm.Dark],
-            "DefaultCompact" => [ThemeAlgorithm.Default, ThemeAlgorithm.Compact],
-            "DarkCompact"    => [ThemeAlgorithm.Dark, ThemeAlgorithm.Compact],
-            _                => throw new ArgumentOutOfRangeException(nameof(chain))
-        };
-        var snapshot = ThemeTestSnapshotFactory.Compile(new ThemeConfigBuilder().WithAlgorithms(algorithms).Build());
+            var baseline = ThemeTestSnapshotFactory.Compile(new ThemeConfigBuilder().WithAlgorithms(chain).Build());
+            var overridden = ThemeTestSnapshotFactory.Compile(
+                new ThemeConfigBuilder().WithAlgorithms(chain).WithToken(name, value).Build());
 
-        var dump = new StringBuilder();
-        foreach (var descriptor in snapshot.Registry.GlobalTokens)
-        {
-            dump.Append(descriptor.Name)
-                .Append('=')
-                .Append(descriptor.Format(snapshot.GlobalTokenValues.GetValue(descriptor.Slot)))
-                .Append('\n');
+            var changed = baseline.Registry.GlobalTokens
+                                  .Where(descriptor => descriptor.Format(baseline.GlobalTokenValues.GetValue(descriptor.Slot)) !=
+                                                       descriptor.Format(overridden.GlobalTokenValues.GetValue(descriptor.Slot)))
+                                  .Select(static descriptor => descriptor.Name)
+                                  .OrderBy(static slot => slot, StringComparer.Ordinal)
+                                  .ToArray();
+
+            changed.ShouldBe(expectedChangedSlots, string.Join(" + ", chain));
         }
-
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dump.ToString())));
-        hash.ShouldBe(expectedHash, dump.ToString());
     }
 
     [Fact]

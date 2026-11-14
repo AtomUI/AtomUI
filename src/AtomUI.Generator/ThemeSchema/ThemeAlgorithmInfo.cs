@@ -1,3 +1,4 @@
+using AtomUI.Generator.Diagnostics;
 using AtomUI.Theme.Build;
 using Microsoft.CodeAnalysis;
 
@@ -36,19 +37,34 @@ internal sealed class ThemeAlgorithmInfo
     internal static ThemeAlgorithmInfo? Create(GeneratorAttributeSyntaxContext context) =>
         context.TargetSymbol is INamedTypeSymbol type ? Create(type) : null;
 
-    internal static ThemeAlgorithmInfo? Create(INamedTypeSymbol type)
+    /// <summary>
+    /// Validates one <c>[ThemeAlgorithm]</c> class. A declaration that cannot be registered is reported as
+    /// ATOMUITOKEN002 at the attribute (as <c>[ControlTokenAlgorithm]</c> does) and skipped; without
+    /// <paramref name="reportDiagnostic"/> it is only skipped.
+    /// </summary>
+    internal static ThemeAlgorithmInfo? Create(
+        INamedTypeSymbol type,
+        Action<Diagnostic>? reportDiagnostic = null,
+        CancellationToken cancellationToken = default)
     {
-        if (
-            type.IsAbstract ||
-            type.IsGenericType ||
-            !ImplementsThemeAlgorithm(type))
+        var attribute = type.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.ThemeAlgorithmAttribute);
+        if (attribute is null)
         {
             return null;
         }
 
-        var attribute = type.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.ThemeAlgorithmAttribute);
-        if (attribute is null ||
-            attribute.ConstructorArguments.Length != 4 ||
+        var typeName = type.ToDisplayString();
+        if (type.TypeKind != TypeKind.Class ||
+            type.IsAbstract ||
+            type.IsGenericType ||
+            !ImplementsThemeAlgorithm(type))
+        {
+            Report(reportDiagnostic, type, attribute, cancellationToken,
+                $"'{typeName}' must be a non-abstract, non-generic class that implements IThemeAlgorithm.");
+            return null;
+        }
+
+        if (attribute.ConstructorArguments.Length != 4 ||
             attribute.ConstructorArguments[0].Value is not string catalog ||
             attribute.ConstructorArguments[1].Value is not string id ||
             !ThemeBuildIdentifier.IsValid(catalog) ||
@@ -56,6 +72,8 @@ internal sealed class ThemeAlgorithmInfo
             attribute.ConstructorArguments[2].Value is not int revision ||
             revision <= 0)
         {
+            Report(reportDiagnostic, type, attribute, cancellationToken,
+                $"'{typeName}' declares a theme algorithm with an invalid catalog, id or revision.");
             return null;
         }
 
@@ -76,6 +94,8 @@ internal sealed class ThemeAlgorithmInfo
         };
         if (appearance is null)
         {
+            Report(reportDiagnostic, type, attribute, cancellationToken,
+                $"'{typeName}' declares a theme algorithm with an invalid appearance effect.");
             return null;
         }
 
@@ -91,7 +111,27 @@ internal sealed class ThemeAlgorithmInfo
                 type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
         }
 
+        Report(reportDiagnostic, type, attribute, cancellationToken,
+            $"'{typeName}' must have a public parameterless constructor.");
         return null;
+    }
+
+    private static void Report(
+        Action<Diagnostic>? reportDiagnostic,
+        INamedTypeSymbol type,
+        AttributeData attribute,
+        CancellationToken cancellationToken,
+        string message)
+    {
+        if (reportDiagnostic is null)
+        {
+            return;
+        }
+
+        var location = attribute.ApplicationSyntaxReference?.GetSyntax(cancellationToken).GetLocation() ??
+                       type.Locations.FirstOrDefault(static candidate => candidate.IsInSource) ??
+                       Location.None;
+        reportDiagnostic(Diagnostic.Create(AtomUIDiagnosticDescriptors.CompiledThemeBindingFailed, location, message));
     }
 
     private static bool ImplementsThemeAlgorithm(ITypeSymbol type)

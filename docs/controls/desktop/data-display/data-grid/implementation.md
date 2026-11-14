@@ -480,6 +480,10 @@ SparseHeightDeltaIndex 只保存 pinned/current-LRU block 的实测差值；pass
 kind/group level 分类的 estimator 并删除明细。prefix sum 和 offset-to-slot 是 O(log M)，M 受 cache/pin 与用户显式状态上限
 约束。禁止从 slot 0 扫描到 first slot，也禁止按 total/历史访问量创建全局 Fenwick array。
 
+槽位区间必须首尾相接：一行的结束边界就是下一槽位的起点，offset-to-slot 只能按槽位起点的同一算式比较，不得用
+“起点 + 实测高度”另行求行底。分数缩放下布局取整得到的行高不能被二进制精确表示，两种求值会相差若干 ULP，
+落进缝隙的偏移不属于任何槽位；任何有限偏移都必须映射到一个合法槽位。
+
 自动 `RowHeightEstimate` 的 owner 是 committed data generation。`CommitRangePresentation` 先用 `DefaultRowHeight` 构建新
 generation 的高度索引；只有 range、snapshot、pins 与 staged containers 均准备成功、即将交换 presentation 时，才调用
 `ResetRowHeightEstimateForDataGeneration`。这样失败或迟到的 generation 不污染当前高度状态；Source 换绑、Query/filter、分页和

@@ -16,6 +16,7 @@
     <ProjectReference Include="../../src/AtomUI.Core/AtomUI.Core.csproj" />
     <ProjectReference Include="../../src/AtomUI.Controls.Shared/AtomUI.Controls.Shared.csproj" />
     <ProjectReference Include="../../src/AtomUI.Localization/AtomUI.Localization.csproj" />
+    <ProjectReference Include="../AtomUI.Theme.ContractTests/AtomUI.Theme.ContractTests.csproj" />
     <ProjectReference Include="../../src/AtomUI.Generator/AtomUI.Generator.csproj"
                       OutputItemType="Analyzer"
                       ReferenceOutputAssembly="false"

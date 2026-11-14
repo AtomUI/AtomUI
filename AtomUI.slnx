@@ -51,6 +51,7 @@
     <Project Path="tests/AtomUI.Build.Tasks.Tests/AtomUI.Build.Tasks.Tests.csproj" />
     <Project Path="tests/AtomUI.Controls.Tests/AtomUI.Controls.Tests.csproj" />
     <Project Path="tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj" />
+    <Project Path="tests/AtomUI.Theme.ContractTests/AtomUI.Theme.ContractTests.csproj" />
     <Project Path="tests/AtomUI.Localization.IntegrationTests/AtomUI.Localization.IntegrationTests.csproj" />
     <Project Path="tests/AtomUI.Localization.Tests/AtomUI.Localization.Tests.csproj" />
     <Project Path="tests/AtomUI.Toolkits.GalleryBase.Generator.Tests/AtomUI.Toolkits.GalleryBase.Generator.Tests.csproj" />

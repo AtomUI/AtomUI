@@ -776,3 +776,40 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   2. `ThemeAlgorithmContext.Algorithms` 暴露的是各步骤共用的数组，算法强转回数组就能改掉后续算法看到的内容；包一层只读视图代价很小。
   3. 测试缺口：成功或抛错后标记已清除没有直接断言；控件延迟编译路径上的失败如何抛出没有测试；根链带 Alias 算法时的 `ControlAlgorithmMode.Global` 没有测试（规格 4.6 要求四种模式）。
   4. 内置路径测试的分配断言只覆盖 `CalculateAlias` 入口，整次编译的分配只由一次性的测量覆盖。
+
+### Task 12：可复用的算法契约测试（未提交，待审阅）
+
+- 改动：
+  1. 新建测试支持类库 `tests/AtomUI.Theme.ContractTests`（net10.0，不打包，不含测试用例，只引用 `AtomUI.Core`；`src/` 下无人引用）。加入 `AtomUI.slnx`；`AtomUI.Core` 增加 `InternalsVisibleTo AtomUI.Theme.ContractTests`；`AtomUI.Core.Tests` 引用它。
+  2. `ThemeAlgorithmContract.cs`：`ThemeAlgorithmContractViolation`、`ThemeAlgorithmContractInput`（含 `Capture`）、`ThemeAlgorithmContract.Verify`，形状与简报一致；12 个检查名以公开常量给出，与规格 4.6 一一对应。`MapTokenSamples` 集中定义 Map 阶段 5 种值类型（Color、double、CornerRadius、Thickness、TimeSpan）各两个样本，遇到其他类型抛异常并点名类型和 Token。
+  3. `ContrastRatio.cs`：WCAG 相对亮度与对比度，半透明前景先与背景合成；阈值常量 4.5 与 3。
+  4. 测试：`BuiltInAlgorithmContractTests`（三算法，Theory）与 `ThemeAlgorithmContractSelfTests`（简报 9 个，名称逐字，另加 4 个）。
+- 做法：Map 写满、确定性、不改输入直接跑 Map 阶段（跟随型算法以 `AtomUI:Default` 的 Map 结果为 `previousMap`）；其余检查经真实编译器编译。`Stable`、`StageBoundary` 不重写规则：编译结果里的 `ThemeAlgorithmContractException` 按 Token 所属阶段归类（Alias 阶段 Token 只可能是「未稳定」，否则为越界）。不属于契约违例的编译失败（包括 Token 名为空的「阶段内抛错」）直接抛 `InvalidOperationException` 中止校验。
+- `Capture` 收集：Core 三个内置算法 + 注册经 `AddThemeAlgorithms` 加入的算法 + 经 `IThemeManagerBuilder.AddControlPackage` 加入的控件描述符。不收集经 `IAtomUIBuilder` 启用的控件包，调用方用 `input with { Controls = … }` 补；只构造 builder、不 Build，不需要 Avalonia 应用。
+- 内置三算法结论：全部检查通过，没有登记的违例。Default 单独运行；Dark、Compact 接在 Default 后运行、跳过 Map 写满。对比度：Default 正文 16.48、实色上文字 4.10；Dark 13.31、5.19；Compact 在 `[Default, Compact]` 上同 Default，混合链 `[Default, Compact, Dark]` 上为 13.31、5.19（审阅修复一轮后）。不适用项：Compact 的外观一致（Preserve）、可组合（自身就是 Compact）；Dark 的混合链（链里已有 Default，同一链不得重复身份，`[Default, Dark]` 本身就是浅色基底后接暗色算法，由可读性检查覆盖）。
+- 与简报的出入：
+  1. 多加 4 个自测（Identity、Stable、ComposableWithCompact、HybridChainReadable），让 12 个检查每个都有失败用例。
+  2. 混合链：浅色与 Preserve 算法后接 `AtomUI:Dark`（Preserve 的被验链是浅色，规格 4.2 要求 Alias 阶段处理明暗两种外观）；暗色算法后接 `AtomUI:Default`（规格未写，属解释）。
+  3. 「控件高度」取 `ControlHeight`（Seed 阶段，Compact 会写）与 SM/LG/XS；「颜色类 Token」取类型为 `Color`/`Color?` 的全部全局 Token。
+  4. 规格 4.6 中涉及 `EvaluateOwn` 的两项属于控件阶段（Task 14 起），本任务未覆盖；`Controls` 已随输入进入注册表，留给后续扩展。
+  5. 「不支持的值类型」异常没有测试（需要自定义全局 Schema）。
+- 测试：TDD 先红后绿（类库先放空实现，13 个自测失败，3 个内置用例对空实现必然通过）。`AtomUI.Core.Tests` 523/523（507 + 16）。整个解决方案构建 0 错误，警告只有离线环境的 NU1900。全量回归 `[SUMMARY] TOTAL: 存在失败, 总耗时 15:45`：共 12433 个（12417 + 16），1 个失败在 `AtomUI.Desktop.Controls.Tests` 的 `ImagePreviewerImageLoadingTests.Detach_Releases_Entries_Unsubscribes_Collection_And_Reattach_Reconciles_Changes`，是 Avalonia Headless 建立测试会话时的跨线程异常（Test Case Cleanup Failure），与本任务无关；单独重跑 ImagePreviewer 119/119、整个项目 4397/4397 通过。按规则全量回归不记为通过。主控在暂存树上重跑全量回归：12433 个全部通过，该失败为偶发。
+- 审阅修复一轮（审阅结论「需修复」，校验器本身判定可靠）：
+  1. 重要：Preserve 算法从未在暗色外观下检查可读性。改为 Preserve 也后接 `AtomUI:Dark`（链里已有 Dark 时跳过）。新增自测 `HybridChainReadable_Reports_A_Preserve_Algorithm_That_Is_Unreadable_Under_Dark`（跟随型 Preserve 算法的 Alias 阶段不看外观、写深灰 `ColorTextLightSolid`：浅色主色上约 3.2，暗色主色上约 2.5），修复前失败、修复后通过。内置 Compact 现在实际编译 `[Default, Compact, Dark]`，仍通过（正文 13.31，实色上文字 5.19）。
+  2. 次要：Dark 跟随型算法跳过混合链的豁免写进 `HybridChainReadable` 与 `Verify` 的 XML 文档；`Verify(Default, standalone: false)` 的参数检查移到 `Verify` 开头；对比度自测里的注释由「#808080」更正为「#7F7F7F」。
+  3. `AtomUI.Core.Tests` 524/524（523 + 1）。只改了测试支持库与 Core 测试，未重跑全量回归。
+- 审阅结论：首轮审阅认为校验本身可靠（12 项检查逐一证明会因目标原因失败、在默认算法上不误报；对比度公式用已知颜色对核对无误；「稳定性」与「阶段越界」走真实编译器），指出一个重要问题后退回修正一轮；复审结论为全部解决，无新的严重或重要问题。Task 11 的提交为 `fde5ffe7d`。
+  - 重要问题：外观效果为 Preserve 的算法从不在暗色外观下接受可读性检查，带颜色写入的第三方 Preserve 算法可以不经暗色检查就通过契约。已修：混合链检查对 Light 与 Preserve 算法都在链尾接 `AtomUI:Dark`，对 Dark 算法接 `AtomUI:Default`，只有那个内置算法已在链里时才跳过，不按身份或类别豁免。
+  - 内置 Compact 现在确实按 `[Default, Compact, Dark]` 编译并检查：正文 13.31、实色上的文字 5.19，通过。
+- 全量回归：实现者那一次有 1 个失败（`ImagePreviewerImageLoadingTests.Detach_Releases_Entries_Unsubscribes_Collection_And_Reattach_Reconciles_Changes`，Avalonia Headless 建立测试会话时的跨线程异常），该项目重跑 4397/4397。主控在同一棵树上重跑完整的全量回归：`[SUMMARY] TOTAL: 12433 个测试全部通过, 总耗时 16:20`。判定为偶发，与本任务无关（出错的测试项目不引用新库，测试程序集各在独立进程运行）。这是执行以来第一次出现偶发失败，记录在案。
+- 带入 Task 14 的一项：契约校验靠 Token 所在的阶段区分「不稳定」与「阶段越界」，因为 `ThemeAlgorithmContractException` 没有类别字段。只有 Alias 阶段时这样分是对的；控件阶段加入后，不稳定的 Own Token 或 `EvaluateGlobal` 写出的不稳定 Map Token 会被错标为越界。Task 14 给异常加明确的类别。
+- 带入 Task 17 审阅的一项：`standalone` 由调用方声明，不与描述符绑定。PrimeNG 的六个算法都可单独使用，必须用 `standalone: true` 校验，否则「Map 写满」会被悄悄跳过。
+- 留待最终整体审阅统一处理的小项：
+  1. 「后接 Compact」检查里的颜色只统计 `Color` 类型的槽位，阴影、画刷里的颜色不比较；高度那一半对「排在 Compact 之前」的算法实际不可能失败。
+  2. 身份检查只测了重复注册；非法 `Catalog`/`Id` 和 `Revision <= 0` 的分支没有自测（构造函数已校验，可能本就走不到）。未支持的 Map 值类型抛错的分支没有自测。
+  3. 「不改输入」不比较 `ColorPalettes`。
+  4. 新增的 Preserve 自测只断言目标违例存在、`Readable` 不存在，没有断言列表里没有别的违例。
+
+### 阶段四小结（Task 11–12）
+
+算法的 Alias 阶段和编译器的三步求值流程已就位，并有一套可复用的契约校验，内置三算法全部通过。内置主题的编译结果和分配字节数与阶段三结束时完全相同。全量回归增至 12434（含 1 个只在显式指定时运行的测量）。

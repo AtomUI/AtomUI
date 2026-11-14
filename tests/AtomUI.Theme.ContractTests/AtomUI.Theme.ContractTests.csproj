@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Test-support class library: the reusable theme algorithm contract (spec 4.6). It has no test cases of its
+       own; test projects reference it to verify built-in and package algorithms. Never reference it from src/. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <RootNamespace>AtomUI.Theme.ContractTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/AtomUI.Core/AtomUI.Core.csproj" />
+  </ItemGroup>
+</Project>

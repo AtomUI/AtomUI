@@ -74,9 +74,10 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         var surface = rules.Surface.AsSpan();
         var alias   = _preset.Alias;
 
-        // PrimeUIX focus.ring.color is the primary colour; the ring and the field glow widths come from the preset
-        // (Aura: a one-line ring, no glow; Lara: no ring, a three-line glow).
-        token.ColorFocusBorder           = token.ColorPrimary;
+        // PrimeUIX focus.ring.color (the primary colour; Nora dark: the field border, see its table); the ring and the
+        // field glow widths come from the preset (Aura: a one-line ring, no glow; Lara: no ring, a three-line glow;
+        // Nora: a two-line ring, no glow).
+        token.ColorFocusBorder           = rules.FocusBorder(token);
         token.FocusVisualBorderThickness = new Thickness(token.LineWidth * alias.FocusVisualBorderLineWidths);
         token.ControlOutlineWidth        = token.LineWidth * alias.ControlOutlineLineWidths;
         if (rules.ControlOutline is { } controlOutline)
@@ -104,76 +105,76 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
 
     private static void WriteColors(DesignToken seed, DesignToken map, PrimeNGAppearanceRules rules)
     {
+        var surface = rules.Surface.AsSpan();
         var primary = PrimeNGPalette.Resolve(seed.ColorPrimary);
         var link    = PrimeNGPalette.Resolve(seed.ColorLink ?? seed.ColorPrimary);
         var success = PrimeNGPalette.Resolve(seed.ColorSuccess);
         var warning = PrimeNGPalette.Resolve(seed.ColorWarning);
         var error   = PrimeNGPalette.Resolve(seed.ColorError);
         var info    = PrimeNGPalette.Resolve(seed.ColorInfo);
-        var surface = rules.Surface.AsSpan();
 
         var p = rules.Primary;
-        map.ColorPrimary            = p.Base.Resolve(primary);
-        map.ColorPrimaryHover       = p.Hover.Resolve(primary);
-        map.ColorPrimaryActive      = p.Active.Resolve(primary);
-        map.ColorPrimaryBg          = p.Bg.Resolve(primary);
-        map.ColorPrimaryBgHover     = p.BgHover.Resolve(primary);
-        map.ColorPrimaryBorder      = p.Border.Resolve(primary);
-        map.ColorPrimaryBorderHover = p.BorderHover.Resolve(primary);
-        map.ColorPrimaryTextHover   = p.TextHover.Resolve(primary);
-        map.ColorPrimaryText        = p.Text.Resolve(primary);
-        map.ColorPrimaryTextActive  = p.TextActive.Resolve(primary);
+        map.ColorPrimary            = p.Base.Resolve(primary, surface);
+        map.ColorPrimaryHover       = p.Hover.Resolve(primary, surface);
+        map.ColorPrimaryActive      = p.Active.Resolve(primary, surface);
+        map.ColorPrimaryBg          = p.Bg.Resolve(primary, surface);
+        map.ColorPrimaryBgHover     = p.BgHover.Resolve(primary, surface);
+        map.ColorPrimaryBorder      = p.Border.Resolve(primary, surface);
+        map.ColorPrimaryBorderHover = p.BorderHover.Resolve(primary, surface);
+        map.ColorPrimaryTextHover   = p.TextHover.Resolve(primary, surface);
+        map.ColorPrimaryText        = p.Text.Resolve(primary, surface);
+        map.ColorPrimaryTextActive  = p.TextActive.Resolve(primary, surface);
 
-        map.ColorLink       = p.Base.Resolve(link);
-        map.ColorLinkHover  = p.Hover.Resolve(link);
-        map.ColorLinkActive = p.Active.Resolve(link);
+        map.ColorLink       = p.Base.Resolve(link, surface);
+        map.ColorLinkHover  = p.Hover.Resolve(link, surface);
+        map.ColorLinkActive = p.Active.Resolve(link, surface);
 
         var s = rules.Status;
-        map.ColorSuccess            = s.Base.Resolve(success);
-        map.ColorSuccessHover       = s.Hover.Resolve(success);
-        map.ColorSuccessActive      = s.Active.Resolve(success);
-        map.ColorSuccessBg          = s.Bg.Resolve(success);
-        map.ColorSuccessBgHover     = s.BgHover.Resolve(success);
-        map.ColorSuccessBorder      = s.Border.Resolve(success);
-        map.ColorSuccessBorderHover = s.BorderHover.Resolve(success);
-        map.ColorSuccessTextHover   = s.TextHover.Resolve(success);
-        map.ColorSuccessText        = s.Text.Resolve(success);
-        map.ColorSuccessTextActive  = s.TextActive.Resolve(success);
+        map.ColorSuccess            = s.Base.Resolve(success, surface);
+        map.ColorSuccessHover       = s.Hover.Resolve(success, surface);
+        map.ColorSuccessActive      = s.Active.Resolve(success, surface);
+        map.ColorSuccessBg          = s.Bg.Resolve(success, surface);
+        map.ColorSuccessBgHover     = s.BgHover.Resolve(success, surface);
+        map.ColorSuccessBorder      = s.Border.Resolve(success, surface);
+        map.ColorSuccessBorderHover = s.BorderHover.Resolve(success, surface);
+        map.ColorSuccessTextHover   = s.TextHover.Resolve(success, surface);
+        map.ColorSuccessText        = s.Text.Resolve(success, surface);
+        map.ColorSuccessTextActive  = s.TextActive.Resolve(success, surface);
 
-        map.ColorWarning            = s.Base.Resolve(warning);
-        map.ColorWarningHover       = s.Hover.Resolve(warning);
-        map.ColorWarningActive      = s.Active.Resolve(warning);
-        map.ColorWarningBg          = s.Bg.Resolve(warning);
-        map.ColorWarningBgHover     = s.BgHover.Resolve(warning);
-        map.ColorWarningBorder      = s.Border.Resolve(warning);
-        map.ColorWarningBorderHover = s.BorderHover.Resolve(warning);
-        map.ColorWarningTextHover   = s.TextHover.Resolve(warning);
-        map.ColorWarningText        = s.Text.Resolve(warning);
-        map.ColorWarningTextActive  = s.TextActive.Resolve(warning);
+        map.ColorWarning            = s.Base.Resolve(warning, surface);
+        map.ColorWarningHover       = s.Hover.Resolve(warning, surface);
+        map.ColorWarningActive      = s.Active.Resolve(warning, surface);
+        map.ColorWarningBg          = s.Bg.Resolve(warning, surface);
+        map.ColorWarningBgHover     = s.BgHover.Resolve(warning, surface);
+        map.ColorWarningBorder      = s.Border.Resolve(warning, surface);
+        map.ColorWarningBorderHover = s.BorderHover.Resolve(warning, surface);
+        map.ColorWarningTextHover   = s.TextHover.Resolve(warning, surface);
+        map.ColorWarningText        = s.Text.Resolve(warning, surface);
+        map.ColorWarningTextActive  = s.TextActive.Resolve(warning, surface);
 
-        map.ColorInfo            = s.Base.Resolve(info);
-        map.ColorInfoHover       = s.Hover.Resolve(info);
-        map.ColorInfoActive      = s.Active.Resolve(info);
-        map.ColorInfoBg          = s.Bg.Resolve(info);
-        map.ColorInfoBgHover     = s.BgHover.Resolve(info);
-        map.ColorInfoBorder      = s.Border.Resolve(info);
-        map.ColorInfoBorderHover = s.BorderHover.Resolve(info);
-        map.ColorInfoTextHover   = s.TextHover.Resolve(info);
-        map.ColorInfoText        = s.Text.Resolve(info);
-        map.ColorInfoTextActive  = s.TextActive.Resolve(info);
+        map.ColorInfo            = s.Base.Resolve(info, surface);
+        map.ColorInfoHover       = s.Hover.Resolve(info, surface);
+        map.ColorInfoActive      = s.Active.Resolve(info, surface);
+        map.ColorInfoBg          = s.Bg.Resolve(info, surface);
+        map.ColorInfoBgHover     = s.BgHover.Resolve(info, surface);
+        map.ColorInfoBorder      = s.Border.Resolve(info, surface);
+        map.ColorInfoBorderHover = s.BorderHover.Resolve(info, surface);
+        map.ColorInfoTextHover   = s.TextHover.Resolve(info, surface);
+        map.ColorInfoText        = s.Text.Resolve(info, surface);
+        map.ColorInfoTextActive  = s.TextActive.Resolve(info, surface);
 
         var e = rules.Error;
-        map.ColorError            = e.Base.Resolve(error);
-        map.ColorErrorHover       = e.Hover.Resolve(error);
-        map.ColorErrorActive      = e.Active.Resolve(error);
-        map.ColorErrorBg          = e.Bg.Resolve(error);
-        map.ColorErrorBgHover     = e.BgHover.Resolve(error);
-        map.ColorErrorBgActive    = e.BgActive.Resolve(error);
-        map.ColorErrorBorder      = e.Border.Resolve(error);
-        map.ColorErrorBorderHover = e.BorderHover.Resolve(error);
-        map.ColorErrorTextHover   = e.TextHover.Resolve(error);
-        map.ColorErrorText        = e.Text.Resolve(error);
-        map.ColorErrorTextActive  = e.TextActive.Resolve(error);
+        map.ColorError            = e.Base.Resolve(error, surface);
+        map.ColorErrorHover       = e.Hover.Resolve(error, surface);
+        map.ColorErrorActive      = e.Active.Resolve(error, surface);
+        map.ColorErrorBg          = e.Bg.Resolve(error, surface);
+        map.ColorErrorBgHover     = e.BgHover.Resolve(error, surface);
+        map.ColorErrorBgActive    = e.BgActive.Resolve(error, surface);
+        map.ColorErrorBorder      = e.Border.Resolve(error, surface);
+        map.ColorErrorBorderHover = e.BorderHover.Resolve(error, surface);
+        map.ColorErrorTextHover   = e.TextHover.Resolve(error, surface);
+        map.ColorErrorText        = e.Text.Resolve(error, surface);
+        map.ColorErrorTextActive  = e.TextActive.Resolve(error, surface);
 
         var n = rules.Neutral;
         map.ColorBgBase   = seed.ColorBgBase ?? n.BgBase.Resolve(surface);

@@ -3,6 +3,7 @@ using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.ContractTests;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Headless.XUnit;
@@ -16,7 +17,7 @@ namespace AtomUI.Themes.Tests;
 /// One PrimeNG preset that has moved onto its <c>PrimeNG:&lt;Preset&gt;</c> / <c>PrimeNG:&lt;Preset&gt;.Dark</c>
 /// algorithms, as the migration tests see it.
 /// </summary>
-/// <param name="Preset">The preset name (<c>Aura</c>, <c>Lara</c>); the profile ids are <c>PrimeNG&lt;Preset&gt;</c> plus the suffixes.</param>
+/// <param name="Preset">The preset name (<c>Aura</c>, <c>Lara</c>, <c>Nora</c>); the profile ids are <c>PrimeNG&lt;Preset&gt;</c> plus the suffixes.</param>
 /// <param name="CompactNonEquivalentSlots">
 /// The README's "不等价项": slots where the base profile + <c>AtomUI:Compact</c> differs from the compact profile, as
 /// snapshot keys. They are also the only control values the compact XML may still hold. Keep in sync with the README.
@@ -53,8 +54,9 @@ public class PrimeNGPresetMigrationTests
 
     /// <summary>
     /// In the old dark profiles the chain <c>[AtomUI:Dark]</c> re-derived the <c>ColorPrimary</c> and
-    /// <c>ColorError</c> seeds in its Map stage, so the baseline holds <c>#2FB685</c> and <c>#D98F8F</c>; the
-    /// algorithm reaches the author's values (<c>#34D399</c>, <c>#FCA5A5</c>) from the shared 500 seeds.
+    /// <c>ColorError</c> seeds in its Map stage, so the baseline holds <c>#2FB685</c> and <c>#D98F8F</c> (Nora:
+    /// <c>#11A071</c>, <c>#D66363</c>); the algorithm reaches the author's values (<c>#34D399</c>, <c>#FCA5A5</c>;
+    /// Nora <c>#10B981</c>, <c>#F87171</c>) from the shared 500 seeds.
     /// </summary>
     private static (string Profile, string Token)[] DarkSeedExceptions(string preset) =>
     [
@@ -68,7 +70,8 @@ public class PrimeNGPresetMigrationTests
     {
         new PrimeNGPresetMigration("Aura", [], DarkSeedExceptions("Aura"), []),
         new PrimeNGPresetMigration("Lara", ["C AtomUI:Select PopupContentPadding"], DarkSeedExceptions("Lara"),
-            ["ColorControlOutline"])
+            ["ColorControlOutline"]),
+        new PrimeNGPresetMigration("Nora", [], DarkSeedExceptions("Nora"), [])
     }.ToDictionary(preset => preset.Preset, StringComparer.Ordinal);
 
     private static readonly string[] SharedRuleTokens =
@@ -90,6 +93,10 @@ public class PrimeNGPresetMigrationTests
     [InlineData("PrimeNGLara.Dark")]
     [InlineData("PrimeNGLara.Compact")]
     [InlineData("PrimeNGLara.DarkCompact")]
+    [InlineData("PrimeNGNora")]
+    [InlineData("PrimeNGNora.Dark")]
+    [InlineData("PrimeNGNora.Compact")]
+    [InlineData("PrimeNGNora.DarkCompact")]
     public async Task Tokens_The_Old_Xml_Set_Explicitly_Keep_Their_Values(string profile)
     {
         // Temporary migration check (removed with the snapshot tool in Task 21). Reads the pre-change XML copy and
@@ -110,6 +117,7 @@ public class PrimeNGPresetMigrationTests
     [AvaloniaTheory]
     [InlineData("Aura")]
     [InlineData("Lara")]
+    [InlineData("Nora")]
     public async Task Swapping_The_Chain_To_The_Dark_Algorithm_Equals_The_Dark_Profile(string presetName)
     {
         var preset = Presets[presetName];
@@ -125,6 +133,7 @@ public class PrimeNGPresetMigrationTests
     [AvaloniaTheory]
     [InlineData("Aura")]
     [InlineData("Lara")]
+    [InlineData("Nora")]
     public async Task Appending_Compact_Equals_The_Compact_Profile_Except_Listed_Slots(string presetName)
     {
         var preset = Presets[presetName];
@@ -144,17 +153,19 @@ public class PrimeNGPresetMigrationTests
     }
 
     [AvaloniaTheory]
-    [InlineData("Aura")]
-    [InlineData("Lara")]
-    public async Task Primary_Seed_Change_Moves_Focus_Ring_And_Selected_Background(string presetName)
+    [InlineData("Aura", "#3B82F6")]
+    [InlineData("Lara", "#3B82F6")]
+    [InlineData("Nora", "#2563EB")]
+    public async Task Primary_Seed_Change_Moves_Focus_Ring_And_Selected_Background(string presetName, string expectedPrimary)
     {
+        // The seed is the 500 stop; Aura and Lara take it as the light primary, Nora the 600 stop (blue-600).
         var profile = Presets[presetName].BaseProfile;
         var emerald = await Apply(new ThemeRequest(profile, null, ThemeTransitionReason.UserRequest));
         var emeraldSelected = Global<Color>(emerald, "ControlItemBgActive");
 
         var config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#3B82F6").Build();
         var blue = await Apply(new ThemeRequest(profile, config, ThemeTransitionReason.UserRequest));
-        Global<Color>(blue, "ColorPrimary").ShouldBe(Color.Parse("#3B82F6"));
+        Global<Color>(blue, "ColorPrimary").ShouldBe(Color.Parse(expectedPrimary));
         Global<Color>(blue, "ColorFocusBorder").ShouldBe(Global<Color>(blue, "ColorPrimary"));
         Global<Color>(blue, "ControlItemBgActive").ShouldNotBe(emeraldSelected);
         Global<Color>(blue, "ControlItemBgActive").ShouldBe(Color.Parse("#EFF6FF"));
@@ -163,6 +174,7 @@ public class PrimeNGPresetMigrationTests
     [Theory]
     [InlineData("Aura")]
     [InlineData("Lara")]
+    [InlineData("Nora")]
     public void Preset_Xml_No_Longer_Contains_Rule_Tokens(string presetName)
     {
         var preset = Presets[presetName];
@@ -223,6 +235,97 @@ public class PrimeNGPresetMigrationTests
         Global<Color>(blue, "ColorControlOutline").ShouldBe(Color.Parse("#BFDBFE"));
     }
 
+    [AvaloniaFact]
+    public async Task Nora_Takes_Darker_Primary_Stops()
+    {
+        // Light 600 / 700 / 800 and dark 500 / 400 / 300 of the shared emerald-500 seed (Aura: 500 / 600 / 700 and
+        // 400 / 300 / 200).
+        var light = await Apply(new ThemeRequest("PrimeNGNora", null, ThemeTransitionReason.UserRequest));
+        Global<Color>(light, "ColorPrimary").ShouldBe(Color.Parse("#059669"));
+        Global<Color>(light, "ColorPrimaryHover").ShouldBe(Color.Parse("#047857"));
+        Global<Color>(light, "ColorPrimaryActive").ShouldBe(Color.Parse("#065F46"));
+        Global<Color>(light, "ColorFocusBorder").ShouldBe(Color.Parse("#059669"));
+
+        var dark = await Apply(new ThemeRequest("PrimeNGNora.Dark", null, ThemeTransitionReason.UserRequest));
+        Global<Color>(dark, "ColorPrimary").ShouldBe(Color.Parse("#10B981"));
+        Global<Color>(dark, "ColorPrimaryHover").ShouldBe(Color.Parse("#34D399"));
+        Global<Color>(dark, "ColorPrimaryActive").ShouldBe(Color.Parse("#6EE7B7"));
+        // The dark selected background is the solid primary with the zinc-950 contrast text, and the dark focus
+        // ring is the field border (zinc-500), not the primary.
+        Global<Color>(dark, "ColorPrimaryBg").ShouldBe(Color.Parse("#10B981"));
+        Global<Color>(dark, "ColorPrimaryText").ShouldBe(Color.Parse("#09090B"));
+        Global<Color>(dark, "ColorFocusBorder").ShouldBe(Color.Parse("#71717A"));
+        Global<Color>(dark, "ColorFocusBorder").ShouldBe(Global<Color>(dark, "ColorBorder"));
+    }
+
+    [AvaloniaFact]
+    public async Task Nora_Dark_Steps_Override_Comes_From_The_Control_Stage()
+    {
+        // The value the old Nora.Dark XML set on Steps, now written by PrimeNGStepsTokens.
+        foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
+        {
+            var dark = await Apply(new ThemeRequest(profile, null, ThemeTransitionReason.UserRequest));
+            Own<Color>(dark, "Steps", "FinishIconColor").ShouldBe(Color.Parse("#09090B"), profile);
+        }
+
+        // The stage follows the contrast colour, not a constant: a light appearance after Nora.Dark leaves the
+        // Ant Design value.
+        var hybridConfig = new ThemeConfigBuilder()
+                           .WithAlgorithms(new ThemeAlgorithm("PrimeNG", "Nora.Dark"), ThemeAlgorithm.Default)
+                           .Build();
+        var hybrid = await Apply(new ThemeRequest("PrimeNGNora.Dark", hybridConfig, ThemeTransitionReason.UserRequest));
+        Own<Color>(hybrid, "Steps", "FinishIconColor").ShouldBe(Global<Color>(hybrid, "ColorPrimary"));
+
+        var themes = Path.Combine(FindRepositoryRoot(), "src", "AtomUI.Themes.PrimeNG", "Themes");
+        foreach (var profile in Presets["Nora"].Profiles)
+        {
+            var root = XDocument.Load(Path.Combine(themes, profile + ".theme.xml")).Root!;
+            root.Descendants(ThemeNamespace + "Control")
+                .Where(control => control.Attribute("Id")?.Value == "Steps")
+                .ShouldBeEmpty(profile);
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGNora.Dark")]
+    [InlineData("PrimeNGNora.DarkCompact")]
+    public async Task Nora_Dark_Selected_Text_Stays_Readable(string profile)
+    {
+        // Nora dark makes the selected background the solid primary (PrimeUIX highlight.background); AtomUI controls
+        // draw ColorText, or the primary colour, on the selected and selected-hover backgrounds, so those pairs keep
+        // body-text contrast.
+        const double floor = 4.5;
+        var dark = await Apply(new ThemeRequest(profile, null, ThemeTransitionReason.UserRequest));
+        var container = Global<Color>(dark, "ColorBgContainer");
+
+        var selectedHover = ContrastRatio.Of(Global<Color>(dark, "ColorText"), Global<Color>(dark, "ControlItemBgActiveHover"));
+        selectedHover.ShouldBeGreaterThanOrEqualTo(floor, $"ColorText on ControlItemBgActiveHover: {selectedHover:F2}");
+
+        var menuSelected = ContrastRatio.Of(Own<Color>(dark, "NavMenu", "ItemSelectedColor"),
+            ContrastRatio.Composite(Own<Color>(dark, "NavMenu", "ItemSelectedBg"), Own<Color>(dark, "NavMenu", "ItemBg")));
+        menuSelected.ShouldBeGreaterThanOrEqualTo(floor, $"NavMenu selected item: {menuSelected:F2}");
+
+        // The Filled primary button: ColorPrimary on the button's own ColorPrimaryBg / ColorPrimaryBgHover.
+        var primary = Global<Color>(dark, "ColorPrimary");
+        foreach (var background in new[] { "ColorPrimaryBg", "ColorPrimaryBgHover" })
+        {
+            var filled = ContrastRatio.Of(primary,
+                ContrastRatio.Composite(Effective<Color>(dark, "Button", background), container));
+            filled.ShouldBeGreaterThanOrEqualTo(floor, $"Filled button on {background}: {filled:F2}");
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Nora_Dark_NavMenu_Stage_Writes_Nothing_Under_A_Light_Appearance()
+    {
+        var hybridConfig = new ThemeConfigBuilder()
+                           .WithAlgorithms(new ThemeAlgorithm("PrimeNG", "Nora.Dark"), ThemeAlgorithm.Default)
+                           .Build();
+        var hybrid = await Apply(new ThemeRequest("PrimeNGNora.Dark", hybridConfig, ThemeTransitionReason.UserRequest));
+        // The Ant Design value: the menu's selected background is ControlItemBgActive.
+        Own<Color>(hybrid, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(hybrid, "ControlItemBgActive"));
+    }
+
     private static string StripMetadata(string path, string algorithmId)
     {
         var root = XDocument.Load(path).Root!;
@@ -270,6 +373,13 @@ public class PrimeNGPresetMigrationTests
         snapshot.Registry.TryGetControl(new ControlTokenIdentity("AtomUI", owner), out var control).ShouldBeTrue();
         var token = control!.OwnTokens.Single(token => token.Name == name);
         return snapshot.Controls[control.Slot].ControlTokenValues.Get<T>(token.Slot);
+    }
+
+    private static T Effective<T>(ThemeSnapshot snapshot, string owner, string name)
+    {
+        snapshot.Registry.TryGetControl(new ControlTokenIdentity("AtomUI", owner), out var control).ShouldBeTrue();
+        snapshot.Registry.TryGetGlobalToken(name, out var token).ShouldBeTrue();
+        return snapshot.Controls[control!.Slot].GetEffectiveGlobalValue<T>(snapshot.GlobalTokenValues, token!.Slot);
     }
 
     private static string FindRepositoryRoot()

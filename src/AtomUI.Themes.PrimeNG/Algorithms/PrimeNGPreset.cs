@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -12,12 +13,40 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 /// </summary>
 /// <param name="Stop">A palette stop (50 to 950), <see cref="White"/> or <see cref="Black"/>.</param>
 /// <param name="Opacity">The opacity applied on top of the stop's own alpha, from 0 to 1.</param>
-internal readonly record struct PrimeNGShade(int Stop, double Opacity = 1.0)
+/// <param name="FromSurface">
+/// In a family rule, takes the stop from the neutral (surface) scale instead of the family, for a family token that
+/// PrimeUIX maps to a surface colour (Nora's dark highlight text, <c>surface.950</c>). Has no effect where the palette
+/// is the surface scale already.
+/// </param>
+internal readonly record struct PrimeNGShade(int Stop, double Opacity = 1.0, bool FromSurface = false)
 {
     internal const int White = 0;
     internal const int Black = 1000;
 
+    /// <summary>
+    /// A stop of the neutral (surface) scale, for use in a family rule.
+    /// </summary>
+    internal static PrimeNGShade Surface(int stop) => new(stop, 1.0, FromSurface: true);
+
+    /// <summary>
+    /// Resolves a family rule's shade: from the family palette, or from the surface scale when
+    /// <see cref="FromSurface"/> is set.
+    /// </summary>
+    internal Color Resolve(ReadOnlySpan<Color> family, ReadOnlySpan<Color> surface) =>
+        ResolveIn(FromSurface ? surface : family);
+
+    /// <summary>
+    /// Resolves a shade against a single palette that is already the right one (the neutral rows, the control
+    /// stages' surface values). A <see cref="FromSurface"/> shade belongs in a family rule and must go through
+    /// <see cref="Resolve(ReadOnlySpan{Color}, ReadOnlySpan{Color})"/>; passing one here is a programming error.
+    /// </summary>
     internal Color Resolve(ReadOnlySpan<Color> palette)
+    {
+        Debug.Assert(!FromSurface, "A surface shade of a family rule must be resolved with the family and the surface.");
+        return ResolveIn(palette);
+    }
+
+    private Color ResolveIn(ReadOnlySpan<Color> palette)
     {
         var color = Stop switch
         {
@@ -89,6 +118,20 @@ internal sealed record PrimeNGNeutralRule(
 /// The colour of the glow around a focused field (<c>ColorControlOutline</c>), computed in the Alias stage from the
 /// final Map tokens; <see langword="null"/> keeps the Ant Design formula (a preset without a field glow).
 /// </param>
+/// <param name="FocusBorder">
+/// The focus ring colour (<c>ColorFocusBorder</c>), computed in the Alias stage from the final Map tokens (Aura and
+/// Lara: the primary colour in both appearances).
+/// </param>
+/// <param name="CardBorderSecondary">
+/// The card's own <c>ColorBorderSecondary</c>, a stop of the surface scale; <see langword="null"/> keeps the global
+/// value.
+/// </param>
+/// <param name="ButtonPrimaryBg">
+/// The button's own <c>ColorPrimaryBg</c> and <c>ColorPrimaryBgHover</c> (the Filled primary background and its hover,
+/// also the Text variant's hover), computed from the control's global tokens; <see langword="null"/> keeps the global
+/// values. A preset whose selected background is the solid primary needs it, because the Filled variant draws the
+/// primary colour on that background.
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -96,7 +139,10 @@ internal sealed record PrimeNGAppearanceRules(
     PrimeNGFamilyRule Error,
     PrimeNGNeutralRule Neutral,
     PrimeNGShade SelectionForeground,
-    Func<DesignToken, Color>? ControlOutline);
+    Func<DesignToken, Color>? ControlOutline,
+    Func<DesignToken, Color> FocusBorder,
+    PrimeNGShade? CardBorderSecondary,
+    Func<DesignToken, (Color Bg, Color BgHover)>? ButtonPrimaryBg);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

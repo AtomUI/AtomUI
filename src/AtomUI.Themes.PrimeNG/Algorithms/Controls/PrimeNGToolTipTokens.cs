@@ -13,6 +13,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara.Dark", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora.Dark", 1)]
 internal sealed class PrimeNGToolTipTokens : IControlTokenAlgorithm<ToolTipToken>
 {
     /// <inheritdoc />

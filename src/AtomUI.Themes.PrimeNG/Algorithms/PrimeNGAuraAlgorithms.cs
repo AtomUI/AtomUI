@@ -68,7 +68,10 @@ internal static class PrimeNGAuraPreset
                 Border: new(300), BorderSecondary: new(200), BgMask: new(Black, 0.4),
                 BgContainerDisabled: new(200), TextDisabled: new(400)),
             SelectionForeground: new(White),
-            ControlOutline: null),
+            ControlOutline: null,
+            FocusBorder: static token => token.ColorPrimary,
+            CardBorderSecondary: null,
+            ButtonPrimaryBg: null),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -95,7 +98,10 @@ internal static class PrimeNGAuraPreset
                 Border: new(600), BorderSecondary: new(700), BgMask: new(Black, 0.6),
                 BgContainerDisabled: new(700), TextDisabled: new(500)),
             SelectionForeground: new(900),
-            ControlOutline: null),
+            ControlOutline: null,
+            FocusBorder: static token => token.ColorPrimary,
+            CardBorderSecondary: null,
+            ButtonPrimaryBg: null),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),

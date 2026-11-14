@@ -7,7 +7,7 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
 /// <summary>
 /// Dialog under the PrimeNG presets: the PrimeUIX <c>overlay.modal.border.radius</c> (<c>border.radius.xl</c>), the
-/// padding of the baseline XML (20, the <c>aura-compat</c> <c>overlay.modal.padding</c>) and the title size of the
+/// padding of the baseline XML (20, the <c>aura-compat</c> and <c>nora-compat</c> <c>overlay.modal.padding</c>) and the title size of the
 /// baseline XML (20, the <c>FontSizeXL</c> step). The title weight 600 is the global <c>FontWeightStrong</c>
 /// already.
 /// </summary>
@@ -15,6 +15,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara.Dark", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora.Dark", 1)]
 internal sealed class PrimeNGDialogTokens : IControlTokenAlgorithm<DialogToken>
 {
     /// <inheritdoc />

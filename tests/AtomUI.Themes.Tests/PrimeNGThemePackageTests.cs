@@ -130,11 +130,15 @@ public class PrimeNGThemePackageTests
     [InlineData("PrimeNGLara.Dark", "#3FFFFFFF", "#3F3F46")]
     [InlineData("PrimeNGLara.Compact", "#3F000000", "#E2E8F0")]
     [InlineData("PrimeNGLara.DarkCompact", "#3FFFFFFF", "#3F3F46")]
+    [InlineData("PrimeNGNora", "#3F000000", "#E2E8F0")]
+    [InlineData("PrimeNGNora.Dark", "#3FFFFFFF", "#3F3F46")]
+    [InlineData("PrimeNGNora.Compact", "#3F000000", "#E2E8F0")]
+    [InlineData("PrimeNGNora.DarkCompact", "#3FFFFFFF", "#3F3F46")]
     public async Task Disabled_Text_Stays_As_Readable_As_The_Old_Profiles(
         string id, string oldDisabledText, string oldDisabledBackground)
     {
         // The floor is what the pre-algorithm profiles compiled to (Ant's translucent disabled text on the explicit
-        // disabled background): 1.79 light, 2.06 dark, the same for Aura and Lara. Ant's formula on the PrimeNG
+        // disabled background): 1.79 light, 2.06 dark, the same for Aura, Lara and Nora. Ant's formula on the PrimeNG
         // neutrals would give 1.20 / 1.35.
         var floor = ContrastRatio.Of(Color.Parse(oldDisabledText), Color.Parse(oldDisabledBackground));
         var snapshot = await Apply(id);

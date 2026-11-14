@@ -1,88 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGNora" Name="PrimeNG Nora" Appearance="Light" IsDefault="false">
   <Algorithms>
-    <Algorithm Id="Default" />
+    <Algorithm Catalog="PrimeNG" Id="Nora" />
   </Algorithms>
   <Tokens>
-    <Token Name="ColorPrimary" Value="#059669" />
-    <Token Name="ColorPrimaryHover" Value="#047857" />
-    <Token Name="ColorPrimaryActive" Value="#065F46" />
-    <Token Name="ColorTextLightSolid" Value="#FFFFFF" />
-    <Token Name="ColorPrimaryBg" Value="#ECFDF5" />
-    <Token Name="ColorPrimaryText" Value="#065F46" />
-    <Token Name="ColorText" Value="#0F172A" />
-    <Token Name="ColorTextSecondary" Value="#64748B" />
-    <Token Name="ColorTextDescription" Value="#64748B" />
-    <Token Name="ColorBgContainer" Value="#FFFFFF" />
-    <Token Name="ColorFillTertiary" Value="#F1F5F9" />
-    <Token Name="ColorBgContainerDisabled" Value="#E2E8F0" />
-    <Token Name="ColorBorderSecondary" Value="#00000000" />
-    <Token Name="ColorBorder" Value="#64748B" />
-    <Token Name="ColorTextPlaceholder" Value="#64748B" />
-    <Token Name="ColorError" Value="#F87171" />
-    <Token Name="BorderRadiusXS" Value="2" />
-    <Token Name="BorderRadiusSM" Value="2" />
+    <Token Name="ColorPrimary" Value="#10B981" />
+    <Token Name="ColorError" Value="#EF4444" />
     <Token Name="BorderRadius" Value="2" />
-    <Token Name="BorderRadiusLG" Value="2" />
-    <Token Name="PaddingContentHorizontal" Value="12" />
     <Token Name="ControlHeight" Value="40" />
-    <Token Name="ControlHeightSM" Value="36" />
-    <Token Name="ControlHeightLG" Value="48" />
-    <Token Name="FontSizeSM" Value="12" />
-    <Token Name="FontSizeLG" Value="16" />
-    <Token Name="FocusVisualBorderThickness" Value="2" />
-    <Token Name="ColorFocusBorder" Value="#059669" />
-    <Token Name="ControlOutlineWidth" Value="0" />
-    <Token Name="MotionDurationMid" Value="00:00:00.2000000" />
-    <Token Name="BoxShadowsSecondary" Value="0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000" />
-    <Token Name="BoxShadows" Value="0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000" />
-    <Token Name="ColorBgMask" Value="#66000000" />
     <Token Name="EnableMotion" Value="false" />
   </Tokens>
-  <Controls>
-    <Control Catalog="AtomUI" Id="Button">
-      <Tokens>
-        <Token Name="FontWeight" Value="700" />
-        <Token Name="BorderRadius" Value="2" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="CheckBox">
-      <Tokens>
-        <Token Name="CheckIndicatorSize" Value="20" />
-        <Token Name="CheckedMarkSize" Value="14" />
-        <Token Name="BorderRadiusSM" Value="2" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="Select">
-      <Tokens>
-        <Token Name="OptionPadding" Value="12,8" />
-        <Token Name="PopupContentPadding" Value="0,2" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="Card">
-      <Tokens>
-        <Token Name="BodyPadding" Value="20" />
-        <Token Name="BorderRadiusLG" Value="2" />
-        <Token Name="RestingShadows" Value="0 1 3 0 #1A000000, 0 1 2 -1 #1A000000" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="Dialog">
-      <Tokens>
-        <Token Name="BorderRadiusLG" Value="2" />
-        <Token Name="ContentPadding" Value="20" />
-        <Token Name="WindowContentPadding" Value="20" />
-        <Token Name="HeaderPadding" Value="20" />
-        <Token Name="FooterPadding" Value="20" />
-        <Token Name="HeaderFontSize" Value="20" />
-        <Token Name="FontWeightStrong" Value="600" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="ToolTip">
-      <Tokens>
-        <Token Name="ToolTipBackground" Value="#334155" />
-        <Token Name="ToolTipCornerRadius" Value="2" />
-        <Token Name="ContentPadding" Value="12,8" />
-      </Tokens>
-    </Control>
-  </Controls>
 </Theme>

@@ -1042,3 +1042,57 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
 - 留待最终整体审阅统一处理的小项：
   1. Lara 的颜色规则行与 Aura 逐行相同（约 60 行），按「各预设从自己的 XML 转录、预期会分化」保留为数据，已加注释。
   2. 例外列表里的 Token 如果在旧 XML 里不存在，会被悄悄忽略（Task 18 起就是如此）；这部分在 Task 21 随显式用例一起删除。
+
+### Task 20：Nora（未提交，待审阅）
+
+- 改动：新增 `Algorithms/PrimeNGNoraAlgorithms.cs`（`PrimeNGNoraAlgorithm` = `PrimeNG:Nora` Light、`PrimeNGNoraDarkAlgorithm` = `PrimeNG:Nora.Dark` Dark、规则表 `PrimeNGNoraPreset.Table`）与 `Algorithms/Controls/PrimeNGStepsTokens.cs`（只关联 `PrimeNG:Nora.Dark`；暗色外观下 `FinishIconColor = ColorTextLightSolid`（N950），浅色外观下什么都不写）。六个控件阶段各加 Nora 两个身份；`PrimeNGPresets.Resolve` 加 Nora 分支，仍穷尽、未知身份抛异常。
+- 规则表的扩展（三处，Aura、Lara 按现行为填，12 份导出证明未动）：①`PrimeNGShade` 加 `FromSurface`（及 `PrimeNGShade.Surface(stop)`），家族规则里的某个 Token 可取中性级 — Nora 暗色 `ColorPrimaryText`/`TextHover`/`TextActive` = N950（PrimeUIX `highlight.color`/`focusColor`）；Map 阶段家族取色改为 `Resolve(family, surface)`。②`PrimeNGAppearanceRules.FocusBorder`（静态委托，Alias 阶段写 `ColorFocusBorder`）：Aura、Lara 明暗都是 `ColorPrimary`；Nora 浅色 `ColorPrimary`、暗色 `ColorBorder`（N500，旧 XML 的 `#71717A`，PrimeUIX `form.field.focus.border.color`）。③`PrimeNGAppearanceRules.CardBorderSecondary`（可空的中性级，Card 阶段写卡片作用域的 `ColorBorderSecondary`）：Aura、Lara 为 null；Nora 浅色 null、暗色 N700（旧暗色 XML 的卡片 `#3F3F46`，等于 `nora-compat` 的 `overlay.*.borderColor`）。没有 `if (preset == Nora)` 分支。
+- Nora 规则：主色浅 600/700/800、暗 500/400/300；`ColorPrimaryBg` 浅 P50、暗 P500（实色，`BgHover` P400，PrimeUIX `highlight.focusBackground`）；`ColorPrimaryText` 浅 P800、暗 N950；文字 N900/白、次要 N500/N400、边框 N500/N500、次要边框透明（黑@0）、`SelectionForeground`/`ColorTextLightSolid` 白/N950；错误色基准明暗都是 E400（旧 XML 两边都是 `#F87171`）；圆角阶梯偏移全 0（XS/SM/LG/XL 都等于 2）；`FocusVisualBorderThickness` 2×`LineWidth`；控件：按钮字重 700、复选框 20/14、Select 选项内边距同 Aura 公式、弹层 `0,2`（两种密度相同，PrimeUIX `list.padding` 0.125rem 0）、卡片/对话框/提示同 Aura 常量。状态色（成功、警告、信息）的基准/悬停/按下取浅 600/700/800、暗 500/400/300（实现者的决定，见偏离 1）。
+- 四份 Nora XML：链 + `ColorPrimary #10B981`、`ColorError #EF4444`、`BorderRadius 2`、`ControlHeight 40`、常量 `EnableMotion false`；明暗只差链；紧凑只多 `AtomUI:Compact`；不再有 `Controls`（含 `Steps`）。不等价项：无。
+- 暗色种子裁决：旧暗色 XML 写的 `ColorPrimary #10B981`、`ColorError #F87171` 正是 Nora 暗色规则从共享种子得到的值（P500、E400）；基线是 `#11A071`、`#D66363`（旧链 `[AtomUI:Dark]` 再推导）。例外清单正好是两个暗色 profile 的这两个 Token，没有别的 Token 需要例外。
+- 测试（并入 `PrimeNGPresetMigrationTests`，加 Nora 描述数据，不新建文件）：显式理论加 4 行；`Swapping_…`、`Appending_Compact_…`、`Preset_Xml_No_Longer_Contains_Rule_Tokens` 各加 `Nora` 行；`Primary_Seed_Change_…` 增加期望主色参数（Aura/Lara `#3B82F6`，Nora 取 600 = `#2563EB`）；新增 `Nora_Takes_Darker_Primary_Stops`、`Nora_Dark_Steps_Override_Comes_From_The_Control_Stage`（两个暗色 profile 的 `FinishIconColor` = `#09090B`；混合链 `[Nora.Dark, AtomUI:Default]` 下不写；四份 XML 无 `Steps`）；契约理论加 `Nora`、`Nora.Dark`（`standalone: true`）；禁用文字常驻测试加 4 个 Nora profile。RED：8 条失败（Nora 身份未注册、XML 仍有规则 Token、换链/紧凑不等价、暗色主色为 `#11A071`）。GREEN：`AtomUI.Themes.Tests` 75/75（环境变量未设置）；显式迁移理论 12/12；`AtomUIGallery.Tests` 422/422。变异检查：注释掉 Steps 阶段的赋值 → `Nora_Dark_Steps_…`、`Nora_Disables_Motion_…` 与显式理论的两个暗色 Nora 行失败（`expected #ff09090b, got #ff10b981`），已还原。
+- Aura、Lara 未动：12 个 profile 导出到 scratchpad 的 `t20/after-final/`，8 份 Aura/Lara 与 `t19/after-fix1/` `cmp` 逐字节相同。
+- 禁用文字：N400 / N500（与 Aura 同理：次要文字 N500 / N400 往背景方向一档；Nora 加深的是正文与边框，次要文字级与 Aura 相同）。对禁用底色实测：浅 2.08、暗 2.16；旧 Nora profile 1.79 / 2.06。
+- 差异清单（`Diff(baseline, current)`；紧凑与基础 profile 的差异逐行相同；没有新增或删除的行；逐行去掉颜色后比较，非颜色部分零行变化 — 浅色 `Slider.ThumbCircleBorderColorDisabled` 的旧值是具名色 `Silver`）：
+  - 浅色 `PrimeNGNora`/`.Compact` 各 178 行（全局 71 + 控件 107）= Aura 的 168 个键 + 状态色基准 10 行。旧 XML 显式写的值一行都没变。
+    - Map 规则：主色其余 5 个（P100、P200、P300、P700、P900）；`ColorLink` 3 个跟主色种子（`#059669`/`#047857`/`#065F46`）；错误色其余 10 个；成功、警告、信息各 10 个（基准取 600，所以基准也变：`#46A716`、`#D59311`、`#1365D9`）；中性 `ColorBgLayout` N50、`ColorBgSolid/Hover/Active`、`ColorBgSpotlight` N700、`ColorFill/Secondary/Quaternary`、`ColorTextTertiary/Quaternary` N500/N400（修复轮 1：比 Aura 深一级）。
+    - Ant Alias 跟随 12（同 Aura）；`ColorTextDisabled` 1。
+    - 控件 107：`ColorFillSecondary` 组 27、`ColorTextDisabled` 19、`ColorFillQuaternary`（`ColorFillAlter`）13、`ColorFill` 8、`ColorTextQuaternary` 6、`ColorInfo` 5（4 个进度条 `DefaultColor`、`ResultInfoIconColor`）、`ColorTextTertiary`（`ColorIcon`）4、`ColorErrorBg` 3、`ColorPrimaryBorder` 3、`ColorPrimaryBorderHover` 2、`ColorErrorHover`/`ColorSuccess`/`ColorWarning`/`ColorBgLayout`/`ColorPrimaryBgHover` 各 1，按公式 12（同 Aura：4 个 `DangerShadow`、2 个 `FilledHandleBg`、`Tour.PrimaryNextBtnHoverBg`、`Slider.ThumbCircleBorderColorDisabled`、`NotificationProgressBg` 起点、3 个 `Skeleton` 渐变）。
+  - 暗色 `PrimeNGNora.Dark`/`.DarkCompact` 各 244 行（全局 74 + 控件 170）= Aura 暗色的 244 个键减去 `Steps.FinishIconColor`（Nora 保持基线 `#09090B`），加上 `NavMenu.ItemSelectedBg`（修复轮 1：`#10B981` → `ColorPrimary`@16% `#2910B981`，Nora.Dark 的 NavMenu 阶段）。
+    - 根因一：`ColorPrimary` `#11A071` → `#10B981`（裁决）。跟随：`SelectionBackground`；控件 32 行；`Slider.ThumbOutlineColor`、`NotificationProgressBg` 终点。焦点环（`#71717A`）与选中底色（`#10B981`）不变，旧 XML 已写。
+    - 根因二：`ColorError` `#D66363` → `#F87171`（裁决）。跟随：`ColorHighlight`；控件 30 行。
+    - Map 规则：主色其余 5 个（`BgHover` P700（修复轮 1，原 P400；跟随它的 `ControlItemBgActiveHover`、`Splitter.HandleLineDragColor`）、边框 P700@36%/P600@36%、`TextHover`/`TextActive` N950）；`ColorLink` 3 个；错误色其余 10 个；状态色各 10 个（基准取 500）；中性 `ColorBgSolidHover/Active`、`ColorBgSpotlight` N700、`ColorFill/Secondary/Quaternary`、`ColorTextTertiary/Quaternary` N500/N600；`SelectionForeground` 白 → N950。
+    - Ant Alias 跟随 12；`ColorTextDisabled` 1；其余控件按与 Aura 相同的组跟随，按公式 13 行（浅色 12 + `ThumbOutlineColor`）。
+  - 证据：scratchpad `t20/PrimeNGNora*.fix1.diff.txt`（修复轮 1 后）、`t20/fix1diff.py`、`t20/classify.py` 的输出（报告里有分组）。按钮作用域的 `ColorPrimaryBg`/`BgHover` 是控件作用域的全局值，导出不含它们，由常驻测试覆盖。
+- 来源：PrimeUIX 只用于在 3.1.1 `nora-compat` 里核对过的项（`primary.*`、`highlight.*`、`text.*`、`formField.borderColor/focusBorderColor/invalidBorderColor`、`focusRing.width`、`overlay.*.borderColor`、`list.padding`、`button.label.fontWeight`、`button.{success,info,warn}`、`tag.*`、`steps.itemNumber.activeColor`、`checkbox.width`、`overlay.modal.padding`、`tooltip.padding`、`transitionDuration`）；其余标 XML（基线）。README 写明 `nora-compat` 不同的值（浅色 `highlight.background` P600、`text.mutedColor` N600、`formField.invalidBorderColor` E500、`card.borderRadius` `border.radius.sm` 与其阴影、`tooltip.background` N900/`surface.0`）。
+- 偏离简报：①**状态色取级**：旧 XML 没写状态色，规格 4.7 对状态家族的提议是「按主色家族的同一取级规则」，`nora-compat` 的 `button.{success,info,warn}` 与 `tag.*` 也是浅 600、暗 500，所以 Nora 的状态基准/悬停/按下跟主色同样偏移；代价是浅色多 10 行差异（成功、警告、信息的基准色变深），对比度上升（白字对成功色 2.27 → 3.09）。要回到 Aura 的取级只需改规则表三处数字。②测试并入 `PrimeNGPresetMigrationTests`（主控决定），没有新建 `PrimeNGNoraMigrationTests.cs`。③`Primary_Seed_Change_…` 理论加了期望主色参数（Nora 浅色取 600）。
+- 带入 Task 22 人工验收（Nora 是高对比预设，以下是对比度下降或需要上屏看的项）：
+  - 浅色链接色跟主色：`#1677FF` → `#059669`，对白底 4.10 → 3.77。
+  - 暗色焦点环是 N500（与边框同色），在 2px 宽度下与未聚焦边框只差宽度，需上屏确认可辨。
+  - 暗色选中项悬停底改为 P700（修复轮 1）：白字 5.48，仍低于改前的 7.74（`#125E45`）。
+  - 暗色 `DropdownButton`、`ResetButton`、`SubmitButton` 的 Filled 主色变体：仍在实色主色底上画主色字（1.00，与改前 1.32 同源），只有 `Button` 有作用域内的半透明底；已写进 README 的「Unsupported and known differences」。
+  - 暗色其余选中底仍是实色主色、其上为 `ColorText` 白的地方（未逐控件核对文字色）：白字对 `#10B981` 为 2.54，与改前相同。
+  - 暗色 `ColorTextTertiary` 4.45 → 4.12、错误文字 5.52 → 5.29（小幅下降）。
+  - Task 18 那张清单同样适用于 Nora 四个 profile（`Tour.PrimaryNextBtnHoverBg`、`Skeleton` 渐变、`FilledHandleBg`、`Slider.ThumbCircleBorderColorDisabled`、`ColorFillAlter` 系列、禁用文字 N400/N500）。
+  - 状态色变深（偏离 1）：进度条默认色、`Result` 图标、警告色 `#D59311`。
+- 带入 Task 23 的 CHANGELOG：PrimeNG Nora 暗色主题的主色由 #11A071 改为 #10B981、错误色由 #D66363 改为 #F87171；Nora 四个 profile 的状态色改取 600（暗色 500）级，链接、填充、实色底、提示底色、次级文字、禁用文字改按 PrimeNG 取级。
+- 修复轮 1（审阅指出两项重要的可读性回退与四个小项）：
+  1. 暗色 `BgHover` P400 → P700：AtomUI 在 `ControlItemBgActiveHover` 上画 `ColorText`（白），PrimeUIX 的 P400 配的是深色文字，引用不成立；README 注明此行偏离 PrimeUIX 及原因。白字 1.92 → 5.48（改前 7.74）。
+  2. NavMenu：新增 `PrimeNGNavMenuTokens`（只关联 `Nora.Dark`，浅色外观不写）。**没有按裁决把 `ItemSelectedColor` 设为 `ColorTextLightSolid`**：同一个 Token 还给「选中路径」上的父级标题着色（`BaseNavMenuItemHeaderTheme.axaml` 的 `IsInSelectedPath`），那里的底是菜单底 `#09090B`，设成 N950 会让父级标题不可见。改为把 `ItemSelectedBg` 设为 `ColorPrimary`@16%（Aura 的形状），文字仍是主色：1.00 → 6.39；按下态（白字在 `ItemSelectedBg` 上）16.2。核对过的其余 NavMenu Token：`HorizontalItemSelectedColor`（底为透明，主色对菜单底 7.84，未改）、`DarkItemSelectedColor`/`DarkItemSelectedBg`（N950 对 P500，7.84，未改）、危险项（未改）。
+  3. Filled 按钮：规则表新增 `PrimeNGAppearanceRules.ButtonPrimaryBg`（Aura、Lara、Nora 浅色为 null），Nora 暗色在按钮作用域内写 `ColorPrimaryBg` = 主色@16%、`ColorPrimaryBgHover` = 主色@24%。读这两个值的只有 `Button.Variants.cs` 的主色变体：Filled 的底与悬停底（1.00 → 6.39，悬停 2.16 → 5.46）、Text 变体的悬停底（悬停字 1.32 → 8.43）；按下底读的是 `ColorPrimaryBorder`，不受影响；没有哪一项变差，所以做了。`DropdownButton`/`ResetButton`/`SubmitButton` 是独立身份，未覆盖，列入 README 与 Task 22。
+  4. 浅色 `TextTertiary`/`TextQuaternary` 改为 N500/N400（Aura、Lara 不变）：`ColorTextTertiary`/`ColorIcon` 对白底 2.56 → 4.76（改前 3.32），`ColorTextQuaternary` 1.48 → 2.56（改前 1.82）；`ColorTextDisabled` 仍为 N400，与 quaternary 同级（Ant 里二者同为 25% 文字），对禁用底 2.08 不变。
+  5. Steps 混合链断言改为等于 Ant 值（`ColorPrimary`）；NavMenu 加同类断言（`ItemSelectedBg` 等于 `ControlItemBgActive`）。新增常驻 `Nora_Dark_Selected_Text_Stays_Readable`（两个暗色 profile：`ColorText` 对 `ControlItemBgActiveHover`、NavMenu 选中项、Filled 按钮底与悬停底，下限 4.5）与 `Nora_Dark_NavMenu_Stage_Writes_Nothing_Under_A_Light_Appearance`。变异：BgHover 回到 P400、NavMenu 阶段不写、去掉按钮作用域底、去掉 Steps 守卫、去掉 NavMenu 守卫，五项各自使对应用例失败，已还原。
+  6. `PrimeNGShade.Resolve(palette)` 加 `Debug.Assert(!FromSurface)` 与说明；`WithOpacity` 移到 `PrimeNGPalette`（Lara 改用它，值不变）；Nora 规则表注释更正为「暗色基准 P500，比 Aura 深一级」。
+  - 结果：`AtomUI.Themes.Tests` 78/78（环境变量未设置），显式迁移理论 12/12，`AtomUIGallery.Tests` 422/422。12 个 profile 导出到 `t20/fix1/`，8 份 Aura/Lara 与 `t19/after-fix1/` 逐字节相同。Nora 差异：浅色 178（键集合不变，13 行换了新值：tertiary/quaternary 及其 10 个控件跟随）、暗色 244（多 `NavMenu.ItemSelectedBg`，`ColorPrimaryBgHover` 组 3 行换了新值）；紧凑与基础逐行相同；非颜色部分零行。
+- 审阅结论：首轮审阅独立确认迁移准确（行数、没有非颜色变化、紧凑与常规一致、Aura 与 Lara 逐字节未动、旧 XML 的显式值保持），指出两个重要的可读性问题后退回修正一轮；复审结论为七项全部解决，没有引入新问题。Task 19 的提交为 `5b4152447`。
+  - 重要问题一：Nora 暗色的选中悬停背景照 PrimeUIX 取了主色 400 级，但 AtomUI 的控件在它上面画的是白字（时间选择单元格、DataGrid 选中行、分隔条折叠按钮），对比度从 7.74 降到 1.92。已修：改取 700 级，白字 5.48。
+  - 重要问题二：暗色导航菜单的选中文字与背景同色（1.32 → 1.00），主色填充按钮同理 — 旧 XML 把主色背景设成了实色主色，暗色主色的裁决又让主色恰好等于它。已修：新增只关联 `PrimeNG:Nora.Dark` 的导航菜单控件阶段，把选中背景改为主色 16%（选中项 6.39，选中路径上的父级标题保持 7.84）；按钮作用域内的主色背景与悬停背景改为主色 16%、24%（填充 6.39，填充悬停 5.46，文本按钮悬停 8.43，其他形态不变）。
+  - 同轮修掉的小项：Nora 浅色的第三、四级文字各加深一档（图标与第三级文字 2.56 → 4.76，第四级 1.48 → 2.56）；步骤条的混合链断言改为断言 Ant 的值（去掉浅色外观的保护判断后会失败），新的导航菜单阶段有同类断言；`PrimeNGShade.Resolve` 单参数重载加断言；一处注释更正。
+  - 以上每项都有常驻测试，五次故意改坏的验证都会失败。修正后 Nora 与基线的差异：浅色 178 行、暗色 244 行，仍然全部是颜色。
+- 裁决（导航菜单的修法，实现者偏离了主控的裁决）：主控原定把 `ItemSelectedColor` 改为实色上的文字色；实现者查模板发现同一个 Token 也是「选中项所在路径上的父级标题」的前景色，而那些标题画在菜单底色上，改成深色会让它们看不见。改为调整选中背景。予以认可 — 复审核实了模板里的用法，并逐一检查了画在选中背景上的其他状态（按住、禁用、键盘激活、暗色样式、水平模式），没有变差的 — 主控的原裁决是在没看模板的情况下定的。
+- 裁决（Nora 的状态色取级，实现者在简报之外的决定）：成功、警告、信息家族的基础、悬停、按下取浅色 600/700/800、暗色 500/400/300，与主色一致。予以认可 — 规格 4.7 有此提议，审阅对照 `nora-compat` 的按钮与标签源码属实，白字在三种状态色上的对比度升高（2.27 → 3.09、1.90 → 2.62、4.10 → 5.40）— 代价是浅色下这三个颜色比改造前深。留给用户确认。
+- 已知差异（写进了 README）：`DropdownButton`、`ResetButton`、`SubmitButton` 是独立的控件身份，暗色 Nora 下它们的填充形态仍是主色文字画在实色主色背景上；暗色 Nora 里白字画在实色主色（500 级）上的地方对比度仍是 2.54，这是旧 XML 显式设置的选中背景，没有改。
+- 这个任务带来的教训：对颜色类改动，只证明「每行差异都有原因」不够，还要看对比度有没有变差。Aura 与 Lara 用了同样的第三、四级文字规则（浅色 400、300 级），它们的可读性留给最终整体审阅专门核对。
+- 留待最终整体审阅统一处理的小项：
+  1. `PrimeNGShade.Resolve` 单参数重载的保护只在 Debug 构建生效。
+  2. Nora 的 `EnableMotion false` 作为常量留在 XML 里（PrimeUIX 的 `transitionDuration: 0s`）；也可以进规则表。

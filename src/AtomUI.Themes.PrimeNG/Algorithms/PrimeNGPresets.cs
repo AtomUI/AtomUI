@@ -29,6 +29,7 @@ internal static class PrimeNGPresets
             {
                 "Aura" or "Aura.Dark" => PrimeNGAuraPreset.Table,
                 "Lara" or "Lara.Dark" => PrimeNGLaraPreset.Table,
+                "Nora" or "Nora.Dark" => PrimeNGNoraPreset.Table,
                 _ => throw new InvalidOperationException(
                     $"The PrimeNG algorithm '{algorithm.Id}' has no rule table for the control stages.")
             };

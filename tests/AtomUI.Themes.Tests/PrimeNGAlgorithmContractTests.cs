@@ -26,6 +26,8 @@ public class PrimeNGAlgorithmContractTests
     [InlineData("Aura.Dark")]
     [InlineData("Lara")]
     [InlineData("Lara.Dark")]
+    [InlineData("Nora")]
+    [InlineData("Nora.Dark")]
     public void Preset_Algorithm_Satisfies_The_Contract(string id)
     {
         // A PrimeNG preset algorithm starts its chain, so it is verified standalone: it must write every Map token.

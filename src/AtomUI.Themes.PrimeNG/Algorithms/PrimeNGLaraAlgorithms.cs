@@ -73,7 +73,10 @@ internal static class PrimeNGLaraPreset
                 BgContainerDisabled: new(200), TextDisabled: new(400)),
             SelectionForeground: new(White),
             // PrimeUIX focus.ring.shadow, light: primary 200 (the primary border stop of this table).
-            ControlOutline: static token => token.ColorPrimaryBorder),
+            ControlOutline: static token => token.ColorPrimaryBorder,
+            FocusBorder: static token => token.ColorPrimary,
+            CardBorderSecondary: null,
+            ButtonPrimaryBg: null),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -101,7 +104,10 @@ internal static class PrimeNGLaraPreset
                 BgContainerDisabled: new(700), TextDisabled: new(500)),
             SelectionForeground: new(900),
             // PrimeUIX focus.ring.shadow, dark: primary.color mixed with 80% transparent.
-            ControlOutline: static token => WithOpacity(token.ColorPrimary, 0.2)),
+            ControlOutline: static token => PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.2),
+            FocusBorder: static token => token.ColorPrimary,
+            CardBorderSecondary: null,
+            ButtonPrimaryBg: null),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
@@ -126,7 +132,4 @@ internal static class PrimeNGLaraPreset
             DialogPadding: 20,
             ToolTipPadding: new Thickness(12, 8),
             ToolTipColor: new(White)));
-
-    private static Color WithOpacity(Color color, double opacity) =>
-        Color.FromArgb(PrimeNGPalette.RoundHalfUp(color.A * opacity), color.R, color.G, color.B);
 }

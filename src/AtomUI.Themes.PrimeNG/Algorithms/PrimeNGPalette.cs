@@ -95,4 +95,11 @@ internal static class PrimeNGPalette
     /// JavaScript <c>Math.round</c> for the non-negative channel values: half up, never banker's rounding.
     /// </summary>
     internal static byte RoundHalfUp(double value) => (byte)Math.Clamp(Math.Floor(value + 0.5), 0, 255);
+
+    /// <summary>
+    /// The colour with <paramref name="opacity"/> applied on top of its own alpha (PrimeUIX
+    /// <c>color-mix(…, transparent)</c>).
+    /// </summary>
+    internal static Color WithOpacity(Color color, double opacity) =>
+        Color.FromArgb(RoundHalfUp(color.A * opacity), color.R, color.G, color.B);
 }

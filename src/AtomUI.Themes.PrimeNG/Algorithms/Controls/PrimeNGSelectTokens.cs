@@ -7,13 +7,15 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
 /// <summary>
 /// Select under the PrimeNG presets: option and panel padding, computed from the control's effective global size
-/// tokens by the preset's rule table (Aura 12,8 and 4; Lara 16,10 and 0,8). PrimeUIX has no compact density; the
-/// compact values are fits to the baseline XML, see the README.
+/// tokens by the preset's rule table (Aura 12,8 and 4; Lara 16,10 and 0,8; Nora 12,8 and 0,2). PrimeUIX has no compact
+/// density; the compact values are fits to the baseline XML, see the README.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Lara.Dark", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora", 1)]
+[ControlTokenAlgorithm("PrimeNG", "Nora.Dark", 1)]
 internal sealed class PrimeNGSelectTokens : IControlTokenAlgorithm<SelectToken>
 {
     /// <inheritdoc />

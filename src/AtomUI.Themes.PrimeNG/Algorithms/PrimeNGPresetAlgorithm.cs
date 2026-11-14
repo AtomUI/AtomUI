@@ -20,6 +20,10 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 /// A dark algorithm that follows another algorithm only recomputes the colours: the sizes of the previous Map stay,
 /// as with <c>AtomUI:Dark</c>. Compact density is <c>AtomUI:Compact</c> appended to the chain.
 /// </para>
+/// <para>
+/// The Alias stage writes the preset's focus, placeholder, disabled, contrast, padding and shadow rules; the
+/// per-control values are control stages under <c>Algorithms/Controls</c>, shared by the light and dark variant.
+/// </para>
 /// </remarks>
 public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgorithm
 {
@@ -58,9 +62,38 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The rules follow <see cref="ThemeAlgorithmContext.Appearance"/>, not the variant of this instance, so a
+    /// mixed chain such as <c>[PrimeNG:Aura, AtomUI:Dark]</c> gets the dark Alias values. Widths and paddings are
+    /// derived from Map size tokens and follow <c>AtomUI:Compact</c>.
+    /// </remarks>
     public void EvaluateAlias(in ThemeAlgorithmContext context, DesignToken token)
     {
-        // The Alias rules of the presets are not defined yet; the stage writes nothing.
+        ArgumentNullException.ThrowIfNull(token);
+        var rules   = _preset.For(context.Appearance);
+        var surface = rules.Surface.AsSpan();
+        var alias   = _preset.Alias;
+
+        // PrimeUIX focus.ring.color is the primary colour, its width one line; fields get no outline glow.
+        token.ColorFocusBorder           = token.ColorPrimary;
+        token.FocusVisualBorderThickness = new Thickness(token.LineWidth * alias.FocusVisualBorderLineWidths);
+        token.ControlOutlineWidth        = token.LineWidth * alias.ControlOutlineLineWidths;
+
+        // PrimeUIX form.field.placeholder.color and the muted text both use text.muted.color.
+        token.ColorTextPlaceholder     = token.ColorTextSecondary;
+        token.ColorTextDescription     = token.ColorTextSecondary;
+        token.ColorBgContainerDisabled = rules.Neutral.BgContainerDisabled.Resolve(surface);
+        // PrimeUIX form.field.disabled.color is the muted-text stop and relies on a component opacity AtomUI does not
+        // apply; one stop further from the text (lighter in light, darker in dark) keeps disabled text distinct
+        // from secondary text and readable on the disabled background.
+        token.ColorTextDisabled        = rules.Neutral.TextDisabled.Resolve(surface);
+        token.ColorTextLightSolid      = rules.SelectionForeground.Resolve(surface);
+
+        // The Ant Design formula takes SizeMS (16, compact 12); PrimeNG pads content with 12 (compact 8).
+        token.PaddingContentHorizontal = token.SizeSM;
+
+        token.BoxShadows          = alias.BoxShadows;
+        token.BoxShadowsSecondary = alias.BoxShadowsSecondary;
     }
 
     private static void WriteColors(DesignToken seed, DesignToken map, PrimeNGAppearanceRules rules)

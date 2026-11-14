@@ -1,5 +1,6 @@
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
+using AtomUI.Theme.ContractTests;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Headless.XUnit;
@@ -118,6 +119,23 @@ public class PrimeNGThemePackageTests
         Effective<CornerRadius>(snapshot, "Dialog", "BorderRadiusLG").ShouldBe(new CornerRadius(12));
         Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(20));
         Own<double>(snapshot, "Dialog", "HeaderFontSize").ShouldBe(20);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", "#3F000000", "#E2E8F0")]
+    [InlineData("PrimeNGAura.Dark", "#3FFFFFFF", "#3F3F46")]
+    [InlineData("PrimeNGAura.Compact", "#3F000000", "#E2E8F0")]
+    [InlineData("PrimeNGAura.DarkCompact", "#3FFFFFFF", "#3F3F46")]
+    public async Task Aura_Disabled_Text_Stays_As_Readable_As_The_Old_Profiles(
+        string id, string oldDisabledText, string oldDisabledBackground)
+    {
+        // The floor is what the pre-algorithm profiles compiled to (Ant's translucent disabled text on the explicit
+        // disabled background): 1.79 light, 2.06 dark. Ant's formula on the PrimeNG neutrals would give 1.20 / 1.35.
+        var floor = ContrastRatio.Of(Color.Parse(oldDisabledText), Color.Parse(oldDisabledBackground));
+        var snapshot = await Apply(id);
+        var ratio = ContrastRatio.Of(Global<Color>(snapshot, "ColorTextDisabled"),
+            Global<Color>(snapshot, "ColorBgContainerDisabled"));
+        ratio.ShouldBeGreaterThanOrEqualTo(floor, $"{id}: {ratio:F2} < {floor:F2}");
     }
 
     [AvaloniaFact]

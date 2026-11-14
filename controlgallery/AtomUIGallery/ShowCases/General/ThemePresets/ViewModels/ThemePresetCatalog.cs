@@ -29,15 +29,18 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         return packages.Length == 0 ? compiled : packages;
     }
 
-    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm> algorithms)
+    // A null chain keeps the definition's own chain: a mode profile may run a package algorithm (for example
+    // PrimeNG:Aura.Dark) that the built-in Default/Dark/Compact toggles cannot stand in for.
+    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms)
     {
         _ = Read();
+        var definition = _catalog!.Get(themeId).Definition;
+        algorithms ??= definition.Algorithms.Select(descriptor => descriptor.Algorithm).ToArray();
         var key = themeId + ":" + string.Join(",", algorithms);
         if (_configs.TryGetValue(key, out var cached))
         {
             return cached;
         }
-        var definition = _catalog!.Get(themeId).Definition;
         // Inherit=false starts from library defaults, so unrelated root aliases and Own
         // overrides cannot leak into this preview. Keep every declaration, including Own tokens.
         var builder = new ThemeConfigBuilder().WithInherit(false).WithAlgorithms(algorithms.ToArray());
@@ -65,7 +68,7 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         return config;
     }
 
-    internal static string Export(string id, string name, ThemeConfig config)
+    internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null)
     {
         XNamespace ns = "https://atomui.net/schemas/theme/v1";
         XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",
@@ -75,9 +78,11 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         XElement Tokens(IReadOnlyDictionary<string, string> values) => new(ns + "Tokens",
             values.Select(value => new XElement(ns + "Token", new XAttribute("Name", value.Key), new XAttribute("Value", value.Value))));
         var root = new XElement(ns + "Theme", new XAttribute("Id", id), new XAttribute("Name", name),
-            new XAttribute("Appearance", config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? "Dark" : "Light"),
+            new XAttribute("Appearance",
+                (appearance ?? (config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? ThemeAppearance.Dark : ThemeAppearance.Light)).ToString()),
             new XAttribute("IsDefault", false), Algorithms(config.Algorithms!), Tokens(config.Tokens),
-            new XElement(ns + "Controls", config.Controls.Select(pair =>
+            // The schema requires at least one Control inside Controls, so a profile without control values omits it.
+            config.Controls.Count == 0 ? null : new XElement(ns + "Controls", config.Controls.Select(pair =>
             {
                 var control = new XElement(ns + "Control", new XAttribute("Catalog", pair.Key.Catalog),
                     new XAttribute("Id", pair.Key.Id));

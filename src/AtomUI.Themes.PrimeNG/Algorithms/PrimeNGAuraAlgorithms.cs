@@ -1,5 +1,7 @@
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Schema;
+using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Themes.PrimeNG.Algorithms;
 
@@ -61,7 +63,8 @@ internal static class PrimeNGAuraPreset
                 Fill: new(300), FillSecondary: new(200), FillTertiary: new(100), FillQuaternary: new(50),
                 BgContainer: new(White), BgElevated: new(White), BgLayout: new(50), BgSpotlight: new(700),
                 BgBlur: new(White, 0), BgSolid: new(900), BgSolidHover: new(800), BgSolidActive: new(950),
-                Border: new(300), BorderSecondary: new(200), BgMask: new(Black, 0.4)),
+                Border: new(300), BorderSecondary: new(200), BgMask: new(Black, 0.4),
+                BgContainerDisabled: new(200), TextDisabled: new(400)),
             SelectionForeground: new(White)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
@@ -86,9 +89,24 @@ internal static class PrimeNGAuraPreset
                 Fill: new(600), FillSecondary: new(700), FillTertiary: new(800), FillQuaternary: new(900),
                 BgContainer: new(950), BgElevated: new(900), BgLayout: new(950), BgSpotlight: new(700),
                 BgBlur: new(White, 0.04), BgSolid: new(White), BgSolidHover: new(300), BgSolidActive: new(100),
-                Border: new(600), BorderSecondary: new(700), BgMask: new(Black, 0.6)),
+                Border: new(600), BorderSecondary: new(700), BgMask: new(Black, 0.6),
+                BgContainerDisabled: new(700), TextDisabled: new(500)),
             SelectionForeground: new(900)),
         Sizes: new PrimeNGSizeLadder(
-            BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2,
-            ControlHeightSMOffset: -4, ControlHeightLGOffset: 8));
+            BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
+            ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
+        Alias: new PrimeNGAliasRule(
+            FocusVisualBorderLineWidths: 1,
+            ControlOutlineLineWidths: 0,
+            BoxShadows: BoxShadows.Parse("0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000"),
+            BoxShadowsSecondary: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")),
+        Controls: new PrimeNGControlRule(
+            ButtonFontWeight: FontWeight.Medium,
+            CheckIndicatorSize: 20,
+            CheckedMarkSize: 14,
+            CardBodyPadding: 20,
+            CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
+            DialogPadding: 20,
+            ToolTipPadding: new Thickness(12, 8),
+            ToolTipColor: new(White)));
 }

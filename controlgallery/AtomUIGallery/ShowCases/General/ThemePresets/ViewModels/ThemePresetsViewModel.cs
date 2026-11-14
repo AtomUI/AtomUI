@@ -188,8 +188,15 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         var suffix = IsDark && IsCompact ? ".DarkCompact" : IsDark ? ".Dark" : IsCompact ? ".Compact" : "";
         var profile = _themes.FirstOrDefault(item => item.Package == family.Package && item.Info.Id == _selectedPresetId + suffix);
         var id = profile.Info?.Id ?? _selectedPresetId;
-        var algorithms = new List<ThemeAlgorithm> { IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default };
-        if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
+        // Whenever the requested mode exists as a definition (the base definition itself in plain light, non-compact
+        // mode; otherwise the .Dark/.Compact/.DarkCompact profile), the preview keeps that definition's own chain.
+        // Only a missing mode profile falls back to the base theme with the built-in Dark/Compact toggles.
+        List<ThemeAlgorithm>? algorithms = null;
+        if (profile.Info is null)
+        {
+            algorithms = [IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default];
+            if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
+        }
         this.RaiseAndSetIfChanged(ref _previewThemeId, id, nameof(PreviewThemeId));
         this.RaiseAndSetIfChanged(ref _previewConfig, _catalog.CreateConfig(id, algorithms), nameof(PreviewConfig));
         CopySucceeded = false;
@@ -197,7 +204,8 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     }
 
     public string ExportThemeXml() => ThemePresetCatalog.Export(_previewThemeId!,
-        _themes.Single(item => item.Info.Id == _previewThemeId).Info.Name, _previewConfig!);
+        _themes.Single(item => item.Info.Id == _previewThemeId).Info.Name, _previewConfig!,
+        IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light);
 
     private static AntDesignIconKind? IconFor(string id) => id switch
     {

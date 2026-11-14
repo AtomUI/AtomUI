@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using AtomUI.Theme;
+using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Themes.PrimeNG.Algorithms;
@@ -69,14 +71,19 @@ internal sealed record PrimeNGNeutralRule(
     PrimeNGShade BgSolidActive,
     PrimeNGShade Border,
     PrimeNGShade BorderSecondary,
-    PrimeNGShade BgMask);
+    PrimeNGShade BgMask,
+    PrimeNGShade BgContainerDisabled,
+    PrimeNGShade TextDisabled);
 
 /// <summary>
 /// The colour rules of one appearance. <see cref="Primary"/> also drives the link colours and the selection
 /// background; <see cref="Status"/> drives the success, warning and info families.
 /// </summary>
 /// <param name="Surface">The neutral scale, a constant of the preset (spec 4.7).</param>
-/// <param name="SelectionForeground">Text on the selection background (the PrimeUIX primary contrast colour).</param>
+/// <param name="SelectionForeground">
+/// Text on the selection background and on solid primary fills (the PrimeUIX primary contrast colour); the Alias
+/// stage also writes it to <c>ColorTextLightSolid</c>.
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -89,13 +96,47 @@ internal sealed record PrimeNGAppearanceRules(
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the
 /// <c>BorderRadius</c> seed (never below 0) and the small and large control heights relative to the
 /// <c>ControlHeight</c> seed. The font ladder is the Ant Design one, which already gives PrimeNG's 12/14/16.
+/// <see cref="BorderRadiusXLOffset"/> has no global token: the control stages use it for the PrimeUIX
+/// <c>border.radius.xl</c> of cards and dialogs.
 /// </summary>
 internal sealed record PrimeNGSizeLadder(
     double BorderRadiusXSOffset,
     double BorderRadiusSMOffset,
     double BorderRadiusLGOffset,
+    double BorderRadiusXLOffset,
     double ControlHeightSMOffset,
     double ControlHeightLGOffset);
+
+/// <summary>
+/// The Alias rules of a preset that do not depend on the appearance. Widths are multiples of the <c>LineWidth</c>
+/// Map token, so they follow a theme that changes it.
+/// </summary>
+/// <param name="FocusVisualBorderLineWidths">The focus ring width, in line widths (PrimeUIX <c>focus.ring.width</c>).</param>
+/// <param name="ControlOutlineLineWidths">The width of the glow around a focused field, in line widths.</param>
+/// <param name="BoxShadows">Modal and large overlays (PrimeUIX <c>overlay.modal.shadow</c>).</param>
+/// <param name="BoxShadowsSecondary">Popovers and select panels (PrimeUIX <c>overlay.popover.shadow</c>).</param>
+internal sealed record PrimeNGAliasRule(
+    double FocusVisualBorderLineWidths,
+    double ControlOutlineLineWidths,
+    BoxShadows BoxShadows,
+    BoxShadows BoxShadowsSecondary);
+
+/// <summary>
+/// The fixed control stage values of a preset. The sizes are the values of the pre-algorithm XML profiles (the
+/// acceptance baseline); the compact profiles have always kept them, so they do not follow <c>AtomUI:Compact</c>.
+/// For Aura they equal the <c>aura-compat</c> preset of <c>@primeuix/themes</c> 3.1.1 at a 16px root; the standard
+/// <c>aura</c> preset is denser (for example card padding 18, tooltip padding 6/10). Values that follow from other
+/// tokens are computed in the control stages instead.
+/// </summary>
+internal sealed record PrimeNGControlRule(
+    FontWeight ButtonFontWeight,
+    double CheckIndicatorSize,
+    double CheckedMarkSize,
+    double CardBodyPadding,
+    BoxShadows CardRestingShadows,
+    double DialogPadding,
+    Thickness ToolTipPadding,
+    PrimeNGShade ToolTipColor);
 
 /// <summary>
 /// The rule table of one PrimeNG preset (Aura, Lara or Nora): which palette stop each semantic token takes, per
@@ -104,4 +145,13 @@ internal sealed record PrimeNGSizeLadder(
 internal sealed record PrimeNGPreset(
     PrimeNGAppearanceRules Light,
     PrimeNGAppearanceRules Dark,
-    PrimeNGSizeLadder Sizes);
+    PrimeNGSizeLadder Sizes,
+    PrimeNGAliasRule Alias,
+    PrimeNGControlRule Controls)
+{
+    /// <summary>
+    /// The rules of the appearance a chain resolves to.
+    /// </summary>
+    internal PrimeNGAppearanceRules For(ThemeAppearance appearance) =>
+        appearance == ThemeAppearance.Dark ? Dark : Light;
+}

@@ -89,6 +89,13 @@ public class ThemePresetsShowCaseTests
         model.PreviewThemeId.ShouldBe("GalleryPreviewFixture");
         model.PreviewConfig!.Algorithms.ShouldBe([ThemeAlgorithm.Dark, ThemeAlgorithm.Compact]);
         model.PreviewConfig.Inherit.ShouldBeFalse();
+
+        // Plain light, non-compact mode resolves to the base definition itself, which keeps its own chain.
+        model.IsDark = false;
+        model.IsCompact = false;
+        model.PreviewThemeId.ShouldBe("GalleryPreviewFixture");
+        model.PreviewConfig!.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
+        model.PreviewConfig.Inherit.ShouldBeFalse();
     }
 
     [Fact]
@@ -120,8 +127,8 @@ public class ThemePresetsShowCaseTests
             ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorInfoBg).ShouldNotBe(Color.Parse("#123456"));
             foreach (var (dark, compact, suffix, color, background, height) in new[]
             {
-                (true, false, ".Dark", "#2FB685", "#09090B", 40),
-                (true, true, ".DarkCompact", "#2FB685", "#09090B", 36),
+                (true, false, ".Dark", "#34D399", "#09090B", 40),
+                (true, true, ".DarkCompact", "#34D399", "#09090B", 36),
                 (false, true, ".Compact", "#10B981", "#FFFFFF", 36),
                 (false, false, "", "#10B981", "#FFFFFF", 40)
             })
@@ -129,7 +136,9 @@ public class ThemePresetsShowCaseTests
                 model.IsDark = dark; model.IsCompact = compact; Pump();
                 model.SelectedPresetId.ShouldBe("PrimeNGAura");
                 model.PreviewThemeId.ShouldBe("PrimeNGAura" + suffix);
-                model.PreviewConfig!.Algorithms!.Contains(ThemeAlgorithm.Dark).ShouldBe(dark);
+                // A mode profile keeps its own chain (the PrimeNG Aura algorithms), not the built-in toggles.
+                model.PreviewConfig!.Algorithms![0].ShouldBe(new ThemeAlgorithm("PrimeNG", dark ? "Aura.Dark" : "Aura"));
+                model.PreviewConfig.Algorithms.Contains(ThemeAlgorithm.Compact).ShouldBe(compact);
                 AssertTokens(button, color, background, height, 500);
                 AssertIndependentProfile(button, (ThemeManager)manager, model.PreviewThemeId!);
                 ControlTokenAccessor.Capture(button).GetGlobal<double>(SharedTokenKind.ControlHeightSM).ShouldBe(compact ? 27 : 36);
@@ -245,9 +254,14 @@ public class ThemePresetsShowCaseTests
             XNamespace ns = "https://atomui.net/schemas/theme/v1";
             root.Name.ShouldBe(ns + "Theme");
             root.Attribute("Id")!.Value.ShouldBe("PrimeNGAura.DarkCompact");
-            Color.Parse(root.Element(ns + "Tokens")!.Elements().Single(token => token.Attribute("Name")!.Value == "ColorBgContainer").Attribute("Value")!.Value).ShouldBe(Color.Parse("#09090B"));
-            Enum.Parse<FontWeight>(root.Element(ns + "Controls")!.Elements().Single(control => control.Attribute("Id")!.Value == "Button")
-                .Element(ns + "Tokens")!.Elements().Single(token => token.Attribute("Name")!.Value == "FontWeight").Attribute("Value")!.Value).ShouldBe(FontWeight.Medium);
+            root.Attribute("Appearance")!.Value.ShouldBe("Dark");
+            // The Aura profiles carry the algorithm chain and seeds; colours and control values come from the
+            // PrimeNG algorithms, so the export has no Controls section.
+            root.Element(ns + "Algorithms")!.Elements()
+                .Select(element => ((string?)element.Attribute("Catalog"), element.Attribute("Id")!.Value))
+                .ShouldBe([("PrimeNG", "Aura.Dark"), ((string?)null, "Compact")]);
+            Color.Parse(root.Element(ns + "Tokens")!.Elements().Single(token => token.Attribute("Name")!.Value == "ColorPrimary").Attribute("Value")!.Value).ShouldBe(Color.Parse("#10B981"));
+            root.Element(ns + "Controls").ShouldBeNull();
             model.IsDark = false; Pump(); model.CopySucceeded.ShouldBeFalse();
         }
         finally { window.Close(); Pump(); }

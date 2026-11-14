@@ -22,7 +22,7 @@ Dialog 与 Notification 触发按钮。集合变化要同步本文。
 
 - 预设条只列出来自主题包的主题，不列用户目录主题；无主题包时只显示 DaybreakBlue 与 Gallery 自带色板主题。
 - 点击预设将对应主题的完整配置应用到预览区的 `ThemeConfigProvider`，不改变 Gallery 全局主题；全局主题切换仍在设置页。
-- 暗色、紧凑开关改写同一 Provider 的 `Algorithms`，与预设正交。
+- 暗色、紧凑开关选择同包的模式 profile，Provider 使用该 profile 自己的算法链（例如 `PrimeNG:Aura.Dark`）；只有缺少对应 profile 的主题才改写为内置 Dark / Compact 算法。
 - 页面切换预设时不重建控件树；主题事务保证预览区不出现新旧状态混合帧。
 - "复制主题"导出的是预览区 Provider 的有效配置，可直接放进用户主题目录。
 
@@ -42,13 +42,14 @@ Dialog 与 Notification 触发按钮。集合变化要同步本文。
 ## 模式 profile 与局部隔离
 
 同一编译主题包中，存在基础 ID 时，`.Dark`、`.Compact`、`.DarkCompact` 定义属于该基础预设族，
-预设条只显示基础入口。选择身份始终保持基础 ID；模式组合选择同包实际存在的 profile，缺失时使用基础主题与
-既有 Dark / Compact 算法。此规则不依赖厂商名称；图标映射是唯一按名称前缀区分的展示逻辑。
+预设条只显示基础入口。选择身份始终保持基础 ID；模式组合选择同包实际存在的 profile 并沿用它的算法链，缺失时使用
+基础主题与既有 Dark / Compact 算法。此规则不依赖厂商名称；图标映射是唯一按名称前缀区分的展示逻辑。
 
 `ThemeInfo` 和 `ThemeConfigProvider` 目前没有公开的包来源与局部 ThemeId 输入。Gallery 的内部适配器集中读取
 已提交编译 Catalog 的包切片及定义 revision，将完整声明的全局、控件和 Own Token 转为 `Inherit=false` 的
 既有 `ThemeConfig`；不会临时切换根主题。编译 Catalog 更新时清空配置缓存。该内部桥接的维护边界限定在
 Gallery，不扩展 Core 公开 API，也不在运行时读取 XML 或反射发现主题包。
 
-复制内容包含当前实际 profile ID、算法和完整局部声明，值经现有 Token formatter 规范化，再组成 XML v1。
+复制内容包含当前实际 profile ID、外观、算法和完整局部声明，值经现有 Token formatter 规范化，再组成 XML v1；
+没有控件级声明时不输出 `Controls`（XSD 要求其中至少有一个 `Control`）。
 例如 Aura 暗色紧凑模式复制为 `PrimeNGAura.DarkCompact`，重新读取会得到相同的算法派生结果。

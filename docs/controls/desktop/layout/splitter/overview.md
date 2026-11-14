@@ -144,7 +144,7 @@ Splitter 的运行时组合关系如下：
 | `SplitterPanelCollapsible` | public data model | 描述面板可折叠方向、显示策略和折叠尺寸。 |
 | `SplitterResizeEventArgs` | public event args | 暴露 resize 事件中的 handle index 和尺寸快照。 |
 | `SplitterDraggerDoubleClickedEventArgs` | public event args | 暴露双击的零基 handle index，不携带 internal handle。 |
-| `SplitterToken` | internal design token | 从 SharedToken 派生组件级视觉变量。 |
+| `SplitterToken` | public design token（供主题算法写入；应用经生成资源与主题配置定制） | 从 SharedToken 派生组件级视觉变量。 |
 
 集成关系：
 

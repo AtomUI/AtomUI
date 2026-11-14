@@ -4,7 +4,7 @@
 
 ## 1. 定位
 
-`WindowTitleBarToken` 是 scope id 为 `WindowTitleBar` 的 internal control token，源码位于 `src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs`。它从 `SharedToken` 计算标题栏和 caption button 的视觉变量，并通过生成的 `WindowTitleBarTokenResource` key 供 AXAML 使用。
+`WindowTitleBarToken` 是 scope id 为 `WindowTitleBar` 的公开 control token 类（主题算法的控件阶段可以写它），源码位于 `src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs`。它从 `SharedToken` 计算标题栏和 caption button 的视觉变量，并通过生成的 `WindowTitleBarTokenResource` key 供 AXAML 使用。
 
 Token 负责尺寸、间距、字体和状态颜色，不负责以下运行时语义：
 

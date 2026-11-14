@@ -117,7 +117,7 @@ Cascader 与 TreeSelect 目前仍复用部分 SelectToken：多选内容 padding
 
 ## 5. 兼容性要求
 
-SelectToken 属于 Select 主题契约。即使 `SelectToken` 是 internal 类型，生成的 `SelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+SelectToken 属于 Select 主题契约。`SelectToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `SelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 
@@ -152,7 +152,7 @@ Token 变更要求：
 
 | Token | 裁决 |
 | --- | --- |
-| `OptionPadding` | Active：候选行内边距（PrimeNG 预设 `12,8`）。 |
+| `OptionPadding` | Active：候选行内边距（PrimeNG 预设由算法的 Select 控件阶段从尺寸 Token 计算，Aura 为 `12,8`）。 |
 | `SelectAffixPadding` | Reserved：`antd Select selectAffixPadding`，前缀由 `MultiModePrefixIndent*` 对齐、后缀位于输入帧 padding 内，暂无独立的前后缀内边距。 |
 | `FixedItemMargin` | Reserved：`antd INTERNAL_FIXED_ITEM_MARGIN`，多选标签由标签面板间距与 `MultipleItemHeight*` 布局，暂不施加标签外边距。 |
 

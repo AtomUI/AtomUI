@@ -98,7 +98,7 @@ AtomUI 的控件算法必须能表达四种状态：
 
 算法配置的领域模型是 `Unspecified / Disabled / Global / Custom` 四态策略。可空 `bool` 加自定义算法列表
 虽然可以间接编码这些状态，但会把一个领域值拆成两个耦合字段，并产生布尔值与自定义列表同时声明等无效
-组合。因此配置规范化后必须使用 `ControlAlgorithmMode` 枚举；Custom 的有序 `ThemeAlgorithm` 枚举值作为不可变
+组合。因此配置规范化后必须使用 `ControlAlgorithmMode` 枚举；Custom 的有序 `ThemeAlgorithm` 身份作为不可变
 payload 保存，并且只允许在 Mode 为 `Custom` 时非空。`bool` 或 `bool?` 不能作为内部真源。
 
 `ThemeConfig`、`ControlThemeConfig` 及其全部集合在构造完成后不可修改。公开构造器或
@@ -221,9 +221,11 @@ new ThemeConfigBuilder()
     .Build();
 ```
 
-`ThemeConfig.Algorithms`、`ControlThemeConfig.Algorithms` 和 `ThemeState.Algorithms` 都是只读枚举列表。系统不提供
-字符串 Builder 重载，也不在配置、状态、descriptor、registry 或 cache key 中保存字符串算法身份。未定义的强制
-转换枚举值由 Normalizer 拒绝。
+`ThemeAlgorithm` 是 `(Catalog, Id)` 只读结构体，内置算法通过 `ThemeAlgorithm.Default`、`Dark`、`Compact` 取得，
+包里的算法通过生成的 `<Catalog>Algorithms` 类（例如 `PrimeNGAlgorithms.AuraDark`）或 `new ThemeAlgorithm(catalog, id)`
+取得。`ThemeConfig.Algorithms`、`ControlThemeConfig.Algorithms` 和 `ThemeState.Algorithms` 都是只读身份列表。系统不提供
+`"Catalog:Id"` 字符串 Builder 重载；配置、状态、registry 与 cache key 以结构体为键，按 `Catalog`、`Id` 序数排序。
+`default(ThemeAlgorithm)` 与未注册的身份由 Normalizer 拒绝（`ATMTHM4004`）。
 
 `ThemeConfigProvider` 是轻量局部 ThemeVariant 宿主，只公开一个 `Config` 和继承的内容子节点。旧的
 `SharedTokenSetters`、`ControlTokenInfoSetters`、字符串算法集合以及 Token 查询属性不属于新架构。
@@ -293,7 +295,7 @@ Global Token snapshot。
 > 本节注册与资产模型对应本地已实现的 TypeMap 契约，验证与发布状态见 [AOT 与裁剪架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 `ThemeSchemaRegistry` 在应用主题初始化前一次性构建。Control、Token 和主题资产只来自源生成结果；
-主题算法可以通过显式 `ThemeAlgorithmDescriptor` 注册：
+主题算法与控件阶段通过显式描述符注册：
 
 ```text
 ThemeSchemaRegistry
@@ -303,38 +305,52 @@ ThemeSchemaRegistry
 |   \-- exact CLR type, factory, own token schema, evaluator, resource projector
 +-- ControlThemeAssetManifest
 |   \-- asset identity, exported themes, required Token owners, semantic bindings, resource order
-\-- ThemeAlgorithmDescriptor[ThemeAlgorithm]
-    \-- revision, evaluator, AOT factory, appearance effect
++-- ThemeAlgorithmDescriptor[ThemeAlgorithm (Catalog, Id)]
+|   \-- revision, AOT factory, appearance effect
+\-- ControlTokenAlgorithmDescriptor[(ThemeAlgorithm, ControlTokenIdentity)]
+    \-- revision, one instance of the control stage class
 ```
 
-每个 `ThemeAlgorithmDescriptor` 必须声明稳定的 `ThemeAlgorithm` 枚举值和显式 revision/version。算法实现、默认
-参数、依赖 Token 或输出语义发生变化时必须提升 revision，不能只保留相同枚举值让旧缓存继续命中。当前封闭集合
-只有 `Default`、`Dark` 和 `Compact`；不支持第三方自由字符串算法 ID。
+算法身份是开放的 `(Catalog, Id)`。Core 的三个内置算法 `AtomUI:Default`、`AtomUI:Dark`、`AtomUI:Compact` 是这套契约的
+第一批实现，不享有特殊通道。算法类用 `[ThemeAlgorithm(catalog, id, revision, appearanceEffect)]` 声明，控件阶段类用
+`[ControlTokenAlgorithm(catalog, id, revision)]` 声明；生成器为每个声明了二者之一的包产出
+`GeneratedThemeAlgorithmRegistration.Register(builder)`，经 `IThemeManagerBuilder.AddThemeAlgorithms` 与
+`AddControlTokenAlgorithms` 进入注册表。启动索引、仅含全局 Token 的启动注册表与运行时追加包三条路径都携带包算法。
+运行时不反射扫描算法，也不建立字符串注册路径；控件阶段描述符由泛型约束构造（`ControlTokenAlgorithmDescriptor.Create<TToken, TAlgorithm>`），
+不使用 `Activator`。重复的算法身份报 `Duplicate algorithm identity 'Catalog:Id'.`，同一（算法，控件）的两个控件阶段报
+`Duplicate control algorithm '{algorithm}' for control '{control}'.`。算法或控件未注册的控件阶段保留在注册表里，但
+不会被调用。
 
-算法实现使用 `ThemeAlgorithmAttribute(ThemeAlgorithm, revision, appearanceEffect)` 声明元数据。源生成器读取
-Roslyn enum typed constant 并生成枚举 Descriptor 构造表达式；运行时不反射扫描算法，也不建立字符串注册路径。
-增加算法时必须追加新的显式枚举值，并同步算法实现、Attribute、XML XSD 枚举和契约测试。
+每个 descriptor 必须声明显式 revision。算法实现、默认参数、依赖 Token 或输出语义发生变化时必须提升 revision，
+不能只保留相同身份让旧缓存继续命中。
 
-算法 descriptor 的求值契约固定为：
+算法有三个阶段：
 
 ```text
-Evaluate(effectiveSeed, previousMap?) -> nextMap
+Map     (required)  IThemeAlgorithm.Evaluate(effectiveSeed, previousMap?, nextMap)
+Alias   (optional)  IThemeAliasAlgorithm.EvaluateAlias(in context, token)       same class as Map
+Control (optional)  IControlTokenAlgorithm<TToken>.EvaluateGlobal / EvaluateOwn one class per control
 ```
 
-同一算法链中的 `effectiveSeed` 引用和值保持不变；第一个算法接收 `previousMap=null`，后续算法接收前一个算法
-输出的 Map。算法不得修改 Seed 或 previous Map，必须返回新的不可变语义结果或只在本次编译 workspace 中写入
-目标 builder。Dark、Compact 在没有 previous Map 时可以内部调用 Default，但这种 fallback 属于算法实现，
-不能改变通用链契约。
+同一算法链中的 `effectiveSeed` 引用和值保持不变；编译器为每个算法新建 `nextMap`（复制自 `previousMap`，第一个算法
+复制自 Seed），第一个算法接收 `previousMap=null`。算法不得修改 Seed 或 previous Map。Dark、Compact 在没有
+previous Map 时可以内部调用 Default，但这种 fallback 属于算法实现，不能改变通用链契约。三个阶段可以写什么、
+`ThemeAlgorithmContext` 的含义与作者须遵守的约束见[编写主题算法](../../../guides/theming/writing-theme-algorithms.md)。
 
 `ThemeSchemaRegistry.Revision` 根据排序后的完整 descriptor schema 确定性计算，输入至少包含 Global Token
 schema、Control identity、Control CLR type、Own Token name/kind/stage/value type/resource key schema、主题资产
-结构、算法枚举值/revision 及其外观声明。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
+结构、算法 `Catalog`/`Id`/revision 及其外观声明，以及每个控件阶段的（算法身份，控件身份，revision）。字符串一律
+经确定性指纹构建器逐字符计入。没有注册任何包算法与控件阶段时，修订号与只有 Core 算法时相同。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
 revision。Control Own Token 属性声明在终端类型还是显式标记的抽象定义层、定义层所在程序集和继承深度也不进入
 revision。Own Token 的 Active / Reserved 分类与全局 Token 消费图是生成器的分析产物，不进入 schema 和 revision。
 注册顺序不影响 revision；任何会改变配置绑定、Token 类型或资源投影结构的 descriptor 变化都必须改变 revision。
 
-Registry 在首个 snapshot 编译前冻结。Manager 构建完成后不能追加 Token、Control、算法或主题资产
-descriptor；可选控件包必须在 `UseAtomUI` Builder 阶段完成显式注册。
+Registry 在首个 snapshot 编译前冻结，已提交的 registry 不再修改。可选控件包、主题包与算法包在 `UseAtomUI` Builder
+阶段显式注册；启动后经 `LoadPackages` 追加的包生成一份新的 registry，规则是追加不得改变已提交的编译结果：
+追加可以带来新算法；控件阶段只有在它的算法或它的控件是同一次追加新注册的时才被接受，为已注册的算法和已注册的
+控件补控件阶段会被拒绝（`Package append cannot add a control algorithm for the already registered algorithm
+'{algorithm}' and control '{control}'.`），整次追加不提交。算法与控件都未注册的「休眠」控件阶段与启动时一样被接受
+并保留，代价是身份写错时没有诊断。
 
 Token schema slot 与冻结时绑定的 Control slot 只保证在同一 registry revision 生命周期内稳定。不同 revision 可以重新
 分配 slot，公开协议、持久化配置和跨版本缓存不得依赖整数 slot 不变，而应使用稳定 identity 并在绑定后解析
@@ -445,7 +461,7 @@ TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官�
 
 `ThemeDefinitionBinder` 负责：
 
-- 使用 `ThemeSchemaRegistry` 解析 Token，并按 Reader 已转换的 `ThemeAlgorithm` 枚举绑定算法 descriptor。
+- 使用 `ThemeSchemaRegistry` 解析 Token，并按 Reader 已转换的 `ThemeAlgorithm` 身份绑定算法 descriptor。
 - 将字符串值一次性转换为目标类型。
 - 校验未知 Token、未知 Control、算法冲突、Appearance 一致性和跨字段语义。
 - 输出不可变、typed `ThemeDefinition` 和结构化 diagnostics。
@@ -601,10 +617,10 @@ Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改
 ThemeCompileInput
   -> merge effective config
   -> initialize effective Seed Token
-  -> run ordered Evaluate(seed, previousMap) algorithms
+  -> run ordered Evaluate(seed, previousMap, nextMap) algorithms (Map stage)
   -> apply Map overrides
-  -> format Alias Token
-  -> apply Alias overrides and AtomUI final normalization
+  -> Alias stage: explicit Alias values, Ant Alias formulas, algorithm Alias stages
+  -> AtomUI final normalization
   -> resolve each registered Control slot state (cheap config comparison)
   -> freeze global token values and resources
   -> ThemeSnapshot (control slots compile on first query)
@@ -614,36 +630,52 @@ ThemeCompileInput
 公开 API 返回。惰性 cell 持有独立编译 source；全局结果复用时，仅首次实际编译控件才恢复可变 builder，
 不捕获历史 snapshot。详见[惰性物化设计](lazy-materialization.md)。
 
+优先级从低到高固定为：**Ant 默认公式 < 算法 < 主题显式值（XML 或 `ThemeConfig`）< 更内层作用域的显式值**。
+算法写入的值与显式值一样参与派生，但用户显式设置的字段不被算法覆盖。
+
 全局计算顺序固定为：
 
 1. 从 AtomUI library Seed defaults、ThemeDefinition 和有效配置构造唯一的 effective Seed。
-2. 将同一 effective Seed 依次传给算法链；第一个算法的 previous Map 为空，后续算法接收前序 Map。
+2. 将同一 effective Seed 依次传给算法链的 Map 阶段；第一个算法的 previous Map 为空，后续算法接收前序 Map。
 3. 对最终 Map 应用显式 Map Token override。
-4. 由 Map 生成 Alias Token，再应用显式 Alias Token override。
+4. Alias 阶段，按下文的三步流程执行：先标记并写入显式 Alias 值，运行 `CalculateAliasTokenValues()`，再写一次
+   显式值，使派生 Alias 跟随显式值；链上实现了 `IThemeAliasAlgorithm` 的算法按链的顺序运行，后者覆盖前者。
 5. 执行 AtomUI 最终语义规范化。`MotionEnabled=false` 时，Motion 服务被禁用且全部标准 duration Token 强制为
    `TimeSpan.Zero`；`WaveEnabled=false` 时 Wave 行为不创建动画。该后置条件不依赖单个控件是否正确消费时长。
 
 每个 Control 的计算顺序为：
 
 1. 以全局最终 Token 为基线，接受并叠加该 Control 配置中的任意已注册 Global Token 覆盖。
-2. `Disabled` 时只保留直接覆盖，不重新派生；`Global` 或 `Custom` 时，从 Control effective Seed 按相应算法链
-   重新生成 Map 和 Alias。
+2. `Disabled` 时只保留直接覆盖，不重新派生；`Global` 或 `Custom` 时，以根主题编译后的全局值为种子，按相应算法链
+   重新生成 Map 和 Alias（含算法的 Alias 阶段）。
 3. 在重新派生后应用该 Control 的 Map、Alias override 和 Motion 最终规范化。
-4. 把该 Control 配置中的显式 Own Token override 写入 builder，并为这些字段置显式位。
-5. 使用 Control 的有效全局 Token 计算其余 Own Token 默认值；evaluator 通过 `IsExplicit(kind)` 判断字段是否已被
-   显式设置，不得以 `double.NaN` 等哨兵值判断。
-6. 再次写入全部显式 Own Token override；无论 evaluator 如何写字段，显式值最终胜出。
-7. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它只提供给该 Control evaluator，不
+4. 控件阶段的 `EvaluateGlobal`：链上关联了该控件的每个控件阶段按链的顺序在该控件自己的全局 Token 副本上运行，写入
+   直接生效，不重跑 Map 和 Alias。在未指定与 `Disabled` 模式下，阶段写过的 Token 中，作用域有效配置显式设置了的
+   Map/Alias Token 写回主题显式值（主题显式值胜过 `EvaluateGlobal`）；Seed Token 是已被 Map 阶段消费的输入，不写回；
+   `Global` 与 `Custom` 模式不写回（见下文的既有例外）。随后再写一次该控件的全局
+   覆盖并做最终规范化。`Custom` 用控件自己的链，其余三种
+   模式用作用域链。没有 Own Token 类的控件没有控件阶段。
+5. Own Token 按三步流程执行：显式 Own Token override 写入 builder 并置显式位，使用 Control 的有效全局 Token 运行
+   `CalculateTokenValues`，再次写入全部显式值；链上有控件阶段时，再运行各控件阶段的 `EvaluateOwn`。evaluator 通过
+   `IsExplicit(kind)` 判断字段是否已被显式设置，不得以 `double.NaN` 等哨兵值判断；无论 evaluator 与算法如何写字段，
+   显式值最终胜出。
+6. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它提供给该 Control evaluator 和控件阶段，不
    修改 ThemeContext appearance。
-8. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。
+7. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。`EvaluateGlobal` 写过任何
+   Token 的控件不再与根共享全局资源。
+
+`Global` 与 `Custom` 模式有一个既有例外：主题在根上显式设置的 Map 与 Alias 值不参与第 2 步的重新推导，在该控件
+作用域里会被默认公式或算法的 Alias 阶段取代；「算法 < 主题显式值」在这两种模式下只对该控件自己的覆盖成立。而且
+算法链是在已推导过的种子上重跑的，对自身输出不幂等的算法（PrimeNG 预设算法、Ant 的 Dark 算法）会让该控件的颜色
+再偏一档。是否让根显式值参与重新推导，需要单独决定。
 
 Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
 `IsDark`。
 
-第 4 到第 6 步固定为 `MarkExplicit(config.OwnTokens)` → `Evaluate(builder, appearance)` → `ApplyExplicit()`。
+第 5 步的默认部分固定为 `MarkExplicit(config.OwnTokens)` → `Evaluate(builder, appearance)` → `ApplyExplicit()`。
 求值器对字段的默认赋值是无条件的，所以被其他字段读取的基字段（例如 DataGrid 的 `BorderColor`）必须以
-`if (!IsExplicit(kind)) Field = …;` 守卫默认赋值；只被消费的字段不需要守卫，第 6 步已保证其最终值。这样内部派生字段
-（`TableBorderColor = BorderColor`）在第 5 步读到的就是显式值，用户覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
+`if (!IsExplicit(kind)) Field = …;` 守卫默认赋值；只被消费的字段不需要守卫，最后的 `ApplyExplicit()` 已保证其最终值。
+这样内部派生字段（`TableBorderColor = BorderColor`）在 `Evaluate` 中读到的就是显式值，用户覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
 仍是唯一默认计算入口。
 
 控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
@@ -656,6 +688,71 @@ Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Glo
 
 任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
 全局维度（Seed/算法链/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。
+
+### 7.1 可选阶段的三步流程
+
+全局 Alias 阶段与控件 Own Token 阶段共用一个流程（`StagedTokenEvaluation`）：
+
+1. 标记并写入用户显式值，运行默认计算，再写一次显式值。链上没有算法实现该阶段时到此结束；内置三个算法没有可选
+   阶段，内置主题只走这一步，不创建对象、不打开记账、默认公式只运行一次。
+2. 对链上每个实现了该阶段的算法分别打开写入记账，运行该阶段，在 `finally` 中关闭记账。记下的属性名经 Token
+   descriptor 解析成槽位，不属于本阶段的写入立即报 `StageBoundary`。没有写入时结束。
+3. 把算法写过的槽位与用户显式槽位一起标记为显式，写一次显式值，重跑默认计算，再运行各算法，最后写一次显式值。
+   与上一轮比较写入的槽位与值，不同则并入新槽位再来一轮；第 3 轮仍不同时报 `Unstable`。
+
+显式标记在所有出口（含异常）清除，不随 builder 复制泄漏。`EvaluateOwn` 运行期间同时记录有效全局 Token 的写入，
+有写入即报 `StageBoundary`。
+
+违反阶段契约时抛 `ThemeAlgorithmContractException`（`Violation` 为 `StageBoundary`、`Unstable` 或 `Failed`）；
+算法的 Map 阶段（含创建实例）抛出的异常同样包装为 `Failed`，内置算法也一样。全局 Map 与 Alias 阶段的违规让整次
+编译失败，异常放进编译结果；控件阶段的违规在该控件槽位首次被查询时抛出（见上文的控件槽位
+编译契约），不是编译期诊断。异常文本与修正方法见[编写主题算法](../../../guides/theming/writing-theme-algorithms.md#9-违反契约时会看到什么)。
+
+### 7.2 Token 写入记账与性能
+
+Token 对象只在编译期间存在；渲染与资源查找读冻结后的表，不经过 Token 属性。为了知道算法写了哪些字段，
+`DesignToken` 的 255 个全局 Token 属性和全部控件 Token 属性是 partial 属性，生成的另一半 getter 为 `get => field`，
+setter 写入字段后调用 `RecordWrite(nameof(P))`。`AbstractDesignToken` 只多一个可空引用字段：为空表示不记账，此时
+`RecordWrite` 只做一次空引用判断（内联），真正记账的冷路径放在禁止内联的独立方法里；记录列表在第一次记账时才
+分配。每个 Token 实例因此多 8 字节，不记账时不分配内存。记账只在算法的 Alias 与控件阶段运行期间打开。
+
+实测代价（2026-11-13，与改造前的树对比，默认 Ant 主题；编译与切换在 `DOTNET_TieredCompilation=0` 下测量，启动采样使用默认分层编译）：
+
+- 冷编译按门槛统计量（25 分位数）慢 2.3%–2.7%，约 0.018 毫秒；按中位数慢 3.4%–3.7%。这超过了设计时定的
+  门槛（差异落在基线波动内且不超过 2%）。
+- 启动耗时按字面规则（新树中位数落在基线取值范围内）没有通过：越界大多在更快一侧；变慢一侧有两项，普通窗口的
+  预编译分段高出基线最大值 0.005 毫秒，带启动屏的提交分段高出基线最大值 0.17 毫秒（差值 0.49 毫秒，小于基线自身
+  的波动）。
+- 明暗切换、编译分配（每个 Token 实例 +8 字节）、程序集与 NativeAOT 体积、编译结果哈希都在门槛内。
+- 一次冷编译约 31,600 次属性写入，94% 是编译器内部对全局 Token 的逐属性复制（117 份副本 × 255 个属性），每次都
+  经过带判断的 setter，这是剩余差距的主要来源。
+
+项目负责人决定按这个结果通过，这是对门槛的一次明确放宽，门槛本身没有达到。之后的工作以该次验收时的树为性能
+基线，不得在此基础上再退化。已知但未采用的改进：把全局 Token 的复制改成整体克隆，使那 94% 的写入不再经过 setter；
+未实测。详细数据见规格 `docs/superpowers/specs/2026-11-13-theme-algorithm-strategy-design.md` 第 4.11 节。
+
+上述决定之后加入的全部内容（Alias 阶段、控件阶段及相关代码）另做了一次最终复测（2026-11-14，同一台机器、同一套
+流程，基线为提交 `3a87bba25`，即接受记账代价时的树）：
+
+- 内置主题（Default / Dark / Compact 三条链）：冷编译按 25 分位数为 −0.87% / −1.24% / −1.21%，在波动范围内；但当天
+  这台机器冷编译的分辨力只有 8%–9%（上一次测量时为 2.3%–3.0%），这批数据分辨不出 2% 的差异。主题切换往返未缓存
+  +0.37%（按中位数 +0.18%），缓存 +0.71%，在波动范围内（分辨力 2.1%–2.8%）。每次冷编译的分配逐字节不变（1,138,032 /
+  1,143,224 / 1,138,416 字节），编译结果的值哈希不变。计时批次跑在编译器最后一次不改变行为的重构之前；重构后重新核对了
+  分配字节数与值哈希，二者相同。
+- 启动：第一次测量发现即使没有注册任何 Alias 或控件阶段，启动也多出约 1 毫秒（普通窗口的预编译分段 +1.0 到 +1.3 毫秒，
+  带启动屏的提交分段 +1.1 到 +1.6 毫秒），原因是控件阶段注册表的代码在空表上运行也要即时编译（多 JIT 了 11 个方法，
+  其中有以值元组为键的泛型字典实例化）。该问题已在发布前修复：没有注册控件阶段时不再进入这段代码，只供阶段使用的代码也
+  移出了每次都执行的方法。修复后启动期间 JIT 的方法集合与基线相同（数量相同，没有控件阶段的方法），两个分段指标在两批
+  测量中都落在基线取值范围内（普通窗口预编译分段 −0.3 毫秒与 +0.8 毫秒，带启动屏的提交分段 +0.8 毫秒与 −0.5 毫秒；两批
+  符号相反，即剩余差异低于机器约 1 毫秒的分辨力）。启动期间 JIT 的 IL 总量比基线多 579 字节。启动工具不加载 Gallery 和
+  PrimeNG 包，因此注册了控件阶段的应用的启动耗时没有测量。
+- 体积：`AtomUI.Core.dll` 自该基线由 1,125,888 字节增至 1,148,928 字节（+2.05%），增加的是 Alias 阶段与控件阶段的
+  代码。这超过了计划定的 1% 程序集体积门槛，记为未达到；是否接受由项目负责人决定，尚未决定。其他受门槛约束的程序集
+  增长不超过 0.10%。NativeAOT Gallery 可执行文件小 0.09%（93,237,496 → 93,156,072 字节，在启动修复之前测量）：PrimeNG
+  包主题数据减少的量多于新增代码。
+- 使用阶段的主题的代价（只记录，不设门槛）：同一进程内 PrimeNGAura 冷编译约 0.88 毫秒，内置默认主题约 0.74 毫秒
+  （+18%），分配 1,249,256 字节对 1,138,032 字节（+9.8%）；PrimeNGAura.Dark 约 0.89 毫秒（+20%），1,254,568 字节
+  （+10.2%）。只注册 PrimeNG 的算法与控件阶段而不使用时，内置主题的分配仍正好是 1,138,032 字节。
 
 ## 8. ThemeSnapshot
 
@@ -1455,8 +1552,9 @@ Child snapshot C (Button override only)
 
 - 完整 snapshot cache：复用完全等价的有效主题。
 - Control compilation cache：以 global token 结构化 key、Control identity、Control config 结构化 key、
-  algorithm `(id, revision)` 和 registry revision 为 key，复用跨作用域的 Control 计算结果；fingerprint 只用于
-  候选定位，命中后仍执行结构相等比较。
+  算法 descriptor（实例身份、revision、appearance effect）和 registry revision 为 key，复用跨作用域的 Control 计算
+  结果；链上有该控件的控件阶段时，key 另含按链顺序的各阶段 revision 与描述符实例身份，没有时 key 与此前逐位相同。
+  fingerprint 只用于候选定位，命中后仍执行结构相等比较。
 
 两级缓存共用容量策略，失败和取消结果不缓存。
 
@@ -1571,8 +1669,9 @@ snapshot 视为内存泄漏。
   `*.theme.xml`，不反射发现 Resolver、Theme 或 Token。
 - 手动刷新不使用 `FileSystemWatcher`、动态代码生成或运行时类型构造。
 - 第三方 Control 的 identity、Token descriptor 和资源投影必须由 AtomUI generator 生成并通过真实包级入口注册；默认
-  Package 粒度必须完整保留内部 Control 和主题资源。算法 descriptor 只使用 `ThemeAlgorithm` 的封闭成员，并提供显式
-  revision/version。
+  Package 粒度必须完整保留内部 Control 和主题资源。算法 descriptor 由生成的注册类以类型化工厂构造，控件阶段
+  descriptor 由 `ControlTokenAlgorithmDescriptor.Create<TToken, TAlgorithm>` 的泛型约束构造，都不使用反射或
+  `Activator`，并提供显式 revision。
 - 生成器测试必须验证 exact CLR type/identity、Own Token、统一强类型 key、常量时间 key 映射、资源投影、资产
   manifest 和输出稳定性，并限制生成源码体积回归。
 - 主题系统完成后必须执行真实 Gallery NativeAOT publish，不能只依赖 analyzer。
@@ -1612,7 +1711,7 @@ Theme/
 +-- ThemeInfo.cs                      可用主题元数据
 |
 +-- Algorithms/
-|   +-- 算法 descriptor、attribute、接口与内置算法
+|   +-- 算法身份、attribute、三个阶段的接口、ThemeAlgorithmContext、契约异常与内置算法
 |   +-- Default、Dark、Compact 计算器
 |   \-- 调色板、颜色映射和算法计算辅助
 |
@@ -1631,7 +1730,7 @@ Theme/
 +-- Schema/
 |   +-- ThemeSchemaRegistry
 |   +-- TokenDescriptor、ControlTokenDescriptor
-|   +-- ThemeAlgorithmDescriptor
+|   +-- ThemeAlgorithmDescriptor、ControlTokenAlgorithmDescriptor
 |   +-- ControlThemeAssetDescriptor 和 asset manifest contracts
 |   \-- identity、stage、parser 和 resource projector contracts
 |

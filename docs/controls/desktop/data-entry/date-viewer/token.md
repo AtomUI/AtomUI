@@ -7,7 +7,7 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 ## 1. 定位
 
 [DateViewerToken.cs](../../../../../src/AtomUI.Desktop.Controls/DateViewer/DateViewerToken.cs)通过 ControlDesignToken
-注册并生成 DateViewerTokenResource/TokenKind。Token 类是 internal，应用使用生成资源入口；
+注册并生成 DateViewerTokenResource/TokenKind。Token 类是公开类（供主题算法的控件阶段写入），应用仍使用生成资源入口；
 公共面板不依赖 DatePicker Token。DateViewer 与 RangeDateViewer 共享同一组资源。
 
 ## 2. Token 分类

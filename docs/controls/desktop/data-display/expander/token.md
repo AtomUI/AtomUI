@@ -107,7 +107,7 @@ Collapse 拥有独立的 CollapseToken 和多面板布局模型。Expander 不�
 
 ## 5. 兼容性要求
 
-ExpanderToken 属于 Expander 主题契约。即使 `ExpanderToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+ExpanderToken 属于 Expander 主题契约。`ExpanderToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

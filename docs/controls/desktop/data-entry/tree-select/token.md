@@ -66,7 +66,7 @@ TreeSelectToken 直接影响 TreeSelect。TreeSelect 还复用以下 Token 系�
 
 ## 5. 兼容性要求
 
-TreeSelectToken 属于 TreeSelect 主题契约。即使 `TreeSelectToken` 是 internal 类型，生成的 `TreeSelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+TreeSelectToken 属于 TreeSelect 主题契约。`TreeSelectToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `TreeSelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

@@ -121,7 +121,7 @@ TextAreaToken 影响以下控件或主题：
 
 ## 5. 兼容性要求
 
-TextBoxToken、LineEditToken 与 TextAreaToken 属于输入控件家族的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+TextBoxToken、LineEditToken 与 TextAreaToken 属于输入控件家族的主题契约。这三个 Token 类是公开类，主题算法的控件阶段会直接写它们的属性，因此类型本身、生成的 TokenKind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

@@ -53,8 +53,9 @@ Modal 的控件专项模型通过 Theme 消费 Token：
   选择作用域上下文的方式，连同 RED 测试作为后续任务（见 [runtime.md §11](../../../../architecture/systems/theming/runtime.md)）。
 - 最大化的 Overlay surface 通过 `^[IsDialogMaximized=True]` 状态 Setter 去掉圆角，不再由 presenter 写本地值；恢复后回到主题圆角。
 - `OverlayDialogResizer` 的 12 处尺寸字面量是透明拖拽热区的布局常量，标注 `<!-- layout -->`。
-- 主题包定制（PrimeNG 预设）：Dialog 圆角经 `Controls[Dialog].BorderRadiusLG`，正文内边距 `ContentPadding`，标题字号
-  `HeaderFontSize`，标题字重 `FontWeightStrong`，均有生效测试。
+- 主题包定制（PrimeNG 预设）：由 PrimeNG 算法的 Dialog 控件阶段写入——Dialog 作用域的 `BorderRadiusLG`，
+  `HeaderPadding` / `ContentPadding` / `WindowContentPadding` / `FooterPadding`，标题字号 `HeaderFontSize`
+  （`FontSizeXL`）；标题字重沿用全局 `FontWeightStrong`。这些 Token 均有生效测试。
 
 MessageBox 具有独立的完整 surface Own，MinWidth 默认410 且为整框语义（Dialog 默认200 为正文 viewport 基线，框默认 248），StyleIconSize 为 MessageBox 专属。Window/Overlay surface 都显式跟随真实 Dialog/MessageBox owner；原生窗口装饰继续使用 Window 身份。
 

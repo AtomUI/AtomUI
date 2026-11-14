@@ -41,7 +41,7 @@
 
 - `Message`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MessageCard`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `MessageCardToken`：internal 控件 Token scope，负责从全局 token 派生控件语义变量。
+- `MessageCardToken`：控件 Token scope（公开类，供主题算法的控件阶段写入），负责从全局 token 派生控件语义变量。
 - `WindowMessageManager`：拥有稳定卡片集合、public Stack 配置、TopLevel host、生命周期调度与用户回调清理。
 - `WindowFeedbackLayer`：作为窗口反馈 manager 的宿主，按最近成功提交的 `Show` 原子移动直接 manager 子项；不拥有卡片、
   scheduler 或用户回调。

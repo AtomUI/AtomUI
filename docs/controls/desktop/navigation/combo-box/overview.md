@@ -56,7 +56,7 @@ ComboBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 
 主要公开类型与枚举：
 
-- 类型：`ComboBox`、`ComboBoxItem`。`ComboBoxHandle`、`ComboBoxTextBox`、`ComboBoxToken` 为 internal 协作类型，不是公共契约。
+- 类型：`ComboBox`、`ComboBoxItem`。`ComboBoxHandle`、`ComboBoxTextBox` 为 internal 协作类型，不是公共契约；`ComboBoxToken` 是公开类，只供主题算法的控件阶段写入，应用通过生成资源与主题配置定制，不直接使用它。
 - 枚举：无。
 
 稳定 template part：

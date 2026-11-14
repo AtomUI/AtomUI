@@ -131,7 +131,7 @@ SegmentedToken 只直接影响 Segmented 及其 item：
 
 ## 5. 兼容性要求
 
-SegmentedToken 属于 Segmented 主题契约。即使 `SegmentedToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+SegmentedToken 属于 Segmented 主题契约。`SegmentedToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

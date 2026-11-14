@@ -8,7 +8,7 @@ Notification Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 当前 Token scope：
 
-- internal `NotificationCardToken`，scope id 为 `NotificationCard`，源码位于 `src/AtomUI.Desktop.Controls/Notifications/NotificationCardToken.cs`。
+- `NotificationCardToken`（公开类，供主题算法的控件阶段写入），scope id 为 `NotificationCard`，源码位于 `src/AtomUI.Desktop.Controls/Notifications/NotificationCardToken.cs`。
 
 ## 2. Token 分类
 

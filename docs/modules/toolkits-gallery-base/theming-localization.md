@@ -161,10 +161,21 @@ Own Token 类只在 Control 存在独有设计值时创建，并由 AtomUI gener
 
 ```csharp
 [ControlDesignToken]
-internal sealed class ShowCaseItemToken : AbstractControlDesignToken
+internal sealed partial class ShowCaseItemToken : AbstractControlDesignToken
 {
+    public partial Thickness CardPadding { get; set; }
+
+    protected override void CalculateTokenValues(bool isDarkMode)
+    {
+        base.CalculateTokenValues(isDarkMode);
+        CardPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 5);
+    }
 }
 ```
+
+GalleryBase 的 Token 类保持 `internal`，但与 AtomUI 控件包一样必须是 `partial` 类、Token 属性必须是 partial 属性
+（实现部分由生成器产出，否则报 `ATOMUIGEN049`），`CalculateTokenValues` 用 `protected override`。因为是 `internal`，
+其他程序集的主题算法不能为 GalleryBase 控件写控件阶段。
 
 `[ControlDesignToken]` 只标记 Own Token 类型，不携带 Control 类型、identity 或 ID。禁止泛型
 `[ControlDesignToken<TControl>]` 和手写 ID。即使某个 GalleryBase Control 没有 Own Token，生成器仍为它生成独立

@@ -3,6 +3,13 @@
 本目录按版本维护公共 API 变化和迁移示例。正式发布摘要继续由仓库根目录的 `CHANGELOG.md` 与
 `CHANGELOG.zh-CN.md` 维护。
 
+## Unreleased
+
+- [Theme algorithm strategy: API changes](unreleased-theme-algorithms-api-changes.md)
+- [主题算法策略化：API 变更](unreleased-theme-algorithms-api-changes.zh-CN.md)
+
+发布时并入该版本的 `<version>-api-changes` 文档。
+
 ## 6.2.14
 
 - [API Change Examples](6.2.14-api-changes.md)

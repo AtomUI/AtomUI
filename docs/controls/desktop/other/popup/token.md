@@ -6,7 +6,7 @@
 
 ## 1. Popup 专属 Token
 
-`PopupToken` 是 internal control token，服务 Popup frame 和多个 Popup-bearing 控件：
+`PopupToken` 是公开的 control token 类（主题算法的控件阶段可以写它；应用仍经生成资源与主题配置定制），服务 Popup frame 和多个 Popup-bearing 控件：
 
 | Token | 派生来源 | 语义与消费者 |
 | --- | --- | --- |

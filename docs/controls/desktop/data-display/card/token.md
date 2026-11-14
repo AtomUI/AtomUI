@@ -149,7 +149,7 @@ CardToken 不应被其他 Data Display 控件直接复用。若多个控件需�
 
 ## 5. 兼容性要求
 
-CardToken 属于 Card 主题契约。即使 `CardToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+CardToken 属于 Card 主题契约。`CardToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

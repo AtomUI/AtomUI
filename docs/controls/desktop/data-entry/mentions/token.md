@@ -70,7 +70,7 @@ MentionsToken 只影响 Mentions 候选弹层，不直接影响 AutoComplete、S
 
 ## 5. 兼容性要求
 
-MentionsToken 属于 Mentions 主题契约。即使 `MentionsToken` 是 internal 类型，生成的 `MentionsTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+MentionsToken 属于 Mentions 主题契约。`MentionsToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `MentionsTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

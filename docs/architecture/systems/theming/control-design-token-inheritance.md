@@ -44,12 +44,12 @@ public sealed class ControlDesignTokenAttribute : Attribute
 
 ```csharp
 [ControlDesignToken]
-public abstract class CommonButtonToken : AbstractControlDesignToken
+public abstract partial class CommonButtonToken : AbstractControlDesignToken
 {
-    public double ContentHeight { get; set; }
-    public Thickness ContentPadding { get; set; }
+    public partial double ContentHeight { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         ContentHeight = EffectiveGlobalToken.ControlHeight;
         ContentPadding = EffectiveGlobalToken.InputPadding;
@@ -64,7 +64,10 @@ public abstract class CommonButtonToken : AbstractControlDesignToken
 - 不拥有 Catalog、Control ID、factory、evaluator、descriptor、slot、资源键或注册片段；
 - 必须是非泛型顶级类；
 - 对第三方开放时使用 `public abstract`，仅供已知第一方下游包复用时可以使用 `internal abstract` 与正常的
-  `InternalsVisibleTo`；
+  `InternalsVisibleTo`；公开的终端类不能继承内部抽象层，所以 AtomUI 四个控件包的抽象层随终端类一起是 `public`；
+- 公开的抽象层可以被外部程序集继承，它的 `protected` 成员（`CalculateTokenValues` 重写与
+  `AbstractButtonGeometryToken.CalculateContentPadding` 这类辅助方法）因此属于公开 API；
+- 类是 `partial` 类，Token 属性是 partial 属性，实现部分由生成器产出（见下文「属性扁平化」）；
 - 使用表达稳定视觉语义的家族名称，不要求 `Base` 或 `Definition` 后缀。
 
 ### 终端 Token
@@ -73,11 +76,11 @@ public abstract class CommonButtonToken : AbstractControlDesignToken
 namespace AtomUI.Desktop.Controls
 {
     [ControlDesignToken]
-    internal sealed class ButtonToken : CommonButtonToken
+    public sealed partial class ButtonToken : CommonButtonToken
     {
-        public BoxShadows DefaultShadow { get; set; }
+        public partial BoxShadows DefaultShadow { get; set; }
 
-        public override void CalculateTokenValues(bool isDarkMode)
+        protected override void CalculateTokenValues(bool isDarkMode)
         {
             base.CalculateTokenValues(isDarkMode);
             DefaultShadow = EffectiveGlobalToken.BoxShadows;
@@ -112,7 +115,10 @@ Generator 从终端沿 `BaseType` 遍历到准确的 `AbstractControlDesignToken
 - 是实例属性且不是 indexer 或显式接口实现；
 - 普通 getter 和 setter 都存在，并可由终端程序集的生成代码访问；`init`-only setter 与 `required` 属性不受支持；
 - 未标记 `[NotTokenDefinition]`；
-- 不是 `virtual`、`abstract`、`override` 或使用 `new` 隐藏的属性。
+- 不是 `virtual`、`abstract`、`override` 或使用 `new` 隐藏的属性；
+- 是 partial 属性，且所在类是 partial 类（否则 `ATOMUIGEN049`）。实现部分由 `TokenPropertyImplementationGenerator` 按声明层
+  逐层生成：getter 为 `get => field`，setter 写入后调用 `RecordWrite(nameof(P))`。记账按属性名而不按 slot，因为同一个
+  抽象层属性在不同终端里的 slot 不同；编译器在记账结束后经终端 descriptor 把名称解析成 slot。
 
 不同层声明同名属性、同名不同类型或任何隐藏关系都必须构建失败。继承属性与任一 Global Token 同名时继续使用
 Own/Global 名称冲突诊断，不能通过声明层或类型限定符消除歧义。

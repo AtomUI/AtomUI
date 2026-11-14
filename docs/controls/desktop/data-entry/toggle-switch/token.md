@@ -117,7 +117,7 @@ ToggleSwitchToken 不影响 Checkbox、Radio、Segmented、Button 或 Select。�
 
 ## 5. 兼容性要求
 
-ToggleSwitchToken 属于 ToggleSwitch 主题契约。即使 `ToggleSwitchToken` 是 internal 类型，生成的 `ToggleSwitchTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+ToggleSwitchToken 属于 ToggleSwitch 主题契约。`ToggleSwitchToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `ToggleSwitchTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

@@ -69,16 +69,23 @@ using AtomUI.Theme.DesignTokens;
 namespace Acme.Controls;
 
 [ControlDesignToken]
-internal sealed class RatingToken : AbstractControlDesignToken
+public sealed partial class RatingToken : AbstractControlDesignToken
 {
-    public double StarSize { get; set; }
+    public partial double StarSize { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         StarSize = EffectiveGlobalToken.ControlHeight;
     }
 }
 ```
+
+Token 类必须是 `partial` 类，Token 属性必须是 partial 属性，实现部分由生成器产出（否则报 `ATOMUIGEN049`）；
+`CalculateTokenValues` 用 `protected override`（`public override` 会报 CS0507）。Token 类可以是 `internal`，但只有
+`public` 时，主题包才能为这个控件写主题算法的控件阶段。反过来，控件包也可以为自己的控件提供某个已有算法下的取值：
+写一个 `[ControlTokenAlgorithm("PrimeNG", "Aura", 1)]` 的控件阶段类，并在包自己的 `UseAcmeControls()` 入口里调用生成的
+`GeneratedThemeAlgorithmRegistration.Register(builder.Theme)`——没有别的代码会替包调用它，不调用就不会登记。见
+[编写主题算法](writing-theme-algorithms.md#43-控件阶段)。
 
 主题使用编译型 AXAML，明确导出 key 与 TargetType：
 

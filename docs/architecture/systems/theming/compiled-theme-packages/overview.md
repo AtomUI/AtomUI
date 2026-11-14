@@ -191,7 +191,7 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 
 | 包 | 内容 | 明确不支持（写进 README） |
 | --- | --- | --- |
-| `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；primary emerald、surface slate / zinc、直接给值的语义层逐项映射到 AtomUI 全局 Token，少量 `<Control>` 覆盖 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
+| `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；值由包内六个主题算法（`PrimeNG:Aura` 等及其 `.Dark`）按 PrimeNG 色阶与规则表计算，primary emerald、surface slate / zinc，逐控件值由算法的控件阶段写入；XML 只有算法链和 Seed Token（Lara 紧凑 profile 另有一项 Select 覆盖） | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
 | `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
 | `AtomUI.Themes.Bootstrap` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
 | `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
@@ -203,10 +203,11 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 ```text
 AtomUI.Themes.PrimeNG/
 +-- AtomUI.Themes.PrimeNG.csproj   <AtomUIThemeDefinition Include="Themes/*.theme.xml" />
-+-- Themes/PrimeNGAura.theme.xml   语义值表 + 逐控件 <Control> 覆盖
-+-- Themes/PrimeNGLara.theme.xml
-+-- Themes/PrimeNGNora.theme.xml
-+-- PrimeNGThemes.cs               UsePrimeNGThemes() 扩展：调用生成的 Register(builder)
++-- Algorithms/                    六个主题算法、规则表、色阶；Controls/ 下是控件阶段
++-- Themes/PrimeNGAura*.theme.xml  算法链 + 种子（每个预设四个 profile）
++-- Themes/PrimeNGLara*.theme.xml
++-- Themes/PrimeNGNora*.theme.xml
++-- PrimeNGThemes.cs               UsePrimeNGThemes() 扩展：调用生成的算法注册与主题包注册
 \-- README.md                      模拟了什么、放弃了什么、与原设计语言的已知差异
 ```
 
@@ -215,9 +216,12 @@ AtomUI.Themes.PrimeNG/
 - 生成器把 XML 编译为类型化注册，运行时不读 XML；注册进同一 Catalog，出现在 `AvailableThemes`，与用户目录主题和
   DaybreakBlue 走同一事务；Theme.Id 跨包不得重复。
 - 每个基础 ID 均有 `.Dark`、`.Compact`、`.DarkCompact` 静态 profile，合计 PrimeNG 12、Shadcn 12、Bootstrap 4、Material 4。
-  应用选择精确 ID；基础 ID 叠加算法仍保留显式 Map/Alias 覆盖，不自动派发 profile。Gallery 使用通用后缀规则选择。
+  应用选择精确 ID，不自动派发 profile。只写值表的包，基础 ID 叠加算法仍保留显式 Map/Alias 覆盖；PrimeNG 换成同族
+  暗色算法与暗色 profile 等价，后接 `AtomUI:Dark` 则是混合链。Gallery 使用通用后缀规则选择。
 - 预设 XML 里的 `<Control>` 覆盖只能引用 Core 与已启用控件包中登记的 Control 与 Token；预设包不自动启用控件包。
-- 预设包不含 C# 运行时逻辑、不含 ControlTheme、不含控件代码；只有 XML、生成的注册与一个 `UseXxxThemes()` 入口。
+- 预设包不含 ControlTheme、不含控件代码；内容是 XML、生成的注册与一个 `UseXxxThemes()` 入口，另可包含主题算法。唯一允许的 C# 运行时代码是
+  [主题算法](../../../../guides/theming/writing-theme-algorithms.md)（目前只有 PrimeNG），它们只用 Core 的公开 API，
+  在主题编译期运行，构建期仍不执行算法。
 - README 的"不支持"清单与实际行为一致，属于验收项；首版 PrimeNG 的 Aura / Lara / Nora 对映射表逐项核对，并与
   primeng.dev 的 Aura 演示按关键区域容差对照一次，结论记入 README。
 

@@ -8,7 +8,7 @@ Message Token 只表达组件级视觉变量，例如尺寸、间距、颜色、
 
 当前 Token scope：
 
-- internal `MessageCardToken`，scope id 为 `MessageCard`，源码位于 `src/AtomUI.Desktop.Controls/Message/MessageCardToken.cs`。
+- `MessageCardToken`（公开类，供主题算法的控件阶段写入），scope id 为 `MessageCard`，源码位于 `src/AtomUI.Desktop.Controls/Message/MessageCardToken.cs`。
 
 ## 2. Token 分类
 

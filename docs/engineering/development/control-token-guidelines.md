@@ -68,12 +68,12 @@ public sealed class Rating : TemplatedControl
 }
 
 [ControlDesignToken]
-internal sealed class RatingToken : AbstractControlDesignToken
+public sealed partial class RatingToken : AbstractControlDesignToken
 {
-    public double StarSize { get; set; }
-    public double StarGap { get; set; }
+    public partial double StarSize { get; set; }
+    public partial double StarGap { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         StarSize = EffectiveGlobalToken.ControlHeight;
         if (!IsExplicit(RatingTokenKind.StarGap))
@@ -93,6 +93,18 @@ internal sealed class RatingToken : AbstractControlDesignToken
   判断显式性，Color、Thickness、CornerRadius 等类型没有可用哨兵。
 - 内部派生字段（例如 DataGrid 由公开 `BorderColor` 派生的 `TableBorderColor`）从公开字段派生，主题消费派生字段
   时用户覆盖公开字段仍然生效。
+
+Token 类与 Token 属性的写法：
+
+- Token 类必须是 `partial` 类，每个 Token 属性必须是 partial 属性（`public partial double StarSize { get; set; }`）。
+  实现部分由 `TokenPropertyImplementationGenerator` 生成：getter 是 `get => field`，setter 写入字段后调用基类的
+  `RecordWrite(nameof(StarSize))`，供编译器知道主题算法写了哪些 Token（不记账时只是一次空引用判断）。属性上的初始化器
+  可以保留在声明处。类或属性不是 partial 时报 `ATOMUIGEN049`，该属性不产出实现。不要手写实现部分。
+- `CalculateTokenValues` 在基类上是 `protected virtual`，Token 类用 `protected override`；写成 `public override` 会报
+  CS0507。生成的内部入口 `RunDefaultCalculation` 供生成的 schema 调用，外部代码（包括主题算法）调用不到默认计算。
+- AtomUI 四个控件包（`AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid）的控件 Token 类都是
+  `public`，主题算法的控件阶段可以直接写它们的属性（见[编写主题算法](../../guides/theming/writing-theme-algorithms.md#43-控件阶段)）。
+  GalleryBase 的 Token 类保持 `internal`。第三方 Token 类可以是 `internal`，但那样只有本程序集能为它写控件阶段。
 
 约束：
 
@@ -115,8 +127,12 @@ internal sealed class RatingToken : AbstractControlDesignToken
 才提取无 identity 的抽象 `[ControlDesignToken]` 层；不能为了可能的复用提前建立空继承层。
 
 抽象层可以位于另一个程序集。对第三方开放时使用 `public abstract`，仅供已知第一方包复用时可以使用
-`internal abstract` 与正常的 `InternalsVisibleTo`。跨 Desktop/Mobile 的产品视觉语义放在最低且正确的共同上游
-`AtomUI.Controls`，不因复用下沉到 `AtomUI.Core` 或 `AtomUI.Controls.Shared`。
+`internal abstract` 与正常的 `InternalsVisibleTo`；公开的终端类不能继承内部抽象层。跨 Desktop/Mobile 的产品视觉语义放在
+最低且正确的共同上游 `AtomUI.Controls`，不因复用下沉到 `AtomUI.Core` 或 `AtomUI.Controls.Shared`。
+
+AtomUI 控件包里的抽象中间层（例如 `AbstractButtonGeometryToken`）随终端类一起公开，外部程序集可以继承它们。因此它们的
+`protected` 成员——包括 `CalculateTokenValues` 的重写和 `CalculateContentPadding` 这类辅助方法——属于公开 API，修改签名
+或语义按破坏性变更处理。
 
 ### 默认值计算继承
 
@@ -426,6 +442,7 @@ Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手
 - internal 实现类型被错误声明为独立 Token owner。
 - `CalculateTokenValues` 以 `double.IsNaN` 或其他哨兵判断 Own Token 显式性。
 - `CalculateTokenValues` 内对 Own 字段无条件赋值后，同一方法又读取该字段派生其他字段（基字段未用 `IsExplicit` 守卫）。
+- Token 类不是 partial 类，或 Token 属性不是 partial 属性（`ATOMUIGEN049`）。
 
 以下问题由分析器报告，迁移期为警告，所属控件家族迁移完成后由项目 `.editorconfig` 升级为错误：
 

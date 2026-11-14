@@ -56,7 +56,7 @@ OtpLineEditToken 不影响 LineEdit、SearchEdit、TextArea 或其他输入控�
 
 ## 5. 兼容性要求
 
-OtpLineEditToken 属于 OtpLineEdit 的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md 都会形成稳定依赖。
+OtpLineEditToken 属于 OtpLineEdit 的主题契约。Token 类是公开类，主题算法的控件阶段会直接写它的属性；生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md 都会形成稳定依赖。
 
 Token 变更要求：
 

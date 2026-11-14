@@ -247,7 +247,7 @@ NavMenuToken 不服务 Breadcrumb、Pagination、Steps 或 TabControl。导航�
 
 ## 6. 兼容性要求
 
-NavMenuToken 属于 NavMenu 主题契约。即使 `NavMenuToken` 是 internal 类型，生成的 `NavMenuTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
+NavMenuToken 属于 NavMenu 主题契约。`NavMenuToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `NavMenuTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
 
 Token 变更要求：
 

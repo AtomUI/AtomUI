@@ -179,7 +179,7 @@ Button 家族控件支持 Custom 尺寸时，应复用 Middle 档中适用于该
 
 ## 5. 兼容性要求
 
-ButtonToken 属于 Button 主题契约。即使 `ButtonToken` 是 internal 类型，生成的 `ButtonTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
+ButtonToken 属于 Button 主题契约。`ButtonToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `ButtonTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
 
 ButtonToken 变更要求：
 

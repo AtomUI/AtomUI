@@ -117,7 +117,7 @@ Token 变更影响范围：
 
 ## 5. 兼容性要求
 
-进度 Token 属于进度条家族主题契约。即使各 Token 类型是 internal 类型，生成的 `XxxTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+进度 Token 属于进度条家族主题契约。各 Token 类是公开类，主题算法的控件阶段会直接写它们的属性，因此类型本身、生成的 `XxxTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

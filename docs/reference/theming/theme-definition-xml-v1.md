@@ -16,7 +16,7 @@
 - 一个 XML 文件只定义一个主题。
 - XML namespace 是格式版本，不使用额外的 `Version` 属性。
 - v1 文档严格使用 `Theme -> Algorithms -> Tokens -> Controls` 的固定顺序。
-- 算法使用有序 `<Algorithm Id="..." />` 元素，不使用逗号分隔字符串。
+- 算法使用有序 `<Algorithm Catalog="..." Id="..." />` 元素，不使用逗号分隔字符串；`Catalog` 省略时为 `AtomUI`。
 - Control 使用 `(Catalog, Id)` 组成稳定身份，不根据 CLR 类型名或程序集扫描推断身份。
 - Token 只使用 `Value` 属性，不允许正文值、类型属性或 `IsShared` 分类标记。
 - Token 类型、阶段和赋值器由 `ThemeSchemaRegistry` 决定，XML 不重复声明 schema 信息。
@@ -121,7 +121,7 @@ require computed == Theme.Appearance
 ```
 
 AtomUI 的 `Default`、`Dark`、`Compact` descriptor effect 分别为 `Light`、`Dark`、`Preserve`。Binder 不按算法
-名称猜测 effect，而是读取枚举键对应 descriptor 的声明。descriptor 未注册、effect 不合法或最终结果与
+名称猜测 effect，而是读取算法身份对应 descriptor 的声明。descriptor 未注册、effect 不合法或最终结果与
 `Appearance` 不一致时，整个 definition 绑定失败。
 
 绑定后，`Appearance` 作为已验证的 definition 最终 appearance 存入不可变 `ThemeDefinition`。运行时
@@ -139,25 +139,56 @@ M0 = Algorithm[0].Evaluate(effectiveSeed, null)
 M1 = Algorithm[1].Evaluate(effectiveSeed, M0)
 ...
 Mn = Algorithm[n].Evaluate(effectiveSeed, M[n-1])
-result = ApplyMapAndAliasOverrides(Mn)
+result = ApplyMapOverrides(Mn) -> Alias stage -> ApplyAliasOverrides
 ```
 
-算法求值签名固定为 `Evaluate(effectiveSeed, previousMap?) -> nextMap`。整条链中的 `effectiveSeed` 是同一份不可变
-语义输入；前一个算法的输出只作为下一个算法的 `previousMap`，不能替代 Seed。算法不得修改 Seed 或 previous
-Map。第一个算法收到 `previousMap=null`；内置算法需要默认 Map 时可以在自身实现中调用 Default fallback，但
-不得改变通用链契约。
+算法的 Map 阶段签名固定为 `Evaluate(effectiveSeed, previousMap?, nextMap)`：编译器为每个算法准备 `nextMap`
+（复制自 `previousMap`，第一个算法复制自 Seed），算法写入它。整条链中的 `effectiveSeed` 是同一份不可变语义输入；
+前一个算法的输出只作为下一个算法的 `previousMap`，不能替代 Seed。算法不得修改 Seed 或 previous Map。第一个算法
+收到 `previousMap=null`；内置算法需要默认 Map 时可以在自身实现中调用 Default fallback，但不得改变通用链契约。
+算法还可以实现可选的 Alias 阶段和控件阶段，链上每个算法的可选阶段都会运行；三个阶段的契约与优先级见
+[编写主题算法](../../guides/theming/writing-theme-algorithms.md)。
 
-`Algorithm` 是空元素，只允许一个必填 `Id` 属性。v1 XSD 的允许值严格为 `Default`、`Dark` 和 `Compact`，并区分
-大小写；`dark`、`Unknown`、`1` 和空值都会在 Reader 边界失败并产生带源码位置的 diagnostic。同一算法链内不得
-重复枚举值。
+`Algorithm` 是空元素，有两个属性：
 
-Reader 使用精确映射把 XML 文本转换成 `ThemeAlgorithm`；读取成功的 `ThemeDocument` 不保存原始字符串。Binder
-再用枚举键查询 `ThemeSchemaRegistry` 中唯一的 `ThemeAlgorithmDescriptor`。因此“XML 值非法”和“合法枚举但
-当前 schema 未注册实现”属于两个明确的错误边界。
+| 属性 | 必须 | 类型 | 语义 |
+|---|---|---|---|
+| `Catalog` | 否 | `Identifier` | 注册该算法的命名域；省略时为 `AtomUI` |
+| `Id` | 是 | `Identifier` | 该命名域中的算法 |
+
+算法身份是 `(Catalog, Id)`，两者都区分大小写，按 ordinal 比较。`Id` 的 XSD 类型是三个内置值 `Default`、`Dark`、
+`Compact` 的枚举与 `Identifier` 的并集：内置值保留编辑器补全，其他合法标识符也能通过校验。现有只写 `Id` 的主题
+文件不用修改。第三方算法写自己的 Catalog，例如：
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1"
+       Id="PrimeNGAura.DarkCompact"
+       Name="PrimeNG Aura DarkCompact"
+       Appearance="Dark">
+  <Algorithms>
+    <Algorithm Catalog="PrimeNG" Id="Aura.Dark" />
+    <Algorithm Id="Compact" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#10B981" />
+  </Tokens>
+</Theme>
+```
+
+同一算法链内不得重复同一身份；写不写 `Catalog="AtomUI"` 都是同一身份。XSD 的 identity constraint 看不到省略的
+属性，所以重复由 Reader 检查，报 `ATMTHM1002`（`Theme algorithm 'Catalog:Id' is duplicated.`）。`1`、空值和含空格的
+值不是合法标识符，在 Reader 边界失败并产生带源码位置的 diagnostic；`dark`、`Unknown` 是合法标识符，交给 Binder。
+
+Reader 把 `Catalog` 与 `Id` 构造成 `ThemeAlgorithm`；读取成功的 `ThemeDocument` 不保存原始字符串。写了 `Catalog`
+的元素，诊断路径为 `Algorithm[@Catalog='X'][@Id='Y']`，省略时路径不变。Binder 再用身份查询 `ThemeSchemaRegistry`
+中唯一的 `ThemeAlgorithmDescriptor`，未注册时报 `ATMTHM2001`（`Theme algorithm 'Catalog:Id' is not registered.`）。
+因此“XML 值非法”和“合法身份但当前 schema 未注册实现”属于两个明确的错误边界。
 
 主题文件只声明算法身份和顺序。算法实例、依赖关系、AOT 构造委托以及外观影响由 descriptor 提供；每个
-descriptor 必须提供显式 revision/version，算法行为变化时必须提升 revision。当前算法集合是封闭的，不支持任意
-第三方字符串 ID。新增算法必须追加 `ThemeAlgorithm` 显式数值，并同步实现及 Attribute、v1 XSD 枚举和契约测试。
+descriptor 必须提供显式 revision/version，算法行为变化时必须提升 revision。算法集合不是封闭的：主题包和应用通过
+`[ThemeAlgorithm]` 声明算法，由生成的 `GeneratedThemeAlgorithmRegistration.Register` 注册进同一个 registry。编译进
+包的主题 XML 引用了构建期看不到的算法时，构建报 `ATOMUITOKEN002`（`Unknown algorithm 'Catalog:Id'.`）并带行列。
 
 ## 6. Tokens 与 Token
 
@@ -234,14 +265,14 @@ ControlAlgorithmMode
 +-- Unspecified
 +-- Disabled
 +-- Global
-\-- Custom -> ordered ThemeAlgorithm values
+\-- Custom -> ordered ThemeAlgorithm identities
 ```
 
 `Global` 的含义也不是简单的“启用”，而是“使用当前作用域的全局算法链重新派生该 Control 的有效
 Token”。如果写成 `Algorithm="true"`，XML 本身无法表达启用的是哪一条算法链。
 
 Control `Global` 和 `Custom` 使用与全局算法完全相同的
-`Evaluate(sameEffectiveSeed, previousMap?) -> nextMap` 契约。Binder 同样解析每个算法 descriptor 的 appearance
+`Evaluate(sameEffectiveSeed, previousMap?, nextMap)` 契约，并同样运行算法的 Alias 阶段。Binder 同样解析每个算法 descriptor 的 appearance
 effect；计算得到的 Control appearance 只传给该 Control 的 Token evaluator，不修改所在 ThemeContext 的
 `ThemeSnapshot.Appearance` 或 Avalonia ThemeVariant。
 
@@ -271,7 +302,7 @@ internal enum ControlAlgorithmMode : byte
 }
 ```
 
-`Custom` 对应的有序 `ThemeAlgorithm` 枚举值作为规范化 Control 配置中的不可变 payload 保存，并且只允许在 Mode 为
+`Custom` 对应的有序 `ThemeAlgorithm` 身份作为规范化 Control 配置中的不可变 payload 保存，并且只允许在 Mode 为
 `Custom` 时非空。Reader 和 Binder 不得先降级为 `bool` 或 `bool?` 再推断。这样 Schema、diagnostic、C#
 配置模型和运行时合并器共享同一套领域语义。
 
@@ -338,11 +369,11 @@ typed immutable ThemeDefinition + diagnostics
 
 1. XML well-formedness：编码、标签、属性引用和 namespace 正确。
 2. XSD validation：元素顺序、数量、属性、基础词法和单文件唯一性正确。
-3. Registry binding：已解析的算法枚举、Control 和 Token identity 均存在。
+3. Registry binding：已解析的算法身份、Control 和 Token identity 均存在。
 4. Value conversion：每个 Token 值转换为 schema 指定的强类型值。
 5. Semantic validation：算法互斥、外观一致性、空 Control、跨文件默认主题冲突等规则成立。
 
-XSD validation 不能替代 Binder。XSD 固定算法枚举的可读文本，但不保证当前进程已注册相应 descriptor，也不包含
+XSD validation 不能替代 Binder。XSD 只校验算法身份的标识符词法，不保证当前进程已注册相应 descriptor，也不包含
 当前进程安装的 Control、Token 集合或 Token 值目标类型。
 
 每条 diagnostic 必须包含：
@@ -401,7 +432,7 @@ Reader 保留源码位置和声明顺序；Binder 输出 typed、不可变定义
 
 - namespace 版本。
 - Theme metadata。
-- 有序算法 `(ThemeAlgorithm, descriptor revision)`。
+- 有序算法 `(Catalog, Id, descriptor revision)`。
 - 按 Token slot 排序的 typed Token value。
 - 按 `(Catalog, Id)` 排序的 Control 配置。
 - Schema registry revision。
@@ -425,6 +456,22 @@ Control `(Catalog, Id)` 进行 ordinal 排序，使代码评审 diff 稳定。
 
 v1 namespace 和 XSD 发布后保持不可变。只允许不改变验证结果的文档澄清。
 
+已记录的一次例外：主题算法开放时，v1 XSD 做了一次只放宽、不收紧的修改（见第 5 节）：
+
+- `Algorithm` 增加可选 `Catalog` 属性；`Id` 的类型从三个内置值的枚举改为内置值与 `Identifier` 的并集
+  （`AlgorithmIdType`）。
+- 删除两个 identity constraint：顶层的 `UniqueGlobalAlgorithmId` 和 Control 内的 `UniqueControlAlgorithmId`。
+  `xs:unique` 看不到省略的 `Catalog`，无法按 `(Catalog, Id)` 判重。
+
+后果：
+
+- 此前有效的文件全部仍然有效，语义不变。
+- 只用 XSD 校验（例如编辑器）时，重复的 `<Algorithm>` 不再被拒绝。判重移进 Reader，Reader 仍然报告它，诊断仍是
+  `ATMTHM1002`（文本改为 `Theme algorithm 'Catalog:Id' is duplicated.`），所以 Reader 管线的结果不变。
+- 形状像内置值但不是内置值的合法标识符（例如 `Id="dark"`、`Id="Unknown"`）以前无效、现在仍然无效，但不再由 XSD 报
+  `ATMTHM1002`，而是通过 XSD 与 Reader 后由 Binder 报 `ATMTHM2001`（`Theme algorithm 'AtomUI:dark' is not registered.`）。
+- 不是合法标识符的值（`1`、空值、含空格）仍由 XSD 报 `ATMTHM1002`。
+
 破坏性格式变更必须使用新 namespace，例如 `https://atomui.net/schemas/theme/v2`，并提供独立 XSD、Reader
 和迁移工具。Reader 只接受显式注册的 namespace，不猜测版本，不把无 namespace 文档当作 v1，也不建立旧格式
 adapter。
@@ -441,11 +488,12 @@ adapter。
 - Binder 从 library Light baseline 折叠 definition 算法 effect；声明 `Appearance` 与计算结果不一致时拒绝绑定。
 - 运行时替换全局算法链后只改变新 snapshot appearance；Control custom appearance 不改变作用域 variant。
 - `Algorithm` 属性与 `<Algorithms>` 同时出现时被拒绝。
-- 非法算法文本、未注册算法枚举、未知 Control/Token 和非法 Value 产生带行列及路径的 diagnostic。
+- 非法算法标识符、重复的算法身份、未注册算法、未知 Control/Token 和非法 Value 产生带行列及路径的 diagnostic。
+- 省略 `Catalog` 与 `Catalog="AtomUI"` 解析为同一身份；其他 Catalog 的算法身份按 `(Catalog, Id)` 区分。
 - DTD、外部实体、超限文件和超限元素数量在发布定义前失败。
 - 相同 typed 内容的不同 XML 排版得到相同 fingerprint。
 - 相同 fingerprint、不同 typed 结构的碰撞样例不会被判定为同一主题定义。
 - 文件内容或 schema/algorithm descriptor revision 变化时旧绑定和编译缓存失效。
-- 同一算法枚举值提升 descriptor revision 后 definition fingerprint、Binder 缓存和 Compiler 缓存全部失效；
+- 同一算法身份提升 descriptor revision 后 definition fingerprint、Binder 缓存和 Compiler 缓存全部失效；
   只改变 XML revision 但 typed 内容不变时，仍通过结构比较安全复用可复用的编译结果。
 - Schema 校验、Reader 和 Binder 的正常路径通过 NativeAOT 验证，不执行反射扫描或动态代码生成。

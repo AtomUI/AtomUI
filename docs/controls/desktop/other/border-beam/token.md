@@ -73,7 +73,7 @@ BorderBeamToken 只影响 BorderBeam 自身，不应被 Card、Button、GroupBox
 
 ## 5. 兼容性要求
 
-BorderBeamToken 属于 BorderBeam 主题契约。即使 `BorderBeamToken` 是 internal 类型，生成的 `BorderBeamTokenKind` 和 AXAML resource 使用点也形成稳定依赖。
+BorderBeamToken 属于 BorderBeam 主题契约。`BorderBeamToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `BorderBeamTokenKind` 和 AXAML resource 使用点也形成稳定依赖。
 
 BorderBeamToken 变更要求：
 

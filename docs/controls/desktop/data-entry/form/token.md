@@ -97,7 +97,7 @@ FormToken 直接影响 Form、FormItem 和 FormItemDecorator 参与的表单布�
 
 ## 5. 兼容性要求
 
-FormToken 属于 Form 主题契约。即使 `FormToken` 是 internal 类型，生成的 `FormTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+FormToken 属于 Form 主题契约。`FormToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `FormTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

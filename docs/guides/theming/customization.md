@@ -410,8 +410,14 @@ Global Algorithm 是有序派生链。例如暗色主题可以使用：
 ```
 
 Compact 算法可以继续追加，并声明为保持当前 appearance。算法不是简单的布尔开关；顺序属于主题语义。
-`ThemeAlgorithm` 是算法身份的唯一类型，当前封闭成员为 `Default`、`Dark` 和 `Compact`。C# 配置、运行时状态、
-descriptor 和缓存都使用枚举；XML 的 `Id` 只是在 Reader 边界使用的严格序列化文本。
+`ThemeAlgorithm` 是算法身份的唯一类型，由 `(Catalog, Id)` 组成。Core 内置 `AtomUI:Default`、`AtomUI:Dark` 和
+`AtomUI:Compact`（`ThemeAlgorithm.Default` 等）；主题包可以注册自己的算法，例如 PrimeNG 包的 `PrimeNG:Aura` 与
+`PrimeNG:Aura.Dark`。XML 里写 `<Algorithm Catalog="PrimeNG" Id="Aura" />`，省略 `Catalog` 即为 `AtomUI`。C# 配置、
+运行时状态、descriptor 和缓存都使用身份结构体，不使用字符串。
+
+算法除了从 Seed 推出 Map，还可以改写 Alias Token 和单个控件的 Token；它写入的值与 XML 显式值一样带动派生值，但
+优先级低于主题的显式值。把 `[PrimeNG:Aura]` 后面接上 `AtomUI:Dark` 得到的是混合链，不等于 `PrimeNG:Aura.Dark`；要
+某个设计语言的暗色，选它自己的暗色算法或暗色 profile。编写自己的算法见[编写主题算法](writing-theme-algorithms.md)。
 
 Control 级算法有四种状态：
 
@@ -423,7 +429,8 @@ Control 级算法有四种状态：
 | `Custom` | 使用该 Control 配置声明的算法链 |
 
 大多数只调整少量颜色或尺寸的主题应使用 `Disabled`。只有当 Control 级 Seed Token 需要重新生成完整 Map/Alias
-关系时，才使用 `Global` 或 `Custom`。
+关系时，才使用 `Global` 或 `Custom`。注意这两种模式以根主题编译后的全局值为种子重新推导：根上显式设置的 Map 与 Alias
+值在该控件作用域里会被默认公式取代，对自身输出不幂等的算法（PrimeNG 预设算法、`AtomUI:Dark`）还会让颜色再偏一档。
 
 ## 10. 在运行时切换主题
 
@@ -719,6 +726,7 @@ Control 使用同一条确定性路径。
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)：稳定视觉区域、Selector、ContractType、Popup 和兼容性契约。
 - [Control Token 设计规范](../../engineering/development/control-token-guidelines.md)：Control 和第三方 Control 的研发约束。
 - [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn、Bootstrap、Material 预设包，以及制作自己的预设包。
+- [编写主题算法](writing-theme-algorithms.md)：声明、注册、测试和发布自己的主题算法。
 - [主题生效测试规范](../../engineering/development/theme-effect-tests.md)：承诺面中每个 Token 如何被证明有效。
 - [主题定义 XML v1 规范](../../reference/theming/theme-definition-xml-v1.md)：主题文件格式、算法和验证规则。
 - [启动与注册链路](../../architecture/foundations/startup-and-registration.md)：应用、Control 包和 ThemeManager 的构建顺序。

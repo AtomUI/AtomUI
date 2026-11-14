@@ -81,7 +81,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | ID | Category | Severity | Trigger | Fix | Owner |
 |---|---|---|---|---|---|
 | `ATOMUITOKEN001` | Token | Error | 编译主题输入无效、超限，或构建中间产物不能可靠生成 | 修正 XML/输入路径及容量，清理失效输出后重建 | Compiled theme input task |
-| `ATOMUITOKEN002` | Token | Error | 编译主题的 Token/owner/算法契约、元数据或静态字面量不受支持或不匹配 | 按带源位置的诊断修正定义与依赖；显式选择支持的编译值域或动态来源 | Compiled theme generator |
+| `ATOMUITOKEN002` | Token | Error | 编译主题的 Token/owner/算法契约、元数据或静态字面量不受支持或不匹配，包括：主题 XML 的算法链引用了构建期看不到的算法（`Unknown algorithm 'Catalog:Id'.`，在 `Algorithm` 元素行列）；引用元数据中算法构建契约无效或重复；同一 Catalog 的两个算法 Id 去掉 `.`、`-` 后在 `<Catalog>Algorithms` 中撞名（无位置）；`[ThemeAlgorithm]` 类不是实现 `IThemeAlgorithm` 的非抽象非泛型类、没有公开无参构造函数，或特性的 catalog/id/revision、appearanceEffect 无效（在特性上，该类不注册）；`[ControlTokenAlgorithm]` 类不是本程序集内可访问的非抽象非泛型类、未恰好实现一次 `IControlTokenAlgorithm<TToken>`、没有公开无参构造函数、`TToken` 不是绑定了控件的终端 Own Token 类，或特性的 catalog/id/revision 无效（在类名或特性上） | 按带源位置的诊断修正定义与依赖；显式选择支持的编译值域或动态来源；引用的算法需由本程序集或直接引用的程序集声明 | Compiled theme generator |
 | `ATOMUIREG001` | Registration | Error | 顶层主题导出目标、key 不明确或重复 | 声明可解析的 target 和唯一 Type/string key | Registration generator |
 | `ATOMUIREG002` | Registration | Error | TokenResource 没有唯一且可访问的实际 owner | 修正 namespace 或 Token 契约 | Registration generator |
 | `ATOMUIREG003` | Registration | Error | 主题目标不可访问、开放泛型或不是 StyledElement；资源 x:Class 不能绑定到本程序集的可访问具体资源类 | 使用可访问的具体主题目标 | Registration generator |
@@ -153,6 +153,11 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 默认 Warning；仓库五个控件包与 GalleryBase 在项目 `WarningsAsErrors` 中将 041、042、043、044、045、047 统一提升为 Error。
 生成器在外部 AXAML/生成位置报告的诊断不受目录 `.editorconfig` 可靠控制，因此包级编译器门禁与现有消费合同共同验证；
 046 已退役且不进入活跃严重级别清单，040/048 本身仍为 Error。
+`ATOMUIGEN049` 由 IDE 设计期可见的 `TokenPropertyImplementationGenerator` 报告，位置按文件路径与行列构造、不持有语法树，
+所以源码中的 `#pragma warning disable` 与按文件生效的 `.editorconfig` 节对它不起作用，只能在项目级设置中调整；它是
+Error，正常情况下应修正代码而不是抑制。`[ThemeAlgorithm]` 声明不合法（抽象、泛型、缺少公开无参构造函数、标识符非法或
+`revision <= 0`）时生成器跳过该类、不报诊断；用算法契约测试确认算法已注册，见
+[编写主题算法](../../guides/theming/writing-theme-algorithms.md#31-算法类)。
 `042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`047` 只报告可静态证明的
 写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。
 `043`、`044`、`047` 检查控件代码，只在控件包内运行：编译单元引用 `SharedTokenKind` 且不是其定义程序集，并且声明了

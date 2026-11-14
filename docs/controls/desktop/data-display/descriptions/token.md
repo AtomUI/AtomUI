@@ -109,7 +109,7 @@ DescriptionsToken 只直接影响 Descriptions 及其内部生成视觉：
 
 ## 5. 兼容性要求
 
-DescriptionsToken 属于 Descriptions 主题契约。即使 `DescriptionsToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+DescriptionsToken 属于 Descriptions 主题契约。`DescriptionsToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

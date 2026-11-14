@@ -63,6 +63,9 @@ public sealed class CompiledThemeValueWriter
 }
 ```
 
+`ThemeAlgorithm` 是 `(Catalog, Id)` 只读结构体。生成代码以 `new ThemeAlgorithm("AtomUI", "Dark")` 这类身份传入
+`SetAlgorithms` 与 `RequireControl`，不再写 `(ThemeAlgorithm)整数`；按旧枚举数值生成的程序需要用当前生成器重建。
+
 tokenId 在整个程序内唯一、controlId 在程序控件集合内唯一；均为非负本地序号，不能作为应用 slot。
 resourceKey 使用现有 `SharedTokenKind` 或对应 `XxxTokenKind`，Control 使用公开 `XxxTokens.Identity`；
 实际绑定检查精确 owner Type/metadata name、资源 key、编译时 Token 名、`typeof(T)`、stage 与值契约版本，不能凭结构摘要自认证。
@@ -97,8 +100,14 @@ ThemeBuildOwnerAttribute(int version, string catalog, string id, string ownerAss
 ThemeBuildTokenAttribute(int version, string catalog, string ownerId, string name,
     string valueType, string valueTypeAssemblyIdentity, string resourceKeyType,
     string resourceKeyAssemblyIdentity, string resourceKeyMember, int stage, int valueContractVersion)
+ThemeBuildAlgorithmAttribute(int version, string catalog, string id, int revision, int appearanceEffect)
 CompiledThemeManifestAttribute(int version, string packageId, string data)
 ```
+
+`ThemeBuildAlgorithmAttribute` 为声明了 `[ThemeAlgorithm]` 的程序集记录每个算法的身份、revision 与外观效果
+（`0` Preserve、`1` Light、`2` Dark），写在生成的 `GeneratedThemeBuildContracts.g.cs` 末尾，随程序集传给引用方；
+Core 自身记录 `AtomUI:Compact/Dark/Default`。引用方的生成器从直接引用读取这些记录，加上本程序集声明的算法，用来
+校验主题 XML 的算法链。重复身份是构建错误（`Duplicate algorithm build contract: Catalog:Id`）。
 
 只含字符串和整数，不产生 Control Type 根表。Global 的 catalog/ownerId 均为空；attribute 所属 IAssemblySymbol
 确定契约/identity provider 的生产程序集，ownerAssemblyIdentity 单独确定 owner 定义程序集，两者不要求相同。
@@ -119,8 +128,13 @@ schemaDigest 使用规范排序、明确字段边界的 SHA-256，不能代替�
 快照并生成版本化中立 AdditionalFile，带原始 SHA-256、位置与 diagnostics；这些中间输入不进入运行时。
 程序摘要覆盖中立输入、所需 Token 契约、字面量/ABI 与生成实现身份。所有输出按 configuration/framework 隔离。
 
-中立传输版本为 4，包含声明文本、来源位置、摘要、规范值与类型化 primitive payload；保留记录/字节限额。
-旧版本输入直接拒绝，由配套工具重新生成。它是构建工具私有协议，不进入运行时，运行时生成 ABI 仍为 v1。
+中立传输版本为 5，包含声明文本、来源位置、摘要、规范值与类型化 primitive payload；保留记录/字节限额。
+版本 5 的算法项是 `(Catalog, Id, Line, Column)`，不再是整数。旧版本输入直接拒绝
+（`Compiled theme input format is out of date; rebuild the project.`），由配套工具重新生成。它是构建工具私有协议，
+不进入运行时，运行时生成 ABI 仍为 v1。
+
+主题链或已知控件的自定义链引用了构建契约中没有的算法时，生成器在该 `Algorithm` 元素的行列报 `ATOMUITOKEN002`
+（`Unknown algorithm 'Catalog:Id'.`），该主题不生成程序。未知控件先报控件错误并跳过，它的自定义链不再检查。
 
 Core 的内置 codec 拥有字面量解析和规范格式，Tasks 源链接相同实现；HSL/HSV 等语法直接使用运行时 converter。
 Generator 只匹配值能力并发射类型化 C# 表达式。生成程序只注册并写入静态默认值，

@@ -490,7 +490,7 @@ ThemeDefinition + ThemeConfig + generated schema
 | 需求 | AtomUI 入口 |
 | --- | --- |
 | 改品牌、基础字号、圆角和全局状态 | `ThemeConfigBuilder.WithToken`，优先覆盖 Seed |
-| 暗色、紧凑及组合 | `WithAlgorithms`，当前算法身份为 `Default`、`Dark`、`Compact` |
+| 暗色、紧凑及组合 | `WithAlgorithms`，内置算法身份为 `Default`、`Dark`、`Compact`；主题包可注册其他设计语言的算法 |
 | 仅改变某类 Control | `WithControl` + `ControlThemeConfigBuilder`，使用生成的 `XxxTokens.Identity` |
 | 页面或区域建立局部主题 | `ThemeConfigProvider.Config`，绑定或替换完整不可变配置 |
 | 调整稳定视觉部件 | 生成的专用 Semantic Part Style，如 `ButtonContentStyle`、`CardBodyStyle` |
@@ -538,7 +538,7 @@ var buttonConfig = new ThemeConfigBuilder()
 该配置只改变 Button identity 的有效 Token，不创建 Button 内容树的主题作用域。Control 可覆盖自身 Own Token
 和任意已注册 Global Token；Own Token 名称由生成的 `XxxTokenKey`、控件 Token 文档和 schema 确认。
 `Unspecified` 继承父策略，最终默认 `Disabled`；`Disabled` 不因 Control Seed 覆盖重派生 Map/Alias；
-`Global` 使用作用域算法重新派生；`Custom` 使用显式有序算法链，当前仍由上述内置算法身份组成。
+`Global` 使用作用域算法重新派生；`Custom` 使用显式有序算法链，可以由内置算法和已注册的包算法组成。
 
 ### 局部作用域与资源读取
 

@@ -93,7 +93,7 @@ Notification 的视觉模型由控件模板、ControlTheme、SharedToken 和必�
 | `NotificationProgressBarTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 | `WindowNotificationManagerTheme.axaml` | 定义弹层、窗口或 overlay 宿主视觉。 |
 
-Notification 使用 internal `NotificationCardToken` 作为控件 Token scope。Token 只表达卡片背景、尺寸、padding、图标、进度和外部间距等视觉语义，不承载 Stack、剩余时长或关闭状态。
+Notification 使用 `NotificationCardToken` 作为控件 Token scope（公开类，供主题算法的控件阶段写入）。Token 只表达卡片背景、尺寸、padding、图标、进度和外部间距等视觉语义，不承载 Stack、剩余时长或关闭状态。
 
 主题维护规则：
 
@@ -116,7 +116,7 @@ Notification 与同分类控件共享尺寸、状态、Token、Gallery 展示和
 - `NotificationCard`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `NotificationProgressBar`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `NotificationProgressBarVisibleConverter`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `NotificationCardToken`：internal 控件 Token scope，负责从全局 token 派生卡片视觉变量。
+- `NotificationCardToken`：控件 Token scope（公开类，供主题算法的控件阶段写入），负责从全局 token 派生卡片视觉变量。
 - `WindowNotificationManager`：数据、状态或行为协作类型，维护集合同步和事件路径。
 - 共享 `FeedbackStackPresenter` / `FeedbackStackPanel` / `FeedbackLifetimeScheduler`：维护堆叠布局与生命周期调度，不拥有 Notification public 内容语义。
 - 共享 `FeedbackCardMotion` / `FeedbackCardMotionCoordinator`：维护位置感知的进入/退出曲线、单 actor 执行和取消释放，不进入 public API。

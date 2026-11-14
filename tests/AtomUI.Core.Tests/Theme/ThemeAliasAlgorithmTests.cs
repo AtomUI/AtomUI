@@ -119,6 +119,7 @@ public class ThemeAliasAlgorithmTests
 
         exception.Algorithm.ShouldBe(s_testX);
         exception.TokenName.ShouldBe(nameof(DesignToken.ColorPrimary));
+        exception.Violation.ShouldBe(ThemeAlgorithmContractViolationKind.StageBoundary);
         exception.Message.ShouldBe("Algorithm 'Test:X' wrote token 'ColorPrimary' outside the Alias stage.");
     }
 
@@ -130,6 +131,7 @@ public class ThemeAliasAlgorithmTests
 
         exception.Algorithm.ShouldBe(s_testX);
         exception.TokenName.ShouldBe(nameof(DesignToken.ControlOutlineWidth));
+        exception.Violation.ShouldBe(ThemeAlgorithmContractViolationKind.Unstable);
         exception.Message.ShouldBe(
             "Algorithm 'Test:X' did not stabilize after 3 rounds; unstable token 'ControlOutlineWidth'.");
     }
@@ -148,6 +150,7 @@ public class ThemeAliasAlgorithmTests
 
         exception.Algorithm.ShouldBe(s_testX);
         exception.TokenName.ShouldBeNull();
+        exception.Violation.ShouldBe(ThemeAlgorithmContractViolationKind.Failed);
         exception.Message.ShouldBe("Algorithm 'Test:X' failed in the Alias stage.");
         exception.InnerException.ShouldBeSameAs(failure);
         received.ShouldNotBeNull();

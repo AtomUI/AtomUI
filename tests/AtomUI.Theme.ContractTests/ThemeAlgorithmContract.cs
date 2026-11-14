@@ -16,29 +16,42 @@ namespace AtomUI.Theme.ContractTests;
 /// </summary>
 /// <param name="Check">The check that failed; one of the constants on <see cref="ThemeAlgorithmContract"/>.</param>
 /// <param name="Algorithm">The algorithm that broke the rule.</param>
-/// <param name="TokenName">The global token involved, or <see langword="null"/> when the rule is not about one token.</param>
+/// <param name="TokenName">
+/// The token involved (a global token, or a control's own token for a control stage), or <see langword="null"/> when
+/// the rule is not about one token.
+/// </param>
 /// <param name="Message">What was observed.</param>
 public sealed record ThemeAlgorithmContractViolation(string Check, ThemeAlgorithm Algorithm, string? TokenName, string Message);
 
 /// <summary>
-/// What the contract verifier sees: the registered algorithms (the Core built-ins plus package algorithms) and the
-/// control token descriptors that go into the theme schema registry it compiles against.
+/// What the contract verifier sees: the registered algorithms (the Core built-ins plus package algorithms), the
+/// control token descriptors and the control token stages that go into the theme schema registry it compiles against.
 /// </summary>
 public sealed record ThemeAlgorithmContractInput(
     IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms,
     IReadOnlyList<ControlTokenDescriptor> Controls)
 {
     /// <summary>
+    /// The registered control token stages. The stages of the verified algorithm whose control is in
+    /// <see cref="Controls"/> (with own tokens) are checked too; the others stay registered but are not called.
+    /// Empty by default.
+    /// </summary>
+    public IReadOnlyList<ControlTokenAlgorithmDescriptor> ControlAlgorithms { get; init; } =
+        Array.Empty<ControlTokenAlgorithmDescriptor>();
+
+    /// <summary>
     /// Runs the caller's registration (e.g. <c>builder =&gt; builder.UsePrimeNGThemes()</c>) against a fresh theme
     /// manager builder and captures the Core built-in algorithms followed by every algorithm the registration added
-    /// through <see cref="IThemeManagerBuilder.AddThemeAlgorithms"/>, plus the control token descriptors of the
-    /// control packages it added through <see cref="IThemeManagerBuilder.AddControlPackage"/>.
+    /// through <see cref="IThemeManagerBuilder.AddThemeAlgorithms"/>, the control token descriptors of the control
+    /// packages it added through <see cref="IThemeManagerBuilder.AddControlPackage"/>, and the control token stages
+    /// it added through <see cref="IThemeManagerBuilder.AddControlTokenAlgorithms"/>.
     /// </summary>
     /// <remarks>
     /// No Avalonia application is required: the builder is only constructed and registered against, never built.
     /// Control packages enabled through the application builder (<c>IAtomUIBuilder</c>) do not pass through
     /// <see cref="IThemeManagerBuilder"/> and are not captured; supply their descriptors with
-    /// <c>input with { Controls = ... }</c>. The Map and Alias checks do not need controls.
+    /// <c>input with { Controls = ... }</c>. The Map and Alias checks do not need controls; the control stage checks
+    /// skip every stage whose control is not supplied.
     /// </remarks>
     public static ThemeAlgorithmContractInput Capture(Action<IThemeManagerBuilder> register)
     {
@@ -48,7 +61,10 @@ public sealed record ThemeAlgorithmContractInput(
         builder.CompletePendingRegistrations();
         return new ThemeAlgorithmContractInput(
             GeneratedThemeSchema.GetAlgorithms().Concat(builder.ThemeAlgorithms).ToArray(),
-            builder.ControlPackages.SelectMany(static package => package.Controls).ToArray());
+            builder.ControlPackages.SelectMany(static package => package.Controls).ToArray())
+        {
+            ControlAlgorithms = builder.ControlTokenAlgorithms.ToArray()
+        };
     }
 }
 
@@ -64,10 +80,16 @@ public static class ThemeAlgorithmContract
     /// <summary>A standalone algorithm writes every Map-stage token.</summary>
     public const string MapComplete = nameof(MapComplete);
 
-    /// <summary>The same input produces the same output, slot by slot.</summary>
+    /// <summary>
+    /// The same input produces the same output, slot by slot: the global tokens, and for every control stage of the
+    /// algorithm the control's own tokens and effective global tokens.
+    /// </summary>
     public const string Deterministic = nameof(Deterministic);
 
-    /// <summary>The Map stage leaves the effective seed and the previous map unchanged.</summary>
+    /// <summary>
+    /// The Map stage leaves the effective seed and the previous map unchanged; a control stage's <c>EvaluateOwn</c>
+    /// leaves the effective global token unchanged.
+    /// </summary>
     public const string InputsUnchanged = nameof(InputsUnchanged);
 
     /// <summary>Changing the <c>ColorPrimary</c> seed changes the primary color and its states.</summary>
@@ -94,10 +116,16 @@ public static class ThemeAlgorithmContract
     /// </summary>
     public const string HybridChainReadable = nameof(HybridChainReadable);
 
-    /// <summary>The compiler's staged evaluation stabilizes within its round limit.</summary>
+    /// <summary>
+    /// The compiler's staged evaluation stabilizes within its round limit, for the Alias stage and for the Own tokens
+    /// of every control stage of the algorithm.
+    /// </summary>
     public const string Stable = nameof(Stable);
 
-    /// <summary>The Alias stage writes only Alias-stage tokens.</summary>
+    /// <summary>
+    /// The Alias stage writes only Alias-stage tokens; a control stage's <c>EvaluateOwn</c> writes only the control's
+    /// own tokens and never the effective global token.
+    /// </summary>
     public const string StageBoundary = nameof(StageBoundary);
 
     /// <summary>
@@ -220,7 +248,8 @@ public static class ThemeAlgorithmContract
 
         internal void Run(ThemeAlgorithmContractInput input, bool standalone)
         {
-            _registry   = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), input.Controls, input.Algorithms);
+            _registry   = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), input.Controls,
+                input.Algorithms, null, input.ControlAlgorithms);
             _descriptor = Resolve(algorithm);
             _default    = Resolve(ThemeAlgorithm.Default);
             _dark       = Resolve(ThemeAlgorithm.Dark);
@@ -246,6 +275,7 @@ public static class ThemeAlgorithmContract
                 CheckComposableWithCompact(chain, baseline);
                 CheckHybridChainReadable(chain);
             }
+            CheckControlStages(chain);
         }
 
         private ThemeAlgorithmDescriptor Resolve(ThemeAlgorithm identity)
@@ -311,14 +341,14 @@ public static class ThemeAlgorithmContract
             }
         }
 
-        private void CompareCapture(DesignToken token, object?[] before, string role)
+        private void CompareCapture(DesignToken token, object?[] before, string role, string stage = "The Map stage")
         {
             foreach (var descriptor in Globals)
             {
                 if (!SameValue(descriptor, before[descriptor.Slot], descriptor.GetValue(token)))
                 {
                     Report(InputsUnchanged, descriptor.Name,
-                        $"The Map stage changed token '{descriptor.Name}' of the {role}.");
+                        $"{stage} changed token '{descriptor.Name}' of the {role}.");
                 }
             }
         }
@@ -569,19 +599,12 @@ public static class ThemeAlgorithmContract
                 config,
                 _registry));
 
-            var chainText = string.Join(", ", chain.Select(static descriptor => descriptor.Algorithm.ToString()));
+            var chainText = ChainText(chain);
             switch (result.Exception)
             {
-                case ThemeAlgorithmContractException { TokenName: { } tokenName } contract:
-                {
-                    // The compiler raises the unstable error only for tokens the stage may write, and the boundary
-                    // error only for tokens it may not.
-                    var check = _registry.TryGetGlobalToken(tokenName, out var token) && token!.Stage == TokenStage.Alias
-                        ? Stable
-                        : StageBoundary;
-                    Report(check, tokenName, contract.Message, contract.Algorithm);
+                case ThemeAlgorithmContractException { Violation: not ThemeAlgorithmContractViolationKind.Failed } contract:
+                    ReportContract(contract);
                     return null;
-                }
                 case { } exception:
                     throw new InvalidOperationException(
                         $"Compiling the chain [{chainText}] failed; the contract of '{algorithm}' cannot be verified.",
@@ -597,6 +620,144 @@ public static class ThemeAlgorithmContract
 
             return result.Snapshot!;
         }
+
+        // The compiler says which rule was broken; the token may be a global or an own token.
+        private void ReportContract(ThemeAlgorithmContractException contract)
+        {
+            var check = contract.Violation == ThemeAlgorithmContractViolationKind.Unstable ? Stable : StageBoundary;
+            Report(check, contract.TokenName, contract.Message, contract.Algorithm);
+        }
+
+        private static string ChainText(IReadOnlyList<ThemeAlgorithmDescriptor> chain) =>
+            string.Join(", ", chain.Select(static descriptor => descriptor.Algorithm.ToString()));
+
+        // ---------------------------------------------------------------- Control stages, through the compiler
+
+        // Every control stage of the verified algorithm whose control is registered with own tokens runs in the
+        // verified chain (the control has no configuration, so the scope chain applies). A stage whose control was not
+        // supplied cannot be called and is skipped.
+        private void CheckControlStages(IReadOnlyList<ThemeAlgorithmDescriptor> chain)
+        {
+            var stages = new List<(ControlTokenAlgorithmDescriptor Stage, ControlTokenDescriptor Control)>();
+            foreach (var stage in _registry.ControlAlgorithms)
+            {
+                if (stage.Algorithm == algorithm &&
+                    _registry.TryGetControl(stage.Control, out var control) &&
+                    control!.HasOwnTokens)
+                {
+                    stages.Add((stage, control));
+                }
+            }
+
+            if (stages.Count == 0 || Compile(chain) is not { } first || Compile(chain) is not { } second)
+            {
+                return;
+            }
+
+            foreach (var (stage, control) in stages)
+            {
+                var left = Materialize(first, control, chain);
+                CheckControlInputsUnchanged(stage, control, first, left, chain);
+                if (left is null || Materialize(second, control, chain) is not { } right)
+                {
+                    continue;
+                }
+
+                foreach (var own in control.OwnTokens)
+                {
+                    if (!SameValue(own, left.ControlTokenValues.GetValue(own.Slot),
+                            right.ControlTokenValues.GetValue(own.Slot)))
+                    {
+                        ReportNotDeterministic(own.Name);
+                    }
+                }
+
+                foreach (var descriptor in Globals)
+                {
+                    if (!SameValue(descriptor, EffectiveGlobal(first, left, descriptor),
+                            EffectiveGlobal(second, right, descriptor)))
+                    {
+                        ReportNotDeterministic(descriptor.Name);
+                    }
+                }
+            }
+        }
+
+        // Compiling a control is lazy: its contract exception surfaces when the control's snapshot is read.
+        private ControlThemeSnapshot? Materialize(
+            ThemeSnapshot snapshot,
+            ControlTokenDescriptor control,
+            IReadOnlyList<ThemeAlgorithmDescriptor> chain)
+        {
+            try
+            {
+                return snapshot.Controls[control.Slot];
+            }
+            catch (ThemeAlgorithmContractException contract)
+                when (contract.Violation != ThemeAlgorithmContractViolationKind.Failed)
+            {
+                ReportContract(contract);
+                return null;
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    $"Compiling control '{control.Identity}' under the chain [{ChainText(chain)}] failed; the contract " +
+                    $"of '{algorithm}' cannot be verified.",
+                    exception);
+            }
+        }
+
+        // Runs EvaluateOwn directly on a copy of the control's effective global token, as the compiler hands it over,
+        // and compares the copy before and after. When the control did not compile (a reported violation), the scope's
+        // global token stands in for the effective one.
+        private void CheckControlInputsUnchanged(
+            ControlTokenAlgorithmDescriptor stage,
+            ControlTokenDescriptor control,
+            ThemeSnapshot snapshot,
+            ControlThemeSnapshot? compiled,
+            IReadOnlyList<ThemeAlgorithmDescriptor> chain)
+        {
+            var effectiveGlobal = ThemeCompiler.CreateBuilder(
+                snapshot.GlobalTokenValues, snapshot.PresetColorPalettes, Globals);
+            foreach (var descriptor in Globals)
+            {
+                if (compiled is not null &&
+                    compiled.EffectiveGlobalTokenDelta.TryGetValue(descriptor.Slot, out var value))
+                {
+                    descriptor.SetValue(effectiveGlobal, descriptor.CopyValue(value));
+                }
+            }
+
+            var appearance = compiled?.Appearance ?? snapshot.Appearance;
+            var token = control.CreateBuilder()!;
+            token.AssignEffectiveGlobalToken(effectiveGlobal);
+            control.Evaluate(token, appearance);
+            var before = Capture(effectiveGlobal);
+            var context = new ThemeAlgorithmContext(
+                appearance, chain.Select(static descriptor => descriptor.Algorithm).ToArray());
+            try
+            {
+                stage.EvaluateOwn(in context, effectiveGlobal, token);
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidOperationException(
+                    $"The control stage of '{algorithm}' for '{control.Identity}' failed; its contract cannot be verified.",
+                    exception);
+            }
+
+            CompareCapture(effectiveGlobal, before, "effective global token",
+                $"The control stage for '{control.Identity}'");
+        }
+
+        private static object? EffectiveGlobal(
+            ThemeSnapshot snapshot,
+            ControlThemeSnapshot control,
+            TokenDescriptor descriptor) =>
+            control.EffectiveGlobalTokenDelta.TryGetValue(descriptor.Slot, out var value)
+                ? value
+                : snapshot.GlobalTokenValues.GetValue(descriptor.Slot);
 
         // ---------------------------------------------------------------- Helpers
 

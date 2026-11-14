@@ -882,3 +882,50 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   2. 休眠测试只走完了「缺控件」那一半，「缺算法、之后追加算法」那一半没有激活。
   3. 校验遍历全部控件阶段实现再按引用筛掉已提交的；只遍历新追加的更直接（开销可忽略）。
   4. 测试文件的 `using` 顺序。
+
+### Task 14：编译器执行控件 Token 算法阶段（未提交，待审阅）
+
+- 改动（`src/AtomUI.Core/Theme`）：
+  1. `ThemeCompiler.CompileControl`：最后一个参数由全局描述符列表改为注册表（用来查控件阶段）。顺序按规格 4.3：既有的四种模式得到有效全局 Token（未改动，含 `Global`/`Custom` 下根显式 Map/Alias 不参与重新推导的既有例外）→ 链上各控件阶段的 `EvaluateGlobal`（记账，只用来判断是否写过；写入直接生效，不重跑 Map/Alias）→ 再写一次该控件的全局覆盖、`NormalizeFinalBehavior` → Own Token 走 `StagedTokenEvaluation.Run`（阶段名 `Control`，默认计算是 `descriptor.Evaluate`，显式值是该控件的 Own 覆盖，名称经 `TryGetOwnToken` 解析）。`EvaluateGlobal` 写过任何 Token 时控件不再与根相同，计算全局差量。
+  2. `EvaluateOwn` 运行期间在有效全局 Token 上也打开记账，有写入即抛 `StageBoundary`：「Algorithm 'X' wrote token 'ColorPrimary' outside the Control stage.」。`StagedTokenEvaluation.RunSteps` 的 catch 加了 `when (exception is not ThemeAlgorithmContractException)`，让这个异常原样穿过，不被包成「failed」。`EvaluateGlobal` 抛异常时包成 `Failed`。
+  3. 使用哪条链：`Custom` 用控件自己的链，其余三种模式用作用域链。`ThemeCompiler.ResolveControlStages` 返回按链顺序参与的控件阶段描述符，没有时返回 `null`；注册表没有任何控件阶段（内置主题）或控件没有 Own Token 时第一句就返回，不查表、不分配。
+  4. 链上有控件阶段的控件，单元格的 `UsesRootSharedResources` 为 false（`EvaluateGlobal` 是否写入要编译后才知道）；两条单元格构造路径（逐控件与启动索引）都改了，后者只在注册表有控件阶段时才查。
+  5. 缓存键：`ControlCompilationCacheKey` 不加字段。有控件阶段时，原来存控件描述符 `CompilationIdentity` 的字段改存一个按值比较的 `ControlStageCompilationIdentity`（控件身份 + 各阶段的 `Revision` 与 `CompilationIdentity`，按链顺序）；没有时仍是原来的对象，键的相等与哈希与之前逐位相同。`ControlCompilationCache.GetOrCompile` 与 `ControlCompilationCacheKey.Create` 各加一个可选参数 `controlStages`。
+  6. `LazyControlSnapshotSource` 用注册表替换原来的全局描述符字段（字段数不变，对象大小不变）；阶段在 `CompileControl` 内解析，不进工厂闭包，闭包大小不变。缓存路径上为建键多解析一次（只在注册表有控件阶段时有实际开销）。
+  7. 主控裁决 1：`ThemeAlgorithmContractException` 新增 `Violation` 属性，三处 `StagedTokenEvaluation` 抛点和两处新抛点都设置。
+- 改动（契约测试 `tests/AtomUI.Theme.ContractTests`）：`ThemeAlgorithmContractInput.ControlAlgorithms`（`init`，默认空，`Capture` 收集 builder 的 `ControlTokenAlgorithms`），验证器的注册表带上它们。`Stable`/`StageBoundary` 改按 `Violation` 分类（不再按 Token 的阶段推断）；`Failed` 仍视为验证无法进行而抛出。被验证算法的每个控件阶段（控件在 `Controls` 里且有 Own Token）：编译两次比较 Own Token 与有效全局（`Deterministic`）；物化控件时捕获契约异常（`Stable`/`StageBoundary`）；直接调用一次 `EvaluateOwn` 比较有效全局前后快照（`InputsUnchanged`，控件编译失败时用作用域全局代替）。
+- 与简报/主控说明的出入：
+  1. 枚举名用 `ThemeAlgorithmContractViolationKind`，不是主控指定的 `ThemeAlgorithmContractViolation`：契约测试库已有同名公开 record `AtomUI.Theme.ContractTests.ThemeAlgorithmContractViolation`，同时引用两个命名空间的代码（如 `ThemeAlgorithmContractSelfTests`）会报 CS0104 二义。改名只需全局替换。
+  2. 枚举多一个成员 `Failed`：算法自身抛异常的抛点既不是不稳定也不是越界，主控要求「每个抛点都设置」。
+  3. `CompileControl` 改签名（注册表替换全局描述符列表）；简报未列 `LazyControlSnapshots.cs`、`ControlCompilationCache.cs`、`StagedTokenEvaluation.cs`、`ThemeAlgorithmContractException.cs`，均为实现所需。
+  4. 控件阶段的修订号本来已折叠进注册表修订号（Task 13），全局缓存键已含注册表修订号；控件键再计入一次是按简报要求，冗余但无害。
+- 测试：新增 `ControlTokenAlgorithmCompilationTests`（13 个方法、16 个用例，名称逐字）；`ThemeAliasAlgorithmTests` 三处补断言 `Violation`。RED：实现执行逻辑前 12 个失败（控件阶段没有运行、契约未报告）；4 个先通过：两个「显式值胜出」（阶段不运行时结果本就是显式值）、缓存键与「无阶段控件不变」（这两项依赖的键与单元格改动在 RED 时已写好）。GREEN：16/16。`AtomUI.Core.Tests` 549/549（533 + 16），`AtomUI.Generator.Tests` 1100/1100，`AtomUI.Themes.Tests` 27/27，`AtomUIGallery.Tests` 422/422；`AtomUI.Theme.ContractTests` 是库，0 错误构建，其检查经 Core.Tests 的自测运行。按新规则未跑全量回归。
+- 测量（Task 7 的测量工具，`DOTNET_TieredCompilation=0`，冷编译 21 / 预热 10，切换 3 / 1，Release；只看分配与哈希，未跑耗时批次）：改动前（HEAD `84166be73`）与改动后全部分配、哈希、sanity 行逐字相同（49 行 `diff` 无输出）。冷编译分配中位数 Default 1,138,032、Dark 1,143,224、Compact 1,138,416，`defaultMemoised` 1,121,784；三个哈希与 Task 7/10/11/13 登记的相同。
+- 搁置的三条审阅意见：(i) 标记跨轮只增不减 — 未改动，控件阶段沿用同一行为；(ii) `ThemeAlgorithmContext.Algorithms` 暴露数组 — 未改善，每次编译新建数组（与 Alias 阶段相同）；(iii) `Global` 模式下根链带 Alias 阶段的测试 — 未补，四模式理论覆盖的是控件阶段。
+- 修订第 1 轮（审阅通过，无严重/重要问题；补一处测试缺口与五个小项）：
+  1. 新增 `Startup_Index_Path_Serves_The_Stage_Written_Global_Value_For_That_Control_Only`：基于启动索引（手动注册表）的注册表加一个在 `EvaluateGlobal` 写 `ColorPrimary` 的控件阶段；经 `ThemeTokenResourceProvider` 查该控件作用域的共享资源得到阶段写的值，同作用域无阶段的控件得到根的值。首次即通过；临时把 `CompileIndexedControls` 的条件改回「未配置即用根资源」后失败（得到根的 `#ff1677ff`），恢复后通过。
+  2. 新增不分配的 `HasControlStage`，两处单元格判断改用它；`ResolveControlStages` 只剩缓存键与编译两处调用。
+  3. `ResolveControlStages` 改用 `ControlStageChain`。
+  4. 每次有阶段的控件编译只建一个算法上下文：`CompileControl` 的局部变量换成 `ControlStagePlan?`（仍是一个引用，无阶段时为 null，原路径不变），上下文由全局部分创建、Own 部分复用。
+  5. `EvaluateOwnStage` 的「只抛第一个」改成显式写法。
+  6. `LazyControlSnapshotSource` 的摘要全部改为英文。
+  - 结果：`AtomUI.Core.Tests` 550/550，`AtomUI.Themes.Tests` 27/27，`AtomUIGallery.Tests` 422/422；测量的分配、哈希、sanity 行与基线逐字相同（Default 1,138,032、Dark 1,143,224、Compact 1,138,416，`defaultMemoised` 1,121,784，三个哈希不变）。
+- 审阅结论：首轮审阅即判定规格符合、质量通过，无严重或重要问题；主控把一处测试缺口和五个小项退回修正一轮，复审确认六项全部解决、没有引入新问题。Task 15 的提交为 `84166be73`。审阅逐行核对了内置路径（没有注册任何控件阶段实现时）：
+  - 每个控件的编译只多一次「控件阶段表是否为空」的判断和两次空判断；不新增委托、闭包、列表或记账。
+  - 控件缓存键存的还是原来那个身份对象，哈希输入不变；单元格的共享资源判断在阶段表为空时化简为原式。
+  - 分配字节数与结果哈希在改动前后逐行相同。
+- 裁决（异常类别的命名）：主控原先要求枚举叫 `ThemeAlgorithmContractViolation`，实现者改为 `ThemeAlgorithmContractViolationKind` 并加了第三个成员 `Failed`。予以认可 — 原名与契约测试库里已有的公开记录类型同名，同时引用两个命名空间会有歧义；算法自身抛异常的那个抛出点既不是「不稳定」也不是「越界」，没有第三个成员就做不到「每个抛出点都设置类别」。
+- 裁决（完整耗时对比的时间）：原定在本任务结束时做的完整耗时对比，改到 Task 23 的性能复核一并做 — 它要独占机器一到两小时；本任务的内置路径已逐行核对，确定性指标逐字相同，阶段六、七不改 `AtomUI.Core` 的编译器，届时测出退化仍可归因到本任务 — 代价是本任务若有耗时退化，会晚约一天发现。对比基线仍是提交 `3a87bba25` 的树。
+- 阶段五全量回归（主控运行，带停滞保护，针对首轮审阅时的树，即修订第 1 轮之前）：`[SUMMARY] TOTAL: 存在失败; 总耗时 16:10`，12464 个测试里 1 个失败：`ComboBoxShowCasePageTests.ComboBox_ShowCase_Filter_And_Empty_Content_Examples_Render`（示例页里一个样式设置的内边距期望 24，读到 16）。修订第 1 轮之后只跑了 `AtomUI.Core.Tests`、`AtomUI.Themes.Tests`、`AtomUIGallery.Tests`，全量回归留到阶段六结束。
+- 偶发失败的对照实验：最近 5 次全量运行里出了 4 个不同的偶发失败和 1 次挂死，此前约 12 次一个都没有，所以这次没有直接判为无关，做了对照 — 在改造前的树（Task 1 之前，`0bf534726`）和当前树上各连续运行 `AtomUIGallery.Tests` 8 遍：改造前 8/8 全过（每遍 421 个），当前 8/8 全过（每遍 422 个）。结论：单独运行时两棵树都复现不了，失败只在全量回归里出现（Gallery 排在两个大的界面测试项目之后运行）；对照没有显示这个分支引入了不稳定，但也没有排除 — 要排除得在改造前的树上重复跑全量回归，每遍 16 分钟，没有做。出问题的测试文件都是上游已有的。留给用户决定是否单独调查。
+- 带入 Task 23 的一项：控件阶段的契约违规在该控件第一次被读取时抛出（延迟编译），不是编译期诊断；包作者会在查资源时遇到，指南要写一句。
+- 留待最终整体审阅统一处理的小项：
+  1. 契约校验的 `CheckControlStages` 在基线为空或可复用基线时仍多编译两遍。
+  2. `Changing_A_Control_Algorithm_Revision_Invalidates_That_Controls_Cache_Entry` 没有隔离出修订号：两个描述符实例的身份对象本来就不同，不折叠修订号键也不同。折叠修订号与注册表修订号冗余但无害。
+  3. 「无阶段控件编译结果不变」的测试只比较了 Own Token 的第 0 个槽位，应比较整张表。
+  4. 同一次编译的两个阶段现在共用一个上下文实例，`Algorithms` 暴露数组的问题（Task 11 小项 2）在这里同样存在。
+  5. `HasControlStage` 重复了调用方已做的空表判断（无害）。
+
+### 阶段五小结（Task 13、15、14）
+
+算法的控件阶段已全部就位：契约与注册（Task 13）、运行时追加的接受规则（Task 15）、编译器执行与契约校验的扩展（Task 14）。内置主题的编译结果和分配字节数与阶段三结束时完全相同。实际执行顺序是 13、15、14。

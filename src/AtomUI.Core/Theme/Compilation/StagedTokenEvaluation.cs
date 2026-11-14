@@ -82,6 +82,7 @@ internal static class StagedTokenEvaluation
                     throw new ThemeAlgorithmContractException(
                         unstable.Writer,
                         unstable.Descriptor.Name,
+                        ThemeAlgorithmContractViolationKind.Unstable,
                         $"Algorithm '{unstable.Writer}' did not stabilize after {MaxRounds} rounds; " +
                         $"unstable token '{unstable.Descriptor.Name}'.");
                 }
@@ -112,11 +113,14 @@ internal static class StagedTokenEvaluation
             {
                 step.Evaluate(token);
             }
-            catch (Exception exception)
+            // A contract exception raised by the step itself (the compiler's checks around the algorithm call)
+            // already names the algorithm and the rule; only the algorithm's own failures are wrapped.
+            catch (Exception exception) when (exception is not ThemeAlgorithmContractException)
             {
                 throw new ThemeAlgorithmContractException(
                     step.Algorithm,
                     null,
+                    ThemeAlgorithmContractViolationKind.Failed,
                     $"Algorithm '{step.Algorithm}' failed in the {stage} stage.",
                     exception);
             }
@@ -134,6 +138,7 @@ internal static class StagedTokenEvaluation
                     throw new ThemeAlgorithmContractException(
                         step.Algorithm,
                         name,
+                        ThemeAlgorithmContractViolationKind.StageBoundary,
                         $"Algorithm '{step.Algorithm}' wrote token '{name}' outside the {stage} stage.");
                 }
 

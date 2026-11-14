@@ -6,11 +6,14 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Compilation;
 
 /// <summary>
-/// 惰性槽共享的只读全局编译输入。只保留全局计算所需数据，不持有父快照或整张控件配置表。
+/// The read-only global compilation input shared by lazy control cells. It keeps only what control compilation
+/// needs from the global compilation, never the parent snapshot or the whole control configuration table.
+/// The registry is held (instead of only its global descriptor list) because control compilation also looks up the
+/// control token stages there; the snapshot that owns the cells holds the same registry.
 /// </summary>
 internal sealed class LazyControlSnapshotSource
 {
-    private readonly IReadOnlyList<TokenDescriptor> _globalDescriptors;
+    private readonly ThemeSchemaRegistry _registry;
     private readonly IReadOnlyList<ThemeAlgorithmDescriptor> _globalAlgorithms;
     private readonly ThemeAppearance _globalAppearance;
     private readonly object _builderGate = new();
@@ -31,7 +34,7 @@ internal sealed class LazyControlSnapshotSource
         ControlCompilationCache? cache)
     {
         ArgumentNullException.ThrowIfNull(input);
-        _globalDescriptors = input.Registry.GlobalTokens;
+        _registry         = input.Registry;
         _globalAlgorithms = input.EffectiveConfig.Algorithms;
         _globalAppearance = globalAppearance;
         _globalBuilder    = globalBuilder;
@@ -58,7 +61,7 @@ internal sealed class LazyControlSnapshotSource
             {
                 // 只捕获当前 source 的冻结值；不捕获 input、父 snapshot 或历史 source。
                 Volatile.Write(ref _globalBuilder,
-                    ThemeCompiler.CreateBuilder(_globalValues, _globalPalettes, _globalDescriptors));
+                    ThemeCompiler.CreateBuilder(_globalValues, _globalPalettes, _registry.GlobalTokens));
             }
             return _globalBuilder;
         }
@@ -79,12 +82,15 @@ internal sealed class LazyControlSnapshotSource
                 GetGlobalBuilder(),
                 _globalValues,
                 _globalResources,
-                _globalDescriptors,
+                _registry,
                 valueDonor);
         }
 
+        // The stages are resolved again inside CompileControl rather than captured here: capturing them would grow
+        // the closure of every control, including those without stages.
         return _cache?.TryGetTarget(out var cache) == true
-            ? cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory, EstimatedRetainedBytes)
+            ? cache.GetOrCompile(_globalKey!, descriptor, config, _globalAppearance, Factory, EstimatedRetainedBytes,
+                ThemeCompiler.ResolveControlStages(_registry, descriptor, config, _globalAlgorithms))
             : Factory();
     }
 
@@ -121,7 +127,7 @@ internal sealed class ControlSnapshotCell
     }
 
     internal ControlSnapshotCell(LazyControlSnapshotSource source, ControlTokenDescriptor descriptor,
-        NormalizedControlThemeConfig? config, ControlThemeSnapshot? valueDonor = null)
+        NormalizedControlThemeConfig? config, ControlThemeSnapshot? valueDonor = null, bool hasControlStage = false)
     {
         _source = source;
         _descriptor = descriptor;
@@ -129,8 +135,10 @@ internal sealed class ControlSnapshotCell
         _valueDonor = valueDonor;
         // 与 CompileControl 在 Own evaluator 之前冻结差量的分支相同。
         // Own evaluator 不参与 Shared 值计算，Global/Custom 算法仍走完整路径。
-        UsesRootSharedResources = config is null ||
-            (config.GlobalTokens.Count == 0 && config.AlgorithmMode is ControlAlgorithmMode.Unspecified or ControlAlgorithmMode.Disabled);
+        // A control token stage may write the control's global copy (EvaluateGlobal), which is known only once the
+        // control compiles, so a control with a stage never reads the root's shared resources directly.
+        UsesRootSharedResources = !hasControlStage && (config is null ||
+            (config.GlobalTokens.Count == 0 && config.AlgorithmMode is ControlAlgorithmMode.Unspecified or ControlAlgorithmMode.Disabled));
     }
 
     internal ControlSnapshotCell(LazyControlSnapshotSource source, Func<ControlTokenDescriptor> descriptorFactory,

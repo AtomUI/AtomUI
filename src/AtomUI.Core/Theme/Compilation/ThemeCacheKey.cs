@@ -481,22 +481,88 @@ internal readonly struct ThemeSnapshotCacheKey : IEquatable<ThemeSnapshotCacheKe
     }
 }
 
+/// <summary>
+/// The compilation identity of a control whose chain runs control token stages: the control descriptor's identity
+/// plus the revision and identity of every participating stage, in chain order. Compared by value.
+/// </summary>
+/// <remarks>
+/// A control without control stages keeps the bare descriptor identity in its key, so its key is exactly what it was
+/// before control stages existed; only controls with stages pay for this object.
+/// </remarks>
+internal sealed class ControlStageCompilationIdentity : IEquatable<ControlStageCompilationIdentity>
+{
+    private readonly object _controlIdentity;
+    private readonly (int Revision, object CompilationIdentity)[] _stages;
+    private readonly int _hashCode;
+
+    internal ControlStageCompilationIdentity(
+        object controlIdentity,
+        IReadOnlyList<ControlTokenAlgorithmDescriptor> stages)
+    {
+        _controlIdentity = controlIdentity;
+        _stages          = new (int, object)[stages.Count];
+        var hash = new HashCode();
+        hash.Add(controlIdentity);
+        hash.Add(_stages.Length);
+        for (var index = 0; index < _stages.Length; index++)
+        {
+            _stages[index] = (stages[index].Revision, stages[index].CompilationIdentity);
+            hash.Add(_stages[index].Revision);
+            hash.Add(_stages[index].CompilationIdentity);
+        }
+        _hashCode = hash.ToHashCode();
+    }
+
+    internal long EstimatedRetainedBytes => 48L + _stages.Length * 16L;
+
+    public bool Equals(ControlStageCompilationIdentity? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        if (other is null ||
+            !ReferenceEquals(_controlIdentity, other._controlIdentity) ||
+            _stages.Length != other._stages.Length)
+        {
+            return false;
+        }
+        for (var index = 0; index < _stages.Length; index++)
+        {
+            if (_stages[index].Revision != other._stages[index].Revision ||
+                !ReferenceEquals(_stages[index].CompilationIdentity, other._stages[index].CompilationIdentity))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public override bool Equals(object? obj) => Equals(obj as ControlStageCompilationIdentity);
+
+    public override int GetHashCode() => _hashCode;
+}
+
 internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilationCacheKey>
 {
     private readonly GlobalCompilationCacheKey _global;
     private readonly NormalizedControlConfigCacheKey? _controlConfig;
+    // The descriptor's CompilationIdentity, or a ControlStageCompilationIdentity when control stages take part.
     private readonly object _compilationIdentity;
 
     private ControlCompilationCacheKey(
         GlobalCompilationCacheKey global,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? controlConfig,
-        ThemeAppearance appearance)
+        ThemeAppearance appearance,
+        IReadOnlyList<ControlTokenAlgorithmDescriptor>? controlStages)
     {
         ArgumentNullException.ThrowIfNull(global);
 
         _global       = global;
-        _compilationIdentity = descriptor.CompilationIdentity;
+        _compilationIdentity = controlStages is null
+            ? descriptor.CompilationIdentity
+            : new ControlStageCompilationIdentity(descriptor.CompilationIdentity, controlStages);
         Identity      = descriptor.Identity;
         ControlSlot   = descriptor.Slot;
         Appearance    = appearance;
@@ -507,19 +573,30 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
     internal ControlTokenIdentity Identity { get; }
     internal long EstimatedRetainedBytes => ThemeRetainedBytesEstimator.Add(
-        ThemeRetainedBytesEstimator.Add(64 + CacheKeyArray.EstimateIdentity(Identity), _global.EstimatedRetainedBytes),
-        _controlConfig?.EstimatedRetainedBytes ?? 0);
+        ThemeRetainedBytesEstimator.Add(
+            ThemeRetainedBytesEstimator.Add(64 + CacheKeyArray.EstimateIdentity(Identity), _global.EstimatedRetainedBytes),
+            _controlConfig?.EstimatedRetainedBytes ?? 0),
+        (_compilationIdentity as ControlStageCompilationIdentity)?.EstimatedRetainedBytes ?? 0);
     internal long EstimatedInputRetainedBytes => _controlConfig?.EstimatedInputRetainedBytes ?? 0;
     internal int ControlSlot { get; }
     internal ThemeAppearance Appearance { get; }
 
+    /// <param name="global">The key of the global compilation the control derives from.</param>
+    /// <param name="descriptor">The control.</param>
+    /// <param name="controlConfig">The control's effective configuration, if any.</param>
+    /// <param name="appearance">The appearance the control compiles under.</param>
+    /// <param name="controlStages">
+    /// The control token stages that run for this control, in chain order, or <see langword="null"/> when none does;
+    /// see <see cref="ThemeCompiler.ResolveControlStages"/>.
+    /// </param>
     internal static ControlCompilationCacheKey Create(
         GlobalCompilationCacheKey global,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? controlConfig,
-        ThemeAppearance appearance)
+        ThemeAppearance appearance,
+        IReadOnlyList<ControlTokenAlgorithmDescriptor>? controlStages = null)
     {
-        return new ControlCompilationCacheKey(global, descriptor, controlConfig, appearance);
+        return new ControlCompilationCacheKey(global, descriptor, controlConfig, appearance, controlStages);
     }
 
     public bool Equals(ControlCompilationCacheKey other)
@@ -527,7 +604,8 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
         return ControlSlot == other.ControlSlot &&
                Appearance == other.Appearance &&
                Identity == other.Identity &&
-               ReferenceEquals(_compilationIdentity, other._compilationIdentity) &&
+               (ReferenceEquals(_compilationIdentity, other._compilationIdentity) ||
+                (_compilationIdentity is ControlStageCompilationIdentity stages && stages.Equals(other._compilationIdentity))) &&
                _global.Equals(other._global) &&
                Equals(_controlConfig, other._controlConfig);
     }

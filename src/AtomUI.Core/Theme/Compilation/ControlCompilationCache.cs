@@ -39,7 +39,8 @@ internal sealed class ControlCompilationCache : IDisposable
         NormalizedControlThemeConfig? controlConfig,
         ThemeAppearance appearance,
         Func<ControlThemeSnapshot> factory,
-        long sourceRetainedBytes = 0)
+        long sourceRetainedBytes = 0,
+        IReadOnlyList<ControlTokenAlgorithmDescriptor>? controlStages = null)
     {
         ArgumentNullException.ThrowIfNull(globalKey);
         ArgumentNullException.ThrowIfNull(descriptor);
@@ -50,7 +51,8 @@ internal sealed class ControlCompilationCache : IDisposable
             globalKey,
             descriptor,
             controlConfig,
-            appearance);
+            appearance,
+            controlStages);
         return _entries.GetOrCreateAsync(
                            key,
                            _ => ValueTask.FromResult(factory()),

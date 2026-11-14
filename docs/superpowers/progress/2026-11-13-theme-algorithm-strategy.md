@@ -947,3 +947,28 @@ NOW 切换的单向中位数：cached 切暗 5.404 ms、切亮 5.234 ms；uncach
   1. 纯色画刷的不透明度不进基线（今天只有 `Window.SystemBarColor` 一个，恒为 1）。
   2. 渐变格式不含 `TransformOrigin`，没有径向与锥形渐变的几何分支（今天 4 个渐变都是线性、无变换）。
   3. 显式测试结束后没有把主题切回去；与别的测试一起显式运行时会影响后面的测试。
+
+### Task 17：PrimeNG 色阶与 Aura 的 Map 阶段（未提交，待审阅）
+
+- 改动：`src/AtomUI.Themes.PrimeNG/Algorithms/` 新增 `PrimeNGPalette`（`Mix`/`Generate`/`Resolve`，权重表达式与 `@primeuix/styled` 1.2.0 逐字相同，半数向上取整）、`PrimeNGTailwindPalettes`（22 套 Tailwind 色板，从 `@primeuix/themes` 3.1.1 的 primitive 文本转录，Lara、Nora 的表逐字相同，500 级互不重复）、`PrimeNGPreset`（规则表：明暗各一套主色 / 状态色 / 错误色 / 中性色取级 + 尺寸阶梯）、`PrimeNGPresetAlgorithm`（公开抽象基类，实现 `IThemeAlgorithm` 与 `IThemeAliasAlgorithm`，Alias 阶段不写任何值）、`PrimeNGAuraAlgorithm` / `PrimeNGAuraDarkAlgorithm`（`PrimeNG:Aura`、`PrimeNG:Aura.Dark`，revision 1）。`UsePrimeNGThemes` 先调生成的 `GeneratedThemeAlgorithmRegistration.Register` 再注册主题包；生成器正常产出注册类和 `PrimeNGAlgorithms` 身份类。PrimeNG 项目加 `InternalsVisibleTo AtomUI.Themes.Tests`（简报文件清单未列，测试要访问内部的色阶类）；`AtomUI.Themes.Tests` 引用 `AtomUI.Theme.ContractTests`。README 新增「Preset algorithms」一节：来源包与版本、色阶规则、Aura 映射表逐行标注来源（XML 现值 / PrimeUIX 对应 Token / AtomUI 提议）。
+- Map 的做法：先跑对应的 Ant 算法（浅色 `Default`，暗色 `Dark`）让所有 Map Token 有值（字号、尺寸、动效、线宽、Ant 预置色板），再写 PrimeNG 的全部颜色类 Map Token，单独使用时再写尺寸阶梯。暗色接在别的算法之后时 Ant `Dark` 本身只重算颜色，PrimeNG 也不写尺寸，所以尺寸沿用前一个 Map。种子：主色、成功、警告、错误、信息种子都是各自色阶的 500 级，`ColorLink` 缺省取主色种子；中性色阶是常量（浅色 slate，暗色 zinc）。尺寸阶梯相对种子：圆角 XS/SM/LG = 半径 −4/−2/+2，控件高度 SM/LG = 高度 −4/+8（Aura 40→36/48、Lara 44→40/52 都符合）；字号用 Ant 阶梯（14 时正是 12/16）。
+- 规格 4.7「提议」行的核对（PrimeUIX `aura/base`、`button`、`message`、`tooltip`）：浅色 `ColorPrimaryBgHover` 100、`ColorPrimaryTextActive` 800 有 PrimeUIX 对应（`highlight.focusBackground`/`focusColor`）；浅色 Border 200/300、TextHover 600 保留提议。暗色「按暗色对称取级」改为跟 PrimeUIX：BgHover = 400@24%（`highlight.focusBackground`），TextActive = 白@87%（`highlight.focusColor`），Border/BorderHover = 700@36%/600@36%（借用 `message.*.borderColor`），TextHover 300。状态色没有沿用主色规则：按钮取级（500/600/700，暗 400/300/200）与主色一致，但文字和底色按 `message`（文字浅 600、暗 500；底色浅 50、暗 500@16%），否则暗色的成功文字会变成白色。错误色基准 400/300（现值），悬停/按下各再走一级（浅 500/600，暗 200/100）。其余中性 Token（Tertiary、Quaternary、Fill 系列、Layout、Solid 系列）PrimeUIX 无对应，是提议值，README 已标明。
+- 简报手算值核对：`Generate(#10B981)[0] = #F3FCF9`、`[10] = #042E20`、`Mix(white, #10B981, 95).G = 252` 与按官方实现复算一致，未改测试。另加一条能区分半数向上与银行家舍入的断言（`Mix(#010101, black, 50).R = 1`；251.5 两种舍入都得 252，区分不了）。
+- 测试：新增 `PrimeNGPaletteTests`（9 条）与 `PrimeNGAlgorithmContractTests`（5 条）。`Aura_Map_Matches_The_Baseline_Colours` 的种子设为主色 `#10B981`、错误色 `#EF4444`（red-500；简报没写种子，按「种子是 500 级」推出）。契约校验对两个算法都用 `standalone: true`。RED：色阶类不存在，`PrimeNGPaletteTests` 编译失败（CS0103）。GREEN：`AtomUI.Themes.Tests` 43/43（原 29 + 14；环境变量未设置，显式快照测试未运行——Task 16 审阅留下的这一项已确认）。变异检查：把暗色主色悬停临时改成 400，契约报 `StatesDistinct`，已还原。`AtomUIGallery.Tests` 422/422（第一次运行有 1 个失败 `ComboBoxShowCasePageTests.ComboBox_ShowCase_Filter_And_Empty_Content_Examples_Render`，期望 Padding 24 实得 16；单独运行时多数失败，去掉算法注册后单独运行同样失败，与本任务无关；重跑全套通过）。
+- 基线核对：XML 未改，没有 XML 引用新算法。改后用 `Dump_Baseline_For_All_Twelve_Profiles` 导出 12 个 profile 到临时目录 `primeng-task17-after/`，与 `primeng-baseline/` 逐个 `cmp` 字节相同（每份 1722 行），`Diff` 自然为空。
+- 审阅结论：规格符合，质量通过，无严重或重要问题。Task 16 的提交为 `9a958923f`。审阅逐项核对了主控点名的六个风险：
+  - 转录：把 `@primeuix/themes` 3.1.1 Aura 预设的 `primitive` 段与 `PrimeNGTailwindPalettes.cs` 全量比对，22 组色板 × 11 级共 242 个值全部一致；混色与色阶公式与 `@primeuix/styled` 1.2.0 的源码逐式相同，`Math.Floor(x + 0.5)` 对非负通道值等价于 JS 的 `Math.round`。
+  - 只用公开 API：`AtomUI.Core` 没有对 `AtomUI.Themes.PrimeNG` 开放内部成员；作为底的 `DefaultThemeVariantCalculator` 与 `DarkThemeVariantCalculator` 都是公开类型。第三方能写出同样的算法。
+  - 「先跑一遍 Ant 算法作底」：每次调用新建计算器实例，保持纯函数；暗色算法接在别的算法之后时只重算颜色、尺寸沿用，有测试；Map 里 71 个颜色 Token 全部由 PrimeNG 规则写入，没有一个留着 Ant 的值。
+  - 对规格 4.7「提议」行的替换：取自 PrimeUIX 的几项（高亮背景、遮罩、浮层背景、消息与按钮的状态取级、提示背景）对照源码属实；没有 PrimeUIX 对应项的都在 README 里标成 AtomUI 的提议，且不与任何「现值」行或基线冲突。
+  - 基线色值测试断言了简报列出的全部 13 个值；测试用的种子都是主题 XML 能设置的。
+  - 注册算法只改变注册表修订号（指纹与缓存键），不改变不引用新算法的主题的编译值。
+- 裁决（状态色家族的取法）：规格 4.7 提议成功、警告、信息家族照搬主色规则；实现改为状态取级跟主色、文字与背景跟 PrimeUIX 的 `message`。予以认可 — 照搬主色规则的话，暗色下状态色文字会变成 87% 白，与 PrimeUIX 的实际取值不符；规格 4.7 自己写明提议行要对照源码核对 — 代价是与规格文字不一致，README 逐行记了来源。留给用户确认。
+- 带入 Task 18 的两项：Aura 的四份 XML 要把 `ColorError` 种子设为 red-500 `#EF4444`（今天写的是 `#F87171`，那是算法取出的 400 级）；README 补一句「浅色 Aura 接在别的算法之后会丢弃前一个算法的整个 Map」。
+- 新发现的一处行为，留给用户（与 Task 11 记录的 `Global`/`Custom` 例外同源）：PrimeNG 算法对自己的输出不是幂等的。控件用 `Global` 或 `Custom` 算法模式时，编译器拿已编译的根全局 Token 作种子重跑算法链；此时 `ColorError` 已经是 400 级、暗色的 `ColorPrimary` 也是 400 级，都不是 Tailwind 的 500 级，于是走公式生成，那个控件的错误色（浅色）和主色、状态色（暗色）会再偏一档。Ant 的暗色算法今天也有同样的漂移。目前没有任何主题用到控件算法模式。
+- `ComboBoxShowCasePageTests.ComboBox_ShowCase_Filter_And_Empty_Content_Examples_Render` 的归属已确定：单独运行这个测试，在改造前的树（`0bf534726`）上 5 次全部失败，在当前树上 5 次失败 3 次，同一条断言。它依赖运行顺序，是原有问题，不是本计划引入的。实现者去掉算法注册后单独重跑 3 次也都失败，结论一致。
+- 留待最终整体审阅统一处理的小项：
+  1. `PrimeNGFamilyRule.BgActive` 对主色和状态色规则是没人读的数据（只有 `ColorErrorBgActive` 这一个 Token）。
+  2. 暗色下 `ColorPrimaryText` 与 `ColorPrimaryTextActive` 都是 87% 白（照 PrimeUIX），没有按下态的区分；Task 22 人工验收时看一眼。
+  3. `PrimeNGPalette.Stops` 是 `static readonly int[]`（简报指定），内部且从不写入；换成不可变集合更干净。
+  4. `WriteSizes` 只读圆角的左上角值，非均匀圆角的种子会被悄悄拉平（PrimeNG 的种子都是均匀的）。

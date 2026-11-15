@@ -296,7 +296,8 @@ compilation only to 8%–9% that day, so a 2% difference could not be detected. 
 by jitting the control-stage registry even when it was empty, was found and fixed before release; startup now jits the
 same methods as the baseline and is unchanged within the machine's resolution of about 1 ms (applications that register
 control stages were not measured). `AtomUI.Core.dll` grew by 2.05% (1,125,888 → 1,148,928 bytes), which is above the
-plan's 1% assembly-size gate and is recorded as not met; other gated assemblies grew by at most 0.10%, and the NativeAOT
+plan's 1% assembly-size gate; the gate was not met, and the project owner accepted this growth on 2026-11-14 as an
+explicit relaxation limited to this assembly. Other gated assemblies grew by at most 0.10%, and the NativeAOT
 Gallery executable is 0.09% smaller. A theme that uses the stages pays for them: `PrimeNGAura` compiles in about
 0.88 ms versus about 0.74 ms for the built-in default theme (+18%) and allocates 1,249,256 versus 1,138,032 bytes
 (+9.8%); `PrimeNGAura.Dark` takes about 0.89 ms (+20%) and 1,254,568 bytes (+10.2%).

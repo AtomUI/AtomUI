@@ -406,7 +406,7 @@ public partial class NavMenu : ItemsControl,
     
     private protected virtual void HandleItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _entryOwnershipCoordinator.Synchronize();
+        _entryOwnershipCoordinator.Synchronize(e);
         if (IsPopupPinnedOpen)
         {
             // 条目图变化会改变可钉住目标（例如声明式钉住先于条目填充写入）或使当前钉住节点失效。

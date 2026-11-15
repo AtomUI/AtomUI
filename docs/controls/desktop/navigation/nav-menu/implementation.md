@@ -244,7 +244,9 @@ owner menu、parent item 或 parent group 到生成容器的运行期状态关�
 
 协调器用引用相等集合检测同 owner、跨 owner、跨 custom wrapper 和跨根菜单的重复 occurrence，并使用 Avalonia weak collection subscription 监听当前 scope 内所有可通知的 custom entry source。built-in child collection 不由祖先协调器订阅，避免深树形成 O(N²) 订阅和重复全子树扫描；其 mutation 由 child 自身协调器在本地处理，structural owner 冲突仍提供跨 scope 的全局唯一性边界。custom source 动态加入内置后代时，协调器复用 entry graph 插入校验，拒绝 candidate 指回当前 built-in scope owner 或其任意 built-in 祖先；通过校验后最近 scope owner 才取得 ownership。后代移除或 source 离开当前 scope 时释放 ownership 和订阅。weak structural owner 与 weak collection subscription 都不能反向强持有根菜单或离线 built-in owner。
 
-根 `NavMenu` 的 direct `Items` 和外部 `ItemsSource` 都通过 `ItemsView.CollectionChanged` 到达控件。由于该通知是 post-mutation，根协调器每次根据当前 root scope 构建引用相等 occurrence/owner 映射，统一检测非法类型、循环、同一状态 entry 的重复 occurrence 和已被其他 structural owner 占用的实例，然后对保留、移除和新增的 root scope owner 及 custom source 弱订阅做 reconcile。校验失败时必须确定性抛出，但不得在通知回调中重入修改调用方 collection 来伪造事务回滚。已从当前 scope 消失的旧 root owner 即使本次新图非法也要释放，避免一次失败的 source replacement 永久锁住旧 entry。内置 `Entries` 集合则在 mutation 前完成同一 scope 校验；`AddRange` 一次写入完整批次，先同步整批 ownership，再投影父级并发送单次批量 Add 通知，保持批量失败原子性并阻止 parent callback 或集合观察者抢占未提交 entry。
+根 `NavMenu` 的 direct `Items` 和外部 `ItemsSource` 都通过 `ItemsView.CollectionChanged` 到达控件。由于该通知是 post-mutation，根协调器每次根据当前 root scope 构建引用相等 occurrence/owner 映射，统一检测非法类型、循环、同一状态 entry 的重复 occurrence 和已被其他 structural owner 占用的实例，然后对保留、移除和新增的 root scope owner 及 custom source 弱订阅做 reconcile。校验失败时必须确定性抛出，但不得在通知回调中重入修改调用方 collection 来伪造事务回滚。已从当前 scope 消失的旧 root owner 即使本次新图非法也要释放，避免一次失败的 source replacement 永久锁住旧 entry。
+
+完整 reconcile 成功且 scope 内没有 custom node 时，协调器额外保留 direct scope 索引：每个内置状态 entry 首次 occurrence 的索引和直接 entry 数。此时 scope 内所有状态 entry 都是由当前 owner 持有的直接 entry，因此末尾追加内置 entry（根 `ItemsView` 的 Add 通知，或内置 `Entries` 的末尾 `Add` / `Insert` / `AddRange`）只校验新 entry：与索引或同批次内的重复报告同 owner 重复异常，被其他 structural owner 占用的报告已挂载异常；追加项在 scope 顺序中最后出现，所以异常种类、索引和优先级与完整 reconcile 一致。成功后只为新 entry 取得 ownership 并写入索引。增量路径只接受起始索引等于直接 entry 数、当前集合计数和对应位置实例与通知一致、且全部为 `NavMenuNode` / `NavMenuGroup` / `NavMenuDivider` 的追加；中间插入、Remove、Replace、Move、Reset、非法项、custom node，以及上一次 reconcile 失败后的任何变化都回到完整 reconcile。完整 apply 开始即作废索引，只有提交了无 custom node 的 scope 才重建；增量校验失败同样作废索引，使仍留在 post-mutation 集合中的非法项在后续变化中继续被完整扫描报告。含 custom node 的 scope 不保留索引，非通知 custom source 的变化仍由下一次根变化的完整扫描发现。内置 `Entries` 集合则在 mutation 前完成同一 scope 校验；`AddRange` 一次写入完整批次，先同步整批 ownership，再投影父级并发送单次批量 Add 通知，保持批量失败原子性并阻止 parent callback 或集合观察者抢占未提交 entry。
 
 根验证不能以 `Items.IsReadOnly` 区分 direct `Items` 和 `ItemsSource`。该状态只描述集合写入口，不代表 source 数据已经满足类型契约；否则 direct Items 会被检查，而绑定 ItemsSource 的初始项、Replace 或 Reset 会绕过校验。
 
@@ -460,7 +462,7 @@ inline collapsed cache 不得持有 `NavMenuItem`、header、popup 或 template 
 
 容器生成边界按呈现层级划分：根层在首次布局时生成全部 entry 容器；子菜单（inline 子树或 popup content）在首次打开时才接入模板并生成该层容器，未打开的层级不产生 `NavMenuItem`。同一层级内不做虚拟化，生成成本随该层 entry 数线性增长。子菜单打开状态只由容器的 `IsSubMenuOpen` 持有，keyboard active 持有 `NavMenuItem` 引用，`NavMenuSemanticNavigator` 的层级枚举、`FindDirectItem` 路径定位和 `EnsureGroupContainers` 都通过 `ContainerFromIndex` 读取已生成容器；这些职责依赖“呈现层级全量生成”，因此虚拟化 ItemsPanel 不在支持范围内（见 overview 兼容性不变量）。只有 selection 投影在每次 container prepare 时从 `SelectedItem` 重新计算，不依赖容器常驻。
 
-根 `ItemsView.CollectionChanged` 每次触发根 scope 的完整 occurrence/owner reconcile，单次通知成本随根 entry 数线性增长；逐项 `Items.Add` 装载大量根 entry 的总成本因此为 O(N²)，批量数据应通过 `ItemsSource` 一次提供。
+逐项末尾追加内置 entry（根 `Items.Add`、可通知 `ItemsSource` 的 Add 或内置 `Entries.Add`）走 direct scope 索引的增量校验，单次成本只与新增项数相关，逐项装载总成本随 entry 数线性增长。完整 occurrence/owner reconcile 的成本随当前 scope 大小线性增长，只用于不满足增量条件的变化（见 7.2）；含 custom node 的 scope 逐项追加仍逐次完整扫描，大量数据应通过 `ItemsSource` 一次提供。direct scope 索引只引用 scope 内已被持有的 entry，随 Remove、Reset 和失败的完整 reconcile 清理，不引入额外的对象保留。
 
 纯节点菜单必须保持一个数据节点对应一个 `NavMenuItem`，不得为统一模型增加额外 wrapper。只有实际存在 `NavMenuGroup` 或 `NavMenuDivider` 时才生成结构容器。语义 `Level` 在 prepare 上下文中 O(1) 得到；直接容器和路径查找优先走无分组快路径；spacing 只在根控件计算公开值与后代默认值的关系，再通过内部继承属性和 ItemsPanel `TemplateBinding` 传播，不为每个节点增加 relay binding。
 
@@ -586,6 +588,7 @@ owner 之间转移或被回收复用时既不残留旧层级，也不重复添�
 - 重复挂载覆盖同一/不同 `Entries` owner、根 source、Remove 后重挂载、source removal 后换根菜单、root owner WeakReference 回收，以及 `NavMenuDivider` 多位置复用。
 - custom wrapper 覆盖离线和根菜单中的初始共享内置后代、嵌套 observable source 动态获取/释放 owner、动态重复、动态指回 built-in owner/祖先、Remove 后重挂载，以及外部 custom source 不得保留 owner。
 - 批量初始化覆盖同步观察者重入，确保完整批次在首次通知前已经提交 ownership；纯 built-in 深链覆盖祖先不订阅后代 collection。
+- 逐项装载覆盖根 `ItemsSource` 追加的读取次数线性上界、直接根 `Items` 与内置 `Entries` 逐项追加的近线性耗时，以及增量路径与完整 reconcile 等价：重复索引、失败后继续报告、跨 owner 占用不取得 ownership、custom node 后代共享与非通知 custom source 的再扫描、custom node 离开后恢复增量校验。
 - `SelectedItem`、`DefaultSelectedPath`、`DefaultOpenPaths`、stale replay、clear selection、容器回收后的 sibling selection、视觉树 detach 后的程序化选择切换，以及任意深度 collapsed popup 关闭重开后的 selected leaf 投影。
 - 点击子节点时父级 header 不出现错误 hover 背景。
 - `IsItemBackgroundEnabled=true/false` 下 inline 背景块、header 背景和间距分别正确。

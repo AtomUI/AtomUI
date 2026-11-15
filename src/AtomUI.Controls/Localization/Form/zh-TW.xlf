@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="zh-TW" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Controls.Localization.FormLangResourceKind">
+    <unit id="FieldRequired">
+      <segment>
+        <source>{0} is required.</source>
+        <target state="translated">請輸入{0}。</target>
+      </segment>
+    </unit>
+    <unit id="InvalidEmail">
+      <segment>
+        <source>Enter a valid email address for {0}.</source>
+        <target state="translated">請輸入有效的{0}電子郵件地址。</target>
+      </segment>
+    </unit>
+    <unit id="InvalidLength">
+      <segment>
+        <source>{0} must be between {1} and {2} characters.</source>
+        <target state="translated">{0}長度須為 {1} 到 {2} 個字元。</target>
+      </segment>
+    </unit>
+    <unit id="InvalidRange">
+      <segment>
+        <source>{0} must be between {1} and {2}.</source>
+        <target state="translated">{0}須介於 {1} 與 {2} 之間。</target>
+      </segment>
+    </unit>
+    <unit id="InvalidUrl">
+      <segment>
+        <source>Enter a valid URL for {0}.</source>
+        <target state="translated">請輸入有效的{0}網址。</target>
+      </segment>
+    </unit>
+    <unit id="InvalidValue">
+      <segment>
+        <source>Enter a valid value for {0}.</source>
+        <target state="translated">請輸入有效的{0}。</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

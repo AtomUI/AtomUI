@@ -13,6 +13,12 @@
         <target state="final">Limpar</target>
       </segment>
     </unit>
+    <unit id="Close">
+      <segment>
+        <source>Close</source>
+        <target state="final">Fechar</target>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>
@@ -47,6 +53,12 @@
       <segment>
         <source>(optional)</source>
         <target state="final">(opcional)</target>
+      </segment>
+    </unit>
+    <unit id="Required">
+      <segment>
+        <source>(required)</source>
+        <target state="final">(obrigatório)</target>
       </segment>
     </unit>
     <unit id="Reset">

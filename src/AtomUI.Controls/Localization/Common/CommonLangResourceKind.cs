@@ -16,5 +16,7 @@ public enum CommonLangResourceKind
     Loading,
     Optional,
     // Appended to keep the values of the existing members stable for compiled callers.
-    Clear
+    Clear,
+    Close,
+    Required
 }

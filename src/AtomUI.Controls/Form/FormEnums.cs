@@ -18,7 +18,8 @@ public enum FormRequiredMark
     Default,
     Hidden,
     Optional,
-    Customize
+    Customize,
+    RequiredText
 }
 
 public enum FormValidateTrigger

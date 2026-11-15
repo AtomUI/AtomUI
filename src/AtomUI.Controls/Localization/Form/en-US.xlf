@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Controls.Localization.FormLangResourceKind">
+    <unit id="FieldRequired">
+      <segment>
+        <source>{0} is required.</source>
+      </segment>
+    </unit>
+    <unit id="InvalidEmail">
+      <segment>
+        <source>Enter a valid email address for {0}.</source>
+      </segment>
+    </unit>
+    <unit id="InvalidLength">
+      <segment>
+        <source>{0} must be between {1} and {2} characters.</source>
+      </segment>
+    </unit>
+    <unit id="InvalidRange">
+      <segment>
+        <source>{0} must be between {1} and {2}.</source>
+      </segment>
+    </unit>
+    <unit id="InvalidUrl">
+      <segment>
+        <source>Enter a valid URL for {0}.</source>
+      </segment>
+    </unit>
+    <unit id="InvalidValue">
+      <segment>
+        <source>Enter a valid value for {0}.</source>
+      </segment>
+    </unit>
+  </file>
+</xliff>

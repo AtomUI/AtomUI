@@ -32,6 +32,11 @@
                                            DockPanel.Dock="Right"
                                            IsVisible="False"
                                            VerticalAlignment="Center" />
+                                <TextBlock Text="{atom:CommonLangResource Required}"
+                                           Name="RequiredTextMark"
+                                           DockPanel.Dock="Right"
+                                           IsVisible="False"
+                                           VerticalAlignment="Center" />
                                 <atom:IconPresenter Name="TooltipIconPresenter"
                                                     DockPanel.Dock="Right"
                                                     Icon="{TemplateBinding TooltipIcon}"
@@ -209,6 +214,13 @@
         <Style Selector="^[RequiredMark=Default][IsRequired=True][IsValueItem=True]">
             <Style Selector="^ /template/ TextBlock#PART_DefaultRequireMark">
                 <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[RequiredMark=RequiredText][IsRequired=True][IsValueItem=True]">
+            <Style Selector="^ /template/ TextBlock#RequiredTextMark">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextTertiary}" />
             </Style>
         </Style>
 

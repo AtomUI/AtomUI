@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="2.1" srcLang="en-US" trgLang="pt-BR" xmlns="urn:oasis:names:tc:xliff:document:2.0">
+  <file id="AtomUI.Controls.Localization.FormLangResourceKind">
+    <unit id="FieldRequired">
+      <segment>
+        <source>{0} is required.</source>
+        <target state="final">{0} é obrigatório.</target>
+      </segment>
+    </unit>
+    <unit id="InvalidEmail">
+      <segment>
+        <source>Enter a valid email address for {0}.</source>
+        <target state="final">Insira um endereço de e-mail válido para {0}.</target>
+      </segment>
+    </unit>
+    <unit id="InvalidLength">
+      <segment>
+        <source>{0} must be between {1} and {2} characters.</source>
+        <target state="final">{0} deve conter entre {1} e {2} caracteres.</target>
+      </segment>
+    </unit>
+    <unit id="InvalidRange">
+      <segment>
+        <source>{0} must be between {1} and {2}.</source>
+        <target state="final">{0} deve estar entre {1} e {2}.</target>
+      </segment>
+    </unit>
+    <unit id="InvalidUrl">
+      <segment>
+        <source>Enter a valid URL for {0}.</source>
+        <target state="final">Insira um URL válido para {0}.</target>
+      </segment>
+    </unit>
+    <unit id="InvalidValue">
+      <segment>
+        <source>Enter a valid value for {0}.</source>
+        <target state="final">Insira um valor válido para {0}.</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

@@ -21,6 +21,7 @@ using Avalonia.Metadata;
 [assembly: TypeForwardedTo(typeof(ButtonIconPlacement))]
 [assembly: TypeForwardedTo(typeof(SearchRequestedEventArgs))]
 [assembly: TypeForwardedTo(typeof(SearchTriggerSource))]
+[assembly: TypeForwardedTo(typeof(FormItemLayout))]
 [assembly: TypeForwardedTo(typeof(OtpLineEditInputMode))]
 [assembly: TypeForwardedTo(typeof(OtpLineEditCompletedEventArgs))]
 [assembly: TypeForwardedTo(typeof(DateViewerSelectionUnit))]

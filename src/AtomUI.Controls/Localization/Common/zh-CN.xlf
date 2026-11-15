@@ -13,6 +13,12 @@
         <target state="translated">清除</target>
       </segment>
     </unit>
+    <unit id="Close">
+      <segment>
+        <source>Close</source>
+        <target state="translated">关闭</target>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>
@@ -47,6 +53,12 @@
       <segment>
         <source>(optional)</source>
         <target state="translated">(可选)</target>
+      </segment>
+    </unit>
+    <unit id="Required">
+      <segment>
+        <source>(required)</source>
+        <target state="translated">(必填)</target>
       </segment>
     </unit>
     <unit id="Reset">

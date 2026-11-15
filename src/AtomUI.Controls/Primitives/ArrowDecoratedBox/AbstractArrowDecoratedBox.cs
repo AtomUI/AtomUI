@@ -109,6 +109,9 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         AvaloniaProperty.Register<AbstractArrowDecoratedBox, ArrowPosition>(
             nameof(ArrowPosition));
 
+    public static readonly StyledProperty<double?> ArrowAnchorOffsetProperty =
+        AvaloniaProperty.Register<AbstractArrowDecoratedBox, double?>(nameof(ArrowAnchorOffset));
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractArrowDecoratedBox>();
 
@@ -128,6 +131,16 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     {
         get => GetValue(ArrowPositionProperty);
         set => SetValue(ArrowPositionProperty, value);
+    }
+
+    /// <summary>
+    /// Arrow center in device-independent units from the left or top of its edge.
+    /// A null value uses the alignment specified by <see cref="ArrowPosition"/>.
+    /// </summary>
+    public double? ArrowAnchorOffset
+    {
+        get => GetValue(ArrowAnchorOffsetProperty);
+        set => SetValue(ArrowAnchorOffsetProperty, value);
     }
 
     public bool IsMotionEnabled
@@ -212,7 +225,7 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     static AbstractArrowDecoratedBox()
     {
         AffectsMeasure<AbstractArrowDecoratedBox>(IsArrowVisibleProperty, ArrowDirectionProperty);
-        AffectsArrange<AbstractArrowDecoratedBox>(ArrowPositionProperty);
+        AffectsArrange<AbstractArrowDecoratedBox>(ArrowPositionProperty, ArrowAnchorOffsetProperty);
         AffectsRender<AbstractArrowDecoratedBox>(BackgroundProperty, ArrowOpacityProperty);
     }
 
@@ -246,6 +259,11 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         if (change.Property == BorderThicknessProperty)
         {
             PseudoClasses.Set(BorderedPseudoClass, BorderThickness != default);
+        }
+
+        if (ArrowAnchorOffset is not null && change.Property == CornerRadiusProperty)
+        {
+            InvalidateArrange();
         }
 
         if (change.Property == ArrowPositionProperty)
@@ -473,6 +491,11 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         }
 
         var adjustedOffset = AdjustArrowOffset(new Point(offsetX, offsetY), finalSize, size);
+        if (ArrowAnchorOffset is { } anchorOffset && double.IsFinite(anchorOffset))
+        {
+            adjustedOffset = ResolveAnchoredOffset(adjustedOffset, anchorOffset, finalSize, size);
+        }
+
         ArrowIndicatorLayout.Arrange(new Rect(adjustedOffset, size));
         if (ArrowIndicator != null)
         {
@@ -481,6 +504,25 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
 
         SetArrowIndicatorLayoutBoundsIfChanged(ArrowIndicatorLayout.Bounds);
         ArrowPlacementFlipped     = false;
+    }
+
+    private Point ResolveAnchoredOffset(Point offset, double center, Size finalSize, Size arrowSize)
+    {
+        var radius = GetMaskCornerRadius();
+        return ArrowDirection switch
+        {
+            Direction.Top => new Point(ClampArrowStart(center, finalSize.Width, arrowSize.Width, radius.TopLeft, radius.TopRight), offset.Y),
+            Direction.Bottom => new Point(ClampArrowStart(center, finalSize.Width, arrowSize.Width, radius.BottomLeft, radius.BottomRight), offset.Y),
+            Direction.Left => new Point(offset.X, ClampArrowStart(center, finalSize.Height, arrowSize.Height, radius.TopLeft, radius.BottomLeft)),
+            _ => new Point(offset.X, ClampArrowStart(center, finalSize.Height, arrowSize.Height, radius.TopRight, radius.BottomRight))
+        };
+    }
+
+    private static double ClampArrowStart(double center, double edge, double arrow, double startRadius, double endRadius)
+    {
+        var min = Math.Max(0, startRadius);
+        var max = edge - arrow - Math.Max(0, endRadius);
+        return min <= max ? Math.Clamp(center - arrow / 2, min, max) : (edge - arrow) / 2;
     }
 
     private void SetArrowDirectionIfChanged(Direction direction)

@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.14-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.15-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -76,10 +76,10 @@ net8-only 包兼容桥接面向 .NET 10 及以后，net8 裁剪与 NativeAOT 后
 
 #### 最新版本说明
 
-AtomUI 6.2.14 升级到 Avalonia 12.1.6，为 TreeView、TreeSelect 和日期时间选择器新增键盘导航，改进焦点描边，
-并修复 DataGrid 滚动时行拖动中断。Release 包新增 .NET 11 目标框架。升级前请先把 Avalonia 升到 12.1.6，
-并检查 Skeleton 模板、Space 对齐类型、Empty 描述样式以及 Card、Result 的用法，重新编译生成的注册元数据消费方。
-详见[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md)和[更新日志](./CHANGELOG.zh-CN.md)。
+AtomUI 6.2.15 修复 DataGrid 在分数缩放下滚动崩溃，保留 TreeView 虚拟化时的状态，并恢复 ListBox、ListView 和
+Transfer 的条目键盘焦点。Form 新增按字段校验与静默校验。本版本调整自定义 `IForm` 的契约，将共享评分控件的提示
+移到桌面 `Rate`，并调整 Carousel 自动播放条件。详见[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md)和
+[更新日志](./CHANGELOG.zh-CN.md)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -136,10 +136,10 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.14
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.14
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.14
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.14
+dotnet add package AtomUI.Desktop.Controls --version 6.2.15
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.15
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.15
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.15
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -166,10 +166,10 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.14"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.14"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.14"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.14"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.15"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.15"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.15"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.15"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>

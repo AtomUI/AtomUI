@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using Avalonia.Controls;
 using Shouldly;
 using Xunit;
@@ -34,9 +33,9 @@ public class NavMenuEntryPopulationScalingTests
     }
 
     [Fact]
-    public void Appending_Direct_Root_Items_One_At_A_Time_Scales_Near_Linearly()
+    public void Appending_Direct_Root_Items_One_At_A_Time_Allocates_Near_Linearly()
     {
-        AssertNearLinearScaling(count =>
+        AssertNearLinearAllocations(count =>
         {
             var menu = new AtomUI.Desktop.Controls.NavMenu();
             for (var index = 0; index < count; index++)
@@ -47,9 +46,9 @@ public class NavMenuEntryPopulationScalingTests
     }
 
     [Fact]
-    public void Appending_Node_Entries_One_At_A_Time_Scales_Near_Linearly()
+    public void Appending_Node_Entries_One_At_A_Time_Allocates_Near_Linearly()
     {
-        AssertNearLinearScaling(count =>
+        AssertNearLinearAllocations(count =>
         {
             var owner = new NavMenuNode();
             for (var index = 0; index < count; index++)
@@ -235,33 +234,25 @@ public class NavMenuEntryPopulationScalingTests
         return source.Reads;
     }
 
-    private static void AssertNearLinearScaling(Action<int> populate)
+    private static void AssertNearLinearAllocations(Action<int> populate)
     {
         const int smallCount = 500;
         const int largeCount = 4000;
-        populate(smallCount);
-        populate(largeCount);
+        populate(1);
 
-        var small = MedianTicks(() => populate(smallCount));
-        var large = MedianTicks(() => populate(largeCount));
+        var small = MeasureAllocatedBytes(populate, smallCount);
+        var large = MeasureAllocatedBytes(populate, largeCount);
 
-        // Eight times the entries: linear population stays near 8x, a full reconcile per
-        // addition grows toward 64x.
+        // A full reconcile allocates a new ownership snapshot for the entire collection
+        // on each addition. For eight times the entries, that grows toward 64x.
         ((double)large / Math.Max(1, small)).ShouldBeLessThan(24d);
     }
 
-    private static long MedianTicks(Action action)
+    private static long MeasureAllocatedBytes(Action<int> populate, int count)
     {
-        var samples = new long[5];
-        for (var index = 0; index < samples.Length; index++)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            action();
-            samples[index] = stopwatch.ElapsedTicks;
-        }
-
-        Array.Sort(samples);
-        return samples[samples.Length / 2];
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        populate(count);
+        return GC.GetAllocatedBytesForCurrentThread() - before;
     }
 
     private sealed class CountingEntrySource : IList, INotifyCollectionChanged, INotifyPropertyChanged

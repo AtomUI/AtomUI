@@ -24,6 +24,7 @@ using Avalonia.Metadata;
 [assembly: TypeForwardedTo(typeof(FormItemLayout))]
 [assembly: TypeForwardedTo(typeof(OtpLineEditInputMode))]
 [assembly: TypeForwardedTo(typeof(OtpLineEditCompletedEventArgs))]
+[assembly: TypeForwardedTo(typeof(SliderMark))]
 [assembly: TypeForwardedTo(typeof(DateViewerSelectionUnit))]
 [assembly: TypeForwardedTo(typeof(DateViewerPanelKind))]
 [assembly: TypeForwardedTo(typeof(DateViewerCellType))]

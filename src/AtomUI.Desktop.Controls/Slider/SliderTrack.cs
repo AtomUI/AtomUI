@@ -42,11 +42,7 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         RangeBase.ValueProperty.AddOwner<SliderTrack>();
 
     public static readonly StyledProperty<IReadOnlyList<double>?> RangeValuesProperty =
-        AvaloniaProperty.Register<SliderTrack, IReadOnlyList<double>?>(
-            nameof(RangeValues),
-            defaultBindingMode: BindingMode.TwoWay,
-            enableDataValidation: true,
-            coerce: CoerceRangeValues);
+        AbstractSlider.RangeValuesProperty.AddOwner<SliderTrack>();
 
     public static readonly StyledProperty<IReadOnlyList<bool>?> DisabledHandlesProperty =
         AvaloniaProperty.Register<SliderTrack, IReadOnlyList<bool>?>(nameof(DisabledHandles));
@@ -55,7 +51,15 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(IsDraggableTrack));
 
     public static readonly StyledProperty<bool> IsRangeModeProperty =
-        AvaloniaProperty.Register<SliderTrack, bool>(nameof(IsRangeMode));
+        AbstractSlider.IsRangeModeProperty.AddOwner<SliderTrack>();
+
+    internal static readonly StyledProperty<double> TickFrequencyProperty = AbstractSlider.TickFrequencyProperty.AddOwner<SliderTrack>();
+
+    internal static readonly StyledProperty<bool> IsDotsVisibleProperty = AbstractSlider.IsDotsVisibleProperty.AddOwner<SliderTrack>();
+
+    internal double TickFrequency => GetValue(TickFrequencyProperty);
+
+    internal bool IsDotsVisible => GetValue(IsDotsVisibleProperty);
 
     public static readonly StyledProperty<Orientation> OrientationProperty =
         ScrollBar.OrientationProperty.AddOwner<SliderTrack>();
@@ -70,19 +74,19 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(DeferThumbDrag));
 
     public static readonly StyledProperty<bool> IsIncludedProperty =
-        AvaloniaProperty.Register<SliderTrack, bool>(nameof(IsIncluded), true);
+        AbstractSlider.IsIncludedProperty.AddOwner<SliderTrack>();
 
     public static readonly StyledProperty<IBrush?> TrackBarBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TrackBarBrush));
 
     public static readonly StyledProperty<IBrush?> TracksBrushProperty =
-        AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TracksBrush));
+        AbstractSlider.TracksBrushProperty.AddOwner<SliderTrack>();
 
     public static readonly StyledProperty<IBrush?> TrackGrooveBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TrackGrooveBrush));
 
     public static readonly StyledProperty<List<SliderMark>?> MarksProperty =
-        AvaloniaProperty.Register<SliderTrack, List<SliderMark>?>(nameof(Marks));
+        AbstractSlider.MarksProperty.AddOwner<SliderTrack>();
 
     public static readonly StyledProperty<double> MarkLabelFontSizeProperty =
         TextElement.FontSizeProperty.AddOwner<SliderTrack>();
@@ -391,6 +395,8 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             RangeValuesProperty,
             IsRangeModeProperty);
         AffectsArrange<SliderTrack>(IsDirectionReversedProperty,
+            TickFrequencyProperty,
+            IsDotsVisibleProperty,
             MinimumProperty,
             MaximumProperty,
             ValueProperty,
@@ -529,15 +535,6 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         {
             RefreshMarkTextMetrics();
         }
-    }
-
-    private static IReadOnlyList<double>? CoerceRangeValues(AvaloniaObject sender, IReadOnlyList<double>? values)
-    {
-        var normalized = SliderRangeMath.NormalizeRangeValues(
-            values,
-            sender.GetValue(MinimumProperty),
-            sender.GetValue(MaximumProperty));
-        return normalized.Count == 0 ? sender.GetValue(RangeValuesProperty) : normalized;
     }
 
     private void EnsureThumbs()
@@ -951,7 +948,7 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             return;
         }
 
-        if (Marks is null || Marks.Count == 0)
+        if (!IsDotsVisible && Marks is not { Count: > 0 })
         {
             _marksElement.MarkRects     = null;
             _marksElement.MarkTextRects = null;
@@ -960,7 +957,33 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             return;
         }
 
-        var markRects     = new List<(Rect, int, bool)>(Marks.Count);
+        var markRects = new List<(Rect, int, bool)>();
+        var frequency = TickFrequency;
+        if (IsDotsVisible && frequency > 0 && double.IsFinite(frequency))
+        {
+            var count = (Maximum - Minimum) / frequency;
+            var length = Orientation == Orientation.Horizontal ? railRect.Width : railRect.Height;
+            if (double.IsFinite(count) && count >= 0)
+            {
+                // Coalesce ticks that land on the same visible pixel.
+                var stride = Math.Max(1, Math.Ceiling(count / Math.Max(1, length)));
+                for (var index = 0d; index < count; index += stride)
+                {
+                    AddMark(markRects, railRect, values, Minimum + index * frequency, -1);
+                }
+                AddMark(markRects, railRect, values, Maximum, -1);
+            }
+        }
+
+        if (Marks is null || Marks.Count == 0)
+        {
+            _marksElement.MarkRects     = markRects.Count > 0 ? markRects : null;
+            _marksElement.MarkTextRects = null;
+            _markTextRects              = null;
+            _marksElement.InvalidateVisual();
+            return;
+        }
+
         var markTextRects = new List<(Rect, int, bool, FormattedText)>(Marks.Count);
         var thumbSize     = GetThumbSize();
 
@@ -969,9 +992,7 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             var mark = Marks[i];
             var markIncluded = IsMarkIncluded(mark.Value, values);
             var center = MarkCenterPoint(railRect, mark.Value);
-            var markRect = new Rect(
-                new Point(center.X - SliderMarkSize / 2, center.Y - SliderMarkSize / 2),
-                new Size(SliderMarkSize, SliderMarkSize));
+            var markRect = CreateMarkRect(center);
             markRects.Add((markRect, i, markIncluded));
 
             Point textPosition;
@@ -1003,6 +1024,15 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         _markTextRects              = markTextRects;
         _marksElement.InvalidateVisual();
     }
+
+    private void AddMark(List<(Rect, int, bool)> marks, Rect railRect, IReadOnlyList<double> values, double value, int index)
+    {
+        var center = MarkCenterPoint(railRect, value);
+        marks.Add((CreateMarkRect(center), index, IsMarkIncluded(value, values)));
+    }
+
+    private Rect CreateMarkRect(Point center) =>
+        new(center.X - SliderMarkSize / 2, center.Y - SliderMarkSize / 2, SliderMarkSize, SliderMarkSize);
 
     private List<Rect> CreateSegmentRects(Rect railRect, IReadOnlyList<double> values)
     {

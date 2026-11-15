@@ -9,8 +9,7 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// <summary>
 /// Card under the PrimeNG presets: the card surface is PrimeUIX <c>content.background</c> (the elevated
 /// background: white, dark neutral 900), the radius <c>border.radius.xl</c> and the PrimeUIX <c>card.shadow</c>, plus
-/// the body padding of the baseline XML (20 for all three presets; the <c>aura-compat</c> and <c>nora-compat</c>
-/// value). In dark the header takes the card surface too. A preset whose card border differs from the global secondary
+/// PrimeUIX 3.1.1 <c>card.body.padding</c> (Aura and Nora 18, Lara 20). In dark the header takes the card surface too. A preset whose card border differs from the global secondary
 /// border (Nora dark: neutral 700 where the global one is transparent) sets it for the card only.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]

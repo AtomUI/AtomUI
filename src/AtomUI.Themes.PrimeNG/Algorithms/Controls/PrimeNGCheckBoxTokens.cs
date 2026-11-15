@@ -5,9 +5,8 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
 /// <summary>
-/// CheckBox under the PrimeNG presets: the indicator and mark sizes of the baseline XML (Aura 20 / 14, which is
-/// <c>aura-compat</c> <c>checkbox.width</c> / <c>checkbox.icon.size</c>; Lara 24 / 14, where <c>lara-compat</c> has
-/// 24 / 16; Nora 20 / 14). The radius is the global <c>BorderRadiusSM</c> already (PrimeUIX <c>border.radius.sm</c>;
+/// CheckBox under the PrimeNG presets: PrimeUIX 3.1.1 <c>checkbox.width</c> / <c>checkbox.icon.size</c> (Aura and Nora
+/// 18 / 12, Lara 20 / 14). The radius is the global <c>BorderRadiusSM</c> already (PrimeUIX <c>border.radius.sm</c>;
 /// Nora <c>border.radius.xs</c>, which its size ladder makes equal).
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]

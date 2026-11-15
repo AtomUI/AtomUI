@@ -123,8 +123,8 @@ public class PrimeNGAlgorithmContractTests
         standalone.BorderRadiusXS.ShouldBe(new CornerRadius(6));
         standalone.BorderRadiusSM.ShouldBe(new CornerRadius(8));
         standalone.BorderRadiusLG.ShouldBe(new CornerRadius(12));
-        standalone.ControlHeightSM.ShouldBe(standalone.ControlHeight - 4);
-        standalone.ControlHeightLG.ShouldBe(standalone.ControlHeight + 8);
+        standalone.ControlHeightSM.ShouldBe(standalone.ControlHeight - 7);
+        standalone.ControlHeightLG.ShouldBe(standalone.ControlHeight + 7);
     }
 
     // The Aura profiles pin the primary seed to emerald-500 and the error seed to red-500.

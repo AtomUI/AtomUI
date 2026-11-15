@@ -111,7 +111,7 @@ internal static class PrimeNGAuraPreset
             ButtonPrimaryBg: null),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
-            ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
+            ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 1,
             ControlOutlineLineWidths: 0,
@@ -120,15 +120,19 @@ internal static class PrimeNGAuraPreset
         Controls: new PrimeNGControlRule(
             ButtonFontWeight: FontWeight.Medium,
             ButtonPaddingHorizontal: null,
-            CheckIndicatorSize: 20,
-            CheckedMarkSize: 14,
-            // A fit to the baseline 12,8 (compact 8,6); PrimeUIX list.padding for the panel.
+            // PrimeUIX checkbox.width 1.125rem, icon.size 0.75rem.
+            CheckIndicatorSize: 18,
+            CheckedMarkSize: 12,
+            // PrimeUIX list.option.padding 0.25rem 0.625rem (10, 4) and list.padding 0.25rem, on the size ladder.
             SelectOptionPadding: static global =>
-                new Thickness(global.UniformlyPaddingSM, global.UniformlyPaddingSM / 2 + 2),
+                new Thickness(global.UniformlyPaddingSM - 2, global.UniformlyPaddingXXS),
             SelectPopupContentPadding: static global => new Thickness(global.UniformlyPaddingXXS),
-            CardBodyPadding: 20,
+            // PrimeUIX card.body.padding and overlay.modal.padding 1.125rem; dialog.title.font.size 1.125rem.
+            CardBodyPadding: 18,
             CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
-            DialogPadding: 20,
-            ToolTipPadding: new Thickness(12, 8),
+            DialogPadding: 18,
+            DialogHeaderFontSize: 18,
+            // PrimeUIX tooltip.padding 0.375rem 0.625rem.
+            ToolTipPadding: new Thickness(10, 6),
             ToolTipColor: new(White)));
 }

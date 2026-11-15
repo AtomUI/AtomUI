@@ -124,15 +124,15 @@ public class ThemePresetsShowCaseTests
             var button = page.FindControl<Button>("PreviewPrimary")!;
             var provider = page.FindControl<ThemeConfigProvider>("PreviewProvider")!;
             var initial = button;
-            AssertTokens(button, "#10B981", "#FFFFFF", 40, 500);
+            AssertTokens(button, "#10B981", "#FFFFFF", 35, 500);
             AssertIndependentProfile(button, (ThemeManager)manager, "PrimeNGAura");
             ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorInfoBg).ShouldNotBe(Color.Parse("#123456"));
             foreach (var (dark, compact, suffix, color, background, height) in new[]
             {
-                (true, false, ".Dark", "#34D399", "#09090B", 40),
-                (true, true, ".DarkCompact", "#34D399", "#09090B", 36),
-                (false, true, ".Compact", "#10B981", "#FFFFFF", 36),
-                (false, false, "", "#10B981", "#FFFFFF", 40)
+                (true, false, ".Dark", "#34D399", "#09090B", 35),
+                (true, true, ".DarkCompact", "#34D399", "#09090B", 31),
+                (false, true, ".Compact", "#10B981", "#FFFFFF", 31),
+                (false, false, "", "#10B981", "#FFFFFF", 35)
             })
             {
                 model.IsDark = dark; model.IsCompact = compact; Pump();
@@ -143,7 +143,7 @@ public class ThemePresetsShowCaseTests
                 model.PreviewConfig.Algorithms.Contains(ThemeAlgorithm.Compact).ShouldBe(compact);
                 AssertTokens(button, color, background, height, 500);
                 AssertIndependentProfile(button, (ThemeManager)manager, model.PreviewThemeId!);
-                ControlTokenAccessor.Capture(button).GetGlobal<double>(SharedTokenKind.ControlHeightSM).ShouldBe(compact ? 27 : 36);
+                ControlTokenAccessor.Capture(button).GetGlobal<double>(SharedTokenKind.ControlHeightSM).ShouldBe(compact ? 23.25 : 28);
                 page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
                 provider.Config.ShouldBeSameAs(model.PreviewConfig);
             }
@@ -179,11 +179,11 @@ public class ThemePresetsShowCaseTests
                 {
                     model.IsDark = dark; model.IsCompact = compact; Pump();
                     var tokens = ControlTokenAccessor.Capture(button);
-                    tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(family == "Material" ? (dark ? "#1C1B1F" : "#FFFBFE") : (dark ? "#212529" : "#FFFFFF")));
+                    tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(family == "Material" ? (dark ? "#1C1B1F" : "#FFFBFE") : (dark ? "#080A0C" : "#FFFFFF")));
                     tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe((family == "Material" ? 40 : 38) - (compact ? 4 : 0));
                     if (family == "Bootstrap")
                     {
-                        tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.FromArgb(0x40, 0x0D, 0x6E, 0xFD));
+                        tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.Parse(dark ? "#0064BA" : "#6FC8FF"));
                     }
                     else
                     {

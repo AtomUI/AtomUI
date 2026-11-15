@@ -125,7 +125,7 @@ internal static class PrimeNGNoraPreset
                                               PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.24))),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
-            ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
+            ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 2,
             ControlOutlineLineWidths: 0,
@@ -134,15 +134,20 @@ internal static class PrimeNGNoraPreset
         Controls: new PrimeNGControlRule(
             ButtonFontWeight: FontWeight.Bold,
             ButtonPaddingHorizontal: null,
-            CheckIndicatorSize: 20,
-            CheckedMarkSize: 14,
-            // The Aura fit to 12,8 (compact 8,6); PrimeUIX nora-compat list.padding (0.125rem 0) in both densities.
+            // PrimeUIX checkbox.width 1.125rem, icon.size 0.75rem.
+            CheckIndicatorSize: 18,
+            CheckedMarkSize: 12,
+            // PrimeUIX list.option.padding 0.25rem 0.625rem (10, 4) on the size ladder; list.padding 0.125rem 0 in
+            // both densities.
             SelectOptionPadding: static global =>
-                new Thickness(global.UniformlyPaddingSM, global.UniformlyPaddingSM / 2 + 2),
+                new Thickness(global.UniformlyPaddingSM - 2, global.UniformlyPaddingXXS),
             SelectPopupContentPadding: static _ => new Thickness(0, 2),
-            CardBodyPadding: 20,
+            // PrimeUIX card.body.padding and overlay.modal.padding 1.125rem; dialog.title.font.size 1.125rem.
+            CardBodyPadding: 18,
             CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
-            DialogPadding: 20,
-            ToolTipPadding: new Thickness(12, 8),
+            DialogPadding: 18,
+            DialogHeaderFontSize: 18,
+            // PrimeUIX tooltip.padding 0.375rem 0.625rem.
+            ToolTipPadding: new Thickness(10, 6),
             ToolTipColor: new(White)));
 }

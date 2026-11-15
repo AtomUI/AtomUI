@@ -88,18 +88,52 @@ public class PrimeNGThemePackageTests
             manager.CurrentTheme!.Appearance.ShouldBe(suffix.Contains("Dark")
                 ? ThemeAppearance.Dark : ThemeAppearance.Light);
             var snapshot = manager.CurrentSnapshot!;
-            var normalHeight = id == "PrimeNGLara" ? 44d : 40d;
+            // @primeuix/themes 3.1.1 form.field heights at a 14px font and 1.5 line height (primeng.dev v22).
+            var normalHeight = id == "PrimeNGLara" ? 39d : 35d;
             Global<double>(snapshot, "ControlHeight").ShouldBe(normalHeight - (suffix.Contains("Compact") ? 4 : 0));
             if (suffix.Contains("Compact"))
             {
                 var height = normalHeight - 4;
                 Global<double>(snapshot, "ControlHeightSM").ShouldBe(height * 0.75);
                 Global<double>(snapshot, "ControlHeightLG").ShouldBe(height * 1.25);
-                Global<double>(snapshot, "PaddingContentHorizontal").ShouldBe(8);
+                Global<double>(snapshot, "PaddingContentHorizontal").ShouldBe(7);
+                // The field padding and the Select option padding follow the size ladder (PrimeUIX has no compact).
+                Global<Thickness>(snapshot, "InputPadding").Left.ShouldBe(6);
+                Global<Thickness>(snapshot, "InputPaddingSM").Left.ShouldBe(4);
+                Global<Thickness>(snapshot, "InputPaddingLG").Left.ShouldBe(8);
+                Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(id == "PrimeNGLara" ? new Thickness(10, 4) : new Thickness(6, 4));
+            }
+            if (!suffix.Contains("Compact"))
+            {
+                Global<double>(snapshot, "ControlHeightSM").ShouldBe(normalHeight - 7);
+                Global<double>(snapshot, "ControlHeightLG").ShouldBe(normalHeight + 7);
+                // form.field.padding.x / sm / lg (10 / 8 / 12); the Button pads its label by the same 10.
+                Global<Thickness>(snapshot, "InputPadding").Left.ShouldBe(10);
+                Global<Thickness>(snapshot, "InputPaddingSM").Left.ShouldBe(8);
+                Global<Thickness>(snapshot, "InputPaddingLG").Left.ShouldBe(12);
+                Global<double>(snapshot, "PaddingContentHorizontal").ShouldBe(11);
+                // A field is its font height plus vertical padding and border; PrimeNG fields are exactly the control
+                // heights, and an odd remainder is split top/bottom in whole pixels.
+                foreach (var (padding, height, fontHeight) in new[]
+                         {
+                             ("InputPadding", "ControlHeight", "FontHeight"),
+                             ("InputPaddingSM", "ControlHeightSM", "FontHeightSM"),
+                             ("InputPaddingLG", "ControlHeightLG", "FontHeightLG")
+                         })
+                {
+                    var field = Global<Thickness>(snapshot, padding);
+                    // The small field also insets its text by InputContentMargin.
+                    var margin = padding == "InputPaddingSM" ? Global<Thickness>(snapshot, "InputContentMargin") : default;
+                    (field.Top + field.Bottom + Global<double>(snapshot, fontHeight) + 2 * Global<double>(snapshot, "LineWidth") +
+                     margin.Top + margin.Bottom)
+                        .ShouldBe(Global<double>(snapshot, height), $"{id}{suffix} {padding}");
+                    field.Top.ShouldBe(Math.Floor(field.Top));
+                    field.Bottom.ShouldBe(Math.Floor(field.Bottom));
+                }
             }
             if (id == "PrimeNGLara" && !suffix.Contains("Compact"))
             {
-                Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(16, 10));
+                Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(14, 8));
                 Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(0, 8));
             }
             if (suffix.Contains("Dark"))
@@ -250,8 +284,8 @@ public class PrimeNGThemePackageTests
         }
         foreach (var (name, value) in new Dictionary<string, double>
                  {
-                     ["ControlHeight"] = 40, ["ControlHeightSM"] = 36, ["ControlHeightLG"] = 48,
-                     ["PaddingContentHorizontal"] = 12, ["FontSizeSM"] = 12, ["FontSizeLG"] = 16,
+                     ["ControlHeight"] = 35, ["ControlHeightSM"] = 28, ["ControlHeightLG"] = 42,
+                     ["PaddingContentHorizontal"] = 11, ["FontSizeSM"] = 12, ["FontSizeLG"] = 16,
                      ["ControlOutlineWidth"] = 0
                  })
         {
@@ -272,19 +306,23 @@ public class PrimeNGThemePackageTests
     {
         var snapshot = await Apply("PrimeNGAura");
         Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.Medium);
-        Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(20);
-        Own<double>(snapshot, "CheckBox", "CheckedMarkSize").ShouldBe(14);
-        Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(12, 8));
+        Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(18);
+        Own<double>(snapshot, "CheckBox", "CheckedMarkSize").ShouldBe(12);
+        Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(10, 4));
         Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(4));
-        Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(20));
+        // The label sits at border + button.padding.x (10 / sm 8 / lg 12), as on primeng.dev.
+        Own<Thickness>(snapshot, "Button", "ContentPadding").Left.ShouldBe(11);
+        Own<Thickness>(snapshot, "Button", "ContentPaddingSM").Left.ShouldBe(9);
+        Own<Thickness>(snapshot, "Button", "ContentPaddingLG").Left.ShouldBe(13);
+        Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(18));
         Own<BoxShadows>(snapshot, "Card", "RestingShadows").Count.ShouldBe(2);
         Own<Color>(snapshot, "ToolTip", "ToolTipBackground").ShouldBe(Color.Parse("#334155"));
         Own<CornerRadius>(snapshot, "ToolTip", "ToolTipCornerRadius").ShouldBe(new CornerRadius(6));
-        Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(12, 8));
+        Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 6));
         Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(12));
         Effective<CornerRadius>(snapshot, "Dialog", "BorderRadiusLG").ShouldBe(new CornerRadius(12));
-        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(20));
-        Own<double>(snapshot, "Dialog", "HeaderFontSize").ShouldBe(20);
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18));
+        Own<double>(snapshot, "Dialog", "HeaderFontSize").ShouldBe(18);
     }
 
     [AvaloniaTheory]
@@ -385,11 +423,34 @@ public class PrimeNGThemePackageTests
         inputActiveShadow.Spread.ShouldBe(3);
         inputActiveShadow.Color.ShouldBe(Color.Parse("#A7F3D0"));
         Global<Thickness>(snapshot, "FocusVisualBorderThickness").ShouldBe(new Thickness(0));
-        Global<double>(snapshot, "ControlHeight").ShouldBe(44);
-        Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(24);
-        Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(16, 10));
+        Global<double>(snapshot, "ControlHeight").ShouldBe(39);
+        Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(20);
+        Own<double>(snapshot, "CheckBox", "CheckedMarkSize").ShouldBe(14);
+        Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(14, 8));
         Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(0, 8));
         Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.SemiBold);
+        // Lara's button.padding.x is 0.875rem, wider than its 0.625rem field padding.
+        Own<Thickness>(snapshot, "Button", "ContentPadding").Left.ShouldBe(15);
+        Own<Thickness>(snapshot, "Button", "ContentPaddingSM").Left.ShouldBe(9);
+        Own<Thickness>(snapshot, "Button", "ContentPaddingLG").Left.ShouldBe(13);
+        Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(20));
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(20));
+        Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 8));
+    }
+
+    [AvaloniaFact]
+    public async Task Nora_Uses_The_Standard_Nora_Densities()
+    {
+        var snapshot = await Apply("PrimeNGNora");
+        Global<double>(snapshot, "ControlHeight").ShouldBe(35);
+        Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(18);
+        Own<double>(snapshot, "CheckBox", "CheckedMarkSize").ShouldBe(12);
+        Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(10, 4));
+        Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(0, 2));
+        Own<Thickness>(snapshot, "Button", "ContentPadding").Left.ShouldBe(11);
+        Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(18));
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18));
+        Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 6));
     }
 
     [AvaloniaFact]

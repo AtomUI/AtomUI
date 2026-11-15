@@ -35,13 +35,13 @@ Every value is produced by the preset algorithms; the XML files hold only the al
 
 | Family | Chain (light / dark; compact appends `AtomUI:Compact`) | Seeds | Constants |
 |---|---|---|---|
-| Aura | `[PrimeNG:Aura]` / `[PrimeNG:Aura.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 40` | none |
-| Lara | `[PrimeNG:Lara]` / `[PrimeNG:Lara.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 44` | compact only: Select `PopupContentPadding 4` ([不等价项](#compact-profiles-and-不等价项)) |
-| Nora | `[PrimeNG:Nora]` / `[PrimeNG:Nora.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 2`, `ControlHeight 40` | `EnableMotion false` (PrimeUIX `transitionDuration` 0s) |
+| Aura | `[PrimeNG:Aura]` / `[PrimeNG:Aura.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 35` | none |
+| Lara | `[PrimeNG:Lara]` / `[PrimeNG:Lara.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 39` | compact only: Select `PopupContentPadding 4` ([不等价项](#compact-profiles-and-不等价项)) |
+| Nora | `[PrimeNG:Nora]` / `[PrimeNG:Nora.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 2`, `ControlHeight 35` | `EnableMotion false` (PrimeUIX `transitionDuration` 0s) |
 
 The light and dark files of a family differ only in the chain (apart from the profile metadata: `Id`, `Name`, `Appearance`). Dark profiles use zinc-950 (`#09090B`) field backgrounds, zinc-900 (`#18181B`) Card/elevated backgrounds, white text and zinc-400 muted text. Aura/Lara use emerald-400/300/200 primary states, zinc-600 field borders and zinc-700 content borders; Nora uses emerald-500/400/300 states, zinc-500 field borders and a solid emerald selected background with zinc-950 text. Dark masks use 60% black; tooltip backgrounds use zinc-700 with white text. These values follow the presets' `colorScheme.dark` tables.
 
-Compact profiles keep the normal 40px/44px height seed and append `AtomUI:Compact`: the resulting normal height is 36px/40px, SM/LG heights are 75%/125% of it (Aura/Nora 27/45; Lara 30/50), horizontal content padding becomes 8px and Select option padding `8,6` (Aura/Nora) or `8,8` (Lara). Checkbox indicator, Card/Dialog padding and tooltip padding stay at their full-density values.
+Compact profiles keep the normal 35px/39px height seed and append `AtomUI:Compact`: the resulting normal height is 31px/35px, SM/LG heights are 75%/125% of it (Aura/Nora 23.25/38.75; Lara 26.25/43.75), field padding becomes 6 (SM 4, LG 8), horizontal content padding 7px and Select option padding `6,4` (Aura/Nora) or `10,4` (Lara). PrimeUIX has no compact density. Checkbox indicator, Card/Dialog padding and tooltip padding stay at their full-density values.
 
 ## Preset algorithms
 
@@ -67,7 +67,7 @@ All six share one implementation (`PrimeNGPresetAlgorithm`); each preset brings 
 
 ## 映射与来源 (mapping and sources)
 
-The value baseline is the approved PrimeNG v22 mapping (14px compatibility typography), rather than a promise of identical web/native rendering. Sources: [PrimeNG styled mode](https://primeng.dev/theming) and the official [Aura](https://github.com/primefaces/primeuix/tree/main/packages/themes/src/presets/aura), [Lara](https://github.com/primefaces/primeuix/tree/main/packages/themes/src/presets/lara) and [Nora](https://github.com/primefaces/primeuix/tree/main/packages/themes/src/presets/nora) presets in `@primeuix/themes`.
+The value baseline is the standard (16px) presets of `@primeuix/themes` 3.1.1, as specified by [PrimeNG Styled Mode → Base Font Size](https://primeng.dev/theming/styled): PrimeNG sizes components in rem against a 16px document root, and AtomUI maps 1rem to 16px, so it uses `aura`, `lara` and `nora` (typography `0.875rem` = 14px). The `aura-compat`, `lara-compat` and `nora-compat` variants are calibrated for a legacy 14px root (maintained until June 2027); reading their values against a 16px root enlarges every size by 16/14, which is why earlier AtomUI profiles were about 14% too large (control height 40 instead of 35). The result is checked against what primeng.dev (PrimeNG 22) renders, rather than promising identical web/native rendering. Sources: that page, [PrimeNG styled mode](https://primeng.dev/theming) and the published presets under `dist/aura`, `dist/lara` and `dist/nora` of [`@primeuix/themes`](https://www.npmjs.com/package/@primeuix/themes); PrimeNG's own `packages/themes/src/presets` re-exports them.
 
 **Source packages and versions.**
 
@@ -75,9 +75,9 @@ The value baseline is the approved PrimeNG v22 mapping (14px compatibility typog
 |---|---|---|---|
 | Tailwind colour tables (22 scales, 50–950) | [`@primeuix/themes`](https://www.npmjs.com/package/@primeuix/themes) | 3.1.1 | the `primitive` export, `dist/aura/base/index.mjs`; Lara and Nora carry the identical table |
 | Colour-scale formula (`palette`, `mix`) | [`@primeuix/styled`](https://www.npmjs.com/package/@primeuix/styled) | 1.2.0 | the `palette` / `mix` implementation |
-| Aura rules | `@primeuix/themes` | 3.1.1 | `aura/base`, `aura/button`, `aura/message`, `aura/tooltip`; the fixed control sizes equal `aura-compat` |
-| Lara rules | `@primeuix/themes` | 3.1.1 | `lara`, `lara-compat` |
-| Nora rules | `@primeuix/themes` | 3.1.1 | `nora-compat/base`, `button`, `steps`, `card`, `dialog`, `checkbox`, `tooltip`, `tag` |
+| Aura rules | `@primeuix/themes` | 3.1.1 | `aura/base`, `aura/button`, `aura/checkbox`, `aura/card`, `aura/dialog`, `aura/message`, `aura/tooltip`; sizes from the standard preset |
+| Lara rules | `@primeuix/themes` | 3.1.1 | `lara` (sizes); colour and focus rules also checked against `lara-compat` |
+| Nora rules | `@primeuix/themes` | 3.1.1 | `nora` (sizes); colour rules from `nora-compat/base`, `button`, `steps`, `card`, `dialog`, `tag` |
 
 **Colour scale.** Stops are 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 (index `i` = 0 to 10). A seed that equals the 500 stop of one of the 22 Tailwind scales PrimeNG ships resolves to that hand-tuned table. Any other seed goes through the PrimeUIX `palette` formula: stops up to 500 mix in white (`19 × (5 − i)` %, so 50 is 95% white and 500 is the seed), stops above 500 mix in black (`15 × (i − 5)` %, so 950 is 75% black), linearly per sRGB channel, rounded half up (`Math.round`). The seed's alpha is kept on every stop.
 
@@ -96,7 +96,7 @@ The rule tables below give stops; at the Aura seeds they produce these values (A
 | Form border / placeholder / invalid | `ColorBorder #CBD5E1`, `ColorTextPlaceholder #64748B`, `ColorError #F87171` (red-400 from the red-500 seed `#EF4444`) |
 | Disabled background | `ColorBgContainerDisabled #E2E8F0` (separate from the hover fill) |
 | Radius xs / sm / md / lg | `BorderRadiusXS 2`, `BorderRadiusSM 4`, `BorderRadius 6`, `BorderRadiusLG 8` |
-| Field density / typography | `ControlHeight 40`, SM `36`, LG `48`; `PaddingContentHorizontal 12`, `FontSizeSM 12`, LG `16` |
+| Field density / typography | `ControlHeight 35`, SM `28`, LG `42`; field padding X 10 / SM 8 / LG 12 (`InputPadding*`); `PaddingContentHorizontal 11` (content inset: field padding plus border), `FontSizeSM 12`, LG `16` |
 | Focus / motion | `FocusVisualBorderThickness 1`, `ColorFocusBorder #10B981`, `ControlOutlineWidth 0`, `MotionDurationMid 200ms` |
 | Select/popover / modal / mask | `BoxShadowsSecondary`, `BoxShadows`, `ColorBgMask #66000000` |
 
@@ -104,10 +104,10 @@ The rule tables below give stops; at the Aura seeds they produce these values (A
 |---|---|
 | Button | `FontWeight 500`; radius is the global `BorderRadius 6` |
 | CheckBox | `CheckIndicatorSize 20`, `CheckedMarkSize 14`; radius is the global `BorderRadiusSM 4` |
-| Select | `OptionPadding 12,8`, `PopupContentPadding 4` |
-| Card | `BodyPadding 20`, card-scoped `BorderRadiusLG 12`, `RestingShadows` with the two PrimeNG static shadow layers |
-| Dialog | dialog-scoped `BorderRadiusLG 12`; `HeaderPadding`, `ContentPadding`, `WindowContentPadding`, `FooterPadding 20`; `HeaderFontSize 20`; title weight is the global `FontWeightStrong 600` |
-| ToolTip | `ToolTipBackground #334155`, `ToolTipColor #FFFFFF`, `ToolTipCornerRadius 6`, `ContentPadding 12,8` |
+| Select | `OptionPadding 10,4`, `PopupContentPadding 4` |
+| Card | `BodyPadding 18`, card-scoped `BorderRadiusLG 12`, `RestingShadows` with the two PrimeNG static shadow layers |
+| Dialog | dialog-scoped `BorderRadiusLG 12`; `HeaderPadding`, `ContentPadding`, `WindowContentPadding`, `FooterPadding 18`; `HeaderFontSize 18`; title weight is the global `FontWeightStrong 600` |
+| ToolTip | `ToolTipBackground #334155`, `ToolTipColor #FFFFFF`, `ToolTipCornerRadius 6`, `ContentPadding 10,6` |
 
 ### Aura Map rules
 
@@ -141,7 +141,7 @@ The rule tables below give stops; at the Aura seeds they produce these values (A
 | `ColorBgMask` | black@40% | black@60% | XML (baseline); PrimeUIX `mask.background` |
 | `ColorBgBase` / `ColorTextBase` (when the seed is unset) | white / black | N950 / white | Dark XML (baseline); Light keeps the Ant Design values |
 | `BorderRadiusXS` / `SM` / `LG` | radius − 4 / − 2 / + 2 | same | XML (baseline) (2/4/8 around 6); PrimeUIX `borderRadius.xs/sm/md/lg` |
-| `ControlHeightSM` / `LG` | height − 4 / + 8 | same | XML (baseline) (36/48 around 40; Lara 40/52 around 44) |
+| `ControlHeightSM` / `LG` | height − 7 / + 7 | same | PrimeUIX 3.1.1 `form.field.sm` / `lg` paddings at 12px / 16px type (28/42 around 35; Lara 32/46 around 39) |
 | Font sizes, sizes, motion, line widths, Ant preset palettes | Ant Design formulas | Ant Design Dark | The Ant ladder already gives PrimeUIX's 12/14/16 |
 
 The spec 4.7 row "按暗色对称取级" for the dark primary border and text states is replaced by the values above, which follow PrimeUIX where it has a counterpart. Every "现值" row of spec 4.7 is reproduced exactly (`PrimeNGAlgorithmContractTests.Aura_Map_Matches_The_Spec_Colours`).
@@ -164,16 +164,16 @@ Written by the Alias stage of both Aura algorithms for the resolved appearance, 
 
 ### Aura control stages
 
-One class per control under `Algorithms/Controls`, each declared for both `PrimeNG:Aura` and `PrimeNG:Aura.Dark` (revision 1). Values that follow from other tokens are computed. The fixed sizes are the values of the pre-algorithm XML profiles; the compact profiles have always kept them, so they do not follow `AtomUI:Compact`. They equal the `aura-compat` preset of `@primeuix/themes` 3.1.1 at a 16px root; the standard `aura` preset is denser (card and modal padding 18, tooltip padding 6/10, option padding 4/10, checkbox 18 / 12).
+One class per control under `Algorithms/Controls`, each declared for both `PrimeNG:Aura` and `PrimeNG:Aura.Dark` (revision 1). Values that follow from other tokens are computed. The fixed sizes are the standard `aura` preset of `@primeuix/themes` 3.1.1 at a 16px root (what primeng.dev renders); they do not follow `AtomUI:Compact`. Paddings that sit on the size ladder (field, button, Select option) do.
 
 | Control | Values | Source |
 |---|---|---|
-| Button | `FontWeight 500` | PrimeUIX `button.label.font.weight`; the radius is the global `BorderRadius` already |
-| CheckBox | `CheckIndicatorSize 20`, `CheckedMarkSize 14` | XML (baseline) (`aura-compat` `checkbox.width`, `checkbox.icon.size`); the radius is the global `BorderRadiusSM` |
-| Select | `OptionPadding` = (`UniformlyPaddingSM`, `UniformlyPaddingSM / 2 + 2`): 12,8, compact 8,6; `PopupContentPadding` = `UniformlyPaddingXXS` (4) | Option padding: AtomUI, a fit to the XML (baseline) values 12,8 / 8,6, not a PrimeUIX derivation; popup padding: PrimeUIX `list.padding` |
-| Card | for the card only: `ColorBgContainer` = `ColorBgElevated`, `BorderRadiusLG` = radius + 6 (12); `BodyPadding 20`; `RestingShadows` static two-layer shadow; dark `HeaderBg` = the card surface | PrimeUIX `card.background` (`content.background`), `border.radius.xl`, `card.shadow`; body padding XML (baseline) (`aura-compat` `card.body.padding`); dark header XML (baseline) |
-| Dialog | for the dialog only: `BorderRadiusLG` = radius + 6 (12); header, content, window content and footer padding 20; `HeaderFontSize` = `FontSizeXL` (20) | PrimeUIX `overlay.modal.border.radius`; padding and title size XML (baseline) (`aura-compat` `overlay.modal.padding`, `dialog.title.font.size`); weight 600 is the global `FontWeightStrong` |
-| ToolTip | `ToolTipBackground` N700, `ToolTipColor` white, `ToolTipCornerRadius` = `BorderRadius`, `ContentPadding 12,8` | PrimeUIX `tooltip.background`, `tooltip.color` (`surface.0`), `overlay.popover.border.radius`; padding XML (baseline) (`aura-compat` `tooltip.padding`) |
+| Button | `FontWeight 500`; `ContentPadding` / `SM` / `LG` horizontal = `button.padding.x` + border (11 / 9 / 13, the label inset primeng.dev renders) | PrimeUIX `button.label.font.weight`, `button.padding.x` (`{form.field.padding.x}`, sm / lg likewise); the radius is the global `BorderRadius` already |
+| CheckBox | `CheckIndicatorSize 18`, `CheckedMarkSize 12` | PrimeUIX `checkbox.width` (1.125rem), `checkbox.icon.size` (0.75rem); the radius is the global `BorderRadiusSM` |
+| Select | `OptionPadding` = (`UniformlyPaddingSM − 2`, `UniformlyPaddingXXS`): 10,4, compact 6,4; `PopupContentPadding` = `UniformlyPaddingXXS` (4) | PrimeUIX `list.option.padding` (0.25rem 0.625rem), `list.padding` (0.25rem) |
+| Card | for the card only: `ColorBgContainer` = `ColorBgElevated`, `BorderRadiusLG` = radius + 6 (12); `BodyPadding 18`; `RestingShadows` static two-layer shadow; dark `HeaderBg` = the card surface | PrimeUIX `card.background` (`content.background`), `border.radius.xl`, `card.shadow`; `card.body.padding` (1.125rem); dark header XML (baseline) |
+| Dialog | for the dialog only: `BorderRadiusLG` = radius + 6 (12); header, content, window content and footer padding 18; `HeaderFontSize 18` | PrimeUIX `overlay.modal.border.radius`, `overlay.modal.padding` (1.125rem), `dialog.title.font.size` (1.125rem); weight 600 is the global `FontWeightStrong` |
+| ToolTip | `ToolTipBackground` N700, `ToolTipColor` white, `ToolTipCornerRadius` = `BorderRadius`, `ContentPadding 10,6` | PrimeUIX `tooltip.background`, `tooltip.color` (`surface.0`), `overlay.popover.border.radius`, `tooltip.padding` (0.375rem 0.625rem) |
 
 ### Lara rules
 
@@ -198,10 +198,10 @@ The Lara rule table (`PrimeNGLaraPreset`) is transcribed from the pre-algorithm 
 
 | Control | Values | Source |
 |---|---|---|
-| Button | `FontWeight 600`; for the button only: `ControlPaddingHorizontal 16` | PrimeUIX `lara-compat` `button.label.font.weight`, `button.padding.x` (1rem); kept for compact too (XML (baseline)) |
-| CheckBox | `CheckIndicatorSize 24`, `CheckedMarkSize 14` | XML (baseline); PrimeUIX `lara-compat` `checkbox.width` is 24, its `checkbox.icon.size` 16 |
-| Select | `OptionPadding` = (`UniformlyPadding`, `UniformlyPaddingSM / 2 + 4`): 16,10, compact 8,8; `PopupContentPadding` = (0, `UniformlyPaddingXS`): 0,8 | Full density: PrimeUIX `lara-compat` `list.option.padding` (0.625rem 1rem), `list.padding` (0.5rem 0). The compact option padding is AtomUI, a fit to the XML (baseline) value 8,8 |
-| Card, Dialog, ToolTip | as Aura (body padding 20, radius + 6, the two-layer resting shadow; dialog padding and title 20; tooltip N700, white, 12,8) | XML (baseline): the old Lara XML wrote the Aura values. PrimeUIX `lara-compat` differs (card padding 24 and radius `border.radius.lg`, modal padding 24, tooltip padding 12,10) |
+| Button | `FontWeight 600`; `ContentPadding` horizontal = `SizeSM + 2` + border (15, compact 11); SM / LG as Aura (9 / 13) | PrimeUIX `button.label.font.weight`, `button.padding.x` (0.875rem; sm / lg are the field paddings) |
+| CheckBox | `CheckIndicatorSize 20`, `CheckedMarkSize 14` | PrimeUIX `checkbox.width` (1.25rem), `checkbox.icon.size` (0.875rem) |
+| Select | `OptionPadding` = (`UniformlyPaddingSM + 2`, `UniformlyPaddingXS`): 14,8, compact 10,4; `PopupContentPadding` = (0, `UniformlyPaddingXS`): 0,8 | PrimeUIX `list.option.padding` (0.5rem 0.875rem), `list.padding` (0.5rem 0); compact panel padding: see 不等价项 |
+| Card, Dialog, ToolTip | as Aura, except body and dialog padding 20 and tooltip padding 10,8 | PrimeUIX `card.body.padding` and `overlay.modal.padding` (1.25rem), `tooltip.padding` (0.5rem 0.625rem); dialog title 1.125rem as Aura |
 
 ### Nora rules
 
@@ -240,17 +240,17 @@ The Nora rule table (`PrimeNGNoraPreset`) is transcribed from the pre-algorithm 
 | Control | Values | Source |
 |---|---|---|
 | Button | `FontWeight 700`; dark, for the button only: `ColorPrimaryBg` = `ColorPrimary`@16%, `ColorPrimaryBgHover` = `ColorPrimary`@24% | Weight: XML (baseline); PrimeUIX `button.label.fontWeight`. The scoped backgrounds are AtomUI (the Aura shape): the Filled variant draws `ColorPrimary` on them, and the global ones are the solid primary / P700 (1.00 and 2.16; now 6.39 and 5.46). They also make the Text variant's hover background translucent (hover text 1.32 → 8.43). `DropdownButton`, `ResetButton` and `SubmitButton` are separate identities and keep the global values, see [Unsupported](#unsupported-and-known-differences) |
-| CheckBox | `CheckIndicatorSize 20`, `CheckedMarkSize 14` | XML (baseline); PrimeUIX `checkbox.width` 1.25rem |
-| Select | `OptionPadding` as Aura (12,8, compact 8,6); `PopupContentPadding` 0,2 in both densities | XML (baseline); PrimeUIX `list.padding` (0.125rem 0) |
+| CheckBox | as Aura (18 / 12) | PrimeUIX `checkbox.width` (1.125rem), `checkbox.icon.size` (0.75rem) |
+| Select | `OptionPadding` as Aura (10,4, compact 6,4); `PopupContentPadding` 0,2 in both densities | PrimeUIX `list.option.padding` (0.25rem 0.625rem), `list.padding` (0.125rem 0) |
 | Card | as Aura, radius + 0 (2); dark: for the card only `ColorBorderSecondary` N700 | XML (baseline); the dark border equals PrimeUIX `overlay.*.borderColor` (transparent / `surface.700`). PrimeUIX `card.borderRadius` is `border.radius.sm` and its shadow differs; the XML values are kept |
-| Dialog | as Aura, radius + 0 (2) | XML (baseline); PrimeUIX `overlay.modal.padding` 1.25rem |
-| ToolTip | as Aura (N700, white, `BorderRadius`, 12,8) | XML (baseline); PrimeUIX `tooltip.padding` 0.5rem 0.75rem. PrimeUIX `tooltip.background` is N900 / `surface.0`; the XML kept N700 / white |
+| Dialog | as Aura, radius + 0 (2) | PrimeUIX `overlay.modal.padding` (1.125rem) |
+| ToolTip | as Aura (N700, white, `BorderRadius`, 10,6) | PrimeUIX `tooltip.padding` (0.375rem 0.625rem). PrimeUIX `tooltip.background` is N900 / `surface.0`; the XML kept N700 / white |
 | NavMenu (`PrimeNG:Nora.Dark` only, `PrimeNGNavMenuTokens`) | dark: `ItemSelectedBg` = `ColorPrimary`@16%; nothing under a light appearance | AtomUI. Ant Design takes it from `ControlItemBgActive`, the solid primary here, and draws `ItemSelectedColor` (the primary) on it (1.00; now 6.39). `ItemSelectedColor` cannot become the contrast colour, because it also colours the selected-path headers, which sit on the menu background |
 | Steps (`PrimeNG:Nora.Dark` only, `PrimeNGStepsTokens`) | dark: `FinishIconColor` = `ColorTextLightSolid` (N950), so the completed check stays readable on the solid primary; nothing under a light appearance | XML (baseline); PrimeUIX `steps.itemNumber.activeColor` (`primary.contrast.color`) |
 
 ### Compact profiles and 不等价项
 
-The compact profiles are the base profiles with `AtomUI:Compact` appended. Everything the pre-algorithm compact XML wrote by hand (SM/LG heights, `PaddingContentHorizontal 8`, Select `OptionPadding`) now follows from the rules. **不等价项** are the slots where the base profile + `AtomUI:Compact` differs from the compact profile; they are the only per-control values left in any XML file, and `PrimeNGThemePackageTests.Appending_Compact_Equals_The_Compact_Profile_Except_Listed_Slots` asserts the list:
+The compact profiles are the base profiles with `AtomUI:Compact` appended. Everything the pre-algorithm compact XML wrote by hand (SM/LG heights, `PaddingContentHorizontal`, Select `OptionPadding`) now follows from the rules. **不等价项** are the slots where the base profile + `AtomUI:Compact` differs from the compact profile; they are the only per-control values left in any XML file, and `PrimeNGThemePackageTests.Appending_Compact_Equals_The_Compact_Profile_Except_Listed_Slots` asserts the list:
 
 | Family | 不等价项 | Why |
 |---|---|---|

@@ -117,7 +117,7 @@ internal static class PrimeNGLaraPreset
             ButtonPrimaryBg: null),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
-            ControlHeightSMOffset: -4, ControlHeightLGOffset: 8),
+            ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 0,
             ControlOutlineLineWidths: 3,
@@ -125,18 +125,23 @@ internal static class PrimeNGLaraPreset
             BoxShadowsSecondary: BoxShadows.Parse("0 2 12 0 #1A000000")),
         Controls: new PrimeNGControlRule(
             ButtonFontWeight: FontWeight.SemiBold,
-            ButtonPaddingHorizontal: 16,
-            CheckIndicatorSize: 24,
+            // PrimeUIX button.padding.x 0.875rem (14), wider than the 0.625rem field padding; on the size ladder.
+            ButtonPaddingHorizontal: static global => global.SizeSM + 2,
+            // PrimeUIX checkbox.width 1.25rem, icon.size 0.875rem.
+            CheckIndicatorSize: 20,
             CheckedMarkSize: 14,
-            // PrimeUIX list.option.padding (16, 10) and list.padding (0, 8). The option padding follows the size
-            // ladder (compact 8, 8: a fit to the baseline, not a PrimeUIX derivation); the panel padding has no
-            // compact counterpart that a size token gives (the old compact XML wrote 4), see the README.
+            // PrimeUIX list.option.padding 0.5rem 0.875rem (14, 8) and list.padding 0.5rem 0 (0, 8), on the size
+            // ladder; the panel padding has no compact counterpart that a size token gives (the old compact XML
+            // wrote 4), see the README.
             SelectOptionPadding: static global =>
-                new Thickness(global.UniformlyPadding, global.UniformlyPaddingSM / 2 + 4),
+                new Thickness(global.UniformlyPaddingSM + 2, global.UniformlyPaddingXS),
             SelectPopupContentPadding: static global => new Thickness(0, global.UniformlyPaddingXS),
+            // PrimeUIX card.body.padding and overlay.modal.padding 1.25rem; dialog.title.font.size 1.125rem.
             CardBodyPadding: 20,
             CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
             DialogPadding: 20,
-            ToolTipPadding: new Thickness(12, 8),
+            DialogHeaderFontSize: 18,
+            // PrimeUIX tooltip.padding 0.5rem 0.625rem.
+            ToolTipPadding: new Thickness(10, 8),
             ToolTipColor: new(White)));
 }

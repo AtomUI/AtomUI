@@ -96,11 +96,34 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         token.ColorTextDisabled        = rules.Neutral.TextDisabled.Resolve(surface);
         token.ColorTextLightSolid      = rules.SelectionForeground.Resolve(surface);
 
-        // The Ant Design formula takes SizeMS (16, compact 12); PrimeNG pads content with 12 (compact 8).
-        token.PaddingContentHorizontal = token.SizeSM;
+        // @primeuix/themes 3.1.1 form.field.padding.x is 0.625rem, sm 0.5rem, lg 0.75rem (10 / 8 / 12) in all three
+        // presets. They follow the size ladder (SizeSM 12, compact 8), so AtomUI:Compact narrows them too. The Ant
+        // formula pads inputs by UniformlyPaddingSM - LineWidth (11). The vertical padding makes a field exactly its
+        // control height, as in PrimeNG, instead of the Ant rounding (35 rendered 36, SM 28 rendered 26).
+        var fieldPaddingX = token.SizeSM - 2;
+        // The small field also insets its text by InputContentMargin.
+        var chrome = 2 * token.LineWidth;
+        token.InputPadding   = FieldPadding(fieldPaddingX, token.ControlHeight - token.FontHeight - chrome);
+        token.InputPaddingSM = FieldPadding(token.SizeSM - 4, token.ControlHeightSM - token.FontHeightSM - chrome -
+                                                              token.InputContentMargin.Top - token.InputContentMargin.Bottom);
+        token.InputPaddingLG = FieldPadding(token.SizeSM, token.ControlHeightLG - token.FontHeightLG - chrome);
+        // Content inset of item rows and other content: the field padding inside a border (the Button stage sets the
+        // Button's own label paddings).
+        token.PaddingContentHorizontal = fieldPaddingX + token.LineWidth;
 
         token.BoxShadows          = alias.BoxShadows;
         token.BoxShadowsSecondary = alias.BoxShadowsSecondary;
+    }
+
+    /// <summary>
+    /// A field padding whose vertical part is the control height left over around the text line, border and content
+    /// margin. An odd remainder goes to the bottom, so both sides are whole pixels and the height is exact at any scale.
+    /// </summary>
+    private static Thickness FieldPadding(double horizontal, double vertical)
+    {
+        vertical = Math.Max(0, vertical);
+        var top  = Math.Floor(vertical / 2);
+        return new Thickness(horizontal, top, horizontal, vertical - top);
     }
 
     private static void WriteColors(DesignToken seed, DesignToken map, PrimeNGAppearanceRules rules)

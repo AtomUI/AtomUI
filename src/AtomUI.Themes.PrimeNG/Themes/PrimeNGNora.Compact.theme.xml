@@ -8,7 +8,7 @@
     <Token Name="ColorPrimary" Value="#10B981" />
     <Token Name="ColorError" Value="#EF4444" />
     <Token Name="BorderRadius" Value="2" />
-    <Token Name="ControlHeight" Value="40" />
+    <Token Name="ControlHeight" Value="35" />
     <Token Name="EnableMotion" Value="false" />
   </Tokens>
 </Theme>

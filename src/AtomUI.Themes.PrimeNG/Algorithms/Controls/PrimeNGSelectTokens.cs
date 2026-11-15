@@ -7,8 +7,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
 /// <summary>
 /// Select under the PrimeNG presets: option and panel padding, computed from the control's effective global size
-/// tokens by the preset's rule table (Aura 12,8 and 4; Lara 16,10 and 0,8; Nora 12,8 and 0,2). PrimeUIX has no compact
-/// density; the compact values are fits to the baseline XML, see the README.
+/// tokens by the preset's rule table: PrimeUIX 3.1.1 <c>list.option.padding</c> and <c>list.padding</c> (Aura 10,4 and 4;
+/// Lara 14,8 and 0,8; Nora 10,4 and 0,2). PrimeUIX has no compact density; the option padding follows the size ladder.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]

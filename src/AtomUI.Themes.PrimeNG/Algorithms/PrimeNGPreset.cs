@@ -188,20 +188,21 @@ internal sealed record PrimeNGAliasRule(
     BoxShadows BoxShadowsSecondary);
 
 /// <summary>
-/// The fixed control stage values of a preset. The sizes are the values of the pre-algorithm XML profiles (the
-/// acceptance baseline); the compact profiles have always kept them, so they do not follow <c>AtomUI:Compact</c>.
-/// For Aura they equal the <c>aura-compat</c> preset of <c>@primeuix/themes</c> 3.1.1 at a 16px root; the standard
-/// <c>aura</c> preset is denser (for example card padding 18, tooltip padding 6/10). Values that follow from other
-/// tokens are computed in the control stages instead.
+/// The fixed control stage values of a preset: the standard presets of <c>@primeuix/themes</c> 3.1.1 at a 16px root
+/// (PrimeNG Styled Mode, "Base Font Size"), which is what PrimeNG 22 (primeng.dev) renders. The <c>*-compat</c>
+/// presets are calibrated for a legacy 14px root; AtomUI maps 1rem to 16px, so their values would be 16/14 too large. Fixed sizes do not follow <c>AtomUI:Compact</c>; values that follow from other
+/// tokens are delegates evaluated in the control stages.
 /// </summary>
 /// <param name="ButtonPaddingHorizontal">
-/// The button's own <c>ControlPaddingHorizontal</c>; <see langword="null"/> keeps the global value.
+/// The button's horizontal label padding (PrimeUIX <c>button.padding.x</c>) where it differs from the field padding,
+/// from the button's effective global tokens; <see langword="null"/> keeps the field padding.
 /// </param>
+/// <param name="DialogHeaderFontSize">The dialog title size (PrimeUIX <c>dialog.title.font.size</c>).</param>
 /// <param name="SelectOptionPadding">The Select option padding, from the control's effective global tokens.</param>
 /// <param name="SelectPopupContentPadding">The Select panel padding, from the control's effective global tokens.</param>
 internal sealed record PrimeNGControlRule(
     FontWeight ButtonFontWeight,
-    double? ButtonPaddingHorizontal,
+    Func<DesignToken, double>? ButtonPaddingHorizontal,
     double CheckIndicatorSize,
     double CheckedMarkSize,
     Func<DesignToken, Thickness> SelectOptionPadding,
@@ -209,6 +210,7 @@ internal sealed record PrimeNGControlRule(
     double CardBodyPadding,
     BoxShadows CardRestingShadows,
     double DialogPadding,
+    double DialogHeaderFontSize,
     Thickness ToolTipPadding,
     PrimeNGShade ToolTipColor);
 

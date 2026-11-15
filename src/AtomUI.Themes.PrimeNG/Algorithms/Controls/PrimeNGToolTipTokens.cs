@@ -8,7 +8,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// ToolTip under the PrimeNG presets: PrimeUIX <c>tooltip.background</c> (neutral 700, the global
 /// <c>ColorBgSpotlight</c>), <c>tooltip.color</c>
 /// (<c>surface.0</c>, white in both appearances), <c>overlay.popover.border.radius</c> (the global
-/// <c>BorderRadius</c>) and the padding of the baseline XML (12,8, the <c>aura-compat</c> <c>tooltip.padding</c>).
+/// <c>BorderRadius</c>) and <c>tooltip.padding</c> of the standard <c>@primeuix/themes</c> 3.1.1 presets (Aura and Nora
+/// 10,6; Lara 10,8).
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]

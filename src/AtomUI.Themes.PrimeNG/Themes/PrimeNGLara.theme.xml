@@ -7,6 +7,6 @@
     <Token Name="ColorPrimary" Value="#10B981" />
     <Token Name="ColorError" Value="#EF4444" />
     <Token Name="BorderRadius" Value="6" />
-    <Token Name="ControlHeight" Value="44" />
+    <Token Name="ControlHeight" Value="39" />
   </Tokens>
 </Theme>

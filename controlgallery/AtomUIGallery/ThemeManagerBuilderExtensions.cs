@@ -11,13 +11,13 @@ namespace AtomUIGallery;
 public static class ThemeManagerBuilderExtensions
 {
     /// <summary>
-    /// Declares the Gallery package, its shell dependency, translations and compiled themes.
+    /// Declares the Gallery package, its shell dependency, translations and theme packages.
     /// </summary>
     public static IAtomUIBuilder UseGalleryControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
         return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
             .DependsOn(static root => root.UseGalleryBase(AtomUIGalleryModule.Configure))
-            .DependsOn(static root => GeneratedThemePackageRegistration.Register(root.Theme.UsePrimeNGThemes().UseShadcnThemes().UseBootstrapThemes().UseMaterialThemes())));
+            .DependsOn(static root => root.Theme.UsePrimeNGThemes().UseShadcnThemes().UseBootstrapThemes().UseMaterialThemes()));
     }
 }

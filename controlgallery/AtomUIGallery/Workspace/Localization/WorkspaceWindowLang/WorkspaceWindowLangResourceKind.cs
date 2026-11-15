@@ -22,5 +22,18 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemCompactMode,
     MenuItemEnableMotion,
     MenuItemEnableWaveSpirit,
-    MenuItemOtherThemes
+    MenuItemDesignLanguage,
+    MenuItemBrandColor,
+    MenuItemBrandColorReset,
+    MenuItemBrandColorFixedHint,
+    MenuItemOtherThemes,
+    DesignLanguageAntDesign,
+    DesignLanguageBootstrap,
+    DesignLanguageMaterial,
+    DesignLanguagePrimeNGAura,
+    DesignLanguagePrimeNGLara,
+    DesignLanguagePrimeNGNora,
+    DesignLanguageShadcnZinc,
+    DesignLanguageShadcnSlate,
+    DesignLanguageShadcnStone
 }

@@ -2,7 +2,13 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Xml.Linq;
+using AtomUI.Theme;
+using AtomUIGallery.Workspace.ViewModels;
 using AtomUIGallery.Workspace.Views;
+using Avalonia;
+using Avalonia.Media;
+using System.Reactive.Threading.Tasks;
+using MenuItem = AtomUI.Desktop.Controls.MenuItem;
 using Shouldly;
 using Xunit;
 
@@ -47,14 +53,14 @@ public class WorkspaceWindowLayoutTests
     [Fact]
     public void Workspace_Window_Theme_Choices_Use_Available_Theme_Ids()
     {
-        var source = File.ReadAllText(GetRepoFile("controlgallery/AtomUIGallery/Workspace/Views/WorkspaceWindow.axaml.cs"));
+        var source = File.ReadAllText(GetRepoFile("controlgallery/AtomUIGallery/Workspace/Views/GalleryThemeMenu.cs"));
 
-        source.ShouldContain("ViewModel.AvailableThemes");
-        source.ShouldContain("new StableCommand(ViewModel.SwitchThemeCommand)");
+        source.ShouldContain("_viewModel.AvailableThemes");
+        source.ShouldContain("new StableCommand(viewModel.SwitchThemeCommand)");
         Regex.IsMatch(source, @"\bToggleType\s*=\s*MenuItemToggleType\.Radio\b").ShouldBeTrue();
-        Regex.IsMatch(source, @"\bGroupName\s*=\s*ThemeColorGroupName\b").ShouldBeTrue();
-        source.ShouldContain("string.Equals(theme.Id, ViewModel.CurrentThemeId");
-        Regex.IsMatch(source, @"\bCommand\s*=\s*switchThemeCommand\b").ShouldBeTrue();
+        Regex.IsMatch(source, @"\bGroupName\s*=\s*OtherThemeGroupName\b").ShouldBeTrue();
+        source.ShouldContain("string.Equals(theme.Id, _viewModel.CurrentThemeId");
+        Regex.IsMatch(source, @"\bCommand\s*=\s*_switchThemeCommand\b").ShouldBeTrue();
         source.ShouldContain("CommandParameter = theme.Id");
     }
 
@@ -69,9 +75,67 @@ public class WorkspaceWindowLayoutTests
         innerCommand.RaiseCanExecuteChanged();
 
         raiseCount.ShouldBe(0);
-        stableCommand.CanExecute("PolarGreen").ShouldBeTrue();
-        stableCommand.Execute("PolarGreen");
-        innerCommand.ExecuteParameters.ShouldBe(["PolarGreen"]);
+        stableCommand.CanExecute("DaybreakBlue").ShouldBeTrue();
+        stableCommand.Execute("DaybreakBlue");
+        innerCommand.ExecuteParameters.ShouldBe(["DaybreakBlue"]);
+    }
+
+    [Fact]
+    public async Task Theme_Menu_Groups_By_Design_Language()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        var manager   = Application.Current!.GetThemeManager()!;
+        var viewModel = new WorkspaceWindowViewModel();
+        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
+        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        try
+        {
+            languageItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
+                        .ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes));
+            otherItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
+                     .ShouldBe(viewModel.AvailableThemes.Where(theme => theme.DesignLanguage is null)
+                                        .Select(theme => theme.Id));
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+
+            languageItem.Items.OfType<MenuItem>().Single(item => item.IsChecked == true).Tag.ShouldBe("AntDesign");
+            brandItem.IsEnabled.ShouldBeTrue();
+            brandItem.Items.OfType<MenuItem>().Select(item => item.Tag).ShouldContain(Color.Parse("#52C41A"));
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await manager.ApplyThemeAsync(new ThemeRequest(
+                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                TestContext.Current.CancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task Brand_Swatches_Disabled_For_Fixed_Language()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        var manager   = Application.Current!.GetThemeManager()!;
+        var viewModel = new WorkspaceWindowViewModel();
+        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
+        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            brandItem.IsEnabled.ShouldBeTrue();
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+
+            brandItem.IsEnabled.ShouldBeFalse();
+            brandItem.Items.Count.ShouldBe(0);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await manager.ApplyThemeAsync(new ThemeRequest(
+                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                TestContext.Current.CancellationToken);
+        }
     }
 
     private static string GetRepoFile(string relativePath)
@@ -93,7 +157,7 @@ public class WorkspaceWindowLayoutTests
 
     private static ICommand CreateStableThemeCommand(ICommand innerCommand)
     {
-        var commandType = typeof(WorkspaceWindow).GetNestedType("StableCommand", BindingFlags.NonPublic);
+        var commandType = typeof(GalleryThemeMenu).GetNestedType("StableCommand", BindingFlags.NonPublic);
         commandType.ShouldNotBeNull();
         var constructor = commandType!.GetConstructor(
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,

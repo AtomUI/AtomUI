@@ -46,8 +46,10 @@
                 </atom:MenuItem>
             </atom:MenuItem>
             <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemTheme}">
-                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemThemeSettings}"
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemDesignLanguage}"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.ThemeCatalog}" />
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemBrandColor}"
+                               Tag="{x:Static workspaceviews:WindowMenuItemKind.BrandColor}" />
                 <atom:MenuSeparator />
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemAppearance}">
                     <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemLightMode}"
@@ -69,6 +71,8 @@
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemCompactMode}"
                                ToggleType="CheckBox"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.Compact}" />
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemOtherThemes}"
+                               Tag="{x:Static workspaceviews:WindowMenuItemKind.OtherThemes}" />
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemEnableMotion}"
                                ToggleType="CheckBox"
                                IsChecked="True"

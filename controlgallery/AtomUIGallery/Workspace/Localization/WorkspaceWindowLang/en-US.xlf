@@ -1,9 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.WorkspaceWindowLangResourceKind">
+    <unit id="DesignLanguageAntDesign">
+      <segment>
+        <source>Ant Design</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageBootstrap">
+      <segment>
+        <source>Bootstrap</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageMaterial">
+      <segment>
+        <source>Material</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGAura">
+      <segment>
+        <source>PrimeNG Aura</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGLara">
+      <segment>
+        <source>PrimeNG Lara</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGNora">
+      <segment>
+        <source>PrimeNG Nora</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnSlate">
+      <segment>
+        <source>Shadcn Slate</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnStone">
+      <segment>
+        <source>Shadcn Stone</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnZinc">
+      <segment>
+        <source>Shadcn Zinc</source>
+      </segment>
+    </unit>
     <unit id="MenuItemAppearance">
       <segment>
         <source>Appearance</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColor">
+      <segment>
+        <source>Brand Color</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColorFixedHint">
+      <segment>
+        <source>This design language uses a fixed brand color</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColorReset">
+      <segment>
+        <source>Reset Brand Color</source>
       </segment>
     </unit>
     <unit id="MenuItemCompactMode">
@@ -14,6 +74,11 @@
     <unit id="MenuItemDarkMode">
       <segment>
         <source>Dark Mode</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemDesignLanguage">
+      <segment>
+        <source>Design Language</source>
       </segment>
     </unit>
     <unit id="MenuItemEnableFullScreen">
@@ -73,7 +138,7 @@
     </unit>
     <unit id="MenuItemOtherThemes">
       <segment>
-        <source>Other themes</source>
+        <source>Other Themes</source>
       </segment>
     </unit>
     <unit id="MenuItemSettings">

@@ -1,16 +1,12 @@
 using System.Reactive;
-using System.ComponentModel;
-using System.Windows.Input;
 using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Shell;
-using AtomUIGallery.Localization;
 using AtomUIGallery.Workspace.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using DesktopMenu = AtomUI.Desktop.Controls.Menu;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
@@ -26,6 +22,8 @@ internal enum WindowMenuItemKind
     Move,
     Resize,
     ThemeCatalog,
+    BrandColor,
+    OtherThemes,
     LightMode,
     DarkMode,
     FollowSystem,
@@ -42,12 +40,9 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
 {
     public const string LanguageId = nameof(WorkspaceWindow);
     private const string TitleBarMenuResourceKey = "WorkspaceTitleBarMenu";
-    private const string ThemeColorGroupName = "ThemeColor";
     private GalleryShellView? _shellView;
     private bool _closed;
-    private MenuItem? _themeMenuItem;
-    private readonly List<MenuItem> _themeMenuItems = new();
-    private PropertyChangedEventHandler? _viewModelPropertyChangedHandler;
+    private GalleryThemeMenu? _themeMenu;
 
     public WorkspaceWindow()
     {
@@ -114,11 +109,8 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         }
         _closed = true;
         RemoveHandler(MenuItem.ClickEvent, HandleMenuItemClick);
-        if (ViewModel is not null && _viewModelPropertyChangedHandler is not null)
-        {
-            ViewModel.PropertyChanged -= _viewModelPropertyChangedHandler;
-            _viewModelPropertyChangedHandler = null;
-        }
+        _themeMenu?.Dispose();
+        _themeMenu = null;
         _shellView?.Dispose();
         _shellView = null;
         ViewModel?.Dispose();
@@ -139,142 +131,21 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
             return;
         }
 
-        _themeMenuItem = menu.Items
+        var themeItems = menu.Items
                              .OfType<MenuItem>()
                              .SelectMany(static item => item.Items.OfType<MenuItem>())
-                             .FirstOrDefault(static item =>
-                                 item.Tag is WindowMenuItemKind.ThemeCatalog);
-        if (_themeMenuItem is null)
+                             .Where(static item => item.Tag is WindowMenuItemKind.ThemeCatalog or
+                                 WindowMenuItemKind.BrandColor or
+                                 WindowMenuItemKind.OtherThemes)
+                             .ToDictionary(static item => (WindowMenuItemKind)item.Tag!);
+        if (!themeItems.TryGetValue(WindowMenuItemKind.ThemeCatalog, out var designLanguageItem) ||
+            !themeItems.TryGetValue(WindowMenuItemKind.BrandColor, out var brandColorItem) ||
+            !themeItems.TryGetValue(WindowMenuItemKind.OtherThemes, out var otherThemesItem))
         {
             return;
         }
 
-        RebuildThemeMenuItems();
-        _viewModelPropertyChangedHandler = HandleViewModelPropertyChanged;
-        ViewModel.PropertyChanged += _viewModelPropertyChangedHandler;
-    }
-
-    private void HandleViewModelPropertyChanged(object? sender, PropertyChangedEventArgs args)
-    {
-        if (args.PropertyName == nameof(GalleryWorkspaceViewModel.AvailableThemes))
-        {
-            RebuildThemeMenuItems();
-        }
-        else if (args.PropertyName == nameof(GalleryWorkspaceViewModel.CurrentThemeId) && ViewModel is { } viewModel)
-        {
-            foreach (var item in _themeMenuItems)
-            {
-                item.IsChecked = Equals(item.CommandParameter, viewModel.CurrentThemeId);
-            }
-        }
-    }
-
-    private void RebuildThemeMenuItems()
-    {
-        if (ViewModel is null || _themeMenuItem is null)
-        {
-            return;
-        }
-
-        _themeMenuItem.Items.Clear();
-        _themeMenuItems.Clear();
-
-        var switchThemeCommand = new StableCommand(ViewModel.SwitchThemeCommand);
-        var designLanguages = ViewModel.AvailableThemes
-                                       .GroupBy(static theme => GetThemeDesignLanguage(theme.Id))
-                                       .OrderBy(static group => group.Key.Name is null);
-        foreach (var group in designLanguages)
-        {
-            var (designLanguage, themeNamePrefix) = group.Key;
-            var designLanguageItem = new MenuItem { Header = designLanguage };
-            if (designLanguage is null)
-            {
-                designLanguageItem.Bind(MenuItem.HeaderProperty,
-                    new DynamicResourceExtension(WorkspaceWindowLangResourceKind.MenuItemOtherThemes));
-            }
-
-            foreach (var theme in group)
-            {
-                var item = new MenuItem
-                {
-                    Header           = CreateThemeMenuHeader(theme, themeNamePrefix),
-                    ToggleType       = MenuItemToggleType.Radio,
-                    GroupName        = ThemeColorGroupName,
-                    IsChecked        = string.Equals(theme.Id, ViewModel.CurrentThemeId, StringComparison.Ordinal),
-                    Command          = switchThemeCommand,
-                    CommandParameter = theme.Id
-                };
-                designLanguageItem.Items.Add(item);
-                _themeMenuItems.Add(item);
-            }
-
-            _themeMenuItem.Items.Add(designLanguageItem);
-        }
-    }
-
-    private static (string? Name, string? ThemeNamePrefix) GetThemeDesignLanguage(string themeId)
-    {
-        // Built-in appearance and density variants share the same base theme ID.
-        var variantSeparator = themeId.IndexOf('.');
-        var baseId = variantSeparator >= 0 ? themeId[..variantSeparator] : themeId;
-        return baseId switch
-        {
-            IThemeManager.DEFAULT_THEME_ID or "PolarGreen" or "SunsetOrange" or "GoldenPurple" or "Magenta" => ("Ant Design", null),
-            "Bootstrap" => ("Bootstrap", "Bootstrap"),
-            "Material" => ("Material Design", "Material"),
-            "PrimeNGAura" or "PrimeNGLara" or "PrimeNGNora" => ("PrimeNG", "PrimeNG"),
-            "ShadcnSlate" or "ShadcnStone" or "ShadcnZinc" => ("shadcn/ui", "Shadcn"),
-            _ => (null, null)
-        };
-    }
-
-    private static string GetThemeMenuLabel(ThemeInfo theme, string? prefix)
-    {
-        if (prefix is null)
-        {
-            return theme.Name;
-        }
-
-        if (string.Equals(theme.Name, prefix, StringComparison.Ordinal))
-        {
-            return theme.Appearance.ToString();
-        }
-
-        return theme.Name.StartsWith(prefix + " ", StringComparison.Ordinal)
-            ? theme.Name[(prefix.Length + 1)..]
-            : theme.Name;
-    }
-
-    private static Control CreateThemeMenuHeader(ThemeInfo theme, string? prefix)
-    {
-        var header = new Grid
-        {
-            ColumnDefinitions = new ColumnDefinitions("*,Auto")
-        };
-        header.Children.Add(new Avalonia.Controls.TextBlock
-        {
-            Text              = GetThemeMenuLabel(theme, prefix),
-            VerticalAlignment = VerticalAlignment.Center
-        });
-
-        if (theme.AccentColor is { } accentColor)
-        {
-            var swatch = new Border
-            {
-                Width               = 12,
-                Height              = 12,
-                CornerRadius        = new CornerRadius(2),
-                Background          = new SolidColorBrush(accentColor),
-                Margin              = new Thickness(12, 0, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment   = VerticalAlignment.Center,
-                IsHitTestVisible    = false
-            };
-            Grid.SetColumn(swatch, 1);
-            header.Children.Add(swatch);
-        }
-
-        return header;
+        _themeMenu = new GalleryThemeMenu(ViewModel, designLanguageItem, brandColorItem, otherThemesItem);
     }
 
     private void HandleMenuItemClick(object? sender, RoutedEventArgs e)
@@ -383,27 +254,5 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
         }
 
         return null;
-    }
-
-    private sealed class StableCommand(ICommand innerCommand) : ICommand
-    {
-        public event EventHandler? CanExecuteChanged
-        {
-            add { }
-            remove { }
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            return innerCommand.CanExecute(parameter);
-        }
-
-        public void Execute(object? parameter)
-        {
-            if (innerCommand.CanExecute(parameter))
-            {
-                innerCommand.Execute(parameter);
-            }
-        }
     }
 }

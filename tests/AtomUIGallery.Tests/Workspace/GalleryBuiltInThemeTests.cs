@@ -1,6 +1,7 @@
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme;
 using AtomUI.Theme.Resources;
+using AtomUIGallery.Workspace;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -11,33 +12,61 @@ namespace AtomUIGallery.Tests.Workspace;
 
 public class GalleryBuiltInThemeTests
 {
-    private static readonly ThemeAlgorithm[] DefaultChain = [new ThemeAlgorithm("AtomUI", "Default")];
-
     static GalleryBuiltInThemeTests()
     {
         AvaloniaTestApp.EnsureInitialized();
     }
 
-    [Fact]
-    public void Gallery_Retains_Core_And_Palette_Themes_In_Display_Order()
+    [Theory]
+    [InlineData("PolarGreen")]
+    [InlineData("SunsetOrange")]
+    [InlineData("GoldenPurple")]
+    [InlineData("Magenta")]
+    public void Gallery_Catalog_No_Longer_Contains_The_Removed_Color_Presets(string themeId)
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
 
-        manager.AvailableThemes.Where(theme => theme.Id is "DaybreakBlue" or "PolarGreen" or "SunsetOrange" or "GoldenPurple" or "Magenta").ShouldBe([
-            new ThemeInfo("DaybreakBlue", "Daybreak Blue", ThemeAppearance.Light, true, Color.Parse("#1677FF")) { Algorithms = DefaultChain },
-            new ThemeInfo("PolarGreen", "Polar Green", ThemeAppearance.Light, false, Color.Parse("#52C41A")) { Algorithms = DefaultChain },
-            new ThemeInfo("SunsetOrange", "Sunset Orange", ThemeAppearance.Light, false, Color.Parse("#FA8C16")) { Algorithms = DefaultChain },
-            new ThemeInfo("GoldenPurple", "Golden Purple", ThemeAppearance.Light, false, Color.Parse("#722ED1")) { Algorithms = DefaultChain },
-            new ThemeInfo("Magenta", "Magenta", ThemeAppearance.Light, false, Color.Parse("#EB2F96")) { Algorithms = DefaultChain }
+        manager.AvailableThemes.Select(theme => theme.Id).ShouldNotContain(themeId);
+    }
+
+    [Fact]
+    public void Gallery_Catalog_Keeps_DaybreakBlue_As_The_Seed_Based_Ant_Design_Language()
+    {
+        var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
+
+        var theme = manager.AvailableThemes.Single(info => info.Id == "DaybreakBlue");
+        theme.DesignLanguage.ShouldBe("AntDesign");
+        theme.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+        theme.AccentColor.ShouldBe(Color.Parse("#1677FF"));
+    }
+
+    [Fact]
+    public void Ant_Named_Swatches_Match_The_Removed_Presets()
+    {
+        GalleryBrandSwatches.AntNamed.Select(swatch => (swatch.Name, swatch.Color)).ShouldBe([
+            ("Daybreak Blue", Color.Parse("#1677FF")),
+            ("Polar Green", Color.Parse("#52C41A")),
+            ("Sunset Orange", Color.Parse("#FA8C16")),
+            ("Golden Purple", Color.Parse("#722ED1")),
+            ("Magenta", Color.Parse("#EB2F96"))
         ]);
+    }
+
+    [Fact]
+    public void Brand_Swatches_Show_Named_Ant_Colors_Only_For_Ant_Design()
+    {
+        var ant   = GalleryBrandSwatches.For("AntDesign", "Daybreak Blue", Color.Parse("#1677FF"));
+        var other = GalleryBrandSwatches.For("PrimeNG.Aura", "PrimeNG Aura", Color.Parse("#10B981"));
+
+        ant.Select(swatch => swatch.Name).ShouldContain("Polar Green");
+        ant.Count(swatch => swatch.Color == Color.Parse("#1677FF")).ShouldBe(1);
+        other.Select(swatch => swatch.Name).ShouldNotContain("Polar Green");
+        GalleryBrandSwatches.Tailwind500.Count.ShouldBe(17);
+        other.Count(swatch => swatch.Color == Color.Parse("#10B981")).ShouldBe(1);
     }
 
     [Theory]
     [InlineData("DaybreakBlue", "#1677FF")]
-    [InlineData("PolarGreen", "#52C41A")]
-    [InlineData("SunsetOrange", "#FA8C16")]
-    [InlineData("GoldenPurple", "#722ED1")]
-    [InlineData("Magenta", "#EB2F96")]
     public async Task Gallery_Theme_Id_Compiles_The_Expected_Brand_Colors(
         string themeId,
         string color)

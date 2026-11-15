@@ -269,6 +269,65 @@ public class ThemeCatalogReloadTests
         });
     }
 
+    [Fact]
+    public async Task Reload_Recomputes_Design_Language_Grouping()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            using var directory = new TemporaryDirectory();
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            builder.AddThemeDefinitionResolver(new StaticLanguageResolver(
+                "Pkg", "memory://pkg", CompiledThemeCatalogResolverTests.LanguageXml(
+                    "PkgBlue", "AntDesign", "Light", "Normal", "Seed")));
+            builder.UseUserThemeDirectory(directory.Path);
+            var manager = builder.Build();
+            var file = System.IO.Path.Combine(directory.Path, "dark.theme.xml");
+            File.WriteAllText(file, CompiledThemeCatalogResolverTests.LanguageXml(
+                "UserDark", "AntDesign", "Dark", "Normal", "Seed"));
+            manager.InitializeApplication(Application.Current!);
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBe("AntDesign");
+
+            File.WriteAllText(file, CompiledThemeCatalogResolverTests.LanguageXml(
+                "UserDark", "AntDesign", "Dark", "Normal", "Fixed"));
+            var demoted = await manager.ReloadThemesAsync(TestContext.Current.CancellationToken);
+
+            demoted.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBeNull();
+            manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic => diagnostic.Code == "ATMTHM3104");
+
+            File.WriteAllText(file, CompiledThemeCatalogResolverTests.LanguageXml(
+                "UserDark", "AntDesign", "Dark", "Normal", "Seed"));
+            var restored = await manager.ReloadThemesAsync(TestContext.Current.CancellationToken);
+
+            restored.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBe("AntDesign");
+            manager.ThemeCatalogDiagnostics.ShouldNotContain(static diagnostic => diagnostic.Code == "ATMTHM3104");
+        });
+    }
+
+    private sealed class StaticLanguageResolver(string id, string identity, string xml) : IThemeDefinitionResolver
+    {
+        private readonly byte[] _bytes = System.Text.Encoding.UTF8.GetBytes(xml);
+
+        public string Id { get; } = id;
+        public bool SupportsReload => false;
+
+        public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
+        {
+            return new ThemeDefinitionResolveResult([new Source(identity, _bytes)], []);
+        }
+
+        private sealed class Source(string identity, byte[] bytes) : IThemeDefinitionSource
+        {
+            public string SourceIdentity { get; } = identity;
+            public string SourceRevision => "1";
+            public Stream OpenRead() => new MemoryStream(bytes, writable: false);
+        }
+    }
+
     private static string WriteTheme(
         string directory,
         string fileName,

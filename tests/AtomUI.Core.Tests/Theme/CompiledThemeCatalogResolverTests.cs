@@ -323,6 +323,112 @@ public class CompiledThemeCatalogResolverTests
         });
     }
 
+    [Fact]
+    public async Task Catalog_Demotes_User_Theme_That_Duplicates_A_Package_Variant()
+    {
+        await HeadlessTestApp.RunAsync(async () =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
+                LanguageXml("UserBlue", "AntDesign", "Light", "Normal", "Seed"));
+
+            var themes = manager.AvailableThemes;
+            themes.Single(static theme => theme.Id == "PkgBlue").DesignLanguage.ShouldBe("AntDesign");
+            themes.Single(static theme => theme.Id == "UserBlue").DesignLanguage.ShouldBeNull();
+            manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic =>
+                diagnostic.Code == "ATMTHM3103" && diagnostic.Severity == ThemeDiagnosticSeverity.Warning);
+            manager.CompiledThemeCatalog.Get("UserBlue").Info.DesignLanguage.ShouldBeNull();
+
+            var result = await manager.ApplyThemeAsync(
+                new ThemeRequest("UserBlue", null, ThemeTransitionReason.UserRequest));
+            result.Status.ShouldBe(ThemeTransitionStatus.Committed);
+        });
+    }
+
+    [Fact]
+    public void Catalog_Lets_A_User_Theme_Add_A_Missing_Variant()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
+                LanguageXml("UserDark", "AntDesign", "Dark", "Normal", "Seed"));
+
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBe("AntDesign");
+            manager.ThemeCatalogDiagnostics.ShouldNotContain(static diagnostic =>
+                diagnostic.Code == "ATMTHM3103" || diagnostic.Code == "ATMTHM3104");
+        });
+    }
+
+    [Fact]
+    public void Catalog_Demotes_A_Variant_With_Different_Brand_Support()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
+                LanguageXml("UserDark", "AntDesign", "Dark", "Normal", "Fixed"));
+
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBeNull();
+            manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic =>
+                diagnostic.Code == "ATMTHM3104" && diagnostic.Severity == ThemeDiagnosticSeverity.Warning);
+        });
+    }
+
+    [Fact]
+    public void Catalog_Demoted_Definition_Does_Not_Occupy_A_Slot_Or_Set_Brand_Support()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            // The language's first definition is Seed; the Fixed variant is demoted (3104) and must not
+            // block the later Dark/Compact variant, nor may a demoted duplicate (3103) claim its slot.
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
+                LanguageXml("FixedDark", "AntDesign", "Dark", "Normal", "Fixed"),
+                LanguageXml("SeedDark", "AntDesign", "Dark", "Normal", "Seed"));
+
+            var themes = manager.AvailableThemes;
+            themes.Single(static theme => theme.Id == "FixedDark").DesignLanguage.ShouldBeNull();
+            themes.Single(static theme => theme.Id == "SeedDark").DesignLanguage.ShouldBe("AntDesign");
+        });
+    }
+
+    private static ThemeManager BuildLanguageManager(params string[] xmls)
+    {
+        var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+        var index = 0;
+        foreach (var xml in xmls)
+        {
+            index++;
+            builder.AddThemeDefinitionResolver(new MemoryResolver(
+                $"Lang{index}",
+                new MemorySource($"memory://lang-{index}", "1", xml)));
+        }
+        var manager = builder.Build();
+        manager.InitializeApplication(Application.Current!);
+        return manager;
+    }
+
+    internal static string LanguageXml(
+        string id,
+        string language,
+        string appearance,
+        string density,
+        string brand)
+    {
+        var algorithms = appearance == "Dark"
+            ? "<Algorithm Id=\"Dark\" />"
+            : "<Algorithm Id=\"Default\" />";
+        return $$"""
+                 <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="{{id}}" Name="{{id}}" Appearance="{{appearance}}"
+                        DesignLanguage="{{language}}" Density="{{density}}" BrandColor="{{brand}}">
+                   <Algorithms>{{algorithms}}</Algorithms>
+                 </Theme>
+                 """;
+    }
+
     private static string ThemeXml(
         string id,
         string name,

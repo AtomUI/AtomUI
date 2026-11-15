@@ -186,6 +186,8 @@ internal sealed class CompiledThemeCatalog
             }
         }
 
+        ApplyDesignLanguageRules(definitions, orderedDefinitions, diagnostics);
+
         var defaults = orderedDefinitions.Where(static entry => entry.Info.IsDefault).ToArray();
         if (defaults.Length != 1)
         {
@@ -277,6 +279,8 @@ internal sealed class CompiledThemeCatalog
             }
         }
 
+        ApplyDesignLanguageRules(definitions, orderedDefinitions, diagnostics);
+
         var defaults = orderedDefinitions.Where(static entry => entry.Info.IsDefault).ToArray();
         if (defaults.Length != 1)
         {
@@ -295,6 +299,71 @@ internal sealed class CompiledThemeCatalog
                 defaults[0],
                 slices),
             diagnostics);
+    }
+
+    /// <summary>
+    /// Enforces cross-definition design language rules over the merged catalog in load order. A definition that
+    /// duplicates an already registered (Appearance, Density) variant of its language (ATMTHM3103), or whose brand
+    /// color support differs from the language's first definition (ATMTHM3104), is demoted out of the group
+    /// (<c>DesignLanguage = null</c>) with a Warning. Demoted definitions are never registered into the language's
+    /// bookkeeping, so they neither occupy a variant slot nor decide the language's brand support.
+    /// </summary>
+    private static void ApplyDesignLanguageRules(
+        Dictionary<string, CompiledThemeDefinition> definitions,
+        List<CompiledThemeDefinition> orderedDefinitions,
+        List<ThemeDiagnostic> diagnostics)
+    {
+        var languages = new Dictionary<string, (ThemeBrandColorSupport Brand, HashSet<(ThemeAppearance, ThemeDensity)> Variants)>(
+            StringComparer.Ordinal);
+        for (var index = 0; index < orderedDefinitions.Count; index++)
+        {
+            var entry = orderedDefinitions[index];
+            var language = entry.Info.DesignLanguage;
+            if (language is null)
+            {
+                continue;
+            }
+
+            var variant = (entry.Info.Appearance, entry.Info.Density);
+            ThemeDiagnostic? warning = null;
+            if (languages.TryGetValue(language, out var state))
+            {
+                if (state.Variants.Contains(variant))
+                {
+                    warning = Warning(
+                        "ATMTHM3103",
+                        entry.Revision.SourceIdentity,
+                        "$",
+                        $"Theme '{entry.Info.Id}' duplicates the {variant.Appearance}/{variant.Density} variant of " +
+                        $"design language '{language}'; it is removed from the design language group.");
+                }
+                else if (state.Brand != entry.Info.BrandColor)
+                {
+                    warning = Warning(
+                        "ATMTHM3104",
+                        entry.Revision.SourceIdentity,
+                        "$",
+                        $"Theme '{entry.Info.Id}' declares brand color support '{entry.Info.BrandColor}' which differs " +
+                        $"from design language '{language}' ('{state.Brand}'); it is removed from the design language group.");
+                }
+            }
+
+            if (warning is not null)
+            {
+                diagnostics.Add(warning);
+                var demoted = entry with { Info = entry.Info with { DesignLanguage = null } };
+                definitions[entry.Info.Id] = demoted;
+                orderedDefinitions[index] = demoted;
+                continue;
+            }
+
+            if (state.Variants is null)
+            {
+                state = (entry.Info.BrandColor, new HashSet<(ThemeAppearance, ThemeDensity)>());
+                languages.Add(language, state);
+            }
+            state.Variants.Add(variant);
+        }
     }
 
     private static ThemeResolverSliceLoadResult LoadResolverSlice(
@@ -575,6 +644,15 @@ internal sealed class CompiledThemeCatalog
             Environment.NewLine,
             diagnostics.Select(static diagnostic =>
                 $"{diagnostic.Code} {diagnostic.Source}{diagnostic.Path}: {diagnostic.Message}"));
+    }
+
+    private static ThemeDiagnostic Warning(
+        string code,
+        string source,
+        string path,
+        string message)
+    {
+        return new ThemeDiagnostic(code, ThemeDiagnosticSeverity.Warning, source, path, message);
     }
 
     private static ThemeDiagnostic Error(

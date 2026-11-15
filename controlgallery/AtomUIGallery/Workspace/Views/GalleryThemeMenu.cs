@@ -261,7 +261,6 @@ internal sealed class GalleryThemeMenu : IDisposable
     {
         var header = new Grid
         {
-            Width             = 160,
             ColumnDefinitions = new ColumnDefinitions("*,Auto")
         };
         var text = new Avalonia.Controls.TextBlock

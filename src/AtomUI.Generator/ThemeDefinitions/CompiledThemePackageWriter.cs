@@ -23,20 +23,37 @@ internal static class CompiledThemePackageWriter
         var programs = new List<string>();
         var requirements = new List<CompiledThemeRequirement>();
         var ids = new HashSet<string>(StringComparer.Ordinal);
+        var variants = new HashSet<string>(StringComparer.Ordinal);
+        var brandSupport = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var file in files)
         {
             CompiledThemeInput input;
             try { input = CompiledThemeInput.Decode(file.Text); }
             catch (Exception error) { Error(output, file.Path, 0, 0, error.Message); continue; }
             if (!ids.Add(input.Id)) { Error(output, input.SourcePath, 0, 0, "Duplicate compiled theme Id: " + input.Id); continue; }
+            if (input.DesignLanguage.Length > 0)
+            {
+                if (!variants.Add(input.DesignLanguage + "\u001f" + input.Appearance + "\u001f" + input.Density))
+                {
+                    Error(output, input.SourcePath, 0, 0, "ATMTHM3103: Design language '" + input.DesignLanguage + "' declares more than one definition for the same appearance and density in this package.");
+                    continue;
+                }
+                if (brandSupport.TryGetValue(input.DesignLanguage, out var support) && support != input.BrandColor)
+                {
+                    Error(output, input.SourcePath, 0, 0, "ATMTHM3104: Design language '" + input.DesignLanguage + "' mixes Seed and Fixed brand color support in this package.");
+                    continue;
+                }
+                brandSupport[input.DesignLanguage] = input.BrandColor;
+            }
             var describe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");
             var write = new StringBuilder();
             var currentDescribe = describe;
             var currentWrite = write;
             var controlDescriptions = new List<string>();
             var controlWrites = new List<string>();
-            var fields = new List<string> { "compiled-abi-v1", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
+            var fields = new List<string> { "compiled-abi-v2", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
                 input.Id, input.Name, input.Appearance.ToString(CultureInfo.InvariantCulture), input.IsDefault.ToString() };
+            fields.Add(input.DesignLanguage); fields.Add(input.Density.ToString(CultureInfo.InvariantCulture)); fields.Add(input.BrandColor.ToString(CultureInfo.InvariantCulture));
             fields.AddRange(input.Algorithms.Select(a => a.Catalog + ":" + a.Id));
             var tokenId = 0;
             var valid = true;
@@ -109,11 +126,14 @@ internal static class CompiledThemePackageWriter
             if (!valid) { continue; }
             var programName = "CompiledThemeProgram_" + programs.Count;
             var source = new StringBuilder("internal sealed class " + programName + " : " + Compiled + "CompiledThemeProgram\n{\n");
-            source.Append("    internal ").Append(programName).Append("() : base(1, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
+            source.Append("    internal ").Append(programName).Append("() : base(2, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
                 .Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest)).Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest))
                 .Append(", ").Append(ThemeBuildContracts.Literal(ThemeBuildContracts.Digest(fields))).Append(", ").Append(ThemeBuildContracts.Literal(input.Id))
                 .Append(", ").Append(ThemeBuildContracts.Literal(input.Name)).Append(", (global::AtomUI.Theme.ThemeAppearance)").Append(input.Appearance)
-                .Append(", ").Append(input.IsDefault ? "true" : "false").Append(", ").Append(accent).AppendLine(") { }");
+                .Append(", ").Append(input.IsDefault ? "true" : "false").Append(", ").Append(accent)
+                .Append(", ").Append(input.DesignLanguage.Length == 0 ? "null" : ThemeBuildContracts.Literal(input.DesignLanguage))
+                .Append(", (global::AtomUI.Theme.ThemeDensity)").Append(input.Density).Append(", (global::AtomUI.Theme.ThemeBrandColorSupport)").Append(input.BrandColor)
+                .Append(", new string[] { ").Append(string.Join(", ", input.Algorithms.Select(a => ThemeBuildContracts.Literal(a.Catalog + ":" + a.Id)))).AppendLine(" }) { }");
             source.AppendLine("    protected override bool IsBackgroundPrepareSafe => true;");
             source.Append("    protected override void Describe(").Append(Compiled).Append("CompiledThemeBindingBuilder builder)\n    {\n").Append(describe).AppendLine("    }");
             source.Append("    protected override void WriteStaticDefaults(").Append(Compiled).Append("CompiledThemeValueWriter writer)\n    {\n").Append(write).AppendLine("    }");

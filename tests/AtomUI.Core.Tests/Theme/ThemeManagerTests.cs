@@ -1,3 +1,4 @@
+using AtomUI.Theme.Algorithms;
 using System.Reflection;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
@@ -84,6 +85,9 @@ public class ThemeManagerTests
                     ThemeAppearance.Light,
                     true,
                     Color.Parse("#1677FF"))
+                {
+                    Algorithms = [new ThemeAlgorithm("AtomUI", "Default")]
+                }
             ]);
         });
     }

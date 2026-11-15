@@ -161,10 +161,10 @@ public class CompiledThemeAlgorithmContractTests
         return sink.ToArray();
     }
 
-    private static MetadataReference GeneratedCoreReference() =>
+    internal static MetadataReference GeneratedCoreReference() =>
         RunGenerator(CreateCoreCompilation(), out _).ToMetadataReference();
 
-    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
+    internal static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
         params CompiledThemeInput[] inputs)
     {
         var texts = inputs.Select((input, index) => (AdditionalText)new InMemoryAdditionalText(
@@ -202,7 +202,7 @@ public class CompiledThemeAlgorithmContractTests
             [CSharpSyntaxTree.ParseText(RuntimeStubs), CSharpSyntaxTree.ParseText(assemblyAttributes)],
             PlatformReferences(), new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)).ToMetadataReference();
 
-    private static CSharpCompilation CreatePackageCompilation(string source, MetadataReference runtime) =>
+    internal static CSharpCompilation CreatePackageCompilation(string source, MetadataReference runtime) =>
         CSharpCompilation.Create("AtomUI.Themes.PrimeNG",
             [CSharpSyntaxTree.ParseText(source, path: "PackageSource.cs")],
             PlatformReferences().Add(runtime), new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -270,7 +270,7 @@ public class CompiledThemeAlgorithmContractTests
         }
         """;
 
-    private const string ConsumerSource = """
+    internal const string ConsumerSource = """
         namespace Acme.Themes
         {
             public sealed class Marker { }

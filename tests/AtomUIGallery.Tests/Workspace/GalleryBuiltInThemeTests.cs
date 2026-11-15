@@ -1,3 +1,4 @@
+using AtomUI.Theme.Algorithms;
 using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -10,6 +11,8 @@ namespace AtomUIGallery.Tests.Workspace;
 
 public class GalleryBuiltInThemeTests
 {
+    private static readonly ThemeAlgorithm[] DefaultChain = [new ThemeAlgorithm("AtomUI", "Default")];
+
     static GalleryBuiltInThemeTests()
     {
         AvaloniaTestApp.EnsureInitialized();
@@ -21,11 +24,11 @@ public class GalleryBuiltInThemeTests
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
 
         manager.AvailableThemes.Where(theme => theme.Id is "DaybreakBlue" or "PolarGreen" or "SunsetOrange" or "GoldenPurple" or "Magenta").ShouldBe([
-            new ThemeInfo("DaybreakBlue", "Daybreak Blue", ThemeAppearance.Light, true, Color.Parse("#1677FF")),
-            new ThemeInfo("PolarGreen", "Polar Green", ThemeAppearance.Light, false, Color.Parse("#52C41A")),
-            new ThemeInfo("SunsetOrange", "Sunset Orange", ThemeAppearance.Light, false, Color.Parse("#FA8C16")),
-            new ThemeInfo("GoldenPurple", "Golden Purple", ThemeAppearance.Light, false, Color.Parse("#722ED1")),
-            new ThemeInfo("Magenta", "Magenta", ThemeAppearance.Light, false, Color.Parse("#EB2F96"))
+            new ThemeInfo("DaybreakBlue", "Daybreak Blue", ThemeAppearance.Light, true, Color.Parse("#1677FF")) { Algorithms = DefaultChain },
+            new ThemeInfo("PolarGreen", "Polar Green", ThemeAppearance.Light, false, Color.Parse("#52C41A")) { Algorithms = DefaultChain },
+            new ThemeInfo("SunsetOrange", "Sunset Orange", ThemeAppearance.Light, false, Color.Parse("#FA8C16")) { Algorithms = DefaultChain },
+            new ThemeInfo("GoldenPurple", "Golden Purple", ThemeAppearance.Light, false, Color.Parse("#722ED1")) { Algorithms = DefaultChain },
+            new ThemeInfo("Magenta", "Magenta", ThemeAppearance.Light, false, Color.Parse("#EB2F96")) { Algorithms = DefaultChain }
         ]);
     }
 

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Schema;
 using Avalonia.Media;
 
@@ -7,6 +8,9 @@ namespace AtomUI.Theme.Definitions.Compiled;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class CompiledThemeProgram
 {
+    /// <summary>
+    /// Creates an ABI 1 program. The design language metadata takes its defaults and the algorithm chain is empty.
+    /// </summary>
     protected CompiledThemeProgram(
         int abiVersion, string sourceIdentity, string sourceRevision, string contentDigest,
         string programDigest, string id, string name, ThemeAppearance appearance, bool isDefault, Color? accentColor)
@@ -15,6 +19,68 @@ public abstract class CompiledThemeProgram
         {
             throw new NotSupportedException($"Compiled theme ABI '{abiVersion}' is not supported.");
         }
+        Validate(sourceIdentity, sourceRevision, contentDigest, programDigest, id, name, appearance);
+        SourceIdentity = sourceIdentity;
+        SourceRevision = sourceRevision;
+        ContentDigest = contentDigest;
+        ProgramDigest = programDigest;
+        Info = new ThemeInfo(id, name, appearance, isDefault, accentColor);
+    }
+
+    /// <summary>
+    /// Creates an ABI 2 program that also publishes the design language metadata and the algorithm chain.
+    /// </summary>
+    /// <param name="algorithms">The algorithm chain, each element formatted as <c>Catalog:Id</c>.</param>
+    protected CompiledThemeProgram(
+        int abiVersion, string sourceIdentity, string sourceRevision, string contentDigest,
+        string programDigest, string id, string name, ThemeAppearance appearance, bool isDefault, Color? accentColor,
+        string? designLanguage, ThemeDensity density, ThemeBrandColorSupport brandColor, string[] algorithms)
+    {
+        if (abiVersion != 2)
+        {
+            throw new NotSupportedException($"Compiled theme ABI '{abiVersion}' is not supported.");
+        }
+        Validate(sourceIdentity, sourceRevision, contentDigest, programDigest, id, name, appearance);
+        ArgumentNullException.ThrowIfNull(algorithms);
+        if (designLanguage is not null)
+        {
+            SchemaIdentifier.Validate(designLanguage, nameof(designLanguage));
+        }
+        if (!Enum.IsDefined(density))
+        {
+            throw new ArgumentOutOfRangeException(nameof(density));
+        }
+        if (!Enum.IsDefined(brandColor))
+        {
+            throw new ArgumentOutOfRangeException(nameof(brandColor));
+        }
+        var chain = new ThemeAlgorithm[algorithms.Length];
+        for (var i = 0; i < chain.Length; i++)
+        {
+            var text = algorithms[i];
+            var separator = text?.IndexOf(':') ?? -1;
+            if (separator <= 0 || separator == text!.Length - 1)
+            {
+                throw new ArgumentException($"Algorithm identity '{text}' must be formatted as 'Catalog:Id'.", nameof(algorithms));
+            }
+            chain[i] = new ThemeAlgorithm(text[..separator], text[(separator + 1)..]);
+        }
+        SourceIdentity = sourceIdentity;
+        SourceRevision = sourceRevision;
+        ContentDigest = contentDigest;
+        ProgramDigest = programDigest;
+        Info = new ThemeInfo(id, name, appearance, isDefault, accentColor)
+        {
+            DesignLanguage = designLanguage,
+            Density = density,
+            BrandColor = brandColor,
+            Algorithms = chain
+        };
+    }
+
+    private static void Validate(string sourceIdentity, string sourceRevision, string contentDigest, string programDigest,
+        string id, string name, ThemeAppearance appearance)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceIdentity);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceRevision);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentDigest);
@@ -25,11 +91,6 @@ public abstract class CompiledThemeProgram
         {
             throw new ArgumentOutOfRangeException(nameof(appearance));
         }
-        SourceIdentity = sourceIdentity;
-        SourceRevision = sourceRevision;
-        ContentDigest = contentDigest;
-        ProgramDigest = programDigest;
-        Info = new ThemeInfo(id, name, appearance, isDefault, accentColor);
     }
 
     internal string SourceIdentity { get; }

@@ -13,7 +13,23 @@ internal static class ThemeDocumentReader
     private const string MalformedXmlCode = "ATMTHM1001";
     private const string SchemaValidationCode = "ATMTHM1002";
     private const string ResourceLimitCode = "ATMTHM1003";
+    private const string SeedPinsBrandTokenCode = "ATMTHM3101";
     private const string XsdResourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd";
+
+    // Tokens derived from the brand color; a Seed-capable definition must let the brand algorithm produce them.
+    private static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
+    {
+        "ColorPrimaryHover",
+        "ColorPrimaryActive",
+        "ColorPrimaryBg",
+        "ColorPrimaryBgHover",
+        "ColorPrimaryBorder",
+        "ColorPrimaryBorderHover",
+        "ColorPrimaryText",
+        "ColorPrimaryTextHover",
+        "ColorPrimaryTextActive",
+        "ColorControlOutline"
+    };
 
     private static readonly Lazy<XmlSchemaSet> s_schemaSet = new(CreateSchemaSet);
 
@@ -95,8 +111,56 @@ internal static class ThemeDocumentReader
                                 "/",
                                 "The theme definition does not contain a Theme root."));
         }
+        else
+        {
+            ValidateSeedBrandTokens(document, diagnostics);
+        }
 
         return new ThemeDocumentReadResult(document, diagnostics);
+    }
+
+    private static void ValidateSeedBrandTokens(
+        ThemeDocument document,
+        List<ThemeDefinitionDiagnostic> diagnostics)
+    {
+        if (document.BrandColor != ThemeBrandColorSupport.Seed)
+        {
+            return;
+        }
+
+        foreach (var token in document.Tokens)
+        {
+            ReportSeedPinnedToken(token, diagnostics);
+        }
+
+        foreach (var control in document.Controls)
+        {
+            foreach (var token in control.Tokens)
+            {
+                ReportSeedPinnedToken(token, diagnostics);
+            }
+        }
+    }
+
+    private static void ReportSeedPinnedToken(
+        ThemeTokenDocument token,
+        List<ThemeDefinitionDiagnostic> diagnostics)
+    {
+        if (!s_brandDerivedTokens.Contains(token.Name))
+        {
+            return;
+        }
+
+        var location = token.Location;
+        diagnostics.Add(new ThemeDefinitionDiagnostic(
+                            SeedPinsBrandTokenCode,
+                            ThemeDefinitionDiagnosticSeverity.Error,
+                            location.Source,
+                            location.Line,
+                            location.Column,
+                            location.Path,
+                            $"Token '{token.Name}' is derived from the brand color and cannot be set " +
+                            "when the theme declares BrandColor=\"Seed\"; declare BrandColor=\"Fixed\" or remove the token."));
     }
 
     private static XmlReaderSettings CreateReaderSettings(

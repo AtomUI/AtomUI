@@ -442,6 +442,73 @@ public class ThemeDocumentReaderTests
             }));
     }
 
+    [Theory]
+    [InlineData("ColorPrimaryHover")]
+    [InlineData("ColorControlOutline")]
+    public void Read_Rejects_Seed_Theme_That_Pins_A_Brand_Token(string token)
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" BrandColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                              <Tokens><Token Name="{{token}}" Value="#FF0000" /></Tokens>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        var diagnostic = result.Diagnostics.ShouldHaveSingleItem();
+        diagnostic.Code.ShouldBe("ATMTHM3101");
+        diagnostic.Severity.ShouldBe(ThemeDefinitionDiagnosticSeverity.Error);
+        diagnostic.Line.ShouldBeGreaterThan(0);
+        diagnostic.Message.ShouldContain(token);
+    }
+
+    [Fact]
+    public void Read_Rejects_Seed_Theme_With_Control_Level_ColorPrimaryBg()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" BrandColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                              <Controls>
+                                <Control Catalog="AtomUI" Id="Button">
+                                  <Tokens><Token Name="ColorPrimaryBg" Value="#FF0000" /></Tokens>
+                                </Control>
+                              </Controls>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        result.Diagnostics.ShouldContain(d => d.Code == "ATMTHM3101");
+    }
+
+    [Fact]
+    public void Read_Accepts_Seed_Theme_With_Only_ColorPrimary_And_ColorLink()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" BrandColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                              <Tokens>
+                                <Token Name="ColorPrimary" Value="#1677FF" />
+                                <Token Name="ColorLink" Value="#1677FF" />
+                              </Tokens>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+    }
+
+    [Fact]
+    public void Read_Accepts_Fixed_Theme_That_Pins_Brand_Tokens()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" BrandColor="Fixed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                              <Tokens><Token Name="ColorPrimaryHover" Value="#FF0000" /></Tokens>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+    }
+
     private static ThemeDocumentReadResult Read(string xml)
     {
         using var stream = CreateStream(xml);

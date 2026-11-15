@@ -395,6 +395,48 @@ public class CompiledThemeCatalogResolverTests
         });
     }
 
+    [Fact]
+    public void Append_Registry_Keeps_Original_Slice_Info_So_A_Later_Reload_Restores_Grouping()
+    {
+        var registry = TypedThemeSnapshotCacheTests.CreateRegistry();
+        var context = new ThemeDefinitionResolveContext("Tests", string.Empty, false, 0);
+        var staticResolver = new MemoryResolver("Static", new MemorySource(
+            "memory://static", "1", LanguageXml("StaticBlue", "AntDesign", "Light", "Normal", "Seed")
+                .Replace("Appearance=\"Light\"", "Appearance=\"Light\" IsDefault=\"true\"")));
+        var user = new MutableMemorySource(
+            "memory://user", "1", LanguageXml("UserBlue", "AntDesign", "Light", "Normal", "Seed"));
+        var userResolver = new ReloadableMutableResolver(user);
+        // The reloadable user theme is ordered first and claims the variant, so the static one is demoted.
+        var initial = CompiledThemeCatalog.LoadInitial(registry, [userResolver, staticResolver], context);
+        initial.Success.ShouldBeTrue();
+        initial.Catalog!.Get("StaticBlue").Info.DesignLanguage.ShouldBeNull();
+        initial.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("AntDesign");
+
+        var rebound = initial.Catalog.AppendRegistry(registry, registry, []);
+        rebound.Get("StaticBlue").Info.DesignLanguage.ShouldBeNull();
+
+        // The conflict goes away on reload (the user theme moves to another variant); the static slice is reused
+        // verbatim, so it must still hold its original Info for the static theme to rejoin the group.
+        user.Replace(LanguageXml("UserBlue", "AntDesign", "Dark", "Normal", "Seed"));
+        user.SetRevision("2");
+        var reloaded = CompiledThemeCatalog.LoadReload(
+            registry, rebound, [userResolver, staticResolver], context);
+        reloaded.Success.ShouldBeTrue();
+        reloaded.Catalog!.Get("StaticBlue").Info.DesignLanguage.ShouldBe("AntDesign");
+        reloaded.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("AntDesign");
+    }
+
+    private sealed class ReloadableMutableResolver(MutableMemorySource source) : IThemeDefinitionResolver
+    {
+        public string Id => "ReloadableMutable";
+        public bool SupportsReload => true;
+
+        public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
+        {
+            return new ThemeDefinitionResolveResult([source], []);
+        }
+    }
+
     private static ThemeManager BuildLanguageManager(params string[] xmls)
     {
         var builder = new ThemeManagerBuilder(Application.Current!.GetType());

@@ -69,7 +69,10 @@ internal sealed class CompiledThemeCatalog
         }
         var slices = _resolverSlices.Select(slice => slice with
         {
-            Definitions = slice.Definitions.Select(entry => entries[entry.Info.Id]).ToArray()
+            // Slices must keep each definition's original Info: entries carry the demoted (published) Info, and
+            // reloads reuse static slices verbatim before re-applying the design language rules.
+            Definitions = slice.Definitions
+                .Select(entry => entry with { Definition = entries[entry.Info.Id].Definition }).ToArray()
         }).ToArray();
         return new CompiledThemeCatalog(entries, OrderedDefinitions.Select(entry => entries[entry.Info.Id]).ToArray(),
             entries[DefaultDefinition.Info.Id], slices);

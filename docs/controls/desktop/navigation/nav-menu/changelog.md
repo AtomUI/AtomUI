@@ -6,6 +6,7 @@
 
 - Docs
   - `overview.md` 兼容性不变量写明 ItemsPanel 必须是非虚拟化面板：选择定位、分组容器准备、子菜单状态和键盘导航都以每个 entry 容器已生成为前提，替换为虚拟化面板不受支持。
+  - 评估后确认不支持虚拟化 ItemsPanel：`overview.md` 补充回收导致的子菜单打开状态丢失、视口外 `DefaultOpenPaths` 无法 replay，以及超长导航改用子菜单层级或 `TreeView` 的指引；`implementation.md` 补充按呈现层级延迟生成容器的边界、容器持有打开状态与 keyboard active 的维护不变量，以及逐项 `Items.Add` 的根 reconcile 成本说明。
 
 ## 2026-11-11
 

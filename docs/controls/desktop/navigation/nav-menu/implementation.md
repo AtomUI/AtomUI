@@ -458,6 +458,10 @@ inline collapsed cache 不得持有 `NavMenuItem`、header、popup 或 template 
 
 默认路径 replay 必须有界，避免容器生成失败时形成无休止 dispatcher 队列。
 
+容器生成边界按呈现层级划分：根层在首次布局时生成全部 entry 容器；子菜单（inline 子树或 popup content）在首次打开时才接入模板并生成该层容器，未打开的层级不产生 `NavMenuItem`。同一层级内不做虚拟化，生成成本随该层 entry 数线性增长。子菜单打开状态只由容器的 `IsSubMenuOpen` 持有，keyboard active 持有 `NavMenuItem` 引用，`NavMenuSemanticNavigator` 的层级枚举、`FindDirectItem` 路径定位和 `EnsureGroupContainers` 都通过 `ContainerFromIndex` 读取已生成容器；这些职责依赖“呈现层级全量生成”，因此虚拟化 ItemsPanel 不在支持范围内（见 overview 兼容性不变量）。只有 selection 投影在每次 container prepare 时从 `SelectedItem` 重新计算，不依赖容器常驻。
+
+根 `ItemsView.CollectionChanged` 每次触发根 scope 的完整 occurrence/owner reconcile，单次通知成本随根 entry 数线性增长；逐项 `Items.Add` 装载大量根 entry 的总成本因此为 O(N²)，批量数据应通过 `ItemsSource` 一次提供。
+
 纯节点菜单必须保持一个数据节点对应一个 `NavMenuItem`，不得为统一模型增加额外 wrapper。只有实际存在 `NavMenuGroup` 或 `NavMenuDivider` 时才生成结构容器。语义 `Level` 在 prepare 上下文中 O(1) 得到；直接容器和路径查找优先走无分组快路径；spacing 只在根控件计算公开值与后代默认值的关系，再通过内部继承属性和 ItemsPanel `TemplateBinding` 传播，不为每个节点增加 relay binding。
 
 默认 TreeDataTemplate 对 `INavMenuNode.Entries` 使用编译绑定；自定义节点通过协变接口默认实现回退到 `Children`。内置集合直接满足 Avalonia ItemsSource 的 `IList` / `INotifyCollectionChanged` 契约，该默认路径不分配适配集合。实现不使用反射、运行期类型扫描、动态 Style、dispatcher 延时或持久化扁平导航缓存，保持 NativeAOT 可分析。
@@ -508,6 +512,7 @@ inline collapsed cache 不得持有 `NavMenuItem`、header、popup 或 template 
 - 节点的 `ParentNode`、容器的 `Level` / `IsTopLevel`、选择祖先和键盘父级只能来自 semantic owner，不得从逻辑树距离推导。
 - 节点、分组和分隔线使用不同 recycle key，clear 必须移除各自 owner、binding 和状态。
 - 纯节点菜单不增加结构容器、递归扁平缓存或每项 spacing binding。
+- 依赖容器的层级逻辑可以假定当前呈现层级的 entry 容器全部存在；打开状态、keyboard active 与路径定位都以此为前提，不得引入只在部分层级或部分视口成立的虚拟化假设。
 - root Header/Footer 保持固定，空 slot 不占布局；结构标题和分隔线的 mode/collapsed 变体由各自内部 ControlTheme 维护。
 
 ### 弹层动效接入约束

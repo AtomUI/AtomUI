@@ -189,12 +189,12 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
 
     bool IFeedbackStackItem.IsProgressVisible => false;
 
-    void IFeedbackStackItem.RequestClose()
+    void IFeedbackLifetimeItem.RequestClose()
     {
         Close();
     }
 
-    void IFeedbackStackItem.UpdateRemaining(TimeSpan remaining)
+    void IFeedbackLifetimeItem.UpdateRemaining(TimeSpan remaining)
     {
     }
 

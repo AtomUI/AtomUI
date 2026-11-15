@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Avalonia.Threading;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 /// <summary>Coordinates feedback lifetimes through one lazily-created dispatcher timer.</summary>
 internal sealed class FeedbackLifetimeScheduler : IDisposable
@@ -9,9 +9,9 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
     private static readonly TimeSpan MinimumWakeup = TimeSpan.FromMilliseconds(1);
     private readonly IFeedbackClock _clock;
     private readonly IFeedbackWakeup _wakeup;
-    private readonly Dictionary<IFeedbackStackItem, Entry> _entries = new();
-    private readonly List<IFeedbackStackItem> _removeItems = new();
-    private readonly List<IFeedbackStackItem> _expiredItems = new();
+    private readonly Dictionary<IFeedbackLifetimeItem, Entry> _entries = new();
+    private readonly List<IFeedbackLifetimeItem> _removeItems = new();
+    private readonly List<IFeedbackLifetimeItem> _expiredItems = new();
     private bool _isAllPaused;
     private bool _isDisposed;
 
@@ -32,7 +32,7 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
 
     internal bool IsAllPaused => _isAllPaused;
 
-    internal void Register(IFeedbackStackItem item, TimeSpan duration)
+    internal void Register(IFeedbackLifetimeItem item, TimeSpan duration)
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
         Remove(item);
@@ -50,7 +50,7 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
         ScheduleNext(now);
     }
 
-    internal bool Remove(IFeedbackStackItem item)
+    internal bool Remove(IFeedbackLifetimeItem item)
     {
         if (!_entries.Remove(item))
         {
@@ -61,7 +61,7 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
         return true;
     }
 
-    internal void SetPaused(IFeedbackStackItem item, bool isPaused)
+    internal void SetPaused(IFeedbackLifetimeItem item, bool isPaused)
     {
         if (!_entries.TryGetValue(item, out var entry) || entry.IsItemPaused == isPaused)
         {
@@ -187,7 +187,7 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
                 }
 
                 entry.Remaining = remaining;
-                if (item.IsProgressVisible && item.IsStackVisible)
+                if (WantsProgressUpdates(item))
                 {
                     item.UpdateRemaining(remaining);
                 }
@@ -238,7 +238,7 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
             {
                 next = remaining;
             }
-            if (item.IsProgressVisible && item.IsStackVisible && ProgressRefreshInterval > TimeSpan.Zero &&
+            if (WantsProgressUpdates(item) && ProgressRefreshInterval > TimeSpan.Zero &&
                 ProgressRefreshInterval < next)
             {
                 next = ProgressRefreshInterval;
@@ -255,6 +255,9 @@ internal sealed class FeedbackLifetimeScheduler : IDisposable
         }
         _wakeup.Schedule(next, OnWakeup);
     }
+
+    private static bool WantsProgressUpdates(IFeedbackLifetimeItem item) =>
+        item is IFeedbackProgressItem { IsProgressUpdateNeeded: true };
 
     private static void CaptureRemaining(Entry entry, TimeSpan now)
     {

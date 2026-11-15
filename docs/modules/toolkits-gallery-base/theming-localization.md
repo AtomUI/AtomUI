@@ -94,7 +94,10 @@ reload command 或菜单，宿主需要刷新用户主题时直接调用 `ITheme
 
 - `AvailableThemes`：`IThemeManager.AvailableThemes` 的防御性快照；`ThemeCatalogChanged` 后整体替换。
 - `CurrentThemeId`：只由已提交的 `ThemeChanged`/Catalog 回退状态更新，不把菜单点击当成提交结果。
-- `SwitchThemeCommand`：接收 Theme Id，并沿统一请求路径组合基础算法、Appearance、Compact、Motion 和 Wave Spirit 设置。
+- `SwitchThemeCommand`：接收 Theme Id，用于未声明设计语言的"其他主题"，沿统一请求路径组合基础算法、Appearance、Compact、Motion 和 Wave Spirit 设置；选择已声明设计语言的主题时按该主题原样应用。
+- `CurrentDesignLanguage`、`CanChooseBrandColor`、`BrandColor`：当前主题的设计语言（`null` 表示其他主题）、该语言是否为 `Seed`（可替换品牌色）、该语言记忆的品牌色（`null` 表示使用主题自身色）。
+- `SwitchDesignLanguageCommand`：按设计语言切换，经 `ThemeSelectionResolver` 选出匹配当前 Appearance/Compact 的 profile（缺少变体时回退到基础链并追加内置 Dark/Compact），并带上该语言记忆的品牌色。
+- `SetBrandColorCommand`：设置当前语言的品牌色，写入请求 `ThemeConfig` 的 `ColorPrimary`；`Fixed` 语言上为 no-op，与主题 `AccentColor` 相同的颜色视为清除。品牌色按设计语言记忆在 ViewModel 内存中（`_brandByLanguage`），不持久化；切到别的语言再切回时恢复。Dark、Compact、Motion 变化沿用同一份记忆。
 - `AppearanceMode` 与 `IsLightAppearanceMode` / `IsDarkAppearanceMode` / `IsSystemAppearanceMode`：投影 Light、Dark、Follow System 三态；`SetAppearanceModeCommand` 负责显式切换，`ToggleDarkModeCommand` 保留 bool 到 Light/Dark 的便捷映射。
 
 相对于当前已提交设置，主题色选择只替换下一次请求的 `ThemeRequest.ThemeId`；请求仍重建并携带完整的运行时

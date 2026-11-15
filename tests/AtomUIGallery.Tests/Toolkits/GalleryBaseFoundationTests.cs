@@ -12,6 +12,7 @@ using AtomUI.Toolkits.GalleryBase.Routing;
 using AtomUI.Toolkits.GalleryBase.Shell;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using ReactiveUI;
 using Shouldly;
 using Xunit;
@@ -403,10 +404,12 @@ public class GalleryBaseFoundationTests
             await viewModel.ToggleMotionCommand.Execute(false).ToTask();
             committedRequest = null;
 
-            await viewModel.SwitchThemeCommand.Execute("PolarGreen").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#52C41A")).ToTask();
 
-            viewModel.CurrentThemeId.ShouldBe("PolarGreen");
-            manager.CurrentTheme!.ThemeId.ShouldBe("PolarGreen");
+            viewModel.CurrentThemeId.ShouldBe("DaybreakBlue");
+            manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
+            ReadToken(committedRequest!.Config, nameof(SharedTokenKind.ColorPrimary)).ShouldBe("#52C41A");
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
             manager.CurrentTheme.Algorithms.ShouldBe([
                 ThemeAlgorithm.Default,
@@ -489,9 +492,9 @@ public class GalleryBaseFoundationTests
         {
             await viewModel.SwitchThemeCommand.Execute("PrimeNGAura.Dark").ToTask();
 
-            await viewModel.SwitchThemeCommand.Execute("PolarGreen").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
 
-            manager.CurrentTheme!.ThemeId.ShouldBe("PolarGreen");
+            manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
             manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
         }
         finally
@@ -544,6 +547,98 @@ public class GalleryBaseFoundationTests
             () => new TestRouteView());
 
         return options.BuildConfiguration();
+    }
+
+    [Fact]
+    public async Task Workspace_Remembers_Brand_Color_Per_Design_Language()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            viewModel.CanChooseBrandColor.ShouldBeTrue();
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#52C41A")).ToTask();
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Aura").ToTask();
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#6366F1")).ToTask();
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#6366F1"));
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+            viewModel.CanChooseBrandColor.ShouldBeFalse();
+            viewModel.BrandColor.ShouldBeNull();
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#18181B"));
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            viewModel.CurrentDesignLanguage.ShouldBe("AntDesign");
+            viewModel.BrandColor.ShouldBe(Color.Parse("#52C41A"));
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#52C41A"));
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Aura").ToTask();
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#6366F1"));
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Fixed_Language_Ignores_SetBrandColor()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+            var before = ReadRootColorPrimary(manager);
+
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#FF0000")).ToTask();
+
+            viewModel.BrandColor.ShouldBeNull();
+            ReadRootColorPrimary(manager).ShouldBe(before);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Toggles_Keep_The_Brand_Color()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Aura").ToTask();
+            var defaultPrimary = ReadRootColorPrimary(manager);
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#123456")).ToTask();
+
+            await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
+            await viewModel.ToggleCompactModeCommand.Execute(true).ToTask();
+
+            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGAura.DarkCompact");
+            viewModel.BrandColor.ShouldBe(Color.Parse("#123456"));
+            ReadRootColorPrimary(manager).ShouldNotBe(defaultPrimary);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    private static Color ReadRootColorPrimary(IThemeManager manager)
+    {
+        var snapshot = ((ThemeManager)manager).CurrentSnapshot!;
+        snapshot.Registry.TryGetGlobalToken(nameof(SharedTokenKind.ColorPrimary), out var token).ShouldBeTrue();
+        return snapshot.GlobalTokenValues.Get<Color>(token!.Slot);
     }
 
     private static string ReadToken(ThemeConfig? config, string name)

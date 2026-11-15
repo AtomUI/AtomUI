@@ -8,6 +8,7 @@ using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Navigation;
 using Avalonia;
+using Avalonia.Media;
 using ReactiveUI;
 
 namespace AtomUI.Toolkits.GalleryBase.Shell;
@@ -26,6 +27,9 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleMotionCommand;
     private readonly Lazy<ReactiveCommand<bool, Unit>> _toggleWaveSpiritCommand;
     private readonly Lazy<ReactiveCommand<string, Unit>> _switchThemeCommand;
+    private readonly Lazy<ReactiveCommand<string, Unit>> _switchDesignLanguageCommand;
+    private readonly Lazy<ReactiveCommand<Color?, Unit>> _setBrandColorCommand;
+    private readonly Dictionary<string, Color?> _brandByLanguage = new(StringComparer.Ordinal);
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhCNCommand;
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhTWCommand;
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToEnUSCommand;
@@ -63,6 +67,18 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
 
     public ReactiveCommand<string, Unit> SwitchThemeCommand => _switchThemeCommand.Value;
 
+    /// <summary>
+    /// Gets the command that switches to a design language, keeping the appearance, density and the brand color
+    /// remembered for that language.
+    /// </summary>
+    public ReactiveCommand<string, Unit> SwitchDesignLanguageCommand => _switchDesignLanguageCommand.Value;
+
+    /// <summary>
+    /// Gets the command that sets the brand color of the current design language. It does nothing when the language
+    /// does not accept a brand color; a color equal to the theme's own accent color clears the choice.
+    /// </summary>
+    public ReactiveCommand<Color?, Unit> SetBrandColorCommand => _setBrandColorCommand.Value;
+
     public ReactiveCommand<Unit, Unit> SwitchToZhCNCommand => _switchToZhCNCommand.Value;
 
     public ReactiveCommand<Unit, Unit> SwitchToZhTWCommand => _switchToZhTWCommand.Value;
@@ -82,6 +98,26 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         get => _currentThemeId;
         private set => this.RaiseAndSetIfChanged(ref _currentThemeId, value);
     }
+
+    /// <summary>
+    /// Gets the design language of the current theme, or <see langword="null"/> for a theme that declares none.
+    /// </summary>
+    public string? CurrentDesignLanguage => FindTheme(CurrentThemeId)?.DesignLanguage;
+
+    /// <summary>
+    /// Gets whether the current design language accepts a replaceable brand color.
+    /// </summary>
+    public bool CanChooseBrandColor =>
+        FindTheme(CurrentThemeId) is { DesignLanguage: not null, BrandColor: ThemeBrandColorSupport.Seed };
+
+    /// <summary>
+    /// Gets the brand color remembered for the current design language, or <see langword="null"/> when the theme's own
+    /// color is in use. The memory lives in this view model only.
+    /// </summary>
+    public Color? BrandColor =>
+        CurrentDesignLanguage is { } language && CanChooseBrandColor
+            ? _brandByLanguage.GetValueOrDefault(language)
+            : null;
 
     public ThemePreference AppearanceMode
     {
@@ -149,6 +185,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         _toggleMotionCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetMotionEnabledAsync));
         _toggleWaveSpiritCommand = new(() => ReactiveCommand.CreateFromTask<bool>(SetWaveSpiritEnabledAsync));
         _switchThemeCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchThemeAsync));
+        _switchDesignLanguageCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchDesignLanguageAsync));
+        _setBrandColorCommand = new(() => ReactiveCommand.CreateFromTask<Color?>(SetBrandColorAsync));
 
         _switchToZhCNCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhCN)));
         _switchToZhTWCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhTW)));
@@ -255,25 +293,65 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             return;
         }
         await ApplyThemeSettingsAsync(themeId);
+        FollowAppliedProfileAppearance(themeId);
+    }
 
-        // Picking a profile variant picks its appearance: the appearance mode follows the applied profile, unless the
-        // system mode already yields that appearance.
-        if (_themeManager?.CurrentTheme is { } state &&
-            string.Equals(state.ThemeId, themeId, StringComparison.Ordinal) &&
-            IsProfileFamily(GetProfileBaseId(themeId)))
+    private async Task SwitchDesignLanguageAsync(string designLanguage)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(designLanguage);
+        if (string.Equals(designLanguage, CurrentDesignLanguage, StringComparison.Ordinal))
         {
-            var isDark = state.Appearance == ThemeAppearance.Dark;
-            var followsSystem = AppearanceMode == ThemePreference.System &&
-                                (_systemAppearanceSource.GetCurrentAppearance() == ThemeAppearance.Dark) == isDark;
-            if (!followsSystem)
-            {
-                ReleaseSystemAppearanceSubscription();
-                AppearanceMode = isDark ? ThemePreference.Dark : ThemePreference.Light;
-            }
+            return;
+        }
+        await ApplyThemeSettingsAsync(designLanguage: designLanguage);
+        FollowAppliedProfileAppearance(null);
+    }
+
+    private async Task SetBrandColorAsync(Color? color)
+    {
+        if (CurrentDesignLanguage is not { } language || !CanChooseBrandColor)
+        {
+            return;
+        }
+
+        // A color equal to the theme's own accent color means "no custom color".
+        if (color is { } chosen && FindTheme(CurrentThemeId)?.AccentColor == chosen)
+        {
+            color = null;
+        }
+        if (_brandByLanguage.GetValueOrDefault(language) == color)
+        {
+            return;
+        }
+
+        _brandByLanguage[language] = color;
+        this.RaisePropertyChanged(nameof(BrandColor));
+        await ApplyThemeSettingsAsync();
+    }
+
+    // Picking a language profile picks its appearance: the appearance mode follows the applied profile, unless the
+    // system mode already yields that appearance.
+    private void FollowAppliedProfileAppearance(string? requestedThemeId)
+    {
+        if (_themeManager?.CurrentTheme is not { } state ||
+            (requestedThemeId is not null && !string.Equals(state.ThemeId, requestedThemeId, StringComparison.Ordinal)) ||
+            FindTheme(state.ThemeId)?.DesignLanguage is null)
+        {
+            return;
+        }
+
+        var isDark = state.Appearance == ThemeAppearance.Dark;
+        var followsSystem = AppearanceMode == ThemePreference.System &&
+                            (_systemAppearanceSource.GetCurrentAppearance() == ThemeAppearance.Dark) == isDark;
+        if (!followsSystem)
+        {
+            ReleaseSystemAppearanceSubscription();
+            AppearanceMode = isDark ? ThemePreference.Dark : ThemePreference.Light;
         }
     }
 
     private async Task ApplyThemeSettingsAsync(string? requestedThemeId = null,
+                                               string? designLanguage = null,
                                                ThemeTransitionReason reason = ThemeTransitionReason.UserRequest)
     {
         if (_themeManager is null)
@@ -282,26 +360,45 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
 
         var currentThemeId = _themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID;
-        var themeId        = requestedThemeId ?? currentThemeId;
-        var baseId         = GetProfileBaseId(themeId);
+        var currentLanguage = FindTheme(currentThemeId)?.DesignLanguage;
         var builder        = new ThemeConfigBuilder();
-        string? variantId  = null;
-        if (IsProfileFamily(baseId))
-        {
-            // A profile's own algorithms decide its appearance and density. A picked profile applies as defined; the
-            // appearance and compact toggles select the sibling profile that matches them.
-            variantId = requestedThemeId ?? FindProfileVariant(baseId, _isDark, _isCompact);
-        }
+        string themeId;
+        Color? brandSeed = null;
+        var requestedLanguage = requestedThemeId is not null ? FindTheme(requestedThemeId)?.DesignLanguage : null;
 
-        if (variantId is not null)
+        if (designLanguage is not null || (requestedThemeId is null && currentLanguage is not null))
         {
-            themeId = variantId;
+            // The resolver picks the profile that matches the appearance and density, or falls back to the language's
+            // base chain with the built-in dark and compact algorithms.
+            var language = designLanguage ?? currentLanguage!;
+            var selection = new ThemeSelection(
+                language,
+                _isDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
+                _isCompact ? ThemeDensity.Compact : ThemeDensity.Normal,
+                _brandByLanguage.GetValueOrDefault(language));
+            var resolved = ThemeSelectionResolver.Resolve(AvailableThemes, selection);
+            themeId   = resolved.ThemeId;
+            brandSeed = resolved.BrandSeed;
+            if (resolved.Algorithms is not null)
+            {
+                builder.WithAlgorithms(resolved.Algorithms.ToArray());
+            }
+        }
+        else if (requestedLanguage is not null)
+        {
+            // A picked language profile applies as defined, with the brand color remembered for its language.
+            themeId = requestedThemeId!;
+            if (FindTheme(themeId)?.BrandColor == ThemeBrandColorSupport.Seed)
+            {
+                brandSeed = _brandByLanguage.GetValueOrDefault(requestedLanguage);
+            }
         }
         else
         {
-            // Plain themes (the Ant presets) take the gallery's appearance and density as algorithms. A theme that
-            // replaces a profile starts from Default instead of carrying the profile's own algorithm.
-            var baseAlgorithms = requestedThemeId is not null && IsProfileFamily(GetProfileBaseId(currentThemeId))
+            // Plain themes take the gallery's appearance and density as algorithms. A theme that replaces a language
+            // profile starts from Default instead of carrying the profile's own algorithm.
+            themeId = requestedThemeId ?? currentThemeId;
+            var baseAlgorithms = requestedThemeId is not null && currentLanguage is not null
                 ? [ThemeAlgorithm.Default]
                 : _baseAlgorithms;
             var algorithms = new List<ThemeAlgorithm>(baseAlgorithms.Length + 2);
@@ -315,6 +412,11 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
                 algorithms.Add(ThemeAlgorithm.Dark);
             }
             builder.WithAlgorithms(algorithms.ToArray());
+        }
+
+        if (brandSeed is { } seed)
+        {
+            builder.WithToken(nameof(SharedTokenKind.ColorPrimary), FormatColor(seed));
         }
 
         var config = builder
@@ -332,6 +434,13 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         {
             this.RaisePropertyChanged(nameof(CurrentThemeId));
         }
+    }
+
+    private static string FormatColor(Color color)
+    {
+        return color.A == 255
+            ? $"#{color.R:X2}{color.G:X2}{color.B:X2}"
+            : $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
     }
 
     private void SubscribeSystemAppearance()
@@ -390,6 +499,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         {
             CurrentThemeId = args.CurrentTheme.ThemeId;
         }
+        RaiseDesignLanguageChanged();
     }
 
     private void HandleLanguageChanged(object? sender, LanguageChangedEventArgs args)
@@ -415,6 +525,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         if (state is not null)
         {
             CurrentThemeId = state.ThemeId;
+            RaiseDesignLanguageChanged();
             _isDark = state.Appearance == ThemeAppearance.Dark;
             if (!_hasExplicitAppearanceMode)
             {
@@ -422,7 +533,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
                     ? ThemePreference.Dark
                     : ThemePreference.Light;
             }
-            _isCompact = state.Algorithms.Contains(ThemeAlgorithm.Compact);
+            _isCompact = state.Algorithms.Contains(ThemeAlgorithm.Compact) ||
+                         FindTheme(state.ThemeId)?.Density == ThemeDensity.Compact;
             _baseAlgorithms = state.Algorithms
                                    .Where(static algorithm =>
                                        algorithm != ThemeAlgorithm.Compact && algorithm != ThemeAlgorithm.Dark)
@@ -452,56 +564,23 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         this.RaisePropertyChanged(nameof(IsSystemAppearanceMode));
     }
 
-    // Built-in theme packages publish each profile as "<base>", "<base>.Dark", "<base>.Compact" and
-    // "<base>.DarkCompact"; the longest suffix is matched first.
-    private static readonly string[] ProfileVariantSuffixes = [".DarkCompact", ".Dark", ".Compact"];
-
-    private static string GetProfileBaseId(string themeId)
-    {
-        foreach (var suffix in ProfileVariantSuffixes)
-        {
-            if (themeId.EndsWith(suffix, StringComparison.Ordinal))
-            {
-                return themeId[..^suffix.Length];
-            }
-        }
-        return themeId;
-    }
-
-    private bool IsProfileFamily(string baseId)
-    {
-        foreach (var suffix in ProfileVariantSuffixes)
-        {
-            if (HasTheme(baseId + suffix))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private string? FindProfileVariant(string baseId, bool isDark, bool isCompact)
-    {
-        var themeId = baseId + (isDark, isCompact) switch
-        {
-            (true, true)  => ".DarkCompact",
-            (true, false) => ".Dark",
-            (false, true) => ".Compact",
-            _             => string.Empty
-        };
-        return HasTheme(themeId) ? themeId : null;
-    }
-
-    private bool HasTheme(string themeId)
+    private ThemeInfo? FindTheme(string themeId)
     {
         foreach (var theme in AvailableThemes)
         {
             if (string.Equals(theme.Id, themeId, StringComparison.Ordinal))
             {
-                return true;
+                return theme;
             }
         }
-        return false;
+        return null;
+    }
+
+    private void RaiseDesignLanguageChanged()
+    {
+        this.RaisePropertyChanged(nameof(CurrentDesignLanguage));
+        this.RaisePropertyChanged(nameof(CanChooseBrandColor));
+        this.RaisePropertyChanged(nameof(BrandColor));
     }
 
     private static IReadOnlyList<ThemeInfo> CaptureThemes(IReadOnlyList<ThemeInfo>? themes)

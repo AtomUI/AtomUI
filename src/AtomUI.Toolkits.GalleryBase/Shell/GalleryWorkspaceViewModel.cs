@@ -247,14 +247,30 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         await ApplyThemeSettingsAsync();
     }
 
-    private Task SwitchThemeAsync(string themeId)
+    private async Task SwitchThemeAsync(string themeId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
         if (string.Equals(themeId, CurrentThemeId, StringComparison.Ordinal))
         {
-            return Task.CompletedTask;
+            return;
         }
-        return ApplyThemeSettingsAsync(themeId);
+        await ApplyThemeSettingsAsync(themeId);
+
+        // Picking a profile variant picks its appearance: the appearance mode follows the applied profile, unless the
+        // system mode already yields that appearance.
+        if (_themeManager?.CurrentTheme is { } state &&
+            string.Equals(state.ThemeId, themeId, StringComparison.Ordinal) &&
+            IsProfileFamily(GetProfileBaseId(themeId)))
+        {
+            var isDark = state.Appearance == ThemeAppearance.Dark;
+            var followsSystem = AppearanceMode == ThemePreference.System &&
+                                (_systemAppearanceSource.GetCurrentAppearance() == ThemeAppearance.Dark) == isDark;
+            if (!followsSystem)
+            {
+                ReleaseSystemAppearanceSubscription();
+                AppearanceMode = isDark ? ThemePreference.Dark : ThemePreference.Light;
+            }
+        }
     }
 
     private async Task ApplyThemeSettingsAsync(string? requestedThemeId = null,
@@ -265,29 +281,47 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             return;
         }
 
-        var algorithms = new List<ThemeAlgorithm>(_baseAlgorithms.Length + 2);
-        algorithms.AddRange(_baseAlgorithms);
-        if (_isCompact)
+        var currentThemeId = _themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID;
+        var themeId        = requestedThemeId ?? currentThemeId;
+        var baseId         = GetProfileBaseId(themeId);
+        var builder        = new ThemeConfigBuilder();
+        string? variantId  = null;
+        if (IsProfileFamily(baseId))
         {
-            algorithms.Add(ThemeAlgorithm.Compact);
-        }
-        if (_isDark)
-        {
-            algorithms.Add(ThemeAlgorithm.Dark);
+            // A profile's own algorithms decide its appearance and density. A picked profile applies as defined; the
+            // appearance and compact toggles select the sibling profile that matches them.
+            variantId = requestedThemeId ?? FindProfileVariant(baseId, _isDark, _isCompact);
         }
 
-        var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(algorithms.ToArray())
+        if (variantId is not null)
+        {
+            themeId = variantId;
+        }
+        else
+        {
+            // Plain themes (the Ant presets) take the gallery's appearance and density as algorithms. A theme that
+            // replaces a profile starts from Default instead of carrying the profile's own algorithm.
+            var baseAlgorithms = requestedThemeId is not null && IsProfileFamily(GetProfileBaseId(currentThemeId))
+                ? [ThemeAlgorithm.Default]
+                : _baseAlgorithms;
+            var algorithms = new List<ThemeAlgorithm>(baseAlgorithms.Length + 2);
+            algorithms.AddRange(baseAlgorithms);
+            if (_isCompact)
+            {
+                algorithms.Add(ThemeAlgorithm.Compact);
+            }
+            if (_isDark)
+            {
+                algorithms.Add(ThemeAlgorithm.Dark);
+            }
+            builder.WithAlgorithms(algorithms.ToArray());
+        }
+
+        var config = builder
                      .WithToken(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false")
                      .WithToken(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false")
                      .Build();
-        var result = await _themeManager.ApplyThemeAsync(
-            new ThemeRequest(
-                requestedThemeId ??
-                _themeManager.CurrentTheme?.ThemeId ??
-                IThemeManager.DEFAULT_THEME_ID,
-                config,
-                reason));
+        var result = await _themeManager.ApplyThemeAsync(new ThemeRequest(themeId, config, reason));
         if (result.Status == ThemeTransitionStatus.Failed)
         {
             this.RaisePropertyChanged(nameof(CurrentThemeId));
@@ -416,6 +450,58 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         this.RaisePropertyChanged(nameof(IsLightAppearanceMode));
         this.RaisePropertyChanged(nameof(IsDarkAppearanceMode));
         this.RaisePropertyChanged(nameof(IsSystemAppearanceMode));
+    }
+
+    // Built-in theme packages publish each profile as "<base>", "<base>.Dark", "<base>.Compact" and
+    // "<base>.DarkCompact"; the longest suffix is matched first.
+    private static readonly string[] ProfileVariantSuffixes = [".DarkCompact", ".Dark", ".Compact"];
+
+    private static string GetProfileBaseId(string themeId)
+    {
+        foreach (var suffix in ProfileVariantSuffixes)
+        {
+            if (themeId.EndsWith(suffix, StringComparison.Ordinal))
+            {
+                return themeId[..^suffix.Length];
+            }
+        }
+        return themeId;
+    }
+
+    private bool IsProfileFamily(string baseId)
+    {
+        foreach (var suffix in ProfileVariantSuffixes)
+        {
+            if (HasTheme(baseId + suffix))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private string? FindProfileVariant(string baseId, bool isDark, bool isCompact)
+    {
+        var themeId = baseId + (isDark, isCompact) switch
+        {
+            (true, true)  => ".DarkCompact",
+            (true, false) => ".Dark",
+            (false, true) => ".Compact",
+            _             => string.Empty
+        };
+        return HasTheme(themeId) ? themeId : null;
+    }
+
+    private bool HasTheme(string themeId)
+    {
+        foreach (var theme in AvailableThemes)
+        {
+            if (string.Equals(theme.Id, themeId, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static IReadOnlyList<ThemeInfo> CaptureThemes(IReadOnlyList<ThemeInfo>? themes)

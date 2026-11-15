@@ -425,6 +425,82 @@ public class GalleryBaseFoundationTests
         }
     }
 
+    // Profile families (PrimeNG, shadcn/ui, Bootstrap, Material) ship explicit .Dark / .Compact / .DarkCompact profiles
+    // whose own algorithms decide appearance and density; the gallery must not replace them with the previous theme's.
+    [Fact]
+    public async Task Workspace_ViewModel_Applies_A_Profile_With_Its_Own_Algorithms()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            manager.CurrentTheme!.Appearance.ShouldBe(ThemeAppearance.Light);
+
+            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Dark").ToTask();
+
+            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.Dark");
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
+            manager.CurrentTheme.Algorithms.ShouldBe([new ThemeAlgorithm("PrimeNG", "Lara.Dark")]);
+            viewModel.AppearanceMode.ShouldBe(ThemePreference.Dark);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Workspace_ViewModel_Toggles_Select_The_Matching_Profile_Variant()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Dark").ToTask();
+
+            await viewModel.ToggleCompactModeCommand.Execute(true).ToTask();
+            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.DarkCompact");
+
+            await viewModel.SetAppearanceModeCommand.Execute(ThemePreference.Light).ToTask();
+            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.Compact");
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Light);
+
+            await viewModel.ToggleCompactModeCommand.Execute(false).ToTask();
+            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara");
+            viewModel.CurrentThemeId.ShouldBe("PrimeNGLara");
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Workspace_ViewModel_Leaving_A_Profile_Does_Not_Carry_Its_Algorithm()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchThemeCommand.Execute("PrimeNGAura.Dark").ToTask();
+
+            await viewModel.SwitchThemeCommand.Execute("PolarGreen").ToTask();
+
+            manager.CurrentTheme!.ThemeId.ShouldBe("PolarGreen");
+            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
     [Fact]
     public async Task Workspace_ViewModel_Does_Not_Reapply_Selected_Theme_Id()
     {

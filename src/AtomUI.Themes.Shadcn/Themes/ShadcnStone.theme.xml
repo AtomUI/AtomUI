@@ -41,7 +41,16 @@
     <Token Name="PaddingContentHorizontal" Value="12" />
     <Token Name="LineWidth" Value="1" />
     <Token Name="EnableWaveSpirit" Value="false" />
-    <Token Name="BoxShadows" Value="0 1 2 0 #0D000000" />
-    <Token Name="BoxShadowsSecondary" Value="0 1 2 0 #0D000000" />
+    <Token Name="BoxShadows" Value="0 10 15 -3 #1A000000, 0 4 6 -4 #1A000000" />
+    <Token Name="BoxShadowsSecondary" Value="0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000" />
   </Tokens>
+  <Controls>
+    <!-- shadcn popups pair shadow-md with a 1px border (ColorBorder); the ring keeps the top edge visible. -->
+    <Control Catalog="AtomUI" Id="Popup">
+      <Tokens>
+        <Token Name="PopupRootShadow" Value="0 0 0 1 #E7E5E4, 0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000" />
+        <Token Name="OverlayHostShadow" Value="0 0 0 1 #E7E5E4, 0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000" />
+      </Tokens>
+    </Control>
+  </Controls>
 </Theme>

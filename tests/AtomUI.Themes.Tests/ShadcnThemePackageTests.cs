@@ -48,7 +48,49 @@ public class ShadcnThemePackageTests
         Global<double>(snapshot, "ControlHeightLG").ShouldBe(40);
         Global<double>(snapshot, "LineWidth").ShouldBe(1);
         Global<bool>(snapshot, "EnableWaveSpirit").ShouldBeFalse();
-        Global<BoxShadows>(snapshot, "BoxShadows").ShouldBe(BoxShadows.Parse("0 1 2 0 #0D000000"));
+    }
+
+    // shadcn/ui: dropdown, popover and select content use shadow-md (BoxShadowsSecondary, read by popups and menus);
+    // dialog, sheet and toast use shadow-lg (BoxShadows). The same Tailwind values apply to every profile.
+    [AvaloniaTheory]
+    [InlineData("ShadcnZinc")]
+    [InlineData("ShadcnSlate")]
+    [InlineData("ShadcnStone")]
+    public async Task Every_Profile_Maps_Popup_And_Dialog_Shadows(string id)
+    {
+        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
+        {
+            var snapshot = await Apply(id + suffix);
+            Global<BoxShadows>(snapshot, "BoxShadowsSecondary")
+                .ShouldBe(BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000"), id + suffix);
+            Global<BoxShadows>(snapshot, "BoxShadows")
+                .ShouldBe(BoxShadows.Parse("0 10 15 -3 #1A000000, 0 4 6 -4 #1A000000"), id + suffix);
+        }
+    }
+
+    // shadcn popups pair shadow-md with a 1px border; shadow-md casts downward, so without the border a popup's top edge
+    // disappears on a same-coloured page. Popup draws the border as a spread ring in ColorBorder; arrow flyouts and
+    // other BoxShadowsSecondary consumers keep the plain shadow.
+    [AvaloniaTheory]
+    [InlineData("ShadcnZinc")]
+    [InlineData("ShadcnSlate")]
+    [InlineData("ShadcnStone")]
+    public async Task Popup_Shadows_Carry_The_Border_Ring(string id)
+    {
+        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
+        {
+            var snapshot = await Apply(id + suffix);
+            var border = Global<Color>(snapshot, "ColorBorder");
+            var expected = new BoxShadows(new BoxShadow { Spread = 1, Color = border },
+                [.. BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")]);
+            snapshot.Registry.TryGetControl(new ControlTokenIdentity("AtomUI", "Popup"), out var popup).ShouldBeTrue();
+            foreach (var name in new[] { "PopupRootShadow", "OverlayHostShadow" })
+            {
+                var token = popup!.OwnTokens.Single(token => token.Name == name);
+                snapshot.Controls[popup.Slot].ControlTokenValues.Get<BoxShadows>(token.Slot)
+                        .ShouldBe(expected, $"{id}{suffix} {name}");
+            }
+        }
     }
 
     [AvaloniaTheory]

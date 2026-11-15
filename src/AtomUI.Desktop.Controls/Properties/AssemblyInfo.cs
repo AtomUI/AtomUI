@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using AtomUI.Desktop.Controls;
 using Avalonia.Metadata;
 
 [assembly: XmlnsPrefix("https://atomui.net", "atom")]
@@ -12,3 +14,8 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Utils")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme.Resources")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme")]
+
+[assembly: TypeForwardedTo(typeof(DateViewerSelectionUnit))]
+[assembly: TypeForwardedTo(typeof(DateViewerPanelKind))]
+[assembly: TypeForwardedTo(typeof(DateViewerCellType))]
+[assembly: TypeForwardedTo(typeof(DateViewerRange))]

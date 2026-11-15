@@ -19,6 +19,7 @@
 | `MediaQuery/` | 媒体断点和响应式布局支持，规则见 [响应式架构](../../architecture/systems/control-infrastructure/responsive.md) |
 | `WaveSpirit/` | 点击波纹/动效扩展 |
 | `Converters/`、`Utils/` | 控件共享工具 |
+| `Dates/` | `DateUnitMath` 提供日期单位和周序；`DatePanelAlgorithms` 提供共享面板、自然月布局和无分配的逐格状态查询。 |
 
 ## 相关专题
 

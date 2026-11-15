@@ -1,4 +1,5 @@
 // Shared Gregorian topology and selection-unit invariants used by three public control families.
+using AtomUI.Controls;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
@@ -182,10 +183,10 @@ public class DatePanelAlgorithmTests
         })
         {
             var culture = CultureInfo.GetCultureInfo(name);
-            AtomUI.Desktop.Controls.Internal.DateViewer.DatePanelAlgorithms.GetWeekFirstDay(culture).ShouldBe(day);
-            AtomUI.Desktop.Controls.Internal.DateViewer.DatePanelAlgorithms
+            DatePanelAlgorithms.GetWeekFirstDay(culture).ShouldBe(day);
+            DatePanelAlgorithms
                 .GetWeekIdentity(new DateTime(2026, 10, 4), culture, day).Week.ShouldBe(week);
-            AtomUI.Desktop.Controls.Internal.DateViewer.DatePanelAlgorithms
+            DatePanelAlgorithms
                 .GetWeekIdentity(new DateTime(2025, 12, 31), culture, day).ShouldBe((2026, 1));
         }
     }
@@ -298,14 +299,14 @@ public class DatePanelAlgorithmTests
 
     private static object BuildInput(object input, int panelIndex = 0)
     {
-        var method = RequiredType(InternalNamespace + "DatePanelAlgorithms").GetMethod("Build", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        var method = RequiredType(typeof(DatePanelAlgorithms).FullName!).GetMethod("Build", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
         method.ShouldNotBeNull();
         return method!.Invoke(null, [input, panelIndex])!;
     }
 
     private static Type RequiredType(string name)
     {
-        var type = typeof(DatePicker).Assembly.GetType(name);
+        var type = typeof(DatePanelAlgorithms).Assembly.GetType(name);
         type.ShouldNotBeNull($"new shared date panel contract {name} must exist");
         return type!;
     }

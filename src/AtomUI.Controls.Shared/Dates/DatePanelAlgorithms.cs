@@ -1,62 +1,99 @@
 using System.Globalization;
+using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 
-namespace AtomUI.Desktop.Controls.Internal.DateViewer;
+namespace AtomUI.Controls;
 
 /// <summary>Gregorian topology and unit comparisons without control or host dependencies.</summary>
 internal static class DatePanelAlgorithms
 {
-    private static bool IsMainlandChinese(CultureInfo culture) => culture.TwoLetterISOLanguageName == "zh" &&
-        (culture.Name.EndsWith("-CN", StringComparison.OrdinalIgnoreCase) || culture.Name.Equals("zh-Hans", StringComparison.OrdinalIgnoreCase));
-
-    private static bool UsesSundayFirstWeek(CultureInfo culture) =>
-        culture.Name.EndsWith("-US", StringComparison.OrdinalIgnoreCase) ||
-        culture.Name.EndsWith("-TW", StringComparison.OrdinalIgnoreCase) ||
-        culture.Name.EndsWith("-BR", StringComparison.OrdinalIgnoreCase);
-
-    internal static DayOfWeek GetWeekFirstDay(CultureInfo culture) => IsMainlandChinese(culture)
-        ? DayOfWeek.Monday : UsesSundayFirstWeek(culture) ? DayOfWeek.Sunday : culture.DateTimeFormat.FirstDayOfWeek;
-
-    internal static (int Year, int Week) GetWeekIdentity(DateTime value, CultureInfo culture, DayOfWeek firstDay)
+    internal static DateMonthLayout GetMonthLayout(DateOnly anchor, DayOfWeek firstDayOfWeek)
     {
-        var rule = IsMainlandChinese(culture) ? CalendarWeekRule.FirstFourDayWeek :
-            UsesSundayFirstWeek(culture) ? CalendarWeekRule.FirstDay : culture.DateTimeFormat.CalendarWeekRule;
-        var referenceDay = rule == CalendarWeekRule.FirstFourDayWeek ? 4 : rule == CalendarWeekRule.FirstFullWeek ? 7 : 1;
-        DateTime FirstWeek(int year) => GetWeekRange(new DateTime(year, 1, referenceDay), firstDay).Start;
-        var start = GetWeekRange(value, firstDay).Start;
-        var year = value.Year;
-        if (year < 9999 && start >= FirstWeek(year + 1))
+        var first = new DateOnly(anchor.Year, anchor.Month, 1);
+        var leading = DateUnitMath.DayOffset(first.DayOfWeek, firstDayOfWeek);
+        var days = DateUnitMath.DaysInMonth(first.Year, first.Month);
+        return new DateMonthLayout(leading, days, (leading + days + 6) / 7);
+    }
+
+    internal static DateCellState GetCellState(in DateCellStateInput input, DateOnly date)
+    {
+        var weekday = DateUnitMath.DayOffset(date.DayOfWeek, input.FirstDayOfWeek);
+        var disabled = date < input.MinDate || date > input.MaxDate || input.DisabledDate?.Invoke(date) == true;
+        var selected = !disabled && (date == input.SelectedDate || date == input.RangeStart || date == input.RangeEnd);
+        var range = GetRangeFlags(date.DayNumber, input.RangeStart?.DayNumber, input.RangeEnd?.DayNumber);
+        return GetCellState(date == input.Today, disabled, selected, range,
+            weekday == 0 || date.Day == 1,
+            weekday == 6 || date.Day == DateUnitMath.DaysInMonth(date.Year, date.Month));
+    }
+
+    private static DateCellState GetCellState(bool isToday, bool isDisabled, bool isSelected,
+        DateCellState range, bool isRowStart = false, bool isRowEnd = false)
+    {
+        var state = range;
+        if (isToday)
         {
-            year++;
+            state |= DateCellState.Today;
         }
-        else if (year > 1 && start < FirstWeek(year))
+        if (isDisabled)
         {
-            year--;
+            state |= DateCellState.Disabled;
+        }
+        if (isSelected)
+        {
+            state |= DateCellState.Selected;
+        }
+        if (isRowStart)
+        {
+            state |= DateCellState.RowStart;
+        }
+        if (isRowEnd)
+        {
+            state |= DateCellState.RowEnd;
+        }
+        return state;
+    }
+
+    private static DateCellState GetRangeFlags(int key, int? start, int? end)
+    {
+        if (start is null || end is null)
+        {
+            return DateCellState.None;
+        }
+        if (start > end)
+        {
+            (start, end) = (end, start);
         }
 
-        return (year, (int)((start - FirstWeek(year)).TotalDays / 7) + 1);
+        var state = DateCellState.None;
+        if (start == key)
+        {
+            state |= DateCellState.RangeStart;
+        }
+        if (end == key)
+        {
+            state |= DateCellState.RangeEnd;
+        }
+        if (start < key && key < end)
+        {
+            state |= DateCellState.RangeMiddle;
+        }
+        return state;
     }
+
+    internal static DayOfWeek GetWeekFirstDay(CultureInfo culture) => DateUnitMath.GetWeekFirstDay(culture);
+
+    internal static (int Year, int Week) GetWeekIdentity(DateTime value, CultureInfo culture, DayOfWeek firstDay) =>
+        DateUnitMath.GetWeekIdentity(value, culture, firstDay);
 
     public static DateTime Normalize(DateTime value, DateViewerSelectionUnit unit, DayOfWeek firstDayOfWeek) =>
-        GetUnitRange(value, unit, firstDayOfWeek).Start;
+        DateUnitMath.Normalize(value, unit, firstDayOfWeek);
 
-    public static DateUnitRange GetUnitRange(DateTime value, DateViewerSelectionUnit unit, DayOfWeek firstDayOfWeek)
-    {
-        value = value.Date;
-        return unit switch
-        {
-            DateViewerSelectionUnit.Date => new DateUnitRange(value, value),
-            DateViewerSelectionUnit.Week => GetWeekRange(value, firstDayOfWeek),
-            DateViewerSelectionUnit.Month => new DateUnitRange(new DateTime(value.Year, value.Month, 1),
-                new DateTime(value.Year, value.Month, DateTime.DaysInMonth(value.Year, value.Month))),
-            DateViewerSelectionUnit.Quarter => GetQuarterRange(value),
-            DateViewerSelectionUnit.Year => new DateUnitRange(new DateTime(value.Year, 1, 1), new DateTime(value.Year, 12, 31)),
-            _ => throw new ArgumentOutOfRangeException(nameof(unit))
-        };
-    }
+    public static DateUnitRange GetUnitRange(DateTime value, DateViewerSelectionUnit unit, DayOfWeek firstDayOfWeek) =>
+        DateUnitMath.GetUnitRange(value, unit, firstDayOfWeek);
 
     public static DateTime GetPanelAnchor(DateTime value, DateViewerPanelKind kind) => kind switch
     {
-        DateViewerPanelKind.Date => new DateTime(value.Year, value.Month, 1),
+        DateViewerPanelKind.Date => DateUnitMath.GetMonthStart(value),
         DateViewerPanelKind.Month or DateViewerPanelKind.Quarter => new DateTime(value.Year, 1, 1),
         DateViewerPanelKind.Year => new DateTime(Math.Max(1, value.Year / 10 * 10), 1, 1),
         _ => throw new ArgumentOutOfRangeException(nameof(kind))
@@ -149,8 +186,7 @@ internal static class DatePanelAlgorithms
         {
             var original = topology.Cells[index];
             var projected = BuildCell(input, original.Value, original.Kind, original.Row, original.Column,
-                original.DisplayText, original.IsInView, firstDay, topology.Columns,
-                _ => !original.IsDisabled, _ => !original.IsDisabled);
+                original.DisplayText, original.IsInView, firstDay, topology.Columns, cachedDisabled: original.IsDisabled);
             if (projected == original)
             {
                 continue;
@@ -167,8 +203,9 @@ internal static class DatePanelAlgorithms
     {
         var showWeek = input.ShowWeek || input.SelectionUnit == DateViewerSelectionUnit.Week;
         var columns = showWeek ? 8 : 7;
-        var offset = ((int)anchor.DayOfWeek - (int)firstDay + 7) % 7;
-        var startTicks = anchor.Ticks - offset * TimeSpan.TicksPerDay;
+        var layout = GetMonthLayout(DateOnly.FromDateTime(anchor), firstDay);
+        var startTicks = anchor.Ticks - layout.LeadingDays * TimeSpan.TicksPerDay;
+        var monthEnd = anchor.AddDays(layout.DaysInMonth - 1);
         var cells = new List<DateViewerCellModel>(6 * columns);
         for (var row = 0; row < 6; row++)
         {
@@ -178,12 +215,12 @@ internal static class DatePanelAlgorithms
                 var weekDate = FromDateTicks(Math.Max(0, rawStart));
                 var number = weekDate is { } date
                     ? (input.WeekNumbering == DateWeekNumbering.Iso
-                        ? ISOWeek.GetWeekOfYear(date)
+                        ? DateUnitMath.GetIsoWeek(date).Week
                         : GetWeekIdentity(date, input.Culture, firstDay).Week)
                         .ToString(CultureInfo.InvariantCulture)
                     : string.Empty;
-                var inView = weekDate is { } weekStart && GetWeekRange(weekStart, firstDay) is { } weekPeriod &&
-                             weekPeriod.End >= anchor && weekPeriod.Start <= new DateTime(anchor.Year, anchor.Month, DateTime.DaysInMonth(anchor.Year, anchor.Month));
+                var inView = weekDate is { } weekStart && DateUnitMath.GetWeekRange(weekStart, firstDay) is { } weekPeriod &&
+                             weekPeriod.End >= anchor && weekPeriod.Start <= monthEnd;
                 cells.Add(BuildCell(input, weekDate, DateViewerCellType.Week, row, 0, number, inView,
                     firstDay, columns, isDateEnabled, isPeriodEnabled));
             }
@@ -202,9 +239,12 @@ internal static class DatePanelAlgorithms
             headers.Add(string.Empty);
         }
 
+        var names = input.AbbreviatedWeekdays
+            ? input.Culture.DateTimeFormat.AbbreviatedDayNames
+            : input.Culture.DateTimeFormat.ShortestDayNames;
         for (var index = 0; index < 7; index++)
         {
-            headers.Add((input.AbbreviatedWeekdays ? input.Culture.DateTimeFormat.AbbreviatedDayNames : input.Culture.DateTimeFormat.ShortestDayNames)[((int)firstDay + index) % 7]);
+            headers.Add(names[((int)firstDay + index) % 7]);
         }
 
         return new DatePanelModel(anchor, input.PanelKind, 6, columns, cells.AsReadOnly())
@@ -252,19 +292,19 @@ internal static class DatePanelAlgorithms
 
     private static DateViewerCellModel BuildCell(DatePanelInput input, DateTime? value, DateViewerCellType kind,
         int row, int column, string text, bool inView, DayOfWeek firstDay, int columns,
-        Func<DateTime, bool> isDateEnabled, Func<DateUnitRange, bool> isPeriodEnabled)
+        Func<DateTime, bool>? isDateEnabled = null, Func<DateUnitRange, bool>? isPeriodEnabled = null, bool? cachedDisabled = null)
     {
         var cellUnit = GetCellUnit(kind);
         var period = value is { } date ? GetUnitRange(date, cellUnit, firstDay) : (DateUnitRange?)null;
-        var disabled = period is null || (kind == DateViewerCellType.Date ||
-                                           kind == DateViewerCellType.Week && input.ConstraintMode == DatePanelConstraintMode.Calendar
-            ? !isDateEnabled(value!.Value)
-            : !isPeriodEnabled(period.Value));
+        var disabled = cachedDisabled ?? (period is null || (kind == DateViewerCellType.Date ||
+            kind == DateViewerCellType.Week && input.ConstraintMode == DatePanelConstraintMode.Calendar
+            ? !isDateEnabled!(value!.Value)
+            : !isPeriodEnabled!(period.Value)));
         var comparisonUnit = kind == DateViewerCellType.Date && input.SelectionUnit == DateViewerSelectionUnit.Week
             ? DateViewerSelectionUnit.Week
             : cellUnit;
         bool Matches(DateTime? target) => value is { } candidate && target is { } selection &&
-            Normalize(candidate, comparisonUnit, firstDay) == Normalize(selection, comparisonUnit, firstDay);
+            DateUnitMath.IsSameUnit(candidate, selection, comparisonUnit, firstDay);
         var selectableWeek = kind != DateViewerCellType.Week || input.SelectionUnit == DateViewerSelectionUnit.Week;
         var rangeVisualEligible = IsRangeVisualEligible(input, inView);
         var rangeGrid = rangeVisualEligible && input.SelectionUnit == comparisonUnit && input.Range is not null;
@@ -277,15 +317,17 @@ internal static class DatePanelAlgorithms
         var visualEndpoint = state.HasPreview ? state.PreviewStart || state.PreviewEnd : selected;
         var weekVisual = input.SelectionUnit == DateViewerSelectionUnit.Week && input.PanelKind == DateViewerPanelKind.Date &&
                          !disabled && visualEndpoint;
+        var flags = GetCellState(period?.Contains(input.Today) == true && kind != DateViewerCellType.Week,
+            disabled, selected, state.Committed);
         return new DateViewerCellModel(value, kind, period, text, row, column, inView,
-            period?.Contains(input.Today) == true && kind != DateViewerCellType.Week, disabled, selected, hovered)
+            (flags & DateCellState.Today) != 0, (flags & DateCellState.Disabled) != 0, (flags & DateCellState.Selected) != 0, hovered)
         {
             IsFocused = !disabled && kind != DateViewerCellType.Week && Matches(input.FocusedValue),
             IsVisualEndpoint = visualEndpoint,
             IsNavigationCurrent = false,
-            IsRangeStart = state.Start,
-            IsRangeEnd = state.End,
-            IsRangeMiddle = state.Middle,
+            IsRangeStart = (flags & DateCellState.RangeStart) != 0,
+            IsRangeEnd = (flags & DateCellState.RangeEnd) != 0,
+            IsRangeMiddle = (flags & DateCellState.RangeMiddle) != 0,
             HasRangePreview = state.HasPreview,
             IsRangePreviewStart = state.PreviewStart,
             IsRangePreviewEnd = state.PreviewEnd,
@@ -329,49 +371,27 @@ internal static class DatePanelAlgorithms
         return (start, end, start > end);
     }
 
-    private readonly record struct RangeState(bool Start, bool End, bool Middle, bool HasPreview,
+    private readonly record struct RangeState(DateCellState Committed, bool HasPreview,
         bool PreviewStart, bool PreviewEnd, bool PreviewMiddle);
 
     private static RangeState GetRangeState(DatePanelInput input, DateTime value, DayOfWeek firstDay)
     {
-        DateTime? Key(DateTime? date) => date.HasValue ? Normalize(date.Value, input.SelectionUnit, firstDay) : null;
+        int? Key(DateTime? date) => date is { } day
+            ? DateOnly.FromDateTime(Normalize(day, input.SelectionUnit, firstDay)).DayNumber
+            : null;
         var key = Key(value)!.Value;
         var start = Key(input.Range!.Start);
         var end = Key(input.Range.End);
         var previewStart = input.ActiveRangePart == DateRangeActivePart.Start ? Key(input.HoveredValue) : start;
         var previewEnd = input.ActiveRangePart == DateRangeActivePart.End ? Key(input.HoveredValue) : end;
-        var hasCommittedRange = start.HasValue && end.HasValue;
-        if (start > end)
+        if (input.HoveredValue is not null && previewStart is not null && previewEnd is not null)
         {
-            (start, end) = (end, start);
+            var preview = GetRangeFlags(key, previewStart, previewEnd);
+            return new RangeState(DateCellState.None, true, (preview & DateCellState.RangeStart) != 0,
+                (preview & DateCellState.RangeEnd) != 0, (preview & DateCellState.RangeMiddle) != 0);
         }
 
-        if (previewStart > previewEnd)
-        {
-            (previewStart, previewEnd) = (previewEnd, previewStart);
-        }
-
-        var preview = input.HoveredValue.HasValue && previewStart.HasValue && previewEnd.HasValue;
-        return new RangeState(hasCommittedRange && !preview && start == key, hasCommittedRange && !preview && end == key,
-            hasCommittedRange && !preview && start < key && key < end, preview,
-            preview && previewStart == key, preview && previewEnd == key,
-            preview && previewStart < key && key < previewEnd);
-    }
-
-    private static DateUnitRange GetWeekRange(DateTime value, DayOfWeek firstDayOfWeek)
-    {
-        var offset = ((int)value.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
-        var start = value.Ticks - offset * TimeSpan.TicksPerDay;
-        return new DateUnitRange(new DateTime(Math.Max(0, start)),
-            new DateTime(Math.Min(DateTime.MaxValue.Date.Ticks, start + 6 * TimeSpan.TicksPerDay)));
-    }
-
-    private static DateUnitRange GetQuarterRange(DateTime value)
-    {
-        var firstMonth = (value.Month - 1) / 3 * 3 + 1;
-        var lastMonth = firstMonth + 2;
-        return new DateUnitRange(new DateTime(value.Year, firstMonth, 1),
-            new DateTime(value.Year, lastMonth, DateTime.DaysInMonth(value.Year, lastMonth)));
+        return new RangeState(GetRangeFlags(key, start, end), false, false, false, false);
     }
 
     private static DateTime? FromDateTicks(long ticks) => ticks >= DateTime.MinValue.Ticks && ticks <= DateTime.MaxValue.Date.Ticks

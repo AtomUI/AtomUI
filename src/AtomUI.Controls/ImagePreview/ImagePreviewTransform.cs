@@ -17,7 +17,7 @@ internal static class ImagePreviewTransformMath
 {
     private const double BaseImageHeightRatio = 0.70;
 
-    internal static Size CalculateBaseImageSize(Size imageSize, Size viewportSize)
+    internal static Size CalculateBaseImageSize(Size imageSize, Size viewportSize, double baseHeightRatio = BaseImageHeightRatio)
     {
         if (!IsPositiveFinite(imageSize.Width) ||
             !IsPositiveFinite(imageSize.Height) ||
@@ -29,7 +29,7 @@ internal static class ImagePreviewTransformMath
 
         var fitScale = Math.Min(
             viewportSize.Width / imageSize.Width,
-            viewportSize.Height * BaseImageHeightRatio / imageSize.Height);
+            viewportSize.Height * baseHeightRatio / imageSize.Height);
         if (!IsPositiveFinite(fitScale))
         {
             return new Size(0, 0);
@@ -102,18 +102,31 @@ internal static class ImagePreviewTransformMath
         }
 
         var scale = IsPositiveFinite(state.Scale) ? state.Scale : 1.0;
-        var angle = Math.Abs(state.Rotate) % 180;
+        var (minimum, maximum) = GetTranslationLimits(baseImageSize, viewportSize, scale, state.Rotate);
+        return state with
+        {
+            Scale = scale,
+            X = Clamp(state.X, minimum.X, maximum.X),
+            Y = Clamp(state.Y, minimum.Y, maximum.Y)
+        };
+    }
+
+    internal static (Vector Minimum, Vector Maximum) GetTranslationLimits(
+        Size baseImageSize, Size viewportSize, double scale, double rotation = 0)
+    {
+        if (!IsPositiveFinite(baseImageSize.Width) || !IsPositiveFinite(baseImageSize.Height) ||
+            !IsPositiveFinite(viewportSize.Width) || !IsPositiveFinite(viewportSize.Height))
+        {
+            return default;
+        }
+        var angle = Math.Abs(rotation) % 180;
         var rotated = Math.Abs(angle - 90) < 0.000001;
+        scale = IsPositiveFinite(scale) ? scale : 1.0;
         var width = (rotated ? baseImageSize.Height : baseImageSize.Width) * scale;
         var height = (rotated ? baseImageSize.Width : baseImageSize.Height) * scale;
         var maxX = Math.Max(0, (width - viewportSize.Width) / 2);
         var maxY = Math.Max(0, (height - viewportSize.Height) / 2);
-        return state with
-        {
-            Scale = scale,
-            X = Clamp(state.X, -maxX, maxX),
-            Y = Clamp(state.Y, -maxY, maxY)
-        };
+        return (new Vector(-maxX, -maxY), new Vector(maxX, maxY));
     }
 
     internal static double CalculateWheelRatio(double deltaY, double scaleStep)

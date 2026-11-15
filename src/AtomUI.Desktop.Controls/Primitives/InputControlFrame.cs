@@ -1,9 +1,11 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Interactivity;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -121,6 +123,49 @@ internal class InputControlFrame : ContentControl,
     internal static readonly StyledProperty<IBrush?> HostBackgroundProperty =
         AvaloniaProperty.Register<InputControlFrame, IBrush?>(nameof(HostBackground));
 
+    // Theme variables: the surface values of the current StyleVariant and EffectiveStatus, read from the owner's effective
+    // global Tokens (the same resources OwnerTokenResource reads). The ControlTheme maps the interaction states (hover,
+    // focus, pressed) onto them, so the variant x status matrix is not expressed as one style per combination. They are
+    // direct properties fed by one OwnerTokenSet: a styled property with a binding per variable would add value-store
+    // entries to every frame, and one owner subscription per variable would multiply the attach cost.
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameBorderBrushProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameBorderBrush), o => o.FrameBorderBrush);
+
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameBackgroundProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameBackground), o => o.FrameBackground);
+
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameHoverBorderBrushProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameHoverBorderBrush), o => o.FrameHoverBorderBrush);
+
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameHoverBackgroundProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameHoverBackground), o => o.FrameHoverBackground);
+
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameActiveBorderBrushProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameActiveBorderBrush), o => o.FrameActiveBorderBrush);
+
+    internal static readonly DirectProperty<InputControlFrame, object?> FrameActiveShadowProperty =
+        AvaloniaProperty.RegisterDirect<InputControlFrame, object?>(nameof(FrameActiveShadow), o => o.FrameActiveShadow);
+
+    internal object? FrameBorderBrush => FrameTokens.GetValue(0);
+
+    internal object? FrameBackground => FrameTokens.GetValue(1);
+
+    internal object? FrameHoverBorderBrush => FrameTokens.GetValue(2);
+
+    internal object? FrameHoverBackground => FrameTokens.GetValue(3);
+
+    internal object? FrameActiveBorderBrush => FrameTokens.GetValue(4);
+
+    internal object? FrameActiveShadow => FrameTokens.GetValue(5);
+
+    /// <summary>
+    /// Converter of the ControlTheme setters that project a theme variable: an unresolved variable (no value yet, e.g.
+    /// before the frame is attached) yields no value, so the target falls back exactly as an unresolved
+    /// <c>OwnerTokenResource</c> setter does.
+    /// </summary>
+    public static readonly IValueConverter ThemeVariableConverter =
+        new FuncValueConverter<object?, object?>(value => value ?? AvaloniaProperty.UnsetValue);
+
     internal IBrush? HostBorderBrush
     {
         get => GetValue(HostBorderBrushProperty);
@@ -192,6 +237,7 @@ internal class InputControlFrame : ContentControl,
     #endregion
 
     private readonly TransitionInitializationSession _transitionInitialization;
+    private OwnerTokenSet? _frameTokens;
 
     static InputControlFrame()
     {
@@ -245,6 +291,12 @@ internal class InputControlFrame : ContentControl,
             change.Property == HostBackgroundProperty)
         {
             UpdateHostBrushPseudoClasses();
+        }
+
+        if (_frameTokens is not null &&
+            (change.Property == StyleVariantProperty || change.Property == EffectiveStatusProperty))
+        {
+            ConfigureFrameVariables(_frameTokens);
         }
 
         if (change.Property == StatusProperty ||
@@ -313,6 +365,104 @@ internal class InputControlFrame : ContentControl,
             StyleVariant == InputControlStyleVariant.Borderless);
         PseudoClasses.Set(AddOnDecoratedBoxPseudoClass.Underlined,
             StyleVariant == InputControlStyleVariant.Underlined);
+    }
+
+    private const int FrameVariableCount = 6;
+
+    private static readonly DirectPropertyBase<object?>[] s_frameVariableProperties =
+    [
+        FrameBorderBrushProperty, FrameBackgroundProperty, FrameHoverBorderBrushProperty, FrameHoverBackgroundProperty,
+        FrameActiveBorderBrushProperty, FrameActiveShadowProperty
+    ];
+
+    /// <summary>
+    /// Points the theme variables at the Tokens of the current StyleVariant and EffectiveStatus; variables the variant's
+    /// interaction styles do not read have no Token. An unchanged variable is not resolved again.
+    /// </summary>
+    /// <summary>
+    /// The Tokens behind the theme variables, created and pointed at the current StyleVariant and EffectiveStatus on the
+    /// first read, so a style that reads a variable always finds it configured. It only listens to this frame, so it
+    /// lives and dies with it; entries resolve when a style first reads them.
+    /// </summary>
+    private OwnerTokenSet FrameTokens
+    {
+        get
+        {
+            if (_frameTokens is null)
+            {
+                _frameTokens = new OwnerTokenSet(this, FrameVariableCount, OnFrameVariableChanged);
+                ConfigureFrameVariables(_frameTokens);
+            }
+
+            return _frameTokens;
+        }
+    }
+
+    private void ConfigureFrameVariables(OwnerTokenSet tokens)
+    {
+        var status = EffectiveStatus;
+        SharedTokenKind? border          = null;
+        SharedTokenKind? background      = null;
+        SharedTokenKind? hoverBorder     = null;
+        SharedTokenKind? hoverBackground = null;
+        SharedTokenKind? activeBorder    = null;
+        SharedTokenKind? activeShadow    = null;
+        switch (StyleVariant)
+        {
+            case InputControlStyleVariant.Outlined:
+                border = ByStatus(status, SharedTokenKind.ColorBorder, SharedTokenKind.ColorError,
+                    SharedTokenKind.ColorWarning);
+                background = SharedTokenKind.ColorBgContainer;
+                hoverBorder = ByStatus(status, SharedTokenKind.ColorPrimaryHover, SharedTokenKind.ColorErrorBorderHover,
+                    SharedTokenKind.ColorWarningBorderHover);
+                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                    SharedTokenKind.ColorWarning);
+                activeShadow = ByStatus(status, SharedTokenKind.InputActiveShadow,
+                    SharedTokenKind.InputErrorActiveShadow, SharedTokenKind.InputWarningActiveShadow);
+                break;
+            case InputControlStyleVariant.Filled:
+                border = ByStatus(status, SharedTokenKind.ColorFillTertiary, SharedTokenKind.ColorErrorBg,
+                    SharedTokenKind.ColorWarningBg);
+                background = border;
+                hoverBackground = ByStatus(status, SharedTokenKind.ColorFillSecondary, SharedTokenKind.ColorErrorBgHover,
+                    SharedTokenKind.ColorWarningBgHover);
+                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                    SharedTokenKind.ColorWarning);
+                break;
+            case InputControlStyleVariant.Underlined:
+                border = ByStatus(status, SharedTokenKind.ColorBorder, SharedTokenKind.ColorError,
+                    SharedTokenKind.ColorWarning);
+                hoverBorder = ByStatus(status, SharedTokenKind.ColorPrimaryHover, SharedTokenKind.ColorErrorBorderHover,
+                    SharedTokenKind.ColorWarningBorderHover);
+                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                    SharedTokenKind.ColorWarning);
+                break;
+        }
+
+        tokens.SetKind(0, border);
+        tokens.SetKind(1, background);
+        tokens.SetKind(2, hoverBorder);
+        tokens.SetKind(3, hoverBackground);
+        tokens.SetKind(4, activeBorder);
+        tokens.SetKind(5, activeShadow);
+    }
+
+    private static SharedTokenKind ByStatus(InputControlStatus status,
+                                            SharedTokenKind normal,
+                                            SharedTokenKind error,
+                                            SharedTokenKind warning)
+    {
+        return status switch
+        {
+            InputControlStatus.Error => error,
+            InputControlStatus.Warning => warning,
+            _ => normal
+        };
+    }
+
+    private void OnFrameVariableChanged(int index, object? oldValue, object? newValue)
+    {
+        RaisePropertyChanged(s_frameVariableProperties[index], oldValue, newValue);
     }
 
     private void UpdateEffectiveStatus()

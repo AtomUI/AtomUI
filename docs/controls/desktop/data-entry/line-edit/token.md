@@ -76,8 +76,9 @@ TextBoxToken / LineEditToken / TextAreaToken
 各自文本尺寸、padding 和 resize 专属布局
 ```
 
-输入表面的边框、圆角、背景、hover/focus shadow、error/warning 和 disabled 状态由 `InputControlFrameTheme` 以
-`OwnerTokenResource` 读取所属公开控件的有效 Global Token，`Controls[LineEdit]` 等覆盖只改变该控件的输入表面；
+输入表面的边框、圆角、背景、hover/focus shadow、error/warning 和 disabled 状态，都读取所属公开控件的有效 Global Token。
+读取方式分两种：随 variant 与有效状态变化的表面值，由 frame 的内部主题变量经同一 owner accessor 读取，再由
+`InputControlFrameTheme` 投射到各交互状态；其余值由主题以 `OwnerTokenResource` 读取。因此 `Controls[LineEdit]` 等覆盖只改变该控件的输入表面；
 各控件主题不再为 hover / focus 重复设置表面颜色。`TextBoxTheme` 同样以 `OwnerTokenResource` 读取全局值：它也是
 NumericUpDown、选择器与筛选框内嵌编辑器（EmbeddedTextBox 及其派生类）的基础主题，这些编辑器没有 identity，
 跟随宿主控件。TextBox 的内容 padding 由 `TextBoxTokenResource` 进入 `TextBoxTheme.axaml`；LineEdit 的单行字号由

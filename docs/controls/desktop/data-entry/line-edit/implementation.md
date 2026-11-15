@@ -111,6 +111,12 @@ OverflowTip and other internal consumers
 
 - 旧清除按钮 click 订阅必须解除，再绑定新 `PART_ClearButton`。
 - frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算；共有状态经模板绑定回放到 frame。
+- 表面状态画刷：frame 的六个主题变量由一个 `OwnerTokenSet` 供值。
+  - **创建：** 样式第一次读变量时才创建这个 set，并按当前 `StyleVariant` 和 `EffectiveStatus` 指定每个变量的 Token；之后这两个属性变化时重新指定。读取时变量一定已配置，不依赖挂树顺序。
+  - **取值：** 每个条目第一次被读取时才解析。只在交互状态中读取的变量（hover、focus、pressed），在该状态出现之前不做资源查找。当前 variant 的交互样式不读的变量，不指定 Token。
+  - **刷新：** set 对 frame 只有一组资源、主题变体和 owner 订阅；收到主题发布时，只重新解析已读取、且键确实变化的条目。
+  - **生命周期：** set 只监听 frame 自身，随 frame 一起回收，不需要额外的释放路径。
+  - **投射：** 主题按 hover → focus-within / pressed 的顺序把变量投射到表面属性。变量与表面值的对应关系见 [输入控件共享架构设计 §3.2](../input-control-architecture-design.md#32-inputcontrolframe)。
 - root 表面投射：四个输入模板把 owner 的 `BorderBrush` / `Background` 模板绑定到 frame 的内部属性 `HostBorderBrush` / `HostBackground`（ButtonSpinner 与 NumericUpDown 只绑定 `BorderBrush`）。有值时 frame 置 `:host-border-brush` / `:host-background` 伪类，`InputControlFrameTheme` 在全部状态样式之后把它投射到 frame 的 `BorderBrush` / `Background`，因此定制期间 hover / pressed / focus 的边框变色让位；focus 的 `BoxShadow` 是独立属性槽，反馈不丢失。置空时伪类撤销，状态机恢复。控件代码不向 frame 写本地值。
 - `TextBox` 的 `PART_InputControlFrame` 必须水平填满 TextBox 已分配宽度；placeholder、短文本和长文本只改变内部文本布局，不改变输入外框宽度。
 - `TextBox` 模板通过 `TemplateBinding` 将继承的 `InnerLeftContent` / `InnerRightContent` 交给独立的 `ContentPresenter`。左侧 presenter 停靠在编辑区左侧，右侧 presenter 位于 clear/reveal/Form feedback 之后、count 之前；两者均在文本 scroll viewer 外。模板把内容是否为空映射到布局容器的内部 class，ControlTheme 仅在至少一侧内容非空时为 `AdaptiveSpacingDockPanel` 设置 `SpacingXXS`；面板只为可见且具有宽度的辅助区分配间距。两侧内容均为空时撤销间距 setter，保留原有 clear/reveal/Form feedback/count 场景的编辑宽度。空值 presenter 折叠，避免辅助区内部的 `Spacing` 留下空隙。内容的创建、隐式 DataTemplate 查找、替换和释放由 presenter 管理，不增加代码绑定或内容订阅；重新套用模板时由新模板实例接管当前内容。

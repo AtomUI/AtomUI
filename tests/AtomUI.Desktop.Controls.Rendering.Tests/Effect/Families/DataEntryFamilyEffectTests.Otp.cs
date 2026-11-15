@@ -39,12 +39,7 @@ public partial class DataEntryFamilyEffectTests
         otp.GetVisualDescendants().OfType<OtpLineEditCell>().ElementAt(index);
 
     /// <summary>The InputControlFrame owner reads the cell theme replaces for every state, with the reason.</summary>
-    private static readonly Dictionary<string, string> s_otpNotRendered = new(StringComparer.Ordinal)
-    {
-        ["InputPadding"]   = "the frame pads its add-on borders only; the OTP cell template has no add-ons (LineEdit renders it)",
-        ["InputPaddingLG"] = "the frame pads its add-on borders only; the OTP cell template has no add-ons (LineEdit renders it)",
-        ["InputPaddingSM"] = "the frame pads its add-on borders only; the OTP cell template has no add-ons (LineEdit renders it)"
-    };
+    private static readonly Dictionary<string, string> s_otpNotRendered = new(StringComparer.Ordinal);
 
     public static IEnumerable<object[]> OtpLineEditRows()
     {

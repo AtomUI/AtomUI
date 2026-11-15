@@ -31,6 +31,27 @@ public static class ThemeOwnerReads
         return result;
     }
 
+    // `SharedTokenKind.ColorBorder` in control code that feeds theme variables from owner Token accessors.
+    private static readonly Regex s_code = new(@"\bSharedTokenKind\.(?<name>\w+)", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// The distinct global Token names a primitive's code reads from its owner (theme variables fed by
+    /// <c>OwnerTokenBinding</c> accessors), named as <c>SharedTokenKind.X</c> in the given repository-relative C# files.
+    /// </summary>
+    public static IReadOnlySet<string> ReadCode(params string[] repositoryRelativePaths)
+    {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var path in repositoryRelativePaths)
+        {
+            foreach (Match match in s_code.Matches(File.ReadAllText(Path.Combine(RepositoryRoot, path))))
+            {
+                result.Add(match.Groups["name"].Value);
+            }
+        }
+
+        return result;
+    }
+
     /// <summary>The distinct Token names read with OwnerTokenResource in an AXAML text.</summary>
     internal static IReadOnlySet<string> Parse(string axaml)
     {

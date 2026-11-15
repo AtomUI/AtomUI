@@ -1,5 +1,13 @@
 # LineEdit Changelog
 
+## 2026-11-14
+
+- Performance
+  - 输入 frame（LineEdit、TextBox、TextArea、SearchEdit、Select、TreeSelect、Cascader、日期/时间选择器、NumericUpDown、OtpLineEdit、AutoComplete、Mentions 共用）的 variant × 有效状态画刷改由 frame 的内部主题变量提供。`InputControlFrameTheme` 只把它们投射到 hover / focus-within / pressed 状态，不再逐个组合写样式。
+  - 同时删除 `InputControlFrameTheme` 中 6 条附加区内边距样式：`AddOnDecoratedBoxTheme` 在其后声明了相同选择器、相同值的样式，这 6 条从不生效。
+  - 每个实例创建时的分配减少 5.6%–10.9%（17 个输入家族控件）；常驻对象数 LineEdit 减少 14.8%（5530 → 4709），Select 减少 14.6%（10540 → 9003）。
+  - 13 个输入宿主 × 4 variant × 3 status × 8 种交互状态，加上 Large / Small 尺寸，frame 与附加区的表面值、内边距和圆角均与改动前逐项一致。Token、`ThemeConfig.Controls`、`ThemeConfigProvider` 与 `TokenTransitions` 的定制路径不变。
+
 ## 2026-11-12
 
 - Fixed

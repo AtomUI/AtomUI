@@ -54,6 +54,13 @@ AddOnDecoratedBox 及其专用派生类型
 
 它输出 `EffectiveStatus` 和视觉伪类，不拥有 `Text`、候选集合、搜索任务、Form value 或 AddOn 内容。
 
+表面画刷里随 variant 与有效状态变化的部分，由 frame 算成 internal 主题变量：`FrameBorderBrush`、`FrameBackground`、`FrameHoverBorderBrush`、`FrameHoverBackground`、`FrameActiveBorderBrush`、`FrameActiveShadow`。
+
+- **取值：** 按当前 `StyleVariant` 和 `EffectiveStatus` 读取 owner 的 Effective Global Token，资源键、owner 解析和无 owner 时的回落都与 `OwnerTokenResource` 相同。资源、作用域、主题变体或 owner 变化时随之刷新。
+- **投射：** `InputControlFrameTheme` 只用 variant 伪类加 hover / focus-within / pressed 选择器，把变量投射到 `BorderBrush`、`Background`、`BoxShadow`，不再为每种 variant × status × 交互组合各写一条样式。disabled、附加区和根画刷样式保持不变。
+- **定制：** Token、`ThemeConfig.Controls`、`ThemeConfigProvider` 和 `TokenTransitions` 的定制路径与原状态矩阵一致。
+- **存储：** 变量是 DirectProperty，由一个 `OwnerTokenSet` 供值：每个 frame 只有一组 owner 订阅，条目在第一次读取时才解析，也不经过 Avalonia 绑定，因此 frame 不会多出 value store 条目。
+
 ## 4. 状态模型
 
 状态来源严格分为三类：

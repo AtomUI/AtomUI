@@ -17,8 +17,11 @@ public partial class InputFamilyEffectTests
     private const string Numeric = "src/AtomUI.Desktop.Controls/NumericUpDown/Themes/";
     private const string Complete = "src/AtomUI.Desktop.Controls/AutoComplete/Themes/";
 
-    /// <summary>One primitive theme and the global Tokens it reads from its owner.</summary>
-    internal sealed record OwnerReadList(string Theme, string[] Tokens);
+    /// <summary>
+    /// One primitive theme and the global Tokens it reads from its owner, in the theme AXAML or, for theme variables the
+    /// primitive computes, in its code.
+    /// </summary>
+    internal sealed record OwnerReadList(string Theme, string[] Tokens, params string[] Code);
 
     internal static readonly OwnerReadList s_inputControlFrame = new(Primitives + "InputControlFrameTheme.axaml",
     [
@@ -26,8 +29,8 @@ public partial class InputFamilyEffectTests
         "ColorBorder", "ColorError", "ColorErrorBg", "ColorErrorBgHover", "ColorErrorBorderHover", "ColorFillSecondary",
         "ColorFillTertiary", "ColorPrimary", "ColorPrimaryHover", "ColorText", "ColorTextDisabled", "ColorWarning",
         "ColorWarningBg", "ColorWarningBgHover", "ColorWarningBorderHover", "EnableMotion", "InputActiveShadow",
-        "InputErrorActiveShadow", "InputPadding", "InputPaddingLG", "InputPaddingSM", "InputWarningActiveShadow"
-    ]);
+        "InputErrorActiveShadow", "InputWarningActiveShadow"
+    ], "src/AtomUI.Desktop.Controls/Primitives/InputControlFrame.cs");
 
     internal static readonly OwnerReadList s_addOnDecoratedBox = new(Primitives + "AddOnDecoratedBoxTheme.axaml",
     [
@@ -88,12 +91,7 @@ public partial class InputFamilyEffectTests
     internal static readonly Dictionary<string, (OwnerReadList[] Lists, Dictionary<string, string> NotRendered)> s_hosts =
         new(StringComparer.Ordinal)
         {
-            ["TextBox"] = ([s_inputControlFrame, s_textBox, s_clearButton, s_revealButton], new(StringComparer.Ordinal)
-            {
-                ["InputPadding"]   = "the frame pads the add-on borders only; TextBox has no add-ons (LineEdit renders it)",
-                ["InputPaddingLG"] = "the frame pads the add-on borders only; TextBox has no add-ons (LineEdit renders it)",
-                ["InputPaddingSM"] = "the frame pads the add-on borders only; TextBox has no add-ons (LineEdit renders it)"
-            }),
+            ["TextBox"] = ([s_inputControlFrame, s_textBox, s_clearButton, s_revealButton], new(StringComparer.Ordinal)),
             ["LineEdit"] = ([s_inputControlFrame, s_addOnDecoratedBox, s_clearButton, s_revealButton], new(StringComparer.Ordinal)),
             ["SearchEdit"] = ([s_inputControlFrame, s_addOnDecoratedBox, s_clearButton, s_revealButton], new(StringComparer.Ordinal)
             {
@@ -152,10 +150,10 @@ public partial class InputFamilyEffectTests
     [Fact]
     public void Owner_Read_Lists_Match_The_Primitive_Themes()
     {
-        // Drift guard: a new OwnerTokenResource read in a primitive theme must get an effect row through its hosts.
+        // Drift guard: a new owner read in a primitive theme or theme-variable code must get an effect row through its hosts.
         foreach (var list in s_allLists)
         {
-            ThemeOwnerReads.Read(list.Theme).Order(StringComparer.Ordinal)
+            ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)
                            .ShouldBe(list.Tokens.Order(StringComparer.Ordinal), list.Theme);
         }
     }

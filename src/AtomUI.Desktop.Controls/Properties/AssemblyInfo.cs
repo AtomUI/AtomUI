@@ -20,6 +20,7 @@ using Avalonia.Metadata;
 [assembly: TypeForwardedTo(typeof(ButtonShape))]
 [assembly: TypeForwardedTo(typeof(ButtonIconPlacement))]
 [assembly: TypeForwardedTo(typeof(StepsStatus))]
+[assembly: TypeForwardedTo(typeof(ICollapseItemData))]
 [assembly: TypeForwardedTo(typeof(SearchRequestedEventArgs))]
 [assembly: TypeForwardedTo(typeof(SearchTriggerSource))]
 [assembly: TypeForwardedTo(typeof(FormItemLayout))]

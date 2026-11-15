@@ -6,6 +6,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 
 namespace AtomUI.Controls.Commons;
 
@@ -28,6 +29,10 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<AbstractFloatButton, PathIcon?>(nameof(Icon));
     
+    public static readonly StyledProperty<Vector> DragTranslationProperty =
+        AvaloniaProperty.Register<AbstractFloatButton, Vector>(nameof(DragTranslation),
+            validate: static value => double.IsFinite(value.X) && double.IsFinite(value.Y));
+
     public static readonly StyledProperty<string?> TooltipProperty =
         AvaloniaProperty.Register<AbstractFloatButton, string?>(nameof(Tooltip));
     
@@ -93,6 +98,13 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(IconProperty, value);
     }
     
+    /// <summary>Gets or sets a temporary render translation without changing the anchor position.</summary>
+    public Vector DragTranslation
+    {
+        get => GetValue(DragTranslationProperty);
+        set => SetValue(DragTranslationProperty, value);
+    }
+
     public string? Tooltip
     {
         get => GetValue(TooltipProperty);
@@ -199,9 +211,57 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
 
     #endregion
     
+    private bool _isCommittingDrag;
     private protected ScopeAwareOverlayLayer? _overlayLayer;
     private protected Canvas? _badgeLayout;
     private protected Control? _badge;
+
+    internal Size? OverlayAvailableSize => _overlayLayer?.Bounds.Size;
+
+    /// <summary>Folds the temporary render translation into the anchored position and clears the translation.</summary>
+    public void CommitDragTranslation()
+    {
+        var translation = DragTranslation;
+        if (_overlayLayer is not { } layer || translation == default)
+        {
+            return;
+        }
+
+        var xSign = Placement is FloatButtonPlacement.Right or FloatButtonPlacement.TopRight or
+            FloatButtonPlacement.BottomRight ? -1 : 1;
+        var ySign = Placement is FloatButtonPlacement.Bottom or FloatButtonPlacement.BottomLeft or
+            FloatButtonPlacement.BottomRight ? -1 : 1;
+        _isCommittingDrag = true;
+        try
+        {
+            SetCurrentValue(FloatOffsetXProperty, FloatOffsetX + xSign * translation.X);
+            SetCurrentValue(FloatOffsetYProperty, FloatOffsetY + ySign * translation.Y);
+        }
+        finally
+        {
+            _isCommittingDrag = false;
+        }
+        CalculatePosition(this, layer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+        SetCurrentValue(DragTranslationProperty, default);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (DragTranslation != default)
+        {
+            UpdateDragVisual();
+        }
+    }
+
+    private void UpdateDragVisual()
+    {
+        if (ElementComposition.GetElementVisual(this) is { } visual)
+        {
+            var translation = DragTranslation;
+            visual.Translation = new Vector3D(translation.X, translation.Y, 0);
+        }
+    }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
@@ -255,10 +315,14 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
                  change.Property == FloatOffsetYProperty ||
                  change.Property == PlacementProperty)
         {
-            if (_overlayLayer != null)
+            if (!_isCommittingDrag && _overlayLayer is { } layer)
             {
-                CalculatePosition(this, _overlayLayer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
+                CalculatePosition(this, layer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
             }
+        }
+        else if (change.Property == DragTranslationProperty)
+        {
+            UpdateDragVisual();
         }
         else if (change.Property == IsBadgeEnabledProperty ||
                  change.Property == IsDotBadgeProperty)

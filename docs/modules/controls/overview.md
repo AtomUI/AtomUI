@@ -66,11 +66,17 @@ Core 拥有动效定义与播放协议。布局原语只承担自然测量、占
 | `Primitives/` | 桌面控件复用的基础装饰、动效、视觉层 |
 | `Icon/` | 图标控件与图标主题 |
 | `ItemsControl/` | ItemsControl 相关反射扩展和主题 |
+| `Carousel/` | `AbstractCarousel` 共用页切换、选择来源和自动播放门控。 |
 | `Form/` | 表单验证基础能力 |
 | `Grid/`、`FlexPanel/` | 布局基础 |
-| `Badge/`、`Buttons/`、`Select/` | 多个桌面控件复用的抽象层 |
+| `Badge/`、`Select/` | 控件复用的抽象层 |
+| `Buttons/` | `AbstractButton` 提供 Desktop 与 Mobile Button 的通用属性、伪类与颜色变体解析。产品控件分别提供尺寸、交互反馈和主题。 |
+| `Ellipsis/` | `AbstractEllipsis` 提供测量、截断及展开操作，`EllipsisDirection` 定义截断位置。Mobile 提供产品主题。见[变更记录](../../controls/desktop/data-display/ellipsis/changelog.md) |
+| `MarqueeLabel/` | `AbstractMarqueeLabel` 共用溢出、启动延迟及运动门控。Desktop Alert 使用既有帧动画，Mobile NoticeBar 通过 internal 扩展点接入合成器位移。见 [Alert 变更记录](../../controls/desktop/feedback/alert/changelog.md) |
 
 具体桌面控件文档应放在 [../../controls/desktop/overview.md](../../controls/desktop/overview.md)，本模块文档只解释公共基础层。
+
+`VirtualizingStackPanel.ScrollItemToStart(index, offset)` 使用已实现容器在视口中的实际位置对齐列表项。正偏移为粘性标题预留空间，列表边缘由滚动范围约束。
 Control Token 定义层的提取门槛、Generator 扁平化和运行时隔离见
 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。该能力不表示仓库已经存在
 Mobile 终端或共享 Token 基类。

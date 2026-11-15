@@ -2,6 +2,15 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Implementation
+  - 修复分数缩放（125%、150% 等）下范围呈现的 DataGrid 滚动时进程崩溃（#540）。`SparseHeightDeltaIndex.FindSlotAtOffset` 用
+    “本行起点 + 实测高度”求行底，与下一槽位的起点相差若干 ULP；偏移落进这条缝时遍历的上下界交叉，`Math.Clamp` 抛
+    `ArgumentException`。槽位边界现在只由 `StartOf` 一个算式求值，一行的结束边界即下一槽位的起点，区间首尾相接。
+- Tests
+  - `DataGridViewportPlannerTests` 新增分数缩放行高下每个行边界偏移都映射到所属槽位的用例。
+
 ## 2026-11-12
 
 - Theme

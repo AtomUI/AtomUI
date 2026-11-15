@@ -194,6 +194,60 @@ public class DataGridViewportPlannerTests
         }
     }
 
+    // 行高 = 设备像素 / RenderScaling：分数缩放下布局取整得到的行高不能被二进制精确表示，
+    // 行底与下一行行顶若按不同算式求值会相差若干 ULP。任何落在行边界上的偏移都必须映射到包含它的槽位。
+    [Theory]
+    [InlineData(1.25)]
+    [InlineData(1.5)]
+    [InlineData(1.75)]
+    [InlineData(2.25)]
+    public void Sparse_Index_Maps_Every_Row_Boundary_To_Its_Slot_For_Fractional_Scaling_Heights(double renderScaling)
+    {
+        const int slotCount = 64;
+        const double tolerance = 1e-9;
+        for (var pixels = 24; pixels <= 120; pixels++)
+        {
+            var height = pixels / renderScaling;
+            // 默认高度：与实测相同、相邻浮点数（显示行求平均的结果）、向上取整的初始估计
+            foreach (var defaultHeight in new[] { height, Math.BitDecrement(height), Math.Ceiling(height) })
+            {
+                foreach (var measureEverySlot in new[] { true, false })
+                {
+                    var heights = new SparseHeightDeltaIndex(40);
+                    for (var slot = 0; slot < slotCount; slot++)
+                    {
+                        if (measureEverySlot || slot % 5 != 4)
+                        {
+                            heights.SetMeasuredHeight(slot, height, DataGridHeightClass.Data);
+                        }
+                    }
+                    heights.RebaseDefaultHeight(defaultHeight);
+
+                    var extent = heights.GetExtent(slotCount);
+                    for (var slot = 0; slot < slotCount; slot++)
+                    {
+                        var bottom = heights.GetOffset(slot) + heights.GetHeight(slot);
+                        foreach (var offset in new[]
+                                 {
+                                     heights.GetOffset(slot), Math.BitDecrement(bottom), bottom, Math.BitIncrement(bottom)
+                                 })
+                        {
+                            var found = heights.FindSlotAtOffset(offset, slotCount);
+
+                            found.ShouldBeInRange(0, slotCount - 1);
+                            heights.GetOffset(found).ShouldBeLessThanOrEqualTo(offset + tolerance);
+                            if (offset < extent - tolerance)
+                            {
+                                offset.ShouldBeLessThan(
+                                    heights.GetOffset(found) + heights.GetHeight(found) + tolerance);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     [Fact]
     public void Warm_Fixed_Height_Planning_Allocates_Nothing()
     {

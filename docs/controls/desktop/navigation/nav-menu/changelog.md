@@ -2,6 +2,16 @@
 
 本文档记录 NavMenu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Performance
+  - 逐项末尾追加内置 entry 不再每次完整重扫 entry scope：`NavMenuEntryOwnershipCoordinator` 在无 custom node 的 scope 上保留 direct scope 索引，根 `Items.Add` / `ItemsSource` Add 与内置 `Entries` 末尾追加只校验新 entry，逐项装载从 O(N²) 降为线性；重复、owner 冲突、custom source 弱订阅和离开 scope 的 owner 释放语义不变。`implementation.md` 7.2 补充增量条件与回退规则，第 8 节删除逐项 `Items.Add` 的 O(N²) 说明。
+- Tests
+  - `NavMenuEntryPopulationScalingTests` 覆盖逐项装载的线性读取上界与近线性托管分配量，以及增量校验与完整 reconcile 的异常、ownership 和回退等价。
+- Docs
+  - `overview.md` 兼容性不变量写明 ItemsPanel 必须是非虚拟化面板：选择定位、分组容器准备、子菜单状态和键盘导航都以每个 entry 容器已生成为前提，替换为虚拟化面板不受支持。
+  - 评估后确认不支持虚拟化 ItemsPanel：`overview.md` 补充回收导致的子菜单打开状态丢失、视口外 `DefaultOpenPaths` 无法 replay，以及超长导航改用子菜单层级或 `TreeView` 的指引；`implementation.md` 补充按呈现层级延迟生成容器的边界、容器持有打开状态与 keyboard active 的维护不变量，以及逐项 `Items.Add` 的根 reconcile 成本说明。
+
 ## 2026-11-11
 
 - Theme

@@ -95,7 +95,7 @@ Mentions 的公共 API 由文本值、触发符、候选数据、过滤、弹层
 | `IMentionOption.Key` | 候选项稳定 key，可作为过滤候选值回退。 |
 | `IMentionOption.Header` | 候选项显示内容，默认模板显示该值。 |
 | `IMentionOption.Value` | 插入文本时优先使用的值。 |
-| `IMentionOption.IsEnabled` | 候选项启用状态，供候选列表视觉和选择逻辑使用。 |
+| `IMentionOption.IsEnabled` | 候选项启用状态。`false` 的候选项以禁用视觉呈现（容器 `IsEnabled=false`，文字为 `ColorTextDisabled`），不会成为打开时的预选项，键盘导航、指针悬停和点击都会跳过它，因此不会被提交。该值在候选项准备容器时读取，不监听运行期变化；需要切换时重新提供候选集合。 |
 
 事件契约：
 
@@ -174,7 +174,9 @@ Disabled / invisible / window deactivated
 
 - 弹层打开时，按键优先交给 `CandidateList.HandleKeyDown()`。
 - `Escape` 取消候选并关闭弹层。
-- `Enter` 在弹层打开时提交当前候选。
+- 候选视图刷新后预选第一个启用的候选项；全部禁用时不预选。
+- `Up` / `Down` 在启用的候选项之间移动 active candidate，跨越视口与首尾回绕时跳过禁用项。
+- `Enter` 在弹层打开时提交当前候选（未导航时为预选项）；没有可提交的候选项时只关闭弹层。
 - `F4` 切换弹层打开状态。
 - 弹层关闭时，`Down` 可打开弹层，除非该按键被 XY focus 导航占用。
 

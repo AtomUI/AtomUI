@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using AtomUI.Controls;
@@ -15,7 +15,7 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Form : ItemsControl,
+public class Form : AbstractForm,
                     ICustomizableSizeTypeAware,
                     IMotionAwareControl,
                     IForm,
@@ -38,12 +38,11 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Form>();
     
-    public static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
-        AvaloniaProperty.Register<Form, FormRequiredMark>(nameof(RequiredMark), FormRequiredMark.Default);
+    public new static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
+        AbstractForm.RequiredMarkProperty.AddOwner<Form>();
     
-    public static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
-        AvaloniaProperty.Register<Form, bool>(
-            nameof(IsValidateFeedbackEnabled), false);
+    public new static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
+        AbstractForm.IsValidateFeedbackEnabledProperty.AddOwner<Form>();
     
     public static readonly StyledProperty<object?> SuccessFeedbackProperty =
         FormValidateFeedback.SuccessFeedbackProperty.AddOwner<Form>();
@@ -78,8 +77,8 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<TextWrapping> LabelWrappingProperty =
         AvaloniaProperty.Register<Form, TextWrapping>(nameof(LabelWrapping), TextWrapping.NoWrap);
     
-    public static readonly StyledProperty<FormLayout> FormLayoutProperty =
-        AvaloniaProperty.Register<Form, FormLayout>(nameof(FormLayout));
+    public new static readonly StyledProperty<FormLayout> FormLayoutProperty =
+        AbstractForm.FormLayoutProperty.AddOwner<Form>();
     
     public static readonly StyledProperty<object?> CustomRequireMarkProperty =
         AvaloniaProperty.Register<Form, object?>(nameof(CustomRequireMark));
@@ -93,11 +92,11 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<IDataTemplate?> CustomOptionalMarkTemplateProperty =
         AvaloniaProperty.Register<Form, IDataTemplate?>(nameof(CustomOptionalMarkTemplate));
     
-    public static readonly StyledProperty<bool> IsScrollToFirstErrorEnabledProperty =
-        AvaloniaProperty.Register<Form, bool>(nameof(IsScrollToFirstErrorEnabled));
+    public new static readonly StyledProperty<bool> IsScrollToFirstErrorEnabledProperty =
+        AbstractForm.IsScrollToFirstErrorEnabledProperty.AddOwner<Form>();
     
-    public static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
-        AvaloniaProperty.Register<Form, FormValidateTrigger>(nameof(ValidateTrigger), FormValidateTrigger.OnChanged);
+    public new static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
+        AbstractForm.ValidateTriggerProperty.AddOwner<Form>();
     
     public static readonly StyledProperty<MediaBreakGridLength?> LabelColInfoProperty =
         AvaloniaProperty.Register<Form, MediaBreakGridLength?>(nameof(LabelColInfo));
@@ -105,21 +104,14 @@ public class Form : ItemsControl,
     public static readonly StyledProperty<MediaBreakGridLength?> WrapperColInfoProperty =
         AvaloniaProperty.Register<Form, MediaBreakGridLength?>(nameof(WrapperColInfo));
     
-    public static readonly DirectProperty<Form, IFormValues?> ValuesProperty =
-        AvaloniaProperty.RegisterDirect<Form, IFormValues?>(
-            nameof(Values),
-            o => o.Values);
+    public new static readonly DirectProperty<Form, IFormValues?> ValuesProperty =
+        AbstractForm.ValuesProperty.AddOwner<Form>(owner => owner.Values);
     
-    public static readonly DirectProperty<Form, IFormValues?> InitialValuesProperty =
-        AvaloniaProperty.RegisterDirect<Form, IFormValues?>(
-            nameof(InitialValues),
-            o => o.InitialValues,
-            (o, v) => o.InitialValues = v);
+    public new static readonly DirectProperty<Form, IFormValues?> InitialValuesProperty =
+        AbstractForm.InitialValuesProperty.AddOwner<Form>(owner => owner.InitialValues, (owner, value) => owner.InitialValues = value);
     
-    public static readonly DirectProperty<Form, bool?> IsFormValidProperty =
-        AvaloniaProperty.RegisterDirect<Form, bool?>(
-            nameof(IsFormValid),
-            o => o.IsFormValid);
+    public new static readonly DirectProperty<Form, bool?> IsFormValidProperty =
+        AbstractForm.IsFormValidProperty.AddOwner<Form>(owner => owner.IsFormValid);
     
     public static readonly StyledProperty<IBrush?> ErrorMessageForegroundProperty =
         AvaloniaProperty.Register<Form, IBrush?>(nameof(ErrorMessageForeground));
@@ -175,13 +167,13 @@ public class Form : ItemsControl,
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
-    public FormRequiredMark RequiredMark
+    public new FormRequiredMark RequiredMark
     {
         get => GetValue(RequiredMarkProperty);
         set => SetValue(RequiredMarkProperty, value);
     }
     
-    public bool IsValidateFeedbackEnabled
+    public new bool IsValidateFeedbackEnabled
     {
         get => GetValue(IsValidateFeedbackEnabledProperty);
         set => SetValue(IsValidateFeedbackEnabledProperty, value);
@@ -257,7 +249,7 @@ public class Form : ItemsControl,
         set => SetValue(LabelWrappingProperty, value);
     }
     
-    public FormLayout FormLayout
+    public new FormLayout FormLayout
     {
         get => GetValue(FormLayoutProperty);
         set => SetValue(FormLayoutProperty, value);
@@ -289,13 +281,13 @@ public class Form : ItemsControl,
         set => SetValue(CustomOptionalMarkTemplateProperty, value);
     }
     
-    public bool IsScrollToFirstErrorEnabled
+    public new bool IsScrollToFirstErrorEnabled
     {
         get => GetValue(IsScrollToFirstErrorEnabledProperty);
         set => SetValue(IsScrollToFirstErrorEnabledProperty, value);
     }
     
-    public FormValidateTrigger ValidateTrigger
+    public new FormValidateTrigger ValidateTrigger
     {
         get => GetValue(ValidateTriggerProperty);
         set => SetValue(ValidateTriggerProperty, value);
@@ -325,30 +317,16 @@ public class Form : ItemsControl,
         set => SetValue(ItemTemplateProperty, value);
     }
     
-    private IFormValues? _values;
+    public new IFormValues? Values => base.Values;
 
-    public IFormValues? Values
+    public new IFormValues? InitialValues
     {
-        get => _values;
-        private set => SetAndRaise(ValuesProperty, ref _values, value);
+        get => base.InitialValues;
+        set => base.InitialValues = value;
     }
-    
-    private IFormValues? _initialValues;
 
-    public IFormValues? InitialValues
-    {
-        get => _initialValues;
-        set => SetAndRaise(InitialValuesProperty, ref _initialValues, value);
-    }
-    
-    private bool? _isFormValid;
+    public new bool? IsFormValid => base.IsFormValid;
 
-    public bool? IsFormValid
-    {
-        get => _isFormValid;
-        private set => SetAndRaise(IsFormValidProperty, ref _isFormValid, value);
-    }
-    
     public IBrush? ErrorMessageForeground
     {
         get => GetValue(ErrorMessageForegroundProperty);
@@ -395,11 +373,31 @@ public class Form : ItemsControl,
 
     #region 公共事件定义
 
-    public event EventHandler<EventArgs>? AboutToValidate;
-    public event EventHandler<FormValidatedEventArgs>? Validated;
-    public event EventHandler<FormSubmittedEventArgs>? Submitted;
-    public event EventHandler<FormItemValueChangedEventArgs>? ItemValueChanged;
-    public event EventHandler? ResetCompleted;
+    public new event EventHandler<EventArgs>? AboutToValidate
+    {
+        add => base.AboutToValidate += value;
+        remove => base.AboutToValidate -= value;
+    }
+    public new event EventHandler<FormValidatedEventArgs>? Validated
+    {
+        add => base.Validated += value;
+        remove => base.Validated -= value;
+    }
+    public new event EventHandler<FormSubmittedEventArgs>? Submitted
+    {
+        add => base.Submitted += value;
+        remove => base.Submitted -= value;
+    }
+    public new event EventHandler<FormItemValueChangedEventArgs>? ItemValueChanged
+    {
+        add => base.ItemValueChanged += value;
+        remove => base.ItemValueChanged -= value;
+    }
+    public new event EventHandler? ResetCompleted
+    {
+        add => base.ResetCompleted += value;
+        remove => base.ResetCompleted -= value;
+    }
     
     #endregion
     
@@ -442,18 +440,12 @@ public class Form : ItemsControl,
     
     #endregion
 
-    private bool _initValueApplied;
-    internal bool IsResetting;
-    private CancellationTokenSource? _validationTokenSource;
-    
     static Form()
     {
         AffectsMeasure<Form>(SizeTypeProperty);
         AffectsMeasure<Form>(FormLayoutOrientationProperty);
         SubmitButton.SubmitEvent.AddClassHandler<Form>((form, args) => form.HandleSubmitButtonClick(args));
         ResetButton.ResetEvent.AddClassHandler<Form>((form, args) => form.HandleResetButtonClick(args));
-        FormItem.ValueChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValueChanged(args));
-        FormItem.ValidateChangedEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemValidateChanged(args));
         FormItem.DeleteRequestEvent.AddClassHandler<Form>((form, args) => form.HandleFormItemDelete(args));
     }
     
@@ -491,7 +483,6 @@ public class Form : ItemsControl,
         base.PrepareContainerForItemOverride(container, item, index);
         if (container is FormItem formItem)
         {
-            formItem.OwnerForm                                          = this;
             formItem[!FormItem.SizeTypeProperty]                        = this[!SizeTypeProperty];
             formItem[!FormItem.IsMotionEnabledProperty]                 = this[!IsMotionEnabledProperty];
             formItem[!FormItem.ErrorMessageForegroundProperty]          = this[!ErrorMessageForegroundProperty];
@@ -525,152 +516,19 @@ public class Form : ItemsControl,
     {
     }
     
-    public void Validate()
-    {
-        var cancellationToken = BeginValidationRun();
-        Dispatcher.InvokeAsync(() => ValidateAsync(cancellationToken));
-    }
+    public new void Validate() => base.Validate();
 
-    public async Task<FormValidateResult> ValidateAsync(CancellationToken cancellationToken)
-    {
-        AboutToValidate?.Invoke(this, EventArgs.Empty);
-        var tasks = new List<Task>(Items.Count);
-        foreach (var item in Items)
-        {
-            if (item is FormItem formItem && !formItem.IsSkipValidate())
-            {
-                tasks.Add(formItem.ValidateValueAsync(cancellationToken));
-            }
-        }
-        await Task.WhenAll(tasks);
-        var validateMessages = new List<FormValidateMessage>(Items.Count);
-        var hasError         = false;
-        foreach (var item in Items)
-        {
-            if (item is FormItem formItem && !formItem.IsSkipValidate())
-            {
-                if (formItem.ValidateResult == FormValidateResult.Error)
-                {
-                    hasError = true;
-                }
-                if (formItem.ValidateResult != FormValidateResult.Success)
-                {
-                    if (formItem.ValidateErrorMessages != null)
-                    {
-                        foreach (var errorMessage in formItem.ValidateErrorMessages)
-                        {
-                            validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, errorMessage, FormValidateResult.Error));
-                        }
-                    }
-                    if (formItem.ValidateWarningMessages != null)
-                    {
-                        foreach (var warningMessage in formItem.ValidateWarningMessages)
-                        {
-                            validateMessages.Add(new FormValidateMessage(formItem.FieldName ?? string.Empty, warningMessage, FormValidateResult.Warning));
-                        }
-                    }
-                }
-            }
-        }
+    public new Task<FormValidateResult> ValidateAsync(CancellationToken cancellationToken) => base.ValidateAsync(cancellationToken);
 
-        var validateResult = hasError ? FormValidateResult.Error : FormValidateResult.Success;
+    public new void SetFormValues(IFormValues formValues) => base.SetFormValues(formValues);
 
-        if (validateResult == FormValidateResult.Error)
-        {
-            Validated?.Invoke(this, new FormValidatedEventArgs(validateResult, null, validateMessages));
-            return FormValidateResult.Error;
-        }
-        return FormValidateResult.Success;
-    }
+    public new void Submit() => base.Submit();
 
-    public void SetFormValues(IFormValues formValues)
-    {
-        foreach (var item in Items)
-        {
-            if (item is FormItem formItem && formItem.IsValueItem)
-            {
-                var fieldName = formItem.FieldName;
-                if (!string.IsNullOrEmpty(fieldName))
-                {
-                    if (formValues.TryGetValue(fieldName, out var value))
-                    {
-                        formItem.SetItemValue(value);
-                    }
-                }
-            }
-        }
-    }
+    protected override void NotifySubmit(FormValues values) => base.NotifySubmit(values);
 
-    public void Submit()
-    {
-        var cancellationToken = BeginValidationRun();
-        Dispatcher.InvokeAsync(async () =>
-        {
-            var result = await ValidateAsync(cancellationToken);
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
-            if (result == FormValidateResult.Success)
-            {
-                var values = new FormValues();
-                // 收集值
-                CollectValues(values);
-                Validated?.Invoke(this, new FormValidatedEventArgs(result, values, null));
-                NotifySubmit(values);
-                Submitted?.Invoke(this, new FormSubmittedEventArgs(values));
-            }
-        });
-    }
+    public new void Reset() => base.Reset();
 
-    protected virtual void NotifySubmit(FormValues values)
-    {
-    }
-
-    public void Reset()
-    {
-        try
-        {
-            CancelPendingValidation();
-            IsResetting = true;
-            foreach (var item in Items)
-            {
-                if (item is FormItem formItem)
-                {
-                    formItem.ResetItemValue();
-                }
-            }
-            
-            NotifyReset();
-            IsFormValid = false;
-            ResetCompleted?.Invoke(this, EventArgs.Empty);
-        }
-        finally
-        {
-            Dispatcher.Post(() =>
-            {
-                IsResetting = false;
-            });
-        }
-    }
-
-    protected virtual void NotifyReset()
-    {
-    }
-
-    private CancellationToken BeginValidationRun()
-    {
-        CancelPendingValidation();
-        _validationTokenSource = new CancellationTokenSource();
-        return _validationTokenSource.Token;
-    }
-
-    private void CancelPendingValidation()
-    {
-        _validationTokenSource?.Cancel();
-        _validationTokenSource?.Dispose();
-        _validationTokenSource = null;
-    }
+    protected override void NotifyReset() => base.NotifyReset();
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -743,97 +601,9 @@ public class Form : ItemsControl,
         args.Handled = true;
     }
 
-    private void HandleFormItemValueChanged(RoutedEventArgs args)
-    {
-        var formItem = args.Source as IFormItem;
-        Debug.Assert(formItem != null);
-        ItemValueChanged?.Invoke(this, new FormItemValueChangedEventArgs(formItem, formItem.GetItemValue()));
-        args.Handled = true;
-        foreach (var item in Items)
-        {
-            if (item is FormItem childFormItem && childFormItem != formItem)
-            {
-                childFormItem.NotifyFormItemChanged(formItem);
-            }
-        }
-    }
-    
-    private void HandleFormItemValidateChanged(FormItemValidateChangedEventArgs args)
-    {
-        var formItem = args.Source as IFormItem;
-        Debug.Assert(formItem != null);
-        if (args.Status == FormValidateStatus.Error)
-        {
-            IsFormValid = false;
-            return;
-        }
+    protected override void OnLoaded(RoutedEventArgs e) => base.OnLoaded(e);
 
-        var isValid = true;
-        foreach (var item in Items)
-        {
-            if (item is FormItem childFormItem && childFormItem.IsValueItem)
-            {
-                if (childFormItem.ValidateStatus == FormValidateStatus.Error ||
-                    childFormItem.ValidateStatus == FormValidateStatus.Validating ||
-                    childFormItem.ValidateStatus == FormValidateStatus.Default)
-                {
-                    isValid = false;
-                    break;
-                }
-            }
-        }
-        IsFormValid = isValid;
-    }
-
-    private void CollectValues(FormValues formValues)
-    {
-        foreach (var item in Items)
-        {
-            if (item is FormItem formItem)
-            {
-                var fieldName = formItem.FieldName;
-                if (string.IsNullOrWhiteSpace(fieldName))
-                {
-                    continue;
-                }
-                formValues.Add(fieldName, formItem.GetItemValue());
-            }
-        }
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        if (_initialValues == null)
-        {
-            return;
-        }
-        if (!_initValueApplied)
-        {
-            foreach (var item in Items)
-            {
-                if (item is FormItem formItem)
-                {
-                    var fieldName = formItem.FieldName;
-                    if (string.IsNullOrWhiteSpace(fieldName))
-                    {
-                        continue;
-                    }
-
-                    if (_initialValues.ContainsKey(fieldName))
-                    {
-                        formItem.SetItemValue(_initialValues[fieldName]);
-                    }
-                }
-            }
-            _initValueApplied = true;
-        }
-    }
-
-    public void DeleteFormItem(IFormItem formItem)
-    {
-        Items.Remove(formItem);
-    }
+    public new void DeleteFormItem(IFormItem formItem) => base.DeleteFormItem(formItem);
 
     private void HandleFormItemDelete(RoutedEventArgs args)
     {

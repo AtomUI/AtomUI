@@ -1,4 +1,5 @@
 using AtomUI.Animations;
+using AtomUI.Controls.Commons;
 using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
@@ -119,6 +120,7 @@ internal class SwitchKnob : TemplatedControl
     
     private bool _isLoading;
     private IDisposable? _loadingAnimation;
+    private MotionGate? _loadingMotionGate;
     private IBrush? _loadIndicatorPenBrush;
     private double _loadIndicatorPenThickness;
     private Pen? _loadIndicatorPen;
@@ -129,6 +131,7 @@ internal class SwitchKnob : TemplatedControl
             BackgroundProperty, RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty,
             LoadIndicatorThicknessProperty);
         AffectsMeasure<SwitchKnob>(KnobSizeProperty);
+        IsMotionEnabledProperty.OverrideDefaultValue<SwitchKnob>(true);
     }
     
     public SwitchKnob()
@@ -147,7 +150,7 @@ internal class SwitchKnob : TemplatedControl
         IsEnabled  = false;
         if (this.IsAttachedToVisualTree())
         {
-            StartLoadingAnimation();
+            AttachLoadingGate();
         }
     }
 
@@ -158,11 +161,9 @@ internal class SwitchKnob : TemplatedControl
             return;
         }
 
-        var animation = _loadingAnimation;
-        _loadingAnimation = null;
         _isLoading = false;
         IsEnabled = true;
-        animation?.Dispose();
+        RemoveLoadingGate();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -170,19 +171,14 @@ internal class SwitchKnob : TemplatedControl
         base.OnAttachedToVisualTree(e);
         if (_isLoading)
         {
-            StartLoadingAnimation();
+            AttachLoadingGate();
         }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        if (_isLoading)
-        {
-            var animation = _loadingAnimation;
-            _loadingAnimation = null;
-            animation?.Dispose();
-        }
+        RemoveLoadingGate();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -192,9 +188,17 @@ internal class SwitchKnob : TemplatedControl
         {
             KnobRenderWidth = KnobSize.Width;
         }
-        else if (change.Property == LoadingAnimationDurationProperty && _isLoading && this.IsAttachedToVisualTree())
+        else if (change.Property == LoadingAnimationDurationProperty && _loadingMotionGate?.ShouldRun == true)
         {
             StartLoadingAnimation();
+        }
+        else if (change.Property == IsMotionEnabledProperty && _loadingMotionGate is { } gate)
+        {
+            gate.IsMotionEnabled = IsMotionEnabled;
+            if (!IsMotionEnabled)
+            {
+                StopLoadingAnimation();
+            }
         }
         else if (change.Property == KnobBoxShadowProperty)
         {
@@ -258,12 +262,45 @@ internal class SwitchKnob : TemplatedControl
         }
     }
 
+    private void AttachLoadingGate()
+    {
+        _loadingMotionGate ??= new MotionGate(this, HandleLoadingGateChanged) { IsMotionEnabled = IsMotionEnabled };
+        if (_loadingMotionGate.ShouldRun && IsMotionEnabled)
+        {
+            StartLoadingAnimation();
+        }
+    }
+
+    private void RemoveLoadingGate()
+    {
+        _loadingMotionGate?.Dispose();
+        _loadingMotionGate = null;
+        StopLoadingAnimation();
+    }
+
+    private void HandleLoadingGateChanged(bool animate)
+    {
+        if (animate && _loadingMotionGate is not null && _isLoading && IsMotionEnabled)
+        {
+            StartLoadingAnimation();
+        }
+        else
+        {
+            StopLoadingAnimation();
+        }
+    }
+
+    private void StopLoadingAnimation()
+    {
+        var animation = _loadingAnimation;
+        _loadingAnimation = null;
+        animation?.Dispose();
+    }
+
     private void StartLoadingAnimation()
     {
-        var previous = _loadingAnimation;
-        _loadingAnimation = null;
-        previous?.Dispose();
-        if (!_isLoading || !this.IsAttachedToVisualTree())
+        StopLoadingAnimation();
+        if (!_isLoading || !IsMotionEnabled || !this.IsAttachedToVisualTree() || LoadingAnimationDuration <= TimeSpan.Zero)
         {
             return;
         }

@@ -12,6 +12,8 @@
         <atom:ListBoxItemTheme TargetType="atom:CandidateListItem" />
     </ControlTheme.BasedOn>
     <Setter Property="BorderThickness" Value="0" />
+    <!-- Popup candidate list: keyboard focus stays in the host input, which forwards keys to the list. -->
+    <Setter Property="Focusable" Value="False" />
 
     <Style Selector="^:is(atom|CandidateListItem)">
         <Setter Property="CandidateIndicatorMargin" Value="{atom:OwnerTokenResource MarginXXS}" />

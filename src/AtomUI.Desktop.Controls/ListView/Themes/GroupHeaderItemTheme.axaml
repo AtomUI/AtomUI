@@ -7,6 +7,8 @@
         <ControlTheme.BasedOn>
             <atom:ListViewItemTheme TargetType="atom:GroupHeaderItem" />
         </ControlTheme.BasedOn>
+        <!-- Group headers are not navigable: arrow keys and Tab skip them. -->
+        <Setter Property="Focusable" Value="False" />
 
         <Style Selector="^[IsGroupItem=True]">
             <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter}" />

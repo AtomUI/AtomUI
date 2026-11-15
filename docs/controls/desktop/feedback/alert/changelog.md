@@ -2,6 +2,19 @@
 
 本文档记录 Alert 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- API
+  - `AbstractMarqueeLabel` 提供 internal `UseCompositedMarquee` 扩展点。`AbstractMarqueeLabel`、`MarqueeLabel` 与 `Alert` 的 public 和 protected API 快照与 `f11459de0745fe02c46e134d94f39b9e35817706` 基线完全一致，共 1,351 行。
+- Theme
+  - Desktop Alert 沿用原 ControlTheme、告警图标和文本视口。
+- Fix
+  - 启用合成路径的标签由合成器移动两份保留的文本绘制内容。门控关闭或控件离树时释放动画视觉，重新开启后遵循 `StartDelay` 并从文本起点播放。
+- Desktop 影响
+  - Alert 继续使用既有帧动画，默认零启动延迟并在悬停时冻结当前位移，指针移出后从该位置继续。
+- Tests
+  - Desktop `Alert` 与 `RecurringVisualWorkTests` 共 16 个用例通过。在 Avalonia 12.1.6 上用同一 Skia 驱动回放基线与 adapter 工作区，浅深色裁剪、起点、位移、悬停、循环接缝及实际 Gallery 页面共 29 对帧，逐像素差异均为 0。macOS 原生 Gallery 另行打开 Alert 的 Loop Banner 并检查渲染。
+
 ## 2026-11-11
 
 - Fix

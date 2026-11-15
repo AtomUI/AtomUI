@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Layout;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 internal static class SliderRangeMath
 {
@@ -194,5 +194,62 @@ internal static class SliderRangeMath
         var top    = railRect.Y + railRect.Height * (1 - end);
         var height = railRect.Height * (end - start);
         return new Rect(railRect.X, top, railRect.Width, height);
+    }
+
+    internal static double SnapToTick(double value, double minimum, double maximum, double frequency)
+    {
+        if (frequency <= 0 || !double.IsFinite(frequency))
+        {
+            return value - minimum < maximum - value ? minimum : maximum;
+        }
+
+        try
+        {
+            var min = (decimal)minimum;
+            var max = (decimal)maximum;
+            var step = (decimal)frequency;
+            var current = (decimal)value;
+            if (step != 0)
+            {
+                var tick = decimal.Floor((current - min) / step);
+                var lower = min + tick * step;
+                // Keep the range's maximum available even if the last interval is shorter.
+                var upper = Math.Min(max, lower + step);
+                return (double)(current - lower < upper - current ? lower : upper);
+            }
+        }
+        catch (OverflowException)
+        {
+            // Some valid double ranges cannot be represented as decimals.
+        }
+
+        var index = Math.Floor((value - minimum) / frequency);
+        var previous = minimum + index * frequency;
+        if (!double.IsFinite(previous))
+        {
+            return value;
+        }
+        var next = Math.Min(maximum, previous + frequency);
+        return Math.Clamp(value - previous < next - value ? previous : next, minimum, maximum);
+    }
+
+    internal static double AdjacentTick(double value, double minimum, double frequency, double direction)
+    {
+        try
+        {
+            var min = (decimal)minimum;
+            var step = (decimal)frequency;
+            if (step != 0)
+            {
+                var tick = ((decimal)value - min) / step;
+                var next = direction > 0 ? decimal.Floor(tick) + 1 : decimal.Ceiling(tick) - 1;
+                return (double)(min + next * step);
+            }
+        }
+        catch (OverflowException)
+        {
+            // Fall back to double arithmetic outside the decimal range.
+        }
+        return value + Math.CopySign(frequency, direction);
     }
 }

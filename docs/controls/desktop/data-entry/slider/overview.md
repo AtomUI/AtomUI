@@ -14,7 +14,7 @@
 
 Slider 是桌面数据录入体系中的连续或离散数值选择控件。它支持单值模式和任意数量 handle 的 Range 模式，并通过轨道、thumb、mark、键盘和 Tooltip 表达数值选择。
 
-Slider 继承 Avalonia `RangeBase`，使用 `Minimum`、`Maximum`、`Value`、`SmallChange` 和 `LargeChange` 的基础语义。Range 模式不使用独立的起止值类型，而是通过 `RangeValues` 维护有序的多值集合。
+Slider 通过 `AtomUI.Controls.AbstractSlider` 继承 Avalonia `RangeBase` 的数值模型，共用范围归一化、步进及比例换算。Range 模式通过 `RangeValues` 维护有序的多值集合，桌面控件管理方向、轨道拖动和数值提示。
 
 ## 2. 设计语言
 
@@ -50,6 +50,9 @@ Slider 继承 Avalonia `RangeBase`，使用 `Minimum`、`Maximum`、`Value`、`S
 | `Orientation` | `Orientation` | 轨道方向，默认 `Horizontal`。 |
 | `IsDirectionReversed` | `bool` | 反转数值增长方向。 |
 | `IsSnapToTickEnabled` | `bool` | 是否把指针和键盘输入吸附到 tick。 |
+| `TickFrequency` | `double` | 固定步长。量化在可表示范围内使用十进制数运算。 |
+| `IsDotsVisible` | `bool` | 沿轨道按固定步长显示刻度点，默认关闭。 |
+| `IsSnapToMarksOnly` | `bool` | 有可用的 `Marks` 时吸附到标记值，默认关闭。 |
 | `IsRangeMode` | `bool` | 是否使用 `RangeValues` 和多 handle 视觉。 |
 | `RangeValues` | `IReadOnlyList<double>?` | Range 模式下所有 handle 的当前值，至少两个值。 |
 | `DisabledHandles` | `IReadOnlyList<bool>?` | 按索引禁用指定 handle。 |

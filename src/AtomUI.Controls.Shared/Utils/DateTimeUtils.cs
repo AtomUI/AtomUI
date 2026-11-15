@@ -78,7 +78,7 @@ internal static class DateTimeUtils
                     {
                         continue;
                     }
-                    var size = TextUtils.CalculateTextSize(text, fontSize, fontFamily, fontStyle, fontWeight);
+                    var size = TextUtils.CalculateTextSizeCached(text, fontSize, fontFamily, fontStyle, fontWeight);
                     if (size.Width > maxWidth)
                     {
                         maxWidth = size.Width;
@@ -125,7 +125,7 @@ internal static class DateTimeUtils
         var widestWidth = 0d;
         for (var d = '0'; d <= '9'; d++)
         {
-            var w = TextUtils.CalculateTextSize(d.ToString(), fontSize, fontFamily, fontStyle, fontWeight).Width;
+            var w = TextUtils.CalculateTextSizeCached(d.ToString(), fontSize, fontFamily, fontStyle, fontWeight).Width;
             if (w > widestWidth)
             {
                 widestWidth = w;

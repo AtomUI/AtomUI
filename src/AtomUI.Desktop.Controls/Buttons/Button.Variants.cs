@@ -61,6 +61,28 @@ public partial class Button
         {
             ConfigureDangerVariantThemeVariables(tokens);
         }
+        else if (EffectiveColor == ButtonColor.Success)
+        {
+            ConfigureStatusVariantThemeVariables(
+                tokens,
+                SharedTokenKind.ColorSuccess,
+                SharedTokenKind.ColorSuccessHover,
+                SharedTokenKind.ColorSuccessActive,
+                SharedTokenKind.ColorSuccessBg,
+                SharedTokenKind.ColorSuccessBgHover,
+                SharedTokenKind.ColorSuccessBorder);
+        }
+        else if (EffectiveColor == ButtonColor.Warning)
+        {
+            ConfigureStatusVariantThemeVariables(
+                tokens,
+                SharedTokenKind.ColorWarning,
+                SharedTokenKind.ColorWarningHover,
+                SharedTokenKind.ColorWarningActive,
+                SharedTokenKind.ColorWarningBg,
+                SharedTokenKind.ColorWarningBgHover,
+                SharedTokenKind.ColorWarningBorder);
+        }
         else if (TryGetPresetPrimaryColor(EffectiveColor, out var presetColor) &&
                  TryCaptureSnapshotTokens(out var snapshotTokens))
         {
@@ -75,6 +97,33 @@ public partial class Button
                 tokens.Own(ButtonTokenKind.SolidTextColor),
                 VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0])));
         }
+    }
+
+    /// <summary>
+    /// Success and Warning follow the semantic variant layout with Global status Tokens. Their solid shadow is derived
+    /// from the light status colour, so it is a snapshot value recomputed when the theme publishes.
+    /// </summary>
+    private void ConfigureStatusVariantThemeVariables(
+        VariantTokens tokens,
+        SharedTokenKind color,
+        SharedTokenKind hoverColor,
+        SharedTokenKind activeColor,
+        SharedTokenKind bgColor,
+        SharedTokenKind bgHoverColor,
+        SharedTokenKind borderColor)
+    {
+        var shadow = TryCaptureSnapshotTokens(out var snapshotTokens)
+            ? VariantValue.Of(CreatePresetShadow(snapshotTokens, snapshotTokens.GetEffectiveGlobal<Color>(bgColor)))
+            : NoShadowVariant;
+        ConfigureSemanticVariantThemeVariables(
+            tokens.Global(color),
+            tokens.Global(hoverColor),
+            tokens.Global(activeColor),
+            tokens.Global(bgColor),
+            tokens.Global(bgHoverColor),
+            tokens.Global(borderColor),
+            tokens.Own(ButtonTokenKind.SolidTextColor),
+            shadow);
     }
 
     private void ConfigureDangerVariantThemeVariables(VariantTokens tokens)

@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
@@ -20,41 +21,41 @@ namespace AtomUI.Desktop.Controls;
     StepsItemPseudoClass.ItemHeaderForegroundOverride,
     StepsItemPseudoClass.ItemSubHeaderForegroundOverride,
     StepsItemPseudoClass.ItemRailBackgroundOverride)]
-public class StepsItem : HeaderedContentControl
+public class StepsItem : AbstractStepsItem
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<object?> SubHeaderProperty =
-        AvaloniaProperty.Register<StepsItem, object?>(nameof(SubHeader));
+    public new static readonly StyledProperty<object?> SubHeaderProperty =
+        AbstractStepsItem.SubHeaderProperty.AddOwner<StepsItem>();
 
-    public static readonly StyledProperty<IDataTemplate?> SubHeaderTemplateProperty =
-        AvaloniaProperty.Register<StepsItem, IDataTemplate?>(nameof(SubHeaderTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> SubHeaderTemplateProperty =
+        AbstractStepsItem.SubHeaderTemplateProperty.AddOwner<StepsItem>();
 
-    public static readonly StyledProperty<PathIcon?> IconProperty =
-        AvaloniaProperty.Register<StepsItem, PathIcon?>(nameof(Icon));
+    public new static readonly StyledProperty<PathIcon?> IconProperty =
+        AbstractStepsItem.IconProperty.AddOwner<StepsItem>();
 
-    public static readonly StyledProperty<StepsStatus?> StatusProperty =
-        AvaloniaProperty.Register<StepsItem, StepsStatus?>(nameof(Status));
+    public new static readonly StyledProperty<StepsStatus?> StatusProperty =
+        AbstractStepsItem.StatusProperty.AddOwner<StepsItem>();
 
-    public object? SubHeader
+    public new object? SubHeader
     {
         get => GetValue(SubHeaderProperty);
         set => SetValue(SubHeaderProperty, value);
     }
 
-    public IDataTemplate? SubHeaderTemplate
+    public new IDataTemplate? SubHeaderTemplate
     {
         get => GetValue(SubHeaderTemplateProperty);
         set => SetValue(SubHeaderTemplateProperty, value);
     }
 
-    public PathIcon? Icon
+    public new PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
-    public StepsStatus? Status
+    public new StepsStatus? Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -96,42 +97,6 @@ public class StepsItem : HeaderedContentControl
 
     internal static readonly StyledProperty<IBrush?> ItemRailBackgroundProperty =
         AvaloniaProperty.Register<StepsItem, IBrush?>(nameof(ItemRailBackground));
-
-    internal static readonly DirectProperty<StepsItem, int> StepNumberProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, int>(
-            nameof(StepNumber),
-            item => item.StepNumber,
-            (item, value) => item.StepNumber = value);
-
-    internal static readonly DirectProperty<StepsItem, bool> IsCurrentProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, bool>(
-            nameof(IsCurrent),
-            item => item.IsCurrent,
-            (item, value) => item.IsCurrent = value);
-
-    internal static readonly DirectProperty<StepsItem, StepsStatus> AutomaticStatusProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, StepsStatus>(
-            nameof(AutomaticStatus),
-            item => item.AutomaticStatus,
-            (item, value) => item.AutomaticStatus = value);
-
-    internal static readonly DirectProperty<StepsItem, StepsStatus> EffectiveStatusProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, StepsStatus>(
-            nameof(EffectiveStatus),
-            item => item.EffectiveStatus,
-            (item, value) => item.EffectiveStatus = value);
-
-    internal static readonly DirectProperty<StepsItem, bool> IsFirstProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, bool>(
-            nameof(IsFirst),
-            item => item.IsFirst,
-            (item, value) => item.IsFirst = value);
-
-    internal static readonly DirectProperty<StepsItem, bool> IsLastProperty =
-        AvaloniaProperty.RegisterDirect<StepsItem, bool>(
-            nameof(IsLast),
-            item => item.IsLast,
-            (item, value) => item.IsLast = value);
 
     internal static readonly DirectProperty<StepsItem, StepsStatus> ConnectorStatusProperty =
         AvaloniaProperty.RegisterDirect<StepsItem, StepsStatus>(
@@ -223,54 +188,6 @@ public class StepsItem : HeaderedContentControl
         set => SetValue(ItemRailBackgroundProperty, value);
     }
 
-    private int _stepNumber;
-
-    internal int StepNumber
-    {
-        get => _stepNumber;
-        private set => SetAndRaise(StepNumberProperty, ref _stepNumber, value);
-    }
-
-    private bool _isCurrent;
-
-    internal bool IsCurrent
-    {
-        get => _isCurrent;
-        private set => SetAndRaise(IsCurrentProperty, ref _isCurrent, value);
-    }
-
-    private StepsStatus _automaticStatus = StepsStatus.Wait;
-
-    internal StepsStatus AutomaticStatus
-    {
-        get => _automaticStatus;
-        private set => SetAndRaise(AutomaticStatusProperty, ref _automaticStatus, value);
-    }
-
-    private StepsStatus _effectiveStatus = StepsStatus.Wait;
-
-    internal StepsStatus EffectiveStatus
-    {
-        get => _effectiveStatus;
-        private set => SetAndRaise(EffectiveStatusProperty, ref _effectiveStatus, value);
-    }
-
-    private bool _isFirst;
-
-    internal bool IsFirst
-    {
-        get => _isFirst;
-        private set => SetAndRaise(IsFirstProperty, ref _isFirst, value);
-    }
-
-    private bool _isLast;
-
-    internal bool IsLast
-    {
-        get => _isLast;
-        private set => SetAndRaise(IsLastProperty, ref _isLast, value);
-    }
-
     private StepsStatus _connectorStatus = StepsStatus.Wait;
 
     internal StepsStatus ConnectorStatus
@@ -305,9 +222,7 @@ public class StepsItem : HeaderedContentControl
 
     #endregion
 
-    internal Steps? Owner { get; private set; }
-
-    internal int ItemIndex { get; private set; } = -1;
+    internal new Steps? Owner => base.Owner as Steps;
 
     private StepsItemIndicator? _indicator;
 
@@ -323,42 +238,22 @@ public class StepsItem : HeaderedContentControl
             SizeTypeProperty);
     }
 
-    internal void AttachToOwner(Steps owner, int index)
+    internal void ApplyOwnerState(int stepNumber, bool isCurrent, StepsStatus automaticStatus,
+        bool isFirst, bool isLast, StepsStatus connectorStatus)
     {
-        Owner = owner;
-        ItemIndex = index;
+        SetStepState(stepNumber, isCurrent, automaticStatus, isFirst, isLast);
+        ApplyDesktopConnectorStatus(connectorStatus);
+    }
+
+    internal void ApplyDesktopConnectorStatus(StepsStatus status)
+    {
+        ConnectorStatus = status;
         UpdateCanInvoke();
         UpdateProgressState();
     }
 
-    internal void ApplyOwnerState(
-        int stepNumber,
-        bool isCurrent,
-        StepsStatus automaticStatus,
-        bool isFirst,
-        bool isLast,
-        StepsStatus connectorStatus)
+    private protected override void OnOwnerDetached()
     {
-        StepNumber = stepNumber;
-        IsCurrent = isCurrent;
-        AutomaticStatus = automaticStatus;
-        EffectiveStatus = Status ?? automaticStatus;
-        IsFirst = isFirst;
-        IsLast = isLast;
-        ConnectorStatus = connectorStatus;
-        UpdateProgressState();
-    }
-
-    internal void DetachFromOwner()
-    {
-        Owner = null;
-        ItemIndex = -1;
-        StepNumber = 0;
-        IsCurrent = false;
-        AutomaticStatus = StepsStatus.Wait;
-        EffectiveStatus = StepsStatus.Wait;
-        IsFirst = false;
-        IsLast = false;
         ConnectorStatus = StepsStatus.Wait;
         CanInvoke = false;
         IsProgressVisible = false;
@@ -376,11 +271,7 @@ public class StepsItem : HeaderedContentControl
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == StatusProperty)
-        {
-            Owner?.HandleItemStatusChanged(this);
-        }
-        else if (change.Property == IsClickableProperty ||
+        if (change.Property == IsClickableProperty ||
                  change.Property == IsEffectivelyEnabledProperty)
         {
             UpdateCanInvoke();

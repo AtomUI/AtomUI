@@ -17,7 +17,7 @@ Form 的实现以 `ItemsControl` 为容器基础，`FormItem` 作为字段级容
 - `src/AtomUI.Controls/Form/IFormValidateFeedback.cs`、`FormValidateFeedback.cs`：验证反馈控件契约和基础实现。
 - `src/AtomUI.Controls/Form/IFormValidator.cs`、`Validators/*.cs`：验证器契约和内置验证器。
 - `src/AtomUI.Controls/Form/FormValues.cs`、`FormValidateMessage.cs`、事件参数类型：表单值和验证事件数据结构。
-- `src/AtomUI.Desktop.Controls/Form/Form.cs`：桌面 Form 容器、表单项配置同步、验证聚合、提交、重置、动态删除和 ItemsControl 容器逻辑。
+- `src/AtomUI.Controls/Form/AbstractForm.cs` 与 `AbstractFormItem.cs`：字段注册、值快照、提交与重置、校验与错误归属。Desktop 类型提供布局、响应式列宽与反馈模板。
 - `src/AtomUI.Desktop.Controls/Form/FormItem.cs`：字段级布局、模板接入、内容接入、Form 配置接收、反馈创建和响应式列宽。
 - `src/AtomUI.Desktop.Controls/Form/FormItem.Validation.cs`：FormItem 验证运行、debounce、取消、策略执行、结果应用和逐条消息 items 构建。
 - `src/AtomUI.Desktop.Controls/Form/FormItemDecorator.cs`：组合输入控件的表单能力转发。
@@ -248,7 +248,7 @@ Form validator 产生的 error 必须写入内容控件的 `DataValidationErrors
 
 错误和警告消息被逐条构建为带 `semantic-help-item` marker 的 `TextBlock`，插入 `ExtraInfoLayout` 并分别使用
 `ErrorMessageForeground` 与 `WarningMessageForeground`；静态 `HelpText` 是 `Help` 文案的固定 `helpItem` 实例。
-每次重建先清空旧消息节点，再按"消息在前、`Help` 在后"排列。警告没有 Avalonia native validation 等价语义，
+相同位置的消息复用 `TextBlock`，多出的节点随消息移除。消息按输入、外部、校验错误和警告排列，`Help` 保持在消息之后。警告没有 Avalonia native validation 等价语义，
 因此只保留在 Form 消息、`ValidateStatus=Warning` 和控件扩展视觉状态中，不写入 `DataValidationErrors`。
 
 ### 7.5 Form 有效性聚合

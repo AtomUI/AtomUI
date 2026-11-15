@@ -8,6 +8,12 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-14
+
+- Fixed
+  - `IMentionOption.IsEnabled=false` 的候选项此前按启用项渲染，键盘导航（视口内外）会落到它上面，打开时的预选也可能选中它并被 Enter 提交。现在禁用项呈现禁用视觉，预选取第一个启用项，键盘、指针悬停与点击都跳过禁用项。Mentions 通过 internal `CandidateList.ItemEnabledResolver` 把选项启用状态交给共享 CandidateList，AutoComplete / Select 行为不变。
+  - 候选列表超过视口、虚拟化回收容器后，键盘活动候选的高亮会落到错误的行上，滚回后活动候选不高亮。修复位于共享的 CandidateList，详见 [ListBox Changelog](../../data-display/list-box/changelog.md)。
+
 ## 2026-11-11
 
 - Behavior

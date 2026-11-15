@@ -13,6 +13,12 @@
 
 当用户说“参考某个项目源码”或表达同等意图时，必须先执行 [参考项目源码查找规范](reference-project-source-guidelines.md) 中规定的本地优先查找流程。不得跳过项目目录下的 `.referenceprojects`、逐级向上的 `ReferenceProjects`，直接去 GitHub；只有所有本地位置都未命中时，GitHub 才是允许的兜底来源。
 
+## 分支与 Worktree
+
+主线是 `release/6.0`，默认直接在主工作区开发。未经用户在对话中明确许可，禁止创建任何分支或 worktree，也不得切换
+当前工作区分支；经许可创建的分支与 worktree 在完成并获准提交后，必须合并回 `release/6.0`、在主线验证通过并清理。
+完整规则见[分支与 Worktree 管理规范](branch-and-worktree-guidelines.md)。
+
 ## 新增功能与 Bug 修复的测试生命周期
 
 所有新增功能和 Bug 修复必须遵守[测试价值与生命周期规范](../development/test-value-and-lifecycle.md)。新增测试默认

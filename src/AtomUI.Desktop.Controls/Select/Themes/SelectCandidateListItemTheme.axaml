@@ -11,6 +11,8 @@
             <atom:ListViewItemTheme TargetType="atom:SelectCandidateListItem" />
         </ControlTheme.BasedOn>
         <Setter Property="BorderThickness" Value="0" />
+        <!-- Popup candidate list: keyboard focus stays in the host input, which forwards keys to the list. -->
+        <Setter Property="Focusable" Value="False" />
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
             <Setter Property="FontSize" Value="{atom:SelectTokenResource OptionFontSize}"/>

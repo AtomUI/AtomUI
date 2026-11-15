@@ -8,6 +8,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -192,6 +194,82 @@ public class FloatButtonHostOverlayTests
             toggleSwitch.IsChecked.ShouldBe(true);
             hoverHost.IsOpen.ShouldBeTrue();
             clickHost.IsOpen.ShouldBeTrue();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Theory]
+    [InlineData(FloatButtonPlacement.BottomRight, -1, -1)]
+    [InlineData(FloatButtonPlacement.TopLeft, 1, 1)]
+    [InlineData(FloatButtonPlacement.Right, -1, 1)]
+    public void DragTranslation_Only_Changes_Composition_Until_The_Anchor_Is_Committed(
+        FloatButtonPlacement placement, int xSign, int ySign)
+    {
+        var host = new AtomUI.Desktop.Controls.FloatButtonHost
+        {
+            Placement = placement, FloatOffsetX = 32, FloatOffsetY = 32
+        };
+        var window = CreateWindow(host, out var overlayPanel);
+        try
+        {
+            window.UpdateLayout();
+            var button = GetOverlayFloatButton<AtomUI.Desktop.Controls.FloatButton>(overlayPanel);
+            var originalBounds = button.Bounds;
+            var originalX = Canvas.GetLeft(button);
+            var originalY = Canvas.GetTop(button);
+            var visual = ElementComposition.GetElementVisual(button)!;
+            var delta = new Vector(12, -9);
+            var layouts = 0;
+            window.LayoutUpdated += (_, _) => layouts++;
+
+            button.DragTranslation = delta;
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            button.Bounds.ShouldBe(originalBounds);
+            Canvas.GetLeft(button).ShouldBe(originalX);
+            Canvas.GetTop(button).ShouldBe(originalY);
+            button.FloatOffsetX.ShouldBe(32);
+            button.FloatOffsetY.ShouldBe(32);
+            visual.Translation.ShouldBe(new Vector3D(delta.X, delta.Y, 0));
+            layouts.ShouldBe(0);
+
+            button.CommitDragTranslation();
+            window.UpdateLayout();
+            button.DragTranslation.ShouldBe(default(Vector));
+            visual.Translation.ShouldBe(default(Vector3D));
+            button.FloatOffsetX.ShouldBe(32 + xSign * delta.X);
+            button.FloatOffsetY.ShouldBe(32 + ySign * delta.Y);
+            Canvas.GetLeft(button).ShouldBe(originalX + delta.X);
+            Canvas.GetTop(button).ShouldBe(originalY + delta.Y);
+            layouts.ShouldBe(1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Desktop_FloatButton_Host_Still_Forwards_Tooltip_And_Color()
+    {
+        var host = new AtomUI.Desktop.Controls.FloatButtonHost
+        {
+            Tooltip = "Initial",
+            TooltipColor = Colors.Coral
+        };
+        var window = CreateWindow(host, out var overlayPanel);
+        try
+        {
+            var button = GetOverlayFloatButton<AtomUI.Desktop.Controls.FloatButton>(overlayPanel);
+            AtomUI.Desktop.Controls.ToolTip.GetTip(button).ShouldBe("Initial");
+            AtomUI.Desktop.Controls.ToolTip.GetColor(button).ShouldBe(Colors.Coral);
+            host.Tooltip = "Updated";
+            host.TooltipColor = null;
+            AtomUI.Desktop.Controls.ToolTip.GetTip(button).ShouldBe("Updated");
+            AtomUI.Desktop.Controls.ToolTip.GetColor(button).ShouldBeNull();
         }
         finally
         {

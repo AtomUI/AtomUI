@@ -21,16 +21,15 @@ namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
 [TokenOwnerTransparent]
-public partial class TabItem : HeaderedContentControl, ISelectable
+public partial class TabItem : AbstractTabItem, ISelectable
 {
     #region 公共属性定义
 
-    public static readonly DirectProperty<TabItem, Dock?> TabStripPlacementProperty =
-        AvaloniaProperty.RegisterDirect<TabItem, Dock?>(nameof(TabStripPlacement),
-            o => o.TabStripPlacement);
+    public new static readonly DirectProperty<TabItem, Dock?> TabStripPlacementProperty =
+        AbstractTabItem.TabStripPlacementProperty.AddOwner<TabItem>(owner => owner.TabStripPlacement);
 
-    public static readonly StyledProperty<bool> IsSelectedProperty =
-        SelectingItemsControl.IsSelectedProperty.AddOwner<TabItem>();
+    public new static readonly StyledProperty<bool> IsSelectedProperty =
+        AbstractTabItem.IsSelectedProperty.AddOwner<TabItem>();
 
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<TabItem, PathIcon?>(nameof(Icon));
@@ -44,13 +43,13 @@ public partial class TabItem : HeaderedContentControl, ISelectable
     public static readonly StyledProperty<bool> IsAutoHideCloseButtonProperty =
         AvaloniaProperty.Register<TabItem, bool>(nameof(IsAutoHideCloseButton));
 
-    public Dock? TabStripPlacement
+    public new Dock? TabStripPlacement
     {
-        get => _tabStripPlacement;
-        internal set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
+        get => base.TabStripPlacement;
+        internal set => base.TabStripPlacement = value;
     }
 
-    public bool IsSelected
+    public new bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
@@ -163,19 +162,14 @@ public partial class TabItem : HeaderedContentControl, ISelectable
     }
     #endregion
 
-    private Dock? _tabStripPlacement;
     private IconButton? _closeButton;
 
     private readonly TransitionInitializationSession _transitionInitialization;
 
     static TabItem()
     {
-        SelectableMixin.Attach<TabItem>(IsSelectedProperty);
         PressedMixin.Attach<TabItem>();
-        FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
         DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
-        AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
-        AutomationProperties.IsOffscreenBehaviorProperty.OverrideDefaultValue<TabItem>(IsOffscreenBehavior.FromClip);
     }
 
     private void ConfigureHasIcon()

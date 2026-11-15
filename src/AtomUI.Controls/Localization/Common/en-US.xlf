@@ -11,6 +11,11 @@
         <source>Clear</source>
       </segment>
     </unit>
+    <unit id="Close">
+      <segment>
+        <source>Close</source>
+      </segment>
+    </unit>
     <unit id="Delete">
       <segment>
         <source>Delete</source>
@@ -39,6 +44,11 @@
     <unit id="Optional">
       <segment>
         <source>(optional)</source>
+      </segment>
+    </unit>
+    <unit id="Required">
+      <segment>
+        <source>(required)</source>
       </segment>
     </unit>
     <unit id="Reset">

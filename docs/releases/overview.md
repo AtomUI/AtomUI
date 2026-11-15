@@ -10,6 +10,11 @@
 
 发布时并入该版本的 `<version>-api-changes` 文档。
 
+## 6.2.15
+
+- [API Change Examples](6.2.15-api-changes.md)
+- [API 变更示例](6.2.15-api-changes.zh-CN.md)
+
 ## 6.2.14
 
 - [API Change Examples](6.2.14-api-changes.md)

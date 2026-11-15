@@ -46,16 +46,20 @@
                     </atom:AddOnDecoratedBox.ContentLeftAddOn>
 
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
-                        <StackPanel Orientation="Horizontal"
+                        <atom:InputAccessoryPanel Orientation="Horizontal"
                                     Classes.semantic-suffix="True"
                                     Spacing="{atom:LineEditTokenResource UniformlyPaddingXXS}">
-                            <atom:InputClearIconButton
-                                Classes.semantic-clear="True"
-                                Name="PART_ClearButton"
-                                VerticalAlignment="Center"
-                                Icon="{Binding $parent[atom:LineEdit].ClearIcon}"
-                                IsVisible="{Binding $parent[atom:LineEdit].IsEffectiveShowClearButton}"
-                                IsMotionEnabled="{Binding $parent[atom:LineEdit].IsMotionEnabled}" />
+                            <atom:InputAccessoryPanel.ClearButtonTemplate>
+                                <DataTemplate>
+                                    <atom:InputClearIconButton
+                                        Classes.semantic-clear="True"
+                                        Name="PART_ClearButton"
+                                        VerticalAlignment="Center"
+                                        Icon="{Binding $parent[atom:LineEdit].ClearIcon}"
+                                        IsVisible="{Binding $parent[atom:LineEdit].IsEffectiveShowClearButton}"
+                                        IsMotionEnabled="{Binding $parent[atom:LineEdit].IsMotionEnabled}" />
+                                </DataTemplate>
+                            </atom:InputAccessoryPanel.ClearButtonTemplate>
                             <atom:RevealButton
                                 Name="PART_RevealButton"
                                 VerticalAlignment="Center"
@@ -77,13 +81,17 @@
                                 Focusable="False"
                                 Content="{Binding $parent[atom:LineEdit].InnerRightContent}"
                                 ContentTemplate="{Binding $parent[atom:LineEdit].InnerRightContentTemplate}" />
-                            <atom:TextBlock Name="TextCountIndicator"
-                                            Classes.semantic-count="True"
-                                            VerticalAlignment="Center"
-                                            Foreground="{atom:LineEditTokenResource ColorTextPlaceholder}"
-                                            Text="{Binding $parent[atom:LineEdit].CountText}"
-                                            IsVisible="{Binding $parent[atom:LineEdit].IsShowCount}" />
-                        </StackPanel>
+                            <atom:InputAccessoryPanel.CountTemplate>
+                                <DataTemplate>
+                                    <atom:TextBlock Name="TextCountIndicator"
+                                                    Classes.semantic-count="True"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{atom:LineEditTokenResource ColorTextPlaceholder}"
+                                                    Text="{Binding $parent[atom:LineEdit].CountText}"
+                                                    IsVisible="{Binding $parent[atom:LineEdit].IsShowCount}" />
+                                </DataTemplate>
+                            </atom:InputAccessoryPanel.CountTemplate>
+                        </atom:InputAccessoryPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
 
                     <atom:ScrollViewer

@@ -2,6 +2,17 @@
 
 本文档记录 Badge 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- API
+  - `AbstractCountBadge` 提供程序集内扩展点 `SynchronizesDecoratedTarget`。Mobile 的组合徽标可以通过此入口负责常驻目标及计数、圆点之间的移交。
+- Fix
+  - 组合徽标挂树时由实际宿主接管目标，避免外层计数徽标和内层圆点徽标重复设置同一个逻辑父级。
+- Desktop 影响
+  - 扩展点默认开启。Desktop 的隐藏指示器仍保留装饰目标，模板与公开 API 无变化。
+- Tests
+  - Desktop Badge 定向测试 34 项通过。Mobile 原失败的 14 项通过复验（包含 Skia 指纹与 Gallery 导航）。
+
 ## 2026-11-11
 
 - Fix

@@ -20,7 +20,7 @@ Cascader 的实现由外层 `Cascader` 和内部 `CascaderView` 组成。`Cascad
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderView.Filter.cs`：过滤路径收集、过滤结果列表、过滤计数和高亮文本。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderViewLevelList.cs`：单级列表、容器准备、虚拟化上下文保存和清理。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderViewItem.cs`：选项容器、checked / expanded / selected 事件、leaf 判断和绑定型选项同步。
-- `src/AtomUI.Desktop.Controls/Cascader/CascaderOption.cs`：`ICascaderOption`、默认轻量 `CascaderOption` 和层级 helper。
+- `src/AtomUI.Controls/Cascader/` 保存选项树、异步加载接口和结果。Desktop 程序集转发既有类型，保留原有 .NET 命名空间。
 - `src/AtomUI.Desktop.Controls/Cascader/BindableCascaderOption.cs`：绑定型选项模型，使用 scoped resource host generator。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderAddOnDecoratedBox.cs`：Cascader 输入布局扩展，复用 `InputControlFrame` 的输入表面状态。
 - `src/AtomUI.Desktop.Controls/Cascader/CascaderViewPanel.cs`：弹层 frame 布局与边框测量。

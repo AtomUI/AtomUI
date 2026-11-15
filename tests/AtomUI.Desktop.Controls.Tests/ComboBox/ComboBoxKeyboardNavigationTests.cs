@@ -11,6 +11,7 @@ using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
 using AtomUIComboBox = AtomUI.Desktop.Controls.ComboBox;
+using AtomUIComboBoxItem = AtomUI.Desktop.Controls.ComboBoxItem;
 
 namespace AtomUI.Desktop.Controls.Tests.ComboBox;
 
@@ -303,6 +304,52 @@ public class ComboBoxKeyboardNavigationTests
 
         comboBox.SelectedIndex.ShouldBe(expectedIndex);
         comboBox.IsDropDownOpen.ShouldBeFalse();
+    }
+
+    // The default virtualizing panel hides the ComboBoxItem items it recycles; navigation must still step onto them.
+    [Fact]
+    public void Explicit_Items_Navigate_Past_The_Realized_Range_Both_Ways()
+    {
+        var comboBox = new AtomUIComboBox
+        {
+            Width           = 200,
+            IsMotionEnabled = false
+        };
+        var items = new List<AtomUIComboBoxItem>();
+        for (var i = 0; i < 200; i++)
+        {
+            var item = new AtomUIComboBoxItem { Content = $"Item {i}" };
+            items.Add(item);
+            comboBox.Items.Add(item);
+        }
+
+        ShowInWindow(comboBox, window =>
+        {
+            comboBox.Focus(NavigationMethod.Tab).ShouldBeTrue();
+            comboBox.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            comboBox.GetRealizedContainers().Count().ShouldBeLessThan(items.Count);
+
+            for (var i = 0; i < 31; i++)
+            {
+                PressKey(window, Key.Down, PhysicalKey.ArrowDown);
+            }
+            Dispatcher.UIThread.RunJobs();
+            items[30].IsCandidateSelected.ShouldBeTrue();
+            items[0].IsVisible.ShouldBeFalse("the panel has recycled the first rows by now");
+
+            for (var i = 0; i < 25; i++)
+            {
+                PressKey(window, Key.Up, PhysicalKey.ArrowUp);
+            }
+            Dispatcher.UIThread.RunJobs();
+            items[5].IsCandidateSelected.ShouldBeTrue();
+            items.Count(item => item.IsCandidateSelected).ShouldBe(1);
+
+            PressKey(window, Key.Enter, PhysicalKey.Enter);
+            Dispatcher.UIThread.RunJobs();
+            comboBox.SelectedIndex.ShouldBe(5);
+        });
     }
 
     private static void PressKey(AvaloniaWindow window, Key key, PhysicalKey physicalKey)

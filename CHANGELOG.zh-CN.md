@@ -174,6 +174,41 @@ AtomUI 的重要变更记录在此文件中。
   - Result 状态图标在改变图标 Token 的主题发布（例如切换暗色）后保持状态颜色与尺寸：状态画刷与尺寸以可撤销的模板值投递，不再覆盖图标自身主题值；自定义 `Icon` 显式设置的 `FillBrush`、`StrokeBrush`、`Width`、`Height` 保持不变。
   - 可见变化：HyperLinkTextBlock 保持透明默认背景，使着色、悬停和选中表格行的底色可见；仅显式应用 Background 绘制到已有文本节点，默认主题不消费 ColorBgContainer。Transfer 搜索图标颜色及筛选框外间距跟随穿梭宿主；既有几何与动画端点保持不变。
 
+## 6.2.15
+
+`2026-11-15`
+
+- Breaking Changes
+  - 自定义 `IForm` 实现须补齐 `ValidateAsync(FormValidateOptions, CancellationToken)` 重载，并检查本地化默认提示与校验反馈。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#form-校验契约)
+  - 星级提示改用桌面 `Rate.ToolTips`。`AbstractRate` 及其共享派生控件不再提供该属性。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#rate-提示)
+  - 同时导入两个命名空间时，请限定桌面文本输入基类的名称。虚方法声明移至共享基类后重新编译派生类，并检查自定义模板、属性所有者及模型程序集查找。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#共享控件基类与类型转发)
+  - Carousel 在控件隐藏、脱离、禁用、应用停用或窗口最小化时暂停自动播放。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#carousel-自动播放)
+  - ListBox、ListView 和 Transfer 的 Tab 与方向键将焦点落在条目。依赖容器、组标题或复选框接收焦点的自定义主题和测试需要调整。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#列表键盘焦点)
+  - 同步升级相关包与 Generator，重新编译生成注册的消费方，并重新发布裁剪与 NativeAOT 应用。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#生成注册)
+- Form
+  - 支持按字段或静默校验、读取逐字段报告和处理 `SubmitFailed`。新增 `RequiredText` 标记，并提供英语、简体中文、繁体中文和巴西葡萄牙语语言包的校验文案。
+- Button、Slider 和 Rate
+  - Button 新增 `Success`、`Warning` 配色和 `Rectangular` 形状。
+  - Slider 可用 `IsDotsVisible` 显示刻度点，并通过 `IsSnapToMarksOnly` 吸附到标记。
+  - Rate 支持只读，也可单独关闭悬停预览。
+- TreeView、Transfer、ComboBox 和 Mentions
+  - TreeView 在容器回收后保留展开、选中和勾选状态，支持跨视口键盘导航与跨未实现行的 Shift 范围选择。#541
+  - 勾选级联覆盖整棵数据树，TreeView 和 Transfer 开启虚拟化后仍保留 `CheckedItems`。
+  - 候选行回收后保持高亮对齐，ComboBox 按可见候选项导航，Mentions 的预选、键盘和指针导航跳过禁用候选项。#541
+  - 恢复 ListBox、ListView 和 Transfer 的键盘焦点入口，方向键每次移动一项，焦点描边绘制在条目内侧。
+- DataGrid、TabControl 和 Segmented
+  - 修复分数缩放下滚动偏移落入相邻槽位之间时的崩溃。#540
+  - TabControl 和 TabStrip 的选中指示线对齐从右向左布局中的镜像标题。
+  - Segmented 的选中滑块和过渡维持在轨道内边距区域内。
+- 共享控件
+  - 新增支持起始、末尾和中间截断的共享 `AbstractEllipsis` 基类。
+  - 使用 `DragTranslation` 预览 FloatButton 拖动位移，并通过 `CommitDragTranslation()` 将位移提交到锚点偏移。
+  - 装饰容器新增 `ArrowAnchorOffset`，内部虚拟化堆叠面板支持将滚动项对齐到起始边。
+  - 组合徽标可以将装饰目标交由内部徽标挂载，避免重复更改同一目标的父级。
+- 控件性能
+  - 降低 Icon、Button、Pagination、进度指示器和输入控件的创建与运行开销。隐藏图标暂停动效，文本度量复用结果，ToggleSwitch 通过渲染变换实现动画。
+  - 逐项插入 NavMenu 内置条目的总开销随条目数线性增长。
+
 ## 6.2.14
 
 `2026-11-13`

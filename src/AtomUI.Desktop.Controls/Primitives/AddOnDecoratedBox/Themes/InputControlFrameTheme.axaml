@@ -37,6 +37,7 @@
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
+        <!-- Addon padding per size lives in AddOnDecoratedBoxTheme, the only theme with addon parts. -->
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         </Style>

@@ -172,6 +172,41 @@ All notable changes to AtomUI are documented in this file.
   - Result status icons keep their status colour and size after a theme publish that changes the icon Tokens (for example switching to dark): the status brush and size are applied as removable template values instead of being written over the icon's own theme values, and a custom `Icon` keeps its own explicit `FillBrush`, `StrokeBrush`, `Width` and `Height`.
   - Visible changes: HyperLinkTextBlock keeps its transparent default so tinted, hovered and selected table-row surfaces remain visible; an explicit application Background paints on its existing text visual. Its default theme does not consume ColorBgContainer. Transfer search icon colour and filter margins follow the transfer host; existing geometry and animation endpoints remain unchanged.
 
+## 6.2.15
+
+`2026-11-15`
+
+- Breaking Changes
+  - Implement the new `ValidateAsync(FormValidateOptions, CancellationToken)` overload on custom `IForm` implementations. Review localized default messages and validation feedback. [Migration guide](docs/releases/6.2.15-api-changes.md#form-validation-contract)
+  - Use Desktop `Rate.ToolTips` for star tooltips. `AbstractRate` and its shared subclasses no longer provide this property. [Migration guide](docs/releases/6.2.15-api-changes.md#rate-tooltips)
+  - Qualify the Desktop text input base if both namespaces are imported. Rebuild subclasses after virtual hooks move to shared bases, and review custom templates and property or model assembly lookups. [Migration guide](docs/releases/6.2.15-api-changes.md#shared-control-bases-and-forwarded-types)
+  - Carousel autoplay pauses while the control is hidden, detached or disabled, the application is inactive, or the window is minimized. [Migration guide](docs/releases/6.2.15-api-changes.md#carousel-autoplay)
+  - Tab and arrow keys focus ListBox, ListView and Transfer rows. Update custom themes and tests that expect container, group header, or checkbox focus. [Migration guide](docs/releases/6.2.15-api-changes.md#list-keyboard-focus)
+  - Upgrade related packages and Generator together, rebuild generated consumers and republish trimmed and NativeAOT applications. [Migration guide](docs/releases/6.2.15-api-changes.md#generated-registration)
+- Form
+  - Validate selected fields or run silently, inspect the field-level report, and handle `SubmitFailed`. Add the `RequiredText` mark and localized validation messages in English, Simplified Chinese, Traditional Chinese and the Brazilian Portuguese language pack.
+- Button, Slider and Rate
+  - Add `Success` and `Warning` button colors and the `Rectangular` shape.
+  - Use `IsDotsVisible` and `IsSnapToMarksOnly` to display a discrete scale and snap to its marks.
+  - Make Rate read-only or disable its hover preview independently.
+- TreeView, Transfer, ComboBox and Mentions
+  - Keep expanded, selected and checked states across TreeView container recycling. Navigate across viewport boundaries and extend Shift selection across unrealized rows. #541
+  - Apply check cascades to the entire tree data set and preserve `CheckedItems` when TreeView or Transfer virtualizes its rows.
+  - Keep candidate highlighting aligned after recycling, navigate visible options in ComboBox, and skip disabled Mentions candidates in preselection, keyboard and pointer navigation. #541
+  - Restore keyboard entry to ListBox, ListView and Transfer. Move one item per arrow press and keep the focus outline inside each row.
+- DataGrid, TabControl and Segmented
+  - Prevent a scroll crash at fractional scaling when an offset falls between adjacent slots. #540
+  - Align the active TabControl and TabStrip indicator with mirrored headers in right-to-left layouts.
+  - Keep the Segmented selection thumb and its transition inside the padded track.
+- Shared controls
+  - Add the shared `AbstractEllipsis` base with start, end and middle truncation.
+  - Preview FloatButton drag movement with `DragTranslation` and commit it to the anchor offsets with `CommitDragTranslation()`.
+  - Add `ArrowAnchorOffset` to decorated boxes and add start-aligned scrolling to the internal virtualizing stack panel.
+  - Allow composite badges to delegate target ownership to their inner badge without reparenting the same target twice.
+- Control performance
+  - Reduce construction and recurring work in Icon, Button, Pagination, progress indicators and input controls. Pause hidden icon motion, reuse text measurements, and animate ToggleSwitch with render transforms.
+  - Make repeated NavMenu entry insertion scale linearly with the number of built-in entries.
+
 ## 6.2.14
 
 `2026-11-13`

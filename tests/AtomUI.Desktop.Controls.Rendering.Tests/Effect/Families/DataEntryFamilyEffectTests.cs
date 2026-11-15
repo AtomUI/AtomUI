@@ -188,6 +188,15 @@ public partial class DataEntryFamilyEffectTests
             case "LabelRequiredMarkColor" or "ColorError":
                 return new Scenario(static () => CreateForm(), null,
                     new EffectOptions { Region = static form => Descendant<Avalonia.Controls.TextBlock>(FormItemAt(form, 0), "PART_DefaultRequireMark") });
+            // The RequiredText mark after a required label.
+            case "ColorTextTertiary":
+                return new Scenario(static () =>
+                    {
+                        var form = CreateForm();
+                        form.RequiredMark = FormRequiredMark.RequiredText;
+                        return form;
+                    }, null,
+                    new EffectOptions { Region = static form => LabelOf(form) });
             // The tooltip icon after the label.
             case "ColorIcon" or "IconSize":
                 return new Scenario(static () => CreateForm(), null,
@@ -196,11 +205,14 @@ public partial class DataEntryFamilyEffectTests
             case "ColorTextDescription":
                 return new Scenario(static () => CreateForm(), null,
                     new EffectOptions { Region = static form => FormItemAt(form, 1) });
+            // An item validates when it attaches, so the help status is set once the form is shown.
             case "ColorWarningText":
-                return new Scenario(static () => CreateForm(status: FormValidateStatus.Warning), null,
+                return new Scenario(static () => CreateForm(),
+                    static form => FormItemAt(form, 1).ValidateStatus = FormValidateStatus.Warning,
                     new EffectOptions { Region = static form => FormItemAt(form, 1) });
             case "ColorErrorText":
-                return new Scenario(static () => CreateForm(status: FormValidateStatus.Error), null,
+                return new Scenario(static () => CreateForm(),
+                    static form => FormItemAt(form, 1).ValidateStatus = FormValidateStatus.Error,
                     new EffectOptions { Region = static form => FormItemAt(form, 1) });
             // Validate feedback icons in the line edit suffix. An item with feedback validates when it attaches (no
             // validators: Success), so the warning status is set once the form is shown.

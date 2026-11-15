@@ -1,15 +1,11 @@
 using System.Globalization;
+using AtomUI.Controls;
 
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
 internal enum DateRangeActivePart { Start, End }
 internal enum DateWeekNumbering { Culture, Iso }
 internal enum DatePanelConstraintMode { Unit, Picker, Calendar }
-
-internal readonly record struct DateUnitRange(DateTime Start, DateTime End)
-{
-    public bool Contains(DateTime value) => value.Date >= Start && value.Date <= End;
-}
 
 /// <summary>Effective rendering inputs. This is a projection, not a writable selection owner.</summary>
 internal sealed record DatePanelInput

@@ -186,11 +186,22 @@ click event：
 - ListBox 通过 class handler 接收后调用 `NotifyListBoxItemClicked`，再触发 public `ItemClicked`。
 - CandidateList 通过重写 `NotifyListBoxItemClicked` 在单选模式提交候选项。
 
-keyboard navigation：
+keyboard navigation（契约见 [overview §8.4](overview.md#84-键盘焦点模型)）：
 
-- `IsSelectable=true` 时，方向键进入 Avalonia `MoveSelection`。
-- 多选模式下，平台 select-all 手势调用 `Selection.SelectAll()`。
-- `IsSelectable=false` 时，ListBox 不处理这些键盘选择路径。
+- `ListBox.OnKeyDown` 自己处理方向键、select-all 手势和条目上的 Space / Enter，处理这些按键时不调用 `base.OnKeyDown`：
+  Avalonia `ListBox.OnKeyDown` 对方向键不检查 `Handled` 就再执行一次 `MoveSelection`（会让一次按键移动两项），
+  `ItemsControl.OnKeyDown` 会再移动一次焦点；select-all 在 Avalonia 中也不检查 `IsSelectable`。其他按键仍交给基类。
+- 方向键：起点是焦点元素所在的条目容器（`GetContainerFromEventSource`），没有时退回选择锚点容器；以
+  `IndexFromContainer >= 0` 判断容器已实现（自身即容器的条目未实现时 `ContainerFromIndex` 仍会返回它）。没有起点时
+  `↓` / `→` 取首项、`↑` / `←` 取末项。目标由 `ItemsControl.GetNextControl` 在 `ItemsPanelRoot`（`INavigableContainer`）上查找，
+  它跳过不可聚焦、禁用和不可见的容器，虚拟化面板在查找时实现并滚入目标。随后按 §8.4 的提交策略调用 `UpdateSelection`，
+  最后 `Focus(NavigationMethod.Directional)`，使主题焦点描边显示。
+- Space / Enter：只在事件源就是条目容器时处理。Avalonia `ListBoxItem.OnKeyDown` 会先通过
+  `UpdateSelectionFromEvent` 提交（多选时整体替换选择），因此 `UpdateSelectionFromEvent` 拒绝 `KeyEventArgs`，键盘提交统一
+  在 `ListBox.OnKeyDown` 按提交策略执行。
+- `IsSelectable=false` 时，方向键只移动焦点，不进入任何选择路径。
+- 焦点描边由主题完成：`ListBoxItemTheme` 不再关闭 `Focusable`，`Frame` 是模板焦点目标并内侧绘制；CandidateList、
+  Cascader 搜索结果列表的条目主题固定 `Focusable=False`。
 
 context request：
 
@@ -236,10 +247,14 @@ CandidateList 使用 ListBox 的 container pipeline，但替换容器类型为 `
 - `CreateContainerForItemOverride`
 - `NeedsContainerOverride`
 - `ConfigureEmptyIndicator`
-- `NotifyRestoreDefaultContext`
+- `PrepareContainerForItemOverride`
 - `NotifyClearContainerForVirtualizingContext`
 
 这些扩展点要求 ListBox 的基础 prepare / clear 顺序稳定，避免候选项临时高亮、disabled 状态和 selection 状态在虚拟化回收时串扰。
+
+候选高亮是 `CandidateSelectedIndex` 的投射：CandidateList 在 ListBox 基础 prepare 全部完成之后，按本次准备的 `index` 设置容器的 `IsCandidateSelected`，对任何数据项类型生效。不能在 `NotifyRestoreDefaultContext` 里用 `IListItemVirtualizingContextAware.VirtualIndex` 判断：ListBox 在该回调之后才写入新的 `VirtualIndex`，回收容器此时仍带着上一个位置；该回调也只对 `IListItemData` 项执行。
+
+候选可用性统一由 `IsCandidateAvailable` 判定：数据项启用、多选未达 `MaxCount` 上限（已选项除外）、容器已实现时还要求容器启用且可见；键盘导航、指针迁移、`CandidateSelectedItem` / `CandidateSelectedIndex` 写入都经过它。数据项启用默认只认 `IListItemData.IsEnabled`；数据项不是 `IListItemData` 的宿主（Mentions）设置 internal `ItemEnabledResolver`，此时该判定同时决定可用性和容器 `IsEnabled`，并在基础 prepare 之后按本次数据项重新写入容器 `IsEnabled`，覆盖 ListBox 按 `VirtualIndex` 恢复的旧值（过滤后同一 index 可能是另一项）。未设置 resolver 时（AutoComplete、Select）行为不变。
 
 ### 7.6 条目分割线与圆角内容裁剪
 

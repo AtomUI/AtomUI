@@ -60,15 +60,15 @@
 
         <Style Selector="^ /template/ Border#PART_ProgressRail">
             <Setter Property="Background"
-                    Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding GrooveBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#PART_ProgressTrack">
             <Setter Property="Background"
-                    Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#PART_ProgressSuccess">
             <Setter Property="Background"
-                    Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding SuccessStrokeBrush}" />
         </Style>
 
         <Style Selector="^[StrokeLineCap=Round]">

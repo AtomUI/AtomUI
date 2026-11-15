@@ -509,6 +509,10 @@ public partial class Mentions : TemplatedControl,
                 _candidateList.Commit      -= HandleCandidateListComplete;
                 _candidateList.Cancel      -= HandleCandidateListCanceled;
                 _candidateList.ItemsSource =  null;
+                if (_candidateList is Primitives.CandidateList oldCandidateList)
+                {
+                    oldCandidateList.ItemEnabledResolver = null;
+                }
             }
 
             _candidateList = value;
@@ -517,6 +521,10 @@ public partial class Mentions : TemplatedControl,
             {
                 _candidateList.Commit      += HandleCandidateListComplete;
                 _candidateList.Cancel      += HandleCandidateListCanceled;
+                if (_candidateList is Primitives.CandidateList newCandidateList)
+                {
+                    newCandidateList.ItemEnabledResolver = IsOptionEnabled;
+                }
                 _candidateList.ItemsSource =  _view;
             }
         }
@@ -536,6 +544,9 @@ public partial class Mentions : TemplatedControl,
     #endregion
     
     private static bool IsValidAsyncLoadDebounce(TimeSpan value) => value.TotalMilliseconds >= 0.0;
+
+    // Shared by the candidate list (availability and container IsEnabled) and the open-time pre-selection.
+    private static readonly Func<object?, bool> IsOptionEnabled = item => item is not IMentionOption { IsEnabled: false };
 
     private MentionTextArea? _textArea;
     private Popup? _popup;
@@ -1397,8 +1408,21 @@ public partial class Mentions : TemplatedControl,
             {
                 _candidateList.ItemsSource = _view;
             }
-            _candidateList.SelectedItem = _view.Count > 0 ? _view[0] : null;
+            _candidateList.SelectedItem = FindFirstEnabledOption(_view);
         }
+    }
+
+    private static IMentionOption? FindFirstEnabledOption(IList<IMentionOption> options)
+    {
+        foreach (var option in options)
+        {
+            if (IsOptionEnabled(option))
+            {
+                return option;
+            }
+        }
+
+        return null;
     }
 
     private string? GetValueByOption(IMentionOption option)

@@ -23,6 +23,8 @@
                                   MarkLabelFontFamily="{TemplateBinding FontFamily}"
                                   MarkLabelFontSize="{TemplateBinding FontSize}"
                                   Marks="{TemplateBinding Marks}"
+                                  TickFrequency="{TemplateBinding TickFrequency}"
+                                  IsDotsVisible="{TemplateBinding IsDotsVisible}"
                                   IsIncluded="{TemplateBinding IsIncluded}" />
             </ControlTemplate>
         </Setter>

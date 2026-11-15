@@ -28,7 +28,7 @@
                 HostBorderBrush="{TemplateBinding BorderBrush}"
                 HostBackground="{TemplateBinding Background}"
                 DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                IsMotionEnabled="{Binding $parent[atom:TextBox].IsMotionEnabled}"
                 CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                 CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
                 IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
@@ -44,16 +44,20 @@
                         Focusable="False"
                         IsVisible="{TemplateBinding InnerLeftContent, Converter={x:Static ObjectConverters.IsNotNull}}"
                         Content="{TemplateBinding InnerLeftContent}" />
-                    <StackPanel
+                    <atom:InputAccessoryPanel
                         Orientation="Horizontal"
                         DockPanel.Dock="Right"
                         Spacing="{atom:OwnerTokenResource UniformlyPaddingXXS}">
-                        <atom:InputClearIconButton
-                            Name="PART_ClearButton"
-                            IsVisible="{TemplateBinding IsEffectiveShowClearButton}" 
-                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                            Icon="{TemplateBinding ClearIcon}"
-                            VerticalAlignment="Center"/>
+                        <atom:InputAccessoryPanel.ClearButtonTemplate>
+                            <DataTemplate>
+                                <atom:InputClearIconButton
+                                    Name="PART_ClearButton"
+                                    IsVisible="{Binding $parent[atom:TextBox].IsEffectiveShowClearButton}"
+                                    IsMotionEnabled="{Binding $parent[atom:TextBox].IsMotionEnabled}"
+                                    Icon="{Binding $parent[atom:TextBox].ClearIcon}"
+                                    VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </atom:InputAccessoryPanel.ClearButtonTemplate>
                         <atom:RevealButton
                             Name="PART_RevealButton"
                             IsChecked="{TemplateBinding RevealPassword, Mode=TwoWay}"
@@ -74,11 +78,15 @@
                             Focusable="False"
                             IsVisible="{TemplateBinding InnerRightContent, Converter={x:Static ObjectConverters.IsNotNull}}"
                             Content="{TemplateBinding InnerRightContent}" />
-                        <atom:TextBlock Name="TextCountIndicator" 
-                                        VerticalAlignment="Center"
-                                        Text="{TemplateBinding CountText}"
-                                        IsVisible="{TemplateBinding IsShowCount}"/>
-                    </StackPanel>
+                        <atom:InputAccessoryPanel.CountTemplate>
+                            <DataTemplate>
+                                <atom:TextBlock Name="TextCountIndicator"
+                                                VerticalAlignment="Center"
+                                                Text="{Binding $parent[atom:TextBox].CountText}"
+                                                IsVisible="{Binding $parent[atom:TextBox].IsShowCount}"/>
+                            </DataTemplate>
+                        </atom:InputAccessoryPanel.CountTemplate>
+                    </atom:InputAccessoryPanel>
             
                     <atom:ScrollViewer
                         Name="ScrollViewer"

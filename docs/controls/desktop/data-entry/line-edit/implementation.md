@@ -105,11 +105,11 @@ OverflowTip and other internal consumers
 
 ## 5. 生命周期与模板接入
 
-`AbstractTextInput.OnInitialized` 在未设置 `ClearIcon` 时写入默认 `CloseCircleFilled`，并建立 Form/native validation 与 viewport 度量边界。控件 token scope 和主题 asset 由 generator 显式注册；TextBox、LineEdit、TextArea 的专属 Token 只表达各自文本布局或尺寸差异。
+`AtomUI.Controls.AbstractTextInput` 负责编辑、计数、组合输入与表单反馈。Desktop 同名子类在未设置 `ClearIcon` 时保留默认 `CloseCircleFilled`，并接入 Desktop frame 与 viewport 度量。控件 token scope 和主题 asset 由 generator 显式注册；TextBox、LineEdit、TextArea 的专属 Token 只表达各自文本布局或尺寸差异。
 
 `OnApplyTemplate` 规则：
 
-- 旧清除按钮 click 订阅必须解除，再绑定新 `PART_ClearButton`。
+- 主题仅在`IsAllowClear` 或 `IsShowCount` 首次启用时创建对应子节点。节点保持原语义部件路由，在当前模板有效期间复用。重套模板时解除旧清除按钮订阅。
 - frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算；共有状态经模板绑定回放到 frame。
 - 表面状态画刷：frame 的六个主题变量由一个 `OwnerTokenSet` 供值。
   - **创建：** 样式第一次读变量时才创建这个 set，并按当前 `StyleVariant` 和 `EffectiveStatus` 指定每个变量的 Token；之后这两个属性变化时重新指定。读取时变量一定已配置，不依赖挂树顺序。

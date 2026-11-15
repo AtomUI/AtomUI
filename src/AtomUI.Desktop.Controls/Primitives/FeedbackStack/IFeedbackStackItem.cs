@@ -1,17 +1,15 @@
+using AtomUI.Controls;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Internal lifecycle contract shared by transient feedback surfaces.</summary>
-internal interface IFeedbackStackItem
+/// <summary>Desktop feedback cards add stack visibility to the shared lifetime contract.</summary>
+internal interface IFeedbackStackItem : IFeedbackLifetimeItem, IFeedbackProgressItem
 {
-    bool IsClosing { get; }
-    bool IsClosed { get; }
     bool IsProgressVisible { get; }
     bool IsStackVisible { get; set; }
 
-    void RequestClose();
-    void UpdateRemaining(TimeSpan remaining);
+    bool IFeedbackProgressItem.IsProgressUpdateNeeded => IsProgressVisible && IsStackVisible;
 }
 
 /// <summary>
@@ -22,15 +20,4 @@ internal interface IFeedbackStackTransitionSnapshotItem
     bool TryBeginStackCollapseSnapshot();
     void ArmStackCollapseSnapshot(ITransform targetTransform);
     void ReleaseStackTransitionSnapshot();
-}
-
-internal interface IFeedbackClock
-{
-    TimeSpan Now { get; }
-}
-
-internal interface IFeedbackWakeup : IDisposable
-{
-    void Schedule(TimeSpan due, Action callback);
-    void Cancel();
 }

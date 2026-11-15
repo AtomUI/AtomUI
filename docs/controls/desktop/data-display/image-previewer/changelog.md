@@ -2,6 +2,28 @@
 
 本文档记录 ImagePreviewer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## Unreleased
+
+### API
+
+- `ImagePreviewItem` 与 `ImageSwitchMode` 的 CLR 命名空间保留，由 Desktop 程序集转发到 `AtomUI.Controls`。
+
+### Theme
+
+- Desktop 继续使用既有预览与封面模板。
+
+### Fix
+
+- Desktop 与 Mobile 共用预览条目、帧切换和变换边界计算。尺寸计算将适配比例设为可选输入，默认值为 0.70。
+
+### Desktop 影响
+
+- Desktop 预览继续使用既有请求、租约和保留帧流程，程序集转发覆盖原调用入口。
+
+### Tests
+
+- ImagePreviewer 定向回归覆盖已有载入、切换、变换和主题场景。
+
 ## 2026-11-10
 
 - Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。

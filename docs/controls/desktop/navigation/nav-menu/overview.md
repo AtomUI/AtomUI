@@ -337,6 +337,7 @@ NavMenu 不实现 Form、CompactSpace 或 Button 家族接口。
 - 根分组中的节点仍为顶层节点；嵌套分组不能改变节点的 `ParentNode`、`Level` 或 `IsTopLevel`。
 - `Header` / `Footer` 固定区域不能进入菜单 ItemsPanel 或随菜单项滚动；空 content 不得改变既有无 slot 布局。
 - `ItemSpacing` 只控制根默认 ItemsPanel，并在具有有效设置时覆盖后代默认 ItemsPanel 的额外容器间距；未设置的 Horizontal 根层保持 `0`，其 popup、submenu 和 group 仍使用 `VerticalItemsPanelSpacing`。该属性不重定义 `ItemContentMargin`、`VerticalChildItemsMargin` 或自定义 ItemsPanel 的布局语义。
+- 选择定位、分组容器准备、子菜单打开状态和键盘导航都以当前呈现层级的每个 entry 容器都已生成为前提，因此根、子菜单和分组的 ItemsPanel 必须是非虚拟化面板（默认面板满足）。替换为 `VirtualizingStackPanel` 等虚拟化面板不受支持，也不是扩展点：视口外的 entry 没有容器，键盘导航只会在已生成的容器之间循环，子菜单打开状态随容器回收丢失，视口外目标的 `DefaultOpenPaths` 无法 replay。容器按层级延迟生成，未打开的子菜单不生成子容器；超长导航应组织为子菜单层级，确需数千行可滚动导航树时使用支持虚拟化面板的 `TreeView`。
 - `NavMenuNode` 只承载命令配置，不实现 `ICommandSource`，不直接订阅 `CanExecuteChanged`，也不保存当前 `NavMenuItem` 容器。
 - `CommandParameter` 保持标准显式参数语义，不隐式回退到 `ItemKey`、`Header`、`SelectedItem` 或节点自身。
 - `NavMenuItemClick` 和 `NavMenuNodeSelected` 的事件语义不变。

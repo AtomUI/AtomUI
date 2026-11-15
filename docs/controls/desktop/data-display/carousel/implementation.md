@@ -115,7 +115,7 @@ Carousel 的交互事件应从输入源收敛到控件级语义事件：
 - ItemsSource、selection、checked、expanded、filter、paging 或 upload task 的集合同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 
-AutoPlay 由 Carousel 持有的单个 `DispatcherTimer` 驱动，选中页的进度由 `CarouselPageIndicator` 的 Avalonia animation 驱动。Carousel attach 后跟踪自身及 Visual 祖先链；有效不可见时停止 autoplay timer。PageIndicator 同时取消并把 progress 归零；重新可见后 timer 与 progress 从同一周期重新启动，避免页面恢复时进度条与实际切页时机错位。detach 时释放 timer 可见性订阅、progress cancellation 和 animation 状态。
+`AbstractCarousel` 管理页索引和选择来源，启用自动播放且可运行时才创建计时器。`MotionGate` 跟踪挂载状态、有效可见性、应用活动和动效开关。Desktop 另外监听窗口最小化状态，并在手势捕获期间暂停。计时器暂停时 `CarouselPageIndicator` 同步重置进度；恢复后重新开始一个周期。离开视觉树时释放计时器和订阅。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 

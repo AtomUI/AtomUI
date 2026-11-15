@@ -71,7 +71,7 @@ public class TextAreaSemanticPartTests
                    "Classes.semantic-count:TextBlock",
                    "Classes.semantic-scope-input-frame:TextAreaDecoratedBox",
                    "Classes.semantic-prefix:AddOnContentPresenter",
-                   "Classes.semantic-suffix:StackPanel",
+                   "Classes.semantic-suffix:InputAccessoryPanel",
                    "Classes.semantic-clear:InputClearIconButton",
                    "Classes.semantic-content:Panel",
                    "Classes.semantic-placeholder:TextBlock",

@@ -2,6 +2,11 @@
 
 本文档记录 Rate 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Performance
+  - The star template paints and hit-tests its background on the existing Panel instead of an extra wrapping Border; one visual less per star, identical output.
+
 ## 2026-10-04
 
 - Fixed

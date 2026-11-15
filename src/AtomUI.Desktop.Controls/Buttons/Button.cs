@@ -3,6 +3,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -17,8 +18,6 @@ using Avalonia.Media.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
-using AvaloniaButton = Avalonia.Controls.Button;
-
 public enum ButtonType
 {
     Default,
@@ -28,59 +27,12 @@ public enum ButtonType
     Text
 }
 
-public enum ButtonShape
-{
-    Default,
-    Circle,
-    Round
-}
-
-public enum ButtonIconPlacement
-{
-    Start,
-    End
-}
-
-public enum ButtonColor
-{
-    Default,
-    Primary,
-    Danger,
-    Red,
-    Volcano,
-    Orange,
-    Gold,
-    Yellow,
-    Lime,
-    Green,
-    Cyan,
-    Blue,
-    GeekBlue,
-    Purple,
-    Pink,
-    Magenta,
-    Grey
-}
-
-public enum ButtonVariant
-{
-    Outlined,
-    Dashed,
-    Solid,
-    Filled,
-    Text,
-    Link
-}
-
-[PseudoClasses(ButtonPseudoClass.IconOnly,
-    ButtonPseudoClass.Loading,
-    ButtonPseudoClass.IsDanger,
-    ButtonPseudoClass.DefaultType,
+[PseudoClasses(ButtonPseudoClass.DefaultType,
     ButtonPseudoClass.DashedType,
     ButtonPseudoClass.PrimaryType,
     ButtonPseudoClass.LinkType,
     ButtonPseudoClass.TextType)]
-public partial class Button : AvaloniaButton,
+public partial class Button : AbstractButton,
                       ICustomizableSizeTypeAware,
                       IWaveSpiritAwareControl,
                       ICompactSpaceAware,
@@ -92,23 +44,23 @@ public partial class Button : AvaloniaButton,
     public static readonly StyledProperty<ButtonType> ButtonTypeProperty =
         AvaloniaProperty.Register<Button, ButtonType>(nameof(ButtonType));
 
-    public static readonly StyledProperty<ButtonShape> ShapeProperty =
-        AvaloniaProperty.Register<Button, ButtonShape>(nameof(Shape));
+    public new static readonly StyledProperty<ButtonShape> ShapeProperty =
+        AbstractButton.ShapeProperty.AddOwner<Button>();
 
-    public static readonly StyledProperty<bool> IsDangerProperty =
-        AvaloniaProperty.Register<Button, bool>(nameof(IsDanger));
+    public new static readonly StyledProperty<bool> IsDangerProperty =
+        AbstractButton.IsDangerProperty.AddOwner<Button>();
 
     public static readonly StyledProperty<bool> IsGhostProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsGhost));
 
-    public static readonly StyledProperty<bool> IsLoadingProperty =
-        AvaloniaProperty.Register<Button, bool>(nameof(IsLoading));
+    public new static readonly StyledProperty<bool> IsLoadingProperty =
+        AbstractButton.IsLoadingProperty.AddOwner<Button>();
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Button>();
 
-    public static readonly StyledProperty<PathIcon?> IconProperty =
-        AvaloniaProperty.Register<Button, PathIcon?>(nameof(Icon));
+    public new static readonly StyledProperty<PathIcon?> IconProperty =
+        AbstractButton.IconProperty.AddOwner<Button>();
 
     public static readonly StyledProperty<double> IconWidthProperty =
         AvaloniaProperty.Register<Button, double>(nameof(IconWidth));
@@ -116,10 +68,8 @@ public partial class Button : AvaloniaButton,
     public static readonly StyledProperty<double> IconHeightProperty =
         AvaloniaProperty.Register<Button, double>(nameof(IconHeight));
 
-    public static readonly StyledProperty<ButtonIconPlacement> IconPlacementProperty =
-        AvaloniaProperty.Register<Button, ButtonIconPlacement>(
-            nameof(IconPlacement),
-            ButtonIconPlacement.Start);
+    public new static readonly StyledProperty<ButtonIconPlacement> IconPlacementProperty =
+        AbstractButton.IconPlacementProperty.AddOwner<Button>();
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Button>();
@@ -127,11 +77,11 @@ public partial class Button : AvaloniaButton,
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Button>();
 
-    public static readonly StyledProperty<ButtonColor?> ColorProperty =
-        AvaloniaProperty.Register<Button, ButtonColor?>(nameof(Color));
+    public new static readonly StyledProperty<ButtonColor?> ColorProperty =
+        AbstractButton.ColorProperty.AddOwner<Button>();
 
-    public static readonly StyledProperty<ButtonVariant?> VariantProperty =
-        AvaloniaProperty.Register<Button, ButtonVariant?>(nameof(Variant));
+    public new static readonly StyledProperty<ButtonVariant?> VariantProperty =
+        AbstractButton.VariantProperty.AddOwner<Button>();
 
     public ButtonType ButtonType
     {
@@ -139,13 +89,13 @@ public partial class Button : AvaloniaButton,
         set => SetValue(ButtonTypeProperty, value);
     }
 
-    public ButtonShape Shape
+    public new ButtonShape Shape
     {
         get => GetValue(ShapeProperty);
         set => SetValue(ShapeProperty, value);
     }
 
-    public bool IsDanger
+    public new bool IsDanger
     {
         get => GetValue(IsDangerProperty);
         set => SetValue(IsDangerProperty, value);
@@ -157,7 +107,7 @@ public partial class Button : AvaloniaButton,
         set => SetValue(IsGhostProperty, value);
     }
 
-    public bool IsLoading
+    public new bool IsLoading
     {
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
@@ -169,7 +119,7 @@ public partial class Button : AvaloniaButton,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public PathIcon? Icon
+    public new PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
@@ -187,7 +137,7 @@ public partial class Button : AvaloniaButton,
         set => SetValue(IconHeightProperty, value);
     }
 
-    public ButtonIconPlacement IconPlacement
+    public new ButtonIconPlacement IconPlacement
     {
         get => GetValue(IconPlacementProperty);
         set => SetValue(IconPlacementProperty, value);
@@ -205,13 +155,13 @@ public partial class Button : AvaloniaButton,
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
-    public ButtonColor? Color
+    public new ButtonColor? Color
     {
         get => GetValue(ColorProperty);
         set => SetValue(ColorProperty, value);
     }
 
-    public ButtonVariant? Variant
+    public new ButtonVariant? Variant
     {
         get => GetValue(VariantProperty);
         set => SetValue(VariantProperty, value);
@@ -224,6 +174,11 @@ public partial class Button : AvaloniaButton,
     internal static readonly StyledProperty<bool> IsIconVisibleProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsIconVisible), true);
 
+    internal static readonly DirectProperty<Button, bool> EffectiveIconVisibleProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(
+            nameof(EffectiveIconVisible),
+            o => o.EffectiveIconVisible);
+
     internal static readonly StyledProperty<object?> RightExtraContentProperty =
         AvaloniaProperty.Register<Button, object?>(nameof(RightExtraContent));
 
@@ -233,16 +188,6 @@ public partial class Button : AvaloniaButton,
     internal static readonly StyledProperty<Thickness> EffectiveBorderThicknessProperty =
         AvaloniaProperty.Register<Button, Thickness>(
             nameof(EffectiveBorderThickness));
-
-    internal static readonly StyledProperty<ButtonColor> EffectiveColorProperty =
-        AvaloniaProperty.Register<Button, ButtonColor>(
-            nameof(EffectiveColor),
-            ButtonColor.Default);
-
-    internal static readonly StyledProperty<ButtonVariant> EffectiveVariantProperty =
-        AvaloniaProperty.Register<Button, ButtonVariant>(
-            nameof(EffectiveVariant),
-            ButtonVariant.Outlined);
 
     internal static readonly StyledProperty<bool> EffectiveIsDangerProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(EffectiveIsDanger));
@@ -314,6 +259,18 @@ public partial class Button : AvaloniaButton,
         set => SetValue(IsIconVisibleProperty, value);
     }
 
+    private bool _effectiveIconVisible;
+
+    /// <summary>
+    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon"/> is set, the icon is allowed
+    /// and the button is not loading. Templates bind to it instead of a three-way MultiBinding.
+    /// </summary>
+    internal bool EffectiveIconVisible
+    {
+        get => _effectiveIconVisible;
+        private set => SetAndRaise(EffectiveIconVisibleProperty, ref _effectiveIconVisible, value);
+    }
+
     internal object? RightExtraContent
     {
         get => GetValue(RightExtraContentProperty);
@@ -330,18 +287,6 @@ public partial class Button : AvaloniaButton,
     {
         get => GetValue(EffectiveBorderThicknessProperty);
         set => SetValue(EffectiveBorderThicknessProperty, value);
-    }
-
-    internal ButtonColor EffectiveColor
-    {
-        get => GetValue(EffectiveColorProperty);
-        set => SetValue(EffectiveColorProperty, value);
-    }
-
-    internal ButtonVariant EffectiveVariant
-    {
-        get => GetValue(EffectiveVariantProperty);
-        set => SetValue(EffectiveVariantProperty, value);
     }
 
     internal bool EffectiveIsDanger
@@ -575,8 +520,7 @@ public partial class Button : AvaloniaButton,
     {
         base.OnApplyTemplate(e);
         _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
-        ConfigureEffectiveButtonState();
-        UpdatePseudoClasses();
+        UpdateButtonTypePseudoClasses();
         ConfigureWaveSpiritType();
         ConfigureEffectiveCornerRadius();
     }
@@ -615,6 +559,14 @@ public partial class Button : AvaloniaButton,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == IconProperty ||
+            change.Property == IsIconVisibleProperty ||
+            change.Property == IsLoadingProperty)
+        {
+            // Same rule as ButtonIconVisibleConverter, which the templates used before.
+            EffectiveIconVisible = Icon is AtomUI.Controls.Icon && IsIconVisible && !IsLoading;
+        }
+
         if (change.Property == IsPressedProperty)
         {
             HandlePressedChanged(change);
@@ -626,14 +578,14 @@ public partial class Button : AvaloniaButton,
             ConfigureWaveSpiritType();
         }
 
-        if (ShouldConfigureEffectiveButtonState(change.Property))
+        if (change.Property == ButtonTypeProperty || change.Property == IsGhostProperty)
         {
-            ConfigureEffectiveButtonState();
+            RefreshEffectiveButtonState();
         }
 
-        if (ShouldUpdatePseudoClasses(change.Property))
+        if (change.Property == ButtonTypeProperty)
         {
-            UpdatePseudoClasses();
+            UpdateButtonTypePseudoClasses();
         }
 
         if (ShouldConfigureEffectiveBorderThickness(change.Property))
@@ -705,10 +657,9 @@ public partial class Button : AvaloniaButton,
     {
         WaveSpiritType = Shape switch
         {
-            ButtonShape.Default => WaveSpiritType.RoundRectWave,
-            ButtonShape.Round   => WaveSpiritType.PillWave,
-            ButtonShape.Circle  => WaveSpiritType.CircleWave,
-            _                   => default
+            ButtonShape.Round  => WaveSpiritType.PillWave,
+            ButtonShape.Circle => WaveSpiritType.CircleWave,
+            _                  => WaveSpiritType.RoundRectWave
         };
     }
 
@@ -724,32 +675,21 @@ public partial class Button : AvaloniaButton,
         }
     }
 
-    private void ConfigureEffectiveButtonState()
+    protected override void OnEffectiveButtonStateChanged()
     {
-        var (color, variant) = ResolveEffectiveColorAndVariant();
-
-        if (IsGhost && variant == ButtonVariant.Solid)
-        {
-            variant = ButtonVariant.Outlined;
-        }
-
-        EffectiveColor      = color;
-        EffectiveVariant    = variant;
-        EffectiveIsDanger   = color == ButtonColor.Danger;
+        EffectiveIsDanger   = EffectiveColor == ButtonColor.Danger;
         EffectiveIsGhost    = IsGhost;
-        EffectiveIsBordered = IsBorderedVariant(variant);
+        EffectiveIsBordered = IsBorderedVariant(EffectiveVariant);
 
         ConfigureEffectiveBorderThickness();
         ConfigureVariantThemeVariables();
     }
 
-    private (ButtonColor Color, ButtonVariant Variant) ResolveEffectiveColorAndVariant()
-    {
-        if (Color is not null && Variant is not null)
-        {
-            return (Color.Value, Variant.Value);
-        }
+    protected override ButtonVariant NormalizeVariant(ButtonVariant variant) =>
+        IsGhost && variant == ButtonVariant.Solid ? ButtonVariant.Outlined : variant;
 
+    protected override (ButtonColor Color, ButtonVariant Variant) ResolveFallbackColorAndVariant()
+    {
         if (ButtonType != ButtonType.Default || IsDanger)
         {
             var variant = ButtonType switch
@@ -842,27 +782,10 @@ public partial class Button : AvaloniaButton,
     private void ConfigureEffectiveCornerRadius()
     {
         EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
-            _shapeCornerRadius ?? HostCornerRadius ?? CornerRadius,
+            Shape == ButtonShape.Rectangular ? default : _shapeCornerRadius ?? HostCornerRadius ?? CornerRadius,
             IsUsedInCompactSpace, 
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
-    }
-
-    private bool ShouldUpdatePseudoClasses(AvaloniaProperty property)
-    {
-        return property == ContentProperty ||
-               property == IsLoadingProperty ||
-               property == ButtonTypeProperty ||
-               property == IsDangerProperty;
-    }
-
-    private bool ShouldConfigureEffectiveButtonState(AvaloniaProperty property)
-    {
-        return property == ButtonTypeProperty ||
-               property == IsDangerProperty ||
-               property == IsGhostProperty ||
-               property == ColorProperty ||
-               property == VariantProperty;
     }
 
     private bool ShouldConfigureEffectiveBorderThickness(AvaloniaProperty property)
@@ -876,20 +799,18 @@ public partial class Button : AvaloniaButton,
     {
         return property == CornerRadiusProperty ||
                property == HostCornerRadiusProperty ||
+               property == ShapeProperty ||
                property == CompactSpaceItemPositionProperty ||
                property == CompactSpaceOrientationProperty;
     }
 
-    private void UpdatePseudoClasses()
+    private void UpdateButtonTypePseudoClasses()
     {
-        PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
-        PseudoClasses.Set(ButtonPseudoClass.Loading, IsLoading);
         PseudoClasses.Set(ButtonPseudoClass.DefaultType, ButtonType == ButtonType.Default);
         PseudoClasses.Set(ButtonPseudoClass.DashedType, ButtonType == ButtonType.Dashed);
         PseudoClasses.Set(ButtonPseudoClass.PrimaryType, ButtonType == ButtonType.Primary);
         PseudoClasses.Set(ButtonPseudoClass.LinkType, ButtonType == ButtonType.Link);
         PseudoClasses.Set(ButtonPseudoClass.TextType, ButtonType == ButtonType.Text);
-        PseudoClasses.Set(ButtonPseudoClass.IsDanger, IsDanger);
     }
 
 }

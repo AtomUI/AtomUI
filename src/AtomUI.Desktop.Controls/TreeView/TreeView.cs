@@ -608,14 +608,11 @@ public partial class TreeView : AvaloniaTreeView,
                 var oldItems = e.OldItems!;
                 for (var i = 0; i < oldItems.Count; i++)
                 {
-                    if (!ShouldPreserveRemovedTreeItem(oldItems[i]))
-                    {
-                        CheckedItems.Remove(oldItems[i]);
-                    }
+                    RemoveCheckedItemOfRemovedNode(oldItems[i]);
                 }
                 break;
             case NotifyCollectionChangedAction.Reset:
-                CheckedItems.Clear();
+                ClearCheckedItemsOfResetRoots();
                 break;
         }
     }
@@ -761,6 +758,7 @@ public partial class TreeView : AvaloniaTreeView,
             treeViewItem[!TreeViewItem.IsAutoExpandParentProperty]        = this[!IsAutoExpandParentProperty];
             
             PrepareTreeViewItem(treeViewItem, item, index);
+            NotifyTreeViewItemPrepared(treeViewItem, item);
         }
         else
         {
@@ -784,19 +782,37 @@ public partial class TreeView : AvaloniaTreeView,
     {
     }
 
+    // Avalonia's TreeViewItem forwards the prepare of nested containers here, so this covers every level.
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
+    {
+        if (container is TreeViewItem treeViewItem)
+        {
+            using (treeViewItem.BeginContainerLifecycle())
+            {
+                base.PrepareContainerForItemOverride(container, item, index);
+            }
+            return;
+        }
+
+        base.PrepareContainerForItemOverride(container, item, index);
+    }
+
     protected override void ClearContainerForItemOverride(Control container)
     {
         if (container is TreeViewItem treeViewItem)
         {
-            var shouldReleaseTreeDataTemplateBinding = treeViewItem.Header is BindableTreeItemNode;
-            treeViewItem.ClearPreparedTreeItemNodeData();
-            base.ClearContainerForItemOverride(container);
-            if (shouldReleaseTreeDataTemplateBinding)
+            using (treeViewItem.BeginContainerLifecycle())
             {
-                // HeaderedItemsControl keeps TreeDataTemplate children binding in an internal disposable.
-                // Preparing once with a null item lets Avalonia release that binding before recycling.
-                base.PrepareContainerForItemOverride(container, null, -1);
+                var shouldReleaseTreeDataTemplateBinding = treeViewItem.Header is BindableTreeItemNode;
+                treeViewItem.ClearPreparedTreeItemNodeData();
                 base.ClearContainerForItemOverride(container);
+                if (shouldReleaseTreeDataTemplateBinding)
+                {
+                    // HeaderedItemsControl keeps TreeDataTemplate children binding in an internal disposable.
+                    // Preparing once with a null item lets Avalonia release that binding before recycling.
+                    base.PrepareContainerForItemOverride(container, null, -1);
+                    base.ClearContainerForItemOverride(container);
+                }
             }
             return;
         }
@@ -810,6 +826,7 @@ public partial class TreeView : AvaloniaTreeView,
         _isTreeDataControllerAttached = true;
         _treeDataController.SetRootSource(ItemsSource);
         InteractionHandler.Attach(this);
+        ObserveSelectedItems();
         UpdatePseudoClasses();
     }
     
@@ -820,6 +837,7 @@ public partial class TreeView : AvaloniaTreeView,
         ClearKeyboardActiveItem();
         CancelItemsSourceReplay();
         InteractionHandler.Detach(this);
+        StopObservingSelectedItems();
         
         // 清理所有待处理的异步加载操作
         _asyncLoadCoordinator.CancelAll();
@@ -1161,6 +1179,11 @@ public partial class TreeView : AvaloniaTreeView,
         else if (change.Property == SelectedItemProperty || change.Property == SelectedItemsProperty)
         {
             RecordExplicitSelectionUpdateDuringReplay(true);
+        }
+
+        if (change.Property == SelectedItemsProperty && _isTreeDataControllerAttached)
+        {
+            ObserveSelectedItems();
         }
 
     }

@@ -153,6 +153,9 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     // Live ancestor-visibility subscriptions; 0 when the tracker is not active.
     internal int TrackedAncestorCount => _ancestorVisibilityTracker?.SubscriptionCount ?? 0;
 
+    // A product that delegates its target to another badge owns that transfer.
+    internal virtual bool SynchronizesDecoratedTarget => true;
+
     private protected abstract AbstractCountBadgeAdorner CreateBadgeAdorner();
 
     private void PrepareAdorner()
@@ -539,6 +542,11 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     // 目标的挂载与替换独立于指示器：指示器未创建或处于隐藏时，旧目标仍要移除、新目标仍要挂上。
     private void SyncDecoratedTargetChild(Control? oldDecoratedTarget)
     {
+        if (!SynchronizesDecoratedTarget)
+        {
+            return;
+        }
+
         if (oldDecoratedTarget is not null &&
             !ReferenceEquals(oldDecoratedTarget, DecoratedTarget) &&
             oldDecoratedTarget.GetVisualParent() == this)

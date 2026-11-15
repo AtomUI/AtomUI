@@ -101,14 +101,34 @@ public sealed class MotionGate : IDisposable
             ResolveSource();
             Update();
         }
+        else if (e.Property == Visual.IsVisibleProperty && _isAttached)
+        {
+            ConfigureVisibilityTracking();
+            Update();
+        }
     }
 
     private void Attach()
     {
-        _attachment?.Dispose();
-        _attachment = new CompositeDisposable();
         _isAttached = true;
         ResolveSource();
+        ConfigureVisibilityTracking();
+    }
+
+    private void ConfigureVisibilityTracking()
+    {
+        _attachment?.Dispose();
+        _attachment = null;
+        // A hidden owner is never effectively visible whatever its ancestors are, so the ancestor chain is watched
+        // only while the owner itself is visible. Many owners start hidden (placeholders, optional parts), and each
+        // tracked owner subscribes to every ancestor. The owner's own IsVisible changes re-run this method.
+        if (!_owner.IsVisible)
+        {
+            _isVisible = false;
+            return;
+        }
+
+        _attachment = new CompositeDisposable();
         // Reports the current value synchronously, then every ancestor visibility change.
         _owner.TrackEffectiveVisibility(isVisible =>
         {
@@ -116,6 +136,9 @@ public sealed class MotionGate : IDisposable
             Update();
         }, _attachment);
     }
+
+    /// <summary>Gets whether the gate currently subscribes to the owner's visual ancestors.</summary>
+    internal bool IsTrackingAncestorVisibility => _attachment is not null;
 
     private void Detach()
     {

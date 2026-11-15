@@ -2,6 +2,11 @@
 
 本文档记录 AutoComplete 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Fixed
+  - 候选列表超过视口、虚拟化回收容器后，键盘活动候选的高亮会落到错误的行上，滚回后活动候选不高亮。修复位于共享的 CandidateList，详见 [ListBox Changelog](../../data-display/list-box/changelog.md)。
+
 ## 2026-11-11
 
 - Theme

@@ -192,7 +192,10 @@ public class ComboBoxShowCasePageTests
                 editableComboBox.IsDropDownOpen = true;
                 Dispatcher.UIThread.RunJobs();
 
-                var popupFrame = GetVisualDescendant<Border>(window, "PopupFrame");
+                var filterPopup = editableComboBox.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single();
+                filterPopup.IsOpen.ShouldBeTrue();
+                var popupFrame = filterPopup.Child.ShouldBeOfType<Border>();
+                TopLevel.GetTopLevel(popupFrame).ShouldBeSameAs(window);
                 popupFrame.GetVisualDescendants()
                           .OfType<AtomUI.Desktop.Controls.ComboBoxItem>()
                           .Where(item => item.IsVisible && item.Content is string)
@@ -217,9 +220,11 @@ public class ComboBoxShowCasePageTests
                     box.IsDropDownOpen = true;
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    box.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single()
-                       .IsOpen.ShouldBeTrue($"{name} must open its physical popup at {box.Bounds}.");
-                    var frame = GetVisualDescendant<Border>(window, "PopupFrame");
+                    var popup = box.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single();
+                    popup.IsOpen.ShouldBeTrue($"{name} must open its physical popup at {box.Bounds}.");
+                    // The previous example's popup can still be playing its close motion in the overlay.
+                    var frame = popup.Child.ShouldBeOfType<Border>();
+                    TopLevel.GetTopLevel(frame).ShouldBeSameAs(window);
                     var indicator = GetVisualDescendant<Border>(frame, "PART_EmptyIndicator");
                     indicator.IsEffectivelyVisible.ShouldBe(name != "DisabledEmptyComboBox");
                     if (name == "TemplateEmptyComboBox")

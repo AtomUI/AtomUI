@@ -200,6 +200,12 @@ public partial class ButtonFamilyEffectTests
             return button;
         };
 
+        EffectSetup StatusSetup(string statusToken, ButtonVariant variant, string? pseudoClass)
+        {
+            var color = statusToken.StartsWith("ColorSuccess", StringComparison.Ordinal) ? ButtonColor.Success : ButtonColor.Warning;
+            return new(With(b => Variant(b, color, variant)), pseudoClass is null ? null : Pseudo(pseudoClass));
+        }
+
         void Release(AtomButton button)
         {
             if (isDropdown)
@@ -312,6 +318,20 @@ public partial class ButtonFamilyEffectTests
                 return new(With(static b => Variant(b, ButtonColor.Primary, ButtonVariant.Filled)), Pseudo(":pointerover"));
             case "ColorPrimaryBorder":
                 return new(With(static b => Variant(b, ButtonColor.Primary, ButtonVariant.Filled)), Pseudo(":pressed"));
+
+            // Success / Warning: the semantic variant layout of Primary with the Global status Tokens.
+            case "ColorSuccess" or "ColorWarning":
+                return StatusSetup(token, ButtonVariant.Solid, null);
+            case "ColorSuccessHover" or "ColorWarningHover":
+                return StatusSetup(token, ButtonVariant.Solid, ":pointerover");
+            case "ColorSuccessActive" or "ColorWarningActive":
+                return StatusSetup(token, ButtonVariant.Solid, ":pressed");
+            case "ColorSuccessBg" or "ColorWarningBg":
+                return StatusSetup(token, ButtonVariant.Filled, null);
+            case "ColorSuccessBgHover" or "ColorWarningBgHover":
+                return StatusSetup(token, ButtonVariant.Filled, ":pointerover");
+            case "ColorSuccessBorder" or "ColorWarningBorder":
+                return StatusSetup(token, ButtonVariant.Filled, ":pressed");
 
             // Danger
             case "DangerColor":

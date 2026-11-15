@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
@@ -450,6 +451,18 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     private IBrush? _treeNodeLinePenBrush;
     private double _treeNodeLinePenWidth;
     private CompositeDisposable? _treeItemNodeBindingDisposables;
+    // Plain ITreeItemNode data has no change notification, so the container writes its interactive state
+    // back to it. A virtualizing panel prepares recycled containers from the node data again, which then
+    // carries the latest state; BindableTreeItemNode gets the same through its two-way sync.
+    private ITreeItemNode? _stateWriteBackTreeItemNode;
+    private bool _isApplyingNodeData;
+    // In checkbox mode the owning TreeView reconciles the node's checked state with CheckedItems once the node
+    // data is applied, so the IsChecked change of the apply is not handled as a toggle.
+    private bool _isCheckedStateReconciledByOwner;
+    // Prepare, clear and logical (re)attach swap ItemsSource for the container's own reasons; such resets and
+    // replacements do not remove nodes from the data tree.
+    private int _containerLifecycleDepth;
+    private bool _isItemsSourceChanging;
 
     static TreeViewItem()
     {
@@ -487,25 +500,51 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         // TreeViewItem._treeView forwarding, which is never reset after detach), the
         // TreeViewItem-level prepare, and logical re-attach — funnel through this method, so
         // the membership invariant is enforced here rather than at each caller.
-        if (!this.GetLogicalAncestors().OfType<TreeView>().Any())
+        if (this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault() is not { } treeView)
         {
             return;
         }
 
         ClearTreeItemNodeBindingDisposables();
 
+        var isCheckedStateReconciledByOwner = treeView.ToggleType == ItemToggleType.CheckBox;
         if (treeItemData is BindableTreeItemNode bindableTreeItemNode)
         {
             var disposables = new CompositeDisposable();
             _treeItemNodeBindingDisposables = disposables;
             disposables.Add(bindableTreeItemNode.AttachResourceHost(resourceHost));
 
-            ApplyNodeData(this, treeItemData);
+            ApplyNodeData(this, treeItemData, isCheckedStateReconciledByOwner);
             BindBindableTreeItemNode(bindableTreeItemNode, disposables);
         }
         else
         {
-            ApplyNodeData(this, treeItemData);
+            ApplyNodeData(this, treeItemData, isCheckedStateReconciledByOwner);
+            _stateWriteBackTreeItemNode = treeItemData;
+        }
+
+        treeView.ReconcilePreparedCheckedState(this, treeItemData);
+    }
+
+    internal ContainerLifecycleScope BeginContainerLifecycle()
+    {
+        return new ContainerLifecycleScope(this);
+    }
+
+    // A struct scope: prepare and clear run for every container a virtualizing panel recycles.
+    internal readonly struct ContainerLifecycleScope : IDisposable
+    {
+        private readonly TreeViewItem _owner;
+
+        public ContainerLifecycleScope(TreeViewItem owner)
+        {
+            _owner = owner;
+            ++owner._containerLifecycleDepth;
+        }
+
+        public void Dispose()
+        {
+            --_owner._containerLifecycleDepth;
         }
     }
 
@@ -513,6 +552,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         _treeItemNodeBindingDisposables?.Dispose();
         _treeItemNodeBindingDisposables = null;
+        _stateWriteBackTreeItemNode     = null;
     }
 
     internal void ClearPreparedTreeItemNodeData()
@@ -523,13 +563,18 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         // and SelectedItems, which would destroy state that outlives the container otherwise.
         if (Header is BindableTreeItemNode)
         {
-            ClearValue(ItemsSourceProperty);
+            using (BeginContainerLifecycle())
+            {
+                ClearValue(ItemsSourceProperty);
+            }
         }
     }
     
     private void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (OwnerTreeView is null)
+        // Swapping ItemsSource replays the old children as removed (or a Reset); the swap itself decides, with
+        // both collections known, whether nodes left the data tree.
+        if (OwnerTreeView is null || _isItemsSourceChanging)
         {
             return;
         }
@@ -541,14 +586,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
                 var oldItems = e.OldItems!;
                 for (var i = 0; i < oldItems.Count; i++)
                 {
-                    if (!OwnerTreeView.ShouldPreserveRemovedTreeItem(oldItems[i]))
-                    {
-                        OwnerTreeView.CheckedItems.Remove(oldItems[i]);
-                    }
+                    OwnerTreeView.RemoveCheckedItemOfRemovedNode(oldItems[i]);
                 }
                 break;
             case NotifyCollectionChangedAction.Reset:
-                OwnerTreeView.CheckedItems.Clear();
+                OwnerTreeView.RemoveDetachedCheckedItems();
                 break;
         }
     }
@@ -570,7 +612,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        base.OnAttachedToLogicalTree(e);
+        // HeaderedItemsControl may bind the children it deferred while detached.
+        using (BeginContainerLifecycle())
+        {
+            base.OnAttachedToLogicalTree(e);
+        }
 
         // Node bindings follow logical-tree membership: this is the same ancestor chain Avalonia
         // uses for TreeViewItem._treeView (EnsureTreeView), so base.PrepareContainerForItemOverride
@@ -582,7 +628,10 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             Header is BindableTreeItemNode bindableTreeItemNode &&
             treeView is not null)
         {
-            base.PrepareContainerForItemOverride(this, bindableTreeItemNode, -1);
+            using (BeginContainerLifecycle())
+            {
+                base.PrepareContainerForItemOverride(this, bindableTreeItemNode, -1);
+            }
             var resourceHost = this.GetLogicalAncestors().OfType<TreeViewItem>().FirstOrDefault() as IResourceHost ?? treeView;
             PrepareTreeItemNodeData(bindableTreeItemNode, resourceHost);
         }
@@ -590,13 +639,39 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        ClearPreparedTreeItemNodeData();
-        base.OnDetachedFromLogicalTree(e);
+        using (BeginContainerLifecycle())
+        {
+            ClearPreparedTreeItemNodeData();
+            base.OnDetachedFromLogicalTree(e);
+        }
     }
     
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
+        if (change.Property == ItemsSourceProperty)
+        {
+            // ItemsControl answers the swap with a Reset of Items from inside base.OnPropertyChanged.
+            var wasItemsSourceChanging = _isItemsSourceChanging;
+            _isItemsSourceChanging = true;
+            try
+            {
+                base.OnPropertyChanged(change);
+            }
+            finally
+            {
+                _isItemsSourceChanging = wasItemsSourceChanging;
+            }
+            HandleItemsSourceChanged(change);
+        }
+        else
+        {
+            base.OnPropertyChanged(change);
+        }
+
+        if (_stateWriteBackTreeItemNode is { } stateWriteBackTreeItemNode)
+        {
+            SyncTreeItemNodeFromContainer(stateWriteBackTreeItemNode, change.Property);
+        }
         
         if (change.Property == ItemCountProperty ||
             change.Property == HasTreeItemDataLoaderProperty)
@@ -703,6 +778,18 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         }
     }
 
+    // Outside the container's own lifecycle a new ItemsSource means the node's children collection was replaced,
+    // e.g. BindableTreeItemNode.Children assigned: the old children the new collection does not carry are gone.
+    private void HandleItemsSourceChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        if (_containerLifecycleDepth == 0 &&
+            OwnerTreeView is { } owner &&
+            change.GetOldValue<IEnumerable?>() is { } oldChildren)
+        {
+            owner.RemoveCheckedItemsOfReplacedChildren(oldChildren, change.GetNewValue<IEnumerable?>());
+        }
+    }
+
     private void HandleGroupNameChanged(AvaloniaPropertyChangedEventArgs change)
     {
         (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnGroupOrTypeChanged(this, change.GetOldValue<string>());
@@ -721,6 +808,15 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         var newValue = change.GetNewValue<bool?>();
         PseudoClasses.Set(StdPseudoClass.Checked, newValue == true);
+
+        // Node data applied on prepare restores state, it is not a toggle. In checkbox mode the owner reconciles it
+        // with CheckedItems afterwards; otherwise a container a virtualizing panel is still realizing has no item
+        // index yet for the handler to resolve.
+        if (_isApplyingNodeData &&
+            (_isCheckedStateReconciledByOwner || (Parent as ItemsControl)?.ItemFromContainer(this) is null))
+        {
+            return;
+        }
 
         (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(this);
     }
@@ -992,6 +1088,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             treeViewItem[!IsAutoExpandParentProperty]        = this[!IsAutoExpandParentProperty];
             
             PrepareTreeViewItem(treeViewItem, item, index);
+            OwnerTreeView?.NotifyTreeViewItemPrepared(treeViewItem, item);
         }
         else
         {
@@ -1007,15 +1104,18 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         if (container is TreeViewItem treeViewItem)
         {
-            var shouldReleaseTreeDataTemplateBinding = treeViewItem.Header is BindableTreeItemNode;
-            treeViewItem.ClearPreparedTreeItemNodeData();
-            base.ClearContainerForItemOverride(container);
-            if (shouldReleaseTreeDataTemplateBinding)
+            using (treeViewItem.BeginContainerLifecycle())
             {
-                // HeaderedItemsControl keeps TreeDataTemplate children binding in an internal disposable.
-                // Preparing once with a null item lets Avalonia release that binding before recycling.
-                base.PrepareContainerForItemOverride(container, null, -1);
+                var shouldReleaseTreeDataTemplateBinding = treeViewItem.Header is BindableTreeItemNode;
+                treeViewItem.ClearPreparedTreeItemNodeData();
                 base.ClearContainerForItemOverride(container);
+                if (shouldReleaseTreeDataTemplateBinding)
+                {
+                    // HeaderedItemsControl keeps TreeDataTemplate children binding in an internal disposable.
+                    // Preparing once with a null item lets Avalonia release that binding before recycling.
+                    base.PrepareContainerForItemOverride(container, null, -1);
+                    base.ClearContainerForItemOverride(container);
+                }
             }
             return;
         }
@@ -1023,19 +1123,30 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         base.ClearContainerForItemOverride(container);
     }
 
-    internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeItemNode treeItemData)
+    internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeItemNode treeItemData,
+                                       bool isCheckedStateReconciledByOwner)
     {
-        treeViewItem.SetCurrentValue(IconProperty, treeItemData.Icon);
-        treeViewItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
-        treeViewItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
-        treeViewItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
-        treeViewItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
-        treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
-        treeViewItem.SetCurrentValue(GroupNameProperty, treeItemData.GroupName);
-        treeViewItem.SetCurrentValue(ValueProperty, treeItemData.Value);
-        
-        treeViewItem.ItemKey = treeItemData.ItemKey;
-        treeViewItem.IsLeaf  = treeItemData.IsLeaf;
+        treeViewItem._isApplyingNodeData              = true;
+        treeViewItem._isCheckedStateReconciledByOwner = isCheckedStateReconciledByOwner;
+        try
+        {
+            treeViewItem.SetCurrentValue(IconProperty, treeItemData.Icon);
+            treeViewItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
+            treeViewItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
+            treeViewItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
+            treeViewItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
+            treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
+            treeViewItem.SetCurrentValue(GroupNameProperty, treeItemData.GroupName);
+            treeViewItem.SetCurrentValue(ValueProperty, treeItemData.Value);
+
+            treeViewItem.ItemKey = treeItemData.ItemKey;
+            treeViewItem.IsLeaf  = treeItemData.IsLeaf;
+        }
+        finally
+        {
+            treeViewItem._isApplyingNodeData              = false;
+            treeViewItem._isCheckedStateReconciledByOwner = false;
+        }
     }
 
     private void BindBindableTreeItemNode(BindableTreeItemNode node, CompositeDisposable disposables)
@@ -1047,7 +1158,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
         void ContainerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            SyncBindableTreeItemNodeFromContainer(node, e.Property);
+            SyncTreeItemNodeFromContainer(node, e.Property);
         }
 
         node.PropertyChanged += NodePropertyChanged;
@@ -1114,7 +1225,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         }
     }
 
-    private void SyncBindableTreeItemNodeFromContainer(BindableTreeItemNode node, AvaloniaProperty property)
+    private void SyncTreeItemNodeFromContainer(ITreeItemNode node, AvaloniaProperty property)
     {
         if (property == IsCheckedProperty &&
             node.IsChecked != IsChecked)

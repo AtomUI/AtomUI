@@ -2,6 +2,11 @@
 
 本文档记录 Pagination 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Performance
+  - `PaginationNav` creates its nine fixed navigation slots when its template applies instead of in the constructor. Hidden, empty and single-page paginations no longer build and style them (an empty Pagination: 382 KB → 80 KB). The items panel is built only when the presenter is measured, after this point, so containers are prepared with the same item count and order as before.
+
 ## 2026-11-10
 
 - Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。

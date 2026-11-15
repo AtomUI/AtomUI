@@ -1,4 +1,5 @@
 using AtomUI.Animations;
+using AtomUI.Controls;
 using AtomUI.Utils;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
@@ -89,16 +90,6 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         }
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        // The ink bar thickness is a Token (InkBarThickness): a theme or Control-level change re-lays the indicator out.
-        if (change.Property == SelectedIndicatorThicknessProperty)
-        {
-            SetupSelectedIndicator();
-        }
-    }
-
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
@@ -123,6 +114,7 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
             _scrollViewer.PropertyChanged += HandleScrollViewerPropertyChanged;
         }
 
+        ConfigureCustomIndicator();
         SubscribeSelectedItemBounds();
         SetupSelectedIndicator();
     }
@@ -133,6 +125,35 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         base.OnAttachedToVisualTree(e);
         SubscribeSelectedItemBounds();
         SetupSelectedIndicator();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == IsIndicatorLengthAnimatedProperty || change.Property == IsSelectedItemCenteredProperty)
+        {
+            ConfigureCustomIndicator();
+            InvalidateArrange();
+        }
+        // The ink bar thickness is a Token (InkBarThickness): a theme or Control-level change re-lays the indicator out.
+        if (change.Property == IndicatorModeProperty || change.Property == IndicatorFixedLengthProperty ||
+            change.Property == IsIndicatorLengthAnimatedProperty || change.Property == SelectedIndicatorThicknessProperty)
+        {
+            SetupSelectedIndicator();
+        }
+    }
+
+    private void ConfigureCustomIndicator()
+    {
+        if (IsIndicatorLengthAnimated || IsSelectedItemCentered)
+        {
+            SetCustomIndicatorParts(IsIndicatorLengthAnimated ? _selectedIndicator : null,
+                IsSelectedItemCentered ? _scrollViewer : null, _itemsPresenter);
+        }
+        else
+        {
+            ResetCustomIndicatorParts();
+        }
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -180,7 +201,7 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
     
     private void SetupSelectedIndicator()
     {
-        if (IsTabReorderIndicatorRefreshDeferred)
+        if (IsIndicatorLengthAnimated || IsTabReorderIndicatorRefreshDeferred)
         {
             return;
         }
@@ -204,7 +225,6 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
                 var selectedBounds = tabStripItem.Bounds;
                 var builder        = new TransformOperations.Builder(1);
                 var offset         = _itemsPresenter?.Bounds.Position ?? default;
-                var selectedSize   = selectedBounds.Size;
                 var previewOffset  = GetTabReorderPreviewPrimaryOffset(tabStripItem);
                 if (!double.IsFinite(offset.X) || !double.IsFinite(offset.Y) || !double.IsFinite(previewOffset))
                 {
@@ -216,30 +236,14 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
                 _selectedIndicator.SetCurrentValue(IsVisibleProperty, true);
 
 
-                if (TabStripPlacement == Dock.Top)
-                {
-                    _selectedIndicator.SetCurrentValue(WidthProperty, selectedSize.Width);
-                    _selectedIndicator.SetCurrentValue(HeightProperty, SelectedIndicatorThickness);
-                    builder.AppendTranslate(offset.X + selectedBounds.Left + previewOffset, 0);
-                }
-                else if (TabStripPlacement == Dock.Right)
-                {
-                    _selectedIndicator.SetCurrentValue(HeightProperty, selectedSize.Height);
-                    _selectedIndicator.SetCurrentValue(WidthProperty, SelectedIndicatorThickness);
-                    builder.AppendTranslate(0, offset.Y + selectedBounds.Y + previewOffset);
-                }
-                else if (TabStripPlacement == Dock.Bottom)
-                {
-                    _selectedIndicator.SetCurrentValue(WidthProperty, selectedSize.Width);
-                    _selectedIndicator.SetCurrentValue(HeightProperty, SelectedIndicatorThickness);
-                    builder.AppendTranslate(offset.X + selectedBounds.Left + previewOffset, 0);
-                }
-                else
-                {
-                    _selectedIndicator.SetCurrentValue(HeightProperty, selectedSize.Height);
-                    _selectedIndicator.SetCurrentValue(WidthProperty, SelectedIndicatorThickness);
-                    builder.AppendTranslate(0, offset.Y + selectedBounds.Y + previewOffset);
-                }
+                var vertical = TabStripPlacement is Dock.Left or Dock.Right;
+                var itemBounds = new Rect(selectedBounds.Position + offset +
+                    (vertical ? new Point(0, previewOffset) : new Point(previewOffset, 0)), selectedBounds.Size);
+                var bounds = TabSelectionIndicator.ResolveBounds(tabStripItem, itemBounds,
+                    vertical, IndicatorMode, IndicatorFixedLength);
+                _selectedIndicator.SetCurrentValue(WidthProperty, vertical ? SelectedIndicatorThickness : bounds.Length);
+                _selectedIndicator.SetCurrentValue(HeightProperty, vertical ? bounds.Length : SelectedIndicatorThickness);
+                builder.AppendTranslate(vertical ? 0 : bounds.Start, vertical ? bounds.Start : 0);
 
                 var transform = builder.Build();
                 var baseTransform = GetBaseValue(SelectedIndicatorRenderTransformProperty);

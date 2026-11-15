@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:preview="clr-namespace:AtomUI.Desktop.Controls;assembly=AtomUI.Controls"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ImageGroupPreviewer}" TargetType="atom:ImageGroupPreviewer">
         <Setter Property="atom:ImageViewer.ThemeColorBgLayout" Value="{atom:ImageGroupPreviewerTokenResource ColorBgLayout}" />
@@ -48,7 +49,7 @@
                                   ItemsSource="{TemplateBinding EffectiveItems}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="atom:ImagePreviewEntry">
+                            <DataTemplate x:DataType="preview:ImagePreviewEntry">
                                 <atom:ImagePreviewerCover ImageSource="{Binding ThumbnailImage}"
                                                           OwnerPadding="{Binding Padding, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"
                                                           OwnerBorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=atom:ImageGroupPreviewer}}"

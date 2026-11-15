@@ -20,7 +20,8 @@ Popup 的物理关闭策略还承载内部钉住打开状态。`IsPopupPinnedOpe
 - `src/AtomUI.Desktop.Controls/Popup/Popup.cs`：公共 API、自定义定位、翻转通知、frame shadow 选择、动效和 wheel guard。
 - `src/AtomUI.Desktop.Controls/Popup/PopupReflectionExtensions.cs`
 - `src/AtomUI.Desktop.Controls/Popup/PopupLightDismissRegistration.cs`：取得当前 open session 的 light-dismiss registration，负责配置变化时的更新和释放。
-- `src/AtomUI.Desktop.Controls/Popup/PopupUtils.cs`：placement 算法、popup scope 和 owning popup 查询。
+- `src/AtomUI.Desktop.Controls/Popup/PopupUtils.cs`：Desktop 宿主定位、边界约束以及 popup scope 和 owning popup 查询。
+- `src/AtomUI.Controls/Primitives/ArrowDecoratedBox/PlacementGeometry.cs`：与 Mobile 共用的锚点、重力、翻转与放置转换。
 - `src/AtomUI.Desktop.Controls/Popup/PopupToken.cs`：Popup 家族的阴影、圆角和 anchor margin Token。
 - `src/AtomUI.Core/Animations/Motion`：可复用动效定义、原生播放、请求身份和属性覆盖。
 - `src/AtomUI.Desktop.Controls/Popup/PopupSurface.cs`：实际表面与显示前的 owner 就绪通知。

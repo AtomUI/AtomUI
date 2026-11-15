@@ -11,15 +11,5 @@
                 Value="{atom:ToggleSwitchTokenResource LineWidth}" />
         <Setter Property="LoadingAnimationDuration"
                 Value="{atom:ToggleSwitchTokenResource LoadingAnimationDuration}" />
-
-        <Style Selector="^[IsMotionEnabled=True]">
-            <Setter Property="Transitions">
-                <atom:TokenTransitions>
-                    <Transitions>
-                        <DoubleTransition Property="KnobRenderWidth" atom:TokenTransitions.Duration="MotionDurationMid" />
-                    </Transitions>
-                </atom:TokenTransitions>
-            </Setter>
-        </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -10,7 +10,8 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 主要源码：
 
-- `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.cs`：公共 API、Avalonia 属性注册、事件、Form 接口、状态入口和模板生命周期。
+- `src/AtomUI.Controls/Input/AbstractOtpInput.cs` 承担输入过滤、活动格、完成事件和 Form 值。
+- `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.cs` 保留公开属性和事件，负责模板、格子投射及桌面 Form feedback。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.SemanticParts.cs`：Semantic Part descriptor 声明（`root`、`cellList`、`cell`、`separator`），cell 与 separator 为 `Multiple` + RuntimeCreated。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditCell.cs`：内部 cell 控件，承载单字符显示、placeholder、active、mask 和事件回调。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditSeparatorContext.cs`：separator 模板上下文，提供前后 cell index 和 display index。
@@ -27,7 +28,7 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 ## 3. 核心类职责
 
-`OtpLineEdit` 是 public 控件，也是唯一状态 owner。它负责维护 `Text`、`Length`、active cell index、完成状态、effective status、Form feedback 和模板 part 生命周期。
+`AbstractOtpInput` 维护 `Text`、`Length`、活动格、完成状态和有效验证状态。桌面 `OtpLineEdit` 将这些状态投射到格子，管理 Form feedback 和模板生命周期。逻辑索引始终按文本顺序排列。RTL 布局将索引 0 放到右侧，方向键按可见方向移动。
 
 `OtpLineEditCell` 是 internal visual/input cell。它接收 owner 投射的 display character、placeholder、active、masked、read-only、disabled 和 effective status。它可以把用户输入事件回调给 owner，但不能独立更新验证码值。
 

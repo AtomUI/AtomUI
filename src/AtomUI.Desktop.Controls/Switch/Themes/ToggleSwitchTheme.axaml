@@ -29,6 +29,8 @@
                                      atom:TransitionInitialization.Mode="Owner"
                                      Classes.semantic-indicator="True"
                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                     RenderTransform="{TemplateBinding KnobRenderTransform}"
+                                     RenderTransformOrigin="0%,0%"
                                      IsCheckedState="{TemplateBinding IsChecked}" />
                 </Panel>
             </ControlTemplate>
@@ -53,7 +55,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:RectTransition Property="KnobMovingRect" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <TransformOperationsTransition Property="KnobRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>

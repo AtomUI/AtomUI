@@ -87,6 +87,7 @@ Read the relevant document before touching the corresponding area:
 - AI collaboration and bug-fix discipline: [docs/engineering/contributing/agent-guidelines.md](docs/engineering/contributing/agent-guidelines.md)
 - Test value, temporary-first lifecycle, and mandatory feature/bug-fix acceptance: [docs/engineering/development/test-value-and-lifecycle.md](docs/engineering/development/test-value-and-lifecycle.md)
 - Reference project source lookup: [docs/engineering/contributing/reference-project-source-guidelines.md](docs/engineering/contributing/reference-project-source-guidelines.md)
+- Branch and worktree management (hard constraint): [docs/engineering/contributing/branch-and-worktree-guidelines.md](docs/engineering/contributing/branch-and-worktree-guidelines.md)
 - AOT and trimming architecture: [docs/architecture/foundations/aot-and-trimming.md](docs/architecture/foundations/aot-and-trimming.md)
 - TypeMap registration pipeline: [docs/architecture/foundations/aot-typemap-registration.md](docs/architecture/foundations/aot-typemap-registration.md)
 - Control, Token and resource registration contracts: [docs/architecture/foundations/control-registration-contracts.md](docs/architecture/foundations/control-registration-contracts.md)
@@ -143,6 +144,15 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 1. **未经明确指令不得提交**：没有用户的明确要求，完成一个任务或模块的开发之后，必须先交用户审查；未通过审查前，禁止自行创建 git commit，同样禁止 amend、rebase 等改写已有提交的动作。
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
+
+## 分支与 Worktree 强约束（本项目生效）
+
+1. **主线开发**：主线是 `release/6.0`，默认直接在主工作区的 `release/6.0` 上开发；不得自行切换到其他分支。
+2. **未经许可不得创建**：没有用户在对话中的明确许可，禁止创建任何分支或 worktree（含 `git branch`/`checkout -b`/`switch -c`/`worktree add`，以及 `EnterWorktree`、子代理 worktree 隔离、`superpowers:using-git-worktrees` 等隐式创建方式）。技能默认要求隔离时，以本条为准。许可单次有效，只覆盖所申请的那个分支 / worktree。
+3. **名称必须有明确含义**：分支名用 `<类型>/<范围>-<简述>`（如 `fix/datagrid-541-slot-offset`、`perf/navmenu-incremental-ownership`），worktree 目录名与分支名一致；禁止工具自动生成的随机名、哈希、纯日期/序号、`tmp`/`wip`，以及 `claude/`、`codex/` 等代理名前缀。
+4. **完成即合并回主线**：经许可创建的分支与 worktree，开发完成并经用户审查授权提交后，必须合并进 `release/6.0`，在主线上验证通过，再删除 worktree 与分支；不得遗留、不得自行推送。
+
+详细规则见 [分支与 Worktree 管理规范](docs/engineering/contributing/branch-and-worktree-guidelines.md)。
 
 ## Superpowers 产物存放强约束（本项目生效）
 

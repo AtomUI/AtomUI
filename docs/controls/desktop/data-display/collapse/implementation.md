@@ -14,7 +14,8 @@
 - `src/AtomUI.Desktop.Controls/Collapse/Collapse.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseItem.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseToken.cs`
-- `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`
+- `src/AtomUI.Controls/Collapse/AbstractCollapse.cs`、`AbstractCollapseItem.cs`、`ICollapseItemData.cs`：共用容器数据映射、选择模式及手风琴选择规整。
+- `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`：Desktop 的 `CollapseItemData` 默认数据对象。
 - `src/AtomUI.Core/Animations/Motion`：动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
 - `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与方向锚定。
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml`
@@ -29,7 +30,8 @@
 
 ## 3. 核心类职责
 
-- `Collapse`：维护 items、Avalonia selection model、selection mode、输入路由、容器生成、模式切换归一和 item 位置投影。
+- `AbstractCollapse`：配置 Avalonia 选择模式，启用手风琴时保留集合顺序中的第一项选择。
+- `Collapse`：处理 Desktop 输入和 item 的边框、圆角与模板投影。
 - `CollapseItem`：承载单项 public 内容与 `IsSelected` 投影，处理 header 命中、展开按钮和 content motion 生命周期。
 - `CollapseToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
 

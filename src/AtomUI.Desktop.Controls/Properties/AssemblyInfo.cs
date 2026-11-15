@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using AtomUI.Desktop.Controls;
 using Avalonia.Metadata;
 
 [assembly: XmlnsPrefix("https://atomui.net", "atom")]
@@ -12,3 +14,25 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Desktop.Controls.Utils")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme.Resources")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme")]
+
+[assembly: TypeForwardedTo(typeof(ButtonColor))]
+[assembly: TypeForwardedTo(typeof(ButtonVariant))]
+[assembly: TypeForwardedTo(typeof(ButtonShape))]
+[assembly: TypeForwardedTo(typeof(ButtonIconPlacement))]
+[assembly: TypeForwardedTo(typeof(StepsStatus))]
+[assembly: TypeForwardedTo(typeof(ICollapseItemData))]
+[assembly: TypeForwardedTo(typeof(SearchRequestedEventArgs))]
+[assembly: TypeForwardedTo(typeof(SearchTriggerSource))]
+[assembly: TypeForwardedTo(typeof(FormItemLayout))]
+[assembly: TypeForwardedTo(typeof(OtpLineEditInputMode))]
+[assembly: TypeForwardedTo(typeof(OtpLineEditCompletedEventArgs))]
+[assembly: TypeForwardedTo(typeof(SliderMark))]
+[assembly: TypeForwardedTo(typeof(ICascaderOption))]
+[assembly: TypeForwardedTo(typeof(CascaderOption))]
+[assembly: TypeForwardedTo(typeof(ICascaderOptionExtensions))]
+[assembly: TypeForwardedTo(typeof(AtomUI.Desktop.Controls.DataLoad.ICascaderItemDataLoader))]
+[assembly: TypeForwardedTo(typeof(CascaderItemLoadResult))]
+[assembly: TypeForwardedTo(typeof(DateViewerSelectionUnit))]
+[assembly: TypeForwardedTo(typeof(DateViewerPanelKind))]
+[assembly: TypeForwardedTo(typeof(DateViewerCellType))]
+[assembly: TypeForwardedTo(typeof(DateViewerRange))]

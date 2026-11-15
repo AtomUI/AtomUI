@@ -2,6 +2,11 @@
 
 本文档记录 Skeleton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Performance
+  - `MotionGate` subscribes to the owner's visual ancestors only while the owner itself is visible. Hidden owners (for example the placeholder Skeleton in every Gallery ShowCase item) used to subscribe to every ancestor; the gate's result is unchanged because a hidden owner can never run.
+
 ## 2026-11-11
 
 - Fix

@@ -20,24 +20,24 @@ namespace AtomUI.Desktop.Controls;
 // Collapse TokenResource and Controls[Collapse] reaches the item headers, bodies, separators and motion.
 [TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
-public class CollapseItem : HeaderedContentControl, ISelectable
+public class CollapseItem : AbstractCollapseItem, ISelectable
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<bool> IsSelectedProperty =
-        SelectingItemsControl.IsSelectedProperty.AddOwner<CollapseItem>();
+    public new static readonly StyledProperty<bool> IsSelectedProperty =
+        AbstractCollapseItem.IsSelectedProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<bool> IsShowExpandIconProperty =
-        AvaloniaProperty.Register<CollapseItem, bool>(nameof(IsShowExpandIcon), true);
+    public new static readonly StyledProperty<bool> IsShowExpandIconProperty =
+        AbstractCollapseItem.IsShowExpandIconProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<PathIcon?> ExpandIconProperty =
-        AvaloniaProperty.Register<CollapseItem, PathIcon?>(nameof(ExpandIcon));
+    public new static readonly StyledProperty<PathIcon?> ExpandIconProperty =
+        AbstractCollapseItem.ExpandIconProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<object?> AddOnContentProperty =
-        AvaloniaProperty.Register<CollapseItem, object?>(nameof(AddOnContent));
+    public new static readonly StyledProperty<object?> AddOnContentProperty =
+        AbstractCollapseItem.AddOnContentProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<IDataTemplate?> AddOnContentTemplateProperty =
-        AvaloniaProperty.Register<CollapseItem, IDataTemplate?>(nameof(AddOnContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> AddOnContentTemplateProperty =
+        AbstractCollapseItem.AddOnContentTemplateProperty.AddOwner<CollapseItem>();
     
     public static readonly StyledProperty<Thickness> HeaderPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(HeaderPadding));
@@ -45,31 +45,31 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(ContentPadding));
 
-    public bool IsSelected
+    public new bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
 
-    public bool IsShowExpandIcon
+    public new bool IsShowExpandIcon
     {
         get => GetValue(IsShowExpandIconProperty);
         set => SetValue(IsShowExpandIconProperty, value);
     }
 
-    public PathIcon? ExpandIcon
+    public new PathIcon? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
 
-    public object? AddOnContent
+    public new object? AddOnContent
     {
         get => GetValue(AddOnContentProperty);
         set => SetValue(AddOnContentProperty, value);
     }
 
-    public IDataTemplate? AddOnContentTemplate
+    public new IDataTemplate? AddOnContentTemplate
     {
         get => GetValue(AddOnContentTemplateProperty);
         set => SetValue(AddOnContentTemplateProperty, value);
@@ -286,9 +286,7 @@ public class CollapseItem : HeaderedContentControl, ISelectable
 
     static CollapseItem()
     {
-        SelectableMixin.Attach<CollapseItem>(IsSelectedProperty);
         PressedMixin.Attach<CollapseItem>();
-        FocusableProperty.OverrideDefaultValue(typeof(CollapseItem), true);
         DataContextProperty.Changed.AddClassHandler<CollapseItem>((x, e) => x.UpdateHeader(e));
     }
 

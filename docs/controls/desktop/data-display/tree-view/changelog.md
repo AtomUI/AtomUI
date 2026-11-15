@@ -3,6 +3,51 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Fix
+  - 虚拟化面板下 `Shift` + ↑↓ / Home / End 范围多选只包含已实现的行：范围原先在已实现容器的序列上计算，锚点容器被回收后锚点丢失（Shift+End 甚至只剩 1 项）。选择锚点改为保存项，范围在节点数据的先序序列上计算，覆盖未实现的节点。
+  - `SelectedItems` 变化（键盘范围、代码增删）作用于未实现的节点后，节点数据不同步，之后实现的行按旧的 `IsSelected` 显示为未选中。节点 `IsSelected` 现在跟随 `SelectedItems`。
+  - 范围选择内部集合改按引用比较：`TreeItemNode` 是 record，值相等的不同节点会被当成同一项。
+  - 直接添加 `TreeViewItem` 子项的树在虚拟化面板下键盘导航仍停在视口内：面板隐藏它回收的自身容器项，`ContainerFromIndex` 却仍返回它们，导航把它们当作被过滤隐藏而跳过。现在只把有索引（已实现）的容器当作容器，其余按需实现。
+- Implementation
+  - 新增 `TreeView.SelectionState.cs`：attach 期间订阅 `SelectedItems` 集合变化，把增删同步到 `ITreeItemNode.IsSelected`，按引用维护镜像，Reset / 重新 attach 时求差；detach 时退订。
+  - `TreeView.KeyboardNavigation.cs` 新增 `GetRealizedContainer`（`ContainerFromIndex` 且 `IndexFromContainer >= 0`），逐项导航与范围遍历都只把已实现的容器当作容器。
+  - `TreeView.KeyboardNavigation.cs` 的选择锚点从容器改为项，新增按节点数据的先序遍历 `EnumerateNavigableTreeItems`，`SelectKeyboardRange` 改用它；容器离开视觉树不再清空锚点。
+- Tests
+  - `TreeViewKeyboardNavigationTests` 新增直接 `TreeViewItem` 子项在虚拟化面板下 ↑↓ Home End 与 Shift 范围越过视口的用例。
+  - `TreeViewKeyboardNavigationTests` 新增 `TreeItemNode` / `BindableTreeItemNode` 各 4 项：Shift+End 覆盖未实现的根与子节点并保持先序、锚点容器回收后扩展范围、收缩范围取消未实现节点的选择、代码增删未实现节点后行的选择显示。
+- Docs
+  - `keyboard-navigation-design.md` §7.1 增加范围选择算法，§8 性能、§9 兼容性（移除“范围只含已实现部分”，改为过滤只作用于已实现容器）、§10 验证同步；`implementation.md` 源码职责、§7.8 锚点与选择镜像；`overview.md` 选择行为补充 `SelectedItems` 权威与节点镜像。
+
+- Fix
+  - 虚拟化面板下 checkbox 级联只覆盖已实现的子节点：勾选有 15 个子节点、视口只实现约 8 个的已展开节点时，`CheckedItems` 只得到已实现部分，父节点显示半选。级联改为沿节点数据（`ITreeItemNode.Children` / `ParentNode`）计算，父级 true / null 按全部子节点得出。
+  - 虚拟化面板回收 `BindableTreeItemNode` 容器时 `CheckedItems` 被整体清空：清理容器的 `ItemsSource` 被当成子集合 `Reset`，处理为 `CheckedItems.Clear()`。容器生命周期内的 `ItemsSource` 变化不再清理勾选；真实的子集合 `Reset` 只移除从根不可达的勾选项，替换子集合只移除离开的节点及其子树。
+  - 代码向 `CheckedItems` 加入或移除未实现节点时，节点数据与之后实现的容器不再与集合不一致；赋值新的 `CheckedItems` 集合时其中的节点显示为勾选（此前已实现容器全部显示未勾选）。
+- Implementation
+  - `TreeView.CheckedState.cs` 改为“勾选计划 + 提交”：计划按节点数据生成目标状态，提交依次更新 `CheckedItems`、节点 `IsChecked` 与已实现容器；不再为级联临时展开子树（无节点模型的数据除外）。新增按引用比较的 `CheckedItems` 镜像、`ReconcilePreparedCheckedState`（容器准备时对齐）、`IsApplyingCheckedState`（投射不触发交互处理器）、私有保护的 `RecursiveCheckNodeDataPredicate` / `RecursiveUnCheckNodeDataPredicate`。
+  - `TreeViewItem` 新增容器生命周期作用域 `BeginContainerLifecycle`，`TreeView` 重写 `PrepareContainerForItemOverride` 进入该作用域；`ItemsSource` 变化期间忽略 `Items` 变化，生命周期外的替换按数据删除处理。
+  - `TransferTreeView` 的 `SelectAll` / `DeselectAll` 按根数据项执行，覆盖未实现的根节点；未实现节点按 `MaskKeys` 判断屏蔽。
+  - 路径回放在目标容器已显示勾选时直接执行勾选处理，`CheckedItems` 清空后仍能恢复。
+- Tests
+  - `TreeViewVirtualizationStateTests` 新增：虚拟化下级联覆盖未实现子节点（16 项）、取消一个子节点后父级半选再恢复、`TreeItemNode` / `BindableTreeItemNode` 回收时 `CheckedItems` 不变（滚离与滚回两处断言）、代码增删未实现节点、`Clear` 作用于未实现节点、子集合 `Reset` 与 `BindableTreeItemNode.Children` 替换只移除离开的节点、严格模式不级联，以及非虚拟化面板结果不变。
+- Docs
+  - `overview.md` 勾选行为与兼容性不变量改为 `CheckedItems` 权威、节点数据级联、容器回收不是数据删除；`implementation.md` 更新勾选流、§7.3 勾选计划、§7.7 容器生命周期与数据删除的区分、性能边界与维护不变量。
+
+- Fix
+  - `ItemsPanel` 为虚拟化面板时，键盘导航可以越过视口：↑↓ / Home / End / ← → 的目标索引没有容器时，先布局一次，再对所属 `ItemsControl` 调用 `ScrollIntoView(index)` 实现容器。此前方向键停在视口内最后一个已实现节点，Home / End 落到已实现范围的首尾。
+  - 虚拟化面板回收活动项容器后，活动项不再丢失：容器离开视觉树时只释放容器引用和指示状态，保留 active 路径（每层索引和项）；该项的下一个容器完成准备时重新绑定，按键时仍未绑定则沿路径重新实现。
+  - 虚拟化面板回收并重新实现容器后，`TreeItemNode` 与自定义 `ITreeItemNode` 节点不再丢失状态：此前只有 `BindableTreeItemNode` 回写容器状态，普通节点重新准备时用过期数据覆盖，导致展开收起、选中底色消失（`SelectedItem` 仍在）；勾选模式下回收容器重用时以过期 `IsChecked` 触发取消勾选级联，Debug 构建断言终止。
+- Implementation
+  - `TreeViewItem` 对普通 `ITreeItemNode` 回写 `IsChecked` / `IsSelected` / `IsExpanded`（`ApplyNodeData` 之后开始，容器清理时停止），与绑定型节点共用 `SyncTreeItemNodeFromContainer`；`ApplyNodeData` 期间写到尚无索引容器上的 `IsChecked` 变化不触发勾选级联。
+  - `TreeView.KeyboardNavigation.cs` 新增 active 路径、容器准备通知 `NotifyTreeViewItemPrepared` 与按需实现容器的 `RealizeContainer`；`TreeView` / `TreeViewItem.ContainerForItemPreparedOverride` 末尾通知 TreeView。非虚拟化面板的导航路径不变。
+- Tests
+  - 新增 `TreeViewVirtualizationStateTests`：`TreeItemNode` 与 `BindableTreeItemNode` 在虚拟化回收后保留展开、选中，以及勾选级联后的容器与数据勾选状态。
+  - `TreeViewKeyboardNavigationTests` 新增顶层与子层均为虚拟化面板时 ↑↓ Home End 越过视口、从下方进入已展开节点末子节点的用例。
+- Docs
+  - 更新 `keyboard-navigation-design.md` 的定位、§7.1 遍历、§7.3 active item 生命周期、§8 性能、§9 兼容性（虚拟化下回收的容器从节点数据恢复状态、Shift 范围只含已实现部分）与 §10 验证；同步 `implementation.md` §7.8 与 `overview.md` §8.8。
+  - `overview.md` 节点契约补充容器与节点的双向状态流（所有 `ITreeItemNode` 回写）；`implementation.md` 数据流图、§7.7 与维护不变量补充普通节点回写与重新准备时不触发级联。
+
 ## 2026-11-11
 
 - Design

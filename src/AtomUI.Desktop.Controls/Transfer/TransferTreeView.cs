@@ -167,24 +167,29 @@ public partial class TransferTreeView : TreeView, ITransferTreeView, ITransferDe
         return true;
     }
 
+    private protected override bool RecursiveCheckNodeDataPredicate(object item) => !IsMaskedItem(item);
+
+    private protected override bool RecursiveUnCheckNodeDataPredicate(object item) => !IsMaskedItem(item);
+
+    // Goes by the root data rather than the realized root containers, which a virtualizing panel limits.
     public new void SelectAll()
     {
-        for (var i = 0; i < ItemCount; i++)
+        foreach (var item in Items)
         {
-            if (ContainerFromIndex(i) is TreeViewItem treeItem)
+            if (item != null)
             {
-                CheckedSubTree(treeItem);
+                SetSubTreeChecked(item, true);
             }
         }
     }
 
     public void DeselectAll()
     {
-        for (var i = 0; i < ItemCount; i++)
+        foreach (var item in Items)
         {
-            if (ContainerFromIndex(i) is TreeViewItem treeItem)
+            if (item != null)
             {
-                UnCheckedSubTree(treeItem);
+                SetSubTreeChecked(item, false);
             }
         }
     }

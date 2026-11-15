@@ -779,11 +779,21 @@ var result = ThemeSelectionResolver.Resolve(
 // result.BrandSeed   = #52C41A                   (Fixed 语言为 null，且 BrandColorIgnored = true)
 ```
 
-规则：先找同一设计语言里 (`Appearance`, `Density`) 精确匹配的定义，用它自己的链（`Algorithms = null`）；没有精确匹配时，
-取该语言的 Light + Normal 定义为基础，从它的链里去掉 `Dark`、`Compact`，再按选择追加 `Compact`、`Dark`（Ant Design 只有
-一个基础 profile，明暗和紧凑靠内置算法）；语言不存在，或既无精确匹配也没有 Light + Normal 基础定义，抛
-`ArgumentException`。调用方用结果组装 `ThemeRequest`：`ThemeId`、`Algorithms`（为 null 时不指定）和
-`ColorPrimary = BrandSeed`（为 null 时不写）。
+规则：
+
+1. 先找同一设计语言里 (`Appearance`, `Density`) 精确匹配的定义，用它自己的链（`Algorithms = null`）。
+2. 没有精确匹配时选一个回退定义，从它的链里去掉 `Dark`、`Compact`，再按选择追加 `Compact`、`Dark`（Ant Design 只有一个
+   基础 profile，明暗和紧凑靠内置算法）。回退定义按下面的顺序确定，每一步都取目录顺序中的第一个：
+   - 该语言的 Light + Normal 定义（基础定义）；
+   - 没有基础定义时，与所选 `Appearance` 相同的定义；
+   - 再没有时，与所选 `Density` 相同的定义；
+   - 都没有时，该语言的第一个定义。
+
+   因此设计语言不必提供 Light + Normal 定义。例如用户目录里只有 `Appearance="Dark"` 的 `MyNight` 声明了
+   `DesignLanguage="MyBrand"`，在亮色下选择 `MyBrand` 会得到 `MyNight` 加去掉 `Dark` 后的链，而不是异常。
+3. 只有语言在目录中不存在时才抛 `ArgumentException`。
+
+调用方用结果组装 `ThemeRequest`：`ThemeId`、`Algorithms`（为 null 时不指定）和 `ColorPrimary = BrandSeed`（为 null 时不写）。
 
 ## 相关文档
 

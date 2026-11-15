@@ -146,7 +146,8 @@ public static class ThemeSelectionResolver
 
 1. 在 `catalog` 中找 `DesignLanguage` 相同且 (`Appearance`, `Density`) 精确匹配的定义 → `ThemeId` 为它，`Algorithms = null`。
 2. 没有精确匹配：取该语言的 `Light`+`Normal` 定义为基础，`Algorithms = 基础定义自身的链 + [Dark?] + [Compact?]`（即 Ant Design 现在的做法：只有一个基础 profile，明暗紧凑靠内置算法）。基础定义的链由调用方从 `ThemeState`/目录取得；若 Core 无法在纯函数里拿到链，实现者可让 `Resolve` 返回"在基础链上追加"的标记，由 `ThemeManager` 展开 —— **这一点留给实现者**，约束是结果必须等价于"基础 profile + 内置 Dark/Compact"。
-3. 找不到该语言 → 抛 `ArgumentException`。
+   - **修订（2026-11-15，终审 I1）**：语言没有 `Light`+`Normal` 定义时不抛异常，改为回退到该语言最近的已声明定义：先取与所选 `Appearance` 相同的第一个定义，再取与所选 `Density` 相同的第一个，最后取该语言的第一个定义（均按目录顺序），在它的链上同样去掉再追加内置 Dark/Compact。这样一个只声明了暗色变体的用户目录主题不会让调用方崩溃。
+3. 找不到该语言 → 抛 `ArgumentException`（这是唯一的异常情形）。
 4. 品牌：语言 `BrandColor == Seed` 且 `selection.BrandColor` 非空 → `BrandSeed = selection.BrandColor`；`Fixed` 且非空 → `BrandSeed = null, BrandColorIgnored = true`。
 
 调用方用结果组 `ThemeRequest`：`ThemeId`、`Algorithms`（为 null 时不指定，保留 profile 链）、`ColorPrimary = BrandSeed`（为 null 时不写），再叠加自己的 Token（如动效开关）。解析器不读写任何状态。

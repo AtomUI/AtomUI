@@ -43,12 +43,19 @@ public static class ThemeSelectionResolver
     /// Resolves a selection against the catalog.
     /// </summary>
     /// <remarks>
-    /// An exact (appearance, density) variant of the language is used as is. Otherwise the language's light, normal
-    /// definition is the base and its chain gets the built-in compact and dark algorithms appended.
+    /// <para>
+    /// An exact (appearance, density) variant of the language is used as is, with its own algorithm chain.
+    /// </para>
+    /// <para>
+    /// Otherwise a fallback definition of the language is chosen and its chain, without the built-in dark and compact
+    /// algorithms, gets the built-in compact and dark algorithms the selection asks for appended. The fallback is the
+    /// language's light, normal definition (its base). A language without a base falls back to its nearest declared
+    /// definition: the first one in catalog order with the requested appearance, else the first one with the requested
+    /// density, else the language's first definition. A language therefore never needs a light, normal definition to
+    /// be selectable in every appearance and density.
+    /// </para>
     /// </remarks>
-    /// <exception cref="ArgumentException">
-    /// The language is unknown, or has neither an exact variant nor a light, normal base definition.
-    /// </exception>
+    /// <exception cref="ArgumentException">The language is not present in the catalog.</exception>
     public static ThemeSelectionResult Resolve(IReadOnlyList<ThemeInfo> catalog, ThemeSelection selection)
     {
         ArgumentNullException.ThrowIfNull(catalog);
@@ -57,6 +64,8 @@ public static class ThemeSelectionResolver
         ThemeInfo? first = null;
         ThemeInfo? exact = null;
         ThemeInfo? baseInfo = null;
+        ThemeInfo? sameAppearance = null;
+        ThemeInfo? sameDensity = null;
         foreach (var info in catalog)
         {
             if (!string.Equals(info.DesignLanguage, selection.DesignLanguage, StringComparison.Ordinal))
@@ -74,6 +83,16 @@ public static class ThemeSelectionResolver
             {
                 baseInfo ??= info;
             }
+
+            if (info.Appearance == selection.Appearance)
+            {
+                sameAppearance ??= info;
+            }
+
+            if (info.Density == selection.Density)
+            {
+                sameDensity ??= info;
+            }
         }
 
         if (first is null)
@@ -90,11 +109,12 @@ public static class ThemeSelectionResolver
             themeId    = exact.Id;
             algorithms = null;
         }
-        else if (baseInfo is not null)
+        else
         {
-            themeId = baseInfo.Id;
-            var chain = new List<ThemeAlgorithm>(baseInfo.Algorithms.Count + 2);
-            foreach (var algorithm in baseInfo.Algorithms)
+            var fallback = baseInfo ?? sameAppearance ?? sameDensity ?? first;
+            themeId = fallback.Id;
+            var chain = new List<ThemeAlgorithm>(fallback.Algorithms.Count + 2);
+            foreach (var algorithm in fallback.Algorithms)
             {
                 if (algorithm != ThemeAlgorithm.Dark && algorithm != ThemeAlgorithm.Compact)
                 {
@@ -113,13 +133,6 @@ public static class ThemeSelectionResolver
             }
 
             algorithms = chain;
-        }
-        else
-        {
-            throw new ArgumentException(
-                $"Design language '{selection.DesignLanguage}' has no variant for appearance '{selection.Appearance}' " +
-                $"and density '{selection.Density}' and no light, normal base definition to fall back to.",
-                nameof(selection));
         }
 
         Color? seed = null;

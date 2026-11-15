@@ -127,17 +127,68 @@ public class ThemeSelectionResolverTests
     }
 
     [Fact]
-    public void Language_Without_Light_Normal_Base_And_No_Exact_Match_Throws()
+    public void Dark_Only_Language_Requested_In_Light_Falls_Back_To_Its_Definition()
+    {
+        var seed = Color.Parse("#52C41A");
+        var catalog = new List<ThemeInfo>
+        {
+            Info("MyNight", "MyBrand", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
+                 ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+        };
+
+        var light = ThemeSelectionResolver.Resolve(
+            catalog, new ThemeSelection("MyBrand", ThemeAppearance.Light, ThemeDensity.Normal, seed));
+        var lightCompact = ThemeSelectionResolver.Resolve(
+            catalog, new ThemeSelection("MyBrand", ThemeAppearance.Light, ThemeDensity.Compact, null));
+
+        light.ThemeId.ShouldBe("MyNight");
+        light.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
+        light.BrandSeed.ShouldBe(seed);
+        lightCompact.ThemeId.ShouldBe("MyNight");
+        lightCompact.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact]);
+    }
+
+    [Fact]
+    public void Compact_Only_Language_Requested_Normal_Falls_Back_To_The_Same_Appearance()
     {
         var catalog = new List<ThemeInfo>
         {
-            Info("OnlyDark", "Lang", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed)
+            Info("Tight.Dark", "Tight", ThemeAppearance.Dark, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
+                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark),
+            Info("Tight", "Tight", ThemeAppearance.Light, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
+                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
         };
 
-        var exception = Should.Throw<ArgumentException>(() => ThemeSelectionResolver.Resolve(
-                                                            catalog,
-                                                            new ThemeSelection("Lang", ThemeAppearance.Light, ThemeDensity.Compact, null)));
-        exception.Message.ShouldContain("Lang");
+        var light = ThemeSelectionResolver.Resolve(
+            catalog, new ThemeSelection("Tight", ThemeAppearance.Light, ThemeDensity.Normal, null));
+        var dark = ThemeSelectionResolver.Resolve(
+            catalog, new ThemeSelection("Tight", ThemeAppearance.Dark, ThemeDensity.Normal, null));
+
+        light.ThemeId.ShouldBe("Tight");
+        light.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
+        dark.ThemeId.ShouldBe("Tight.Dark");
+        dark.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+    }
+
+    [Fact]
+    public void Fallback_Prefers_Same_Density_Then_Catalog_Order_When_No_Appearance_Matches()
+    {
+        var catalog = new List<ThemeInfo>
+        {
+            Info("Night.Compact", "Night", ThemeAppearance.Dark, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
+                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark),
+            Info("Night", "Night", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed,
+                 ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+        };
+
+        ThemeSelectionResolver.Resolve(catalog, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Normal, null))
+                              .ThemeId.ShouldBe("Night");
+        ThemeSelectionResolver.Resolve(catalog, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Compact, null))
+                              .ThemeId.ShouldBe("Night.Compact");
+
+        var single = new List<ThemeInfo> { catalog[0] };
+        ThemeSelectionResolver.Resolve(single, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Normal, null))
+                              .ThemeId.ShouldBe("Night.Compact");
     }
 
     [Fact]

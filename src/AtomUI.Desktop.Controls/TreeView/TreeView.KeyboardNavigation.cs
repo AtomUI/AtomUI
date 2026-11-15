@@ -14,6 +14,10 @@ namespace AtomUI.Desktop.Controls;
 public partial class TreeView : ICustomKeyboardNavigation
 {
     private TreeViewItem? _keyboardActiveItem;
+    // The active node as data (index and item per level, root level first). A virtualizing panel can
+    // recycle the active container in any layout pass, so the container is only a binding: a recycled
+    // one is released, and the node's next container, or a re-realized one, takes the state back.
+    private List<KeyboardPathSegment>? _keyboardActivePath;
     private TreeViewItem? _keyboardSelectionAnchor;
     private bool _isKeyboardActiveVisible;
     private bool _isSyncingKeyboardRangeSelection;
@@ -88,6 +92,7 @@ public partial class TreeView : ICustomKeyboardNavigation
             return;
         }
 
+        RestoreRecycledKeyboardActiveItem();
         var hadActiveItem = _keyboardActiveItem is not null && IsNavigable(_keyboardActiveItem);
         var activeItem    = EnsureKeyboardActiveItem();
         if (activeItem is null)
@@ -150,12 +155,26 @@ public partial class TreeView : ICustomKeyboardNavigation
     {
         if (ReferenceEquals(_keyboardActiveItem, treeViewItem))
         {
-            SetKeyboardActiveItem(null);
+            // Removed or recycled: the path stays, so the node's next container can take the state back.
+            ReleaseKeyboardActiveContainer();
         }
 
         if (ReferenceEquals(_keyboardSelectionAnchor, treeViewItem))
         {
             _keyboardSelectionAnchor = null;
+        }
+    }
+
+    // A virtualizing panel realized a container for the active node again (scrolled back, or re-realized
+    // in the same layout pass that recycled it).
+    internal void NotifyTreeViewItemPrepared(TreeViewItem treeViewItem, object? item)
+    {
+        if (_keyboardActiveItem is null &&
+            _keyboardActivePath is { Count: > 0 } path &&
+            ReferenceEquals(item ?? treeViewItem, path[^1].Item))
+        {
+            _keyboardActiveItem = treeViewItem;
+            UpdateKeyboardActiveIndicator();
         }
     }
 
@@ -173,6 +192,7 @@ public partial class TreeView : ICustomKeyboardNavigation
 
     private TreeViewItem? EnsureKeyboardActiveItem()
     {
+        RestoreRecycledKeyboardActiveItem();
         if (_keyboardActiveItem is { } activeItem)
         {
             if (IsNavigable(activeItem))
@@ -233,8 +253,81 @@ public partial class TreeView : ICustomKeyboardNavigation
             _keyboardActiveItem = treeViewItem;
         }
 
+        _keyboardActivePath = treeViewItem is null ? null : BuildKeyboardPath(treeViewItem);
         UpdateKeyboardActiveIndicator();
     }
+
+    private void ReleaseKeyboardActiveContainer()
+    {
+        if (_keyboardActiveItem is { } activeItem)
+        {
+            activeItem.IsKeyboardActive              = false;
+            activeItem.IsKeyboardFocusOutlineVisible = false;
+            _keyboardActiveItem                      = null;
+        }
+    }
+
+    // Re-binds the active node when its container was recycled: detached, or hidden as its own
+    // container and no longer indexed. The node is re-realized along the path; on any mismatch
+    // (items changed meanwhile) the regular fallback of EnsureKeyboardActiveItem applies.
+    private void RestoreRecycledKeyboardActiveItem()
+    {
+        if (_keyboardActivePath is not { Count: > 0 } path ||
+            (_keyboardActiveItem is { } activeItem &&
+             activeItem.IsAttachedToVisualTree() &&
+             activeItem.Parent is ItemsControl activeOwner &&
+             activeOwner.IndexFromContainer(activeItem) >= 0))
+        {
+            return;
+        }
+
+        ItemsControl  owner     = this;
+        TreeViewItem? container = null;
+        foreach (var segment in path)
+        {
+            container = segment.Index < owner.ItemCount ? RealizeContainer(owner, segment.Index) : null;
+            if (container is null || !ReferenceEquals(GetTreeItem(container), segment.Item))
+            {
+                return;
+            }
+
+            owner = container;
+        }
+
+        ReleaseKeyboardActiveContainer();
+        SetKeyboardActiveItem(container);
+    }
+
+    private List<KeyboardPathSegment>? BuildKeyboardPath(TreeViewItem treeViewItem)
+    {
+        var path = new List<KeyboardPathSegment>();
+        for (var current = treeViewItem; current.Parent is ItemsControl owner;)
+        {
+            var index = owner.IndexFromContainer(current);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            path.Add(new KeyboardPathSegment(index, owner.ItemFromContainer(current) ?? current));
+            if (ReferenceEquals(owner, this))
+            {
+                path.Reverse();
+                return path;
+            }
+
+            if (owner is not TreeViewItem parentItem)
+            {
+                return null;
+            }
+
+            current = parentItem;
+        }
+
+        return null;
+    }
+
+    private readonly record struct KeyboardPathSegment(int Index, object Item);
 
     private void SetKeyboardActiveVisible(bool isVisible)
     {
@@ -573,7 +666,7 @@ public partial class TreeView : ICustomKeyboardNavigation
 
         for (var i = index + step; i >= 0 && i < owner.ItemCount; i += step)
         {
-            if (owner.ContainerFromIndex(i) is TreeViewItem sibling && IsSelfNavigable(sibling))
+            if (RealizeContainer(owner, i) is { } sibling && IsSelfNavigable(sibling))
             {
                 return sibling;
             }
@@ -589,21 +682,35 @@ public partial class TreeView : ICustomKeyboardNavigation
             return null;
         }
 
-        // A just expanded node may not have realized its children yet: run one layout pass.
-        if (owner.ContainerFromIndex(first ? 0 : owner.ItemCount - 1) is null)
-        {
-            owner.UpdateLayout();
-        }
-
         var step = first ? 1 : -1;
         for (var i = first ? 0 : owner.ItemCount - 1; i >= 0 && i < owner.ItemCount; i += step)
         {
-            if (owner.ContainerFromIndex(i) is TreeViewItem child && IsSelfNavigable(child))
+            if (RealizeContainer(owner, i) is { } child && IsSelfNavigable(child))
             {
                 return child;
             }
         }
 
         return null;
+    }
+
+    // Keyboard targets are containers, but a virtualizing panel only realizes the viewport.
+    // A missing container is first given one layout pass (a just expanded node), then scrolled into view,
+    // which makes the virtualizing panel realize it. Non-virtualizing panels always hit the first lookup.
+    private static TreeViewItem? RealizeContainer(ItemsControl owner, int index)
+    {
+        if (owner.ContainerFromIndex(index) is TreeViewItem container)
+        {
+            return container;
+        }
+
+        owner.UpdateLayout();
+        if (owner.ContainerFromIndex(index) is TreeViewItem laidOut)
+        {
+            return laidOut;
+        }
+
+        owner.ScrollIntoView(index);
+        return owner.ContainerFromIndex(index) as TreeViewItem;
     }
 }

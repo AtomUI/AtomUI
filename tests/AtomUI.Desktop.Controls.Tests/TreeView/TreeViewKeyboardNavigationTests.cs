@@ -1,10 +1,12 @@
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -182,6 +184,69 @@ public class TreeViewKeyboardNavigationTests
 
             Press(window, Key.Home);
             treeView.SelectedItem.ShouldBeSameAs(tree.Root);
+        });
+    }
+
+    // Issue #541: virtualizing panels only realize the viewport, so navigation must realize the next container.
+    [Fact]
+    public void Arrow_Home_And_End_Reach_Nodes_Outside_Viewport_When_Virtualized()
+    {
+        // BindableTreeItemNode keeps IsExpanded on the data, so expansion survives container recycling.
+        var roots = new List<BindableTreeItemNode>();
+        for (var i = 0; i < 40; i++)
+        {
+            var children = new List<ITreeItemNode>();
+            for (var j = 0; j < 15; j++)
+            {
+                children.Add(new BindableTreeItemNode { Header = $"Node {i}-{j}", IsLeaf = true });
+            }
+            roots.Add(new BindableTreeItemNode { Header = $"Node {i}", Children = children });
+        }
+
+        var treeView = CreateTreeView();
+        treeView.Height      = 120;
+        treeView.ItemsSource = roots;
+        treeView.ItemsPanel  = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+        treeView.Styles.Add(new Style(x => x.OfType<AtomTreeViewItem>())
+        {
+            Setters =
+            {
+                new Setter(ItemsControl.ItemsPanelProperty,
+                    new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()))
+            }
+        });
+
+        WithWindow(treeView, window =>
+        {
+            FocusTree(treeView);
+            Press(window, Key.Right);
+            treeView.KeyboardActiveItem!.IsExpanded.ShouldBeTrue();
+
+            // Node 0's 15 children, then Node 1 .. Node 15: far past the realized viewport.
+            for (var i = 0; i < 30; i++)
+            {
+                Press(window, Key.Down).ShouldBeTrue();
+            }
+            treeView.SelectedItem.ShouldBeSameAs(roots[15]);
+
+            Press(window, Key.End);
+            treeView.SelectedItem.ShouldBeSameAs(roots[39]);
+
+            for (var i = 0; i < 20; i++)
+            {
+                Press(window, Key.Up).ShouldBeTrue();
+            }
+            treeView.SelectedItem.ShouldBeSameAs(roots[19]);
+
+            // Back up into the expanded node from below: its last child is re-realized on demand.
+            Press(window, Key.Home);
+            treeView.SelectedItem.ShouldBeSameAs(roots[0]);
+            Press(window, Key.End);
+            for (var i = 0; i < 39; i++)
+            {
+                Press(window, Key.Up).ShouldBeTrue();
+            }
+            treeView.SelectedItem.ShouldBeSameAs(roots[0].Children[14]);
         });
     }
 

@@ -446,6 +446,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     private IBrush? _treeNodeLinePenBrush;
     private double _treeNodeLinePenWidth;
     private CompositeDisposable? _treeItemNodeBindingDisposables;
+    // Plain ITreeItemNode data has no change notification, so the container writes its interactive state
+    // back to it. A virtualizing panel prepares recycled containers from the node data again, which then
+    // carries the latest state; BindableTreeItemNode gets the same through its two-way sync.
+    private ITreeItemNode? _stateWriteBackTreeItemNode;
+    private bool _isApplyingNodeData;
 
     static TreeViewItem()
     {
@@ -502,6 +507,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         else
         {
             ApplyNodeData(this, treeItemData);
+            _stateWriteBackTreeItemNode = treeItemData;
         }
     }
 
@@ -509,6 +515,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         _treeItemNodeBindingDisposables?.Dispose();
         _treeItemNodeBindingDisposables = null;
+        _stateWriteBackTreeItemNode     = null;
     }
 
     internal void ClearPreparedTreeItemNodeData()
@@ -593,6 +600,11 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+
+        if (_stateWriteBackTreeItemNode is { } stateWriteBackTreeItemNode)
+        {
+            SyncTreeItemNodeFromContainer(stateWriteBackTreeItemNode, change.Property);
+        }
         
         if (change.Property == ItemCountProperty ||
             change.Property == HasTreeItemDataLoaderProperty)
@@ -717,6 +729,13 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         var newValue = change.GetNewValue<bool?>();
         PseudoClasses.Set(StdPseudoClass.Checked, newValue == true);
+
+        // Node data applied to a container that a virtualizing panel is still realizing restores state, it is
+        // not a toggle: the container has no item index yet, so a cascade could not resolve its item.
+        if (_isApplyingNodeData && (Parent as ItemsControl)?.ItemFromContainer(this) is null)
+        {
+            return;
+        }
 
         (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(this);
     }
@@ -988,6 +1007,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             treeViewItem[!IsAutoExpandParentProperty]        = this[!IsAutoExpandParentProperty];
             
             PrepareTreeViewItem(treeViewItem, item, index);
+            OwnerTreeView?.NotifyTreeViewItemPrepared(treeViewItem, item);
         }
         else
         {
@@ -1021,17 +1041,25 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     internal static void ApplyNodeData(TreeViewItem treeViewItem, ITreeItemNode treeItemData)
     {
-        treeViewItem.SetCurrentValue(IconProperty, treeItemData.Icon);
-        treeViewItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
-        treeViewItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
-        treeViewItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
-        treeViewItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
-        treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
-        treeViewItem.SetCurrentValue(GroupNameProperty, treeItemData.GroupName);
-        treeViewItem.SetCurrentValue(ValueProperty, treeItemData.Value);
-        
-        treeViewItem.ItemKey = treeItemData.ItemKey;
-        treeViewItem.IsLeaf  = treeItemData.IsLeaf;
+        treeViewItem._isApplyingNodeData = true;
+        try
+        {
+            treeViewItem.SetCurrentValue(IconProperty, treeItemData.Icon);
+            treeViewItem.SetCurrentValue(IsCheckedProperty, treeItemData.IsChecked);
+            treeViewItem.SetCurrentValue(IsSelectedProperty, treeItemData.IsSelected);
+            treeViewItem.SetCurrentValue(IsEnabledProperty, treeItemData.IsEnabled);
+            treeViewItem.SetCurrentValue(IsExpandedProperty, treeItemData.IsExpanded);
+            treeViewItem.SetCurrentValue(IsIndicatorEnabledProperty, treeItemData.IsIndicatorEnabled);
+            treeViewItem.SetCurrentValue(GroupNameProperty, treeItemData.GroupName);
+            treeViewItem.SetCurrentValue(ValueProperty, treeItemData.Value);
+
+            treeViewItem.ItemKey = treeItemData.ItemKey;
+            treeViewItem.IsLeaf  = treeItemData.IsLeaf;
+        }
+        finally
+        {
+            treeViewItem._isApplyingNodeData = false;
+        }
     }
 
     private void BindBindableTreeItemNode(BindableTreeItemNode node, CompositeDisposable disposables)
@@ -1043,7 +1071,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
         void ContainerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            SyncBindableTreeItemNodeFromContainer(node, e.Property);
+            SyncTreeItemNodeFromContainer(node, e.Property);
         }
 
         node.PropertyChanged += NodePropertyChanged;
@@ -1110,7 +1138,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         }
     }
 
-    private void SyncBindableTreeItemNodeFromContainer(BindableTreeItemNode node, AvaloniaProperty property)
+    private void SyncTreeItemNodeFromContainer(ITreeItemNode node, AvaloniaProperty property)
     {
         if (property == IsCheckedProperty &&
             node.IsChecked != IsChecked)

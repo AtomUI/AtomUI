@@ -72,7 +72,8 @@ TreeViewItem
 ContainerForItemPreparedOverride
   OwnerTreeView
   ApplyNodeData(ITreeItemNode)
-  BindableTreeItemNode attach resource host + property sync
+  BindableTreeItemNode attach resource host + two-way property sync
+  plain ITreeItemNode: container state write-back
   ItemTemplate -> HeaderTemplate
   switcher icons
   filter / motion / hover / line / toggle / selectable state bindings
@@ -400,11 +401,19 @@ drop indicator 根据目标 header 上半区、中间区域和下半区决定插
 - 同步绑定必须进入容器生命周期 disposable。`ClearContainerForItemOverride`、detach、re-template 或 container recycle 时释放，不允许让旧容器继续订阅节点。容器清理还必须释放 `TreeDataTemplate` 建立的 children binding，避免回收容器继续持有旧节点。
 - 同一个节点被多个容器短暂使用时，resource host attach 必须使用 attachment count 或等价 scoped token，释放到 0 后再解除 owner 订阅。
 
+普通节点（`TreeItemNode` 与自定义 `ITreeItemNode`）没有变更通知，只接收容器回写：
+
+- `PrepareTreeItemNodeData` 在 `ApplyNodeData` 之后记录当前节点，`TreeViewItem.OnPropertyChanged` 把 `IsChecked`、`IsSelected`、`IsExpanded` 的变化写回节点（与绑定型节点共用 `SyncTreeItemNodeFromContainer`）。
+- 回写只在 `ApplyNodeData` 之后开始，并在 `ClearPreparedTreeItemNodeData`（容器清理、logical detach）时先于 Avalonia 的容器清理停止；容器准备前后由 Avalonia 基类写入的选择标记不会写进新节点。
+- 虚拟化面板回收的容器会带着上一个节点的状态被重新准备。`ApplyNodeData` 把节点状态写到尚未取得索引的容器上属于状态恢复：此时 `IsChecked` 变化不触发勾选级联（级联需要从容器解析数据项）。非虚拟化面板在准备时容器已有索引，行为不变。
+
 ### 7.8 键盘活动项维护
 
-活动项以容器引用保存，只在以下路径更新：键盘导航、指针按下节点、祖先收起（`TreeViewItem` 的 `IsExpanded` 变为 false 时通知 TreeView，立即上移到被收起的节点）、按键前校验（被过滤隐藏或禁用时修复为最近的可导航祖先）、容器离开视觉树（`TreeViewItem.OnDetachedFromVisualTree` 通知 TreeView，离开的容器正是活动项或选择锚点时清空）、TreeView detach 与宿主关闭浮层（清空）。
+活动项以容器引用加 active 路径（从顶层起每层的索引和项）保存，路径在设置活动项时重建。只在以下路径更新：键盘导航、指针按下节点、祖先收起（`TreeViewItem` 的 `IsExpanded` 变为 false 时通知 TreeView，立即上移到被收起的节点）、按键前校验（被过滤隐藏或禁用时修复为最近的可导航祖先）、容器离开视觉树（`TreeViewItem.OnDetachedFromVisualTree` 通知 TreeView：离开的容器是活动项时释放容器引用和指示状态、保留路径，是选择锚点时清空锚点）、容器准备（`TreeView` / `TreeViewItem.ContainerForItemPreparedOverride` 通知 TreeView，准备的项是路径末端且当前没有活动容器时重新绑定）、TreeView detach 与宿主关闭浮层（清空容器与路径）。
 
-遍历只访问已实现容器。已展开但子容器尚未生成时，只对该节点执行一次布局来生成子容器；仍无可导航子节点时按无子节点处理，不等待、不轮询。
+按键前若活动容器已被回收（离开视觉树，或作为自身容器被隐藏而不再有索引），沿路径逐层重新实现容器并校验每层的项；不一致时按无效处理。
+
+遍历按索引取容器。没有容器时先对所属 `ItemsControl` 执行一次布局（刚展开节点的子容器），仍没有时调用 `ScrollIntoView(index)` 让虚拟化面板实现它；仍无容器或无可导航子节点时按“没有”处理，不等待、不轮询。非虚拟化面板不会进入这两步。
 
 ## 8. 资源、性能与 AOT 边界
 
@@ -455,7 +464,7 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
 - `TreeNodeIndex` 是 drop 定位的权威索引；drag pointer move 不得触发全树数据遍历。
 - 节点 move 不能被当成 remove 清理选中、勾选或展开状态。
 - root 数据源、节点 `Children`、parent node 和索引必须在移动后保持一致。
-- `TreeItemNode` 保持轻量数据节点定位，不承载 Avalonia 属性系统。
+- `TreeItemNode` 保持轻量数据节点定位，不承载 Avalonia 属性系统；它与自定义 `ITreeItemNode` 一样接收容器状态回写，节点数据是容器回收后恢复状态的来源。
 - `BindableTreeItemNode` 的 resource host attach、属性订阅和容器同步必须与容器生命周期成对释放。
 - 绑定型节点不能永久保存当前 `TreeViewItem`、header、template part 或 visual container。
 - Semantic Part 的 marker 放置（`TreeViewItemTheme.axaml` 的 `semantic-scope-header` 静态跳点、

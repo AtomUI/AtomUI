@@ -3,6 +3,22 @@
 本文档记录 TreeView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Fix
+  - `ItemsPanel` 为虚拟化面板时，键盘导航可以越过视口：↑↓ / Home / End / ← → 的目标索引没有容器时，先布局一次，再对所属 `ItemsControl` 调用 `ScrollIntoView(index)` 实现容器。此前方向键停在视口内最后一个已实现节点，Home / End 落到已实现范围的首尾。
+  - 虚拟化面板回收活动项容器后，活动项不再丢失：容器离开视觉树时只释放容器引用和指示状态，保留 active 路径（每层索引和项）；该项的下一个容器完成准备时重新绑定，按键时仍未绑定则沿路径重新实现。
+  - 虚拟化面板回收并重新实现容器后，`TreeItemNode` 与自定义 `ITreeItemNode` 节点不再丢失状态：此前只有 `BindableTreeItemNode` 回写容器状态，普通节点重新准备时用过期数据覆盖，导致展开收起、选中底色消失（`SelectedItem` 仍在）；勾选模式下回收容器重用时以过期 `IsChecked` 触发取消勾选级联，Debug 构建断言终止。
+- Implementation
+  - `TreeViewItem` 对普通 `ITreeItemNode` 回写 `IsChecked` / `IsSelected` / `IsExpanded`（`ApplyNodeData` 之后开始，容器清理时停止），与绑定型节点共用 `SyncTreeItemNodeFromContainer`；`ApplyNodeData` 期间写到尚无索引容器上的 `IsChecked` 变化不触发勾选级联。
+  - `TreeView.KeyboardNavigation.cs` 新增 active 路径、容器准备通知 `NotifyTreeViewItemPrepared` 与按需实现容器的 `RealizeContainer`；`TreeView` / `TreeViewItem.ContainerForItemPreparedOverride` 末尾通知 TreeView。非虚拟化面板的导航路径不变。
+- Tests
+  - 新增 `TreeViewVirtualizationStateTests`：`TreeItemNode` 与 `BindableTreeItemNode` 在虚拟化回收后保留展开、选中，以及勾选级联后的容器与数据勾选状态。
+  - `TreeViewKeyboardNavigationTests` 新增顶层与子层均为虚拟化面板时 ↑↓ Home End 越过视口、从下方进入已展开节点末子节点的用例。
+- Docs
+  - 更新 `keyboard-navigation-design.md` 的定位、§7.1 遍历、§7.3 active item 生命周期、§8 性能、§9 兼容性（虚拟化下回收的容器从节点数据恢复状态、Shift 范围只含已实现部分）与 §10 验证；同步 `implementation.md` §7.8 与 `overview.md` §8.8。
+  - `overview.md` 节点契约补充容器与节点的双向状态流（所有 `ITreeItemNode` 回写）；`implementation.md` 数据流图、§7.7 与维护不变量补充普通节点回写与重新准备时不触发级联。
+
 ## 2026-11-11
 
 - Design

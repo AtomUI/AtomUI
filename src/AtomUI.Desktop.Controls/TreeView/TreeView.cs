@@ -761,6 +761,7 @@ public partial class TreeView : AvaloniaTreeView,
             treeViewItem[!TreeViewItem.IsAutoExpandParentProperty]        = this[!IsAutoExpandParentProperty];
             
             PrepareTreeViewItem(treeViewItem, item, index);
+            NotifyTreeViewItemPrepared(treeViewItem, item);
         }
         else
         {

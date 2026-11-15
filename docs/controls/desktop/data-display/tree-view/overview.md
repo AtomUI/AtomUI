@@ -87,6 +87,10 @@ TreeViewItem 节点 API：
 
 `ITreeItemNode` 是数据驱动树的节点契约，提供 `Header`、`Icon`、`ItemKey`、`Children`、`IsEnabled`、`IsChecked`、`IsSelected`、`IsExpanded`、`IsIndicatorEnabled`、`GroupName`、`IsLeaf`、`Value` 和 parent node 更新能力。数据驱动场景下 `Children` 是节点结构的权威子集合；TreeViewItem 只投射节点状态和视觉交互，不作为结构数据源。
 
+节点状态在容器与节点之间双向流动，适用于所有 `ITreeItemNode` 实现：容器准备时按节点数据设置 `IsChecked`、`IsSelected`、`IsExpanded` 等状态；容器上的
+`IsChecked`、`IsSelected`、`IsExpanded` 变化（指针、键盘、级联、API）通过接口 setter 写回节点。因此虚拟化面板回收并重新实现容器后，展开、选中和勾选状态从节点恢复。
+`BindableTreeItemNode` 另外把节点属性变化推送到容器；`TreeItemNode` 和没有变更通知的自定义节点只接收写回。
+
 节点数据类型边界：
 
 | 类型 | 定位 | 绑定能力 | 兼容边界 |
@@ -232,7 +236,7 @@ TreeView 的状态模型由节点状态、选择状态、勾选状态、展开�
 - `TreeItemNode` 的定位是轻量数据源节点，不承载 `DynamicResource`、Avalonia styled binding target 或资源宿主职责。
 - 需要在 XAML 中直接绑定节点属性，或把节点 `Header`、`Icon`、状态属性设置为 `DynamicResource` 时，使用独立的 `BindableTreeItemNode`。
 - `BindableTreeItemNode` 进入 TreeView 容器生命周期时，由 owner TreeView / TreeViewItem attach scoped resource host；离开容器、detach、re-template 或 container recycle 时释放 attach token。
-- 绑定型节点属性变化应同步当前生成的 `TreeViewItem` 容器；容器交互导致的 checked、selected、expanded 等状态变化也应按契约回写节点状态。
+- 绑定型节点属性变化应同步当前生成的 `TreeViewItem` 容器；容器交互导致的 checked、selected、expanded 等状态变化按契约回写节点状态（所有 `ITreeItemNode` 一致）。
 - 自定义 `ITreeItemNode` 仍按普通数据模型处理；TreeView 不要求用户模型继承 `BindableTreeItemNode`。
 
 ## 5. 视觉与主题模型
@@ -377,7 +381,7 @@ TreeView 同时支持 checkbox 和 radio。checkbox 可以按 `IsCheckStrictly` 
 
 ### 8.8 键盘导航模型
 
-键盘导航以 TreeView 为唯一焦点目标，用内部的键盘活动项表达键盘位置，而不是移动焦点到节点。活动项只在已实现、可见、可用、祖先全部展开的节点之间按先序移动；
+键盘导航以 TreeView 为唯一焦点目标，用内部的键盘活动项表达键盘位置，而不是移动焦点到节点。活动项只在可见、可用、祖先全部展开的节点之间按先序移动，`ItemsPanel` 为虚拟化面板时按需实现视口外的目标节点；
 提交策略由 `IsSelectable`、`SelectionMode` 和 `ToggleType` 推导，不新增公共模式属性。浮层宿主通过内部转发入口复用同一模型。
 完整设计见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
 

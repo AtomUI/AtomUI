@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGLara.Compact" Name="PrimeNG Lara Compact" Appearance="Light" IsDefault="false">
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGLara.Compact" Name="PrimeNG Lara Compact" Appearance="Light" DesignLanguage="PrimeNG.Lara" BrandColor="Seed" Density="Compact" IsDefault="false">
   <Algorithms>
     <Algorithm Catalog="PrimeNG" Id="Lara" />
     <Algorithm Id="Compact" />

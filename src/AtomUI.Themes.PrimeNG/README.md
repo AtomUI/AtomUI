@@ -2,6 +2,8 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
+Design language: `PrimeNG.Aura` / `PrimeNG.Lara` / `PrimeNG.Nora`; brand color is `Seed` (`ColorPrimary` is the seed and the derived states follow the algorithm).
+
 Compiled Aura, Lara and Nora presets for AtomUI desktop controls, built on six PrimeNG theme algorithms. Register the package once; the default remains `DaybreakBlue`.
 
 ```csharp

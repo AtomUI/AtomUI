@@ -2,6 +2,8 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
+Design language: `Bootstrap`; brand color is `Fixed` (all four profiles hand-write the focus halo `ColorControlOutline`, which would stay blue after a brand change).
+
 A compiled token preset approximating Bootstrap 6.0 through AtomUI's existing Ant Design control structure. Registration preserves the `DaybreakBlue` default.
 
 ```csharp

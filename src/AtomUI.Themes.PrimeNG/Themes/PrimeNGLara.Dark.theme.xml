@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGLara.Dark" Name="PrimeNG Lara Dark" Appearance="Dark" IsDefault="false">
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGLara.Dark" Name="PrimeNG Lara Dark" Appearance="Dark" DesignLanguage="PrimeNG.Lara" BrandColor="Seed" IsDefault="false">
   <Algorithms>
     <Algorithm Catalog="PrimeNG" Id="Lara.Dark" />
   </Algorithms>

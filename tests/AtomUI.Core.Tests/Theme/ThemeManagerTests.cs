@@ -86,6 +86,8 @@ public class ThemeManagerTests
                     true,
                     Color.Parse("#1677FF"))
                 {
+                    DesignLanguage = "AntDesign",
+                    BrandColor = ThemeBrandColorSupport.Seed,
                     Algorithms = [new ThemeAlgorithm("AtomUI", "Default")]
                 }
             ]);

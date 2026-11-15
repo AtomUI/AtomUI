@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Bootstrap.Compact" Name="Bootstrap Compact" Appearance="Light" IsDefault="false">
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Bootstrap.Compact" Name="Bootstrap Compact" Appearance="Light" DesignLanguage="Bootstrap" BrandColor="Fixed" Density="Compact" IsDefault="false">
   <Algorithms>
     <Algorithm Id="Default" />
     <Algorithm Id="Compact" />

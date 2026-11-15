@@ -329,11 +329,11 @@ public class CompiledThemeCatalogResolverTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             var manager = BuildLanguageManager(
-                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
-                LanguageXml("UserBlue", "AntDesign", "Light", "Normal", "Seed"));
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed"),
+                LanguageXml("UserBlue", "TestLang", "Light", "Normal", "Seed"));
 
             var themes = manager.AvailableThemes;
-            themes.Single(static theme => theme.Id == "PkgBlue").DesignLanguage.ShouldBe("AntDesign");
+            themes.Single(static theme => theme.Id == "PkgBlue").DesignLanguage.ShouldBe("TestLang");
             themes.Single(static theme => theme.Id == "UserBlue").DesignLanguage.ShouldBeNull();
             manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic =>
                 diagnostic.Code == "ATMTHM3103" && diagnostic.Severity == ThemeDiagnosticSeverity.Warning);
@@ -351,11 +351,11 @@ public class CompiledThemeCatalogResolverTests
         HeadlessTestApp.Run(() =>
         {
             var manager = BuildLanguageManager(
-                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
-                LanguageXml("UserDark", "AntDesign", "Dark", "Normal", "Seed"));
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed"),
+                LanguageXml("UserDark", "TestLang", "Dark", "Normal", "Seed"));
 
             manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
-                   .DesignLanguage.ShouldBe("AntDesign");
+                   .DesignLanguage.ShouldBe("TestLang");
             manager.ThemeCatalogDiagnostics.ShouldNotContain(static diagnostic =>
                 diagnostic.Code == "ATMTHM3103" || diagnostic.Code == "ATMTHM3104");
         });
@@ -367,8 +367,8 @@ public class CompiledThemeCatalogResolverTests
         HeadlessTestApp.Run(() =>
         {
             var manager = BuildLanguageManager(
-                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
-                LanguageXml("UserDark", "AntDesign", "Dark", "Normal", "Fixed"));
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed"),
+                LanguageXml("UserDark", "TestLang", "Dark", "Normal", "Fixed"));
 
             manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
                    .DesignLanguage.ShouldBeNull();
@@ -385,13 +385,13 @@ public class CompiledThemeCatalogResolverTests
             // The language's first definition is Seed; the Fixed variant is demoted (3104) and must not
             // block the later Dark/Compact variant, nor may a demoted duplicate (3103) claim its slot.
             var manager = BuildLanguageManager(
-                LanguageXml("PkgBlue", "AntDesign", "Light", "Normal", "Seed"),
-                LanguageXml("FixedDark", "AntDesign", "Dark", "Normal", "Fixed"),
-                LanguageXml("SeedDark", "AntDesign", "Dark", "Normal", "Seed"));
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed"),
+                LanguageXml("FixedDark", "TestLang", "Dark", "Normal", "Fixed"),
+                LanguageXml("SeedDark", "TestLang", "Dark", "Normal", "Seed"));
 
             var themes = manager.AvailableThemes;
             themes.Single(static theme => theme.Id == "FixedDark").DesignLanguage.ShouldBeNull();
-            themes.Single(static theme => theme.Id == "SeedDark").DesignLanguage.ShouldBe("AntDesign");
+            themes.Single(static theme => theme.Id == "SeedDark").DesignLanguage.ShouldBe("TestLang");
         });
     }
 
@@ -401,29 +401,29 @@ public class CompiledThemeCatalogResolverTests
         var registry = TypedThemeSnapshotCacheTests.CreateRegistry();
         var context = new ThemeDefinitionResolveContext("Tests", string.Empty, false, 0);
         var staticResolver = new MemoryResolver("Static", new MemorySource(
-            "memory://static", "1", LanguageXml("StaticBlue", "AntDesign", "Light", "Normal", "Seed")
+            "memory://static", "1", LanguageXml("StaticBlue", "TestLang", "Light", "Normal", "Seed")
                 .Replace("Appearance=\"Light\"", "Appearance=\"Light\" IsDefault=\"true\"")));
         var user = new MutableMemorySource(
-            "memory://user", "1", LanguageXml("UserBlue", "AntDesign", "Light", "Normal", "Seed"));
+            "memory://user", "1", LanguageXml("UserBlue", "TestLang", "Light", "Normal", "Seed"));
         var userResolver = new ReloadableMutableResolver(user);
         // The reloadable user theme is ordered first and claims the variant, so the static one is demoted.
         var initial = CompiledThemeCatalog.LoadInitial(registry, [userResolver, staticResolver], context);
         initial.Success.ShouldBeTrue();
         initial.Catalog!.Get("StaticBlue").Info.DesignLanguage.ShouldBeNull();
-        initial.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("AntDesign");
+        initial.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("TestLang");
 
         var rebound = initial.Catalog.AppendRegistry(registry, registry, []);
         rebound.Get("StaticBlue").Info.DesignLanguage.ShouldBeNull();
 
         // The conflict goes away on reload (the user theme moves to another variant); the static slice is reused
         // verbatim, so it must still hold its original Info for the static theme to rejoin the group.
-        user.Replace(LanguageXml("UserBlue", "AntDesign", "Dark", "Normal", "Seed"));
+        user.Replace(LanguageXml("UserBlue", "TestLang", "Dark", "Normal", "Seed"));
         user.SetRevision("2");
         var reloaded = CompiledThemeCatalog.LoadReload(
             registry, rebound, [userResolver, staticResolver], context);
         reloaded.Success.ShouldBeTrue();
-        reloaded.Catalog!.Get("StaticBlue").Info.DesignLanguage.ShouldBe("AntDesign");
-        reloaded.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("AntDesign");
+        reloaded.Catalog!.Get("StaticBlue").Info.DesignLanguage.ShouldBe("TestLang");
+        reloaded.Catalog.Get("UserBlue").Info.DesignLanguage.ShouldBe("TestLang");
     }
 
     private sealed class ReloadableMutableResolver(MutableMemorySource source) : IThemeDefinitionResolver

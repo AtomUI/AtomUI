@@ -2,6 +2,8 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
+Design language: `Material`; brand color is `Fixed` (the dark profiles need a separate M3 tone-80 seed, which a single brand color cannot map).
+
 A compiled preset approximating baseline Material 3 colors, density and elevation through AtomUI's existing Ant Design controls. Registration preserves the `DaybreakBlue` default.
 
 ```csharp

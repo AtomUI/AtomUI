@@ -73,6 +73,29 @@ public class MaterialThemePackageTests
         Contrast(dotColor, Global<Color>(snapshot, "ColorPrimary")).ShouldBeGreaterThan(4.5);
     }
 
+    [AvaloniaFact]
+    public void Profiles_Declare_Design_Language_And_Brand_Support()
+    {
+        var manager = Application.Current!.GetThemeManager()!;
+        var expected = new (string Id, ThemeAppearance Appearance, ThemeDensity Density)[]
+        {
+            ("Material", ThemeAppearance.Light, ThemeDensity.Normal),
+            ("Material.Dark", ThemeAppearance.Dark, ThemeDensity.Normal),
+            ("Material.Compact", ThemeAppearance.Light, ThemeDensity.Compact),
+            ("Material.DarkCompact", ThemeAppearance.Dark, ThemeDensity.Compact)
+        };
+        foreach (var (id, appearance, density) in expected)
+        {
+            var info = manager.AvailableThemes.Single(theme => theme.Id == id);
+            info.DesignLanguage.ShouldBe("Material");
+            info.BrandColor.ShouldBe(ThemeBrandColorSupport.Fixed);
+            info.Appearance.ShouldBe(appearance);
+            info.Density.ShouldBe(density);
+        }
+
+        manager.ThemeCatalogDiagnostics.ShouldBeEmpty();
+    }
+
     private static async Task<ThemeSnapshot> Apply(string id)
     {
         var manager = (ThemeManager)Application.Current!.GetThemeManager()!;

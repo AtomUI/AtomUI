@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnSlate" Name="Shadcn Slate" Appearance="Light" IsDefault="false">
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnSlate" Name="Shadcn Slate" Appearance="Light" DesignLanguage="Shadcn.Slate" BrandColor="Fixed" IsDefault="false">
   <Algorithms>
     <Algorithm Id="Default" />
   </Algorithms>

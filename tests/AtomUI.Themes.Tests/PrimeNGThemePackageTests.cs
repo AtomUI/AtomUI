@@ -595,6 +595,58 @@ public class PrimeNGThemePackageTests
     private static Task<ThemeSnapshot> Apply(string id) =>
         Apply(new ThemeRequest(id, null, ThemeTransitionReason.UserRequest));
 
+    [AvaloniaTheory]
+    [InlineData("Aura")]
+    [InlineData("Lara")]
+    [InlineData("Nora")]
+    public void Profiles_Declare_Design_Language_And_Brand_Support(string family)
+    {
+        var manager = Application.Current!.GetThemeManager()!;
+        var expected = new (string Suffix, ThemeAppearance Appearance, ThemeDensity Density)[]
+        {
+            ("", ThemeAppearance.Light, ThemeDensity.Normal),
+            (".Dark", ThemeAppearance.Dark, ThemeDensity.Normal),
+            (".Compact", ThemeAppearance.Light, ThemeDensity.Compact),
+            (".DarkCompact", ThemeAppearance.Dark, ThemeDensity.Compact)
+        };
+        foreach (var (suffix, appearance, density) in expected)
+        {
+            var info = manager.AvailableThemes.Single(theme => theme.Id == "PrimeNG" + family + suffix);
+            info.DesignLanguage.ShouldBe("PrimeNG." + family);
+            info.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+            info.Appearance.ShouldBe(appearance);
+            info.Density.ShouldBe(density);
+        }
+
+        manager.ThemeCatalogDiagnostics.ShouldBeEmpty();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", "PrimeNGAura.Dark")]
+    [InlineData("PrimeNGLara", "PrimeNGLara.Dark")]
+    [InlineData("PrimeNGNora", "PrimeNGNora.Dark")]
+    public async Task Brand_Seed_Drives_Derived_States_In_Both_Appearances(string light, string dark)
+    {
+        // #123456 is not a Tailwind 500 stop, so the palette formula must run and move every derived brand token.
+        var seed = Color.Parse("#123456");
+        var config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#123456").Build();
+        var lightDefault = await Apply(light);
+        var darkDefault = await Apply(dark);
+        var lightSnapshot = await Apply(new ThemeRequest(light, config, ThemeTransitionReason.UserRequest));
+        var darkSnapshot = await Apply(new ThemeRequest(dark, config, ThemeTransitionReason.UserRequest));
+
+        foreach (var (defaults, seeded) in new[] { (lightDefault, lightSnapshot), (darkDefault, darkSnapshot) })
+        {
+            foreach (var name in new[] { "ColorPrimary", "ColorPrimaryHover", "ColorPrimaryBg", "ColorControlOutline" })
+            {
+                Global<Color>(seeded, name).ShouldNotBe(Global<Color>(defaults, name), name);
+            }
+        }
+
+        Global<Color>(darkSnapshot, "ColorPrimary").ShouldNotBe(Global<Color>(lightSnapshot, "ColorPrimary"));
+        Global<Color>(lightSnapshot, "ColorPrimaryHover").ShouldNotBe(seed);
+    }
+
     private static async Task<ThemeSnapshot> Apply(ThemeRequest request)
     {
         var manager = (ThemeManager)Application.Current!.GetThemeManager()!;

@@ -3,6 +3,8 @@
        Id="DaybreakBlue"
        Name="Daybreak Blue"
        Appearance="Light"
+       DesignLanguage="AntDesign"
+       BrandColor="Seed"
        IsDefault="true">
   <Algorithms>
     <Algorithm Id="Default" />

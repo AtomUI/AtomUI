@@ -2,6 +2,8 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
+Design language: `Shadcn.Zinc` / `Shadcn.Slate` / `Shadcn.Stone`; brand color is `Fixed` (the ten primary-color states are hand-written per profile, so a replacement seed cannot drive them).
+
 Compiled Zinc, Slate and Stone presets that approximate shadcn/ui through AtomUI's existing global tokens. Registration preserves the `DaybreakBlue` default.
 
 ```csharp

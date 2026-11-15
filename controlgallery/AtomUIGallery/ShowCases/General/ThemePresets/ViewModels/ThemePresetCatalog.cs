@@ -22,10 +22,12 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
             _catalog = catalog;
             _configs.Clear();
         }
+        // Slices keep each definition's original Info; the published Info carries the design language demotion
+        // (ATMTHM3103/3104), so grouping here agrees with the Gallery menu.
         var compiled = catalog.ResolverSlices
             .SelectMany(slice => slice.Definitions
                 .Where(entry => entry.Revision.ProgramDigest is not null)
-                .Select(entry => (entry.Info, Package: slice.ResolverId))).ToArray();
+                .Select(entry => (catalog.Get(entry.Info.Id).Info, Package: slice.ResolverId))).ToArray();
         var packages = compiled.Where(item => item.Package != "AtomUIGallery" && item.Package != "AtomUI.Core").ToArray();
         return packages.Length == 0 ? compiled : packages;
     }

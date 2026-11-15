@@ -86,20 +86,20 @@ reload command 或菜单，宿主需要刷新用户主题时直接调用 `ITheme
 
 - `AvailableThemes`：`IThemeManager.AvailableThemes` 的防御性快照；`ThemeCatalogChanged` 后整体替换。
 - `CurrentThemeId`：只由已提交的 `ThemeChanged`/Catalog 回退状态更新，不把菜单点击当成提交结果。
-- `SwitchThemeCommand`：接收 Theme Id，用于未声明设计语言的"其他主题"，沿统一请求路径组合基础算法、Appearance、Compact、Motion 和 Wave Spirit 设置；选择已声明设计语言的主题时按该主题原样应用。
+- `SwitchThemeCommand`：接收 Theme Id，用于未声明设计语言的"其他主题"，沿统一请求路径组合基础算法、Appearance、Compact、Motion 和 Wave Spirit 设置。选择已声明设计语言的 profile 时按该 profile 原样应用，Appearance 跟随它；但如果所选主题是其设计语言的 Light + Normal 基础定义，而该语言没有与当前 Dark/Compact 开关对应的变体（例如只有一个 `DaybreakBlue` 的 `AntDesign`），则与设计语言切换一样按当前开关解析（基础链追加内置 Compact/Dark），保留用户当前的 Dark/Compact，与引入设计语言之前的行为一致。
 - `CurrentDesignLanguage`、`CanChooseBrandColor`、`BrandColor`：当前主题的设计语言（`null` 表示其他主题）、该语言是否为 `Seed`（可替换品牌色）、该语言记忆的品牌色（`null` 表示使用主题自身色）。
-- `SwitchDesignLanguageCommand`：按设计语言切换，经 `ThemeSelectionResolver` 选出匹配当前 Appearance/Compact 的 profile（缺少变体时回退到基础链并追加内置 Dark/Compact），并带上该语言记忆的品牌色。
+- `SwitchDesignLanguageCommand`：按设计语言切换，经 `ThemeSelectionResolver` 选出匹配当前 Appearance/Compact 的 profile（缺少变体时回退到基础定义，没有基础定义时回退到该语言最近的已声明定义，再追加内置 Dark/Compact），并带上该语言记忆的品牌色。目录中不存在的设计语言（例如菜单生成后目录已变化）被忽略，不会让命令出错。
 - `SetBrandColorCommand`：设置当前语言的品牌色，写入请求 `ThemeConfig` 的 `ColorPrimary`；`Fixed` 语言上为 no-op，与主题 `AccentColor` 相同的颜色视为清除。品牌色按设计语言记忆在 ViewModel 内存中（`_brandByLanguage`），不持久化；切到别的语言再切回时恢复。Dark、Compact、Motion 变化沿用同一份记忆。
 - `AppearanceMode` 与 `IsLightAppearanceMode` / `IsDarkAppearanceMode` / `IsSystemAppearanceMode`：投影 Light、Dark、Follow System 三态；`SetAppearanceModeCommand` 负责显式切换，`ToggleDarkModeCommand` 保留 bool 到 Light/Dark 的便捷映射。
 
-相对于当前已提交设置，主题色选择只替换下一次请求的 `ThemeRequest.ThemeId`；请求仍重建并携带完整的运行时
-`ThemeConfig`。AtomUIGallery 的内置产品主题在对应 Theme Definition XML 中显式声明
-相同颜色的 `ColorPrimary` 与 `ColorLink`，使品牌控件和 Link 同步换色；`ColorInfo` 等语义色保持独立。颜色 Seed
-不写入运行时 `ThemeConfig`。每次请求都从最近一次已提交 `ThemeState.Algorithms` 提取除 `Compact`、`Dark` 之外的
-基础链；基础链为空时回退 `Default`，随后按顺序追加可选 `Compact` 和 `Dark`。因此 Dark + Compact 的当前标准链是
-`Default -> Compact -> Dark`，不是用 `[Dark]` 或 `[Compact, Dark]` 丢弃 definition 的基础算法。Motion 和 Wave
-Spirit 作为完整请求中的 Token override 一并提交；关闭 Motion 会同时关闭 Wave Spirit，启用 Wave Spirit 会同时
-启用 Motion。
+每次主题请求都重建并携带完整的运行时 `ThemeConfig`。品牌色不再通过切换主题 Id 实现：AtomUIGallery 不再提供
+PolarGreen 等 Ant 色彩预设主题文件，而是把品牌色作为 `ColorPrimary` 种子写入请求 `ThemeConfig`（仅当当前设计语言为
+`Seed` 且已选色时），由算法派生 Hover/Active/Bg 等状态和焦点光晕 `ColorControlOutline`；`ColorLink`、`ColorInfo`
+等其他种子保持独立，不随品牌色变化。未声明设计语言的主题沿用旧做法：从最近一次已提交 `ThemeState.Algorithms`
+提取除 `Compact`、`Dark` 之外的基础链；基础链为空时回退 `Default`，随后按顺序追加可选 `Compact` 和 `Dark`。因此
+Dark + Compact 的当前标准链是 `Default -> Compact -> Dark`，不是用 `[Dark]` 或 `[Compact, Dark]` 丢弃 definition 的
+基础算法；`ThemeSelectionResolver` 的回退使用同一公式。Motion 和 Wave Spirit 作为完整请求中的 Token override 一并
+提交；关闭 Motion 会同时关闭 Wave Spirit，启用 Wave Spirit 会同时启用 Motion。
 
 Follow System 通过 `IGallerySystemAppearanceSource` 更新 Dark 状态，并以 `ThemeTransitionReason.FollowSystem` 提交同一
 完整请求。主题 Id、Appearance、Compact、Motion 和 Wave Spirit 保持正交；失败或被更新请求替代时，Shell 会重新
@@ -108,9 +108,11 @@ Follow System 通过 `IGallerySystemAppearanceSource` 更新 Dark 状态，并�
 ViewModel 对 `ThemeChanged`、`ThemeCatalogChanged` 和语言事件都保存对称的 handler，并在 `Dispose()` 中解除这些
 handler 及当前 Follow System appearance 订阅。
 产品窗口可以基于 `AvailableThemes` 动态创建同组 Radio 菜单，但不应复制主题名称/Id，也不应自行解析 XML。
-AtomUIGallery 将这些 Radio 项放在本地化的 Theme Settings 子菜单中；主题声明 `AccentColor` 时，菜单项在文字右侧
-显示 `12 × 12`、`2px` 圆角的实心正方形色块，未声明时不创建占位色块。Light、Dark、Follow System 位于
-Appearance 子菜单，Compact、Motion 和 Wave Spirit 保留为外层 Theme 菜单中的正交开关。
+AtomUIGallery 的 Theme 菜单（`GalleryThemeMenu`）分为三个子菜单：Design language（按 `DesignLanguage` 分组的 Radio
+项）、Brand color（当前语言的色块与 Reset；`Fixed` 语言或未声明设计语言的主题整组禁用，并以悬停提示说明原因）和
+Other themes（未声明设计语言的主题，没有时隐藏）。主题或语言声明了 `AccentColor` 时，菜单项在文字右侧显示
+`12 × 12`、`2px` 圆角的实心正方形色块，未声明时不创建占位色块。Light、Dark、Follow System 位于 Appearance 子菜单，
+Compact、Motion 和 Wave Spirit 保留为外层 Theme 菜单中的正交开关。
 
 ## 主题资产与生成注册
 

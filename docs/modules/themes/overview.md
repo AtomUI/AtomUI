@@ -17,8 +17,10 @@
 四包均已实现并在本地验证，尚未发布到 NuGet。四种 profile 为基础 ID 与 `.Dark`、`.Compact`、`.DarkCompact`；
 注册不改变默认 DaybreakBlue，不自动启用 Desktop 控件。
 
-Gallery 现有的 4 个色板主题（PolarGreen、SunsetOrange、GoldenPurple、Magenta）保留在 Gallery 项目；是否迁成
-`AtomUI.Themes.AntColors` 包另行决定。
+Gallery 原有的 4 个色板主题（PolarGreen、SunsetOrange、GoldenPurple、Magenta）已删除，改为 `AntDesign` 设计语言
+（Core 的 `DaybreakBlue`）在 Gallery Brand color 菜单中的命名品牌色块，品牌色写入请求的 `ColorPrimary`。四个包的
+profile 都声明了 `DesignLanguage`、`Density` 和 `BrandColor`，见[主题定制指南](../../guides/theming/customization.md)
+「设计语言与品牌色」。
 
 ## 项目结构
 

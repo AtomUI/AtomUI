@@ -748,7 +748,7 @@ Control 使用同一条确定性路径。
 
 手写其中任何一个会报 `ATMTHM3101`（Error），改为声明 `BrandColor="Fixed"` 或删掉该 Token。`ColorLink` 不在这组里：
 它是独立种子，Seed 主题可以显式设置。`Fixed` 的主题（Bootstrap、Material、Shadcn）自己决定品牌色，选择器不会向它写入种子。
-没有声明 `BrandColor` 的主题（包括用户目录里没有设计语言的主题）按缺省 `Fixed` 处理，Gallery 的 Theme Presets 页不再为它提供品牌色色块；要启用，请声明 `BrandColor="Seed"`。
+没有声明 `BrandColor` 的主题按缺省 `Fixed` 处理。Gallery 的 Theme Presets 页只列出编译主题包，因此未声明 `BrandColor` 的编译主题包（包括 ABI 1 编译包）不再提供品牌色色块；要启用，请声明 `BrandColor="Seed"`。
 
 ### 目录诊断
 

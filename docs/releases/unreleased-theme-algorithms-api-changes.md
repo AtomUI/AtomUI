@@ -29,7 +29,7 @@ the author's guide.
 | `AbstractDesignToken` | — | new `protected void RecordWrite(string)` called by the generated setters; do not call it yourself |
 | Theme XML `<Algorithm>` | `Id` is `Default`, `Dark` or `Compact` | optional `Catalog` (default `AtomUI`); `Id` accepts any identifier. Existing files stay valid |
 | Explicit global Alias values | written after the Alias formulas; derived Alias tokens ignored them | drive the Alias tokens derived from them (a fix). Themes that set Alias tokens explicitly can compile differently |
-| Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 5, algorithms as `Catalog`/`Id`; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
+| Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 6, algorithms as `Catalog`/`Id` plus the design language metadata; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
 | Design language and brand color | — | new `ThemeDensity` (`Normal`, `Compact`) and `ThemeBrandColorSupport` (`Fixed`, `Seed`) enums; `ThemeInfo` gains the `init` properties `DesignLanguage`, `Density`, `BrandColor` and `Algorithms` (the definition's own chain); new `ThemeSelection`, `ThemeSelectionResult` and `ThemeSelectionResolver`; `CompiledThemeProgram` gains a protected ABI 2 constructor. ABI 1 packages keep loading with the defaults; no action (see below) |
 | PrimeNG presets | XML value tables with Ant-derived fill-ins | produced by six PrimeNG algorithms; visible colour changes (see below) |
 
@@ -225,11 +225,14 @@ the three built-in values and `Identifier`. An invalid identifier fails in the r
 identity fails in the binder (`ATMTHM2001`) or, for compiled theme packages, at build time (`ATOMUITOKEN002`,
 "Unknown algorithm 'Catalog:Id'."). A repeated identity in one chain reports `ATMTHM1002`.
 
-## Compiled theme input format version 5
+## Compiled theme input format version 6
 
-The neutral intermediate file that the Toolchain task passes to the generator moves from format version 4 to 5:
-algorithm entries carry `Catalog`, `Id`, line and column instead of an integer. It is a private build-tool protocol;
-the generated runtime ABI stays v1. An intermediate left over from an older build fails with
+The neutral intermediate file that the Toolchain task passes to the generator moves from format version 4 to 6:
+algorithm entries carry `Catalog`, `Id`, line and column instead of an integer (version 5), and each definition also
+carries its `DesignLanguage`, `Density` and `BrandColor` (version 6). It is a private build-tool protocol. The
+generator now emits compiled theme programs with runtime ABI 2 (the `CompiledThemeProgram` constructor that carries the
+design language metadata and the algorithm chain); the runtime still loads ABI 1 packages built by older generators,
+with the metadata at its defaults. An intermediate left over from an older build fails with
 "Compiled theme input format is out of date; rebuild the project." Rebuild (or clean) the project.
 
 ## New and extended diagnostics
@@ -254,16 +257,16 @@ gains `init` properties and `ThemeRequest` / `ThemeConfig` are unchanged.
 | API | Description |
 | --- | --- |
 | `ThemeDensity`, `ThemeBrandColorSupport` | The two new enums |
-| `ThemeInfo.DesignLanguage`, `Density`, `BrandColor`, `Algorithms` | New `init` properties; `Algorithms` is the definition's own chain and takes part in equality |
+| `ThemeInfo.DesignLanguage`, `Density`, `BrandColor`, `Algorithms` | New `init` properties; `Algorithms` is the definition's own chain, stored as a read-only copy (assigning `null` throws `ArgumentNullException`), and takes part in equality |
 | `ThemeSelection`, `ThemeSelectionResult` | Records for the selection and the resolved theme id, algorithm chain and brand seed |
-| `ThemeSelectionResolver` | Pure functions `Resolve`, `DesignLanguages` and `BrandColorSupport`; an unknown language, or one with neither an exact variant nor a light, normal base definition, throws `ArgumentException` |
+| `ThemeSelectionResolver` | Pure functions `Resolve`, `DesignLanguages` and `BrandColorSupport`. Without an exact variant, `Resolve` falls back to the language's light, normal definition, else its nearest declared definition (same appearance, then same density, then the first one); only an unknown language throws `ArgumentException` |
 | `CompiledThemeProgram` ABI 2 constructor | Protected, for generated code; carries the design language metadata and the algorithm chain. ABI 1 packages still load |
 
 A `Seed` theme must not set the brand-derived tokens (`ColorPrimaryHover`, `ColorPrimaryActive`, `ColorPrimaryBg`,
 `ColorPrimaryBgHover`, `ColorPrimaryBorder`, `ColorPrimaryBorderHover`, `ColorPrimaryText`, `ColorPrimaryTextHover`,
-`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set. A theme that declares no `BrandColor`, including user-directory themes without a design
-language, now counts as `Fixed`, so the Gallery Theme Presets page no longer offers brand swatches for it; declare
-`BrandColor="Seed"` to opt in.
+`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set. A theme that declares no `BrandColor` counts as `Fixed`. The Gallery Theme Presets page,
+which lists compiled theme packages only, therefore no longer offers brand swatches for compiled packages that do not
+declare `BrandColor` (including ABI 1 packages); declare `BrandColor="Seed"` to opt in.
 `ATMTHM3103` (duplicate appearance and density inside one design language) and `ATMTHM3104` (mixed `Seed` and
 `Fixed`) are errors inside a compiled theme package and warnings in the runtime catalog, where the later conflicting
 definition leaves the group and stays usable by id. See [Theme customization](../guides/theming/customization.md)

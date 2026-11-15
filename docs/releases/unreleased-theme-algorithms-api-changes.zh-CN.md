@@ -27,7 +27,7 @@
 | `AbstractDesignToken` | — | 新增 `protected void RecordWrite(string)`，由生成的 setter 调用，不要自己调用 |
 | 主题 XML `<Algorithm>` | `Id` 只能是 `Default`、`Dark`、`Compact` | 新增可选 `Catalog`（缺省 `AtomUI`）；`Id` 接受任意合法标识符。现有文件仍然有效 |
 | 全局 Alias 显式值 | 在 Alias 公式之后写入，派生 Alias 不跟随 | 带动由它派生的 Alias（修复）。显式设置过 Alias Token 的主题，编译结果可能变化 |
-| 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 5，算法为 `Catalog`/`Id`；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
+| 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 6，算法为 `Catalog`/`Id`，并携带设计语言元数据；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
 | 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
 | PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
 
@@ -209,10 +209,12 @@ PrimeNG 的 profile 有变化：例如 PrimeNG Aura 的焦点阴影扩散现在�
 Reader 失败；合法但未注册在 Binder 失败（`ATMTHM2001`），编译主题包则在构建期失败（`ATOMUITOKEN002`，
 「Unknown algorithm 'Catalog:Id'.」）。同一条链里重复的身份报 `ATMTHM1002`。
 
-## 编译主题输入格式版本 5
+## 编译主题输入格式版本 6
 
-Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 5：算法项带 `Catalog`、`Id`、行、列，不再是整数。它是构建
-工具的私有协议，生成的运行时 ABI 仍是 v1。旧构建留下的中间文件会报「Compiled theme input format is out of date; rebuild the project.」，
+Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 6：算法项带 `Catalog`、`Id`、行、列，不再是整数（版本 5）；
+每个定义还携带 `DesignLanguage`、`Density` 和 `BrandColor`（版本 6）。它是构建工具的私有协议。生成器现在输出运行时
+ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `CompiledThemeProgram` 构造函数）；旧生成器构建的 ABI 1 编译包仍可
+加载，元数据取缺省值。旧构建留下的中间文件会报「Compiled theme input format is out of date; rebuild the project.」，
 重新构建（或清理）项目即可。
 
 ## 新增与扩展的诊断
@@ -236,14 +238,14 @@ Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 
 | API | 说明 |
 | --- | --- |
 | `ThemeDensity`、`ThemeBrandColorSupport` | 两个新枚举 |
-| `ThemeInfo.DesignLanguage`、`Density`、`BrandColor`、`Algorithms` | 新增 `init` 属性；`Algorithms` 是定义自身的算法链，参与相等比较 |
+| `ThemeInfo.DesignLanguage`、`Density`、`BrandColor`、`Algorithms` | 新增 `init` 属性；`Algorithms` 是定义自身的算法链，保存为只读副本（赋 `null` 抛 `ArgumentNullException`），参与相等比较 |
 | `ThemeSelection`、`ThemeSelectionResult` | 选择，以及解析出的主题 Id、算法链和品牌种子 |
-| `ThemeSelectionResolver` | 纯函数 `Resolve`、`DesignLanguages`、`BrandColorSupport`；语言不存在，或既无精确变体也没有 Light + Normal 基础定义时抛 `ArgumentException` |
+| `ThemeSelectionResolver` | 纯函数 `Resolve`、`DesignLanguages`、`BrandColorSupport`。没有精确变体时，`Resolve` 回退到该语言的 Light + Normal 定义，没有则回退到最近的已声明定义（同 Appearance，其次同 Density，最后取第一个）；只有语言不存在时抛 `ArgumentException` |
 | `CompiledThemeProgram` ABI 2 构造函数 | 受保护，供生成代码使用；携带设计语言元数据和算法链。ABI 1 编译包仍可加载 |
 
 `Seed` 主题不得手写品牌派生 Token（`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、
 `ColorPrimaryBorder`、`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、
-`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。没有声明 `BrandColor` 的主题（包括用户目录里没有设计语言的主题）现在按 `Fixed` 处理，Gallery 的 Theme Presets 页不再为它提供品牌色色块；要启用请声明 `BrandColor="Seed"`。`ATMTHM3103`（同一设计语言内 `Appearance` 与
+`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。没有声明 `BrandColor` 的主题按 `Fixed` 处理。Gallery 的 Theme Presets 页只列出编译主题包，因此不再为未声明 `BrandColor` 的编译主题包（包括 ABI 1 编译包）提供品牌色色块；要启用请声明 `BrandColor="Seed"`。`ATMTHM3103`（同一设计语言内 `Appearance` 与
 `Density` 重复）和 `ATMTHM3104`（混用 `Seed` 与 `Fixed`）在编译主题包内是 Error，在运行时目录是 Warning：在后的冲突定义退出分组，
 仍可按 Id 使用。规则和解析器示例见[主题定制指南](../guides/theming/customization.md)。
 

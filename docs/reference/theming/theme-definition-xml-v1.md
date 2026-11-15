@@ -100,6 +100,9 @@ Theme                                  exactly 1
 | `Name` | 是 | 1..128 字符 | 面向用户显示的名称 |
 | `Appearance` | 是 | `Light` 或 `Dark` | 该 definition 算法链求值后的最终 appearance 断言 |
 | `IsDefault` | 否 | `true` 或 `false` | 是否参与默认主题选择，默认 `false` |
+| `DesignLanguage` | 否 | `Identifier` | 该定义所属的设计语言，例如 `AntDesign`、`PrimeNG.Aura`；同一语言的定义归为一组。缺省时不参与分组 |
+| `Density` | 否 | `Normal` 或 `Compact` | 该定义按哪种密度编写，与 `Appearance` 一起标识设计语言内的变体，默认 `Normal` |
+| `BrandColor` | 否 | `Seed` 或 `Fixed` | `Seed`：品牌色可替换，品牌派生 Token 由算法从 `ColorPrimary` 推出；`Fixed`：品牌色由定义固定，默认 `Fixed` |
 
 Theme `Id`、Control `Catalog`、Control `Id` 和 Token `Name` 使用相同 Identifier 词法：
 
@@ -107,7 +110,15 @@ Theme `Id`、Control `Catalog`、Control `Id` 和 Token `Name` 使用相同 Iden
 [A-Za-z_][A-Za-z0-9_.-]{0,127}
 ```
 
-Identifier 区分大小写，使用 ordinal 比较。`DaybreakBlue` 和 `daybreakblue` 是两个不同身份。
+Identifier 区分大小写，使用 ordinal 比较。`DaybreakBlue` 和 `daybreakblue` 是两个不同身份。`DesignLanguage` 使用同一词法。
+
+`DesignLanguage`、`Density`、`BrandColor` 只是元数据：它们不参与 Binder 的算法与外观校验，也不改变定义编译出的
+Token。`BrandColor="Seed"` 的定义不得显式写出品牌派生 Token（`ColorPrimaryHover`、`ColorPrimaryActive`、
+`ColorPrimaryBg`、`ColorPrimaryBgHover`、`ColorPrimaryBorder`、`ColorPrimaryBorderHover`、`ColorPrimaryText`、
+`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、`ColorControlOutline`），无论写在全局 `<Tokens>` 还是
+`<Controls>` 下的控件级覆盖中，否则 Reader 报 `ATMTHM3101`（Error）。同一设计语言内的跨定义规则
+（`ATMTHM3103`、`ATMTHM3104`）由 Catalog 检查，见第 9 节。使用方式见
+[主题定制指南](../../guides/theming/customization.md)「设计语言与品牌色」。
 
 一个可用 ThemeCatalog 最多只能有一个 `IsDefault="true"` 的主题。该约束跨文件生效，由 `ThemeCatalog`
 验证，不属于单文件 XSD 约束。
@@ -394,6 +405,18 @@ diagnostic code 按责任分段：
 | `ATMTHM3xxx` | Token value 转换和配置语义 |
 | `ATMTHM4xxx` | Catalog、来源优先级和跨文件冲突 |
 
+设计语言元数据相关的诊断：
+
+| Code | 检查位置 | 条件 | 级别 |
+|---|---|---|---|
+| `ATMTHM3101` | Reader（运行时与构建期共用同一实现） | `BrandColor="Seed"` 的定义显式写了品牌派生 Token（全局或控件级） | Error；构建期使编译主题包生成失败 |
+| `ATMTHM3103` | Catalog / 生成器 | 同一 `DesignLanguage` 内两个定义的 (`Appearance`, `Density`) 相同 | 编译主题包内为 Error；运行时目录为 Warning |
+| `ATMTHM3104` | Catalog / 生成器 | 同一 `DesignLanguage` 内各定义的 `BrandColor` 不一致 | 编译主题包内为 Error；运行时目录为 Warning |
+
+运行时目录在合并所有来源（编译包、用户目录、重载）后按加载顺序检查 `ATMTHM3103`/`ATMTHM3104`：冲突的那个定义
+（在后者）退出分组，按 `DesignLanguage = null` 发布，仍可按 Id 使用；被退出分组的定义不占用变体，也不决定该语言的
+品牌色支持。生成器只看得到一个包，在包内用同样的规则检查，被拒绝的定义同样不占用变体。
+
 ## 10. 安全与资源边界
 
 Reader 必须满足：
@@ -471,6 +494,9 @@ v1 namespace 和 XSD 发布后保持不可变。只允许不改变验证结果�
 - 形状像内置值但不是内置值的合法标识符（例如 `Id="dark"`、`Id="Unknown"`）以前无效、现在仍然无效，但不再由 XSD 报
   `ATMTHM1002`，而是通过 XSD 与 Reader 后由 Binder 报 `ATMTHM2001`（`Theme algorithm 'AtomUI:dark' is not registered.`）。
 - 不是合法标识符的值（`1`、空值、含空格）仍由 XSD 报 `ATMTHM1002`。
+
+第二次已记录的放宽：设计语言与品牌色分离时，`Theme` 增加三个可选属性 `DesignLanguage`、`Density`、
+`BrandColor`（见第 4 节）。此前有效的文件全部仍然有效、语义不变；使用这些属性的文件不能被更早的严格 v1 XSD 接受。
 
 破坏性格式变更必须使用新 namespace，例如 `https://atomui.net/schemas/theme/v2`，并提供独立 XSD、Reader
 和迁移工具。Reader 只接受显式注册的 namespace，不猜测版本，不把无 namespace 文档当作 v1，也不建立旧格式

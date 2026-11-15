@@ -243,6 +243,8 @@ CandidateList 使用 ListBox 的 container pipeline，但替换容器类型为 `
 
 候选高亮是 `CandidateSelectedIndex` 的投射：CandidateList 在 ListBox 基础 prepare 全部完成之后，按本次准备的 `index` 设置容器的 `IsCandidateSelected`，对任何数据项类型生效。不能在 `NotifyRestoreDefaultContext` 里用 `IListItemVirtualizingContextAware.VirtualIndex` 判断：ListBox 在该回调之后才写入新的 `VirtualIndex`，回收容器此时仍带着上一个位置；该回调也只对 `IListItemData` 项执行。
 
+候选可用性统一由 `IsCandidateAvailable` 判定：数据项启用、多选未达 `MaxCount` 上限（已选项除外）、容器已实现时还要求容器启用且可见；键盘导航、指针迁移、`CandidateSelectedItem` / `CandidateSelectedIndex` 写入都经过它。数据项启用默认只认 `IListItemData.IsEnabled`；数据项不是 `IListItemData` 的宿主（Mentions）设置 internal `ItemEnabledResolver`，此时该判定同时决定可用性和容器 `IsEnabled`，并在基础 prepare 之后按本次数据项重新写入容器 `IsEnabled`，覆盖 ListBox 按 `VirtualIndex` 恢复的旧值（过滤后同一 index 可能是另一项）。未设置 resolver 时（AutoComplete、Select）行为不变。
+
 ### 7.6 条目分割线与圆角内容裁剪
 
 `ListBoxItem` 持有三个 internal DirectProperty：`IsSplitLineVisible`（ListBox 写入的分割线决策）、

@@ -261,7 +261,9 @@ gains `init` properties and `ThemeRequest` / `ThemeConfig` are unchanged.
 
 A `Seed` theme must not set the brand-derived tokens (`ColorPrimaryHover`, `ColorPrimaryActive`, `ColorPrimaryBg`,
 `ColorPrimaryBgHover`, `ColorPrimaryBorder`, `ColorPrimaryBorderHover`, `ColorPrimaryText`, `ColorPrimaryTextHover`,
-`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set.
+`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set. A theme that declares no `BrandColor`, including user-directory themes without a design
+language, now counts as `Fixed`, so the Gallery Theme Presets page no longer offers brand swatches for it; declare
+`BrandColor="Seed"` to opt in.
 `ATMTHM3103` (duplicate appearance and density inside one design language) and `ATMTHM3104` (mixed `Seed` and
 `Fixed`) are errors inside a compiled theme package and warnings in the runtime catalog, where the later conflicting
 definition leaves the group and stays usable by id. See [Theme customization](../guides/theming/customization.md)

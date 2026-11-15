@@ -17,7 +17,7 @@ internal static class ThemeDocumentReader
     private const string XsdResourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd";
 
     // Tokens derived from the brand color; a Seed-capable definition must let the brand algorithm produce them.
-    private static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
     {
         "ColorPrimaryHover",
         "ColorPrimaryActive",

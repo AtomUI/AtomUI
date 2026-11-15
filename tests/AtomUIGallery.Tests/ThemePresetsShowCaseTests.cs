@@ -46,6 +46,39 @@ public class ThemePresetsShowCaseTests
     }
 
     [Fact]
+    public void Gallery_Brand_Derived_Token_Set_Matches_The_Core_Rule()
+    {
+        ThemePresetCatalog.s_brandDerivedTokens.ShouldBe(
+            AtomUI.Theme.Definitions.ThemeDocumentReader.s_brandDerivedTokens, ignoreOrder: true);
+    }
+
+    [Fact]
+    public void Theme_Without_Design_Language_Or_Brand_Declaration_Cannot_Choose_Primary()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "GalleryPreviewFixture" };
+        model.CanChoosePrimary.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Selected_Swatch_Survives_Mode_Toggles_On_A_Seed_Family()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "PrimeNGAura" };
+        var rose = Color.Parse("#F43F5E");
+        model.SelectedPrimary = rose;
+        foreach (var (dark, compact, suffix) in new[]
+                 { (true, false, ".Dark"), (true, true, ".DarkCompact"), (false, true, ".Compact"), (false, false, "") })
+        {
+            model.IsDark = dark;
+            model.IsCompact = compact;
+            model.PreviewThemeId.ShouldBe("PrimeNGAura" + suffix);
+            model.SelectedPrimary.ShouldBe(rose);
+            Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(rose);
+        }
+    }
+
+    [Fact]
     public void Export_Writes_Design_Language_Metadata()
     {
         AvaloniaTestApp.EnsureInitialized();

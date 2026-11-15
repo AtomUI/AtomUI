@@ -75,7 +75,7 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
     }
 
     // Tokens derived from the brand color; a theme declaring BrandColor="Seed" must not pin them (rule ATMTHM3101).
-    private static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
+    internal static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
     {
         nameof(DesignToken.ColorPrimaryHover), nameof(DesignToken.ColorPrimaryActive),
         nameof(DesignToken.ColorPrimaryBg), nameof(DesignToken.ColorPrimaryBgHover),

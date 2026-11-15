@@ -243,7 +243,7 @@ Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 
 
 `Seed` 主题不得手写品牌派生 Token（`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、
 `ColorPrimaryBorder`、`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、
-`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。`ATMTHM3103`（同一设计语言内 `Appearance` 与
+`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。没有声明 `BrandColor` 的主题（包括用户目录里没有设计语言的主题）现在按 `Fixed` 处理，Gallery 的 Theme Presets 页不再为它提供品牌色色块；要启用请声明 `BrandColor="Seed"`。`ATMTHM3103`（同一设计语言内 `Appearance` 与
 `Density` 重复）和 `ATMTHM3104`（混用 `Seed` 与 `Fixed`）在编译主题包内是 Error，在运行时目录是 Warning：在后的冲突定义退出分组，
 仍可按 Id 使用。规则和解析器示例见[主题定制指南](../guides/theming/customization.md)。
 

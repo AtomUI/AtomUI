@@ -32,6 +32,8 @@ Mentions 的实现以 `MentionTextArea` 为输入内核，`Popup` 和 `Candidate
 
 `CandidateList` 是候选选择边界和 active candidate owner。Mentions 只依赖 `ICandidateList` 的 `ItemsSource`、`SelectedItem`、`Commit`、`Cancel` 和 `HandleKeyDown()`，不直接管理候选项容器；鼠标候选迁移、键盘导航和 `Enter` 提交必须最终读取同一 active candidate。
 
+候选项启用状态由 Mentions 提供、由 CandidateList 执行：`IMentionOption` 不是 `IListItemData`，所以 Mentions 在绑定 `PART_CandidateList` 时把 internal `CandidateList.ItemEnabledResolver` 设为 `IMentionOption.IsEnabled` 判定，解绑时清空。CandidateList 用它决定候选可用性（键盘、指针）和容器 `IsEnabled`；`RefreshView()` 的预选使用同一判定选出第一个启用项。
+
 `IMentionOptionsAsyncLoader` 是异步数据边界。控件只调用 `LoadAsync(context, token)`，不假设远程协议、缓存策略或错误显示方式。
 
 ## 4. 状态与数据流
@@ -114,7 +116,8 @@ Popup 打开时创建 `_subscriptionsOnOpen`，订阅自身 `IsVisible`、`IsEna
 
 - `CandidateList.HandleKeyDown()` 优先处理弹层打开状态下的按键。
 - `Escape` 取消当前候选，清空 `FilterValue` 并关闭弹层。
-- `Enter` 在弹层打开时提交 `CandidateList.SelectedItem`。
+- `Enter` 在弹层打开时提交 `CandidateList.SelectedItem`：有 active candidate 时先写回 `SelectedItem`，否则提交 `RefreshView()` 预选的第一个启用候选项；全部禁用时 `SelectedItem` 为 null，只关闭弹层。
+- `Up` / `Down` 由 CandidateList 在可用候选项之间移动，禁用候选项在视口内外和首尾回绕时都被跳过。
 - `F4` 切换 `IsDropDownOpen`。
 - 弹层关闭时，`Down` 打开弹层；若该按键被 XY focus 导航占用，则不打开。
 
@@ -229,6 +232,7 @@ AOT 边界：
 - 弹层打开/关闭必须尊重 `DropDownOpening` / `DropDownClosing` 的取消结果。
 - 异步 loader 结果不能让过期请求覆盖当前候选视图。
 - 候选提交必须使用 `MentionTextArea.InsertMentionOption()`，保留 undo/redo 和 selection 语义。
+- 禁用候选项（`IMentionOption.IsEnabled=false`）不能成为预选项、active candidate 或提交项；预选与 `ItemEnabledResolver` 必须共用同一判定，容器启用状态按候选项数据而不是按回收前的 index 恢复。
 - 重新套用模板不能泄漏旧 part 的事件订阅。
 - MentionsToken 只服务 popup 尺寸，不承载候选数据、过滤值、loading 或输入状态。
 - Semantic Part marker 的维护边界：`MentionsTheme.axaml` 承载 `semantic-scope-input`（`MentionTextArea` 节点）、`semantic-popup-root`（`PopupFrame` Border）、`semantic-popup-list`（`PART_CandidateList`）静态 marker；`prefix` / `content` / `placeholder` / `input` / `clear` 的 marker 位于共享 `TextAreaTheme.axaml` 与 `TextAreaDecoratedBoxTheme.axaml`（`CrossNestedOwners=true`，生成器沿 `MentionTextArea` → `TextArea` 主题链校验）；`popup.listItem` 的 marker 由共享 `CandidateList.CreateContainerForItemOverride()` 注入（`RuntimeCreated=true`）。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删。
@@ -240,6 +244,7 @@ AOT 边界：
 - `MentionsShowCasePageTests` 覆盖 Gallery 页面结构、示例 snapshot、源码片段和延迟加载规则。
 - Gallery 走查基础用法、variant、异步加载、自定义触发符、disabled/read-only、placement、status、auto-size 和 clear 示例。
 - 控件行为验证应覆盖触发符扫描、候选过滤、异步加载成功/失败/超时、键盘导航、候选提交、Form value 和模板重应用事件释放。
+- `MentionsDisabledOptionTests`：禁用候选项的容器禁用态、预选跳过前导禁用项、全部禁用时 Enter 不插入、键盘在视口内外与回绕时跳过、指针悬停/点击无效、虚拟化回收与过滤后容器启用态按数据恢复。
 - `MentionsSemanticPartTests`：descriptor 九个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中输入区目标、popup 部件 marker 暴露。
 - Token 改动需验证 `MentionsTokenKind`、`MentionsTokenResourceExtension`、`MentionsTheme.axaml` 引用和 Token 类型、生成数据和 token.md 语义说明一致。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

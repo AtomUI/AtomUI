@@ -6,9 +6,10 @@
 ## 2026-11-14
 
 - Fixed
+  - CandidateList 只认 `IListItemData.IsEnabled`，Mentions 的禁用选项（`IMentionOption`）因此仍可被键盘导航选中并按启用项渲染。新增 internal `ItemEnabledResolver`，由宿主提供数据项启用判定，同时驱动候选可用性和容器 `IsEnabled`（prepare 时按数据项写入，不沿用按 index 保存的旧值）；未设置时行为不变。
   - CandidateList（AutoComplete、Mentions 的候选列表）在虚拟化回收后高亮错位：回收容器继承了活动候选的高亮，滚回后活动候选又不高亮。原因是高亮在 `NotifyRestoreDefaultContext` 中按尚未更新的 `VirtualIndex` 判断，且该回调只对 `IListItemData` 执行（Mentions 选项不经过）。改为在 `PrepareContainerForItemOverride` 的基础 prepare 之后按本次 `index` 设置。
 - Docs
-  - `implementation.md` §7.5 更新 CandidateList 扩展点与候选高亮的恢复时机。
+  - `implementation.md` §7.5 更新 CandidateList 扩展点与候选高亮的恢复时机，补充候选可用性判定与 `ItemEnabledResolver`。
 
 ## 2026-10-20
 

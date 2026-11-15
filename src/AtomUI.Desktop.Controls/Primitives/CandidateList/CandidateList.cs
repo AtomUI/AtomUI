@@ -89,6 +89,33 @@ public class CandidateList : ListBox, ICandidateList
         set => SetValue(MaxCountProperty, value);
     }
     #endregion
+
+    #region 内部属性定义
+
+    /// <summary>
+    /// Resolves whether a candidate item is enabled, for hosts whose item type is not <see cref="IListItemData"/>
+    /// (Mentions uses <see cref="IMentionOption.IsEnabled"/>). When set, it decides both candidate availability
+    /// and the container's <c>IsEnabled</c>; when null, only <see cref="IListItemData.IsEnabled"/> is honoured.
+    /// </summary>
+    internal Func<object?, bool>? ItemEnabledResolver
+    {
+        get => _itemEnabledResolver;
+        set
+        {
+            if (ReferenceEquals(_itemEnabledResolver, value))
+            {
+                return;
+            }
+
+            _itemEnabledResolver = value;
+            ConfigureOptionsForMaxCount();
+            ClearActiveCandidateIfUnavailable();
+        }
+    }
+
+    private Func<object?, bool>? _itemEnabledResolver;
+
+    #endregion
     
     #region 公共事件定义
     public static readonly RoutedEvent<RoutedEventArgs> CommitEvent =
@@ -158,9 +185,9 @@ public class CandidateList : ListBox, ICandidateList
             {
                 var item      = Items[i];
                 var container = ContainerFromIndex(i);
-                if (item is IListItemData selectOption)
+                if (ItemEnabledResolver is not null || item is IListItemData)
                 {
-                    SetContainerEnabledIfChanged(container, selectOption.IsEnabled);
+                    SetContainerEnabledIfChanged(container, IsItemDataEnabled(item));
                 }
             }
         }
@@ -273,9 +300,19 @@ public class CandidateList : ListBox, ICandidateList
         return true;
     }
 
+    private bool IsItemDataEnabled(object? item)
+    {
+        if (ItemEnabledResolver is { } resolver)
+        {
+            return resolver(item);
+        }
+
+        return item is not IListItemData { IsEnabled: false };
+    }
+
     private bool IsCandidateAvailable(object? item, CandidateListItem? container)
     {
-        if (item is IListItemData itemData && !itemData.IsEnabled)
+        if (!IsItemDataEnabled(item))
         {
             return false;
         }
@@ -616,6 +653,13 @@ public class CandidateList : ListBox, ICandidateList
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
+        if (ItemEnabledResolver is not null)
+        {
+            // The base restores IsEnabled saved by index for IListItemData; resolver-backed items are not
+            // IListItemData and the saved index may now hold another item (filtering), so the item data decides.
+            SetContainerEnabledIfChanged(container, IsCandidateAvailable(item, null));
+        }
+
         if (container is CandidateListItem candidateListItem)
         {
             SetCandidateItemSelectedIfChanged(candidateListItem,

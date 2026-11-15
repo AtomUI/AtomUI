@@ -7,7 +7,11 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListViewItem">
             <Panel>
+                <!-- Keyboard focus outline: drawn just inside the item frame, so it is neither clipped by the list
+                     viewport nor overlaps the neighbouring items. -->
                 <atom:PixelAlignedBorder Name="Frame"
+                                         TemplatedControl.IsTemplateFocusTarget="True"
+                                         atom:FocusOutlineAdorner.IsInset="True"
                                          Background="{TemplateBinding Background}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          Padding="{TemplateBinding Padding}">
@@ -34,7 +38,6 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListViewItem)">
-        <Setter Property="Focusable" Value="False" />
         <Setter Property="Margin" Value="{atom:ListViewTokenResource ItemMargin}" />
         <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
         <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />

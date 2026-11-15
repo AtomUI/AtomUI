@@ -2,6 +2,16 @@
 
 本文档记录 Transfer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Fixed
+  - ListTransfer 列表面板无法用键盘浏览：点击条目后焦点落在条目的勾选框上，第一次 `↓` 把焦点移到面板头部的全选勾选框。
+    条目改为焦点目标、勾选框不可聚焦；方向键只移动焦点，`Space` / `Enter` 切换勾选（此前方向键会逐项切换勾选）。
+- Theme
+  - `TransferListItemTheme` 的 `Frame` 成为模板焦点目标并内侧绘制焦点描边；`CheckBox#SelectedIndicator` 设为 `Focusable=False`。
+- Docs
+  - `overview.md` 新增 §8.1.1 列表面板键盘模型。
+
 ## 2026-09-01
 
 - Semantic Part（方向限定对齐）

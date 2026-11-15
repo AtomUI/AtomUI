@@ -14,6 +14,8 @@
             <atom:ListBoxItemTheme TargetType="atom:CascaderViewFilterListItem" />
         </ControlTheme.BasedOn>
         <Setter Property="BorderThickness" Value="0" />
+        <!-- Popup candidate list: keyboard focus stays in the host input, which forwards keys to the list. -->
+        <Setter Property="Focusable" Value="False" />
 
         <Style Selector="^:is(atom|CascaderViewFilterListItem)">
             <Style Selector="^:pointerover:not(:disabled)">

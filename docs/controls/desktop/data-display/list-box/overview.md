@@ -107,7 +107,7 @@ ListBox 的状态模型由选择状态、交互状态、过滤状态、空状态
 
 - `IsSelectable=false` 时，ListBox 不响应 pointer 或 keyboard 选择更新，并清空 `SelectedIndex`、`SelectedItem` 和 `SelectedItems`。
 - `SelectionMode` 继承 Avalonia `ListBox` 语义，单选使用 `SelectedItem`，多选使用 `SelectedItems`。
-- 方向键按 Avalonia navigation direction 移动选择，`Shift` 支持范围选择，平台 select-all 手势在多选模式下选择全部。
+- 键盘移动焦点与提交选择的规则见 §8.4：单选时选择跟随焦点条目；多选时方向键只移动焦点，Space / Enter 切换，`Shift` 做范围选择，平台 select-all 手势选择全部。
 - `IsShowSelectedIndicator=true` 时，选中容器右侧显示 `SelectedIndicator`。
 
 点击行为：
@@ -163,6 +163,10 @@ ListBoxItemTheme
 - disabled 内容使用 SharedToken disabled 文本色。
 - 选中指示器默认使用 默认 `CheckOutlined`，颜色使用 SharedToken 主色，尺寸使用 SharedToken icon size。
 - 空状态默认使用 `Empty` 的 simple preset image。
+- 键盘焦点描边由条目模板 `Frame` 承载（`TemplatedControl.IsTemplateFocusTarget=True`、`FocusOutlineAdorner.IsInset=True`）：
+  主题的 `DefaultFocusAdorner`（`ColorFocusBorder`、`LineWidthFocus`）画在 `Frame` 内侧，不被列表视口和圆角内容裁剪切掉，
+  也不压到相邻条目；只在 Tab / 方向键获得焦点时显示，指针获得焦点不显示。暗色算法下 `ColorPrimaryBg` 取
+  `ColorPrimaryBorder`（与 Ant Design 一致），选中条目上的描边与 `ItemSelectedBg` 同色，此时焦点位置由选中背景表达。
 
 ListBoxToken 提供内容 padding、条目文字颜色、条目状态背景、条目 padding、条目 margin、选中指示器 margin 和过滤高亮色。Token 详情见 [ListBox Token 设计](token.md)。
 
@@ -220,6 +224,39 @@ ListBox 的过滤模型面向简单文本列表和候选项列表。`FilterValue
 
 CandidateList 继承 ListBox，并增加候选项键盘导航、候选高亮、commit / cancel 和最大选择数量控制。ListBox 的点击、选择、过滤、空状态和虚拟化上下文规则直接影响 CandidateList，因此 ListBox 变更必须走 CandidateList 验证。
 
+CandidateList 不使用 §8.4 的焦点模型：键盘焦点留在宿主输入框（AutoComplete、Mentions），宿主把按键转发给
+`CandidateList.HandleKeyDown`，候选高亮是列表内部的活动项。`CandidateListItemTheme` 因此固定 `Focusable=False`，点击候选项
+不会把焦点从宿主移走。基于 ListBox 的 Cascader 搜索结果列表同样固定条目不可聚焦。
+
+### 8.4 键盘焦点模型
+
+独立使用的 ListBox 采用 Avalonia 的条目焦点模型：
+
+| 节点 | 键盘角色 |
+| --- | --- |
+| `ListBox` | 不可聚焦；`KeyboardNavigation.TabNavigation=Once`，整个列表只占一个 Tab 停靠点。 |
+| `ListBoxItem` | 键盘焦点目标。Tab 进入列表时落在最近一次聚焦的条目，没有时取选中条目，再没有时取第一个可导航条目；进入不改变选择。指针按下条目时焦点落在该条目。 |
+| 条目内容 | 用户模板里的可聚焦内容保留自己的焦点和 Space / Enter 语义；方向键从它所在的条目出发导航。 |
+
+可导航条目是已实现或可由面板实现、`IsEffectivelyEnabled=true`、`IsEffectivelyVisible=true`（`HideUnMatched` 过滤隐藏的条目
+不可导航）且可聚焦的条目。按键语义：
+
+| 按键 | 单选（`IsSelectable=true`） | 多选（`SelectionMode` 含 `Multiple`） | `IsSelectable=false` |
+| --- | --- | --- | --- |
+| `↑` / `↓`（水平面板为 `←` / `→`）、`Home` / `End` | 焦点移到相邻 / 首个 / 末个可导航条目，选择跟随，每次按键只移动一项。 | 只移动焦点，不改变选择。 | 只移动焦点。 |
+| `Shift` + 方向键 | 同无修饰键。 | 焦点移动，并从选择锚点到新焦点条目做范围选择。 | 只移动焦点。 |
+| Ctrl / Cmd + 方向键 | 只移动焦点，不改变选择。 | 只移动焦点。 | 只移动焦点。 |
+| `Space` / `Enter`（焦点在条目自身） | 选中焦点条目；已选中时不处理并继续冒泡；Ctrl / Cmd 组合取消选中。 | 切换焦点条目的选中状态；`Shift` 组合做范围选择。 | 不处理。 |
+| 平台 select-all 手势 | 不处理。 | 选择全部。 | 不处理。 |
+
+规则：
+
+- 找不到目标条目（已在边界且 `WrapSelection=false`）时不设置 `Handled`，按键继续冒泡；`Alt` 组合不参与导航，留给宿主。
+- 多选时浏览本身不改变业务选择，与 TreeView 的提交策略一致。
+- 键盘提交与指针使用同一选择入口，`SelectionChanged` 语义不变；键盘提交不派发 `ItemClicked`，该事件只表达指针点击。
+- 虚拟化面板（默认 `VirtualizingStackPanel`）下，视口外的目标条目由面板实现并滚入视口；持有焦点的容器滚出视口时由面板保留，滚回后焦点与选择不变。
+- `PageUp` / `PageDown`：Avalonia 12.1.6 `VirtualizingStackPanel` 的方向导航没有翻页分支，按键交给模板内的 ScrollViewer 滚动一页视口，焦点与选择保持不变。
+
 ## 9. 文档导航与验证策略
 
 文档导航：
@@ -235,6 +272,7 @@ CandidateList 继承 ListBox，并增加候选项键盘导航、候选高亮、c
 | --- | --- |
 | Public API | 检查 ListBox / ListBoxItem 属性、事件、默认值和 Avalonia selection 语义不变。 |
 | 状态 | 覆盖 selectable、selected indicator、filter、empty、disabled、keyboard navigation 和 CandidateList commit。 |
+| 键盘 | 默认主题与默认虚拟化面板下覆盖 Tab 停靠、每次按键只移动一项、越过视口、Home / End、禁用项跳过、回收后焦点保留、多选提交策略和焦点描边；CandidateList 点击不夺取宿主焦点。 |
 | AXAML | 检查 root、item、empty、indicator、filter highlighter 在 light / dark 和三种 SizeType 下显示稳定，外框 / 分割线 / 圆角内容裁剪规则一致。 |
 | Token | 检查 ListBoxTokenKind、AXAML token resource 和 token.md 语义说明保持一致。 |
 | 虚拟化 | 覆盖 container prepare / clear、上下滚动后状态不串扰。 |

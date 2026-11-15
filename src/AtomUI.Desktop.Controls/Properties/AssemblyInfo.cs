@@ -15,6 +15,10 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme.Resources")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme")]
 
+[assembly: TypeForwardedTo(typeof(ButtonColor))]
+[assembly: TypeForwardedTo(typeof(ButtonVariant))]
+[assembly: TypeForwardedTo(typeof(ButtonShape))]
+[assembly: TypeForwardedTo(typeof(ButtonIconPlacement))]
 [assembly: TypeForwardedTo(typeof(SearchRequestedEventArgs))]
 [assembly: TypeForwardedTo(typeof(SearchTriggerSource))]
 [assembly: TypeForwardedTo(typeof(OtpLineEditInputMode))]

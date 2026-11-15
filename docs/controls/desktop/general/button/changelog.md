@@ -13,6 +13,17 @@
 - Performance
   - Skip theme-token capture while the Button has no themed ancestor. Properties set from XAML (ButtonType, IsDanger, IsGhost, Color, Variant) arrive before the Button is attached; each used to throw and catch an `InvalidOperationException`. `OnAttachedToLogicalTree` still configures the variant variables, so the values are unchanged.
   - Bind the icon slot visibility to an internal `EffectiveIconVisible` property (`Icon is Icon && IsIconVisible && !IsLoading`, the old converter rule) instead of a three-way MultiBinding with reflection bindings, and the `ShadowsFrame` shadow setter to `{TemplateBinding VariantShadow}`. Same values and the same binding priorities; rendering is pixel-identical in every state.
+- API
+  - Desktop 和 Mobile 的 Button 共用 `AbstractButton` 的通用属性、伪类和颜色变体解析。四种 Button 枚举仍使用原 CLR 全名，由 Desktop 程序集转发到 `AtomUI.Controls`。
+  - 新增 `ButtonColor.Success`、`ButtonColor.Warning` 和 `ButtonShape.Rectangular`。
+- Theme
+  - 新语义色使用全局状态色阶，矩形使用直角轮廓。
+- Fix
+  - 已挂载的按钮增删 `Icon` 后即时更新 `:icononly`。
+- Desktop 影响
+  - 旧枚举值及旧属性字段、方法和路由事件的签名保留。旧客户端可加载新版程序集。
+- Tests
+  - Button 及相关定向测试通过 136 项。Headless/Skia 对比正式 6.2.14 和候选版，浅色与深色的八种 Desktop 状态尺寸一致，差异位于两次采样也会变动的加载图标抗锯齿范围内。
 
 ## 2026-11-11
 

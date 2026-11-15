@@ -236,10 +236,12 @@ CandidateList 使用 ListBox 的 container pipeline，但替换容器类型为 `
 - `CreateContainerForItemOverride`
 - `NeedsContainerOverride`
 - `ConfigureEmptyIndicator`
-- `NotifyRestoreDefaultContext`
+- `PrepareContainerForItemOverride`
 - `NotifyClearContainerForVirtualizingContext`
 
 这些扩展点要求 ListBox 的基础 prepare / clear 顺序稳定，避免候选项临时高亮、disabled 状态和 selection 状态在虚拟化回收时串扰。
+
+候选高亮是 `CandidateSelectedIndex` 的投射：CandidateList 在 ListBox 基础 prepare 全部完成之后，按本次准备的 `index` 设置容器的 `IsCandidateSelected`，对任何数据项类型生效。不能在 `NotifyRestoreDefaultContext` 里用 `IListItemVirtualizingContextAware.VirtualIndex` 判断：ListBox 在该回调之后才写入新的 `VirtualIndex`，回收容器此时仍带着上一个位置；该回调也只对 `IListItemData` 项执行。
 
 ### 7.6 条目分割线与圆角内容裁剪
 

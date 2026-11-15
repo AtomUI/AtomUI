@@ -3,6 +3,13 @@
 本文档记录 ListBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Fixed
+  - CandidateList（AutoComplete、Mentions 的候选列表）在虚拟化回收后高亮错位：回收容器继承了活动候选的高亮，滚回后活动候选又不高亮。原因是高亮在 `NotifyRestoreDefaultContext` 中按尚未更新的 `VirtualIndex` 判断，且该回调只对 `IListItemData` 执行（Mentions 选项不经过）。改为在 `PrepareContainerForItemOverride` 的基础 prepare 之后按本次 `index` 设置。
+- Docs
+  - `implementation.md` §7.5 更新 CandidateList 扩展点与候选高亮的恢复时机。
+
 ## 2026-10-20
 
 - Fixed

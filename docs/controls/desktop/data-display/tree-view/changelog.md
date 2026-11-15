@@ -6,6 +6,21 @@
 ## 2026-11-14
 
 - Fix
+  - 虚拟化面板下 `Shift` + ↑↓ / Home / End 范围多选只包含已实现的行：范围原先在已实现容器的序列上计算，锚点容器被回收后锚点丢失（Shift+End 甚至只剩 1 项）。选择锚点改为保存项，范围在节点数据的先序序列上计算，覆盖未实现的节点。
+  - `SelectedItems` 变化（键盘范围、代码增删）作用于未实现的节点后，节点数据不同步，之后实现的行按旧的 `IsSelected` 显示为未选中。节点 `IsSelected` 现在跟随 `SelectedItems`。
+  - 范围选择内部集合改按引用比较：`TreeItemNode` 是 record，值相等的不同节点会被当成同一项。
+  - 直接添加 `TreeViewItem` 子项的树在虚拟化面板下键盘导航仍停在视口内：面板隐藏它回收的自身容器项，`ContainerFromIndex` 却仍返回它们，导航把它们当作被过滤隐藏而跳过。现在只把有索引（已实现）的容器当作容器，其余按需实现。
+- Implementation
+  - 新增 `TreeView.SelectionState.cs`：attach 期间订阅 `SelectedItems` 集合变化，把增删同步到 `ITreeItemNode.IsSelected`，按引用维护镜像，Reset / 重新 attach 时求差；detach 时退订。
+  - `TreeView.KeyboardNavigation.cs` 新增 `GetRealizedContainer`（`ContainerFromIndex` 且 `IndexFromContainer >= 0`），逐项导航与范围遍历都只把已实现的容器当作容器。
+  - `TreeView.KeyboardNavigation.cs` 的选择锚点从容器改为项，新增按节点数据的先序遍历 `EnumerateNavigableTreeItems`，`SelectKeyboardRange` 改用它；容器离开视觉树不再清空锚点。
+- Tests
+  - `TreeViewKeyboardNavigationTests` 新增直接 `TreeViewItem` 子项在虚拟化面板下 ↑↓ Home End 与 Shift 范围越过视口的用例。
+  - `TreeViewKeyboardNavigationTests` 新增 `TreeItemNode` / `BindableTreeItemNode` 各 4 项：Shift+End 覆盖未实现的根与子节点并保持先序、锚点容器回收后扩展范围、收缩范围取消未实现节点的选择、代码增删未实现节点后行的选择显示。
+- Docs
+  - `keyboard-navigation-design.md` §7.1 增加范围选择算法，§8 性能、§9 兼容性（移除“范围只含已实现部分”，改为过滤只作用于已实现容器）、§10 验证同步；`implementation.md` 源码职责、§7.8 锚点与选择镜像；`overview.md` 选择行为补充 `SelectedItems` 权威与节点镜像。
+
+- Fix
   - 虚拟化面板下 checkbox 级联只覆盖已实现的子节点：勾选有 15 个子节点、视口只实现约 8 个的已展开节点时，`CheckedItems` 只得到已实现部分，父节点显示半选。级联改为沿节点数据（`ITreeItemNode.Children` / `ParentNode`）计算，父级 true / null 按全部子节点得出。
   - 虚拟化面板回收 `BindableTreeItemNode` 容器时 `CheckedItems` 被整体清空：清理容器的 `ItemsSource` 被当成子集合 `Reset`，处理为 `CheckedItems.Clear()`。容器生命周期内的 `ItemsSource` 变化不再清理勾选；真实的子集合 `Reset` 只移除从根不可达的勾选项，替换子集合只移除离开的节点及其子树。
   - 代码向 `CheckedItems` 加入或移除未实现节点时，节点数据与之后实现的容器不再与集合不一致；赋值新的 `CheckedItems` 集合时其中的节点显示为勾选（此前已实现容器全部显示未勾选）。

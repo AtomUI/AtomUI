@@ -826,6 +826,7 @@ public partial class TreeView : AvaloniaTreeView,
         _isTreeDataControllerAttached = true;
         _treeDataController.SetRootSource(ItemsSource);
         InteractionHandler.Attach(this);
+        ObserveSelectedItems();
         UpdatePseudoClasses();
     }
     
@@ -836,6 +837,7 @@ public partial class TreeView : AvaloniaTreeView,
         ClearKeyboardActiveItem();
         CancelItemsSourceReplay();
         InteractionHandler.Detach(this);
+        StopObservingSelectedItems();
         
         // 清理所有待处理的异步加载操作
         _asyncLoadCoordinator.CancelAll();
@@ -1177,6 +1179,11 @@ public partial class TreeView : AvaloniaTreeView,
         else if (change.Property == SelectedItemProperty || change.Property == SelectedItemsProperty)
         {
             RecordExplicitSelectionUpdateDuringReplay(true);
+        }
+
+        if (change.Property == SelectedItemsProperty && _isTreeDataControllerAttached)
+        {
+            ObserveSelectedItems();
         }
 
     }

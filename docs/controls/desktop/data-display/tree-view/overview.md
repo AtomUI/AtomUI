@@ -178,6 +178,7 @@ TreeView 的状态模型由节点状态、选择状态、勾选状态、展开�
 - `IsSelectable=false` 时不允许节点被选中，并清空 TreeView 当前选择。
 - `IsSelectOnRightClick=false` 时，右键不更新选择。
 - `SelectionMode` 继承 Avalonia `TreeView` 语义，单选使用 `SelectedItem`，多选使用 `SelectedItems`。
+- `SelectedItems` 是选择状态的权威。`ITreeItemNode` 节点的 `IsSelected` 跟随 `SelectedItems`，包括虚拟化面板尚未实现容器的节点；之后实现的行按节点数据显示当前选择。
 - Form 集成以单选 / 多选模式分别读取和写入 `SelectedItem` 或 `SelectedItems`，并保持原始节点对象 / 列表实例，不把节点值转换为字符串。
 
 勾选行为：

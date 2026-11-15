@@ -103,6 +103,60 @@ public class CandidateListBehaviorTests
         }
     }
 
+    // The active candidate is an index; the virtualizing panel prepares recycled containers for other indexes.
+    // Option data (IListItemData) and plain items (Mentions) take the same path.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Highlight_Follows_The_Active_Index_Across_Container_Recycling(bool optionData)
+    {
+        var items = Enumerable.Range(0, 200)
+                              .Select(i => optionData
+                                  ? (object)new AutoCompleteOption { Header = $"Item {i}", Content = $"Item {i}" }
+                                  : $"Item {i}")
+                              .ToArray();
+        var candidateList = new CandidateList
+        {
+            Width       = 240,
+            Height      = 120,
+            ItemsSource = items
+        };
+        var window = Show(candidateList);
+
+        try
+        {
+            for (var i = 0; i < 31; i++)
+            {
+                PressCandidateKey(candidateList, Key.Down);
+            }
+            Dispatcher.UIThread.RunJobs();
+            candidateList.CandidateSelectedIndex.ShouldBe(30);
+            HighlightedIndexes(candidateList).ShouldBe(new[] { 30 });
+
+            candidateList.ScrollIntoView(199);
+            candidateList.UpdateLayout();
+            candidateList.ContainerFromIndex(30).ShouldBeNull();
+            HighlightedIndexes(candidateList).ShouldBeEmpty("recycled containers must not inherit the highlight");
+
+            candidateList.ScrollIntoView(30);
+            candidateList.UpdateLayout();
+            HighlightedIndexes(candidateList).ShouldBe(new[] { 30 });
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    private static int[] HighlightedIndexes(CandidateList candidateList)
+    {
+        return candidateList.GetRealizedContainers()
+                            .OfType<CandidateListItem>()
+                            .Where(item => item.IsCandidateSelected)
+                            .Select(candidateList.IndexFromContainer)
+                            .ToArray();
+    }
+
     private static CandidateListItem GetContainer(CandidateList candidateList, int index)
     {
         var container = candidateList.ContainerFromIndex(index) as CandidateListItem;

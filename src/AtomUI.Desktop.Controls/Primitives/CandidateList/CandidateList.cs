@@ -611,24 +611,18 @@ public class CandidateList : ListBox, ICandidateList
 
     #region 虚拟化上下文管理
 
-    protected override void NotifyRestoreDefaultContext(ListBoxItem item, IListItemData itemData)
+    // The active candidate is an index. A virtualizing panel prepares recycled containers for other indexes, so
+    // every prepared container takes its highlight from the index it is prepared for, whatever the item type.
+    protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
-        base.NotifyRestoreDefaultContext(item, itemData);
-        if (item is CandidateListItem candidateListItem && item is IListItemVirtualizingContextAware virtualListItem)
+        base.PrepareContainerForItemOverride(container, item, index);
+        if (container is CandidateListItem candidateListItem)
         {
-            if (CandidateSelectedIndex != -1)
-            {
-                SetCandidateItemSelectedIfChanged(
-                    candidateListItem,
-                    virtualListItem.VirtualIndex == CandidateSelectedIndex);
-            }
-            else
-            {
-                SetCandidateItemSelectedIfChanged(candidateListItem, false);
-            }
+            SetCandidateItemSelectedIfChanged(candidateListItem,
+                CandidateSelectedIndex >= 0 && index == CandidateSelectedIndex);
         }
     }
-    
+
     protected override void NotifyClearContainerForVirtualizingContext(ListBoxItem item)
     {
         base.NotifyClearContainerForVirtualizingContext(item);

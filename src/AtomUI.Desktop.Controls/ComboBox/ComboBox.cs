@@ -1739,7 +1739,10 @@ public partial class ComboBox : AvaloniaComboBox,
         var comboBoxItem = GetCandidateItemContainer(index);
         if (comboBoxItem != null)
         {
-            return comboBoxItem.IsVisible &&
+            // A virtualizing panel hides the ComboBoxItem items it recycles and shows them again when it realizes
+            // them (ContainerFromIndex still returns such an item), so visibility only describes a realized
+            // container; filtering is checked from the item.
+            return (comboBoxItem.IsVisible || !IsRealizedContainer(comboBoxItem)) &&
                    comboBoxItem.IsEnabled &&
                    IsCurrentFilterMatched(item);
         }
@@ -1748,6 +1751,9 @@ public partial class ComboBox : AvaloniaComboBox,
             ? IsCurrentFilterMatched(item)
             : control.IsVisible && control.IsEnabled && IsCurrentFilterMatched(item);
     }
+
+    // Only a container the panel has realized has an index; a recycled ComboBoxItem item has none.
+    private bool IsRealizedContainer(Control container) => IndexFromContainer(container) >= 0;
 
     private bool IsCurrentFilterMatched(object? item)
     {

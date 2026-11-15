@@ -605,6 +605,214 @@ public class TreeViewKeyboardNavigationTests
         }
     }
 
+    // A virtualizing panel hides the TreeViewItem items it recycles, and ContainerFromIndex still returns them:
+    // navigation must not treat such an item as filtered out.
+    [Fact]
+    public void Arrow_Home_And_End_Reach_Explicit_Items_Outside_Viewport_When_Virtualized()
+    {
+        var treeView = CreateTreeView();
+        treeView.Height        = 120;
+        treeView.SelectionMode = SelectionMode.Multiple;
+        treeView.ItemsPanel    = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+        var roots = new List<AtomTreeViewItem>();
+        for (var i = 0; i < 40; i++)
+        {
+            var root = new AtomTreeViewItem { Header = $"Node {i}" };
+            roots.Add(root);
+            treeView.Items.Add(root);
+        }
+
+        WithWindow(treeView, window =>
+        {
+            FocusTree(treeView);
+            Press(window, Key.Space);
+            for (var i = 0; i < 30; i++)
+            {
+                Press(window, Key.Down).ShouldBeTrue();
+            }
+            treeView.KeyboardActiveItem.ShouldBeSameAs(roots[30]);
+
+            Press(window, Key.Home);
+            treeView.KeyboardActiveItem.ShouldBeSameAs(roots[0]);
+            Press(window, Key.End);
+            treeView.KeyboardActiveItem.ShouldBeSameAs(roots[39]);
+            for (var i = 0; i < 25; i++)
+            {
+                Press(window, Key.Up).ShouldBeTrue();
+            }
+            treeView.KeyboardActiveItem.ShouldBeSameAs(roots[14]);
+
+            // Range from the anchor Node 0, which is hidden by the panel at this point.
+            Press(window, Key.End, RawInputModifiers.Shift);
+            treeView.SelectedItems.Cast<object>().ShouldBe(roots);
+        });
+    }
+
+    // Range selection runs over the node data, so it reaches nodes a virtualizing panel has not realized.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Shift_End_Selects_Unrealized_Nodes_When_Virtualized(bool bindable)
+    {
+        var roots    = CreateVirtualizedRoots(bindable);
+        var treeView = CreateVirtualizedTreeView(roots);
+        treeView.SelectionMode = SelectionMode.Multiple;
+
+        WithWindow(treeView, window =>
+        {
+            FocusTree(treeView);
+            Press(window, Key.Right);
+            Press(window, Key.Space);
+
+            Press(window, Key.End, RawInputModifiers.Shift);
+
+            // Node 0, its 15 children, then Node 1 .. Node 39, in visual order.
+            var expected = Preorder(roots).ToList();
+            expected.Count.ShouldBe(55);
+            treeView.SelectedItems.Cast<object>().ShouldBe(expected);
+            foreach (var node in expected.Cast<ITreeItemNode>())
+            {
+                node.IsSelected.ShouldBeTrue();
+            }
+
+            // A row realized after the selection shows it.
+            treeView.ScrollIntoView(30);
+            treeView.UpdateLayout();
+            ((AtomTreeViewItem)treeView.ContainerFromIndex(30)!).IsSelected.ShouldBeTrue();
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Shift_Range_Keeps_Anchor_After_Its_Container_Is_Recycled(bool bindable)
+    {
+        var roots    = CreateVirtualizedRoots(bindable);
+        var treeView = CreateVirtualizedTreeView(roots);
+        treeView.SelectionMode = SelectionMode.Multiple;
+
+        WithWindow(treeView, window =>
+        {
+            FocusTree(treeView);
+            Press(window, Key.Space);  // anchor: Node 0
+            Press(window, Key.End);    // multiple mode: moves only; Node 0 is recycled
+            treeView.ContainerFromIndex(0).ShouldBeNull();
+
+            Press(window, Key.Up, RawInputModifiers.Shift);
+
+            treeView.SelectedItems.Cast<object>().ShouldBe(roots.Take(39).Cast<object>());
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Shrinking_Range_Deselects_Unrealized_Nodes(bool bindable)
+    {
+        var roots    = CreateVirtualizedRoots(bindable);
+        var treeView = CreateVirtualizedTreeView(roots);
+        treeView.SelectionMode = SelectionMode.Multiple;
+
+        WithWindow(treeView, window =>
+        {
+            FocusTree(treeView);
+            Press(window, Key.Space);
+            Press(window, Key.End, RawInputModifiers.Shift);
+            treeView.SelectedItems.Count.ShouldBe(40);
+
+            Press(window, Key.Home, RawInputModifiers.Shift);
+
+            treeView.SelectedItems.Cast<object>().ShouldBe(new object[] { roots[0] });
+            roots[39].IsSelected.ShouldBeFalse();
+            treeView.ScrollIntoView(39);
+            treeView.UpdateLayout();
+            ((AtomTreeViewItem)treeView.ContainerFromIndex(39)!).IsSelected.ShouldBeFalse();
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SelectedItems_Changes_For_Unrealized_Nodes_Reach_Their_Rows(bool bindable)
+    {
+        var roots    = CreateVirtualizedRoots(bindable);
+        var treeView = CreateVirtualizedTreeView(roots);
+        treeView.SelectionMode = SelectionMode.Multiple;
+
+        WithWindow(treeView, _ =>
+        {
+            treeView.ContainerFromIndex(35).ShouldBeNull();
+            treeView.SelectedItems.Add(roots[35]);
+            roots[35].IsSelected.ShouldBeTrue();
+
+            treeView.ScrollIntoView(35);
+            treeView.UpdateLayout();
+            ((AtomTreeViewItem)treeView.ContainerFromIndex(35)!).IsSelected.ShouldBeTrue();
+            treeView.SelectedItems.Contains(roots[35]).ShouldBeTrue();
+
+            treeView.ScrollIntoView(0);
+            treeView.UpdateLayout();
+            treeView.ContainerFromIndex(35).ShouldBeNull();
+            treeView.SelectedItems.Remove(roots[35]);
+            roots[35].IsSelected.ShouldBeFalse();
+
+            treeView.ScrollIntoView(35);
+            treeView.UpdateLayout();
+            ((AtomTreeViewItem)treeView.ContainerFromIndex(35)!).IsSelected.ShouldBeFalse();
+        });
+    }
+
+    private static List<ITreeItemNode> CreateVirtualizedRoots(bool bindable)
+    {
+        var roots = new List<ITreeItemNode>();
+        for (var i = 0; i < 40; i++)
+        {
+            var children = new List<ITreeItemNode>();
+            for (var j = 0; j < 15; j++)
+            {
+                children.Add(bindable
+                    ? new BindableTreeItemNode { Header = $"Node {i}-{j}", IsLeaf = true }
+                    : new TreeItemNode { Header         = $"Node {i}-{j}", IsLeaf = true });
+            }
+            roots.Add(bindable
+                ? new BindableTreeItemNode { Header = $"Node {i}", Children = children }
+                : new TreeItemNode { Header         = $"Node {i}", Children = children });
+        }
+        return roots;
+    }
+
+    private static AtomTreeView CreateVirtualizedTreeView(List<ITreeItemNode> roots)
+    {
+        var treeView = CreateTreeView();
+        treeView.Height      = 120;
+        treeView.ItemsSource = roots;
+        treeView.ItemsPanel  = new FuncTemplate<Panel?>(() => new VirtualizingStackPanel());
+        treeView.Styles.Add(new Style(x => x.OfType<AtomTreeViewItem>())
+        {
+            Setters =
+            {
+                new Setter(ItemsControl.ItemsPanelProperty,
+                    new FuncTemplate<Panel?>(() => new VirtualizingStackPanel()))
+            }
+        });
+        return treeView;
+    }
+
+    private static IEnumerable<object> Preorder(IEnumerable<ITreeItemNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+            if (node.IsExpanded)
+            {
+                foreach (var child in Preorder(node.Children))
+                {
+                    yield return child;
+                }
+            }
+        }
+    }
+
     private static AtomTreeView CreateTreeView()
     {
         return new AtomTreeView

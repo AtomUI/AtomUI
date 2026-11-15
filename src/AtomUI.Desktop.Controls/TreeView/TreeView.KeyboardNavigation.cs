@@ -1,3 +1,4 @@
+using System.Collections;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Collections;
@@ -18,7 +19,9 @@ public partial class TreeView : ICustomKeyboardNavigation
     // recycle the active container in any layout pass, so the container is only a binding: a recycled
     // one is released, and the node's next container, or a re-realized one, takes the state back.
     private List<KeyboardPathSegment>? _keyboardActivePath;
-    private TreeViewItem? _keyboardSelectionAnchor;
+    // The range anchor is the item, not its container: a virtualizing panel recycles containers, and a range
+    // extends over nodes that are not realized.
+    private object? _keyboardSelectionAnchor;
     private bool _isKeyboardActiveVisible;
     private bool _isSyncingKeyboardRangeSelection;
 
@@ -159,10 +162,6 @@ public partial class TreeView : ICustomKeyboardNavigation
             ReleaseKeyboardActiveContainer();
         }
 
-        if (ReferenceEquals(_keyboardSelectionAnchor, treeViewItem))
-        {
-            _keyboardSelectionAnchor = null;
-        }
     }
 
     // A virtualizing panel realized a container for the active node again (scrolled back, or re-realized
@@ -182,7 +181,7 @@ public partial class TreeView : ICustomKeyboardNavigation
     {
         _isKeyboardActiveVisible = false;
         SetKeyboardActiveItem(treeViewItem);
-        _keyboardSelectionAnchor = treeViewItem;
+        _keyboardSelectionAnchor = GetTreeItem(treeViewItem);
     }
 
     private static bool IsNavigationKey(Key key)
@@ -375,21 +374,22 @@ public partial class TreeView : ICustomKeyboardNavigation
         {
             if (extend)
             {
-                SelectKeyboardRange(_keyboardSelectionAnchor ?? previous ?? target, target);
+                SelectKeyboardRange(_keyboardSelectionAnchor ?? GetTreeItem(previous ?? target), GetTreeItem(target));
             }
 
             return;
         }
 
-        SelectedItem             = GetTreeItem(target);
-        _keyboardSelectionAnchor = target;
+        var targetItem = GetTreeItem(target);
+        SelectedItem             = targetItem;
+        _keyboardSelectionAnchor = targetItem;
     }
 
-    private void SelectKeyboardRange(TreeViewItem anchor, TreeViewItem target)
+    private void SelectKeyboardRange(object anchor, object target)
     {
-        var items       = EnumerateNavigableItems().ToList();
-        var anchorIndex = items.IndexOf(anchor);
-        var targetIndex = items.IndexOf(target);
+        var items       = EnumerateNavigableTreeItems().ToList();
+        var anchorIndex = IndexOfReference(items, anchor);
+        var targetIndex = IndexOfReference(items, target);
         if (anchorIndex < 0 || targetIndex < 0)
         {
             return;
@@ -398,19 +398,15 @@ public partial class TreeView : ICustomKeyboardNavigation
         _keyboardSelectionAnchor = anchor;
         var start = Math.Min(anchorIndex, targetIndex);
         var end   = Math.Max(anchorIndex, targetIndex);
-        var range = new List<object>(end - start + 1);
-        for (var i = start; i <= end; i++)
-        {
-            range.Add(GetTreeItem(items[i]));
-        }
+        var range = items.GetRange(start, end - start + 1);
 
         // Only the delta is synchronized, so SelectedItems never passes through an empty selection. Avalonia
         // TreeView raises SelectionChanged for every SelectedItems notification (AvaloniaList removes one
         // contiguous run per notification, then adds the rest in one), and offers no batch update: those
         // intermediate events are suppressed and the whole change is reported once. Collection observers
         // still see the removal before the addition.
-        var rangeSet    = new HashSet<object>(range);
-        var selectedSet = new HashSet<object>(SelectedItems.Cast<object>());
+        var rangeSet    = new HashSet<object>(range, ReferenceEqualityComparer.Instance);
+        var selectedSet = new HashSet<object>(SelectedItems.Cast<object>(), ReferenceEqualityComparer.Instance);
         var removed     = SelectedItems.Cast<object>().Where(item => !rangeSet.Contains(item)).ToList();
         var added       = range.Where(item => !selectedSet.Contains(item)).ToList();
         if (removed.Count == 0 && added.Count == 0)
@@ -526,7 +522,7 @@ public partial class TreeView : ICustomKeyboardNavigation
             SelectedItem = treeItem;
         }
 
-        _keyboardSelectionAnchor = activeItem;
+        _keyboardSelectionAnchor = treeItem;
         return true;
     }
 
@@ -597,6 +593,87 @@ public partial class TreeView : ICustomKeyboardNavigation
                 }
             }
         }
+    }
+
+    // Preorder over navigable nodes as items, for ranges that span nodes a virtualizing panel has not realized.
+    // A realized container decides with its live state (filter visibility, enabled, expansion); a node without
+    // a container decides from its own state: an own-container TreeViewItem, or ITreeItemNode data that the
+    // containers write back. Other data without a container counts as navigable and collapsed, which is the
+    // state its next container is prepared with. Filtering only applies to realized containers.
+    private IEnumerable<object> EnumerateNavigableTreeItems()
+    {
+        return Walk(this, Items);
+
+        static IEnumerable<object> Walk(ItemsControl? owner, IEnumerable items)
+        {
+            var index = 0;
+            foreach (var item in items)
+            {
+                var container = owner is null ? null : GetRealizedContainer(owner, index);
+                ++index;
+                if (item is null)
+                {
+                    continue;
+                }
+
+                bool          isNavigable;
+                bool          isExpanded;
+                IEnumerable?  children;
+                ItemsControl? childOwner = null;
+                if (container is not null)
+                {
+                    isNavigable = IsSelfNavigable(container);
+                    isExpanded  = container.IsExpanded;
+                    children    = container.Items;
+                    childOwner  = container;
+                }
+                else if (item is TreeViewItem ownContainer)
+                {
+                    isNavigable = ownContainer.IsEnabled;
+                    isExpanded  = ownContainer.IsExpanded;
+                    children    = ownContainer.Items;
+                }
+                else if (item is ITreeItemNode node)
+                {
+                    isNavigable = node.IsEnabled;
+                    isExpanded  = node.IsExpanded;
+                    children    = node.Children;
+                }
+                else
+                {
+                    isNavigable = true;
+                    isExpanded  = false;
+                    children    = null;
+                }
+
+                if (!isNavigable)
+                {
+                    continue;
+                }
+
+                yield return item;
+                if (isExpanded && children is not null)
+                {
+                    foreach (var descendant in Walk(childOwner, children))
+                    {
+                        yield return descendant;
+                    }
+                }
+            }
+        }
+    }
+
+    private static int IndexOfReference(List<object> items, object item)
+    {
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (ReferenceEquals(items[i], item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     private TreeViewItem? GetNextNavigableItem(TreeViewItem treeViewItem)
@@ -699,18 +776,27 @@ public partial class TreeView : ICustomKeyboardNavigation
     // which makes the virtualizing panel realize it. Non-virtualizing panels always hit the first lookup.
     private static TreeViewItem? RealizeContainer(ItemsControl owner, int index)
     {
-        if (owner.ContainerFromIndex(index) is TreeViewItem container)
+        if (GetRealizedContainer(owner, index) is { } container)
         {
             return container;
         }
 
         owner.UpdateLayout();
-        if (owner.ContainerFromIndex(index) is TreeViewItem laidOut)
+        if (GetRealizedContainer(owner, index) is { } laidOut)
         {
             return laidOut;
         }
 
         owner.ScrollIntoView(index);
-        return owner.ContainerFromIndex(index) as TreeViewItem;
+        return GetRealizedContainer(owner, index);
+    }
+
+    // ContainerFromIndex also returns a TreeViewItem item that a virtualizing panel has recycled (hidden, not
+    // indexed); only a container the panel has realized has an index. Every child of a non-virtualizing panel has one.
+    private static TreeViewItem? GetRealizedContainer(ItemsControl owner, int index)
+    {
+        return owner.ContainerFromIndex(index) is TreeViewItem container && owner.IndexFromContainer(container) >= 0
+            ? container
+            : null;
     }
 }

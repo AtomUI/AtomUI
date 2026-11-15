@@ -24,7 +24,8 @@ TreeView 内部实现较多，按功能拆分 partial 文件。拆分边界服�
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.CheckedState.cs`：checkbox 严格 / 级联状态、按节点数据计算的勾选计划、`CheckedItems` 同步与引用镜像、容器准备时的勾选对齐、数据删除时的勾选清理和半选父级计算。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.Filter.cs`：过滤、高亮、隐藏未命中、展开路径、filter context 备份和恢复。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.AsyncItemDataLoad.cs`：异步加载、加载合并、超时、取消和 `TreeItemLoaded` 派发。
-- `src/AtomUI.Desktop.Controls/TreeView/TreeView.KeyboardNavigation.cs`：键盘活动项、可导航节点遍历、按键分派、提交策略、活动项视觉可见性、Tab 导航钩子、宿主转发入口 `HandleKeyDown` / `ClearKeyboardActiveItem` 和宿主开关 `IsKeyboardMoveSelectionEnabled`。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeView.SelectionState.cs`：节点选择镜像，让 `ITreeItemNode.IsSelected` 跟随 `SelectedItems`（含未实现的节点），订阅随视觉树 attach / detach。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeView.KeyboardNavigation.cs`：键盘活动项、可导航节点遍历（逐项按容器、范围选择按节点数据）、按键分派、提交策略、活动项视觉可见性、Tab 导航钩子、宿主转发入口 `HandleKeyDown` / `ClearKeyboardActiveItem` 和宿主开关 `IsKeyboardMoveSelectionEnabled`。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.DragAndDrop.cs`：拖拽命中测试、drag preview、drop indicator、drop 操作和拖拽事件。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.DataController.cs`：内部数据控制器、drop request / result、root / children 集合移动和 parent node 同步。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.NodeIndex.cs`：节点索引、节点父级、所在集合、兄弟索引和 collection changed 增量维护。
@@ -438,11 +439,15 @@ drop indicator 根据目标 header 上半区、中间区域和下半区决定插
 
 ### 7.8 键盘活动项维护
 
-活动项以容器引用加 active 路径（从顶层起每层的索引和项）保存，路径在设置活动项时重建。只在以下路径更新：键盘导航、指针按下节点、祖先收起（`TreeViewItem` 的 `IsExpanded` 变为 false 时通知 TreeView，立即上移到被收起的节点）、按键前校验（被过滤隐藏或禁用时修复为最近的可导航祖先）、容器离开视觉树（`TreeViewItem.OnDetachedFromVisualTree` 通知 TreeView：离开的容器是活动项时释放容器引用和指示状态、保留路径，是选择锚点时清空锚点）、容器准备（`TreeView` / `TreeViewItem.ContainerForItemPreparedOverride` 通知 TreeView，准备的项是路径末端且当前没有活动容器时重新绑定）、TreeView detach 与宿主关闭浮层（清空容器与路径）。
+活动项以容器引用加 active 路径（从顶层起每层的索引和项）保存，路径在设置活动项时重建。只在以下路径更新：键盘导航、指针按下节点、祖先收起（`TreeViewItem` 的 `IsExpanded` 变为 false 时通知 TreeView，立即上移到被收起的节点）、按键前校验（被过滤隐藏或禁用时修复为最近的可导航祖先）、容器离开视觉树（`TreeViewItem.OnDetachedFromVisualTree` 通知 TreeView：离开的容器是活动项时释放容器引用和指示状态、保留路径）、容器准备（`TreeView` / `TreeViewItem.ContainerForItemPreparedOverride` 通知 TreeView，准备的项是路径末端且当前没有活动容器时重新绑定）、TreeView detach 与宿主关闭浮层（清空容器与路径）。
 
 按键前若活动容器已被回收（离开视觉树，或作为自身容器被隐藏而不再有索引），沿路径逐层重新实现容器并校验每层的项；不一致时按无效处理。
 
 遍历按索引取容器。没有容器时先对所属 `ItemsControl` 执行一次布局（刚展开节点的子容器），仍没有时调用 `ScrollIntoView(index)` 让虚拟化面板实现它；仍无容器或无可导航子节点时按“没有”处理，不等待、不轮询。非虚拟化面板不会进入这两步。
+
+选择锚点保存为项，由指针按下、单选跟随、Enter / Space 提交和范围选择设置，只在清除活动项时清空，不随容器离开视觉树清空。`EnumerateNavigableTreeItems` 按先序产生可导航的项：有容器时用容器状态，没有容器时用自身容器 `TreeViewItem` 或 `ITreeItemNode` 的状态；范围选择在这个序列上按引用定位锚点和目标，并只把差量同步到 `SelectedItems`。
+
+`SelectedItems` 是选择状态的权威。`TreeView.SelectionState.cs` 在 attach 时订阅 `SelectedItems` 的集合变化（`SelectedItems` 被替换时改订新集合），把增删同步到节点的 `IsSelected`，并按引用维护已同步节点的镜像；Reset / Move 或重新 attach 时按镜像求差。自身是容器的 `TreeViewItem` 由 Avalonia 直接标记，不经过镜像。这样未实现节点在选择变化后被实现时，`ApplyNodeData` 写入的就是当前选择。detach 时退订，避免应用持有的 `SelectedItems` 集合延长 TreeView 的生命周期。
 
 ## 8. 资源、性能与 AOT 边界
 

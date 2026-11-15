@@ -32,6 +32,33 @@ public class CompiledThemeProgramAbiTests
     }
 
     [Fact]
+    public void Abi2_Program_Rejects_Null_Algorithms()
+    {
+        Should.Throw<ArgumentNullException>(() => new Abi2Program(2, null!));
+        Should.Throw<ArgumentNullException>(() => new Abi2Program(2, ["PrimeNG:Aura", null!]));
+    }
+
+    [Fact]
+    public void Published_Algorithms_Cannot_Be_Mutated_Through_A_Cast()
+    {
+        var program = new Abi2Program(2, ["PrimeNG:Aura"]);
+
+        program.PublishedInfo.Algorithms.ShouldNotBeAssignableTo<ThemeAlgorithm[]>();
+        ((IList<ThemeAlgorithm>)program.PublishedInfo.Algorithms).IsReadOnly.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ThemeInfo_Algorithms_Copies_And_Rejects_Null()
+    {
+        ThemeAlgorithm[] source = [ThemeAlgorithm.Default];
+        var info = new ThemeInfo("T", "T", ThemeAppearance.Light, false) { Algorithms = source };
+        source[0] = ThemeAlgorithm.Dark;
+
+        info.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
+        Should.Throw<ArgumentNullException>(() => new ThemeInfo("T", "T", ThemeAppearance.Light, false) { Algorithms = null! });
+    }
+
+    [Fact]
     public void Abi_Mismatch_Throws()
     {
         Should.Throw<NotSupportedException>(() => new Abi1Program(2));

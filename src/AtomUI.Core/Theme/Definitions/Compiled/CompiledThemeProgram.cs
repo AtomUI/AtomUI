@@ -57,9 +57,9 @@ public abstract class CompiledThemeProgram
         var chain = new ThemeAlgorithm[algorithms.Length];
         for (var i = 0; i < chain.Length; i++)
         {
-            var text = algorithms[i];
-            var separator = text?.IndexOf(':') ?? -1;
-            if (separator <= 0 || separator == text!.Length - 1)
+            var text = algorithms[i] ?? throw new ArgumentNullException(nameof(algorithms), "Algorithm identities must not be null.");
+            var separator = text.IndexOf(':');
+            if (separator <= 0 || separator == text.Length - 1)
             {
                 throw new ArgumentException($"Algorithm identity '{text}' must be formatted as 'Catalog:Id'.", nameof(algorithms));
             }

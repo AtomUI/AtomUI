@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using AtomUI.Theme.Algorithms;
 using Avalonia.Media;
 
@@ -37,10 +38,23 @@ public sealed record ThemeInfo(
     /// </summary>
     public ThemeBrandColorSupport BrandColor { get; init; }
 
+    private readonly IReadOnlyList<ThemeAlgorithm> _algorithms = ReadOnlyCollection<ThemeAlgorithm>.Empty;
+
     /// <summary>
-    /// Gets the definition's own algorithm chain.
+    /// Gets the definition's own algorithm chain. The assigned list is copied into a read-only snapshot.
     /// </summary>
-    public IReadOnlyList<ThemeAlgorithm> Algorithms { get; init; } = [];
+    /// <exception cref="ArgumentNullException">The assigned list is <see langword="null"/>.</exception>
+    public IReadOnlyList<ThemeAlgorithm> Algorithms
+    {
+        get => _algorithms;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _algorithms = value.Count == 0
+                ? ReadOnlyCollection<ThemeAlgorithm>.Empty
+                : Array.AsReadOnly(value.ToArray());
+        }
+    }
 
     public bool Equals(ThemeInfo? other)
     {

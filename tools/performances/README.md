@@ -9,6 +9,7 @@
 | [AtomUI.Performance](AtomUI.Performance/AtomUI.Performance.csproj) | 控件级基准 | 批量创建单个控件或小组合，观测实例化、布局、visual tree、分配和专项行为验证 | 微基准，不代表 Gallery 页面打开体验 |
 | [AtomUI.Localization.Performance](AtomUI.Localization.Performance/AtomUI.Localization.Performance.csproj) | Localization 基准 | 测量 Registry/Snapshot 构建、`ILocalizer.Get`、语言切换和 Snapshot 内存增长 | 纯 Localization 运行时基线，不加载桌面控件主题 |
 | [AtomUI.GalleryPerformance](AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj) | Gallery 场景复现 | 启动 Gallery Workspace，走真实 route/view/XAML，测量 showcase 从导航触发到视觉树和布局稳定 | 体验路径基准，必须复现 Gallery 真实使用方式 |
+| [AtomUI.ControlBaseline](AtomUI.ControlBaseline/AtomUI.ControlBaseline.csproj) | 单控件成本普查 | 对每个可默认构造的控件类型测单实例的构造、挂载、套模板和布局成本，可切换 AtomUI 主题或 Avalonia 原生 Fluent 主题 | 同一套代码分两个进程跑，用来判断控件本身相对原生控件的轻重；不代表页面体验 |
 | [AtomUI.StartupPerformance](AtomUI.StartupPerformance/README.md) | 启动基准 | 冷启动进程：平台初始化、AtomUI 初始化、窗口首帧与渲染批次、UI 线程最长阻塞 | 独立进程交错采样；单次运行只作 smoke |
 
 ## AtomUI.Performance 结构
@@ -277,6 +278,59 @@ dotnet run --project tools/performances/AtomUI.GalleryPerformance/AtomUI.Gallery
   --iterations 10 --warmup 2 --timeout-ms 30000 \
   --markdown /tmp/select-showcase-navigation-phase4.md
 ```
+
+### 全量 ShowCase 审计
+
+`AtomUI.GalleryPerformance --audit` 在一个进程里依次导航全部（或 `--audit-showcases a,b,c` 指定的）ShowCase。
+它只计导航触发和布局泵的时间与当前线程分配，就绪判定用的视觉树统计不计入，因此数字低于单页导航模式，两者不能混比。
+`首次访问` 是进程内第一次进入该页，受访问顺序影响，不是冷进程数据。
+
+- `--audit-full`：关闭 Gallery 的分批延迟挂载，物化页面上全部 ShowCaseItem。
+- `--audit-loose-ready`：任意非空且形态稳定的路由即视为就绪，用于专用就绪条件已过期的 ShowCase。
+- `--audit-reverse`：反向访问顺序，用来估计顺序对首次访问的影响。
+- `--json` / `--markdown`：输出每页的 visual 数、类型分布、首次与稳态耗时、分配量。
+
+```bash
+dotnet build tools/performances/AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj -c Release --framework net10.0
+dotnet .artifacts/bin/Release/net10.0/AtomUI.GalleryPerformance.dll --audit --audit-loose-ready \
+  --iterations 12 --warmup 2 --timeout-ms 40000 \
+  --json /tmp/atomui-audit.json --markdown /tmp/atomui-audit.md
+```
+
+### 单控件成本普查
+
+`AtomUI.ControlBaseline` 每个类型建 `--count` 个实例（默认 100）放进 `WrapPanel`，减去空窗口底噪后给出单实例的
+visual 数、耗时和分配量。`ContentControl` 填入字符串内容，`ItemsControl` 为空，所以它测的是默认关闭态的固定成本。
+`--filter A,B` 只测指定类型名。
+输出的 `gc/sample` 是计时区间内发生的 gen0 回收次数。前后对比时两侧次数不同，计时差异可能来自回收时机而非控件本身；
+可用 `DOTNET_GCgen0size=0x40000000` 让计时区间内不发生回收，单独比较 CPU 工作量。前后对比应使用两份独立构建交替运行。
+`cpu=` 列是计时区间内的进程 CPU 时间（含 GC 线程）。机器负载高时，它比墙钟时间更少受到等待 CPU 的影响，但仍会随 GC 并行度波动。负载高时以分配量为主要依据，耗时用多轮交替的配对比较判断方向。
+
+`--frame-matrix <文件>` 对每个输入宿主，按 4 种 variant × 3 种 status × 8 种交互状态（以及 Large / Small 尺寸），输出内部输入 frame 与附加区的边框、背景、阴影、内边距、圆角和可见性。每种组合一行，两份构建的输出可直接 `diff`。
+
+```bash
+dotnet build tools/performances/AtomUI.ControlBaseline/AtomUI.ControlBaseline.csproj -c Release --framework net10.0
+dotnet .artifacts/bin/Release/net10.0/AtomUI.ControlBaseline.dll --mode fluent --json /tmp/baseline-fluent.json
+dotnet .artifacts/bin/Release/net10.0/AtomUI.ControlBaseline.dll --mode atomui --json /tmp/baseline-atomui.json
+```
+
+### 性能改动的视觉与泄漏守卫
+
+性能改动必须视觉零差异、无资源泄漏。`run_perf_guards.sh` 把未优化构建（例如基点提交的 worktree）与当前构建放在一起检查：
+
+```bash
+tools/performances/run_perf_guards.sh <未优化构建的 Release 输出目录> .artifacts/bin/Release/net10.0 /tmp/perf-guard
+```
+
+- 页面视觉：`AtomUI.GalleryPerformance --audit --audit-full --snapshot-dir` 物化全部 ShowCaseItem，按整页高度截图；两侧各截两次。
+- 状态视觉：`AtomUI.ControlBaseline --state-snapshots` 对每个控件类型渲染默认态、各视觉枚举取值（逐个）、常见视觉布尔属性、禁用态，
+  以及强制的 `:pointerover`、`:pressed`、`:focus`、`:focus-within`、`:focus-visible`、`:checked`、`:selected`；能关的动效全部关闭。
+- `compare_snapshots.py` 把同一构建两次截图之间不同的像素当作动画遮罩，其余像素必须完全一致；`away px` 列是离动画像素较远的差异，
+  需要逐个解释。只靠两次截图的遮罩覆盖不全，动画附近偶有漏网像素时，重截几次确认是否稳定。
+- 泄漏：`--leak-check N` 反复进入、离开每个页面后强制 GC，统计仍存活的页面实例；`AtomUI.ControlBaseline --leak` 对每个控件类型
+  显示后关闭窗口再统计存活实例。`--leak-selftest` 故意保留实例，用来确认检测本身有效。候选构建的存活数不得多于基线。
+- 状态截图默认先稳定 6 轮再截。环境变量 `ATOMUI_STATE_SETTLE_PASSES=60` 可以延长稳定轮数，让正在进行的过渡走完，用来区分“截到过渡中途”和“稳定差异”。
+- 守卫不测时间；运行期间不要重新构建被检查的输出目录，也不要编辑正在执行的脚本。
 
 ## 扩展建议
 

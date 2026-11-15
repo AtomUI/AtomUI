@@ -448,7 +448,7 @@ public partial class TreeView
         {
             if (i == path.Length - 1)
             {
-                treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+                CheckTreeViewItemFromPath(treeViewItem);
                 isChecked = true;
             }
         });
@@ -465,11 +465,24 @@ public partial class TreeView
                 {
                     if (i == checkedPath.Length - 1)
                     {
-                        treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+                        CheckTreeViewItemFromPath(treeViewItem);
                     }
                 });
             }
         }
+    }
+
+    // A container can already show checked, e.g. projected from a CheckedItems the replay has just cleared; then
+    // no IsChecked change would reach the checked-state handling, so it is applied as a toggle explicitly.
+    private void CheckTreeViewItemFromPath(TreeViewItem treeViewItem)
+    {
+        if (treeViewItem.IsChecked != true)
+        {
+            treeViewItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+            return;
+        }
+
+        (InteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(treeViewItem);
     }
 
     private void ConfigureDefaultExpandedPaths()

@@ -21,7 +21,7 @@ TreeView 内部实现较多，按功能拆分 partial 文件。拆分边界服�
   声明（`[SemanticPart]`），覆盖子节点容器与 switcher / indicator / icon / title 内容区域。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.StateReplay.cs`：loaded 回放、ItemsSource 变化后的选择 / 勾选 / 展开状态恢复。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.PathTraversal.cs`：`TreeNodePath` 遍历、展开路径、容器确保和展开状态恢复。
-- `src/AtomUI.Desktop.Controls/TreeView/TreeView.CheckedState.cs`：checkbox 严格 / 级联状态、`CheckedItems` 同步和半选父级计算。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeView.CheckedState.cs`：checkbox 严格 / 级联状态、按节点数据计算的勾选计划、`CheckedItems` 同步与引用镜像、容器准备时的勾选对齐、数据删除时的勾选清理和半选父级计算。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.Filter.cs`：过滤、高亮、隐藏未命中、展开路径、filter context 备份和恢复。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.AsyncItemDataLoad.cs`：异步加载、加载合并、超时、取消和 `TreeItemLoaded` 派发。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeView.KeyboardNavigation.cs`：键盘活动项、可导航节点遍历、按键分派、提交策略、活动项视觉可见性、Tab 导航钩子、宿主转发入口 `HandleKeyDown` / `ClearKeyboardActiveItem` 和宿主开关 `IsKeyboardMoveSelectionEnabled`。
@@ -120,15 +120,19 @@ TreeView 的 Form 适配层只投射 Avalonia 原生选择状态，不建立第�
 勾选流：
 
 ```text
-TreeViewItem.IsChecked changed
+TreeViewItem.IsChecked changed            CheckedItems Add / Remove / Reset (code)
+      ↓                                            ↓
+DefaultTreeViewInteractionHandler.OnCheckedChanged  HandleCheckedItemsCollectionChanged
+      ↓                                            ↓
+Radio: RadioButtonGroupManager             (CheckBox cascading) plan over node data
+CheckBox strict: sync current item only     (other modes) project the item only
+CheckBox cascading: plan subtree + parents over node data
       ↓
-DefaultTreeViewInteractionHandler.OnCheckedChanged
+CommitCheckedStatePlan: CheckedItems → node IsChecked → realized container IsChecked
       ↓
-Radio: RadioButtonGroupManager
-CheckBox strict: sync current item only
-CheckBox cascading: check / uncheck subtree + update parents
-      ↓
-CheckedItems + CheckedItemsChanged
+CheckedItemsChanged
+
+container prepared from node data → ReconcilePreparedCheckedState (CheckBox only)
 ```
 
 过滤流：
@@ -344,7 +348,25 @@ ItemsSource 变化时，TreeView 在 Avalonia 清理旧容器之前捕获选中�
 
 ### 7.3 勾选级联
 
-级联勾选需要临时展开未实现子树以确保子容器可访问，并在完成后恢复原展开状态。`CheckedItemsSyncScope` 用于防止内部批量更新 `CheckedItems` 时递归触发容器同步和重复事件。
+`CheckedItems` 是勾选状态的权威。`TreeView` 另持一个按引用比较的镜像集合 `_checkedItemSet`：成员判断为常数时间，`Reset` 时据此得知此前勾选的项。`TreeItemNode` 是 record，`Equals` / `GetHashCode` 依赖可变状态，镜像与计划中的字典都必须用 `ReferenceEqualityComparer`。赋值为普通 `IList`（无变更通知）时，镜像在每个入口按列表重新读取。
+
+一次勾选变化（交互、代码增删、`Reset`、容器准备时并入）先生成 `CheckedStatePlan`，再统一提交：
+
+- 子节点来源：`TreeViewItem` 项（声明式树）取 `Items`；`ITreeItemNode` 取 `Children`；其他数据只能经已实现容器的 `Items` 访问，必要时临时展开该容器并在结束后恢复，这是唯一需要临时展开的情况。
+- 父节点来源：已实现容器取逻辑父 `TreeViewItem`，否则取 `ITreeItemNode.ParentNode`。
+- 可勾选判断：已实现容器取 `IsEnabled && IsIndicatorEnabled`，否则取节点数据的同名属性。递归谓词对已实现容器调用 `RecursiveCheckNodePredicate` / `RecursiveUnCheckNodePredicate`，对未实现节点调用私有保护的 `RecursiveCheckNodeDataPredicate` / `RecursiveUnCheckNodeDataPredicate`（`TransferTreeView` 据 `MaskKeys` 屏蔽）。
+- 状态读取：计划中已有的项取计划值；否则在 `CheckedItems` 中为 true；不在时按容器或节点数据区分 null（半选）与 false。
+- 取消勾选：被操作节点总是离开 `CheckedItems`；后代中非 false 且通过谓词的节点置 false。
+- 父级更新：受影响节点的父级去重后按深度从深到浅各计算一次，遇到禁用父级停止向上。批量变化（`Reset`、多项增删）也只对每个父级算一次。
+- 提交：`CommitCheckedStatePlan` 在 `CheckedItemsSyncScope` 与 `IsApplyingCheckedState` 内依次更新 `CheckedItems`（经 `AddCheckedItemCore` / `RemoveCheckedItemCore` 同步镜像）、写节点 `IsChecked`、投射到已实现容器（容器按一次性构建的“项 → 已实现容器”映射查找）。`IsApplyingCheckedState` 期间容器的 `IsChecked` 变化是投射，交互处理器直接返回，不再级联；提交期间关闭 TreeView 动效。
+
+容器准备时，`PrepareTreeItemNodeData` 在 `ApplyNodeData` 之后调用 `ReconcilePreparedCheckedState`（仅 checkbox 模式）：节点在 `CheckedItems` 中则投射 true；节点数据为 true 而 `CheckedItems` 不含它时，按一次勾选并入（严格模式只加入该项）。`ApplyNodeData` 期间写入的 `IsChecked` 在 checkbox 模式下不触发交互处理器；其他模式下，尚无索引的容器同样不触发。
+
+`CheckedItems` 的外部变化：`Add` / `Remove` / `Replace` 在 checkbox 级联模式下对可勾选项执行级联计划，其他模式只投射该项（容器变化照常经交互处理器，radio 由分组管理）。`Reset`（含赋值新集合）比较镜像：离开集合的项置 false，新进入的项在级联模式下勾选其子树，再更新两者的父级；此前从未进入 `CheckedItems` 的节点保留自身数据。
+
+默认状态与运行期路径回放（`TryCheckNodePath`、`ConfigureDefaultCheckedPaths`）在目标容器已显示勾选时直接调用交互处理器，保证 `CheckedItems` 被清空后仍能恢复。
+
+`CheckedItemsSyncScope` 防止内部批量更新 `CheckedItems` 时再次进入外部变化处理；作用域退出时恢复进入前的同步标记，可嵌套。
 
 父级状态按所有有效子节点计算：
 
@@ -405,7 +427,14 @@ drop indicator 根据目标 header 上半区、中间区域和下半区决定插
 
 - `PrepareTreeItemNodeData` 在 `ApplyNodeData` 之后记录当前节点，`TreeViewItem.OnPropertyChanged` 把 `IsChecked`、`IsSelected`、`IsExpanded` 的变化写回节点（与绑定型节点共用 `SyncTreeItemNodeFromContainer`）。
 - 回写只在 `ApplyNodeData` 之后开始，并在 `ClearPreparedTreeItemNodeData`（容器清理、logical detach）时先于 Avalonia 的容器清理停止；容器准备前后由 Avalonia 基类写入的选择标记不会写进新节点。
-- 虚拟化面板回收的容器会带着上一个节点的状态被重新准备。`ApplyNodeData` 把节点状态写到尚未取得索引的容器上属于状态恢复：此时 `IsChecked` 变化不触发勾选级联（级联需要从容器解析数据项）。非虚拟化面板在准备时容器已有索引，行为不变。
+- 虚拟化面板回收的容器会带着上一个节点的状态被重新准备。`ApplyNodeData` 把节点状态写到容器上属于状态恢复，不是切换：checkbox 模式下由 `ReconcilePreparedCheckedState` 按 `CheckedItems` 对齐，其他模式下尚无索引的容器不触发交互处理器。
+
+容器生命周期与数据删除的区分：
+
+- 准备（`TreeView.PrepareContainerForItemOverride`，Avalonia `TreeViewItem` 会把嵌套容器的准备转发到这里）、清理（`TreeView` / `TreeViewItem.ClearContainerForItemOverride`、`ClearPreparedTreeItemNodeData`）与逻辑树 attach / detach 在 `BeginContainerLifecycle` 作用域内执行（结构体作用域，滚动时不分配）。这些路径替换或清空容器的 `ItemsSource`，不代表节点离开数据树。
+- `ItemsSource` 变化时，Avalonia 在 `ItemsControl.OnPropertyChanged` 内把旧子项作为移除或 `Reset` 发出；`TreeViewItem` 在此期间忽略 `Items` 变化，由变化本身判断：生命周期内忽略；生命周期外表示节点的子集合被替换（如给 `BindableTreeItemNode.Children` 赋新集合），旧集合中不在新集合里的节点连同子树离开 `CheckedItems`。
+- 子集合自身的移除 / 替换只把该项移出 `CheckedItems`（拖拽移动中的节点保留），不改写其节点数据；子集合 `Reset` 时移除从根已不可达的勾选项（逐层检查 `ParentNode.Children` 是否仍包含该节点），无节点模型的数据无法判断，保留。
+- 根集合 `Reset`（含换源）在同步作用域内清空 `CheckedItems`，不把变化投射到已离开的旧数据；运行期状态由 ItemsSource 回放恢复。
 
 ### 7.8 键盘活动项维护
 
@@ -423,7 +452,9 @@ TreeView 不通过反射访问模板内部结构。模板接入依赖稳定 part
 
 TreeView / TreeViewItem 对绑定型节点的 attach/release 是资源生命周期边界。不得把 generated `TreeViewItem`、header、container 或 Gallery ShowCase 永久挂回节点，也不得用清空 DataContext 或静态资源替代动态资源能力。
 
-过滤、默认状态回放和勾选级联会触发 layout pass 以实现需要访问的子容器；这些路径必须保持有界，不能引入固定延时等待。
+过滤和默认状态回放会触发 layout pass 以实现需要访问的子容器；勾选级联沿节点数据计算，只有无节点模型的数据需要临时展开容器。这些路径必须保持有界，不能引入固定延时等待。
+
+勾选计划的开销为受影响子树大小加上每个受影响父级的子节点数；“项 → 已实现容器”映射每次计划构建一次，与已实现容器数成正比。容器准备时的对齐只做一次镜像查找，节点数据未勾选时不做额外工作。
 
 拖拽 preview 使用 `AdornerLayer`，完成或取消拖拽时必须从 adorner layer 移除。drag indicator Pen 和 tree line Pen 均按 brush / width 缓存，避免每帧重复创建。
 
@@ -451,7 +482,9 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
 - 默认状态回放顺序保持 selected、checked、filter、expanded。
 - ItemsSource 变化先尝试恢复运行期状态，再回退默认状态。
 - 多选模式的 ItemsSource 变化恢复必须以 `SelectedItems` 为权威；不能因为 `SelectedItem` 非空而丢弃其它已选节点。
-- `CheckedItemsSyncScope` 必须包裹内部批量 checked 集合更新。
+- `CheckedItemsSyncScope` 必须包裹内部批量 checked 集合更新；内部增删必须经 `AddCheckedItemCore` / `RemoveCheckedItemCore` 以保持引用镜像一致。
+- 勾选级联与父级计算不得依赖容器是否已实现；容器只投射 `CheckedItems` / 节点数据，不作为勾选状态来源。
+- 容器准备、清理和逻辑树 attach / detach 引起的 `ItemsSource` 变化必须处于 `BeginContainerLifecycle` 作用域，不能被当成数据删除清理 `CheckedItems`。
 - filter 进入时备份上下文，退出时恢复。
 - `TreeViewItemHeader` 替换 `PART_HeaderContentFrame` 时必须解除旧 pointer 事件。
 - `DefaultTreeViewInteractionHandler.Detach` 必须释放 pointer、input manager、root handler 和 radio group 关系。

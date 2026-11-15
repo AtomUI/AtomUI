@@ -187,7 +187,9 @@ TreeView 的状态模型由节点状态、选择状态、勾选状态、展开�
 - `ToggleType=Radio` 时只在叶子节点显示 radio。
 - `IsCheckStrictly=false` 时 checkbox 勾选会级联子树，并根据子级状态更新父级 true / false / null。
 - `IsCheckStrictly=true` 时 checkbox 只同步当前节点，不级联父子级。
-- `CheckedItems` 是当前勾选数据集合，变化会同步已实现容器状态并触发 `CheckedItemsChanged`。
+- `CheckedItems` 是勾选状态的权威集合，变化触发 `CheckedItemsChanged`。级联沿节点数据（`ITreeItemNode.Children` / `ParentNode`，声明式树为子 `TreeViewItem`）计算，不依赖容器是否已实现：结果写入 `CheckedItems` 与节点 `IsChecked`，再投射到已实现容器；之后实现的容器从节点数据取得状态。虚拟化面板下勾选一个父节点同样覆盖视口外的子节点，父级 true / null 也按全部子节点计算。
+- 代码对 `CheckedItems` 的增删等同于勾选 / 取消勾选该节点（checkbox 级联模式包括级联），对未实现节点同样生效；赋值新集合或 `Reset` 时，离开集合的节点取消勾选、新进入的节点按勾选处理。
+- 节点数据 `IsChecked=true` 而 `CheckedItems` 尚未包含它时，容器实现（准备）时按一次勾选并入；容器回收、重新准备不改变 `CheckedItems`，只有节点真正离开数据树（移除、子集合重置或被替换）才从 `CheckedItems` 移除。
 
 展开行为：
 
@@ -308,7 +310,8 @@ TreeView 不实现 CompactSpace、Button 家族或 Popup 菜单导航模型。
 - `DefaultSelectedPaths`、`DefaultCheckedPaths`、`DefaultExpandedPaths` 是默认状态入口，不是持续受控状态。
 - `IsDefaultExpandAll=true` 优先于 `DefaultExpandedPaths`。
 - `SelectedItem` / `SelectedItems` 的 Avalonia 选择语义不变。
-- `CheckedItems` 与已实现容器的 `IsChecked` 必须双向同步，内部同步不得递归触发重复事件。
+- `CheckedItems` 是勾选状态的权威来源；节点数据与已实现容器的 `IsChecked` 是它的投射，内部同步不得递归触发重复事件。
+- 虚拟化与非虚拟化面板的勾选结果一致：级联、父级半选与 `CheckedItems` 不取决于哪些容器已实现；容器回收不是数据删除。
 - `IsCheckStrictly=false` 时 checkbox 保持父子级级联和半选语义；`true` 时只同步当前节点。
 - `ToggleType=Radio` 只在叶子节点显示 radio，并遵守 `GroupName` 分组。
 - `TreeNodePath` 匹配优先使用 `ItemKey`，没有 `ItemKey` 时才使用 `Value` 字符串。

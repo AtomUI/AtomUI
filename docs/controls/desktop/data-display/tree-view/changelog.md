@@ -6,6 +6,20 @@
 ## 2026-11-14
 
 - Fix
+  - 虚拟化面板下 checkbox 级联只覆盖已实现的子节点：勾选有 15 个子节点、视口只实现约 8 个的已展开节点时，`CheckedItems` 只得到已实现部分，父节点显示半选。级联改为沿节点数据（`ITreeItemNode.Children` / `ParentNode`）计算，父级 true / null 按全部子节点得出。
+  - 虚拟化面板回收 `BindableTreeItemNode` 容器时 `CheckedItems` 被整体清空：清理容器的 `ItemsSource` 被当成子集合 `Reset`，处理为 `CheckedItems.Clear()`。容器生命周期内的 `ItemsSource` 变化不再清理勾选；真实的子集合 `Reset` 只移除从根不可达的勾选项，替换子集合只移除离开的节点及其子树。
+  - 代码向 `CheckedItems` 加入或移除未实现节点时，节点数据与之后实现的容器不再与集合不一致；赋值新的 `CheckedItems` 集合时其中的节点显示为勾选（此前已实现容器全部显示未勾选）。
+- Implementation
+  - `TreeView.CheckedState.cs` 改为“勾选计划 + 提交”：计划按节点数据生成目标状态，提交依次更新 `CheckedItems`、节点 `IsChecked` 与已实现容器；不再为级联临时展开子树（无节点模型的数据除外）。新增按引用比较的 `CheckedItems` 镜像、`ReconcilePreparedCheckedState`（容器准备时对齐）、`IsApplyingCheckedState`（投射不触发交互处理器）、私有保护的 `RecursiveCheckNodeDataPredicate` / `RecursiveUnCheckNodeDataPredicate`。
+  - `TreeViewItem` 新增容器生命周期作用域 `BeginContainerLifecycle`，`TreeView` 重写 `PrepareContainerForItemOverride` 进入该作用域；`ItemsSource` 变化期间忽略 `Items` 变化，生命周期外的替换按数据删除处理。
+  - `TransferTreeView` 的 `SelectAll` / `DeselectAll` 按根数据项执行，覆盖未实现的根节点；未实现节点按 `MaskKeys` 判断屏蔽。
+  - 路径回放在目标容器已显示勾选时直接执行勾选处理，`CheckedItems` 清空后仍能恢复。
+- Tests
+  - `TreeViewVirtualizationStateTests` 新增：虚拟化下级联覆盖未实现子节点（16 项）、取消一个子节点后父级半选再恢复、`TreeItemNode` / `BindableTreeItemNode` 回收时 `CheckedItems` 不变（滚离与滚回两处断言）、代码增删未实现节点、`Clear` 作用于未实现节点、子集合 `Reset` 与 `BindableTreeItemNode.Children` 替换只移除离开的节点、严格模式不级联，以及非虚拟化面板结果不变。
+- Docs
+  - `overview.md` 勾选行为与兼容性不变量改为 `CheckedItems` 权威、节点数据级联、容器回收不是数据删除；`implementation.md` 更新勾选流、§7.3 勾选计划、§7.7 容器生命周期与数据删除的区分、性能边界与维护不变量。
+
+- Fix
   - `ItemsPanel` 为虚拟化面板时，键盘导航可以越过视口：↑↓ / Home / End / ← → 的目标索引没有容器时，先布局一次，再对所属 `ItemsControl` 调用 `ScrollIntoView(index)` 实现容器。此前方向键停在视口内最后一个已实现节点，Home / End 落到已实现范围的首尾。
   - 虚拟化面板回收活动项容器后，活动项不再丢失：容器离开视觉树时只释放容器引用和指示状态，保留 active 路径（每层索引和项）；该项的下一个容器完成准备时重新绑定，按键时仍未绑定则沿路径重新实现。
   - 虚拟化面板回收并重新实现容器后，`TreeItemNode` 与自定义 `ITreeItemNode` 节点不再丢失状态：此前只有 `BindableTreeItemNode` 回写容器状态，普通节点重新准备时用过期数据覆盖，导致展开收起、选中底色消失（`SelectedItem` 仍在）；勾选模式下回收容器重用时以过期 `IsChecked` 触发取消勾选级联，Debug 构建断言终止。

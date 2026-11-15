@@ -211,7 +211,8 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
 
     internal void OnCheckedChanged(TreeViewItem viewItem)
     {
-        if (TreeView is not { } treeView)
+        // A checked state being applied projects onto containers; those changes are not toggles.
+        if (TreeView is not { } treeView || treeView.IsApplyingCheckedState)
         {
             return;
         }
@@ -261,19 +262,20 @@ internal class DefaultTreeViewInteractionHandler : ITreeViewInteractionHandler
             return;
         }
 
+        if (treeView.TreeItemFromContainer(viewItem) is not { } treeNode)
+        {
+            return;
+        }
+
         using (treeView.BeginCheckedItemsSync())
         {
-            var treeNode = treeView.TreeItemFromContainer(viewItem);
             if (viewItem.IsChecked == true)
             {
-                if (!treeView.CheckedItems.Contains(treeNode))
-                {
-                    treeView.CheckedItems.Add(treeNode);
-                }
+                treeView.AddCheckedItemCore(treeNode);
             }
             else
             {
-                treeView.CheckedItems.Remove(treeNode);
+                treeView.RemoveCheckedItemCore(treeNode);
             }
         }
     }

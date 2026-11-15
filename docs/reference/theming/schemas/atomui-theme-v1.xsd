@@ -46,6 +46,20 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="DensityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Normal" />
+      <xs:enumeration value="Compact" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="BrandColorSupportType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Fixed" />
+      <xs:enumeration value="Seed" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ThemeAlgorithmType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Default" />
@@ -171,6 +185,9 @@
                   type="theme:StrictBooleanType"
                   use="optional"
                   default="false" />
+    <xs:attribute name="DesignLanguage" type="theme:IdentifierType" use="optional" />
+    <xs:attribute name="Density" type="theme:DensityType" use="optional" />
+    <xs:attribute name="BrandColor" type="theme:BrandColorSupportType" use="optional" />
   </xs:complexType>
 
   <xs:element name="Theme" type="theme:ThemeType">

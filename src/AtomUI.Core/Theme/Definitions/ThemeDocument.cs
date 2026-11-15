@@ -56,7 +56,10 @@ internal sealed class ThemeDocument
         IEnumerable<ThemeAlgorithmDocument> algorithms,
         IEnumerable<ThemeTokenDocument> tokens,
         IEnumerable<ControlThemeDocument> controls,
-        ThemeSourceLocation location)
+        ThemeSourceLocation location,
+        string? designLanguage = null,
+        ThemeDensity density = ThemeDensity.Normal,
+        ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed)
     {
         Id         = id;
         Name       = name;
@@ -66,9 +69,15 @@ internal sealed class ThemeDocument
         Tokens     = Array.AsReadOnly(tokens.ToArray());
         Controls   = Array.AsReadOnly(controls.ToArray());
         Location   = location;
+        DesignLanguage = designLanguage;
+        Density        = density;
+        BrandColor     = brandColor;
     }
 
     public string Id { get; }
+    public string? DesignLanguage { get; }
+    public ThemeDensity Density { get; }
+    public ThemeBrandColorSupport BrandColor { get; }
     public string Name { get; }
     public ThemeAppearance Appearance { get; }
     public bool IsDefault { get; }

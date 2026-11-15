@@ -15,6 +15,71 @@ public class ThemeDocumentReaderTests
     private const string Source = "themes/test.theme.xml";
 
     [Fact]
+    public void Read_Maps_Design_Language_Metadata()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A.Dark" Name="A" Appearance="Dark"
+                                   Density="Compact" DesignLanguage="PrimeNG.Aura" BrandColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        result.Document!.DesignLanguage.ShouldBe("PrimeNG.Aura");
+        result.Document.Density.ShouldBe(ThemeDensity.Compact);
+        result.Document.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+    }
+
+    [Fact]
+    public void Read_Defaults_Missing_Metadata_To_Null_Normal_Fixed()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        result.Document!.DesignLanguage.ShouldBeNull();
+        result.Document.Density.ShouldBe(ThemeDensity.Normal);
+        result.Document.BrandColor.ShouldBe(ThemeBrandColorSupport.Fixed);
+    }
+
+    [Theory]
+    [InlineData("DesignLanguage=\"a b\"")]
+    [InlineData("Density=\"Tight\"")]
+    [InlineData("BrandColor=\"Auto\"")]
+    public void Read_Rejects_Invalid_Design_Language_Metadata(string attribute)
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" {{attribute}}>
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        result.Diagnostics.ShouldContain(static item => item.Code == "ATMTHM1002");
+    }
+
+    [Fact]
+    public void ThemeInfo_Equality_Compares_Algorithms_By_Sequence()
+    {
+        var left = new ThemeInfo("A", "A", ThemeAppearance.Light, false)
+        {
+            Algorithms = [ThemeAlgorithm.Default, ThemeAlgorithm.Compact]
+        };
+        var same = new ThemeInfo("A", "A", ThemeAppearance.Light, false)
+        {
+            Algorithms = new List<ThemeAlgorithm> { ThemeAlgorithm.Default, ThemeAlgorithm.Compact }
+        };
+        var different = left with { Algorithms = [ThemeAlgorithm.Default] };
+
+        left.ShouldBe(same);
+        left.GetHashCode().ShouldBe(same.GetHashCode());
+        left.ShouldNotBe(different);
+    }
+
+    [Fact]
     public void Read_Maps_Control_Algorithm_Forms_To_The_Four_State_Enum()
     {
         var result = Read($$"""

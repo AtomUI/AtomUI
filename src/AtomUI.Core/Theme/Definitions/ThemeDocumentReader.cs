@@ -199,6 +199,9 @@ internal static class ThemeDocumentReader
         private string? _name;
         private ThemeAppearance _appearance;
         private bool _isDefault;
+        private string? _designLanguage;
+        private ThemeDensity _density;
+        private ThemeBrandColorSupport _brandColor;
         private ThemeSourceLocation _location;
         private readonly List<ThemeAlgorithmDocument> _algorithms = new();
         private readonly HashSet<ThemeAlgorithm> _algorithmIdentities = new();
@@ -262,7 +265,10 @@ internal static class ThemeDocumentReader
                 _algorithms,
                 _tokens,
                 _controls,
-                _location);
+                _location,
+                _designLanguage,
+                _density,
+                _brandColor);
         }
 
         private string ReadTheme(XmlReader reader)
@@ -274,6 +280,13 @@ internal static class ThemeDocumentReader
                 : ThemeAppearance.Light;
             _isDefault = string.Equals(reader.GetAttribute("IsDefault"), "true", StringComparison.Ordinal);
             _location  = Location(reader, "/Theme");
+            _designLanguage = reader.GetAttribute("DesignLanguage");
+            _density = string.Equals(reader.GetAttribute("Density"), "Compact", StringComparison.Ordinal)
+                ? ThemeDensity.Compact
+                : ThemeDensity.Normal;
+            _brandColor = string.Equals(reader.GetAttribute("BrandColor"), "Seed", StringComparison.Ordinal)
+                ? ThemeBrandColorSupport.Seed
+                : ThemeBrandColorSupport.Fixed;
             return "/Theme";
         }
 

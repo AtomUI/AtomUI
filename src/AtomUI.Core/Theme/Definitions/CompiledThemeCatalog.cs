@@ -516,7 +516,13 @@ internal sealed class CompiledThemeCatalog
                     definition.Name,
                     definition.EffectiveAppearance,
                     definition.IsDefault,
-                    accentColor),
+                    accentColor)
+                {
+                    DesignLanguage = document.DesignLanguage,
+                    Density        = document.Density,
+                    BrandColor     = document.BrandColor,
+                    Algorithms     = document.Algorithms.Select(static item => item.Algorithm).ToArray()
+                },
                 definition,
                 definitionRevision),
             diagnostics);

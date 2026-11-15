@@ -1,5 +1,6 @@
 using System.Text;
 using AtomUI.Theme;
+using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -290,6 +291,35 @@ public class CompiledThemeCatalogResolverTests
             manager.AvailableThemes
                    .Single(static theme => theme.Id == "NoAccent")
                    .AccentColor.ShouldBeNull();
+        });
+    }
+
+    [Fact]
+    public void Catalog_Publishes_Design_Language_Metadata_In_ThemeInfo()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            builder.AddThemeDefinitionResolver(new MemoryResolver(
+                "Meta",
+                new MemorySource(
+                    "memory://meta",
+                    "1",
+                    """
+                    <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Meta" Name="Meta" Appearance="Dark"
+                           DesignLanguage="PrimeNG.Aura" Density="Compact" BrandColor="Seed">
+                      <Algorithms><Algorithm Id="Dark" /><Algorithm Id="Compact" /></Algorithms>
+                    </Theme>
+                    """)));
+            var manager = builder.Build();
+
+            manager.InitializeApplication(Application.Current!);
+
+            var info = manager.AvailableThemes.Single(static theme => theme.Id == "Meta");
+            info.DesignLanguage.ShouldBe("PrimeNG.Aura");
+            info.Density.ShouldBe(ThemeDensity.Compact);
+            info.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+            info.Algorithms.ShouldBe([ThemeAlgorithm.Dark, ThemeAlgorithm.Compact]);
         });
     }
 

@@ -3,6 +3,21 @@
 本文档记录 ListView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Design
+  - 确立独立 ListView 的键盘焦点模型（overview §8.5），与 ListBox 共用焦点模型和提交策略：条目是焦点目标，列表是一个 Tab
+    停靠点；单选时选择跟随焦点，多选时方向键只移动焦点、Space / Enter 切换、`Shift` 范围选择。
+- Fixed
+  - 默认主题下 ListView 无法获得键盘焦点：`ListViewItemTheme` 设置了 `Focusable=False`。条目恢复可聚焦，组标题和 Select
+    候选列表条目改为显式 `Focusable=False`；ListView 设为 `TabNavigation=Once`。
+  - 多选（含 Transfer 的 `Multiple | Toggle`）时方向键会逐项切换选择；改为只移动焦点。
+  - 没有选择时组标题被设为 Tab-once 目标，Tab 无法进入分组列表。
+- Theme
+  - `ListViewItemTheme` 的 `Frame` 成为模板焦点目标并内侧绘制焦点描边。
+- Docs
+  - `overview.md` 新增 §8.5 键盘焦点模型并更新 §4、§5；`implementation.md` 重写 keyboard navigation 流程。
+
 ## 2026-11-10
 
 - API

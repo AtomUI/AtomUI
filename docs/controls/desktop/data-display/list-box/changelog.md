@@ -5,10 +5,23 @@
 
 ## 2026-11-14
 
+- Design
+  - 确立独立 ListBox 的键盘焦点模型（overview §8.4）：条目是焦点目标，列表是一个 Tab 停靠点；单选时选择跟随焦点，
+    多选时方向键只移动焦点、Space / Enter 切换、`Shift` 范围选择，与 TreeView 的提交策略一致。PageUp / PageDown 由
+    ScrollViewer 滚动视口（Avalonia 12.1.6 虚拟化面板无翻页导航）。
+- Theme
+  - `ListBoxItemTheme` 的 `Frame` 成为模板焦点目标并内侧绘制焦点描边（`IsTemplateFocusTarget`、`FocusOutlineAdorner.IsInset`）。
 - Fixed
+  - 默认主题下 ListBox 无法获得键盘焦点：`ListBoxItemTheme` 设置了 `Focusable=False`，点击条目后焦点为空，方向键无效。
+    条目恢复可聚焦；CandidateList、Cascader 搜索结果列表的条目主题改为显式 `Focusable=False`，焦点仍留在宿主输入框。
+  - 每按一次方向键选择移动两项：`OnKeyDown` 先 `MoveSelection` 再调用 Avalonia `ListBox.OnKeyDown` 又移动一次。方向键
+    改为只由 ListBox 处理。
+  - 多选模式下 Space / Enter 整体替换选择：Avalonia `ListBoxItem` 的按键提交被拦截，改按多选提交策略切换。
   - CandidateList（AutoComplete、Mentions 的候选列表）在虚拟化回收后高亮错位：回收容器继承了活动候选的高亮，滚回后活动候选又不高亮。原因是高亮在 `NotifyRestoreDefaultContext` 中按尚未更新的 `VirtualIndex` 判断，且该回调只对 `IListItemData` 执行（Mentions 选项不经过）。改为在 `PrepareContainerForItemOverride` 的基础 prepare 之后按本次 `index` 设置。
 - Docs
   - `implementation.md` §7.5 更新 CandidateList 扩展点与候选高亮的恢复时机。
+  - `overview.md` 新增 §8.4 键盘焦点模型，§5 补充焦点描边、§8.3 补充 CandidateList 的宿主焦点约定；`implementation.md`
+    重写 keyboard navigation 流程。
 
 ## 2026-10-20
 

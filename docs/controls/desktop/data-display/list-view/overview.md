@@ -159,9 +159,8 @@ ListView 的状态模型由数据视图状态、选择状态、分页状态、�
 
 键盘和文本搜索行为：
 
-- 方向键按 Avalonia navigation direction 移动选择，`WrapSelection` 控制边界循环。
-- 多选模式下，平台 select-all 手势调用 `Selection.SelectAll()`。
-- Space / Enter 会尝试从事件源更新选择。
+- 键盘焦点与提交规则见 §8.5：条目是焦点目标；单选时选择跟随焦点，多选时方向键只移动焦点、Space / Enter 切换、`Shift`
+  范围选择；`WrapSelection` 控制边界循环。
 - `IsTextSearchEnabled=true` 时，文本输入按 `TextSearch.TextBinding` 或 `DisplayMemberBinding` 做前缀搜索，搜索词由短定时器清空。
 
 过滤行为：
@@ -231,6 +230,8 @@ ListViewItemTheme
 - selected indicator 默认使用 `CheckOutlined`，颜色和尺寸来自 SharedToken。
 - 空状态默认使用 `Empty` 的 simple preset image。
 - 分页器 margin 使用 ListViewToken 的 `PaginationMargin`。
+- 键盘焦点描边由条目模板 `Frame` 承载（`TemplatedControl.IsTemplateFocusTarget=True`、`FocusOutlineAdorner.IsInset=True`），
+  规则与 ListBox 相同，见 [ListBox 视觉与主题模型](../list-box/overview.md#5-视觉与主题模型)。组标题不可聚焦，不显示描边。
 
 ListViewToken 提供内容 padding、条目文字颜色、条目状态背景、条目 padding、条目 margin、分页器 margin、组标题色和选中指示器 margin。Token 详情见 [ListView Token 设计](token.md)。
 
@@ -315,6 +316,17 @@ ListView 为原始数据源中的每一次出现建立独立 source entry，并�
 
 `IsOperating` 不改变数据、选择或分页状态，只在视觉上通过 `Spin` 覆盖当前列表内容。外部异步加载、刷新或批量操作应通过此模型表达忙碌状态，而不是在 ListView 内部引入远程请求或任务编排。
 
+### 8.5 键盘焦点模型
+
+独立使用的 ListView 与 ListBox 采用同一焦点模型和提交策略，按键表见 [ListBox 键盘焦点模型](../list-box/overview.md#84-键盘焦点模型)。
+ListView 的差异：
+
+- ListView 不可聚焦，`KeyboardNavigation.TabNavigation=Once`；Tab 进入时落在最近一次聚焦的条目，没有时取选择锚点条目，再没有时取第一个可导航条目。
+- 组标题（`GroupHeaderItem`）固定 `Focusable=False`：Tab、方向键和 `Home` / `End` 都跳过组标题；`Shift` 范围选择按 source entry 计算，组标题不进入结果。
+- 分页开启时，方向键只在当前页的条目之间移动。
+- Select 下拉的 `SelectCandidateList` 继承 ListView，但条目主题固定 `Focusable=False`，焦点留在 Select，按键由 Select 转发。
+- `PageUp` / `PageDown` 与 ListBox 相同，由 ScrollViewer 滚动视口，焦点与选择不变。
+
 ## 9. 文档导航与验证策略
 
 文档导航：
@@ -336,4 +348,5 @@ ListView 为原始数据源中的每一次出现建立独立 source entry，并�
 | AXAML | 检查 root、pagination、Spin、ScrollViewer、EmptyIndicator、item 和 group item 在 light / dark 和三种 SizeType 下显示稳定，外框 / 分割线 / 圆角内容裁剪规则一致。 |
 | Token | 检查 `ListViewTokenKind`、AXAML token resource 和 token.md 语义说明保持一致。 |
 | 虚拟化 | 覆盖 container prepare / clear、上下滚动后 disabled、group item 和 selected 状态不串扰。 |
+| 键盘 | 默认主题与默认虚拟化面板下覆盖 Tab 停靠、越过视口、Home / End、禁用项与组标题跳过、回收后焦点保留、多选提交策略和焦点描边。 |
 | 文档 | 运行 `git diff --check`，确认链接存在且只记录最新设计状态。 |

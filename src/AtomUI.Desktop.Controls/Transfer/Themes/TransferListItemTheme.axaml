@@ -12,6 +12,8 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TransferListItem">
                 <Border Name="Frame"
+                        TemplatedControl.IsTemplateFocusTarget="True"
+                        atom:FocusOutlineAdorner.IsInset="True"
                         Background="{TemplateBinding Background}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Padding="{TemplateBinding Padding}">
@@ -19,6 +21,7 @@
                         <atom:CheckBox
                             Name="SelectedIndicator"
                             Classes.semantic-item-icon="True"
+                            Focusable="False"
                             DockPanel.Dock="Left"
                             VerticalAlignment="Center"
                             IsChecked="{TemplateBinding IsSelected}"

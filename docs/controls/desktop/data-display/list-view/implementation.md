@@ -312,12 +312,19 @@ click event：
 - `ItemClickMode=Release` 时左键释放触发 `ListViewItem.Clicked`。
 - ListView 通过 class handler 接收后调用 `NotifyItemClicked`，再触发 public `ItemClicked`。
 
-keyboard navigation：
+keyboard navigation（契约见 [overview §8.5](overview.md#85-键盘焦点模型)）：
 
-- 方向键通过 `INavigableContainer` 查找下一个容器，并更新 selection 与 focus。
+- `ListView.OnKeyDown` 处理方向键时不调用 `base.OnKeyDown`（`ItemsControl.OnKeyDown` 只会再移动一次焦点）。起点是焦点元素
+  所在的条目容器，没有时 `↓` / `→` 取首项、`↑` / `←` 取末项；目标由 `GetNextControl` 在 `ItemsPanelRoot` 上查找，跳过
+  不可聚焦（组标题）、禁用和不可见的容器，虚拟化面板实现并滚入目标。随后按提交策略调用 `UpdateSelection`（单选跟随、
+  多选只在 `Shift` 时做范围选择），最后 `Focus(NavigationMethod.Directional)`。
+- `MoveSelection` 保留为派生控件可用的 protected 入口（移动并选择），默认按键路径不再使用它。
 - `WrapSelection=true` 时同步 Avalonia focus wrap 行为。
-- 多选模式下，平台 select-all 手势调用 `Selection.SelectAll()`。
-- Space / Enter 从事件源更新选择。
+- 多选且 `IsSelectable=true` 时，平台 select-all 手势调用 `Selection.SelectAll()`。
+- Space / Enter 只在事件源是本列表的非组标题条目时处理：多选切换，单选选中（已选中时不处理并继续冒泡）。
+- `ContainerForItemPreparedOverride` 只在选择锚点有效（`AnchorIndex >= 0`）时把对应容器设为 Tab-once 目标；组标题没有
+  source index，不会成为 Tab 目标。
+- `ListViewItemTheme` 不再关闭 `Focusable`；`GroupHeaderItemTheme`、`SelectCandidateListItemTheme` 固定 `Focusable=False`。
 
 text search：
 

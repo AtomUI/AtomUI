@@ -155,6 +155,18 @@ Transfer 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 
 Transfer 的当前项状态必须由单一 owner 推导。`SelectedKeys` 保存跨源面板和目标面板的当前选中 key 集合，内部 `TransferListView.SelectedKeys` / `TransferTreeView.SelectedKeys` 只承载面板级投影，不另建业务选择状态。集合替换、清空、原地变更和模板重套用时必须从 public key 集合回放到列表选中项、树勾选项和计数状态。
 
+### 8.1.1 列表面板键盘模型
+
+ListTransfer 的源 / 目标列表面板（`TransferListView`，选择模式 `Multiple | Toggle`，选中即勾选）沿用 ListView 的键盘焦点模型
+（[ListView 键盘焦点模型](../../data-display/list-view/overview.md#85-键盘焦点模型)）：
+
+- 条目 `TransferListItem` 是焦点目标，每个面板是一个 Tab 停靠点；条目内的 `CheckBox#SelectedIndicator` 不可聚焦，点击勾选框时焦点落在条目上。
+- 方向键、`Home` / `End` 只移动焦点，不勾选；`Space` / `Enter` 切换焦点条目的勾选，`Shift` + 方向键从锚点做范围勾选，平台 select-all 手势勾选全部。勾选结果照常回写 `SelectedKeys`。
+- 键盘焦点描边画在条目 `Frame` 内侧，与 ListView 一致。
+- 单向模式的目标面板不可勾选（`IsSelectable=false`），方向键只移动焦点。
+
+TreeTransfer 的树面板沿用 TreeView 的键盘模型。
+
 ### 8.2 集合与数据同步模型
 
 Transfer 的集合状态必须能处理 source replace、reset、clear 和 container recycle。`TargetKeys` 是目标面板数据的稳定来源，Transfer 按 `ItemsSource` membership 生成源面板和目标面板集合；对可写绑定集合执行移动、移除和清空时优先原地变更，只有 `null`、只读或 fixed-size 集合才回退为属性替换。业务数据对象不应反向持有视觉对象，虚拟化或懒创建路径必须在容器回收时清理旧状态。

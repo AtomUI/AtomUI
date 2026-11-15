@@ -237,7 +237,8 @@ public partial class ListView
             listItem.IsSplitLineVisible = ShouldShowSplitLine(index == ItemCount - 1);
         }
         MarkContainerSelected(container, container is ListViewItem selectedItem && selectedItem.EntryId is not null && _selection.SelectedEntryIds.Contains(selectedItem.EntryId.Value));
-        if (_selection.AnchorIndex == SourceIndexFromViewIndex(index))
+        // Group headers have no source index; with no anchor (-1) they must not become the Tab target.
+        if (_selection.AnchorIndex >= 0 && _selection.AnchorIndex == SourceIndexFromViewIndex(index))
         {
             KeyboardNavigation.SetTabOnceActiveElement(this, container);
         }

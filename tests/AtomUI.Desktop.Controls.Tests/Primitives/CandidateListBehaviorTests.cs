@@ -148,6 +148,45 @@ public class CandidateListBehaviorTests
         }
     }
 
+    // Standalone ListBox items are focus targets, but candidate lists keep keyboard focus in their host input:
+    // neither the list nor its items take focus, also when a candidate is clicked.
+    [Fact]
+    public void Clicking_A_Candidate_Keeps_Focus_In_The_Host_Input()
+    {
+        var alpha = new AutoCompleteOption { Header = "Alpha", Content = "Alpha" };
+        var beta  = new AutoCompleteOption { Header = "Beta", Content = "Beta" };
+        var input = new TextBox();
+        var candidateList = new CandidateList
+        {
+            Width       = 240,
+            Height      = 120,
+            ItemsSource = new[] { alpha, beta }
+        };
+        var window = Show(new StackPanel { Children = { input, candidateList } });
+
+        try
+        {
+            candidateList.Focusable.ShouldBeFalse();
+            var betaContainer = GetContainer(candidateList, 1);
+            betaContainer.Focusable.ShouldBeFalse();
+
+            input.Focus(NavigationMethod.Tab).ShouldBeTrue();
+            var point = betaContainer.TranslatePoint(
+                new Point(betaContainer.Bounds.Width / 2, betaContainer.Bounds.Height / 2), window);
+            point.ShouldNotBeNull();
+            window.MouseMove(point.Value);
+            window.MouseDown(point.Value, MouseButton.Left);
+            window.MouseUp(point.Value, MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            window.FocusManager!.GetFocusedElement().ShouldBeSameAs(input);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     private static int[] HighlightedIndexes(CandidateList candidateList)
     {
         return candidateList.GetRealizedContainers()

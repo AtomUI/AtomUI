@@ -1,12 +1,11 @@
-using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 
-namespace AtomUI.Desktop.Controls;
+namespace AtomUI.Controls;
 
 /// <summary>
 /// Shared Avalonia property owner for input validation state projected by
-/// <see cref="AbstractTextInput"/> and <see cref="InputControlFrame"/>.
+/// <see cref="AbstractTextInput"/> and product input frames.
 /// </summary>
 internal abstract class InputControlState : AvaloniaObject
 {

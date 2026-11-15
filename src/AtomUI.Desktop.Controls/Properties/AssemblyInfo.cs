@@ -15,6 +15,10 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme.Resources")]
 [assembly: XmlnsDefinition("https://atomui.net", "AtomUI.Theme")]
 
+[assembly: TypeForwardedTo(typeof(SearchRequestedEventArgs))]
+[assembly: TypeForwardedTo(typeof(SearchTriggerSource))]
+[assembly: TypeForwardedTo(typeof(OtpLineEditInputMode))]
+[assembly: TypeForwardedTo(typeof(OtpLineEditCompletedEventArgs))]
 [assembly: TypeForwardedTo(typeof(DateViewerSelectionUnit))]
 [assembly: TypeForwardedTo(typeof(DateViewerPanelKind))]
 [assembly: TypeForwardedTo(typeof(DateViewerCellType))]

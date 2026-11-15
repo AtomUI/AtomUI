@@ -14,15 +14,19 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:TextArea">
-                <DockPanel LastChildFill="True"
+                <atom:InputAccessoryDockPanel LastChildFill="True"
                            Height="{TemplateBinding Height}">
-                    <atom:TextBlock Name="TextCountIndicator"
-                                    Classes.semantic-count="True"
-                                    DockPanel.Dock="Bottom"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Text="{TemplateBinding CountText}"
-                                    IsVisible="{TemplateBinding IsShowCount}" />
+                    <atom:InputAccessoryDockPanel.CountTemplate>
+                        <DataTemplate>
+                            <atom:TextBlock Name="TextCountIndicator"
+                                            Classes.semantic-count="True"
+                                            DockPanel.Dock="Bottom"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Right"
+                                            Text="{Binding $parent[atom:TextArea].CountText}"
+                                            IsVisible="{Binding $parent[atom:TextArea].IsShowCount}" />
+                        </DataTemplate>
+                    </atom:InputAccessoryDockPanel.CountTemplate>
                     <Panel>
                         <atom:TextAreaDecoratedBox
                             Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
@@ -54,16 +58,20 @@
                                     Focusable="False" />
                             </atom:TextAreaDecoratedBox.ContentLeftAddOn>
                             <atom:TextAreaDecoratedBox.ContentRightAddOn>
-                                <StackPanel Orientation="Vertical"
+                                <atom:InputAccessoryPanel Orientation="Vertical"
                                             Classes.semantic-suffix="True"
                                             Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
-                                    <atom:InputClearIconButton
-                                        Name="PART_ClearButton"
-                                        Classes.semantic-clear="True"
-                                        VerticalAlignment="Center"
-                                        Icon="{Binding $parent[atom:TextArea].ClearIcon}"
-                                        IsVisible="{Binding $parent[atom:TextArea].IsEffectiveShowClearButton}"
-                                        IsMotionEnabled="{Binding $parent[atom:TextArea].IsMotionEnabled}" />
+                                    <atom:InputAccessoryPanel.ClearButtonTemplate>
+                                        <DataTemplate>
+                                            <atom:InputClearIconButton
+                                                Name="PART_ClearButton"
+                                                Classes.semantic-clear="True"
+                                                VerticalAlignment="Center"
+                                                Icon="{Binding $parent[atom:TextArea].ClearIcon}"
+                                                IsVisible="{Binding $parent[atom:TextArea].IsEffectiveShowClearButton}"
+                                                IsMotionEnabled="{Binding $parent[atom:TextArea].IsMotionEnabled}" />
+                                        </DataTemplate>
+                                    </atom:InputAccessoryPanel.ClearButtonTemplate>
                                     <ContentPresenter
                                         Name="PART_FormFeedBack"
                                         VerticalAlignment="Stretch"
@@ -79,7 +87,7 @@
                                         Focusable="False"
                                         Content="{Binding $parent[atom:TextArea].InnerRightContent}"
                                         ContentTemplate="{Binding $parent[atom:TextArea].InnerRightContentTemplate}" />
-                                </StackPanel>
+                                </atom:InputAccessoryPanel>
                             </atom:TextAreaDecoratedBox.ContentRightAddOn>
 
                             <Panel Name="ContentLayout" Classes.semantic-content="True">
@@ -121,7 +129,7 @@
                                            Cursor="SizeNorthSouth"
                                            IsVisible="{TemplateBinding IsResizable}" />
                     </Panel>
-                </DockPanel>
+                </atom:InputAccessoryDockPanel>
             </ControlTemplate>
         </Setter>
 

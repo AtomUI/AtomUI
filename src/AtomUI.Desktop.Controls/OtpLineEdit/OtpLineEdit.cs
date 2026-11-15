@@ -3,9 +3,8 @@ using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Interactivity;
@@ -15,45 +14,37 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
-public partial class OtpLineEdit : TemplatedControl,
+public partial class OtpLineEdit : AbstractOtpInput,
                                    IMotionAwareControl,
                                    ICustomizableSizeTypeAware,
                                    IInputControlStyleVariantAware,
-                                   IInputControlStatusAware,
-                                   IFormItemAware,
                                    IFormItemFeedbackAware
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<string?> TextProperty =
-        AvaloniaProperty.Register<OtpLineEdit, string?>(
-            nameof(Text),
-            defaultBindingMode: BindingMode.TwoWay,
-            coerce: CoerceText);
+    public new static readonly StyledProperty<string?> TextProperty =
+        AbstractOtpInput.TextProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<int> LengthProperty =
-        AvaloniaProperty.Register<OtpLineEdit, int>(
-            nameof(Length),
-            6,
-            coerce: (_, value) => Math.Max(1, value));
+    public new static readonly StyledProperty<int> LengthProperty =
+        AbstractOtpInput.LengthProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<OtpLineEditInputMode> InputModeProperty =
-        AvaloniaProperty.Register<OtpLineEdit, OtpLineEditInputMode>(nameof(InputMode));
+    public new static readonly StyledProperty<OtpLineEditInputMode> InputModeProperty =
+        AbstractOtpInput.InputModeProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<Func<string, string>?> FormatterProperty =
-        AvaloniaProperty.Register<OtpLineEdit, Func<string, string>?>(nameof(Formatter));
+    public new static readonly StyledProperty<Func<string, string>?> FormatterProperty =
+        AbstractOtpInput.FormatterProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<bool> IsMaskedProperty =
-        AvaloniaProperty.Register<OtpLineEdit, bool>(nameof(IsMasked));
+    public new static readonly StyledProperty<bool> IsMaskedProperty =
+        AbstractOtpInput.IsMaskedProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<char> MaskCharProperty =
-        AvaloniaProperty.Register<OtpLineEdit, char>(nameof(MaskChar), '•');
+    public new static readonly StyledProperty<char> MaskCharProperty =
+        AbstractOtpInput.MaskCharProperty.AddOwner<OtpLineEdit>();
 
     public static readonly StyledProperty<string?> PlaceholderTextProperty =
         AvaloniaProperty.Register<OtpLineEdit, string?>(nameof(PlaceholderText));
 
-    public static readonly StyledProperty<bool> IsReadOnlyProperty =
-        AvaloniaProperty.Register<OtpLineEdit, bool>(nameof(IsReadOnly));
+    public new static readonly StyledProperty<bool> IsReadOnlyProperty =
+        AbstractOtpInput.IsReadOnlyProperty.AddOwner<OtpLineEdit>();
 
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<OtpLineEdit, bool>(nameof(IsAllowClear));
@@ -79,43 +70,43 @@ public partial class OtpLineEdit : TemplatedControl,
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<OtpLineEdit>();
 
-    public static readonly StyledProperty<InputControlStatus> StatusProperty =
-        InputControlStatusProperty.StatusProperty.AddOwner<OtpLineEdit>();
+    public new static readonly StyledProperty<InputControlStatus> StatusProperty =
+        AbstractOtpInput.StatusProperty.AddOwner<OtpLineEdit>();
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<OtpLineEdit>();
 
-    public string? Text
+    public new string? Text
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
 
-    public int Length
+    public new int Length
     {
         get => GetValue(LengthProperty);
         set => SetValue(LengthProperty, value);
     }
 
-    public OtpLineEditInputMode InputMode
+    public new OtpLineEditInputMode InputMode
     {
         get => GetValue(InputModeProperty);
         set => SetValue(InputModeProperty, value);
     }
 
-    public Func<string, string>? Formatter
+    public new Func<string, string>? Formatter
     {
         get => GetValue(FormatterProperty);
         set => SetValue(FormatterProperty, value);
     }
 
-    public bool IsMasked
+    public new bool IsMasked
     {
         get => GetValue(IsMaskedProperty);
         set => SetValue(IsMaskedProperty, value);
     }
 
-    public char MaskChar
+    public new char MaskChar
     {
         get => GetValue(MaskCharProperty);
         set => SetValue(MaskCharProperty, value);
@@ -127,7 +118,7 @@ public partial class OtpLineEdit : TemplatedControl,
         set => SetValue(PlaceholderTextProperty, value);
     }
 
-    public bool IsReadOnly
+    public new bool IsReadOnly
     {
         get => GetValue(IsReadOnlyProperty);
         set => SetValue(IsReadOnlyProperty, value);
@@ -181,7 +172,7 @@ public partial class OtpLineEdit : TemplatedControl,
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public InputControlStatus Status
+    public new InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -197,7 +188,11 @@ public partial class OtpLineEdit : TemplatedControl,
 
     #region 公共事件定义
 
-    public event EventHandler<OtpLineEditCompletedEventArgs>? Completed;
+    public new event EventHandler<OtpLineEditCompletedEventArgs>? Completed
+    {
+        add => base.Completed += value;
+        remove => base.Completed -= value;
+    }
 
     #endregion
 
@@ -213,16 +208,8 @@ public partial class OtpLineEdit : TemplatedControl,
             nameof(IsEffectiveShowClearButton),
             o => o.IsEffectiveShowClearButton);
 
-    internal static readonly DirectProperty<OtpLineEdit, InputControlStatus> EffectiveStatusProperty =
-        AvaloniaProperty.RegisterDirect<OtpLineEdit, InputControlStatus>(
-            nameof(EffectiveStatus),
-            o => o.EffectiveStatus);
-
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<OtpLineEdit, FormValidateFeedback?>(nameof(FormFeedback));
-
-    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
-        InputControlState.FormStatusProperty.AddOwner<OtpLineEdit>();
 
     internal static readonly DirectProperty<OtpLineEdit, bool> IsFormFeedbackVisibleProperty =
         AvaloniaProperty.RegisterDirect<OtpLineEdit, bool>(
@@ -244,24 +231,10 @@ public partial class OtpLineEdit : TemplatedControl,
         private set => SetAndRaise(IsEffectiveShowClearButtonProperty, ref _isEffectiveShowClearButton, value);
     }
 
-    private InputControlStatus _effectiveStatus;
-
-    internal InputControlStatus EffectiveStatus
-    {
-        get => _effectiveStatus;
-        private set => SetAndRaise(EffectiveStatusProperty, ref _effectiveStatus, value);
-    }
-
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
         set => SetValue(FormFeedbackProperty, value);
-    }
-
-    internal FormValidateStatus FormStatus
-    {
-        get => GetValue(FormStatusProperty);
-        private set => SetCurrentValue(FormStatusProperty, value);
     }
 
     private bool _isFormFeedbackVisible;
@@ -274,16 +247,12 @@ public partial class OtpLineEdit : TemplatedControl,
 
     #endregion
 
-    private bool _isCompleted;
-    private int _activeIndex;
     private IconButton? _clearButton;
     private IDisposable? _feedbackStatusSubscription;
-    private EventHandler? _formValueChanged;
 
     static OtpLineEdit()
     {
         AffectsMeasure<OtpLineEdit>(LengthProperty, SizeTypeProperty);
-        FocusableProperty.OverrideDefaultValue<OtpLineEdit>(true);
     }
 
     public OtpLineEdit()
@@ -291,14 +260,12 @@ public partial class OtpLineEdit : TemplatedControl,
         AddHandler(TextInputEvent, HandleDescendantTextInput, RoutingStrategies.Bubble, true);
         AddHandler(KeyDownEvent, HandleDescendantKeyDown, RoutingStrategies.Bubble, true);
         AddHandler(RequestBringIntoViewEvent, HandleDescendantRequestBringIntoView, RoutingStrategies.Bubble, true);
-        UpdateEffectiveStatus();
         UpdateCellItems();
     }
 
-    public void Clear()
-    {
-        SetCurrentValue(TextProperty, null);
-    }
+    public new void Clear() => base.Clear();
+
+    protected override int NormalizeLength(int length) => Math.Max(1, length);
 
     protected override void OnInitialized()
     {
@@ -313,50 +280,6 @@ public partial class OtpLineEdit : TemplatedControl,
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == LengthProperty ||
-            change.Property == InputModeProperty ||
-            change.Property == FormatterProperty)
-        {
-            CoerceValue(TextProperty);
-        }
-
-        if (change.Property == TextProperty ||
-            change.Property == LengthProperty)
-        {
-            ConfigureActiveIndexForValueChange();
-            UpdateCompletedState();
-            UpdateValuePseudoClasses();
-            ConfigureEffectiveShowClearButton();
-        }
-
-        if (change.Property == TextProperty)
-        {
-            _formValueChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        if (change.Property == StatusProperty ||
-            change.Property == FormStatusProperty ||
-            change.Property == DataValidationErrors.HasErrorsProperty ||
-            change.Property == DataValidationErrors.ErrorsProperty)
-        {
-            UpdateEffectiveStatus();
-        }
-
-        if (change.Property == IsKeyboardFocusWithinProperty)
-        {
-            if (change.GetNewValue<bool>())
-            {
-                SetActiveIndexToFirstEmptyCell();
-            }
-
-            UpdateCellItems();
-        }
-
-        if (change.Property == IsEffectivelyEnabledProperty)
-        {
-            UpdateCellItems();
-        }
-
         if (change.Property == TextProperty ||
             change.Property == LengthProperty ||
             change.Property == IsMaskedProperty ||
@@ -368,12 +291,17 @@ public partial class OtpLineEdit : TemplatedControl,
             change.Property == StyleVariantProperty ||
             change.Property == IsReadOnlyProperty ||
             change.Property == IsMotionEnabledProperty ||
-            change.Property == EffectiveStatusProperty)
+            change.Property == EffectiveStatusProperty ||
+            change.Property == ActiveIndexProperty ||
+            change.Property == IsKeyboardFocusWithinProperty ||
+            change.Property == IsEffectivelyEnabledProperty)
         {
             UpdateCellItems();
         }
 
-        if (change.Property == IsAllowClearProperty ||
+        if (change.Property == TextProperty ||
+            change.Property == LengthProperty ||
+            change.Property == IsAllowClearProperty ||
             change.Property == IsReadOnlyProperty)
         {
             ConfigureEffectiveShowClearButton();
@@ -389,9 +317,6 @@ public partial class OtpLineEdit : TemplatedControl,
     {
         base.OnGotFocus(e);
 
-        // 聚焦时活动格定位到第一空格（全满则为最后一格），
-        // 保证聚焦即见光标，而不是停留在陈旧位置
-        SetActiveIndexToFirstEmptyCell();
         UpdateCellItems();
     }
 
@@ -411,7 +336,6 @@ public partial class OtpLineEdit : TemplatedControl,
         }
 
         ConfigureEffectiveShowClearButton();
-        UpdateEffectiveStatus();
         UpdateCellItems();
     }
 
@@ -428,33 +352,9 @@ public partial class OtpLineEdit : TemplatedControl,
         _feedbackStatusSubscription = null;
     }
 
-    protected override void OnTextInput(TextInputEventArgs e)
-    {
-        if (!ReferenceEquals(e.Source, this))
-        {
-            base.OnTextInput(e);
-            return;
-        }
+    protected override void OnTextInput(TextInputEventArgs e) => base.OnTextInput(e);
 
-        if (!TryHandleTextInput(e))
-        {
-            base.OnTextInput(e);
-        }
-    }
-
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        if (!ReferenceEquals(e.Source, this))
-        {
-            base.OnKeyDown(e);
-            return;
-        }
-
-        if (!TryHandleKeyDown(e))
-        {
-            base.OnKeyDown(e);
-        }
-    }
+    protected override void OnKeyDown(KeyEventArgs e) => base.OnKeyDown(e);
 
     private void HandleDescendantTextInput(object? sender, TextInputEventArgs e)
     {
@@ -484,204 +384,10 @@ public partial class OtpLineEdit : TemplatedControl,
         }
     }
 
-    private bool TryHandleTextInput(TextInputEventArgs e)
-    {
-        if (!CanEdit() || string.IsNullOrEmpty(e.Text))
-        {
-            return false;
-        }
-
-        ReplaceTextFromActiveIndex(e.Text);
-        e.Handled = true;
-        return true;
-    }
-
-    private bool TryHandleKeyDown(KeyEventArgs e)
-    {
-        if (!CanEdit())
-        {
-            return false;
-        }
-
-        switch (e.Key)
-        {
-            case Key.Back:
-                RemoveWithBackspace();
-                e.Handled = true;
-                return true;
-            case Key.Delete:
-                RemoveAtActiveIndex();
-                e.Handled = true;
-                return true;
-            case Key.Left:
-                MoveActiveIndex(-1);
-                e.Handled = true;
-                return true;
-            case Key.Right:
-                MoveActiveIndex(1);
-                e.Handled = true;
-                return true;
-            case Key.Home:
-                _activeIndex = 0;
-                e.Handled    = true;
-                return true;
-            case Key.End:
-                MoveActiveIndexToFirstEmptyCell();
-                e.Handled = true;
-                return true;
-            default:
-                return false;
-        }
-    }
-
     private static bool IsCellInputSource(object? source)
     {
         return source is Control control &&
                control.FindAncestorOfType<OtpLineEditCell>(includeSelf: true) is not null;
-    }
-
-    private static string? CoerceText(AvaloniaObject sender, string? value)
-    {
-        var otpLineEdit = (OtpLineEdit)sender;
-        return otpLineEdit.NormalizeText(value);
-    }
-
-    private string? NormalizeText(string? value)
-    {
-        if (value is null)
-        {
-            return null;
-        }
-
-        var normalized = Formatter?.Invoke(value) ?? value;
-        normalized = FilterByInputMode(normalized);
-
-        if (normalized.Length > Length)
-        {
-            normalized = normalized[..Length];
-        }
-
-        return normalized;
-    }
-
-    private string FilterByInputMode(string value)
-    {
-        return InputMode switch
-        {
-            OtpLineEditInputMode.Numeric      => new string(value.Where(char.IsDigit).ToArray()),
-            OtpLineEditInputMode.AlphaNumeric => new string(value.Where(char.IsLetterOrDigit).ToArray()),
-            _                                 => value
-        };
-    }
-
-    private void UpdateCompletedState()
-    {
-        var isCompleted = Text?.Length == Length;
-        if (isCompleted && !_isCompleted && Text is { } text)
-        {
-            Completed?.Invoke(this, new OtpLineEditCompletedEventArgs(text));
-        }
-
-        _isCompleted = isCompleted;
-    }
-
-    private bool CanEdit()
-    {
-        return IsEnabled && !IsReadOnly;
-    }
-
-    private void ReplaceTextFromActiveIndex(string text)
-    {
-        var current    = Text ?? string.Empty;
-        var startIndex = Math.Clamp(_activeIndex, 0, Length - 1);
-        var before     = startIndex < current.Length ? current[..startIndex] : current;
-        var afterStart = startIndex + text.Length;
-        var after      = afterStart < current.Length ? current[afterStart..] : string.Empty;
-
-        SetCurrentValue(TextProperty, before + text + after);
-        MoveActiveIndexToFirstEmptyCell();
-    }
-
-    private void RemoveWithBackspace()
-    {
-        var current = Text;
-        if (string.IsNullOrEmpty(current))
-        {
-            return;
-        }
-
-        // 删除后光标留在被删格（该格已空），继续退格时前移删除
-        // 前一个字符
-        var activeIndex      = Math.Clamp(_activeIndex, 0, Length - 1);
-        var removeIndex      = Math.Min(activeIndex, current.Length - 1);
-
-        _activeIndex = Math.Clamp(removeIndex, 0, Length - 1);
-        SetCurrentValue(TextProperty, RemoveAt(current, removeIndex));
-    }
-
-    private void RemoveAtActiveIndex()
-    {
-        var current = Text;
-        if (string.IsNullOrEmpty(current) || _activeIndex >= current.Length)
-        {
-            return;
-        }
-
-        var removeIndex     = Math.Clamp(_activeIndex, 0, current.Length - 1);
-        var nextText        = RemoveAt(current, removeIndex);
-        var nextTextLength  = nextText?.Length ?? 0;
-        var nextActiveIndex = nextTextLength == 0
-            ? 0
-            : Math.Min(removeIndex, nextTextLength - 1);
-
-        _activeIndex = Math.Clamp(nextActiveIndex, 0, Length - 1);
-        SetCurrentValue(TextProperty, nextText);
-    }
-
-    private static string? RemoveAt(string value, int index)
-    {
-        var result = value.Remove(index, 1);
-        return result.Length == 0 ? null : result;
-    }
-
-    private void MoveActiveIndex(int delta)
-    {
-        var upperBound = GetActiveIndexUpperBound();
-        _activeIndex = Math.Clamp(_activeIndex + delta, 0, upperBound);
-        UpdateCellItems();
-    }
-
-    private void MoveActiveIndexToFirstEmptyCell()
-    {
-        SetActiveIndexToFirstEmptyCell();
-        UpdateCellItems();
-    }
-
-    private void ConfigureActiveIndexForValueChange()
-    {
-        if (IsKeyboardFocusWithin)
-        {
-            ClampActiveIndexToValueBoundary();
-        }
-        else
-        {
-            SetActiveIndexToFirstEmptyCell();
-        }
-    }
-
-    private void SetActiveIndexToFirstEmptyCell()
-    {
-        _activeIndex = GetActiveIndexUpperBound();
-    }
-
-    private void ClampActiveIndexToValueBoundary()
-    {
-        _activeIndex = Math.Clamp(_activeIndex, 0, GetActiveIndexUpperBound());
-    }
-
-    private int GetActiveIndexUpperBound()
-    {
-        return Math.Clamp(Text?.Length ?? 0, 0, Length - 1);
     }
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
@@ -692,20 +398,6 @@ public partial class OtpLineEdit : TemplatedControl,
     private void ConfigureEffectiveShowClearButton()
     {
         IsEffectiveShowClearButton = IsAllowClear && !IsReadOnly && !string.IsNullOrEmpty(Text);
-    }
-
-    private void UpdateEffectiveStatus()
-    {
-        EffectiveStatus = InputControlState.ResolveEffectiveStatus(this, Status, FormStatus);
-
-        PseudoClasses.Set(StdPseudoClass.Warning, EffectiveStatus == InputControlStatus.Warning);
-        UpdateValuePseudoClasses();
-    }
-
-    private void UpdateValuePseudoClasses()
-    {
-        PseudoClasses.Set(":filled", Text?.Length == Length);
-        PseudoClasses.Set(":empty", string.IsNullOrEmpty(Text));
     }
 
     private void UpdateCellItems()
@@ -723,8 +415,8 @@ public partial class OtpLineEdit : TemplatedControl,
 
             item.DisplayText        = displayText;
             item.PlaceholderText    = GetCellPlaceholder(index);
-            item.IsActive           = IsKeyboardFocusWithin && IsEffectivelyEnabled && index == _activeIndex;
-            item.IsInputTarget      = CanEdit() && IsEffectivelyEnabled && index == _activeIndex;
+            item.IsActive           = IsKeyboardFocusWithin && IsEffectivelyEnabled && index == ActiveIndex;
+            item.IsInputTarget      = CanEdit() && IsEffectivelyEnabled && index == ActiveIndex;
             item.IsMotionEnabled    = IsMotionEnabled;
             item.EffectiveStatus    = EffectiveStatus;
             item.SizeType           = SizeType;
@@ -797,32 +489,6 @@ public partial class OtpLineEdit : TemplatedControl,
     }
 
     #region 实现 FormItem 接口
-
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
-
-    void IFormItemAware.SetFormValue(object? value)
-    {
-        SetCurrentValue(TextProperty, value?.ToString());
-    }
-
-    object? IFormItemAware.GetFormValue()
-    {
-        return Text;
-    }
-
-    void IFormItemAware.ClearFormValue()
-    {
-        Clear();
-    }
-
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status)
-    {
-        SetCurrentValue(FormStatusProperty, status);
-    }
 
     void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value)
     {

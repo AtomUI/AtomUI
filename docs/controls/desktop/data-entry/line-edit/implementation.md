@@ -105,11 +105,11 @@ OverflowTip and other internal consumers
 
 ## 5. 生命周期与模板接入
 
-`AbstractTextInput.OnInitialized` 在未设置 `ClearIcon` 时写入默认 `CloseCircleFilled`，并建立 Form/native validation 与 viewport 度量边界。控件 token scope 和主题 asset 由 generator 显式注册；TextBox、LineEdit、TextArea 的专属 Token 只表达各自文本布局或尺寸差异。
+`AtomUI.Controls.AbstractTextInput` 负责编辑、计数、组合输入与表单反馈。Desktop 同名子类在未设置 `ClearIcon` 时保留默认 `CloseCircleFilled`，并接入 Desktop frame 与 viewport 度量。控件 token scope 和主题 asset 由 generator 显式注册；TextBox、LineEdit、TextArea 的专属 Token 只表达各自文本布局或尺寸差异。
 
 `OnApplyTemplate` 规则：
 
-- 旧清除按钮 click 订阅必须解除，再绑定新 `PART_ClearButton`。
+- 主题仅在`IsAllowClear` 或 `IsShowCount` 首次启用时创建对应子节点。节点保持原语义部件路由，在当前模板有效期间复用。重套模板时解除旧清除按钮订阅。
 - `AbstractTextInput` 每次套用模板都重新查找第一个 `InputControlFrame` 后代作为 root 表面中继目标，并把共有状态回放到 frame；frame 负责初始 transitions 抑制、边框厚度和 CompactSpace 状态计算。
 - root 表面中继：`OnApplyTemplate` 建立缓存后立即同步当前 `Background` / `BorderBrush`；owner 这两个属性变化时，有值以 `BindingPriority.LocalValue` 写入 frame 同名属性（共享 `TemplatedControl` 属性实例，直接 `SetValue`），置空或 `UnsetValue` 时对 frame `ClearValue`。LocalValue 高于 frame 状态机的 StyleTrigger，因此定制期间 hover / pressed / focus 的边框变色让位；focus 的 `BoxShadow` 是独立属性槽，反馈不丢失。中继在模板重新套用时丢弃旧 frame 引用并重建。
 - `TextBox` 的 `PART_InputControlFrame` 必须水平填满 TextBox 已分配宽度；placeholder、短文本和长文本只改变内部文本布局，不改变输入外框宽度。

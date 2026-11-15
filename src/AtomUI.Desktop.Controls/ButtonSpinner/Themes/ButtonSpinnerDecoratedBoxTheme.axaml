@@ -105,15 +105,22 @@
                             </atom:ButtonSpinnerContentPanel>
                         </atom:AddOnDecoratedBoxContentFrame>
 
-                        <ContentPresenter
-                            Name="PART_SpinnerHandle"
-                            ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}"
-                            Content="{TemplateBinding SpinnerContent}"
-                            Opacity="{TemplateBinding HandleOpacity}">
-                            <ContentPresenter.RenderTransform>
-                                <TranslateTransform X="{Binding HandleOffset, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            </ContentPresenter.RenderTransform>
-                        </ContentPresenter>
+                        <!-- The floating handle slides in from its edge (HandleOffset). This background-less clip
+                             keeps the sliding and the hidden handle inside the frame's rounded box, for drawing and
+                             hit testing, while the frame's focus outline and shadow stay outside the clip. -->
+                        <Border Name="SpinnerHandleClip"
+                                ClipToBounds="True"
+                                CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
+                                ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}">
+                            <ContentPresenter
+                                Name="PART_SpinnerHandle"
+                                Content="{TemplateBinding SpinnerContent}"
+                                Opacity="{TemplateBinding HandleOpacity}">
+                                <ContentPresenter.RenderTransform>
+                                    <TranslateTransform X="{Binding HandleOffset, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </ContentPresenter.RenderTransform>
+                            </ContentPresenter>
+                        </Border>
                     </Panel>
                 </DockPanel>
             </ControlTemplate>

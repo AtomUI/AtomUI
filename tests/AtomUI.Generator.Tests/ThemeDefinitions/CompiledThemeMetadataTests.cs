@@ -47,6 +47,19 @@ public class CompiledThemeMetadataTests
                    .ShouldContain(d => d.GetMessage(null).Contains("ATMTHM3104"));
     }
 
+    [Fact]
+    public void Brand_Rejected_Definition_Does_Not_Take_A_Variant_Slot()
+    {
+        // AuraDark is rejected for 3104, so the later valid AuraDarkSeed owns the Dark/Normal slot (as at runtime).
+        Run(out var diagnostics,
+            Input("AuraLight", 0, 0, 1), Input("AuraDark", 1, 0, 0), Input("AuraDarkSeed", 1, 0, 1));
+
+        var errors = diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
+                                .Select(static d => d.GetMessage(null)).ToArray();
+        errors.ShouldContain(message => message.Contains("ATMTHM3104"));
+        errors.ShouldNotContain(message => message.Contains("ATMTHM3103"));
+    }
+
     private static CompiledThemeInput Input(string id, int appearance, int density, int brandColor) => new()
     {
         SourceIdentity = "Themes/" + id + ".xml",

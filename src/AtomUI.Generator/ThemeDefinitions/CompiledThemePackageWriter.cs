@@ -33,7 +33,9 @@ internal static class CompiledThemePackageWriter
             if (!ids.Add(input.Id)) { Error(output, input.SourcePath, 0, 0, "Duplicate compiled theme Id: " + input.Id); continue; }
             if (input.DesignLanguage.Length > 0)
             {
-                if (!variants.Add(input.DesignLanguage + "\u001f" + input.Appearance + "\u001f" + input.Density))
+                // A rejected definition takes no variant slot and does not decide brand support, as in the runtime catalog.
+                var variant = input.DesignLanguage + "\u001f" + input.Appearance + "\u001f" + input.Density;
+                if (variants.Contains(variant))
                 {
                     Error(output, input.SourcePath, 0, 0, "ATMTHM3103: Design language '" + input.DesignLanguage + "' declares more than one definition for the same appearance and density in this package.");
                     continue;
@@ -43,6 +45,7 @@ internal static class CompiledThemePackageWriter
                     Error(output, input.SourcePath, 0, 0, "ATMTHM3104: Design language '" + input.DesignLanguage + "' mixes Seed and Fixed brand color support in this package.");
                     continue;
                 }
+                variants.Add(variant);
                 brandSupport[input.DesignLanguage] = input.BrandColor;
             }
             var describe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");

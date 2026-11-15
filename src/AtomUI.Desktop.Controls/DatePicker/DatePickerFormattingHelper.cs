@@ -326,7 +326,7 @@ internal static class DatePickerFormattingHelper
         foreach (var referenceText in referenceTexts)
         {
             preferredWidth = Math.Max(preferredWidth,
-                TextUtils.CalculateTextSize(
+                TextUtils.CalculateTextSizeCached(
                     referenceText,
                     fontSize,
                     fontFamily,

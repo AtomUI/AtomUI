@@ -8,6 +8,13 @@ namespace AtomUI.Media;
 internal static class FontCollectionLifetime
 {
     private static readonly ConditionalWeakTable<FontManager, CollectionSet> Collections = new();
+    private static int s_generation;
+
+    /// <summary>
+    /// Increments whenever a font collection is added, so cached text measurements can tell that glyph
+    /// resolution, including fallback fonts, may have changed.
+    /// </summary>
+    internal static int Generation => Volatile.Read(ref s_generation);
 
     internal static IDisposable Acquire(FontManager manager, Uri key, Func<IFontCollection> factory)
     {
@@ -52,6 +59,7 @@ internal static class FontCollectionLifetime
             // API accepts only a URI, so a scope cannot safely remove its exact instance:
             // another host may have replaced the entry in the meantime.
             manager.AddFontCollection(collection);
+            Interlocked.Increment(ref s_generation);
             set.References.Add(key, 0);
         }
         catch (Exception error)

@@ -3,6 +3,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -224,6 +225,11 @@ public partial class Button : AvaloniaButton,
     internal static readonly StyledProperty<bool> IsIconVisibleProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsIconVisible), true);
 
+    internal static readonly DirectProperty<Button, bool> EffectiveIconVisibleProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(
+            nameof(EffectiveIconVisible),
+            o => o.EffectiveIconVisible);
+
     internal static readonly StyledProperty<object?> RightExtraContentProperty =
         AvaloniaProperty.Register<Button, object?>(nameof(RightExtraContent));
 
@@ -304,6 +310,18 @@ public partial class Button : AvaloniaButton,
     {
         get => GetValue(IsIconVisibleProperty);
         set => SetValue(IsIconVisibleProperty, value);
+    }
+
+    private bool _effectiveIconVisible;
+
+    /// <summary>
+    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon"/> is set, the icon is allowed
+    /// and the button is not loading. Templates bind to it instead of a three-way MultiBinding.
+    /// </summary>
+    internal bool EffectiveIconVisible
+    {
+        get => _effectiveIconVisible;
+        private set => SetAndRaise(EffectiveIconVisibleProperty, ref _effectiveIconVisible, value);
     }
 
     internal object? RightExtraContent
@@ -592,6 +610,14 @@ public partial class Button : AvaloniaButton,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == IconProperty ||
+            change.Property == IsIconVisibleProperty ||
+            change.Property == IsLoadingProperty)
+        {
+            // Same rule as ButtonIconVisibleConverter, which the templates used before.
+            EffectiveIconVisible = Icon is AtomUI.Controls.Icon && IsIconVisible && !IsLoading;
+        }
+
         if (change.Property == IsPressedProperty)
         {
             HandlePressedChanged(change);
@@ -1130,6 +1156,15 @@ public partial class Button : AvaloniaButton,
 
         internal static bool TryCreate(Button owner, out ButtonThemeTokenReader reader)
         {
+            // Properties set in XAML arrive before the Button joins a themed tree, so there is no context yet and
+            // OnAttachedToLogicalTree configures the variables later. Capture would throw for the same condition;
+            // checking first avoids throwing and catching an exception for every such property during creation.
+            if (ThemeScope.ResolveContext(owner) is null)
+            {
+                reader = default;
+                return false;
+            }
+
             try
             {
                 reader = new ButtonThemeTokenReader(ControlTokenAccessor.Capture<Button>(owner));

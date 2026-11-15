@@ -45,17 +45,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -110,17 +101,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -174,17 +156,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -394,7 +367,7 @@
 
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{Binding VariantShadow, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding VariantShadow}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

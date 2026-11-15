@@ -27,6 +27,8 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
 
     private static readonly object RapidAssetCacheGate = new();
     private static readonly byte[]?[] RapidAssetCache  = new byte[4][];
+    private static readonly object GrayscaleAssetCacheGate = new();
+    private static readonly Dictionary<string, byte[]> GrayscaleAssetCache = new(StringComparer.Ordinal);
 
     public static EntityKey ID = "ImagePreviewer";
 
@@ -372,11 +374,30 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
 
     private static ImagePreviewItem CreateGrayscaleItem(string source)
     {
-        var grayscaleBytes = ApplyGrayscale(ReadAssetBytes(source), 0.5f);
+        var grayscaleBytes = GetGrayscaleAssetBytes(source);
         return new ImagePreviewItem(new StreamImageSource(
             _ => new ValueTask<Stream>(new MemoryStream(grayscaleBytes)),
             "grayscale-1",
             "v1"));
+    }
+
+    // Decoding, filtering and re-encoding the PNG took most of each visit to this page. The result depends only
+    // on the bundled asset, so it is produced once per process; the cache holds one entry per demo source.
+    private static byte[] GetGrayscaleAssetBytes(string source)
+    {
+        lock (GrayscaleAssetCacheGate)
+        {
+            if (GrayscaleAssetCache.TryGetValue(source, out var cached))
+            {
+                return cached;
+            }
+        }
+
+        var bytes = ApplyGrayscale(ReadAssetBytes(source), 0.5f);
+        lock (GrayscaleAssetCacheGate)
+        {
+            return GrayscaleAssetCache.TryAdd(source, bytes) ? bytes : GrayscaleAssetCache[source];
+        }
     }
 
     private static byte[] ApplyGrayscale(byte[] pngBytes, float amount)

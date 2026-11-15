@@ -218,6 +218,66 @@ public class MotionGateTests
     }
 
     [Fact]
+    public void Owner_visibility_stops_and_restarts()
+    {
+        using var host = new Host();
+        host.Owner.IsVisible = false;
+        Host.Run();
+        var calls = new List<bool>();
+        using var gate = new MotionGate(host.Owner, calls.Add);
+        Host.Run();
+        gate.ShouldRun.ShouldBeFalse();
+
+        host.Owner.IsVisible = true;
+        Host.Run();
+        gate.ShouldRun.ShouldBeTrue();
+
+        host.Owner.IsVisible = false;
+        Host.Run();
+        gate.ShouldRun.ShouldBeFalse();
+
+        calls.ShouldBe([true, false]);
+    }
+
+    [Fact]
+    public void Showing_owner_under_hidden_parent_waits_for_parent()
+    {
+        using var host = new Host();
+        host.Owner.IsVisible  = false;
+        host.Parent.IsVisible = false;
+        Host.Run();
+        var calls = new List<bool>();
+        using var gate = new MotionGate(host.Owner, calls.Add);
+
+        host.Owner.IsVisible = true;
+        Host.Run();
+        gate.ShouldRun.ShouldBeFalse();
+
+        host.Parent.IsVisible = true;
+        Host.Run();
+        gate.ShouldRun.ShouldBeTrue();
+        calls.ShouldBe([true]);
+    }
+
+    [Fact]
+    public void Hidden_owner_does_not_subscribe_to_ancestors()
+    {
+        using var host = new Host();
+        host.Owner.IsVisible = false;
+        Host.Run();
+        using var gate = new MotionGate(host.Owner, _ => { });
+        gate.IsTrackingAncestorVisibility.ShouldBeFalse();
+
+        host.Owner.IsVisible = true;
+        Host.Run();
+        gate.IsTrackingAncestorVisibility.ShouldBeTrue();
+
+        host.Owner.IsVisible = false;
+        Host.Run();
+        gate.IsTrackingAncestorVisibility.ShouldBeFalse();
+    }
+
+    [Fact]
     public void Missing_lifetime_counts_as_active()
     {
         MotionActivity.Application.IsActive.ShouldBeTrue();

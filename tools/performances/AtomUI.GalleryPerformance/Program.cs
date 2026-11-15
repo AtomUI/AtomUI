@@ -89,7 +89,7 @@ namespace AtomUI.GalleryPerformance;
 
 internal static class Program
 {
-    private static readonly Size WindowSize = new(1300, 900);
+    internal static readonly Size WindowSize = new(1300, 900);
     private static readonly Rect WindowBounds = new(0, 0, WindowSize.Width, WindowSize.Height);
 #if DEBUG
     private const string BuildConfiguration = "Debug";
@@ -97,120 +97,120 @@ internal static class Program
     private const string BuildConfiguration = "Release";
 #endif
     private const string ColdChildSamplePrefix = "__ATOMUI_COLD_SAMPLE__";
-    private static readonly ShowCaseSpec Overview = new(
+    internal static readonly ShowCaseSpec Overview = new(
         "OverviewPage",
         OverviewViewModel.ID,
         "AtomUIGallery.ShowCases.Overview.OverviewPage",
         "controlgallery/AtomUIGallery/ShowCases/General/Overview/Views/OverviewPage.axaml",
         stats => stats.VisualCount > 0);
-    private static readonly IReadOnlyDictionary<string, ShowCaseSpec> ShowCases =
+    internal static readonly IReadOnlyDictionary<string, ShowCaseSpec> ShowCases =
         new Dictionary<string, ShowCaseSpec>(StringComparer.OrdinalIgnoreCase)
         {
             ["lineedit"] = new(
                 "LineEditShowCase",
                 LineEditViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.LineEditShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/LineEditShowCase.axaml",
+                "AtomUIGallery.ShowCases.LineEdit.LineEditShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/LineEdit/Views/LineEditShowCase.axaml",
                 stats => stats.LineEditCount > 0),
             ["icon"] = new(
                 "IconShowCase",
                 IconViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.IconShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/General/IconShowCase.axaml",
+                "AtomUIGallery.ShowCases.Icon.IconShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/Icon/Views/IconShowCase.axaml",
                 stats => stats.IconCount > 0),
             ["avatar"] = new(
                 "AvatarShowCase",
                 AvatarViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.AvatarShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/AvatarShowCase.axaml",
+                "AtomUIGallery.ShowCases.Avatar.AvatarShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Avatar/Views/AvatarShowCase.axaml",
                 stats => stats.AvatarCount > 0),
             ["badge"] = new(
                 "BadgeShowCase",
                 BadgeViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.BadgeShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/BadgeShowCase.axaml",
+                "AtomUIGallery.ShowCases.Badge.BadgeShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Badge/Views/BadgeShowCase.axaml",
                 stats => stats.CountBadgeCount > 0 || stats.DotBadgeCount > 0 || stats.RibbonBadgeCount > 0),
             ["infoflyout"] = new(
                 "InfoFlyoutShowCase",
                 InfoFlyoutViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.InfoFlyoutShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/InfoFlyoutShowCase.axaml",
+                "AtomUIGallery.ShowCases.InfoFlyout.InfoFlyoutShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/InfoFlyout/Views/InfoFlyoutShowCase.axaml",
                 stats => stats.FlyoutHostCount > 0),
             ["card"] = new(
                 "CardShowCase",
                 CardViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CardShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/CardShowCase.axaml",
+                "AtomUIGallery.ShowCases.Card.CardShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Card/Views/CardShowCase.axaml",
                 stats => stats.CardCount > 0),
             ["groupbox"] = new(
                 "GroupBoxShowCase",
                 GroupBoxViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.GroupBoxShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/GroupBoxShowCase.axaml",
+                "AtomUIGallery.ShowCases.GroupBox.GroupBoxShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/GroupBox/Views/GroupBoxShowCase.axaml",
                 stats => stats.GroupBoxCount >= 9),
             ["imagepreviewer"] = new(
                 "ImagePreviewerShowCase",
                 ImagePreviewerViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ImagePreviewerShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/ImagePreviewerShowCase.axaml",
+                "AtomUIGallery.ShowCases.ImagePreviewer.ImagePreviewerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/ImagePreviewer/Views/ImagePreviewerShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 5 && stats.ImageCount + stats.SvgCount >= 5),
             ["collapse"] = new(
                 "CollapseShowCase",
                 CollapseViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CollapseShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/CollapseShowCase.axaml",
+                "AtomUIGallery.ShowCases.Collapse.CollapseShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Collapse/Views/CollapseShowCase.axaml",
                 stats => stats.CollapseCount > 0),
             ["expander"] = new(
                 "ExpanderShowCase",
                 ExpanderViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ExpanderShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/ExpanderShowCase.axaml",
+                "AtomUIGallery.ShowCases.Expander.ExpanderShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Expander/Views/ExpanderShowCase.axaml",
                 stats => stats.VisualCount > 0),
             ["empty"] = new(
                 "EmptyShowCase",
                 EmptyViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.EmptyShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/EmptyShowCase.axaml",
+                "AtomUIGallery.ShowCases.Empty.EmptyShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Empty/Views/EmptyShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 4 && stats.SvgCount >= 6),
             ["descriptions"] = new(
                 "DescriptionsShowCase",
                 DescriptionsViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.DescriptionsShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/DescriptionsShowCase.axaml",
+                "AtomUIGallery.ShowCases.Descriptions.DescriptionsShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Descriptions/Views/DescriptionsShowCase.axaml",
                 stats => stats.DescriptionsCount > 0),
             ["tour"] = new(
                 "TourShowCase",
                 TourViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TourShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/TourShowCase.axaml",
+                "AtomUIGallery.ShowCases.Tour.TourShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tour/Views/TourShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 7 && stats.ButtonCount >= 20 && stats.VisualCount > 0),
             ["statistic"] = new(
                 "StatisticShowCase",
                 StatisticViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.StatisticShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/StatisticShowCase.axaml",
+                "AtomUIGallery.ShowCases.Statistic.StatisticShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Statistic/Views/StatisticShowCase.axaml",
                 stats => stats.StatisticCount >= 9 &&
                          stats.TimerStatisticCount >= 6 &&
                          stats.StatisticCountUpCount >= 2),
             ["timeline"] = new(
                 "TimelineShowCase",
                 TimelineViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TimelineShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/TimelineShowCase.axaml",
+                "AtomUIGallery.ShowCases.Timeline.TimelineShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Timeline/Views/TimelineShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 6 &&
                          stats.ButtonCount >= 1 &&
                          stats.RadioButtonCount >= 3),
             ["list"] = new(
                 "ListShowCase",
                 ListViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ListShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/ListShowCase.axaml",
+                "AtomUIGallery.ShowCases.List.ListShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/List/Views/ListShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 11 && stats.VisualCount > 0),
             ["modal"] = new(
                 "ModalShowCase",
                 ModalViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ModalShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/ModalShowCase.axaml",
+                "AtomUIGallery.ShowCases.Modal.ModalShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Modal/Views/ModalShowCase.axaml",
                 stats => stats.DialogCount > 0 || stats.MessageBoxCount > 0),
             ["message"] = new(
                 "MessageShowCase",
@@ -227,44 +227,44 @@ internal static class Program
             ["alert"] = new(
                 "AlertShowCase",
                 AlertViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.AlertShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/AlertShowCase.axaml",
+                "AtomUIGallery.ShowCases.Alert.AlertShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Alert/Views/AlertShowCase.axaml",
                 stats => stats.AlertCount > 0),
             ["skeleton"] = new(
                 "SkeletonShowCase",
                 SkeletonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SkeletonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/SkeletonShowCase.axaml",
+                "AtomUIGallery.ShowCases.Skeleton.SkeletonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Skeleton/Views/SkeletonShowCase.axaml",
                 stats => stats.SkeletonCount >= 4 && stats.SkeletonLineCount >= 6),
             ["spin"] = new(
                 "SpinShowCase",
                 SpinViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SpinShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/SpinShowCase.axaml",
+                "AtomUIGallery.ShowCases.Spin.SpinShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Spin/Views/SpinShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 5 && stats.AlertCount >= 3),
             ["popupconfirm"] = new(
                 "PopupConfirmShowCase",
                 PopupConfirmViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.PopupConfirmShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/PopupConfirmShowCase.axaml",
+                "AtomUIGallery.ShowCases.PopupConfirm.PopupConfirmShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/PopupConfirm/Views/PopupConfirmShowCase.axaml",
                 stats => stats.FlyoutHostCount > 0),
             ["result"] = new(
                 "ResultShowCase",
                 ResultViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ResultShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/ResultShowCase.axaml",
+                "AtomUIGallery.ShowCases.Result.ResultShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Result/Views/ResultShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 8 && stats.SvgCount >= 3 && stats.ButtonCount >= 10),
             ["progressbar"] = new(
                 "ProgressBarShowCase",
                 ProgressBarViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ProgressBarShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/ProgressBarShowCase.axaml",
+                "AtomUIGallery.ShowCases.ProgressBar.ProgressBarShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/ProgressBar/Views/ProgressBarShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 18 && stats.VisualCount > 0),
             ["qrcode"] = new(
                 "QRCodeShowCase",
                 QRCodeViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.QRCodeShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/QRCodeShowCase.axaml",
+                "AtomUIGallery.ShowCases.QRCode.QRCodeShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/QRCode/Views/QRCodeShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 8 && stats.VisualCount > 0),
             ["segmented"] = new(
                 "SegmentedShowCase",
@@ -275,58 +275,58 @@ internal static class Program
             ["drawer"] = new(
                 "DrawerShowCase",
                 DrawerViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.DrawerShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Feedback/DrawerShowCase.axaml",
+                "AtomUIGallery.ShowCases.Drawer.DrawerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Drawer/Views/DrawerShowCase.axaml",
                 stats => stats.DrawerCount > 0),
             ["carousel"] = new(
                 "CarouselShowCase",
                 CarouselViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CarouselShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/CarouselShowCase.axaml",
+                "AtomUIGallery.ShowCases.Carousel.CarouselShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Carousel/Views/CarouselShowCase.axaml",
                 stats => stats.CarouselCount > 0),
             ["calendar"] = new(
                 "CalendarShowCase",
                 CalendarViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CalendarShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/CalendarShowCase.axaml",
+                "AtomUIGallery.ShowCases.Calendar.CalendarShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Calendar/Views/CalendarShowCase.axaml",
                 stats => stats.CalendarCount > 0 &&
                          stats.CalendarItemCount > 0 &&
                          stats.CalendarDayButtonCount >= 42),
             ["button"] = new(
                 "ButtonShowCase",
                 ButtonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ButtonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/General/ButtonShowCase.axaml",
+                "AtomUIGallery.ShowCases.Button.ButtonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/Button/Views/ButtonShowCase.axaml",
                 stats => stats.ButtonCount > 0),
             ["floatbutton"] = new(
                 "FloatButtonShowCase",
                 FloatButtonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.FloatButtonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/General/FloatButtonShowCase.axaml",
+                "AtomUIGallery.ShowCases.FloatButton.FloatButtonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/FloatButton/Views/FloatButtonShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 10 && stats.IconPresenterCount > 0),
             ["dropdownbutton"] = new(
                 "DropdownButtonShowCase",
                 DropdownButtonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.DropdownButtonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/DropdownButtonShowCase.axaml",
+                "AtomUIGallery.ShowCases.DropdownButton.DropdownButtonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/DropdownButton/Views/DropdownButtonShowCase.axaml",
                 stats => stats.ButtonCount > 0),
             ["splitbutton"] = new(
                 "SplitButtonShowCase",
                 SplitButtonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SplitButtonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/General/SplitButtonShowCase.axaml",
+                "AtomUIGallery.ShowCases.SplitButton.SplitButtonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/SplitButton/Views/SplitButtonShowCase.axaml",
                 stats => stats.ButtonCount > 0),
             ["buttonspinner"] = new(
                 "ButtonSpinnerShowCase",
                 ButtonSpinnerViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ButtonSpinnerShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/ButtonSpinnerShowCase.axaml",
+                "AtomUIGallery.ShowCases.ButtonSpinner.ButtonSpinnerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/ButtonSpinner/Views/ButtonSpinnerShowCase.axaml",
                 stats => stats.ButtonSpinnerCount > 0),
             ["breadcrumb"] = new(
                 "BreadcrumbShowCase",
                 BreadcrumbViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.BreadcrumbShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/BreadcrumbShowCase.axaml",
+                "AtomUIGallery.ShowCases.Breadcrumb.BreadcrumbShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/Breadcrumb/Views/BreadcrumbShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 6 && stats.IconPresenterCount >= 21),
             ["tabcontrol"] = new(
                 "TabControlShowCase",
@@ -337,8 +337,8 @@ internal static class Program
             ["steps"] = new(
                 "StepsShowCase",
                 StepsViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.StepsShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/StepsShowCase.axaml",
+                "AtomUIGallery.ShowCases.Steps.StepsShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/Steps/Views/StepsShowCase.axaml",
                 stats => stats.StepsCount >= 34 &&
                          stats.StepsItemCount >= 115 &&
                          stats.StepsItemIndicatorCount >= 115),
@@ -351,44 +351,44 @@ internal static class Program
             ["pagination"] = new(
                 "PaginationShowCase",
                 PaginationViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.PaginationShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/PaginationShowCase.axaml",
+                "AtomUIGallery.ShowCases.Pagination.PaginationShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/Pagination/Views/PaginationShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 7 && stats.VisualCount > 0),
             ["space"] = new(
                 "SpaceShowCase",
                 SpaceViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SpaceShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Layout/SpaceShowCase.axaml",
+                "AtomUIGallery.ShowCases.Space.SpaceShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Layout/Space/Views/SpaceShowCase.axaml",
                 stats => stats.SpaceCount > 0 || stats.CompactSpaceCount > 0),
             ["splitter"] = new(
                 "SplitterShowCase",
                 SplitterViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SplitterShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Layout/SplitterShowCase.axaml",
+                "AtomUIGallery.ShowCases.Splitter.SplitterShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Layout/Splitter/Views/SplitterShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 7 && stats.VisualCount > 0),
             ["select"] = new(
                 "SelectShowCase",
                 SelectViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SelectShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/SelectShowCase.axaml",
+                "AtomUIGallery.ShowCases.Select.SelectShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Select/Views/SelectShowCase.axaml",
                 stats => stats.SelectCount > 0),
             ["numberupdown"] = new(
                 "NumberUpDownShowCase",
                 NumberUpDownViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.NumberUpDownShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/NumberUpDownShowCase.axaml",
+                "AtomUIGallery.ShowCases.NumberUpDown.NumberUpDownShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/NumberUpDown/Views/NumberUpDownShowCase.axaml",
                 stats => stats.ButtonSpinnerCount >= 30 && stats.AddOnDecoratedBoxCount >= 30),
             ["autocomplete"] = new(
                 "AutoCompleteShowCase",
                 AutoCompleteViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.AutoCompleteShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/AutoCompleteShowCase.axaml",
+                "AtomUIGallery.ShowCases.AutoComplete.AutoCompleteShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/AutoComplete/Views/AutoCompleteShowCase.axaml",
                 stats => stats.AutoCompleteCount > 0),
             ["mentions"] = new(
                 "MentionsShowCase",
                 MentionsViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.MentionsShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/MentionsShowCase.axaml",
+                "AtomUIGallery.ShowCases.Mentions.MentionsShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Mentions/Views/MentionsShowCase.axaml",
                 stats => stats.MentionsCount > 0),
             ["datepicker"] = new(
                 "DatePickerShowCase",
@@ -399,44 +399,44 @@ internal static class Program
             ["timepicker"] = new(
                 "TimePickerShowCase",
                 TimePickerViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TimePickerShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/TimePickerShowCase.axaml",
+                "AtomUIGallery.ShowCases.TimePicker.TimePickerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/TimePicker/Views/TimePickerShowCase.axaml",
                 stats => stats.InfoPickerInputCount > 0),
             ["colorpicker"] = new(
                 "ColorPickerShowCase",
                 ColorPickerViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.ColorPickerShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/ColorPickerShowCase.axaml",
+                "AtomUIGallery.ShowCases.ColorPicker.ColorPickerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/ColorPicker/Views/ColorPickerShowCase.axaml",
                 stats => stats.ColorPickerCount >= 20 && stats.GradientColorPickerCount >= 3),
             ["form"] = new(
                 "FormShowCase",
                 FormViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.FormShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/FormShowCase.axaml",
+                "AtomUIGallery.ShowCases.Form.FormShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Form/Views/FormShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 2 && stats.LineEditCount >= 3),
             ["treeselect"] = new(
                 "TreeSelectShowCase",
                 TreeSelectViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TreeSelectShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/TreeSelectShowCase.axaml",
+                "AtomUIGallery.ShowCases.TreeSelect.TreeSelectShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/TreeSelect/Views/TreeSelectShowCase.axaml",
                 stats => stats.TreeSelectCount > 0),
             ["cascader"] = new(
                 "CascaderShowCase",
                 CascaderViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CascaderShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/CascaderShowCase.axaml",
+                "AtomUIGallery.ShowCases.Cascader.CascaderShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Cascader/Views/CascaderShowCase.axaml",
                 stats => stats.CascaderCount > 0),
             ["checkbox"] = new(
                 "CheckBoxShowCase",
                 CheckBoxViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.CheckBoxShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/CheckBoxShowCase.axaml",
+                "AtomUIGallery.ShowCases.CheckBox.CheckBoxShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/CheckBox/Views/CheckBoxShowCase.axaml",
                 stats => stats.CheckBoxCount > 0),
             ["radiobutton"] = new(
                 "RadioButtonShowCase",
                 RadioButtonViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.RadioButtonShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/RadioButtonShowCase.axaml",
+                "AtomUIGallery.ShowCases.RadioButton.RadioButtonShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/RadioButton/Views/RadioButtonShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 8 && stats.RadioButtonCount > 0),
             ["toggleswitch"] = new(
                 "ToggleSwitchShowCase",
@@ -447,47 +447,131 @@ internal static class Program
             ["rate"] = new(
                 "RateShowCase",
                 RateViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.RateShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/RateShowCase.axaml",
+                "AtomUIGallery.ShowCases.Rate.RateShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Rate/Views/RateShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 6 && stats.VisualCount > 0),
             ["slider"] = new(
                 "SliderShowCase",
                 SliderViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.SliderShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/SliderShowCase.axaml",
+                "AtomUIGallery.ShowCases.Slider.SliderShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Slider/Views/SliderShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 4 && stats.VisualCount > 0),
             ["datagrid"] = new(
                 "DataGridShowCase",
                 DataGridViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.DataGridShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/DataGridShowCase.axaml",
+                "AtomUIGallery.ShowCases.DataGrid.DataGridShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/DataGrid/Views/DataGridShowCase.axaml",
                 stats => stats.VisualCount > 0),
             ["treeview"] = new(
                 "TreeViewShowCase",
                 TreeViewViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TreeViewShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataDisplay/TreeViewShowCase.axaml",
+                "AtomUIGallery.ShowCases.TreeView.TreeViewShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/TreeView/Views/TreeViewShowCase.axaml",
                 stats => stats.VisualCount > 0),
             ["transfer"] = new(
                 "TransferShowCase",
                 TransferViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.TransferShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/TransferShowCase.axaml",
+                "AtomUIGallery.ShowCases.Transfer.TransferShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Transfer/Views/TransferShowCase.axaml",
                 stats => stats.VisualCount > 0),
             ["upload"] = new(
                 "UploadShowCase",
                 UploadViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.UploadShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/DataEntry/UploadShowCase.axaml",
+                "AtomUIGallery.ShowCases.Upload.UploadShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataEntry/Upload/Views/UploadShowCase.axaml",
                 stats => stats.ShowCaseItemCount >= 10 && stats.VisualCount > 0),
             ["menu"] = new(
                 "MenuShowCase",
                 MenuViewModel.ID,
-                "AtomUIGallery.ShowCases.Views.MenuShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/Views/Navigation/MenuShowCase.axaml",
+                "AtomUIGallery.ShowCases.Menu.MenuShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/Menu/Views/MenuShowCase.axaml",
                 stats => stats.MenuItemCount > 0 &&
                          stats.NavMenuItemHeaderCount >= 42 &&
-                         stats.MotionTargetCount >= 30)
+                         stats.MotionTargetCount >= 30),
+            ["tag"] = new(
+                "TagShowCase",
+                AtomUIGallery.ShowCases.Tag.TagViewModel.ID,
+                "AtomUIGallery.ShowCases.Tag.TagShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tag/Views/TagShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["tooltip"] = new(
+                "TooltipShowCase",
+                AtomUIGallery.ShowCases.Tooltip.TooltipViewModel.ID,
+                "AtomUIGallery.ShowCases.Tooltip.TooltipShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/Tooltip/Views/TooltipShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["watermark"] = new(
+                "WatermarkShowCase",
+                AtomUIGallery.ShowCases.Watermark.WatermarkViewModel.ID,
+                "AtomUIGallery.ShowCases.Watermark.WatermarkShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Feedback/Watermark/Views/WatermarkShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["separator"] = new(
+                "SeparatorShowCase",
+                AtomUIGallery.ShowCases.Separator.SeparatorViewModel.ID,
+                "AtomUIGallery.ShowCases.Separator.SeparatorShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/Separator/Views/SeparatorShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["tabstrip"] = new(
+                "TabStripShowCase",
+                AtomUIGallery.ShowCases.TabStrip.TabStripViewModel.ID,
+                "AtomUIGallery.ShowCases.TabStrip.TabStripShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Navigation/TabStrip/Views/TabStripShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["flexpanel"] = new(
+                "FlexPanelShowCase",
+                AtomUIGallery.ShowCases.FlexPanel.FlexPanelViewModel.ID,
+                "AtomUIGallery.ShowCases.FlexPanel.FlexPanelShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Layout/FlexPanel/Views/FlexPanelShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["grid"] = new(
+                "GridShowCase",
+                AtomUIGallery.ShowCases.Grid.GridViewModel.ID,
+                "AtomUIGallery.ShowCases.Grid.GridShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Layout/Grid/Views/GridShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["masonry"] = new(
+                "MasonryShowCase",
+                AtomUIGallery.ShowCases.Masonry.MasonryViewModel.ID,
+                "AtomUIGallery.ShowCases.Masonry.MasonryShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Layout/Masonry/Views/MasonryShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["palette"] = new(
+                "PaletteShowCase",
+                AtomUIGallery.ShowCases.Palette.PaletteViewModel.ID,
+                "AtomUIGallery.ShowCases.Palette.PaletteShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/Palette/Views/PaletteShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["borderbeam"] = new(
+                "BorderBeamShowCase",
+                AtomUIGallery.ShowCases.BorderBeam.BorderBeamViewModel.ID,
+                "AtomUIGallery.ShowCases.BorderBeam.BorderBeamShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Other/BorderBeam/Views/BorderBeamShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["dateviewer"] = new(
+                "DateViewerShowCase",
+                AtomUIGallery.ShowCases.DateViewer.DateViewerViewModel.ID,
+                "AtomUIGallery.ShowCases.DateViewer.DateViewerShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/DataDisplay/DateViewer/Views/DateViewerShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["customizetheme"] = new(
+                "CustomizeThemeShowCase",
+                AtomUIGallery.ShowCases.CustomizeTheme.CustomizeThemeViewModel.ID,
+                "AtomUIGallery.ShowCases.CustomizeTheme.CustomizeThemeShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/CustomizeTheme/Views/CustomizeThemeShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["window"] = new(
+                "WindowShowCase",
+                AtomUIGallery.ShowCases.Window.WindowViewModel.ID,
+                "AtomUIGallery.ShowCases.Window.WindowShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/Window/Views/WindowShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["splash"] = new(
+                "SplashShowCase",
+                AtomUIGallery.ShowCases.Splash.SplashViewModel.ID,
+                "AtomUIGallery.ShowCases.Splash.SplashShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml",
+                stats => stats.VisualCount > 0)
         };
 
     [STAThread]
@@ -496,6 +580,11 @@ internal static class Program
         if (args.Contains("--native-motion", StringComparer.Ordinal))
         {
             return NativeMotionProbe.Run(args);
+        }
+
+        if (args.Contains("--audit", StringComparer.Ordinal))
+        {
+            return GalleryAuditProbe.Run(args);
         }
 
         var options = PerfOptions.Parse(args);
@@ -642,20 +731,34 @@ internal static class Program
         }
     }
 
-    private static void SetupAvalonia(out ClassicDesktopStyleApplicationLifetime lifetime)
+    internal static void SetupAvalonia(out ClassicDesktopStyleApplicationLifetime lifetime)
+    {
+        SetupAvalonia(out lifetime, renderPixels: false);
+    }
+
+    /// <param name="renderPixels">
+    /// Renders through Skia so frames can be captured. Timing modes keep the headless drawing stub, so their
+    /// numbers stay comparable with earlier runs.
+    /// </param>
+    internal static void SetupAvalonia(out ClassicDesktopStyleApplicationLifetime lifetime, bool renderPixels)
     {
         lifetime = new ClassicDesktopStyleApplicationLifetime
         {
             Args = []
         };
 
-        AppBuilder.Configure<GalleryApplication>()
-                  .UseReactiveUI(build =>
-                      build.ConfigureViewLocator(locator => new ShowCaseViewModule().RegisterViews(locator)))
-                  .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                  .WithAtomUIDefaultOptions()
-                  .UseAtomUI(GalleryApplication.Configure)
-                  .SetupWithLifetime(lifetime);
+        var builder = AppBuilder.Configure<GalleryApplication>()
+                                .UseReactiveUI(build =>
+                                    build.ConfigureViewLocator(locator => new ShowCaseViewModule().RegisterViews(locator)));
+        if (renderPixels)
+        {
+            builder = builder.UseSkia();
+        }
+
+        builder.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = !renderPixels })
+               .WithAtomUIDefaultOptions()
+               .UseAtomUI(GalleryApplication.Configure)
+               .SetupWithLifetime(lifetime);
         // The public startup flow schedules the main window after framework setup.
         Dispatcher.UIThread.RunJobs();
     }
@@ -880,7 +983,7 @@ internal static class Program
         return new NavigationSample(iteration, phase, trigger, stopwatch.Elapsed, allocatedBytes, stats);
     }
 
-    private static string TriggerNavigation(WorkspaceWindow window, ShowCaseSpec showCase)
+    internal static string TriggerNavigation(WorkspaceWindow window, ShowCaseSpec showCase)
     {
         var navMenu = window.GetSelfAndVisualDescendants().OfType<NavMenu>().FirstOrDefault();
         var navItem = window.GetSelfAndVisualDescendants()
@@ -930,8 +1033,13 @@ internal static class Program
 
     private static void NavigateToOverview(WorkspaceWindow window, PerfOptions options)
     {
+        NavigateToOverview(window, options.Timeout);
+    }
+
+    internal static void NavigateToOverview(WorkspaceWindow window, TimeSpan timeout)
+    {
         ExecuteNavigateCommand(window, OverviewViewModel.ID);
-        WaitForRoute(window, Overview, options.Timeout);
+        WaitForRoute(window, Overview, timeout);
     }
 
     private static void ExecuteNavigateCommand(WorkspaceWindow window, EntityKey key)
@@ -946,7 +1054,7 @@ internal static class Program
         }
     }
 
-    private static Control WaitForRoute(WorkspaceWindow window, ShowCaseSpec showCase, TimeSpan timeout)
+    internal static Control WaitForRoute(WorkspaceWindow window, ShowCaseSpec showCase, TimeSpan timeout)
     {
         var stopwatch          = Stopwatch.StartNew();
         var stableLayoutPasses = 0;
@@ -1088,7 +1196,7 @@ internal static class Program
             $"Timed out waiting for {showCase.RouteTypeName}: latest={DescribeStats(latestStats)}.");
     }
 
-    private static void PumpLayout(Avalonia.Controls.Window window)
+    internal static void PumpLayout(Avalonia.Controls.Window window)
     {
         Dispatcher.UIThread.RunJobs();
         window.Measure(WindowSize);

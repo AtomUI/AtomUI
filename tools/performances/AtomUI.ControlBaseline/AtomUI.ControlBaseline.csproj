@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>AtomUI.ControlBaseline</RootNamespace>
+        <AssemblyName>AtomUI.ControlBaseline</AssemblyName>
+        <Nullable>enable</Nullable>
+        <!-- The stock Fluent reference application intentionally has no AtomUI generated startup hooks. -->
+        <NoWarn>$(NoWarn);ATOMUIREG015</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Headless" />
+        <!-- Skia rendering for the state-snapshots pixel capture mode. -->
+        <PackageReference Include="Avalonia.Desktop" />
+        <!-- Stock Avalonia reference point only; never referenced by product assemblies. -->
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"
+                          PrivateAssets="all" />
+    </ItemGroup>
+
+</Project>

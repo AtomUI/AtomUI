@@ -1,5 +1,10 @@
 # LineEdit Changelog
 
+## 2026-11-14
+
+- Performance
+  - Removed six addon padding styles from `InputControlFrameTheme` that `AddOnDecoratedBoxTheme` redefines with the same selectors and values (the only theme with addon parts). About 6 KB less per decorated input, identical values.
+
 ## 2026-11-12
 
 - Fixed

@@ -3,16 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- Icon has no template: Icon.Render paints the background and glyph, Width/Height size it and
+         ICustomHitTest makes the whole icon hit-testable. -->
     <ControlTheme x:Key="{x:Type atom:Icon}" TargetType="atom:Icon">
-        
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Background="{TemplateBinding Background}"
-                        Height="{TemplateBinding Height}"
-                        Width="{TemplateBinding Width}"/>
-            </ControlTemplate>
-        </Setter>
-        
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
         <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />

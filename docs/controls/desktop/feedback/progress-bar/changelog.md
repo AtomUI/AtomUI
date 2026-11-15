@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-14
+
+- Performance
+  - Line and circle progress part setters bind to the progress control with `{TemplateBinding}` instead of `{Binding …, RelativeSource={RelativeSource TemplatedParent}}`. The sources are Avalonia properties of the same type and the targets are one-way, so values and setter priority are unchanged.
+
 ## 2026-11-11
 
 - Fix

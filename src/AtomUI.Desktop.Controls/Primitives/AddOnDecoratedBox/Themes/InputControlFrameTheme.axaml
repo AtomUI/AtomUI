@@ -37,42 +37,15 @@
         <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
         <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
         
+        <!-- Addon padding per size lives in AddOnDecoratedBoxTheme, the only theme with addon parts. -->
         <Style Selector="^[SizeType=Large]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingLG}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingLG}" />
-            </Style>
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
-            </Style>
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingSM}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingSM}" />
-            </Style>
             <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
         </Style>
 

@@ -81,7 +81,7 @@ Icon 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控
 | 主题文件 | 职责 |
 | --- | --- |
 | `IconPresenterTheme.axaml` | 定义布局、内容承载或框架节点视觉。 |
-| `IconTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
+| `IconTheme.axaml` | 提供 Token 资源绑定和主题变体 selector；`Icon` 没有控件模板，背景与图形由 `Icon.Render` 绘制。 |
 | `PathIconTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
 Icon 使用 `IconToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 基础交互和主题状态 运行时状态。

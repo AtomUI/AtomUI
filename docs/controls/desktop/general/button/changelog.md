@@ -8,6 +8,12 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-14
+
+- Performance
+  - Skip theme-token capture while the Button has no themed ancestor. Properties set from XAML (ButtonType, IsDanger, IsGhost, Color, Variant) arrive before the Button is attached; each used to throw and catch an `InvalidOperationException`. `OnAttachedToLogicalTree` still configures the variant variables, so the values are unchanged.
+  - Bind the icon slot visibility to an internal `EffectiveIconVisible` property (`Icon is Icon && IsIconVisible && !IsLoading`, the old converter rule) instead of a three-way MultiBinding with reflection bindings, and the `ShadowsFrame` shadow setter to `{TemplateBinding VariantShadow}`. Same values and the same binding priorities; rendering is pixel-identical in every state.
+
 ## 2026-11-11
 
 - Theme

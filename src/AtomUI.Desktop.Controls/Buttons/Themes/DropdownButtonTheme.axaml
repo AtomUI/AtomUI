@@ -53,17 +53,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    DockPanel.Dock="Left">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    DockPanel.Dock="Left"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Content="{TemplateBinding Content}"

@@ -2,6 +2,11 @@
 
 本文档记录 DatePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-14
+
+- Performance
+  - Input width measurement reuses earlier text shaping for identical text and font (`TextUtils.CalculateTextSizeCached`). The key includes the resolved typeface, the font collection generation and the current cultures, so results equal a fresh measurement. Each picker used to shape about a dozen strings several times during creation.
+
 ## 2026-11-11
 
 - Changed

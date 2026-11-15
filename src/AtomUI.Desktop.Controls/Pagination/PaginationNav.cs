@@ -57,12 +57,24 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
 
     public PaginationNav()
     {
-        for (var i = 0; i < Pagination.MaxNavItemCount; i++)
+        SelectionMode = SelectionMode.Single;
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        // The fixed navigation slots are logical children, so creating them in the constructor styled and initialized
+        // all of them even when the nav is never measured (hidden, empty or single-page pagination). They are added
+        // when the template applies instead. The items panel is only built when ItemsPresenter is measured, after
+        // this call, so every container is still prepared with the final ItemCount, exactly as before.
+        if (ItemCount == 0)
         {
-            Items.Add(new PaginationNavItem());
+            for (var i = 0; i < Pagination.MaxNavItemCount; i++)
+            {
+                Items.Add(new PaginationNavItem());
+            }
         }
 
-        SelectionMode = SelectionMode.Single;
+        base.OnApplyTemplate(e);
     }
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)

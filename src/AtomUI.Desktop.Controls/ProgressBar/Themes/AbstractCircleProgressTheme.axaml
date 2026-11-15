@@ -18,29 +18,29 @@
 
         <Style Selector="^ /template/ Path#PART_ProgressRail">
             <Setter Property="Stroke"
-                    Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding GrooveBrush}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeThickness}" />
             <Setter Property="StrokeLineCap"
-                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding ShapeStrokeLineCap}" />
         </Style>
 
         <Style Selector="^ /template/ Path#PART_ProgressTrack">
             <Setter Property="Stroke"
-                    Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeBrush}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeThickness}" />
             <Setter Property="StrokeLineCap"
-                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding ShapeStrokeLineCap}" />
         </Style>
 
         <Style Selector="^ /template/ Path#PART_ProgressSuccess">
             <Setter Property="Stroke"
-                    Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding SuccessStrokeBrush}" />
             <Setter Property="StrokeThickness"
-                    Value="{Binding StrokeThickness, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeThickness}" />
             <Setter Property="StrokeLineCap"
-                    Value="{Binding ShapeStrokeLineCap, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding ShapeStrokeLineCap}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_ExceptionCompletedIconPresenter">

@@ -7,6 +7,9 @@ using AtomUIGallery.Workspace.ViewModels;
 using AtomUIGallery.Workspace.Views;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Threading;
+using AtomUI.Toolkits.GalleryBase.Shell;
+using ReactiveUI;
 using System.Reactive.Threading.Tasks;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
 using Shouldly;
@@ -97,6 +100,7 @@ public class WorkspaceWindowLayoutTests
                                         .Select(theme => theme.Id));
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            Dispatcher.UIThread.RunJobs();
 
             languageItem.Items.OfType<MenuItem>().Single(item => item.IsChecked == true).Tag.ShouldBe("AntDesign");
             brandItem.IsEnabled.ShouldBeTrue();
@@ -122,15 +126,59 @@ public class WorkspaceWindowLayoutTests
         try
         {
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            Dispatcher.UIThread.RunJobs();
             brandItem.IsEnabled.ShouldBeTrue();
 
             await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+            Dispatcher.UIThread.RunJobs();
 
             brandItem.IsEnabled.ShouldBeFalse();
             brandItem.Items.Count.ShouldBe(0);
         }
         finally
         {
+            viewModel.Dispose();
+            await manager.ApplyThemeAsync(new ThemeRequest(
+                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                TestContext.Current.CancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task Theme_Menu_Coalesces_Rebuilds_Into_One_Per_Dispatcher_Turn()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        var manager   = Application.Current!.GetThemeManager()!;
+        var viewModel = new WorkspaceWindowViewModel();
+        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
+        var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            Dispatcher.UIThread.RunJobs();
+            var languageCount = languageItem.Items.Count;
+            var brandCount    = brandItem.Items.Count;
+            menu.RebuildCount = 0;
+
+            viewModel.RaisePropertyChanged(nameof(GalleryWorkspaceViewModel.CurrentThemeId));
+            viewModel.RaisePropertyChanged(nameof(GalleryWorkspaceViewModel.CurrentDesignLanguage));
+            viewModel.RaisePropertyChanged(nameof(GalleryWorkspaceViewModel.CanChooseBrandColor));
+            viewModel.RaisePropertyChanged(nameof(GalleryWorkspaceViewModel.BrandColor));
+            menu.RebuildCount.ShouldBe(0);
+            Dispatcher.UIThread.RunJobs();
+
+            menu.RebuildCount.ShouldBe(1);
+            languageItem.Items.Count.ShouldBe(languageCount);
+            brandItem.Items.Count.ShouldBe(brandCount);
+
+            viewModel.RaisePropertyChanged(nameof(GalleryWorkspaceViewModel.BrandColor));
+            menu.Dispose();
+            Dispatcher.UIThread.RunJobs();
+            menu.RebuildCount.ShouldBe(1);
+        }
+        finally
+        {
+            menu.Dispose();
             viewModel.Dispose();
             await manager.ApplyThemeAsync(new ThemeRequest(
                 IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),

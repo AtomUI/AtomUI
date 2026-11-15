@@ -10,6 +10,7 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
+using Avalonia.Threading;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
 
 namespace AtomUIGallery.Workspace.Views;
@@ -47,6 +48,12 @@ internal sealed class GalleryThemeMenu : IDisposable
     private readonly StableCommand _setBrandColorCommand;
     private readonly PropertyChangedEventHandler _propertyChangedHandler;
     private bool _disposed;
+    private bool _rebuildPending;
+
+    /// <summary>
+    /// Gets or sets the number of completed rebuilds; used by tests to observe coalescing.
+    /// </summary>
+    internal int RebuildCount { get; set; }
 
     public GalleryThemeMenu(GalleryWorkspaceViewModel viewModel,
                             MenuItem designLanguageItem,
@@ -84,12 +91,33 @@ internal sealed class GalleryThemeMenu : IDisposable
             nameof(GalleryWorkspaceViewModel.CanChooseBrandColor) or
             nameof(GalleryWorkspaceViewModel.BrandColor))
         {
-            Rebuild();
+            ScheduleRebuild();
         }
+    }
+
+    // Several view model properties change together; one rebuild per dispatcher turn avoids repeated work and
+    // avoids clearing a menu item while its own click is still being handled.
+    private void ScheduleRebuild()
+    {
+        if (_disposed || _rebuildPending)
+        {
+            return;
+        }
+
+        _rebuildPending = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            _rebuildPending = false;
+            if (!_disposed)
+            {
+                Rebuild();
+            }
+        });
     }
 
     private void Rebuild()
     {
+        RebuildCount++;
         var themes = _viewModel.AvailableThemes;
         RebuildDesignLanguages(themes);
         RebuildBrandColors(themes);

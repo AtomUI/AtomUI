@@ -292,14 +292,26 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         {
             return;
         }
+        // A base theme that takes the toggles keeps the gallery's appearance; only a profile applied as defined
+        // decides it.
+        var takesToggles = ResolveBaseThemeWithToggles(themeId) is not null;
         await ApplyThemeSettingsAsync(themeId);
-        FollowAppliedProfileAppearance(themeId);
+        if (!takesToggles)
+        {
+            FollowAppliedProfileAppearance(themeId);
+        }
     }
 
     private async Task SwitchDesignLanguageAsync(string designLanguage)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(designLanguage);
         if (string.Equals(designLanguage, CurrentDesignLanguage, StringComparison.Ordinal))
+        {
+            return;
+        }
+        // The catalog may have changed since the caller listed the language; an unknown language is ignored instead of
+        // faulting the command.
+        if (!AvailableThemes.Any(theme => string.Equals(theme.DesignLanguage, designLanguage, StringComparison.Ordinal)))
         {
             return;
         }
@@ -366,17 +378,20 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         Color? brandSeed = null;
         var requestedLanguage = requestedThemeId is not null ? FindTheme(requestedThemeId)?.DesignLanguage : null;
 
+        ThemeSelectionResult? resolved = null;
         if (designLanguage is not null || (requestedThemeId is null && currentLanguage is not null))
         {
-            // The resolver picks the profile that matches the appearance and density, or falls back to the language's
-            // base chain with the built-in dark and compact algorithms.
-            var language = designLanguage ?? currentLanguage!;
-            var selection = new ThemeSelection(
-                language,
-                _isDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
-                _isCompact ? ThemeDensity.Compact : ThemeDensity.Normal,
-                _brandByLanguage.GetValueOrDefault(language));
-            var resolved = ThemeSelectionResolver.Resolve(AvailableThemes, selection);
+            // The resolver picks the profile that matches the appearance and density, or falls back to a definition of
+            // the language with the built-in dark and compact algorithms.
+            resolved = ThemeSelectionResolver.Resolve(AvailableThemes, CreateSelection(designLanguage ?? currentLanguage!));
+        }
+        else if (requestedThemeId is not null)
+        {
+            resolved = ResolveBaseThemeWithToggles(requestedThemeId);
+        }
+
+        if (resolved is not null)
+        {
             themeId   = resolved.ThemeId;
             brandSeed = resolved.BrandSeed;
             if (resolved.Algorithms is not null)
@@ -434,6 +449,32 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         {
             this.RaisePropertyChanged(nameof(CurrentThemeId));
         }
+    }
+
+    private ThemeSelection CreateSelection(string language)
+    {
+        return new ThemeSelection(
+            language,
+            _isDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
+            _isCompact ? ThemeDensity.Compact : ThemeDensity.Normal,
+            _brandByLanguage.GetValueOrDefault(language));
+    }
+
+    // A requested theme that is its language's light, normal base, while the language has no variant for the current
+    // Dark/Compact toggles, takes the toggles the way a theme without a language does (SwitchThemeCommand keeps its
+    // contract). Returns null when the theme applies as defined instead.
+    private ThemeSelectionResult? ResolveBaseThemeWithToggles(string themeId)
+    {
+        if (FindTheme(themeId) is not
+            { DesignLanguage: { } language, Appearance: ThemeAppearance.Light, Density: ThemeDensity.Normal })
+        {
+            return null;
+        }
+
+        var resolved = ThemeSelectionResolver.Resolve(AvailableThemes, CreateSelection(language));
+        return resolved.Algorithms is not null && string.Equals(resolved.ThemeId, themeId, StringComparison.Ordinal)
+            ? resolved
+            : null;
     }
 
     private static string FormatColor(Color color)

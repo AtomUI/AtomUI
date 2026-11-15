@@ -504,6 +504,85 @@ public class GalleryBaseFoundationTests
         }
     }
 
+    // SwitchThemeCommand keeps its pre-design-language contract: a theme that is its language's only (base) definition
+    // takes the gallery's current Dark/Compact toggles instead of resetting them to its own light, normal profile.
+    [Fact]
+    public async Task Workspace_ViewModel_SwitchTheme_To_A_Base_Theme_Keeps_Dark_Toggle()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchThemeCommand.Execute("PrimeNGAura.Dark").ToTask();
+
+            await viewModel.SwitchThemeCommand.Execute("DaybreakBlue").ToTask();
+
+            manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
+            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
+            viewModel.AppearanceMode.ShouldBe(ThemePreference.Dark);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Workspace_ViewModel_SwitchTheme_To_A_Base_Theme_Keeps_Compact_Toggle()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Compact").ToTask();
+
+            await viewModel.SwitchThemeCommand.Execute("DaybreakBlue").ToTask();
+
+            manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
+            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact]);
+            viewModel.AppearanceMode.ShouldBe(ThemePreference.Light);
+
+            await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
+            manager.CurrentTheme!.Algorithms.ShouldBe([
+                ThemeAlgorithm.Default,
+                ThemeAlgorithm.Compact,
+                ThemeAlgorithm.Dark
+            ]);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Workspace_ViewModel_SwitchDesignLanguage_Ignores_An_Unknown_Language()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        await RestoreDefaultThemeAsync(manager);
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            var transitionId = ReadNextThemeTransitionId(manager);
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("NoSuchLanguage").ToTask();
+
+            ReadNextThemeTransitionId(manager).ShouldBe(transitionId);
+            manager.CurrentTheme!.ThemeId.ShouldBe(IThemeManager.DEFAULT_THEME_ID);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
     [Fact]
     public async Task Workspace_ViewModel_Does_Not_Reapply_Selected_Theme_Id()
     {

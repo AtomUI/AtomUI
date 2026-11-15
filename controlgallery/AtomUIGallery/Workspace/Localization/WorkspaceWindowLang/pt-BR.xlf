@@ -85,6 +85,12 @@
         <target state="translated">Light Modo</target>
       </segment>
     </unit>
+    <unit id="MenuItemOtherThemes">
+      <segment>
+        <source>Other themes</source>
+        <target state="translated">Outros temas</target>
+      </segment>
+    </unit>
     <unit id="MenuItemSettings">
       <segment>
         <source>Settings</source>

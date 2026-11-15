@@ -4,11 +4,13 @@ using System.Windows.Input;
 using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Shell;
+using AtomUIGallery.Localization;
 using AtomUIGallery.Workspace.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using DesktopMenu = AtomUI.Desktop.Controls.Menu;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
@@ -154,10 +156,16 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
 
     private void HandleViewModelPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName is nameof(GalleryWorkspaceViewModel.AvailableThemes) or
-            nameof(GalleryWorkspaceViewModel.CurrentThemeId))
+        if (args.PropertyName == nameof(GalleryWorkspaceViewModel.AvailableThemes))
         {
             RebuildThemeMenuItems();
+        }
+        else if (args.PropertyName == nameof(GalleryWorkspaceViewModel.CurrentThemeId) && ViewModel is { } viewModel)
+        {
+            foreach (var item in _themeMenuItems)
+            {
+                item.IsChecked = Equals(item.CommandParameter, viewModel.CurrentThemeId);
+            }
         }
     }
 
@@ -168,40 +176,84 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
             return;
         }
 
-        foreach (var existing in _themeMenuItems)
-        {
-            _themeMenuItem.Items.Remove(existing);
-        }
+        _themeMenuItem.Items.Clear();
         _themeMenuItems.Clear();
 
-        var insertIndex = 0;
         var switchThemeCommand = new StableCommand(ViewModel.SwitchThemeCommand);
-        foreach (var theme in ViewModel.AvailableThemes)
+        var designLanguages = ViewModel.AvailableThemes
+                                       .GroupBy(static theme => GetThemeDesignLanguage(theme.Id))
+                                       .OrderBy(static group => group.Key.Name is null);
+        foreach (var group in designLanguages)
         {
-            var item = new MenuItem
+            var (designLanguage, themeNamePrefix) = group.Key;
+            var designLanguageItem = new MenuItem { Header = designLanguage };
+            if (designLanguage is null)
             {
-                Header           = CreateThemeMenuHeader(theme),
-                ToggleType       = MenuItemToggleType.Radio,
-                GroupName        = ThemeColorGroupName,
-                IsChecked        = string.Equals(theme.Id, ViewModel.CurrentThemeId, StringComparison.Ordinal),
-                Command          = switchThemeCommand,
-                CommandParameter = theme.Id
-            };
-            _themeMenuItem.Items.Insert(insertIndex++, item);
-            _themeMenuItems.Add(item);
+                designLanguageItem.Bind(MenuItem.HeaderProperty,
+                    new DynamicResourceExtension(WorkspaceWindowLangResourceKind.MenuItemOtherThemes));
+            }
+
+            foreach (var theme in group)
+            {
+                var item = new MenuItem
+                {
+                    Header           = CreateThemeMenuHeader(theme, themeNamePrefix),
+                    ToggleType       = MenuItemToggleType.Radio,
+                    GroupName        = ThemeColorGroupName,
+                    IsChecked        = string.Equals(theme.Id, ViewModel.CurrentThemeId, StringComparison.Ordinal),
+                    Command          = switchThemeCommand,
+                    CommandParameter = theme.Id
+                };
+                designLanguageItem.Items.Add(item);
+                _themeMenuItems.Add(item);
+            }
+
+            _themeMenuItem.Items.Add(designLanguageItem);
         }
     }
 
-    private static Control CreateThemeMenuHeader(ThemeInfo theme)
+    private static (string? Name, string? ThemeNamePrefix) GetThemeDesignLanguage(string themeId)
+    {
+        // Built-in appearance and density variants share the same base theme ID.
+        var variantSeparator = themeId.IndexOf('.');
+        var baseId = variantSeparator >= 0 ? themeId[..variantSeparator] : themeId;
+        return baseId switch
+        {
+            IThemeManager.DEFAULT_THEME_ID or "PolarGreen" or "SunsetOrange" or "GoldenPurple" or "Magenta" => ("Ant Design", null),
+            "Bootstrap" => ("Bootstrap", "Bootstrap"),
+            "Material" => ("Material Design", "Material"),
+            "PrimeNGAura" or "PrimeNGLara" or "PrimeNGNora" => ("PrimeNG", "PrimeNG"),
+            "ShadcnSlate" or "ShadcnStone" or "ShadcnZinc" => ("shadcn/ui", "Shadcn"),
+            _ => (null, null)
+        };
+    }
+
+    private static string GetThemeMenuLabel(ThemeInfo theme, string? prefix)
+    {
+        if (prefix is null)
+        {
+            return theme.Name;
+        }
+
+        if (string.Equals(theme.Name, prefix, StringComparison.Ordinal))
+        {
+            return theme.Appearance.ToString();
+        }
+
+        return theme.Name.StartsWith(prefix + " ", StringComparison.Ordinal)
+            ? theme.Name[(prefix.Length + 1)..]
+            : theme.Name;
+    }
+
+    private static Control CreateThemeMenuHeader(ThemeInfo theme, string? prefix)
     {
         var header = new Grid
         {
-            Width             = 160,
             ColumnDefinitions = new ColumnDefinitions("*,Auto")
         };
         header.Children.Add(new Avalonia.Controls.TextBlock
         {
-            Text              = theme.Name,
+            Text              = GetThemeMenuLabel(theme, prefix),
             VerticalAlignment = VerticalAlignment.Center
         });
 

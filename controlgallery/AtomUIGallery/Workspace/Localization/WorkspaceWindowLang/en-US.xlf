@@ -71,6 +71,11 @@
         <source>Light Mode</source>
       </segment>
     </unit>
+    <unit id="MenuItemOtherThemes">
+      <segment>
+        <source>Other themes</source>
+      </segment>
+    </unit>
     <unit id="MenuItemSettings">
       <segment>
         <source>Settings</source>

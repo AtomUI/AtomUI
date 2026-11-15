@@ -21,5 +21,6 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemFollowSystem,
     MenuItemCompactMode,
     MenuItemEnableMotion,
-    MenuItemEnableWaveSpirit
+    MenuItemEnableWaveSpirit,
+    MenuItemOtherThemes
 }

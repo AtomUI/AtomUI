@@ -85,6 +85,12 @@
         <target state="translated">明亮模式</target>
       </segment>
     </unit>
+    <unit id="MenuItemOtherThemes">
+      <segment>
+        <source>Other themes</source>
+        <target state="translated">其他主题</target>
+      </segment>
+    </unit>
     <unit id="MenuItemSettings">
       <segment>
         <source>Settings</source>

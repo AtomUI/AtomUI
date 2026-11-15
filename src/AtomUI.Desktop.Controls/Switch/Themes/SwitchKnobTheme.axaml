@@ -13,7 +13,6 @@
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="KnobRenderWidth" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                     <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
                 </Transitions>
             </Setter>

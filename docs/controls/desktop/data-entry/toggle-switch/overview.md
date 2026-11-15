@@ -95,7 +95,7 @@ IsChecked
       ↓
 CalculateElementsOffset
       ↓
-KnobRect + content offset + GrooveBackground selector
+KnobRenderTransform + content offset + GrooveBackground selector
 ```
 
 按下状态会临时拉伸把手宽度，并同步调整当前可见内容偏移。释放后重新计算标准把手和内容位置。
@@ -109,7 +109,7 @@ ToggleSwitch 使用控件本体绘制轨道，模板负责内容和把手。
 | 主题 | 职责 |
 | --- | --- |
 | `ToggleSwitchTheme.axaml` | 主模板、状态 selector、SizeType 分支、轨道背景、WaveSpirit 和 SwitchKnob token 传递。 |
-| `SwitchKnobTheme.axaml` | 把手加载透明度、加载动画周期和把手宽度动效。 |
+| `SwitchKnobTheme.axaml` | 把手加载透明度、加载动画周期与透明度过渡。 |
 
 视觉状态主要由主题 selector 表达：
 

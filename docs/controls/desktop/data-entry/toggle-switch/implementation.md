@@ -43,12 +43,12 @@ ArrangeOverride 的最终内容盒（已应用 Width/Height、Min/Max，不含 M
       ↓
 CalculateElementsOffset
       ↓
-KnobRect + KnobMovingRect + OnContentOffset + OffContentOffset
+KnobRenderTransform + OnContentOffset + OffContentOffset
       ↓
-ToggleSwitchContentPanel 排列内容 + Render 绘制最终轨道
+ToggleSwitchContentPanel 平移内容 + Render 绘制最终轨道
 ```
 
-checked 变化时，如果启用 motion，控件先基于当前 groove size 重新计算元素位置，再由 `RectTransition` 和 `PointTransition` 执行动画。`_isCheckedChanged` 用于让 arrange 阶段在 checked 切换后使用 `KnobMovingRect`，保持过渡位置一致。
+切换或按压时，主题从固定的把手槽过渡到目标平移和横向缩放。内容文字在固定槽中排列，偏移过渡直接更新渲染平移。尺寸和模板变化仍按正常布局流程计算最终内容盒。
 
 loading 状态流：
 

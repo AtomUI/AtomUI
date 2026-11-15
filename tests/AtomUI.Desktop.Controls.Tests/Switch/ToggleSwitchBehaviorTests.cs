@@ -86,11 +86,11 @@ public class ToggleSwitchBehaviorTests
             toggleSwitch.Bounds.Size.ShouldBe(new Size(32, 14));
 
             var knob = FindIndicator(toggleSwitch);
-            knob.Bounds.ShouldBe(new Rect(-3, -3, 20, 20));
+            GetIndicatorBounds(knob, toggleSwitch).ShouldBe(new Rect(-3, -3, 20, 20));
 
             toggleSwitch.IsChecked = true;
             Dispatcher.UIThread.RunJobs();
-            knob.Bounds.ShouldBe(new Rect(15, -3, 20, 20));
+            GetIndicatorBounds(knob, toggleSwitch).ShouldBe(new Rect(15, -3, 20, 20));
 
             // antd renders the switch handle outside the content container, so custom
             // geometry (the 20px MUI handle on a 14px track) overhangs instead of clipping.
@@ -126,9 +126,12 @@ public class ToggleSwitchBehaviorTests
             // The internal knob geometry must follow the explicit width instead of the
             // content-measured width, mirroring antd's `width: 40px` root styling.
             var knob = FindIndicator(toggleSwitch);
-            knob.Bounds.X.ShouldBe(toggleSwitch.Bounds.Width - toggleSwitch.TrackPadding - knob.Bounds.Width, 1e-6);
+            GetIndicatorBounds(knob, toggleSwitch).X.ShouldBe(toggleSwitch.Bounds.Width - toggleSwitch.TrackPadding - knob.Bounds.Width, 1e-6);
         });
     }
+
+    private static Rect GetIndicatorBounds(TemplatedControl knob, AtomToggleSwitch owner) =>
+        new Rect(knob.Bounds.Size).TransformToAABB(knob.TransformToVisual(owner)!.Value);
 
     private static TemplatedControl FindIndicator(AtomToggleSwitch toggleSwitch)
     {

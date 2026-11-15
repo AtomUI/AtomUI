@@ -26,6 +26,7 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemBrandColor,
     MenuItemBrandColorReset,
     MenuItemBrandColorFixedHint,
+    MenuItemBrandColorNoLanguageHint,
     MenuItemOtherThemes,
     DesignLanguageAntDesign,
     DesignLanguageBootstrap,

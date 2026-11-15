@@ -73,6 +73,12 @@
         <target state="translated">此设计语言使用固定品牌色</target>
       </segment>
     </unit>
+    <unit id="MenuItemBrandColorNoLanguageHint">
+      <segment>
+        <source>This theme declares no design language, so its brand color cannot be changed</source>
+        <target state="translated">此主题未声明设计语言，无法更换品牌色</target>
+      </segment>
+    </unit>
     <unit id="MenuItemBrandColorReset">
       <segment>
         <source>Reset Brand Color</source>

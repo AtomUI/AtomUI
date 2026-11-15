@@ -61,6 +61,11 @@
         <source>This design language uses a fixed brand color</source>
       </segment>
     </unit>
+    <unit id="MenuItemBrandColorNoLanguageHint">
+      <segment>
+        <source>This theme declares no design language, so its brand color cannot be changed</source>
+      </segment>
+    </unit>
     <unit id="MenuItemBrandColorReset">
       <segment>
         <source>Reset Brand Color</source>

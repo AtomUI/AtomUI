@@ -73,6 +73,12 @@
         <target state="translated">Esta linguagem de design usa uma cor de marca fixa</target>
       </segment>
     </unit>
+    <unit id="MenuItemBrandColorNoLanguageHint">
+      <segment>
+        <source>This theme declares no design language, so its brand color cannot be changed</source>
+        <target state="translated">Este tema não declara uma linguagem de design, então sua cor de marca não pode ser alterada</target>
+      </segment>
+    </unit>
     <unit id="MenuItemBrandColorReset">
       <segment>
         <source>Reset Brand Color</source>

@@ -134,6 +134,17 @@ public class WorkspaceWindowLayoutTests
 
             brandItem.IsEnabled.ShouldBeFalse();
             brandItem.Items.Count.ShouldBe(0);
+            var fixedHint = ResolveTipText(brandItem);
+            fixedHint.ShouldNotBeNullOrEmpty();
+
+            // A theme without a design language gets its own hint instead of the "fixed brand color" one.
+            await viewModel.SwitchThemeCommand.Execute("GalleryPreviewFixture").ToTask();
+            Dispatcher.UIThread.RunJobs();
+
+            brandItem.IsEnabled.ShouldBeFalse();
+            var noLanguageHint = ResolveTipText(brandItem);
+            noLanguageHint.ShouldNotBeNullOrEmpty();
+            noLanguageHint.ShouldNotBe(fixedHint);
         }
         finally
         {
@@ -184,6 +195,19 @@ public class WorkspaceWindowLayoutTests
                 IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);
         }
+    }
+
+    // The hint binds a localized resource; host it briefly so the dynamic resource resolves.
+    private static string? ResolveTipText(MenuItem item)
+    {
+        var tip = (Avalonia.Controls.TextBlock)AtomUI.Desktop.Controls.ToolTip.GetTip(item)!;
+        var host = new Avalonia.Controls.Window { Content = tip };
+        host.Show();
+        Dispatcher.UIThread.RunJobs();
+        var text = tip.Text;
+        host.Close();
+        host.Content = null;
+        return text;
     }
 
     private static string GetRepoFile(string relativePath)

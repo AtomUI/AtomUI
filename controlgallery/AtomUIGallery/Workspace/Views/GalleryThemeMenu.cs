@@ -151,11 +151,14 @@ internal sealed class GalleryThemeMenu : IDisposable
         _brandColorItem.IsEnabled = canChoose;
         if (!canChoose || _viewModel.CurrentDesignLanguage is not { } language)
         {
-            // A disabled parent cannot open, so the hint is carried by its tooltip.
+            // A disabled parent cannot open, so the hint is carried by its tooltip. A theme without a design language
+            // has no language whose brand color could be fixed, so it gets its own hint.
             AtomUI.Desktop.Controls.ToolTip.SetShowOnDisabled(_brandColorItem, true);
             var tip = new Avalonia.Controls.TextBlock();
             tip.Bind(Avalonia.Controls.TextBlock.TextProperty,
-                new DynamicResourceExtension(WorkspaceWindowLangResourceKind.MenuItemBrandColorFixedHint));
+                new DynamicResourceExtension(_viewModel.CurrentDesignLanguage is null
+                    ? WorkspaceWindowLangResourceKind.MenuItemBrandColorNoLanguageHint
+                    : WorkspaceWindowLangResourceKind.MenuItemBrandColorFixedHint));
             AtomUI.Desktop.Controls.ToolTip.SetTip(_brandColorItem, tip);
             return;
         }

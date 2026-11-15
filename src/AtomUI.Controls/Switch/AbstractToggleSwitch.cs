@@ -205,10 +205,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(IconSizeProperty, value);
     }
 
+    // The knob target is the base value its transition animates to. SetCurrentValue would write it into the active
+    // animation layer during a transition, and the end of that transition would drop it.
     internal ITransform? KnobRenderTransform
     {
         get => GetValue(KnobRenderTransformProperty);
-        private set => SetCurrentValue(KnobRenderTransformProperty, value);
+        private set => SetValue(KnobRenderTransformProperty, value);
     }
 
     internal Point OnContentOffset

@@ -130,6 +130,39 @@ public class ToggleSwitchBehaviorTests
         });
     }
 
+    private sealed class CheckedModel
+    {
+        public bool IsOn { get; set; } = true;
+    }
+
+    // A switch checked through a binding after it is shown animates its knob. The knob's final position must survive the
+    // end of that transition: written into the animation layer, it was dropped with the transition and the knob fell
+    // back to the start while the groove showed checked.
+    [Fact]
+    public void Knob_Stays_At_The_Checked_End_After_A_Bound_Check_Animates()
+    {
+        var toggleSwitch = new AtomToggleSwitch { IsMotionEnabled = true };
+        toggleSwitch.Bind(ToggleButton.IsCheckedProperty, new Avalonia.Data.Binding(nameof(CheckedModel.IsOn)));
+        var host = new StackPanel { Children = { toggleSwitch } };
+
+        ShowInWindow(host, () =>
+        {
+            host.DataContext = new CheckedModel();
+            Dispatcher.UIThread.RunJobs();
+            for (var tick = 0; tick < 60; tick++)
+            {
+                Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                Dispatcher.UIThread.RunJobs();
+                Thread.Sleep(5);
+            }
+
+            toggleSwitch.IsChecked.ShouldBe(true);
+            var knob = FindIndicator(toggleSwitch);
+            GetIndicatorBounds(knob, toggleSwitch).X.ShouldBe(
+                toggleSwitch.Bounds.Width - toggleSwitch.TrackPadding - knob.Bounds.Width, 1e-6);
+        });
+    }
+
     private static Rect GetIndicatorBounds(TemplatedControl knob, AtomToggleSwitch owner) =>
         new Rect(knob.Bounds.Size).TransformToAABB(knob.TransformToVisual(owner)!.Value);
 

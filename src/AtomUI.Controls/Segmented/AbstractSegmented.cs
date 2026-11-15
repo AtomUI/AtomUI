@@ -144,7 +144,8 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         OrientationProperty.OverrideDefaultValue<AbstractSegmented>(Orientation.Horizontal);
         AffectsMeasure<AbstractSegmented>(OrientationProperty, IsExpandingProperty, SizeTypeProperty);
         AffectsRender<AbstractSegmented>(
-            SelectedThumbCornerRadiusProperty, 
+            PaddingProperty,
+            SelectedThumbCornerRadiusProperty,
             SelectedThumbBgProperty,
             SelectedThumbBoxShadowsProperty,
             SelectedThumbSizeProperty, 
@@ -298,9 +299,12 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         context.DrawRectangle(Background, null, new RoundedRect(new Rect(Bounds.Size), CornerRadius));
         if (_isThumbVisible)
         {
-            context.DrawRectangle(SelectedThumbBg, null,
-                new RoundedRect(new Rect(SelectedThumbPos, SelectedThumbSize), SelectedThumbCornerRadius),
-                SelectedThumbBoxShadows);
+            var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
+            if (thumb.Width > 0 && thumb.Height > 0)
+            {
+                context.DrawRectangle(SelectedThumbBg, null,
+                    new RoundedRect(thumb, SelectedThumbCornerRadius), SelectedThumbBoxShadows);
+            }
         }
     }
 
@@ -383,8 +387,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             return;
         }
 
-        var targetPos  = new Point(offset.X, offset.Y);
-        var targetSize = segmentedItem.Bounds.Size;
+        var target = ConstrainThumb(new Rect(offset, segmentedItem.Bounds.Size), Bounds.Size);
+        var targetPos = target.Position;
+        var targetSize = target.Size;
 
         // 当前插值值不是目标值；重复排列同一目标不能撤销正在运行的过渡。
         var basePos = GetBaseValue(SelectedThumbPosProperty);
@@ -416,6 +421,14 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         {
             BeginThumbMotion();
         }
+    }
+
+    private Rect ConstrainThumb(Rect thumb, Size trackSize)
+    {
+        var padding = Padding;
+        var inset = new Thickness(Math.Max(0, padding.Left), Math.Max(0, padding.Top),
+            Math.Max(0, padding.Right), Math.Max(0, padding.Bottom));
+        return thumb.Intersect(new Rect(trackSize).Deflate(inset));
     }
 
     private void SetThumbVisible(bool visible)

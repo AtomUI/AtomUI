@@ -36,7 +36,7 @@ Gallery 和测试：
 
 ## 3. 核心类职责
 
-`AbstractSegmented` 是状态协调器。它持有方向、形状、选择属性、内部选中滑块属性和 Form value 适配逻辑，负责方向键选择，并在选择变化和最终排列后同步选中滑块矩形。
+`AbstractSegmented` 是状态协调器。它持有方向、形状、选择属性、内部选中滑块属性和 Form value 适配逻辑，负责方向键选择，并在选择变化和最终排列后同步选中滑块矩形。目标矩形和过渡中绘制的矩形均与轨道内边距区域求交。
 
 `Segmented` 是桌面公开控件。它不重复共享选择逻辑，只注册 `SegmentedToken.ScopeProvider` 并为数据 item 创建 `SegmentedItem` 容器。
 

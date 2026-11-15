@@ -40,8 +40,11 @@ public class SegmentedThumbMotionTests
         ShowInWindow(segmented, () =>
         {
             var selected = segmented.ContainerFromIndex(2).ShouldNotBeNull();
-            ((Point)segmented.GetValue(GetThumbProperty("SelectedThumbPosProperty"))!).ShouldBe(selected.TranslatePoint(default, segmented)!.Value);
-            ((Size)segmented.GetValue(GetThumbProperty("SelectedThumbSizeProperty"))!).ShouldBe(selected.Bounds.Size);
+            var selectedRect = new Rect(selected.TranslatePoint(default, segmented)!.Value, selected.Bounds.Size);
+            var inset = new Rect(segmented.Bounds.Size).Deflate(segmented.Padding);
+            var expectedThumb = selectedRect.Intersect(inset);
+            ((Point)segmented.GetValue(GetThumbProperty("SelectedThumbPosProperty"))!).ShouldBe(expectedThumb.Position);
+            ((Size)segmented.GetValue(GetThumbProperty("SelectedThumbSizeProperty"))!).ShouldBe(expectedThumb.Size);
             var transitions = segmented.Transitions.ShouldNotBeNull();
             AssertThumbTransition(transitions, GetThumbProperty("SelectedThumbPosProperty"));
             AssertThumbTransition(transitions, GetThumbProperty("SelectedThumbSizeProperty"));

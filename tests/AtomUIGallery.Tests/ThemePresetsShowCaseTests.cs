@@ -32,6 +32,51 @@ namespace AtomUIGallery.Tests;
 public class ThemePresetsShowCaseTests
 {
     [Fact]
+    public void Primary_Choice_Follows_Declared_Brand_Support()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!);
+        model.SelectedPresetId = "PrimeNGAura";
+        model.CanChoosePrimary.ShouldBeTrue();
+        foreach (var id in new[] { "Bootstrap", "Material", "ShadcnZinc", "ShadcnSlate", "ShadcnStone" })
+        {
+            model.SelectedPresetId = id;
+            model.CanChoosePrimary.ShouldBeFalse(id);
+        }
+    }
+
+    [Fact]
+    public void Export_Writes_Design_Language_Metadata()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "PrimeNGAura" };
+        model.IsDark = true;
+        model.IsCompact = true;
+        model.PreviewThemeId.ShouldBe("PrimeNGAura.DarkCompact");
+        var xml = model.ExportThemeXml();
+        var root = XDocument.Parse(xml).Root!;
+        root.Attribute("DesignLanguage")!.Value.ShouldBe("PrimeNG.Aura");
+        root.Attribute("BrandColor")!.Value.ShouldBe("Seed");
+        root.Attribute("Density")!.Value.ShouldBe("Compact");
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
+        var result = AtomUI.Theme.Definitions.ThemeDocumentReader.Read(stream, "export.theme.xml");
+        result.Diagnostics.ShouldBeEmpty();
+        result.Document.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Export_Of_A_Seed_Theme_With_Pinned_Brand_Tokens_Falls_Back_To_Fixed()
+    {
+        var config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default)
+            .WithToken("ColorPrimary", "#1677FF").WithToken("ColorPrimaryHover", "#4096FF").Build();
+        var xml = ThemePresetCatalog.Export("Pinned", "Pinned", config, designLanguage: "Pinned",
+            brandColor: ThemeBrandColorSupport.Seed, density: ThemeDensity.Normal);
+        XDocument.Parse(xml).Root!.Attribute("BrandColor")!.Value.ShouldBe("Fixed");
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
+        AtomUI.Theme.Definitions.ThemeDocumentReader.Read(stream, "pinned.theme.xml").Diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Package_Profiles_Are_Grouped_By_Family_And_Compiled_Package_Origin()
     {
         AvaloniaTestApp.EnsureInitialized();
@@ -509,7 +554,7 @@ public class ThemePresetsShowCaseTests
             var bar = page.FindControl<ItemsControl>("PrimarySwatchBar")!;
             bool[] Checked() => bar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.RadioButton>()
                                    .Select(swatch => swatch.IsChecked == true).ToArray();
-            model.CanChoosePrimary.ShouldBeTrue();
+            model.CanChoosePrimary.ShouldBeFalse();
             model.PrimarySwatches.Count.ShouldBe(6);
             model.PrimarySwatches[^1].ShouldBe(Color.Parse("#6750A4"));
             model.PrimarySwatchItems[^1].IsSelected.ShouldBeTrue();
@@ -529,13 +574,13 @@ public class ThemePresetsShowCaseTests
             Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#D0BCFF"));
             AssertIndependentProfile(button, manager, "Material.Dark");
 
-            // A fixed swatch survives a mode toggle.
+            // Material declares a fixed brand color, so a swatch click is ignored and the own seed stays selected.
             model.SelectedPrimary = Color.Parse("#F43F5E"); Pump();
+            model.SelectedPrimary.ShouldBeNull();
             model.IsDark = false; Pump();
-            model.SelectedPrimary.ShouldBe(Color.Parse("#F43F5E"));
             model.PrimarySwatches[^1].ShouldBe(Color.Parse("#6750A4"));
-            Checked().ShouldBe([false, false, false, true, false, false]);
-            Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#F43F5E"));
+            Checked().ShouldBe([false, false, false, false, false, true]);
+            Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#6750A4"));
         }
         finally { window.Close(); Pump(); }
     }

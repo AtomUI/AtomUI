@@ -74,21 +74,27 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         return config;
     }
 
-    // Explicit theme values beat the algorithm, so a definition that declares any derived primary token
-    // (ColorPrimaryHover, ColorPrimaryBg, ...) keeps those states fixed whatever the ColorPrimary seed is.
-    internal bool FixesPrimaryStates(string themeId)
+    // Tokens derived from the brand color; a theme declaring BrandColor="Seed" must not pin them (rule ATMTHM3101).
+    private static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
     {
-        _ = Read();
-        var definition = _catalog!.Get(themeId).Definition;
-        static bool IsDerivedPrimary(BoundTokenValue token) =>
-            token.Descriptor.Name.StartsWith(nameof(DesignToken.ColorPrimary), StringComparison.Ordinal) &&
-            token.Descriptor.Name != nameof(DesignToken.ColorPrimary);
-        return definition.Tokens.Any(IsDerivedPrimary) ||
-               definition.Controls.Any(control => control.GlobalTokens.Any(IsDerivedPrimary));
-    }
+        nameof(DesignToken.ColorPrimaryHover), nameof(DesignToken.ColorPrimaryActive),
+        nameof(DesignToken.ColorPrimaryBg), nameof(DesignToken.ColorPrimaryBgHover),
+        nameof(DesignToken.ColorPrimaryBorder), nameof(DesignToken.ColorPrimaryBorderHover),
+        nameof(DesignToken.ColorPrimaryText), nameof(DesignToken.ColorPrimaryTextHover),
+        nameof(DesignToken.ColorPrimaryTextActive), nameof(DesignToken.ColorControlOutline)
+    };
 
-    internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null)
+    internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null,
+        string? designLanguage = null, ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
+        ThemeDensity density = ThemeDensity.Normal)
     {
+        // A Seed theme that pins a brand-derived token would be rejected on read, so export it as Fixed.
+        if (brandColor == ThemeBrandColorSupport.Seed &&
+            (config.Tokens.Keys.Any(s_brandDerivedTokens.Contains) ||
+             config.Controls.Values.Any(control => control.Tokens.Keys.Any(s_brandDerivedTokens.Contains))))
+        {
+            brandColor = ThemeBrandColorSupport.Fixed;
+        }
         XNamespace ns = "https://atomui.net/schemas/theme/v1";
         XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",
             values.Select(value => new XElement(ns + "Algorithm",
@@ -99,6 +105,8 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         var root = new XElement(ns + "Theme", new XAttribute("Id", id), new XAttribute("Name", name),
             new XAttribute("Appearance",
                 (appearance ?? (config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? ThemeAppearance.Dark : ThemeAppearance.Light)).ToString()),
+            designLanguage is null ? null : new XAttribute("DesignLanguage", designLanguage),
+            new XAttribute("BrandColor", brandColor.ToString()), new XAttribute("Density", density.ToString()),
             new XAttribute("IsDefault", false), Algorithms(config.Algorithms!), Tokens(config.Tokens),
             // The schema requires at least one Control inside Controls, so a profile without control values omits it.
             config.Controls.Count == 0 ? null : new XElement(ns + "Controls", config.Controls.Select(pair =>

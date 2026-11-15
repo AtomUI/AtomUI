@@ -127,8 +127,8 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     /// </summary>
     public IReadOnlyList<ThemePrimarySwatch> PrimarySwatchItems => _primarySwatchItems;
     /// <summary>
-    /// Whether the previewed definition lets the derived primary states follow the seed; <c>false</c> when it
-    /// declares any <c>ColorPrimary*</c> token besides <c>ColorPrimary</c> itself.
+    /// Whether the previewed definition declares <c>BrandColor="Seed"</c>, so the derived primary states follow
+    /// a replaced seed; <c>false</c> for a definition with a fixed brand color.
     /// </summary>
     public bool CanChoosePrimary
     {
@@ -282,8 +282,9 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     // whether it fixes the derived primary states can differ between light and dark profiles.
     private void UpdateSwatches(string previewId)
     {
-        var presetPrimary = _themes.Single(item => item.Info.Id == previewId).Info.AccentColor ?? s_defaultPrimary;
-        CanChoosePrimary = !_catalog.FixesPrimaryStates(previewId);
+        var previewInfo = _themes.Single(item => item.Info.Id == previewId).Info;
+        var presetPrimary = previewInfo.AccentColor ?? s_defaultPrimary;
+        CanChoosePrimary = previewInfo.BrandColor == ThemeBrandColorSupport.Seed;
         if (_primarySwatchItems.Count == 0 || presetPrimary != _presetPrimary)
         {
             _presetPrimary = presetPrimary;
@@ -321,7 +322,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     private void Refresh()
     {
         _themes = _catalog.Read();
-        _presets = _themes.Where(item => !IsProfile(item.Info.Id, item.Package))
+        _presets = _themes.Where(item => !IsProfile(item.Info, item.Package))
             .Select(item => new ThemePresetItem(item.Info.Id, item.Info.Name, item.Info.AccentColor ?? Colors.Transparent,
                 IconFor(item.Info.Id))).ToArray();
         this.RaisePropertyChanged(nameof(Presets));
@@ -333,12 +334,23 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         UpdatePreview();
     }
 
-    private bool IsProfile(string id, string package)
+    // A declared design language groups its variants: the light, normal definition is the preset and every other
+    // variant of the language is a profile. A definition without a language falls back to the id suffix convention.
+    private bool IsProfile(ThemeInfo info, string package)
     {
+        if (info.DesignLanguage is { } language)
+        {
+            return (info.Appearance != ThemeAppearance.Light || info.Density != ThemeDensity.Normal) &&
+                   _themes.Any(item => item.Package == package && item.Info.DesignLanguage == language &&
+                                       item.Info.Appearance == ThemeAppearance.Light &&
+                                       item.Info.Density == ThemeDensity.Normal);
+        }
+        var id = info.Id;
         foreach (var suffix in new[] { ".DarkCompact", ".Compact", ".Dark" })
         {
             if (id.EndsWith(suffix, StringComparison.Ordinal) &&
-                _themes.Any(item => item.Package == package && item.Info.Id == id[..^suffix.Length]))
+                _themes.Any(item => item.Package == package && item.Info.DesignLanguage is null &&
+                                    item.Info.Id == id[..^suffix.Length]))
             {
                 return true;
             }
@@ -350,30 +362,58 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     {
         if (_selectedPresetId is null) { return; }
         var family = _themes.Single(item => item.Info.Id == _selectedPresetId);
-        var suffix = IsDark && IsCompact ? ".DarkCompact" : IsDark ? ".Dark" : IsCompact ? ".Compact" : "";
-        var profile = _themes.FirstOrDefault(item => item.Package == family.Package && item.Info.Id == _selectedPresetId + suffix);
-        var id = profile.Info?.Id ?? _selectedPresetId;
-        // Whenever the requested mode exists as a definition (the base definition itself in plain light, non-compact
-        // mode; otherwise the .Dark/.Compact/.DarkCompact profile), the preview keeps that definition's own chain.
-        // Only a missing mode profile falls back to the base theme with the built-in Dark/Compact toggles.
+        string id;
         List<ThemeAlgorithm>? algorithms = null;
-        if (profile.Info is null)
+        Color? seed = null;
+        if (family.Info.DesignLanguage is { } language)
         {
-            algorithms = [IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default];
-            if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
+            // The resolver picks the exact (appearance, density) variant, or the base definition with the built-in
+            // Dark/Compact algorithms appended when the language lacks that variant.
+            var result = ThemeSelectionResolver.Resolve(_themes.Select(item => item.Info).ToArray(),
+                new ThemeSelection(language, IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
+                    IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal, _selectedPrimary));
+            id = result.ThemeId;
+            algorithms = result.Algorithms?.ToList();
+            seed = result.BrandSeed;
+        }
+        else
+        {
+            // No declared language: look up a mode profile by id suffix, else use the base theme with the
+            // built-in Dark/Compact toggles.
+            var suffix = IsDark && IsCompact ? ".DarkCompact" : IsDark ? ".Dark" : IsCompact ? ".Compact" : "";
+            var profile = _themes.FirstOrDefault(item => item.Package == family.Package &&
+                                                         item.Info.DesignLanguage is null &&
+                                                         item.Info.Id == _selectedPresetId + suffix);
+            id = profile.Info?.Id ?? _selectedPresetId;
+            if (profile.Info is null)
+            {
+                algorithms = [IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default];
+                if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
+            }
+            if (_selectedPrimary is { } selected && _themes.Single(item => item.Info.Id == id).Info.BrandColor ==
+                ThemeBrandColorSupport.Seed)
+            {
+                seed = selected;
+            }
         }
         UpdateSwatches(id);
+        // UpdateSwatches may clear a selection the new profile cannot honor.
+        if (seed is not null && _selectedPrimary is null) { seed = null; }
         this.RaiseAndSetIfChanged(ref _previewThemeId, id, nameof(PreviewThemeId));
         this.RaiseAndSetIfChanged(ref _previewConfig,
-            _catalog.CreateConfig(id, algorithms, _selectedPrimary is { } primary ? FormatColor(primary) : null),
+            _catalog.CreateConfig(id, algorithms, seed is { } primary ? FormatColor(primary) : null),
             nameof(PreviewConfig));
         CopySucceeded = false;
         CopyFailed = false;
     }
 
-    public string ExportThemeXml() => ThemePresetCatalog.Export(_previewThemeId!,
-        _themes.Single(item => item.Info.Id == _previewThemeId).Info.Name, _previewConfig!,
-        IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light);
+    public string ExportThemeXml()
+    {
+        var info = _themes.Single(item => item.Info.Id == _previewThemeId).Info;
+        return ThemePresetCatalog.Export(_previewThemeId!, info.Name, _previewConfig!,
+            IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light, info.DesignLanguage, info.BrandColor,
+            IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal);
+    }
 
     private static string FormatColor(Color color) => color.A == 0xFF
         ? $"#{color.R:X2}{color.G:X2}{color.B:X2}"

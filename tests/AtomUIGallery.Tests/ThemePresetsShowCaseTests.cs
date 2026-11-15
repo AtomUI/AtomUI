@@ -179,11 +179,11 @@ public class ThemePresetsShowCaseTests
                 {
                     model.IsDark = dark; model.IsCompact = compact; Pump();
                     var tokens = ControlTokenAccessor.Capture(button);
-                    tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(family == "Material" ? (dark ? "#1C1B1F" : "#FFFBFE") : (dark ? "#212529" : "#FFFFFF")));
+                    tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(family == "Material" ? (dark ? "#1C1B1F" : "#FFFBFE") : (dark ? "#080A0C" : "#FFFFFF")));
                     tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe((family == "Material" ? 40 : 38) - (compact ? 4 : 0));
                     if (family == "Bootstrap")
                     {
-                        tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.FromArgb(0x40, 0x0D, 0x6E, 0xFD));
+                        tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.Parse(dark ? "#0064BA" : "#6FC8FF"));
                     }
                     else
                     {

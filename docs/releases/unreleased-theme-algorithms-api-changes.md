@@ -206,7 +206,8 @@ affected derivations:
 Themes that set none of these compile exactly as before (`Default`, `Dark`, `Compact` and DaybreakBlue are
 unchanged). Among the preset packages, Bootstrap and the PrimeNG profiles changed: for example the PrimeNG Aura focus
 shadow now has a spread of 0 because its `ControlOutlineWidth` is 0, and Bootstrap's input focus shadow is
-`0 0 0 4 #400d6efd` instead of `0 0 0 2 #190591ff`. If you relied on the old result, set the derived token
+`0 0 0 3 #6fc8ff` instead of `0 0 0 2 #190591ff` (the Bootstrap preset also moved to Bootstrap 6.0 values; Dark is
+`0 0 0 3 #0064ba`). If you relied on the old result, set the derived token
 explicitly too. The analyzers `ATOMUIGEN040` and `ATOMUIGEN048` now also check `DesignToken.CalculateAliasTokenValues`.
 
 ## Theme XML: `Catalog` on `<Algorithm>`

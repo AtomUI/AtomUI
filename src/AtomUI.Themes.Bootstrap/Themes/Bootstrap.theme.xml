@@ -4,24 +4,28 @@
     <Algorithm Id="Default" />
   </Algorithms>
   <Tokens>
-    <Token Name="ColorPrimary" Value="#0D6EFD" />
-    <Token Name="ColorSuccess" Value="#198754" />
-    <Token Name="ColorWarning" Value="#FFC107" />
-    <Token Name="ColorError" Value="#DC3545" />
+    <Token Name="ColorPrimary" Value="#0087FE" />
+    <Token Name="ColorSuccess" Value="#00B15A" />
+    <Token Name="ColorWarning" Value="#FFC900" />
+    <Token Name="ColorError" Value="#E62845" />
+    <Token Name="ColorInfo" Value="#00B4F8" />
     <Token Name="FontSize" Value="16" />
     <Token Name="ControlHeight" Value="38" />
-    <Token Name="BorderRadius" Value="6" />
-    <Token Name="ControlOutlineWidth" Value="4" />
-    <Token Name="ColorControlOutline" Value="#400D6EFD" />
+    <Token Name="ControlHeightSM" Value="32" />
+    <Token Name="ControlHeightLG" Value="44" />
+    <Token Name="BorderRadius" Value="8" />
+    <Token Name="BorderRadiusLG" Value="12" />
+    <Token Name="ControlOutlineWidth" Value="3" />
+    <Token Name="ColorControlOutline" Value="#6FC8FF" />
     <Token Name="ColorTextLightSolid" Value="#FFFFFF" />
     <Token Name="ColorBgBase" Value="#FFFFFF" />
-    <Token Name="ColorTextBase" Value="#212529" />
-    <Token Name="ColorText" Value="#212529" />
+    <Token Name="ColorTextBase" Value="#171A1D" />
+    <Token Name="ColorText" Value="#171A1D" />
     <Token Name="ColorBgContainer" Value="#FFFFFF" />
-    <Token Name="ColorBgLayout" Value="#F8F9FA" />
+    <Token Name="ColorBgLayout" Value="#F6F7F8" />
     <Token Name="ColorBgElevated" Value="#FFFFFF" />
-    <Token Name="ColorBorder" Value="#DEE2E6" />
-    <Token Name="ColorBorderSecondary" Value="#E9ECEF" />
+    <Token Name="ColorBorder" Value="#C6CBCF" />
+    <Token Name="ColorBorderSecondary" Value="#D4D8DB" />
     <Token Name="PaddingContentHorizontal" Value="12" />
   </Tokens>
 </Theme>

@@ -193,7 +193,7 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 | --- | --- | --- |
 | `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；值由包内六个主题算法（`PrimeNG:Aura` 等及其 `.Dark`）按 PrimeNG 色阶与规则表计算，primary emerald、surface slate / zinc，逐控件值由算法的控件阶段写入；XML 只有算法链和 Seed Token（Lara 紧凑 profile 另有一项 Select 覆盖） | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
 | `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
-| `AtomUI.Themes.Bootstrap` | `#0d6efd` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 6` | 渐变背景、内阴影 |
+| `AtomUI.Themes.Bootstrap` | Bootstrap 6.0：`#0087fe` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 8` | 渐变背景、内阴影 |
 | `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
 
 包名不带 `Like` 等后缀。PrimeNG 的 Material 预设与 `AtomUI.Themes.Material` 重叠，不重复做。

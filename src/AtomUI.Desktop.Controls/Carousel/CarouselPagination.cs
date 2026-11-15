@@ -51,6 +51,8 @@ internal class CarouselPagination : SelectingItemsControl
     }
     #endregion
 
+    internal Carousel? Owner { get; set; }
+
     static CarouselPagination()
     {
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<CarouselPagination>(false);
@@ -114,7 +116,7 @@ internal class CarouselPagination : SelectingItemsControl
             var container = GetContainerFromEventSource(e.Source);
             if (container != null)
             {
-                e.Handled = UpdateSelectionFromEvent(container, e);
+                e.Handled = SelectFromPointer(container, e);
             }
         }
     }
@@ -127,8 +129,25 @@ internal class CarouselPagination : SelectingItemsControl
             if (container != null
                 && container.ContainsSelfOrDescendantAt(e.GetPosition(container)))
             {
-                e.Handled = UpdateSelectionFromEvent(container, e);
+                e.Handled = SelectFromPointer(container, e);
             }
         }
+    }
+
+    private bool SelectFromPointer(Control container, PointerEventArgs input)
+    {
+        if (Owner is null)
+        {
+            return UpdateSelectionFromEvent(container, input);
+        }
+
+        var index = IndexFromContainer(container);
+        if (index < 0)
+        {
+            return false;
+        }
+        Owner.SelectPageFromPagination(index);
+        container.PerformFeedback(FeedbackAction.Click);
+        return true;
     }
 }

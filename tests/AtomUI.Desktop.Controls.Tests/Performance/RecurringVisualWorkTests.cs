@@ -163,18 +163,17 @@ public class RecurringVisualWorkTests
 
         ShowInWindow(host, () =>
         {
-            var timer = GetPrivateField<DispatcherTimer>(typeof(AtomUICarousel), carousel, "_autoPlayTimer");
-            timer.IsEnabled.ShouldBeTrue();
+            carousel.IsAutoPlayTimerRunning.ShouldBeTrue();
 
             host.IsVisible = false;
             Dispatcher.UIThread.RunJobs();
 
-            timer.IsEnabled.ShouldBeFalse();
+            carousel.IsAutoPlayTimerRunning.ShouldBeFalse();
 
             host.IsVisible = true;
             Dispatcher.UIThread.RunJobs();
 
-            timer.IsEnabled.ShouldBeTrue();
+            carousel.IsAutoPlayTimerRunning.ShouldBeTrue();
         });
     }
 

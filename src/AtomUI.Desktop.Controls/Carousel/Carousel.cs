@@ -1,5 +1,4 @@
-using System.Reactive.Disposables;
-using AtomUI.Controls;
+using AtomUI.Controls.Commons;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -9,22 +8,22 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
+using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls;
 
-public class Carousel : SelectingItemsControl, IMotionAwareControl
+public class Carousel : AbstractCarousel
 {
     #region 公共属性定义
     public static readonly StyledProperty<bool> IsShowNavButtonsProperty = 
         AvaloniaProperty.Register<Carousel, bool>(nameof(IsShowNavButtons), false);
     
-    public static readonly StyledProperty<bool> IsAutoPlayProperty = 
-        AvaloniaProperty.Register<Carousel, bool>(nameof(IsAutoPlay));
+    public new static readonly StyledProperty<bool> IsAutoPlayProperty =
+        AbstractCarousel.IsAutoPlayProperty.AddOwner<Carousel>();
     
-    public static readonly StyledProperty<TimeSpan> AutoPlaySpeedProperty = 
-        AvaloniaProperty.Register<Carousel, TimeSpan>(nameof(AutoPlaySpeed), TimeSpan.FromMilliseconds(3000));
+    public new static readonly StyledProperty<TimeSpan> AutoPlaySpeedProperty =
+        AbstractCarousel.AutoPlaySpeedProperty.AddOwner<Carousel>();
     
     public static readonly StyledProperty<CarouselPaginationPosition> PaginationPositionProperty = 
         AvaloniaProperty.Register<Carousel, CarouselPaginationPosition>(nameof(PaginationPosition), CarouselPaginationPosition.Bottom);
@@ -35,8 +34,8 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     public static readonly StyledProperty<bool> IsShowTransitionProgressProperty = 
         AvaloniaProperty.Register<Carousel, bool>(nameof(IsShowTransitionProgress), false);
     
-    public static readonly StyledProperty<bool> IsInfiniteProperty = 
-        AvaloniaProperty.Register<Carousel, bool>(nameof(IsInfinite), true);
+    public new static readonly StyledProperty<bool> IsInfiniteProperty =
+        AbstractCarousel.IsInfiniteProperty.AddOwner<Carousel>();
     
     public static readonly StyledProperty<TimeSpan> PageTransitionDurationProperty = 
         AvaloniaProperty.Register<Carousel, TimeSpan>(nameof(PageTransitionDuration));
@@ -50,11 +49,11 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     public static readonly StyledProperty<CarouselTransitionEffect> TransitionEffectProperty = 
         AvaloniaProperty.Register<Carousel, CarouselTransitionEffect>(nameof(TransitionEffect));
     
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Carousel>();
+    public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        AbstractCarousel.IsMotionEnabledProperty.AddOwner<Carousel>();
 
-    public static readonly StyledProperty<bool> IsSwipeEnabledProperty =
-        AvaloniaProperty.Register<Carousel, bool>(nameof(IsSwipeEnabled));
+    public new static readonly StyledProperty<bool> IsSwipeEnabledProperty =
+        AbstractCarousel.IsSwipeEnabledProperty.AddOwner<Carousel>();
     
     public bool IsShowNavButtons
     {
@@ -62,13 +61,13 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
         set => SetValue(IsShowNavButtonsProperty, value);
     }
     
-    public bool IsAutoPlay
+    public new bool IsAutoPlay
     {
         get => GetValue(IsAutoPlayProperty);
         set => SetValue(IsAutoPlayProperty, value);
     }
     
-    public TimeSpan AutoPlaySpeed
+    public new TimeSpan AutoPlaySpeed
     {
         get => GetValue(AutoPlaySpeedProperty);
         set => SetValue(AutoPlaySpeedProperty, value);
@@ -92,7 +91,7 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
         set => SetValue(IsShowTransitionProgressProperty, value);
     }
     
-    public bool IsInfinite
+    public new bool IsInfinite
     {
         get => GetValue(IsInfiniteProperty);
         set => SetValue(IsInfiniteProperty, value);
@@ -122,13 +121,13 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
         set => SetValue(TransitionEffectProperty, value);
     }
     
-    public bool IsMotionEnabled
+    public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
-    public bool IsSwipeEnabled
+    public new bool IsSwipeEnabled
     {
         get => GetValue(IsSwipeEnabledProperty);
         set => SetValue(IsSwipeEnabledProperty, value);
@@ -260,21 +259,18 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     
     private IScrollable? _scroller;
     private CarouselPagination? _pagination;
-    private DispatcherTimer? _autoPlayTimer;
-    private CompositeDisposable? _autoPlayVisibilitySubscriptions;
+    private AvaloniaWindow? _window;
     private IconButton? _previousButton;
     private IconButton? _nextButton;
-    private bool _isPointerGestureActive;
+    private IPointer? _swipePointer;
     private Point _pointerPressPoint;
     private const double SwipeGestureThreshold = 30;
     private bool _isSwipeCursorActive;
     
     static Carousel()
     {
-        SelectionModeProperty.OverrideDefaultValue<Carousel>(SelectionMode.AlwaysSelected);
         ItemsPanelProperty.OverrideDefaultValue<Carousel>(DefaultPanel);
         AffectsArrange<Carousel>(SelectedIndexProperty);
-        AutoScrollToSelectedItemProperty.OverrideDefaultValue<Carousel>(false);
         ItemCountProperty.Changed.AddClassHandler<Carousel>((carousel, args) => carousel.HandleItemCountChanged(args.GetNewValue<int>()));
     }
 
@@ -292,33 +288,10 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
         SetCurrentValue(IndicatorItemsProperty, items);
     }
     
-    public void Next()
-    {
-        if (!IsInfinite)
-        {
-            if (SelectedIndex < ItemCount - 1)
-            {
-                ++SelectedIndex;
-            }
-        }
-        else
-        {
-            SelectedIndex = (SelectedIndex + 1) % ItemCount;
-        }
-    }
-    
-    public void Previous()
-    {
-        if (SelectedIndex > 0)
-        {
-            --SelectedIndex;
-        }
-        else if (IsInfinite)
-        {
-            SelectedIndex = ItemCount - 1;
-        }
-    }
-    
+    public new void Next() => base.Next();
+
+    public new void Previous() => base.Previous();
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -333,9 +306,26 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        CancelSwipe();
+        if (_pagination is not null)
+        {
+            _pagination.Owner = null;
+        }
+        if (_previousButton is not null)
+        {
+            _previousButton.Click -= HandlePreviousButtonClick;
+        }
+        if (_nextButton is not null)
+        {
+            _nextButton.Click -= HandleNextButtonClick;
+        }
         base.OnApplyTemplate(e);
         _scroller       = e.NameScope.Find<IScrollable>("PART_ScrollViewer");
         _pagination     = e.NameScope.Find<CarouselPagination>("PART_Pagination");
+        if (_pagination is not null)
+        {
+            _pagination.Owner = this;
+        }
         _previousButton = e.NameScope.Find<IconButton>("PART_PreviousButton");
         _nextButton     = e.NameScope.Find<IconButton>("PART_NextButton");
         BuildEffectivePageTransition(false);
@@ -353,19 +343,19 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
 
     private void HandlePreviousButtonClick(object? sender, RoutedEventArgs args)
     {
-        Previous();
+        MoveBy(-1, CarouselChangeSource.User);
     }
 
     private void HandleNextButtonClick(object? sender, RoutedEventArgs args)
     {
-        Next();
+        MoveBy(1, CarouselChangeSource.User);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
 
-        if (!IsSwipeEnabled)
+        if (!IsSwipeEnabled || _swipePointer is not null)
         {
             return;
         }
@@ -383,23 +373,23 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
             return;
         }
 
-        _isPointerGestureActive = true;
-        _pointerPressPoint      = point.Position;
+        _swipePointer = e.Pointer;
+        _pointerPressPoint = point.Position;
         e.Pointer.Capture(this);
+        SetAutoPlayInteractionPaused(true);
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
 
-        if (!IsSwipeEnabled || !_isPointerGestureActive)
+        if (!ReferenceEquals(_swipePointer, e.Pointer))
         {
             return;
         }
 
-        var handled = TryHandleSwipe(e.GetPosition(this));
-        _isPointerGestureActive = false;
-        e.Pointer.Capture(null);
+        var handled = IsSwipeEnabled && TryHandleSwipe(e.GetPosition(this));
+        CancelSwipe();
         if (handled)
         {
             e.Handled = true;
@@ -409,8 +399,24 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
-        _isPointerGestureActive = false;
+        if (ReferenceEquals(_swipePointer, e.Pointer))
+        {
+            CancelSwipe();
+        }
     }
+
+    private void CancelSwipe()
+    {
+        var pointer = _swipePointer;
+        _swipePointer = null;
+        if (pointer?.Captured == this)
+        {
+            pointer.Capture(null);
+        }
+        SetAutoPlayInteractionPaused(false);
+    }
+
+    internal void SelectPageFromPagination(int index) => RequestPageChange(index, CarouselChangeSource.User);
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -450,40 +456,25 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
                 UpdateSwipeCursor();
             }
         }
-        else if (change.Property == IsAutoPlayProperty)
-        {
-            BuildAutoPlayTimer();
-        }
-        else if (change.Property == AutoPlaySpeedProperty)
-        {
-            ConfigureAutoPlayTimer();
-        }
         else if (change.Property == IsSwipeEnabledProperty)
         {
             UpdateSwipeCursor();
-        }
-        else if (change.Property == SelectedIndexProperty)
-        {
-            if (_autoPlayTimer != null && _autoPlayTimer.IsEnabled)
+            if (!IsSwipeEnabled)
             {
-                _autoPlayTimer?.Stop();
-                _autoPlayTimer?.Start();
+                CancelSwipe();
             }
         }
 
-        if (change.Property == IsAutoPlayProperty ||
-            change.Property == IsShowTransitionProgressProperty)
+        if (change.Property == IsShowTransitionProgressProperty)
         {
-            if (IsAutoPlay)
-            {
-                SetCurrentValue(IsEffectiveShowTransitionProgressProperty, IsShowTransitionProgress);
-            }
-            else
-            {
-                SetCurrentValue(IsEffectiveShowTransitionProgressProperty, false);
-            }
+            UpdateTransitionProgressVisibility();
         }
     }
+
+    protected override void OnAutoPlayRunningChanged(bool isRunning) => UpdateTransitionProgressVisibility();
+
+    private void UpdateTransitionProgressVisibility() =>
+        SetCurrentValue(IsEffectiveShowTransitionProgressProperty, IsAutoPlayTimerRunning && IsShowTransitionProgress);
 
     private bool TryHandleSwipe(Point releasePoint)
     {
@@ -497,11 +488,11 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
             {
                 if (delta.X < 0)
                 {
-                    Next();
+                    MoveBy(1, CarouselChangeSource.User);
                 }
                 else
                 {
-                    Previous();
+                    MoveBy(-1, CarouselChangeSource.User);
                 }
 
                 return true;
@@ -514,11 +505,11 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
             {
                 if (delta.Y < 0)
                 {
-                    Next();
+                    MoveBy(1, CarouselChangeSource.User);
                 }
                 else
                 {
-                    Previous();
+                    MoveBy(-1, CarouselChangeSource.User);
                 }
 
                 return true;
@@ -583,17 +574,35 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _window = TopLevel.GetTopLevel(this) as AvaloniaWindow;
+        if (_window is not null)
+        {
+            _window.PropertyChanged += HandleHostWindowPropertyChanged;
+        }
+        UpdateHostWindowAvailability();
         base.OnAttachedToVisualTree(e);
-        ConfigureAutoPlayVisibilityTracking();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _autoPlayVisibilitySubscriptions?.Dispose();
-        _autoPlayVisibilitySubscriptions = null;
-        _autoPlayTimer?.Stop();
+        if (_window is not null)
+        {
+            _window.PropertyChanged -= HandleHostWindowPropertyChanged;
+            _window = null;
+        }
         base.OnDetachedFromVisualTree(e);
+        CancelSwipe();
     }
+
+    private void HandleHostWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == AvaloniaWindow.WindowStateProperty)
+        {
+            UpdateHostWindowAvailability();
+        }
+    }
+
+    private void UpdateHostWindowAvailability() => SetAutoPlayHostAvailable(_window?.WindowState != WindowState.Minimized);
 
     private void ConfigureNavButtons()
     {
@@ -692,73 +701,6 @@ public class Carousel : SelectingItemsControl, IMotionAwareControl
             {
                 pageSlide.Orientation = PageSlide.SlideAxis.Vertical;
             }
-        }
-    }
-
-    private void BuildAutoPlayTimer()
-    {
-        if (IsAutoPlay)
-        {
-            if (_autoPlayTimer != null)
-            {
-                _autoPlayTimer.Stop();
-                _autoPlayTimer.Tick -= HandleAutoPlayTick;
-            }
-            _autoPlayTimer      =  new DispatcherTimer();
-            _autoPlayTimer.Tick += HandleAutoPlayTick;
-            ConfigureAutoPlayTimer();
-        }
-        else
-        {
-            if (_autoPlayTimer != null)
-            {
-                _autoPlayTimer.Stop();
-                _autoPlayTimer.Tick -= HandleAutoPlayTick;
-            }
-            _autoPlayTimer = null;
-        }
-
-        ConfigureAutoPlayVisibilityTracking();
-    }
-
-    private void HandleAutoPlayTick(object? sender, EventArgs e)
-    {
-        Next();
-    }
-
-    private void ConfigureAutoPlayTimer()
-    {
-        if (_autoPlayTimer != null)
-        {
-            _autoPlayTimer.Interval = AutoPlaySpeed;
-        }
-    }
-
-    private void ConfigureAutoPlayVisibilityTracking()
-    {
-        _autoPlayVisibilitySubscriptions?.Dispose();
-        _autoPlayVisibilitySubscriptions = null;
-
-        if (!IsAutoPlay || !this.IsAttachedToVisualTree())
-        {
-            _autoPlayTimer?.Stop();
-            return;
-        }
-
-        var subscriptions = new CompositeDisposable();
-        _autoPlayVisibilitySubscriptions = subscriptions;
-        this.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscriptions);
-    }
-
-    private void HandleEffectiveVisibilityChanged(bool isEffectivelyVisible)
-    {
-        if (isEffectivelyVisible)
-        {
-            _autoPlayTimer?.Start();
-        }
-        else
-        {
-            _autoPlayTimer?.Stop();
         }
     }
 }

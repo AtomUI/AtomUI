@@ -720,6 +720,70 @@ Control 使用同一条确定性路径。
    public 子 Control 完整替换。
 5. 所有输入先编译成不可变 ThemeSnapshot，再由稳定 ThemeContext 原子发布。
 
+## 设计语言与品牌色
+
+一个主题定义可以声明自己属于哪个设计语言、是哪种明暗和密度的变体，以及是否允许替换品牌色。这些属性写在
+`<Theme>` 元素上，供界面把一组 profile 归成一个选项（例如 Gallery 的设计语言菜单）：
+
+```xml
+<Theme Id="PrimeNGAura.Dark" Name="PrimeNG Aura Dark" Appearance="Dark"
+       DesignLanguage="PrimeNG.Aura" Density="Normal" BrandColor="Seed">
+```
+
+| 属性 | 取值 | 缺省 | 含义 |
+| --- | --- | --- | --- |
+| `DesignLanguage` | 标识符 | 不声明 | 同一设计语言的定义归为一组；不声明的主题不进入任何分组，但仍可按 Id 使用 |
+| `Density` | `Normal`、`Compact` | `Normal` | 该定义按哪种密度编写；与 `Appearance` 一起构成变体 |
+| `BrandColor` | `Seed`、`Fixed` | `Fixed` | `Seed`：品牌色可替换，品牌派生 Token 由算法从 `ColorPrimary` 推出；`Fixed`：品牌色由定义写死 |
+
+同一设计语言内，(`Appearance`, `Density`) 不能重复，各定义的 `BrandColor` 必须一致。`ThemeInfo` 暴露
+`DesignLanguage`、`Density`、`BrandColor` 和定义自身的算法链 `Algorithms`。
+
+### Seed 与 Fixed
+
+`BrandColor="Seed"` 的主题把 `ColorPrimary` 当作种子，下面这组品牌派生 Token 必须由算法计算，不能在该主题里手写：
+
+`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、`ColorPrimaryBorder`、
+`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、`ColorControlOutline`。
+
+手写其中任何一个会报 `ATMTHM3101`（Error），改为声明 `BrandColor="Fixed"` 或删掉该 Token。`ColorLink` 不在这组里：
+它是独立种子，Seed 主题可以显式设置。`Fixed` 的主题（Bootstrap、Material、Shadcn）自己决定品牌色，选择器不会向它写入种子。
+
+### 目录诊断
+
+同一设计语言的跨定义冲突按两处不同的级别处理：
+
+- 编译主题包内：`ATMTHM3103`（同一设计语言里 `Appearance` 与 `Density` 重复）和 `ATMTHM3104`（同一设计语言混用
+  `Seed` 与 `Fixed`）是 Error，包不能通过生成。
+- 运行时目录合并所有来源（包、用户目录、热重载）后检查，发的是 Warning，不阻止应用启动。冲突的定义（按加载顺序在后者）
+  退出分组，按 `DesignLanguage = null` 处理，仍可按 Id 使用；用户目录也可以给已有设计语言补充变体，只要变体不重复、
+  `BrandColor` 一致。
+
+### 用解析器把选择变成主题请求
+
+`ThemeSelectionResolver` 是 Core 里的纯函数，不读写任何状态。它把用户的选择（设计语言、明暗、密度、品牌色）解析成要应用的
+主题 Id、算法链和品牌种子：
+
+```csharp
+var catalog = themeManager.AvailableThemes;      // IReadOnlyList<ThemeInfo>
+var languages = ThemeSelectionResolver.DesignLanguages(catalog);
+var support = ThemeSelectionResolver.BrandColorSupport(catalog, "AntDesign");
+
+var result = ThemeSelectionResolver.Resolve(
+    catalog,
+    new ThemeSelection("AntDesign", ThemeAppearance.Dark, ThemeDensity.Compact, Color.Parse("#52C41A")));
+
+// result.ThemeId     = "DaybreakBlue"
+// result.Algorithms  = [Default, Compact, Dark]  (null 表示沿用 profile 自己的链)
+// result.BrandSeed   = #52C41A                   (Fixed 语言为 null，且 BrandColorIgnored = true)
+```
+
+规则：先找同一设计语言里 (`Appearance`, `Density`) 精确匹配的定义，用它自己的链（`Algorithms = null`）；没有精确匹配时，
+取该语言的 Light + Normal 定义为基础，从它的链里去掉 `Dark`、`Compact`，再按选择追加 `Compact`、`Dark`（Ant Design 只有
+一个基础 profile，明暗和紧凑靠内置算法）；语言不存在，或既无精确匹配也没有 Light + Normal 基础定义，抛
+`ArgumentException`。调用方用结果组装 `ThemeRequest`：`ThemeId`、`Algorithms`（为 null 时不指定）和
+`ColorPrimary = BrandSeed`（为 null 时不写）。
+
 ## 相关文档
 
 - [AtomUI 主题系统架构](../../architecture/systems/theming/runtime.md)：完整运行时模型、事务、缓存、生命周期和验收标准。

@@ -30,6 +30,7 @@ the author's guide.
 | Theme XML `<Algorithm>` | `Id` is `Default`, `Dark` or `Compact` | optional `Catalog` (default `AtomUI`); `Id` accepts any identifier. Existing files stay valid |
 | Explicit global Alias values | written after the Alias formulas; derived Alias tokens ignored them | drive the Alias tokens derived from them (a fix). Themes that set Alias tokens explicitly can compile differently |
 | Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 5, algorithms as `Catalog`/`Id`; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
+| Design language and brand color | — | new `ThemeDensity` (`Normal`, `Compact`) and `ThemeBrandColorSupport` (`Fixed`, `Seed`) enums; `ThemeInfo` gains the `init` properties `DesignLanguage`, `Density`, `BrandColor` and `Algorithms` (the definition's own chain); new `ThemeSelection`, `ThemeSelectionResult` and `ThemeSelectionResolver`; `CompiledThemeProgram` gains a protected ABI 2 constructor. ABI 1 packages keep loading with the defaults; no action (see below) |
 | PrimeNG presets | XML value tables with Ant-derived fill-ins | produced by six PrimeNG algorithms; visible colour changes (see below) |
 
 ## `ThemeAlgorithm` becomes an identity struct
@@ -243,6 +244,28 @@ the generated runtime ABI stays v1. An intermediate left over from an older buil
 | `ThemeSchemaException` | "Duplicate algorithm identity 'Catalog:Id'." and "Duplicate control algorithm '{algorithm}' for control '{control}'." |
 | `ThemeLoadException` | Runtime package append: "Package append cannot add a control algorithm for the already registered algorithm '{algorithm}' and control '{control}'." |
 | `ThemeAlgorithmContractException` | `StageBoundary`, `Unstable` or `Failed` violation of an optional algorithm stage; also `Failed` when an algorithm's Map stage throws (built-in algorithms included). A control-stage violation is thrown when that control is first read, not at compile time |
+
+## Design language and brand color
+
+Theme definitions can declare `DesignLanguage`, `Density` (`Normal` or `Compact`, default `Normal`) and `BrandColor`
+(`Seed` or `Fixed`, default `Fixed`) on the `<Theme>` element. All additions are source compatible; `ThemeInfo` only
+gains `init` properties and `ThemeRequest` / `ThemeConfig` are unchanged.
+
+| API | Description |
+| --- | --- |
+| `ThemeDensity`, `ThemeBrandColorSupport` | The two new enums |
+| `ThemeInfo.DesignLanguage`, `Density`, `BrandColor`, `Algorithms` | New `init` properties; `Algorithms` is the definition's own chain and takes part in equality |
+| `ThemeSelection`, `ThemeSelectionResult` | Records for the selection and the resolved theme id, algorithm chain and brand seed |
+| `ThemeSelectionResolver` | Pure functions `Resolve`, `DesignLanguages` and `BrandColorSupport`; an unknown language, or one with neither an exact variant nor a light, normal base definition, throws `ArgumentException` |
+| `CompiledThemeProgram` ABI 2 constructor | Protected, for generated code; carries the design language metadata and the algorithm chain. ABI 1 packages still load |
+
+A `Seed` theme must not set the brand-derived tokens (`ColorPrimaryHover`, `ColorPrimaryActive`, `ColorPrimaryBg`,
+`ColorPrimaryBgHover`, `ColorPrimaryBorder`, `ColorPrimaryBorderHover`, `ColorPrimaryText`, `ColorPrimaryTextHover`,
+`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set.
+`ATMTHM3103` (duplicate appearance and density inside one design language) and `ATMTHM3104` (mixed `Seed` and
+`Fixed`) are errors inside a compiled theme package and warnings in the runtime catalog, where the later conflicting
+definition leaves the group and stays usable by id. See [Theme customization](../guides/theming/customization.md)
+(Chinese) for the rules and a resolver example.
 
 ## PrimeNG presets are produced by algorithms
 

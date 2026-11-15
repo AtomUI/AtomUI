@@ -28,6 +28,7 @@
 | 主题 XML `<Algorithm>` | `Id` 只能是 `Default`、`Dark`、`Compact` | 新增可选 `Catalog`（缺省 `AtomUI`）；`Id` 接受任意合法标识符。现有文件仍然有效 |
 | 全局 Alias 显式值 | 在 Alias 公式之后写入，派生 Alias 不跟随 | 带动由它派生的 Alias（修复）。显式设置过 Alias Token 的主题，编译结果可能变化 |
 | 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 5，算法为 `Catalog`/`Id`；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
+| 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
 | PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
 
 ## `ThemeAlgorithm` 改为身份结构体
@@ -226,6 +227,25 @@ Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 
 | `ThemeSchemaException` | 「Duplicate algorithm identity 'Catalog:Id'.」「Duplicate control algorithm '{algorithm}' for control '{control}'.」 |
 | `ThemeLoadException` | 运行时追加包：「Package append cannot add a control algorithm for the already registered algorithm '{algorithm}' and control '{control}'.」 |
 | `ThemeAlgorithmContractException` | 可选算法阶段违反契约：`StageBoundary`、`Unstable` 或 `Failed`；算法的 Map 阶段抛异常时也报 `Failed`（内置算法也一样）。控件阶段的违规在该控件第一次被读取时抛出，不是编译期诊断 |
+
+## 设计语言与品牌色
+
+主题定义可以在 `<Theme>` 元素上声明 `DesignLanguage`、`Density`（`Normal` 或 `Compact`，缺省 `Normal`）和 `BrandColor`
+（`Seed` 或 `Fixed`，缺省 `Fixed`）。所有新增都源码兼容：`ThemeInfo` 只追加 `init` 属性，`ThemeRequest` 与 `ThemeConfig` 不变。
+
+| API | 说明 |
+| --- | --- |
+| `ThemeDensity`、`ThemeBrandColorSupport` | 两个新枚举 |
+| `ThemeInfo.DesignLanguage`、`Density`、`BrandColor`、`Algorithms` | 新增 `init` 属性；`Algorithms` 是定义自身的算法链，参与相等比较 |
+| `ThemeSelection`、`ThemeSelectionResult` | 选择，以及解析出的主题 Id、算法链和品牌种子 |
+| `ThemeSelectionResolver` | 纯函数 `Resolve`、`DesignLanguages`、`BrandColorSupport`；语言不存在，或既无精确变体也没有 Light + Normal 基础定义时抛 `ArgumentException` |
+| `CompiledThemeProgram` ABI 2 构造函数 | 受保护，供生成代码使用；携带设计语言元数据和算法链。ABI 1 编译包仍可加载 |
+
+`Seed` 主题不得手写品牌派生 Token（`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、
+`ColorPrimaryBorder`、`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、
+`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。`ATMTHM3103`（同一设计语言内 `Appearance` 与
+`Density` 重复）和 `ATMTHM3104`（混用 `Seed` 与 `Fixed`）在编译主题包内是 Error，在运行时目录是 Warning：在后的冲突定义退出分组，
+仍可按 Id 使用。规则和解析器示例见[主题定制指南](../guides/theming/customization.md)。
 
 ## PrimeNG 预设改由算法计算
 

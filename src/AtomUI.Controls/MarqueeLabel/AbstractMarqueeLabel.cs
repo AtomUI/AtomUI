@@ -1,10 +1,13 @@
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Styling; 
+using Avalonia.Rendering.Composition;
+using Avalonia.Rendering.Composition.Animations;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -93,14 +96,20 @@ public abstract class AbstractMarqueeLabel : TextBlock
     private CancellationTokenSource? _cancellationTokenSource;
     private DispatcherTimer? _startDelayTimer;
     private Animation? _animation;
+    private MarqueeTextVisual? _compositedText;
+    private TopLevel? _compositedTopLevel;
     private bool _animationRunning;
     private double _lastDesiredWidth;
     private double _lastTextWidth;
     private double _pivotOffsetStartValue;
     private readonly MotionGate _motionGate;
 
+    // Composition has no client-side readback of the current translation.
+    // Opt in only for labels that restart from the beginning when the gate reopens.
+    internal virtual bool UseCompositedMarquee => false;
+
     /// <summary>True while a scrolling animation is running.</summary>
-    internal bool IsMarqueeAnimating => _cancellationTokenSource is not null;
+    internal bool IsMarqueeAnimating => _cancellationTokenSource is not null || _compositedText is not null;
 
     /// <summary>True while a delayed start is waiting for its timer.</summary>
     internal bool HasPendingStartDelay => _startDelayTimer is not null;
@@ -181,12 +190,20 @@ public abstract class AbstractMarqueeLabel : TextBlock
             }
             else if (change.Property == CycleSpaceProperty || change.Property == MoveSpeedProperty)
             {
-                var originRunning = _animationRunning;
+                var originRunning = _animationRunning || _compositedText is not null;
                 ReConfigureAnimation();
                 if (originRunning)
                 {
                     HandleStartupMarqueeAnimation();
                 }
+            }
+            else if (_compositedText is not null && change.Property == BoundsProperty)
+            {
+                _compositedText.InvalidateVisual();
+            }
+            else if (UseCompositedMarquee && change.Property == TextWrappingProperty && TextWrapping != TextWrapping.NoWrap)
+            {
+                HandleCleanupMarqueeAnimation();
             }
         }
     }
@@ -230,6 +247,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
     private bool CanStartMarquee()
     {
         return _lastDesiredWidth > 0 &&
+               (!UseCompositedMarquee || TextWrapping == TextWrapping.NoWrap) &&
                this.IsAttachedToVisualTree() &&
                _motionGate.ShouldRun &&
                !IsPausedByPointerOver;
@@ -239,7 +257,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     private void HandleStartupMarqueeAnimation()
     {
-        if (_animation is null || !CanStartMarquee())
+        if ((!UseCompositedMarquee && _animation is null) || !CanStartMarquee())
         {
             return;
         }
@@ -269,7 +287,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
                 return;
             }
             // The completion of the run stopped above may have discarded the animation while the delay was pending.
-            if (_animation is null)
+            if (!UseCompositedMarquee && _animation is null)
             {
                 ReConfigureAnimation();
             }
@@ -281,6 +299,12 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     private void StartMarqueeAnimation()
     {
+        if (UseCompositedMarquee)
+        {
+            StartCompositedMarquee();
+            return;
+        }
+
         if (_animation is null)
         {
             return;
@@ -316,6 +340,7 @@ public abstract class AbstractMarqueeLabel : TextBlock
     private void HandleCleanupMarqueeAnimation()
     {
         CancelStartDelay();
+        StopCompositedMarquee();
         if (_cancellationTokenSource != null)
         {
             _cancellationTokenSource.Cancel();
@@ -326,7 +351,8 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     private void HandleLayoutUpdated(Size size, Size availableSize)
     {
-        if (availableSize.Width > size.Width || MathUtils.AreClose(availableSize.Width, size.Width))
+        if ((UseCompositedMarquee && TextWrapping != TextWrapping.NoWrap) ||
+            availableSize.Width > size.Width || MathUtils.AreClose(availableSize.Width, size.Width))
         {
             HandleCleanupMarqueeAnimation();
             PivotOffset            = 0;
@@ -335,16 +361,21 @@ public abstract class AbstractMarqueeLabel : TextBlock
         }
         else
         {
-            if (!MathUtils.AreClose(_lastDesiredWidth, size.Width))
+            if (UseCompositedMarquee || !MathUtils.AreClose(_lastDesiredWidth, size.Width))
             {
                 _lastDesiredWidth = size.Width;
                 if (!MathUtils.AreClose(_lastTextWidth, TextLayout.Width))
                 {
                     _lastTextWidth = TextLayout.Width;
+                    StopCompositedMarquee();
                 }
             }
 
-            if (!_animationRunning && _startDelayTimer is null)
+            if (_compositedText is not null)
+            {
+                _compositedText.InvalidateVisual();
+            }
+            else if (!_animationRunning && _startDelayTimer is null)
             {
                 ReConfigureAnimation();
                 HandleStartupMarqueeAnimation();
@@ -354,6 +385,12 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     private void ReConfigureAnimation()
     {
+        if (UseCompositedMarquee)
+        {
+            StopCompositedMarquee();
+            return;
+        }
+
         if (_animation is not null && _animationRunning)
         {
             _cancellationTokenSource?.Cancel();
@@ -367,7 +404,6 @@ public abstract class AbstractMarqueeLabel : TextBlock
             _pivotOffsetStartValue %= cycleWidth;
         }
 
-        var delta = _pivotOffsetStartValue - cycleWidth - _pivotOffsetStartValue;
         _animation = new Animation
         {
             IterationCount    = new IterationCount(long.MaxValue),
@@ -392,11 +428,102 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     protected override void RenderTextLayout(DrawingContext context, Point origin)
     {
-        var offset = TextLayout.OverhangLeading + PivotOffset;
-        TextLayout.Draw(context, origin + new Point(offset, 0));
-        if (PivotOffset < 0)
+        if (_compositedText is not null)
         {
-            TextLayout.Draw(context, origin + new Point(offset + _lastTextWidth + CycleSpace, 0));
+            context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
+            return;
+        }
+
+        DrawMarqueeText(context, origin, PivotOffset, PivotOffset < 0);
+    }
+
+    private void DrawMarqueeText(DrawingContext context, Point origin, double pivot, bool drawSecondCopy)
+    {
+        var textLayout = TextLayout;
+        var offset = textLayout.OverhangLeading + pivot;
+        textLayout.Draw(context, origin + new Point(offset, 0));
+        if (drawSecondCopy)
+        {
+            textLayout.Draw(context, origin + new Point(offset + _lastTextWidth + CycleSpace, 0));
+        }
+    }
+
+    private void StartCompositedMarquee()
+    {
+        var cycleWidth = _lastTextWidth + CycleSpace;
+        if (_compositedText is not null || !(cycleWidth > 0) || ElementComposition.GetElementVisual(this) is null)
+        {
+            return;
+        }
+
+        var text = new MarqueeTextVisual(this);
+        VisualChildren.Add(text);
+        var visual = ElementComposition.GetElementVisual(text)!;
+        var animation = visual.Compositor.CreateVector3DKeyFrameAnimation();
+        animation.Duration = TimeSpan.FromMilliseconds(CalculateDuration(cycleWidth));
+        animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        var linear = new LinearEasing();
+        animation.InsertKeyFrame(0, default, linear);
+        animation.InsertKeyFrame(1, new Vector3D(-cycleWidth, 0, 0), linear);
+        visual.StartAnimation(nameof(CompositionVisual.Translation), animation);
+        _compositedText = text;
+        _compositedTopLevel = TopLevel.GetTopLevel(this);
+        if (_compositedTopLevel is not null)
+        {
+            _compositedTopLevel.ScalingChanged += HandleCompositedScalingChanged;
+        }
+        InvalidateVisual();
+    }
+
+    private void HandleCompositedScalingChanged(object? sender, EventArgs e) => _compositedText?.InvalidateVisual();
+
+    private void StopCompositedMarquee()
+    {
+        if (_compositedText is { } text)
+        {
+            _compositedText = null;
+            if (_compositedTopLevel is not null)
+            {
+                _compositedTopLevel.ScalingChanged -= HandleCompositedScalingChanged;
+                _compositedTopLevel = null;
+            }
+            if (ElementComposition.GetElementVisual(text) is { } visual)
+            {
+                // A hidden ancestor can defer the tree update. Queue a direct value on the compositor
+                // to cancel both an installed and a pending animation. The client value is already zero,
+                // so change it first to make the zero assignment part of the batch.
+                visual.Translation = new Vector3D(1, 0, 0);
+                visual.Translation = default;
+            }
+            VisualChildren.Remove(text);
+            InvalidateVisual();
+        }
+    }
+
+    private sealed class MarqueeTextVisual(AbstractMarqueeLabel owner) : Visual
+    {
+        public override void Render(DrawingContext context)
+        {
+            // The child uses the owner's shaped text and the same origin as TextBlock.Render.
+            var padding = owner.Padding;
+            if (owner.UseLayoutRounding)
+            {
+                padding = LayoutHelper.RoundLayoutThickness(padding, LayoutHelper.GetLayoutScale(owner));
+            }
+
+            var top = padding.Top;
+            var heightDifference = owner.Bounds.Height - owner.TextLayout.Height;
+            if (heightDifference < 0)
+            {
+                top += owner.VerticalAlignment switch
+                {
+                    VerticalAlignment.Center => heightDifference / 2,
+                    VerticalAlignment.Bottom => heightDifference,
+                    _ => 0
+                };
+            }
+
+            owner.DrawMarqueeText(context, new Point(padding.Left, top), 0, true);
         }
     }
 }

@@ -126,6 +126,8 @@
             <Setter Property="LoadIndicatorBrush"
                     Value="{atom:ToggleSwitchTokenResource OffStateLoadIndicatorColor}" />
             <Style Selector="^[IsCheckedState=True]">
+                <Setter Property="Background"
+                        Value="{atom:ToggleSwitchTokenResource HandleCheckedBg}" />
                 <Setter Property="LoadIndicatorBrush"
                         Value="{atom:ToggleSwitchTokenResource SwitchColor}" />
             </Style>

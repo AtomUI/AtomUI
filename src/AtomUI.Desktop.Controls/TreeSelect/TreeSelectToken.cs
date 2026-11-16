@@ -14,6 +14,12 @@ public sealed partial class TreeSelectToken : AbstractSelectInputToken
     public partial double HeaderHeight { get; set; }
     public partial Color NodeHoverBg { get; set; }
     public partial Color NodeSelectedBg { get; set; }
+
+    /// <summary>
+    /// The text colour of a selected node in the dropdown tree, drawn on <see cref="NodeSelectedBg"/>. Defaults to
+    /// the body text colour.
+    /// </summary>
+    public partial Color NodeSelectedColor { get; set; }
     public partial Thickness TreeItemMargin { get; set; }
     public partial Thickness TreeItemHeaderPadding { get; set; }
     public partial Thickness TreeItemHeaderMargin { get; set; }
@@ -37,6 +43,7 @@ public sealed partial class TreeSelectToken : AbstractSelectInputToken
         HeaderHeight = presentation.HeaderHeight;
         NodeHoverBg = presentation.NodeHoverBg;
         NodeSelectedBg = presentation.NodeSelectedBg;
+        NodeSelectedColor = presentation.NodeSelectedColor;
         TreeItemMargin = presentation.TreeItemMargin;
         TreeItemHeaderPadding = presentation.TreeItemHeaderPadding;
         TreeItemHeaderMargin = presentation.TreeItemHeaderMargin;

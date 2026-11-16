@@ -46,6 +46,12 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
     public partial Color HandleBg { get; set; }
 
     /// <summary>
+    /// The handle background of a checked switch, drawn on the primary track. Defaults to <see cref="HandleBg"/>; a
+    /// theme whose primary is near white sets a dark handle so it stays visible.
+    /// </summary>
+    public partial Color HandleCheckedBg { get; set; }
+
+    /// <summary>
     /// 开关把手阴影
     /// </summary>
     public partial BoxShadow HandleShadow { get; set; }
@@ -143,7 +149,12 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
         TrackMinWidth   = handleSize * 2 + padding * 4;
         TrackMinWidthSM = handleSizeSM * 2 + padding * 2;
         TrackPadding    = padding; // Fixed value
-        HandleBg        = EffectiveGlobalToken.ColorWhite;
+        if (!IsExplicit(ToggleSwitchTokenKind.HandleBg))
+        {
+            HandleBg = EffectiveGlobalToken.ColorWhite;
+        }
+        // The checked handle follows the handle background, an explicit one included.
+        HandleCheckedBg = HandleBg;
         HandleSize      = new Size(handleSize, handleSize);
         HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
 

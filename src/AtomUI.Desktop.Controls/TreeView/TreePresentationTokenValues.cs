@@ -6,10 +6,11 @@ namespace AtomUI.Desktop.Controls;
 
 internal static class TreePresentationTokenValues
 {
-    internal static (double HeaderHeight, Color NodeHoverBg, Color NodeSelectedBg, Thickness TreeItemMargin, Thickness TreeItemHeaderPadding, Thickness TreeItemHeaderMargin, Thickness TreeNodeSwitcherMargin, Thickness TreeNodeIconMargin, Color FilterHighlightColor) Calculate(DesignToken token) =>
+    internal static (double HeaderHeight, Color NodeHoverBg, Color NodeSelectedBg, Color NodeSelectedColor, Thickness TreeItemMargin, Thickness TreeItemHeaderPadding, Thickness TreeItemHeaderMargin, Thickness TreeNodeSwitcherMargin, Thickness TreeNodeIconMargin, Color FilterHighlightColor) Calculate(DesignToken token) =>
         (token.ControlHeightSM,
          token.ControlItemBgHover,
          token.ControlItemBgActive,
+         token.ColorText,
          new Thickness(0, 0, 0, token.UniformlyPaddingXXS / 2),
          new Thickness(token.UniformlyPaddingXS, 0),
          new Thickness(token.UniformlyMarginXXS, 0, 0, 0),

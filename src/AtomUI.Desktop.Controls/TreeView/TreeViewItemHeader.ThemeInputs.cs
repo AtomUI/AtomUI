@@ -22,6 +22,11 @@ internal partial class TreeViewItemHeader
     public static IBrush? GetThemeNodeSelectedBg(StyledElement element) => element.GetValue(ThemeNodeSelectedBgProperty);
     public static void SetThemeNodeSelectedBg(StyledElement element, IBrush? value) => element.SetValue(ThemeNodeSelectedBgProperty, value);
 
+    public static readonly AttachedProperty<IBrush?> ThemeNodeSelectedColorProperty =
+        AvaloniaProperty.RegisterAttached<TreeViewItemHeader, StyledElement, IBrush?>("ThemeNodeSelectedColor", inherits: true);
+    public static IBrush? GetThemeNodeSelectedColor(StyledElement element) => element.GetValue(ThemeNodeSelectedColorProperty);
+    public static void SetThemeNodeSelectedColor(StyledElement element, IBrush? value) => element.SetValue(ThemeNodeSelectedColorProperty, value);
+
     public static readonly AttachedProperty<Thickness> ThemeTreeItemMarginProperty =
         AvaloniaProperty.RegisterAttached<TreeViewItemHeader, StyledElement, Thickness>("ThemeTreeItemMargin", inherits: true);
     public static Thickness GetThemeTreeItemMargin(StyledElement element) => element.GetValue(ThemeTreeItemMarginProperty);

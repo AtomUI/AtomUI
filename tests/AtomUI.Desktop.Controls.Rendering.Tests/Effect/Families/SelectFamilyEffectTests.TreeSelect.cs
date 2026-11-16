@@ -124,12 +124,12 @@ public partial class SelectFamilyEffectTests
                         nodes[0] = nodes[0] with { Icon = new FolderOutlined() };
                     });
                     break;
-                case "NodeHoverBg" or "NodeSelectedBg":
+                case "NodeHoverBg" or "NodeSelectedBg" or "NodeSelectedColor":
                     b.Popup = true;
                     b.Arrange.Add(c =>
                     {
                         var item = TopLevel.GetTopLevel(c)!.GetVisualDescendants().OfType<TreeViewItem>().First();
-                        if (token == "NodeSelectedBg")
+                        if (token != "NodeHoverBg")
                         {
                             item.IsSelected = true;
                         }

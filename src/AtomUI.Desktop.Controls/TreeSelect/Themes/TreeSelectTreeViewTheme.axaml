@@ -9,6 +9,7 @@
         <Setter Property="atom:TreeViewItemHeader.ThemeHeaderHeight" Value="{atom:TreeSelectTokenResource HeaderHeight}" />
         <Setter Property="atom:TreeViewItemHeader.ThemeNodeHoverBg" Value="{atom:TreeSelectTokenResource NodeHoverBg}" />
         <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedBg" Value="{atom:TreeSelectTokenResource NodeSelectedBg}" />
+        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedColor" Value="{atom:TreeSelectTokenResource NodeSelectedColor}" />
         <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemMargin" Value="{atom:TreeSelectTokenResource TreeItemMargin}" />
         <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderPadding" Value="{atom:TreeSelectTokenResource TreeItemHeaderPadding}" />
         <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderMargin" Value="{atom:TreeSelectTokenResource TreeItemHeaderMargin}" />

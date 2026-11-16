@@ -173,6 +173,18 @@
             </Style>
         </Style>
 
+        <!-- The selected node's text (NodeSelectedColor, the body text colour by default) on the selected background. -->
+        <Style Selector="^[IsSelectable=True][IsSelected=True]:not(:disabled)">
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Foreground"
+                        Value="{Binding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedColor)}" />
+            </Style>
+            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
+                <Setter Property="Foreground"
+                        Value="{Binding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedColor)}" />
+            </Style>
+        </Style>
+
         <Style Selector="^[ToggleType=CheckBox]">
             <Style Selector="^ /template/ atom|CheckBox#ToggleCheckbox">
                 <Setter Property="IsVisible" Value="True" />

@@ -33,11 +33,14 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 ### 2.2 把手 Token
 
 - `HandleBg`
+- `HandleCheckedBg`
 - `HandleShadow`
 - `HandleSize`
 - `HandleSizeSM`
 
-这些 Token 控制把手背景、阴影和普通/小号尺寸。按下时把手宽度由运行时 `STRETCH_FACTOR` 拉伸，不作为 Token。
+这些 Token 控制把手背景、阴影和普通/小号尺寸。`HandleCheckedBg` 是选中（`SwitchKnob.IsCheckedState`）时的把手背景，
+默认等于 `HandleBg`（包括显式设置的 `HandleBg`），所以 Ant Design 渲染不变；主色接近白色的主题（PrimeNG noir 暗色、
+shadcn/ui 暗色）用它把选中把手设为深色，否则白色把手在近白轨道上不可见。按下时把手宽度由运行时 `STRETCH_FACTOR` 拉伸，不作为 Token。
 
 ### 2.3 内容边距 Token
 

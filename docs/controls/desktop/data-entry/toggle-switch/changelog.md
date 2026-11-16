@@ -2,6 +2,12 @@
 
 本文档记录 ToggleSwitch 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `HandleCheckedBg`：选中状态的把手背景，默认等于 `HandleBg`（Ant Design 渲染不变）。主色接近白色的
+    主题据此让选中把手保持可见（PrimeUIX `toggleswitch.handle.checked.background`，shadcn/ui switch thumb）。
+
 ## 2026-11-11
 
 - Theme

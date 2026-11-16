@@ -55,7 +55,7 @@ public partial class ChoiceFamilyEffectTests
             case "ContentIconSize" or "ContentIconSizeSM" or "ControlHeight" or "UniformlyPaddingXXS":
                 IconContent();
                 break;
-            case "SwitchColor" or "ColorPrimary":
+            case "SwitchColor" or "ColorPrimary" or "HandleCheckedBg":
                 Checked();
                 break;
             case "ColorPrimaryHover":

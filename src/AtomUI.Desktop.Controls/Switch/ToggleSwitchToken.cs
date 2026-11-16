@@ -52,6 +52,49 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
     public partial Color HandleCheckedBg { get; set; }
 
     /// <summary>
+    /// The handle background of an unchecked switch under the pointer. Defaults to <see cref="HandleBg"/>.
+    /// </summary>
+    public partial Color HandleHoverBg { get; set; }
+
+    /// <summary>
+    /// The handle background of a checked switch under the pointer. Defaults to <see cref="HandleCheckedBg"/>.
+    /// </summary>
+    public partial Color HandleCheckedHoverBg { get; set; }
+
+    /// <summary>
+    /// The track background of an unchecked switch. Defaults to <c>ColorTextQuaternary</c> (Ant Design).
+    /// </summary>
+    public partial Color TrackBg { get; set; }
+
+    /// <summary>
+    /// The track background of an unchecked switch under the pointer. Defaults to <c>ColorTextTertiary</c> (Ant Design).
+    /// </summary>
+    public partial Color TrackHoverBg { get; set; }
+
+    /// <summary>
+    /// The track background of a checked switch under the pointer; the checked track at rest is
+    /// <see cref="SwitchColor"/>. Defaults to <c>ColorPrimaryHover</c> (Ant Design).
+    /// </summary>
+    public partial Color TrackCheckedHoverBg { get; set; }
+
+    /// <summary>
+    /// The outline of an unchecked switch's track, drawn inside the track when <see cref="TrackBorderThickness"/> is
+    /// not 0. Defaults to transparent.
+    /// </summary>
+    public partial Color TrackBorderColor { get; set; }
+
+    /// <summary>
+    /// The outline of a checked switch's track, drawn inside the track when <see cref="TrackBorderThickness"/> is not
+    /// 0. Defaults to transparent.
+    /// </summary>
+    public partial Color TrackCheckedBorderColor { get; set; }
+
+    /// <summary>
+    /// The width of the track outline. Defaults to 0: no outline (Ant Design).
+    /// </summary>
+    public partial double TrackBorderThickness { get; set; }
+
+    /// <summary>
     /// 开关把手阴影
     /// </summary>
     public partial BoxShadow HandleShadow { get; set; }
@@ -153,8 +196,26 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
         {
             HandleBg = EffectiveGlobalToken.ColorWhite;
         }
-        // The checked handle follows the handle background, an explicit one included.
-        HandleCheckedBg = HandleBg;
+        // The checked and hover handles follow the handle background, an explicit one included.
+        if (!IsExplicit(ToggleSwitchTokenKind.HandleCheckedBg))
+        {
+            HandleCheckedBg = HandleBg;
+        }
+        if (!IsExplicit(ToggleSwitchTokenKind.HandleHoverBg))
+        {
+            HandleHoverBg = HandleBg;
+        }
+        if (!IsExplicit(ToggleSwitchTokenKind.HandleCheckedHoverBg))
+        {
+            HandleCheckedHoverBg = HandleCheckedBg;
+        }
+
+        TrackBg                 = EffectiveGlobalToken.ColorTextQuaternary;
+        TrackHoverBg            = EffectiveGlobalToken.ColorTextTertiary;
+        TrackCheckedHoverBg     = EffectiveGlobalToken.ColorPrimaryHover;
+        TrackBorderColor        = Colors.Transparent;
+        TrackCheckedBorderColor = Colors.Transparent;
+        TrackBorderThickness    = 0;
         HandleSize      = new Size(handleSize, handleSize);
         HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
 

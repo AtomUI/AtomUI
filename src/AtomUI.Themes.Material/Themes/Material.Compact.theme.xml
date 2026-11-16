@@ -6,6 +6,9 @@
   </Algorithms>
   <Tokens>
     <Token Name="ColorPrimary" Value="#6750A4" />
+    <Token Name="ColorLink" Value="#6750A4" />
+    <Token Name="ColorLinkHover" Value="#6750A4" />
+    <Token Name="ColorLinkActive" Value="#6750A4" />
     <Token Name="ColorTextLightSolid" Value="#FFFFFF" />
     <Token Name="BorderRadius" Value="4" />
     <Token Name="ControlHeight" Value="40" />

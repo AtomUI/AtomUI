@@ -412,6 +412,12 @@ diagnostic code 按责任分段：
 | `ATMTHM3101` | Reader（运行时与构建期共用同一实现） | `BrandColor="Seed"` 的定义显式写了品牌派生 Token（全局或控件级） | Error；构建期使编译主题包生成失败 |
 | `ATMTHM3103` | Catalog / 生成器 | 同一 `DesignLanguage` 内两个定义的 (`Appearance`, `Density`) 相同 | 编译主题包内为 Error；运行时目录为 Warning |
 | `ATMTHM3104` | Catalog / 生成器 | 同一 `DesignLanguage` 内各定义的 `BrandColor` 不一致 | 编译主题包内为 Error；运行时目录为 Warning |
+| `ATMTHM3105` | Catalog / 生成器 | 声明了 `DesignLanguage` 的定义，其 `Density` 与算法链不符：`Density="Compact"` 但链里没有内置 `Compact` 算法，或 `Density="Normal"`（含缺省）但链里有 | 两处都是 Warning；定义留在分组内 |
+
+生成器为 `ATMTHM3103`、`ATMTHM3104`、`ATMTHM3105` 各用一个专用的诊断描述符（诊断 Id 就是这个码，带标题和参数化消息），
+不再借用编译主题绑定失败的通用描述符 `ATOMUITOKEN002`。`ATMTHM3105` 只检查声明了设计语言的定义：解析器按声明的
+`Density` 选变体，链与声明不符时选到的变体会按另一种密度渲染；没有设计语言的定义不参与变体解析（包括没有 `Density`
+属性的旧主题与 ABI 1 编译包），不检查。
 
 运行时目录在合并所有来源（编译包、用户目录、重载）后按加载顺序检查 `ATMTHM3103`/`ATMTHM3104`：冲突的那个定义
 （在后者）退出分组，按 `DesignLanguage = null` 发布，仍可按 Id 使用；被退出分组的定义不占用变体，也不决定该语言的

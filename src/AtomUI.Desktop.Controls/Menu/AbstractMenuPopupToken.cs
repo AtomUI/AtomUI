@@ -28,6 +28,13 @@ public abstract partial class AbstractMenuPopupToken : AbstractControlDesignToke
     public partial Thickness ItemPaddingInline { get; set; }
     public partial double SeparatorItemHeight { get; set; }
 
+    /// <summary>
+    /// The shadows of the menu's popups (the context menu, submenus and menubar drop-downs). Defaults to
+    /// <c>BoxShadowsSecondary</c>, the value the shared Popup Token gives other overlays, so a theme can give menus
+    /// their own frame (for example an outline ring in a menu-specific border colour).
+    /// </summary>
+    public partial BoxShadows MenuPopupShadows { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -48,6 +55,7 @@ public abstract partial class AbstractMenuPopupToken : AbstractControlDesignToke
         MenuPopupMinWidth = 120;
         MenuPopupMaxWidth = 800;
         SeparatorItemHeight = EffectiveGlobalToken.LineWidth * 5;
+        MenuPopupShadows = EffectiveGlobalToken.BoxShadowsSecondary;
         MenuPopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, EffectiveGlobalToken.BorderRadiusLG.TopLeft / 2);
     }
 }

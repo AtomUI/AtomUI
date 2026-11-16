@@ -90,8 +90,11 @@ internal static class PrimeNGNoraPreset
             // (ColorPrimaryHover), color #ffffff (the contrast colour).
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
-            // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color.
-            SwitchHandleChecked: new(White),
+            // PrimeUIX toggleswitch (3.1.1): background = hoverBackground = form.field.background (surface.0), border
+            // form.field.border.color (surface.500, checked primary.color), handle form.field.border.color (surface.500),
+            // checked handle primary.contrast.color, checked hover background primary.color (no change).
+            Switch: new PrimeNGSwitchRule(Track: new(White), TrackHover: new(White), Handle: new(500),
+                HandleHover: new(500), HandleChecked: new(White), TrackBorder: new(500), CheckedHoverKeepsPrimary: true),
             // PrimeUIX overlay.{select,popover}.border.color, light: transparent in light.
             OverlayBorder: new(Black, 0),
             // PrimeUIX progressbar.background (surface.300 / surface.600).
@@ -99,7 +102,9 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX navigation.item.active.background / activeColor (menubar, tieredmenu): surface.200 with
             // text.hover.color; the hover row too (see PrimeNGNavMenuTokens: Nora's solid primary focus is not used).
             NavigationItemActive: new(200),
-            NavigationItemActiveColor: new(950)),
+            NavigationItemActiveColor: new(950),
+            // PrimeUIX menu / tieredmenu / contextmenu / menubar submenu border: content.border.color (surface.400).
+            MenuBorder: new(400)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             // ColorPrimaryBg / BgHover are the primary at 16% / 24% (PrimeUIX button.text hover / active background);
@@ -142,8 +147,10 @@ internal static class PrimeNGNoraPreset
             // (ColorPrimaryHover), color surface.950 (the contrast colour).
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
-            // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color (surface.950).
-            SwitchHandleChecked: new(950),
+            // PrimeUIX toggleswitch (3.1.1), dark: form.field.background surface.950, border and handle surface.500,
+            // checked handle primary.contrast.color (surface.950), checked hover background primary.color.
+            Switch: new PrimeNGSwitchRule(Track: new(950), TrackHover: new(950), Handle: new(500),
+                HandleHover: new(500), HandleChecked: new(950), TrackBorder: new(500), CheckedHoverKeepsPrimary: true),
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
             OverlayBorder: new(700),
             // PrimeUIX progressbar.background (surface.300 / surface.600).
@@ -151,7 +158,9 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX navigation.item.active.background / activeColor (menubar, tieredmenu): surface.700 with
             // text.color; the hover row too (see PrimeNGNavMenuTokens: Nora's solid primary focus is not used).
             NavigationItemActive: new(700),
-            NavigationItemActiveColor: new(White)),
+            NavigationItemActiveColor: new(White),
+            // PrimeUIX menu / tieredmenu / contextmenu / menubar submenu border: content.border.color (surface.500).
+            MenuBorder: new(500)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

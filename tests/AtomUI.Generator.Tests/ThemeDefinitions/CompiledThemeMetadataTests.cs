@@ -34,8 +34,12 @@ public class CompiledThemeMetadataTests
     {
         Run(out var diagnostics, Input("AuraLight", 0, 0, 1), Input("AuraLight2", 0, 0, 1));
 
-        diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
-                   .ShouldContain(d => d.GetMessage(null).Contains("ATMTHM3103"));
+        var duplicate = diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
+                                   .ShouldHaveSingleItem();
+        duplicate.Id.ShouldBe("ATMTHM3103");
+        duplicate.Descriptor.Title.ToString(null).ShouldBe("Duplicate design language variant");
+        duplicate.GetMessage(null).ShouldBe(
+            "Design language 'PrimeNG.Aura' declares more than one definition for the Light/Normal variant in this package; 'AuraLight2' is rejected");
     }
 
     [Fact]
@@ -43,8 +47,12 @@ public class CompiledThemeMetadataTests
     {
         Run(out var diagnostics, Input("AuraLight", 0, 0, 1), Input("AuraDark", 1, 0, 0));
 
-        diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
-                   .ShouldContain(d => d.GetMessage(null).Contains("ATMTHM3104"));
+        var mixed = diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
+                               .ShouldHaveSingleItem();
+        mixed.Id.ShouldBe("ATMTHM3104");
+        mixed.Descriptor.Title.ToString(null).ShouldBe("Mixed brand color support in a design language");
+        mixed.GetMessage(null).ShouldBe(
+            "Design language 'PrimeNG.Aura' mixes Seed and Fixed brand color support in this package; 'AuraDark' declares Fixed and is rejected");
     }
 
     [Fact]
@@ -55,9 +63,40 @@ public class CompiledThemeMetadataTests
             Input("AuraLight", 0, 0, 1), Input("AuraDark", 1, 0, 0), Input("AuraDarkSeed", 1, 0, 1));
 
         var errors = diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
-                                .Select(static d => d.GetMessage(null)).ToArray();
-        errors.ShouldContain(message => message.Contains("ATMTHM3104"));
-        errors.ShouldNotContain(message => message.Contains("ATMTHM3103"));
+                                .Select(static d => d.Id).ToArray();
+        errors.ShouldContain("ATMTHM3104");
+        errors.ShouldNotContain("ATMTHM3103");
+    }
+
+    [Theory]
+    [InlineData(1, false, true)]
+    [InlineData(0, true, true)]
+    [InlineData(1, true, false)]
+    [InlineData(0, false, false)]
+    public void Generator_Warns_When_Density_Disagrees_With_The_Algorithm_Chain(int density, bool compactAlgorithm, bool warns)
+    {
+        var input = Input("AuraLight", 0, density, 1);
+        input.Algorithms = compactAlgorithm
+            ? [new ThemeAlgorithmInput { Catalog = "AtomUI", Id = "Default" }, new ThemeAlgorithmInput { Catalog = "AtomUI", Id = "Compact" }]
+            : [new ThemeAlgorithmInput { Catalog = "AtomUI", Id = "Default" }];
+
+        Run(out var diagnostics, input);
+
+        var mismatch = diagnostics.Where(static d => d.Id == "ATMTHM3105").ToArray();
+        if (warns)
+        {
+            var warning = mismatch.ShouldHaveSingleItem();
+            warning.Severity.ShouldBe(DiagnosticSeverity.Warning);
+            warning.GetMessage(null).ShouldBe(
+                $"Theme 'AuraLight' of design language 'PrimeNG.Aura' declares Density=\"{(density == 1 ? "Compact" : "Normal")}\" " +
+                $"but its algorithm chain {(compactAlgorithm ? "contains" : "lacks")} the built-in Compact algorithm");
+            // A Warning: the package still generates.
+            diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
+        }
+        else
+        {
+            mismatch.ShouldBeEmpty();
+        }
     }
 
     private static CompiledThemeInput Input(string id, int appearance, int density, int brandColor) => new()

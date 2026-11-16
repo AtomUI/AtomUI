@@ -24,6 +24,7 @@
         <Setter Property="atom:MenuPopupScrollHost.ThemeItemBorderRadius" Value="{atom:ContextMenuTokenResource ItemBorderRadius}" />
         <Setter Property="atom:MenuPopupScrollHost.ThemeItemPaddingInline" Value="{atom:ContextMenuTokenResource ItemPaddingInline}" />
         <Setter Property="atom:MenuPopupScrollHost.ThemeSeparatorItemHeight" Value="{atom:ContextMenuTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupShadows" Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -61,10 +62,11 @@
         <Setter Property="DisplayPageSize" Value="8" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="MotionDuration" Value="{atom:ContextMenuTokenResource MotionDurationMid}"/>
+        <!-- Menus take their own popup frame (MenuPopupShadows; by default the Popup Token's BoxShadowsSecondary). -->
         <Setter Property="PopupRootShadow"
-                Value="{atom:PopupTokenResource PopupRootShadow}" />
+                Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
         <Setter Property="OverlayHostShadow"
-                Value="{atom:PopupTokenResource OverlayHostShadow}" />
+                Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
 
     </ControlTheme>
 </ResourceDictionary>

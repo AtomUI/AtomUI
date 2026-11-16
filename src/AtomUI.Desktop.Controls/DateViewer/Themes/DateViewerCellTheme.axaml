@@ -62,6 +62,18 @@
             </atom:TokenTransitions>
         </Setter>
     </Style>
+    <!-- The compact cell's text (the contrast colour on a selected cell) changes with the value frame's background,
+         over the same duration, so light text never sits on the not-yet-filled background. The content presentation
+         sets its own transitions below. -->
+    <Style Selector="^[IsMotionEnabled=True][Presentation=Compact] /template/ atom|TextBlock#PART_Value">
+        <Setter Property="Transitions">
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions>
+            </atom:TokenTransitions>
+        </Setter>
+    </Style>
     <Style Selector="^ /template/ Border#PART_WeekSelection">
         <Setter Property="IsVisible" Value="False" />
         <Setter Property="Background" Value="Transparent" />

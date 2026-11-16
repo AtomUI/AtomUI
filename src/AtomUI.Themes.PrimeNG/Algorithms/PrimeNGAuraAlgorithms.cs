@@ -79,8 +79,10 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX highlight: the pale P50 / P100 (ColorPrimaryBg / BgHover) with primary.700 text (ColorPrimaryText).
             Highlight: null,
             HighlightColor: static token => token.ColorPrimaryText,
-            // PrimeUIX toggleswitch.handle.checked.background: surface.0.
-            SwitchHandleChecked: new(White),
+            // PrimeUIX toggleswitch (3.1.1): background / hoverBackground surface.300 / 400, handle.background /
+            // hoverBackground / checkedBackground surface.0, checkedHoverBackground primary.hover.color.
+            Switch: new PrimeNGSwitchRule(Track: new(300), TrackHover: new(400), Handle: new(White),
+                HandleHover: new(White), HandleChecked: new(White), TrackBorder: null, CheckedHoverKeepsPrimary: false),
             // PrimeUIX overlay.{select,popover}.border.color, light: surface.200.
             OverlayBorder: new(200),
             // PrimeUIX progressbar.background (content.border.color).
@@ -88,7 +90,9 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX navigation.item.active.background / focusBackground (surface.100) with activeColor / focusColor
             // (text.hover.color).
             NavigationItemActive: new(100),
-            NavigationItemActiveColor: new(800)),
+            NavigationItemActiveColor: new(800),
+            // PrimeUIX menu / tieredmenu / contextmenu / menubar submenu border: content.border.color (surface.200).
+            MenuBorder: new(200)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -123,8 +127,10 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX highlight: P400 at 16% / 24% (ColorPrimaryBg / BgHover) with white at 87% (ColorPrimaryText).
             Highlight: null,
             HighlightColor: static token => token.ColorPrimaryText,
-            // PrimeUIX toggleswitch.handle.checked.background: surface.900.
-            SwitchHandleChecked: new(900),
+            // PrimeUIX toggleswitch (3.1.1), dark: background / hoverBackground surface.700 / 600, handle.background /
+            // hoverBackground surface.400 / 300, handle.checkedBackground surface.900.
+            Switch: new PrimeNGSwitchRule(Track: new(700), TrackHover: new(600), Handle: new(400),
+                HandleHover: new(300), HandleChecked: new(900), TrackBorder: null, CheckedHoverKeepsPrimary: false),
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
             OverlayBorder: new(700),
             // PrimeUIX progressbar.background (content.border.color).
@@ -132,7 +138,9 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX navigation.item.active.background / focusBackground (surface.800) with activeColor / focusColor
             // (text.hover.color).
             NavigationItemActive: new(800),
-            NavigationItemActiveColor: new(White)),
+            NavigationItemActiveColor: new(White),
+            // PrimeUIX menu / tieredmenu / contextmenu / menubar submenu border: content.border.color (surface.700).
+            MenuBorder: new(700)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

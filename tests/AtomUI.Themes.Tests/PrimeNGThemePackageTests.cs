@@ -818,7 +818,7 @@ public class PrimeNGThemePackageTests
     }
 
     // PrimeUIX 3.1.1 toggleswitch.handle.checked.background: Aura / Lara light-dark(surface.0, surface.900), Nora
-    // primary.contrast.color. The unchecked handle keeps the Ant Design white (the track is not mapped).
+    // primary.contrast.color.
     [AvaloniaTheory]
     [InlineData("PrimeNGAura", null, "#FFFFFF")]
     [InlineData("PrimeNGAura.Dark", null, "#18181B")]
@@ -831,9 +831,53 @@ public class PrimeNGThemePackageTests
     {
         var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
         Own<Color>(snapshot, "ToggleSwitch", "HandleCheckedBg").ShouldBe(Color.Parse(handle));
-        Own<Color>(snapshot, "ToggleSwitch", "HandleBg").ShouldBe(Colors.White);
+        Own<Color>(snapshot, "ToggleSwitch", "HandleCheckedHoverBg").ShouldBe(Color.Parse(handle));
         var ratio = ContrastRatio.Of(Color.Parse(handle), Own<Color>(snapshot, "ToggleSwitch", "SwitchColor"));
         ratio.ShouldBeGreaterThanOrEqualTo(3.0, $"{profile} checked handle on the track: {ratio:F2}");
+    }
+
+    // PrimeUIX 3.1.1 toggleswitch, unchecked state and hovers. Aura / Lara: background light-dark(surface.300,
+    // surface.700), hoverBackground light-dark(surface.400, surface.600), handle.background light-dark(surface.0,
+    // surface.400), handle.hoverBackground light-dark(surface.0, surface.300), checkedHoverBackground primary.hover.color,
+    // transparent borders. Nora: background = hoverBackground = form.field.background (surface.0 / surface.950), borderColor
+    // form.field.border.color (surface.500), checkedBorderColor primary.color, handle form.field.border.color,
+    // checkedHoverBackground primary.color.
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null, "#CBD5E1", "#94A3B8", "#FFFFFF", "#FFFFFF", null)]
+    [InlineData("PrimeNGAura.Dark", null, "#3F3F46", "#52525B", "#A1A1AA", "#D4D4D8", null)]
+    [InlineData("PrimeNGLara", null, "#CBD5E1", "#94A3B8", "#FFFFFF", "#FFFFFF", null)]
+    [InlineData("PrimeNGLara.Dark", null, "#3F3F46", "#52525B", "#A1A1AA", "#D4D4D8", null)]
+    [InlineData("PrimeNGNora", null, "#FFFFFF", "#FFFFFF", "#64748B", "#64748B", "#64748B")]
+    [InlineData("PrimeNGNora.Dark", null, "#09090B", "#09090B", "#71717A", "#71717A", "#71717A")]
+    [InlineData("PrimeNGAura", "#10B981", "#CBD5E1", "#94A3B8", "#FFFFFF", "#FFFFFF", null)]
+    [InlineData("PrimeNGNora", "#6366F1", "#FFFFFF", "#FFFFFF", "#64748B", "#64748B", "#64748B")]
+    public async Task Switch_Track_And_Handle_Follow_PrimeUIX(string profile, string? seed, string track, string trackHover,
+                                                               string handle, string handleHover, string? border)
+    {
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        var primary  = Global<Color>(snapshot, "ColorPrimary");
+        Own<Color>(snapshot, "ToggleSwitch", "TrackBg").ShouldBe(Color.Parse(track));
+        Own<Color>(snapshot, "ToggleSwitch", "TrackHoverBg").ShouldBe(Color.Parse(trackHover));
+        Own<Color>(snapshot, "ToggleSwitch", "HandleBg").ShouldBe(Color.Parse(handle));
+        Own<Color>(snapshot, "ToggleSwitch", "HandleHoverBg").ShouldBe(Color.Parse(handleHover));
+        Own<Color>(snapshot, "ToggleSwitch", "SwitchColor").ShouldBe(primary);
+        if (border is null)
+        {
+            Own<double>(snapshot, "ToggleSwitch", "TrackBorderThickness").ShouldBe(0);
+            Own<Color>(snapshot, "ToggleSwitch", "TrackCheckedHoverBg").ShouldBe(Global<Color>(snapshot, "ColorPrimaryHover"));
+        }
+        else
+        {
+            Own<double>(snapshot, "ToggleSwitch", "TrackBorderThickness").ShouldBe(Global<double>(snapshot, "LineWidth"));
+            Own<Color>(snapshot, "ToggleSwitch", "TrackBorderColor").ShouldBe(Color.Parse(border));
+            Own<Color>(snapshot, "ToggleSwitch", "TrackCheckedBorderColor").ShouldBe(primary);
+            Own<Color>(snapshot, "ToggleSwitch", "TrackCheckedHoverBg").ShouldBe(primary);
+        }
+        // The unchecked handle stays distinguishable from its track (non-text 3:1 except Aura / Lara light, where
+        // PrimeUIX's white handle on surface 300 relies on its shadow: 1.48).
+        var ratio = ContrastRatio.Of(Color.Parse(handle), Color.Parse(track));
+        ratio.ShouldBeGreaterThanOrEqualTo(profile.Contains("Nora", StringComparison.Ordinal) || profile.Contains("Dark", StringComparison.Ordinal) ? 3.0 : 1.4,
+            $"{profile} unchecked handle on the track: {ratio:F2}");
     }
 
     [AvaloniaTheory]

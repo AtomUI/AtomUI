@@ -317,7 +317,10 @@ which lists compiled theme packages only, therefore no longer offers brand swatc
 declare `BrandColor` (including ABI 1 packages); declare `BrandColor="Seed"` to opt in.
 `ATMTHM3103` (duplicate appearance and density inside one design language) and `ATMTHM3104` (mixed `Seed` and
 `Fixed`) are errors inside a compiled theme package and warnings in the runtime catalog, where the later conflicting
-definition leaves the group and stays usable by id. See [Theme customization](../guides/theming/customization.md)
+definition leaves the group and stays usable by id. The generator reports them with dedicated descriptors (the
+diagnostic id is the code, with a title and a parameterized message) instead of the generic `ATOMUITOKEN002`.
+`ATMTHM3105` (a warning in both places; the definition keeps its group) flags a design language definition whose
+`Density` disagrees with its chain: `Compact` without the built-in `Compact` algorithm, or `Normal` with it. See [Theme customization](../guides/theming/customization.md)
 (Chinese) for the rules and a resolver example.
 
 ## PrimeNG presets are produced by algorithms

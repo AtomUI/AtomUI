@@ -235,6 +235,12 @@ public sealed partial class NavMenuToken : AbstractControlDesignToken
     /// 弹出框背景色
     /// </summary>
     public partial Color MenuPopupBg { get; set; }
+
+    /// <summary>
+    /// The shadows of the horizontal and vertical menu's submenu popups. Defaults to <c>BoxShadowsSecondary</c>, the
+    /// value the shared Popup Token gives other overlays, so a theme can give menus their own frame.
+    /// </summary>
+    public partial BoxShadows MenuPopupShadows { get; set; }
     
     /// <summary>
     /// 横向菜单行高
@@ -470,6 +476,7 @@ public sealed partial class NavMenuToken : AbstractControlDesignToken
         TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
         
         MenuPopupBg               = EffectiveGlobalToken.ColorBgElevated;
+        MenuPopupShadows          = EffectiveGlobalToken.BoxShadowsSecondary;
         MenuPopupContentPadding   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
         VerticalItemsPanelSpacing = 0;
         VerticalChildItemsMargin  = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXXS);

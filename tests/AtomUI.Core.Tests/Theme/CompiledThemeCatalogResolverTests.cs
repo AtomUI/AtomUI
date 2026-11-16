@@ -361,6 +361,39 @@ public class CompiledThemeCatalogResolverTests
         });
     }
 
+    [Theory]
+    [InlineData("Compact", "<Algorithm Id=\"Dark\" />", true)]
+    [InlineData("Normal", "<Algorithm Id=\"Dark\" /><Algorithm Id=\"Compact\" />", true)]
+    [InlineData("Compact", "<Algorithm Id=\"Dark\" /><Algorithm Id=\"Compact\" />", false)]
+    [InlineData("Normal", "<Algorithm Id=\"Dark\" />", false)]
+    public void Catalog_Warns_When_Density_Disagrees_With_The_Algorithm_Chain(string density, string algorithms, bool warns)
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed"),
+                $$"""
+                <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Dense" Name="Dense" Appearance="Dark"
+                       DesignLanguage="TestLang" Density="{{density}}" BrandColor="Seed">
+                  <Algorithms>{{algorithms}}</Algorithms>
+                </Theme>
+                """);
+
+            var mismatch = manager.ThemeCatalogDiagnostics.Where(static diagnostic => diagnostic.Code == "ATMTHM3105").ToArray();
+            if (warns)
+            {
+                mismatch.ShouldHaveSingleItem().Severity.ShouldBe(ThemeDiagnosticSeverity.Warning);
+                mismatch[0].Message.ShouldContain("'Dense'");
+            }
+            else
+            {
+                mismatch.ShouldBeEmpty();
+            }
+            // A Warning only: the definition stays in its group.
+            manager.AvailableThemes.Single(static theme => theme.Id == "Dense").DesignLanguage.ShouldBe("TestLang");
+        });
+    }
+
     [Fact]
     public void Catalog_Demotes_A_Variant_With_Different_Brand_Support()
     {

@@ -24,6 +24,7 @@
         <Setter Property="atom:MenuPopupScrollHost.ThemeItemBorderRadius" Value="{atom:MenuFlyoutPresenterTokenResource ItemBorderRadius}" />
         <Setter Property="atom:MenuPopupScrollHost.ThemeItemPaddingInline" Value="{atom:MenuFlyoutPresenterTokenResource ItemPaddingInline}" />
         <Setter Property="atom:MenuPopupScrollHost.ThemeSeparatorItemHeight" Value="{atom:MenuFlyoutPresenterTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupShadows" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupShadows}" />
 
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuFlyoutPresenter">
@@ -56,6 +57,7 @@
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
             <Setter Property="Background" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
+            <Setter Property="BorderBrush" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBorderColor}" />
             <Setter Property="MinWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
             <Setter Property="MaxWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
         </Style>

@@ -116,6 +116,35 @@ internal sealed record PrimeNGNeutralRule(
     PrimeNGShade TextDisabled);
 
 /// <summary>
+/// PrimeUIX <c>toggleswitch</c> colours of one appearance, as stops of the surface scale (<see cref="PrimeNGShade.White"/>
+/// is <c>surface.0</c>). The checked track is the primary colour in every preset.
+/// </summary>
+/// <param name="Track">The unchecked track (<c>toggleswitch.background</c>).</param>
+/// <param name="TrackHover">The unchecked track under the pointer (<c>toggleswitch.hoverBackground</c>).</param>
+/// <param name="Handle">The unchecked handle (<c>toggleswitch.handle.background</c>).</param>
+/// <param name="HandleHover">The unchecked handle under the pointer (<c>toggleswitch.handle.hoverBackground</c>).</param>
+/// <param name="HandleChecked">
+/// The checked handle at rest and under the pointer (<c>toggleswitch.handle.checkedBackground</c> /
+/// <c>checkedHoverBackground</c>, equal in every preset).
+/// </param>
+/// <param name="TrackBorder">
+/// The unchecked track's border (<c>toggleswitch.borderColor</c>, Nora <c>form.field.border.color</c>; the checked border
+/// is <c>primary.color</c>), or <see langword="null"/> for the transparent border of Aura and Lara.
+/// </param>
+/// <param name="CheckedHoverKeepsPrimary">
+/// Whether the checked track keeps the primary colour under the pointer (Nora <c>checkedHoverBackground</c> =
+/// <c>primary.color</c>); otherwise it is <c>primary.hover.color</c>, AtomUI's default.
+/// </param>
+internal sealed record PrimeNGSwitchRule(
+    PrimeNGShade Track,
+    PrimeNGShade TrackHover,
+    PrimeNGShade Handle,
+    PrimeNGShade HandleHover,
+    PrimeNGShade HandleChecked,
+    PrimeNGShade? TrackBorder,
+    bool CheckedHoverKeepsPrimary);
+
+/// <summary>
 /// The colour rules of one appearance. <see cref="Primary"/> also drives the selection background;
 /// <see cref="Status"/> drives the success, warning and info families.
 /// </summary>
@@ -152,10 +181,7 @@ internal sealed record PrimeNGNeutralRule(
 /// PrimeUIX <c>highlight.focusColor</c> equals it in every preset except Aura / Lara light (P800); AtomUI has no
 /// separate selected-hover text slot.
 /// </param>
-/// <param name="SwitchHandleChecked">
-/// PrimeUIX <c>toggleswitch.handle.checked.background</c>, a stop of the surface scale (the ToggleSwitch's own
-/// <c>HandleCheckedBg</c>).
-/// </param>
+/// <param name="Switch">PrimeUIX <c>toggleswitch</c>: the track and handle colours of the ToggleSwitch.</param>
 /// <param name="OverlayBorder">
 /// PrimeUIX <c>overlay.select.border.color</c> and <c>overlay.popover.border.color</c> (equal in every preset), a stop
 /// of the surface scale: the border of arrow flyouts and the outline ring of select panels and menus.
@@ -174,6 +200,11 @@ internal sealed record PrimeNGNeutralRule(
 /// PrimeUIX <c>navigation.item.active.color</c>, a stop of the surface scale (<c>text.hover.color</c>; Nora dark
 /// <c>text.color</c>): the text of those items.
 /// </param>
+/// <param name="MenuBorder">
+/// PrimeUIX <c>content.border.color</c>, a stop of the surface scale: the border of menus (<c>menu</c>, <c>tieredmenu</c>,
+/// <c>contextmenu</c>, the <c>menubar</c> submenu). It equals <see cref="OverlayBorder"/> in Aura and Lara; Nora's is
+/// surface 400 / 500 while its select panels and popovers are transparent / surface 700.
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -188,11 +219,12 @@ internal sealed record PrimeNGAppearanceRules(
     PrimeNGShade? CardBorderSecondary,
     Func<DesignToken, (Color Background, Color FocusBackground)>? Highlight,
     Func<DesignToken, Color> HighlightColor,
-    PrimeNGShade SwitchHandleChecked,
+    PrimeNGSwitchRule Switch,
     PrimeNGShade OverlayBorder,
     PrimeNGShade ProgressTrack,
     PrimeNGShade NavigationItemActive,
-    PrimeNGShade NavigationItemActiveColor);
+    PrimeNGShade NavigationItemActiveColor,
+    PrimeNGShade MenuBorder);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

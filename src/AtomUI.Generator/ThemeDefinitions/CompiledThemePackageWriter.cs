@@ -12,11 +12,19 @@ internal static class CompiledThemePackageWriter
 {
     private const string Compiled = "global::AtomUI.Theme.Definitions.Compiled.";
     private static readonly DiagnosticDescriptor Failure = Diagnostics.AtomUIDiagnosticDescriptors.CompiledThemeBindingFailed;
-    internal static void Error(GenerationOutput output, string? path, int line, int column, string message)
+    internal static void Error(GenerationOutput output, string? path, int line, int column, string message) =>
+        Report(output, Failure, path, line, column, message);
+
+    private static void Report(GenerationOutput output, DiagnosticDescriptor descriptor, string? path, int line, int column,
+        params object?[] arguments)
     {
         var position = new LinePosition(Math.Max(0, line - 1), Math.Max(0, column - 1));
-        output.ReportDiagnostic(Diagnostic.Create(Failure, string.IsNullOrEmpty(path) ? Location.None : Location.Create(path!, new TextSpan(0, 0), new LinePositionSpan(position, position)), message));
+        output.ReportDiagnostic(Diagnostic.Create(descriptor, string.IsNullOrEmpty(path) ? Location.None : Location.Create(path!, new TextSpan(0, 0), new LinePositionSpan(position, position)), arguments));
     }
+
+    private static string DensityName(int density) => density == 1 ? "Compact" : "Normal";
+    private static string AppearanceName(int appearance) => appearance == 1 ? "Dark" : "Light";
+    private static string BrandColorName(int brandColor) => brandColor == 1 ? "Seed" : "Fixed";
     internal static CompiledThemeManifest? Write(GenerationOutput output, Compilation compilation, ThemeBuildContracts contracts,
         IEnumerable<(string Path, string Text)> files, string assemblyName, string packageId)
     {
@@ -37,16 +45,25 @@ internal static class CompiledThemePackageWriter
                 var variant = input.DesignLanguage + "\u001f" + input.Appearance + "\u001f" + input.Density;
                 if (variants.Contains(variant))
                 {
-                    Error(output, input.SourcePath, 0, 0, "ATMTHM3103: Design language '" + input.DesignLanguage + "' declares more than one definition for the same appearance and density in this package.");
+                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageDuplicateVariant, input.SourcePath, 0, 0,
+                        input.DesignLanguage, AppearanceName(input.Appearance), DensityName(input.Density), input.Id);
                     continue;
                 }
                 if (brandSupport.TryGetValue(input.DesignLanguage, out var support) && support != input.BrandColor)
                 {
-                    Error(output, input.SourcePath, 0, 0, "ATMTHM3104: Design language '" + input.DesignLanguage + "' mixes Seed and Fixed brand color support in this package.");
+                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageMixedBrandColor, input.SourcePath, 0, 0,
+                        input.DesignLanguage, input.Id, BrandColorName(input.BrandColor));
                     continue;
                 }
                 variants.Add(variant);
                 brandSupport[input.DesignLanguage] = input.BrandColor;
+                // The resolver picks a variant by its declared Density; a chain that disagrees renders another density.
+                var compactChain = input.Algorithms.Any(a => a.Catalog == "AtomUI" && a.Id == "Compact");
+                if (compactChain != (input.Density == 1))
+                {
+                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageDensityMismatch, input.SourcePath, 0, 0,
+                        input.Id, input.DesignLanguage, DensityName(input.Density), compactChain ? "contains" : "lacks");
+                }
             }
             var describe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");
             var write = new StringBuilder();

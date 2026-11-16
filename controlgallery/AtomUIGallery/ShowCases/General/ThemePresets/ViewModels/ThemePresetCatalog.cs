@@ -90,12 +90,23 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         string? designLanguage = null, ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
         ThemeDensity density = ThemeDensity.Normal)
     {
-        // A Seed theme that pins a brand-derived token would be rejected on read, so export it as Fixed.
+        // A Seed theme that pins a brand-derived token would be rejected on read (ATMTHM3101), so export it as Fixed.
+        // The export then no longer matches its design language, whose definitions all accept a seed: a Fixed
+        // definition in a Seed language is demoted out of the group at runtime (ATMTHM3104) and fails a package build.
+        // The declaration written is the one that matches what is exported, so the language is dropped and a comment
+        // says why; the theme stays usable by its Id.
+        XComment? note = null;
         if (brandColor == ThemeBrandColorSupport.Seed &&
             (config.Tokens.Keys.Any(s_brandDerivedTokens.Contains) ||
              config.Controls.Values.Any(control => control.Tokens.Keys.Any(s_brandDerivedTokens.Contains))))
         {
             brandColor = ThemeBrandColorSupport.Fixed;
+            if (designLanguage is not null)
+            {
+                note = new XComment($" DesignLanguage=\"{designLanguage}\" omitted: this export sets brand-derived tokens, " +
+                                    "so it is BrandColor=\"Fixed\" while that design language accepts a brand seed. ");
+                designLanguage = null;
+            }
         }
         XNamespace ns = "https://atomui.net/schemas/theme/v1";
         XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",
@@ -109,7 +120,7 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
                 (appearance ?? (config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? ThemeAppearance.Dark : ThemeAppearance.Light)).ToString()),
             designLanguage is null ? null : new XAttribute("DesignLanguage", designLanguage),
             new XAttribute("BrandColor", brandColor.ToString()), new XAttribute("Density", density.ToString()),
-            new XAttribute("IsDefault", false), Algorithms(config.Algorithms!), Tokens(config.Tokens),
+            new XAttribute("IsDefault", false), note, Algorithms(config.Algorithms!), Tokens(config.Tokens),
             // The schema requires at least one Control inside Controls, so a profile without control values omits it.
             config.Controls.Count == 0 ? null : new XElement(ns + "Controls", config.Controls.Select(pair =>
             {

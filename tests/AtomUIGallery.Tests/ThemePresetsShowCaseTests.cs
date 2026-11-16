@@ -167,7 +167,8 @@ public class ThemePresetsShowCaseTests
         model.IsCompact = true;
         model.SelectedPresetId.ShouldBe("GalleryPreviewFixture");
         model.PreviewThemeId.ShouldBe("GalleryPreviewFixture");
-        model.PreviewConfig!.Algorithms.ShouldBe([ThemeAlgorithm.Dark, ThemeAlgorithm.Compact]);
+        // 与 ThemeSelectionResolver 的规范一致：定义自身链去掉内建 Dark/Compact，再按 Compact、Dark 追加。
+        model.PreviewConfig!.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark]);
         model.PreviewConfig.Inherit.ShouldBeFalse();
 
         // Plain light, non-compact mode resolves to the base definition itself, which keeps its own chain.
@@ -521,6 +522,36 @@ public class ThemePresetsShowCaseTests
             model.PreviewConfig.ShouldBeSameAs(seeded);
             reset.Command.CanExecute(reset.CommandParameter).ShouldBeFalse();
             swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false, false]);
+        }
+        finally { window.Close(); Pump(); }
+    }
+
+    [Fact]
+    public void Preset_And_Swatch_Bars_Do_Not_Clip_The_Wave_Spirit_Of_Their_Items()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "PrimeNGAura" };
+        var page = new ThemePresetsShowCase { DataContext = model };
+        var window = new Window { Width = 1200, Height = 900, Content = page };
+        try
+        {
+            window.Show(); Pump();
+            foreach (var barName in new[] { "PresetBar", "PrimarySwatchBar" })
+            {
+                var bar = page.FindControl<ItemsControl>(barName)!;
+                var items = bar.GetVisualDescendants().OfType<Control>()
+                               .Where(c => c is Button or AtomUI.Desktop.Controls.RadioButton).ToList();
+                items.ShouldNotBeEmpty(barName);
+                foreach (var item in items)
+                {
+                    // The wave spirit is drawn outside the item's bounds; nothing up to the bar may clip it.
+                    foreach (var ancestor in item.GetVisualAncestors().OfType<Visual>())
+                    {
+                        ancestor.ClipToBounds.ShouldBeFalse($"{barName}: {ancestor.GetType().Name}");
+                        if (ReferenceEquals(ancestor, bar)) break;
+                    }
+                }
+            }
         }
         finally { window.Close(); Pump(); }
     }

@@ -210,6 +210,8 @@
 
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
+                <Setter Property="PopupRootShadow" Value="{atom:NavMenuTokenResource MenuPopupShadows}" />
+                <Setter Property="OverlayHostShadow" Value="{atom:NavMenuTokenResource MenuPopupShadows}" />
                 <Setter Property="RequestedPlacement" Value="RightEdgeAlignedTop" />
                 <Setter Property="HorizontalOffset" Value="{atom:NavMenuTokenResource SpacingXS}" />
                 <Setter Property="VerticalOffset" Value="{atom:NavMenuTokenResource SpacingXXS}" />

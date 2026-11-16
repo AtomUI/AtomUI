@@ -120,6 +120,11 @@
             </Style>
         </Style>
 
+        <!-- At 0 the inner label sits on the empty track; InnerLabelEmptyOpacity (1 by default) can hide it. -->
+        <Style Selector="^:labelinner:value-zero /template/ Label#PART_PercentageLabel">
+            <Setter Property="Opacity" Value="{atom:ProgressBarTokenResource InnerLabelEmptyOpacity}" />
+        </Style>
+
         <Style Selector="^:labelinner">
             <!-- 如果是 Inner 模式，成功状态下不显示成功 icon -->
             <Style Selector="^ /template/ atom|IconPresenter">

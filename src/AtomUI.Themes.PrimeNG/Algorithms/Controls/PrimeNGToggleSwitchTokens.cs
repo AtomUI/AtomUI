@@ -5,11 +5,13 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
 /// <summary>
-/// ToggleSwitch under the PrimeNG presets: the checked handle <c>HandleCheckedBg</c> is PrimeUIX 3.1.1
-/// <c>toggleswitch.handle.checked.background</c> (Aura / Lara <c>light-dark(surface.0, surface.900)</c>, Nora
-/// <c>primary.contrast.color</c>), so it stays visible on a near-white primary track (noir dark). The unchecked handle
-/// keeps the Ant Design white: PrimeUIX pairs its <c>handle.background</c> (Aura / Lara dark surface.400, Nora the
-/// field border colour) with a track AtomUI does not map (<c>ColorTextQuaternary</c> here).
+/// ToggleSwitch under the PrimeNG presets: PrimeUIX 3.1.1 <c>toggleswitch</c> (the preset's <c>Switch</c> row). Aura and
+/// Lara: an unchecked track of surface 300 / 400 (hover), dark 700 / 600, a white handle (dark surface 400 / 300) and a
+/// white checked handle (dark surface 900); the checked track is the primary with <c>primary.hover.color</c> under the
+/// pointer (AtomUI's default). Nora: a field-like switch, the track the field background (surface 0 / 950) with a
+/// one-line field border (surface 500, checked the primary), the handle the field border colour, the checked handle
+/// the contrast colour, and a checked track that stays the primary under the pointer. The checked handle stays visible
+/// on a near-white primary track (noir dark).
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
@@ -27,7 +29,27 @@ internal sealed class PrimeNGToggleSwitchTokens : IControlTokenAlgorithm<ToggleS
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, ToggleSwitchToken token)
     {
-        var rules = PrimeNGPresets.Rules(context, effectiveGlobal);
-        token.HandleCheckedBg = rules.SwitchHandleChecked.Resolve(rules.Surface.AsSpan());
+        var rules   = PrimeNGPresets.Rules(context, effectiveGlobal);
+        var surface = rules.Surface.AsSpan();
+        var rule    = rules.Switch;
+        var checkedHandle = rule.HandleChecked.Resolve(surface);
+
+        token.TrackBg              = rule.Track.Resolve(surface);
+        token.TrackHoverBg         = rule.TrackHover.Resolve(surface);
+        token.HandleBg             = rule.Handle.Resolve(surface);
+        token.HandleHoverBg        = rule.HandleHover.Resolve(surface);
+        token.HandleCheckedBg      = checkedHandle;
+        token.HandleCheckedHoverBg = checkedHandle;
+        if (rule.CheckedHoverKeepsPrimary)
+        {
+            token.TrackCheckedHoverBg = effectiveGlobal.ColorPrimary;
+        }
+
+        if (rule.TrackBorder is { } border)
+        {
+            token.TrackBorderColor        = border.Resolve(surface);
+            token.TrackCheckedBorderColor = effectiveGlobal.ColorPrimary;
+            token.TrackBorderThickness    = effectiveGlobal.LineWidth;
+        }
     }
 }

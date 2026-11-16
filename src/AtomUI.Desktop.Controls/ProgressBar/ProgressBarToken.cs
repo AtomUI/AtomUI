@@ -26,6 +26,12 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
     public partial Color InnerLabelColor { get; set; }
 
     /// <summary>
+    /// Opacity of an inner percentage label while the value is 0, where the label sits on the empty track instead of
+    /// the bar. Defaults to 1 (shown); 0 hides it, as PrimeNG does.
+    /// </summary>
+    public partial double InnerLabelEmptyOpacity { get; set; }
+
+    /// <summary>
     /// Active 状态轨道闪光动画的时长（antd progressActiveMotionDuration，2.4s）
     /// Duration of the Active status shimmer over the track (antd progressActiveMotionDuration, 2.4s)
     /// </summary>
@@ -39,6 +45,7 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
         LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
         LineProgressPadding = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
         InnerLabelColor = EffectiveGlobalToken.ColorTextLabel;
+        InnerLabelEmptyOpacity = 1;
         ProgressActiveMotionDuration = TimeSpan.FromSeconds(2.4); // antd progressActiveMotionDuration: '2.4s'
     }
 }

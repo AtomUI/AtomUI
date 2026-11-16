@@ -386,7 +386,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         else
         {
             // No declared language: look up a mode profile by id suffix, else use the base theme with the
-            // built-in Dark/Compact toggles.
+            // built-in Dark/Compact algorithms appended by the ThemeSelectionResolver rule.
             var suffix = IsDark && IsCompact ? ".DarkCompact" : IsDark ? ".Dark" : IsCompact ? ".Compact" : "";
             var profile = _themes.FirstOrDefault(item => item.Package == family.Package &&
                                                          item.Info.DesignLanguage is null &&
@@ -394,8 +394,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
             id = profile.Info?.Id ?? _selectedPresetId;
             if (profile.Info is null)
             {
-                algorithms = [IsDark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default];
-                if (IsCompact) { algorithms.Add(ThemeAlgorithm.Compact); }
+                algorithms = FallbackChain(family.Info.Algorithms, IsDark, IsCompact);
             }
             if (_selectedPrimary is { } selected && _themes.Single(item => item.Info.Id == id).Info.BrandColor ==
                 ThemeBrandColorSupport.Seed)
@@ -412,6 +411,26 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
             nameof(PreviewConfig));
         CopySucceeded = false;
         CopyFailed = false;
+    }
+
+    /// <summary>
+    /// The chain of a fallback definition, by the <see cref="ThemeSelectionResolver"/> rule (shared with the Gallery
+    /// workspace): the definition's own chain without the built-in <c>Dark</c> and <c>Compact</c> algorithms, then
+    /// <c>Compact</c> when compact is asked for, then <c>Dark</c> when dark is asked for.
+    /// </summary>
+    internal static List<ThemeAlgorithm> FallbackChain(IReadOnlyList<ThemeAlgorithm> baseChain, bool dark, bool compact)
+    {
+        var chain = new List<ThemeAlgorithm>(baseChain.Count + 2);
+        foreach (var algorithm in baseChain)
+        {
+            if (algorithm != ThemeAlgorithm.Dark && algorithm != ThemeAlgorithm.Compact)
+            {
+                chain.Add(algorithm);
+            }
+        }
+        if (compact) { chain.Add(ThemeAlgorithm.Compact); }
+        if (dark) { chain.Add(ThemeAlgorithm.Dark); }
+        return chain;
     }
 
     public string ExportThemeXml()

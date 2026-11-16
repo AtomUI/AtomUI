@@ -12,7 +12,8 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 /// ToggleSwitch and its identity-less SwitchKnob. Small-size Tokens need <c>SizeType=Small</c>; the content margins and font
 /// sizes need on/off text, the icon sizes an icon content; the loading indicator Tokens need <c>IsLoading</c>. The loading
 /// arc rotates with a looping animation, so loading rows slow the loop to a day per turn: both frames then show the arc at
-/// the same angle and only the Token changes it.
+/// the same angle and only the Token changes it. Hover Tokens need <c>:pointerover</c>; the track outline colours need a
+/// local outline width (<c>TrackBorderThickness</c> is 0 by default).
 /// </summary>
 public partial class ChoiceFamilyEffectTests
 {
@@ -62,8 +63,20 @@ public partial class ChoiceFamilyEffectTests
                 Checked();
                 arrange = static c => Pseudo(c, ":pointerover");
                 break;
-            case "ColorTextTertiary":
+            case "ColorTextTertiary" or "TrackHoverBg" or "HandleHoverBg":
                 arrange = static c => Pseudo(c, ":pointerover");
+                break;
+            case "TrackCheckedHoverBg" or "HandleCheckedHoverBg":
+                Checked();
+                arrange = static c => Pseudo(c, ":pointerover");
+                break;
+            case "TrackBorderColor":
+                // The outline is drawn only with a width; TrackBorderThickness is 0 by default.
+                steps.Add(static s => s.GrooveBorderThickness = 2);
+                break;
+            case "TrackCheckedBorderColor":
+                Checked();
+                steps.Add(static s => s.GrooveBorderThickness = 2);
                 break;
             case "SwitchDisabledOpacity" or "OpacityLoading":
                 steps.Add(static s => s.IsEnabled = false);

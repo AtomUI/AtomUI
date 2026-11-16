@@ -78,17 +78,25 @@
 
         <Style Selector="^[IsChecked=True]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:ToggleSwitchTokenResource ColorPrimaryHover}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackCheckedHoverBg}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]">
             <Setter Property="GrooveBackground"
-                    Value="{atom:ToggleSwitchTokenResource ColorTextQuaternary}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackBg}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:ToggleSwitchTokenResource ColorTextTertiary}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackHoverBg}" />
+        </Style>
+
+        <!-- The track outline (none by default: TrackBorderThickness 0) lies inside the track. -->
+        <Setter Property="GrooveBorderThickness" Value="{atom:ToggleSwitchTokenResource TrackBorderThickness}" />
+        <Setter Property="GrooveBorderBrush" Value="{atom:ToggleSwitchTokenResource TrackBorderColor}" />
+        <Style Selector="^[IsChecked=True]">
+            <Setter Property="GrooveBorderBrush"
+                    Value="{atom:ToggleSwitchTokenResource TrackCheckedBorderColor}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
@@ -130,6 +138,15 @@
                         Value="{atom:ToggleSwitchTokenResource HandleCheckedBg}" />
                 <Setter Property="LoadIndicatorBrush"
                         Value="{atom:ToggleSwitchTokenResource SwitchColor}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:pointerover /template/ atom|SwitchKnob#PART_SwitchKnob">
+            <Setter Property="Background"
+                    Value="{atom:ToggleSwitchTokenResource HandleHoverBg}" />
+            <Style Selector="^[IsCheckedState=True]">
+                <Setter Property="Background"
+                        Value="{atom:ToggleSwitchTokenResource HandleCheckedHoverBg}" />
             </Style>
         </Style>
 

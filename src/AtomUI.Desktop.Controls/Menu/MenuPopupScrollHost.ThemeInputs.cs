@@ -128,5 +128,11 @@ internal partial class MenuPopupScrollHost
     public static double GetThemeSeparatorItemHeight(StyledElement element) => element.GetValue(ThemeSeparatorItemHeightProperty);
     public static void SetThemeSeparatorItemHeight(StyledElement element, double value) => element.SetValue(ThemeSeparatorItemHeightProperty, value);
 
+    public static readonly AttachedProperty<BoxShadows> ThemeMenuPopupShadowsProperty =
+        AvaloniaProperty.RegisterAttached<MenuPopupScrollHost, StyledElement, BoxShadows>("ThemeMenuPopupShadows", inherits: true);
+
+    public static BoxShadows GetThemeMenuPopupShadows(StyledElement element) => element.GetValue(ThemeMenuPopupShadowsProperty);
+    public static void SetThemeMenuPopupShadows(StyledElement element, BoxShadows value) => element.SetValue(ThemeMenuPopupShadowsProperty, value);
+
     #endregion
 }

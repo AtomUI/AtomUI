@@ -214,8 +214,8 @@
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
-            <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
-            <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
+            <Setter Property="PopupRootShadow" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
+            <Setter Property="OverlayHostShadow" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
             <Setter Property="MinWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
             <Setter Property="MaxWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
         </Style>

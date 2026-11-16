@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Security.Cryptography;
+using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Schema;
 using Avalonia.Media;
@@ -309,7 +310,9 @@ internal sealed class CompiledThemeCatalog
     /// duplicates an already registered (Appearance, Density) variant of its language (ATMTHM3103), or whose brand
     /// color support differs from the language's first definition (ATMTHM3104), is demoted out of the group
     /// (<c>DesignLanguage = null</c>) with a Warning. Demoted definitions are never registered into the language's
-    /// bookkeeping, so they neither occupy a variant slot nor decide the language's brand support.
+    /// bookkeeping, so they neither occupy a variant slot nor decide the language's brand support. A grouped definition
+    /// whose declared <c>Density</c> disagrees with its algorithm chain (Compact without the built-in Compact algorithm,
+    /// or Normal with it) gets an ATMTHM3105 Warning and stays in the group.
     /// </summary>
     private static void ApplyDesignLanguageRules(
         Dictionary<string, CompiledThemeDefinition> definitions,
@@ -366,6 +369,19 @@ internal sealed class CompiledThemeCatalog
                 languages.Add(language, state);
             }
             state.Variants.Add(variant);
+
+            // The resolver picks a variant by its declared Density; a chain that disagrees renders another density.
+            // The definition keeps its group: the declaration is suspicious, not conflicting.
+            var compactChain = entry.Info.Algorithms.Contains(ThemeAlgorithm.Compact);
+            if (compactChain != (entry.Info.Density == ThemeDensity.Compact))
+            {
+                diagnostics.Add(Warning(
+                    "ATMTHM3105",
+                    entry.Revision.SourceIdentity,
+                    "$",
+                    $"Theme '{entry.Info.Id}' of design language '{language}' declares Density=\"{entry.Info.Density}\" " +
+                    $"but its algorithm chain {(compactChain ? "contains" : "lacks")} the built-in Compact algorithm."));
+            }
         }
     }
 

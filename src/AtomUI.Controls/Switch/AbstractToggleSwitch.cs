@@ -37,6 +37,20 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         AvaloniaProperty.Register<AbstractToggleSwitch, IBrush?>(
             nameof(GrooveBackground));
 
+    /// <summary>
+    /// The brush of the groove's outline, drawn inside the groove; nothing is drawn while it is
+    /// <see langword="null"/> or <see cref="GrooveBorderThickness"/> is 0.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> GrooveBorderBrushProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, IBrush?>(nameof(GrooveBorderBrush));
+
+    /// <summary>
+    /// The width of the groove's outline. The outline lies inside the groove, so it changes neither the layout nor the
+    /// knob position.
+    /// </summary>
+    public static readonly StyledProperty<double> GrooveBorderThicknessProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(GrooveBorderThickness));
+
     public static readonly StyledProperty<object?> OnContentProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, object?>(nameof(OnContent));
     
@@ -89,6 +103,20 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     {
         get => GetValue(GrooveBackgroundProperty);
         set => SetValue(GrooveBackgroundProperty, value);
+    }
+
+    /// <inheritdoc cref="GrooveBorderBrushProperty"/>
+    public IBrush? GrooveBorderBrush
+    {
+        get => GetValue(GrooveBorderBrushProperty);
+        set => SetValue(GrooveBorderBrushProperty, value);
+    }
+
+    /// <inheritdoc cref="GrooveBorderThicknessProperty"/>
+    public double GrooveBorderThickness
+    {
+        get => GetValue(GrooveBorderThicknessProperty);
+        set => SetValue(GrooveBorderThicknessProperty, value);
     }
 
     [DependsOn(nameof(OnContentTemplate))]
@@ -244,6 +272,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     private EventHandler? _formValueChanged;
     
     private readonly TransitionInitializationSession _transitionInitialization;
+    private IPen? _grooveBorderPen;
 
     static AbstractToggleSwitch()
     {
@@ -259,7 +288,7 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             KnobSizeProperty,
             InnerMinMarginProperty,
             InnerMaxMarginProperty);
-        AffectsRender<AbstractToggleSwitch>(GrooveBackgroundProperty);
+        AffectsRender<AbstractToggleSwitch>(GrooveBackgroundProperty, GrooveBorderBrushProperty, GrooveBorderThicknessProperty);
         IsCheckedProperty.Changed.AddClassHandler<AbstractToggleSwitch>((toggleSwitch, args) => toggleSwitch.NotifyFormValueChanged(args.NewValue as bool?));
     }
 
@@ -461,8 +490,17 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     public sealed override void Render(DrawingContext context)
     {
-        var size = Bounds.Size;
-        context.DrawPilledRect(GrooveBackground, null, new Rect(new Point(0, 0), size));
+        var rect      = new Rect(new Point(0, 0), Bounds.Size);
+        var thickness = GrooveBorderThickness;
+        if (thickness <= 0 || GrooveBorderBrush is null)
+        {
+            context.DrawPilledRect(GrooveBackground, null, rect);
+            return;
+        }
+
+        // The outline is stroked on a rect deflated by half its width, so it stays inside the groove.
+        PenUtils.TryModifyOrCreate(ref _grooveBorderPen, GrooveBorderBrush, thickness);
+        context.DrawPilledRect(GrooveBackground, _grooveBorderPen, rect.Deflate(thickness / 2));
     }
 
     public bool HitTest(Point point)

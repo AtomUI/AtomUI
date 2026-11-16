@@ -760,6 +760,10 @@ Control 使用同一条确定性路径。
   退出分组，按 `DesignLanguage = null` 处理，仍可按 Id 使用；用户目录也可以给已有设计语言补充变体，只要变体不重复、
   `BrandColor` 一致。
 
+另有一条单定义规则 `ATMTHM3105`（编译主题包内与运行时目录都是 Warning，定义留在分组内）：声明了设计语言的定义，
+`Density` 必须与算法链一致。`Density="Compact"` 却没有内置 `Compact` 算法，或 `Density="Normal"`（含不写）却带了
+`Compact` 算法，解析器按声明选中的变体就会以另一种密度渲染。没有设计语言的定义不检查。
+
 ### 用解析器把选择变成主题请求
 
 `ThemeSelectionResolver` 是 Core 里的纯函数，不读写任何状态。它把用户的选择（设计语言、明暗、密度、品牌色）解析成要应用的

@@ -16,7 +16,7 @@
                     Namespace="AtomUI.Theme" Package="AtomUI.Core" BaseClass="ThemeConfigProvider" />
             </gallery:GalleryStickyTabsHost.Header>
             <StackPanel Margin="28,10,28,28" Spacing="20">
-                <ItemsControl ItemsSource="{Binding Presets}">
+                <ItemsControl Name="PresetBar" ItemsSource="{Binding Presets}" ClipToBounds="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
@@ -43,7 +43,7 @@
                 <WrapPanel Orientation="Horizontal" ItemSpacing="{atom:SharedTokenResource Spacing}"
                            LineSpacing="{atom:SharedTokenResource SpacingSM}">
                     <TextBlock VerticalAlignment="Center" Text="{vm:ThemePresetsShowCaseLangResource PrimaryColor}" />
-                    <ItemsControl Name="PrimarySwatchBar" ItemsSource="{Binding PrimarySwatchItems}"
+                    <ItemsControl Name="PrimarySwatchBar" ItemsSource="{Binding PrimarySwatchItems}" ClipToBounds="False"
                                   IsEnabled="{Binding CanChoosePrimary}"
                                   AutomationProperties.Name="{vm:ThemePresetsShowCaseLangResource PrimaryColor}">
                         <ItemsControl.ItemsPanel>

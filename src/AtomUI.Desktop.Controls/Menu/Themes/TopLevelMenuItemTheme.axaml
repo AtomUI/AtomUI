@@ -152,9 +152,9 @@
                 <Setter Property="MarginToAnchor"
                         Value="{atom:MenuTokenResource TopLevelItemPopupMarginToAnchor}" />
                 <Setter Property="PopupRootShadow"
-                        Value="{atom:PopupTokenResource PopupRootShadow}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
                 <Setter Property="OverlayHostShadow"
-                        Value="{atom:PopupTokenResource OverlayHostShadow}" />
+                        Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
             </Style>
 
             <Style Selector="^[ShouldUseOverlayPopup=False] /template/ atom|Popup#PART_Popup">

@@ -73,6 +73,29 @@ public class MaterialThemePackageTests
         Contrast(dotColor, Global<Color>(snapshot, "ColorPrimary")).ShouldBeGreaterThan(4.5);
     }
 
+    // Material 3 text button (md.comp.text-button, mdc-tokens v0_161): label-text-color and its hover / focus /
+    // pressed variants are md.sys.color.primary itself (hover feedback is the state layer, not a new label color).
+    // The profiles pin the ColorLink family to their primary seed, so links and Link buttons stay on the primary in
+    // every state (Ant Design's rule ColorLink ?? ColorInfo would give #1677FF, and its hover derivation would drift
+    // off the primary).
+    [AvaloniaTheory]
+    [InlineData("Material", "#6750A4")]
+    [InlineData("Material.Dark", "#D0BCFF")]
+    [InlineData("Material.Compact", "#6750A4")]
+    [InlineData("Material.DarkCompact", "#D0BCFF")]
+    public async Task Links_Take_The_Primary(string id, string seed)
+    {
+        var snapshot = await Apply(id);
+        var primary = Color.Parse(seed);
+        Global<Color>(snapshot, "ColorLink").ShouldBe(Global<Color>(snapshot, "ColorPrimary"));
+        Global<Color>(snapshot, "ColorLinkHover").ShouldBe(primary);
+        Global<Color>(snapshot, "ColorLinkActive").ShouldBe(primary);
+        Global<Color>(snapshot, "ColorLink").ShouldNotBe(Color.Parse("#1677FF"));
+        var manager = Application.Current!.GetThemeManager()!;
+        manager.AvailableThemes.Single(theme => theme.Id == id).AccentColor.ShouldBe(Color.Parse(seed));
+        Contrast(Global<Color>(snapshot, "ColorLink"), Global<Color>(snapshot, "ColorBgContainer")).ShouldBeGreaterThan(4.5);
+    }
+
     [AvaloniaFact]
     public void Profiles_Declare_Design_Language_And_Brand_Support()
     {

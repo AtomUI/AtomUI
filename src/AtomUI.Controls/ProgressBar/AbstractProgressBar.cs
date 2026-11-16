@@ -373,8 +373,12 @@ public abstract class AbstractProgressBar : RangeBase,
             UpdateProgress();
         }
 
-        if (change.Property == IsIndeterminateProperty)
+        if (change.Property == IsIndeterminateProperty ||
+            change.Property == ValueProperty ||
+            change.Property == MinimumProperty ||
+            change.Property == MaximumProperty)
         {
+            // Completed 与 ValueZero 都随值域变化，值变化时必须刷新伪类，主题取值才会跟随
             UpdatePseudoClasses();
         }
 
@@ -636,6 +640,7 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         PseudoClasses.Set(ProgressBarPseudoClass.Indeterminate, IsIndeterminate);
         PseudoClasses.Set(ProgressBarPseudoClass.Completed, MathUtils.AreClose(Value, Maximum));
+        PseudoClasses.Set(ProgressBarPseudoClass.ValueZero, MathUtils.AreClose(Value, 0d));
     }
 
     protected virtual void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)

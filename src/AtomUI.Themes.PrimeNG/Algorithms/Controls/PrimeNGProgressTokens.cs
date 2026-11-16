@@ -40,7 +40,9 @@ internal abstract class PrimeNGProgressTokens<TToken> : IControlTokenAlgorithm<T
 /// The line progress bar: the PrimeUIX colours, <c>progressbar.border.radius</c>, <c>content.border.radius</c>
 /// (the global <c>BorderRadius</c>: 6, Nora 2) instead of Ant Design's capsule, and <c>progressbar.label.color</c>,
 /// <c>primary.contrast.color</c>, for an inner percentage label: both candidates of the label's readability choice are
-/// the contrast colour (<c>InnerLabelColor</c> = <c>ColorTextLightSolid</c>). PrimeUIX's fixed height (1.125rem,
+/// the contrast colour (<c>InnerLabelColor</c> = <c>ColorTextLightSolid</c>). PrimeNG 22 renders the label inside the
+/// value bar and hides it at 0 (<c>labelDisplay</c>: <c>display: none</c> when the value is 0), where it would be the
+/// contrast colour on the light track, so <c>InnerLabelEmptyOpacity</c> is 0. PrimeUIX's fixed height (1.125rem,
 /// Lara 1.25rem) and label font have no token: the bar keeps AtomUI's size types.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
@@ -53,8 +55,9 @@ internal sealed class PrimeNGProgressBarTokens : PrimeNGProgressTokens<ProgressB
 {
     private protected override void EvaluateShape(DesignToken effectiveGlobal, ProgressBarToken token)
     {
-        token.LineBorderRadius = effectiveGlobal.BorderRadius;
-        token.InnerLabelColor  = effectiveGlobal.ColorTextLightSolid;
+        token.LineBorderRadius       = effectiveGlobal.BorderRadius;
+        token.InnerLabelColor        = effectiveGlobal.ColorTextLightSolid;
+        token.InnerLabelEmptyOpacity = 0;
     }
 }
 

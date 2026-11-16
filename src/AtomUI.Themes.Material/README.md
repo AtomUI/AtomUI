@@ -39,6 +39,7 @@ This preset deliberately uses the approved baseline palette and dimensions, rath
 | AtomUI token | Light | Dark |
 |---|---|---|
 | `ColorPrimary` seed | `#6750A4` | `#D0BCFF` |
+| `ColorLink` seed | `#6750A4` | `#D0BCFF` |
 | `ColorTextLightSolid` | `#FFFFFF` | `#381E72` |
 | `ColorBgBase`, `ColorBgContainer`, `ColorBgLayout` | `#FFFBFE` | `#1C1B1F` |
 | `ColorTextBase`, `ColorText` | `#1C1B1F` | `#E6E1E5` |
@@ -48,6 +49,8 @@ This preset deliberately uses the approved baseline palette and dimensions, rath
 | `BorderRadius`, `ControlHeight`, `FontWeightStrong` | `4`, `40`, `500` | same |
 | `BoxShadowsSecondary` (approximate elevation 1) | `0 1 3 0 #33000000` | same |
 | `BoxShadows` (approximate elevation 3) | `0 4 8 3 #26000000` | same |
+
+`ColorLink` is the primary seed in every profile: the Material 3 [text button](https://github.com/material-components/material-components-web/blob/master/packages/mdc-tokens/v0_161/_md-comp-text-button.scss) `label-text-color` (and its hover, focus and pressed variants) is `md.sys.color.primary`, so hyperlinks and Link buttons take the primary (`ColorLink` / `Hover` / `Active` = `ColorPrimary` / `Hover` / `Active`, derived from the same seed). Without it AtomUI's rule `ColorLink ?? ColorInfo` gave them Ant Design's `#1677FF`. Material shows hover and pressed as state layers; AtomUI's link states keep the derived hover / active tones.
 
 Dark primary and related states are derived from the light-purple seed by AtomUI's existing Dark algorithm; they are not exact Material state-layer colors. Other semantic colors, disabled states, component-specific geometry and typography continue to use AtomUI defaults and algorithms. `FontWeightStrong` is a global strong-text token, not an override of every control's own font weight.
 

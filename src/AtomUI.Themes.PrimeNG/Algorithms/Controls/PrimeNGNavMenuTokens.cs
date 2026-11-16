@@ -54,5 +54,8 @@ internal sealed class PrimeNGNavMenuTokens : IControlTokenAlgorithm<NavMenuToken
         token.HorizontalItemHoverBg       = background;
         token.HorizontalItemBorderRadius  = effectiveGlobal.BorderRadius;
         token.ActiveBarHeight             = 0;
+
+        // The submenu popups of the horizontal and vertical menu take the menu frame (PrimeUIX menubar submenu).
+        token.MenuPopupShadows = PrimeNGMenuFrame.Shadows(context, effectiveGlobal);
     }
 }

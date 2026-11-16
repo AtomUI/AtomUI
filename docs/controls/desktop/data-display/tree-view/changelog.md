@@ -8,6 +8,8 @@
 - Token
   - 新增 Own Token `NodeSelectedColor`（TreeView、TransferTreeView、TreeSelect）：选中节点的文字色，默认 `ColorText`
     （antd Tree `nodeSelectedColor`），Ant Design 渲染不变；选中底色为实色的主题据此设置对比色。
+- Motion
+  - 选中节点文字（`NodeSelectedColor`，HeaderPresenter 与 FilterHighlighter）与选中背景同时过渡（`MotionDurationMid`，仅 `IsMotionEnabled` 时）。
 
 ## 2026-11-14
 

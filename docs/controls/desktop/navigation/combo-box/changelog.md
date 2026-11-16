@@ -2,6 +2,11 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Motion
+  - 选中项文字（`Foreground`）与选中背景同时过渡（`MotionDurationMid`，仅 `IsMotionEnabled` 时），实色选中底色下不再先变色。
+
 ## 2026-11-14
 
 - Fixed

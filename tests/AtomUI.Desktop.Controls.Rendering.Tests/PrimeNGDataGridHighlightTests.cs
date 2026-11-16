@@ -61,7 +61,9 @@ public class PrimeNGDataGridHighlightTests
     public async Task Selected_Row_Text_Is_The_Highlight_Color(string themeId, string? seed, string background, string text)
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        var config = seed is null ? null : new ThemeConfigBuilder().WithToken("ColorPrimary", seed).Build();
+        // Motion off: the selected row's Foreground transitions with its background and would be read mid-way.
+        var builder = new ThemeConfigBuilder().WithToken("EnableMotion", "false");
+        var config = (seed is null ? builder : builder.WithToken("ColorPrimary", seed)).Build();
         (await manager.ApplyThemeAsync(new ThemeRequest(themeId, config, ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken)).Status.ShouldBe(ThemeTransitionStatus.Committed);
         var grid = new DataGrid

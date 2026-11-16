@@ -104,6 +104,8 @@
                     <atom:TokenTransitions>
                         <Transitions>
                             <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <!-- The selected row's text (RowSelectedColor) moves with its background. -->
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

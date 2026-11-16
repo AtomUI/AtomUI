@@ -7,6 +7,8 @@
 - Token
   - 新增 Own Token `RowSelectedColor`：选中行文字色，默认全局 `ControlItemColorActive`（默认 `ColorText`），设在选中行的
     `Foreground` 上，单元格继承。选中底色为实色的主题据此保持选中行文字可读。
+- Motion
+  - 选中行的 `Foreground`（`RowSelectedColor`）与背景同时过渡（`MotionDurationMid`，仅 `IsMotionEnabled` 时），实色选中底色下文字不会先于背景变成对比色。
 
 ## 2026-11-14
 

@@ -276,6 +276,26 @@
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
+            <!-- The selected node's text (NodeSelectedColor) is set on these parts; it moves with the selected
+                 background. -->
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
+            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
         </Style>
     </Style>
 </ControlTheme>

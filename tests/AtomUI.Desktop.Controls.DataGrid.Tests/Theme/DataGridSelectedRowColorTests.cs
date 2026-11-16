@@ -28,7 +28,8 @@ public class DataGridSelectedRowColorTests
     public async Task Selected_Row_Text_Follows_ControlItemColorActive()
     {
         var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
-        await Apply(manager, null);
+        // Motion off: the row's Foreground transition would hold the previous colour while it is read.
+        await Apply(manager, new ThemeConfigBuilder().WithToken("EnableMotion", "false").Build());
         var grid = new global::AtomUI.Desktop.Controls.DataGrid
         {
             AutoGenerateColumns = false,
@@ -51,7 +52,8 @@ public class DataGridSelectedRowColorTests
             accessor.GetOwn<Color>(DataGridTokenKind.RowSelectedColor).ShouldBe(text);
             SelectedRowForeground(grid).ShouldBe(text);
 
-            await Apply(manager, new ThemeConfigBuilder().WithToken("ControlItemColorActive", "#FF123456").Build());
+            await Apply(manager, new ThemeConfigBuilder().WithToken("ControlItemColorActive", "#FF123456")
+                                                         .WithToken("EnableMotion", "false").Build());
             Dispatcher.UIThread.RunJobs();
             ControlTokenAccessor.Capture<global::AtomUI.Desktop.Controls.DataGrid>(grid)
                                 .GetOwn<Color>(DataGridTokenKind.RowSelectedColor).ShouldBe(Color.Parse("#FF123456"));
@@ -64,6 +66,43 @@ public class DataGridSelectedRowColorTests
             await Apply(manager, null);
         }
     }
+
+    [Fact]
+    public async Task Selected_Row_Text_Transitions_With_Its_Background_Only_With_Motion()
+    {
+        var manager = Application.Current!.GetThemeManager().ShouldBeOfType<ThemeManager>();
+        await Apply(manager, null);
+        var grid = new global::AtomUI.Desktop.Controls.DataGrid
+        {
+            AutoGenerateColumns = false,
+            ItemsSource = new TestDataGridSource<Item>(new[] { new Item("one") }),
+            Width = 360,
+            Height = 220
+        };
+        grid.Columns.Add(new DataGridTextColumn { Header = "Name", Binding = new Binding(nameof(Item.Name)) });
+        var window = new AvaloniaWindow { Width = 420, Height = 280, Content = grid };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            var row = grid.GetVisualDescendants().OfType<DataGridRow>().First();
+            BrushTransitions(row).ShouldContain("Background");
+            BrushTransitions(row).ShouldContain("Foreground");
+
+            await Apply(manager, new ThemeConfigBuilder().WithToken("EnableMotion", "false").Build());
+            Dispatcher.UIThread.RunJobs();
+            BrushTransitions(grid.GetVisualDescendants().OfType<DataGridRow>().First()).ShouldBeEmpty();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+            await Apply(manager, null);
+        }
+    }
+
+    private static string[] BrushTransitions(DataGridRow row) =>
+        row.Transitions?.OfType<AtomUI.Animations.SolidColorBrushTransition>().Select(t => t.Property?.Name ?? "").ToArray() ?? [];
 
     private static Color? SelectedRowForeground(global::AtomUI.Desktop.Controls.DataGrid grid) =>
         (grid.GetVisualDescendants().OfType<DataGridRow>().Single(row => row.IsSelected).Foreground as ISolidColorBrush)?.Color;

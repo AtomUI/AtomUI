@@ -84,7 +84,11 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX overlay.{select,popover}.border.color, light: surface.200.
             OverlayBorder: new(200),
             // PrimeUIX progressbar.background (content.border.color).
-            ProgressTrack: new(200)),
+            ProgressTrack: new(200),
+            // PrimeUIX navigation.item.active.background / focusBackground (surface.100) with activeColor / focusColor
+            // (text.hover.color).
+            NavigationItemActive: new(100),
+            NavigationItemActiveColor: new(800)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -124,7 +128,11 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
             OverlayBorder: new(700),
             // PrimeUIX progressbar.background (content.border.color).
-            ProgressTrack: new(700)),
+            ProgressTrack: new(700),
+            // PrimeUIX navigation.item.active.background / focusBackground (surface.800) with activeColor / focusColor
+            // (text.hover.color).
+            NavigationItemActive: new(800),
+            NavigationItemActiveColor: new(White)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

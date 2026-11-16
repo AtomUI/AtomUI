@@ -164,6 +164,16 @@ internal sealed record PrimeNGNeutralRule(
 /// PrimeUIX <c>progressbar.background</c>, the unfilled track of the progress controls, a stop of the surface scale
 /// (Aura and Lara <c>content.border.color</c>, Nora its own <c>surface.300</c> / <c>surface.600</c>).
 /// </param>
+/// <param name="NavigationItemActive">
+/// PrimeUIX <c>navigation.item.active.background</c>, a stop of the surface scale: the neutral background of an active
+/// menu item (an open submenu's path in menubar and tieredmenu), which the NavMenu stage uses for the selected,
+/// hovered and keyboard-active items. PrimeUIX navigation has no highlight: Aura and Lara also focus on it
+/// (<c>navigation.item.focus.background</c>, surface 100 / 800).
+/// </param>
+/// <param name="NavigationItemActiveColor">
+/// PrimeUIX <c>navigation.item.active.color</c>, a stop of the surface scale (<c>text.hover.color</c>; Nora dark
+/// <c>text.color</c>): the text of those items.
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -180,7 +190,9 @@ internal sealed record PrimeNGAppearanceRules(
     Func<DesignToken, Color> HighlightColor,
     PrimeNGShade SwitchHandleChecked,
     PrimeNGShade OverlayBorder,
-    PrimeNGShade ProgressTrack);
+    PrimeNGShade ProgressTrack,
+    PrimeNGShade NavigationItemActive,
+    PrimeNGShade NavigationItemActiveColor);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

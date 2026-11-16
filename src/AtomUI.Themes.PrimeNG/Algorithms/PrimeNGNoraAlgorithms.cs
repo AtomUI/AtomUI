@@ -95,7 +95,11 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX overlay.{select,popover}.border.color, light: transparent in light.
             OverlayBorder: new(Black, 0),
             // PrimeUIX progressbar.background (surface.300 / surface.600).
-            ProgressTrack: new(300)),
+            ProgressTrack: new(300),
+            // PrimeUIX navigation.item.active.background / activeColor (menubar, tieredmenu): surface.200 with
+            // text.hover.color; the hover row too (see PrimeNGNavMenuTokens: Nora's solid primary focus is not used).
+            NavigationItemActive: new(200),
+            NavigationItemActiveColor: new(950)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             // ColorPrimaryBg / BgHover are the primary at 16% / 24% (PrimeUIX button.text hover / active background);
@@ -143,7 +147,11 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
             OverlayBorder: new(700),
             // PrimeUIX progressbar.background (surface.300 / surface.600).
-            ProgressTrack: new(600)),
+            ProgressTrack: new(600),
+            // PrimeUIX navigation.item.active.background / activeColor (menubar, tieredmenu): surface.700 with
+            // text.color; the hover row too (see PrimeNGNavMenuTokens: Nora's solid primary focus is not used).
+            NavigationItemActive: new(700),
+            NavigationItemActiveColor: new(White)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

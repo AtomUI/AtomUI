@@ -597,27 +597,45 @@ public class PrimeNGThemePackageTests
         // The completed step's check is the contrast colour on the solid primary.
         Own<Color>(light, "Steps", "FinishIconColor").ShouldBe(Colors.White);
         Own<Color>(light, "Steps", "FinishIconBgColor").ShouldBe(Color.Parse("#059669"));
-        // The Filled button keeps the global pale background; the selected NavMenu item takes it too, because its text
-        // is the primary colour.
+        // The Filled button keeps the global pale background.
         Effective<Color>(light, "Button", "ColorPrimaryBg").ShouldBe(Color.Parse("#ECFDF5"));
-        Own<Color>(light, "NavMenu", "ItemSelectedBg").ShouldBe(Color.Parse("#ECFDF5"));
+        // NavMenu follows PrimeUIX navigation, not the highlight: the neutral active background (slate 200).
+        Own<Color>(light, "NavMenu", "ItemSelectedBg").ShouldBe(Color.Parse("#E2E8F0"));
     }
 
-    [AvaloniaFact]
-    public async Task NavMenu_Stage_Follows_The_Highlight_Shape()
+    // @primeuix/themes 3.1.1 navigation.item: active.background / active.color (Aura, Lara: surface 100 / 800 with
+    // text.hover.color surface 800 / 0; Nora: surface 200 / 700 with text.hover.color 950 light, text.color 0 dark).
+    // Aura and Lara focus on the same pair; Nora hovers on content.hover (the same pair) instead of its solid primary
+    // focus. The primary seed (noir or a colour) does not change navigation.
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null, "#F1F5F9", "#1E293B")]
+    [InlineData("PrimeNGAura.Dark", null, "#27272A", "#FFFFFF")]
+    [InlineData("PrimeNGLara", null, "#F1F5F9", "#1E293B")]
+    [InlineData("PrimeNGLara.Dark", null, "#27272A", "#FFFFFF")]
+    [InlineData("PrimeNGNora", null, "#E2E8F0", "#020617")]
+    [InlineData("PrimeNGNora.Dark", null, "#3F3F46", "#FFFFFF")]
+    [InlineData("PrimeNGAura", "#10B981", "#F1F5F9", "#1E293B")]
+    [InlineData("PrimeNGNora", "#6366F1", "#E2E8F0", "#020617")]
+    [InlineData("PrimeNGNora.Dark", "#6366F1", "#3F3F46", "#FFFFFF")]
+    public async Task NavMenu_Follows_PrimeUIX_Navigation(string profile, string? seed, string background, string text)
     {
-        var hybridConfig = new ThemeConfigBuilder()
-                           .WithAlgorithms(new ThemeAlgorithm("PrimeNG", "Nora.Dark"), ThemeAlgorithm.Default)
-                           .Build();
-        var hybrid = await Apply(new ThemeRequest("PrimeNGNora.Dark", hybridConfig, ThemeTransitionReason.UserRequest));
-        // A solid highlight (here the Nora light Alias rule over Ant Design's Map): the menu keeps the pale primary,
-        // because its selected text is the primary colour.
-        Global<Color>(hybrid, "ControlItemBgActive").ShouldBe(Global<Color>(hybrid, "ColorPrimary"));
-        Own<Color>(hybrid, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(hybrid, "ColorPrimaryBg"));
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        foreach (var name in new[] { "ItemSelectedBg", "ItemHoverBg", "ItemActiveBg", "HorizontalItemSelectedBg", "HorizontalItemHoverBg" })
+        {
+            Own<Color>(snapshot, "NavMenu", name).ShouldBe(Color.Parse(background), name);
+        }
+        foreach (var name in new[] { "ItemSelectedColor", "ItemHoverColor", "HorizontalItemSelectedColor" })
+        {
+            Own<Color>(snapshot, "NavMenu", name).ShouldBe(Color.Parse(text), name);
+        }
+        // PrimeUIX menubar has no indicator bar; its items take the content radius.
+        Own<double>(snapshot, "NavMenu", "ActiveBarHeight").ShouldBe(0);
+        Own<CornerRadius>(snapshot, "NavMenu", "HorizontalItemBorderRadius").ShouldBe(Global<CornerRadius>(snapshot, "BorderRadius"));
 
-        // The pale highlight of Aura: the Ant Design value, ControlItemBgActive.
-        var aura = await ApplyEmerald("PrimeNGAura");
-        Own<Color>(aura, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(aura, "ControlItemBgActive"));
+        // The selected text is readable on the selected background and, for the selected-path headers, on the menu.
+        var item = Own<Color>(snapshot, "NavMenu", "ItemBg");
+        ContrastRatio.Of(Color.Parse(text), ContrastRatio.Composite(Color.Parse(background), item)).ShouldBeGreaterThanOrEqualTo(4.5);
+        ContrastRatio.Of(Color.Parse(text), Global<Color>(snapshot, "ColorBgContainer")).ShouldBeGreaterThanOrEqualTo(4.5);
     }
 
     public static TheoryData<string> AllProfiles() =>

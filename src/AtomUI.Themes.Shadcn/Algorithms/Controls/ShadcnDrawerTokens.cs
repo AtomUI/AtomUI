@@ -1,4 +1,5 @@
 using AtomUI.Desktop.Controls;
+using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 
@@ -6,7 +7,8 @@ namespace AtomUI.Themes.Shadcn.Algorithms.Controls;
 
 /// <summary>
 /// The Drawer (Sheet) under the shadcn styles: the drawer shadow level of the overlay table on all four sides
-/// (design 5.6.1). The anchored-side border is a Task-9 control token; until then the Ant Design rendering stays.
+/// (design 5.6.1). Vega additionally draws the anchored-side border — the outline ring colour at one line, the
+/// other styles draw none.
 /// </summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
@@ -34,10 +36,18 @@ internal sealed class ShadcnDrawerTokens : IControlTokenAlgorithm<DrawerToken>
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, DrawerToken token)
     {
-        var shadows = ShadcnStyles.Shadow(ShadcnStyles.Resolve(context).Overlay.DrawerShadow);
+        var dark    = context.Appearance == ThemeAppearance.Dark;
+        var style   = ShadcnStyles.Resolve(context);
+        var shadows = ShadcnStyles.Shadow(style.Overlay.DrawerShadow);
         token.BoxShadowDrawerLeft  = shadows;
         token.BoxShadowDrawerRight = shadows;
         token.BoxShadowDrawerUp    = shadows;
         token.BoxShadowDrawerDown  = shadows;
+        if (style.Id == "Vega")
+        {
+            var surface = ShadcnBaseColors.Resolve(effectiveGlobal.ColorNeutral, dark);
+            token.EdgeBorderColor   = ShadcnStyles.OutlineRing(surface, dark, style);
+            token.EdgeBorderThickness = 1;
+        }
     }
 }

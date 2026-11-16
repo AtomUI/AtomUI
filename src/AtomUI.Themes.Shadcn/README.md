@@ -68,6 +68,8 @@
 | Popover 圆角 | 弹层框体无圆角 Token，随全局 BorderRadius（Maia 26 vs 官方 popover 18 等） |
 | 子菜单阴影比主菜单高一级（部分 Style） | 都用主菜单档 |
 | 彩色 Theme 下 `--secondary` 变 zinc 100/800 | Secondary 跟随 Base Color（差异极小：#F5F5F5 对 #F4F4F5） |
+| Compact 尺寸梯度 | `AtomUI:Compact` 按 Ant 比例重算小/大号（SM=75%、XS=50%、LG=125%）与字号，非该 Style 梯度等量再压一级 |
+| 追加 `AtomUI:Dark` 的混链 | Map 颜色退化为 Ant 暗色公式（只有 Alias 与控件作用域保留 shadcn 取值）；暗色请用各 Style 的 `.Dark` profile |
 | Nova 等的 Card/Dialog 灰底底栏 | 不做 |
 | 字体、图标库 | 非目标（主题 Token 之外） |
 | 透明色直接使用 | `bg-primary/80` 类合成到背景上为不透明色，避免叠在非白底时偏离官方 |

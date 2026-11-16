@@ -203,8 +203,8 @@ internal static class ThemeDocumentReader
 
         // A built-in chain cannot derive a neutral family; a vendor algorithm may provide its own default seed.
         var hasSeed = document.Tokens.Any(static token => token.Name == "ColorNeutral");
-        var builtinOnlyChain = document.Algorithms.All(static document =>
-            document.Algorithm.Catalog == ThemeAlgorithm.BuiltInCatalog);
+        var builtinOnlyChain = document.Algorithms.All(static entry =>
+            entry.Algorithm.Catalog == ThemeAlgorithm.BuiltInCatalog);
         if (!hasSeed && builtinOnlyChain)
         {
             diagnostics.Add(new ThemeDefinitionDiagnostic(

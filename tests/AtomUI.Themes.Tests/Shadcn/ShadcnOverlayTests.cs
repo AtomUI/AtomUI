@@ -267,4 +267,27 @@ public class ShadcnOverlayTests
         var token = control!.OwnTokens.Single(item => item.Name == tokenName);
         return snapshot.Controls[control.Slot].ControlTokenValues.Get<T>(token.Slot);
     }
+
+    [AvaloniaTheory]
+    [InlineData("Vega", false)]
+    [InlineData("Vega", true)]
+    public async Task Vega_Drawer_Has_The_Anchored_Side_Edge_Border(string style, bool dark)
+    {
+        var snapshot = await Apply(style, "neutral", dark);
+        var foreground = ShadcnAppendix.BaseColors()[("neutral", dark, "foreground")];
+        var ring = Color.FromArgb(0x1A, foreground.R, foreground.G, foreground.B);
+
+        Own<double>(snapshot, "Drawer", "EdgeBorderThickness").ShouldBe(1, style);
+        Own<Color>(snapshot, "Drawer", "EdgeBorderColor").ShouldBe(ring, style);
+    }
+
+    [AvaloniaFact]
+    public async Task Other_Styles_Draw_No_Drawer_Edge_Border()
+    {
+        foreach (var style in new[] { "Nova", "Maia", "Luma" })
+        {
+            var snapshot = await Apply(style, "neutral", false);
+            Own<double>(snapshot, "Drawer", "EdgeBorderThickness").ShouldBe(0, style);
+        }
+    }
 }

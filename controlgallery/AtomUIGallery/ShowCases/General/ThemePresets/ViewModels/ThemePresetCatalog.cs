@@ -91,6 +91,24 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         nameof(DesignToken.ColorPrimaryTextActive), nameof(DesignToken.ColorControlOutline)
     };
 
+    // Tokens derived from the neutral family; a theme declaring NeutralColor="Seed" must not pin them (rule
+    // ATMTHM3106). Mirrors ThemeDocumentReader.s_neutralDerivedTokens.
+    internal static readonly HashSet<string> s_neutralDerivedTokens = new(StringComparer.Ordinal)
+    {
+        nameof(DesignToken.ColorBgLayout), nameof(DesignToken.ColorBgContainer), nameof(DesignToken.ColorBgElevated),
+        nameof(DesignToken.ColorBgSpotlight), nameof(DesignToken.ColorBgSolid), nameof(DesignToken.ColorBgSolidHover),
+        nameof(DesignToken.ColorBgSolidActive), nameof(DesignToken.ColorText), nameof(DesignToken.ColorTextHeading),
+        nameof(DesignToken.ColorTextSecondary), nameof(DesignToken.ColorTextTertiary),
+        nameof(DesignToken.ColorTextQuaternary), nameof(DesignToken.ColorTextDescription),
+        nameof(DesignToken.ColorTextPlaceholder), nameof(DesignToken.ColorTextDisabled), nameof(DesignToken.ColorIcon),
+        nameof(DesignToken.ColorIconHover), nameof(DesignToken.ColorFill), nameof(DesignToken.ColorFillSecondary),
+        nameof(DesignToken.ColorFillTertiary), nameof(DesignToken.ColorFillQuaternary),
+        nameof(DesignToken.ColorFillContent), nameof(DesignToken.ColorBgContainerDisabled),
+        nameof(DesignToken.ColorBorder), nameof(DesignToken.ColorBorderSecondary), nameof(DesignToken.ColorSplit),
+        nameof(DesignToken.ControlItemBgHover), nameof(DesignToken.ControlItemBgActive),
+        nameof(DesignToken.ControlItemColorActive)
+    };
+
     internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null,
         string? designLanguage = null, ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
         ThemeDensity density = ThemeDensity.Normal, ThemeNeutralColorSupport neutralColor = ThemeNeutralColorSupport.Fixed)
@@ -112,6 +130,14 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
                                     "so it is BrandColor=\"Fixed\" while that design language accepts a brand seed. ");
                 designLanguage = null;
             }
+        }
+        // Symmetric with the brand rule above: a Seed definition pinning a neutral-derived token would be rejected
+        // on read (ATMTHM3106), so export it as Fixed too.
+        if (neutralColor == ThemeNeutralColorSupport.Seed &&
+            (config.Tokens.Keys.Any(s_neutralDerivedTokens.Contains) ||
+             config.Controls.Values.Any(control => control.Tokens.Keys.Any(s_neutralDerivedTokens.Contains))))
+        {
+            neutralColor = ThemeNeutralColorSupport.Fixed;
         }
         XNamespace ns = "https://atomui.net/schemas/theme/v1";
         XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",

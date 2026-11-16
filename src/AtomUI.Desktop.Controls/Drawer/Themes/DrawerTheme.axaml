@@ -5,7 +5,5 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Drawer}" TargetType="atom:Drawer">
         <Setter Property="ContentPadding" Value="{atom:DrawerTokenResource ContentPadding}" />
-        <Setter Property="EdgeBorderColor" Value="{atom:DrawerTokenResource EdgeBorderColor}" />
-        <Setter Property="EdgeBorderThickness" Value="{atom:DrawerTokenResource EdgeBorderThickness}" />
     </ControlTheme>
 </ResourceDictionary>

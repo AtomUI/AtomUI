@@ -153,4 +153,36 @@ public class ShadcnControlTests
                 .ShouldBe(new CornerRadius(radius), $"{style} {size}");
         }
     }
+
+    /// <summary>
+    /// The official toggle-group: no track background, no border, the selected item is a muted rounded pill
+    /// (rounded-lg/md/xl per style) with no shadow — not the Ant grey track + white shadowed thumb.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("Nova", 10d, 10d)]
+    [InlineData("Vega", 8d, 8d)]
+    [InlineData("Maia", 26d, 14d)]
+    [InlineData("Luma", 26d, 26d)]
+    [InlineData("Rhea", 18d, 18d)]
+    public async Task Segmented_Is_The_Official_Trackless_Pill(string style, double trackRadius, double thumbRadius)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+        var table = ShadcnAppendix.BaseColors();
+
+        // No track background; the selected pill is muted with the foreground text and no shadow.
+        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "TrackBg").ShouldBe(Colors.Transparent, style);
+        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemSelectedBg")
+            .ShouldBe(table[("neutral", false, "muted")], style);
+        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemSelectedColor")
+            .ShouldBe(table[("neutral", false, "foreground")], style);
+        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemHoverBg")
+            .ShouldBe(table[("neutral", false, "muted")], style);
+        // Radius ladders: track (BorderRadius) and selected pill (BorderRadiusSM for the middle size).
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Segmented", "BorderRadius")
+            .ShouldBe(new CornerRadius(trackRadius), style);
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Segmented", "BorderRadiusSM")
+            .ShouldBe(new CornerRadius(thumbRadius), style);
+        // The thumb shadow falls back to the global BoxShadowsTertiary (ring+card shadow); override it empty.
+        ShadcnOverlayTests.ControlGlobal<BoxShadows>(snapshot, "Segmented", "BoxShadowsTertiary").Count.ShouldBe(0, style);
+    }
 }

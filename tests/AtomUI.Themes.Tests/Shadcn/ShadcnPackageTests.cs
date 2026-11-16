@@ -37,6 +37,32 @@ public class ShadcnPackageTests
         manager.ThemeCatalogDiagnostics.ShouldBeEmpty();
     }
 
+    [AvaloniaTheory]
+    [InlineData("Vega")]
+    [InlineData("Maia")]
+    [InlineData("Lyra")]
+    [InlineData("Mira")]
+    [InlineData("Luma")]
+    [InlineData("Sera")]
+    [InlineData("Rhea")]
+    public void Every_Style_Profiles_Declare_Language_And_Seeds(string style)
+    {
+        var manager = (ThemeManager)Application.Current!.GetThemeManager()!;
+        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
+        {
+            var info = manager.AvailableThemes.Single(theme => theme.Id == $"Shadcn{style}" + suffix);
+            info.DesignLanguage.ShouldBe($"Shadcn.{style}");
+            info.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+            info.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Seed);
+            info.Density.ShouldBe(suffix.Contains("Compact") ? ThemeDensity.Compact : ThemeDensity.Normal);
+            info.Appearance.ShouldBe(suffix.Contains("Dark") ? ThemeAppearance.Dark : ThemeAppearance.Light);
+            info.AccentColor.ShouldBe(Color.Parse("#171717"));
+            info.NeutralAccentColor.ShouldBe(Color.Parse("#737373"));
+        }
+
+        manager.ThemeCatalogDiagnostics.ShouldBeEmpty();
+    }
+
     public static TheoryData<string, bool> FamilyAppearances()
     {
         var data = new TheoryData<string, bool>();

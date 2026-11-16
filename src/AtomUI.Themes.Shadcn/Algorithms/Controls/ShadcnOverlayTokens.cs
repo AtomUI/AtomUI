@@ -13,6 +13,20 @@ namespace AtomUI.Themes.Shadcn.Algorithms.Controls;
 /// </summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnPopupTokens : IControlTokenAlgorithm<PopupToken>
 {
     /// <inheritdoc />
@@ -40,6 +54,20 @@ internal sealed class ShadcnPopupTokens : IControlTokenAlgorithm<PopupToken>
 /// </summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnFlyoutHostTokens : IControlTokenAlgorithm<FlyoutHostToken>
 {
     /// <inheritdoc />
@@ -62,6 +90,20 @@ internal sealed class ShadcnFlyoutHostTokens : IControlTokenAlgorithm<FlyoutHost
 /// </summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnArrowDecoratedBoxTokens : IControlTokenAlgorithm<ArrowDecoratedBoxToken>
 {
     /// <inheritdoc />

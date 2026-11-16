@@ -1,4 +1,5 @@
 using AtomUI.Theme.Compilation;
+using Avalonia;
 using AtomUI.Theme.Schema;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
@@ -67,6 +68,55 @@ public class ShadcnControlTests
         var snapshot = await ShadcnOverlayTests.Apply("neutral", false);
 
         ShadcnOverlayTests.Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.Medium);
+    }
+
+    [AvaloniaFact]
+    public async Task Sera_Button_Is_Semibold_12()
+    {
+        var snapshot = await ShadcnOverlayTests.Apply("Sera", "neutral", false);
+
+        ShadcnOverlayTests.Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.SemiBold);
+        ShadcnOverlayTests.Global<double>(snapshot, "FontSize").ShouldBe(12);
+        ShadcnOverlayTests.Global<double>(snapshot, "ControlHeight").ShouldBe(40);
+    }
+
+    /// <summary>Design 5.5: style → heights (default/SM/LG/XS), radius, font size.</summary>
+    public static readonly (string Style, double H, double SM, double LG, double XS, double Radius, double Font)[] Geometry =
+    [
+        ("Vega", 36, 32, 40, 24, 8, 14),
+        ("Nova", 32, 28, 36, 24, 10, 14),
+        ("Maia", 36, 32, 40, 24, 26, 14),
+        ("Lyra", 32, 28, 36, 24, 0, 12),
+        ("Mira", 28, 24, 32, 20, 8, 12),
+        ("Luma", 36, 32, 40, 24, 26, 14),
+        ("Sera", 40, 36, 44, 28, 0, 12),
+        ("Rhea", 32, 28, 36, 24, 18, 14)
+    ];
+
+    [AvaloniaTheory]
+    [MemberData(nameof(StyleRows))]
+    public async Task Every_Style_Geometry_Matches_The_Design_Table(string style)
+    {
+        var row = Geometry.Single(item => item.Style == style);
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+
+        ShadcnOverlayTests.Global<double>(snapshot, "ControlHeight").ShouldBe(row.H, style);
+        ShadcnOverlayTests.Global<double>(snapshot, "ControlHeightSM").ShouldBe(row.SM, style);
+        ShadcnOverlayTests.Global<double>(snapshot, "ControlHeightLG").ShouldBe(row.LG, style);
+        ShadcnOverlayTests.Global<double>(snapshot, "ControlHeightXS").ShouldBe(row.XS, style);
+        ShadcnOverlayTests.Global<CornerRadius>(snapshot, "BorderRadius").ShouldBe(new CornerRadius(row.Radius), style);
+        ShadcnOverlayTests.Global<double>(snapshot, "FontSize").ShouldBe(row.Font, style);
+    }
+
+    public static TheoryData<string> StyleRows()
+    {
+        var data = new TheoryData<string>();
+        foreach (var (style, _, _, _, _, _, _) in Geometry)
+        {
+            data.Add(style);
+        }
+
+        return data;
     }
 
     private static T ControlGlobal<T>(ThemeSnapshot snapshot, string controlId, string globalName)

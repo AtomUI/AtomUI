@@ -1,5 +1,6 @@
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
+using AtomUI.Themes.Shadcn.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
 using Avalonia;
@@ -114,6 +115,95 @@ public class ShadcnOverlayTests
         Own<BoxShadows>(snapshot, "ToolTip", "ToolTipShadows").Count.ShouldBe(0);
     }
 
+    [AvaloniaTheory]
+    [InlineData("Vega")]
+    [InlineData("Maia")]
+    [InlineData("Lyra")]
+    [InlineData("Mira")]
+    [InlineData("Luma")]
+    [InlineData("Sera")]
+    [InlineData("Rhea")]
+    public async Task Every_Style_Overlay_Matches_The_Design_Table(string style)
+    {
+        var row = OverlayTable.Single(item => item.Style == style);
+        foreach (var dark in new[] { false, true })
+        {
+            var snapshot = await Apply(style, "neutral", dark);
+            var table = ShadcnAppendix.BaseColors();
+            var foreground = table[("neutral", dark, "foreground")];
+            var ring = Color.FromArgb(Alpha(dark ? row.RingDark : row.RingLight), foreground.R, foreground.G, foreground.B);
+
+            // Menu popup: the ring at the style's alpha ahead of the style's menu shadow, the style's radius.
+            var expectedMenu = ShadcnStyles.RingThenShadow(ring, row.MenuShadow);
+            Own<BoxShadows>(snapshot, "Popup", "PopupRootShadow").ShouldBe(expectedMenu, $"{style} menu");
+            Own<CornerRadius>(snapshot, "Popup", "PopupCornerRadius").ShouldBe(new CornerRadius(row.MenuRadius));
+
+            // Arrow flyouts: the plain popover shadow; the integrated border is the same ring colour.
+            Own<BoxShadows>(snapshot, "FlyoutHost", "PopupRootShadow").ShouldBe(ShadcnStyles.Shadow(row.PopoverShadow));
+
+            // Drawer, mask, tooltip.
+            var drawer = ShadcnStyles.Shadow(row.DrawerShadow);
+            Own<BoxShadows>(snapshot, "Drawer", "BoxShadowDrawerLeft").ShouldBe(drawer);
+            Global<Color>(snapshot, "ColorBgMask").ShouldBe(Color.FromArgb(Alpha(row.Mask), 0, 0, 0));
+            Own<CornerRadius>(snapshot, "ToolTip", "ToolTipCornerRadius").ShouldBe(new CornerRadius(row.TooltipRadius));
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Maia_Menu_Shadow_Is_2xl_With_Ring_5()
+    {
+        var snapshot = await Apply("Maia", "neutral", false);
+        var foreground = ShadcnAppendix.BaseColors()[("neutral", false, "foreground")];
+        var ring = Color.FromArgb(Alpha(5), foreground.R, foreground.G, foreground.B);
+
+        Own<BoxShadows>(snapshot, "Popup", "PopupRootShadow")
+            .ShouldBe(ShadcnStyles.RingThenShadow(ring, "2xl"));
+    }
+
+    [AvaloniaFact]
+    public async Task Luma_Dialog_Has_Xl_Shadow()
+    {
+        var snapshot = await Apply("Luma", "neutral", false);
+        var foreground = ShadcnAppendix.BaseColors()[("neutral", false, "foreground")];
+        var ring = Color.FromArgb(Alpha(5), foreground.R, foreground.G, foreground.B);
+
+        // The dialog surface reads the dialog's effective global BoxShadows (control stage override).
+        ControlGlobal<BoxShadows>(snapshot, "Dialog", "BoxShadows")
+            .ShouldBe(ShadcnStyles.RingThenShadow(ring, "xl"));
+    }
+
+    [AvaloniaFact]
+    public async Task Lyra_Radius_Is_Zero_Everywhere()
+    {
+        var snapshot = await Apply("Lyra", "neutral", false);
+
+        Global<CornerRadius>(snapshot, "BorderRadius").ShouldBe(new CornerRadius(0));
+        Own<CornerRadius>(snapshot, "Popup", "PopupCornerRadius").ShouldBe(new CornerRadius(0));
+        Own<CornerRadius>(snapshot, "ToolTip", "ToolTipCornerRadius").ShouldBe(new CornerRadius(0));
+    }
+
+    [AvaloniaFact]
+    public async Task Mira_Focus_Ring_Is_2px_30()
+    {
+        var snapshot = await Apply("Mira", "neutral", false);
+        var ring = ShadcnAppendix.BaseColors()[("neutral", false, "ring")];
+
+        Global<double>(snapshot, "ControlOutlineWidth").ShouldBe(2);
+        Global<Color>(snapshot, "ColorControlOutline").ShouldBe(Color.FromArgb(77, ring.R, ring.G, ring.B));
+    }
+
+    internal static T ControlGlobal<T>(ThemeSnapshot snapshot, string controlId, string globalName)
+    {
+        snapshot.Registry.TryGetControl(new ControlTokenIdentity("AtomUI", controlId), out var control)
+                 .ShouldBeTrue(controlId);
+        snapshot.Registry.TryGetGlobalToken(globalName, out var token).ShouldBeTrue(globalName);
+        return snapshot.Controls[control!.Slot]
+                       .GetEffectiveGlobalValue<T>(snapshot.GlobalTokenValues, token!.Slot);
+    }
+
+    private static byte Alpha(int percent) =>
+        (byte)Math.Clamp(Math.Round(percent * 255 / 100d, MidpointRounding.AwayFromZero), 0, 255);
+
     private static Color Ring(IReadOnlyDictionary<(string, bool, string), Color> table, string family, bool dark)
     {
         // The outline ring of the floating surfaces: the foreground at 10% in both Nova appearances.
@@ -130,6 +220,32 @@ public class ShadcnOverlayTests
         result.Status.ShouldBe(ThemeTransitionStatus.Committed);
         return manager.CurrentSnapshot!;
     }
+
+    internal static async Task<ThemeSnapshot> Apply(string style, string family, bool dark)
+    {
+        var manager = (ThemeManager)Application.Current!.GetThemeManager()!;
+        var config = new ThemeConfigBuilder().WithToken("ColorNeutral", Hex(Seed(family))).Build();
+        var result = await manager.ApplyThemeAsync(
+            new ThemeRequest(dark ? $"Shadcn{style}.Dark" : $"Shadcn{style}", config, ThemeTransitionReason.UserRequest));
+        result.Status.ShouldBe(ThemeTransitionStatus.Committed);
+        return manager.CurrentSnapshot!;
+    }
+
+    /// <summary>The overlay table of design 5.6.1: style → (menu shadow, menu radius, popover shadow, popover
+    /// radius, ring alpha light, ring alpha dark, tooltip radius, dialog shadow, drawer shadow, mask %).</summary>
+    internal static readonly (string Style, string MenuShadow, double MenuRadius, string PopoverShadow,
+        double PopoverRadius, int RingLight, int RingDark, double TooltipRadius, string DialogShadow,
+        string DrawerShadow, int Mask)[] OverlayTable =
+    [
+        ("Vega", "md", 8, "md", 8, 10, 10, 8, "none", "lg", 10),
+        ("Nova", "md", 10, "md", 10, 10, 10, 8, "none", "lg", 10),
+        ("Maia", "2xl", 18, "2xl", 18, 5, 10, 18, "none", "lg", 80),
+        ("Lyra", "md", 0, "md", 0, 10, 10, 0, "none", "lg", 10),
+        ("Mira", "md", 10, "md", 10, 10, 10, 8, "none", "lg", 80),
+        ("Luma", "lg", 22, "lg", 22, 5, 10, 14, "xl", "xl", 30),
+        ("Sera", "md", 0, "md", 0, 10, 10, 0, "md", "md", 20),
+        ("Rhea", "lg", 18, "lg", 22, 5, 10, 14, "xl", "xl", 30)
+    ];
 
     internal static Color Seed(string family) =>
         ShadcnAppendix.NeutralSeeds().Single(item => item.Family == family).Seed;

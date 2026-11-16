@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnLuma.DarkCompact" Name="Shadcn Luma DarkCompact" Appearance="Dark" DesignLanguage="Shadcn.Luma" BrandColor="Seed" NeutralColor="Seed" Density="Compact" IsDefault="false">
+  <Algorithms>
+    <Algorithm Catalog="Shadcn" Id="Luma.Dark" />
+    <Algorithm Id="Compact" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#171717" />
+    <Token Name="ColorNeutral" Value="#737373" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+  </Tokens>
+</Theme>

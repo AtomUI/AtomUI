@@ -29,6 +29,20 @@ internal static class ShadcnInputStage
 /// <summary>LineEdit under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnLineEditTokens : IControlTokenAlgorithm<LineEditToken>
 {
     /// <inheritdoc />
@@ -46,6 +60,20 @@ internal sealed class ShadcnLineEditTokens : IControlTokenAlgorithm<LineEditToke
 /// <summary>TextArea under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnTextAreaTokens : IControlTokenAlgorithm<TextAreaToken>
 {
     /// <inheritdoc />
@@ -63,6 +91,20 @@ internal sealed class ShadcnTextAreaTokens : IControlTokenAlgorithm<TextAreaToke
 /// <summary>Select under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnSelectTokens : IControlTokenAlgorithm<SelectToken>
 {
     /// <inheritdoc />
@@ -80,6 +122,20 @@ internal sealed class ShadcnSelectTokens : IControlTokenAlgorithm<SelectToken>
 /// <summary>Cascader under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnCascaderTokens : IControlTokenAlgorithm<CascaderToken>
 {
     /// <inheritdoc />
@@ -97,6 +153,20 @@ internal sealed class ShadcnCascaderTokens : IControlTokenAlgorithm<CascaderToke
 /// <summary>DatePicker under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnDatePickerTokens : IControlTokenAlgorithm<DatePickerToken>
 {
     /// <inheritdoc />
@@ -114,6 +184,20 @@ internal sealed class ShadcnDatePickerTokens : IControlTokenAlgorithm<DatePicker
 /// <summary>TimePicker under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnTimePickerTokens : IControlTokenAlgorithm<TimePickerToken>
 {
     /// <inheritdoc />
@@ -131,6 +215,20 @@ internal sealed class ShadcnTimePickerTokens : IControlTokenAlgorithm<TimePicker
 /// <summary>AutoComplete under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnAutoCompleteTokens : IControlTokenAlgorithm<AutoCompleteToken>
 {
     /// <inheritdoc />
@@ -148,6 +246,20 @@ internal sealed class ShadcnAutoCompleteTokens : IControlTokenAlgorithm<AutoComp
 /// <summary>Mentions under the shadcn styles: see <see cref="ShadcnInputStage"/>.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Maia.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Lyra.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Mira.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Luma.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Sera.Dark", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea", 1)]
+[ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnMentionsTokens : IControlTokenAlgorithm<MentionsToken>
 {
     /// <inheritdoc />

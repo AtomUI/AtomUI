@@ -315,7 +315,8 @@ changes:
   TransferTreeView and TreeSelect is `highlight.color` (Aura / Lara light: primary 700 instead of the body text).
   `ColorPrimaryBg` stays the pale primary (Nora dark: primary at 16% instead of the solid 500), so filled buttons and
   tags no longer need a compensation; Nora dark `ColorPrimaryText` is the readable primary 400 instead of zinc-950.
-  The date and time cells keep the pale selected background. The checked ToggleSwitch handle follows PrimeUIX
+  The selected text is written once to the global `ControlItemColorActive`, so DataGrid rows, the time cells and the
+  range middle of the date pickers follow too (PrimeUIX `datepicker`). The checked ToggleSwitch handle follows PrimeUIX
   (Aura / Lara dark zinc-900, Nora the contrast colour).
 - Dark primary and error colours change, because the old dark profiles ran `AtomUI:Dark` over values that were
   already final:

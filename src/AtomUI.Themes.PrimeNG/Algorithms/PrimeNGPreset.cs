@@ -146,8 +146,9 @@ internal sealed record PrimeNGNeutralRule(
 /// (filled buttons, tags, step panels).
 /// </param>
 /// <param name="HighlightColor">
-/// PrimeUIX <c>highlight.color</c>, the selected item's text, computed from the final tokens; the control stages write
-/// it to the selected-text tokens (Select, Cascader, ComboBox, ListBox, ListView, TreeView and their variants).
+/// PrimeUIX <c>highlight.color</c>, the selected item's text, computed from the final tokens; the Alias stage writes it
+/// to the global <c>ControlItemColorActive</c>, which the selected-text tokens of the list, tree, data-grid and date /
+/// time controls default to.
 /// PrimeUIX <c>highlight.focusColor</c> equals it in every preset except Aura / Lara light (P800); AtomUI has no
 /// separate selected-hover text slot.
 /// </param>

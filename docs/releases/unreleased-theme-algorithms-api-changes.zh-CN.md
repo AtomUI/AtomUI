@@ -282,7 +282,8 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   500 / 400；noir 950 / 700，暗色 50 / 300；Aura 与 Lara 保持浅淡的主色 50 / 100），Select、Cascader、ComboBox、ListBox、
   ListView、TransferListView、TreeView、TransferTreeView、TreeSelect 的选中文字为 `highlight.color`（Aura / Lara 浅色为
   主色 700，不再是正文色）。`ColorPrimaryBg` 保持浅淡主色（Nora 暗色为主色 16%，不再是实色 500），Filled 按钮与 Tag
-  不再需要补偿；Nora 暗色 `ColorPrimaryText` 改为可读的主色 400，不再是 zinc-950。日期与时间格子保持浅淡选中底色。
+  不再需要补偿；Nora 暗色 `ColorPrimaryText` 改为可读的主色 400，不再是 zinc-950。选中文字只写一次到全局 `ControlItemColorActive`，DataGrid 选中行、时间格与日期选择器的范围中段随之跟随（PrimeUIX
+  `datepicker`）。
   ToggleSwitch 选中把手按 PrimeUIX（Aura / Lara 暗色 zinc-900，Nora 为对比色）。
 - 暗色的主色和错误色变了。旧的暗色 profile 让 `AtomUI:Dark` 对已经是最终值的颜色又推导了一遍：
 

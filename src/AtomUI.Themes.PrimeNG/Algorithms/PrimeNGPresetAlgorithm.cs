@@ -103,6 +103,9 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         {
             (token.ControlItemBgActive, token.ControlItemBgActiveHover) = highlight(token);
         }
+        // PrimeUIX highlight.color, the selected item's text, once for every control: the selected-text tokens of the
+        // list, tree, data-grid and date / time controls default to ControlItemColorActive.
+        token.ControlItemColorActive = rules.HighlightColor(token);
 
         // @primeuix/themes 3.1.1 form.field.padding.x is 0.625rem, sm 0.5rem, lg 0.75rem (10 / 8 / 12) in all three
         // presets. They follow the size ladder (SizeSM 12, compact 8), so AtomUI:Compact narrows them too. The Ant

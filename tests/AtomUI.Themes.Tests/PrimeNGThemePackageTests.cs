@@ -729,6 +729,8 @@ public class PrimeNGThemePackageTests
         var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
         Global<Color>(snapshot, "ControlItemBgActive").ShouldBe(Color.Parse(background));
         Global<Color>(snapshot, "ControlItemBgActiveHover").ShouldBe(Color.Parse(focus));
+        // highlight.color is written once, to the global ControlItemColorActive; the selected-text tokens default to it.
+        Global<Color>(snapshot, "ControlItemColorActive").ShouldBe(Color.Parse(text));
         foreach (var (owner, color, selected) in SelectedTextTokens)
         {
             Own<Color>(snapshot, owner, color).ShouldBe(Color.Parse(text), $"{owner}.{color}");
@@ -737,21 +739,26 @@ public class PrimeNGThemePackageTests
     }
 
     [AvaloniaTheory]
-    [InlineData("PrimeNGAura", null)]
-    [InlineData("PrimeNGNora", null)]
-    [InlineData("PrimeNGNora", "#10B981")]
-    [InlineData("PrimeNGNora.Dark", "#10B981")]
-    public async Task Controls_Without_A_Selected_Text_Token_Keep_The_Pale_Highlight(string profile, string? seed)
+    [InlineData("PrimeNGAura", null, true)]
+    [InlineData("PrimeNGNora", "#10B981", true)]
+    [InlineData("PrimeNGNora.Dark", "#10B981", true)]
+    [InlineData("PrimeNGAura", "#10B981", false)]
+    public async Task Date_And_Time_Cells_Follow_The_Highlight(string profile, string? seed, bool solid)
     {
-        // The date and time cells draw ColorText (or the primary) on ControlItemBgActive and have no selected-text
-        // token, so under a solid highlight their owners take the pale primary background back.
+        // The pickers follow PrimeUIX datepicker: the range middle and the selected time cell are the highlight
+        // (ControlItemBgActive with ControlItemColorActive). The content presentation of Calendar and DateViewer draws
+        // today's / the selected cell in the primary on the highlight; under a solid highlight it takes the highlight text.
         var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
-        foreach (var owner in new[] { "DatePicker", "RangeDatePicker", "TimePicker", "RangeTimePicker", "Calendar",
-                                      "LunarCalendar", "DateViewer", "RangeDateViewer" })
+        foreach (var owner in new[] { "DatePicker", "RangeDatePicker", "TimePicker", "RangeTimePicker" })
         {
-            Effective<Color>(snapshot, owner, "ControlItemBgActive").ShouldBe(Global<Color>(snapshot, "ColorPrimaryBg"), owner);
-            Effective<Color>(snapshot, owner, "ControlItemBgActiveHover").ShouldBe(Global<Color>(snapshot, "ColorPrimaryBgHover"), owner);
+            Effective<Color>(snapshot, owner, "ControlItemBgActive").ShouldBe(Global<Color>(snapshot, "ControlItemBgActive"), owner);
         }
+        var expected = solid ? Global<Color>(snapshot, "ControlItemColorActive") : Global<Color>(snapshot, "ColorPrimary");
+        Own<Color>(snapshot, "Calendar", "ItemActiveColor").ShouldBe(expected);
+        Own<Color>(snapshot, "DateViewer", "CellActiveColor").ShouldBe(expected);
+        Own<Color>(snapshot, "RangeDateViewer", "CellActiveColor").ShouldBe(expected);
+        Own<Color>(snapshot, "ListBox", "ItemSelectedColor")
+            .ShouldBe(Global<Color>(snapshot, "ControlItemColorActive"));
     }
 
     // Seeds other than emerald: PrimeUIX's solid highlight with the contrast colour. Measured, with the 3:1 floor of

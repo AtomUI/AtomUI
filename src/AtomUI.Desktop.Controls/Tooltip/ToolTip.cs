@@ -33,6 +33,14 @@ public partial class ToolTip : ContentControl,
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<ToolTip>();
 
+    /// <summary>
+    /// The shadow of the tooltip popup. The popup is a runtime-created cross-root node outside this control's
+    /// ControlTheme, so the theme writes the token here and the code relays it to the popup (a ControlTheme
+    /// setter cannot reach the popup's tree).
+    /// </summary>
+    public static readonly StyledProperty<BoxShadows> ToolTipShadowsProperty =
+        AvaloniaProperty.Register<ToolTip, BoxShadows>(nameof(ToolTipShadows));
+
     public static readonly AttachedProperty<object?> TipProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, object?>("Tip");
 
@@ -105,6 +113,13 @@ public partial class ToolTip : ContentControl,
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
+    }
+
+    /// <inheritdoc cref="ToolTipShadowsProperty"/>
+    public BoxShadows ToolTipShadows
+    {
+        get => GetValue(ToolTipShadowsProperty);
+        set => SetValue(ToolTipShadowsProperty, value);
     }
 
     public bool IsMotionEnabled
@@ -672,6 +687,9 @@ public partial class ToolTip : ContentControl,
             _popup.Bind(Popup.CloseMotionProperty, this.GetObservable(CloseMotionProperty)),
             _popup.Bind(Popup.MotionDurationProperty, this.GetObservable(MotionDurationProperty)),
             _popup.Bind(Popup.IsMotionEnabledProperty, this.GetObservable(IsMotionEnabledProperty)),
+            // Cross-root relay of the tooltip's own shadow tokens (see ToolTipShadowsProperty).
+            _popup.Bind(Popup.PopupRootShadowProperty, this.GetObservable(ToolTipShadowsProperty)),
+            _popup.Bind(Popup.OverlayHostShadowProperty, this.GetObservable(ToolTipShadowsProperty)),
             _popup.Bind(Popup.HorizontalOffsetProperty, ResolveValueSource(control, HorizontalOffsetProperty).GetBindingObservable(HorizontalOffsetProperty)),
             _popup.Bind(Popup.VerticalOffsetProperty, ResolveValueSource(control, VerticalOffsetProperty).GetBindingObservable(VerticalOffsetProperty)),
             _popup.Bind(Popup.RequestedPlacementProperty, ResolveValueSource(control, PlacementProperty).GetBindingObservable(PlacementProperty, v => (PlacementMode?)v)),

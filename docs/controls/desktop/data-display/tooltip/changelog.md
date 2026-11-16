@@ -2,6 +2,11 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-16
+
+- Token
+  - 新增 Own Token `ToolTipShadows`：Tooltip 弹层专属阴影，默认等于全局 `BoxShadowsSecondary`（改动前的实际绘制值，Ant Design 渲染不变），主题可置空实现 shadcn 无阴影 Tooltip；ControlTheme 写入 `ToolTip.ToolTipShadows`，由控件代码转发到运行期创建的跨根 Popup。
+
 ## 2026-11-15
 
 - Theme：ToolTip 箭头框体的 `BorderThickness` 固定为 0，主题经 `ArrowDecoratedBoxToken.ContentBorderThickness` 给箭头框体加边框时 Tooltip 保持无边框（PrimeUIX tooltip 无边框）。

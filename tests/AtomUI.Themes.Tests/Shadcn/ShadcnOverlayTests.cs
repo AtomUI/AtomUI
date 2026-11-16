@@ -111,6 +111,7 @@ public class ShadcnOverlayTests
         Own<Color>(snapshot, "ToolTip", "ToolTipColor").ShouldBe(table[(family, dark, "background")]);
         Own<CornerRadius>(snapshot, "ToolTip", "ToolTipCornerRadius").ShouldBe(new CornerRadius(8));
         Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(12, 6, 12, 6));
+        Own<BoxShadows>(snapshot, "ToolTip", "ToolTipShadows").Count.ShouldBe(0);
     }
 
     private static Color Ring(IReadOnlyDictionary<(string, bool, string), Color> table, string family, bool dark)

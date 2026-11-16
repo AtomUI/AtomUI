@@ -7,6 +7,7 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -75,6 +76,19 @@ public partial class Drawer : Control,
 
     public static readonly StyledProperty<double> PushOffsetPercentProperty =
         AvaloniaProperty.Register<Drawer, double>(nameof(PushOffsetPercent));
+
+    /// <summary>
+    /// The border colour drawn on the drawer's anchored side (see <see cref="DrawerToken.EdgeBorderColor"/>);
+    /// transparent by default, so the Ant Design rendering draws nothing.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> EdgeBorderColorProperty =
+        AvaloniaProperty.Register<Drawer, IBrush?>(nameof(EdgeBorderColor));
+
+    /// <summary>
+    /// The thickness of the anchored-side border (see <see cref="DrawerToken.EdgeBorderThickness"/>); 0 by default.
+    /// </summary>
+    public static readonly StyledProperty<double> EdgeBorderThicknessProperty =
+        AvaloniaProperty.Register<Drawer, double>(nameof(EdgeBorderThickness));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Drawer>();
@@ -195,6 +209,18 @@ public partial class Drawer : Control,
         set => SetValue(PushOffsetPercentProperty, value);
     }
 
+    public IBrush? EdgeBorderColor
+    {
+        get => GetValue(EdgeBorderColorProperty);
+        set => SetValue(EdgeBorderColorProperty, value);
+    }
+
+    public double EdgeBorderThickness
+    {
+        get => GetValue(EdgeBorderThicknessProperty);
+        set => SetValue(EdgeBorderThicknessProperty, value);
+    }
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -252,6 +278,8 @@ public partial class Drawer : Control,
     private CompositeDisposable? _relayBindingDisposables;
     private IDisposable? _motionBinding;
     private IDisposable? _pushOffsetBinding;
+    private IDisposable? _edgeBorderColorBinding;
+    private IDisposable? _edgeBorderThicknessBinding;
     private IDisposable? _dialogSizeBinding;
     private Control? _openOnSizeChangedTarget;
     private int _visualTreeVersion;
@@ -282,6 +310,12 @@ public partial class Drawer : Control,
             this,
             PushOffsetPercentProperty,
             DrawerTokenKind.PushOffsetPercent);
+        _edgeBorderColorBinding?.Dispose();
+        _edgeBorderColorBinding = TokenResourceBinder.CreateControlTokenBinding(
+            this, EdgeBorderColorProperty, DrawerTokenKind.EdgeBorderColor);
+        _edgeBorderThicknessBinding?.Dispose();
+        _edgeBorderThicknessBinding = TokenResourceBinder.CreateControlTokenBinding(
+            this, EdgeBorderThicknessProperty, DrawerTokenKind.EdgeBorderThickness);
         ApplyDialogSizeTokenBinding();
         _visualTreeVersion++;
         var parentDrawer = FindParentDrawer();
@@ -317,6 +351,10 @@ public partial class Drawer : Control,
         _motionBinding = null;
         _pushOffsetBinding?.Dispose();
         _pushOffsetBinding = null;
+        _edgeBorderColorBinding?.Dispose();
+        _edgeBorderColorBinding = null;
+        _edgeBorderThicknessBinding?.Dispose();
+        _edgeBorderThicknessBinding = null;
         _dialogSizeBinding?.Dispose();
         _dialogSizeBinding = null;
         var visualTreeVersion = ++_visualTreeVersion;

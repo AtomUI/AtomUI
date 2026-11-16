@@ -30,5 +30,7 @@ internal sealed class ShadcnToolTipTokens : IControlTokenAlgorithm<ToolTipToken>
         token.ToolTipColor      = surface.Background;
         token.ToolTipCornerRadius = new CornerRadius(style.Overlay.TooltipRadius);
         token.ContentPadding    = new Thickness(12, 6, 12, 6);
+        // The official tooltip has no shadow and no ring.
+        token.ToolTipShadows    = default;
     }
 }

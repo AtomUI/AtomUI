@@ -79,6 +79,17 @@ public sealed partial class DrawerToken : AbstractControlDesignToken
     /// </summary>
     public partial double PushOffsetPercent { get; set; }
 
+    /// <summary>
+    /// The border colour drawn on the drawer's anchored side (the sheet border of shadcn). Defaults to
+    /// transparent, so the Ant Design rendering draws nothing.
+    /// </summary>
+    public partial Color EdgeBorderColor { get; set; }
+
+    /// <summary>
+    /// The thickness of the anchored-side border. Defaults to 0.
+    /// </summary>
+    public partial double EdgeBorderThickness { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -196,6 +207,8 @@ public sealed partial class DrawerToken : AbstractControlDesignToken
         CloseIconMargin   = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
         ContentPadding    = EffectiveGlobalToken.PaddingLG;
         PushOffsetPercent = 0.4;
+        EdgeBorderColor   = Colors.Transparent;
+        EdgeBorderThickness = 0;
     }
     
 }

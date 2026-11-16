@@ -43,6 +43,13 @@ public sealed partial class ToolTipToken : AbstractControlDesignToken
     /// </summary>
     public partial TimeSpan MotionDuration { get; set; }
 
+    /// <summary>
+    /// The shadow of the tooltip popup, independent of the menu popup's. Defaults to what the tooltip popup drew
+    /// before (the popup token's <c>BoxShadowsSecondary</c>); a theme with a shadowless tooltip (shadcn) sets it
+    /// to empty.
+    /// </summary>
+    public partial BoxShadows ToolTipShadows { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -53,6 +60,7 @@ public sealed partial class ToolTipToken : AbstractControlDesignToken
         ToolTipCornerRadius = new CornerRadius(4);
         ContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
         MotionDuration = EffectiveGlobalToken.MotionDurationFast;
+        ToolTipShadows = EffectiveGlobalToken.BoxShadowsSecondary;
     }
     
 }

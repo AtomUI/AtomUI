@@ -84,7 +84,16 @@ internal class DrawerContainer : ContentControl
         AvaloniaProperty.RegisterDirect<DrawerContainer, double>(nameof(PushOffsetPercent),
             o => o.PushOffsetPercent,
             (o, v) => o.PushOffsetPercent = v);
-    
+
+    // The anchored-side border of the drawer surface, relayed from the Drawer's EdgeBorderColor /
+    // EdgeBorderThickness tokens. The thickness is composed per placement in code: a scalar token cannot express
+    // one side of a Thickness in a ControlTheme setter binding.
+    internal static readonly StyledProperty<IBrush?> EdgeBorderColorProperty =
+        AvaloniaProperty.Register<DrawerContainer, IBrush?>(nameof(EdgeBorderColor));
+
+    internal static readonly StyledProperty<double> EdgeBorderThicknessProperty =
+        AvaloniaProperty.Register<DrawerContainer, double>(nameof(EdgeBorderThickness));
+
     private DrawerPlacement _placement = DrawerPlacement.Right;
 
     internal DrawerPlacement Placement
@@ -95,8 +104,21 @@ internal class DrawerContainer : ContentControl
             if (SetAndRaise(PlacementProperty, ref _placement, value))
             {
                 RefreshActiveChildDrawerPushTransform();
+                ApplyEdgeBorder();
             }
         }
+    }
+
+    internal IBrush? EdgeBorderColor
+    {
+        get => GetValue(EdgeBorderColorProperty);
+        set => SetValue(EdgeBorderColorProperty, value);
+    }
+
+    internal double EdgeBorderThickness
+    {
+        get => GetValue(EdgeBorderThicknessProperty);
+        set => SetValue(EdgeBorderThicknessProperty, value);
     }
 
     private bool _isShowMask;
@@ -222,6 +244,7 @@ internal class DrawerContainer : ContentControl
     private int _pushTransformVersion;
     private ThemeContextResourceBridge? _resourceBridge;
     private CompositeDisposable? _drawerBindingDisposables;
+    private CompositeDisposable? _edgeBorderBindings;
     private IDisposable? _hostMarginSubscription;
     private IDisposable? _drawnChromeOverlaySuppression;
 
@@ -246,6 +269,8 @@ internal class DrawerContainer : ContentControl
             Bind(IsMotionEnabledProperty, drawer[!AtomUI.Desktop.Controls.Drawer.IsMotionEnabledProperty]),
             Bind(IsCloseOnMaskClickProperty, drawer[!AtomUI.Desktop.Controls.Drawer.IsCloseOnMaskClickProperty]),
             Bind(PushOffsetPercentProperty, drawer[!AtomUI.Desktop.Controls.Drawer.PushOffsetPercentProperty]),
+            Bind(EdgeBorderColorProperty, drawer[!AtomUI.Desktop.Controls.Drawer.EdgeBorderColorProperty]),
+            Bind(EdgeBorderThicknessProperty, drawer[!AtomUI.Desktop.Controls.Drawer.EdgeBorderThicknessProperty]),
             Bind(ThemeVariantScope.ActualThemeVariantProperty,
                 drawer.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
         };
@@ -474,10 +499,12 @@ internal class DrawerContainer : ContentControl
         var hostMargin = _hostMarginSubscription;
         var overlaySuppression = _drawnChromeOverlaySuppression;
         var infoContainer = _infoContainer;
+        var edgeBorderBindings = _edgeBorderBindings;
         _entryPreparation = null;
         _surface = null;
         _mask = null;
         _drawerBindingDisposables = null;
+        _edgeBorderBindings = null;
         _hostMarginSubscription = null;
         _drawnChromeOverlaySuppression = null;
         _infoContainer = null;
@@ -497,6 +524,7 @@ internal class DrawerContainer : ContentControl
             TryCleanup(() => MotionPlayback.CancelAndReset(mask), ref failures);
         }
         DisposeOwned(bindings, ref failures);
+        DisposeOwned(edgeBorderBindings, ref failures);
         TryCleanup(() => hostMargin?.Dispose(), ref failures);
         TryCleanup(() => overlaySuppression?.Dispose(), ref failures);
         TryCleanup(() => DetachFromLayer(null), ref failures);
@@ -737,6 +765,7 @@ internal class DrawerContainer : ContentControl
             _infoContainer.CloseRequested += HandleCloseRequested;
         }
         RefreshActiveChildDrawerPushTransform();
+        SetupEdgeBorder();
 
         if (previousSurface is not null && !ReferenceEquals(previousSurface, _surface))
         {
@@ -843,6 +872,34 @@ internal class DrawerContainer : ContentControl
         return _activeChildDrawer != null &&
                _activeChildDrawer.TryGetTarget(out var activeChildDrawer) &&
                ReferenceEquals(activeChildDrawer, childDrawer);
+    }
+
+    private void SetupEdgeBorder()
+    {
+        _edgeBorderBindings?.Dispose();
+        _edgeBorderBindings = new CompositeDisposable(
+            this.GetPropertyChangedObservable(EdgeBorderColorProperty).Subscribe(_ => ApplyEdgeBorder()),
+            this.GetPropertyChangedObservable(EdgeBorderThicknessProperty).Subscribe(_ => ApplyEdgeBorder()));
+        ApplyEdgeBorder();
+    }
+
+    // The border sits on the side facing the content (a left drawer gets a right border, as the shadcn sheet).
+    private void ApplyEdgeBorder()
+    {
+        if (_surface is null)
+        {
+            return;
+        }
+
+        // Template parts keep their LocalValue free for users and themes; the composed border is a current value.
+        _surface.SetCurrentValue(Border.BorderBrushProperty, EdgeBorderColor);
+        _surface.SetCurrentValue(Border.BorderThicknessProperty, Placement switch
+        {
+            DrawerPlacement.Left   => new Thickness(0, 0, EdgeBorderThickness, 0),
+            DrawerPlacement.Right  => new Thickness(EdgeBorderThickness, 0, 0, 0),
+            DrawerPlacement.Top    => new Thickness(0, 0, 0, EdgeBorderThickness),
+            _                      => new Thickness(0, EdgeBorderThickness, 0, 0)
+        });
     }
 
     private void RefreshActiveChildDrawerPushTransform()

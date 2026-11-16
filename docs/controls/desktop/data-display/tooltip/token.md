@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ToolTipMaxWidth` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ContentPadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`ToolTipBackground` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius`、`ToolTipShadows` |
 | 动效 | 弹出与收起的缩放时长。 | `MotionDuration` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -33,6 +33,10 @@ Tooltip 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - `ToolTipMaxWidth` 约束弹层内容最大宽度；文本内容默认在该约束内换行（`TextWrapping.Wrap`），超出部分换行展示而不是被裁剪或截断。
+- `ToolTipShadows` 是 Tooltip 弹层自己的阴影，独立于菜单弹层（`Controls[Popup]`）；默认等于全局 `BoxShadowsSecondary`
+  （改动前的实际绘制值，Ant Design 渲染不变）。主题可置空实现 shadcn 的无阴影 Tooltip。弹层是运行期跨根创建的
+  Popup，ControlTheme 只能把 Token 写到 `ToolTip.ToolTipShadows`，由控件代码转发到弹层（`PopupRootShadow` /
+  `OverlayHostShadow`）。
 
 ### 共享动效 Token
 

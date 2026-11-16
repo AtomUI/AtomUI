@@ -2,6 +2,11 @@
 
 本文档记录 Drawer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-16
+
+- Token
+  - 新增 Own Token `EdgeBorderColor` / `EdgeBorderThickness`：贴边一侧的抽屉边框（左侧抽屉画右边框，类 shadcn sheet）；默认透明且厚度 0，Ant Design 渲染不变。厚度按方位组合成单边 Thickness，由 `DrawerContainer` 以 `SetCurrentValue` 写入表面。
+
 ## 2026-11-10
 
 - Fixed

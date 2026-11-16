@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `MiddleSize`、`LargeSize`、`SmallSize` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `HeaderMargin`、`FooterPadding`、`CloseIconPadding`、`CloseIconMargin`、`ContentPadding`、`PushOffsetPercent` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `BoxShadowDrawerLeft`、`BoxShadowDrawerRight`、`BoxShadowDrawerUp`、`BoxShadowDrawerDown` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `BoxShadowDrawerLeft`、`BoxShadowDrawerRight`、`BoxShadowDrawerUp`、`BoxShadowDrawerDown`、`EdgeBorderColor`、`EdgeBorderThickness` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -31,6 +31,10 @@ Drawer 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+- `EdgeBorderColor` / `EdgeBorderThickness` 在贴边一侧绘制边框（左侧抽屉画右边框，类 shadcn sheet）；默认透明
+  且厚度 0，Ant Design 渲染不变。厚度按方位组合成单边 `Thickness`，由 `DrawerContainer` 以 `SetCurrentValue`
+  写入表面（标量 Token 无法在 ControlTheme 绑定中表达单边厚度），主题经 `DrawerTokenResource` 写到
+  `Drawer.EdgeBorderColor` / `EdgeBorderThickness`。
 
 ## 4. 控件家族影响
 

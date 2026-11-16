@@ -15,10 +15,18 @@ public sealed partial class MenuFlyoutPresenterToken : AbstractMenuPopupToken
     /// </summary>
     public partial Color MenuPopupBorderColor { get; set; }
 
+    /// <summary>
+    /// The thickness of the menu flyout popup's frame border, drawn with <see cref="MenuPopupBorderColor"/> along the
+    /// arrow box. Defaults to an empty thickness (no border, the previous rendering); a theme that gives the popup a
+    /// border sets it.
+    /// </summary>
+    public partial Thickness MenuPopupBorderThickness { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         MenuPopupBorderColor = EffectiveGlobalToken.ColorBorderSecondary;
+        MenuPopupBorderThickness = new Thickness();
         if (!IsExplicit(MenuFlyoutPresenterTokenKind.ItemColor))
         {
             ItemColor = EffectiveGlobalToken.ColorText;

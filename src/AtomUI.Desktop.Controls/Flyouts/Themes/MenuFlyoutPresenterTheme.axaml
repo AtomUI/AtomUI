@@ -58,6 +58,7 @@
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
             <Setter Property="Background" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
             <Setter Property="BorderBrush" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBorderColor}" />
+            <Setter Property="BorderThickness" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBorderThickness}" />
             <Setter Property="MinWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
             <Setter Property="MaxWidth" Value="{Binding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
         </Style>

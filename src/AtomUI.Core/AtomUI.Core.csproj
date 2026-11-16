@@ -52,6 +52,7 @@
         <InternalsVisibleTo Include="AtomUIGallery.Tests"/>
         <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
         <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
+        <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase"/>
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Localization.IntegrationTests"/>
         <InternalsVisibleTo Include="AtomUI.AI.Controls"/>

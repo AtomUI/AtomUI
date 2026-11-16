@@ -100,7 +100,8 @@ internal sealed class PrimeNGMenuFlyoutPresenterTokens : IControlTokenAlgorithm<
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, MenuFlyoutPresenterToken token)
     {
-        token.MenuPopupBorderColor = PrimeNGMenuFrame.Border(context);
+        token.MenuPopupBorderColor   = PrimeNGMenuFrame.Border(context);
+        token.MenuPopupBorderThickness = new Avalonia.Thickness(effectiveGlobal.LineWidth);
         token.MenuPopupShadows     = PrimeNGMenuFrame.Shadows(context, effectiveGlobal);
     }
 }

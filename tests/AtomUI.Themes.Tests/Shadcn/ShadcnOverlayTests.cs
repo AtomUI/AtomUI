@@ -290,4 +290,38 @@ public class ShadcnOverlayTests
             Own<double>(snapshot, "Drawer", "EdgeBorderThickness").ShouldBe(0, style);
         }
     }
+
+    /// <summary>
+    /// The menu family reads its own token scope (MenuPopupShadows / MenuPopupBorderColor), not Controls[Popup]:
+    /// every menu identity gets the outline ring plus the style's menu shadow, and the flyout presenter's
+    /// integrated border the ring colour.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("Vega", "md")]
+    [InlineData("Nova", "md")]
+    [InlineData("Maia", "2xl")]
+    [InlineData("Lyra", "md")]
+    [InlineData("Mira", "md")]
+    [InlineData("Luma", "lg")]
+    [InlineData("Sera", "md")]
+    [InlineData("Rhea", "lg")]
+    public async Task Every_Style_Menu_Family_Carries_Ring_And_Menu_Shadow(string style, string level)
+    {
+        foreach (var dark in new[] { false, true })
+        {
+            var snapshot = await Apply(style, "neutral", dark);
+            var foreground = ShadcnAppendix.BaseColors()[("neutral", dark, "foreground")];
+            var percent = dark ? OverlayTable.Single(r => r.Style == style).RingDark
+                               : OverlayTable.Single(r => r.Style == style).RingLight;
+            var ring = Color.FromArgb((byte)Math.Round(percent * 2.55), foreground.R, foreground.G, foreground.B);
+            var expected = ShadcnStyles.RingThenShadow(ring, level);
+
+            foreach (var id in new[] { "Menu", "ContextMenu", "MenuFlyoutPresenter", "NavMenu" })
+            {
+                Own<BoxShadows>(snapshot, id, "MenuPopupShadows").ShouldBe(expected, $"{style} {(dark ? "D" : "L")} {id}");
+            }
+            Own<Color>(snapshot, "MenuFlyoutPresenter", "MenuPopupBorderColor").ShouldBe(ring, $"{style} presenter border");
+            Own<Avalonia.Thickness>(snapshot, "MenuFlyoutPresenter", "MenuPopupBorderThickness").ShouldBe(new Avalonia.Thickness(1), $"{style} presenter border width");
+        }
+    }
 }

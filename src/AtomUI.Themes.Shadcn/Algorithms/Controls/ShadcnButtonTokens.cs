@@ -31,21 +31,12 @@ internal sealed class ShadcnButtonTokens : IControlTokenAlgorithm<ButtonToken>
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
+        // The per-size ladder from the registry classes: rounded-4xl styles stay 26 at every size, the
+        // min(var(--radius-md), Npx) formulas clamp Nova and Mira (appendix C).
         var style = ShadcnStyles.Resolve(context);
-        // The button sizes read the BorderRadius / LG / SM ladder. The capsule styles (rounded-full) draw half
-        // the control height at every size -- the --radius value itself would exceed it and mangle the shape.
-        if (ShadcnStyles.IsButtonCapsule(style.Id))
-        {
-            controlGlobal.BorderRadius   = new CornerRadius(controlGlobal.ControlHeight / 2);
-            controlGlobal.BorderRadiusLG = new CornerRadius(controlGlobal.ControlHeightLG / 2);
-            controlGlobal.BorderRadiusSM = new CornerRadius(controlGlobal.ControlHeightSM / 2);
-        }
-        else
-        {
-            controlGlobal.BorderRadius   = new CornerRadius(style.ButtonRadius);
-            controlGlobal.BorderRadiusLG = new CornerRadius(style.ButtonRadius);
-            controlGlobal.BorderRadiusSM = new CornerRadius(style.ButtonRadiusSM);
-        }
+        controlGlobal.BorderRadius   = new CornerRadius(style.ButtonRadius);
+        controlGlobal.BorderRadiusLG = new CornerRadius(style.ButtonRadiusLG);
+        controlGlobal.BorderRadiusSM = new CornerRadius(style.ButtonRadiusSM);
     }
 
     /// <inheritdoc />

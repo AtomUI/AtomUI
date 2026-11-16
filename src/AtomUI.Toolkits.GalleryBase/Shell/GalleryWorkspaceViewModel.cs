@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reactive;
 using AtomUI.Localization;
 using AtomUI.Theme;
+using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -43,6 +44,10 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private bool _isCompact;
     private bool _isMotionEnabled = true;
     private bool _isWaveSpiritEnabled = true;
+    // A theme may declare EnableMotion/EnableWaveSpirit explicitly (the Shadcn styles declare no wave spirit).
+    // Until the user touches the toggles, the declaration wins; an explicit user choice then overrides it.
+    private bool _motionTouched;
+    private bool _waveSpiritTouched;
     private ThemeAlgorithm[] _baseAlgorithms = [ThemeAlgorithm.Default];
     private IReadOnlyList<ThemeInfo> _availableThemes = Array.Empty<ThemeInfo>();
     private string _currentThemeId = IThemeManager.DEFAULT_THEME_ID;
@@ -284,9 +289,11 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private async Task SetMotionEnabledAsync(bool enabled)
     {
         _isMotionEnabled = enabled;
+        _motionTouched = true;
         if (!enabled)
         {
             _isWaveSpiritEnabled = false;
+            _waveSpiritTouched = true;
         }
         await ApplyThemeSettingsAsync();
     }
@@ -296,8 +303,10 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         if (enabled)
         {
             _isMotionEnabled = true;
+            _motionTouched = true;
         }
         _isWaveSpiritEnabled = enabled;
+        _waveSpiritTouched = true;
         await ApplyThemeSettingsAsync();
     }
 
@@ -485,10 +494,16 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             builder.WithToken(nameof(SharedTokenKind.ColorNeutral), FormatColor(neutral));
         }
 
-        var config = builder
-                     .WithToken(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false")
-                     .WithToken(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false")
-                     .Build();
+        // Only an explicit user choice overrides the theme's own declarations.
+        if (_motionTouched)
+        {
+            builder.WithToken(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false");
+        }
+        if (_waveSpiritTouched)
+        {
+            builder.WithToken(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false");
+        }
+        var config = builder.Build();
         var result = await _themeManager.ApplyThemeAsync(new ThemeRequest(themeId, config, reason));
         if (result.Status == ThemeTransitionStatus.Failed)
         {
@@ -638,9 +653,32 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             }
         }
 
-        _isMotionEnabled = ReadBooleanToken(config, nameof(SharedTokenKind.EnableMotion), true);
-        _isWaveSpiritEnabled = _isMotionEnabled &&
-                               ReadBooleanToken(config, nameof(SharedTokenKind.EnableWaveSpirit), true);
+        // Read the applied snapshot, not the request config: a declaration that was not overridden (Shadcn's
+        // EnableWaveSpirit=false) lives in the definition, so only the snapshot tells what actually rendered.
+        ThemeSnapshot? snapshot = null;
+        if (_themeManager is ThemeManager concreteManager)
+        {
+            snapshot = concreteManager.CurrentSnapshot;
+        }
+        if (snapshot is not null &&
+            snapshot.Registry.TryGetGlobalToken(nameof(SharedTokenKind.EnableMotion), out var motionToken))
+        {
+            _isMotionEnabled = snapshot.GlobalTokenValues.Get<bool>(motionToken.Slot);
+        }
+        else
+        {
+            _isMotionEnabled = ReadBooleanToken(config, nameof(SharedTokenKind.EnableMotion), true);
+        }
+        if (snapshot is not null &&
+            snapshot.Registry.TryGetGlobalToken(nameof(SharedTokenKind.EnableWaveSpirit), out var waveToken))
+        {
+            _isWaveSpiritEnabled = _isMotionEnabled && snapshot.GlobalTokenValues.Get<bool>(waveToken.Slot);
+        }
+        else
+        {
+            _isWaveSpiritEnabled = _isMotionEnabled &&
+                                   ReadBooleanToken(config, nameof(SharedTokenKind.EnableWaveSpirit), true);
+        }
     }
 
     private void SetAppearanceModeState(ThemePreference appearanceMode)

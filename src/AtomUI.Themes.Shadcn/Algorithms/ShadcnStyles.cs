@@ -37,6 +37,7 @@ internal sealed record ShadcnStyle(
     double ControlHeightXS,
     double ButtonRadius,
     double ButtonRadiusSM,
+    double ButtonRadiusLG,
     double InputRadius,
     double PaddingX,
     double PaddingXSM,
@@ -64,7 +65,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Nova { get; } = new(
         "Nova",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 10, ButtonRadiusSM: 8, InputRadius: 10,
+        ButtonRadius: 10, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 10,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -82,7 +83,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Vega { get; } = new(
         "Vega",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 8, ButtonRadiusSM: 8, InputRadius: 8,
+        ButtonRadius: 8, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 8,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -100,7 +101,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Maia { get; } = new(
         "Maia",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 26, ButtonRadiusSM: 26, InputRadius: 26,
+        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 26,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -118,7 +119,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Lyra { get; } = new(
         "Lyra",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 0, ButtonRadiusSM: 0, InputRadius: 0,
+        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.Medium,
@@ -136,7 +137,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Mira { get; } = new(
         "Mira",
         ControlHeight: 28, ControlHeightSM: 24, ControlHeightLG: 32, ControlHeightXS: 20,
-        ButtonRadius: 8, ButtonRadiusSM: 8, InputRadius: 8,
+        ButtonRadius: 8, ButtonRadiusSM: 6, ButtonRadiusLG: 8, InputRadius: 8,
         PaddingX: 8, PaddingXSM: 8, PaddingXLG: 10,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.Medium,
@@ -154,7 +155,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Luma { get; } = new(
         "Luma",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 26, ButtonRadiusSM: 26, InputRadius: 22,
+        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 22,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -172,7 +173,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Sera { get; } = new(
         "Sera",
         ControlHeight: 40, ControlHeightSM: 36, ControlHeightLG: 44, ControlHeightXS: 28,
-        ButtonRadius: 0, ButtonRadiusSM: 0, InputRadius: 0,
+        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0,
         PaddingX: 24, PaddingXSM: 16, PaddingXLG: 32,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.SemiBold,
@@ -190,7 +191,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Rhea { get; } = new(
         "Rhea",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 18, ButtonRadiusSM: 18, InputRadius: 18,
+        ButtonRadius: 18, ButtonRadiusSM: 18, ButtonRadiusLG: 18, InputRadius: 18,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -246,13 +247,6 @@ internal static class ShadcnStyles
 
         throw new InvalidOperationException("The algorithm chain contains no Shadcn style.");
     }
-
-    /// <summary>Whether the style's buttons are <c>rounded-full</c> capsules (Maia, Luma): the radius is half the
-    /// control height at every size, not the --radius value.</summary>
-    public static bool IsButtonCapsule(string styleId) => styleId is "Maia" or "Luma";
-
-    /// <summary>Whether the style's inputs are <c>rounded-full</c> capsules (Maia).</summary>
-    public static bool IsInputCapsule(string styleId) => styleId is "Maia";
 
     /// <summary>Resolves a shadow level name to the official Tailwind v4 shadow definition (design 5.6.1).</summary>
     public static BoxShadows Shadow(string level) => level switch

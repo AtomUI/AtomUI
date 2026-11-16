@@ -25,21 +25,11 @@ internal static class ShadcnInputStage
             ? ShadcnBaseColors.CompositeOver(surface.Input, 0.3, surface.Background)
             : Colors.Transparent;
 
-        // The input sizes read the BorderRadius / LG / SM ladder; the capsule style draws half the height, the
-        // small field is one step below the base radius (Nova 10 / 10 / 8, Vega 8 / 8 / 6).
+        // The registry input has no size variants: one radius class at every size (appendix C).
         var style = ShadcnStyles.Resolve(context);
-        if (ShadcnStyles.IsInputCapsule(style.Id))
-        {
-            controlGlobal.BorderRadius   = new CornerRadius(controlGlobal.ControlHeight / 2);
-            controlGlobal.BorderRadiusLG = new CornerRadius(controlGlobal.ControlHeightLG / 2);
-            controlGlobal.BorderRadiusSM = new CornerRadius(controlGlobal.ControlHeightSM / 2);
-        }
-        else
-        {
-            controlGlobal.BorderRadius   = new CornerRadius(style.InputRadius);
-            controlGlobal.BorderRadiusLG = new CornerRadius(style.InputRadius);
-            controlGlobal.BorderRadiusSM = new CornerRadius(Math.Max(0, style.InputRadius - 2));
-        }
+        controlGlobal.BorderRadius   = new CornerRadius(style.InputRadius);
+        controlGlobal.BorderRadiusLG = new CornerRadius(style.InputRadius);
+        controlGlobal.BorderRadiusSM = new CornerRadius(style.InputRadius);
     }
 }
 

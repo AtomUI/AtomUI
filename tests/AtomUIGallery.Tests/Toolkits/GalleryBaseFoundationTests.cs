@@ -932,4 +932,40 @@ public class GalleryBaseFoundationTests
             base.Dispose();
         }
     }
+
+    [Fact]
+    public async Task Theme_Declared_WaveSpirit_Wins_Until_The_User_Toggles()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            // The Shadcn profiles declare EnableWaveSpirit=false; the gallery toggle defaults to on and the
+            // user has not touched it, so the declaration must reach the rendered snapshot.
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            ReadRootBool(manager, nameof(SharedTokenKind.EnableWaveSpirit)).ShouldBeFalse();
+
+            // Back on a theme without a declaration the global toggle keeps its value (on).
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            ReadRootBool(manager, nameof(SharedTokenKind.EnableWaveSpirit)).ShouldBeTrue();
+
+            // Once the user toggles, the explicit choice overrides any declaration, on any theme.
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            await viewModel.ToggleWaveSpiritCommand.Execute(true).ToTask();
+            ReadRootBool(manager, nameof(SharedTokenKind.EnableWaveSpirit)).ShouldBeTrue();
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    private static bool ReadRootBool(IThemeManager manager, string name)
+    {
+        var snapshot = ((ThemeManager)manager).CurrentSnapshot!;
+        snapshot.Registry.TryGetGlobalToken(name, out var token).ShouldBeTrue(name);
+        return snapshot.GlobalTokenValues.Get<bool>(token!.Slot);
+    }
 }

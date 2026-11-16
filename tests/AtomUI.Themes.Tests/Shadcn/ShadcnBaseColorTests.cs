@@ -83,22 +83,6 @@ public class ShadcnBaseColorTests
     {
         var surface = ShadcnBaseColors.Resolve(Color.Parse("#6B7280"), true);
 
-        Contrast(surface.Foreground, surface.Background).ShouldBeGreaterThanOrEqualTo(7);
-    }
-
-    private static double Contrast(Color foreground, Color background)
-    {
-        double Channel(byte value)
-        {
-            var linear = value / 255d;
-            return linear <= 0.03928 ? linear / 12.92 : Math.Pow((linear + 0.055) / 1.055, 2.4);
-        }
-
-        double Luminance(Color color) =>
-            0.2126 * Channel(color.R) + 0.7152 * Channel(color.G) + 0.0722 * Channel(color.B);
-
-        var first = Luminance(foreground);
-        var second = Luminance(background);
-        return (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
+        ShadcnAppendix.Contrast(surface.Foreground, surface.Background).ShouldBeGreaterThanOrEqualTo(7);
     }
 }

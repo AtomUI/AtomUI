@@ -138,4 +138,21 @@ internal static partial class ShadcnAppendix
         var match = HexRegex().Match(cell);
         return match.Success ? match.Value : null;
     }
+
+    /// <summary>WCAG relative-luminance contrast ratio of two opaque colours.</summary>
+    internal static double Contrast(Color foreground, Color background)
+    {
+        double Channel(byte value)
+        {
+            var linear = value / 255d;
+            return linear <= 0.03928 ? linear / 12.92 : Math.Pow((linear + 0.055) / 1.055, 2.4);
+        }
+
+        double Luminance(Color color) =>
+            0.2126 * Channel(color.R) + 0.7152 * Channel(color.G) + 0.0722 * Channel(color.B);
+
+        var first = Luminance(foreground);
+        var second = Luminance(background);
+        return (Math.Max(first, second) + 0.05) / (Math.Min(first, second) + 0.05);
+    }
 }

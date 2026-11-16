@@ -152,10 +152,10 @@ internal static class ShadcnBaseColors
         _ => throw new ArgumentOutOfRangeException(nameof(index))
     };
 
-    private readonly record struct Oklch(double Lightness, double Chroma, double Hue);
+    internal readonly record struct Oklch(double Lightness, double Chroma, double Hue);
 
     /// <summary>sRGB to OKLCH (CSS Color 4), the inverse of <see cref="ColorFromOklch"/>.</summary>
-    private static Oklch OklchOf(Color color)
+    internal static Oklch OklchOf(Color color)
     {
         double Linear(byte value)
         {
@@ -176,7 +176,7 @@ internal static class ShadcnBaseColors
     }
 
     /// <summary>OKLCH to sRGB (CSS Color 4), rounded like the alignment appendix generator.</summary>
-    private static Color ColorFromOklch(double lightness, double chroma, double hue)
+    internal static Color ColorFromOklch(double lightness, double chroma, double hue)
     {
         var a = chroma * Math.Cos(hue);
         var b = chroma * Math.Sin(hue);

@@ -121,7 +121,7 @@ public partial class DataFamilyEffectTests
             case "NodeHoverBg" or "ControlItemBgHover":
                 return new Scenario(() => CreateTreeView(), static tree => HeaderOf(tree, "Leaf one").IsHover = true);
             // Selected node background (rounded by BorderRadius).
-            case "NodeSelectedBg" or "NodeSelectedColor" or "ControlItemBgActive":
+            case "NodeSelectedBg" or "NodeSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive":
                 return new Scenario(() => CreateTreeView(), static tree => Select(tree, "Leaf one"));
             case "BorderRadius":
                 return new Scenario(() => CreateTreeView(), static tree => Select(tree, "Leaf one"),

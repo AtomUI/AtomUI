@@ -2,6 +2,11 @@
 
 本文档记录 Calendar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `ItemActiveColor`：Fullscreen 选中单元文字色，默认 `ColorPrimary`（Ant Design 渲染不变），选中底色为实色的主题据此设置对比色。
+
 ## 2026-11-11
 
 - Theme

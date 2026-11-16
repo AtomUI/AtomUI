@@ -89,7 +89,7 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        OptionSelectedColor      = EffectiveGlobalToken.ColorText;
+        OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
         OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
         OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
         OptionActiveBg           = EffectiveGlobalToken.ControlItemBgHover;

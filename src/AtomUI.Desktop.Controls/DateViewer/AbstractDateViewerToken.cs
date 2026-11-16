@@ -11,6 +11,13 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
     public partial Color PanelBg { get; set; }
     public partial Color CellHoverBg { get; set; }
     public partial Color CellRangeBg { get; set; }
+
+    /// <summary>
+    /// The text colour of today's and the selected cell in the content presentation, drawn on
+    /// <c>ControlItemBgActive</c>. Defaults to the primary colour (Ant Design); a theme whose selected background is
+    /// the solid primary sets the contrast colour.
+    /// </summary>
+    public partial Color CellActiveColor { get; set; }
     public partial double PanelWidth { get; set; }
     public partial double CellHeight { get; set; }
     public partial double CellWidth { get; set; }
@@ -46,6 +53,7 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
         PanelBg = EffectiveGlobalToken.ColorBgContainer;
         CellHoverBg = EffectiveGlobalToken.ControlItemBgHover;
         CellRangeBg = EffectiveGlobalToken.ControlItemBgActive;
+        CellActiveColor = EffectiveGlobalToken.ColorPrimary;
         var dateColumnWidth = EffectiveGlobalToken.ControlHeightSM * 1.5;
         var bodyHorizontalPadding = EffectiveGlobalToken.UniformlyPadding + EffectiveGlobalToken.UniformlyPaddingXXS / 2;
         PanelWidth = dateColumnWidth * 7 + bodyHorizontalPadding * 2;

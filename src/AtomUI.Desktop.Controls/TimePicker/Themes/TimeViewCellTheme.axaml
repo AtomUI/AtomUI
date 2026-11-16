@@ -38,7 +38,7 @@
         </Style>
         
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ControlItemColorActive}" />
             <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
         </Style>
 

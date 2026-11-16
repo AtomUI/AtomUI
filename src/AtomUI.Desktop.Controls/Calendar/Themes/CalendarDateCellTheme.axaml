@@ -195,7 +195,7 @@
                 <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
             </Style>
             <Style Selector="^[Presentation=Content]:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+                <Setter Property="Foreground" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeItemActiveColor)}" />
             </Style>
             <Style Selector="^:week">
                 <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />

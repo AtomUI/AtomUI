@@ -112,6 +112,9 @@
             <Style Selector="^[IsSelected=True]">
                 <Setter Property="Background"
                         Value="{atom:DataGridTokenResource TableSelectedRowBg}" />
+                <!-- The selected row's text (RowSelectedColor, ControlItemColorActive by default); cells inherit it. -->
+                <Setter Property="Foreground"
+                        Value="{atom:DataGridTokenResource RowSelectedColor}" />
                 <Style Selector="^:row-hover">
                     <Setter Property="Background"
                             Value="{atom:DataGridTokenResource TableSelectedRowHoverBg}" />

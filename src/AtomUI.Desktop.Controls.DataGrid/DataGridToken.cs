@@ -62,6 +62,13 @@ public sealed partial class DataGridToken : AbstractControlDesignToken
     /// Background color of table selected row when hovered
     /// </summary>
     public partial Color RowSelectedHoverBg { get; set; }
+
+    /// <summary>
+    /// Text color of a selected row, drawn on <see cref="RowSelectedBg"/> and <see cref="RowSelectedHoverBg"/>.
+    /// Defaults to the global <c>ControlItemColorActive</c> (the body text color unless a theme sets the contrast color
+    /// of a solid selected background).
+    /// </summary>
+    public partial Color RowSelectedColor { get; set; }
     
     /// <summary>
     /// 表格行展开背景色
@@ -323,6 +330,11 @@ public sealed partial class DataGridToken : AbstractControlDesignToken
         if (!IsExplicit(DataGridTokenKind.RowSelectedHoverBg))
         {
             RowSelectedHoverBg          = EffectiveGlobalToken.ControlItemBgActiveHover;
+        }
+
+        if (!IsExplicit(DataGridTokenKind.RowSelectedColor))
+        {
+            RowSelectedColor            = EffectiveGlobalToken.ControlItemColorActive;
         }
 
         if (!IsExplicit(DataGridTokenKind.RowExpandedBg))

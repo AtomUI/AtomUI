@@ -94,7 +94,7 @@ public sealed partial class CascaderToken : AbstractSelectInputToken
         OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
         OptionPadding            = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, itemPaddingVertical);
         MenuPadding              = EffectiveGlobalToken.PaddingXXS;
-        OptionSelectedColor      = EffectiveGlobalToken.ColorText;
+        OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
         HeaderHeight             = EffectiveGlobalToken.ControlHeightSM;
         FilterHighlightColor     = EffectiveGlobalToken.ColorError;
         ItemHeaderSpacing        = EffectiveGlobalToken.SpacingXXS;

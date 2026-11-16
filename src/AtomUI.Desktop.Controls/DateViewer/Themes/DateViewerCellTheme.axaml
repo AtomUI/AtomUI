@@ -86,6 +86,12 @@
         <Setter Property="Width" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePeriodCellWidth)}" />
         <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePeriodCellPadding)}" />
     </Style>
+    <!-- The range middle draws the selected-item text (ControlItemColorActive, the body text by default) where its
+         CellRangeBg (ControlItemBgActive) background is shown; keyboard-current, week-selection, outside and disabled
+         cells set their own colours after this style. -->
+    <Style Selector="^:range-middle:not(:week-mode):not(:has-preview):not(:outside), ^:range-preview-middle:not(:week-mode):not(:outside), ^:week-mode:range-middle, ^:week-mode:range-preview-middle">
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ControlItemColorActive}" />
+    </Style>
     <Style Selector="^:visual-endpoint:not(:disabled), ^:navigation-current:not(:disabled)">
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
         <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
@@ -215,14 +221,14 @@
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
     </Style>
     <Style Selector="^[Presentation=Content]:today:date:not(:week-mode):not(:visual-endpoint):not(:range-middle):not(:range-preview-middle)">
-        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="Foreground" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellActiveColor)}" />
     </Style>
     <Style Selector="^[Presentation=Content]:today:date:not(:week-mode):not(:visual-endpoint):not(:range-middle):not(:range-preview-middle) /template/ Border#PART_CellSurface">
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
         <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
     </Style>
     <Style Selector="^[Presentation=Content]:selected:not(:range-start):not(:range-end)">
-        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="Foreground" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellActiveColor)}" />
     </Style>
     <Style Selector="^[Presentation=Content]:selected:not(:range-start):not(:range-end) /template/ Border#PART_CellSurface">
         <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActive}" />

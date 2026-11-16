@@ -15,6 +15,12 @@ using AvaloniaWindow = Avalonia.Controls.Window;
 using AtomTreeView = AtomUI.Desktop.Controls.TreeView;
 using AtomTreeViewItem = AtomUI.Desktop.Controls.TreeViewItem;
 using AtomToggleSwitch = AtomUI.Desktop.Controls.ToggleSwitch;
+using AtomSelect = AtomUI.Desktop.Controls.Select;
+using AtomCascader = AtomUI.Desktop.Controls.Cascader;
+using AtomComboBox = AtomUI.Desktop.Controls.ComboBox;
+using AtomListBox = AtomUI.Desktop.Controls.ListBox;
+using AtomListView = AtomUI.Desktop.Controls.ListView;
+using AtomTreeSelect = AtomUI.Desktop.Controls.TreeSelect;
 
 namespace AtomUI.Desktop.Controls.Tests.Theme;
 
@@ -83,6 +89,43 @@ public class SelectedStateTokenTests
             HeaderColor(tree, "Other").ShouldNotBe(Color.Parse("#FF123456"));
         });
         await Apply(manager, null);
+    }
+
+    [Fact]
+    public async Task Global_ControlItemColorActive_Defaults_To_ColorText_And_Drives_The_Selected_Text_Tokens()
+    {
+        var manager = GetThemeManager();
+        await Apply(manager, null);
+        var select   = new AtomSelect();
+        var cascader = new AtomCascader();
+        var combo    = new AtomComboBox();
+        var list     = new AtomListBox();
+        var listView = new AtomListView();
+        var tree     = new AtomTreeView();
+        var treeSelect = new AtomTreeSelect();
+        await Show(new StackPanel { Children = { select, cascader, combo, list, listView, tree, treeSelect } }, async () =>
+        {
+            var text = ControlTokenAccessor.Capture(list).GetEffectiveGlobal<Color>(SharedTokenKind.ColorText);
+            ControlTokenAccessor.Capture(list).GetEffectiveGlobal<Color>(SharedTokenKind.ControlItemColorActive).ShouldBe(text);
+            AssertSelectedText(text);
+
+            // One global value reaches every selected-text token.
+            await Apply(manager, new ThemeConfigBuilder().WithToken("ControlItemColorActive", "#FF123456").Build());
+            Dispatcher.UIThread.RunJobs();
+            AssertSelectedText(Color.Parse("#FF123456"));
+        });
+        await Apply(manager, null);
+
+        void AssertSelectedText(Color expected)
+        {
+            ControlTokenAccessor.Capture(select).GetOwn<Color>(SelectTokenKind.OptionSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(cascader).GetOwn<Color>(CascaderTokenKind.OptionSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(combo).GetOwn<Color>(ComboBoxTokenKind.ItemSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(list).GetOwn<Color>(ListBoxTokenKind.ItemSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(listView).GetOwn<Color>(ListViewTokenKind.ItemSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(tree).GetOwn<Color>(TreeViewTokenKind.NodeSelectedColor).ShouldBe(expected);
+            ControlTokenAccessor.Capture(treeSelect).GetOwn<Color>(TreeSelectTokenKind.NodeSelectedColor).ShouldBe(expected);
+        }
     }
 
     private static Color KnobColor(AtomToggleSwitch toggle) =>

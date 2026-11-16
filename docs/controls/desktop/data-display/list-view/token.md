@@ -55,6 +55,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 - 普通背景使用透明色。
 - hover 背景使用 `SharedToken.ColorBgTextHover`。
 - selected 背景使用 `SharedToken.ControlItemBgActive`。
+- selected 文字 `ItemSelectedColor` 使用 `SharedToken.ControlItemColorActive`（默认等于 `ColorText`）。
 
 `ItemHoverBg` 和 `ItemSelectedBg` 是 ListView public styled property，theme 默认值来自这些 Token，允许实例级覆盖。组标题保持普通背景，不应用 hover / selected 背景规则。
 

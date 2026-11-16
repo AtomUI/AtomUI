@@ -178,7 +178,7 @@ public partial class DataFamilyEffectTests
             case "ItemHoverBgColor" or "ItemHoverColor" or "ColorBgTextHover":
                 return new Scenario(static () => CreateListBox(), static list => Pseudo(ListBoxItemAt(list, 0), ":pointerover"));
             // Selected item: background, text and (with the indicator shown) the check mark, its size and margin.
-            case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ColorText":
+            case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive" or "ColorText":
                 return new Scenario(static () => CreateListBox(), static list => ((ListBox)list).SelectedIndex = 1);
             // The check mark of the selected item (compared on the mark: its colour fills a few pixels only).
             case "ColorPrimary":
@@ -301,7 +301,7 @@ public partial class DataFamilyEffectTests
         {
             case "ItemHoverBgColor" or "ItemHoverColor" or "ColorBgTextHover":
                 return new Scenario(() => CreateListView(), static list => Pseudo(ListViewItemAt(list, 0), ":pointerover"));
-            case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ColorText":
+            case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive" or "ColorText":
                 return new Scenario(() => CreateListView(), static list => ((ListView)list).SelectedIndex = 1);
             case "ColorPrimary":
                 return new Scenario(() => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,

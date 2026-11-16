@@ -12,6 +12,7 @@
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:LunarCalendarTokenResource FullBg}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:LunarCalendarTokenResource FullPanelBg}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:LunarCalendarTokenResource ItemActiveBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveColor" Value="{atom:LunarCalendarTokenResource ItemActiveColor}" />
 
         <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:LunarCalendarTokenResource YearControlWidth}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:LunarCalendarTokenResource MonthControlWidth}" />

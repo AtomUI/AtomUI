@@ -80,7 +80,7 @@ public sealed partial class ComboBoxToken : AbstractControlDesignToken
 
         ItemColor         = colorTextSecondary;
         ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
+        ItemSelectedColor = EffectiveGlobalToken.ControlItemColorActive;
 
         ItemBgColor         = colorBgContainer;
         ItemHoverBgColor    = colorBgTextHover;

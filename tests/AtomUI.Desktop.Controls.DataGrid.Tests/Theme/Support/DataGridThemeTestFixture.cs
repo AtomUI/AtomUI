@@ -144,7 +144,8 @@ internal static class DataGridThemeTestFixture
             ((IPseudoClasses)grid.GetVisualDescendants().OfType<DataGridFilterIndicator>().First().Classes)
                 .Add(token == "ColorBgTextActive" ? ":pressed" : ":pointerover");
         }
-        if (token.Contains("Selected", StringComparison.Ordinal) || token.Contains("ItemBgActive", StringComparison.Ordinal))
+        if (token.Contains("Selected", StringComparison.Ordinal) || token.Contains("ItemBgActive", StringComparison.Ordinal) ||
+            token.Contains("ItemColorActive", StringComparison.Ordinal))
         {
             grid.Selection = new DataGridSelectionState([DataGridRowKey.FromInt64(1)], null, [], []);
         }

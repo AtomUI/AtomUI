@@ -254,6 +254,15 @@ public partial class DesignToken
     public partial Color ControlItemBgActiveHover { get; set; } // Note. It also is a color
 
     /// <summary>
+    /// The text colour of a selected (active) item drawn on <see cref="ControlItemBgActive"/> and
+    /// <see cref="ControlItemBgActiveHover"/>: the selected option, list item, tree node, data-grid row and range or
+    /// time cell. Defaults to <see cref="ColorText"/>; a theme whose selected background is a solid colour sets the
+    /// matching contrast colour once here, and the controls' own selected-text tokens default to it.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public partial Color ControlItemColorActive { get; set; }
+
+    /// <summary>
     /// 控制组件的交互大小
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]

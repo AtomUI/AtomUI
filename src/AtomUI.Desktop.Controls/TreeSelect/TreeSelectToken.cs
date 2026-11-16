@@ -17,7 +17,7 @@ public sealed partial class TreeSelectToken : AbstractSelectInputToken
 
     /// <summary>
     /// The text colour of a selected node in the dropdown tree, drawn on <see cref="NodeSelectedBg"/>. Defaults to
-    /// the body text colour.
+    /// the global <c>ControlItemColorActive</c>.
     /// </summary>
     public partial Color NodeSelectedColor { get; set; }
     public partial Thickness TreeItemMargin { get; set; }

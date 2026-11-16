@@ -95,7 +95,7 @@ public partial class SelectFamilyEffectTests
                     or "BorderRadiusLG" or "ItemDisabledColor":
                     Open();
                     break;
-                case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive":
+                case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive":
                     Selected();
                     Open();
                     break;

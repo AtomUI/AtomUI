@@ -14,6 +14,7 @@
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:CalendarTokenResource FullBg}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:CalendarTokenResource FullPanelBg}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:CalendarTokenResource ItemActiveBg}" />
+        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveColor" Value="{atom:CalendarTokenResource ItemActiveColor}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:CalendarTokenResource YearControlWidth}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:CalendarTokenResource MonthControlWidth}" />
         <Setter Property="tokeninputs:CalendarHeader.ThemeYearMonthCellWidth" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />

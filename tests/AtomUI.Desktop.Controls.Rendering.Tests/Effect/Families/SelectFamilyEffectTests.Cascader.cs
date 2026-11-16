@@ -172,7 +172,7 @@ public partial class SelectFamilyEffectTests
                     Open();
                     Item(static item => item.IsCandidateSelected = true);
                     break;
-                case "OptionSelectedBg" or "OptionSelectedColor" or "OptionSelectedFontWeight" or "ControlItemBgActive"
+                case "OptionSelectedBg" or "OptionSelectedColor" or "OptionSelectedFontWeight" or "ControlItemBgActive" or "ControlItemColorActive"
                     or "FontWeightStrong":
                     Open();
                     Item(static item => item.IsExpanded = true);

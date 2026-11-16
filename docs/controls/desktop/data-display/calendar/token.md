@@ -62,7 +62,7 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 Token owner：Calendar 把自己的 Token owner 转发给模板中的 DateViewer（`TokenOwnerForwarding`），因此 Calendar 提供的面板与单元主题以
 `OwnerTokenResource` 读取宿主 Calendar / LunarCalendar 的有效全局 Token，`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格；
 DateViewer 自己的 Own Token 仍读 DateViewer 身份。Header 中的 ComboBox、OptionButtonGroup 保持各自身份。
-LunarCalendar 复用模板和 AbstractCalendarToken 的真实公共 Own 计算，但由自己的终端设置样式输入。MiniContentHeight/FullCellMinHeight 等月历度量保持各自公式；ItemActiveBg 由两个终端独立拥有：农历 Fullscreen Year 的选中月份使用该 Own（默认 active item 浅蓝色），农历 Month 的选中日期仍使用主色。YearMonthCellWidth 只被 Gregorian 消费，不添加给 Lunar；农历 Compact Year 使用自己的 MiniMonthCellWidth。Controls[Calendar] 的 Own 不再进入 Lunar。
+LunarCalendar 复用模板和 AbstractCalendarToken 的真实公共 Own 计算，但由自己的终端设置样式输入。MiniContentHeight/FullCellMinHeight 等月历度量保持各自公式；ItemActiveBg 由两个终端独立拥有：农历 Fullscreen Year 的选中月份使用该 Own（默认 active item 浅蓝色），农历 Month 的选中日期仍使用主色。YearMonthCellWidth 只被 Gregorian 消费，不添加给 Lunar；农历 Compact Year 使用自己的 MiniMonthCellWidth。Controls[Calendar] 的 Own 不再进入 Lunar。ItemActiveColor（默认 ColorPrimary）是 Gregorian Fullscreen 选中单元的文字色，画在 ItemActiveBg 上；选中底色为实色的主题设为对比色。农历单元的选中文字由 LunarCalendarCellContent 使用 ColorTextLightSolid，不消费它。
 业务布局、模板内容、动态资源覆盖和尺寸语义必须完整；普通主题修改不能让农历次级行与业务条重叠。
 状态选择在 Theme Selector，资源更新由 scoped owner 链传播，不能以静态值规避生命周期。
 

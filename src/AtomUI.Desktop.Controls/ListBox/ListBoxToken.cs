@@ -93,7 +93,7 @@ public sealed partial class ListBoxToken : AbstractControlDesignToken
 
         ItemColor         = colorTextSecondary;
         ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
+        ItemSelectedColor = EffectiveGlobalToken.ControlItemColorActive;
 
         ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
         ItemHoverBgColor    = colorBgTextHover;

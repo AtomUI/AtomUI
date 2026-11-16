@@ -27,7 +27,7 @@ public partial class DataFamilyEffectTests
     internal static readonly OwnerReadList s_dateViewerCell = new(DateViewerThemes + "DateViewerCellTheme.axaml",
     [
         "BorderRadiusSM", "BorderThickness", "ColorPrimary", "ColorSplit", "ColorText", "ColorTextDisabled",
-        "ColorTextLightSolid", "ControlItemBgActive", "ControlItemBgHover", "EnableMotion"
+        "ColorTextLightSolid", "ControlItemBgActive", "ControlItemBgHover", "ControlItemColorActive", "EnableMotion"
     ]);
 
     /// <summary>
@@ -35,6 +35,12 @@ public partial class DataFamilyEffectTests
     /// They are covered by <see cref="RangeDateViewer_Uses_Independent_Own_Tokens"/>.
     /// </summary>
     private static readonly HashSet<string> s_rangeOnlyViewerTokens = new(StringComparer.Ordinal) { "PanelSpacing", "UniformlyMargin" };
+
+    /// <summary>
+    /// Owner globals the single DateViewer reads through the shared cell theme but cannot show: the range-middle text
+    /// <c>ControlItemColorActive</c> (a single viewer has no range). Covered by the RangeDateViewer rows.
+    /// </summary>
+    private static readonly string[] s_rangeOnlyViewerGlobals = ["ControlItemColorActive"];
 
     internal static DateViewer CreateDateViewer(
         DateViewerPresentation presentation = DateViewerPresentation.Compact,
@@ -103,7 +109,8 @@ public partial class DataFamilyEffectTests
                .Where(row => !skip.Contains((string)row[0]));
     }
 
-    public static IEnumerable<object[]> DateViewerRows() => ViewerRows("DateViewer", s_rangeOnlyViewerTokens);
+    public static IEnumerable<object[]> DateViewerRows() =>
+        ViewerRows("DateViewer", s_rangeOnlyViewerTokens.Concat(s_rangeOnlyViewerGlobals));
 
     [Theory]
     [MemberData(nameof(DateViewerRows))]
@@ -146,6 +153,20 @@ public partial class DataFamilyEffectTests
             case "ContentCellContentMargin":
                 // The cell template content is inset from the cell edges.
                 return Content(cellTemplate: true);
+            case "CellActiveColor":
+                // The text of the selected full-content cell (the range viewer: today's cell outside its range).
+                return range
+                    ? new Scenario(static () =>
+                    {
+                        var viewer = CreateRangeDateViewer(DateViewerPresentation.Content, TodayMonthValue(),
+                            TodayMonthValue().AddDays(1));
+                        viewer.DisplayDate = DateTime.Today;
+                        return viewer;
+                    }, null, new EffectOptions { Region = static c => ViewerCell(c, DateTime.Today) })
+                    : Content(options: new EffectOptions { Region = static c => ViewerCell(c, s_calendarDate) });
+            case "ControlItemColorActive":
+                // The text of a range-middle cell (range viewer only: the single viewer has no range middle).
+                return Compact(options: new EffectOptions { Region = static c => ViewerCell(c, s_calendarDate.AddDays(2)) });
             case "ControlItemBgActive":
                 // The selected full-content cell's surface (and the range background derived from it); the range viewer
                 // shows it on the today cell outside its range.

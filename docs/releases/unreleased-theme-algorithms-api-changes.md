@@ -24,7 +24,8 @@ the author's guide.
 | Generated `<Catalog>Algorithms` | — | one public static class per algorithm catalog in a package (e.g. `PrimeNGAlgorithms.AuraDark`); no action |
 | Control token classes of `AtomUI.Controls`, `AtomUI.Desktop.Controls`, ColorPicker, DataGrid | 148 `internal`, 2 `public` | all 150 `public partial` (117 terminal, 33 abstract); token properties are partial properties. Larger public surface; abstract layers can be inherited and their `protected` helpers are public API |
 | Third-party control token classes | ordinary class, auto-properties, `public override CalculateTokenValues` | `partial` class, `partial` properties (`ATOMUIGEN049` otherwise), `protected override CalculateTokenValues` (CS0507 otherwise) |
-| `DesignToken` global token properties (255) | auto-properties | partial properties; no change for callers |
+| `DesignToken` global token properties (256) | auto-properties | partial properties; no change for callers |
+| New global Alias token `ControlItemColorActive` | — | the text colour on `ControlItemBgActive` (selected items); defaults to `ColorText`, so nothing changes unless a theme sets it; the controls' selected-text tokens default to it (see below) |
 | `AbstractControlDesignToken.CalculateTokenValues` | `public virtual` | `protected virtual`; cannot be called from outside |
 | `AbstractDesignToken` | — | new `protected void RecordWrite(string)` called by the generated setters; do not call it yourself |
 | Theme XML `<Algorithm>` | `Id` is `Default`, `Dark` or `Compact` | optional `Catalog` (default `AtomUI`); `Id` accepts any identifier. Existing files stay valid |
@@ -210,6 +211,24 @@ shadow now has a spread of 0 because its `ControlOutlineWidth` is 0, and Bootstr
 `0 0 0 3 #6fc8ff` instead of `0 0 0 2 #190591ff` (the Bootstrap preset also moved to Bootstrap 6.0 values; Dark is
 `0 0 0 3 #0064ba`). If you relied on the old result, set the derived token
 explicitly too. The analyzers `ATOMUIGEN040` and `ATOMUIGEN048` now also check `DesignToken.CalculateAliasTokenValues`.
+
+## New global Alias token `ControlItemColorActive`
+
+`ControlItemColorActive` is the text colour of a selected (active) item drawn on `ControlItemBgActive` and
+`ControlItemBgActiveHover`. The default Alias formula sets it to `ColorText`, so the default, dark and compact themes
+and every theme that does not set it render exactly as before. A theme whose selected background is a solid colour
+(the PrimeNG Nora and noir highlights) sets the matching contrast colour once, globally, instead of per control. One
+token covers the selected and the selected-hover background: PrimeUIX `highlight.focusColor` equals
+`highlight.color` in every preset except Aura / Lara light (primary 800 instead of 700), and AtomUI controls have no
+separate selected-hover text slot.
+
+These selected-text tokens now default to it instead of `ColorText` (same value by default): Select and Cascader
+`OptionSelectedColor`; ComboBox, ListBox, ListView and TransferListView `ItemSelectedColor`; TreeView,
+TransferTreeView and TreeSelect `NodeSelectedColor`; the new DataGrid `RowSelectedColor` (the selected row's text, set on
+the row so the cells inherit it). The selected time cell of TimePicker / RangeTimePicker / DatePicker /
+RangeDatePicker and the range middle of the date panels read it directly. Two new Own tokens cover the primary text the
+content presentation draws on `ControlItemBgActive`: Calendar `ItemActiveColor` (fullscreen selected cell) and
+DateViewer `CellActiveColor` (today's and the selected content cell), both defaulting to `ColorPrimary`.
 
 ## Theme XML: `Catalog` on `<Algorithm>`
 

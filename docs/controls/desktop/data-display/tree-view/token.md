@@ -37,8 +37,8 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 - `DirectoryNodeSelectedBg`
 
 `NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`NodeSelectedColor` 是选中节点
-（未禁用）的文字色，画在 `NodeSelectedBg` 上，默认 `ColorText`（antd Tree `nodeSelectedColor`），所以 Ant Design 渲染不变；
-选中底色为实色的主题（PrimeNG）把它设为对应的对比色。TreeSelect 与 TransferTreeView 共用同一 Token。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 是保留 Token（`[ReservedToken]`，对应 antd Tree `directoryNodeSelectedColor` / `directoryNodeSelectedBg`）：AtomUI TreeView 没有目录树模式，设置后暂无视觉效果。
+（未禁用）的文字色，画在 `NodeSelectedBg` 上，默认取全局 `ControlItemColorActive`（默认 `ColorText`，antd Tree
+`nodeSelectedColor`），所以 Ant Design 渲染不变；选中底色为实色的主题（PrimeNG）在全局设置对比色。TreeSelect 与 TransferTreeView 共用同一 Token。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 是保留 Token（`[ReservedToken]`，对应 antd Tree `directoryNodeSelectedColor` / `directoryNodeSelectedBg`）：AtomUI TreeView 没有目录树模式，设置后暂无视觉效果。
 
 未选中节点的文字与图标色使用宿主的 `ColorText`，disabled 节点的文字、节点图标与 switcher 图标统一使用 `ColorTextDisabled`（与 antd 一致，此前图标与 switcher 以 0.3 不透明度弱化），不在 TreeViewToken 中重复定义。
 

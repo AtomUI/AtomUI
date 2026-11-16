@@ -16,7 +16,8 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 | --- | --- | --- |
 | 表面 | PanelBg | ColorBgContainer，面板背景。 |
 | 交互 | CellHoverBg | ControlItemBgHover，Hover 背景。 |
-| 连续范围 | CellRangeBg | ControlItemBgActive，范围/预览中段。 |
+| 连续范围 | CellRangeBg | ControlItemBgActive，范围/预览中段；中段文字读全局 `ControlItemColorActive`（默认 `ColorText`）。 |
+| Content 选中 | CellActiveColor | ColorPrimary，Content 呈现中今天与选中日期的文字（画在 ControlItemBgActive 上）；选中底色为实色的主题设为对比色。 |
 | Compact 尺寸 | PanelWidth | 7 × (ControlHeightSM × 1.5) + 2 × (UniformlyPadding + UniformlyPaddingXXS / 2)，默认 288。 |
 | 值框尺寸 | CellHeight / CellWidth | ControlHeightSM，日期值框最小高度与宽度。 |
 | 日期行距 | CellRowHeight | CellHeight + 3 × UniformlyPaddingXXS，默认 36；周标题和日期行采用同一节距。 |

@@ -18,7 +18,10 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CellFontSize`、`CellFontSizeMD`、`CellFontSizeSM`、`SelectionColumnWidth` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CellPadding`、`CellPaddingMD`、`CellPaddingSM`、`PaginationMargin`、`PaginationMarginSM`、`PaginationPanelMargin`、`PaginationPanelMarginSM` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HeaderBg`、`HeaderColor`、`HeaderSortActiveBg`、`HeaderSortHoverBg`、`BodySortBg`、`RowHoverBg` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HeaderBg`、`HeaderColor`、`HeaderSortActiveBg`、`HeaderSortHoverBg`、`BodySortBg`、`RowHoverBg`、`RowSelectedBg`、`RowSelectedColor` |
+
+`RowSelectedColor` 是选中行文字色，默认取全局 `ControlItemColorActive`（默认等于 `ColorText`），设在 `DataGridRow` 的
+`Foreground` 上由单元格继承；与 `RowSelectedBg` / `RowSelectedHoverBg`（`ControlItemBgActive` / `Hover`）成对。
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `HeaderBorderRadius`、`LeftFrozenShadows`、`RightFrozenShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。

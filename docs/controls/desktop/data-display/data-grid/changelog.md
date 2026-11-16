@@ -2,6 +2,12 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `RowSelectedColor`：选中行文字色，默认全局 `ControlItemColorActive`（默认 `ColorText`），设在选中行的
+    `Foreground` 上，单元格继承。选中底色为实色的主题据此保持选中行文字可读。
+
 ## 2026-11-14
 
 - Implementation

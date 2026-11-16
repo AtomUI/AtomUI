@@ -22,7 +22,8 @@
 | 生成的 `<Catalog>Algorithms` | — | 包里每个算法 Catalog 一个公开静态类（例如 `PrimeNGAlgorithms.AuraDark`）；无需操作 |
 | `AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid 的控件 Token 类 | 148 个 `internal`，2 个 `public` | 全部 150 个为 `public partial`（117 个终端类、33 个抽象中间层），Token 属性为 partial 属性。公开 API 面增大；抽象中间层可被继承，其 `protected` 辅助方法属于公开 API |
 | 第三方控件 Token 类 | 普通类、自动属性、`public override CalculateTokenValues` | `partial` 类、`partial` 属性（否则 `ATOMUIGEN049`）、`protected override CalculateTokenValues`（否则 CS0507） |
-| `DesignToken` 的全局 Token 属性（255 个） | 自动属性 | partial 属性；调用方无变化 |
+| `DesignToken` 的全局 Token 属性（256 个） | 自动属性 | partial 属性；调用方无变化 |
+| 新增全局 Alias Token `ControlItemColorActive` | — | `ControlItemBgActive`（选中项）上的文字色，默认 `ColorText`，主题不设置时不变；各控件的选中文字 Token 默认取它（见下文） |
 | `AbstractControlDesignToken.CalculateTokenValues` | `public virtual` | `protected virtual`；外部不能再调用 |
 | `AbstractDesignToken` | — | 新增 `protected void RecordWrite(string)`，由生成的 setter 调用，不要自己调用 |
 | 主题 XML `<Algorithm>` | `Id` 只能是 `Default`、`Dark`、`Compact` | 新增可选 `Catalog`（缺省 `AtomUI`）；`Id` 接受任意合法标识符。现有文件仍然有效 |
@@ -175,7 +176,7 @@ public sealed partial class RatingToken : AbstractControlDesignToken
   Token 类之外的代码不能再调用它。
 - 类可以保持 `internal`；那样只有本程序集能为它声明控件阶段。
 
-`DesignToken` 的 255 个全局 Token 属性也是 partial 属性，调用方不受影响。
+`DesignToken` 的 256 个全局 Token 属性也是 partial 属性，调用方不受影响。
 
 ## 全局 Alias 显式值现在带动派生 Alias
 
@@ -195,6 +196,20 @@ public sealed partial class RatingToken : AbstractControlDesignToken
 PrimeNG 的 profile 有变化：例如 PrimeNG Aura 的焦点阴影扩散现在是 0（它的 `ControlOutlineWidth` 是 0），Bootstrap 的
 输入框焦点阴影由 `0 0 0 2 #190591ff` 变为 `0 0 0 3 #6fc8ff`（Bootstrap 预设同时改为 Bootstrap 6.0 的值，Dark 为 `0 0 0 3 #0064ba`）。如果依赖旧结果，把派生 Token 也显式设置。分析器
 `ATOMUIGEN040`、`ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
+
+## 新增全局 Alias Token `ControlItemColorActive`
+
+`ControlItemColorActive` 是选中（激活）项画在 `ControlItemBgActive` 与 `ControlItemBgActiveHover` 上的文字色。默认 Alias
+公式取 `ColorText`，因此默认、暗色、紧凑主题以及所有不设置它的主题渲染不变。选中底色为实色的主题（PrimeNG Nora 与
+noir 的高亮）只需在全局设置一次对比色，不必逐控件设置。选中与选中悬停共用一个 Token：PrimeUIX `highlight.focusColor`
+除 Aura / Lara 浅色（主色 800 级而非 700 级）外都等于 `highlight.color`，AtomUI 控件也没有单独的选中悬停文字位。
+
+下列选中文字 Token 的默认值改为它（默认取值不变）：Select 与 Cascader 的 `OptionSelectedColor`；ComboBox、ListBox、
+ListView、TransferListView 的 `ItemSelectedColor`；TreeView、TransferTreeView、TreeSelect 的 `NodeSelectedColor`；新增的
+DataGrid `RowSelectedColor`（选中行文字，设在行上，单元格继承）。TimePicker / RangeTimePicker / DatePicker /
+RangeDatePicker 的选中时间格与日期面板的范围中段直接读取它。Content 呈现在 `ControlItemBgActive` 上绘制的主色文字由两个
+新 Own Token 承担：Calendar `ItemActiveColor`（Fullscreen 选中单元）与 DateViewer `CellActiveColor`（Content 的今天与选中
+单元），默认均为 `ColorPrimary`。
 
 ## 主题 XML：`<Algorithm>` 的 `Catalog`
 

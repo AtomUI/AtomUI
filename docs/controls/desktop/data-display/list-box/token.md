@@ -57,6 +57,7 @@ disabled 条目的内容 presenter 前景读取 `ItemDisabledColor`（默认 `Co
 - 普通背景使用透明色。
 - hover 背景使用 `SharedToken.ColorBgTextHover`。
 - selected 背景使用 `SharedToken.ControlItemBgActive`。
+- selected 文字 `ItemSelectedColor` 使用 `SharedToken.ControlItemColorActive`（默认等于 `ColorText`）。
 
 `ItemHoverBg` 和 `ItemSelectedBg` 是 ListBox public styled property，theme 默认值来自这些 Token，允许实例级覆盖。
 

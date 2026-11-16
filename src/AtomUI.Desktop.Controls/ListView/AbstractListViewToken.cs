@@ -93,7 +93,7 @@ public abstract partial class AbstractListViewToken : AbstractControlDesignToken
 
         ItemColor         = colorTextSecondary;
         ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
+        ItemSelectedColor = EffectiveGlobalToken.ControlItemColorActive;
 
         ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
         ItemHoverBgColor    = colorBgTextHover;

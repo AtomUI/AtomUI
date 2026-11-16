@@ -10,7 +10,7 @@ internal static class TreePresentationTokenValues
         (token.ControlHeightSM,
          token.ControlItemBgHover,
          token.ControlItemBgActive,
-         token.ColorText,
+         token.ControlItemColorActive,
          new Thickness(0, 0, 0, token.UniformlyPaddingXXS / 2),
          new Thickness(token.UniformlyPaddingXS, 0),
          new Thickness(token.UniformlyMarginXXS, 0, 0, 0),

@@ -90,7 +90,7 @@ public partial class SelectFamilyEffectTests
             case "OptionFontSize" or "OptionHeight" or "OptionPadding" or "PopupContentPadding" or "ColorBgElevated":
                 Open();
                 break;
-            case "OptionSelectedBg" or "OptionSelectedColor" or "OptionSelectedFontWeight" or "ControlItemBgActive"
+            case "OptionSelectedBg" or "OptionSelectedColor" or "OptionSelectedFontWeight" or "ControlItemBgActive" or "ControlItemColorActive"
                 or "FontWeightStrong":
                 Selected();
                 Open();

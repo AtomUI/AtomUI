@@ -20,6 +20,12 @@ internal partial class DateViewerCell
     public static IBrush? GetThemeCellHoverBg(StyledElement element) => element.GetValue(ThemeCellHoverBgProperty);
     public static void SetThemeCellHoverBg(StyledElement element, IBrush? value) => element.SetValue(ThemeCellHoverBgProperty, value);
 
+    public static readonly AttachedProperty<IBrush?> ThemeCellActiveColorProperty =
+        AvaloniaProperty.RegisterAttached<DateViewerCell, StyledElement, IBrush?>("ThemeCellActiveColor", inherits: true);
+
+    public static IBrush? GetThemeCellActiveColor(StyledElement element) => element.GetValue(ThemeCellActiveColorProperty);
+    public static void SetThemeCellActiveColor(StyledElement element, IBrush? value) => element.SetValue(ThemeCellActiveColorProperty, value);
+
     public static readonly AttachedProperty<IBrush?> ThemeCellRangeBgProperty =
         AvaloniaProperty.RegisterAttached<DateViewerCell, StyledElement, IBrush?>("ThemeCellRangeBg", inherits: true);
 

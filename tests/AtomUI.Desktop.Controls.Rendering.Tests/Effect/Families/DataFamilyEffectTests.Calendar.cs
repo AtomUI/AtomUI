@@ -145,8 +145,12 @@ public partial class DataFamilyEffectTests
         Run(scenario.Create, scenario.Arrange, CalendarTokens.Identity, token, scenario.Options);
     }
 
+    // ItemActiveColor (shared by AbstractCalendarToken) colours the fullscreen selected cell of the Gregorian calendar;
+    // the lunar cells draw their selected text through LunarCalendarCellContent (ColorTextLightSolid), so the lunar row
+    // has no visible state for it.
     public static IEnumerable<object[]> LunarCalendarRows() =>
-        HostRows("LunarCalendar", [], [s_calendarTheme, s_calendarHeader, s_calendarDateCell, s_datePanel]);
+        HostRows("LunarCalendar", [], [s_calendarTheme, s_calendarHeader, s_calendarDateCell, s_datePanel])
+            .Where(static row => (string)row[0] != "ItemActiveColor");
 
     [Theory]
     [MemberData(nameof(LunarCalendarRows))]
@@ -230,6 +234,9 @@ public partial class DataFamilyEffectTests
             case "ColorTextLightSolid":
                 // The selected cell's light text.
                 return Mini(options: new EffectOptions { Region = static c => SelectedCalendarCell(c) });
+            case "ItemActiveColor":
+                // The fullscreen selected cell's text on ItemActiveBg.
+                return Full(options: new EffectOptions { Region = static c => SelectedCalendarCell(c) });
             case "BorderRadiusSM":
                 // The selected cell's rounded corners (radius 12, as the cell is small).
                 return Mini(options: new EffectOptions

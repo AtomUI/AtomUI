@@ -27,6 +27,14 @@ public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
     public partial Color ItemActiveBg { get; set; }
 
     /// <summary>
+    /// The text colour of the selected date / month cell in fullscreen mode, drawn on <see cref="ItemActiveBg"/>.
+    /// Defaults to the primary colour (Ant Design); a theme whose selected background is the solid primary sets the
+    /// contrast colour. The LunarCalendar's cells draw their selected text through their own cell content
+    /// (<c>ColorTextLightSolid</c>), so it only shows on the Gregorian calendar.
+    /// </summary>
+    public partial Color ItemActiveColor { get; set; }
+
+    /// <summary>
     /// Year Select 最小宽度。
     /// </summary>
     public partial double YearControlWidth { get; set; }
@@ -92,6 +100,7 @@ public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
         FullBg = EffectiveGlobalToken.ColorBgContainer;
         FullPanelBg = EffectiveGlobalToken.ColorBgContainer;
         ItemActiveBg = EffectiveGlobalToken.ControlItemBgActive;
+        ItemActiveColor = EffectiveGlobalToken.ColorPrimary;
         YearControlWidth = 80;
         MonthControlWidth = 70;
         WeekHeaderHeight = EffectiveGlobalToken.ControlHeightSM * 0.75 +

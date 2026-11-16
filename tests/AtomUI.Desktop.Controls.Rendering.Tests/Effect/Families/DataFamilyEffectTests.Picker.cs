@@ -67,8 +67,8 @@ public partial class DataFamilyEffectTests
     /// <summary>TimeViewCell is Token-owner transparent: its theme (owner: marker) reads the hosting picker's globals.</summary>
     internal static readonly OwnerReadList s_timeViewCell = new(TimePickerThemes + "TimeViewCellTheme.axaml",
     [
-        "BorderRadiusSM", "ColorBgTextHover", "ColorText", "ColorTextDisabled", "ColorTextSecondary", "ColorTransparent",
-        "ControlItemBgActive", "ControlItemBgActiveHover"
+        "BorderRadiusSM", "ColorBgTextHover", "ColorTextDisabled", "ColorTextSecondary", "ColorTransparent",
+        "ControlItemBgActive", "ControlItemBgActiveHover", "ControlItemColorActive"
     ]);
 
     private static OwnerReadList Input(InputOwnerReadList list) => new(list.Theme, list.Tokens);
@@ -634,6 +634,11 @@ public partial class DataFamilyEffectTests
             case "PeriodHostWidth":
                 b.TimeView();
                 b.Clock12();
+                break;
+            case "ControlItemColorActive":
+                // The selected time cell's text on ControlItemBgActive.
+                b.TimeView();
+                b.Region = static c => SelectedTimeCell(c);
                 break;
             case "ControlItemBgActiveHover":
                 // The selected cell of the column the picker input steps with navigation keys.

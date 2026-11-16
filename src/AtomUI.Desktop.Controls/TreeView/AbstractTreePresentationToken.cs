@@ -12,9 +12,9 @@ public abstract partial class AbstractTreePresentationToken : AbstractControlDes
     public partial Color NodeSelectedBg { get; set; }
 
     /// <summary>
-    /// The text colour of a selected node, drawn on <see cref="NodeSelectedBg"/>. Defaults to the body text colour
-    /// (antd Tree <c>nodeSelectedColor</c>); a theme whose selected background is a solid colour sets the matching
-    /// contrast colour.
+    /// The text colour of a selected node, drawn on <see cref="NodeSelectedBg"/>. Defaults to the global
+    /// <c>ControlItemColorActive</c>, which is the body text colour unless a theme sets the contrast colour of a solid
+    /// selected background (antd Tree <c>nodeSelectedColor</c>).
     /// </summary>
     public partial Color NodeSelectedColor { get; set; }
     public partial Thickness TreeItemMargin { get; set; }

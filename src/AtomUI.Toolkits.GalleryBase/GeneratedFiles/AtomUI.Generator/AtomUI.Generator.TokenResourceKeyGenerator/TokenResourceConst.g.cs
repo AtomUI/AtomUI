@@ -129,6 +129,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -292,7 +293,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -426,6 +427,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -587,7 +589,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -717,6 +719,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -878,7 +881,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1031,6 +1034,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -1211,7 +1215,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1345,6 +1349,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -1506,7 +1511,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1643,6 +1648,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -1807,7 +1813,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1947,6 +1953,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -2110,7 +2117,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2244,6 +2251,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -2405,7 +2413,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2540,6 +2548,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -2702,7 +2711,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2836,6 +2845,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -2997,7 +3007,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3140,6 +3150,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -3310,7 +3321,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3453,6 +3464,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -3619,7 +3631,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3761,6 +3773,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlItemBgActiveDisabled = (int)SharedTokenKind.ControlItemBgActiveDisabled,
         ControlItemBgActiveHover = (int)SharedTokenKind.ControlItemBgActiveHover,
         ControlItemBgHover = (int)SharedTokenKind.ControlItemBgHover,
+        ControlItemColorActive = (int)SharedTokenKind.ControlItemColorActive,
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
@@ -3926,7 +3939,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 255u)
+                if ((uint)slot >= 256u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }

@@ -7,6 +7,7 @@
         <Setter Property="tokeninputs:DateViewerCell.ThemePanelBg" Value="{atom:RangeDateViewerTokenResource PanelBg}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeCellHoverBg" Value="{atom:RangeDateViewerTokenResource CellHoverBg}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeCellRangeBg" Value="{atom:RangeDateViewerTokenResource CellRangeBg}" />
+        <Setter Property="tokeninputs:DateViewerCell.ThemeCellActiveColor" Value="{atom:RangeDateViewerTokenResource CellActiveColor}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemePanelWidth" Value="{atom:RangeDateViewerTokenResource PanelWidth}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeCellHeight" Value="{atom:RangeDateViewerTokenResource CellHeight}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeCellWidth" Value="{atom:RangeDateViewerTokenResource CellWidth}" />

@@ -2,6 +2,11 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `CellActiveColor`：Content 呈现中今天与选中日期的文字色，默认 `ColorPrimary`；范围中段文字改读全局 `ControlItemColorActive`（默认 `ColorText`）。Ant Design 渲染不变。
+
 ## 2026-11-11
 
 - Theme

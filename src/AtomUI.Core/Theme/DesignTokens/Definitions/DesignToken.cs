@@ -196,6 +196,7 @@ public partial class DesignToken : AbstractDesignToken
         ControlItemBgHover          = ColorFillTertiary;
         ControlItemBgActive         = ColorPrimaryBg;
         ControlItemBgActiveHover    = ColorPrimaryBgHover;
+        ControlItemColorActive      = ColorText;
         ControlItemBgActiveDisabled = ColorFill;
         if (!IsExplicit(SharedTokenKind.ColorControlOutline))
         {

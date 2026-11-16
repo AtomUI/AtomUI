@@ -20,6 +20,12 @@ internal partial class CalendarHeader
     public static IBrush? GetThemeFullPanelBg(StyledElement element) => element.GetValue(ThemeFullPanelBgProperty);
     public static void SetThemeFullPanelBg(StyledElement element, IBrush? value) => element.SetValue(ThemeFullPanelBgProperty, value);
 
+    public static readonly AttachedProperty<IBrush?> ThemeItemActiveColorProperty =
+        AvaloniaProperty.RegisterAttached<CalendarHeader, StyledElement, IBrush?>("ThemeItemActiveColor", inherits: true);
+
+    public static IBrush? GetThemeItemActiveColor(StyledElement element) => element.GetValue(ThemeItemActiveColorProperty);
+    public static void SetThemeItemActiveColor(StyledElement element, IBrush? value) => element.SetValue(ThemeItemActiveColorProperty, value);
+
     public static readonly AttachedProperty<IBrush?> ThemeItemActiveBgProperty =
         AvaloniaProperty.RegisterAttached<CalendarHeader, StyledElement, IBrush?>("ThemeItemActiveBg", inherits: true);
 

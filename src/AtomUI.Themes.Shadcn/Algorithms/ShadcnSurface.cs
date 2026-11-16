@@ -51,6 +51,19 @@ internal static class ShadcnBaseColors
     /// <summary>neutral-500, the seed of the default base color.</summary>
     public static readonly Color DefaultSeed = ShadcnTailwindPalette.Stop("neutral", 500);
 
+    /// <summary>
+    /// Alpha-composites <paramref name="source"/> over <paramref name="background"/> into an opaque colour, the
+    /// AtomUI stand-in for a Tailwind <c>bg-primary/80</c>-style value (design 6.2: compositing keeps the look on
+    /// non-white parents).
+    /// </summary>
+    public static Color CompositeOver(Color source, double alpha, Color background)
+    {
+        return Color.FromRgb(
+            (byte)Math.Clamp(Math.Round(background.R + (source.R - background.R) * alpha), 0, 255),
+            (byte)Math.Clamp(Math.Round(background.G + (source.G - background.G) * alpha), 0, 255),
+            (byte)Math.Clamp(Math.Round(background.B + (source.B - background.B) * alpha), 0, 255));
+    }
+
     private static readonly Color s_darkBorder = Color.FromArgb(0x1A, 0xFF, 0xFF, 0xFF);
     private static readonly Color s_darkInput  = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
 

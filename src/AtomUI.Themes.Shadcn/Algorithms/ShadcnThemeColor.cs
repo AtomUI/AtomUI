@@ -61,6 +61,44 @@ internal static class ShadcnThemeColor
         return new ShadcnPrimary(primary, foreground, null);
     }
 
+    /// <summary>
+    /// Resolves a <b>computed</b> <c>ColorPrimary</c> — the appearance-adjusted primary a Map stage wrote — back
+    /// into the theme. The later stages see the computed token, not the seed, so the neutral and official-theme
+    /// detection accepts the appearance's own stops.
+    /// </summary>
+    public static ShadcnPrimary ResolveComputed(Color primary, ShadcnSurface surface, bool dark)
+    {
+        // The base color's own primary for this appearance: the theme follows the base color.
+        if (primary == surface.Primary)
+        {
+            return new ShadcnPrimary(primary, surface.PrimaryForeground, "neutral");
+        }
+
+        foreach (var family in ShadcnTailwindPalette.ThemeFamilies)
+        {
+            var followsLightness = family is "lime" or "yellow";
+            var lightStop = followsLightness ? 400 : 700;
+            var darkStop = followsLightness ? 500 : 800;
+            var foregroundStop = followsLightness ? 900 : 50;
+            if (dark && primary == ShadcnTailwindPalette.Stop(family, darkStop))
+            {
+                return new ShadcnPrimary(primary, ShadcnTailwindPalette.Stop(family, foregroundStop), family);
+            }
+
+            if (primary == ShadcnTailwindPalette.Stop(family, lightStop))
+            {
+                return new ShadcnPrimary(
+                    dark ? ShadcnTailwindPalette.Stop(family, darkStop) : primary,
+                    ShadcnTailwindPalette.Stop(family, foregroundStop),
+                    family);
+            }
+        }
+
+        // Custom: the computed primary already carries the appearance; only the foreground is derived.
+        var foreground = ReadableForeground(primary, ShadcnBaseColors.OklchOf(primary).Hue);
+        return new ShadcnPrimary(primary, foreground, null);
+    }
+
     private static (double LightnessDrop, double ChromaScale) ComputeDarkDerivation()
     {
         double lightnessSum = 0;

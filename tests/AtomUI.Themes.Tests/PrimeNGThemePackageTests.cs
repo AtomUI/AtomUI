@@ -779,6 +779,27 @@ public class PrimeNGThemePackageTests
             .ShouldBe(Global<Color>(snapshot, "ControlItemColorActive"));
     }
 
+    // PrimeUIX datepicker date.selected / month.selected: primary.color with primary.contrast.color. The LunarCalendar
+    // draws its selected cells' text in the contrast colour, so its selected background is the primary in every preset
+    // (Aura / Lara with a coloured seed would otherwise put white on primary 50).
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null)]
+    [InlineData("PrimeNGAura.Dark", null)]
+    [InlineData("PrimeNGAura", "#10B981")]
+    [InlineData("PrimeNGLara.Dark", "#10B981")]
+    [InlineData("PrimeNGNora", "#6366F1")]
+    [InlineData("PrimeNGNora.Dark", "#6366F1")]
+    public async Task LunarCalendar_Selected_Cells_Follow_The_Datepicker(string profile, string? seed)
+    {
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        var primary  = Global<Color>(snapshot, "ColorPrimary");
+        var contrast = Global<Color>(snapshot, "ColorTextLightSolid");
+        Own<Color>(snapshot, "LunarCalendar", "ItemActiveBg").ShouldBe(primary);
+        Own<Color>(snapshot, "LunarCalendar", "ItemActiveColor").ShouldBe(contrast);
+        // The lunar cell content's selected text is the control's ColorTextLightSolid: the contrast colour.
+        Effective<Color>(snapshot, "LunarCalendar", "ColorTextLightSolid").ShouldBe(contrast);
+    }
+
     // Seeds other than emerald: PrimeUIX's solid highlight with the contrast colour. Measured, with the 3:1 floor of
     // large text; the values are listed in the README.
     [AvaloniaTheory]

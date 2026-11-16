@@ -764,6 +764,12 @@ Control 使用同一条确定性路径。
 `Density` 必须与算法链一致。`Density="Compact"` 却没有内置 `Compact` 算法，或 `Density="Normal"`（含不写）却带了
 `Compact` 算法，解析器按声明选中的变体就会以另一种密度渲染。没有设计语言的定义不检查。
 
+与品牌色轴对称，另有一条中性色轴：声明了 `NeutralColor="Seed"` 的设计语言接受一个可空的 `ColorNeutral` 种子
+（语义是"中性色阶的代表色"，如 shadcn Base Color 浅色的 `--muted-foreground`）。`ThemeSelectionResolver` 把
+选择解析成 `NeutralSeed` / `NeutralColorIgnored`；Ant Design 等固定语言忽略该种子，渲染不变。配套诊断为
+`ATMTHM3106`（Seed 定义钉中性派生 Token）、`ATMTHM3107`（Seed 无种子且链仅内置算法）、`ATMTHM3108`
+（语言内中性声明不一致）。
+
 ### 用解析器把选择变成主题请求
 
 `ThemeSelectionResolver` 是 Core 里的纯函数，不读写任何状态。它把用户的选择（设计语言、明暗、密度、品牌色）解析成要应用的

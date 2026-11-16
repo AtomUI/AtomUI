@@ -30,6 +30,10 @@
 | 全局 Alias 显式值 | 在 Alias 公式之后写入，派生 Alias 不跟随 | 带动由它派生的 Alias（修复）。显式设置过 Alias Token 的主题，编译结果可能变化 |
 | 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 6，算法为 `Catalog`/`Id`，并携带设计语言元数据；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
 | 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
+| 中性色轴 | — | 新增可空种子 `DesignToken.ColorNeutral`（中性色阶代表色，Ant Design 计算器忽略）、`ThemeInfo.NeutralColor` / `NeutralAccentColor`、`ThemeSelection.NeutralColor`、`ThemeSelectionResult.NeutralSeed` / `NeutralColorIgnored`、`ThemeSelectionResolver.NeutralColorSupport`、XML 属性 `NeutralColor="Seed|Fixed"`、诊断 `ATMTHM3106`–`ATMTHM3108`；编译主题包以 ABI 3 发布（ABI 1/2 照常加载并取默认值） |
+| `AtomUI.Themes.Shadcn` 主题 Id | — | 按 shadcn/ui 现行标准重做：旧 `ShadcnZinc` / `ShadcnSlate` / `ShadcnStone`（未发布到 NuGet）替换为 8 种 Style `ShadcnVega` … `ShadcnRhea`，均为 `BrandColor="Seed"` 且 `NeutralColor="Seed"`；按设计语言 `Shadcn.<Style>` 切换 |
+| `ToolTipToken.ToolTipShadows`、`DrawerToken.EdgeBorderColor` / `EdgeBorderThickness` | — | 新增 Own Token；默认值等于既有渲染，Ant Design 不变 |
+| 编译主题输入（构建工具中间文件） | 格式版本 6 | 版本 7，携带 `NeutralColor`；旧中间文件照旧报「Compiled theme input format is out of date; rebuild the project.」 |
 | PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
 | `ProgressBarToken.InnerLabelColor` | — | 新增公开 Own Token：内嵌百分比文字的深色候选（默认 `ColorTextLabel`，即主题原先读取的值）；主题不设置时不变 |
 | 带边框的 `ArrowDecoratedBox` | `BorderThickness` 非零时内置主题隐藏箭头 | 保留箭头，框体与箭头绘制为一条整体描边。新增公开 Own Token `ArrowDecoratedBoxToken.ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`；默认值保持 Ant Design 不变（见下文） |

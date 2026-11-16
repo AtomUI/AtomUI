@@ -103,6 +103,7 @@ Theme                                  exactly 1
 | `DesignLanguage` | 否 | `Identifier` | 该定义所属的设计语言，例如 `AntDesign`、`PrimeNG.Aura`；同一语言的定义归为一组。缺省时不参与分组 |
 | `Density` | 否 | `Normal` 或 `Compact` | 该定义按哪种密度编写，与 `Appearance` 一起标识设计语言内的变体，默认 `Normal` |
 | `BrandColor` | 否 | `Seed` 或 `Fixed` | `Seed`：品牌色可替换，品牌派生 Token 由算法从 `ColorPrimary` 推出；`Fixed`：品牌色由定义固定，默认 `Fixed` |
+| `NeutralColor` | 否 | `Seed` 或 `Fixed` | `Seed`：中性色可替换，中性派生 Token 由算法从 `ColorNeutral` 推出；`Fixed`：中性色由定义固定，默认 `Fixed` |
 
 Theme `Id`、Control `Catalog`、Control `Id` 和 Token `Name` 使用相同 Identifier 词法：
 
@@ -413,6 +414,9 @@ diagnostic code 按责任分段：
 | `ATMTHM3103` | Catalog / 生成器 | 同一 `DesignLanguage` 内两个定义的 (`Appearance`, `Density`) 相同 | 编译主题包内为 Error；运行时目录为 Warning |
 | `ATMTHM3104` | Catalog / 生成器 | 同一 `DesignLanguage` 内各定义的 `BrandColor` 不一致 | 编译主题包内为 Error；运行时目录为 Warning |
 | `ATMTHM3105` | Catalog / 生成器 | 声明了 `DesignLanguage` 的定义，其 `Density` 与算法链不符：`Density="Compact"` 但链里没有内置 `Compact` 算法，或 `Density="Normal"`（含缺省）但链里有 | 两处都是 Warning；定义留在分组内 |
+| `ATMTHM3106` | Reader（运行时与构建期共用同一实现） | `NeutralColor="Seed"` 的定义显式写了中性派生 Token（全局或控件级） | Error；构建期使编译主题包生成失败 |
+| `ATMTHM3107` | Reader | `NeutralColor="Seed"` 但既无 `ColorNeutral` 种子、算法链又仅含内置算法（无法提供缺省中性） | Warning；定义仍加载 |
+| `ATMTHM3108` | Catalog / 生成器 | 同一 `DesignLanguage` 内各定义的 `NeutralColor` 不一致 | 编译主题包内为 Error；运行时目录为 Warning |
 
 生成器为 `ATMTHM3103`、`ATMTHM3104`、`ATMTHM3105` 各用一个专用的诊断描述符（诊断 Id 就是这个码，带标题和参数化消息），
 不再借用编译主题绑定失败的通用描述符 `ATOMUITOKEN002`。`ATMTHM3105` 只检查声明了设计语言的定义：解析器按声明的

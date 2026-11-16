@@ -39,8 +39,9 @@ PrimeNG 包的值由它注册的六个主题算法计算（`PrimeNG:Aura`、`Pri
   PrimeNG 的 Alias 与控件规则在暗色外观下运行。结果可读，但不是 PrimeNG 的暗色。
 - 换主色种子后，悬停、按下、焦点环和选中底色都跟着变。
 
-Shadcn、Bootstrap、Material 仍是「Ant 算法 + 显式值」：基础 ID 叠加算法会保留其显式 Map/Alias 覆盖，所以给基础
-主题换上 Dark 算法不等于选中具名的 Dark profile。
+Bootstrap、Material 仍是「Ant 算法 + 显式值」：基础 ID 叠加算法会保留其显式 Map/Alias 覆盖，所以给基础
+主题换上 Dark 算法不等于选中具名的 Dark profile。Shadcn 已改为与 PrimeNG 相同的算法包：8 种 Style（设计语言）
+× 7 种 Base Color（`NeutralColor="Seed"` 的 `ColorNeutral` 种子）× Neutral + 17 种 Theme（`ColorPrimary` 种子）。
 
 预设包不自动启用控件包。`<Control>` 覆盖和 PrimeNG 的控件阶段都要求对应控件包已经 `UseXxxControls()`；控件没有
 注册时，它的控件阶段不会被调用。
@@ -50,7 +51,7 @@ Shadcn、Bootstrap、Material 仍是「Ant 算法 + 显式值」：基础 ID 叠
 | 包 | 主题 Id | 模拟的要点 | 不支持 |
 | --- | --- | --- | --- |
 | `AtomUI.Themes.PrimeNG` | `PrimeNGAura`、`PrimeNGLara`、`PrimeNGNora` | 由 PrimeNG 算法计算：PrimeNG 色阶取级、noir 主色（slate-950 种子，与 primeng.dev 默认一致；可换任意种子色）、slate / zinc 表面、圆角 6 / 6 / 2、字段高度 40 / 44 / 40、按钮字重 500 / 600 / 700、焦点环三种形态 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 缩放 |
-| `AtomUI.Themes.Shadcn` | `ShadcnZinc`、`ShadcnSlate`、`ShadcnStone` | 近黑主色、细边框、无 wave、弱阴影、`BorderRadius 6`、`ControlHeight 36` | 焦点环形态、Command 式弹层 |
+| `AtomUI.Themes.Shadcn` | `ShadcnVega`、`ShadcnNova`、`ShadcnMaia`、`ShadcnLyra`、`ShadcnMira`、`ShadcnLuma`、`ShadcnSera`、`ShadcnRhea` | 对齐 shadcn/ui 现行标准：Tailwind v4.3.5 色板 + 取档规则、8 种 Style 几何与弹层阴影档、7 种 Base Color、Neutral + 17 种 Theme | 大写/字距（Sera）、焦点外环、遮罩模糊、按下位移、Popover 圆角（随全局 BorderRadius） |
 | `AtomUI.Themes.Bootstrap` | `Bootstrap` | Bootstrap 6.0：`#0087fe` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 8` | 渐变背景、内阴影 |
 | `AtomUI.Themes.Material` | `Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
 

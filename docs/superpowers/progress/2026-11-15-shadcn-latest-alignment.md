@@ -86,3 +86,11 @@
 - Important 3：I-1 Vega Drawer 贴边边框遗漏（已修：Vega 写环色 1px，其余 Style 不画，测试 3 条锁定，043d0e91e）；I-2 混链 remarks 误导（已修：remarks+README 明确 [Shadcn:X, AtomUI:Dark] 的 Map 颜色是 Ant 公式值，暗色用 .Dark profile）；I-3 FinalVisual 临时测试（f792abeeb 误入库，等用户授权 amend 移除或提交删除；默认 dotnet test 会执行 8 行，Linux/CI 因 /private/tmp 路径会挂）。
 - Minor：M-1 Compact 比例重算（README 记录）；M-2 Export 中性自保降级（已修）；M-3 lambda 参数遮蔽（已修）；M-4 Drawer 双通道赋值（已修：删 AXAML 冗余 Setter，保代码绑定同 PushOffsetPercent）；M-5 ShadcnAppendix 依赖仓库文件（知悉不修）。
 - Declined to judge：Luma 小号档是否应区别于半高胶囊（用户真机确认后按半高修复，视为已裁定）；混链是否应 Alias 自愈（系统级取向，PrimeNG 同病，另立项）。
+
+## 验收后修正（2026-11-16 深夜，commit 7c22159dc）
+
+- 用户两次质疑胶囊弧度 → 重读附录 C 官方 registry class，发现 b15c4bd54 的"半高胶囊"修复是误读：**Maia/Luma 按钮与 Maia 输入框官方是 `rounded-4xl`（固定 26px），不是 `rounded-full`**。上轮把表里的 26 错误换成半高 18/20/16，导致弧度比官方浅——正是用户看到的"两端弧度有问题/LineEdit 胶囊不正常"。已按官方原始 JSON 三重验证（ui.shadcn.com/r/styles/base-maia/input.json 等）。
+- 修正内容：Maia/Luma 按钮三档 26/26/26；输入框全尺寸单一圆角（Maia 26、Luma 22、Rhea 18、Nova 10、Vega/Mira 8、Lyra/Sera 0）；Nova 按钮 LG=min(radius-md 8,12)=8、Mira SM=rounded-sm 6；删除 IsButtonCapsule/IsInputCapsule 半高分支。测试 336/336。
+- 同提交携带：菜单族 ShadcnMenuTokens（四身份环+MenuShadow、presenter 边框色=环色）、MenuFlyoutPresenterToken.MenuPopupBorderThickness（Thickness 类型，默认空=现状，Shadcn 写 1px、PrimeNG 写 LineWidth——补上前置批次缺失的厚度半截）、Gallery 动效/波纹开关改为主题声明优先（Shadcn profile 的 EnableWaveSpirit=false 不再被全局开关覆盖，用户显式切换后覆盖；Core 加 GalleryBase IVT 以读应用后快照）。
+- 菜单阴影像素级仍未可见：值链已全通（Token→ContextMenu→Popup→ShadowsAwareContainer.painter 值正确、overlay=True），断点在 overlay host 不为阴影膨胀（Measure/Arrange 仅 !IsOverlayMode 才 inflate 阴影厚度）→ 大阴影被裁剩贴边淡晕。前置批次架构遗留，另立任务。
+- 脚本视觉验收 Demo 已按规程删除，证据 21 帧截图+results.md 存 /tmp/shadcn-acceptance-evidence（仓库外）。验收结论：13 项 ✅（胶囊几何、抽屉边框、Vega 环、Zinc、弹层描边、Ant 不变基线）；菜单像素 4 ❌=前置遗留裁切；Tooltip 3 ❌=Demo 定位局限（视觉模型已确认反色/无阴影正确渲染）。

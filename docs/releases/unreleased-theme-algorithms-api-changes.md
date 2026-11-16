@@ -33,6 +33,7 @@ the author's guide.
 | Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 6, algorithms as `Catalog`/`Id` plus the design language metadata; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
 | Design language and brand color | — | new `ThemeDensity` (`Normal`, `Compact`) and `ThemeBrandColorSupport` (`Fixed`, `Seed`) enums; `ThemeInfo` gains the `init` properties `DesignLanguage`, `Density`, `BrandColor` and `Algorithms` (the definition's own chain); new `ThemeSelection`, `ThemeSelectionResult` and `ThemeSelectionResolver`; `CompiledThemeProgram` gains a protected ABI 2 constructor. ABI 1 packages keep loading with the defaults; no action (see below) |
 | PrimeNG presets | XML value tables with Ant-derived fill-ins | produced by six PrimeNG algorithms; visible colour changes (see below) |
+| `ProgressBarToken.InnerLabelColor` | — | new public Own token: the inner percentage label's dark candidate (default `ColorTextLabel`, the value the theme read before); no change unless a theme sets it |
 | `ArrowDecoratedBox` with a border | the built-in theme hid the arrow while `BorderThickness` was not zero | the arrow stays; the box draws one outline around box and arrow. New public Own tokens `ArrowDecoratedBoxToken.ContentBorderColor`, `ContentBorderThickness`, `ContentMinHeight`; defaults keep Ant Design unchanged (see below) |
 
 ## `ThemeAlgorithm` becomes an identity struct
@@ -365,6 +366,10 @@ changes:
   are the primary states. Unchanged under the default noir primary; with a coloured seed the link button is the primary
   fill colour (emerald light `#10B981` instead of `#047857`). Hyperlinks and other link text keep the global link
   colours.
+- Progress controls follow PrimeUIX `progressbar`: the value is the primary colour (was Ant's `ColorInfo` blue), the
+  track `content.border.color` (Nora surface 300 / 600), the line bar's radius `BorderRadius` and the inner label the
+  contrast colour. New public Own token `ProgressBarToken.InnerLabelColor` (default `ColorTextLabel`, the inner
+  label's dark candidate the theme used to read directly; Ant Design unchanged).
 - Overlays follow PrimeUIX `overlay.popover` / `overlay.select` (3.1.1, measured on primeng.dev/popover): arrow
   flyouts (Popover, PopupConfirm, picker panels, dropdown menus) get a 1px border in `overlay.popover.border.color`
   (Aura / Lara slate-200, dark zinc-700; Nora transparent, dark zinc-700) around box and arrow, padding 10 (Lara 14),

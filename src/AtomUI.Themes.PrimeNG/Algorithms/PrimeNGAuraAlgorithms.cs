@@ -82,7 +82,9 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX toggleswitch.handle.checked.background: surface.0.
             SwitchHandleChecked: new(White),
             // PrimeUIX overlay.{select,popover}.border.color, light: surface.200.
-            OverlayBorder: new(200)),
+            OverlayBorder: new(200),
+            // PrimeUIX progressbar.background (content.border.color).
+            ProgressTrack: new(200)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -120,7 +122,9 @@ internal static class PrimeNGAuraPreset
             // PrimeUIX toggleswitch.handle.checked.background: surface.900.
             SwitchHandleChecked: new(900),
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
-            OverlayBorder: new(700)),
+            OverlayBorder: new(700),
+            // PrimeUIX progressbar.background (content.border.color).
+            ProgressTrack: new(700)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

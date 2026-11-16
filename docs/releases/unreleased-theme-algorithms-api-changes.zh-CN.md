@@ -31,6 +31,7 @@
 | 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 6，算法为 `Catalog`/`Id`，并携带设计语言元数据；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
 | 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
 | PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
+| `ProgressBarToken.InnerLabelColor` | — | 新增公开 Own Token：内嵌百分比文字的深色候选（默认 `ColorTextLabel`，即主题原先读取的值）；主题不设置时不变 |
 | 带边框的 `ArrowDecoratedBox` | `BorderThickness` 非零时内置主题隐藏箭头 | 保留箭头，框体与箭头绘制为一条整体描边。新增公开 Own Token `ArrowDecoratedBoxToken.ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`；默认值保持 Ant Design 不变（见下文） |
 
 ## `ThemeAlgorithm` 改为身份结构体
@@ -322,6 +323,9 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
 - Link 按钮按 PrimeUIX `button.link.color`（`{primary.color}`）：Button 作用域内 `ColorLink` / `Hover` / `Active` 取主色
   三态。默认 noir 主色下不变；彩色种子下 Link 按钮为主色（emerald 浅色 `#10B981`，原为 `#047857`）。超链接等其他链接文字
   仍用全局链接色。
+- 进度类控件按 PrimeUIX `progressbar`：进度色取主色（原为 Ant 的 `ColorInfo` 蓝），轨道为 `content.border.color`（Nora
+  为 surface 300 / 600），线形圆角取 `BorderRadius`，内嵌百分比取对比色。新增公开 Own Token
+  `ProgressBarToken.InnerLabelColor`（默认 `ColorTextLabel`，即主题原先直接读取的内嵌文字深色候选；Ant Design 不变）。
 - 弹层按 PrimeUIX `overlay.popover` / `overlay.select`（3.1.1，并在 primeng.dev/popover 实测）：箭头 flyout（Popover、
   PopupConfirm、Picker 面板、下拉菜单）框体与箭头带 1px 边框，颜色为 `overlay.popover.border.color`（Aura / Lara
   slate-200，暗色 zinc-700；Nora 透明，暗色 zinc-700），内边距 10（Lara 14），无最小高度，框体距 anchor 10

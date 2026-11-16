@@ -160,6 +160,10 @@ internal sealed record PrimeNGNeutralRule(
 /// PrimeUIX <c>overlay.select.border.color</c> and <c>overlay.popover.border.color</c> (equal in every preset), a stop
 /// of the surface scale: the border of arrow flyouts and the outline ring of select panels and menus.
 /// </param>
+/// <param name="ProgressTrack">
+/// PrimeUIX <c>progressbar.background</c>, the unfilled track of the progress controls, a stop of the surface scale
+/// (Aura and Lara <c>content.border.color</c>, Nora its own <c>surface.300</c> / <c>surface.600</c>).
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -175,7 +179,8 @@ internal sealed record PrimeNGAppearanceRules(
     Func<DesignToken, (Color Background, Color FocusBackground)>? Highlight,
     Func<DesignToken, Color> HighlightColor,
     PrimeNGShade SwitchHandleChecked,
-    PrimeNGShade OverlayBorder);
+    PrimeNGShade OverlayBorder,
+    PrimeNGShade ProgressTrack);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

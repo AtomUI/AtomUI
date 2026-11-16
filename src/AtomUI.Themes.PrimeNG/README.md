@@ -147,6 +147,19 @@ PrimeUIX gives every overlay a 1px border, a radius and a shadow (`overlay.selec
 
 Arrow flyouts are the AtomUI controls whose surface is an `ArrowDecoratedBox`: InfoFlyout (Popover), PopupConfirm, the date and time picker panels, dropdown menus (`MenuFlyoutPresenter`), tree flyouts, Tour, the DataGrid filter flyouts and the ColorPicker panel. With a border the arrow box draws one outline around the box and the arrow (no line across the arrow's base, as PrimeNG's `::before` / `::after` triangles), and a frame ring of the hosting popup is not painted, so a date picker panel inside a `PopupToken` popup keeps a single border. The ToolTip shares the arrow box but keeps no border: PrimeUIX `tooltip` has none. Panels without an arrow (Select, Cascader, ComboBox, AutoComplete, Mentions, context and sub menus) have no border of their own, so the border is the ring ahead of the shadow, as the Shadcn package does.
 
+### Progress
+
+PrimeUIX 3.1.1 `progressbar` (`dist/{aura,lara,nora}/progressbar`; measured on [primeng.dev/progressbar](https://primeng.dev/progressbar), Aura noir light: value `#020617`, track `#E2E8F0`, label `#FFFFFF`, height 18, radius 6, label 10px / 600). `PrimeNGProgressTokens` (all six algorithms) writes, for ProgressBar, StepsProgressBar, CircleProgress and DashboardProgress:
+
+| Token | Value | Source |
+|---|---|---|
+| `DefaultColor` | `ColorPrimary` (noir light `#020617`, dark `#FAFAFA`; Nora indigo light `#4F46E5`) | `progressbar.value.background` = `{primary.color}` |
+| `RemainingColor` | Aura / Lara N200 / N700 (`#E2E8F0` / `#3F3F46`), Nora N300 / N600 (`#CBD5E1` / `#52525B`) (`ProgressTrack` row) | `progressbar.background` (Aura / Lara `content.border.color`; Nora `surface.300` / `surface.600`) |
+| ProgressBar `LineBorderRadius` | `BorderRadius` (6, Nora 2) instead of the capsule | `progressbar.border.radius` = `content.border.radius` |
+| ProgressBar `InnerLabelColor` | `ColorTextLightSolid` (white, dark N950): the inner percentage is always the contrast colour | `progressbar.label.color` = `primary.contrast.color` |
+
+Not mapped: PrimeUIX's fixed bar height (1.125rem, Lara 1.25rem) and label font (10px / 600, Lara 12px, Nora 700), since AtomUI's line progress sizes come from its size types and have no height or label-font token; the circle text keeps `ColorText` (PrimeNG has no circle progress). PrimeUIX has no success or exception state; those keep the preset's status colours. An inner label at 0% sits on the track in AtomUI (PrimeNG clips it with the value bar), so it is the contrast colour on the track there.
+
 ### Aura at the emerald seed
 
 The rule tables below give stops; at the emerald seed (`ColorPrimary #10B981`, the raw `@primeuix/themes` preset value; the profiles default to [noir](#noir-the-default-primary)) they produce these values (Aura Light):

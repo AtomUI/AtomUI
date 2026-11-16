@@ -93,7 +93,9 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color.
             SwitchHandleChecked: new(White),
             // PrimeUIX overlay.{select,popover}.border.color, light: transparent in light.
-            OverlayBorder: new(Black, 0)),
+            OverlayBorder: new(Black, 0),
+            // PrimeUIX progressbar.background (surface.300 / surface.600).
+            ProgressTrack: new(300)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             // ColorPrimaryBg / BgHover are the primary at 16% / 24% (PrimeUIX button.text hover / active background);
@@ -139,7 +141,9 @@ internal static class PrimeNGNoraPreset
             // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color (surface.950).
             SwitchHandleChecked: new(950),
             // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
-            OverlayBorder: new(700)),
+            OverlayBorder: new(700),
+            // PrimeUIX progressbar.background (surface.300 / surface.600).
+            ProgressTrack: new(600)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

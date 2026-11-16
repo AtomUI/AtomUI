@@ -319,7 +319,7 @@ internal sealed class CompiledThemeCatalog
         List<CompiledThemeDefinition> orderedDefinitions,
         List<ThemeDiagnostic> diagnostics)
     {
-        var languages = new Dictionary<string, (ThemeBrandColorSupport Brand, HashSet<(ThemeAppearance, ThemeDensity)> Variants)>(
+        var languages = new Dictionary<string, (ThemeBrandColorSupport Brand, ThemeNeutralColorSupport Neutral, HashSet<(ThemeAppearance, ThemeDensity)> Variants)>(
             StringComparer.Ordinal);
         for (var index = 0; index < orderedDefinitions.Count; index++)
         {
@@ -352,6 +352,15 @@ internal sealed class CompiledThemeCatalog
                         $"Theme '{entry.Info.Id}' declares brand color support '{entry.Info.BrandColor}' which differs " +
                         $"from design language '{language}' ('{state.Brand}'); it is removed from the design language group.");
                 }
+                else if (state.Neutral != entry.Info.NeutralColor)
+                {
+                    warning = Warning(
+                        "ATMTHM3108",
+                        entry.Revision.SourceIdentity,
+                        "$",
+                        $"Theme '{entry.Info.Id}' declares neutral color support '{entry.Info.NeutralColor}' which differs " +
+                        $"from design language '{language}' ('{state.Neutral}'); it is removed from the design language group.");
+                }
             }
 
             if (warning is not null)
@@ -365,7 +374,7 @@ internal sealed class CompiledThemeCatalog
 
             if (state.Variants is null)
             {
-                state = (entry.Info.BrandColor, new HashSet<(ThemeAppearance, ThemeDensity)>());
+                state = (entry.Info.BrandColor, entry.Info.NeutralColor, new HashSet<(ThemeAppearance, ThemeDensity)>());
                 languages.Add(language, state);
             }
             state.Variants.Add(variant);
@@ -593,6 +602,12 @@ internal sealed class CompiledThemeCatalog
                                     ?.Value is Color color
             ? color
             : (Color?)null;
+        var neutralAccentColor = definition.Tokens
+                                           .FirstOrDefault(static token =>
+                                                token.Descriptor.Name == nameof(DesignToken.ColorNeutral))
+                                           ?.Value is Color neutralColor
+            ? neutralColor
+            : (Color?)null;
         var definitionRevision = new ThemeDefinitionRevision(
             identity,
             revision,
@@ -606,10 +621,12 @@ internal sealed class CompiledThemeCatalog
                     definition.IsDefault,
                     accentColor)
                 {
-                    DesignLanguage = document.DesignLanguage,
-                    Density        = document.Density,
-                    BrandColor     = document.BrandColor,
-                    Algorithms     = document.Algorithms.Select(static item => item.Algorithm).ToArray()
+                    DesignLanguage     = document.DesignLanguage,
+                    Density            = document.Density,
+                    BrandColor         = document.BrandColor,
+                    NeutralColor       = document.NeutralColor,
+                    NeutralAccentColor = neutralAccentColor,
+                    Algorithms         = document.Algorithms.Select(static item => item.Algorithm).ToArray()
                 },
                 definition,
                 definitionRevision),

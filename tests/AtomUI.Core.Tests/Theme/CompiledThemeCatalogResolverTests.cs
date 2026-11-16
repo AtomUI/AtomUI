@@ -411,6 +411,50 @@ public class CompiledThemeCatalogResolverTests
     }
 
     [Fact]
+    public void Mixed_NeutralColor_In_One_Language_Reports_ATMTHM3108()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed", "Seed"),
+                LanguageXml("UserDark", "TestLang", "Dark", "Normal", "Seed", "Fixed"));
+
+            manager.AvailableThemes.Single(static theme => theme.Id == "UserDark")
+                   .DesignLanguage.ShouldBeNull();
+            manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic =>
+                diagnostic.Code == "ATMTHM3108" && diagnostic.Severity == ThemeDiagnosticSeverity.Warning);
+        });
+    }
+
+    [Fact]
+    public void Catalog_Fills_Neutral_Accent_Color_From_The_ColorNeutral_Seed()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed", "Seed"));
+
+            var info = manager.AvailableThemes.Single(static theme => theme.Id == "PkgBlue");
+            info.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Seed);
+            info.NeutralAccentColor.ShouldBe(Color.Parse("#71717B"));
+        });
+    }
+
+    [Fact(Skip = "Enabled by Task 3: ABI 3 publishes NeutralColor and NeutralAccentColor.")]
+    public void Runtime_And_Compiled_Readers_Agree_On_NeutralColor()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            // Runtime XML catalog leg (the compiled-program leg is added with ABI 3 in Task 3).
+            var manager = BuildLanguageManager(
+                LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed", "Seed"));
+            var info = manager.AvailableThemes.Single(static theme => theme.Id == "PkgBlue");
+            info.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Seed);
+            info.NeutralAccentColor.ShouldBe(Color.Parse("#71717B"));
+        });
+    }
+
+    [Fact]
     public void Catalog_Demoted_Definition_Does_Not_Occupy_A_Slot_Or_Set_Brand_Support()
     {
         HeadlessTestApp.Run(() =>
@@ -491,15 +535,22 @@ public class CompiledThemeCatalogResolverTests
         string language,
         string appearance,
         string density,
-        string brand)
+        string brand,
+        string neutral = "Fixed")
     {
         var algorithms = appearance == "Dark"
             ? "<Algorithm Id=\"Dark\" />"
             : "<Algorithm Id=\"Default\" />";
+        var neutralAttributes = neutral == "Seed"
+            ? " NeutralColor=\"Seed\""
+            : string.Empty;
+        var neutralToken = neutral == "Seed"
+            ? "\n                   <Tokens><Token Name=\"ColorNeutral\" Value=\"#71717B\" /></Tokens>"
+            : string.Empty;
         return $$"""
                  <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="{{id}}" Name="{{id}}" Appearance="{{appearance}}"
-                        DesignLanguage="{{language}}" Density="{{density}}" BrandColor="{{brand}}">
-                   <Algorithms>{{algorithms}}</Algorithms>
+                        DesignLanguage="{{language}}" Density="{{density}}" BrandColor="{{brand}}"{{neutralAttributes}}>
+                   <Algorithms>{{algorithms}}</Algorithms>{{neutralToken}}
                  </Theme>
                  """;
     }

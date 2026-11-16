@@ -23,3 +23,15 @@ public enum ThemeBrandColorSupport : byte
     /// <summary>The definition derives its brand tokens from a replaceable seed color.</summary>
     Seed
 }
+
+/// <summary>
+/// Describes whether a theme definition lets the user replace its neutral color family.
+/// </summary>
+public enum ThemeNeutralColorSupport : byte
+{
+    /// <summary>The neutral family is fixed by the definition and cannot be replaced.</summary>
+    Fixed,
+
+    /// <summary>The definition derives its neutral tokens from a replaceable seed color.</summary>
+    Seed
+}

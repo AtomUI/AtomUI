@@ -60,6 +60,13 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="NeutralColorSupportType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Fixed" />
+      <xs:enumeration value="Seed" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ThemeAlgorithmType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Default" />
@@ -188,6 +195,7 @@
     <xs:attribute name="DesignLanguage" type="theme:IdentifierType" use="optional" />
     <xs:attribute name="Density" type="theme:DensityType" use="optional" />
     <xs:attribute name="BrandColor" type="theme:BrandColorSupportType" use="optional" />
+    <xs:attribute name="NeutralColor" type="theme:NeutralColorSupportType" use="optional" />
   </xs:complexType>
 
   <xs:element name="Theme" type="theme:ThemeType">

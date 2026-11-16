@@ -497,6 +497,85 @@ public class ThemeDocumentReaderTests
     }
 
     [Fact]
+    public void NeutralColor_Attribute_Defaults_To_Fixed_And_Reads_Seed()
+    {
+        var defaults = Read($$"""
+                             <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light">
+                               <Algorithms><Algorithm Id="Default" /></Algorithms>
+                             </Theme>
+                             """);
+        defaults.Success.ShouldBeTrue(defaults.DiagnosticsText());
+        defaults.Document!.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Fixed);
+
+        var seed = Read($$"""
+                          <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light" NeutralColor="Seed">
+                            <Algorithms><Algorithm Id="Default" /></Algorithms>
+                            <Tokens><Token Name="ColorNeutral" Value="#71717B" /></Tokens>
+                          </Theme>
+                          """);
+        seed.Success.ShouldBeTrue(seed.DiagnosticsText());
+        seed.Document!.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Seed);
+    }
+
+    [Fact]
+    public void Seed_Neutral_Definition_Pinning_A_Neutral_Token_Reports_ATMTHM3106()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light"
+                                   NeutralColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                              <Tokens>
+                                <Token Name="ColorNeutral" Value="#71717B" />
+                                <Token Name="ColorBorder" Value="#E4E4E7" />
+                              </Tokens>
+                              <Controls>
+                                <Control Catalog="AtomUI" Id="Button">
+                                  <Tokens><Token Name="ControlItemBgHover" Value="#F4F4F5" /></Tokens>
+                                </Control>
+                              </Controls>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeFalse();
+        var pinned = result.Diagnostics.Where(d => d.Code == "ATMTHM3106").ToArray();
+        pinned.Length.ShouldBe(2);
+        pinned.ShouldAllBe(d => d.Severity == ThemeDefinitionDiagnosticSeverity.Error);
+        pinned.ShouldContain(d => d.Message.Contains("ColorBorder"));
+        pinned.ShouldContain(d => d.Message.Contains("ControlItemBgHover"));
+    }
+
+    [Fact]
+    public void Seed_Neutral_Definition_Without_Seed_Reports_ATMTHM3107_Warning()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light"
+                                   NeutralColor="Seed">
+                              <Algorithms><Algorithm Id="Default" /></Algorithms>
+                            </Theme>
+                            """);
+
+        // A Warning: the definition still loads, but a built-in chain cannot derive a neutral family.
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        var warning = result.Diagnostics.ShouldHaveSingleItem();
+        warning.Code.ShouldBe("ATMTHM3107");
+        warning.Severity.ShouldBe(ThemeDefinitionDiagnosticSeverity.Warning);
+    }
+
+    [Fact]
+    public void Seed_Neutral_Definition_With_Vendor_Chain_Without_Seed_Stays_Silent()
+    {
+        var result = Read($$"""
+                            <Theme xmlns="{{Namespace}}" Id="A" Name="A" Appearance="Light"
+                                   NeutralColor="Seed">
+                              <Algorithms><Algorithm Catalog="Shadcn" Id="Nova" /></Algorithms>
+                            </Theme>
+                            """);
+
+        result.Success.ShouldBeTrue(result.DiagnosticsText());
+        result.Diagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Read_Accepts_Fixed_Theme_That_Pins_Brand_Tokens()
     {
         var result = Read($$"""

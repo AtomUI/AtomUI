@@ -59,7 +59,8 @@ internal sealed class ThemeDocument
         ThemeSourceLocation location,
         string? designLanguage = null,
         ThemeDensity density = ThemeDensity.Normal,
-        ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed)
+        ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
+        ThemeNeutralColorSupport neutralColor = ThemeNeutralColorSupport.Fixed)
     {
         Id         = id;
         Name       = name;
@@ -72,12 +73,14 @@ internal sealed class ThemeDocument
         DesignLanguage = designLanguage;
         Density        = density;
         BrandColor     = brandColor;
+        NeutralColor   = neutralColor;
     }
 
     public string Id { get; }
     public string? DesignLanguage { get; }
     public ThemeDensity Density { get; }
     public ThemeBrandColorSupport BrandColor { get; }
+    public ThemeNeutralColorSupport NeutralColor { get; }
     public string Name { get; }
     public ThemeAppearance Appearance { get; }
     public bool IsDefault { get; }

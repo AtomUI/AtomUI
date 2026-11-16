@@ -38,6 +38,16 @@ public sealed record ThemeInfo(
     /// </summary>
     public ThemeBrandColorSupport BrandColor { get; init; }
 
+    /// <summary>
+    /// Gets whether the neutral color family of the definition can be replaced.
+    /// </summary>
+    public ThemeNeutralColorSupport NeutralColor { get; init; }
+
+    /// <summary>
+    /// Gets the definition's own <c>ColorNeutral</c> seed, or <see langword="null"/> when it declares none.
+    /// </summary>
+    public Color? NeutralAccentColor { get; init; }
+
     private readonly IReadOnlyList<ThemeAlgorithm> _algorithms = ReadOnlyCollection<ThemeAlgorithm>.Empty;
 
     /// <summary>
@@ -72,6 +82,8 @@ public sealed record ThemeInfo(
                DesignLanguage == other.DesignLanguage &&
                Density == other.Density &&
                BrandColor == other.BrandColor &&
+               NeutralColor == other.NeutralColor &&
+               NeutralAccentColor == other.NeutralAccentColor &&
                Algorithms.SequenceEqual(other.Algorithms);
     }
 
@@ -86,6 +98,8 @@ public sealed record ThemeInfo(
         hash.Add(DesignLanguage);
         hash.Add(Density);
         hash.Add(BrandColor);
+        hash.Add(NeutralColor);
+        hash.Add(NeutralAccentColor);
         foreach (var algorithm in Algorithms)
         {
             hash.Add(algorithm);

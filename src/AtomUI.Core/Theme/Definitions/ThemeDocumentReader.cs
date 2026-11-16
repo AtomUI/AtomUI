@@ -14,6 +14,8 @@ internal static class ThemeDocumentReader
     private const string SchemaValidationCode = "ATMTHM1002";
     private const string ResourceLimitCode = "ATMTHM1003";
     private const string SeedPinsBrandTokenCode = "ATMTHM3101";
+    private const string SeedPinsNeutralTokenCode = "ATMTHM3106";
+    private const string SeedNeutralWithoutSeedCode = "ATMTHM3107";
     private const string XsdResourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd";
 
     // Tokens derived from the brand color; a Seed-capable definition must let the brand algorithm produce them.
@@ -29,6 +31,40 @@ internal static class ThemeDocumentReader
         "ColorPrimaryTextHover",
         "ColorPrimaryTextActive",
         "ColorControlOutline"
+    };
+
+    // Tokens derived from the neutral color family; a neutral-Seed definition must let its algorithm produce them.
+    internal static readonly HashSet<string> s_neutralDerivedTokens = new(StringComparer.Ordinal)
+    {
+        "ColorBgLayout",
+        "ColorBgContainer",
+        "ColorBgElevated",
+        "ColorBgSpotlight",
+        "ColorBgSolid",
+        "ColorBgSolidHover",
+        "ColorBgSolidActive",
+        "ColorText",
+        "ColorTextHeading",
+        "ColorTextSecondary",
+        "ColorTextTertiary",
+        "ColorTextQuaternary",
+        "ColorTextDescription",
+        "ColorTextPlaceholder",
+        "ColorTextDisabled",
+        "ColorIcon",
+        "ColorIconHover",
+        "ColorFill",
+        "ColorFillSecondary",
+        "ColorFillTertiary",
+        "ColorFillQuaternary",
+        "ColorFillContent",
+        "ColorBgContainerDisabled",
+        "ColorBorder",
+        "ColorBorderSecondary",
+        "ColorSplit",
+        "ControlItemBgHover",
+        "ControlItemBgActive",
+        "ControlItemColorActive"
     };
 
     private static readonly Lazy<XmlSchemaSet> s_schemaSet = new(CreateSchemaSet);
@@ -114,6 +150,7 @@ internal static class ThemeDocumentReader
         else
         {
             ValidateSeedBrandTokens(document, diagnostics);
+            ValidateSeedNeutralTokens(document, diagnostics);
         }
 
         return new ThemeDocumentReadResult(document, diagnostics);
@@ -140,6 +177,67 @@ internal static class ThemeDocumentReader
                 ReportSeedPinnedToken(token, diagnostics);
             }
         }
+    }
+
+    private static void ValidateSeedNeutralTokens(
+        ThemeDocument document,
+        List<ThemeDefinitionDiagnostic> diagnostics)
+    {
+        if (document.NeutralColor != ThemeNeutralColorSupport.Seed)
+        {
+            return;
+        }
+
+        foreach (var token in document.Tokens)
+        {
+            ReportSeedPinnedNeutralToken(token, diagnostics);
+        }
+
+        foreach (var control in document.Controls)
+        {
+            foreach (var token in control.Tokens)
+            {
+                ReportSeedPinnedNeutralToken(token, diagnostics);
+            }
+        }
+
+        // A built-in chain cannot derive a neutral family; a vendor algorithm may provide its own default seed.
+        var hasSeed = document.Tokens.Any(static token => token.Name == "ColorNeutral");
+        var builtinOnlyChain = document.Algorithms.All(static document =>
+            document.Algorithm.Catalog == ThemeAlgorithm.BuiltInCatalog);
+        if (!hasSeed && builtinOnlyChain)
+        {
+            diagnostics.Add(new ThemeDefinitionDiagnostic(
+                                SeedNeutralWithoutSeedCode,
+                                ThemeDefinitionDiagnosticSeverity.Warning,
+                                document.Location.Source,
+                                document.Location.Line,
+                                document.Location.Column,
+                                "/Theme",
+                                "The theme declares NeutralColor=\"Seed\" without a ColorNeutral seed and its " +
+                                "algorithm chain is built-in only; the neutral family falls back to the algorithm's default."));
+        }
+    }
+
+    private static void ReportSeedPinnedNeutralToken(
+        ThemeTokenDocument token,
+        List<ThemeDefinitionDiagnostic> diagnostics)
+    {
+        if (!s_neutralDerivedTokens.Contains(token.Name))
+        {
+            return;
+        }
+
+        var location = token.Location;
+        diagnostics.Add(new ThemeDefinitionDiagnostic(
+                            SeedPinsNeutralTokenCode,
+                            ThemeDefinitionDiagnosticSeverity.Error,
+                            location.Source,
+                            location.Line,
+                            location.Column,
+                            location.Path,
+                            $"Token '{token.Name}' is derived from the neutral color family and cannot be set " +
+                            "when the theme declares NeutralColor=\"Seed\"; declare NeutralColor=\"Fixed\" or remove the token."));
     }
 
     private static void ReportSeedPinnedToken(
@@ -266,6 +364,7 @@ internal static class ThemeDocumentReader
         private string? _designLanguage;
         private ThemeDensity _density;
         private ThemeBrandColorSupport _brandColor;
+        private ThemeNeutralColorSupport _neutralColor;
         private ThemeSourceLocation _location;
         private readonly List<ThemeAlgorithmDocument> _algorithms = new();
         private readonly HashSet<ThemeAlgorithm> _algorithmIdentities = new();
@@ -332,7 +431,8 @@ internal static class ThemeDocumentReader
                 _location,
                 _designLanguage,
                 _density,
-                _brandColor);
+                _brandColor,
+                _neutralColor);
         }
 
         private string ReadTheme(XmlReader reader)
@@ -351,6 +451,9 @@ internal static class ThemeDocumentReader
             _brandColor = string.Equals(reader.GetAttribute("BrandColor"), "Seed", StringComparison.Ordinal)
                 ? ThemeBrandColorSupport.Seed
                 : ThemeBrandColorSupport.Fixed;
+            _neutralColor = string.Equals(reader.GetAttribute("NeutralColor"), "Seed", StringComparison.Ordinal)
+                ? ThemeNeutralColorSupport.Seed
+                : ThemeNeutralColorSupport.Fixed;
             return "/Theme";
         }
 

@@ -31,6 +31,7 @@
 | 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 6，算法为 `Catalog`/`Id`，并携带设计语言元数据；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
 | 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
 | PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
+| 带边框的 `ArrowDecoratedBox` | `BorderThickness` 非零时内置主题隐藏箭头 | 保留箭头，框体与箭头绘制为一条整体描边。新增公开 Own Token `ArrowDecoratedBoxToken.ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`；默认值保持 Ant Design 不变（见下文） |
 
 ## `ThemeAlgorithm` 改为身份结构体
 
@@ -211,6 +212,27 @@ RangeDatePicker 的选中时间格与日期面板的范围中段直接读取它�
 新 Own Token 承担：Calendar `ItemActiveColor`（Fullscreen 选中单元）与 DateViewer `CellActiveColor`（Content 的今天与选中
 单元），默认均为 `ColorPrimary`。
 
+## 带边框的箭头框体及其 Token
+
+`ArrowDecoratedBox`（InfoFlyout / Popover、PopupConfirm、各 Picker 面板、下拉菜单、树形 flyout、Tour、DataGrid 筛选
+flyout 和 ColorPicker 面板的表面）以前只要 `BorderThickness` 非零就隐藏箭头，因为箭头无法与边框融合。现在带边框时由框体
+自己绘制背景和边框，作为框体与箭头的一条整体描边：边框沿箭头两条斜边延续，箭头底边处没有横线。布局、箭头位置和命中区域
+不变；模板里的容器 `Border` 保留边框宽度参与布局，但不再绘制边框及其下方的背景，箭头指示器保留布局但不绘制。应用若给箭头
+框体设置了 `BorderThickness`（直接设置或经样式），现在会重新看到带边框的箭头；需要旧外观时设置 `IsArrowVisible="False"`。
+箭头框体带边框时，宿主弹层 frame 阴影中的 `0 0 0 N` 描边环不再绘制，保证只有一条描边。
+
+由 `ArrowDecoratedBoxToken` 上三个公开 Own Token 驱动；默认值即原有取值，Ant Design 及不设置它们的主题渲染完全不变：
+
+| Token | 类型 | 默认值 | 含义 |
+| --- | --- | --- | --- |
+| `ContentBorderColor` | `Color` | `ColorBorderSecondary`（原 `BorderBrush`） | 框体及箭头的边框色 |
+| `ContentBorderThickness` | `Thickness` | `0`（原 `BorderThickness`） | 边框宽度；非零时绘制整体描边 |
+| `ContentMinHeight` | `double` | `ControlHeight`（原 `MinHeight`） | 框体最小高度 |
+
+ToolTip 主题现在显式把其箭头框体的 `BorderThickness` 设为 0，主题给箭头框体加边框时 Tooltip 不受影响。PopupConfirm 与
+anchor 的间距改读 `FlyoutHostToken.MarginToAnchor`（原为 `PopupToken.MarginToAnchor`），与其阴影来源一致（两者默认都是
+`UniformlyMarginXXS`，主题不设置时不变）。
+
 ## 主题 XML：`<Algorithm>` 的 `Catalog`
 
 ```xml
@@ -297,7 +319,13 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   链接色（取主色种子色阶中的一档；浅色下链接取比主色填充更深的级，即 700 / 800 / 900 级，保证白底上的链接文字可读）；中性填充、实色底与提示底色；第三、第四级文字与禁用文字；实色主色上的对比文字（暗色为中性
   900，Nora 暗色为中性 950）。Nora 还把成功、警告、信息的基准色移到 600 级（暗色 500 级）。原来半透明的填充色现在是
   不透明的色阶颜色。
-- 除上文的 Alias 派生修复外，算法迁移没有改变任何尺寸、内边距、圆角、字体、线宽、动效或阴影几何。
+- 弹层按 PrimeUIX `overlay.popover` / `overlay.select`（3.1.1，并在 primeng.dev/popover 实测）：箭头 flyout（Popover、
+  PopupConfirm、Picker 面板、下拉菜单）框体与箭头带 1px 边框，颜色为 `overlay.popover.border.color`（Aura / Lara
+  slate-200，暗色 zinc-700；Nora 透明，暗色 zinc-700），内边距 10（Lara 14），无最小高度，框体距 anchor 10
+  （`popover.gutter`），阴影为 `overlay.popover.shadow`（Lara `0 1 3 0 #1A000000`）；Select、Cascader、ComboBox、
+  AutoComplete、Mentions 面板与右键菜单以阴影前的 `0 0 0 1` 描边环表示边框，Aura / Lara 圆角由 8 改为 6（Nora 仍为 2），距 anchor 由 4
+  改为 2（Nora 0，`anchor.gutter`）。Tooltip 保持无边框。
+- 除上文的 Alias 派生修复和弹层取值外，算法迁移没有改变任何尺寸、内边距、圆角、字体、线宽、动效或阴影几何。
 - `[PrimeNG:Aura.Dark]` 与 `PrimeNGAura.Dark` profile 相同，基础链后接 `AtomUI:Compact` 与 `.Compact` profile 相同
   （Lara 的紧凑 profile 保留一项列出的差异）。在浅色 PrimeNG 链后接 `AtomUI:Dark` 是混合链，不是 PrimeNG 的暗色。
 

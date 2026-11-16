@@ -2,6 +2,11 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-11-15
+
+- Rendering
+  - `ShadowsAwareContainer` 跟踪箭头框体的 `BorderThickness`：框体自带边框时，frame 阴影中的描边环（无偏移、无模糊、正 spread 的外阴影，如 `0 0 0 1 <color>`）不再绘制，保证只有一条描边；阴影厚度与定位仍按完整 `BoxShadow` 计算，不改变 Child 位置。
+
 ## 2026-11-08
 
 - Theme / Token

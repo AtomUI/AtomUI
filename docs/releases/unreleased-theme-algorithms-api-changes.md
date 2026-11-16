@@ -33,6 +33,7 @@ the author's guide.
 | Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 6, algorithms as `Catalog`/`Id` plus the design language metadata; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
 | Design language and brand color | — | new `ThemeDensity` (`Normal`, `Compact`) and `ThemeBrandColorSupport` (`Fixed`, `Seed`) enums; `ThemeInfo` gains the `init` properties `DesignLanguage`, `Density`, `BrandColor` and `Algorithms` (the definition's own chain); new `ThemeSelection`, `ThemeSelectionResult` and `ThemeSelectionResolver`; `CompiledThemeProgram` gains a protected ABI 2 constructor. ABI 1 packages keep loading with the defaults; no action (see below) |
 | PrimeNG presets | XML value tables with Ant-derived fill-ins | produced by six PrimeNG algorithms; visible colour changes (see below) |
+| `ArrowDecoratedBox` with a border | the built-in theme hid the arrow while `BorderThickness` was not zero | the arrow stays; the box draws one outline around box and arrow. New public Own tokens `ArrowDecoratedBoxToken.ContentBorderColor`, `ContentBorderThickness`, `ContentMinHeight`; defaults keep Ant Design unchanged (see below) |
 
 ## `ThemeAlgorithm` becomes an identity struct
 
@@ -230,6 +231,33 @@ RangeDatePicker and the range middle of the date panels read it directly. Two ne
 content presentation draws on `ControlItemBgActive`: Calendar `ItemActiveColor` (fullscreen selected cell) and
 DateViewer `CellActiveColor` (today's and the selected content cell), both defaulting to `ColorPrimary`.
 
+## Bordered arrow boxes and their tokens
+
+`ArrowDecoratedBox` (the surface of InfoFlyout / Popover, PopupConfirm, the picker panels, dropdown menus, tree
+flyouts, Tour, the DataGrid filter flyouts and the ColorPicker panel) used to hide its arrow whenever its
+`BorderThickness` was not zero, because the arrow could not join the border. With a border the box now draws its
+background and border itself, as one outline around the content box and the arrow: the border runs along the arrow's
+two sides and nothing crosses the arrow's base. Layout, the arrow's position and the hit region are unchanged; the
+template's container `Border` keeps its border width for layout but paints neither the border nor the background under
+it, and the arrow indicator keeps its layout but paints nothing. Applications that set `BorderThickness` on an
+arrow box (directly or through a style) now get the arrow back with the border around it; set `IsArrowVisible="False"`
+to keep the previous look. A `0 0 0 N` outline ring in the hosting popup's frame shadow is not painted while the
+arrow box has a border, so it keeps one outline.
+
+Three public Own tokens on `ArrowDecoratedBoxToken` drive it; their defaults are the previous values, so Ant Design
+and every theme that does not set them render exactly as before:
+
+| Token | Type | Default | Meaning |
+| --- | --- | --- | --- |
+| `ContentBorderColor` | `Color` | `ColorBorderSecondary` (the previous `BorderBrush`) | border colour of the box and its arrow |
+| `ContentBorderThickness` | `Thickness` | `0` (the previous `BorderThickness`) | border width; not zero draws the combined outline |
+| `ContentMinHeight` | `double` | `ControlHeight` (the previous `MinHeight`) | minimum height of the box |
+
+The ToolTip theme now sets its arrow box's `BorderThickness` to 0 explicitly, so a theme that gives arrow boxes a
+border does not give tooltips one. PopupConfirm reads its gap to the anchor from `FlyoutHostToken.MarginToAnchor`
+instead of `PopupToken.MarginToAnchor`, like its shadows (both default to `UniformlyMarginXXS`, so nothing changes
+unless a theme sets one of them).
+
 ## Theme XML: `Catalog` on `<Algorithm>`
 
 ```xml
@@ -333,8 +361,15 @@ changes:
   readable on white); neutral fills, solid and spotlight backgrounds; tertiary, quaternary and disabled text; the contrast
   foreground on solid primary (dark: neutral 900, Nora dark: neutral 950). Nora also moves its success, warning and
   info base colours to the 600 stop (dark 500). Fills that were translucent are now opaque scale colours.
-- Beyond the Alias-derivation fix above, the algorithm migration changed no size, padding, radius, font, line width,
-  motion or shadow geometry value.
+- Overlays follow PrimeUIX `overlay.popover` / `overlay.select` (3.1.1, measured on primeng.dev/popover): arrow
+  flyouts (Popover, PopupConfirm, picker panels, dropdown menus) get a 1px border in `overlay.popover.border.color`
+  (Aura / Lara slate-200, dark zinc-700; Nora transparent, dark zinc-700) around box and arrow, padding 10 (Lara 14),
+  no minimum height, the box 10 from the anchor (`popover.gutter`) and `overlay.popover.shadow` (Lara `0 1 3 0
+  #1A000000`); select panels, Cascader, ComboBox, AutoComplete, Mentions and context menus get the border as a
+  `0 0 0 1` ring ahead of their shadow, Aura / Lara radius 6 instead of 8 (Nora stays 2), and 2 (Nora 0) from the anchor
+  (`anchor.gutter`) instead of 4. Tooltips stay borderless.
+- Beyond the Alias-derivation fix above and the overlay values, the algorithm migration changed no size, padding,
+  radius, font, line width, motion or shadow geometry value.
 - `[PrimeNG:Aura.Dark]` equals the `PrimeNGAura.Dark` profile, and appending `AtomUI:Compact` equals the
   `.Compact` profile (Lara compact keeps one listed difference). Appending `AtomUI:Dark` to a light PrimeNG chain is
   a hybrid chain and is not the PrimeNG dark theme.

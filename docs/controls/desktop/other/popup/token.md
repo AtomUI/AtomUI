@@ -24,6 +24,10 @@ Popup 是 Token owner 透明容器（`[TokenOwnerTransparent]`）：弹层内容
 `PopupRootShadow` 只由原生弹层窗口绘制，headless 测试以弹层 `FrameShadow` 断言其语义。边对齐弹层的缩放原点按框体实际
 绘制的圆角内缩，不读取作用域根的 `BorderRadius` / `BorderRadiusLG`。
 
+`PopupRootShadow` / `OverlayHostShadow` 可以用一条 `0 0 0 N <color>` 描边环表示无边框面板的边框（Shadcn、PrimeNG 预设）。
+Child 是自带边框的箭头框体（`ArrowDecoratedBox` 且 `BorderThickness` 非零）时，`ShadowsAwareContainer` 不绘制描边环，
+只绘制其余阴影，避免双重描边与横穿箭头底边的线。
+
 `PopupCornerRadius` 不由 transparent host 绘制；它由 Child、Presenter 或 `PopupFrame` 提供给
 `ShadowsAwareContainer`，使 frame shadow 与显式可选 surface 和内容圆角一致。
 

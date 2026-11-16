@@ -2,6 +2,10 @@
 
 本文档记录 PopupConfirm 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Theme / Token：与 anchor 的间距改读 `FlyoutHostToken.MarginToAnchor`（原 `PopupToken.MarginToAnchor`），与阴影同属箭头 flyout 的 Token；两者默认值相同。带边框时箭头随框体整体描边显示（见 InfoFlyout Token 设计）。
+
 ## 2026-11-08
 
 - Theme / Token

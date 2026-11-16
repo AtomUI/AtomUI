@@ -2,6 +2,10 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Theme：ToolTip 箭头框体的 `BorderThickness` 固定为 0，主题经 `ArrowDecoratedBoxToken.ContentBorderThickness` 给箭头框体加边框时 Tooltip 保持无边框（PrimeUIX tooltip 无边框）。
+
 ## 2026-11-08
 
 - Theme / Token

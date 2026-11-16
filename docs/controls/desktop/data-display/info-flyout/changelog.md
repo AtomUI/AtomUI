@@ -1,5 +1,9 @@
 # InfoFlyout Changelog
 
+## 2026-11-15
+
+- Theme / Token：`ArrowDecoratedBoxToken` 新增 `ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`（默认即原 `BorderBrush` / `BorderThickness` / `MinHeight` 取值）。带边框的箭头框体不再隐藏箭头，改为框体自绘一条环绕框体与箭头的整体描边；Ant Design 默认无边框，渲染不变。见 [Token 设计](token.md)。
+
 ## 2026-11-10
 
 - Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。

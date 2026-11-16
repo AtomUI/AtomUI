@@ -65,6 +65,25 @@ FlyoutHost 的全局动效读取自身有效值；MenuFlyout / TreeViewFlyout �
 
 受保护的 `BindPointerPlacementOffsets(object, object)` 只把 `FlyoutHostTokenKind` 规范化为 FlyoutHost Own key；SharedTokenKind、自定义枚举/字符串和已经类型化的 key 在 placement target 作用域中保持原义。已打开的同一 flyout 可直接 `ShowAt(newTarget)`：旧会话先关闭并释放绑定，再在新目标作用域中建立定位绑定；无需调用方先 Hide。同目标关闭动效中的 ShowAt 仍取消关闭并复用当前会话。
 
+## 箭头框体 Token（`ArrowDecoratedBoxToken`）
+
+Flyout 的弹层表面 `FlyoutPresenter` 是 `ArrowDecoratedBox`，其外观 Token 属于共享的 `ArrowDecoratedBoxToken`
+（scope id `ArrowDecoratedBox`，源码 `src/AtomUI.Desktop.Controls/Primitives/ArrowDecoratedBox/ArrowDecoratedBoxToken.cs`），
+同一组 Token 也作用于 PopupConfirm、Picker 面板、下拉菜单、树形 flyout、Tour、DataGrid 筛选 flyout 与 ColorPicker 面板：
+
+| Token | 派生来源 | 语义 |
+| --- | --- | --- |
+| `ArrowSize` | `SizePopupArrow / 1.3` | 箭头尺寸（底边宽度；箭头长度约为其一半）。 |
+| `ContentPadding` | `PaddingXS` | 框体内边距。 |
+| `ContentBorderColor` | `ColorBorderSecondary` | 框体与箭头的边框色。 |
+| `ContentBorderThickness` | `0` | 边框宽度；非零时框体自绘一条环绕框体与箭头的整体描边（箭头底边无横线），模板容器 `Border` 只保留布局宽度。 |
+| `ContentMinHeight` | `ControlHeight` | 框体最小高度。 |
+| `ArrowStrokeColor` / `ArrowStrokeThickness` | 7% 黑 / 1 | 无边框时箭头自身的描边。 |
+
+Ant Design 默认 `ContentBorderThickness` 为 0，渲染与此前逐像素一致。ToolTip 主题把自身箭头框体的 `BorderThickness`
+固定为 0，不受该 Token 影响。PrimeNG 预设经控件算法写入这些 Token，取值见 `src/AtomUI.Themes.PrimeNG/README.md` 的
+Overlays 一节。
+
 ## 独立 Token 身份与共享计算
 
 公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 公式；Controls[Popup] 的圆角不再改变这个公开 presenter。

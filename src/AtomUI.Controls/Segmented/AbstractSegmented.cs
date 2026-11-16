@@ -299,14 +299,20 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     
     public sealed override void Render(DrawingContext context)
     {
-        context.DrawRectangle(Background, null, new RoundedRect(new Rect(Bounds.Size), CornerRadius));
+        var trackBounds = new Rect(Bounds.Size);
+        // CSS border-radius semantics: a theme radius larger than half the shorter side would draw
+        // asymmetrically in Avalonia, so both the track and the thumb clamp first (CornerRadiusUtils).
+        var trackRadius = AtomUI.Media.CornerRadiusUtils.ClampToSize(CornerRadius, trackBounds.Width, trackBounds.Height);
+        context.DrawRectangle(Background, null, new RoundedRect(trackBounds, trackRadius));
         if (_isThumbVisible)
         {
             var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
             if (thumb.Width > 0 && thumb.Height > 0)
             {
+                var thumbRadius = AtomUI.Media.CornerRadiusUtils.ClampToSize(
+                    SelectedThumbCornerRadius, thumb.Width, thumb.Height);
                 context.DrawRectangle(SelectedThumbBg, null,
-                    new RoundedRect(thumb, SelectedThumbCornerRadius), SelectedThumbBoxShadows);
+                    new RoundedRect(thumb, thumbRadius), SelectedThumbBoxShadows);
             }
         }
     }

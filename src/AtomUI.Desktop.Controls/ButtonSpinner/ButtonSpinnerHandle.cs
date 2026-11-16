@@ -80,7 +80,51 @@ internal class ButtonSpinnerHandle : TemplatedControl
         base.OnApplyTemplate(e);
         IncreaseButton = e.NameScope.Find<IconButton>("PART_IncreaseButton");
         DecreaseButton = e.NameScope.Find<IconButton>("PART_DecreaseButton");
+        ConfigureHandleButtonRadii();
         ButtonsCreated?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == CornerRadiusProperty ||
+            change.Property == ButtonSpinnerLocationProperty ||
+            change.Property == BoundsProperty)
+        {
+            ConfigureHandleButtonRadii();
+        }
+    }
+
+    // The pressed/hover background of each half-height button draws with the IconButton's own CornerRadius, which
+    // falls back to the (theme-wide, e.g. 26) global BorderRadius. Oversized for a half-height cell, Avalonia draws
+    // it asymmetrically and rounds the middle divider edge; split the handle radius per side and clamp it to the
+    // half cell (CSS border-radius semantics) so the outer corners follow the frame and the divider edge stays flat.
+    private void ConfigureHandleButtonRadii()
+    {
+        if (IncreaseButton is null || DecreaseButton is null)
+        {
+            return;
+        }
+        var isRight = ButtonSpinnerLocation != ButtonSpinnerLocation.Left;
+        var cellHeight = Math.Max(0d, Bounds.Height / 2 - 1); // UniformGrid RowSpacing of 1
+        var cellWidth = Bounds.Width;
+        CornerRadius increase;
+        CornerRadius decrease;
+        if (isRight)
+        {
+            increase = new CornerRadius(0, CornerRadius.TopRight, 0, 0);
+            decrease = new CornerRadius(0, 0, CornerRadius.BottomRight, 0);
+        }
+        else
+        {
+            increase = new CornerRadius(CornerRadius.TopLeft, 0, 0, 0);
+            decrease = new CornerRadius(0, 0, 0, CornerRadius.BottomLeft);
+        }
+        // Template parts keep their LocalValue free; the split radius is a runtime composition (ATOMUIGEN047).
+        IncreaseButton.SetCurrentValue(CornerRadiusProperty,
+            AtomUI.Media.CornerRadiusUtils.ClampToSize(increase, cellWidth, cellHeight));
+        DecreaseButton.SetCurrentValue(CornerRadiusProperty,
+            AtomUI.Media.CornerRadiusUtils.ClampToSize(decrease, cellWidth, cellHeight));
     }
     
     public override void Render(DrawingContext context)

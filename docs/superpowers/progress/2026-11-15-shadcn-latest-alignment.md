@@ -101,3 +101,5 @@
 - 修复：新增 `AtomUI.Media.CornerRadiusUtils.ClampToSize`（CSS 语义钳制，注意 CornerRadius 构造参数顺序 TL,TR,BR,BL）；AbstractSegmented.Render 对轨道与选中胶囊钳制；ButtonSpinnerHandle.ConfigureHandleButtonRadii 按方位拆分圆角（上按钮只留外侧上角、下按钮只留外侧下角）并钳制到半格高，SetCurrentValue 写入（ATOMUIGEN047）。Ant 默认 6 远小于半高，渲染不变。
 - 测试：CornerRadiusClamp 5/5、Core 630/630、Segmented+Spinner+NumericUpDown 100/100、Rendering 相关 98/98。
 - 潜在同类面：Tabs 指示器等模板内 Border 走 Avalonia Border 渲染（非自绘），如真机再报同类畸形可按同工具修；注意官方 tabs 容器在 36 高上也用 rounded-4xl=26，浏览器自动缩到 18。
+
+- Segmented 全样式错误（用户真机）：未写控件阶段，呈现 Ant 灰轨道+白 thumb+阴影。按官方 toggle-group/toggle 重做（commit 见上）：TrackBg 透明、选中/hover=muted、文字 muted-foreground/foreground、thumb 阴影清空（覆盖全局 BoxShadowsTertiary）、圆角 ladder 按 Style（Vega/Mira 8/8、Nova 10/10、Maia 26/14、Luma 26/26、Rhea 18/18、Lyra/Sera 0）。Themes 341/341。

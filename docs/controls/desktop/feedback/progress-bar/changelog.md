@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-15
+
+- Token
+  - `ProgressBarToken` 新增 `InnerLabelColor`（默认 `ColorTextLabel`），替代主题直接读取的 `ColorTextLabel` 作为内嵌百分比文本的候选色；默认值相同，Ant Design 渲染不变。PrimeNG 预设经控件算法写入进度色（`DefaultColor` = 主色、`RemainingColor` = PrimeUIX 轨道色）、`LineBorderRadius` 与 `InnerLabelColor`。
+
 ## 2026-11-14
 
 - Performance

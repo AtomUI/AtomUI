@@ -75,6 +75,12 @@ public partial class StepsProgressFamilyEffectTests
             // The padding of the bar around an inner percentage label, and the label colour on the filled track.
             "LineProgressPadding" or "UniformlyPaddingXXS" or "ColorTextLightSolid" => static p =>
                 p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start },
+            // The inner label picks InnerLabelColor where it reads better than ColorTextLightSolid: on a bright bar.
+            "InnerLabelColor" => static p =>
+            {
+                p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start };
+                p.StrokeBrush     = Avalonia.Media.Brushes.Yellow;
+            },
             _ => static _ => { }
         };
         if (token == "LineBorderRadius")

@@ -1,5 +1,6 @@
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -19,6 +20,12 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
     public partial double LineProgressPadding { get; set; }
 
     /// <summary>
+    /// Text colour of an inner percentage label where it reads better than <c>ColorTextLightSolid</c> on the bar
+    /// (the label takes the more readable of the two); defaults to <c>ColorTextLabel</c>.
+    /// </summary>
+    public partial Color InnerLabelColor { get; set; }
+
+    /// <summary>
     /// Active 状态轨道闪光动画的时长（antd progressActiveMotionDuration，2.4s）
     /// Duration of the Active status shimmer over the track (antd progressActiveMotionDuration, 2.4s)
     /// </summary>
@@ -31,6 +38,7 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
         base.CalculateTokenValues(isDarkMode);
         LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
         LineProgressPadding = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
+        InnerLabelColor = EffectiveGlobalToken.ColorTextLabel;
         ProgressActiveMotionDuration = TimeSpan.FromSeconds(2.4); // antd progressActiveMotionDuration: '2.4s'
     }
 }

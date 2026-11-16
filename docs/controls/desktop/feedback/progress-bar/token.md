@@ -9,7 +9,7 @@
 ```text
 AbstractProgressToken            DefaultColor, RemainingColor
 ├── AbstractLineProgressToken    LineExtraInfoMargin, LineInfoIconSize, LineInfoIconSizeSM
-│   ├── ProgressBarToken         LineBorderRadius, LineProgressPadding, ProgressActiveMotionDuration (Reserved)
+│   ├── ProgressBarToken         LineBorderRadius, LineProgressPadding, InnerLabelColor, ProgressActiveMotionDuration (Reserved)
 │   └── StepsProgressBarToken    ProgressStepMarginInlineEnd, ProgressStepMinWidth
 └── AbstractCircleProgressToken  CircleTextColor, CircleMinimumTextFontSize, CircleMinimumIconSize
     ├── CircleProgressToken
@@ -50,6 +50,9 @@ CircleProgress 的默认进度色，`Controls[ProgressBar].Tokens[DefaultColor]`
 - `LineBorderRadius`：圆头（`StrokeLineCap=Round`）线形进度的 rail / track / success 圆角，默认 100（胶囊形；此前主题
   硬编码 `CornerRadius=1000`，对高度小于 200px 的进度条两者都是胶囊）。
 - `LineProgressPadding`：内嵌百分比文本和进度条边缘之间的内部 padding，默认 `UniformlyPaddingXXS / 2`。
+- `InnerLabelColor`：内嵌百分比文本的候选色，默认 `ColorTextLabel`。文本在 `InnerLabelColor` 与 `ColorTextLightSolid`
+  中取在进度条（值为 0 时为轨道）上可读性更高的一个；主题把它设为 `ColorTextLightSolid` 即固定使用对比色
+  （PrimeNG 预设：PrimeUIX `progressbar.label.color` = `primary.contrast.color`）。
 - `ProgressActiveMotionDuration`：Reserved，类型 `TimeSpan`，默认 2.4s（antd `progressActiveMotionDuration: '2.4s'`）。
   Active 状态的轨道闪光动画尚未实现，Active 与 Normal 渲染相同；类型先与 antd 对齐，激活时不再是破坏性变更。
 

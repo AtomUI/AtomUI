@@ -16,8 +16,9 @@
         <Setter Property="LineExtraInfoMargin" Value="{atom:ProgressBarTokenResource LineExtraInfoMargin}" />
         <Setter Property="PresetLineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
         <Setter Property="PresetLineInfoIconSizeSM" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+        <!-- The inner percentage label takes the more readable of InnerLabelColor and ColorTextLightSolid. -->
         <Setter Property="ColorTextLabel"
-                Value="{atom:ProgressBarTokenResource ColorTextLabel}" />
+                Value="{atom:ProgressBarTokenResource InnerLabelColor}" />
         <Setter Property="ColorTextLightSolid"
                 Value="{atom:ProgressBarTokenResource ColorTextLightSolid}" />
 

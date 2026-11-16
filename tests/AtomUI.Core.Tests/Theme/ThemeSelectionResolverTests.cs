@@ -207,4 +207,56 @@ public class ThemeSelectionResolverTests
         ThemeSelectionResolver.BrandColorSupport(catalog, "Bootstrap").ShouldBe(ThemeBrandColorSupport.Fixed);
         Should.Throw<ArgumentException>(() => ThemeSelectionResolver.BrandColorSupport(catalog, "Nope"));
     }
+
+    private static List<ThemeInfo> CreateNeutralCatalog(ThemeNeutralColorSupport support)
+    {
+        return
+        [
+            Info("Nova", "Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
+                 ThemeAlgorithm.Default) with { NeutralColor = support }
+        ];
+    }
+
+    [Fact]
+    public void Seed_Language_Passes_Neutral_Seed()
+    {
+        var result = ThemeSelectionResolver.Resolve(
+            CreateNeutralCatalog(ThemeNeutralColorSupport.Seed),
+            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null, Color.Parse("#71717B")));
+
+        result.ThemeId.ShouldBe("Nova");
+        result.NeutralSeed.ShouldBe(Color.Parse("#71717B"));
+        result.NeutralColorIgnored.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Fixed_Language_Ignores_Neutral_Color()
+    {
+        var result = ThemeSelectionResolver.Resolve(
+            CreateNeutralCatalog(ThemeNeutralColorSupport.Fixed),
+            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null, Color.Parse("#71717B")));
+
+        result.NeutralSeed.ShouldBeNull();
+        result.NeutralColorIgnored.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void No_Neutral_Color_Leaves_Seed_Null()
+    {
+        var result = ThemeSelectionResolver.Resolve(
+            CreateNeutralCatalog(ThemeNeutralColorSupport.Seed),
+            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null));
+
+        result.NeutralSeed.ShouldBeNull();
+        result.NeutralColorIgnored.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void NeutralColorSupport_Reports_First_Definition()
+    {
+        var catalog = CreateNeutralCatalog(ThemeNeutralColorSupport.Seed);
+
+        ThemeSelectionResolver.NeutralColorSupport(catalog, "Shadcn.Nova").ShouldBe(ThemeNeutralColorSupport.Seed);
+        Should.Throw<ArgumentException>(() => ThemeSelectionResolver.NeutralColorSupport(catalog, "Nope"));
+    }
 }

@@ -4,17 +4,19 @@ using Avalonia.Media;
 namespace AtomUI.Theme;
 
 /// <summary>
-/// A user's theme selection: the design language, appearance, density and an optional brand color.
+/// A user's theme selection: the design language, appearance, density and optional brand and neutral colors.
 /// </summary>
 /// <param name="DesignLanguage">The design language identifier, as listed by <see cref="ThemeSelectionResolver.DesignLanguages"/>.</param>
 /// <param name="Appearance">The requested appearance.</param>
 /// <param name="Density">The requested density.</param>
 /// <param name="BrandColor">The chosen brand color, or <see langword="null"/> to keep the definition's own.</param>
+/// <param name="NeutralColor">The chosen neutral color, or <see langword="null"/> to keep the definition's own.</param>
 public sealed record ThemeSelection(
     string DesignLanguage,
     ThemeAppearance Appearance,
     ThemeDensity Density,
-    Color? BrandColor);
+    Color? BrandColor,
+    Color? NeutralColor = null);
 
 /// <summary>
 /// The outcome of resolving a <see cref="ThemeSelection"/> against a theme catalog.
@@ -27,11 +29,17 @@ public sealed record ThemeSelection(
 /// The seed to write into <c>ColorPrimary</c>, or <see langword="null"/> when the language is fixed or no color was chosen.
 /// </param>
 /// <param name="BrandColorIgnored">A brand color was chosen but the design language does not accept one.</param>
+/// <param name="NeutralSeed">
+/// The seed to write into <c>ColorNeutral</c>, or <see langword="null"/> when the language is fixed or no color was chosen.
+/// </param>
+/// <param name="NeutralColorIgnored">A neutral color was chosen but the design language does not accept one.</param>
 public sealed record ThemeSelectionResult(
     string ThemeId,
     IReadOnlyList<ThemeAlgorithm>? Algorithms,
     Color? BrandSeed,
-    bool BrandColorIgnored);
+    bool BrandColorIgnored,
+    Color? NeutralSeed = null,
+    bool NeutralColorIgnored = false);
 
 /// <summary>
 /// Turns a <see cref="ThemeSelection"/> into the theme id, algorithm chain and brand seed to apply.
@@ -149,7 +157,21 @@ public static class ThemeSelectionResolver
             }
         }
 
-        return new ThemeSelectionResult(themeId, algorithms, seed, ignored);
+        Color? neutralSeed = null;
+        var neutralIgnored = false;
+        if (selection.NeutralColor is not null)
+        {
+            if (first.NeutralColor == ThemeNeutralColorSupport.Seed)
+            {
+                neutralSeed = selection.NeutralColor;
+            }
+            else
+            {
+                neutralIgnored = true;
+            }
+        }
+
+        return new ThemeSelectionResult(themeId, algorithms, seed, ignored, neutralSeed, neutralIgnored);
     }
 
     /// <summary>
@@ -185,6 +207,27 @@ public static class ThemeSelectionResolver
             if (string.Equals(info.DesignLanguage, designLanguage, StringComparison.Ordinal))
             {
                 return info.BrandColor;
+            }
+        }
+
+        throw new ArgumentException(
+            $"Design language '{designLanguage}' is not present in the theme catalog.", nameof(designLanguage));
+    }
+
+    /// <summary>
+    /// Gets whether the design language accepts a replaceable neutral color family.
+    /// </summary>
+    /// <exception cref="ArgumentException">The language is not present in the catalog.</exception>
+    public static ThemeNeutralColorSupport NeutralColorSupport(IReadOnlyList<ThemeInfo> catalog, string designLanguage)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(designLanguage);
+
+        foreach (var info in catalog)
+        {
+            if (string.Equals(info.DesignLanguage, designLanguage, StringComparison.Ordinal))
+            {
+                return info.NeutralColor;
             }
         }
 

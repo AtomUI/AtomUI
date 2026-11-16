@@ -138,11 +138,13 @@ internal sealed record PrimeNGNeutralRule(
 /// The card's own <c>ColorBorderSecondary</c>, a stop of the surface scale; <see langword="null"/> keeps the global
 /// value.
 /// </param>
-/// <param name="ButtonPrimaryBg">
-/// The button's own <c>ColorPrimaryBg</c> and <c>ColorPrimaryBgHover</c> (the Filled primary background and its hover,
-/// also the Text variant's hover), computed from the control's global tokens; <see langword="null"/> keeps the global
-/// values. A preset whose selected background is the solid primary needs it, because the Filled variant draws the
-/// primary colour on that background.
+/// <param name="PrimaryTint">
+/// A translucent primary tint (rest and hover), computed from the control's global tokens, for the controls that draw
+/// the primary colour on the selected background: the button's own <c>ColorPrimaryBg</c> and
+/// <c>ColorPrimaryBgHover</c> (the Filled primary background and its hover, also the Text variant's hover) and the
+/// NavMenu's <c>ItemSelectedBg</c> (the rest tint). <see langword="null"/> keeps the global values. A preset whose
+/// selected background is the solid primary (Nora) needs it, because the primary colour would vanish on that
+/// background.
 /// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
@@ -156,7 +158,7 @@ internal sealed record PrimeNGAppearanceRules(
     Func<DesignToken, Color>? ControlOutline,
     Func<DesignToken, Color> FocusBorder,
     PrimeNGShade? CardBorderSecondary,
-    Func<DesignToken, (Color Bg, Color BgHover)>? ButtonPrimaryBg);
+    Func<DesignToken, (Color Bg, Color BgHover)>? PrimaryTint);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

@@ -263,6 +263,9 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   `#334155` 配白字，暗色 `#FAFAFA` / `#E4E4E7` / `#D4D4D8` 配 `#09090B` 字，选中底色为中性色，CheckBox / Radio 的选中
   标记取对比色。要恢复原来的颜色，把 `ColorPrimary` 设为 `#10B981`；其他种子行为不变。下表中的 emerald 值即 emerald
   种子下的值。
+- Nora 浅色的选中底色按 `@primeuix/themes` 3.1.1 改为实色主色（`highlight.background` 主色 600 级；emerald 种子下为
+  `#059669`，选中悬停 `#10B981`），不再是浅淡的主色 50 / 100 级。Filled `Button`、NavMenu 选中项与 Steps 已完成图标
+  与 Nora 暗色一样做了补偿。默认的 noir 主色下，各预设的选中底色都是中性色。
 - 暗色的主色和错误色变了。旧的暗色 profile 让 `AtomUI:Dark` 对已经是最终值的颜色又推导了一遍：
 
   | Profile | `ColorPrimary` | `ColorError` |

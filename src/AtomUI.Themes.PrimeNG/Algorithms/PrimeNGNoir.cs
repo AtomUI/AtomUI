@@ -135,7 +135,7 @@ internal static class PrimeNGNoir
         {
             Primary = noir.Primary,
             SelectionForeground = noir.SelectionForeground,
-            ButtonPrimaryBg = null
+            PrimaryTint = null
         };
 
     /// <summary>

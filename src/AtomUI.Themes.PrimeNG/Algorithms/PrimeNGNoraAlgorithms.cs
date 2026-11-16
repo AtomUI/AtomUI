@@ -7,8 +7,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 
 /// <summary>
 /// The light PrimeNG Nora preset as a theme algorithm (<c>PrimeNG:Nora</c>): primary 600/700/800 of the 500 seed,
-/// slate surfaces with slate-900 text and slate-500 borders, transparent secondary borders, 2px radii and a two-line
-/// focus ring.
+/// a solid primary 600 selected background, slate surfaces with slate-900 text and slate-500 borders, transparent
+/// secondary borders, 2px radii and a two-line focus ring.
 /// </summary>
 [ThemeAlgorithm("PrimeNG", "Nora", 1, ThemeAppearanceEffect.Light)]
 public sealed class PrimeNGNoraAlgorithm : PrimeNGPresetAlgorithm
@@ -34,10 +34,12 @@ public sealed class PrimeNGNoraDarkAlgorithm : PrimeNGPresetAlgorithm
 }
 
 /// <summary>
-/// The Nora rule table (spec 4.7), transcribed from the four pre-algorithm Nora XML profiles (the acceptance baseline).
-/// It differs from Aura in the primary and status stops (one stop darker in both appearances: light 600, dark 500), the
-/// deeper text and border stops, the transparent secondary border, the solid dark selected background, the dark focus
-/// ring, the 2px radius ladder and the control values; the README of this package lists the sources row by row.
+/// The Nora rule table (spec 4.7), transcribed from the four pre-algorithm Nora XML profiles (the acceptance baseline)
+/// and aligned with the <c>nora</c> preset of <c>@primeuix/themes</c> 3.1.1. It differs from Aura in the primary and
+/// status stops (one stop darker in both appearances: light 600, dark 500), the deeper text and border stops, the
+/// transparent secondary border, the solid selected background (PrimeUIX <c>highlight.background</c>
+/// <c>light-dark(primary.600, primary.500)</c>), the dark focus ring, the 2px radius ladder and the control values;
+/// the README of this package lists the sources row by row.
 /// </summary>
 internal static class PrimeNGNoraPreset
 {
@@ -47,9 +49,15 @@ internal static class PrimeNGNoraPreset
     internal static readonly PrimeNGPreset Table = new(
         Light: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Slate,
+            // PrimeUIX nora (3.1.1) highlight: a solid primary 600 background with white text. Its focus background
+            // is P700, but AtomUI controls draw ColorText (N900) on the selected and selected-hover backgrounds
+            // (Select, ListBox, time cells, DataGrid rows), so BgHover departs and takes P500, lighter than the
+            // background: N900 on emerald 600 / 500 is 4.74 / 7.04 (P700 would give 3.26). The primary text rows
+            // depart from PrimeUIX highlight.color (white): AtomUI draws ColorPrimaryText* on the page background, so
+            // they keep the page-readable P800 / P700 / P900.
             Primary: new PrimeNGFamilyRule(
                 Base: new(600), Hover: new(700), Active: new(800),
-                Bg: new(50), BgHover: new(100),
+                Bg: new(600), BgHover: new(500),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(700), Text: new(800), TextActive: new(900)),
             // Links take deeper stops than the primary fill so link text stays readable on white; hover and active go deeper.
@@ -80,7 +88,11 @@ internal static class PrimeNGNoraPreset
             ControlOutline: null,
             FocusBorder: static token => token.ColorPrimary,
             CardBorderSecondary: null,
-            ButtonPrimaryBg: null),
+            // The Filled primary button and the selected NavMenu item draw the primary colour on ColorPrimaryBg, the
+            // solid primary here; they take a translucent tint close to PrimeUIX primary.50 / primary.100 (the
+            // button.text hover / active backgrounds), which a control stage cannot read as stops.
+            PrimaryTint: static token => (PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.06),
+                                          PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.16))),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             // PrimeUIX nora-compat highlight: a solid primary 500 background with surface.950 text. Its focus
@@ -119,10 +131,10 @@ internal static class PrimeNGNoraPreset
             FocusBorder: static token => token.ColorBorder,
             // PrimeUIX nora-compat overlay.*.border.color: transparent in light, surface.700 in dark.
             CardBorderSecondary: new(700),
-            // The Filled primary button draws the primary colour on ColorPrimaryBg, which is the solid primary here;
-            // for the button only it takes the Aura shape (the primary at 16% / 24%).
-            ButtonPrimaryBg: static token => (PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.16),
-                                              PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.24))),
+            // The Filled primary button and the selected NavMenu item draw the primary colour on ColorPrimaryBg, the
+            // solid primary here; they take the Aura dark shape (the primary at 16% / 24%).
+            PrimaryTint: static token => (PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.16),
+                                          PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.24))),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

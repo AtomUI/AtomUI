@@ -289,6 +289,10 @@ changes:
   `#09090B` text, a neutral selected background, and checked CheckBox / Radio marks in the contrast colour. Set
   `ColorPrimary` to `#10B981` to get the previous colours back; every other seed behaves as before. The emerald values
   in the table below are those of the emerald seed.
+- Nora light's selected background follows `@primeuix/themes` 3.1.1 (`highlight.background` primary 600): it is the
+  solid primary (emerald seed `#059669`, selected-hover `#10B981`) instead of the pale primary 50 / 100. The Filled
+  `Button`, the selected NavMenu item and the completed Steps icon compensate as in Nora dark. With the default noir
+  primary the selected background is a neutral tint in every preset.
 - Dark primary and error colours change, because the old dark profiles ran `AtomUI:Dark` over values that were
   already final:
 

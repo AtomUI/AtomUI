@@ -201,10 +201,12 @@ public class PrimeNGThemePackageTests
     }
 
     [AvaloniaTheory]
-    [InlineData("Aura", "#3B82F6")]
-    [InlineData("Lara", "#3B82F6")]
-    [InlineData("Nora", "#2563EB")]
-    public async Task Primary_Seed_Change_Moves_Focus_Ring_And_Selected_Background(string presetName, string expectedPrimary)
+    // Selected background: Aura and Lara light P50 (PrimeUIX highlight.background), Nora light the solid P600.
+    [InlineData("Aura", "#3B82F6", "#EFF6FF")]
+    [InlineData("Lara", "#3B82F6", "#EFF6FF")]
+    [InlineData("Nora", "#2563EB", "#2563EB")]
+    public async Task Primary_Seed_Change_Moves_Focus_Ring_And_Selected_Background(string presetName, string expectedPrimary,
+                                                                                  string expectedSelected)
     {
         // The seed is the 500 stop; Aura and Lara take it as the light primary, Nora the 600 stop (blue-600).
         var profile = Presets[presetName].BaseProfile;
@@ -216,7 +218,7 @@ public class PrimeNGThemePackageTests
         Global<Color>(blue, "ColorPrimary").ShouldBe(Color.Parse(expectedPrimary));
         Global<Color>(blue, "ColorFocusBorder").ShouldBe(Global<Color>(blue, "ColorPrimary"));
         Global<Color>(blue, "ControlItemBgActive").ShouldNotBe(emeraldSelected);
-        Global<Color>(blue, "ControlItemBgActive").ShouldBe(Color.Parse("#EFF6FF"));
+        Global<Color>(blue, "ControlItemBgActive").ShouldBe(Color.Parse(expectedSelected));
     }
 
     [Theory]
@@ -560,6 +562,50 @@ public class PrimeNGThemePackageTests
             var filled = ContrastRatio.Of(primary,
                 ContrastRatio.Composite(Effective<Color>(dark, "Button", background), container));
             filled.ShouldBeGreaterThanOrEqualTo(floor, $"Filled button on {background}: {filled:F2}");
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGNora")]
+    [InlineData("PrimeNGNora.Compact")]
+    public async Task Nora_Light_Highlight_Is_The_Solid_Primary(string profile)
+    {
+        // @primeuix/themes 3.1.1 nora: highlight.background light-dark(primary.600, primary.500) with white text in
+        // light. AtomUI draws ColorText on the selected background, so the selected-hover background departs from
+        // PrimeUIX focusBackground (P700) and takes P500.
+        var light = await ApplyEmerald(profile);
+        Global<Color>(light, "ColorPrimaryBg").ShouldBe(Color.Parse("#059669"));
+        Global<Color>(light, "ColorPrimaryBgHover").ShouldBe(Color.Parse("#10B981"));
+        Global<Color>(light, "ControlItemBgActive").ShouldBe(Global<Color>(light, "ColorPrimary"));
+        // Primary-coloured text stays on the page-readable stops (it is drawn on the page background).
+        Global<Color>(light, "ColorPrimaryText").ShouldBe(Color.Parse("#065F46"));
+        Global<Color>(light, "ColorTextLightSolid").ShouldBe(Colors.White);
+        // The completed step's check is the contrast colour on the solid primary.
+        Own<Color>(light, "Steps", "FinishIconColor").ShouldBe(Colors.White);
+        Own<Color>(light, "Steps", "FinishIconBgColor").ShouldBe(Color.Parse("#059669"));
+        // The Filled button and the selected NavMenu item take a translucent primary tint (about P50 / P100).
+        Effective<Color>(light, "Button", "ColorPrimaryBg").ShouldBe(Color.Parse("#0F059669"));
+        Effective<Color>(light, "Button", "ColorPrimaryBgHover").ShouldBe(Color.Parse("#29059669"));
+        Own<Color>(light, "NavMenu", "ItemSelectedBg").ShouldBe(Color.Parse("#0F059669"));
+
+        var container = Global<Color>(light, "ColorBgContainer");
+        foreach (var background in new[] { "ControlItemBgActive", "ControlItemBgActiveHover" })
+        {
+            var ratio = ContrastRatio.Of(Global<Color>(light, "ColorText"), Global<Color>(light, background));
+            ratio.ShouldBeGreaterThanOrEqualTo(4.5, $"ColorText on {background}: {ratio:F2}");
+        }
+        // The primary on a tint of itself cannot beat the primary on white (emerald-600: 3.77); the floor is the 3:1
+        // of large text and UI components, as the pale highlight gave before.
+        var primary = Global<Color>(light, "ColorPrimary");
+        foreach (var (what, foreground, background) in new[]
+                 {
+                     ("Filled button", primary, Effective<Color>(light, "Button", "ColorPrimaryBg")),
+                     ("Filled button hover", primary, Effective<Color>(light, "Button", "ColorPrimaryBgHover")),
+                     ("NavMenu selected item", Own<Color>(light, "NavMenu", "ItemSelectedColor"), Own<Color>(light, "NavMenu", "ItemSelectedBg"))
+                 })
+        {
+            var ratio = ContrastRatio.Of(foreground, ContrastRatio.Composite(background, container));
+            ratio.ShouldBeGreaterThanOrEqualTo(3.0, $"{what}: {ratio:F2}");
         }
     }
 

@@ -127,4 +127,37 @@ public class ShadcnControlTests
         return snapshot.Controls[control!.Slot]
                        .GetEffectiveGlobalValue<T>(snapshot.GlobalTokenValues, token!.Slot);
     }
+
+    /// <summary>
+    /// The capsule (rounded-full) styles draw half-height button and input radii at every size; the other styles
+    /// use their radius table. The size ladder reads BorderRadius / LG / SM, so the stages write all three.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("Maia", 18, 20, 16)]   // capsule: half the height (36/40/28)
+    [InlineData("Luma", 18, 20, 16)]   // capsule buttons
+    [InlineData("Nova", 10, 10, 8)]
+    [InlineData("Vega", 8, 8, 8)]
+    [InlineData("Sera", 0, 0, 0)]
+    public async Task Button_Radius_Ladder_Matches_The_Style(string style, double middle, double lg, double sm)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Button", "BorderRadius").ShouldBe(new CornerRadius(middle), style);
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Button", "BorderRadiusLG").ShouldBe(new CornerRadius(lg), style);
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Button", "BorderRadiusSM").ShouldBe(new CornerRadius(sm), style);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("Maia", 18, 20, 16)]   // capsule inputs
+    [InlineData("Nova", 10, 10, 8)]
+    [InlineData("Luma", 22, 22, 20)]
+    [InlineData("Rhea", 18, 18, 16)]
+    public async Task Input_Radius_Ladder_Matches_The_Style(string style, double middle, double lg, double sm)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "LineEdit", "BorderRadius").ShouldBe(new CornerRadius(middle), style);
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "LineEdit", "BorderRadiusLG").ShouldBe(new CornerRadius(lg), style);
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "LineEdit", "BorderRadiusSM").ShouldBe(new CornerRadius(sm), style);
+    }
 }

@@ -69,6 +69,10 @@ public partial class DisplayFamilyEffectTests
         }, new EffectOptions
         {
             Region = c => DrawerRegion(c, token),
+            // The edge border colour only shows where the edge border thickness draws one.
+            Companions = token == "EdgeBorderColor"
+                ? [(DrawerTokens.Identity, "EdgeBorderThickness", "4")]
+                : null,
             Perturb = token switch
             {
                 "SmallSize" or "MiddleSize" or "LargeSize" => static _ => new Dimension(240),
@@ -85,6 +89,8 @@ public partial class DisplayFamilyEffectTests
         return token switch
         {
             "ColorBgMask" => Part<Control>(frame, "PART_Mask"),
+            // The edge border is drawn by the surface (the DrawerInfoContainer's parent), outside its own bounds.
+            "EdgeBorderColor" or "EdgeBorderThickness" => Part<Control>(frame, "PART_Surface"),
             "CloseIconPadding" or "CloseIconMargin" or "PaddingXXS" or "FontSize" or
                 "ColorBgTextHover" or "ColorBgTextActive" or "BorderRadiusSM" => Part<IconButton>(frame, "PART_CloseButton"),
             "HeaderMargin" or "UniformlyMarginXS" or "UniformlyMargin" or "UniformlyMarginLG" or "FontSizeLG" or "FontHeightLG" or

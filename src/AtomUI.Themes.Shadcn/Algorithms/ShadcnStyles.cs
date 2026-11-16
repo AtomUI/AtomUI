@@ -247,6 +247,13 @@ internal static class ShadcnStyles
         throw new InvalidOperationException("The algorithm chain contains no Shadcn style.");
     }
 
+    /// <summary>Whether the style's buttons are <c>rounded-full</c> capsules (Maia, Luma): the radius is half the
+    /// control height at every size, not the --radius value.</summary>
+    public static bool IsButtonCapsule(string styleId) => styleId is "Maia" or "Luma";
+
+    /// <summary>Whether the style's inputs are <c>rounded-full</c> capsules (Maia).</summary>
+    public static bool IsInputCapsule(string styleId) => styleId is "Maia";
+
     /// <summary>Resolves a shadow level name to the official Tailwind v4 shadow definition (design 5.6.1).</summary>
     public static BoxShadows Shadow(string level) => level switch
     {

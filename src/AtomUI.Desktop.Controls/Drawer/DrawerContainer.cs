@@ -884,16 +884,19 @@ internal class DrawerContainer : ContentControl
     }
 
     // The border sits on the side facing the content (a left drawer gets a right border, as the shadcn sheet).
+    // It is drawn by the info container's Frame (the visible surface with the shadows); the outer PART_Surface is
+    // only a layout shell. The per-side Thickness is a runtime composition of the scalar token and the placement,
+    // which a ControlTheme setter cannot express.
     private void ApplyEdgeBorder()
     {
-        if (_surface is null)
+        if (_infoContainer is null)
         {
             return;
         }
 
         // Template parts keep their LocalValue free for users and themes; the composed border is a current value.
-        _surface.SetCurrentValue(Border.BorderBrushProperty, EdgeBorderColor);
-        _surface.SetCurrentValue(Border.BorderThicknessProperty, Placement switch
+        _infoContainer.SetCurrentValue(BorderBrushProperty, EdgeBorderColor);
+        _infoContainer.SetCurrentValue(BorderThicknessProperty, Placement switch
         {
             DrawerPlacement.Left   => new Thickness(0, 0, EdgeBorderThickness, 0),
             DrawerPlacement.Right  => new Thickness(EdgeBorderThickness, 0, 0, 0),

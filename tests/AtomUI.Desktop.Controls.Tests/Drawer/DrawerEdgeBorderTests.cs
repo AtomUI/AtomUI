@@ -104,10 +104,10 @@ public class DrawerEdgeBorderTests
         }
     }
 
-    private static Border FindSurface(AvaloniaWindow window)
+    // The edge border is drawn by the drawer's info container (the visible surface with the shadows).
+    private static DrawerInfoContainer FindSurface(AvaloniaWindow window)
     {
-        return window.GetVisualDescendants().OfType<Border>()
-                     .Single(border => border.Name == "PART_Surface");
+        return window.GetVisualDescendants().OfType<DrawerInfoContainer>().Single();
     }
 
     private static AvaloniaWindow CreateAtomWindow(Control content)

@@ -10,7 +10,9 @@
                 <Panel
                     Name="RootLayout">
                     <Border Name="Frame"
-                            Classes.semantic-section="True" />
+                            Classes.semantic-section="True"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}" />
                     <Grid Name="InfoLayout"
                           RowDefinitions="Auto, Auto, *, Auto, Auto">
                         <Grid Name="InfoHeader"

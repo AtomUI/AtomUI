@@ -79,7 +79,7 @@ public static class TokenEffectHarness
         {
             initialTopLevel.Content = null;
         }
-        var provider = new ThemeConfigProvider { Config = CreateConfig(comparesPixels, null) };
+        var provider = new ThemeConfigProvider { Config = CreateConfig(comparesPixels, null, options?.Companions) };
         provider.Child = new AvaloniaBorder
         {
             Padding             = new Thickness(24),
@@ -128,7 +128,7 @@ public static class TokenEffectHarness
             var regionOf     = options?.Region?.Invoke(control) ?? control;
             var boundsBefore = before is null ? default : GetPixelBounds(regionOf, window, before, inflation);
 
-            provider.Config = CreateConfig(comparesPixels, (identity, token, formatted));
+            provider.Config = CreateConfig(comparesPixels, (identity, token, formatted), options?.Companions);
             WaitForValue(control, target, formatted, () => failure is not null);
             failure.ShouldBeNull(DescribeFailure(failure));
             ThemeTokenValueFormatter.Format(target.Read(control)).ShouldBe(formatted,
@@ -188,13 +188,20 @@ public static class TokenEffectHarness
 
     private static ThemeConfig CreateConfig(
         bool settleMotion,
-        (ControlTokenIdentity Identity, string Token, string Value)? overrideEntry)
+        (ControlTokenIdentity Identity, string Token, string Value)? overrideEntry,
+        IReadOnlyList<(ControlTokenIdentity Identity, string Token, string Value)>? companions = null)
     {
         var builder = new ThemeConfigBuilder();
         if (settleMotion)
         {
             // Motion off zeroes transition durations, so a captured frame shows the final visual state.
             builder.WithToken(nameof(SharedTokenKind.EnableMotion), "false");
+        }
+        foreach (var companion in companions ?? [])
+        {
+            builder.WithControl(
+                companion.Identity,
+                new ControlThemeConfigBuilder().WithToken(companion.Token, companion.Value).Build());
         }
         if (overrideEntry is { } entry)
         {
@@ -355,6 +362,12 @@ public sealed record EffectOptions
     /// zero (a vertical padding computed from a line height) only shows when the Token decreases.
     /// </summary>
     public Func<object, object>? Perturb { get; init; }
+
+    /// <summary>
+    /// Extra control-token overrides applied in both the baseline and the perturbed capture, for a Token that only
+    /// shows in a state another Token provides (a border colour needs a non-zero border thickness).
+    /// </summary>
+    public IReadOnlyList<(ControlTokenIdentity Identity, string Token, string Value)>? Companions { get; init; }
 
     /// <summary>
     /// Grows the comparison region on every side, for Tokens that move something painted outside the bounds without

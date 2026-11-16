@@ -46,4 +46,11 @@ internal static class PrimeNGPresets
     /// has a tinted selected background.
     /// </summary>
     internal static bool HasSolidHighlight(DesignToken token) => token.ControlItemBgActive == token.ColorPrimary;
+
+    /// <summary>
+    /// The rules a control stage applies: the table of the chain's preset for the resolved appearance, with the noir
+    /// rows when the control's primary colour is noir.
+    /// </summary>
+    internal static PrimeNGAppearanceRules Rules(in ThemeAlgorithmContext context, DesignToken token) =>
+        PrimeNGNoir.Resolve(Resolve(context), context.Appearance, token);
 }

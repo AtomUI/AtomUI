@@ -478,8 +478,13 @@ public class PrimeNGThemePackageTests
         foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
         {
             var dark = await ApplyEmerald(profile);
-            Global<Color>(dark, "ColorPrimaryBg").ShouldBe(Color.Parse("#10B981"));
-            Global<Color>(dark, "ColorPrimaryText").ShouldBe(Color.Parse("#09090B"));
+            // The selected background is the solid primary (ControlItemBgActive) with surface-950 text; ColorPrimaryBg
+            // is the primary at 16% (PrimeUIX button.text hover background) and the primary text, drawn on the page
+            // background, is the primary 400 stop.
+            Global<Color>(dark, "ControlItemBgActive").ShouldBe(Color.Parse("#10B981"));
+            Own<Color>(dark, "Select", "OptionSelectedColor").ShouldBe(Color.Parse("#09090B"));
+            Global<Color>(dark, "ColorPrimaryBg").ShouldBe(Color.Parse("#2910B981"));
+            Global<Color>(dark, "ColorPrimaryText").ShouldBe(Color.Parse("#34D399"));
             Own<Color>(dark, "Steps", "ProcessIconColor").ShouldBe(Color.Parse("#09090B"));
             Own<Color>(dark, "Steps", "FinishTitleColor").ShouldBe(Colors.White);
         }
@@ -518,13 +523,18 @@ public class PrimeNGThemePackageTests
             Own<Color>(dark, "Steps", "FinishIconColor").ShouldBe(Color.Parse("#09090B"), profile);
         }
 
-        // The stage follows the contrast colour, not a constant: a light appearance after Nora.Dark leaves the
-        // Ant Design value.
+        // The stage follows the contrast colour, not a constant: a light appearance after Nora.Dark gets the Nora
+        // light Alias highlight (solid primary) and the light contrast colour on it.
         var hybridConfig = new ThemeConfigBuilder()
                            .WithAlgorithms(new ThemeAlgorithm("PrimeNG", "Nora.Dark"), ThemeAlgorithm.Default)
                            .Build();
         var hybrid = await Apply(new ThemeRequest("PrimeNGNora.Dark", hybridConfig, ThemeTransitionReason.UserRequest));
-        Own<Color>(hybrid, "Steps", "FinishIconColor").ShouldBe(Global<Color>(hybrid, "ColorPrimary"));
+        Global<Color>(hybrid, "ControlItemBgActive").ShouldBe(Global<Color>(hybrid, "ColorPrimary"));
+        Own<Color>(hybrid, "Steps", "FinishIconColor").ShouldBe(Global<Color>(hybrid, "ColorTextLightSolid"));
+
+        // Under Aura's pale highlight the stage writes nothing and the Ant Design value (the primary) stays.
+        var aura = await ApplyEmerald("PrimeNGAura");
+        Own<Color>(aura, "Steps", "FinishIconColor").ShouldBe(Global<Color>(aura, "ColorPrimary"));
 
         var themes = Path.Combine(FindRepositoryRoot(), "src", "AtomUI.Themes.PrimeNG", "Themes");
         foreach (var profile in Presets["Nora"].Profiles)
@@ -541,15 +551,17 @@ public class PrimeNGThemePackageTests
     [InlineData("PrimeNGNora.DarkCompact")]
     public async Task Nora_Dark_Selected_Text_Stays_Readable(string profile)
     {
-        // Nora dark makes the selected background the solid primary (PrimeUIX highlight.background); AtomUI controls
-        // draw ColorText, or the primary colour, on the selected and selected-hover backgrounds, so those pairs keep
-        // body-text contrast.
+        // Nora dark makes the selected background the solid primary (PrimeUIX highlight.background) with the
+        // surface-950 contrast text on it and on the focus background (P400).
         const double floor = 4.5;
         var dark = await ApplyEmerald(profile);
         var container = Global<Color>(dark, "ColorBgContainer");
 
-        var selectedHover = ContrastRatio.Of(Global<Color>(dark, "ColorText"), Global<Color>(dark, "ControlItemBgActiveHover"));
-        selectedHover.ShouldBeGreaterThanOrEqualTo(floor, $"ColorText on ControlItemBgActiveHover: {selectedHover:F2}");
+        foreach (var background in new[] { "ControlItemBgActive", "ControlItemBgActiveHover" })
+        {
+            var selected = ContrastRatio.Of(Own<Color>(dark, "ListBox", "ItemSelectedColor"), Global<Color>(dark, background));
+            selected.ShouldBeGreaterThanOrEqualTo(floor, $"ListBox selected text on {background}: {selected:F2}");
+        }
 
         var menuSelected = ContrastRatio.Of(Own<Color>(dark, "NavMenu", "ItemSelectedColor"),
             ContrastRatio.Composite(Own<Color>(dark, "NavMenu", "ItemSelectedBg"), Own<Color>(dark, "NavMenu", "ItemBg")));
@@ -570,54 +582,42 @@ public class PrimeNGThemePackageTests
     [InlineData("PrimeNGNora.Compact")]
     public async Task Nora_Light_Highlight_Is_The_Solid_Primary(string profile)
     {
-        // @primeuix/themes 3.1.1 nora: highlight.background light-dark(primary.600, primary.500) with white text in
-        // light. AtomUI draws ColorText on the selected background, so the selected-hover background departs from
-        // PrimeUIX focusBackground (P700) and takes P500.
+        // @primeuix/themes 3.1.1 nora: highlight.background light-dark(primary.600, primary.500), focusBackground
+        // light-dark(primary.700, primary.400), color light-dark(#ffffff, surface.950). The selected background is the
+        // Alias ControlItemBgActive; ColorPrimaryBg stays the pale primary (button.text hover background primary.50).
         var light = await ApplyEmerald(profile);
-        Global<Color>(light, "ColorPrimaryBg").ShouldBe(Color.Parse("#059669"));
-        Global<Color>(light, "ColorPrimaryBgHover").ShouldBe(Color.Parse("#10B981"));
-        Global<Color>(light, "ControlItemBgActive").ShouldBe(Global<Color>(light, "ColorPrimary"));
+        Global<Color>(light, "ControlItemBgActive").ShouldBe(Color.Parse("#059669"));
+        Global<Color>(light, "ControlItemBgActiveHover").ShouldBe(Color.Parse("#047857"));
+        Global<Color>(light, "ColorPrimaryBg").ShouldBe(Color.Parse("#ECFDF5"));
+        Global<Color>(light, "ColorPrimaryBgHover").ShouldBe(Color.Parse("#D1FAE5"));
         // Primary-coloured text stays on the page-readable stops (it is drawn on the page background).
         Global<Color>(light, "ColorPrimaryText").ShouldBe(Color.Parse("#065F46"));
         Global<Color>(light, "ColorTextLightSolid").ShouldBe(Colors.White);
+        Own<Color>(light, "Select", "OptionSelectedColor").ShouldBe(Colors.White);
         // The completed step's check is the contrast colour on the solid primary.
         Own<Color>(light, "Steps", "FinishIconColor").ShouldBe(Colors.White);
         Own<Color>(light, "Steps", "FinishIconBgColor").ShouldBe(Color.Parse("#059669"));
-        // The Filled button and the selected NavMenu item take a translucent primary tint (about P50 / P100).
-        Effective<Color>(light, "Button", "ColorPrimaryBg").ShouldBe(Color.Parse("#0F059669"));
-        Effective<Color>(light, "Button", "ColorPrimaryBgHover").ShouldBe(Color.Parse("#29059669"));
-        Own<Color>(light, "NavMenu", "ItemSelectedBg").ShouldBe(Color.Parse("#0F059669"));
-
-        var container = Global<Color>(light, "ColorBgContainer");
-        foreach (var background in new[] { "ControlItemBgActive", "ControlItemBgActiveHover" })
-        {
-            var ratio = ContrastRatio.Of(Global<Color>(light, "ColorText"), Global<Color>(light, background));
-            ratio.ShouldBeGreaterThanOrEqualTo(4.5, $"ColorText on {background}: {ratio:F2}");
-        }
-        // The primary on a tint of itself cannot beat the primary on white (emerald-600: 3.77); the floor is the 3:1
-        // of large text and UI components, as the pale highlight gave before.
-        var primary = Global<Color>(light, "ColorPrimary");
-        foreach (var (what, foreground, background) in new[]
-                 {
-                     ("Filled button", primary, Effective<Color>(light, "Button", "ColorPrimaryBg")),
-                     ("Filled button hover", primary, Effective<Color>(light, "Button", "ColorPrimaryBgHover")),
-                     ("NavMenu selected item", Own<Color>(light, "NavMenu", "ItemSelectedColor"), Own<Color>(light, "NavMenu", "ItemSelectedBg"))
-                 })
-        {
-            var ratio = ContrastRatio.Of(foreground, ContrastRatio.Composite(background, container));
-            ratio.ShouldBeGreaterThanOrEqualTo(3.0, $"{what}: {ratio:F2}");
-        }
+        // The Filled button keeps the global pale background; the selected NavMenu item takes it too, because its text
+        // is the primary colour.
+        Effective<Color>(light, "Button", "ColorPrimaryBg").ShouldBe(Color.Parse("#ECFDF5"));
+        Own<Color>(light, "NavMenu", "ItemSelectedBg").ShouldBe(Color.Parse("#ECFDF5"));
     }
 
     [AvaloniaFact]
-    public async Task Nora_Dark_NavMenu_Stage_Writes_Nothing_Under_A_Light_Appearance()
+    public async Task NavMenu_Stage_Follows_The_Highlight_Shape()
     {
         var hybridConfig = new ThemeConfigBuilder()
                            .WithAlgorithms(new ThemeAlgorithm("PrimeNG", "Nora.Dark"), ThemeAlgorithm.Default)
                            .Build();
         var hybrid = await Apply(new ThemeRequest("PrimeNGNora.Dark", hybridConfig, ThemeTransitionReason.UserRequest));
-        // The Ant Design value: the menu's selected background is ControlItemBgActive.
-        Own<Color>(hybrid, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(hybrid, "ControlItemBgActive"));
+        // A solid highlight (here the Nora light Alias rule over Ant Design's Map): the menu keeps the pale primary,
+        // because its selected text is the primary colour.
+        Global<Color>(hybrid, "ControlItemBgActive").ShouldBe(Global<Color>(hybrid, "ColorPrimary"));
+        Own<Color>(hybrid, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(hybrid, "ColorPrimaryBg"));
+
+        // The pale highlight of Aura: the Ant Design value, ControlItemBgActive.
+        var aura = await ApplyEmerald("PrimeNGAura");
+        Own<Color>(aura, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(aura, "ControlItemBgActive"));
     }
 
     public static TheoryData<string> AllProfiles() =>
@@ -676,15 +676,118 @@ public class PrimeNGThemePackageTests
         {
             Check($"{name} on ColorBgContainer", Global<Color>(snapshot, name), container, text);
         }
-        // List controls draw ColorText on the selected and selected-hover backgrounds.
-        Check("ColorText on ControlItemBgActive", Global<Color>(snapshot, "ColorText"), Global<Color>(snapshot, "ControlItemBgActive"), text);
-        Check("ColorText on ControlItemBgActiveHover", Global<Color>(snapshot, "ColorText"), Global<Color>(snapshot, "ControlItemBgActiveHover"), text);
+        // The selected item: its selected-text token on the selected (highlight) and selected-hover (focus) backgrounds.
+        foreach (var (owner, color, background) in SelectedTextTokens)
+        {
+            Check($"{owner}.{color} on {background}", Own<Color>(snapshot, owner, color), Own<Color>(snapshot, owner, background), text);
+            Check($"{owner}.{color} on ControlItemBgActiveHover", Own<Color>(snapshot, owner, color),
+                Effective<Color>(snapshot, owner, "ControlItemBgActiveHover"), text);
+        }
         // The Filled primary button and the selected NavMenu item draw the primary on a primary background.
         Check("Filled button", primary, Effective<Color>(snapshot, "Button", "ColorPrimaryBg"), text);
         Check("Filled button hover", primary, Effective<Color>(snapshot, "Button", "ColorPrimaryBgHover"), text);
         Check("NavMenu selected item", Own<Color>(snapshot, "NavMenu", "ItemSelectedColor"), Own<Color>(snapshot, "NavMenu", "ItemSelectedBg"), text);
         // The completed step's check is an icon: the 3:1 non-text floor.
         Check("Steps finish icon", Own<Color>(snapshot, "Steps", "FinishIconColor"), Own<Color>(snapshot, "Steps", "FinishIconBgColor"), 3);
+    }
+
+    /// <summary>
+    /// The controls that draw a selected item's text on the selected background, with their selected-text and
+    /// selected-background Own tokens. The PrimeNG control stages set the text to PrimeUIX <c>highlight.color</c>.
+    /// </summary>
+    private static readonly (string Owner, string Color, string Background)[] SelectedTextTokens =
+    [
+        ("Select", "OptionSelectedColor", "OptionSelectedBg"),
+        ("Cascader", "OptionSelectedColor", "OptionSelectedBg"),
+        ("ComboBox", "ItemSelectedColor", "ItemSelectedBgColor"),
+        ("ListBox", "ItemSelectedColor", "ItemSelectedBgColor"),
+        ("ListView", "ItemSelectedColor", "ItemSelectedBgColor"),
+        ("TransferListView", "ItemSelectedColor", "ItemSelectedBgColor"),
+        ("TreeView", "NodeSelectedColor", "NodeSelectedBg"),
+        ("TransferTreeView", "NodeSelectedColor", "NodeSelectedBg"),
+        ("TreeSelect", "NodeSelectedColor", "NodeSelectedBg")
+    ];
+
+    // @primeuix/themes 3.1.1 highlight (background, focusBackground, color) and the site's noir highlight, at the
+    // default noir seed and the emerald seed. Aura and Lara are pale: P50 / P100 with P700 in light, P400 at 16% / 24%
+    // with white at 87% in dark. Nora and noir are solid with the contrast colour.
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null, "#020617", "#334155", "#FFFFFF")]
+    [InlineData("PrimeNGAura.Dark", null, "#FAFAFA", "#D4D4D8", "#09090B")]
+    [InlineData("PrimeNGLara", null, "#020617", "#334155", "#FFFFFF")]
+    [InlineData("PrimeNGLara.Dark", null, "#FAFAFA", "#D4D4D8", "#09090B")]
+    [InlineData("PrimeNGNora", null, "#020617", "#334155", "#FFFFFF")]
+    [InlineData("PrimeNGNora.Dark", null, "#FAFAFA", "#D4D4D8", "#09090B")]
+    [InlineData("PrimeNGAura", "#10B981", "#ECFDF5", "#D1FAE5", "#047857")]
+    [InlineData("PrimeNGAura.Dark", "#10B981", "#2934D399", "#3D34D399", "#DEFFFFFF")]
+    [InlineData("PrimeNGLara", "#10B981", "#ECFDF5", "#D1FAE5", "#047857")]
+    [InlineData("PrimeNGLara.Dark", "#10B981", "#2934D399", "#3D34D399", "#DEFFFFFF")]
+    [InlineData("PrimeNGNora", "#10B981", "#059669", "#047857", "#FFFFFF")]
+    [InlineData("PrimeNGNora.Dark", "#10B981", "#10B981", "#34D399", "#09090B")]
+    public async Task Highlight_Follows_PrimeUIX(string profile, string? seed, string background, string focus, string text)
+    {
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        Global<Color>(snapshot, "ControlItemBgActive").ShouldBe(Color.Parse(background));
+        Global<Color>(snapshot, "ControlItemBgActiveHover").ShouldBe(Color.Parse(focus));
+        foreach (var (owner, color, selected) in SelectedTextTokens)
+        {
+            Own<Color>(snapshot, owner, color).ShouldBe(Color.Parse(text), $"{owner}.{color}");
+            Own<Color>(snapshot, owner, selected).ShouldBe(Color.Parse(background), $"{owner}.{selected}");
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null)]
+    [InlineData("PrimeNGNora", null)]
+    [InlineData("PrimeNGNora", "#10B981")]
+    [InlineData("PrimeNGNora.Dark", "#10B981")]
+    public async Task Controls_Without_A_Selected_Text_Token_Keep_The_Pale_Highlight(string profile, string? seed)
+    {
+        // The date and time cells draw ColorText (or the primary) on ControlItemBgActive and have no selected-text
+        // token, so under a solid highlight their owners take the pale primary background back.
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        foreach (var owner in new[] { "DatePicker", "RangeDatePicker", "TimePicker", "RangeTimePicker", "Calendar",
+                                      "LunarCalendar", "DateViewer", "RangeDateViewer" })
+        {
+            Effective<Color>(snapshot, owner, "ControlItemBgActive").ShouldBe(Global<Color>(snapshot, "ColorPrimaryBg"), owner);
+            Effective<Color>(snapshot, owner, "ControlItemBgActiveHover").ShouldBe(Global<Color>(snapshot, "ColorPrimaryBgHover"), owner);
+        }
+    }
+
+    // Seeds other than emerald: PrimeUIX's solid highlight with the contrast colour. Measured, with the 3:1 floor of
+    // large text; the values are listed in the README.
+    [AvaloniaTheory]
+    [InlineData("PrimeNGNora", "#3B82F6")]
+    [InlineData("PrimeNGNora.Dark", "#3B82F6")]
+    [InlineData("PrimeNGNora", "#6366F1")]
+    [InlineData("PrimeNGNora.Dark", "#6366F1")]
+    public async Task Solid_Highlight_Text_Stays_Readable_For_Other_Seeds(string profile, string seed)
+    {
+        var snapshot = await ApplySeed(profile, seed);
+        foreach (var background in new[] { "ControlItemBgActive", "ControlItemBgActiveHover" })
+        {
+            var ratio = ContrastRatio.Of(Own<Color>(snapshot, "Select", "OptionSelectedColor"), Global<Color>(snapshot, background));
+            ratio.ShouldBeGreaterThanOrEqualTo(3.0, $"{profile} {seed} on {background}: {ratio:F2}");
+        }
+    }
+
+    // PrimeUIX 3.1.1 toggleswitch.handle.checked.background: Aura / Lara light-dark(surface.0, surface.900), Nora
+    // primary.contrast.color. The unchecked handle keeps the Ant Design white (the track is not mapped).
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura", null, "#FFFFFF")]
+    [InlineData("PrimeNGAura.Dark", null, "#18181B")]
+    [InlineData("PrimeNGLara.Dark", null, "#18181B")]
+    [InlineData("PrimeNGNora", null, "#FFFFFF")]
+    [InlineData("PrimeNGNora.Dark", null, "#09090B")]
+    [InlineData("PrimeNGAura.Dark", "#10B981", "#18181B")]
+    [InlineData("PrimeNGNora.Dark", "#10B981", "#09090B")]
+    public async Task Checked_Switch_Handle_Follows_PrimeUIX(string profile, string? seed, string handle)
+    {
+        var snapshot = seed is null ? await Apply(profile) : await ApplySeed(profile, seed);
+        Own<Color>(snapshot, "ToggleSwitch", "HandleCheckedBg").ShouldBe(Color.Parse(handle));
+        Own<Color>(snapshot, "ToggleSwitch", "HandleBg").ShouldBe(Colors.White);
+        var ratio = ContrastRatio.Of(Color.Parse(handle), Own<Color>(snapshot, "ToggleSwitch", "SwitchColor"));
+        ratio.ShouldBeGreaterThanOrEqualTo(3.0, $"{profile} checked handle on the track: {ratio:F2}");
     }
 
     [AvaloniaTheory]
@@ -720,6 +823,10 @@ public class PrimeNGThemePackageTests
 
     // The pre-noir default seed: emerald-500, the raw @primeuix/themes preset value. Tests of the coloured-primary
     // rules apply it explicitly.
+    private static Task<ThemeSnapshot> ApplySeed(string id, string seed) =>
+        Apply(new ThemeRequest(id, new ThemeConfigBuilder().WithToken("ColorPrimary", seed).Build(),
+            ThemeTransitionReason.UserRequest));
+
     private static Task<ThemeSnapshot> ApplyEmerald(string id) =>
         Apply(new ThemeRequest(id, new ThemeConfigBuilder().WithToken("ColorPrimary", "#10B981").Build(),
             ThemeTransitionReason.UserRequest));

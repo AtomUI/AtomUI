@@ -31,11 +31,10 @@ internal sealed record PrimeNGNoirRule(
 /// keeps the preset's rules.
 /// </para>
 /// <para>
-/// The site's highlight is the solid primary (light <c>primary.950</c> with white text, dark <c>primary.50</c> with
-/// <c>primary.950</c> text). AtomUI list controls (Select, Cascader, ListBox, ComboBox, TreeView, DataGrid, the time
-/// and date cells) draw <c>ColorText</c> on <c>ControlItemBgActive</c>, which would be about 1.1:1 on either solid
-/// colour, so the selected background is a neutral tint one step stronger than the hover fill instead (the in-repo
-/// shadcn/ui presets use the same shape). The Button stage's Filled background therefore keeps the global one.
+/// The site's highlight is the solid primary: light <c>primary.950</c> (focus <c>primary.700</c>) with white text, dark
+/// <c>primary.50</c> (focus <c>primary.300</c>) with <c>primary.950</c> text. It is the selected background
+/// (<c>ControlItemBgActive</c>) and the selected-text tokens of the list controls, as in Nora; <c>ColorPrimaryBg</c>
+/// stays the pale primary of filled buttons and tags.
 /// </para>
 /// </remarks>
 internal static class PrimeNGNoir
@@ -58,11 +57,11 @@ internal static class PrimeNGNoir
     internal static readonly PrimeNGNoirRule Light = new(
         Primary: new PrimeNGFamilyRule(
             Base: new(950), Hover: new(800), Active: new(700),
-            // AtomUI: the site's highlight is solid 950 / focus 700 with white text, but ColorText is drawn on the
-            // selected background (see the remarks); N200 / N300 are one and two steps above the hover fill
-            // (ColorFillTertiary N100), so the selected item stays distinct from the hovered one.
-            Bg: new(200), BgHover: new(300),
-            Border: new(300), BorderHover: new(400),
+            // The pale primary (filled buttons, tags): PrimeUIX button.text hover / active background primary.50 /
+            // primary.100; the borders one step on (Lara's focus glow, ColorPrimaryBorder, is primary.200 as on the
+            // site). The solid highlight is the Highlight row.
+            Bg: new(50), BgHover: new(100),
+            Border: new(200), BorderHover: new(300),
             // AtomUI: primary-coloured text follows the primary states; it is drawn on the page background.
             TextHover: new(800), Text: new(950), TextActive: new(700)),
         // PrimeUIX button.link is primary.color; the states follow the primary states (20.2 / 14.6 / 10.4 on white).
@@ -76,10 +75,10 @@ internal static class PrimeNGNoir
     internal static readonly PrimeNGNoirRule Dark = new(
         Primary: new PrimeNGFamilyRule(
             Base: new(50), Hover: new(200), Active: new(300),
-            // AtomUI: the site's highlight is solid 50 / focus 300 with surface-950 text; ColorText (white) is drawn
-            // on the selected background, so it is a tint one and two steps above the hover fill (N800): white
-            // 10.4 / 7.7.
-            Bg: new(700), BgHover: new(600),
+            // The pale primary (filled buttons, tags): primary.color at 16% / 24%, the Aura dark shape (PrimeUIX
+            // button.text hover / active background). The borders are opaque N600 / N500: the primary end of this
+            // scale is the light one, so the Aura P700@36% would be a dark grey that vanishes on N950.
+            Bg: new(50, 0.16), BgHover: new(50, 0.24),
             Border: new(600), BorderHover: new(500),
             // AtomUI: primary-coloured text follows the primary states; it is drawn on the page background (surface
             // 950 would vanish there).
@@ -126,16 +125,19 @@ internal static class PrimeNGNoir
     }
 
     /// <summary>
-    /// A preset's rules with the noir rows: the primary family and the contrast colour. The Filled button keeps the
-    /// global backgrounds, which are a neutral tint under noir. The link row is applied separately, because the
-    /// link seed can differ from the primary seed.
+    /// A preset's rules with the noir rows: the primary family, the contrast colour and the site's highlight
+    /// (background <c>primary.color</c>, focus background <c>primary.activeColor</c> - light 950 / 700, dark 50 / 300 -
+    /// with the contrast colour as text). The link row is applied separately, because the link seed can differ from
+    /// the primary seed. The checked switch handle keeps the preset's row (Aura / Lara surface.0 / surface.900, Nora
+    /// the contrast colour), which stays visible on either noir track.
     /// </summary>
     internal static PrimeNGAppearanceRules Apply(PrimeNGAppearanceRules rules, PrimeNGNoirRule noir) =>
         rules with
         {
             Primary = noir.Primary,
             SelectionForeground = noir.SelectionForeground,
-            PrimaryTint = null
+            Highlight = static token => (token.ColorPrimary, token.ColorPrimaryActive),
+            HighlightColor = static token => token.ColorTextLightSolid
         };
 
     /// <summary>

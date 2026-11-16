@@ -260,12 +260,15 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   后，悬停、按下、焦点环和选中底色都会跟着变。
 - 十二个 profile 的默认主色改为 **noir**，即 primeng.dev（primeng 22.1.5）的默认主色：`ColorPrimary` 由 emerald
   `#10B981` 改为 `#020617`（slate-950）。中性色 950 级的种子让主色色阶取表面色阶：浅色 `#020617` / `#1E293B` /
-  `#334155` 配白字，暗色 `#FAFAFA` / `#E4E4E7` / `#D4D4D8` 配 `#09090B` 字，选中底色为中性色，CheckBox / Radio 的选中
-  标记取对比色。要恢复原来的颜色，把 `ColorPrimary` 设为 `#10B981`；其他种子行为不变。下表中的 emerald 值即 emerald
+  `#334155` 配白字，暗色 `#FAFAFA` / `#E4E4E7` / `#D4D4D8` 配 `#09090B` 字，选中项使用站点的实色 noir 高亮，CheckBox /
+  Radio 的选中标记取对比色。要恢复原来的颜色，把 `ColorPrimary` 设为 `#10B981`；其他种子行为不变。下表中的 emerald 值即 emerald
   种子下的值。
-- Nora 浅色的选中底色按 `@primeuix/themes` 3.1.1 改为实色主色（`highlight.background` 主色 600 级；emerald 种子下为
-  `#059669`，选中悬停 `#10B981`），不再是浅淡的主色 50 / 100 级。Filled `Button`、NavMenu 选中项与 Steps 已完成图标
-  与 Nora 暗色一样做了补偿。默认的 noir 主色下，各预设的选中底色都是中性色。
+- 选中项严格按 PrimeUIX 3.1.1 的 `highlight`：选中底色为 `ControlItemBgActive`（Nora 浅色主色 600 / 悬停 700，暗色
+  500 / 400；noir 950 / 700，暗色 50 / 300；Aura 与 Lara 保持浅淡的主色 50 / 100），Select、Cascader、ComboBox、ListBox、
+  ListView、TransferListView、TreeView、TransferTreeView、TreeSelect 的选中文字为 `highlight.color`（Aura / Lara 浅色为
+  主色 700，不再是正文色）。`ColorPrimaryBg` 保持浅淡主色（Nora 暗色为主色 16%，不再是实色 500），Filled 按钮与 Tag
+  不再需要补偿；Nora 暗色 `ColorPrimaryText` 改为可读的主色 400，不再是 zinc-950。日期与时间格子保持浅淡选中底色。
+  ToggleSwitch 选中把手按 PrimeUIX（Aura / Lara 暗色 zinc-900，Nora 为对比色）。
 - 暗色的主色和错误色变了。旧的暗色 profile 让 `AtomUI:Dark` 对已经是最终值的颜色又推导了一遍：
 
   | Profile | `ColorPrimary` | `ColorError` |

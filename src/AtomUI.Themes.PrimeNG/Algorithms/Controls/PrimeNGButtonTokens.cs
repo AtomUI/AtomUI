@@ -9,10 +9,9 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// Button under the PrimeNG presets: the PrimeUIX <c>button.label.font.weight</c> (Aura 500, Lara 600, Nora 700)
 /// and the horizontal label padding of each size: PrimeUIX <c>button.padding.x</c> (the field padding: 10 / sm 8 /
 /// lg 12; Lara's normal size 0.875rem) plus the border, so the label sits where primeng.dev puts it. The radius is
-/// the global <c>BorderRadius</c> already (PrimeUIX <c>button.border.radius</c> is <c>border.radius.md</c>; Nora <c>border.radius.xs</c>, which is its seed). Where the
-/// preset's selected background is the solid primary (Nora), the button's own <c>ColorPrimaryBg</c> /
-/// <c>ColorPrimaryBgHover</c> come from the rule table so the Filled variant's primary text stays readable; a noir
-/// primary keeps the global ones, which are a neutral tint (<see cref="PrimeNGNoir"/>).
+/// the global <c>BorderRadius</c> already (PrimeUIX <c>button.border.radius</c> is <c>border.radius.md</c>; Nora <c>border.radius.xs</c>, which is its seed). The Filled
+/// variant draws the primary on the global <c>ColorPrimaryBg</c>, which every preset keeps pale (the solid highlight is
+/// <c>ControlItemBgActive</c> only), so it needs no compensation.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
@@ -25,11 +24,6 @@ internal sealed class PrimeNGButtonTokens : IControlTokenAlgorithm<ButtonToken>
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
-        var preset = PrimeNGPresets.Resolve(context);
-        if (PrimeNGNoir.Resolve(preset, context.Appearance, controlGlobal).PrimaryTint is { } primaryBg)
-        {
-            (controlGlobal.ColorPrimaryBg, controlGlobal.ColorPrimaryBgHover) = primaryBg(controlGlobal);
-        }
     }
 
     /// <inheritdoc />

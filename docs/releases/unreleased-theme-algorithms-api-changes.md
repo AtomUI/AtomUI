@@ -286,13 +286,18 @@ changes:
 - The default primary of all twelve profiles is now **noir**, the default of primeng.dev (primeng 22.1.5):
   `ColorPrimary` is `#020617` (slate-950) instead of emerald `#10B981`. A neutral-950 seed makes the primary scale the
   surface scale: light `#020617` / `#1E293B` / `#334155` with white text, dark `#FAFAFA` / `#E4E4E7` / `#D4D4D8` with
-  `#09090B` text, a neutral selected background, and checked CheckBox / Radio marks in the contrast colour. Set
+  `#09090B` text, the site's solid noir highlight for selected items, and checked CheckBox / Radio marks in the
+  contrast colour. Set
   `ColorPrimary` to `#10B981` to get the previous colours back; every other seed behaves as before. The emerald values
   in the table below are those of the emerald seed.
-- Nora light's selected background follows `@primeuix/themes` 3.1.1 (`highlight.background` primary 600): it is the
-  solid primary (emerald seed `#059669`, selected-hover `#10B981`) instead of the pale primary 50 / 100. The Filled
-  `Button`, the selected NavMenu item and the completed Steps icon compensate as in Nora dark. With the default noir
-  primary the selected background is a neutral tint in every preset.
+- Selected items follow PrimeUIX `highlight` (3.1.1) exactly: the selected background is `ControlItemBgActive`
+  (Nora light primary 600 / hover 700, dark 500 / 400; noir 950 / 700, dark 50 / 300; Aura and Lara keep the pale
+  primary 50 / 100) and the selected text of Select, Cascader, ComboBox, ListBox, ListView, TransferListView, TreeView,
+  TransferTreeView and TreeSelect is `highlight.color` (Aura / Lara light: primary 700 instead of the body text).
+  `ColorPrimaryBg` stays the pale primary (Nora dark: primary at 16% instead of the solid 500), so filled buttons and
+  tags no longer need a compensation; Nora dark `ColorPrimaryText` is the readable primary 400 instead of zinc-950.
+  The date and time cells keep the pale selected background. The checked ToggleSwitch handle follows PrimeUIX
+  (Aura / Lara dark zinc-900, Nora the contrast colour).
 - Dark primary and error colours change, because the old dark profiles ran `AtomUI:Dark` over values that were
   already final:
 

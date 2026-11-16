@@ -76,7 +76,11 @@ internal static class PrimeNGAuraPreset
             ControlOutline: null,
             FocusBorder: static token => token.ColorPrimary,
             CardBorderSecondary: null,
-            PrimaryTint: null),
+            // PrimeUIX highlight: the pale P50 / P100 (ColorPrimaryBg / BgHover) with primary.700 text (ColorPrimaryText).
+            Highlight: null,
+            HighlightColor: static token => token.ColorPrimaryText,
+            // PrimeUIX toggleswitch.handle.checked.background: surface.0.
+            SwitchHandleChecked: new(White)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -108,7 +112,11 @@ internal static class PrimeNGAuraPreset
             ControlOutline: null,
             FocusBorder: static token => token.ColorPrimary,
             CardBorderSecondary: null,
-            PrimaryTint: null),
+            // PrimeUIX highlight: P400 at 16% / 24% (ColorPrimaryBg / BgHover) with white at 87% (ColorPrimaryText).
+            Highlight: null,
+            HighlightColor: static token => token.ColorPrimaryText,
+            // PrimeUIX toggleswitch.handle.checked.background: surface.900.
+            SwitchHandleChecked: new(900)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

@@ -49,15 +49,13 @@ internal static class PrimeNGNoraPreset
     internal static readonly PrimeNGPreset Table = new(
         Light: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Slate,
-            // PrimeUIX nora (3.1.1) highlight: a solid primary 600 background with white text. Its focus background
-            // is P700, but AtomUI controls draw ColorText (N900) on the selected and selected-hover backgrounds
-            // (Select, ListBox, time cells, DataGrid rows), so BgHover departs and takes P500, lighter than the
-            // background: N900 on emerald 600 / 500 is 4.74 / 7.04 (P700 would give 3.26). The primary text rows
-            // depart from PrimeUIX highlight.color (white): AtomUI draws ColorPrimaryText* on the page background, so
-            // they keep the page-readable P800 / P700 / P900.
+            // ColorPrimaryBg / BgHover are the pale primary (PrimeUIX button.text hover / active background primary.50 /
+            // primary.100); the solid highlight is the Highlight row. The primary text rows are drawn on the page
+            // background, so they keep the page-readable P800 / P700 / P900 (PrimeUIX highlight.color, white, is the
+            // HighlightColor row).
             Primary: new PrimeNGFamilyRule(
                 Base: new(600), Hover: new(700), Active: new(800),
-                Bg: new(600), BgHover: new(500),
+                Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(700), Text: new(800), TextActive: new(900)),
             // Links take deeper stops than the primary fill so link text stays readable on white; hover and active go deeper.
@@ -88,22 +86,23 @@ internal static class PrimeNGNoraPreset
             ControlOutline: null,
             FocusBorder: static token => token.ColorPrimary,
             CardBorderSecondary: null,
-            // The Filled primary button and the selected NavMenu item draw the primary colour on ColorPrimaryBg, the
-            // solid primary here; they take a translucent tint close to PrimeUIX primary.50 / primary.100 (the
-            // button.text hover / active backgrounds), which a control stage cannot read as stops.
-            PrimaryTint: static token => (PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.06),
-                                          PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.16))),
+            // PrimeUIX nora (3.1.1) highlight: background primary.600 (ColorPrimary), focusBackground primary.700
+            // (ColorPrimaryHover), color #ffffff (the contrast colour).
+            Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
+            HighlightColor: static token => token.ColorTextLightSolid,
+            // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color.
+            SwitchHandleChecked: new(White)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
-            // PrimeUIX nora-compat highlight: a solid primary 500 background with surface.950 text. Its focus
-            // background is P400 with dark text, but AtomUI draws ColorText (white) on the selected-hover background
-            // (ControlItemBgActiveHover), so BgHover departs from PrimeUIX and takes P700.
+            // ColorPrimaryBg / BgHover are the primary at 16% / 24% (PrimeUIX button.text hover / active background);
+            // the solid highlight is the Highlight row. The primary text rows are drawn on the page background, so they
+            // take the light stops 400 / 300 / 200 (PrimeUIX highlight.color, surface.950, is the HighlightColor row
+            // and would vanish on the page).
             Primary: new PrimeNGFamilyRule(
                 Base: new(500), Hover: new(400), Active: new(300),
-                Bg: new(500), BgHover: new(700),
+                Bg: new(500, 0.16), BgHover: new(500, 0.24),
                 Border: new(700, 0.36), BorderHover: new(600, 0.36),
-                TextHover: PrimeNGShade.Surface(950), Text: PrimeNGShade.Surface(950),
-                TextActive: PrimeNGShade.Surface(950)),
+                TextHover: new(300), Text: new(400), TextActive: new(200)),
             Link: new PrimeNGLinkRule(Base: new(500), Hover: new(400), Active: new(300)),
             Status: new PrimeNGFamilyRule(
                 Base: new(500), Hover: new(400), Active: new(300),
@@ -131,10 +130,12 @@ internal static class PrimeNGNoraPreset
             FocusBorder: static token => token.ColorBorder,
             // PrimeUIX nora-compat overlay.*.border.color: transparent in light, surface.700 in dark.
             CardBorderSecondary: new(700),
-            // The Filled primary button and the selected NavMenu item draw the primary colour on ColorPrimaryBg, the
-            // solid primary here; they take the Aura dark shape (the primary at 16% / 24%).
-            PrimaryTint: static token => (PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.16),
-                                          PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.24))),
+            // PrimeUIX nora (3.1.1) highlight: background primary.500 (ColorPrimary), focusBackground primary.400
+            // (ColorPrimaryHover), color surface.950 (the contrast colour).
+            Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
+            HighlightColor: static token => token.ColorTextLightSolid,
+            // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color (surface.950).
+            SwitchHandleChecked: new(950)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),

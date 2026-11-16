@@ -22,7 +22,7 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 /// as with <c>AtomUI:Dark</c>. Compact density is <c>AtomUI:Compact</c> appended to the chain.
 /// </para>
 /// <para>
-/// The Alias stage writes the preset's focus, placeholder, disabled, contrast, padding and shadow rules; the
+/// The Alias stage writes the preset's focus, placeholder, disabled, contrast, highlight, padding and shadow rules; the
 /// per-control values are control stages under <c>Algorithms/Controls</c>, shared by the light and dark variant.
 /// </para>
 /// </remarks>
@@ -97,6 +97,12 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         // from secondary text and readable on the disabled background.
         token.ColorTextDisabled        = rules.Neutral.TextDisabled.Resolve(surface);
         token.ColorTextLightSolid      = rules.SelectionForeground.Resolve(surface);
+        // PrimeUIX highlight.background / focusBackground: the selected item's background. Without a row the Ant
+        // formula (ColorPrimaryBg / BgHover) stays, the pale highlight of Aura and Lara.
+        if (rules.Highlight is { } highlight)
+        {
+            (token.ControlItemBgActive, token.ControlItemBgActiveHover) = highlight(token);
+        }
 
         // @primeuix/themes 3.1.1 form.field.padding.x is 0.625rem, sm 0.5rem, lg 0.75rem (10 / 8 / 12) in all three
         // presets. They follow the size ladder (SizeSM 12, compact 8), so AtomUI:Compact narrows them too. The Ant

@@ -138,13 +138,22 @@ internal sealed record PrimeNGNeutralRule(
 /// The card's own <c>ColorBorderSecondary</c>, a stop of the surface scale; <see langword="null"/> keeps the global
 /// value.
 /// </param>
-/// <param name="PrimaryTint">
-/// A translucent primary tint (rest and hover), computed from the control's global tokens, for the controls that draw
-/// the primary colour on the selected background: the button's own <c>ColorPrimaryBg</c> and
-/// <c>ColorPrimaryBgHover</c> (the Filled primary background and its hover, also the Text variant's hover) and the
-/// NavMenu's <c>ItemSelectedBg</c> (the rest tint). <see langword="null"/> keeps the global values. A preset whose
-/// selected background is the solid primary (Nora) needs it, because the primary colour would vanish on that
-/// background.
+/// <param name="Highlight">
+/// PrimeUIX <c>highlight.background</c> and <c>highlight.focusBackground</c>, the selected item's background and its
+/// hover, written by the Alias stage to <c>ControlItemBgActive</c> / <c>ControlItemBgActiveHover</c> from the final Map
+/// tokens; <see langword="null"/> keeps the Ant Design formula (<c>ColorPrimaryBg</c> / <c>ColorPrimaryBgHover</c>),
+/// which is the pale highlight of Aura and Lara. <c>ColorPrimaryBg</c> itself stays the pale primary background
+/// (filled buttons, tags, step panels).
+/// </param>
+/// <param name="HighlightColor">
+/// PrimeUIX <c>highlight.color</c>, the selected item's text, computed from the final tokens; the control stages write
+/// it to the selected-text tokens (Select, Cascader, ComboBox, ListBox, ListView, TreeView and their variants).
+/// PrimeUIX <c>highlight.focusColor</c> equals it in every preset except Aura / Lara light (P800); AtomUI has no
+/// separate selected-hover text slot.
+/// </param>
+/// <param name="SwitchHandleChecked">
+/// PrimeUIX <c>toggleswitch.handle.checked.background</c>, a stop of the surface scale (the ToggleSwitch's own
+/// <c>HandleCheckedBg</c>).
 /// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
@@ -158,7 +167,9 @@ internal sealed record PrimeNGAppearanceRules(
     Func<DesignToken, Color>? ControlOutline,
     Func<DesignToken, Color> FocusBorder,
     PrimeNGShade? CardBorderSecondary,
-    Func<DesignToken, (Color Bg, Color BgHover)>? PrimaryTint);
+    Func<DesignToken, (Color Background, Color FocusBackground)>? Highlight,
+    Func<DesignToken, Color> HighlightColor,
+    PrimeNGShade SwitchHandleChecked);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the

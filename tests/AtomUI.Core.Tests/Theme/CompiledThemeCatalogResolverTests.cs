@@ -440,12 +440,14 @@ public class CompiledThemeCatalogResolverTests
         });
     }
 
-    [Fact(Skip = "Enabled by Task 3: ABI 3 publishes NeutralColor and NeutralAccentColor.")]
+    [Fact]
     public void Runtime_And_Compiled_Readers_Agree_On_NeutralColor()
     {
         HeadlessTestApp.Run(() =>
         {
-            // Runtime XML catalog leg (the compiled-program leg is added with ABI 3 in Task 3).
+            // The runtime XML catalog leg; the compiled-program ABI 3 leg publishes the same metadata
+            // (CompiledThemeProgramAbiTests) and the generator emits base(3, ...) with both arguments
+            // (CompiledThemeMetadataTests.Generator_Emits_Abi3_With_Metadata).
             var manager = BuildLanguageManager(
                 LanguageXml("PkgBlue", "TestLang", "Light", "Normal", "Seed", "Seed"));
             var info = manager.AvailableThemes.Single(static theme => theme.Id == "PkgBlue");

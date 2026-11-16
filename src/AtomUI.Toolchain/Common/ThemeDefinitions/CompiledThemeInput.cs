@@ -19,6 +19,8 @@ internal sealed class CompiledThemeInput
     internal int Density;
     /// <summary>Numeric value of <c>ThemeBrandColorSupport</c>.</summary>
     internal int BrandColor;
+    /// <summary>Numeric value of <c>ThemeNeutralColorSupport</c>.</summary>
+    internal int NeutralColor;
     internal ThemeAlgorithmInput[] Algorithms = Array.Empty<ThemeAlgorithmInput>();
     internal ThemeLiteralInput[] Tokens = Array.Empty<ThemeLiteralInput>();
     internal ThemeControlInput[] Controls = Array.Empty<ThemeControlInput>();
@@ -26,7 +28,8 @@ internal sealed class CompiledThemeInput
     internal const string Extension = ".atomuithemeinput";
     // 5: algorithms are written as Catalog/Id strings with their source location instead of enum values.
     // 6: adds the design language, density and brand color support of the definition.
-    private const int FormatVersion = 6;
+    // 7: adds the neutral color support of the definition.
+    private const int FormatVersion = 7;
     private const int MaximumBytes = 8 * 1024 * 1024;
     private const int MaximumRecords = 65536;
     internal string Encode()
@@ -37,7 +40,7 @@ internal sealed class CompiledThemeInput
             writer.Write(FormatVersion); writer.Write("atomui-theme-reader-xsd-v1");
             writer.Write(SourceIdentity); writer.Write(SourcePath); writer.Write(ContentDigest);
             writer.Write(Id); writer.Write(Name); writer.Write(Appearance); writer.Write(IsDefault);
-            writer.Write(DesignLanguage); writer.Write(Density); writer.Write(BrandColor);
+            writer.Write(DesignLanguage); writer.Write(Density); writer.Write(BrandColor); writer.Write(NeutralColor);
             WriteAlgorithms(writer, Algorithms); WriteTokens(writer, Tokens);
             writer.Write(Controls.Length);
             foreach (var control in Controls)
@@ -65,7 +68,7 @@ internal sealed class CompiledThemeInput
         {
             SourceIdentity = reader.ReadString(), SourcePath = reader.ReadString(), ContentDigest = reader.ReadString(),
             Id = reader.ReadString(), Name = reader.ReadString(), Appearance = reader.ReadInt32(), IsDefault = reader.ReadBoolean(),
-            DesignLanguage = reader.ReadString(), Density = reader.ReadInt32(), BrandColor = reader.ReadInt32(),
+            DesignLanguage = reader.ReadString(), Density = reader.ReadInt32(), BrandColor = reader.ReadInt32(), NeutralColor = reader.ReadInt32(),
             Algorithms = ReadAlgorithms(reader), Tokens = ReadTokens(reader)
         };
         input.Controls = new ThemeControlInput[ReadCount(reader)];
@@ -77,7 +80,7 @@ internal sealed class CompiledThemeInput
                 Algorithms = ReadAlgorithms(reader), Tokens = ReadTokens(reader), Line = reader.ReadInt32(), Column = reader.ReadInt32()
             };
         }
-        if (stream.Position != stream.Length || input.ContentDigest.Length != 64 || input.Appearance < 0 || input.Appearance > 1 || input.Density < 0 || input.Density > 1 || input.BrandColor < 0 || input.BrandColor > 1 ||
+        if (stream.Position != stream.Length || input.ContentDigest.Length != 64 || input.Appearance < 0 || input.Appearance > 1 || input.Density < 0 || input.Density > 1 || input.BrandColor < 0 || input.BrandColor > 1 || input.NeutralColor < 0 || input.NeutralColor > 1 ||
             (input.DesignLanguage.Length > 0 && !ThemeBuildIdentifier.IsValid(input.DesignLanguage)) || string.IsNullOrWhiteSpace(input.Id))
         { throw new InvalidDataException("Invalid compiled theme input."); }
         return input;

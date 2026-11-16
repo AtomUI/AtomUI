@@ -78,6 +78,65 @@ public abstract class CompiledThemeProgram
         };
     }
 
+    /// <summary>
+    /// Creates an ABI 3 program that also publishes the neutral color support and its own <c>ColorNeutral</c> seed.
+    /// </summary>
+    /// <param name="algorithms">The algorithm chain, each element formatted as <c>Catalog:Id</c>.</param>
+    /// <param name="neutralAccentColor">The definition's own <c>ColorNeutral</c> seed, or <see langword="null"/>.</param>
+    protected CompiledThemeProgram(
+        int abiVersion, string sourceIdentity, string sourceRevision, string contentDigest,
+        string programDigest, string id, string name, ThemeAppearance appearance, bool isDefault, Color? accentColor,
+        string? designLanguage, ThemeDensity density, ThemeBrandColorSupport brandColor,
+        ThemeNeutralColorSupport neutralColor, Color? neutralAccentColor, string[] algorithms)
+    {
+        if (abiVersion != 3)
+        {
+            throw new NotSupportedException($"Compiled theme ABI '{abiVersion}' is not supported.");
+        }
+        Validate(sourceIdentity, sourceRevision, contentDigest, programDigest, id, name, appearance);
+        ArgumentNullException.ThrowIfNull(algorithms);
+        if (designLanguage is not null)
+        {
+            SchemaIdentifier.Validate(designLanguage, nameof(designLanguage));
+        }
+        if (!Enum.IsDefined(density))
+        {
+            throw new ArgumentOutOfRangeException(nameof(density));
+        }
+        if (!Enum.IsDefined(brandColor))
+        {
+            throw new ArgumentOutOfRangeException(nameof(brandColor));
+        }
+        if (!Enum.IsDefined(neutralColor))
+        {
+            throw new ArgumentOutOfRangeException(nameof(neutralColor));
+        }
+        var chain = new ThemeAlgorithm[algorithms.Length];
+        for (var i = 0; i < chain.Length; i++)
+        {
+            var text = algorithms[i] ?? throw new ArgumentNullException(nameof(algorithms), "Algorithm identities must not be null.");
+            var separator = text.IndexOf(':');
+            if (separator <= 0 || separator == text.Length - 1)
+            {
+                throw new ArgumentException($"Algorithm identity '{text}' must be formatted as 'Catalog:Id'.", nameof(algorithms));
+            }
+            chain[i] = new ThemeAlgorithm(text[..separator], text[(separator + 1)..]);
+        }
+        SourceIdentity = sourceIdentity;
+        SourceRevision = sourceRevision;
+        ContentDigest = contentDigest;
+        ProgramDigest = programDigest;
+        Info = new ThemeInfo(id, name, appearance, isDefault, accentColor)
+        {
+            DesignLanguage = designLanguage,
+            Density = density,
+            BrandColor = brandColor,
+            NeutralColor = neutralColor,
+            NeutralAccentColor = neutralAccentColor,
+            Algorithms = chain
+        };
+    }
+
     private static void Validate(string sourceIdentity, string sourceRevision, string contentDigest, string programDigest,
         string id, string name, ThemeAppearance appearance)
     {

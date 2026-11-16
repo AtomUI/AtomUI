@@ -32,5 +32,11 @@ internal static partial class AtomUIDiagnosticDescriptors
         AtomUIDiagnosticIds.DesignLanguageDensityMismatch, "Density does not match the algorithm chain",
         "Theme '{0}' of design language '{1}' declares Density=\"{2}\" but its algorithm chain {3} the built-in Compact algorithm",
         AtomUIDiagnosticCategories.Token, DiagnosticSeverity.Warning, true);
+
+    /// <summary>ATMTHM3108: the definitions of one design language in the package mix Seed and Fixed neutral color support.</summary>
+    internal static readonly DiagnosticDescriptor DesignLanguageMixedNeutralColor = new(
+        AtomUIDiagnosticIds.DesignLanguageMixedNeutralColor, "Mixed neutral color support in a design language",
+        "Design language '{0}' mixes Seed and Fixed neutral color support in this package; '{1}' declares {2} and is rejected",
+        AtomUIDiagnosticCategories.Token, DiagnosticSeverity.Error, true);
 }
 #pragma warning restore RS2008

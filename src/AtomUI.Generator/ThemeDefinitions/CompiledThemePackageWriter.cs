@@ -25,6 +25,7 @@ internal static class CompiledThemePackageWriter
     private static string DensityName(int density) => density == 1 ? "Compact" : "Normal";
     private static string AppearanceName(int appearance) => appearance == 1 ? "Dark" : "Light";
     private static string BrandColorName(int brandColor) => brandColor == 1 ? "Seed" : "Fixed";
+    private static string NeutralColorName(int neutralColor) => neutralColor == 1 ? "Seed" : "Fixed";
     internal static CompiledThemeManifest? Write(GenerationOutput output, Compilation compilation, ThemeBuildContracts contracts,
         IEnumerable<(string Path, string Text)> files, string assemblyName, string packageId)
     {
@@ -33,6 +34,7 @@ internal static class CompiledThemePackageWriter
         var ids = new HashSet<string>(StringComparer.Ordinal);
         var variants = new HashSet<string>(StringComparer.Ordinal);
         var brandSupport = new Dictionary<string, int>(StringComparer.Ordinal);
+        var neutralSupport = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var file in files)
         {
             CompiledThemeInput input;
@@ -55,8 +57,15 @@ internal static class CompiledThemePackageWriter
                         input.DesignLanguage, input.Id, BrandColorName(input.BrandColor));
                     continue;
                 }
+                if (neutralSupport.TryGetValue(input.DesignLanguage, out var neutral) && neutral != input.NeutralColor)
+                {
+                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageMixedNeutralColor, input.SourcePath, 0, 0,
+                        input.DesignLanguage, input.Id, NeutralColorName(input.NeutralColor));
+                    continue;
+                }
                 variants.Add(variant);
                 brandSupport[input.DesignLanguage] = input.BrandColor;
+                neutralSupport[input.DesignLanguage] = input.NeutralColor;
                 // The resolver picks a variant by its declared Density; a chain that disagrees renders another density.
                 var compactChain = input.Algorithms.Any(a => a.Catalog == "AtomUI" && a.Id == "Compact");
                 if (compactChain != (input.Density == 1))
@@ -71,13 +80,14 @@ internal static class CompiledThemePackageWriter
             var currentWrite = write;
             var controlDescriptions = new List<string>();
             var controlWrites = new List<string>();
-            var fields = new List<string> { "compiled-abi-v2", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
+            var fields = new List<string> { "compiled-abi-v3", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
                 input.Id, input.Name, input.Appearance.ToString(CultureInfo.InvariantCulture), input.IsDefault.ToString() };
-            fields.Add(input.DesignLanguage); fields.Add(input.Density.ToString(CultureInfo.InvariantCulture)); fields.Add(input.BrandColor.ToString(CultureInfo.InvariantCulture));
+            fields.Add(input.DesignLanguage); fields.Add(input.Density.ToString(CultureInfo.InvariantCulture)); fields.Add(input.BrandColor.ToString(CultureInfo.InvariantCulture)); fields.Add(input.NeutralColor.ToString(CultureInfo.InvariantCulture));
             fields.AddRange(input.Algorithms.Select(a => a.Catalog + ":" + a.Id));
             var tokenId = 0;
             var valid = true;
             var accent = "null";
+            var neutralAccent = "null";
             void Check(IEnumerable<ThemeAlgorithmInput> algorithms)
             {
                 foreach (var algorithm in algorithms.Where(a => !contracts.Algorithms.ContainsKey(a.Catalog + "\u001f" + a.Id)))
@@ -109,6 +119,7 @@ internal static class CompiledThemePackageWriter
                         .Append(", ").Append(value.Expression).Append(", ").Append(ThemeBuildContracts.Literal(value.Canonical)).AppendLine(");");
                     fields.AddRange(contract.Fields); fields.Add(method); fields.Add(prefix); fields.Add(value.Canonical); fields.Add(value.Expression);
                     if (!controlId.HasValue && literal.Name == "ColorPrimary" && ThemeLiteralCodec.NormalizeType(type) == "Avalonia.Media.Color") { accent = value.Expression; }
+                    if (!controlId.HasValue && literal.Name == "ColorNeutral" && ThemeLiteralCodec.NormalizeType(type) == "Avalonia.Media.Color") { neutralAccent = value.Expression; }
                     requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id, Catalog = owner?.Catalog ?? "", ControlId = owner?.Id ?? "",
                         OwnerAssemblyName = owner is null ? "" : new System.Reflection.AssemblyName(owner.OwnerAssembly).Name!, OwnerMetadataName = owner?.OwnerType ?? "",
                         Scope = own ? "own" : controlId.HasValue ? "controlGlobal" : "global", TokenName = contract.Name,
@@ -146,13 +157,14 @@ internal static class CompiledThemePackageWriter
             if (!valid) { continue; }
             var programName = "CompiledThemeProgram_" + programs.Count;
             var source = new StringBuilder("internal sealed class " + programName + " : " + Compiled + "CompiledThemeProgram\n{\n");
-            source.Append("    internal ").Append(programName).Append("() : base(2, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
+            source.Append("    internal ").Append(programName).Append("() : base(3, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
                 .Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest)).Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest))
                 .Append(", ").Append(ThemeBuildContracts.Literal(ThemeBuildContracts.Digest(fields))).Append(", ").Append(ThemeBuildContracts.Literal(input.Id))
                 .Append(", ").Append(ThemeBuildContracts.Literal(input.Name)).Append(", (global::AtomUI.Theme.ThemeAppearance)").Append(input.Appearance)
                 .Append(", ").Append(input.IsDefault ? "true" : "false").Append(", ").Append(accent)
                 .Append(", ").Append(input.DesignLanguage.Length == 0 ? "null" : ThemeBuildContracts.Literal(input.DesignLanguage))
                 .Append(", (global::AtomUI.Theme.ThemeDensity)").Append(input.Density).Append(", (global::AtomUI.Theme.ThemeBrandColorSupport)").Append(input.BrandColor)
+                .Append(", (global::AtomUI.Theme.ThemeNeutralColorSupport)").Append(input.NeutralColor).Append(", ").Append(neutralAccent)
                 .Append(", new string[] { ").Append(string.Join(", ", input.Algorithms.Select(a => ThemeBuildContracts.Literal(a.Catalog + ":" + a.Id)))).AppendLine(" }) { }");
             source.AppendLine("    protected override bool IsBackgroundPrepareSafe => true;");
             source.Append("    protected override void Describe(").Append(Compiled).Append("CompiledThemeBindingBuilder builder)\n    {\n").Append(describe).AppendLine("    }");

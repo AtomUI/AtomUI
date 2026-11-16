@@ -16,17 +16,38 @@ public class CompiledThemeMetadataTests
     private const string PackageFile = "GeneratedThemePackageRegistration.g.cs";
 
     [Fact]
-    public void Generator_Emits_Abi2_With_Metadata()
+    public void Generator_Emits_Abi3_With_Metadata()
     {
+        var light = Input("AuraLight", 0, 0, 1);
+        light.NeutralColor = 1;
+        var dark = Input("AuraDark", 1, 0, 1);
+        dark.NeutralColor = 1;
         var package = Run(out var diagnostics,
-            Input("AuraLight", 0, 0, 1), Input("AuraDark", 1, 0, 1));
+            light, dark);
 
         diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
         var source = package.SyntaxTrees.Single(t => t.FilePath.EndsWith(PackageFile, StringComparison.Ordinal))
                             .GetText(TestContext.Current.CancellationToken).ToString();
-        source.ShouldContain("base(2,");
+        source.ShouldContain("base(3,");
         source.ShouldContain("\"PrimeNG.Aura\"");
+        source.ShouldContain("(global::AtomUI.Theme.ThemeNeutralColorSupport)1");
         source.ShouldNotContain("base(1,");
+        source.ShouldNotContain("base(2,");
+    }
+
+    [Fact]
+    public void Generator_Reports_ATMTHM3108_For_Mixed_NeutralColor()
+    {
+        var seed = Input("AuraLight", 0, 0, 1);
+        seed.NeutralColor = 1;
+        Run(out var diagnostics, seed, Input("AuraDark", 1, 0, 1));
+
+        var mixed = diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error)
+                               .ShouldHaveSingleItem();
+        mixed.Id.ShouldBe("ATMTHM3108");
+        mixed.Descriptor.Title.ToString(null).ShouldBe("Mixed neutral color support in a design language");
+        mixed.GetMessage(null).ShouldBe(
+            "Design language 'PrimeNG.Aura' mixes Seed and Fixed neutral color support in this package; 'AuraDark' declares Fixed and is rejected");
     }
 
     [Fact]

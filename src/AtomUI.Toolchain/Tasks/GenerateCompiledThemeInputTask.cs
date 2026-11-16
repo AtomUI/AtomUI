@@ -81,7 +81,7 @@ public sealed class GenerateCompiledThemeInputTask : ITask
             {
                 SourceIdentity = input.SourceIdentity.Replace('\\', '/'), SourcePath = Path.GetFullPath(input.SourcePath), ContentDigest = digest,
                 Id = document.Id, Name = document.Name, Appearance = (int)document.Appearance, IsDefault = document.IsDefault,
-                DesignLanguage = document.DesignLanguage ?? "", Density = (int)document.Density, BrandColor = (int)document.BrandColor,
+                DesignLanguage = document.DesignLanguage ?? "", Density = (int)document.Density, BrandColor = (int)document.BrandColor, NeutralColor = (int)document.NeutralColor,
                 Algorithms = Algorithms(document.Algorithms), Tokens = Tokens(document.Tokens),
                 Controls = document.Controls.Select(c => new ThemeControlInput { Catalog = c.Identity.Catalog, Id = c.Identity.Id,
                     Mode = (int)c.AlgorithmMode, Algorithms = Algorithms(c.Algorithms), Tokens = Tokens(c.Tokens), Line = c.Location.Line, Column = c.Location.Column }).ToArray()

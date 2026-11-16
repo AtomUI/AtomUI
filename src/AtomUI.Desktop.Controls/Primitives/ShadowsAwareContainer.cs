@@ -32,6 +32,14 @@ internal class ShadowsAwareContainer : Decorator
     public static readonly StyledProperty<Direction> ArrowDirectionProperty = 
         ArrowDecoratedBox.ArrowDirectionProperty.AddOwner<ShadowsAwareContainer>();
     
+    /// <summary>
+    /// The border width of the content surface when it draws its own border (a bordered arrow box). While it is not
+    /// zero the outline rings of the frame shadow (<c>0 0 0 N</c> entries that stand in for a border) are not painted,
+    /// so the surface keeps one outline.
+    /// </summary>
+    internal static readonly StyledProperty<Thickness> SurfaceBorderThicknessProperty =
+        AvaloniaProperty.Register<ShadowsAwareContainer, Thickness>(nameof(SurfaceBorderThickness));
+
     public static readonly StyledProperty<bool> IsOverlayModeProperty = 
         AvaloniaProperty.Register<ShadowsAwareContainer, bool>(nameof (IsOverlayMode), false);
     
@@ -71,6 +79,12 @@ internal class ShadowsAwareContainer : Decorator
         set => SetValue(ArrowDirectionProperty, value);
     }
     
+    internal Thickness SurfaceBorderThickness
+    {
+        get => GetValue(SurfaceBorderThicknessProperty);
+        set => SetValue(SurfaceBorderThicknessProperty, value);
+    }
+
     public bool IsOverlayMode
     {
         get => GetValue(IsOverlayModeProperty);
@@ -304,6 +318,7 @@ internal class ShadowsAwareContainer : Decorator
         _frameRenderer[!PopupFrameRenderer.BoxShadowProperty]         = this[!BoxShadowProperty];
         _frameRenderer[!PopupFrameRenderer.CornerRadiusProperty]      = this[!CornerRadiusProperty];
         _frameRenderer[!PopupFrameRenderer.SurfaceBackgroundProperty] = this[!SurfaceBackgroundProperty];
+        _frameRenderer[!PopupFrameRenderer.SurfaceBorderThicknessProperty] = this[!SurfaceBorderThicknessProperty];
         ((ISetLogicalParent)_frameRenderer).SetParent(this);
         VisualChildren.Insert(0, _frameRenderer);
         LogicalChildren.Insert(0, _frameRenderer);
@@ -380,6 +395,8 @@ internal class ShadowsAwareContainer : Decorator
                     arrowDecoratedBox, ArrowDecoratedBox.ArrowDirectionProperty, this, ArrowDirectionProperty));
                 _surfaceBindings.Add(BindUtils.RelayBind(
                     arrowDecoratedBox, ArrowDecoratedBox.IsArrowVisibleProperty, this, IsArrowVisibleProperty));
+                _surfaceBindings.Add(BindUtils.RelayBind(
+                    arrowDecoratedBox, ArrowDecoratedBox.BorderThicknessProperty, this, SurfaceBorderThicknessProperty));
             }
             else
             {
@@ -387,6 +404,7 @@ internal class ShadowsAwareContainer : Decorator
                 // 模板后续（重新）应用时重新探测，部件就绪即恢复箭头绑定
                 SetCurrentValue(IsArrowVisibleProperty, false);
                 SetCurrentValue(CornerRadiusProperty, default);
+                SetCurrentValue(SurfaceBorderThicknessProperty, default(Thickness));
                 if (child is TemplatedControl templatedChild)
                 {
                     templatedChild.TemplateApplied += HandleSurfaceTemplateApplied;
@@ -397,12 +415,14 @@ internal class ShadowsAwareContainer : Decorator
         else if (child is Border bordered)
         {
             SetCurrentValue(IsArrowVisibleProperty, false);
+            SetCurrentValue(SurfaceBorderThicknessProperty, default(Thickness));
             _surfaceBindings.Add(BindUtils.RelayBind(
                 bordered, Border.CornerRadiusProperty, this, CornerRadiusProperty));
         }
         else if (child is TemplatedControl templatedControl)
         {
             SetCurrentValue(IsArrowVisibleProperty, false);
+            SetCurrentValue(SurfaceBorderThicknessProperty, default(Thickness));
             _surfaceBindings.Add(BindUtils.RelayBind(
                 templatedControl, TemplatedControl.CornerRadiusProperty, this, CornerRadiusProperty));
         }
@@ -410,6 +430,7 @@ internal class ShadowsAwareContainer : Decorator
         {
             SetCurrentValue(IsArrowVisibleProperty, false);
             SetCurrentValue(CornerRadiusProperty, default);
+            SetCurrentValue(SurfaceBorderThicknessProperty, default(Thickness));
         }
     }
 
@@ -429,6 +450,13 @@ internal class ShadowsAwareContainer : Decorator
         public static readonly StyledProperty<IBrush?> SurfaceBackgroundProperty =
             AvaloniaProperty.Register<PopupFrameRenderer, IBrush?>(nameof(SurfaceBackground));
 
+        public static readonly StyledProperty<Thickness> SurfaceBorderThicknessProperty =
+            AvaloniaProperty.Register<PopupFrameRenderer, Thickness>(nameof(SurfaceBorderThickness));
+
+        // The painted shadows: BoxShadow without its outline rings while the surface has its own border; rebuilt only when
+        // either changes. Layout keeps using BoxShadow, the value Popup places the surface with.
+        private BoxShadows _paintedShadow;
+
         public BoxShadows BoxShadow
         {
             get => GetValue(BoxShadowProperty);
@@ -447,10 +475,56 @@ internal class ShadowsAwareContainer : Decorator
             set => SetValue(SurfaceBackgroundProperty, value);
         }
 
+        public Thickness SurfaceBorderThickness
+        {
+            get => GetValue(SurfaceBorderThicknessProperty);
+            set => SetValue(SurfaceBorderThicknessProperty, value);
+        }
+
         static PopupFrameRenderer()
         {
             ClipToBoundsProperty.OverrideDefaultValue<PopupFrameRenderer>(false);
-            AffectsRender<PopupFrameRenderer>(BoxShadowProperty, CornerRadiusProperty, SurfaceBackgroundProperty);
+            AffectsRender<PopupFrameRenderer>(BoxShadowProperty, CornerRadiusProperty, SurfaceBackgroundProperty,
+                SurfaceBorderThicknessProperty);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == BoxShadowProperty || change.Property == SurfaceBorderThicknessProperty)
+            {
+                _paintedShadow = SurfaceBorderThickness != default ? WithoutOutlineRings(BoxShadow) : BoxShadow;
+            }
+        }
+
+        /// <summary>
+        /// Drops the outline rings, the outer shadows with no offset, no blur and a positive spread, which stand in
+        /// for a border on surfaces that have none.
+        /// </summary>
+        internal static BoxShadows WithoutOutlineRings(BoxShadows shadows)
+        {
+            var kept = new List<BoxShadow>(shadows.Count);
+            foreach (var shadow in shadows)
+            {
+                var isRing = !shadow.IsInset && shadow.OffsetX == 0 && shadow.OffsetY == 0 && shadow.Blur == 0 &&
+                             shadow.Spread > 0;
+                if (!isRing)
+                {
+                    kept.Add(shadow);
+                }
+            }
+
+            if (kept.Count == shadows.Count)
+            {
+                return shadows;
+            }
+
+            return kept.Count switch
+            {
+                0 => default,
+                1 => new BoxShadows(kept[0]),
+                _ => new BoxShadows(kept[0], kept.GetRange(1, kept.Count - 1).ToArray())
+            };
         }
 
         public override void Render(DrawingContext context)
@@ -470,7 +544,7 @@ internal class ShadowsAwareContainer : Decorator
                 cornerRadius.BottomRight,
                 cornerRadius.BottomLeft);
             var fill = SurfaceBackground ?? Brushes.Transparent;
-            context.DrawRectangle(fill, null, roundedRect, BoxShadow);
+            context.DrawRectangle(fill, null, roundedRect, _paintedShadow);
         }
     }
 }

@@ -47,18 +47,26 @@
         <Setter Property="IsMotionEnabled" Value="{atom:ArrowDecoratedBoxTokenResource EnableMotion}" />
         <Setter Property="Foreground" Value="{atom:ArrowDecoratedBoxTokenResource ColorText}" />
         <Setter Property="Background" Value="{atom:ArrowDecoratedBoxTokenResource ColorBgElevated}" />
-        <Setter Property="BorderBrush" Value="{atom:ArrowDecoratedBoxTokenResource ColorBorderSecondary}" />
-        <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="MinHeight" Value="{atom:ArrowDecoratedBoxTokenResource ControlHeight}" />
+        <Setter Property="BorderBrush" Value="{atom:ArrowDecoratedBoxTokenResource ContentBorderColor}" />
+        <!-- The border width is a token (0 in Ant Design); a bordered box draws one outline around box and arrow. -->
+        <Setter Property="BorderThickness" Value="{atom:ArrowDecoratedBoxTokenResource ContentBorderThickness}" />
+        <Setter Property="MinHeight" Value="{atom:ArrowDecoratedBoxTokenResource ContentMinHeight}" />
         <Setter Property="Padding" Value="{atom:ArrowDecoratedBoxTokenResource ContentPadding}" />
         <Setter Property="ArrowSize" Value="{atom:ArrowDecoratedBoxTokenResource ArrowSize}" />
         <Setter Property="CornerRadius" Value="{atom:ArrowDecoratedBoxTokenResource BorderRadius}" />
 
-        <!--  带边框状态下浮动箭头无法与边框融合呈现,内置主题直接隐藏箭头  -->
+        <!-- With a border the box itself draws background and border as one outline around box and arrow
+             (AbstractArrowDecoratedBox.Render). The container keeps its border width for layout but paints neither
+             the border nor the area under it, and the arrow indicator keeps its layout but paints nothing, so no
+             line crosses the arrow's base. -->
         <Style Selector="^:bordered">
-            <Style Selector="^ /template/ Panel#ArrowPositionLayout">
-                <Setter Property="IsVisible" Value="False" />
+            <Style Selector="^ /template/ Border#PART_ContentDecorator">
+                <Setter Property="BorderBrush" Value="{x:Null}" />
+                <Setter Property="Background" Value="{x:Null}" />
+                <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+            </Style>
+            <Style Selector="^ /template/ atom|ArrowIndicator#PART_ArrowIndicator">
+                <Setter Property="Opacity" Value="0" />
             </Style>
         </Style>
 

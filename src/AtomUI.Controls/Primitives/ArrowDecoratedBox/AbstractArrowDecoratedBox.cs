@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using AtomUI.Media;
 using Avalonia.Media;
 
 namespace AtomUI.Controls;
@@ -90,8 +91,9 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     public const string ArrowDecoratorPart = "PART_ArrowDecorator";
 
     /// <summary>
-    /// BorderThickness 非默认值时置位;内置主题按该状态隐藏浮动箭头,
-    /// 因为当前内置视觉不支持箭头与边框的融合呈现。
+    /// Set while <see cref="TemplatedControl.BorderThickness"/> is not zero. The box then draws its background and
+    /// border itself as one outline around the content box and the arrow (no line across the arrow's base); the
+    /// built-in theme hands the template's container border and arrow indicator over to that outline.
     /// </summary>
     public const string BorderedPseudoClass = ":bordered";
 
@@ -222,11 +224,16 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     private protected ArrowIndicator? ArrowIndicator;
     private protected bool ArrowPlacementFlipped;
 
+    private StreamGeometry? _outlineGeometry;
+    private OutlineShape _outlineShape;
+    private IPen? _outlinePen;
+
     static AbstractArrowDecoratedBox()
     {
         AffectsMeasure<AbstractArrowDecoratedBox>(IsArrowVisibleProperty, ArrowDirectionProperty);
         AffectsArrange<AbstractArrowDecoratedBox>(ArrowPositionProperty, ArrowAnchorOffsetProperty);
-        AffectsRender<AbstractArrowDecoratedBox>(BackgroundProperty, ArrowOpacityProperty);
+        AffectsRender<AbstractArrowDecoratedBox>(BackgroundProperty, ArrowOpacityProperty, BorderBrushProperty,
+            BorderThicknessProperty, CornerRadiusProperty);
     }
 
     public static Direction GetDirection(ArrowPosition arrowPosition)
@@ -374,8 +381,196 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
             ArrangeArrow(finalSize);
         }
 
+        // The outline follows the arranged box and arrow; a move of either without a size change of this control
+        // would not repaint it otherwise.
+        if (UpdateOutline())
+        {
+            InvalidateVisual();
+        }
+
         return size;
     }
+
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        UpdateOutline();
+        if (_outlineGeometry is null)
+        {
+            return;
+        }
+
+        PenUtils.TryModifyOrCreate(ref _outlinePen, BorderBrush, _outlineShape.Thickness);
+        context.DrawGeometry(Background, _outlinePen, _outlineGeometry);
+    }
+
+    /// <summary>
+    /// The outline drawn while the box has a border (the content box united with the visible arrow), in this
+    /// control's coordinates; <see langword="null"/> without a border.
+    /// </summary>
+    internal Geometry? OutlineGeometry
+    {
+        get
+        {
+            UpdateOutline();
+            return _outlineGeometry;
+        }
+    }
+
+    /// <summary>
+    /// Rebuilds the cached outline when the box, the arrow, the radius or the border width changed. Returns whether
+    /// it changed.
+    /// </summary>
+    private bool UpdateOutline()
+    {
+        var shape = ResolveOutlineShape();
+        if (shape == _outlineShape)
+        {
+            return false;
+        }
+
+        _outlineShape    = shape;
+        _outlineGeometry = shape.Thickness > 0 && shape.Box.Width > 0 && shape.Box.Height > 0
+            ? BuildOutline(shape)
+            : null;
+        return true;
+    }
+
+    private OutlineShape ResolveOutlineShape()
+    {
+        var border = BorderThickness;
+        if (border == default || _contentDecorator is null ||
+            _contentDecorator.TransformToVisual(this) is not { } boxTransform)
+        {
+            return default;
+        }
+
+        // A uniform border is the supported case; a non-uniform one is drawn with its widest side.
+        var thickness = Math.Max(Math.Max(border.Left, border.Right), Math.Max(border.Top, border.Bottom));
+        var box       = new Rect(_contentDecorator.Bounds.Size).TransformToAABB(boxTransform);
+        var shape     = new OutlineShape(box, GetMaskCornerRadius(), thickness, false, default, default);
+        if (IsArrowVisible && ArrowOpacity > 0 &&
+            ArrowIndicator is { } arrow &&
+            arrow.Bounds.Width > 0 && arrow.Bounds.Height > 0 &&
+            arrow.TryGetOutline(out var local) &&
+            arrow.TransformToVisual(this) is { } arrowTransform)
+        {
+            var outline = new ArrowOutline(
+                local.BaseStart.Transform(arrowTransform),
+                local.TipStart.Transform(arrowTransform),
+                local.TipControl.Transform(arrowTransform),
+                local.TipEnd.Transform(arrowTransform),
+                local.BaseEnd.Transform(arrowTransform));
+            shape = shape with { HasArrow = true, Direction = ArrowDirection, Arrow = outline };
+        }
+
+        return shape;
+    }
+
+    /// <summary>
+    /// Walks the content box clockwise along the centre line of its border and, on the arrow's edge, out around the
+    /// arrow and back, so one stroke outlines both and nothing crosses the arrow's base.
+    /// </summary>
+    private static StreamGeometry BuildOutline(in OutlineShape shape)
+    {
+        var half   = shape.Thickness / 2;
+        var rect   = shape.Box.Deflate(half);
+        var limit  = Math.Max(0, Math.Min(rect.Width, rect.Height) / 2);
+        var radius = shape.CornerRadius;
+        var tl     = Math.Clamp(radius.TopLeft - half, 0, limit);
+        var tr     = Math.Clamp(radius.TopRight - half, 0, limit);
+        var br     = Math.Clamp(radius.BottomRight - half, 0, limit);
+        var bl     = Math.Clamp(radius.BottomLeft - half, 0, limit);
+        var arrow  = shape.HasArrow ? shape.Direction : (Direction?)null;
+
+        var geometry = new StreamGeometry();
+        using var context = geometry.Open();
+        context.BeginFigure(new Point(rect.Left + tl, rect.Top), true);
+        if (arrow == Direction.Top)
+        {
+            AppendArrow(context, shape.Arrow, Direction.Top, rect.Top);
+        }
+        context.LineTo(new Point(rect.Right - tr, rect.Top));
+        AppendCorner(context, new Point(rect.Right, rect.Top + tr), tr);
+        if (arrow == Direction.Right)
+        {
+            AppendArrow(context, shape.Arrow, Direction.Right, rect.Right);
+        }
+        context.LineTo(new Point(rect.Right, rect.Bottom - br));
+        AppendCorner(context, new Point(rect.Right - br, rect.Bottom), br);
+        if (arrow == Direction.Bottom)
+        {
+            AppendArrow(context, shape.Arrow, Direction.Bottom, rect.Bottom);
+        }
+        context.LineTo(new Point(rect.Left + bl, rect.Bottom));
+        AppendCorner(context, new Point(rect.Left, rect.Bottom - bl), bl);
+        if (arrow == Direction.Left)
+        {
+            AppendArrow(context, shape.Arrow, Direction.Left, rect.Left);
+        }
+        context.LineTo(new Point(rect.Left, rect.Top + tl));
+        AppendCorner(context, new Point(rect.Left + tl, rect.Top), tl);
+        context.EndFigure(true);
+        return geometry;
+    }
+
+    private static void AppendCorner(StreamGeometryContext context, Point end, double radius)
+    {
+        if (radius > 0)
+        {
+            context.ArcTo(end, new Size(radius, radius), 0, false, SweepDirection.Clockwise);
+        }
+    }
+
+    private static void AppendArrow(StreamGeometryContext context, in ArrowOutline arrow, Direction edge, double edgeLine)
+    {
+        var horizontal = edge is Direction.Top or Direction.Bottom;
+        // Base points move onto the border's centre line along the arrow's sides.
+        var start = OnEdgeLine(arrow.BaseStart, arrow.TipStart, horizontal, edgeLine);
+        var end   = OnEdgeLine(arrow.BaseEnd, arrow.TipEnd, horizontal, edgeLine);
+        var tipStart = arrow.TipStart;
+        var tipEnd   = arrow.TipEnd;
+        // Clockwise: left to right on top, top to bottom on the right, right to left at the bottom, bottom to top on
+        // the left. The layout transform of the arrow can hand the points over in either order.
+        var reversed = edge switch
+        {
+            Direction.Top => start.X > end.X,
+            Direction.Right => start.Y > end.Y,
+            Direction.Bottom => start.X < end.X,
+            _ => start.Y < end.Y
+        };
+        if (reversed)
+        {
+            (start, end)       = (end, start);
+            (tipStart, tipEnd) = (tipEnd, tipStart);
+        }
+
+        context.LineTo(start);
+        context.LineTo(tipStart);
+        context.QuadraticBezierTo(arrow.TipControl, tipEnd);
+        context.LineTo(end);
+    }
+
+    private static Point OnEdgeLine(Point basePoint, Point sidePoint, bool horizontal, double edgeLine)
+    {
+        var from = horizontal ? basePoint.Y : basePoint.X;
+        var to   = horizontal ? sidePoint.Y : sidePoint.X;
+        if (Math.Abs(to - from) < double.Epsilon)
+        {
+            return basePoint;
+        }
+
+        var t = (edgeLine - from) / (to - from);
+        return basePoint + (sidePoint - basePoint) * t;
+    }
+
+    private readonly record struct OutlineShape(
+        Rect Box,
+        CornerRadius CornerRadius,
+        double Thickness,
+        bool HasArrow,
+        Direction Direction,
+        ArrowOutline Arrow);
 
     private void ArrangeArrow(Size finalSize)
     {

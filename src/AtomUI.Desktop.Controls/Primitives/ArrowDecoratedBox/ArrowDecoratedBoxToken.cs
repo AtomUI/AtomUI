@@ -29,6 +29,23 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
     /// </summary>
     public partial double ArrowStrokeThickness { get; set; }
 
+    /// <summary>
+    /// Border colour of the content box; with a non-zero <see cref="ContentBorderThickness"/> it outlines the box and
+    /// the arrow as one shape.
+    /// </summary>
+    public partial Color ContentBorderColor { get; set; }
+
+    /// <summary>
+    /// Border width of the content box (0 by default: no border). A non-zero width draws one outline around the box
+    /// and the arrow.
+    /// </summary>
+    public partial Thickness ContentBorderThickness { get; set; }
+
+    /// <summary>
+    /// Minimum height of the box.
+    /// </summary>
+    public partial double ContentMinHeight { get; set; }
+
     public ArrowDecoratedBoxToken()
 
     {
@@ -41,6 +58,9 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
         ContentPadding       = EffectiveGlobalToken.PaddingXS;
         ArrowStrokeColor     = ColorUtils.FromRgbF(0.07, 0, 0, 0);
         ArrowStrokeThickness = 1;
+        ContentBorderColor     = EffectiveGlobalToken.ColorBorderSecondary;
+        ContentBorderThickness = default;
+        ContentMinHeight       = EffectiveGlobalToken.ControlHeight;
     }
 
 }

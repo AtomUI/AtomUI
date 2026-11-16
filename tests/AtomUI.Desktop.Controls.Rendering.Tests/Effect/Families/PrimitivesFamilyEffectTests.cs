@@ -41,7 +41,11 @@ public partial class PrimitivesFamilyEffectTests
     public void Arrow_Token_Has_Effect(string token, bool own)
     {
         _ = own;
-        TokenEffectHarness.AssertHasEffect(() => new ArrowDecoratedBox { Content = "Scoped arrow content", BorderThickness = token == "ColorBorderSecondary" ? new Thickness(1) : default },
+        // The border colour only shows with a border; every other token keeps the theme's border width (a local
+        // value would hide ContentBorderThickness).
+        TokenEffectHarness.AssertHasEffect(() => token is "ColorBorderSecondary" or "ContentBorderColor"
+                ? new ArrowDecoratedBox { Content = "Scoped arrow content", BorderThickness = new Thickness(1) }
+                : new ArrowDecoratedBox { Content = "Scoped arrow content" },
             ArrowDecoratedBoxTokens.Identity, token,
             c => ((Avalonia.Controls.Window)TopLevel.GetTopLevel(c)!).Background = Brushes.Gray,
             thresholdRatio: token is "ArrowStrokeColor" or "ArrowStrokeThickness" ? TokenEffectHarness.ThinLineThresholdRatio : TokenEffectHarness.DefaultThresholdRatio,

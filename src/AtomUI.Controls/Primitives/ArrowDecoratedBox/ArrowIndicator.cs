@@ -44,7 +44,11 @@ public class ArrowIndicator : Control
         set => SetValue(StrokeThicknessProperty, value);
     }
 
+    // CommonShapeBuilder.BuildArrow tip rounding; the outline points below follow the same construction.
+    private const double TipRadius = 1.5;
+
     private Geometry? _arrowGeometry;
+    private Vector _geometryOffset;
     private IPen? _cachedPen;
 
     static ArrowIndicator()
@@ -59,8 +63,9 @@ public class ArrowIndicator : Control
     {
         if (_arrowGeometry is null || force)
         {
-            _arrowGeometry = CommonShapeBuilder.BuildArrow(ArrowSize, 1.5);
-            var matrix = Matrix.CreateTranslation(_arrowGeometry.Bounds.X, -_arrowGeometry.Bounds.Y);
+            _arrowGeometry  = CommonShapeBuilder.BuildArrow(ArrowSize, TipRadius);
+            _geometryOffset = new Vector(_arrowGeometry.Bounds.X, -_arrowGeometry.Bounds.Y);
+            var matrix = Matrix.CreateTranslation(_geometryOffset.X, _geometryOffset.Y);
             _arrowGeometry.Transform =  new MatrixTransform(matrix);
         }
     }
@@ -85,6 +90,31 @@ public class ArrowIndicator : Control
         return _arrowGeometry?.Bounds.Size ?? new Size(ArrowSize, ArrowSize);
     }
 
+    /// <summary>
+    /// The arrow's outline in this control's coordinates, in the order the geometry is drawn: the base start, the
+    /// start of the rounded tip, the tip's control point, the end of the rounded tip and the base end. Returns
+    /// <see langword="false"/> before the geometry exists.
+    /// </summary>
+    internal bool TryGetOutline(out ArrowOutline outline)
+    {
+        if (_arrowGeometry is null)
+        {
+            outline = default;
+            return false;
+        }
+
+        // Same points as CommonShapeBuilder.BuildArrow, moved by the translation applied to the geometry.
+        var size = ArrowSize;
+        var tip  = new Point(size / 2.0, size / 2.0 + 1);
+        outline = new ArrowOutline(
+            new Point(0, size) + _geometryOffset,
+            new Point(tip.X - TipRadius, tip.Y) + _geometryOffset,
+            new Point(tip.X, tip.Y - TipRadius) + _geometryOffset,
+            new Point(tip.X + TipRadius, tip.Y) + _geometryOffset,
+            new Point(size, size) + _geometryOffset);
+        return true;
+    }
+
     public sealed override void Render(DrawingContext context)
     {
         if (_arrowGeometry is not null)
@@ -94,3 +124,9 @@ public class ArrowIndicator : Control
         }
     }
 }
+
+/// <summary>
+/// The outline of an <see cref="ArrowIndicator"/>: the two base points, the rounded tip (a quadratic curve from
+/// <see cref="TipStart"/> through <see cref="TipControl"/> to <see cref="TipEnd"/>).
+/// </summary>
+internal readonly record struct ArrowOutline(Point BaseStart, Point TipStart, Point TipControl, Point TipEnd, Point BaseEnd);

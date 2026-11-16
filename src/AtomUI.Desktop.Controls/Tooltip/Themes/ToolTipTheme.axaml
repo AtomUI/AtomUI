@@ -36,6 +36,8 @@
             <Setter Property="MinHeight" Value="{atom:ToolTipTokenResource ControlHeight}" />
             <Setter Property="Padding" Value="{atom:ToolTipTokenResource ContentPadding}" />
             <Setter Property="CornerRadius" Value="{atom:ToolTipTokenResource ToolTipCornerRadius}" />
+            <!-- A tooltip has no border, whatever the arrow box's border width (PrimeUIX tooltip has none either). -->
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

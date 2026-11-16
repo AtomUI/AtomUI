@@ -55,6 +55,13 @@
         <Token Name="RadioColor" Value="#18181B" />
       </Tokens>
     </Control>
+    <!-- shadcn/ui switch thumb is the background colour (bg-background); a white thumb vanishes on the near-white
+         primary track. -->
+    <Control Catalog="AtomUI" Id="ToggleSwitch">
+      <Tokens>
+        <Token Name="HandleCheckedBg" Value="#18181B" />
+      </Tokens>
+    </Control>
     <!-- shadcn popups pair shadow-md with a 1px border (ColorBorder); the ring keeps the top edge visible. -->
     <Control Catalog="AtomUI" Id="Popup">
       <Tokens>

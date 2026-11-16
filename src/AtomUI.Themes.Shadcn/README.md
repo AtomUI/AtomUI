@@ -19,7 +19,7 @@ appBuilder.UseAtomUI(builder =>
 });
 ```
 
-The package references Core and Desktop.Controls. Dark profiles use typed CheckBox and RadioButton identities to override CheckBox's local `ColorWhite` and RadioButton's existing Own `RadioColor`: their selected check/dot colors otherwise derive from white rather than `ColorTextLightSolid`. This keeps selected marks dark against the light dark-mode primary fill without changing global white or control templates. The generator compiles XML v1 into typed registrations at build time; startup does not read XML, scan assemblies or register controls. Consumers register their own control packages.
+The package references Core and Desktop.Controls. Dark profiles use typed CheckBox and RadioButton identities to override CheckBox's local `ColorWhite` and RadioButton's existing Own `RadioColor`: their selected check/dot colors otherwise derive from white rather than `ColorTextLightSolid`. This keeps selected marks dark against the light dark-mode primary fill without changing global white or control templates. For the same reason the dark profiles set the ToggleSwitch's `HandleCheckedBg` to the background colour (shadcn/ui switch thumb `bg-background`), so the checked thumb stays visible on the near-white track. The generator compiles XML v1 into typed registrations at build time; startup does not read XML, scan assemblies or register controls. Consumers register their own control packages.
 
 ## Appearance and density profiles
 

@@ -127,6 +127,12 @@ public class ShadcnThemePackageTests
                 dotColor.ShouldBe(Color.Parse(container));
                 Contrast(checkMark, Global<Color>(snapshot, "ColorPrimary")).ShouldBeGreaterThan(7);
                 Contrast(dotColor, Global<Color>(snapshot, "ColorPrimary")).ShouldBeGreaterThan(7);
+                snapshot.Registry.TryGetControl(new ControlTokenIdentity("AtomUI", "ToggleSwitch"), out var toggle).ShouldBeTrue();
+                var thumb = toggle!.OwnTokens.Single(token => token.Name == "HandleCheckedBg");
+                var thumbColor = snapshot.Controls[toggle.Slot].ControlTokenValues.Get<Color>(thumb.Slot);
+                thumbColor.ShouldBe(Color.Parse(container));
+                var track = toggle.OwnTokens.Single(token => token.Name == "SwitchColor");
+                Contrast(thumbColor, snapshot.Controls[toggle.Slot].ControlTokenValues.Get<Color>(track.Slot)).ShouldBeGreaterThan(7);
                 Global<Color>(snapshot, "ColorWhite").ShouldBe(Colors.White);
             }
             Contrast(Global<Color>(snapshot, "ColorText"), Global<Color>(snapshot, "ColorBgContainer")).ShouldBeGreaterThan(7);

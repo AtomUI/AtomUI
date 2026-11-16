@@ -156,6 +156,10 @@ internal sealed record PrimeNGNeutralRule(
 /// PrimeUIX <c>toggleswitch.handle.checked.background</c>, a stop of the surface scale (the ToggleSwitch's own
 /// <c>HandleCheckedBg</c>).
 /// </param>
+/// <param name="OverlayBorder">
+/// PrimeUIX <c>overlay.select.border.color</c> and <c>overlay.popover.border.color</c> (equal in every preset), a stop
+/// of the surface scale: the border of arrow flyouts and the outline ring of select panels and menus.
+/// </param>
 internal sealed record PrimeNGAppearanceRules(
     ImmutableArray<Color> Surface,
     PrimeNGFamilyRule Primary,
@@ -170,7 +174,8 @@ internal sealed record PrimeNGAppearanceRules(
     PrimeNGShade? CardBorderSecondary,
     Func<DesignToken, (Color Background, Color FocusBackground)>? Highlight,
     Func<DesignToken, Color> HighlightColor,
-    PrimeNGShade SwitchHandleChecked);
+    PrimeNGShade SwitchHandleChecked,
+    PrimeNGShade OverlayBorder);
 
 /// <summary>
 /// The size ladder around the seeds, written only when the algorithm starts its chain: the radii relative to the
@@ -194,7 +199,10 @@ internal sealed record PrimeNGSizeLadder(
 /// <param name="FocusVisualBorderLineWidths">The focus ring width, in line widths (PrimeUIX <c>focus.ring.width</c>).</param>
 /// <param name="ControlOutlineLineWidths">The width of the glow around a focused field, in line widths.</param>
 /// <param name="BoxShadows">Modal and large overlays (PrimeUIX <c>overlay.modal.shadow</c>).</param>
-/// <param name="BoxShadowsSecondary">Popovers and select panels (PrimeUIX <c>overlay.popover.shadow</c>).</param>
+/// <param name="BoxShadowsSecondary">
+/// Select panels and menus (PrimeUIX <c>overlay.select.shadow</c> and <c>overlay.navigation.shadow</c>, equal in every
+/// preset); arrow flyouts take <see cref="PrimeNGControlRule.PopoverShadows"/>.
+/// </param>
 internal sealed record PrimeNGAliasRule(
     double FocusVisualBorderLineWidths,
     double ControlOutlineLineWidths,
@@ -214,6 +222,16 @@ internal sealed record PrimeNGAliasRule(
 /// <param name="DialogHeaderFontSize">The dialog title size (PrimeUIX <c>dialog.title.font.size</c>).</param>
 /// <param name="SelectOptionPadding">The Select option padding, from the control's effective global tokens.</param>
 /// <param name="SelectPopupContentPadding">The Select panel padding, from the control's effective global tokens.</param>
+/// <param name="PopoverPadding">The arrow flyout's content padding (PrimeUIX <c>overlay.popover.padding</c>).</param>
+/// <param name="PopoverGutter">
+/// The distance between the anchor and an arrow flyout's box, which the arrow spans (PrimeUIX <c>popover.gutter</c>;
+/// the arrow is twice as wide as it is long).
+/// </param>
+/// <param name="PopoverShadows">The arrow flyout's shadow (PrimeUIX <c>overlay.popover.shadow</c>).</param>
+/// <param name="OverlayAnchorGutter">
+/// The distance between the anchor and a select panel, menu or other overlay without an arrow (PrimeUIX
+/// <c>anchor.gutter</c>).
+/// </param>
 internal sealed record PrimeNGControlRule(
     FontWeight ButtonFontWeight,
     Func<DesignToken, double>? ButtonPaddingHorizontal,
@@ -226,7 +244,11 @@ internal sealed record PrimeNGControlRule(
     double DialogPadding,
     double DialogHeaderFontSize,
     Thickness ToolTipPadding,
-    PrimeNGShade ToolTipColor);
+    PrimeNGShade ToolTipColor,
+    double PopoverPadding,
+    double PopoverGutter,
+    BoxShadows PopoverShadows,
+    double OverlayAnchorGutter);
 
 /// <summary>
 /// The rule table of one PrimeNG preset (Aura, Lara or Nora): which palette stop each semantic token takes, per

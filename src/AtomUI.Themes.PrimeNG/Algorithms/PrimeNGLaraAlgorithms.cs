@@ -85,7 +85,9 @@ internal static class PrimeNGLaraPreset
             Highlight: null,
             HighlightColor: static token => token.ColorPrimaryText,
             // PrimeUIX toggleswitch.handle.checked.background: surface.0.
-            SwitchHandleChecked: new(White)),
+            SwitchHandleChecked: new(White),
+            // PrimeUIX overlay.{select,popover}.border.color, light: surface.200.
+            OverlayBorder: new(200)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             Primary: new PrimeNGFamilyRule(
@@ -122,7 +124,9 @@ internal static class PrimeNGLaraPreset
             Highlight: null,
             HighlightColor: static token => token.ColorPrimaryText,
             // PrimeUIX toggleswitch.handle.checked.background: surface.900.
-            SwitchHandleChecked: new(900)),
+            SwitchHandleChecked: new(900),
+            // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
+            OverlayBorder: new(700)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: -4, BorderRadiusSMOffset: -2, BorderRadiusLGOffset: 2, BorderRadiusXLOffset: 6,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),
@@ -151,5 +155,11 @@ internal static class PrimeNGLaraPreset
             DialogHeaderFontSize: 18,
             // PrimeUIX tooltip.padding 0.5rem 0.625rem.
             ToolTipPadding: new Thickness(10, 8),
-            ToolTipColor: new(White)));
+            ToolTipColor: new(White),
+            // PrimeUIX overlay.popover.padding 0.875rem, popover.gutter 10px, overlay.popover.shadow (lighter than the
+            // select / navigation shadow); anchor.gutter 2px.
+            PopoverPadding: 14,
+            PopoverGutter: 10,
+            PopoverShadows: BoxShadows.Parse("0 1 3 0 #1A000000"),
+            OverlayAnchorGutter: 2));
 }

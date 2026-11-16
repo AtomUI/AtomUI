@@ -129,6 +129,24 @@ PrimeUIX `highlight` is the selected item's background, focus background (select
 
 The Alias stage writes `highlight.color` once, to the global `ControlItemColorActive`; the selected-text tokens default to it: Select / Cascader `OptionSelectedColor`, ComboBox / ListBox / ListView / TransferListView `ItemSelectedColor`, TreeView / TransferTreeView / TreeSelect `NodeSelectedColor` and DataGrid `RowSelectedColor` (the selected row). The selected time cell of the pickers and the range-middle date cells read it directly, so the pickers follow PrimeUIX `datepicker` exactly: the selected date is `primary.color` with `primary.contrast.color` (the Ant compact cell already is), the range middle `highlight.background` with `highlight.color`. PrimeUIX `highlight.focusColor` equals `highlight.color` except in Aura / Lara light (P800); AtomUI has no selected-hover text slot. The content presentation of Calendar (fullscreen) and DateViewer draws today's and the selected cell in the primary on `ControlItemBgActive`; under a solid highlight `PrimeNGActiveCellTokens` sets their `ItemActiveColor` / `CellActiveColor` to `ControlItemColorActive` (LunarCalendar already draws its selected cells with the contrast colour). NavMenu and Steps compensate as listed under the Nora control stages. `PrimeNGThemePackageTests.Highlight_Follows_PrimeUIX` asserts the table; `PrimeNGDataGridHighlightTests` (Rendering tests) the DataGrid row.
 
+### Overlays (popovers, select panels, menus)
+
+PrimeUIX gives every overlay a 1px border, a radius and a shadow (`overlay.select`, `overlay.popover`, `overlay.navigation`; `@primeuix/themes` 3.1.1 `dist/{aura,lara,nora}/base`, checked on 2026-11-15 together with `popover`, `select`, `menu`, `tieredmenu`, `contextmenu` and `tooltip`). Measured on [primeng.dev/popover](https://primeng.dev/popover) (Aura light): `.p-popover` border `1px solid #E2E8F0`, radius 6, padding 10, shadow `0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1)`, 10px from the anchor, the border continuing around the arrow. The overlay stages (`Algorithms/Controls/PrimeNGOverlayTokens.cs`, all six algorithms) map them:
+
+| What | Aura | Lara | Nora | Written to | Source |
+|---|---|---|---|---|---|
+| Border colour, light / dark | N200 / N700 (`#E2E8F0` / `#3F3F46`) | as Aura | transparent / N700 | `OverlayBorder` row: `ArrowDecoratedBoxToken.ContentBorderColor`; the `0 0 0 1` ring of `PopupToken` shadows | `overlay.{select,popover}.border.color` |
+| Border width | `LineWidth` (1) | same | same | `ArrowDecoratedBoxToken.ContentBorderThickness` | CSS `1px solid` |
+| Radius | `BorderRadius` (6) | 6 | 2 | arrow box `BorderRadius` (global already), `PopupToken.PopupCornerRadius` | `overlay.{select,popover}.border.radius` (md / xs) |
+| Arrow flyout padding | 10 | 14 | 10 | `ArrowDecoratedBoxToken.ContentPadding` | `overlay.popover.padding` |
+| Arrow flyout minimum height | 0 | 0 | 0 | `ArrowDecoratedBoxToken.ContentMinHeight` (Ant: `ControlHeight`) | PrimeNG has none |
+| Arrow, gap to the anchor | `ArrowSize 19`, `FlyoutHostToken.MarginToAnchor 0`: the box 10 from the anchor, the tip 0.75 before it | same | same | see `PrimeNGPopoverArrow` | `popover.gutter` 10px (a 20×10 border triangle whose tip ends 1px before the anchor) |
+| Arrow flyout shadow | `0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000` | `0 1 3 0 #1A000000` | as Aura | `FlyoutHostToken.PopupRootShadow` / `OverlayHostShadow` (no ring: the arrow box draws the border) | `overlay.popover.shadow` |
+| Select panel / menu shadow | `0 0 0 1 <border>` ring + `BoxShadowsSecondary` (`0 4 6 -1, 0 2 4 -2`) | ring + `0 2 12 0 #1A000000` | `BoxShadowsSecondary` only in light (transparent border), ring N700 in dark | `PopupToken.PopupRootShadow` / `OverlayHostShadow` | `overlay.select.shadow` = `overlay.navigation.shadow` |
+| Gap to the anchor (no arrow) | 2 | 2 | 0 | `PopupToken.MarginToAnchor` | `anchor.gutter` |
+
+Arrow flyouts are the AtomUI controls whose surface is an `ArrowDecoratedBox`: InfoFlyout (Popover), PopupConfirm, the date and time picker panels, dropdown menus (`MenuFlyoutPresenter`), tree flyouts, Tour, the DataGrid filter flyouts and the ColorPicker panel. With a border the arrow box draws one outline around the box and the arrow (no line across the arrow's base, as PrimeNG's `::before` / `::after` triangles), and a frame ring of the hosting popup is not painted, so a date picker panel inside a `PopupToken` popup keeps a single border. The ToolTip shares the arrow box but keeps no border: PrimeUIX `tooltip` has none. Panels without an arrow (Select, Cascader, ComboBox, AutoComplete, Mentions, context and sub menus) have no border of their own, so the border is the ring ahead of the shadow, as the Shadcn package does.
+
 ### Aura at the emerald seed
 
 The rule tables below give stops; at the emerald seed (`ColorPrimary #10B981`, the raw `@primeuix/themes` preset value; the profiles default to [noir](#noir-the-default-primary)) they produce these values (Aura Light):
@@ -206,7 +224,7 @@ Written by the Alias stage of both Aura algorithms for the resolved appearance, 
 | `ColorTextDisabled` | N400 | N500 | AtomUI. PrimeUIX `form.field.disabled.color` is N500 / N400, the muted-text stop, and PrimeNG separates it with a component opacity AtomUI does not apply; one stop further from the text keeps it apart from `ColorTextSecondary`. Contrast on `ColorBgContainerDisabled`: 2.08 light, 2.16 dark (the Ant formula gave 1.20 / 1.35, the pre-algorithm profiles 1.79 / 2.06) |
 | `ColorTextLightSolid` | white | N900 | PrimeUIX `primary.contrast.color` |
 | `PaddingContentHorizontal` | `SizeSM` (12; compact 8) | same | The Ant formula (`SizeMS`) gives 16 / 12 |
-| `BoxShadows` / `BoxShadowsSecondary` | modal / popover shadow | same | PrimeUIX `overlay.modal.shadow` / `overlay.popover.shadow` |
+| `BoxShadows` / `BoxShadowsSecondary` | modal / select shadow | same | PrimeUIX `overlay.modal.shadow` / `overlay.select.shadow` (= `overlay.navigation.shadow`; the Aura popover shadow is the same value). Arrow flyouts take `overlay.popover.shadow` from the overlay stages, see [Overlays](#overlays-popovers-select-panels-menus) |
 
 ### Aura control stages
 
@@ -314,6 +332,8 @@ The compact profiles are the base profiles with `AtomUI:Compact` appended. Every
 - **Hybrid chains** such as `[PrimeNG:Aura, AtomUI:Dark]` are readable but not the PrimeNG dark preset, see [换算法不等于选 profile](#换算法不等于选-profile-changing-the-chain-versus-choosing-a-profile).
 - **Solid highlight contrast.** Under Nora the selected text is the PrimeUIX contrast colour on the solid primary: light white on P600 (emerald 3.77, blue 5.17, indigo 6.29), dark N950 on P500 (emerald 7.84, blue 5.41, indigo 4.45). The emerald light pair is below 4.5 in PrimeUIX itself.
 - **Selected-hover text.** AtomUI has one selected-text colour for the selected and the selected-hover background; PrimeUIX Aura / Lara light use `primary.800` on the focus background (`primary.700` is used for both).
+- **Overlay borders of menus.** PrimeUIX menus take `content.border.color`, select panels `overlay.select.border.color`. They are equal in Aura and Lara; in Nora the menu border is N400 / N500 while the select border is transparent / N700. AtomUI menus and select panels share `PopupToken` (and dropdown menus the arrow box), so Nora menus get the select border.
+- **Arrow shape.** The AtomUI arrow has a slightly rounded tip and is 19 wide at the box (PrimeNG: a sharp 20×10 triangle); its position along the edge follows AtomUI's placement (`ArrowPosition`), not PrimeUIX `popover.arrowOffset` (1.125rem from the box edge).
 - **Switch unchecked handle.** Only the checked handle follows PrimeUIX (`HandleCheckedBg`); the unchecked handle stays the Ant Design white because the unchecked track is Ant's `ColorTextQuaternary`, not PrimeUIX `toggleswitch.background` (Aura / Lara `surface.300` / `surface.700`, Nora the field background with a border).
 
 **Changes against the pre-algorithm profiles.** In the old dark profiles the chain `[AtomUI:Dark]` re-derived the primary and error seeds the XML had already written as final values. The dark profiles now compile to the values their XML wrote:

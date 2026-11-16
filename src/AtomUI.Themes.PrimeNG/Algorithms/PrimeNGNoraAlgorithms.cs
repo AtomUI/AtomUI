@@ -91,7 +91,9 @@ internal static class PrimeNGNoraPreset
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
             // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color.
-            SwitchHandleChecked: new(White)),
+            SwitchHandleChecked: new(White),
+            // PrimeUIX overlay.{select,popover}.border.color, light: transparent in light.
+            OverlayBorder: new(Black, 0)),
         Dark: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Zinc,
             // ColorPrimaryBg / BgHover are the primary at 16% / 24% (PrimeUIX button.text hover / active background);
@@ -135,7 +137,9 @@ internal static class PrimeNGNoraPreset
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
             // PrimeUIX toggleswitch.handle.checked.background: primary.contrast.color (surface.950).
-            SwitchHandleChecked: new(950)),
+            SwitchHandleChecked: new(950),
+            // PrimeUIX overlay.{select,popover}.border.color, dark: surface.700.
+            OverlayBorder: new(700)),
         Sizes: new PrimeNGSizeLadder(
             BorderRadiusXSOffset: 0, BorderRadiusSMOffset: 0, BorderRadiusLGOffset: 0, BorderRadiusXLOffset: 0,
             ControlHeightSMOffset: -7, ControlHeightLGOffset: 7),
@@ -162,5 +166,10 @@ internal static class PrimeNGNoraPreset
             DialogHeaderFontSize: 18,
             // PrimeUIX tooltip.padding 0.375rem 0.625rem.
             ToolTipPadding: new Thickness(10, 6),
-            ToolTipColor: new(White)));
+            ToolTipColor: new(White),
+            // PrimeUIX overlay.popover.padding 0.625rem, popover.gutter 10px, overlay.popover.shadow; anchor.gutter 0.
+            PopoverPadding: 10,
+            PopoverGutter: 10,
+            PopoverShadows: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000"),
+            OverlayAnchorGutter: 0));
 }

@@ -361,6 +361,10 @@ changes:
   readable on white); neutral fills, solid and spotlight backgrounds; tertiary, quaternary and disabled text; the contrast
   foreground on solid primary (dark: neutral 900, Nora dark: neutral 950). Nora also moves its success, warning and
   info base colours to the 600 stop (dark 500). Fills that were translucent are now opaque scale colours.
+- Link buttons take PrimeUIX `button.link.color` (`{primary.color}`): within the Button, `ColorLink` / `Hover` / `Active`
+  are the primary states. Unchanged under the default noir primary; with a coloured seed the link button is the primary
+  fill colour (emerald light `#10B981` instead of `#047857`). Hyperlinks and other link text keep the global link
+  colours.
 - Overlays follow PrimeUIX `overlay.popover` / `overlay.select` (3.1.1, measured on primeng.dev/popover): arrow
   flyouts (Popover, PopupConfirm, picker panels, dropdown menus) get a 1px border in `overlay.popover.border.color`
   (Aura / Lara slate-200, dark zinc-700; Nora transparent, dark zinc-700) around box and arrow, padding 10 (Lara 14),

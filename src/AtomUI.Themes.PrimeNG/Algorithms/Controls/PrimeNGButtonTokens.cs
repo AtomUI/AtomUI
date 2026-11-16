@@ -11,7 +11,11 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// lg 12; Lara's normal size 0.875rem) plus the border, so the label sits where primeng.dev puts it. The radius is
 /// the global <c>BorderRadius</c> already (PrimeUIX <c>button.border.radius</c> is <c>border.radius.md</c>; Nora <c>border.radius.xs</c>, which is its seed). The Filled
 /// variant draws the primary on the global <c>ColorPrimaryBg</c>, which every preset keeps pale (the solid highlight is
-/// <c>ControlItemBgActive</c> only), so it needs no compensation.
+/// <c>ControlItemBgActive</c> only), so it needs no compensation. The Link variant takes PrimeUIX
+/// <c>button.link.color</c>, <c>{primary.color}</c>: for the Button only, <c>ColorLink</c> / <c>Hover</c> /
+/// <c>Active</c> are the primary and its hover and active states (PrimeUIX keeps the colour and underlines the label on
+/// hover, which AtomUI does not draw, so the primary states keep the feedback). The global link colours stay the
+/// deeper, page-readable stops for hyperlinks and other link text.
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
@@ -24,6 +28,9 @@ internal sealed class PrimeNGButtonTokens : IControlTokenAlgorithm<ButtonToken>
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
+        controlGlobal.ColorLink       = controlGlobal.ColorPrimary;
+        controlGlobal.ColorLinkHover  = controlGlobal.ColorPrimaryHover;
+        controlGlobal.ColorLinkActive = controlGlobal.ColorPrimaryActive;
     }
 
     /// <inheritdoc />

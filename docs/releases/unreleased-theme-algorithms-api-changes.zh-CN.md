@@ -319,6 +319,9 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   链接色（取主色种子色阶中的一档；浅色下链接取比主色填充更深的级，即 700 / 800 / 900 级，保证白底上的链接文字可读）；中性填充、实色底与提示底色；第三、第四级文字与禁用文字；实色主色上的对比文字（暗色为中性
   900，Nora 暗色为中性 950）。Nora 还把成功、警告、信息的基准色移到 600 级（暗色 500 级）。原来半透明的填充色现在是
   不透明的色阶颜色。
+- Link 按钮按 PrimeUIX `button.link.color`（`{primary.color}`）：Button 作用域内 `ColorLink` / `Hover` / `Active` 取主色
+  三态。默认 noir 主色下不变；彩色种子下 Link 按钮为主色（emerald 浅色 `#10B981`，原为 `#047857`）。超链接等其他链接文字
+  仍用全局链接色。
 - 弹层按 PrimeUIX `overlay.popover` / `overlay.select`（3.1.1，并在 primeng.dev/popover 实测）：箭头 flyout（Popover、
   PopupConfirm、Picker 面板、下拉菜单）框体与箭头带 1px 边框，颜色为 `overlay.popover.border.color`（Aura / Lara
   slate-200，暗色 zinc-700；Nora 透明，暗色 zinc-700），内边距 10（Lara 14），无最小高度，框体距 anchor 10

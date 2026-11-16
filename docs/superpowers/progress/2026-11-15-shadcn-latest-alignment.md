@@ -94,3 +94,10 @@
 - 同提交携带：菜单族 ShadcnMenuTokens（四身份环+MenuShadow、presenter 边框色=环色）、MenuFlyoutPresenterToken.MenuPopupBorderThickness（Thickness 类型，默认空=现状，Shadcn 写 1px、PrimeNG 写 LineWidth——补上前置批次缺失的厚度半截）、Gallery 动效/波纹开关改为主题声明优先（Shadcn profile 的 EnableWaveSpirit=false 不再被全局开关覆盖，用户显式切换后覆盖；Core 加 GalleryBase IVT 以读应用后快照）。
 - 菜单阴影像素级仍未可见：值链已全通（Token→ContextMenu→Popup→ShadowsAwareContainer.painter 值正确、overlay=True），断点在 overlay host 不为阴影膨胀（Measure/Arrange 仅 !IsOverlayMode 才 inflate 阴影厚度）→ 大阴影被裁剩贴边淡晕。前置批次架构遗留，另立任务。
 - 脚本视觉验收 Demo 已按规程删除，证据 21 帧截图+results.md 存 /tmp/shadcn-acceptance-evidence（仓库外）。验收结论：13 项 ✅（胶囊几何、抽屉边框、Vega 环、Zinc、弹层描边、Ant 不变基线）；菜单像素 4 ❌=前置遗留裁切；Tooltip 3 ❌=Demo 定位局限（视觉模型已确认反色/无阴影正确渲染）。
+
+## 真机视觉反馈修复（2026-11-17，commit f19f3a9fe）
+
+- 用户红框反馈两处同根因畸形：①Segmented 选中胶囊（左端撑圆/右端塌陷/不对称）；②NumericUpDown handle 按住态（上端大圆/下端与分隔线断裂）。根因：Maia/Luma 全局 BorderRadius=26 流入半高元素（Segmented thumb ~28 高、handle 单格 ~17 高），**Avalonia 对超过短边一半的 CornerRadius 不做 CSS 式对称缩放**，且 handle 上下按钮各拿整圆角导致中缝圆弧断裂。官方 CSS 行为：每角半径自动 ≤ 短边/2。
+- 修复：新增 `AtomUI.Media.CornerRadiusUtils.ClampToSize`（CSS 语义钳制，注意 CornerRadius 构造参数顺序 TL,TR,BR,BL）；AbstractSegmented.Render 对轨道与选中胶囊钳制；ButtonSpinnerHandle.ConfigureHandleButtonRadii 按方位拆分圆角（上按钮只留外侧上角、下按钮只留外侧下角）并钳制到半格高，SetCurrentValue 写入（ATOMUIGEN047）。Ant 默认 6 远小于半高，渲染不变。
+- 测试：CornerRadiusClamp 5/5、Core 630/630、Segmented+Spinner+NumericUpDown 100/100、Rendering 相关 98/98。
+- 潜在同类面：Tabs 指示器等模板内 Border 走 Avalonia Border 渲染（非自绘），如真机再报同类畸形可按同工具修；注意官方 tabs 容器在 36 高上也用 rounded-4xl=26，浏览器自动缩到 18。

@@ -283,6 +283,12 @@ changes:
 - `ColorPrimary`, `ColorError` and the other status colours in a PrimeNG theme are seeds (the 500 stop of their
   scale); the algorithm maps them to the displayed stop. Changing the primary seed now also moves hover, active,
   focus ring and selected backgrounds.
+- The default primary of all twelve profiles is now **noir**, the default of primeng.dev (primeng 22.1.5):
+  `ColorPrimary` is `#020617` (slate-950) instead of emerald `#10B981`. A neutral-950 seed makes the primary scale the
+  surface scale: light `#020617` / `#1E293B` / `#334155` with white text, dark `#FAFAFA` / `#E4E4E7` / `#D4D4D8` with
+  `#09090B` text, a neutral selected background, and checked CheckBox / Radio marks in the contrast colour. Set
+  `ColorPrimary` to `#10B981` to get the previous colours back; every other seed behaves as before. The emerald values
+  in the table below are those of the emerald seed.
 - Dark primary and error colours change, because the old dark profiles ran `AtomUI:Dark` over values that were
   already final:
 

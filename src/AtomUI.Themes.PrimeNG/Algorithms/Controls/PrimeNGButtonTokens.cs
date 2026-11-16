@@ -11,7 +11,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 /// lg 12; Lara's normal size 0.875rem) plus the border, so the label sits where primeng.dev puts it. The radius is
 /// the global <c>BorderRadius</c> already (PrimeUIX <c>button.border.radius</c> is <c>border.radius.md</c>; Nora <c>border.radius.xs</c>, which is its seed). Where the
 /// preset's selected background is the solid primary (Nora dark), the button's own <c>ColorPrimaryBg</c> /
-/// <c>ColorPrimaryBgHover</c> come from the rule table so the Filled variant's primary text stays readable.
+/// <c>ColorPrimaryBgHover</c> come from the rule table so the Filled variant's primary text stays readable; a noir
+/// primary keeps the global ones, which are a neutral tint (<see cref="PrimeNGNoir"/>).
 /// </summary>
 [ControlTokenAlgorithm("PrimeNG", "Aura", 1)]
 [ControlTokenAlgorithm("PrimeNG", "Aura.Dark", 1)]
@@ -25,7 +26,7 @@ internal sealed class PrimeNGButtonTokens : IControlTokenAlgorithm<ButtonToken>
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
         var preset = PrimeNGPresets.Resolve(context);
-        if (preset.For(context.Appearance).ButtonPrimaryBg is { } primaryBg)
+        if (PrimeNGNoir.Resolve(preset, context.Appearance, controlGlobal).ButtonPrimaryBg is { } primaryBg)
         {
             (controlGlobal.ColorPrimaryBg, controlGlobal.ColorPrimaryBgHover) = primaryBg(controlGlobal);
         }

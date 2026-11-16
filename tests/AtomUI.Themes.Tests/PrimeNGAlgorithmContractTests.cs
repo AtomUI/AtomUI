@@ -92,6 +92,74 @@ public class PrimeNGAlgorithmContractTests
         map.ColorPrimaryBg.ShouldBe(Color.Parse("#EFF6FF"));
     }
 
+    // primeng.dev's default primary "noir" (primeng 22.1.5 configurator): the primary scale is the surface scale,
+    // light primary 950 / 800 / 700 with white contrast text, dark primary 50 / 200 / 300 with surface-950 text.
+    [Theory]
+    [InlineData("Aura", "#020617", "#1E293B", "#334155", "#FFFFFF")]
+    [InlineData("Lara", "#020617", "#1E293B", "#334155", "#FFFFFF")]
+    [InlineData("Nora", "#020617", "#1E293B", "#334155", "#FFFFFF")]
+    [InlineData("Aura.Dark", "#FAFAFA", "#E4E4E7", "#D4D4D8", "#09090B")]
+    [InlineData("Lara.Dark", "#FAFAFA", "#E4E4E7", "#D4D4D8", "#09090B")]
+    [InlineData("Nora.Dark", "#FAFAFA", "#E4E4E7", "#D4D4D8", "#09090B")]
+    public void Noir_Seed_Takes_The_Surface_Scale(string id, string primary, string hover, string active,
+                                                  string foreground)
+    {
+        var map = Map(seed => seed.ColorPrimary = Color.Parse("#020617"), new ThemeAlgorithm("PrimeNG", id));
+        AssertColors(map, new Dictionary<string, string>
+        {
+            [nameof(DesignToken.ColorPrimary)]        = primary,
+            [nameof(DesignToken.ColorPrimaryHover)]   = hover,
+            [nameof(DesignToken.ColorPrimaryActive)]  = active,
+            [nameof(DesignToken.SelectionBackground)] = primary,
+            [nameof(DesignToken.SelectionForeground)] = foreground,
+            // The link seed defaults to the primary, so the links are noir too: the primary states.
+            [nameof(DesignToken.ColorLink)]           = primary,
+            [nameof(DesignToken.ColorLinkHover)]      = hover,
+            [nameof(DesignToken.ColorLinkActive)]     = active
+        });
+    }
+
+    [Theory]
+    [InlineData("#030712")] // gray-950
+    [InlineData("#09090B")] // zinc-950
+    [InlineData("#0A0A0A")] // neutral-950
+    [InlineData("#0C0A09")] // stone-950
+    public void Any_Neutral_950_Seed_Is_Noir_On_The_Preset_Surface(string seed)
+    {
+        // The trigger is the seed, the scale is the appearance's surface (slate in light, zinc in dark), so one
+        // remembered seed works in both appearances.
+        var light = Map(token => token.ColorPrimary = Color.Parse(seed), Aura);
+        light.ColorPrimary.ShouldBe(Color.Parse("#020617"));
+        light.ColorPrimaryHover.ShouldBe(Color.Parse("#1E293B"));
+        var dark = Map(token => token.ColorPrimary = Color.Parse(seed), AuraDark);
+        dark.ColorPrimary.ShouldBe(Color.Parse("#FAFAFA"));
+        dark.ColorPrimaryHover.ShouldBe(Color.Parse("#E4E4E7"));
+    }
+
+    [Fact]
+    public void A_Seed_Next_To_Noir_Is_A_Colour()
+    {
+        // One step off slate-950 is an ordinary seed: the palette formula keeps it as the light 500 stop.
+        var map = Map(token => token.ColorPrimary = Color.Parse("#020618"), Aura);
+        map.ColorPrimary.ShouldBe(Color.Parse("#020618"));
+        map.ColorPrimaryHover.ShouldNotBe(Color.Parse("#1E293B"));
+    }
+
+    [Fact]
+    public void An_Explicit_Link_Seed_Keeps_Its_Own_Scale_Under_Noir()
+    {
+        var map = Map(token =>
+        {
+            token.ColorPrimary = Color.Parse("#020617");
+            token.ColorLink    = Color.Parse("#3B82F6");
+        }, Aura);
+        map.ColorPrimary.ShouldBe(Color.Parse("#020617"));
+        // The Aura light link row: blue 700 / 800 / 900.
+        map.ColorLink.ShouldBe(Color.Parse("#1D4ED8"));
+        map.ColorLinkHover.ShouldBe(Color.Parse("#1E40AF"));
+        map.ColorLinkActive.ShouldBe(Color.Parse("#1E3A8A"));
+    }
+
     [Fact]
     public void Dark_After_Another_Algorithm_Keeps_The_Previous_Sizes()
     {

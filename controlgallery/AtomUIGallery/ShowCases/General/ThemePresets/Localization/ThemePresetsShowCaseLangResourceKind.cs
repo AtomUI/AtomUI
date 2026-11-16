@@ -33,6 +33,7 @@ public enum ThemePresetsShowCaseLangResourceKind
     Name,
     Role,
     PrimaryColor,
+    Noir,
     Emerald,
     Blue,
     Violet,

@@ -73,6 +73,10 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         (Color.FromUInt32(0xFFF43F5Eu), ThemePresetsShowCaseLangResourceKind.Rose, "Rose"),
         (Color.FromUInt32(0xFFF59E0Bu), ThemePresetsShowCaseLangResourceKind.Amber, "Amber"),
     ];
+    // primeng.dev's default primary (primeng 22.1.5): slate-950, which a PrimeNG algorithm turns into the noir
+    // primary (the surface scale). Offered first for the PrimeNG presets.
+    private static readonly (Color Color, ThemePresetsShowCaseLangResourceKind Name, string Fallback) s_noirSwatch =
+        (Color.FromUInt32(0xFF020617u), ThemePresetsShowCaseLangResourceKind.Noir, "Noir");
     // The seed a definition without its own ColorPrimary starts from.
     private static readonly Color s_defaultPrimary = new DesignToken().ColorPrimary;
     public IScreen HostScreen { get; }
@@ -288,7 +292,10 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         if (_primarySwatchItems.Count == 0 || presetPrimary != _presetPrimary)
         {
             _presetPrimary = presetPrimary;
-            var items = s_swatches.Select(swatch => new ThemePrimarySwatch(swatch.Color, swatch.Name, swatch.Fallback)).ToList();
+            var offered = previewInfo.DesignLanguage?.StartsWith("PrimeNG.", StringComparison.Ordinal) == true
+                ? s_swatches.Prepend(s_noirSwatch)
+                : s_swatches;
+            var items = offered.Select(swatch => new ThemePrimarySwatch(swatch.Color, swatch.Name, swatch.Fallback)).ToList();
             if (!items.Any(item => item.Color == presetPrimary))
             {
                 items.Add(new ThemePrimarySwatch(presetPrimary, ThemePresetsShowCaseLangResourceKind.PresetColor, "Preset color"));

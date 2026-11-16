@@ -10,7 +10,7 @@
 ThemePresetsShowCase
 +-- 预设条        来自 IThemeManager.AvailableThemes 中由主题包注册的主题；每项一个图标与名称
 +-- 正交开关      暗色、紧凑；与预设自由组合
-+-- 主色色块      五个 Tailwind 500 色块 + 预览定义自身种子；"恢复预设主色"清除选择；固定主色状态的预设禁用并说明
++-- 主色色块      五个 Tailwind 500 色块（PrimeNG 预设前置 Noir）+ 预览定义自身种子；"恢复预设主色"清除选择；固定主色状态的预设禁用并说明
 +-- 预览区        ThemeConfigProvider 包裹的固定控件集合
 \-- 复制主题      导出预览区当前有效主题为 XML v1 文本
 ```
@@ -37,7 +37,8 @@ Info 类型的 Alert 用的是信息色（`ColorInfo`），色块不改变它，
 以下"预览定义"指预览区实际编译的定义：存在对应模式 profile 时是该 profile（如 `Material.Dark`），否则是基础定义。
 
 - 色块固定为 Tailwind 500 色阶：翡翠绿 `#10B981`、蓝 `#3B82F6`、紫罗兰 `#8B5CF6`、玫瑰红 `#F43F5E`、
-  琥珀 `#F59E0B`（与 `PrimeNGTailwindPalettes` 的 500 档一致），之后是预览定义自身的种子，即它声明的
+  琥珀 `#F59E0B`（与 `PrimeNGTailwindPalettes` 的 500 档一致）；预览定义的设计语言为 `PrimeNG.*` 时最前面另有
+  Noir（墨黑）`#020617`，即 primeng.dev 的默认主色，也是 PrimeNG 预设自身的种子。之后是预览定义自身的种子，即它声明的
   `ColorPrimary`（未声明时为 Ant 默认 `#1677FF`）；与前五个重复时不再列出。自身种子随预设、暗色、紧凑切换而重算，
   例如 Material 亮色为 `#6750A4`，暗色为 `#D0BCFF`。PrimeNG 算法把种子当作 500 档，命中 Tailwind 500 时取转录色阶，
   其它颜色走生成色阶；Bootstrap、Material 与内置 Ant 主题只声明 `ColorPrimary`，色块同样设置它们的种子。

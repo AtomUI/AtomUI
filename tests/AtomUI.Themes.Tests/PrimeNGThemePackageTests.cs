@@ -208,7 +208,7 @@ public class PrimeNGThemePackageTests
     {
         // The seed is the 500 stop; Aura and Lara take it as the light primary, Nora the 600 stop (blue-600).
         var profile = Presets[presetName].BaseProfile;
-        var emerald = await Apply(profile);
+        var emerald = await ApplyEmerald(profile);
         var emeraldSelected = Global<Color>(emerald, "ControlItemBgActive");
 
         var config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#3B82F6").Build();
@@ -267,7 +267,7 @@ public class PrimeNGThemePackageTests
     [AvaloniaFact]
     public async Task Aura_Maps_Semantic_Tokens()
     {
-        var snapshot = await Apply("PrimeNGAura");
+        var snapshot = await ApplyEmerald("PrimeNGAura");
         foreach (var (name, value) in new Dictionary<string, string>
                  {
                      ["ColorPrimary"] = "#10B981", ["ColorPrimaryHover"] = "#059669",
@@ -390,7 +390,8 @@ public class PrimeNGThemePackageTests
     [InlineData("PrimeNGNora.DarkCompact", 7.84, 10.35, 13.05)]
     public async Task Link_Colours_Stay_Readable_On_The_Container(string id, double link, double hover, double active)
     {
-        var snapshot = await Apply(id);
+        // The floors are the emerald values; the noir default is covered by Noir_Stays_Readable.
+        var snapshot = await ApplyEmerald(id);
         var container = Global<Color>(snapshot, "ColorBgContainer");
         foreach (var (name, floor) in new[] { ("ColorLink", link), ("ColorLinkHover", hover), ("ColorLinkActive", active) })
         {
@@ -416,7 +417,7 @@ public class PrimeNGThemePackageTests
     [AvaloniaFact]
     public async Task Lara_Uses_Outline_Glow_And_Larger_Controls()
     {
-        var snapshot = await Apply("PrimeNGLara");
+        var snapshot = await ApplyEmerald("PrimeNGLara");
         Global<double>(snapshot, "ControlOutlineWidth").ShouldBe(3);
         Global<Color>(snapshot, "ColorControlOutline").ShouldBe(Color.Parse("#A7F3D0"));
         var inputActiveShadow = Global<BoxShadows>(snapshot, "InputActiveShadow")[0];
@@ -474,7 +475,7 @@ public class PrimeNGThemePackageTests
         Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(2));
         foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
         {
-            var dark = await Apply(profile);
+            var dark = await ApplyEmerald(profile);
             Global<Color>(dark, "ColorPrimaryBg").ShouldBe(Color.Parse("#10B981"));
             Global<Color>(dark, "ColorPrimaryText").ShouldBe(Color.Parse("#09090B"));
             Own<Color>(dark, "Steps", "ProcessIconColor").ShouldBe(Color.Parse("#09090B"));
@@ -487,13 +488,13 @@ public class PrimeNGThemePackageTests
     {
         // Light 600 / 700 / 800 and dark 500 / 400 / 300 of the shared emerald-500 seed (Aura: 500 / 600 / 700 and
         // 400 / 300 / 200).
-        var light = await Apply("PrimeNGNora");
+        var light = await ApplyEmerald("PrimeNGNora");
         Global<Color>(light, "ColorPrimary").ShouldBe(Color.Parse("#059669"));
         Global<Color>(light, "ColorPrimaryHover").ShouldBe(Color.Parse("#047857"));
         Global<Color>(light, "ColorPrimaryActive").ShouldBe(Color.Parse("#065F46"));
         Global<Color>(light, "ColorFocusBorder").ShouldBe(Color.Parse("#059669"));
 
-        var dark = await Apply("PrimeNGNora.Dark");
+        var dark = await ApplyEmerald("PrimeNGNora.Dark");
         Global<Color>(dark, "ColorPrimary").ShouldBe(Color.Parse("#10B981"));
         Global<Color>(dark, "ColorPrimaryHover").ShouldBe(Color.Parse("#34D399"));
         Global<Color>(dark, "ColorPrimaryActive").ShouldBe(Color.Parse("#6EE7B7"));
@@ -511,7 +512,7 @@ public class PrimeNGThemePackageTests
         // contrast colour (PrimeNGStepsTokens).
         foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
         {
-            var dark = await Apply(profile);
+            var dark = await ApplyEmerald(profile);
             Own<Color>(dark, "Steps", "FinishIconColor").ShouldBe(Color.Parse("#09090B"), profile);
         }
 
@@ -542,7 +543,7 @@ public class PrimeNGThemePackageTests
         // draw ColorText, or the primary colour, on the selected and selected-hover backgrounds, so those pairs keep
         // body-text contrast.
         const double floor = 4.5;
-        var dark = await Apply(profile);
+        var dark = await ApplyEmerald(profile);
         var container = Global<Color>(dark, "ColorBgContainer");
 
         var selectedHover = ContrastRatio.Of(Global<Color>(dark, "ColorText"), Global<Color>(dark, "ControlItemBgActiveHover"));
@@ -573,6 +574,85 @@ public class PrimeNGThemePackageTests
         Own<Color>(hybrid, "NavMenu", "ItemSelectedBg").ShouldBe(Global<Color>(hybrid, "ControlItemBgActive"));
     }
 
+    public static TheoryData<string> AllProfiles() =>
+        new(new[] { "PrimeNGAura", "PrimeNGLara", "PrimeNGNora" }
+            .SelectMany(id => new[] { id, id + ".Dark", id + ".Compact", id + ".DarkCompact" }));
+
+    [AvaloniaTheory]
+    [MemberData(nameof(AllProfiles))]
+    public async Task Profiles_Default_To_Noir(string profile)
+    {
+        // primeng.dev (primeng 22.1.5) starts every preset on primary "noir": slate-950 is the seed, and the primary
+        // scale is the surface scale (light slate 950 / 800 / 700, dark zinc 50 / 200 / 300).
+        var manager = Application.Current!.GetThemeManager()!;
+        manager.AvailableThemes.Single(theme => theme.Id == profile).AccentColor.ShouldBe(Color.Parse("#020617"));
+
+        var snapshot = await Apply(profile);
+        var dark = profile.Contains("Dark", StringComparison.Ordinal);
+        var expected = dark
+            ? new[] { "#FAFAFA", "#E4E4E7", "#D4D4D8", "#09090B" }
+            : new[] { "#020617", "#1E293B", "#334155", "#FFFFFF" };
+        Global<Color>(snapshot, "ColorPrimary").ShouldBe(Color.Parse(expected[0]), profile);
+        Global<Color>(snapshot, "ColorPrimaryHover").ShouldBe(Color.Parse(expected[1]), profile);
+        Global<Color>(snapshot, "ColorPrimaryActive").ShouldBe(Color.Parse(expected[2]), profile);
+        Global<Color>(snapshot, "ColorTextLightSolid").ShouldBe(Color.Parse(expected[3]), profile);
+        Global<Color>(snapshot, "SelectionForeground").ShouldBe(Color.Parse(expected[3]), profile);
+
+        // PrimeUIX checkbox / radiobutton icon.checked.color is primary.contrast.color: the checked marks take the
+        // contrast colour, so they stay visible on the near-white dark primary.
+        Effective<Color>(snapshot, "CheckBox", "ColorWhite").ShouldBe(Color.Parse(expected[3]), profile);
+        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(Color.Parse(expected[3]), profile);
+    }
+
+    [AvaloniaTheory]
+    [MemberData(nameof(AllProfiles))]
+    public async Task Noir_Stays_Readable(string profile)
+    {
+        const double text = 4.5;
+        var snapshot = await Apply(profile);
+        var container = Global<Color>(snapshot, "ColorBgContainer");
+        var primary = Global<Color>(snapshot, "ColorPrimary");
+
+        void Check(string what, Color foreground, Color background, double floor)
+        {
+            var ratio = ContrastRatio.Of(foreground, ContrastRatio.Composite(background, container));
+            ratio.ShouldBeGreaterThanOrEqualTo(floor, $"{profile} {what}: {ratio:F2}");
+        }
+
+        // Text on the primary fill (primary buttons, the text selection, checked marks).
+        Check("ColorTextLightSolid on ColorPrimary", Global<Color>(snapshot, "ColorTextLightSolid"), primary, text);
+        Check("CheckBox mark", Effective<Color>(snapshot, "CheckBox", "ColorWhite"), primary, text);
+        Check("Radio dot", Own<Color>(snapshot, "RadioButton", "RadioColor"), Own<Color>(snapshot, "RadioButton", "RadioBgColor"), text);
+        // Primary-coloured text on the page background (links, selected tab labels, ColorPrimaryText*).
+        foreach (var name in new[] { "ColorPrimary", "ColorPrimaryHover", "ColorPrimaryActive", "ColorPrimaryText",
+                                     "ColorPrimaryTextHover", "ColorPrimaryTextActive", "ColorLink", "ColorLinkHover",
+                                     "ColorLinkActive" })
+        {
+            Check($"{name} on ColorBgContainer", Global<Color>(snapshot, name), container, text);
+        }
+        // List controls draw ColorText on the selected and selected-hover backgrounds.
+        Check("ColorText on ControlItemBgActive", Global<Color>(snapshot, "ColorText"), Global<Color>(snapshot, "ControlItemBgActive"), text);
+        Check("ColorText on ControlItemBgActiveHover", Global<Color>(snapshot, "ColorText"), Global<Color>(snapshot, "ControlItemBgActiveHover"), text);
+        // The Filled primary button and the selected NavMenu item draw the primary on a primary background.
+        Check("Filled button", primary, Effective<Color>(snapshot, "Button", "ColorPrimaryBg"), text);
+        Check("Filled button hover", primary, Effective<Color>(snapshot, "Button", "ColorPrimaryBgHover"), text);
+        Check("NavMenu selected item", Own<Color>(snapshot, "NavMenu", "ItemSelectedColor"), Own<Color>(snapshot, "NavMenu", "ItemSelectedBg"), text);
+        // The completed step's check is an icon: the 3:1 non-text floor.
+        Check("Steps finish icon", Own<Color>(snapshot, "Steps", "FinishIconColor"), Own<Color>(snapshot, "Steps", "FinishIconBgColor"), 3);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGAura.Dark")]
+    [InlineData("PrimeNGLara.Dark")]
+    [InlineData("PrimeNGNora.Dark")]
+    public async Task Coloured_Primary_Keeps_White_Check_Marks(string profile)
+    {
+        // Only noir moves the checked marks to the contrast colour; a coloured primary keeps today's white marks.
+        var snapshot = await ApplyEmerald(profile);
+        Effective<Color>(snapshot, "CheckBox", "ColorWhite").ShouldBe(Colors.White);
+        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(Colors.White);
+    }
+
     private static string StripMetadata(string path, string algorithmId)
     {
         var root = XDocument.Load(path).Root!;
@@ -591,6 +671,12 @@ public class PrimeNGThemePackageTests
         var snapshot = await Apply(new ThemeRequest(profile, config, ThemeTransitionReason.UserRequest));
         return ThemeSnapshotDump.Dump(snapshot);
     }
+
+    // The pre-noir default seed: emerald-500, the raw @primeuix/themes preset value. Tests of the coloured-primary
+    // rules apply it explicitly.
+    private static Task<ThemeSnapshot> ApplyEmerald(string id) =>
+        Apply(new ThemeRequest(id, new ThemeConfigBuilder().WithToken("ColorPrimary", "#10B981").Build(),
+            ThemeTransitionReason.UserRequest));
 
     private static Task<ThemeSnapshot> Apply(string id) =>
         Apply(new ThemeRequest(id, null, ThemeTransitionReason.UserRequest));

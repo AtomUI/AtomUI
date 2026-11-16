@@ -1,4 +1,5 @@
 using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Themes.PrimeNG.Algorithms;
 
@@ -37,4 +38,12 @@ internal static class PrimeNGPresets
 
         throw new InvalidOperationException("The algorithm chain contains no PrimeNG preset algorithm.");
     }
+
+    /// <summary>
+    /// Whether the selected background (<c>ControlItemBgActive</c>) is the solid primary colour, as in the Nora
+    /// presets (PrimeUIX <c>highlight.background</c>). A control that draws the primary colour on the selected
+    /// background compensates only then: a noir primary, or a hybrid chain whose Map colours come from Ant Design,
+    /// has a tinted selected background.
+    /// </summary>
+    internal static bool HasSolidHighlight(DesignToken token) => token.ControlItemBgActive == token.ColorPrimary;
 }

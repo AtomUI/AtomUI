@@ -182,7 +182,7 @@ result = ApplyMapOverrides(Mn) -> Alias stage -> ApplyAliasOverrides
     <Algorithm Id="Compact" />
   </Algorithms>
   <Tokens>
-    <Token Name="ColorPrimary" Value="#10B981" />
+    <Token Name="ColorPrimary" Value="#020617" />
   </Tokens>
 </Theme>
 ```

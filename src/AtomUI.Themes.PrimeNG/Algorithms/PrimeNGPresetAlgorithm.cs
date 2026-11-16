@@ -14,7 +14,8 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 /// The Map stage first runs the matching Ant Design algorithm, so every Map token has a value, then writes the
 /// preset's colours and, when the algorithm starts its chain, its size ladder. The <c>ColorPrimary</c>,
 /// <c>ColorSuccess</c>, <c>ColorWarning</c>, <c>ColorError</c> and <c>ColorInfo</c> seeds are the 500 stops of their
-/// families; <c>ColorLink</c> defaults to the primary seed. The neutral scale is a constant of the preset.
+/// families; <c>ColorLink</c> defaults to the primary seed. The neutral scale is a constant of the preset. A primary
+/// or link seed that is the 950 stop of a neutral family is the primeng.dev "noir" primary (<see cref="PrimeNGNoir"/>).
 /// </para>
 /// <para>
 /// A dark algorithm that follows another algorithm only recomputes the colours: the sizes of the previous Map stay,
@@ -54,7 +55,7 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
             new DefaultThemeVariantCalculator().Evaluate(effectiveSeed, previousMap, nextMap);
         }
 
-        WriteColors(effectiveSeed, nextMap, _dark ? _preset.Dark : _preset.Light);
+        WriteColors(effectiveSeed, nextMap, _dark ? _preset.Dark : _preset.Light, PrimeNGNoir.For(_dark));
         if (!_dark || previousMap is null)
         {
             WriteSizes(effectiveSeed, nextMap, _preset.Sizes);
@@ -70,7 +71,8 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
     public void EvaluateAlias(in ThemeAlgorithmContext context, DesignToken token)
     {
         ArgumentNullException.ThrowIfNull(token);
-        var rules   = _preset.For(context.Appearance);
+        // A noir primary (see PrimeNGNoir) changes the contrast colour.
+        var rules   = PrimeNGNoir.Resolve(_preset, context.Appearance, token);
         var surface = rules.Surface.AsSpan();
         var alias   = _preset.Alias;
 
@@ -126,11 +128,34 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         return new Thickness(horizontal, top, horizontal, vertical - top);
     }
 
-    private static void WriteColors(DesignToken seed, DesignToken map, PrimeNGAppearanceRules rules)
+    private static void WriteColors(DesignToken seed, DesignToken map, PrimeNGAppearanceRules rules, PrimeNGNoirRule noir)
     {
+        // A noir seed (primeng.dev's default primary) takes the surface scale and the noir rows; the link follows its
+        // own seed, which defaults to the primary one.
+        var linkSeed = seed.ColorLink ?? seed.ColorPrimary;
+        var linkRule = rules.Link;
+        Color[] primary;
+        Color[] link;
+        if (PrimeNGNoir.IsSeed(seed.ColorPrimary))
+        {
+            primary = PrimeNGNoir.Palette(rules.Surface, seed.ColorPrimary);
+            rules   = PrimeNGNoir.Apply(rules, noir);
+        }
+        else
+        {
+            primary = PrimeNGPalette.Resolve(seed.ColorPrimary);
+        }
+        if (PrimeNGNoir.IsSeed(linkSeed))
+        {
+            link     = PrimeNGNoir.Palette(rules.Surface, linkSeed);
+            linkRule = noir.Link;
+        }
+        else
+        {
+            link = PrimeNGPalette.Resolve(linkSeed);
+        }
+
         var surface = rules.Surface.AsSpan();
-        var primary = PrimeNGPalette.Resolve(seed.ColorPrimary);
-        var link    = PrimeNGPalette.Resolve(seed.ColorLink ?? seed.ColorPrimary);
         var success = PrimeNGPalette.Resolve(seed.ColorSuccess);
         var warning = PrimeNGPalette.Resolve(seed.ColorWarning);
         var error   = PrimeNGPalette.Resolve(seed.ColorError);
@@ -148,7 +173,7 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         map.ColorPrimaryText        = p.Text.Resolve(primary, surface);
         map.ColorPrimaryTextActive  = p.TextActive.Resolve(primary, surface);
 
-        var l = rules.Link;
+        var l = linkRule;
         map.ColorLink       = l.Base.Resolve(link, surface);
         map.ColorLinkHover  = l.Hover.Resolve(link, surface);
         map.ColorLinkActive = l.Active.Resolve(link, surface);

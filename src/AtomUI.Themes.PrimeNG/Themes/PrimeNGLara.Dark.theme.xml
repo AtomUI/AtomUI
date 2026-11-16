@@ -4,7 +4,7 @@
     <Algorithm Catalog="PrimeNG" Id="Lara.Dark" />
   </Algorithms>
   <Tokens>
-    <Token Name="ColorPrimary" Value="#10B981" />
+    <Token Name="ColorPrimary" Value="#020617" />
     <Token Name="ColorError" Value="#EF4444" />
     <Token Name="BorderRadius" Value="6" />
     <Token Name="ControlHeight" Value="39" />

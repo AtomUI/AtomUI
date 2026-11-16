@@ -202,15 +202,16 @@ public class ThemePresetsShowCaseTests
             var button = page.FindControl<Button>("PreviewPrimary")!;
             var provider = page.FindControl<ThemeConfigProvider>("PreviewProvider")!;
             var initial = button;
-            AssertTokens(button, "#10B981", "#FFFFFF", 35, 500);
+            AssertTokens(button, "#020617", "#FFFFFF", 35, 500);
             AssertIndependentProfile(button, (ThemeManager)manager, "PrimeNGAura");
             ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorInfoBg).ShouldNotBe(Color.Parse("#123456"));
             foreach (var (dark, compact, suffix, color, background, height) in new[]
             {
-                (true, false, ".Dark", "#34D399", "#09090B", 35),
-                (true, true, ".DarkCompact", "#34D399", "#09090B", 31),
-                (false, true, ".Compact", "#10B981", "#FFFFFF", 31),
-                (false, false, "", "#10B981", "#FFFFFF", 35)
+                // The PrimeNG default primary is noir: slate-950 in light, zinc-50 in dark.
+                (true, false, ".Dark", "#FAFAFA", "#09090B", 35),
+                (true, true, ".DarkCompact", "#FAFAFA", "#09090B", 31),
+                (false, true, ".Compact", "#020617", "#FFFFFF", 31),
+                (false, false, "", "#020617", "#FFFFFF", 35)
             })
             {
                 model.IsDark = dark; model.IsCompact = compact; Pump();
@@ -340,7 +341,7 @@ public class ThemePresetsShowCaseTests
             root.Element(ns + "Algorithms")!.Elements()
                 .Select(element => ((string?)element.Attribute("Catalog"), element.Attribute("Id")!.Value))
                 .ShouldBe([("PrimeNG", "Aura.Dark"), ((string?)null, "Compact")]);
-            Color.Parse(root.Element(ns + "Tokens")!.Elements().Single(token => token.Attribute("Name")!.Value == "ColorPrimary").Attribute("Value")!.Value).ShouldBe(Color.Parse("#10B981"));
+            Color.Parse(root.Element(ns + "Tokens")!.Elements().Single(token => token.Attribute("Name")!.Value == "ColorPrimary").Attribute("Value")!.Value).ShouldBe(Color.Parse("#020617"));
             root.Element(ns + "Controls").ShouldBeNull();
             model.IsDark = false; Pump(); model.CopySucceeded.ShouldBeFalse();
         }
@@ -444,9 +445,9 @@ public class ThemePresetsShowCaseTests
         try
         {
             window.Show(); Pump();
-            // Aura's own seed is emerald-500, one of the five, so it is not listed twice.
+            // A PrimeNG preset leads with noir, its own seed (slate-950), so it is not listed twice.
             model.PrimarySwatches.ShouldBe([
-                Color.Parse("#10B981"), Color.Parse("#3B82F6"), Color.Parse("#8B5CF6"),
+                Color.Parse("#020617"), Color.Parse("#10B981"), Color.Parse("#3B82F6"), Color.Parse("#8B5CF6"),
                 Color.Parse("#F43F5E"), Color.Parse("#F59E0B")
             ]);
             var button = page.FindControl<Button>("PreviewPrimary")!;
@@ -491,27 +492,27 @@ public class ThemePresetsShowCaseTests
             var reset = page.FindControl<Button>("ResetPrimaryButton")!;
             var swatches = page.FindControl<ItemsControl>("PrimarySwatchBar")!
                                .GetVisualDescendants().OfType<AtomUI.Desktop.Controls.RadioButton>().ToArray();
-            swatches.Select(AutomationProperties.GetName).ShouldBe(["Emerald", "Blue", "Violet", "Rose", "Amber"]);
-            // With no selection the preset's own seed (emerald) is shown as the selected swatch.
-            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false]);
+            swatches.Select(AutomationProperties.GetName).ShouldBe(["Noir", "Emerald", "Blue", "Violet", "Rose", "Amber"]);
+            // With no selection the preset's own seed (noir) is shown as the selected swatch.
+            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false, false]);
             reset.Command!.CanExecute(reset.CommandParameter).ShouldBeFalse();
 
             // Keyboard: focus the blue swatch and press Space.
-            swatches[1].Focus().ShouldBeTrue();
+            swatches[2].Focus().ShouldBeTrue();
             window.KeyPress(Key.Space, RawInputModifiers.None, PhysicalKey.Space, " ");
             window.KeyRelease(Key.Space, RawInputModifiers.None, PhysicalKey.Space, " ");
             Pump();
             model.SelectedPrimary.ShouldBe(Color.Parse("#3B82F6"));
-            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([false, true, false, false, false]);
+            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([false, false, true, false, false, false]);
             ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse("#3B82F6"));
             reset.Command.CanExecute(reset.CommandParameter).ShouldBeTrue();
 
             reset.Command.Execute(reset.CommandParameter); Pump();
             model.SelectedPrimary.ShouldBeNull();
             model.PreviewConfig.ShouldBeSameAs(seeded);
-            ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse("#10B981"));
+            ControlTokenAccessor.Capture(button).GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse("#020617"));
             AssertIndependentProfile(button, (ThemeManager)Application.Current!.GetThemeManager()!, "PrimeNGAura");
-            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false]);
+            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false, false]);
             reset.Command.CanExecute(reset.CommandParameter).ShouldBeFalse();
 
             // Selecting the swatch equal to the own seed is the same as clearing: no new config, reset stays disabled.
@@ -519,7 +520,7 @@ public class ThemePresetsShowCaseTests
             model.SelectedPrimary.ShouldBeNull();
             model.PreviewConfig.ShouldBeSameAs(seeded);
             reset.Command.CanExecute(reset.CommandParameter).ShouldBeFalse();
-            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false]);
+            swatches.Select(swatch => swatch.IsChecked == true).ShouldBe([true, false, false, false, false, false]);
         }
         finally { window.Close(); Pump(); }
     }
@@ -671,6 +672,8 @@ public class ThemePresetsShowCaseTests
         try
         {
             window.Show(); Pump();
+            // The solid selected background is the coloured-primary Nora rule (noir uses a neutral tint).
+            model.SelectedPrimary = Color.Parse("#10B981"); Pump();
             foreach (var compact in new[] { false, true })
             {
                 model.IsCompact = compact; Pump();

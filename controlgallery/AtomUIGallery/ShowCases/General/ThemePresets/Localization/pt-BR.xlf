@@ -181,6 +181,12 @@
         <target state="translated">Cor primária</target>
       </segment>
     </unit>
+    <unit id="Noir">
+      <segment>
+        <source>Noir</source>
+        <target state="translated">Preto</target>
+      </segment>
+    </unit>
     <unit id="Emerald">
       <segment>
         <source>Emerald</source>

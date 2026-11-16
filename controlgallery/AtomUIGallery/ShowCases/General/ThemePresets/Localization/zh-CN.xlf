@@ -181,6 +181,12 @@
         <target state="translated">主色</target>
       </segment>
     </unit>
+    <unit id="Noir">
+      <segment>
+        <source>Noir</source>
+        <target state="translated">墨黑</target>
+      </segment>
+    </unit>
     <unit id="Emerald">
       <segment>
         <source>Emerald</source>

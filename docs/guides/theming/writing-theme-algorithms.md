@@ -29,7 +29,7 @@ PrimeNG 的十二份主题 XML 改造后只剩算法链和 Seed Token（主色�
     <Algorithm Catalog="PrimeNG" Id="Aura.Dark" />
   </Algorithms>
   <Tokens>
-    <Token Name="ColorPrimary" Value="#10B981" />
+    <Token Name="ColorPrimary" Value="#020617" />
     <Token Name="ColorError" Value="#EF4444" />
     <Token Name="BorderRadius" Value="6" />
     <Token Name="ControlHeight" Value="40" />

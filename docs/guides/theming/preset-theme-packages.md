@@ -49,7 +49,7 @@ Shadcn、Bootstrap、Material 仍是「Ant 算法 + 显式值」：基础 ID 叠
 
 | 包 | 主题 Id | 模拟的要点 | 不支持 |
 | --- | --- | --- | --- |
-| `AtomUI.Themes.PrimeNG` | `PrimeNGAura`、`PrimeNGLara`、`PrimeNGNora` | 由 PrimeNG 算法计算：PrimeNG 色阶取级、emerald 主色、slate / zinc 表面、圆角 6 / 6 / 2、字段高度 40 / 44 / 40、按钮字重 500 / 600 / 700、焦点环三种形态 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 缩放 |
+| `AtomUI.Themes.PrimeNG` | `PrimeNGAura`、`PrimeNGLara`、`PrimeNGNora` | 由 PrimeNG 算法计算：PrimeNG 色阶取级、noir 主色（slate-950 种子，与 primeng.dev 默认一致；可换任意种子色）、slate / zinc 表面、圆角 6 / 6 / 2、字段高度 40 / 44 / 40、按钮字重 500 / 600 / 700、焦点环三种形态 | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 缩放 |
 | `AtomUI.Themes.Shadcn` | `ShadcnZinc`、`ShadcnSlate`、`ShadcnStone` | 近黑主色、细边框、无 wave、弱阴影、`BorderRadius 6`、`ControlHeight 36` | 焦点环形态、Command 式弹层 |
 | `AtomUI.Themes.Bootstrap` | `Bootstrap` | Bootstrap 6.0：`#0087fe` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 8` | 渐变背景、内阴影 |
 | `AtomUI.Themes.Material` | `Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |

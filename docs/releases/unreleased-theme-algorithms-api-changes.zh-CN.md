@@ -258,6 +258,11 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
 
 - PrimeNG 主题里的 `ColorPrimary`、`ColorError` 等状态色是种子（色阶的 500 级），由算法映射到实际显示的级。换主色种子
   后，悬停、按下、焦点环和选中底色都会跟着变。
+- 十二个 profile 的默认主色改为 **noir**，即 primeng.dev（primeng 22.1.5）的默认主色：`ColorPrimary` 由 emerald
+  `#10B981` 改为 `#020617`（slate-950）。中性色 950 级的种子让主色色阶取表面色阶：浅色 `#020617` / `#1E293B` /
+  `#334155` 配白字，暗色 `#FAFAFA` / `#E4E4E7` / `#D4D4D8` 配 `#09090B` 字，选中底色为中性色，CheckBox / Radio 的选中
+  标记取对比色。要恢复原来的颜色，把 `ColorPrimary` 设为 `#10B981`；其他种子行为不变。下表中的 emerald 值即 emerald
+  种子下的值。
 - 暗色的主色和错误色变了。旧的暗色 profile 让 `AtomUI:Dark` 对已经是最终值的颜色又推导了一遍：
 
   | Profile | `ColorPrimary` | `ColorError` |

@@ -151,6 +151,11 @@
         <source>Primary color</source>
       </segment>
     </unit>
+    <unit id="Noir">
+      <segment>
+        <source>Noir</source>
+      </segment>
+    </unit>
     <unit id="Emerald">
       <segment>
         <source>Emerald</source>

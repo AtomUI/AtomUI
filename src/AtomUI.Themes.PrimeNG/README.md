@@ -2,7 +2,7 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
-Design language: `PrimeNG.Aura` / `PrimeNG.Lara` / `PrimeNG.Nora`; brand color is `Seed` (`ColorPrimary` is the seed and the derived states follow the algorithm).
+Design language: `PrimeNG.Aura` / `PrimeNG.Lara` / `PrimeNG.Nora`; brand color is `Seed` (`ColorPrimary` is the seed and the derived states follow the algorithm). The default primary is **noir** (seed slate-950 `#020617`), the default of [primeng.dev](https://primeng.dev) (primeng 22.1.5 with `@primeuix/themes` 3.1.1 and `@primeuix/styled` 1.2.0), see [Noir](#noir-the-default-primary).
 
 Compiled Aura, Lara and Nora presets for AtomUI desktop controls, built on six PrimeNG theme algorithms. Register the package once; the default remains `DaybreakBlue`.
 
@@ -37,11 +37,11 @@ Every value is produced by the preset algorithms; the XML files hold only the al
 
 | Family | Chain (light / dark; compact appends `AtomUI:Compact`) | Seeds | Constants |
 |---|---|---|---|
-| Aura | `[PrimeNG:Aura]` / `[PrimeNG:Aura.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 35` | none |
-| Lara | `[PrimeNG:Lara]` / `[PrimeNG:Lara.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 39` | compact only: Select `PopupContentPadding 4` ([不等价项](#compact-profiles-and-不等价项)) |
-| Nora | `[PrimeNG:Nora]` / `[PrimeNG:Nora.Dark]` | `ColorPrimary #10B981`, `ColorError #EF4444`, `BorderRadius 2`, `ControlHeight 35` | `EnableMotion false` (PrimeUIX `transitionDuration` 0s) |
+| Aura | `[PrimeNG:Aura]` / `[PrimeNG:Aura.Dark]` | `ColorPrimary #020617` (noir), `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 35` | none |
+| Lara | `[PrimeNG:Lara]` / `[PrimeNG:Lara.Dark]` | `ColorPrimary #020617` (noir), `ColorError #EF4444`, `BorderRadius 6`, `ControlHeight 39` | compact only: Select `PopupContentPadding 4` ([不等价项](#compact-profiles-and-不等价项)) |
+| Nora | `[PrimeNG:Nora]` / `[PrimeNG:Nora.Dark]` | `ColorPrimary #020617` (noir), `ColorError #EF4444`, `BorderRadius 2`, `ControlHeight 35` | `EnableMotion false` (PrimeUIX `transitionDuration` 0s) |
 
-The light and dark files of a family differ only in the chain (apart from the profile metadata: `Id`, `Name`, `Appearance`). Dark profiles use zinc-950 (`#09090B`) field backgrounds, zinc-900 (`#18181B`) Card/elevated backgrounds, white text and zinc-400 muted text. Aura/Lara use emerald-400/300/200 primary states, zinc-600 field borders and zinc-700 content borders; Nora uses emerald-500/400/300 states, zinc-500 field borders and a solid emerald selected background with zinc-950 text. Dark masks use 60% black; tooltip backgrounds use zinc-700 with white text. These values follow the presets' `colorScheme.dark` tables.
+The light and dark files of a family differ only in the chain (apart from the profile metadata: `Id`, `Name`, `Appearance`). Dark profiles use zinc-950 (`#09090B`) field backgrounds, zinc-900 (`#18181B`) Card/elevated backgrounds, white text and zinc-400 muted text. With the default noir primary every dark profile uses zinc-50/200/300 primary states with zinc-950 text on them and a zinc-700 selected background; Aura/Lara use zinc-600 field borders and zinc-700 content borders, Nora zinc-500 field borders. With a coloured primary seed (for example emerald `#10B981`, the raw preset value) Aura/Lara use its 400/300/200 stops and Nora its 500/400/300 stops with a solid selected background and zinc-950 text. Dark masks use 60% black; tooltip backgrounds use zinc-700 with white text. These values follow the presets' `colorScheme.dark` tables.
 
 Compact profiles keep the normal 35px/39px height seed and append `AtomUI:Compact`: the resulting normal height is 31px/35px, SM/LG heights are 75%/125% of it (Aura/Nora 23.25/38.75; Lara 26.25/43.75), field padding becomes 6 (SM 4, LG 8), horizontal content padding 7px and Select option padding `6,4` (Aura/Nora) or `10,4` (Lara). PrimeUIX has no compact density. Checkbox indicator, Card/Dialog padding and tooltip padding stay at their full-density values.
 
@@ -83,11 +83,39 @@ The value baseline is the standard (16px) presets of `@primeuix/themes` 3.1.1, a
 
 **Colour scale.** Stops are 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 (index `i` = 0 to 10). A seed that equals the 500 stop of one of the 22 Tailwind scales PrimeNG ships resolves to that hand-tuned table. Any other seed goes through the PrimeUIX `palette` formula: stops up to 500 mix in white (`19 × (5 − i)` %, so 50 is 95% white and 500 is the seed), stops above 500 mix in black (`15 × (i − 5)` %, so 950 is 75% black), linearly per sRGB channel, rounded half up (`Math.round`). The seed's alpha is kept on every stop.
 
+### Noir (the default primary)
+
+primeng.dev starts every preset on the primary "noir" (primeng 22.1.5: the configurator state `{preset: 'Aura', primary: 'noir', surface: null}`, verified on 2026-11-15; Aura, Lara and Nora alike). Noir is not a palette of `@primeuix/themes`: the site extends the preset with `primary` = the surface palette (`{surface.50}` … `{surface.950}`) and these colour-scheme rows, identical for all presets:
+
+| Site token | Light | Dark |
+|---|---|---|
+| `primary.color` / `hoverColor` / `activeColor` | `primary.950` / `800` / `700` | `primary.50` / `200` / `300` |
+| `primary.contrastColor` | `#ffffff` | `primary.950` |
+| `highlight.background` / `focusBackground` | `primary.950` / `700` | `primary.50` / `300` |
+| `highlight.color` / `focusColor` | `#ffffff` | `primary.950` |
+
+**Trigger.** A `ColorPrimary` seed whose RGB is the 950 stop of a Tailwind neutral family (slate `#020617`, gray `#030712`, zinc `#09090B`, neutral `#0A0A0A`, stone `#0C0A09`) is noir. The primary palette is then the surface scale of the appearance being computed (slate in light, zinc in dark), so one seed gives noir in both appearances (the Gallery remembers one brand seed per design language). `ColorLink` follows its own seed (the primary by default): a noir link seed takes the noir link row, any other keeps the preset's link row. Any other primary seed keeps the preset's rules. The twelve profiles pin `ColorPrimary #020617`. The rows are one definition per appearance (`PrimeNGNoir`), shared by the three presets; the Alias and control stages recognise noir from the computed primary (light N950, dark N50).
+
+| Token | Light (slate) | Dark (zinc) | Source / reason |
+|---|---|---|---|
+| `ColorPrimary` / `Hover` / `Active` | N950 / N800 / N700 (`#020617` / `#1E293B` / `#334155`) | N50 / N200 / N300 (`#FAFAFA` / `#E4E4E7` / `#D4D4D8`) | site `primary.color` / `hoverColor` / `activeColor` |
+| `SelectionBackground` | N950 | N50 | site `primary.color` |
+| `SelectionForeground`, `ColorTextLightSolid` | white | N950 (`#09090B`) | site `primary.contrastColor` |
+| `ColorPrimaryBg` / `BgHover` (`ControlItemBgActive` / `Hover`) | N200 / N300 | N700 / N600 | AtomUI. The site's highlight is the solid primary with contrast text, but AtomUI list controls (Select, Cascader, ListBox, ComboBox, TreeView, DataGrid, time and date cells) draw `ColorText` on the selected background: about 1.1:1 on N950 or N50. A neutral tint one and two steps above the hover fill (`ColorFillTertiary` N100 / N800) keeps the selected item apart from the hovered one; `ColorText` on it: light 8.40 / 6.97 (Aura), dark 10.44 / 7.73 |
+| `ColorPrimaryBorder` / `BorderHover` | N300 / N400 | N600 / N500 | AtomUI: one step beyond the selected background, so a primary Tag keeps a visible border (Lara's light focus glow `ColorPrimaryBorder` is N300; the site's is `primary.200` = N200) |
+| `ColorPrimaryText` / `TextHover` / `TextActive` | N950 / N800 / N700 | N50 / N200 / N300 | AtomUI: the primary states. The site's `highlight.color` is white / N950, but AtomUI draws these tokens on the page background, where white (light) and N950 (dark) would vanish |
+| `ColorLink` / `Hover` / `Active` (noir link seed) | N950 / N800 / N700 | N50 / N200 / N300 | PrimeUIX `button.link` is `primary.color`; the states follow the primary states: 20.17 / 14.63 / 10.35 on white, 19.06 / 15.68 / 13.46 on N950 |
+| Button `ColorPrimaryBg` / `BgHover` (Filled) | global | global | The selected background is a tint, so the Filled variant keeps it (Nora's solid-highlight compensation does not apply); `ColorPrimary` on it ≥ 10 |
+| CheckBox `ColorWhite` (check mark), RadioButton `RadioColor` (dot) | `ColorTextLightSolid` (white) | `ColorTextLightSolid` (N950) | PrimeUIX `checkbox.icon.checked.color` / `radiobutton.icon.checked.color` = `primary.contrast.color`; a white mark would vanish on the dark N50 primary. Control stages `PrimeNGCheckBoxTokens`, `PrimeNGRadioButtonTokens`; a coloured primary keeps the white mark |
+| `ColorFocusBorder`, `ColorControlOutline` | the preset's rule | the preset's rule | They follow `ColorPrimary` / `ColorPrimaryBorder` (Nora dark: the field border) |
+
+`PrimeNGThemePackageTests.Noir_Stays_Readable` checks these pairs for all twelve profiles (text 4.5:1, the Steps check icon 3:1).
+
 **Reading the rule tables.** `P` is the primary family, `S` a status family (success, warning, info), `E` the error family, `N` the neutral scale. `@n%` is an opacity. The "Source" column says where a row comes from: **XML (baseline)** – the value the pre-algorithm XML profiles set explicitly, which were the acceptance baseline of the rebuild; **PrimeUIX** – the preset token named; **AtomUI** – a decision with no direct PrimeUIX counterpart.
 
-### Aura at the default seeds
+### Aura at the emerald seed
 
-The rule tables below give stops; at the Aura seeds they produce these values (Aura Light):
+The rule tables below give stops; at the emerald seed (`ColorPrimary #10B981`, the raw `@primeuix/themes` preset value; the profiles default to [noir](#noir-the-default-primary)) they produce these values (Aura Light):
 
 | PrimeNG semantic | AtomUI global token |
 |---|---|
@@ -247,8 +275,8 @@ The Nora rule table (`PrimeNGNoraPreset`) is transcribed from the pre-algorithm 
 | Card | as Aura, radius + 0 (2); dark: for the card only `ColorBorderSecondary` N700 | XML (baseline); the dark border equals PrimeUIX `overlay.*.borderColor` (transparent / `surface.700`). PrimeUIX `card.borderRadius` is `border.radius.sm` and its shadow differs; the XML values are kept |
 | Dialog | as Aura, radius + 0 (2) | PrimeUIX `overlay.modal.padding` (1.125rem) |
 | ToolTip | as Aura (N700, white, `BorderRadius`, 10,6) | PrimeUIX `tooltip.padding` (0.375rem 0.625rem). PrimeUIX `tooltip.background` is N900 / `surface.0`; the XML kept N700 / white |
-| NavMenu (`PrimeNG:Nora.Dark` only, `PrimeNGNavMenuTokens`) | dark: `ItemSelectedBg` = `ColorPrimary`@16%; nothing under a light appearance | AtomUI. Ant Design takes it from `ControlItemBgActive`, the solid primary here, and draws `ItemSelectedColor` (the primary) on it (1.00; now 6.39). `ItemSelectedColor` cannot become the contrast colour, because it also colours the selected-path headers, which sit on the menu background |
-| Steps (`PrimeNG:Nora.Dark` only, `PrimeNGStepsTokens`) | dark: `FinishIconColor` = `ColorTextLightSolid` (N950), so the completed check stays readable on the solid primary; nothing under a light appearance | XML (baseline); PrimeUIX `steps.itemNumber.activeColor` (`primary.contrast.color`) |
+| NavMenu (`PrimeNG:Nora.Dark` only, `PrimeNGNavMenuTokens`) | dark: `ItemSelectedBg` = `ColorPrimary`@16%, only while `ControlItemBgActive` is the solid primary (`PrimeNGPresets.HasSolidHighlight`); nothing under noir or a chain whose Map colours come from Ant Design | AtomUI. Ant Design takes it from `ControlItemBgActive`, the solid primary here, and draws `ItemSelectedColor` (the primary) on it (1.00; now 6.39). `ItemSelectedColor` cannot become the contrast colour, because it also colours the selected-path headers, which sit on the menu background |
+| Steps (`PrimeNG:Nora.Dark` only, `PrimeNGStepsTokens`) | dark: `FinishIconColor` = `ColorTextLightSolid` (N950), so the completed check stays readable on the solid primary, only while `ControlItemBgActive` is the solid primary; nothing under noir (the check keeps the primary colour on the tinted background) or a chain whose Map colours come from Ant Design | XML (baseline); PrimeUIX `steps.itemNumber.activeColor` (`primary.contrast.color`) |
 
 ### Compact profiles and 不等价项
 
@@ -268,7 +296,8 @@ The compact profiles are the base profiles with `AtomUI:Compact` appended. Every
 - **Control algorithm modes.** A control in `ControlAlgorithmMode.Global` or `Custom` re-runs the chain with the already-derived global tokens as seeds. A derived colour is not a Tailwind 500 stop, so that control's colours shift by one stop. Ant Design's dark algorithm has the same drift; it is not fixed here.
 - **Placing a PrimeNG algorithm after another algorithm.** A light PrimeNG algorithm discards the previous algorithm's whole Map (its Ant Design base pass ignores `previousMap`). A dark PrimeNG algorithm keeps the previous Map's sizes and only recomputes the colours.
 - **Hybrid chains** such as `[PrimeNG:Aura, AtomUI:Dark]` are readable but not the PrimeNG dark preset, see [换算法不等于选 profile](#换算法不等于选-profile-changing-the-chain-versus-choosing-a-profile).
-- **Nora dark buttons.** The Filled primary variant of `DropdownButton`, `ResetButton` and `SubmitButton` still draws `ColorPrimary` on the global `ColorPrimaryBg`, which is the solid primary (text contrast 1.00); only `Button` has the scoped translucent background. Elsewhere, selected backgrounds are the solid primary with `ColorText` on them where the control does not switch the text colour (white on `#10B981`: 2.54, unchanged from the pre-algorithm profiles).
+- **Nora dark buttons.** The Filled primary variant of `DropdownButton`, `ResetButton` and `SubmitButton` still draws `ColorPrimary` on the global `ColorPrimaryBg`, which is the solid primary (text contrast 1.00); only `Button` has the scoped translucent background. Elsewhere, selected backgrounds are the solid primary with `ColorText` on them where the control does not switch the text colour (white on `#10B981`: 2.54, unchanged from the pre-algorithm profiles). Under the default noir primary the selected background is a neutral tint, so none of this applies.
+- **Noir switch handle.** The ToggleSwitch has one `HandleBg` (white) for both states. On the dark noir primary (N50) the checked handle is white on near-white (PrimeUIX `toggleswitch.handle.checked.background` is `primary.contrast.color`); a stage cannot colour the checked handle alone without darkening the unchecked one.
 
 **Changes against the pre-algorithm profiles.** In the old dark profiles the chain `[AtomUI:Dark]` re-derived the primary and error seeds the XML had already written as final values. The dark profiles now compile to the values their XML wrote:
 

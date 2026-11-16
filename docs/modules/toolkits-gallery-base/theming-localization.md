@@ -72,6 +72,10 @@ AtomUIGallery 在 `UseGalleryControls()` 中直接注册 PrimeNG、Shadcn、Boot
 `DaybreakBlue` 来自 AtomUI Core 默认 definition；Gallery 自身不再包含任何主题 XML，也不再生成 `GeneratedThemePackageRegistration`。
 原先的 Polar Green、Sunset Orange、Golden Purple、Magenta 四个预设已删除，改为 Theme 菜单 Brand color 中 `AntDesign` 语言专属的命名色块
 （`#52C41A`、`#FA8C16`、`#722ED1`、`#EB2F96`，另有 Daybreak Blue `#1677FF`），由 `GalleryBrandSwatches` 统一维护。
+`PrimeNG.*` 语言使用自己的列表 `GalleryBrandSwatches.PrimeNG`：primeng.dev（primeng 22.1.5）配置器的主色，依站点顺序为
+Noir `#020617`（站点默认，也是 PrimeNG 主题的 `AccentColor`）和 emerald、green、lime、orange、amber、yellow、teal、cyan、
+sky、blue、indigo、violet、purple、fuchsia、pink、rose 十六个 Tailwind 500 色（站点没有 red）；其他 `Seed` 语言仍用
+`Tailwind500`。
 
 Core 默认主题由构建期生成类型化主题包，生成内容只有强类型注册与默认赋值，主题派生仍由运行时算法计算。
 不扫描程序集或资源目录。Desktop Gallery 另外使用 `WithApplicationId("AtomUIGallery")` 和

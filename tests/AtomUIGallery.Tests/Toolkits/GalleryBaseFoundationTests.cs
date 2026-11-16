@@ -665,6 +665,35 @@ public class GalleryBaseFoundationTests
     }
 
     [Fact]
+    public async Task PrimeNG_Defaults_To_Noir_Until_A_Brand_Color_Is_Chosen()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Aura").ToTask();
+            manager.CurrentTheme!.Appearance.ShouldBe(ThemeAppearance.Light);
+            viewModel.BrandColor.ShouldBeNull();
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#020617"));
+
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#10B981")).ToTask();
+            viewModel.BrandColor.ShouldBe(Color.Parse("#10B981"));
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#10B981"));
+
+            // Noir is the theme's own accent colour, so choosing it clears the brand choice.
+            await viewModel.SetBrandColorCommand.Execute(Color.Parse("#020617")).ToTask();
+            viewModel.BrandColor.ShouldBeNull();
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#020617"));
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
     public async Task Fixed_Language_Ignores_SetBrandColor()
     {
         var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());

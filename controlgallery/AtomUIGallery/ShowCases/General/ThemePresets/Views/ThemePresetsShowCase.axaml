@@ -67,6 +67,25 @@
                                Text="{vm:ThemePresetsShowCaseLangResource PrimaryFixed}"
                                IsVisible="{Binding !CanChoosePrimary}" />
                 </WrapPanel>
+                <WrapPanel Name="NeutralSwatchPanel" IsVisible="{Binding CanChooseNeutral}">
+                    <TextBlock VerticalAlignment="Center" Text="{vm:ThemePresetsShowCaseLangResource NeutralColorLabel}" />
+                    <ItemsControl ItemsSource="{Binding NeutralSwatchItems}" ClipToBounds="False"
+                                  AutomationProperties.Name="{vm:ThemePresetsShowCaseLangResource NeutralColorLabel}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="{atom:SharedTokenResource SpacingSM}" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ThemePrimarySwatch">
+                                <atom:RadioButton VerticalAlignment="Center" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                                  AutomationProperties.Name="{Binding Name}" ToolTip.Tip="{Binding Name}"
+                                                  Click="SelectNeutral">
+                                    <Ellipse Width="{atom:SharedTokenResource ControlHeightXS}" Height="{atom:SharedTokenResource ControlHeightXS}"
+                                             Fill="{Binding Brush}" />
+                                </atom:RadioButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </WrapPanel>
                 <TextBlock Text="{Binding PreviewThemeId}" />
                 <theme:ThemeConfigProvider Name="PreviewProvider" Config="{Binding PreviewConfig}">
                     <Border Background="{atom:SharedTokenResource ColorBgContainer}" TextElement.Foreground="{atom:SharedTokenResource ColorText}" Padding="24" CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">

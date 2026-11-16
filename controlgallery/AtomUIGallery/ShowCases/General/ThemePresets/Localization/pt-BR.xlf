@@ -235,5 +235,126 @@
         <target state="translated">Este tema fixa explicitamente os estados da cor primária, que não acompanham a semente.</target>
       </segment>
     </unit>
+
+    <unit id="Cyan">
+      <segment>
+        <source>Cyan</source>
+        <target state="translated">Ciano</target>
+      </segment>
+    </unit>
+    <unit id="Fuchsia">
+      <segment>
+        <source>Fuchsia</source>
+        <target state="translated">Fúcsia</target>
+      </segment>
+    </unit>
+    <unit id="Green">
+      <segment>
+        <source>Green</source>
+        <target state="translated">Verde</target>
+      </segment>
+    </unit>
+    <unit id="Indigo">
+      <segment>
+        <source>Indigo</source>
+        <target state="translated">Índigo</target>
+      </segment>
+    </unit>
+    <unit id="Lime">
+      <segment>
+        <source>Lime</source>
+        <target state="translated">Limão</target>
+      </segment>
+    </unit>
+    <unit id="Orange">
+      <segment>
+        <source>Orange</source>
+        <target state="translated">Laranja</target>
+      </segment>
+    </unit>
+    <unit id="Pink">
+      <segment>
+        <source>Pink</source>
+        <target state="translated">Rosa</target>
+      </segment>
+    </unit>
+    <unit id="Purple">
+      <segment>
+        <source>Purple</source>
+        <target state="translated">Roxo</target>
+      </segment>
+    </unit>
+    <unit id="Red">
+      <segment>
+        <source>Red</source>
+        <target state="translated">Vermelho</target>
+      </segment>
+    </unit>
+    <unit id="Sky">
+      <segment>
+        <source>Sky</source>
+        <target state="translated">Céu</target>
+      </segment>
+    </unit>
+    <unit id="Teal">
+      <segment>
+        <source>Teal</source>
+        <target state="translated">Azul-petróleo</target>
+      </segment>
+    </unit>
+    <unit id="Yellow">
+      <segment>
+        <source>Yellow</source>
+        <target state="translated">Amarelo</target>
+      </segment>
+    </unit>
+    <unit id="NeutralColorLabel">
+      <segment>
+        <source>Neutral Color</source>
+        <target state="translated">Cor Neutra</target>
+      </segment>
+    </unit>
+    <unit id="Neutral">
+      <segment>
+        <source>Neutral</source>
+        <target state="translated">Neutro</target>
+      </segment>
+    </unit>
+    <unit id="Stone">
+      <segment>
+        <source>Stone</source>
+        <target state="translated">Stone</target>
+      </segment>
+    </unit>
+    <unit id="Zinc">
+      <segment>
+        <source>Zinc</source>
+        <target state="translated">Zinco</target>
+      </segment>
+    </unit>
+    <unit id="Mauve">
+      <segment>
+        <source>Mauve</source>
+        <target state="translated">Malva</target>
+      </segment>
+    </unit>
+    <unit id="Olive">
+      <segment>
+        <source>Olive</source>
+        <target state="translated">Oliva</target>
+      </segment>
+    </unit>
+    <unit id="Mist">
+      <segment>
+        <source>Mist</source>
+        <target state="translated">Névoa</target>
+      </segment>
+    </unit>
+    <unit id="Taupe">
+      <segment>
+        <source>Taupe</source>
+        <target state="translated">Taupe</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

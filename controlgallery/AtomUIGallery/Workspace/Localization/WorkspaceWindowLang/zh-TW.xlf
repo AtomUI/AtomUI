@@ -37,24 +37,6 @@
         <target state="translated">PrimeNG Nora</target>
       </segment>
     </unit>
-    <unit id="DesignLanguageShadcnSlate">
-      <segment>
-        <source>Shadcn Slate</source>
-        <target state="translated">Shadcn Slate</target>
-      </segment>
-    </unit>
-    <unit id="DesignLanguageShadcnStone">
-      <segment>
-        <source>Shadcn Stone</source>
-        <target state="translated">Shadcn Stone</target>
-      </segment>
-    </unit>
-    <unit id="DesignLanguageShadcnZinc">
-      <segment>
-        <source>Shadcn Zinc</source>
-        <target state="translated">Shadcn Zinc</target>
-      </segment>
-    </unit>
     <unit id="MenuItemAppearance">
       <segment>
         <source>Appearance</source>
@@ -77,6 +59,30 @@
       <segment>
         <source>This theme declares no design language, so its brand color cannot be changed</source>
         <target state="translated">此主題未聲明設計語言，無法更換品牌色</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColor">
+      <segment>
+        <source>Neutral Color</source>
+        <target state="translated">中性色</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorReset">
+      <segment>
+        <source>Reset Neutral Color</source>
+        <target state="translated">重設中性色</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorFixedHint">
+      <segment>
+        <source>The current design language does not accept a neutral color</source>
+        <target state="translated">當前設計語言不支持中性色</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorNoLanguageHint">
+      <segment>
+        <source>The current theme belongs to no design language</source>
+        <target state="translated">當前主題不屬於任何設計語言</target>
       </segment>
     </unit>
     <unit id="MenuItemBrandColorReset">
@@ -203,6 +209,55 @@
       <segment>
         <source>AtomUI Desktop Gallery</source>
         <target state="translated">AtomUI 桌面控件庫</target>
+      </segment>
+    </unit>
+
+    <unit id="DesignLanguageShadcnVega">
+      <segment>
+        <source>Shadcn Vega</source>
+        <target state="translated">Shadcn Vega</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnNova">
+      <segment>
+        <source>Shadcn Nova</source>
+        <target state="translated">Shadcn Nova</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnMaia">
+      <segment>
+        <source>Shadcn Maia</source>
+        <target state="translated">Shadcn Maia</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnLyra">
+      <segment>
+        <source>Shadcn Lyra</source>
+        <target state="translated">Shadcn Lyra</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnMira">
+      <segment>
+        <source>Shadcn Mira</source>
+        <target state="translated">Shadcn Mira</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnLuma">
+      <segment>
+        <source>Shadcn Luma</source>
+        <target state="translated">Shadcn Luma</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnSera">
+      <segment>
+        <source>Shadcn Sera</source>
+        <target state="translated">Shadcn Sera</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnRhea">
+      <segment>
+        <source>Shadcn Rhea</source>
+        <target state="translated">Shadcn Rhea</target>
       </segment>
     </unit>
   </file>

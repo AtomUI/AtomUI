@@ -35,12 +35,13 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
     // A null chain keeps the definition's own chain: a mode profile may run a package algorithm (for example
     // PrimeNG:Aura.Dark) that the built-in Default/Dark/Compact toggles cannot stand in for.
     // A non-null primary replaces the definition's ColorPrimary seed; null leaves the declarations untouched.
-    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms, string? primary = null)
+    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms, string? primary = null,
+        string? neutral = null)
     {
         _ = Read();
         var definition = _catalog!.Get(themeId).Definition;
         algorithms ??= definition.Algorithms.Select(descriptor => descriptor.Algorithm).ToArray();
-        var key = themeId + ":" + string.Join(",", algorithms) + ":" + primary;
+        var key = themeId + ":" + string.Join(",", algorithms) + ":" + primary + ":" + neutral;
         if (_configs.TryGetValue(key, out var cached))
         {
             return cached;
@@ -55,6 +56,10 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
         if (primary is not null)
         {
             builder.WithToken(nameof(DesignToken.ColorPrimary), primary);
+        }
+        if (neutral is not null)
+        {
+            builder.WithToken(nameof(DesignToken.ColorNeutral), neutral);
         }
         foreach (var control in definition.Controls)
         {
@@ -88,7 +93,7 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
 
     internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null,
         string? designLanguage = null, ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
-        ThemeDensity density = ThemeDensity.Normal)
+        ThemeDensity density = ThemeDensity.Normal, ThemeNeutralColorSupport neutralColor = ThemeNeutralColorSupport.Fixed)
     {
         // A Seed theme that pins a brand-derived token would be rejected on read (ATMTHM3101), so export it as Fixed.
         // The export then no longer matches its design language, whose definitions all accept a seed: a Fixed
@@ -119,7 +124,8 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
             new XAttribute("Appearance",
                 (appearance ?? (config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? ThemeAppearance.Dark : ThemeAppearance.Light)).ToString()),
             designLanguage is null ? null : new XAttribute("DesignLanguage", designLanguage),
-            new XAttribute("BrandColor", brandColor.ToString()), new XAttribute("Density", density.ToString()),
+            new XAttribute("BrandColor", brandColor.ToString()),
+            new XAttribute("NeutralColor", neutralColor.ToString()), new XAttribute("Density", density.ToString()),
             new XAttribute("IsDefault", false), note, Algorithms(config.Algorithms!), Tokens(config.Tokens),
             // The schema requires at least one Control inside Controls, so a profile without control values omits it.
             config.Controls.Count == 0 ? null : new XElement(ns + "Controls", config.Controls.Select(pair =>

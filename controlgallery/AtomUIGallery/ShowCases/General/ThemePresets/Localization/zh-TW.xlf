@@ -235,5 +235,126 @@
         <target state="translated">此預設顯式固定了主色的各個狀態色，它們不會跟隨種子變化。</target>
       </segment>
     </unit>
+
+    <unit id="Cyan">
+      <segment>
+        <source>Cyan</source>
+        <target state="translated">青色</target>
+      </segment>
+    </unit>
+    <unit id="Fuchsia">
+      <segment>
+        <source>Fuchsia</source>
+        <target state="translated">品紅</target>
+      </segment>
+    </unit>
+    <unit id="Green">
+      <segment>
+        <source>Green</source>
+        <target state="translated">綠色</target>
+      </segment>
+    </unit>
+    <unit id="Indigo">
+      <segment>
+        <source>Indigo</source>
+        <target state="translated">靛藍</target>
+      </segment>
+    </unit>
+    <unit id="Lime">
+      <segment>
+        <source>Lime</source>
+        <target state="translated">酸橙</target>
+      </segment>
+    </unit>
+    <unit id="Orange">
+      <segment>
+        <source>Orange</source>
+        <target state="translated">橙色</target>
+      </segment>
+    </unit>
+    <unit id="Pink">
+      <segment>
+        <source>Pink</source>
+        <target state="translated">粉色</target>
+      </segment>
+    </unit>
+    <unit id="Purple">
+      <segment>
+        <source>Purple</source>
+        <target state="translated">紫色</target>
+      </segment>
+    </unit>
+    <unit id="Red">
+      <segment>
+        <source>Red</source>
+        <target state="translated">紅色</target>
+      </segment>
+    </unit>
+    <unit id="Sky">
+      <segment>
+        <source>Sky</source>
+        <target state="translated">天藍</target>
+      </segment>
+    </unit>
+    <unit id="Teal">
+      <segment>
+        <source>Teal</source>
+        <target state="translated">藍綠</target>
+      </segment>
+    </unit>
+    <unit id="Yellow">
+      <segment>
+        <source>Yellow</source>
+        <target state="translated">黃色</target>
+      </segment>
+    </unit>
+    <unit id="NeutralColorLabel">
+      <segment>
+        <source>Neutral Color</source>
+        <target state="translated">中性色</target>
+      </segment>
+    </unit>
+    <unit id="Neutral">
+      <segment>
+        <source>Neutral</source>
+        <target state="translated">中性</target>
+      </segment>
+    </unit>
+    <unit id="Stone">
+      <segment>
+        <source>Stone</source>
+        <target state="translated">石頭灰</target>
+      </segment>
+    </unit>
+    <unit id="Zinc">
+      <segment>
+        <source>Zinc</source>
+        <target state="translated">鋅灰</target>
+      </segment>
+    </unit>
+    <unit id="Mauve">
+      <segment>
+        <source>Mauve</source>
+        <target state="translated">淡紫灰</target>
+      </segment>
+    </unit>
+    <unit id="Olive">
+      <segment>
+        <source>Olive</source>
+        <target state="translated">橄欖</target>
+      </segment>
+    </unit>
+    <unit id="Mist">
+      <segment>
+        <source>Mist</source>
+        <target state="translated">霧灰</target>
+      </segment>
+    </unit>
+    <unit id="Taupe">
+      <segment>
+        <source>Taupe</source>
+        <target state="translated">灰褐</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

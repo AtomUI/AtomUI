@@ -23,6 +23,7 @@ internal sealed class GalleryThemeMenu : IDisposable
 {
     private const string DesignLanguageGroupName = "ThemeDesignLanguage";
     private const string BrandColorGroupName = "ThemeBrandColor";
+    private const string NeutralColorGroupName = "ThemeNeutralColor";
     private const string OtherThemeGroupName = "ThemeColor";
 
     // Design language identifiers are matched exactly; an unknown language falls back to the base theme's name.
@@ -34,18 +35,25 @@ internal sealed class GalleryThemeMenu : IDisposable
         ["PrimeNG.Aura"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGAura,
         ["PrimeNG.Lara"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGLara,
         ["PrimeNG.Nora"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGNora,
-        ["Shadcn.Zinc"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnZinc,
-        ["Shadcn.Slate"]   = WorkspaceWindowLangResourceKind.DesignLanguageShadcnSlate,
-        ["Shadcn.Stone"]   = WorkspaceWindowLangResourceKind.DesignLanguageShadcnStone,
+        ["Shadcn.Vega"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnVega,
+        ["Shadcn.Nova"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnNova,
+        ["Shadcn.Maia"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnMaia,
+        ["Shadcn.Lyra"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnLyra,
+        ["Shadcn.Mira"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnMira,
+        ["Shadcn.Luma"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnLuma,
+        ["Shadcn.Sera"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnSera,
+        ["Shadcn.Rhea"]    = WorkspaceWindowLangResourceKind.DesignLanguageShadcnRhea,
     };
 
     private readonly GalleryWorkspaceViewModel _viewModel;
     private readonly MenuItem _designLanguageItem;
     private readonly MenuItem _brandColorItem;
+    private readonly MenuItem _neutralColorItem;
     private readonly MenuItem _otherThemesItem;
     private readonly StableCommand _switchThemeCommand;
     private readonly StableCommand _switchDesignLanguageCommand;
     private readonly StableCommand _setBrandColorCommand;
+    private readonly StableCommand _setNeutralColorCommand;
     private readonly PropertyChangedEventHandler _propertyChangedHandler;
     private bool _disposed;
     private bool _rebuildPending;
@@ -58,15 +66,18 @@ internal sealed class GalleryThemeMenu : IDisposable
     public GalleryThemeMenu(GalleryWorkspaceViewModel viewModel,
                             MenuItem designLanguageItem,
                             MenuItem brandColorItem,
+                            MenuItem neutralColorItem,
                             MenuItem otherThemesItem)
     {
         _viewModel                   = viewModel;
         _designLanguageItem          = designLanguageItem;
         _brandColorItem              = brandColorItem;
+        _neutralColorItem            = neutralColorItem;
         _otherThemesItem             = otherThemesItem;
         _switchThemeCommand          = new StableCommand(viewModel.SwitchThemeCommand);
         _switchDesignLanguageCommand = new StableCommand(viewModel.SwitchDesignLanguageCommand);
         _setBrandColorCommand        = new StableCommand(viewModel.SetBrandColorCommand);
+        _setNeutralColorCommand      = new StableCommand(viewModel.SetNeutralColorCommand);
         Rebuild();
         _propertyChangedHandler = HandleViewModelPropertyChanged;
         viewModel.PropertyChanged += _propertyChangedHandler;
@@ -121,6 +132,7 @@ internal sealed class GalleryThemeMenu : IDisposable
         var themes = _viewModel.AvailableThemes;
         RebuildDesignLanguages(themes);
         RebuildBrandColors(themes);
+        RebuildNeutralColors(themes);
         RebuildOtherThemes(themes);
     }
 
@@ -191,6 +203,54 @@ internal sealed class GalleryThemeMenu : IDisposable
         reset.Bind(MenuItem.HeaderProperty,
             new DynamicResourceExtension(WorkspaceWindowLangResourceKind.MenuItemBrandColorReset));
         _brandColorItem.Items.Add(reset);
+    }
+
+    private void RebuildNeutralColors(IReadOnlyList<ThemeInfo> themes)
+    {
+        _neutralColorItem.Items.Clear();
+        var canChoose = _viewModel.CanChooseNeutralColor;
+        _neutralColorItem.IsEnabled = canChoose;
+        if (!canChoose || _viewModel.CurrentDesignLanguage is not { } language)
+        {
+            AtomUI.Desktop.Controls.ToolTip.SetShowOnDisabled(_neutralColorItem, true);
+            var tip = new Avalonia.Controls.TextBlock();
+            tip.Bind(Avalonia.Controls.TextBlock.TextProperty,
+                new DynamicResourceExtension(_viewModel.CurrentDesignLanguage is null
+                    ? WorkspaceWindowLangResourceKind.MenuItemNeutralColorNoLanguageHint
+                    : WorkspaceWindowLangResourceKind.MenuItemNeutralColorFixedHint));
+            AtomUI.Desktop.Controls.ToolTip.SetTip(_neutralColorItem, tip);
+            return;
+        }
+
+        AtomUI.Desktop.Controls.ToolTip.SetTip(_neutralColorItem, null);
+        var baseTheme = FindBaseTheme(themes, language);
+        var selected  = _viewModel.NeutralColor ?? baseTheme?.NeutralAccentColor;
+        foreach (var swatch in GalleryNeutralSwatches.For(language, baseTheme?.NeutralAccentColor))
+        {
+            var item = new MenuItem
+            {
+                ToggleType       = MenuItemToggleType.Radio,
+                GroupName        = NeutralColorGroupName,
+                IsChecked        = selected == swatch.Color,
+                Command          = _setNeutralColorCommand,
+                CommandParameter = swatch.Color,
+                Tag              = swatch.Color
+            };
+            SetHeader(item, CreateHeader(swatch.Color,
+                header => header.Text = swatch.Name.Length > 0 ? swatch.Name : baseTheme?.Name ?? language));
+            _neutralColorItem.Items.Add(item);
+        }
+
+        _neutralColorItem.Items.Add(new MenuSeparator());
+        var reset = new MenuItem
+        {
+            Command          = _setNeutralColorCommand,
+            CommandParameter = null,
+            IsEnabled        = _viewModel.NeutralColor is not null
+        };
+        reset.Bind(MenuItem.HeaderProperty,
+            new DynamicResourceExtension(WorkspaceWindowLangResourceKind.MenuItemNeutralColorReset));
+        _neutralColorItem.Items.Add(reset);
     }
 
     private void RebuildOtherThemes(IReadOnlyList<ThemeInfo> themes)

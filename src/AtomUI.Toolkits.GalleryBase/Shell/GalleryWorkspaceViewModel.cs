@@ -30,6 +30,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private readonly Lazy<ReactiveCommand<string, Unit>> _switchDesignLanguageCommand;
     private readonly Lazy<ReactiveCommand<Color?, Unit>> _setBrandColorCommand;
     private readonly Dictionary<string, Color?> _brandByLanguage = new(StringComparer.Ordinal);
+    private readonly Lazy<ReactiveCommand<Color?, Unit>> _setNeutralColorCommand;
+    private readonly Dictionary<string, Color?> _neutralByLanguage = new(StringComparer.Ordinal);
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhCNCommand;
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToZhTWCommand;
     private readonly Lazy<ReactiveCommand<Unit, Unit>> _switchToEnUSCommand;
@@ -79,6 +81,9 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     /// </summary>
     public ReactiveCommand<Color?, Unit> SetBrandColorCommand => _setBrandColorCommand.Value;
 
+    /// <summary>Sets the neutral color of the current design language; null keeps the definition's own.</summary>
+    public ReactiveCommand<Color?, Unit> SetNeutralColorCommand => _setNeutralColorCommand.Value;
+
     public ReactiveCommand<Unit, Unit> SwitchToZhCNCommand => _switchToZhCNCommand.Value;
 
     public ReactiveCommand<Unit, Unit> SwitchToZhTWCommand => _switchToZhTWCommand.Value;
@@ -124,6 +129,16 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         get => _appearanceMode;
         private set => SetAppearanceModeState(value);
     }
+
+    /// <summary>Gets whether the current design language accepts a replaceable neutral color family.</summary>
+    public bool CanChooseNeutralColor =>
+        FindTheme(CurrentThemeId) is { DesignLanguage: not null, NeutralColor: ThemeNeutralColorSupport.Seed };
+
+    /// <summary>Gets the neutral color remembered for the current design language, if it accepts one.</summary>
+    public Color? NeutralColor =>
+        CurrentDesignLanguage is { } neutralLanguage && CanChooseNeutralColor
+            ? _neutralByLanguage.GetValueOrDefault(neutralLanguage)
+            : null;
 
     public bool IsLightAppearanceMode => AppearanceMode == ThemePreference.Light;
 
@@ -187,6 +202,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         _switchThemeCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchThemeAsync));
         _switchDesignLanguageCommand = new(() => ReactiveCommand.CreateFromTask<string>(SwitchDesignLanguageAsync));
         _setBrandColorCommand = new(() => ReactiveCommand.CreateFromTask<Color?>(SetBrandColorAsync));
+        _setNeutralColorCommand = new(() => ReactiveCommand.CreateFromTask<Color?>(SetNeutralColorAsync));
 
         _switchToZhCNCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhCN)));
         _switchToZhTWCommand = new(() => ReactiveCommand.Create(() => SetLanguage(LanguageTags.ZhTW)));
@@ -319,6 +335,28 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         FollowAppliedProfileAppearance(null);
     }
 
+    private async Task SetNeutralColorAsync(Color? color)
+    {
+        if (CurrentDesignLanguage is not { } language || !CanChooseNeutralColor)
+        {
+            return;
+        }
+
+        // A color equal to the theme's own neutral seed means "no custom neutral".
+        if (color is { } chosenNeutral && FindTheme(CurrentThemeId)?.NeutralAccentColor == chosenNeutral)
+        {
+            color = null;
+        }
+        if (_neutralByLanguage.GetValueOrDefault(language) == color)
+        {
+            return;
+        }
+
+        _neutralByLanguage[language] = color;
+        this.RaisePropertyChanged(nameof(NeutralColor));
+        await ApplyThemeSettingsAsync();
+    }
+
     private async Task SetBrandColorAsync(Color? color)
     {
         if (CurrentDesignLanguage is not { } language || !CanChooseBrandColor)
@@ -434,6 +472,19 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             builder.WithToken(nameof(SharedTokenKind.ColorPrimary), FormatColor(seed));
         }
 
+        Color? neutralSeed = null;
+        if (resolved?.NeutralColorIgnored != true &&
+            (resolved is not null || (requestedLanguage is not null && FindTheme(themeId)?.NeutralColor == ThemeNeutralColorSupport.Seed)))
+        {
+            neutralSeed = resolved?.NeutralSeed ??
+                          (requestedLanguage is not null ? _neutralByLanguage.GetValueOrDefault(requestedLanguage) : null);
+        }
+
+        if (neutralSeed is { } neutral)
+        {
+            builder.WithToken(nameof(SharedTokenKind.ColorNeutral), FormatColor(neutral));
+        }
+
         var config = builder
                      .WithToken(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false")
                      .WithToken(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false")
@@ -457,7 +508,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             language,
             _isDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
             _isCompact ? ThemeDensity.Compact : ThemeDensity.Normal,
-            _brandByLanguage.GetValueOrDefault(language));
+            _brandByLanguage.GetValueOrDefault(language),
+            _neutralByLanguage.GetValueOrDefault(language));
     }
 
     // A requested theme that is its language's light, normal base, while the language has no variant for the current
@@ -622,6 +674,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         this.RaisePropertyChanged(nameof(CurrentDesignLanguage));
         this.RaisePropertyChanged(nameof(CanChooseBrandColor));
         this.RaisePropertyChanged(nameof(BrandColor));
+        this.RaisePropertyChanged(nameof(CanChooseNeutralColor));
+        this.RaisePropertyChanged(nameof(NeutralColor));
     }
 
     private static IReadOnlyList<ThemeInfo> CaptureThemes(IReadOnlyList<ThemeInfo>? themes)

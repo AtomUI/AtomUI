@@ -644,10 +644,10 @@ public class GalleryBaseFoundationTests
             await viewModel.SetBrandColorCommand.Execute(Color.Parse("#6366F1")).ToTask();
             ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#6366F1"));
 
-            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
-            viewModel.CanChooseBrandColor.ShouldBeFalse();
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            viewModel.CanChooseBrandColor.ShouldBeTrue();
             viewModel.BrandColor.ShouldBeNull();
-            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#18181B"));
+            ReadRootColorPrimary(manager).ShouldBe(Color.Parse("#171717"));
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
             viewModel.CurrentDesignLanguage.ShouldBe("AntDesign");
@@ -701,7 +701,7 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("Bootstrap").ToTask();
             var before = ReadRootColorPrimary(manager);
 
             await viewModel.SetBrandColorCommand.Execute(Color.Parse("#FF0000")).ToTask();
@@ -740,6 +740,100 @@ public class GalleryBaseFoundationTests
             viewModel.Dispose();
             await RestoreDefaultThemeAsync(manager);
         }
+    }
+
+    [Fact]
+    public async Task Neutral_Color_Is_Remembered_Per_Language()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            viewModel.CanChooseNeutralColor.ShouldBeTrue();
+
+            await viewModel.SetNeutralColorCommand.Execute(Color.Parse("#71717B")).ToTask();
+            viewModel.NeutralColor.ShouldBe(Color.Parse("#71717B"));
+
+            // The choice is per language: another language neither shows nor keeps it.
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            viewModel.CanChooseNeutralColor.ShouldBeFalse();
+            viewModel.NeutralColor.ShouldBeNull();
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            viewModel.NeutralColor.ShouldBe(Color.Parse("#71717B"));
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task NeutralColor_Is_Not_Applied_To_AntDesign()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+            var plain = CaptureGlobals(manager);
+
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            await viewModel.SetNeutralColorCommand.Execute(Color.Parse("#71717B")).ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
+
+            var after = CaptureGlobals(manager);
+            after.Count.ShouldBe(plain.Count);
+            foreach (var (name, value) in plain)
+            {
+                after.TryGetValue(name, out var afterValue).ShouldBeTrue(name);
+                afterValue.ShouldBe(value, name);
+            }
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    [Fact]
+    public async Task Choosing_The_Definition_Neutral_Clears_The_Choice()
+    {
+        var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
+        var manager = Application.Current!.GetThemeManager()!;
+        var viewModel = new GalleryWorkspaceViewModel(configuration);
+        try
+        {
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            await viewModel.SetNeutralColorCommand.Execute(Color.Parse("#71717B")).ToTask();
+
+            // The definition's own seed (#737373) means "no custom neutral".
+            await viewModel.SetNeutralColorCommand.Execute(Color.Parse("#737373")).ToTask();
+
+            viewModel.NeutralColor.ShouldBeNull();
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await RestoreDefaultThemeAsync(manager);
+        }
+    }
+
+    private static Dictionary<string, object?> CaptureGlobals(IThemeManager manager)
+    {
+        var snapshot = ((ThemeManager)manager).CurrentSnapshot!;
+        var result = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var descriptor in snapshot.Registry.GlobalTokens)
+        {
+            result[descriptor.Name] = snapshot.GlobalTokenValues.GetValue(descriptor.Slot);
+        }
+
+        return result;
     }
 
     private static Color ReadRootColorPrimary(IThemeManager manager)

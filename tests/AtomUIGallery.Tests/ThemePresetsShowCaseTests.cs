@@ -38,7 +38,7 @@ public class ThemePresetsShowCaseTests
         using var model = new ThemePresetsViewModel(null!);
         model.SelectedPresetId = "PrimeNGAura";
         model.CanChoosePrimary.ShouldBeTrue();
-        foreach (var id in new[] { "Bootstrap", "Material", "ShadcnZinc", "ShadcnSlate", "ShadcnStone" })
+        foreach (var id in new[] { "Bootstrap", "Material" })
         {
             model.SelectedPresetId = id;
             model.CanChoosePrimary.ShouldBeFalse(id);
@@ -117,7 +117,11 @@ public class ThemePresetsShowCaseTests
         model.Presets.Where(item => item.ThemeId.StartsWith("PrimeNG", StringComparison.Ordinal)).Select(item => item.ThemeId).ShouldBe(["PrimeNGAura", "PrimeNGLara", "PrimeNGNora"]);
         model.Presets.Where(item => item.ThemeId.StartsWith("PrimeNG", StringComparison.Ordinal)).ShouldAllBe(item => item.Icon != null);
         model.Presets.Single(item => item.ThemeId == "GalleryPreviewFixture").Icon.ShouldBeNull();
-        var families = new[] { "ShadcnZinc", "ShadcnSlate", "ShadcnStone" };
+        var families = new[]
+        {
+            "ShadcnVega", "ShadcnNova", "ShadcnMaia", "ShadcnLyra",
+            "ShadcnMira", "ShadcnLuma", "ShadcnSera", "ShadcnRhea"
+        };
         model.Presets.Where(item => item.ThemeId.StartsWith("Shadcn", StringComparison.Ordinal))
             .Select(item => item.ThemeId).ShouldBe(families, ignoreOrder: true);
         model.Presets.Where(item => item.ThemeId.StartsWith("Bootstrap", StringComparison.Ordinal))
@@ -229,22 +233,24 @@ public class ThemePresetsShowCaseTests
             }
             model.SelectedPresetId = "PrimeNGNora"; Pump();
             ControlTokenAccessor.Capture(button).GetOwn<FontWeight, ButtonTokenKind>(ButtonTokenKind.FontWeight).ShouldBe((FontWeight)700);
-            foreach (var (id, primary) in new[]
+            foreach (var (id, primary, height) in new[]
             {
-                ("ShadcnZinc", "#18181B"), ("ShadcnSlate", "#0F172A"), ("ShadcnStone", "#1C1917")
+                ("ShadcnNova", "#171717", 32d), ("ShadcnMaia", "#171717", 36d), ("ShadcnSera", "#171717", 40d)
             })
             {
                 model.SelectedPresetId = id;
                 model.IsDark = false; model.IsCompact = false; Pump();
                 var tokens = ControlTokenAccessor.Capture(button);
                 tokens.GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse(primary));
-                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(36);
+                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(height);
                 tokens.GetGlobal<bool>(SharedTokenKind.EnableWaveSpirit).ShouldBeFalse();
                 AssertIndependentProfile(button, (ThemeManager)manager, id);
                 model.IsDark = true; model.IsCompact = true; Pump();
                 tokens = ControlTokenAccessor.Capture(button);
-                tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(primary));
-                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(32);
+                // Neutral dark: the background is neutral-950 and the neutral theme's primary is neutral-200.
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse("#0A0A0A"));
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse("#E5E5E5"));
+                tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(height - 4);
                 AssertIndependentProfile(button, (ThemeManager)manager, id + ".DarkCompact");
                 page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
             }
@@ -574,10 +580,10 @@ public class ThemePresetsShowCaseTests
             note.IsVisible.ShouldBeFalse();
             model.SelectedPrimary = Color.Parse("#8B5CF6"); Pump();
 
-            // Shadcn declares ColorPrimaryHover/Bg/Border/... explicitly in every profile, which beat the algorithm.
+            // A preset that fixes its brand color keeps the swatch bar disabled with the note.
             foreach (var (dark, compact) in new[] { (false, false), (true, false), (true, true), (false, true) })
             {
-                model.SelectedPresetId = "ShadcnZinc";
+                model.SelectedPresetId = "Material";
                 model.IsDark = dark; model.IsCompact = compact; Pump();
                 model.CanChoosePrimary.ShouldBeFalse(model.PreviewThemeId);
                 model.SelectedPrimary.ShouldBeNull();

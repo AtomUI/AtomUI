@@ -27,6 +27,10 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemBrandColorReset,
     MenuItemBrandColorFixedHint,
     MenuItemBrandColorNoLanguageHint,
+    MenuItemNeutralColor,
+    MenuItemNeutralColorReset,
+    MenuItemNeutralColorFixedHint,
+    MenuItemNeutralColorNoLanguageHint,
     MenuItemOtherThemes,
     DesignLanguageAntDesign,
     DesignLanguageBootstrap,
@@ -34,7 +38,12 @@ public enum WorkspaceWindowLangResourceKind
     DesignLanguagePrimeNGAura,
     DesignLanguagePrimeNGLara,
     DesignLanguagePrimeNGNora,
-    DesignLanguageShadcnZinc,
-    DesignLanguageShadcnSlate,
-    DesignLanguageShadcnStone
+    DesignLanguageShadcnVega,
+    DesignLanguageShadcnNova,
+    DesignLanguageShadcnMaia,
+    DesignLanguageShadcnLyra,
+    DesignLanguageShadcnMira,
+    DesignLanguageShadcnLuma,
+    DesignLanguageShadcnSera,
+    DesignLanguageShadcnRhea
 }

@@ -23,6 +23,7 @@ internal enum WindowMenuItemKind
     Resize,
     ThemeCatalog,
     BrandColor,
+    NeutralColor,
     OtherThemes,
     LightMode,
     DarkMode,
@@ -136,16 +137,18 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
                              .SelectMany(static item => item.Items.OfType<MenuItem>())
                              .Where(static item => item.Tag is WindowMenuItemKind.ThemeCatalog or
                                  WindowMenuItemKind.BrandColor or
+                                 WindowMenuItemKind.NeutralColor or
                                  WindowMenuItemKind.OtherThemes)
                              .ToDictionary(static item => (WindowMenuItemKind)item.Tag!);
         if (!themeItems.TryGetValue(WindowMenuItemKind.ThemeCatalog, out var designLanguageItem) ||
             !themeItems.TryGetValue(WindowMenuItemKind.BrandColor, out var brandColorItem) ||
+            !themeItems.TryGetValue(WindowMenuItemKind.NeutralColor, out var neutralColorItem) ||
             !themeItems.TryGetValue(WindowMenuItemKind.OtherThemes, out var otherThemesItem))
         {
             return;
         }
 
-        _themeMenu = new GalleryThemeMenu(ViewModel, designLanguageItem, brandColorItem, otherThemesItem);
+        _themeMenu = new GalleryThemeMenu(ViewModel, designLanguageItem, brandColorItem, neutralColorItem, otherThemesItem);
     }
 
     private void HandleMenuItemClick(object? sender, RoutedEventArgs e)

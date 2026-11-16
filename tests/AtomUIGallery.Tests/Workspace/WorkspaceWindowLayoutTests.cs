@@ -89,8 +89,8 @@ public class WorkspaceWindowLayoutTests
         AvaloniaTestApp.EnsureInitialized();
         var manager   = Application.Current!.GetThemeManager()!;
         var viewModel = new WorkspaceWindowViewModel();
-        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
-        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        var (languageItem, brandItem, neutralItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem(), new MenuItem());
+        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
         try
         {
             languageItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
@@ -121,15 +121,15 @@ public class WorkspaceWindowLayoutTests
         AvaloniaTestApp.EnsureInitialized();
         var manager   = Application.Current!.GetThemeManager()!;
         var viewModel = new WorkspaceWindowViewModel();
-        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
-        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        var (languageItem, brandItem, neutralItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem(), new MenuItem());
+        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
         try
         {
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
             Dispatcher.UIThread.RunJobs();
             brandItem.IsEnabled.ShouldBeTrue();
 
-            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Zinc").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("Bootstrap").ToTask();
             Dispatcher.UIThread.RunJobs();
 
             brandItem.IsEnabled.ShouldBeFalse();
@@ -161,8 +161,8 @@ public class WorkspaceWindowLayoutTests
         AvaloniaTestApp.EnsureInitialized();
         var manager   = Application.Current!.GetThemeManager()!;
         var viewModel = new WorkspaceWindowViewModel();
-        var (languageItem, brandItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem());
-        var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, otherItem);
+        var (languageItem, brandItem, neutralItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem(), new MenuItem());
+        var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
         try
         {
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();

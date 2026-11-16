@@ -50,6 +50,8 @@
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.ThemeCatalog}" />
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemBrandColor}"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.BrandColor}" />
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemNeutralColor}"
+                               Tag="{x:Static workspaceviews:WindowMenuItemKind.NeutralColor}" />
                 <atom:MenuSeparator />
                 <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemAppearance}">
                     <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemLightMode}"

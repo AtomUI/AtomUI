@@ -79,6 +79,39 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         (Color.FromUInt32(0xFF020617u), ThemePresetsShowCaseLangResourceKind.Noir, "Noir");
     // The seed a definition without its own ColorPrimary starts from.
     private static readonly Color s_defaultPrimary = new DesignToken().ColorPrimary;
+    // The seventeen shadcn themes: each swatch writes the theme's light primary (a Tailwind 700 stop; lime and
+    // yellow 400), so both appearances resolve to the official values. Neutral is the preset's own primary.
+    private static readonly (Color Color, ThemePresetsShowCaseLangResourceKind Name, string Fallback)[] s_shadcnSwatches =
+    [
+        (Color.FromUInt32(0xFFBB4D00u), ThemePresetsShowCaseLangResourceKind.Amber, "Amber"),
+        (Color.FromUInt32(0xFF1447E6u), ThemePresetsShowCaseLangResourceKind.Blue, "Blue"),
+        (Color.FromUInt32(0xFF007595u), ThemePresetsShowCaseLangResourceKind.Cyan, "Cyan"),
+        (Color.FromUInt32(0xFF007A55u), ThemePresetsShowCaseLangResourceKind.Emerald, "Emerald"),
+        (Color.FromUInt32(0xFFA800B7u), ThemePresetsShowCaseLangResourceKind.Fuchsia, "Fuchsia"),
+        (Color.FromUInt32(0xFF008236u), ThemePresetsShowCaseLangResourceKind.Green, "Green"),
+        (Color.FromUInt32(0xFF432DD7u), ThemePresetsShowCaseLangResourceKind.Indigo, "Indigo"),
+        (Color.FromUInt32(0xFF9AE600u), ThemePresetsShowCaseLangResourceKind.Lime, "Lime"),
+        (Color.FromUInt32(0xFFCA3500u), ThemePresetsShowCaseLangResourceKind.Orange, "Orange"),
+        (Color.FromUInt32(0xFFC6005Cu), ThemePresetsShowCaseLangResourceKind.Pink, "Pink"),
+        (Color.FromUInt32(0xFF8200DBu), ThemePresetsShowCaseLangResourceKind.Purple, "Purple"),
+        (Color.FromUInt32(0xFFC10007u), ThemePresetsShowCaseLangResourceKind.Red, "Red"),
+        (Color.FromUInt32(0xFFC70036u), ThemePresetsShowCaseLangResourceKind.Rose, "Rose"),
+        (Color.FromUInt32(0xFF0069A8u), ThemePresetsShowCaseLangResourceKind.Sky, "Sky"),
+        (Color.FromUInt32(0xFF00786Fu), ThemePresetsShowCaseLangResourceKind.Teal, "Teal"),
+        (Color.FromUInt32(0xFF7008E7u), ThemePresetsShowCaseLangResourceKind.Violet, "Violet"),
+        (Color.FromUInt32(0xFFFDC700u), ThemePresetsShowCaseLangResourceKind.Yellow, "Yellow")
+    ];
+    // The seven shadcn base colors; a swatch writes the light --muted-foreground (the ColorNeutral seed).
+    private static readonly (Color Color, ThemePresetsShowCaseLangResourceKind Name, string Fallback)[] s_neutralSwatches =
+    [
+        (Color.FromUInt32(0xFF737373u), ThemePresetsShowCaseLangResourceKind.Neutral, "Neutral"),
+        (Color.FromUInt32(0xFF79716Bu), ThemePresetsShowCaseLangResourceKind.Stone, "Stone"),
+        (Color.FromUInt32(0xFF71717Bu), ThemePresetsShowCaseLangResourceKind.Zinc, "Zinc"),
+        (Color.FromUInt32(0xFF79697Bu), ThemePresetsShowCaseLangResourceKind.Mauve, "Mauve"),
+        (Color.FromUInt32(0xFF7C7C67u), ThemePresetsShowCaseLangResourceKind.Olive, "Olive"),
+        (Color.FromUInt32(0xFF67787Cu), ThemePresetsShowCaseLangResourceKind.Mist, "Mist"),
+        (Color.FromUInt32(0xFF7C6D67u), ThemePresetsShowCaseLangResourceKind.Taupe, "Taupe")
+    ];
     public IScreen HostScreen { get; }
     public string? UrlPathSegment => ID.ToString();
     private readonly IThemeManager _manager;
@@ -96,6 +129,9 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     private DataGridLocalSource<PreviewRow>? _previewSource;
     private IReadOnlyList<Color> _primarySwatches = [];
     private IReadOnlyList<ThemePrimarySwatch> _primarySwatchItems = [];
+    private IReadOnlyList<ThemePrimarySwatch> _neutralSwatchItems = [];
+    private Color? _selectedNeutral;
+    private Color? _presetNeutral;
     private Color _presetPrimary;
     private Color? _selectedPrimary;
     private bool _canChoosePrimary = true;
@@ -164,6 +200,32 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         }
     }
     public ReactiveCommand<Unit, Unit> ResetPrimary { get; }
+    /// <summary>The neutral swatches of the previewed definition; empty unless it accepts a neutral seed.</summary>
+    public IReadOnlyList<ThemePrimarySwatch> NeutralSwatchItems => _neutralSwatchItems;
+    /// <summary>Whether the previewed definition declares <c>NeutralColor="Seed"</c>.</summary>
+    public bool CanChooseNeutral => _neutralSwatchItems.Count > 0;
+    /// <summary>
+    /// The neutral seed that replaces the previewed definition's own; <c>null</c> keeps the own seed. Selecting
+    /// the own seed equals clearing.
+    /// </summary>
+    public Color? SelectedNeutral
+    {
+        get => _selectedNeutral;
+        set
+        {
+            if (value == _presetNeutral)
+            {
+                value = null;
+            }
+            if (value == _selectedNeutral)
+            {
+                return;
+            }
+            this.RaiseAndSetIfChanged(ref _selectedNeutral, value);
+            UpdateNeutralSwatchSelection();
+            UpdatePreview();
+        }
+    }
     public bool IsDark
     {
         get => _isDark;
@@ -289,12 +351,15 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         var previewInfo = _themes.Single(item => item.Info.Id == previewId).Info;
         var presetPrimary = previewInfo.AccentColor ?? s_defaultPrimary;
         CanChoosePrimary = previewInfo.BrandColor == ThemeBrandColorSupport.Seed;
+        var shadcnLanguage = previewInfo.DesignLanguage?.StartsWith("Shadcn.", StringComparison.Ordinal) == true;
         if (_primarySwatchItems.Count == 0 || presetPrimary != _presetPrimary)
         {
             _presetPrimary = presetPrimary;
             var offered = previewInfo.DesignLanguage?.StartsWith("PrimeNG.", StringComparison.Ordinal) == true
                 ? s_swatches.Prepend(s_noirSwatch)
-                : s_swatches;
+                : shadcnLanguage
+                    ? s_shadcnSwatches
+                    : s_swatches;
             var items = offered.Select(swatch => new ThemePrimarySwatch(swatch.Color, swatch.Name, swatch.Fallback)).ToList();
             if (!items.Any(item => item.Color == presetPrimary))
             {
@@ -308,13 +373,45 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         // Only one of the five fixed swatches survives a profile change; a previous profile's own seed, the new
         // profile's own seed, or any selection on a profile with fixed primary states falls back to null.
         if (_selectedPrimary is { } selected &&
-            (!_canChoosePrimary || selected == presetPrimary || !s_swatches.Any(swatch => swatch.Color == selected)))
+            (!_canChoosePrimary || selected == presetPrimary ||
+             !(shadcnLanguage ? s_shadcnSwatches : s_swatches).Any(swatch => swatch.Color == selected)))
         {
             _selectedPrimary = null;
             _canResetPrimary.OnNext(false);
             this.RaisePropertyChanged(nameof(SelectedPrimary));
         }
         UpdateSwatchSelection();
+
+        // The neutral row follows the previewed definition's declaration; the Shadcn base colors are the choices.
+        if (previewInfo.NeutralColor == ThemeNeutralColorSupport.Seed)
+        {
+            _presetNeutral = previewInfo.NeutralAccentColor;
+            var neutralItems = s_neutralSwatches.Select(swatch => new ThemePrimarySwatch(swatch.Color, swatch.Name, swatch.Fallback)).ToList();
+            if (_presetNeutral is { } own && !neutralItems.Any(item => item.Color == own))
+            {
+                neutralItems.Add(new ThemePrimarySwatch(own, ThemePresetsShowCaseLangResourceKind.PresetColor, "Preset color"));
+            }
+            _neutralSwatchItems = neutralItems;
+        }
+        else
+        {
+            _presetNeutral  = null;
+            _selectedNeutral = null;
+            _neutralSwatchItems = [];
+            this.RaisePropertyChanged(nameof(SelectedNeutral));
+        }
+        this.RaisePropertyChanged(nameof(NeutralSwatchItems));
+        this.RaisePropertyChanged(nameof(CanChooseNeutral));
+        UpdateNeutralSwatchSelection();
+    }
+
+    private void UpdateNeutralSwatchSelection()
+    {
+        var shown = _selectedNeutral ?? _presetNeutral;
+        foreach (var swatch in _neutralSwatchItems)
+        {
+            swatch.IsSelected = swatch.Color == shown;
+        }
     }
 
     private void UpdateSwatchSelection()
@@ -378,7 +475,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
             // Dark/Compact algorithms appended when the language lacks that variant.
             var result = ThemeSelectionResolver.Resolve(_themes.Select(item => item.Info).ToArray(),
                 new ThemeSelection(language, IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
-                    IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal, _selectedPrimary));
+                    IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal, _selectedPrimary, _selectedNeutral));
             id = result.ThemeId;
             algorithms = result.Algorithms?.ToList();
             seed = result.BrandSeed;
@@ -407,7 +504,8 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         if (seed is not null && _selectedPrimary is null) { seed = null; }
         this.RaiseAndSetIfChanged(ref _previewThemeId, id, nameof(PreviewThemeId));
         this.RaiseAndSetIfChanged(ref _previewConfig,
-            _catalog.CreateConfig(id, algorithms, seed is { } primary ? FormatColor(primary) : null),
+            _catalog.CreateConfig(id, algorithms, seed is { } primary ? FormatColor(primary) : null,
+                _selectedNeutral is { } neutral ? FormatColor(neutral) : null),
             nameof(PreviewConfig));
         CopySucceeded = false;
         CopyFailed = false;
@@ -438,7 +536,7 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
         var info = _themes.Single(item => item.Info.Id == _previewThemeId).Info;
         return ThemePresetCatalog.Export(_previewThemeId!, info.Name, _previewConfig!,
             IsDark ? ThemeAppearance.Dark : ThemeAppearance.Light, info.DesignLanguage, info.BrandColor,
-            IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal);
+            IsCompact ? ThemeDensity.Compact : ThemeDensity.Normal, info.NeutralColor);
     }
 
     private static string FormatColor(Color color) => color.A == 0xFF

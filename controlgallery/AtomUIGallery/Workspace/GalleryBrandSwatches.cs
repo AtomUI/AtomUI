@@ -37,6 +37,37 @@ internal static class GalleryBrandSwatches
     public const string PrimeNGLanguagePrefix = "PrimeNG.";
 
     /// <summary>
+    /// The prefix of the Shadcn design languages (<c>Shadcn.Nova</c>, …, <c>Shadcn.Rhea</c>).
+    /// </summary>
+    public const string ShadcnLanguagePrefix = "Shadcn.";
+
+    /// <summary>
+    /// The seventeen shadcn themes (ui.shadcn.com/create), in site order: each swatch writes the theme's light
+    /// primary — a Tailwind 700 stop, lime and yellow 400 — so both appearances resolve to the official values.
+    /// The Neutral theme is the language's own primary and is offered by the base color, not this list.
+    /// </summary>
+    public static IReadOnlyList<GalleryBrandSwatch> Shadcn { get; } =
+    [
+        new("Amber", Color.Parse("#BB4D00")),
+        new("Blue", Color.Parse("#1447E6")),
+        new("Cyan", Color.Parse("#007595")),
+        new("Emerald", Color.Parse("#007A55")),
+        new("Fuchsia", Color.Parse("#A800B7")),
+        new("Green", Color.Parse("#008236")),
+        new("Indigo", Color.Parse("#432DD7")),
+        new("Lime", Color.Parse("#9AE600")),
+        new("Orange", Color.Parse("#CA3500")),
+        new("Pink", Color.Parse("#C6005C")),
+        new("Purple", Color.Parse("#8200DB")),
+        new("Red", Color.Parse("#C10007")),
+        new("Rose", Color.Parse("#C70036")),
+        new("Sky", Color.Parse("#0069A8")),
+        new("Teal", Color.Parse("#00786F")),
+        new("Violet", Color.Parse("#7008E7")),
+        new("Yellow", Color.Parse("#FDC700"))
+    ];
+
+    /// <summary>
     /// The primary colors of the primeng.dev configurator (primeng 22.1.5), in site order: noir (slate-950, the site's
     /// default) and the sixteen Tailwind 500 stops it offers (it has no red).
     /// </summary>
@@ -103,6 +134,17 @@ internal static class GalleryBrandSwatches
             }
 
             AddDistinct(result, PrimeNG);
+            return result;
+        }
+
+        if (designLanguage.StartsWith(ShadcnLanguagePrefix, StringComparison.Ordinal))
+        {
+            if (baseColor is { } ownNeutral)
+            {
+                result.Add(new GalleryBrandSwatch(baseName, ownNeutral));
+            }
+
+            AddDistinct(result, Shadcn);
             return result;
         }
 

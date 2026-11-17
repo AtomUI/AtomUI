@@ -30,8 +30,6 @@ internal sealed class GalleryThemeMenu : IDisposable
     private static readonly Dictionary<string, WorkspaceWindowLangResourceKind> DesignLanguageNames = new(StringComparer.Ordinal)
     {
         ["AntDesign"]      = WorkspaceWindowLangResourceKind.DesignLanguageAntDesign,
-        ["Bootstrap"]      = WorkspaceWindowLangResourceKind.DesignLanguageBootstrap,
-        ["Material"]       = WorkspaceWindowLangResourceKind.DesignLanguageMaterial,
         ["PrimeNG.Aura"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGAura,
         ["PrimeNG.Lara"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGLara,
         ["PrimeNG.Nora"]   = WorkspaceWindowLangResourceKind.DesignLanguagePrimeNGNora,
@@ -139,21 +137,75 @@ internal sealed class GalleryThemeMenu : IDisposable
     private void RebuildDesignLanguages(IReadOnlyList<ThemeInfo> themes)
     {
         _designLanguageItem.Items.Clear();
-        foreach (var language in ThemeSelectionResolver.DesignLanguages(themes))
+        var languages = ThemeSelectionResolver.DesignLanguages(themes).ToList();
+
+        // Languages sharing the family prefix (Shadcn.*, PrimeNG.*) fold into one submenu; single-variant
+        // languages stay top-level. Grouping is data-driven off the prefix, so a future style package
+        // joins its family without further menu changes.
+        var families = new List<(string Family, List<string> Languages)>();
+        var single   = new List<string>();
+        foreach (var language in languages)
         {
-            var baseTheme = FindBaseTheme(themes, language);
-            var item = new MenuItem
+            var separator = language.IndexOf('.');
+            var family    = separator < 0 ? language : language[..separator];
+            var existing  = families.FirstOrDefault(entry => entry.Family == family);
+            if (separator < 0)
             {
-                ToggleType       = MenuItemToggleType.Radio,
-                GroupName        = DesignLanguageGroupName,
-                IsChecked        = string.Equals(language, _viewModel.CurrentDesignLanguage, StringComparison.Ordinal),
-                Command          = _switchDesignLanguageCommand,
-                CommandParameter = language,
-                Tag              = language
-            };
-            SetHeader(item, CreateHeader(baseTheme?.AccentColor, header => BindLanguageName(header, language, baseTheme)));
-            _designLanguageItem.Items.Add(item);
+                single.Add(language);
+            }
+            else if (existing == default)
+            {
+                families.Add((family, [language]));
+            }
+            else
+            {
+                existing.Languages.Add(language);
+            }
         }
+
+        foreach (var (family, languages2) in families.Where(entry => entry.Languages.Count > 1))
+        {
+            single.RemoveAll(language => languages2.Contains(language));
+        }
+
+        foreach (var language in single.Concat(families.Where(entry => entry.Languages.Count == 1)
+                                                      .SelectMany(entry => entry.Languages)))
+        {
+            _designLanguageItem.Items.Add(CreateLanguageItem(themes, language));
+        }
+
+        foreach (var (family, languages2) in families.Where(entry => entry.Languages.Count > 1))
+        {
+            var parent = new MenuItem { Header = family, Tag = family };
+            foreach (var language in languages2)
+            {
+                parent.Items.Add(CreateLanguageItem(themes, language));
+            }
+            // Emphasize the family while one of its children is the current language (MenuItem has no
+            // highlight member; the radio state itself lives on the child items).
+            if (languages2.Contains(_viewModel.CurrentDesignLanguage!))
+            {
+                parent.FontWeight = Avalonia.Media.FontWeight.Bold;
+            }
+            _designLanguageItem.Items.Add(parent);
+        }
+    }
+
+    private MenuItem CreateLanguageItem(IReadOnlyList<ThemeInfo> themes, string language)
+    {
+        var baseTheme = FindBaseTheme(themes, language);
+        var item = new MenuItem
+        {
+            ToggleType       = MenuItemToggleType.Radio,
+            GroupName        = DesignLanguageGroupName,
+            IsChecked        = string.Equals(language, _viewModel.CurrentDesignLanguage, StringComparison.Ordinal),
+            Command          = _switchDesignLanguageCommand,
+            CommandParameter = language,
+            Tag              = language
+        };
+        SetHeader(item, CreateHeader(baseTheme?.AccentColor, header => BindLanguageName(header, language, baseTheme)));
+        // The parent of a folded family highlights while one of its children is the current language.
+        return item;
     }
 
     private void RebuildBrandColors(IReadOnlyList<ThemeInfo> themes)

@@ -93,11 +93,23 @@ public class WorkspaceWindowLayoutTests
         using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
         try
         {
-            languageItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
-                        .ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes));
+            // Single-variant languages stay top-level; multi-variant families (Shadcn, PrimeNG) fold into a
+            // submenu whose children carry the language tags.
+            var menuItems = languageItem.Items.OfType<MenuItem>().ToList();
+            var topLevelTags = menuItems.Where(item => item.Items.Count == 0).Select(item => (string?)item.Tag).ToList();
+            var familyItems = menuItems.Where(item => item.Items.Count > 0).ToList();
+            topLevelTags.ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
+                .Where(l => l.Split('.')[0..^1].Length == 0 || ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
+                    .Count(o => o.Split('.')[0] == l.Split('.')[0]) == 1));
+            familyItems.Select(item => (string)item.Header!).ShouldBe(new[] { "PrimeNG", "Shadcn" });
+            familyItems.Single(f => (string)f.Header! == "Shadcn").Items.OfType<MenuItem>()
+                       .Select(item => (string?)item.Tag)
+                       .ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
+                                  .Where(l => l.StartsWith("Shadcn.", StringComparison.Ordinal)));
             otherItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
                      .ShouldBe(viewModel.AvailableThemes.Where(theme => theme.DesignLanguage is null)
                                         .Select(theme => theme.Id));
+
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
             Dispatcher.UIThread.RunJobs();
@@ -105,6 +117,16 @@ public class WorkspaceWindowLayoutTests
             languageItem.Items.OfType<MenuItem>().Single(item => item.IsChecked == true).Tag.ShouldBe("AntDesign");
             brandItem.IsEnabled.ShouldBeTrue();
             brandItem.Items.OfType<MenuItem>().Select(item => item.Tag).ShouldContain(Color.Parse("#52C41A"));
+
+            // A folded family: switching to one of its styles checks the child radio inside the submenu and
+            // bolds the family parent.
+            await viewModel.SwitchDesignLanguageCommand.Execute("Shadcn.Nova").ToTask();
+            Dispatcher.UIThread.RunJobs();
+            var shadcn = languageItem.Items.OfType<MenuItem>().Single(item => (string?)item.Tag == "Shadcn");
+            shadcn.Items.OfType<MenuItem>().Single(item => item.IsChecked == true).Tag.ShouldBe("Shadcn.Nova");
+            shadcn.FontWeight.ShouldBe(Avalonia.Media.FontWeight.Bold);
+            languageItem.Items.OfType<MenuItem>().Where(item => item.IsChecked && item.Items.Count == 0)
+                         .ShouldBeEmpty("top-level radios clear when a folded style is chosen");
         }
         finally
         {
@@ -129,7 +151,7 @@ public class WorkspaceWindowLayoutTests
             Dispatcher.UIThread.RunJobs();
             brandItem.IsEnabled.ShouldBeTrue();
 
-            await viewModel.SwitchDesignLanguageCommand.Execute("Bootstrap").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("GalleryFixed").ToTask();
             Dispatcher.UIThread.RunJobs();
 
             brandItem.IsEnabled.ShouldBeFalse();

@@ -33,8 +33,6 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemNeutralColorNoLanguageHint,
     MenuItemOtherThemes,
     DesignLanguageAntDesign,
-    DesignLanguageBootstrap,
-    DesignLanguageMaterial,
     DesignLanguagePrimeNGAura,
     DesignLanguagePrimeNGLara,
     DesignLanguagePrimeNGNora,

@@ -15,7 +15,7 @@
 | [Generator](generator/overview.md) | `src/AtomUI.Generator` | [主题系统](../architecture/systems/theming/overview.md)、[本地化系统](../architecture/systems/localization/overview.md) |
 | [Toolchain](toolchain/overview.md) | `src/AtomUI.Toolchain`，统一构建任务、公共模型及裁剪后端 | [设计思路与职责边界](toolchain/design.md)、[构建与验证](toolchain/build-and-verification.md)、[构建与打包](../architecture/foundations/build-and-packaging.md) |
 | [ILLink10 后端](typemap-linker/overview.md) | `src/AtomUI.Toolchain/Backends/ILLink10`，Toolchain 的 Browser/TypeMap 后端详解 | [Browser TypeMap 链接](../architecture/foundations/aot-browser-linking.md) |
-| [Themes](themes/overview.md) | `src/AtomUI.Themes.*`，PrimeNG / Shadcn / Bootstrap / Material 预设主题包 | [编译主题包](../architecture/systems/theming/compiled-theme-packages/overview.md) |
+| [Themes](themes/overview.md) | `src/AtomUI.Themes.*`，PrimeNG / Shadcn 预设主题包 | [编译主题包](../architecture/systems/theming/compiled-theme-packages/overview.md) |
 | [Fonts](fonts/overview.md) | `src/AtomUI.Fonts.*` | [主题系统](../architecture/systems/theming/overview.md) |
 | [Icons](icons/overview.md) | `src/AtomUI.Icons.*` | [整体架构](../architecture/overview.md) |
 | [GalleryBase](toolkits-gallery-base/overview.md) | `src/AtomUI.Toolkits.GalleryBase` | [启动与注册](../architecture/foundations/startup-and-registration.md) |

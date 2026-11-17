@@ -187,18 +187,16 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 预设不进入 Core，也不引入设计语言抽象层。这些包证明的命题是：Ant Design 的 Token 词汇足以表达其他设计语言的大致
 观感；表达不了的部分写进包的 README，不改控件结构或代码。
 
-当前四包均已实现并在本地验证，尚未发布到 NuGet；不将本地构建/测试等同于发布。
+当前两包均已实现并在本地验证，尚未发布到 NuGet；不将本地构建/测试等同于发布。
 
 | 包 | 内容 | 明确不支持（写进 README） |
 | --- | --- | --- |
 | `AtomUI.Themes.PrimeNG` | Aura（默认）、Lara、Nora 三个预设；值由包内六个主题算法（`PrimeNG:Aura` 等及其 `.Dark`）按 PrimeNG 色阶与规则表计算，primary 默认 noir（slate-950 种子，主色色阶取表面色阶，对齐 primeng.dev 22.1.5）、surface slate / zinc，逐控件值由算法的控件阶段写入；XML 只有算法链和 Seed Token（Lara 紧凑 profile 另有一项 Select 覆盖） | ripple、浮动标签、以透明度表达禁用、Filled 字段形态、rem 根字号缩放 |
 | `AtomUI.Themes.Shadcn` | zinc / slate / stone 三色系，近黑主色，细边框，无 wave，弱阴影 | 焦点环形态、Command 式弹层 |
-| `AtomUI.Themes.Bootstrap` | Bootstrap 6.0：`#0087fe` 主色、`FontSize 16`、`ControlHeight 38`、`BorderRadius 8` | 渐变背景、内阴影 |
-| `AtomUI.Themes.Material` | 紫色主色、`BorderRadius 4`、`ControlHeight 40`、三级 BoxShadow 近似 elevation | ripple、浮动标签、全大写 |
 
-包名不带 `Like` 等后缀。PrimeNG 的 Material 预设与 `AtomUI.Themes.Material` 重叠，不重复做。
+包名不带 `Like` 等后缀。
 
-每个包引用 `AtomUI.Core`；PrimeNG、Shadcn、Material 还引用 `AtomUI.Desktop.Controls` 以生成类型化控件覆盖，Bootstrap 仅依赖 Core。生成器仅为构建依赖：
+每个包引用 `AtomUI.Core`；PrimeNG、Shadcn 还引用 `AtomUI.Desktop.Controls` 以生成类型化控件覆盖。生成器仅为构建依赖：
 
 ```text
 AtomUI.Themes.PrimeNG/
@@ -215,8 +213,8 @@ AtomUI.Themes.PrimeNG/
 
 - 生成器把 XML 编译为类型化注册，运行时不读 XML；注册进同一 Catalog，出现在 `AvailableThemes`，与用户目录主题和
   DaybreakBlue 走同一事务；Theme.Id 跨包不得重复。
-- 每个基础 ID 均有 `.Dark`、`.Compact`、`.DarkCompact` 静态 profile，合计 PrimeNG 12、Shadcn 12、Bootstrap 4、Material 4。
-  应用选择精确 ID，不自动派发 profile。只写值表的包，基础 ID 叠加算法仍保留显式 Map/Alias 覆盖；PrimeNG 换成同族
+- 每个基础 ID 均有 `.Dark`、`.Compact`、`.DarkCompact` 静态 profile，合计 PrimeNG 12、Shadcn 12。
+  应用选择精确 ID，不自动派发 profile。PrimeNG 换成同族
   暗色算法与暗色 profile 等价，后接 `AtomUI:Dark` 则是混合链。Gallery 使用通用后缀规则选择。
 - 预设 XML 里的 `<Control>` 覆盖只能引用 Core 与已启用控件包中登记的 Control 与 Token；预设包不自动启用控件包。
 - 预设包不含 ControlTheme、不含控件代码；内容是 XML、生成的注册与一个 `UseXxxThemes()` 入口，另可包含主题算法。唯一允许的 C# 运行时代码是

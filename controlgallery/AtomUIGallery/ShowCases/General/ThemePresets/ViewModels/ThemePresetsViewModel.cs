@@ -547,8 +547,6 @@ public sealed class ThemePresetsViewModel : ReactiveObject, IRoutableViewModel, 
     {
         _ when id.StartsWith("PrimeNG", StringComparison.Ordinal) => AntDesignIconKind.ThunderboltOutlined,
         _ when id.StartsWith("Shadcn", StringComparison.Ordinal) => AntDesignIconKind.AppstoreOutlined,
-        _ when id.StartsWith("Bootstrap", StringComparison.Ordinal) => AntDesignIconKind.LayoutOutlined,
-        _ when id.StartsWith("Material", StringComparison.Ordinal) => AntDesignIconKind.BulbOutlined,
         _ => null
     };
 }

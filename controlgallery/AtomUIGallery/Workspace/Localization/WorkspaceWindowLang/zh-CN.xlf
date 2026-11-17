@@ -7,34 +7,22 @@
         <target state="translated">Ant Design</target>
       </segment>
     </unit>
-    <unit id="DesignLanguageBootstrap">
-      <segment>
-        <source>Bootstrap</source>
-        <target state="translated">Bootstrap</target>
-      </segment>
-    </unit>
-    <unit id="DesignLanguageMaterial">
-      <segment>
-        <source>Material</source>
-        <target state="translated">Material</target>
-      </segment>
-    </unit>
     <unit id="DesignLanguagePrimeNGAura">
       <segment>
-        <source>PrimeNG Aura</source>
-        <target state="translated">PrimeNG Aura</target>
+        <source>Aura</source>
+        <target state="translated">Aura</target>
       </segment>
     </unit>
     <unit id="DesignLanguagePrimeNGLara">
       <segment>
-        <source>PrimeNG Lara</source>
-        <target state="translated">PrimeNG Lara</target>
+        <source>Lara</source>
+        <target state="translated">Lara</target>
       </segment>
     </unit>
     <unit id="DesignLanguagePrimeNGNora">
       <segment>
-        <source>PrimeNG Nora</source>
-        <target state="translated">PrimeNG Nora</target>
+        <source>Nora</source>
+        <target state="translated">Nora</target>
       </segment>
     </unit>
     <unit id="MenuItemAppearance">
@@ -214,50 +202,50 @@
 
     <unit id="DesignLanguageShadcnVega">
       <segment>
-        <source>Shadcn Vega</source>
-        <target state="translated">Shadcn Vega</target>
+        <source>Vega</source>
+        <target state="translated">Vega</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnNova">
       <segment>
-        <source>Shadcn Nova</source>
-        <target state="translated">Shadcn Nova</target>
+        <source>Nova</source>
+        <target state="translated">Nova</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnMaia">
       <segment>
-        <source>Shadcn Maia</source>
-        <target state="translated">Shadcn Maia</target>
+        <source>Maia</source>
+        <target state="translated">Maia</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnLyra">
       <segment>
-        <source>Shadcn Lyra</source>
-        <target state="translated">Shadcn Lyra</target>
+        <source>Lyra</source>
+        <target state="translated">Lyra</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnMira">
       <segment>
-        <source>Shadcn Mira</source>
-        <target state="translated">Shadcn Mira</target>
+        <source>Mira</source>
+        <target state="translated">Mira</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnLuma">
       <segment>
-        <source>Shadcn Luma</source>
-        <target state="translated">Shadcn Luma</target>
+        <source>Luma</source>
+        <target state="translated">Luma</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnSera">
       <segment>
-        <source>Shadcn Sera</source>
-        <target state="translated">Shadcn Sera</target>
+        <source>Sera</source>
+        <target state="translated">Sera</target>
       </segment>
     </unit>
     <unit id="DesignLanguageShadcnRhea">
       <segment>
-        <source>Shadcn Rhea</source>
-        <target state="translated">Shadcn Rhea</target>
+        <source>Rhea</source>
+        <target state="translated">Rhea</target>
       </segment>
     </unit>
   </file>

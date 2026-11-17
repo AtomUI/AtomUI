@@ -364,7 +364,7 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 主题定义通过两种明确入口进入同一个 ThemeCatalog：
 
 - 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题和
-  `AtomUI.Themes.*` 预设主题包（PrimeNG、Shadcn、Bootstrap、Material）都使用此路径；引用预设包的方式见
+  `AtomUI.Themes.*` 预设主题包（PrimeNG、Shadcn）都使用此路径；引用预设包的方式见
   [预设主题包指南](preset-theme-packages.md)。
 - 动态 XML 通过 Resolver、Reader 和 Binder 加载；包括显式 avares URI 与主动启用的用户主题目录。
 
@@ -747,7 +747,7 @@ Control 使用同一条确定性路径。
 `ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、`ColorControlOutline`。
 
 手写其中任何一个会报 `ATMTHM3101`（Error），改为声明 `BrandColor="Fixed"` 或删掉该 Token。`ColorLink` 不在这组里：
-它是独立种子，Seed 主题可以显式设置。`Fixed` 的主题（Bootstrap、Material、Shadcn）自己决定品牌色，选择器不会向它写入种子。
+它是独立种子，Seed 主题可以显式设置。`Fixed` 的主题自己决定品牌色，选择器不会向它写入种子。
 没有声明 `BrandColor` 的主题按缺省 `Fixed` 处理。Gallery 的 Theme Presets 页只列出编译主题包，因此未声明 `BrandColor` 的编译主题包（包括 ABI 1 编译包）不再提供品牌色色块；要启用，请声明 `BrandColor="Seed"`。
 
 ### 目录诊断
@@ -810,7 +810,7 @@ var result = ThemeSelectionResolver.Resolve(
 - [AtomUI 主题系统架构](../../architecture/systems/theming/runtime.md)：完整运行时模型、事务、缓存、生命周期和验收标准。
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)：稳定视觉区域、Selector、ContractType、Popup 和兼容性契约。
 - [Control Token 设计规范](../../engineering/development/control-token-guidelines.md)：Control 和第三方 Control 的研发约束。
-- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn、Bootstrap、Material 预设包，以及制作自己的预设包。
+- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn 预设包，以及制作自己的预设包。
 - [编写主题算法](writing-theme-algorithms.md)：声明、注册、测试和发布自己的主题算法。
 - [主题生效测试规范](../../engineering/development/theme-effect-tests.md)：承诺面中每个 Token 如何被证明有效。
 - [主题定义 XML v1 规范](../../reference/theming/theme-definition-xml-v1.md)：主题文件格式、算法和验证规则。

@@ -1,7 +1,7 @@
 # 主题指南
 
 - [主题定制指南](customization.md)：Token、主题文件、暗色与紧凑算法、局部主题、ControlTheme 和 Semantic Part。
-- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn、Bootstrap、Material 预设包，在预设之上定制，制作自己的预设包。
+- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn 预设包，在预设之上定制，制作自己的预设包。
 - [编写主题算法](writing-theme-algorithms.md)：用另一种设计语言的规则计算 Token——声明与注册、Map/Alias/控件三个阶段、约束、契约测试、混合链与发布。
 - [与其他框架的主题集成](framework-theme-integration.md)：主题共存、Fluent 接入、资源优先级、明暗协调、版本边界和集成验证。
 - [第三方 AtomUI Control Package 指南](third-party-control-packages.md)：从项目配置、Control/Theme 约定到 AOT 注册入口和发布验证的完整接入步骤。

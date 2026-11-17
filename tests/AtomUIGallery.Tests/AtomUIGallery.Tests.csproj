@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <AtomUIThemeDefinition Include="Fixtures/GalleryPreviewFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/GalleryFixedBrandFixture.theme.xml" />
     </ItemGroup>
 
     <ItemGroup>

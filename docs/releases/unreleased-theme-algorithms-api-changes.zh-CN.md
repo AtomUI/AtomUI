@@ -198,9 +198,8 @@ public sealed partial class RatingToken : AbstractControlDesignToken
 | `LineWidthFocus` | `FocusVisualBorderThickness` |
 | `ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` | `InputPaddingLG`、`InputPaddingSM`、`InputPadding` |
 
-没有设置这些 Token 的主题编译结果完全不变（`Default`、`Dark`、`Compact` 与 DaybreakBlue 不变）。预设包里 Bootstrap 和
-PrimeNG 的 profile 有变化：例如 PrimeNG Aura 的焦点阴影扩散现在是 0（它的 `ControlOutlineWidth` 是 0），Bootstrap 的
-输入框焦点阴影由 `0 0 0 2 #190591ff` 变为 `0 0 0 3 #6fc8ff`（Bootstrap 预设同时改为 Bootstrap 6.0 的值，Dark 为 `0 0 0 3 #0064ba`）。如果依赖旧结果，把派生 Token 也显式设置。分析器
+没有设置这些 Token 的主题编译结果完全不变（`Default`、`Dark`、`Compact` 与 DaybreakBlue 不变）。预设包里
+PrimeNG 的 profile 有变化：例如 PrimeNG Aura 的焦点阴影扩散现在是 0（它的 `ControlOutlineWidth` 是 0）。如果依赖旧结果，把派生 Token 也显式设置。分析器
 `ATOMUIGEN040`、`ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
 
 ## 新增全局 Alias Token `ControlItemColorActive`

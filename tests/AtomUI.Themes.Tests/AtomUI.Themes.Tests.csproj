@@ -19,8 +19,6 @@
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
         <ProjectReference Include="../../src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
-        <ProjectReference Include="../../src/AtomUI.Themes.Bootstrap/AtomUI.Themes.Bootstrap.csproj" />
-        <ProjectReference Include="../../src/AtomUI.Themes.Material/AtomUI.Themes.Material.csproj" />
         <ProjectReference Include="../AtomUI.Theme.ContractTests/AtomUI.Theme.ContractTests.csproj" />
     </ItemGroup>
 </Project>

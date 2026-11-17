@@ -2,8 +2,8 @@
 
 `src/AtomUI.Themes.*` 是一组预设主题 NuGet 包，每个包用 Ant Design 的 Token 词汇模拟一种设计语言的大致观感。
 它们走[编译主题包](../../architecture/systems/theming/compiled-theme-packages/overview.md#11-预设主题包)机制，
-不包含控件代码或 ControlTheme，不引入设计语言抽象层。Bootstrap、Material 只包含主题定义；PrimeNG 与 Shadcn 另外包含
-六个[主题算法](../../guides/theming/writing-theme-algorithms.md)及其控件阶段（`Algorithms/`），这是它唯一的 C# 运行时代码。
+不包含控件代码或 ControlTheme，不引入设计语言抽象层。PrimeNG 与 Shadcn 包含各自的
+[主题算法](../../guides/theming/writing-theme-algorithms.md)及其控件阶段（`Algorithms/`），这是包内唯一的 C# 运行时代码。
 
 ## 包清单
 
@@ -11,14 +11,12 @@
 |---|---|---|
 | `src/AtomUI.Themes.PrimeNG` | `PrimeNGAura`、`PrimeNGLara`、`PrimeNGNora`，各有四种 profile；算法 `PrimeNG:Aura`、`PrimeNG:Lara`、`PrimeNG:Nora` 及各自的 `.Dark` | Core + Desktop.Controls |
 | `src/AtomUI.Themes.Shadcn` | `ShadcnVega` … `ShadcnRhea`（8 种 Style），各有四种 profile | Core + Desktop.Controls |
-| `src/AtomUI.Themes.Bootstrap` | `Bootstrap`，四种 profile | Core |
-| `src/AtomUI.Themes.Material` | `Material`，四种 profile | Core + Desktop.Controls |
 
-四包均已实现并在本地验证，尚未发布到 NuGet。四种 profile 为基础 ID 与 `.Dark`、`.Compact`、`.DarkCompact`；
+两包均已实现并在本地验证，尚未发布到 NuGet。四种 profile 为基础 ID 与 `.Dark`、`.Compact`、`.DarkCompact`；
 注册不改变默认 DaybreakBlue，不自动启用 Desktop 控件。
 
 Gallery 原有的 4 个色板主题（PolarGreen、SunsetOrange、GoldenPurple、Magenta）已删除，改为 `AntDesign` 设计语言
-（Core 的 `DaybreakBlue`）在 Gallery Brand color 菜单中的命名品牌色块，品牌色写入请求的 `ColorPrimary`。四个包的
+（Core 的 `DaybreakBlue`）在 Gallery Brand color 菜单中的命名品牌色块，品牌色写入请求的 `ColorPrimary`。两个包的
 profile 都声明了 `DesignLanguage`、`Density` 和 `BrandColor`，见[主题定制指南](../../guides/theming/customization.md)
 「设计语言与品牌色」。
 
@@ -40,8 +38,8 @@ AtomUI.Themes.PrimeNG/
 
 - XML 只使用 Core 与已启用控件包登记的 Control 与 Token；预设包不自动启用控件包。
 - 每个预设的值来自原设计语言的公开 Token 源码或文档，README 记录映射表（或规则表）的出处与版本。
-- 选择实际静态 profile ID；直接给基础 ID 加算法不会自动选择 profile。只写值表的包（Bootstrap、Material）
-  会保留定义中的 Map/Alias 覆盖；PrimeNG 换成同族暗色算法与暗色 profile 等价，但后接 `AtomUI:Dark` 得到的是混合链。
+- 选择实际静态 profile ID；直接给基础 ID 加算法不会自动选择 profile。PrimeNG 换成同族暗色算法与暗色 profile 等价，
+  但后接 `AtomUI:Dark` 得到的是混合链。
 - 算法只用 Core 的公开 API，第三方能写出同样的算法；算法须通过 `tests/AtomUI.Theme.ContractTests` 的契约校验。
 - README 的"不支持"清单是验收项，必须与实际行为一致。
 - 包的生效以主题系统的生效测试为前提：预设只是值表或主题算法，写进去的值没效果属于主题系统缺陷，不在预设包里打补丁。

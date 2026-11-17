@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="GalleryFixedBrandFixture" Name="Fixed brand fixture" Appearance="Light" DesignLanguage="GalleryFixed" BrandColor="Fixed" IsDefault="false">
+  <Algorithms><Algorithm Id="Default" /></Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#7C3AED" />
+  </Tokens>
+</Theme>

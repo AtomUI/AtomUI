@@ -34,14 +34,14 @@ Dialog 与 Notification 触发按钮。集合变化要同步本文。
 主题显式声明的值优先于算法，不会跟随种子（见下文"固定主色状态的预设"）。Progress、"processing" 状态的 Tag 与
 Info 类型的 Alert 用的是信息色（`ColorInfo`），色块不改变它，所以这几处颜色不随色块变化。
 
-以下"预览定义"指预览区实际编译的定义：存在对应模式 profile 时是该 profile（如 `Material.Dark`），否则是基础定义。
+以下"预览定义"指预览区实际编译的定义：存在对应模式 profile 时是该 profile（如 `PrimeNGAura.Dark`），否则是基础定义。
 
 - 色块固定为 Tailwind 500 色阶：翡翠绿 `#10B981`、蓝 `#3B82F6`、紫罗兰 `#8B5CF6`、玫瑰红 `#F43F5E`、
   琥珀 `#F59E0B`（与 `PrimeNGTailwindPalettes` 的 500 档一致）；预览定义的设计语言为 `PrimeNG.*` 时最前面另有
   Noir（墨黑）`#020617`，即 primeng.dev 的默认主色，也是 PrimeNG 预设自身的种子。之后是预览定义自身的种子，即它声明的
   `ColorPrimary`（未声明时为 Ant 默认 `#1677FF`）；与前五个重复时不再列出。自身种子随预设、暗色、紧凑切换而重算，
-  例如 Material 亮色为 `#6750A4`，暗色为 `#D0BCFF`。PrimeNG 算法把种子当作 500 档，命中 Tailwind 500 时取转录色阶，
-  其它颜色走生成色阶；Bootstrap、Material 与内置 Ant 主题只声明 `ColorPrimary`，色块同样设置它们的种子。
+  例如 PrimeNG Aura 的 noir 种子亮色为 `#020617`，暗色为 `#FAFAFA`。PrimeNG 算法把种子当作 500 档，命中 Tailwind 500 时取转录色阶，
+  其它颜色走生成色阶；内置 Ant 主题只声明 `ColorPrimary`，色块同样设置它们的种子。
 - 视图模型：`PrimarySwatches`（颜色列表）、`PrimarySwatchItems`（带本地化名称与选中状态的条目）、
   `CanChoosePrimary`（预览定义是否允许选色）、`SelectedPrimary`（`null` 表示使用预览定义自身种子，此时预览配置与
   未加色块前完全相同，是同一个缓存实例）、`ResetPrimary` 命令（清除选择）。
@@ -75,7 +75,7 @@ profile 都属于这种情况；切回其它预设后色块行恢复可用。
 - 页面不依赖任何预设专有代码：删除全部主题包引用后页面仍可运行。
 - PrimeNG Aura 选蓝色色块后，主按钮悬停 `#2563EB`、按下 `#1D4ED8`，焦点边框等于主色；暗色下主色 `#60A5FA`、
   悬停 `#93C5FD`；清除后回到翡翠绿种子。
-- Shadcn 预设的色块行禁用并显示说明；Material 切换暗色时自身种子色块由 `#6750A4` 变为 `#D0BCFF` 并显示为选中。
+- Shadcn 预设的色块行禁用并显示说明；PrimeNG 切换暗色时自身种子色块随 profile 重算（如 Aura 的 noir 由 `#020617` 变为 `#FAFAFA`）并显示为选中。
 
 ## 模式 profile 与局部隔离
 

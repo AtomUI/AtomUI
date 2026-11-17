@@ -72,7 +72,7 @@ antd `cardHeadPadding`（页签放在 head 内时标题的上内边距）；Atom
 
 `ExtraColor` 控制 Header Extra 区域文字色（`HeaderExtra` 的 `Foreground`）。`CardShadows` 是 hoverable Card 和 hoverable grid item 的
 悬停阴影（antd `cardShadow`）。`RestingShadows` 是有边框（Outlined）Card 不悬停时的静止阴影，是 AtomUI 扩展（antd 无对应 Token），供
-主题预设（例如 PrimeNG 的常驻卡片阴影、Material 的 elevation）表达常驻阴影；默认值是与 `CardShadows` 同层数的透明阴影（由
+主题预设（例如 PrimeNG 的常驻卡片阴影）表达常驻阴影；默认值是与 `CardShadows` 同层数的透明阴影（由
 `CardShadows` 派生），悬停过渡因此不增减阴影层。静止的 Borderless Card 阴影仍是 `BoxShadowsTertiary`（经
 `Controls[Card].BoxShadowsTertiary` 设置），悬停的 hoverable Card 仍切换到 `CardShadows` 并去掉边框。`CardGridItemShadows` 使用多层阴影表达 grid item 之间的边线。
 

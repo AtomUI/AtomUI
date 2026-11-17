@@ -428,7 +428,7 @@ public class GalleryBaseFoundationTests
         }
     }
 
-    // Profile families (PrimeNG, shadcn/ui, Bootstrap, Material) ship explicit .Dark / .Compact / .DarkCompact profiles
+    // Profile families (PrimeNG, shadcn/ui) ship explicit .Dark / .Compact / .DarkCompact profiles
     // whose own algorithms decide appearance and density; the gallery must not replace them with the previous theme's.
     [Fact]
     public async Task Workspace_ViewModel_Applies_A_Profile_With_Its_Own_Algorithms()
@@ -701,7 +701,7 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchDesignLanguageCommand.Execute("Bootstrap").ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("GalleryFixed").ToTask();
             var before = ReadRootColorPrimary(manager);
 
             await viewModel.SetBrandColorCommand.Execute(Color.Parse("#FF0000")).ToTask();

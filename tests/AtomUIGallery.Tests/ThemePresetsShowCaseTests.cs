@@ -38,11 +38,9 @@ public class ThemePresetsShowCaseTests
         using var model = new ThemePresetsViewModel(null!);
         model.SelectedPresetId = "PrimeNGAura";
         model.CanChoosePrimary.ShouldBeTrue();
-        foreach (var id in new[] { "Bootstrap", "Material" })
-        {
-            model.SelectedPresetId = id;
-            model.CanChoosePrimary.ShouldBeFalse(id);
-        }
+        // A preset that declares a design language but fixes its brand colour cannot choose a primary either.
+        model.SelectedPresetId = "GalleryFixedBrandFixture";
+        model.CanChoosePrimary.ShouldBeFalse();
     }
 
     [Fact]
@@ -124,29 +122,7 @@ public class ThemePresetsShowCaseTests
         };
         model.Presets.Where(item => item.ThemeId.StartsWith("Shadcn", StringComparison.Ordinal))
             .Select(item => item.ThemeId).ShouldBe(families, ignoreOrder: true);
-        model.Presets.Where(item => item.ThemeId.StartsWith("Bootstrap", StringComparison.Ordinal))
-            .Select(item => item.ThemeId).ShouldBe(new[] { "Bootstrap" });
         var catalog = ((ThemeManager)Application.Current!.GetThemeManager()!).CompiledThemeCatalog;
-        var bootstrap = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Bootstrap");
-        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
-        {
-            bootstrap.Definitions.ShouldContain(entry => entry.Info.Id == "Bootstrap" + suffix && entry.Revision.ProgramDigest != null);
-            model.SelectedPresetId = "Bootstrap";
-            model.IsDark = suffix.Contains("Dark");
-            model.IsCompact = suffix.Contains("Compact");
-            model.PreviewThemeId.ShouldBe("Bootstrap" + suffix);
-        }
-        model.Presets.Where(item => item.ThemeId.StartsWith("Material", StringComparison.Ordinal))
-            .Select(item => item.ThemeId).ShouldBe(new[] { "Material" });
-        var material = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Material");
-        foreach (var suffix in new[] { "", ".Dark", ".Compact", ".DarkCompact" })
-        {
-            material.Definitions.ShouldContain(entry => entry.Info.Id == "Material" + suffix && entry.Revision.ProgramDigest != null);
-            model.SelectedPresetId = "Material";
-            model.IsDark = suffix.Contains("Dark");
-            model.IsCompact = suffix.Contains("Compact");
-            model.PreviewThemeId.ShouldBe("Material" + suffix);
-        }
         var package = catalog.ResolverSlices.Single(slice => slice.ResolverId == "AtomUI.Themes.Shadcn");
         foreach (var id in families)
         {
@@ -253,55 +229,6 @@ public class ThemePresetsShowCaseTests
                 tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe(height - 4);
                 AssertIndependentProfile(button, (ThemeManager)manager, id + ".DarkCompact");
                 page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
-            }
-            foreach (var family in new[] { "Bootstrap", "Material" })
-            {
-                model.SelectedPresetId = family;
-                foreach (var (dark, compact, suffix) in new[]
-                {
-                    (false, false, ""), (true, false, ".Dark"),
-                    (false, true, ".Compact"), (true, true, ".DarkCompact")
-                })
-                {
-                    model.IsDark = dark; model.IsCompact = compact; Pump();
-                    var tokens = ControlTokenAccessor.Capture(button);
-                    tokens.GetGlobal<Color>(SharedTokenKind.ColorBgContainer).ShouldBe(Color.Parse(family == "Material" ? (dark ? "#1C1B1F" : "#FFFBFE") : (dark ? "#080A0C" : "#FFFFFF")));
-                    tokens.GetGlobal<double>(SharedTokenKind.ControlHeight).ShouldBe((family == "Material" ? 40 : 38) - (compact ? 4 : 0));
-                    if (family == "Bootstrap")
-                    {
-                        tokens.GetGlobal<Color>(SharedTokenKind.ColorControlOutline).ShouldBe(Color.Parse(dark ? "#0064BA" : "#6FC8FF"));
-                    }
-                    else
-                    {
-                        tokens.GetGlobal<Color>(SharedTokenKind.ColorTextLightSolid).ShouldBe(Color.Parse(dark ? "#381E72" : "#FFFFFF"));
-                        if (!dark)
-                        {
-                            tokens.GetGlobal<Color>(SharedTokenKind.ColorPrimary).ShouldBe(Color.Parse("#6750A4"));
-                        }
-                        tokens.GetGlobal<BoxShadows>(SharedTokenKind.BoxShadows).ShouldBe(BoxShadows.Parse("0 4 8 3 #26000000"));
-                    }
-                    AssertIndependentProfile(button, (ThemeManager)manager, family + suffix);
-                    page.FindControl<Button>("PreviewPrimary").ShouldBeSameAs(initial);
-                    var check = provider.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.CheckBox>().Single();
-                    var radio = provider.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.RadioButton>().Single();
-                    var mark = check.GetVisualDescendants().OfType<AtomUI.Controls.Icon>().Single(icon => icon.Name == "CheckedMark");
-                    var dot = radio.GetVisualDescendants().OfType<TemplatedControl>().Single(control => control.Name == "Indicator");
-                    var dotBrush = AvaloniaPropertyRegistry.Instance.GetRegistered(dot.GetType()).Single(property => property.Name == "RadioInnerBackground");
-                    var onPrimary = family == "Material" && dark ? Color.Parse("#381E72") : Colors.White;
-                    ((ISolidColorBrush)mark.StrokeBrush!).Color.ShouldBe(onPrimary);
-                    ((ISolidColorBrush)dot.GetValue(dotBrush)!).Color.ShouldBe(onPrimary);
-                    check.Foreground = Brushes.Magenta;
-                    radio.Foreground = Brushes.Magenta;
-                    check.IsEnabled = false; radio.IsEnabled = false; Pump();
-                    check.Foreground.ShouldBeSameAs(Brushes.Magenta);
-                    radio.Foreground.ShouldBeSameAs(Brushes.Magenta);
-                    var disabled = ControlTokenAccessor.Capture(check).GetGlobal<Color>(SharedTokenKind.ColorTextDisabled);
-                    ((ISolidColorBrush)mark.StrokeBrush!).Color.ShouldBe(disabled);
-                    ((ISolidColorBrush)dot.GetValue(dotBrush)!).Color.ShouldBe(disabled);
-                    check.ClearValue(TemplatedControl.ForegroundProperty);
-                    radio.ClearValue(TemplatedControl.ForegroundProperty);
-                    check.IsEnabled = true; radio.IsEnabled = true; Pump();
-                }
             }
             publications.ShouldBe(0);
             manager.CurrentTheme.ShouldBeSameAs(root);
@@ -583,7 +510,7 @@ public class ThemePresetsShowCaseTests
             // A preset that fixes its brand color keeps the swatch bar disabled with the note.
             foreach (var (dark, compact) in new[] { (false, false), (true, false), (true, true), (false, true) })
             {
-                model.SelectedPresetId = "Material";
+                model.SelectedPresetId = "GalleryFixedBrandFixture";
                 model.IsDark = dark; model.IsCompact = compact; Pump();
                 model.CanChoosePrimary.ShouldBeFalse(model.PreviewThemeId);
                 model.SelectedPrimary.ShouldBeNull();
@@ -606,52 +533,6 @@ public class ThemePresetsShowCaseTests
             model.SelectedPrimary = Color.Parse("#3B82F6"); Pump();
             model.SelectedPrimary.ShouldBe(Color.Parse("#3B82F6"));
             Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#3B82F6"));
-        }
-        finally { window.Close(); Pump(); }
-    }
-
-    [Fact]
-    public void Own_Seed_Swatch_Follows_The_Previewed_Mode_Profile()
-    {
-        AvaloniaTestApp.EnsureInitialized();
-        var manager = (ThemeManager)Application.Current!.GetThemeManager()!;
-        using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "Material" };
-        var page = new ThemePresetsShowCase { DataContext = model };
-        var window = new Window { Width = 1200, Height = 900, Content = page };
-        try
-        {
-            window.Show(); Pump();
-            var button = page.FindControl<Button>("PreviewPrimary")!;
-            var bar = page.FindControl<ItemsControl>("PrimarySwatchBar")!;
-            bool[] Checked() => bar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.RadioButton>()
-                                   .Select(swatch => swatch.IsChecked == true).ToArray();
-            model.CanChoosePrimary.ShouldBeFalse();
-            model.PrimarySwatches.Count.ShouldBe(6);
-            model.PrimarySwatches[^1].ShouldBe(Color.Parse("#6750A4"));
-            model.PrimarySwatchItems[^1].IsSelected.ShouldBeTrue();
-            Checked().ShouldBe([false, false, false, false, false, true]);
-            var light = model.PreviewConfig;
-            model.SelectedPrimary = Color.Parse("#6750A4"); Pump();
-            model.SelectedPrimary.ShouldBeNull();
-            model.PreviewConfig.ShouldBeSameAs(light);
-
-            model.IsDark = true; Pump();
-            model.PreviewThemeId.ShouldBe("Material.Dark");
-            model.PrimarySwatches.Count.ShouldBe(6);
-            model.PrimarySwatches[^1].ShouldBe(Color.Parse("#D0BCFF"));
-            model.PrimarySwatchItems.Single(item => item.IsSelected).Color.ShouldBe(Color.Parse("#D0BCFF"));
-            Checked().ShouldBe([false, false, false, false, false, true]);
-            model.SelectedPrimary.ShouldBeNull();
-            Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#D0BCFF"));
-            AssertIndependentProfile(button, manager, "Material.Dark");
-
-            // Material declares a fixed brand color, so a swatch click is ignored and the own seed stays selected.
-            model.SelectedPrimary = Color.Parse("#F43F5E"); Pump();
-            model.SelectedPrimary.ShouldBeNull();
-            model.IsDark = false; Pump();
-            model.PrimarySwatches[^1].ShouldBe(Color.Parse("#6750A4"));
-            Checked().ShouldBe([false, false, false, false, false, true]);
-            Color.Parse(model.PreviewConfig!.Tokens["ColorPrimary"]).ShouldBe(Color.Parse("#6750A4"));
         }
         finally { window.Close(); Pump(); }
     }

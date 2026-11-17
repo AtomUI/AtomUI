@@ -8,7 +8,7 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
-- 新增预设主题包 `AtomUI.Themes.PrimeNG`、`AtomUI.Themes.Shadcn`、`AtomUI.Themes.Bootstrap`、`AtomUI.Themes.Material`：已实现并在本地验证，尚未发布到 NuGet；`AtomUI.Core` 仍只内置 DaybreakBlue。
+- 新增预设主题包 `AtomUI.Themes.PrimeNG`、`AtomUI.Themes.Shadcn`：已实现并在本地验证，尚未发布到 NuGet；`AtomUI.Core` 仍只内置 DaybreakBlue。
 - 启动注册表的热查询不再逐次进入条目锁或格式化控件身份字符串；生成启动的身份、校验与类型三条路径上，已注册（命中）的查询预热后零分配（未命中仍会格式化诊断键）。
 - 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
 - Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
@@ -21,7 +21,7 @@ AtomUI 的重要变更记录在此文件中。
   - 阶段写了本阶段之外的 Token、3 轮内不稳定或自身抛异常时抛 `ThemeAlgorithmContractException`（`StageBoundary`、`Unstable`、`Failed`）；算法的 Map 阶段抛异常时（内置算法也一样）同样以 `Failed`（「failed in the Map stage」）报告。Map 或 Alias 阶段的违规让主题编译失败；控件阶段的违规在该控件第一次被读取时抛出，不是编译期诊断。
   - 运行时追加包（`LoadPackages`）可以带来新算法；控件阶段只有在它的算法或它的控件是同一次追加新注册的时才被接受，算法或控件在任何地方都没有注册的控件阶段作为休眠实现保留，所以身份写错时没有诊断。
   - 混合链（例如 `[PrimeNG:Aura, AtomUI:Dark]`）合法，但不是 PrimeNG 的暗色。`ControlAlgorithmMode.Global` / `Custom` 下算法链在已推导过的种子上重跑，对自身输出不幂等的算法（PrimeNG 的算法、`AtomUI:Dark`）会让该控件的颜色再偏一档，根上的显式 Map/Alias 值也不参与（既有行为）。
-  - 修复：显式设置的全局 Alias 值现在带动由它派生的 Alias Token：`ControlOutlineWidth`、`ColorControlOutline`、`ColorErrorOutline`、`ColorWarningOutline` 带动 `InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`；`LineWidthFocus` 带动 `FocusVisualBorderThickness`；`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` 带动 `InputPaddingLG`、`InputPaddingSM`、`InputPadding`。没有设置这些 Token 的主题不变；Bootstrap 与 PrimeNG 的输入框焦点阴影有变化。`ATOMUIGEN040` / `ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
+  - 修复：显式设置的全局 Alias 值现在带动由它派生的 Alias Token：`ControlOutlineWidth`、`ColorControlOutline`、`ColorErrorOutline`、`ColorWarningOutline` 带动 `InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`；`LineWidthFocus` 带动 `FocusVisualBorderThickness`；`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` 带动 `InputPaddingLG`、`InputPaddingSM`、`InputPadding`。没有设置这些 Token 的主题不变；PrimeNG 的输入框焦点阴影有变化。`ATOMUIGEN040` / `ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
   - 性能：Token 写入记账让主题冷编译慢 2.3%–2.7%（25 分位数，约 0.018 毫秒）或 3.4%–3.7%（中位数），启动检查按字面规则在两个分段指标上分别越界 0.005 毫秒和 0.17 毫秒；项目负责人决定按此结果通过，是对 2% 门槛的一次明确放宽。就记账这一项改动而言，主题切换、分配（每个 Token 实例 +8 字节）、体积与编译结果都通过，渲染不受影响。
   - Alias 阶段与控件阶段的性能（与接受记账代价时的树对比复测）：内置主题的冷编译、主题切换与分配没有可测量的代价（分配逐字节不变；当天冷编译的分辨力只有 8%–9%，分辨不出 2% 的差异），启动耗时在测量分辨力（约 1 毫秒）内不变。`AtomUI.Core.dll` 增大 2.05%。使用阶段的主题要为阶段付出代价：PrimeNG 预设冷编译约 0.88 毫秒，内置默认主题约 0.74 毫秒（+18%），分配多约 111 KB。
 - PrimeNG 预设

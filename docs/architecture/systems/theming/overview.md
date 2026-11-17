@@ -7,7 +7,7 @@ AtomUI 主题系统跨越 Core 运行时、Control 包、主题资产、Source G
 - [应用资源宿主验证](application-resource-host-verification.md)：源码实现证据、性能对照和验收边界。
 - [惰性物化与资源查询](lazy-materialization.md)：独立惰性槽、资源 key 路由、稳定 provider、registry 复用边界与内存计费。
 - [编译主题包](compiled-theme-packages/overview.md)：包内 XML 的类型化 C# 生成、统一运行期计算、生命周期和验证边界。
-- [预设主题包](compiled-theme-packages/overview.md#11-预设主题包)：PrimeNG、Shadcn、Bootstrap、Material 以编译主题包交付，Core 不变。
+- [预设主题包](compiled-theme-packages/overview.md#11-预设主题包)：PrimeNG、Shadcn 以编译主题包交付，Core 不变。
 - [Control Design Token 继承架构](control-design-token-inheritance.md)：抽象定义层、终端 `sealed` Token、生成期
   schema 扁平化、跨程序集复用和运行时隔离边界。
 - [Semantic Part 系统](semantic-parts.md)：稳定视觉区域、Selector、descriptor、Popup 和兼容性。

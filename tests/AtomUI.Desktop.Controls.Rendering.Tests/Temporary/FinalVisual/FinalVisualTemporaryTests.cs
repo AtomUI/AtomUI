@@ -63,8 +63,7 @@ public class FinalVisualTemporaryTests
                      ("PrimeNGAura", "#10B981", "primeng-aura-emerald-light"),
                      ("DaybreakBlue", null, "antdesign-daybreakblue-light"),
                      ("ShadcnNova", null, "shadcn-nova-light"),
-                     ("ShadcnNova.Dark", null, "shadcn-nova-dark"),
-                     ("Material", null, "material-light")
+                     ("ShadcnNova.Dark", null, "shadcn-nova-dark")
                  })
         {
             if (filter is null || name.Contains(filter, StringComparison.Ordinal))

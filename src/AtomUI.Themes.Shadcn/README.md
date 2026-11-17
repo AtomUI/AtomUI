@@ -78,5 +78,5 @@
 
 ## 与其他包的关系
 
-- Ant Design、PrimeNG、Bootstrap、Material 的渲染不受本包影响（Core 的 `ColorNeutral` 种子被它们的算法忽略）。
+- Ant Design、PrimeNG 的渲染不受本包影响（Core 的 `ColorNeutral` 种子被它们的算法忽略）。
 - 启用：`builder.Theme.UseShadcnThemes()`（注册 16 个 Style 算法、控件阶段与 32 个 profile）。

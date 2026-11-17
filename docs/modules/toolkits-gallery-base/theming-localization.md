@@ -67,8 +67,8 @@ public static class ThemeManagerBuilderExtensions
 GalleryBase 依赖 AtomUI Desktop 控件作为 Shell 默认 UI，因此产品应先注册 Desktop 控件主题。
 
 GalleryBase 本身不注册产品主题定义。具体产品通过生成的编译主题包或 `IThemeDefinitionResolver` 显式追加定义；例如
-AtomUIGallery 在 `UseGalleryControls()` 中直接注册 PrimeNG、Shadcn、Bootstrap、Material 四个主题包
-（`UsePrimeNGThemes().UseShadcnThemes().UseBootstrapThemes().UseMaterialThemes()`），而单独使用 `UseGalleryBase()` 的应用不会看到这些主题。
+AtomUIGallery 在 `UseGalleryControls()` 中直接注册 PrimeNG、Shadcn 两个主题包
+（`UsePrimeNGThemes().UseShadcnThemes()`），而单独使用 `UseGalleryBase()` 的应用不会看到这些主题。
 `DaybreakBlue` 来自 AtomUI Core 默认 definition；Gallery 自身不再包含任何主题 XML，也不再生成 `GeneratedThemePackageRegistration`。
 原先的 Polar Green、Sunset Orange、Golden Purple、Magenta 四个预设已删除，改为 Theme 菜单 Brand color 中 `AntDesign` 语言专属的命名色块
 （`#52C41A`、`#FA8C16`、`#722ED1`、`#EB2F96`，另有 Daybreak Blue `#1677FF`），由 `GalleryBrandSwatches` 统一维护。

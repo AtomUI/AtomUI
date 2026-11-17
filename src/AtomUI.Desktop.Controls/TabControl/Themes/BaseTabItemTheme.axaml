@@ -6,10 +6,11 @@
               x:ClassModifier="internal">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TabItem">
+            <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
+                 使背景框缩进 item Bounds 内，而墨条按 Bounds 绘制，导致背景右侧窄 Margin 宽度。 -->
             <Border Name="Frame"
                     Background="{TemplateBinding Background}"
-                    Padding="{TemplateBinding Padding}"
-                    Margin="{TemplateBinding Margin}">
+                    Padding="{TemplateBinding Padding}">
                 <!-- Ant Design line tabs outline the tab button (icon and label), not the padded tab. -->
                 <StackPanel Orientation="Horizontal"
                             TemplatedControl.IsTemplateFocusTarget="True">

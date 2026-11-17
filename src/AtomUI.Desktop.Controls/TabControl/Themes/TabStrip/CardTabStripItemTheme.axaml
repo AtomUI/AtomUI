@@ -11,6 +11,8 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <!-- Ant Design card tabs draw the focus outline just inside the card (offset -lineWidthFocus). -->
+                <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
+                     使卡片框缩进 item Bounds 内。 -->
                 <atom:PixelAlignedBorder Name="Frame"
                                          TemplatedControl.IsTemplateFocusTarget="True"
                                          atom:FocusOutlineAdorner.IsInset="True"
@@ -18,8 +20,7 @@
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          Background="{TemplateBinding Background}"
-                                         Padding="{TemplateBinding Padding}"
-                                         Margin="{TemplateBinding Margin}">
+                                         Padding="{TemplateBinding Padding}">
                     <StackPanel Name="ContentLayout" Orientation="Horizontal">
                         <atom:IconPresenter Name="ItemIconPresenter"
                                             Classes.semantic-icon="True"

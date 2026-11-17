@@ -1,4 +1,5 @@
 using AtomUI.Animations;
+using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
@@ -225,6 +226,25 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         StopThumbMotion();
         base.OnDetachedFromVisualTree(e);
     }
+
+    // Called by the items panel after it relaid out its children: a theme switch rebuilds the containers and a
+    // visibility change re-divides the expanding panel, and neither re-runs this control's own ArrangeOverride —
+    // without this hook a thumb that captured a mid-relayout geometry would stay frozen on it.
+    internal void NotifyItemsRelaidOut()
+    {
+        if (!_isThumbVisible)
+        {
+            return;
+        }
+
+        // The notification arrives from the items panel inside an in-flight layout pass: the panel has arranged
+        // its children, but the surrounding measure/arrange of this control may still be running with mixed old
+        // and new geometry, and ConstrainThumb would clip the thumb against a stale track. Recalibrate one
+        // dispatcher turn later, when the pass has fully settled; the same-target guard keeps settled frames free.
+        Avalonia.Threading.Dispatcher.UIThread.Post(
+            () => SetupSelectedThumbRect(),
+            Avalonia.Threading.DispatcherPriority.Loaded);
+    }
     
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
@@ -302,14 +322,14 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         var trackBounds = new Rect(Bounds.Size);
         // CSS border-radius semantics: a theme radius larger than half the shorter side would draw
         // asymmetrically in Avalonia, so both the track and the thumb clamp first (CornerRadiusUtils).
-        var trackRadius = AtomUI.Media.CornerRadiusUtils.ClampToSize(CornerRadius, trackBounds.Width, trackBounds.Height);
+        var trackRadius = CornerRadiusUtils.ClampToSize(CornerRadius, trackBounds.Width, trackBounds.Height);
         context.DrawRectangle(Background, null, new RoundedRect(trackBounds, trackRadius));
         if (_isThumbVisible)
         {
             var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
             if (thumb.Width > 0 && thumb.Height > 0)
             {
-                var thumbRadius = AtomUI.Media.CornerRadiusUtils.ClampToSize(
+                var thumbRadius = CornerRadiusUtils.ClampToSize(
                     SelectedThumbCornerRadius, thumb.Width, thumb.Height);
                 context.DrawRectangle(SelectedThumbBg, null,
                     new RoundedRect(thumb, thumbRadius), SelectedThumbBoxShadows);

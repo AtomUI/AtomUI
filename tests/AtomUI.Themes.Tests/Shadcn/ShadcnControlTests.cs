@@ -155,34 +155,37 @@ public class ShadcnControlTests
     }
 
     /// <summary>
-    /// The official toggle-group: no track background, no border, the selected item is a muted rounded pill
-    /// (rounded-lg/md/xl per style) with no shadow — not the Ant grey track + white shadowed thumb.
+    /// shadcn has no segmented component, so the Ant track pattern stays (grey track, elevated thumb, soft
+    /// shadow) and only the palette flows in from the shadcn globals: the track reads --muted (without the
+    /// override it would fall back to ColorBgLayout = --background and disappear into the page), the thumb
+    /// --popover, the hover --secondary, and the radius ladder the global per-style BorderRadius.
     /// </summary>
     [AvaloniaTheory]
-    [InlineData("Nova", 10d, 10d)]
+    [InlineData("Nova", 10d, 8d)]
     [InlineData("Vega", 8d, 8d)]
-    [InlineData("Maia", 26d, 14d)]
+    [InlineData("Maia", 26d, 26d)]
     [InlineData("Luma", 26d, 26d)]
     [InlineData("Rhea", 18d, 18d)]
-    public async Task Segmented_Is_The_Official_Trackless_Pill(string style, double trackRadius, double thumbRadius)
+    public async Task Segmented_Keeps_The_Ant_Track_With_Shadcn_Colors(string style, double radius, double radiusSM)
     {
         var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
         var table = ShadcnAppendix.BaseColors();
 
-        // No track background; the selected pill is muted with the foreground text and no shadow.
-        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "TrackBg").ShouldBe(Colors.Transparent, style);
+        ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "TrackBg")
+            .ShouldBe(table[("neutral", false, "muted")], $"{style} track");
         ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemSelectedBg")
-            .ShouldBe(table[("neutral", false, "muted")], style);
+            .ShouldBe(table[("neutral", false, "popover")], $"{style} thumb");
         ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemSelectedColor")
-            .ShouldBe(table[("neutral", false, "foreground")], style);
+            .ShouldBe(table[("neutral", false, "foreground")], $"{style} selected text");
         ShadcnOverlayTests.Own<Color>(snapshot, "Segmented", "ItemHoverBg")
-            .ShouldBe(table[("neutral", false, "muted")], style);
-        // Radius ladders: track (BorderRadius) and selected pill (BorderRadiusSM for the middle size).
+            .ShouldBe(table[("neutral", false, "secondary")], $"{style} hover");
+        // The radius ladder falls back to the global per-style radius (clamped at draw time, f19f3a9fe).
         ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Segmented", "BorderRadius")
-            .ShouldBe(new CornerRadius(trackRadius), style);
+            .ShouldBe(new CornerRadius(radius), style);
         ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "Segmented", "BorderRadiusSM")
-            .ShouldBe(new CornerRadius(thumbRadius), style);
-        // The thumb shadow falls back to the global BoxShadowsTertiary (ring+card shadow); override it empty.
-        ShadcnOverlayTests.ControlGlobal<BoxShadows>(snapshot, "Segmented", "BoxShadowsTertiary").Count.ShouldBe(0, style);
+            .ShouldBe(new CornerRadius(radiusSM), style);
+        // The thumb keeps the Ant soft shadow (the shadcn empty override is gone).
+        ShadcnOverlayTests.ControlGlobal<BoxShadows>(snapshot, "Segmented", "BoxShadowsTertiary")
+            .Count.ShouldBeGreaterThan(0, style);
     }
 }

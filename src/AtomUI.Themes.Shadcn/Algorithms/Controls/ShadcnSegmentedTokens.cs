@@ -2,15 +2,18 @@ using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Themes.Shadcn.Algorithms.Controls;
 
 /// <summary>
-/// The Segmented under the shadcn styles is the official toggle-group look: no track background and no border,
-/// the selected item a muted rounded pill (the item radius per style, appendix C: rounded-md/xl/4xl/full) with
-/// no shadow — not the Ant grey track with the white shadowed thumb.
+/// The Segmented under the shadcn styles: shadcn has no segmented component, so the Ant track pattern stays
+/// (grey track, elevated thumb, soft thumb shadow) and only the palette flows in from the shadcn globals —
+/// thumb = <c>--popover</c>, hover = <c>--secondary</c>, text = <c>--foreground</c>, radius ladder = the global
+/// per-style <c>BorderRadius</c> (clamped at draw time by <c>CornerRadiusUtils</c>). The one override is the
+/// track: the default reads <c>ColorBgLayout</c>, which the shadcn Map maps to <c>--background</c> (the page
+/// itself), so the track would disappear into the page — it reads <c>--muted</c> instead, the grey the Ant
+/// track renders in.
 /// </summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
@@ -33,26 +36,6 @@ internal sealed class ShadcnSegmentedTokens : IControlTokenAlgorithm<SegmentedTo
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
-        var style = ShadcnStyles.Resolve(context);
-        // The theme reads the global radius ladder: track = BorderRadius (LG for the large size), the selected
-        // pill = BorderRadiusSM (XS for the small size). Item radius: rounded-md 8 (Vega/Nova/Mira), rounded-xl 14
-        // (Maia), the capsule styles stay at the container radius (Luma full, Rhea 18), Lyra/Sera square.
-        var (track, thumb) = style.Id switch
-        {
-            "Vega" or "Mira" => (8d, 8d),
-            "Nova"                     => (10d, 10d),
-            "Maia"                     => (26d, 14d),
-            "Luma"                     => (26d, 26d),
-            "Rhea"                     => (18d, 18d),
-            _                          => (0d, 0d)
-        };
-        controlGlobal.BorderRadius   = new CornerRadius(track);
-        controlGlobal.BorderRadiusLG = new CornerRadius(track);
-        controlGlobal.BorderRadiusSM = new CornerRadius(thumb);
-        controlGlobal.BorderRadiusXS = new CornerRadius(thumb);
-        // The theme binds the thumb shadow to the global BoxShadowsTertiary (the Shadcn card ring); the official
-        // pill has no shadow.
-        controlGlobal.BoxShadowsTertiary = default;
     }
 
     /// <inheritdoc />
@@ -60,12 +43,6 @@ internal sealed class ShadcnSegmentedTokens : IControlTokenAlgorithm<SegmentedTo
     {
         var dark    = context.Appearance == ThemeAppearance.Dark;
         var surface = ShadcnBaseColors.Resolve(effectiveGlobal.ColorNeutral, dark);
-        token.TrackBg           = Colors.Transparent; // no track: the items sit on the page
-        token.ItemSelectedBg    = surface.Muted;      // data-[state=on]:bg-muted
-        token.ItemSelectedColor = surface.Foreground;
-        token.ItemHoverBg       = surface.Muted;      // hover:bg-muted
-        token.ItemHoverColor    = surface.Foreground;
-        token.ItemActiveBg      = surface.Muted;
-        token.ItemColor         = surface.MutedForeground;
+        token.TrackBg = surface.Muted;
     }
 }

@@ -184,7 +184,12 @@ public abstract class ShadcnStyleAlgorithm : IThemeAlgorithm, IThemeAliasAlgorit
         nextMap.ControlHeightSM = style.ControlHeightSM;
         nextMap.ControlHeightLG = style.ControlHeightLG;
         nextMap.ControlHeightXS = style.ControlHeightXS;
+        // The full radius ladder (many controls read SM/LG/XS, e.g. the Segmented thumb and IconButton): the
+        // per-style table at every size, mirroring the official one-radius-per-style classes.
         nextMap.BorderRadius    = new CornerRadius(style.ButtonRadius);
+        nextMap.BorderRadiusSM  = new CornerRadius(style.ButtonRadiusSM);
+        nextMap.BorderRadiusLG  = new CornerRadius(style.ButtonRadiusLG);
+        nextMap.BorderRadiusXS  = new CornerRadius(style.ButtonRadiusSM);
         nextMap.FontSize        = style.FontSize;
         nextMap.FontSizeSM      = style.FontSizeSM;
     }

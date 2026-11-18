@@ -13,7 +13,8 @@
                                          Background="{TemplateBinding Background}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
-                                         CornerRadius="{TemplateBinding CornerRadius}">
+                                         CornerRadius="{TemplateBinding CornerRadius}"
+                                         ClipContentToCornerRadius="True">
                     <Grid>
                         <Border Name="ContentFrame" Padding="{TemplateBinding Padding}">
                             <Viewbox Name="QRCodeSurfaceScaler" Stretch="Uniform">

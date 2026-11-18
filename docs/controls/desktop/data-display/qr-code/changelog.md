@@ -2,6 +2,14 @@
 
 本文档记录 QRCode 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Fixed
+  - 掩码态（Loading/Expired/Scanned）不再把圆角外框裁成直角：`cover` 是子节点、绘制在 `Frame` 之上，未裁剪时会铺满方框并盖住边框，圆角视觉失效。`Frame` 现开启 `ClipContentToCornerRadius`，把内容子树统一裁到圆角内框（与 `Expander PART_Frame` 同一契约）；`Active` 态视觉不变。
+
+- Theme
+  - 圆角由根节点裁剪统一提供，容器放大圆角（如 Shadcn Luma/Maia 26）时掩码仍保持圆角。
+
 ## 2026-11-10
 
 - Fixed

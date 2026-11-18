@@ -1,4 +1,5 @@
 using AtomUI.Controls.Utils;
+using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -300,6 +301,12 @@ public class DashedBorder : Decorator
         // the child bounds expanded back by the padding. The WinUI keypoints builder
         // deflates the given bounds by the border thickness again, hence the inflate.
         var innerEdgeBounds = childBounds.Inflate(padding + borderThickness);
+
+        // CSS border-radius semantics, same as in BorderRenderHelper: the WinUI keypoint builder
+        // partitions an oversized radius into elliptical arcs while the rendered border follows
+        // Skia's uniform scaling, so the clip must scale the radii to the clip bounds first.
+        cornerRadius = CornerRadiusUtils.ScaleToSize(
+            cornerRadius, innerEdgeBounds.Width, innerEdgeBounds.Height);
 
         var keypoints = RoundRectGeometryBuilder.CalculateRoundedCornersRectangleWinUI(
             innerEdgeBounds,

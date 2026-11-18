@@ -26,6 +26,13 @@ internal class BorderRenderHelper
                         BackgroundSizing backgroundSizing,
                         bool dashedEnabled)
     {
+        // CSS border-radius semantics: Skia's rounded rect (the box shadow and the simple drawing
+        // path below) scales overlapping corner radii down by one uniform factor, while the WinUI
+        // keypoint geometry used for the complex path partitions the overshoot into elliptical
+        // arcs instead. Scale once here so the background, the border ring and the box shadow all
+        // render the same shape and stay concentric under oversized theme radii (e.g. Luma/Maia
+        // InputRadius 22/26 on a 32px-high input capsule).
+        cornerRadius      = CornerRadiusUtils.ScaleToSize(cornerRadius, finalSize.Width, finalSize.Height);
         _size             = finalSize;
         _borderThickness  = borderThickness;
         _cornerRadius     = cornerRadius;

@@ -59,6 +59,11 @@ public sealed partial class ComboBoxToken : AbstractControlDesignToken
     public partial Thickness ItemPadding { get; set; }
 
     /// <summary>
+    /// 列表项高度
+    /// </summary>
+    public partial double ItemHeight { get; set; }
+
+    /// <summary>
     /// 列表项外边距
     /// </summary>
     public partial Thickness ItemMargin { get; set; }
@@ -89,6 +94,7 @@ public sealed partial class ComboBoxToken : AbstractControlDesignToken
         HandleHoverColor = EffectiveGlobalToken.ColorPrimary;
 
         ItemPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
+        ItemHeight  = EffectiveGlobalToken.ControlHeight;
         ItemMargin  = new Thickness(0, 0.5);
     }
     

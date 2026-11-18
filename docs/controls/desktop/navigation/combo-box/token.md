@@ -18,6 +18,7 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | 按源码 Token 语义维护 |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding`、`ItemPadding`、`ItemMargin` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ItemHeight` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ItemColor`、`ItemHoverColor`、`ItemSelectedColor`、`ItemDisabledColor`、`ItemBgColor`、`ItemHoverBgColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `PopupContentPadding` |
 

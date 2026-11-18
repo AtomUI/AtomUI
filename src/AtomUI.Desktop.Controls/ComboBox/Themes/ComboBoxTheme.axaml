@@ -202,7 +202,7 @@
         <Setter Property="PopupContentPadding" Value="{atom:ComboBoxTokenResource PopupContentPadding}" />
         <Setter Property="EmptyIndicatorPadding" Value="{atom:ComboBoxTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:ComboBoxTokenResource ControlHeight}" />
+        <Setter Property="ItemHeight" Value="{atom:ComboBoxTokenResource ItemHeight}" />
         <Setter Property="PlaceholderForeground" Value="{atom:ComboBoxTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^[IsAllowClear=True][CanClearValue=True]:not(:disabled)">

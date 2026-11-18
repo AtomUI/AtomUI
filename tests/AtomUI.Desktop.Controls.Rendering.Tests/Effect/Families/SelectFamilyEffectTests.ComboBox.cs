@@ -90,6 +90,11 @@ public partial class SelectFamilyEffectTests
             switch (token)
             {
                 // ---- drop-down ----
+                case "ItemHeight":
+                    // The row height shows on the open list: every item takes it.
+                    count = 6;
+                    Open();
+                    break;
                 case "ItemBgColor" or "ItemColor" or "ItemMargin" or "ItemPadding" or "PopupContentPadding"
                     or "ColorBgElevated" or "ColorTextSecondary" or "UniformlyPaddingSM" or "UniformlyPaddingXXS"
                     or "BorderRadiusLG" or "ItemDisabledColor":

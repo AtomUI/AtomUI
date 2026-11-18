@@ -2,6 +2,14 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Theme / Token
+  - 列表项行高由主题直读全局 `ControlHeight` 改为 ComboBox 自有槽位 `ItemHeight`（Ant 默认仍为全局
+    `ControlHeight`，渲染不变）；`AtomUI.Themes.PrimeNG` 新增 `PrimeNGComboBoxTokens`（六个算法）取官方
+    `list.option`：行高 29（0.875rem 行高 × 1.5 + 上下各 0.25rem）、`ItemPadding` 横向 10，使下拉首项与面板顶边、
+    行间距与官方一致。
+
 ## 2026-11-15
 
 - Motion

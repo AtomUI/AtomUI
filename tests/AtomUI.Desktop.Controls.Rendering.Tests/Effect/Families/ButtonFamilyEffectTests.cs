@@ -495,9 +495,11 @@ public partial class ButtonFamilyEffectTests
         {
             case "BorderRadiusLG" or "BorderRadiusSM":
                 return new(With(b => b.SizeType = SizeOf(token)));
-            case "ColorPrimaryHover":
+            // The Ant baseline derives both separator slots in SplitButtonToken from these globals, so they still
+            // have a code read and need the filled form to show.
+            case "SolidSeparatorColor" or "ColorPrimaryHover":
                 return new(With(static b => b.IsPrimaryButtonType = true));
-            case "ColorErrorHover":
+            case "DangerSeparatorColor" or "ColorErrorHover":
                 return new(With(static b =>
                 {
                     b.IsPrimaryButtonType = true;

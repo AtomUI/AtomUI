@@ -2,6 +2,16 @@
 
 本文档记录 SplitButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Changed
+  - 实心（Primary / Danger）形态的接缝分隔色改由 `SplitButtonToken` 自有槽位 `SolidSeparatorColor` / `DangerSeparatorColor`
+    表达，`SplitButtonTheme` 两个 Setter 改绑；Ant 默认值仍为全局 `ColorPrimaryHover` / `ColorErrorHover`，渲染不变。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGSplitButtonTokens`（六个算法）：两个槽位取 `ColorPrimary` / `ColorError`（filled 的
+    填充色），接缝与两侧同色而不可见，对齐官方 `@primeuix/styles` 3.1.1（`.p-splitbutton-button` 的
+    `border-inline-end: 0 none`，接缝由 `button.<severity>.borderColor` 承担，filled 下等于填充色）。
+    Outline（Default）形态本就没有接缝线，未改动。
+
 ## 2026-11-08
 
 - Changed

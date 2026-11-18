@@ -50,13 +50,13 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BorderThickness" Value="{atom:SplitButtonTokenResource BorderThickness}"/>
 
-        <!-- 对齐上游 solid 组合规则：primary 形态接缝分隔线取次按钮 hover 背景
-             （colorPrimaryHover / colorErrorHover），default（outline）形态无接缝线保持 ColorBorder。 -->
+        <!-- 接缝分隔色经自有槽位下发：Ant 基线沿用上游 solid 组合规则的 primary / danger hover 档；
+             设计语言可改为与填充同色（PrimeNG：filled 的 borderColor 等于填充色，接缝不可见）。 -->
         <Style Selector="^[IsPrimaryButtonType=True][IsDanger=False]">
-            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource ColorPrimaryHover}"/>
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource SolidSeparatorColor}"/>
         </Style>
         <Style Selector="^[IsPrimaryButtonType=True][IsDanger=True]">
-            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource ColorErrorHover}"/>
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource DangerSeparatorColor}"/>
         </Style>
 
         <Style Selector="^[SizeType=Large]">

@@ -2,6 +2,23 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Changed
+  - 默认（Default）浮动按钮的表面与前景改由 `FloatButtonToken` 自有槽位 `DefaultBg` / `DefaultHoverBg` / `DefaultActiveBg` /
+    `DefaultIconColor` 表达（Ant 默认分别为 `ColorBgElevated` / `ColorBgTextHover` / 透明 / `ColorText`，渲染不变）；
+    `AbstractFloatButtonTheme` 改绑这组槽位，并移除已被 `ButtonType` 两个分支完全遮蔽的基座 `Foreground`（`ColorText`）死读。
+  - 方形胶囊容器（`FloatButtonItemsControl`）的填充由 `OwnerTokenResource ColorBgElevated` 改绑同一表面槽位
+    `FloatButtonTokenResource DefaultBg`：容器失去阴影后（PrimeNG）必须由填充表达表面，否则白底在白卡片上不可见；
+    Ant 基线 `DefaultBg` 仍等于 `ColorBgElevated`，渲染不变。
+  - `PrimeNGFloatButtonTokens` 补官方 `button.secondary` 表面：`surface.100` / `200` / `300` / `600`（暗色 `800` / `700` /
+    `600` / `300`）。官方没有“白色无阴影”按钮，Ant 白底默认在无阴影后会不可见，故中性浮动按钮落到 secondary。
+  - 浮动按钮族阴影改由 `FloatButtonToken` 自有 Token `FloatButtonShadows` 表达：`AbstractFloatButtonTheme`（独立按钮与
+    嵌入圆钮）、`FloatButtonGroupTheme` 与 `FloatButtonGroupHostTheme` 的方形容器改绑 `FloatButtonTokenResource
+    FloatButtonShadows`；默认值仍为全局 `BoxShadowsSecondary`，Ant Design 渲染不变。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGFloatButtonTokens`（Aura/Lara/Nora × 亮/暗共六个算法）：PrimeNG 设计语言下
+    浮动按钮族无阴影，对齐 `@primeuix/themes` 3.1.1 官方取值（button 各 severity 与 speeddial 均无 resting 阴影）。
+
 ## 2026-11-08
 
 - Changed

@@ -9,7 +9,8 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="BadgeEffectiveColor" Value="{atom:OwnerTokenResource ColorError}" />
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
-        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <!-- Foreground is set per ButtonType below (Default / Primary); a base ColorText read here would be shadowed
+             by both branches and would only leave a dead global read the effect contract must guard. -->
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -24,7 +25,7 @@
 
         <Style Selector="^[IsEmbedMode=False], ^[IsEmbedMode=True][Shape=Circle]">
             <Style Selector="^ /template/ Border#BackgroundFrame">
-                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultBg}" />
             </Style>
         </Style>
         <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
@@ -50,7 +51,7 @@
         </Style>
 
         <Style Selector="^[IsEmbedMode=False]">
-            <Setter Property="BoxShadow" Value="{atom:OwnerTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
@@ -79,7 +80,7 @@
             </Style>
             <Style Selector="^[Shape=Circle]">
                 <Setter Property="BoxShadow"
-                        Value="{atom:OwnerTokenResource BoxShadowsSecondary}" />
+                        Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
             </Style>
         </Style>
 
@@ -92,8 +93,12 @@
         </Style>
 
         <Style Selector="^[ButtonType=Default]">
+            <Setter Property="Foreground" Value="{atom:FloatButtonTokenResource DefaultIconColor}" />
             <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultHoverBg}" />
+            </Style>
+            <Style Selector="^:pressed">
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultActiveBg}" />
             </Style>
         </Style>
 

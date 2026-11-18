@@ -19,7 +19,8 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `FloatButtonSize`、`FloatButtonIconSize`、`DescriptionLineHeight` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FloatOffsetX`、`FloatOffsetY` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PrimaryColor` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `DescriptionLineHeight` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `FloatButtonShadows`、`DescriptionLineHeight` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `DefaultBg`、`DefaultHoverBg`、`DefaultActiveBg`、`DefaultIconColor`、`PrimaryColor` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -39,6 +40,17 @@ FloatButton 的控件专项模型通过 Theme 消费 Token：
 `AbstractFloatButtonTheme` 由 FloatButton 与 BackTopFloatButton 共用，其中的 Global Token 经 `OwnerTokenResource` 读取实际
 公开 owner 的有效值；图标颜色跟随按钮 `Foreground`，因为 `IconPresenter` 本身是带 Token 身份的公开控件，在它上面读取
 `OwnerTokenResource` 会落到 IconPresenter 自己的身份。
+
+浮动按钮族的阴影由自有 Token `FloatButtonShadows` 表达（默认取全局 `BoxShadowsSecondary`，Ant Design 渲染不变）：
+`AbstractFloatButtonTheme` 的独立按钮与嵌入圆钮、`FloatButtonGroupTheme` 与 `FloatButtonGroupHostTheme` 的方形容器均读该
+Token，设计语言算法（如 `AtomUI.Themes.PrimeNG` 的 `PrimeNGFloatButtonTokens`）可按语言覆盖，PrimeNG 下无阴影。
+
+默认（Default）类型的表面与前景同样由自有槽位表达：`DefaultBg` 画在底层 `BackgroundFrame`，`DefaultHoverBg` /
+`DefaultActiveBg` 由 `:pointerover` / `:pressed` 样式块覆盖上层 `Frame`，`DefaultIconColor` 是按钮 `Foreground`（图标
+跟随）。Ant Design 默认值分别为 `ColorBgElevated` / `ColorBgTextHover` / 透明 / `ColorText`，渲染与引入槽位前一致；
+FloatButton 族的其它身份（BackTop、Group、Host）主题经 `FloatButtonTokenResource` 读同一组槽位，因此家族表面随语言
+统一：方形胶囊容器（`FloatButtonItemsControl` 的 `[Shape=Square]`）的填充也读 `DefaultBg`。PrimeNG 下这组槽位取官方
+`button.secondary`：官方没有“白色无阴影”按钮，白底默认会与白卡片融为一体；容器同理，去掉阴影后必须由填充表达表面。
 
 ## 4. 控件家族影响
 

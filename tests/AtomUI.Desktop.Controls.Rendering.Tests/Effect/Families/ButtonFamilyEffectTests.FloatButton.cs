@@ -26,14 +26,14 @@ public partial class ButtonFamilyEffectTests
     /// </summary>
     private static readonly string[] s_floatButtonOwnerReads =
     [
-        "BorderRadiusLG", "BorderRadiusSM", "BoxShadowsSecondary", "ColorBgElevated", "ColorBgTextHover", "ColorError",
-        "ColorPrimary", "ColorPrimaryActive", "ColorPrimaryHover", "ColorText", "EnableMotion", "FontSizeSM",
+        "BorderRadiusLG", "BorderRadiusSM", "ColorError",
+        "ColorPrimary", "ColorPrimaryActive", "ColorPrimaryHover", "EnableMotion", "FontSizeSM",
         "MarginXXS", "PaddingXXS", "ZIndexPopupBase"
     ];
 
     /// <summary>Global Tokens the internal FloatButtonItemsControl theme reads from its FloatButtonGroup owner.</summary>
     private static readonly string[] s_floatButtonGroupOwnerReads =
-        ["BorderRadiusLG", "ColorBgElevated", "ColorSplit", "Spacing"];
+        ["BorderRadiusLG", "ColorSplit", "Spacing"];
 
     [Fact]
     public void Owner_Read_Lists_Match_The_Primitive_Themes()
@@ -201,6 +201,10 @@ public partial class ButtonFamilyEffectTests
                 }));
             case "ColorBgTextHover":
                 return new(With(static _ => { }), Pseudo(":pointerover"));
+            case "DefaultHoverBg":
+                return new(With(static _ => { }), Pseudo(":pointerover"));
+            case "DefaultActiveBg":
+                return new(With(static _ => { }), Pseudo(":pressed"));
             case "PrimaryColor" or "ColorTextLightSolid" or "ColorPrimary":
                 return new(With(static b => b.ButtonType = FloatButtonType.Primary));
             case "ColorPrimaryHover":

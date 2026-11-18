@@ -47,7 +47,9 @@
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[Shape=Square]">
-            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
+            <!-- The capsule container is the family default surface: it follows the FloatButton surface slot so a
+                 language that removes the group shadow (PrimeNG) fills it instead of leaving an invisible white box. -->
+            <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultBg}" />
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^ /template/ atomc|FloatButtonSeparatorLayer">

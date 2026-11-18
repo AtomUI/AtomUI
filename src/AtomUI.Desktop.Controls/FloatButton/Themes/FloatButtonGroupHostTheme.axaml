@@ -13,7 +13,7 @@
         </Style>
         
         <Style Selector="^[Shape=Square]">
-            <Setter Property="BoxShadow" Value="{atom:FloatButtonGroupHostTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

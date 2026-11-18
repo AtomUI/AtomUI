@@ -83,10 +83,15 @@
                 <Setter Property="CornerRadius"
                         Value="{atom:NavMenuTokenResource HorizontalItemBorderRadius}" />
 
+                <!-- 水平顶层项的垂直 Padding 必须为 0（浅深一致）：文字靠 HorizontalLineHeight
+                     撑满整项高度实现 CSS line-height 式居中；若继承垂直菜单的
+                     ItemContentPadding 上下内边距，文字视口矮于行盒，字形贴行盒底部渲染，
+                     视觉偏下（此前深色分支漏掉重置即为此缺陷）。 -->
+                <Setter Property="Padding" Value="0" />
+
                 <!-- antd horizontal menu: hover / open use the hover background, the selected item its own background
                      and text colour; the active bar shows in all three states. -->
                 <Style Selector="^[IsDarkStyle=False]">
-                    <Setter Property="Padding" Value="0" />
                     <Style Selector="^ /template/ Rectangle#PART_ActiveIndicator">
                         <Setter Property="IsVisible" Value="True" />
                     </Style>

@@ -108,7 +108,11 @@ public partial class DisplayFamilyEffectTests
         _ = own;
         Run(new Scenario(() => new BorderBeam
         {
-            Width = 160, Height = 60, BorderThickness = token == "BorderThickness" ? new Thickness(1) : new Thickness(3), Duration = TimeSpan.FromDays(1), Content = "Highlighted content"
+            // Only the Duration row needs motion. With a running loop the arrange's Progress is reset to the path
+            // start before the frame is captured, where just the opaque head of the gradient sits inside the ring
+            // and the fade tokens look inert; a zero duration keeps the arranged Progress on screen.
+            Width = 160, Height = 60, BorderThickness = token == "BorderThickness" ? new Thickness(1) : new Thickness(3),
+            Duration = token == "Duration" ? TimeSpan.FromDays(1) : TimeSpan.Zero, Content = "Highlighted content"
         }, c =>
         {
             if (token == "BorderThickness")

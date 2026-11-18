@@ -27,8 +27,36 @@ internal enum CardContentType
 
 public partial class Card : AbstractCard,
                     ISizeTypeAware,
-                    IMotionAwareControl
+                    IMotionAwareControl,
+                    IBorderBeamAwareControl
 {
+    #region IBorderBeamAwareControl 实现
+
+    /// <summary>
+    /// The beam geometry of the card's own frame. A hosting <see cref="BorderBeam"/> draws its light on this ring,
+    /// so the beam follows the card's border thickness and corner radius instead of the beam's theme radius, which
+    /// can diverge from the card under large-radius themes (e.g. shadcn Luma BorderRadiusLG 26 vs a radius-8 card).
+    /// </summary>
+    event EventHandler? IBorderBeamAwareControl.BorderBeamGeometryChanged
+    {
+        add => _borderBeamGeometryChanged += value;
+        remove => _borderBeamGeometryChanged -= value;
+    }
+
+    private event EventHandler? _borderBeamGeometryChanged;
+
+    public BorderBeamGeometry GetBorderBeamGeometry()
+    {
+        return new BorderBeamGeometry(BorderThickness, CornerRadius);
+    }
+
+    private void NotifyBorderBeamGeometryChanged()
+    {
+        _borderBeamGeometryChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    #endregion
+
     #region 公共属性定义
     
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 
@@ -162,10 +190,12 @@ public partial class Card : AbstractCard,
         {
             ConfigureHeaderBorderThickness();
             ConfigureContentBorderThickness();
+            NotifyBorderBeamGeometryChanged();
         }
         else if (change.Property == CornerRadiusProperty)
         {
             ConfigureContentCornerRadius();
+            NotifyBorderBeamGeometryChanged();
         }
         else if (change.Property == ContentProperty)
         {

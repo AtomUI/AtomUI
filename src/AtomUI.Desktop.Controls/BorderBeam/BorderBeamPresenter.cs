@@ -144,6 +144,12 @@ internal class BorderBeamPresenter : Control
 
     private Animation? _animation;
     private IDisposable? _animationSubscription;
+    private Geometry? _borderGeometryCache;
+    private (Size Size, Thickness Outset, Thickness BorderThickness, CornerRadius Radius)? _geometryCacheKey;
+    private BorderBeamPathMetrics _pathMetricsCache;
+    private (Size Size, Thickness Outset, double BeamSize)? _metricsCacheKey;
+    private IBrush? _beamBrushCache;
+    private bool _beamBrushDirty = true;
     private Rect? _effectiveViewport;
     private AvaloniaList<BorderBeamColorStop>? _subscribedColorStops;
 
@@ -198,6 +204,16 @@ internal class BorderBeamPresenter : Control
             ConfigureColorStopsSubscription(change.GetNewValue<AvaloniaList<BorderBeamColorStop>?>());
         }
 
+        if (change.Property == ColorProperty ||
+            change.Property == ColorStopsProperty ||
+            change.Property == BeamSizeProperty ||
+            change.Property == MaxVisibleStopPercentProperty ||
+            change.Property == DefaultStartColorProperty ||
+            change.Property == DefaultEndColorProperty)
+        {
+            _beamBrushDirty = true;
+        }
+
         if (change.Property == IsMotionEnabledProperty ||
             change.Property == DurationProperty ||
             change.Property == OutsetProperty ||
@@ -217,19 +233,48 @@ internal class BorderBeamPresenter : Control
 
         var borderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, BorderBeamGeometry.BorderThickness);
         var renderBounds    = GetRenderBounds();
-        var borderGeometry  = CreateBorderGeometry(renderBounds, borderThickness, BorderBeamGeometry.CornerRadius);
-        if (borderGeometry is null)
+        var outset          = Outset.HasValue
+            ? BorderUtils.BuildRenderScaleAwareThickness(this, Outset.Value)
+            : default;
+        var radius = BorderBeamGeometry.CornerRadius;
+
+        // Steady-state caches: the progress animation re-enters Render at the refresh rate, and rebuilding the
+        // clip geometry (two stream geometries + combine), the path metrics (four arc integrals) and the gradient
+        // brush on every frame is pure allocation churn - the GC pauses read as a periodic hitch. Everything is
+        // keyed on its inputs, so a size, outset, thickness, radius or colour change simply misses and rebuilds.
+        var geometryKey = (renderBounds.Size, outset, borderThickness, radius);
+        if (_geometryCacheKey != geometryKey || _borderGeometryCache is null)
+        {
+            _borderGeometryCache = CreateBorderGeometry(renderBounds, borderThickness, radius);
+            _geometryCacheKey    = geometryKey;
+        }
+        if (_borderGeometryCache is null)
         {
             return;
         }
 
         var effectiveCount = Math.Max(1, Count);
-        var pathMetrics    = BorderBeamPathSampler.CreateMetrics(renderBounds, BeamSize);
-        var beamBrush      = CreateBeamBrush();
-        var beamBounds     = CreateBeamBounds();
+        var metricsKey = (renderBounds.Size, outset, BeamSize);
+        if (_metricsCacheKey != metricsKey)
+        {
+            _pathMetricsCache = BorderBeamPathSampler.CreateMetrics(renderBounds, BeamSize);
+            _metricsCacheKey  = metricsKey;
+        }
+
+        if (_beamBrushDirty || _beamBrushCache is null)
+        {
+            // Immutable snapshot: the drawing context converts a mutable gradient brush on EVERY draw, which is
+            // exactly the per-frame allocation the cache exists to remove.
+            _beamBrushCache = CreateBeamBrush().ToImmutable();
+            _beamBrushDirty = false;
+        }
+
+        var pathMetrics = _pathMetricsCache;
+        var beamBrush   = _beamBrushCache;
+        var beamBounds  = CreateBeamBounds();
 
         using var opacityState = context.PushOpacity(Math.Clamp(BeamOpacity, 0d, 1d));
-        using var clipState    = context.PushGeometryClip(borderGeometry);
+        using var clipState    = context.PushGeometryClip(_borderGeometryCache);
         for (var index = 0; index < effectiveCount; index++)
         {
             var beamProgress = BorderBeamPathSampler.GetBeamProgress(Progress, index, effectiveCount);
@@ -462,6 +507,7 @@ internal class BorderBeamPresenter : Control
 
     private void HandleColorStopsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        _beamBrushDirty = true;
         InvalidateVisual();
     }
 }

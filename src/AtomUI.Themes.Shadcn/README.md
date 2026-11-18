@@ -44,6 +44,14 @@
 品牌派生（`hover:bg-primary/80` 等）：`ColorPrimaryHover/Active` = 主色 80% 合成（按下为位移而非变色）；
 `ColorPrimaryBg/BgHover/Border/BorderHover` = 10%/20%/30%/50% 合成（AtomUI 近似，shadcn 无对应变量）。
 
+`Empty` 内置插画（控件级覆写）：插画从 fill 阶梯取色（`ColorFill` 为强调色，`ColorFillTertiary/Quaternary`
+为体面与最浅档，另有 `ColorBorderSecondary`），而 shadcn 的四档 fill 落在同一档（`--accent`、`--secondary`、
+`--muted` 同为 100 档），会把插画压成单色块。Empty 阶段改按 Ant 的 15%/6%/4%/2% 前景合成重建阶梯，明暗两态
+与任意 Base Color 下方向都正确。
+
+`CheckBox` 勾选框圆角（控件级覆写）：用附录 C 的专用值（Vega/Nova/Mira 4、Maia 6、Luma/Rhea 5、Lyra/Sera 0），
+不复用按钮圆角阶梯——按钮圆角 26 落在 16px 指示器上会被 CSS 语义钳到半高，整个勾选框变成圆形。
+
 ## 弹层（阴影与描边环）
 
 - 描边环 = `--foreground` 按 Style 透明度（多数 10%，Maia/Luma/Rhea 浅色 5%/暗色 10%）的 1px 扩散阴影，

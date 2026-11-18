@@ -188,4 +188,54 @@ public class ShadcnControlTests
         ShadcnOverlayTests.ControlGlobal<BoxShadows>(snapshot, "Segmented", "BoxShadowsTertiary")
             .Count.ShouldBeGreaterThan(0, style);
     }
+
+    /// <summary>
+    /// The Empty preset illustration draws its tones from the fill ramp. shadcn maps every level of that ramp onto
+    /// one neutral stop (accent/secondary/muted are all stop 100), which flattened the built-in illustration into a
+    /// single washed-out tone; Empty therefore carries its own ladder.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("neutral", false)]
+    [InlineData("neutral", true)]
+    [InlineData("zinc", false)]
+    [InlineData("zinc", true)]
+    public async Task Empty_Illustration_Keeps_A_Fill_Ramp(string family, bool dark)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(family, dark);
+
+        var background = ShadcnOverlayTests.Global<Color>(snapshot, "ColorBgLayout");
+        var accent     = ShadcnOverlayTests.ControlGlobal<Color>(snapshot, "Empty", "ColorFill");
+        var body       = ShadcnOverlayTests.ControlGlobal<Color>(snapshot, "Empty", "ColorFillTertiary");
+        var faint      = ShadcnOverlayTests.ControlGlobal<Color>(snapshot, "Empty", "ColorFillQuaternary");
+
+        // The accent must clearly stand out from the body tone, and the body from the faintest tone, in the
+        // direction away from the page background (dark mode runs the ramp the other way round).
+        Contrast(accent, background).ShouldBeGreaterThan(Contrast(body, background) + 0.06, $"{family}/{dark} accent");
+        Contrast(body, background).ShouldBeGreaterThan(Contrast(faint, background), $"{family}/{dark} body");
+    }
+
+    private static double Contrast(Color left, Color right) => Math.Abs(Luminance(left) - Luminance(right));
+
+    private static double Luminance(Color color) => (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255d;
+
+    /// <summary>
+    /// The checkbox radius of each style (appendix C, <c>rounded-[4px]</c>/<c>[5px]</c>/<c>[6px]</c>/<c>none</c>), not
+    /// the button radius ladder: on a 16px indicator a 26px radius collapses into a circle.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("Nova", 4d)]
+    [InlineData("Vega", 4d)]
+    [InlineData("Maia", 6d)]
+    [InlineData("Lyra", 0d)]
+    [InlineData("Mira", 4d)]
+    [InlineData("Luma", 5d)]
+    [InlineData("Sera", 0d)]
+    [InlineData("Rhea", 5d)]
+    public async Task CheckBox_Uses_The_Style_Checkbox_Radius(string style, double expected)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+
+        ShadcnOverlayTests.ControlGlobal<CornerRadius>(snapshot, "CheckBox", "BorderRadiusSM")
+            .ShouldBe(new CornerRadius(expected), style);
+    }
 }

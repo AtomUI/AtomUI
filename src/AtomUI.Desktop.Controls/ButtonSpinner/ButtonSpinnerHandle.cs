@@ -50,6 +50,23 @@ internal class ButtonSpinnerHandle : TemplatedControl
         get => _spinnerBorderThickness;
         set => SetAndRaise(SpinnerBorderThicknessProperty, ref _spinnerBorderThickness, value);
     }
+
+    public static readonly DirectProperty<ButtonSpinnerHandle, Thickness> HandleContentMarginProperty =
+        AvaloniaProperty.RegisterDirect<ButtonSpinnerHandle, Thickness>(nameof(HandleContentMargin),
+            o => o.HandleContentMargin,
+            (o, v) => o.HandleContentMargin = v);
+
+    private Thickness _handleContentMargin;
+
+    /// <summary>
+    /// The inset of the two half-height buttons: the frame's border width on the outer edges, so their hover/pressed
+    /// fill stays inside the input frame's outline (PrimeNG insets its stacked button group by 1px the same way).
+    /// </summary>
+    internal Thickness HandleContentMargin
+    {
+        get => _handleContentMargin;
+        private set => SetAndRaise(HandleContentMarginProperty, ref _handleContentMargin, value);
+    }
     
     public IconButton? IncreaseButton { get; private set; }
     public IconButton? DecreaseButton { get; private set; }
@@ -81,6 +98,7 @@ internal class ButtonSpinnerHandle : TemplatedControl
         IncreaseButton = e.NameScope.Find<IconButton>("PART_IncreaseButton");
         DecreaseButton = e.NameScope.Find<IconButton>("PART_DecreaseButton");
         ConfigureHandleButtonRadii();
+        ConfigureHandleContentMargin();
         ButtonsCreated?.Invoke(this, EventArgs.Empty);
     }
 
@@ -89,10 +107,22 @@ internal class ButtonSpinnerHandle : TemplatedControl
         base.OnPropertyChanged(change);
         if (change.Property == CornerRadiusProperty ||
             change.Property == ButtonSpinnerLocationProperty ||
+            change.Property == SpinnerBorderThicknessProperty ||
             change.Property == BoundsProperty)
         {
             ConfigureHandleButtonRadii();
+            ConfigureHandleContentMargin();
         }
+    }
+
+    // The outer edges inset by the frame's border width; the inner edge (the side facing the text) stays flush so the
+    // buttons keep meeting the divider.
+    private void ConfigureHandleContentMargin()
+    {
+        var border = SpinnerBorderThickness;
+        HandleContentMargin = ButtonSpinnerLocation == ButtonSpinnerLocation.Left
+            ? new Thickness(border.Left, border.Top, 0, border.Bottom)
+            : new Thickness(0, border.Top, border.Right, border.Bottom);
     }
 
     // The pressed/hover background of each half-height button draws with the IconButton's own CornerRadius, which

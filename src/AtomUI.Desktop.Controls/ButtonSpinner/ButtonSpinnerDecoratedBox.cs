@@ -336,10 +336,12 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         if (!IsEffectivelyEnabled)
         {
+            // A disabled spinner keeps its handle in view (Ant Design leaves the handlers visible and greys them out);
+            // the handle's own :disabled style supplies the disabled surface and icon colour.
             IsSpinnerContentHover = false;
-            HandleOpacity = 0.0;
-            HandleOffset = IsHandleFloatable ? GetHiddenOffset() : 0.0;
-            ContentLeftShift = 0.0;
+            HandleOpacity = IsShowHandle ? 1.0 : 0.0;
+            HandleOffset  = IsShowHandle ? 0.0 : (IsHandleFloatable ? GetHiddenOffset() : 0.0);
+            ContentLeftShift  = 0.0;
             ContentRightShift = 0.0;
             return;
         }

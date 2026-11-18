@@ -8,6 +8,16 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-17
+
+- Theme
+  - 手柄图标静息色、悬停背景、按下图标色改读自有槽位 `HandleIconColor` / `HandleHoverBg` / `HandlePressedColor`
+    （定义在共享的 `AbstractButtonSpinnerToken`，Ant 取值不变）。
+  - 手柄内两个半高按钮按边框宽度外侧内缩，按下/悬停底色不再覆盖输入框边框。
+  - `AtomUI.Themes.PrimeNG` 的 `PrimeNGNumericUpDownTokens` 按官方 `inputnumber.button` 写入同一套值。
+  - 禁用态保持手柄可见（原先淡出隐藏），禁用外观由手柄 `:disabled` 样式呈现。
+  - 图标尺寸在 PrimeNG 下为 7.875（官方 `form.field.font.size` 14 连续两次缩小四分之一，产品口径），Ant 仍为 `fontSize / 2`。
+
 ## 2026-11-11
 
 - Theme

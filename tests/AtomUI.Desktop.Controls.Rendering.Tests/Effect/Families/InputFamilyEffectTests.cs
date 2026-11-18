@@ -161,7 +161,8 @@ public partial class InputFamilyEffectTests
                     var frame = c.GetVisualDescendants().OfType<ButtonSpinnerDecoratedBox>().First();
                     var window = (Avalonia.Controls.Window)TopLevel.GetTopLevel(c)!;
                     window.MouseMove(frame.TranslatePoint(new Point(8, 8), window)!.Value);
-                    frame.HandleOpacity.ShouldBe(frame.IsEffectivelyEnabled ? 1 : 0);
+                    // The handle stays in view in every state, disabled included (Ant greys the handlers).
+                    frame.HandleOpacity.ShouldBe(1d);
                 });
             }
             if (pseudoClass.Length > 0)
@@ -188,6 +189,20 @@ public partial class InputFamilyEffectTests
                 break;
             case ("ButtonSpinner" or "NumericUpDown", "HandleHoverColor"):
                 SpinnerHandle(":pointerover");
+                break;
+            case ("ButtonSpinner" or "NumericUpDown", "HandleHoverBg"):
+                SpinnerHandle(":pointerover");
+                break;
+            case ("ButtonSpinner" or "NumericUpDown", "HandlePressedColor"):
+                SpinnerHandle(":pressed");
+                break;
+            case ("ButtonSpinner" or "NumericUpDown", "HandleIconColor" or "ColorIcon"):
+                // The resting icon colour shows on the two arrow glyphs only: compare the handle, not the whole input.
+                SpinnerHandle(string.Empty);
+                options = new EffectOptions
+                {
+                    Region = static c => c.GetVisualDescendants().OfType<ButtonSpinnerHandle>().First()
+                };
                 break;
             case ("ButtonSpinner" or "NumericUpDown", "HandleActiveBg" or "ColorPrimaryActive"):
                 SpinnerHandle(":pressed");

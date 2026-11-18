@@ -10,7 +10,7 @@ Own 值；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，Numer
 ## 2. Own Token
 
 - `HandleWidth`、`HandleIconSize`：浮动步进柄的宽度与上下箭头尺寸。
-- `HandleBg`、`FilledHandleBg`、`HandleActiveBg`、`HandleHoverColor`、`HandleBorderColor`：正常、Filled、按下、悬停与边框视觉。
+- `HandleBg`、`FilledHandleBg`、`HandleHoverBg`、`HandleActiveBg`、`HandleIconColor`、`HandleHoverColor`、`HandlePressedColor`、`HandleBorderColor`：正常、Filled、悬停、按下、图标与边框视觉。
 - `FilledHandleBg` 根据该终端的有效 `HandleBg` 派生；显式 `HandleBg` 先保留，再计算派生值。
 
 NumericUpDown 没有 `InputFontSize*` Own Token，也没有承诺默认控件宽度。已有 `ButtonSpinner.ControlWidth` 仍为 Reserved，

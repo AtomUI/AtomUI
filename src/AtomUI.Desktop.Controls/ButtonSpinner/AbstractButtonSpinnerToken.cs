@@ -38,6 +38,21 @@ public abstract partial class AbstractButtonSpinnerToken : AbstractControlDesign
     public partial Color HandleHoverColor { get; set; }
 
     /// <summary>
+    /// 操作按钮悬浮背景色
+    /// </summary>
+    public partial Color HandleHoverBg { get; set; }
+
+    /// <summary>
+    /// 操作按钮图标静息颜色
+    /// </summary>
+    public partial Color HandleIconColor { get; set; }
+
+    /// <summary>
+    /// 操作按钮按下颜色
+    /// </summary>
+    public partial Color HandlePressedColor { get; set; }
+
+    /// <summary>
     /// 操作按钮边框颜色
     /// </summary>
     public partial Color HandleBorderColor { get; set; }
@@ -56,6 +71,11 @@ public abstract partial class AbstractButtonSpinnerToken : AbstractControlDesign
         HandleActiveBg = EffectiveGlobalToken.ColorFillAlter;
 
         HandleHoverColor  = EffectiveGlobalToken.ColorPrimary;
+        // Ant Design has no hover fill on the handle buttons (only the icon changes) and the resting icon is the
+        // shared icon colour; both slots exist so a design language can give the handle its own surface.
+        HandleHoverBg     = Colors.Transparent;
+        HandleIconColor   = EffectiveGlobalToken.ColorIcon;
+        HandlePressedColor = EffectiveGlobalToken.ColorPrimaryActive;
         HandleBorderColor = EffectiveGlobalToken.ColorBorder;
     }
 

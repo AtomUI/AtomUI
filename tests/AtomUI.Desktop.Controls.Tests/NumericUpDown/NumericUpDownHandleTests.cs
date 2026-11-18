@@ -27,7 +27,7 @@ public class NumericUpDownHandleTests
     }
 
     [Fact]
-    public void Disabled_NumericUpDown_Hides_Floatable_Spinner_Handle()
+    public void Disabled_NumericUpDown_Keeps_The_Floatable_Spinner_Handle()
     {
         var numericUpDown = new AtomUINumericUpDown
         {
@@ -43,7 +43,8 @@ public class NumericUpDownHandleTests
                                              .OfType<ContentPresenter>()
                                              .Single(item => item.Name == "PART_SpinnerHandle");
 
-            spinnerHandle.Opacity.ShouldBe(0.0);
+            // A disabled input keeps its handle in view (Ant Design greys the handlers instead of hiding them).
+            spinnerHandle.Opacity.ShouldBe(1.0);
         });
     }
 

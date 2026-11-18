@@ -8,6 +8,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <UniformGrid
+                    Name="PART_ButtonsLayout"
                     Columns="1" 
                     Rows="2"
                     RowSpacing="1">
@@ -47,12 +48,21 @@
             <Setter Property="IconWidth" Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
             <Setter Property="IconHeight"
                     Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
+            <Setter Property="IconBrush" Value="{Binding $parent[atom:ButtonSpinner].HandleIconColor}" />
+        </Style>
+
+        <!-- The two half-height buttons sit inside the frame's border (official PrimeNG insets the button group by
+             1px), so their hover/pressed fill never paints over the input frame's outline. -->
+        <Style Selector="^ /template/ UniformGrid#PART_ButtonsLayout">
+            <Setter Property="Margin" Value="{Binding $parent[atom:ButtonSpinnerHandle].HandleContentMargin}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pointerover, ^ /template/ atom|IconButton#PART_DecreaseButton:pointerover">
             <Setter Property="IconBrush"
                     Value="{Binding $parent[atom:ButtonSpinner].HandleHoverColor}" />
+            <Setter Property="Background"
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleHoverBg}" />
         </Style>
         
         <Style

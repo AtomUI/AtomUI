@@ -23,9 +23,11 @@
         <Setter Property="FilledHandleBg" Value="{atom:NumericUpDownTokenResource FilledHandleBg}" />
         <Setter Property="HandleBorderColor" Value="{atom:NumericUpDownTokenResource HandleBorderColor}" />
         <Setter Property="HandleHoverColor" Value="{atom:NumericUpDownTokenResource HandleHoverColor}" />
+        <Setter Property="HandleHoverBg" Value="{atom:NumericUpDownTokenResource HandleHoverBg}" />
+        <Setter Property="HandleIconColor" Value="{atom:NumericUpDownTokenResource HandleIconColor}" />
         <Setter Property="HandleActiveBg" Value="{atom:NumericUpDownTokenResource HandleActiveBg}" />
         <Setter Property="HandleIconSize" Value="{atom:NumericUpDownTokenResource HandleIconSize}" />
-        <Setter Property="HandlePressedColor" Value="{atom:NumericUpDownTokenResource ColorPrimaryActive}" />
+        <Setter Property="HandlePressedColor" Value="{atom:NumericUpDownTokenResource HandlePressedColor}" />
         <Setter Property="SpinnerHandleWidth" Value="{atom:NumericUpDownTokenResource HandleWidth}" />
         <Style Selector="^[IsButtonSpinnerFloatable=False]">
             <Setter Property="Template">

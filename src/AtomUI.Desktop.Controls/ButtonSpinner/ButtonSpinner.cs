@@ -193,6 +193,12 @@ public partial class ButtonSpinner : Spinner,
     internal static readonly StyledProperty<IBrush?> HandleHoverColorProperty =
         AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleHoverColor));
 
+    internal static readonly StyledProperty<IBrush?> HandleHoverBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleHoverBg));
+
+    internal static readonly StyledProperty<IBrush?> HandleIconColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleIconColor));
+
     internal static readonly StyledProperty<IBrush?> HandleActiveBgProperty =
         AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleActiveBg));
 
@@ -241,6 +247,18 @@ public partial class ButtonSpinner : Spinner,
     {
         get => GetValue(HandleHoverColorProperty);
         set => SetValue(HandleHoverColorProperty, value);
+    }
+
+    internal IBrush? HandleHoverBg
+    {
+        get => GetValue(HandleHoverBgProperty);
+        set => SetValue(HandleHoverBgProperty, value);
+    }
+
+    internal IBrush? HandleIconColor
+    {
+        get => GetValue(HandleIconColorProperty);
+        set => SetValue(HandleIconColorProperty, value);
     }
 
     internal IBrush? HandleActiveBg

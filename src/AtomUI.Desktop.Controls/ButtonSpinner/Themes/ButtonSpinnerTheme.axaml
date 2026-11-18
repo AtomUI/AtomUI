@@ -14,9 +14,11 @@
         <Setter Property="FilledHandleBg" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
         <Setter Property="HandleBorderColor" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}" />
         <Setter Property="HandleHoverColor" Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+        <Setter Property="HandleHoverBg" Value="{atom:ButtonSpinnerTokenResource HandleHoverBg}" />
+        <Setter Property="HandleIconColor" Value="{atom:ButtonSpinnerTokenResource HandleIconColor}" />
         <Setter Property="HandleActiveBg" Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
         <Setter Property="HandleIconSize" Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
-        <Setter Property="HandlePressedColor" Value="{atom:ButtonSpinnerTokenResource ColorPrimaryActive}" />
+        <Setter Property="HandlePressedColor" Value="{atom:ButtonSpinnerTokenResource HandlePressedColor}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ButtonSpinnerDecoratedBox

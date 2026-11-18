@@ -2,6 +2,22 @@
 
 本文档记录 ButtonSpinner 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Changed
+  - 手势按钮的静息图标色、悬停背景改为自有槽位 `HandleIconColor` / `HandleHoverBg`，按下图标色 `HandlePressedColor` 由
+    主题常量改为自有槽位（Ant 取值不变：全局 `ColorIcon` / 透明 / `ColorPrimaryActive`），两个槽位定义在
+    `AbstractButtonSpinnerToken`，NumericUpDown 共享。
+  - 手柄内两个半高按钮按输入框边框宽度在外侧内缩（`ButtonSpinnerHandle.HandleContentMargin`，官方 PrimeNG 的
+    inset 1px）：按下/悬停底色不再盖住输入框边框与圆角。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGButtonSpinnerTokens` / `PrimeNGNumericUpDownTokens`（各六个算法）：按
+    `@primeuix/themes` 3.1.1 `inputnumber.button` 取 rest 透明、hover surface.100/800、active surface.200/700、
+    图标 surface.400 / 500-300 / 600-200、无分隔线、宽 2.25rem（36）。
+  - 手柄箭头图标在 PrimeNG 下取 7.875（官方 `form.field.font.size` = 0.875rem 即 14，按产品口径连续缩小两次四分之一：
+    14 → 10.5 → 7.875）；Ant 基线仍是 `handleFontSize = fontSize / 2`，保持不变。
+  - 禁用态不再隐藏手柄：`ButtonSpinnerDecoratedBox` 在禁用时保持 `HandleOpacity = 1`（Ant Design 也是禁用但可见），
+    由手柄自身的 `:disabled` 样式呈现禁用底色与图标色。
+
 ## 2026-11-11
 
 - Theme

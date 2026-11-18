@@ -1,19 +1,19 @@
 ---
 name: atomui-commit-msg
-description: Generate a single-line commit message for AtomUI by reading the project's git staged area and recent commit style. Use when the user asks for a commit message, says "msg", "commit msg", "写提交信息", "创建 commit", "创建commit", or wants one-line text that covers all staged changes. Output should match the repository's existing commit style and summarize all staged changes in one line.
+description: Generate a commit message for AtomUI by reading the project's git staged area and recent commit style. Use when the user asks for a commit message, says "msg", "commit msg", "写提交信息", "创建 commit", "创建commit", or wants text that covers all staged changes. Output is a short English title (≤72 chars, what changed) plus an optional concise bullet body (why / impact / key details); Chinese only on explicit request.
 ---
 
 # AtomUI Commit Message Generation Skill
 
 ## Goals
 
-**1. Accurately summarize the commit** — Generate a one-line commit message based on the current **git staging area**, covering all staged changes.
+**1. Accurately summarize the commit** — Generate a commit message based on the current **git staging area**, covering all staged changes: a short title stating what changed, plus an optional body for why / impact / key details.
 
 **2. Stay consistent with repository style** — Match the repository's existing commit conventions rather than mechanically applying a template.
 
 ## Core Principle
 
-> A commit message is not a per-file listing of the diff — it is a compressed expression of the commit's intent. Read the staging area first, then summarize, then output one line.
+> A commit message is not a per-file listing of the diff — it is a compressed expression of the commit's intent. Read the staging area first, then summarize: the title answers *what*, the optional body answers *why / impact*.
 
 ## IMPORTANT: Trigger Conditions
 
@@ -41,9 +41,9 @@ Only include unstaged changes if the user explicitly requests it (e.g., "include
 
 Before generating a message, review recent commits to avoid producing a format inconsistent with the repository's conventions.
 
-### 3. Default to a single line of output
+### 3. Default to a short title, optional body
 
-Unless the user explicitly asks for an explanation or a body, the final response should be **one line of commit message only** — no analysis, bullet points, code blocks, or quotes.
+The deliverable is the **commit message itself**: a short header line stating what changed, followed by an optional concise body (blank line + up to 5 wrapped bullets) when there is genuinely extra context worth recording. Never output analysis, commentary, code blocks, or quotes around the message. Trivial commits stay title-only.
 
 ## Execution Steps
 
@@ -100,13 +100,13 @@ Notes:
 - If the repository already uses a more natural phrasing, prefer matching the existing style.
 - `gallery` is used as a type prefix in AtomUI (analogous to `site` in ant-design) for ShowCase / Gallery app changes.
 
-### Step 5: Generate one line
+### Step 5: Generate title + optional body
 
 The output must be:
 
-- **One line**
-- **Covering all staged changes**
-- **Concise**
+- **A header line** stating what changed (≤72 chars hard, ≤50 soft target)
+- **An optional body** (blank line + wrapped bullets, ≤5) for why / impact / key details
+- **Covering all staged changes** honestly across title + body
 - **Consistent with repository style**
 - **Ready to use as-is for the commit**
 
@@ -134,14 +134,16 @@ Examples:
 - `docs(Core): add three-tier architecture documentation`
 - `gallery: add QRCode showcase with comprehensive examples`
 - `chore(deps): bump Avalonia from 11.3.1 to 11.3.2`
-- `fix(Select): 修复多选模式下点击后下拉框意外关闭`
+- Chinese subject only on explicit request: `fix(Select): 修复多选模式下点击后下拉框意外关闭`
 
 ### Header rules
 
 - Use **imperative mood** — `add` / `fix` / `update`, not `added` / `fixed` / `updated`. For Chinese subjects, start with a verb: "修复" / "添加" / "调整".
 - Do **NOT** capitalize the first letter of an English subject.
 - Do **NOT** end with a period (`.` or `。`).
-- Keep the header line to **72 characters or fewer**.
+- Keep the header line to **72 characters or fewer**; soft target **≤50** so it stays scannable in `git log --oneline`.
+- The header answers **what changed** — never why / how / impact; push those into the body.
+- Do **NOT** chain extra facts into the header with `——`, `（）`/`()` asides, semicolons, or comma-spliced clauses; one change, one phrase.
 - Avoid vague terms like `WIP`, `misc`, `update files`.
 
 ### Type selection
@@ -178,11 +180,31 @@ When uncertain:
 - For multiple closely related controls, use comma-separated names: `Select,AutoComplete`
 - If no clear scope exists, it may be omitted
 
+### Body rules
+
+Add a body only when the title alone would lose information worth recording (root cause, motivation, impact scope, key trade-offs). Otherwise omit it — trivial commits stay title-only.
+
+- Format: one blank line after the header, then bullet lines starting with `- ` (a short paragraph is acceptable when prose reads better).
+- **At most 5 bullets**; wrap each line at **72 characters**.
+- Content: why (root cause / motivation), impact scope, notable decisions or follow-ups — not a restatement of the title.
+- Language: English by default, same as the header.
+
+Example:
+
+```text
+fix(NavMenu): center text in dark horizontal top-level items
+
+- dark branch missed the Padding=0 reset and inherited vertical
+  ItemContentPadding, shrinking the text viewport below the 46px
+  HorizontalLineHeight so glyphs sank to the line-box bottom
+- move the Padding=0 setter into the shared IsTopLevel=True scope
+```
+
 ## Language Rules
 
 - `type` and `scope` **MUST be English** (they are fixed keywords / identifiers)
-- `subject` and `body` **default to English; Chinese is also acceptable**
-- Use Chinese for the `subject` when the user is conversing in Chinese or explicitly requests it
+- `subject` and `body` **default to English regardless of the conversation language**
+- Use Chinese only when the user **explicitly requests** it for that commit (e.g. "用中文写提交信息")
 
 ## Layer Awareness
 
@@ -207,7 +229,7 @@ If staged changes include a mix of docs, styles, types, and small fixes:
 
 If the staging area contains clearly unrelated groups of changes:
 
-- Still produce an honest one-line message
+- Still produce an honest title-only message
 - Do not pretend these changes share a single specific purpose
 - Use a broad summary, e.g., `chore(controls): clean up styles, types and docs`
 
@@ -223,12 +245,12 @@ If the changes include a breaking API change:
 - Generating a message without reading `git diff --cached`
 - Guessing content based only on filenames
 - Describing only some files/changes while ignoring other staged content
-- Outputting multi-line explanations as the commit message
+- Outputting analysis or commentary around the message — the structured title + optional body itself is the deliverable
 - Breaking from established repository style just to fit a template
 - Writing headers longer than 72 characters unless truly unavoidable
 - Wrapping the final output in backticks, quotes, or code blocks
 - Do not push to the remote end unless explicitly requested
-- Do not add "Co-Authored-By: xxx" or information regarding other agents.
+- Do not add "Co-Authored-By: xxx" or information regarding other agents. Enforced by the `scripts/hooks/commit-msg` git hook (`core.hooksPath scripts/hooks`), which rejects AI/model attribution lines.
 
 ## Reference
 

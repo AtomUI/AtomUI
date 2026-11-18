@@ -37,6 +37,7 @@
         </Style>
 
         <Style Selector="^[MessageType=Information]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource InformationShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:MessageCardTokenResource ColorPrimary}" />
@@ -44,6 +45,7 @@
         </Style>
 
         <Style Selector="^[MessageType=Loading]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource LoadingShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:MessageCardTokenResource ColorPrimary}" />
@@ -51,6 +53,7 @@
         </Style>
 
         <Style Selector="^[MessageType=Error]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource ErrorShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:MessageCardTokenResource ColorError}" />
@@ -58,6 +61,7 @@
         </Style>
 
         <Style Selector="^[MessageType=Success]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource SuccessShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:MessageCardTokenResource ColorSuccess}" />
@@ -65,6 +69,7 @@
         </Style>
 
         <Style Selector="^[MessageType=Warning]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource WarningShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:MessageCardTokenResource ColorWarning}" />
@@ -100,7 +105,8 @@
         <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource ContentPadding}" />
         <Setter Property="CornerRadius" Value="{atom:MessageCardTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource BoxShadows}" />
+        <!-- The card shadow comes from the slot of the current MessageType (every value has one); there is no
+             severity-less base shadow. -->
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="Margin" Value="0" />

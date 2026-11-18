@@ -95,9 +95,39 @@ public sealed partial class NotificationCardToken : AbstractControlDesignToken
     /// </summary>
     public partial Thickness NotificationBottomMargin { get; set; }
 
+    /// <summary>
+    /// 提醒框默认阴影（Default 类型回退值）
+    /// </summary>
+    public partial BoxShadows RestingShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框信息样式阴影
+    /// </summary>
+    public partial BoxShadows InformationShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框成功样式阴影
+    /// </summary>
+    public partial BoxShadows SuccessShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框警告样式阴影
+    /// </summary>
+    public partial BoxShadows WarningShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框错误样式阴影
+    /// </summary>
+    public partial BoxShadows ErrorShadows { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
+        RestingShadows     = EffectiveGlobalToken.BoxShadows;
+        InformationShadows = EffectiveGlobalToken.BoxShadows;
+        SuccessShadows     = EffectiveGlobalToken.BoxShadows;
+        WarningShadows     = EffectiveGlobalToken.BoxShadows;
+        ErrorShadows       = EffectiveGlobalToken.BoxShadows;
 
         // 间距直接取全局 Token 的同名值，不再做控件级缩放：
         //   卡片内边距         = paddingMD(纵向) / paddingLG(横向)

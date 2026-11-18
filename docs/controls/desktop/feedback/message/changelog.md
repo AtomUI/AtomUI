@@ -2,6 +2,15 @@
 
 本文档记录 Message 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Changed
+  - 卡片阴影按 severity 拆分为 `MessageCardToken` 自有槽位（`Information` / `Success` / `Warning` / `Error` / `Loading`Shadows），
+    `MessageCardTheme` 的每个 `MessageType` 样式块改绑对应槽位；不存在无 severity 的兜底阴影，基础 Shadow setter 已移除。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGMessageCardTokens`（六个算法）：severity 阴影按官方 `@primeuix/themes` 3.1.1
+    `message` / `toast` 取 `0 4 8 0` 的 blue / green / yellow / red 500 档 4% 单层，`Loading`（AtomUI 独有）取 neutral。
+    Ant Design 基线下五个槽位同为全局 `BoxShadows`，渲染不变。
+
 ## 2026-11-08
 
 - Theme / Token

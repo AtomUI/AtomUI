@@ -19,9 +19,16 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 图标尺寸。 | `MessageIconSize` |
 | 间距与布局 | 卡片 padding、图标间距、宿主边距。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ContentBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `InformationShadows`、`SuccessShadows`、`WarningShadows`、`ErrorShadows`、`LoadingShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 阴影按 severity 分槽
+
+卡片阴影由与当前 `MessageType` 对应的自有槽位提供（`Information` / `Success` / `Warning` / `Error` / `Loading`），
+没有无 severity 的兜底槽：`MessageType` 的每个取值都有样式块，基础 Shadow setter 会被遮蔽而非生效。Ant Design 基线
+下五个槽位同为全局 `BoxShadows`，渲染与引入槽位前一致；设计语言算法（如 `AtomUI.Themes.PrimeNG` 的
+`PrimeNGMessageCardTokens`）可按 severity 覆盖（PrimeNG 为 `0 4 8 0` 的 severity 彩色 4% 阴影，`Loading` 取 neutral）。
 
 ### 主题读取与裁决
 

@@ -29,6 +29,31 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
     public partial Thickness MessageIconMargin { get; set; }
     public partial Thickness MessageTopMargin { get; set; }
 
+    /// <summary>
+    /// 提醒框信息样式阴影
+    /// </summary>
+    public partial BoxShadows InformationShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框成功样式阴影
+    /// </summary>
+    public partial BoxShadows SuccessShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框警告样式阴影
+    /// </summary>
+    public partial BoxShadows WarningShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框错误样式阴影
+    /// </summary>
+    public partial BoxShadows ErrorShadows { get; set; }
+
+    /// <summary>
+    /// 提醒框加载样式阴影
+    /// </summary>
+    public partial BoxShadows LoadingShadows { get; set; }
+
     public MessageCardToken()
 
     {
@@ -37,6 +62,13 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
+        // Every MessageType has a severity shadow slot, so there is no resting shadow: the theme sets the card shadow
+        // from the slot matching the current MessageType.
+        InformationShadows  = EffectiveGlobalToken.BoxShadows;
+        SuccessShadows      = EffectiveGlobalToken.BoxShadows;
+        WarningShadows      = EffectiveGlobalToken.BoxShadows;
+        ErrorShadows        = EffectiveGlobalToken.BoxShadows;
+        LoadingShadows      = EffectiveGlobalToken.BoxShadows;
         ContentBg = EffectiveGlobalToken.ColorBgElevated;
         ContentPadding = new Thickness(
             (EffectiveGlobalToken.ControlHeightLG -

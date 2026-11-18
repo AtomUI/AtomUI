@@ -117,7 +117,7 @@
         <Setter Property="Background" Value="{atom:NotificationCardTokenResource NotificationBg}" />
         <Setter Property="Padding" Value="{atom:NotificationCardTokenResource NotificationPadding}" />
         <Setter Property="CornerRadius" Value="{atom:NotificationCardTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource BoxShadows}" />
+        <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource RestingShadows}" />
 
         <Style Selector="^ /template/ Border#Frame">
             <Setter Property="Margin" Value="0" />
@@ -141,6 +141,7 @@
         </Style>
 
         <Style Selector="^[NotificationType=Information]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource InformationShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:NotificationCardTokenResource ColorPrimary}" />
@@ -148,6 +149,7 @@
         </Style>
 
         <Style Selector="^[NotificationType=Error]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource ErrorShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:NotificationCardTokenResource ColorError}" />
@@ -155,6 +157,7 @@
         </Style>
 
         <Style Selector="^[NotificationType=Success]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource SuccessShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:NotificationCardTokenResource ColorSuccess}" />
@@ -162,6 +165,7 @@
         </Style>
 
         <Style Selector="^[NotificationType=Warning]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource WarningShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
                         Value="{atom:NotificationCardTokenResource ColorWarning}" />

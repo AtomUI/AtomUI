@@ -2,6 +2,15 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-17
+
+- Changed
+  - 卡片阴影按 severity 拆分为 `NotificationCardToken` 自有槽位（`RestingShadows` + `Information` / `Success` / `Warning` /
+    `Error`Shadows），`NotificationCardTheme` 改绑；`NotificationType.Default` 用 `RestingShadows` 兜底。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGNotificationCardTokens`（六个算法）：`RestingShadows` 取官方 `overlay.popover.shadow`，
+    severity 取 `0 4 8 0` 彩色 4%（官方 `secondary` / `contrast` 无对应 `NotificationType`，不映射）。
+    Ant Design 基线下五个槽位同为全局 `BoxShadows`，渲染不变。
+
 ## 2026-11-08
 
 - Theme / Token

@@ -46,10 +46,11 @@ public partial class FeedbackFamilyEffectTests
 
         var type = token switch
         {
-            "ColorError" => MessageType.Error,
-            "ColorSuccess" => MessageType.Success,
-            "ColorWarning" => MessageType.Warning,
-            _ => MessageType.Information
+            "ColorError" or "ErrorShadows"       => MessageType.Error,
+            "ColorSuccess" or "SuccessShadows"   => MessageType.Success,
+            "ColorWarning" or "WarningShadows"   => MessageType.Warning,
+            "LoadingShadows"                     => MessageType.Loading,
+            _                                    => MessageType.Information
         };
         Action<Control>? arrange = token is "SelectionBackground" or "SelectionForeground"
             ? static card => card.GetVisualDescendants().OfType<Avalonia.Controls.SelectableTextBlock>().First().SelectAll()
@@ -127,10 +128,12 @@ public partial class FeedbackFamilyEffectTests
 
         var type = token switch
         {
-            "ColorError" => NotificationType.Error,
-            "ColorSuccess" => NotificationType.Success,
-            "ColorWarning" => NotificationType.Warning,
-            _ => NotificationType.Information
+            "ColorError" or "ErrorShadows"       => NotificationType.Error,
+            "ColorSuccess" or "SuccessShadows"   => NotificationType.Success,
+            "ColorWarning" or "WarningShadows"   => NotificationType.Warning,
+            // The resting shadow only paints a notification with no severity.
+            "RestingShadows"                     => NotificationType.Default,
+            _                                    => NotificationType.Information
         };
         var progress = token is "NotificationProgressBg" or "NotificationProgressHeight" or "NotificationProgressMargin"
             or "NotificationProgressTrackBg" or "ColorFillQuaternary" or "ColorPrimaryBorderHover" or "BorderRadiusLG";

@@ -106,24 +106,7 @@
             </Style>
         </Style>
 
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="DefaultHeaderPadding"
-                    Value="{atom:CollapseTokenResource CollapseHeaderPaddingLG}" />
-            <Setter Property="DefaultContentPadding"
-                    Value="{atom:CollapseTokenResource CollapseContentPaddingLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="DefaultHeaderPadding"
-                    Value="{atom:CollapseTokenResource HeaderPadding}" />
-            <Setter Property="DefaultContentPadding"
-                    Value="{atom:CollapseTokenResource ContentPadding}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="DefaultHeaderPadding"
-                    Value="{atom:CollapseTokenResource CollapseHeaderPaddingSM}" />
-            <Setter Property="DefaultContentPadding"
-                    Value="{atom:CollapseTokenResource CollapseContentPaddingSM}" />
-        </Style>
+        <Setter Property="UseItemPaddingTokenResources" Value="True" />
 
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">

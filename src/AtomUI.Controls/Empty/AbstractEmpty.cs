@@ -268,7 +268,7 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
         }
     }
 
-    private bool TryResolvePresetColors(out PresetImageColors colors)
+    private protected virtual bool TryResolvePresetColors(out PresetImageColors colors)
     {
         if (BorderColor is ISolidColorBrush border &&
             BorderColorSecondary is ISolidColorBrush borderSecondary &&
@@ -282,6 +282,14 @@ public abstract class AbstractEmpty : TemplatedControl, ISizeTypeAware
 
         colors = default;
         return false;
+    }
+
+    private protected void RefreshPresetImage()
+    {
+        if (this.IsAttachedToVisualTree() && Image is null && ImagePath is null && ImageSource is null && PresetImage.HasValue)
+        {
+            SetupImage();
+        }
     }
 
     private void SetupImage()

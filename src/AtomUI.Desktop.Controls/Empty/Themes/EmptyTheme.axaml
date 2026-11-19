@@ -72,11 +72,7 @@
         
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="BorderColor" Value="{atom:EmptyTokenResource ColorFill}"/>
-        <Setter Property="BorderColorSecondary" Value="{atom:EmptyTokenResource ColorBorderSecondary}"/>
-        <Setter Property="ShadowColor" Value="{atom:EmptyTokenResource ColorFillTertiary}"/>
-        <Setter Property="ContentColor" Value="{atom:EmptyTokenResource ColorFillQuaternary}"/>
-        <Setter Property="BgColor" Value="{atom:EmptyTokenResource ColorBgElevated}"/>
+        <Setter Property="UsePresetPaletteTokenResources" Value="True"/>
         
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ ContentPresenter#Description">

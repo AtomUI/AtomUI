@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
@@ -5,6 +6,12 @@ using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
+
+internal static class SkeletonShimmerResources
+{
+    public static SkeletonShimmerColorTokenResourceKeys ShimmerColorTokenResourceKeys { get; } =
+        new(SkeletonTokenKind.GradientFromColor, SkeletonTokenKind.GradientToColor);
+}
 
 [ControlDesignToken]
 public sealed partial class SkeletonToken : AbstractSkeletonToken

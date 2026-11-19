@@ -7,9 +7,10 @@ using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.Utils;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
@@ -104,6 +105,7 @@ public partial class Space : AbstractSpace,
     #endregion
 
     private CompositeDisposable? _spacingBindings;
+    private OwnerTokenPropertyBindings? _spacingTokens;
     private readonly HashSet<Control> _semanticItemMarkerOwners = new();
     private BorderRenderHelper? _borderRenderHelper;
 
@@ -124,7 +126,7 @@ public partial class Space : AbstractSpace,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        ApplySpacingTokenBinding();
+        UpdateSpacingTokenBindings();
 
         if (SplitTemplate != null)
         {
@@ -137,6 +139,8 @@ public partial class Space : AbstractSpace,
         base.OnDetachedFromVisualTree(e);
         _spacingBindings?.Dispose();
         _spacingBindings = null;
+        _spacingTokens?.Dispose();
+        _spacingTokens = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -144,7 +148,7 @@ public partial class Space : AbstractSpace,
         base.OnPropertyChanged(change);
         if (change.Property == SizeTypeProperty)
         {
-            ApplySpacingTokenBinding();
+            UpdateSpacingTokenBindings();
         }
         else if (this.IsAttachedToVisualTree())
         {
@@ -192,7 +196,7 @@ public partial class Space : AbstractSpace,
     }
 
 
-    private void ApplySpacingTokenBinding()
+    private void UpdateSpacingTokenBindings()
     {
         _spacingBindings?.Dispose();
         _spacingBindings = null;
@@ -208,11 +212,23 @@ public partial class Space : AbstractSpace,
             CustomizableSizeType.Large  => SpaceTokenKind.GapLargeSize,
             _                           => SpaceTokenKind.GapSmallSize
         };
-        _spacingBindings = new CompositeDisposable
+        // The active key follows SizeType while both public spacing properties keep their own Template binding.
+        var tokens = _spacingTokens ??= new OwnerTokenPropertyBindings(this, 1, BindingPriority.Template);
+        var bindings = new CompositeDisposable(2);
+        try
         {
-            TokenResourceBinder.CreateControlTokenBinding(this, ItemSpacingProperty, tokenKind),
-            TokenResourceBinder.CreateControlTokenBinding(this, LineSpacingProperty, tokenKind)
-        };
+            var spacing = tokens.Observe(0, ControlTokenResourceKey.Own(GetType(), tokenKind));
+            bindings.Add(Bind(ItemSpacingProperty, spacing, BindingPriority.Template));
+            bindings.Add(Bind(LineSpacingProperty, spacing, BindingPriority.Template));
+            _spacingBindings = bindings;
+        }
+        catch
+        {
+            bindings.Dispose();
+            tokens.Dispose();
+            _spacingTokens = null;
+            throw;
+        }
     }
 
     private void HandleSplitTemplateChanged()

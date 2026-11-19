@@ -32,6 +32,7 @@ Space 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - Space 只拥有 GapSmallSize/GapMiddleSize/GapLargeSize；AddonBg/AddOnPadding* 属于独立 CompactSpaceAddOn，颜色、padding 与全局值均通过 Controls[CompactSpaceAddOn] 配置。
+- `Space` 挂载时观察当前尺寸档的一个间距 Token，为 `ItemSpacing` 和 `LineSpacing` 分别提供 Template 优先级的默认值。两项属性可独立覆盖，卸载时释放监听。
 
 ## 4. 控件家族影响
 

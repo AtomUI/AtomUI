@@ -1,10 +1,14 @@
+using System.Globalization;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace AtomUI.Controls.Commons;
 
@@ -52,6 +56,9 @@ internal class TimelineIndicator : TemplatedControl
     internal static readonly StyledProperty<double> RelativeLineHeightProperty =
         AvaloniaProperty.Register<TimelineIndicator, double>(nameof(RelativeLineHeight));
 
+    internal static readonly StyledProperty<TimelineIndicatorTokenResourceKeys?> IndicatorTokenResourceKeysProperty =
+        AvaloniaProperty.Register<TimelineIndicator, TimelineIndicatorTokenResourceKeys?>(nameof(IndicatorTokenResourceKeys));
+
     internal static readonly DirectProperty<TimelineIndicator, bool> IsFirstProperty =
         AvaloniaProperty.RegisterDirect<TimelineIndicator, bool>(nameof(IsFirst),
             o => o.IsFirst,
@@ -70,8 +77,7 @@ internal class TimelineIndicator : TemplatedControl
     internal static readonly StyledProperty<IBrush?> DefaultIndicatorColorProperty =
         AvaloniaProperty.Register<TimelineIndicator, IBrush?>(nameof(DefaultIndicatorColor));
 
-    // The node colour: the item's IndicatorColor, or the theme's DefaultIndicatorColor (ColorPrimary) when the item has none.
-    // Recomputed when either changes, so theme changes reach uncoloured nodes.
+    // The item colour takes precedence over the theme's default for the dot and icon.
     internal static readonly DirectProperty<TimelineIndicator, IBrush?> EffectiveIndicatorColorProperty =
         AvaloniaProperty.RegisterDirect<TimelineIndicator, IBrush?>(nameof(EffectiveIndicatorColor),
             o => o.EffectiveIndicatorColor);
@@ -106,6 +112,15 @@ internal class TimelineIndicator : TemplatedControl
         set => SetValue(DefaultIndicatorColorProperty, value);
     }
 
+    internal TimelineIndicatorTokenResourceKeys? IndicatorTokenResourceKeys
+    {
+        get => GetValue(IndicatorTokenResourceKeysProperty);
+        set => SetValue(IndicatorTokenResourceKeysProperty, value);
+    }
+
+    private OwnerTokenSet? _defaultTokens;
+    private double _themeLineHeightRatio;
+    private IBrush? _themeIndicatorColor;
     private IBrush? _effectiveIndicatorColor;
 
     internal IBrush? EffectiveIndicatorColor
@@ -198,16 +213,13 @@ internal class TimelineIndicator : TemplatedControl
             IndicatorDotBorderWidthProperty,
             IndicatorDotSizeProperty,
             IndicatorTailWidthProperty);
-        TextElement.FontSizeProperty.Changed.AddClassHandler<TimelineIndicator>((indicator, args) =>
-        {
-            indicator.IndicatorMinHeight = args.GetNewValue<double>() * indicator.RelativeLineHeight;
-        });
+        TextElement.FontSizeProperty.Changed.AddClassHandler<TimelineIndicator>((indicator, _) => indicator.UpdateIndicatorMinHeight());
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        EffectiveIndicatorColor = IndicatorColor ?? DefaultIndicatorColor;
+        UpdateIndicatorColor();
         _rail          =   e.NameScope.Find<Border>("PART_Rail");
         _dot           =   e.NameScope.Find<Border>("PART_Dot");
         _iconHost      =   e.NameScope.Find<Border>("PART_IconHost");
@@ -218,18 +230,81 @@ internal class TimelineIndicator : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IndicatorColorProperty || change.Property == DefaultIndicatorColorProperty)
+        if (change.Property == IndicatorTokenResourceKeysProperty)
         {
-            EffectiveIndicatorColor = IndicatorColor ?? DefaultIndicatorColor;
+            UpdateIndicatorDefaultsTokenSubscription();
+        }
+        else if (change.Property == IndicatorColorProperty || change.Property == DefaultIndicatorColorProperty)
+        {
+            UpdateIndicatorColor();
         }
         else if (change.Property == RelativeLineHeightProperty)
         {
-            IndicatorMinHeight = RelativeLineHeight * TextElement.GetFontSize(this);
+            UpdateIndicatorMinHeight();
         }
         else if (change.Property == IndicatorIconProperty)
         {
             UpdatePseudoClasses();
         }
+    }
+
+    private void UpdateIndicatorDefaultsTokenSubscription()
+    {
+        _defaultTokens?.Dispose();
+        _defaultTokens = null;
+        if (IndicatorTokenResourceKeys is { } keys)
+        {
+            _defaultTokens = new OwnerTokenSet(this, 2, RefreshIndicatorDefaults);
+            _defaultTokens.SetResourceKey(0, keys.LineHeightRatio);
+            _defaultTokens.SetResourceKey(1, keys.NodeColor);
+        }
+        RefreshIndicatorDefaults();
+    }
+
+    private void RefreshIndicatorDefaults()
+    {
+        _themeLineHeightRatio = ReadLineHeightRatio(_defaultTokens?.GetValue(0));
+        _themeIndicatorColor = _defaultTokens?.GetValue(1) switch
+        {
+            IBrush brush => brush,
+            Color color => new ImmutableSolidColorBrush(color),
+            var value when ReferenceEquals(value, BindingOperations.DoNothing) => _themeIndicatorColor,
+            _ => null
+        };
+        UpdateIndicatorMinHeight();
+        UpdateIndicatorColor();
+    }
+
+    private double ReadLineHeightRatio(object? value)
+    {
+        if (value is double ratio)
+        {
+            return ratio;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _themeLineHeightRatio;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
+    private void UpdateIndicatorMinHeight()
+    {
+        var ratio = _defaultTokens is null || IsSet(RelativeLineHeightProperty) ? RelativeLineHeight : _themeLineHeightRatio;
+        IndicatorMinHeight = ratio * TextElement.GetFontSize(this);
+    }
+
+    private void UpdateIndicatorColor()
+    {
+        var fallback = _defaultTokens is null || IsSet(DefaultIndicatorColorProperty) ? DefaultIndicatorColor : _themeIndicatorColor;
+        EffectiveIndicatorColor = IndicatorColor ?? fallback;
     }
 
     private void UpdatePseudoClasses()
@@ -328,3 +403,5 @@ internal class TimelineIndicator : TemplatedControl
         return finalSize;
     }
 }
+
+internal sealed record TimelineIndicatorTokenResourceKeys(object LineHeightRatio, object NodeColor);

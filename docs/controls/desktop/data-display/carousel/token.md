@@ -36,6 +36,8 @@ Carousel 的控件专项模型通过 Theme 消费 Token：
 `ArrowOffset`（antd `arrowOffset`，默认 `SpacingXS` 8px）是切换箭头与 Carousel 边缘的距离；此前箭头错误地使用分页指示器的
 `PaginationOffset`（12px）。`ArrowOpacity` 是静止箭头的不透明度（AtomUI 扩展，默认 0.2；antd 固定 0.4），悬停时完全不透明。
 
+轮播成组读取 `ArrowOffset` 和 `PaginationOffset`。两项值分别计算箭头与分页边距，模板消费有效边距。分页换边时两处输出按同一方向更新。
+
 主题读法：Carousel 以 `CarouselTokenResource` 读取全局 Token，无 identity 的分页指示器同样读 Carousel；`CarouselNavButton` 保持自己的
 identity（箭头颜色跟随 `Controls[CarouselNavButton].ColorBgContainer`），箭头尺寸与不透明度读 Carousel 的 Own Token；`CarouselPage`
 是 Token owner 透明的页面容器，页面内容保持 Carousel 为 owner。

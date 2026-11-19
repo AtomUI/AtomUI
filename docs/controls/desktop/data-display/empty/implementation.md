@@ -144,11 +144,11 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 
 ### 8.1 图片计算与结果提交
 
-来源和内部颜色属性是输入，renderer 的 `Source` / `Path` 是输出。计算和提交必须分开，遵守下列顺序：
+图片来源与配色是输入，renderer 的 `Source` / `Path` 是输出。计算与提交分开，按下列顺序执行。
 
 1. 执行图片来源互斥校验（`Image`、`PresetImage`、`ImagePath`、`ImageSource`，只统计本地值、样式值、模板值与绑定提供的非空值，默认值不计）；模板 part 尚不存在或模板不含 `PART_SvgImage` 时不写入 renderer。
    提交优先级为 `Image`（由模板渲染，清空 svg）、`ImagePath`、`ImageSource`、`PresetImage`。
-2. 对预设图形，先检查 `BorderColor`、`BorderColorSecondary`、`ShadowColor`、`ContentColor`、`BgColor` 是否齐备。
+2. 对预设图形，先检查边框、次级边框、阴影、内容与背景颜色是否齐备。桌面默认主题一次读取整组资源，保留已有样式覆盖。替换主题继续使用共享的画刷入口。
    任一资源暂缺时保留已有 `Source` / `Path`，首次没有结果时保持无图，不把暂缺转换成取消图片。
 3. 资源齐备后完成背景叠色计算，由 `BuiltInImageBuilder` 生成完整 SVG 字符串，再清理旧 `Path` 并提交到 `Source`。
    禁止先把 `Source` 设为 `null` 再检查画刷或生成结果。
@@ -156,7 +156,7 @@ Empty 的交互事件应从输入源收敛到控件级语义事件：
 5. 三种来源均为 `null` 时清空 `Source` 与 `Path`，保证主动取消图片后不残留旧图。
 
 预设图形的 SVG 字符串由 `BuiltInImageBuilder.GetPresetImage(preset, colors)` 按（预设，五个画刷颜色）缓存，容量 32 项，满时清空；叠色与拼接只在未命中时执行。
-缓存键取同步时控件持有的颜色，不订阅主题；挂树时重新同步，保证主题切换后挂回的实例使用当前颜色。
+SVG 缓存键取同步时使用的颜色。桌面仅在处理预设图片时创建一组主题资源观察，整组更新后提交一次，离开逻辑树时释放。重新挂树时按当前作用域读取。
 
 提交必须幂等：目标 `Source` / `Path` 与当前结果相同时不写入，也不经过 `Source=null` 的中间状态。同步不替换模板节点，
 不额外保存图片来源副本，不引入计时器、Dispatcher 延时、重试或强制刷新入口。

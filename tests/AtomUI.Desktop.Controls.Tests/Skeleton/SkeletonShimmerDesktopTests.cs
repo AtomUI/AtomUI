@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Animation.Easings;
@@ -143,8 +144,10 @@ public class SkeletonShimmerDesktopTests
         line.MotionEasingCurve.ShouldBeNull();
         line.EffectiveShimmerEasing.ShouldBeOfType<SplineEasing>().X1.ShouldBe(0.25);
         line.IsMotionEnabled.ShouldBeTrue();
-        var from = line.ShimmerFromColor.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull();
-        var to   = line.ShimmerToColor.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull();
+        line.TryFindResource(SkeletonTokenKind.GradientFromColor, line.ActualThemeVariant, out var fromResource).ShouldBeTrue();
+        line.TryFindResource(SkeletonTokenKind.GradientToColor, line.ActualThemeVariant, out var toResource).ShouldBeTrue();
+        var from = fromResource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull();
+        var to   = toResource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull();
         from.Color.ShouldNotBe(to.Color);
         // The band's base colour is the blocks' own background, so a resting frame and the band edges match.
         from.Color.ShouldBe(((ISolidColorBrush)line.Background!).Color);

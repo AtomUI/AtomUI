@@ -39,9 +39,9 @@ Timeline 的控件专项模型通过 Theme 消费 Token：
 - `IndicatorMiddleModeMargin` 用于 Vertical 双侧布局，不承载 Alternate 奇偶状态。
 - Horizontal 内容与轴线之间的 gap 直接使用 Timeline 的有效 `UniformlyPaddingXS`，不为同一全局间距复制 Timeline 专属 Token。
 - `TimelineItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），条目与无 identity 的 `TimelineIndicator` 以
-  `TimelineTokenResource` 读取：`Controls[Timeline]` 作用于节点、连接线、间距与默认节点色（`ColorPrimary`）。
-- 未设置 `IndicatorColor` 的节点使用主题的 `DefaultIndicatorColor`，并在主题变化时随 `ColorPrimary` 重算（此前模板应用时一次性
-  复制，之后不再跟随 Token）；条目 `Padding`（`ItemPaddingBottom*`）变化会重新测量。
+  Timeline 的资源键读取节点、连接线、间距与默认节点色。
+- 桌面节点通过同一 `OwnerTokenSet` 读取 `RelativeLineHeight` 与 `ColorPrimary`，并按当前字号更新节点最小高度。
+  条目设置的 `IndicatorColor` 优先。条目 `Padding`（`ItemPaddingBottom*`）变化会重新测量。
 - antd 6.7 Timeline 不再为最后一项设置内容最小高度，原 `LastItemContentMinHeight`（从未被消费）已删除。
 - `IndicatorSize`、`IndicatorDotSize`、`IndicatorDotBorderWidth`、`IndicatorTailWidth` 和 `IndicatorTailColor` 同时服务 Vertical 与 Horizontal renderer。
 

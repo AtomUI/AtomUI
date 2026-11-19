@@ -38,8 +38,7 @@ Separator 的控件专项模型通过 Theme 消费 Token：
   尺寸的外边距。因此中号、小号带标题时分别是 `HorizontalMarginBlock` / `HorizontalMarginBlockSM`。
 - `TitleFontWeight` 是非 Plain 标题的字重，默认 `Medium`（500）。它是 AtomUI 扩展：antd Divider 带文字时字重固定为 500，没有对应 Token；
   Plain 标题为常规字重、`FontSize`。
-- `TextPaddingInline`、`OrientationMarginPercent` 绑定到内部属性并标记 `AffectsArrange`，`VerticalMarginInline` 标记 `AffectsMeasure`，
-  主题或 `Controls[Separator]` 变化后立即重新排布。
+- 桌面主题成组读取三个布局 Own Token。带标题的水平分隔线按 `TextPaddingInline` 和 `OrientationMarginPercent` 重排，竖向分隔线按 `VerticalMarginInline` 重新测量。公开 `OrientationMargin` 仍可覆盖标题的边缘距离。
 - 线色 `ColorSplit`、线宽 `LineWidth`、标题色 `ColorTextHeading`、标题字号 `FontSizeLG` / `FontSize` 经 `SeparatorTokenResource` 读取，
   `Controls[Separator]` 覆盖生效。
 - `CustomizableSizeType.Custom` 不引入第四组间距 Token。Theme 使用 `HorizontalMarginBlock` 作为基础回退值，并把最终 `Margin` 的接管权留给实例或 owner-scoped Style。

@@ -36,8 +36,7 @@
         <Setter Property="TitleColor" Value="{atom:SeparatorTokenResource ColorTextHeading}" />
         <Setter Property="LineColor" Value="{atom:SeparatorTokenResource ColorSplit}" />
         
-        <Setter Property="TextPaddingInline" Value="{atom:SeparatorTokenResource TextPaddingInline}" />
-        <Setter Property="OrientationMarginPercent" Value="{atom:SeparatorTokenResource OrientationMarginPercent}" />
+        <Setter Property="UseSeparatorLayoutTokenResources" Value="True" />
         <Setter Property="LineWidth" Value="{atom:SeparatorTokenResource LineWidth}" />
         
         <Style Selector="^[IsPlain=True]">
@@ -86,7 +85,6 @@
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             
-            <Setter Property="VerticalMarginInline" Value="{atom:SeparatorTokenResource VerticalMarginInline}"/>
         </Style>
         
     </ControlTheme>

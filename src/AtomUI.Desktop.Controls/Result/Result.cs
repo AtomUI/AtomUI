@@ -1,11 +1,17 @@
+using System.Globalization;
 using System.Reactive.Disposables;
+using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -13,26 +19,48 @@ using IconControl = AtomUI.Controls.Icon;
 
 public partial class Result : AbstractResult
 {
-    internal static readonly StyledProperty<double> StatusIconSizeProperty =
-        AvaloniaProperty.Register<Result, double>(nameof(StatusIconSize), double.NaN);
+    private const int HeaderRatioIndex = 0;
+    private const int SubHeaderRatioIndex = 1;
+    private const int IconSizeIndex = 2;
+    private const int InfoColorIndex = 3;
+    private const int SuccessColorIndex = 4;
+    private const int WarningColorIndex = 5;
+    private const int ErrorColorIndex = 6;
 
-    internal static readonly StyledProperty<IBrush?> StatusIconBrushProperty =
-        AvaloniaProperty.Register<Result, IBrush?>(nameof(StatusIconBrush));
+    private static readonly object[] s_styleTokenKeys =
+    [
+        ControlTokenResourceKey.Global(ResultTokens.Identity, SharedTokenKind.RelativeLineHeightHeading3),
+        ControlTokenResourceKey.Global(ResultTokens.Identity, SharedTokenKind.RelativeLineHeight),
+        ResultTokenKind.StatusIconSize,
+        ResultTokenKind.ResultInfoIconColor,
+        ResultTokenKind.ResultSuccessIconColor,
+        ResultTokenKind.ResultWarningIconColor,
+        ResultTokenKind.ResultErrorIconColor
+    ];
 
-    internal double StatusIconSize
+    internal static readonly StyledProperty<bool> UseResultPresentationTokenResourcesProperty =
+        AvaloniaProperty.Register<Result, bool>(nameof(UseResultPresentationTokenResources));
+
+    internal bool UseResultPresentationTokenResources
     {
-        get => GetValue(StatusIconSizeProperty);
-        set => SetValue(StatusIconSizeProperty, value);
+        get => GetValue(UseResultPresentationTokenResourcesProperty);
+        set => SetValue(UseResultPresentationTokenResourcesProperty, value);
     }
 
-    internal IBrush? StatusIconBrush
-    {
-        get => GetValue(StatusIconBrushProperty);
-        set => SetValue(StatusIconBrushProperty, value);
-    }
+    internal double StatusIconSize { get; private set; } = double.NaN;
+    internal IBrush? StatusIconBrush { get; private set; }
 
     private ContentPresenter? _statusIconPresenter;
     private CompositeDisposable? _statusIconValues;
+    private OwnerTokenSet? _styleTokens;
+    private double _headerLineHeightRatio;
+    private double _subHeaderLineHeightRatio;
+
+    private protected override double HeaderLineHeightRatio =>
+        IsSet(RelativeHeaderLineHeightProperty) ? base.HeaderLineHeightRatio : _headerLineHeightRatio;
+
+    private protected override double SubHeaderLineHeightRatio =>
+        IsSet(RelativeSubHeaderLineHeightProperty) ? base.SubHeaderLineHeightRatio : _subHeaderLineHeightRatio;
 
     public Result()
     {
@@ -62,10 +90,117 @@ public partial class Result : AbstractResult
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == StatusIconSizeProperty ||
-            change.Property == StatusIconBrushProperty)
+        if (change.Property == UseResultPresentationTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdatePresentationTokenSubscription();
+        }
+        else if (change.Property == StatusProperty && _styleTokens is not null)
+        {
+            RefreshPresentationDefaults();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdatePresentationTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _styleTokens?.Dispose();
+        _styleTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdatePresentationTokenSubscription()
+    {
+        if (UseResultPresentationTokenResources && _styleTokens is null)
+        {
+            _styleTokens = new OwnerTokenSet(this, s_styleTokenKeys.Length, RefreshPresentationDefaults);
+            for (var index = 0; index < s_styleTokenKeys.Length; ++index)
+            {
+                _styleTokens.SetResourceKey(index, s_styleTokenKeys[index]);
+            }
+        }
+        else if (!UseResultPresentationTokenResources && _styleTokens is not null)
+        {
+            _styleTokens.Dispose();
+            _styleTokens = null;
+        }
+        RefreshPresentationDefaults();
+    }
+
+    private void RefreshPresentationDefaults()
+    {
+        var header = ReadNumber(_styleTokens?.GetValue(HeaderRatioIndex), _headerLineHeightRatio, 0);
+        var subHeader = ReadNumber(_styleTokens?.GetValue(SubHeaderRatioIndex), _subHeaderLineHeightRatio, 0);
+        var size = ReadNumber(_styleTokens?.GetValue(IconSizeIndex), StatusIconSize, double.NaN);
+        var brush = ReadStatusBrush();
+        var headerChanged = !_headerLineHeightRatio.Equals(header);
+        var subHeaderChanged = !_subHeaderLineHeightRatio.Equals(subHeader);
+        var iconChanged = !StatusIconSize.Equals(size) || !Equals(StatusIconBrush, brush);
+
+        _headerLineHeightRatio = header;
+        _subHeaderLineHeightRatio = subHeader;
+        StatusIconSize = size;
+        StatusIconBrush = brush;
+
+        if (headerChanged)
+        {
+            ConfigureHeaderLineHeight();
+        }
+        if (subHeaderChanged)
+        {
+            ConfigureSubHeaderLineHeight();
+        }
+        if (iconChanged)
         {
             UpdateStatusIcon();
+        }
+    }
+
+    private IBrush? ReadStatusBrush()
+    {
+        var index = Status switch
+        {
+            ResultStatus.Info => InfoColorIndex,
+            ResultStatus.Success or ResultStatus.Waiting => SuccessColorIndex,
+            ResultStatus.Warning => WarningColorIndex,
+            ResultStatus.Error => ErrorColorIndex,
+            _ => -1
+        };
+        if (index < 0)
+        {
+            return null;
+        }
+
+        return _styleTokens?.GetValue(index) switch
+        {
+            IBrush brush => brush,
+            Color color => new ImmutableSolidColorBrush(color),
+            string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+            _ => null
+        };
+    }
+
+    private static double ReadNumber(object? value, double previous, double fallback)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : fallback;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return fallback;
         }
     }
 

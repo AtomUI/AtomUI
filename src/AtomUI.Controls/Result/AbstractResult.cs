@@ -262,13 +262,17 @@ public abstract class AbstractResult : ContentControl
         }
     }
 
-    private void ConfigureHeaderLineHeight()
+    private protected virtual double HeaderLineHeightRatio => RelativeHeaderLineHeight;
+
+    private protected virtual double SubHeaderLineHeightRatio => RelativeSubHeaderLineHeight;
+
+    private protected void ConfigureHeaderLineHeight()
     {
-        SetCurrentValue(HeaderLineHeightProperty, RelativeHeaderLineHeight * HeaderFontSize);
+        SetCurrentValue(HeaderLineHeightProperty, HeaderLineHeightRatio * HeaderFontSize);
     }
 
-    private void ConfigureSubHeaderLineHeight()
+    private protected void ConfigureSubHeaderLineHeight()
     {
-        SetCurrentValue(SubHeaderLineHeightProperty, RelativeSubHeaderLineHeight * SubHeaderFontSize);
+        SetCurrentValue(SubHeaderLineHeightProperty, SubHeaderLineHeightRatio * SubHeaderFontSize);
     }
 }

@@ -1,9 +1,12 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Resources;
+using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -204,7 +207,7 @@ public class EmptyObjectContentTests
         {
             var svg = empty.GetVisualDescendants().OfType<AvaloniaSvg>().Single();
             var lightSource = svg.Source.ShouldNotBeNull();
-            var lightBorder = ((ISolidColorBrush)empty.BorderColor!).Color;
+            var lightBorder = ReadPaletteColor(empty, SharedTokenKind.ColorFill);
             lightSource.ShouldBe(ExpectedDefault(empty));
 
             // Switch the theme while the empty is detached (its resource subscriptions are gone).
@@ -216,7 +219,7 @@ public class EmptyObjectContentTests
             Dispatcher.UIThread.RunJobs();
             empty.UpdateLayout();
 
-            ((ISolidColorBrush)empty.BorderColor!).Color.ShouldNotBe(lightBorder);
+            ReadPaletteColor(empty, SharedTokenKind.ColorFill).ShouldNotBe(lightBorder);
             var darkSource = empty.GetVisualDescendants().OfType<AvaloniaSvg>().Single().Source.ShouldNotBeNull();
             darkSource.ShouldNotBe(lightSource);
             darkSource.ShouldBe(ExpectedDefault(empty));
@@ -228,13 +231,20 @@ public class EmptyObjectContentTests
         }
     }
 
-    // Builds the default preset straight from the control's current colours, bypassing the cache.
+    // Builds the expected preset from the scoped resources independently of the renderer.
     private static string ExpectedDefault(AtomUIEmpty empty)
     {
-        var bg = ((ISolidColorBrush)empty.BgColor!).Color;
-        Color Resolve(IBrush? brush) => ColorUtils.OnBackground(((ISolidColorBrush)brush!).Color, bg);
+        var bg = ReadPaletteColor(empty, SharedTokenKind.ColorBgElevated);
+        Color Resolve(SharedTokenKind kind) => ColorUtils.OnBackground(ReadPaletteColor(empty, kind), bg);
         return BuiltInImageBuilder.BuildDefaultImage(
-            Resolve(empty.ShadowColor), Resolve(empty.BorderColor), Resolve(empty.BorderColorSecondary));
+            Resolve(SharedTokenKind.ColorFillTertiary), Resolve(SharedTokenKind.ColorFill), Resolve(SharedTokenKind.ColorBorderSecondary));
+    }
+
+    private static Color ReadPaletteColor(AtomUIEmpty empty, SharedTokenKind kind)
+    {
+        var key = ControlTokenResourceKey.Global(EmptyTokens.Identity, kind);
+        empty.TryFindResource(key, empty.ActualThemeVariant, out var value).ShouldBeTrue();
+        return value is Color color ? color : value.ShouldBeAssignableTo<ISolidColorBrush>()!.Color;
     }
 
     private static async Task ApplyAppearanceAsync(ThemeAppearance appearance)

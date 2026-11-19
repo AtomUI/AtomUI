@@ -28,7 +28,7 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 - EmptyToken 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
-预设图形的颜色绑定由 `EmptyTheme.axaml` 声明：
+桌面默认主题启用预设配色读取。使用预设图形时，`Empty` 用一组 `OwnerTokenSet` 读取下列 Effective Global Token，保留 `Empty` 的资源身份及作用域。
 
 | 内部颜色输入 | SharedToken |
 | --- | --- |
@@ -38,7 +38,7 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 | `ContentColor` | `ColorFillQuaternary` |
 | `BgColor` | `ColorBgElevated` |
 
-`AbstractEmpty` 消费这些输入进行颜色叠加并生成 SVG。资源暂缺、恢复和重新挂树的结果提交规则由
+`AbstractEmpty` 使用整组颜色进行叠加并生成 SVG。资源暂缺、恢复和重新挂树的结果提交规则由
 [图片计算与结果提交](implementation.md#81-图片计算与结果提交)统一定义；不通过新增 Token 或固定颜色保存图片状态。
 
 ## 4. 控件家族影响
@@ -69,6 +69,4 @@ Empty 的控件专项模型通过 Theme 消费 Token：
 
 ## 7. 有效 Token 与作用域边界
 
-预设图形的五个颜色输入与描述文字颜色使用 `EmptyTokenResource`，因此 `Controls[Empty]` 可独立覆盖图形
-和描述。Default 图片消费边框和次级边框，Simple 图片消费四级填充；背景参与颜色合成。自定义图片不受预设图形颜色
-Token 重绘。三档图片高度、描述间距与页脚间距保持 Active，默认尺寸及布局不变。
+预设图形的五个颜色输入与描述文字颜色均在 `Empty` 作用域解析，因此 `Controls[Empty]` 可独立覆盖图形和描述。描述文字颜色仍使用 `EmptyTokenResource`。Default 图片消费边框和次级边框，Simple 图片消费四级填充，背景参与颜色合成。自定义图片继续由调用方提供。三档图片高度、描述间距与页脚间距保持 Active，默认尺寸及布局不变。

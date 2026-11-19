@@ -25,6 +25,8 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+折叠项在自身作用域按尺寸档成组读标题和内容内边距。`Custom` 使用 `Middle` 的默认值。实例值优先于 owner 值，owner 值优先于 Token 默认值。
+
 Collapse 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。

@@ -84,9 +84,10 @@ Public API / ItemsSource / Command / Event
 - 兄弟分隔符生命周期：`BreadcrumbSeparatorManager` 依据条目数维护 N-1 个分隔符（`Breadcrumb` 在 `UpdateItemStates`
   末尾与集合变化时合并为一个可取消的 Dispatcher 更新）；每个分隔符是 `Breadcrumb` 的逻辑子级（经
   `AttachSeparatorLogicalChild`/`DetachSeparatorLogicalChild` 挂载）、`BreadcrumbItemsPanel` 的视觉子级，
-  `Content`/`ContentTemplate` 绑定到前一条目容器的 `Separator`/`SeparatorTemplate`，默认前景色与间距经
-  `TokenResourceBinder` 绑定 `SeparatorColor`/`SeparatorMargin`；模板重套用、条目清除或容器回收时先释放绑定，
-  再移除视觉与逻辑挂载。相同分隔符集合不重新挂载视觉节点，不重复触发布局失效；新增/删除项只修改差异。
+  `Content`/`ContentTemplate` 绑定到前一条目容器的 `Separator`/`SeparatorTemplate`。同一 Breadcrumb 的所有分隔符共用
+  `SeparatorColor` 和 `SeparatorMargin` 的资源监听，各自保留模板优先级和语义样式入口。模板重套用、条目清除或容器回收时
+  先释放对应绑定，再移除视觉与逻辑挂载。相同分隔符集合保持既有视觉节点，新增或删除项只修改差异。
+  自定义模板的内容框在行内垂直居中。箭头可使用 `RightOutlined`，以图标几何中心对齐整行。
   owner 视觉卸载时取消待调度更新、解除集合订阅并释放所有分隔符，重新挂载时按当前条目重建。
 - `BreadcrumbItemsPanel` 使用已经包含 Margin 的 `DesiredSize` 测量与分配布局槽；具体 Margin 与垂直对齐由
   Avalonia `ArrangeCore` 处理，面板不再重复加算偏移或间距。

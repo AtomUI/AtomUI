@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using AtomUI.Controls.Commons;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -82,6 +83,9 @@ public abstract class AbstractSkeleton : TemplatedControl
     internal static readonly StyledProperty<IBrush?> ShimmerToColorProperty =
         AvaloniaProperty.Register<AbstractSkeleton, IBrush?>(nameof(ShimmerToColor));
 
+    internal static readonly StyledProperty<SkeletonShimmerColorTokenResourceKeys?> ShimmerColorTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractSkeleton, SkeletonShimmerColorTokenResourceKeys?>(nameof(ShimmerColorTokenResourceKeys));
+
     /// <summary>
     /// Marks a <see cref="Border"/> as a shimmer block. A marked, attached border registers with its host: the
     /// outermost <see cref="AbstractSkeleton"/> among its visual ancestors, where a composite skeleton counts only
@@ -107,6 +111,12 @@ public abstract class AbstractSkeleton : TemplatedControl
     {
         get => GetValue(ShimmerToColorProperty);
         set => SetValue(ShimmerToColorProperty, value);
+    }
+
+    internal SkeletonShimmerColorTokenResourceKeys? ShimmerColorTokenResourceKeys
+    {
+        get => GetValue(ShimmerColorTokenResourceKeysProperty);
+        set => SetValue(ShimmerColorTokenResourceKeysProperty, value);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -143,6 +153,7 @@ public abstract class AbstractSkeleton : TemplatedControl
     private RoundedRect[] _sceneBlocks = [];
     private Size _sceneLayerSize;
     private SkeletonShimmerScene? _lastScene;
+    private OwnerTokenSet? _shimmerColorTokens;
     private bool _isShimmerHost;
     private bool _isTemplateApplied;
 
@@ -205,6 +216,11 @@ public abstract class AbstractSkeleton : TemplatedControl
         else if (change.Property == MotionDurationProperty)
         {
             UpdateShimmer();
+            ResendShimmerScene();
+        }
+        else if (change.Property == ShimmerColorTokenResourceKeysProperty)
+        {
+            ReleaseShimmerColorTokenSubscription();
             ResendShimmerScene();
         }
         else if (change.Property == MotionEasingCurveProperty ||
@@ -330,6 +346,7 @@ public abstract class AbstractSkeleton : TemplatedControl
         {
             _shimmerBlocks[i] = _shimmerBlocks[i].Release();
         }
+        ReleaseShimmerColorTokenSubscription();
         IsShimmerRunning = false;
     }
 
@@ -454,11 +471,46 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     private void SendScene()
     {
+        var colors = ReadShimmerColors();
         var scene = new SkeletonShimmerScene(_sceneBlocks, _sceneLayerSize.Width,
-            ToShimmerColor(ShimmerFromColor), ToShimmerColor(ShimmerToColor), MotionDuration,
+            colors.From, colors.To, MotionDuration,
             CreateRenderEasing(EffectiveShimmerEasing));
         _lastScene = scene;
         Send(scene);
+    }
+
+    private (Color From, Color To) ReadShimmerColors()
+    {
+        if (_shimmerColorTokens is null && ShimmerColorTokenResourceKeys is { } keys)
+        {
+            // Only the active compositor host submits a scene. Nested and inactive skeletons do not observe the palette.
+            _shimmerColorTokens = new OwnerTokenSet(this, 2, ResendShimmerScene);
+            _shimmerColorTokens.SetResourceKey(0, keys.From);
+            _shimmerColorTokens.SetResourceKey(1, keys.To);
+        }
+
+        var from = _shimmerColorTokens is null || IsSet(ShimmerFromColorProperty)
+            ? ToShimmerColor(ShimmerFromColor)
+            : ReadShimmerColor(_shimmerColorTokens.GetValue(0), _lastScene?.From ?? Colors.Transparent);
+        var to = _shimmerColorTokens is null || IsSet(ShimmerToColorProperty)
+            ? ToShimmerColor(ShimmerToColor)
+            : ReadShimmerColor(_shimmerColorTokens.GetValue(1), _lastScene?.To ?? Colors.Transparent);
+        return (from, to);
+    }
+
+    private static Color ReadShimmerColor(object? value, Color previous) => value switch
+    {
+        IBrush brush => ToShimmerColor(brush),
+        Color color => color,
+        string text when Color.TryParse(text, out var color) => color,
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => Colors.Transparent
+    };
+
+    private void ReleaseShimmerColorTokenSubscription()
+    {
+        _shimmerColorTokens?.Dispose();
+        _shimmerColorTokens = null;
     }
 
     /// <summary>

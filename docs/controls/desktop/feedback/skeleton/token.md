@@ -23,8 +23,7 @@ Token 按控件语义分类维护：
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
-`GradientFromColor` 是占位块底色与微光亮带底色，`GradientToColor` 是亮带峰值色，主题把它们写入 internal 的 `ShimmerFromColor`、
-`ShimmerToColor`；`LoadingMotionDuration` 是亮带周期。`LoadingBackgroundStart`、`LoadingBackgroundMiddle`、`LoadingBackgroundEnd`
+`GradientFromColor` 是占位块与微光亮带的底色，`GradientToColor` 是亮带峰值色。活动桌面宿主成组读取两色。`LoadingMotionDuration` 是亮带周期。`LoadingBackgroundStart`、`LoadingBackgroundMiddle`、`LoadingBackgroundEnd`
 描述 Ant Design 的 400% 背景平移关键帧，默认由两种渐变色派生（两种渐变色被显式覆盖时，派生画刷使用覆盖值）；Desktop 主题不再引用它们，
 它们决定已生成的 Token 资源键，因此保留。`TitleHeight` 是标题行高度（antd `titleHeight`），`ParagraphLineHeight` 是段落行高度
 （antd `paragraphLiHeight`）。`ImageColor` 是图片占位图标的填充色（AtomUI 扩展；antd 固定为 `#bfbfbf`，默认值相同），取代主题中的

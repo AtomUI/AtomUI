@@ -1,10 +1,14 @@
+using System.Globalization;
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -169,12 +173,8 @@ public class Carousel : AbstractCarousel
             o => o.EffectiveNextButtonMargin,
             (o, v) => o.EffectiveNextButtonMargin = v);
     
-    internal static readonly StyledProperty<double> PaginationOffsetProperty =
-        AvaloniaProperty.Register<Carousel, double>(nameof(PaginationOffset));
-
-    // The switch arrows' inset from the carousel edge (antd arrowOffset); the theme reads Carousel.ArrowOffset.
-    internal static readonly StyledProperty<double> ArrowOffsetProperty =
-        AvaloniaProperty.Register<Carousel, double>(nameof(ArrowOffset));
+    internal static readonly StyledProperty<bool> UseNavigationOffsetTokenResourcesProperty =
+        AvaloniaProperty.Register<Carousel, bool>(nameof(UseNavigationOffsetTokenResources));
     
     internal static readonly DirectProperty<Carousel, bool> IsEffectiveShowTransitionProgressProperty =
         AvaloniaProperty.RegisterDirect<Carousel, bool>(
@@ -245,17 +245,17 @@ public class Carousel : AbstractCarousel
         set => SetAndRaise(IsEffectiveShowTransitionProgressProperty, ref _isEffectiveShowTransitionProgress, value);
     }
     
-    internal double PaginationOffset
+    internal bool UseNavigationOffsetTokenResources
     {
-        get => GetValue(PaginationOffsetProperty);
-        set => SetValue(PaginationOffsetProperty, value);
+        get => GetValue(UseNavigationOffsetTokenResourcesProperty);
+        set => SetValue(UseNavigationOffsetTokenResourcesProperty, value);
     }
 
-    internal double ArrowOffset
-    {
-        get => GetValue(ArrowOffsetProperty);
-        set => SetValue(ArrowOffsetProperty, value);
-    }
+    private static readonly object s_paginationOffsetKey = CarouselTokenKind.PaginationOffset;
+    private static readonly object s_arrowOffsetKey = CarouselTokenKind.ArrowOffset;
+    private OwnerTokenSet? _offsetTokens;
+    private double _paginationOffset;
+    private double _arrowOffset;
     
     private IList<object>? _indicatorItems;
 
@@ -447,15 +447,14 @@ public class Carousel : AbstractCarousel
         {
             ConfigureNavButtons();
         }
-        else if (change.Property == PaginationPositionProperty ||
-                 change.Property == PaginationOffsetProperty)
+        else if (change.Property == PaginationPositionProperty)
         {
             ConfigurePaginationMargin();
             ConfigureNavButtonsMargin();
         }
-        else if (change.Property == ArrowOffsetProperty)
+        else if (change.Property == UseNavigationOffsetTokenResourcesProperty && this.IsAttachedToVisualTree())
         {
-            ConfigureNavButtonsMargin();
+            UpdateNavigationOffsetTokenSubscription();
         }
         else if (change.Property == TransitionEffectProperty)
         {
@@ -595,10 +594,13 @@ public class Carousel : AbstractCarousel
         }
         UpdateHostWindowAvailability();
         base.OnAttachedToVisualTree(e);
+        UpdateNavigationOffsetTokenSubscription();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _offsetTokens?.Dispose();
+        _offsetTokens = null;
         if (_window is not null)
         {
             _window.PropertyChanged -= HandleHostWindowPropertyChanged;
@@ -640,23 +642,82 @@ public class Carousel : AbstractCarousel
         }
     }
 
+    private void UpdateNavigationOffsetTokenSubscription()
+    {
+        if (UseNavigationOffsetTokenResources)
+        {
+            if (_offsetTokens is null)
+            {
+                _offsetTokens = new OwnerTokenSet(this, 2, RefreshOffsets);
+                _offsetTokens.SetResourceKey(0, s_paginationOffsetKey);
+                _offsetTokens.SetResourceKey(1, s_arrowOffsetKey);
+            }
+        }
+        else
+        {
+            _offsetTokens?.Dispose();
+            _offsetTokens = null;
+        }
+
+        RefreshOffsets();
+    }
+
+    private void RefreshOffsets()
+    {
+        var pagination = ReadOffset(_offsetTokens?.GetValue(0), _paginationOffset);
+        var arrow = ReadOffset(_offsetTokens?.GetValue(1), _arrowOffset);
+        var paginationChanged = !_paginationOffset.Equals(pagination);
+        var arrowChanged = !_arrowOffset.Equals(arrow);
+        _paginationOffset = pagination;
+        _arrowOffset = arrow;
+
+        if (paginationChanged)
+        {
+            ConfigurePaginationMargin();
+        }
+        if (arrowChanged)
+        {
+            ConfigureNavButtonsMargin();
+        }
+    }
+
+    private static double ReadOffset(object? value, double previous)
+    {
+        if (value is double offset)
+        {
+            return offset;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
     private void ConfigurePaginationMargin()
     {
         if (PaginationPosition == CarouselPaginationPosition.Bottom)
         {
-            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, 0, 0, PaginationOffset));
+            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, 0, 0, _paginationOffset));
         }
         else if (PaginationPosition == CarouselPaginationPosition.Top)
         {
-            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, PaginationOffset, 0, 0));
+            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, _paginationOffset, 0, 0));
         }
         else if (PaginationPosition == CarouselPaginationPosition.Left)
         {
-            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(PaginationOffset, 0, 0, 0));
+            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(_paginationOffset, 0, 0, 0));
         }
         else if (PaginationPosition == CarouselPaginationPosition.Right)
         {
-            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, 0, PaginationOffset, 0));
+            SetCurrentValue(EffectivePaginationMarginProperty, new Thickness(0, 0, _paginationOffset, 0));
         }
     }
 
@@ -665,14 +726,14 @@ public class Carousel : AbstractCarousel
         if (PaginationPosition == CarouselPaginationPosition.Bottom ||
             PaginationPosition == CarouselPaginationPosition.Top)
         {
-            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(ArrowOffset, 0, 0, 0));
-            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, ArrowOffset, 0));
+            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(_arrowOffset, 0, 0, 0));
+            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, _arrowOffset, 0));
         }
         else if (PaginationPosition == CarouselPaginationPosition.Left ||
                  PaginationPosition == CarouselPaginationPosition.Right)
         {
-            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(0, ArrowOffset, 0, 0));
-            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, 0, ArrowOffset));
+            SetCurrentValue(EffectivePreviousButtonMarginProperty, new Thickness(0, _arrowOffset, 0, 0));
+            SetCurrentValue(EffectiveNextButtonMarginProperty, new Thickness(0, 0, 0, _arrowOffset));
         }
     }
 

@@ -64,8 +64,7 @@
         </Setter>
 
         <Setter Property="Padding" Value="{atom:ResultTokenResource FramePadding}" />
-        <Setter Property="RelativeHeaderLineHeight" Value="{atom:ResultTokenResource RelativeLineHeightHeading3}" />
-        <Setter Property="RelativeSubHeaderLineHeight" Value="{atom:ResultTokenResource RelativeLineHeight}" />
+        <Setter Property="UseResultPresentationTokenResources" Value="True" />
         <Setter Property="HeaderFontSize" Value="{atom:ResultTokenResource HeaderFontSize}" />
         <Setter Property="SubHeaderFontSize" Value="{atom:ResultTokenResource SubHeaderFontSize}" />
         <Style Selector="^/template/ ContentPresenter#PART_StatusIconPresenter">
@@ -98,24 +97,6 @@
 
         <Style Selector="^ /template/ ContentPresenter#ExtraContent">
             <Setter Property="Margin" Value="{atom:ResultTokenResource ExtraMargin}" />
-        </Style>
-
-        <Setter Property="StatusIconSize" Value="{atom:ResultTokenResource StatusIconSize}" />
-
-        <Style Selector="^[Status=Info]">
-            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultInfoIconColor}" />
-        </Style>
-        <Style Selector="^[Status=Success]">
-            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultSuccessIconColor}" />
-        </Style>
-        <Style Selector="^[Status=Warning]">
-            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultWarningIconColor}" />
-        </Style>
-        <Style Selector="^[Status=Error]">
-            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultErrorIconColor}" />
-        </Style>
-        <Style Selector="^[Status=Waiting]">
-            <Setter Property="StatusIconBrush" Value="{atom:ResultTokenResource ResultSuccessIconColor}" />
         </Style>
 
         <Style Selector="^[Status=Info],^[Status=Success], ^[Status=Warning], ^[Status=Error], ^[Status=Waiting]">

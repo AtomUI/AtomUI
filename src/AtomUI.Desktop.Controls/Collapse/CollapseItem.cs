@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -93,11 +95,8 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<CollapseItem>();
 
-    internal static readonly StyledProperty<Thickness> DefaultHeaderPaddingProperty =
-        AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(DefaultHeaderPadding));
-
-    internal static readonly StyledProperty<Thickness> DefaultContentPaddingProperty =
-        AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(DefaultContentPadding));
+    internal static readonly StyledProperty<bool> UseItemPaddingTokenResourcesProperty =
+        AvaloniaProperty.Register<CollapseItem, bool>(nameof(UseItemPaddingTokenResources));
 
     internal static readonly DirectProperty<CollapseItem, Thickness?> OwnerHeaderPaddingProperty =
         AvaloniaProperty.RegisterDirect<CollapseItem, Thickness?>(nameof(OwnerHeaderPadding),
@@ -163,17 +162,24 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         set => SetValue(SizeTypeProperty, value);
     }
 
-    internal Thickness DefaultHeaderPadding
+    internal bool UseItemPaddingTokenResources
     {
-        get => GetValue(DefaultHeaderPaddingProperty);
-        set => SetValue(DefaultHeaderPaddingProperty, value);
+        get => GetValue(UseItemPaddingTokenResourcesProperty);
+        set => SetValue(UseItemPaddingTokenResourcesProperty, value);
     }
 
-    internal Thickness DefaultContentPadding
-    {
-        get => GetValue(DefaultContentPaddingProperty);
-        set => SetValue(DefaultContentPaddingProperty, value);
-    }
+    private static readonly object[] s_paddingKeys =
+    [
+        CollapseTokenKind.CollapseHeaderPaddingSM,
+        CollapseTokenKind.CollapseContentPaddingSM,
+        CollapseTokenKind.HeaderPadding,
+        CollapseTokenKind.ContentPadding,
+        CollapseTokenKind.CollapseHeaderPaddingLG,
+        CollapseTokenKind.CollapseContentPaddingLG
+    ];
+
+    private OwnerTokenSet? _paddingTokens;
+    private (Thickness Header, Thickness Content) _defaultPaddings;
 
     private Thickness? _ownerHeaderPadding;
 
@@ -322,6 +328,14 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
     {
         base.OnAttachedToVisualTree(e);
         SetupDefaultExpandIcon();
+        UpdatePaddingTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _paddingTokens?.Dispose();
+        _paddingTokens = null;
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -348,10 +362,16 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == HeaderPaddingProperty ||
+        if (change.Property == UseItemPaddingTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdatePaddingTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _paddingTokens is not null)
+        {
+            RefreshDefaultPaddings();
+        }
+        else if (change.Property == HeaderPaddingProperty ||
             change.Property == ContentPaddingProperty ||
-            change.Property == DefaultHeaderPaddingProperty ||
-            change.Property == DefaultContentPaddingProperty ||
             change.Property == OwnerHeaderPaddingProperty ||
             change.Property == OwnerContentPaddingProperty)
         {
@@ -436,14 +456,72 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         Debug.Assert(ExpandIcon != null);
     }
 
+    private void UpdatePaddingTokenSubscription()
+    {
+        if (UseItemPaddingTokenResources && _paddingTokens is null)
+        {
+            _paddingTokens = new OwnerTokenSet(this, s_paddingKeys.Length, RefreshDefaultPaddings);
+            for (var index = 0; index < s_paddingKeys.Length; ++index)
+            {
+                _paddingTokens.SetResourceKey(index, s_paddingKeys[index]);
+            }
+        }
+        else if (!UseItemPaddingTokenResources && _paddingTokens is not null)
+        {
+            _paddingTokens.Dispose();
+            _paddingTokens = null;
+        }
+        RefreshDefaultPaddings();
+    }
+
+    private void RefreshDefaultPaddings()
+    {
+        var index = SizeType switch
+        {
+            CustomizableSizeType.Small => 0,
+            CustomizableSizeType.Middle or CustomizableSizeType.Custom => 2,
+            CustomizableSizeType.Large => 4,
+            _ => -1
+        };
+        _defaultPaddings = index < 0
+            ? default
+            : (ReadPadding(_paddingTokens?.GetValue(index), _defaultPaddings.Header),
+               ReadPadding(_paddingTokens?.GetValue(index + 1), _defaultPaddings.Content));
+        UpdateEffectivePaddings();
+    }
+
+    private static Thickness ReadPadding(object? value, Thickness previous)
+    {
+        if (value is Thickness padding)
+        {
+            return padding;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        if (value is string text)
+        {
+            try
+            {
+                return Thickness.Parse(text);
+            }
+            catch (FormatException)
+            {
+                return default;
+            }
+        }
+        return default;
+    }
+
     private void UpdateEffectivePaddings()
     {
         EffectiveHeaderPadding = IsSet(HeaderPaddingProperty)
             ? HeaderPadding
-            : OwnerHeaderPadding ?? DefaultHeaderPadding;
+            : OwnerHeaderPadding ?? _defaultPaddings.Header;
         EffectiveContentPadding = IsSet(ContentPaddingProperty)
             ? ContentPadding
-            : OwnerContentPadding ?? DefaultContentPadding;
+            : OwnerContentPadding ?? _defaultPaddings.Content;
     }
 
 }

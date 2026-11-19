@@ -97,8 +97,7 @@ Empty 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | --- | --- |
 | `EmptyTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Empty 使用 `EmptyToken` 表达图片高度、描述间距和 Footer 间距。预设图形的颜色输入由 ControlTheme 直接绑定 SharedToken，
-再由共享基类计算 SVG 配色；颜色资源归属见 [Empty Token 设计](token.md)。Token 不承载实例内容或可见性状态。
+Empty 使用 `EmptyToken` 表达图片高度、描述间距和 Footer 间距。桌面默认 ControlTheme 启用成组读取实际预设图形的颜色，交给共享基类计算 SVG 配色。颜色资源归属见 [Empty Token 设计](token.md)。Token 不承载实例内容或可见性状态。
 
 主题维护规则：
 

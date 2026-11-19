@@ -2,8 +2,10 @@ using System.Collections.Specialized;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls.Presenters;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -19,6 +21,8 @@ internal sealed class BreadcrumbSeparatorManager : IDisposable
 {
     private readonly Breadcrumb _owner;
     private readonly List<SeparatorEntry> _separatorEntries = new();
+    private OwnerTokenPropertyBindings? _separatorTokens;
+    private (IObservable<object?> Foreground, IObservable<object?> Margin) _separatorValues;
     private BreadcrumbItemsPanel? _itemsPanel;
     private bool _itemsCollectionSubscribed;
     private DispatcherOperation? _pendingUpdate;
@@ -76,6 +80,11 @@ internal sealed class BreadcrumbSeparatorManager : IDisposable
         while (_separatorEntries.Count < targetCount)
         {
             _separatorEntries.Add(CreateSeparator());
+        }
+
+        if (targetCount == 0)
+        {
+            ReleaseSeparatorTokenBindings();
         }
 
         for (var i = 0; i < _separatorEntries.Count; i++)
@@ -136,10 +145,21 @@ internal sealed class BreadcrumbSeparatorManager : IDisposable
         }
 
         _separatorEntries.Clear();
+        ReleaseSeparatorTokenBindings();
     }
 
     private SeparatorEntry CreateSeparator()
     {
+        if (_separatorTokens is null)
+        {
+            // Runtime siblings share the breadcrumb's resource reads. A per-presenter style would read each key again.
+            var ownerType = _owner.GetType();
+            var tokens = new OwnerTokenPropertyBindings(_owner, 2, BindingPriority.Template);
+            _separatorValues = (
+                tokens.Observe(0, ControlTokenResourceKey.Own(ownerType, BreadcrumbTokenKind.SeparatorColor)),
+                tokens.Observe(1, ControlTokenResourceKey.Own(ownerType, BreadcrumbTokenKind.SeparatorMargin)));
+            _separatorTokens = tokens;
+        }
         var presenter = new ContentPresenter
         {
             HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -148,22 +168,28 @@ internal sealed class BreadcrumbSeparatorManager : IDisposable
         };
         presenter.Classes.Add(BreadcrumbSemanticParts.SeparatorClass);
 
-        var entry = new SeparatorEntry(presenter)
+        var entry = new SeparatorEntry(presenter);
+        try
         {
-            ForegroundTokenBinding = TokenResourceBinder.CreateControlTokenBinding(
-                _owner,
-                presenter,
-                ContentPresenter.ForegroundProperty,
-                BreadcrumbTokenKind.SeparatorColor),
-            MarginTokenBinding = TokenResourceBinder.CreateControlTokenBinding(
-                _owner,
-                presenter,
-                ContentPresenter.MarginProperty,
-                BreadcrumbTokenKind.SeparatorMargin)
-        };
+            entry.ForegroundTokenBinding = presenter.Bind(ContentPresenter.ForegroundProperty,
+                _separatorValues.Foreground, BindingPriority.Template);
+            entry.MarginTokenBinding = presenter.Bind(ContentPresenter.MarginProperty,
+                _separatorValues.Margin, BindingPriority.Template);
+            _owner.AttachSeparatorLogicalChild(presenter);
+            return entry;
+        }
+        catch
+        {
+            entry.Dispose();
+            throw;
+        }
+    }
 
-        _owner.AttachSeparatorLogicalChild(presenter);
-        return entry;
+    private void ReleaseSeparatorTokenBindings()
+    {
+        _separatorTokens?.Dispose();
+        _separatorTokens = null;
+        _separatorValues = default;
     }
 
     private void RemoveSeparatorAt(int index)

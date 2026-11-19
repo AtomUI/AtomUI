@@ -28,8 +28,7 @@
         <Setter Property="Padding" Value="{atom:SegmentedTokenResource TrackPadding}" />
         <Setter Property="Background" Value="{atom:SegmentedTokenResource TrackBg}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="SelectedThumbBg" Value="{atom:SegmentedTokenResource ItemSelectedBg}" />
-        <Setter Property="SelectedThumbBoxShadows" Value="{atom:SegmentedTokenResource BoxShadowsTertiary}" />
+        <Setter Property="UseSelectedThumbTokenResources" Value="True" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Style Selector="^[IsExpanding=True]">
             <Setter Property="HorizontalAlignment" Value="Stretch" />

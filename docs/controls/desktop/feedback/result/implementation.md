@@ -106,8 +106,8 @@ Result 没有控件专属 pointer、keyboard、command 或 public 事件。它�
 
 1. `Status` 或 `Icon` 变化时，普通状态把 `StatusIcon` 设为 `Icon ?? CreateDefaultStatusIcon(Status)`；异常状态更新静态 SVG 的 Source。
    `CreateDefaultStatusIcon` 是 `private protected virtual` 扩展点，基类每次返回新的图标实例，403/404/500 返回 `null`。
-2. `PART_StatusIconPresenter.Child`、`StatusIconSize` 或 `StatusIconBrush` 变化时，`UpdateStatusIcon` 先释放上次投递的值，再以 Template 优先级把尺寸和画刷应用到当前 Child；`Icon` 子类同时投递 FillBrush 与 StrokeBrush。Template 优先级高于图标自身 ControlTheme 的 Style setter，因此改变图标 Token 的主题发布不会把状态图标刷回默认色；调用方在自定义 `Icon` 上的本地值和样式触发器仍然优先。不得改回 `SetCurrentValue`：它写在图标主题绑定的同一优先级上，下一次发布即被覆盖，还会覆盖调用方的本地值。
-3. `HeaderFontSize`、`SubHeaderFontSize` 或相对行高变化时重新计算绝对 `LineHeight`。
+2. 桌面主题用一组资源读取两项相对行高、图标尺寸和当前状态画刷。图标 Presenter 的 Child 位于内容树，尺寸和画刷通过可释放的 Template 优先级应用到该 Child。`Icon` 子类同时接收 FillBrush 与 StrokeBrush，调用方的本地值和样式触发器优先。
+3. `HeaderFontSize`、`SubHeaderFontSize` 或对应的相对行高变化时重新计算绝对 `LineHeight`。整组主题变更时，图标最多应用一轮新值。
 4. 模板重套用先释放旧 presenter 订阅，再获取两个新图标 part，并回放图标与文本行高状态。
 
 Result 没有 `SizeType`。默认尺寸基线由 `FramePadding`、`StatusIconSize`、`ImageWidth`、`ImageHeight`、`HeaderFontSize`、

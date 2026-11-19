@@ -157,7 +157,7 @@ Skeleton 的交互事件应从输入源收敛到控件级语义事件：
   `EnableMotion`。应用进入后台（`IActivatableLifetime` 报告 Background 停用）或注入的活动来源变为非活动时，微光停止。
 - **启动**：宿主以 `BindingPriority.Animation` 把每个块的 `Border.Background` 设为 `null` 并保留返回的 `IDisposable`，使底色不在渐变下再画一次；
   收集块在微光层坐标中的圆角矩形，发送 `SkeletonShimmerScene` 后发送 `SkeletonShimmerStart`，并开始订阅宿主的 `LayoutUpdated`。
-- **停止**：发送 `SkeletonShimmerStop`，释放全部背景抑制（块回到主题底色，不留动画优先级值），退订 `LayoutUpdated`。运行中新登记的块立即被抑制，
+- **停止** 发送 `SkeletonShimmerStop`，释放全部背景抑制与配色观察，块回到主题底色。宿主退订 `LayoutUpdated`。运行中新登记的块立即被抑制，
   注销的块立即释放。
 - **场景重建**：只在运行期间、宿主每次布局完成后比较块矩形与微光层尺寸；与上一次场景不同时才构建新的块数组并发送场景，宽度变化
   （旋转、字号变化）因此只重建一次，之后的帧不触发布局。`ShimmerFromColor`、`ShimmerToColor`、`MotionDuration`、`MotionEasingCurve`
@@ -172,8 +172,7 @@ Skeleton 的交互事件应从输入源收敛到控件级语义事件：
   带块的场景到达后恢复。
 - **缓动的线程边界**：缓动在渲染线程求值。`SplineEasing` 的关键样条会缓存参数并惰性重建，控制点也可在 UI 线程修改，因此每个场景
   发送的是 `new SplineEasing(X1, Y1, X2, Y2)` 私有副本；Avalonia 其他内置缓动无状态，原样传递；自定义 `Easing` 原样传递，必须是纯函数。
-- **颜色**：`ShimmerFromColor`、`ShimmerToColor` 是 internal 画刷属性（颜色 Token 以纯色画刷发布），Desktop `AbstractSkeletonTheme` 设为
-  `GradientFromColor`、`GradientToColor`；场景取画刷颜色并把画刷不透明度并入 alpha。底色与块背景相同，所以静止帧与未运行时逐像素一致。
+- **颜色** 桌面主题指定 `GradientFromColor` 和 `GradientToColor`。微光宿主在启动时成组读取，配色变化只重发一次场景。场景取画刷颜色并把画刷不透明度并入 alpha。底色与块背景相同，静止帧与未运行时逐像素一致。
 - **启动时机**：宿主等模板应用（组合骨架在应加载时还要等占位构建）后才启动，首次激活只创建一个处理器；附着、`OnLoaded`、模板应用与占位构建都会重新评估。
 - **生命周期**：模板重新应用或占位重建改变微光层时，宿主先停止并把视觉从旧层取下，再在新层上创建，任一时刻每个宿主最多一个处理器；
   宿主脱离视觉树时停止、取下视觉并释放门控。`StartActiveAnimation`/`StopActiveAnimation` 保留为 protected，作用是请求宿主重新评估。

@@ -106,6 +106,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         set => SetValue(SelectedThumbBoxShadowsProperty, value);
     }
 
+    private protected virtual (IBrush? Brush, BoxShadows Shadows) ThumbPaint =>
+        (SelectedThumbBg, SelectedThumbBoxShadows);
+
     // 内部动画属性
     internal Size SelectedThumbSize
     {
@@ -331,8 +334,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             {
                 var thumbRadius = CornerRadiusUtils.ClampToSize(
                     SelectedThumbCornerRadius, thumb.Width, thumb.Height);
-                context.DrawRectangle(SelectedThumbBg, null,
-                    new RoundedRect(thumb, thumbRadius), SelectedThumbBoxShadows);
+                var paint = ThumbPaint;
+                context.DrawRectangle(paint.Brush, null,
+                    new RoundedRect(thumb, thumbRadius), paint.Shadows);
             }
         }
     }

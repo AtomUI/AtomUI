@@ -27,8 +27,7 @@
         <Setter Property="Background" Value="{atom:SkeletonTokenResource GradientFromColor}"/>
         <Setter Property="MotionDuration" Value="{atom:SkeletonTokenResource LoadingMotionDuration}"/>
         <Setter Property="IsMotionEnabled" Value="{atom:SkeletonTokenResource EnableMotion}"/>
-        <Setter Property="ShimmerFromColor" Value="{atom:SkeletonTokenResource GradientFromColor}"/>
-        <Setter Property="ShimmerToColor" Value="{atom:SkeletonTokenResource GradientToColor}"/>
+        <Setter Property="ShimmerColorTokenResourceKeys" Value="{x:Static atom:SkeletonShimmerResources.ShimmerColorTokenResourceKeys}"/>
 
         <Style Selector="^:is(atom|AbstractSkeleton).semantic-preview-owner">
             <Setter Property="HorizontalAlignment" Value="Stretch" />

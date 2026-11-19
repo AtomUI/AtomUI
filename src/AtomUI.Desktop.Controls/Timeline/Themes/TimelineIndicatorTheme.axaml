@@ -28,10 +28,9 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="RelativeLineHeight" Value="{atom:TimelineTokenResource RelativeLineHeight}"/>
+        <Setter Property="IndicatorTokenResourceKeys" Value="{x:Static atom:TimelineIndicatorResources.IndicatorTokenResourceKeys}"/>
         <Setter Property="IndicatorDotBorderWidth" Value="{atom:TimelineTokenResource IndicatorDotBorderWidth}"/>
         <Setter Property="IndicatorDotSize" Value="{atom:TimelineTokenResource IndicatorDotSize}"/>
-        <Setter Property="DefaultIndicatorColor" Value="{atom:TimelineTokenResource ColorPrimary}"/>
         <Setter Property="IndicatorTailWidth" Value="{atom:TimelineTokenResource IndicatorTailWidth}"/>
         <Setter Property="IndicatorTailColor" Value="{atom:TimelineTokenResource IndicatorTailColor}"/>
 

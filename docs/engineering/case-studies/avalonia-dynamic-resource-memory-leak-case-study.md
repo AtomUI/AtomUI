@@ -296,8 +296,8 @@ if (menuNode is NavMenuNode navMenuNode)
 
 Flyout 的修复方式：
 
-- `EnsureGlobalResourceBindings()`：首次打开时创建全局资源 binding。
-- `ReleaseGlobalResourceBindings()`：关闭、解除注册、宿主释放时统一释放。
+- `EnsurePlacementTokenBindings()`：首次打开时创建全局资源 binding。
+- `ReleasePlacementTokenBindings()`：关闭、解除注册、宿主释放时统一释放。
 - `DropdownButton`、`SplitButton`、`FlyoutHost` 在 unregister 时调用 release，并在需要时先 hide。
 
 本次实现位置：

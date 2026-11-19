@@ -1,18 +1,19 @@
+using System.Globalization;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
-using AtomUI.Controls.Primitives;
 using AtomUI.Animations;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -44,11 +45,23 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         Dialog.IsMotionEnabledProperty.AddOwner<OverlayDialogPresenter>();
 
+    private static readonly TimeSpan s_defaultMotionDuration = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan s_defaultOpeningDuration = TimeSpan.FromMilliseconds(300);
+
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), TimeSpan.FromMilliseconds(200));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), s_defaultMotionDuration);
 
     internal static readonly StyledProperty<TimeSpan> OpeningMotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), TimeSpan.FromMilliseconds(300));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), s_defaultOpeningDuration);
+
+    internal static readonly StyledProperty<bool> UseOwnerMotionDurationTokenResourcesProperty =
+        AvaloniaProperty.Register<OverlayDialogPresenter, bool>(nameof(UseOwnerMotionDurationTokenResources));
+
+    internal bool UseOwnerMotionDurationTokenResources
+    {
+        get => GetValue(UseOwnerMotionDurationTokenResourcesProperty);
+        set => SetValue(UseOwnerMotionDurationTokenResourcesProperty, value);
+    }
 
     internal bool IsModal
     {
@@ -70,15 +83,21 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     internal TimeSpan MotionDuration
     {
-        get => GetValue(MotionDurationProperty);
+        get => _motionTimingTokens is not null && !IsSet(MotionDurationProperty)
+            ? _themeMotionDuration : GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
 
     internal TimeSpan OpeningMotionDuration
     {
-        get => GetValue(OpeningMotionDurationProperty);
+        get => _motionTimingTokens is not null && !IsSet(OpeningMotionDurationProperty)
+            ? _themeOpeningDuration : GetValue(OpeningMotionDurationProperty);
         set => SetValue(OpeningMotionDurationProperty, value);
     }
+
+    private OwnerTokenSet? _motionTimingTokens;
+    private TimeSpan _themeMotionDuration = s_defaultMotionDuration;
+    private TimeSpan _themeOpeningDuration = s_defaultOpeningDuration;
 
     #endregion
 
@@ -444,12 +463,59 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
+        if (change.Property == UseOwnerMotionDurationTokenResourcesProperty)
+        {
+            UpdateMotionDurationTokenSubscription();
+        }
+        else if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
         {
             ReleaseEntryPreparation();
             ResetMotionTargets();
         }
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_motionTimingTokens is null && UseOwnerMotionDurationTokenResources)
+        {
+            UpdateMotionDurationTokenSubscription();
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _motionTimingTokens?.Dispose();
+        _motionTimingTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateMotionDurationTokenSubscription()
+    {
+        _motionTimingTokens?.Dispose();
+        _motionTimingTokens = null;
+        if (UseOwnerMotionDurationTokenResources && this.IsAttachedToVisualTree())
+        {
+            _motionTimingTokens = new OwnerTokenSet(this, 2, RefreshMotionDurations);
+            _motionTimingTokens.SetKind(0, SharedTokenKind.MotionDurationMid);
+            _motionTimingTokens.SetKind(1, SharedTokenKind.MotionDurationSlow);
+            RefreshMotionDurations();
+        }
+    }
+
+    private void RefreshMotionDurations()
+    {
+        _themeMotionDuration = ReadDuration(_motionTimingTokens?.GetValue(0), _themeMotionDuration, s_defaultMotionDuration);
+        _themeOpeningDuration = ReadDuration(_motionTimingTokens?.GetValue(1), _themeOpeningDuration, s_defaultOpeningDuration);
+    }
+
+    private static TimeSpan ReadDuration(object? value, TimeSpan previous, TimeSpan fallback) => value switch
+    {
+        TimeSpan duration => duration,
+        string text when TimeSpan.TryParse(text, CultureInfo.CurrentCulture, out var parsed) => parsed,
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => fallback
+    };
 
     public ValueTask DisposeAsync()
     {

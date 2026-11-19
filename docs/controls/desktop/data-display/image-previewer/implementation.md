@@ -178,6 +178,9 @@ TopLevel 尺寸或 render scaling 变化后重新计算物理像素 bucket；相
 logical parent 和 modal subscription，并构造显示 tracker；关闭时先处理可取消 `DialogClosing`，再释放 host state（含清空显示 tracker 与 WaitForLoaded 保留帧）
 和全部 Full leases，最后恢复关闭态 Thumbnail 策略。Template 只绑定 entry 状态和图片，不持有结果 lease。
 
+模板中的封面继承 `ImagePreviewer` 或 `ImageGroupPreviewer` 的主题输入。独立封面在挂载时使用 `ImagePreviewer` 身份读取当前作用域，
+因此移到 `Window` 等容器下时仍能取得封面尺寸与遮罩。默认输入共用一个资源监听，以 Style 优先级输出，离树时释放。
+
 Semantic marker 与承载节点同生命周期：native dialog 创建时把 `popup.root` marker 注入内容根包裹 Panel，宿主关闭销毁整棵
 visual subtree 后不残留任何 marker 或订阅；`viewer`、float toolbar 与 overlay 根节点由宿主代码或宿主模板创建，marker 静态
 声明在各自主题中；overlay 的 `popup.mask` marker 静态声明在新增遮罩子元素上，随 overlay 模板创建/销毁。打开与重开不维护

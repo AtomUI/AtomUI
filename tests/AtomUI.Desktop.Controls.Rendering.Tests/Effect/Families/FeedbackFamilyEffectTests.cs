@@ -91,7 +91,7 @@ public partial class FeedbackFamilyEffectTests
     /// Global Tokens an identity-less part theme reads through <c>OwnerTokenResource</c>. The consumption map attributes
     /// them to <c>shared-primitive</c>, so the members carrying the part run them as rows of their own.
     /// </summary>
-    internal sealed record OwnerReadList(string Theme, string[] Tokens);
+    internal sealed record OwnerReadList(string Theme, string[] Tokens, params string[] Code);
 
     /// <summary>Every owner-read list of the family; the drift guard keeps each equal to its theme AXAML.</summary>
     private static OwnerReadList[] FamilyOwnerReadLists() => [s_overlayPopupHost, s_popupRoot, ..DialogOwnerReadLists()];
@@ -101,7 +101,7 @@ public partial class FeedbackFamilyEffectTests
     {
         foreach (var list in FamilyOwnerReadLists())
         {
-            ThemeOwnerReads.Read(list.Theme).Order(StringComparer.Ordinal)
+            ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)
                            .ShouldBe(list.Tokens.Order(StringComparer.Ordinal), list.Theme);
         }
     }

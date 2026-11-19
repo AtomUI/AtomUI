@@ -445,6 +445,10 @@ public partial class NavigationFamilyEffectTests
             target => ArrangePopupToken(target, token), MenuFlyoutPresenterTokens.Identity, token,
             new EffectOptions
             {
+                // Ant Design has no default outline. Enable it in both frames when probing its colour.
+                Companions = token is "MenuPopupBorderColor" or "ColorBorderSecondary"
+                    ? [(MenuFlyoutPresenterTokens.Identity, "MenuPopupBorderThickness", "1")]
+                    : null,
                 Region = token is "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius" or "ColorBgTextHover" or "BorderRadius"
                     ? static root => PopupItemOf(root, "Open") : null,
                 Perturb = token == "MenuPopupMaxWidth" ? static _ => 140d : token == "MenuPopupMinWidth" ? static _ => 500d

@@ -24,7 +24,7 @@ public partial class FeedbackFamilyEffectTests
     private const string DialogThemes = "src/AtomUI.Desktop.Controls/Dialog/Themes/";
 
     internal static readonly OwnerReadList s_dialogSurface =
-        new(DialogThemes + "DialogSurfaceTheme.axaml", ["BorderRadiusLG", "BoxShadows", "FontWeightStrong", "MotionDurationMid"]);
+        new(DialogThemes + "DialogSurfaceTheme.axaml", ["BorderRadiusLG", "BoxShadows", "FontWeightStrong"]);
 
     internal static readonly OwnerReadList s_overlayDialogHeader =
         new(DialogThemes + "OverlayDialogHeaderTheme.axaml", ["IconSize", "SpacingSM"]);
@@ -36,7 +36,8 @@ public partial class FeedbackFamilyEffectTests
         new(DialogThemes + "OverlayDialogMaskTheme.axaml", ["ColorBgMask"]);
 
     internal static readonly OwnerReadList s_overlayDialogPresenter =
-        new(DialogThemes + "OverlayDialogPresenterTheme.axaml", ["MotionDurationMid", "MotionDurationSlow"]);
+        new(DialogThemes + "OverlayDialogPresenterTheme.axaml", ["MotionDurationMid", "MotionDurationSlow"],
+            "src/AtomUI.Desktop.Controls/Dialog/OverlayHost/OverlayDialogPresenter.cs");
 
     private static readonly OwnerReadList[] s_dialogParts =
         [s_dialogSurface, s_overlayDialogHeader, s_dialogCaptionButton, s_overlayDialogMask, s_overlayDialogPresenter];
@@ -129,7 +130,7 @@ public partial class FeedbackFamilyEffectTests
     [Fact]
     public void Dialog_Motion_Follows_The_Dialog_Motion_Tokens()
     {
-        // The surface zoom and the presenter (mask fade) durations are Dialog globals read by the identity-less parts.
+        // The presenter reads the Dialog's durations for both the surface zoom and mask fade.
         var create = CreateDialogRoot(static _ => { }, static () => new Dialog());
         var root   = create.Root();
         WithProvider(root, provider =>
@@ -145,8 +146,7 @@ public partial class FeedbackFamilyEffectTests
                                                                   .WithToken("MotionDurationSlow", slow.ToString("c"))
                                                                   .Build())
                               .Build();
-            WaitFor(() => presenter.OpeningMotionDuration == slow && surface.MotionDuration == mid);
-            surface.MotionDuration.ShouldBe(mid);
+            WaitFor(() => presenter.OpeningMotionDuration == slow && presenter.MotionDuration == mid);
             presenter.MotionDuration.ShouldBe(mid);
             presenter.OpeningMotionDuration.ShouldBe(slow);
 

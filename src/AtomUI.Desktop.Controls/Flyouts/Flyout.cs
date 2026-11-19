@@ -222,6 +222,8 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     private object? _pointerVerticalOffsetTokenKey;
 
     private CompositeDisposable? _globalResourceBindingDisposables;
+    private OwnerTokenPropertyBindings? _resourceTokens;
+    private Control? _resourcePlacementTarget;
 
     private IDisposable? _pointerHorizontalOffsetBinding;
 
@@ -304,7 +306,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             // cleanup must not dispose resources belonging to the next positioning session.
             _ = HideCore(canCancel: false);
         }
-        EnsureGlobalResourceBindings(placementTarget);
+        EnsurePlacementTokenBindings(placementTarget);
         if (Popup is PopupControl popup)
         {
             popup.SetCurrentValue(PopupControl.IsPopupPinnedOpenProperty, IsPopupPinnedOpen);
@@ -315,13 +317,18 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
                 return true;
             }
         }
-        return base.ShowAtCore(placementTarget, showAtPointer);
+        var opened = base.ShowAtCore(placementTarget, showAtPointer);
+        if (!opened && !IsOpen && !_hasPendingPinnedOpen)
+        {
+            ReleasePlacementTokenBindings();
+        }
+        return opened;
     }
 
     protected override void OnClosed()
     {
         base.OnClosed();
-        ReleaseGlobalResourceBindings();
+        ReleasePlacementTokenBindings();
     }
 
     protected override Control CreatePresenter()
@@ -373,7 +380,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         if (change.Property == RequestedPlacementProperty)
         {
             CoerceValue(PlacementProperty);
-            ConfigurePointerPlacementOffsets();
+            UpdatePointerOffsetTokenBindings();
         }
     }
 
@@ -413,19 +420,27 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     {
         _pointerHorizontalOffsetTokenKey = horizontalOffsetTokenKey;
         _pointerVerticalOffsetTokenKey   = verticalOffsetTokenKey;
-        ConfigurePointerPlacementOffsets();
+        UpdatePointerOffsetTokenBindings();
     }
 
     #endregion
 
     #region 内部协作 API
 
+    internal virtual (object PopupRoot, object OverlayHost) GetPopupShadowTokenResourceKeys() =>
+        (ControlTokenResourceKey.Own(typeof(FlyoutHost), FlyoutHostTokenKind.PopupRootShadow),
+         ControlTokenResourceKey.Own(typeof(FlyoutHost), FlyoutHostTokenKind.OverlayHostShadow));
+
     internal virtual AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverOpen);
 
     internal virtual AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverClose);
 
-    internal void ReleaseGlobalResourceBindings()
+    internal void ReleasePlacementTokenBindings()
     {
+        if (_resourcePlacementTarget is { } target)
+        {
+            target.ResourcesChanged -= HandlePlacementTargetResourcesChanged;
+        }
         _pointerHorizontalOffsetBinding?.Dispose();
         _pointerVerticalOffsetBinding?.Dispose();
         _pointerHorizontalOffsetBinding = null;
@@ -433,6 +448,9 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
         _globalResourceBindingDisposables?.Dispose();
         _globalResourceBindingDisposables = null;
+        _resourceTokens?.Dispose();
+        _resourceTokens = null;
+        _resourcePlacementTarget = null;
     }
 
     internal void CloseForLifecycle()
@@ -451,7 +469,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             CancelPendingPinnedOpen();
         }
 
-        ReleaseGlobalResourceBindings();
+        ReleasePlacementTokenBindings();
     }
 
     internal void SetMotionConfigurationOwner(AvaloniaObject? owner)
@@ -481,35 +499,48 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     #region 内部实现
 
-    private void EnsureGlobalResourceBindings(Control context)
+    private void EnsurePlacementTokenBindings(Control context)
     {
-        if (_globalResourceBindingDisposables is not null)
+        if (ReferenceEquals(_resourcePlacementTarget, context))
         {
             return;
         }
 
-        _globalResourceBindingDisposables = new CompositeDisposable(3)
+        ReleasePlacementTokenBindings();
+        // The Flyout is non-visual. Its values follow the runtime placement target's theme scope.
+        var tokens = new OwnerTokenPropertyBindings(context, 5, BindingPriority.Template);
+        var bindings = new CompositeDisposable(3);
+        _resourceTokens = tokens;
+        _resourcePlacementTarget = context;
+        _globalResourceBindingDisposables = bindings;
+        try
         {
-            TokenResourceBinder.CreateControlTokenBinding(
-                typeof(FlyoutHost),
-                context,
-                this,
-                PopupRootShadowProperty,
-                FlyoutHostTokenKind.PopupRootShadow),
-            TokenResourceBinder.CreateControlTokenBinding(
-                typeof(FlyoutHost),
-                context,
-                this,
-                OverlayHostShadowProperty,
-                FlyoutHostTokenKind.OverlayHostShadow),
-            TokenResourceBinder.CreateControlTokenBinding(
-                typeof(FlyoutHost),
-                context,
-                this,
-                MotionDurationProperty,
-                SharedTokenKind.MotionDurationMid)
-        };
-        ConfigurePointerPlacementOffsets(context);
+            var (popupRootKey, overlayHostKey) = GetPopupShadowTokenResourceKeys();
+            var popupRoot = tokens.Observe(0, popupRootKey);
+            var overlayHost = Equals(popupRootKey, overlayHostKey) ? popupRoot : tokens.Observe(1, overlayHostKey);
+            bindings.Add(Bind(PopupRootShadowProperty, popupRoot, BindingPriority.Template));
+            bindings.Add(Bind(OverlayHostShadowProperty, overlayHost, BindingPriority.Template));
+            bindings.Add(Bind(MotionDurationProperty,
+                tokens.Observe(2, ControlTokenResourceKey.Global(typeof(FlyoutHost), SharedTokenKind.MotionDurationMid)),
+                BindingPriority.Template));
+            context.ResourcesChanged += HandlePlacementTargetResourcesChanged;
+            UpdatePointerOffsetTokenBindings();
+        }
+        catch
+        {
+            ReleasePlacementTokenBindings();
+            throw;
+        }
+    }
+
+    private void HandlePlacementTargetResourcesChanged(object? sender, ResourcesChangedEventArgs e)
+    {
+        // PopupFlyoutBase sets the placement target as the popup's logical parent without adding it to LogicalChildren.
+        // Resource lookup follows that parent, but the popup needs the placement session to relay change notifications.
+        if (_popupControl is { } popup && ReferenceEquals(popup.Parent, sender))
+        {
+            ((IResourceHost)popup).NotifyHostedResourcesChanged(e);
+        }
     }
 
     private Popup CreatePopup()
@@ -639,7 +670,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             popup.SetPopupParent(null);
         }
         Target = null;
-        ReleaseGlobalResourceBindings();
+        ReleasePlacementTokenBindings();
     }
 
     private void ApplyLightDismissConfiguration(PopupControl popup)
@@ -649,14 +680,14 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             IsLightDismissEnabled);
     }
 
-    private void ConfigurePointerPlacementOffsets(Control? context = null)
+    private void UpdatePointerOffsetTokenBindings()
     {
         _pointerHorizontalOffsetBinding?.Dispose();
         _pointerVerticalOffsetBinding?.Dispose();
         _pointerHorizontalOffsetBinding = null;
         _pointerVerticalOffsetBinding   = null;
 
-        if (_globalResourceBindingDisposables is null)
+        if (_resourceTokens is not { } tokens)
         {
             return;
         }
@@ -665,11 +696,6 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             _pointerHorizontalOffsetTokenKey != null &&
             _pointerVerticalOffsetTokenKey != null)
         {
-            context ??= _popupControl?.PlacementTarget ?? _motionConfigurationOwner as Control;
-            if (context is null)
-            {
-                return;
-            }
             // Pointer offsets are configured on this non-visual Flyout, so AXAML cannot bind them to
             // the runtime placement target. The open-session bindings are released on close / detach.
             var horizontalKey = _pointerHorizontalOffsetTokenKey is FlyoutHostTokenKind horizontalToken
@@ -677,9 +703,14 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
             var verticalKey = _pointerVerticalOffsetTokenKey is FlyoutHostTokenKind verticalToken
                 ? ControlTokenResourceKey.Own(typeof(FlyoutHost), verticalToken) : _pointerVerticalOffsetTokenKey;
             _pointerHorizontalOffsetBinding = this.Bind(HorizontalOffsetProperty,
-                context.GetResourceObservable(horizontalKey), BindingPriority.Style);
+                tokens.Observe(3, horizontalKey), BindingPriority.Style);
             _pointerVerticalOffsetBinding = this.Bind(VerticalOffsetProperty,
-                context.GetResourceObservable(verticalKey), BindingPriority.Style);
+                tokens.Observe(4, verticalKey), BindingPriority.Style);
+        }
+        else
+        {
+            tokens.ClearKey(3);
+            tokens.ClearKey(4);
         }
     }
 

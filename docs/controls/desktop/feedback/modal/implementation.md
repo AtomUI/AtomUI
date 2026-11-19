@@ -211,6 +211,9 @@ Overlay 使用共享 Motion 的原生时钟。私有 Border 承担普通 Zoom �
 实际 Mask 是另一个透明度目标。入场 .2→1，使用 Slow / OutCirc；离场当前值→.2，使用 Mid / InOutCirc，表面透明度最终为零。
 无有效显式锚点时使用实际面板中心，原点在本次入场后冻结；遮罩使用对应时长的 Linear Fade。
 
+`OverlayDialogPresenter` 在挂树期间成组读取 `MotionDurationSlow` 和 `MotionDurationMid`。开场与离场分别在其播放开始时取值，独立设置的时长继续拥有优先级。
+`DialogSurface` 提供表面绘制与交互，表面与遮罩的播放时长统一由 `OverlayDialogPresenter` 读取。
+
 准备覆盖保持首帧透明，布局就绪后同步建立轨迹起点。关闭先替代当前入场再取消旧令牌，避免归一跳变。
 Show / Close / Dispose 的任务先登记后执行，重入取得同一任务；完成边界来自真实播放结果，不使用提交后定时器。
 

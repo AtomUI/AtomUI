@@ -102,6 +102,10 @@ Public API / ItemsSource / Command / Event
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
+非视觉 `Flyout` 随当前定位目标建立一组资源监听。默认阴影和动效时长保持 Template 优先级，Pointer 模式的自定义资源偏移保持
+Style 优先级。关闭或取消本次打开时释放监听，等待挂载的钉住弹层可保留到重试。改从另一个目标打开时改用新目标的作用域。
+独立 Popup 从逻辑父级查找资源，打开会话负责把当前定位目标的资源变化通知转发到 Popup，以更新已挂载的模板。会话释放时同步退订转发。
+
 稳定 template part 接入点：
 
 - `PART_ArrowDecorator`：稳定模板协作入口，重命名前必须同步主题和实现。

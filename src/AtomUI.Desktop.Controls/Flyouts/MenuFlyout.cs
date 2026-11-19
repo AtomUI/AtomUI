@@ -94,6 +94,9 @@ public class MenuFlyout : Flyout, IScrollAwareControl
 
     #region 内部协作 API
 
+    internal override (object PopupRoot, object OverlayHost) GetPopupShadowTokenResourceKeys() =>
+        (MenuFlyoutPresenterTokenKind.MenuPopupShadows, MenuFlyoutPresenterTokenKind.MenuPopupShadows);
+
     internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownOpen);
 
     internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownClose);

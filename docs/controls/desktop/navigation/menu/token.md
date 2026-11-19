@@ -48,6 +48,9 @@ Menu 的控件专项模型通过 Theme 消费 Token：
 Menu、ContextMenu、MenuFlyoutPresenter 各有独立 Own。20个真实弹层字段由 AbstractMenuPopupToken 复用，具体内部输入连接实际宿主与菜单项。TopLevel* 只属于 Menu，ContextMenuOffsetX/Y 只属于 ContextMenu。各自的有效全局值派生各自 Own，来源 Menu 覆盖不进入其他两种弹层。菜单栏顶层项主题 `TopLevelMenuItemTheme` 从 Menu
 所在的资源作用域查找，局部资源中同名主题优先于应用资源。
 
+独立 `MenuFlyout` 的原生和 Overlay Popup 默认阴影都取定位目标作用域内的 `MenuFlyoutPresenter.MenuPopupShadows`，应用设置的阴影属性可覆盖默认值。
+通过 `FlyoutHost` 承载时使用宿主转发的阴影属性。菜单弹层的边框由 `MenuPopupBorderColor` 和 `MenuPopupBorderThickness` 共同决定，Ant Design 默认厚度为 0。
+
 ## 5. 控件家族影响
 
 调整 Menu Token 时必须评估以下范围：

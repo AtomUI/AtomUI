@@ -51,9 +51,6 @@ internal sealed partial class DialogSurface : ContentControl, IDisposable
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         Dialog.IsMotionEnabledProperty.AddOwner<DialogSurface>();
 
-    internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<DialogSurface, TimeSpan>(nameof(MotionDuration));
-
     internal static readonly StyledProperty<bool> IsLoadingProperty =
         Dialog.IsLoadingProperty.AddOwner<DialogSurface>();
 
@@ -128,12 +125,6 @@ internal sealed partial class DialogSurface : ContentControl, IDisposable
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    internal TimeSpan MotionDuration
-    {
-        get => GetValue(MotionDurationProperty);
-        set => SetValue(MotionDurationProperty, value);
     }
 
     internal bool IsLoading

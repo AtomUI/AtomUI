@@ -6,6 +6,8 @@ using AtomUI.Exceptions;
 using AtomUI.Input;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Converters;
@@ -288,9 +290,6 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             o => o.EffectivePopupMinWidth,
             (o, v) => o.EffectivePopupMinWidth = v);
 
-    internal static readonly StyledProperty<double> PopupMinWidthProperty =
-        AvaloniaProperty.Register<NavMenuItem, double>(nameof(PopupMinWidth));
-
     internal static readonly DirectProperty<NavMenuItem, NavMenuMode> ModeProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, NavMenuMode>(nameof(Mode),
             o => o.Mode,
@@ -383,17 +382,13 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             o => o.EffectiveCollapsedTooltip);
 
     private double _effectivePopupMinWidth;
+    private double _popupMinWidth;
+    private OwnerTokenSet? _popupMinWidthTokens;
 
     internal double EffectivePopupMinWidth
     {
         get => _effectivePopupMinWidth;
         set => SetAndRaise(EffectivePopupMinWidthProperty, ref _effectivePopupMinWidth, value);
-    }
-
-    internal double PopupMinWidth
-    {
-        get => GetValue(PopupMinWidthProperty);
-        set => SetValue(PopupMinWidthProperty, value);
     }
 
     internal TimeSpan OpenCloseMotionDuration
@@ -624,6 +619,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         Level              = 0;
         IsTopLevel         = false;
         UpdatePseudoClasses();
+        ConfigureEffectivePopupMinWidth();
     }
     
     static NavMenuItem()
@@ -815,8 +811,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         {
             HasSubMenu = ItemCount > 0;
         }
-        else if (change.Property == BoundsProperty ||
-                 change.Property == PopupMinWidthProperty)
+        else if (change.Property == BoundsProperty || change.Property == ModeProperty)
         {
             ConfigureEffectivePopupMinWidth();
         }
@@ -929,20 +924,23 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     
     private void ConfigureEffectivePopupMinWidth()
     {
-        if (IsTopLevel)
+        if (!IsTopLevel || OwnerMenu is not { } menu || Mode == NavMenuMode.Inline)
         {
-            if (OwnerMenu is { } navMenu)
-            {
-                if (navMenu.EffectiveMode == NavMenuMode.Horizontal)
-                {
-                    EffectivePopupMinWidth = Math.Max(_itemHeader?.Bounds.Width ?? Bounds.Width, PopupMinWidth);
-                }
-                else
-                {
-                    EffectivePopupMinWidth = PopupMinWidth;
-                }
-            }
+            _popupMinWidthTokens?.Dispose();
+            _popupMinWidthTokens = null;
+            _popupMinWidth = 0;
+            return;
         }
+
+        if (_popupMinWidthTokens is null)
+        {
+            _popupMinWidthTokens = new OwnerTokenSet(this, 1, ConfigureEffectivePopupMinWidth);
+            _popupMinWidthTokens.SetResourceKey(0, NavMenuTokenKind.MenuPopupMinWidth);
+        }
+        _popupMinWidth = NavMenuPopupFrame.ReadLengthResource(_popupMinWidthTokens.GetValue(0), _popupMinWidth, 0);
+        EffectivePopupMinWidth = menu.EffectiveMode == NavMenuMode.Horizontal
+            ? Math.Max(_itemHeader?.Bounds.Width ?? Bounds.Width, _popupMinWidth)
+            : _popupMinWidth;
     }
 
     private void UpdatePseudoClasses()

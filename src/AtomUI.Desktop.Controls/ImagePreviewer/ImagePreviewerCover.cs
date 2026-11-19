@@ -228,7 +228,8 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 
     public ImagePreviewerCover()
     {
-        _ownerInputs = Primitives.OwnerThemeInputs.Bind(this, null, typeof(ImagePreviewer), OwnerInputs);
+        _ownerInputs = Primitives.OwnerThemeInputs.Bind(this, null, typeof(ImagePreviewer), OwnerInputs,
+            typeof(ImageGroupPreviewer));
     }
 
     static ImagePreviewerCover()

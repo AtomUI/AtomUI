@@ -122,6 +122,8 @@ header 背景与前景过渡以 `atom:TokenTransitions` 声明 `MotionDurationSl
 
 `MenuPopupMaxHeight` 的默认值为 `ItemHeight * 8`。短菜单按内容自然高度测量；长菜单由 popup 内部滚动容器承载，避免弹出层随条目数量无限增长。主题可以覆盖该 token 调整可见范围，但不应通过改变 `ItemHeight` 间接控制 popup 容量。
 
+弹层框从自身的资源作用域成组读取宽高上限，测量时同时使用可用空间与语义样式的尺寸。顶层触发项从自己的作用域读取最小宽度 token，保留横向模板使用的有效最小宽度。
+
 ### 2.7 Horizontal 导航 Token
 
 - `MenuHorizontalHeight`

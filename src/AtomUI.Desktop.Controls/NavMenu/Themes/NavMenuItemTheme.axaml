@@ -182,9 +182,6 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
-            <Setter Property="PopupMinWidth"
-                    Value="{atom:NavMenuTokenResource MenuPopupMinWidth}" />
-
             <Style Selector="^ /template/ atom|NavMenuPopupFrame#PART_PopupFrame">
                 <Setter Property="Background"
                         Value="{atom:NavMenuTokenResource MenuPopupBg}" />
@@ -192,10 +189,7 @@
                         Value="{atom:PopupTokenResource PopupCornerRadius}" />
                 <Setter Property="MinWidth"
                         Value="{atom:NavMenuTokenResource MenuPopupMinWidth}" />
-                <Setter Property="PopupMaxWidth"
-                        Value="{atom:NavMenuTokenResource MenuPopupMaxWidth}" />
-                <Setter Property="PopupMaxHeight"
-                        Value="{atom:NavMenuTokenResource MenuPopupMaxHeight}" />
+                <Setter Property="UsePopupMaxSizeTokenResources" Value="True" />
                 <Setter Property="Padding"
                         Value="{atom:NavMenuTokenResource MenuPopupContentPadding}" />
             </Style>

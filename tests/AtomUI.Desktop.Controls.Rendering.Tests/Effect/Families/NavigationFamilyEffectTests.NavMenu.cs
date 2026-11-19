@@ -129,7 +129,8 @@ public partial class NavigationFamilyEffectTests
                 return Inline(static menu => ItemOf(menu, "Delete").IsPointerHold = true, At("Delete"), dark: true);
 
             // ---- vertical: the submenu popup -------------------------------------------------------------------------
-            case "MenuPopupBg" or "ColorBgElevated" or "MenuPopupContentPadding" or "MenuPopupMinWidth":
+            case "MenuPopupBg" or "ColorBgElevated" or "MenuPopupContentPadding" or "MenuPopupMinWidth" or
+                "MenuPopupShadows" or "BoxShadowsSecondary":
                 return VerticalPopup(static popup => popup);
             case "DarkMenuPopupBg":
                 return VerticalPopup(static popup => popup, dark: true);

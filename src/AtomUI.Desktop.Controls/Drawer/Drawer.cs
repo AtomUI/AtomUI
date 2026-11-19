@@ -5,6 +5,7 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Media;
@@ -277,10 +278,7 @@ public partial class Drawer : Control,
     private DrawerContainer? _container;
     private CompositeDisposable? _relayBindingDisposables;
     private IDisposable? _motionBinding;
-    private IDisposable? _pushOffsetBinding;
-    private IDisposable? _edgeBorderColorBinding;
-    private IDisposable? _edgeBorderThicknessBinding;
-    private IDisposable? _dialogSizeBinding;
+    private OwnerTokenPropertyBindings? _drawerTokens;
     private Control? _openOnSizeChangedTarget;
     private int _visualTreeVersion;
     
@@ -305,18 +303,7 @@ public partial class Drawer : Control,
         base.OnAttachedToVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
-        _pushOffsetBinding?.Dispose();
-        _pushOffsetBinding = TokenResourceBinder.CreateControlTokenBinding(
-            this,
-            PushOffsetPercentProperty,
-            DrawerTokenKind.PushOffsetPercent);
-        _edgeBorderColorBinding?.Dispose();
-        _edgeBorderColorBinding = TokenResourceBinder.CreateControlTokenBinding(
-            this, EdgeBorderColorProperty, DrawerTokenKind.EdgeBorderColor);
-        _edgeBorderThicknessBinding?.Dispose();
-        _edgeBorderThicknessBinding = TokenResourceBinder.CreateControlTokenBinding(
-            this, EdgeBorderThicknessProperty, DrawerTokenKind.EdgeBorderThickness);
-        ApplyDialogSizeTokenBinding();
+        UpdateDrawerTokenBindings();
         _visualTreeVersion++;
         var parentDrawer = FindParentDrawer();
         _relayBindingDisposables?.Dispose();
@@ -349,14 +336,8 @@ public partial class Drawer : Control,
         base.OnDetachedFromVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = null;
-        _pushOffsetBinding?.Dispose();
-        _pushOffsetBinding = null;
-        _edgeBorderColorBinding?.Dispose();
-        _edgeBorderColorBinding = null;
-        _edgeBorderThicknessBinding?.Dispose();
-        _edgeBorderThicknessBinding = null;
-        _dialogSizeBinding?.Dispose();
-        _dialogSizeBinding = null;
+        _drawerTokens?.Dispose();
+        _drawerTokens = null;
         var visualTreeVersion = ++_visualTreeVersion;
         _relayBindingDisposables?.Dispose();
         _relayBindingDisposables = null;
@@ -421,7 +402,7 @@ public partial class Drawer : Control,
 
         if (change.Property == SizeTypeProperty)
         {
-            ApplyDialogSizeTokenBinding();
+            UpdateDialogSizeTokenBinding();
         }
         
         if (change.Property == OpenOnProperty)
@@ -629,15 +610,31 @@ public partial class Drawer : Control,
         RaiseCrossRootsChanged();
     }
     
-    private void ApplyDialogSizeTokenBinding()
+    private void UpdateDrawerTokenBindings()
     {
-        _dialogSizeBinding?.Dispose();
-        _dialogSizeBinding = null;
-        if (!this.IsAttachedToVisualTree())
+        _drawerTokens?.Dispose();
+        // The runtime overlay consumes these public values from the Drawer. Keep a single theme read group
+        // on the Drawer so the placement scope and Template priority do not depend on where the overlay is attached.
+        var tokens = new OwnerTokenPropertyBindings(this, 4, BindingPriority.Template);
+        _drawerTokens = tokens;
+        var ownerType = GetType();
+        try
         {
-            return;
+            tokens.Bind(0, PushOffsetPercentProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.PushOffsetPercent));
+            tokens.Bind(1, EdgeBorderColorProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.EdgeBorderColor));
+            tokens.Bind(2, EdgeBorderThicknessProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.EdgeBorderThickness));
+            UpdateDialogSizeTokenBinding();
         }
+        catch
+        {
+            _drawerTokens = null;
+            tokens.Dispose();
+            throw;
+        }
+    }
 
+    private void UpdateDialogSizeTokenBinding()
+    {
         var tokenKind = SizeType switch
         {
             CustomizableSizeType.Small  => DrawerTokenKind.SmallSize,
@@ -645,7 +642,7 @@ public partial class Drawer : Control,
             CustomizableSizeType.Large  => DrawerTokenKind.LargeSize,
             _                           => DrawerTokenKind.SmallSize
         };
-        _dialogSizeBinding = TokenResourceBinder.CreateControlTokenBinding(this, DialogSizeProperty, tokenKind);
+        _drawerTokens?.Bind(3, DialogSizeProperty, ControlTokenResourceKey.Own(GetType(), tokenKind));
     }
 
     private void ConfigureEffectiveDialogSize()

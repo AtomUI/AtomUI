@@ -7,7 +7,6 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Cursor" Value="Arrow" />
         <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
-        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationMid}" />
         <Setter Property="ContentViewportMinWidth" Value="{Binding $self.(atom:DialogSurface.ThemeMinWidth)}" />
         <Setter Property="ContentViewportMinHeight" Value="{Binding $self.(atom:DialogSurface.ThemeMinHeight)}" />
         <Setter Property="Template">

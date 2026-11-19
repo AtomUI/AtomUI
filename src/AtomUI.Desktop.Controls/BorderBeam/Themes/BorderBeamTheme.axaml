@@ -22,10 +22,7 @@
                                                Duration="{TemplateBinding Duration}"
                                                BeamSize="{TemplateBinding BeamSize}"
                                                Count="{TemplateBinding Count}"
-                                               BeamOpacity="{TemplateBinding BeamOpacity}"
-                                               MaxVisibleStopPercent="{TemplateBinding MaxVisibleStopPercent}"
-                                               DefaultStartColor="{TemplateBinding DefaultStartColor}"
-                                               DefaultEndColor="{TemplateBinding DefaultEndColor}" />
+                                               Paint="{TemplateBinding EffectivePaint}" />
                 </Grid>
             </ControlTemplate>
         </Setter>
@@ -33,12 +30,9 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BorderThickness" Value="{atom:BorderBeamTokenResource BorderThickness}" />
         <Setter Property="CornerRadius" Value="{atom:BorderBeamTokenResource BorderRadiusLG}" />
-        <Setter Property="DefaultStartColor" Value="{atom:BorderBeamTokenResource ColorPrimary}" />
-        <Setter Property="DefaultEndColor" Value="{atom:BorderBeamTokenResource ColorPrimaryHover}" />
+        <Setter Property="UseBeamPaintTokenResources" Value="True" />
         <Setter Property="Duration" Value="{atom:BorderBeamTokenResource MotionDuration}" />
         <Setter Property="BeamSize" Value="{atom:BorderBeamTokenResource BeamSize}" />
-        <Setter Property="BeamOpacity" Value="{atom:BorderBeamTokenResource BeamOpacity}" />
-        <Setter Property="MaxVisibleStopPercent" Value="{atom:BorderBeamTokenResource MaxVisibleStopPercent}" />
 
         <Style Selector="^[IsMotionEnabled=False] /template/ atom|BorderBeamPresenter#PART_BeamPresenter">
             <Setter Property="IsVisible" Value="False" />

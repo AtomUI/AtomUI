@@ -57,6 +57,8 @@ BorderBeamToken
 
 默认渐变使用 `ColorPrimary 0% -> ColorPrimaryHover MaxVisibleStopPercent% -> Transparent`。用户设置 `Color` 或 `ColorStops` 后，颜色来源切换为实例配置，但 `MaxVisibleStopPercent` 仍控制停靠点映射。
 
+宿主成组读取两项默认色、不透明度与可见段终点，并通过一次模板投射交给 Presenter。
+
 BorderBeamToken 不定义业务色组，不定义 preset color 组合，不定义 `Ocean`、`Aurora`、`Sunset` 等示例色板。示例色板属于 Gallery 示例数据，不属于控件 Token。
 
 `Count` 控制单个 BorderBeam 实例沿同一边界绘制的光束数量，默认值为 `1`，非正值按 `1` 处理。它不描述

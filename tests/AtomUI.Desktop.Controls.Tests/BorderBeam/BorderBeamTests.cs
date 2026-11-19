@@ -127,8 +127,9 @@ public class BorderBeamTests
         ShowInWindow(borderBeam, () =>
         {
             borderBeam.ApplyTemplate();
-            borderBeam.DefaultStartColor.ShouldBeAssignableTo<ISolidColorBrush>();
-            borderBeam.DefaultEndColor.ShouldBeAssignableTo<ISolidColorBrush>();
+            var presenter = borderBeam.GetVisualDescendants().OfType<BorderBeamPresenter>().Single();
+            presenter.Paint.StartColor.ShouldBeAssignableTo<ISolidColorBrush>();
+            presenter.Paint.EndColor.ShouldBeAssignableTo<ISolidColorBrush>();
         });
     }
 

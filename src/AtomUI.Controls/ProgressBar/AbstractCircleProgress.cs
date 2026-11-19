@@ -1,11 +1,14 @@
-using AtomUI.Data;
+using System.Globalization;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using ProgressPath = Avalonia.Controls.Shapes.Path;
@@ -55,6 +58,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractCircleProgress, double>(
             nameof(CircleMinimumIconSize));
 
+    internal static readonly StyledProperty<bool> UseExtraInfoSizeTokenResourcesProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, bool>(nameof(UseExtraInfoSizeTokenResources));
+
     // Percentage font size and status icon size computed from the circle size (bounded below by the Tokens). The control
     // theme projects them to FontSize and to the icon presenters, so a local FontSize or an application Style still wins.
     internal static readonly StyledProperty<double> ExtraInfoFontSizeProperty =
@@ -88,6 +94,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(CircleMinimumIconSizeProperty, value);
     }
 
+    internal bool UseExtraInfoSizeTokenResources
+    {
+        get => GetValue(UseExtraInfoSizeTokenResourcesProperty);
+        set => SetValue(UseExtraInfoSizeTokenResourcesProperty, value);
+    }
+
     internal double ExtraInfoFontSize
     {
         get => GetValue(ExtraInfoFontSizeProperty);
@@ -109,6 +121,11 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     #endregion
+
+    private OwnerTokenSet? _circleMinimumTokens;
+    private (double Text, double Icon) _circleMinimums;
+
+    private protected virtual (object Text, object Icon)? ExtraInfoSizeTokenResourceKeys => null;
 
     private ProgressPath? _progressRail;
     private ProgressPath? _progressTrack;
@@ -300,17 +317,19 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
-        
+
+        if (change.Property == UseExtraInfoSizeTokenResourcesProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateExtraInfoSizeTokenSubscription();
+        }
+
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == WidthProperty || change.Property == HeightProperty ||
                 change.Property == CircleMinimumTextFontSizeProperty ||
                 change.Property == CircleMinimumIconSizeProperty)
             {
-                var circleSize = CalculateCircleSize();
-                CalculateStrokeThickness(circleSize);
-                SetupExtraInfoFontSize(circleSize);
-                SetupExtraInfoIconSize(circleSize);
+                UpdateCircleMetrics();
             }
         }
 
@@ -335,20 +354,112 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
     }
 
-    private void SetupExtraInfoFontSize(double circleSize)
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        var fontSize = circleSize * 0.15 + 6;
-        if (fontSize < CircleMinimumTextFontSize)
+        base.OnAttachedToLogicalTree(e);
+        UpdateExtraInfoSizeTokenSubscription();
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        _circleMinimumTokens?.Dispose();
+        _circleMinimumTokens = null;
+        _circleMinimums = default;
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_circleMinimumTokens is not null)
         {
-            fontSize = CircleMinimumTextFontSize;
+            // A reused template may have picked up a new resource scope before visual attachment.
+            SetupExtraInfoSize(CalculateCircleSize());
+        }
+    }
+
+    private void UpdateExtraInfoSizeTokenSubscription()
+    {
+        if (UseExtraInfoSizeTokenResources && ExtraInfoSizeTokenResourceKeys is { } keys)
+        {
+            if (_circleMinimumTokens is not null)
+            {
+                return;
+            }
+
+            _circleMinimumTokens = new OwnerTokenSet(this, 2, RefreshCircleMinimums);
+            try
+            {
+                _circleMinimumTokens.SetResourceKey(0, keys.Text);
+                _circleMinimumTokens.SetResourceKey(1, keys.Icon);
+                RefreshCircleMinimums();
+            }
+            catch
+            {
+                _circleMinimumTokens.Dispose();
+                _circleMinimumTokens = null;
+                _circleMinimums = default;
+                throw;
+            }
+        }
+        else if (_circleMinimumTokens is not null)
+        {
+            _circleMinimumTokens.Dispose();
+            _circleMinimumTokens = null;
+            RefreshCircleMinimums();
+        }
+    }
+
+    private void RefreshCircleMinimums()
+    {
+        var next = (ReadMinimum(_circleMinimumTokens?.GetValue(0), _circleMinimums.Text),
+                    ReadMinimum(_circleMinimumTokens?.GetValue(1), _circleMinimums.Icon));
+        if (_circleMinimums.Equals(next))
+        {
+            return;
+        }
+
+        _circleMinimums = next;
+        if (this.IsAttachedToVisualTree())
+        {
+            SetupExtraInfoSize(CalculateCircleSize());
+        }
+    }
+
+    private static double ReadMinimum(object? value, double previous)
+    {
+        if (value is double size)
+        {
+            return size;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+
+        // Match the original typed theme setters for numeric resources and invalid values.
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
+    private void SetupExtraInfoSize(double circleSize)
+    {
+        var textMinimum = IsSet(CircleMinimumTextFontSizeProperty) ? CircleMinimumTextFontSize : _circleMinimums.Text;
+        var iconMinimum = IsSet(CircleMinimumIconSizeProperty) ? CircleMinimumIconSize : _circleMinimums.Icon;
+        var fontSize = circleSize * 0.15 + 6;
+        if (fontSize < textMinimum)
+        {
+            fontSize = textMinimum;
         }
 
         ExtraInfoFontSize = fontSize;
-    }
-
-    private void SetupExtraInfoIconSize(double circleSize)
-    {
-        ExtraInfoIconSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
+        ExtraInfoIconSize = Math.Max(circleSize / 4.5, iconMinimum);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -448,7 +559,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override Rect GetProgressBarRect(Rect controlRect)
     {
-        return new Rect(new Point(0, 0), controlRect.Size);
+        var size = controlRect.Size;
+        var diameter = Math.Min(size.Width, size.Height);
+        return new Rect(size).CenterRect(new Rect(new Size(diameter, diameter)));
     }
 
     protected override Rect GetExtraInfoRect(Rect controlRect)
@@ -475,10 +588,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override void NotifyEffectSizeTypeChanged()
     {
+        UpdateCircleMetrics();
+    }
+
+    private void UpdateCircleMetrics()
+    {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        SetupExtraInfoFontSize(circleSize);
-        SetupExtraInfoIconSize(circleSize);
+        SetupExtraInfoSize(circleSize);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -600,13 +717,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         var strokeThickness = double.IsFinite(EffectiveStrokeThickness)
             ? Math.Max(0, EffectiveStrokeThickness)
             : 0;
-        var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
-        var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));
-        return new Rect(
-            (size.Width - width) / 2,
-            (size.Height - height) / 2,
-            width,
-            height);
+        // Keep both radii equal when the parent arranges the control into a rectangular slot.
+        var diameter = Math.Floor(Math.Max(0, Math.Min(size.Width, size.Height) - strokeThickness));
+        return new Rect(size).CenterRect(new Rect(new Size(diameter, diameter)));
     }
 
     private void UpdateTemplateProgressVisuals(Size size)

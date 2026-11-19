@@ -237,6 +237,7 @@ ProgressBar 不依赖运行时反射、字符串 binding、动态类型扫描或
 - 默认颜色来自各进度控件自己的终端 Token 与其有效 Global Token。
 - `TrailColor` 会写入 `GrooveBrush` local value；清空后恢复主题资源。
 - 状态图标由 `IconPresenter` 承载，默认图标在模板应用后以 template priority 设置。
+- 线形控件的主题按有效档位选择状态图标尺寸，信息区测量与 `IconPresenter` 的宽高共用 `LineInfoIconSize`。
 
 性能边界：
 

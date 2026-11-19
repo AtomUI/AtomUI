@@ -47,6 +47,8 @@ CircleProgress 的默认进度色，`Controls[ProgressBar].Tokens[DefaultColor]`
 
 ### 2.3 ProgressBar Token
 
+- `LineStrokeThicknessLG` / `LineStrokeThickness` / `LineStrokeThicknessSM` 提供大、中、小三档线宽，默认 8/6/4 DIP。
+  控件通过资源读取组直接取得这三档值，以计算档位和轨道厚度。显式 `IndicatorThickness` 与内嵌信息区尺寸规则继续参与有效厚度计算。
 - `LineBorderRadius`：圆头（`StrokeLineCap=Round`）线形进度的 rail / track / success 圆角，默认 100（胶囊形；此前主题
   硬编码 `CornerRadius=1000`，对高度小于 200px 的进度条两者都是胶囊）。
 - `LineProgressPadding`：内嵌百分比文本和进度条边缘之间的内部 padding，默认 `UniformlyPaddingXXS / 2`。
@@ -67,7 +69,7 @@ CircleProgress 的默认进度色，`Controls[ProgressBar].Tokens[DefaultColor]`
 - `CircleMinimumTextFontSize`：按圆形尺寸计算的文本字号下限，默认 `FontSizeSM - 2`。
 - `CircleMinimumIconSize`：按圆形尺寸计算的状态图标尺寸下限，默认 `SizeXS`。
 
-两个下限变化后会立即重新计算字号与图标尺寸。
+`CircleProgress` 和 `DashboardProgress` 在桌面默认主题中用一组资源读取各自的两个 Own Token。整组变化后立即重新计算字号与图标尺寸。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -89,9 +91,10 @@ direct render + template part layout
 | Token 分类 | 主要消费点 |
 | --- | --- |
 | 默认颜色 | 各控件主题设置默认 `StrokeBrush` 和 `GrooveBrush`。 |
-| 线形间距与图标 | 线形控件主题设置 `LineExtraInfoMargin`、`LineProgressPadding` 和内部 `PresetLineInfoIconSize(SM)`；`AbstractLineProgressTheme.axaml` 按 `EffectiveSizeType` 选择图标尺寸。 |
+| 线形间距 | 普通和分段进度条通过资源读取组读取各自的 `LineExtraInfoMargin`，普通进度条还读取 `LineProgressPadding`。 |
+| 线形状态图标 | `ProgressBarTheme.axaml` 和 `StepsProgressBarTheme.axaml` 按 `EffectiveSizeType` 将对应的尺寸 Token 写入 `LineInfoIconSize`。信息区测量与图标宽高都使用该有效值。 |
 | 步骤间距 | `StepsProgressBarTheme.axaml` 设置内部 `ChunkSpace` 和 `MinChunkWidth`。 |
-| 圆形内部信息 | 圆形控件主题设置文本颜色和文本、图标最小尺寸；计算出的字号和图标尺寸经内部属性由 `AbstractCircleProgressTheme.axaml` 投射到 `FontSize` 和状态图标。 |
+| 圆形内部信息 | 圆形控件主题设置文本颜色并启用两项尺寸下限的资源读取。计算出的字号和图标尺寸经内部属性由 `AbstractCircleProgressTheme.axaml` 投射到 `FontSize` 和状态图标。 |
 | 状态色 | `AbstractProgressBarTheme.axaml` 以 `OwnerTokenResource` 读取成功、错误、disabled 颜色；状态图标画刷先写入进度控件的内部画刷再向下绑定（IconPresenter 有自己的 identity）。 |
 | 动效 | `AbstractProgressBarTheme.axaml` 的 `Value`、`StrokeBrush`、`Foreground` 过渡以 `atom:TokenTransitions` 声明，按接收的进度控件解析。 |
 

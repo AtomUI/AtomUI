@@ -26,28 +26,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     #endregion
 
-    #region 内部属性定义
-
-    internal static readonly StyledProperty<IBrush?> ColorTextLabelProperty =
-        AvaloniaProperty.Register<AbstractGeneralProgressBar, IBrush?>(nameof(ColorTextLabel));
-
-    internal static readonly StyledProperty<IBrush?> ColorTextLightSolidProperty =
-        AvaloniaProperty.Register<AbstractGeneralProgressBar, IBrush?>(nameof(ColorTextLightSolid));
-
-    internal IBrush? ColorTextLabel
-    {
-        get => GetValue(ColorTextLabelProperty);
-        set => SetValue(ColorTextLabelProperty, value);
-    }
-
-    internal IBrush? ColorTextLightSolid
-    {
-        get => GetValue(ColorTextLightSolidProperty);
-        set => SetValue(ColorTextLightSolidProperty, value);
-    }
-    #endregion
-
     private LineProgressPanel? _progressBody;
+    private (Color? Label, Color? Solid) _innerLabelColors;
 
     private protected override bool HasTemplateProgressVisuals => _progressBody is not null;
 
@@ -199,19 +179,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected override void CalculateStrokeThickness()
     {
-        double strokeThickness;
-        if (EffectiveSizeType == SizeType.Large)
-        {
-            strokeThickness = LARGE_STROKE_THICKNESS;
-        }
-        else if (EffectiveSizeType == SizeType.Middle)
-        {
-            strokeThickness = MIDDLE_STROKE_THICKNESS;
-        }
-        else
-        {
-            strokeThickness = SMALL_STROKE_THICKNESS;
-        }
+        double strokeThickness = QueryLineStrokeThickness(EffectiveSizeType);
 
         if (!double.IsNaN(IndicatorThickness))
         {
@@ -307,34 +275,34 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM); a host
-        // without that theme has no presets yet, so the control's own FontSize stands in.
-        var fontSize   = PresetFontSize > 0 ? PresetFontSize : FontSize;
-        var fontSizeSM = PresetFontSizeSM > 0 ? PresetFontSizeSM : FontSize;
+        // The preset font sizes come from the control's effective Tokens through the token-query contract; a host
+        // without a theme falls back to the control's own FontSize inside the query itself.
+        var fontSize   = QueryPresetFontSize(small: false);
+        var fontSizeSM = QueryPresetFontSize(small: true);
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
         {
             _largeSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(LARGE_STROKE_THICKNESS, defaultExtraInfoSize.Height),
+                Math.Max(QueryLineStrokeThickness(SizeType.Large), defaultExtraInfoSize.Height),
                 defaultExtraInfoSize.Height + LineProgressPadding * 2);
             _middleSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(MIDDLE_STROKE_THICKNESS, defaultExtraInfoSize.Height),
+                Math.Max(QueryLineStrokeThickness(SizeType.Middle), defaultExtraInfoSize.Height),
                 defaultExtraInfoSize.Height + LineProgressPadding * 2);
             _smallSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(SMALL_STROKE_THICKNESS, smallExtraInfoSize.Height),
+                Math.Max(QueryLineStrokeThickness(SizeType.Small), smallExtraInfoSize.Height),
                 smallExtraInfoSize.Height + LineProgressPadding * 2);
         }
         else
         {
             _largeSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(LARGE_STROKE_THICKNESS, defaultExtraInfoSize.Width),
+                Math.Max(QueryLineStrokeThickness(SizeType.Large), defaultExtraInfoSize.Width),
                 defaultExtraInfoSize.Width + LineProgressPadding * 2);
             _middleSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(MIDDLE_STROKE_THICKNESS, defaultExtraInfoSize.Width),
+                Math.Max(QueryLineStrokeThickness(SizeType.Middle), defaultExtraInfoSize.Width),
                 defaultExtraInfoSize.Width + LineProgressPadding * 2);
             _smallSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(SMALL_STROKE_THICKNESS, smallExtraInfoSize.Width),
+                Math.Max(QueryLineStrokeThickness(SizeType.Small), smallExtraInfoSize.Width),
                 smallExtraInfoSize.Width + LineProgressPadding * 2);
         }
 
@@ -521,7 +489,8 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
                 !PercentPosition.IsInner)
             {
                 // 只要图标
-                return new Size(LineInfoIconSize, LineInfoIconSize);
+                var iconSize = LineInfoIconSize;
+                return new Size(iconSize, iconSize);
             }
 
             var textSize = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, Percentage), fontSize, FontFamily);
@@ -565,9 +534,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         base.NotifyPropertyChanged(change);
         if (change.Property == StrokeBrushProperty ||
             change.Property == ForegroundProperty ||
-            change.Property == PercentPositionProperty ||
-            change.Property == ColorTextLabelProperty ||
-            change.Property == ColorTextLightSolidProperty)
+            change.Property == PercentPositionProperty)
         {
             SetupPercentLabelColor();
         }
@@ -660,6 +627,15 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
     }
 
+    private protected void SetInnerLabelColorCandidates(Color? label, Color? solid)
+    {
+        if (_innerLabelColors != (label, solid))
+        {
+            _innerLabelColors = (label, solid);
+            SetupPercentLabelColor();
+        }
+    }
+
     private void SetupPercentLabelColor()
     {
         if (!PercentPosition.IsInner)
@@ -668,12 +644,10 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         }
         else
         {
-            if (ColorTextLabel != null && ColorTextLightSolid != null)
+            if (_innerLabelColors is ({ } colorTextLabel, { } colorTextLightSolid))
             {
                 // 根据当前的 Stroke 笔刷计算可读性
                 // 但是渐变笔刷就麻烦了，暂时不支持吧
-                var colorTextLabel      = (ColorTextLabel as ISolidColorBrush)!.Color;
-                var colorTextLightSolid = (ColorTextLightSolid as ISolidColorBrush)!.Color;
                 if (MathUtils.AreClose(Value, 0))
                 {
                     if (GrooveBrush is ISolidColorBrush grooveBrush)

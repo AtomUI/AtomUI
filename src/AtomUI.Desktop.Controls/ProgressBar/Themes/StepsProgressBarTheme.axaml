@@ -10,13 +10,14 @@
             <themes:AbstractLineProgressTheme TargetType="atom:StepsProgressBar" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="LineSizeTokenResourceMode" Value="FontAndStepPresets" />
         <Setter Property="GrooveBrush" Value="{atom:StepsProgressBarTokenResource RemainingColor}" />
         <Setter Property="StrokeBrush" Value="{atom:StepsProgressBarTokenResource DefaultColor}" />
-        <Setter Property="LineExtraInfoMargin" Value="{atom:StepsProgressBarTokenResource LineExtraInfoMargin}" />
-        <Setter Property="PresetLineInfoIconSize" Value="{atom:StepsProgressBarTokenResource LineInfoIconSize}" />
-        <Setter Property="PresetLineInfoIconSizeSM" Value="{atom:StepsProgressBarTokenResource LineInfoIconSizeSM}" />
-        <Setter Property="ChunkSpace" Value="{atom:StepsProgressBarTokenResource ProgressStepMarginInlineEnd}" />
-        <Setter Property="MinChunkWidth" Value="{atom:StepsProgressBarTokenResource ProgressStepMinWidth}" />
+        <Setter Property="LineInfoIconSize" Value="{atom:StepsProgressBarTokenResource LineInfoIconSize}" />
+
+        <Style Selector="^[EffectiveSizeType=Middle], ^[EffectiveSizeType=Small]">
+            <Setter Property="LineInfoIconSize" Value="{atom:StepsProgressBarTokenResource LineInfoIconSizeSM}" />
+        </Style>
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:StepsProgressBar">

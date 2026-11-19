@@ -10,17 +10,14 @@
             <themes:AbstractLineProgressTheme TargetType="atom:ProgressBar" />
         </ControlTheme.BasedOn>
 
+        <Setter Property="LineSizeTokenResourceMode" Value="FontAndStrokePresets" />
         <Setter Property="GrooveBrush" Value="{atom:ProgressBarTokenResource RemainingColor}" />
         <Setter Property="StrokeBrush" Value="{atom:ProgressBarTokenResource DefaultColor}" />
-        <Setter Property="LineProgressPadding" Value="{atom:ProgressBarTokenResource LineProgressPadding}" />
-        <Setter Property="LineExtraInfoMargin" Value="{atom:ProgressBarTokenResource LineExtraInfoMargin}" />
-        <Setter Property="PresetLineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
-        <Setter Property="PresetLineInfoIconSizeSM" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
-        <!-- The inner percentage label takes the more readable of InnerLabelColor and ColorTextLightSolid. -->
-        <Setter Property="ColorTextLabel"
-                Value="{atom:ProgressBarTokenResource InnerLabelColor}" />
-        <Setter Property="ColorTextLightSolid"
-                Value="{atom:ProgressBarTokenResource ColorTextLightSolid}" />
+        <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
+
+        <Style Selector="^[EffectiveSizeType=Middle], ^[EffectiveSizeType=Small]">
+            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+        </Style>
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ProgressBar">

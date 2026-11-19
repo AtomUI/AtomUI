@@ -6,6 +6,24 @@
 
 - 只记录会影响 ProgressBar 设计理解、兼容边界、实现架构或维护方式的变化。
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
+
+## 2026-11-19
+
+- 普通和分段进度条的主题将状态图标尺寸归并到一个内部属性，供布局测量与图标模板共同使用。
+
+## 2026-11-18
+
+- Geometry
+  - CircleProgress 和 DashboardProgress 在非方形布局中以短边确定轨道直径，轨道、进度弧和成功弧共用居中的正圆视口。
+
+- Theme
+  - 线厚度阶梯由控件专属 Token `LineStrokeThicknessLG`、`LineStrokeThickness` 和 `LineStrokeThicknessSM` 提供，默认 8/6/4。
+    线宽与布局使用的字号档位由同一个挂树期资源读取组提供。实际厚度变化时触发重新测量，模板仍设置显示字号。
+  - 完成和异常图标的绘制与信息区测量使用同一档位。Large 使用 `LineInfoIconSize`，Middle 和 Small 使用 `LineInfoIconSizeSM`。
+- Shadcn
+  - `ShadcnProgressBarTokens` 控件阶段：指示条 `--primary`、轨道 `--muted`（此前 antd `ColorInfo` 蓝在所有中性风格上错色）；
+    高度/圆角按附录 C 每风格单值（Nova 4/Vega 6/Maia 12·r26/Lyra 4·r0/Mira 4·r8/Luma 12/Sera 2·r0/Rhea 8·r18），
+    单值风格三档同值（与 Luma 按钮圆角阶梯 26/26/26 同一表达方式）。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
 ## 2026-11-15

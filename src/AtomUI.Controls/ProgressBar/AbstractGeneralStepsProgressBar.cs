@@ -66,34 +66,22 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     #endregion
 
-    #region 内部属性定义
+    private (double Gap, double MinimumWidth) _resourceStepSize = (DEFAULT_CHUNK_SPACE, 0);
 
-    // Gap between two steps and the minimum step width, filled by the control theme from the control's own Tokens.
-    internal static readonly StyledProperty<double> ChunkSpaceProperty =
-        AvaloniaProperty.Register<AbstractGeneralStepsProgressBar, double>(nameof(ChunkSpace), DEFAULT_CHUNK_SPACE);
+    internal double ChunkSpace => _resourceStepSize.Gap;
 
-    internal static readonly StyledProperty<double> MinChunkWidthProperty =
-        AvaloniaProperty.Register<AbstractGeneralStepsProgressBar, double>(nameof(MinChunkWidth));
-
-    internal double ChunkSpace
+    private protected bool SetResourceStepSize(double gap, double minimumWidth)
     {
-        get => GetValue(ChunkSpaceProperty);
-        set => SetValue(ChunkSpaceProperty, value);
+        var previous = _resourceStepSize;
+        _resourceStepSize = (gap, minimumWidth);
+        return _resourceStepSize != previous;
     }
-
-    internal double MinChunkWidth
-    {
-        get => GetValue(MinChunkWidthProperty);
-        set => SetValue(MinChunkWidthProperty, value);
-    }
-
-    #endregion
 
     #region 内部协作 API
 
     internal double GetChunkWidth()
     {
-        return Math.Max(GetPresetChunkWidth(), MinChunkWidth);
+        return Math.Max(GetPresetChunkWidth(), _resourceStepSize.MinimumWidth);
     }
 
     private double GetPresetChunkWidth()
@@ -165,8 +153,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     static AbstractGeneralStepsProgressBar()
     {
-        AffectsMeasure<AbstractGeneralStepsProgressBar>(StepsProperty, ChunkWidthProperty, ChunkHeightProperty,
-            ChunkSpaceProperty, MinChunkWidthProperty);
+        AffectsMeasure<AbstractGeneralStepsProgressBar>(StepsProperty, ChunkWidthProperty, ChunkHeightProperty);
         AffectsArrange<AbstractGeneralStepsProgressBar>(PercentPositionProperty);
         AffectsRender<AbstractGeneralStepsProgressBar>(StepsStrokeBrushProperty);
     }
@@ -251,7 +238,7 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
     protected override void CalculateStrokeThickness()
     {
         // 不改变高度
-        var strokeThickness = LARGE_STROKE_THICKNESS;
+        var strokeThickness = QueryLineStrokeThickness(SizeType.Large);
         if (!double.IsNaN(ChunkHeight))
         {
             strokeThickness = ChunkHeight;
@@ -308,28 +295,28 @@ public abstract class AbstractGeneralStepsProgressBar : AbstractLineProgress
 
     protected void CalculateSizeTypeThresholdValue()
     {
-        // The preset font sizes come from the control's effective Tokens through the theme (PresetFontSize / SM).
-        var fontSize   = PresetFontSize;
-        var fontSizeSM = PresetFontSizeSM;
+        // The preset font sizes come from the control's effective Tokens through the token-query contract.
+        var fontSize   = QueryPresetFontSize(small: false);
+        var fontSizeSM = QueryPresetFontSize(small: true);
         var defaultExtraInfoSize = CalculateExtraInfoSize(fontSize);
         var smallExtraInfoSize   = CalculateExtraInfoSize(fontSizeSM);
         if (Orientation == Orientation.Horizontal)
         {
             _largeSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(LARGE_STROKE_THICKNESS, defaultExtraInfoSize.Height));
+                Math.Max(QueryLineStrokeThickness(SizeType.Large), defaultExtraInfoSize.Height));
             _middleSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(MIDDLE_STROKE_THICKNESS, defaultExtraInfoSize.Height));
+                Math.Max(QueryLineStrokeThickness(SizeType.Middle), defaultExtraInfoSize.Height));
             _smallSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(SMALL_STROKE_THICKNESS, smallExtraInfoSize.Height));
+                Math.Max(QueryLineStrokeThickness(SizeType.Small), smallExtraInfoSize.Height));
         }
         else
         {
             _largeSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(LARGE_STROKE_THICKNESS, defaultExtraInfoSize.Width));
+                Math.Max(QueryLineStrokeThickness(SizeType.Large), defaultExtraInfoSize.Width));
             _middleSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(MIDDLE_STROKE_THICKNESS, defaultExtraInfoSize.Width));
+                Math.Max(QueryLineStrokeThickness(SizeType.Middle), defaultExtraInfoSize.Width));
             _smallSizeTypeThresholdValue = new SizeTypeThresholdValue(
-                Math.Max(SMALL_STROKE_THICKNESS, smallExtraInfoSize.Width));
+                Math.Max(QueryLineStrokeThickness(SizeType.Small), smallExtraInfoSize.Width));
         }
 
         _sizeTypeThresholdValuesInitialized = true;

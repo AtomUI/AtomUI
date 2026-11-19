@@ -173,8 +173,6 @@ internal sealed class StepsProgressPanel : Panel
         if (e.Property == AbstractGeneralStepsProgressBar.StepsProperty ||
             e.Property == AbstractGeneralStepsProgressBar.ChunkWidthProperty ||
             e.Property == AbstractGeneralStepsProgressBar.ChunkHeightProperty ||
-            e.Property == AbstractGeneralStepsProgressBar.ChunkSpaceProperty ||
-            e.Property == AbstractGeneralStepsProgressBar.MinChunkWidthProperty ||
             e.Property == AbstractProgressBar.EffectiveSizeTypeProperty ||
             e.Property == AbstractLineProgress.OrientationProperty ||
             e.Property == AbstractGeneralStepsProgressBar.PercentPositionProperty ||

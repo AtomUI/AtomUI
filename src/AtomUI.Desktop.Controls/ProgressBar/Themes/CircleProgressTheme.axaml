@@ -12,8 +12,7 @@
 
         <Setter Property="GrooveBrush" Value="{atom:CircleProgressTokenResource RemainingColor}" />
         <Setter Property="StrokeBrush" Value="{atom:CircleProgressTokenResource DefaultColor}" />
-        <Setter Property="CircleMinimumTextFontSize" Value="{atom:CircleProgressTokenResource CircleMinimumTextFontSize}" />
-        <Setter Property="CircleMinimumIconSize" Value="{atom:CircleProgressTokenResource CircleMinimumIconSize}" />
+        <Setter Property="UseExtraInfoSizeTokenResources" Value="True" />
         <Style Selector="^[IsEnabled=True]">
             <Setter Property="Foreground" Value="{atom:CircleProgressTokenResource CircleTextColor}" />
         </Style>

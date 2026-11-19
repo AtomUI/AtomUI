@@ -524,7 +524,7 @@ indicator 是每个 owner 唯一的信息 `Panel`，统一包裹百分比 label�
 | --- | --- | --- | --- | --- |
 | `ProgressBar` | `SizeType=Large` | Large/Middle/Small track thickness 为 `8/6/4` | `IndicatorThickness`；横向 Height 或纵向 Width 可影响 effective size | body、rail、track Setter 不得破坏外部/内嵌 indicator 的预留空间 |
 | `StepsProgressBar` | `SizeType=Large` | 自动 `ChunkWidth` 为 `14/6/2`；默认 `ChunkHeight=8` | `ChunkWidth`、`ChunkHeight`、`IndicatorThickness` | 自动宽度不得写回 public `ChunkWidth`，尺寸档切换必须重新计算；runtime Rectangle 间距保持 2 |
-| `CircleProgress` | `SizeType=Large` | Large/Middle/Small 直径为 `120/90/60`；thickness 按实际直径计算且最小 3 | `Width`、`Height`、`IndicatorThickness` | rail/track Bounds 等于 `floor(body size - EffectiveStrokeThickness)` 并与 body 同心；Geometry 在该局部视口内表达圆弧 |
+| `CircleProgress` | `SizeType=Large` | Large/Middle/Small 直径为 `120/90/60`；thickness 按实际直径计算且最小 3 | `Width`、`Height`、`IndicatorThickness` | rail/track 的正方形视口以 `floor(max(0, min(body.Width, body.Height) - EffectiveStrokeThickness))` 为边长，与 body 同心；Geometry 在该局部视口内绘制圆弧 |
 | `DashboardProgress` | `SizeType=Large` | 与 Circle 相同，弧跨度再扣除 `GapDegree` | `Width`、`Height`、`IndicatorThickness`、`GapDegree` | rail/track 使用相同内缩视口和中心点，Geometry 共享缺口方向与起始角 |
 
 最小尺寸失败回归是 `StepsProgressBar` 在 `ChunkWidth=NaN` 时从 Large 切换到 Middle/Small：当前实现把首次计算结果写回

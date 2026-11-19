@@ -8,6 +8,24 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class ProgressBarToken : AbstractLineProgressToken
 {
     /// <summary>
+    /// 大号线状进度条厚度（antd 8）
+    /// Line stroke thickness of the large preset
+    /// </summary>
+    public partial double LineStrokeThicknessLG { get; set; }
+
+    /// <summary>
+    /// 默认（中号）线状进度条厚度（antd 6）
+    /// Line stroke thickness of the middle preset
+    /// </summary>
+    public partial double LineStrokeThickness { get; set; }
+
+    /// <summary>
+    /// 小号线状进度条厚度（antd 4）
+    /// Line stroke thickness of the small preset
+    /// </summary>
+    public partial double LineStrokeThicknessSM { get; set; }
+
+    /// <summary>
     /// 条状进度条圆角
     /// Corner radius of the rounded (capsule) line progress bar
     /// </summary>
@@ -42,7 +60,10 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
+        LineBorderRadius      = new CornerRadius(100); // magic for capsule shape, should be a very large number
+        LineStrokeThicknessLG = 8;   // antd progress line default
+        LineStrokeThickness   = 6;
+        LineStrokeThicknessSM = 4;
         LineProgressPadding = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
         InnerLabelColor = EffectiveGlobalToken.ColorTextLabel;
         InnerLabelEmptyOpacity = 1;

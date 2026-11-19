@@ -69,6 +69,24 @@ public partial class StepsProgressFamilyEffectTests
                 p.SizeType = SizeType.Small;
                 p.Value    = 100;
             },
+            // A thickness perturbation is only visible when the bar's height is the thickness itself: the
+            // fallback MinHeight of an outer percentage label would mask it, so hide the label and pin
+            // the preset under test.
+            "LineStrokeThickness" => static p =>
+            {
+                p.IsProgressInfoVisible = false;
+                p.SizeType              = SizeType.Middle;
+            },
+            "LineStrokeThicknessLG" => static p =>
+            {
+                p.IsProgressInfoVisible = false;
+                p.SizeType              = SizeType.Large;
+            },
+            "LineStrokeThicknessSM" => static p =>
+            {
+                p.IsProgressInfoVisible = false;
+                p.SizeType              = SizeType.Small;
+            },
             "FontSizeSM" => static p => p.SizeType = SizeType.Small,
             "ColorError" => static p => p.Status = ProgressStatus.Exception,
             "ColorBgContainerDisabled" or "ControlItemBgActiveDisabled" or "ColorTextDisabled" => static p => p.IsEnabled = false,
@@ -81,6 +99,11 @@ public partial class StepsProgressFamilyEffectTests
                 p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start };
                 p.StrokeBrush     = Avalonia.Media.Brushes.Yellow;
             },
+            "InnerLabelEmptyOpacity" => static p =>
+            {
+                p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start };
+                p.Value           = 0;
+            },
             _ => static _ => { }
         };
         if (token == "LineBorderRadius")
@@ -88,6 +111,11 @@ public partial class StepsProgressFamilyEffectTests
             // The default radius (100) already makes a capsule of every thickness; a larger radius looks the same, so the
             // row squares the ends instead.
             options = new EffectOptions { Perturb = static _ => new Avalonia.CornerRadius(0) };
+        }
+        else if (token == "InnerLabelEmptyOpacity")
+        {
+            // The default opacity is already fully opaque. Hide the zero-value inner label to verify a pixel change.
+            options = new EffectOptions { Perturb = static _ => 0d };
         }
 
         Run(() =>

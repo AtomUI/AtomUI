@@ -146,6 +146,7 @@ Tab 轨道的溢出提示与 Popup surface 阴影是两种不同语义。轨道�
 end 的左边等于 viewport width；垂直 start 的底边等于 `0`，end 的顶边等于 viewport height。
 主轴尺寸使用主题布局常量（32；`MenuEdgeThickness` 已保留，载体厚度没有可见语义），交叉轴尺寸和 Canvas 定位使用 compiled binding 跟随真实 `Bounds`。
 阴影向内容区渐淡，Canvas 的裁剪边界使更多按钮和相邻内容保持干净；不能关闭所有祖先裁剪来掩盖几何错误。
+绘制时沿交叉轴延伸载体，使扩散收缩和模糊之后的阴影仍覆盖到 viewport 两端。布局中的载体位置和裁剪边界保持按 viewport 计算。
 `TabOverflowEdgeIndicator` 在 Skia 实际绘制时按当前矩阵的线性部分补偿 offset，保持 Token 的逻辑 DIP 参数；
 这修正当前 Avalonia 在高 DPI 下 offset 与 blur/spread 缩放不一致的问题。draw operation 只保存值快照，不持有
 页面或窗口。升级 Avalonia 时需重新核对后端变换顺序，参见 [implementation.md](implementation.md)。

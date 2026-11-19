@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -6,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -130,6 +132,9 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, double>(
             nameof(BadgeShadowSize));
 
+    internal static readonly StyledProperty<BadgeShadowTokenResourceKeys?> ShadowTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, BadgeShadowTokenResourceKeys?>(nameof(ShadowTokenResourceKeys));
+
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty
         = MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCountBadgeAdorner>();
 
@@ -180,6 +185,14 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetValue(BadgeShadowSizeProperty, value);
     }
 
+    internal BadgeShadowTokenResourceKeys? ShadowTokenResourceKeys
+    {
+        get => GetValue(ShadowTokenResourceKeysProperty);
+        set => SetValue(ShadowTokenResourceKeysProperty, value);
+    }
+
+    private OwnerTokenSet? _shadowTokens;
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -222,8 +235,16 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         _motion.TryStart();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateShadowTokenSubscription();
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _shadowTokens?.Dispose();
+        _shadowTokens = null;
         base.OnDetachedFromVisualTree(e);
         _motion.Detach();
     }
@@ -233,6 +254,13 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         SetAndRaise(PresentedContentProperty, ref _presentedContent, Content ?? _countText);
     }
 
+    private void UpdateShadowTokenSubscription()
+    {
+        _shadowTokens?.Dispose();
+        _shadowTokens = ShadowTokenResourceKeys?.Observe(this, BuildBoxShadow);
+        BuildBoxShadow();
+    }
+
     private void BuildBoxShadow()
     {
         // The border ring is rendered as a shadow; without a border there is nothing to draw.
@@ -240,16 +268,9 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         {
             IndicatorShadows = default;
         }
-        else if (BadgeShadowColor is not null)
+        else if (BadgeShadowTokenResourceKeys.TryRead(this, _shadowTokens, BadgeShadowColorProperty, BadgeShadowSizeProperty, out var shadow))
         {
-            IndicatorShadows = new BoxShadows(new BoxShadow
-            {
-                OffsetX = 0,
-                OffsetY = 0,
-                Blur    = 0,
-                Spread  = BadgeShadowSize,
-                Color   = ((ISolidColorBrush)BadgeShadowColor).Color
-            });
+            IndicatorShadows = shadow;
         }
     }
 
@@ -261,7 +282,11 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             _motion.UpdateConfiguration(IsMotionEnabled, MotionDuration);
         }
 
-        if (change.Property == BadgeShadowSizeProperty ||
+        if (change.Property == ShadowTokenResourceKeysProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateShadowTokenSubscription();
+        }
+        else if (change.Property == BadgeShadowSizeProperty ||
             change.Property == BadgeShadowColorProperty ||
             change.Property == IsBorderedProperty)
         {

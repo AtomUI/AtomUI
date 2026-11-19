@@ -1,4 +1,5 @@
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -169,7 +170,7 @@ public class RibbonBadgeAdornerTests
         var adorner = CreateMeasuredRibbonAdorner(RibbonBadgePlacement.End, isAdornerMode: true);
         using var context = ShowInAdornerHost(adorner, width: 160, height: 80);
 
-        adorner.BadgeRibbonCornerTransform = new ScaleTransform(1, 0.25).ToImmutable();
+        adorner.Resources[RibbonBadgeTokenKind.CornerTransform] = new ScaleTransform(1, 0.25).ToImmutable();
         Dispatcher.UIThread.RunJobs();
 
         var foldBounds = GetFoldBounds(adorner);
@@ -209,9 +210,12 @@ public class RibbonBadgeAdornerTests
             Text                            = "Ribbon",
             Placement                       = placement,
             IsAdornerMode                   = isAdornerMode,
-            BadgeRibbonOffset               = new Point(8, 8),
-            BadgeRibbonCornerTransform      = new ScaleTransform(1, 0.75).ToImmutable(),
-            BadgeRibbonCornerDarkenAmount   = 15,
+            Resources = new ResourceDictionary
+            {
+                [RibbonBadgeTokenKind.Offset] = new Point(8, 8),
+                [RibbonBadgeTokenKind.CornerTransform] = new ScaleTransform(1, 0.75).ToImmutable(),
+                [RibbonBadgeTokenKind.CornerDarkenAmount] = 15
+            },
             RibbonColor                     = new SolidColorBrush(Color.Parse("#1677ff"))
         };
     }

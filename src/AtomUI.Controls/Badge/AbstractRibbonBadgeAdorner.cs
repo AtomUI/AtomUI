@@ -1,11 +1,14 @@
-﻿using AtomUI.Controls.Utils;
+﻿using System.Globalization;
+using AtomUI.Controls.Utils;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -30,17 +33,8 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractRibbonBadgeAdorner, Point>(
             nameof(Offset));
 
-    internal static readonly StyledProperty<Point> BadgeRibbonOffsetProperty =
-        AvaloniaProperty.Register<AbstractRibbonBadgeAdorner, Point>(
-            nameof(BadgeRibbonOffset));
-
-    internal static readonly StyledProperty<int> BadgeRibbonCornerDarkenAmountProperty =
-        AvaloniaProperty.Register<AbstractRibbonBadgeAdorner, int>(
-            nameof(BadgeRibbonCornerDarkenAmount));
-
-    internal static readonly StyledProperty<ImmutableTransform?> BadgeRibbonCornerTransformProperty =
-        AvaloniaProperty.Register<AbstractRibbonBadgeAdorner, ImmutableTransform?>(
-            nameof(BadgeRibbonCornerTransform));
+    internal static readonly StyledProperty<bool> UseRibbonGeometryTokenResourcesProperty =
+        AvaloniaProperty.Register<AbstractRibbonBadgeAdorner, bool>(nameof(UseRibbonGeometryTokenResources));
 
     internal static readonly DirectProperty<AbstractRibbonBadgeAdorner, bool> IsAdornerModeProperty =
         AvaloniaProperty.RegisterDirect<AbstractRibbonBadgeAdorner, bool>(
@@ -80,22 +74,10 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         set => SetValue(OffsetProperty, value);
     }
 
-    internal Point BadgeRibbonOffset
+    internal bool UseRibbonGeometryTokenResources
     {
-        get => GetValue(BadgeRibbonOffsetProperty);
-        set => SetValue(BadgeRibbonOffsetProperty, value);
-    }
-
-    internal int BadgeRibbonCornerDarkenAmount
-    {
-        get => GetValue(BadgeRibbonCornerDarkenAmountProperty);
-        set => SetValue(BadgeRibbonCornerDarkenAmountProperty, value);
-    }
-
-    internal ImmutableTransform? BadgeRibbonCornerTransform
-    {
-        get => GetValue(BadgeRibbonCornerTransformProperty);
-        set => SetValue(BadgeRibbonCornerTransformProperty, value);
+        get => GetValue(UseRibbonGeometryTokenResourcesProperty);
+        set => SetValue(UseRibbonGeometryTokenResourcesProperty, value);
     }
     
     #endregion
@@ -106,21 +88,110 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
     private IBrush? _cornerBrush;
     private Size _arrangedSize;
     private readonly BorderRenderHelper _borderRenderHelper;
+    private OwnerTokenSet? _ribbonGeometryTokens;
+    private Point _ribbonOffset;
+    private Matrix _foldTransform = Matrix.Identity;
+    private int _darkenAmount;
+
+    private protected virtual OwnerTokenSet? CreateRibbonGeometryTokenSet(Action changed) => null;
 
     static AbstractRibbonBadgeAdorner()
     {
-        AffectsMeasure<AbstractRibbonBadgeAdorner>(TextProperty, IsAdornerModeProperty,
-            PlacementProperty, BadgeRibbonOffsetProperty, BadgeRibbonCornerTransformProperty);
-        AffectsArrange<AbstractRibbonBadgeAdorner>(OffsetProperty, PlacementProperty,
-            BadgeRibbonOffsetProperty, BadgeRibbonCornerTransformProperty);
-        AffectsRender<AbstractRibbonBadgeAdorner>(RibbonColorProperty, OffsetProperty,
-            PlacementProperty, BadgeRibbonOffsetProperty, BadgeRibbonCornerDarkenAmountProperty,
-            BadgeRibbonCornerTransformProperty);
+        AffectsMeasure<AbstractRibbonBadgeAdorner>(TextProperty, IsAdornerModeProperty, PlacementProperty);
+        AffectsArrange<AbstractRibbonBadgeAdorner>(OffsetProperty, PlacementProperty);
+        AffectsRender<AbstractRibbonBadgeAdorner>(RibbonColorProperty, OffsetProperty, PlacementProperty, CornerRadiusProperty);
     }
 
     public AbstractRibbonBadgeAdorner()
     {
         _borderRenderHelper = new BorderRenderHelper();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateRibbonGeometryTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _ribbonGeometryTokens?.Dispose();
+        _ribbonGeometryTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == UseRibbonGeometryTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateRibbonGeometryTokenSubscription();
+        }
+    }
+
+    private void UpdateRibbonGeometryTokenSubscription()
+    {
+        _ribbonGeometryTokens?.Dispose();
+        _ribbonGeometryTokens = UseRibbonGeometryTokenResources ? CreateRibbonGeometryTokenSet(RefreshRibbonGeometry) : null;
+        RefreshRibbonGeometry();
+    }
+
+    private void RefreshRibbonGeometry()
+    {
+        var offset = ReadRibbonOffset(_ribbonGeometryTokens?.GetValue(0));
+        var transform = _ribbonGeometryTokens?.GetValue(1) is ImmutableTransform fold ? fold.Value : Matrix.Identity;
+        var darkenAmount = ReadDarkenAmount(_ribbonGeometryTokens?.GetValue(2));
+        var layoutChanged = _ribbonOffset != offset || _foldTransform != transform;
+        var colorChanged = _darkenAmount != darkenAmount;
+
+        _ribbonOffset = offset;
+        _foldTransform = transform;
+        _darkenAmount = darkenAmount;
+        if (layoutChanged)
+        {
+            InvalidateMeasure();
+            InvalidateArrange();
+        }
+        if (layoutChanged || colorChanged)
+        {
+            InvalidateVisual();
+        }
+    }
+
+    private static Point ReadRibbonOffset(object? value)
+    {
+        if (value is Point offset)
+        {
+            return offset;
+        }
+        if (value is string text)
+        {
+            try
+            {
+                return Point.Parse(text);
+            }
+            catch (FormatException)
+            {
+                return default;
+            }
+        }
+        return default;
+    }
+
+    private static int ReadDarkenAmount(object? value)
+    {
+        if (value is int amount)
+        {
+            return amount;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToInt32(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -143,7 +214,7 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
             : size.Width;
         var targetHeight = double.IsFinite(availableSize.Height)
             ? availableSize.Height
-            : BadgeRibbonOffset.Y + size.Height + foldSize.Height;
+            : _ribbonOffset.Y + size.Height + foldSize.Height;
         return new Size(targetWidth, targetHeight);
     }
 
@@ -204,7 +275,7 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         }
 
         var sourceColor  = backgroundColor.Value;
-        var darkenAmount = BadgeRibbonCornerDarkenAmount;
+        var darkenAmount = _darkenAmount;
         if (_cornerBrushSourceColor == sourceColor &&
             _cornerBrushDarkenAmount == darkenAmount)
         {
@@ -230,15 +301,15 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         var offsetY = 0d;
         if (IsAdornerMode)
         {
-            offsetY += BadgeRibbonOffset.Y + Offset.Y;
+            offsetY += _ribbonOffset.Y + Offset.Y;
             var targetWidth = finalSize.Width > 0 ? finalSize.Width : DesiredSize.Width;
             if (Placement == RibbonBadgePlacement.End)
             {
-                offsetX = targetWidth - bodySize.Width + BadgeRibbonOffset.X + Offset.X;
+                offsetX = targetWidth - bodySize.Width + _ribbonOffset.X + Offset.X;
             }
             else
             {
-                offsetX = -BadgeRibbonOffset.X + Offset.X;
+                offsetX = -_ribbonOffset.X + Offset.X;
             }
         }
 
@@ -252,9 +323,9 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
 
     private RibbonBadgeFold GetFold()
     {
-        var width  = Math.Max(0, BadgeRibbonOffset.X);
-        var height = Math.Max(0, BadgeRibbonOffset.Y);
-        var transform = BadgeRibbonCornerTransform?.Value ?? Matrix.Identity;
+        var width  = Math.Max(0, _ribbonOffset.X);
+        var height = Math.Max(0, _ribbonOffset.Y);
+        var transform = _foldTransform;
         if (Placement == RibbonBadgePlacement.Start)
         {
             transform = transform.Append(Matrix.CreateScale(-1, 1));

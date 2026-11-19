@@ -255,11 +255,7 @@ Ribbon Token offset 的两个坐标不得在实现中混用：
 既有 public API、TokenResource key、Theme setter 或 Gallery 可见默认外观。只有确认当前 Token 语义不足以表达默认视觉时，
 才允许引入新 Token，并同步 `token.md`、Theme 引用、生成资源和可视回归。
 
-折角暗面使用 `RibbonColor` 派生色和 `BadgeRibbonCornerDarkenAmount` 计算，不单独读取 public `RibbonColor` 字符串。
-`BadgeRibbonCornerTransform` 若参与折角形状，必须在折角点位或完整 geometry cache key 中体现；不能只把 transform 附在
-cached geometry 上，同时继续用 transform 前的 bounds 做布局。影响 Ribbon 布局或折角形状的属性必须触发对应的
-measure、arrange 或 render 失效，至少包括 `Text`、`Placement`、`Offset`、`BadgeRibbonOffset`、
-`BadgeRibbonCornerTransform`、`BadgeRibbonCornerDarkenAmount` 和 `RibbonColor`。
+折角暗面使用解析后的 `RibbonColor` 画刷和 `CornerDarkenAmount` 计算。桌面主题由 Adorner 整组读取偏移、变换和暗化参数。变换直接参与折角点位计算。资源中的偏移或变换改变时重排几何，只有暗化参数变化时只重绘。
 
 渲染回归不能只验证 TextBlock 的位置或 owner 的 inline tree。Ribbon 折角必须通过 Skia/headless 捕获后的像素断言验证：
 三角暗面区域为加深色，主体背景区域为 Ribbon 主色，三角外背景区保持目标或窗口背景色。验证矩阵至少覆盖 `Start`/`End`、

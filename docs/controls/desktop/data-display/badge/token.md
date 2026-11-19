@@ -41,6 +41,8 @@ Badge 的控件专项模型通过 Theme 消费 Token：
   显式读取 Own Token 与 Global Token（含 `MotionDurationMid`、DotBadge 状态色、Ribbon 的 `ColorPrimary`、`BorderRadiusSM`、
   `ColorTextLightSolid`）。带装饰目标时指示器位于 AdornerLayer，经逻辑父级（徽标本身）解析资源，`Controls[CountBadge]`
   等覆盖同样到达。
+- 桌面主题把圆点和数量徽标的阴影颜色与扩展量交给各自的实际绘制部件。圆点指示器和数量 Adorner 分别按原 Own 键成组读取，整组变更时只计算一次阴影。
+- Ribbon Adorner 按同一作用域成组读取 `Offset`、`CornerTransform` 和 `CornerDarkenAmount`。公开的 `Offset` 仍按调用方配置叠加。
 - `BadgeColor`、`DotColor`、`RibbonColor` 的预设色名对应 antd `genPresetColor` 的 `darkColor`（色板第 6 级），取自徽标所在
   主题快照的预设色板（暗色主题为暗色色板），主题变化时重算；预设色不跟随 `ColorPrimary`。其他文本按颜色解析；未设置或无效时
   清除内部值，回到主题的 `IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`。共享的色板查找位于

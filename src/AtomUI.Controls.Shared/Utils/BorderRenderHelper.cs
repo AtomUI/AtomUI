@@ -16,6 +16,7 @@ internal class BorderRenderHelper
     private Geometry? _borderGeometryCache;
     private Size _size;
     private Thickness _borderThickness;
+    private CornerRadius _sourceCornerRadius;
     private CornerRadius _cornerRadius;
     private BackgroundSizing _backgroundSizing;
     private bool _dashedEnabled;
@@ -32,6 +33,7 @@ internal class BorderRenderHelper
         // arcs instead. Scale once here so the background, the border ring and the box shadow all
         // render the same shape and stay concentric under oversized theme radii (e.g. Luma/Maia
         // InputRadius 22/26 on a 32px-high input capsule).
+        _sourceCornerRadius = cornerRadius;
         cornerRadius      = CornerRadiusUtils.ScaleToSize(cornerRadius, finalSize.Width, finalSize.Height);
         _size             = finalSize;
         _borderThickness  = borderThickness;
@@ -126,7 +128,7 @@ internal class BorderRenderHelper
     {
         if (_size != finalSize
             || _borderThickness != borderThickness
-            || _cornerRadius != cornerRadius
+            || _sourceCornerRadius != cornerRadius
             || _backgroundSizing != backgroundSizing
             || _dashedEnabled != (strokeDashArray is { Count: > 0 })
             || !_initialized)

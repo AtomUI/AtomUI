@@ -27,8 +27,13 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
         set => SetValue(ActivatedThumbProperty, value);
     }
 
-    internal List<GradientColorSliderThumb> Thumbs { get; } = new();
     private bool _ignoringPropertyChanged;
+
+    #endregion
+
+    #region 内部协作 API
+
+    internal List<GradientColorSliderThumb> Thumbs { get; } = new();
 
     #endregion
 

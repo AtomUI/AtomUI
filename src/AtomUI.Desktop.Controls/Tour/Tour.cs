@@ -51,17 +51,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     public static readonly StyledProperty<bool> IsDisabledInteractionProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsDisabledInteraction));
     
-    // The popup's Token gap to the target (TourToken.PopupMarginToAnchor), projected by the theme so it follows theme and
-    // Control-level changes; the open popup's margin is the gap offset of the step placement plus this value.
-    internal static readonly StyledProperty<double> PopupMarginToAnchorProperty =
-        AvaloniaProperty.Register<Tour, double>(nameof(PopupMarginToAnchor));
-
-    internal double PopupMarginToAnchor
-    {
-        get => GetValue(PopupMarginToAnchorProperty);
-        set => SetValue(PopupMarginToAnchorProperty, value);
-    }
-
     public static readonly StyledProperty<double> GapOffsetXProperty =
         AvaloniaProperty.Register<Tour, double>(nameof(GapOffsetX), 6);
     
@@ -229,6 +218,11 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     #endregion
 
     #region 内部属性定义
+
+    // The popup's Token gap to the target (TourToken.PopupMarginToAnchor), projected by the theme so it follows theme and
+    // Control-level changes; the open popup's margin is the gap offset of the step placement plus this value.
+    internal static readonly StyledProperty<double> PopupMarginToAnchorProperty =
+        AvaloniaProperty.Register<Tour, double>(nameof(PopupMarginToAnchor));
     internal static readonly DirectProperty<Tour, Rect> TargetClipBoundsProperty =
         AvaloniaProperty.RegisterDirect<Tour, Rect>(nameof(TargetClipBounds),
             o => o.TargetClipBounds,
@@ -269,6 +263,12 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<Tour>();
+
+    internal double PopupMarginToAnchor
+    {
+        get => GetValue(PopupMarginToAnchorProperty);
+        set => SetValue(PopupMarginToAnchorProperty, value);
+    }
     
     private Rect _targetClipBounds;
 

@@ -28,11 +28,6 @@ internal class CaptionButton : AvaloniaButton
     public static readonly StyledProperty<bool> IsCheckedProperty = 
         AvaloniaProperty.Register<CaptionButton, bool>(nameof(IsChecked), defaultBindingMode: BindingMode.TwoWay, defaultValue:false);
 
-    internal static readonly DirectProperty<CaptionButton, PathIcon?> EffectiveIconProperty =
-        AvaloniaProperty.RegisterDirect<CaptionButton, PathIcon?>(
-            nameof(EffectiveIcon),
-            o => o.EffectiveIcon);
-    
     public PathIcon? NormalIcon
     {
         get => GetValue(NormalIconProperty);
@@ -63,17 +58,14 @@ internal class CaptionButton : AvaloniaButton
         set => SetValue(IsCheckedProperty, value);
     }
 
-    private PathIcon? _effectiveIcon;
-
-    internal PathIcon? EffectiveIcon
-    {
-        get => _effectiveIcon;
-        private set => SetAndRaise(EffectiveIconProperty, ref _effectiveIcon, value);
-    }
-
     #endregion
     
     #region 内部属性定义
+
+    internal static readonly DirectProperty<CaptionButton, PathIcon?> EffectiveIconProperty =
+        AvaloniaProperty.RegisterDirect<CaptionButton, PathIcon?>(
+            nameof(EffectiveIcon),
+            o => o.EffectiveIcon);
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CaptionButton>();
@@ -89,6 +81,14 @@ internal class CaptionButton : AvaloniaButton
             nameof(EffectiveCornerRadius),
             o => o.EffectiveCornerRadius,
             (o, v) => o.EffectiveCornerRadius = v);
+
+    private PathIcon? _effectiveIcon;
+
+    internal PathIcon? EffectiveIcon
+    {
+        get => _effectiveIcon;
+        private set => SetAndRaise(EffectiveIconProperty, ref _effectiveIcon, value);
+    }
     
     internal bool IsMotionEnabled
     {

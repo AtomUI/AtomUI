@@ -41,15 +41,6 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
     public static readonly StyledProperty<bool> IsDangerProperty =
         AvaloniaProperty.Register<MenuItem, bool>(nameof(IsDanger));
 
-    internal static readonly StyledProperty<double> IconMarginInlineEndProperty =
-        AvaloniaProperty.Register<MenuItem, double>(nameof(IconMarginInlineEnd));
-
-    internal double IconMarginInlineEnd
-    {
-        get => GetValue(IconMarginInlineEndProperty);
-        set => SetValue(IconMarginInlineEndProperty, value);
-    }
-
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
@@ -116,6 +107,9 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 
     #region 内部属性定义
 
+    internal static readonly StyledProperty<double> IconMarginInlineEndProperty =
+        AvaloniaProperty.Register<MenuItem, double>(nameof(IconMarginInlineEnd));
+
 
     internal static readonly DirectProperty<MenuItem, MenuSemanticLevel> SemanticLevelProperty =
         AvaloniaProperty.RegisterDirect<MenuItem, MenuSemanticLevel>(nameof(SemanticLevel),
@@ -138,6 +132,12 @@ public class MenuItem : AvaloniaMenuItem, IMenuItemData, IScrollAwareControl
 
     internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<MenuItem>();
+
+    internal double IconMarginInlineEnd
+    {
+        get => GetValue(IconMarginInlineEndProperty);
+        set => SetValue(IconMarginInlineEndProperty, value);
+    }
 
     // Runtime owner context, not a user style input. Publishing it lets the
     // ControlTheme update its motion preset when a container changes owners.

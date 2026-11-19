@@ -54,6 +54,14 @@ internal class DataGridHeaderViewItem : ContentControl
     }
     private bool _isFrozen;
     
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<DataGridHeaderViewItem, Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<DataGridHeaderViewItem, Thickness>(
+            nameof(EffectiveBorderThickness), o => o.EffectiveBorderThickness);
+
     bool _isShowLeftFrozenShadow = false;
 
     internal bool IsShowLeftFrozenShadow
@@ -61,7 +69,7 @@ internal class DataGridHeaderViewItem : ContentControl
         get => _isShowLeftFrozenShadow;
         set => SetAndRaise(IsShowLeftFrozenShadowProperty, ref _isShowLeftFrozenShadow, value);
     }
-    
+
     bool _isShowRightFrozenShadow = false;
 
     internal bool IsShowRightFrozenShadow
@@ -69,14 +77,6 @@ internal class DataGridHeaderViewItem : ContentControl
         get => _isShowRightFrozenShadow;
         set => SetAndRaise(IsShowRightFrozenShadowProperty, ref _isShowRightFrozenShadow, value);
     }
-
-    #endregion
-
-    #region 内部属性定义
-    
-    internal static readonly DirectProperty<DataGridHeaderViewItem, Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<DataGridHeaderViewItem, Thickness>(
-            nameof(EffectiveBorderThickness), o => o.EffectiveBorderThickness);
     
     internal Thickness EffectiveBorderThickness
     {

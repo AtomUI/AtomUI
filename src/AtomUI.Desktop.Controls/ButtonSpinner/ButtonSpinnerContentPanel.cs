@@ -5,7 +5,7 @@ namespace AtomUI.Desktop.Controls;
 
 internal class ButtonSpinnerContentPanel : AdaptiveSpacingDockPanel
 {
-    #region 公共属性定义
+    #region 内部属性定义
 
     internal static readonly DirectProperty<ButtonSpinnerContentPanel, bool> IsHandleFloatableProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerContentPanel, bool>(

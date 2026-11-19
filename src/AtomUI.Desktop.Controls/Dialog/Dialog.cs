@@ -342,13 +342,6 @@ public partial class Dialog : TemplatedControl,
         set => SetValue(HostMinWidthProperty, value);
     }
 
-    /// <summary>
-    /// How the terminal's <c>MinWidth</c>/<c>MinHeight</c> Tokens size the surface content frame: the Dialog Tokens are
-    /// the content viewport baseline (frame = Token + padding + border); a terminal returning true sizes the whole frame
-    /// (frame = max(Token, padding + border)), like antd's confirm <c>width</c>.
-    /// </summary>
-    internal virtual bool UsesWholeFrameMinimum => false;
-
     public double HostMinHeight
     {
         get => GetValue(HostMinHeightProperty);
@@ -484,6 +477,17 @@ public partial class Dialog : TemplatedControl,
 
     private protected IReadOnlyList<DialogButton> SurfaceButtons =>
         _surfaceButtons ?? Array.Empty<DialogButton>();
+
+    #endregion
+
+    #region 内部协作 API
+
+    /// <summary>
+    /// How the terminal's <c>MinWidth</c>/<c>MinHeight</c> Tokens size the surface content frame: the Dialog Tokens are
+    /// the content viewport baseline (frame = Token + padding + border); a terminal returning true sizes the whole frame
+    /// (frame = max(Token, padding + border)), like antd's confirm <c>width</c>.
+    /// </summary>
+    internal virtual bool UsesWholeFrameMinimum => false;
 
     #endregion
 

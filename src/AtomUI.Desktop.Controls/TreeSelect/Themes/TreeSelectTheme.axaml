@@ -6,20 +6,26 @@
     <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
         <Setter Property="atom:SelectTag.ThemeMultipleItemBg" Value="{atom:TreeSelectTokenResource MultipleItemBg}" />
         <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeight}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeightSM" Value="{atom:TreeSelectTokenResource MultipleItemHeightSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeightLG" Value="{atom:TreeSelectTokenResource MultipleItemHeightLG}" />
         <Setter Property="atom:SelectTag.ThemeMultipleSelectorBgDisabled" Value="{atom:TreeSelectTokenResource MultipleSelectorBgDisabled}" />
         <Setter Property="atom:SelectTag.ThemeMultipleItemColorDisabled" Value="{atom:TreeSelectTokenResource MultipleItemColorDisabled}" />
         <Setter Property="atom:SelectTag.ThemeOptionFontSize" Value="{atom:TreeSelectTokenResource OptionFontSize}" />
         <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePaddingSM" Value="{atom:TreeSelectTokenResource MultiModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePaddingLG" Value="{atom:TreeSelectTokenResource MultiModePaddingLG}" />
+        <Setter Property="atom:SelectTag.ThemeCompactMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePaddingSM}" />
         <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndent}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndentSM" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndentLG" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentLG}" />
         <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePaddingSM" Value="{atom:TreeSelectTokenResource SingleModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePaddingLG" Value="{atom:TreeSelectTokenResource SingleModePaddingLG}" />
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightSM}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentSM}" />
+            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePaddingSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightLG}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePaddingLG}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentLG}" />
+            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePaddingLG}" />
+        </Style>
 
     <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
     <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
@@ -164,9 +170,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="IsMotionEnabled" Value="{atom:TreeSelectTokenResource EnableMotion}" />
-        <Setter Property="PopupContentPadding"
-                Value="{atom:TreeSelectTokenResource PopupContentPadding}" />
-        <Setter Property="ItemHeight" Value="{atom:TreeSelectTokenResource ControlHeight}" />
+        <Setter Property="PopupLayoutTokenResourceKeys" Value="{x:Static atom:SelectPopupLayoutResources.TreeSelect}" />
         <!-- The popup frame's MinWidth is template-bound to EffectivePopupWidth, which TreeSelect bounds below by this. -->
         <Setter Property="MinPopupWidth" Value="{atom:TreeSelectTokenResource MinPopupWidth}" />
         <Setter Property="PlaceholderForeground"

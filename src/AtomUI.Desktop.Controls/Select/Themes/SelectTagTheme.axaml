@@ -23,7 +23,7 @@
             </Style>
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeightLG)}" />
+                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
@@ -36,7 +36,7 @@
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeightSM)}" />
+                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
             </Style>
 
         </Style>

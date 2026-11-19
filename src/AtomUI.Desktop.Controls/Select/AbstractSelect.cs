@@ -5,11 +5,11 @@ using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -241,7 +241,15 @@ public abstract class AbstractSelect : TemplatedControl,
     public int DisplayPageSize
     {
         get => GetValue(DisplayPageSizeProperty);
-        set => SetValue(DisplayPageSizeProperty, value);
+        set
+        {
+            var becomesExplicit = _defaultPopupHeight.HasValue && !IsSet(DisplayPageSizeProperty) && value == DisplayPageSize;
+            SetValue(DisplayPageSizeProperty, value);
+            if (becomesExplicit)
+            {
+                ConfigureMaxDropdownHeight();
+            }
+        }
     }
 
     public int MaxCount
@@ -428,11 +436,8 @@ public abstract class AbstractSelect : TemplatedControl,
     #region 内部属性定义
 
 
-    internal static readonly DirectProperty<AbstractSelect, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    internal static readonly StyledProperty<CandidatePopupLayoutTokenResourceKeys?> PopupLayoutTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractSelect, CandidatePopupLayoutTokenResourceKeys?>(nameof(PopupLayoutTokenResourceKeys));
 
     internal static readonly DirectProperty<AbstractSelect, double> MaxPopupHeightProperty =
         AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
@@ -507,14 +512,15 @@ public abstract class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractSelect>();
 
-    private double _itemHeight;
-
-    internal double ItemHeight
+    internal CandidatePopupLayoutTokenResourceKeys? PopupLayoutTokenResourceKeys
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(PopupLayoutTokenResourceKeysProperty);
+        set => SetValue(PopupLayoutTokenResourceKeysProperty, value);
     }
 
+    private OwnerTokenSet? _popupLayoutTokens;
+    private double _itemHeight;
+    private double? _defaultPopupHeight;
     private double _maxPopupHeight;
 
     internal double MaxPopupHeight
@@ -738,6 +744,10 @@ public abstract class AbstractSelect : TemplatedControl,
         this.SubscribeAncestorIsVisible(IsVisibleChanged, SubscriptionsOnOpen);
 
         ConfigurePopupMinWith(Bounds.Width);
+        if (_defaultPopupHeight.HasValue)
+        {
+            ConfigureMaxDropdownHeight();
+        }
         NotifyPopupOpened();
     }
 
@@ -755,8 +765,12 @@ public abstract class AbstractSelect : TemplatedControl,
         {
             ConfigurePopupPlacement();
         }
+        else if (change.Property == PopupLayoutTokenResourceKeysProperty)
+        {
+            UpdatePopupLayoutTokenSubscription(change.GetOldValue<CandidatePopupLayoutTokenResourceKeys?>()?.ContentPadding is not null);
+        }
         else if (change.Property == DisplayPageSizeProperty ||
-                 change.Property == ItemHeightProperty)
+                 change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxDropdownHeight();
         }
@@ -783,7 +797,48 @@ public abstract class AbstractSelect : TemplatedControl,
 
     protected virtual void ConfigureMaxDropdownHeight()
     {
-        MaxPopupHeight = ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
+        MaxPopupHeight = _defaultPopupHeight is { } maxHeight && !IsSet(DisplayPageSizeProperty)
+            ? maxHeight
+            : _itemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
+    private void UpdatePopupLayoutTokenSubscription(bool previouslyThemedPadding)
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = null;
+        if (PopupLayoutTokenResourceKeys is { } keys)
+        {
+            _popupLayoutTokens = keys.Observe(this, RefreshPopupLayout);
+        }
+        if (previouslyThemedPadding && PopupLayoutTokenResourceKeys?.ContentPadding is null)
+        {
+            PopupContentPadding = default;
+        }
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var previousRowHeight = _itemHeight;
+        var previousMaxHeight = _defaultPopupHeight;
+        _itemHeight = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _itemHeight) ?? 0;
+        _defaultPopupHeight = PopupLayoutTokenResourceKeys?.DefaultMaxHeight is null
+            ? null
+            : CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(2), _defaultPopupHeight);
+        if (PopupLayoutTokenResourceKeys?.ContentPadding is not null)
+        {
+            var padding = CandidatePopupLayoutTokenResourceKeys.ReadPadding(_popupLayoutTokens?.GetValue(1), PopupContentPadding);
+            if (padding != PopupContentPadding)
+            {
+                // The final padding is a template output and recalculates height with the complete new metrics.
+                PopupContentPadding = padding;
+                return;
+            }
+        }
+        if (!previousRowHeight.Equals(_itemHeight) || previousMaxHeight != _defaultPopupHeight)
+        {
+            ConfigureMaxDropdownHeight();
+        }
     }
 
     protected void UpdatePseudoClasses()

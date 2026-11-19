@@ -127,9 +127,6 @@
         </Setter>
 
         <Style Selector="^:is(atom|ButtonSpinnerDecoratedBox)">
-
-            <Setter Property="SpinnerBorderThickness"
-                    Value="{atom:OwnerTokenResource BorderThickness}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="SpinnerHandleWidth"
                     Value="{Binding $parent[atom:ButtonSpinner].SpinnerHandleWidth}" />

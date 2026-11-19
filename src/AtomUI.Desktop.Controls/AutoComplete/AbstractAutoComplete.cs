@@ -11,6 +11,7 @@ using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Input;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -549,23 +550,14 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     #region 内部属性定义
 
 
-    internal static readonly DirectProperty<AbstractAutoComplete, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    internal static readonly StyledProperty<CandidatePopupLayoutTokenResourceKeys?> PopupLayoutTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractAutoComplete, CandidatePopupLayoutTokenResourceKeys?>(nameof(PopupLayoutTokenResourceKeys));
 
     internal static readonly DirectProperty<AbstractAutoComplete, double> MaxPopupHeightProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
             nameof(MaxPopupHeight),
             o => o.MaxPopupHeight,
             (o, v) => o.MaxPopupHeight = v);
-
-    internal static readonly DirectProperty<AbstractAutoComplete, double> MinPopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
-            nameof(MinPopupWidth),
-            o => o.MinPopupWidth,
-            (o, v) => o.MinPopupWidth = v);
 
     internal static readonly DirectProperty<AbstractAutoComplete, double> EffectivePopupWidthProperty =
         AvaloniaProperty.RegisterDirect<AbstractAutoComplete, double>(
@@ -602,28 +594,20 @@ public abstract class AbstractAutoComplete : TemplatedControl,
         set => SetValue(PopupBackgroundProperty, value);
     }
 
-    private double _itemHeight;
-
-    internal double ItemHeight
+    internal CandidatePopupLayoutTokenResourceKeys? PopupLayoutTokenResourceKeys
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(PopupLayoutTokenResourceKeysProperty);
+        set => SetValue(PopupLayoutTokenResourceKeysProperty, value);
     }
 
+    private OwnerTokenSet? _popupLayoutTokens;
+    private double _itemHeight;
     private double _maxPopupHeight;
 
     internal double MaxPopupHeight
     {
         get => _maxPopupHeight;
         set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
-    }
-
-    private double _minPopupWidth;
-
-    internal double MinPopupWidth
-    {
-        get => _minPopupWidth;
-        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
     }
 
     private double _effectivePopupWidth;
@@ -765,8 +749,12 @@ public abstract class AbstractAutoComplete : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == DisplayCandidateCountProperty ||
-            change.Property == ItemHeightProperty)
+        if (change.Property == PopupLayoutTokenResourceKeysProperty)
+        {
+            UpdatePopupLayoutTokenSubscription();
+        }
+        else if (change.Property == DisplayCandidateCountProperty ||
+                 change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxPopupHeight();
         }
@@ -791,7 +779,29 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
     protected virtual void ConfigureMaxPopupHeight()
     {
-        MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+        MaxPopupHeight = _itemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
+    private void UpdatePopupLayoutTokenSubscription()
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = PopupLayoutTokenResourceKeys?.Observe(this, RefreshPopupLayout);
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var previousRowHeight = _itemHeight;
+        _itemHeight = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _itemHeight) ?? 0;
+        var padding = CandidatePopupLayoutTokenResourceKeys.ReadPadding(_popupLayoutTokens?.GetValue(1), PopupContentPadding);
+        if (padding != PopupContentPadding)
+        {
+            PopupContentPadding = padding;
+        }
+        else if (!previousRowHeight.Equals(_itemHeight))
+        {
+            ConfigureMaxPopupHeight();
+        }
     }
 
     protected bool HasFocus() => IsKeyboardFocusWithin;

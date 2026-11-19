@@ -51,11 +51,10 @@ PopupFrame + MaxPopupHeight + CandidateList viewport
 
 主题使用点：
 
-- `ItemHeight="{atom:MentionsTokenResource OptionHeight}"`
-- `PopupContentPadding="{atom:MentionsTokenResource PopupContentPadding}"`
-- `MinPopupWidth="{atom:MentionsTokenResource MinPopupWidth}"`
+- `OptionHeight` 和 `PopupContentPadding` 由同一资源观察组读取。任一项更新时刷新弹层高度。
+- `MinPopupWidth` 由实际弹层边框读取。
 
-`MaxPopupHeight` 不是 Token。它由 `ItemHeight`、`DisplayCandidateCount` 和 `PopupContentPadding` 在控件实例上计算，属于运行时布局结果。
+`MaxPopupHeight` 由候选项基准高度、`DisplayCandidateCount` 和 `PopupContentPadding` 算出，是弹层模板使用的运行时布局结果。
 
 ## 4. 控件家族影响
 

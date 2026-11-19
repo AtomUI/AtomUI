@@ -24,6 +24,8 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 
 这些 Token 只服务 `TextBoxTheme.axaml` 中 TextBox 自身内容 padding。TextPresenter 的基础 margin 属于模板布局常量；输入表面边框、背景、圆角、hover/focus shadow、error/warning 和 disabled 视觉不属于 `TextBoxToken`。
 
+共享的 `AddOnDecoratedBox` 在警告、错误和禁用时成组读取附加内容的前景和图标色。禁用态共用一次读取，离树时释放观察和临时样式值。应用部件样式与本地画刷继续优先。
+
 ### 2.2 LineEdit 字号 Token
 
 - `LineEdit.InputFontSize`
@@ -55,6 +57,8 @@ TextArea 没有字号 Own Token：`TextAreaTheme.axaml` 按 `SizeType` 读取 Te
 
 - `TextArea.ResizeIndicatorLineColor`
 - `TextArea.ResizeHandleSize`
+
+手柄模板读取 `ResizeHandleSize` 决定命中和绘制区域。绘制部件按同一组资源读取斜线颜色与当前 owner 的 `LineWidth`，只重绘斜线。
 
 这些 Token 控制 TextArea 右下角 resize handle 的线条颜色和尺寸。它们只服务 `IsResizable=true` 的拖拽入口，不影响 TextArea 的自动高度算法或固定行数测量。
 `ResizeHandle` 叠放在输入表面之上，自己绘制两条斜线指示：命中区与指示边长都是 `ResizeHandleSize`，线条按边长比例排布，

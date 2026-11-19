@@ -71,15 +71,6 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             o => o.IsButtonSpinnerVisible,
             (o, v) => o.IsButtonSpinnerVisible = v);
     
-    internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, Thickness> SpinnerBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, Thickness>(nameof(SpinnerBorderThickness),
-            o => o.SpinnerBorderThickness,
-            (o, v) => o.SpinnerBorderThickness = v);
-    
-
-
-
-
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
@@ -104,14 +95,6 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         set => SetAndRaise(IsButtonSpinnerVisibleProperty, ref _showButtonSpinner, value);
     }
     
-    private Thickness _spinnerBorderThickness;
-
-    internal Thickness SpinnerBorderThickness
-    {
-        get => _spinnerBorderThickness;
-        set => SetAndRaise(SpinnerBorderThicknessProperty, ref _spinnerBorderThickness, value);
-    }
-
     internal double HandleOpacity
     {
         get => GetValue(HandleOpacityProperty);

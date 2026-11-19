@@ -1,33 +1,28 @@
+using System.Globalization;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ResizeHandle : TemplatedControl
 {
-    /// <summary>Colour of the two diagonal indicator strokes (TextArea.ResizeIndicatorLineColor).</summary>
-    internal static readonly StyledProperty<IBrush?> IndicatorBrushProperty =
-        AvaloniaProperty.Register<ResizeHandle, IBrush?>(nameof(IndicatorBrush));
+    internal static readonly StyledProperty<bool> UseResizeIndicatorTokenResourcesProperty =
+        AvaloniaProperty.Register<ResizeHandle, bool>(nameof(UseResizeIndicatorTokenResources));
 
-    /// <summary>Stroke width of the indicator (the owner's LineWidth).</summary>
-    internal static readonly StyledProperty<double> IndicatorLineWidthProperty =
-        AvaloniaProperty.Register<ResizeHandle, double>(nameof(IndicatorLineWidth));
-
-    internal IBrush? IndicatorBrush
+    internal bool UseResizeIndicatorTokenResources
     {
-        get => GetValue(IndicatorBrushProperty);
-        set => SetValue(IndicatorBrushProperty, value);
-    }
-
-    internal double IndicatorLineWidth
-    {
-        get => GetValue(IndicatorLineWidthProperty);
-        set => SetValue(IndicatorLineWidthProperty, value);
+        get => GetValue(UseResizeIndicatorTokenResourcesProperty);
+        set => SetValue(UseResizeIndicatorTokenResourcesProperty, value);
     }
 
     internal TextArea? Owner { get; set; }
@@ -35,10 +30,86 @@ internal class ResizeHandle : TemplatedControl
     private Point? _lastPoint;
     private bool _dragging;
     private IPen? _indicatorPen;
+    private static readonly object s_indicatorBrushKey = TextAreaTokenKind.ResizeIndicatorLineColor;
+    private OwnerTokenSet? _indicatorTokens;
+    private IBrush? _indicatorBrush;
+    private double _indicatorLineWidth;
 
-    static ResizeHandle()
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        AffectsRender<ResizeHandle>(IndicatorBrushProperty, IndicatorLineWidthProperty);
+        base.OnAttachedToVisualTree(e);
+        UpdateResizeIndicatorTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _indicatorTokens?.Dispose();
+        _indicatorTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == UseResizeIndicatorTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateResizeIndicatorTokenSubscription();
+        }
+    }
+
+    private void UpdateResizeIndicatorTokenSubscription()
+    {
+        if (UseResizeIndicatorTokenResources && _indicatorTokens is null)
+        {
+            _indicatorTokens = new OwnerTokenSet(this, 2, RefreshIndicator);
+            _indicatorTokens.SetResourceKey(0, s_indicatorBrushKey);
+            _indicatorTokens.SetKind(1, SharedTokenKind.LineWidth);
+        }
+        else if (!UseResizeIndicatorTokenResources && _indicatorTokens is not null)
+        {
+            _indicatorTokens.Dispose();
+            _indicatorTokens = null;
+        }
+        RefreshIndicator();
+    }
+
+    private void RefreshIndicator()
+    {
+        var brush = _indicatorTokens?.GetValue(0) switch
+        {
+            IBrush value => value,
+            Color color => new ImmutableSolidColorBrush(color),
+            string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+            var value when ReferenceEquals(value, BindingOperations.DoNothing) => _indicatorBrush,
+            _ => null
+        };
+        var lineWidth = ReadLineWidth(_indicatorTokens?.GetValue(1));
+        if (!Equals(_indicatorBrush, brush) || !_indicatorLineWidth.Equals(lineWidth))
+        {
+            _indicatorBrush = brush;
+            _indicatorLineWidth = lineWidth;
+            InvalidateVisual();
+        }
+    }
+
+    private double ReadLineWidth(object? value)
+    {
+        if (value is double width)
+        {
+            return width;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _indicatorLineWidth;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
     }
 
     /// <summary>
@@ -56,7 +127,7 @@ internal class ResizeHandle : TemplatedControl
             return;
         }
 
-        PenUtils.TryModifyOrCreate(ref _indicatorPen, IndicatorBrush, IndicatorLineWidth);
+        PenUtils.TryModifyOrCreate(ref _indicatorPen, _indicatorBrush, _indicatorLineWidth);
         if (_indicatorPen is null)
         {
             return;

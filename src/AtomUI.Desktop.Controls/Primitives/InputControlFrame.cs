@@ -296,7 +296,7 @@ internal class InputControlFrame : ContentControl,
         if (_frameTokens is not null &&
             (change.Property == StyleVariantProperty || change.Property == EffectiveStatusProperty))
         {
-            ConfigureFrameVariables(_frameTokens);
+            UpdateFrameTokenKeys(_frameTokens);
         }
 
         if (change.Property == StatusProperty ||
@@ -391,14 +391,14 @@ internal class InputControlFrame : ContentControl,
             if (_frameTokens is null)
             {
                 _frameTokens = new OwnerTokenSet(this, FrameVariableCount, OnFrameVariableChanged);
-                ConfigureFrameVariables(_frameTokens);
+                UpdateFrameTokenKeys(_frameTokens);
             }
 
             return _frameTokens;
         }
     }
 
-    private void ConfigureFrameVariables(OwnerTokenSet tokens)
+    private void UpdateFrameTokenKeys(OwnerTokenSet tokens)
     {
         var status = EffectiveStatus;
         SharedTokenKind? border          = null;

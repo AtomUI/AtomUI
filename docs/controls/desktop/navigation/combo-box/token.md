@@ -37,6 +37,8 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 不新增 ComboBox 专属空态 Token。`PopupContentPadding` 继续表示弹层框体内边距，`ItemPadding` 继续表示候选行
 内边距。空态开关和内容属于控件实例状态，不进入 Token。属性契约见[空态 API](overview.md#31-空态-api)。
 
+ComboBox 成组读取候选行高和 `PopupContentPadding`。实际行高继续随资源变化传给已实现的候选行，弹层高度按更新后的行高和内边距计算。
+
 ## 4. 控件家族影响
 
 调整 ComboBox Token 时必须评估以下范围：

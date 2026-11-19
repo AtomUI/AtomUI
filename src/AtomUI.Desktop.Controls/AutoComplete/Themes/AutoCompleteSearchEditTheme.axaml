@@ -7,9 +7,7 @@
         <ControlTheme.BasedOn>
             <atom:AbstractAutoCompleteTheme TargetType="atom:AutoCompleteSearchEdit" />
         </ControlTheme.BasedOn>
-        <Setter Property="ItemHeight" Value="{atom:AutoCompleteSearchEditTokenResource OptionHeight}" />
-        <Setter Property="PopupContentPadding" Value="{atom:AutoCompleteSearchEditTokenResource PopupContentPadding}" />
-        <Setter Property="MinPopupWidth" Value="{atom:AutoCompleteSearchEditTokenResource MinPopupWidth}" />
+        <Setter Property="PopupLayoutTokenResourceKeys" Value="{x:Static atom:AutoCompletePopupLayoutResources.SearchEdit}" />
         <Style Selector="^[IsPopupMatchSelectWidth=False] /template/ Border#PopupFrame">
             <Setter Property="MaxWidth" Value="{atom:AutoCompleteSearchEditTokenResource MaxPopupWidth}" />
         </Style>
@@ -58,7 +56,7 @@
                         <Border Name="PopupFrame"
                                 Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
-                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                MinWidth="{atom:AutoCompleteSearchEditTokenResource MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:CandidateList Name="{x:Static atom:AutoCompleteThemeConstants.CandidateListPart}"
                                                 Classes.semantic-popup-list="True"

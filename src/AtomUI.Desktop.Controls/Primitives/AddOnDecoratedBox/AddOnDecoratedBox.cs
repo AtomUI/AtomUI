@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Primitives.Themes;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -16,6 +17,14 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
+
+internal enum AddOnStatusPalette
+{
+    Default,
+    Warning,
+    Error,
+    Disabled
+}
 
 internal class AddOnDecoratedBox : InputControlFrame
 {
@@ -102,23 +111,17 @@ internal class AddOnDecoratedBox : InputControlFrame
     #endregion
     
     #region 内部属性定义
-    internal static readonly StyledProperty<IBrush?> AddOnStatusForegroundProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, IBrush?>(nameof(AddOnStatusForeground));
+    internal static readonly StyledProperty<AddOnStatusPalette> StatusPaletteProperty =
+        AvaloniaProperty.Register<AddOnDecoratedBox, AddOnStatusPalette>(nameof(StatusPalette));
 
-    internal static readonly StyledProperty<IBrush?> AddOnStatusIconBrushProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, IBrush?>(nameof(AddOnStatusIconBrush));
-
-    internal IBrush? AddOnStatusForeground
+    internal AddOnStatusPalette StatusPalette
     {
-        get => GetValue(AddOnStatusForegroundProperty);
-        set => SetValue(AddOnStatusForegroundProperty, value);
+        get => GetValue(StatusPaletteProperty);
+        set => SetValue(StatusPaletteProperty, value);
     }
 
-    internal IBrush? AddOnStatusIconBrush
-    {
-        get => GetValue(AddOnStatusIconBrushProperty);
-        set => SetValue(AddOnStatusIconBrushProperty, value);
-    }
+    internal IBrush? AddOnStatusForeground { get; private set; }
+    internal IBrush? AddOnStatusIconBrush { get; private set; }
 
     internal static readonly DirectProperty<AddOnDecoratedBox, Thickness> InnerBoxBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<AddOnDecoratedBox, Thickness>(nameof(InnerBoxBorderThickness),
@@ -256,6 +259,8 @@ internal class AddOnDecoratedBox : InputControlFrame
     private ContentPresenter? _rightAddOnPresenter;
     private ContentPresenter? _contentLeftAddOn;
     private ContentPresenter? _contentRightAddOn;
+    private OwnerTokenSet? _statusTokens;
+    private bool _observeStatusResources;
     private CompositeDisposable? _statusColorValues;
     private bool _borderInfoDirty;
     private bool _cornerRadiusDirty;
@@ -321,18 +326,74 @@ internal class AddOnDecoratedBox : InputControlFrame
             _borderInfoDirty = true;
         }
 
-        if (change.Property == StatusProperty ||
-            change.Property == EffectiveStatusProperty ||
-            change.Property == IsEnabledProperty ||
-            change.Property == ContentLeftAddOnProperty ||
-            change.Property == ContentRightAddOnProperty ||
-            change.Property == AddOnStatusForegroundProperty ||
-            change.Property == AddOnStatusIconBrushProperty)
+        if (change.Property == StatusPaletteProperty && _observeStatusResources)
+        {
+            UpdateStatusPaletteTokenSubscription();
+        }
+        else if (change.Property == ContentLeftAddOnProperty || change.Property == ContentRightAddOnProperty)
         {
             UpdateIconStatusColors();
         }
 
         ScheduleLayoutUpdate();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _observeStatusResources = true;
+        UpdateStatusPaletteTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _observeStatusResources = false;
+        _statusTokens?.Dispose();
+        _statusTokens = null;
+        AddOnStatusForeground = null;
+        AddOnStatusIconBrush = null;
+        UpdateIconStatusColors();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateStatusPaletteTokenSubscription()
+    {
+        _statusTokens?.Dispose();
+        _statusTokens = null;
+        AddOnStatusForeground = null;
+        AddOnStatusIconBrush = null;
+        (SharedTokenKind? Foreground, SharedTokenKind? Icon) keys = StatusPalette switch
+        {
+            AddOnStatusPalette.Error => (SharedTokenKind.ColorErrorText, SharedTokenKind.ColorError),
+            AddOnStatusPalette.Warning => (SharedTokenKind.ColorWarningText, SharedTokenKind.ColorWarning),
+            AddOnStatusPalette.Disabled => (SharedTokenKind.ColorTextDisabled, null),
+            _ => default
+        };
+        if (keys.Foreground is { } foreground)
+        {
+            _statusTokens = new OwnerTokenSet(this, keys.Icon.HasValue ? 2 : 1, RefreshStatusColors);
+            _statusTokens.SetKind(0, foreground);
+            if (keys.Icon is { } icon)
+            {
+                _statusTokens.SetKind(1, icon);
+            }
+        }
+        RefreshStatusColors();
+    }
+
+    private void RefreshStatusColors()
+    {
+        var foreground = _statusTokens?.GetValue(0);
+        var icon = StatusPalette == AddOnStatusPalette.Disabled ? foreground : _statusTokens?.GetValue(1);
+        if (!ReferenceEquals(foreground, BindingOperations.DoNothing))
+        {
+            AddOnStatusForeground = foreground as IBrush;
+        }
+        if (!ReferenceEquals(icon, BindingOperations.DoNothing))
+        {
+            AddOnStatusIconBrush = icon as IBrush;
+        }
+        UpdateIconStatusColors();
     }
 
     private void ConfigureEffectiveContentFramePadding()

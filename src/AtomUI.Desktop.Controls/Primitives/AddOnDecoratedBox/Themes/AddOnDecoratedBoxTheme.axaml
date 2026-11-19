@@ -186,16 +186,13 @@
         </Style>
 
         <Style Selector="^[EffectiveStatus=Error]">
-            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorErrorText}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorError}" />
+            <Setter Property="StatusPalette" Value="Error" />
         </Style>
         <Style Selector="^[EffectiveStatus=Warning]">
-            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorWarningText}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorWarning}" />
+            <Setter Property="StatusPalette" Value="Warning" />
         </Style>
         <Style Selector="^:disabled">
-            <Setter Property="AddOnStatusForeground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
-            <Setter Property="AddOnStatusIconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+            <Setter Property="StatusPalette" Value="Disabled" />
         </Style>
     </Style>
 </ControlTheme>

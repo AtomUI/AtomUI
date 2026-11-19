@@ -96,6 +96,8 @@ MaxPopupHeight = ItemHeight * DisplayPageSize
                + PopupContentPadding.Bottom
 ```
 
+`AbstractSelect` 成组读取候选项高度和弹层内边距。这两项任一更新都会刷新高度上限，弹层模板继续使用最终的内边距与尺寸。
+
 `MaxPopupHeight`、`EffectivePopupWidth`、`SelectedCount`、`IsSelectionEmpty` 和 `IsEffectiveFilterEnabled` 都是实例运行状态，不是 Token。
 
 ## 4. 控件家族影响

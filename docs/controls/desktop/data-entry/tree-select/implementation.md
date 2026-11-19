@@ -200,7 +200,7 @@ TreeSelect 有两个内部同步状态：
 
 ### 7.5 弹层尺寸
 
-弹层最大高度由 `AbstractSelect` 根据 `ItemHeight`、`DisplayPageSize` 和 `PopupContentPadding` 计算。TreeSelect 自身通过 `TreeSelectToken.MinPopupWidth` 给候选弹层提供下限宽度，并在 `IsPopupMatchSelectWidth=true` 时继承输入控件当前宽度作为有效最小宽度。
+弹层最大高度由 `AbstractSelect` 根据成组读取的候选项高度和内边距，以及 `DisplayPageSize` 计算。TreeSelect 自身通过 `TreeSelectToken.MinPopupWidth` 给候选弹层提供下限宽度，并在 `IsPopupMatchSelectWidth=true` 时继承输入控件当前宽度作为有效最小宽度。
 
 ### 7.6 右侧内容和 handle binding
 

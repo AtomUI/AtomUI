@@ -1,5 +1,9 @@
 # LineEdit Changelog
 
+## 2026-11-18
+
+- 桌面 TextArea 手柄合并斜线画刷与线宽资源读取，尺寸和拖动继续由原入口管理。
+
 ## 2026-11-14
 
 - Performance

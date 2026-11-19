@@ -6,20 +6,26 @@
     <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select">
         <Setter Property="atom:SelectTag.ThemeMultipleItemBg" Value="{atom:SelectTokenResource MultipleItemBg}" />
         <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeight}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeightSM" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeightLG" Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
         <Setter Property="atom:SelectTag.ThemeMultipleSelectorBgDisabled" Value="{atom:SelectTokenResource MultipleSelectorBgDisabled}" />
         <Setter Property="atom:SelectTag.ThemeMultipleItemColorDisabled" Value="{atom:SelectTokenResource MultipleItemColorDisabled}" />
         <Setter Property="atom:SelectTag.ThemeOptionFontSize" Value="{atom:SelectTokenResource OptionFontSize}" />
         <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:SelectTokenResource MultiModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePaddingSM" Value="{atom:SelectTokenResource MultiModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePaddingLG" Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+        <Setter Property="atom:SelectTag.ThemeCompactMultiModePadding" Value="{atom:SelectTokenResource MultiModePaddingSM}" />
         <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndent}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndentSM" Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndentLG" Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
         <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePaddingSM" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePaddingLG" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
+            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
+            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+        </Style>
 
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
@@ -166,10 +172,8 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="IsMotionEnabled" Value="{atom:SelectTokenResource EnableMotion}" />
-        <Setter Property="PopupContentPadding"
-                Value="{atom:SelectTokenResource PopupContentPadding}" />
+        <Setter Property="PopupLayoutTokenResourceKeys" Value="{x:Static atom:SelectPopupLayoutResources.Select}" />
         <Setter Property="OptionFontSize" Value="{atom:SelectTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:SelectTokenResource OptionHeight}" />
         <Setter Property="PlaceholderForeground"
                 Value="{atom:SelectTokenResource ColorTextPlaceholder}" />
 

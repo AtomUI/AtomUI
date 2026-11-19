@@ -43,6 +43,7 @@ Token 作用域（2026-11-08 输入家族迁移后）：
 - 内部 AutoCompleteTextAreaBox 跟随 AutoCompleteTextArea 宿主；LineEdit/SearchEdit 子控件沿现有独立输入身份使用默认主题，SearchEdit 的公开搜索 Button 保持 Button 身份。
 - `OptionHeight` 当前只参与弹层最大高度（`OptionHeight × DisplayCandidateCount + 内边距`），候选项自身高度来自
   CandidateList 的主题。
+- 各终端成组读取 `OptionHeight` 与 `PopupContentPadding`。任一项更新时重新计算弹层高度，`MinPopupWidth` 直接由弹层边框读取。
 - AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 均有独立 Own：OptionHeight、PopupContentPadding、MinPopupWidth、MaxPopupWidth；共享 AbstractAutoCompleteToken 计算，彼此的覆盖不传播。
 
 ## 4. 控件家族影响

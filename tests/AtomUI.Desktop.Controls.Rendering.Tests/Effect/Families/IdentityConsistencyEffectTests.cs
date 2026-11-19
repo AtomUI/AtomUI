@@ -87,17 +87,23 @@ public class IdentityConsistencyEffectTests
         FeedbackFamilyEffectTests.WithIsolationWindow(new StackPanel { Children = { source, target } }, (provider, capture) =>
         {
             using var before = capture();
-            var baseline = target.MinPopupWidth;
+            var sourceFrame = AutoCompletePopupFrame(source);
+            var targetFrame = AutoCompletePopupFrame(target);
+            var baseline = targetFrame.MinWidth;
             provider.Config = FeedbackFamilyEffectTests.IsolationConfig(control: (AutoCompleteTokens.Identity, "MinPopupWidth", "333"));
             using var sourceChanged = capture();
-            source.MinPopupWidth.ShouldBe(333);
-            target.MinPopupWidth.ShouldBe(baseline);
+            sourceFrame.MinWidth.ShouldBe(333);
+            targetFrame.MinWidth.ShouldBe(baseline);
             provider.Config = FeedbackFamilyEffectTests.IsolationConfig(control: (identity, "MinPopupWidth", "444"));
             using var targetChanged = capture();
-            target.MinPopupWidth.ShouldBe(444);
-            source.MinPopupWidth.ShouldBe(baseline);
+            targetFrame.MinWidth.ShouldBe(444);
+            sourceFrame.MinWidth.ShouldBe(baseline);
         });
     }
+
+    private static Control AutoCompletePopupFrame(AbstractAutoComplete control) =>
+        control.GetVisualDescendants().OfType<Popup>().Single(item => item.Name == AutoCompleteThemeConstants.PopupPart)
+               .Child.ShouldBeAssignableTo<Control>().ShouldNotBeNull();
 
     [Fact]
     public void Numeric_Handle_Uses_The_Numeric_Own_Background()

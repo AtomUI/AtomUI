@@ -3,8 +3,9 @@ using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Primitives.Themes;
-using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -342,6 +343,9 @@ public partial class ComboBox : AvaloniaComboBox,
     
     internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(PopupContentPadding));
+
+    internal static readonly StyledProperty<bool> UsePopupLayoutTokenResourcesProperty =
+        AvaloniaProperty.Register<ComboBox, bool>(nameof(UsePopupLayoutTokenResources));
     
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<ComboBox, FormValidateFeedback?>(nameof(FormFeedback));
@@ -396,7 +400,13 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(PopupContentPaddingProperty);
         set => SetValue(PopupContentPaddingProperty, value);
     }
-    
+
+    internal bool UsePopupLayoutTokenResources
+    {
+        get => GetValue(UsePopupLayoutTokenResourcesProperty);
+        set => SetValue(UsePopupLayoutTokenResourcesProperty, value);
+    }
+
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
@@ -464,6 +474,16 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private const string ContentLeftAddOnPresenterPart = "PART_ContentLeftAddOnPresenter";
     private const string ContentRightAddOnPresenterPart = "PART_ContentRightAddOnPresenter";
+
+    private static readonly CandidatePopupLayoutTokenResourceKeys s_popupLayoutTokenResourceKeys =
+        new(ComboBoxTokenKind.ItemHeight,
+            ComboBoxTokenKind.PopupContentPadding);
+    private OwnerTokenSet? _popupLayoutTokens;
+    private IDisposable? _rowHeightStyleValue;
+    private IDisposable? _popupPaddingStyleValue;
+    private double? _themedRowHeight;
+    private Thickness? _themedPopupPadding;
+    private bool _updatingPopupLayout;
 
     private Popup? _popup;
     private IDisposable? _deactivationSubscription;
@@ -776,11 +796,18 @@ public partial class ComboBox : AvaloniaComboBox,
             {
                 UpdatePseudoClasses();
             }
+            else if (change.Property == UsePopupLayoutTokenResourcesProperty)
+            {
+                UpdatePopupLayoutTokenSubscription();
+            }
             else if (change.Property == DropDownDisplayPageSizeProperty ||
                      change.Property == ItemHeightProperty ||
                      change.Property == PopupContentPaddingProperty)
             {
-                ConfigureMaxDropdownHeight();
+                if (!_updatingPopupLayout)
+                {
+                    ConfigureMaxDropdownHeight();
+                }
             }
             else if (change.Property == SelectedItemProperty &&
                      change.NewValue != null &&
@@ -1161,6 +1188,52 @@ public partial class ComboBox : AvaloniaComboBox,
     {
         SetCurrentValue(MaxDropDownHeightProperty,
             DropDownDisplayPageSize * ItemHeight + PopupContentPadding.Top + PopupContentPadding.Bottom);
+    }
+
+    private void UpdatePopupLayoutTokenSubscription()
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = UsePopupLayoutTokenResources ? s_popupLayoutTokenResourceKeys.Observe(this, RefreshPopupLayout) : null;
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var height = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _themedRowHeight);
+        var rawPadding = _popupLayoutTokens?.GetValue(1);
+        Thickness? padding = rawPadding is null || ReferenceEquals(rawPadding, AvaloniaProperty.UnsetValue)
+            ? null
+            : CandidatePopupLayoutTokenResourceKeys.ReadPadding(rawPadding, _themedPopupPadding ?? default);
+        var previous = (ItemHeight, PopupContentPadding);
+        _updatingPopupLayout = true;
+        try
+        {
+            // ItemHeight still feeds the realized item bindings. Both template values keep their theme priority.
+            SetPopupLayoutValue(ItemHeightProperty, height, ref _themedRowHeight, ref _rowHeightStyleValue);
+            SetPopupLayoutValue(PopupContentPaddingProperty, padding, ref _themedPopupPadding, ref _popupPaddingStyleValue);
+        }
+        finally
+        {
+            _updatingPopupLayout = false;
+        }
+        if (!previous.Equals((ItemHeight, PopupContentPadding)))
+        {
+            ConfigureMaxDropdownHeight();
+        }
+    }
+
+    private void SetPopupLayoutValue<T>(
+        StyledProperty<T> property, T? value, ref T? previous, ref IDisposable? styleValue)
+        where T : struct
+    {
+        if (Nullable.Equals(previous, value))
+        {
+            return;
+        }
+        var oldStyleValue = styleValue;
+        styleValue = value is { } resolved ? SetValue(property, resolved, BindingPriority.Style) : null;
+        previous = value;
+        oldStyleValue?.Dispose();
     }
 
     private void ConfigureOverlayInputPassThroughElement()

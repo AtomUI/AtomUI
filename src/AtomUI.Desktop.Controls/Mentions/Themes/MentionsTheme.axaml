@@ -43,7 +43,7 @@
                         <Border Name="PopupFrame"
                                 Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
-                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                MinWidth="{atom:MentionsTokenResource MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <Panel>
                                 <atom:Spin Name="LoadingIndicator" SizeType="Middle" 
@@ -68,9 +68,7 @@
         </Setter>
         
         <Setter Property="IsMotionEnabled" Value="{atom:MentionsTokenResource EnableMotion}" />
-        <Setter Property="ItemHeight" Value="{atom:MentionsTokenResource OptionHeight}" />
-        <Setter Property="PopupContentPadding" Value="{atom:MentionsTokenResource PopupContentPadding}" />
-        <Setter Property="MinPopupWidth" Value="{atom:MentionsTokenResource MinPopupWidth}" />
+        <Setter Property="UsePopupLayoutTokenResources" Value="True" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />

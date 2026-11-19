@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | 尺寸 | `ControlWidth` | Cascader 输入控件默认宽度。 | `CascaderTheme.axaml` root style。 |
 | 尺寸 | `ControlItemWidth` | 单列选项默认宽度，也是普通 popup 最小宽度基线。 | `CascaderTheme.axaml`、level list 主题。 |
-| 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `CascaderTheme.axaml` `MaxPopupHeight`。 |
+| 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `AbstractSelect` 读取并提供给弹层模板。 |
 | 尺寸 | `HeaderHeight` | 选项 header 最小高度。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `OptionPadding` | 选项内部 padding。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `MenuPadding` | 单列菜单 padding。 | `CascaderViewLevelListTheme.axaml`。 |
@@ -26,6 +26,8 @@
 ## 3. 控件专项模型中的 Token 使用
 
 `CascaderTheme.axaml` 使用 `ControlWidth`、`ControlItemWidth`、`DropdownHeight` 和 `FilterHighlightColor` 定义外层输入宽度、普通 popup 最小宽度、最大高度和过滤高亮。
+
+Cascader 默认使用 `DropdownHeight` 限制弹层高度。调用方显式设置 `DisplayPageSize` 时，则用页大小和候选项高度计算上限。
 
 `CascaderViewLevelListTheme.axaml` 使用 `ControlItemWidth` 和 `MenuPadding` 定义每列的结构尺寸。级联列宽属于 Cascader 的核心视觉契约，不应被单个 item 模板硬编码覆盖。
 

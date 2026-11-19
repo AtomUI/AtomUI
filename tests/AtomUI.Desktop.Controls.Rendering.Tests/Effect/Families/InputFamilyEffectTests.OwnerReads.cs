@@ -37,7 +37,7 @@ public partial class InputFamilyEffectTests
         "ColorBorder", "ColorError", "ColorErrorText", "ColorFillAlter", "ColorText", "ColorTextDisabled",
         "ColorTextQuaternary", "ColorWarning", "ColorWarningText", "FontHeight", "FontHeightLG", "FontHeightSM",
         "InputContentMargin", "InputPadding", "InputPaddingLG", "InputPaddingSM", "SpacingXXS"
-    ]);
+    ], "src/AtomUI.Desktop.Controls/Primitives/AddOnDecoratedBox/AddOnDecoratedBox.cs");
 
     internal static readonly OwnerReadList s_clearButton = new(Input + "InputClearIconButtonTheme.axaml",
         ["ColorText", "ColorTextQuaternary", "ColorTextTertiary", "IconSize"]);
@@ -48,7 +48,8 @@ public partial class InputFamilyEffectTests
     internal static readonly OwnerReadList s_textAreaDecoratedBox = new(Input + "TextAreaDecoratedBoxTheme.axaml",
         ["InputPadding", "InputPaddingLG", "InputPaddingSM"]);
 
-    internal static readonly OwnerReadList s_resizeHandle = new(Input + "ResizeHandleTheme.axaml", ["LineWidth"]);
+    internal static readonly OwnerReadList s_resizeHandle = new(Input + "ResizeHandleTheme.axaml", ["LineWidth"],
+        "src/AtomUI.Desktop.Controls/Input/ResizeHandle.cs");
 
     /// <summary>TextBoxTheme reads its globals from the owner: the theme is also the base of identity-less embedded editors.</summary>
     internal static readonly OwnerReadList s_textBox = new(Input + "TextBoxTheme.axaml",
@@ -60,8 +61,7 @@ public partial class InputFamilyEffectTests
 
     internal static readonly OwnerReadList s_buttonSpinnerDecoratedBox = new(Spinner + "ButtonSpinnerDecoratedBoxTheme.axaml",
     [
-        "BorderThickness", "ControlHeight", "ControlHeightLG", "ControlHeightSM", "InputPadding", "InputPaddingLG",
-        "InputPaddingSM", "SpacingXXS"
+        "ControlHeight", "ControlHeightLG", "ControlHeightSM", "InputPadding", "InputPaddingLG", "InputPaddingSM", "SpacingXXS"
     ]);
 
     internal static readonly OwnerReadList s_buttonSpinnerHandle = new(Spinner + "ButtonSpinnerHandleTheme.axaml",

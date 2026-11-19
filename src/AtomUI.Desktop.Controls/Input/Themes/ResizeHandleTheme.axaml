@@ -11,8 +11,7 @@
         </Setter>
         
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="IndicatorBrush" Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
-        <Setter Property="IndicatorLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
+        <Setter Property="UseResizeIndicatorTokenResources" Value="True" />
         <!-- The drag target and the indicator span TextArea.ResizeHandleSize. -->
         <Setter Property="Height" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />
         <Setter Property="Width" Value="{atom:TextAreaTokenResource ResizeHandleSize}" />

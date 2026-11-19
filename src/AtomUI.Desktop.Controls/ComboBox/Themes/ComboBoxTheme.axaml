@@ -199,10 +199,9 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsMotionEnabled" Value="{atom:ComboBoxTokenResource EnableMotion}" />
-        <Setter Property="PopupContentPadding" Value="{atom:ComboBoxTokenResource PopupContentPadding}" />
+        <Setter Property="UsePopupLayoutTokenResources" Value="True" />
         <Setter Property="EmptyIndicatorPadding" Value="{atom:ComboBoxTokenResource Padding}" />
         <Setter Property="OptionFontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:ComboBoxTokenResource ItemHeight}" />
         <Setter Property="PlaceholderForeground" Value="{atom:ComboBoxTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^[IsAllowClear=True][CanClearValue=True]:not(:disabled)">

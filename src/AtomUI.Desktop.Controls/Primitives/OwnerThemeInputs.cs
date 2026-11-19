@@ -17,8 +17,8 @@ internal readonly record struct OwnerThemeInput(AvaloniaProperty Property, strin
 /// owner provides them: runtime dialog surfaces whose dialog is not styled in a tree, a picker presenter shown without
 /// its picker, a standalone cover. The owner is the part's forwarded <c>ThemeScope.TokenOwner</c>; a part created
 /// alone takes <c>fallbackOwnerType</c>'s registered identity (the identity the owner's default ControlTheme would
-/// inject) as its owner. Each input is delivered by <see cref="TokenResourceBinder.CreateTokenResourceBinding"/> with
-/// the owner's Own key (by Token name) or effective global key at Style priority — the priority the owner's
+/// inject) as its owner. Inputs share one resource observer and use the owner's Own keys (by Token name) or effective
+/// global keys at Style priority — the priority the owner's
 /// ControlTheme setters reach through inheritance — so the value resolves through the part's own resource chain like an
 /// AXAML TokenResource, follows publishes and variants, and a local value on the part still wins. The binding set is
 /// rebuilt only when the owner identity changes, new bindings first. When the part inherits its owner from an attached
@@ -34,15 +34,17 @@ internal static class OwnerThemeInputs
     /// </param>
     /// <param name="fallbackOwnerType">The design owner of a part created alone, or null.</param>
     /// <param name="inputs">The inheritable inputs and the owner Token names they are mapped from.</param>
+    /// <param name="alternateOwnerType">Another registered control whose theme provides these inputs.</param>
     internal static IDisposable Bind(
         Control part,
         Control? host,
         Type? fallbackOwnerType,
-        IReadOnlyList<OwnerThemeInput> inputs)
+        IReadOnlyList<OwnerThemeInput> inputs,
+        Type? alternateOwnerType = null)
     {
         ArgumentNullException.ThrowIfNull(part);
         ArgumentNullException.ThrowIfNull(inputs);
-        return new Binding(part, host, fallbackOwnerType, inputs);
+        return new Binding(part, host, fallbackOwnerType, inputs, alternateOwnerType);
     }
 
     private sealed class Binding : IDisposable
@@ -50,18 +52,21 @@ internal static class OwnerThemeInputs
         private readonly Control _part;
         private readonly Control? _host;
         private readonly Type? _fallbackOwnerType;
+        private readonly Type? _alternateOwnerType;
         private readonly IReadOnlyList<OwnerThemeInput> _inputs;
         private readonly IDisposable _ownerSubscription;
-        private IDisposable?[]? _bindings;
+        private OwnerTokenPropertyBindings? _bindings;
         private ControlTokenIdentity? _boundOwner;
         private IDisposable? _fallbackOwner;
         private bool _disposed;
 
-        internal Binding(Control part, Control? host, Type? fallbackOwnerType, IReadOnlyList<OwnerThemeInput> inputs)
+        internal Binding(Control part, Control? host, Type? fallbackOwnerType, IReadOnlyList<OwnerThemeInput> inputs,
+            Type? alternateOwnerType)
         {
             _part = part;
             _host = host;
             _fallbackOwnerType = fallbackOwnerType;
+            _alternateOwnerType = alternateOwnerType;
             _inputs = inputs;
             part.AttachedToLogicalTree += HandleTreeChanged;
             part.DetachedFromLogicalTree += HandleTreeChanged;
@@ -106,17 +111,6 @@ internal static class OwnerThemeInputs
                 Release();
                 return;
             }
-            var owner = ThemeScope.GetTokenOwner(_part);
-            if (owner is not null && !_part.IsSet(ThemeScope.TokenOwnerProperty))
-            {
-                // Inherited from an attached owner ancestor: that owner's ControlTheme setters provide the inputs.
-                // A forwarded owner (TokenOwnerForwarding writes a LocalValue, so IsSet is true) is intentionally
-                // treated as "not provided by an attached ancestor": the forwarding host sits outside the part's
-                // logical tree (popup presenter, hosted surface), so its ControlTheme setters cannot reach the part
-                // and the mapping below must supply the inputs. Same key and scope, so no visible difference.
-                Release();
-                return;
-            }
             var context = ThemeScope.ResolveContext(_part);
             if (context is null)
             {
@@ -124,6 +118,21 @@ internal static class OwnerThemeInputs
                 return;
             }
             var registry = context.Snapshot.Registry;
+            var owner = ThemeScope.GetTokenOwner(_part);
+            if (owner is { } inheritedOwner && !_part.IsSet(ThemeScope.TokenOwnerProperty))
+            {
+                // Forwarded owners use a local value. For inheritance, only a compatible ControlTheme supplies
+                // the expected inputs. Standalone covers and time presenters can inherit the surrounding Window.
+                if (_fallbackOwnerType is null ||
+                    (registry.TryGetControl(inheritedOwner, out var ancestor) &&
+                     (_fallbackOwnerType.IsAssignableFrom(ancestor.ControlType) ||
+                      _alternateOwnerType?.IsAssignableFrom(ancestor.ControlType) == true)))
+                {
+                    Release();
+                    return;
+                }
+                owner = null;
+            }
             if (owner is null)
             {
                 if (_fallbackOwnerType is not null && registry.TryGetControl(_fallbackOwnerType, out var fallback))
@@ -147,20 +156,28 @@ internal static class OwnerThemeInputs
                 Release();
                 return;
             }
-            var bindings = new IDisposable?[_inputs.Count];
-            for (var index = 0; index < _inputs.Count; index++)
+            var bindings = new OwnerTokenPropertyBindings(_part, _inputs.Count, BindingPriority.Style);
+            try
             {
-                var (property, token) = _inputs[index];
-                var key = ResolveKey(descriptor, owner.Value, token);
-                bindings[index] = key is null
-                    ? null
-                    : TokenResourceBinder.CreateTokenResourceBinding(_part, _part, property, key, BindingPriority.Style);
+                for (var index = 0; index < _inputs.Count; index++)
+                {
+                    var (property, token) = _inputs[index];
+                    if (ResolveKey(descriptor, owner.Value, token) is { } key)
+                    {
+                        bindings.Bind(index, property, key);
+                    }
+                }
+            }
+            catch
+            {
+                bindings.Dispose();
+                throw;
             }
             // New bindings first: observers never see the attached-property default between two owners.
             var replaced = _bindings;
             _bindings = bindings;
             _boundOwner = owner;
-            DisposeAll(replaced);
+            replaced?.Dispose();
         }
 
         private static object? ResolveKey(ControlTokenDescriptor descriptor, ControlTokenIdentity owner, string token)
@@ -180,23 +197,12 @@ internal static class OwnerThemeInputs
         private void Release()
         {
             var bindings = _bindings;
+            var fallbackOwner = _fallbackOwner;
             _bindings = null;
             _boundOwner = null;
-            DisposeAll(bindings);
-            _fallbackOwner?.Dispose();
             _fallbackOwner = null;
-        }
-
-        private static void DisposeAll(IDisposable?[]? bindings)
-        {
-            if (bindings is null)
-            {
-                return;
-            }
-            foreach (var binding in bindings)
-            {
-                binding?.Dispose();
-            }
+            bindings?.Dispose();
+            fallbackOwner?.Dispose();
         }
     }
 }

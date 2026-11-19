@@ -5,15 +5,15 @@ using Avalonia.Controls;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Reads several global Design Tokens through the owner of one target element, with one set of target subscriptions.
+/// Reads several Design Token resources through one target element, with one set of target subscriptions.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Each entry resolves exactly like an <see cref="OwnerTokenBinding"/> on the same target: the owner's unbound Effective
+/// An inherited entry resolves like an <see cref="OwnerTokenBinding"/> on the same target: the owner's unbound Effective
 /// Global key, or the plain <see cref="SharedTokenKind"/> without an owner or with an owner the target's registry does not
 /// register. The set re-resolves on <see cref="StyledElement.ResourcesChanged"/> (checking a theme publish's
 /// <see cref="ThemePublishDelta"/> per entry first), on <see cref="StyledElement.ActualThemeVariantChanged"/> and when
-/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes.
+/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes. Fixed entries use the original resource key.
 /// </para>
 /// <para>
 /// Controls use it for theme variables they compute from several Tokens: one subscription per element instead of one
@@ -29,10 +29,12 @@ namespace AtomUI.Theme.Resources;
 internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
 {
     private readonly StyledElement _target;
-    private readonly Action<int, object?, object?> _changed;
+    private readonly Action<int, object?, object?>? _changed;
+    private readonly Action? _groupChanged;
     private readonly SharedTokenKind?[] _kinds;
-    private readonly object?[] _ownerKeys;
+    private readonly object?[] _keys;
     private readonly object?[] _values;
+    private readonly object?[]? _pendingValues;
     private readonly bool[] _resolved;
     private ControlTokenIdentity? _owner;
     private ThemePublishTracker _publishes;
@@ -42,14 +44,27 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
     /// <param name="count">The number of entries.</param>
     /// <param name="changed">Called with the entry index, the old and the new value whenever an entry's value changes.</param>
     internal OwnerTokenSet(StyledElement target, int count, Action<int, object?, object?> changed)
+        : this(target, count, changed ?? throw new ArgumentNullException(nameof(changed)), null)
     {
-        _target    = target;
-        _changed   = changed;
-        _kinds     = new SharedTokenKind?[count];
-        _ownerKeys = new object?[count];
-        _values    = new object?[count];
-        _resolved  = new bool[count];
-        _owner     = target.GetValue(ThemeScope.TokenOwnerProperty);
+    }
+
+    /// <summary>Reports one change after all changed values of a refresh are available to the consumer.</summary>
+    internal OwnerTokenSet(StyledElement target, int count, Action changed)
+        : this(target, count, null, changed ?? throw new ArgumentNullException(nameof(changed)))
+    {
+    }
+
+    private OwnerTokenSet(StyledElement target, int count, Action<int, object?, object?>? changed, Action? groupChanged)
+    {
+        _target        = target;
+        _changed       = changed;
+        _groupChanged  = groupChanged;
+        _kinds         = new SharedTokenKind?[count];
+        _keys          = new object?[count];
+        _values        = new object?[count];
+        _pendingValues = groupChanged is null ? null : new object?[count];
+        _resolved      = new bool[count];
+        _owner         = target.GetValue(ThemeScope.TokenOwnerProperty);
         TokenOwnerListeners.Add(target, this);
         target.ResourcesChanged          += OnResourcesChanged;
         target.ActualThemeVariantChanged += OnActualThemeVariantChanged;
@@ -73,8 +88,8 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
                 _publishes.MarkCurrent(context);
             }
 
-            _resolved[index] = true;
             _values[index]   = Resolve(index, context);
+            _resolved[index] = true;
         }
 
         return _values[index];
@@ -89,16 +104,52 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
     /// </summary>
     internal void SetKind(int index, SharedTokenKind? kind)
     {
-        if (_kinds[index] == kind)
+        if (_kinds[index] == kind && (kind.HasValue || _keys[index] is null))
         {
             return;
         }
 
-        _kinds[index]     = kind;
-        _ownerKeys[index] = kind is { } token && _owner is { } owner ? OwnerTokenBinding.GetResourceKey(owner, token) : null;
-        if (_resolved[index])
+        var key = kind is { } token && _owner is { } owner ? OwnerTokenBinding.GetResourceKey(owner, token) : null;
+        SetEntry(index, kind, key);
+    }
+
+    /// <summary>Points an entry at the exact resource key used by the original consumer.</summary>
+    internal void SetResourceKey(int index, object? key)
+    {
+        if (_kinds[index] is null && Equals(_keys[index], key))
         {
-            Refresh(index, ThemeScope.ResolveContext(_target));
+            return;
+        }
+
+        SetEntry(index, null, key);
+    }
+
+    private void SetEntry(int index, SharedTokenKind? kind, object? key)
+    {
+        var previousKind = _kinds[index];
+        var previousKey  = _keys[index];
+        _kinds[index] = kind;
+        _keys[index]  = key;
+        if (!_resolved[index])
+        {
+            return;
+        }
+
+        object? value;
+        try
+        {
+            value = Resolve(index, ThemeScope.ResolveContext(_target));
+        }
+        catch
+        {
+            _kinds[index] = previousKind;
+            _keys[index]  = previousKey;
+            throw;
+        }
+
+        if (UpdateValue(index, value, _values))
+        {
+            _groupChanged?.Invoke();
         }
     }
 
@@ -113,6 +164,7 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
         TokenOwnerListeners.Remove(_target, this);
         _target.ResourcesChanged          -= OnResourcesChanged;
         _target.ActualThemeVariantChanged -= OnActualThemeVariantChanged;
+        _publishes = default;
     }
 
     void ITokenOwnerListener.OnTokenOwnerChanged(ControlTokenIdentity? owner)
@@ -120,9 +172,10 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
         _owner = owner;
         for (var i = 0; i < _kinds.Length; i++)
         {
-            _ownerKeys[i] = _kinds[i] is { } token && owner is { } identity
-                ? OwnerTokenBinding.GetResourceKey(identity, token)
-                : null;
+            if (_kinds[i] is { } token)
+            {
+                _keys[i] = owner is { } identity ? OwnerTokenBinding.GetResourceKey(identity, token) : null;
+            }
         }
 
         RefreshAll();
@@ -134,12 +187,9 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
     {
         var context = ThemeScope.ResolveContext(_target);
         var delta   = _publishes.Observe(context);
-        for (var i = 0; i < _kinds.Length; i++)
+        if (!ReferenceEquals(delta, ThemePublishDelta.Nothing))
         {
-            if (_resolved[i] && _kinds[i] is { } kind && (delta is null || IsKeyChanged(i, kind, delta, context!)))
-            {
-                Refresh(i, context);
-            }
+            RefreshEntries(context, delta);
         }
     }
 
@@ -147,18 +197,66 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
     {
         var context = ThemeScope.ResolveContext(_target);
         _publishes.MarkCurrent(context);
-        for (var i = 0; i < _kinds.Length; i++)
+        RefreshEntries(context, null);
+    }
+
+    private void RefreshEntries(ThemeContext? context, ThemePublishDelta? delta)
+    {
+        if (_pendingValues is not { } pending)
         {
-            if (_resolved[i])
+            ReadEntries(context, delta, _values);
+            return;
+        }
+
+        // Stage the group so a lookup failure leaves the last complete values available for a retry.
+        Array.Copy(_values, pending, _values.Length);
+        bool changed;
+        try
+        {
+            changed = ReadEntries(context, delta, pending);
+            if (changed)
             {
-                Refresh(i, context);
+                Array.Copy(pending, _values, pending.Length);
             }
+        }
+        catch
+        {
+            // A failed lookup may have followed an owner or variant change. The next notification must re-read every entry.
+            _publishes = default;
+            throw;
+        }
+        finally
+        {
+            Array.Clear(pending);
+        }
+
+        if (changed)
+        {
+            _groupChanged!.Invoke();
         }
     }
 
-    private bool IsKeyChanged(int index, SharedTokenKind kind, ThemePublishDelta delta, ThemeContext context)
+    private bool ReadEntries(ThemeContext? context, ThemePublishDelta? delta, object?[] values)
     {
-        if (_ownerKeys[index] is not null && context.TryGetRegisteredOwnerSlot(_owner!.Value, out var slot))
+        var changed = false;
+        for (var i = 0; i < _kinds.Length; i++)
+        {
+            if (_resolved[i] && (_kinds[i].HasValue || _keys[i] is not null) &&
+                (delta is null || IsKeyChanged(i, delta, context!)))
+            {
+                changed |= UpdateValue(i, Resolve(i, context), values);
+            }
+        }
+        return changed;
+    }
+
+    private bool IsKeyChanged(int index, ThemePublishDelta delta, ThemeContext context)
+    {
+        if (_kinds[index] is not { } kind)
+        {
+            return delta.IsChanged(_keys[index]!);
+        }
+        if (_keys[index] is not null && context.TryGetRegisteredOwnerSlot(_owner!.Value, out var slot))
         {
             return delta.IsOwnerGlobalChanged(slot, kind);
         }
@@ -167,28 +265,30 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
 
     private object? Resolve(int index, ThemeContext? context)
     {
-        if (_kinds[index] is not { } kind)
+        var key = _keys[index];
+        if (_kinds[index] is { } kind && (key is null || OwnerTokenBinding.IsKnownUnregistered(context, _owner!.Value)))
+        {
+            key = kind;
+        }
+        if (key is null)
         {
             return null;
         }
 
         ResolveCount++;
-        var key = _ownerKeys[index] is { } ownerKey && !OwnerTokenBinding.IsKnownUnregistered(context, _owner!.Value)
-            ? ownerKey
-            : kind;
         return _target.TryFindResource(key, _target.ActualThemeVariant, out var value) ? value : null;
     }
 
-    private void Refresh(int index, ThemeContext? context)
+    private bool UpdateValue(int index, object? value, object?[] values)
     {
-        var value = Resolve(index, context);
-        var old   = _values[index];
+        var old = values[index];
         if (Equals(old, value))
         {
-            return;
+            return false;
         }
 
-        _values[index] = value;
-        _changed(index, old, value);
+        values[index] = value;
+        _changed?.Invoke(index, old, value);
+        return true;
     }
 }

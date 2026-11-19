@@ -5,29 +5,7 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TabStrip}" TargetType="atom:TabStrip">
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSize" Value="{atom:TabStripTokenResource TitleFontSize}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeLG" Value="{atom:TabStripTokenResource TitleFontSizeLG}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeSM" Value="{atom:TabStripTokenResource TitleFontSizeSM}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemMargin" Value="{atom:TabStripTokenResource HorizontalItemMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemColor" Value="{atom:TabStripTokenResource ItemColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemHoverColor" Value="{atom:TabStripTokenResource ItemHoverColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemSelectedColor" Value="{atom:TabStripTokenResource ItemSelectedColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemIconMargin" Value="{atom:TabStripTokenResource ItemIconMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingHorizontal" Value="{atom:TabStripTokenResource MenuIndicatorPaddingHorizontal}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingVertical" Value="{atom:TabStripTokenResource MenuIndicatorPaddingVertical}" />
-
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowLeft" Value="{atom:TabStripTokenResource BoxShadowTabsOverflowLeft}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowRight" Value="{atom:TabStripTokenResource BoxShadowTabsOverflowRight}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowTop" Value="{atom:TabStripTokenResource BoxShadowTabsOverflowTop}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowBottom" Value="{atom:TabStripTokenResource BoxShadowTabsOverflowBottom}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCloseIconMargin" Value="{atom:TabStripTokenResource CloseIconMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeInkBarColor" Value="{atom:TabStripTokenResource InkBarColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeInkBarThickness" Value="{atom:TabStripTokenResource InkBarThickness}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemGutter" Value="{atom:TabStripTokenResource HorizontalItemGutter}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPadding" Value="{atom:TabStripTokenResource HorizontalItemPadding}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPaddingLG" Value="{atom:TabStripTokenResource HorizontalItemPaddingLG}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPaddingSM" Value="{atom:TabStripTokenResource HorizontalItemPaddingSM}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeVerticalItemGutter" Value="{atom:TabStripTokenResource VerticalItemGutter}" />
+        <Setter Property="atom:TabTokenResourceBindingExtension.Owner" Value="{Binding $self}" />
 
         <ControlTheme.BasedOn>
             <themes:BaseTabStripTheme TargetType="atom:TabStrip" />
@@ -67,10 +45,10 @@
         </Setter>
 
         <Setter Property="SelectedIndicatorThickness"
-                Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeInkBarThickness)}" />
+                Value="{atom:TabStripTokenResource InkBarThickness}" />
 
         <Style Selector="^ /template/ Border#PART_SelectedItemIndicator">
-            <Setter Property="Background" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeInkBarColor)}" />
+            <Setter Property="Background" Value="{atom:TabTokenResourceBinding InkBarColor}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]">
@@ -97,7 +75,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemGutter)}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
@@ -131,7 +109,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeVerticalItemGutter)}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
@@ -165,7 +143,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemGutter)}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
@@ -199,7 +177,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeVerticalItemGutter)}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 

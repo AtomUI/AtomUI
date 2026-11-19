@@ -10,22 +10,22 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
-            <Setter Property="Margin" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemMargin)}" />
+            <Setter Property="Margin" Value="{atom:TabTokenResourceBinding HorizontalItemMargin}" />
             <Style Selector="^[SizeType=Large]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPaddingLG)}"/>
+                    <Setter Property="Padding" Value="{atom:TabTokenResourceBinding HorizontalItemPadding}"/>
                 </Style>
             </Style>
             
             <Style Selector="^[SizeType=Middle]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPadding)}"/>
+                    <Setter Property="Padding" Value="{atom:TabTokenResourceBinding HorizontalItemPadding}"/>
                 </Style>
             </Style>
             
             <Style Selector="^[SizeType=Small]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Padding" Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeHorizontalItemPaddingSM)}"/>
+                    <Setter Property="Padding" Value="{atom:TabTokenResourceBinding HorizontalItemPadding}"/>
                 </Style>
             </Style>
         </Style>

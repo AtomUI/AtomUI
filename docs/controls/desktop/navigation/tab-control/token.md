@@ -51,6 +51,8 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 - 无身份的共享部件 `BaseTabControl` / `BaseTabStrip` 基础主题、`TabScrollViewer` 与溢出菜单以 `OwnerTokenResource` 读取宿主的有效全局
   Token；溢出菜单所在 Popup 为 Token owner 透明，`Controls[TabStrip]` 等作用于其溢出菜单。溢出按钮与菜单项关闭按钮是注册的 IconButton，
   由无身份部件读取宿主值后向下绑定。
+- 基础分隔线的画刷和厚度由 `BaseTabControl` 通过同一 `OwnerTokenSet` 解析。卡片终端在同一观察组中按当前尺寸读取自身的圆角键，
+  卡片条使用自己的观察组。计算后的分隔线与卡片圆角继续供现有模板和容器使用。
 - 页签项使用命名主题（`TabItemTheme` / `CardTabItemTheme` / `TabStripItemTheme` / `CardTabStripItemTheme`），从页签项自身所在资源作用域查找，
   局部资源中的同名主题优先于应用资源；命名主题不注入 owner，页签项继承宿主为 owner（过渡时长随宿主）。
 

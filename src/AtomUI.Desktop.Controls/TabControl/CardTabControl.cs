@@ -1,4 +1,6 @@
-﻿using AtomUI.Generated.AtomUIDesktopControls;
+﻿using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -37,9 +39,6 @@ public partial class CardTabControl : BaseTabControl
 
     #region 内部属性实现
 
-    internal static readonly StyledProperty<CornerRadius> CardBorderRadiusProperty =
-        AvaloniaProperty.Register<CardTabControl, CornerRadius>(nameof(CardBorderRadius));
-    
     internal static readonly StyledProperty<CornerRadius> EffectiveCardBorderRadiusProperty =
         AvaloniaProperty.Register<CardTabControl, CornerRadius>(nameof(EffectiveCardBorderRadius));
 
@@ -49,12 +48,17 @@ public partial class CardTabControl : BaseTabControl
     internal static readonly StyledProperty<double> CardSizeProperty =
         AvaloniaProperty.Register<CardTabControl, double>(nameof(CardSize));
 
-    internal CornerRadius CardBorderRadius
-    {
-        get => GetValue(CardBorderRadiusProperty);
-        set => SetValue(CardBorderRadiusProperty, value);
-    }
-    
+    private static readonly object[] s_cardRadiusKeys =
+    [
+        ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusSM),
+        ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadius),
+        ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusLG)
+    ];
+
+    private protected override object[] CardRadiusKeys => s_cardRadiusKeys;
+
+    private protected override void OnCardRadiusChanged() => HandleTabStripPlacementChanged();
+
     internal CornerRadius EffectiveCardBorderRadius
     {
         get => GetValue(EffectiveCardBorderRadiusProperty);
@@ -128,10 +132,8 @@ public partial class CardTabControl : BaseTabControl
     {
         base.OnPropertyChanged(change);
 
-        // The card radius is a Token (BorderRadius by size): a theme or Control-level change recomputes the per-side radius.
         if (change.Property == TabStripPlacementProperty ||
-            change.Property == CardSizeProperty ||
-            change.Property == CardBorderRadiusProperty)
+            change.Property == CardSizeProperty)
         {
             HandleTabStripPlacementChanged();
         }
@@ -153,8 +155,8 @@ public partial class CardTabControl : BaseTabControl
     {
         if (TabStripPlacement == Dock.Top)
         {
-            EffectiveCardBorderRadius = new CornerRadius(CardBorderRadius.TopLeft,
-                CardBorderRadius.TopRight, bottomLeft: 0, bottomRight: 0);
+            EffectiveCardBorderRadius = new CornerRadius(CardRadius.TopLeft,
+                CardRadius.TopRight, bottomLeft: 0, bottomRight: 0);
             if (_addTabButton is not null && _itemsPresenter is not null)
             {
                 _addTabButton.Width  = CardSize;
@@ -163,8 +165,8 @@ public partial class CardTabControl : BaseTabControl
         }
         else if (TabStripPlacement == Dock.Bottom)
         {
-            EffectiveCardBorderRadius = new CornerRadius(0, 0, bottomLeft: CardBorderRadius.BottomLeft,
-                bottomRight: CardBorderRadius.BottomRight);
+            EffectiveCardBorderRadius = new CornerRadius(0, 0, bottomLeft: CardRadius.BottomLeft,
+                bottomRight: CardRadius.BottomRight);
             if (_addTabButton is not null && _itemsPresenter is not null)
             {
                 _addTabButton.Width  = CardSize;
@@ -173,8 +175,8 @@ public partial class CardTabControl : BaseTabControl
         }
         else if (TabStripPlacement == Dock.Left)
         {
-            EffectiveCardBorderRadius = new CornerRadius(CardBorderRadius.TopLeft, 0,
-                bottomLeft: CardBorderRadius.BottomLeft, bottomRight: 0);
+            EffectiveCardBorderRadius = new CornerRadius(CardRadius.TopLeft, 0,
+                bottomLeft: CardRadius.BottomLeft, bottomRight: 0);
             if (_addTabButton is not null && _itemsPresenter is not null)
             {
                 _addTabButton.Width               = CardSize;
@@ -184,8 +186,8 @@ public partial class CardTabControl : BaseTabControl
         }
         else
         {
-            EffectiveCardBorderRadius = new CornerRadius(0, CardBorderRadius.TopRight, bottomLeft: 0,
-                bottomRight: CardBorderRadius.BottomRight);
+            EffectiveCardBorderRadius = new CornerRadius(0, CardRadius.TopRight, bottomLeft: 0,
+                bottomRight: CardRadius.BottomRight);
             if (_addTabButton is not null && _itemsPresenter is not null)
             {
                 _addTabButton.Width               = CardSize;

@@ -2,6 +2,7 @@
 using System.Collections.Specialized;
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -295,23 +296,31 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
 
     #region 内部属性实现
     
-    internal static readonly StyledProperty<IBrush?> SeparatorBorderBrushProperty =
-        AvaloniaProperty.Register<BaseTabControl, IBrush?>(nameof(SeparatorBorderBrush));
+    internal static readonly StyledProperty<bool> UseSeparatorTokenResourcesProperty =
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(UseSeparatorTokenResources));
 
-    internal static readonly StyledProperty<Thickness> SeparatorBorderThicknessProperty =
-        AvaloniaProperty.Register<BaseTabControl, Thickness>(nameof(SeparatorBorderThickness));
+    internal static readonly StyledProperty<bool> UseCardRadiusTokenResourcesProperty =
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(UseCardRadiusTokenResources));
 
-    internal IBrush? SeparatorBorderBrush
+    internal bool UseSeparatorTokenResources
     {
-        get => GetValue(SeparatorBorderBrushProperty);
-        set => SetValue(SeparatorBorderBrushProperty, value);
+        get => GetValue(UseSeparatorTokenResourcesProperty);
+        set => SetValue(UseSeparatorTokenResourcesProperty, value);
     }
 
-    internal Thickness SeparatorBorderThickness
+    internal bool UseCardRadiusTokenResources
     {
-        get => GetValue(SeparatorBorderThicknessProperty);
-        set => SetValue(SeparatorBorderThicknessProperty, value);
+        get => GetValue(UseCardRadiusTokenResourcesProperty);
+        set => SetValue(UseCardRadiusTokenResourcesProperty, value);
     }
+
+    internal IBrush? SeparatorBorderBrush { get; private set; }
+    internal Thickness SeparatorBorderThickness { get; private set; }
+
+    private const int SeparatorResourceCount = 2;
+    private OwnerTokenSet? _chromeTokens;
+    private protected CornerRadius CardRadius { get; private set; }
+    private protected virtual object[]? CardRadiusKeys => null;
 
     internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
         AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
@@ -393,7 +402,7 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         SelectionModeProperty.OverrideDefaultValue<BaseTabControl>(SelectionMode.AlwaysSelected);
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<BaseTabControl>(false);
         ItemsPanelProperty.OverrideDefaultValue<BaseTabControl>(DefaultPanel);
-        AffectsRender<BaseTabControl>(SeparatorBorderBrushProperty, SeparatorBorderThicknessProperty, UseLayoutRoundingProperty);
+        AffectsRender<BaseTabControl>(UseLayoutRoundingProperty);
         AffectsMeasure<BaseTabControl>(TabStripMarginProperty, TabAndContentGutterProperty, TabStripPlacementProperty);
     }
 
@@ -513,11 +522,14 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        UpdateChromeTokenSubscription();
         _tabReorderScrollViewer?.AttachOverflowOwner(this);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _chromeTokens?.Dispose();
+        _chromeTokens = null;
         _tabReorderScrollViewer?.DetachOverflowOwner(this);
         ClearPendingTabActivation();
         CancelTabReorder();
@@ -809,6 +821,15 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if ((change.Property == UseSeparatorTokenResourcesProperty || change.Property == UseCardRadiusTokenResourcesProperty) &&
+            this.IsAttachedToVisualTree())
+        {
+            UpdateChromeTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _chromeTokens is not null)
+        {
+            RefreshChromeStyle();
+        }
         if (change.Property == SelectedIndexProperty)
         {
             _overflowSelectionChanged?.Invoke(this, EventArgs.Empty);
@@ -856,6 +877,59 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         PseudoClasses.Set(TabPseudoClass.Right, TabStripPlacement == Dock.Right);
         PseudoClasses.Set(TabPseudoClass.Bottom, TabStripPlacement == Dock.Bottom);
         PseudoClasses.Set(TabPseudoClass.Left, TabStripPlacement == Dock.Left);
+    }
+
+    private void UpdateChromeTokenSubscription()
+    {
+        _chromeTokens?.Dispose();
+        _chromeTokens = null;
+        var radiusKeys = UseCardRadiusTokenResources ? CardRadiusKeys : null;
+        if (UseSeparatorTokenResources || radiusKeys is not null)
+        {
+            _chromeTokens = new OwnerTokenSet(this, SeparatorResourceCount + (radiusKeys?.Length ?? 0), RefreshChromeStyle);
+            if (UseSeparatorTokenResources)
+            {
+                _chromeTokens.SetKind(0, SharedTokenKind.ColorBorderSecondary);
+                _chromeTokens.SetKind(1, SharedTokenKind.BorderThickness);
+            }
+            if (radiusKeys is not null)
+            {
+                for (var index = 0; index < radiusKeys.Length; ++index)
+                {
+                    _chromeTokens.SetResourceKey(SeparatorResourceCount + index, radiusKeys[index]);
+                }
+            }
+        }
+        RefreshChromeStyle();
+    }
+
+    private void RefreshChromeStyle()
+    {
+        var rawBrush = _chromeTokens?.GetValue(0);
+        var rawThickness = _chromeTokens?.GetValue(1);
+        var brush = ReferenceEquals(rawBrush, BindingOperations.DoNothing) ? SeparatorBorderBrush : rawBrush as IBrush;
+        var thickness = ReferenceEquals(rawThickness, BindingOperations.DoNothing)
+            ? SeparatorBorderThickness
+            : rawThickness is Thickness value ? value : default;
+        if (!Equals(SeparatorBorderBrush, brush) || SeparatorBorderThickness != thickness)
+        {
+            SeparatorBorderBrush = brush;
+            SeparatorBorderThickness = thickness;
+            InvalidateVisual();
+        }
+
+        var radius = UseCardRadiusTokenResources && CardRadiusKeys is not null
+            ? TabCardRadiusResources.Read(_chromeTokens, SeparatorResourceCount, SizeType, CardRadius)
+            : default;
+        if (CardRadius != radius)
+        {
+            CardRadius = radius;
+            OnCardRadiusChanged();
+        }
+    }
+
+    private protected virtual void OnCardRadiusChanged()
+    {
     }
 
     private void HandlePlacementChanged()

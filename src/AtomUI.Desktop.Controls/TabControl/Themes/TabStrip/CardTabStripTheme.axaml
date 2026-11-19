@@ -6,31 +6,7 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CardTabStrip}" TargetType="atom:CardTabStrip">
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSize" Value="{atom:CardTabStripTokenResource TitleFontSize}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeLG" Value="{atom:CardTabStripTokenResource TitleFontSizeLG}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeTitleFontSizeSM" Value="{atom:CardTabStripTokenResource TitleFontSizeSM}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeHorizontalItemMargin" Value="{atom:CardTabStripTokenResource HorizontalItemMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemColor" Value="{atom:CardTabStripTokenResource ItemColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemHoverColor" Value="{atom:CardTabStripTokenResource ItemHoverColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemSelectedColor" Value="{atom:CardTabStripTokenResource ItemSelectedColor}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeItemIconMargin" Value="{atom:CardTabStripTokenResource ItemIconMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingHorizontal" Value="{atom:CardTabStripTokenResource MenuIndicatorPaddingHorizontal}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeMenuIndicatorPaddingVertical" Value="{atom:CardTabStripTokenResource MenuIndicatorPaddingVertical}" />
-
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowLeft" Value="{atom:CardTabStripTokenResource BoxShadowTabsOverflowLeft}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowRight" Value="{atom:CardTabStripTokenResource BoxShadowTabsOverflowRight}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowTop" Value="{atom:CardTabStripTokenResource BoxShadowTabsOverflowTop}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeBoxShadowTabsOverflowBottom" Value="{atom:CardTabStripTokenResource BoxShadowTabsOverflowBottom}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCloseIconMargin" Value="{atom:CardTabStripTokenResource CloseIconMargin}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardBg" Value="{atom:CardTabStripTokenResource CardBg}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardSize" Value="{atom:CardTabStripTokenResource CardSize}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardPadding" Value="{atom:CardTabStripTokenResource CardPadding}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardPaddingSM" Value="{atom:CardTabStripTokenResource CardPaddingSM}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardPaddingLG" Value="{atom:CardTabStripTokenResource CardPaddingLG}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeVerticalItemPadding" Value="{atom:CardTabStripTokenResource VerticalItemPadding}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeCardGutter" Value="{atom:CardTabStripTokenResource CardGutter}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginHorizontal" Value="{atom:CardTabStripTokenResource AddTabButtonMarginHorizontal}" />
-        <Setter Property="atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginVertical" Value="{atom:CardTabStripTokenResource AddTabButtonMarginVertical}" />
+        <Setter Property="atom:TabTokenResourceBindingExtension.Owner" Value="{Binding $self}" />
 
         <ControlTheme.BasedOn>
             <themes:BaseTabStripTheme TargetType="atom:CardTabStrip" />
@@ -79,13 +55,13 @@
         </Setter>
 
         <Setter Property="CardSize"
-                Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardSize)}" />
+                Value="{atom:CardTabStripTokenResource CardSize}" />
         <Setter Property="CardBorderThickness"
                 Value="{atom:CardTabStripTokenResource BorderThickness}" />
         
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
             <Setter Property="IconBrush"
-                    Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemColor)}" />
+                    Value="{atom:TabTokenResourceBinding ItemColor}" />
             <Setter Property="IconWidth"
                     Value="{atom:CardTabStripTokenResource IconSize}" />
             <Setter Property="IconHeight"
@@ -96,7 +72,7 @@
         
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton:pointerover">
             <Setter Property="IconBrush"
-                    Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeItemHoverColor)}" />
+                    Value="{atom:TabTokenResourceBinding ItemHoverColor}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]">
@@ -123,13 +99,13 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardGutter)}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginHorizontal)}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginHorizontal}" />
             </Style>
 
         </Style>
@@ -158,13 +134,13 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardGutter)}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginVertical)}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginVertical}" />
             </Style>
 
         </Style>
@@ -193,13 +169,13 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardGutter)}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginHorizontal)}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginHorizontal}" />
             </Style>
 
         </Style>
@@ -228,28 +204,17 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeCardGutter)}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{Binding $self.(atom:TabOverflowEdgeIndicator.ThemeAddTabButtonMarginVertical)}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginVertical}" />
             </Style>
 
         </Style>
         
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:CardTabStripTokenResource BorderRadiusLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:CardTabStripTokenResource BorderRadius}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:CardTabStripTokenResource BorderRadiusSM}" />
-        </Style>
+        <Setter Property="UseCardRadiusTokenResources" Value="True" />
     </ControlTheme>
 </ResourceDictionary>

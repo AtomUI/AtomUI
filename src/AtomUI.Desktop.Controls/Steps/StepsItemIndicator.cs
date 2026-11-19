@@ -1,11 +1,16 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -127,11 +132,8 @@ internal class StepsItemIndicator : TemplatedControl
     internal static readonly StyledProperty<double> ProgressLineThicknessProperty =
         AvaloniaProperty.Register<StepsItemIndicator, double>(nameof(ProgressLineThickness));
 
-    internal static readonly StyledProperty<IBrush?> ProgressGrooveColorProperty =
-        AvaloniaProperty.Register<StepsItemIndicator, IBrush?>(nameof(ProgressGrooveColor));
-
-    internal static readonly StyledProperty<IBrush?> ProgressColorProperty =
-        AvaloniaProperty.Register<StepsItemIndicator, IBrush?>(nameof(ProgressColor));
+    internal static readonly StyledProperty<bool> UseProgressRingTokenResourcesProperty =
+        AvaloniaProperty.Register<StepsItemIndicator, bool>(nameof(UseProgressRingTokenResources));
 
     private int _stepNumber;
 
@@ -215,16 +217,10 @@ internal class StepsItemIndicator : TemplatedControl
         set => SetValue(ProgressLineThicknessProperty, value);
     }
 
-    internal IBrush? ProgressGrooveColor
+    internal bool UseProgressRingTokenResources
     {
-        get => GetValue(ProgressGrooveColorProperty);
-        set => SetValue(ProgressGrooveColorProperty, value);
-    }
-
-    internal IBrush? ProgressColor
-    {
-        get => GetValue(ProgressColorProperty);
-        set => SetValue(ProgressColorProperty, value);
+        get => GetValue(UseProgressRingTokenResourcesProperty);
+        set => SetValue(UseProgressRingTokenResourcesProperty, value);
     }
 
     #endregion
@@ -232,6 +228,10 @@ internal class StepsItemIndicator : TemplatedControl
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private IPen? _progressGroovePen;
     private IPen? _progressPen;
+    private static readonly object s_progressGrooveKey = StepsTokenKind.ProgressGrooveColor;
+    private static readonly object s_progressColorKey = StepsTokenKind.ProgressColor;
+    private OwnerTokenSet? _progressPaintTokens;
+    private (IBrush? Groove, IBrush? Track) _progressPaint;
 
     internal bool IsWavePlaying => _waveSpiritDecorator?.IsPlaying == true;
 
@@ -245,8 +245,6 @@ internal class StepsItemIndicator : TemplatedControl
         AffectsRender<StepsItemIndicator>(
             PercentProperty,
             ProgressLineThicknessProperty,
-            ProgressGrooveColorProperty,
-            ProgressColorProperty,
             IsCurrentProperty,
             IsProgressVisibleProperty,
             UseLayoutRoundingProperty);
@@ -274,7 +272,65 @@ internal class StepsItemIndicator : TemplatedControl
         {
             SetCurrentValue(IsCustomProperty, Icon is not null);
         }
+        else if ((change.Property == UseProgressRingTokenResourcesProperty || change.Property == IsProgressVisibleProperty) &&
+                 this.IsAttachedToVisualTree())
+        {
+            UpdateProgressRingTokenSubscription();
+        }
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateProgressRingTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _progressPaintTokens?.Dispose();
+        _progressPaintTokens = null;
+        _progressPaint = default;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateProgressRingTokenSubscription()
+    {
+        if (IsProgressVisible && UseProgressRingTokenResources)
+        {
+            if (_progressPaintTokens is null)
+            {
+                _progressPaintTokens = new OwnerTokenSet(this, 2, RefreshProgressPaint);
+                _progressPaintTokens.SetResourceKey(0, s_progressGrooveKey);
+                _progressPaintTokens.SetResourceKey(1, s_progressColorKey);
+            }
+        }
+        else if (_progressPaintTokens is not null)
+        {
+            _progressPaintTokens.Dispose();
+            _progressPaintTokens = null;
+        }
+        RefreshProgressPaint();
+    }
+
+    private void RefreshProgressPaint()
+    {
+        var paint = (ReadBrush(_progressPaintTokens?.GetValue(0), _progressPaint.Groove),
+                     ReadBrush(_progressPaintTokens?.GetValue(1), _progressPaint.Track));
+        if (!_progressPaint.Equals(paint))
+        {
+            _progressPaint = paint;
+            InvalidateVisual();
+        }
+    }
+
+    private static IBrush? ReadBrush(object? value, IBrush? previous) => value switch
+    {
+        IBrush brush => brush,
+        Color color => new ImmutableSolidColorBrush(color),
+        string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => null
+    };
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -294,12 +350,12 @@ internal class StepsItemIndicator : TemplatedControl
         var lineThickness = BorderUtils.BuildRenderScaleAwareThickness(this, ProgressLineThickness);
         var progressRect = new Rect(Bounds.Size).Deflate(lineThickness / 2);
 
-        PenUtils.TryModifyOrCreate(ref _progressGroovePen, ProgressGrooveColor, lineThickness);
+        PenUtils.TryModifyOrCreate(ref _progressGroovePen, _progressPaint.Groove, lineThickness);
         context.DrawEllipse(null, _progressGroovePen, progressRect);
 
         PenUtils.TryModifyOrCreate(
             ref _progressPen,
-            ProgressColor,
+            _progressPaint.Track,
             lineThickness,
             lineCap: PenLineCap.Round);
         context.DrawArc(_progressPen, progressRect, -90, 360 * Percent.Value / 100);

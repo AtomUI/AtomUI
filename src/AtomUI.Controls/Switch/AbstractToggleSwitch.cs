@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -19,6 +21,7 @@ using Avalonia.Media.Transformation;
 using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
@@ -203,6 +206,9 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     internal static readonly StyledProperty<double> InnerMinMarginProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(InnerMinMargin));
 
+    internal static readonly StyledProperty<bool> UseContentMarginTokenResourcesProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, bool>(nameof(UseContentMarginTokenResources));
+
     internal static readonly StyledProperty<double> IconSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(IconSize));
 
@@ -217,15 +223,26 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     internal double InnerMaxMargin
     {
-        get => GetValue(InnerMaxMarginProperty);
+        get => IsSet(InnerMaxMarginProperty) ? GetValue(InnerMaxMarginProperty) : _contentMargins.Max;
         set => SetValue(InnerMaxMarginProperty, value);
     }
 
     internal double InnerMinMargin
     {
-        get => GetValue(InnerMinMarginProperty);
+        get => IsSet(InnerMinMarginProperty) ? GetValue(InnerMinMarginProperty) : _contentMargins.Min;
         set => SetValue(InnerMinMarginProperty, value);
     }
+
+    internal bool UseContentMarginTokenResources
+    {
+        get => GetValue(UseContentMarginTokenResourcesProperty);
+        set => SetValue(UseContentMarginTokenResourcesProperty, value);
+    }
+
+    private OwnerTokenSet? _contentMarginTokens;
+    private (double Min, double Max) _contentMargins;
+
+    private protected virtual (object NormalMin, object NormalMax, object SmallMin, object SmallMax)? ContentMarginKeys => null;
 
     internal double IconSize
     {
@@ -310,10 +327,13 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     {
         _transitionInitialization.Reset();
         base.OnAttachedToVisualTree(e);
+        UpdateContentMarginTokenSubscription();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _contentMarginTokens?.Dispose();
+        _contentMarginTokens = null;
         _transitionInitialization.Reset();
         _pendingWave?.Abort();
         _pendingWave = null;
@@ -359,6 +379,14 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         if (change.Property == IsLoadingProperty)
         {
             HandleLoadingState(IsLoading);
+        }
+        else if (change.Property == UseContentMarginTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateContentMarginTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _contentMarginTokens is not null)
+        {
+            RefreshContentMargins();
         }
         else if ((change.Property == IsPointerOverProperty && !IsLoading) ||
                  change.Property == IsCheckedProperty ||
@@ -667,6 +695,59 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         else
         {
             _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
+        }
+    }
+
+    private void UpdateContentMarginTokenSubscription()
+    {
+        if (UseContentMarginTokenResources && ContentMarginKeys is { } keys)
+        {
+            if (_contentMarginTokens is null)
+            {
+                _contentMarginTokens = new OwnerTokenSet(this, 4, RefreshContentMargins);
+                _contentMarginTokens.SetResourceKey(0, keys.NormalMin);
+                _contentMarginTokens.SetResourceKey(1, keys.NormalMax);
+                _contentMarginTokens.SetResourceKey(2, keys.SmallMin);
+                _contentMarginTokens.SetResourceKey(3, keys.SmallMax);
+            }
+        }
+        else if (_contentMarginTokens is not null)
+        {
+            _contentMarginTokens.Dispose();
+            _contentMarginTokens = null;
+        }
+        RefreshContentMargins();
+    }
+
+    private void RefreshContentMargins()
+    {
+        var previous = (InnerMinMargin, InnerMaxMargin);
+        var index = SizeType == CustomizableSizeType.Small ? 2 : 0;
+        _contentMargins = (ReadMargin(index, _contentMargins.Min), ReadMargin(index + 1, _contentMargins.Max));
+        if (!previous.Equals((InnerMinMargin, InnerMaxMargin)))
+        {
+            InvalidateMeasure();
+        }
+    }
+
+    private double ReadMargin(int index, double previous)
+    {
+        var value = _contentMarginTokens?.GetValue(index);
+        if (value is double margin)
+        {
+            return margin;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 

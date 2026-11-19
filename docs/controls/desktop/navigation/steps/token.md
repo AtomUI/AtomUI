@@ -88,6 +88,8 @@ TailColor 遵循步骤条 rail 的语义：Wait 使用 disabled 色，Process �
 
 Progress 外径由当前 `IconSize` / `IconSizeSM` 加对应 padding 推导，不维护重复的固定 size Token。Progress Token 控制 padding、groove 和 arc 颜色。Percent 是运行时输入，不进入 Token。
 
+指示器显示进度环时成组读取底槽与填色，隐藏或卸载时释放资源观察。
+
 ### 2.7 Inline
 
 - `InlineDotSize`
@@ -152,6 +154,8 @@ Type / Orientation / EffectiveTitlePlacement / SizeType
 ```
 
 Token 不能替代 EffectiveStatus、LayoutPanel 计算或 Percent coercion。
+
+布局面板成组读取连接线与相邻内容的基础间距。主题里的 Dot、Navigation、Panel 等状态选择器仍可覆盖实际布局参数。
 
 ### 3.1 实例语义样式与 Token 边界
 

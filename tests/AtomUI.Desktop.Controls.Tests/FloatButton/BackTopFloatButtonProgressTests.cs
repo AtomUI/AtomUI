@@ -199,9 +199,9 @@ public class BackTopFloatButtonProgressTests
         {
             var ring = backTop.GetVisualDescendants().OfType<BackTopProgressRing>().Single();
             ring.IsVisible.ShouldBeTrue();
-            ring.IndicatorBrush.ShouldNotBeNull();
-            ring.TrackBrush.ShouldNotBeNull();
-            ring.StrokeThickness.ShouldBe(2d); // LineWidthBold
+            ring.Paint.Indicator.ShouldNotBeNull();
+            ring.Paint.Track.ShouldNotBeNull();
+            ring.Paint.Thickness.ShouldBe(2d); // LineWidthBold
             backTop.Target!.Offset = new Vector(0, 380);
             Dispatcher.UIThread.RunJobs();
             // 名义 viewport 240 + content 1000 => maxScroll = 760；实际 maxScroll 运行时读取，

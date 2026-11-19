@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Media;
@@ -91,8 +92,12 @@ public class StepsProgressTests
             Height                = 32,
             Percent               = 25,
             ProgressLineThickness = 2,
-            ProgressGrooveColor   = Brushes.Gray,
-            ProgressColor         = Brushes.Blue,
+            UseProgressRingTokenResources = true,
+            Resources = new ResourceDictionary
+            {
+                [StepsTokenKind.ProgressGrooveColor] = Brushes.Gray,
+                [StepsTokenKind.ProgressColor] = Brushes.Blue
+            },
             IsCurrent             = false,
             IsProgressVisible     = true
         };
@@ -154,10 +159,10 @@ public class StepsProgressTests
                 indicator.ProgressLineThickness = 3;
                 break;
             case RenderInput.ProgressGrooveColor:
-                indicator.ProgressGrooveColor = Brushes.Red;
+                indicator.Resources[StepsTokenKind.ProgressGrooveColor] = Brushes.Red;
                 break;
             case RenderInput.ProgressColor:
-                indicator.ProgressColor = Brushes.Green;
+                indicator.Resources[StepsTokenKind.ProgressColor] = Brushes.Green;
                 break;
             case RenderInput.IsCurrent:
                 indicator.IsCurrent = true;

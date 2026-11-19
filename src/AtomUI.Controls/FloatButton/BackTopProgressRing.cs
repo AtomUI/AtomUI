@@ -1,8 +1,13 @@
+using System.Globalization;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -18,14 +23,8 @@ internal class BackTopProgressRing : Control
     public static readonly StyledProperty<double> ProgressProperty =
         AvaloniaProperty.Register<BackTopProgressRing, double>(nameof(Progress));
 
-    public static readonly StyledProperty<IBrush?> TrackBrushProperty =
-        AvaloniaProperty.Register<BackTopProgressRing, IBrush?>(nameof(TrackBrush));
-
-    public static readonly StyledProperty<IBrush?> IndicatorBrushProperty =
-        AvaloniaProperty.Register<BackTopProgressRing, IBrush?>(nameof(IndicatorBrush));
-
-    public static readonly StyledProperty<double> StrokeThicknessProperty =
-        AvaloniaProperty.Register<BackTopProgressRing, double>(nameof(StrokeThickness), 2d);
+    internal static readonly StyledProperty<BackTopProgressRingTokenResourceKeys?> ProgressRingTokenResourceKeysProperty =
+        AvaloniaProperty.Register<BackTopProgressRing, BackTopProgressRingTokenResourceKeys?>(nameof(ProgressRingTokenResourceKeys));
 
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         AvaloniaProperty.Register<BackTopProgressRing, CornerRadius>(nameof(CornerRadius));
@@ -36,22 +35,10 @@ internal class BackTopProgressRing : Control
         set => SetValue(ProgressProperty, value);
     }
 
-    public IBrush? TrackBrush
+    internal BackTopProgressRingTokenResourceKeys? ProgressRingTokenResourceKeys
     {
-        get => GetValue(TrackBrushProperty);
-        set => SetValue(TrackBrushProperty, value);
-    }
-
-    public IBrush? IndicatorBrush
-    {
-        get => GetValue(IndicatorBrushProperty);
-        set => SetValue(IndicatorBrushProperty, value);
-    }
-
-    public double StrokeThickness
-    {
-        get => GetValue(StrokeThicknessProperty);
-        set => SetValue(StrokeThicknessProperty, value);
+        get => GetValue(ProgressRingTokenResourceKeysProperty);
+        set => SetValue(ProgressRingTokenResourceKeysProperty, value);
     }
 
     public CornerRadius CornerRadius
@@ -62,11 +49,92 @@ internal class BackTopProgressRing : Control
 
     static BackTopProgressRing()
     {
-        AffectsRender<BackTopProgressRing>(ProgressProperty, TrackBrushProperty,
-            IndicatorBrushProperty, StrokeThicknessProperty, CornerRadiusProperty);
+        AffectsRender<BackTopProgressRing>(ProgressProperty, CornerRadiusProperty);
     }
 
     private IPen? _trackPen;
+    private OwnerTokenSet? _paintTokens;
+    private (double Thickness, IBrush? Track, IBrush? Indicator) _paint = (2d, null, null);
+
+    internal (double Thickness, IBrush? Track, IBrush? Indicator) Paint => _paint;
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdatePaintTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _paintTokens?.Dispose();
+        _paintTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ProgressRingTokenResourceKeysProperty && this.IsAttachedToVisualTree())
+        {
+            UpdatePaintTokenSubscription();
+        }
+    }
+
+    private void UpdatePaintTokenSubscription()
+    {
+        _paintTokens?.Dispose();
+        _paintTokens = null;
+        if (ProgressRingTokenResourceKeys is { } keys)
+        {
+            _paintTokens = new OwnerTokenSet(this, 3, RefreshPaint);
+            _paintTokens.SetResourceKey(0, keys.Thickness);
+            _paintTokens.SetResourceKey(1, keys.Track);
+            _paintTokens.SetResourceKey(2, keys.Indicator);
+        }
+        RefreshPaint();
+    }
+
+    private void RefreshPaint()
+    {
+        var paint = (
+            ReadThickness(_paintTokens?.GetValue(0)),
+            ReadBrush(_paintTokens?.GetValue(1), _paint.Track),
+            ReadBrush(_paintTokens?.GetValue(2), _paint.Indicator));
+        if (!_paint.Equals(paint))
+        {
+            _paint = paint;
+            InvalidateVisual();
+        }
+    }
+
+    private static IBrush? ReadBrush(object? value, IBrush? previous) => value switch
+    {
+        IBrush brush => brush,
+        Color color => new ImmutableSolidColorBrush(color),
+        string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => null
+    };
+
+    private double ReadThickness(object? value)
+    {
+        if (value is double thickness)
+        {
+            return thickness;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _paint.Thickness;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 2d;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 2d;
+        }
+    }
 
     /// <summary>
     /// 计算环的几何：外/中心线/内边界矩形与对应圆角半径。
@@ -93,7 +161,7 @@ internal class BackTopProgressRing : Control
     public override void Render(DrawingContext context)
     {
         var bounds    = new Rect(Bounds.Size);
-        var thickness = StrokeThickness;
+        var (thickness, track, indicator) = Paint;
         if (bounds.Width <= 0 || bounds.Height <= 0 || thickness <= 0)
         {
             return;
@@ -101,7 +169,7 @@ internal class BackTopProgressRing : Control
 
         var metrics = CalculateRingMetrics(bounds.Size, CornerRadius.TopLeft, thickness);
 
-        PenUtils.TryModifyOrCreate(ref _trackPen, TrackBrush, thickness);
+        PenUtils.TryModifyOrCreate(ref _trackPen, track, thickness);
         if (_trackPen is not null)
         {
             // 轨道描边以中心线为基准；外缘与按钮轮廓重合，两种形状共用同一路径
@@ -110,7 +178,7 @@ internal class BackTopProgressRing : Control
         }
 
         var sweepAngle = 360d * Math.Clamp(Progress, 0d, 1d);
-        if (sweepAngle <= 0 || IndicatorBrush is null)
+        if (sweepAngle <= 0 || indicator is null)
         {
             return;
         }
@@ -125,7 +193,7 @@ internal class BackTopProgressRing : Control
         if (sweepAngle >= 360d)
         {
             // 扇形起终点重合退化，直接用进度色填充整个环带
-            context.DrawGeometry(IndicatorBrush, null, bandGeometry);
+            context.DrawGeometry(indicator, null, bandGeometry);
             return;
         }
 
@@ -155,7 +223,7 @@ internal class BackTopProgressRing : Control
 
         using (context.PushGeometryClip(bandGeometry))
         {
-            context.DrawGeometry(IndicatorBrush, null, sectorGeometry);
+            context.DrawGeometry(indicator, null, sectorGeometry);
         }
     }
 
@@ -201,6 +269,8 @@ internal class BackTopProgressRing : Control
 /// 进度环的几何参数。外边界为按钮轮廓（半径等于按钮圆角半径），
 /// 中心线与内边界由线宽向内偏移得到。
 /// </summary>
+internal sealed record BackTopProgressRingTokenResourceKeys(object Thickness, object Track, object Indicator);
+
 internal readonly record struct BackTopProgressRingMetrics(
     Rect OuterRect,
     Rect CenterlineRect,

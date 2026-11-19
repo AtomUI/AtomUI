@@ -74,11 +74,11 @@ shadcn/ui 暗色）用它把选中把手设为深色，否则白色把手在近�
 
 该 Token 控制 `SwitchKnob` loading arc 的旋转周期。它不表达当前旋转角度或动画是否运行。
 
-loading arc 的线宽读全局 `LineWidth`（`SwitchKnobTheme` 以 `ToggleSwitchTokenResource LineWidth` 设置内部
-`LoadIndicatorThickness`）。禁用或加载中的开关与 antd 一致，在根上以 `SwitchDisabledOpacity` 整体变暗一次（轨道、把手与开/关内容），把手自身不再单独变暗；loading arc 另以 `LoadingBgOpacity` 绘制。`SwitchKnob` 只属于
-ToggleSwitch，以 `ToggleSwitchTokenResource` 读取。
+加载中的 `SwitchKnob` 成组读取 `LineWidth` 和亮弧透明度，停止加载时释放观察。根控件用 `SwitchDisabledOpacity` 统一降低轨道、把手和开关内容的不透明度，亮弧按自身不透明度绘制。动画周期使用原有 `LoadingAnimationDuration`。
 
 ## 3. 控件专项模型中的 Token 使用
+
+开关按当前尺寸档成组读内容的两项内边距，测量时使用该档数值。
 
 ToggleSwitchToken 使用路径：
 

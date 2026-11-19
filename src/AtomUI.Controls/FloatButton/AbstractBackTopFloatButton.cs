@@ -5,6 +5,8 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -102,9 +104,7 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         {
             Target?.ScrollChanged -= HandleScrollChanged;
         }
-        _cancellationTokenSource?.Cancel();
-        _cancellationTokenSource?.Dispose();
-        _cancellationTokenSource = null;
+        CancelScrollAnimation();
     }
 
     protected override void ConfigureDefaultIcon()
@@ -120,6 +120,7 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
         base.OnPropertyChanged(change);
         if (change.Property == TargetProperty)
         {
+            CancelScrollAnimation();
             ConfigureTarget(change.OldValue as AvaScrollViewer, change.NewValue as AvaScrollViewer);
         }
     }
@@ -167,33 +168,67 @@ public abstract class AbstractBackTopFloatButton : AbstractFloatButton
 
     protected override void OnClick()
     {
-        if (IsEffectivelyEnabled)
+        if (IsEffectivelyEnabled && Target is { } target)
         {
-            if (Target != null)
-            {
-                _cancellationTokenSource?.Cancel();
-                _cancellationTokenSource?.Dispose();
-                _cancellationTokenSource = new CancellationTokenSource();
-                var currentOffset = Target.Offset;
-                var animation = new Animation
-                {
-                    Easing   = new CubicEaseInOut(),
-                    Duration = ToTopDuration,
-                    Children =
-                    {
-                        new KeyFrame
-                        {
-                            Setters = { new Setter(AvaScrollViewer.OffsetProperty, currentOffset) }, Cue = new Cue(0.0d)
-                        },
-                        new KeyFrame
-                        {
-                            Setters = { new Setter(AvaScrollViewer.OffsetProperty, new Vector(currentOffset.X, 0)) }, Cue = new Cue(1.0d)
-                        }
-                    }
-                };
-                animation.RunAsync(Target, _cancellationTokenSource.Token);
-            }
+            CancelScrollAnimation();
+            var cancellation = new CancellationTokenSource();
+            _cancellationTokenSource = cancellation;
+            _ = ScrollToTopAsync(target, cancellation);
         }
         base.OnClick();
+    }
+
+    private void CancelScrollAnimation()
+    {
+        var cancellation = _cancellationTokenSource;
+        _cancellationTokenSource = null;
+        cancellation?.Cancel();
+        cancellation?.Dispose();
+    }
+
+    private async Task ScrollToTopAsync(AvaScrollViewer target, CancellationTokenSource cancellation)
+    {
+        var token = cancellation.Token;
+        var currentOffset = target.Offset;
+        var destination = currentOffset.WithY(0);
+        var animation = new Animation
+        {
+            Easing = new CubicEaseInOut(),
+            Duration = ToTopDuration,
+            Children =
+            {
+                new KeyFrame
+                {
+                    Setters = { new Setter(AvaScrollViewer.OffsetProperty, currentOffset) },
+                    Cue = new Cue(0d)
+                },
+                new KeyFrame
+                {
+                    Setters = { new Setter(AvaScrollViewer.OffsetProperty, destination) },
+                    Cue = new Cue(1d)
+                }
+            }
+        };
+        try
+        {
+            await animation.RunAsync(target, token);
+            // Commit after the animation priority value is released so the scroll viewer keeps the exact end
+            // position even when the final render tick passed the last keyframe. Keep the target's Offset binding.
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!token.IsCancellationRequested && ReferenceEquals(Target, target) && target.IsAttachedToVisualTree())
+                {
+                    target.SetCurrentValue(AvaScrollViewer.OffsetProperty, destination);
+                }
+            }, DispatcherPriority.Background);
+        }
+        finally
+        {
+            if (ReferenceEquals(_cancellationTokenSource, cancellation))
+            {
+                _cancellationTokenSource = null;
+                cancellation.Dispose();
+            }
+        }
     }
 }

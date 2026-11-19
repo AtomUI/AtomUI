@@ -28,6 +28,8 @@ SliderToken 不承载：
 
 `SliderTrackSize` 表示轨道区域推荐尺寸，`RailSize` 表示 rail 厚度。水平和垂直 padding 为 thumb、rail 和 mark 提供布局空间。
 
+轨道部件成组读取实际使用的轨道尺寸与静态刻度绘制参数。轨道向刻度绘制部件传递一组尺寸、线宽和背景。动画颜色与禁用选择器继续控制实时绘制状态。
+
 `MarginPartWithMark` 对应 antd `marginPartWithMark`（`controlHeightLG - controlSize`），当前为 Reserved：SliderTrack 测量
 mark 文本并把文本尺寸计入轨道高度，不再使用固定的 mark 外边距。
 

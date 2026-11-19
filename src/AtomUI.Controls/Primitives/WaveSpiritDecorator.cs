@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using System.Globalization;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -49,14 +52,14 @@ internal class WaveSpiritDecorator : Control
     
     public TimeSpan SizeMotionDuration
     {
-        get => GetValue(SizeMotionDurationProperty);
-        set => SetValue(SizeMotionDurationProperty, value);
+        get => GetWaveMetric(SizeMotionDurationProperty, _themeDuration);
+        set => SetWaveMetric(SizeMotionDurationProperty, value);
     }
 
     public TimeSpan OpacityMotionDuration
     {
-        get => GetValue(OpacityMotionDurationProperty);
-        set => SetValue(OpacityMotionDurationProperty, value);
+        get => GetWaveMetric(OpacityMotionDurationProperty, _themeDuration);
+        set => SetWaveMetric(OpacityMotionDurationProperty, value);
     }
     
     public Easing SizeEasingCurve
@@ -73,14 +76,14 @@ internal class WaveSpiritDecorator : Control
     
     public double OriginOpacity
     {
-        get => GetValue(OriginOpacityProperty);
-        set => SetValue(OriginOpacityProperty, value);
+        get => GetWaveMetric(OriginOpacityProperty, _themeOriginOpacity);
+        set => SetWaveMetric(OriginOpacityProperty, value);
     }
     
     public double WaveRange
     {
-        get => GetValue(WaveRangeProperty);
-        set => SetValue(WaveRangeProperty, value);
+        get => GetWaveMetric(WaveRangeProperty, _themeRange);
+        set => SetWaveMetric(WaveRangeProperty, value);
     }
     
     public IBrush? WaveBrush
@@ -140,6 +143,15 @@ internal class WaveSpiritDecorator : Control
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<WaveSpiritDecorator>();
 
+    internal static readonly StyledProperty<bool> UseOwnerWaveTokenResourcesProperty =
+        AvaloniaProperty.Register<WaveSpiritDecorator, bool>(nameof(UseOwnerWaveTokenResources));
+
+    internal bool UseOwnerWaveTokenResources
+    {
+        get => GetValue(UseOwnerWaveTokenResourcesProperty);
+        set => SetValue(UseOwnerWaveTokenResourcesProperty, value);
+    }
+
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -193,6 +205,10 @@ internal class WaveSpiritDecorator : Control
     #endregion
     
     private AbstractWavePainter? _wavePainter;
+    private OwnerTokenSet? _waveMetricTokens;
+    private double _themeRange;
+    private double _themeOriginOpacity;
+    private TimeSpan _themeDuration;
     private CancellationTokenSource? _cancellationTokenSource;
     private bool _isPlaying;
     private static readonly Easing DefaultEasingCurve = new CubicEaseOut();
@@ -222,7 +238,11 @@ internal class WaveSpiritDecorator : Control
                 BuildWavePainter(true);
             }
         }
-        if (change.Property == WaveBrushProperty ||
+        if (change.Property == UseOwnerWaveTokenResourcesProperty)
+        {
+            UpdateWaveTokenSubscription();
+        }
+        else if (change.Property == WaveBrushProperty ||
             change.Property == OriginOpacityProperty ||
             change.Property == WaveRangeProperty ||
             change.Property == SizeMotionDurationProperty ||
@@ -240,6 +260,91 @@ internal class WaveSpiritDecorator : Control
         }
     }
     
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_waveMetricTokens is null && UseOwnerWaveTokenResources)
+        {
+            UpdateWaveTokenSubscription();
+        }
+    }
+
+    private T GetWaveMetric<T>(StyledProperty<T> property, T themeValue) =>
+        _waveMetricTokens is not null && !IsSet(property) ? themeValue : GetValue(property);
+
+    private void SetWaveMetric<T>(StyledProperty<T> property, T value)
+    {
+        // An explicit value equal to the registration default can still replace the scoped default.
+        var needsRefresh = _waveMetricTokens is not null && !IsSet(property) &&
+                           EqualityComparer<T>.Default.Equals(GetValue(property), value);
+        SetValue(property, value);
+        if (needsRefresh)
+        {
+            CancelAnimation();
+            ConfigureWavePainter();
+        }
+    }
+
+    private void UpdateWaveTokenSubscription()
+    {
+        _waveMetricTokens?.Dispose();
+        _waveMetricTokens = null;
+        if (UseOwnerWaveTokenResources && this.IsAttachedToVisualTree())
+        {
+            _waveMetricTokens = new OwnerTokenSet(this, 3, RefreshWaveMetrics);
+            _waveMetricTokens.SetKind(0, SharedTokenKind.WaveAnimationRange);
+            _waveMetricTokens.SetKind(1, SharedTokenKind.WaveStartOpacity);
+            _waveMetricTokens.SetKind(2, SharedTokenKind.MotionDurationSlow);
+        }
+        ReadWaveMetrics();
+        CancelAnimation();
+        ConfigureWavePainter();
+    }
+
+    private void RefreshWaveMetrics()
+    {
+        var previous = (WaveRange, OriginOpacity, SizeMotionDuration, OpacityMotionDuration);
+        ReadWaveMetrics();
+        if (!previous.Equals((WaveRange, OriginOpacity, SizeMotionDuration, OpacityMotionDuration)))
+        {
+            CancelAnimation();
+            ConfigureWavePainter();
+        }
+    }
+
+    private void ReadWaveMetrics()
+    {
+        _themeRange = ReadMetric(_waveMetricTokens?.GetValue(0), _themeRange);
+        _themeOriginOpacity = ReadMetric(_waveMetricTokens?.GetValue(1), _themeOriginOpacity);
+        _themeDuration = _waveMetricTokens?.GetValue(2) switch
+        {
+            TimeSpan duration => duration,
+            string text when TimeSpan.TryParse(text, CultureInfo.CurrentCulture, out var parsed) => parsed,
+            var value when ReferenceEquals(value, BindingOperations.DoNothing) => _themeDuration,
+            _ => TimeSpan.Zero
+        };
+    }
+
+    private static double ReadMetric(object? value, double previous)
+    {
+        if (value is double metric)
+        {
+            return metric;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
     private void BuildWavePainter(bool force)
     {
         if (_wavePainter == null || force)
@@ -257,9 +362,9 @@ internal class WaveSpiritDecorator : Control
                 _wavePainter = new RoundRectWavePainter();
             }
 
-            ConfigureWavePainter();
             ConfigurePainterSize(Bounds.Size);
         }
+        ConfigureWavePainter();
     }
 
     private void ConfigureWavePainter()
@@ -317,6 +422,8 @@ internal class WaveSpiritDecorator : Control
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _waveMetricTokens?.Dispose();
+        _waveMetricTokens = null;
         base.OnDetachedFromVisualTree(e);
         CancelAnimation();
     }

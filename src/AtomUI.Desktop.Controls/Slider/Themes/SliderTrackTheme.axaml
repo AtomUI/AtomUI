@@ -7,12 +7,7 @@
          Controls[Slider] reaches the rail, marks and labels. IsMotionEnabled is template-bound from the Slider. -->
     <ControlTheme x:Key="{x:Type atom:SliderTrack}" TargetType="atom:SliderTrack">
         <!-- The track reserves the hovered handle circle across the rail (SliderToken derives the padding from it). -->
-        <Setter Property="SliderTrackSize" Value="{atom:SliderTokenResource ThumbCircleSizeHover}" />
-        <Setter Property="SliderMarkSize" Value="{atom:SliderTokenResource MarkSize}" />
-        <Setter Property="SliderRailSize" Value="{atom:SliderTokenResource RailSize}" />
-        <Setter Property="MarkBackgroundBrush" Value="{atom:SliderTokenResource ColorBgElevated}" />
-        <Setter Property="MarkBorderThickness"
-                Value="{atom:SliderTokenResource ThumbCircleBorderThickness}" />
+        <Setter Property="UseTrackAndMarkTokenResources" Value="True" />
         <Setter Property="MarkLabelBrush" Value="{atom:SliderTokenResource ColorText}" />
 
         <Style Selector="^:disabled">

@@ -31,7 +31,8 @@ public partial class PrimitivesFamilyEffectTests
             .ShouldBe(new HashSet<string> { "SelectionBackground" });
         ThemeOwnerReads.Read("src/AtomUI.Controls/Embedding/Themes/EmbeddableControlRootTheme.axaml").Order()
             .ShouldBe(new[] { "ColorBgContainer", "ColorText", "FontFamily", "FontSize" }.Order());
-        ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/Primitives/Themes/WaveSpiritDecoratorTheme.axaml").Order()
+        ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/Primitives/Themes/WaveSpiritDecoratorTheme.axaml")
+            .Union(ThemeOwnerReads.ReadCode("src/AtomUI.Controls/Primitives/WaveSpiritDecorator.cs")).Order()
             .ShouldBe(new[] { "ColorPrimary", "WaveStartOpacity", "MotionDurationSlow", "WaveAnimationRange" }.Order());
     }
 

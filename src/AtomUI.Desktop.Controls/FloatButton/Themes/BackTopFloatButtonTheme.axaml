@@ -111,9 +111,7 @@
         <Style Selector="^ /template/ atomc|BackTopProgressRing#ProgressRing">
             <!-- 默认隐藏：由 IsShowProgress=True 的下述选择器置 True（后序样式覆盖先序） -->
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="StrokeThickness" Value="{atom:BackTopFloatButtonTokenResource LineWidthBold}" />
-            <Setter Property="TrackBrush" Value="{atom:BackTopFloatButtonTokenResource ColorBorderSecondary}" />
-            <Setter Property="IndicatorBrush" Value="{atom:BackTopFloatButtonTokenResource ColorPrimary}" />
+            <Setter Property="ProgressRingTokenResourceKeys" Value="{x:Static atom:BackTopRingResources.ProgressRingTokenResourceKeys}" />
         </Style>
 
         <Style Selector="^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing">

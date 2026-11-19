@@ -1,9 +1,19 @@
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
 using ToolTipControl = AtomUI.Desktop.Controls.ToolTip;
+
+internal static class BackTopRingResources
+{
+    public static BackTopProgressRingTokenResourceKeys ProgressRingTokenResourceKeys { get; } = new(
+        ControlTokenResourceKey.Global(BackTopFloatButtonTokens.Identity, SharedTokenKind.LineWidthBold),
+        ControlTokenResourceKey.Global(BackTopFloatButtonTokens.Identity, SharedTokenKind.ColorBorderSecondary),
+        ControlTokenResourceKey.Global(BackTopFloatButtonTokens.Identity, SharedTokenKind.ColorPrimary));
+}
 
 public partial class BackTopFloatButton : AbstractBackTopFloatButton
 {

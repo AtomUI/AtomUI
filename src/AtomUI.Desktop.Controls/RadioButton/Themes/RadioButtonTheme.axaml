@@ -54,12 +54,9 @@
         </Style>
 
         <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
-            <Setter Property="RadioSize" Value="{atom:RadioButtonTokenResource RadioSize}" />
+            <Setter Property="DotGeometryTokenResourceKeys" Value="{x:Static atom:RadioIndicatorResources.DotGeometryTokenResourceKeys}" />
             <Setter Property="Width" Value="{atom:RadioButtonTokenResource RadioSize}" />
             <Setter Property="Height" Value="{atom:RadioButtonTokenResource RadioSize}" />
-            <Setter Property="DotSizeValue" Value="{atom:RadioButtonTokenResource DotSize}" />
-            <Setter Property="DotPadding"
-                    Value="{atom:RadioButtonTokenResource DotPadding}" />
             <Setter Property="RadioInnerBackground"
                     Value="{atom:RadioButtonTokenResource RadioColor}" />
             <Setter Property="BorderBrush"

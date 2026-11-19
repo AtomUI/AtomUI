@@ -50,6 +50,7 @@
         </Style>
 
         <Setter Property="TrackPadding" Value="{atom:ToggleSwitchTokenResource TrackPadding}" />
+        <Setter Property="UseContentMarginTokenResources" Value="True" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
@@ -103,10 +104,6 @@
             <Setter Property="FontSize"
                     Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSizeSM}" />
             <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSizeSM}" />
-            <Setter Property="InnerMaxMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMaxMarginSM}" />
-            <Setter Property="InnerMinMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMinMarginSM}" />
             <Setter Property="TrackHeight" Value="{atom:ToggleSwitchTokenResource TrackHeightSM}" />
             <Setter Property="TrackMinWidth"
                     Value="{atom:ToggleSwitchTokenResource TrackMinWidthSM}" />
@@ -116,10 +113,6 @@
             <Setter Property="FontSize"
                     Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSize}" />
             <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSize}" />
-            <Setter Property="InnerMaxMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMaxMargin}" />
-            <Setter Property="InnerMinMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMinMargin}" />
             <Setter Property="TrackHeight" Value="{atom:ToggleSwitchTokenResource TrackHeight}" />
             <Setter Property="TrackMinWidth"
                     Value="{atom:ToggleSwitchTokenResource TrackMinWidth}" />

@@ -5,10 +5,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SwitchKnob}" TargetType="atom:SwitchKnob">
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="LoadingBgOpacity"
-                Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
-        <Setter Property="LoadIndicatorThickness"
-                Value="{atom:ToggleSwitchTokenResource LineWidth}" />
+        <Setter Property="LoadingIndicatorTokenResourceKeys" Value="{x:Static atom:ToggleSwitchResources.LoadingIndicatorTokenResourceKeys}" />
         <Setter Property="LoadingAnimationDuration"
                 Value="{atom:ToggleSwitchTokenResource LoadingAnimationDuration}" />
     </ControlTheme>

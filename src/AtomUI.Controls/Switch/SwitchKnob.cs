@@ -1,6 +1,8 @@
+using System.Globalization;
 using AtomUI.Animations;
 using AtomUI.Controls.Commons;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
@@ -67,6 +69,9 @@ internal class SwitchKnob : TemplatedControl
             o => o.LoadingBgOpacity,
             (o, v) => o.LoadingBgOpacity = v);
 
+    internal static readonly StyledProperty<SwitchLoadingIndicatorTokenResourceKeys?> LoadingIndicatorTokenResourceKeysProperty =
+        AvaloniaProperty.Register<SwitchKnob, SwitchLoadingIndicatorTokenResourceKeys?>(nameof(LoadingIndicatorTokenResourceKeys));
+
     internal int Rotation
     {
         get => GetValue(RotationProperty);
@@ -99,7 +104,9 @@ internal class SwitchKnob : TemplatedControl
     
     internal double LoadIndicatorThickness
     {
-        get => GetValue(LoadIndicatorThicknessProperty);
+        get => IsSet(LoadIndicatorThicknessProperty) || _loadingPaintTokens is null
+            ? GetValue(LoadIndicatorThicknessProperty)
+            : _loadingPaint.Thickness;
         set => SetValue(LoadIndicatorThicknessProperty, value);
     }
 
@@ -112,8 +119,14 @@ internal class SwitchKnob : TemplatedControl
     private double _loadingBgOpacity;
     internal double LoadingBgOpacity
     {
-        get => _loadingBgOpacity;
+        get => _loadingPaintTokens is null ? _loadingBgOpacity : _loadingPaint.Opacity;
         set => SetAndRaise(LoadingBgOpacityProperty, ref _loadingBgOpacity, value);
+    }
+
+    internal SwitchLoadingIndicatorTokenResourceKeys? LoadingIndicatorTokenResourceKeys
+    {
+        get => GetValue(LoadingIndicatorTokenResourceKeysProperty);
+        set => SetValue(LoadingIndicatorTokenResourceKeysProperty, value);
     }
     
     #endregion
@@ -121,6 +134,8 @@ internal class SwitchKnob : TemplatedControl
     private bool _isLoading;
     private IDisposable? _loadingAnimation;
     private MotionGate? _loadingMotionGate;
+    private OwnerTokenSet? _loadingPaintTokens;
+    private (double Opacity, double Thickness) _loadingPaint;
     private IBrush? _loadIndicatorPenBrush;
     private double _loadIndicatorPenThickness;
     private Pen? _loadIndicatorPen;
@@ -150,6 +165,7 @@ internal class SwitchKnob : TemplatedControl
         IsEnabled  = false;
         if (this.IsAttachedToVisualTree())
         {
+            UpdateLoadingPaintTokenSubscription();
             AttachLoadingGate();
         }
     }
@@ -163,6 +179,7 @@ internal class SwitchKnob : TemplatedControl
 
         _isLoading = false;
         IsEnabled = true;
+        UpdateLoadingPaintTokenSubscription();
         RemoveLoadingGate();
     }
 
@@ -171,12 +188,14 @@ internal class SwitchKnob : TemplatedControl
         base.OnAttachedToVisualTree(e);
         if (_isLoading)
         {
+            UpdateLoadingPaintTokenSubscription();
             AttachLoadingGate();
         }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ReleaseLoadingPaintTokenSubscription();
         base.OnDetachedFromVisualTree(e);
         RemoveLoadingGate();
     }
@@ -187,6 +206,10 @@ internal class SwitchKnob : TemplatedControl
         if (change.Property == KnobSizeProperty)
         {
             KnobRenderWidth = KnobSize.Width;
+        }
+        else if (change.Property == LoadingIndicatorTokenResourceKeysProperty && _isLoading && this.IsAttachedToVisualTree())
+        {
+            UpdateLoadingPaintTokenSubscription();
         }
         else if (change.Property == LoadingAnimationDurationProperty && _loadingMotionGate?.ShouldRun == true)
         {
@@ -256,9 +279,55 @@ internal class SwitchKnob : TemplatedControl
             var       rotationMatrix          = Matrix.CreateRotation(Rotation * Math.PI / 180);
             using var translateToCenterState  = context.PushTransform(translateToCenterMatrix);
             using var rotationMatrixState     = context.PushTransform(rotationMatrix);
-            using var bgOpacity               = context.PushOpacity(_loadingBgOpacity);
+            using var bgOpacity               = context.PushOpacity(LoadingBgOpacity);
 
             context.DrawArc(pen, loadingRect, 0, 90);
+        }
+    }
+
+    private void UpdateLoadingPaintTokenSubscription()
+    {
+        ReleaseLoadingPaintTokenSubscription();
+        if (_isLoading && LoadingIndicatorTokenResourceKeys is { } keys)
+        {
+            _loadingPaintTokens = new OwnerTokenSet(this, 2, RefreshLoadingPaint);
+            _loadingPaintTokens.SetResourceKey(0, keys.Opacity);
+            _loadingPaintTokens.SetResourceKey(1, keys.Thickness);
+        }
+        RefreshLoadingPaint();
+    }
+
+    private void RefreshLoadingPaint()
+    {
+        _loadingPaint = (
+            ReadNumber(_loadingPaintTokens?.GetValue(0), _loadingPaint.Opacity),
+            ReadNumber(_loadingPaintTokens?.GetValue(1), _loadingPaint.Thickness));
+        InvalidateVisual();
+    }
+
+    private void ReleaseLoadingPaintTokenSubscription()
+    {
+        _loadingPaintTokens?.Dispose();
+        _loadingPaintTokens = null;
+    }
+
+    private static double ReadNumber(object? value, double previous)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 
@@ -358,3 +427,5 @@ internal class SwitchKnob : TemplatedControl
         return _loadIndicatorPen;
     }
 }
+
+internal sealed record SwitchLoadingIndicatorTokenResourceKeys(object Opacity, object Thickness);

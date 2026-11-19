@@ -125,12 +125,7 @@
         <!-- Defaults of template parts that state Setters override are Style Setters, not template attributes: a template
              resource read is a local value and would mask every state Setter below. -->
         <Style Selector="^ /template/ atom|StepsItemLayoutPanel">
-            <Setter Property="PreferredHorizontalConnectorLength" Value="{atom:StepsTokenResource UniformlyMargin}" />
-            <Setter Property="ConnectorThickness" Value="{atom:StepsTokenResource LineWidth}" />
-            <Setter Property="HorizontalConnectorGap" Value="{atom:StepsTokenResource UniformlyMarginXXS}" />
-            <Setter Property="IndicatorSpacing" Value="{atom:StepsTokenResource SpacingXS}" />
-            <Setter Property="VerticalConnectorMargin" Value="{atom:StepsTokenResource VerticalItemSpacing}" />
-            <Setter Property="VerticalItemPadding" Value="{atom:StepsTokenResource UniformlyPaddingSM}" />
+            <Setter Property="UseStepLayoutTokenResources" Value="True" />
         </Style>
         <Style Selector="^ /template/ atom|StepsPanelItemFrame#ItemWrapper">
             <Setter Property="ArrowWidth" Value="{atom:StepsTokenResource PanelArrowWidth}" />

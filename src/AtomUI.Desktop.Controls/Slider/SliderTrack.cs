@@ -2,9 +2,11 @@ using AtomUI.Theme;
 using System.Globalization;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Media;
 using AtomUI.Reflection;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -16,7 +18,9 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Rendering;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -56,14 +60,6 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
 
     public static readonly StyledProperty<bool> IsRangeModeProperty =
         AbstractSlider.IsRangeModeProperty.AddOwner<SliderTrack>();
-
-    internal static readonly StyledProperty<double> TickFrequencyProperty = AbstractSlider.TickFrequencyProperty.AddOwner<SliderTrack>();
-
-    internal static readonly StyledProperty<bool> IsDotsVisibleProperty = AbstractSlider.IsDotsVisibleProperty.AddOwner<SliderTrack>();
-
-    internal double TickFrequency => GetValue(TickFrequencyProperty);
-
-    internal bool IsDotsVisible => GetValue(IsDotsVisibleProperty);
 
     public static readonly StyledProperty<Orientation> OrientationProperty =
         ScrollBar.OrientationProperty.AddOwner<SliderTrack>();
@@ -219,14 +215,12 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
 
     #region 内部属性定义
 
-    internal static readonly StyledProperty<double> SliderTrackSizeProperty =
-        AvaloniaProperty.Register<SliderTrack, double>(nameof(SliderTrackSize));
+    internal static readonly StyledProperty<double> TickFrequencyProperty = AbstractSlider.TickFrequencyProperty.AddOwner<SliderTrack>();
 
-    internal static readonly StyledProperty<double> SliderRailSizeProperty =
-        AvaloniaProperty.Register<SliderTrack, double>(nameof(SliderRailSize));
+    internal static readonly StyledProperty<bool> IsDotsVisibleProperty = AbstractSlider.IsDotsVisibleProperty.AddOwner<SliderTrack>();
 
-    internal static readonly StyledProperty<double> SliderMarkSizeProperty =
-        AvaloniaProperty.Register<SliderTrack, double>(nameof(SliderMarkSize));
+    internal static readonly StyledProperty<bool> UseTrackAndMarkTokenResourcesProperty =
+        AvaloniaProperty.Register<SliderTrack, bool>(nameof(UseTrackAndMarkTokenResources));
 
     internal static readonly StyledProperty<IBrush?> MarkBorderBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(MarkBorderBrush));
@@ -234,32 +228,22 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
     internal static readonly StyledProperty<IBrush?> MarkBorderActiveBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(MarkBorderActiveBrush));
 
-    internal static readonly StyledProperty<IBrush?> MarkBackgroundBrushProperty =
-        AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(MarkBackgroundBrush));
-
-    internal static readonly StyledProperty<Thickness> MarkBorderThicknessProperty =
-        AvaloniaProperty.Register<SliderTrack, Thickness>(nameof(MarkBorderThickness));
-
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SliderTrack>();
 
-    internal double SliderTrackSize
+    internal double TickFrequency => GetValue(TickFrequencyProperty);
+
+    internal bool IsDotsVisible => GetValue(IsDotsVisibleProperty);
+
+    internal bool UseTrackAndMarkTokenResources
     {
-        get => GetValue(SliderTrackSizeProperty);
-        set => SetValue(SliderTrackSizeProperty, value);
+        get => GetValue(UseTrackAndMarkTokenResourcesProperty);
+        set => SetValue(UseTrackAndMarkTokenResourcesProperty, value);
     }
 
-    internal double SliderRailSize
-    {
-        get => GetValue(SliderRailSizeProperty);
-        set => SetValue(SliderRailSizeProperty, value);
-    }
-
-    internal double SliderMarkSize
-    {
-        get => GetValue(SliderMarkSizeProperty);
-        set => SetValue(SliderMarkSizeProperty, value);
-    }
+    private double SliderTrackSize => _trackSize;
+    private double SliderRailSize => _railSize;
+    private double SliderMarkSize => _markPaint.Size;
 
     internal IBrush? MarkBorderBrush
     {
@@ -271,18 +255,6 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
     {
         get => GetValue(MarkBorderActiveBrushProperty);
         set => SetValue(MarkBorderActiveBrushProperty, value);
-    }
-
-    internal IBrush? MarkBackgroundBrush
-    {
-        get => GetValue(MarkBackgroundBrushProperty);
-        set => SetValue(MarkBackgroundBrushProperty, value);
-    }
-
-    internal Thickness MarkBorderThickness
-    {
-        get => GetValue(MarkBorderThicknessProperty);
-        set => SetValue(MarkBorderThicknessProperty, value);
     }
 
     internal bool IsMotionEnabled
@@ -390,18 +362,28 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
     private List<(Rect, int, bool, FormattedText)>? _markTextRects;
     private IDisposable? _focusProcessDisposable;
     private Size _markLabelSize;
+    private OwnerTokenSet? _trackTokens;
+    private SliderMarkPaint _markPaint;
+    private double _trackSize;
+    private double _railSize;
+
+    private static readonly object[] s_trackKeys =
+    [
+        SliderTokenKind.ThumbCircleSizeHover,
+        SliderTokenKind.RailSize,
+        SliderTokenKind.MarkSize,
+        ControlTokenResourceKey.Global(SliderTokens.Identity, SharedTokenKind.ColorBgElevated),
+        SliderTokenKind.ThumbCircleBorderThickness
+    ];
 
     static SliderTrack()
     {
-        // The track and rail sizes and the padding are theme Token values: a theme change re-lays out the track.
+        // The layout includes the caller's padding and mark labels.
         AffectsMeasure<SliderTrack>(MarksProperty,
             MarkLabelFontSizeProperty,
             MarkLabelFontFamilyProperty,
             RangeValuesProperty,
             IsRangeModeProperty,
-            SliderTrackSizeProperty,
-            SliderRailSizeProperty,
-            SliderMarkSizeProperty,
             PaddingProperty);
         AffectsArrange<SliderTrack>(IsDirectionReversedProperty,
             TickFrequencyProperty,
@@ -423,6 +405,7 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        UpdateTrackAndMarkTokenSubscription();
         var inputManager = AvaloniaLocator.Current.GetService<IInputManager>()!;
         _focusProcessDisposable = inputManager.Process.Subscribe(args =>
         {
@@ -448,10 +431,100 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _trackTokens?.Dispose();
+        _trackTokens = null;
         base.OnDetachedFromVisualTree(e);
         _focusProcessDisposable?.Dispose();
         _focusProcessDisposable = null;
         ClearThumbs();
+    }
+
+    private void UpdateTrackAndMarkTokenSubscription()
+    {
+        if (UseTrackAndMarkTokenResources && _trackTokens is null)
+        {
+            _trackTokens = new OwnerTokenSet(this, s_trackKeys.Length, RefreshTrackAndMarkStyle);
+            for (var index = 0; index < s_trackKeys.Length; ++index)
+            {
+                _trackTokens.SetResourceKey(index, s_trackKeys[index]);
+            }
+        }
+        else if (!UseTrackAndMarkTokenResources && _trackTokens is not null)
+        {
+            _trackTokens.Dispose();
+            _trackTokens = null;
+        }
+        RefreshTrackAndMarkStyle();
+    }
+
+    private void RefreshTrackAndMarkStyle()
+    {
+        var trackSize = ReadNumber(_trackTokens?.GetValue(0), _trackSize);
+        var railSize = ReadNumber(_trackTokens?.GetValue(1), _railSize);
+        var markSize = ReadNumber(_trackTokens?.GetValue(2), _markPaint.Size);
+        var background = _trackTokens?.GetValue(3) switch
+        {
+            IBrush brush => brush,
+            Color color => new ImmutableSolidColorBrush(color),
+            string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+            var value when ReferenceEquals(value, BindingOperations.DoNothing) => _markPaint.Background,
+            _ => null
+        };
+        var borderThickness = ReadMarkBorderThickness(_trackTokens?.GetValue(4));
+        var layoutChanged = !_trackSize.Equals(trackSize) || !_railSize.Equals(railSize) || !_markPaint.Size.Equals(markSize);
+
+        _trackSize = trackSize;
+        _railSize = railSize;
+        _markPaint = new SliderMarkPaint(background, borderThickness, markSize);
+        _marksElement?.UpdateStaticPaint(_markPaint);
+        if (layoutChanged)
+        {
+            InvalidateMeasure();
+        }
+    }
+
+    private static double ReadNumber(object? value, double previous)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
+    private Thickness ReadMarkBorderThickness(object? value)
+    {
+        if (value is Thickness thickness)
+        {
+            return thickness;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _markPaint.BorderThickness;
+        }
+        if (value is string text)
+        {
+            try
+            {
+                return Thickness.Parse(text);
+            }
+            catch (FormatException)
+            {
+                return default;
+            }
+        }
+        return default;
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -526,6 +599,10 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             {
                 thumb.SetCurrentValue(SliderThumb.IsMotionEnabledProperty, isMotionEnabled);
             }
+        }
+        else if (change.Property == UseTrackAndMarkTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateTrackAndMarkTokenSubscription();
         }
 
         if (change.Property == RangeValuesProperty ||
@@ -631,16 +708,13 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
             IsHitTestVisible = false
         };
         _marksElement.SetTemplatedParent(TemplatedParent ?? this);
+        _marksElement.UpdateStaticPaint(_markPaint);
+        // This renderer is created at runtime and has the Slider as its templated parent. The relay passes
+        // the track's state brushes, including values driven by its transitions.
         BindUtils.RelayBind(this, MarkBorderBrushProperty, _marksElement,
             SliderMarksElement.MarkBorderBrushProperty, BindingMode.OneWay, BindingPriority.Template);
         BindUtils.RelayBind(this, MarkBorderActiveBrushProperty, _marksElement,
             SliderMarksElement.MarkBorderActiveBrushProperty, BindingMode.OneWay, BindingPriority.Template);
-        BindUtils.RelayBind(this, MarkBackgroundBrushProperty, _marksElement,
-            SliderMarksElement.MarkBackgroundBrushProperty, BindingMode.OneWay, BindingPriority.Template);
-        BindUtils.RelayBind(this, MarkBorderThicknessProperty, _marksElement,
-            SliderMarksElement.MarkBorderThicknessProperty, BindingMode.OneWay, BindingPriority.Template);
-        BindUtils.RelayBind(this, SliderMarkSizeProperty, _marksElement,
-            SliderMarksElement.SliderMarkSizeProperty, BindingMode.OneWay, BindingPriority.Template);
         LogicalChildren.Add(_marksElement);
         VisualChildren.Add(_marksElement);
     }

@@ -1,9 +1,14 @@
+using System.Globalization;
 using AtomUI.Controls.Primitives;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -22,32 +27,18 @@ internal sealed class FocusOutlineAdorner : Control
     public static readonly AttachedProperty<bool> IsInsetProperty =
         AvaloniaProperty.RegisterAttached<FocusOutlineAdorner, Visual, bool>("IsInset");
 
-    public static readonly StyledProperty<IBrush?> OutlineBrushProperty =
-        AvaloniaProperty.Register<FocusOutlineAdorner, IBrush?>(nameof(OutlineBrush));
+    internal static readonly StyledProperty<bool> UseFocusOutlineTokenResourcesProperty =
+        AvaloniaProperty.Register<FocusOutlineAdorner, bool>(nameof(UseFocusOutlineTokenResources));
 
-    public static readonly StyledProperty<double> OutlineThicknessProperty =
-        AvaloniaProperty.Register<FocusOutlineAdorner, double>(nameof(OutlineThickness));
-
-    public static readonly StyledProperty<double> OutlineOffsetProperty =
-        AvaloniaProperty.Register<FocusOutlineAdorner, double>(nameof(OutlineOffset));
-
-    public IBrush? OutlineBrush
+    internal bool UseFocusOutlineTokenResources
     {
-        get => GetValue(OutlineBrushProperty);
-        set => SetValue(OutlineBrushProperty, value);
+        get => GetValue(UseFocusOutlineTokenResourcesProperty);
+        set => SetValue(UseFocusOutlineTokenResourcesProperty, value);
     }
 
-    public double OutlineThickness
-    {
-        get => GetValue(OutlineThicknessProperty);
-        set => SetValue(OutlineThicknessProperty, value);
-    }
-
-    public double OutlineOffset
-    {
-        get => GetValue(OutlineOffsetProperty);
-        set => SetValue(OutlineOffsetProperty, value);
-    }
+    public IBrush? OutlineBrush => _outline.Brush;
+    public double OutlineThickness => _outline.Thickness;
+    public double OutlineOffset => _outline.Offset;
 
     public static bool GetIsInset(Visual element) => element.GetValue(IsInsetProperty);
 
@@ -55,6 +46,15 @@ internal sealed class FocusOutlineAdorner : Control
 
     private Pen? _pen;
     private CornerRadius _renderedCornerRadius;
+    private OwnerTokenSet? _outlineTokens;
+    private (IBrush? Brush, double Thickness, double Offset) _outline;
+
+    private static readonly object[] s_outlineKeys =
+    [
+        ControlTokenResourceKey.Global(AdornerLayerTokens.Identity, SharedTokenKind.ColorFocusBorder),
+        ControlTokenResourceKey.Global(AdornerLayerTokens.Identity, SharedTokenKind.LineWidthFocus),
+        AdornerLayerTokenKind.FocusOutlineOffset
+    ];
     // The adorned element and, when it borrows its shape from its owner, the owner: shape changes that keep
     // the size (an expander header squaring its bottom corners) re-arrange nothing, so they are watched here.
     private AvaloniaObject? _shapeSource;
@@ -64,8 +64,7 @@ internal sealed class FocusOutlineAdorner : Control
 
     static FocusOutlineAdorner()
     {
-        AffectsRender<FocusOutlineAdorner>(OutlineBrushProperty, OutlineThicknessProperty, OutlineOffsetProperty,
-            AdornerLayer.AdornedElementProperty);
+        AffectsRender<FocusOutlineAdorner>(AdornerLayer.AdornedElementProperty);
         IsHitTestVisibleProperty.OverrideDefaultValue<FocusOutlineAdorner>(false);
     }
 
@@ -80,10 +79,15 @@ internal sealed class FocusOutlineAdorner : Control
     {
         base.OnAttachedToVisualTree(e);
         SubscribeShapeSources();
+        UpdateOutlineTokenSubscription();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _outlineTokens?.Dispose();
+        _outlineTokens = null;
+        _outline = default;
+        _pen = null;
         base.OnDetachedFromVisualTree(e);
         UnsubscribeShapeSources();
     }
@@ -106,6 +110,68 @@ internal sealed class FocusOutlineAdorner : Control
             // before the visual one. AdornerLayer releases its subscriptions on the adorned element and every
             // ancestor only when the adorned element changes while the adorner is still its visual child.
             AdornerLayer.SetAdornedElement(this, null);
+        }
+        else if (change.Property == UseFocusOutlineTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateOutlineTokenSubscription();
+        }
+    }
+
+    private void UpdateOutlineTokenSubscription()
+    {
+        if (UseFocusOutlineTokenResources && _outlineTokens is null)
+        {
+            _outlineTokens = new OwnerTokenSet(this, s_outlineKeys.Length, RefreshOutline);
+            for (var index = 0; index < s_outlineKeys.Length; ++index)
+            {
+                _outlineTokens.SetResourceKey(index, s_outlineKeys[index]);
+            }
+        }
+        else if (!UseFocusOutlineTokenResources && _outlineTokens is not null)
+        {
+            _outlineTokens.Dispose();
+            _outlineTokens = null;
+        }
+        RefreshOutline();
+    }
+
+    private void RefreshOutline()
+    {
+        var brush = _outlineTokens?.GetValue(0) switch
+        {
+            IBrush value => value,
+            Color color => new ImmutableSolidColorBrush(color),
+            string text when Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+            var value when ReferenceEquals(value, BindingOperations.DoNothing) => _outline.Brush,
+            _ => null
+        };
+        var paint = (brush,
+            ReadNumber(_outlineTokens?.GetValue(1), _outline.Thickness),
+            ReadNumber(_outlineTokens?.GetValue(2), _outline.Offset));
+        if (!_outline.Equals(paint))
+        {
+            _outline = paint;
+            InvalidateVisual();
+        }
+    }
+
+    private static double ReadNumber(object? value, double previous)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 

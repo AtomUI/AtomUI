@@ -1,12 +1,19 @@
+using System.Globalization;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 using AvaloniaFlowDirection = Avalonia.Media.FlowDirection;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class StepsItemLayoutPanel : Panel
 {
+    #region 公共属性定义
+
     public static readonly StyledProperty<StepsType> TypeProperty =
         AvaloniaProperty.Register<StepsItemLayoutPanel, StepsType>(nameof(Type), StepsType.Default);
 
@@ -75,43 +82,74 @@ internal class StepsItemLayoutPanel : Panel
 
     public double IndicatorSpacing
     {
-        get => GetValue(IndicatorSpacingProperty);
+        get => IsSet(IndicatorSpacingProperty) ? GetValue(IndicatorSpacingProperty) : _layoutDefaults.IndicatorSpacing;
         set => SetValue(IndicatorSpacingProperty, value);
     }
 
     public double ConnectorThickness
     {
-        get => GetValue(ConnectorThicknessProperty);
+        get => IsSet(ConnectorThicknessProperty) ? GetValue(ConnectorThicknessProperty) : _layoutDefaults.ConnectorThickness;
         set => SetValue(ConnectorThicknessProperty, value);
     }
 
     public double HorizontalConnectorGap
     {
-        get => GetValue(HorizontalConnectorGapProperty);
+        get => IsSet(HorizontalConnectorGapProperty) ? GetValue(HorizontalConnectorGapProperty) : _layoutDefaults.HorizontalGap;
         set => SetValue(HorizontalConnectorGapProperty, value);
     }
 
     public double PreferredHorizontalConnectorLength
     {
-        get => GetValue(PreferredHorizontalConnectorLengthProperty);
+        get => IsSet(PreferredHorizontalConnectorLengthProperty)
+            ? GetValue(PreferredHorizontalConnectorLengthProperty)
+            : _layoutDefaults.HorizontalLength;
         set => SetValue(PreferredHorizontalConnectorLengthProperty, value);
     }
 
     public double VerticalConnectorMargin
     {
-        get => GetValue(VerticalConnectorMarginProperty);
+        get => IsSet(VerticalConnectorMarginProperty) ? GetValue(VerticalConnectorMarginProperty) : _layoutDefaults.VerticalMargin;
         set => SetValue(VerticalConnectorMarginProperty, value);
     }
 
     public double VerticalItemPadding
     {
-        get => GetValue(VerticalItemPaddingProperty);
+        get => IsSet(VerticalItemPaddingProperty) ? GetValue(VerticalItemPaddingProperty) : _layoutDefaults.VerticalPadding;
         set => SetValue(VerticalItemPaddingProperty, value);
     }
 
     public Orientation EffectiveTitlePlacement => ResolveTitlePlacement(Type, EffectiveOrientation, TitlePlacement);
 
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<bool> UseStepLayoutTokenResourcesProperty =
+        AvaloniaProperty.Register<StepsItemLayoutPanel, bool>(nameof(UseStepLayoutTokenResources));
+
+    internal bool UseStepLayoutTokenResources
+    {
+        get => GetValue(UseStepLayoutTokenResourcesProperty);
+        set => SetValue(UseStepLayoutTokenResourcesProperty, value);
+    }
+
+    #endregion
+
     private Orientation EffectiveOrientation => Type == StepsType.Panel ? Orientation.Horizontal : Orientation;
+
+    private static readonly object[] s_layoutKeys =
+    [
+        ControlTokenResourceKey.Global(StepsTokens.Identity, SharedTokenKind.UniformlyMargin),
+        ControlTokenResourceKey.Global(StepsTokens.Identity, SharedTokenKind.LineWidth),
+        ControlTokenResourceKey.Global(StepsTokens.Identity, SharedTokenKind.UniformlyMarginXXS),
+        ControlTokenResourceKey.Global(StepsTokens.Identity, SharedTokenKind.SpacingXS),
+        StepsTokenKind.VerticalItemSpacing,
+        ControlTokenResourceKey.Global(StepsTokens.Identity, SharedTokenKind.UniformlyPaddingSM)
+    ];
+
+    private OwnerTokenSet? _layoutTokens;
+    private (double HorizontalLength, double ConnectorThickness, double HorizontalGap, double IndicatorSpacing,
+        double VerticalMargin, double VerticalPadding) _layoutDefaults = (0, 1, 0, 0, 0, 0);
 
     static StepsItemLayoutPanel()
     {
@@ -139,6 +177,86 @@ internal class StepsItemLayoutPanel : Panel
             VerticalItemPaddingProperty);
         AffectsParentMeasure<StepsItemLayoutPanel>(RoleProperty);
         AffectsParentArrange<StepsItemLayoutPanel>(RoleProperty);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateLayoutTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _layoutTokens?.Dispose();
+        _layoutTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == UseStepLayoutTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateLayoutTokenSubscription();
+        }
+    }
+
+    private void UpdateLayoutTokenSubscription()
+    {
+        if (UseStepLayoutTokenResources && _layoutTokens is null)
+        {
+            _layoutTokens = new OwnerTokenSet(this, s_layoutKeys.Length, RefreshLayoutDefaults);
+            for (var index = 0; index < s_layoutKeys.Length; ++index)
+            {
+                _layoutTokens.SetResourceKey(index, s_layoutKeys[index]);
+            }
+        }
+        else if (!UseStepLayoutTokenResources && _layoutTokens is not null)
+        {
+            _layoutTokens.Dispose();
+            _layoutTokens = null;
+        }
+        RefreshLayoutDefaults();
+    }
+
+    private void RefreshLayoutDefaults()
+    {
+        // The theme's state styles can still override an individual metric.
+        var previous = (PreferredHorizontalConnectorLength, ConnectorThickness, HorizontalConnectorGap,
+                        IndicatorSpacing, VerticalConnectorMargin, VerticalItemPadding);
+        _layoutDefaults = (
+            ReadNumber(0, _layoutDefaults.HorizontalLength),
+            ReadNumber(1, _layoutDefaults.ConnectorThickness, 1),
+            ReadNumber(2, _layoutDefaults.HorizontalGap),
+            ReadNumber(3, _layoutDefaults.IndicatorSpacing),
+            ReadNumber(4, _layoutDefaults.VerticalMargin),
+            ReadNumber(5, _layoutDefaults.VerticalPadding));
+        if (!previous.Equals((PreferredHorizontalConnectorLength, ConnectorThickness, HorizontalConnectorGap,
+                              IndicatorSpacing, VerticalConnectorMargin, VerticalItemPadding)))
+        {
+            InvalidateMeasure();
+        }
+    }
+
+    private double ReadNumber(int index, double previous, double fallback = 0)
+    {
+        var value = _layoutTokens?.GetValue(index);
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : fallback;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return fallback;
+        }
     }
 
     public static void SetRole(Control element, StepsItemLayoutRole value)

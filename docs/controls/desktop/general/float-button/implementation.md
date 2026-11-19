@@ -204,7 +204,8 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - 进度计算：`maxScroll = max(Extent.Height - Viewport.Height, 0)`，`ScrollProgress = maxScroll > 0 ? Clamp(Offset.Y / maxScroll, 0, 1) : 0`。进度只在 `Target` 的 `ScrollChanged` 与控件 `OnLoaded` 两个入口更新；Avalonia `ScrollChanged` 在 extent/viewport 变化时同样触发，内容尺寸变化（等效 resize 场景）已被覆盖，不引入额外的 SizeChanged 监听。
 - 绘制实现：`BackTopProgressRing` 自定义 `Render` 绘制轨道与进度指示。轨道是圆角矩形描边，`CornerRadius` 为高度一半（Circle 形状由基类尺寸同步设置）时即为整圆；进度指示是以环中心为顶点、半径取环矩形半对角线的扇形填充，从 12 点方向（-90°）顺时针扫 `360 × progress` 度（进度满 100% 时扇形退化，直接用进度色填充整个环带），再裁剪到环带。
 - 环几何不变量：`CalculateRingMetrics` 统一推导三个边界——外边界半径等于按钮自身圆角半径（与按钮轮廓完全重合，圆角处不留缝隙），中心线半径 = 外边界半径 − 半线宽，内边界半径 = 外边界半径 − 线宽；对应矩形依次为 `bounds`、`bounds.Deflate(半线宽)`、`bounds.Deflate(线宽)`。`CornerRadius` 是**外边界**的半径语义，不是中心线半径：把它当中心线使用会让外缘比按钮轮廓大出半线宽，在四个圆角处露出背景与环之间的缝隙（圆形因半径被 clamp 到尺寸一半而恰好不暴露）。
-- ControlTheme 兜底理由：扇形角度是随滚动连续变化的运行时值，ControlTheme selector/Setter 无法表达，故按主题绑定优先约束的兜底条款采用自定义 Render；线宽、颜色与显隐等静态契约仍由 `BackTopFloatButtonTheme.axaml` 注入——`StrokeThickness` 取 `LineWidthBold`、`TrackBrush` 取 `ColorBorderSecondary`、`IndicatorBrush` 取 `ColorPrimary`，显隐由 `^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing` selector 控制，默认 `IsVisible=False`。
+- 扇形的连续角度在 Render 中计算。模板给进度环指定线宽和两项颜色的资源键，进度环成组读取并重绘。显隐由 `IsShowProgress` 的模板选择器控制。
+- 回顶动画正常完成后将目标的纵向 Offset 精确提交为零。重复点击、换目标或卸载时取消之前的动画。
 - Square 环带裁剪：进度扇形通过 `PushGeometryClip` 裁剪到「外圆角矩形 − 内圆角矩形」的 `CombinedGeometry`（`Exclude`）环带，Circle 与 Square 复用同一渲染路径。扇形半径取半对角线以保证覆盖环带最外点。Circle 形状下环带为同心圆环，扇形与环带的交集即原圆弧进度带。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。

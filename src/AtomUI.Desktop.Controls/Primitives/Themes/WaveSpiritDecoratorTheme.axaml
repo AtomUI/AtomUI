@@ -5,9 +5,6 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:WaveSpiritDecorator}" TargetType="atom:WaveSpiritDecorator">
         <Setter Property="WaveBrush" Value="{atom:OwnerTokenResource ColorPrimary}"/>
-        <Setter Property="OriginOpacity" Value="{atom:OwnerTokenResource WaveStartOpacity}"/>
-        <Setter Property="SizeMotionDuration" Value="{atom:OwnerTokenResource MotionDurationSlow}"/>
-        <Setter Property="OpacityMotionDuration" Value="{atom:OwnerTokenResource MotionDurationSlow}"/>
-        <Setter Property="WaveRange" Value="{atom:OwnerTokenResource WaveAnimationRange}"/>
+        <Setter Property="UseOwnerWaveTokenResources" Value="True"/>
     </ControlTheme>
 </ResourceDictionary>

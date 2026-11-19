@@ -1,5 +1,5 @@
 # AdornerLayer Token 设计
 
-`FocusVisualMargin` 是唯一 Active Own Token；FocusVisualBorderThickness / ColorFocusBorder 使用 AdornerLayer 的有效全局值。只影响采用默认焦点装饰模板的控件；具有自定义焦点模板的控件维持自身契约。
+`FocusOutlineOffset` 是默认焦点描边与目标边缘的距离。`LineWidthFocus` 和 `ColorFocusBorder` 使用 AdornerLayer 的有效全局值。默认焦点装饰的绘制部件成组读取三项资源，自定义焦点模板使用自身资源。
 
 验证应覆盖实际启用状态、局部覆盖、根覆盖和独立注册身份。通用规则见[控件 Token 规范](../../../../engineering/development/control-token-guidelines.md)。

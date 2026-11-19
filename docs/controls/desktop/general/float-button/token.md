@@ -32,7 +32,7 @@ FloatButton 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
-- BackTop 进度环不引入控件专属 Token；`BackTopFloatButtonTheme.axaml` 中的进度环节点直接引用全局 SharedToken——线宽取 `LineWidthBold`，轨道色取 `ColorBorderSecondary`，进度色取 `ColorPrimary`。
+- BackTop 进度环从所属 BackTop 作用域成组读取三个 Effective Global Token。线宽取 `LineWidthBold`，轨道色取 `ColorBorderSecondary`，进度色取 `ColorPrimary`。
 
 徽标位置由 `BadgeOffset` 属性的按形状默认值表达。原 `SquareBadgeOffset`、`CircleBadgeOffset` 两个 Token 没有任何消费者，
 已于 2026-11-08 删除（见仓库 `CHANGELOG.md` 的 Breaking Changes）。

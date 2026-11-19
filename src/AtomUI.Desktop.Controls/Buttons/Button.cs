@@ -1,9 +1,6 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Desktop.Controls.DesignTokens;
-using AtomUI.Media;
-using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -14,7 +11,6 @@ using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -198,36 +194,10 @@ public partial class Button : AbstractButton,
     internal static readonly StyledProperty<bool> EffectiveIsBorderedProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(EffectiveIsBordered), true);
 
-    internal static readonly StyledProperty<IBrush?> VariantTextBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantTextBrush));
+    internal static readonly DirectProperty<Button, ButtonVariantAppearance> VariantAppearanceProperty =
+        AvaloniaProperty.RegisterDirect<Button, ButtonVariantAppearance>(
+            nameof(VariantAppearance), button => button.VariantAppearance);
 
-    internal static readonly StyledProperty<IBrush?> VariantTextHoverBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantTextHoverBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantTextPressedBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantTextPressedBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBackgroundBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBackgroundBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBackgroundHoverBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBackgroundHoverBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBackgroundPressedBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBackgroundPressedBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBorderBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBorderBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBorderHoverBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBorderHoverBrush));
-
-    internal static readonly StyledProperty<IBrush?> VariantBorderPressedBrushProperty =
-        AvaloniaProperty.Register<Button, IBrush?>(nameof(VariantBorderPressedBrush));
-
-    internal static readonly StyledProperty<BoxShadows> VariantShadowProperty =
-        AvaloniaProperty.Register<Button, BoxShadows>(nameof(VariantShadow));
-    
     internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
         WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
     
@@ -307,66 +277,14 @@ public partial class Button : AbstractButton,
         set => SetValue(EffectiveIsBorderedProperty, value);
     }
 
-    internal IBrush? VariantTextBrush
+    private ButtonVariantAppearance _variantAppearance;
+
+    internal ButtonVariantAppearance VariantAppearance
     {
-        get => GetValue(VariantTextBrushProperty);
-        set => SetValue(VariantTextBrushProperty, value);
+        get => _variantAppearance;
+        private set => SetAndRaise(VariantAppearanceProperty, ref _variantAppearance, value);
     }
 
-    internal IBrush? VariantTextHoverBrush
-    {
-        get => GetValue(VariantTextHoverBrushProperty);
-        set => SetValue(VariantTextHoverBrushProperty, value);
-    }
-
-    internal IBrush? VariantTextPressedBrush
-    {
-        get => GetValue(VariantTextPressedBrushProperty);
-        set => SetValue(VariantTextPressedBrushProperty, value);
-    }
-
-    internal IBrush? VariantBackgroundBrush
-    {
-        get => GetValue(VariantBackgroundBrushProperty);
-        set => SetValue(VariantBackgroundBrushProperty, value);
-    }
-
-    internal IBrush? VariantBackgroundHoverBrush
-    {
-        get => GetValue(VariantBackgroundHoverBrushProperty);
-        set => SetValue(VariantBackgroundHoverBrushProperty, value);
-    }
-
-    internal IBrush? VariantBackgroundPressedBrush
-    {
-        get => GetValue(VariantBackgroundPressedBrushProperty);
-        set => SetValue(VariantBackgroundPressedBrushProperty, value);
-    }
-
-    internal IBrush? VariantBorderBrush
-    {
-        get => GetValue(VariantBorderBrushProperty);
-        set => SetValue(VariantBorderBrushProperty, value);
-    }
-
-    internal IBrush? VariantBorderHoverBrush
-    {
-        get => GetValue(VariantBorderHoverBrushProperty);
-        set => SetValue(VariantBorderHoverBrushProperty, value);
-    }
-
-    internal IBrush? VariantBorderPressedBrush
-    {
-        get => GetValue(VariantBorderPressedBrushProperty);
-        set => SetValue(VariantBorderPressedBrushProperty, value);
-    }
-
-    internal BoxShadows VariantShadow
-    {
-        get => GetValue(VariantShadowProperty);
-        set => SetValue(VariantShadowProperty, value);
-    }
-    
     internal WaveSpiritType WaveSpiritType
     {
         get => GetValue(WaveSpiritTypeProperty);

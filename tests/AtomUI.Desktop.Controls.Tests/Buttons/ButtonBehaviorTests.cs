@@ -210,39 +210,39 @@ public class ButtonBehaviorTests
         {
             BrushShouldHaveSameColor(
                 button.Foreground,
-                GetInternalPropertyValue<IBrush?>(button, "VariantTextBrush"));
+                button.VariantAppearance.Text);
             BrushShouldHaveSameColor(
                 button.Background,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"));
+                button.VariantAppearance.Background);
             BrushShouldHaveSameColor(
                 button.BorderBrush,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBorderBrush"));
+                button.VariantAppearance.Border);
 
             SetPseudoClass(button, StdPseudoClass.PointerOver, true);
             Dispatcher.UIThread.RunJobs();
 
             BrushShouldHaveSameColor(
                 button.Foreground,
-                GetInternalPropertyValue<IBrush?>(button, "VariantTextHoverBrush"));
+                button.VariantAppearance.TextHover);
             BrushShouldHaveSameColor(
                 button.Background,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundHoverBrush"));
+                button.VariantAppearance.BackgroundHover);
             BrushShouldHaveSameColor(
                 button.BorderBrush,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBorderHoverBrush"));
+                button.VariantAppearance.BorderHover);
 
             SetPseudoClass(button, StdPseudoClass.Pressed, true);
             Dispatcher.UIThread.RunJobs();
 
             BrushShouldHaveSameColor(
                 button.Foreground,
-                GetInternalPropertyValue<IBrush?>(button, "VariantTextPressedBrush"));
+                button.VariantAppearance.TextPressed);
             BrushShouldHaveSameColor(
                 button.Background,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundPressedBrush"));
+                button.VariantAppearance.BackgroundPressed);
             BrushShouldHaveSameColor(
                 button.BorderBrush,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBorderPressedBrush"));
+                button.VariantAppearance.BorderPressed);
         });
     }
 
@@ -354,8 +354,8 @@ public class ButtonBehaviorTests
                 .ShouldBeTrue();
             GetInternalPropertyValue<Thickness>(button, "EffectiveBorderThickness")
                 .ShouldBe(button.BorderThickness);
-            BrushShouldHaveSameColor(button.Foreground, GetInternalPropertyValue<IBrush?>(button, "VariantTextBrush"));
-            BrushShouldHaveSameColor(button.Background, GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"));
+            BrushShouldHaveSameColor(button.Foreground, button.VariantAppearance.Text);
+            BrushShouldHaveSameColor(button.Background, button.VariantAppearance.Background);
 
             var foreground = GetSolidBrushColor(button.Foreground);
             var background = GetSolidBrushColor(button.Background);
@@ -383,10 +383,10 @@ public class ButtonBehaviorTests
         ShowInWindow(provider, () =>
         {
             BrushShouldHaveColor(button.Background, scopedPrimaryColor);
-            BrushShouldHaveColor(GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"),
+            BrushShouldHaveColor(button.VariantAppearance.Background,
                 scopedPrimaryColor);
             BrushShouldHaveSameColor(button.Background,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"));
+                button.VariantAppearance.Background);
         });
     }
 
@@ -432,8 +432,8 @@ public class ButtonBehaviorTests
         ShowInWindow(button, () =>
         {
             BrushShouldBeTransparent(button.Background);
-            BrushShouldBeTransparent(GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"));
-            GetInternalPropertyValue<BoxShadows>(button, "VariantShadow")
+            BrushShouldBeTransparent(button.VariantAppearance.Background);
+            button.VariantAppearance.Shadow
                 .ShouldBe(new BoxShadows());
             GetInternalPropertyValue<Thickness>(button, "EffectiveBorderThickness")
                 .ShouldBe(new Thickness(0));
@@ -483,7 +483,7 @@ public class ButtonBehaviorTests
 
             BrushShouldHaveSameColor(
                 frame.Background,
-                GetInternalPropertyValue<IBrush?>(button, "VariantBackgroundBrush"),
+                button.VariantAppearance.Background,
                 "Clearing the root background must restore the theme variant state machine.");
         });
     }

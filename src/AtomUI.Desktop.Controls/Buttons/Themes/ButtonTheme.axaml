@@ -8,21 +8,26 @@
         <Setter Property="atom:ButtonThemeInputs.ThemeBorderColorDisabled" Value="{atom:ButtonTokenResource BorderColorDisabled}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeCirclePadding" Value="{atom:ButtonTokenResource CirclePadding}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeLG" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSizeSM" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeContentPadding" Value="{atom:ButtonTokenResource ContentPadding}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingLG" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeContentPaddingSM" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeDefaultBorderColorDisabled" Value="{atom:ButtonTokenResource DefaultBorderColorDisabled}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeFontWeight" Value="{atom:ButtonTokenResource FontWeight}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeIconEndMargin" Value="{atom:ButtonTokenResource IconEndMargin}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeIconMargin" Value="{atom:ButtonTokenResource IconMargin}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPadding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingLG" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPaddingSM" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
         <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSize" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeLG" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
-        <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSizeSM" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeContentPadding" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPadding" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSize" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="atom:ButtonThemeInputs.ThemeContentFontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeContentPadding" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeIconOnyPadding" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
+            <Setter Property="atom:ButtonThemeInputs.ThemeOnlyIconSize" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
+        </Style>
 
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
@@ -221,15 +226,15 @@
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
-            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSizeLG)}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSize)}" />
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
             <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeLG}" />
             <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeLG}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPaddingLG)}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPadding)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPaddingLG)}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPadding)}" />
             </Style>
         </Style>
 
@@ -249,15 +254,15 @@
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
-            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSizeSM)}" />
+            <Setter Property="FontSize" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentFontSize)}" />
             <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeSM}" />
             <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeSM}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPaddingSM)}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeContentPadding)}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPaddingSM)}" />
+                <Setter Property="Padding" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeIconOnyPadding)}" />
             </Style>
         </Style>
 
@@ -281,8 +286,8 @@
         </Style>
 
         <Style Selector="^:icononly:loading[SizeType=Large]">
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeLG)}" />
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeLG)}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Middle]">
             <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
@@ -293,8 +298,8 @@
             <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Small]">
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeSM)}" />
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSizeSM)}" />
+            <Setter Property="IconWidth" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
+            <Setter Property="IconHeight" Value="{Binding $self.(atom:ButtonThemeInputs.ThemeOnlyIconSize)}" />
         </Style>
 
         <Style Selector="^[IconPlacement=Start]">
@@ -358,28 +363,28 @@
         <!-- Color / Variant 视觉变量开始 -->
         <Style Selector="^:not(:disabled)">
             <Setter Property="Foreground"
-                    Value="{Binding VariantTextBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Background"
-                    Value="{Binding VariantBackgroundBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
             <Setter Property="BorderBrush"
-                    Value="{Binding VariantBorderBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Border, RelativeSource={RelativeSource Self}}" />
 
             <Style Selector="^:pointerover">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderHover, RelativeSource={RelativeSource Self}}" />
             </Style>
 
             <Style Selector="^:pressed">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
 
@@ -390,7 +395,7 @@
 
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{TemplateBinding VariantShadow}" />
+                    Value="{Binding VariantAppearance.Shadow, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

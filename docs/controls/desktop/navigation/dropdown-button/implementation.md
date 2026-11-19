@@ -81,8 +81,8 @@ Public API / ItemsSource / Command / Event
 稳定 template part 接入点：
 
 - `PART_WaveSpirit`：稳定模板协作入口，重命名前必须同步主题和实现。
-- `PART_RootLayout`：承载根视觉、边框、背景或尺寸基线。
-- `PART_DropdownIndicator`：展示指示器、进度、分页或状态反馈。
+- `PART_RootLayout`：在剩余空间内按 `HorizontalContentAlignment` 排列文字、按钮图标和加载图标。
+- `PART_DropdownIndicator`：沿触发器逻辑尾端排列，尾端距离来自按钮 `Padding`。
 - `PART_LoadingIcon`：展示继承自 Button loading 状态的图标，并绑定 owner 的图标宽高。
 - `PART_ButtonIcon`：承载用户触发入口、导航或关闭动作。
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。

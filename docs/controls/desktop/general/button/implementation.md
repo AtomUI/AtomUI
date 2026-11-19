@@ -112,11 +112,15 @@ Button owner Style 中的 `ButtonIconStyle` 和 `ButtonContentStyle` 消费 Part
 
 Button 交互沿 Avalonia Button 基类处理点击、命令、键盘和 enabled 状态。AtomUI 只在状态同步层补充 loading、wave、icon-only、shape 和 compact。
 
+当前变体使用的颜色和阴影资源由同一个 `OwnerTokenSet` 观察。资源变化只更新发生变化的槽位。固定值与预设色继续由变体计算提供。
+
 Wave 播放条件必须同时考虑 `IsWaveSpiritEnabled`、`IsMotionEnabled`、disabled、loading 和 Button 语义状态。释放触发
 Wave 时，Button 读取当时已经合并 Theme、状态 selector、Semantic root Style 和用户 Style 的最终视觉属性，按
 `BorderBrush -> Background` 顺序选择有效实色 Brush。透明、纯白和非实色 Brush 不参与取色；没有有效 Brush 时清除
 本地 `WaveBrush`，由 `WaveSpiritDecorator` 使用主题默认值。用户定制的 root `Background` / `BorderBrush` 属于最终
 视觉属性，同样参与该取色顺序。
+
+桌面波纹在同一资源观察组读取扩散范围、起始透明度和默认时长。尺寸与淡出共享时长来源，并保留分别设置时长的入口。
 
 Loading 状态影响 loading icon、原 icon 可见性和交互反馈，但不应通过直接禁用控件来模拟。
 

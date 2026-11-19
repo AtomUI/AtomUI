@@ -29,9 +29,7 @@
                                            CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                            Background="{TemplateBinding Background}" />
                         <Border Padding="{TemplateBinding Padding}">
-                            <DockPanel Name="PART_RootLayout"
-                                       LastChildFill="True"
-                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            <DockPanel LastChildFill="True"
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <atom:IconPresenter
                                     Name="PART_DropdownIndicator"
@@ -40,26 +38,30 @@
                                     Icon="{TemplateBinding OpenIndicator}"
                                     IconBrush="{TemplateBinding Foreground}"
                                     IsVisible="{TemplateBinding IsShowOpenIndicator}" />
-                                <antdicons:LoadingOutlined
-                                    Name="PART_LoadingIcon"
-                                    Width="{TemplateBinding IconWidth}"
-                                    Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
-                                    FillBrush="{TemplateBinding Foreground}"
-                                    StrokeBrush="{TemplateBinding Foreground}"
-                                    DockPanel.Dock="Left" />
-                                <atom:IconPresenter
-                                    Name="PART_ButtonIcon"
-                                    Width="{TemplateBinding IconWidth}"
-                                    Height="{TemplateBinding IconHeight}"
-                                    Icon="{TemplateBinding Icon}"
-                                    DockPanel.Dock="Left"
-                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
-                                <ContentPresenter
-                                    Name="PART_ContentPresenter"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <DockPanel Name="PART_RootLayout"
+                                           LastChildFill="True"
+                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                                    <antdicons:LoadingOutlined
+                                        Name="PART_LoadingIcon"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        LoadingAnimation="Spin"
+                                        FillBrush="{TemplateBinding Foreground}"
+                                        StrokeBrush="{TemplateBinding Foreground}"
+                                        DockPanel.Dock="Left" />
+                                    <atom:IconPresenter
+                                        Name="PART_ButtonIcon"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        Icon="{TemplateBinding Icon}"
+                                        DockPanel.Dock="Left"
+                                        IsVisible="{TemplateBinding EffectiveIconVisible}" />
+                                    <ContentPresenter
+                                        Name="PART_ContentPresenter"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                </DockPanel>
                             </DockPanel>
                         </Border>
                     </Panel>

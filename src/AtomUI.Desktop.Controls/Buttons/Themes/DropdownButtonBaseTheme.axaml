@@ -331,28 +331,28 @@
         <!-- Color / Variant 视觉变量开始 -->
         <Style Selector="^:not(:disabled)">
             <Setter Property="Foreground"
-                    Value="{Binding VariantTextBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Background"
-                    Value="{Binding VariantBackgroundBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
             <Setter Property="BorderBrush"
-                    Value="{Binding VariantBorderBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Border, RelativeSource={RelativeSource Self}}" />
 
             <Style Selector="^:pointerover">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderHover, RelativeSource={RelativeSource Self}}" />
             </Style>
 
             <Style Selector="^:pressed">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
 
@@ -363,7 +363,7 @@
 
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{TemplateBinding VariantShadow}" />
+                    Value="{Binding VariantAppearance.Shadow, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

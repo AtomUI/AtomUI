@@ -1,8 +1,6 @@
-using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
@@ -17,26 +15,28 @@ namespace AtomUI.Desktop.Controls;
 /// <see cref="EffectiveColor"/> and <see cref="EffectiveVariant"/>.
 /// </summary>
 /// <remarks>
-/// Token-backed variables are bound to the same resource keys the ControlTheme's <c>ButtonTokenResource</c> setters use
+/// Token-backed variables are read from the same resource keys the ControlTheme's <c>ButtonTokenResource</c> setters use
 /// (boxed <see cref="ButtonTokenKind"/> for Own Tokens, the owner's Effective Global key for global Tokens). Application,
 /// scoped and <c>ThemeConfigProvider</c> resources therefore reach the variant colours exactly as they reach every other
-/// Button Token, and the bound values follow resource changes without a recompute. Global keys use the registered
+/// Button Token. One set observes the active resource slots and refreshes only the values that change. Global keys use the registered
 /// identity of the instance (DropdownButton has its own), Own Tokens use that same terminal identity. Preset colours are not Tokens: they
 /// come from the captured snapshot's palettes and are recomputed when the theme publishes.
 /// </remarks>
 public partial class Button
 {
     private const int VariantSlotCount = 10;
+    private const int VariantShadowSlot = 9;
     private static readonly IBrush TransparentBrush = new ImmutableSolidColorBrush(Colors.Transparent);
     private static readonly VariantValue TransparentVariant = new(TransparentBrush, false);
     private static readonly VariantValue NoShadowVariant = new(new BoxShadows(), false);
-    private static readonly Func<object?, object?> s_toVariantBrush = ToVariantBrush;
 
     // Theme reads happen on the UI thread only.
     private static readonly Dictionary<(ControlTokenIdentity Identity, ButtonTokenKind Kind), object> s_ownVariantKeys = new();
     private static readonly Dictionary<(ControlTokenIdentity Identity, SharedTokenKind Kind), object> s_globalVariantKeys = new();
 
-    private readonly VariantSlot[] _variantSlots = new VariantSlot[VariantSlotCount];
+    private readonly VariantValue?[] _variantSlots = new VariantValue?[VariantSlotCount];
+    private OwnerTokenSet? _variantTokens;
+    private int _configuringVariantSlot = -1;
 
     private void ConfigureVariantThemeVariables()
     {
@@ -396,45 +396,100 @@ public partial class Button
         VariantValue borderPressed,
         VariantValue shadow)
     {
-        SetVariantSlot(0, VariantTextBrushProperty, text, s_toVariantBrush);
-        SetVariantSlot(1, VariantTextHoverBrushProperty, textHover, s_toVariantBrush);
-        SetVariantSlot(2, VariantTextPressedBrushProperty, textPressed, s_toVariantBrush);
-        SetVariantSlot(3, VariantBackgroundBrushProperty, background, s_toVariantBrush);
-        SetVariantSlot(4, VariantBackgroundHoverBrushProperty, backgroundHover, s_toVariantBrush);
-        SetVariantSlot(5, VariantBackgroundPressedBrushProperty, backgroundPressed, s_toVariantBrush);
-        SetVariantSlot(6, VariantBorderBrushProperty, border, s_toVariantBrush);
-        SetVariantSlot(7, VariantBorderHoverBrushProperty, borderHover, s_toVariantBrush);
-        SetVariantSlot(8, VariantBorderPressedBrushProperty, borderPressed, s_toVariantBrush);
-        SetVariantSlot(9, VariantShadowProperty, shadow, null);
+        var appearance = VariantAppearance;
+        SetVariantSlot(0, text, ref appearance);
+        SetVariantSlot(1, textHover, ref appearance);
+        SetVariantSlot(2, textPressed, ref appearance);
+        SetVariantSlot(3, background, ref appearance);
+        SetVariantSlot(4, backgroundHover, ref appearance);
+        SetVariantSlot(5, backgroundPressed, ref appearance);
+        SetVariantSlot(6, border, ref appearance);
+        SetVariantSlot(7, borderHover, ref appearance);
+        SetVariantSlot(8, borderPressed, ref appearance);
+        SetVariantSlot(VariantShadowSlot, shadow, ref appearance);
+        VariantAppearance = appearance;
     }
 
-    // Re-running the projection (property changes, theme publications) keeps an unchanged slot as it is: its resource
-    // binding already follows the Token, so nothing is rebound or reallocated.
-    private void SetVariantSlot(int index, AvaloniaProperty property, VariantValue value, Func<object?, object?>? converter)
+    private void SetVariantSlot(int index, VariantValue value, ref ButtonVariantAppearance appearance)
     {
         ref var slot = ref _variantSlots[index];
-        if (slot.Value is { } current && current.Equals(value))
+        if (slot is { } current && current.Equals(value))
         {
             return;
         }
 
-        slot.Binding?.Dispose();
-        slot.Binding = null;
-        slot.Value   = value;
         if (value.IsResource)
         {
-            slot.Binding = TokenResourceBinder.CreateTokenResourceBinding(
-                this, this, property, value.Source, BindingPriority.LocalValue, converter);
+            _variantTokens ??= new OwnerTokenSet(this, VariantSlotCount, VariantResourceChanged);
         }
-        else
+
+        object? resolved = value.Source;
+        if (_variantTokens is { } tokens)
         {
-            SetValue(property, value.Source);
+            var previousIndex = _configuringVariantSlot;
+            _configuringVariantSlot = index;
+            try
+            {
+                tokens.SetResourceKey(index, value.IsResource ? value.Source : null);
+                if (value.IsResource)
+                {
+                    resolved = tokens.GetValue(index);
+                }
+            }
+            finally
+            {
+                _configuringVariantSlot = previousIndex;
+            }
+        }
+
+        var replacesResource = slot is { IsResource: true };
+        slot = value;
+        ApplyVariantValue(index, replacesResource && ReferenceEquals(resolved, BindingOperations.DoNothing)
+            ? AvaloniaProperty.UnsetValue
+            : resolved, ref appearance);
+    }
+
+    private void VariantResourceChanged(int index, object? previous, object? value)
+    {
+        if (_configuringVariantSlot != index && _variantSlots[index] is { IsResource: true })
+        {
+            var appearance = VariantAppearance;
+            ApplyVariantValue(index, value, ref appearance);
+            VariantAppearance = appearance;
         }
     }
 
-    private static object? ToVariantBrush(object? value)
+    private void ApplyVariantValue(int index, object? value, ref ButtonVariantAppearance appearance)
     {
-        return value is Color color ? ToBrush(color) : value;
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return;
+        }
+        if (index == VariantShadowSlot)
+        {
+            appearance = appearance with { Shadow = value is BoxShadows shadows ? shadows : default };
+            return;
+        }
+
+        var brush = value switch
+        {
+            IBrush resolved => resolved,
+            Color color => ToBrush(color),
+            _ => null
+        };
+        appearance = index switch
+        {
+            0 => appearance with { Text = brush },
+            1 => appearance with { TextHover = brush },
+            2 => appearance with { TextPressed = brush },
+            3 => appearance with { Background = brush },
+            4 => appearance with { BackgroundHover = brush },
+            5 => appearance with { BackgroundPressed = brush },
+            6 => appearance with { Border = brush },
+            7 => appearance with { BorderHover = brush },
+            8 => appearance with { BorderPressed = brush },
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
     }
 
     private static IBrush ToBrush(Color color)
@@ -483,12 +538,6 @@ public partial class Button
         internal static VariantValue Of(Color color) => new(ToBrush(color), false);
 
         internal static VariantValue Of(BoxShadows shadows) => new(shadows, false);
-    }
-
-    private struct VariantSlot
-    {
-        internal VariantValue? Value;
-        internal IDisposable? Binding;
     }
 
     /// <summary>Resource keys of the Tokens a variant reads, matching the ControlTheme's ButtonTokenResource keys.</summary>
@@ -609,3 +658,15 @@ public partial class Button
         }
     }
 }
+
+internal readonly record struct ButtonVariantAppearance(
+    IBrush? Text,
+    IBrush? TextHover,
+    IBrush? TextPressed,
+    IBrush? Background,
+    IBrush? BackgroundHover,
+    IBrush? BackgroundPressed,
+    IBrush? Border,
+    IBrush? BorderHover,
+    IBrush? BorderPressed,
+    BoxShadows Shadow);

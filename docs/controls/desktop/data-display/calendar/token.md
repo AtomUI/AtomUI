@@ -38,7 +38,7 @@ LunarCalendarToken 持有双行内容尺寸、文字/标记颜色与范围条避
 | `LunarCalendar.MarkerMargin` | 右侧 `UniformlyMarginXXS`（4） | 标记圆点与次要文字的间距。 |
 | `LunarCalendar.MarkerCornerRadius` | `MarkerSize / 2` | 标记圆点圆角。 |
 
-范围条标签的字号与颜色读宿主的 `FontSizeSM` / `ColorTextLightSolid`；Mini 键盘焦点描边读 `FocusVisualBorderThickness`。
+范围条面板通过同一 `OwnerTokenSet` 读取宿主的 `UniformlyMarginXXS`、`FontSizeSM` 与 `ColorTextLightSolid`。面板提供设置标签字号和画刷的入口。Mini 键盘焦点描边读 `FocusVisualBorderThickness`。
 日期、模式、约束、节日优先级、Provider revision 和确认状态不属于 Token。
 
 ## 3. 专项模型消费

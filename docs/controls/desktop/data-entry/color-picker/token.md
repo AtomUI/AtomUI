@@ -35,6 +35,9 @@ ColorPicker 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从本终端有效全局 Token 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
+色块通过同一 `OwnerTokenSet` 读取宿主的空色斜线和棋盘格画刷。色块与滑块直接读取作用域继承的棋盘格尺寸，由同一缓存生成图案。
+带文字的 `ColorPicker` 从逻辑起始边使用触发器的边框厚度与 `TriggerPadding`。颜色文字与色块之间由 `TriggerTextMargin` 控制。
+
 确认操作区的布局与可见性由 ControlTheme 表达，间距使用 View 有效全局 Token，按钮视觉复用 Button 主题。`IsNeedConfirm`、候选值、输入有效性及确认/取消结果属于实例交互状态，不进入 ColorPicker Token；该能力不增加专属 Token。提交与取消语义见 [ColorPicker 确认与取消设计](confirmation-design.md)。
 
 ## 4. 控件家族影响
@@ -67,7 +70,7 @@ ColorPicker 的控件专项模型通过 Theme 消费 Token：
 | `ColorPickerInsetShadow` | `ColorPickerView` / `GradientColorPickerView` 面板 |
 | `ColorPickerHandlerSizeLG` | `ColorPickerView` / `GradientColorPickerView` 面板 |
 | `ColorPickerHandlerSize` | `ColorPickerView` / `GradientColorPickerView` 面板 |
-| `ColorPickerHandlerSizeSM` | `ColorPickerView` / `GradientColorPickerView` 面板 |
+| `ColorPickerHandlerSizeSM` | `ColorPickerView` / `GradientColorPickerView` 用它派生滑块和滑块手柄尺寸 |
 | `ColorPickerHandlerLightColor` | `ColorPickerView` / `GradientColorPickerView` 面板 |
 | `ColorPickerHandlerDarkColor` | `ColorPickerView` / `GradientColorPickerView` 面板 |
 | `ColorPickerSliderSize` | `ColorPickerView` / `GradientColorPickerView` 面板 |

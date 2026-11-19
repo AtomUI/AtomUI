@@ -12,7 +12,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.VisualTree;
 using CalendarRangeBarPanelControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarRangeBarPanel;
 
@@ -224,7 +223,7 @@ public partial class Calendar : TemplatedControl
     {
         SetCurrentValue(ValueProperty, DateTime.Today);
         _rangeBars.CollectionChanged += OnRangeBarsCollectionChanged;
-        BindPresentationMetrics();
+        UpdatePresentationMetricTokenBindings();
     }
 
     internal const string DateViewerPart = "PART_DateViewer";
@@ -238,9 +237,7 @@ public partial class Calendar : TemplatedControl
     private CalendarHeader? _defaultHeader;
     private ContentControl? _customHeader;
     private ICalendarPresentationAdapter _presentationAdapter = DefaultCalendarPresentationAdapter.Instance;
-    private IDisposable? _miniContentHeightBinding;
-    private IDisposable? _fullCellMinHeightBinding;
-    private IDisposable? _rangeBarTopOffsetBinding;
+    private OwnerTokenPropertyBindings? _metricBindings;
     private readonly Dictionary<CalendarRangeBar, CalendarRangeBarAttachment> _rangeBarAttachments =
         new(ReferenceEqualityComparer.Instance);
 
@@ -524,7 +521,7 @@ public partial class Calendar : TemplatedControl
         }
 
         _presentationAdapter = presentationAdapter;
-        BindPresentationMetrics();
+        UpdatePresentationMetricTokenBindings();
         _dateViewer?.RefreshHost();
         _dateViewer?.RefreshContent();
 
@@ -536,30 +533,32 @@ public partial class Calendar : TemplatedControl
         RefreshCustomHeaderContent();
     }
 
-    private void BindPresentationMetrics()
+    private void UpdatePresentationMetricTokenBindings()
     {
-        // Adapter Token kinds are chosen at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
-        // The bindings resolve the Calendar's effective Tokens, so Controls[Calendar] / Controls[LunarCalendar] apply.
-        _miniContentHeightBinding?.Dispose();
-        _fullCellMinHeightBinding?.Dispose();
-        _rangeBarTopOffsetBinding?.Dispose();
-
+        // The active adapter chooses the owner and keys at runtime. A fixed ControlTheme cannot follow this switch.
         var metrics = _presentationAdapter.Metrics;
-        _miniContentHeightBinding = BindMetric(EffectiveMiniContentHeightProperty, metrics.OwnerType,
-            metrics.MiniContentHeightResourceKey);
-        _fullCellMinHeightBinding = BindMetric(EffectiveFullCellMinHeightProperty, metrics.OwnerType,
-            metrics.FullCellMinHeightResourceKey);
-        _rangeBarTopOffsetBinding = BindMetric(EffectiveRangeBarTopOffsetProperty, metrics.OwnerType,
-            metrics.RangeBarTopOffsetResourceKey);
+        var bindings = new OwnerTokenPropertyBindings(this, 3, BindingPriority.Template);
+        try
+        {
+            bindings.Bind(0, EffectiveMiniContentHeightProperty, MetricKey(metrics.OwnerType, metrics.MiniContentHeightResourceKey));
+            bindings.Bind(1, EffectiveFullCellMinHeightProperty, MetricKey(metrics.OwnerType, metrics.FullCellMinHeightResourceKey));
+            bindings.Bind(2, EffectiveRangeBarTopOffsetProperty, MetricKey(metrics.OwnerType, metrics.RangeBarTopOffsetResourceKey));
+        }
+        catch
+        {
+            bindings.Dispose();
+            throw;
+        }
+
+        var previous = _metricBindings;
+        _metricBindings = bindings;
+        previous?.Dispose();
     }
 
-    private IDisposable BindMetric(AvaloniaProperty property, Type ownerType, Enum tokenKind)
-    {
-        var resourceKey = tokenKind is SharedTokenKind globalKind
+    private static object MetricKey(Type ownerType, Enum tokenKind) =>
+        tokenKind is SharedTokenKind globalKind
             ? ControlTokenResourceKey.Global(ownerType, globalKind)
             : ControlTokenResourceKey.Own(ownerType, tokenKind);
-        return TokenResourceBinder.CreateTokenResourceBinding(this, this, property, resourceKey);
-    }
 
     internal void RefreshPresentation()
     {

@@ -23,6 +23,7 @@ public sealed partial class GradientColorPickerViewToken : AbstractColorPickerVi
         {
             ColorPickerSliderTrackSize = 8;
         }
-        CalculateDerivedValues(ColorPickerHandlerSizeSM, ColorPickerPresetColorSize, ColorPickerSliderTrackSize);
+        ColorPickerSliderSize = ColorPickerHandlerSizeSM;
+        CalculateDependentSizes(ColorPickerHandlerSizeSM, ColorPickerPresetColorSize, ColorPickerSliderTrackSize);
     }
 }

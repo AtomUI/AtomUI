@@ -1,7 +1,5 @@
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Desktop.Controls.DesignTokens;
-using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -23,6 +21,7 @@ public sealed partial class ColorPickerViewToken : AbstractColorPickerViewToken
         {
             ColorPickerSliderTrackSize = 8;
         }
-        CalculateDerivedValues(ColorPickerHandlerSizeSM, ColorPickerPresetColorSize, ColorPickerSliderTrackSize);
+        ColorPickerSliderSize = ColorPickerHandlerSizeSM;
+        CalculateDependentSizes(ColorPickerHandlerSizeSM, ColorPickerPresetColorSize, ColorPickerSliderTrackSize);
     }
 }

@@ -32,7 +32,8 @@ internal partial class TimePickerPresenter : PickerPresenterBase
     public TimePickerPresenter()
     {
         // Hosted by a picker the owner is forwarded; shown alone the presenter follows the TimePicker identity.
-        _ownerInputs = Primitives.OwnerThemeInputs.Bind(this, null, typeof(TimePicker), OwnerInputs);
+        _ownerInputs = Primitives.OwnerThemeInputs.Bind(this, null, typeof(TimePicker), OwnerInputs,
+            typeof(RangeTimePicker));
     }
 
     #region 公共属性定义

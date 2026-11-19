@@ -1,5 +1,8 @@
+using System.Globalization;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -31,21 +34,20 @@ internal sealed class CalendarRangeBarPanel : Panel
     public static readonly StyledProperty<double> RangeBarTopOffsetProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarTopOffset));
 
-    public static readonly StyledProperty<double> RangeBarHorizontalInsetProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarHorizontalInset));
-
     public static readonly StyledProperty<double> RangeBarGapProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarGap));
-
-    public static readonly StyledProperty<double> RangeBarLabelFontSizeProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, double>(nameof(RangeBarLabelFontSize),
-            TextBlock.FontSizeProperty.GetDefaultValue(typeof(TextBlock)));
 
     public static readonly StyledProperty<Thickness> RangeBarLabelPaddingProperty =
         AvaloniaProperty.Register<CalendarRangeBarPanel, Thickness>(nameof(RangeBarLabelPadding));
 
-    public static readonly StyledProperty<IBrush?> RangeBarLabelForegroundProperty =
-        AvaloniaProperty.Register<CalendarRangeBarPanel, IBrush?>(nameof(RangeBarLabelForeground));
+    public static readonly StyledProperty<bool> UseRangeBarTokenResourcesProperty =
+        AvaloniaProperty.Register<CalendarRangeBarPanel, bool>(nameof(UseRangeBarTokenResources));
+
+    public bool UseRangeBarTokenResources
+    {
+        get => GetValue(UseRangeBarTokenResourcesProperty);
+        set => SetValue(UseRangeBarTokenResourcesProperty, value);
+    }
 
     public CalendarMode Mode
     {
@@ -77,12 +79,6 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarTopOffsetProperty, value);
     }
 
-    public double RangeBarHorizontalInset
-    {
-        get => GetValue(RangeBarHorizontalInsetProperty);
-        set => SetValue(RangeBarHorizontalInsetProperty, value);
-    }
-
     /// <summary>Gap between range bars stacked in the same cell (the theme binds the Calendar's RangeBarGap).</summary>
     public double RangeBarGap
     {
@@ -90,11 +86,19 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarGapProperty, value);
     }
 
-    /// <summary>Font size of the range bar label (the theme binds the owner's FontSizeSM).</summary>
+    /// <summary>Font size of the range bar label, defaulting to the owner's FontSizeSM.</summary>
     public double RangeBarLabelFontSize
     {
-        get => GetValue(RangeBarLabelFontSizeProperty);
-        set => SetValue(RangeBarLabelFontSizeProperty, value);
+        get => _labelFontSizeOverride ?? _themeLabelFontSize;
+        set
+        {
+            var previous = RangeBarLabelFontSize;
+            _labelFontSizeOverride = value;
+            if (!previous.Equals(value))
+            {
+                InvalidateRangeBars();
+            }
+        }
     }
 
     /// <summary>Padding of the range bar label inside its bar (the theme binds the Calendar's RangeBarLabelPadding).</summary>
@@ -104,11 +108,19 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarLabelPaddingProperty, value);
     }
 
-    /// <summary>Text colour of the range bar label (the theme binds the owner's ColorTextLightSolid).</summary>
+    /// <summary>Text colour of the range bar label, defaulting to the owner's ColorTextLightSolid.</summary>
     public IBrush? RangeBarLabelForeground
     {
-        get => GetValue(RangeBarLabelForegroundProperty);
-        set => SetValue(RangeBarLabelForegroundProperty, value);
+        get => _labelForegroundOverride.IsSet ? _labelForegroundOverride.Value : _themeLabelForeground;
+        set
+        {
+            var previous = RangeBarLabelForeground;
+            _labelForegroundOverride = (true, value);
+            if (!Equals(previous, value))
+            {
+                InvalidateRangeBars();
+            }
+        }
     }
 
     #endregion
@@ -120,11 +132,8 @@ internal sealed class CalendarRangeBarPanel : Panel
         RangeBarsProperty,
         RangeBarHeightProperty,
         RangeBarTopOffsetProperty,
-        RangeBarHorizontalInsetProperty,
         RangeBarGapProperty,
         RangeBarLabelPaddingProperty,
-        RangeBarLabelFontSizeProperty,
-        RangeBarLabelForegroundProperty,
         FlowDirectionProperty
     };
 
@@ -132,6 +141,13 @@ internal sealed class CalendarRangeBarPanel : Panel
     private Size _realizedSize;
     private bool _segmentsDirty = true;
     private DateViewerControl? _subscribedLayoutSource;
+    private static readonly double s_defaultFontSize = TextBlock.FontSizeProperty.GetDefaultValue(typeof(TextBlock));
+    private OwnerTokenSet? _rangeBarTokens;
+    private double _horizontalInset;
+    private double _themeLabelFontSize = s_defaultFontSize;
+    private IBrush? _themeLabelForeground;
+    private double? _labelFontSizeOverride;
+    private (bool IsSet, IBrush? Value) _labelForegroundOverride;
 
     public CalendarRangeBarPanel()
     {
@@ -163,6 +179,66 @@ internal sealed class CalendarRangeBarPanel : Panel
         if (LayoutTriggers.Contains(change.Property))
         {
             InvalidateRangeBars();
+        }
+        if (change.Property == UseRangeBarTokenResourcesProperty)
+        {
+            UpdateRangeBarTokenSubscription();
+        }
+    }
+
+    private void UpdateRangeBarTokenSubscription()
+    {
+        if (UseRangeBarTokenResources)
+        {
+            _rangeBarTokens = new OwnerTokenSet(this, 3, RefreshRangeBarStyle);
+            _rangeBarTokens.SetKind(0, SharedTokenKind.UniformlyMarginXXS);
+            _rangeBarTokens.SetKind(1, SharedTokenKind.FontSizeSM);
+            _rangeBarTokens.SetKind(2, SharedTokenKind.ColorTextLightSolid);
+        }
+        else
+        {
+            _rangeBarTokens?.Dispose();
+            _rangeBarTokens = null;
+        }
+        RefreshRangeBarStyle();
+    }
+
+    private void RefreshRangeBarStyle()
+    {
+        var inset = ReadNumber(_rangeBarTokens?.GetValue(0), _horizontalInset, 0);
+        var fontSize = RangeBarLabelFontSize;
+        var foreground = RangeBarLabelForeground;
+        _themeLabelFontSize = ReadNumber(_rangeBarTokens?.GetValue(1), _themeLabelFontSize, s_defaultFontSize);
+        var brush = _rangeBarTokens?.GetValue(2);
+        if (!ReferenceEquals(brush, BindingOperations.DoNothing))
+        {
+            _themeLabelForeground = brush as IBrush;
+        }
+        if (!_horizontalInset.Equals(inset) || !fontSize.Equals(RangeBarLabelFontSize) ||
+            !Equals(foreground, RangeBarLabelForeground))
+        {
+            _horizontalInset = inset;
+            InvalidateRangeBars();
+        }
+    }
+
+    private static double ReadNumber(object? value, double previous, double fallback)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : fallback;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return fallback;
         }
     }
 
@@ -358,7 +434,7 @@ internal sealed class CalendarRangeBarPanel : Panel
             var right = included.Max(cell => cell.Bounds.Right);
             var top = included.Min(cell => cell.Bounds.Top);
             var bottom = included.Min(cell => cell.Bounds.Bottom);
-            var inset = ClampMetric(RangeBarHorizontalInset, 0, included.Min(cell => cell.Bounds.Width) / 2);
+            var inset = ClampMetric(_horizontalInset, 0, included.Min(cell => cell.Bounds.Width) / 2);
             var offset = GetLaneOffset(lane, requestedHeight);
             var width = right - left - inset * 2;
             var height = Math.Min(requestedHeight, Math.Max(0, bottom - top - offset));
@@ -503,14 +579,16 @@ internal sealed class CalendarRangeBarPanel : Panel
     /// <summary>The label colour and size follow the panel's themed values (owner ColorTextLightSolid / FontSizeSM).</summary>
     private void ApplyLabelStyle(TextBlock label)
     {
-        if (!Equals(label.Foreground, RangeBarLabelForeground))
+        var foreground = RangeBarLabelForeground;
+        if (!Equals(label.Foreground, foreground))
         {
-            label.SetCurrentValue(TextBlock.ForegroundProperty, RangeBarLabelForeground);
+            label.SetCurrentValue(TextBlock.ForegroundProperty, foreground);
         }
 
-        if (label.FontSize != RangeBarLabelFontSize)
+        var fontSize = RangeBarLabelFontSize;
+        if (label.FontSize != fontSize)
         {
-            label.SetCurrentValue(TextBlock.FontSizeProperty, RangeBarLabelFontSize);
+            label.SetCurrentValue(TextBlock.FontSizeProperty, fontSize);
         }
     }
 
@@ -525,12 +603,13 @@ internal sealed class CalendarRangeBarPanel : Panel
         var textBlock = new TextBlock
         {
             Text = text,
+            FontSize = RangeBarLabelFontSize,
+            Foreground = RangeBarLabelForeground,
             TextTrimming = TextTrimming.CharacterEllipsis,
             VerticalAlignment = VerticalAlignment.Center,
             TextAlignment = bar.FlowDirection == FlowDirection.RightToLeft ? TextAlignment.Right : TextAlignment.Left,
             IsHitTestVisible = false
         };
-        ApplyLabelStyle(textBlock);
         return textBlock;
     }
 

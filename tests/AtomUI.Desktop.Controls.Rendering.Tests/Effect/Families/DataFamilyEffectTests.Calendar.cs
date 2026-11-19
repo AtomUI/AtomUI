@@ -41,7 +41,7 @@ public partial class DataFamilyEffectTests
     [
         "BorderRadiusLG", "ColorBorderSecondary", "ColorSplit", "ColorTextLightSolid", "FontHeightSM", "FontSizeSM",
         "LineWidth", "UniformlyMarginXXS", "UniformlyPaddingXS"
-    ]);
+    ], "src/AtomUI.Desktop.Controls/Calendar/Internal/CalendarRangeBarPanel.cs");
 
     private static readonly DateTime s_calendarDate = new(2026, 7, 15);
 
@@ -265,6 +265,18 @@ public partial class DataFamilyEffectTests
                 return CalendarOnSurface(lunar);
 
             // ---- fullscreen calendar ----
+            case "FullCellMinHeight":
+                // Give the calendar enough space for its natural row sizing to take effect.
+                return new Scenario(() => new Avalonia.Controls.Window
+                {
+                    Width = 720,
+                    Height = 1030,
+                    Content = CreateCalendar(lunar: lunar)
+                }, Options: new EffectOptions
+                {
+                    Target = static root => Descendant<Calendar>(root),
+                    Perturb = static _ => 72d
+                });
             case "RangeBarGap":
                 return Full(rangeBars: true, options: new EffectOptions
                 {
@@ -282,7 +294,7 @@ public partial class DataFamilyEffectTests
                 return Full(options: new EffectOptions { Region = static c => OutsideCalendarCell(c) });
             default:
                 // FullBg / ColorBgContainer, FullPanelBg, ItemActiveBg / ControlItemBgActive (selected cell), the cell
-                // geometry (FullCellMinHeight, FullCellMargin / UniformlyMarginXS, FullCellPadding / UniformlyPaddingXS,
+                // geometry (FullCellMargin / UniformlyMarginXS, FullCellPadding / UniformlyPaddingXS,
                 // FullCellBorderThickness / LineWidthBold, ColorFillSecondary), the week header (WeekHeaderHeight,
                 // WeekHeaderPadding, UniformlyPaddingSM / UniformlyPaddingXXS), the header selects (YearControlWidth,
                 // MonthControlWidth), ColorText and ColorTextDisabled (outside cells).

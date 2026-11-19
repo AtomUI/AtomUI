@@ -692,7 +692,7 @@ public partial class DataFamilyEffectTests
         foreach (var list in s_pickerOwnLists.Concat([s_calendarHeader, s_calendarTheme, s_calendarDateCell, s_datePanel,
                      s_dateViewerHeader, s_dateViewerCell]))
         {
-            ThemeOwnerReads.Read(list.Theme).Order(StringComparer.Ordinal)
+            ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)
                            .ShouldBe(list.Tokens.Order(StringComparer.Ordinal), list.Theme);
         }
     }

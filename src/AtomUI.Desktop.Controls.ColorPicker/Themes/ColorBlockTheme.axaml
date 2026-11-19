@@ -4,8 +4,7 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorBlock}" TargetType="atom:ColorBlock">
-        <Setter Property="EmptyColorBrush" Value="{atom:OwnerTokenResource ColorError}" />
-        <Setter Property="EmptyLineWidth" Value="{atom:OwnerTokenResource LineWidthBold}" />
+        <Setter Property="UsePreviewPaintTokenResources" Value="True" />
         <Style Selector="^[IsCustomSize=True]">
             <Setter Property="Width" Value="{Binding Size, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Height" Value="{Binding Size, RelativeSource={RelativeSource Self}}" />
@@ -33,8 +32,6 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="TransparentBgIntervalColor" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
-        <Setter Property="TransparentBgSize" Value="{Binding (atom:ColorPickerThemeInputs.ThemeTransparentBgSize), RelativeSource={RelativeSource Self}}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
         <Style Selector="^[IsEmptyColorMode=True]">

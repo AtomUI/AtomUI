@@ -24,7 +24,8 @@
                                              CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                              Background="{TemplateBinding Background}"
                                              Padding="{TemplateBinding TriggerPadding}">
-                        <StackPanel Orientation="Horizontal"
+                        <StackPanel Name="PART_TriggerContent"
+                                    Orientation="Horizontal"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
                             <atom:ColorBlock Name="PART_ColorIndicator"
@@ -63,5 +64,9 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
+
+        <Style Selector="^[IsTextVisible=True] /template/ StackPanel#PART_TriggerContent">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

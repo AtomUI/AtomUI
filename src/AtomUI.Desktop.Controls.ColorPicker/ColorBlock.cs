@@ -1,7 +1,10 @@
+using System.Globalization;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -59,10 +62,8 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
 
     #region 内部属性定义
 
-    internal static readonly StyledProperty<IBrush?> EmptyColorBrushProperty =
-        AvaloniaProperty.Register<ColorBlock, IBrush?>(nameof(EmptyColorBrush));
-    internal static readonly StyledProperty<double> EmptyLineWidthProperty =
-        AvaloniaProperty.Register<ColorBlock, double>(nameof(EmptyLineWidth));
+    internal static readonly StyledProperty<bool> UsePreviewPaintTokenResourcesProperty =
+        AvaloniaProperty.Register<ColorBlock, bool>(nameof(UsePreviewPaintTokenResources));
 
     internal static readonly DirectProperty<ColorBlock, IBrush?> TransparentBgBrushProperty =
         AvaloniaProperty.RegisterDirect<ColorBlock, IBrush?>(
@@ -70,27 +71,16 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             o => o.TransparentBgBrush,
             (o, v) => o.TransparentBgBrush = v);
 
-    internal static readonly StyledProperty<IBrush?> TransparentBgIntervalColorProperty =
-        AvaloniaProperty.Register<ColorBlock, IBrush?>(nameof(TransparentBgIntervalColor));
-
-    internal static readonly StyledProperty<double> TransparentBgSizeProperty =
-        AvaloniaProperty.Register<ColorBlock, double>(nameof(TransparentBgSize), 4.0);
-
     internal static readonly DirectProperty<ColorBlock, bool> IsCustomSizeProperty =
         AvaloniaProperty.RegisterDirect<ColorBlock, bool>(
             nameof(IsCustomSize),
             o => o.IsCustomSize,
             (o, v) => o.IsCustomSize = v);
 
-    internal IBrush? EmptyColorBrush
+    internal bool UsePreviewPaintTokenResources
     {
-        get => GetValue(EmptyColorBrushProperty);
-        set => SetValue(EmptyColorBrushProperty, value);
-    }
-    internal double EmptyLineWidth
-    {
-        get => GetValue(EmptyLineWidthProperty);
-        set => SetValue(EmptyLineWidthProperty, value);
+        get => GetValue(UsePreviewPaintTokenResourcesProperty);
+        set => SetValue(UsePreviewPaintTokenResourcesProperty, value);
     }
 
     private IBrush? _transparentBgBrush;
@@ -99,18 +89,6 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     {
         get => _transparentBgBrush;
         set => SetAndRaise(TransparentBgBrushProperty, ref _transparentBgBrush, value);
-    }
-
-    internal IBrush? TransparentBgIntervalColor
-    {
-        get => GetValue(TransparentBgIntervalColorProperty);
-        set => SetValue(TransparentBgIntervalColorProperty, value);
-    }
-
-    internal double TransparentBgSize
-    {
-        get => GetValue(TransparentBgSizeProperty);
-        set => SetValue(TransparentBgSizeProperty, value);
     }
 
     private bool _isCustomSize;
@@ -126,57 +104,97 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
     #region 运行时字段
 
     private readonly Pen _emptyColorPen = new();
+    private OwnerTokenSet? _paintTokens;
 
     #endregion
 
     static ColorBlock()
     {
-        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty, EmptyColorBrushProperty, EmptyLineWidthProperty);
+        AffectsRender<ColorBlock>(TransparentBgBrushProperty, IsEmptyColorModeProperty);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        ConfigureTransparentBgBrush();
+        UpdatePaint();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == UsePreviewPaintTokenResourcesProperty)
         {
-            if (change.Property == TransparentBgIntervalColorProperty ||
-                change.Property == TransparentBgSizeProperty ||
-                change.Property == IsEmptyColorModeProperty)
+            UpdatePreviewPaintTokenSubscription();
+        }
+        else if (change.Property == IsEmptyColorModeProperty ||
+                 change.Property == ColorPickerThemeInputs.ThemeTransparentBgSizeProperty)
+        {
+            if (this.IsAttachedToVisualTree())
             {
-                ConfigureTransparentBgBrush();
+                UpdatePaint();
             }
         }
-
-        if (change.Property == EmptyColorBrushProperty || change.Property == EmptyLineWidthProperty)
-        {
-            _emptyColorPen.Brush = EmptyColorBrush;
-            _emptyColorPen.Thickness = EmptyLineWidth;
-        }
-
-        if (change.Property == SizeProperty)
+        else if (change.Property == SizeProperty)
         {
             IsCustomSize = !double.IsNaN(Size);
         }
     }
 
-    private void ConfigureTransparentBgBrush()
+    private void UpdatePreviewPaintTokenSubscription()
     {
-        if (IsEmptyColorMode)
+        _paintTokens?.Dispose();
+        _paintTokens = null;
+        if (UsePreviewPaintTokenResources)
         {
-            TransparentBgBrush = Brushes.Transparent;
+            _paintTokens = new OwnerTokenSet(this, 3, UpdatePaint);
+            _paintTokens.SetKind(0, SharedTokenKind.ColorError);
+            _paintTokens.SetKind(1, SharedTokenKind.LineWidthBold);
+            _paintTokens.SetKind(2, SharedTokenKind.ColorFillSecondary);
         }
-        else
+        UpdatePaint();
+    }
+
+    private void UpdatePaint()
+    {
+        if (!IsEmptyColorMode)
         {
-            if (TransparentBgIntervalColor != null && TransparentBgIntervalColor is ISolidColorBrush solidColorBrush)
+            if (_paintTokens?.GetValue(2) is ISolidColorBrush interval)
             {
-                TransparentBgBrush = TransparentBgBrushUtils.Build(TransparentBgSize, solidColorBrush.Color);
+                TransparentBgBrush = TransparentBgBrushUtils.Build(
+                    ColorPickerThemeInputs.GetThemeTransparentBgSize(this), interval.Color);
             }
+            return;
+        }
+
+        TransparentBgBrush = Brushes.Transparent;
+        var rawBrush = _paintTokens?.GetValue(0);
+        var brush = ReferenceEquals(rawBrush, BindingOperations.DoNothing) ? _emptyColorPen.Brush : rawBrush as IBrush;
+        var width = ReadEmptyLineWidth(_paintTokens?.GetValue(1));
+        if (!Equals(brush, _emptyColorPen.Brush) || !width.Equals(_emptyColorPen.Thickness))
+        {
+            _emptyColorPen.Brush = brush;
+            _emptyColorPen.Thickness = width;
+            InvalidateVisual();
+        }
+    }
+
+    private double ReadEmptyLineWidth(object? value)
+    {
+        if (value is double width)
+        {
+            return width;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _emptyColorPen.Thickness;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 

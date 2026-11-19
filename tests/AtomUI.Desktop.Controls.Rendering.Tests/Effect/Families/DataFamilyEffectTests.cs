@@ -31,7 +31,7 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 public partial class DataFamilyEffectTests
 {
     /// <summary>One identity-less part theme and the global Tokens it reads from its owner.</summary>
-    internal sealed record OwnerReadList(string Theme, string[] Tokens);
+    internal sealed record OwnerReadList(string Theme, string[] Tokens, params string[] Code);
 
     private static IEnumerable<object[]> MapRows(string controlId)
     {

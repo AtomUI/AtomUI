@@ -1,5 +1,4 @@
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -75,8 +74,13 @@ public abstract partial class AbstractColorPickerViewToken : AbstractControlDesi
 
     protected void CalculateDerivedValues(double handlerSize, double presetSize, double trackSize)
     {
-        CheckedMarkSize = presetSize * 0.6;
         ColorPickerSliderSize = handlerSize;
+        CalculateDependentSizes(handlerSize, presetSize, trackSize);
+    }
+
+    private protected void CalculateDependentSizes(double handlerSize, double presetSize, double trackSize)
+    {
+        CheckedMarkSize = presetSize * 0.6;
         ColorPickerSliderThumbSize = handlerSize + EffectiveGlobalToken.LineWidth * 2;
         ColorPickerPreviewSize = trackSize * 2 + EffectiveGlobalToken.UniformlyMarginSM;
     }

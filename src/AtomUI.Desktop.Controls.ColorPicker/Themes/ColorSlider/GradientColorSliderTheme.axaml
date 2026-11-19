@@ -40,8 +40,6 @@
         <Setter Property="Maximum" Value="1.0" />
         <Setter Property="TransparentBgIntervalColor"
                 Value="{atom:OwnerTokenResource ColorFillSecondary}" />
-        <Setter Property="TransparentBgSize"
-                Value="{Binding (atom:ColorPickerThemeInputs.ThemeTransparentBgSize), RelativeSource={RelativeSource Self}}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Height" Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderSize), RelativeSource={RelativeSource Self}}" />
     </ControlTheme>

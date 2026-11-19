@@ -23,7 +23,7 @@
                             ClipToBounds="False"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
-                        <Border Name="PART_CellInner"
+                        <tokeninputs:CalendarCellFrame Name="PART_CellInner"
                                 TemplatedControl.IsTemplateFocusTarget="True"
                                 Background="Transparent"
                                 Cursor="Hand"
@@ -53,7 +53,7 @@
                                 <Border Grid.Row="0" Name="PART_CellOutline" Grid.RowSpan="2"
                                         IsHitTestVisible="False" />
                             </Grid>
-                        </Border>
+                        </tokeninputs:CalendarCellFrame>
                     </Border>
                 </ControlTemplate>
             </Setter>
@@ -123,7 +123,7 @@
                 <Setter Property="CornerRadius" Value="0" />
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
                 <Setter Property="BorderThickness" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellBorderThickness)}" />
-                <Setter Property="MinHeight" Value="{Binding $parent[controls:Calendar].EffectiveFullCellMinHeight}" />
+                <Setter Property="tokeninputs:CalendarCellFrame.MinimumDesiredHeight" Value="{Binding $parent[controls:Calendar].EffectiveFullCellMinHeight}" />
                 <Setter Property="Padding" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellPadding)}" />
             </Style>
             <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_Value">

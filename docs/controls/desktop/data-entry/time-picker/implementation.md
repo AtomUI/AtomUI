@@ -116,6 +116,10 @@ Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完
 
 - presenter 应在 TimeView part 可用后按 `constraints -> effective selection -> display anchor -> button state` 的顺序回放状态。模板重套用、运行时切换 `ClockIdentifier`、增量变化和受控值变化都必须进入同一同步入口。
 
+`TimePickerPresenter` 在独立挂载时使用 `TimePicker` 的默认身份，避免沿用 `Window` 等容器的身份而丢失时间行高。
+由选择器显示时，弹层继续使用 `TimePicker` 或 `RangeTimePicker` 转发的身份。面板需要补齐的主题输入共用一个资源监听，
+以 Style 优先级提供给 `TimeView`，离树时释放。
+
 弹层 Semantic Part 组装与生命周期：
 
 - 弹层内容由 owner `CreatePickerPresenter()` 在首次打开时运行时创建并经 `PickerPresenter` 属性装入 `PART_Popup` 的内容根盒子；presenter / TimeView 主题模板上的 Semantic marker 随模板应用静态存在，`popup.item` marker 由 `DateTimePickerPanel.RefreshItems` 创建 `TimeViewCell` 时注入。弹层关闭不销毁 marker，列表滚动、容器复用、增量变化与弹层重开后 marker 保持；`OnDetachedFromVisualTree` 释放 owned presenter 后，下次打开重建并重新获得同一组 marker。

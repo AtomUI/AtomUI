@@ -217,6 +217,7 @@ internal sealed class DatePanel : TemplatedControl
             _pool.Add(new DateViewerCell());
         }
 
+        var layoutValuesChanged = _cells.Children.Count != model.Cells.Count;
         for (var index = _cells.Children.Count - 1; index >= model.Cells.Count; index--)
         {
             ((DateViewerCell)_cells.Children[index]).Unbind();
@@ -226,6 +227,9 @@ internal sealed class DatePanel : TemplatedControl
         {
             var cell = _pool[index];
             var state = model.Cells[index];
+            var previous = cell.Model;
+            layoutValuesChanged |= previous?.Value != state.Value || previous?.Kind != state.Kind ||
+                                   previous?.Row != state.Row || previous?.Column != state.Column;
             var cellTemplate = state.Kind == DateViewerCellType.Week ? null : CellTemplate;
             var fullCellTemplate = state.Kind == DateViewerCellType.Week ? null : FullCellTemplate;
             var defaultFullCellTemplate = state.Kind == DateViewerCellType.Week ? null : DefaultFullCellTemplate;
@@ -249,6 +253,12 @@ internal sealed class DatePanel : TemplatedControl
             {
                 _cells.Children.Add(cell);
             }
+        }
+
+        if (layoutValuesChanged)
+        {
+            // Reused cells can change dates without changing size. Publish the new values with their arranged bounds.
+            InvalidateArrange();
         }
     }
 

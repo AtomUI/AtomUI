@@ -16,27 +16,12 @@ internal abstract class AbstractColorSlider : RangeBase
 {
     #region 公共属性定义
 
-    internal static readonly StyledProperty<IBrush?> TransparentBgIntervalColorProperty =
-        AvaloniaProperty.Register<AbstractColorSlider, IBrush?>(nameof(TransparentBgIntervalColor));
-
-    internal static readonly StyledProperty<double> TransparentBgSizeProperty =
-        AvaloniaProperty.Register<AbstractColorSlider, double>(nameof(TransparentBgSize), 4.0);
-
-    internal IBrush? TransparentBgIntervalColor
-    {
-        get => GetValue(TransparentBgIntervalColorProperty);
-        set => SetValue(TransparentBgIntervalColorProperty, value);
-    }
-
-    internal double TransparentBgSize
-    {
-        get => GetValue(TransparentBgSizeProperty);
-        set => SetValue(TransparentBgSizeProperty, value);
-    }
-
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<IBrush?> TransparentBgIntervalColorProperty =
+        AvaloniaProperty.Register<AbstractColorSlider, IBrush?>(nameof(TransparentBgIntervalColor));
 
     internal static readonly DirectProperty<AbstractColorSlider, IBrush?> TransparentBgBrushProperty =
         AvaloniaProperty.RegisterDirect<AbstractColorSlider, IBrush?>(
@@ -49,6 +34,12 @@ internal abstract class AbstractColorSlider : RangeBase
             nameof(ThumbSize),
             o => o.ThumbSize,
             (o, v) => o.ThumbSize = v);
+
+    internal IBrush? TransparentBgIntervalColor
+    {
+        get => GetValue(TransparentBgIntervalColorProperty);
+        set => SetValue(TransparentBgIntervalColorProperty, value);
+    }
 
     private IBrush? _transparentBgBrush;
 
@@ -127,16 +118,11 @@ internal abstract class AbstractColorSlider : RangeBase
     {
         base.OnPropertyChanged(change);
 
-        if (this.IsAttachedToVisualTree())
+        if (this.IsAttachedToVisualTree() &&
+            (change.Property == TransparentBgIntervalColorProperty ||
+             change.Property == ColorPickerThemeInputs.ThemeTransparentBgSizeProperty))
         {
-            if (change.Property == TransparentBgIntervalColorProperty ||
-                change.Property == TransparentBgSizeProperty)
-            {
-                if (TransparentBgIntervalColor != null && TransparentBgIntervalColor is ISolidColorBrush solidColorBrush)
-                {
-                    TransparentBgBrush = TransparentBgBrushUtils.Build(TransparentBgSize, solidColorBrush.Color);
-                }
-            }
+            UpdateTransparentBgBrush();
         }
     }
 
@@ -145,9 +131,15 @@ internal abstract class AbstractColorSlider : RangeBase
         base.OnApplyTemplate(e);
         _pointerMovedDispose?.Dispose();
         _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
-        if (TransparentBgIntervalColor != null && TransparentBgIntervalColor is ISolidColorBrush solidColorBrush)
+        UpdateTransparentBgBrush();
+    }
+
+    private void UpdateTransparentBgBrush()
+    {
+        if (TransparentBgIntervalColor is ISolidColorBrush interval)
         {
-            TransparentBgBrush = TransparentBgBrushUtils.Build(TransparentBgSize, solidColorBrush.Color);
+            TransparentBgBrush = TransparentBgBrushUtils.Build(
+                ColorPickerThemeInputs.GetThemeTransparentBgSize(this), interval.Color);
         }
     }
 

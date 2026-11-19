@@ -23,9 +23,6 @@ internal sealed class ColorPickerThemeInputs
     public static readonly AttachedProperty<double> ThemeColorPickerHandlerSizeProperty =
         AvaloniaProperty.RegisterAttached<ColorPickerThemeInputs, StyledElement, double>("ThemeColorPickerHandlerSize", inherits: true);
 
-    public static readonly AttachedProperty<double> ThemeColorPickerHandlerSizeSMProperty =
-        AvaloniaProperty.RegisterAttached<ColorPickerThemeInputs, StyledElement, double>("ThemeColorPickerHandlerSizeSM", inherits: true);
-
     public static readonly AttachedProperty<IBrush?> ThemeColorPickerHandlerLightColorProperty =
         AvaloniaProperty.RegisterAttached<ColorPickerThemeInputs, StyledElement, IBrush?>("ThemeColorPickerHandlerLightColor", inherits: true);
 
@@ -102,8 +99,6 @@ internal sealed class ColorPickerThemeInputs
     public static void SetThemeColorPickerHandlerSizeLG(StyledElement element, double value) => element.SetValue(ThemeColorPickerHandlerSizeLGProperty, value);
     public static double GetThemeColorPickerHandlerSize(StyledElement element) => element.GetValue(ThemeColorPickerHandlerSizeProperty);
     public static void SetThemeColorPickerHandlerSize(StyledElement element, double value) => element.SetValue(ThemeColorPickerHandlerSizeProperty, value);
-    public static double GetThemeColorPickerHandlerSizeSM(StyledElement element) => element.GetValue(ThemeColorPickerHandlerSizeSMProperty);
-    public static void SetThemeColorPickerHandlerSizeSM(StyledElement element, double value) => element.SetValue(ThemeColorPickerHandlerSizeSMProperty, value);
     public static IBrush? GetThemeColorPickerHandlerLightColor(StyledElement element) => element.GetValue(ThemeColorPickerHandlerLightColorProperty);
     public static void SetThemeColorPickerHandlerLightColor(StyledElement element, IBrush? value) => element.SetValue(ThemeColorPickerHandlerLightColorProperty, value);
     public static IBrush? GetThemeColorPickerHandlerDarkColor(StyledElement element) => element.GetValue(ThemeColorPickerHandlerDarkColorProperty);

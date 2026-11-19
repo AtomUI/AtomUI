@@ -9,7 +9,8 @@ public partial class ColorPickerFamilyEffectTests
     private static readonly InputFamilyEffectTests.OwnerReadList[] s_parts =
     [
         new(ThemeRoot + "AbstractColorPickerTheme.axaml", ["BorderRadius", "BorderRadiusLG", "BorderRadiusSM", "BorderThickness", "ColorBgContainerDisabled", "ColorBgElevated", "ColorBorder", "ColorError", "ColorPrimaryHover", "ColorText", "ColorTextDisabled", "ColorWarning", "ControlHeightXS", "EnableMotion", "FontSize", "FontSizeLG", "FontSizeSM", "UniformlyMarginXXS"]),
-        new(ThemeRoot + "ColorBlockTheme.axaml", ["BorderRadius", "BorderRadiusSM", "BorderRadiusXS", "BorderThickness", "ColorBorder", "ColorError", "ColorFillSecondary", "ControlHeight", "ControlHeightSM", "ControlHeightXS", "LineWidthBold"]),
+        new(ThemeRoot + "ColorBlockTheme.axaml", ["BorderRadius", "BorderRadiusSM", "BorderRadiusXS", "BorderThickness", "ColorBorder", "ColorError", "ColorFillSecondary", "ControlHeight", "ControlHeightSM", "ControlHeightXS", "LineWidthBold"],
+            "src/AtomUI.Desktop.Controls.ColorPicker/ColorBlock.cs"),
         new(ThemeRoot + "ColorPickerPaletteGroupTheme.axaml", ["SpacingXXS"]),
         new(ThemeRoot + "PaletteColorItemTheme.axaml", ["BorderRadiusSM", "BorderThickness", "ColorFill", "ColorTextSecondary", "ColorWhite", "LineWidth"]),
         new(ThemeRoot + "ColorView/AbstractColorPickerViewTheme.axaml", ["ColorBorderSecondary", "EnableMotion", "PaddingXXS", "SpacingSM", "SpacingXS"]),
@@ -34,7 +35,8 @@ public partial class ColorPickerFamilyEffectTests
             .ShouldBe(s_parts.Select(part => part.Theme).Order());
         foreach (var part in s_parts.Append(InputFamilyEffectTests.s_textBox))
         {
-            ThemeOwnerReads.Read(part.Theme).Order().ShouldBe(part.Tokens.Order(), part.Theme);
+            ThemeOwnerReads.Read(part.Theme).Union(ThemeOwnerReads.ReadCode(part.Code)).Order()
+                           .ShouldBe(part.Tokens.Order(), part.Theme);
         }
     }
 

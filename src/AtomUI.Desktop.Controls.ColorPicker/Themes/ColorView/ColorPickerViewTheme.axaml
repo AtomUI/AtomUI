@@ -10,7 +10,6 @@
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow" Value="{atom:ColorPickerViewTokenResource ColorPickerInsetShadow}" />
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSizeLG}" />
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeSM" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSizeSM}" />
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerLightColor}" />
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerDarkColor}" />
         <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerSliderSize" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderSize}" />

@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Theme.Resources;
@@ -6,6 +7,7 @@ using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using ReactiveUI;
@@ -474,10 +476,14 @@ public sealed class GalleryShellView : UserControl, IDisposable
             Padding         = new Thickness(16, 12),
             Child           = footerLayout
         };
-        _themeBindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(footer, Border.BorderThicknessProperty,
-            SharedTokenKind.LineWidth, converter: value => value is double lineWidth
-                ? new Thickness(0, lineWidth, 0, 0) : AvaloniaProperty.UnsetValue));
-        BindToken(footer, Border.BorderBrushProperty, SharedTokenKind.ColorBorderSecondary);
+        // The shell constructs this Border in code, so its two defaults share one footer-local resource observer.
+        var footerTokens = new OwnerTokenPropertyBindings(footer, 2, BindingPriority.Template);
+        _themeBindings.Add(footerTokens);
+        var borderThickness = footerTokens.Observe(0, SharedTokenKind.LineWidth)
+            .Select(static value => value is double lineWidth
+                ? (object)new Thickness(0, lineWidth, 0, 0) : AvaloniaProperty.UnsetValue);
+        _themeBindings.Add(footer.Bind(Border.BorderThicknessProperty, borderThickness, BindingPriority.Template));
+        footerTokens.Bind(1, Border.BorderBrushProperty, SharedTokenKind.ColorBorderSecondary);
         return footer;
     }
 

@@ -1,77 +1,83 @@
-using System.Reactive.Disposables;
+using System.Diagnostics.CodeAnalysis;
 using AtomUI.Controls;
-using AtomUI.Data;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace AtomUI.Toolkits.GalleryBase.Shell;
 
 internal sealed class GalleryMediaBreakPointResolver : IDisposable
 {
-    private static readonly AttachedProperty<int> ScreenXXXLMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXXXLMin");
-    private static readonly AttachedProperty<int> ScreenXXLMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXXLMin");
-    private static readonly AttachedProperty<int> ScreenXLMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenXLMin");
-    private static readonly AttachedProperty<int> ScreenLGMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenLGMin");
-    private static readonly AttachedProperty<int> ScreenMDMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenMDMin");
-    private static readonly AttachedProperty<int> ScreenSMMinProperty =
-        AvaloniaProperty.RegisterAttached<GalleryBrowserShellView, Control, int>("ScreenSMMin");
-
-    private static readonly (AttachedProperty<int> Property, SharedTokenKind Token, MediaBreakPoint BreakPoint)[] s_thresholds =
+    private static readonly (object Key, MediaBreakPoint BreakPoint)[] s_thresholds =
     [
-        (ScreenXXXLMinProperty, SharedTokenKind.ScreenXXXLMin, MediaBreakPoint.ExtraExtraExtraLarge),
-        (ScreenXXLMinProperty, SharedTokenKind.ScreenXXLMin, MediaBreakPoint.ExtraExtraLarge),
-        (ScreenXLMinProperty, SharedTokenKind.ScreenXLMin, MediaBreakPoint.ExtraLarge),
-        (ScreenLGMinProperty, SharedTokenKind.ScreenLGMin, MediaBreakPoint.Large),
-        (ScreenMDMinProperty, SharedTokenKind.ScreenMDMin, MediaBreakPoint.Medium),
-        (ScreenSMMinProperty, SharedTokenKind.ScreenSMMin, MediaBreakPoint.Small)
+        (SharedTokenKind.ScreenXXXLMin, MediaBreakPoint.ExtraExtraExtraLarge),
+        (SharedTokenKind.ScreenXXLMin, MediaBreakPoint.ExtraExtraLarge),
+        (SharedTokenKind.ScreenXLMin, MediaBreakPoint.ExtraLarge),
+        (SharedTokenKind.ScreenLGMin, MediaBreakPoint.Large),
+        (SharedTokenKind.ScreenMDMin, MediaBreakPoint.Medium),
+        (SharedTokenKind.ScreenSMMin, MediaBreakPoint.Small)
     ];
-    private readonly Control _host;
+
     private readonly Action _changed;
-    private readonly CompositeDisposable _bindings = new();
+    private readonly OwnerTokenSet _resources;
+    private readonly int[] _widths = new int[s_thresholds.Length];
 
     internal GalleryMediaBreakPointResolver(Control host, Action changed)
     {
-        _host = host;
         _changed = changed;
-        // These runtime-created shell hosts have no ControlTheme/template. Binding the
-        // properties on the real host preserves its local scope and resource lifecycle.
-        foreach (var threshold in s_thresholds)
+        // A publish can cross more than one breakpoint as the thresholds update. Preserve the original order
+        // of the public events by reporting each changed threshold in the same order as the original bindings.
+        _resources = new OwnerTokenSet(host, s_thresholds.Length, HandleThresholdChanged);
+        try
         {
-            _bindings.Add(TokenResourceBinder.CreateGlobalTokenBinding(host, threshold.Property, threshold.Token));
+            for (var i = 0; i < s_thresholds.Length; i++)
+            {
+                _resources.SetResourceKey(i, s_thresholds[i].Key);
+                _widths[i] = ReadWidth(_resources.GetValue(i), 0);
+            }
         }
-        host.PropertyChanged += HandlePropertyChanged;
+        catch
+        {
+            _resources.Dispose();
+            throw;
+        }
     }
 
     internal MediaBreakPoint Resolve(double width)
     {
-        foreach (var threshold in s_thresholds)
+        for (var i = 0; i < s_thresholds.Length; i++)
         {
-            if (width >= _host.GetValue(threshold.Property))
+            if (width >= _widths[i])
             {
-                return threshold.BreakPoint;
+                return s_thresholds[i].BreakPoint;
             }
         }
         return MediaBreakPoint.ExtraSmall;
     }
 
-    public void Dispose()
-    {
-        _host.PropertyChanged -= HandlePropertyChanged;
-        _bindings.Dispose();
-    }
+    public void Dispose() => _resources.Dispose();
 
-    private void HandlePropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    private void HandleThresholdChanged(int index, object? previous, object? value)
     {
-        if (s_thresholds.Any(item => item.Property == change.Property))
+        var width = ReadWidth(value, _widths[index]);
+        if (_widths[index] != width)
         {
+            _widths[index] = width;
             _changed();
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Screen tokens are integers. Local resources retain the same implicit conversion used by the previous Avalonia int property bindings.")]
+    private static int ReadWidth(object? value, int current)
+    {
+        if (value is int width)
+        {
+            return width;
+        }
+        return ReferenceEquals(value, BindingOperations.DoNothing)
+            ? current
+            : BindingValue<int>.FromUntyped(value ?? AvaloniaProperty.UnsetValue).GetValueOrDefault();
+    }
 }

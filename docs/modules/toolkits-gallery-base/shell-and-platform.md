@@ -28,6 +28,9 @@ GalleryShell
 
 `GalleryShellView` 负责 Sidebar、BrandArea、FooterLinks、VersionTag、`RoutedViewHost` 和导航/内容分隔线。Shell 不负责 Demo 页面内部布局。ShowCase 页面继续使用 `GalleryStickyTabsHost`、`ShowCasePanel` 和 `ShowCaseItem`。
 
+Sidebar 页脚在自己的资源作用域内，共用一组监听读取 `LineWidth` 和 `ColorBorderSecondary`。线宽转换成仅上边有效的 `Thickness`，
+两个输出使用 Template 优先级，随 `GalleryShellView.Dispose()` 释放。
+
 ### 可折叠 Sidebar
 
 GalleryBase 通过显式 NavMenu host 契约为产品导航视图提供可选的 Sidebar 折叠能力：

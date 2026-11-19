@@ -1,8 +1,12 @@
+using System.Globalization;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -26,15 +30,8 @@ public partial class TreeView
             o => o.DragIndicatorRenderInfo,
             (o, v) => o.DragIndicatorRenderInfo = v);
 
-    internal static readonly DirectProperty<TreeView, double> DragIndicatorLineWidthProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, double>(nameof(DragIndicatorLineWidth),
-            o => o.DragIndicatorLineWidth,
-            (o, v) => o.DragIndicatorLineWidth = v);
-
-    internal static readonly DirectProperty<TreeView, IBrush?> DragIndicatorBrushProperty =
-        AvaloniaProperty.RegisterDirect<TreeView, IBrush?>(nameof(DragIndicatorBrush),
-            o => o.DragIndicatorBrush,
-            (o, v) => o.DragIndicatorBrush = v);
+    internal static readonly StyledProperty<bool> UseDragIndicatorTokenResourcesProperty =
+        AvaloniaProperty.Register<TreeView, bool>(nameof(UseDragIndicatorTokenResources));
 
     private DragIndicatorRenderInfo? _dragIndicatorRenderInfo;
 
@@ -49,23 +46,19 @@ public partial class TreeView
     internal bool IsDragging
     {
         get => _isDragging;
-        set => SetAndRaise(IsDraggingProperty, ref _isDragging, value);
+        set
+        {
+            if (SetAndRaise(IsDraggingProperty, ref _isDragging, value))
+            {
+                UpdateDragIndicatorTokenSubscription();
+            }
+        }
     }
 
-    private double _dragIndicatorLineWidth;
-
-    internal double DragIndicatorLineWidth
+    internal bool UseDragIndicatorTokenResources
     {
-        get => _dragIndicatorLineWidth;
-        set => SetAndRaise(DragIndicatorLineWidthProperty, ref _dragIndicatorLineWidth, value);
-    }
-
-    private IBrush? _dragIndicatorBrush;
-
-    internal IBrush? DragIndicatorBrush
-    {
-        get => _dragIndicatorBrush;
-        set => SetAndRaise(DragIndicatorBrushProperty, ref _dragIndicatorBrush, value);
+        get => GetValue(UseDragIndicatorTokenResourcesProperty);
+        set => SetValue(UseDragIndicatorTokenResourcesProperty, value);
     }
     
     #endregion
@@ -76,6 +69,9 @@ public partial class TreeView
     private TreeViewItem? _currentDragOver; // 这个不是目标节点，有可能是在父节点上拖动
     private TreeViewItem? _dropTargetNode; // 目标释放节点
     private DropTargetInfo? _dropTargetInfo;
+    private OwnerTokenSet? _dragIndicatorTokens;
+    private double _dragIndicatorLineWidth;
+    private IBrush? _dragIndicatorBrush;
     private Pen? _dragIndicatorPen;
     private IBrush? _dragIndicatorPenBrush;
     private double _dragIndicatorPenLineWidth;
@@ -83,15 +79,71 @@ public partial class TreeView
     private static void ConfigureDragAndDrop()
     {
         AffectsRender<TreeView>(DragIndicatorRenderInfoProperty,
-            DragIndicatorBrushProperty,
-            DragIndicatorLineWidthProperty,
             UseLayoutRoundingProperty,
             NodeHoverModeProperty);
 
+        UseDragIndicatorTokenResourcesProperty.Changed.AddClassHandler<TreeView>(
+            (tree, _) => tree.UpdateDragIndicatorTokenSubscription());
         NodeSwitcherButton.NodeLoadRequestEvent.AddClassHandler<TreeView>((tree, args) =>
         {
             tree.HandleNodeLoadRequest(args.ViewItem);
         });
+    }
+
+    internal virtual object DragIndicatorLineWidthKey => TreeViewTokenKind.DragIndicatorLineWidth;
+
+    private void UpdateDragIndicatorTokenSubscription()
+    {
+        if (IsDragging && UseDragIndicatorTokenResources)
+        {
+            if (_dragIndicatorTokens is null)
+            {
+                _dragIndicatorTokens = new OwnerTokenSet(this, 2, RefreshDragIndicatorPaint);
+                _dragIndicatorTokens.SetResourceKey(0, DragIndicatorLineWidthKey);
+                _dragIndicatorTokens.SetKind(1, SharedTokenKind.ColorPrimary);
+                RefreshDragIndicatorPaint();
+            }
+        }
+        else if (_dragIndicatorTokens is not null)
+        {
+            _dragIndicatorTokens.Dispose();
+            _dragIndicatorTokens = null;
+            RefreshDragIndicatorPaint();
+        }
+    }
+
+    private void RefreshDragIndicatorPaint()
+    {
+        var width = _dragIndicatorTokens?.GetValue(0);
+        var brush = _dragIndicatorTokens?.GetValue(1);
+        _dragIndicatorLineWidth = ReadDragIndicatorWidth(width);
+        if (!ReferenceEquals(brush, BindingOperations.DoNothing))
+        {
+            _dragIndicatorBrush = brush as IBrush;
+        }
+        _dragIndicatorPen = null;
+        _dragIndicatorPenBrush = null;
+        InvalidateVisual();
+    }
+
+    private double ReadDragIndicatorWidth(object? value)
+    {
+        if (value is double width)
+        {
+            return width;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return _dragIndicatorLineWidth;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
     }
     
     // 自己优先的查找，用于确认拖动发生的节点
@@ -382,10 +434,10 @@ public partial class TreeView
         var   offsetY                   = position.Y;
         Point startPoint                = default;
         Point endPoint                  = default;
-        var   offsetYDelta              = DragIndicatorLineWidth / 2;
+        var   offsetYDelta              = _dragIndicatorLineWidth / 2;
 
-        var minOffsetY = DragIndicatorLineWidth / 2;
-        var maxOffsetY = Bounds.Height - DragIndicatorLineWidth / 2;
+        var minOffsetY = offsetYDelta;
+        var maxOffsetY = Bounds.Height - offsetYDelta;
 
         var effectiveIndex = 0;
         if (effectiveDropTarget.Parent is TreeViewItem parentItem)
@@ -657,14 +709,14 @@ public partial class TreeView
 
     private Pen GetDragIndicatorPen()
     {
-        var dragIndicatorLineWidth = BorderUtils.BuildRenderScaleAwareThickness(this, DragIndicatorLineWidth);
+        var dragIndicatorLineWidth = BorderUtils.BuildRenderScaleAwareThickness(this, _dragIndicatorLineWidth);
         if (_dragIndicatorPen is null ||
-            !ReferenceEquals(_dragIndicatorPenBrush, DragIndicatorBrush) ||
+            !ReferenceEquals(_dragIndicatorPenBrush, _dragIndicatorBrush) ||
             !MathUtils.AreClose(_dragIndicatorPenLineWidth, dragIndicatorLineWidth))
         {
-            _dragIndicatorPenBrush     = DragIndicatorBrush;
+            _dragIndicatorPenBrush     = _dragIndicatorBrush;
             _dragIndicatorPenLineWidth = dragIndicatorLineWidth;
-            _dragIndicatorPen          = new Pen(DragIndicatorBrush, dragIndicatorLineWidth);
+            _dragIndicatorPen          = new Pen(_dragIndicatorBrush, dragIndicatorLineWidth);
         }
 
         return _dragIndicatorPen;

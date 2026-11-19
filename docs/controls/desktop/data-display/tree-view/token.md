@@ -64,7 +64,7 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 
 - `DragIndicatorLineWidth`
 
-`DragIndicatorLineWidth` 控制 drop indicator 线宽。拖拽指示线颜色当前来自 `SharedToken.ColorPrimary`，由 TreeView Theme 绑定到 internal drag indicator brush。
+`DragIndicatorLineWidth` 控制拖拽插入线的宽度。拖动开始时，树通过 `OwnerTokenSet` 读取当前终端的线宽与宿主的 `SharedToken.ColorPrimary`，拖动结束时释放观察。预览背景在被拖动行所属的树内解析 `NodeHoverBg`。
 
 拖拽位置、目标节点和 indicator 坐标属于运行时状态，不进入 Token。
 

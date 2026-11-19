@@ -57,10 +57,5 @@ internal partial class TreeViewItemHeader
     public static IBrush? GetThemeFilterHighlightColor(StyledElement element) => element.GetValue(ThemeFilterHighlightColorProperty);
     public static void SetThemeFilterHighlightColor(StyledElement element, IBrush? value) => element.SetValue(ThemeFilterHighlightColorProperty, value);
 
-    public static readonly AttachedProperty<double> ThemeDragIndicatorLineWidthProperty =
-        AvaloniaProperty.RegisterAttached<TreeViewItemHeader, StyledElement, double>("ThemeDragIndicatorLineWidth", inherits: true);
-    public static double GetThemeDragIndicatorLineWidth(StyledElement element) => element.GetValue(ThemeDragIndicatorLineWidthProperty);
-    public static void SetThemeDragIndicatorLineWidth(StyledElement element, double value) => element.SetValue(ThemeDragIndicatorLineWidthProperty, value);
-
     #endregion
 }

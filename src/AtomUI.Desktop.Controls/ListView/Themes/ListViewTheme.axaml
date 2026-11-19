@@ -15,9 +15,13 @@
         <Setter Property="atom:GroupHeaderItem.ThemeItemBgColor" Value="{atom:ListViewTokenResource ItemBgColor}" />
         <Setter Property="atom:GroupHeaderItem.ThemeItemHoverBgColor" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
         <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedBgColor" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemPaddingSM" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
         <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPadding}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemPaddingLG" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+        </Style>
         <Setter Property="atom:GroupHeaderItem.ThemeItemMargin" Value="{atom:ListViewTokenResource ItemMargin}" />
         <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderColor" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
         <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderPadding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />

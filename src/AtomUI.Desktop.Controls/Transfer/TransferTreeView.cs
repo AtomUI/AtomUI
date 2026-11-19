@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,6 +13,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorProvider
 {
+    internal override object DragIndicatorLineWidthKey => TransferTreeViewTokenKind.DragIndicatorLineWidth;
+
     #region 公共属性定义
     public static readonly DirectProperty<TransferTreeView, IList<EntityKey>?> SelectedKeysProperty =
         AvaloniaProperty.RegisterDirect<TransferTreeView, IList<EntityKey>?>(nameof(SelectedKeys), 

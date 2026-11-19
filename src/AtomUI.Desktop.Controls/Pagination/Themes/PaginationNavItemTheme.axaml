@@ -151,8 +151,8 @@
             <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSizeSM)}" />
-            <Setter Property="MinWidth" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSizeSM)}" />
+            <Setter Property="Height" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
+            <Setter Property="MinWidth" Value="{Binding $self.(atom:PaginationNavItem.ThemeItemSize)}" />
             <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSizeSM}" />
         </Style>
 

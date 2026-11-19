@@ -67,6 +67,8 @@ Transfer 的控件专项模型通过 Theme 消费 Token：
 `TransferListItem` / `TransferTreeViewItem` 对 Token owner 透明，继承实际 TransferListView / TransferTreeView 的全局与动效。
 TransferListView、TransferTreeView 使用自己的 Own，复用真实列表/树展示计算；ListView/TreeView 的来源覆盖不进入 Transfer 视图。分组专用 GroupHeaderPadding 和图标式 SelectedIndicatorMargin 只被原 ListView 模板消费，不添加给使用 CheckBox 的 Transfer 模板。
 
+TransferTreeView 的拖拽线宽与拖拽预览背景分别使用自身的 `DragIndicatorLineWidth`、`NodeHoverBg`，跟随被拖动行所属的树。
+
 `TreeTransfer.ListWidthLG` 为 Reserved：树穿梭视图不支持分页，没有可达的分页加宽状态。字段与默认值保留以维持配置兼容；
 普通宽度使用 `TreeTransfer.ListWidth`。`ListTransfer.ListWidthLG` 仍用于分页列表。
 

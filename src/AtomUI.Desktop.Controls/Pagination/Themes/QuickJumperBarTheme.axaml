@@ -23,7 +23,7 @@
         <Setter Property="PageText" Value="{atom:PaginationLangResource PageText}"/>
         
         <Style Selector="^ /template/ StackPanel#PART_RootLayout">
-            <Setter Property="Spacing" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationLayoutSpacing)}"/>
+            <Setter Property="Spacing" Value="{Binding $self.(atom:PaginationNavItem.ThemeQuickJumperSpacing)}"/>
         </Style>
         
         <Style Selector="^ /template/ atom|LineEdit#PART_PageLineEdit">
@@ -31,7 +31,7 @@
         </Style>
 
         <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_PageLineEdit">
-            <Setter Property="Width" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationMiniQuickJumperInputWidth)}"/>
+            <Setter Property="Width" Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationQuickJumperInputWidth)}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -68,19 +68,20 @@
                     Value="{Binding $self.(atom:GroupHeaderItem.ThemeSelectedIndicatorMargin)}" />
         </Style>
 
+        <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Small], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPadding)}" />
+        </Style>
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
-            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPaddingLG)}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
-            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPadding)}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
-            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPaddingSM)}" />
         </Style>
 
         <Style Selector="^:disabled">

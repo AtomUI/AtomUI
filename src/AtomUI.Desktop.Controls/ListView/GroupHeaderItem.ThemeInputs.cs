@@ -56,23 +56,11 @@ internal partial class GroupHeaderItem
     public static IBrush? GetThemeItemSelectedBgColor(StyledElement element) => element.GetValue(ThemeItemSelectedBgColorProperty);
     public static void SetThemeItemSelectedBgColor(StyledElement element, IBrush? value) => element.SetValue(ThemeItemSelectedBgColorProperty, value);
 
-    public static readonly AttachedProperty<Thickness> ThemeItemPaddingSMProperty =
-        AvaloniaProperty.RegisterAttached<GroupHeaderItem, StyledElement, Thickness>("ThemeItemPaddingSM", inherits: true);
-
-    public static Thickness GetThemeItemPaddingSM(StyledElement element) => element.GetValue(ThemeItemPaddingSMProperty);
-    public static void SetThemeItemPaddingSM(StyledElement element, Thickness value) => element.SetValue(ThemeItemPaddingSMProperty, value);
-
     public static readonly AttachedProperty<Thickness> ThemeItemPaddingProperty =
         AvaloniaProperty.RegisterAttached<GroupHeaderItem, StyledElement, Thickness>("ThemeItemPadding", inherits: true);
 
     public static Thickness GetThemeItemPadding(StyledElement element) => element.GetValue(ThemeItemPaddingProperty);
     public static void SetThemeItemPadding(StyledElement element, Thickness value) => element.SetValue(ThemeItemPaddingProperty, value);
-
-    public static readonly AttachedProperty<Thickness> ThemeItemPaddingLGProperty =
-        AvaloniaProperty.RegisterAttached<GroupHeaderItem, StyledElement, Thickness>("ThemeItemPaddingLG", inherits: true);
-
-    public static Thickness GetThemeItemPaddingLG(StyledElement element) => element.GetValue(ThemeItemPaddingLGProperty);
-    public static void SetThemeItemPaddingLG(StyledElement element, Thickness value) => element.SetValue(ThemeItemPaddingLGProperty, value);
 
     public static readonly AttachedProperty<Thickness> ThemeItemMarginProperty =
         AvaloniaProperty.RegisterAttached<GroupHeaderItem, StyledElement, Thickness>("ThemeItemMargin", inherits: true);

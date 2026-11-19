@@ -40,6 +40,8 @@ internal sealed record ShadcnStyle(
     double ButtonRadiusLG,
     double InputRadius,
     double CheckBoxRadius,
+    double ProgressHeight,
+    double ProgressRadius,
     double PaddingX,
     double PaddingXSM,
     double PaddingXLG,
@@ -66,7 +68,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Nova { get; } = new(
         "Nova",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 10, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 10, CheckBoxRadius: 4,
+        ButtonRadius: 10, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 10, CheckBoxRadius: 4, ProgressHeight: 4, ProgressRadius: 100,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -84,7 +86,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Vega { get; } = new(
         "Vega",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 8, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 8, CheckBoxRadius: 4,
+        ButtonRadius: 8, ButtonRadiusSM: 8, ButtonRadiusLG: 8, InputRadius: 8, CheckBoxRadius: 4, ProgressHeight: 6, ProgressRadius: 100,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -102,7 +104,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Maia { get; } = new(
         "Maia",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 26, CheckBoxRadius: 6,
+        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 26, CheckBoxRadius: 6, ProgressHeight: 12, ProgressRadius: 26,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -120,7 +122,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Lyra { get; } = new(
         "Lyra",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0, CheckBoxRadius: 0,
+        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0, CheckBoxRadius: 0, ProgressHeight: 4, ProgressRadius: 0,
         PaddingX: 10, PaddingXSM: 8, PaddingXLG: 12,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.Medium,
@@ -138,7 +140,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Mira { get; } = new(
         "Mira",
         ControlHeight: 28, ControlHeightSM: 24, ControlHeightLG: 32, ControlHeightXS: 20,
-        ButtonRadius: 8, ButtonRadiusSM: 6, ButtonRadiusLG: 8, InputRadius: 8, CheckBoxRadius: 4,
+        ButtonRadius: 8, ButtonRadiusSM: 6, ButtonRadiusLG: 8, InputRadius: 8, CheckBoxRadius: 4, ProgressHeight: 4, ProgressRadius: 8,
         PaddingX: 8, PaddingXSM: 8, PaddingXLG: 10,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.Medium,
@@ -156,7 +158,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Luma { get; } = new(
         "Luma",
         ControlHeight: 36, ControlHeightSM: 32, ControlHeightLG: 40, ControlHeightXS: 24,
-        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 22, CheckBoxRadius: 5,
+        ButtonRadius: 26, ButtonRadiusSM: 26, ButtonRadiusLG: 26, InputRadius: 22, CheckBoxRadius: 5, ProgressHeight: 12, ProgressRadius: 100,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,
@@ -174,7 +176,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Sera { get; } = new(
         "Sera",
         ControlHeight: 40, ControlHeightSM: 36, ControlHeightLG: 44, ControlHeightXS: 28,
-        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0, CheckBoxRadius: 0,
+        ButtonRadius: 0, ButtonRadiusSM: 0, ButtonRadiusLG: 0, InputRadius: 0, CheckBoxRadius: 0, ProgressHeight: 2, ProgressRadius: 0,
         PaddingX: 24, PaddingXSM: 16, PaddingXLG: 32,
         FontSize: 12, FontSizeSM: 12,
         ButtonWeight: FontWeight.SemiBold,
@@ -192,7 +194,7 @@ internal static class ShadcnStyles
     public static ShadcnStyle Rhea { get; } = new(
         "Rhea",
         ControlHeight: 32, ControlHeightSM: 28, ControlHeightLG: 36, ControlHeightXS: 24,
-        ButtonRadius: 18, ButtonRadiusSM: 18, ButtonRadiusLG: 18, InputRadius: 18, CheckBoxRadius: 5,
+        ButtonRadius: 18, ButtonRadiusSM: 18, ButtonRadiusLG: 18, InputRadius: 18, CheckBoxRadius: 5, ProgressHeight: 8, ProgressRadius: 18,
         PaddingX: 12, PaddingXSM: 8, PaddingXLG: 16,
         FontSize: 14, FontSizeSM: 12.8,
         ButtonWeight: FontWeight.Medium,

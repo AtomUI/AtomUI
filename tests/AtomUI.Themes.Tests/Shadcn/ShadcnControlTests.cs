@@ -214,6 +214,37 @@ public class ShadcnControlTests
         Contrast(body, background).ShouldBeGreaterThan(Contrast(faint, background), $"{family}/{dark} body");
     }
 
+    /// <summary>
+    /// The line progress of each style (appendix C): one bar height and one radius per style, the indicator on
+    /// --primary and the track on --muted - the antd defaults (info-blue indicator, fill track, 8/6/4 ladder)
+    /// break every neutral style.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData("Nova", 4d, 100d)]
+    [InlineData("Vega", 6d, 100d)]
+    [InlineData("Maia", 12d, 26d)]
+    [InlineData("Lyra", 4d, 0d)]
+    [InlineData("Mira", 4d, 8d)]
+    [InlineData("Luma", 12d, 100d)]
+    [InlineData("Sera", 2d, 0d)]
+    [InlineData("Rhea", 8d, 18d)]
+    public async Task Progress_Follows_The_Style_Height_Radius_And_Palette(string style, double height, double radius)
+    {
+        var snapshot = await ShadcnOverlayTests.Apply(style, "neutral", false);
+        var table = ShadcnAppendix.BaseColors();
+
+        ShadcnOverlayTests.Own<Color>(snapshot, "ProgressBar", "DefaultColor")
+            .ShouldBe(table[("neutral", false, "primary")], $"{style} indicator");
+        ShadcnOverlayTests.Own<Color>(snapshot, "ProgressBar", "RemainingColor")
+            .ShouldBe(table[("neutral", false, "muted")], $"{style} track");
+        ShadcnOverlayTests.Own<double>(snapshot, "ProgressBar", "LineStrokeThickness").ShouldBe(height, style);
+        ShadcnOverlayTests.Own<double>(snapshot, "ProgressBar", "LineStrokeThicknessLG").ShouldBe(height, style);
+        ShadcnOverlayTests.Own<double>(snapshot, "ProgressBar", "LineStrokeThicknessSM").ShouldBe(height, style);
+        var expectedRadius = radius >= 100 ? 100d : radius;
+        ShadcnOverlayTests.Own<CornerRadius>(snapshot, "ProgressBar", "LineBorderRadius")
+            .ShouldBe(new CornerRadius(expectedRadius), style);
+    }
+
     private static double Contrast(Color left, Color right) => Math.Abs(Luminance(left) - Luminance(right));
 
     private static double Luminance(Color color) => (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255d;

@@ -49,6 +49,9 @@
 `--muted` 同为 100 档），会把插画压成单色块。Empty 阶段改按 Ant 的 15%/6%/4%/2% 前景合成重建阶梯，明暗两态
 与任意 Base Color 下方向都正确。
 
+`ProgressBar` 线形进度条（控件级覆写）：指示条 `--primary`、轨道 `--muted`；高度/圆角按附录 C 每风格单值
+（Lyra/Sera 直角，Maia/Rhea/Mira 字面圆角被 CSS 半高钳制成胶囊），单高度风格三档厚度阶梯同值。
+
 `CheckBox` 勾选框圆角（控件级覆写）：用附录 C 的专用值（Vega/Nova/Mira 4、Maia 6、Luma/Rhea 5、Lyra/Sera 0），
 不复用按钮圆角阶梯——按钮圆角 26 落在 16px 指示器上会被 CSS 语义钳到半高，整个勾选框变成圆形。
 

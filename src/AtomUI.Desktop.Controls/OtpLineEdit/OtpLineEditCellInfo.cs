@@ -7,20 +7,6 @@ namespace AtomUI.Desktop.Controls;
 
 public sealed class OtpLineEditCellInfo : INotifyPropertyChanged
 {
-    private string? _displayText;
-    private string? _placeholderText;
-    private bool _isActive;
-    private bool _isInputTarget;
-    private bool _isMotionEnabled;
-    private InputControlStatus _effectiveStatus;
-    private CustomizableSizeType _sizeType;
-    private InputControlStyleVariant _styleVariant;
-    private object? _separator;
-    private IDataTemplate? _separatorTemplate;
-    private bool _isSeparatorVisible;
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public string? DisplayText
     {
         get => _displayText;
@@ -86,6 +72,41 @@ public sealed class OtpLineEditCellInfo : INotifyPropertyChanged
         get => _isSeparatorVisible;
         internal set => SetField(ref _isSeparatorVisible, value);
     }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    internal bool JoinsPreviousCell
+    {
+        get => _joinsPreviousCell;
+        set => SetField(ref _joinsPreviousCell, value);
+    }
+
+    internal bool JoinsNextCell
+    {
+        get => _joinsNextCell;
+        set => SetField(ref _joinsNextCell, value);
+    }
+
+    internal int FocusZIndex
+    {
+        get => _focusZIndex;
+        set => SetField(ref _focusZIndex, value);
+    }
+
+    private string? _displayText;
+    private string? _placeholderText;
+    private bool _isActive;
+    private bool _isInputTarget;
+    private bool _isMotionEnabled;
+    private InputControlStatus _effectiveStatus;
+    private CustomizableSizeType _sizeType;
+    private InputControlStyleVariant _styleVariant;
+    private object? _separator;
+    private IDataTemplate? _separatorTemplate;
+    private bool _isSeparatorVisible;
+    private bool _joinsPreviousCell;
+    private bool _joinsNextCell;
+    private int _focusZIndex;
 
     private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {

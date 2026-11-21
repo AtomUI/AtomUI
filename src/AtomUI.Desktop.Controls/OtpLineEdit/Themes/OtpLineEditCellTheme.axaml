@@ -5,6 +5,9 @@
     x:ClassModifier="internal">
     <!-- Underlined cells draw only the bottom edge of the BorderThickness Token. -->
     <atom:BorderThicknessFilterConverter x:Key="OtpCellUnderlineThicknessConverter" Left="False" Top="False" Right="False" />
+    <atom:BorderThicknessFilterConverter x:Key="OtpJoinedBorderThickness" Left="False" />
+    <atom:CornerRadiusFilterConverter x:Key="OtpStartCorners" TopRight="False" BottomRight="False" />
+    <atom:CornerRadiusFilterConverter x:Key="OtpEndCorners" TopLeft="False" BottomLeft="False" />
 
     <ControlTheme x:Key="{x:Type atom:OtpLineEditCell}" TargetType="atom:OtpLineEditCell">
         <ControlTheme.BasedOn>
@@ -13,39 +16,50 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:PixelAlignedBorder
-                    Name="PART_Frame"
-                    Width="{TemplateBinding Width}"
-                    Height="{TemplateBinding Height}"
-                    Padding="{TemplateBinding Padding}"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    BoxShadow="{TemplateBinding BoxShadow}"
-                    BackgroundSizing="InnerBorderEdge">
-                    <Panel>
-                        <ContentPresenter
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        <!--
-                            活动 cell 的输入光标。
-                            显隐由 OtpLineEditCell 依据 IsActive 与内容驱动，
-                            闪烁为标准 1s 步进动画；颜色/高度跟随 cell 字体。
-                        -->
-                        <!-- layout: the caret is 1 px wide, as the text box caret it replaces -->
-                        <Rectangle
-                            Name="PART_Caret"
-                            Width="1"
-                            Height="{Binding FontSize, RelativeSource={RelativeSource TemplatedParent}}"
-                            Fill="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            IsVisible="False" />
-                    </Panel>
-                </atom:PixelAlignedBorder>
+                <Panel>
+                    <atom:PixelAlignedBorder
+                        x:Name="PART_Frame"
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
+                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        BoxShadow="{TemplateBinding BoxShadow}"
+                        BackgroundSizing="InnerBorderEdge">
+                        <Panel>
+                            <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            <!--
+                                活动 cell 的输入光标。
+                                显隐由 OtpLineEditCell 依据 IsActive 与内容驱动，
+                                闪烁为标准 1s 步进动画；颜色/高度跟随 cell 字体。
+                            -->
+                            <!-- layout: the caret is 1 px wide, as the text box caret it replaces -->
+                            <Rectangle
+                                Name="PART_Caret"
+                                Width="1"
+                                Height="{Binding FontSize, RelativeSource={RelativeSource TemplatedParent}}"
+                                Fill="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                IsVisible="False" />
+                        </Panel>
+                    </atom:PixelAlignedBorder>
+                    <!-- Right-align the paint against the start of this cell to cover the previous cell's trailing stroke. -->
+                    <Canvas Width="0" HorizontalAlignment="Left" IsHitTestVisible="False">
+                        <atom:PixelAlignedBorder Name="PART_LeadingSeam"
+                                                 Canvas.Right="0"
+                                                 Width="{CompiledBinding BorderThickness.Right, ElementName=PART_Frame}"
+                                                 Height="{CompiledBinding Bounds.Height, ElementName=PART_Frame}"
+                                                 Background="{TemplateBinding BorderBrush}"
+                                                 IsVisible="False" />
+                    </Canvas>
+                </Panel>
             </ControlTemplate>
         </Setter>
 
@@ -209,6 +223,29 @@
                         Value="{Binding (atom:InputControlFrame).HostBorderBrush, RelativeSource={RelativeSource Self}}" />
             </Style>
 
+        </Style>
+
+        <Style Selector="^.joins-previous[StyleVariant=Outlined] /template/ atom|PixelAlignedBorder#PART_Frame">
+            <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource OtpJoinedBorderThickness}}" />
+        </Style>
+        <Style Selector="^.joins-previous[StyleVariant=Filled] /template/ atom|PixelAlignedBorder#PART_Frame">
+            <Setter Property="BorderThickness" Value="{TemplateBinding BorderThickness, Converter={StaticResource OtpJoinedBorderThickness}}" />
+        </Style>
+        <Style Selector="^.joins-next:not(.joins-previous) /template/ atom|PixelAlignedBorder#PART_Frame">
+            <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource OtpStartCorners}}" />
+        </Style>
+        <Style Selector="^.joins-previous:not(.joins-next) /template/ atom|PixelAlignedBorder#PART_Frame">
+            <Setter Property="CornerRadius" Value="{TemplateBinding CornerRadius, Converter={StaticResource OtpEndCorners}}" />
+        </Style>
+        <Style Selector="^.joins-previous.joins-next /template/ atom|PixelAlignedBorder#PART_Frame">
+            <Setter Property="CornerRadius" Value="0" />
+        </Style>
+        <Style Selector="^.joins-previous:not(:disabled):not(:host-border-brush)">
+            <Style Selector="^[StyleVariant=Outlined]:pointerover, ^[StyleVariant=Outlined]:pressed, ^[StyleVariant=Outlined][IsActive=True], ^[StyleVariant=Filled]:pressed, ^[StyleVariant=Filled][IsActive=True]">
+                <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeadingSeam">
+                    <Setter Property="IsVisible" Value="True" />
+                </Style>
+            </Style>
         </Style>
 
         <Style Selector="^:cell-active /template/ Rectangle#PART_Caret">

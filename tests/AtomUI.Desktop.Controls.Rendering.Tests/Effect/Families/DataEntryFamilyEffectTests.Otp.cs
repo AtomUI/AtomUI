@@ -72,6 +72,8 @@ public partial class DataEntryFamilyEffectTests
         var firstCell = new EffectOptions { Region = static otp => OtpCellAt(otp, 0) };
         switch (token)
         {
+            case "JoinCells":
+                return new Scenario(static () => new OtpLineEdit { Length = 4, Text = "12" });
             case "CellWidthLG" or "ControlHeightLG" or "FontSizeLG" or "BorderRadiusLG":
                 return new Scenario(static () => CreateOtp(CustomizableSizeType.Large));
             case "CellWidthSM" or "ControlHeightSM" or "FontSizeSM" or "BorderRadiusSM":

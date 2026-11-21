@@ -216,6 +216,15 @@ public partial class OtpLineEdit : AbstractOtpInput,
             nameof(IsFormFeedbackVisible),
             o => o.IsFormFeedbackVisible);
 
+    internal static readonly StyledProperty<bool> JoinCellsProperty =
+        AvaloniaProperty.Register<OtpLineEdit, bool>(nameof(JoinCells));
+
+    internal static readonly StyledProperty<double> CellGapProperty =
+        AvaloniaProperty.Register<OtpLineEdit, double>(nameof(CellGap));
+
+    internal static readonly DirectProperty<OtpLineEdit, double> EffectiveCellGapProperty =
+        AvaloniaProperty.RegisterDirect<OtpLineEdit, double>(nameof(EffectiveCellGap), o => o.EffectiveCellGap);
+
     private readonly AvaloniaList<OtpLineEditCellInfo> _cellItems = [];
 
     internal IReadOnlyList<OtpLineEditCellInfo> CellItems
@@ -245,10 +254,32 @@ public partial class OtpLineEdit : AbstractOtpInput,
         private set => SetAndRaise(IsFormFeedbackVisibleProperty, ref _isFormFeedbackVisible, value);
     }
 
+    internal bool JoinCells
+    {
+        get => GetValue(JoinCellsProperty);
+        set => SetValue(JoinCellsProperty, value);
+    }
+
+    internal double CellGap
+    {
+        get => GetValue(CellGapProperty);
+        set => SetValue(CellGapProperty, value);
+    }
+
+    private double _effectiveCellGap;
+
+    internal double EffectiveCellGap
+    {
+        get => _effectiveCellGap;
+        private set => SetAndRaise(EffectiveCellGapProperty, ref _effectiveCellGap, value);
+    }
+
     #endregion
 
     private IconButton? _clearButton;
     private IDisposable? _feedbackStatusSubscription;
+
+    private bool AreCellsJoined => JoinCells && Separator is null;
 
     static OtpLineEdit()
     {
@@ -287,6 +318,7 @@ public partial class OtpLineEdit : AbstractOtpInput,
             change.Property == PlaceholderTextProperty ||
             change.Property == SeparatorProperty ||
             change.Property == SeparatorTemplateProperty ||
+            change.Property == JoinCellsProperty ||
             change.Property == SizeTypeProperty ||
             change.Property == StyleVariantProperty ||
             change.Property == IsReadOnlyProperty ||
@@ -297,6 +329,11 @@ public partial class OtpLineEdit : AbstractOtpInput,
             change.Property == IsEffectivelyEnabledProperty)
         {
             UpdateCellItems();
+        }
+
+        if (change.Property == CellGapProperty || change.Property == JoinCellsProperty || change.Property == SeparatorProperty)
+        {
+            EffectiveCellGap = AreCellsJoined ? 0 : CellGap;
         }
 
         if (change.Property == TextProperty ||
@@ -402,7 +439,8 @@ public partial class OtpLineEdit : AbstractOtpInput,
 
     private void UpdateCellItems()
     {
-        var text  = Text ?? string.Empty;
+        var text   = Text ?? string.Empty;
+        var joined = AreCellsJoined;
         SyncCellItemCount();
 
         for (var index = 0; index < Length; index++)
@@ -424,6 +462,9 @@ public partial class OtpLineEdit : AbstractOtpInput,
             item.Separator          = CreateSeparatorContent(index);
             item.SeparatorTemplate  = SeparatorTemplate;
             item.IsSeparatorVisible = ShouldShowSeparatorAfter(index);
+            item.JoinsPreviousCell  = joined && index > 0;
+            item.JoinsNextCell      = joined && index < Length - 1;
+            item.FocusZIndex        = joined && item.IsActive ? 1 : 0;
         }
     }
 

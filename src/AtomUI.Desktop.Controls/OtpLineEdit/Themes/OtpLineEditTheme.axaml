@@ -18,9 +18,14 @@
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"
-                                                Spacing="{atom:OtpLineEditTokenResource CellGap}" />
+                                                Spacing="{Binding $parent[atom:OtpLineEdit].EffectiveCellGap}" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerTheme>
+                                <ControlTheme TargetType="ContentPresenter" x:DataType="atom:OtpLineEditCellInfo">
+                                    <Setter Property="ZIndex" Value="{Binding FocusZIndex}" />
+                                </ControlTheme>
+                            </ItemsControl.ItemContainerTheme>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="atom:OtpLineEditCellInfo">
                                     <!-- The separator sits CellGap after its cell, the same gap as between cells (antd columnGap). -->
@@ -30,6 +35,8 @@
                                                 Classes.semantic-scope-cell="True">
                                         <atom:OtpLineEditCell
                                             Classes.semantic-cell="True"
+                                            Classes.joins-previous="{Binding JoinsPreviousCell}"
+                                            Classes.joins-next="{Binding JoinsNextCell}"
                                             Classes.custom-cell-width="{Binding $parent[atom:OtpLineEdit].CellWidth, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             DisplayText="{Binding DisplayText}"
                                             PlaceholderText="{Binding PlaceholderText}"
@@ -102,6 +109,8 @@
         <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="IsMotionEnabled" Value="{atom:OtpLineEditTokenResource EnableMotion}" />
+        <Setter Property="JoinCells" Value="{atom:OtpLineEditTokenResource JoinCells}" />
+        <Setter Property="CellGap" Value="{atom:OtpLineEditTokenResource CellGap}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
     </ControlTheme>
 </ResourceDictionary>

@@ -19,6 +19,9 @@ public sealed partial class OtpLineEditToken : AbstractControlDesignToken
 
     public partial double CellGap { get; set; }
 
+    /// <summary>Joins adjacent cells into one frame when no separator is provided.</summary>
+    public partial bool JoinCells { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);

@@ -34,6 +34,7 @@ SelectToken 不承载以下状态：
 - `OptionSelectedFontWeight`
 - `OptionSelectedBg`
 - `OptionActiveBg`
+- `OptionBackgroundInset`
 - `OptionPadding`
 - `OptionFontSize`
 - `OptionHeight`
@@ -42,9 +43,11 @@ SelectToken 不承载以下状态：
 是候选行内边距。弹层最大高度使用实例 `ItemHeight` 计算，主题默认值来自 `OptionHeight`，因此调整 `OptionHeight` 同时改变
 候选行最小高度和弹层可视行数对应的高度。
 
+`OptionBackgroundInset` 只内缩候选项背景，不改变行高、内容位置或命中区域。Shadcn 在背景上下各保留一个主题线宽。
+
 候选行位于 Popup 的弹层内容中（Popup 是 owner 透明容器，候选行继承 Select 的 owner）；`SelectCandidateListItemTheme` 的全部视觉（前景、
 背景、内边距、行高、禁用色、多选指示器颜色与尺寸）以 `SelectTokenResource` 显式读取 Select 的有效值，
-`Controls[Select]` 的覆盖作用于候选项。ListViewItem 基础主题只提供模板与布局。
+`Controls[Select]` 的覆盖作用于候选项。候选项沿用 ListViewItem 的共享状态和度量。
 
 ### 2.3 输入内容 padding Token
 

@@ -91,12 +91,15 @@ Public API / ItemsSource / Command / Event
 - 宿主保存提交值，`TimePickerPresenter.TempSelectedTime` 保存当前候选；`PreviewTime` 表示悬停，`InputText` 表示正在编辑的原始输入缓冲，三者不能写回竞争宿主 `SelectedTime`。
 - 面板选择先形成完整候选，再通知宿主更新文本；悬停结束恢复候选或输入缓冲。宿主文本投影到原生输入部件时不被解释成用户编辑；输入部件自身的文本变化才解析为候选。无效文本阻止确认，关闭时恢复原提交值。
 - 统一确认入口读取最新候选，结束本次编辑，再以 `SetCurrentValue` 写回并发出确认通知；已有值、显示锚点、Enter、双击确认和 Now 不分别实现提交副本。
+- 弹层页脚的 Now 使用主色链接样式，OK 使用主色实心样式。两者按当前按钮主题提供交互状态反馈。
 - 无需确认的范围选择在端点切换前提交旧端点；关闭在共享基类清除活动端之前完成候选收口。相同端点值也必须开始新的候选会话，外部写入更新活动端的候选。
 - 焦点在输入、列和按钮之间转移不结束编辑；焦点离开整个组合控件才收口。钉住弹层提交后从最新提交值重新开始编辑，生命周期失效释放旧订阅和候选。
 
 ### 循环列的滚动模型
 
 `TimeViewCell` 自身承载最小行高；内部 ContentPresenter 按文字的自然高度测量，再通过 `VerticalContentAlignment=Center` 排列。内部 presenter 不重复绑定格子的 MinHeight，避免将文字拉伸至整行高度而从顶部绘制。
+
+行的透明容器负责整行命中，独立背景层绘制状态高亮。TimePicker 与 RangeTimePicker 的 `ItemBackgroundInset` 只调整该背景层，滚动定位、文字和命中继续使用原来的行尺寸。
 
 时、分、秒列的 ScrollViewer 在主题中使用 `VerticalScrollBarVisibility=Hidden`，只隐藏滚动条，保留滚轮、触控板与键盘滚动。循环序列没有固定首尾，滚动条位置不作为值位置指示；不能将该配置替换为会禁用纵向滚动的 `Disabled`。
 
@@ -231,6 +234,8 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 ### 弹层动效接入约束
 
 TimePicker/RangeTimePicker 继承 InfoPickerInput 配置入口，共享主题提供 Slide 默认并单向传给 PART_Popup。时间候选、确认和滚轮选择仍由 Picker 管理，保持列 viewport、offset、可见滚动条及 IsChangeOnScroll 语义。
+
+RangeTimePicker 的弹层横向对准当前端点，纵向从完整输入框的上下边缘计算 `RangeMarginToAnchor`。向上翻转时使用同一间距。
 
 固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
 具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。

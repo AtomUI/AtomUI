@@ -312,7 +312,7 @@ marker，均属于公共主题契约变更。
   style-class 示例对应的样式定制示例（示例文案不出现 “dom” 字样）：两张 `labelCol=4*` / `wrapperCol=20*` 的
   卡片表单垂直堆叠（一上一下），每张 `MaxWidth="800"` 水平铺满（等宽保证 4\*/20\* 栅格切分出一致的 label
   列宽），共享用户名（`Please enter username!`）、邮箱（`Please enter email!`）与 Submit / reset 按钮组内容；
-  第一张以对象式定制 `label`（`#333333`、`FontWeight=Medium`、右对齐）与 `content`（左内边距 12）；第二张为
+  第一张以对象式定制 `label`（主题 Token `ColorTextSecondary`、`FontWeight=Medium`、右对齐）与 `content`（左内边距 12）；第二张为
   `Filled` 变体，以函数式定制 `root`（`#1677FF` 描边）、`label`（`#1677FF`）与 `content`。root 的背景 /
   描边 / 阴影经 `/template/ Border#Frame` 落到 Form 模板根 Border；其余 Part 经后代 selector
   （`atom|Form.semantic-* <PartType>.semantic-*`）落到模板节点。

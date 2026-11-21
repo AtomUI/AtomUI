@@ -2,6 +2,11 @@
 
 本文档记录 NavMenu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Theme
+  - Shadcn 令展开的 NavMenu 内联子菜单底色透明，并加强普通选中行相对悬浮态的对比。
+
 ## 2026-11-14
 
 - Performance

@@ -108,6 +108,8 @@ DropdownButton 的视觉模型由控件模板、ControlTheme、SharedToken 和�
 
 DropdownButton 当前没有专属 Token 文档；主题通过 SharedToken、关联控件 Token 或继承主题资源表达视觉语义。运行时状态不得写入 Token 模型。
 
+Shadcn 暗色中的 Link 触发按钮使用与 Button 相同的链接色阶，并在 `Controls[DropdownButton]` 作用域内解析普通、悬停和按下颜色。弹出菜单的行和表面使用菜单主题。
+
 主题维护规则：
 
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。

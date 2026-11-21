@@ -102,6 +102,8 @@ SplitButton 的视觉模型由控件模板、ControlTheme、SharedToken 和必�
 
 SplitButton 当前没有专属 Token 文档；主题通过 SharedToken、关联控件 Token 或继承主题资源表达视觉语义。运行时状态不得写入 Token 模型。
 
+Shadcn 实心 SplitButton 在模板中预留 1 DIP 分隔槽，竖线距上下边缘各 1 DIP。正常 Primary 的线色由主色配对的前景派生，Danger 使用危险色细线。Default 通过两段共享的已有描边形成接缝。两段共享按实际高度约束的外侧圆角。危险色填充与已展开触发器分别采用半透明危险色和悬停色。
+
 主题维护规则：
 
 - 不删除或重命名已经稳定的 ControlTheme key、template part、伪类和资源 key。

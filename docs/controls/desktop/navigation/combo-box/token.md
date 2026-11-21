@@ -39,6 +39,8 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 
 ComboBox 成组读取候选行高和 `PopupContentPadding`。实际行高继续随资源变化传给已实现的候选行，弹层高度按更新后的行高和内边距计算。
 
+Shadcn 暗色通过 `ItemSelectedBgColor` 区分已选项和当前悬停候选项。选中行沿用 `ItemSelectedColor` 和既有字重，`ItemHoverBgColor` 与 `ItemSelectedBgColor` 可独立覆盖。
+
 ## 4. 控件家族影响
 
 调整 ComboBox Token 时必须评估以下范围：

@@ -82,10 +82,13 @@ ContainerForItemPreparedOverride
 
 默认状态回放流：
 
+首次布局前，模板化的节点应用当前可解析的默认展开路径。首次布局完成后，控件在呈现之前以静态方式应用可解析的默认选中和勾选路径。加载阶段补齐尚未应用的状态并执行过滤。
+
 ```text
+首次布局完成
+  默认选中和勾选路径，暂停动效
 OnLoaded
-  ConfigureDefaultSelectedPaths
-  ConfigureDefaultCheckedPaths
+  回放尚未应用的默认选中和勾选路径
   FilterTreeNode
   IsDefaultExpandAll ? ExpandAll(false) : ConfigureDefaultExpandedPaths
 ```
@@ -343,7 +346,7 @@ TreeView pointer 流程：
 
 ### 7.2 默认状态回放
 
-默认状态回放按 selected、checked、filter、expanded 的顺序执行。这样选中和勾选可以在过滤和展开之前完成基础状态同步，最后由 `IsDefaultExpandAll` 或 `DefaultExpandedPaths` 决定可见展开结构。
+首帧前的默认路径回放复用选中集合和勾选级联逻辑。可解析的默认选中、勾选依次应用，其余路径由加载回放补齐。过滤和剩余展开状态在加载阶段处理。
 
 ItemsSource 变化时，TreeView 在 Avalonia 清理旧容器之前捕获选中、勾选对象及运行期节点路径。Avalonia 的源重置可能逐项发出临时变化；TreeView 在回放事务中将中间 `SelectionChanged` 标记为已处理，暂缓 `CheckedItemsChanged` 与 Form 值通知。连续换源只回放最后一次源；调用方在换源后显式设置的选择或勾选优先于旧快照。同一事务内，可观察集合的连续增删更新最终路径，内部勾选级联不记录部分状态；显式赋值为普通 `IList` 后的同步修改在回放前重新读取。完成后按对象身份比较原状态与最终状态：未变则不通知，真实变化则分别发布一次包含移除与新增节点的选择或勾选事件；选择变化对应的 Form 值变更只通知一次。多选模式以 `SelectedItems` 路径为恢复权威，避免 `SelectedItem` 非空时折叠成单选；属性处理或回放抛错、控件脱离视觉树时清理事务状态。
 

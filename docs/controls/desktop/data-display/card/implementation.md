@@ -192,7 +192,8 @@ Card 自身不处理 keyboard、focus、pointer capture、drag/drop 或 popup �
 
 交互路径主要由主题和内部控件负责：
 
-- `IsHoverable` 通过 selector 设置 cursor、pointer over 阴影和边框厚度。
+- `IsHoverable` 通过 selector 设置光标、悬停阴影和外边框画笔。悬停时以卡面背景作为外边框画笔，保留边框厚度和原有绘制路径。启用动效时，画笔与阴影共用 `MotionDurationFast`。
+- `CardGridPanel` 从已排布的格子边界生成内部行列分隔线。相邻格子共用一次填充，外围由 Card 画外框，标题由 `HeaderFrame` 画下分隔线。分隔线显示在网格内容上方。Grid item 的悬停层在网格范围内改变不透明度。
 - `CardActionPanel` pointer over 改变 Foreground。
 - `CardActionButton` pointer over 改变 IconBrush。
 - Tab 选择由内部 `TabControl` 处理。

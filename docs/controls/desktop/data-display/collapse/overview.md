@@ -140,6 +140,7 @@ Collapse 的分隔线采用结构化所有权：
 - `PART_Frame` 绘制外框、圆角并裁剪整体内容。
 - 非末 `CollapseItem` 的 item shell 固定绘制底部分隔线。
 - 默认 bordered 模式下，`PART_ContentFrame` 固定绘制内容顶部边线。
+- 内容可见时，末项标题的下沿与内容区贴合。收起完成后，末项标题承接外框底部圆角。
 - Borderless 模式保留 item 间分隔线，但不绘制外框和内容顶部边线。
 - Ghost 模式不绘制外框、item 分隔线和内容顶部边线。
 - 分隔线厚度不得依赖 `IsSelected`、动效进行状态或动效完成时机。

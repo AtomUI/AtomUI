@@ -45,6 +45,7 @@ PopupConfirm 的公共契约由 public/protected 类型成员、Avalonia 属性�
 | --- | --- | --- |
 | 内容与数据 | `CancelText`、`ConfirmContent`、`ConfirmContentTemplate`、`Icon`、`OkText`、`Title` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 交互与状态 | `ConfirmStatus`、`IsShowCancelButton` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
+| 弹层定位 | `Placement`、`IsPointAtCenter` | 定义弹层方向和箭头在触发控件上的指向。 |
 | 其他稳定入口 | `OkButtonType` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
 稳定事件包括 `Cancelled`、`Confirmed`、`PopupClick`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
@@ -68,6 +69,10 @@ PopupConfirm 的公共契约由 public/protected 类型成员、Avalonia 属性�
 | `PART_Title` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 
 控件专属或内部伪类包括 `EmptyContent=:empty-content`、`PopupConfirmPseudoClass.EmptyContent`。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
+
+### 箭头指向与弹层对齐
+
+内置主题默认启用 `IsPointAtCenter`。使用边缘对齐的 `Placement` 时，弹层沿靠近触发控件的一边平移，让箭头指向触发控件中心。显式设置 `IsPointAtCenter="False"` 可使用边缘对齐，弹层仍受可用空间约束。
 
 ### 打开与关闭动效配置
 

@@ -9,6 +9,7 @@ TimePicker Token 只表达组件级视觉变量，例如尺寸、间距、颜色
 当前 Token scope：
 
 - `TimePickerToken`，scope id 为 `TimePicker`，源码位于 `src/AtomUI.Desktop.Controls/TimePicker/TimePickerToken.cs`。
+- `RangeTimePickerToken`，scope id 为 `RangeTimePicker`，源码位于 `src/AtomUI.Desktop.Controls/TimePicker/RangeTimePickerToken.cs`。
 
 ## 2. Token 分类
 
@@ -25,6 +26,8 @@ Token 按控件语义分类维护：
 - `ButtonsMargin`（Now / OK 按钮区与时间列的间距）与 `PeriodHostWidth`（上午/下午列宽，默认等于 `ItemWidth`）接通消费（Active）。
   按钮区原先借读 `DatePicker.ButtonsPanelMargin`，默认值相同。
 - 新增 `ItemMargin`（时间单元左右外边距，默认 `UniformlyMarginXXS`，antd `marginInline: marginXXS`），替换 `4,0` 字面量。
+- `ItemBackgroundInset` 控制 TimePicker 和 RangeTimePicker 选中、悬停和键盘导航高亮在行内的留白。默认值为零。Shadcn 主题在上下各内缩 `LineWidth`，使用原有行距和命中区域。
+- `CenterItemContent` 控制 TimePicker 和 RangeTimePicker 时间列文字是否水平居中。Shadcn 启用居中并将默认内边距设为零。其他主题沿用左对齐的默认值，仍可独立配置 `ItemPadding`。
 - RangeTimePicker 的 RangePickerArrowMargin/RangePickerIndicatorThickness 与 RangeMarginToAnchor 使用 RangeTimePicker 身份；原 InfoPickerInput 配置应迁移到实际 range 终端。
 
 TimeView 与 TimeViewCell 位于注册控件 ScrollViewer 内；TimeView 把所属 Picker 的 Token owner 转发给各列，TimeViewCell 是 Token owner

@@ -24,7 +24,7 @@ ToggleSwitch 的 public 桌面类型位于 `AtomUI.Desktop.Controls`，实际交
 
 `AbstractToggleSwitch` 是状态和布局核心。它负责读取 `IsChecked`、`IsLoading`、`SizeType`、`OnContent`、`OffContent` 等状态，计算轨道尺寸、把手位置、内容偏移和 Form value。
 
-`SwitchKnob` 是内部把手。它根据 `KnobSize` 和 `KnobRenderWidth` 绘制圆形或胶囊把手，在 loading 状态下绘制旋转 loading arc。
+`SwitchKnob` 是内部把手，负责绘制圆形或胶囊轮廓以及 loading 状态的旋转弧线。
 
 `WaveSpiritDecorator` 是视觉效果边界，只在 checked 状态变化且 `IsWaveSpiritEnabled=true` 时播放，不参与值状态计算。
 
@@ -48,7 +48,7 @@ KnobRenderTransform + OnContentOffset + OffContentOffset
 ToggleSwitchContentPanel 平移内容 + Render 绘制最终轨道
 ```
 
-切换或按压时，主题从固定的把手槽过渡到目标平移和横向缩放。内容文字在固定槽中排列，偏移过渡直接更新渲染平移。尺寸和模板变化仍按正常布局流程计算最终内容盒。
+切换或按压时，把手保留固定的布局槽，主题为目标平移和绘制宽度增量提供过渡。内容文字在固定槽中排列，偏移过渡直接更新渲染平移。尺寸和模板变化仍按正常布局流程计算最终内容盒。
 
 loading 状态流：
 
@@ -87,7 +87,7 @@ Form.ClearValue()    → IsChecked = null
 - `PART_WaveSpirit`
 - `PART_MainContainer`
 
-模板接入后，控件把当前 `KnobSize` 写入 `SwitchKnob`，再根据当前 `IsLoading` 同步把手 loading 状态。模板 part 没有全局事件订阅，主要生命周期风险来自内容图标 relay binding 和 loading animation。
+模板接入后，控件把当前 `KnobSize` 写入 `SwitchKnob`，再根据当前 `IsLoading` 同步把手 loading 状态。自定义模板省略把手的平移或宽度增量绑定时，控件使用 `TemplateBinding` 补齐。更换模板会清除旧把手的 `TemplatedParent`，使其释放对原 owner 的订阅。模板部件的其他生命周期管理主要涉及内容图标 relay binding 和 loading animation。
 
 模板层级与 antd Switch 对齐：`PART_SwitchKnob` 位于外层 `Panel`（root 的直接子层），不在 `PART_MainContainer`（内容
 `Canvas`，`ClipToBounds=True`）之内。内容 on/off presenter 的离屏裁剪依赖 `PART_MainContainer`，把手越出轨道边界的
@@ -146,7 +146,10 @@ owner 的偏移还依赖每个 presenter 的尺寸；画布测量完成时标记
 
 ### 7.2 把手位置
 
-`HandleRect(bool isChecked, Size controlSize)` 根据 checked 状态计算把手左上角。unchecked 时把手位于左侧 `TrackPadding`，checked 时位于 `controlSize.Width - TrackPadding - handleSize`。按下时把手宽度乘以 `STRETCH_FACTOR`。
+`HandleRect` 根据选中状态与目标把手宽度计算矩形。未选中时左侧与轨道相距 `TrackPadding`，选中时右侧保持相同间距。
+根主题通过 `EnableHandlePressStretch` Token 控制按下时的几何反馈。开启时，把手目标宽度为常态宽度的 1.3 倍，
+可见内容同步让位。关闭时，按住把手及内容保持原位，切换选中状态时仍使用同一平移过渡。
+把手的位置与增加的绘制宽度采用同一时长过渡，部件在每帧绘制对应宽度的胶囊，端部半径保持为把手高度的一半。按下与切换期间沿用原有的布局尺寸。
 
 ### 7.3 内容偏移
 
@@ -164,7 +167,7 @@ checked 时 on content 进入可见区域，off content 移到右侧不可见区
 
 ### 7.5 把手与 loading 绘制
 
-`SwitchKnob.Render` 根据 `KnobRenderWidth` 和高度判断绘制圆形或胶囊把手，填充色来自标准的 `Background` 属性（主题通过 `HandleBg` Token 设置，`.semantic-indicator` 可直接覆盖）。loading 状态下，按当前 `Rotation` 绘制 90 度 arc。`GetLoadIndicatorPen` 缓存 pen，并在 brush 引用变化时重建。
+`SwitchKnob.Render` 根据 `KnobSize`、`KnobWidthExtension` 和实际高度绘制圆形或胶囊把手，填充色来自标准的 `Background` 属性（主题通过 `HandleBg` Token 设置，`.semantic-indicator` 可直接覆盖）。loading 状态下，按当前 `Rotation` 在把手绘制区域中心绘制 90 度 arc，弧线沿用常态把手尺寸。`GetLoadIndicatorPen` 缓存 pen，并在 brush 引用变化时重建。
 
 把手阴影由 `KnobBoxShadow`（主题从 `HandleShadow` Token 设置）派生：`SwitchKnob.OnPropertyChanged` 把
 `BoxShadow` 转换为 `DropShadowEffect`，以 `BindingPriority.Style` 写入 `EffectProperty` 即时帧。同优先级下用户

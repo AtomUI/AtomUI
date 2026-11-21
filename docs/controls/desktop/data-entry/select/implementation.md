@@ -38,6 +38,10 @@ Tags 模式的动态选项必须作为 Select 自身运行时状态维护。用�
 
 `SelectResultOptionsBox` 是多选结果边界。它根据 `SelectedOptions` 创建 `SelectTag`，并在过滤启用时插入 `SelectFilterTextBox`。
 
+预设尺寸下，多选和 Tags 模式用同一个首行高度预算。标签高于该尺寸的文本行高时，
+`SelectAddOnDecoratedBox` 从上下内边距中扣除可容纳的差值。只要标签和过滤输入能放在一行，
+首个标签就不会撑高输入框。`SelectWrapPanel` 根据可用宽度测量每一行，内容换行后仍会撑高输入框。
+
 `OverflowTip` 是跨选择类控件复用的显示增强边界。Select 模板把 `IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` 和当前展示文本传给该 attached behavior；单选显示节点以外层 `SelectAddOnDecoratedBox` 作为 `PlacementTarget`，避免 tooltip 左边按内部文本 padding 对齐；`SelectResultOptionsBox` 动态创建 tag 时把同一组设置绑定到每个 `SelectTag`。它只在视觉溢出时托管自己写入的 `ToolTip.Tip`，用户显式设置的 tooltip 不会被覆盖或清理。
 
 `SelectHandle` 是右侧操作边界。它根据 loading、过滤、展开状态选择当前图标，并把清除按钮点击转换为 `ClearRequestedEvent`。

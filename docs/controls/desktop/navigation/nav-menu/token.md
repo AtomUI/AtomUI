@@ -59,6 +59,8 @@ active bar 颜色（悬浮、展开、选中三态）；`HorizontalItemHoverColo
 - `HorizontalItemSelectedBg`
 
 用于 header hover、active、selected 以及 inline submenu 背景块。`SubMenuItemBg` 只应用于 inline child frame，不应被用作 root menu 背景。
+Shadcn 将 `SubMenuItemBg` 和 `DarkSubMenuItemBg` 默认设为透明，让展开的内联子菜单沿用根菜单表面。
+Shadcn 在 `ItemSelectedBg` 的默认选中填充上混入 14% 的中性前景色，使选中项与悬浮项可辨。
 `HorizontalItemBorderRadius`（默认 0，与 antd 一致）是 light 与 dark horizontal 顶层项的圆角；light 顶层项背景在悬浮、展开、选中、键盘激活和
 按住时都透明，圆角只在 `HorizontalItemHoverBg` / `HorizontalItemSelectedBg` 或应用样式给出背景时可见。
 `HorizontalItemHoverBg` 是 light horizontal 顶层项悬浮与展开背景，`HorizontalItemSelectedBg` 是其选中背景（默认均透明，对应 antd）。

@@ -233,7 +233,7 @@ item 的 hover/pressed 背景遮罩，对齐上游 `thumb ~ item::after` 透明�
 `AbstractSegmented.Render()` 绘制两层矩形：
 
 1. 使用 `Background` 和根 `CornerRadius` 绘制轨道背景。
-2. 仅当 `_isThumbVisible` 为 true 时绘制选中滑块。桌面主题成组读取背景及阴影，`SelectedThumbCornerRadius` 继续参与边界计算。单独修改背景或阴影只触发重绘。
+2. 仅当 `_isThumbVisible` 为 true 时绘制选中滑块。桌面主题成组读取背景及阴影。使用 `SizeType=Custom` 时，滑块采用选中项已设置的 `CornerRadius`，其余情况使用 `SelectedThumbCornerRadius`。修改自定义选中项圆角会触发滑块重绘。
 
 `SetThumbVisible` 变化时调用 `InvalidateVisual()` 触发重绘。item 本身的 hover/pressed 背景遮罩和文本状态仍由
 `SegmentedItemTheme.axaml` 负责；选中背景只由滑块绘制，item 的 `:selected` 不绘制背景。

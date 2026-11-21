@@ -339,7 +339,7 @@ TreeView 不实现 CompactSpace、Button 家族或 Popup 菜单导航模型。
 
 ### 8.1 默认状态回放模型
 
-TreeView 加载后按固定顺序回放默认选中、默认勾选、过滤和默认展开。`IsDefaultExpandAll=true` 时展开全部节点，并覆盖 `DefaultExpandedPaths` 的展开路径。
+TreeView 在首帧前应用可解析的默认展开、选中和勾选状态，加载阶段处理其余状态。`IsDefaultExpandAll=true` 时展开全部节点，并覆盖 `DefaultExpandedPaths` 的展开路径。
 
 ### 8.2 Path 模型
 

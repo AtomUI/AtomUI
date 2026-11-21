@@ -80,6 +80,10 @@ public class ShowCaseItem : ContentControl
   `160`，`DeferredPlaceholderCornerRadius` 控制 Skeleton 占位框圆角。当示例内容高度不同且需要避免物化时的布局跳动时，
   页面必须把 `DeferredPlaceholderHeight` 设置为实际预期高度。
 
+普通示例卡片和带版本角标的示例卡片均使用主题边框色和线宽绘制完整外框。`IsFake` 占位布局隐藏外框。
+
+示例的版本角标由 `BadgeText` 提供。默认配色由 RibbonBadge 读取当前主题的主色与对应前景色。需要指定其他颜色时使用 `BadgeColor`。
+
 XAML 使用规范：
 
 ```xml

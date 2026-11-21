@@ -84,7 +84,9 @@ Collapse
                                 └── ContentPresenter#PART_ContentPresenter
 ```
 
-边框职责固定为：`PART_Frame` 绘制外框；item shell 绘制非末项底线；`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。Header 不承担 item 分隔线，动效状态不参与边框计算。root 表面投影把 owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding` 绑定到 `PART_Frame`；默认主题不设置根背景，root 背景由 Semantic Setter 或应用级样式提供。圆角按 antd collapse 样式规则分发：首项 header 承接容器上圆角、末项 header 与 content 承接下圆角（`HeaderCornerRadius`/`ContentCornerRadius` 由 owner 的 `CornerRadius` 与 item 位置计算），使 header/body 的背景沿容器圆角绘制而非盖住圆角边框。
+`PART_Frame` 绘制外框，item shell 绘制非末项底线，`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。模板把 owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding` 绑定到 `PART_Frame`。默认主题的根背景由 Semantic Setter 或应用级样式提供。
+
+owner 根据条目位置计算 `HeaderCornerRadius` 和 `ContentCornerRadius`。首项标题承接外框上圆角，末项内容承接外框下圆角。内容视口可见时，`CollapseItemTheme` 只保留标题的上圆角，让标题下沿与内容顶线贴合。收起完成并隐藏末项内容视口后，末项标题承接外框下圆角。分隔线厚度仍由条目位置和视觉模式决定。
 
 ### 4.2 Semantic Part marker 放置
 

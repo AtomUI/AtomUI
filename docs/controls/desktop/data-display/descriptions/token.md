@@ -72,7 +72,7 @@ Header + Extra + default items + bordered label/content cells
 | Token | 主要使用点 |
 | --- | --- |
 | `LabelBg` | 边框 label cell 背景、纵向边框 label 背景。 |
-| `LabelColor` | 普通模式 label 和冒号颜色。 |
+| `LabelColor` | 普通模式 label 和冒号颜色。Shadcn 暗色使用描述文字色。 |
 | `TitleColor` | HeaderPresenter foreground。 |
 | `HeaderMargin` | HeaderLayout margin。 |
 | `ItemPaddingLG` / `ItemPadding` / `ItemPaddingSM` | 边框 item padding。 |

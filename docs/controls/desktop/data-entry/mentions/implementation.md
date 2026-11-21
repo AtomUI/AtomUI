@@ -30,6 +30,9 @@ Mentions 的实现以 `MentionTextArea` 为输入内核，`Popup` 和 `Candidate
 
 `MentionTextArea` 是文本输入和 trigger 检测边界。它继承 `TextArea`，复用 `AbstractTextInput` 的多行输入、清除、状态、Form feedback、尺寸和 `InputControlFrame` 输入表面，并增加 `TriggerPrefix`、`FilterValue`、`IsDropDownOpen`、`CandidateOpenRequest` 和 `CandidateCloseRequest`。
 
+Mentions 根主题允许输入框的焦点环绘制在控件边界外。内部文本仍由输入框内容视口裁剪，
+页面滚动由外部视口负责。
+
 `CandidateList` 是候选选择边界和 active candidate owner。Mentions 只依赖 `ICandidateList` 的 `ItemsSource`、`SelectedItem`、`Commit`、`Cancel` 和 `HandleKeyDown()`，不直接管理候选项容器；鼠标候选迁移、键盘导航和 `Enter` 提交必须最终读取同一 active candidate。
 
 候选项启用状态由 Mentions 提供、由 CandidateList 执行：`IMentionOption` 不是 `IListItemData`，所以 Mentions 在绑定 `PART_CandidateList` 时把 internal `CandidateList.ItemEnabledResolver` 设为 `IMentionOption.IsEnabled` 判定，解绑时清空。CandidateList 用它决定候选可用性（键盘、指针）和容器 `IsEnabled`；`RefreshView()` 的预选使用同一判定选出第一个启用项。

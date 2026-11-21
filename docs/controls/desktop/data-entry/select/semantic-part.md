@@ -155,11 +155,12 @@ Select 是唯一 Semantic owner，公开 13 个 Semantic Part（语义对齐：`
 | AtomUI 节点 | `SelectTheme.axaml` 中 `ContentRightAddOn` StackPanel |
 | 职责 | 内容后缀区域，承载最大数量指示、用户 `ContentRightAddOn` 与选择 handle。 |
 | 相关 API | `ContentRightAddOn`、`ContentRightAddOnTemplate`、`MaxCount` |
-| 相关 Token | SharedToken `ColorTextQuaternary`（默认前景） |
+| 相关 Token | SharedToken `ColorTextQuaternary`（默认前景）、`ColorTextDescription`（Shadcn Luma 默认前景） |
 | 稳定性 | stable since 6.2.0 |
 
-suffix 区默认前景色为 `ColorTextQuaternary`，下拉指示箭头（SelectHandle 内图标）与后缀内容跟随该颜色：
-在 `SelectSuffixStyle` 上设置 `TextElement.Foreground` 即可同时定制箭头与后缀内容颜色（例如
+下拉指示箭头与后缀内容继承 suffix 区的默认前景色 `ColorTextQuaternary`。Shadcn Luma 默认使用
+`ColorTextDescription` 对应上游的 `muted-foreground`，应用显式提供的 `ColorTextQuaternary` 优先。
+在 `SelectSuffixStyle` 上设置 `TextElement.Foreground` 可以同时定制箭头与后缀内容颜色（例如
 `#1890FF` 蓝色箭头，与上游语义样式示例一致）。清除按钮、表单校验反馈与最大数量指示各自维护颜色，
 不随该前景色变化。
 

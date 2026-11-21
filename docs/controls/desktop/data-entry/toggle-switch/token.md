@@ -37,10 +37,13 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 - `HandleShadow`
 - `HandleSize`
 - `HandleSizeSM`
+- `EnableHandlePressStretch`
 
 这些 Token 控制把手背景、阴影和普通/小号尺寸。`HandleCheckedBg` 是选中（`SwitchKnob.IsCheckedState`）时的把手背景，
-默认等于 `HandleBg`（包括显式设置的 `HandleBg`），所以 Ant Design 渲染不变；主色接近白色的主题（PrimeNG noir 暗色、
-shadcn/ui 暗色）用它把选中把手设为深色，否则白色把手在近白轨道上不可见。按下时把手宽度由运行时 `STRETCH_FACTOR` 拉伸，不作为 Token。
+默认等于 `HandleBg`，包括显式设置的 `HandleBg`。PrimeNG noir 暗色可通过此 Token 为近白轨道配置深色把手。
+
+`EnableHandlePressStretch` 默认开启。按下时，把手朝轨道内侧横向伸展，可见内容同步让位。Shadcn 各套主题关闭该反馈，
+按住时把手维持原始尺寸，可见内容保持原位。此 Token 对所有尺寸档生效，选中状态变化时仍按主题动效滑动。
 
 ### 2.3 内容边距 Token
 
@@ -63,10 +66,15 @@ shadcn/ui 暗色）用它把选中把手设为深色，否则白色把手在近�
 ### 2.5 状态颜色和透明度 Token
 
 - `SwitchColor`
+- `TrackBg`
+- `TrackHoverBg`
+- `TrackCheckedHoverBg`
 - `SwitchDisabledOpacity`
 - `OffStateLoadIndicatorColor`
 
-`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。unchecked 轨道和 hover 色来自 SharedToken。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
+`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。`TrackBg` 与 `TrackHoverBg` 分别用于关闭及关闭时悬停的轨道，`TrackCheckedHoverBg` 用于开启时悬停的轨道。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
+
+Shadcn 的关闭轨道从次级文字色派生。浅色使用较深的关闭轨道衬托白色把手，悬停时再加深。深色将次级文字色与容器底色混合，悬停时略提亮。中性深色的开启轨道使用较柔和的亮度，轨道内容使用亮色前景。
 
 ### 2.6 加载动画 Token
 

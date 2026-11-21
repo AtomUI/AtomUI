@@ -112,7 +112,7 @@ Card.Actions changed
 
 悬停和动效：
 
-- `IsHoverable=true` 时，Card 进入 pointer over 后使用 `CardShadows`，并隐藏边框以避免边框和阴影同时强化。
+- `IsHoverable=true` 时，指针进入后阴影切换为 `CardShadows`，外边框与卡面融为一体。边框仍占据原有布局空间，封面和内容保持原位。
 - `IsMotionEnabled=true` 时启用阴影和操作区文字颜色过渡。
 - 初始加载时过渡会先禁用，再在 Loaded 后启用，避免首次渲染出现不必要动画。
 
@@ -200,7 +200,7 @@ CardTabsContent -> Tabs
 others/null -> Default
 ```
 
-主题根据 `ContentType` 控制 body padding、Header border 和圆角。Grid 内容取消 body padding，由 `CardGridItem` 自己提供 item padding 和边线阴影。
+主题根据 `ContentType` 控制 body padding 和圆角。Grid 内容取消 body padding，由 `CardGridItem` 提供自身内边距。网格统一绘制内部行列分隔线，标题保有自己的下分隔线。格子悬停时，分隔线继续显示，格子的底色与阴影单独过渡。
 
 ### 8.2 栅格内容模型
 

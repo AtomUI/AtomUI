@@ -111,7 +111,9 @@ Inline Token 只服务 `Type=Inline` 的紧凑视觉。
 - `PanelWaitTextColor`、`PanelProcessTextColor`、`PanelFinishTextColor`、`PanelErrorTextColor`
 - `PanelActiveTextColor`、`PanelErrorActiveTextColor`
 
-Panel 箭头宽度按 Ant Design 的几何关系由 item 基础高度乘以 `0.7071` 推导；Small 使用较小的 padding、字体和圆角。Filled 使用状态色面板背景；Outlined 的非当前项使用 `ColorBgContainer`，以状态色表达文字和边框，只有当前项使用对应的浅色 active 背景。
+Panel 箭头宽度按 Ant Design 的几何关系由 item 基础高度乘以 `0.7071` 推导；Small 使用较小的 padding、字体和圆角。Filled 使用状态色面板背景；Outlined 的非当前项使用 `ColorBgContainer`，以状态色表达文字和边框，只有当前项使用对应的浅色 active 背景。 Shadcn 风格将 Panel 首尾外角限制在 8 DIP 以内，保留主题原有的更小圆角。
+
+Shadcn 暗色的 Filled Panel 将当前项状态色混入面板底色，当前普通项和错误项各使用可读的前景 Token。可分别覆盖 `PanelWaitActiveBackground`、`PanelProcessActiveBackground`、`PanelFinishActiveBackground`、`PanelErrorActiveBackground` 和对应的前景 Token。
 
 ## 3. 控件专项模型中的 Token 使用
 

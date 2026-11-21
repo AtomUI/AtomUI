@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `PreviewOperationSize`、`DialogMinWidth`、`DialogMinHeight`、`CoverImageWidth`、`ErrorIconSize` |
 | 保留 | 暂无视觉效果。 | `ImagePreviewSwitchSize`（antd Image `imagePreviewSwitchSize`：antd 6.7 声明但样式未读取；切换按钮尺寸由 `PreviewOperationSize` 与内边距决定） |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FloatToolbarPadding`、`FloatToolbarIndicatorPadding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PreviewOperationColor`、`PreviewOperationHoverColor`、`PreviewOperationColorDisabled`、`MaskBgColor`、`TitleBarBackgroundColor`、`NavButtonBgColor` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PreviewOperationColor`、`PreviewOperationHoverColor`、`PreviewOperationColorDisabled`、`MaskBgColor`、`TitleBarBackgroundColor`、`NavButtonBgColor`、`NavButtonBgHoverColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `FloatToolbarIndicatorPadding` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -38,6 +38,8 @@ ImagePreviewer 的控件专项模型通过 Theme 消费 Token：
 `ErrorIconSize` 是封面与预览窗口中加载失败占位图标的尺寸（AtomUI 扩展，默认 `ControlHeightLG * 1.2` = 48px），取代主题中的
 `48` 字面量。`FloatToolbarIndicatorPadding` 的默认值改为 0：索引指示器透明且居中，原先只有水平分量的默认值从未产生视觉效果；
 设置垂直分量会调整指示器与操作区的距离。
+
+浮动翻页按钮、操作栏和叠层关闭按钮将浅色操作图标与深色半透明背景搭配，在亮色画布和图片上保持可读。禁用图标降低亮度，仍保留深色底衬。
 
 主题读法：ImagePreviewer / ImageGroupPreviewer 从各自终端读取 Global/Own，再通过具体内部样式输入到达封面、overlay、viewer、工具栏与原生预览窗口。跨根沿真实逻辑 owner 链，来源 ImagePreviewer 的覆盖不再进入 Group。胶囊/圆形形状仍为布局常量。
 

@@ -3,6 +3,11 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Performance
+  - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。涉及 `SelectTag` 的标签输入。
+
 ## 2026-11-11
 
 - Theme

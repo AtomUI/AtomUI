@@ -2,6 +2,10 @@
 
 本文档记录 PopupConfirm 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-19
+
+- 内置主题默认启用 `IsPointAtCenter`，让箭头指向触发控件中心。显式设置为 `False` 可使用严格的边缘对齐。
+
 ## 2026-11-15
 
 - Theme / Token：与 anchor 的间距改读 `FlyoutHostToken.MarginToAnchor`（原 `PopupToken.MarginToAnchor`），与阴影同属箭头 flyout 的 Token；两者默认值相同。带边框时箭头随框体整体描边显示（见 InfoFlyout Token 设计）。

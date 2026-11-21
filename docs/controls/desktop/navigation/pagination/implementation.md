@@ -244,6 +244,10 @@ owner-to-context 同步与 context-to-owner 请求使用不同入口，并在值
 稳定契约：改变任一格的 Token、selector 或默认值必须同步 Pagination 与 SimplePagination 两个根模板、
 `PaginationNavItemTheme`、Token 文档与尺寸相关回归测试。
 
+完整分页、简洁分页和快速跳转容器的默认主题允许输入控件在分页行边界外绘制焦点环。紧凑间距由
+`PaginationLayoutMiniSpacing` 提供，确保页大小选择框的焦点环有空间完整绘制，且与相邻的快速跳转标签分开。简洁分页的小尺寸输入框垂直居中，输入框的内边距由分页主题读取。
+行高和前后翻页按钮的尺寸继续使用 `ItemSizeSM`。
+
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
 ## 9. 资源、性能与 AOT 边界

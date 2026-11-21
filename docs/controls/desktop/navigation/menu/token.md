@@ -29,6 +29,8 @@ Token 按控件语义分类维护：
   `TopLevelItemHoverColor` / `TopLevelItemHoverBg`；展开（菜单栏的选中项）`TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`，
   默认与悬浮相同。
 - 图标与文字间距 `ItemIconMarginInlineEnd`（默认 `UniformlyMarginXXS`，与此前的 `ItemMargin` 右侧值相同）同时作用于顶层项与弹层项的图标。
+- `MenuPopupContentPadding` 控制菜单栏首层及嵌套弹层的内容内边距，标签溢出菜单复用此值。Shadcn 在原有上下间距的基础上，
+  保留至少 `UniformlyPaddingXXS` 的留白，默认每侧 4 DIP。Lyra 和 Sera 的直角弹层因此也会在首末项的高亮与边框之间留白。
 - 分组标题内间距 `GroupTitlePadding`（默认 `UniformlyPadding, UniformlyPaddingXS`，即此前写死的 16,8）。
 - 危险项：`MenuItem.IsDanger`、`MenuItemData.IsDanger`（`IMenuItemData.IsDanger` 默认 `false`）标记，文字 `DangerItemColor`，悬浮文字
   `DangerItemHoverColor`。

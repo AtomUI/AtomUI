@@ -33,7 +33,7 @@ CheckBox 的控件专项模型通过 Theme 消费 Token：
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - CheckBox 与它唯一宿主的无身份部件 `CheckBoxIndicator` 都以 `CheckBoxTokenResource` 读取，`Controls[CheckBox]` 覆盖作用于
   指示器的尺寸（`CheckIndicatorSize`）、勾选标记尺寸（`CheckedMarkSize`）、圆角（全局 `BorderRadiusSM`）、边框与颜色；
-  勾选标记颜色为全局 `ColorWhite`。PrimeNG 预设由其算法的 CheckBox 控件阶段设置
+  勾选标记读取当前控件作用域的 `ColorWhite`。Shadcn 暗色以主色配对的 `ColorTextLightSolid` 绘制该标记。PrimeNG 预设由其算法的 CheckBox 控件阶段设置
   `CheckIndicatorSize` / `CheckedMarkSize`（Aura、Nora 20 / 14，Lara 24 / 14），圆角沿用全局 `BorderRadiusSM`。
 - CheckBoxGroup 以 `CheckBoxGroupTokenResource SpacingXS` 设置选项间距；组内选项是 CheckBox，按 CheckBox 自身 identity 读取，
   `Controls[CheckBoxGroup]` 的颜色覆盖不作用于选项。

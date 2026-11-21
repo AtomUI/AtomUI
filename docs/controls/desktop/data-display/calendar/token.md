@@ -37,6 +37,9 @@ LunarCalendarToken 持有双行内容尺寸、文字/标记颜色与范围条避
 | `LunarCalendar.MarkerSize` | `UniformlyMarginXXS`（4） | 节假日/调休标记圆点直径。 |
 | `LunarCalendar.MarkerMargin` | 右侧 `UniformlyMarginXXS`（4） | 标记圆点与次要文字的间距。 |
 | `LunarCalendar.MarkerCornerRadius` | `MarkerSize / 2` | 标记圆点圆角。 |
+| `LunarCalendar.MiniDateCellPadding` | 上下 3，左右 0 | 紧凑日期格的双行文字内边距。 |
+| `LunarCalendar.MiniDateCellHeight` | `MiniDateCellSize` 与两行行高加上下内边距的较大值 | 紧凑月份的日期格高度。日期格宽度由 `MiniDateCellSize` 控制。 |
+| `LunarCalendar.MiniDateCellCornerRadius` | 6 | 紧凑日期格的选中、悬停与描边圆角。 |
 
 范围条面板通过同一 `OwnerTokenSet` 读取宿主的 `UniformlyMarginXXS`、`FontSizeSM` 与 `ColorTextLightSolid`。面板提供设置标签字号和画刷的入口。Mini 键盘焦点描边读 `FocusVisualBorderThickness`。
 日期、模式、约束、节日优先级、Provider revision 和确认状态不属于 Token。
@@ -62,7 +65,12 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 Token owner：Calendar 把自己的 Token owner 转发给模板中的 DateViewer（`TokenOwnerForwarding`），因此 Calendar 提供的面板与单元主题以
 `OwnerTokenResource` 读取宿主 Calendar / LunarCalendar 的有效全局 Token，`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格；
 DateViewer 自己的 Own Token 仍读 DateViewer 身份。Header 中的 ComboBox、OptionButtonGroup 保持各自身份。
-LunarCalendar 复用模板和 AbstractCalendarToken 的真实公共 Own 计算，但由自己的终端设置样式输入。MiniContentHeight/FullCellMinHeight 等月历度量保持各自公式；ItemActiveBg 由两个终端独立拥有：农历 Fullscreen Year 的选中月份使用该 Own（默认 active item 浅蓝色），农历 Month 的选中日期仍使用主色。YearMonthCellWidth 只被 Gregorian 消费，不添加给 Lunar；农历 Compact Year 使用自己的 MiniMonthCellWidth。Controls[Calendar] 的 Own 不再进入 Lunar。ItemActiveColor（默认 ColorPrimary）是 Gregorian Fullscreen 选中单元的文字色，画在 ItemActiveBg 上；选中底色为实色的主题设为对比色。农历单元的选中文字由 LunarCalendarCellContent 使用 ColorTextLightSolid，不消费它。
+LunarCalendar 复用模板和 `AbstractCalendarToken` 的计算，并从自己的 Token owner 读取令牌。两种日历分别持有
+`ItemActiveBg` 和 `ItemActiveColor`。普通 Calendar 的全屏选中单元和 LunarCalendar 的全屏选中月份使用这组令牌。
+LunarCalendar 的全屏月视图在暗色外观下也使用这组令牌。日期格绘制 `ItemActiveBg`，公历和农历两行文字均使用
+`ItemActiveColor`。Ant Design 暗色使用选中项色与正文色。Shadcn 暗色在选中项色上叠加 14% 的正文色，区分悬停与选中。
+LunarCalendar 在浅色外观和紧凑月视图中的选中日期使用主色和对应的对比文字色。
+普通 Calendar 使用 `YearMonthCellWidth`，农历紧凑年视图使用 `MiniMonthCellWidth`。
 业务布局、模板内容、动态资源覆盖和尺寸语义必须完整；普通主题修改不能让农历次级行与业务条重叠。
 状态选择在 Theme Selector，资源更新由 scoped owner 链传播，不能以静态值规避生命周期。
 

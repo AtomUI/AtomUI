@@ -21,7 +21,9 @@ OtpLineEdit 使用 `OtpLineEditToken` 表达 OTP 分格输入的专属布局语�
 ### 2.2 Cell 间距 Token
 
 - `OtpLineEdit.CellGap`
-这些 Token 控制相邻 cell 之间的默认水平间距。当前模板使用 `CellGap`；`SizeType` 只改变 cell 宽度和字号，separator 与前一个 cell 的间距也使用 `CellGap`，默认仍为 4px。
+- `OtpLineEdit.JoinCells`
+
+`CellGap` 控制分开排列时的格间距和分隔符两侧间距。`JoinCells` 默认关闭，Shadcn Luma 在浅色、深色和紧凑档开启。开启后，没有 `Separator` 的验证码格相接，首尾保留外侧圆角，内侧接缝只绘制一道边框。
 
 ## 3. 控件专项模型中的 Token 使用
 

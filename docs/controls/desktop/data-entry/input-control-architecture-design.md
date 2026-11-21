@@ -99,6 +99,7 @@ Native Error / Form Error
 焦点表现与 Ant Design 一致，只由 frame 表达：
 
 - focus-within 时 frame 边框切换为状态主色；只有 `Outlined` 叠加 `0 0 0 ControlOutlineWidth` 的 `InputActiveShadow`（Error / Warning 对应 `InputErrorActiveShadow` / `InputWarningActiveShadow`）。focus shadow 的 Setter 必须带 `Outlined` 变体条件，嵌入式输入因此天然拿不到阴影。
+- Frame 使用内部 `:input-focus-within` 合并宿主与实际子树的键盘焦点。Avalonia 独立维护 `:focus-within`，两者的通知顺序不会重复触发输入框的焦点样式。焦点阴影出现或消失时以透明度过渡，保持轮廓尺寸。
 - 输入家族在键盘聚焦时不叠加共享焦点描边（`FocusOutlineAdorner`），以下三层都把 `FocusAdorner` 设为空：
   - **宿主**：文本输入、选择器、日期 / 时间选择器、步进输入等的主题；
   - **外框**：`InputControlFrameTheme` 统一设置，所以模板为了接收内边距点击而把外框设为可聚焦时，也不会出现焦点框；

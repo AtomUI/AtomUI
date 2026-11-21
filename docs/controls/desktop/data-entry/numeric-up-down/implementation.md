@@ -114,7 +114,7 @@ String mode 保存 raw text，同时尝试同步可计算 `Value`。内部同步
 - 偏移按 Handle 宽度扣除已有内容 padding，并保留半个侧 padding 作为间距；不能仅按 padding 倍数推导，以免小尺寸或自定义 Handle 宽度时重叠。
 - disabled 清除 hover 状态，并保持 `HandleOpacity=0`。
 
-两个模式的编辑器与后缀由内部 `NumericUpDownInputPanel` 共同排列。它消费装饰框 `ContentRightShift` 的当前有效动画值，先在排列宽度中扣除右侧避让量，再使用 DockPanel 分配后缀和编辑器；外层尺寸与自然期望尺寸不随动画追加宽度。编辑器右边界不得跨入后缀交互区域，后缀也不得进入浮动 Handle 的操作区域。
+编辑器与后缀由内部 `NumericUpDownInputPanel` 中的 DockPanel 共同排列。面板消费装饰框的 `ContentLeftShift` 和 `ContentRightShift` 当前有效动画值，在排列阶段从对应一侧留出浮动手柄空间，保持外层尺寸和自然测量尺寸。编辑器、后缀和手柄的交互区域各自独立。
 
 后缀不再单独声明 RenderTransform 或过渡，输入布局也不启动第二条动画。避让属性直接使 Arrange 失效；控件保留布局舍入，几何验证应考虑设备像素舍入。长文本由内部文本编辑器按真实 viewport 处理滚动和光标位置。
 

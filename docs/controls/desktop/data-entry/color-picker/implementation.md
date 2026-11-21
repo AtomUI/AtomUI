@@ -184,6 +184,8 @@ Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立
 
 预设项位于公开 Collapse 之后：Collapse 保留自身身份，`PaletteColorItem` 在 attach 时复用 `TokenOwnerForwarding` 跟随 PaletteGroup，detach 时释放并清除转发值。ThemeScope 的 internal attached setter 无法从 AXAML 访问。WrapPanel 间距通过 PaletteGroup 的普通 PaletteSpacing 属性声明式传入。勾选 Icon 保持自身身份，前景由 PaletteColorItem.CheckedMarkForeground 明确投射；分隔线保留 BorderBrush，厚度经既有过滤转换器只取左边。
 
+色谱按完整栅格坐标读取指针与 HSV。绘制选色环时，根据当前环半径内缩色谱边缘和圆角弧，令整圈留在色谱内。此投影只决定绘制位置，释放指针或改变选色环尺寸时仍保留已选的 HSV 值。
+
 ColorBlock 的 Size 由 ControlTheme 状态 Setter 投射至 Width/Height。色谱 bitmap、选中颜色和测量半径属于运行时数据，代码写入使用 SetCurrentValue。RGB/HSV 数据端点的诊断说明只围绕相应语句，不豁免主题 chrome。空色斜线使用每实例缓存 Pen，资源值变化更新画笔，无非 Visual 资源订阅。
 
 

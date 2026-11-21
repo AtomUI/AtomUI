@@ -54,6 +54,16 @@ FloatButton 族的其它身份（BackTop、Group、Host）主题经 `FloatButton
 
 ## 4. 控件家族影响
 
+Shadcn 的 Default 取同风格普通 Button 的描边和悬停配色。背景叠在 `ColorBgElevated` 上，覆盖浮动按钮后面的滚动内容。
+描边读取 FloatButton owner 的 `ColorBorder` 与 `BorderThickness`。独立 FloatButton、BackTop 和组内圆钮各自绘制描边，
+方形组通过容器绘制一个外框，组内按钮仍由现有分隔线区分。
+
+Vega 将 `shadow-xs` 作为描边默认阴影。Primary 仍响应调用方显式提供的 `FloatButtonShadows`，包括与 Vega 默认值相同的覆盖。
+
+Shadcn 的独立方形按钮有说明时按内容测量，以常规 `ControlHeight` 为最小尺寸，纯图标按钮使用 `FloatButtonSize`。说明布局读取该 owner 的字号、`PaddingLG` 和 `SpacingXS`，默认左右留白不超过 10 DIP，上下各 2 DIP。图标和文字横排，默认文本在可用宽度内显示至多两行，默认宽度上限为最小宽度的 2.5 倍。Luma、Maia 的带文字轮廓按实际高度形成胶囊，纯图标方钮的圆角由较小尺寸约束。显式尺寸、圆角及模板仍通过相同入口应用。
+
+扩展排版的默认行高跟随风格字号。应用设置的 `DescriptionLineHeight` 优先，嵌入组内按钮继续使用原行高令牌并由组维护分隔。
+
 调整 FloatButton Token 时必须评估以下范围：
 
 - `FloatButton`

@@ -41,7 +41,7 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
   边框后再接通这两个 Token。
 - `ContentLineHeight*` 是相对对应字号的行高倍数；`ContentPaddingLG`、`ContentPaddingSM` 的垂直内边距分别由
   `ControlHeightLG` / `ControlHeightSM` 与同档字号、行高计算。
-- `RadioBgColor`（antd 内部 `radioBgColor`）是选中单选框的背景色，默认 `ColorPrimary`；`RadioColor` 是选中圆点颜色。
+- `RadioBgColor`（antd 内部 `radioBgColor`）是选中单选框的背景色，默认 `ColorPrimary`；`RadioColor` 是选中圆点颜色。Shadcn 暗色使用与底色配对的 `ColorTextLightSolid`。
   `RadioIndicator` 按原 Own 键成组读取 `DotSize`、`RadioSize` 和 `DotPadding`，计算动画使用的圆点尺寸。主题投射指示器的宽高和状态颜色。RadioButtonGroup 的选项保留 RadioButton 自身 identity。
 
 ## 4. 控件家族影响

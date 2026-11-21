@@ -130,6 +130,8 @@ Text Token 必须保持以下语义：
 
 用于默认按钮阴影和按钮组边框协调。该组 Token 影响 Button 与 Button 家族或周边控件的视觉关系。
 
+Shadcn 的常态按钮默认平贴。Vega 的中性描边按钮使用 `shadow-xs`，`DefaultShadow` 仍然是中性描边、实心和虚线变体共用的配置入口。局部或应用资源及 `ThemeConfigProvider` 提供的显式值按资源优先级生效，空阴影也可用于覆盖 Vega 的默认阴影。键盘焦点环独立使用当前样式的描边与环宽。
+
 `GroupBorderColor` 为 Reserved（`[ReservedToken]`）：紧凑空间中相邻主按钮之间的组分隔线尚未绘制，设置它当前没有视觉效果，
 不属于可调 Token 列表；接通分隔线后转为 Active。
 
@@ -159,6 +161,8 @@ ControlTheme
 ```
 
 ButtonToken 不定义 `BlueSolidHoverBg`、`PurpleFilledActiveBg` 这类组合 Token。
+
+Shadcn 暗色的 Button 在控件级分别派生链接的普通、悬停与按下文字色。危险描边和虚线变体的文字与边框共用可读的悬停色，按下色与对应的实底文字保持对比。显式设置的状态 Token 继续按现有优先级覆盖。
 
 ## 4. Button 家族影响
 

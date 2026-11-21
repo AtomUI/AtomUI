@@ -3,6 +3,12 @@
 本文档记录 ListView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Performance
+  - 去掉 `GroupHeaderItem` 的 13 个可继承主题输入。ListView（及 TransferListView 覆盖）在根部把 Own Token 赋给列表的普通属性，
+    列表在准备容器时把项目值直接绑定到容器，项目主题用编译绑定读取自身属性。渲染不变，单个列表分配约少 4%–7%。
+
 ## 2026-11-14
 
 - Design

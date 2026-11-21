@@ -2,6 +2,10 @@
 
 本文档记录 DropdownButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Shadcn 暗色的 Link 触发按钮使用可读的普通、悬停和按下文字色。
+
 ## 2026-11-14
 
 - Performance

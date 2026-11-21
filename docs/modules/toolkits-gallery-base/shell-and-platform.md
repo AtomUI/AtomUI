@@ -28,6 +28,8 @@ GalleryShell
 
 `GalleryShellView` 负责 Sidebar、BrandArea、FooterLinks、VersionTag、`RoutedViewHost` 和导航/内容分隔线。Shell 不负责 Demo 页面内部布局。ShowCase 页面继续使用 `GalleryStickyTabsHost`、`ShowCasePanel` 和 `ShowCaseItem`。
 
+导航分隔线占用侧栏与内容之间的独立列。桌面窗口标题栏下沿的分隔线占用 Shell 上方的独立行。两条线位于内容的吸顶范围之外，均不参与指针命中。
+
 Sidebar 页脚在自己的资源作用域内，共用一组监听读取 `LineWidth` 和 `ColorBorderSecondary`。线宽转换成仅上边有效的 `Thickness`，
 两个输出使用 Template 优先级，随 `GalleryShellView.Dispose()` 释放。
 
@@ -52,7 +54,7 @@ public interface IGallerySidebarNavMenuHost
 - `NavMenu.IsInlineCollapsed` 是唯一折叠状态源，Shell 和产品 ViewModel 不保存第二份镜像状态。
 - 展开宽度由 `GalleryShellConfiguration.SidebarWidth` 写入 host 暴露的根 `NavMenu.Width`。
 - 折叠宽度由 `NavMenu.InlineCollapsedWidth` 及其主题 Token 决定，GalleryBase 不重复配置默认值。
-- 可折叠 Sidebar 使用 `Auto,*` 列布局，Sidebar 宽度单向跟随 `NavMenu.Width` 的有效值，使 NavMenu
+- 可折叠 Sidebar 使用 `Auto,Auto,*` 列布局，Sidebar 宽度单向跟随 `NavMenu.Width` 的有效值，使 NavMenu
   的折叠/展开 motion 同时驱动品牌区、导航/内容分隔线和内容区边界。
 - `SidebarHeaderAction` 是产品导航视图提供的、尚未挂入其他视觉树的可选操作控件。Shell 只把它放入品牌区
   右侧，不拥有其命令、图标、文案或折叠状态。

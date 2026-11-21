@@ -2,6 +2,17 @@
 
 本文档记录 Calendar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Performance
+  - 去掉 `CalendarHeader` 的 16 个可继承主题输入。终端 Own Token 在根部（Calendar 或 LunarCalendar 的 Setter）赋给普通属性，
+    再经 `TemplateBinding` 传给头部、范围条和面板；日期格主题直接读取终端 Token，LunarCalendar 的派生格主题与面板主题读取自己的
+    Token。暗色全屏选中由格子的 `:dark-variant` 伪类表达。渲染不变，单个 Calendar 分配约少 10%。
+
+- Theme
+  - LunarCalendar 全屏月视图在暗色外观下为选中日期使用 `ItemActiveBg`，公历、农历两行文字使用 `ItemActiveColor`。
+    Shadcn 暗色分别呈现悬停与选中底色。紧凑日期格和浅色日期格继续用主色表达选中。
+
 ## 2026-11-15
 
 - Token

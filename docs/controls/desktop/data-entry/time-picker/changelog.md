@@ -2,6 +2,17 @@
 
 本文档记录 TimePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Performance
+  - 去掉 `TimeView` 的 8 个可继承主题输入。TimeView 经 `OwnerThemeInputs.BindFromOwner` 从自身 Token owner（四个时间/日期
+    picker 终端）读取 Own Token 到普通属性，再经 `TemplateBinding` 与 `DateTimePickerPanel` 的直接绑定传给各行；终端主题不再
+    设置这些输入，值也不再沿 picker 与弹层的整棵树继承。渲染不变。
+
+- Fixed
+  - Shadcn 的 TimePicker 和 RangeTimePicker 在相邻高亮之间留出空白，行距和点击范围保持原有尺寸。
+  - 时间弹层的 Now 采用当前主题主色，保留链接按钮的悬停、按压和禁用反馈。
+
 ## 2026-11-14
 
 - Performance

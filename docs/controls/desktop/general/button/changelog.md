@@ -8,6 +8,15 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-20
+
+- Performance
+  - 去掉 `ButtonThemeInputs` 的 10 个可继承主题输入。Button、SubmitButton、ResetButton 的主题把 Own Token 赋给按钮自身的
+    普通属性，按钮主题用编译绑定和 `TemplateBinding` 读取，值不再沿按钮内容继承。渲染不变，每个按钮分配约少 13 KB（约 5%）。
+
+- 改善 Shadcn 暗色 Button 的链接文字、危险描边与虚线变体在普通、悬停和按下状态的可读性。
+- 按 Shadcn 各风格调整按钮阴影、键盘焦点环和禁用态。Vega 中性描边按钮使用 `shadow-xs`。实心、虚线及其余风格的中性描边按钮默认平贴。
+
 ## 2026-11-14
 
 - Performance

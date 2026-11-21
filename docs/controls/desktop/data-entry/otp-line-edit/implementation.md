@@ -36,6 +36,8 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 `OtpLineEditToken` 定义 OtpLineEdit 专属布局 Token。输入表面颜色、边框、focus shadow、disabled、error 和 warning 由 `InputControlFrameTheme` 与 SharedToken 表达，cell 文本字号直接复用 SharedToken 的输入字号。
 
+`JoinCells` 开启且 `Separator` 为空时，根控件将有效格间距设为零，并标记每格与前后格的连接关系。格子的模板根据连接关系保留外侧圆角和单道接缝，宽度及画刷继续使用格子的有效属性。悬停、按下和焦点反馈可在已有接缝的位置更新颜色，格子的布局和命中区域保持不变。活动格的容器绘制在邻格上方，焦点边框和外发光优先显示。添加 `Separator` 会恢复格间距和每格的独立边框。
+
 ## 4. 状态与数据流
 
 完整值流：

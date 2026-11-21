@@ -53,6 +53,7 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
   由无身份部件读取宿主值后向下绑定。
 - 基础分隔线的画刷和厚度由 `BaseTabControl` 通过同一 `OwnerTokenSet` 解析。卡片终端在同一观察组中按当前尺寸读取自身的圆角键，
   卡片条使用自己的观察组。计算后的分隔线与卡片圆角继续供现有模板和容器使用。
+- Shadcn 将 `CardTabControl` 和 `CardTabStrip` 的默认外角限制在 8 DIP 以内。各样式较小的圆角及显式 Token 覆盖仍按原优先级生效，贴合内容的边保持直边。
 - 页签项使用命名主题（`TabItemTheme` / `CardTabItemTheme` / `TabStripItemTheme` / `CardTabStripItemTheme`），从页签项自身所在资源作用域查找，
   局部资源中的同名主题优先于应用资源；命名主题不注入 owner，页签项继承宿主为 owner（过渡时长随宿主）。
 

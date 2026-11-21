@@ -2,6 +2,14 @@
 
 本文档记录 Pagination 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Fixed
+  - Keep page-size and jump-input focus rings visible outside the pagination row. Size the compact layout gap to accommodate the theme's focus ring.
+  - In compact Shadcn simple pagination, inset the page input while keeping the navigation targets at their existing size.
+- Performance
+  - 去掉 `PaginationNavItem` 的 6 个可继承主题输入。Pagination / SimplePagination 在根部把 Own Token 赋给自身的普通属性，模板用 `TemplateBinding` 读取，导航条在准备容器时把项目尺寸、禁用色与内边距直接绑定到各项，快速跳转条随创建一起绑定并在移除时释放。渲染不变，单个分页器分配约少 1%–2%，耗时持平。
+
 ## 2026-11-14
 
 - Performance

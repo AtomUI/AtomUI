@@ -20,7 +20,9 @@ Token 按控件语义分类维护：
 | 可见分割线 | 分割线默认厚度和 grip 厚度。 | `SplitBarSize`、`HandleLineThickness` |
 | 拖拽提示 | grip 沿主轴的可见长度。 | `SplitBarDraggableSize` |
 | 折叠按钮定位 | 折叠按钮相对 handle 中心的偏移。 | `SplitBarCollapseOffset`、`SplitBarCollapseOffsetNegative`、`SplitBarCollapseCrossOffset` |
-| 颜色与状态视觉 | 普通、hover、dragging 和图标状态颜色。 | `HandleLineColor`、`HandleLineHoverColor`、`HandleLineDragColor`、`HandleIconColor`、`HandleIconHoverColor`、`HandleIconPressedColor` |
+| 分割线颜色 | 静止、悬停、拖动时的分割线颜色。 | `HandleLineColor`、`HandleLineHoverColor`、`HandleLineDragColor` |
+| 拖拽提示颜色 | 静止、悬停、拖动时的中心拖拽柄颜色。 | `HandleGripColor`、`HandleGripHoverColor`、`HandleGripDragColor` |
+| 折叠按钮颜色 | 静止、悬停、按下时的图标颜色。 | `HandleIconColor`、`HandleIconHoverColor`、`HandleIconPressedColor` |
 | 图标尺寸 | 折叠按钮图标尺寸。 | `HandleIconSize` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -52,7 +54,11 @@ Splitter 必须区分两种尺寸：
 - handle、drag bar 是无 identity 的单宿主部件，主题以 `SplitterTokenResource` 读取全局 Token（`BorderRadiusXS`、`ColorFill`、
   `ControlItemBg*`、`FontSizeSM`、`ZIndexPopupBase`），`Controls[Splitter]` 覆盖生效。
 
-### 3.3 圆角
+### 3.3 拖拽柄颜色
+
+`HandleGripColor` 默认取控件作用域的 `ColorFill`，悬停和拖动态默认沿用静止颜色。Shadcn 风格使用次级文字色凸显静止拖拽柄，悬停及拖动时提高分割线和拖拽柄的对比度。禁用拖拽时继续隐藏中心提示。
+
+### 3.4 圆角
 
 Splitter 当前没有专属圆角 token。根框架圆角应优先复用 `CornerRadius` 基础属性或 SharedToken；可见分割线和 grip 圆角应通过实例级 `LineCornerRadius` 语义或 SharedToken 映射。不要为子面板圆角新增 Splitter Token，子面板圆角属于用户内容容器。
 

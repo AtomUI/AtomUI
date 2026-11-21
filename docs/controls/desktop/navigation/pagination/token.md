@@ -30,6 +30,10 @@ Token 按控件语义分类维护：
   是 LineEdit，焦点阴影由 Input 家族绘制。
 - `ItemInputBg` 是 SimplePagination 输入框背景；`PaginationMiniQuickJumperInputWidth` 是小尺寸时快速跳转与简洁模式输入框的宽度（antd
   `controlHeightLG * 1.1`）。
+- `PaginationLayoutMiniSpacing` 是完整分页与简洁分页的小尺寸布局间距，默认取 `UniformlyMarginXXS / 2` 和
+  `ControlOutlineWidth` 中的较大值，给紧凑布局里的输入焦点环留出空间。
+- `SimplePagination` 使用自己作用域的 `InputPaddingSM` 设置小尺寸编辑框的内边距。Shadcn 预设从两侧纵向内边距中扣除
+  `ControlOutlineWidth`，结果最低为零。水平方向内边距和翻页按钮的尺寸沿用各主题的对应 Token。
 - `PaginationItemPaddingInline` 是页码项的行内（水平）内间距，作用于页码文字，宽页码（如四位数）不再贴边；默认 `UniformlyMarginXXS * 1.5, 0`。
 - 页码项 `PaginationNavItem` 被 Pagination 与 SimplePagination 共用，以 `OwnerTokenResource` 读取所在分页控件的有效全局 Token；页码项内的
   图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 有自己的 Own，公共尺寸/禁用色/布局与输入宽度经抽象层共享计算、按终端独立覆盖。

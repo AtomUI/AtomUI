@@ -69,12 +69,16 @@ antd `cardHeadPadding`（页签放在 head 内时标题的上内边距）；Atom
 - `CardShadows`
 - `RestingShadows`
 - `CardGridItemShadows`
+- `CardGridHoverShadows`
 
-`ExtraColor` 控制 Header Extra 区域文字色（`HeaderExtra` 的 `Foreground`）。`CardShadows` 是 hoverable Card 和 hoverable grid item 的
-悬停阴影（antd `cardShadow`）。`RestingShadows` 是有边框（Outlined）Card 不悬停时的静止阴影，是 AtomUI 扩展（antd 无对应 Token），供
+`ExtraColor` 控制 Header Extra 区域文字色（`HeaderExtra` 的 `Foreground`）。`CardShadows` 是可悬停 Card 的阴影（antd `cardShadow`）。
+`RestingShadows` 是有边框（Outlined）Card 不悬停时的静止阴影，是 AtomUI 扩展（antd 无对应 Token），供
 主题预设（例如 PrimeNG 的常驻卡片阴影）表达常驻阴影；默认值是与 `CardShadows` 同层数的透明阴影（由
 `CardShadows` 派生），悬停过渡因此不增减阴影层。静止的 Borderless Card 阴影仍是 `BoxShadowsTertiary`（经
-`Controls[Card].BoxShadowsTertiary` 设置），悬停的 hoverable Card 仍切换到 `CardShadows` 并去掉边框。`CardGridItemShadows` 使用多层阴影表达 grid item 之间的边线。
+`Controls[Card].BoxShadowsTertiary` 设置）。可悬停 Card 在指针进入后切换到 `CardShadows`，外边框画笔过渡至卡面背景，厚度继续用于布局。
+
+网格依据 `LineWidth` 和 `ColorBorderSecondary` 绘制固定分隔线。`CardGridItemShadows` 用于格子的常驻装饰，默认无装饰。
+`CardGridHoverShadows` 控制格子的悬停阴影，默认采用 `CardShadows`。Shadcn 使用当前风格的阴影档位，格子悬停层同时使用 `ColorFillQuaternary`。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -102,10 +106,11 @@ Header + Body + Cover + Actions + Grid + Tabs + Meta
 | `ActionsBg` | CardActionPanel 背景（Render 中绘制，只取下圆角）。 |
 | `TabsMarginBottom` | 保留，无视觉效果。 |
 | `ExtraColor` | Extra 区域文字颜色。 |
-| `CardShadows` | Card hover 和 grid item hover 阴影。 |
+| `CardShadows` | Card 悬停阴影。 |
 | `RestingShadows` | 有边框 Card 的静止阴影（默认透明）。 |
 | `CardActionsIconSize` | CardActionButton icon 宽高。 |
-| `CardGridItemShadows` | CardGridItem 默认边线阴影。 |
+| `CardGridItemShadows` | CardGridItem 常驻装饰阴影。 |
+| `CardGridHoverShadows` | CardGridItem 悬停阴影。 |
 
 实例状态派生：
 

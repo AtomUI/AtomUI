@@ -88,7 +88,8 @@ semantic owner IsPopupPinnedOpen
 ### 5.1 frame renderer
 
 `PopupFrameRenderer` 在 shadow 非空或 surface 非 `null` 时惰性创建，位于 Child 之前，不增加 layout wrapper。
-renderer 使用现有 Child bounds；arrow 可见时从 frame body bounds 扣除 indicator 占用。圆角从
+带箭头的内容提供实际主体装饰器时，renderer 将其排列边界转换到容器坐标。这样 shadow 的内缘与描边共用实际主体宽度，
+包括 Retina 下半个 DIP 的布局边界。其他内容使用现有 Child bounds，可见 arrow 按方向扣除 indicator 占用。圆角从
 `IArrowAwareShadowMaskInfoProvider`、`Border` 或 `TemplatedControl` 解析。
 
 fill 固定为 `SurfaceBackground ?? Brushes.Transparent`。shadow 为空且 surface 为 `null` 时不绘制；surface 非 `null`

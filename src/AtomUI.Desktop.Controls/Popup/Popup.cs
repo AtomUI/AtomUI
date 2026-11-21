@@ -2,13 +2,11 @@ using System.ComponentModel;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Data;
 using AtomUI.Media;
 using AtomUI.Animations;
 using AtomUI.Native;
 using AtomUI.Reflection;
 using AtomUI.Theme;
-using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -188,6 +186,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     internal static readonly StyledProperty<Thickness> MotionMarginProperty =
         AvaloniaProperty.Register<Popup, Thickness>(nameof(MotionMargin));
 
+    internal static readonly StyledProperty<Control?> VerticalPlacementFrameProperty =
+        AvaloniaProperty.Register<Popup, Control?>(nameof(VerticalPlacementFrame));
+
     internal BoxShadows FrameShadow
     {
         get => GetValue(FrameShadowProperty);
@@ -209,6 +210,12 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     {
         get => GetValue(MotionMarginProperty);
         private set => SetCurrentValue(MotionMarginProperty, value);
+    }
+
+    internal Control? VerticalPlacementFrame
+    {
+        get => GetValue(VerticalPlacementFrameProperty);
+        set => SetValue(VerticalPlacementFrameProperty, value);
     }
 
     /// <summary>
@@ -369,7 +376,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 _ignoreRequestedPlacementChange--;
             }
         }
-        else if (change.Property == MarginToAnchorProperty)
+        else if (change.Property == MarginToAnchorProperty ||
+                 change.Property == VerticalPlacementFrameProperty)
         {
             this.HandlePositionChange();
         }
@@ -636,6 +644,15 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             else
             {
                 (anchor, gravity) = PopupUtils.GetAnchorAndGravity(requestedPlacement);
+                if (VerticalPlacementFrame is { } frame &&
+                    target.GetPresentationSource()?.RootVisual is { } root &&
+                    frame.TransformToVisual(root) is { } transform)
+                {
+                    // The active input supplies the horizontal anchor. Use the frame's
+                    // top and bottom edges before constraint handling chooses a side.
+                    var frameBounds = new Rect(frame.Bounds.Size).TransformToAABB(transform);
+                    placement.AnchorRectangle = placement.AnchorRectangle.WithY(frameBounds.Y).WithHeight(frameBounds.Height);
+                }
             }
 
             // 箭头隐藏或部件不可用时保持空 bounds：窗口型 Popup 在朝向 anchor 一侧保留完整阴影，

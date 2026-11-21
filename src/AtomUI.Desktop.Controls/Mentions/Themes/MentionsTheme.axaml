@@ -67,6 +67,8 @@
             </ControlTemplate>
         </Setter>
         
+        <!-- The nested input frame draws its focus outline outside the Mentions bounds. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="IsMotionEnabled" Value="{atom:MentionsTokenResource EnableMotion}" />
         <Setter Property="UsePopupLayoutTokenResources" Value="True" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">

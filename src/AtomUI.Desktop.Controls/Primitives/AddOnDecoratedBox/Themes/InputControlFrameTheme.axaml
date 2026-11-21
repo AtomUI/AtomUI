@@ -4,7 +4,7 @@
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InputControlFrameTheme"
               TargetType="atom:InputControlFrame"
               x:ClassModifier="internal">
-    <!-- The frame expresses focus through :focus-within (border and outline shadow). Templates make frames
+    <!-- The frame expresses effective input focus through :input-focus-within. Templates make frames
          focusable for pointer hits on padding; they must never add an adorner frame. -->
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
@@ -67,22 +67,32 @@
             <Setter Property="BorderBrush"
                     Value="{CompiledBinding $self.FrameHoverBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
+        <Style Selector="^:outline[UsesTransparentBorder=True][EffectiveStatus=Default][IsInnerBoxHover=False],
+                         ^:outline[UsesTransparentHoverBorder=True][EffectiveStatus=Default][IsInnerBoxHover=True]">
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="^:outline[UsesTransparentBorder=True] /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        </Style>
+        <Style Selector="^:outline[UsesBottomOnlyBorder=True] /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
+            <Setter Property="DrawOnlyBottomBorder" Value="True" />
+        </Style>
         <Style Selector="^:filled[IsInnerBoxHover=True]">
             <Setter Property="Background"
                     Value="{CompiledBinding $self.FrameHoverBackground, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
-        <Style Selector="^:outline:focus-within, ^:outline:pressed">
+        <Style Selector="^:outline:input-focus-within, ^:outline:pressed">
             <Setter Property="BorderBrush"
                     Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
             <Setter Property="BoxShadow"
                     Value="{CompiledBinding $self.FrameActiveShadow, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
-        <Style Selector="^:filled:focus-within">
+        <Style Selector="^:filled:input-focus-within">
             <Setter Property="BorderBrush"
                     Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="^:filled:pressed, ^:underlined:focus-within, ^:underlined:pressed">
+        <Style Selector="^:filled:pressed, ^:underlined:input-focus-within, ^:underlined:pressed">
             <Setter Property="BorderBrush"
                     Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
@@ -133,6 +143,9 @@
                     Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Setter Property="BorderBrush"
                     Value="{atom:OwnerTokenResource ColorBorder}" />
+        </Style>
+        <Style Selector="^:disabled:outline[UsesTransparentBorder=True]">
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
         <Style Selector="^:disabled:outline /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:disabled:outline /template/ atom|PixelAlignedBorder#PART_RightAddOn,

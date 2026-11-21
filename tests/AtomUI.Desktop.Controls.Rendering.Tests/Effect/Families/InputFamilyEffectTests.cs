@@ -124,7 +124,7 @@ public partial class InputFamilyEffectTests
         void Variant(InputControlStyleVariant variant) => init.Add(c => SetVariant(c, variant));
         void Status(InputControlStatus status) => init.Add(c => SetStatus(c, status));
         void Hover() => arrange.Add(static c => FrameOf(c).IsInnerBoxHover = true);
-        void Focus() => arrange.Add(static c => ((IPseudoClasses)FrameOf(c).Classes).Add(":focus-within"));
+        void Focus() => arrange.Add(static c => FrameOf(c).IsInputFocusWithin = true);
         void Disabled() => init.Add(static c => c.IsEnabled = false);
         void LeftAddOn(object content) => init.Add(c => SetLeftAddOn(c, content));
         // TextArea has no outer add-ons; its prefix presenter receives the same status colours.

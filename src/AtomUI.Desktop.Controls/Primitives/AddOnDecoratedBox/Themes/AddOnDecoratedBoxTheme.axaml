@@ -135,6 +135,14 @@
         <Style Selector="^[StyleVariant=Filled] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
             <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         </Style>
+        <Style Selector="^:outline[UsesTransparentBorder=True] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        </Style>
+        <Style Selector="^:outline[UsesBottomOnlyBorder=True] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame,
+                         ^:outline[UsesBottomOnlyBorder=True] /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
+                         ^:outline[UsesBottomOnlyBorder=True] /template/ atom|PixelAlignedBorder#PART_RightAddOn">
+            <Setter Property="DrawOnlyBottomBorder" Value="True" />
+        </Style>
 
         <Style Selector="^[SizeType=Large]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">

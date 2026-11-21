@@ -231,7 +231,7 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     static AbstractArrowDecoratedBox()
     {
         AffectsMeasure<AbstractArrowDecoratedBox>(IsArrowVisibleProperty, ArrowDirectionProperty);
-        AffectsArrange<AbstractArrowDecoratedBox>(ArrowPositionProperty, ArrowAnchorOffsetProperty);
+        AffectsArrange<AbstractArrowDecoratedBox>(ArrowPositionProperty, ArrowAnchorOffsetProperty, CornerRadiusProperty);
         AffectsRender<AbstractArrowDecoratedBox>(BackgroundProperty, ArrowOpacityProperty, BorderBrushProperty,
             BorderThicknessProperty, CornerRadiusProperty);
     }
@@ -266,11 +266,6 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         if (change.Property == BorderThicknessProperty)
         {
             PseudoClasses.Set(BorderedPseudoClass, BorderThickness != default);
-        }
-
-        if (ArrowAnchorOffset is not null && change.Property == CornerRadiusProperty)
-        {
-            InvalidateArrange();
         }
 
         if (change.Property == ArrowPositionProperty)
@@ -686,10 +681,7 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         }
 
         var adjustedOffset = AdjustArrowOffset(new Point(offsetX, offsetY), finalSize, size);
-        if (ArrowAnchorOffset is { } anchorOffset && double.IsFinite(anchorOffset))
-        {
-            adjustedOffset = ResolveAnchoredOffset(adjustedOffset, anchorOffset, finalSize, size);
-        }
+        adjustedOffset = ResolveCornerSafeArrowOffset(adjustedOffset, finalSize, size);
 
         ArrowIndicatorLayout.Arrange(new Rect(adjustedOffset, size));
         if (ArrowIndicator != null)
@@ -701,23 +693,33 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
         ArrowPlacementFlipped     = false;
     }
 
-    private Point ResolveAnchoredOffset(Point offset, double center, Size finalSize, Size arrowSize)
+    private Point ResolveCornerSafeArrowOffset(Point offset, Size finalSize, Size arrowSize)
     {
-        var radius = GetMaskCornerRadius();
-        return ArrowDirection switch
+        var direction = ArrowDirection;
+        var horizontal = direction is Direction.Top or Direction.Bottom;
+        var start = horizontal ? offset.X : offset.Y;
+        if (ArrowAnchorOffset is { } center && double.IsFinite(center))
         {
-            Direction.Top => new Point(ClampArrowStart(center, finalSize.Width, arrowSize.Width, radius.TopLeft, radius.TopRight), offset.Y),
-            Direction.Bottom => new Point(ClampArrowStart(center, finalSize.Width, arrowSize.Width, radius.BottomLeft, radius.BottomRight), offset.Y),
-            Direction.Left => new Point(offset.X, ClampArrowStart(center, finalSize.Height, arrowSize.Height, radius.TopLeft, radius.BottomLeft)),
-            _ => new Point(offset.X, ClampArrowStart(center, finalSize.Height, arrowSize.Height, radius.TopRight, radius.BottomRight))
+            var arrowExtent = horizontal ? arrowSize.Width : arrowSize.Height;
+            start = center - arrowExtent / 2;
+        }
+
+        // The arrow's entire base must sit on the straight edge for the outline to follow it without backtracking.
+        var radius = GetMaskCornerRadius();
+        return direction switch
+        {
+            Direction.Top => new Point(ClampArrowStart(start, finalSize.Width, arrowSize.Width, radius.TopLeft, radius.TopRight), offset.Y),
+            Direction.Bottom => new Point(ClampArrowStart(start, finalSize.Width, arrowSize.Width, radius.BottomLeft, radius.BottomRight), offset.Y),
+            Direction.Left => new Point(offset.X, ClampArrowStart(start, finalSize.Height, arrowSize.Height, radius.TopLeft, radius.BottomLeft)),
+            _ => new Point(offset.X, ClampArrowStart(start, finalSize.Height, arrowSize.Height, radius.TopRight, radius.BottomRight))
         };
     }
 
-    private static double ClampArrowStart(double center, double edge, double arrow, double startRadius, double endRadius)
+    private static double ClampArrowStart(double start, double edge, double arrow, double startRadius, double endRadius)
     {
         var min = Math.Max(0, startRadius);
         var max = edge - arrow - Math.Max(0, endRadius);
-        return min <= max ? Math.Clamp(center - arrow / 2, min, max) : (edge - arrow) / 2;
+        return min <= max ? Math.Clamp(start, min, max) : (edge - arrow) / 2;
     }
 
     private void SetArrowDirectionIfChanged(Direction direction)

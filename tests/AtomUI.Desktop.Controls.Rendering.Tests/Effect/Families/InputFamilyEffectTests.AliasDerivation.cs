@@ -4,7 +4,6 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Shouldly;
 using SkiaSharp;
 using Xunit;
@@ -33,7 +32,7 @@ public partial class InputFamilyEffectTests
         {
             var frame = FrameOf(lineEdit);
             using var unfocused = capture();
-            ((IPseudoClasses)frame.Classes).Add(":focus-within");
+            frame.IsInputFocusWithin = true;
             using var focused = capture();
 
             provider.Config = OutlineWidthConfig(scope, width);

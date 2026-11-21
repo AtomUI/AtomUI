@@ -197,7 +197,14 @@ internal class ShadowsAwareContainer : Decorator
         if (_frameRenderer != null)
         {
             var shadowBounds = Child?.Bounds ?? default;
-            if (IsArrowVisible)
+            if (_arrowDecoratedBox?.ContentDecorator is { } body &&
+                body.TransformToVisual(this) is { } bodyTransform)
+            {
+                // The presenter can round its bounds wider than the actual body. Using those bounds for the
+                // shadow cutout leaves a transparent strip beyond the body's outline.
+                shadowBounds = new Rect(body.Bounds.Size).TransformToAABB(bodyTransform);
+            }
+            else if (IsArrowVisible)
             {
                 var effectiveDirection = ArrowDirection;
                 if (effectiveDirection == Direction.Top)

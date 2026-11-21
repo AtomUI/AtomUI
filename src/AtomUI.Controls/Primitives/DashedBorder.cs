@@ -119,10 +119,21 @@ public class DashedBorder : Decorator
     }
     
     #endregion
+
+    internal static readonly StyledProperty<bool> DrawOnlyBottomBorderProperty =
+        AvaloniaProperty.Register<DashedBorder, bool>(nameof(DrawOnlyBottomBorder));
+
+    internal bool DrawOnlyBottomBorder
+    {
+        get => GetValue(DrawOnlyBottomBorderProperty);
+        set => SetValue(DrawOnlyBottomBorderProperty, value);
+    }
     
     // 不能使用 readonly + inline 初始化：win-x86 ReadyToRun 镜像会把这个字段错误地
     // 读成 null（见 https://github.com/AtomUI/AtomUI/issues/429），这里改为使用时惰性兜底。
     private BorderRenderHelper? _borderRenderHelper = new BorderRenderHelper();
+    // The bottom-only stroke keeps its own pen cache; sharing the fill helper would recreate the pen every render.
+    private BorderRenderHelper? _bottomBorderRenderHelper;
     private Thickness? _renderThickness;
     private double _layoutScale;
     private Control? _managedClipChild;
@@ -140,6 +151,7 @@ public class DashedBorder : Decorator
             BorderThicknessProperty,
             CornerRadiusProperty,
             BoxShadowProperty,
+            DrawOnlyBottomBorderProperty,
             StrokeDashArrayProperty,
             StrokeDaskOffsetProperty,
             UseLayoutRoundingProperty);
@@ -152,6 +164,25 @@ public class DashedBorder : Decorator
         var layoutScale = LayoutHelper.GetLayoutScale(this);
         var renderThickness = GetRenderThickness(layoutScale);
         var renderSize = CalculateRenderSize(Bounds.Size, layoutScale);
+
+        if (DrawOnlyBottomBorder)
+        {
+            // The other edges keep their layout thickness and preserve the background inset and child clip.
+            borderRenderHelper.Render(context, renderSize, renderThickness, CornerRadius, BackgroundSizing,
+                Background, null, StrokeDashArray, StrokeDaskOffset, BoxShadow);
+
+            if (BorderBrush is { } borderBrush && renderThickness.Bottom > 0)
+            {
+                var bottom = Math.Min(renderThickness.Bottom, renderSize.Height);
+                using (context.PushClip(new Rect(0, renderSize.Height - bottom, renderSize.Width, bottom)))
+                {
+                    var bottomBorderRenderHelper = _bottomBorderRenderHelper ??= new BorderRenderHelper();
+                    bottomBorderRenderHelper.Render(context, renderSize, renderThickness, CornerRadius, BackgroundSizing,
+                        null, borderBrush, StrokeDashArray, StrokeDaskOffset);
+                }
+            }
+            return;
+        }
 
         borderRenderHelper.Render(
             context,
@@ -178,6 +209,11 @@ public class DashedBorder : Decorator
             change.Property == UseLayoutRoundingProperty)
         {
             _renderThickness = null;
+        }
+
+        if (change.Property == DrawOnlyBottomBorderProperty && !DrawOnlyBottomBorder)
+        {
+            _bottomBorderRenderHelper = null;
         }
 
         if (change.Property == ClipContentToCornerRadiusProperty ||

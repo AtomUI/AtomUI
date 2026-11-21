@@ -110,6 +110,11 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
     public partial Size HandleSizeSM { get; set; }
 
     /// <summary>
+    /// Whether pressing the switch stretches the handle inward and shifts the visible content. Defaults to true.
+    /// </summary>
+    public partial bool EnableHandlePressStretch { get; set; }
+
+    /// <summary>
     /// 内容区域最小边距
     /// </summary>
     public partial double InnerMinMargin { get; set; }
@@ -218,6 +223,7 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
         TrackBorderThickness    = 0;
         HandleSize      = new Size(handleSize, handleSize);
         HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
+        EnableHandlePressStretch = true;
 
         InnerMinMargin   = handleSize / 2;
         InnerMaxMargin   = handleSize + padding * 3;

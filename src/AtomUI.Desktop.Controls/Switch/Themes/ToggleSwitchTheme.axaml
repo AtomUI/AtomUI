@@ -29,6 +29,7 @@
                                      atom:TransitionInitialization.Mode="Owner"
                                      Classes.semantic-indicator="True"
                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                     KnobWidthExtension="{TemplateBinding KnobWidthExtension}"
                                      RenderTransform="{TemplateBinding KnobRenderTransform}"
                                      RenderTransformOrigin="0%,0%"
                                      IsCheckedState="{TemplateBinding IsChecked}" />
@@ -50,6 +51,7 @@
         </Style>
 
         <Setter Property="TrackPadding" Value="{atom:ToggleSwitchTokenResource TrackPadding}" />
+        <Setter Property="EnableHandlePressStretch" Value="{atom:ToggleSwitchTokenResource EnableHandlePressStretch}" />
         <Setter Property="UseContentMarginTokenResources" Value="True" />
 
         <Style Selector="^[IsMotionEnabled=True]">
@@ -57,6 +59,7 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <TransformOperationsTransition Property="KnobRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="KnobWidthExtension" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>

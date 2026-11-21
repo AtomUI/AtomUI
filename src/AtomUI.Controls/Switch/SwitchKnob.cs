@@ -49,8 +49,8 @@ internal class SwitchKnob : TemplatedControl
     internal static readonly StyledProperty<Size> KnobSizeProperty =
         AvaloniaProperty.Register<SwitchKnob, Size>(nameof(KnobSize));
     
-    internal static readonly StyledProperty<double> KnobRenderWidthProperty =
-        AvaloniaProperty.Register<SwitchKnob, double>(nameof(KnobRenderWidth));
+    internal static readonly StyledProperty<double> KnobWidthExtensionProperty =
+        AvaloniaProperty.Register<SwitchKnob, double>(nameof(KnobWidthExtension));
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SwitchKnob>();
@@ -90,10 +90,10 @@ internal class SwitchKnob : TemplatedControl
         set => SetValue(KnobSizeProperty, value);
     }
     
-    internal double KnobRenderWidth
+    internal double KnobWidthExtension
     {
-        get => GetValue(KnobRenderWidthProperty);
-        set => SetValue(KnobRenderWidthProperty, value);
+        get => GetValue(KnobWidthExtensionProperty);
+        set => SetValue(KnobWidthExtensionProperty, value);
     }
     
     internal bool IsMotionEnabled
@@ -143,7 +143,7 @@ internal class SwitchKnob : TemplatedControl
     static SwitchKnob()
     {
         AffectsRender<SwitchKnob>(
-            BackgroundProperty, RotationProperty, KnobRenderWidthProperty, LoadIndicatorBrushProperty,
+            BackgroundProperty, RotationProperty, KnobSizeProperty, KnobWidthExtensionProperty, LoadIndicatorBrushProperty,
             LoadIndicatorThicknessProperty);
         AffectsMeasure<SwitchKnob>(KnobSizeProperty);
         IsMotionEnabledProperty.OverrideDefaultValue<SwitchKnob>(true);
@@ -203,11 +203,7 @@ internal class SwitchKnob : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == KnobSizeProperty)
-        {
-            KnobRenderWidth = KnobSize.Width;
-        }
-        else if (change.Property == LoadingIndicatorTokenResourceKeysProperty && _isLoading && this.IsAttachedToVisualTree())
+        if (change.Property == LoadingIndicatorTokenResourceKeysProperty && _isLoading && this.IsAttachedToVisualTree())
         {
             UpdateLoadingPaintTokenSubscription();
         }
@@ -251,15 +247,9 @@ internal class SwitchKnob : TemplatedControl
 
     public sealed override void Render(DrawingContext context)
     {
-        var offsetX = 0d;
-        var offsetY = 0d;
-        if (IsCheckedState)
-        {
-            offsetX = Bounds.Width - KnobRenderWidth;
-        }
-
-        var targetRect = new Rect(offsetX, offsetY, KnobRenderWidth, Bounds.Height);
-        if (MathUtils.AreClose(KnobRenderWidth, DesiredSize.Height))
+        var renderWidth = KnobSize.Width + KnobWidthExtension;
+        var targetRect  = new Rect(0, 0, renderWidth, Bounds.Height);
+        if (MathUtils.AreClose(renderWidth, targetRect.Height))
         {
             context.DrawEllipse(Background, null, targetRect);
         }
@@ -271,7 +261,7 @@ internal class SwitchKnob : TemplatedControl
         if (_isLoading)
         {
             var delta           = 2.5;
-            var loadingRectSize = targetRect.Size.Deflate(new Thickness(delta));
+            var loadingRectSize = new Size(KnobSize.Width, targetRect.Height).Deflate(new Thickness(delta));
             var loadingRect = new Rect(new Point(-loadingRectSize.Width / 2, -loadingRectSize.Height / 2),
                 loadingRectSize);
             var       pen                     = GetLoadIndicatorPen();

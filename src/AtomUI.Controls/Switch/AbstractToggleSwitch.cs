@@ -209,11 +209,17 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     internal static readonly StyledProperty<bool> UseContentMarginTokenResourcesProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, bool>(nameof(UseContentMarginTokenResources));
 
+    internal static readonly StyledProperty<bool> EnableHandlePressStretchProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, bool>(nameof(EnableHandlePressStretch), true);
+
     internal static readonly StyledProperty<double> IconSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(IconSize));
 
     internal static readonly StyledProperty<ITransform?> KnobRenderTransformProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, ITransform?>(nameof(KnobRenderTransform));
+
+    internal static readonly StyledProperty<double> KnobWidthExtensionProperty =
+        SwitchKnob.KnobWidthExtensionProperty.AddOwner<AbstractToggleSwitch>();
 
     internal static readonly StyledProperty<Point> OnContentOffsetProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OnContentOffset));
@@ -239,6 +245,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(UseContentMarginTokenResourcesProperty, value);
     }
 
+    internal bool EnableHandlePressStretch
+    {
+        get => GetValue(EnableHandlePressStretchProperty);
+        set => SetValue(EnableHandlePressStretchProperty, value);
+    }
+
     private OwnerTokenSet? _contentMarginTokens;
     private (double Min, double Max) _contentMargins;
 
@@ -256,6 +268,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     {
         get => GetValue(KnobRenderTransformProperty);
         private set => SetValue(KnobRenderTransformProperty, value);
+    }
+
+    internal double KnobWidthExtension
+    {
+        get => GetValue(KnobWidthExtensionProperty);
+        private set => SetValue(KnobWidthExtensionProperty, value);
     }
 
     internal Point OnContentOffset
@@ -357,12 +375,16 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         if (_switchKnob is not null)
         {
             _switchKnob.KnobSize = KnobSize;
-            // Default templates declare the binding. A custom template using the established part
-            // alone still receives its required position, which cannot be supplied by that theme.
+            // Custom templates can omit the bindings declared by the default theme. These fallback
+            // bindings follow TemplatedParent so they release this owner when the part is replaced.
             if (!_switchKnob.IsSet(RenderTransformProperty))
             {
-                _switchKnob.Bind(RenderTransformProperty, this.GetObservable(KnobRenderTransformProperty), BindingPriority.Template);
+                _switchKnob.Bind(RenderTransformProperty, new TemplateBinding(KnobRenderTransformProperty));
                 _switchKnob.SetValue(RenderTransformOriginProperty, new RelativePoint(0, 0, RelativeUnit.Relative), BindingPriority.Template);
+            }
+            if (!_switchKnob.IsSet(SwitchKnob.KnobWidthExtensionProperty))
+            {
+                _switchKnob.Bind(SwitchKnob.KnobWidthExtensionProperty, new TemplateBinding(KnobWidthExtensionProperty));
             }
         }
 
@@ -426,7 +448,8 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             SetupContent(change.OldValue, change.NewValue, change.Property == OnContentProperty);
         }
 
-        if (change.Property == IsPressedProperty && _switchKnob is not null)
+        if (_switchKnob is not null &&
+            (change.Property == IsPressedProperty || (change.Property == EnableHandlePressStretchProperty && IsPressed)))
         {
             CalculateElementsOffset(GrooveRect().Size);
         }
@@ -654,27 +677,28 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     private void CalculateElementsOffset(Size controlSize)
     {
         var isChecked = IsChecked.HasValue && IsChecked.Value;
-        var knobTarget = HandleRect(isChecked, controlSize);
+        var stretchHandle = IsPressed && EnableHandlePressStretch;
+        var handleWidth = stretchHandle ? KnobSize.Width * STRETCH_FACTOR : KnobSize.Width;
+        var knobTarget = HandleRect(isChecked, controlSize, handleWidth);
+        KnobWidthExtension = handleWidth - KnobSize.Width;
         if (KnobRenderTransform is null || _knobTarget != knobTarget)
         {
             _knobTarget = knobTarget;
-            var builder = new TransformOperations.Builder(2);
-            builder.AppendScale(KnobSize.Width > 0 ? knobTarget.Width / KnobSize.Width : 1, 1);
+            var builder = new TransformOperations.Builder(1);
             builder.AppendTranslate(knobTarget.X, knobTarget.Y);
             KnobRenderTransform = builder.Build();
         }
 
         var onExtraInfoRect  = ExtraInfoRect(true, controlSize);
         var offExtraInfoRect = ExtraInfoRect(false, controlSize);
+        var pressedOffset = stretchHandle ? knobTarget.Width * (STRETCH_FACTOR - 1) : 0;
         if (isChecked)
         {
-            var pressedOffset = IsPressed ? knobTarget.Width * (STRETCH_FACTOR - 1) : 0;
             OnContentOffset  = new Point(onExtraInfoRect.X - pressedOffset, onExtraInfoRect.Y);
             OffContentOffset = new Point(controlSize.Width + 1, onExtraInfoRect.Top);
         }
         else
         {
-            var pressedOffset = IsPressed ? knobTarget.Width * (STRETCH_FACTOR - 1) : 0;
             OffContentOffset = new Point(offExtraInfoRect.X + pressedOffset, offExtraInfoRect.Y);
             OnContentOffset  = new Point(-offExtraInfoRect.Width, offExtraInfoRect.Top);
         }
@@ -771,17 +795,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         return new Rect(Bounds.Size);
     }
 
-    private Rect HandleRect(bool isChecked, Size controlSize)
+    private Rect HandleRect(bool isChecked, Size controlSize, double handleWidth)
     {
         double handlePosX;
         double handlePosY;
-        var    handleSize = KnobSize.Width;
         var    offsetX    = TrackPadding;
         var    offsetY    = TrackPadding;
-        if (IsPressed)
-        {
-            handleSize *= STRETCH_FACTOR;
-        }
 
         if (!isChecked)
         {
@@ -790,11 +809,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
         else
         {
-            handlePosX = controlSize.Width - offsetX - handleSize;
+            handlePosX = controlSize.Width - offsetX - handleWidth;
             handlePosY = offsetY;
         }
 
-        return new Rect(handlePosX, handlePosY, handleSize, KnobSize.Height);
+        return new Rect(handlePosX, handlePosY, handleWidth, KnobSize.Height);
     }
 
     private Rect ExtraInfoRect(bool isChecked, Size controlSize)

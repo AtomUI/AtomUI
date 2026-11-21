@@ -14,7 +14,7 @@ namespace AtomUI.Controls.Commons;
 using AvaloniaButton = Avalonia.Controls.Button;
 
 [TemplatePart("PART_BadgeLayout", typeof(Canvas))]
-[PseudoClasses(ButtonPseudoClass.IconOnly)]
+[PseudoClasses(ButtonPseudoClass.IconOnly, ":description", ":plain-description")]
 public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
 {
     #region 公共属性定义
@@ -196,6 +196,9 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         AvaloniaProperty.Register<AbstractFloatButton, IBrush?>(
             nameof(BadgeEffectiveColor));
 
+    internal static readonly StyledProperty<bool> UseContentMeasureProperty =
+        AvaloniaProperty.Register<AbstractFloatButton, bool>(nameof(UseContentMeasure));
+
     private bool _isEmbedMode;
 
     internal bool IsEmbedMode
@@ -210,6 +213,12 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         set => SetValue(BadgeEffectiveColorProperty, value);
     }
 
+    internal bool UseContentMeasure
+    {
+        get => GetValue(UseContentMeasureProperty);
+        set => SetValue(UseContentMeasureProperty, value);
+    }
+
     #endregion
     
     private bool _isCommittingDrag;
@@ -218,6 +227,11 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
     private protected Control? _badge;
     private IDisposable? _themeSubscription;
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
+
+    static AbstractFloatButton()
+    {
+        AffectsMeasure<AbstractFloatButton>(UseContentMeasureProperty);
+    }
 
     internal Size? OverlayAvailableSize => _overlayLayer?.Bounds.Size;
 
@@ -281,9 +295,31 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
 
     protected override Size MeasureOverride(Size availableSize)
     {
+        if (UseContentMeasure)
+        {
+            if (!double.IsFinite(Width))
+            {
+                availableSize = availableSize.WithWidth(Math.Min(availableSize.Width, GetDescriptionWidthLimit()));
+            }
+            return base.MeasureOverride(availableSize);
+        }
+
         var size       = base.MeasureOverride(availableSize);
         var effectSize = Math.Max(size.Width, size.Height);
         return new Size(effectSize, effectSize);
+    }
+
+    private double GetDescriptionWidthLimit()
+    {
+        var width = double.IsFinite(MaxWidth) ? MaxWidth : MinWidth * 2.5;
+        if (_overlayLayer is { Bounds.Width: > 0 } layer)
+        {
+            var offset = Placement is FloatButtonPlacement.Top or FloatButtonPlacement.Bottom or FloatButtonPlacement.Center
+                ? 2 * Math.Abs(FloatOffsetX)
+                : Math.Max(0, FloatOffsetX);
+            width = Math.Min(width, layer.Bounds.Width - offset);
+        }
+        return Math.Max(MinWidth, width);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -291,6 +327,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         base.OnPropertyChanged(change);
         if (change.Property == IconProperty ||
             change.Property == ContentProperty ||
+            change.Property == ContentTemplateProperty ||
             change.Property == ShapeProperty)
         {
             UpdatePseudoClasses();
@@ -309,6 +346,11 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
                  change.Property == FloatOffsetYProperty ||
                  change.Property == PlacementProperty)
         {
+            if (UseContentMeasure &&
+                (change.Property == FloatOffsetXProperty || change.Property == PlacementProperty))
+            {
+                InvalidateMeasure();
+            }
             if (!_isCommittingDrag && _overlayLayer is { } layer)
             {
                 CalculatePosition(this, layer.Bounds.Size, Placement, FloatOffsetX, FloatOffsetY);
@@ -380,6 +422,8 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
 
     protected virtual void UpdatePseudoClasses()
     {
+        PseudoClasses.Set(":description", Content is not null);
+        PseudoClasses.Set(":plain-description", Content is string && ContentTemplate is null);
         if (Shape == FloatButtonShape.Square)
         {
             PseudoClasses.Set(ButtonPseudoClass.IconOnly, Icon is not null && Content is null);
@@ -405,22 +449,23 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         {
             _overlayLayer.SizeChanged -= HandleLayerSizeChanged;
         }
-        if (!IsEmbedMode)
+        _overlayLayer = IsEmbedMode ? null : parent as ScopeAwareOverlayLayer;
+        if (_overlayLayer is not null)
         {
-            if (parent is ScopeAwareOverlayLayer scopeAwareOverlayLayer)
-            {
-                _overlayLayer                      =  scopeAwareOverlayLayer;
-                scopeAwareOverlayLayer.SizeChanged += HandleLayerSizeChanged;
-            }
+            _overlayLayer.SizeChanged += HandleLayerSizeChanged;
         }
-        else
+        if (UseContentMeasure)
         {
-            _overlayLayer = null;
+            InvalidateMeasure();
         }
     }
 
     private void HandleLayerSizeChanged(object? sender, SizeChangedEventArgs e)
     {
+        if (UseContentMeasure && e.PreviousSize.Width != e.NewSize.Width)
+        {
+            InvalidateMeasure();
+        }
         CalculatePosition(this, e.NewSize, Placement, FloatOffsetX, FloatOffsetY);
     }
 
@@ -437,6 +482,8 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
             Canvas.SetTop(_badge, targetOffsetY);
         }
     }
+
+    #region 内部协作 API
 
     internal static void CalculatePosition(Control floatControl, 
                                            Size layerSize, 
@@ -512,4 +559,6 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         Canvas.SetLeft(floatControl, targetOffsetX);
         Canvas.SetTop(floatControl, targetOffsetY);
     }
+
+    #endregion
 }

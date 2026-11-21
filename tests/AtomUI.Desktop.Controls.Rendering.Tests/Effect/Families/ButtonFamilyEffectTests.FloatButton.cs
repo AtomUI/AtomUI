@@ -52,9 +52,13 @@ public partial class ButtonFamilyEffectTests
 
     [Theory]
     [MemberData(nameof(FloatButtonRows))]
-    public void FloatButton_Token_Has_Effect(string token, bool isOwn)
+    public async Task FloatButton_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
+        if (token is "ColorBorder" or "BorderThickness" or "BorderRadius" or "IconSize" or "FontSize" or "SpacingXS" or "PaddingLG" or "ControlHeight")
+        {
+            await ApplyShadcnRecipeTheme();
+        }
         if (token is "FloatOffsetX" or "FloatOffsetY" or "UniformlyMargin")
         {
             // The host places the overlay button at its offsets; the button moves inside the overlay layer.
@@ -185,6 +189,14 @@ public partial class ButtonFamilyEffectTests
 
         switch (token)
         {
+            case "BorderRadius":
+                return new(With(static b => b.Shape = FloatButtonShape.Square));
+            case "IconSize" or "FontSize" or "SpacingXS" or "PaddingLG" or "ControlHeight":
+                return new(With(static b =>
+                {
+                    b.Shape = FloatButtonShape.Square;
+                    b.Content = "Help info";
+                }));
             case "DescriptionLineHeight" or "FontSizeSM" or "PaddingXXS" or "BorderRadiusLG":
                 return new(With(static b =>
                 {

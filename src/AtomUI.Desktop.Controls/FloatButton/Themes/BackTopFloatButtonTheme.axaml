@@ -39,18 +39,22 @@
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="{TemplateBinding CornerRadius}"
                                     Cursor="{TemplateBinding Cursor}">
-                                <StackPanel Name="RootLayout">
+                                <DockPanel Name="RootLayout" LastChildFill="True">
                                     <atom:IconPresenter Name="IconPresenter" Icon="{TemplateBinding Icon}"
-                                                        Classes.semantic-icon="True"
+                                                        Classes.semantic-icon="True" DockPanel.Dock="Top"
                                                         IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                    <ContentPresenter Content="{TemplateBinding Content}"
+                                    <ContentPresenter Name="Description" Content="{TemplateBinding Content}"
                                                       Classes.semantic-content="True"
                                                       TextWrapping="Wrap"
                                                       HorizontalContentAlignment="Center"
                                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                                       IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                </StackPanel>
+                                </DockPanel>
                             </Border>
+                            <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />
@@ -96,6 +100,10 @@
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center" />
                             </Border>
+                            <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />

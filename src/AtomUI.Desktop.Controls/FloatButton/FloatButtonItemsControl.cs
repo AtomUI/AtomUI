@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -79,6 +80,7 @@ internal class FloatButtonItemsControl : TemplatedControl
     #endregion
     
     private StackPanel? _itemsLayout;
+    private FloatButtonThemeInputs? _themeInputs;
 
     static FloatButtonItemsControl()
     {
@@ -96,6 +98,19 @@ internal class FloatButtonItemsControl : TemplatedControl
         DetachItemsLayoutChildren();
         _itemsLayout = e.NameScope.Find<StackPanel>("PART_ItemsLayout");
         _itemsLayout?.Children.AddRange(Children);
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        _themeInputs = new FloatButtonThemeInputs(this);
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        _themeInputs?.Dispose();
+        _themeInputs = null;
+        base.OnDetachedFromLogicalTree(e);
     }
 
     private void DetachItemsLayoutChildren()

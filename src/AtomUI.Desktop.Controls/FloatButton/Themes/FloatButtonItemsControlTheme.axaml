@@ -19,6 +19,8 @@
                                     <atomc:FloatButtonSeparatorLayer Orientation="{TemplateBinding Orientation}"
                                                                      Lines="{TemplateBinding Lines}" />
                                     <StackPanel Name="PART_ItemsLayout" Orientation="{TemplateBinding Orientation}" />
+                                    <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                            CornerRadius="{TemplateBinding CornerRadius}" />
                                 </Panel>
                             </Border>
                         </DockPanel>
@@ -38,6 +40,8 @@
                             <atomc:FloatButtonSeparatorLayer Orientation="{TemplateBinding Orientation}"
                                                              Lines="{TemplateBinding Lines}" />
                             <StackPanel Name="PART_ItemsLayout" Orientation="{TemplateBinding Orientation}" />
+                            <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
                         </Panel>
                     </Border>
                 </ControlTemplate>
@@ -54,6 +58,12 @@
         </Style>
         <Style Selector="^ /template/ atomc|FloatButtonSeparatorLayer">
             <Setter Property="SeparatorBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
+        </Style>
+
+        <Style Selector="^[Shape=Square][(atom|FloatButtonThemeInputs.HasOutline)=True] /template/ Border#OutlineFrame">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="BorderBrush" Value="{atom:FloatButtonTokenResource ColorBorder}" />
+            <Setter Property="BorderThickness" Value="{atom:FloatButtonTokenResource BorderThickness}" />
         </Style>
         
         <Style Selector="^[Shape=Circle]">

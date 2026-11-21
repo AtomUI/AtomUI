@@ -39,6 +39,12 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     public partial Color OptionActiveBg { get; set; }
 
     /// <summary>
+    /// 选项背景相对于交互区域的内缩距离
+    /// Insets the option background within its interactive row.
+    /// </summary>
+    public partial Thickness OptionBackgroundInset { get; set; }
+
+    /// <summary>
     /// 选项内间距
     /// Padding of option
     /// </summary>
@@ -71,16 +77,7 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     /// 菜单内容边距
     /// </summary>
     public partial Thickness PopupContentPadding { get; set; }
-
-
-
-
-
-
-
-
-
-
+    
     public SelectToken()
 
     {

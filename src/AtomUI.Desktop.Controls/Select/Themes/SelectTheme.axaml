@@ -76,6 +76,14 @@
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
                                         Spacing="{atom:SelectTokenResource SpacingXS}">
+                                <TextElement.Foreground>
+                                    <MultiBinding Converter="{x:Static atom:InputControlFrame.IndicatorForegroundConverter}"
+                                                  Priority="Template"
+                                                  x:CompileBindings="True">
+                                        <Binding Path="$parent[atom:SelectAddOnDecoratedBox].MutedIndicatorForeground" />
+                                        <atom:SelectTokenResource Kind="ColorTextQuaternary" />
+                                    </MultiBinding>
+                                </TextElement.Foreground>
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
                                     MaxCount="{CompiledBinding $parent[atom:Select].MaxCount}"

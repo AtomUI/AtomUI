@@ -70,7 +70,7 @@ public partial class SelectFamilyEffectTests
         public Func<object, object>? Perturb;
 
         public void Hover() => Arrange.Add(static c => FrameOf(c).IsInnerBoxHover = true);
-        public void Focus() => Arrange.Add(static c => ((IPseudoClasses)FrameOf(c).Classes).Add(":focus-within"));
+        public void Focus() => Arrange.Add(static c => FrameOf(c).IsInputFocusWithin = true);
         public void Disabled() => Init.Add(static c => c.IsEnabled = false);
 
         public void OnPart<T>(string name, string pseudoClass) where T : Control => Arrange.Add(c =>

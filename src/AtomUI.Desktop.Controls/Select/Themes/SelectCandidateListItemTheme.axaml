@@ -5,7 +5,7 @@
     x:ClassModifier="internal">
     <!-- The option item exists only in the Select drop-down: every visual reads the Select's effective Tokens explicitly
          (the owner-transparent Popup also hands the Select's owner to it), so Controls[Select] reaches the options. The
-         ListViewItem base theme only provides the template and layout. -->
+         ListViewItem base theme provides shared item states and metrics. -->
     <ControlTheme x:Key="{x:Type atom:SelectCandidateListItem}" TargetType="atom:SelectCandidateListItem">
         <ControlTheme.BasedOn>
             <atom:ListViewItemTheme TargetType="atom:SelectCandidateListItem" />
@@ -13,6 +13,38 @@
         <Setter Property="BorderThickness" Value="0" />
         <!-- Popup candidate list: keyboard focus stays in the host input, which forwards keys to the list. -->
         <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:SelectCandidateListItem">
+                <Panel Background="Transparent">
+                    <atom:PixelAlignedBorder Name="OptionBackground"
+                                             Background="{TemplateBinding Background}"
+                                             CornerRadius="{TemplateBinding CornerRadius}"
+                                             IsHitTestVisible="False" />
+                    <atom:PixelAlignedBorder Name="Frame"
+                                             TemplatedControl.IsTemplateFocusTarget="True"
+                                             atom:FocusOutlineAdorner.IsInset="True"
+                                             CornerRadius="{TemplateBinding CornerRadius}"
+                                             Padding="{TemplateBinding Padding}">
+                        <DockPanel LastChildFill="True">
+                            <atom:IconTemplatePresenter Name="SelectedIndicator"
+                                                        IconTemplate="{TemplateBinding SelectedIndicator}"
+                                                        IsVisible="{TemplateBinding IsSelectedIndicatorVisible}"
+                                                        DockPanel.Dock="Right" />
+                            <ContentPresenter Name="ContentPresenter"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </DockPanel>
+                    </atom:PixelAlignedBorder>
+                    <atom:PixelAlignedBorder Name="SplitLineFrame"
+                                             VerticalAlignment="Bottom"
+                                             BorderBrush="{TemplateBinding BorderBrush}"
+                                             BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                                             IsVisible="{TemplateBinding IsSplitLineEffectiveVisible}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
 
         <Style Selector="^:is(atom|SelectCandidateListItem)">
             <Setter Property="FontSize" Value="{atom:SelectTokenResource OptionFontSize}"/>
@@ -24,6 +56,9 @@
             <Style Selector="^[IsGroupItem=False]">
                 <Setter Property="MinHeight" Value="{atom:SelectTokenResource OptionHeight}"/>
                 <Setter Property="Padding" Value="{atom:SelectTokenResource OptionPadding}"/>
+                <Style Selector="^ /template/ atom|PixelAlignedBorder#OptionBackground">
+                    <Setter Property="Margin" Value="{atom:SelectTokenResource OptionBackgroundInset}" />
+                </Style>
             </Style>
 
             <Style Selector="^[IsGroupItem=False]:pointerover">

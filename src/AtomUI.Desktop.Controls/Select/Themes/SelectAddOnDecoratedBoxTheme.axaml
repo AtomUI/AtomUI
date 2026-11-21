@@ -2,7 +2,9 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:converters="using:AtomUI.Desktop.Controls.Converters"
     x:ClassModifier="internal">
+    <converters:SelectTagFramePaddingConverter x:Key="TagFramePaddingConverter" />
     <ControlTheme x:Key="{x:Type atom:SelectAddOnDecoratedBox}" TargetType="atom:SelectAddOnDecoratedBox">
         <ControlTheme.BasedOn>
             <atom:AddOnDecoratedBoxTheme TargetType="atom:SelectAddOnDecoratedBox" />
@@ -11,68 +13,43 @@
         <Style Selector="^:is(atom|SelectAddOnDecoratedBox)">
             <Style Selector="^:not(^[Mode=Single])">
                 <Style Selector="^[IsSelectionEmpty=False]">
-                    <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                    <Setter Property="ContentFramePadding"
+                            Value="{Binding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
+                    <Setter Property="CompactContentFramePadding"
+                            Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
+                    <Setter Property="ContentMinHeight"
+                            Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
+                    <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
+                        <Setter Property="Margin"
+                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
+                    </Style>
+                    <Style Selector="^[SizeType=Custom] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                         <Setter Property="Padding"
                                 Value="{Binding (atom:AddOnDecoratedBox).EffectiveContentFramePadding, RelativeSource={RelativeSource TemplatedParent}}" />
                     </Style>
-                    <Style Selector="^[SizeType=Large]">
-                        <Setter Property="ContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
-                        <Setter Property="CompactContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
-                        <Setter Property="ContentMinHeight"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
-                        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
-                            <Setter Property="Margin"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
-                        </Style>
+                    <Style Selector="^[SizeType=Small] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame,
+                                     ^[SizeType=Middle] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                        <Setter Property="Padding">
+                            <MultiBinding Converter="{StaticResource TagFramePaddingConverter}" x:CompileBindings="True">
+                                <Binding Path="$parent[atom:SelectAddOnDecoratedBox].EffectiveContentFramePadding" />
+                                <Binding Path="$parent[atom:SelectAddOnDecoratedBox].ContentMinHeight" />
+                                <atom:OwnerTokenResource Kind="FontHeight" />
+                            </MultiBinding>
+                        </Setter>
                     </Style>
-                    <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                        <Setter Property="ContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
-                        <Setter Property="CompactContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
-                        <Setter Property="ContentMinHeight"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
-                        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
-                            <Setter Property="Margin"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
-                        </Style>
-                    </Style>
-                    <Style Selector="^[SizeType=Small]">
-                        <Setter Property="ContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
-                        <Setter Property="CompactContentFramePadding"
-                                Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
-                        <Setter Property="ContentMinHeight"
-                                Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
-                        <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
-                            <Setter Property="Margin"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
-                        </Style>
+                    <Style Selector="^[SizeType=Large] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                        <Setter Property="Padding">
+                            <MultiBinding Converter="{StaticResource TagFramePaddingConverter}" x:CompileBindings="True">
+                                <Binding Path="$parent[atom:SelectAddOnDecoratedBox].EffectiveContentFramePadding" />
+                                <Binding Path="$parent[atom:SelectAddOnDecoratedBox].ContentMinHeight" />
+                                <atom:OwnerTokenResource Kind="FontHeightLG" />
+                            </MultiBinding>
+                        </Setter>
                     </Style>
                 </Style>
 
-                <Style Selector="^[IsSelectionEmpty=True]">
-                    <Style Selector="^[SizeType=Large]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
-                        </Style>
-                    </Style>
-                    <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
-                        </Style>
-
-                    </Style>
-                    <Style Selector="^[SizeType=Small]">
-                        <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                            <Setter Property="Padding"
-                                    Value="{Binding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
-                        </Style>
-                    </Style>
+                <Style Selector="^[IsSelectionEmpty=True] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                    <Setter Property="Padding" Value="{Binding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
                 </Style>
             </Style>
 

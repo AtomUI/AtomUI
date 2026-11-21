@@ -23,7 +23,8 @@
                     <Panel Name="ButtonsLayout">
                         <atom:Button Name="PART_NowButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
                                      Content="{atom:DatePickerLangResource Now}" />
-                        <atom:Button Name="PART_TodayButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
+                        <atom:Button Name="PART_TodayButton" ButtonType="Link" Color="Primary" Variant="Link"
+                                     HorizontalAlignment="Left" SizeType="Small"
                                      Content="{atom:DatePickerLangResource Today}" />
                         <atom:Button Name="PART_ConfirmButton" ButtonType="Primary" HorizontalAlignment="Right" SizeType="Small"
                                      Content="{atom:CommonLangResource Ok}" />

@@ -23,7 +23,10 @@ public sealed partial class RangeTimePickerToken : AbstractTimePickerToken
             ItemHeight = EffectiveGlobalToken.ControlHeight - 4;
         }
         PeriodHostWidth = ItemWidth;
-        ItemPadding = CalculateTimeItemPadding(ItemWidth, ItemHeight);
+        if (!IsExplicit(RangeTimePickerTokenKind.ItemPadding))
+        {
+            ItemPadding = CalculateTimeItemPadding(ItemWidth, ItemHeight);
+        }
         var range = RangePickerInputTokenValues.Calculate(EffectiveGlobalToken);
         RangePickerArrowMargin = range.ArrowMargin;
         RangePickerIndicatorThickness = range.IndicatorThickness;

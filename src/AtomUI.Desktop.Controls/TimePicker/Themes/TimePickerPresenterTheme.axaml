@@ -18,6 +18,8 @@
                                 <atom:Button
                                     Name="PART_NowButton"
                                     ButtonType="Link"
+                                    Color="Primary"
+                                    Variant="Link"
                                     IsVisible="{TemplateBinding IsShowNow}"
                                     HorizontalAlignment="Left"
                                     SizeType="Small"

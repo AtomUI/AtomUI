@@ -47,6 +47,122 @@ internal static class OwnerThemeInputs
         return new Binding(part, host, fallbackOwnerType, inputs, alternateOwnerType);
     }
 
+    /// <summary>
+    /// Binds a part's own (non-inherited) properties to the Own Tokens of the owner it sits under. Unlike
+    /// <see cref="Bind"/>, the owner's ControlTheme provides nothing: the part resolves the values itself, so they
+    /// reach only the part instead of inheriting through the owner's whole tree. <paramref name="inputsByOwner"/> lists,
+    /// per owner control type, the properties and the owner's Token keys (its generated <c>TokenKind</c> values, which
+    /// keeps the reads visible to the Token consumption analysis). Values are bound only while the part is attached and
+    /// its <c>ThemeScope.TokenOwner</c> is a registered control assignable to one of those types; otherwise the
+    /// properties keep their defaults, as they did when no such owner supplied the inputs.
+    /// </summary>
+    internal static IDisposable BindFromOwner(
+        Control part,
+        IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)> inputsByOwner)
+    {
+        ArgumentNullException.ThrowIfNull(part);
+        ArgumentNullException.ThrowIfNull(inputsByOwner);
+        return new OwnerBinding(part, inputsByOwner);
+    }
+
+    private sealed class OwnerBinding : IDisposable
+    {
+        private readonly Control _part;
+        private readonly IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)> _inputsByOwner;
+        private readonly IDisposable _ownerSubscription;
+        private OwnerTokenPropertyBindings? _bindings;
+        private ControlTokenIdentity? _boundOwner;
+        private bool _disposed;
+
+        internal OwnerBinding(
+            Control part,
+            IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)> inputsByOwner)
+        {
+            _part = part;
+            _inputsByOwner = inputsByOwner;
+            part.AttachedToLogicalTree += HandleTreeChanged;
+            part.DetachedFromLogicalTree += HandleTreeChanged;
+            _ownerSubscription = part.GetObservable(ThemeScope.TokenOwnerProperty).Subscribe(_ => Refresh());
+            Refresh();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            _part.AttachedToLogicalTree -= HandleTreeChanged;
+            _part.DetachedFromLogicalTree -= HandleTreeChanged;
+            _ownerSubscription.Dispose();
+            Release();
+        }
+
+        private void HandleTreeChanged(object? sender, LogicalTreeAttachmentEventArgs e) => Refresh();
+
+        private void Refresh()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            // Detached parts hold no resource or owner-listener subscriptions.
+            if (!((ILogical)_part).IsAttachedToLogicalTree ||
+                ThemeScope.ResolveContext(_part) is not { } context ||
+                ThemeScope.GetTokenOwner(_part) is not { } owner ||
+                !context.Snapshot.Registry.TryGetControl(owner, out var descriptor) ||
+                FindInputs(descriptor.ControlType) is not { } inputs)
+            {
+                Release();
+                return;
+            }
+            if (owner == _boundOwner && _bindings is not null)
+            {
+                return;
+            }
+            var bindings = new OwnerTokenPropertyBindings(_part, inputs.Count, BindingPriority.Style);
+            try
+            {
+                for (var index = 0; index < inputs.Count; index++)
+                {
+                    var (property, key) = inputs[index];
+                    bindings.Bind(index, property, key);
+                }
+            }
+            catch
+            {
+                bindings.Dispose();
+                throw;
+            }
+            // New bindings first: observers never see the property default between two owners.
+            var replaced = _bindings;
+            _bindings = bindings;
+            _boundOwner = owner;
+            replaced?.Dispose();
+        }
+
+        private IReadOnlyList<(AvaloniaProperty Property, object Key)>? FindInputs(Type controlType)
+        {
+            foreach (var (ownerType, inputs) in _inputsByOwner)
+            {
+                if (ownerType.IsAssignableFrom(controlType))
+                {
+                    return inputs;
+                }
+            }
+            return null;
+        }
+
+        private void Release()
+        {
+            var bindings = _bindings;
+            _bindings = null;
+            _boundOwner = null;
+            bindings?.Dispose();
+        }
+    }
+
     private sealed class Binding : IDisposable
     {
         private readonly Control _part;

@@ -635,8 +635,7 @@ public partial class DataFamilyEffectTests
                 b.TimeView();
                 b.Clock12();
                 break;
-            case "ControlItemColorActive":
-                // The selected time cell's text on ControlItemBgActive.
+            case "ItemBackgroundInset" or "CenterItemContent" or "ControlItemColorActive":
                 b.TimeView();
                 b.Region = static c => SelectedTimeCell(c);
                 break;
@@ -689,7 +688,7 @@ public partial class DataFamilyEffectTests
     [Fact]
     public void Picker_Owner_Read_Lists_Match_The_Part_Themes()
     {
-        foreach (var list in s_pickerOwnLists.Concat([s_calendarHeader, s_calendarTheme, s_calendarDateCell, s_datePanel,
+        foreach (var list in s_pickerOwnLists.Concat([s_calendarHeader, s_calendarTheme, s_calendarDateCell, s_calendarDatePanel, s_datePanel,
                      s_dateViewerHeader, s_dateViewerCell]))
         {
             ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)

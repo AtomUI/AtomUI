@@ -95,7 +95,6 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="ItemHeight" Value="{Binding $self.(atom:TimeView.ThemeItemHeight)}" />
         <Setter Property="SpacerLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
   
@@ -103,15 +102,19 @@
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         
         <Style Selector="^ /template/ atom|TextBlock#PART_HeaderText">
-            <Setter Property="Height" Value="{Binding $self.(atom:TimeView.ThemeItemHeight)}" />
+            <Setter Property="Height" Value="{TemplateBinding ItemHeight}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="{Binding $self.(atom:TimeView.ThemeHeaderMargin)}" />
+            <Setter Property="Margin" Value="{TemplateBinding HeaderMargin}" />
         </Style>
         
         <Style Selector="^ /template/ atom|DateTimePickerPanel">
-            <Setter Property="ItemHeight" Value="{Binding $self.(atom:TimeView.ThemeItemHeight)}" />
+            <Setter Property="ItemHeight" Value="{TemplateBinding ItemHeight}" />
+            <Setter Property="ItemMargin" Value="{TemplateBinding ItemMargin}" />
+            <Setter Property="ItemPadding" Value="{TemplateBinding ItemPadding}" />
+            <Setter Property="ItemBackgroundInset" Value="{TemplateBinding ItemBackgroundInset}" />
+            <Setter Property="CenterItemContent" Value="{TemplateBinding CenterItemContent}" />
         </Style>
         
         <Style Selector="^ /template/ Rectangle">
@@ -119,19 +122,19 @@
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_HourHost">
-            <Setter Property="Width" Value="{Binding $self.(atom:TimeView.ThemeItemWidth)}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_MinuteHost">
-            <Setter Property="Width" Value="{Binding $self.(atom:TimeView.ThemeItemWidth)}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_SecondHost">
-            <Setter Property="Width" Value="{Binding $self.(atom:TimeView.ThemeItemWidth)}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_PeriodHost">
-            <Setter Property="Width" Value="{Binding $self.(atom:TimeView.ThemePeriodHostWidth)}" />
+            <Setter Property="Width" Value="{TemplateBinding PeriodHostWidth}" />
         </Style>
         
     </ControlTheme>

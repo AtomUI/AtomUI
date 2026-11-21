@@ -1,6 +1,5 @@
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Desktop.Controls.DesignTokens;
-using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -20,6 +19,9 @@ public sealed partial class TimePickerToken : AbstractTimePickerToken
             ItemHeight = EffectiveGlobalToken.ControlHeight - 4;
         }
         PeriodHostWidth = ItemWidth;
-        ItemPadding = CalculateTimeItemPadding(ItemWidth, ItemHeight);
+        if (!IsExplicit(TimePickerTokenKind.ItemPadding))
+        {
+            ItemPadding = CalculateTimeItemPadding(ItemWidth, ItemHeight);
+        }
     }
 }

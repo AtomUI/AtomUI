@@ -27,12 +27,12 @@ public partial class DataFamilyEffectTests
             ThemeScope.GetTokenOwner(presenter).ShouldBe(TimePickerTokens.Identity);
             var expected = ControlTokenAccessor.Capture<TimePicker>(presenter).GetOwn<double>(TimePickerTokenKind.ItemHeight);
             expected.ShouldBeGreaterThan(0);
-            TimeView.GetThemeItemHeight(timeView).ShouldBe(expected);
+            timeView.ItemHeight.ShouldBe(expected);
 
             using var before = capture();
             provider.Config = IsolationConfig(control: (TimePickerTokens.Identity, "ItemHeight", "60"));
             using var after = capture();
-            TimeView.GetThemeItemHeight(timeView).ShouldBe(60d);
+            timeView.ItemHeight.ShouldBe(60d);
             ChangedRatioOf(before, after, timeView).ShouldBeGreaterThan(0d, "Controls[TimePicker].ItemHeight did not reach the time view");
         });
     }

@@ -28,6 +28,25 @@ public class TimeViewCell : AvaloniaListBoxItem
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    // Forwarded by the owning DateTimePickerPanel from its TimeView.
+    internal static readonly StyledProperty<Thickness> ItemBackgroundInsetProperty =
+        AvaloniaProperty.Register<TimeViewCell, Thickness>(nameof(ItemBackgroundInset));
+
+    internal static readonly StyledProperty<bool> CenterItemContentProperty =
+        AvaloniaProperty.Register<TimeViewCell, bool>(nameof(CenterItemContent));
+
+    internal Thickness ItemBackgroundInset
+    {
+        get => GetValue(ItemBackgroundInsetProperty);
+        set => SetValue(ItemBackgroundInsetProperty, value);
+    }
+
+    internal bool CenterItemContent
+    {
+        get => GetValue(CenterItemContentProperty);
+        set => SetValue(CenterItemContentProperty, value);
+    }
+
     /// <summary>The selected value of the column that navigation keys from the picker input are stepping.</summary>
     internal bool IsKeyboardActive
     {

@@ -62,6 +62,21 @@ internal class DateTimePickerPanel : Panel
     public DateTimePickerPanelType PanelType { get => GetValue(PanelTypeProperty); set => SetValue(PanelTypeProperty, value); }
     public string ItemFormat { get => GetValue(ItemFormatProperty); set => SetValue(ItemFormatProperty, value); }
     public bool ShouldLoop { get => GetValue(ShouldLoopProperty); set => SetValue(ShouldLoopProperty, value); }
+
+    // Row metrics of the owning TimeView, forwarded to every generated row below.
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemMargin));
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemPadding));
+    internal static readonly StyledProperty<Thickness> ItemBackgroundInsetProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemBackgroundInset));
+    internal static readonly StyledProperty<bool> CenterItemContentProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, bool>(nameof(CenterItemContent));
+
+    internal Thickness ItemMargin { get => GetValue(ItemMarginProperty); set => SetValue(ItemMarginProperty, value); }
+    internal Thickness ItemPadding { get => GetValue(ItemPaddingProperty); set => SetValue(ItemPaddingProperty, value); }
+    internal Thickness ItemBackgroundInset { get => GetValue(ItemBackgroundInsetProperty); set => SetValue(ItemBackgroundInsetProperty, value); }
+    internal bool CenterItemContent { get => GetValue(CenterItemContentProperty); set => SetValue(CenterItemContentProperty, value); }
     public DateTime FormatDate { get; set; } = DateTime.Today;
     public int MinimumValue
     {
@@ -216,6 +231,12 @@ internal class DateTimePickerPanel : Panel
             // Runtime-generated rows are not template parts. A ControlTheme cannot
             // TemplateBind through this panel to their owner's motion property.
             cell[!TimeViewCell.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            // Row metrics follow this panel directly; the rows read no inherited theme inputs.
+            cell[!MarginProperty] = this[!ItemMarginProperty];
+            cell[!MinHeightProperty] = this[!ItemHeightProperty];
+            cell[!TimeViewCell.PaddingProperty] = this[!ItemPaddingProperty];
+            cell[!TimeViewCell.ItemBackgroundInsetProperty] = this[!ItemBackgroundInsetProperty];
+            cell[!TimeViewCell.CenterItemContentProperty] = this[!CenterItemContentProperty];
             cell.PointerEntered += HandleCellPointerEntered;
             cell.PointerExited += HandleCellPointerExited;
             Children.Add(cell);
@@ -226,6 +247,11 @@ internal class DateTimePickerPanel : Panel
             cell.PointerEntered -= HandleCellPointerEntered;
             cell.PointerExited -= HandleCellPointerExited;
             cell.ClearValue(TimeViewCell.IsMotionEnabledProperty);
+            cell.ClearValue(MarginProperty);
+            cell.ClearValue(MinHeightProperty);
+            cell.ClearValue(TimeViewCell.PaddingProperty);
+            cell.ClearValue(TimeViewCell.ItemBackgroundInsetProperty);
+            cell.ClearValue(TimeViewCell.CenterItemContentProperty);
             Children.RemoveAt(Children.Count - 1);
         }
         _selectedValue = Normalize(_selectedValue);

@@ -36,6 +36,8 @@
                         <atom:Button
                             Name="PART_TodayButton"
                             ButtonType="Link"
+                            Color="Primary"
+                            Variant="Link"
                             HorizontalAlignment="Left"
                             SizeType="Small"
                             Content="{atom:DatePickerLangResource Today}" />

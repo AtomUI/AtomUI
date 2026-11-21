@@ -5,14 +5,6 @@
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:TimePicker}" TargetType="atom:TimePicker">
         <Setter Property="atom:TimePickerPresenter.ThemeButtonsMargin" Value="{atom:TimePickerTokenResource ButtonsMargin}" />
-
-        <Setter Property="atom:TimeView.ThemeItemHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
-        <Setter Property="atom:TimeView.ThemeItemWidth" Value="{atom:TimePickerTokenResource ItemWidth}" />
-        <Setter Property="atom:TimeView.ThemePeriodHostWidth" Value="{atom:TimePickerTokenResource PeriodHostWidth}" />
-        <Setter Property="atom:TimeView.ThemeItemPadding" Value="{atom:TimePickerTokenResource ItemPadding}" />
-        <Setter Property="atom:TimeView.ThemeItemMargin" Value="{atom:TimePickerTokenResource ItemMargin}" />
-
-
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:TimePicker" />
         </ControlTheme.BasedOn>

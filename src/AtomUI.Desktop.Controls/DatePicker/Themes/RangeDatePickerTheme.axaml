@@ -12,12 +12,6 @@
         <Setter Property="atom:DatePickerPresenter.ThemeButtonsPanelMargin" Value="{atom:RangeDatePickerTokenResource ButtonsPanelMargin}" />
 
 
-        <Setter Property="atom:TimeView.ThemeItemHeight" Value="{atom:RangeDatePickerTokenResource ItemHeight}" />
-        <Setter Property="atom:TimeView.ThemeItemWidth" Value="{atom:RangeDatePickerTokenResource ItemWidth}" />
-        <Setter Property="atom:TimeView.ThemePeriodHostWidth" Value="{atom:RangeDatePickerTokenResource PeriodHostWidth}" />
-        <Setter Property="atom:TimeView.ThemeItemPadding" Value="{atom:RangeDatePickerTokenResource ItemPadding}" />
-        <Setter Property="atom:TimeView.ThemeItemMargin" Value="{atom:RangeDatePickerTokenResource ItemMargin}" />
-        <Setter Property="atom:TimeView.ThemeHeaderMargin" Value="{atom:RangeDatePickerTokenResource HeaderMargin}" />
 
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeDatePicker" />

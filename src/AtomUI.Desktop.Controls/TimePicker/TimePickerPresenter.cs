@@ -11,19 +11,14 @@ namespace AtomUI.Desktop.Controls;
 internal partial class TimePickerPresenter : PickerPresenterBase
 {
     // The time picker terminals (TimePicker, RangeTimePicker, the date-time pickers) declare these fields; the presenter
-    // maps them itself because it is shown in a popup root, or alone, and the picker may not be styled in a tree.
+    // maps them itself because it is shown in a popup root, or alone, and the picker may not be styled in a tree. The
+    // TimeView resolves its own metrics from the same owner.
     private static Primitives.OwnerThemeInput[]? s_ownerInputs;
 
     // Built on first use: the input properties live in another partial file, so a static initializer cannot see them as assigned.
     private static Primitives.OwnerThemeInput[] OwnerInputs => s_ownerInputs ??=
     [
         new(ThemeButtonsMarginProperty, "ButtonsMargin"),
-        new(TimeView.ThemeItemHeightProperty, "ItemHeight"),
-        new(TimeView.ThemeItemWidthProperty, "ItemWidth"),
-        new(TimeView.ThemePeriodHostWidthProperty, "PeriodHostWidth"),
-        new(TimeView.ThemeItemPaddingProperty, "ItemPadding"),
-        new(TimeView.ThemeItemMarginProperty, "ItemMargin"),
-        new(TimeView.ThemeHeaderMarginProperty, "HeaderMargin")
     ];
 
     // Lives as long as the presenter; it only subscribes to the presenter itself and to its theme context while attached.

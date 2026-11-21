@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -127,10 +128,31 @@ internal partial class TimeView : TemplatedControl
         set => SetValue(SpacerLineWidthProperty, value);
     }
 
-    internal static readonly DirectProperty<TimeView, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<TimeView, double>(nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    // Metrics of the hosting picker's Own Tokens. The time view resolves them from its Token owner itself, so they
+    // reach only this view and its template parts instead of inheriting through the whole picker and popup tree.
+    internal static readonly StyledProperty<double> ItemHeightProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(ItemHeight));
+
+    internal static readonly StyledProperty<double> ItemWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(ItemWidth));
+
+    internal static readonly StyledProperty<double> PeriodHostWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(PeriodHostWidth));
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemPadding));
+
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemMargin));
+
+    internal static readonly StyledProperty<Thickness> ItemBackgroundInsetProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemBackgroundInset));
+
+    internal static readonly StyledProperty<bool> CenterItemContentProperty =
+        AvaloniaProperty.Register<TimeView, bool>(nameof(CenterItemContent));
+
+    internal static readonly StyledProperty<Thickness> HeaderMarginProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(HeaderMargin));
 
     internal static readonly StyledProperty<bool> IsPointerInSelectorProperty =
         AvaloniaProperty.Register<TimeView, bool>(nameof(IsPointerInSelector), false);
@@ -160,13 +182,97 @@ internal partial class TimeView : TemplatedControl
         set => SetAndRaise(SpacerWidthProperty, ref _spacerWidth, value);
     }
 
-    private double _itemHeight;
-
     internal double ItemHeight
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(ItemHeightProperty);
+        set => SetValue(ItemHeightProperty, value);
     }
+
+    internal double ItemWidth
+    {
+        get => GetValue(ItemWidthProperty);
+        set => SetValue(ItemWidthProperty, value);
+    }
+
+    internal double PeriodHostWidth
+    {
+        get => GetValue(PeriodHostWidthProperty);
+        set => SetValue(PeriodHostWidthProperty, value);
+    }
+
+    internal Thickness ItemPadding
+    {
+        get => GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
+    }
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal Thickness ItemBackgroundInset
+    {
+        get => GetValue(ItemBackgroundInsetProperty);
+        set => SetValue(ItemBackgroundInsetProperty, value);
+    }
+
+    internal bool CenterItemContent
+    {
+        get => GetValue(CenterItemContentProperty);
+        set => SetValue(CenterItemContentProperty, value);
+    }
+
+    internal Thickness HeaderMargin
+    {
+        get => GetValue(HeaderMarginProperty);
+        set => SetValue(HeaderMarginProperty, value);
+    }
+
+    // The picker terminals' Own Tokens, keyed by their generated TokenKind values so the reads stay visible to the
+    // Token consumption analysis. Date pickers have no background inset or centred content; time pickers no header.
+    private static readonly IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)>
+        s_ownerInputs =
+        [
+            (typeof(RangeTimePicker), [
+                (ItemHeightProperty, RangeTimePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, RangeTimePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, RangeTimePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, RangeTimePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, RangeTimePickerTokenKind.ItemMargin),
+                (ItemBackgroundInsetProperty, RangeTimePickerTokenKind.ItemBackgroundInset),
+                (CenterItemContentProperty, RangeTimePickerTokenKind.CenterItemContent)
+            ]),
+            (typeof(TimePicker), [
+                (ItemHeightProperty, TimePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, TimePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, TimePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, TimePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, TimePickerTokenKind.ItemMargin),
+                (ItemBackgroundInsetProperty, TimePickerTokenKind.ItemBackgroundInset),
+                (CenterItemContentProperty, TimePickerTokenKind.CenterItemContent)
+            ]),
+            (typeof(RangeDatePicker), [
+                (ItemHeightProperty, RangeDatePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, RangeDatePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, RangeDatePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, RangeDatePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, RangeDatePickerTokenKind.ItemMargin),
+                (HeaderMarginProperty, RangeDatePickerTokenKind.HeaderMargin)
+            ]),
+            (typeof(DatePicker), [
+                (ItemHeightProperty, DatePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, DatePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, DatePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, DatePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, DatePickerTokenKind.ItemMargin),
+                (HeaderMarginProperty, DatePickerTokenKind.HeaderMargin)
+            ])
+        ];
+
+    // Lives as long as the view; it subscribes only to the view itself and, while attached, to its resources.
+    private readonly IDisposable _ownerInputs;
 
     internal bool IsPointerInSelector
     {
@@ -226,6 +332,7 @@ internal partial class TimeView : TemplatedControl
 
     public TimeView()
     {
+        _ownerInputs = OwnerThemeInputs.BindFromOwner(this, s_ownerInputs);
         // Each column handles its own scrolling first. Unconsumed focus requests
         // must not continue through the popup's logical owner into the page.
         AddHandler(RequestBringIntoViewEvent, (_, e) =>

@@ -10,11 +10,6 @@
 
         <Setter Property="atom:TimePickerPresenter.ThemeButtonsMargin" Value="{atom:RangeTimePickerTokenResource ButtonsMargin}" />
 
-        <Setter Property="atom:TimeView.ThemeItemHeight" Value="{atom:RangeTimePickerTokenResource ItemHeight}" />
-        <Setter Property="atom:TimeView.ThemeItemWidth" Value="{atom:RangeTimePickerTokenResource ItemWidth}" />
-        <Setter Property="atom:TimeView.ThemePeriodHostWidth" Value="{atom:RangeTimePickerTokenResource PeriodHostWidth}" />
-        <Setter Property="atom:TimeView.ThemeItemPadding" Value="{atom:RangeTimePickerTokenResource ItemPadding}" />
-        <Setter Property="atom:TimeView.ThemeItemMargin" Value="{atom:RangeTimePickerTokenResource ItemMargin}" />
 
 
         <ControlTheme.BasedOn>
@@ -34,7 +29,7 @@
                          for pointer hits on its padding; it is a local tab group ordered by TabIndex because the clear button
                          precedes the inputs in the frame's visual tree. -->
                     <atom:AddOnDecoratedBox
-                        Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        x:Name="PART_AddOnDecoratedBox"
                         Focusable="True"
                         IsTabStop="False"
                         KeyboardNavigation.TabNavigation="Local"
@@ -144,6 +139,7 @@
                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
                                 RequestedPlacement="{TemplateBinding PickerPlacement}"
+                                VerticalPlacementFrame="{CompiledBinding ElementName=PART_AddOnDecoratedBox}"
                                 IsPointAtCenter="{TemplateBinding IsPointAtCenter}"
                                 OverlayDismissEventPassThrough="True"
                                 IsHorizontalFlipped="{TemplateBinding IsPopupHorizontalFlipped, Mode=TwoWay}"

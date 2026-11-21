@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -51,6 +52,17 @@ public class CardGridContent : ItemsControl
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridContent>();
+
+    internal static readonly DirectProperty<CardGridContent, Geometry?> SeparatorGeometryProperty =
+        AvaloniaProperty.RegisterDirect<CardGridContent, Geometry?>(nameof(SeparatorGeometry), content => content.SeparatorGeometry);
+
+    private Geometry? _separatorGeometry;
+
+    internal Geometry? SeparatorGeometry
+    {
+        get => _separatorGeometry;
+        set => SetAndRaise(SeparatorGeometryProperty, ref _separatorGeometry, value);
+    }
     
     public SizeType SizeType
     {
@@ -74,7 +86,7 @@ public class CardGridContent : ItemsControl
         SetCurrentValue(ColumnDefinitionsProperty, new ColumnDefinitions());
         SetCurrentValue(RowDefinitionsProperty, new RowDefinitions());
     }
-    
+
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new CardGridItem();
@@ -121,6 +133,7 @@ public class CardGridContent : ItemsControl
         if (container is CardGridItem gridItem)
         {
             DisposeCardGridItemState(gridItem);
+            gridItem.SetGridHoverClip(null);
         }
 
         base.ClearContainerForItemOverride(container);
@@ -143,6 +156,7 @@ public class CardGridContent : ItemsControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        SeparatorGeometry = null;
         _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         if (_itemsPresenter != null)
         {

@@ -153,9 +153,16 @@ public sealed partial class CardToken : AbstractControlDesignToken
     public partial double CardActionsIconSize { get; set; }
     
     /// <summary>
-    /// 表格内容的默认阴影
+    /// 网格项的常驻装饰阴影。网格分隔线由网格容器绘制。
+    /// Resting decoration of a grid item. The grid container paints the separators.
     /// </summary>
     public partial BoxShadows CardGridItemShadows { get; set; }
+
+    /// <summary>
+    /// 网格项的悬停阴影。
+    /// Hover shadow of a grid item.
+    /// </summary>
+    public partial BoxShadows CardGridHoverShadows { get; set; }
     
     public CardToken()
 
@@ -220,50 +227,11 @@ public sealed partial class CardToken : AbstractControlDesignToken
             RestingShadows = Transparent(CardShadows);
         }
 
-        var lineWidth = EffectiveGlobalToken.LineWidth;
-        CardGridItemShadows = new BoxShadows(new BoxShadow()
+        if (!IsExplicit(CardTokenKind.CardGridHoverShadows))
         {
-            OffsetX = lineWidth,
-            OffsetY = 0,
-            Blur    = 0,
-            Spread  = 0,
-            Color   = EffectiveGlobalToken.ColorBorderSecondary
-        }, [
-            new BoxShadow
-            {
-                OffsetX = 0,
-                OffsetY = lineWidth,
-                Blur    = 0,
-                Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
-            },
-            new BoxShadow
-            {
-                OffsetX = lineWidth,
-                OffsetY = lineWidth,
-                Blur    = 0,
-                Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
-            },
-            new BoxShadow
-            {
-                IsInset = true,
-                OffsetX = lineWidth,
-                OffsetY = 0,
-                Blur    = 0,
-                Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
-            },
-            new BoxShadow
-            {
-                IsInset = true,
-                OffsetX = 0,
-                OffsetY = lineWidth,
-                Blur    = 0,
-                Spread  = 0,
-                Color   = EffectiveGlobalToken.ColorBorderSecondary
-            },
-        ]);
+            CardGridHoverShadows = CardShadows;
+        }
+
         CardHeadPadding     = EffectiveGlobalToken.Padding;
         CardPaddingBase     = EffectiveGlobalToken.PaddingLG;
         CardActionsIconSize = EffectiveGlobalToken.FontSize;

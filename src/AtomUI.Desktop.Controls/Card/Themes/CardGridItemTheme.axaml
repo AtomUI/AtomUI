@@ -6,16 +6,24 @@
     <ControlTheme x:Key="{x:Type atom:CardGridItem}" TargetType="atom:CardGridItem">
         <Setter Property="Template">
             <ControlTemplate>
-                <!-- 网格线由带偏移的 1px 阴影绘制；DashedBorder 经 BoxShadowRenderHelper 绘制阴影，偏移随渲染缩放，高 DPI 下线宽与卡片边框一致 -->
-                <atom:DashedBorder Name="Frame" Padding="{TemplateBinding Padding}"
-                                   BoxShadow="{TemplateBinding BoxShadow}"
-                                   Background="Transparent">
-                    <ContentPresenter Name="ContentPresenter"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                </atom:DashedBorder>
+                <Panel>
+                    <atom:DashedBorder Name="HoverFrame"
+                                       IsHitTestVisible="False"
+                                       IsVisible="False"
+                                       Opacity="0"
+                                       Clip="{TemplateBinding GridHoverClip}"
+                                       BoxShadow="{atom:CardTokenResource CardGridHoverShadows}"
+                                       Background="{atom:CardTokenResource ColorFillQuaternary}" />
+                    <atom:DashedBorder Name="Frame" Padding="{TemplateBinding Padding}"
+                                       BoxShadow="{TemplateBinding BoxShadow}"
+                                       Background="Transparent">
+                        <ContentPresenter Name="ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </atom:DashedBorder>
+                </Panel>
             </ControlTemplate>
         </Setter>
 
@@ -42,8 +50,21 @@
         </Style>
 
         <Style Selector="^[IsHoverable=True]">
-            <Style Selector="^:pointerover">
-                <Setter Property="BoxShadow" Value="{atom:CardTokenResource CardShadows}" />
+            <!-- Only hoverable items realize the hover layer; it still rests at opacity 0 for the fade. -->
+            <Style Selector="^ /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^:pointerover /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+            <Style Selector="^[IsMotionEnabled=True] /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
             </Style>
         </Style>
 

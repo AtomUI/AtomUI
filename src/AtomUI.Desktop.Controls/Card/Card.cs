@@ -201,7 +201,6 @@ public partial class Card : AbstractCard,
         {
             ConfigureContentType();
             ConfigureContentCornerRadius();
-            ConfigureHeaderBorderThickness();
         }
     }
 
@@ -266,14 +265,7 @@ public partial class Card : AbstractCard,
 
     private void ConfigureHeaderBorderThickness()
     {
-        if (ContentType == CardContentType.Grid)
-        {
-            SetCurrentValue(HeaderBorderThicknessProperty, new Thickness(0));
-        }
-        else
-        {
-            SetCurrentValue(HeaderBorderThicknessProperty, new Thickness(0, 0, 0, BorderThickness.Bottom));
-        }
+        SetCurrentValue(HeaderBorderThicknessProperty, new Thickness(0, 0, 0, BorderThickness.Bottom));
     }
 
     private void ConfigureContentCornerRadius()

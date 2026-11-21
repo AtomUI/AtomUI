@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using SkiaSharp;
 using Xunit;
@@ -13,7 +14,7 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests;
 
 public class CardGridItemShadowRenderingTests
 {
-    // 网格线由 lineWidth 偏移的阴影绘制，高 DPI 下线宽须与卡片外边框一致（均为 1 DIP）
+    // The separator and the card outline use the same device-scale stroke width.
     [Theory]
     [InlineData(1d)]
     [InlineData(1.5d)]
@@ -52,7 +53,12 @@ public class CardGridItemShadowRenderingTests
             var cardBounds = new Rect(card.Bounds.Size).TransformToAABB(card.TransformToVisual(window)!.Value);
             var runs = DarkRuns(frame, row, (int)Math.Floor(cardBounds.X * scaling), (int)Math.Ceiling(cardBounds.Right * scaling));
 
-            // 最后一段为卡片右边框；列间网格线位于首列右边缘处（分数缩放下左边框与首列网格线可能被抗锯齿拆开，不参与比较）
+            var header = card.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "HeaderFrame");
+            var headerCenter = header.TranslatePoint(new Point(0, header.Bounds.Height / 2), window)!.Value;
+            var headerOutline = DarkRuns(frame, (int)(headerCenter.Y * scaling),
+                (int)Math.Floor(cardBounds.X * scaling), (int)Math.Ceiling(cardBounds.Right * scaling)).First();
+            runs[0].ShouldBe(headerOutline, $"one left outline at {scaling}x");
+
             var columnEdge = item.TranslatePoint(new Point(item.Bounds.Width, 0), window)!.Value.X * scaling;
             var gridLine = runs.Single(run => Math.Abs(run.Start - columnEdge) <= 2);
             gridLine.Length.ShouldBe(runs[^1].Length, $"grid line runs {string.Join(", ", runs)} at {scaling}x");

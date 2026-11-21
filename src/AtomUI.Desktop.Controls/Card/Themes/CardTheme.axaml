@@ -161,7 +161,16 @@
             <Setter Property="Cursor" Value="Hand" />
             <Style Selector="^:pointerover">
                 <Setter Property="BoxShadow" Value="{atom:CardTokenResource CardShadows}" />
-                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="{CompiledBinding $self.Background}" />
+            </Style>
+            <Style Selector="^[IsMotionEnabled=True] /template/ atom|PixelAlignedBorder#Frame">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
             </Style>
         </Style>
 

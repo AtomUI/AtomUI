@@ -10,7 +10,7 @@
     <ControlTheme x:Key="{x:Type atom:ColorSpectrum}" TargetType="atom:ColorSpectrum">
         <Setter Property="Template">
             <ControlTemplate TargetType="{x:Type atom:ColorSpectrum}">
-                <!-- layout: fixed raster inset, hit target or compact editor packing. -->
+                <!-- layout: fixed raster inset. -->
                 <Border Name="PART_Frame" ClipToBounds="True"
                         Padding="0.5"
                         CornerRadius="{TemplateBinding CornerRadius}">
@@ -38,11 +38,13 @@
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch">
                                 <Panel Name="PART_SelectionEllipsePanel">
+                                    <Ellipse Stroke="{atom:OwnerTokenResource ColorText}"
+                                             StrokeThickness="{atom:OwnerTokenResource LineWidth}"
+                                             IsHitTestVisible="False" />
                                     <Ellipse x:Name="SelectionEllipse"
+                                             Margin="{atom:OwnerTokenResource BorderThickness}"
                                              StrokeThickness="{atom:OwnerTokenResource LineWidthBold}"
-                                             IsHitTestVisible="False"
-                                             HorizontalAlignment="Stretch"
-                                             VerticalAlignment="Stretch" />
+                                             IsHitTestVisible="False" />
                                 </Panel>
                             </Canvas>
                         </Panel>

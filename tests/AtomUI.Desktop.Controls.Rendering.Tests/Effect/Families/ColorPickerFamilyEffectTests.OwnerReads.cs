@@ -14,7 +14,7 @@ public partial class ColorPickerFamilyEffectTests
         new(ThemeRoot + "ColorPickerPaletteGroupTheme.axaml", ["SpacingXXS"]),
         new(ThemeRoot + "PaletteColorItemTheme.axaml", ["BorderRadiusSM", "BorderThickness", "ColorFill", "ColorTextSecondary", "ColorWhite", "LineWidth"]),
         new(ThemeRoot + "ColorView/AbstractColorPickerViewTheme.axaml", ["ColorBorderSecondary", "EnableMotion", "PaddingXXS", "SpacingSM", "SpacingXS"]),
-        new(ThemeRoot + "ColorView/ColorSpectrumTheme.axaml", ["BorderRadiusSM", "LineWidthBold"]),
+        new(ThemeRoot + "ColorView/ColorSpectrumTheme.axaml", ["BorderRadiusSM", "BorderThickness", "ColorText", "LineWidth", "LineWidthBold"]),
         new(ThemeRoot + "ColorSlider/ColorSliderTheme.axaml", ["ColorFillSecondary"]),
         new(ThemeRoot + "ColorSlider/GradientColorSliderTheme.axaml", ["ColorFillSecondary"]),
         new(ThemeRoot + "ColorSlider/ColorSliderThumbTheme.axaml", ["BorderThickness", "ColorBgElevated", "ColorFillSecondary", "ColorPrimaryActive"]),

@@ -165,7 +165,7 @@ public partial class ColorPickerFamilyEffectTests
             {
                 return control.GetVisualDescendants().OfType<ColorSliderThumb>().First();
             }
-            if (token.StartsWith("ColorPickerHandler", StringComparison.Ordinal) || token is "LineWidthBold")
+            if (token.StartsWith("ColorPickerHandler", StringComparison.Ordinal) || token is "ColorText" or "LineWidthBold")
             {
                 return control.GetVisualDescendants().OfType<Panel>().Single(c => c.Name == "PART_SelectionEllipsePanel");
             }

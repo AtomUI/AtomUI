@@ -45,6 +45,7 @@ internal sealed class ShadcnCardTokens : IControlTokenAlgorithm<CardToken>
         var ring = ShadcnStyles.WithAlpha(
             surface.Foreground, ShadcnStyles.AlphaByte(style.CardRingAlpha));
         token.CardShadows = ShadcnStyles.RingThenShadow(ring, style.CardShadow);
+        token.CardGridHoverShadows = ShadcnStyles.Shadow(style.CardShadow);
         token.BodyPadding = new Thickness(style.CardPadding);
     }
 }

@@ -36,6 +36,12 @@ internal sealed class ShadcnCheckBoxTokens : IControlTokenAlgorithm<CheckBoxToke
         var style = ShadcnStyles.Resolve(context);
         // The indicator's template binds CornerRadius to the control-scope BorderRadiusSM.
         controlGlobal.BorderRadiusSM = new CornerRadius(style.CheckBoxRadius);
+
+        if (context.Appearance == ThemeAppearance.Dark)
+        {
+            // The indicator uses this control-scoped token for the check mark.
+            controlGlobal.ColorWhite = controlGlobal.ColorTextLightSolid;
+        }
     }
 
     /// <inheritdoc />

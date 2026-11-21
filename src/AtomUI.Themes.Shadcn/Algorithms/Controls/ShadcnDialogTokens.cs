@@ -35,8 +35,7 @@ internal sealed class ShadcnDialogTokens : IControlTokenAlgorithm<DialogToken>
         var dark    = context.Appearance == ThemeAppearance.Dark;
         var style   = ShadcnStyles.Resolve(context);
         var surface = ShadcnBaseColors.Resolve(controlGlobal.ColorNeutral, dark);
-        var ring = ShadcnStyles.WithAlpha(
-            surface.Foreground, ShadcnStyles.AlphaByte(dark ? style.Overlay.RingAlphaDark : style.Overlay.RingAlphaLight));
+        var ring    = ShadcnStyles.OutlineRing(surface, dark, style);
         controlGlobal.BoxShadows = ShadcnStyles.RingThenShadow(ring, style.Overlay.DialogShadow);
     }
 

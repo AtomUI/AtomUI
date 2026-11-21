@@ -2,6 +2,8 @@ using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
+using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Themes.Shadcn.Algorithms.Controls;
 
@@ -51,6 +53,14 @@ internal sealed class ShadcnMenuTokens : IControlTokenAlgorithm<MenuToken>
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, MenuToken token)
     {
         ShadcnMenuShadows.Apply(context, effectiveGlobal, token);
+
+        // Square presets still need space between the first and last hover fills and the popup edges.
+        var padding = token.MenuPopupContentPadding;
+        var minVerticalPadding = effectiveGlobal.UniformlyPaddingXXS;
+        token.MenuPopupContentPadding = new Thickness(padding.Left,
+            Math.Max(padding.Top, minVerticalPadding),
+            padding.Right,
+            Math.Max(padding.Bottom, minVerticalPadding));
     }
 }
 
@@ -124,7 +134,7 @@ internal sealed class ShadcnMenuFlyoutPresenterTokens : IControlTokenAlgorithm<M
     }
 }
 
-/// <summary>The NavMenu submenu popups under the shadcn styles.</summary>
+/// <summary>The NavMenu row fills and submenu surfaces under the shadcn styles.</summary>
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Nova.Dark", 1)]
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Vega", 1)]
@@ -154,6 +164,24 @@ internal sealed class ShadcnNavMenuTokens : IControlTokenAlgorithm<NavMenuToken>
         var dark    = context.Appearance == ThemeAppearance.Dark;
         var style   = ShadcnStyles.Resolve(context);
         var surface = ShadcnBaseColors.Resolve(effectiveGlobal.ColorNeutral, dark);
+        // Expanded inline submenus use the root surface. The accent and hover fills share a neutral stop.
+        token.SubMenuItemBg = Colors.Transparent;
+        token.DarkSubMenuItemBg = Colors.Transparent;
+        token.ItemSelectedBg = ShadcnBaseColors.CompositeOver(surface.Foreground, 0.14, token.ItemSelectedBg);
+
+        if (dark)
+        {
+            // IsDarkStyle retains its own menu surface. Use that surface for the row tints and the dark
+            // appearance foreground for row text, since the primary button foreground is inverted.
+            token.DarkItemColor         = surface.MutedForeground;
+            token.DarkGroupTitleColor   = surface.MutedForeground;
+            token.DarkItemDisabledColor = ShadcnBaseColors.CompositeOver(surface.MutedForeground, 0.5, token.DarkMenuBg);
+            token.DarkItemHoverColor    = surface.Foreground;
+            token.DarkItemSelectedColor = surface.Foreground;
+            token.DarkItemHoverBg       = ShadcnBaseColors.CompositeOver(surface.Foreground, 0.12, token.DarkMenuBg);
+            token.DarkItemSelectedBg    = ShadcnBaseColors.CompositeOver(surface.Foreground, 0.25, token.DarkMenuBg);
+        }
+
         token.MenuPopupShadows = ShadcnStyles.RingThenShadow(
             ShadcnStyles.OutlineRing(surface, dark, style), style.Overlay.MenuShadow);
     }

@@ -53,6 +53,97 @@ public class ListViewItem : ContentControl,
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ListViewItem>();
     
+    // Forwarded by the owning ListView from its terminal theme; see ListView.ItemTheme.cs.
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemColor));
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemHoverColor));
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemSelectedColor));
+
+    internal IBrush? ItemSelectedColor
+    {
+        get => GetValue(ItemSelectedColorProperty);
+        set => SetValue(ItemSelectedColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemDisabledColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemDisabledColor));
+
+    internal IBrush? ItemDisabledColor
+    {
+        get => GetValue(ItemDisabledColorProperty);
+        set => SetValue(ItemDisabledColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemBgColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemBgColor));
+
+    internal IBrush? ItemBgColor
+    {
+        get => GetValue(ItemBgColorProperty);
+        set => SetValue(ItemBgColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(ItemPadding));
+
+    internal Thickness ItemPadding
+    {
+        get => GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(ItemMargin));
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> GroupHeaderColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(GroupHeaderColor));
+
+    internal IBrush? GroupHeaderColor
+    {
+        get => GetValue(GroupHeaderColorProperty);
+        set => SetValue(GroupHeaderColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> GroupHeaderPaddingProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(GroupHeaderPadding));
+
+    internal Thickness GroupHeaderPadding
+    {
+        get => GetValue(GroupHeaderPaddingProperty);
+        set => SetValue(GroupHeaderPaddingProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> SelectedIndicatorMarginProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(SelectedIndicatorMargin));
+
+    internal Thickness SelectedIndicatorMargin
+    {
+        get => GetValue(SelectedIndicatorMarginProperty);
+        set => SetValue(SelectedIndicatorMarginProperty, value);
+    }
+
     internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
         ListBox.ItemHoverBgProperty.AddOwner<ListViewItem>();
     

@@ -41,9 +41,9 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListViewItem)">
-        <Setter Property="Margin" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemMargin)}" />
-        <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemColor)}" />
-        <Setter Property="Background" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemBgColor)}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.ItemMargin}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.ItemBgColor}" />
         <!-- The split line under the item is LineWidth thick; an application BorderThickness replaces it. -->
         <Setter Property="SplitLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
@@ -51,11 +51,11 @@
         
         <Style Selector="^[IsGroupItem=False]">
             <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemHoverColor)}" />
+                <Setter Property="Foreground" Value="{CompiledBinding $self.ItemHoverColor}" />
                 <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
             </Style>
             <Style Selector="^:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemSelectedColor)}" />
+                <Setter Property="Foreground" Value="{CompiledBinding $self.ItemSelectedColor}" />
                 <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
@@ -65,11 +65,11 @@
             <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Margin"
-                    Value="{Binding $self.(atom:GroupHeaderItem.ThemeSelectedIndicatorMargin)}" />
+                    Value="{TemplateBinding SelectedIndicatorMargin}" />
         </Style>
 
         <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Small], ^[SizeType=Custom]">
-            <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemPadding)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.ItemPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
@@ -87,13 +87,13 @@
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemDisabledColor)}" />
+                        Value="{TemplateBinding ItemDisabledColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Foreground" Value="{Binding $self.(atom:GroupHeaderItem.ThemeGroupHeaderColor)}" />
-            <Setter Property="Background" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemBgColor)}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.GroupHeaderColor}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.ItemBgColor}" />
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />

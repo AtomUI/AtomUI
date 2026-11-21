@@ -738,6 +738,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
             listItem[!ListViewItem.ItemSelectedBgProperty]          = this[!ItemSelectedBgProperty];
             listItem[!ListViewItem.IsShowSelectedIndicatorProperty] = this[!IsShowSelectedIndicatorProperty];
             listItem[!ListViewItem.ItemClickModeProperty]           = this[!ItemClickModeProperty];
+            ForwardItemTheme(this, listItem);
             
             PrepareListViewItem(listItem, item, index);
 

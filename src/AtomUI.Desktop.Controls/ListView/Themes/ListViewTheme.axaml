@@ -7,25 +7,25 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.ListViewTheme"
               TargetType="atom:ListView">
-        <Setter Property="atom:GroupHeaderItem.ThemeContentPadding" Value="{atom:ListViewTokenResource ContentPadding}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemColor" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverColor" Value="{atom:ListViewTokenResource ItemHoverColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedColor" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemDisabledColor" Value="{atom:ListViewTokenResource ItemDisabledColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemBgColor" Value="{atom:ListViewTokenResource ItemBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverBgColor" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedBgColor" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPadding}" />
+        <Setter Property="ContentPadding" Value="{atom:ListViewTokenResource ContentPadding}" />
+        <Setter Property="ItemColor" Value="{atom:ListViewTokenResource ItemColor}" />
+        <Setter Property="ItemHoverColor" Value="{atom:ListViewTokenResource ItemHoverColor}" />
+        <Setter Property="ItemSelectedColor" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
+        <Setter Property="ItemDisabledColor" Value="{atom:ListViewTokenResource ItemDisabledColor}" />
+        <Setter Property="ItemBgColor" Value="{atom:ListViewTokenResource ItemBgColor}" />
+        <Setter Property="ItemHoverBgColor" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
+        <Setter Property="ItemSelectedBgColor" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
+        <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPadding}" />
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
+            <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
         </Style>
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+            <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
         </Style>
-        <Setter Property="atom:GroupHeaderItem.ThemeItemMargin" Value="{atom:ListViewTokenResource ItemMargin}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderColor" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderPadding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeSelectedIndicatorMargin" Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
+        <Setter Property="ItemMargin" Value="{atom:ListViewTokenResource ItemMargin}" />
+        <Setter Property="GroupHeaderColor" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
+        <Setter Property="GroupHeaderPadding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
+        <Setter Property="SelectedIndicatorMargin" Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
 
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListView">
@@ -93,12 +93,12 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
-        <Setter Property="ItemHoverBg" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemHoverBgColor)}" />
-        <Setter Property="ItemSelectedBg" Value="{Binding $self.(atom:GroupHeaderItem.ThemeItemSelectedBgColor)}" />
+        <Setter Property="ItemHoverBg" Value="{CompiledBinding $self.ItemHoverBgColor}" />
+        <Setter Property="ItemSelectedBg" Value="{CompiledBinding $self.ItemSelectedBgColor}" />
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
-        <Setter Property="Padding" Value="{Binding $self.(atom:GroupHeaderItem.ThemeContentPadding)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
 
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>

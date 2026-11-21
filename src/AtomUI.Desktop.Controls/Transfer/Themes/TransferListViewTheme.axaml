@@ -4,23 +4,23 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferListView}" TargetType="atom:TransferListView">
-        <Setter Property="atom:GroupHeaderItem.ThemeContentPadding" Value="{atom:TransferListViewTokenResource ContentPadding}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemColor" Value="{atom:TransferListViewTokenResource ItemColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverColor" Value="{atom:TransferListViewTokenResource ItemHoverColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedColor" Value="{atom:TransferListViewTokenResource ItemSelectedColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemDisabledColor" Value="{atom:TransferListViewTokenResource ItemDisabledColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemBgColor" Value="{atom:TransferListViewTokenResource ItemBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemHoverBgColor" Value="{atom:TransferListViewTokenResource ItemHoverBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemSelectedBgColor" Value="{atom:TransferListViewTokenResource ItemSelectedBgColor}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:TransferListViewTokenResource ItemPadding}" />
+        <Setter Property="ContentPadding" Value="{atom:TransferListViewTokenResource ContentPadding}" />
+        <Setter Property="ItemColor" Value="{atom:TransferListViewTokenResource ItemColor}" />
+        <Setter Property="ItemHoverColor" Value="{atom:TransferListViewTokenResource ItemHoverColor}" />
+        <Setter Property="ItemSelectedColor" Value="{atom:TransferListViewTokenResource ItemSelectedColor}" />
+        <Setter Property="ItemDisabledColor" Value="{atom:TransferListViewTokenResource ItemDisabledColor}" />
+        <Setter Property="ItemBgColor" Value="{atom:TransferListViewTokenResource ItemBgColor}" />
+        <Setter Property="ItemHoverBgColor" Value="{atom:TransferListViewTokenResource ItemHoverBgColor}" />
+        <Setter Property="ItemSelectedBgColor" Value="{atom:TransferListViewTokenResource ItemSelectedBgColor}" />
+        <Setter Property="ItemPadding" Value="{atom:TransferListViewTokenResource ItemPadding}" />
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:TransferListViewTokenResource ItemPaddingSM}" />
+            <Setter Property="ItemPadding" Value="{atom:TransferListViewTokenResource ItemPaddingSM}" />
         </Style>
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="atom:GroupHeaderItem.ThemeItemPadding" Value="{atom:TransferListViewTokenResource ItemPaddingLG}" />
+            <Setter Property="ItemPadding" Value="{atom:TransferListViewTokenResource ItemPaddingLG}" />
         </Style>
-        <Setter Property="atom:GroupHeaderItem.ThemeItemMargin" Value="{atom:TransferListViewTokenResource ItemMargin}" />
-        <Setter Property="atom:GroupHeaderItem.ThemeGroupHeaderColor" Value="{atom:TransferListViewTokenResource GroupHeaderColor}" />
+        <Setter Property="ItemMargin" Value="{atom:TransferListViewTokenResource ItemMargin}" />
+        <Setter Property="GroupHeaderColor" Value="{atom:TransferListViewTokenResource GroupHeaderColor}" />
 
 
 

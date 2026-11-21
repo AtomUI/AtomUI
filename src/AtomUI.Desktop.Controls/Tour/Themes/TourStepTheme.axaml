@@ -2,7 +2,11 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:converters="using:AtomUI.Desktop.Controls.Converters"
+    xmlns:primitives="using:Avalonia.Controls.Primitives"
+    x:CompileBindings="True"
     x:ClassModifier="internal">
+    <converters:TourCloseIconBrushConverter x:Key="TourCloseIconBrushConverter" />
     <ControlTheme x:Key="{x:Type atom:TourStep}" TargetType="atom:TourStep">
         <Setter Property="Template">
             <ControlTemplate>
@@ -63,12 +67,16 @@
                 <Setter Property="IconBrush" Value="{atom:TourStepTokenResource ColorTextLightSolid}" />
             </Style>
             
-            <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton:pointerover">
-                <Setter Property="IconBrush" Value="{atom:TourStepTokenResource ColorTextLightSolid}" />
-            </Style>
-        
-            <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton:pressed">
-                <Setter Property="IconBrush" Value="{atom:TourStepTokenResource ColorTextLightSolid}" />
+            <Style Selector="^ /template/ atom|DialogCaptionButton#CloseButton:pointerover, ^ /template/ atom|DialogCaptionButton#CloseButton:pressed">
+                <Setter Property="Foreground" Value="{atom:TourStepTokenResource ColorIconHover}" />
+                <Setter Property="IconBrush">
+                    <MultiBinding Converter="{StaticResource TourCloseIconBrushConverter}">
+                        <Binding Path="$self.TemplatedParent.(primitives:TemplatedControl.Foreground)" />
+                        <Binding Path="$self.Background" />
+                        <Binding Path="$parent[atom:ArrowDecoratedBox].Background" />
+                        <Binding Path="$self.Foreground" />
+                    </MultiBinding>
+                </Setter>
             </Style>
             
         </Style>

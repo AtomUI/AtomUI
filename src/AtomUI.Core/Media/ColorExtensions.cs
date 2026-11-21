@@ -147,9 +147,9 @@ public static class ColorExtensions
     public static double GetLuminance(this Color color)
     {
         // http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
-        var    rsRGB = color.R / 255;
-        var    gsRGB = color.G / 255;
-        var    bsRGB = color.B / 255;
+        var    rsRGB = color.R / 255d;
+        var    gsRGB = color.G / 255d;
+        var    bsRGB = color.B / 255d;
         double r     = 0;
         double g     = 0;
         double b     = 0;

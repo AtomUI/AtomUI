@@ -63,49 +63,48 @@ internal static class TransitionInterpolation
 
     public static BoxShadows BoxShadowsInterpolate(double progress, BoxShadows oldValue, BoxShadows newValue)
     {
-        int cnt = progress >= 1d ? newValue.Count : oldValue.Count;
-        if (cnt == 0)
+        if (progress <= 0d)
         {
-            return new BoxShadows();
+            return oldValue;
         }
-        BoxShadow first;
-        if (oldValue.Count > 0 && newValue.Count > 0)
+        if (progress >= 1d)
         {
-            first = BoxShadowInterpolate(progress, oldValue[0], newValue[0]);
+            return newValue;
         }
-        else if (oldValue.Count > 0)
+
+        var count = Math.Max(oldValue.Count, newValue.Count);
+        if (count == 0)
         {
-            first = oldValue[0];
+            return default;
         }
-        else
-        {
-            first = newValue[0];
-        }
-        
-        if (cnt == 1)
+
+        var first = InterpolateAt(0);
+        if (count == 1)
         {
             return new BoxShadows(first);
         }
-        
-        var rest = new BoxShadow[cnt - 1];
-        for (var c = 0; c < rest.Length; c++)
+
+        var rest = new BoxShadow[count - 1];
+        for (var index = 1; index < count; index++)
         {
-            var idx = c + 1;
-            if (oldValue.Count > idx && newValue.Count > idx)
-            {
-                rest[c] = BoxShadowInterpolate(progress, oldValue[idx], newValue[idx]);
-            }
-            else if (oldValue.Count > idx)
-            {
-                rest[c] = oldValue[idx];
-            }
-            else
-            {
-                rest[c] = newValue[idx];
-            }
+            rest[index - 1] = InterpolateAt(index);
         }
 
         return new BoxShadows(first, rest);
+
+        BoxShadow InterpolateAt(int index)
+        {
+            // Fade an unpaired shadow through transparency without changing its outline.
+            var from = index < oldValue.Count ? oldValue[index] : WithTransparentColor(newValue[index]);
+            var to = index < newValue.Count ? newValue[index] : WithTransparentColor(oldValue[index]);
+            return BoxShadowInterpolate(progress, from, to);
+        }
+
+        static BoxShadow WithTransparentColor(BoxShadow shadow)
+        {
+            shadow.Color = Colors.Transparent;
+            return shadow;
+        }
     }
 
     public static BoxShadow BoxShadowInterpolate(double progress, BoxShadow oldValue, BoxShadow newValue)

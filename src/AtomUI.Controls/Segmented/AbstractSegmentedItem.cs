@@ -125,6 +125,11 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
         {
             UpdatePseudoClasses();
         }
+        else if (change.Property == CornerRadiusProperty && IsSelected &&
+                 ItemsControl.ItemsControlFromItemContainer(this) is AbstractSegmented { SizeType: CustomizableSizeType.Custom } owner)
+        {
+            owner.InvalidateVisual();
+        }
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)

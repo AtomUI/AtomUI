@@ -332,8 +332,13 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
             if (thumb.Width > 0 && thumb.Height > 0)
             {
-                var thumbRadius = CornerRadiusUtils.ClampToSize(
-                    SelectedThumbCornerRadius, thumb.Width, thumb.Height);
+                var radius = SizeType == CustomizableSizeType.Custom &&
+                             SelectedIndex >= 0 &&
+                             ContainerFromIndex(SelectedIndex) is AbstractSegmentedItem item &&
+                             item.IsSet(CornerRadiusProperty)
+                    ? item.CornerRadius
+                    : SelectedThumbCornerRadius;
+                var thumbRadius = CornerRadiusUtils.ClampToSize(radius, thumb.Width, thumb.Height);
                 var paint = ThumbPaint;
                 context.DrawRectangle(paint.Brush, null,
                     new RoundedRect(thumb, thumbRadius), paint.Shadows);

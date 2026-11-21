@@ -1,6 +1,6 @@
 <!-- owner: global Tokens are read from the owner because this theme is also the base of LunarCalendar (its own
      identity). On a Calendar the owner is the Calendar. -->
-<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.Calendar"
+<ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
@@ -11,43 +11,24 @@
     x:Class="AtomUI.Desktop.Controls.Themes.CalendarControlTheme"
     TargetType="controls:Calendar"
     x:ClassModifier="internal">
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:CalendarTokenResource FullBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:CalendarTokenResource FullPanelBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:CalendarTokenResource ItemActiveBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveColor" Value="{atom:CalendarTokenResource ItemActiveColor}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:CalendarTokenResource YearControlWidth}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:CalendarTokenResource MonthControlWidth}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeYearMonthCellWidth" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderHeight" Value="{atom:CalendarTokenResource WeekHeaderHeight}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderPadding" Value="{atom:CalendarTokenResource WeekHeaderPadding}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellMargin" Value="{atom:CalendarTokenResource FullCellMargin}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellPadding" Value="{atom:CalendarTokenResource FullCellPadding}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellBorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarHeight" Value="{atom:CalendarTokenResource RangeBarHeight}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarGap" Value="{atom:CalendarTokenResource RangeBarGap}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding" Value="{atom:CalendarTokenResource RangeBarLabelPadding}" />
 
     <ControlTheme.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
             <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
+            <ResourceInclude Source="/Calendar/Themes/CalendarDatePanelTheme.axaml" />
         </ResourceDictionary.MergedDictionaries>
-        <ControlTheme x:Key="CalendarDatePanelTheme" TargetType="viewer:DatePanel">
-            <ControlTheme.BasedOn><themes:DatePanelTheme TargetType="viewer:DatePanel" /></ControlTheme.BasedOn>
-            <Setter Property="Width" Value="NaN" />
-            <Setter Property="Padding" Value="0" />
-            <Style Selector="^[Presentation=Compact]">
-                <Setter Property="WeekHeaderMinHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
-            </Style>
-            <Style Selector="^[Presentation=Content]">
-                <Setter Property="WeekHeaderTextAlignment" Value="Right" />
-                <Setter Property="WeekHeaderMinHeight" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeWeekHeaderHeight)}" />
-                <Setter Property="WeekHeaderPadding" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeWeekHeaderPadding)}" />
-            </Style>
-        </ControlTheme>
         </ResourceDictionary>
     </ControlTheme.Resources>
     <Setter Property="DateCellTheme" Value="{StaticResource CalendarDateCellTheme}" />
+    <Setter Property="DatePanelTheme" Value="{StaticResource CalendarDatePanelTheme}" />
+    <!-- Terminal Own Tokens for the template parts; LunarCalendarTheme replaces these root setters with its own. -->
+    <Setter Property="FullPanelBg" Value="{atom:CalendarTokenResource FullPanelBg}" />
+    <Setter Property="YearControlWidth" Value="{atom:CalendarTokenResource YearControlWidth}" />
+    <Setter Property="MonthControlWidth" Value="{atom:CalendarTokenResource MonthControlWidth}" />
+    <Setter Property="RangeBarHeight" Value="{atom:CalendarTokenResource RangeBarHeight}" />
+    <Setter Property="RangeBarGap" Value="{atom:CalendarTokenResource RangeBarGap}" />
+    <Setter Property="RangeBarLabelPadding" Value="{atom:CalendarTokenResource RangeBarLabelPadding}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="controls:Calendar">
             <Border Name="PART_Root"
@@ -65,7 +46,9 @@
                                                  Value="{TemplateBinding Value}"
                                                  Mode="{TemplateBinding Mode}"
                                                  ValidRange="{TemplateBinding ValidRange}"
-                                                 Fullscreen="{TemplateBinding Fullscreen}" />
+                                                 Fullscreen="{TemplateBinding Fullscreen}"
+                                                 YearControlWidth="{TemplateBinding YearControlWidth}"
+                                                 MonthControlWidth="{TemplateBinding MonthControlWidth}" />
                         <ContentControl Name="PART_CustomHeader"
                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
                                         IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -88,7 +71,7 @@
                                                    Classes.semantic-content="True"
                                                    ShowHeader="False" Padding="0"
                                                    CellTheme="{TemplateBinding DateCellTheme}"
-                                                   PanelTheme="{StaticResource CalendarDatePanelTheme}"
+                                                   PanelTheme="{TemplateBinding DatePanelTheme}"
                                                    DefaultFullCellTemplate="{TemplateBinding DefaultDateCellTemplate}"
                                                    Presentation="{TemplateBinding DatePresentation}"
                                                    CellTemplate="{TemplateBinding CellTemplate}"
@@ -102,13 +85,13 @@
                                                             Mode="{TemplateBinding Mode}"
                                                             Fullscreen="{TemplateBinding Fullscreen}"
                                                             RangeBars="{TemplateBinding RangeBars}"
-                                                            RangeBarHeight="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarHeight)}"
+                                                            RangeBarHeight="{TemplateBinding RangeBarHeight}"
                                                             RangeBarTopOffset="{TemplateBinding EffectiveRangeBarTopOffset}"
                                                             UseRangeBarTokenResources="True"
                                                             HorizontalAlignment="Stretch"
                                                             VerticalAlignment="Stretch"
-                                                            RangeBarGap="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarGap)}"
-                                                            RangeBarLabelPadding="{Binding $self.(tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding)}"
+                                                            RangeBarGap="{TemplateBinding RangeBarGap}"
+                                                            RangeBarLabelPadding="{TemplateBinding RangeBarLabelPadding}"
                                                             IsVisible="False"
                                                             IsHitTestVisible="False"
                                                             ZIndex="1" />
@@ -119,12 +102,12 @@
         </ControlTemplate>
     </Setter>
 
-    <Setter Property="Background" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullBg)}" />
+    <Setter Property="Background" Value="{atom:CalendarTokenResource FullBg}" />
     <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="0" />
     <Style Selector="^ /template/ controls|DateViewer">
-        <Setter Property="Background" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullPanelBg)}" />
+        <Setter Property="Background" Value="{TemplateBinding FullPanelBg}" />
     </Style>
     <Style Selector="^:mini /template/ controls|DateViewer">
         <Setter Property="Height" Value="{TemplateBinding EffectiveMiniContentHeight}" />

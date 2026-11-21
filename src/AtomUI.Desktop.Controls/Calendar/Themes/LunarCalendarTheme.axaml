@@ -9,41 +9,154 @@
     x:Class="AtomUI.Desktop.Controls.Themes.LunarCalendarControlTheme"
     TargetType="controls:LunarCalendar"
     x:ClassModifier="internal">
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullBg" Value="{atom:LunarCalendarTokenResource FullBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullPanelBg" Value="{atom:LunarCalendarTokenResource FullPanelBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveBg" Value="{atom:LunarCalendarTokenResource ItemActiveBg}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeItemActiveColor" Value="{atom:LunarCalendarTokenResource ItemActiveColor}" />
-
-        <Setter Property="tokeninputs:CalendarHeader.ThemeYearControlWidth" Value="{atom:LunarCalendarTokenResource YearControlWidth}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeMonthControlWidth" Value="{atom:LunarCalendarTokenResource MonthControlWidth}" />
-
-        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderHeight" Value="{atom:LunarCalendarTokenResource WeekHeaderHeight}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeWeekHeaderPadding" Value="{atom:LunarCalendarTokenResource WeekHeaderPadding}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellMargin" Value="{atom:LunarCalendarTokenResource FullCellMargin}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellPadding" Value="{atom:LunarCalendarTokenResource FullCellPadding}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeFullCellBorderThickness" Value="{atom:LunarCalendarTokenResource FullCellBorderThickness}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarHeight" Value="{atom:LunarCalendarTokenResource RangeBarHeight}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarGap" Value="{atom:LunarCalendarTokenResource RangeBarGap}" />
-        <Setter Property="tokeninputs:CalendarHeader.ThemeRangeBarLabelPadding" Value="{atom:LunarCalendarTokenResource RangeBarLabelPadding}" />
+    <!-- CalendarTheme reads Calendar's own Tokens on the root and passes them to its template parts; these root
+         setters replace them with LunarCalendar's. The cell and panel themes below do the same for the date grid. -->
+    <Setter Property="Background" Value="{atom:LunarCalendarTokenResource FullBg}" />
+    <Setter Property="FullPanelBg" Value="{atom:LunarCalendarTokenResource FullPanelBg}" />
+    <Setter Property="YearControlWidth" Value="{atom:LunarCalendarTokenResource YearControlWidth}" />
+    <Setter Property="MonthControlWidth" Value="{atom:LunarCalendarTokenResource MonthControlWidth}" />
+    <Setter Property="RangeBarHeight" Value="{atom:LunarCalendarTokenResource RangeBarHeight}" />
+    <Setter Property="RangeBarGap" Value="{atom:LunarCalendarTokenResource RangeBarGap}" />
+    <Setter Property="RangeBarLabelPadding" Value="{atom:LunarCalendarTokenResource RangeBarLabelPadding}" />
 
     <ControlTheme.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
             <ResourceInclude Source="/Calendar/Themes/CalendarDateCellTheme.axaml" />
+            <ResourceInclude Source="/Calendar/Themes/CalendarDatePanelTheme.axaml" />
         </ResourceDictionary.MergedDictionaries>
+        <ControlTheme x:Key="LunarDatePanelTheme" TargetType="viewer:DatePanel" BasedOn="{StaticResource CalendarDatePanelTheme}">
+            <Style Selector="^[Presentation=Content]">
+                <Setter Property="WeekHeaderMinHeight" Value="{atom:LunarCalendarTokenResource WeekHeaderHeight}" />
+                <Setter Property="WeekHeaderPadding" Value="{atom:LunarCalendarTokenResource WeekHeaderPadding}" />
+            </Style>
+        </ControlTheme>
         <!-- The cells take the LunarCalendar's Token owner (the Calendar forwards it to its DateViewer); this lunar-only cell
-             theme reads LunarCalendar's Tokens explicitly; its base consumes terminal-supplied presentation inputs. -->
+             theme reads LunarCalendar's Tokens explicitly and replaces the Calendar Own reads of its base. -->
         <ControlTheme x:Key="LunarDateCellTheme" TargetType="viewer:DateViewerCell" BasedOn="{StaticResource CalendarDateCellTheme}">
-            <Style Selector="^[Presentation=Content]:date:selected:not(:disabled) /template/ Border#PART_CellInner">
-                <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ColorPrimary}" />
+            <!-- Lunar cells add separate selection and hover fills beneath the cell frame; the plain
+                 Calendar cell template does not carry them. -->
+            <Setter Property="Template">
+                <ControlTemplate TargetType="viewer:DateViewerCell">
+                    <Border Name="PART_Item"
+                            Background="{TemplateBinding Background}"
+                            Cursor="Hand"
+                            Focusable="False"
+                            Padding="0"
+                            ClipToBounds="False"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Panel>
+                            <Border Name="PART_CellSelection"
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    IsVisible="False" />
+                            <Border Name="PART_CellHover"
+                                    Background="Transparent"
+                                    IsHitTestVisible="False"
+                                    IsVisible="False" />
+                            <tokeninputs:CalendarCellFrame Name="PART_CellInner"
+                                    TemplatedControl.IsTemplateFocusTarget="True"
+                                    Background="Transparent"
+                                    Cursor="Hand"
+                                    ClipToBounds="False"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch">
+                                <Grid ClipToBounds="False">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <ContentControl Name="PART_CellContent"
+                                                    Classes.semantic-cell-content="True"
+                                                    Content="{TemplateBinding Context}" ContentTemplate="{TemplateBinding CellTemplate}"
+                                                    Cursor="Hand"
+                                                    Grid.Row="1"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    VerticalContentAlignment="Stretch"
+                                                    ClipToBounds="False"
+                                                    IsVisible="False" />
+                                    <atom:TextBlock Name="PART_Value"
+                                                    Cursor="Hand"
+                                                    Grid.Row="0"
+                                                    Text="{TemplateBinding DisplayText}"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" />
+                                    <Border Grid.Row="0" Name="PART_CellOutline" Grid.RowSpan="2"
+                                            IsHitTestVisible="False" />
+                                </Grid>
+                            </tokeninputs:CalendarCellFrame>
+                        </Panel>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+            <!-- LunarCalendar's own Tokens replace the Calendar reads of the base cell theme. These come before the lunar
+                 styles below so they still take precedence. The selected text colour skips week and outside cells,
+                 where the base theme's later disabled colour applies. -->
+            <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
+                <Setter Property="Margin" Value="{atom:LunarCalendarTokenResource FullCellMargin}" />
+            </Style>
+            <Style Selector="^[Presentation=Content] /template/ Border#PART_CellInner">
+                <Setter Property="BorderThickness" Value="{atom:LunarCalendarTokenResource FullCellBorderThickness}" />
+                <Setter Property="Padding" Value="{atom:LunarCalendarTokenResource FullCellPadding}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:selected /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ItemActiveBg}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:focus-visible /template/ Border#PART_CellInner">
+                <Setter Property="BorderThickness" Value="{atom:LunarCalendarTokenResource FullCellBorderThickness}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:selected:not(:disabled):not(:week):not(:outside)">
+                <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ItemActiveColor}" />
+            </Style>
+            <!-- The two fills sit inside the straight cell rules. Selection and text switch together, while
+                 the hover fill continues to transition on its own. -->
+            <Style Selector="^[Presentation=Content]:date /template/ Border#PART_CellSelection, ^[Presentation=Content]:date /template/ Border#PART_CellHover">
                 <Setter Property="CornerRadius" Value="{atom:LunarCalendarTokenResource BorderRadiusLG}" />
+                <Setter Property="Margin" Value="{atom:LunarCalendarTokenResource FullCellBorderThickness}" />
+            </Style>
+            <Style Selector="^:date:selected:not(:disabled) /template/ Border#PART_CellSelection">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date:selected:not(:disabled) /template/ Border#PART_CellSelection, ^[Presentation=Content]:not(:dark-variant):date:selected:not(:disabled) /template/ Border#PART_CellSelection">
+                <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ColorPrimary}" />
+            </Style>
+            <Style Selector="^[Presentation=Content]:dark-variant:date:selected:not(:disabled) /template/ Border#PART_CellSelection">
+                <Setter Property="Background" Value="{atom:LunarCalendarTokenResource ItemActiveBg}" />
+            </Style>
+            <Style Selector="^:date:selected:not(:disabled) /template/ Border#PART_CellInner, ^:date:pointerover:not(:disabled):not(:selected) /template/ Border#PART_CellInner">
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+            <Style Selector="^:date /template/ Border#PART_CellHover">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
+            <Style Selector="^:date:pointerover:not(:disabled):not(:selected) /template/ Border#PART_CellHover">
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgHover}" />
+            </Style>
+            <Style Selector="^:date:selected:not(:disabled) /template/ Border#PART_CellHover">
+                <Setter Property="IsVisible" Value="False" />
             </Style>
             <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_Item">
-                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellHeight}" />
             </Style>
-            <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_CellInner">
+            <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_CellInner, ^[Presentation=Compact]:date /template/ Border#PART_CellSelection, ^[Presentation=Compact]:date /template/ Border#PART_CellHover">
                 <Setter Property="Width" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
-                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
+                <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellHeight}" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date /template/ ContentControl#PART_CellContent">
+                <Setter Property="Margin" Value="{atom:LunarCalendarTokenResource MiniDateCellPadding}" />
+            </Style>
+            <Style Selector="^[Presentation=Compact]:date /template/ Border#PART_CellInner, ^[Presentation=Compact]:date /template/ Border#PART_CellSelection, ^[Presentation=Compact]:date /template/ Border#PART_CellHover, ^[Presentation=Compact]:date /template/ Border#PART_CellOutline">
+                <Setter Property="CornerRadius" Value="{atom:LunarCalendarTokenResource MiniDateCellCornerRadius}" />
             </Style>
             <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_Item">
                 <Setter Property="Height" Value="{atom:LunarCalendarTokenResource MiniDateCellSize}" />
@@ -65,4 +178,5 @@
     </ControlTheme.BasedOn>
     <Setter Property="DefaultDateCellTemplate" Value="{StaticResource LunarDefaultCellContent}" />
     <Setter Property="DateCellTheme" Value="{StaticResource LunarDateCellTheme}" />
+    <Setter Property="DatePanelTheme" Value="{StaticResource LunarDatePanelTheme}" />
 </ControlTheme>

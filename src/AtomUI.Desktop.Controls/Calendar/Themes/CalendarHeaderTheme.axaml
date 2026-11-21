@@ -1,4 +1,4 @@
-<ControlTheme xmlns:tokeninputs="using:AtomUI.Desktop.Controls.Internal.Calendar"
+<ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
@@ -28,10 +28,10 @@
                                 HorizontalAlignment="Right"
                                 Spacing="{atom:OwnerTokenResource UniformlyMarginXS}">
                         <atom:ComboBox Name="PART_YearSelect"
-                                       MinWidth="{Binding $self.(tokeninputs:CalendarHeader.ThemeYearControlWidth)}"
+                                       MinWidth="{TemplateBinding YearControlWidth}"
                                        DropDownDisplayPageSize="8" />
                         <atom:ComboBox Name="PART_MonthSelect"
-                                       MinWidth="{Binding $self.(tokeninputs:CalendarHeader.ThemeMonthControlWidth)}"
+                                       MinWidth="{TemplateBinding MonthControlWidth}"
                                        DropDownDisplayPageSize="8" />
                         <atom:OptionButtonGroup Name="PART_ModeSwitch"
                                                 ButtonStyle="Outline">

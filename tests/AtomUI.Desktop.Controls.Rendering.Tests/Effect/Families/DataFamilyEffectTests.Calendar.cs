@@ -39,9 +39,13 @@ public partial class DataFamilyEffectTests
     /// </summary>
     internal static readonly OwnerReadList s_calendarTheme = new(CalendarThemes + "CalendarTheme.axaml",
     [
-        "BorderRadiusLG", "ColorBorderSecondary", "ColorSplit", "ColorTextLightSolid", "FontHeightSM", "FontSizeSM",
+        "BorderRadiusLG", "ColorBorderSecondary", "ColorSplit", "ColorTextLightSolid", "FontSizeSM",
         "LineWidth", "UniformlyMarginXXS", "UniformlyPaddingXS"
     ], "src/AtomUI.Desktop.Controls/Calendar/Internal/CalendarRangeBarPanel.cs");
+
+    /// <summary>The Calendar date panel theme (shared by Calendar and LunarCalendar) reads the compact week header height.</summary>
+    internal static readonly OwnerReadList s_calendarDatePanel = new(CalendarThemes + "CalendarDatePanelTheme.axaml",
+        ["FontHeightSM"]);
 
     private static readonly DateTime s_calendarDate = new(2026, 7, 15);
 
@@ -134,7 +138,7 @@ public partial class DataFamilyEffectTests
             new EffectOptions { Target = static host => Descendant<Calendar>(host), Perturb = static _ => new CornerRadius(48) });
 
     public static IEnumerable<object[]> CalendarRows() =>
-        HostRows("Calendar", [], [s_calendarHeader, s_calendarDateCell, s_datePanel]);
+        HostRows("Calendar", [], [s_calendarHeader, s_calendarDateCell, s_calendarDatePanel, s_datePanel]);
 
     [Theory]
     [MemberData(nameof(CalendarRows))]
@@ -149,7 +153,7 @@ public partial class DataFamilyEffectTests
     // the lunar cells draw their selected text through LunarCalendarCellContent (ColorTextLightSolid), so the lunar row
     // has no visible state for it.
     public static IEnumerable<object[]> LunarCalendarRows() =>
-        HostRows("LunarCalendar", [], [s_calendarTheme, s_calendarHeader, s_calendarDateCell, s_datePanel])
+        HostRows("LunarCalendar", [], [s_calendarTheme, s_calendarHeader, s_calendarDateCell, s_calendarDatePanel, s_datePanel])
             .Where(static row => (string)row[0] != "ItemActiveColor");
 
     [Theory]

@@ -49,11 +49,13 @@
     <Style Selector="^:workday /template/ Border#PART_Marker">
         <Setter Property="Background" Value="{atom:LunarCalendarTokenResource WorkdayMarkerColor}" />
     </Style>
-    <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_SecondaryText">
-        <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ColorTextLightSolid}" />
-    </Style>
-    <Style Selector="^:selected:not(:disabled) /template/ atom|TextBlock#PART_Value">
-        <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ColorTextLightSolid}" />
+    <Style Selector="^:selected:not(:disabled)">
+        <Style Selector="^[Presentation=Compact] /template/ atom|TextBlock#PART_SecondaryText, ^[Presentation=Compact] /template/ atom|TextBlock#PART_Value, ^[Presentation=Content]:not(:dark-variant) /template/ atom|TextBlock#PART_SecondaryText, ^[Presentation=Content]:not(:dark-variant) /template/ atom|TextBlock#PART_Value">
+            <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ColorTextLightSolid}" />
+        </Style>
+        <Style Selector="^[Presentation=Content]:dark-variant /template/ atom|TextBlock#PART_SecondaryText, ^[Presentation=Content]:dark-variant /template/ atom|TextBlock#PART_Value">
+            <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ItemActiveColor}" />
+        </Style>
     </Style>
     <Style Selector="^:outside /template/ atom|TextBlock#PART_SecondaryText, ^:disabled /template/ atom|TextBlock#PART_SecondaryText, ^:outside /template/ atom|TextBlock#PART_Value, ^:disabled /template/ atom|TextBlock#PART_Value">
         <Setter Property="Foreground" Value="{atom:LunarCalendarTokenResource ColorTextDisabled}" />

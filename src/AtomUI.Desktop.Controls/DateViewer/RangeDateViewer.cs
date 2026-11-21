@@ -204,14 +204,6 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
         RaisePropertyChanged(PanelKindProperty, oldKind, PanelKind);
     }
 
-    internal void SetContentFactory(Func<DatePanelSession, DateViewerCellModel, DateViewerCellContext?>? factory) =>
-        _session.SetContentFactory(factory);
-
-    internal void SetAutomationNameFactory(Func<DatePanelSession, DateViewerCellModel, string?>? factory) =>
-        _session.SetAutomationNameFactory(factory);
-
-    internal void RefreshContent() => _session.RefreshContent();
-
     DatePanelInput IDatePanelHost.ReadInput() => _host?.ReadInput() ?? new()
     {
         DisplayDate = DisplayDate, PanelKind = _panelKind, SelectionUnit = SelectionUnit,

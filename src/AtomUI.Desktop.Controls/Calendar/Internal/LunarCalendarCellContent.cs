@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
@@ -33,6 +34,13 @@ internal sealed class LunarCalendarCellContent : TemplatedControl
             PseudoClasses.Set(":disabled", Context?.IsDisabled == true);
             PseudoClasses.Set(":outside", Context?.IsInView == false);
             RaisePropertyChanged(ShowMarkerProperty, default, ShowMarker);
+        }
+
+        // Fullscreen selected dates take the active-item colours in dark appearance; see DateViewerCell.
+        if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
+        {
+            PseudoClasses.Set(DateViewer.DateViewerCell.DarkVariantPseudoClass,
+                ThemeVariant.Dark.Equals(change.GetNewValue<ThemeVariant?>()));
         }
     }
 }

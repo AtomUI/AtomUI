@@ -10,6 +10,9 @@ public sealed partial class LunarCalendarToken : AbstractCalendarToken
 {
     public partial double MiniContentHeight { get; set; }
     public partial double MiniDateCellSize { get; set; }
+    public partial double MiniDateCellHeight { get; set; }
+    public partial Thickness MiniDateCellPadding { get; set; }
+    public partial CornerRadius MiniDateCellCornerRadius { get; set; }
     public partial double MiniMonthCellWidth { get; set; }
     public partial double SecondaryTextFontSize { get; set; }
     public partial double SecondaryTextLineHeight { get; set; }
@@ -39,13 +42,16 @@ public sealed partial class LunarCalendarToken : AbstractCalendarToken
     {
         base.CalculateTokenValues(isDarkMode);
 
+        if (isDarkMode)
+        {
+            ItemActiveColor = EffectiveGlobalToken.ColorText;
+        }
+
         if (!IsExplicit(LunarCalendarTokenKind.MiniDateCellSize))
         {
             MiniDateCellSize = EffectiveGlobalToken.ControlHeightLG;
         }
 
-        MiniContentHeight = EffectiveGlobalToken.FontHeightSM +
-                            (MiniDateCellSize + EffectiveGlobalToken.UniformlyMarginXS) * 6;
         MiniMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 2;
         SecondaryTextFontSize = EffectiveGlobalToken.FontSizeSM;
 
@@ -53,6 +59,26 @@ public sealed partial class LunarCalendarToken : AbstractCalendarToken
         {
             SecondaryTextLineHeight = EffectiveGlobalToken.FontHeightSM;
         }
+
+        if (!IsExplicit(LunarCalendarTokenKind.MiniDateCellPadding))
+        {
+            MiniDateCellPadding = new Thickness(0, 3);
+        }
+
+        if (!IsExplicit(LunarCalendarTokenKind.MiniDateCellCornerRadius))
+        {
+            MiniDateCellCornerRadius = new CornerRadius(6);
+        }
+
+        if (!IsExplicit(LunarCalendarTokenKind.MiniDateCellHeight))
+        {
+            MiniDateCellHeight = Math.Max(MiniDateCellSize, Math.Ceiling(
+                EffectiveGlobalToken.FontHeight + SecondaryTextLineHeight +
+                MiniDateCellPadding.Top + MiniDateCellPadding.Bottom));
+        }
+
+        MiniContentHeight = EffectiveGlobalToken.FontHeightSM +
+                            (MiniDateCellHeight + EffectiveGlobalToken.UniformlyMarginXS) * 6;
 
         SecondaryTextColor = EffectiveGlobalToken.ColorTextTertiary;
         WeekendTextColor = EffectiveGlobalToken.ColorError;

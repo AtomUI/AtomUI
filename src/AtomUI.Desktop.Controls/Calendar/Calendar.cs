@@ -12,6 +12,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using CalendarRangeBarPanelControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarRangeBarPanel;
 
@@ -179,6 +180,31 @@ public partial class Calendar : TemplatedControl
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DateCellThemeProperty =
         AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DateCellTheme));
     internal Avalonia.Styling.ControlTheme? DateCellTheme { get => GetValue(DateCellThemeProperty); set => SetValue(DateCellThemeProperty, value); }
+    // Like DateCellTheme, each terminal supplies the panel theme that reads its own week-header Tokens.
+    internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DatePanelThemeProperty =
+        AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DatePanelTheme));
+    internal Avalonia.Styling.ControlTheme? DatePanelTheme { get => GetValue(DatePanelThemeProperty); set => SetValue(DatePanelThemeProperty, value); }
+
+    // Template-part metrics from the terminal's Own Tokens. Each terminal theme assigns them on the root and the
+    // template passes them to its parts, so the values do not inherit through the calendar tree.
+    internal static readonly StyledProperty<IBrush?> FullPanelBgProperty =
+        AvaloniaProperty.Register<Calendar, IBrush?>(nameof(FullPanelBg));
+    internal IBrush? FullPanelBg { get => GetValue(FullPanelBgProperty); set => SetValue(FullPanelBgProperty, value); }
+    internal static readonly StyledProperty<double> YearControlWidthProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(YearControlWidth));
+    internal double YearControlWidth { get => GetValue(YearControlWidthProperty); set => SetValue(YearControlWidthProperty, value); }
+    internal static readonly StyledProperty<double> MonthControlWidthProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(MonthControlWidth));
+    internal double MonthControlWidth { get => GetValue(MonthControlWidthProperty); set => SetValue(MonthControlWidthProperty, value); }
+    internal static readonly StyledProperty<double> RangeBarHeightProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(RangeBarHeight));
+    internal double RangeBarHeight { get => GetValue(RangeBarHeightProperty); set => SetValue(RangeBarHeightProperty, value); }
+    internal static readonly StyledProperty<double> RangeBarGapProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(RangeBarGap));
+    internal double RangeBarGap { get => GetValue(RangeBarGapProperty); set => SetValue(RangeBarGapProperty, value); }
+    internal static readonly StyledProperty<Thickness> RangeBarLabelPaddingProperty =
+        AvaloniaProperty.Register<Calendar, Thickness>(nameof(RangeBarLabelPadding));
+    internal Thickness RangeBarLabelPadding { get => GetValue(RangeBarLabelPaddingProperty); set => SetValue(RangeBarLabelPaddingProperty, value); }
     internal static readonly StyledProperty<IDataTemplate?> DefaultDateCellTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(DefaultDateCellTemplate));
     internal IDataTemplate? DefaultDateCellTemplate { get => GetValue(DefaultDateCellTemplateProperty); set => SetValue(DefaultDateCellTemplateProperty, value); }

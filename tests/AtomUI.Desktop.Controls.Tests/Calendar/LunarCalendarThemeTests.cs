@@ -41,6 +41,7 @@ public class LunarCalendarThemeTests
             ControlHeightLG = 40,
             ControlHeightSM = 32,
             FontSizeSM = 12,
+            FontHeight = 22,
             FontHeightSM = 20,
             UniformlyMarginXS = 8,
             UniformlyMarginXXS = 4,
@@ -56,7 +57,10 @@ public class LunarCalendarThemeTests
         token.RunDefaultCalculation(isDarkMode: false);
 
         token.MiniDateCellSize.ShouldBe(40);
-        token.MiniContentHeight.ShouldBe(308);
+        token.MiniDateCellHeight.ShouldBe(48);
+        token.MiniDateCellPadding.ShouldBe(new Thickness(0, 3));
+        token.MiniDateCellCornerRadius.ShouldBe(new CornerRadius(6));
+        token.MiniContentHeight.ShouldBe(356);
         token.MiniMonthCellWidth.ShouldBe(80);
         token.SecondaryTextFontSize.ShouldBe(12);
         token.SecondaryTextLineHeight.ShouldBe(20);

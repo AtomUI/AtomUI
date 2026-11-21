@@ -1,0 +1,22 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
+                    xmlns:themes="clr-namespace:AtomUI.Desktop.Controls.Themes"
+                    x:ClassModifier="internal">
+    <!-- The Calendar date panel. Its fullscreen week header reads the Calendar's own Tokens; LunarCalendar supplies a
+         derived panel theme that reads its own instead. -->
+    <ControlTheme x:Key="CalendarDatePanelTheme" TargetType="viewer:DatePanel">
+        <ControlTheme.BasedOn><themes:DatePanelTheme TargetType="viewer:DatePanel" /></ControlTheme.BasedOn>
+        <Setter Property="Width" Value="NaN" />
+        <Setter Property="Padding" Value="0" />
+        <Style Selector="^[Presentation=Compact]">
+            <Setter Property="WeekHeaderMinHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
+        </Style>
+        <Style Selector="^[Presentation=Content]">
+            <Setter Property="WeekHeaderTextAlignment" Value="Right" />
+            <Setter Property="WeekHeaderMinHeight" Value="{atom:CalendarTokenResource WeekHeaderHeight}" />
+            <Setter Property="WeekHeaderPadding" Value="{atom:CalendarTokenResource WeekHeaderPadding}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

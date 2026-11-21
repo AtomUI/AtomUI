@@ -28,9 +28,8 @@ public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
 
     /// <summary>
     /// The text colour of the selected date / month cell in fullscreen mode, drawn on <see cref="ItemActiveBg"/>.
-    /// Defaults to the primary colour (Ant Design); a theme whose selected background is the solid primary sets the
-    /// contrast colour. The LunarCalendar's cells draw their selected text through their own cell content
-    /// (<c>ColorTextLightSolid</c>), so it only shows on the Gregorian calendar.
+    /// Defaults to the primary colour for Calendar. LunarCalendar uses this colour for its fullscreen month cells
+    /// and for both lines of fullscreen date-cell text in dark appearance.
     /// </summary>
     public partial Color ItemActiveColor { get; set; }
 

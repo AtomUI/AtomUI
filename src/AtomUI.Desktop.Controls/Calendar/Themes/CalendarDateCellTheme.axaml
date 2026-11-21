@@ -107,7 +107,7 @@
                 <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             </Style>
             <Style Selector="^[Presentation=Compact]:month /template/ Border#PART_CellInner">
-                <Setter Property="Width" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeYearMonthCellWidth)}" />
+                <Setter Property="Width" Value="{atom:CalendarTokenResource YearMonthCellWidth}" />
             </Style>
             <!-- Without custom cell content the value is centered in the whole cell box (Ant Design line-height
                  centering); the Auto row alone would leave it near the top of the box. -->
@@ -117,14 +117,14 @@
 
             <!-- Fullscreen 布局 -->
             <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
-                <Setter Property="Margin" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellMargin)}" />
+                <Setter Property="Margin" Value="{atom:CalendarTokenResource FullCellMargin}" />
             </Style>
             <Style Selector="^[Presentation=Content] /template/ Border#PART_CellInner">
                 <Setter Property="CornerRadius" Value="0" />
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
-                <Setter Property="BorderThickness" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellBorderThickness)}" />
+                <Setter Property="BorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
                 <Setter Property="tokeninputs:CalendarCellFrame.MinimumDesiredHeight" Value="{Binding $parent[controls:Calendar].EffectiveFullCellMinHeight}" />
-                <Setter Property="Padding" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellPadding)}" />
+                <Setter Property="Padding" Value="{atom:CalendarTokenResource FullCellPadding}" />
             </Style>
             <Style Selector="^[Presentation=Content] /template/ atom|TextBlock#PART_Value">
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -145,7 +145,7 @@
                 <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
             <Style Selector="^[Presentation=Content]:selected /template/ Border#PART_CellInner">
-                <Setter Property="Background" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeItemActiveBg)}" />
+                <Setter Property="Background" Value="{atom:CalendarTokenResource ItemActiveBg}" />
             </Style>
 
             <!-- 键盘焦点：Compact 使用共享焦点描边包围日期块（与日期选择器面板一致，选中的主色块上也清晰可见）；
@@ -155,7 +155,7 @@
             </Style>
             <Style Selector="^[Presentation=Content]:focus-visible /template/ Border#PART_CellInner">
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
-                <Setter Property="BorderThickness" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeFullCellBorderThickness)}" />
+                <Setter Property="BorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
             </Style>
 
             <!-- 禁用 -->
@@ -195,7 +195,7 @@
                 <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextLightSolid}" />
             </Style>
             <Style Selector="^[Presentation=Content]:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{Binding $self.(tokeninputs:CalendarHeader.ThemeItemActiveColor)}" />
+                <Setter Property="Foreground" Value="{atom:CalendarTokenResource ItemActiveColor}" />
             </Style>
             <Style Selector="^:week">
                 <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />

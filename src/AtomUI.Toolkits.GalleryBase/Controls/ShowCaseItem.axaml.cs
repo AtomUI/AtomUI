@@ -74,7 +74,7 @@ public class ShowCaseItem : ContentControl
         AvaloniaProperty.Register<ShowCaseItem, string?>(nameof(BadgeText));
 
     public static readonly StyledProperty<string?> BadgeColorProperty =
-        AvaloniaProperty.Register<ShowCaseItem, string?>(nameof(BadgeColor), "blue");
+        AvaloniaProperty.Register<ShowCaseItem, string?>(nameof(BadgeColor));
 
     public static readonly StyledProperty<string?> SourceKeyProperty =
         AvaloniaProperty.Register<ShowCaseItem, string?>(nameof(SourceKey));

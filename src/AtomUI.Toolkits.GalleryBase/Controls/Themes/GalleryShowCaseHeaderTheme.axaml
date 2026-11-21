@@ -56,7 +56,7 @@
                                         Text="{TemplateBinding Description}"
                                         HorizontalAlignment="Left"
                                         TextWrapping="Wrap"
-                                        Foreground="{gallery:GalleryShowCaseHeaderTokenResource ColorTextTertiary}"
+                                        Foreground="{gallery:GalleryShowCaseHeaderTokenResource ColorTextDescription}"
                                         IsVisible="{TemplateBinding IsDescriptionVisible}" />
                     </StackPanel>
 

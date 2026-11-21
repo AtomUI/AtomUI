@@ -10,24 +10,24 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^:is(atom|SelectTag)">
-            <Setter Property="Background" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemBg)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemBg)}" />
             <Setter Property="IsClosable" Value="True" />
-            <Setter Property="FontSize" Value="{Binding $self.(atom:SelectTag.ThemeOptionFontSize)}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.(atom:SelectTag.ThemeOptionFontSize)}" />
 
             <Style Selector="^:disabled">
                 <Setter Property="Background"
-                        Value="{Binding $self.(atom:SelectTag.ThemeMultipleSelectorBgDisabled)}" />
+                        Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleSelectorBgDisabled)}" />
                 <Setter Property="Foreground"
-                        Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemColorDisabled)}" />
+                        Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemColorDisabled)}" />
                 <Setter Property="IsClosable" Value="False" />
             </Style>
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
             </Style>
 
             <Style Selector="^[SizeType=Custom][HasCustomTagHeight=True]">
@@ -36,7 +36,7 @@
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Height" Value="{Binding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
             </Style>
 
         </Style>

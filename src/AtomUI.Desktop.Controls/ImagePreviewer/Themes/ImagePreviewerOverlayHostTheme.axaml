@@ -12,7 +12,7 @@
             <ControlTemplate>
                 <Panel Classes.semantic-popup-root="True">
                     <Panel Classes.semantic-popup-mask="True"
-                           Background="{Binding $self.(atom:ImageViewer.ThemeColorBgMask)}" />
+                           Background="{CompiledBinding $self.(atom:ImageViewer.ThemeColorBgMask)}" />
                     <ContentPresenter Content="{TemplateBinding Content}"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch" />
@@ -20,22 +20,22 @@
                                      Icon="{antdicons:AntDesignIconProvider CloseOutlined}"
                                      HorizontalAlignment="Right"
                                      VerticalAlignment="Top"
-                                     Margin="{Binding $self.(atom:ImageViewer.ThemeMarginSM)}" />
+                                     Margin="{CompiledBinding $self.(atom:ImageViewer.ThemeMarginSM)}" />
                 </Panel>
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
-            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColor)}" />
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
+            <Setter Property="IconBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationColor)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}" />
             <!-- layout: a radius beyond half the size makes the close button round -->
             <Setter Property="CornerRadius" Value="100" />
-            <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingSM)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePaddingSM)}" />
         </Style>
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover, ^ /template/ atom|IconButton#PART_CloseButton:pressed">
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}" />
-            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}" />
+            <Setter Property="IconBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

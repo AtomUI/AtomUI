@@ -42,22 +42,22 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Padding" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderPadding)}" />
-        <Setter Property="Background" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderBg)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeHeaderPadding)}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeHeaderBg)}" />
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="Width" Value="{Binding $self.(atom:DialogSurface.ThemeLogoSize)}" />
-            <Setter Property="Height" Value="{Binding $self.(atom:DialogSurface.ThemeLogoSize)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeLogoSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeLogoSize)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|DialogCaptionButton">
-            <Setter Property="Width" Value="{Binding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
-            <Setter Property="Height" Value="{Binding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeCloseBtnSize)}" />
             <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
 
         <Style Selector="^ /template/ TextBlock#Title">
-            <Setter Property="Foreground" Value="{Binding $self.(atom:DialogSurface.ThemeHeaderColor)}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:DialogSurface.ThemeHeaderColor)}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 

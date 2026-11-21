@@ -20,7 +20,7 @@
                                 Classes.semantic-content="True"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                BoxShadow="{Binding (atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows), RelativeSource={RelativeSource Self}}"/>
+                                BoxShadow="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows)}"/>
                     </Border>
                     <atom:PixelAlignedBorder Name="PART_EmptyColorFrame"
                                              CornerRadius="{TemplateBinding CornerRadius}"

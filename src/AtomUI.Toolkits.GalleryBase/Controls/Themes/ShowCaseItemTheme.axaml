@@ -13,6 +13,8 @@
             <ControlTemplate TargetType="{x:Type gallery:ShowCaseItem}">
                 <Border x:Name="PART_RootBorder"
                         Background="{gallery:ShowCaseItemTokenResource ColorBgContainer}"
+                        BorderBrush="{gallery:ShowCaseItemTokenResource ColorBorder}"
+                        BorderThickness="{gallery:ShowCaseItemTokenResource BorderThickness}"
                         BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                         Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                         CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -86,6 +88,8 @@
                                       BadgeIsVisible="True">
                         <Border x:Name="PART_RootBorder"
                                 Background="{gallery:ShowCaseItemTokenResource ColorBgContainer}"
+                                BorderBrush="{gallery:ShowCaseItemTokenResource ColorBorder}"
+                                BorderThickness="{gallery:ShowCaseItemTokenResource BorderThickness}"
                                 BoxShadow="{gallery:ShowCaseItemTokenResource CardShadow}"
                                 Padding="{gallery:ShowCaseItemTokenResource CardPadding}"
                                 CornerRadius="{gallery:ShowCaseItemTokenResource CardCornerRadius}">
@@ -157,6 +161,7 @@
 
         <Style Selector="^[IsFake=True] /template/ Border#PART_RootBorder">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
         </Style>
         <Style Selector="^[IsFake=True] /template/ atom|Separator">

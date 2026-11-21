@@ -11,17 +11,17 @@
                     <Panel>
                         <Border HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
-                                Height="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize), RelativeSource={RelativeSource Self}}"
+                                Height="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize)}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
                                 Background="{TemplateBinding TransparentBgBrush}" />
                         <Border HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
-                                Height="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize), RelativeSource={RelativeSource Self}}"
+                                Height="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize)}"
                                 Background="{TemplateBinding Background}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
-                                BoxShadow="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow), RelativeSource={RelativeSource Self}}" />
+                                BoxShadow="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow)}" />
                         <atom:ColorPickerSliderTrack Name="PART_Track"
-                                                     Height="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize), RelativeSource={RelativeSource Self}}"
+                                                     Height="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize)}"
                                                      HorizontalAlignment="Stretch"
                                                      VerticalAlignment="Center"
                                                      Minimum="{TemplateBinding Minimum}"
@@ -48,7 +48,7 @@
         <Setter Property="TransparentBgIntervalColor"
                 Value="{atom:OwnerTokenResource ColorFillSecondary}" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="Height" Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderSize), RelativeSource={RelativeSource Self}}" />
+        <Setter Property="Height" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderSize)}" />
 
     </ControlTheme>
 </ResourceDictionary>

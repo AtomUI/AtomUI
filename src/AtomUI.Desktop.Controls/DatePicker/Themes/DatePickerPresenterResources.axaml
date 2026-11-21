@@ -7,7 +7,7 @@
          the globals are owner reads; DatePicker.HeaderBorderThickness is an Own Token and stays explicit. -->
     <DataTemplate x:Key="DatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
         <atom:PixelAlignedBorder BorderBrush="{atom:OwnerTokenResource ColorBorderSecondary}"
-                                 BorderThickness="{Binding $self.(atom:DatePickerPresenter.ThemeHeaderBorderThickness)}">
+                                 BorderThickness="{CompiledBinding $self.(atom:DatePickerPresenter.ThemeHeaderBorderThickness)}">
             <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
                 <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
                              Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"

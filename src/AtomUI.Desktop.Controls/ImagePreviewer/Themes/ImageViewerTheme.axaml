@@ -44,7 +44,7 @@
                             <StackPanel Name="DefaultErrorLayout"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Spacing="{Binding $self.(atom:ImageViewer.ThemeSpacingXXS)}"
+                                        Spacing="{CompiledBinding $self.(atom:ImageViewer.ThemeSpacingXXS)}"
                                         IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                 <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                           HorizontalAlignment="Center" />
@@ -88,21 +88,21 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-            <Setter Property="Margin" Value="{Binding $self.(atom:ImageViewer.ThemeMarginSM)}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeMarginSM)}" />
         </Style>
         <Style Selector="^ /template/ atom|ImagePreviewRenderer#PART_ImageRenderer">
             <Setter Property="Cursor" Value="DragMove" />
         </Style>
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
         </Style>
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">
             <Setter Property="IsVisible" Value="True" />
         </Style>
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
-            <Setter Property="Width" Value="{Binding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
-            <Setter Property="Height" Value="{Binding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
-            <Setter Property="StrokeBrush" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
+            <Setter Property="StrokeBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True][SuppressTransformAnimation=False]">

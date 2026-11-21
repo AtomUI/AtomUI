@@ -8,7 +8,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ColorPickerCollapse ItemsSource="{TemplateBinding PaletteGroup}"
-                                          ItemContentPadding="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorGroupPadding), RelativeSource={RelativeSource Self}}"
+                                          ItemContentPadding="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorGroupPadding)}"
                                           ItemHeaderPadding="0"
                                           SizeType="Small"
                                           IsGhostStyle="True"
@@ -39,7 +39,7 @@
         </Setter>
 
         <Setter Property="Width"
-                Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerPresetPanelWidth), RelativeSource={RelativeSource Self}}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerPresetPanelWidth)}" />
 
     </ControlTheme>
 </ResourceDictionary>

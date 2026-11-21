@@ -32,9 +32,9 @@
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
         <Setter Property="Width"
-                Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderThumbSize), RelativeSource={RelativeSource Self}}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderThumbSize)}" />
         <Setter Property="Height"
-                Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerSliderThumbSize), RelativeSource={RelativeSource Self}}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerSliderThumbSize)}" />
         
         <Style Selector="^:focus,^:pressed">
             <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryActive}" />

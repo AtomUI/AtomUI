@@ -9,20 +9,20 @@
         </ControlTheme.BasedOn>
         
         <Style Selector="^:is(atom|ImagePreviewNavButton)">
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
-            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColor)}"/>
-            <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingXS)}"/>
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
+            <Setter Property="IconBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationColor)}"/>
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePaddingXS)}"/>
         
             <Style Selector="^:pointerover, ^:pressed">
-                <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}"/>
-                <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}"/>
+                <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}"/>
+                <Setter Property="IconBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}"/>
             </Style>
         
             <Style Selector="^:disabled">
-                <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
-                <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColorDisabled)}"/>
+                <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
+                <Setter Property="IconBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemePreviewOperationColorDisabled)}"/>
             </Style>
         </Style>
 

@@ -25,8 +25,8 @@
         <Setter Property="tokeninputs:DateViewerCell.ThemeHeaderBorderThickness" Value="{atom:DateViewerTokenResource HeaderBorderThickness}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeWeekNumberOpacity" Value="{atom:DateViewerTokenResource WeekNumberOpacity}" />
 
-    <Setter Property="Background" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelBg)}" />
-    <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelPadding)}" />
+    <Setter Property="Background" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelBg)}" />
+    <Setter Property="Padding" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelPadding)}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:DateViewer">

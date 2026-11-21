@@ -107,13 +107,12 @@ public sealed class GalleryShellView : UserControl, IDisposable
             Child = content
         };
         BindToken(ContentHost, Border.BackgroundProperty, SharedTokenKind.ColorBgLayout);
-        Grid.SetColumn(ContentHost, 1);
+        Grid.SetColumn(ContentHost, 2);
 
         _navigationSeparator = new Border
         {
             Name             = "WorkspaceNavigationSeparator",
             Width            = 1,
-            HorizontalAlignment = HorizontalAlignment.Left,
             IsHitTestVisible = false
         };
         BindToken(_navigationSeparator, Border.BackgroundProperty, SharedTokenKind.ColorBorderSecondary);
@@ -123,13 +122,13 @@ public sealed class GalleryShellView : UserControl, IDisposable
         {
             Name = "WorkspaceRootLayout",
             ColumnDefinitions = sidebarNavMenu is not null
-                ? new ColumnDefinitions("Auto,*")
-                : new ColumnDefinitions($"{configuration.Shell.SidebarWidth},*"),
+                ? new ColumnDefinitions("Auto,Auto,*")
+                : new ColumnDefinitions($"{configuration.Shell.SidebarWidth},Auto,*"),
             Children =
             {
                 sidebar,
-                ContentHost,
-                _navigationSeparator
+                _navigationSeparator,
+                ContentHost
             }
         };
         BindToken(rootLayout, Panel.BackgroundProperty, SharedTokenKind.ColorBgContainer);

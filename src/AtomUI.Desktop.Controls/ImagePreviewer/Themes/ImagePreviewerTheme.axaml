@@ -66,15 +66,15 @@
         
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="IsMotionEnabled" Value="{Binding $self.(atom:ImageViewer.ThemeEnableMotion)}" />
+        <Setter Property="IsMotionEnabled" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeEnableMotion)}" />
         
         <Setter Property="CoverIndicatorContentTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Spacing="{Binding $self.(atom:ImageViewer.ThemeSpacingXXS)}">
-                    <antdicons:EyeOutlined StrokeBrush="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"/>
+                            Spacing="{CompiledBinding $self.(atom:ImageViewer.ThemeSpacingXXS)}">
+                    <antdicons:EyeOutlined StrokeBrush="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"/>
                     <TextBlock
                         Text="{atom:ImagePreviewerLangResource Preview}" />
                 </StackPanel>

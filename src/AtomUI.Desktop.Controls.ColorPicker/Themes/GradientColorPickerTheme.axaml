@@ -76,7 +76,7 @@
         <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
             <Setter Property="TextElement.Foreground"
                     Value="{atom:GradientColorPickerTokenResource ColorText}" />
-            <Setter Property="Margin" Value="{Binding (atom:ColorPickerThemeInputs.ThemeTriggerTextMargin), RelativeSource={RelativeSource Self}}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeTriggerTextMargin)}" />
         </Style>
 
         <Style Selector="^:disabled">

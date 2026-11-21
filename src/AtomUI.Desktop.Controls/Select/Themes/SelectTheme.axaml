@@ -16,7 +16,7 @@
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{Binding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
+            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{CompiledBinding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
             <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
             <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
         </Style>

@@ -24,7 +24,7 @@ public class TreeSelectThemeContractTests
         Regex.IsMatch(
                 source,
                 """
-                <Style Selector="\^\[IsSelectionEmpty=True\]">[\s\S]*?<Style Selector="\^\[SizeType=Small\]">[\s\S]*?<Setter Property="Padding"\s+Value="\{Binding \$self\.\(atom:SelectTag\.ThemeSingleModePadding\)\}" />
+                <Style Selector="\^\[IsSelectionEmpty=True\]">[\s\S]*?<Style Selector="\^\[SizeType=Small\]">[\s\S]*?<Setter Property="Padding"\s+Value="\{CompiledBinding \$self\.\(atom:SelectTag\.ThemeSingleModePadding\)\}" />
                 """,
                 RegexOptions.CultureInvariant)
             .ShouldBeTrue("empty multiple TreeSelect should use small select padding when SizeType is Small.");

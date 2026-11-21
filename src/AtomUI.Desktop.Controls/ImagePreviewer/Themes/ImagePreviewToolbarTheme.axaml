@@ -39,37 +39,37 @@
 
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IsPassthroughMouseEvent" Value="False" />
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
-            <Setter Property="Width" Value="{Binding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
-            <Setter Property="Height" Value="{Binding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton">
-            <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
-            <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
-            <Setter Property="Width" Value="{Binding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
-            <Setter Property="Height" Value="{Binding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSizeLG)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeControlHeightSM)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeColorBgTextHover)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorBgTextHover)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeColorBgTextHover)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorBgTextHover)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pressed">
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeColorBgTextActive)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorBgTextActive)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton:pressed">
-            <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeColorBgTextActive)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorBgTextActive)}" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{Binding $self.(atom:ImageViewer.ThemeSpacingXXS)}" />
+            <Setter Property="Spacing" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeSpacingXXS)}" />
         </Style>
 
     </ControlTheme>

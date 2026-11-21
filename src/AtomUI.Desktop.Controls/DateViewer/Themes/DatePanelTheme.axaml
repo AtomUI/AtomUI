@@ -4,10 +4,10 @@
               xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
               x:Class="AtomUI.Desktop.Controls.Themes.DatePanelTheme"
               x:ClassModifier="internal" TargetType="viewer:DatePanel">
-    <Setter Property="Width" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}" />
+    <Setter Property="Width" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}" />
     <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
     <Setter Property="WeekHeaderTextAlignment" Value="Center" />
-    <Setter Property="WeekHeaderMinHeight" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeCellRowHeight)}" />
+    <Setter Property="WeekHeaderMinHeight" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemeCellRowHeight)}" />
     <Setter Property="WeekHeaderPadding" Value="0" />
     <Setter Property="Template">
         <ControlTemplate TargetType="viewer:DatePanel">
@@ -18,7 +18,7 @@
             </DockPanel>
         </ControlTemplate>
     </Setter>
-    <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemeDateBodyPadding)}" />
+    <Setter Property="Padding" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemeDateBodyPadding)}" />
     <Style Selector="^[Presentation=Content]">
         <Setter Property="Width" Value="NaN" />
     </Style>

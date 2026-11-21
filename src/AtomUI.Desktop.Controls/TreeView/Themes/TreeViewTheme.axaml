@@ -58,7 +58,7 @@
     <Style Selector="^:is(atom|TreeView)">
         <Setter Property="Focusable" Value="True" />
         <Setter Property="FocusAdorner" Value="{x:Null}" />
-        <Setter Property="FilterHighlightForeground" Value="{Binding $self.(atom:TreeViewItemHeader.ThemeFilterHighlightColor)}" />
+        <Setter Property="FilterHighlightForeground" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeFilterHighlightColor)}" />
         <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource PaddingXL}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />

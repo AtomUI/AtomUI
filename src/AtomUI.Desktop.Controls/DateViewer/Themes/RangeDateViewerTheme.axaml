@@ -25,8 +25,8 @@
         <Setter Property="tokeninputs:DateViewerCell.ThemeHeaderBorderThickness" Value="{atom:RangeDateViewerTokenResource HeaderBorderThickness}" />
         <Setter Property="tokeninputs:DateViewerCell.ThemeWeekNumberOpacity" Value="{atom:RangeDateViewerTokenResource WeekNumberOpacity}" />
 
-    <Setter Property="Background" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelBg)}" />
-    <Setter Property="Padding" Value="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelPadding)}" />
+    <Setter Property="Background" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelBg)}" />
+    <Setter Property="Padding" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelPadding)}" />
     <Setter Property="PanelSpacing" Value="{atom:RangeDateViewerTokenResource PanelSpacing}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:RangeDateViewer">
@@ -37,11 +37,11 @@
                     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="{TemplateBinding PanelSpacing}"
                                 IsVisible="{TemplateBinding ShowHeader}">
                         <viewer:DateViewerHeader Classes.semantic-header="True"
-                                                 Width="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
+                                                 Width="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
                                                  Context="{TemplateBinding HeaderContext}"
                                                  HeaderTemplate="{TemplateBinding HeaderTemplate}" />
                         <viewer:DateViewerHeader Classes.semantic-header="True"
-                                                 Width="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
+                                                 Width="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
                                                  Context="{TemplateBinding SecondaryHeaderContext}"
                                                  HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                  IsVisible="{TemplateBinding HasSecondaryPanel}" />
@@ -77,7 +77,7 @@
                         CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
                     <DockPanel LastChildFill="True">
                         <viewer:DateViewerHeader DockPanel.Dock="Top" Classes.semantic-header="True"
-                                                 Width="{Binding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
+                                                 Width="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelWidth)}"
                                                  Context="{TemplateBinding HeaderContext}"
                                                  HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                  IsVisible="{TemplateBinding ShowHeader}" />

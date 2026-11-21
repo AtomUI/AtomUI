@@ -44,9 +44,9 @@
         </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ Panel#ButtonsLayout">
-        <Setter Property="Margin" Value="{Binding $self.(atom:DatePickerPresenter.ThemeButtonsPanelMargin)}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:DatePickerPresenter.ThemeButtonsPanelMargin)}" />
     </Style>
     <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
-        <Setter Property="Padding" Value="{Binding $self.(atom:DatePickerPresenter.ThemePanelContentPadding)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:DatePickerPresenter.ThemePanelContentPadding)}" />
     </Style>
 </ControlTheme>

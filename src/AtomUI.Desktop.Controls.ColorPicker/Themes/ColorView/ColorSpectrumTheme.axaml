@@ -57,7 +57,7 @@
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="BoxShadow"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow)}" />
         </Style>
 
         <!-- Focus -->
@@ -71,12 +71,12 @@
         <!-- Selector Color -->
         <Style Selector="^ /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor)}" />
         </Style>
 
         <Style Selector="^:light-selector /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor)}" />
         </Style>
 
         <!-- Selector Size -->
@@ -84,16 +84,16 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Width"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize)}" />
             <Setter Property="Height"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize)}" />
         </Style>
 
         <Style Selector="^:large-selector /template/ Panel#PART_SelectionEllipsePanel">
             <Setter Property="Width"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG)}" />
             <Setter Property="Height"
-                    Value="{Binding (atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG), RelativeSource={RelativeSource Self}}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

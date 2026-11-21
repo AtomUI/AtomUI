@@ -754,10 +754,12 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         Motion.SetEnter(viewport, owner.OpenMotion ?? DefaultOpenMotion);
         Motion.SetLeave(viewport, owner.CloseMotion ?? DefaultCloseMotion);
         Motion.SetDurationOverride(viewport, owner.MotionDuration);
-        Motion.SetIsEnabled(viewport, IsMotionEnabled && !owner.IsExpandAllProcess && !forceDisabledMotion);
+        var animate = IsMotionEnabled && !owner.IsExpandAllProcess && !forceDisabledMotion;
+        Motion.SetIsEnabled(viewport, animate);
         Motion.SetIsVisible(viewport, IsExpanded);
-        if (forceDisabledMotion)
+        if (!animate)
         {
+            // A deferred visibility request could otherwise play after the tree restores motion.
             Motion.SnapVisibility(viewport);
         }
         _ = CompleteExpansionAsync(version, viewport, owner, IsExpanded);
@@ -825,6 +827,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     {
         ++_childrenRequestVersion;
         base.OnApplyTemplate(e);
+        OwnerTreeView?.ApplyInitialExpansion(this);
         _header = e.NameScope.Find<TreeViewItemHeader>("Header");
         _childrenViewport = e.NameScope.Find<ContentViewport>("PART_ChildrenViewport");
 

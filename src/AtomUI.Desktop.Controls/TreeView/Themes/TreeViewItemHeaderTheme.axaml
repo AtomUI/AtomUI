@@ -33,6 +33,7 @@
                                    Focusable="False"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                    Grid.Column="1"
                                    IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
                                    IsVisible="False">
@@ -50,6 +51,7 @@
                                       Focusable="False"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Center"
+                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                       Grid.Column="1"
                                       IsChecked="{TemplateBinding IsChecked}"
                                       GroupName="{TemplateBinding GroupName}"

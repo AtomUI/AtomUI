@@ -1,7 +1,6 @@
 using System.Collections;
 using AtomUI.Controls.Primitives;
 using Avalonia.Controls;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -24,6 +23,8 @@ public partial class TreeView
     private TreeNodePath? _explicitSelectedItemPath;
     private List<TreeNodePath>? _explicitSelectedItemPaths;
     private List<TreeNodePath>? _explicitCheckedItemPaths;
+    private IList<TreeNodePath>? _initialSelectedPathsReplayed;
+    private IList<TreeNodePath>? _initialCheckedPathsReplayed;
 
     private bool IsItemsSourceReplayPending => _itemsSourceReplayState.HasValue;
 
@@ -208,10 +209,49 @@ public partial class TreeView
         _explicitCheckedItemPaths = BuildNodeIdentityPaths(CheckedItems);
     }
 
+    private void ReplayInitialNodeState(object? sender, EventArgs e)
+    {
+        if (!IsArrangeValid || ItemCount == 0)
+        {
+            return;
+        }
+
+        LayoutUpdated -= ReplayInitialNodeState;
+        using var motion = BeginTurnOffMotion();
+        if (DefaultSelectedPaths is { Count: > 0 } selectedPaths &&
+            IsSelectable && SelectedItems.Count == 0 && SelectedItem is null &&
+            SelectDefaultPaths(selectedPaths, requireAllPaths: true))
+        {
+            _initialSelectedPathsReplayed = selectedPaths;
+        }
+        if (DefaultCheckedPaths is { Count: > 0 } checkedPaths && ConfigureDefaultCheckedPaths())
+        {
+            _initialCheckedPathsReplayed = checkedPaths;
+        }
+    }
+
+    private void ClearInitialNodeReplay()
+    {
+        LayoutUpdated -= ReplayInitialNodeState;
+        _initialSelectedPathsReplayed = null;
+        _initialCheckedPathsReplayed = null;
+    }
+
     private void ReplayLoadedState()
     {
-        ConfigureDefaultSelectedPaths();
-        ConfigureDefaultCheckedPaths();
+        var replaySelection = _initialSelectedPathsReplayed is null ||
+                              !ReferenceEquals(_initialSelectedPathsReplayed, DefaultSelectedPaths);
+        var replayChecks = _initialCheckedPathsReplayed is null ||
+                           !ReferenceEquals(_initialCheckedPathsReplayed, DefaultCheckedPaths);
+        ClearInitialNodeReplay();
+        if (replaySelection)
+        {
+            ConfigureDefaultSelectedPaths();
+        }
+        if (replayChecks)
+        {
+            ConfigureDefaultCheckedPaths();
+        }
 
         FilterTreeNode();
 
@@ -455,21 +495,17 @@ public partial class TreeView
         return isChecked;
     }
 
-    private void ConfigureDefaultCheckedPaths()
+    private bool ConfigureDefaultCheckedPaths()
     {
+        var complete = true;
         if (DefaultCheckedPaths != null)
         {
             foreach (var checkedPath in DefaultCheckedPaths)
             {
-                TraverseDefaultStatePath(checkedPath, (treeViewItem, i) =>
-                {
-                    if (i == checkedPath.Length - 1)
-                    {
-                        CheckTreeViewItemFromPath(treeViewItem);
-                    }
-                });
+                complete &= TryCheckNodePath(checkedPath);
             }
         }
+        return complete;
     }
 
     // A container can already show checked, e.g. projected from a CheckedItems the replay has just cleared; then
@@ -511,20 +547,7 @@ public partial class TreeView
         {
             if (DefaultSelectedPaths != null)
             {
-                foreach (var selectedPath in DefaultSelectedPaths)
-                {
-                    TraverseDefaultStatePath(selectedPath, (treeViewItem, i) =>
-                    {
-                        if (i == selectedPath.Length - 1)
-                        {
-                            var item = TreeItemFromContainer(treeViewItem);
-                            if (!SelectedItems.Contains(item))
-                            {
-                                SelectedItems.Add(item);
-                            }
-                        }
-                    });
-                }
+                SelectDefaultPaths(DefaultSelectedPaths, requireAllPaths: false);
             }
         }
         else if ((SelectionMode & SelectionMode.Multiple) == SelectionMode.Multiple &&
@@ -537,6 +560,36 @@ public partial class TreeView
             var paths = GetTreePathFromItem(SelectedItem);
             SelectTreeItemByPath(paths);
         }
+    }
+
+    private bool SelectDefaultPaths(IList<TreeNodePath> paths, bool requireAllPaths)
+    {
+        var items = new List<object?>(paths.Count);
+        foreach (var path in paths)
+        {
+            TraverseDefaultStatePath(path, (item, index) =>
+            {
+                if (index == path.Length - 1)
+                {
+                    items.Add(TreeItemFromContainer(item));
+                }
+            });
+        }
+
+        // An incomplete early selection would prevent the Loaded fallback from applying the remaining defaults.
+        if (requireAllPaths && (items.Count != paths.Count || items.Contains(null)))
+        {
+            return false;
+        }
+
+        foreach (var item in items)
+        {
+            if (!SelectedItems.Contains(item))
+            {
+                SelectedItems.Add(item);
+            }
+        }
+        return true;
     }
 
     private void ConfigureSelectedItems()

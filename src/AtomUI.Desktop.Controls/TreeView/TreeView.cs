@@ -828,11 +828,16 @@ public partial class TreeView : AvaloniaTreeView,
         InteractionHandler.Attach(this);
         ObserveSelectedItems();
         UpdatePseudoClasses();
+        if (DefaultSelectedPaths is { Count: > 0 } || DefaultCheckedPaths is { Count: > 0 })
+        {
+            LayoutUpdated += ReplayInitialNodeState;
+        }
     }
     
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         FinishDrag();
+        ClearInitialNodeReplay();
         base.OnDetachedFromVisualTree(e);
         ClearKeyboardActiveItem();
         CancelItemsSourceReplay();

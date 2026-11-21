@@ -8,7 +8,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -23,10 +22,10 @@ public enum NumericUpDownMode
 }
 
 public partial class NumericUpDown : AbstractNumericUpDown,
-                             IMotionAwareControl,
-                             ICompactSpaceAware,
-                             IInputControlStyleVariantAware,
-                             ICustomizableSizeTypeAware
+                                     IMotionAwareControl,
+                                     ICompactSpaceAware,
+                                     IInputControlStyleVariantAware,
+                                     ICustomizableSizeTypeAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -476,6 +475,8 @@ public partial class NumericUpDown : AbstractNumericUpDown,
             // template, outside this Content subtree's TemplateBinding scope. Keep this
             // binding scoped to the current template and consume the existing animation;
             // the panel must not start a second transition or translate the suffix again.
+            _templatePartBindings.Add(inputPanel.Bind(NumericUpDownInputPanel.LeftInsetProperty,
+                decoratedBox.GetObservable(ButtonSpinnerDecoratedBox.ContentLeftShiftProperty)));
             _templatePartBindings.Add(inputPanel.Bind(NumericUpDownInputPanel.RightInsetProperty,
                 decoratedBox.GetObservable(ButtonSpinnerDecoratedBox.ContentRightShiftProperty)
                             .Select(static shift => Math.Max(0d, -shift))));

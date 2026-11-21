@@ -4,12 +4,21 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class NumericUpDownInputPanel : DockPanel
+internal class NumericUpDownInputPanel : Decorator
 {
     #region 内部属性定义
 
+    internal static readonly StyledProperty<double> LeftInsetProperty =
+        AvaloniaProperty.Register<NumericUpDownInputPanel, double>(nameof(LeftInset));
+
     internal static readonly StyledProperty<double> RightInsetProperty =
         AvaloniaProperty.Register<NumericUpDownInputPanel, double>(nameof(RightInset));
+
+    internal double LeftInset
+    {
+        get => GetValue(LeftInsetProperty);
+        set => SetValue(LeftInsetProperty, value);
+    }
 
     internal double RightInset
     {
@@ -21,22 +30,21 @@ internal class NumericUpDownInputPanel : DockPanel
 
     static NumericUpDownInputPanel()
     {
-        AffectsArrange<NumericUpDownInputPanel>(RightInsetProperty);
+        AffectsArrange<NumericUpDownInputPanel>(LeftInsetProperty, RightInsetProperty);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        // Reserve the floating handle's current animated inset before docking the suffix.
-        // Both the editor's hit area and the suffix then follow the same layout boundary.
-        var inset = Math.Clamp(RightInset, 0d, finalSize.Width);
-        var contentWidth = finalSize.Width - inset;
+        // Arrange the dock panel within the floating handle's animated boundaries.
+        var left  = Math.Clamp(LeftInset, 0d, finalSize.Width);
+        var right = Math.Clamp(finalSize.Width - RightInset, left, finalSize.Width);
         if (UseLayoutRounding)
         {
-            // Round the shared boundary once, before DockPanel rounds each child's slot.
-            // Otherwise a fractional animation frame can round the editor and suffix apart.
-            contentWidth = LayoutHelper.RoundLayoutValue(contentWidth, LayoutHelper.GetLayoutScale(this));
+            var scale = LayoutHelper.GetLayoutScale(this);
+            left      = LayoutHelper.RoundLayoutValue(left, scale);
+            right     = LayoutHelper.RoundLayoutValue(right, scale);
         }
-        base.ArrangeOverride(new Size(contentWidth, finalSize.Height));
+        Child?.Arrange(new Rect(left, 0, right - left, finalSize.Height));
         return finalSize;
     }
 }

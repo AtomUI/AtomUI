@@ -161,7 +161,6 @@ internal class ButtonSpinnerHandle : TemplatedControl
     {
         var          spinnerBorderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, SpinnerBorderThickness);
         var          lineWidth = spinnerBorderThickness.Left;
-        var          lineCenterOffset = lineWidth / 2;
         CornerRadius cornerRadius;
         if (ButtonSpinnerLocation == ButtonSpinnerLocation.Left)
         {
@@ -186,33 +185,17 @@ internal class ButtonSpinnerHandle : TemplatedControl
                 Background, null);
         }
         
+        var handleOffsetY = Bounds.Height / 2;
+        using var renderOptions = context.PushRenderOptions(new RenderOptions
         {
-            var handleOffsetY = Bounds.Height / 2;
-            using var optionState = context.PushRenderOptions(new RenderOptions
-            {
-                EdgeMode = EdgeMode.Antialias
-            });
-            
-            {
-                // 画竖线
-                var startPoint = new Point(lineCenterOffset, lineWidth);
-                var endPoint   = new Point(lineCenterOffset, Bounds.Height - lineWidth);
-                PenUtils.TryModifyOrCreate(ref _handlePen, BorderBrush, lineWidth);
-                if (_handlePen is not null)
-                {
-                    context.DrawLine(_handlePen, startPoint, endPoint);
-                }
-            }
-            {
-                // 画横线
-                var startPoint = new Point(lineWidth, handleOffsetY); 
-                var endPoint   = new Point(Bounds.Width - lineWidth, handleOffsetY);
-                PenUtils.TryModifyOrCreate(ref _handlePen, BorderBrush, lineWidth);
-                if (_handlePen is not null)
-                {
-                    context.DrawLine(_handlePen, startPoint, endPoint);
-                }
-            }
+            EdgeMode = EdgeMode.Antialias
+        });
+        PenUtils.TryModifyOrCreate(ref _handlePen, BorderBrush, lineWidth);
+        if (_handlePen is not null)
+        {
+            context.DrawLine(_handlePen,
+                new Point(lineWidth, handleOffsetY),
+                new Point(Bounds.Width - lineWidth, handleOffsetY));
         }
     }
 }

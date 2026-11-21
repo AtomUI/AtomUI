@@ -51,7 +51,6 @@
                         <atom:AddOnDecoratedBoxContentFrame Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentFramePart}"
                                                             BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
                                                             CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
                                                             Background="{TemplateBinding Background}"
                                                             BoxShadow="{TemplateBinding BoxShadow}"
                                                             BackgroundSizing="InnerBorderEdge">
@@ -121,6 +120,15 @@
                                 </ContentPresenter.RenderTransform>
                             </ContentPresenter>
                         </Border>
+
+                        <!-- The handle is clipped to the outer edge. Paint the frame stroke above it so the
+                             button fill cannot cover the stroke along the rounded corners. -->
+                        <atom:PixelAlignedBorder IsHitTestVisible="False"
+                                                 BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
+                                                 CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
+                                                 BorderBrush="{TemplateBinding BorderBrush}"
+                                                 BackgroundSizing="InnerBorderEdge"
+                                                 ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}" />
                     </Panel>
                 </DockPanel>
             </ControlTemplate>

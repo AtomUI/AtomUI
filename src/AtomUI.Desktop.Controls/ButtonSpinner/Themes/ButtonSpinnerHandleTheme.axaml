@@ -4,31 +4,44 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
+    <atom:BorderThicknessFilterConverter x:Key="SpinnerHandleLeftDividerThickness"
+                                         Top="False" Right="False" Bottom="False" />
+    <atom:BorderThicknessFilterConverter x:Key="SpinnerHandleRightDividerThickness"
+                                         Left="False" Top="False" Bottom="False" />
+
     <ControlTheme x:Key="{x:Type atom:ButtonSpinnerHandle}" TargetType="atom:ButtonSpinnerHandle">
         <Setter Property="Template">
             <ControlTemplate>
-                <UniformGrid
-                    Name="PART_ButtonsLayout"
-                    Columns="1" 
-                    Rows="2"
-                    RowSpacing="1">
-                    <atom:IconButton
-                        Name="PART_IncreaseButton"
-                        IsTabStop="False"
-                        Classes.semantic-increase-button="True"
-                        Icon="{antdicons:AntDesignIconProvider UpOutlined}"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        BackgroundSizing="InnerBorderEdge"/>
-                    <atom:IconButton
-                        Name="PART_DecreaseButton"
-                        IsTabStop="False"
-                        Classes.semantic-decrease-button="True"
-                        Icon="{antdicons:AntDesignIconProvider DownOutlined}"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        BackgroundSizing="InnerBorderEdge"/>
-                </UniformGrid>
+                <Panel>
+                    <UniformGrid
+                        Name="PART_ButtonsLayout"
+                        Columns="1"
+                        Rows="2"
+                        RowSpacing="1">
+                        <atom:IconButton
+                            Name="PART_IncreaseButton"
+                            IsTabStop="False"
+                            Classes.semantic-increase-button="True"
+                            Icon="{antdicons:AntDesignIconProvider UpOutlined}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BackgroundSizing="InnerBorderEdge"/>
+                        <atom:IconButton
+                            Name="PART_DecreaseButton"
+                            IsTabStop="False"
+                            Classes.semantic-decrease-button="True"
+                            Icon="{antdicons:AntDesignIconProvider DownOutlined}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BackgroundSizing="InnerBorderEdge"/>
+                    </UniformGrid>
+
+                    <!-- The buttons reach the content-facing edge. Paint the divider above their state fills. -->
+                    <atom:PixelAlignedBorder Name="ContentDivider"
+                                             IsHitTestVisible="False"
+                                             Margin="{TemplateBinding HandleContentMargin}"
+                                             BorderBrush="{TemplateBinding BorderBrush}" />
+                </Panel>
             </ControlTemplate>
         </Setter>
         
@@ -55,6 +68,15 @@
              1px), so their hover/pressed fill never paints over the input frame's outline. -->
         <Style Selector="^ /template/ UniformGrid#PART_ButtonsLayout">
             <Setter Property="Margin" Value="{Binding $parent[atom:ButtonSpinnerHandle].HandleContentMargin}" />
+        </Style>
+
+        <Style Selector="^[ButtonSpinnerLocation=Right] /template/ atom|PixelAlignedBorder#ContentDivider">
+            <Setter Property="BorderThickness"
+                    Value="{TemplateBinding SpinnerBorderThickness, Converter={StaticResource SpinnerHandleLeftDividerThickness}}" />
+        </Style>
+        <Style Selector="^[ButtonSpinnerLocation=Left] /template/ atom|PixelAlignedBorder#ContentDivider">
+            <Setter Property="BorderThickness"
+                    Value="{TemplateBinding SpinnerBorderThickness, Converter={StaticResource SpinnerHandleRightDividerThickness}}" />
         </Style>
         
         <Style

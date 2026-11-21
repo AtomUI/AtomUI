@@ -11,8 +11,9 @@ namespace AtomUIGallery.ShowCases.ImagePreviewer;
 
 public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
 {
-    private const int RapidSwitchIntervalMs      = 200;
     private const int RapidSwitchLoadDelayMs     = 300;
+    private const int RapidSwitchDisplayTimeMs   = 400;
+    private const int RapidSwitchIntervalMs      = RapidSwitchLoadDelayMs + RapidSwitchDisplayTimeMs;
     private const int RapidSwitchMaxItems        = 40;
     private const string ReplacementFirstAsset   = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/1.png";
     private const string ReplacementSecondAsset  = "avares://AtomUIGallery/Assets/ImagePreviewerShowCase/Fallback.png";

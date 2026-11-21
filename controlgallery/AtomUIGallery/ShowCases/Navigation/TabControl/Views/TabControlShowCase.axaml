@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AtomUIGallery.ShowCases.TabControl.TabControlShowCase"
              xmlns:atom="https://atomui.net"
+             xmlns:desktopTokens="clr-namespace:AtomUI.Desktop.Controls.DesignTokens;assembly=AtomUI.Desktop.Controls"
              xmlns:antdicons="https://atomui.net/icons/antdesign"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:views="clr-namespace:AtomUIGallery.ShowCases.TabControl"
@@ -624,11 +625,14 @@
                             <StackPanel.Styles>
                                 <Style Selector="atom|TabControl.semantic-style-demo">
                                     <atom:TabControlHeaderStyle x:SetterTargetType="Border">
-                                        <Setter Property="Background" Value="#80F5F5F5" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                                     </atom:TabControlHeaderStyle>
+                                    <atom:TabControlIndicatorStyle x:SetterTargetType="Border">
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorError}" />
+                                    </atom:TabControlIndicatorStyle>
                                     <atom:TabControlContentStyle x:SetterTargetType="ContentPresenter">
                                         <Setter Property="Padding" Value="16" />
-                                        <Setter Property="Background" Value="#CCE6F7FF" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                     </atom:TabControlContentStyle>
                                     <atom:TabControlItemStyle x:SetterTargetType="atom:TabItem">
                                         <Setter Property="Padding" Value="6,10" />
@@ -637,17 +641,19 @@
                                 <Style Selector="atom|TabItem.semantic-style-demo">
                                     <atom:TabItemLabelStyle x:SetterTargetType="ContentPresenter">
                                         <Setter Property="FontWeight" Value="Bold" />
-                                        <Setter Property="Foreground" Value="#1890FF" />
+                                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                     </atom:TabItemLabelStyle>
                                 </Style>
                             </StackPanel.Styles>
                             <atom:TabControl Classes="semantic-style-demo"
                                              BorderThickness="2"
-                                             BorderBrush="#E0000000"
+                                             BorderBrush="{atom:SharedTokenResource ColorTextSecondary}"
                                              BorderDashArray="4,2"
                                              Padding="16"
-                                             Margin="0,0,0,10"
-                                             Initialized="HandleSemanticStyleDemoTabControlInitialized">
+                                             Margin="0,0,0,10">
+                                <atom:TabControl.Resources>
+                                    <x:Double x:Key="{x:Static desktopTokens:TabControlTokenKind.InkBarThickness}">4</x:Double>
+                                </atom:TabControl.Resources>
                                 <atom:TabItem Classes="semantic-style-demo"
                                               Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"
                                               Content="{gallery:TabControlShowCaseLangResource P2ContentContentOfTabPaneN1}" />
@@ -660,9 +666,9 @@
                             </atom:TabControl>
                             <atom:CardTabControl Classes="semantic-style-demo"
                                                  TabStripPlacement="Left"
-                                                 Background="#CCFAFAFA"
+                                                 Background="{atom:SharedTokenResource ColorBgElevated}"
                                                  BorderThickness="2"
-                                                 BorderBrush="#D9D9D9"
+                                                 BorderBrush="{atom:SharedTokenResource ColorBorder}"
                                                  BorderDashArray="4,2"
                                                  Padding="16">
                                 <atom:TabItem Header="{gallery:TabControlShowCaseLangResource P2HeaderTabN1}"

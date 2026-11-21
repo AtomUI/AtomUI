@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -170,7 +171,7 @@ public class ComboBoxShowCasePageTests
         AvaloniaTestApp.EnsureInitialized();
         var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox/Views/ComboBoxShowCase.axaml");
         source.ShouldContain("<atom:ComboBoxPopupEmptyStyle");
-        source.ShouldContain("<Setter Property=\"Background\" Value=\"#F6FFED\" />");
+        source.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorSuccessBg}\" />");
         source.ShouldNotContain("Loaded=");
         source.ShouldNotContain("Unloaded=");
         var oldDeferredLoadingDisabled = GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled;
@@ -232,7 +233,8 @@ public class ComboBoxShowCasePageTests
                         indicator.Padding.ShouldBe(new Thickness(24));
                         var background = indicator.Background.ShouldBeAssignableTo<Avalonia.Media.ISolidColorBrush>();
                         background.ShouldNotBeNull();
-                        background.Color.ShouldBe(Avalonia.Media.Color.Parse("#F6FFED"));
+                        var tokens = ControlTokenAccessor.Capture(box);
+                        background.Color.ShouldBe(tokens.GetGlobal<Avalonia.Media.Color>(SharedTokenKind.ColorSuccessBg));
                         indicator.GetVisualDescendants().OfType<Avalonia.Controls.TextBlock>()
                                  .ShouldContain(text => text.Text == "No available options" && text.IsEffectivelyVisible);
                         indicator.GetVisualDescendants().OfType<Empty>().Single().IsEffectivelyVisible.ShouldBeFalse();

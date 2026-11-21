@@ -412,35 +412,35 @@
                             Spacing="12">
                     <StackPanel.Styles>
                         <Style Selector="atom|ButtonSpinner.semantic-object">
-                            <Setter Property="BorderBrush" Value="#1677FF" />
+                            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorderHover}" />
                             <atom:ButtonSpinnerActionsStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#F0F5FF" />
-                                <Setter Property="BorderBrush" Value="#1677FF" />
+                                <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
+                                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorderHover}" />
                             </atom:ButtonSpinnerActionsStyle>
                             <atom:ButtonSpinnerInnerLeftContentStyle x:SetterTargetType="ContentPresenter">
-                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                             </atom:ButtonSpinnerInnerLeftContentStyle>
                             <atom:ButtonSpinnerIncreaseButtonStyle x:SetterTargetType="atom:IconButton">
-                                <Setter Property="IconBrush" Value="#1677FF" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                             </atom:ButtonSpinnerIncreaseButtonStyle>
                             <atom:ButtonSpinnerDecreaseButtonStyle x:SetterTargetType="atom:IconButton">
-                                <Setter Property="IconBrush" Value="#1677FF" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                             </atom:ButtonSpinnerDecreaseButtonStyle>
                         </Style>
                         <Style Selector="atom|ButtonSpinner.semantic-function">
-                            <Setter Property="BorderBrush" Value="#722ED1" />
+                            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSuccessBorderHover}" />
                             <atom:ButtonSpinnerActionsStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#F9F0FF" />
-                                <Setter Property="BorderBrush" Value="#722ED1" />
+                                <Setter Property="Background" Value="{atom:SharedTokenResource ColorSuccessBg}" />
+                                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSuccessBorderHover}" />
                             </atom:ButtonSpinnerActionsStyle>
                             <atom:ButtonSpinnerInnerLeftContentStyle x:SetterTargetType="ContentPresenter">
-                                <Setter Property="Foreground" Value="#722ED1" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorSuccessText}" />
                             </atom:ButtonSpinnerInnerLeftContentStyle>
                             <atom:ButtonSpinnerIncreaseButtonStyle x:SetterTargetType="atom:IconButton">
-                                <Setter Property="IconBrush" Value="#722ED1" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccessText}" />
                             </atom:ButtonSpinnerIncreaseButtonStyle>
                             <atom:ButtonSpinnerDecreaseButtonStyle x:SetterTargetType="atom:IconButton">
-                                <Setter Property="IconBrush" Value="#722ED1" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorSuccessText}" />
                             </atom:ButtonSpinnerDecreaseButtonStyle>
                         </Style>
                     </StackPanel.Styles>

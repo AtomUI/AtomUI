@@ -1,3 +1,5 @@
+using AtomUI.Theme.Resources;
+using Avalonia;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Descriptions;
 using Avalonia.Controls;
@@ -151,7 +153,7 @@ public class DescriptionsShowCasePageTests
             styledDefault.CornerRadius.ShouldBe(new Avalonia.CornerRadius(8));
             styledDefault.BorderBrush.ShouldNotBeNull()
                          .ShouldBeAssignableTo<ISolidColorBrush>()
-                         .Color.ShouldBe(Avalonia.Media.Color.Parse("#CDC1FF"));
+                         .Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorInfoBorder));
 
             var smallLabels = GetItemPartTargets(small, "semantic-label");
             var styledLabels = GetItemPartTargets(styledDefault, "semantic-label");
@@ -161,15 +163,22 @@ public class DescriptionsShowCasePageTests
             {
                 label.Foreground.ShouldNotBeNull()
                      .ShouldBeAssignableTo<ISolidColorBrush>()
-                     .Color.ShouldBe(Colors.Black);
+                     .Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
             }
             foreach (var label in styledLabels)
             {
                 label.Foreground.ShouldNotBeNull()
                        .ShouldBeAssignableTo<ISolidColorBrush>()
-                       .Color.ShouldBe(Avalonia.Media.Color.Parse("#A294F9"));
+                       .Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorTextSecondary));
             }
         });
+    }
+
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
     }
 
     private static string ExtractDescriptionsExampleItems(string source)

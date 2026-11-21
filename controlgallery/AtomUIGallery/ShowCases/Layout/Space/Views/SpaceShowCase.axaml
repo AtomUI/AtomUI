@@ -512,22 +512,22 @@
             <StackPanel Spacing="10">
                 <StackPanel.Styles>
                     <Style Selector="atom|Space.semantic-style-demo-object">
-                        <Setter Property="BorderBrush" Value="#E0000000" />
+                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
                         <Setter Property="BorderThickness" Value="2" />
                         <Setter Property="BorderDashArray" Value="4,2" />
                         <Setter Property="Padding" Value="8" />
                         <atom:SpaceItemStyle x:SetterTargetType="atom:Button">
-                            <Setter Property="Background" Value="#F0F0F0" />
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                             <Setter Property="Padding" Value="4" />
                         </atom:SpaceItemStyle>
                         <atom:SpaceSeparatorStyle x:SetterTargetType="atom:TextBlock">
-                            <Setter Property="Foreground" Value="#FF0000" />
+                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorErrorText}" />
                             <Setter Property="FontWeight" Value="Bold" />
                         </atom:SpaceSeparatorStyle>
                     </Style>
                     <Style Selector="atom|Space.semantic-style-demo-function">
-                        <Setter Property="Background" Value="#E6F7FF" />
-                        <Setter Property="BorderBrush" Value="#1890FF" />
+                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
+                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorderHover}" />
                         <Setter Property="Padding" Value="8" />
                     </Style>
                 </StackPanel.Styles>

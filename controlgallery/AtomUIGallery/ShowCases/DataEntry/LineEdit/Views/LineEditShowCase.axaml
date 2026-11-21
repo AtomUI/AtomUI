@@ -876,7 +876,6 @@
                             <Setter Property="BorderBrush" Value="#F5D3C4" />
                         </Style>
                         <Style Selector="atom|OtpLineEdit.style-class-otp">
-                            <Setter Property="CellWidth" Value="32" />
                             <Setter Property="CellBorderBrush" Value="#6E8CFB" />
                         </Style>
                         <Style Selector="atom|SearchEdit.style-class-search">
@@ -920,8 +919,7 @@
 
                     <atom:OtpLineEdit
                         Classes="style-class-otp"
-                        Length="6"
-                        Separator="*" />
+                        Length="6" />
 
                     <atom:SearchEdit
                         Classes="style-class-search"

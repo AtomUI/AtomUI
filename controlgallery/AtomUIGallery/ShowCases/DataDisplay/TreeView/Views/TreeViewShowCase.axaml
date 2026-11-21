@@ -608,17 +608,17 @@
                                             <Setter Property="Margin" Value="0,2" />
                                         </atom:TreeViewItemItemStyle>
                                         <atom:TreeViewItemItemTitleStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#1677FF" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:TreeViewItemItemTitleStyle>
                                         <atom:TreeViewItemItemSwitcherStyle x:SetterTargetType="ToggleButton">
-                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                             <Setter Property="CornerRadius" Value="4" />
                                         </atom:TreeViewItemItemSwitcherStyle>
                                     </Style>
                                 </StackPanel.Styles>
 
                                 <Border BorderThickness="2"
-                                        BorderBrush="#D9D9D9"
+                                        BorderBrush="{atom:SharedTokenResource ColorBorder}"
                                         CornerRadius="4"
                                         Padding="8">
                                     <atom:TreeView Classes="semantic-object"
@@ -642,7 +642,7 @@
                                 </Border>
 
                                 <Border BorderThickness="2"
-                                        BorderBrush="#E5D9F2"
+                                        BorderBrush="{atom:SharedTokenResource ColorInfoBorder}"
                                         CornerRadius="4"
                                         Padding="8">
                                     <atom:TreeView Classes="semantic-function"

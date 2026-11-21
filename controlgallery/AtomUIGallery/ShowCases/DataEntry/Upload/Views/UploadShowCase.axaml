@@ -34,7 +34,7 @@
                                 <atom:Upload.TriggerContent>
                                     <atom:UploadTrigger SourceKind="Files">
                                         <Border HorizontalAlignment="Left"
-                                                Background="#E6E6FA"
+                                                Background="{atom:SharedTokenResource ColorFillAlter}"
                                                 CornerRadius="8"
                                                 Padding="8">
                                             <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"
@@ -419,7 +419,7 @@
                                     <atom:Upload.TriggerContent>
                                         <atom:UploadTrigger SourceKind="Files">
                                             <Border HorizontalAlignment="Left"
-                                                    Background="#E6E6FA"
+                                                    Background="{atom:SharedTokenResource ColorFillAlter}"
                                                     CornerRadius="8"
                                                     Padding="8">
                                                 <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"
@@ -441,7 +441,7 @@
                                         <atom:Upload.TriggerContent>
                                             <atom:UploadTrigger SourceKind="Files">
                                                 <Border HorizontalAlignment="Left"
-                                                        Background="#E6E6FA"
+                                                        Background="{atom:SharedTokenResource ColorFillAlter}"
                                                         CornerRadius="8"
                                                         Padding="8">
                                                     <atom:Button Icon="{antdicons:AntDesignIconProvider UploadOutlined}"

@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Reflection;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -48,10 +49,9 @@ public class GroupBoxShowCasePageTests
         semanticSource.ShouldContain("Selector=\"atom|GroupBox.semantic-function\"");
         semanticSource.ShouldContain("Selector=\"atom|GroupBox.semantic-border\"");
         semanticSource.ShouldContain("Selector=\"atom|GroupBox.semantic-border-plain\"");
-        semanticSource.ShouldContain("Value=\"#f0f0f0\"");
-        semanticSource.ShouldContain("Value=\"#141414\"");
-        semanticSource.ShouldContain("Value=\"#f5efff\"");
-        semanticSource.ShouldContain("Value=\"#722ED1\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillTertiary}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("Property=\"Background\"");
         semanticSource.ShouldContain("Property=\"Padding\"");
         semanticSource.ShouldContain("Property=\"Foreground\"");
@@ -59,7 +59,7 @@ public class GroupBoxShowCasePageTests
         semanticSource.ShouldContain("Property=\"BorderBrush\"");
         semanticSource.ShouldContain("Property=\"BorderThickness\"");
         semanticSource.ShouldContain("Property=\"CornerRadius\"");
-        semanticSource.ShouldContain("Value=\"#13c2c2\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorSuccessBorder}\"");
         CountOccurrences(semanticSource, "<atom:GroupBoxHeaderStyle").ShouldBe(3);
         CountOccurrences(semanticSource, "<atom:GroupBoxTitleStyle").ShouldBe(3);
         CountOccurrences(semanticSource, "<atom:GroupBoxContentStyle").ShouldBe(1);
@@ -163,39 +163,39 @@ public class GroupBoxShowCasePageTests
 
             var headerStyleDemo = demos.Single(static groupBox => groupBox.Classes.Contains("semantic-object"));
             var header = FindHeader(headerStyleDemo);
-            AssertSolidColor(header.Background, "#f0f0f0");
+            AssertSolidColor(header.Background, SharedTokenKind.ColorFillTertiary);
             header.Padding.ShouldBe(new Thickness(16, 2));
-            AssertSolidColor(FindTitle(headerStyleDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitle(headerStyleDemo).Foreground, SharedTokenKind.ColorText);
             FindContent(headerStyleDemo).Padding.ShouldBe(new Thickness(16, 12));
 
             var iconStyleDemo = demos.Single(static groupBox => groupBox.Classes.Contains("semantic-function"));
             var iconHeader = FindHeader(iconStyleDemo);
-            AssertSolidColor(iconHeader.Background, "#f5efff");
+            AssertSolidColor(iconHeader.Background, SharedTokenKind.ColorInfoBg);
             iconHeader.Padding.ShouldBe(new Thickness(16, 2));
-            AssertSolidColor(FindTitle(iconStyleDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitle(iconStyleDemo).Foreground, SharedTokenKind.ColorText);
             // 主题为 PART_HeaderIconPresenter 设置了 IconSizeLG；此处必须由示例的
             // GroupBoxIconStyle 覆盖尺寸与图标颜色。
             var icon = FindIcon(iconStyleDemo);
             icon.Width.ShouldBe(20);
             icon.Height.ShouldBe(20);
-            AssertSolidColor(icon.IconBrush, "#722ED1");
+            AssertSolidColor(icon.IconBrush, SharedTokenKind.ColorText);
 
             // 边框定制走 owner 作用域普通 Setter：分组边框与背景由 GroupBox 自绘，
             // 因此必须同时断言属性值真正进入自绘画笔，而不是只改了属性表面。
             var borderDemo = demos.Single(static groupBox => groupBox.Classes.Contains("semantic-border"));
-            AssertSolidColor(borderDemo.BorderBrush, "#722ED1");
+            AssertSolidColor(borderDemo.BorderBrush, SharedTokenKind.ColorInfoBorder);
             borderDemo.BorderThickness.ShouldBe(new Thickness(2));
             borderDemo.CornerRadius.ShouldBe(new CornerRadius(12));
-            AssertSolidColor(borderDemo.Background, "#f9f0ff");
-            AssertSolidColor(FindHeader(borderDemo).Background, "#ffffff");
-            AssertDrawnColors(borderDemo, "#722ED1", "#f9f0ff");
+            AssertSolidColor(borderDemo.Background, SharedTokenKind.ColorInfoBg);
+            AssertSolidColor(FindHeader(borderDemo).Background, SharedTokenKind.ColorBgElevated);
+            AssertDrawnColors(borderDemo, SharedTokenKind.ColorInfoBorder, SharedTokenKind.ColorInfoBg);
 
             var plainBorderDemo = demos.Single(static groupBox => groupBox.Classes.Contains("semantic-border-plain"));
-            AssertSolidColor(plainBorderDemo.BorderBrush, "#13c2c2");
+            AssertSolidColor(plainBorderDemo.BorderBrush, SharedTokenKind.ColorSuccessBorder);
             plainBorderDemo.BorderThickness.ShouldBe(new Thickness(2));
             plainBorderDemo.CornerRadius.ShouldBe(new CornerRadius(2));
-            AssertSolidColor(FindTitle(plainBorderDemo).Foreground, "#08979c");
-            AssertDrawnColors(plainBorderDemo, "#13c2c2");
+            AssertSolidColor(FindTitle(plainBorderDemo).Foreground, SharedTokenKind.ColorSuccessText);
+            AssertDrawnColors(plainBorderDemo, SharedTokenKind.ColorSuccessBorder);
         });
     }
 
@@ -243,7 +243,7 @@ public class GroupBoxShowCasePageTests
     /// <c>GroupBox.Render</c> 把背景与边框都作为填充几何绘制（<c>DrawGeometry</c> 的 pen 为 null）：
     /// 背景用 <c>Background</c> 填充，边框用 <c>BorderBrush</c> 填充 outer-minus-inner 几何。
     /// </summary>
-    private static void AssertDrawnColors(AtomUIGroupBox groupBox, params string[] expectedColors)
+    private static void AssertDrawnColors(AtomUIGroupBox groupBox, params SharedTokenKind[] expectedColors)
     {
         var drawingGroup = new DrawingGroup();
         using (var context = drawingGroup.Open())
@@ -259,7 +259,7 @@ public class GroupBoxShowCasePageTests
 
         foreach (var expected in expectedColors)
         {
-            drawnColors.ShouldContain(Color.Parse(expected));
+            drawnColors.ShouldContain(GetThemeColor(expected));
         }
     }
 
@@ -306,11 +306,18 @@ public class GroupBoxShowCasePageTests
                     .Single(static icon => icon.Classes.Contains("semantic-icon"));
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
+    }
+
+    private static void AssertSolidColor(IBrush? actual, SharedTokenKind expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(GetThemeColor(expected));
     }
 
     private static string ExtractShowCaseItem(string source, string sourceKey)

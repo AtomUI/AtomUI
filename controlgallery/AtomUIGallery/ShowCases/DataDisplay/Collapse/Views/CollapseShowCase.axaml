@@ -334,29 +334,29 @@
                                         Spacing="12">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Collapse.semantic-object">
-                                        <Setter Property="Background" Value="#fafafa" />
-                                        <Setter Property="BorderBrush" Value="#e0e0e0" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="8" />
                                         <atom:CollapseHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
                                             <Setter Property="Padding" Value="16,12" />
                                         </atom:CollapseHeaderStyle>
                                         <atom:CollapseTitleStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:CollapseTitleStyle>
                                     </Style>
                                     <Style Selector="atom|Collapse.semantic-function">
-                                        <Setter Property="Background" Value="#ffffff" />
-                                        <Setter Property="BorderBrush" Value="#696fc7" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="8" />
                                         <atom:CollapseHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                             <Setter Property="Padding" Value="16,12" />
                                         </atom:CollapseHeaderStyle>
                                         <atom:CollapseTitleStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:CollapseTitleStyle>
                                     </Style>
                                 </StackPanel.Styles>

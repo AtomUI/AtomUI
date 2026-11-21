@@ -49,7 +49,7 @@
         <gallery:ShowCaseItem Title="{gallery:CardShowCaseLangResource NoBorderTitle}"
                               Description="{gallery:CardShowCaseLangResource NoBorderDescription}"
                               IsOccupyEntireRow="True">
-            <Border Padding="20" Background="{Binding BorderlessFrameBg}">
+            <Border Padding="20" Background="{atom:SharedTokenResource ColorFillTertiary}">
                 <atom:Card Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}" Width="300" StyleVariant="Borderless" HorizontalAlignment="Left">
                     <atom:Card.Extra>
                         <atom:HyperLinkButton Content="{gallery:CardShowCaseLangResource P2ContentMore}" />

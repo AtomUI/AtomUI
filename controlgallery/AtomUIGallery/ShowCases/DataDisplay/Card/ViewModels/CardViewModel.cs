@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using Avalonia.Media;
 using ReactiveUI;
 
 namespace AtomUIGallery.ShowCases.Card;
@@ -11,14 +10,6 @@ public class CardViewModel : ReactiveObject, IRoutableViewModel
     public IScreen HostScreen { get; }
 
     public string UrlPathSegment { get; } = ID.ToString();
-
-    private IBrush? _borderlessFrameBg;
-
-    public IBrush? BorderlessFrameBg
-    {
-        get => _borderlessFrameBg;
-        set => this.RaiseAndSetIfChanged(ref _borderlessFrameBg, value);
-    }
 
     private bool _isLoading;
 

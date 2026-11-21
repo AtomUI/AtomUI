@@ -284,11 +284,11 @@
             <StackPanel.Styles>
                 <Style Selector="atom|PopupConfirm.semantic-styles-object-demo">
                     <atom:PopupConfirmPopupContainerStyle x:SetterTargetType="Border">
-                        <Setter Property="Background" Value="#EEEEEE" />
+                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                         <Setter Property="Padding" Value="16" />
                     </atom:PopupConfirmPopupContainerStyle>
                     <atom:PopupConfirmPopupTitleStyle x:SetterTargetType="TextBlock">
-                        <Setter Property="Foreground" Value="#262626" />
+                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
                     </atom:PopupConfirmPopupTitleStyle>
                 </Style>
                 <Style Selector="atom|PopupConfirm.semantic-styles-function-demo">

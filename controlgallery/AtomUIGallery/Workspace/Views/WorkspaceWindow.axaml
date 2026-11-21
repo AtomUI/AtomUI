@@ -104,12 +104,11 @@
             </atom:MenuItem>
         </atom:Menu>
     </atom:Window.Resources>
-    <Grid>
-        <Grid Name="ShellHost" />
+    <Grid RowDefinitions="Auto,*">
         <Border Name="TitleBarBottomSeparator"
                 Height="1"
-                VerticalAlignment="Top"
                 Background="{atom:SharedTokenResource ColorBorderSecondary}"
                 IsHitTestVisible="False" />
+        <Grid Name="ShellHost" Grid.Row="1" />
     </Grid>
 </atom:Window>

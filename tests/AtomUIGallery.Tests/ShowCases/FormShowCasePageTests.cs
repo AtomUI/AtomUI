@@ -218,7 +218,13 @@ public class FormShowCasePageTests
         CountOccurrences(source, "MaxWidth=\"800\"").ShouldBe(2);
         // Regression: neither card may pin HorizontalAlignment — a Left
         // alignment hugs content width and defeats the shared MaxWidth cap.
-        ExtractSemanticStylingRegion(source).ShouldNotContain("HorizontalAlignment");
+        var semanticStyling = ExtractSemanticStylingRegion(source);
+        semanticStyling.ShouldNotContain("HorizontalAlignment");
+        semanticStyling.ShouldContain("<Setter Property=\"Foreground\" Value=\"{atom:SharedTokenResource ColorTextSecondary}\" />");
+        semanticStyling.ShouldNotContain(" x:Name=\"");
+        semanticStyling.ShouldNotContain(" Name=\"");
+        semanticStyling.ShouldNotContain(" Loaded=\"");
+        semanticStyling.ShouldNotContain(" Unloaded=\"");
         source.ShouldContain("Value=\"#1677FF\"");
         CountOccurrences(source, "<atom:SubmitButton Content=\"{gallery:FormShowCaseLangResource SemanticStyleSubmitButtonText}\" />").ShouldBe(2);
         CountOccurrences(source, "<atom:ResetButton Content=\"{gallery:FormShowCaseLangResource SemanticStyleResetButtonText}\" />").ShouldBe(2);
@@ -252,7 +258,7 @@ public class FormShowCasePageTests
 
     private static string ExtractSemanticStylingRegion(string source)
     {
-        const string startMarker = "Classes=\"semantic-card semantic-object\"";
+        const string startMarker = "SourceKey=\"form-semantic-part\"";
         const string endMarker   = "</gallery:ShowCaseItem.DeferredContentTemplate>";
 
         var start = source.IndexOf(startMarker, StringComparison.Ordinal);

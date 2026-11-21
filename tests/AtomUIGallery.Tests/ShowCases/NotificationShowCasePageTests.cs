@@ -11,6 +11,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -20,6 +21,7 @@ using AvaloniaButton = Avalonia.Controls.Button;
 using AvaloniaWindow = Avalonia.Controls.Window;
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 using DesktopButton = AtomUI.Desktop.Controls.Button;
+using DesktopIconButton = AtomUI.Desktop.Controls.IconButton;
 using DesktopNumericUpDown = AtomUI.Desktop.Controls.NumericUpDown;
 using DesktopToggleSwitch = AtomUI.Desktop.Controls.ToggleSwitch;
 using NotificationCard = AtomUI.Desktop.Controls.NotificationCard;
@@ -204,6 +206,7 @@ public class NotificationShowCasePageTests
         semanticStylesResource.ShouldContain("atom:NotificationCardIconStyle");
         semanticStylesResource.ShouldContain("atom:NotificationCardTitleStyle");
         semanticStylesResource.ShouldContain("atom:NotificationCardDescriptionStyle");
+        semanticStylesResource.ShouldContain("atom:NotificationCardCloseStyle");
         semanticStylesResource.ShouldContain("x:SetterTargetType=\"atom:IconPresenter\"");
         semanticStylesResource.ShouldContain("x:SetterTargetType=\"ContentPresenter\"");
         semanticStylesResource.ShouldNotContain(".Loaded=");
@@ -228,21 +231,21 @@ public class NotificationShowCasePageTests
         var itemStyles = ExtractStylesResource(source, "NotificationSemanticStyleStyles");
 
         var defaultStyle = ExtractStyleBlock(itemStyles, "semantic-default-style-demo\"");
-        defaultStyle.ShouldContain("Value=\"#F6FFED\"");
-        defaultStyle.ShouldContain("Value=\"#95DE64\"");
+        defaultStyle.ShouldContain("Value=\"{DynamicResource NotificationSuccessBackground}\"");
+        defaultStyle.ShouldContain("Value=\"{DynamicResource NotificationSuccessBorder}\"");
         defaultStyle.ShouldContain("Value=\"2\"");
         defaultStyle.ShouldContain("Value=\"16\"");
-        defaultStyle.ShouldContain("Value=\"4 4 0 #D9F7BE\"");
-        defaultStyle.ShouldContain("Value=\"#237804\"");
+        defaultStyle.ShouldContain("Value=\"{DynamicResource NotificationSuccessShadow}\"");
+        defaultStyle.ShouldContain("Value=\"{DynamicResource NotificationSuccessForeground}\"");
         defaultStyle.ShouldContain("Value=\"SemiBold\"");
-        defaultStyle.ShouldContain("Value=\"#3F6600\"");
+        defaultStyle.ShouldContain("Value=\"{DynamicResource NotificationSuccessDescription}\"");
 
         var errorStyle = ExtractStyleBlock(itemStyles, "semantic-error-style-demo:error");
-        errorStyle.ShouldContain("Value=\"#FFF2F0\"");
-        errorStyle.ShouldContain("Value=\"#FFCCC7\"");
-        errorStyle.ShouldContain("Value=\"4 4 0 #FFCCC7\"");
-        errorStyle.ShouldContain("Value=\"#CF1322\"");
-        errorStyle.ShouldContain("Value=\"#5C0011\"");
+        errorStyle.ShouldContain("Value=\"{DynamicResource NotificationErrorBackground}\"");
+        errorStyle.ShouldContain("Value=\"{DynamicResource NotificationErrorBorder}\"");
+        errorStyle.ShouldContain("Value=\"{DynamicResource NotificationErrorShadow}\"");
+        errorStyle.ShouldContain("Value=\"{DynamicResource NotificationErrorForeground}\"");
+        errorStyle.ShouldContain("Value=\"{DynamicResource NotificationErrorDescription}\"");
 
         // root 表面定制必须落在 owner 的 StyledProperty 上（不是模板节点）。
         itemStyles.ShouldContain("Property=\"Background\"");
@@ -353,8 +356,10 @@ public class NotificationShowCasePageTests
         });
     }
 
-    [Fact]
-    public void Notification_Semantic_Style_Buttons_Produce_Styled_Cards()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Notification_Semantic_Style_Buttons_Produce_Styled_Cards(bool useDarkTheme)
     {
         // 点击示例按钮后弹出的卡片必须真的带上 default（浅绿）与 error（红）语义样式。
         // 仅断言 AXAML 文本无法覆盖资源解析与样式挂载这条运行时路径。
@@ -370,38 +375,46 @@ public class NotificationShowCasePageTests
 
             ShowInWindow(page, 1280, 900, () =>
             {
+                var window = TopLevel.GetTopLevel(page).ShouldNotBeNull();
+                window.RequestedThemeVariant = useDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
+                Dispatcher.UIThread.RunJobs();
+
                 ClickButton(page, Lang(NotificationShowCaseLangResourceKind.P2ContentDefaultNotification, "Default Notification"));
                 Dispatcher.UIThread.RunJobs();
 
                 var card = FindLayerCard(page, "semantic-default-style-demo");
                 var frame = FindFrame(card);
-                BrushColor(frame.Background).ShouldBe(Color.Parse("#F6FFED"));
-                BrushColor(frame.BorderBrush).ShouldBe(Color.Parse("#95DE64"));
+                BrushColor(frame.Background).ShouldBe(Color.Parse(useDarkTheme ? "#172819" : "#F6FFED"));
+                BrushColor(frame.BorderBrush).ShouldBe(Color.Parse(useDarkTheme ? "#52744A" : "#95DE64"));
                 frame.BorderThickness.ShouldBe(new Thickness(2));
                 frame.CornerRadius.ShouldBe(new CornerRadius(16));
-                frame.BoxShadow.ShouldBe(BoxShadows.Parse("4 4 0 #D9F7BE"));
+                frame.BoxShadow.ShouldBe(BoxShadows.Parse(useDarkTheme ? "4 4 0 #203B26" : "4 4 0 #D9F7BE"));
                 BrushColor(FindSemanticControl<AvaloniaTextBlock>(card, "semantic-title").Foreground)
-                    .ShouldBe(Color.Parse("#237804"));
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#A4E493" : "#237804"));
                 BrushColor(FindSemanticControl<ContentPresenter>(card, "semantic-description").Foreground)
-                    .ShouldBe(Color.Parse("#3F6600"));
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#C5E6AE" : "#3F6600"));
                 // icon 部件也必须按 owner-scoped 语义样式染色，而不是回落到主题的状态色。
                 var defaultIcon = FindSemanticControl<IconPresenter>(card, "semantic-icon").IconBrush.ShouldNotBeNull();
-                BrushColor(defaultIcon).ShouldBe(Color.Parse("#237804"));
+                BrushColor(defaultIcon).ShouldBe(Color.Parse(useDarkTheme ? "#A4E493" : "#237804"));
+                BrushColor(FindSemanticControl<DesktopIconButton>(card, "semantic-close").IconBrush)
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#A4E493" : "#237804"));
 
                 ClickButton(page, Lang(NotificationShowCaseLangResourceKind.P2ContentErrorNotification, "Error Notification"));
                 Dispatcher.UIThread.RunJobs();
 
                 var errorCard = FindLayerCard(page, "semantic-error-style-demo");
                 var errorFrame = FindFrame(errorCard);
-                BrushColor(errorFrame.Background).ShouldBe(Color.Parse("#FFF2F0"));
-                BrushColor(errorFrame.BorderBrush).ShouldBe(Color.Parse("#FFCCC7"));
-                errorFrame.BoxShadow.ShouldBe(BoxShadows.Parse("4 4 0 #FFCCC7"));
+                BrushColor(errorFrame.Background).ShouldBe(Color.Parse(useDarkTheme ? "#311C1E" : "#FFF2F0"));
+                BrushColor(errorFrame.BorderBrush).ShouldBe(Color.Parse(useDarkTheme ? "#995356" : "#FFCCC7"));
+                errorFrame.BoxShadow.ShouldBe(BoxShadows.Parse(useDarkTheme ? "4 4 0 #4D2325" : "4 4 0 #FFCCC7"));
                 BrushColor(FindSemanticControl<AvaloniaTextBlock>(errorCard, "semantic-title").Foreground)
-                    .ShouldBe(Color.Parse("#CF1322"));
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#FF9497" : "#CF1322"));
                 BrushColor(FindSemanticControl<ContentPresenter>(errorCard, "semantic-description").Foreground)
-                    .ShouldBe(Color.Parse("#5C0011"));
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#FFD0D2" : "#5C0011"));
                 BrushColor(FindSemanticControl<IconPresenter>(errorCard, "semantic-icon").IconBrush)
-                    .ShouldBe(Color.Parse("#CF1322"));
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#FF9497" : "#CF1322"));
+                BrushColor(FindSemanticControl<DesktopIconButton>(errorCard, "semantic-close").IconBrush)
+                    .ShouldBe(Color.Parse(useDarkTheme ? "#FF9497" : "#CF1322"));
             });
         }
         finally

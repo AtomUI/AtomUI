@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Breadcrumb;
 using Avalonia;
@@ -96,7 +97,8 @@ public class BreadcrumbShowCasePageTests
             demos.Length.ShouldBe(2);
 
             var objectDemo = demos.Single(static breadcrumb => breadcrumb.Classes.Contains("semantic-style-demo-object"));
-            AssertSolidColor(objectDemo.BorderBrush, "#F0F0F0");
+            var tokens = ControlTokenAccessor.Capture(objectDemo);
+            AssertSolidColor(objectDemo.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
             objectDemo.BorderThickness.ShouldBe(new Thickness(1));
             objectDemo.CornerRadius.ShouldBe(new CornerRadius(4));
             objectDemo.Padding.ShouldBe(new Thickness(8));
@@ -108,8 +110,8 @@ public class BreadcrumbShowCasePageTests
             objectItems.Length.ShouldBe(2);
             // The plain item takes the object demo item color; the linked item keeps the token
             // link color on its content presenter (Ant Design `.ant-breadcrumb-item a` semantics).
-            AssertContentForeground(objectItems[0], "#1890FF");
-            AssertContentForeground(objectItems[1], "#72000000");
+            AssertContentForeground(objectItems[0], tokens.GetGlobal<Color>(SharedTokenKind.ColorText));
+            AssertContentForeground(objectItems[1], Color.Parse("#72000000"));
 
             var objectSeparators = objectDemo.GetVisualDescendants()
                                              .OfType<ContentPresenter>()
@@ -118,11 +120,11 @@ public class BreadcrumbShowCasePageTests
             objectSeparators.Length.ShouldBe(1);
             foreach (var separator in objectSeparators)
             {
-                AssertSolidColor(separator.Foreground, "#73000000");
+                AssertSolidColor(separator.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorTextSecondary));
             }
 
             var functionDemo = demos.Single(static breadcrumb => breadcrumb.Classes.Contains("semantic-style-demo-function"));
-            AssertSolidColor(functionDemo.BorderBrush, "#F5EFFF");
+            AssertSolidColor(functionDemo.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBorder));
             functionDemo.BorderThickness.ShouldBe(new Thickness(1));
             functionDemo.CornerRadius.ShouldBe(new CornerRadius(4));
             functionDemo.Padding.ShouldBe(new Thickness(8));
@@ -132,9 +134,9 @@ public class BreadcrumbShowCasePageTests
                                             .Where(static candidate => candidate.Classes.Contains("semantic-item"))
                                             .ToArray();
             functionItems.Length.ShouldBe(3);
-            AssertContentForeground(functionItems[0], "#8F87F1");
-            AssertContentForeground(functionItems[1], "#72000000");
-            AssertContentForeground(functionItems[2], "#8F87F1");
+            AssertContentForeground(functionItems[0], tokens.GetGlobal<Color>(SharedTokenKind.ColorSuccessText));
+            AssertContentForeground(functionItems[1], Color.Parse("#72000000"));
+            AssertContentForeground(functionItems[2], tokens.GetGlobal<Color>(SharedTokenKind.ColorSuccessText));
 
             var functionSeparators = functionDemo.GetVisualDescendants()
                                                  .OfType<ContentPresenter>()
@@ -143,19 +145,19 @@ public class BreadcrumbShowCasePageTests
             functionSeparators.Length.ShouldBe(2);
             foreach (var separator in functionSeparators)
             {
-                AssertSolidColor(separator.Foreground, "#73000000");
+                AssertSolidColor(separator.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorTextSecondary));
             }
         });
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static void AssertSolidColor(IBrush? actual, Color expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(expected);
     }
 
-    private static void AssertContentForeground(AtomUIBreadcrumbItem item, string expected)
+    private static void AssertContentForeground(AtomUIBreadcrumbItem item, Color expected)
     {
         var content = item.GetVisualDescendants()
                           .OfType<ContentPresenter>()

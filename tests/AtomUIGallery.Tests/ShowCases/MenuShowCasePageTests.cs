@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Menu;
 using Avalonia;
@@ -444,20 +445,21 @@ public class MenuShowCasePageTests
             var verticalMenu = page.GetVisualDescendants()
                                    .OfType<AtomUINavMenu>()
                                    .Single(static menu => menu.Classes.Contains("semantic-style-demo"));
-            AssertSolidColor(verticalMenu.Background, "#FAFAFA");
-            AssertSolidColor(verticalMenu.BorderBrush, "#D9D9D9");
+            var tokens = ControlTokenAccessor.Capture(verticalMenu);
+            AssertSolidColor(verticalMenu.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorBgElevated));
+            AssertSolidColor(verticalMenu.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
             verticalMenu.BorderThickness.ShouldBe(new Thickness(1));
             verticalMenu.CornerRadius.ShouldBe(new CornerRadius(8));
             verticalMenu.Padding.ShouldBe(new Thickness(8));
 
             var itemContainer = Marked(verticalMenu, "semantic-item").First()
                                                                      .ShouldBeAssignableTo<TemplatedControl>();
-            AssertSolidColor(itemContainer.Foreground, "#1677FF");
+            AssertSolidColor(itemContainer.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorText));
             itemContainer.MinHeight.ShouldBe(36);
 
             var itemIcon = Marked(verticalMenu, "semantic-item-icon").First()
                                                                  .ShouldBeAssignableTo<IconPresenter>();
-            AssertSolidColor(itemIcon.IconBrush, "#1677FF");
+            AssertSolidColor(itemIcon.IconBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoText));
 
             var itemContent = Marked(verticalMenu, "semantic-item-content").First()
                                                                           .ShouldBeAssignableTo<ContentPresenter>();
@@ -470,12 +472,12 @@ public class MenuShowCasePageTests
             var inlineMenu = page.GetVisualDescendants()
                                  .OfType<AtomUINavMenu>()
                                  .Single(static menu => menu.Classes.Contains("semantic-inline-style-demo"));
-            AssertSolidColor(inlineMenu.Background, "#F0F5FF");
+            AssertSolidColor(inlineMenu.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBg));
             AssertSolidColor(
                 Marked(inlineMenu, "semantic-sub-menu-item").First()
                                                             .ShouldBeAssignableTo<TemplatedControl>()
                                                             .Foreground,
-                "#FA541C");
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorWarningText));
             // 一级项的 header 同时带两级 marker，因此 subMenu.* 样式只应命中真正位于子菜单
             // 容器内的节点；这里按容器祖先过滤，避免误取一级项上的同名节点。
             MarkedWithin(inlineMenu, "semantic-sub-menu-item-content", "semantic-sub-menu-item")
@@ -491,17 +493,17 @@ public class MenuShowCasePageTests
             var plainMenu = page.GetVisualDescendants()
                                 .OfType<AtomUIMenu>()
                                 .Single(static menu => menu.Classes.Contains("semantic-style-demo"));
-            AssertSolidColor(plainMenu.Background, "#FAFAFA");
-            AssertSolidColor(plainMenu.BorderBrush, "#D9D9D9");
+            AssertSolidColor(plainMenu.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorBgElevated));
+            AssertSolidColor(plainMenu.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
             plainMenu.BorderThickness.ShouldBe(new Thickness(1));
             plainMenu.CornerRadius.ShouldBe(new CornerRadius(8));
 
             var plainItem = Marked(plainMenu, "semantic-item").First()
                                                              .ShouldBeAssignableTo<TemplatedControl>();
-            AssertSolidColor(plainItem.Foreground, "#1677FF");
+            AssertSolidColor(plainItem.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorText));
             var plainItemIcon = Marked(plainMenu, "semantic-item-icon").First()
                                                                        .ShouldBeAssignableTo<IconPresenter>();
-            AssertSolidColor(plainItemIcon.IconBrush, "#1677FF");
+            AssertSolidColor(plainItemIcon.IconBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoText));
 
             // 菜单栏一级项的图标必须真正渲染：顶层模板若只给 IconPresenter 设 Margin 而不设尺寸，
             // 图标量到 0x0，肉眼不可见却仍占位，菜单项文字被无谓右移。
@@ -523,7 +525,7 @@ public class MenuShowCasePageTests
             var subMenuStyleMenu = page.GetVisualDescendants()
                                        .OfType<AtomUIMenu>()
                                        .Single(static menu => menu.Classes.Contains("semantic-sub-menu-style-demo"));
-            AssertSolidColor(subMenuStyleMenu.Background, "#F0F5FF");
+            AssertSolidColor(subMenuStyleMenu.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBg));
             IsPopupOpen(subMenuStyleMenu).ShouldBeFalse();
 
             void PumpLayout(int iterations)
@@ -562,7 +564,7 @@ public class MenuShowCasePageTests
                 .First(static candidate => candidate.HasSubMenu);
             var popupRootFrame = OpenSubMenuPopup(popupRootOwner).ShouldBeAssignableTo<Border>();
             popupRootFrame.Classes.Contains("semantic-popup-root").ShouldBeTrue();
-            AssertSolidColor(popupRootFrame.BorderBrush, "#D9D9D9");
+            AssertSolidColor(popupRootFrame.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
             popupRootFrame.BorderThickness.ShouldBe(new Thickness(1));
             popupRootFrame.CornerRadius.ShouldBe(new CornerRadius(8));
             popupRootFrame.Padding.ShouldBe(new Thickness(8));
@@ -576,12 +578,12 @@ public class MenuShowCasePageTests
                 Marked(popupContent, "semantic-sub-menu-item").First()
                                                               .ShouldBeAssignableTo<TemplatedControl>()
                                                               .Foreground,
-                "#FA541C");
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorWarningText));
             AssertSolidColor(
                 Marked(popupContent, "semantic-sub-menu-item-icon").First()
                                                                     .ShouldBeAssignableTo<IconPresenter>()
                                                                     .IconBrush,
-                "#FA541C");
+                tokens.GetGlobal<Color>(SharedTokenKind.ColorWarningText));
             Marked(popupContent, "semantic-sub-menu-item-content")
                 .First()
                 .ShouldBeAssignableTo<ContentPresenter>()
@@ -636,12 +638,12 @@ public class MenuShowCasePageTests
                     .Any(static popup => popup.IsOpen);
     }
 
-    private static void AssertSolidColor(IBrush? brush, string expected)
+    private static void AssertSolidColor(IBrush? brush, Color expected)
     {
         brush.ShouldNotBeNull()
              .ShouldBeAssignableTo<ISolidColorBrush>()
              .ShouldNotBeNull()
-             .Color.ShouldBe(Color.Parse(expected));
+             .Color.ShouldBe(expected);
     }
 
     private static void HoverSemanticPartExclusive(

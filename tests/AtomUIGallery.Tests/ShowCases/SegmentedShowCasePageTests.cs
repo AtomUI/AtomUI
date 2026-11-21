@@ -41,6 +41,10 @@ public class SegmentedShowCasePageTests
         semanticSource.ShouldContain("<atom:SegmentedItemStyle x:SetterTargetType=\"atom:SegmentedItem\">");
         semanticSource.ShouldContain("<atom:SegmentedIconStyle x:SetterTargetType=\"atom:IconPresenter\">");
         semanticSource.ShouldContain("<atom:SegmentedLabelStyle x:SetterTargetType=\"ContentPresenter\">");
+        semanticSource.ShouldMatch(
+            """<Style Selector="atom\|Segmented\.semantic-object\[Orientation=Vertical\]">\s*<atom:SegmentedLabelStyle x:SetterTargetType="ContentPresenter">\s*<Setter Property="HorizontalContentAlignment" Value="Left"\s*/>""");
+        semanticSource.ShouldNotContain(".Loaded=");
+        semanticSource.ShouldNotContain(".Unloaded=");
         semanticSource.ShouldContain("Classes=\"semantic-object\"");
         CountOccurrences(semanticSource, "Classes=\"semantic-object\"").ShouldBe(2);
         semanticSource.ShouldContain("Orientation=\"Vertical\"");

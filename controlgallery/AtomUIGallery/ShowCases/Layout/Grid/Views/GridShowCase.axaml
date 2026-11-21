@@ -14,13 +14,13 @@
             <Setter Property="Background" Value="#4096FF" />
         </Style>
         <Style Selector="Border.grid-row-surface">
-            <Setter Property="Background" Value="#F5F5F5" />
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
             <Setter Property="Padding" Value="8" />
         </Style>
         <Style Selector="TextBlock.grid-cell-text">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="#0A0A0A" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="TextBlock.grid-section-title">

@@ -336,14 +336,14 @@
                         <StackPanel.Styles>
                             <Style Selector="atom|Splitter.semantic-style-demo-default">
                                 <Setter Property="Height" Value="200" />
-                                <Setter Property="Background" Value="#FFFBE6" />
+                                <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
                                 <atom:SplitterDraggerStyle x:SetterTargetType="atom:Thumb">
-                                    <Setter Property="Background" Value="#66C2DFFC" />
+                                    <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                 </atom:SplitterDraggerStyle>
                             </Style>
                             <Style Selector="atom|Splitter.semantic-style-demo-dashed">
                                 <Setter Property="Height" Value="200" />
-                                <Setter Property="BorderBrush" Value="#E0000000" />
+                                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
                                 <Setter Property="BorderThickness" Value="2" />
                                 <Setter Property="BorderDashArray" Value="4,2" />
                             </Style>
@@ -351,7 +351,7 @@
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
-                                <Setter Property="Foreground" Value="#000000" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                             </Style>
                         </StackPanel.Styles>
 

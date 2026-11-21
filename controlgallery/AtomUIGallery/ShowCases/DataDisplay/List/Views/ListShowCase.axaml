@@ -350,19 +350,19 @@
                                         Spacing="12">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|ListView.semantic-object">
-                                        <Setter Property="BorderBrush" Value="#91caff" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="8" />
                                         <atom:ListViewItemStyle x:SetterTargetType="atom:ListViewItem">
                                             <Setter Property="FontStyle" Value="Italic" />
                                         </atom:ListViewItemStyle>
                                         <atom:ListViewGroupHeaderStyle x:SetterTargetType="atom:ListViewItem">
-                                            <Setter Property="Foreground" Value="#1677ff" />
-                                            <Setter Property="Background" Value="#e6f4ff" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         </atom:ListViewGroupHeaderStyle>
                                     </Style>
                                     <Style Selector="atom|ListBox.semantic-listbox">
-                                        <Setter Property="BorderBrush" Value="#91caff" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="8" />
                                         <atom:ListBoxItemStyle x:SetterTargetType="atom:ListBoxItem">

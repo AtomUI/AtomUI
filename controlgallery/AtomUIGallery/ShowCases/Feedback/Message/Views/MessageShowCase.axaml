@@ -9,45 +9,71 @@
         <!-- 严格对齐上游 components/message/demo/style-class.tsx：object styles 为浅绿卡片 + 2px 绿边
              + 圆角 16 + 硬阴影，icon / title 绿字；function styles 按 type 分支，error 时整卡转红。 -->
         <Styles x:Key="MessageSemanticStyleStyles">
+            <Styles.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="MessageSuccessBackground" Color="#172819" />
+                            <SolidColorBrush x:Key="MessageSuccessBorder" Color="#52744A" />
+                            <SolidColorBrush x:Key="MessageSuccessForeground" Color="#A4E493" />
+                            <SolidColorBrush x:Key="MessageErrorBackground" Color="#311C1E" />
+                            <SolidColorBrush x:Key="MessageErrorBorder" Color="#995356" />
+                            <SolidColorBrush x:Key="MessageErrorForeground" Color="#FF9497" />
+                            <BoxShadows x:Key="MessageSuccessShadow">4 4 0 #203B26</BoxShadows>
+                            <BoxShadows x:Key="MessageErrorShadow">4 4 0 #4D2325</BoxShadows>
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Default">
+                            <SolidColorBrush x:Key="MessageSuccessBackground" Color="#F6FFED" />
+                            <SolidColorBrush x:Key="MessageSuccessBorder" Color="#95DE64" />
+                            <SolidColorBrush x:Key="MessageSuccessForeground" Color="#237804" />
+                            <SolidColorBrush x:Key="MessageErrorBackground" Color="#FFF2F0" />
+                            <SolidColorBrush x:Key="MessageErrorBorder" Color="#FFCCC7" />
+                            <SolidColorBrush x:Key="MessageErrorForeground" Color="#CF1322" />
+                            <BoxShadows x:Key="MessageSuccessShadow">4 4 0 #D9F7BE</BoxShadows>
+                            <BoxShadows x:Key="MessageErrorShadow">4 4 0 #FFCCC7</BoxShadows>
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </Styles.Resources>
             <Style Selector="atom|MessageCard.semantic-object-style-demo">
-                <Setter Property="Background" Value="#F6FFED" />
-                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="Background" Value="{DynamicResource MessageSuccessBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MessageSuccessBorder}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="CornerRadius" Value="16" />
-                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <Setter Property="BoxShadow" Value="{DynamicResource MessageSuccessShadow}" />
                 <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
-                    <Setter Property="IconBrush" Value="#237804" />
+                    <Setter Property="IconBrush" Value="{DynamicResource MessageSuccessForeground}" />
                 </atom:MessageCardIconStyle>
                 <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
-                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="Foreground" Value="{DynamicResource MessageSuccessForeground}" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                 </atom:MessageCardTitleStyle>
             </Style>
             <!-- function styles 的默认分支：非 error 时返回 object styles 同款绿色。 -->
             <Style Selector="atom|MessageCard.semantic-function-style-demo">
-                <Setter Property="Background" Value="#F6FFED" />
-                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="Background" Value="{DynamicResource MessageSuccessBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MessageSuccessBorder}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="CornerRadius" Value="16" />
-                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <Setter Property="BoxShadow" Value="{DynamicResource MessageSuccessShadow}" />
                 <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
-                    <Setter Property="IconBrush" Value="#237804" />
+                    <Setter Property="IconBrush" Value="{DynamicResource MessageSuccessForeground}" />
                 </atom:MessageCardIconStyle>
                 <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
-                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="Foreground" Value="{DynamicResource MessageSuccessForeground}" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                 </atom:MessageCardTitleStyle>
             </Style>
             <!-- function styles 的 error 分支：type 为 error 时整卡转红，保留 2px 红色硬阴影。 -->
             <Style Selector="atom|MessageCard.semantic-function-style-demo:error">
-                <Setter Property="Background" Value="#FFF2F0" />
-                <Setter Property="BorderBrush" Value="#FFCCC7" />
-                <Setter Property="BoxShadow" Value="4 4 0 #FFCCC7" />
+                <Setter Property="Background" Value="{DynamicResource MessageErrorBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource MessageErrorBorder}" />
+                <Setter Property="BoxShadow" Value="{DynamicResource MessageErrorShadow}" />
                 <atom:MessageCardIconStyle x:SetterTargetType="atom:IconPresenter">
-                    <Setter Property="IconBrush" Value="#CF1322" />
+                    <Setter Property="IconBrush" Value="{DynamicResource MessageErrorForeground}" />
                 </atom:MessageCardIconStyle>
                 <atom:MessageCardTitleStyle x:SetterTargetType="SelectableTextBlock">
-                    <Setter Property="Foreground" Value="#CF1322" />
+                    <Setter Property="Foreground" Value="{DynamicResource MessageErrorForeground}" />
                 </atom:MessageCardTitleStyle>
             </Style>
         </Styles>

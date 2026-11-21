@@ -171,7 +171,7 @@
                                                    StrokeDashArray="{Binding DashedArray, RelativeSource={RelativeSource AncestorType=vm:StepsShowCase}}"
                                                    CornerRadius="{atom:SharedTokenResource BorderRadiusLG}"
                                                    Background="{atom:SharedTokenResource ColorFillAlter}"
-                                                   TextElement.Foreground="{atom:SharedTokenResource ColorTextTertiary}"
+                                                   TextElement.Foreground="{atom:SharedTokenResource ColorTextDescription}"
                                                    Height="260">
                                     <atom:TextBlock Text="{Binding InteractivePageContent}"
                                                     HorizontalAlignment="Center"
@@ -489,7 +489,7 @@
                                         </atom:Steps>
                                         <StackPanel Orientation="Vertical" Spacing="10">
                                             <TextBlock FontWeight="Bold" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignTitleN1}" />
-                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextTertiary}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
+                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextDescription}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
                                         </StackPanel>
                                     </DockPanel>
                                     <atom:Separator Grid.Row="1" Margin="0,10,0,0"/>
@@ -503,7 +503,7 @@
                                         </atom:Steps>
                                         <StackPanel Orientation="Vertical" Spacing="10">
                                             <TextBlock FontWeight="Bold" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignTitleN2}" />
-                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextTertiary}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
+                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextDescription}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
                                         </StackPanel>
                                     </DockPanel>
                                     <atom:Separator Grid.Row="1" Margin="0,10,0,0"/>
@@ -517,7 +517,7 @@
                                         </atom:Steps>
                                         <StackPanel Orientation="Vertical" Spacing="10">
                                             <TextBlock FontWeight="Bold" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignTitleN3}" />
-                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextTertiary}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
+                                            <TextBlock Foreground="{atom:SharedTokenResource ColorTextDescription}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
                                         </StackPanel>
                                     </DockPanel>
                                     <atom:Separator Grid.Row="1" Margin="0,10,0,0"/>
@@ -530,7 +530,7 @@
                                     </atom:Steps>
                                     <StackPanel Orientation="Vertical" Spacing="10">
                                         <TextBlock FontWeight="Bold" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignTitleN4}" />
-                                        <TextBlock Foreground="{atom:SharedTokenResource ColorTextTertiary}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
+                                        <TextBlock Foreground="{atom:SharedTokenResource ColorTextDescription}" Text="{gallery:StepsShowCaseLangResource P2TextAntDesignADesignLanguageForBackgroundApplications}" />
                                     </StackPanel>
                                 </DockPanel>
                             </StackPanel>

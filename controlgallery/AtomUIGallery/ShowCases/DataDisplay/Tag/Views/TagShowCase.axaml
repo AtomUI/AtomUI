@@ -402,15 +402,15 @@
                                         Spacing="12">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Tag.semantic-object">
-                                        <Setter Property="Background" Value="#e6f4ff" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         <atom:TagIconStyle x:SetterTargetType="atom:IconPresenter">
-                                            <Setter Property="IconBrush" Value="#1677ff" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                                         </atom:TagIconStyle>
                                         <atom:TagContentStyle x:SetterTargetType="atom:TextBlock">
                                             <Setter Property="FontWeight" Value="SemiBold" />
                                         </atom:TagContentStyle>
                                         <atom:TagCloseStyle x:SetterTargetType="atom:IconButton">
-                                            <Setter Property="IconBrush" Value="#ff4d4f" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorErrorText}" />
                                         </atom:TagCloseStyle>
                                     </Style>
                                     <Style Selector="atom|CheckableTagGroup.semantic-object">

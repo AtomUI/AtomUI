@@ -55,8 +55,8 @@ public class ButtonSpinnerShowCasePageTests
         // Root border customization is expressed as a plain root Setter inside the owner-scoped
         // Style (root has no generated Style type); it must reach the shared input frame through
         // the owner BorderBrush relay.
-        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#1677FF\" />");
-        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#722ED1\" />");
+        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorInfoBorderHover}\" />");
+        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorSuccessBorderHover}\" />");
 
         foreach (var key in new[]
                  {

@@ -859,7 +859,7 @@
                                                 Text="{gallery:MenuShowCaseLangResource P2HeaderWorkspaceNavigation}" />
                             </StackPanel>
                             <atom:Button Grid.Column="1"
-                                         ButtonType="Primary"
+                                         ButtonType="Text"
                                          Icon="{antdicons:AntDesignIconProvider Kind=MenuFoldOutlined}"
                                          Click="HandleToggleStructuredNavMenuCollapsedClick" />
                         </Grid>
@@ -916,17 +916,17 @@
                 <StackPanel Spacing="16">
                     <StackPanel.Styles>
                         <Style Selector="atom|NavMenu.semantic-style-demo">
-                            <Setter Property="Background" Value="#FAFAFA" />
-                            <Setter Property="BorderBrush" Value="#D9D9D9" />
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+                            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                             <Setter Property="BorderThickness" Value="1" />
                             <Setter Property="CornerRadius" Value="8" />
                             <Setter Property="Padding" Value="8" />
                             <atom:NavMenuItemStyle x:SetterTargetType="HeaderedSelectingItemsControl">
-                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                 <Setter Property="MinHeight" Value="36" />
                             </atom:NavMenuItemStyle>
                             <atom:NavMenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
-                                <Setter Property="IconBrush" Value="#1677FF" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                             </atom:NavMenuItemIconStyle>
                             <atom:NavMenuItemContentStyle x:SetterTargetType="ContentPresenter">
                                 <Setter Property="FontWeight" Value="Bold" />
@@ -938,16 +938,16 @@
                                 <Setter Property="Margin" Value="0,2,0,0" />
                             </atom:NavMenuListStyle>
                             <atom:NavMenuPopupRootStyle x:SetterTargetType="Border">
-                                <Setter Property="BorderBrush" Value="#D9D9D9" />
+                                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="CornerRadius" Value="8" />
                                 <Setter Property="Padding" Value="8" />
                             </atom:NavMenuPopupRootStyle>
                         </Style>
                         <Style Selector="atom|NavMenu.semantic-inline-style-demo">
-                            <Setter Property="Background" Value="#F0F5FF" />
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                             <atom:NavMenuSubMenuItemStyle x:SetterTargetType="HeaderedSelectingItemsControl">
-                                <Setter Property="Foreground" Value="#FA541C" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                             </atom:NavMenuSubMenuItemStyle>
                             <atom:NavMenuSubMenuListStyle x:SetterTargetType="ItemsPresenter">
                                 <Setter Property="Margin" Value="0,4,0,0" />
@@ -960,36 +960,36 @@
                             </atom:NavMenuSubMenuItemContentStyle>
                         </Style>
                         <Style Selector="atom|Menu.semantic-style-demo">
-                            <Setter Property="Background" Value="#FAFAFA" />
-                            <Setter Property="BorderBrush" Value="#D9D9D9" />
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+                            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                             <Setter Property="BorderThickness" Value="1" />
                             <Setter Property="CornerRadius" Value="8" />
                             <Setter Property="Padding" Value="4" />
                             <atom:MenuItemStyle x:SetterTargetType="MenuItem">
-                                <Setter Property="Foreground" Value="#1677FF" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                 <Setter Property="MinHeight" Value="36" />
                             </atom:MenuItemStyle>
                             <atom:MenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
-                                <Setter Property="IconBrush" Value="#1677FF" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                             </atom:MenuItemIconStyle>
                             <atom:MenuItemContentStyle x:SetterTargetType="ContentPresenter">
                                 <Setter Property="FontWeight" Value="Bold" />
                             </atom:MenuItemContentStyle>
                             <atom:MenuPopupRootStyle x:SetterTargetType="Border">
-                                <Setter Property="BorderBrush" Value="#D9D9D9" />
+                                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                 <Setter Property="BorderThickness" Value="1" />
                                 <Setter Property="CornerRadius" Value="8" />
                                 <Setter Property="Padding" Value="8" />
                             </atom:MenuPopupRootStyle>
                         </Style>
                         <Style Selector="atom|Menu.semantic-sub-menu-style-demo">
-                            <Setter Property="Background" Value="#F0F5FF" />
+                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                             <Setter Property="Padding" Value="4" />
                             <atom:MenuSubMenuItemStyle x:SetterTargetType="MenuItem">
-                                <Setter Property="Foreground" Value="#FA541C" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                             </atom:MenuSubMenuItemStyle>
                             <atom:MenuSubMenuItemIconStyle x:SetterTargetType="atom:IconPresenter">
-                                <Setter Property="IconBrush" Value="#FA541C" />
+                                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorWarningText}" />
                             </atom:MenuSubMenuItemIconStyle>
                             <atom:MenuSubMenuItemContentStyle x:SetterTargetType="ContentPresenter">
                                 <Setter Property="FontWeight" Value="Bold" />

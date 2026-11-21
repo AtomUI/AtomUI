@@ -3,10 +3,8 @@ using System.Windows.Input;
 using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase.Shell;
-using AtomUIGallery.Localization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
@@ -203,7 +201,7 @@ internal sealed class GalleryThemeMenu : IDisposable
             CommandParameter = language,
             Tag              = language
         };
-        SetHeader(item, CreateHeader(baseTheme?.AccentColor, header => BindLanguageName(header, language, baseTheme)));
+        item.Header = CreateHeader(baseTheme?.AccentColor, header => BindLanguageName(header, language, baseTheme));
         // The parent of a folded family highlights while one of its children is the current language.
         return item;
     }
@@ -241,7 +239,7 @@ internal sealed class GalleryThemeMenu : IDisposable
                 CommandParameter = swatch.Color,
                 Tag              = swatch.Color
             };
-            SetHeader(item, CreateHeader(swatch.Color, header => header.Text = swatch.Name));
+            item.Header = CreateHeader(swatch.Color, header => header.Text = swatch.Name);
             _brandColorItem.Items.Add(item);
         }
 
@@ -288,8 +286,8 @@ internal sealed class GalleryThemeMenu : IDisposable
                 CommandParameter = swatch.Color,
                 Tag              = swatch.Color
             };
-            SetHeader(item, CreateHeader(swatch.Color,
-                header => header.Text = swatch.Name.Length > 0 ? swatch.Name : baseTheme?.Name ?? language));
+            item.Header = CreateHeader(swatch.Color,
+                header => header.Text = swatch.Name.Length > 0 ? swatch.Name : baseTheme?.Name ?? language);
             _neutralColorItem.Items.Add(item);
         }
 
@@ -324,7 +322,7 @@ internal sealed class GalleryThemeMenu : IDisposable
                 CommandParameter = theme.Id,
                 Tag              = theme.Id
             };
-            SetHeader(item, CreateHeader(theme.AccentColor, header => header.Text = theme.Name));
+            item.Header = CreateHeader(theme.AccentColor, header => header.Text = theme.Name);
             _otherThemesItem.Items.Add(item);
         }
 
@@ -362,11 +360,6 @@ internal sealed class GalleryThemeMenu : IDisposable
         {
             text.Text = baseTheme?.Name ?? language;
         }
-    }
-
-    private static void SetHeader(MenuItem item, Control header)
-    {
-        item.Header = header;
     }
 
     private static Grid CreateHeader(Color? color, Action<Avalonia.Controls.TextBlock> configureText)

@@ -121,10 +121,10 @@ public class MasonryShowCasePageTests
         item.ShouldContain("Selector=\"atom|Masonry.semantic-style-demo.semantic-object-styles\"");
         item.ShouldContain("Selector=\"atom|Masonry.semantic-style-demo.semantic-function-styles[ColumnCount=3]\"");
         CountOccurrences(item, "<atom:MasonryItemStyle x:SetterTargetType=\"Border\">").ShouldBe(2);
-        item.ShouldContain("<Setter Property=\"Background\" Value=\"#FAFAFA\" />");
-        item.ShouldContain("<Setter Property=\"Background\" Value=\"#F0F8FF\" />");
-        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#D9D9D9\" />");
-        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#1890FF\" />");
+        item.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorFillAlter}\" />");
+        item.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorInfoBg}\" />");
+        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorBorder}\" />");
+        item.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorInfoBorderHover}\" />");
         item.ShouldContain("<Setter Property=\"Padding\" Value=\"16\" />");
         item.ShouldContain("<Setter Property=\"Padding\" Value=\"16,12\" />");
         item.ShouldContain("ColumnCount=\"4\"");

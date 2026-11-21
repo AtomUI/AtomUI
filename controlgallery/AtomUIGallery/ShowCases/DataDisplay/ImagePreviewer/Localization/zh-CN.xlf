@@ -105,8 +105,8 @@
     </unit>
     <unit id="RapidSwitchDescription">
       <segment>
-        <source>Append a new image every 200 ms and track the latest one. Toggle the mode to compare Immediate loading-placeholder switching with WaitForLoaded hold-until-loaded switching.</source>
-        <target state="translated">每 200 毫秒追加一张图片并跟踪显示最新一张。切换模式对比 Immediate（立即显示加载提示）与 WaitForLoaded（保留上一张直到加载完成）。</target>
+        <source>The preview cycles through images automatically. Immediate shows a loading placeholder while the next image loads. Wait For Loaded keeps the current image visible until the next one is ready.</source>
+        <target state="translated">预览会自动轮换图片。「立即切换」会在下一张图片加载时显示占位图。「等待加载」会保留当前图片，直到下一张加载完成。</target>
       </segment>
     </unit>
     <unit id="RapidSwitchModeImmediate">

@@ -1217,51 +1217,53 @@
                                     <Style Selector="atom|DataGrid.semantic-info-table-demo">
                                         <Setter Property="IsFrameBorderVisible" Value="True" />
                                         <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         </atom:DataGridTitleStyle>
                                         <atom:DataGridHeaderWrapperStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         </atom:DataGridHeaderWrapperStyle>
                                         <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridHeaderCellStyle>
                                         <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridBodyRowStyle>
                                         <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridBodyCellStyle>
                                         <atom:DataGridFooterStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridFooterStyle>
                                         <atom:DataGridPaginationRootStyle x:SetterTargetType="atom:Pagination">
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridPaginationRootStyle>
                                         <atom:DataGridPaginationItemStyle x:SetterTargetType="ContentControl">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridPaginationItemStyle>
                                     </Style>
                                     <Style Selector="atom|DataGrid.semantic-alert-table-demo">
                                         <Setter Property="IsFrameBorderVisible" Value="True" />
                                         <atom:DataGridSectionStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#FFFBE6" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
                                         </atom:DataGridSectionStyle>
                                         <atom:DataGridContentStyle x:SetterTargetType="Grid">
-                                            <Setter Property="Background" Value="#FFF1F0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
                                         </atom:DataGridContentStyle>
                                         <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                            <Setter Property="Foreground" Value="#D46B08" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridHeaderCellStyle>
                                         <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Foreground" Value="#873800" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridBodyRowStyle>
                                         <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
-                                            <Setter Property="Foreground" Value="#873800" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridBodyCellStyle>
                                         <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#FFF1F0" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
                                         </atom:DataGridTitleStyle>
                                     </Style>
                                 </StackPanel.Styles>

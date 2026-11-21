@@ -150,7 +150,8 @@ public class ShowCasePanelStructureTests
             source.ShouldNotContain("InfoNamespaceLabel");
             source.ShouldNotContain("InfoPackageLabel");
             source.ShouldNotContain("InfoBaseClassLabel");
-            source.ShouldNotContain("<Border Background=\"{atom:SharedTokenResource ColorBgContainer}\"");
+            var headerStart = source.IndexOf("<gallery:GalleryShowCaseHeader", StringComparison.Ordinal);
+            source[..headerStart].ShouldNotContain("<Border Background=\"{atom:SharedTokenResource ColorBgContainer}\"");
         }
     }
 

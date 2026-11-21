@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ReactiveUI;
@@ -241,25 +242,25 @@ public class MessageShowCasePageTests
 
         // Object style 精确值（上游 defaultStyles）。
         var objectStyle = ExtractStyleBlock(itemStyles, "semantic-object-style-demo\"");
-        objectStyle.ShouldContain("Value=\"#F6FFED\"");
-        objectStyle.ShouldContain("Value=\"#95DE64\"");
+        objectStyle.ShouldContain("Value=\"{DynamicResource MessageSuccessBackground}\"");
+        objectStyle.ShouldContain("Value=\"{DynamicResource MessageSuccessBorder}\"");
         objectStyle.ShouldContain("Value=\"2\"");
         objectStyle.ShouldContain("Value=\"16\"");
-        objectStyle.ShouldContain("Value=\"4 4 0 #D9F7BE\"");
-        objectStyle.ShouldContain("Value=\"#237804\"");
+        objectStyle.ShouldContain("Value=\"{DynamicResource MessageSuccessShadow}\"");
+        objectStyle.ShouldContain("Value=\"{DynamicResource MessageSuccessForeground}\"");
         objectStyle.ShouldContain("Value=\"SemiBold\"");
 
         // Function style：默认分支返回与 object styles 同款绿色，:error 分支整卡转红（上游 stylesFn）。
         var functionBase = ExtractStyleBlock(itemStyles, "semantic-function-style-demo\"");
-        functionBase.ShouldContain("Value=\"#F6FFED\"");
-        functionBase.ShouldContain("Value=\"#95DE64\"");
-        functionBase.ShouldContain("Value=\"#237804\"");
+        functionBase.ShouldContain("Value=\"{DynamicResource MessageSuccessBackground}\"");
+        functionBase.ShouldContain("Value=\"{DynamicResource MessageSuccessBorder}\"");
+        functionBase.ShouldContain("Value=\"{DynamicResource MessageSuccessForeground}\"");
 
         var functionError = ExtractStyleBlock(itemStyles, "semantic-function-style-demo:error");
-        functionError.ShouldContain("Value=\"#FFF2F0\"");
-        functionError.ShouldContain("Value=\"#FFCCC7\"");
-        functionError.ShouldContain("Value=\"4 4 0 #FFCCC7\"");
-        functionError.ShouldContain("Value=\"#CF1322\"");
+        functionError.ShouldContain("Value=\"{DynamicResource MessageErrorBackground}\"");
+        functionError.ShouldContain("Value=\"{DynamicResource MessageErrorBorder}\"");
+        functionError.ShouldContain("Value=\"{DynamicResource MessageErrorShadow}\"");
+        functionError.ShouldContain("Value=\"{DynamicResource MessageErrorForeground}\"");
         itemStyles.ShouldContain("MessageCard.semantic-function-style-demo:error");
 
         // root 表面定制必须落在 owner 的 StyledProperty 上（不是模板节点），这也是控件侧补透传的原因。
@@ -300,8 +301,10 @@ public class MessageShowCasePageTests
         return source[start..end];
     }
 
-    [Fact]
-    public void Message_Semantic_Style_Buttons_Pop_At_The_Window_Feedback_Layer()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Message_Semantic_Style_Buttons_Pop_At_The_Window_Feedback_Layer(bool useDarkTheme)
     {
         // 输出行为对齐上游 style-class 示例：消息弹在视口顶部浮层（AtomUI 的 WindowFeedbackLayer），
         // 而不是页面内的局部容器。同时锁定 object / function 两套样式真的作用到卡片。
@@ -319,6 +322,10 @@ public class MessageShowCasePageTests
 
             ShowInWindow(page, 1280, 900, () =>
             {
+                var window = TopLevel.GetTopLevel(page).ShouldNotBeNull();
+                window.RequestedThemeVariant = useDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
+                Dispatcher.UIThread.RunJobs();
+
                 ClickButton(page, Lang(MessageShowCaseLangResourceKind.P2ContentObjectStyle, "Object style"));
                 Dispatcher.UIThread.RunJobs();
 
@@ -327,11 +334,11 @@ public class MessageShowCasePageTests
                 var frame = card.GetVisualDescendants()
                                 .OfType<Border>()
                                 .Single(static border => border.Name == "PART_Frame");
-                                BrushColor(frame.Background).ShouldBe(Color.Parse("#F6FFED"));
-                BrushColor(frame.BorderBrush).ShouldBe(Color.Parse("#95DE64"));
+                BrushColor(frame.Background).ShouldBe(Color.Parse(useDarkTheme ? "#172819" : "#F6FFED"));
+                BrushColor(frame.BorderBrush).ShouldBe(Color.Parse(useDarkTheme ? "#52744A" : "#95DE64"));
                 frame.BorderThickness.ShouldBe(new Thickness(2));
                 frame.CornerRadius.ShouldBe(new CornerRadius(16));
-                frame.BoxShadow.ShouldBe(BoxShadows.Parse("4 4 0 #D9F7BE"));
+                frame.BoxShadow.ShouldBe(BoxShadows.Parse(useDarkTheme ? "4 4 0 #203B26" : "4 4 0 #D9F7BE"));
 
                 ClickButton(page, Lang(MessageShowCaseLangResourceKind.P2ContentFunctionStyle, "Function style"));
                 Dispatcher.UIThread.RunJobs();
@@ -341,9 +348,9 @@ public class MessageShowCasePageTests
                 var errorFrame = errorCard.GetVisualDescendants()
                                           .OfType<Border>()
                                           .Single(static border => border.Name == "PART_Frame");
-                BrushColor(errorFrame.Background).ShouldBe(Color.Parse("#FFF2F0"));
-                BrushColor(errorFrame.BorderBrush).ShouldBe(Color.Parse("#FFCCC7"));
-                errorFrame.BoxShadow.ShouldBe(BoxShadows.Parse("4 4 0 #FFCCC7"));
+                BrushColor(errorFrame.Background).ShouldBe(Color.Parse(useDarkTheme ? "#311C1E" : "#FFF2F0"));
+                BrushColor(errorFrame.BorderBrush).ShouldBe(Color.Parse(useDarkTheme ? "#995356" : "#FFCCC7"));
+                errorFrame.BoxShadow.ShouldBe(BoxShadows.Parse(useDarkTheme ? "4 4 0 #4D2325" : "4 4 0 #FFCCC7"));
             });
         }
         finally

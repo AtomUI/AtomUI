@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Reflection;
 using AtomUI.Controls.Data;
@@ -51,9 +52,9 @@ public class ListShowCasePageTests
         semanticSource.ShouldContain("ListShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|ListView.semantic-object\"");
         semanticSource.ShouldContain("Selector=\"atom|ListBox.semantic-listbox\"");
-        semanticSource.ShouldContain("Value=\"#91caff\"");
-        semanticSource.ShouldContain("Value=\"#1677ff\"");
-        semanticSource.ShouldContain("Value=\"#e6f4ff\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBorder}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("Property=\"FontStyle\"");
         semanticSource.ShouldContain("Property=\"Foreground\"");
         semanticSource.ShouldContain("Property=\"Background\"");
@@ -234,14 +235,14 @@ public class ListShowCasePageTests
                                    .OfType<AtomUIListView>()
                                    .Single(static candidate => candidate.Classes.Contains("semantic-object"));
             var listViewFrame = FindRootFrame(listViewDemo);
-            AssertSolidColor(listViewFrame.BorderBrush, "#91caff");
+            AssertSolidColor(listViewFrame.BorderBrush, SharedTokenKind.ColorInfoBorder);
             listViewFrame.BorderThickness.ShouldBe(new Thickness(1));
             listViewFrame.CornerRadius.ShouldBe(new CornerRadius(8));
             var groupHeader = listViewDemo.GetVisualDescendants()
                                           .OfType<AtomUIListViewItem>()
                                           .First(static candidate => candidate.Classes.Contains("semantic-group-header"));
-            AssertSolidColor(groupHeader.Foreground, "#1677ff");
-            AssertSolidColor(groupHeader.Background, "#e6f4ff");
+            AssertSolidColor(groupHeader.Foreground, SharedTokenKind.ColorText);
+            AssertSolidColor(groupHeader.Background, SharedTokenKind.ColorInfoBg);
             var listViewItems = listViewDemo.GetVisualDescendants()
                                             .OfType<AtomUIListViewItem>()
                                             .Where(static candidate => candidate.Classes.Contains("semantic-item"))
@@ -253,7 +254,7 @@ public class ListShowCasePageTests
                                   .OfType<AtomUIListBox>()
                                   .Single(static candidate => candidate.Classes.Contains("semantic-listbox"));
             var listBoxFrame = FindRootFrame(listBoxDemo);
-            AssertSolidColor(listBoxFrame.BorderBrush, "#91caff");
+            AssertSolidColor(listBoxFrame.BorderBrush, SharedTokenKind.ColorInfoBorder);
             listBoxFrame.BorderThickness.ShouldBe(new Thickness(1));
             listBoxFrame.CornerRadius.ShouldBe(new CornerRadius(8));
             var listBoxItems = listBoxDemo.GetVisualDescendants()
@@ -320,11 +321,18 @@ public class ListShowCasePageTests
         return ShowCaseSnapshotMarkup.Normalize(source);
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
+    }
+
+    private static void AssertSolidColor(IBrush? actual, SharedTokenKind expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(GetThemeColor(expected));
     }
 
     private static int CountOccurrences(string source, string value)

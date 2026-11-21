@@ -88,7 +88,7 @@
     </unit>
     <unit id="RapidSwitchDescription">
       <segment>
-        <source>Append a new image every 200 ms and track the latest one. Toggle the mode to compare Immediate loading-placeholder switching with WaitForLoaded hold-until-loaded switching.</source>
+        <source>The preview cycles through images automatically. Immediate shows a loading placeholder while the next image loads. Wait For Loaded keeps the current image visible until the next one is ready.</source>
       </segment>
     </unit>
     <unit id="RapidSwitchModeImmediate">

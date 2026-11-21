@@ -60,7 +60,9 @@ public class ModalShowCasePageTests
         // 只定制该宿主真实物化的部件（container/body/footer；mask/header/title/close 不存在）。
         styledWindow.ShouldContain("atom:DialogContainerStyle");
         styledWindow.ShouldContain("atom:DialogBodyStyle");
-        styledWindow.ShouldContain("atom:DialogFooterStyle");
+        CountOccurrences(styledWindow, "Value=\"{DynamicResource WindowDialogBackgroundBrush}\"").ShouldBe(2);
+        styledWindow.ShouldContain("Value=\"{DynamicResource WindowDialogTextBrush}\"");
+        AssertCenteredPaddingStyle(styledWindow, "DialogFooterStyle", "DialogTokenResource FooterPadding");
         styledWindow.ShouldNotContain("atom:DialogMaskStyle");
         styledWindow.ShouldNotContain("atom:DialogHeaderStyle");
         styledWindow.ShouldNotContain("atom:DialogTitleStyle");
@@ -86,10 +88,10 @@ public class ModalShowCasePageTests
         var semanticStylesItem = ExtractShowCaseItem(source, "SemanticStylesTitle");
         semanticStylesItem.ShouldContain("atom:DialogMaskStyle");
         semanticStylesItem.ShouldContain("atom:DialogContainerStyle");
-        semanticStylesItem.ShouldContain("atom:DialogHeaderStyle");
+        AssertCenteredPaddingStyle(semanticStylesItem, "DialogHeaderStyle");
         semanticStylesItem.ShouldContain("atom:DialogTitleStyle");
         semanticStylesItem.ShouldContain("atom:DialogBodyStyle");
-        semanticStylesItem.ShouldContain("atom:DialogFooterStyle");
+        AssertCenteredPaddingStyle(semanticStylesItem, "DialogFooterStyle", "DialogTokenResource FooterPadding");
         semanticStylesItem.ShouldContain("atom:DialogCloseStyle");
         // title 是 Avalonia TextBlock、close 是 Avalonia Button，x:SetterTargetType 不得带 atom: 前缀。
         semanticStylesItem.ShouldContain("x:SetterTargetType=\"TextBlock\"");
@@ -126,15 +128,28 @@ public class ModalShowCasePageTests
         item.ShouldContain("Style Selector=\"atom|MessageBox.messagebox-semantic-styles-demo\"");
         item.ShouldContain("atom:MessageBoxMaskStyle");
         item.ShouldContain("atom:MessageBoxContainerStyle");
-        item.ShouldContain("atom:MessageBoxHeaderStyle");
+        AssertCenteredPaddingStyle(item, "MessageBoxHeaderStyle");
         item.ShouldContain("atom:MessageBoxTitleStyle");
         item.ShouldContain("atom:MessageBoxBodyStyle");
-        item.ShouldContain("atom:MessageBoxFooterStyle");
+        AssertCenteredPaddingStyle(item, "MessageBoxFooterStyle", "MessageBoxTokenResource FooterPadding");
         item.ShouldContain("atom:MessageBoxCloseStyle");
 
         // 禁止以事件处理器为特征的代码回退。
         item.ShouldNotContain(".Loaded=");
         item.ShouldNotContain(".Unloaded=");
+    }
+
+    private static void AssertCenteredPaddingStyle(string example, string styleType, string? token = null)
+    {
+        var style = Regex.Match(example, $"<atom:{styleType}\\b[^>]*>(.*?)</atom:{styleType}>", RegexOptions.Singleline);
+        style.Success.ShouldBeTrue($"missing {styleType}");
+        var setters = style.Groups[1].Value;
+        setters.ShouldMatch(
+            """<Setter Property="Padding"\s+Value="\{CompiledBinding [^"]+ModalShowCase.CenterVerticalPadding\}\}"\s*/>""");
+        if (token is not null)
+        {
+            setters.ShouldContain($"Value=\"{{atom:{token}}}\"");
+        }
     }
 
     private static string ExtractModalExampleItems(string source)

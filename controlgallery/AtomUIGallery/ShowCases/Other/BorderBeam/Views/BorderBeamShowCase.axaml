@@ -53,13 +53,13 @@
                                           MinHeight="96">
                                         <atom:TextBlock Grid.Column="0"
                                                         Text="Users"
-                                                        Foreground="{atom:SharedTokenResource ColorTextTertiary}" />
+                                                        Foreground="{atom:SharedTokenResource ColorTextDescription}" />
                                         <atom:TextBlock Grid.Column="1"
                                                         Text="Projects"
-                                                        Foreground="{atom:SharedTokenResource ColorTextTertiary}" />
+                                                        Foreground="{atom:SharedTokenResource ColorTextDescription}" />
                                         <atom:TextBlock Grid.Column="2"
                                                         Text="Tasks"
-                                                        Foreground="{atom:SharedTokenResource ColorTextTertiary}" />
+                                                        Foreground="{atom:SharedTokenResource ColorTextDescription}" />
                                         <atom:TextBlock Grid.Row="1"
                                                         Grid.Column="0"
                                                         Text="128"

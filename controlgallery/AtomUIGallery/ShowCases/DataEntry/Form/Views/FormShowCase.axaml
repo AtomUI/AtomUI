@@ -1753,7 +1753,7 @@
                         </Style>
                         <Style Selector="atom|Form.semantic-object atom|FormItem">
                             <atom:FormItemLabelStyle x:SetterTargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#333333" />
+                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}" />
                                 <Setter Property="FontWeight" Value="Medium" />
                                 <Setter Property="TextAlignment" Value="Right" />
                             </atom:FormItemLabelStyle>

@@ -135,6 +135,34 @@ internal partial class PaginationNavItem : ContentControl, ISelectable
         set => SetValue(EllipsisIconBrushProperty, value);
     }
 
+    // The pager's item inputs: forwarded by the nav, or template-bound by the simple pager.
+    internal static readonly StyledProperty<double> ItemSizeProperty =
+        AbstractPagination.ItemSizeProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemActiveColorDisabledProperty =
+        AbstractPagination.ItemActiveColorDisabledProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
+        AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNavItem>();
+
+    internal double ItemSize
+    {
+        get => GetValue(ItemSizeProperty);
+        set => SetValue(ItemSizeProperty, value);
+    }
+
+    internal IBrush? ItemActiveColorDisabled
+    {
+        get => GetValue(ItemActiveColorDisabledProperty);
+        set => SetValue(ItemActiveColorDisabledProperty, value);
+    }
+
+    internal Thickness ItemPaddingInline
+    {
+        get => GetValue(ItemPaddingInlineProperty);
+        set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
     internal int PageNumber { get; set; } = -1;
 
     #endregion

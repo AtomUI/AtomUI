@@ -2,6 +2,7 @@ using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -135,6 +136,62 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
     {
         get => _isEffectiveVisible;
         set => SetAndRaise(IsEffectiveVisibleProperty, ref _isEffectiveVisible, value);
+    }
+
+    // Presentation inputs set from the terminal's own Tokens by its ControlTheme. They are read by the root template and
+    // passed to the nav items and the quick jumper explicitly, so they do not inherit through the whole pager tree.
+    internal static readonly StyledProperty<double> ItemSizeProperty =
+        AvaloniaProperty.Register<AbstractPagination, double>(nameof(ItemSize));
+
+    internal static readonly StyledProperty<IBrush?> ItemActiveColorDisabledProperty =
+        AvaloniaProperty.Register<AbstractPagination, IBrush?>(nameof(ItemActiveColorDisabled));
+
+    internal static readonly StyledProperty<double> LayoutSpacingProperty =
+        AvaloniaProperty.Register<AbstractPagination, double>(nameof(LayoutSpacing));
+
+    internal static readonly StyledProperty<double> QuickJumperSpacingProperty =
+        AvaloniaProperty.Register<AbstractPagination, double>(nameof(QuickJumperSpacing));
+
+    internal static readonly StyledProperty<double> QuickJumperInputWidthProperty =
+        AvaloniaProperty.Register<AbstractPagination, double>(nameof(QuickJumperInputWidth));
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
+        AvaloniaProperty.Register<AbstractPagination, Thickness>(nameof(ItemPaddingInline));
+
+    internal double ItemSize
+    {
+        get => GetValue(ItemSizeProperty);
+        set => SetValue(ItemSizeProperty, value);
+    }
+
+    internal IBrush? ItemActiveColorDisabled
+    {
+        get => GetValue(ItemActiveColorDisabledProperty);
+        set => SetValue(ItemActiveColorDisabledProperty, value);
+    }
+
+    internal double LayoutSpacing
+    {
+        get => GetValue(LayoutSpacingProperty);
+        set => SetValue(LayoutSpacingProperty, value);
+    }
+
+    internal double QuickJumperSpacing
+    {
+        get => GetValue(QuickJumperSpacingProperty);
+        set => SetValue(QuickJumperSpacingProperty, value);
+    }
+
+    internal double QuickJumperInputWidth
+    {
+        get => GetValue(QuickJumperInputWidthProperty);
+        set => SetValue(QuickJumperInputWidthProperty, value);
+    }
+
+    internal Thickness ItemPaddingInline
+    {
+        get => GetValue(ItemPaddingInlineProperty);
+        set => SetValue(ItemPaddingInlineProperty, value);
     }
 
     #endregion

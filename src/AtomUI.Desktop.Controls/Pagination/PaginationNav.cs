@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -45,6 +46,34 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
+    }
+
+    // The pager's item inputs, template-bound from the pager and forwarded to each item.
+    internal static readonly StyledProperty<double> ItemSizeProperty =
+        AbstractPagination.ItemSizeProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemActiveColorDisabledProperty =
+        AbstractPagination.ItemActiveColorDisabledProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
+        AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNav>();
+
+    internal double ItemSize
+    {
+        get => GetValue(ItemSizeProperty);
+        set => SetValue(ItemSizeProperty, value);
+    }
+
+    internal IBrush? ItemActiveColorDisabled
+    {
+        get => GetValue(ItemActiveColorDisabledProperty);
+        set => SetValue(ItemActiveColorDisabledProperty, value);
+    }
+
+    internal Thickness ItemPaddingInline
+    {
+        get => GetValue(ItemPaddingInlineProperty);
+        set => SetValue(ItemPaddingInlineProperty, value);
     }
 
     #endregion
@@ -94,6 +123,9 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
         {
             navItem[!PaginationNavItem.SizeTypeProperty]        = this[!SizeTypeProperty];
             navItem[!PaginationNavItem.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            navItem[!PaginationNavItem.ItemSizeProperty]        = this[!ItemSizeProperty];
+            navItem[!PaginationNavItem.ItemActiveColorDisabledProperty] = this[!ItemActiveColorDisabledProperty];
+            navItem[!PaginationNavItem.ItemPaddingInlineProperty]       = this[!ItemPaddingInlineProperty];
             navItem.Click -= HandleNavItemClicked;
             navItem.Click += HandleNavItemClicked;
         }

@@ -61,6 +61,29 @@ internal class QuickJumperBar : TemplatedControl
     public event EventHandler<QuickJumpArgs>? JumpRequest;
 
     #endregion
+
+    #region 内部属性定义
+
+    // The pager's quick jumper inputs, bound by the pager that creates the bar.
+    internal static readonly StyledProperty<double> QuickJumperSpacingProperty =
+        AbstractPagination.QuickJumperSpacingProperty.AddOwner<QuickJumperBar>();
+
+    internal static readonly StyledProperty<double> QuickJumperInputWidthProperty =
+        AbstractPagination.QuickJumperInputWidthProperty.AddOwner<QuickJumperBar>();
+
+    internal double QuickJumperSpacing
+    {
+        get => GetValue(QuickJumperSpacingProperty);
+        set => SetValue(QuickJumperSpacingProperty, value);
+    }
+
+    internal double QuickJumperInputWidth
+    {
+        get => GetValue(QuickJumperInputWidthProperty);
+        set => SetValue(QuickJumperInputWidthProperty, value);
+    }
+
+    #endregion
     
     private LineEdit? _lineEdit;
     

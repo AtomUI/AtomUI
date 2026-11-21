@@ -315,11 +315,15 @@ public class CollapseBehaviorTests
 
             GetHeaderDecorator(firstItem).CornerRadius.ShouldBe(new CornerRadius(8, 8, 0, 0));
             GetHeaderDecorator(middleItem).CornerRadius.ShouldBe(default(CornerRadius));
-            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
+            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(default(CornerRadius));
 
             GetContentFrame(firstItem).CornerRadius.ShouldBe(default(CornerRadius));
             GetContentFrame(middleItem).CornerRadius.ShouldBe(default(CornerRadius));
             GetContentFrame(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
+
+            lastItem.IsSelected = false;
+            Dispatcher.UIThread.RunJobs();
+            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
         }
         finally
         {
@@ -328,7 +332,7 @@ public class CollapseBehaviorTests
     }
 
     [Fact]
-    public void Single_Item_Header_Receives_All_Owner_Corner_Radii()
+    public void Single_Item_Header_Rounds_Bottom_Only_When_Collapsed()
     {
         var item = new AtomUICollapseItem
         {
@@ -357,8 +361,12 @@ public class CollapseBehaviorTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            GetHeaderDecorator(item).CornerRadius.ShouldBe(new CornerRadius(8, 8, 8, 8));
+            GetHeaderDecorator(item).CornerRadius.ShouldBe(new CornerRadius(8, 8, 0, 0));
             GetContentFrame(item).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
+
+            item.IsSelected = false;
+            Dispatcher.UIThread.RunJobs();
+            GetHeaderDecorator(item).CornerRadius.ShouldBe(new CornerRadius(8));
         }
         finally
         {
@@ -402,12 +410,16 @@ public class CollapseBehaviorTests
             window.Show();
             Dispatcher.UIThread.RunJobs();
 
-            collapse.CornerRadius = new CornerRadius(12);
+            collapse.CornerRadius = new CornerRadius(12, 10, 16, 6);
             Dispatcher.UIThread.RunJobs();
 
-            GetHeaderDecorator(firstItem).CornerRadius.ShouldBe(new CornerRadius(12, 12, 0, 0));
-            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 12, 12));
-            GetContentFrame(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 12, 12));
+            GetHeaderDecorator(firstItem).CornerRadius.ShouldBe(new CornerRadius(12, 10, 0, 0));
+            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(default(CornerRadius));
+            GetContentFrame(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 16, 6));
+
+            lastItem.IsSelected = false;
+            Dispatcher.UIThread.RunJobs();
+            GetHeaderDecorator(lastItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 16, 6));
         }
         finally
         {
@@ -462,8 +474,12 @@ public class CollapseBehaviorTests
 
             GetHeaderDecorator(firstItem).CornerRadius.ShouldBe(default(CornerRadius));
             GetHeaderDecorator(secondItem).CornerRadius.ShouldBe(default(CornerRadius));
-            GetHeaderDecorator(thirdItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
+            GetHeaderDecorator(thirdItem).CornerRadius.ShouldBe(default(CornerRadius));
             GetContentFrame(thirdItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
+
+            thirdItem.IsSelected = false;
+            Dispatcher.UIThread.RunJobs();
+            GetHeaderDecorator(thirdItem).CornerRadius.ShouldBe(new CornerRadius(0, 0, 8, 8));
         }
         finally
         {

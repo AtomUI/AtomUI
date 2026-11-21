@@ -4,7 +4,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -360,9 +359,8 @@ public partial class Collapse : AbstractCollapse, IMotionAwareControl
             : default;
     }
 
-    // Mirrors antd's collapse style rules: the first item's header carries the top
-    // corners, the last item's header and content carry the bottom corners, so their
-    // backgrounds follow the container's rounded border instead of covering it.
+    // The first header carries the top corners. The last item supplies the bottom
+    // corners to its content and to the header when the content is hidden.
     private void ConfigureItemCorners(CollapseItem collapseItem, int index)
     {
         var radius  = CornerRadius;
@@ -372,10 +370,10 @@ public partial class Collapse : AbstractCollapse, IMotionAwareControl
         collapseItem.HeaderCornerRadius = new CornerRadius(
             isFirst ? radius.TopLeft : 0,
             isFirst ? radius.TopRight : 0,
-            isLast ? radius.BottomLeft : 0,
-            isLast ? radius.BottomRight : 0);
+            isLast ? radius.BottomRight : 0,
+            isLast ? radius.BottomLeft : 0);
         collapseItem.ContentCornerRadius = isLast
-            ? new CornerRadius(0, 0, radius.BottomLeft, radius.BottomRight)
+            ? new CornerRadius(0, 0, radius.BottomRight, radius.BottomLeft)
             : default;
     }
 

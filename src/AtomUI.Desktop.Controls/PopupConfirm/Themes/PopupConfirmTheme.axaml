@@ -18,6 +18,7 @@
         <Setter Property="CancelText" Value="{atom:CommonLangResource Cancel}"/>
         <!-- An arrow flyout like the Popover: its gap and shadows come from the FlyoutHost tokens. -->
         <Setter Property="MarginToAnchor" Value="{atom:FlyoutHostTokenResource MarginToAnchor}"/>
+        <Setter Property="IsPointAtCenter" Value="True"/>
         <Setter Property="MotionDuration" Value="{atom:PopupConfirmTokenResource MotionDurationMid}"/>
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.PopoverClose}" />

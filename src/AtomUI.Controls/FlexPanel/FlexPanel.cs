@@ -77,6 +77,13 @@ public sealed class FlexPanel : Panel
         AffectsParentMeasure<FlexPanel>(
             HorizontalAlignmentProperty,
             VerticalAlignmentProperty,
+            WidthProperty,
+            HeightProperty,
+            MinWidthProperty,
+            MinHeightProperty,
+            MaxWidthProperty,
+            MaxHeightProperty,
+            MarginProperty,
             Flex.OrderProperty,
             Flex.BasisProperty,
             Flex.ShrinkProperty,
@@ -256,7 +263,10 @@ public sealed class FlexPanel : Panel
                 foreach (var element in lineItems)
                 {
                     var length = Flex.GetCurrentLength(element);
-                    element.Measure(Uv.ToSize(max.WithU(length), isColumn));
+                    if (Math.Abs(length - Flex.GetBaseLength(element)) > 1e-4)
+                    {
+                        element.Measure(Uv.ToSize(max.WithU(length), isColumn));
+                    }
                 }
 
                 flexLine.V = lineItems.Max(i => Uv.FromSize(i.DesiredSize, isColumn).V);

@@ -17,6 +17,9 @@ public sealed class FlexPanel : Panel
     private static readonly Func<Layoutable, int> s_getOrder = x => x is { } y ? Flex.GetOrder(y) : 0;
     private static readonly Func<Layoutable, bool> s_isVisible = x => x.IsVisible;
 
+    // Tolerance for treating a resolved flex length as unchanged from the item's base length.
+    private const double FlexLengthTolerance = 1e-4;
+
     /// <summary>
     /// Defines the <see cref="Direction"/> property.
     /// </summary>
@@ -74,6 +77,8 @@ public sealed class FlexPanel : Panel
             AlignItemsProperty,
             AlignContentProperty);
 
+        // Size properties are listed explicitly: a child measured against its flexed length keeps the same clamped
+        // DesiredSize when they change, so the regular desired-size propagation would not reach this panel.
         AffectsParentMeasure<FlexPanel>(
             HorizontalAlignmentProperty,
             VerticalAlignmentProperty,
@@ -263,7 +268,10 @@ public sealed class FlexPanel : Panel
                 foreach (var element in lineItems)
                 {
                     var length = Flex.GetCurrentLength(element);
-                    if (Math.Abs(length - Flex.GetBaseLength(element)) > 1e-4)
+                    // Only remeasure items whose length was actually flexed. Avalonia clamps DesiredSize to the last
+                    // measure constraint, so constraining an unflexed item to its own base length would hide later
+                    // growth of its content from this panel and leave the cached layout stale.
+                    if (Math.Abs(length - Flex.GetBaseLength(element)) > FlexLengthTolerance)
                     {
                         element.Measure(Uv.ToSize(max.WithU(length), isColumn));
                     }

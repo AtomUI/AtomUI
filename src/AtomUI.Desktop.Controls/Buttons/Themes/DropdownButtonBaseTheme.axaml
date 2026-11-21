@@ -2,6 +2,7 @@
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
+              xmlns:documents="using:Avalonia.Controls.Documents"
               x:Class="AtomUI.Desktop.Controls.Themes.DropdownButtonBaseTheme"
               TargetType="atom:DropdownButton">
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
@@ -317,7 +318,7 @@
 
 
 
-        <Style Selector="^:disabled">
+        <Style Selector="^:disabled[UsesThemeRecipe=False]">
             <Setter Property="Foreground"
                     Value="{atom:DropdownButtonTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
@@ -326,10 +327,13 @@
             <Setter Property="Background"
                     Value="{atom:DropdownButtonTokenResource ColorBgContainerDisabled}" />
         </Style>
+        <Style Selector="^:disabled[UsesThemeRecipe=True]">
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonThemeInputs.DisabledOpacity}" />
+        </Style>
         <!-- 公用样式结束 -->
 
         <!-- Color / Variant 视觉变量开始 -->
-        <Style Selector="^:not(:disabled)">
+        <Style Selector="^:not(:disabled), ^[UsesThemeRecipe=True]">
             <Setter Property="Foreground"
                     Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Background"
@@ -337,7 +341,7 @@
             <Setter Property="BorderBrush"
                     Value="{Binding VariantAppearance.Border, RelativeSource={RelativeSource Self}}" />
 
-            <Style Selector="^:pointerover">
+            <Style Selector="^:pointerover:not(:disabled)">
                 <Setter Property="Foreground"
                         Value="{Binding VariantAppearance.TextHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
@@ -346,7 +350,7 @@
                         Value="{Binding VariantAppearance.BorderHover, RelativeSource={RelativeSource Self}}" />
             </Style>
 
-            <Style Selector="^:pressed">
+            <Style Selector="^:pressed[UsesThemeRecipe=False]">
                 <Setter Property="Foreground"
                         Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
@@ -354,11 +358,39 @@
                 <Setter Property="BorderBrush"
                         Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
             </Style>
+            <Style Selector="^[UsesThemeRecipe=True]:pressed:not(:disabled)">
+                <Style Selector="^:pressed-text">
+                    <Setter Property="Foreground" Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
+                <Style Selector="^:pressed-background">
+                    <Setter Property="Background" Value="{Binding VariantAppearance.BackgroundPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
+                <Style Selector="^:pressed-border">
+                    <Setter Property="BorderBrush" Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
+            </Style>
         </Style>
 
-        <Style Selector="^[EffectiveVariant=Text]:disabled, ^[EffectiveVariant=Link]:disabled">
+        <Style Selector="^[EffectiveVariant=Text]:disabled[UsesThemeRecipe=False], ^[EffectiveVariant=Link]:disabled[UsesThemeRecipe=False]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+
+        <Style Selector="^[UsesThemeRecipe=True][EffectiveVariant=Link]:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter, ^[EffectiveVariant=Link]:link-underlined /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="documents:Inline.TextDecorations" Value="{x:Static atom:ButtonThemeInputs.LinkUnderline}" />
+        </Style>
+
+        <Style Selector="^[UsesThemeRecipe=True][EffectiveColor=Default]:not(:disabled)">
+            <Style Selector="^:flyout-open, ^[IsExternalPopupOpen=True]">
+                <Style Selector="^[EffectiveVariant=Outlined], ^[EffectiveVariant=Text]">
+                    <Setter Property="Foreground" Value="{atom:DropdownButtonTokenResource ColorText}" />
+                    <Setter Property="Background" Value="{atom:DropdownButtonTokenResource ColorFillContent}" />
+                </Style>
+                <Style Selector="^[EffectiveVariant=Filled]">
+                    <Setter Property="Foreground" Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
+                    <Setter Property="Background" Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
+                </Style>
+            </Style>
         </Style>
 
         <Style Selector="^ /template/ Border#ShadowsFrame">

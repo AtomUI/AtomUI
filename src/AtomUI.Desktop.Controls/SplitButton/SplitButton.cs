@@ -4,7 +4,11 @@ using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
+using AtomUI.Theme.Compilation;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -275,6 +279,9 @@ public partial class SplitButton : ContentControl,
     internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty = 
         AvaloniaProperty.Register<SplitButton, IBrush?>(nameof (SplitSeparatorBrush));
 
+    internal static readonly StyledProperty<bool> UseInsetSeparatorProperty =
+        AvaloniaProperty.Register<SplitButton, bool>(nameof(UseInsetSeparator));
+
     internal static readonly DirectProperty<SplitButton, ButtonType> EffectiveButtonTypeProperty =
         AvaloniaProperty.RegisterDirect<SplitButton, ButtonType>(nameof(EffectiveButtonType),
             o => o.EffectiveButtonType,
@@ -294,6 +301,8 @@ public partial class SplitButton : ContentControl,
         get => GetValue(SplitSeparatorBrushProperty);
         set => SetValue(SplitSeparatorBrushProperty, value);
     }
+
+    internal bool UseInsetSeparator => GetValue(UseInsetSeparatorProperty);
 
     private ButtonType _effectiveButtonType;
 
@@ -328,7 +337,10 @@ public partial class SplitButton : ContentControl,
     /// 不允许改动次按钮几何（曾用左移覆盖实现，导致 hover 位移与边缘闪烁的体验回归）。
     /// </summary>
     internal bool IsSeparatorVisible =>
-        IsPrimaryButtonType && _secondaryButton is not null && !_isPointerOverSecondaryButton;
+        IsPrimaryButtonType && _secondaryButton is not null &&
+        (UseInsetSeparator
+            ? SplitSeparatorBrush is not (null or ISolidColorBrush { Color.A: 0 })
+            : !_isPointerOverSecondaryButton);
 
     #endregion
     
@@ -346,6 +358,8 @@ public partial class SplitButton : ContentControl,
     private CompositeDisposable? _flyoutBindingDisposables;
     private int _pinnedOpenGeneration;
     private Flyout? _registeredFlyout;
+    private IDisposable? _themeSubscription;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     static SplitButton()
     {
@@ -354,8 +368,8 @@ public partial class SplitButton : ContentControl,
         HorizontalAlignmentProperty.OverrideDefaultValue<SplitButton>(HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<SplitButton>(VerticalAlignment.Top);
         AffectsMeasure<SplitButton>(SizeTypeProperty);
-        AffectsArrange<SplitButton>(IsPrimaryButtonTypeProperty, BorderThicknessProperty, UseLayoutRoundingProperty);
-        AffectsRender<SplitButton>(IsPrimaryButtonTypeProperty, IsDangerProperty, SplitSeparatorBrushProperty);
+        AffectsArrange<SplitButton>(IsPrimaryButtonTypeProperty, BorderThicknessProperty, UseLayoutRoundingProperty, UseInsetSeparatorProperty);
+        AffectsRender<SplitButton>(IsPrimaryButtonTypeProperty, IsDangerProperty, SplitSeparatorBrushProperty, UseInsetSeparatorProperty);
     }
 
     public SplitButton()
@@ -546,7 +560,7 @@ public partial class SplitButton : ContentControl,
         _primaryButton                  = e.NameScope.Find<Button>("PART_PrimaryButton");
         _secondaryButton                = e.NameScope.Find<Button>("PART_SecondaryButton");
         _flyoutStateHelper.AnchorTarget = _secondaryButton;
-        ConfigureButtonCornerRadius();
+        ConfigureButtonCornerRadius(Bounds.Height);
         ConfigureButtonCustomSizeOverrides();
         if (_primaryButton != null)
         {
@@ -582,6 +596,8 @@ public partial class SplitButton : ContentControl,
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, ConfigureSeparator);
+        ConfigureSeparator(ThemeScope.ResolveContext(this)?.Snapshot);
         
         // Control attached again, set Hotkey to create a hotkey manager for this control
         SetCurrentValue(HotKeyProperty, _hotkey);
@@ -595,6 +611,9 @@ public partial class SplitButton : ContentControl,
     
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+        ClearValue(UseInsetSeparatorProperty);
         base.OnDetachedFromLogicalTree(e);
 
         // This will cause the hotkey manager to dispose the observer and the reference to this control
@@ -662,10 +681,11 @@ public partial class SplitButton : ContentControl,
         }
 
         if (change.Property == CornerRadiusProperty ||
+            change.Property == UseInsetSeparatorProperty ||
             change.Property == CompactSpaceItemPositionProperty ||
             change.Property == CompactSpaceOrientationProperty)
         {
-            ConfigureButtonCornerRadius();
+            ConfigureButtonCornerRadius(Bounds.Height);
         }
 
         if (ShouldConfigureCustomSizeOverrides(change.Property))
@@ -688,14 +708,31 @@ public partial class SplitButton : ContentControl,
         }
     }
 
-    private void ConfigureButtonCornerRadius()
+    private void ConfigureSeparator(ThemeSnapshot? snapshot)
+    {
+        SetValue(UseInsetSeparatorProperty, snapshot is not null &&
+            snapshot.Registry.TryGetControl(SplitButtonTokens.Identity, out var descriptor) &&
+            snapshot.Controls[descriptor.Slot].AppearanceSettings is true);
+    }
+
+    private void ConfigureButtonCornerRadius(double height)
     {
         var effectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
             CornerRadius, 
             IsUsedInCompactSpace, 
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
-        
+
+        if (UseInsetSeparator && height > 0)
+        {
+            var cap = height / 2;
+            effectiveCornerRadius = new CornerRadius(
+                Math.Min(effectiveCornerRadius.TopLeft, cap),
+                Math.Min(effectiveCornerRadius.TopRight, cap),
+                Math.Min(effectiveCornerRadius.BottomRight, cap),
+                Math.Min(effectiveCornerRadius.BottomLeft, cap));
+        }
+
         var primaryButtonCornerRadius = new CornerRadius(effectiveCornerRadius.TopLeft,
             0,
             0,
@@ -984,6 +1021,16 @@ public partial class SplitButton : ContentControl,
     {
         var size = base.ArrangeOverride(finalSize);
 
+        if (UseInsetSeparator)
+        {
+            ConfigureButtonCornerRadius(size.Height);
+            if (IsPrimaryButtonType)
+            {
+                // The template already reserves the width for the visible separator.
+                return size;
+            }
+        }
+
         if (_primaryButton is not null && _secondaryButton is not null)
         {
             var originRect = _secondaryButton.Bounds;
@@ -1026,7 +1073,7 @@ public partial class SplitButton : ContentControl,
 
     public override void Render(DrawingContext context)
     {
-        if (IsPrimaryButtonType && _secondaryButton is not null)
+        if (!UseInsetSeparator && IsPrimaryButtonType && _secondaryButton is not null)
         {
             var cornerRadius = (float)CornerRadius.TopLeft;
             if (SplitSeparatorBrush is { } separatorBrush)

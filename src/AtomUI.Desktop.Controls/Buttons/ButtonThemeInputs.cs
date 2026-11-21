@@ -7,6 +7,18 @@ internal sealed class ButtonThemeInputs
 {
     private ButtonThemeInputs() { }
 
+    public const double DisabledOpacity = 0.5;
+
+    public static readonly TextDecorationCollection LinkUnderline =
+    [
+        new TextDecoration
+        {
+            Location = TextDecorationLocation.Underline,
+            StrokeOffset = 4,
+            StrokeOffsetUnit = TextDecorationUnit.Pixel
+        }
+    ];
+
     public static readonly AttachedProperty<IBrush?> ThemeBorderColorDisabledProperty =
         AvaloniaProperty.RegisterAttached<ButtonThemeInputs, StyledElement, IBrush?>("ThemeBorderColorDisabled", inherits: true);
     public static IBrush? GetThemeBorderColorDisabled(StyledElement element) => element.GetValue(ThemeBorderColorDisabledProperty);

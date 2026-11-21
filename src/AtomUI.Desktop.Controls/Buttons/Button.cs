@@ -222,6 +222,15 @@ public partial class Button : AbstractButton,
     
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<Button>();
+
+    internal static readonly DirectProperty<Button, bool> UsesThemeRecipeProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UsesThemeRecipe), button => button.UsesThemeRecipe);
+
+    internal static readonly StyledProperty<bool> IsExternalPopupTriggerProperty =
+        AvaloniaProperty.Register<Button, bool>(nameof(IsExternalPopupTrigger));
+
+    internal static readonly StyledProperty<bool> IsExternalPopupOpenProperty =
+        AvaloniaProperty.Register<Button, bool>(nameof(IsExternalPopupOpen));
     
     internal bool IsIconVisible
     {
@@ -282,7 +291,16 @@ public partial class Button : AbstractButton,
     internal ButtonVariantAppearance VariantAppearance
     {
         get => _variantAppearance;
-        private set => SetAndRaise(VariantAppearanceProperty, ref _variantAppearance, value);
+        private set
+        {
+            SetAndRaise(VariantAppearanceProperty, ref _variantAppearance, value);
+            if (UsesThemeRecipe)
+            {
+                PseudoClasses.Set(":pressed-text", value.TextPressed is not null);
+                PseudoClasses.Set(":pressed-background", value.BackgroundPressed is not null);
+                PseudoClasses.Set(":pressed-border", value.BorderPressed is not null);
+            }
+        }
     }
 
     internal WaveSpiritType WaveSpiritType
@@ -324,6 +342,26 @@ public partial class Button : AbstractButton,
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
         set => SetValue(IsUsedInCompactSpaceProperty, value);
+    }
+
+    private bool _usesThemeRecipe;
+
+    internal bool UsesThemeRecipe
+    {
+        get => _usesThemeRecipe;
+        private set => SetAndRaise(UsesThemeRecipeProperty, ref _usesThemeRecipe, value);
+    }
+
+    internal bool IsExternalPopupTrigger
+    {
+        get => GetValue(IsExternalPopupTriggerProperty);
+        set => SetValue(IsExternalPopupTriggerProperty, value);
+    }
+
+    internal bool IsExternalPopupOpen
+    {
+        get => GetValue(IsExternalPopupOpenProperty);
+        set => SetValue(IsExternalPopupOpenProperty, value);
     }
     
     #endregion
@@ -423,8 +461,8 @@ public partial class Button : AbstractButton,
         _themeScopeSubscription?.Dispose();
         _themeScopeSubscription = s_themeTokenResolver.Subscribe(
             this,
-            _ => ConfigureVariantThemeVariables());
-        ConfigureVariantThemeVariables();
+            _ => ConfigureThemeAppearance());
+        ConfigureThemeAppearance();
     }
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -490,6 +528,11 @@ public partial class Button : AbstractButton,
             HandlePressedChanged(change);
         }
 
+        if (change.Property == FlyoutProperty)
+        {
+            PseudoClasses.Set(":popup-trigger", Flyout is not null);
+        }
+
         if (change.Property == ButtonTypeProperty ||
             change.Property == ShapeProperty)
         {
@@ -515,6 +558,15 @@ public partial class Button : AbstractButton,
         {
             ConfigureEffectiveCornerRadius();
         }
+    }
+
+    private void ConfigureThemeAppearance()
+    {
+        var recipe = ButtonThemeRecipe.Get(this);
+        _themeRecipe = recipe;
+        UsesThemeRecipe = recipe is not null;
+        PseudoClasses.Set(":link-underlined", recipe?.UnderlineLinkAtRest == true);
+        ConfigureVariantThemeVariables();
     }
 
     private void HandlePressedChanged(AvaloniaPropertyChangedEventArgs change)

@@ -6,7 +6,7 @@
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
         <Setter Property="Template">
-            <ControlTemplate>
+            <ControlTemplate TargetType="atom:SplitButton">
                 <DockPanel Name="PART_MainLayout"
                            LastChildFill="True">
                     <atom:Button Name="PART_SecondaryButton"
@@ -17,12 +17,22 @@
                                  Padding="{TemplateBinding Padding}"
                                  SizeType="{TemplateBinding SizeType}"
                                  Icon="{TemplateBinding OpenIndicator}"
+                                 IsExternalPopupTrigger="True"
                                  IsEnabled="{TemplateBinding IsEnabled}"
                                  IsDanger="{TemplateBinding IsDanger}"
                                  ButtonType="{TemplateBinding EffectiveButtonType}"
                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
-                    <atom:Button Name="PART_PrimaryButton"
+                    <Border Name="PART_SeparatorSpace"
+                            DockPanel.Dock="Right"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            Background="{CompiledBinding Background, ElementName=PART_PrimaryButton}">
+                        <!-- layout: shadcn ButtonGroupSeparator is inset by 1 DIP above and below. -->
+                        <Border Margin="0,1,0,1"
+                                Background="{TemplateBinding SplitSeparatorBrush}" />
+                    </Border>
+                    <atom:Button x:Name="PART_PrimaryButton"
                                  Classes.semantic-primary="True"
                                  Content="{TemplateBinding Content}"
                                  ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -59,6 +69,22 @@
             <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource DangerSeparatorColor}"/>
         </Style>
 
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True] /template/ Border#PART_SeparatorSpace">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Width" Value="{CompiledBinding $parent[atom:SplitButton].BorderThickness.Left}" />
+        </Style>
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True]:disabled /template/ Border#PART_SeparatorSpace">
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonThemeInputs.DisabledOpacity}" />
+        </Style>
+
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True][IsDanger=True] /template/ atom|Button">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        </Style>
+
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True]:flyout-open /template/ atom|Button#PART_SecondaryButton">
+            <Setter Property="Background" Value="{Binding VariantAppearance.BackgroundHover, RelativeSource={RelativeSource Self}}" />
+        </Style>
+
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CornerRadius" Value="{atom:SplitButtonTokenResource BorderRadiusLG}"/>
         </Style>
@@ -82,6 +108,9 @@
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button#PART_SecondaryButton">
             <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="1001"/>
+        </Style>
+        <Style Selector="^:flyout-open /template/ atom|Button#PART_SecondaryButton">
+            <Setter Property="IsExternalPopupOpen" Value="True" />
         </Style>
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button:pointerover">
             <!-- layout: stacking order of the two Buttons -->

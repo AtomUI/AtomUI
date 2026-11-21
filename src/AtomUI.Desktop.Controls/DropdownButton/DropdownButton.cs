@@ -294,6 +294,8 @@ public partial class DropdownButton : Button
             }
             menuFlyout.MenuItemClicked += HandleMenuItemClicked;
             menuFlyout.Opening += HandleMenuFlyoutOpening;
+            menuFlyout.Opened += HandleMenuFlyoutOpened;
+            menuFlyout.Closed += HandleMenuFlyoutClosed;
             Bind(() => BindUtils.RelayBind(this, OpenMotionProperty, menuFlyout, AtomUI.Desktop.Controls.Flyout.OpenMotionProperty));
             Bind(() => BindUtils.RelayBind(this, CloseMotionProperty, menuFlyout, AtomUI.Desktop.Controls.Flyout.CloseMotionProperty));
             Bind(() => BindUtils.RelayBind(this, PlacementProperty, menuFlyout, FlyoutControl.RequestedPlacementProperty));
@@ -336,9 +338,12 @@ public partial class DropdownButton : Button
         }
         menuFlyout.MenuItemClicked -= HandleMenuItemClicked;
         menuFlyout.Opening -= HandleMenuFlyoutOpening;
+        menuFlyout.Opened -= HandleMenuFlyoutOpened;
+        menuFlyout.Closed -= HandleMenuFlyoutClosed;
         ++_pinnedOpenGeneration;
         var registration = _flyoutBindingDisposables!;
         _registeredDropdownFlyout = null;
+        SetCurrentValue(IsExternalPopupOpenProperty, false);
         try
         {
             registration.Dispose();
@@ -369,6 +374,19 @@ public partial class DropdownButton : Button
         }
 
         popupChild.MinWidth = Bounds.Width;
+    }
+
+    private void HandleMenuFlyoutOpened(object? sender, EventArgs e)
+    {
+        if (sender is MenuFlyout menuFlyout && ReferenceEquals(menuFlyout.Target, this))
+        {
+            SetCurrentValue(IsExternalPopupOpenProperty, true);
+        }
+    }
+
+    private void HandleMenuFlyoutClosed(object? sender, EventArgs e)
+    {
+        SetCurrentValue(IsExternalPopupOpenProperty, false);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

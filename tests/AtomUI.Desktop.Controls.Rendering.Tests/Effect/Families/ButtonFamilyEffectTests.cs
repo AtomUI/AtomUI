@@ -1,11 +1,14 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
 using AtomUI.Theme.Schema;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
+using Shouldly;
 using Xunit;
 using AtomButton = AtomUI.Desktop.Controls.Button;
 
@@ -25,9 +28,10 @@ public partial class ButtonFamilyEffectTests
 
     [Theory]
     [MemberData(nameof(ButtonRows))]
-    public void Button_Token_Has_Effect(string token, bool isOwn)
+    public async Task Button_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
+        await ApplyThemeForRecipeToken(token);
         Run(ButtonSetup(token, static () => new AtomButton { Content = "Button" }, isDropdown: false),
             ButtonTokens.Identity, token);
     }
@@ -71,7 +75,7 @@ public partial class ButtonFamilyEffectTests
 
     [Theory]
     [MemberData(nameof(DropdownButtonRows))]
-    public void DropdownButton_Token_Has_Effect(string token, bool isOwn)
+    public async Task DropdownButton_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
         if (token is "MarginToAnchor" or "UniformlyMarginXXS")
@@ -80,6 +84,7 @@ public partial class ButtonFamilyEffectTests
             return;
         }
 
+        await ApplyThemeForRecipeToken(token);
         Run(ButtonSetup(token, static () => new DropdownButton { Content = "Dropdown" }, isDropdown: true),
             DropdownButtonTokens.Identity, token);
     }
@@ -156,6 +161,22 @@ public partial class ButtonFamilyEffectTests
 
     internal sealed record EffectSetup(Func<Control> Create, Action<Control>? Arrange = null, EffectOptions? Options = null);
 
+    private static async Task ApplyThemeForRecipeToken(string token)
+    {
+        if (token is "ColorFillContent" or "ControlItemColorActive")
+        {
+            await ApplyShadcnRecipeTheme();
+        }
+    }
+
+    private static async Task ApplyShadcnRecipeTheme()
+    {
+        var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
+        var result = await manager.ApplyThemeAsync(new ThemeRequest("ShadcnLuma", null, ThemeTransitionReason.UserRequest),
+            TestContext.Current.CancellationToken);
+        result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);
+    }
+
     private static void Run(EffectSetup setup, ControlTokenIdentity identity, string token)
     {
         TokenEffectHarness.AssertHasEffect(
@@ -227,6 +248,10 @@ public partial class ButtonFamilyEffectTests
         var size = SizeOf(token);
         switch (token)
         {
+            case "ColorFillContent":
+                return new(With(b => Variant(b, ButtonColor.Default, ButtonVariant.Outlined)), Pseudo(StdPseudoClass.FlyoutOpen));
+            case "ControlItemColorActive":
+                return new(With(b => Variant(b, ButtonColor.Default, ButtonVariant.Filled)));
             // Sizes
             case "ContentFontSizeLG" or "ContentFontSizeSM" or "ContentPaddingLG" or "ContentPaddingSM"
                 or "ControlHeightLG" or "ControlHeightSM" or "FontSizeLG" or "BorderRadiusLG" or "BorderRadiusSM"

@@ -29,25 +29,35 @@ public partial class Button
     private static readonly IBrush TransparentBrush = new ImmutableSolidColorBrush(Colors.Transparent);
     private static readonly VariantValue TransparentVariant = new(TransparentBrush, false);
     private static readonly VariantValue NoShadowVariant = new(new BoxShadows(), false);
+    private static readonly VariantValue NoPressedPaint = new(AvaloniaProperty.UnsetValue, false);
 
     // Theme reads happen on the UI thread only.
     private static readonly Dictionary<(ControlTokenIdentity Identity, ButtonTokenKind Kind), object> s_ownVariantKeys = new();
+    private static readonly Dictionary<(ControlTokenIdentity Identity, ButtonTokenKind Kind, SharedTokenKind? Fallback), object> s_variantOverrideKeys = new();
     private static readonly Dictionary<(ControlTokenIdentity Identity, SharedTokenKind Kind), object> s_globalVariantKeys = new();
+    private static readonly Dictionary<object, object> s_explicitPressedKeys = new();
 
     private readonly VariantValue?[] _variantSlots = new VariantValue?[VariantSlotCount];
     private OwnerTokenSet? _variantTokens;
     private int _configuringVariantSlot = -1;
 
+    // The recipe only changes with the theme snapshot, so ConfigureThemeAppearance resolves it and every
+    // variant pass reads the cached value.
+    private ButtonThemeRecipe? _themeRecipe;
+
     private void ConfigureVariantThemeVariables()
     {
-        var tokens = new VariantTokens(this);
-        if (EffectiveColor == ButtonColor.Default)
+        var tokens = new VariantTokens(this, _themeRecipe);
+        if (EffectiveColor == ButtonColor.Default ||
+            (EffectiveColor == ButtonColor.Primary && EffectiveVariant == ButtonVariant.Link &&
+             tokens.Recipe is not null))
         {
             ConfigureDefaultVariantThemeVariables(tokens);
         }
         else if (EffectiveColor == ButtonColor.Primary)
         {
             ConfigureSemanticVariantThemeVariables(
+                tokens,
                 tokens.Global(SharedTokenKind.ColorPrimary),
                 tokens.Global(SharedTokenKind.ColorPrimaryHover),
                 tokens.Global(SharedTokenKind.ColorPrimaryActive),
@@ -88,6 +98,7 @@ public partial class Button
         {
             var colors = snapshotTokens.GetPresetPalette(presetColor).ColorSequence;
             ConfigureSemanticVariantThemeVariables(
+                tokens,
                 VariantValue.Of(colors[5]),
                 VariantValue.Of(colors[4]),
                 VariantValue.Of(colors[6]),
@@ -95,7 +106,7 @@ public partial class Button
                 VariantValue.Of(colors[1]),
                 VariantValue.Of(colors[2]),
                 tokens.Own(ButtonTokenKind.SolidTextColor),
-                VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0])));
+                tokens.Recipe is null ? VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0])) : NoShadowVariant);
         }
     }
 
@@ -112,10 +123,11 @@ public partial class Button
         SharedTokenKind bgHoverColor,
         SharedTokenKind borderColor)
     {
-        var shadow = TryCaptureSnapshotTokens(out var snapshotTokens)
+        var shadow = tokens.Recipe is null && TryCaptureSnapshotTokens(out var snapshotTokens)
             ? VariantValue.Of(CreatePresetShadow(snapshotTokens, snapshotTokens.GetEffectiveGlobal<Color>(bgColor)))
             : NoShadowVariant;
         ConfigureSemanticVariantThemeVariables(
+            tokens,
             tokens.Global(color),
             tokens.Global(hoverColor),
             tokens.Global(activeColor),
@@ -135,6 +147,19 @@ public partial class Button
         var colorErrorActive = tokens.Global(SharedTokenKind.ColorErrorActive);
         switch (EffectiveVariant)
         {
+            case ButtonVariant.Solid when tokens.Recipe is not null:
+                SetVariantThemeVariables(
+                    dangerColor,
+                    dangerColor,
+                    dangerColor,
+                    tokens.Global(SharedTokenKind.ColorErrorBg),
+                    tokens.Global(SharedTokenKind.ColorErrorBgHover),
+                    colorErrorActive,
+                    TransparentVariant,
+                    TransparentVariant,
+                    colorErrorActive,
+                    dangerShadow);
+                break;
             case ButtonVariant.Solid:
                 SetVariantThemeVariables(
                     dangerColor,
@@ -221,7 +246,7 @@ public partial class Button
                     tokens.Global(SharedTokenKind.ColorBgSolid),
                     tokens.Global(SharedTokenKind.ColorBgSolidHover),
                     tokens.Global(SharedTokenKind.ColorBgSolidActive),
-                    EffectiveIsGhost ? NoShadowVariant : tokens.Own(ButtonTokenKind.DefaultShadow));
+                    EffectiveIsGhost ? NoShadowVariant : GetDefaultShadow(tokens));
                 break;
             }
             case ButtonVariant.Outlined:
@@ -252,12 +277,14 @@ public partial class Button
                         tokens.Own(ButtonTokenKind.DefaultBorderColor),
                         tokens.Own(ButtonTokenKind.DefaultHoverBorderColor),
                         tokens.Own(ButtonTokenKind.DefaultActiveBorderColor),
-                        tokens.Own(ButtonTokenKind.DefaultShadow));
+                        GetDefaultShadow(tokens));
                 }
                 break;
             case ButtonVariant.Filled:
             {
-                var text = tokens.Own(ButtonTokenKind.DefaultColor);
+                var text = tokens.Recipe is null
+                    ? tokens.Own(ButtonTokenKind.DefaultColor)
+                    : tokens.OwnOverride(ButtonTokenKind.DefaultColor, SharedTokenKind.ControlItemColorActive);
                 SetVariantThemeVariables(
                     text,
                     text,
@@ -288,7 +315,9 @@ public partial class Button
                 SetVariantThemeVariables(
                     tokens.Global(SharedTokenKind.ColorLink),
                     tokens.Global(SharedTokenKind.ColorLinkHover),
-                    tokens.Global(SharedTokenKind.ColorLinkActive),
+                    tokens.Global(EffectiveColor == ButtonColor.Primary
+                        ? SharedTokenKind.ColorPrimaryActive
+                        : SharedTokenKind.ColorLinkActive),
                     TransparentVariant,
                     tokens.Own(ButtonTokenKind.LinkHoverBg),
                     TransparentVariant,
@@ -301,6 +330,7 @@ public partial class Button
     }
 
     private void ConfigureSemanticVariantThemeVariables(
+        VariantTokens tokens,
         VariantValue baseColor,
         VariantValue hoverColor,
         VariantValue activeColor,
@@ -328,7 +358,7 @@ public partial class Button
             case ButtonVariant.Outlined:
             case ButtonVariant.Dashed:
             {
-                var background = EffectiveIsGhost ? TransparentVariant : new VariantTokens(this).Own(ButtonTokenKind.DefaultBg);
+                var background = EffectiveIsGhost ? TransparentVariant : tokens.Own(ButtonTokenKind.DefaultBg);
                 SetVariantThemeVariables(
                     baseColor,
                     hoverColor,
@@ -384,6 +414,15 @@ public partial class Button
         }
     }
 
+    private VariantValue GetDefaultShadow(VariantTokens tokens)
+    {
+        if (EffectiveVariant != ButtonVariant.Outlined && tokens.Recipe is { OutlineOnlyDefaultShadow: true })
+        {
+            return tokens.OwnOverride(ButtonTokenKind.DefaultShadow);
+        }
+        return tokens.Own(ButtonTokenKind.DefaultShadow);
+    }
+
     private void SetVariantThemeVariables(
         VariantValue text,
         VariantValue textHover,
@@ -396,6 +435,15 @@ public partial class Button
         VariantValue borderPressed,
         VariantValue shadow)
     {
+        // The recipe's press feedback is movement. Keep documented palette states for preset colors
+        // and preserve explicit pressed paint on each channel without replacing the other channels.
+        if (UsesThemeRecipe && !TryGetPresetPrimaryColor(EffectiveColor, out _))
+        {
+            textPressed = ExplicitPressedPaint(textPressed, text, textHover);
+            backgroundPressed = ExplicitPressedPaint(backgroundPressed, background, backgroundHover);
+            borderPressed = ExplicitPressedPaint(borderPressed, border, borderHover);
+        }
+
         var appearance = VariantAppearance;
         SetVariantSlot(0, text, ref appearance);
         SetVariantSlot(1, textHover, ref appearance);
@@ -408,6 +456,22 @@ public partial class Button
         SetVariantSlot(8, borderPressed, ref appearance);
         SetVariantSlot(VariantShadowSlot, shadow, ref appearance);
         VariantAppearance = appearance;
+    }
+
+    private static VariantValue ExplicitPressedPaint(VariantValue pressed, VariantValue normal, VariantValue hover)
+    {
+        if (!pressed.IsResource || pressed == normal || pressed == hover)
+        {
+            return NoPressedPaint;
+        }
+
+        if (!s_explicitPressedKeys.TryGetValue(pressed.Source, out var key))
+        {
+            key = new ThemeTokenResourceProvider.ExplicitTokenLookup(pressed.Source);
+            s_explicitPressedKeys.Add(pressed.Source, key);
+        }
+
+        return new VariantValue(key, true);
     }
 
     private void SetVariantSlot(int index, VariantValue value, ref ButtonVariantAppearance appearance)
@@ -545,17 +609,14 @@ public partial class Button
     {
         private readonly ControlTokenIdentity _identity;
 
-        internal VariantTokens(Button owner)
+        internal VariantTokens(Button owner, ButtonThemeRecipe? recipe)
         {
             // Variant globals and Own values use the same terminal identity.
-            _identity = owner switch
-            {
-                DropdownButton => DropdownButtonTokens.Identity,
-                SubmitButton => SubmitButtonTokens.Identity,
-                ResetButton => ResetButtonTokens.Identity,
-                _ => ButtonTokens.Identity
-            };
+            _identity = ButtonThemeRecipe.OwnerOf(owner);
+            Recipe = recipe;
         }
+
+        internal ButtonThemeRecipe? Recipe { get; }
 
         internal VariantValue Global(SharedTokenKind kind)
         {
@@ -563,6 +624,20 @@ public partial class Button
             {
                 key = ControlTokenResourceKey.Global(_identity, kind);
                 s_globalVariantKeys.Add((_identity, kind), key);
+            }
+
+            return new VariantValue(key, true);
+        }
+
+        internal VariantValue OwnOverride(ButtonTokenKind kind, SharedTokenKind? fallback = null)
+        {
+            var identity = (_identity, kind, fallback);
+            if (!s_variantOverrideKeys.TryGetValue(identity, out var key))
+            {
+                key = new ThemeTokenResourceProvider.ExplicitTokenLookup(
+                    Own(kind).Source,
+                    fallback is { } global ? Global(global).Source : null);
+                s_variantOverrideKeys.Add(identity, key);
             }
 
             return new VariantValue(key, true);

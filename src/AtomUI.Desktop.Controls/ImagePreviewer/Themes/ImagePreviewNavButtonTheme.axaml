@@ -12,15 +12,16 @@
             <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
             <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}"/>
             <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
-            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"/>
+            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColor)}"/>
             <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingXS)}"/>
         
-            <Style Selector="^:pointerover">
+            <Style Selector="^:pointerover, ^:pressed">
                 <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}"/>
+                <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}"/>
             </Style>
         
             <Style Selector="^:disabled">
-                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}"/>
                 <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColorDisabled)}"/>
             </Style>
         </Style>

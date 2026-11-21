@@ -94,9 +94,10 @@ public abstract partial class AbstractImagePreviewerToken : AbstractControlDesig
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        PreviewOperationColor         = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.65);
-        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.85);
-        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.25);
+        // Floating controls can cover light or dark image content. Pair a dark scrim with light icons.
+        PreviewOperationColor         = EffectiveGlobalToken.ColorWhite.SetAlphaF(0.9);
+        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorWhite;
+        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorWhite.SetAlphaF(0.4);
         PreviewOperationSize          = EffectiveGlobalToken.FontSizeIcon * 1.5;
 
         ErrorIconSize                 = EffectiveGlobalToken.ControlHeightLG * 1.2;
@@ -114,8 +115,8 @@ public abstract partial class AbstractImagePreviewerToken : AbstractControlDesig
             TitleBarBackgroundColor       = EffectiveGlobalToken.ColorBorderSecondary.Darken(1);
         }
 
-        NavButtonBgColor             = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.1);
-        NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBgMask.SetAlphaF(0.2);
+        NavButtonBgColor             = EffectiveGlobalToken.ColorBlack.SetAlphaF(0.72);
+        NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBlack.SetAlphaF(0.84);
         FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
         // The index indicator is transparent and centred above the actions, so only its block padding shows; the default
         // adds none (the former inline-only default never rendered).

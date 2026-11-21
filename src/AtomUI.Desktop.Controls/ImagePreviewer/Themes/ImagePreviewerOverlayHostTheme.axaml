@@ -27,14 +27,15 @@
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
             <Setter Property="IconWidth" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
             <Setter Property="IconHeight" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationSize)}" />
-            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}" />
+            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColor)}" />
             <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgColor)}" />
             <!-- layout: a radius beyond half the size makes the close button round -->
             <Setter Property="CornerRadius" Value="100" />
             <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingSM)}" />
         </Style>
-        <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+        <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover, ^ /template/ atom|IconButton#PART_CloseButton:pressed">
             <Setter Property="Background" Value="{Binding $self.(atom:ImageViewer.ThemeNavButtonBgHoverColor)}" />
+            <Setter Property="IconBrush" Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

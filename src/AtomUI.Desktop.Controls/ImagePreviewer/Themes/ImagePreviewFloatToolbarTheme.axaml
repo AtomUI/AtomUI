@@ -80,7 +80,7 @@
             <Setter Property="Padding" Value="{Binding $self.(atom:ImageViewer.ThemePaddingSM)}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconButton:pointerover">
+        <Style Selector="^ /template/ atom|IconButton:pointerover, ^ /template/ atom|IconButton:pressed">
             <Setter Property="IconBrush"
                     Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}" />
         </Style>
@@ -90,7 +90,7 @@
                     Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationColorDisabled)}" />
         </Style>
         
-        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
+        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover, ^ /template/ atom|ToggleIconButton:pressed">
             <Setter Property="IconBrush"
                     Value="{Binding $self.(atom:ImageViewer.ThemePreviewOperationHoverColor)}" />
         </Style>

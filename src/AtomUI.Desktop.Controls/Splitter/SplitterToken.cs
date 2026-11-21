@@ -35,6 +35,9 @@ public sealed partial class SplitterToken : AbstractControlDesignToken
     public partial Color HandleLineColor { get; set; }
     public partial Color HandleLineHoverColor { get; set; }
     public partial Color HandleLineDragColor { get; set; }
+    public partial Color HandleGripColor { get; set; }
+    public partial Color HandleGripHoverColor { get; set; }
+    public partial Color HandleGripDragColor { get; set; }
     public partial Color HandleIconColor { get; set; }
     public partial Color HandleIconHoverColor { get; set; }
     public partial Color HandleIconPressedColor { get; set; }
@@ -68,6 +71,14 @@ public sealed partial class SplitterToken : AbstractControlDesignToken
         HandleLineColor                = EffectiveGlobalToken.ControlItemBgHover;
         HandleLineHoverColor           = EffectiveGlobalToken.ControlItemBgActive;
         HandleLineDragColor            = EffectiveGlobalToken.ControlItemBgActiveHover;
+
+        if (!IsExplicit(SplitterTokenKind.HandleGripColor))
+        {
+            HandleGripColor = EffectiveGlobalToken.ColorFill;
+        }
+
+        HandleGripHoverColor           = HandleGripColor;
+        HandleGripDragColor            = HandleGripColor;
 
         if (!IsExplicit(SplitterTokenKind.HandleIconColor))
         {

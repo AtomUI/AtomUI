@@ -52,7 +52,8 @@ public partial class LayoutFamilyEffectTests
         "HandleIconSize", "HandleIconColor", "HandleIconHoverColor", "HandleIconPressedColor", "ColorText", "ColorFill",
         "SplitBarCollapseOffset", "SplitBarCollapseOffsetNegative", "SplitBarCollapseCrossOffset", "SplitBarDraggableSize",
         "BorderRadiusXS", "FontSizeSM", "ControlItemBgHover", "ControlItemBgActive", "ControlItemBgActiveHover",
-        "HandleLineColor", "HandleLineHoverColor", "HandleLineDragColor"
+        "HandleLineColor", "HandleLineHoverColor", "HandleLineDragColor",
+        "HandleGripColor", "HandleGripHoverColor", "HandleGripDragColor"
     };
 
     public static IEnumerable<object[]> SplitterRows() => MapRows("Splitter");
@@ -81,6 +82,8 @@ public partial class LayoutFamilyEffectTests
         {
             "HandleLineHoverColor" or "ControlItemBgActive" => static splitter => Pseudo(HandleOf(splitter), ":pointerover"),
             "HandleLineDragColor" or "ControlItemBgActiveHover" => static splitter => Pseudo(HandleOf(splitter), ":dragging"),
+            "HandleGripHoverColor" => static splitter => Pseudo(Descendant<SplitterDragBar>(splitter), ":pointerover"),
+            "HandleGripDragColor" => static splitter => Pseudo(Descendant<SplitterDragBar>(splitter), ":dragging"),
             "HandleIconHoverColor" => static splitter => Pseudo(CollapseButtonOf(splitter), ":pointerover"),
             "HandleIconPressedColor" => static splitter => Pseudo(CollapseButtonOf(splitter), ":pressed"),
             _ => null

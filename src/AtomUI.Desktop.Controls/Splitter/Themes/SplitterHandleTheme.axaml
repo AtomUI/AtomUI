@@ -16,7 +16,6 @@
                         <atom:SplitterDragBar Name="PART_DragBar"
                                               Classes.semantic-dragger="True"
                                               Orientation="{TemplateBinding Orientation}"
-                                              LineBrush="{atom:SplitterTokenResource ColorFill}"
                                               LineThickness="{TemplateBinding LineThickness}"
                                               LineCornerRadius="{TemplateBinding LineCornerRadius}"
                                               IsDragEnabled="{TemplateBinding IsDragEnabled}" />

@@ -5,6 +5,7 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SplitterDragBar}" TargetType="atom:SplitterDragBar">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="LineBrush" Value="{atom:SplitterTokenResource HandleGripColor}" />
         <Setter Property="LineThickness" Value="{atom:SplitterTokenResource HandleLineThickness}" />
         <Setter Property="LineCornerRadius" Value="{atom:SplitterTokenResource BorderRadiusXS}" />
         <Setter Property="Template">
@@ -35,6 +36,14 @@
                 <Setter Property="Height" Value="{Binding LineThickness, RelativeSource={RelativeSource TemplatedParent}}" />
                 <Setter Property="Width" Value="{atom:SplitterTokenResource SplitBarDraggableSize}" />
             </Style>
+        </Style>
+
+        <Style Selector="^[IsDragEnabled=True]:pointerover">
+            <Setter Property="LineBrush" Value="{atom:SplitterTokenResource HandleGripHoverColor}" />
+        </Style>
+
+        <Style Selector="^[IsDragEnabled=True]:dragging">
+            <Setter Property="LineBrush" Value="{atom:SplitterTokenResource HandleGripDragColor}" />
         </Style>
 
         <Style Selector="^[IsDragEnabled=False]">

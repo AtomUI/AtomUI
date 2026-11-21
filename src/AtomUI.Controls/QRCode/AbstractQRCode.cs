@@ -1,4 +1,3 @@
-using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;

@@ -4,19 +4,27 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
+    <atom:UploadThumbnailCornerRadiusConverter x:Key="ThumbnailCornerRadiusConverter" />
     <ControlTheme x:Key="{x:Type atom:UploadPictureShapePreviewContent}" TargetType="atom:UploadPictureShapePreviewContent">
         <ControlTheme.BasedOn>
             <atom:AbstractUploadPictureContentTheme TargetType="atom:UploadPictureShapePreviewContent" />
         </ControlTheme.BasedOn>
         <Setter Property="Template">
-            <ControlTemplate>
-                <atom:PixelAlignedBorder Name="Frame"
+            <ControlTemplate TargetType="atom:UploadPictureShapePreviewContent">
+                <atom:PixelAlignedBorder x:Name="Frame"
                                          Background="{TemplateBinding Background}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          Padding="{TemplateBinding Padding}">
-                    <Border Name="ContentFrame" ClipToBounds="True">
+                    <Border Name="ContentFrame" ClipToBounds="True" x:CompileBindings="True">
+                        <Border.CornerRadius>
+                            <MultiBinding Converter="{StaticResource ThumbnailCornerRadiusConverter}">
+                                <Binding Path="CornerRadius" ElementName="Frame" />
+                                <Binding Path="Padding" ElementName="Frame" />
+                                <Binding Path="BorderThickness" ElementName="Frame" />
+                            </MultiBinding>
+                        </Border.CornerRadius>
                         <Panel>
                             <atom:UploadImagePreviewer Name="PART_ImagePreviewer"
                                                        IsShowCoverMask="False"

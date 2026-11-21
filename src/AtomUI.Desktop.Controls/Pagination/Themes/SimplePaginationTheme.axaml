@@ -5,6 +5,7 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SimplePagination}" TargetType="atom:SimplePagination">
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="atom:PaginationNavItem.ThemeItemSize" Value="{atom:SimplePaginationTokenResource ItemSize}" />
         <Setter Property="atom:PaginationNavItem.ThemeItemActiveColorDisabled" Value="{atom:SimplePaginationTokenResource ItemActiveColorDisabled}" />
         <Setter Property="atom:PaginationNavItem.ThemePaginationLayoutSpacing" Value="{atom:SimplePaginationTokenResource PaginationLayoutSpacing}" />
@@ -43,7 +44,13 @@
                                             SizeType="{TemplateBinding SizeType}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                            Minimum="1" />
+                                            Minimum="1">
+                            <atom:QuickJumpEdit.Styles>
+                                <Style Selector="atom|LineEdit[SizeType=Small] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                                    <Setter Property="Padding" Value="{atom:SimplePaginationTokenResource InputPaddingSM}" />
+                                </Style>
+                            </atom:QuickJumpEdit.Styles>
+                        </atom:QuickJumpEdit>
                         <atom:TextBlock Name="PART_InfoIndicator"
                                         Classes.semantic-info="True"
                                         VerticalAlignment="Center"
@@ -102,6 +109,7 @@
         <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_QuickJumper">
             <Setter Property="MinWidth"
                     Value="{Binding $self.(atom:PaginationNavItem.ThemePaginationQuickJumperInputWidth)}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
     </ControlTheme>

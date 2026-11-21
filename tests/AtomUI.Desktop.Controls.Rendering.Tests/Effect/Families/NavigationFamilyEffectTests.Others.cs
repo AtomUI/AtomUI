@@ -150,8 +150,8 @@ public partial class NavigationFamilyEffectTests
                     pagination.CurrentPage = 2_000;
                     return pagination;
                 }, null);
-            case "ItemSizeSM" or "ControlHeightSM" or "PaginationLayoutMiniSpacing" or "PaginationMiniQuickJumperInputWidth" or
-                "IconSizeSM":
+            case "ItemSizeSM" or "ControlHeightSM" or "ControlOutlineWidth" or "PaginationLayoutMiniSpacing" or
+                "PaginationMiniQuickJumperInputWidth" or "IconSizeSM":
                 return new NavScenario(static () => CreatePagination(CustomizableSizeType.Small), null);
             case "IconSizeLG":
                 return new NavScenario(static () => CreatePagination(CustomizableSizeType.Large), null);
@@ -216,7 +216,8 @@ public partial class NavigationFamilyEffectTests
         var size = token switch
         {
             "IconSizeLG" => CustomizableSizeType.Large,
-            "IconSizeSM" or "ItemSizeSM" or "ControlHeightSM" or "PaginationLayoutMiniSpacing" or "PaginationMiniQuickJumperInputWidth" or "UniformlyMarginXXS" => CustomizableSizeType.Small,
+            "IconSizeSM" or "ItemSizeSM" or "ControlHeightSM" or "ControlOutlineWidth" or "InputPaddingSM" or
+                "PaginationLayoutMiniSpacing" or "PaginationMiniQuickJumperInputWidth" or "UniformlyMarginXXS" => CustomizableSizeType.Small,
             _            => CustomizableSizeType.Middle
         };
         Action<Control>? arrange = token switch

@@ -1,5 +1,4 @@
 using AtomUI.Theme.DesignTokens;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -22,7 +21,8 @@ public abstract partial class AbstractPaginationToken : AbstractControlDesignTok
         ItemSizeSM                = EffectiveGlobalToken.ControlHeightSM;
         ItemActiveColorDisabled   = EffectiveGlobalToken.ColorTextDisabled;
         PaginationLayoutSpacing             = EffectiveGlobalToken.UniformlyMarginXS;
-        PaginationLayoutMiniSpacing         = EffectiveGlobalToken.UniformlyMarginXXS / 2;
+        PaginationLayoutMiniSpacing         = Math.Max(EffectiveGlobalToken.UniformlyMarginXXS / 2,
+                                                       EffectiveGlobalToken.ControlOutlineWidth);
         PaginationQuickJumperInputWidth     = EffectiveGlobalToken.ControlHeightLG * 1.25;
         PaginationMiniQuickJumperInputWidth = EffectiveGlobalToken.ControlHeightLG * 1.1;
     }

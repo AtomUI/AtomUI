@@ -100,7 +100,7 @@ public sealed class ControlPackageDefinition
                 state.EnableDependency(dependency, builder);
             }
             _declare?.Invoke(builder);
-            root.AddPackageDeclaration(new EnabledControlPackage(this, options));
+            root.ThemeManagerBuilder.AddPackageDeclaration(new EnabledControlPackage(this, options));
             state.Stage(Id);
             return builder;
         }

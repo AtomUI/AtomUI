@@ -611,7 +611,8 @@ internal sealed class ThemeCompiler
             globalDelta,
             globalResourceDelta,
             controlTokenValues,
-            controlResources);
+            controlResources,
+            controlBuilder?.AppearanceSettings);
     }
 
     /// <summary>
@@ -727,7 +728,9 @@ internal sealed class ThemeCompiler
 
     private static ThemeAlgorithmContext CreateAlgorithmContext(
         ThemeAppearance appearance,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain)
+        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
+        IReadOnlyList<NormalizedTokenValue>? scopeTokens = null,
+        IReadOnlyList<NormalizedTokenValue>? controlTokens = null)
     {
         var identities = new ThemeAlgorithm[chain.Count];
         for (var index = 0; index < identities.Length; index++)
@@ -736,7 +739,7 @@ internal sealed class ThemeCompiler
         }
 
         // Wrapped read-only so a stage cannot change the chain later algorithms see; this runs only when a stage does.
-        return new ThemeAlgorithmContext(appearance, Array.AsReadOnly(identities));
+        return new ThemeAlgorithmContext(appearance, Array.AsReadOnly(identities), scopeTokens, controlTokens);
     }
 
     /// <summary>
@@ -762,11 +765,11 @@ internal sealed class ThemeCompiler
         ThemeAppearance appearance,
         DesignToken controlGlobal)
     {
+        plan.Context = CreateAlgorithmContext(appearance, plan.Chain, scopeGlobalTokens, config?.GlobalTokens);
         if (config is { AlgorithmMode: ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom })
         {
             scopeGlobalTokens = null;
         }
-        plan.Context = CreateAlgorithmContext(appearance, plan.Chain);
         IReadOnlyCollection<string> names;
         ControlTokenAlgorithmDescriptor? running = null;
         // One recording session for the whole chain: its result is the union of the names every stage wrote.

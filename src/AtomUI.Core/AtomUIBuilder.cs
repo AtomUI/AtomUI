@@ -43,8 +43,6 @@ internal sealed class AtomUIBuilder : IAtomUIBuilder
 
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => ThemeManagerBuilder.PackageDeclarations;
 
-    internal void AddPackageDeclaration(EnabledControlPackage declaration) => ThemeManagerBuilder.AddPackageDeclaration(declaration);
-
     internal Func<MainWindowContext, Task<Avalonia.Controls.Window>>? MainWindowFactory { get; private set; }
 
     internal SplashRegistration? Splash { get; private set; }

@@ -276,6 +276,21 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
         }
 
         ResolveCount++;
+        if (key is ThemeTokenResourceProvider.ExplicitTokenLookup lookup)
+        {
+            if (ThemeTokenResourceProvider.TryFindExplicitTokenResource(_target, lookup.Key, out var explicitValue))
+            {
+                return explicitValue;
+            }
+            if (lookup.FallbackResourceKey is null)
+            {
+                return lookup.DefaultValue;
+            }
+            return _target.TryFindResource(lookup.FallbackResourceKey, _target.ActualThemeVariant, out var fallback)
+                ? fallback
+                : lookup.DefaultValue;
+        }
+
         return _target.TryFindResource(key, _target.ActualThemeVariant, out var value) ? value : null;
     }
 

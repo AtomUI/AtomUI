@@ -10,7 +10,8 @@ internal sealed class ControlThemeSnapshot
         IReadOnlyDictionary<int, object?> effectiveGlobalTokenDelta,
         IReadOnlyDictionary<object, object?> effectiveGlobalResourceDelta,
         TokenValueTable controlTokenValues,
-        IReadOnlyDictionary<object, object?> controlResources)
+        IReadOnlyDictionary<object, object?> controlResources,
+        object? appearanceSettings = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(controlSlot);
         ArgumentNullException.ThrowIfNull(effectiveGlobalTokenDelta);
@@ -24,6 +25,7 @@ internal sealed class ControlThemeSnapshot
         EffectiveGlobalResourceDelta = effectiveGlobalResourceDelta;
         ControlTokenValues           = controlTokenValues;
         ControlResources             = controlResources;
+        AppearanceSettings           = appearanceSettings;
         EstimatedRetainedBytes        = ThemeRetainedBytesEstimator.EstimateControl(this);
     }
 
@@ -33,6 +35,7 @@ internal sealed class ControlThemeSnapshot
     internal IReadOnlyDictionary<object, object?> EffectiveGlobalResourceDelta { get; }
     internal TokenValueTable ControlTokenValues { get; }
     internal IReadOnlyDictionary<object, object?> ControlResources { get; }
+    internal object? AppearanceSettings { get; }
     internal long EstimatedRetainedBytes { get; }
 
     internal T GetEffectiveGlobalValue<T>(TokenValueTable globalValues, int slot)

@@ -11,6 +11,9 @@ public abstract class AbstractControlDesignToken : AbstractDesignToken
 
     protected DesignToken EffectiveGlobalToken { get; private set; } = default!;
 
+    // Optional immutable appearance settings for the owning control's renderer.
+    internal object? AppearanceSettings { get; set; }
+
     internal void AssignEffectiveGlobalToken(DesignToken effectiveGlobalToken)
     {
         EffectiveGlobalToken = effectiveGlobalToken;

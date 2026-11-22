@@ -225,7 +225,7 @@ public partial class Window
                         (mode == FullScreenTitleBarMode.AutoHide && !IsFullScreenTitleBarSuppressed());
         var measuredHeight = _fullScreenTitleBarHost?.SurfaceHeight ?? 0;
         var surfaceHeight  = measuredHeight > 0 ? measuredHeight : TitleBarHeight;
-        var buttonOffsetX = IsSet(MacStandardWindowButtons.OffsetXProperty)
+        var buttonOffsetX = OperatingSystem.IsMacOS() && IsSet(MacStandardWindowButtons.OffsetXProperty)
             ? MacStandardWindowButtons.GetOffsetX(this)
             : _macOsCachedButtonX ?? double.NaN;
         nativeChrome.ConfigureTitleStripFusion(new FullScreenTitleStripFusion(isEnabled, surfaceHeight, buttonOffsetX));

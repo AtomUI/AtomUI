@@ -7,7 +7,7 @@
         <!-- The title bar host used to fill the manager's Child, which the manager insets by its Padding
              (OffScreenMargin); layers are arranged over the whole manager. Mirroring that Padding keeps the surface at
              the same window position. -->
-        <Setter Property="Margin" Value="{Binding $parent[VisualLayerManager].Padding}" />
+        <Setter Property="Margin" Value="{CompiledBinding $parent[VisualLayerManager].Padding}" />
     </ControlTheme>
 
 </ResourceDictionary>

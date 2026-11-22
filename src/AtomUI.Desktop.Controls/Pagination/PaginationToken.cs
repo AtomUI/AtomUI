@@ -51,6 +51,36 @@ public sealed partial class PaginationToken : AbstractPaginationToken
     
     
     
+    /// <summary>
+    /// 页码激活态文本颜色
+    /// Text color of the active Pagination item
+    /// </summary>
+    public partial Color ItemActiveColor { get; set; }
+
+    /// <summary>
+    /// 页码激活态边框颜色
+    /// Border color of the active Pagination item
+    /// </summary>
+    public partial Color ItemActiveBorderColor { get; set; }
+
+    /// <summary>
+    /// 页码激活态悬停文本颜色
+    /// Text color of the hovered active Pagination item
+    /// </summary>
+    public partial Color ItemActiveHoverColor { get; set; }
+
+    /// <summary>
+    /// 页码激活态悬停边框颜色
+    /// Border color of the hovered active Pagination item
+    /// </summary>
+    public partial Color ItemActiveHoverBorderColor { get; set; }
+
+    /// <summary>
+    /// 页码激活态字重
+    /// Font weight of the active Pagination item
+    /// </summary>
+    public partial FontWeight ItemActiveFontWeight { get; set; }
+
     public PaginationToken()
 
     {
@@ -66,6 +96,11 @@ public sealed partial class PaginationToken : AbstractPaginationToken
         ItemActiveBg              = EffectiveGlobalToken.ColorBgContainer;
         ItemLinkBg                = EffectiveGlobalToken.ColorBgContainer;
         ItemActiveBgDisabled      = EffectiveGlobalToken.ControlItemBgActiveDisabled;
+        ItemActiveColor            = EffectiveGlobalToken.ColorPrimary;
+        ItemActiveBorderColor      = EffectiveGlobalToken.ColorPrimary;
+        ItemActiveHoverColor       = EffectiveGlobalToken.ColorPrimaryHover;
+        ItemActiveHoverBorderColor = EffectiveGlobalToken.ColorPrimaryHover;
+        ItemActiveFontWeight       = EffectiveGlobalToken.FontWeightStrong;
 
         InputOutlineOffset                  = new Thickness(0);
         

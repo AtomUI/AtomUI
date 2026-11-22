@@ -7,6 +7,10 @@
     <ControlTheme x:Key="{x:Type atom:Pagination}" TargetType="atom:Pagination">
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="ItemSize" Value="{atom:PaginationTokenResource ItemSize}" />
+        <Setter Property="ItemColor" Value="{atom:PaginationTokenResource ItemColor}" />
+        <Setter Property="ItemHoverColor" Value="{atom:PaginationTokenResource ItemHoverColor}" />
+        <Setter Property="ItemHoverBg" Value="{atom:PaginationTokenResource ItemHoverBg}" />
+        <Setter Property="ItemBorderRadius" Value="{atom:PaginationTokenResource ItemBorderRadius}" />
         <Setter Property="ItemActiveColorDisabled" Value="{atom:PaginationTokenResource ItemActiveColorDisabled}" />
         <Setter Property="LayoutSpacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
         <Setter Property="QuickJumperInputWidth" Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}" />
@@ -43,7 +47,11 @@
                             SizeType="{TemplateBinding SizeType}"
                             ItemSize="{TemplateBinding ItemSize}"
                             ItemActiveColorDisabled="{TemplateBinding ItemActiveColorDisabled}"
-                            ItemPaddingInline="{TemplateBinding ItemPaddingInline}" />
+                            ItemPaddingInline="{TemplateBinding ItemPaddingInline}"
+                            ItemColor="{TemplateBinding ItemColor}"
+                            ItemHoverColor="{TemplateBinding ItemHoverColor}"
+                            ItemHoverBg="{TemplateBinding ItemHoverBg}"
+                            ItemBorderRadius="{TemplateBinding ItemBorderRadius}" />
                         <ContentPresenter Name="PART_SizeChangerPresenter"
                                           IsVisible="{TemplateBinding IsShowSizeChanger}"
                                           Content="{TemplateBinding EffectiveSizeChangerContent}"

@@ -38,7 +38,7 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+        <Setter Property="CornerRadius" Value="{CompiledBinding $self.ItemBorderRadius}" />
         <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
         <Setter Property="Padding"
                 Value="{CompiledBinding $self.ItemPaddingInline}" />
@@ -96,25 +96,27 @@
 
             <Style Selector="^[PaginationItemType=PageIndicator]">
                 <Style Selector="^:selected">
-                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorPrimary}" />
+                    <Setter Property="Foreground" Value="{atom:PaginationTokenResource ItemActiveColor}" />
                     <Setter Property="Background"
                             Value="{atom:PaginationTokenResource ItemActiveBg}" />
-                    <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}" />
+                    <Setter Property="FontWeight" Value="{atom:PaginationTokenResource ItemActiveFontWeight}" />
                     <Setter Property="BorderBrush"
-                            Value="{atom:OwnerTokenResource ColorPrimary}" />
+                            Value="{atom:PaginationTokenResource ItemActiveBorderColor}" />
                     <Style Selector="^:pointerover">
                         <Setter Property="Foreground"
-                                Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
+                                Value="{atom:PaginationTokenResource ItemActiveHoverColor}" />
                         <Setter Property="BorderBrush"
-                                Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
+                                Value="{atom:PaginationTokenResource ItemActiveHoverBorderColor}" />
                     </Style>
                 </Style>
                 <Style Selector="^:not(:selected)">
                     <Setter Property="Background" Value="{atom:PaginationTokenResource ItemBg}" />
-                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+                    <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
                     <Style Selector="^:pointerover">
+                        <Setter Property="Foreground"
+                                Value="{CompiledBinding $self.ItemHoverColor}" />
                         <Setter Property="Background"
-                                Value="{atom:OwnerTokenResource ColorBgTextHover}" />
+                                Value="{CompiledBinding $self.ItemHoverBg}" />
                     </Style>
                     <Style Selector="^:pressed">
                         <Setter Property="Background"
@@ -127,10 +129,12 @@
                 <Setter Property="Background"
                         Value="{atom:OwnerTokenResource ColorTransparent}" />
                 <Setter Property="Foreground"
-                        Value="{atom:OwnerTokenResource ColorText}" />
-                <Style Selector="^:pointerover">
+                        Value="{CompiledBinding $self.ItemColor}" />
+                <Style Selector="^:is(atom|PaginationNavItem):pointerover">
+                    <Setter Property="Foreground"
+                            Value="{CompiledBinding $self.ItemHoverColor}" />
                     <Setter Property="Background"
-                            Value="{atom:OwnerTokenResource ColorBgTextHover}" />
+                            Value="{CompiledBinding $self.ItemHoverBg}" />
                 </Style>
                 <Style Selector="^:pressed">
                     <Setter Property="Background"

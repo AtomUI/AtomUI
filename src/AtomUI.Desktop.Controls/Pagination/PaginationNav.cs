@@ -58,6 +58,18 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
     internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
         AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNav>();
 
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AbstractPagination.ItemColorProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AbstractPagination.ItemHoverColorProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        AbstractPagination.ItemHoverBgProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<CornerRadius> ItemBorderRadiusProperty =
+        AbstractPagination.ItemBorderRadiusProperty.AddOwner<PaginationNav>();
+
     internal double ItemSize
     {
         get => GetValue(ItemSizeProperty);
@@ -74,6 +86,30 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
     {
         get => GetValue(ItemPaddingInlineProperty);
         set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+
+    internal CornerRadius ItemBorderRadius
+    {
+        get => GetValue(ItemBorderRadiusProperty);
+        set => SetValue(ItemBorderRadiusProperty, value);
     }
 
     #endregion
@@ -126,6 +162,10 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
             navItem[!PaginationNavItem.ItemSizeProperty]        = this[!ItemSizeProperty];
             navItem[!PaginationNavItem.ItemActiveColorDisabledProperty] = this[!ItemActiveColorDisabledProperty];
             navItem[!PaginationNavItem.ItemPaddingInlineProperty]       = this[!ItemPaddingInlineProperty];
+            navItem[!PaginationNavItem.ItemColorProperty]               = this[!ItemColorProperty];
+            navItem[!PaginationNavItem.ItemHoverColorProperty]          = this[!ItemHoverColorProperty];
+            navItem[!PaginationNavItem.ItemHoverBgProperty]             = this[!ItemHoverBgProperty];
+            navItem[!PaginationNavItem.ItemBorderRadiusProperty]        = this[!ItemBorderRadiusProperty];
             navItem.Click -= HandleNavItemClicked;
             navItem.Click += HandleNavItemClicked;
         }

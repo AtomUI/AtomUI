@@ -145,6 +145,18 @@ internal partial class PaginationNavItem : ContentControl, ISelectable
     internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
         AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNavItem>();
 
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AbstractPagination.ItemColorProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AbstractPagination.ItemHoverColorProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        AbstractPagination.ItemHoverBgProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<CornerRadius> ItemBorderRadiusProperty =
+        AbstractPagination.ItemBorderRadiusProperty.AddOwner<PaginationNavItem>();
+
     internal double ItemSize
     {
         get => GetValue(ItemSizeProperty);
@@ -161,6 +173,30 @@ internal partial class PaginationNavItem : ContentControl, ISelectable
     {
         get => GetValue(ItemPaddingInlineProperty);
         set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+
+    internal CornerRadius ItemBorderRadius
+    {
+        get => GetValue(ItemBorderRadiusProperty);
+        set => SetValue(ItemBorderRadiusProperty, value);
     }
 
     internal int PageNumber { get; set; } = -1;

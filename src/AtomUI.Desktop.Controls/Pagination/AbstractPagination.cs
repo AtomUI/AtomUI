@@ -158,6 +158,18 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
     internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
         AvaloniaProperty.Register<AbstractPagination, Thickness>(nameof(ItemPaddingInline));
 
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AvaloniaProperty.Register<AbstractPagination, IBrush?>(nameof(ItemColor));
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AvaloniaProperty.Register<AbstractPagination, IBrush?>(nameof(ItemHoverColor));
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        AvaloniaProperty.Register<AbstractPagination, IBrush?>(nameof(ItemHoverBg));
+
+    internal static readonly StyledProperty<CornerRadius> ItemBorderRadiusProperty =
+        AvaloniaProperty.Register<AbstractPagination, CornerRadius>(nameof(ItemBorderRadius));
+
     internal double ItemSize
     {
         get => GetValue(ItemSizeProperty);
@@ -192,6 +204,30 @@ public abstract class AbstractPagination : TemplatedControl, ICustomizableSizeTy
     {
         get => GetValue(ItemPaddingInlineProperty);
         set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+
+    internal CornerRadius ItemBorderRadius
+    {
+        get => GetValue(ItemBorderRadiusProperty);
+        set => SetValue(ItemBorderRadiusProperty, value);
     }
 
     #endregion

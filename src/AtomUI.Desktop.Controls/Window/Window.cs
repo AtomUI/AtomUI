@@ -1602,6 +1602,9 @@ public partial class Window : AvaloniaWindow,
             this.GetObservable(TitleBarFrameBackgroundProperty).Subscribe(
                 brush => ProjectTitleBarFrameBackground(titleBar, brush)),
             this.GetObservable(IsCsdEnabledProperty).Subscribe(
+                _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground)),
+            // 默认标题栏在普通槽与全屏槽之间迁移时，背景的绘制方随之切换。
+            this.GetObservable(NormalSlotTitleBarProperty).Subscribe(
                 _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground))
         };
     }
@@ -1612,8 +1615,10 @@ public partial class Window : AvaloniaWindow,
 
         // Linux CSD 的标题栏背景由 drawn decorations overlay 的
         // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
-        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
-        if (OsType == OsType.Linux && IsCsdEnabled)
+        // 否则不透明背景会盖住该绘制层。该绘制层只服务普通槽：全屏时标题栏迁入
+        // 全屏标题栏宿主，drawn decorations 不再为它绘制背景，标题栏必须自行绘制，
+        // 否则全屏标题栏透出下方内容。其他平台由默认标题栏直接绘制。
+        if (OsType == OsType.Linux && IsCsdEnabled && ReferenceEquals(NormalSlotTitleBar, titleBar))
         {
             _titleBarFrameBackgroundProjection = titleBar.SetValue(
                 WindowTitleBar.BackgroundProperty,

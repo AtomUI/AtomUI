@@ -12,6 +12,7 @@
                                    SizeType="Small" 
                                    SelectedIndex="0"
                                    DockPanel.Dock="Left"
+                                   VerticalAlignment="Stretch"
                                    IsVisible="{TemplateBinding IsFormatEnabled}">
                         <atom:ComboBoxItem Tag="{x:Static atom:ColorFormat.Hex}">HEX</atom:ComboBoxItem>
                         <atom:ComboBoxItem Tag="{x:Static atom:ColorFormat.Hsva}">HSV</atom:ComboBoxItem>
@@ -27,8 +28,10 @@
                                         Increment="1"
                                         IsVisible="{TemplateBinding IsAlphaVisible}"/>
                     <Panel>
+                        <!-- Stretch to the row height so the format selector, the value field and the alpha editor line up. -->
                         <atom:LineEdit Name="PART_HexValueInput"
                                        SizeType="Small"
+                                       VerticalAlignment="Stretch"
                                        IsVisible="False"/>
                         <!-- layout: compact editor packing. -->
                         <StackPanel Name="PART_HsvValuePanel" Spacing="5" Orientation="Horizontal" IsVisible="False">

@@ -58,8 +58,10 @@ public abstract partial class AbstractColorPickerViewToken : AbstractControlDesi
         ColorPickerWidth = 234;
         ColorPickerHandlerSizeLG = 32;
         ColorPickerHandlerSize = 16;
-        // Keep the existing 48px alpha editor; the old unused token default was 44px.
-        ColorPickerAlphaInputWidth = 48;
+        // The 48px Ant alpha editor leaves a 30px text viewport once the border, the small input padding and the
+        // 1px content inset are taken from each side; a theme with wider small padding widens the editor so that
+        // "100%" keeps that viewport instead of being clipped.
+        ColorPickerAlphaInputWidth = 30 + 2 * (EffectiveGlobalToken.LineWidth + EffectiveGlobalToken.InputPaddingSM.Left + 1);
         ColorPickerInputNumberHandleWidth = 16;
         ColorPickerPresetPanelWidth = 220;
         ColorPickerInsetShadow = new BoxShadows(new BoxShadow { IsInset = true, Blur = 1, Color = EffectiveGlobalToken.ColorTextQuaternary });

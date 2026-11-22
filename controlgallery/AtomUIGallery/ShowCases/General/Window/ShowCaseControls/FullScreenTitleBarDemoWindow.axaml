@@ -1,0 +1,28 @@
+<atom:Window xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:antdicons="https://atomui.net/icons/antdesign"
+             x:Class="AtomUIGallery.ShowCases.Window.FullScreenTitleBarDemoWindow"
+             x:ClassModifier="internal"
+             Title="AtomUI Window"
+             IsFullScreenCaptionButtonVisible="True"
+             Width="680"
+             Height="420"
+             WindowStartupLocation="CenterScreen">
+    <atom:Window.RightAddOn>
+        <atom:WindowTitleBarToggleButton Name="PinButton"
+                                         CheckedIcon="{antdicons:AntDesignIconProvider Kind=PushpinFilled}"
+                                         UnCheckedIcon="{antdicons:AntDesignIconProvider Kind=PushpinOutlined}"
+                                         atom:ToolTip.Tip="Pin"
+                                         IsCheckedChanged="HandlePinChanged" />
+    </atom:Window.RightAddOn>
+    <StackPanel Margin="24" Spacing="12">
+        <atom:TextBlock Text="{gallery:WindowShowCaseLangResource FullScreenTitleBarTitle}" FontWeight="Bold" />
+        <atom:TextBlock Text="{gallery:WindowShowCaseLangResource FullScreenTitleBarHint}" TextWrapping="Wrap" />
+        <atom:Button ButtonType="Primary"
+                     HorizontalAlignment="Left"
+                     Content="{gallery:WindowShowCaseLangResource FullScreenTitleBarToggleText}"
+                     Click="HandleToggleFullScreenClick" />
+    </StackPanel>
+</atom:Window>

@@ -92,6 +92,19 @@
                 </gallery:ShowCaseItem>
 
                 <gallery:ShowCaseItem
+                    Title="{gallery:WindowShowCaseLangResource FullScreenTitleBarTitle}"
+                    Description="{gallery:WindowShowCaseLangResource FullScreenTitleBarDescription}"
+                    IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:WindowViewModel">
+                            <atom:Button ButtonType="Primary"
+                                         Content="{gallery:WindowShowCaseLangResource FullScreenTitleBarOpenButtonText}"
+                                         Click="HandleFullScreenTitleBarWindowButtonClick" />
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+                <gallery:ShowCaseItem
                     Title="{gallery:WindowShowCaseLangResource CaptionButtonsTitle}"
                     Description="{gallery:WindowShowCaseLangResource CaptionButtonsDescription}"
                     IsDeferredContentEnabled="True">

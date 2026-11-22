@@ -91,6 +91,31 @@
         <source>Frame layer</source>
       </segment>
     </unit>
+    <unit id="FullScreenTitleBarDescription">
+      <segment>
+        <source>In full screen the title bar keeps its add-ons and caption buttons. FullScreenTitleBarMode chooses AutoHide, Pinned, Docked or Hidden; FullScreenTitleBar replaces its content.</source>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarHint">
+      <segment>
+        <source>Enter full screen, then move the pointer to the top edge. The pin in the title bar switches between AutoHide and Pinned while the window stays full screen.</source>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarOpenButtonText">
+      <segment>
+        <source>Open full screen title bar window</source>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarTitle">
+      <segment>
+        <source>Full screen title bar</source>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarToggleText">
+      <segment>
+        <source>Enter or exit full screen</source>
+      </segment>
+    </unit>
     <unit id="IsTitleVisibleDescription">
       <segment>
         <source>IsTitleVisible=False hides only the title text inside the title bar; the taskbar and window switching still show the OS window title. Different from IsTitleBarVisible, which hides the whole title bar.</source>

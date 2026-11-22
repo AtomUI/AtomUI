@@ -109,6 +109,36 @@
         <target state="translated">Camada de moldura</target>
       </segment>
     </unit>
+    <unit id="FullScreenTitleBarDescription">
+      <segment>
+        <source>In full screen the title bar keeps its add-ons and caption buttons. FullScreenTitleBarMode chooses AutoHide, Pinned, Docked or Hidden; FullScreenTitleBar replaces its content.</source>
+        <target state="translated">Em tela cheia a barra de título mantém seus complementos e botões de legenda. FullScreenTitleBarMode escolhe AutoHide, Pinned, Docked ou Hidden; FullScreenTitleBar substitui seu conteúdo.</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarHint">
+      <segment>
+        <source>Enter full screen, then move the pointer to the top edge. The pin in the title bar switches between AutoHide and Pinned while the window stays full screen.</source>
+        <target state="translated">Entre em tela cheia e leve o ponteiro à borda superior. O alfinete na barra de título alterna entre AutoHide e Pinned enquanto a janela continua em tela cheia.</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarOpenButtonText">
+      <segment>
+        <source>Open full screen title bar window</source>
+        <target state="translated">Abrir janela da barra de título em tela cheia</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarTitle">
+      <segment>
+        <source>Full screen title bar</source>
+        <target state="translated">Barra de título em tela cheia</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarToggleText">
+      <segment>
+        <source>Enter or exit full screen</source>
+        <target state="translated">Entrar ou sair da tela cheia</target>
+      </segment>
+    </unit>
     <unit id="IsTitleVisibleDescription">
       <segment>
         <source>IsTitleVisible=False hides only the title text inside the title bar; the taskbar and window switching still show the OS window title. Different from IsTitleBarVisible, which hides the whole title bar.</source>

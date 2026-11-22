@@ -29,7 +29,8 @@ internal static partial class WindowUtilsMacOS
     /// In full screen AppKit moves the standard window buttons into a separate system window (the title strip) that
     /// slides in together with the menu bar when the pointer reaches the top of the screen. The strip window is found
     /// through the public relation "the window that owns the close button", and its move notifications describe the
-    /// slide. When fusion is enabled, the strip's own background, decoration and shadow are hidden so that only the
+    /// slide. On a display with a camera housing the strip stays at the top of the client area and is faded in and
+    /// out instead, so its alpha is observed as well. When fusion is enabled, the strip's own background, decoration and shadow are hidden so that only the
     /// buttons remain over the managed title bar; the strip is restored exactly when fusion ends.
     /// </summary>
     [SupportedOSPlatform("macos")]
@@ -40,6 +41,9 @@ internal static partial class WindowUtilsMacOS
             WindowUtilsInterop.sel_registerName("removeObserver:name:object:");
         private static readonly IntPtr BoundsSelector = WindowUtilsInterop.sel_registerName("bounds");
         private static readonly IntPtr SetBoundsOriginSelector = WindowUtilsInterop.sel_registerName("setBoundsOrigin:");
+        private static readonly IntPtr AlphaValueSelector = WindowUtilsInterop.sel_registerName("alphaValue");
+        // Lives for the process: every tracker observes the same key path.
+        private static readonly IntPtr AlphaValueKeyPath = WindowUtilsInterop.CreateRetainedNSString("alphaValue");
 
         private readonly IntPtr _window;
         private readonly Action _metricsChanged;
@@ -50,6 +54,7 @@ internal static partial class WindowUtilsMacOS
         private IntPtr _offsetTitleBarView;
         private FullScreenTitleStripFusion _fusion;
         private bool _isFused;
+        private bool _isStripAlphaObserved;
         private bool _isDisposed;
 
         public MacOSFullScreenNativeChrome(IntPtr window, Action metricsChanged)
@@ -161,6 +166,16 @@ internal static partial class WindowUtilsMacOS
                     _observer,
                     WindowUtilsInterop.NSWindowDidMoveNotificationName,
                     _stripWindow);
+                if (_isStripAlphaObserved)
+                {
+                    WindowUtilsInterop.objc_msgSend_void_intptr_intptr(
+                        _stripWindow,
+                        WindowUtilsInterop.RemoveObserverForKeyPathSelector,
+                        _observer,
+                        AlphaValueKeyPath);
+                    _isStripAlphaObserved = false;
+                }
+
                 WindowUtilsInterop.objc_msgSend_void(_stripWindow, WindowUtilsInterop.ReleaseSelector);
             }
 
@@ -169,6 +184,20 @@ internal static partial class WindowUtilsMacOS
             {
                 WindowUtilsInterop.objc_msgSend_void(stripWindow, WindowUtilsInterop.RetainSelector);
                 AddObserver(WindowUtilsInterop.NSWindowDidMoveNotificationName, stripWindow);
+                // Where the full-screen window does not reach the top of the screen (a display with a camera
+                // housing), AppKit reveals the strip by fading it in at a fixed position: no move notification is
+                // posted and only the strip's alpha tells whether it is shown.
+                if (AlphaValueKeyPath != IntPtr.Zero)
+                {
+                    WindowUtilsInterop.objc_msgSend_void_intptr_intptr_nuint_intptr(
+                        stripWindow,
+                        WindowUtilsInterop.AddObserverForKeyPathSelector,
+                        _observer,
+                        AlphaValueKeyPath,
+                        0,
+                        IntPtr.Zero);
+                    _isStripAlphaObserved = true;
+                }
             }
         }
 
@@ -355,55 +384,46 @@ internal static partial class WindowUtilsMacOS
             var contentLayout   = WindowUtilsInterop.GetRect(_window, WindowUtilsInterop.ContentLayoutRectSelector);
             var windowTop       = windowFrame.Origin.Y + windowFrame.Size.Height;
             var persistentInset = Math.Max(0, windowFrame.Size.Height - (contentLayout.Origin.Y + contentLayout.Size.Height));
-            var extent          = 0.0;
-            var controlInset    = default(Thickness);
+            TitleStripState? strip = null;
 
             var closeButton = GetButton(_window, WindowUtilsInterop.NSWindowButton.CloseButton);
             if (_stripWindow != IntPtr.Zero && closeButton != IntPtr.Zero)
             {
-                var stripFrame     = WindowUtilsInterop.GetFrame(_stripWindow);
-                var stripTopOffset = windowTop - (stripFrame.Origin.Y + stripFrame.Size.Height);
-                if (_isFused)
+                var stripFrame = WindowUtilsInterop.GetFrame(_stripWindow);
+                var container  = WindowUtilsInterop.GetSuperview(WindowUtilsInterop.GetSuperview(closeButton));
+                var trailingEdge = 0.0;
+                foreach (var which in new[]
+                         {
+                             WindowUtilsInterop.NSWindowButton.CloseButton,
+                             WindowUtilsInterop.NSWindowButton.MiniaturizeButton,
+                             WindowUtilsInterop.NSWindowButton.ZoomButton
+                         })
                 {
-                    // The strip lies over the managed surface, so only the menu bar above the strip counts.
-                    extent = Math.Max(0, stripTopOffset);
-                }
-                else
-                {
-                    var container = WindowUtilsInterop.GetSuperview(WindowUtilsInterop.GetSuperview(closeButton));
-                    var stripHeight = container == IntPtr.Zero ? 0 : WindowUtilsInterop.GetFrame(container).Size.Height;
-                    extent = Math.Max(0, stripTopOffset + stripHeight);
-                }
-
-                if (_isFused && extent > persistentInset)
-                {
-                    var trailingEdge = 0.0;
-                    foreach (var which in new[]
-                             {
-                                 WindowUtilsInterop.NSWindowButton.CloseButton,
-                                 WindowUtilsInterop.NSWindowButton.MiniaturizeButton,
-                                 WindowUtilsInterop.NSWindowButton.ZoomButton
-                             })
+                    var button = GetButton(_window, which);
+                    if (button != IntPtr.Zero)
                     {
-                        var button = GetButton(_window, which);
-                        if (button != IntPtr.Zero)
-                        {
-                            var frame = WindowUtilsInterop.GetFrame(button);
-                            trailingEdge = Math.Max(trailingEdge, frame.Origin.X + frame.Size.Width);
-                        }
+                        var frame = WindowUtilsInterop.GetFrame(button);
+                        trailingEdge = Math.Max(trailingEdge, frame.Origin.X + frame.Size.Width);
                     }
-
-                    // Button frames are in the title bar view's bounds, which the fusion offsets.
-                    var boundsOffsetX = _offsetTitleBarView == IntPtr.Zero
-                        ? 0
-                        : WindowUtilsInterop.GetRect(_offsetTitleBarView, BoundsSelector).Origin.X;
-                    trailingEdge -= boundsOffsetX;
-                    var stripLeftOffset = stripFrame.Origin.X - windowFrame.Origin.X;
-                    controlInset = new Thickness(stripLeftOffset + trailingEdge + ControlTrailingMargin, 0, 0, 0);
                 }
+
+                // Button frames are in the title bar view's bounds, which the fusion offsets.
+                var boundsOffsetX = _offsetTitleBarView == IntPtr.Zero
+                    ? 0
+                    : WindowUtilsInterop.GetRect(_offsetTitleBarView, BoundsSelector).Origin.X;
+                strip = new TitleStripState(
+                    TopOffset: windowTop - (stripFrame.Origin.Y + stripFrame.Size.Height),
+                    // Without the expected container the strip window itself is the best known extent of the strip.
+                    Height: container == IntPtr.Zero
+                        ? stripFrame.Size.Height
+                        : WindowUtilsInterop.GetFrame(container).Size.Height,
+                    Alpha: WindowUtilsInterop.objc_msgSend_double(_stripWindow, AlphaValueSelector),
+                    IsFused: _isFused,
+                    ButtonsTrailingEdge: stripFrame.Origin.X - windowFrame.Origin.X + trailingEdge - boundsOffsetX +
+                                         ControlTrailingMargin);
             }
 
-            var metrics = new FullScreenNativeChromeMetrics(extent, controlInset, persistentInset);
+            var metrics = MacOSFullScreenChromeGeometry.Compute(persistentInset, strip);
             if (metrics == Metrics)
             {
                 return;

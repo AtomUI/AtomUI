@@ -211,6 +211,11 @@ internal static class WindowUtilsInterop
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern void objc_msgSend_void(IntPtr receiver, IntPtr selector);
 
+    // A double is returned in a floating-point register on both x64 and arm64; objc_msgSend_fpret is only for
+    // long double on x64.
+    [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
+    public static extern double objc_msgSend_double(IntPtr receiver, IntPtr selector);
+
     // NSPoint 为两个 double，x64 与 arm64 都按寄存器返回，不走 objc_msgSend_stret。
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern NSPoint objc_msgSend_point(IntPtr receiver, IntPtr selector);

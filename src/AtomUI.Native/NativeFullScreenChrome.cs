@@ -15,13 +15,70 @@ namespace AtomUI.Native;
 /// The leading and trailing widths taken by platform controls laid over the managed full-screen title bar.
 /// </param>
 /// <param name="PersistentInset">The client height covered by platform chrome that stays presented.</param>
+/// <param name="IsChromePresented">
+/// Whether the platform currently shows chrome of its own inside the client area. It is reported by the platform
+/// rather than derived from <paramref name="Extent"/>: platform chrome can be presented without covering any client
+/// height that the managed title bar has to stay clear of.
+/// </param>
 internal readonly record struct FullScreenNativeChromeMetrics(
     double Extent,
     Thickness ControlInset,
-    double PersistentInset)
+    double PersistentInset,
+    bool IsChromePresented);
+
+/// <summary>
+/// What AppKit currently reports about the title strip of a full-screen window, in client DIPs.
+/// </summary>
+/// <param name="TopOffset">The strip's top edge measured down from the top of the client area; negative above it.</param>
+/// <param name="Height">The height of the strip.</param>
+/// <param name="Alpha">The alpha of the system window that hosts the strip.</param>
+/// <param name="IsFused">Whether the strip is transparent and laid over the managed surface.</param>
+/// <param name="ButtonsTrailingEdge">
+/// The distance from the leading edge of the client area to the trailing edge reserved for the platform buttons.
+/// </param>
+internal readonly record struct TitleStripState(
+    double TopOffset,
+    double Height,
+    double Alpha,
+    bool IsFused,
+    double ButtonsTrailingEdge);
+
+/// <summary>
+/// Derives the full-screen chrome metrics from the observed title strip. It calls no platform API, so the rules are
+/// testable on every platform.
+/// </summary>
+internal static class MacOSFullScreenChromeGeometry
 {
-    /// <summary>Whether the platform currently presents chrome beyond its persistent part.</summary>
-    public bool IsChromePresented => Extent > PersistentInset;
+    /// <param name="persistentInset">The client height covered by platform chrome that stays presented.</param>
+    /// <param name="strip">The observed title strip; <c>null</c> when the window has none.</param>
+    public static FullScreenNativeChromeMetrics Compute(double persistentInset, TitleStripState? strip)
+    {
+        if (strip is not { } state)
+        {
+            return new FullScreenNativeChromeMetrics(0, default, persistentInset, false);
+        }
+
+        // The strip is presented while it is shown and reaches into the client area. AppKit hides it either by
+        // sliding it above the window or, where the window does not reach the top of the screen (a display with a
+        // camera housing), by fading it out in place; position alone cannot tell the second case.
+        var bottomOffset = state.TopOffset + state.Height;
+        var isPresented  = state.Alpha > 0 && bottomOffset > 0;
+        var extent       = 0.0;
+        if (state.IsFused)
+        {
+            // The strip lies over the managed surface, so only the menu bar above the strip counts.
+            extent = Math.Max(0, state.TopOffset);
+        }
+        else if (isPresented)
+        {
+            extent = bottomOffset;
+        }
+
+        var controlInset = state.IsFused && isPresented
+            ? new Thickness(state.ButtonsTrailingEdge, 0, 0, 0)
+            : default;
+        return new FullScreenNativeChromeMetrics(extent, controlInset, persistentInset, isPresented);
+    }
 }
 
 /// <summary>

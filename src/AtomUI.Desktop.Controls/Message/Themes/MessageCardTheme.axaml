@@ -40,7 +40,7 @@
             <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource InformationShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:MessageCardTokenResource ColorPrimary}" />
+                        Value="{atom:MessageCardTokenResource InformationIconColor}" />
             </Style>
         </Style>
 
@@ -56,7 +56,7 @@
             <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource ErrorShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:MessageCardTokenResource ColorError}" />
+                        Value="{atom:MessageCardTokenResource ErrorIconColor}" />
             </Style>
         </Style>
 
@@ -64,7 +64,7 @@
             <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource SuccessShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:MessageCardTokenResource ColorSuccess}" />
+                        Value="{atom:MessageCardTokenResource SuccessIconColor}" />
             </Style>
         </Style>
 
@@ -72,7 +72,7 @@
             <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource WarningShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:MessageCardTokenResource ColorWarning}" />
+                        Value="{atom:MessageCardTokenResource WarningIconColor}" />
             </Style>
         </Style>
 
@@ -128,5 +128,31 @@
             <Setter Property="Margin" Value="{atom:MessageCardTokenResource MessageIconMargin}" />
         </Style>
 
+        <!-- ========================= severity surfaces ========================= -->
+        <!-- After the generic message rule so a severity keeps its colours. -->
+        <Style Selector="^[MessageType=Information]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource InformationBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource InformationColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Success]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource SuccessBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource SuccessColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Warning]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource WarningBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource WarningColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Error]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource ErrorBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource ErrorColor}" />
+            </Style>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

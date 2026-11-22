@@ -1,4 +1,5 @@
 ﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -120,6 +121,156 @@ public sealed partial class NotificationCardToken : AbstractControlDesignToken
     /// </summary>
     public partial BoxShadows ErrorShadows { get; set; }
 
+    /// <summary>
+    /// Border thickness of the card frame; a design language draws a start bar with a thick leading side.
+    /// </summary>
+    public partial Thickness NotificationBorderThickness { get; set; }
+
+    /// <summary>
+    /// Border colour of a notification without a severity.
+    /// </summary>
+    public partial Color NotificationBorderColor { get; set; }
+
+    /// <summary>
+    /// Background of an information notification.
+    /// </summary>
+    public partial Color InformationBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an information notification.
+    /// </summary>
+    public partial Color InformationIconColor { get; set; }
+
+    /// <summary>
+    /// Border colour of an information notification.
+    /// </summary>
+    public partial Color InformationBorderColor { get; set; }
+
+    /// <summary>
+    /// Title colour of an information notification.
+    /// </summary>
+    public partial Color InformationTitleColor { get; set; }
+
+    /// <summary>
+    /// Description colour of an information notification.
+    /// </summary>
+    public partial Color InformationDescriptionColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an information notification.
+    /// </summary>
+    public partial Color InformationCloseIconColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an information notification while the close button is hovered or pressed.
+    /// </summary>
+    public partial Color InformationCloseIconHoverColor { get; set; }
+
+    /// <summary>
+    /// Background of an success notification.
+    /// </summary>
+    public partial Color SuccessBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an success notification.
+    /// </summary>
+    public partial Color SuccessIconColor { get; set; }
+
+    /// <summary>
+    /// Border colour of an success notification.
+    /// </summary>
+    public partial Color SuccessBorderColor { get; set; }
+
+    /// <summary>
+    /// Title colour of an success notification.
+    /// </summary>
+    public partial Color SuccessTitleColor { get; set; }
+
+    /// <summary>
+    /// Description colour of an success notification.
+    /// </summary>
+    public partial Color SuccessDescriptionColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an success notification.
+    /// </summary>
+    public partial Color SuccessCloseIconColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an success notification while the close button is hovered or pressed.
+    /// </summary>
+    public partial Color SuccessCloseIconHoverColor { get; set; }
+
+    /// <summary>
+    /// Background of an warning notification.
+    /// </summary>
+    public partial Color WarningBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an warning notification.
+    /// </summary>
+    public partial Color WarningIconColor { get; set; }
+
+    /// <summary>
+    /// Border colour of an warning notification.
+    /// </summary>
+    public partial Color WarningBorderColor { get; set; }
+
+    /// <summary>
+    /// Title colour of an warning notification.
+    /// </summary>
+    public partial Color WarningTitleColor { get; set; }
+
+    /// <summary>
+    /// Description colour of an warning notification.
+    /// </summary>
+    public partial Color WarningDescriptionColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an warning notification.
+    /// </summary>
+    public partial Color WarningCloseIconColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an warning notification while the close button is hovered or pressed.
+    /// </summary>
+    public partial Color WarningCloseIconHoverColor { get; set; }
+
+    /// <summary>
+    /// Background of an error notification.
+    /// </summary>
+    public partial Color ErrorBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an error notification.
+    /// </summary>
+    public partial Color ErrorIconColor { get; set; }
+
+    /// <summary>
+    /// Border colour of an error notification.
+    /// </summary>
+    public partial Color ErrorBorderColor { get; set; }
+
+    /// <summary>
+    /// Title colour of an error notification.
+    /// </summary>
+    public partial Color ErrorTitleColor { get; set; }
+
+    /// <summary>
+    /// Description colour of an error notification.
+    /// </summary>
+    public partial Color ErrorDescriptionColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an error notification.
+    /// </summary>
+    public partial Color ErrorCloseIconColor { get; set; }
+
+    /// <summary>
+    /// Close icon colour of an error notification while the close button is hovered or pressed.
+    /// </summary>
+    public partial Color ErrorCloseIconHoverColor { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -144,7 +295,42 @@ public sealed partial class NotificationCardToken : AbstractControlDesignToken
 
         // 卡片内边距上下对称：纵向 paddingMD、横向 paddingLG。
         NotificationPadding = new Thickness(paddingLG, paddingMD, paddingLG, paddingMD);
-        NotificationBg = EffectiveGlobalToken.ColorBgElevated;
+        // The severity backgrounds below default to this card background, so an explicit value carries over.
+        if (!IsExplicit(NotificationCardTokenKind.NotificationBg))
+        {
+            NotificationBg = EffectiveGlobalToken.ColorBgElevated;
+        }
+        // The severity surfaces default to the plain card: only the icon carries the severity.
+        NotificationBorderThickness = default;
+        NotificationBorderColor     = Colors.Transparent;
+        InformationBg               = NotificationBg;
+        InformationIconColor        = EffectiveGlobalToken.ColorPrimary;
+        InformationBorderColor      = Colors.Transparent;
+        InformationTitleColor       = EffectiveGlobalToken.ColorTextHeading;
+        InformationDescriptionColor = EffectiveGlobalToken.ColorText;
+        InformationCloseIconColor   = EffectiveGlobalToken.ColorIcon;
+        InformationCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
+        SuccessBg               = NotificationBg;
+        SuccessIconColor        = EffectiveGlobalToken.ColorSuccess;
+        SuccessBorderColor      = Colors.Transparent;
+        SuccessTitleColor       = EffectiveGlobalToken.ColorTextHeading;
+        SuccessDescriptionColor = EffectiveGlobalToken.ColorText;
+        SuccessCloseIconColor   = EffectiveGlobalToken.ColorIcon;
+        SuccessCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
+        WarningBg               = NotificationBg;
+        WarningIconColor        = EffectiveGlobalToken.ColorWarning;
+        WarningBorderColor      = Colors.Transparent;
+        WarningTitleColor       = EffectiveGlobalToken.ColorTextHeading;
+        WarningDescriptionColor = EffectiveGlobalToken.ColorText;
+        WarningCloseIconColor   = EffectiveGlobalToken.ColorIcon;
+        WarningCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
+        ErrorBg               = NotificationBg;
+        ErrorIconColor        = EffectiveGlobalToken.ColorError;
+        ErrorBorderColor      = Colors.Transparent;
+        ErrorTitleColor       = EffectiveGlobalToken.ColorTextHeading;
+        ErrorDescriptionColor = EffectiveGlobalToken.ColorText;
+        ErrorCloseIconColor   = EffectiveGlobalToken.ColorIcon;
+        ErrorCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
         NotificationIconSize = EffectiveGlobalToken.FontSizeLG * EffectiveGlobalToken.RelativeLineHeightLG;
         NotificationCloseButtonSize = EffectiveGlobalToken.ControlHeightLG * 0.55;
 

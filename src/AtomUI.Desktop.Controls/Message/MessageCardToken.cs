@@ -1,4 +1,5 @@
 ﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -54,6 +55,66 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
     /// </summary>
     public partial BoxShadows LoadingShadows { get; set; }
 
+    /// <summary>
+    /// Background of an information message.
+    /// </summary>
+    public partial Color InformationBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an information message.
+    /// </summary>
+    public partial Color InformationIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an information message.
+    /// </summary>
+    public partial Color InformationColor { get; set; }
+
+    /// <summary>
+    /// Background of an success message.
+    /// </summary>
+    public partial Color SuccessBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an success message.
+    /// </summary>
+    public partial Color SuccessIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an success message.
+    /// </summary>
+    public partial Color SuccessColor { get; set; }
+
+    /// <summary>
+    /// Background of an warning message.
+    /// </summary>
+    public partial Color WarningBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an warning message.
+    /// </summary>
+    public partial Color WarningIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an warning message.
+    /// </summary>
+    public partial Color WarningColor { get; set; }
+
+    /// <summary>
+    /// Background of an error message.
+    /// </summary>
+    public partial Color ErrorBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an error message.
+    /// </summary>
+    public partial Color ErrorIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an error message.
+    /// </summary>
+    public partial Color ErrorColor { get; set; }
+
     public MessageCardToken()
 
     {
@@ -69,7 +130,24 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
         WarningShadows      = EffectiveGlobalToken.BoxShadows;
         ErrorShadows        = EffectiveGlobalToken.BoxShadows;
         LoadingShadows      = EffectiveGlobalToken.BoxShadows;
-        ContentBg = EffectiveGlobalToken.ColorBgElevated;
+        // The severity backgrounds below default to this card background, so an explicit value carries over.
+        if (!IsExplicit(MessageCardTokenKind.ContentBg))
+        {
+            ContentBg = EffectiveGlobalToken.ColorBgElevated;
+        }
+        // The severity surfaces default to the plain card: only the icon carries the severity.
+        InformationBg    = ContentBg;
+        InformationIconColor = EffectiveGlobalToken.ColorPrimary;
+        InformationColor = EffectiveGlobalToken.ColorText;
+        SuccessBg    = ContentBg;
+        SuccessIconColor = EffectiveGlobalToken.ColorSuccess;
+        SuccessColor = EffectiveGlobalToken.ColorText;
+        WarningBg    = ContentBg;
+        WarningIconColor = EffectiveGlobalToken.ColorWarning;
+        WarningColor = EffectiveGlobalToken.ColorText;
+        ErrorBg    = ContentBg;
+        ErrorIconColor = EffectiveGlobalToken.ColorError;
+        ErrorColor = EffectiveGlobalToken.ColorText;
         ContentPadding = new Thickness(
             (EffectiveGlobalToken.ControlHeightLG -
              EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) / 2,

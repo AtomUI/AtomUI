@@ -199,7 +199,8 @@ public abstract class AbstractFloatButtonHost : TemplatedControl, IMotionAwareCo
     private protected AbstractFloatButton? FloatButton;
     private protected CompositeDisposable? Disposables;
     private ScopeAwareOverlayLayer? _overlayLayer;
-    
+    private VisualLayerManager? _surfaceHost;
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -218,14 +219,19 @@ public abstract class AbstractFloatButtonHost : TemplatedControl, IMotionAwareCo
         Disposables?.Dispose();
         Disposables =   new CompositeDisposable();
         FloatButton ??= CreateFloatButton(Disposables);
-        _overlayLayer?.Children.Add(FloatButton);
+        if (_overlayLayer != null)
+        {
+            // 浮动按钮带自己的表面宿主进入 T4 层；ControlTheme 不可行的原因见 FloatingSurfaceHost。
+            _surfaceHost = FloatingSurfaceHost.Attach(_overlayLayer, FloatButton, Disposables);
+        }
     }
 
     private void CleanupScopedOverlayLayer()
     {
         if (FloatButton != null)
         {
-            _overlayLayer?.Children.Remove(FloatButton);
+            FloatingSurfaceHost.Detach(_overlayLayer, _surfaceHost);
+            _surfaceHost = null;
             Disposables?.Dispose();
             Disposables = null;
             FloatButton = null;

@@ -5,8 +5,8 @@ namespace AtomUI.Controls.Primitives;
 
 internal class VisualLayerManagerUtils
 {
-    internal const int ScopeAwareAdornerLayerZIndex = int.MaxValue - 99;
-    internal const int ScopeAwareOverlayZIndex = int.MaxValue - 990;
+    internal const int ScopeAwareAdornerLayerZIndex = LayerLadder.ContentOverlay;
+    internal const int ScopeAwareOverlayZIndex = LayerLadder.ContentFloating;
     
     internal static T? FindLayer<T>(VisualLayerManager visualLayerManager) where T : class
     {

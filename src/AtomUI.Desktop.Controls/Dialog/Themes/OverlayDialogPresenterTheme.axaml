@@ -8,22 +8,27 @@
         <Setter Property="UseOwnerMotionDurationTokenResources" Value="True" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:OverlayDialogPresenter">
-                <Panel>
-                    <ContentControl Name="PART_MaskHost"
-                                    IsVisible="{TemplateBinding IsModal}"
-                                    ClipToBounds="False">
-                        <atom:OverlayDialogMask Name="PART_DialogMask"
-                                                Classes.semantic-scope-mask="True"
-                                                ClipToBounds="False" />
-                    </ContentControl>
-                    <Border Name="PART_SurfaceMotionRoot"
-                            Classes.semantic-scope-presenter="True"
-                            ClipToBounds="False">
-                        <ContentPresenter Classes.semantic-wrapper="True"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </Border>
-                </Panel>
+                <!-- layer: 表面宿主（规则 3）。作用域 Dialog 内控件的焦点描边、Badge 落在这里的装饰层，紧贴 Dialog 表面；
+                     窗口级 Dialog 共用本模板，它本身位于 Avalonia OverlayLayer 中，多一层宿主不改变其层级。 -->
+                <VisualLayerManager Name="PART_SurfaceHost"
+                                    atom:LayerLadder.IsSurfaceHost="True">
+                    <Panel>
+                        <ContentControl Name="PART_MaskHost"
+                                        IsVisible="{TemplateBinding IsModal}"
+                                        ClipToBounds="False">
+                            <atom:OverlayDialogMask Name="PART_DialogMask"
+                                                    Classes.semantic-scope-mask="True"
+                                                    ClipToBounds="False" />
+                        </ContentControl>
+                        <Border Name="PART_SurfaceMotionRoot"
+                                Classes.semantic-scope-presenter="True"
+                                ClipToBounds="False">
+                            <ContentPresenter Classes.semantic-wrapper="True"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </Border>
+                    </Panel>
+                </VisualLayerManager>
             </ControlTemplate>
         </Setter>
 

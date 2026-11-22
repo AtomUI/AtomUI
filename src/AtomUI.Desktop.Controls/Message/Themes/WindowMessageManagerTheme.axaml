@@ -9,30 +9,35 @@
             <ControlTemplate>
                 <!-- release/6.0 堆叠结构：StackHost 按方位锚定并紧贴可见队列（hover 命中区与队列范围一致），
                      presenter 拉满 StackHost，卡片间距由 FeedbackStackPanel 的 ExpandedGap 管理；
-                     semantic-list-content 标记 listContent 部件。 -->
-                <Grid Name="PART_StackHost"
-                      Margin="{TemplateBinding Padding}"
-                      ClipToBounds="False">
-                    <!-- Backplates stay arranged while transparent and never contribute to the host extent. -->
-                    <Panel Classes="message-backplates"
-                          Width="0" Height="0"
-                          HorizontalAlignment="Center"
-                          ClipToBounds="False"
-                          IsHitTestVisible="False">
-                        <Border Name="PART_SecondBackplate"
-                                Classes="message-backplate"
-                                Classes.stack-hidden="{Binding !IsSecondBackplateVisible, ElementName=PART_Items}"
-                                Width="{Binding SecondBackplateWidth, ElementName=PART_Items}"
-                                Margin="{Binding SecondBackplateMargin, ElementName=PART_Items}" />
-                        <Border Name="PART_FirstBackplate"
-                                Classes="message-backplate"
-                                Classes.stack-hidden="{Binding !IsFirstBackplateVisible, ElementName=PART_Items}"
-                                Width="{Binding FirstBackplateWidth, ElementName=PART_Items}"
-                                Margin="{Binding FirstBackplateMargin, ElementName=PART_Items}" />
-                    </Panel>
-                    <atom:FeedbackStackPresenter x:Name="PART_Items"
-                                          Classes.semantic-list-content="True" />
-                </Grid>
+                     semantic-list-content 标记 listContent 部件。
+                     layer: 外层是表面宿主（规则 3），卡片内控件的焦点描边、Badge 落在它的装饰层，紧贴本 manager 的卡片；
+                     它没有背景，不参与命中，StackHost 的命中区不变。 -->
+                <VisualLayerManager Name="PART_SurfaceHost"
+                                    atom:LayerLadder.IsSurfaceHost="True">
+                    <Grid Name="PART_StackHost"
+                          Margin="{TemplateBinding Padding}"
+                          ClipToBounds="False">
+                        <!-- Backplates stay arranged while transparent and never contribute to the host extent. -->
+                        <Panel Classes="message-backplates"
+                              Width="0" Height="0"
+                              HorizontalAlignment="Center"
+                              ClipToBounds="False"
+                              IsHitTestVisible="False">
+                            <Border Name="PART_SecondBackplate"
+                                    Classes="message-backplate"
+                                    Classes.stack-hidden="{Binding !IsSecondBackplateVisible, ElementName=PART_Items}"
+                                    Width="{Binding SecondBackplateWidth, ElementName=PART_Items}"
+                                    Margin="{Binding SecondBackplateMargin, ElementName=PART_Items}" />
+                            <Border Name="PART_FirstBackplate"
+                                    Classes="message-backplate"
+                                    Classes.stack-hidden="{Binding !IsFirstBackplateVisible, ElementName=PART_Items}"
+                                    Width="{Binding FirstBackplateWidth, ElementName=PART_Items}"
+                                    Margin="{Binding FirstBackplateMargin, ElementName=PART_Items}" />
+                        </Panel>
+                        <atom:FeedbackStackPresenter x:Name="PART_Items"
+                                              Classes.semantic-list-content="True" />
+                    </Grid>
+                </VisualLayerManager>
             </ControlTemplate>
         </Setter>
 

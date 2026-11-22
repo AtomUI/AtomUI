@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Commons;
 using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using Avalonia;
@@ -137,7 +138,8 @@ public class FloatButtonGroupHost : TemplatedControl, IMotionAwareControl
     private protected FloatButtonGroup? FloatButtonGroup;
     private protected CompositeDisposable? Disposables;
     private ScopeAwareOverlayLayer? _overlayLayer;
-    
+    private VisualLayerManager? _surfaceHost;
+
     public FloatButtonGroupHost()
     {
         Children.CollectionChanged += NotifyChildrenChanged;
@@ -161,7 +163,11 @@ public class FloatButtonGroupHost : TemplatedControl, IMotionAwareControl
         Disposables?.Dispose();
         Disposables =   new CompositeDisposable();
         FloatButtonGroup ??= NotifyCreateFloatButtonGroup(Disposables);
-        _overlayLayer?.Children.Add(FloatButtonGroup);
+        if (_overlayLayer != null)
+        {
+            // 浮动按钮组带自己的表面宿主进入 T4 层；ControlTheme 不可行的原因见 FloatingSurfaceHost。
+            _surfaceHost = FloatingSurfaceHost.Attach(_overlayLayer, FloatButtonGroup, Disposables);
+        }
     }
 
     private void CleanupScopedOverlayLayer()
@@ -169,7 +175,8 @@ public class FloatButtonGroupHost : TemplatedControl, IMotionAwareControl
         if (FloatButtonGroup != null)
         {
             DetachFloatButtonGroupChildren();
-            _overlayLayer?.Children.Remove(FloatButtonGroup);
+            FloatingSurfaceHost.Detach(_overlayLayer, _surfaceHost);
+            _surfaceHost = null;
             Disposables?.Dispose();
             Disposables      = null;
             FloatButtonGroup = null;

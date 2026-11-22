@@ -449,7 +449,7 @@ public abstract class AbstractFloatButton : AvaloniaButton, IMotionAwareControl
         {
             _overlayLayer.SizeChanged -= HandleLayerSizeChanged;
         }
-        _overlayLayer = IsEmbedMode ? null : parent as ScopeAwareOverlayLayer;
+        _overlayLayer = IsEmbedMode ? null : FloatingSurfaceHost.ResolveLayer(parent);
         if (_overlayLayer is not null)
         {
             _overlayLayer.SizeChanged += HandleLayerSizeChanged;

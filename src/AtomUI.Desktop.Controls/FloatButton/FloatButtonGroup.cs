@@ -548,7 +548,7 @@ public partial class FloatButtonGroup : TemplatedControl, IMotionAwareControl
         {
             _overlayLayer.SizeChanged -= HandleLayerSizeChanged;
         }
-        if (parent is ScopeAwareOverlayLayer scopeAwareOverlayLayer)
+        if (FloatingSurfaceHost.ResolveLayer(parent) is { } scopeAwareOverlayLayer)
         {
             _overlayLayer                      =  scopeAwareOverlayLayer;
             scopeAwareOverlayLayer.SizeChanged += HandleLayerSizeChanged;

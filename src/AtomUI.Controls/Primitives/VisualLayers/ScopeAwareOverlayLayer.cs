@@ -25,7 +25,9 @@ public class ScopeAwareOverlayLayer : Canvas
     public static ScopeAwareOverlayLayer? GetLayer(Visual visual)
     {
         Layoutable? layerHost = visual.FindAncestorOfType<ScopeAwareOverlayLayerPanel>(true);
-        layerHost ??= visual.FindAncestorOfType<VisualLayerManager>();
+        // 规则 2：比视口面板更近的表面宿主优先（滚动内容中 Drawer 内的 FloatButton 留在 Drawer 表面内）。
+        layerHost =   LayerLadder.PreferNearerSurfaceHost(visual, layerHost);
+        layerHost ??= LayerLadder.FindContentLayerManager(visual);
         layerHost ??= TopLevel.GetTopLevel(visual);
 
         if (layerHost == null)
@@ -63,19 +65,15 @@ public class ScopeAwareOverlayLayer : Canvas
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment   = VerticalAlignment.Stretch,
-            ZIndex              = VisualLayerManagerUtils.ScopeAwareOverlayZIndex
+            ZIndex              = LayerLadder.ContentFloating
         };
         try
         {
             layer.Injecting = true;
             layer.LayerHost = layerHost;
-            if (layerHost is VisualLayerManager visualLayerManager)
+            if (layerHost is VisualLayerManager or ScopeAwareOverlayLayerPanel)
             {
-                visualLayerManager.AddLayer(layer, layer.ZIndex);
-            }
-            else if (layerHost is ScopeAwareOverlayLayerPanel scopeAwareOverlayLayerPanel)
-            {
-                scopeAwareOverlayLayerPanel.Children.Add(layer);
+                LayerLadder.AddLayer(layerHost, layer, LayerLadder.ContentFloating);
             }
 
             return layer;

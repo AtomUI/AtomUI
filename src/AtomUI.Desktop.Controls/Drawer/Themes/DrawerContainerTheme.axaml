@@ -6,34 +6,39 @@
     <ControlTheme x:Key="{x:Type atom:DrawerContainer}" TargetType="atom:DrawerContainer">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="PART_RootClip"
-                        ClipToBounds="True"
-                        CornerRadius="{TemplateBinding CornerRadius}">
-                    <Panel Name="RootLayout">
-                        <Border Name="PART_Mask"
-                                Classes.semantic-mask="True"
-                                IsVisible="{TemplateBinding IsShowMask}"
-                                Background="{TemplateBinding Background}"
-                                atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}" />
-                        <Border Name="PART_Surface"
-                                atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}">
-                            <atom:DrawerInfoContainer
-                                Name="PART_InfoContainer"
-                                Placement="{TemplateBinding Placement}"
-                                Title="{TemplateBinding Title}"
-                                Footer="{TemplateBinding Footer}"
-                                FooterTemplate="{TemplateBinding FooterTemplate}"
-                                ContentPadding="{TemplateBinding ContentPadding}"
-                                Extra="{TemplateBinding Extra}"
-                                ExtraTemplate="{TemplateBinding ExtraTemplate}"
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                IsShowCloseButton="{TemplateBinding IsShowCloseButton}"
-                                DialogSize="{TemplateBinding DialogSize}"/>
-                        </Border>
-                    </Panel>
-                </Border>
+                <!-- layer: 表面宿主（规则 3）。Drawer 内控件的焦点描边、Badge 落在这里的装饰层，紧贴 Drawer 表面；
+                     Drawer 内的 Watermark / FloatButton / 作用域 Dialog 也就近落入它（规则 2）。 -->
+                <VisualLayerManager Name="PART_SurfaceHost"
+                                    atom:LayerLadder.IsSurfaceHost="True">
+                    <Border Name="PART_RootClip"
+                            ClipToBounds="True"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <Panel Name="RootLayout">
+                            <Border Name="PART_Mask"
+                                    Classes.semantic-mask="True"
+                                    IsVisible="{TemplateBinding IsShowMask}"
+                                    Background="{TemplateBinding Background}"
+                                    atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}" />
+                            <Border Name="PART_Surface"
+                                    atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}">
+                                <atom:DrawerInfoContainer
+                                    Name="PART_InfoContainer"
+                                    Placement="{TemplateBinding Placement}"
+                                    Title="{TemplateBinding Title}"
+                                    Footer="{TemplateBinding Footer}"
+                                    FooterTemplate="{TemplateBinding FooterTemplate}"
+                                    ContentPadding="{TemplateBinding ContentPadding}"
+                                    Extra="{TemplateBinding Extra}"
+                                    ExtraTemplate="{TemplateBinding ExtraTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    IsShowCloseButton="{TemplateBinding IsShowCloseButton}"
+                                    DialogSize="{TemplateBinding DialogSize}"/>
+                            </Border>
+                        </Panel>
+                    </Border>
+                </VisualLayerManager>
             </ControlTemplate>
         </Setter>
         

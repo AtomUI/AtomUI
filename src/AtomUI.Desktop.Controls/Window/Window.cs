@@ -3,6 +3,7 @@ using System.Runtime.Versioning;
 using System.Reactive.Disposables;
 using System.Windows.Input;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Native;
@@ -1118,7 +1119,15 @@ public partial class Window : AvaloniaWindow,
         base.OnApplyTemplate(e);
         _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
         AttachContentCacheParts(e.NameScope);
-        AttachFullScreenTitleBarHost(e.NameScope.Find<FullScreenTitleBarHost>("PART_FullScreenTitleBarHost"));
+        var fullScreenTitleBarHost = e.NameScope.Find<FullScreenTitleBarHost>("PART_FullScreenTitleBarHost");
+        var visualLayerManager     = e.NameScope.Find<VisualLayerManager>("PART_VisualLayerManager");
+        if (visualLayerManager is not null)
+        {
+            LayerLadder.EnsureContentDecorationOrder(visualLayerManager);
+        }
+
+        AttachWindowChromeLayer(visualLayerManager, fullScreenTitleBarHost);
+        AttachFullScreenTitleBarHost(fullScreenTitleBarHost);
 
         HandleCreateTitleBar();
         EnsureWindowsCsdMinimumHeight();

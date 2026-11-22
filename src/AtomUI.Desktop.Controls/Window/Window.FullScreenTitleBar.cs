@@ -1,7 +1,9 @@
 using System.Reactive.Disposables;
+using AtomUI.Controls.Primitives;
 using AtomUI.Native;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -24,6 +26,7 @@ public partial class Window
 
     private readonly HashSet<AvaloniaPopup> _fullScreenTitleBarPopups = new();
     private FullScreenTitleBarHost? _fullScreenTitleBarHost;
+    private WindowChromeLayer? _windowChromeLayer;
     private CompositeDisposable? _fullScreenTitleBarHostSubscriptions;
     private FullScreenTitleBarRevealController? _fullScreenTitleBarRevealController;
     private IFullScreenNativeChrome? _fullScreenNativeChrome;
@@ -90,6 +93,43 @@ public partial class Window
                                       isFocusWithin)));
     }
 
+    /// <summary>
+    /// Moves the template-declared full-screen title bar host into a fresh window chrome layer (T6) of the template's
+    /// <c>PART_VisualLayerManager</c>, releasing the layer of the previous template first.
+    /// </summary>
+    private void AttachWindowChromeLayer(VisualLayerManager? visualLayerManager, FullScreenTitleBarHost? host)
+    {
+        if (_windowChromeLayer is { } current &&
+            ReferenceEquals(current.GetVisualParent(), visualLayerManager) &&
+            ReferenceEquals(current.HostedTitleBar, host))
+        {
+            return;
+        }
+
+        ReleaseWindowChromeLayer();
+        if (visualLayerManager is null || host is null)
+        {
+            return;
+        }
+
+        // WindowChromeLayerTheme projects the manager's Padding (OffScreenMargin) onto the layer's Margin.
+        var layer = new WindowChromeLayer();
+        LayerLadder.AddLayer(visualLayerManager, layer, LayerLadder.WindowChrome);
+        layer.Host(host);
+        _windowChromeLayer = layer;
+    }
+
+    /// <summary>
+    /// Gives up the current window chrome layer: the title bar host leaves it.
+    /// Avalonia's VisualLayerManager has no API to remove an added layer (AddLayer is private and has no inverse), so
+    /// the emptied layer stays in its manager and is discarded together with the template that owns that manager.
+    /// </summary>
+    private void ReleaseWindowChromeLayer()
+    {
+        _windowChromeLayer?.Release();
+        _windowChromeLayer = null;
+    }
+
     private void DetachFullScreenTitleBar()
     {
         StopFullScreenTitleBarReveal();
@@ -97,6 +137,7 @@ public partial class Window
         _fullScreenTitleBarRevealController = null;
         ReleaseFullScreenNativeChrome();
         AttachFullScreenTitleBarHost(null);
+        ReleaseWindowChromeLayer();
     }
 
     /// <summary>

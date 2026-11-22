@@ -41,9 +41,10 @@ internal sealed class DialogOverlayLayer : Canvas
     private static (Panel HostLayer, TopLevel? TopLevel) ResolveHostLayer(Visual anchor, Control? overlayScope)
     {
         // OverlayScope：显式请求把宿主限定在某个作用域内（对齐上游 antd Modal 的 stage/setContainer 语义）。
-        // 作用域优先于默认 TopLevel 宿主；作用域落在普通窗口内时解析结果与默认宿主等价，行为不变。
+        // 作用域优先于默认 TopLevel 宿主；作用域 Dialog 与无 TopLevel 的 fallback 都进入作用域宿主的
+        // T5 ContentPresentationLayer（视口固定，位于同宿主 FloatButton 之上）。
         if (overlayScope is not null &&
-            ScopeAwareOverlayLayer.GetLayer(overlayScope) is { } scopedLayer)
+            ContentPresentationLayer.GetViewportLayer(overlayScope) is { } scopedLayer)
         {
             return (scopedLayer, null);
         }
@@ -55,7 +56,7 @@ internal sealed class DialogOverlayLayer : Canvas
             return (topLevelLayer, topLevel);
         }
 
-        var scopeLayer = ScopeAwareOverlayLayer.GetLayer(anchor) ??
+        var scopeLayer = ContentPresentationLayer.GetViewportLayer(anchor) ??
                          throw new InvalidOperationException("Unable to resolve an overlay layer for Dialog.");
         return (scopeLayer, null);
     }
@@ -134,7 +135,7 @@ internal sealed class DialogOverlayLayer : Canvas
     private void SynchronizeBounds()
     {
         var size = _topLevel?.ClientSize ??
-                   (_hostLayer is ScopeAwareOverlayLayer scopeLayer
+                   (_hostLayer is ContentPresentationLayer scopeLayer
                        ? scopeLayer.AvailableSize
                        : _hostLayer.Bounds.Size);
         if (size.Width <= 0 || size.Height <= 0)

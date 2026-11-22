@@ -158,6 +158,18 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     internal static readonly StyledProperty<double> ArrowSizeProperty =
         AvaloniaProperty.Register<AbstractArrowDecoratedBox, double>(nameof(ArrowSize));
 
+    /// <summary>The width of the arrow indicator's outline; a host such as the tooltip may draw it without one.</summary>
+    internal static readonly StyledProperty<double> ArrowStrokeThicknessProperty =
+        AvaloniaProperty.Register<AbstractArrowDecoratedBox, double>(nameof(ArrowStrokeThickness), 1.0);
+
+    /// <summary>Radius of the arrow's rounded tip (see <see cref="AtomUI.Controls.ArrowIndicator.TipRadius"/>).</summary>
+    internal static readonly StyledProperty<double> ArrowTipRadiusProperty =
+        AvaloniaProperty.Register<AbstractArrowDecoratedBox, double>(nameof(ArrowTipRadius));
+
+    /// <summary>Radius of the arcs joining the arrow to the box edge (see <see cref="AtomUI.Controls.ArrowIndicator.BaseRadius"/>).</summary>
+    internal static readonly StyledProperty<double> ArrowBaseRadiusProperty =
+        AvaloniaProperty.Register<AbstractArrowDecoratedBox, double>(nameof(ArrowBaseRadius));
+
     internal static readonly StyledProperty<Direction> ArrowDirectionProperty = 
         AvaloniaProperty.Register<AbstractArrowDecoratedBox, Direction>(nameof(ArrowDirection));
     
@@ -180,6 +192,24 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     {
         get => GetValue(ArrowSizeProperty);
         set => SetValue(ArrowSizeProperty, value);
+    }
+
+    internal double ArrowStrokeThickness
+    {
+        get => GetValue(ArrowStrokeThicknessProperty);
+        set => SetValue(ArrowStrokeThicknessProperty, value);
+    }
+
+    internal double ArrowTipRadius
+    {
+        get => GetValue(ArrowTipRadiusProperty);
+        set => SetValue(ArrowTipRadiusProperty, value);
+    }
+
+    internal double ArrowBaseRadius
+    {
+        get => GetValue(ArrowBaseRadiusProperty);
+        set => SetValue(ArrowBaseRadiusProperty, value);
     }
 
     internal Direction ArrowDirection
@@ -450,12 +480,7 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
             arrow.TryGetOutline(out var local) &&
             arrow.TransformToVisual(this) is { } arrowTransform)
         {
-            var outline = new ArrowOutline(
-                local.BaseStart.Transform(arrowTransform),
-                local.TipStart.Transform(arrowTransform),
-                local.TipControl.Transform(arrowTransform),
-                local.TipEnd.Transform(arrowTransform),
-                local.BaseEnd.Transform(arrowTransform));
+            var outline = local.Transform(arrowTransform);
             shape = shape with { HasArrow = true, Direction = ArrowDirection, Arrow = outline };
         }
 
@@ -520,11 +545,10 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
     private static void AppendArrow(StreamGeometryContext context, in ArrowOutline arrow, Direction edge, double edgeLine)
     {
         var horizontal = edge is Direction.Top or Direction.Bottom;
-        // Base points move onto the border's centre line along the arrow's sides.
-        var start = OnEdgeLine(arrow.BaseStart, arrow.TipStart, horizontal, edgeLine);
-        var end   = OnEdgeLine(arrow.BaseEnd, arrow.TipEnd, horizontal, edgeLine);
-        var tipStart = arrow.TipStart;
-        var tipEnd   = arrow.TipEnd;
+        // The base points move onto the border's centre line: along the sides for a sharp base, straight across for a
+        // flared one (its arcs leave the edge tangentially).
+        var start = OnEdgeLine(arrow.BaseStart, arrow.BaseRadius > 0 ? null : arrow.TipStart, horizontal, edgeLine);
+        var end   = OnEdgeLine(arrow.BaseEnd, arrow.BaseRadius > 0 ? null : arrow.TipEnd, horizontal, edgeLine);
         // Clockwise: left to right on top, top to bottom on the right, right to left at the bottom, bottom to top on
         // the left. The layout transform of the arrow can hand the points over in either order.
         var reversed = edge switch
@@ -534,29 +558,27 @@ public abstract class AbstractArrowDecoratedBox : ContentControl,
             Direction.Bottom => start.X < end.X,
             _ => start.Y < end.Y
         };
-        if (reversed)
-        {
-            (start, end)       = (end, start);
-            (tipStart, tipEnd) = (tipEnd, tipStart);
-        }
 
-        context.LineTo(start);
-        context.LineTo(tipStart);
-        context.QuadraticBezierTo(arrow.TipControl, tipEnd);
-        context.LineTo(end);
+        context.LineTo(reversed ? end : start);
+        arrow.AppendSides(context, reversed, reversed ? start : end);
     }
 
-    private static Point OnEdgeLine(Point basePoint, Point sidePoint, bool horizontal, double edgeLine)
+    private static Point OnEdgeLine(Point basePoint, Point? sidePoint, bool horizontal, double edgeLine)
     {
+        if (sidePoint is not { } side)
+        {
+            return horizontal ? basePoint.WithY(edgeLine) : basePoint.WithX(edgeLine);
+        }
+
         var from = horizontal ? basePoint.Y : basePoint.X;
-        var to   = horizontal ? sidePoint.Y : sidePoint.X;
+        var to   = horizontal ? side.Y : side.X;
         if (Math.Abs(to - from) < double.Epsilon)
         {
             return basePoint;
         }
 
         var t = (edgeLine - from) / (to - from);
-        return basePoint + (sidePoint - basePoint) * t;
+        return basePoint + (side - basePoint) * t;
     }
 
     private readonly record struct OutlineShape(

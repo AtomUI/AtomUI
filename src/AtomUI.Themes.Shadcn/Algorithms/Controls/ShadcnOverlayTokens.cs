@@ -120,5 +120,10 @@ internal sealed class ShadcnArrowDecoratedBoxTokens : IControlTokenAlgorithm<Arr
         token.ContentBorderColor     = ShadcnStyles.OutlineRing(surface, dark, style);
         token.ContentBorderThickness = new Thickness(1);
         token.ContentPadding         = new Thickness(style.Overlay.PopoverPadding);
+        // shadcn's popovers have no arrow; the arrow flyouts take the tooltip's arrow (ShadcnToolTipTokens) instead of
+        // the antd shape, whose tip radius (BorderRadiusXS) follows the style's large button radius here.
+        token.ArrowSize       = ShadcnToolTipTokens.ArrowSize;
+        token.ArrowTipRadius  = ShadcnToolTipTokens.ArrowTipRadius;
+        token.ArrowBaseRadius = 0;
     }
 }

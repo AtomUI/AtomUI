@@ -50,6 +50,34 @@ public sealed partial class ToolTipToken : AbstractControlDesignToken
     /// </summary>
     public partial BoxShadows ToolTipShadows { get; set; }
 
+    /// <summary>
+    /// The gap between the anchor and the tooltip (the arrow's tip when it shows one), used while neither the host
+    /// nor the tooltip sets <c>ToolTip.MarginToAnchor</c>. Defaults to 4, the attached property's default.
+    /// </summary>
+    public partial double MarginToAnchor { get; set; }
+
+    /// <summary>
+    /// Radius of the tooltip arrow's rounded tip; defaults to the arrow box's (<c>BorderRadiusXS</c>).
+    /// </summary>
+    public partial double ArrowTipRadius { get; set; }
+
+    /// <summary>
+    /// Radius of the arcs joining the tooltip arrow to the box edge; defaults to the arrow box's (<c>BorderRadiusOuter</c>).
+    /// </summary>
+    public partial double ArrowBaseRadius { get; set; }
+
+    /// <summary>
+    /// The size of the tooltip's arrow. Defaults to the arrow box's own default (<c>SizePopupArrow</c>); a theme
+    /// whose tooltip arrow is smaller than its popover arrow (PrimeNG <c>tooltip.gutter</c>) sets it here.
+    /// </summary>
+    public partial double ArrowSize { get; set; }
+
+    /// <summary>
+    /// The width of the tooltip arrow's outline. Defaults to the arrow box's default of 1; 0 draws a plain filled
+    /// arrow (PrimeNG's tooltip arrow is a border triangle without an outline).
+    /// </summary>
+    public partial double ArrowStrokeThickness { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -61,6 +89,11 @@ public sealed partial class ToolTipToken : AbstractControlDesignToken
         ContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
         MotionDuration = EffectiveGlobalToken.MotionDurationFast;
         ToolTipShadows = EffectiveGlobalToken.BoxShadowsSecondary;
+        MarginToAnchor       = 4;
+        ArrowSize            = EffectiveGlobalToken.SizePopupArrow;
+        ArrowTipRadius       = EffectiveGlobalToken.BorderRadiusXS.TopLeft;
+        ArrowBaseRadius      = EffectiveGlobalToken.BorderRadiusOuter.TopLeft;
+        ArrowStrokeThickness = 1;
     }
     
 }

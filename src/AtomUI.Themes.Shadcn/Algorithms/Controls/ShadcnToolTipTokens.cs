@@ -29,6 +29,16 @@ namespace AtomUI.Themes.Shadcn.Algorithms.Controls;
 [ControlTokenAlgorithm(ShadcnStyles.Catalog, "Rhea.Dark", 1)]
 internal sealed class ShadcnToolTipTokens : IControlTokenAlgorithm<ToolTipToken>
 {
+    /// <summary>
+    /// TooltipPrimitive.Arrow: a size-2.5 square rotated 45° with rounded-[2px] corners, moved up by half its size
+    /// plus 2px, so 5√2 - 2 of its unrounded corner shows beyond the box: a right-angled arrow twice that wide with a
+    /// 2px tip and no flare.
+    /// </summary>
+    internal static readonly double ArrowSize = 2 * (5 * Math.Sqrt(2) - 2);
+
+    /// <summary>The <c>rounded-[2px]</c> corner of the arrow square.</summary>
+    internal const double ArrowTipRadius = 2;
+
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
@@ -46,5 +56,8 @@ internal sealed class ShadcnToolTipTokens : IControlTokenAlgorithm<ToolTipToken>
         token.ContentPadding    = new Thickness(12, 6, 12, 6);
         // The official tooltip has no shadow and no ring.
         token.ToolTipShadows    = default;
+        token.ArrowSize       = ArrowSize;
+        token.ArrowTipRadius  = ArrowTipRadius;
+        token.ArrowBaseRadius = 0;
     }
 }

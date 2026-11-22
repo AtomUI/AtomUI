@@ -19,8 +19,10 @@
                             Classes.semantic-arrow="True"
                             FilledColor="{TemplateBinding Background}"
                             ArrowSize="{TemplateBinding ArrowSize}"
+                            TipRadius="{TemplateBinding ArrowTipRadius}"
+                            BaseRadius="{TemplateBinding ArrowBaseRadius}"
                             StrokeBrush="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeColor}"
-                            StrokeThickness="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeThickness}"/>
+                            StrokeThickness="{TemplateBinding ArrowStrokeThickness}"/>
                     </LayoutTransformControl>
                 </Panel>
                 <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
@@ -53,6 +55,9 @@
         <Setter Property="MinHeight" Value="{atom:ArrowDecoratedBoxTokenResource ContentMinHeight}" />
         <Setter Property="Padding" Value="{atom:ArrowDecoratedBoxTokenResource ContentPadding}" />
         <Setter Property="ArrowSize" Value="{atom:ArrowDecoratedBoxTokenResource ArrowSize}" />
+        <Setter Property="ArrowStrokeThickness" Value="{atom:ArrowDecoratedBoxTokenResource ArrowStrokeThickness}" />
+        <Setter Property="ArrowTipRadius" Value="{atom:ArrowDecoratedBoxTokenResource ArrowTipRadius}" />
+        <Setter Property="ArrowBaseRadius" Value="{atom:ArrowDecoratedBoxTokenResource ArrowBaseRadius}" />
         <Setter Property="CornerRadius" Value="{atom:ArrowDecoratedBoxTokenResource BorderRadius}" />
 
         <!-- With a border the box itself draws background and border as one outline around box and arrow

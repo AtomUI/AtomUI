@@ -163,6 +163,13 @@ public partial class ToolTip : ContentControl,
     internal static readonly StyledProperty<IBrush?> ColorBackgroundProperty =
         AvaloniaProperty.Register<ToolTip, IBrush?>(nameof(ColorBackground));
 
+    /// <summary>
+    /// The theme's gap to the anchor (the <c>MarginToAnchor</c> token), used while neither the host nor this tooltip
+    /// sets <see cref="MarginToAnchorProperty"/>.
+    /// </summary>
+    internal static readonly StyledProperty<double> ThemeMarginToAnchorProperty =
+        AvaloniaProperty.Register<ToolTip, double>(nameof(ThemeMarginToAnchor), 4);
+
     private static readonly AttachedProperty<EventHandler<VisualTreeAttachmentEventArgs>?> PendingAttachHandlerProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, EventHandler<VisualTreeAttachmentEventArgs>?>("PendingAttachHandler");
 
@@ -176,6 +183,12 @@ public partial class ToolTip : ContentControl,
     {
         get => GetValue(ColorBackgroundProperty);
         set => SetValue(ColorBackgroundProperty, value);
+    }
+
+    internal double ThemeMarginToAnchor
+    {
+        get => GetValue(ThemeMarginToAnchorProperty);
+        set => SetValue(ThemeMarginToAnchorProperty, value);
     }
 
     internal bool ShouldUseOverlayPopup
@@ -693,7 +706,7 @@ public partial class ToolTip : ContentControl,
             _popup.Bind(Popup.HorizontalOffsetProperty, ResolveValueSource(control, HorizontalOffsetProperty).GetBindingObservable(HorizontalOffsetProperty)),
             _popup.Bind(Popup.VerticalOffsetProperty, ResolveValueSource(control, VerticalOffsetProperty).GetBindingObservable(VerticalOffsetProperty)),
             _popup.Bind(Popup.RequestedPlacementProperty, ResolveValueSource(control, PlacementProperty).GetBindingObservable(PlacementProperty, v => (PlacementMode?)v)),
-            _popup.Bind(Popup.MarginToAnchorProperty, ResolveValueSource(control, MarginToAnchorProperty).GetBindingObservable(MarginToAnchorProperty)),
+            _popup.Bind(Popup.MarginToAnchorProperty, ResolveMarginToAnchor(control)),
             _popup.Bind(Popup.IsPointAtCenterProperty, ResolveValueSource(control, IsPointAtCenterProperty).GetBindingObservable(IsPointAtCenterProperty)),
             _popup.Bind(Popup.IsPopupPinnedOpenProperty, control.GetBindingObservable(IsPopupPinnedOpenProperty)),
         ]);
@@ -721,6 +734,21 @@ public partial class ToolTip : ContentControl,
     private AvaloniaObject ResolveValueSource(Control host, AvaloniaProperty property)
     {
         return IsSet(property) ? this : host;
+    }
+
+    /// <summary>
+    /// The gap to the anchor: an explicit value on this tooltip, then one on the host, then the theme's token.
+    /// </summary>
+    private IObservable<double> ResolveMarginToAnchor(Control host)
+    {
+        if (IsSet(MarginToAnchorProperty))
+        {
+            return this.GetObservable(MarginToAnchorProperty);
+        }
+
+        return host.IsSet(MarginToAnchorProperty)
+            ? host.GetObservable(MarginToAnchorProperty)
+            : this.GetObservable(ThemeMarginToAnchorProperty);
     }
 
     private T GetToolTipValue<T>(Control host, AttachedProperty<T> property)

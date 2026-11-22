@@ -15,6 +15,18 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
     public partial double ArrowSize { get; set; }
 
     /// <summary>
+    /// 箭头尖角圆角半径
+    /// Radius of the arrow's rounded tip (antd <c>borderRadiusXS</c>)
+    /// </summary>
+    public partial double ArrowTipRadius { get; set; }
+
+    /// <summary>
+    /// 箭头与内容框衔接处的圆弧半径
+    /// Radius of the arcs joining the arrow's sides to the box edge (antd <c>borderRadiusOuter</c>)
+    /// </summary>
+    public partial double ArrowBaseRadius { get; set; }
+
+    /// <summary>
     /// 默认的内边距
     /// </summary>
     public partial Thickness ContentPadding { get; set; }
@@ -54,7 +66,11 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ArrowSize            = EffectiveGlobalToken.SizePopupArrow / 1.3;
+        // antd genRoundedArrow: sizePopupArrow wide, half as high, borderRadiusXS at the tip and borderRadiusOuter
+        // where the sides meet the box.
+        ArrowSize            = EffectiveGlobalToken.SizePopupArrow;
+        ArrowTipRadius       = EffectiveGlobalToken.BorderRadiusXS.TopLeft;
+        ArrowBaseRadius      = EffectiveGlobalToken.BorderRadiusOuter.TopLeft;
         ContentPadding       = EffectiveGlobalToken.PaddingXS;
         ArrowStrokeColor     = ColorUtils.FromRgbF(0.07, 0, 0, 0);
         ArrowStrokeThickness = 1;

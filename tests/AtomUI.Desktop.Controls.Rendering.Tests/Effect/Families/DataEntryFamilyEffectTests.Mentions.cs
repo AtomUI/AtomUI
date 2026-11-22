@@ -71,16 +71,17 @@ public partial class DataEntryFamilyEffectTests
 
     // CandidateList and CandidateListItem reuse these two themes. These are their actual owner reads, independent of the
     // Mentions consumption-map rows; LineWidth is suppressed by CandidateListItemTheme's zero BorderThickness in all states.
+    // The selected check reads ItemSelectedIndicatorColor, which CandidateListTheme feeds from the owner's ColorPrimary.
     private static readonly InputFamilyEffectTests.OwnerReadList s_candidateList = new(
         "src/AtomUI.Desktop.Controls/ListBox/Themes/ListBoxTheme.axaml",
         ["EnableMotion", "ColorSplit", "BorderThickness", "BorderRadiusLG", "PaddingXL", "BorderRadius", "Padding", "BorderRadiusSM"]);
 
     private static readonly InputFamilyEffectTests.OwnerReadList s_candidateItem = new(
         "src/AtomUI.Desktop.Controls/ListBox/Themes/ListBoxItemTheme.axaml",
-        ["LineWidth", "ColorSplit", "ColorPrimary", "IconSize", "ControlHeightLG", "ControlHeight", "ControlHeightSM"]);
+        ["LineWidth", "ColorSplit", "IconSize", "ControlHeightLG", "ControlHeight", "ControlHeightSM"]);
 
     public static IEnumerable<object[]> CandidateOwnerRows() =>
-        s_candidateList.Tokens.Concat(s_candidateItem.Tokens).Distinct(StringComparer.Ordinal)
+        s_candidateList.Tokens.Concat(s_candidateItem.Tokens).Append("ColorPrimary").Distinct(StringComparer.Ordinal)
                        .Where(static token => token != "LineWidth").Order(StringComparer.Ordinal)
                        .Select(static token => new object[] { token });
 

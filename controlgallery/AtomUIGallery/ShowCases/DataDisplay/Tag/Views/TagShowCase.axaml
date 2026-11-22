@@ -403,6 +403,7 @@
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Tag.semantic-object">
                                         <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
+                                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         <atom:TagIconStyle x:SetterTargetType="atom:IconPresenter">
                                             <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                                         </atom:TagIconStyle>

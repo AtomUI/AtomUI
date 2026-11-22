@@ -241,13 +241,13 @@
         IsDeferredContentEnabled="True">
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:ProgressBarViewModel">
-        <WrapPanel Orientation="Horizontal" Width="180" HorizontalAlignment="Left">
+        <StackPanel Orientation="Vertical" Spacing="10" Width="180" HorizontalAlignment="Left">
             <atom:ProgressBar Value="30" Minimum="0" Maximum="100" SizeType="Middle" />
             <atom:ProgressBar Value="50" Minimum="0" Maximum="100" SizeType="Middle" />
             <atom:ProgressBar Value="70" Minimum="0" Maximum="100" Status="Exception" SizeType="Middle" />
             <atom:ProgressBar Value="100" Minimum="0" Maximum="100" SizeType="Middle" />
             <atom:ProgressBar Value="50" Minimum="0" Maximum="100" IsProgressInfoVisible="False" SizeType="Middle" />
-        </WrapPanel>
+        </StackPanel>
 
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
@@ -683,7 +683,7 @@
                         <DataTemplate x:DataType="vm:ProgressBarViewModel">
                             <StackPanel Orientation="Vertical"
                                         HorizontalAlignment="Stretch"
-                                        Spacing="0">
+                                        Spacing="10">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|ProgressBar.semantic-style-demo">
                                         <Setter Property="Padding" Value="2" />

@@ -1,5 +1,6 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -77,7 +78,7 @@ internal class TourLayer : Control, IMotionAwareControl
         if (_combinedGeometry is not null &&
             _combinedLayerRect == layerRect &&
             _combinedTargetRegion == targetRegion &&
-            _combinedTargetRegionCornerRadius == targetRegionCornerRadius)
+            MathUtils.AreClose(_combinedTargetRegionCornerRadius, targetRegionCornerRadius))
         {
             return _combinedGeometry;
         }

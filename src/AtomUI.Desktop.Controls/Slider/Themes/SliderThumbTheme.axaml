@@ -10,7 +10,7 @@
         <Setter Property="Focusable" Value="True" />
         <!-- :focus enlarges the handle and draws its outline ring (Ant Design handle focus style). -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
-        <Setter Property="Background" Value="{atom:SliderTokenResource ColorBgContainer}" />
+        <Setter Property="Background" Value="{atom:SliderTokenResource ThumbBg}" />
         <Setter Property="BorderThickness"
                 Value="{atom:SliderTokenResource ThumbCircleBorderThickness}" />
         <Setter Property="BorderBrush" Value="{atom:SliderTokenResource ThumbCircleBorderColor}" />
@@ -31,7 +31,7 @@
             <Setter Property="ThumbCircleSize"
                     Value="{atom:SliderTokenResource ThumbCircleSizeHover}" />
             <Setter Property="OutlineThickness"
-                    Value="{atom:SliderTokenResource ThumbOutlineThickness}" />
+                    Value="{atom:SliderTokenResource ThumbHoverOutlineThickness}" />
         </Style>
 
         <Style Selector="^:focus">

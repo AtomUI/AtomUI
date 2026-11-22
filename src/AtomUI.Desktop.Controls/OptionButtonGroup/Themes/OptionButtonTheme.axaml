@@ -177,9 +177,11 @@
             </Style>
             <Style Selector="^:checked">
                 <Setter Property="Foreground"
-                        Value="{atom:OptionButtonTokenResource ColorPrimary}" />
+                        Value="{atom:OptionButtonTokenResource ButtonOutlineCheckedColor}" />
                 <Setter Property="BorderBrush"
                         Value="{atom:OptionButtonTokenResource ColorPrimary}" />
+                <Setter Property="OutlineCheckedFill"
+                        Value="{atom:OptionButtonTokenResource ButtonOutlineCheckedBackground}" />
             </Style>
 
             <Style Selector="^:unchecked">
@@ -201,6 +203,17 @@
                         Value="{atom:OptionButtonTokenResource ColorPrimaryActive}" />
                 <Setter Property="BorderBrush"
                         Value="{atom:OptionButtonTokenResource ColorPrimaryActive}" />
+            </Style>
+
+            <!-- After the generic hover / pressed rules: the checked text keeps its own colours (on a filled cell). -->
+            <Style Selector="^:checked:pointerover">
+                <Setter Property="Foreground"
+                        Value="{atom:OptionButtonTokenResource ButtonOutlineCheckedHoverColor}" />
+            </Style>
+
+            <Style Selector="^:checked:pressed">
+                <Setter Property="Foreground"
+                        Value="{atom:OptionButtonTokenResource ButtonOutlineCheckedActiveColor}" />
             </Style>
 
             <Style Selector="^:disabled">

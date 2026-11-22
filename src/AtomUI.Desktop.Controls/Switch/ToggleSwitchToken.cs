@@ -148,6 +148,12 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
     /// 开关的颜色
     /// </summary>
     public partial Color SwitchColor { get; set; }
+
+    /// <summary>
+    /// 未选中时轨道内文字 / 图标颜色
+    /// Colour of the inner text and icon on the unchecked track
+    /// </summary>
+    public partial Color UncheckedContentColor { get; set; }
     
     /// <summary>
     /// 开源禁用状态的透明度
@@ -231,6 +237,7 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
         InnerMaxMarginSM = handleSizeSM + padding * 3;
         
         SwitchColor            = EffectiveGlobalToken.ColorPrimary;
+        UncheckedContentColor  = EffectiveGlobalToken.ColorTextLightSolid;
         SwitchDisabledOpacity  = EffectiveGlobalToken.OpacityLoading;
 
         if (!IsExplicit(ToggleSwitchTokenKind.ExtraInfoFontSize))

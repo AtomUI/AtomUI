@@ -39,6 +39,9 @@ public sealed partial class RadioButtonToken : AbstractControlDesignToken
 
     public partial Thickness TextMargin { get; set; }
 
+    /// <summary>The border of an unchecked indicator under the pointer.</summary>
+    public partial Color IndicatorHoverBorderColor { get; set; }
+
     public RadioButtonToken()
 
     {
@@ -65,6 +68,7 @@ public sealed partial class RadioButtonToken : AbstractControlDesignToken
         // internal
         RadioColor   = colorWhite;
         RadioBgColor = colorPrimary;
+        IndicatorHoverBorderColor = colorPrimary;
         TextMargin   = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
     }
     

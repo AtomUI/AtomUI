@@ -47,6 +47,26 @@ public sealed partial class OptionButtonToken : AbstractControlDesignToken
     public partial Color ButtonCheckedColorDisabled { get; set; }
 
     /// <summary>
+    /// Fill of the checked option in the outline style (transparent: only the border and text show the selection).
+    /// </summary>
+    public partial Color ButtonOutlineCheckedBackground { get; set; }
+
+    /// <summary>
+    /// Text colour of the checked option in the outline style.
+    /// </summary>
+    public partial Color ButtonOutlineCheckedColor { get; set; }
+
+    /// <summary>
+    /// Text colour of the checked option in the outline style while hovered.
+    /// </summary>
+    public partial Color ButtonOutlineCheckedHoverColor { get; set; }
+
+    /// <summary>
+    /// Text colour of the checked option in the outline style while pressed.
+    /// </summary>
+    public partial Color ButtonOutlineCheckedActiveColor { get; set; }
+
+    /// <summary>
     /// 单选框实色按钮选中时的文本颜色
     /// </summary>
     public partial Color ButtonSolidCheckedColor { get; set; }
@@ -124,6 +144,10 @@ public sealed partial class OptionButtonToken : AbstractControlDesignToken
         ButtonSolidCheckedHoverBackground  = EffectiveGlobalToken.ColorPrimaryHover;
         ButtonSolidCheckedActiveBackground = EffectiveGlobalToken.ColorPrimaryActive;
         ButtonBackground                   = EffectiveGlobalToken.ColorBgContainer;
+        ButtonOutlineCheckedBackground     = Colors.Transparent;
+        ButtonOutlineCheckedColor          = EffectiveGlobalToken.ColorPrimary;
+        ButtonOutlineCheckedHoverColor     = EffectiveGlobalToken.ColorPrimaryHover;
+        ButtonOutlineCheckedActiveColor    = EffectiveGlobalToken.ColorPrimaryActive;
         ButtonCheckedBackground            = EffectiveGlobalToken.ColorBgContainer;
         ButtonColor                        = EffectiveGlobalToken.ColorText;
         ButtonCheckedBgDisabled            = EffectiveGlobalToken.ControlItemBgActiveDisabled;

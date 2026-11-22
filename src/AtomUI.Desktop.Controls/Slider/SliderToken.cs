@@ -116,6 +116,12 @@ public sealed partial class SliderToken : AbstractControlDesignToken
     public partial Color ThumbCircleBorderColorDisabled { get; set; }
 
     /// <summary>
+    /// 滑块填充色
+    /// Fill of the thumb circle
+    /// </summary>
+    public partial Color ThumbBg { get; set; }
+
+    /// <summary>
     /// 滑块的 outline 环的颜色
     /// </summary>
     public partial Color ThumbOutlineColor { get; set; }
@@ -124,6 +130,12 @@ public sealed partial class SliderToken : AbstractControlDesignToken
     /// 滑块的 outline 环的厚度
     /// </summary>
     public partial Thickness ThumbOutlineThickness { get; set; }
+
+    /// <summary>
+    /// 悬停时滑块 outline 环的厚度
+    /// Thickness of the thumb's outline ring under the pointer (the focus ring is <see cref="ThumbOutlineThickness"/>)
+    /// </summary>
+    public partial Thickness ThumbHoverOutlineThickness { get; set; }
 
     /// <summary>
     /// 轨道禁用态背景色
@@ -198,6 +210,7 @@ public sealed partial class SliderToken : AbstractControlDesignToken
             trackCrossSize / 2);
         MarginPartWithMark = new Thickness(0, 0, 0, EffectiveGlobalToken.ControlHeightLG - controlSize);
 
+        ThumbBg = EffectiveGlobalToken.ColorBgContainer;
         ThumbOutlineColor = ColorUtils.FromRgbF(0.2, ThumbCircleBorderActiveColor.GetRedF(),
             ThumbCircleBorderActiveColor.GetGreenF(),
             ThumbCircleBorderActiveColor.GetBlueF());
@@ -206,6 +219,8 @@ public sealed partial class SliderToken : AbstractControlDesignToken
         {
             ThumbOutlineThickness = new Thickness(EffectiveGlobalToken.WaveAnimationRange);
         }
+
+        ThumbHoverOutlineThickness = ThumbOutlineThickness;
 
         ThumbSize = ThumbCircleSizeHover + ThumbCircleBorderThicknessHover.Left * 2 + ThumbOutlineThickness.Left * 2;
     }

@@ -78,14 +78,14 @@
         <Style Selector="^:not(:checked):pointerover">
             <Style Selector="^ /template/ atom|CheckBoxIndicator#Indicator">
                 <Setter Property="BorderBrush"
-                        Value="{atom:CheckBoxTokenResource ColorPrimaryHover}" />
+                        Value="{atom:CheckBoxTokenResource IndicatorHoverBorderColor}" />
             </Style>
         </Style>
 
         <Style Selector="^:indeterminate:pointerover">
             <Style Selector="^ /template/ atom|CheckBoxIndicator#Indicator">
                 <Setter Property="BorderBrush"
-                        Value="{atom:CheckBoxTokenResource ColorPrimaryHover}" />
+                        Value="{atom:CheckBoxTokenResource IndicatorHoverBorderColor}" />
             </Style>
         </Style>
 

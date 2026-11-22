@@ -490,7 +490,8 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                     context,
                     optionBounds,
                     i,
-                    renderBorderThickness);
+                    renderBorderThickness,
+                    optionButton.OutlineCheckedFill);
             }
         }
     }
@@ -552,7 +553,8 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         DrawingContext context,
         Rect optionBounds,
         int selectedIndex,
-        Thickness renderBorderThickness)
+        Thickness renderBorderThickness,
+        IBrush? fill)
     {
         var selectedBounds = optionBounds;
         if (selectedIndex > 0)
@@ -577,7 +579,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
             renderBorderThickness,
             BuildSelectedCornerRadius(selectedIndex),
             BackgroundSizing.InnerBorderEdge,
-            null,
+            fill,
             SelectedOptionBorderColor);
     }
 

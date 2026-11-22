@@ -79,7 +79,7 @@
         <Style Selector="^:not(:checked):pointerover">
             <Style Selector="^ /template/ atomc|RadioIndicator#Indicator">
                 <Setter Property="BorderBrush"
-                        Value="{atom:RadioButtonTokenResource ColorPrimary}" />
+                        Value="{atom:RadioButtonTokenResource IndicatorHoverBorderColor}" />
             </Style>
         </Style>
         <Style Selector="^:disabled">

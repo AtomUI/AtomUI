@@ -387,7 +387,7 @@ Hold：
 
 | Hold | 建立 | 结束 |
 | --- | --- | --- |
-| Pointer hold | pointer 位于 keep zone 内。 | pointer 离开 keep zone，或 pointer 离开窗口。 |
+| Pointer hold | pointer 位于 keep zone 内。 | pointer 移出 keep zone，或当前窗口收到平台的离窗输入。 |
 | Capture hold | 宿主后代持有 pointer capture。 | capture 释放或丢失。 |
 | Focus hold | 键盘焦点所有者的逻辑祖先链包含宿主。 | 焦点移出。 |
 | Popup hold | 逻辑祖先链包含宿主的 AtomUI `Popup` 打开时从 Window 取得 hold lease。 | Popup 关闭时释放 lease。 |
@@ -437,7 +437,7 @@ Window 把 Dock inset 发布为内容区顶部占位：CSD 模板中并入 `Effe
 
 ### 7.6 动效
 
-表面打开与收起使用沿 Y 轴的位移与不透明度动效，时长取自主题动效 Token，主题关闭动效时直接切换可见性。收起动效进行期间表面不参与命中测试；`Docked` 模式不使用进出动效。动效只影响宿主表面的呈现，不改变 open state 的取值时机。进出动效相对于表面的当前顶边 `max(E, P)` 计算，与平台 chrome 引起的位移相互独立、可以叠加。
+表面打开与收起使用沿 Y 轴的位移与不透明度动效。打开使用 200 ms 的 `CubicEaseOut`，收起使用主题的 `MotionDurationMid` 和线性曲线。中途反向时从当前呈现值继续。主题关闭动效时直接切换可见性。收起动效进行期间表面不参与命中测试。`Docked` 模式直接切换。进出动效相对于表面的当前顶边 `max(E, P)` 计算，可与平台 chrome 引起的位移叠加。
 
 ### 7.7 生命周期
 

@@ -41,15 +41,7 @@
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]:not(:docked) /template/ Border#PART_Surface">
-            <Setter Property="Transitions">
-                <atom:TokenTransitions>
-                    <Transitions>
-                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <TransformOperationsTransition Property="RenderTransform"
-                                                       atom:TokenTransitions.Duration="MotionDurationMid" />
-                    </Transitions>
-                </atom:TokenTransitions>
-            </Setter>
+            <Setter Property="Transitions" Value="{TemplateBinding SurfaceTransitions}" />
         </Style>
     </ControlTheme>
 

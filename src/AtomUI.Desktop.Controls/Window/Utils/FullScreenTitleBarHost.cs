@@ -1,5 +1,7 @@
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -46,6 +48,10 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<FullScreenTitleBarHost>();
 
+    internal static readonly DirectProperty<FullScreenTitleBarHost, Transitions> SurfaceTransitionsProperty =
+        AvaloniaProperty.RegisterDirect<FullScreenTitleBarHost, Transitions>(
+            nameof(SurfaceTransitions), o => o.SurfaceTransitions);
+
     internal static readonly DirectProperty<FullScreenTitleBarHost, double> SurfaceHeightProperty =
         AvaloniaProperty.RegisterDirect<FullScreenTitleBarHost, double>(
             nameof(SurfaceHeight),
@@ -78,6 +84,26 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
+    }
+
+    private Transitions? _surfaceTransitions;
+
+    internal Transitions SurfaceTransitions
+    {
+        get
+        {
+            if (_surfaceTransitions is null)
+            {
+                _surfaceTransitions = new Transitions
+                {
+                    new DoubleTransition { Property = OpacityProperty },
+                    new TransformOperationsTransition { Property = RenderTransformProperty }
+                };
+                UpdateSurfaceTransitions();
+            }
+
+            return _surfaceTransitions;
+        }
     }
 
     private double _surfaceHeight;
@@ -115,6 +141,10 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
     private const string SurfacePart = "PART_Surface";
     private const string DockedPseudoClass = ":docked";
 
+    private static readonly TimeSpan s_enterDuration = TimeSpan.FromMilliseconds(200);
+    private static readonly Easing s_enterEasing = new CubicEaseOut();
+    private static readonly Easing s_leaveEasing = new LinearEasing();
+
     private Border? _surface;
     private IDisposable? _pendingSurfaceHide;
 
@@ -143,6 +173,7 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
         base.OnPropertyChanged(change);
         if (change.Property == IsOpenProperty)
         {
+            UpdateSurfaceTransitions();
             PseudoClasses.Set(StdPseudoClass.Open, IsOpen);
             UpdateSurfaceVisibility();
         }
@@ -150,6 +181,10 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
         {
             PseudoClasses.Set(DockedPseudoClass, Mode == FullScreenTitleBarMode.Docked);
             UpdateSurfaceVisibility();
+        }
+        else if (change.Property == MotionDurationProperty && !IsOpen)
+        {
+            UpdateSurfaceTransitions();
         }
     }
 
@@ -167,6 +202,24 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
     {
         CancelPendingSurfaceHide();
         base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateSurfaceTransitions()
+    {
+        if (_surfaceTransitions is not { } transitions)
+        {
+            return;
+        }
+
+        // Replacing Transitions with a selector would discard the running values before a reversal.
+        // Configure the same instances before the theme changes the surface's opacity and transform.
+        var duration = IsOpen ? s_enterDuration : MotionDuration;
+        var easing   = IsOpen ? s_enterEasing : s_leaveEasing;
+        foreach (TransitionBase transition in transitions)
+        {
+            transition.Duration = duration;
+            transition.Easing   = easing;
+        }
     }
 
     private void UpdateSurfaceVisibility()

@@ -2,6 +2,10 @@
 
 ## 2026-11-22
 
+- Fix
+  - 鼠标停在全屏窗口顶边时，标题栏保持展开。窗口根据平台的离窗输入与指针坐标更新停留状态。
+- Motion
+  - 全屏标题栏的淡入和下滑统一使用 200 ms 的 `CubicEaseOut`。收起时长取自主题，动效中途反向时接续当前画面。
 - Changed
   - 全屏标题栏位于新的 `WindowChromeLayer`（T6）内的表面宿主中：位于内容、Badge、焦点描边、Watermark、吸顶 Tab、FloatButton、作用域 Drawer / Dialog 之上；位于 Window Drawer、Tour、Dialog、弹层和 Message / Notification 之下。修复全屏标题栏被 Gallery 吸顶 Tab 盖住的问题（此前宿主位于 `PART_VisualLayerManager` 内容根内，低于所有注入层）。
   - `PART_FullScreenTitleBarHost` 仍在三个 Window 模板中声明，保留 `TemplateBinding` 契约；Window 在 `OnApplyTemplate` 中把它迁入 chrome 层，模板解除与窗口关闭时释放（层被清空后随旧模板的 `VisualLayerManager` 丢弃，Avalonia 没有移除层的 API，不新增反射）。`WindowChromeLayerTheme.axaml` 把 `VisualLayerManager.Padding`（`OffScreenMargin`）投影为层的 `Margin`，表面保持迁移前的窗口位置。完整替换 Window ControlTheme 的应用仍需保留该 part。

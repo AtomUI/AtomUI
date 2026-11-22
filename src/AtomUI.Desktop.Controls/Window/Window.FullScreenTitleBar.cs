@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -29,6 +30,7 @@ public partial class Window
     private WindowChromeLayer? _windowChromeLayer;
     private CompositeDisposable? _fullScreenTitleBarHostSubscriptions;
     private FullScreenTitleBarRevealController? _fullScreenTitleBarRevealController;
+    private IDisposable? _fullScreenTitleBarPointerLeaveSubscription;
     private IFullScreenNativeChrome? _fullScreenNativeChrome;
     private IInputElement? _fullScreenTitleBarFocusReturnTarget;
     private Point? _fullScreenTitleBarTouchOrigin;
@@ -319,7 +321,9 @@ public partial class Window
         AddHandler(PointerMovedEvent, HandleFullScreenTitleBarPointerMoved, RoutingStrategies.Tunnel, true);
         AddHandler(PointerPressedEvent, HandleFullScreenTitleBarPointerPressed, RoutingStrategies.Tunnel, true);
         AddHandler(PointerReleasedEvent, HandleFullScreenTitleBarPointerReleased, RoutingStrategies.Tunnel, true);
-        PointerExited += HandleFullScreenTitleBarPointerExited;
+        // Showing the surface can invalidate hit testing and raise PointerExited with the pointer still in the window.
+        _fullScreenTitleBarPointerLeaveSubscription = AvaloniaLocator.Current.GetService<IInputManager>()?
+            .Process.Subscribe(HandleFullScreenTitleBarPointerLeave);
         controller.SetSuppressed(IsFullScreenTitleBarSuppressed());
         controller.SetHold(
             FullScreenTitleBarHolds.Focus,
@@ -339,7 +343,8 @@ public partial class Window
         RemoveHandler(PointerMovedEvent, HandleFullScreenTitleBarPointerMoved);
         RemoveHandler(PointerPressedEvent, HandleFullScreenTitleBarPointerPressed);
         RemoveHandler(PointerReleasedEvent, HandleFullScreenTitleBarPointerReleased);
-        PointerExited -= HandleFullScreenTitleBarPointerExited;
+        _fullScreenTitleBarPointerLeaveSubscription?.Dispose();
+        _fullScreenTitleBarPointerLeaveSubscription = null;
         foreach (var popup in _fullScreenTitleBarPopups)
         {
             popup.Closed -= HandleFullScreenTitleBarPopupClosed;
@@ -487,9 +492,11 @@ public partial class Window
         _fullScreenTitleBarRevealController?.SetHold(FullScreenTitleBarHolds.Capture, false);
     }
 
-    private void HandleFullScreenTitleBarPointerExited(object? sender, PointerEventArgs e)
+    private void HandleFullScreenTitleBarPointerLeave(RawInputEventArgs e)
     {
-        if (_fullScreenTitleBarRevealController is not { IsRunning: true } controller)
+        if (e is not RawPointerEventArgs { Type: RawPointerEventType.LeaveWindow } ||
+            !ReferenceEquals(e.Root, this.GetPresentationSource()) ||
+            _fullScreenTitleBarRevealController is not { IsRunning: true } controller)
         {
             return;
         }

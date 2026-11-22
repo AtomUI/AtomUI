@@ -45,6 +45,7 @@
 - `WindowMessageManager`：拥有稳定卡片集合、public Stack 配置、TopLevel host、生命周期调度与用户回调清理。
 - `WindowFeedbackLayer`：作为窗口反馈 manager 的宿主，按最近成功提交的 `Show` 原子移动直接 manager 子项；不拥有卡片、
   scheduler 或用户回调。
+  它是全局层级阶梯的 T8（`int.MaxValue - 50`），高于其他全部层；每个 manager 的卡片宿主自带表面宿主（`LayerLadder.IsSurfaceHost`，只启用 `AdornerLayer`），卡片内控件的焦点描边与 Badge 画在卡片之上。解析 `WindowFeedbackLayer` 时跳过表面宿主，层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - `FeedbackStackPresenter`：消费稳定 ItemsSource，管理整体 hover 和 Message 静态背板状态。
 - `FeedbackStackPanel`：按共享几何契约测量和排列，不拥有内容或生命周期。
 - `FeedbackLifetimeScheduler`：按单调 deadline 调度有限时长项；空闲时没有活动 timer。

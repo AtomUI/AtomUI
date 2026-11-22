@@ -2,6 +2,19 @@
 
 本文档记录 Tour 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - `TourLayer` 由 `int.MaxValue - 98` 改为 `int.MaxValue - 400`（T7），固定低于 Dialog（Avalonia `OverlayLayer`）、高于 TopLevel Drawer；此前与 Dialog 同号，先后取决于插入顺序。
+  - 已知后果：在已打开的模态 Dialog 内启动 Tour 时，遮罩会落到 Dialog 之下。Tour 不负责 Dialog，Gallery 也没有这种用法，视为不受支持的偶然行为。
+  - `TourLayer` 解析 `VisualLayerManager` 时跳过表面宿主，直达 TopLevel 宿主，因此 Tour 遮罩不会被关进 Drawer、Message 等提升表面；Gallery Tour 舞台那种未标记的嵌套 `VisualLayerManager` 仍是有效作用域。
+- API
+  - Tour 的 public / protected API 不变。
+- Docs
+  - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Known limits
+  - Windows 未实测（本次 Windows 10 实机验证只覆盖全屏标题栏、Window Drawer 与 FloatButton）；macOS 与 Linux 未实测。当前 Tour 层级证据为 Headless 测试。
+
 ## 2026-11-08
 
 - Changed

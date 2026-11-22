@@ -150,6 +150,7 @@ Target ScrollViewer (ScrollChanged / OnLoaded)
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 - Host 到 overlay 真实按钮或 group 的属性投影属于运行时动态目标绑定，AXAML 无法通过 `TemplateBinding` 表达；允许使用 C# binding 或 `BindUtils.RelayBind`，但必须挂到当前 overlay 生命周期的 `CompositeDisposable`。
 - `PrepareScopedOverlayLayer` 创建 overlay 目标时建立属性投影；`CleanupScopedOverlayLayer` 移除 overlay 目标并释放同一批投影绑定。
+- FloatButton 属于 T4 内容浮动角色，经 `ScopeAwareOverlayLayer.GetLayer` 解析（接口不变），号码为 `int.MaxValue - 800`，高于共享 `AdornerLayer`（Badge、焦点描边不再画在 FloatButton 之上）与 Watermark / 吸顶 Tab，低于同宿主的作用域 Drawer 与作用域 Dialog。`ScopeAwareOverlayLayer` 不再承载 Dialog。浮动状态下的 FloatButton / FloatButtonGroup 自带表面宿主（`LayerLadder.IsSurfaceHost`，只启用 `AdornerLayer`），其焦点描边与 Badge 画在 FloatButton 表面之上。层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - Group host 搬移 `Children` 到 overlay group 时必须保持逻辑继承路径；释放 overlay group 前应先解除子项挂载，避免同一 child 被旧 group 保留。
 
 稳定 template part 接入点：

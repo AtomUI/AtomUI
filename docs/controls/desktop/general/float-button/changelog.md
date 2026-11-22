@@ -2,6 +2,21 @@
 
 本文档记录 FloatButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - FloatButton / FloatButtonGroup 所在的 `ScopeAwareOverlayLayer` 成为 T4（内容浮动），从共享 `AdornerLayer` 下方移到它上方：内容中的 Badge 和键盘焦点描边不再画在 FloatButton 之上；FloatButton 仍低于同宿主的作用域 Drawer 与作用域 Dialog。
+  - 同一宿主中 FloatButton 从 Watermark 和吸顶 Tab 之下移到它们之上，与 Ant Design 一致（watermark 9 < affix 10 < FloatButton 1000）。
+  - `ScopeAwareOverlayLayer` 不再承载 Dialog。
+  - 浮动状态下的 FloatButton / FloatButtonGroup 自带表面宿主，其内部控件的焦点描边与 Badge 画在 FloatButton 表面之上。
+  - ScrollViewer 滚动内容中的 Drawer 仍低于该 ScrollViewer 视口上的 FloatButton。
+- API
+  - FloatButton 的 public / protected API 不变。
+- Docs
+  - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Known limits
+  - Windows 10 实机（Gallery，150% 缩放）只验证了 FloatButton 自身 Badge 画在各自表面之上、未被相邻 FloatButton 盖住。FloatButton 盖住内容 Badge 没有 Gallery 示例，Windows 未实测，仅有 Headless 证据；macOS 与 Linux 未实测。
+
 ## 2026-11-20
 
 - Shadcn 的 Default 浮动按钮使用对应风格的描边、底色与按压反馈。BackTop 和圆形组按按钮绘制描边，方形组按容器绘制外框。Vega 的描边默认阴影为 `shadow-xs`。

@@ -81,7 +81,7 @@ Public API / inherited command / item source / user input
 - 模板重套用时必须把 public API 对应状态回放到新的 part、伪类和主题变量。
 - 集合、弹层、异步、动效或窗口相关状态必须能处理 reset、close、cancel、detach 和 owner 释放。
 - TopLevel Drawer 使用 Window visible frame：包含 managed/drawn 标题栏，排除透明 frame shadow；该规则不按 OS 或 CSD 模式分叉。
-- Drawer container 始终保留在 owning `TopLevel` 的 `ScopeAwareAdornerLayer`；Window drawn decorations 只绘制 chrome，不作为 Drawer host。
+- `OpenOn is TopLevel` 的 Drawer container 保留在 owning `TopLevel` 宿主的 `TopLevelPresentationLayer`（T7）；`OpenOn` 为 null 或局部元素的 Drawer 位于所在作用域宿主的 `ContentPresentationLayer`（T5）。Window drawn decorations 只绘制 chrome，不作为 Drawer host。
 
 ## 5. 视觉与主题模型
 
@@ -140,12 +140,12 @@ Drawer 涉及弹层、窗口或 overlay 宿主时，打开状态、取消事件�
 
 TopLevel Drawer 的宿主和几何遵循以下规则：
 
-1. Drawer container 使用 placement target 所属 `ScopeAwareAdornerLayer`，保持在 owning Window `TopLevel` 的视觉树中。
+1. Drawer container 使用 placement target 对应的呈现层：`OpenOn is TopLevel` 时为 `TopLevelPresentationLayer`，否则为作用域宿主的 `ContentPresentationLayer`；Window Drawer 保持在 owning Window `TopLevel` 的视觉树中，位于全屏标题栏之上。
 2. Window Drawer 活跃时获取 drawn chrome suppression lease，使 mask 覆盖 managed/drawn titlebar 区域；最后一个 Dialog/Drawer lease 释放后恢复 chrome。
 3. 无论 CSD 状态，Drawer root 和百分比 `DialogSize` 都使用 Window visible frame；visible frame 由完整 layer 只排除 `FrameShadowThickness` 得到，标题栏仍属于可用范围。
 4. Window CornerRadius 只用于 Drawer root clip；窗口最终外轮廓继续由 `WindowVisualLayerClip` 统一裁剪。
-5. 嵌套 Drawer 复用父 Drawer container 当前所在的 `ScopeAwareAdornerLayer`，不得重新注入平行 layer。
-6. 任意 popup-bearing 内容沿 placement target 解析同一 TopLevel 的 Avalonia popup/light-dismiss 层；关闭时直接从 scope layer 移除 container，并对称释放 host geometry 与 chrome lease。直接 Popup、Flyout、ToolTip、ContextMenu 及控件家族清单统一维护在 [Modal 内容弹层叠放设计](../modal/popup-layering-design.md)，Drawer 不复制第二份清单。
+5. 嵌套 Drawer 复用父 Drawer container 当前所在的呈现层，不得重新注入平行 layer；`OpenOn` 指向父 Drawer 之外时也始终复用父层。
+6. 任意 popup-bearing 内容沿 placement target 解析同一 TopLevel 的 Avalonia popup/light-dismiss 层；关闭时直接从 container 实际所在的呈现层（视觉父）移除 container，并对称释放 host geometry 与 chrome lease。直接 Popup、Flyout、ToolTip、ContextMenu 及控件家族清单统一维护在 [Modal 内容弹层叠放设计](../modal/popup-layering-design.md)，Drawer 不复制第二份清单。
 7. Drawer 已打开时修改 `OpenOn`，container 必须同步迁移 adorned target、scope layer、visible-frame 订阅和 Window chrome lease；嵌套 Drawer 跟随同一 effective target，旧 Window 不得残留 suppression 引用。
 
 ### 8.2 动效模型

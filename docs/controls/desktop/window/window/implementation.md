@@ -21,12 +21,14 @@
 - `src/AtomUI.Desktop.Controls/Window/ReactiveWindow.cs`
 - `src/AtomUI.Desktop.Controls/Window/FullScreenTitleBarMode.cs`
 - `src/AtomUI.Desktop.Controls/Window/Themes/FullScreenTitleBarHostTheme.axaml`
+- `src/AtomUI.Desktop.Controls/Window/Themes/WindowChromeLayerTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Window/Themes/WindowResizerTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Window/Themes/WindowTheme.axaml`
 - `src/AtomUI.Desktop.Controls/Window/Themes/WindowTheme.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/FullScreenTitleBarHost.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/FullScreenTitleBarRevealController.cs`
+- `src/AtomUI.Desktop.Controls/Window/Utils/WindowChromeLayer.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowDrawnDecorationsReflectionExtensions.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowResizer.cs`
 - `src/AtomUI.Desktop.Controls/Window/Utils/WindowTitleBarShadowBackground.cs`
@@ -66,6 +68,7 @@
 - `WaylandWindowChromeManager`：Wayland 专属 manager，负责 shadow extents 归一、managed resize grip 接管和 input region 矩形计算。
 - `WindowsWindowChromeManager`：Windows 专属 manager，负责 Windows CSD frame dark mode 与可见 frame border 策略；首次显示前挂载 `AtomUI.Native` 的 `WindowsBackgroundHook`，窗口关闭时释放。该 hook 在 live resize 期间不做 GDI 背景填充（见 [AtomUI.Native Windows 文档](../../../../modules/native/windows.md) 第 5 节）。
 - `FullScreenTitleBarHost`：internal 模板协作层，是全屏标题栏的表面；承载 FullScreen slot 与自定义全屏内容，向状态机提供 keep zone 几何，执行进出动效并报告实测高度。它不持有 open state，不解析模式。
+- `WindowChromeLayer`：internal，`AtomUI.Desktop.Controls`，全局层级阶梯的 T6（`int.MaxValue - 600`）；透明 Panel、自身不参与命中，由 Window 在模板应用时经 `LayerLadder` 注入 `PART_VisualLayerManager`；模板重套用和窗口关闭时被释放（表面宿主清空，标题栏宿主离开该层），由于 Avalonia 的 `VisualLayerManager` 没有移除层的 API，清空的层随旧模板的 `VisualLayerManager` 一起丢弃，不新增反射。`WindowChromeLayerTheme.axaml` 把父 `VisualLayerManager` 的 `Padding`（`OffScreenMargin`）投影为层的 `Margin`，使表面保持迁移前的窗口位置。层内是一个表面宿主（`LayerLadder.IsSurfaceHost` 的嵌套 `VisualLayerManager`，只启用 `AdornerLayer`），其 Child 是 `FullScreenTitleBarHost`，因此标题栏按钮的焦点描边与 Badge 画在 chrome 层自己的装饰层中。Window 取得 `PART_VisualLayerManager` 时也会确保共享 `AdornerLayer` 处于 T2 号码。层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - `FullScreenTitleBarRevealController`：internal 显隐状态机，只在 effective mode 为 `AutoHide` 时运行；输入为 pointer、focus、hold lease、显式请求、抑制条件和时钟，输出 open state 请求，不依赖 Visual 与平台 API。
 - `WindowResizer`：internal 模板协作控件，使用 `GripThickness` 和 `BeginResizeDrag` 提供 managed resize grip。
 - `WindowVisualLayerClip`：internal visible frame 裁剪 helper，是完整 layer surface 排除 `FrameShadowThickness` 后的共享计算入口。
@@ -156,7 +159,7 @@ Window 是全屏标题栏模式、内容来源、open state 和内容区占位�
 稳定 template part 接入点：
 
 - `PART_ContentPresenter`：展示用户内容、文本、图标或模板化数据。
-- `PART_FullScreenTitleBarHost`：全屏标题栏表面，位于 `PART_VisualLayerManager` 内容根内、窗口内容之上、`PART_ContentCacheHost` 之外。
+- `PART_FullScreenTitleBarHost`：全屏标题栏表面，在三个模板中声明于 `PART_VisualLayerManager` 内容根内、窗口内容之上、`PART_ContentCacheHost` 之外；Window 在 `OnApplyTemplate` 中把它迁入 `WindowChromeLayer`（T6）内的表面宿主，模板解除与窗口关闭时释放。
 - `PART_OverlayWrapper`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_RootLayout`：承载根视觉、边框、背景或尺寸基线。
 - `PART_Surface`：全屏标题栏宿主内的表面节点，承载覆盖模式阴影与进出动效。
@@ -191,7 +194,7 @@ Window 的标题栏存在两套输入模型，维护时必须同时成立：
 - CSD 且 `IsTitleBarVisible=false` 时保持 `WindowDecorations.Full`；`WindowDrawnDecorationsTheme` 用 `HasTitleBar && IsTitleBarVisible` 隐藏 `PART_TitleBar`、shadow 和 `PART_TitleBarPresenter`，不能通过 `BorderOnly` 删除平台状态转换所需的完整窗口装饰能力。
 - Avalonia 的 `WindowDecorationMargin.Top` 同时包含 drawn title-bar、frame 和 shadow。Window 因此发布 `EffectiveContentFrameMargin`：标题栏可见或非 CSD 时直接等于 `WindowDecorationMargin`；CSD 且标题栏隐藏时只从 Top 扣除实际 `WindowDrawnDecorations.TitleBarHeight`，并把结果下限限制为 `0`，Left、Right、Bottom 保持不变。drawn title-bar height 尚不可用、非有限或不大于 `0` 时保持原 margin，不能猜测 Token 高度或修改平台 title-bar hint。
 - `EffectiveContentFrameMargin` 在 `WindowDecorationMargin`、`IsTitleBarVisible`、`IsCsdEnabled` 变化时重算，并在 `OnOpened` 后补算一次，确保 Avalonia drawn decorations host 已创建。CSD 内容模板只消费该投影；平台 chrome 几何仍由原始 `WindowDecorationMargin`、title-bar height hint 和 chrome manager 管理。
-- CSD 全屏时 Avalonia 隐藏 drawn decorations 的 underlay 与 overlay；`WindowDrawnDecorationsTheme` 不提供全屏 popover 内容，全屏标题栏由 Window 模板内的 `PART_FullScreenTitleBarHost` 以普通 Avalonia hit test 承载，窗口操作只经过 Window 的 caption command。
+- CSD 全屏时 Avalonia 隐藏 drawn decorations 的 underlay 与 overlay；`WindowDrawnDecorationsTheme` 不提供全屏 popover 内容，全屏标题栏由 Window 模板声明、运行时位于 `WindowChromeLayer` 的 `PART_FullScreenTitleBarHost` 以普通 Avalonia hit test 承载，窗口操作只经过 Window 的 caption command。
 - 默认 `WindowTitleBar`、caption buttons、全屏标题栏宿主和背景/装饰层职责不能混用：caption buttons 保持自身窗口操作 role，`LeftAddOn` 和 `RightAddOn` 表达默认标题栏用户交互，`TitleBarFrameLayer` 只表达背景、遮罩或装饰视觉。
 - 不允许通过捕获异常、转发单个按钮 `Click`、延迟重新命中或给特定 Demo 写特殊判断来让 `TitleBarFrameLayer` 支持交互；这会模糊背景层和标题栏交互层的职责。
 

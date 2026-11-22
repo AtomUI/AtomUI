@@ -2,6 +2,18 @@
 
 本文档记录 Modal 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - 作用域 Dialog（`OverlayScope` 指定作用域）与无 TopLevel 时的 fallback Dialog 由 `ScopeAwareOverlayLayer` 迁到 `ContentPresentationLayer`（T5）：它们位于同宿主的 FloatButton 之上，也位于 Watermark 和吸顶 Tab 之上（此前与 FloatButton 同层、先后取决于插入顺序，且在 Watermark 之下）。
+  - `OverlayDialogPresenter` 自带表面宿主 `PART_SurfaceHost`：Dialog 内控件的键盘焦点描边与 Badge 画在 Dialog 表面之上；Dialog 内的 Watermark、FloatButton 留在 Dialog 表面之内。
+  - Window / TopLevel 级 Dialog 仍使用 Avalonia `OverlayLayer`，位于 TopLevel Drawer 和 Tour 之上，层级不变。
+  - 相对设计的偏差：设计只要求作用域 Dialog 带表面宿主（窗口级 Dialog 依赖 `OverlayLayer` 自带的装饰层）；表面宿主声明在作用域与窗口级共用的 `OverlayDialogPresenterTheme.axaml` 模板根，因此窗口级 Dialog 也带表面宿主，其内焦点描边与 Badge 解析到这个更近的表面宿主而不是 `OverlayLayer` 的专属装饰层。两者都紧贴 Dialog 表面之上，窗口级 Dialog 的层级不变。
+- API
+  - Dialog 的 public / protected API 不变。
+- Known limits
+  - Windows 未实测（本次 Windows 10 实机验证只覆盖全屏标题栏、Window Drawer 与 FloatButton）；macOS 与 Linux 未实测。当前 Dialog 层级证据为 Headless 测试。
+
 ## 2026-11-20
 
 - Performance

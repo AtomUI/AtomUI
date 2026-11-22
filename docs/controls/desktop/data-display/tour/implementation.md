@@ -48,7 +48,7 @@ Popup 接入边界：`Tour` 负责业务状态和内容准备，`PART_Popup` 负
 - `TextTourIndicator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `Tour`：public API 与运行状态 owner，并实现 `ISemanticPartCrossRootProvider` 把打开态的共享遮罩层上报为跨根宿主。
 - `TourIndicator`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `TourLayer`：共享遮罩层，自绘镂空几何（目标区域外全铺 mask）；经 `VisualLayerManager` 挂载，逻辑父归属当前打开的 Tour。
+- `TourLayer`：共享遮罩层（T7，`int.MaxValue - 400`），自绘镂空几何（目标区域外全铺 mask）；经 `LayerLadder` 统一入口注入 `VisualLayerManager`，解析时跳过表面宿主、直达 TopLevel 宿主（Gallery Tour 舞台这类未标记的嵌套 `VisualLayerManager` 仍是有效作用域），逻辑父归属当前打开的 Tour。固定低于 Dialog（Avalonia `OverlayLayer`）、高于 TopLevel Drawer；层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - `TourStep`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `TourStepOption`：集合项、节点或容器类型，承载单项状态和模板协作。
 - `TourStepsView`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。

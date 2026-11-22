@@ -33,7 +33,7 @@ Dialog 内容可以包含 ComboBox、Select、DatePicker、TimePicker、AutoComp
 | 场景 | Dialog presentation host | 内容弹层 host | Drawn chrome |
 | --- | --- | --- | --- |
 | AtomUI Window / 普通 TopLevel | owning `VisualLayerManager.OverlayLayer` | 同一 manager 的 `PopupOverlayLayer` 或平台 `PopupRoot` | modal 活跃时由租约隐藏 |
-| 局部 overlay scope，且仍在 TopLevel 内 | 最近可用的 `ScopeAwareOverlayLayer` fallback | owning TopLevel 的 Popup 服务 | 不改变 |
+| 局部 overlay scope，且仍在 TopLevel 内 | 作用域宿主的 `ContentPresentationLayer`（T5，含 `OverlayScope` 作用域与无 TopLevel fallback） | owning TopLevel 的 Popup 服务 | 不改变 |
 | `DialogHostType.Window` | 独立 Dialog Window | 独立 Window 的 Popup 服务 | 由该 Window 管理 |
 
 Windows CSD、Linux managed decorations 与 macOS 原生 chrome 共享同一 presentation 所有权规则。没有 drawn chrome overlay 时，suppression lease 不改变可见结果。

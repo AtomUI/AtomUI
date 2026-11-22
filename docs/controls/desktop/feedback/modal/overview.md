@@ -126,7 +126,7 @@ Dialog 公开 `Opened`、`Closing`、`Accepted`、`Rejected`、`Finished`、`Clo
 ## 6. 控件家族或集成关系
 
 - `MessageBox` 继承 `Dialog`，只增加语义内容和按钮策略。
-- Overlay 优先使用 placement target 所属 `TopLevel` 的 Avalonia `OverlayLayer`；无可用 TopLevel overlay 时才使用最近的 `ScopeAwareOverlayLayer` fallback。宿主解析由实际能力决定，不按操作系统硬编码，也不使用全局静态 TopLevel 字典。
+- Overlay 优先使用 placement target 所属 `TopLevel` 的 Avalonia `OverlayLayer`；无可用 TopLevel overlay 时才使用最近作用域宿主的 `ContentPresentationLayer`（T5）fallback。宿主解析由实际能力决定，不按操作系统硬编码，也不使用全局静态 TopLevel 字典。
 - Drawer 与 Overlay Dialog 在 Window 中遵循相同的 visible frame、标题栏覆盖和窗口 frame clip 规则，但各自保留独立的 layer、stack 与关闭生命周期。
 - Window 使用 Avalonia 原生 `Window` modal owner 能力；不支持原生 Window 的平台会回退到 Overlay。
 - `IDialogAwareDataContext` 在 DataContext attach/detach 和 Session closed 时接收通知。
@@ -165,7 +165,7 @@ Created -> Opening -> Open -> ClosePending -> Closing -> Closed
 
 ### 8.2 宿主选择
 
-- `DialogHostType.Overlay` 使用 owner 范围内的 Dialog overlay stack。Window/TopLevel 使用 Avalonia `OverlayLayer`；无 TopLevel overlay layer 的 scope 使用 `ScopeAwareOverlayLayer` fallback。
+- `DialogHostType.Overlay` 使用 owner 范围内的 Dialog overlay stack。Window/TopLevel 使用 Avalonia `OverlayLayer`；无 TopLevel overlay layer 的 scope 使用 `ContentPresentationLayer`（T5）fallback；`OverlayScope` 指定的作用域同样使用 `ContentPresentationLayer`。
 - `WindowDrawnDecorations` 只承担 chrome 绘制，不作为 Dialog host；自定义 decorations theme 不改变 Dialog 的 `TopLevel` 所有权。
 - `DialogHostType.Window` 使用原生 Window；平台不支持时回退 Overlay。
 - `IsModal` 只控制交互模态，不改变 `OpenAsync` 的任务边界。

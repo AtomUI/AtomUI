@@ -2,6 +2,19 @@
 
 本文档记录 Watermark 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - Watermark 属于 T3（内容覆盖），由 `int.MaxValue - 99` 改为 `int.MaxValue - 900`，仍高于内容与共享 `AdornerLayer`。FloatButton（T4）、作用域 Drawer 与作用域 Dialog（T5）现在位于 Watermark 之上；此前 Dialog 位于 Watermark 之下。
+  - Watermark 位于提升表面（Drawer、作用域 Dialog、FloatButton 等）内部时留在该表面之内，不再落到窗口层级而被表面盖住。
+  - `ScopeAwareAdornerLayer` 只承载内容覆盖（Watermark、Gallery 吸顶 Tab），不再承载 Drawer。
+- API
+  - Watermark 的 public / protected API 不变。
+- Docs
+  - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Known limits
+  - Windows 未实测（本次 Windows 10 实机验证只覆盖全屏标题栏、Window Drawer 与 FloatButton）；macOS 与 Linux 未实测。当前 Watermark 层级证据为 Headless 测试。
+
 ## 2026-11-11
 
 - Fix

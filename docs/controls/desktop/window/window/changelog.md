@@ -1,5 +1,23 @@
 # Window Changelog
 
+## 2026-11-22
+
+- Changed
+  - 全屏标题栏位于新的 `WindowChromeLayer`（T6）内的表面宿主中：位于内容、Badge、焦点描边、Watermark、吸顶 Tab、FloatButton、作用域 Drawer / Dialog 之上；位于 Window Drawer、Tour、Dialog、弹层和 Message / Notification 之下。修复全屏标题栏被 Gallery 吸顶 Tab 盖住的问题（此前宿主位于 `PART_VisualLayerManager` 内容根内，低于所有注入层）。
+  - `PART_FullScreenTitleBarHost` 仍在三个 Window 模板中声明，保留 `TemplateBinding` 契约；Window 在 `OnApplyTemplate` 中把它迁入 chrome 层，模板解除与窗口关闭时释放（层被清空后随旧模板的 `VisualLayerManager` 丢弃，Avalonia 没有移除层的 API，不新增反射）。`WindowChromeLayerTheme.axaml` 把 `VisualLayerManager.Padding`（`OffScreenMargin`）投影为层的 `Margin`，表面保持迁移前的窗口位置。完整替换 Window ControlTheme 的应用仍需保留该 part。
+  - 标题栏按钮的键盘焦点描边与标题栏内的 Badge 画在 chrome 层自己的装饰层中。
+  - Window 取得 `PART_VisualLayerManager` 时确保共享 `AdornerLayer` 处于 T2 号码（`int.MaxValue - 1000`）。
+  - Window Drawer（`OpenOn is Window`）位于全屏标题栏之上；drawn chrome 抑制租约不变。
+- API
+  - Window 的 public / protected API 不变。
+- Docs
+  - 更新 [Window 全屏标题栏设计](full-screen-title-bar-design.md) 的 6.1、6.4 与第 10 节，层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Validation
+  - Windows 10 实机（单显示器，150% 缩放，Gallery）：原始场景（全屏 → Space 页滚动 → 鼠标滑到顶边）中 AutoHide 标题栏在全宽呈现并盖住吸顶 Tab；Pinned 下标题栏常驻于吸顶 Tab 之上。
+  - 常驻守护 `Primitives/LayerLadderHostOrderTests` 覆盖 chrome 层号码、标题栏宿主位于 chrome 层的表面宿主中，以及模板重套用后只有一个承载宿主的 chrome 层。
+- Known limits
+  - Windows 未实测：Docked 与自定义全屏内容、标题栏内按钮的焦点描边、多显示器、Dark 主题。macOS 与 Linux 未实测，只有 Headless 证据。
+
 ## 2026-11-21
 
 - Docs

@@ -61,7 +61,7 @@ Window 模板还使用 `FullScreenTitleBarHost`、`WindowResizer`、`WindowVisua
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
 | `PART_ContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
-| `PART_FullScreenTitleBarHost` | `FullScreenTitleBarHost` | 全屏标题栏表面，位于 `PART_VisualLayerManager` 内容根内、窗口内容之上；三个 Window 模板均提供。 |
+| `PART_FullScreenTitleBarHost` | `FullScreenTitleBarHost` | 全屏标题栏表面；三个 Window 模板均在 `PART_VisualLayerManager` 内容根内声明，Window 在运行时把它迁入 `WindowChromeLayer`（T6）内的表面宿主。替换 ControlTheme 时仍必须保留该 part。 |
 | `PART_OverlayWrapper` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_RootLayout` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
 | `PART_Surface` | `Border` | 全屏标题栏宿主内的表面节点，承载覆盖模式下的阴影与进出动效。 |

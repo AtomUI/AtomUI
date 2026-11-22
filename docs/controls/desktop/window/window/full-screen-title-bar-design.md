@@ -247,23 +247,37 @@ Window 是唯一同时了解模式、内容来源和窗口状态的对象；宿�
 
 ### 6.1 模板结构
 
-三个 Window 模板（Linux 非 CSD、macOS 非 CSD、CSD）都包含同名的全屏标题栏宿主，位于 `PART_VisualLayerManager` 的内容根之内、窗口内容之上：
+三个 Window 模板（Linux 非 CSD、macOS 非 CSD、CSD）都包含同名的全屏标题栏宿主 `PART_FullScreenTitleBarHost`，在模板中声明于 `PART_VisualLayerManager` 的内容根之内、窗口内容之上；模板声明位置不变，运行时位置是 `WindowChromeLayer`（全局层级阶梯的 T6，见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)）内的表面宿主：Window 在 `OnApplyTemplate` 中经统一注入入口向该模板的 `PART_VisualLayerManager` 注入一个新的 `WindowChromeLayer`，再把宿主从模板父级迁入它的表面宿主。模板重套用与 Window 关闭时，chrome 层被释放（表面宿主清空，宿主离开该层，不回到模板父级）；Avalonia 的 `VisualLayerManager` 没有移除层的 API，清空后的层随旧模板的 `VisualLayerManager` 一起丢弃，本设计不为此新增反射。模板中的声明（模板声明位置）：
 
 ```text
 Window
   -> VisualLayerManager#PART_VisualLayerManager (template-stable)
      -> 内容根
         -> 窗口内容（CSD 模板中为 Panel#PART_ContentCacheHost）
-        -> FullScreenTitleBarHost#PART_FullScreenTitleBarHost (template-stable)
+        -> FullScreenTitleBarHost#PART_FullScreenTitleBarHost (template-stable，运行时被 Window 迁出)
            -> Border#PART_Surface (template-stable)
               -> ContentPresenter#PART_ContentPresenter (template-stable)
 ```
 
-该位置同时满足三项层级要求：
+运行时的有效位置（迁移之后）：
 
-- 宿主位于窗口内容之上，`AutoHide` 与 `Pinned` 的表面可以覆盖内容。
-- 宿主位于 `VisualLayerManager` 的 overlay、adorner 与弹层之下，从全屏标题栏打开的 overlay popup、Dialog mask 和 Drawer 始终位于表面之上。
+```text
+Window
+  -> VisualLayerManager#PART_VisualLayerManager
+     -> 内容根 / 窗口内容 / 共享 AdornerLayer（T2）/ T3–T5 层 …
+     -> WindowChromeLayer（T6，internal，透明，自身不参与命中）
+        -> VisualLayerManager（表面宿主，IsSurfaceHost=true，只启用 AdornerLayer）
+           -> FullScreenTitleBarHost#PART_FullScreenTitleBarHost
+     -> TopLevelPresentationLayer（T7）/ TourLayer / Avalonia OverlayLayer … / WindowFeedbackLayer（T8）
+```
+
+该位置同时满足以下层级要求：
+
+- 宿主位于窗口内容、共享 `AdornerLayer`（Badge、焦点描边）、Watermark、吸顶 Tab、FloatButton 和作用域 Drawer / Dialog 之上，`AutoHide` 与 `Pinned` 的表面可以覆盖它们。
+- 宿主位于 TopLevel Drawer（含 Window Drawer）、Tour、Dialog、overlay popup 和 Message / Notification 之下，从全屏标题栏打开的 overlay popup、Dialog mask 和 Drawer 始终位于表面之上；标题栏打开的 Dialog 仍解析到窗口的 `OverlayLayer`。
+- 宿主所在的表面宿主自带 `AdornerLayer`：标题栏按钮的键盘焦点描边与标题栏内的 Badge 画在 chrome 层自己的装饰层中，不会被其他层盖住。
 - 宿主位于 `PART_ContentCacheHost` 之外，覆盖层内容缓存不包含全屏标题栏表面。
+- `WindowChromeLayer` 铺满 `VisualLayerManager`；迁移前后宿主在窗口坐标中的位置保持一致（全屏状态下表面顶端的窗口坐标 Y 值不变）。宿主原先作为 `VisualLayerManager` 的 Child 被 `Padding`（`OffScreenMargin`）内缩，而注入层按整个 `VisualLayerManager` 排列，所以 `WindowChromeLayerTheme.axaml` 把父 `VisualLayerManager` 的 `Padding` 投影为 chrome 层的 `Margin`，由 ControlTheme 还原同一个内缩矩形。`WindowVisualLayerClip` 是 `PART_VisualLayerManager` 的祖先，chrome 层仍在它的裁剪之内；`FrameShadowThickness` 只作用于内容的 `WindowContentClip`，宿主在模板中本就不在其内，迁移不需要还原它。
 
 ### 6.2 Title-bar slot
 
@@ -285,7 +299,7 @@ Window 分别向两个 slot 发布内容，同一 `WindowTitleBar` 实例不会�
 ### 6.4 稳定契约与定制责任
 
 - `PART_FullScreenTitleBarHost`、`PART_Surface` 和宿主内的 `PART_ContentPresenter` 是 template-stable part。
-- 完整替换 Window ControlTheme 的应用必须保留 `PART_FullScreenTitleBarHost` 及其在 6.1 中的层级位置；缺少该 part 时 effective mode 解析为 `Hidden`。
+- 完整替换 Window ControlTheme 的应用仍必须在模板中声明 `PART_FullScreenTitleBarHost`（位置见 6.1 的模板声明位置），宿主随后由 Window 在运行时迁入 `WindowChromeLayer`，应用不需要也不应自行放置 chrome 层；缺少该 part 时 effective mode 解析为 `Hidden`。宿主迁移后 `Mode`、`IsOpen`、`SurfaceMargin`、`Padding`、`Content`、`ContentTemplate` 的 `TemplateBinding` 契约保持不变。
 - 需要改变全屏标题栏组成的应用使用 `FullScreenTitleBar`；需要完全自管全屏 chrome 的应用使用 `Hidden`。两者都不要求替换 Window 模板。
 - 表面的背景由内容自身绘制。默认标题栏沿用 `TitleBarFrameBackground` 投影与标题栏主题背景；宿主只提供覆盖模式下的阴影。
 
@@ -470,7 +484,8 @@ Window 把 Dock inset 发布为内容区顶部占位：CSD 模板中并入 `Effe
 | 纯逻辑 | effective mode 解析表（`WindowState` × requested mode × content source）；表面顶边、前导安全区与 Dock inset 对三个几何输入及其退化值的计算；native chrome hold 的建立与结束；open state 强制约束表；状态机的全部迁移，包括 enter delay 中途离开、leave delay 中途恢复、多个 hold 叠加与逐个释放、立即关闭、抑制，以及零延迟配置。使用注入时钟，不依赖真实计时。 |
 | 控件行为（headless） | 进入与退出全屏时默认标题栏在两个 slot 之间迁移且实例不变；任意时刻只有一个 presenter 持有该实例；add-on 内容在迁移后保持同一对象；自定义内容优先于默认标题栏；`IsTitleBarVisible=false` 的解析结果；`Docked` 的 Dock inset 等于宿主高度且其他模式为零；`IsFullScreenTitleBarOpen` 的双向绑定与强制结果；`ToggleFullScreen()` 恢复进入前的 `WindowState`。 |
 | 弹层协作 | 从全屏标题栏打开菜单、下拉和嵌套弹层期间表面保持打开，全部关闭后经 leave delay 收起；模态 Dialog 或 Window Drawer 活动期间不接受 reveal。 |
-| 主题契约 | 三个 Window 模板都包含 `PART_FullScreenTitleBarHost` 且层级符合 6.1；`WindowDrawnDecorationsTheme` 不包含全屏 popover 内容；宿主模板包含 `PART_Surface` 与 `PART_ContentPresenter`。 |
+| 层级与遮挡 | Window 把宿主迁入 `WindowChromeLayer`（T6）内的表面宿主，模板重套用后新模板中只有一个承载宿主的 chrome 层，旧层与 Window 关闭时的层被清空；断言父层归属与号码，而不是只断言 child `ZIndex`；全屏标题栏打开时，标题栏区域的 `InputHitTest` 命中标题栏而不是吸顶 Tab、Badge、Watermark 或 FloatButton；标题栏位于 Window Drawer、Tour、Dialog、弹层和 Message 之下；标题栏按钮的键盘焦点描边落在 chrome 层自己的装饰宿主中；迁移前后全屏表面顶端的窗口坐标 Y 值一致，`TemplateBinding` 在迁入后仍然生效。 |
+| 主题契约 | 三个 Window 模板都包含 `PART_FullScreenTitleBarHost` 且声明位置符合 6.1；`WindowDrawnDecorationsTheme` 不包含全屏 popover 内容；宿主模板包含 `PART_Surface` 与 `PART_ContentPresenter`。 |
 | 生命周期 | 模板重套用、退出全屏和 Window 关闭后不残留计时器、pointer 订阅、hold lease 或旧宿主引用；标题栏迁移不产生重复的宿主投影 lease。 |
 | 平台实机：Windows | 四种模式；顶边触发与收起；上下排列多显示器时的触发；触摸下拉；全屏下关闭与退出全屏；任务栏位于顶边且自动隐藏时的交互；全屏表面不可拖动窗口。 |
 | 平台实机：Linux X11 | 四种模式；窗口管理器快捷键进入与退出全屏；不支持 EWMH 全屏的窗口管理器下保持不活动；全屏表面不可拖动窗口。 |
@@ -484,6 +499,6 @@ Window 把 Dock inset 发布为内容区顶部占位：CSD 模板中并入 `Effe
 | 平台 | 状态 | 已验证范围 |
 | --- | --- | --- |
 | macOS | 已实测（单一系统版本与单一显示器） | AppKit 平台语义：客户区覆盖整屏，系统菜单栏与原生标题条以覆盖方式滑入、内容不重排，系统窗口逐帧发出移动通知，原生标题条背景无法经公开透明属性去除，透明区域的输入穿透到客户区，有 owner 的窗口不能进入原生全屏。AtomUI 实现（基于 Gallery 的脚本视觉验收，单窗口原生截图采样门禁 A/A=0）：Gallery 主窗口的派生标题栏在 AutoHide 下迁入全屏宿主，指针到顶后呈现于菜单栏下方并与原生标题条融合，红黄绿在 40pt 表面内垂直居中，指针离开后关闭，退出全屏后同一实例与原生按钮安全区恢复；Gallery 示例窗口经 `ToggleFullScreen()` 进出全屏，Pinned 贴顶常驻且在系统 chrome 出现时下移并呈现原生按钮，Dark 主题下表面跟随标题栏背景。未测试：Docked 与自定义内容的 Gallery 路径、系统 chrome 常驻配置、带刘海显示器、没有原生窗口按钮的窗口、其他 macOS 版本、键盘 Escape 与弹层保持的实机路径。 |
-| Windows | 未测试 | 平台语义来自后端实现分析，尚无实机证据。 |
+| Windows | 部分实测（Windows 10，单显示器，150% 缩放，Gallery 主窗口） | 层级与遮挡（全局层级阶梯 `WindowChromeLayer`）：Space 页滚动使吸顶 Tab 出现后，鼠标从内容区滑到顶边，AutoHide 表面在全宽呈现并盖住吸顶 Tab，连续截帧中没有吸顶 Tab 画在表面之上的帧；标题栏图钉切到 Pinned 后，鼠标离开时表面仍常驻于吸顶 Tab 之上；图钉切回与经 caption button 退出全屏正常。全屏下打开 Window Drawer，Drawer 表面延伸到窗口顶边，其内按钮的键盘焦点描边可见（该次未把鼠标移到顶边，Drawer 活跃期间的 reveal 抑制未实测）。未测试：Docked 与自定义内容、上下排列多显示器、触摸下拉、任务栏位于顶边且自动隐藏、全屏下关闭、全屏表面拖动检查、Dark 主题、标题栏内按钮的焦点描边。 |
 | Linux X11 | 未测试 | 平台语义来自后端实现分析，尚无实机证据。 |
 | Linux Wayland | 未测试 | 平台语义来自后端实现分析，尚无实机证据。 |

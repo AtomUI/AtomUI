@@ -83,6 +83,7 @@ Public API / ItemsSource / Command / Event
   移除非当前 owner 不改变当前作用域。生成器仍是宿主事件订阅与解绑的唯一实现，不复制资源转发逻辑。
 - 资源解析会同步发布属性变化，owner 在调用 Attach 前保存单次赋值释放槽；同步清除或再次挂载时，外层返回的
   token 仍归对应代次释放，不能覆盖内层接管的宿主。装饰层在挂载视觉子级前记录退出所需的层。
+- Watermark 属于 T3 内容覆盖角色，经 `ScopeAwareAdornerLayer.GetLayer` 解析（接口不变），号码为 `int.MaxValue - 900`，高于共享 `AdornerLayer`、低于同宿主的 FloatButton（T4）、作用域 Drawer 与作用域 Dialog（T5）。"包含层"复用只匹配精确类型的 T3 实例；Watermark 位于提升表面（Drawer、作用域 Dialog 等）内部时就近落入该表面宿主，不会掉到窗口层级。Watermark 是纯绘制表面，不需要自带表面宿主。层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
 稳定 template part 接入点：

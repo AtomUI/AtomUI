@@ -2,6 +2,19 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - Notification 所在的 `WindowFeedbackLayer` 仍是 T8（`int.MaxValue - 50`），位于全局层级阶梯最顶层，高于 TopLevel Drawer、Tour、Dialog 和全屏标题栏；相对顺序不变。
+  - 每个 manager 的卡片宿主自带表面宿主：卡片内控件的键盘焦点描边与 Badge 画在卡片之上，不再落到共享 `AdornerLayer` 而被卡片盖住。
+  - `WindowFeedbackLayer` 解析 `VisualLayerManager` 时跳过表面宿主，直达 TopLevel 宿主。
+- API
+  - Notification 的 public / protected API 不变。
+- Docs
+  - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Known limits
+  - Windows 未实测（本次 Windows 10 实机验证只覆盖全屏标题栏、Window Drawer 与 FloatButton）；macOS 与 Linux 未实测。当前 Notification 卡片表面宿主与层级证据为 Headless 测试。
+
 ## 2026-11-21
 
 - Added

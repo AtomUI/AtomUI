@@ -226,6 +226,18 @@ public partial class Button : AbstractButton,
     internal static readonly DirectProperty<Button, bool> UsesThemeRecipeProperty =
         AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UsesThemeRecipe), button => button.UsesThemeRecipe);
 
+    internal static readonly DirectProperty<Button, bool> DisablesWithOpacityProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(DisablesWithOpacity), button => button.DisablesWithOpacity);
+
+    internal static readonly DirectProperty<Button, double> ThemeDisabledOpacityProperty =
+        AvaloniaProperty.RegisterDirect<Button, double>(nameof(ThemeDisabledOpacity), button => button.ThemeDisabledOpacity);
+
+    internal static readonly DirectProperty<Button, bool> PressMovesProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(PressMoves), button => button.PressMoves);
+
+    internal static readonly DirectProperty<Button, bool> UnderlinesLinkOnHoverProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UnderlinesLinkOnHover), button => button.UnderlinesLinkOnHover);
+
     internal static readonly StyledProperty<bool> IsExternalPopupTriggerProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsExternalPopupTrigger));
 
@@ -294,7 +306,7 @@ public partial class Button : AbstractButton,
         private set
         {
             SetAndRaise(VariantAppearanceProperty, ref _variantAppearance, value);
-            if (UsesThemeRecipe)
+            if (PressMoves)
             {
                 PseudoClasses.Set(":pressed-text", value.TextPressed is not null);
                 PseudoClasses.Set(":pressed-background", value.BackgroundPressed is not null);
@@ -346,10 +358,45 @@ public partial class Button : AbstractButton,
 
     private bool _usesThemeRecipe;
 
+    // The recipe's colour model; see ButtonThemeRecipe.UsesRecipeVariants.
     internal bool UsesThemeRecipe
     {
         get => _usesThemeRecipe;
         private set => SetAndRaise(UsesThemeRecipeProperty, ref _usesThemeRecipe, value);
+    }
+
+    private bool _disablesWithOpacity;
+
+    // Disabled buttons keep their colours at ThemeDisabledOpacity instead of the grey disabled paint.
+    internal bool DisablesWithOpacity
+    {
+        get => _disablesWithOpacity;
+        private set => SetAndRaise(DisablesWithOpacityProperty, ref _disablesWithOpacity, value);
+    }
+
+    private double _themeDisabledOpacity = 1;
+
+    internal double ThemeDisabledOpacity
+    {
+        get => _themeDisabledOpacity;
+        private set => SetAndRaise(ThemeDisabledOpacityProperty, ref _themeDisabledOpacity, value);
+    }
+
+    private bool _pressMoves;
+
+    // Pressing moves the button instead of switching to the pressed colours.
+    internal bool PressMoves
+    {
+        get => _pressMoves;
+        private set => SetAndRaise(PressMovesProperty, ref _pressMoves, value);
+    }
+
+    private bool _underlinesLinkOnHover;
+
+    internal bool UnderlinesLinkOnHover
+    {
+        get => _underlinesLinkOnHover;
+        private set => SetAndRaise(UnderlinesLinkOnHoverProperty, ref _underlinesLinkOnHover, value);
     }
 
     internal bool IsExternalPopupTrigger
@@ -564,7 +611,11 @@ public partial class Button : AbstractButton,
     {
         var recipe = ButtonThemeRecipe.Get(this);
         _themeRecipe = recipe;
-        UsesThemeRecipe = recipe is not null;
+        UsesThemeRecipe = recipe is { UsesRecipeVariants: true };
+        DisablesWithOpacity   = recipe?.DisabledOpacity is not null;
+        ThemeDisabledOpacity  = recipe?.DisabledOpacity ?? 1;
+        PressMoves            = recipe is { PressMoves: true };
+        UnderlinesLinkOnHover = recipe is { UnderlineLinkOnHover: true };
         PseudoClasses.Set(":link-underlined", recipe?.UnderlineLinkAtRest == true);
         ConfigureVariantThemeVariables();
     }

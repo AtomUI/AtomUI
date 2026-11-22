@@ -50,7 +50,7 @@ public partial class Button
         var tokens = new VariantTokens(this, _themeRecipe);
         if (EffectiveColor == ButtonColor.Default ||
             (EffectiveColor == ButtonColor.Primary && EffectiveVariant == ButtonVariant.Link &&
-             tokens.Recipe is not null))
+             tokens.Recipe is { UsesRecipeVariants: true }))
         {
             ConfigureDefaultVariantThemeVariables(tokens);
         }
@@ -106,7 +106,9 @@ public partial class Button
                 VariantValue.Of(colors[1]),
                 VariantValue.Of(colors[2]),
                 tokens.Own(ButtonTokenKind.SolidTextColor),
-                tokens.Recipe is null ? VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0])) : NoShadowVariant);
+                tokens.Recipe is not { UsesRecipeVariants: true }
+                    ? VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0]))
+                    : NoShadowVariant);
         }
     }
 
@@ -123,7 +125,7 @@ public partial class Button
         SharedTokenKind bgHoverColor,
         SharedTokenKind borderColor)
     {
-        var shadow = tokens.Recipe is null && TryCaptureSnapshotTokens(out var snapshotTokens)
+        var shadow = tokens.Recipe is not { UsesRecipeVariants: true } && TryCaptureSnapshotTokens(out var snapshotTokens)
             ? VariantValue.Of(CreatePresetShadow(snapshotTokens, snapshotTokens.GetEffectiveGlobal<Color>(bgColor)))
             : NoShadowVariant;
         ConfigureSemanticVariantThemeVariables(
@@ -147,7 +149,7 @@ public partial class Button
         var colorErrorActive = tokens.Global(SharedTokenKind.ColorErrorActive);
         switch (EffectiveVariant)
         {
-            case ButtonVariant.Solid when tokens.Recipe is not null:
+            case ButtonVariant.Solid when tokens.Recipe is { UsesRecipeVariants: true }:
                 SetVariantThemeVariables(
                     dangerColor,
                     dangerColor,
@@ -282,7 +284,7 @@ public partial class Button
                 break;
             case ButtonVariant.Filled:
             {
-                var text = tokens.Recipe is null
+                var text = tokens.Recipe is not { UsesRecipeVariants: true }
                     ? tokens.Own(ButtonTokenKind.DefaultColor)
                     : tokens.OwnOverride(ButtonTokenKind.DefaultColor, SharedTokenKind.ControlItemColorActive);
                 SetVariantThemeVariables(
@@ -437,7 +439,7 @@ public partial class Button
     {
         // The recipe's press feedback is movement. Keep documented palette states for preset colors
         // and preserve explicit pressed paint on each channel without replacing the other channels.
-        if (UsesThemeRecipe && !TryGetPresetPrimaryColor(EffectiveColor, out _))
+        if (PressMoves && !TryGetPresetPrimaryColor(EffectiveColor, out _))
         {
             textPressed = ExplicitPressedPaint(textPressed, text, textHover);
             backgroundPressed = ExplicitPressedPaint(backgroundPressed, background, backgroundHover);

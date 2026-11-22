@@ -212,7 +212,7 @@
                 </atom:TokenTransitions>
             </Setter>
 
-            <Style Selector="^[UsesThemeRecipe=True][IsExternalPopupTrigger=False]:not(:popup-trigger)">
+            <Style Selector="^[PressMoves=True][IsExternalPopupTrigger=False]:not(:popup-trigger)">
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
@@ -367,7 +367,7 @@
         </Style>
 
 
-        <Style Selector="^:disabled[UsesThemeRecipe=False]">
+        <Style Selector="^:disabled[DisablesWithOpacity=False]">
             <Setter Property="Foreground"
                     Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
@@ -376,17 +376,17 @@
             <Setter Property="Background"
                     Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
         </Style>
-        <Style Selector="^[EffectiveColor=Default]:disabled[UsesThemeRecipe=False]">
+        <Style Selector="^[EffectiveColor=Default]:disabled[DisablesWithOpacity=False]">
             <Setter Property="BorderBrush"
                     Value="{CompiledBinding $self.ThemeDefaultBorderColorDisabled}" />
         </Style>
-        <Style Selector="^:disabled[UsesThemeRecipe=True]">
-            <Setter Property="Opacity" Value="{x:Static atom:ButtonThemeInputs.DisabledOpacity}" />
+        <Style Selector="^:disabled[DisablesWithOpacity=True]">
+            <Setter Property="Opacity" Value="{CompiledBinding $self.ThemeDisabledOpacity}" />
         </Style>
         <!-- 公用样式结束 -->
 
         <!-- Color / Variant 视觉变量开始 -->
-        <Style Selector="^:not(:disabled), ^[UsesThemeRecipe=True]">
+        <Style Selector="^:not(:disabled), ^[DisablesWithOpacity=True]">
             <Setter Property="Foreground"
                     Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Background"
@@ -394,7 +394,7 @@
             <Setter Property="BorderBrush"
                     Value="{Binding VariantAppearance.Border, RelativeSource={RelativeSource Self}}" />
 
-            <Style Selector="^:pointerover:not(:disabled)">
+            <Style Selector="^:is(atom|Button):pointerover:not(:disabled)">
                 <Setter Property="Foreground"
                         Value="{Binding VariantAppearance.TextHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
@@ -403,7 +403,7 @@
                         Value="{Binding VariantAppearance.BorderHover, RelativeSource={RelativeSource Self}}" />
             </Style>
 
-            <Style Selector="^:pressed[UsesThemeRecipe=False]">
+            <Style Selector="^:is(atom|Button):pressed[PressMoves=False]">
                 <Setter Property="Foreground"
                         Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
@@ -411,7 +411,7 @@
                 <Setter Property="BorderBrush"
                         Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
             </Style>
-            <Style Selector="^[UsesThemeRecipe=True]:pressed:not(:disabled)">
+            <Style Selector="^:is(atom|Button)[PressMoves=True]:pressed:not(:disabled)">
                 <Style Selector="^:pressed-text">
                     <Setter Property="Foreground" Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 </Style>
@@ -424,17 +424,17 @@
             </Style>
         </Style>
 
-        <Style Selector="^[EffectiveVariant=Text]:disabled[UsesThemeRecipe=False], ^[EffectiveVariant=Link]:disabled[UsesThemeRecipe=False]">
+        <Style Selector="^[EffectiveVariant=Text]:disabled[DisablesWithOpacity=False], ^[EffectiveVariant=Link]:disabled[DisablesWithOpacity=False]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
 
         <!-- Shadcn applies the press offset to the button itself and excludes popup triggers. -->
-        <Style Selector="^[UsesThemeRecipe=True][IsExternalPopupTrigger=False]:pressed:not(:disabled):not(:popup-trigger)">
+        <Style Selector="^[PressMoves=True][IsExternalPopupTrigger=False]:pressed:not(:disabled):not(:popup-trigger)">
             <Setter Property="RenderTransform" Value="translate(0px, 1px)" />
         </Style>
 
-        <Style Selector="^[UsesThemeRecipe=True][EffectiveVariant=Link]:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter, ^[EffectiveVariant=Link]:link-underlined /template/ ContentPresenter#PART_ContentPresenter">
+        <Style Selector="^[UnderlinesLinkOnHover=True][EffectiveVariant=Link]:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter, ^[EffectiveVariant=Link]:link-underlined /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="documents:Inline.TextDecorations" Value="{x:Static atom:ButtonThemeInputs.LinkUnderline}" />
         </Style>
 
@@ -444,7 +444,7 @@
                     <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
                     <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillContent}" />
                 </Style>
-                <Style Selector="^[EffectiveVariant=Filled]">
+                <Style Selector="^:is(atom|Button)[EffectiveVariant=Filled]">
                     <Setter Property="Foreground" Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
                     <Setter Property="Background" Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
                 </Style>

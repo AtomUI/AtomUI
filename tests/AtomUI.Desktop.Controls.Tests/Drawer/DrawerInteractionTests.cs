@@ -660,6 +660,133 @@ public class DrawerInteractionTests
         }
     }
 
+    /// <summary>
+    /// Opens a Drawer scoped to a local target that covers only part of the window, so the Drawer surface host is
+    /// smaller than the window host.
+    /// </summary>
+    private static (AtomUIWindow Window, AtomUI.Desktop.Controls.Drawer Drawer, VisualLayerManager WindowHost,
+        VisualLayerManager SurfaceHost) OpenScopedDrawer(Control drawerContent)
+    {
+        var target = new Border
+        {
+            Width               = 600,
+            Height              = 400,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Top
+        };
+        var drawer = new AtomUI.Desktop.Controls.Drawer
+        {
+            Content         = drawerContent,
+            OpenOn          = target,
+            IsMotionEnabled = false,
+            Width           = 1,
+            Height          = 1
+        };
+        var window = new AtomUIWindow
+        {
+            Width   = 900,
+            Height  = 600,
+            Content = new Panel { Children = { target, drawer } }
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        drawer.IsOpen = true;
+        Dispatcher.UIThread.RunJobs();
+
+        var windowHost = window.GetVisualDescendants().OfType<VisualLayerManager>()
+                               .Single(manager => manager.Name == "PART_VisualLayerManager");
+        var container   = window.GetVisualDescendants().OfType<DrawerContainer>().Single();
+        var surfaceHost = container.GetVisualDescendants().OfType<VisualLayerManager>()
+                                   .First(LayerLadder.GetIsSurfaceHost);
+        return (window, drawer, windowHost, surfaceHost);
+    }
+
+    [Fact]
+    public void Drawer_Content_Resolves_Content_Roles_To_Its_Surface_And_TopLevel_Roles_Past_It()
+    {
+        var inner = new Border { Width = 40, Height = 40 };
+        var (window, drawer, windowHost, surfaceHost) = OpenScopedDrawer(inner);
+        try
+        {
+            surfaceHost.IsVisualAncestorOf(inner).ShouldBeTrue();
+
+            // Content roles stay inside the Drawer surface, so the Drawer never covers its own decorations,
+            // Watermark, FloatButton or scoped Dialog.
+            AdornerLayer.GetAdornerLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ScopeAwareAdornerLayer.GetLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ScopeAwareOverlayLayer.GetLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ContentPresentationLayer.GetViewportLayer(inner).ShouldNotBeNull().GetVisualParent()
+                                    .ShouldBeSameAs(surfaceHost);
+
+            // TopLevel roles skip the surface: a Tour mask or a Window Drawer opened from inside the Drawer must
+            // not be confined to it.
+            LayerLadder.FindTopLevelLayerManager(inner).ShouldBeSameAs(windowHost);
+            TourLayer.GetTourLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+            TopLevelPresentationLayer.GetLayer(window).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+            WindowFeedbackLayer.GetLayer(window).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+        }
+        finally
+        {
+            drawer.IsOpen = false;
+            Dispatcher.UIThread.RunJobs();
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Scoped_Drawer_Content_Popup_Light_Dismisses_On_A_Press_Outside_The_Drawer()
+    {
+        var comboBox = new AtomUI.Desktop.Controls.ComboBox
+        {
+            Width           = 120,
+            IsMotionEnabled = false
+        };
+        comboBox.Items.Add(new AtomUI.Desktop.Controls.ComboBoxItem { Content = "Alpha" });
+        var (window, drawer, windowHost, surfaceHost) = OpenScopedDrawer(comboBox);
+        try
+        {
+            comboBox.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Dispatcher.UIThread.RunJobs();
+            comboBox.IsDropDownOpen.ShouldBeTrue();
+
+            // Avalonia registers light-dismiss on the nearest VisualLayerManager of the placement target, which is
+            // the Drawer surface host and covers only the Drawer. PopupLightDismissRegistration moves the lease to
+            // the window host through Avalonia internals; if that stops working, presses outside the Drawer no
+            // longer close the popup and nothing else reports it.
+            var dismissLayer = window.GetVisualDescendants()
+                                     .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer" &&
+                                                       visual.IsVisible)
+                                     .ShouldBeAssignableTo<InputElement>()
+                                     .ShouldNotBeNull();
+            dismissLayer.GetVisualParent().ShouldBeSameAs(windowHost);
+            surfaceHost.GetVisualChildren()
+                       .Any(visual => visual.GetType().Name == "LightDismissOverlayLayer" && visual.IsVisible)
+                       .ShouldBeFalse();
+
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            dismissLayer.RaiseEvent(new PointerPressedEventArgs(
+                dismissLayer,
+                pointer,
+                window,
+                new Point(800, 550),
+                0,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None));
+            Dispatcher.UIThread.RunJobs();
+
+            comboBox.IsDropDownOpen.ShouldBeFalse();
+        }
+        finally
+        {
+            comboBox.IsDropDownOpen = false;
+            drawer.IsOpen           = false;
+            Dispatcher.UIThread.RunJobs();
+            window.Close();
+        }
+    }
+
     private static void RaisePointerReleased(Control source, MouseButton button, PointerUpdateKind updateKind)
     {
         source.RaiseEvent(new PointerReleasedEventArgs(

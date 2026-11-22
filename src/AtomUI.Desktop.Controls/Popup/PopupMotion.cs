@@ -9,6 +9,8 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>Prepares a definition using layout values, without retaining a popup.</summary>
 internal interface IPopupMotion
 {
+    bool RequiresPositionedAnchorForEntry => false;
+
     AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin);
 }
 
@@ -38,9 +40,9 @@ internal static class PopupMotionDefaults
     public static readonly AbstractMotion MenuClose = new ZoomOut(GetMenuOrigin);
     public static readonly AbstractMotion NavMenuOpen = new NavMenuIn();
     public static readonly AbstractMotion NavMenuClose = new NavMenuOut();
-    public static readonly AbstractMotion PopoverOpen = new ZoomIn(GetPopoverOrigin);
+    public static readonly AbstractMotion PopoverOpen = new ZoomIn(GetPopoverOrigin) { RequiresPositionedAnchorForEntry = true };
     public static readonly AbstractMotion PopoverClose = new ZoomOut(GetPopoverOrigin);
-    public static readonly AbstractMotion TooltipOpen = new ZoomIn(GetTooltipOrigin);
+    public static readonly AbstractMotion TooltipOpen = new ZoomIn(GetTooltipOrigin) { RequiresPositionedAnchorForEntry = true };
     public static readonly AbstractMotion TooltipClose = new ZoomOut(GetTooltipOrigin);
 
     // The AXAML-visible members are genuine AbstractMotion values. Setter
@@ -159,7 +161,10 @@ internal static class PopupMotionDefaults
 
     private sealed class ZoomIn(Func<PopupMotionGeometry, Point> origin) : ZoomBigInMotion, IPopupMotion, ITemplate
     {
-        object ITemplate.Build() => Configure(this, new ZoomIn(origin), null);
+        public bool RequiresPositionedAnchorForEntry { get; init; }
+
+        object ITemplate.Build() => Configure(this,
+            new ZoomIn(origin) { RequiresPositionedAnchorForEntry = RequiresPositionedAnchorForEntry }, null);
 
         public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
             Configure(this, new ZoomBigInMotion { Origin = new RelativePoint(origin(geometry), RelativeUnit.Absolute) }, retainedOrigin);

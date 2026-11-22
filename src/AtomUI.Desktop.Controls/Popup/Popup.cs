@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
@@ -706,6 +707,38 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         CustomPlacementCallback?.Invoke(placement, shadowThickness, marginToAnchor, isUseOverlayHost, false, false);
     }
 
+    internal PopupMotionGeometry GetMotionGeometry()
+    {
+        var placement = RequestedPlacement ?? Placement;
+        var bounds = default(Rect);
+        var anchorBounds = default(Rect);
+        var hasAlignment = false;
+        var radius = 0d;
+        if (_motionTarget is { } surface)
+        {
+            _motionFrame ??= surface.GetVisualDescendants().OfType<ShadowsAwareContainer>().FirstOrDefault();
+            var shape = _motionFrame?.GetContentShape(surface);
+            bounds = shape?.Body ?? new Rect(surface.Bounds.Size);
+            // The origin inset follows the radius the frame actually draws, so Control-level corner overrides
+            // (Controls[ToolTip].ToolTipCornerRadius, popover radii) are honoured instead of the scope-root
+            // BorderRadius Tokens.
+            radius = (shape?.CornerRadius ?? _motionFrame?.CornerRadius ?? default).TopLeft;
+            if (PopupUtils.IsCanonicalAnchorPlacementMode(placement) &&
+                ResolvePlacementTarget() is { } anchor && anchor.IsAttachedToVisualTree() && surface.IsAttachedToVisualTree())
+            {
+                // Cross-root geometry is a value snapshot, never a retained anchor.
+                var topLeft = surface.PointToClient(anchor.PointToScreen(default));
+                var bottomRight = surface.PointToClient(anchor.PointToScreen(new Point(anchor.Bounds.Width, anchor.Bounds.Height)));
+                anchorBounds = new Rect(topLeft, bottomRight);
+                hasAlignment = true;
+            }
+        }
+        return new PopupMotionGeometry(placement, IsHorizontalFlipped, IsVerticalFlipped,
+            FlowDirection, bounds, anchorBounds, hasAlignment, radius,
+            (TemplatedParent as MenuItem)?.SemanticLevel,
+            TemplatedParent is NavMenuItem { Mode: NavMenuMode.Horizontal, IsTopLevel: true });
+    }
+
     internal bool CanOpenPinnedPopup()
     {
         return Child is not null && HasValidPinnedOpenTarget();
@@ -832,7 +865,40 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         // always follows Avalonia's clock, with no periodic Dispatcher work.
         _isOpenMotionActive = true;
         _shadowHitTest?.Invalidate();
-        Dispatcher.Post(() => _ = PlayOpenMotionAsync(version, target), DispatcherPriority.Loaded);
+        Dispatcher.Post(() => PlayOpenMotionWhenPositioned(version, target, Stopwatch.GetTimestamp()), DispatcherPriority.Loaded);
+    }
+
+    private void PlayOpenMotionWhenPositioned(long version, Control target, long startedAt)
+    {
+        if (!IsCurrentMotion(version, target) || !IsOpen || _closeMotionState != PopupCloseState.Idle)
+        {
+            return;
+        }
+
+        if (!IsUsingOverlayLayer &&
+            OpenMotion is { Origin: null } and IPopupMotion { RequiresPositionedAnchorForEntry: true } && CanPlayMotion &&
+            PopupUtils.IsCanonicalAnchorPlacementMode(RequestedPlacement ?? Placement) &&
+            TopLevel.GetTopLevel(target) is PopupRoot root && root.IsWaylandPopupPositionPending())
+        {
+            // Wayland supplies the PopupRoot position asynchronously. Keep the
+            // entry hidden while waiting, even when the final position is (0, 0).
+            if (Stopwatch.GetElapsedTime(startedAt) < TimeSpan.FromSeconds(1))
+            {
+                root.RequestAnimationFrame(_ => PlayOpenMotionWhenPositioned(version, target, startedAt));
+                return;
+            }
+
+            // A host without a configure cannot supply an aligned origin.
+            _isOpenMotionActive = false;
+            ClearEntryPreparation();
+            if (IsCurrentMotion(version, target))
+            {
+                _shadowHitTest?.Invalidate();
+            }
+            return;
+        }
+
+        _ = PlayOpenMotionAsync(version, target);
     }
 
     private async Task PlayOpenMotionAsync(long version, Control target)
@@ -1304,38 +1370,6 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         var preparation = new CompositeDisposable();
         _entryPreparation = preparation;
         preparation.Add(target.SetValue(OpacityProperty, 0, Avalonia.Data.BindingPriority.Animation) ?? Disposable.Empty);
-    }
-
-    internal PopupMotionGeometry GetMotionGeometry()
-    {
-        var placement = RequestedPlacement ?? Placement;
-        var bounds = default(Rect);
-        var anchorBounds = default(Rect);
-        var hasAlignment = false;
-        var radius = 0d;
-        if (_motionTarget is { } surface)
-        {
-            _motionFrame ??= surface.GetVisualDescendants().OfType<ShadowsAwareContainer>().FirstOrDefault();
-            var shape = _motionFrame?.GetContentShape(surface);
-            bounds = shape?.Body ?? new Rect(surface.Bounds.Size);
-            // The origin inset follows the radius the frame actually draws, so Control-level corner overrides
-            // (Controls[ToolTip].ToolTipCornerRadius, popover radii) are honoured instead of the scope-root
-            // BorderRadius Tokens.
-            radius = (shape?.CornerRadius ?? _motionFrame?.CornerRadius ?? default).TopLeft;
-            if (PopupUtils.IsCanonicalAnchorPlacementMode(placement) &&
-                ResolvePlacementTarget() is { } anchor && anchor.IsAttachedToVisualTree() && surface.IsAttachedToVisualTree())
-            {
-                // Cross-root geometry is a value snapshot, never a retained anchor.
-                var topLeft = surface.PointToClient(anchor.PointToScreen(default));
-                var bottomRight = surface.PointToClient(anchor.PointToScreen(new Point(anchor.Bounds.Width, anchor.Bounds.Height)));
-                anchorBounds = new Rect(topLeft, bottomRight);
-                hasAlignment = true;
-            }
-        }
-        return new PopupMotionGeometry(placement, IsHorizontalFlipped, IsVerticalFlipped,
-            FlowDirection, bounds, anchorBounds, hasAlignment, radius,
-            (TemplatedParent as MenuItem)?.SemanticLevel,
-            TemplatedParent is NavMenuItem { Mode: NavMenuMode.Horizontal, IsTopLevel: true });
     }
 
     private enum PopupCloseState

@@ -140,8 +140,9 @@ public partial class DataFamilyEffectTests
                 return new Scenario(() => PreviewerWith(FailedViewer()),
                     static previewer => Pseudo(RotateLeftOf(previewer), ":pointerover"),
                     PartOptions<ImageViewer>(static viewer => Descendant<IconButton>(viewer, "PART_RotateLeftButton")));
-            // The toolbar text and icons, the indicator-to-actions spacing and the indicator padding.
-            case "PreviewOperationColor" or "Spacing" or "FloatToolbarIndicatorPadding":
+            // The toolbar text and icons (PreviewOperationColor derives from ColorWhite), the indicator-to-actions spacing
+            // and the indicator padding.
+            case "PreviewOperationColor" or "ColorWhite" or "Spacing" or "FloatToolbarIndicatorPadding":
                 return new Scenario(() => PreviewerWith(FailedViewer()), null,
                     PartOptions<ImageViewer>(static viewer => Descendant<ImagePreviewFloatToolbar>(viewer)));
             // The inline toolbar padding shows on the edges of its faint background: on a light surface.

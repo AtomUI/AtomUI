@@ -15,7 +15,7 @@ public class GalleryBaseTokenEffectTests
     {
         var rows = new Dictionary<string, string[]>
         {
-            ["GalleryShowCaseHeader"] = ["ColorTextSecondary", "ColorTextTertiary", "ColorBgContainer", "ColorBorderSecondary", "BorderThickness"],
+            ["GalleryShowCaseHeader"] = ["ColorTextSecondary", "ColorTextDescription", "ColorBgContainer", "ColorBorderSecondary", "BorderThickness"],
             ["ShowCaseItem"] = ["ColorBgContainer", "ColorFillTertiary", "BorderThickness"],
             ["ShowCaseZoomOverlay"] = ["ColorBgLayout", "ColorBgContainer"],
             ["SemanticPartPreview"] = ["ColorBgContainer", "ColorBorderSecondary", "ColorBgLayout", "ColorText", "ColorFillAlter", "BorderThickness", "FontSizeLG", "Padding"],
@@ -98,7 +98,7 @@ public class GalleryBaseTokenEffectTests
         var name = (id, token) switch
         {
             ("GalleryShowCaseHeader", "ColorTextSecondary") => "PART_SubtitleText",
-            ("GalleryShowCaseHeader", "ColorTextTertiary") => "PART_DescriptionText",
+            ("GalleryShowCaseHeader", "ColorTextDescription") => "PART_DescriptionText",
             ("GalleryShowCaseHeader", _) => "PART_MetadataCard",
             ("ShowCaseItem", "ColorFillTertiary" or "BorderThickness") => "PART_DeferredPlaceholder",
             ("SemanticPartPreview", "ColorText" or "FontSizeLG") => "PART_Title",

@@ -330,9 +330,23 @@ public partial class NavigationFamilyEffectTests
     public void TourStep_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        Run(() => CreateTourHost(token == "ColorTextLightSolid" ? TourStyleType.Primary : TourStyleType.Default), null,
+        // ColorIconHover is the hovered close icon of a primary step when the step foreground does not contrast with the
+        // hovered button: give the step its frame's colour so the readable fallback shows.
+        Action<Control>? arrange = token == "ColorIconHover"
+            ? static step =>
+            {
+                ((TourStep)step).Foreground = ((ArrowDecoratedBox)TourFrameOf(step)).Background;
+                Pseudo(Descendant<Control>(step, "CloseButton"), ":pointerover");
+            }
+            : null;
+        var primary = token is "ColorTextLightSolid" or "ColorIconHover";
+        Run(() => CreateTourHost(primary ? TourStyleType.Primary : TourStyleType.Default), arrange,
             TourStepTokens.Identity, token,
-            new EffectOptions { Target = static root => OpenTour(root) });
+            new EffectOptions
+            {
+                Target = static root => OpenTour(root),
+                Region = token == "ColorIconHover" ? static step => Descendant<Control>(step, "CloseButton") : null
+            });
     }
 
     public static IEnumerable<object[]> DefaultTourIndicatorRows() => MapRows("DefaultTourIndicator");

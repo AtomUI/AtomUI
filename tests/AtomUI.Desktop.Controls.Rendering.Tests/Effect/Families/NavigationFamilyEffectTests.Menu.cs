@@ -133,7 +133,8 @@ public partial class NavigationFamilyEffectTests
                 "ItemPaddingInline" or "UniformlyPadding" or "ItemIconSize" or "IconSize" or "ItemIconMarginInlineEnd" or
                 "ItemMargin" or "KeyGestureColor" or "ColorTextQuaternary" or "SeparatorItemHeight" or "LineWidth" or
                 "GroupTitlePadding" or "UniformlyPaddingXS" or "DangerItemColor" or "ColorError" or "ItemDisabledColor" or
-                "ColorTextDisabled":
+                "ColorTextDisabled" or "MenuPopupShadows" or "BoxShadowsSecondary":
+                // MenuPopupShadows (derived from BoxShadowsSecondary) is the opened popup's shadow.
                 return MenuPopup(PopupFrameOfMenu);
             case "MenuPopupMaxWidth":
                 // Only an item wider than the maximum is clamped: shrink the maximum below the long item.

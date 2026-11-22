@@ -115,7 +115,8 @@ public partial class DataEntryFamilyEffectTests
                     new EffectOptions { Region = static upload => Descendant<IconButton>(PictureContentAt(upload, 0)) });
             case "ColorBorder" or "BorderThickness" or "PaddingXS" or "ColorTextSecondary" or
                 "PictureListPreviewerSize" or "SizeXXL" or "UploadThumbnailSize" or "FontSizeHeading2" or
-                "PictureListItemMargin":
+                "PictureListItemMargin" or "LineWidth":
+                // LineWidth insets the picture items from the list's clip edges (the PictureListItemMargin sides).
                 return new Scenario(static () => CreateUpload(UploadListType.Picture,
                     statuses: [FileUploadStatus.Success, FileUploadStatus.Pending]));
             case "BorderRadiusLG":

@@ -163,6 +163,10 @@ public partial class LayoutFamilyEffectTests
             // Grid items draw their edges with the grid shadows (LineWidth wide, ColorBorderSecondary).
             case "CardGridItemShadows" or "LineWidth":
                 return new Scenario(static () => CreateCard(content: CreateGrid(hoverable: false)));
+            // A hovered grid item fades in its hover layer: the hover shadows over the quaternary fill.
+            case "CardGridHoverShadows" or "ColorFillQuaternary":
+                return new Scenario(static () => CreateCard(content: CreateGrid()),
+                    static card => Pseudo(Descendant<CardGridItem>(card), ":pointerover"));
             // The tabs content: the tab bar edge padding of the middle size.
             case "UniformlyPaddingSM":
                 return new Scenario(static () => CreateCard(content: CreateTabs()));
@@ -216,7 +220,7 @@ public partial class LayoutFamilyEffectTests
     public void Card_Resting_Shadow_Yields_To_Borderless_And_Hover_Shadows()
     {
         // RestingShadows styles the resting outlined card only: a borderless card keeps BoxShadowsTertiary and a hovered
-        // hoverable card swaps to CardShadows (with no border).
+        // hoverable card swaps to CardShadows (with its border painted in the card background).
         var outlined   = CreateCard();
         var borderless = CreateCard(variant: CardStyleVariant.Borderless);
         var hoverable  = CreateCard(hoverable: true);
@@ -236,7 +240,9 @@ public partial class LayoutFamilyEffectTests
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             WaitFor(() => hoverable.BoxShadow != expected);
             hoverable.BoxShadow.ShouldBe(ControlTokenAccessor.Capture(hoverable).GetOwn<BoxShadows>(CardTokenKind.CardShadows));
-            hoverable.BorderThickness.ShouldBe(new Thickness(0));
+            // The hovered card keeps its border width (no layout shift) and paints the border in its own background.
+            hoverable.BorderThickness.ShouldBe(outlined.BorderThickness);
+            hoverable.BorderBrush.ShouldBe(hoverable.Background);
         });
     }
 

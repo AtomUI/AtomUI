@@ -152,11 +152,11 @@ public partial class LayoutFamilyEffectTests
             ChangedRatioOf(before, byTabControl, tabControl).ShouldBeGreaterThan(0d,
                 "Controls[TabControl].ColorPrimary did not reach the card tabs.");
 
-            // The grid item edges are the Card's grid shadows (LineWidth / ColorBorderSecondary of the Card).
+            // The grid content paints the separators between its items once, in the Card's ColorBorderSecondary.
             provider.Config = IsolationConfig(control: (CardTokens.Identity, "ColorBorderSecondary", IsolationColor));
             using var byCardBorder = capture();
-            ChangedRatioOf(before, byCardBorder, gridItem).ShouldBeGreaterThan(0d,
-                "Controls[Card].ColorBorderSecondary did not reach the grid item edges.");
+            ChangedRatioOf(before, byCardBorder, Descendant<CardGridContent>(gridCard)).ShouldBeGreaterThan(0d,
+                "Controls[Card].ColorBorderSecondary did not reach the grid separators.");
 
             provider.Config = IsolationConfig(control: (CardActionButtonTokens.Identity, "ColorIcon", IsolationColor));
             using var byAction = capture();

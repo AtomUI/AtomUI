@@ -177,7 +177,10 @@ public partial class DataFamilyEffectTests
             using var before = capture();
             var cell = lunar.GetVisualDescendants().OfType<DateViewerCell>()
                 .Single(cell => cell.Model is { IsInView: true } model && model.Kind == kind && cell.Classes.Contains(":selected"));
-            var inner = (Avalonia.Controls.Border)CellInnerOf(cell);
+            // A selected date paints a separate rounded fill under its frame; a selected month paints its frame.
+            var inner = kind == DateViewerCellType.Date
+                ? Descendant<Avalonia.Controls.Border>(cell, "PART_CellSelection")
+                : (Avalonia.Controls.Border)CellInnerOf(cell);
             var expected = Color.Parse(defaultColour);
             inner.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(expected);
 
@@ -334,6 +337,23 @@ public partial class DataFamilyEffectTests
                     new EffectOptions { Region = SelectedLunarMonthSurface });
             case "MiniDateCellSize" or "MiniContentHeight":
                 return new Scenario(static () => Lunar(fullscreen: false));
+            // The mini date cells are MiniDateCellHeight tall: FontHeight plus the secondary line and the cell padding.
+            case "MiniDateCellHeight" or "MiniDateCellPadding" or "FontHeight":
+                return new Scenario(static () => Lunar(fullscreen: false));
+            // The mini date cells round their selection with MiniDateCellCornerRadius.
+            case "MiniDateCellCornerRadius":
+                return new Scenario(static () => Lunar(fullscreen: false), null, new EffectOptions
+                {
+                    Region  = static c => SelectedCalendarCell(c),
+                    Perturb = static _ => new CornerRadius(12)
+                });
+            // Lunar mini date cells use MiniDateCellCornerRadius; BorderRadiusSM rounds the selected month of the year view.
+            case "BorderRadiusSM":
+                return new Scenario(static () => Lunar(fullscreen: false, mode: CalendarMode.Year), null, new EffectOptions
+                {
+                    Region  = SelectedLunarMonthSurface,
+                    Perturb = static _ => new CornerRadius(12)
+                });
             case "MiniMonthCellWidth":
                 return new Scenario(static () => Lunar(fullscreen: false, mode: CalendarMode.Year));
             // Holiday and adjusted workday markers (the WorkdayMarkerColor row was masked before Task 18), compared on the

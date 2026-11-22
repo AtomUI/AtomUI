@@ -91,8 +91,14 @@ public partial class StepsProgressFamilyEffectTests
             "ColorError" => static p => p.Status = ProgressStatus.Exception,
             "ColorBgContainerDisabled" or "ControlItemBgActiveDisabled" or "ColorTextDisabled" => static p => p.IsEnabled = false,
             // The padding of the bar around an inner percentage label, and the label colour on the filled track.
-            "LineProgressPadding" or "UniformlyPaddingXXS" or "ColorTextLightSolid" => static p =>
+            "LineProgressPadding" or "UniformlyPaddingXXS" => static p =>
                 p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start },
+            // The inner label takes ColorTextLightSolid where it reads better than InnerLabelColor: on a dark bar.
+            "ColorTextLightSolid" => static p =>
+            {
+                p.PercentPosition = new PercentPosition { IsInner = true, Alignment = LinePercentAlignment.Start };
+                p.StrokeBrush     = Avalonia.Media.Brushes.Navy;
+            },
             // The inner label picks InnerLabelColor where it reads better than ColorTextLightSolid: on a bright bar.
             "InnerLabelColor" => static p =>
             {

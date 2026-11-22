@@ -236,8 +236,11 @@ public partial class DisplayFamilyEffectTests
             ((ISolidColorBrush)frame.Background!).Color.ShouldBe(Color.Parse(IsolationColor));
             FeedbackFamilyEffectTests.ChangedRatioOf(before, after, surface).ShouldBeGreaterThan(0d);
             FeedbackFamilyEffectTests.ChangedRatioOf(before, after, sibling).ShouldBe(0d);
-            ((ISolidColorBrush)nested.BgColor!).Color.ShouldBe(ControlTokenAccessor.Capture(nested).GetEffectiveGlobal<Color>(SharedTokenKind.ColorBgElevated));
-            ((ISolidColorBrush)nested.BgColor!).Color.ShouldNotBe(Color.Parse(IsolationColor));
+            // The nested Empty reads its preset palette from its own Tokens (BgColor stays an unset override), so the
+            // Drawer's ColorBgElevated does not reach it.
+            nested.BgColor.ShouldBeNull();
+            ControlTokenAccessor.Capture(nested).GetEffectiveGlobal<Color>(SharedTokenKind.ColorBgElevated)
+                                .ShouldNotBe(Color.Parse(IsolationColor));
             drawer.IsOpen = false;
             capture().Dispose();
             container.Resources.MergedDictionaries.OfType<ThemeContextResourceBridge>().ShouldBeEmpty();

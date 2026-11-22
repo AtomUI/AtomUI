@@ -185,7 +185,18 @@ internal static class WindowUtilsInterop
         IntPtr arg2);
 
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
+    public static extern void objc_msgSend_void_intptr_intptr_intptr(
+        IntPtr receiver,
+        IntPtr selector,
+        IntPtr arg1,
+        IntPtr arg2,
+        IntPtr arg3);
+
+    [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern bool objc_msgSend_bool(IntPtr receiver, IntPtr selector);
+
+    [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
+    public static extern bool objc_msgSend_bool_intptr(IntPtr receiver, IntPtr selector, IntPtr arg);
 
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern NSRectFull objc_msgSend_rect(IntPtr receiver, IntPtr selector);
@@ -235,6 +246,20 @@ internal static class WindowUtilsInterop
         sel_registerName("removeObserver:forKeyPath:");
     public static readonly IntPtr NSViewFrameDidChangeNotificationName =
         GetAppKitGlobalObject("NSViewFrameDidChangeNotification");
+    public static readonly IntPtr NSWindowDidMoveNotificationName =
+        GetAppKitGlobalObject("NSWindowDidMoveNotification");
+    public static readonly IntPtr NSWindowDidEnterFullScreenNotificationName =
+        GetAppKitGlobalObject("NSWindowDidEnterFullScreenNotification");
+    public static readonly IntPtr WindowSelector = sel_registerName("window");
+    public static readonly IntPtr ContentViewSelector = sel_registerName("contentView");
+    public static readonly IntPtr ContentLayoutRectSelector = sel_registerName("contentLayoutRect");
+    public static readonly IntPtr SubviewsSelector = sel_registerName("subviews");
+    public static readonly IntPtr LayerSelector = sel_registerName("layer");
+    public static readonly IntPtr SublayersSelector = sel_registerName("sublayers");
+    public static readonly IntPtr CountSelector = sel_registerName("count");
+    public static readonly IntPtr ObjectAtIndexSelector = sel_registerName("objectAtIndex:");
+    public static readonly IntPtr IsKindOfClassSelector = sel_registerName("isKindOfClass:");
+    public static readonly IntPtr SetHiddenSelector = sel_registerName("setHidden:");
 
     private static IntPtr GetAppKitGlobalObject(string symbolName)
     {
@@ -311,6 +336,39 @@ internal static class WindowUtilsInterop
     public static IntPtr GetSuperview(IntPtr view)
     {
         return objc_msgSend_intptr(view, SuperviewSelector);
+    }
+
+    /// <summary>Returns the elements of an <c>NSArray</c>; an empty list for a null array.</summary>
+    public static List<IntPtr> GetArrayItems(IntPtr array)
+    {
+        var items = new List<IntPtr>();
+        if (array == IntPtr.Zero)
+        {
+            return items;
+        }
+
+        var count = (long)objc_msgSend_intptr(array, CountSelector);
+        for (long i = 0; i < count; i++)
+        {
+            items.Add(objc_msgSend_intptr_long(array, ObjectAtIndexSelector, i));
+        }
+
+        return items;
+    }
+
+    public static bool IsKindOfClass(IntPtr obj, string className)
+    {
+        var cls = objc_getClass(className);
+        return obj != IntPtr.Zero && cls != IntPtr.Zero && objc_msgSend_bool_intptr(obj, IsKindOfClassSelector, cls);
+    }
+
+    /// <summary>Hides or shows an <c>NSView</c> or a <c>CALayer</c>; both respond to <c>setHidden:</c>.</summary>
+    public static void SetHidden(IntPtr viewOrLayer, bool isHidden)
+    {
+        if (viewOrLayer != IntPtr.Zero)
+        {
+            objc_msgSend_void_bool(viewOrLayer, SetHiddenSelector, isHidden);
+        }
     }
 
     public static void SetFrameOrigin(IntPtr view, CGPoint point)

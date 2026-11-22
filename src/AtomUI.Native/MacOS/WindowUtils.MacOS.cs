@@ -12,9 +12,9 @@ namespace AtomUI.Native;
 internal readonly record struct ButtonFrame(double X, double Y, double Width, double Height);
 
 [SupportedOSPlatform("macos")]
-internal static class WindowUtilsMacOS
+internal static partial class WindowUtilsMacOS
 {
-    private static readonly ConcurrentDictionary<IntPtr, NativeNotificationObserverRegistration>
+    private static readonly ConcurrentDictionary<IntPtr, INativeNotificationTarget>
         NativeNotificationObservers = new();
     private static readonly object NativeNotificationObserverClassGate = new();
     private static IntPtr s_nativeNotificationObserverClass;
@@ -257,7 +257,13 @@ internal static class WindowUtilsMacOS
         registration.Notify();
     }
 
-    private sealed class NativeNotificationObserverRegistration : IDisposable
+    /// <summary>Receives the notifications delivered to one native observer instance.</summary>
+    private interface INativeNotificationTarget
+    {
+        void Notify();
+    }
+
+    private sealed class NativeNotificationObserverRegistration : IDisposable, INativeNotificationTarget
     {
         private readonly IntPtr _notificationCenter;
         private readonly IntPtr _observer;

@@ -2,6 +2,13 @@
 
 本文档记录 SearchEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- 新增 Own Token 类 `SearchEditToken`，含 `InputFontSizeSM`（小号字体，默认 `FontSize`，与 antd 一致），Small 字号改读它。Ant Design / Shadcn 渲染不变。
+- PrimeNG：`InputFontSizeSM` 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size` 0.75rem），与 Small LineEdit、Button 同为 12px；并补上与 LineEdit 相同的 PrimeUIX form field 规则（悬停边框、禁用文字、图标色、各尺寸同一圆角等），此前 SearchEdit 没有 Own Token 类，主题无法为它单独计算这些值。
+- 修复搜索按钮高度只增不减：按钮 `Height` 原绑定到装饰框自身的 `Bounds.Height`，而装饰框又按子元素测量，两者互相撑高。从高的主题（如 PrimeNG Lara 32px）切到矮的主题后，SearchEdit 一直停在 32px。改为 `VerticalAlignment="Stretch"`，由 `SearchEditPanel` 按行高排布按钮。
+- Small 文本行高随输入框统一改为 `FontHeight`（见 LineEdit changelog），Small SearchEdit 与其他 Small 输入框同为 `ControlHeightSM`。
+
 ## 2026-11-11
 
 - Theme

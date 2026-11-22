@@ -8,6 +8,18 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-21
+
+- Fix：PrimeNG 下聚焦或拖动中的滑块手柄变成圆角方形。PrimeNG 阶段的 `ThumbSize` 只含圆和边框，没有给焦点环留位置；焦点环
+  超出手柄边界，只重绘手柄矩形时被切平。`ThumbSize` 现在与 Ant 公式一致，包含两侧焦点环宽度。
+
+## 2026-11-20
+
+- Token
+  - `SliderToken.ThumbHoverOutlineThickness`（默认等于 `ThumbOutlineThickness`）：悬停时滑块外环厚度，聚焦外环仍用 `ThumbOutlineThickness`。PrimeNG 悬停为 0，聚焦外环取主题焦点环（Aura 1px、Lara 3.2px 光晕、Nora 2px）。
+- Token
+  - `SliderToken.ThumbBg`（默认 `ColorBgContainer`）：滑块圆形填充色；PrimeNG Nora 采用主色。
+
 ## 2026-11-11
 
 - Theme

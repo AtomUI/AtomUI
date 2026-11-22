@@ -2,6 +2,11 @@
 
 本文档记录 TabControl 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractTabToken.TitleFontWeight`（默认 `Normal`）：TabControl、TabStrip、CardTabControl、CardTabStrip 的标签标题字重，经 `TabTokenResourceBinding` 读取；PrimeNG Aura 600，Lara / Nora 700。
+
 ## 2026-11-14
 
 - 共享标签指示线使用转换后的完整标题边界。RTL 镜像标题及运行时切换文字方向后，定宽和随标题宽度的指示线都与选中标题对齐。

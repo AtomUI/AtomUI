@@ -237,6 +237,17 @@ ToolTip 主题现在显式把其箭头框体的 `BorderThickness` 设为 0，主
 anchor 的间距改读 `FlyoutHostToken.MarginToAnchor`（原为 `PopupToken.MarginToAnchor`），与其阴影来源一致（两者默认都是
 `UniformlyMarginXXS`，主题不设置时不变）。
 
+### 箭头几何
+
+`ArrowIndicator` 改按 antd `genRoundedArrow` 的构造绘制：宽 `ArrowSize`、高为宽的一半的直角等腰三角，尖角是半径
+`TipRadius` 的真圆弧，两条斜边以半径 `BaseRadius` 的内凹圆弧平滑并入框体边缘；两个半径都为 0 时就是 CSS 框架的直角
+边框三角。描边只画两条斜边，箭头与框体交界处不再有描边线。此前箭头高约为宽的一半减 0.25，尖角是固定 1.5 的二次曲线，
+底边与斜边直角相接，描边绕整个三角形（含底边）。`ArrowDecoratedBoxToken` 新增 `ArrowTipRadius`（默认 `BorderRadiusXS`）
+与 `ArrowBaseRadius`（默认 `BorderRadiusOuter`），`ArrowSize` 默认值由 `SizePopupArrow / 1.3` 改为 `SizePopupArrow`，与 antd
+的箭头一致（同为 16 宽，可见高度约 5.5，与旧箭头相近）。带边框的整体描边沿用同一几何。这是对旧画法的有意修正，Ant Design
+的箭头外形随之变化。PrimeNG 的 Tooltip 与 Popover 箭头为直角边框三角（两个半径都为 0）；Shadcn 的 Tooltip 和箭头浮层改用官方
+`TooltipPrimitive.Arrow` 的旋转方块形状（宽 `2 × (5√2 − 2)`、尖角圆角 2），不再随样式的大号 `BorderRadiusXS` 变成圆包。
+
 ## 主题 XML：`<Algorithm>` 的 `Catalog`
 
 ```xml
@@ -296,7 +307,7 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
 
 `AtomUI.Themes.PrimeNG`（尚未发布到 NuGet）现在注册六个算法：`PrimeNG:Aura`、`PrimeNG:Aura.Dark`、`PrimeNG:Lara`、
 `PrimeNG:Lara.Dark`、`PrimeNG:Nora`、`PrimeNG:Nora.Dark`，带 Alias 和控件阶段。12 个 profile ID 保留，每份 XML 只剩
-算法链和 Seed Token（主色、错误色、圆角、控件高度，Nora 另有 `EnableMotion`），只有 Lara 的两个紧凑 profile 另保留一项 Select
+算法链和 Seed Token（主色、错误色、圆角、控件高度），只有 Lara 的两个紧凑 profile 另保留一项 Select
 覆盖。可见的变化：
 
 - PrimeNG 主题里的 `ColorPrimary`、`ColorError` 等状态色是种子（色阶的 500 级），由算法映射到实际显示的级。换主色种子
@@ -338,6 +349,11 @@ ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `Compil
   AutoComplete、Mentions 面板与右键菜单以阴影前的 `0 0 0 1` 描边环表示边框，Aura / Lara 圆角由 8 改为 6（Nora 仍为 2），距 anchor 由 4
   改为 2（Nora 0，`anchor.gutter`）。Tooltip 保持无边框。
 - 除上文的 Alias 派生修复和弹层取值外，算法迁移没有改变任何尺寸、内边距、圆角、字体、线宽、动效或阴影几何。
+- Nora 恢复动画。Nora profile 原先按 PrimeUIX `transition.duration: 0s` 设置 `EnableMotion false`，连弹层、抽屉、折叠面板、
+  通知卡片和加载指示器也一起冻结；PrimeNG 只用这个值控制状态颜色过渡，组件进出场动画在所有预设中相同。现在 Nora
+  保持动画开启，把全局 `MotionDurationFast` / `Mid` / `Slow` 设为 0（悬停、聚焦颜色瞬时切换），并在各动画所属控件的
+  作用域内恢复其时长（弹层与对话框 300ms、抽屉 500ms、折叠内容 200ms、通知卡片 300ms、Tabs 指示条 250ms、走马灯
+  500ms、Tooltip 淡入 250ms、开关滑块 100ms）。显式设置 `EnableMotion false` 仍会关闭全部动画。Aura、Lara 不变。
 - `[PrimeNG:Aura.Dark]` 与 `PrimeNGAura.Dark` profile 相同，基础链后接 `AtomUI:Compact` 与 `.Compact` profile 相同
   （Lara 的紧凑 profile 保留一项列出的差异）。在浅色 PrimeNG 链后接 `AtomUI:Dark` 是混合链，不是 PrimeNG 的暗色。
 

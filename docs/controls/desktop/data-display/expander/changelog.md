@@ -3,6 +3,12 @@
 本文档记录 Expander 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `ExpanderToken.HeaderColor`（默认 `ColorTextHeading`）：头部文字颜色。
+  - `ExpanderToken.HeaderFontWeight`（默认 `Normal`）：头部字重，作用于头部内容呈现器；PrimeNG Aura 600，Lara / Nora 700。
+
 ## 2026-11-11
 
 - Behavior

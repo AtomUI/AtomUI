@@ -2,6 +2,15 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token
+  - 新增 Own Token `ArrowSize`、`ArrowTipRadius`、`ArrowBaseRadius`、`ArrowStrokeThickness`：Tooltip 箭头自己的宽度、尖角圆角、与主体衔接处的圆弧半径和描边宽度，不再与 Popover 等箭头浮层共用 `ArrowDecoratedBoxToken`。默认值与箭头框相同（`SizePopupArrow`、`BorderRadiusXS`、`BorderRadiusOuter`、1）。
+  - 新增 Own Token `MarginToAnchor`（默认 4，即附加属性 `ToolTip.MarginToAnchor` 的默认值）：宿主和 Tooltip 实例都没有设置 `ToolTip.MarginToAnchor` 时，弹层与锚点的距离取它；显式设置的值仍然优先。ControlTheme 写入内部属性 `ThemeMarginToAnchor`。
+  - PrimeNG：箭头按 PrimeUIX `tooltip.gutter`（4px）画成 8×4 的直角三角，无圆角、无描边；`MarginToAnchor` 0.5，主体离锚点正好 4px，箭头占满这段间距。此前共用 Popover 的 19px 箭头和 slate 200 描边，箭头偏大，描边在交界处形成一条浅色缝；箭头又额外加在 4px 间距之外。
+  - Shadcn：箭头按官方 `TooltipPrimitive.Arrow`（10px 方块旋转 45°、2px 圆角、上移 50% + 2px）为宽 `2 × (5√2 − 2)`、尖角圆角 2、无衔接圆弧。
+- Theme：箭头几何重做，见 ArrowDecoratedBox 部分（`ArrowIndicator`）。
+
 ## 2026-11-16
 
 - Token

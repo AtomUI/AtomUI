@@ -2,6 +2,15 @@
 
 本文档记录 Message 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Added
+  - `MessageCardToken` 新增每个类型（`Information` / `Success` / `Warning` / `Error`）的 `Bg`、`IconColor`、`Color`（文字）；`MessageCardTheme` 按 `MessageType` 改绑，类型图标改读 `*IconColor`。默认值等于原有外观（`ContentBg`、`ColorText`、`ColorPrimary` 等状态色），Ant Design 与 Shadcn 渲染不变；`Loading` 仍为普通卡片。
+- PrimeNG（PrimeUIX 3.1.1 `message`）
+  - Aura / Lara：类型卡片浅色着底（`{color}.50` 95%，暗色 `{color}.500` 16%），文字与图标取 600（暗色 500）。
+  - Nora：类型卡片实底（800，警告 600；暗色 200），文字与图标取 50（暗色 950）；Loading 白卡在三个预设中都加 1px `content.border.color` 描边（Lara、Nora 为 AtomUI 的辨识度补充）。
+  - Aura：卡片 1px 边框，各类型取 `{color}.200`（暗色 `{color}.700` 36%），Loading 取 `content.border.color`，以阴影前的描边环绘制。
+
 ## 2026-11-17
 
 - Changed

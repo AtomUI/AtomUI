@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-20
+
+- Fixed
+  - 宿主不再绘制方形焦点装饰（`FocusAdorner` 置空），焦点由内部输入框边框表现，与其他输入控件一致；宿主以编程方式获得焦点时转交给内部文本区。新增 `MentionsToken.OptionColor` / `OptionSelectedColor`（默认 `ColorTextSecondary` / `ColorText`）：候选项与选中候选项文字颜色，经主题传给候选列表；PrimeNG 取 `ColorText` 与高亮反差色，修正实心高亮下选中候选项文字不可见。
+
 ## 2026-11-14
 
 - Fixed

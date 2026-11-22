@@ -76,3 +76,15 @@ Pagination 的控件专项模型通过 Theme 消费 Token：
 ## 独立 Token 身份与共享计算
 
 ItemInputBg 移到 SimplePagination。PaginationItemPaddingInline 只绘制页码文字，保留在 Pagination，不添加给只有箭头的 SimplePagination；ItemLinkBg/InputOutlineOffset 继续保留原 Reserved 状态。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `ItemColor` / `ItemHoverColor` / `ItemHoverBg` | `ColorText` / `ColorText` / `ColorBgTextHover` | 页码项文字与悬停 |
+| `ItemActiveColor` / `ItemActiveBorderColor` | `ColorPrimary` | 选中页文字与边框 |
+| `ItemActiveHoverColor` / `ItemActiveHoverBorderColor` | `ColorPrimaryHover` | 选中页悬停 |
+| `ItemActiveFontWeight` | `FontWeightStrong` | 选中页字重 |
+| `ItemBorderRadius` | `BorderRadius` | 页码项圆角 |

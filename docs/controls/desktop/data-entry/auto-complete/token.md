@@ -17,9 +17,9 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `OptionHeight`、`MinPopupWidth`、`MaxPopupWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding`、`OptionMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `PopupContentPadding`、`MinPopupWidth`、`MaxPopupWidth` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `OptionBorderRadius`、`PopupContentPadding`、`MinPopupWidth`、`MaxPopupWidth` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 

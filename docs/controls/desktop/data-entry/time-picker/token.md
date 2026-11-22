@@ -80,3 +80,11 @@ TimePicker 的控件专项模型通过 Theme 消费 Token：
 ## 独立 Token 身份与共享计算
 
 ItemHeight/ItemWidth 的显式基值分别在四终端守卫，再调用共享纯函数派生 ItemPadding；PeriodHostWidth 跟随该终端 ItemWidth。原 TimePicker.HeaderMargin 移到 DatePicker/RangeDatePicker，时间 footer ButtonsMargin 只属于 TimePicker/RangeTimePicker。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `PopupArrowVisible` | `true` | 弹层是否绘制箭头（`AbstractTimeViewToken`） |

@@ -31,6 +31,7 @@ SelectToken 不承载以下状态：
 ### 2.2 候选项 Token
 
 - `OptionSelectedColor`
+- `OptionSelectedIndicatorColor`
 - `OptionSelectedFontWeight`
 - `OptionSelectedBg`
 - `OptionActiveBg`
@@ -38,9 +39,11 @@ SelectToken 不承载以下状态：
 - `OptionPadding`
 - `OptionFontSize`
 - `OptionHeight`
+- `InputFontSizeSM`
 
 这些 Token 控制 `SelectCandidateListItem` 的选中、active、内边距、文本和行高基准。`OptionPadding`（antd `optionPadding`）
-是候选行内边距。弹层最大高度使用实例 `ItemHeight` 计算，主题默认值来自 `OptionHeight`，因此调整 `OptionHeight` 同时改变
+是候选行内边距。`InputFontSizeSM` 是 Small 选择框本身（选中值、占位文字）的字号，默认等于 `FontSize`（与 antd 一致），
+PrimeNG 取 `FontSizeSM`；它定义在 `AbstractSelectInputToken`，Cascader 与 TreeSelect 共用。弹层最大高度使用实例 `ItemHeight` 计算，主题默认值来自 `OptionHeight`，因此调整 `OptionHeight` 同时改变
 候选行最小高度和弹层可视行数对应的高度。
 
 `OptionBackgroundInset` 只内缩候选项背景，不改变行高、内容位置或命中区域。Shadcn 在背景上下各保留一个主题线宽。

@@ -20,6 +20,7 @@ Token 按控件语义分类维护：
 | 间距与布局 | 卡片 padding、图标间距、宿主边距。 | `ContentPadding`、`MessageIconMargin`、`MessageTopMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ContentBg` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `InformationShadows`、`SuccessShadows`、`WarningShadows`、`ErrorShadows`、`LoadingShadows` |
+| 类型表面 | 每个类型的背景、图标与文字颜色。 | `InformationBg`、`InformationIconColor`、`InformationColor` 等（`Success` / `Warning` / `Error` 同名） |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -29,6 +30,12 @@ Token 按控件语义分类维护：
 没有无 severity 的兜底槽：`MessageType` 的每个取值都有样式块，基础 Shadow setter 会被遮蔽而非生效。Ant Design 基线
 下五个槽位同为全局 `BoxShadows`，渲染与引入槽位前一致；设计语言算法（如 `AtomUI.Themes.PrimeNG` 的
 `PrimeNGMessageCardTokens`）可按 severity 覆盖（PrimeNG 为 `0 4 8 0` 的 severity 彩色 4% 阴影，`Loading` 取 neutral）。
+
+### 类型表面
+
+`Information` / `Success` / `Warning` / `Error` 各有 `*Bg`、`*IconColor`、`*Color`（文字）槽位，默认等于普通卡片
+（`ContentBg`、状态色图标、`ColorText`），`Loading` 不分槽。设计语言算法据此绘制着色或实底的类型卡片（PrimeNG
+`message`：Aura / Lara 浅色着底，Nora 实底）。
 
 ### 主题读取与裁决
 

@@ -14,8 +14,11 @@
 | 尺寸 | `ControlItemWidth` | 单列选项默认宽度，也是普通 popup 最小宽度基线。 | `CascaderTheme.axaml`、level list 主题。 |
 | 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `AbstractSelect` 读取并提供给弹层模板。 |
 | 尺寸 | `HeaderHeight` | 选项 header 最小高度。 | `CascaderViewItemTheme.axaml`。 |
+| 字体 | `InputFontSizeSM` | Small 输入控件的字号，默认 `FontSize`（与 antd 一致），定义在 `AbstractSelectInputToken`。 | `CascaderTheme.axaml` Small 尺寸样式。 |
 | 间距 | `OptionPadding` | 选项内部 padding。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `MenuPadding` | 单列菜单 padding。 | `CascaderViewLevelListTheme.axaml`。 |
+| 间距 | `OptionMargin` | 选项外边距（非 0 时选项之间留出间隙）。 | `CascaderViewItemTheme.axaml`。 |
+| 结构 | `OptionBorderRadius` | 选项背景圆角，默认 `BorderRadius`。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `ItemHeaderSpacing` | checkbox、icon、header、expand icon 之间的列间距。 | `CascaderViewItemTheme.axaml`。 |
 | 状态色 | `OptionHoverBg` | pointerover 选项背景。 | `CascaderViewItemTheme.axaml`。 |
 | 状态色 | `OptionSelectedBg` | expanded / selected 选项背景。 | `CascaderViewItemTheme.axaml`。 |

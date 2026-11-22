@@ -4,6 +4,8 @@
 
 ## 2026-11-20
 
+- Token
+  - `AbstractTimeViewToken.PopupArrowVisible`（默认 `true`）：DatePicker、RangeDatePicker 弹层是否绘制指向输入框的箭头；PrimeNG 设为 `false`。弹层头部标题字重改读 DateViewer 的 `HeaderTitleFontWeight`（默认 `Bold`，与原外观一致）。
 - Fixed
   - DatePicker 与 RangeDatePicker 弹层的 Today 使用当前主题主色，并保留链接按钮的交互反馈。
 - Performance

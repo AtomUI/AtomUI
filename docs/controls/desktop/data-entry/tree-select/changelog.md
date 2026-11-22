@@ -3,6 +3,10 @@
 本文档记录 TreeSelect 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`AbstractSelectInputToken` 新增 Own Token `InputFontSizeSM`（小号选择框字体，默认 `FontSize`，与 antd 一致），TreeSelect 的 Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），Small 占位文字和选中值与 Small LineEdit 同字号。
+
 ## 2026-11-11
 
 - Behavior

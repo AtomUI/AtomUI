@@ -13,7 +13,9 @@ Own 值；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，Numer
 - `HandleBg`、`FilledHandleBg`、`HandleHoverBg`、`HandleActiveBg`、`HandleIconColor`、`HandleHoverColor`、`HandlePressedColor`、`HandleBorderColor`：正常、Filled、悬停、按下、图标与边框视觉。
 - `FilledHandleBg` 根据该终端的有效 `HandleBg` 派生；显式 `HandleBg` 先保留，再计算派生值。
 
-NumericUpDown 没有 `InputFontSize*` Own Token，也没有承诺默认控件宽度。已有 `ButtonSpinner.ControlWidth` 仍为 Reserved，
+- `InputFontSizeSM`：Small 字号，默认等于 `FontSize`（与 antd 一致：小号输入框不缩小字号）；PrimeNG 取 `FontSizeSM`。
+
+NumericUpDown 只有 Small 一个 `InputFontSize*` Own Token，也没有承诺默认控件宽度。已有 `ButtonSpinner.ControlWidth` 仍为 Reserved，
 不向新终端复制这个无消费者字段。
 
 ## 3. 输入与步进柄
@@ -21,8 +23,8 @@ NumericUpDown 没有 `InputFontSize*` Own Token，也没有承诺默认控件宽
 输入框、frame、禁用/错误/警告、focus shadow 与动效读取 NumericUpDown 的有效 Global Token。共享柄的具体样式输入由终端
 AXAML 设置；嵌套的 IconButton 仍保留独立身份，宿主明确控制柄图标几何与状态色。
 
-内嵌 `EmbeddedTextBox` 保持 `SizeType=Custom`、无额外 chrome，字号由 NumericUpDown 提供：Small 与 Middle 使用
-`FontSize`（默认14），Large 使用 `FontSizeLG`（默认16）。`IsCustomFontSize` 与调用方显式字号仍可接管。内部编辑器不再把
+内嵌 `EmbeddedTextBox` 保持 `SizeType=Custom`、无额外 chrome，字号由 NumericUpDown 提供：Small 使用 `InputFontSizeSM`（默认等于
+`FontSize`），Middle 使用 `FontSize`（默认14），Large 使用 `FontSizeLG`（默认16）。`IsCustomFontSize` 与调用方显式字号仍可接管。内部编辑器不再把
 宿主默认的 `IsCustomFontSize=false` 传回自己的 Custom 分支并覆盖宿主的大号字号。
 
 `Mode=Spinner` 的加减按钮使用普通 `IconSize`，不使用浮动柄的 `HandleIconSize` 或 `HandleWidth`；分隔线、悬停与按下分别使用

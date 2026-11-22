@@ -2,6 +2,20 @@
 
 本文档记录 AutoComplete 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`AbstractAutoCompleteToken` 新增 `OptionMargin` 与 `OptionBorderRadius`（默认 0，候选行无间隙、直角，与此前一致），经
+  `CandidateList` 传给每个候选行。PrimeNG Aura 与 Select 一致：候选行圆角 4、行间 2px，`PopupContentPadding` 为 (4,3)；
+  Lara、Nora 取 Select 的列表内边距，候选行直角无间隙。
+- 候选行（中号）高度改读宿主的 `OptionHeight`（经 `CandidateList.ItemMinHeight` 传给候选行；Mentions 传自身 `ControlHeight`，
+  外观不变）。Ant Design 下 `OptionHeight` 等于 `ControlHeight`，渲染不变；PrimeNG 取 Select 选项的实际行高（Aura 再扣除
+  选项背景的上下 1px 内缩，即行外的间隙），与 Select 逐行对齐。
+
+## 2026-11-20
+
+- Token
+  - `AbstractAutoCompleteToken.OptionColor` / `OptionSelectedColor`（默认 `ColorTextSecondary` / `ColorText`）：候选项与选中候选项文字颜色（AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea），经主题传给候选列表；默认值与原外观一致。
+
 ## 2026-11-14
 
 - Fixed

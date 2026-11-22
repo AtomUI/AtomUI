@@ -2,6 +2,11 @@
 
 本文档记录 Splitter 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- PrimeNG：Aura、Nora 官方 `handle.background` 透明，1px 分隔线上看不到也找不到拖动手柄。AtomUI 在三个预设中都绘制 Lara 的
+  24px 手柄（surface 400 / 暗色 600）；Nora 的分隔线本身是 surface 400，手柄再深两级（600 / 暗色 300）以区分。
+
 ## 2026-11-08
 
 - Changed

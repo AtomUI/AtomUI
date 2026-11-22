@@ -89,3 +89,11 @@ Token 不保存 `TagColor`、`Variant` 或实例颜色值，也不为每个 `Col
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 `Color × Variant`、CheckableTag 二态、Group 间距、Light/Dark、透明边框、Icon 和 CloseIcon 视觉。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TagFontWeight` | `Normal` | Tag 与 CheckableTag 文本字重（`AbstractTagToken`） |

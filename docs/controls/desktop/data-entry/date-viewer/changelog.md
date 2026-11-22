@@ -2,6 +2,11 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractDateViewerToken` 新增 `CellCornerRadius`（默认 `BorderRadiusSM`）、`CellTodayBg`（默认透明）、`CellTodayColor`（默认 `ColorText`）、`CellTodayBorderColor`（默认 `ColorPrimary`）、`HeaderTitleFontWeight`（默认 `Bold`）、`WeekHeaderHeight`（默认 0，即沿用单元格行高）与 `WeekHeaderFontWeight`（默认 `Normal`）。`WeekHeaderHeight` 为正时由星期行自身取该高度并使星期名垂直居中。这些值由 DateViewer / RangeDateViewer 主题赋给模板中 `DatePanel`、`DateViewerHeader` 的普通属性，单元格读所在面板的属性，不新增可继承输入。默认值与原外观一致；PrimeNG 采用圆形日期、填充式今天、500 标题与 32 / 36 星期行。
+
 ## 2026-11-15
 
 - Token

@@ -2,6 +2,17 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Added
+  - `NotificationCardToken` 新增卡片表面 Token：`NotificationBorderThickness`、`NotificationBorderColor`，以及每个类型（`Information` / `Success` / `Warning` / `Error`）的 `Bg`、`BorderColor`、`IconColor`、`TitleColor`、`DescriptionColor`、`CloseIconColor`、`CloseIconHoverColor`。`NotificationCardTheme` 按 `NotificationType` 改绑；类型图标改读 `*IconColor`。默认值等于原有外观（卡片背景、透明边框、`ColorTextHeading` / `ColorText` / `ColorIcon` / `ColorIconHover`、`ColorPrimary` 等状态色），Ant Design 与 Shadcn 渲染不变。
+- PrimeNG（PrimeUIX 3.1.1 `toast`）
+  - Aura / Lara：类型卡片浅色着底（`{color}.50` 95%，暗色 `{color}.500` 16%），标题、图标、关闭图标取 600（暗色 500），描述取 surface 700（暗色 surface 0）。
+  - Lara / Nora：左侧 6px 色条（`border.width: 0 0 0 6px`），Lara 取 `{color}.500`（暗色 `{color}.700` 36%），无类型卡片取 `content.border.color`。色条以前沿 6px 的内阴影绘制（内容内边距相应加 6px），不用 `6,0,0,0` 的框体边框：Avalonia 的 Border 在边框粗细不一致时不绘制 BoxShadow，卡片会丢掉描边和阴影，与白色背景融为一体。
+  - 无类型卡片在三个预设中都加 1px `content.border.color` 描边（Aura 官方即有；Lara、Nora 为 AtomUI 的辨识度补充），Message 的 Loading 卡片同样处理。
+  - Nora：类型卡片实底（800，警告 600；暗色 200），文字、图标、关闭图标取 50（暗色 950）。
+  - Aura：卡片 1px 边框（无类型取 `content.border.color`，各类型取 `{color}.200`，暗色 `{color}.700` 36%），以阴影前的描边环绘制。Lara / Nora 的类型卡片只保留 `overlay.popover.shadow`。
+
 ## 2026-11-17
 
 - Changed

@@ -215,3 +215,11 @@ StepsToken 只影响：
 | 实例语义样式 | 验证三项属性默认 null、非 null 优先级、运行时修改、清空回退，以及不会改变未覆盖的状态/类型 Token 视觉。 |
 | Token 删除或重命名 | 同步类型、生成资源、AXAML、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档 | 运行 `git diff --check`，检查相对链接。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TitleFontWeight` | `Normal` | 步骤标题字重（Inline 类型保持 Normal） |

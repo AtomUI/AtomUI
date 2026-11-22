@@ -261,6 +261,20 @@ border does not give tooltips one. PopupConfirm reads its gap to the anchor from
 instead of `PopupToken.MarginToAnchor`, like its shadows (both default to `UniformlyMarginXXS`, so nothing changes
 unless a theme sets one of them).
 
+### Arrow geometry
+
+`ArrowIndicator` now follows the antd `genRoundedArrow` construction: a right-angled isosceles triangle `ArrowSize` wide
+and half as high, its tip a true arc of radius `TipRadius`, its sides joining the box edge through concave arcs of
+radius `BaseRadius`; with both radii 0 it is the plain border triangle of CSS frameworks. The outline strokes only the
+two sides, so no line runs where the arrow meets the box. Before, the arrow was about half as high as wide minus 0.25,
+its tip a fixed 1.5 quadratic curve, its sides met the base at a corner and the stroke ran around the whole triangle,
+base included. `ArrowDecoratedBoxToken` gains `ArrowTipRadius` (default `BorderRadiusXS`) and `ArrowBaseRadius` (default
+`BorderRadiusOuter`), and the `ArrowSize` default changes from `SizePopupArrow / 1.3` to `SizePopupArrow`, as in antd
+(16 wide, about 5.5 visible height, close to the old arrow). The bordered outline follows the same geometry. This is a
+deliberate correction of the old drawing, so the Ant Design arrow shape changes with it. PrimeNG's tooltip and popover arrows are sharp border triangles (both
+radii 0); Shadcn's tooltip and arrow flyouts take the official `TooltipPrimitive.Arrow` rotated square
+(`2 × (5√2 − 2)` wide, a 2px tip) instead of following the style's large `BorderRadiusXS` into a blob.
+
 ## Theme XML: `Catalog` on `<Algorithm>`
 
 ```xml
@@ -330,7 +344,7 @@ diagnostic id is the code, with a title and a parameterized message) instead of 
 `AtomUI.Themes.PrimeNG` (not yet published to NuGet) now registers six algorithms, `PrimeNG:Aura`,
 `PrimeNG:Aura.Dark`, `PrimeNG:Lara`, `PrimeNG:Lara.Dark`, `PrimeNG:Nora` and `PrimeNG:Nora.Dark`, with Alias and
 control stages. The twelve profile IDs are kept; each XML file now holds the chain and Seed tokens (primary, error,
-radius, control height; Nora also `EnableMotion`), and only the two Lara compact profiles keep one Select override. Visible
+radius, control height), and only the two Lara compact profiles keep one Select override. Visible
 changes:
 
 - `ColorPrimary`, `ColorError` and the other status colours in a PrimeNG theme are seeds (the 500 stop of their
@@ -384,6 +398,13 @@ changes:
   (`anchor.gutter`) instead of 4. Tooltips stay borderless.
 - Beyond the Alias-derivation fix above and the overlay values, the algorithm migration changed no size, padding,
   radius, font, line width, motion or shadow geometry value.
+- Nora animates again. The Nora profiles used to set `EnableMotion false` for PrimeUIX `transition.duration: 0s`,
+  which also froze every popup, drawer, collapse, notification and spinner; PrimeNG only uses that value for state
+  colours, while its component animations are the same in every preset. Nora now keeps motion on, sets the global
+  `MotionDurationFast` / `Mid` / `Slow` to 0 (instant hover and focus colours) and restores each animation's own
+  duration in its owner's scope (overlays and dialogs 300ms, drawer 500ms, collapsible content 200ms, toast cards
+  300ms, tabs ink bar 250ms, carousel 500ms, tooltip fade 250ms, switch knob 100ms). An explicit `EnableMotion false`
+  still turns everything off. Aura and Lara are unchanged.
 - `[PrimeNG:Aura.Dark]` equals the `PrimeNGAura.Dark` profile, and appending `AtomUI:Compact` equals the
   `.Compact` profile (Lara compact keeps one listed difference). Appending `AtomUI:Dark` to a light PrimeNG chain is
   a hybrid chain and is not the PrimeNG dark theme.

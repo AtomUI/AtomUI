@@ -3,6 +3,14 @@
 本文档记录 Cascader 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：新增 `OptionMargin`（默认 0）与 `OptionBorderRadius`（默认 `BorderRadius`，此前主题直接读 `CascaderViewItem` 作用域的
+  `BorderRadius`）。PrimeNG Aura 与 Select 一致：选项圆角 4、上下各 1px 外边距（行间 2px，`list.gap`），`MenuPadding` 相应减 1；
+  Lara、Nora 选项为直角无间隙。Ant Design 外观不变。
+
+- Token：`AbstractSelectInputToken` 新增 Own Token `InputFontSizeSM`（小号选择框字体，默认 `FontSize`，与 antd 一致），Cascader 的 Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），Small 占位文字和选中值与 Small LineEdit 同字号。
+
 ## 2026-11-15
 
 - Motion

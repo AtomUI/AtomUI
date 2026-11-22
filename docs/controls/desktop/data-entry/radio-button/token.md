@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 单选指示器和按钮内容排版尺寸。 | `RadioSize`、`DotSize`、`ContentFontSize`、`ContentFontSizeLG`、`ContentFontSizeSM` |
 | 间距与布局 | 指示器文字间距和按钮内容 Padding。 | `DotPadding`、`TextMargin`、`Padding`、`PaddingLG`、`PaddingSM` |
-| 颜色与状态视觉 | 文本、背景、hover、checked、active、disabled 视觉。 | `DotColorDisabled`、`RadioColor`、`ButtonColor`、`ButtonSolidCheckedBackground` |
+| 颜色与状态视觉 | 文本、背景、hover、checked、active、disabled 视觉。 | `DotColorDisabled`、`RadioColor`、`ButtonColor`、`ButtonSolidCheckedBackground`、`ButtonOutlineCheckedBackground`、`ButtonOutlineCheckedColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -73,3 +73,11 @@ RadioButton 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、checked、disabled、Outline/Solid、Horizontal/Vertical 和三档 SizeType。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `IndicatorHoverBorderColor` | `ColorPrimary` | 未选中指示器悬停边框 |

@@ -79,3 +79,11 @@ GroupBox Token 相关变更至少验证：
 | Token 文档 | GroupBox token.md 语义说明与 `GroupBoxToken` 属性一致。 |
 | 视觉 | Header 左/中/右位置、带图标 Header、透明背景 Header 缺口均正常。 |
 | 文档 | 本文件、`overview.md` 和 `changelog.md` 的 Token 描述一致。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `HeaderFontWeight` | `Normal` | `HeaderFontWeight` 属性的主题默认值 |

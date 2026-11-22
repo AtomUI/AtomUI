@@ -30,6 +30,7 @@ ListViewToken 当前按 ListView 语义分为六类。
 - `ItemColor`
 - `ItemHoverColor`
 - `ItemSelectedColor`
+- `ItemSelectedIndicatorColor`
 - `ItemDisabledColor`
 
 这些 Token 表达普通数据项在普通、hover、selected 和 disabled 状态下的文字颜色语义。

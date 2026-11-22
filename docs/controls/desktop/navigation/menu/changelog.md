@@ -4,6 +4,8 @@
 
 ## 2026-11-20
 
+- Token
+  - 新增 `MenuItemGroupToken`（此前 MenuItemGroup 只读全局 Token），含 `TitleFontWeight`（默认 `Normal`）：分组标题字重，由 MenuItemGroup 主题直接读取；PrimeNG 600（Nora 700）。
 - Performance
   - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。顶层菜单场景分配约少 8%，Gallery 菜单形态耗时约少 10%。
 

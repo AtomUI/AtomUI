@@ -18,8 +18,8 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `NotificationIconSize`、`NotificationCloseButtonSize`、`NotificationProgressHeight`、`NotificationWidth` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationProgressBg`、`NotificationProgressTrackBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `RestingShadows`、`InformationShadows`、`SuccessShadows`、`WarningShadows`、`ErrorShadows` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationBorderColor`、`NotificationProgressBg`、`NotificationProgressTrackBg`，以及每个类型的 `*Bg`、`*BorderColor`、`*IconColor`、`*TitleColor`、`*DescriptionColor`、`*CloseIconColor`、`*CloseIconHoverColor` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `NotificationBorderThickness`、`RestingShadows`、`InformationShadows`、`SuccessShadows`、`WarningShadows`、`ErrorShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -29,6 +29,15 @@ Token 按控件语义分类维护：
 兜底，四个 severity 各有槽位。Ant Design 基线下五个槽位同为全局 `BoxShadows`，渲染与引入槽位前一致；设计语言算法
 （如 `PrimeNGNotificationCardTokens`）可按 severity 覆盖（PrimeNG：`RestingShadows` 取 `overlay.popover.shadow`，
 severity 为 `0 4 8 0` 彩色 4%，官方 `secondary` / `contrast` 无对应 `NotificationType`，不映射）。
+
+### 类型表面
+
+每个类型（`Information` / `Success` / `Warning` / `Error`）有自己的背景、边框色、图标、标题、描述与关闭图标颜色槽位
+（`*Bg`、`*BorderColor`、`*IconColor`、`*TitleColor`、`*DescriptionColor`、`*CloseIconColor`、`*CloseIconHoverColor`），
+卡片边框粗细为 `NotificationBorderThickness`，无类型卡片的边框色为 `NotificationBorderColor`。默认值等于普通卡片：
+`*Bg` 取 `NotificationBg`，边框透明且粗细为 0，标题 / 描述 / 关闭图标取 `ColorTextHeading` / `ColorText` /
+`ColorIcon`（悬停与按下 `ColorIconHover`），图标取 `ColorPrimary` / `ColorSuccess` / `ColorWarning` / `ColorError`。
+设计语言算法据此绘制着色或实底的类型卡片与左侧色条（PrimeNG Lara / Nora 的 `border.width: 0 0 0 6px`）。
 
 ### 主题读取与裁决
 

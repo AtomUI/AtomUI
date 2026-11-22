@@ -137,3 +137,11 @@ Token 不参与 handle 值排序、disabled 边界、整体轨道 offset 或 Too
 | Padding | 验证有无 mark 的 horizontal / vertical 布局和文本不重叠。 |
 | 动态 handle | 验证所有动态 thumb 使用相同 Token 和主题状态。 |
 | Token 生成 | 检查 SliderTokenKind、AXAML 引用、默认值计算和 token.md 语义一致。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `ThumbBg` | `ColorBgContainer` | 滑块圆形填充色 |

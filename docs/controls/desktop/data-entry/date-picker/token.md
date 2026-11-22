@@ -36,3 +36,11 @@ Presenter 主题组合 DateViewer/RangeDateViewer、TimeView 与 Footer。固定
 ## 独立 Token 身份与共享计算
 
 DatePicker 与 RangeDatePicker 共享实际日期/时间计算，但 HeaderBorderThickness 仅 DatePicker 有真实 divider 消费；RangePanelSpacing 仅 RangeDatePicker。RangeDatePicker 的日期正文使用独立 RangeDateViewer Own；内嵌公开 Button/Icon 仍独立。将原 DatePicker.RangePanelSpacing 移到 RangeDatePicker，将日期时间列的原 TimePicker 覆盖移到当前日期终端。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `PopupArrowVisible` | `true` | 弹层是否绘制箭头（`AbstractTimeViewToken`） |

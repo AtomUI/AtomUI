@@ -2,6 +2,11 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Theme
+  - 删除 Small 下选中内容与占位文本的上下 1px 外边距。它是为旧的 `FontHeightSM` 小号行高补足 2px 的补偿；小号输入框统一改用 `FontHeight` 行高后，保留它会让 ComboBox 比其他 Small 输入框高 2px。Ant 下 ComboBox Small 仍为 24px。
+
 ## 2026-11-20
 
 - Shadcn 暗色下拉列表用独立的背景层级区分已选项与悬停候选项。

@@ -86,3 +86,11 @@ Menu、ContextMenu、MenuFlyoutPresenter 各有独立 Own。20个真实弹层字
 ## 独立 Token 身份与共享计算
 
 迁移 ContextMenuOffsetX/Y 到 Controls[ContextMenu]；其他弹层字段以实际 Menu/ContextMenu/MenuFlyoutPresenter 配置。菜单项内公开动作控件与各自独立的全局身份不做资源别名映射。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TitleFontWeight` | `Normal` | `MenuItemGroupToken`：分组标题字重，由 MenuItemGroup 主题直接读取 |

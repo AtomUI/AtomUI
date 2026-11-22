@@ -10,6 +10,8 @@
 
 ## 2026-11-20
 
+- Token
+  - `ButtonThemeRecipe` 拆为相互独立的开关：`UsesRecipeVariants`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`；Button 新增对应的内部直接属性 `DisablesWithOpacity`、`ThemeDisabledOpacity`、`PressMoves`、`UnderlinesLinkOnHover`，主题选择器按开关生效。无 recipe 的 Ant Design 与既有 Shadcn recipe 行为不变；PrimeNG recipe 关闭变体配方与按压位移，禁用透明度 0.6，链接悬停下划线。
 - Performance
   - 去掉 `ButtonThemeInputs` 的 10 个可继承主题输入。Button、SubmitButton、ResetButton 的主题把 Own Token 赋给按钮自身的
     普通属性，按钮主题用编译绑定和 `TemplateBinding` 读取，值不再沿按钮内容继承。渲染不变，每个按钮分配约少 13 KB（约 5%）。

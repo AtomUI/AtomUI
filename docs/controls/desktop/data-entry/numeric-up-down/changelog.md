@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-21
+
+- Token：新增 Own Token `InputFontSizeSM`（小号字体，默认 `FontSize`，与 antd 一致），Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），与 Small LineEdit 一致。
+- PrimeNG：手柄图标 10.5（PrimeUIX `form.field.font.size` 14 小一档），手柄列宽改为图标加两侧各一个 `InputPadding.Left`，图标离右边框的距离与文字离左边框相同；此前 36px 列宽配 7.875 图标，右侧留白过大、图标过小。
+
 ## 2026-11-17
 
 - Theme

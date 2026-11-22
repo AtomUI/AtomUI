@@ -22,7 +22,7 @@ Token 按控件语义分类维护：
 | 面板装饰与间距 | 指示圈明暗、内阴影及滑块外边距。 | `ColorPickerHandlerLightColor`、`ColorPickerHandlerDarkColor`、`ColorPickerInsetShadow`、`SliderContainerMargin` |
 | 编辑器布局与字号 | Alpha 宽度、数字按钮宽度和明确的紧凑字号。 | `ColorPickerAlphaInputWidth`、`ColorPickerInputNumberHandleWidth`、`EditorFontSize` |
 
-两个原未消费字段均为 Active：Alpha 宽度控制真实 `PART_AlphaInput`，默认保持原控件的 48px（旧无效字段默认 44px）；handle 宽度控制真实 NumericUpDown 浮动按钮，默认仍为 16px。`EditorFontSize` 默认保持原紧凑编辑器的 11px。固定 262px 输入行和 48px 数值通道属于布局装配常量。
+两个原未消费字段均为 Active：Alpha 宽度控制真实 `PART_AlphaInput`，默认为 30px 文本视口加两侧的边框、`InputPaddingSM.Left` 与 1px 内容内缩（Ant / Shadcn 仍为 48px，小号内边距更宽的 PrimeNG 为 50px，保证 "100%" 不被裁切；旧无效字段默认 44px）；handle 宽度控制真实 NumericUpDown 浮动按钮，默认仍为 16px。`EditorFontSize` 默认保持原紧凑编辑器的 11px。固定 262px 输入行和 48px 数值通道属于布局装配常量。
 
 `ColorPickerHandlerSizeSM` 派生滑块大小与 thumb 大小；`ColorPickerSliderTrackSize` 派生预览尺寸；`ColorPickerPresetColorSize` 派生勾选标记。显式覆盖先参与这些默认派生。业务颜色、HSV/RGB 端点和 Alpha 是数据，不随主题色替换；空色斜线读取 `ColorError` / `LineWidthBold`，预设色勾选前景读取 owner 的 `ColorTextSecondary` / `ColorWhite`。
 

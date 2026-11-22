@@ -2,6 +2,10 @@
 
 本文档记录 ButtonSpinner 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- PrimeNG：手柄图标 10.5（PrimeUIX `form.field.font.size` 14 小一档），手柄列宽改为图标加两侧各一个 `InputPadding.Left`，图标离右边框的距离与文字离左边框相同；此前 36px 列宽（`inputnumber.button.width` 2.25rem）配 7.875 图标，右侧留白过大、图标过小。
+
 ## 2026-11-20
 
 - Fixed

@@ -5,6 +5,8 @@
 
 ## 2026-11-20
 
+- Token
+  - `StepsToken.TitleFontWeight`（默认 `Normal`）：步骤标题字重（Inline 类型仍为 Normal）；PrimeNG 500（Nora 700）。
 - Shadcn 暗色 Filled Panel 的当前项使用低亮度状态底色和浅色文字，普通与错误状态保持可辨识。
 
 ## 2026-11-18

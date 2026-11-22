@@ -3,8 +3,28 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21（勾选图标）
+
+- Token：`SelectToken` 新增 `OptionSelectedIndicatorColor`（多选下选中项的勾选图标颜色，默认 `ColorPrimary`）。PrimeNG 取
+  `OptionSelectedColor`（`highlight.color`），修复 noir 实心选中背景上勾选不可见。Shadcn 的勾选为 muted 前景色，与官方
+  SelectItem 的 `text-muted-foreground` 一致，不变。
+
+## 2026-11-21（下拉间隙）
+
+- PrimeNG：下拉面板与输入框的间隙在三个预设中都与 DropdownButton 的菜单一致（可见边缘相距 `MarginXXS`），`Popup.MarginToAnchor`
+  为 `MarginXXS` 加面板外侧 1px 描边环的宽度。官方 `anchor.gutter` 为 2（Nora 0，面板边框叠在输入框边框上）。Select、ComboBox、
+  Cascader、TreeSelect、AutoComplete、Mentions 与日期 / 时间选择器共用该值。
+
+## 2026-11-21
+
+- Token：新增 Own Token `OptionBorderRadius`（选项背景圆角，默认 0，保持原直角，Ant Design / Shadcn 不变）。
+- PrimeNG Aura：选项圆角 4（`list.option.border.radius` = `border.radius.sm`），选项间距 2（`list.gap`，以选项背景上下各内缩 1 实现，面板内边距相应为 4,3），primeng.dev 实测。Lara / Nora 官方为直角、无间距，不变。
+- Token：`AbstractSelectInputToken` 新增 Own Token `InputFontSizeSM`（小号选择框字体，默认 `FontSize`，与 antd 一致），Select 的 Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），Small 占位文字和选中值与 Small LineEdit 同字号。
+
 ## 2026-11-20
 
+- Fixed
+  - 多选标签（SelectTag）文字改读所属选择器的 `ColorText`，不再沿用独立 Tag 的默认文字色；主题把 Tag 默认色配为实心填充时，选择器浅色标签底上的文字仍可读。Ant Design 与 Shadcn 外观不变。
 - Performance
   - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。涉及 `SelectTag` 的标签输入。
 

@@ -4,6 +4,8 @@
 
 ## 2026-11-20
 
+- Token
+  - `PaginationToken` 新增页码项颜色、悬停、选中态颜色 / 边框、选中字重与圆角 Token（`ItemColor`、`ItemHoverColor`、`ItemHoverBg`、`ItemActiveColor`、`ItemActiveBorderColor`、`ItemActiveHoverColor`、`ItemActiveHoverBorderColor`、`ItemActiveFontWeight`、`ItemBorderRadius`），默认值为原先直接读取的全局 Token。其中 `ItemColor`、`ItemHoverColor`、`ItemHoverBg`、`ItemBorderRadius` 位于 `AbstractPaginationToken`，Pagination 与 SimplePagination 各自主题赋给控件的普通属性，再经模板绑定传给页码项，SimplePagination 的上一页 / 下一页读自身 Token；PrimeNG 采用 36px 圆形页码与实心选中态。
 - Fixed
   - Keep page-size and jump-input focus rings visible outside the pagination row. Size the compact layout gap to accommodate the theme's focus ring.
   - In compact Shadcn simple pagination, inset the page input while keeping the navigation targets at their existing size.

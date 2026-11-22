@@ -2,6 +2,17 @@
 
 本文档记录 Collapse 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- PrimeNG：面板标题内边距改为与 Expander 相同（6px 16px，Lara 4px 16px），两者标题等高。官方 `accordion.header.padding` 为 16
+  （Nora 14px 16px），标题约 50px，与 Expander 差距很大，属 AtomUI 的有意偏离。
+
+## 2026-11-20
+
+- Token
+  - `CollapseToken.HeaderColor` / `HeaderActiveColor`（默认 `ColorTextHeading`）：头部文字颜色（展开项用后者）；PrimeNG 采用 accordion 头部颜色。
+  - `CollapseToken.HeaderFontWeight`（默认 `Normal`）：面板头部字重，作用于头部内容呈现器；PrimeNG Aura 600，Lara / Nora 700。
+
 ## 2026-11-11
 
 - Theme

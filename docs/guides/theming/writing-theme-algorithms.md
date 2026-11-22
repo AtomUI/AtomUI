@@ -19,7 +19,7 @@
 | 品牌种子（主色、错误色、圆角、控件高度） | 主题 XML 的 `<Tokens>` 或 `ThemeConfig` |
 | 规则推不出的个别常量 | 主题 XML 的显式值 |
 
-PrimeNG 的十二份主题 XML 改造后只剩算法链和 Seed Token（主色、错误色、圆角、控件高度；Nora 另有 `EnableMotion`），
+PrimeNG 的十二份主题 XML 改造后只剩算法链和 Seed Token（主色、错误色、圆角、控件高度），
 只有 Lara 的两个紧凑 profile 另保留一项规则推不出的 Select 覆盖：
 
 ```xml

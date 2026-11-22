@@ -3,6 +3,11 @@
 本文档记录 ListBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`ListBoxToken` 新增 `ItemSelectedIndicatorColor`（默认 `ColorPrimary`），经 `ListBox` 传给条目；候选列表
+  （AutoComplete、Mentions）仍取宿主的 `ColorPrimary`。PrimeNG 取选中文字色，修复 noir 实心选中背景上勾选图标不可见。
+
 ## 2026-11-14
 
 - Design

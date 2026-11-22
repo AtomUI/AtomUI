@@ -130,3 +130,12 @@ Token 变更要求：
 | 修改展开图标 margin Token | 验证 Start/End 图标位置、AddOnContent、Header 文本间距和自定义 HeaderPadding 分支。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `HeaderColor` | `ColorTextHeading` | 头部文字颜色 |
+| `HeaderFontWeight` | `Normal` | 头部字重，设在语义 header 上 |

@@ -3,6 +3,12 @@
 本文档记录 ListView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`ListViewToken` 新增 `ItemSelectedIndicatorColor`（选中项勾选图标颜色，默认 `ColorPrimary`），经 `ListView` 传给条目，
+  不再直接读宿主的 `ColorPrimary`。Ant Design、Shadcn 外观不变。PrimeNG 取选中文字色（`highlight.color`）：默认 noir 主色下
+  选中背景是实心主色，与主色勾选图标同色，勾选此前完全看不见。
+
 ## 2026-11-20
 
 - Performance

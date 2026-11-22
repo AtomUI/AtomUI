@@ -67,3 +67,17 @@ Header 默认使用 SharedToken 导航按钮，并通过 HeaderHorizontalPadding
 ## 独立 Token 身份与共享计算
 
 迁移原 DateViewer.PanelSpacing 到 RangeDateViewer.PanelSpacing。CellHeight 显式值在各终端保留后参与 CellRowHeight 派生。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `CellCornerRadius` | `BorderRadiusSM` | 日期单元格值框圆角 |
+| `CellTodayBg` | 透明 | 今天单元格背景 |
+| `CellTodayColor` | `ColorText` | 今天单元格文字色 |
+| `CellTodayBorderColor` | `ColorPrimary` | 今天单元格描边 |
+| `HeaderTitleFontWeight` | `Bold` | 面板头部标题字重 |
+| `WeekHeaderHeight` | 0 | 星期行高度；0 沿用单元格行高，正值时星期名垂直居中 |
+| `WeekHeaderFontWeight` | `Normal` | 星期名字重 |

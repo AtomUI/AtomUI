@@ -2,6 +2,13 @@
 
 本文档记录 Tag 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `TagToken.FilledStatusSolid`（默认 `false`）：为 true 时，填充型（Filled）状态标签与 Solid 变体一样使用实心状态色与反差文字；Outlined / Outline 变体不受影响。PrimeNG Lara / Nora 设为 true（官方实心标签）。
+- Token
+  - `AbstractTagToken.TagFontWeight`（默认 `Normal`）：Tag 与 CheckableTag 文本字重，由控件主题 Setter 读取；默认值与原外观一致，PrimeNG 设为 700。
+
 ## 2026-11-08
 
 - Token

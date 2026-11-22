@@ -95,3 +95,11 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 ## 独立 Token 身份与共享计算
 
 CardBg/CardSize/CardPadding*/CardGutter、AddTabButtonMargin*、VerticalItemPadding 从原 TabControl 配置移到 CardTabControl/CardTabStrip。线形 padding 与墨条只承诺于 TabControl/TabStrip；TabAndContentGutter 只属于带正文的两个 Control。原 HorizontalMargin、MenuEdgeThickness Reserved 只保留于 TabControl，不复制给新终端。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TitleFontWeight` | `Normal` | 四种标签控件的标题字重（`AbstractTabToken`，经 `TabTokenResourceBinding` 读取） |

@@ -21,6 +21,13 @@ TreeSelectToken 不承载以下状态：
 
 该 Token 控制 TreeSelect 候选弹层的最小宽度下限，默认值为 `300`。当 `IsPopupMatchSelectWidth=true` 时，实际有效宽度还会受到输入控件当前宽度影响；当输入控件较窄时，`MinPopupWidth` 保证树形层级和节点文本有基本展示空间。
 
+### 2.2 输入字号 Token
+
+- `InputFontSizeSM`
+
+Small TreeSelect 的选中值与占位文字字号，默认等于 `FontSize`（与 antd 一致），定义在 `AbstractSelectInputToken`；PrimeNG 取
+`FontSizeSM`。
+
 ## 3. 控件专项模型中的 Token 使用
 
 TreeSelectToken 使用路径：

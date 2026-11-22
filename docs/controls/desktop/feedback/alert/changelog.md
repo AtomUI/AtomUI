@@ -2,6 +2,11 @@
 
 本文档记录 Alert 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AlertToken.SuccessMessageColor` / `InfoMessageColor` / `WarningMessageColor` / `ErrorMessageColor`（默认 `ColorText`）按类型设置 Alert 前景色；`TextFontWeight`（默认 `Normal`）由 Alert 自身的主题 Setter 读取，本地值与 section 语义样式仍优先。默认值与原外观一致；PrimeNG 采用 message 严重级文字色与 500 / 700 字重。
+
 ## 2026-11-14
 
 - API

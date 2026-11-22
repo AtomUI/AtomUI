@@ -2,6 +2,13 @@
 
 本文档记录 ColorPicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Theme
+  - 输入行三个 Small 控件此前顶对齐、高度不一（LineEdit 比 NumericUpDown 矮 2px，PrimeNG 下 NumericUpDown 又高出 2px）。根因在 Small 输入框行高（见 LineEdit / ComboBox changelog）已统一修复；格式下拉框与 HEX 输入框另外纵向拉伸到行高，保证三者对齐。Ant 下该行为 antd 的 24px。
+- Token
+  - `ColorPickerAlphaInputWidth` 默认值改为 30px 文本视口加两侧边框、`InputPaddingSM.Left` 和 1px 内容内缩：Ant / Shadcn 仍为 48px，PrimeNG（小号内边距多 1px）为 50px，修复 "100%" 末尾被裁切。`InputPaddingSM` 因此成为 ColorPickerView / GradientColorPickerView 的有效全局输入。
+
 ## 2026-11-20
 
 - Performance

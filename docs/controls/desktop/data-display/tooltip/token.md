@@ -19,7 +19,7 @@ Token 按控件语义分类维护：
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ToolTipMaxWidth` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ContentPadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`ToolTipBackground` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius`、`ToolTipShadows` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius`、`ToolTipShadows`、`ArrowSize`、`ArrowTipRadius`、`ArrowBaseRadius`、`ArrowStrokeThickness`、`MarginToAnchor` |
 | 动效 | 弹出与收起的缩放时长。 | `MotionDuration` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -82,3 +82,6 @@ Tooltip 的入场和离场时长读取 Own Token `MotionDuration`（Active），
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+- `ArrowSize` / `ArrowTipRadius` / `ArrowBaseRadius` / `ArrowStrokeThickness` 是 Tooltip 自己的箭头宽度、尖角圆角半径、与主体衔接的圆弧半径和描边宽度，默认等于箭头框 `ArrowDecoratedBoxToken` 的默认值（`SizePopupArrow`、`BorderRadiusXS`、`BorderRadiusOuter`、1）。由 ToolTipTheme 写到箭头框的同名属性；箭头高为宽度的一半，尖角为直角，描边只画两条斜边。主题可让 Tooltip 箭头与 Popover 箭头不同（PrimeNG：8、0、0、0；Shadcn：`2 × (5√2 − 2)`、2、0）。
+- `MarginToAnchor` 是弹层与锚点的距离（有箭头时到箭头尖），只在宿主和 Tooltip 实例都没有设置附加属性 `ToolTip.MarginToAnchor` 时生效；默认 4，与附加属性默认值相同（PrimeNG：0.5，让主体离锚点正好 `tooltip.gutter`）。

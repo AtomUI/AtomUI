@@ -66,3 +66,12 @@ Alert 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `SuccessMessageColor` / `InfoMessageColor` / `WarningMessageColor` / `ErrorMessageColor` | `ColorText` | 按类型的 Alert 前景色 |
+| `TextFontWeight` | `Normal` | Alert 文字字重，设在 Alert 自身 |

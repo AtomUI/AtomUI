@@ -3,6 +3,11 @@
 本文档记录 GroupBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `GroupBoxToken.HeaderFontWeight`（默认 `Normal`）：主题为 `HeaderFontWeight` 属性提供默认值，本地设置仍优先；PrimeNG Aura 600，Lara / Nora 700。
+
 ## 2026-11-08
 
 - Changed

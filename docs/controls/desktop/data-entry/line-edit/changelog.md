@@ -1,5 +1,11 @@
 # LineEdit Changelog
 
+## 2026-11-21
+
+- Theme
+  - Small 输入框（`AddOnDecoratedBoxTheme` 小号：LineEdit、SearchEdit、AutoComplete、Cascader、单值 DatePicker / TimePicker）的文本行高由 `FontHeightSM` 改为 `FontHeight`，与 NumericUpDown、ComboBox、Select、TreeSelect、范围选择器一致。`InputPaddingSM` 正是按这一行高推导的，所以所有 Small 输入框现在都等于 `ControlHeightSM`。
+  - 修复前：Ant 下这组控件为 22px，比 antd 的 24px 小号输入框和同尺寸 NumericUpDown / ComboBox 矮 2px；Shadcn Vega 同样矮 2px。Middle / Large 不变。
+
 ## 2026-11-18
 
 - 桌面 TextArea 手柄合并斜线画刷与线宽资源读取，尺寸和拖动继续由原入口管理。

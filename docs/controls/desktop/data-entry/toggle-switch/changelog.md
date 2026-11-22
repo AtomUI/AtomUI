@@ -4,6 +4,8 @@
 
 ## 2026-11-20
 
+- Token
+  - `ToggleSwitchToken.UncheckedContentColor`（默认 `ColorTextLightSolid`）：未选中轨道内文字与图标颜色；选中时仍为 `ColorTextLightSolid`。PrimeNG 设为 `ColorText`（未选中轨道为浅色 / 深色表面）。
 - Fixed
   - Ant Design 按住时把手沿轨道内侧增宽，保持两端半圆与中间直边。松开后把手滑至另一侧并恢复常态宽度。
   - Shadcn 中性暗色主题降低开启轨道的亮度，并提高轨道与滑块的对比度。

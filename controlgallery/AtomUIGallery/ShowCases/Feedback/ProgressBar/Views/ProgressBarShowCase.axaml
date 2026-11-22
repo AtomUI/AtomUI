@@ -683,7 +683,7 @@
                         <DataTemplate x:DataType="vm:ProgressBarViewModel">
                             <StackPanel Orientation="Vertical"
                                         HorizontalAlignment="Stretch"
-                                        Spacing="10">
+                                        Spacing="0">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|ProgressBar.semantic-style-demo">
                                         <Setter Property="Padding" Value="2" />

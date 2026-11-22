@@ -8,6 +8,8 @@
   - 标题栏按钮的键盘焦点描边与标题栏内的 Badge 画在 chrome 层自己的装饰层中。
   - Window 取得 `PART_VisualLayerManager` 时确保共享 `AdornerLayer` 处于 T2 号码（`int.MaxValue - 1000`）。
   - Window Drawer（`OpenOn is Window`）位于全屏标题栏之上；drawn chrome 抑制租约不变。
+- Fixed
+  - macOS 带刘海显示器：指针到屏幕顶边、系统菜单栏与原生窗口按钮呈现时，全屏标题栏不出现，红黄绿直接浮在内容上；`Pinned` 下原生按钮盖住标题栏前导内容。原因是原生 chrome 跟踪只按原生标题条窗口的位置判断是否呈现，而刘海屏上该窗口不移动、只渐变透明度。现在平台 chrome manager 直接报告 native chrome presented（原生标题条窗口 `alphaValue` 大于零且进入客户区），并对 `alphaValue` 做键值观察；融合不成立时未呈现的原生标题条不再计入 native chrome extent。
 - API
   - Window 的 public / protected API 不变。
 - Docs
@@ -15,8 +17,9 @@
 - Validation
   - Windows 10 实机（单显示器，150% 缩放，Gallery）：原始场景（全屏 → Space 页滚动 → 鼠标滑到顶边）中 AutoHide 标题栏在全宽呈现并盖住吸顶 Tab；Pinned 下标题栏常驻于吸顶 Tab 之上。
   - 常驻守护 `Primitives/LayerLadderHostOrderTests` 覆盖 chrome 层号码、标题栏宿主位于 chrome 层的表面宿主中，以及模板重套用后只有一个承载宿主的 chrome 层。
+  - macOS 实机（内建带刘海显示器，Gallery，脚本驱动真实鼠标事件与截屏）：与分支前基线 A/B，基线中吸顶 Tab 盖住全屏标题栏右半，本分支标题栏完整盖住吸顶 Tab；`AutoHide` 与 `Pinned` 下全屏标题栏随系统 chrome 呈现与收起，原生窗口按钮融合在表面内。
 - Known limits
-  - Windows 未实测：Docked 与自定义全屏内容、标题栏内按钮的焦点描边、多显示器、Dark 主题。macOS 与 Linux 未实测，只有 Headless 证据。
+  - Windows 未实测：Docked 与自定义全屏内容、标题栏内按钮的焦点描边、多显示器、Dark 主题。macOS 未实测：不带刘海的显示器上 native chrome presented 改动后的复测、Docked 与自定义全屏内容、Dark 主题；原生 chrome 跟踪依赖 AppKit，没有 Headless 测试。Linux 未实测，只有 Headless 证据。
 
 ## 2026-11-21
 

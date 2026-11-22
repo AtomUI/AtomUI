@@ -48,6 +48,7 @@
 | Native control inset | 平台 chrome manager | 平台原生控件（原生窗口按钮）当前叠放在全屏标题栏表面之上所占据的前导或尾随宽度。原生控件未呈现时为零。 |
 | Title-strip fusion | 平台 chrome manager | 平台的原生标题条被处理为透明并与全屏标题栏表面重叠的状态。成立时原生标题条不计入 native chrome extent。 |
 | Persistent native inset | 平台 chrome manager | 全屏状态下平台常驻 chrome 占据的客户区顶部高度，是 native chrome extent 中不随 pointer 变化的部分。 |
+| Native chrome presented | 平台 chrome manager | 平台当前是否在客户区内呈现自己的 chrome。由平台直接报告，不由 native chrome extent 推导：平台 chrome 可以在不占据任何客户区高度的情况下呈现（见 4.3 macOS 带刘海显示器）。 |
 
 ### 3.2 呈现模式
 
@@ -173,6 +174,7 @@ Effective mode 的解析不包含平台分支。
 - 全屏状态下窗口客户区覆盖整个屏幕，AtomUI 普通标题栏不呈现，平台不保留标题栏占位。
 - pointer 到达屏幕顶边时，AppKit 以覆盖方式滑入系统菜单栏和带原生窗口按钮的原生标题条，内容区不重排。原生标题条由独立的系统窗口承载，不属于 Avalonia 客户区；pointer 停留在系统 chrome 及其下方邻近区域时系统保持呈现，继续下移后系统滑出收起。
 - 承载原生标题条的系统窗口在滑入与滑出的每一步都发出窗口移动通知，其位置可通过原生窗口按钮所属窗口这一公开关系取得。
+- 带刘海的显示器上，全屏窗口的客户区从刘海带下沿开始，系统菜单栏在刘海带内呈现，不覆盖客户区。承载原生标题条的系统窗口始终停在客户区顶边，不移动也不发出移动通知；AppKit 通过把该窗口的 `alphaValue` 在 0 与 1 之间渐变来呈现和收起它。因此原生标题条是否呈现不能只由位置判断，必须同时看它的透明度。
 - 原生标题条默认带有不透明的背景材质和下沿阴影，窗口的标题栏透明属性在全屏下不能去除它们。隐藏原生标题条的背景视图和阴影图层后，标题条区域完全透明，只留下原生窗口按钮。
 - 系统窗口非不透明：其透明区域的 pointer 输入穿透到下方的客户区，原生窗口按钮所在位置的输入仍由系统接收。
 - AppKit 拥有原生窗口按钮的 frame：原生标题条滑动期间它在每一帧重新布局按钮（其中全屏按钮每帧都会被复位），直接修改按钮 frame 会与 AppKit 逐帧冲突。偏移按钮所在标题条视图的 bounds 原点可以整体平移三个按钮，AppKit 不复位该原点。
@@ -335,13 +337,14 @@ pointer / focus / hold lease / native chrome hold / 显式请求 / 抑制 / 时�
 
 表面高度为零或非有限值时，trigger band 仍然有效，keep zone 退化为 trigger band。
 
-平台 chrome manager 发布三个几何输入，单位与坐标系同上：
+平台 chrome manager 发布三个几何输入与一个呈现状态，几何输入的单位与坐标系同上：
 
 | 输入 | 含义 | 取值 |
 | --- | --- | --- |
-| Native chrome extent `E` | 平台 chrome 中不能与表面重叠的部分当前占据的客户区顶部高度 | Windows 与 Linux 恒为零。macOS 在融合成立时取原生标题条上沿在客户区坐标系中的 `y` 值（即系统菜单栏下沿），融合不成立时取原生标题条下沿的 `y` 值；随系统窗口的移动通知更新。 |
-| Native control inset `L` | 平台原生控件叠放在表面上所占据的前导与尾随宽度 | Windows 与 Linux 恒为零。macOS 在融合成立且 `E > P` 时取原生窗口按钮组的外沿到表面前导边的距离，否则为零。 |
+| Native chrome extent `E` | 平台 chrome 中不能与表面重叠的部分当前占据的客户区顶部高度 | Windows 与 Linux 恒为零。macOS 在融合成立时取原生标题条上沿在客户区坐标系中的 `y` 值（即系统菜单栏下沿；带刘海显示器上菜单栏不进入客户区，恒为零），融合不成立时在原生标题条呈现期间取其下沿的 `y` 值、未呈现时为零；随系统窗口的移动通知与透明度变化更新。 |
+| Native control inset `L` | 平台原生控件叠放在表面上所占据的前导与尾随宽度 | Windows 与 Linux 恒为零。macOS 在融合成立且 native chrome presented 为真时取原生窗口按钮组的外沿到表面前导边的距离，否则为零。 |
 | Persistent native inset `P` | 平台常驻 chrome 占据的客户区顶部高度 | Windows 与 Linux 恒为零。macOS 取窗口内容布局矩形相对窗口顶边的偏移。 |
+| Native chrome presented | 平台当前是否在客户区内呈现自己的 chrome | Windows 与 Linux 恒为假。macOS 在原生标题条窗口的 `alphaValue` 大于零且其下沿进入客户区时为真。它是 `AutoHide` 的 reveal source 与 hold，也是 `L` 取值的前提；不由 `E > P` 推导。 |
 
 全屏标题栏表面的顶边位于 `y = max(E, P)`，trigger band 与 keep zone 随表面整体平移。`E` 的变化直接作用于表面位置，不叠加额外动效，使表面与平台 chrome 同步移动。`L` 作为标题栏的 native chrome inset 或自定义内容的内边距参与表面内部布局，不改变表面的外部几何。
 
@@ -455,7 +458,7 @@ Window 把 Dock inset 发布为内容区顶部占位：CSD 模板中并入 `Effe
 - 状态机使用一个可复用的计时器，只在 `Opening` 与 `Closing` 状态下运行；`Closed` 状态不持有活动计时器。
 - pointer move 处理只做固定数量的数值比较，不分配对象，不遍历视觉树；焦点归属判断只在焦点变化时沿逻辑祖先链执行一次。
 - 非全屏状态下状态机不订阅 pointer 输入，宿主不可见且不参与布局测量之外的工作。
-- 平台 chrome 的观察只在全屏期间存在，使用平台的窗口移动通知驱动，不使用计时器轮询；Windows 与 Linux 不建立任何观察。macOS 通过原生窗口按钮所属窗口这一公开关系定位系统窗口。
+- 平台 chrome 的观察只在全屏期间存在，使用平台的窗口移动通知与原生标题条窗口 `alphaValue` 的键值观察驱动，不使用计时器轮询；Windows 与 Linux 不建立任何观察。macOS 通过原生窗口按钮所属窗口这一公开关系定位系统窗口。
 - Title-strip fusion 修改的是 AppKit 内部视图的可见性。它依赖平台未公开保证的视图结构，因此以结构识别为前提、以堆叠呈现为退化，且修改范围限于隐藏与恢复，不替换、不移除、不重排系统视图。该能力集中在 `AtomUI.Native` 的 macOS 平台层，Desktop Controls 只消费三个几何输入。
 - Hold lease 是固定大小的可释放对象，Window 以计数管理；状态变化不重建 lease。
 - 默认内容不创建第二个 `WindowTitleBar`、第二组 caption button 或第二套 Logo 与标题绑定。
@@ -498,7 +501,7 @@ Window 把 Dock inset 发布为内容区顶部占位：CSD 模板中并入 `Effe
 
 | 平台 | 状态 | 已验证范围 |
 | --- | --- | --- |
-| macOS | 已实测（单一系统版本与单一显示器） | AppKit 平台语义：客户区覆盖整屏，系统菜单栏与原生标题条以覆盖方式滑入、内容不重排，系统窗口逐帧发出移动通知，原生标题条背景无法经公开透明属性去除，透明区域的输入穿透到客户区，有 owner 的窗口不能进入原生全屏。AtomUI 实现（基于 Gallery 的脚本视觉验收，单窗口原生截图采样门禁 A/A=0）：Gallery 主窗口的派生标题栏在 AutoHide 下迁入全屏宿主，指针到顶后呈现于菜单栏下方并与原生标题条融合，红黄绿在 40pt 表面内垂直居中，指针离开后关闭，退出全屏后同一实例与原生按钮安全区恢复；Gallery 示例窗口经 `ToggleFullScreen()` 进出全屏，Pinned 贴顶常驻且在系统 chrome 出现时下移并呈现原生按钮，Dark 主题下表面跟随标题栏背景。未测试：Docked 与自定义内容的 Gallery 路径、系统 chrome 常驻配置、带刘海显示器、没有原生窗口按钮的窗口、其他 macOS 版本、键盘 Escape 与弹层保持的实机路径。 |
+| macOS | 已实测（单一系统版本与单一显示器） | AppKit 平台语义：客户区覆盖整屏，系统菜单栏与原生标题条以覆盖方式滑入、内容不重排，系统窗口逐帧发出移动通知，原生标题条背景无法经公开透明属性去除，透明区域的输入穿透到客户区，有 owner 的窗口不能进入原生全屏。AtomUI 实现（基于 Gallery 的脚本视觉验收，单窗口原生截图采样门禁 A/A=0）：Gallery 主窗口的派生标题栏在 AutoHide 下迁入全屏宿主，指针到顶后呈现于菜单栏下方并与原生标题条融合，红黄绿在 40pt 表面内垂直居中，指针离开后关闭，退出全屏后同一实例与原生按钮安全区恢复；Gallery 示例窗口经 `ToggleFullScreen()` 进出全屏，Pinned 贴顶常驻且在系统 chrome 出现时下移并呈现原生按钮，Dark 主题下表面跟随标题栏背景。带刘海显示器（内建显示器，2026-11-22）：Gallery 主窗口 `AutoHide` 下指针到屏幕顶边，系统菜单栏在刘海带内呈现，全屏标题栏随原生标题条淡入并贴客户区顶边，红黄绿融合在表面前导区域，标题栏内容为其让位，指针离开后一同收起，吸顶 Tab 被表面盖住；Gallery 示例窗口 `Pinned` 下表面常驻，系统 chrome 呈现期间出现原生按钮、收起后消失。未测试：Docked 与自定义内容的 Gallery 路径、系统 chrome 常驻配置、不带刘海的显示器上本次改动后的复测、没有原生窗口按钮的窗口、其他 macOS 版本、键盘 Escape 与弹层保持的实机路径。 |
 | Windows | 部分实测（Windows 10，单显示器，150% 缩放，Gallery 主窗口） | 层级与遮挡（全局层级阶梯 `WindowChromeLayer`）：Space 页滚动使吸顶 Tab 出现后，鼠标从内容区滑到顶边，AutoHide 表面在全宽呈现并盖住吸顶 Tab，连续截帧中没有吸顶 Tab 画在表面之上的帧；标题栏图钉切到 Pinned 后，鼠标离开时表面仍常驻于吸顶 Tab 之上；图钉切回与经 caption button 退出全屏正常。全屏下打开 Window Drawer，Drawer 表面延伸到窗口顶边，其内按钮的键盘焦点描边可见（该次未把鼠标移到顶边，Drawer 活跃期间的 reveal 抑制未实测）。未测试：Docked 与自定义内容、上下排列多显示器、触摸下拉、任务栏位于顶边且自动隐藏、全屏下关闭、全屏表面拖动检查、Dark 主题、标题栏内按钮的焦点描边。 |
 | Linux X11 | 未测试 | 平台语义来自后端实现分析，尚无实机证据。 |
 | Linux Wayland | 未测试 | 平台语义来自后端实现分析，尚无实机证据。 |

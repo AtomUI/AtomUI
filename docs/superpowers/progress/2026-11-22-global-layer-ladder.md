@@ -76,3 +76,18 @@
 - **小项：** `ScopeAwareAdornerLayer` 包裹面板注入分支注明为何不走 `LayerLadder.AddLayer`（必须重建内容包裹 Panel）且号码仍取自 `LayerLadder`；`LayerLadder.EnsureContentDecorationOrder` 注明 Child 本身为 `VisualLayerManager` 时有意空操作；删除 `WindowFeedbackLayer`、`TourLayer` 中未使用的 using；`ContentPresentationLayer.GetLayer` 补 `new` 修饰，消除 CS0108。
 - **测试去留：** 临时目录 `tests/AtomUI.Desktop.Controls.Tests/Temporary/final-fix/`（3 个用例）验证后已整体删除，无净新增常驻测试。
 - **验证：** Desktop Controls 测试过滤（Drawer / Dialog / Popup / ComboBox / Select / Flyout / FloatButton / Message / Notifications / Window / Primitives / Tour）1599 项，1589 通过，10 失败：9 个为已知既有（`PopupMarginPlacementTests` 8 个 csd:false 组合、`FeedbackManagerStackTests.AtomUI_Window_Notification_Stack_Revalidates_Hover_After_Resize`），另 1 个 `LunarCalendarProviderTests.MonthPanelData_QueriesProviderOnceAndReusesItForSamePanelSelection` 因名称含 Selection 被 `Select` 过滤带入，单独运行同样失败，原因是本机 zh-CN 文化周一为一周首日（期望 06-28 周日，实际 06-29 周一），与本改动无关。DataGrid `DataGridFilterDialogPopupTests` 4 项全部通过。`git diff --check`、`git diff --cached --check` 无输出。
+
+## macOS 验收与后续修复（2026-11-22）
+
+- **提交整理。** 本分支与 `release/6.0` 上带 AI 署名尾注的提交已改写为不带尾注的版本（文件树、作者与时间不变）；Tour 圆角容差比较从层级提交中拆出为独立的 `fix(Tour)` 提交，单独签出时编译通过、Tour 测试 22 项通过。改写后的历史尚未推送。
+
+- **macOS 实机验收（内建带刘海显示器，Gallery Debug net10.0，脚本发出真实鼠标事件并截屏，截图只保存在会话临时目录）。** 与分支前基线 `8c946e4f5` 做 A/B：全屏 → 布局 / Space → 滚动到吸顶 Tab 出现 → 鼠标停在窗口顶部触发带。基线中吸顶 Tab 盖住全屏标题栏右半；本分支标题栏在全宽盖住吸顶 Tab。层级相关 Desktop Controls 测试在 macOS 上 1068 项全部通过。
+- **刘海屏上全屏标题栏不跟随系统 chrome（既有缺陷，基线同样存在）。** 鼠标到屏幕顶边时系统菜单栏与原生窗口按钮呈现，全屏标题栏不出现。原因：原生 chrome 跟踪只按原生标题条窗口的位置判断是否呈现，刘海屏上该窗口停在客户区顶边不动，只渐变 `alphaValue`。修复：`AtomUI.Native` 对标题条窗口的 `alphaValue` 做键值观察，`FullScreenNativeChromeMetrics.IsChromePresented` 改为平台直接报告；度量规则抽为不调用平台 API 的 `MacOSFullScreenChromeGeometry.Compute`。实机复验：`AutoHide` 下标题栏随系统 chrome 淡入与收起，原生按钮融合在表面内；示例窗口 `Pinned` 下表面常驻，原生按钮随系统 chrome 出现与消失；经原生绿色按钮退出全屏并再次进入两轮，标题栏与原生按钮恢复正常，进程无异常。
+- **新增常驻测试（3 处）。**
+  - `Window/MacOSFullScreenChromeGeometryTests`（9 个用例）：固定“滑出窗口上方”和“原地淡出”两种隐藏方式下的呈现状态、extent 与 control inset。原生跟踪本身只能在真实 macOS 会话中观察，这些规则此前没有任何自动化守护。
+  - `DrawerInteractionTests.Scoped_Drawer_Content_Popup_Light_Dismisses_On_A_Press_Outside_The_Drawer`：守护 `PopupLightDismissRegistration` 把 dismiss 租约从 Drawer 表面宿主改挂到窗口宿主。变异验证：把重定向改为直接使用原生层时该用例失败（可见的 dismiss 层位于表面宿主），已还原。
+  - `DrawerInteractionTests.Drawer_Content_Resolves_Content_Roles_To_Its_Surface_And_TopLevel_Roles_Past_It`：Drawer 内的元素，装饰层、T3、T4、T5（视口入口）解析到 Drawer 表面宿主；Tour、TopLevel 呈现层、窗口反馈层与 `FindTopLevelLayerManager` 解析到窗口宿主。Drawer 自身落 T5 / T7、嵌套复用与 `OpenOn` 迁移已由该文件既有用例覆盖。
+- **表面宿主的堆叠开销（设计第 10 节要求的确认）。** Headless 临时基准（已删除）：`WindowMessageManager` 连续 `Show` 20 条并逐条布局，15 轮为一个样本，每次运行 7 个样本取中位数。带表面宿主 4 次运行的中位数为 413 / 431 / 438 / 406 ms，临时去掉 Message 模板中的表面宿主后 3 次运行为 435 / 402 / 404 ms。两组差异约 2%，远小于单次运行内样本的离散（约 200–800 ms），没有可测量的退化。表面宿主是每个 manager 一个，不随卡片数量增加。只有 Headless 证据，没有实机帧时间数据。
+- **`WindowChromeLayerTheme.axaml`** 的 `Margin` 绑定由反射 `Binding` 改为 `CompiledBinding`。
+- **评估后不改的两项。** `ContentPresentationLayer.GetLayer` 先解析同宿主 T3 层：代价是每个作用域 Drawer 宿主多一个空 Canvas，且有 `CachedLayerProperty` 缓存；拆开需要把滚动内容与 TopLevel 的包裹面板重建逻辑从 T3 注入中分离，风险高于收益。`LayerLadder.FindTopLevelLayerManager` 对 TopLevel 入参向下查找：Window 模板中前几个节点即命中，只在打开 Drawer、显示消息、启动 Tour 时调用；缓存需要处理模板重套用后的失效，不值得。
+- **未做。** 不带刘海的显示器上呈现状态改动后的实机复测；Docked、自定义全屏内容、Dark 主题；Linux 实机。

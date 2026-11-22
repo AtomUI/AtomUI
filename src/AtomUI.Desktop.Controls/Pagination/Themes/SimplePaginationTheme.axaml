@@ -56,7 +56,8 @@
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                             Minimum="1">
                             <atom:QuickJumpEdit.Styles>
-                                <Style Selector="atom|LineEdit[SizeType=Small] /template/ atom|AddOnDecoratedBox#PART_AddOnDecoratedBox /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                                <!-- Scoped to this editor's subtree: its decorated box follows the editor's SizeType. -->
+                                <Style Selector="atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[SizeType=Small] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                                     <Setter Property="Padding" Value="{atom:SimplePaginationTokenResource InputPaddingSM}" />
                                 </Style>
                             </atom:QuickJumpEdit.Styles>

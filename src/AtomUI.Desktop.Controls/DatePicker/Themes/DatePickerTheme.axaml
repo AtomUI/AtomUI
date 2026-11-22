@@ -7,11 +7,11 @@
         <Setter Property="atom:DatePickerPresenter.ThemePanelContentPadding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
         <Setter Property="atom:DatePickerPresenter.ThemeButtonsPanelMargin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
         <Setter Property="atom:DatePickerPresenter.ThemeHeaderBorderThickness" Value="{atom:DatePickerTokenResource HeaderBorderThickness}" />
-
-
+        
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:DatePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="IsArrowVisible" Value="{atom:DatePickerTokenResource PopupArrowVisible}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
     </ControlTheme>

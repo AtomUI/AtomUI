@@ -90,8 +90,14 @@
             </atom:TokenTransitions>
         </Setter>
     </Style>
+    <Style Selector="^:date">
+        <Setter Property="CornerRadius" Value="{CompiledBinding $parent[viewer:DatePanel].CellCornerRadius}" />
+    </Style>
+    <!-- Today's fill and text sit before the hover, selected, range, outside and disabled styles, which win over them. -->
     <Style Selector="^:today:date:not(:disabled)">
-        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="Background" Value="{CompiledBinding $parent[viewer:DatePanel].CellTodayBg}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $parent[viewer:DatePanel].CellTodayColor}" />
+        <Setter Property="BorderBrush" Value="{CompiledBinding $parent[viewer:DatePanel].CellTodayBorderColor}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
     </Style>
     <Style Selector="^:month /template/ Border#PART_ValueFrame, ^:quarter /template/ Border#PART_ValueFrame, ^:year /template/ Border#PART_ValueFrame">

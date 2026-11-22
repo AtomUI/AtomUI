@@ -8,6 +8,7 @@
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:TimePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="IsArrowVisible" Value="{atom:TimePickerTokenResource PopupArrowVisible}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
     </ControlTheme>

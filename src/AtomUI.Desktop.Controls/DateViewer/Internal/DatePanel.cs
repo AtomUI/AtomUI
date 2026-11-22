@@ -34,6 +34,20 @@ internal sealed class DatePanel : TemplatedControl
         AvaloniaProperty.Register<DatePanel, double>(nameof(WeekHeaderMinHeight));
     public static readonly StyledProperty<Thickness> WeekHeaderPaddingProperty =
         AvaloniaProperty.Register<DatePanel, Thickness>(nameof(WeekHeaderPadding));
+    public static readonly StyledProperty<double> WeekHeaderHeightProperty =
+        AvaloniaProperty.Register<DatePanel, double>(nameof(WeekHeaderHeight));
+    public static readonly StyledProperty<FontWeight> WeekHeaderFontWeightProperty =
+        AvaloniaProperty.Register<DatePanel, FontWeight>(nameof(WeekHeaderFontWeight), FontWeight.Normal);
+
+    // Cell presentation set by the owning viewer's theme from its Token; the pooled cells read them from their panel.
+    internal static readonly StyledProperty<CornerRadius> CellCornerRadiusProperty =
+        AvaloniaProperty.Register<DatePanel, CornerRadius>(nameof(CellCornerRadius));
+    internal static readonly StyledProperty<IBrush?> CellTodayBgProperty =
+        AvaloniaProperty.Register<DatePanel, IBrush?>(nameof(CellTodayBg));
+    internal static readonly StyledProperty<IBrush?> CellTodayColorProperty =
+        AvaloniaProperty.Register<DatePanel, IBrush?>(nameof(CellTodayColor));
+    internal static readonly StyledProperty<IBrush?> CellTodayBorderColorProperty =
+        AvaloniaProperty.Register<DatePanel, IBrush?>(nameof(CellTodayBorderColor));
 
     public DatePanelSession? Session
     {
@@ -54,6 +68,16 @@ internal sealed class DatePanel : TemplatedControl
     public TextAlignment WeekHeaderTextAlignment { get => GetValue(WeekHeaderTextAlignmentProperty); set => SetValue(WeekHeaderTextAlignmentProperty, value); }
     public double WeekHeaderMinHeight { get => GetValue(WeekHeaderMinHeightProperty); set => SetValue(WeekHeaderMinHeightProperty, value); }
     public Thickness WeekHeaderPadding { get => GetValue(WeekHeaderPaddingProperty); set => SetValue(WeekHeaderPaddingProperty, value); }
+    /// <summary>
+    /// The week-day row's height with the names centred in it; 0 gives each name <see cref="WeekHeaderMinHeight"/>
+    /// (the cell row height) instead.
+    /// </summary>
+    public double WeekHeaderHeight { get => GetValue(WeekHeaderHeightProperty); set => SetValue(WeekHeaderHeightProperty, value); }
+    public FontWeight WeekHeaderFontWeight { get => GetValue(WeekHeaderFontWeightProperty); set => SetValue(WeekHeaderFontWeightProperty, value); }
+    internal CornerRadius CellCornerRadius { get => GetValue(CellCornerRadiusProperty); set => SetValue(CellCornerRadiusProperty, value); }
+    internal IBrush? CellTodayBg { get => GetValue(CellTodayBgProperty); set => SetValue(CellTodayBgProperty, value); }
+    internal IBrush? CellTodayColor { get => GetValue(CellTodayColorProperty); set => SetValue(CellTodayColorProperty, value); }
+    internal IBrush? CellTodayBorderColor { get => GetValue(CellTodayBorderColorProperty); set => SetValue(CellTodayBorderColorProperty, value); }
 
     private AvaloniaGrid? _headers;
     private AvaloniaGrid? _cells;
@@ -110,7 +134,7 @@ internal sealed class DatePanel : TemplatedControl
 
             Realize();
         }
-        else if (change.Property == PanelIndexProperty || change.Property == CellTemplateProperty || change.Property == FullCellTemplateProperty || change.Property == DefaultFullCellTemplateProperty || change.Property == CellThemeProperty || change.Property == PresentationProperty || change.Property == WeekHeaderTextAlignmentProperty || change.Property == WeekHeaderMinHeightProperty || change.Property == WeekHeaderPaddingProperty)
+        else if (change.Property == PanelIndexProperty || change.Property == CellTemplateProperty || change.Property == FullCellTemplateProperty || change.Property == DefaultFullCellTemplateProperty || change.Property == CellThemeProperty || change.Property == PresentationProperty || change.Property == WeekHeaderTextAlignmentProperty || change.Property == WeekHeaderMinHeightProperty || change.Property == WeekHeaderPaddingProperty || change.Property == WeekHeaderHeightProperty || change.Property == WeekHeaderFontWeightProperty)
         {
             Realize();
         }
@@ -172,6 +196,11 @@ internal sealed class DatePanel : TemplatedControl
         {
             _headers.IsVisible = model.ColumnHeaders.Count > 0;
             ConfigureGrid(_headers, 1, model.Columns);
+            var rowMinHeight = WeekHeaderHeight > 0 ? WeekHeaderHeight : 0d;
+            if (!MathUtils.AreClose(_headers.MinHeight, rowMinHeight))
+            {
+                _headers.SetCurrentValue(MinHeightProperty, rowMinHeight);
+            }
             while (_headers.Children.Count > model.ColumnHeaders.Count)
             {
                 _headers.Children.RemoveAt(_headers.Children.Count - 1);
@@ -192,9 +221,17 @@ internal sealed class DatePanel : TemplatedControl
                     header.SetCurrentValue(TextBlock.TextAlignmentProperty, WeekHeaderTextAlignment);
                 }
 
-                if (!MathUtils.AreClose(header.MinHeight, WeekHeaderMinHeight))
+                // A positive WeekHeaderHeight sizes the row and centres the names in it; otherwise each name keeps
+                // the cell row height as its own minimum height.
+                var headerMinHeight = WeekHeaderHeight > 0 ? 0d : WeekHeaderMinHeight;
+                if (!MathUtils.AreClose(header.MinHeight, headerMinHeight))
                 {
-                    header.SetCurrentValue(MinHeightProperty, WeekHeaderMinHeight);
+                    header.SetCurrentValue(MinHeightProperty, headerMinHeight);
+                }
+
+                if (header.FontWeight != WeekHeaderFontWeight)
+                {
+                    header.SetCurrentValue(TextBlock.FontWeightProperty, WeekHeaderFontWeight);
                 }
 
                 if (header.Padding != WeekHeaderPadding)

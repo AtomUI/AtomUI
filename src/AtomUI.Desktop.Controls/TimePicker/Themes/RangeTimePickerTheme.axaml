@@ -9,12 +9,11 @@
         <Setter Property="atom:RangeInfoPickerInputTheme.ThemeRangePickerIndicatorThickness" Value="{atom:RangeTimePickerTokenResource RangePickerIndicatorThickness}" />
 
         <Setter Property="atom:TimePickerPresenter.ThemeButtonsMargin" Value="{atom:RangeTimePickerTokenResource ButtonsMargin}" />
-
-
-
+        
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeTimePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="IsArrowVisible" Value="{atom:RangeTimePickerTokenResource PopupArrowVisible}" />
         <Setter Property="MarginToAnchor" Value="{atom:RangeTimePickerTokenResource RangeMarginToAnchor}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />

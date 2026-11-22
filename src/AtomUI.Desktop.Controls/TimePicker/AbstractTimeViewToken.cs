@@ -1,5 +1,4 @@
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
@@ -13,10 +12,16 @@ public abstract partial class AbstractTimeViewToken : AbstractControlDesignToken
     public partial Thickness ItemPadding { get; set; }
     public partial Thickness ItemMargin { get; set; }
 
+    /// <summary>
+    /// Whether the picker popup draws its pointer arrow toward the input (true by default).
+    /// </summary>
+    public partial bool PopupArrowVisible { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        ItemMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);
+        ItemMargin        = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0);
+        PopupArrowVisible = true;
     }
 
     protected static Thickness CalculateTimeItemPadding(double itemWidth, double itemHeight) =>

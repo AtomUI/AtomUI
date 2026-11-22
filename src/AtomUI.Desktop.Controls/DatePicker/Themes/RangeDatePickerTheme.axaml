@@ -16,6 +16,7 @@
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeDatePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="IsArrowVisible" Value="{atom:RangeDatePickerTokenResource PopupArrowVisible}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->

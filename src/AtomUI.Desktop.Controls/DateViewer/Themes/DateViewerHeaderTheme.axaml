@@ -16,7 +16,8 @@
                            IsVisible="{Binding HeaderTemplate, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static ObjectConverters.IsNull}}">
                     <Grid MinHeight="{atom:OwnerTokenResource ControlHeightLG}" DataContext="{TemplateBinding Context}"
                           x:DataType="atom:DateViewerHeaderContext">
-                        <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
+                        <atom:Button ButtonType="Text" HorizontalAlignment="Center"
+                                     FontWeight="{TemplateBinding TitleFontWeight}"
                                      AutomationProperties.Name="{atom:DateViewerLangResource ChoosePeriod}"
                                      Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                                      CommandParameter="{Binding ParentPanelKind}" />

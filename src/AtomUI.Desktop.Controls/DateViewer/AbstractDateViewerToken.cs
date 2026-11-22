@@ -12,6 +12,27 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
     public partial Color CellHoverBg { get; set; }
     public partial Color CellRangeBg { get; set; }
 
+    /// <summary>The corner radius of a date cell's value frame.</summary>
+    public partial CornerRadius CellCornerRadius { get; set; }
+
+    /// <summary>The background of today's date cell (transparent by default: today is outlined).</summary>
+    public partial Color CellTodayBg { get; set; }
+
+    /// <summary>The text colour of today's date cell.</summary>
+    public partial Color CellTodayColor { get; set; }
+
+    /// <summary>The outline of today's date cell.</summary>
+    public partial Color CellTodayBorderColor { get; set; }
+
+    /// <summary>The font weight of the panel header's period title.</summary>
+    public partial FontWeight HeaderTitleFontWeight { get; set; }
+
+    /// <summary>The minimum height of the week-day header row; 0 follows <see cref="CellRowHeight"/>.</summary>
+    public partial double WeekHeaderHeight { get; set; }
+
+    /// <summary>The font weight of the week-day header names.</summary>
+    public partial FontWeight WeekHeaderFontWeight { get; set; }
+
     /// <summary>
     /// The text colour of today's and the selected cell in the content presentation, drawn on
     /// <c>ControlItemBgActive</c>. Defaults to the primary colour (Ant Design); a theme whose selected background is
@@ -53,6 +74,13 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
         PanelBg = EffectiveGlobalToken.ColorBgContainer;
         CellHoverBg = EffectiveGlobalToken.ControlItemBgHover;
         CellRangeBg = EffectiveGlobalToken.ControlItemBgActive;
+        CellCornerRadius     = EffectiveGlobalToken.BorderRadiusSM;
+        CellTodayBg          = Colors.Transparent;
+        CellTodayColor       = EffectiveGlobalToken.ColorText;
+        CellTodayBorderColor = EffectiveGlobalToken.ColorPrimary;
+        HeaderTitleFontWeight = FontWeight.Bold;
+        WeekHeaderHeight      = 0;
+        WeekHeaderFontWeight  = FontWeight.Normal;
         CellActiveColor = EffectiveGlobalToken.ColorPrimary;
         var dateColumnWidth = EffectiveGlobalToken.ControlHeightSM * 1.5;
         var bodyHorizontalPadding = EffectiveGlobalToken.UniformlyPadding + EffectiveGlobalToken.UniformlyPaddingXXS / 2;

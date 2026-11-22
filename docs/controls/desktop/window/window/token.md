@@ -17,11 +17,12 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `TitleBarHeight` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `FullscreenHeaderFramePadding` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `SystemBarColor`、`FrameBorderActive`、`FrameBorderInactive` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `CornerRadius`、`FrameShadows`、`FullscreenPopoverShadows` |
 
 `FrameBorderActive` / `FrameBorderInactive` 只服务 Windows 10 CSD 的客户区顶边补偿，带 alpha 以复现 DWM 阴影纹理的合成效果；它们不是通用窗口边框 Token，也不参与 Win11、Linux 或 macOS 的边框绘制。详细触发条件和禁用范围见 [实现原理](implementation.md#62-windows-10-顶边-frame-补偿)。
+
+`FullscreenPopoverShadows` 是全屏标题栏宿主在 `AutoHide` 与 `Pinned` 覆盖模式下的表面阴影；`Docked` 模式不使用。全屏标题栏的内边距、标题、Logo 和 caption button 尺寸来自默认标题栏自身的 [WindowTitleBar Token](../window-title-bar/token.md)，Window Token 不为全屏状态提供第二套标题栏度量。模式与宿主模型见 [Window 全屏标题栏设计](full-screen-title-bar-design.md)。
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 

@@ -193,7 +193,7 @@ IsIOS/IsIOSVersionAtLeast 包含 MacCatalyst，域比较与生成 guard 均保�
 | 对象 | 迁移要求 |
 | --- | --- |
 | Window、WindowTitleBar、SplitView、OtpLineEdit、OtpLineEditCell、TreeViewFlyoutPresenter | 复用已有类型平台声明，普通主题由 TargetType 自动取得限制 |
-| WindowResizer、FullscreenPopoverLayer、CaptionButton、CaptionButtonGroup、WindowsCaptionButton 等原生窗口辅助类型 | 核对实际原生窗口依赖，在类型上补齐真实产品能力；不按同目录批量标注 |
+| WindowResizer、FullScreenTitleBarHost、CaptionButton、CaptionButtonGroup、WindowsCaptionButton 等原生窗口辅助类型 | 核对实际原生窗口依赖，在类型上补齐真实产品能力；不按同目录批量标注 |
 | WindowTitleBarButton、WindowTitleBarToggleButton 的平台专属主题 | 复用现有主题 CLR 类声明资源限制；不据此收窄可复用控件本身 |
 | Avalonia 的 AdornerLayer、WindowDrawnDecorations 对应的 AtomUI 主题 | 由本包正常资源类声明限制，不修改外部类型，也不要求外部库配合 |
 | OtpTextBox、CaptionButtonFrame 及同目录其他资产 | 按实际控件能力与主题依赖逐项判断；纯资源限制归资源类，不继承目录限制 |

@@ -25,7 +25,7 @@
 | `ScopeAwareOverlayLayer` | `AtomUI.Controls.Primitives` | 最近的 `ScopeAwareOverlayLayerPanel`、`VisualLayerManager` 或 TopLevel | FloatButton、滚动内容内的作用域浮动元素 | `int.MaxValue - 990` |
 | `WindowFeedbackLayer` | `AtomUI.Desktop.Controls` | TopLevel / Window | Message、Notification | `int.MaxValue - 50`，高于 `ScopeAwareAdornerLayer` |
 | `TourLayer` | `AtomUI.Desktop.Controls` | TopLevel / Window | Tour mask / spotlight | `int.MaxValue - 98` |
-| `FullscreenPopoverLayer` | `AtomUI.Desktop.Controls.Window` | Window 模板内部 | macOS 全屏标题栏 popover | 模板固定层，不作为通用 overlay |
+| `FullScreenTitleBarHost` | `AtomUI.Desktop.Controls.Window` | Window 模板内部，`PART_VisualLayerManager` 内容根内、窗口内容之上 | 全屏状态下的标题栏表面 | 模板固定层，不作为通用 overlay |
 
 ## 各层职责
 
@@ -210,9 +210,9 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
 - 其他控件需要 modal mask 时，应使用 popup overlay / dialog mask 体系，而不是复用 TourLayer。
 - Tour 弹窗本体仍通过 popup overlay 路径定位，mask 和弹窗职责分离。
 
-### FullscreenPopoverLayer
+### FullScreenTitleBarHost
 
-`FullscreenPopoverLayer` 是 Window 模板内部的固定层，用于 macOS 全屏场景下顶部标题栏 popover。它不是注入到 `VisualLayerManager` 的通用 layer。
+`FullScreenTitleBarHost` 是 Window 模板内部的固定层，用于在 `WindowState.FullScreen` 下呈现标题栏表面。它位于 `PART_VisualLayerManager` 的内容根之内、窗口内容之上，因此处于 overlay、adorner 和弹层之下；它不是注入到 `VisualLayerManager` 的通用 layer。模式、显隐状态机和内容区占位见 [Window 全屏标题栏设计](../../../controls/desktop/window/window/full-screen-title-bar-design.md)。
 
 使用规则：
 
@@ -234,7 +234,7 @@ Avalonia 原生 `AdornerLayer` 用于紧贴控件或 TopLevel 的局部装饰。
 | FloatButton / 作用域浮动按钮 | `ScopeAwareOverlayLayer` | `PopupOverlayLayer`、`WindowFeedbackLayer` |
 | Tour mask | `TourLayer` | Dialog mask、`WindowFeedbackLayer` |
 | TreeView 拖拽预览 | Avalonia `AdornerLayer` | `WindowFeedbackLayer` |
-| macOS 全屏标题栏 popover | `FullscreenPopoverLayer` | 通用 layer API |
+| 全屏状态下的标题栏表面 | `FullScreenTitleBarHost` | 通用 layer API |
 
 ## 层级顺序规则
 

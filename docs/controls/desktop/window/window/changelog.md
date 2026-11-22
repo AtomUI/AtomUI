@@ -1,5 +1,27 @@
 # Window Changelog
 
+## 2026-11-21
+
+- Docs
+  - Add [Window 全屏标题栏设计](full-screen-title-bar-design.md) and link it from the overview, implementation and Token documents.
+- API
+  - Define `FullScreenTitleBarMode` (`Hidden`, `AutoHide`, `Pinned`, `Docked`; default `AutoHide`), `IsFullScreenTitleBarOpen`, `FullScreenTitleBar`, `FullScreenTitleBarTemplate`, `FullScreenTitleBarMouseEnterDelay`, `FullScreenTitleBarMouseLeaveDelay` and `ToggleFullScreen()` as the full-screen title bar contract of `Window`.
+  - `IsTitleBarVisible=false` without custom full-screen content resolves the full-screen title bar to `Hidden`.
+- Theme
+  - Replace the two hand-written full-screen title templates with a single `PART_FullScreenTitleBarHost` present in all three Window templates. `WindowDrawnDecorationsTheme` no longer supplies drawn-decorations full-screen popover content, and `FullscreenPopoverLayerTheme.axaml` is superseded by `FullScreenTitleBarHostTheme.axaml`.
+  - Remove the template parts `PART_FullscreenPopoverLayer`, `PART_PopoverBorder`, `PART_PopoverCloseButton`, `PART_PopoverFullScreenButton` and the decorations-level `PART_FullScreenButton` / `PART_CloseButton`; add `PART_FullScreenTitleBarHost` and `PART_Surface`.
+- Token
+  - `FullscreenPopoverShadows` becomes the surface shadow of the full-screen title bar host in overlay modes. `FullscreenHeaderFramePadding` has no consumer in this model and leaves the Window Token contract.
+- Implementation structure
+  - Window owns the full-screen title bar mode, content source, open state and dock inset. The default `WindowTitleBar` instance migrates between the Normal slot and the FullScreen slot instead of being re-templated; reveal behavior is an internal state machine (`FullScreenTitleBarRevealController`) separate from the surface (`FullScreenTitleBarHost`), which replaces `FullscreenPopoverLayer`.
+  - Close and exit-full-screen in full-screen state go through the Window caption command only, sharing the close-request flow and the pre-full-screen state restore with the normal state on every platform.
+  - The platform chrome managers gain `AttachFullScreenNativeChrome`; Windows and Linux return `null`, macOS returns a tracker in `AtomUI.Native` that follows AppKit's menu bar and title strip through the strip window's move notifications, hides the strip's background, decoration and shadow while fused, and centres the standard buttons by offsetting the strip title bar view's bounds origin (AppKit re-lays the button frames on every frame of the slide).
+  - While full screen, `NativeChromeInsets` is written by the full-screen title bar and the normal-state macOS button layout returns early.
+  - The platform chrome managers report `SupportsFullScreen`; macOS reports `false` for owned windows, which AppKit never takes into native full screen. `Window.IsFullScreenSupported` follows it and the owner, a full-screen request on such a window is rejected by restoring the previous `WindowState`, the full-screen caption command cannot execute, and the caption group hides the enter button (exit stays available).
+- Validation
+  - `AtomUI.Desktop.Controls.Tests` Window namespace and the temporary full-screen title bar tests: 242 passed. Dialog, Drawer, Popup, AOT, ImagePreviewer and overlay suites: 528 passed. Window and title bar token effect rendering tests: 50 passed.
+  - macOS 26.6.2 scripted acceptance on a real full-screen window: AutoHide, Pinned, Docked, custom content and exit, including the fused traffic lights centred at 49.75pt in the 30–70pt bar. Windows and Linux have no real-machine evidence yet.
+
 ## 2026-11-10
 
 - 窗口首次显示的背景从当前作用域的 Window Own Token 快照读取；后续发布继续由 WindowTheme 动态绑定更新。标题、字体与装饰部件按有效身份 / 所属控件读取。

@@ -65,7 +65,7 @@ Caption button 的公共配置统一属于宿主 `Window`：
 | --- | --- | --- | --- | --- | --- |
 | Minimize | 显示 | 按 Normal 保留 | 显示 | 隐藏 | `CanMinimize=true` 且平台允许最小化。 |
 | Maximize / Restore | 显示 Maximize | 按 Normal 保留 | 显示 Restore | 隐藏 | `CanMaximize=true` 且平台允许最大化/还原。 |
-| FullScreen / Exit | 显示 FullScreen | 按 Normal 保留 | 隐藏 | 显示 Exit | 平台允许全屏。 |
+| FullScreen / Exit | 显示 FullScreen | 按 Normal 保留 | 隐藏 | 显示 Exit | 进入全屏要求平台能把该窗口带入全屏（macOS 有 owner 的窗口不能）；退出入口在全屏期间始终保留。 |
 | Pin / Unpin | 按 checked state 显示 | 按 Normal 保留 | 按 checked state 显示 | 按 checked state 显示 | 当前 backend 支持置顶。 |
 | Close | 显示 | 按 Normal 保留 | 显示 | 显示 | managed close operation 可用。 |
 
@@ -99,7 +99,7 @@ CSD 模式隐藏 AtomUI 默认标题栏时必须保持 `WindowDecorations.Full`�
 | `CaptionButton` / `WindowsCaptionButton` | 呈现 icon、checked icon、active/inactive、hover、pressed 和 motion；通过命令提交一个固定窗口操作。 | 不解释窗口能力，不写入 `WindowState` 或 `Topmost`。 |
 | Platform chrome manager | 发布 native chrome、backend 和操作支持能力。 | 不决定应用 requested visibility，不访问标题栏 template part。 |
 
-Window action 的执行入口集中在 `Window` 内部窗口操作路径。最小化、最大化/还原、全屏/退出、置顶/取消置顶和关闭使用同一 capability 检查，不因默认 caption button 是否可见而改变。
+Window action 的执行入口集中在 `Window` 内部窗口操作路径。public `Window.ToggleFullScreen()` 与 FullScreen caption button 进入同一入口；全屏状态下的 caption button 由迁入全屏标题栏宿主的同一标题栏实例提供，见 [Window 全屏标题栏设计](../window/full-screen-title-bar-design.md)。最小化、最大化/还原、全屏/退出、置顶/取消置顶和关闭使用同一 capability 检查，不因默认 caption button 是否可见而改变。
 
 ## 6. Template、组合与集成契约
 
@@ -140,7 +140,7 @@ AtomUI `Window` 为逻辑树内的 `WindowTitleBar` 提供统一宿主上下文�
 ```text
 MinimizeVisible   = Vminimize   && Cminimize   && !F
 MaximizeVisible   = Vmaximize   && Cmaximize   && !F
-FullScreenVisible = Vfullscreen && Cfullscreen && !M
+FullScreenVisible = Vfullscreen && !M && (F || Cfullscreen)
 PinVisible        = Vpin        && Cpin
 CloseVisible      = Vclose      && Cclose
 ```

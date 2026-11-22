@@ -28,12 +28,13 @@ src/AtomUI.Desktop.Controls/
 │   │   ├── WaylandWindowChromeManager.cs
 │   │   └── WindowsWindowChromeManager.cs
 │   ├── Utils/
-│   │   ├── FullscreenPopoverLayer.cs
+│   │   ├── FullScreenTitleBarHost.cs
+│   │   ├── FullScreenTitleBarRevealController.cs
 │   │   └── WindowVisualLayerClip.cs
 │   └── Themes/
 │       ├── WindowTheme.axaml
 │       ├── WindowDrawnDecorationsTheme.axaml
-│       └── FullscreenPopoverLayerTheme.axaml
+│       └── FullScreenTitleBarHostTheme.axaml
 ├── WindowTitleBar/
 │   ├── WindowTitleBar.cs
 │   ├── WindowTitleBarButton.cs
@@ -78,7 +79,7 @@ src/AtomUI.Desktop.Controls/
 | `WindowTitleBarToggleButton.cs` | 基于 `ToggleIconButton` 提供应用 AddOn checked/unchecked 图标操作，保留业务 `IsChecked` 和图标所有权；Windows 复用同一方形测量。 |
 | `WindowTitleBarHostContext.cs` | internal inheritable attached properties；把标题栏 active/motion/platform 状态从模板的 `ContentPresenter` 投影给 AddOn 内容。 |
 | `WindowTitleBarLayoutPanel.cs` | 测量并排列 Leading、Title、Trailing，集中执行共享标题对齐公式。 |
-| `Strategies/*` | 解释平台 `Auto` 值并归一有效 native chrome insets，不操作 Visual。 |
+| `Strategies/*` | 解释平台 `Auto` 值并归一有效 native chrome insets，不操作 Visual；不按 WindowState 改写 insets，全屏下的值由 Window 发布。 |
 | `CaptionButtonGroup.cs` | 从标题栏投影输入推导按钮 effective visibility 和 checked state，并向固定按钮提供宿主命令。 |
 | `CaptionButton.cs` | 计算 effective icon、圆形背景和 transition 初始化时序。 |
 | `CaptionButtonFrame.cs` | managed caption 的共享几何外壳：内缩的圆角背景层 + 决定布局盒的内容层，供 `CaptionButton` 与两个 AddOn 按钮复用同一套几何来源。 |
@@ -123,7 +124,7 @@ Window 只发布 requested visibility、窗口能力、状态和操作命令。`
 
 Logo 的内容解析与可见性解析分为两层：
 
-**Window 内容层（`Window.EffectiveLogo` / `Window.EffectiveLogoTemplate`）**。公开的 `Logo` / `LogoTemplate` 只承载开发者显式值，框架从不写入。Window 在解析点按显式 `Logo`/`LogoTemplate` → 本窗口 `Icon` → 主窗口显式 `Logo`/`LogoTemplate` → 主窗口 `Icon` 的顺序求值；`WindowIcon` 内容配套内置模板。窗口打开前可以解析主窗口当前值，但不建立长期订阅；打开后且确实依赖主窗口回退时，子 Window 才持有对主窗口 `Logo`、`LogoTemplate` 和 `Icon` 的固定订阅 lease。`OnOpened` 重新解析以取得最新值，本地显式值或本地 `Icon` 接管时释放该 lease，窗口关闭时同样释放。两个全屏标题宿主直接绑定 Window effective 属性。
+**Window 内容层（`Window.EffectiveLogo` / `Window.EffectiveLogoTemplate`）**。公开的 `Logo` / `LogoTemplate` 只承载开发者显式值，框架从不写入。Window 在解析点按显式 `Logo`/`LogoTemplate` → 本窗口 `Icon` → 主窗口显式 `Logo`/`LogoTemplate` → 主窗口 `Icon` 的顺序求值；`WindowIcon` 内容配套内置模板。窗口打开前可以解析主窗口当前值，但不建立长期订阅；打开后且确实依赖主窗口回退时，子 Window 才持有对主窗口 `Logo`、`LogoTemplate` 和 `Icon` 的固定订阅 lease。`OnOpened` 重新解析以取得最新值，本地显式值或本地 `Icon` 接管时释放该 lease，窗口关闭时同样释放。全屏状态下默认标题栏以同一实例迁入 Window 的全屏标题栏宿主，继续按本节规则解析，不存在独立的全屏绑定。
 
 **WindowTitleBar 内容层（`WindowTitleBar.EffectiveLogo` / `WindowTitleBar.EffectiveLogoTemplate`）**。标题栏自己的 `Logo` 或 `LogoTemplate` 任一非空时，effective 内容取标题栏显式值；两者都为空时才取 host projection 通知的 Window effective 内容。三平台 `PART_Logo` 通过 `TemplateBinding` 消费标题栏 effective 属性，因此 standalone 用法和 Window 内自定义标题栏的显式值不会被宿主回退覆盖。运行时设置 `Logo = <Control>` 直接渲染且不残留 WindowIcon 模板；`Logo = null` 回到宿主默认图标，彻底隐藏使用 `LogoVisibility = Never`。
 
@@ -131,7 +132,7 @@ Logo 的内容解析与可见性解析分为两层：
 
 ### 4.4 Effective Title
 
-`Title` 或 `IsTitleVisible` 变化时重新计算 `IsEffectiveTitleVisible = IsTitleVisible && Title is not null`；构造函数先行初始化，属性变更分发中标题重算先于 Logo 重算执行（Logo 的 `Auto` 分支读取标题有效值）。三平台模板的 `PART_ContentPresenter` 与全屏层 `FullscreenTitleText`（绑定 Window 侧 `IsEffectiveFullscreenTitleVisible`）只绑定 internal direct property，不在模板中复制标题判空逻辑。
+`Title` 或 `IsTitleVisible` 变化时重新计算 `IsEffectiveTitleVisible = IsTitleVisible && Title is not null`；构造函数先行初始化，属性变更分发中标题重算先于 Logo 重算执行（Logo 的 `Auto` 分支读取标题有效值）。三平台模板的 `PART_ContentPresenter` 只绑定 internal direct property，不在模板中复制标题判空逻辑。
 
 ### 4.5 标题对齐
 
@@ -210,7 +211,7 @@ AtomUI Window logical tree
 | `CaptionButton` / `WindowsCaptionButton` | internal button | caption themes | `CaptionButtonGroup` | 用户可观察的窗口操作 | internal-observable | 只用于理解平台结构和状态，不作为应用 API。 |
 | `ImagePreviewerTitleBar` | internal derived control | ImagePreviewer theme | `ImagePreviewer` | 继承标题栏内容语义 | internal-observable | 只用于维护派生宿主一致性。 |
 
-`ImagePreviewerTitleBar` 将预览 toolbar 放入 Leading，并使用预览图标与标题构成 Title。全屏标题宿主使用同一布局角色和算法，不维护第二套标题居中逻辑。
+`ImagePreviewerTitleBar` 将预览 toolbar 放入 Leading，并使用预览图标与标题构成 Title。全屏状态下默认标题栏以同一实例迁入 Window 的全屏标题栏宿主，布局角色和算法不存在第二份实现。
 
 AddOn 按钮的容器和顺序由应用内容所有。`WindowTitleBar` 只提供 presenter 和 host state projection，不把内容转换为
 button collection，也不为每个 AddOn 控件订阅 Window 事件。按钮自己的 `Command`、`IsEnabled`、`IsChecked` 和
@@ -296,7 +297,7 @@ MR = TrailingWidth > 0 ? TrailingWidth + HeaderHorizontalSpacing : 0
 
 `LeadingWidth` 与 `TrailingWidth` 来自 direct role child 的 `DesiredSize.Width`，已经包含内部容器 spacing 和该 child 自身 margin，因此 Panel 不再额外累加。区域缺失、不可见、内容为空或孩子实测为零时，对应占位和外部间距同时为零。Windows/Linux Leading 内的 `LogoAndLeftAddOnSpacing` 按两个 presenter 的可见性产生，不由 Panel 根据内容宽度二次推导；Title 组内的 `LogoAndTitleSpacing` 遵循同类 sibling layout 语义。
 
-Windows/Linux 默认模板把有效 Logo 放入 Leading direct role child，并排在 `PART_LeftAddOn` 之前；因此 Logo 宽度及其与 LeftAddOn 的条件间距都作为 `LeadingWidth` 的一部分参与安全空间计算。macOS 默认模板、ImagePreviewer 标题宿主和全屏标题宿主仍可把图标放在 Title role 内，并继续由同一标题对齐公式处理。
+Windows/Linux 默认模板把有效 Logo 放入 Leading direct role child，并排在 `PART_LeftAddOn` 之前；因此 Logo 宽度及其与 LeftAddOn 的条件间距都作为 `LeadingWidth` 的一部分参与安全空间计算。macOS 默认模板和 ImagePreviewer 标题宿主仍可把图标放在 Title role 内，并继续由同一标题对齐公式处理。
 
 Windows caption 类按钮的测量由 `WindowsCaptionButtonLayout` 统一：水平约束为无限时以可用高度归一测量约束，最终边长取可用宽高的较小值与内容最小边长的较大值。因此默认 40 逻辑像素标题栏下得到 40×40 交互面，自定义标题栏高度后随实际高度变化；这一算法供 `WindowsCaptionButton`、`WindowTitleBarButton` 和 `WindowTitleBarToggleButton` 共享。Linux/macOS 仍使用控件内容和 padding 驱动的最小方形测量。
 
@@ -317,21 +318,22 @@ Windows caption 类按钮的测量由 `WindowsCaptionButtonLayout` 统一：水�
 
 - Window-defined host projection 与 `Window.NotifyConfigureTitleBar` 的默认内容投影必须分离：前者服务所有逻辑树内标题栏，后者只配置默认标题栏的 Title、Logo、对齐和 add-on。
 - 每个 `WindowTitleBar` 的宿主投影保持单向、完整且独立；AttachHost 对相同 Window 幂等，detach 或宿主切换必须释放旧 lease；CaptionButtonGroup 不通过 logical attach/detach 建立 Window 状态副本。
-- `WindowTitleBar` 的显式 Logo/Template 优先于宿主 effective Logo；三平台模板只消费标题栏 effective 属性。Window 的两个全屏宿主只消费 Window effective 属性，不能回退到原始 Logo/Title 判空。
+- `WindowTitleBar` 的显式 Logo/Template 优先于宿主 effective Logo；三平台模板只消费标题栏 effective 属性。全屏状态下默认标题栏以同一实例迁入 Window 的全屏标题栏宿主，继续消费自身 effective 属性；全屏状态不额外抑制 Logo，也不存在独立的全屏 Logo 或标题绑定。
 - 默认标题栏的 `LeftAddOn`、`LeftAddOnTemplate`、`RightAddOn` 和 `RightAddOnTemplate` 由 `Window` 的同名 public API 以 `Template` 优先级提供，派生标题栏 local add-on 不被覆盖。
 - 所有已连接标题栏获得 Window 的拖动、双击最大化和 caption 宿主上下文；只有默认标题栏获得尺寸提示和 CSD 高度协作。
 - CSD 下隐藏默认标题栏必须保留 `WindowDecorations.Full`，`WindowDrawnDecorationsTheme` 以 `HasTitleBar && IsTitleBarVisible` 控制 frame、shadow 和 presenter 可见性。
 - 三个平台 ControlTemplate 保持相同语义角色、稳定 part 名称和平台 caption button 顺序。
-- Windows/Linux 的 Logo 始终位于 Leading 最左侧；有效 Logo 与有效 LeftAddOn 之间只由 Leading `DockPanel.HorizontalSpacing` 消费 `LogoAndLeftAddOnSpacing`。macOS、ImagePreviewer 与全屏标题宿主可将图标与 Title 保持为连续 Title 组。无论图标位于哪个 role，标题对齐公式只读取 Leading、Title、Trailing 三个 direct role child 的实测宽度。
+- Windows/Linux 的 Logo 始终位于 Leading 最左侧；有效 Logo 与有效 LeftAddOn 之间只由 Leading `DockPanel.HorizontalSpacing` 消费 `LogoAndLeftAddOnSpacing`。macOS 与 ImagePreviewer 可将图标与 Title 保持为连续 Title 组。无论图标位于哪个 role，标题对齐公式只读取 Leading、Title、Trailing 三个 direct role child 的实测宽度。
 - Leading/Trailing 为零宽时不产生操作区间距；add-on margin 只通过 `DesiredSize` 计入一次。
-- ImagePreviewer 与两个全屏标题宿主复用同一标题布局模型。
+- ImagePreviewer 复用同一标题布局模型；全屏状态复用默认标题栏实例本身，标题栏不感知所在 title-bar slot，见 [Window 全屏标题栏设计](../window/full-screen-title-bar-design.md)。
+- 默认标题栏位于全屏标题栏宿主期间保持宿主投影 lease，暂停标题栏高度提示与 CSD chrome 几何协作，空白区域不发起拖动与双击最大化；迁回普通 slot 后恢复。
 - Title 不参与命中测试；add-on 与 caption buttons 保持可交互。
 - Windows AddOn 仅对齐 managed caption 几何、背景反馈和光标；不设置 `WindowDecorationProperties.ElementRole`，不获得 snap hover、native glyph 或窗口操作命令。Linux/macOS 保持原有圆角、Hand 光标与内容驱动尺寸。
 - `WindowTitleBarToken`、generated resource key 和 Theme 消费名保持同步。
 
 ## 11. 测试与验证
 
-- `WindowTitleBarLogoVisibilityTests` 覆盖 Logo 默认值、平台规则、两个全屏宿主的 effective 绑定和 Window 投影。
+- `WindowTitleBarLogoVisibilityTests` 覆盖 Logo 默认值、平台规则、全屏状态下同一标题栏实例的 Logo 呈现和 Window 投影。
 - `WindowTitleBarEffectiveLogoTests` 覆盖 Icon 回退、运行时内容替换、自定义标题栏显式值优先级、主窗口动态回退、显示前零订阅及 close 释放。
 - `WindowTitleBarAddOnTests` 覆盖 Window add-on API 默认值、模板类型及到默认标题栏的单向实时投影。
 - `WindowTitleBarButtonTests` 覆盖 AddOn 普通/Toggle 控件继承关系，checked/unchecked 图标切换，active/motion/platform host projection，detach 后 standalone 回退，Windows 方形几何与真实 pointer hover/pressed/exit，Linux/macOS 尺寸、圆角、光标回归，以及独立主题资产注册。

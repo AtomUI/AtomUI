@@ -1,5 +1,16 @@
 # WindowTitleBar Changelog
 
+## 2026-11-21
+
+- Docs
+  - Describe the full-screen state as the same `WindowTitleBar` instance hosted by the Window full-screen title bar host; see [Window 全屏标题栏设计](../window/full-screen-title-bar-design.md).
+- Theme
+  - WindowTitleBar no longer has a full-screen-only title template. Logo, title, `LeftAddOn`, `RightAddOn` and caption buttons render through the regular platform templates in the `:fullscreen` state, and the full-screen state does not suppress the Logo on its own.
+- Token
+  - `FullscreenCaptionButtonSize` has no consumer in this model and leaves the WindowTitleBar Token contract; full-screen caption buttons use the regular caption metrics.
+- Implementation structure
+  - `WindowTitleBarNativeChromeInsets.Resolve` and `IWindowTitleBarLayoutStrategy.ResolveNativeChromeInsets` no longer take a window state and no longer zero the insets in full screen; the window publishes the full-screen value.
+
 ## 2026-11-10
 
 - Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。

@@ -6,6 +6,7 @@
 
 - [Window 桌面版架构设计](window/overview.md)
 - [Window 桌面版实现原理](window/implementation.md)
+- [Window 全屏标题栏设计](window/full-screen-title-bar-design.md)
 - [Window Token 设计](window/token.md)
 - [Window Changelog](window/changelog.md)
 - [WindowTitleBar 桌面版架构设计](window-title-bar/overview.md)

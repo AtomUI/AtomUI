@@ -28,7 +28,7 @@ Token 负责尺寸、间距、字体和状态颜色，不负责以下运行时�
 | `TitleFontSize` | 标题字体尺寸。 | WindowTitleBar 和全屏标题宿主 |
 | `TitleFontWeight` | 标题字体粗细。 | WindowTitleBar 和全屏标题宿主 |
 
-`TitleBarPadding` 是原生安全边界后的 managed 内容间距；没有 native chrome inset 时从 frame 边缘起效。标题布局先应用 native chrome extent，再应用 `TitleBarPadding`，两段占位各自只计算一次。`Height`、`FullscreenCaptionButtonSize` 和 `HeaderHorizontalSpacing` 使用跨平台稳定值，不随紧凑密度算法缩小。`LogoAndLeftAddOnSpacing` 默认取当前 WindowTitleBar scope 的 `SpacingXXS`，默认主题下为 4 个逻辑像素。
+`TitleBarPadding` 是原生安全边界后的 managed 内容间距；没有 native chrome inset 时从 frame 边缘起效。标题布局先应用 native chrome extent，再应用 `TitleBarPadding`，两段占位各自只计算一次。`Height` 和 `HeaderHorizontalSpacing` 使用跨平台稳定值，不随紧凑密度算法缩小。`LogoAndLeftAddOnSpacing` 默认取当前 WindowTitleBar scope 的 `SpacingXXS`，默认主题下为 4 个逻辑像素。
 
 `HeaderHorizontalSpacing` 不属于 add-on 固定 margin。对应操作区实测宽度为零时不应用该值；add-on 自身 margin 已由 DesiredSize 计入，不与该 Token 重复计算。`LogoAndLeftAddOnSpacing` 由 Windows/Linux Leading 容器消费，只在 `PART_Logo` 与 `PART_LeftAddOn` 两个 presenter 同时可见时出现；它不通过 `PART_LeftAddOn.Margin` 实现，也不作用于 macOS。`LogoAndTitleSpacing` 只作用于图标和标题同在 Title role 的宿主，不为隐藏或空 Logo/Icon、空 Title 保留占位。
 
@@ -41,10 +41,9 @@ Token 负责尺寸、间距、字体和状态颜色，不负责以下运行时�
 | `CaptionButtonPadding` | managed caption button 内容 padding；Windows AddOn 的外部命中面仍由标题栏可用高度决定。 | `CaptionButtonTheme`、WindowTitleBar AddOn button themes |
 | `CaptionButtonCornerRadius` | managed caption button 的正圆圆角，由 `CaptionButtonIconSize` 与 `CaptionButtonPadding` 推导。 | Linux/macOS WindowTitleBar AddOn button themes |
 | `CaptionButtonBackgroundInset` | managed caption button 背景相对布局盒的内缩；Linux managed caption band 用 `SizeUnit / 2` 把 30 逻辑像素命中面收成 26 逻辑像素圆形背景。 | Linux `CaptionButtonGroupTheme`、Linux WindowTitleBar AddOn button themes、`CaptionButtonFrameTheme` |
-| `CaptionGroupSpacing` | 非 Windows caption buttons、全屏操作和非 Windows AddOn button group 的可选语义间距。 | CaptionButtonGroup、全屏标题宿主、Linux/macOS WindowTitleBar Trailing 容器、应用 AddOn 容器 |
-| `FullscreenCaptionButtonSize` | 全屏标题宿主中 caption button 的固定尺寸。 | Window drawn decorations、fullscreen popover |
+| `CaptionGroupSpacing` | 非 Windows caption buttons 和非 Windows AddOn button group 的可选语义间距。 | CaptionButtonGroup、Linux/macOS WindowTitleBar Trailing 容器、应用 AddOn 容器 |
 
-Windows 原生风格 caption buttons 连续贴合排列，group spacing 为零；Windows AddOn 需要连续 hover 按钮带时，其应用容器同样设置零 spacing。Linux 与全屏操作可使用 `CaptionGroupSpacing`；Linux/macOS 标题栏在 Trailing 容器上固定使用该 Token 分隔 AddOn 操作区与 caption group，使圆形按钮之间保持同一语义间距，没有 AddOn 内容时不产生幽灵间距。`LeftAddOn` / `RightAddOn` 允许任意内容，因此容器内部 spacing 始终由应用所有，Theme 不强制覆盖。`CaptionButtonBackgroundInset` 属于 Theme 状态视觉，只内缩背景层，不改变按钮布局占用尺寸和命中面。
+Windows 原生风格 caption buttons 连续贴合排列，group spacing 为零；Windows AddOn 需要连续 hover 按钮带时，其应用容器同样设置零 spacing。Linux 可使用 `CaptionGroupSpacing`；Linux/macOS 标题栏在 Trailing 容器上固定使用该 Token 分隔 AddOn 操作区与 caption group，使圆形按钮之间保持同一语义间距，没有 AddOn 内容时不产生幽灵间距。`LeftAddOn` / `RightAddOn` 允许任意内容，因此容器内部 spacing 始终由应用所有，Theme 不强制覆盖。`CaptionButtonBackgroundInset` 属于 Theme 状态视觉，只内缩背景层，不改变按钮布局占用尺寸和命中面。
 
 `CaptionButtonCornerRadius` 与 `CaptionButton` 按实测尺寸推导的圆角同源：内容尺寸固定为 icon + padding，默认主题下 30×30 得到 15。该 Token 在 Linux/macOS AddOn theme 生效，让 `WindowTitleBarButton` 与 `WindowTitleBarToggleButton` 和相邻系统 caption 按钮共用同一圆角来源；`CaptionButton` 自身保留实测推导，以覆盖全屏标题宿主对按钮尺寸的覆盖。`CaptionButtonBackgroundInset` 同时被 Linux `CaptionButtonGroupTheme` 与 Linux AddOn theme 消费，是 26 逻辑像素圆形背景的唯一来源；两个家族都通过 `CaptionButtonFrame` 把这个值应用到共享的背景层。Windows AddOn 维持直角铺满标题栏的方形交互面，不消费这两个 Token。
 
@@ -95,8 +94,6 @@ SharedToken
 | `WindowTitleBarButtonTheme.axaml` | AddOn 普通图标按钮的尺寸、背景、active/inactive、hover、pressed、disabled 和 motion；Windows 分支使用方形直角交互面。 |
 | `WindowTitleBarToggleButtonTheme.axaml` | AddOn checked/unchecked 图标按钮的尺寸、背景、active/inactive、hover、pressed、disabled 和 motion；Windows 分支使用方形直角交互面。 |
 | `WindowsCaptionButtonTheme.axaml` | Windows glyph、hover/pressed 以及 close danger state。 |
-| `WindowDrawnDecorationsTheme.axaml` | 全屏标题、Logo 和 caption operations。 |
-| `FullscreenPopoverLayerTheme.axaml` | 非 CSD 全屏弹出标题栏。 |
 | `ImagePreviewerTitleBarTheme.axaml` | 预览图标/标题间距和操作区间距；背景由 ImagePreviewer Token 覆盖。 |
 
 标题栏默认背景来自 WindowTitleBar 的有效全局 Token `ColorBgContainer`；ImagePreviewer 标题栏背景来自 `ImagePreviewerToken.TitleBarBackgroundColor`。背景 ownership 不改变 WindowTitleBar 的内容与 caption Token scope。
@@ -107,7 +104,7 @@ SharedToken
 
 - 默认 `WindowTitleBar` 的 macOS、Windows 和 Linux 模板。
 - 通用 `CaptionButton` 与 `WindowsCaptionButton`。
-- `WindowDrawnDecorations` 和 `FullscreenPopoverLayer` 的全屏标题表面。
+- Window 全屏标题栏宿主中的默认标题栏：全屏状态复用同一实例和同一组 Token，不存在全屏专用度量，见 [Window 全屏标题栏设计](../window/full-screen-title-bar-design.md)。
 - `ImagePreviewerTitleBar` 的标题组和操作区。
 - Light/Dark、active/inactive、hover、pressed、maximized 和 fullscreen 状态。
 

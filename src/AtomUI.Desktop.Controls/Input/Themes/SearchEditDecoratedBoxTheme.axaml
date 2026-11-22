@@ -36,7 +36,7 @@
                         BackgroundSizing="OuterBorderEdge"
                         IsLoading="{TemplateBinding IsSearchButtonLoading}"
                         Content="{TemplateBinding SearchButtonText}"
-                        Height="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}"
+                        VerticalAlignment="Stretch"
                         SizeType="{TemplateBinding SizeType}"
                         Theme="{TemplateBinding SearchButtonTheme}"
                         BorderThickness="{Binding RightAddOnBorderThickness, RelativeSource={RelativeSource TemplatedParent}, Priority=LocalValue}"

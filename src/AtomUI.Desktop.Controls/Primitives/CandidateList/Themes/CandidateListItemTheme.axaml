@@ -20,15 +20,18 @@
         <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
             <Setter Property="Margin" Value="{Binding (atom:CandidateListItem).CandidateIndicatorMargin, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource CandidateIndicatorLeadingMargin}}" />
         </Style>
-        <!-- layout: candidate rows have no outer spacing. -->
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+        <!-- The host's Token decides the row margin and corners (no spacing and square rows by default). -->
+        <Setter Property="Margin" Value="{CompiledBinding $self.ItemMargin}" />
+        <Setter Property="CornerRadius" Value="{CompiledBinding $self.ItemCornerRadius}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
         <Style Selector="^[SizeType=Large]">
             <Setter Property="CandidatePadding" Value="{atom:OwnerTokenResource Padding}" />
             <Setter Property="Padding" Value="{Binding CandidatePadding, RelativeSource={RelativeSource Self}, Converter={StaticResource CandidateHorizontalPadding}}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <!-- The host's option height (AutoComplete OptionHeight, Mentions ControlHeight). -->
+            <Setter Property="MinHeight" Value="{CompiledBinding $self.ItemMinHeight}" />
             <Setter Property="CandidatePadding" Value="{atom:OwnerTokenResource PaddingSM}" />
             <Setter Property="Padding" Value="{Binding CandidatePadding, RelativeSource={RelativeSource Self}, Converter={StaticResource CandidateHorizontalPadding}}" />
         </Style>
@@ -41,17 +44,17 @@
         </Style>
 
         <Style Selector="^:pointerover:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
             <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
         </Style>
 
         <Style Selector="^[IsSelected=False][IsCandidateSelected=True]:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
             <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
         </Style>
         
         <Style Selector="^[IsSelected=True]:not(:disabled)">
-            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.ItemSelectedColor}" />
             <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
         </Style>
     </Style>

@@ -66,6 +66,16 @@ public sealed partial class CascaderToken : AbstractSelectInputToken
     /// Padding of menu item (single column)
     /// </summary>
     public partial Thickness MenuPadding { get; set; }
+
+    /// <summary>
+    /// Outer margin of a menu item (a gap between items when non-zero).
+    /// </summary>
+    public partial Thickness OptionMargin { get; set; }
+
+    /// <summary>
+    /// Corner radius of a menu item's background.
+    /// </summary>
+    public partial CornerRadius OptionBorderRadius { get; set; }
     
     /// <summary>
     /// 过滤高亮颜色
@@ -94,6 +104,8 @@ public sealed partial class CascaderToken : AbstractSelectInputToken
         OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
         OptionPadding            = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, itemPaddingVertical);
         MenuPadding              = EffectiveGlobalToken.PaddingXXS;
+        OptionMargin             = default;
+        OptionBorderRadius       = EffectiveGlobalToken.BorderRadius;
         OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
         HeaderHeight             = EffectiveGlobalToken.ControlHeightSM;
         FilterHighlightColor     = EffectiveGlobalToken.ColorError;

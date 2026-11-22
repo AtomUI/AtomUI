@@ -69,6 +69,8 @@
         
         <!-- The nested input frame draws its focus outline outside the Mentions bounds. -->
         <Setter Property="ClipToBounds" Value="False" />
+        <!-- Focus is shown by the nested input frame, as for the other inputs; the host draws no square adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="IsMotionEnabled" Value="{atom:MentionsTokenResource EnableMotion}" />
         <Setter Property="UsePopupLayoutTokenResources" Value="True" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
@@ -92,5 +94,10 @@
                            TextTrimming="CharacterEllipsis"/>
             </DataTemplate>
         </Setter>
+        <Style Selector="^ /template/ atom|CandidateList">
+            <Setter Property="ItemColor" Value="{atom:MentionsTokenResource OptionColor}" />
+            <Setter Property="ItemSelectedColor" Value="{atom:MentionsTokenResource OptionSelectedColor}" />
+            <Setter Property="ItemMinHeight" Value="{atom:MentionsTokenResource ControlHeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

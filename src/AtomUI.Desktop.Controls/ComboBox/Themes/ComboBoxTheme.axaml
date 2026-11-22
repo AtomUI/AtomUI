@@ -218,14 +218,6 @@
         </Style>
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize" Value="{atom:ComboBoxTokenResource FontSizeSM}" />
-            <Style Selector="^ /template/ atom|TextBlock#PlaceholderText">
-                <!-- layout: keeps the small placeholder on the selected content's baseline -->
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
-            </Style>
-            <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
-                <!-- layout -->
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
-            </Style>
         </Style>
 
         <Style Selector="^[IsEditable=True]">

@@ -21,6 +21,11 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     public partial Color OptionSelectedColor { get; set; }
 
     /// <summary>
+    /// Colour of the check mark on a selected item.
+    /// </summary>
+    public partial Color OptionSelectedIndicatorColor { get; set; }
+
+    /// <summary>
     /// 选项选中时文本字重
     /// Font weight when option is selected
     /// </summary>
@@ -43,6 +48,12 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     /// Insets the option background within its interactive row.
     /// </summary>
     public partial Thickness OptionBackgroundInset { get; set; }
+
+    /// <summary>
+    /// 选项背景圆角，默认 0（AtomUI 一直以来的直角选项）
+    /// Corner radius of the option background; 0 by default (AtomUI's square options).
+    /// </summary>
+    public partial CornerRadius OptionBorderRadius { get; set; }
 
     /// <summary>
     /// 选项内间距
@@ -87,6 +98,7 @@ public sealed partial class SelectToken : AbstractSelectInputToken
     {
         base.CalculateTokenValues(isDarkMode);
         OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
+        OptionSelectedIndicatorColor = EffectiveGlobalToken.ColorPrimary;
         OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
         OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
         OptionActiveBg           = EffectiveGlobalToken.ControlItemBgHover;

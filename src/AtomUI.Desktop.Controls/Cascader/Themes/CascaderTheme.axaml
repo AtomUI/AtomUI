@@ -225,7 +225,7 @@
             <Setter Property="FontSize" Value="{atom:CascaderTokenResource FontSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:CascaderTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:CascaderTokenResource InputFontSizeSM}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">

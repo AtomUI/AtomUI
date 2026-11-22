@@ -11,6 +11,7 @@
         <Setter Property="ItemColor" Value="{atom:ListViewTokenResource ItemColor}" />
         <Setter Property="ItemHoverColor" Value="{atom:ListViewTokenResource ItemHoverColor}" />
         <Setter Property="ItemSelectedColor" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
+        <Setter Property="ItemSelectedIndicatorColor" Value="{atom:ListViewTokenResource ItemSelectedIndicatorColor}" />
         <Setter Property="ItemDisabledColor" Value="{atom:ListViewTokenResource ItemDisabledColor}" />
         <Setter Property="ItemBgColor" Value="{atom:ListViewTokenResource ItemBgColor}" />
         <Setter Property="ItemHoverBgColor" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />

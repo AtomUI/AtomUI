@@ -1,4 +1,3 @@
-using AtomUI.Controls;
 using AtomUI.Controls.Data;
 using AtomUI.Desktop.Controls.Themes;
 using Avalonia;
@@ -8,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls.Primitives;
@@ -96,6 +96,54 @@ public class CandidateList : ListBox, ICandidateList
     #endregion
 
     #region 内部属性定义
+
+    // Candidate text colours from the host's Token, passed to every prepared item (as ItemSelectedBg).
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AvaloniaProperty.Register<CandidateList, IBrush?>(nameof(ItemColor));
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedColorProperty =
+        AvaloniaProperty.Register<CandidateList, IBrush?>(nameof(ItemSelectedColor));
+
+    // Candidate row margin and corners from the host's Token (a design language insets rounded rows with a gap).
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<CandidateList, Thickness>(nameof(ItemMargin));
+
+    internal static readonly StyledProperty<CornerRadius> ItemCornerRadiusProperty =
+        AvaloniaProperty.Register<CandidateList, CornerRadius>(nameof(ItemCornerRadius));
+
+    // The middle-size row height from the host's Token (its option height).
+    internal static readonly StyledProperty<double> ItemMinHeightProperty =
+        AvaloniaProperty.Register<CandidateList, double>(nameof(ItemMinHeight));
+
+    internal double ItemMinHeight
+    {
+        get => GetValue(ItemMinHeightProperty);
+        set => SetValue(ItemMinHeightProperty, value);
+    }
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal CornerRadius ItemCornerRadius
+    {
+        get => GetValue(ItemCornerRadiusProperty);
+        set => SetValue(ItemCornerRadiusProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemSelectedColor
+    {
+        get => GetValue(ItemSelectedColorProperty);
+        set => SetValue(ItemSelectedColorProperty, value);
+    }
 
     /// <summary>
     /// Resolves whether a candidate item is enabled, for hosts whose item type is not <see cref="IListItemData"/>
@@ -667,6 +715,11 @@ public class CandidateList : ListBox, ICandidateList
 
         if (container is CandidateListItem candidateListItem)
         {
+            candidateListItem[!CandidateListItem.ItemColorProperty]         = this[!ItemColorProperty];
+            candidateListItem[!CandidateListItem.ItemSelectedColorProperty] = this[!ItemSelectedColorProperty];
+            candidateListItem[!CandidateListItem.ItemMarginProperty]        = this[!ItemMarginProperty];
+            candidateListItem[!CandidateListItem.ItemCornerRadiusProperty]  = this[!ItemCornerRadiusProperty];
+            candidateListItem[!CandidateListItem.ItemMinHeightProperty]     = this[!ItemMinHeightProperty];
             SetCandidateItemSelectedIfChanged(candidateListItem,
                 CandidateSelectedIndex >= 0 && index == CandidateSelectedIndex);
         }

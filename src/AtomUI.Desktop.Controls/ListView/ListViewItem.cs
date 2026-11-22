@@ -81,6 +81,15 @@ public class ListViewItem : ContentControl,
         set => SetValue(ItemSelectedColorProperty, value);
     }
 
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemSelectedIndicatorColor));
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
+    }
+
     internal static readonly StyledProperty<IBrush?> ItemDisabledColorProperty =
         AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemDisabledColor));
 

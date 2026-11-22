@@ -230,6 +230,11 @@ public partial class ListBox : AvaloniaListBox,
             nameof(IsDefaultEmptyIndicatorVisible),
             o => o.IsDefaultEmptyIndicatorVisible,
             (o, v) => o.IsDefaultEmptyIndicatorVisible = v);
+
+    // The check mark colour of a selected item, from the theme (ListBox: its Own Token; candidate lists: the host's
+    // primary colour).
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        AvaloniaProperty.Register<ListBox, IBrush?>(nameof(ItemSelectedIndicatorColor));
     
     private Thickness _effectiveBorderThickness;
 
@@ -251,6 +256,12 @@ public partial class ListBox : AvaloniaListBox,
     {
         get => _isDefaultEmptyIndicatorVisible;
         set => SetAndRaise(IsDefaultEmptyIndicatorVisibleProperty, ref _isDefaultEmptyIndicatorVisible, value);
+    }
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
     }
 
     #endregion
@@ -394,6 +405,7 @@ public partial class ListBox : AvaloniaListBox,
             listBoxItem[!ListBoxItem.SelectedIndicatorProperty]         = this[!SelectedIndicatorProperty];
             listBoxItem[!ListBoxItem.ItemHoverBgProperty]               = this[!ItemHoverBgProperty];
             listBoxItem[!ListBoxItem.ItemSelectedBgProperty]            = this[!ItemSelectedBgProperty];
+            listBoxItem[!ListBoxItem.ItemSelectedIndicatorColorProperty] = this[!ItemSelectedIndicatorColorProperty];
             listBoxItem[!ListBoxItem.IsShowSelectedIndicatorProperty]   = this[!IsShowSelectedIndicatorProperty];
             listBoxItem[!ListBoxItem.FilterHighlightStrategyProperty]   = this[!FilterHighlightStrategyProperty];
             listBoxItem[!ListBoxItem.FilterHighlightForegroundProperty] = this[!FilterHighlightForegroundProperty];

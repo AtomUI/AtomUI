@@ -147,8 +147,7 @@
                 <Setter Property="FontSize" Value="{atom:SearchEditTokenResource FontSize}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
-                <!-- antd: a small input keeps the middle font size. -->
-                <Setter Property="FontSize" Value="{atom:SearchEditTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:SearchEditTokenResource InputFontSizeSM}" />
             </Style>
         </Style>
         <Setter Property="SearchButtonTheme">

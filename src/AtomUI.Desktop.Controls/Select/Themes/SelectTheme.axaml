@@ -192,7 +192,7 @@
             <Setter Property="FontSize" Value="{atom:SelectTokenResource FontSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SelectTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:SelectTokenResource InputFontSizeSM}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">

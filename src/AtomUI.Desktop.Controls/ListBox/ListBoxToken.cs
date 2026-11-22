@@ -34,6 +34,11 @@ public sealed partial class ListBoxToken : AbstractControlDesignToken
     public partial Color ItemSelectedColor { get; set; }
 
     /// <summary>
+    /// Colour of the check mark on a selected item.
+    /// </summary>
+    public partial Color ItemSelectedIndicatorColor { get; set; }
+
+    /// <summary>
     /// 列表项文字禁用颜色
     /// </summary>
     public partial Color ItemDisabledColor { get; set; }
@@ -94,6 +99,7 @@ public sealed partial class ListBoxToken : AbstractControlDesignToken
         ItemColor         = colorTextSecondary;
         ItemHoverColor    = colorTextSecondary;
         ItemSelectedColor = EffectiveGlobalToken.ControlItemColorActive;
+        ItemSelectedIndicatorColor = EffectiveGlobalToken.ColorPrimary;
 
         ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
         ItemHoverBgColor    = colorBgTextHover;

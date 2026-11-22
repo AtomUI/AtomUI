@@ -80,7 +80,8 @@
         <Setter Property="MinHeight" Value="{atom:CascaderTokenResource HeaderHeight}" />
         <Setter Property="Padding" Value="{atom:CascaderTokenResource OptionPadding}" />
         <Setter Property="CornerRadius"
-                Value="{atom:CascaderViewItemTokenResource BorderRadius}" />
+                Value="{atom:CascaderTokenResource OptionBorderRadius}" />
+        <Setter Property="Margin" Value="{atom:CascaderTokenResource OptionMargin}" />
 
         <Style Selector="^:pointerover">
             <Setter Property="Background" Value="Transparent" />

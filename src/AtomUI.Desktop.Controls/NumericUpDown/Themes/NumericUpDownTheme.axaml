@@ -204,7 +204,7 @@
         <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSize}" />
         <!-- The embedded editor remains Custom and receives the host typography; it must not run its own Custom=Middle font selector. -->
         <Style Selector="^[SizeType=Small][IsCustomFontSize=False]">
-            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource InputFontSizeSM}" />
         </Style>
         <Style Selector="^[SizeType=Large][IsCustomFontSize=False]">
             <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSizeLG}" />

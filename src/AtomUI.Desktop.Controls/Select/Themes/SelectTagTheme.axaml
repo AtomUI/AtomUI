@@ -11,6 +11,9 @@
 
         <Style Selector="^:is(atom|SelectTag)">
             <Setter Property="Background" Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemBg)}" />
+            <!-- The chip text is the field text on the selector's item background, not the standalone tag's default
+                 colour (which a theme may pair with a solid tag fill). -->
+            <Setter Property="CalculatedForeground" Value="{atom:OwnerTokenResource ColorText}" />
             <Setter Property="IsClosable" Value="True" />
             <Setter Property="FontSize" Value="{CompiledBinding $self.(atom:SelectTag.ThemeOptionFontSize)}" />
 

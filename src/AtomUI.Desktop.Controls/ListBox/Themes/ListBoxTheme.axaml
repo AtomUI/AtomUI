@@ -59,6 +59,7 @@
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="ItemHoverBg" Value="{atom:ListBoxTokenResource ItemHoverBgColor}" />
         <Setter Property="ItemSelectedBg" Value="{atom:ListBoxTokenResource ItemSelectedBgColor}" />
+        <Setter Property="ItemSelectedIndicatorColor" Value="{atom:ListBoxTokenResource ItemSelectedIndicatorColor}" />
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />

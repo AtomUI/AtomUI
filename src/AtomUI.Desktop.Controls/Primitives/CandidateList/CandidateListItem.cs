@@ -1,5 +1,6 @@
 using Avalonia;
 using AtomUI.Theme;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -25,6 +26,47 @@ public class CandidateListItem : ListBoxItem
         AvaloniaProperty.Register<CandidateListItem, Thickness>(nameof(CandidateIndicatorMargin));
     internal static readonly StyledProperty<Thickness> CandidatePaddingProperty =
         AvaloniaProperty.Register<CandidateListItem, Thickness>(nameof(CandidatePadding));
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        CandidateList.ItemColorProperty.AddOwner<CandidateListItem>();
+    internal static readonly StyledProperty<IBrush?> ItemSelectedColorProperty =
+        CandidateList.ItemSelectedColorProperty.AddOwner<CandidateListItem>();
+
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        CandidateList.ItemMarginProperty.AddOwner<CandidateListItem>();
+    internal static readonly StyledProperty<CornerRadius> ItemCornerRadiusProperty =
+        CandidateList.ItemCornerRadiusProperty.AddOwner<CandidateListItem>();
+    internal static readonly StyledProperty<double> ItemMinHeightProperty =
+        CandidateList.ItemMinHeightProperty.AddOwner<CandidateListItem>();
+
+    internal double ItemMinHeight
+    {
+        get => GetValue(ItemMinHeightProperty);
+        set => SetValue(ItemMinHeightProperty, value);
+    }
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal CornerRadius ItemCornerRadius
+    {
+        get => GetValue(ItemCornerRadiusProperty);
+        set => SetValue(ItemCornerRadiusProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemSelectedColor
+    {
+        get => GetValue(ItemSelectedColorProperty);
+        set => SetValue(ItemSelectedColorProperty, value);
+    }
 
     internal Thickness CandidateIndicatorMargin
     {

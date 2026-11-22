@@ -44,6 +44,15 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
     
     internal static readonly StyledProperty<IBrush?> ItemSelectedBgProperty =
         ListBox.ItemSelectedBgProperty.AddOwner<ListBoxItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        ListBox.ItemSelectedIndicatorColorProperty.AddOwner<ListBoxItem>();
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
+    }
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ListBoxItem>();

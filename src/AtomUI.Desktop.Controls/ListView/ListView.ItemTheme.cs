@@ -46,6 +46,15 @@ public partial class ListView
         set => SetValue(ItemSelectedColorProperty, value);
     }
 
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        AvaloniaProperty.Register<ListView, IBrush?>(nameof(ItemSelectedIndicatorColor));
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
+    }
+
     internal static readonly StyledProperty<IBrush?> ItemDisabledColorProperty =
         AvaloniaProperty.Register<ListView, IBrush?>(nameof(ItemDisabledColor));
 
@@ -134,6 +143,7 @@ public partial class ListView
         item[!ListViewItem.ItemColorProperty]               = list[!ItemColorProperty];
         item[!ListViewItem.ItemHoverColorProperty]          = list[!ItemHoverColorProperty];
         item[!ListViewItem.ItemSelectedColorProperty]       = list[!ItemSelectedColorProperty];
+        item[!ListViewItem.ItemSelectedIndicatorColorProperty] = list[!ItemSelectedIndicatorColorProperty];
         item[!ListViewItem.ItemDisabledColorProperty]       = list[!ItemDisabledColorProperty];
         item[!ListViewItem.ItemBgColorProperty]             = list[!ItemBgColorProperty];
         item[!ListViewItem.ItemPaddingProperty]             = list[!ItemPaddingProperty];

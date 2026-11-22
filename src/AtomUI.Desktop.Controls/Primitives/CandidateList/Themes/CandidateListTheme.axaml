@@ -6,6 +6,9 @@
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.CandidateListTheme">
     <Setter Property="ItemHoverBg" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
     <Setter Property="ItemSelectedBg" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
+    <Setter Property="ItemSelectedIndicatorColor" Value="{atom:OwnerTokenResource ColorPrimary}" />
+    <Setter Property="ItemColor" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+    <Setter Property="ItemSelectedColor" Value="{atom:OwnerTokenResource ColorText}" />
     <!-- layout: candidate popup content padding is supplied by its host frame. -->
     <Setter Property="Padding" Value="0" />
     <ControlTheme.BasedOn>

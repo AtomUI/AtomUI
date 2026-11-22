@@ -186,9 +186,11 @@
             <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                 <Setter Property="Padding" Value="{atom:OwnerTokenResource InputPaddingSM}" />
             </Style>
+            <!-- Small fields keep the FontHeight line, as NumericUpDown, ComboBox and Select do: InputPaddingSM is
+                 derived for it, so every Small field is ControlHeightSM tall (antd: 14px text on a 22px line in 24px). -->
             <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
-                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
+                <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource FontHeight}" />
                 <Setter Property="Margin" Value="{atom:OwnerTokenResource InputContentMargin}" />
             </Style>
         </Style>

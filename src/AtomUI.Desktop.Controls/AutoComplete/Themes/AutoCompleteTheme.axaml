@@ -62,5 +62,12 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
+        <Style Selector="^ /template/ atom|CandidateList">
+            <Setter Property="ItemColor" Value="{atom:AutoCompleteTokenResource OptionColor}" />
+            <Setter Property="ItemSelectedColor" Value="{atom:AutoCompleteTokenResource OptionSelectedColor}" />
+            <Setter Property="ItemMargin" Value="{atom:AutoCompleteTokenResource OptionMargin}" />
+            <Setter Property="ItemCornerRadius" Value="{atom:AutoCompleteTokenResource OptionBorderRadius}" />
+            <Setter Property="ItemMinHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

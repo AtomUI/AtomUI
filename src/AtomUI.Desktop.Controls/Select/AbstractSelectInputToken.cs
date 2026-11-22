@@ -43,22 +43,19 @@ public abstract partial class AbstractSelectInputToken : AbstractControlDesignTo
     /// Text color of multiple tag when disabled
     /// </summary>
     public partial Color MultipleItemColorDisabled { get; set; }
-
-
-
-
-
-
+    
     /// <summary>
     /// 选项字体大小
     /// Font size of option
     /// </summary>
     public partial double OptionFontSize { get; set; }
 
-
-
-
-
+    /// <summary>
+    /// 小号选择框字体大小，默认等于 <see cref="DesignToken.FontSize"/>（与 antd 一致）
+    /// Font size of the small selector, the middle font size by default (as in antd)
+    /// </summary>
+    public partial double InputFontSizeSM { get; set; }
+    
     /// <summary>
     /// 多选模式下的输入框内边距
     /// </summary>
@@ -119,6 +116,7 @@ protected override void CalculateTokenValues(bool isDarkMode)
         double multipleItemHeightLG = Math.Min(EffectiveGlobalToken.ControlHeightLG - dblPaddingXXS, EffectiveGlobalToken.ControlHeightLG - dblLineWidth);
 
         OptionFontSize =  EffectiveGlobalToken.FontSize;
+        InputFontSizeSM = EffectiveGlobalToken.FontSize;
         MultipleItemBg = EffectiveGlobalToken.ColorFillSecondary;
         MultipleItemHeight = multipleItemHeight - 2;
         MultipleItemHeightSM = multipleItemHeightSM + 4;

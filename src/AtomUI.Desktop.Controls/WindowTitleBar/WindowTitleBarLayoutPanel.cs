@@ -255,8 +255,7 @@ internal sealed class WindowTitleBarLayoutPanel : Panel
                                              .ResolveNativeChromeInsets(
                                                  width,
                                                  NativeChromeInsets,
-                                                 IsCsdEnabled,
-                                                 WindowState);
+                                                 IsCsdEnabled);
     }
 
     private Control? FindChild(WindowTitleBarLayoutRole role)

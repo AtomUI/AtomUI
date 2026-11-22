@@ -181,34 +181,6 @@ public class WindowTitleBarTitleVisibilityTests
         window.Title.ShouldBe("AtomUI Demo");
     }
 
-    [Fact]
-    public void Fullscreen_Layers_Bind_Title_Text_To_Effective_Title_Visibility()
-    {
-        var themePaths = new[]
-        {
-            "src/AtomUI.Desktop.Controls/Window/Themes/FullscreenPopoverLayerTheme.axaml",
-            "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"
-        };
-
-        foreach (var themePath in themePaths)
-        {
-            var source = File.ReadAllText(GetRepoFile(themePath));
-            source.ShouldContain("Text=\"{Binding $parent[atom:Window].Title}\"");
-            source.ShouldContain(
-                "IsVisible=\"{Binding $parent[atom:Window].IsEffectiveFullscreenTitleVisible}\"");
-        }
-    }
-
-    [Fact]
-    public void Window_Fullscreen_Logo_Auto_Mode_Follows_Hidden_Title()
-    {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Window.cs"));
-
-        source.ShouldContain("UpdateEffectiveFullscreenTitleVisible()");
-        source.ShouldContain(
-            "_ => hasLogo && HasTitleContent(Title) && IsEffectiveFullscreenTitleVisible");
-    }
-
     private static string GetRepoFile(string relativePath)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

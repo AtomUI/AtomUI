@@ -1,3 +1,4 @@
+using AtomUI.Native;
 using Avalonia;
 using Avalonia.Media;
 
@@ -9,6 +10,9 @@ internal interface IWindowChromeManager
 
     bool SupportsPinCaptionButton { get; }
 
+    /// <summary>Whether the platform can currently take this window into full screen.</summary>
+    bool SupportsFullScreen { get; }
+
     Action? PrepareInitialShowState();
 
     void HandleFrameShadowChanged(BoxShadows frameShadow);
@@ -18,6 +22,12 @@ internal interface IWindowChromeManager
     void HandlePropertyChanged(AvaloniaProperty property);
 
     void UpdateFrameGeometry();
+
+    /// <summary>
+    /// Starts tracking the chrome the platform presents by itself over a full-screen window.
+    /// </summary>
+    /// <returns><c>null</c> when the platform presents no chrome of its own in full screen.</returns>
+    IFullScreenNativeChrome? AttachFullScreenNativeChrome(Action metricsChanged);
 }
 
 internal static class WindowChromeManager

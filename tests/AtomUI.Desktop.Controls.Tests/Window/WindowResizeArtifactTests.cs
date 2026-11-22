@@ -600,7 +600,11 @@ public class WindowResizeArtifactTests
         var visualLayerManager = layerClip.Elements(av + "VisualLayerManager")
                                           .Single(element =>
                                               (string?)element.Attribute("Name") == "PART_VisualLayerManager");
-        var contentPanel = visualLayerManager.Elements(av + "Panel").Single();
+        // The content root also hosts the full-screen title bar, so the content panel is its named child.
+        var contentPanel = visualLayerManager.Elements(av + "Panel").Single()
+                                             .Elements(av + "Panel")
+                                             .Single(element =>
+                                                 (string?)element.Attribute("Name") == "PART_ContentCacheHost");
 
         contentPanel.Attribute("Margin").ShouldNotBeNull().Value.ShouldBe(
             "{Binding $parent[atom:Window].EffectiveContentFrameMargin}");
@@ -975,60 +979,43 @@ public class WindowResizeArtifactTests
     }
 
     [Fact]
-    public void Fullscreen_Title_Hosts_Use_The_Shared_Full_Frame_Layout_With_Managed_Operations()
+    public void Window_Templates_Host_The_Full_Screen_Title_Bar_Above_Content_And_Below_Visual_Layers()
     {
-        var themePaths = new[]
-        {
-            "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml",
-            "src/AtomUI.Desktop.Controls/Window/Themes/FullscreenPopoverLayerTheme.axaml"
-        };
+        var windowTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/Window/Themes/WindowTheme.axaml"));
+        var decorationsTheme = XDocument.Load(GetRepoFile(
+            "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"));
         XNamespace atom = "https://atomui.net";
 
-        foreach (var themePath in themePaths)
+        var hosts = windowTheme.Descendants(atom + "FullScreenTitleBarHost").ToList();
+        hosts.Count.ShouldBe(3);
+        foreach (var host in hosts)
         {
-            var document = XDocument.Load(GetRepoFile(themePath));
-            var layoutPanel = document.Descendants(atom + "WindowTitleBarLayoutPanel").Single();
-            var directChildren = layoutPanel.Elements().ToList();
+            host.Attribute("Name")?.Value.ShouldBe("PART_FullScreenTitleBarHost");
+            host.Attribute("Mode")?.Value.ShouldBe("{TemplateBinding EffectiveFullScreenTitleBarMode}");
+            host.Attribute("IsOpen")?.Value.ShouldBe("{TemplateBinding IsFullScreenTitleBarOpen}");
+            host.Attribute("Content")?.Value.ShouldBe("{TemplateBinding FullScreenSlotContent}");
+            host.Attribute("ContentTemplate")?.Value.ShouldBe("{TemplateBinding FullScreenSlotContentTemplate}");
 
-            layoutPanel.Attribute("TitleAlignment")?.Value.ShouldBe(
-                "{Binding $parent[atom:Window].TitleAlignment}");
-            layoutPanel.Attribute("OsType")?.Value.ShouldBe("{Binding $parent[atom:Window].OsType}");
-            layoutPanel.Attribute("NativeChromeInsets")?.Value.ShouldBe("0");
-            layoutPanel.Attribute("WindowState")?.Value.ShouldBe("FullScreen");
-            layoutPanel.Attribute("Padding")?.Value.ShouldBe(
-                "{atom:WindowTokenResource FullscreenHeaderFramePadding}");
-            layoutPanel.Attribute("HorizontalSpacing")?.Value.ShouldBe(
-                "{atom:WindowTitleBarTokenResource HeaderHorizontalSpacing}");
-
-            directChildren.Count(child => GetLayoutRole(child) == "Leading").ShouldBe(1);
-            directChildren.Count(child => GetLayoutRole(child) == "Title").ShouldBe(1);
-            directChildren.Count(child => GetLayoutRole(child) == "Trailing").ShouldBe(1);
-
-            directChildren.Single(child => GetLayoutRole(child) == "Leading")
-                          .Descendants()
-                          .ShouldBeEmpty();
-            var title = directChildren.Single(child => GetLayoutRole(child) == "Title");
-            title.Name.LocalName.ShouldBe("DockPanel");
-            title.Attribute("LastChildFill")?.Value.ShouldBe("True");
-            title.Attribute("HorizontalSpacing")?.Value.ShouldBe(
-                "{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}");
-            title.Attribute("IsHitTestVisible")?.Value.ShouldBe("False");
-            title.Attribute("ClipToBounds")?.Value.ShouldBe("True");
-            var logoPresenter = title.Descendants().Single(element =>
-                (string?)element.Attribute("Name") == "FullscreenLogoPresenter");
-            logoPresenter.Attribute("DockPanel.Dock")?.Value.ShouldBe("Left");
-            logoPresenter.Attribute("Content")?.Value.ShouldBe(
-                "{Binding $parent[atom:Window].EffectiveFullscreenLogo}");
-            logoPresenter.Attribute("ContentTemplate")?.Value.ShouldBe(
-                "{Binding $parent[atom:Window].EffectiveFullscreenLogoTemplate}");
-            var titleText = title.Descendants().Single(element =>
-                (string?)element.Attribute("Name") == "FullscreenTitleText");
-            titleText.Attribute("TextWrapping")?.Value.ShouldBe("NoWrap");
-            titleText.Attribute("TextTrimming")?.Value.ShouldBe("CharacterEllipsis");
-
-            var trailing = directChildren.Single(child => GetLayoutRole(child) == "Trailing");
-            trailing.Descendants(atom + "CaptionButton").Count().ShouldBe(2);
+            // Last child of the visual layer manager's content root: above the window content, below the overlay
+            // and adorner layers, and outside the cached content.
+            var contentRoot = host.Parent!;
+            contentRoot.Parent!.Attribute("Name")?.Value.ShouldBe("PART_VisualLayerManager");
+            host.ElementsAfterSelf().ShouldBeEmpty();
+            contentRoot.Elements().First().ShouldNotBe(host);
+            host.Ancestors().ShouldNotContain(element =>
+                (string?)element.Attribute("Name") == "PART_ContentCacheHost");
         }
+
+        windowTheme.Descendants()
+                   .Count(element => (string?)element.Attribute("Content") == "{TemplateBinding NormalSlotTitleBar}")
+                   .ShouldBe(2);
+        windowTheme.Descendants()
+                   .Count(element => (string?)element.Attribute("Margin") == "{TemplateBinding FullScreenContentInset}")
+                   .ShouldBe(2);
+        decorationsTheme.Descendants()
+                        .ShouldNotContain(element => element.Name.LocalName.EndsWith(".FullscreenPopover"));
+        decorationsTheme.ToString().ShouldContain("{Binding $parent[atom:Window].NormalSlotTitleBar}");
     }
 
     [Theory]
@@ -1191,14 +1178,6 @@ public class WindowResizeArtifactTests
         }
 
         return null;
-    }
-
-    private static string? GetLayoutRole(XElement element)
-    {
-        return element.Attributes()
-                      .SingleOrDefault(attribute =>
-                          attribute.Name.LocalName == "WindowTitleBarLayoutPanel.Role")
-                      ?.Value;
     }
 
     private static bool IsPhysicalPixelAligned(double value, double renderScaling)

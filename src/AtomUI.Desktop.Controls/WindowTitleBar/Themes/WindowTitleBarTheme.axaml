@@ -90,6 +90,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
@@ -177,6 +178,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
@@ -260,6 +262,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>

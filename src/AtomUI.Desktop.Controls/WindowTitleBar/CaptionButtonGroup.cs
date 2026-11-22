@@ -110,6 +110,9 @@ internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
     internal static readonly StyledProperty<bool> IsPinCaptionButtonSupportedProperty =
         WindowTitleBar.IsPinCaptionButtonSupportedProperty.AddOwner<CaptionButtonGroup>();
 
+    internal static readonly StyledProperty<bool> IsFullScreenSupportedProperty =
+        WindowTitleBar.IsFullScreenSupportedProperty.AddOwner<CaptionButtonGroup>();
+
     internal static readonly StyledProperty<ICommand?> CaptionButtonCommandProperty =
         WindowTitleBar.CaptionButtonCommandProperty.AddOwner<CaptionButtonGroup>();
 
@@ -175,6 +178,12 @@ internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
     {
         get => GetValue(IsPinCaptionButtonSupportedProperty);
         set => SetValue(IsPinCaptionButtonSupportedProperty, value);
+    }
+
+    internal bool IsFullScreenSupported
+    {
+        get => GetValue(IsFullScreenSupportedProperty);
+        set => SetValue(IsFullScreenSupportedProperty, value);
     }
 
     internal ICommand? CaptionButtonCommand
@@ -276,6 +285,7 @@ internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
         HostWindowStateProperty.Changed.AddClassHandler<CaptionButtonGroup>(OnCaptionInputChanged);
         IsWindowTopmostProperty.Changed.AddClassHandler<CaptionButtonGroup>(OnCaptionInputChanged);
         IsPinCaptionButtonSupportedProperty.Changed.AddClassHandler<CaptionButtonGroup>(OnCaptionInputChanged);
+        IsFullScreenSupportedProperty.Changed.AddClassHandler<CaptionButtonGroup>(OnCaptionInputChanged);
     }
 
     public CaptionButtonGroup()
@@ -305,7 +315,9 @@ internal class CaptionButtonGroup : TemplatedControl, IOperationSystemAware
         IsMinimizeButtonEffectivelyVisible = IsMinimizeCaptionButtonVisible && CanMinimize && !isFullScreen;
         IsMaximizeButtonEffectivelyVisible = IsMaximizeCaptionButtonVisible && CanMaximize && !isFullScreen;
         IsCloseButtonEffectivelyVisible = IsCloseCaptionButtonVisible;
-        IsFullScreenButtonEffectivelyVisible = IsFullScreenCaptionButtonVisible && !isMaximized;
+        // Exit stays available while full screen; entering requires the platform to support full screen.
+        IsFullScreenButtonEffectivelyVisible = IsFullScreenCaptionButtonVisible && !isMaximized &&
+                                               (isFullScreen || IsFullScreenSupported);
         IsPinButtonEffectivelyVisible = IsPinCaptionButtonVisible && IsPinCaptionButtonSupported;
     }
 

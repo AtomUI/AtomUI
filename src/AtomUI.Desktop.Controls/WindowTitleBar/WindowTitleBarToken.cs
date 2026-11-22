@@ -81,11 +81,6 @@ public sealed partial class WindowTitleBarToken : AbstractTitleBarActionToken
     public partial double Height { get; set; }
 
     /// <summary>
-    /// 全屏状态下 Caption 按钮的尺寸（与密度算法解耦，取代直引 EffectiveGlobalToken.SizeLG）
-    /// </summary>
-    public partial double FullscreenCaptionButtonSize { get; set; }
-
-    /// <summary>
     /// 标题栏水平布局分隔（Linux 模板 DockPanel 用，取代直引 EffectiveGlobalToken.SpacingXS）
     /// </summary>
     public partial double HeaderHorizontalSpacing { get; set; }
@@ -129,10 +124,9 @@ public sealed partial class WindowTitleBarToken : AbstractTitleBarActionToken
 
 
         // 窗口装饰语义不走密度算法：紧凑模式下 ControlHeightLG / SizeLG / SpacingXS 都会被拉小，
-        // 标题栏 / 全屏按钮 / DockPanel 间距不应跟着缩，因此使用跨平台稳定值。
-        Height                      = 40;
-        FullscreenCaptionButtonSize = 24;
-        HeaderHorizontalSpacing     = 8;
+        // 标题栏 / DockPanel 间距不应跟着缩，因此使用跨平台稳定值。
+        Height                  = 40;
+        HeaderHorizontalSpacing = 8;
 
         if (!IsExplicit(WindowTitleBarTokenKind.WindowsCloseButtonHoverBgColor))
         {

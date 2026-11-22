@@ -224,6 +224,9 @@ public class WindowTitleBar : TemplatedControl,
     internal static readonly StyledProperty<bool> IsPinCaptionButtonSupportedProperty =
         AvaloniaProperty.Register<WindowTitleBar, bool>(nameof(IsPinCaptionButtonSupported));
 
+    internal static readonly StyledProperty<bool> IsFullScreenSupportedProperty =
+        AvaloniaProperty.Register<WindowTitleBar, bool>(nameof(IsFullScreenSupported), true);
+
     internal static readonly StyledProperty<ICommand?> CaptionButtonCommandProperty =
         AvaloniaProperty.Register<WindowTitleBar, ICommand?>(nameof(CaptionButtonCommand));
 
@@ -351,6 +354,12 @@ public class WindowTitleBar : TemplatedControl,
     {
         get => GetValue(IsPinCaptionButtonSupportedProperty);
         set => SetValue(IsPinCaptionButtonSupportedProperty, value);
+    }
+
+    internal bool IsFullScreenSupported
+    {
+        get => GetValue(IsFullScreenSupportedProperty);
+        set => SetValue(IsFullScreenSupportedProperty, value);
     }
 
     internal ICommand? CaptionButtonCommand
@@ -523,7 +532,7 @@ public class WindowTitleBar : TemplatedControl,
             WindowTitleBarLogoVisibility.Never => false,
             _ => hasLogo && ShouldShowLogoInAutoMode()
         };
-        IsEffectiveLogoVisible = HostWindowState != WindowState.FullScreen && isLogoVisibleByMode;
+        IsEffectiveLogoVisible = isLogoVisibleByMode;
         UpdateEffectiveLogoPresenterContent();
     }
 
@@ -553,12 +562,7 @@ public class WindowTitleBar : TemplatedControl,
             return true;
         }
 
-        if (OsType == OsType.macOS)
-        {
-            return false;
-        }
-
-        return HostWindowState != WindowState.FullScreen;
+        return OsType != OsType.macOS;
     }
 
     private static bool HasTitleContent(object? title)

@@ -28,22 +28,20 @@ public partial class PrimitivesFamilyEffectTests
                 .Single(s => s.Property == WindowDrawnDecorations.TemplateProperty).Value!;
             var content = template.Build().Result;
             var projection = new Panel();
-            var visuals = new[] { content.Underlay, content.Overlay, content.FullscreenPopover };
+            var visuals = new[] { content.Underlay, content.Overlay };
             content.Underlay = null;
             content.Overlay = null;
-            content.FullscreenPopover = null;
             foreach (var visual in visuals)
             {
                 if (visual is Control control) { projection.Children.Add(control); }
             }
-            var fullscreen = new FullscreenPopoverLayer();
-            projection.Children.Add(fullscreen);
+            var fullScreenTitleBarHost = new FullScreenTitleBarHost();
+            projection.Children.Add(fullScreenTitleBarHost);
             window.Content = projection;
             try
             {
                 window.Show();
-                fullscreen.Attach(window);
-                fullscreen.ApplyTemplate();
+                fullScreenTitleBarHost.ApplyTemplate();
                 window.UpdateLayout();
                 object? Read() => token switch
                 {
@@ -52,19 +50,16 @@ public partial class PrimitivesFamilyEffectTests
                     "CornerRadius" => window.CornerRadius,
                     "FrameBorderActive" => Frame("PART_LegacyFrameTopBorderActive").Background,
                     "FrameBorderInactive" => Frame("PART_LegacyFrameTopBorderInactive").Background,
-                    "FullscreenPopoverShadows" => Frame("PART_PopoverBorder").BoxShadow,
-                    "FullscreenHeaderFramePadding" => fullscreen.GetVisualDescendants().OfType<WindowTitleBarLayoutPanel>().First().Padding,
-                    "FullscreenCaptionButtonSize" => fullscreen.GetVisualDescendants().OfType<CaptionButton>().First().Width,
+                    "FullscreenPopoverShadows" => Frame("PART_Surface").BoxShadow,
                     _ => throw new ArgumentOutOfRangeException(nameof(token))
                 };
                 Border Frame(string name) => projection.GetVisualDescendants().OfType<Border>().First(b => b.Name == name);
                 var before = Read();
-                var identity = token == "FullscreenCaptionButtonSize" ? WindowTitleBarTokens.Identity : WindowTokens.Identity;
+                var identity = WindowTokens.Identity;
                 var value = token switch
                 {
                     "SystemBarColor" or "FrameBorderActive" or "FrameBorderInactive" => "#ff00b96b",
                     "CornerRadius" => "24",
-                    "FullscreenHeaderFramePadding" => "40,4,40,4",
                     "FullscreenPopoverShadows" => "0 12 30 4 #9900b96b",
                     _ => "64"
                 };
@@ -78,7 +73,6 @@ public partial class PrimitivesFamilyEffectTests
             }
             finally
             {
-                fullscreen.Detach();
                 window.Close();
                 Dispatcher.UIThread.RunJobs();
             }

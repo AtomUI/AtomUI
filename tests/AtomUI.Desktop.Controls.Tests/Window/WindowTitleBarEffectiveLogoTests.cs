@@ -273,41 +273,7 @@ public class WindowTitleBarEffectiveLogoTests
     }
 
     [Fact]
-    public void Fullscreen_Logo_Visibility_Is_Inactive_Until_Window_Enters_Fullscreen()
-    {
-        var window = new AtomUI.Desktop.Controls.Window
-        {
-            Title          = "AtomUI",
-            LogoVisibility = WindowTitleBarLogoVisibility.Always
-        };
-
-        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
-        GetEffectiveFullscreenLogo(window).ShouldBeNull();
-        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
-
-        window.Icon = CreateIcon();
-        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
-        GetEffectiveFullscreenLogo(window).ShouldBeNull();
-        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
-
-        window.WindowState = WindowState.FullScreen;
-        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeTrue();
-        GetEffectiveFullscreenLogo(window).ShouldBe(window.Icon);
-        GetEffectiveFullscreenLogoTemplate(window).ShouldNotBeNull();
-
-        window.WindowState = WindowState.Normal;
-        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
-        GetEffectiveFullscreenLogo(window).ShouldBeNull();
-        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
-
-        window.Icon = null;
-        GetIsEffectiveFullscreenLogoVisible(window).ShouldBeFalse();
-        GetEffectiveFullscreenLogo(window).ShouldBeNull();
-        GetEffectiveFullscreenLogoTemplate(window).ShouldBeNull();
-    }
-
-    [Fact]
-    public void Hosted_Title_Bar_Releases_Logo_Visibility_When_Host_Enters_Fullscreen()
+    public void Hosted_Title_Bar_Keeps_Logo_Visibility_When_Host_Enters_Fullscreen()
     {
         var logo = new Border();
         var titleBar = new WindowTitleBar
@@ -322,9 +288,10 @@ public class WindowTitleBarEffectiveLogoTests
         GetEffectiveLogoPresenterContent(titleBar).ShouldBe(logo);
         GetEffectiveLogoPresenterContentTemplate(titleBar).ShouldBeNull();
 
+        // The full-screen title bar presents this same instance, so full screen does not suppress the Logo.
         titleBar.HostWindowState = WindowState.FullScreen;
-        GetIsEffectiveLogoVisible(titleBar).ShouldBeFalse();
-        GetEffectiveLogoPresenterContent(titleBar).ShouldBeNull();
+        GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
+        GetEffectiveLogoPresenterContent(titleBar).ShouldBe(logo);
         GetEffectiveLogoPresenterContentTemplate(titleBar).ShouldBeNull();
 
         titleBar.HostWindowState = WindowState.Normal;
@@ -474,20 +441,6 @@ public class WindowTitleBarEffectiveLogoTests
                .GetValue(window);
     }
 
-    private static object? GetEffectiveFullscreenLogo(AtomUI.Desktop.Controls.Window window)
-    {
-        return typeof(AtomUI.Desktop.Controls.Window)
-               .GetProperty("EffectiveFullscreenLogo", BindingFlags.Instance | BindingFlags.NonPublic)!
-               .GetValue(window);
-    }
-
-    private static object? GetEffectiveFullscreenLogoTemplate(AtomUI.Desktop.Controls.Window window)
-    {
-        return typeof(AtomUI.Desktop.Controls.Window)
-               .GetProperty("EffectiveFullscreenLogoTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!
-               .GetValue(window);
-    }
-
     private static WindowTitleBar? GetTitleBar(AtomUI.Desktop.Controls.Window window)
     {
         return typeof(AtomUI.Desktop.Controls.Window)
@@ -514,13 +467,6 @@ public class WindowTitleBarEffectiveLogoTests
         return typeof(WindowTitleBar)
                .GetProperty("EffectiveLogoPresenterContentTemplate", BindingFlags.Instance | BindingFlags.NonPublic)!
                .GetValue(titleBar);
-    }
-
-    private static bool GetIsEffectiveFullscreenLogoVisible(AtomUI.Desktop.Controls.Window window)
-    {
-        return (bool)typeof(AtomUI.Desktop.Controls.Window)
-               .GetProperty("IsEffectiveFullscreenLogoVisible", BindingFlags.Instance | BindingFlags.NonPublic)!
-               .GetValue(window)!;
     }
 
     private static object? GetMainWindowLogoFallbackLease(AtomUI.Desktop.Controls.Window window)

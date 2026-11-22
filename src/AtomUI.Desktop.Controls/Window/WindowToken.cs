@@ -36,14 +36,9 @@ public sealed partial class WindowToken : AbstractControlDesignToken
     public partial BoxShadows FrameShadows { get; set; }
     
     /// <summary>
-    /// 全屏弹出层的阴影
+    /// Shadow of the full-screen title bar surface in the AutoHide and Pinned overlay modes.
     /// </summary>
     public partial BoxShadows FullscreenPopoverShadows { get; set; }
-    
-    /// <summary>
-    /// 全屏弹出层内容内间距
-    /// </summary>
-    public partial Thickness FullscreenHeaderFramePadding { get; set; }
     
     /// <summary>
     /// Windows 10 CSD 客户区顶边自绘边框（激活态）。Win10 的可见边框来自 DWM
@@ -64,9 +59,8 @@ public sealed partial class WindowToken : AbstractControlDesignToken
         CornerRadius             = new CornerRadius(12);
         SystemBarColor           = new SolidColorBrush(EffectiveGlobalToken.ColorBgContainer);
         // 窗口装饰语义不属于密度算法作用域：紧凑算法会把 ControlHeightLG / SizeLG 拉小，
-        // 连带 TitleBarHeight 和全屏弹层 padding 一起缩，因此使用跨平台稳定值切开 compact 链路。
+        // 连带 TitleBarHeight 一起缩，因此使用跨平台稳定值切开 compact 链路。
         TitleBarHeight               = 40;
-        FullscreenHeaderFramePadding = new Thickness(24, 0);
         // 取值对应 Win10 DWM 阴影纹理在窗口顶边的半透明合成：白底上激活态约 #707070、
         // 非激活态约 #AAAAAA，因此边框本身使用带透明度的深灰而不是固定实色。
         FrameBorderActive        = Color.FromArgb(0xA8, 0x26, 0x26, 0x26);

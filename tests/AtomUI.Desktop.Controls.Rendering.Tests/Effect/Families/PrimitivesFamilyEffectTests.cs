@@ -111,11 +111,6 @@ public partial class PrimitivesFamilyEffectTests
     public void Title_Token_Has_Effect(string token, bool own)
     {
         _ = own;
-        if (token == "FullscreenCaptionButtonSize")
-        {
-            AssertWindowEndpoint(token);
-            return;
-        }
         TokenEffectHarness.AssertHasEffect(() => new WindowTitleBar
         {
             Width = 500, Title = "Application window", Logo = new CheckOutlined(),
@@ -154,7 +149,7 @@ public partial class PrimitivesFamilyEffectTests
     {
         _ = own;
         if (token is "SystemBarColor" or "FrameBorderActive" or "FrameBorderInactive" or "CornerRadius" or
-            "FullscreenHeaderFramePadding" or "FullscreenPopoverShadows" or "TitleBarHeight")
+            "FullscreenPopoverShadows" or "TitleBarHeight")
         {
             AssertWindowEndpoint(token);
             return;

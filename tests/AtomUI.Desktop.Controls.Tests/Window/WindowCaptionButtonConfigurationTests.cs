@@ -370,6 +370,14 @@ public class WindowCaptionButtonConfigurationTests
         group.IsFullScreenButtonEffectivelyVisible.ShouldBeTrue();
         group.IsCloseButtonEffectivelyVisible.ShouldBeTrue();
 
+        // Entering full screen needs platform support; leaving it stays available.
+        group.IsFullScreenSupported = false;
+        group.IsFullScreenButtonEffectivelyVisible.ShouldBeFalse();
+        group.HostWindowState = WindowState.FullScreen;
+        group.IsFullScreenButtonEffectivelyVisible.ShouldBeTrue();
+        group.HostWindowState = WindowState.Normal;
+        group.IsFullScreenSupported = true;
+
         group.CanMinimize = true;
         group.CanMaximize = true;
         group.IsPinCaptionButtonSupported = true;
@@ -432,10 +440,6 @@ public class WindowCaptionButtonConfigurationTests
             "src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBar.cs"));
         var groupTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonGroupTheme.axaml"));
-        var popoverSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Utils/FullscreenPopoverLayer.cs"));
-        var popoverTheme = XDocument.Load(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/Themes/FullscreenPopoverLayerTheme.axaml"));
         var drawnDecorationsTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"));
         XNamespace atom = "https://atomui.net";
@@ -454,29 +458,13 @@ public class WindowCaptionButtonConfigurationTests
         AssertCommand(groupTheme, atom, "PART_PinButton", CaptionButtonAction.TogglePin);
         AssertCommand(groupTheme, atom, "PART_CloseButton", CaptionButtonAction.Close);
 
-        popoverSource.ShouldNotContain(".Click +=");
-        AssertCommand(popoverTheme, atom, "PART_PopoverFullScreenButton", CaptionButtonAction.ToggleFullScreen);
-        AssertCommand(popoverTheme, atom, "PART_PopoverCloseButton", CaptionButtonAction.Close);
-        AssertVisibilityBinding(
-            popoverTheme,
-            atom,
-            "PART_PopoverFullScreenButton",
-            "IsFullScreenCaptionButtonVisible");
-        AssertVisibilityBinding(
-            popoverTheme,
-            atom,
-            "PART_PopoverCloseButton",
-            "IsCloseCaptionButtonVisible");
-        AssertVisibilityBinding(
-            drawnDecorationsTheme,
-            atom,
-            "PART_FullScreenButton",
-            "IsFullScreenCaptionButtonVisible");
-        AssertVisibilityBinding(
-            drawnDecorationsTheme,
-            atom,
-            "PART_CloseButton",
-            "IsCloseCaptionButtonVisible");
+        // Full-screen window operations come from the default title bar itself; the drawn decorations provide no
+        // full-screen popover and no caption button parts that Avalonia would wire to its own handlers.
+        drawnDecorationsTheme.Descendants()
+                             .ShouldNotContain(element => element.Name.LocalName.EndsWith(".FullscreenPopover"));
+        drawnDecorationsTheme.Descendants()
+                             .Select(element => (string?)element.Attribute("Name"))
+                             .ShouldNotContain(name => name == "PART_FullScreenButton" || name == "PART_CloseButton");
     }
 
     private static CaptionButtonGroup CreateFullyEnabledGroup()
@@ -528,19 +516,6 @@ public class WindowCaptionButtonConfigurationTests
         buttons.ShouldAllBe(button =>
             (string?)button.Attribute("CommandParameter") ==
             $"{{x:Static atom:CaptionButtonAction.{action}}}");
-    }
-
-    private static void AssertVisibilityBinding(
-        XDocument document,
-        XNamespace atom,
-        string partName,
-        string propertyName)
-    {
-        document.Descendants(atom + "CaptionButton")
-                .Single(element => (string?)element.Attribute("Name") == partName)
-                .Attribute("IsVisible")
-                .ShouldNotBeNull()
-                .Value.ShouldBe($"{{Binding $parent[atom:Window].{propertyName}}}");
     }
 
     private sealed class ConfigureOverrideWindow : AtomUIWindow

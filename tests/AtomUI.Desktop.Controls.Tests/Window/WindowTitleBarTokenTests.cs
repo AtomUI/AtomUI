@@ -137,14 +137,12 @@ public class WindowTitleBarTokenTests
             "src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs"));
 
         windowTokenSource.ShouldContain("TitleBarHeight               = 40;");
-        windowTokenSource.ShouldContain("FullscreenHeaderFramePadding = new Thickness(24, 0);");
         windowTokenSource.ShouldNotContain("GetPlatformTitleBarHeight");
         windowTokenSource.ShouldNotContain("GetPlatformFullscreenHeaderPadding");
         windowTokenSource.ShouldNotContain("OperatingSystem.");
 
-        titleBarTokenSource.ShouldContain("Height                      = 40;");
-        titleBarTokenSource.ShouldContain("FullscreenCaptionButtonSize = 24;");
-        titleBarTokenSource.ShouldContain("HeaderHorizontalSpacing     = 8;");
+        titleBarTokenSource.ShouldContain("Height                  = 40;");
+        titleBarTokenSource.ShouldContain("HeaderHorizontalSpacing = 8;");
         titleBarTokenSource.ShouldNotContain("GetPlatformTitleBarHeight");
         titleBarTokenSource.ShouldNotContain("GetPlatformFullscreenCaptionButtonSize");
         titleBarTokenSource.ShouldNotContain("GetPlatformHeaderHorizontalSpacing");
@@ -336,7 +334,6 @@ public class WindowTitleBarTokenTests
         var themePaths = new[]
         {
             "src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml",
-            "src/AtomUI.Desktop.Controls/Window/Themes/FullscreenPopoverLayerTheme.axaml",
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/CaptionButtonGroupTheme.axaml"
         };
         var themes = themePaths.Select(path => XDocument.Load(GetRepoFile(path))).ToList();

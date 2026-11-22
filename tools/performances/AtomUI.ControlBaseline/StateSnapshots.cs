@@ -40,7 +40,7 @@ internal static class StateSnapshots
         ":pointerover", ":pressed", ":focus", ":focus-within", ":focus-visible", ":checked", ":selected"
     ];
 
-    public static int Run(IReadOnlyList<Type> types, string directory)
+    public static int Run(IReadOnlyList<Type> types, string directory, bool freezeLoadingIcons = false)
     {
         Directory.CreateDirectory(directory);
         var failures = 0;
@@ -95,6 +95,34 @@ internal static class StateSnapshots
                         // Headless windows do not size to content; grow to the panel so tall controls are not clipped.
                         window.Height = Math.Clamp(panel.Bounds.Height + 8, 100, 8000);
                         AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+                    }
+
+                    if (freezeLoadingIcons)
+                    {
+                        var frozen = AtomUI.GalleryPerformance.SnapshotFreeze.FreezeLoadingIcons(window, () =>
+                        {
+                            for (var i = 0; i < 2; i++)
+                            {
+                                Dispatcher.UIThread.RunJobs();
+                                window.UpdateLayout();
+                                AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+                            }
+                        });
+                        if (Environment.GetEnvironmentVariable("ATOMUI_STATE_FREEZE_TRACE") == "1")
+                        {
+                            Console.WriteLine($"{type.Name}: froze {frozen} loading icons");
+                        }
+
+                        // A size change repaints the whole frame, so the capture does not depend on the partial
+                        // repaints the freeze caused.
+                        var height = window.Height;
+                        foreach (var size in new[] { height + 1, height })
+                        {
+                            window.Height = size;
+                            Dispatcher.UIThread.RunJobs();
+                            window.UpdateLayout();
+                            AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+                        }
                     }
 
                     Dispatcher.UIThread.RunJobs();

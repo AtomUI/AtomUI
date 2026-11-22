@@ -22,10 +22,19 @@
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
+        <!-- Theme catalog entries for the design-language variants of the state snapshots. -->
+        <ProjectReference Include="../../../src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"
                           PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Shared with AtomUI.GalleryPerformance: the variant list and the request the Gallery menu sends. -->
+        <Compile Include="../AtomUI.GalleryPerformance/DesignLanguageVariants.cs" Link="DesignLanguageVariants.cs" />
+        <Compile Include="../AtomUI.GalleryPerformance/SnapshotFreeze.cs" Link="SnapshotFreeze.cs" />
     </ItemGroup>
 
 </Project>

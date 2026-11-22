@@ -47,11 +47,27 @@ internal static class GalleryAuditProbe
         var loose      = false;
         var snapshotDirectory = default(string);
         var leakVisits        = 0;
+        var designLanguage    = default(string);
+        var appearance        = default(string);
+        var density           = default(string);
+        var freezeLoadingIcons = false;
 
         for (var i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
+                case SnapshotFreeze.Argument:
+                    freezeLoadingIcons = true;
+                    break;
+                case "--design-language" when i + 1 < args.Length:
+                    designLanguage = args[++i];
+                    break;
+                case "--appearance" when i + 1 < args.Length:
+                    appearance = args[++i];
+                    break;
+                case "--density" when i + 1 < args.Length:
+                    density = args[++i];
+                    break;
                 case "--iterations" when i + 1 < args.Length:
                     iterations = Math.Max(1, int.Parse(args[++i], CultureInfo.InvariantCulture));
                     break;
@@ -99,6 +115,21 @@ internal static class GalleryAuditProbe
             keys.Reverse();
         }
 
+        // The three variant arguments come together or not at all.
+        DesignLanguageVariant? variant = null;
+        if (designLanguage is not null || appearance is not null || density is not null)
+        {
+            if (designLanguage is null || appearance is null || density is null ||
+                !DesignLanguageVariants.TryParse(designLanguage, appearance, density, out var parsed))
+            {
+                Console.Error.WriteLine(
+                    "--design-language, --appearance and --density must be given together and name one of the " +
+                    "variants listed by --list-variants.");
+                return 2;
+            }
+            variant = parsed;
+        }
+
         Program.SetupAvalonia(out var lifetime, renderPixels: !string.IsNullOrWhiteSpace(snapshotDirectory));
         if (lifetime.MainWindow is not WorkspaceWindow window)
         {
@@ -114,9 +145,17 @@ internal static class GalleryAuditProbe
         window.Show();
         Program.WaitForRoute(window, Program.Overview, timeout);
 
+        // Before any page is visited, so snapshots, leak checks and timings all run under the variant.
+        if (variant is { } selected && Program.ApplyVariant(window, selected, timeout) != 0)
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+            return 1;
+        }
+
         if (!string.IsNullOrWhiteSpace(snapshotDirectory))
         {
-            var snapshotResult = GalleryGuardProbe.RunSnapshots(window, keys, timeout, snapshotDirectory);
+            var snapshotResult = GalleryGuardProbe.RunSnapshots(window, keys, timeout, snapshotDirectory, freezeLoadingIcons);
             window.Close();
             Dispatcher.UIThread.RunJobs();
             return snapshotResult;

@@ -331,6 +331,30 @@ tools/performances/run_perf_guards.sh <未优化构建的 Release 输出目录> 
   显示后关闭窗口再统计存活实例。`--leak-selftest` 故意保留实例，用来确认检测本身有效。候选构建的存活数不得多于基线。
 - 状态截图默认先稳定 6 轮再截。环境变量 `ATOMUI_STATE_SETTLE_PASSES=60` 可以延长稳定轮数，让正在进行的过渡走完，用来区分“截到过渡中途”和“稳定差异”。
 - 守卫不测时间；运行期间不要重新构建被检查的输出目录，也不要编辑正在执行的脚本。
+- 可选的第 5～7 个参数是设计语言变体（`<设计语言> <明暗> <密度>`，取值见
+  `AtomUI.GalleryPerformance --list-variants`）：页面截图、状态截图与泄漏检查都在该变体下进行。Gallery 页面经 Gallery 自己的
+  菜单命令切换，并与解析器路径比对主题指纹（这一比对是设计语言重构期间的临时机制）；状态截图走同一个解析器路径。
+- 环境变量 `SNAPSHOT_TOOL_ARGS` 追加到两种截图命令，`SNAPSHOT_COMPARE_ARGS` 追加到 `compare_snapshots.py`；默认为空，行为不变。
+  - `--freeze-loading-icons`：截图前停止加载图标的持续旋转并复位角度，使同一构建的多次截图逐像素一致。基线构建也必须支持
+    这个参数，否则两边一边旋转一边静止。
+  - `--ignore-near-animation`：离自带动画像素 `--near`（默认 6）像素以内的变化照常列出但不计失败，更远的仍计失败。
+
+### 设计语言守卫
+
+设计语言重构期间，用 `run_design_language_guards.sh` 对每个设计语言变体跑一遍上面的守卫，并比对全部编译后的 Token 取值：
+
+```bash
+tools/performances/run_design_language_guards.sh <基线构建的 Release 输出目录> .artifacts/bin/Release/net10.0 /tmp/dl-guard \
+  [页面列表] [变体正则]
+```
+
+- 默认 48 个变体全跑；第 5 个参数是匹配 `--list-variants` 输出行的扩展正则，例如 `"^Shadcn.Nova "` 只跑 Nova 的 4 个变体。
+- 自动带上 `--freeze-loading-icons` 与 `--ignore-near-animation`。
+- 取值比对：两边各运行一次 `AtomUI.GalleryPerformance --dump-tokens <dir>`（48 个变体 × 种子组合，共 484 个文件，格式同
+  `tests/AtomUI.Themes.Tests/ThemeSnapshotDump.cs`），再由 `compare_token_dumps.py` 按键比对。同目录下存在
+  `design_language_token_renames.txt`（每行 `旧键 -> 新键`）或 `design_language_token_exceptions.txt`（每行一个键）时自动带上；
+  环境变量 `ALLOW_ADDED_TOKENS=1` 时，只有候选有的新键只列出、不计失败。
+- 结果在输出目录的 `summary.txt`：每个变体一行 PASS/FAIL 与耗时，最后是取值比对与总结果。
 
 ## 扩展建议
 

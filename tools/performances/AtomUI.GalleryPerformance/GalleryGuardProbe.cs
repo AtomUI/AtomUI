@@ -24,7 +24,8 @@ internal static class GalleryGuardProbe
     public static int RunSnapshots(WorkspaceWindow window,
                                    IReadOnlyList<string> keys,
                                    TimeSpan timeout,
-                                   string directory)
+                                   string directory,
+                                   bool freezeLoadingIcons = false)
     {
         Directory.CreateDirectory(directory);
         var failures = 0;
@@ -45,6 +46,16 @@ internal static class GalleryGuardProbe
                 LayoutAt(window, height);
                 LayoutAt(window, height);
                 Settle(window);
+                if (freezeLoadingIcons)
+                {
+                    var frozen = SnapshotFreeze.FreezeLoadingIcons(window, () => Settle(window));
+                    Console.WriteLine($"{key}: froze {frozen} loading icons");
+                    // A size change repaints the whole frame, so the capture does not depend on the partial repaints
+                    // the freeze caused.
+                    LayoutAt(window, height + 1);
+                    LayoutAt(window, height);
+                    Settle(window);
+                }
 
                 using var frame = window.CaptureRenderedFrame()
                                   ?? throw new InvalidOperationException("No rendered frame was captured.");

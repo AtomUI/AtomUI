@@ -2,11 +2,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using AtomUI.Theme;
 using AtomUIGallery.Desktop;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases;
@@ -577,9 +579,38 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args.Contains("--list-variants", StringComparer.Ordinal))
+        {
+            foreach (var variant in DesignLanguageVariants.All)
+            {
+                Console.WriteLine(variant);
+            }
+            return 0;
+        }
+
+        var dumpTokensIndex = Array.IndexOf(args, "--dump-tokens");
+        if (dumpTokensIndex >= 0)
+        {
+            if (dumpTokensIndex + 1 >= args.Length)
+            {
+                Console.Error.WriteLine("--dump-tokens needs an output directory.");
+                return 2;
+            }
+            return TokenDumpProbe.Run(args[dumpTokensIndex + 1]);
+        }
+
         if (args.Contains("--native-motion", StringComparer.Ordinal))
         {
             return NativeMotionProbe.Run(args);
+        }
+
+        if (!args.Contains("--audit", StringComparer.Ordinal) &&
+            (args.Contains("--design-language", StringComparer.Ordinal) ||
+             args.Contains("--appearance", StringComparer.Ordinal) ||
+             args.Contains("--density", StringComparer.Ordinal)))
+        {
+            Console.Error.WriteLine("--design-language, --appearance and --density are only supported with --audit.");
+            return 2;
         }
 
         if (args.Contains("--audit", StringComparer.Ordinal))
@@ -761,6 +792,68 @@ internal static class Program
                .SetupWithLifetime(lifetime);
         // The public startup flow schedules the main window after framework setup.
         Dispatcher.UIThread.RunJobs();
+    }
+
+    /// <summary>
+    /// Switches the Gallery to a design-language variant the way a user does, through the workspace menu commands
+    /// (appearance, compact, design language), then applies the request <see cref="DesignLanguageVariants.CreateRequest"/>
+    /// builds for the same variant and requires both to yield the same theme content fingerprint. The check covers the
+    /// compact Ant Design variants, whose density lives only in the algorithm chain, and proves that the menu path
+    /// and the resolver path the other tools use reach the same theme.
+    /// </summary>
+    /// <returns>0 on success; 1 with a message on stderr otherwise.</returns>
+    internal static int ApplyVariant(WorkspaceWindow window, DesignLanguageVariant variant, TimeSpan timeout)
+    {
+        var viewModel = window.ViewModel;
+        var manager   = Application.Current?.GetThemeManager();
+        if (viewModel is null || manager is null)
+        {
+            Console.Error.WriteLine($"variant {variant}: the Gallery workspace or its theme manager is not available.");
+            return 1;
+        }
+
+        try
+        {
+            DesignLanguageVariants.WaitFor(viewModel.SetAppearanceModeCommand
+                             .Execute(variant.Appearance == ThemeAppearance.Dark ? ThemePreference.Dark : ThemePreference.Light)
+                             .ToTask(), timeout);
+            DesignLanguageVariants.WaitFor(viewModel.ToggleCompactModeCommand.Execute(variant.Density == ThemeDensity.Compact).ToTask(), timeout);
+            DesignLanguageVariants.WaitFor(viewModel.SwitchDesignLanguageCommand.Execute(variant.DesignLanguage).ToTask(), timeout);
+            var menuState = manager.CurrentTheme
+                            ?? throw new InvalidOperationException("No theme is current after the menu commands.");
+
+            // Applying the resolver's request after the menu path is a no-op when both agree; any difference shows up
+            // as a different fingerprint, including a menu path that left the previous theme in place.
+            var request = DesignLanguageVariants.CreateRequest(manager.AvailableThemes, variant, null, null);
+            var result  = DesignLanguageVariants.WaitFor(manager.ApplyThemeAsync(request), timeout);
+            if (result.Status is not (ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp))
+            {
+                throw new InvalidOperationException(
+                    $"the resolver request for '{request.ThemeId}' ended as {result.Status}: " +
+                    string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            }
+            var resolverState = manager.CurrentTheme!;
+
+            if (!string.Equals(menuState.ThemeId, request.ThemeId, StringComparison.Ordinal) ||
+                menuState.Appearance != variant.Appearance ||
+                menuState.Fingerprint != resolverState.Fingerprint)
+            {
+                Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                    $"variant {variant}: menu path gave {menuState.ThemeId} {menuState.Appearance} {menuState.Fingerprint:x16}, " +
+                    $"resolver path gave {resolverState.ThemeId} {resolverState.Appearance} {resolverState.Fingerprint:x16}."));
+                return 1;
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"variant {variant}: {menuState.ThemeId} fingerprint {menuState.Fingerprint:x16}"));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"variant {variant}: {ex.GetType().Name}: {ex.Message}");
+            return 1;
+        }
     }
 
     private static int RunColdChild(PerfOptions options, ShowCaseSpec showCase)

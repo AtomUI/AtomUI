@@ -3,7 +3,10 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using AtomUI.Desktop.Controls;
+using AtomUI.GalleryPerformance;
 using AtomUI.Theme;
+using AtomUI.Themes.PrimeNG;
+using AtomUI.Themes.Shadcn;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -38,11 +41,23 @@ internal static class Program
         var holdSignalFile         = default(string);
         var frameReport            = false;
         var frameMatrixPath        = default(string);
+        var designLanguage         = default(string);
+        var appearance             = default(string);
+        var density                = default(string);
 
         for (var i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
+                case "--design-language" when i + 1 < args.Length:
+                    designLanguage = args[++i];
+                    break;
+                case "--appearance" when i + 1 < args.Length:
+                    appearance = args[++i];
+                    break;
+                case "--density" when i + 1 < args.Length:
+                    density = args[++i];
+                    break;
                 case "--mode" when i + 1 < args.Length:
                     mode = args[++i].ToLowerInvariant();
                     break;
@@ -87,6 +102,21 @@ internal static class Program
             }
         }
 
+        // The three variant arguments come together or not at all, and only for AtomUI.
+        DesignLanguageVariant? variant = null;
+        if (designLanguage is not null || appearance is not null || density is not null)
+        {
+            if (mode != "atomui" || designLanguage is null || appearance is null || density is null ||
+                !DesignLanguageVariants.TryParse(designLanguage, appearance, density, out var parsed))
+            {
+                Console.Error.WriteLine(
+                    "--design-language, --appearance and --density must be given together, with --mode atomui, and name " +
+                    "one of the variants listed by AtomUI.GalleryPerformance --list-variants.");
+                return 2;
+            }
+            variant = parsed;
+        }
+
         IReadOnlyList<Assembly> assemblies;
         // Generated icon assemblies hold hundreds of equivalent types; two representatives are enough.
         IReadOnlyList<Type> sampleTypes = [];
@@ -113,6 +143,8 @@ internal static class Program
                           atom.UseDesktopControls();
                           atom.UseDesktopColorPicker();
                           atom.UseDesktopDataGrid();
+                          // Catalog entries only: the initial theme stays DaybreakBlue unless a variant is applied.
+                          atom.Theme.UsePrimeNGThemes().UseShadcnThemes();
                       })
                       .SetupWithLifetime(CreateLifetime());
             assemblies =
@@ -131,6 +163,12 @@ internal static class Program
         }
 
         Dispatcher.UIThread.RunJobs();
+
+        // Before any control is created. There is no Gallery menu here; this is the resolver path behind it.
+        if (variant is { } selected && ApplyVariant(selected) != 0)
+        {
+            return 1;
+        }
 
         var types = assemblies.Distinct()
                               .SelectMany(assembly => assembly.GetExportedTypes())
@@ -158,7 +196,7 @@ internal static class Program
 
         if (stateSnapshotDirectory is not null)
         {
-            return StateSnapshots.Run(types, stateSnapshotDirectory);
+            return StateSnapshots.Run(types, stateSnapshotDirectory, args.Contains(SnapshotFreeze.Argument));
         }
 
         if (leakCheck)
@@ -370,6 +408,48 @@ internal static class Program
 
         GC.KeepAlive(window);
         return 0;
+    }
+
+    /// <summary>
+    /// Applies the request the Gallery menu sends for <paramref name="variant"/> (no seeds) and waits for it.
+    /// </summary>
+    /// <returns>0 on success; 1 with a message on stderr otherwise.</returns>
+    private static int ApplyVariant(DesignLanguageVariant variant)
+    {
+        var manager = Application.Current?.GetThemeManager();
+        if (manager is null)
+        {
+            Console.Error.WriteLine($"variant {variant}: the theme manager is not available.");
+            return 1;
+        }
+
+        try
+        {
+            var request = DesignLanguageVariants.CreateRequest(manager.AvailableThemes, variant, null, null);
+            var result  = DesignLanguageVariants.WaitFor(manager.ApplyThemeAsync(request), TimeSpan.FromSeconds(60));
+            var state   = manager.CurrentTheme;
+            if (result.Status is not (ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp) ||
+                state is null ||
+                !string.Equals(state.ThemeId, request.ThemeId, StringComparison.Ordinal) ||
+                state.Appearance != variant.Appearance)
+            {
+                Console.Error.WriteLine(
+                    $"variant {variant}: request for '{request.ThemeId}' ended as {result.Status} with current theme " +
+                    $"{state?.ThemeId} {state?.Appearance}. " +
+                    string.Join(" ", result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+                return 1;
+            }
+
+            Dispatcher.UIThread.RunJobs();
+            Console.WriteLine(string.Create(CultureInfo.InvariantCulture,
+                $"variant {variant}: {state.ThemeId} fingerprint {state.Fingerprint:x16}"));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"variant {variant}: {ex.GetType().Name}: {ex.Message}");
+            return 1;
+        }
     }
 
     private static ClassicDesktopStyleApplicationLifetime CreateLifetime()

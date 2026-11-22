@@ -40,6 +40,9 @@ def main():
     parser.add_argument('--diff-dir')
     parser.add_argument('--near', type=int, default=6,
                         help='pixels within this distance of an unstable pixel are reported as near-animation')
+    parser.add_argument('--ignore-near-animation', action='store_true',
+                        help='changed pixels that are all near-animation are reported but do not fail; '
+                             'changed pixels farther away still fail')
     args = parser.parse_args()
 
     names = sorted(set(os.listdir(args.before_a)) | set(os.listdir(args.after_a)))
@@ -70,11 +73,13 @@ def main():
         near = unstable.filter(ImageFilter.MaxFilter(2 * args.near + 1)) if args.near > 0 else unstable
         away_count = count(ImageChops.subtract(changed, near))
         max_diff = 0
+        ignored = args.ignore_near_animation and away_count == 0
         if changed_count:
             delta = ImageChops.difference(before_a, after_a)
             masked = Image.composite(delta, Image.new('RGB', delta.size), changed)
             max_diff = max(high for _, high in masked.getextrema())
-            failures += 1
+            if not ignored:
+                failures += 1
             if args.diff_dir:
                 os.makedirs(args.diff_dir, exist_ok=True)
                 highlight = before_a.copy()
@@ -84,7 +89,8 @@ def main():
         if changed_count == 0:
             verdict = 'identical'
         elif away_count == 0:
-            verdict = 'VISUAL CHANGE (all next to animated pixels)'
+            verdict = ('next to animated pixels only (ignored)' if ignored
+                       else 'VISUAL CHANGE (all next to animated pixels)')
         else:
             verdict = 'VISUAL CHANGE'
         print(f"{page:18}{size:>14}{count(unstable):>13}{changed_count:>12}{away_count:>9}{max_diff:>10}  {verdict}")

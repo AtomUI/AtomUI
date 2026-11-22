@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using AtomUI.Desktop.Controls;
@@ -90,6 +91,14 @@ public class TourSemanticStylesButtonTests
             (next.Background as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorBgContainer));
             (next.Foreground as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
             (next.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorInfoBorder));
+
+            // The close part style sets the close button's IconBrush without entering its template.
+            var close = popupRoot.GetVisualDescendants().OfType<Control>()
+                                 .First(c => c.Classes.Contains("semantic-popup-close"));
+            (close.GetValue(IconPresenter.IconBrushProperty) as ISolidColorBrush)?.Color
+                .ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
+            var closeIcon = close.GetVisualDescendants().OfType<IconPresenter>().First();
+            (closeIcon.IconBrush as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
 
             // 悬停时，上一步仅清除边框，下一步仅使用主题的提示悬停背景。
             ((IPseudoClasses)prev.Classes).Set(":pointerover", true);

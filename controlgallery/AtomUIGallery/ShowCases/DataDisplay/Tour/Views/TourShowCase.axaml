@@ -467,10 +467,9 @@
                                             <atom:TourPopupDescriptionStyle x:SetterTargetType="ContentPresenter">
                                                 <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                             </atom:TourPopupDescriptionStyle>
+                                            <!-- The close button shares IconPresenter's IconBrush property. -->
                                             <atom:TourPopupCloseStyle x:SetterTargetType="Button">
-                                                <Style Selector="^ /template/ atom|IconPresenter">
-                                                    <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
-                                                </Style>
+                                                <Setter Property="(atom:IconPresenter.IconBrush)" Value="{atom:SharedTokenResource ColorText}" />
                                             </atom:TourPopupCloseStyle>
                                             <atom:TourPopupIndicatorStyle x:SetterTargetType="Ellipse">
                                                 <Setter Property="Fill" Value="{atom:SharedTokenResource ColorText}" />

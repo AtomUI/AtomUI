@@ -36,5 +36,7 @@ internal sealed class PrimeNGCheckBoxTokens : IControlTokenAlgorithm<CheckBoxTok
         var controls = PrimeNGPresets.Resolve(context).Controls;
         token.CheckIndicatorSize = controls.CheckIndicatorSize;
         token.CheckedMarkSize    = controls.CheckedMarkSize;
+        // root.hover.border.color is form.field.hover.border.color.
+        token.IndicatorHoverBorderColor = PrimeNGInputStage.HoverBorder(context, effectiveGlobal);
     }
 }

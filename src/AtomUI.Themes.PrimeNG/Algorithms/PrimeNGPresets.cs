@@ -7,6 +7,13 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 /// Finds the rule table of the PrimeNG preset a chain runs, for the control stages, which are shared by the light
 /// and dark algorithm of a preset and learn which one runs only from the context.
 /// </summary>
+internal enum PrimeNGPresetKind
+{
+    Aura,
+    Lara,
+    Nora
+}
+
 internal static class PrimeNGPresets
 {
     internal const string Catalog = "PrimeNG";
@@ -45,6 +52,31 @@ internal static class PrimeNGPresets
     /// background compensates only then: a noir primary, or a hybrid chain whose Map colours come from Ant Design,
     /// has a tinted selected background.
     /// </summary>
+    /// <summary>Which of the three preset families the chain's PrimeNG algorithm belongs to.</summary>
+    internal static PrimeNGPresetKind KindOf(in ThemeAlgorithmContext context)
+    {
+        var preset = Resolve(context);
+        if (ReferenceEquals(preset, PrimeNGLaraPreset.Table))
+        {
+            return PrimeNGPresetKind.Lara;
+        }
+        return ReferenceEquals(preset, PrimeNGNoraPreset.Table) ? PrimeNGPresetKind.Nora : PrimeNGPresetKind.Aura;
+    }
+
+    /// <summary>A surface stop (slate in light, zinc in dark) of the active appearance; 0 is white.</summary>
+    internal static Avalonia.Media.Color Surface(in ThemeAlgorithmContext context, int stop)
+    {
+        var rules = Resolve(context).For(context.Appearance);
+        return new PrimeNGShade(stop).Resolve(rules.Surface.AsSpan());
+    }
+
+    /// <summary>PrimeUIX <c>content.border.color</c>: Aura and Lara surface 200 / 700, Nora surface 400 / 500.</summary>
+    internal static Avalonia.Media.Color ContentBorder(in ThemeAlgorithmContext context)
+    {
+        var rules = Resolve(context).For(context.Appearance);
+        return rules.MenuBorder.Resolve(rules.Surface.AsSpan());
+    }
+
     internal static bool HasSolidHighlight(DesignToken token) => token.ControlItemBgActive == token.ColorPrimary;
 
     /// <summary>

@@ -29,6 +29,30 @@ internal sealed class PrimeNGStepsTokens : IControlTokenAlgorithm<StepsToken>
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, StepsToken token)
     {
+        // PrimeUIX steps / stepper: step.number.size 2rem round, number.font.size 1rem; waiting numbers are
+        // number.background (content.background) with a content.border.color border and text.muted text; the
+        // separator is separator.background (content.border.color); the active title is the primary colour. Aura's
+        // active number is also an outlined disc (number.active.background content.background, primary text); Lara and
+        // Nora fill it with the primary colour.
+        var border = PrimeNGPresets.ContentBorder(context);
+        token.IconContainerSize         = 32;
+        token.IconContainerCornerRadius = new Avalonia.CornerRadius(16);
+        token.IconFontSize              = 16;
+        token.WaitIconBgColor           = effectiveGlobal.ColorBgElevated;
+        token.WaitIconBorderColor       = border;
+        token.WaitIconColor             = effectiveGlobal.ColorTextSecondary;
+        token.WaitTailColor             = border;
+        token.ProcessTitleColor         = effectiveGlobal.ColorPrimary;
+        // item.label.font.weight 500 (Nora 700).
+        token.TitleFontWeight           = PrimeNGPresets.KindOf(context) == PrimeNGPresetKind.Nora
+            ? Avalonia.Media.FontWeight.Bold
+            : Avalonia.Media.FontWeight.Medium;
+        if (PrimeNGPresets.KindOf(context) == PrimeNGPresetKind.Aura)
+        {
+            token.ProcessIconBgColor     = effectiveGlobal.ColorBgElevated;
+            token.ProcessIconBorderColor = border;
+            token.ProcessIconColor       = effectiveGlobal.ColorPrimary;
+        }
         if (!PrimeNGPresets.HasSolidHighlight(effectiveGlobal))
         {
             return;

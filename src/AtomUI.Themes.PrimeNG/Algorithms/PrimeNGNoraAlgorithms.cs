@@ -7,7 +7,7 @@ namespace AtomUI.Themes.PrimeNG.Algorithms;
 
 /// <summary>
 /// The light PrimeNG Nora preset as a theme algorithm (<c>PrimeNG:Nora</c>): primary 600/700/800 of the 500 seed,
-/// a solid primary 600 selected background, slate surfaces with slate-900 text and slate-500 borders, transparent
+/// a solid primary 600 selected background, slate surfaces with slate-900 text and slate-500 borders, N400
 /// secondary borders, 2px radii and a two-line focus ring.
 /// </summary>
 [ThemeAlgorithm("PrimeNG", "Nora", 1, ThemeAppearanceEffect.Light)]
@@ -66,22 +66,24 @@ internal static class PrimeNGNoraPreset
                 Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
+            // PrimeUIX nora form.field.invalid.border.color red.500 (light).
             Error: new PrimeNGFamilyRule(
-                Base: new(400), Hover: new(500), Active: new(600),
+                Base: new(500), Hover: new(600), Active: new(700),
                 Bg: new(50), BgHover: new(100),
                 Border: new(200), BorderHover: new(300),
                 TextHover: new(500), Text: new(600), TextActive: new(700)),
             ErrorBgActive: new(200),
             Neutral: new PrimeNGNeutralRule(
                 BgBase: new(White), TextBase: new(Black),
-                // Tertiary and quaternary are the Aura stops (N500 / N400), so icons and tertiary text keep the 3:1 of
-                // the old profiles on white (PrimeUIX nora has a single muted level, N600).
-                Text: new(900), TextSecondary: new(500), TextTertiary: new(500), TextQuaternary: new(400),
+                // PrimeUIX nora text.muted.color N600; tertiary and quaternary are the Aura stops (N500 / N400), so
+                // icons and tertiary text keep the 3:1 of the old profiles on white (nora has a single muted level).
+                Text: new(900), TextSecondary: new(600), TextTertiary: new(500), TextQuaternary: new(400),
                 Fill: new(300), FillSecondary: new(200), FillTertiary: new(100), FillQuaternary: new(50),
                 BgContainer: new(White), BgElevated: new(White), BgLayout: new(50), BgSpotlight: new(700),
                 BgBlur: new(White, 0), BgSolid: new(900), BgSolidHover: new(800), BgSolidActive: new(950),
-                Border: new(500), BorderSecondary: new(Black, 0), BgMask: new(Black, 0.4),
-                BgContainerDisabled: new(200), TextDisabled: new(400)),
+                // PrimeUIX nora content.border.color N400 (dividers, accordion, panel, fieldset); form.field.disabled.background N300.
+                Border: new(500), BorderSecondary: new(400), BgMask: new(Black, 0.4),
+                BgContainerDisabled: new(300), TextDisabled: new(400)),
             SelectionForeground: new(White),
             ControlOutline: null,
             FocusBorder: static token => token.ColorPrimary,
@@ -95,8 +97,10 @@ internal static class PrimeNGNoraPreset
             // checked handle primary.contrast.color, checked hover background primary.color (no change).
             Switch: new PrimeNGSwitchRule(Track: new(White), TrackHover: new(White), Handle: new(500),
                 HandleHover: new(500), HandleChecked: new(White), TrackBorder: new(500), CheckedHoverKeepsPrimary: true),
-            // PrimeUIX overlay.{select,popover}.border.color, light: transparent in light.
-            OverlayBorder: new(Black, 0),
+            // PrimeUIX overlay.{select,popover}.border.color is transparent in light, which leaves the white panels with
+            // only a faint shadow on a white surface (the same on primeng.dev). AtomUI deviates here for legibility and
+            // takes Nora's content border (surface 200), the light counterpart of the dark surface.700 border.
+            OverlayBorder: new(200),
             // PrimeUIX progressbar.background (surface.300 / surface.600).
             ProgressTrack: new(300),
             // PrimeUIX navigation.item.active.background / activeColor (menubar, tieredmenu): surface.200 with
@@ -134,13 +138,13 @@ internal static class PrimeNGNoraPreset
                 Fill: new(600), FillSecondary: new(700), FillTertiary: new(800), FillQuaternary: new(900),
                 BgContainer: new(950), BgElevated: new(900), BgLayout: new(950), BgSpotlight: new(700),
                 BgBlur: new(White, 0.04), BgSolid: new(White), BgSolidHover: new(300), BgSolidActive: new(100),
-                Border: new(500), BorderSecondary: new(Black, 0), BgMask: new(Black, 0.6),
+                // PrimeUIX nora content.border.color, dark: N500.
+                Border: new(500), BorderSecondary: new(500), BgMask: new(Black, 0.6),
                 BgContainerDisabled: new(700), TextDisabled: new(500)),
             SelectionForeground: new(950),
             ControlOutline: null,
-            // The dark focus ring is the field border colour (N500), PrimeUIX form.field.focus.border.color; the
-            // primary ring would sit on the solid primary selected background.
-            FocusBorder: static token => token.ColorBorder,
+            // PrimeUIX nora focus.ring.color, dark: the primary colour (surface.50 under noir).
+            FocusBorder: static token => token.ColorPrimary,
             // PrimeUIX nora-compat overlay.*.border.color: transparent in light, surface.700 in dark.
             CardBorderSecondary: new(700),
             // PrimeUIX nora (3.1.1) highlight: background primary.500 (ColorPrimary), focusBackground primary.400
@@ -167,6 +171,10 @@ internal static class PrimeNGNoraPreset
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 2,
             ControlOutlineLineWidths: 0,
+            // PrimeUIX focus.ring.width 2px.
+            FocusRingLineWidths: 2,
+            // PrimeUIX focus.ring.offset 2px.
+            FocusRingOffsetLineWidths: 2,
             BoxShadows: BoxShadows.Parse("0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000"),
             BoxShadowsSecondary: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")),
         Controls: new PrimeNGControlRule(
@@ -182,15 +190,19 @@ internal static class PrimeNGNoraPreset
             SelectPopupContentPadding: static _ => new Thickness(0, 2),
             // PrimeUIX card.body.padding and overlay.modal.padding 1.125rem; dialog.title.font.size 1.125rem.
             CardBodyPadding: 18,
-            CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
+            // PrimeUIX nora card.border.radius border.radius.lg (4).
+            CardBorderRadiusOffset: 2,
+            // PrimeUIX nora card.shadow.
+            CardRestingShadows: BoxShadows.Parse("0 1 4 0 #1A000000"),
             DialogPadding: 18,
             DialogHeaderFontSize: 18,
             // PrimeUIX tooltip.padding 0.375rem 0.625rem.
             ToolTipPadding: new Thickness(10, 6),
             ToolTipColor: new(White),
-            // PrimeUIX overlay.popover.padding 0.625rem, popover.gutter 10px, overlay.popover.shadow; anchor.gutter 0.
+            // PrimeUIX overlay.popover.padding 0.625rem, popover.gutter 10px, overlay.popover.shadow.
             PopoverPadding: 10,
             PopoverGutter: 10,
-            PopoverShadows: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000"),
-            OverlayAnchorGutter: 0));
+            PopoverShadows: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")),
+        // PrimeUIX nora base: transitionDuration 0s.
+        TransitionDuration: TimeSpan.Zero);
 }

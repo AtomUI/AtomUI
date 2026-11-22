@@ -81,6 +81,26 @@ internal static class PrimeNGPalette
     }
 
     /// <summary>
+    /// Returns the palette a theme colour was taken from, given the stop it was written at: the Tailwind table with
+    /// that colour at that stop, otherwise the palette generated with the colour as its 500 stop (a close
+    /// approximation for custom seeds, whose generated palette is not stored in the token).
+    /// </summary>
+    internal static Color[] FromStop(Color color, int stop)
+    {
+        var index = IndexOf(stop);
+        foreach (var table in PrimeNGTailwindPalettes.All)
+        {
+            var known = table[index];
+            if (known.R == color.R && known.G == color.G && known.B == color.B)
+            {
+                return table.ToArray();
+            }
+        }
+
+        return Generate(color);
+    }
+
+    /// <summary>
     /// Returns the index of a stop number (50 to 950).
     /// </summary>
     internal static int IndexOf(int stop)

@@ -26,6 +26,20 @@ internal sealed class PrimeNGRadioButtonTokens : IControlTokenAlgorithm<RadioBut
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, RadioButtonToken token)
     {
+        // PrimeUIX radiobutton.width 1.125rem with icon.size 0.625rem (Lara 1.25rem / 0.875rem). Nora keeps the field
+        // background when checked and draws the dot in the primary colour (checked.background form.field.background,
+        // icon.checked.color primary.color).
+        var kind = PrimeNGPresets.KindOf(context);
+        token.RadioSize  = kind == PrimeNGPresetKind.Lara ? 20 : 18;
+        token.DotSize    = kind == PrimeNGPresetKind.Lara ? 14 : 10;
+        token.DotPadding = (token.RadioSize - token.DotSize) / 2;
+        token.IndicatorHoverBorderColor = PrimeNGInputStage.HoverBorder(context, effectiveGlobal);
+        if (kind == PrimeNGPresetKind.Nora)
+        {
+            token.RadioBgColor = effectiveGlobal.ColorBgContainer;
+            token.RadioColor   = effectiveGlobal.ColorPrimary;
+            return;
+        }
         if (PrimeNGNoir.IsActive(context, effectiveGlobal))
         {
             token.RadioColor = effectiveGlobal.ColorTextLightSolid;

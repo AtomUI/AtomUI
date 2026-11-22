@@ -56,6 +56,14 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         }
 
         WriteColors(effectiveSeed, nextMap, _dark ? _preset.Dark : _preset.Light, PrimeNGNoir.For(_dark));
+        if (_preset.TransitionDuration is { } transition)
+        {
+            // The state-colour transitions; VerySlow drives value animations (progress, count-up), which PrimeNG
+            // keeps in every preset (progressbar: width 1s).
+            nextMap.MotionDurationFast = transition;
+            nextMap.MotionDurationMid  = transition;
+            nextMap.MotionDurationSlow = transition;
+        }
         if (!_dark || previousMap is null)
         {
             WriteSizes(effectiveSeed, nextMap, _preset.Sizes);
@@ -81,6 +89,8 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         // Nora: a two-line ring, no glow).
         token.ColorFocusBorder           = rules.FocusBorder(token);
         token.FocusVisualBorderThickness = new Thickness(token.LineWidth * alias.FocusVisualBorderLineWidths);
+        // PrimeUIX focus.ring.width (Lara: the focus.ring.shadow spread) for the keyboard focus outline.
+        token.LineWidthFocus             = token.LineWidth * alias.FocusRingLineWidths;
         token.ControlOutlineWidth        = token.LineWidth * alias.ControlOutlineLineWidths;
         if (rules.ControlOutline is { } controlOutline)
         {
@@ -88,8 +98,11 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
             token.ColorControlOutline = controlOutline(token);
         }
 
-        // PrimeUIX form.field.placeholder.color and the muted text both use text.muted.color.
-        token.ColorTextPlaceholder     = token.ColorTextSecondary;
+        // PrimeUIX form.field.placeholder.color is the muted text (surface 500, Nora 600; dark surface 400), which reads
+        // almost like a typed value. AtomUI keeps the placeholder one step lighter than that in every preset: surface
+        // 400 in light and surface 500 in dark (a deliberate deviation; ColorTextSecondary keeps the muted text).
+        token.ColorTextPlaceholder     = surface[PrimeNGPalette.IndexOf(context.Appearance == AtomUI.Theme.ThemeAppearance.Dark ? 500 : 400)];
+        // PrimeUIX text.muted.color is also the description text.
         token.ColorTextDescription     = token.ColorTextSecondary;
         token.ColorBgContainerDisabled = rules.Neutral.BgContainerDisabled.Resolve(surface);
         // PrimeUIX form.field.disabled.color is the muted-text stop and relies on a component opacity AtomUI does not
@@ -106,16 +119,20 @@ public abstract class PrimeNGPresetAlgorithm : IThemeAlgorithm, IThemeAliasAlgor
         // PrimeUIX highlight.color, the selected item's text, once for every control: the selected-text tokens of the
         // list, tree, data-grid and date / time controls default to ControlItemColorActive.
         token.ControlItemColorActive = rules.HighlightColor(token);
+        // PrimeUIX list.option.focus.background, the hovered or keyboard-focused option, equals
+        // navigation.item.active.background in all three presets (Nora: surface.200 / 700).
+        token.ControlItemBgHover = rules.NavigationItemActive.Resolve(surface);
 
         // @primeuix/themes 3.1.1 form.field.padding.x is 0.625rem, sm 0.5rem, lg 0.75rem (10 / 8 / 12) in all three
         // presets. They follow the size ladder (SizeSM 12, compact 8), so AtomUI:Compact narrows them too. The Ant
         // formula pads inputs by UniformlyPaddingSM - LineWidth (11). The vertical padding makes a field exactly its
         // control height, as in PrimeNG, instead of the Ant rounding (35 rendered 36, SM 28 rendered 26).
         var fieldPaddingX = token.SizeSM - 2;
-        // The small field also insets its text by InputContentMargin.
+        // The small field also insets its text by InputContentMargin; its text sits on the FontHeight line, as in
+        // every AtomUI Small field.
         var chrome = 2 * token.LineWidth;
         token.InputPadding   = FieldPadding(fieldPaddingX, token.ControlHeight - token.FontHeight - chrome);
-        token.InputPaddingSM = FieldPadding(token.SizeSM - 4, token.ControlHeightSM - token.FontHeightSM - chrome -
+        token.InputPaddingSM = FieldPadding(token.SizeSM - 4, token.ControlHeightSM - token.FontHeight - chrome -
                                                               token.InputContentMargin.Top - token.InputContentMargin.Bottom);
         token.InputPaddingLG = FieldPadding(token.SizeSM, token.ControlHeightLG - token.FontHeightLG - chrome);
         // Content inset of item rows and other content: the field padding inside a border (the Button stage sets the

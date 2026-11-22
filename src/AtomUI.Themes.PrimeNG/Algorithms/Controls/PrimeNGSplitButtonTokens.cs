@@ -28,9 +28,9 @@ internal sealed class PrimeNGSplitButtonTokens : IControlTokenAlgorithm<SplitBut
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, SplitButtonToken token)
     {
-        // The filled buttons paint exactly these fills (primary fill = ColorPrimary, danger fill = ColorError), so the
-        // seam matches both halves instead of standing out a stop lighter as the Ant rule does.
+        // The filled halves paint exactly these fills (the primary, and the button family's danger stop), so the seam
+        // matches both halves, as PrimeUIX draws no divider between them.
         token.SolidSeparatorColor  = effectiveGlobal.ColorPrimary;
-        token.DangerSeparatorColor = effectiveGlobal.ColorError;
+        token.DangerSeparatorColor = PrimeNGButtonFamilyTokens<ButtonToken>.DangerFills(context, effectiveGlobal).Base;
     }
 }

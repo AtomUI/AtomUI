@@ -25,7 +25,7 @@ internal sealed class PrimeNGCardTokens : IControlTokenAlgorithm<CardToken>
     {
         var preset = PrimeNGPresets.Resolve(context);
         controlGlobal.ColorBgContainer = controlGlobal.ColorBgElevated;
-        controlGlobal.BorderRadiusLG   = PrimeNGOverlayRadius.Of(controlGlobal, preset.Sizes);
+        controlGlobal.BorderRadiusLG   = new CornerRadius(controlGlobal.BorderRadius.TopLeft + preset.Controls.CardBorderRadiusOffset);
         var rules = preset.For(context.Appearance);
         if (rules.CardBorderSecondary is { } border)
         {

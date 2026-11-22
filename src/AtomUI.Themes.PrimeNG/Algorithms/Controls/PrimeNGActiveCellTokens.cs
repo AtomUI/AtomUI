@@ -1,6 +1,9 @@
 using AtomUI.Desktop.Controls;
 using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme;
+using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Themes.PrimeNG.Algorithms.Controls;
 
@@ -87,6 +90,7 @@ internal sealed class PrimeNGDateViewerTokens : IControlTokenAlgorithm<DateViewe
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, DateViewerToken token)
     {
+        PrimeNGDatePanel.Apply(context, effectiveGlobal, token);
         if (PrimeNGPresets.HasSolidHighlight(effectiveGlobal))
         {
             token.CellActiveColor = effectiveGlobal.ControlItemColorActive;
@@ -113,9 +117,46 @@ internal sealed class PrimeNGRangeDateViewerTokens : IControlTokenAlgorithm<Rang
     /// <inheritdoc />
     public void EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, RangeDateViewerToken token)
     {
+        PrimeNGDatePanel.Apply(context, effectiveGlobal, token);
         if (PrimeNGPresets.HasSolidHighlight(effectiveGlobal))
         {
             token.CellActiveColor = effectiveGlobal.ControlItemColorActive;
         }
+    }
+}
+
+/// <summary>
+/// The date panel of the pickers and the compact date viewers, PrimeUIX 3.1.1 <c>datepicker</c>: day cells of
+/// <c>date.width</c> 1.75rem (Lara 2.25rem) with <c>date.padding</c> 0.25rem (Lara 0.375rem) around them, so seven
+/// columns make the panel width; <c>day.view.margin</c> 0.5rem (Lara 0.625rem) under the header;
+/// <c>date.hover.background</c> (content.hover.background), <c>panel.background</c> (content.background),
+/// <c>date.border.radius</c> 50% and the borderless <c>today</c> chip (surface 200 / 900 text, dark 700 / white).
+/// </summary>
+internal static class PrimeNGDatePanel
+{
+    internal static void Apply(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, AbstractDateViewerToken token)
+    {
+        var lara    = PrimeNGPresets.KindOf(context) == PrimeNGPresetKind.Lara;
+        var cell    = lara ? 36 : 28;
+        var padding = lara ? 6 : 4;
+        token.CellWidth       = cell;
+        token.CellHeight      = cell;
+        token.CellRowHeight   = cell + 2 * padding;
+        token.PanelWidth      = 7 * (cell + 2 * padding);
+        token.DateBodyPadding = new Thickness(0, lara ? 10 : 8, 0, 0);
+        token.CellHoverBg     = effectiveGlobal.ControlItemBgHover;
+        token.PanelBg         = effectiveGlobal.ColorBgElevated;
+
+        var dark = context.Appearance == ThemeAppearance.Dark;
+        token.CellCornerRadius     = new CornerRadius(cell / 2.0);
+        token.CellTodayBg          = PrimeNGPresets.Surface(context, dark ? 700 : 200);
+        token.CellTodayColor       = dark ? Colors.White : PrimeNGPresets.Surface(context, 900);
+        token.CellTodayBorderColor = Colors.Transparent;
+
+        // select.month / select.year font.weight 500 in every preset; week.day.font.weight 500 (Lara 700) in a
+        // weekday cell of week.day.padding 0.25rem (Lara 0.375rem) around the 1rem table line (measured 32px on Aura).
+        token.HeaderTitleFontWeight = FontWeight.Medium;
+        token.WeekHeaderFontWeight  = lara ? FontWeight.Bold : FontWeight.Medium;
+        token.WeekHeaderHeight      = 24 + 2 * padding;
     }
 }

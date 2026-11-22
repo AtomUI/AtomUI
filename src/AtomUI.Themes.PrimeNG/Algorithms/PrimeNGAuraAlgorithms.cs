@@ -147,6 +147,10 @@ internal static class PrimeNGAuraPreset
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 1,
             ControlOutlineLineWidths: 0,
+            // PrimeUIX focus.ring.width 1px.
+            FocusRingLineWidths: 1,
+            // PrimeUIX focus.ring.offset 2px.
+            FocusRingOffsetLineWidths: 2,
             BoxShadows: BoxShadows.Parse("0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000"),
             BoxShadowsSecondary: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")),
         Controls: new PrimeNGControlRule(
@@ -161,15 +165,17 @@ internal static class PrimeNGAuraPreset
             SelectPopupContentPadding: static global => new Thickness(global.UniformlyPaddingXXS),
             // PrimeUIX card.body.padding and overlay.modal.padding 1.125rem; dialog.title.font.size 1.125rem.
             CardBodyPadding: 18,
+            // PrimeUIX aura card.border.radius border.radius.xl (12).
+            CardBorderRadiusOffset: 6,
+            // PrimeUIX aura card.shadow.
             CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
             DialogPadding: 18,
             DialogHeaderFontSize: 18,
             // PrimeUIX tooltip.padding 0.375rem 0.625rem.
             ToolTipPadding: new Thickness(10, 6),
             ToolTipColor: new(White),
-            // PrimeUIX overlay.popover.padding 0.625rem, popover.gutter 10px, overlay.popover.shadow; anchor.gutter 2px.
+            // PrimeUIX overlay.popover.padding 0.625rem, popover.gutter 10px, overlay.popover.shadow.
             PopoverPadding: 10,
             PopoverGutter: 10,
-            PopoverShadows: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000"),
-            OverlayAnchorGutter: 2));
+            PopoverShadows: BoxShadows.Parse("0 4 6 -1 #1A000000, 0 2 4 -2 #1A000000")));
 }

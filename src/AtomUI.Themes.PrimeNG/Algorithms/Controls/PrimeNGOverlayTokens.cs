@@ -35,10 +35,15 @@ internal sealed class PrimeNGArrowDecoratedBoxTokens : IControlTokenAlgorithm<Ar
         var rules    = preset.For(context.Appearance);
         var controls = preset.Controls;
         token.ContentBorderColor     = rules.OverlayBorder.Resolve(rules.Surface.AsSpan());
+        // PrimeUIX .p-popover:before draws the arrow edge in popover.border.color too.
+        token.ArrowStrokeColor       = token.ContentBorderColor;
         token.ContentBorderThickness = new Thickness(effectiveGlobal.LineWidth);
         token.ContentPadding         = new Thickness(controls.PopoverPadding);
         token.ContentMinHeight       = 0;
         token.ArrowSize              = PrimeNGPopoverArrow.Size(controls);
+        // A plain border triangle: no rounded tip and no flare into the box.
+        token.ArrowTipRadius         = 0;
+        token.ArrowBaseRadius        = 0;
     }
 }
 
@@ -59,6 +64,7 @@ internal sealed class PrimeNGFlyoutHostTokens : IControlTokenAlgorithm<FlyoutHos
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
+        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
     }
 
     /// <inheritdoc />
@@ -74,8 +80,8 @@ internal sealed class PrimeNGFlyoutHostTokens : IControlTokenAlgorithm<FlyoutHos
 /// <summary>
 /// Overlays without an arrow under the PrimeNG presets (select, cascader, combo box, auto-complete and mention panels,
 /// context and sub menus): PrimeUIX 3.1.1 <c>overlay.select</c>. The <c>border.color</c> becomes a one-line
-/// <c>0 0 0 1</c> ring ahead of the shadow, since those panels have no border of their own (Nora light: transparent,
-/// no ring); the shadow is the global <c>BoxShadowsSecondary</c> (<c>overlay.select.shadow</c>, which equals
+/// <c>0 0 0 1</c> ring ahead of the shadow, since those panels have no border of their own (Nora light: PrimeUIX's is
+/// transparent; AtomUI draws surface 200 for legibility, see the Nora rules); the shadow is the global <c>BoxShadowsSecondary</c> (<c>overlay.select.shadow</c>, which equals
 /// <c>overlay.navigation.shadow</c>), the radius the global <c>BorderRadius</c> (<c>overlay.select.border.radius</c>)
 /// and the gap to the anchor <c>anchor.gutter</c> (Aura and Lara 2, Nora 0). An arrow box hosted in such a popup
 /// draws its own border and does not paint the ring.
@@ -91,6 +97,7 @@ internal sealed class PrimeNGPopupTokens : IControlTokenAlgorithm<PopupToken>
     /// <inheritdoc />
     public void EvaluateGlobal(in ThemeAlgorithmContext context, DesignToken controlGlobal)
     {
+        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
     }
 
     /// <inheritdoc />
@@ -103,7 +110,11 @@ internal sealed class PrimeNGPopupTokens : IControlTokenAlgorithm<PopupToken>
         token.PopupRootShadow   = shadows;
         token.OverlayHostShadow = shadows;
         token.PopupCornerRadius = effectiveGlobal.BorderRadius;
-        token.MarginToAnchor    = preset.Controls.OverlayAnchorGutter;
+        // PrimeUIX anchor.gutter is 2 (Nora 0, which stacks the panel border on the field border). AtomUI keeps the panels
+        // the same distance from their field as the DropdownButton's menu (MarginXXS) in every preset, a deliberate
+        // deviation so every drop-down in an app opens at one gap. The panel border is the 1px ring drawn outside the
+        // frame, so the frame sits one line further away for the visible edges to match the menu's.
+        token.MarginToAnchor    = effectiveGlobal.UniformlyMarginXXS + effectiveGlobal.LineWidth;
     }
 
     /// <summary>
@@ -134,19 +145,21 @@ internal sealed class PrimeNGPopupTokens : IControlTokenAlgorithm<PopupToken>
 }
 
 /// <summary>
-/// The arrow of PrimeNG popovers: PrimeNG draws a triangle <c>2 × popover.gutter</c> wide and <c>popover.gutter</c>
-/// long whose tip ends 1px before the anchor. An AtomUI arrow of size <c>s</c> lays out <c>s / 2 + 0.5</c> long (the
-/// ArrowIndicator bounds, its rounded tip 0.75 inside them), so a size of <c>2 × gutter - 1</c> puts the box exactly
-/// <c>gutter</c> away from the anchor with the tip 0.75 before it.
+/// The arrow of PrimeNG popovers and tooltips: PrimeNG draws a sharp triangle <c>2 × gutter</c> wide and
+/// <c>gutter</c> long in the gap between the anchor and the box. An AtomUI arrow of size <c>s</c> is <c>s / 2</c> long
+/// and overlaps the box by half a pixel, so a size of <c>2 × gutter</c> and a 0.5 gap before its tip put the box
+/// exactly <c>gutter</c> away from the anchor.
 /// </summary>
 internal static class PrimeNGPopoverArrow
 {
-    internal static double Size(PrimeNGControlRule controls) => 2 * controls.PopoverGutter - 1;
+    /// <summary>The arrow box overlaps the arrow's base with the box edge by this much (ArrangeArrow).</summary>
+    private const double BaseOverlap = 0.5;
 
-    /// <summary>
-    /// The gap between the anchor and the arrow's layout that leaves <c>popover.gutter</c> between the anchor and the
-    /// box.
-    /// </summary>
-    internal static double MarginToAnchor(PrimeNGControlRule controls) =>
-        Math.Max(0, controls.PopoverGutter - (Size(controls) / 2 + 0.5));
+    internal static double Size(PrimeNGControlRule controls) => 2 * controls.PopoverGutter;
+
+    /// <summary>The gap between the anchor and the arrow's tip that leaves <c>popover.gutter</c> to the box.</summary>
+    internal static double MarginToAnchor(PrimeNGControlRule controls) => MarginToAnchor(controls.PopoverGutter);
+
+    /// <summary>The gap between the anchor and the tip of a <c>2 × gutter</c> arrow that leaves <c>gutter</c> to the box.</summary>
+    internal static double MarginToAnchor(double gutter) => Math.Max(0, gutter - (gutter - BaseOverlap));
 }

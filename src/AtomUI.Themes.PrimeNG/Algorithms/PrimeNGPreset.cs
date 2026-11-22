@@ -255,6 +255,8 @@ internal sealed record PrimeNGSizeLadder(
 internal sealed record PrimeNGAliasRule(
     double FocusVisualBorderLineWidths,
     double ControlOutlineLineWidths,
+    double FocusRingLineWidths,
+    double FocusRingOffsetLineWidths,
     BoxShadows BoxShadows,
     BoxShadows BoxShadowsSecondary);
 
@@ -277,10 +279,6 @@ internal sealed record PrimeNGAliasRule(
 /// the arrow is twice as wide as it is long).
 /// </param>
 /// <param name="PopoverShadows">The arrow flyout's shadow (PrimeUIX <c>overlay.popover.shadow</c>).</param>
-/// <param name="OverlayAnchorGutter">
-/// The distance between the anchor and a select panel, menu or other overlay without an arrow (PrimeUIX
-/// <c>anchor.gutter</c>).
-/// </param>
 internal sealed record PrimeNGControlRule(
     FontWeight ButtonFontWeight,
     Func<DesignToken, double>? ButtonPaddingHorizontal,
@@ -289,6 +287,7 @@ internal sealed record PrimeNGControlRule(
     Func<DesignToken, Thickness> SelectOptionPadding,
     Func<DesignToken, Thickness> SelectPopupContentPadding,
     double CardBodyPadding,
+    double CardBorderRadiusOffset,
     BoxShadows CardRestingShadows,
     double DialogPadding,
     double DialogHeaderFontSize,
@@ -296,19 +295,26 @@ internal sealed record PrimeNGControlRule(
     PrimeNGShade ToolTipColor,
     double PopoverPadding,
     double PopoverGutter,
-    BoxShadows PopoverShadows,
-    double OverlayAnchorGutter);
+    BoxShadows PopoverShadows);
 
 /// <summary>
 /// The rule table of one PrimeNG preset (Aura, Lara or Nora): which palette stop each semantic token takes, per
 /// appearance, and the size ladder. The light and dark algorithms of a preset share one table.
 /// </summary>
+/// <param name="TransitionDuration">
+/// PrimeUIX <c>transition.duration</c>, the CSS transition of state colours (hover, focus, checked), written to the
+/// global <c>MotionDurationFast</c> / <c>Mid</c> / <c>Slow</c>; <see langword="null"/> keeps the Ant Design ladder (Aura
+/// and Lara: 0.2s, the Ant <c>MotionDurationMid</c>). Nora's is 0s. The component enter / leave animations of
+/// <c>@primeuix/styles</c> do not read it, so the control stages of their owners restore them (see
+/// <see cref="Controls.PrimeNGMotion"/>).
+/// </param>
 internal sealed record PrimeNGPreset(
     PrimeNGAppearanceRules Light,
     PrimeNGAppearanceRules Dark,
     PrimeNGSizeLadder Sizes,
     PrimeNGAliasRule Alias,
-    PrimeNGControlRule Controls)
+    PrimeNGControlRule Controls,
+    TimeSpan? TransitionDuration = null)
 {
     /// <summary>
     /// The rules of the appearance a chain resolves to.

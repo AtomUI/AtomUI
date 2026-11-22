@@ -79,7 +79,8 @@ internal static class PrimeNGLaraPreset
             SelectionForeground: new(White),
             // PrimeUIX focus.ring.shadow, light: primary 200 (the primary border stop of this table).
             ControlOutline: static token => token.ColorPrimaryBorder,
-            FocusBorder: static token => token.ColorPrimary,
+            // PrimeUIX lara focus.ring.color is transparent; the visible ring is focus.ring.shadow (primary.200).
+            FocusBorder: static token => token.ColorPrimaryBorder,
             CardBorderSecondary: null,
             // PrimeUIX highlight: the pale P50 / P100 (ColorPrimaryBg / BgHover) with primary.700 text (ColorPrimaryText).
             Highlight: null,
@@ -128,7 +129,8 @@ internal static class PrimeNGLaraPreset
             SelectionForeground: new(900),
             // PrimeUIX focus.ring.shadow, dark: primary.color mixed with 80% transparent.
             ControlOutline: static token => PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.2),
-            FocusBorder: static token => token.ColorPrimary,
+            // PrimeUIX lara focus.ring.shadow, dark: the primary colour at 20%.
+            FocusBorder: static token => PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.2),
             CardBorderSecondary: null,
             // PrimeUIX highlight: P400 at 16% / 24% (ColorPrimaryBg / BgHover) with white at 87% (ColorPrimaryText).
             Highlight: null,
@@ -153,7 +155,12 @@ internal static class PrimeNGLaraPreset
         Alias: new PrimeNGAliasRule(
             FocusVisualBorderLineWidths: 0,
             ControlOutlineLineWidths: 3,
-            BoxShadows: BoxShadows.Parse("0 20 25 -5 #1A000000, 0 8 10 -6 #1A000000"),
+            // PrimeUIX focus.ring.shadow 0 0 0 0.2rem: a 3.2px glow at offset 0 (focus.ring.width 0).
+            FocusRingLineWidths: 3.2,
+            // The Lara glow sits on the element edge (box-shadow, no outline-offset).
+            FocusRingOffsetLineWidths: 0,
+            // PrimeUIX lara overlay.modal.shadow 0 1px 3px rgba(0,0,0,0.3).
+            BoxShadows: BoxShadows.Parse("0 1 3 0 #4D000000"),
             BoxShadowsSecondary: BoxShadows.Parse("0 2 12 0 #1A000000")),
         Controls: new PrimeNGControlRule(
             ButtonFontWeight: FontWeight.SemiBold,
@@ -170,16 +177,18 @@ internal static class PrimeNGLaraPreset
             SelectPopupContentPadding: static global => new Thickness(0, global.UniformlyPaddingXS),
             // PrimeUIX card.body.padding and overlay.modal.padding 1.25rem; dialog.title.font.size 1.125rem.
             CardBodyPadding: 20,
-            CardRestingShadows: BoxShadows.Parse("0 1 3 0 #1A000000, 0 1 2 -1 #1A000000"),
+            // PrimeUIX lara card.border.radius border.radius.lg (8).
+            CardBorderRadiusOffset: 2,
+            // PrimeUIX lara card.shadow.
+            CardRestingShadows: BoxShadows.Parse("0 2 4 0 #13000000"),
             DialogPadding: 20,
             DialogHeaderFontSize: 18,
             // PrimeUIX tooltip.padding 0.5rem 0.625rem.
             ToolTipPadding: new Thickness(10, 8),
             ToolTipColor: new(White),
             // PrimeUIX overlay.popover.padding 0.875rem, popover.gutter 10px, overlay.popover.shadow (lighter than the
-            // select / navigation shadow); anchor.gutter 2px.
+            // select / navigation shadow).
             PopoverPadding: 14,
             PopoverGutter: 10,
-            PopoverShadows: BoxShadows.Parse("0 1 3 0 #1A000000"),
-            OverlayAnchorGutter: 2));
+            PopoverShadows: BoxShadows.Parse("0 1 3 0 #1A000000")));
 }

@@ -316,7 +316,7 @@ public class DialogContentPopupLayeringTests
     private static void LightDismiss(Avalonia.Controls.Window window)
     {
         var dismissLayer = window.GetVisualDescendants()
-                                 .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer")
+                                 .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer" && visual.IsVisible)
                                  .ShouldBeAssignableTo<InputElement>();
         dismissLayer.IsHitTestVisible.ShouldBeTrue();
         RaisePointerClick(window, dismissLayer, new Point(8, 8));

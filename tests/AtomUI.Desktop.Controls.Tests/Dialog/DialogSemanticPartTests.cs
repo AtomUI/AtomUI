@@ -849,7 +849,7 @@ public class DialogSemanticPartTests
 
                 var presenter = dialog.GetCrossRoots()[0].ShouldBeOfType<OverlayDialogPresenter>();
                 var layer     = presenter.GetVisualParent().ShouldBeOfType<DialogOverlayLayer>();
-                var scopeLayer = layer.GetVisualParent().ShouldBeOfType<ScopeAwareOverlayLayer>();
+                var scopeLayer = layer.GetVisualParent().ShouldBeOfType<ContentPresentationLayer>();
                 scopeLayer.GetVisualParent().ShouldBeSameAs(scopeHost);
 
                 var maskActor = presenter.GetVisualDescendants().OfType<Control>()

@@ -979,7 +979,7 @@ public class WindowResizeArtifactTests
     }
 
     [Fact]
-    public void Window_Templates_Host_The_Full_Screen_Title_Bar_Above_Content_And_Below_Visual_Layers()
+    public void Window_Templates_Declare_The_Full_Screen_Title_Bar_Host_After_The_Content()
     {
         var windowTheme = XDocument.Load(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Themes/WindowTheme.axaml"));
@@ -997,8 +997,8 @@ public class WindowResizeArtifactTests
             host.Attribute("Content")?.Value.ShouldBe("{TemplateBinding FullScreenSlotContent}");
             host.Attribute("ContentTemplate")?.Value.ShouldBe("{TemplateBinding FullScreenSlotContentTemplate}");
 
-            // Last child of the visual layer manager's content root: above the window content, below the overlay
-            // and adorner layers, and outside the cached content.
+            // Declared as the last child of the visual layer manager's content root, outside the cached content. At runtime
+            // the window moves it into its window chrome layer (T6), above the content roles and below the TopLevel roles.
             var contentRoot = host.Parent!;
             contentRoot.Parent!.Attribute("Name")?.Value.ShouldBe("PART_VisualLayerManager");
             host.ElementsAfterSelf().ShouldBeEmpty();

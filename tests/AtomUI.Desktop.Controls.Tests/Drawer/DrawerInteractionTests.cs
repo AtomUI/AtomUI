@@ -139,7 +139,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var infoContainer = layer.GetVisualDescendants()
@@ -175,7 +175,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var mask = layer.GetVisualDescendants()
@@ -210,7 +210,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
             var container = layer.GetVisualDescendants().OfType<DrawerContainer>().Single();
             var motionActor = container.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "PART_Surface");
@@ -300,7 +300,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
             var container = layer.GetVisualDescendants().OfType<DrawerContainer>().Single();
 
@@ -455,14 +455,18 @@ public class DrawerInteractionTests
             parentDrawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(parentDrawer).ShouldNotBeNull();
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(parentDrawer)!).ShouldNotBeNull();
             AtomUI.Desktop.Controls.Drawer.GetDrawer(childDrawer).ShouldBeSameAs(parentDrawer);
             childDrawer.OpenOn.ShouldBeSameAs(window);
-            ScopeAwareAdornerLayer.GetLayer(childDrawer).ShouldBeSameAs(layer);
 
             childDrawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
             layer.Children.OfType<DrawerContainer>().Count().ShouldBe(2);
+            // 子 Drawer 复用父 Drawer 所在的层：两个 container 的视觉父级是同一个实例，而不是子 Drawer 自己解析出的层。
+            var parentContainer = parentDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            var childContainer  = childDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            childContainer.GetVisualParent().ShouldNotBeNull().ShouldBeSameAs(parentContainer.GetVisualParent());
+            parentContainer.GetVisualParent().ShouldBeSameAs(layer);
 
             childDrawer.IsOpen = false;
             Dispatcher.UIThread.RunJobs();
@@ -554,8 +558,8 @@ public class DrawerInteractionTests
 
             firstWindow.IsDrawnChromeOverlayVisible.ShouldBeFalse();
             secondWindow.IsDrawnChromeOverlayVisible.ShouldBeTrue();
-            var firstLayer = ScopeAwareAdornerLayer.GetLayer(firstWindow).ShouldNotBeNull();
-            var secondLayer = ScopeAwareAdornerLayer.GetLayer(secondTarget).ShouldNotBeNull();
+            var firstLayer = TopLevelPresentationLayer.GetLayer(firstWindow).ShouldNotBeNull();
+            var secondLayer = TopLevelPresentationLayer.GetLayer(secondWindow).ShouldNotBeNull();
             var container = firstLayer.Children.OfType<DrawerContainer>().Single();
             container.Margin.ShouldBe(firstShadow);
 
@@ -629,7 +633,11 @@ public class DrawerInteractionTests
 
             childDrawer.OpenOn.ShouldBeSameAs(localTarget);
             window.IsDrawnChromeOverlayVisible.ShouldBeTrue();
-            var layer = ScopeAwareAdornerLayer.GetLayer(localTarget).ShouldNotBeNull();
+            // localTarget 位于父 Drawer 自己的 container 内：container 不能进入自己表面宿主中的层，
+            // 而是落在 container 外侧的作用域宿主（这里是窗口宿主）的 T5。
+            var parentContainer = parentDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            var layer = parentContainer.GetVisualParent().ShouldBeOfType<ContentPresentationLayer>();
+            parentContainer.IsVisualAncestorOf(layer).ShouldBeFalse();
             layer.Children.OfType<DrawerContainer>().Count().ShouldBe(2);
             layer.Children.OfType<DrawerContainer>()
                  .ShouldAllBe(container => ReferenceEquals(

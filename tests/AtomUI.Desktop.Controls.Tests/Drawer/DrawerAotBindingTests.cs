@@ -60,7 +60,7 @@ public class DrawerAotBindingTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var container = layer.Children.Single();

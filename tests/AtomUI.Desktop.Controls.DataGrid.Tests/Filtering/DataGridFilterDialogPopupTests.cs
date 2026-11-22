@@ -415,7 +415,7 @@ public class DataGridFilterDialogPopupTests
     {
         PumpAndRender();
         var dismissLayer = window.GetVisualDescendants()
-                                 .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer")
+                                 .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer" && visual.IsVisible)
                                  .ShouldBeAssignableTo<InputElement>();
         dismissLayer.IsHitTestVisible.ShouldBeTrue();
         RaisePointerClick(window, dismissLayer, new Point(8, 8));

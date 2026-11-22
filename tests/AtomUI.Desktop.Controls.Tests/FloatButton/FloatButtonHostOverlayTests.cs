@@ -393,7 +393,7 @@ public class FloatButtonHostOverlayTests
 
             var overlayLayer = scrollViewer.GetVisualDescendants()
                                            .OfType<ScopeAwareOverlayLayer>()
-                                           .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
+                                           .Single(layer => LayerFloatButtons(layer).Any());
             var verticalScrollBar = scrollViewer.GetVisualDescendants()
                                                 .OfType<AtomUI.Desktop.Controls.ScrollBar>()
                                                 .Single(scrollBar => scrollBar.Name == "PART_VerticalScrollBar");
@@ -567,8 +567,8 @@ public class FloatButtonHostOverlayTests
 
             var overlayLayer = scrollViewer.GetVisualDescendants()
                                            .OfType<ScopeAwareOverlayLayer>()
-                                           .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
-            var button = overlayLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+                                           .Single(layer => LayerFloatButtons(layer).Any());
+            var button = LayerFloatButtons(overlayLayer).Single();
             var beforeX = Canvas.GetLeft(button);
             var beforeY = Canvas.GetTop(button);
 
@@ -580,8 +580,8 @@ public class FloatButtonHostOverlayTests
 
             var reattachedLayer = scrollViewer.GetVisualDescendants()
                                               .OfType<ScopeAwareOverlayLayer>()
-                                              .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
-            var reattachedButton = reattachedLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+                                              .Single(layer => LayerFloatButtons(layer).Any());
+            var reattachedButton = LayerFloatButtons(reattachedLayer).Single();
 
             Canvas.GetLeft(reattachedButton).ShouldBe(beforeX);
             Canvas.GetTop(reattachedButton).ShouldBe(beforeY);
@@ -716,6 +716,14 @@ public class FloatButtonHostOverlayTests
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
+    }
+
+    /// <summary>层中的浮动按钮：每个浮动按钮带自己的表面宿主进入层，层的直接子项是宿主。</summary>
+    private static IEnumerable<AtomUI.Desktop.Controls.FloatButton> LayerFloatButtons(ScopeAwareOverlayLayer layer)
+    {
+        return layer.Children.OfType<VisualLayerManager>()
+                    .Select(host => host.Child)
+                    .OfType<AtomUI.Desktop.Controls.FloatButton>();
     }
 
     private static TFloatButton GetOverlayFloatButton<TFloatButton>(ScopeAwareOverlayLayerPanel overlayPanel)

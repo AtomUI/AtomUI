@@ -1,12 +1,45 @@
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme;
+using AtomUI.Theme.Schema;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using Shouldly;
+using Xunit;
 
 namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 
 /// <summary>Arrange table of Select: the state in which each of its Tokens shows.</summary>
 public partial class SelectFamilyEffectTests
 {
+    /// <summary>
+    /// The frame's appearance reads (<see cref="InputFamilyEffectTests.s_inputControlFrameAppearanceReads"/>) under Shadcn
+    /// Luma, whose muted select indicator draws the drop-down arrow in ColorTextDescription; an explicit ColorTextQuaternary
+    /// turns the muted indicator off, so the arrow takes that colour instead.
+    /// </summary>
+    [Theory]
+    [InlineData("ColorTextDescription")]
+    [InlineData("ColorTextQuaternary")]
+    public async Task Select_Muted_Indicator_Follows_The_Frame_Appearance_Reads_Under_Shadcn_Luma(string token)
+    {
+        InputFamilyEffectTests.s_inputControlFrameAppearanceReads.ShouldContain(token);
+        var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
+        (await manager.ApplyThemeAsync(new ThemeRequest("ShadcnLuma", null, ThemeTransitionReason.UserRequest),
+            TestContext.Current.CancellationToken)).Status.ShouldBeOneOf(ThemeTransitionStatus.Committed,
+            ThemeTransitionStatus.NoOp);
+        try
+        {
+            // The handle region of the ColorTextQuaternary row: the arrow is a few pixels of a wide surface.
+            Run(SelectSetup("ColorTextQuaternary"), SelectTokens.Identity, token);
+        }
+        finally
+        {
+            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null,
+                ThemeTransitionReason.UserRequest), TestContext.Current.CancellationToken);
+        }
+    }
+
     private static EffectSetup SelectSetup(string token)
     {
         var b    = new SetupBuilder();

@@ -15,7 +15,7 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 public partial class DisplayFamilyEffectTests
 {
     private static readonly string[] ListViewOwnerReads = ["BorderRadius", "BorderRadiusLG", "BorderRadiusSM", "BorderThickness", "ColorSplit", "EnableMotion", "Padding", "PaddingXL"];
-    private static readonly string[] ListItemOwnerReads = ["ColorPrimary", "ColorSplit", "ControlHeight", "ControlHeightLG", "ControlHeightSM", "FontSize", "FontSizeSM", "IconSize", "LineWidth"];
+    private static readonly string[] ListItemOwnerReads = ["ColorSplit", "ControlHeight", "ControlHeightLG", "ControlHeightSM", "FontSize", "FontSizeSM", "IconSize", "LineWidth"];
     private static readonly string[] TreeViewOwnerReads = ["ColorPrimary", "EnableMotion", "MotionDurationSlow", "PaddingXL"];
     private static readonly string[] TreeItemOwnerReads = ["BorderThickness", "ColorBorder"];
     private static readonly string[] TreeHeaderOwnerReads = ["BorderRadius", "ColorBgContainerDisabled", "ColorPrimary", "ColorText", "ColorTextDisabled", "IconSize"];
@@ -24,22 +24,26 @@ public partial class DisplayFamilyEffectTests
     [Fact]
     public void Transfer_Inherited_Owner_Reads_Match_Their_Actual_Themes()
     {
-        foreach (var (path, tokens) in new (string, string[])[]
+        // TreeView resolves its drag indicator brush in code (UseDragIndicatorTokenResources).
+        foreach (var (path, tokens, code) in new (string, string[], string[])[]
         {
-            ("ListView/Themes/ListViewTheme.axaml", ListViewOwnerReads),
-            ("ListView/Themes/ListViewItemTheme.axaml", ListItemOwnerReads),
-            ("TreeView/Themes/TreeViewTheme.axaml", TreeViewOwnerReads),
-            ("TreeView/Themes/TreeViewItemTheme.axaml", TreeItemOwnerReads),
-            ("TreeView/Themes/TreeViewItemHeaderTheme.axaml", TreeHeaderOwnerReads),
-            ("TreeView/Themes/NodeSwitcherButtonTheme.axaml", TreeSwitcherOwnerReads)
+            ("ListView/Themes/ListViewTheme.axaml", ListViewOwnerReads, []),
+            ("ListView/Themes/ListViewItemTheme.axaml", ListItemOwnerReads, []),
+            ("TreeView/Themes/TreeViewTheme.axaml", TreeViewOwnerReads,
+                ["src/AtomUI.Desktop.Controls/TreeView/TreeView.DragAndDrop.cs"]),
+            ("TreeView/Themes/TreeViewItemTheme.axaml", TreeItemOwnerReads, []),
+            ("TreeView/Themes/TreeViewItemHeaderTheme.axaml", TreeHeaderOwnerReads, []),
+            ("TreeView/Themes/NodeSwitcherButtonTheme.axaml", TreeSwitcherOwnerReads, [])
         })
         {
-            ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/" + path).Order().ShouldBe(tokens.Order());
+            ThemeOwnerReads.Read("src/AtomUI.Desktop.Controls/" + path).Union(ThemeOwnerReads.ReadCode(code)).Order()
+                           .ShouldBe(tokens.Order(), path);
         }
     }
 
-    // The TransferListItem template replaces the split-line / selected-icon visuals. ColorSplit, LineWidth,
-    // ColorPrimary and IconSize of that base template therefore have no Transfer visual consumer. The outer list's
+    // The TransferListItem template replaces the split-line / selected-icon visuals. ColorSplit, LineWidth and IconSize
+    // of that base template therefore have no Transfer visual consumer (the selected icon's colour is the list's
+    // ItemSelectedIndicatorColor, not an owner read). The outer list's
     // BorderThickness is deliberately zero. These suppressed inherited defaults are guarded by the contract below.
     public static IEnumerable<object[]> TransferListOwnerRows() => new[]
     {

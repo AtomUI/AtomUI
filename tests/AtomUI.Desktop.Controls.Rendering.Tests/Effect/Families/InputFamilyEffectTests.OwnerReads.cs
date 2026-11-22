@@ -32,6 +32,13 @@ public partial class InputFamilyEffectTests
         "InputErrorActiveShadow", "InputWarningActiveShadow"
     ], "src/AtomUI.Desktop.Controls/Primitives/InputControlFrame.cs");
 
+    /// <summary>
+    /// InputControlFrame code reads that only an appearance publish draws: Shadcn Luma's muted select indicator takes
+    /// ColorTextDescription, and an explicit ColorTextQuaternary turns it off. The default theme publishes no appearance, so
+    /// the hosts get no rows for them; <c>SelectFamilyEffectTests</c> renders both under Shadcn Luma.
+    /// </summary>
+    internal static readonly string[] s_inputControlFrameAppearanceReads = ["ColorTextDescription", "ColorTextQuaternary"];
+
     internal static readonly OwnerReadList s_addOnDecoratedBox = new(Primitives + "AddOnDecoratedBoxTheme.axaml",
     [
         "ColorBorder", "ColorError", "ColorErrorText", "ColorFillAlter", "ColorText", "ColorTextDisabled",
@@ -154,8 +161,11 @@ public partial class InputFamilyEffectTests
         // Drift guard: a new owner read in a primitive theme or theme-variable code must get an effect row through its hosts.
         foreach (var list in s_allLists)
         {
+            var expected = list == s_inputControlFrame
+                ? list.Tokens.Union(s_inputControlFrameAppearanceReads, StringComparer.Ordinal)
+                : list.Tokens;
             ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)
-                           .ShouldBe(list.Tokens.Order(StringComparer.Ordinal), list.Theme);
+                           .ShouldBe(expected.Order(StringComparer.Ordinal), list.Theme);
         }
     }
 

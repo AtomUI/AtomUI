@@ -24,7 +24,8 @@ public partial class NavigationFamilyEffectTests
     private const string TabThemes = "src/AtomUI.Desktop.Controls/TabControl/Themes/";
 
     internal static readonly FeedbackFamilyEffectTests.OwnerReadList s_baseTabControl =
-        new(TabThemes + "BaseTabControlTheme.axaml", ["BorderThickness", "ColorBorderSecondary", "EnableMotion"]);
+        new(TabThemes + "BaseTabControlTheme.axaml", ["BorderThickness", "ColorBorderSecondary", "EnableMotion"],
+            "src/AtomUI.Desktop.Controls/TabControl/BaseTabControl.cs");
 
     internal static readonly FeedbackFamilyEffectTests.OwnerReadList s_baseTabStrip =
         new(TabThemes + "TabStrip/BaseTabStripTheme.axaml", ["BorderThickness", "ColorBorderSecondary", "EnableMotion"]);
@@ -40,7 +41,7 @@ public partial class NavigationFamilyEffectTests
     {
         foreach (var list in new[] { s_baseTabControl, s_baseTabStrip, s_tabScrollViewer, s_tabOverflowMenu })
         {
-            ThemeOwnerReads.Read(list.Theme).Order(StringComparer.Ordinal)
+            ThemeOwnerReads.Read(list.Theme).Union(ThemeOwnerReads.ReadCode(list.Code)).Order(StringComparer.Ordinal)
                            .ShouldBe(list.Tokens.Order(StringComparer.Ordinal), list.Theme);
         }
     }

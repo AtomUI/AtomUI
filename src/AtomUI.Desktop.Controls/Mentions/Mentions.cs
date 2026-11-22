@@ -737,6 +737,17 @@ public partial class Mentions : TemplatedControl,
         }
     }
 
+    // The host takes focus only programmatically (it is not a tab stop); the text area is the input, so focus moves
+    // there and its frame shows it.
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && _textArea is { } textArea)
+        {
+            textArea.Focus(e.NavigationMethod, e.KeyModifiers);
+        }
+    }
+
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);

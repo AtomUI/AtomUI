@@ -367,6 +367,14 @@ internal class ShadowsAwareContainer : Decorator
         }
     }
 
+    private void HandleContentDecoratorPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == BoundsProperty && _frameRenderer is not null)
+        {
+            InvalidateArrange();
+        }
+    }
+
     private void ConfigureShadowsInfo(Control? child)
     {
         _surfaceBindings = new CompositeDisposable();
@@ -385,6 +393,12 @@ internal class ShadowsAwareContainer : Decorator
                 {
                     _surfaceBindings.Add(BindUtils.RelayBind(
                         contentDecorator, Border.CornerRadiusProperty, this, CornerRadiusProperty));
+                    // The shadow cutout follows the body's bounds, but the body can be re-arranged on its own (a
+                    // descendant's arrange pass) while this container keeps its size and is not re-arranged; the
+                    // stale cutout then leaves a transparent strip between the border and the shadow.
+                    contentDecorator.PropertyChanged += HandleContentDecoratorPropertyChanged;
+                    _surfaceBindings.Add(Disposable.Create(() =>
+                        contentDecorator.PropertyChanged -= HandleContentDecoratorPropertyChanged));
                 }
                 else
                 {

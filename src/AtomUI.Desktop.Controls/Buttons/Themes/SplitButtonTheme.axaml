@@ -32,7 +32,7 @@
                         <Border Margin="0,1,0,1"
                                 Background="{TemplateBinding SplitSeparatorBrush}" />
                     </Border>
-                    <atom:Button x:Name="PART_PrimaryButton"
+                    <atom:Button Name="PART_PrimaryButton"
                                  Classes.semantic-primary="True"
                                  Content="{TemplateBinding Content}"
                                  ContentTemplate="{TemplateBinding ContentTemplate}"

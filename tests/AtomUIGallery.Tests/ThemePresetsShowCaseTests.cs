@@ -581,7 +581,7 @@ public class ThemePresetsShowCaseTests
     }
 
     [Fact]
-    public void Nora_Dark_Preview_Renders_Contrasting_Steps_Icons_And_Preserves_Status_Titles()
+    public void Nora_Dark_Preview_Renders_Contrasting_Steps_Icons_And_Primary_Active_Title()
     {
         AvaloniaTestApp.EnsureInitialized();
         using var model = new ThemePresetsViewModel(null!) { SelectedPresetId = "PrimeNGNora", IsDark = true };
@@ -602,7 +602,8 @@ public class ThemePresetsShowCaseTests
                 var number = items[1].GetVisualDescendants().OfType<Avalonia.Controls.TextBlock>().Single(text => text.Name == "StepNumberText");
                 ((ISolidColorBrush)number.Foreground!).Color.ShouldBe(Color.Parse("#09090B"));
                 ((ISolidColorBrush)items[0].Foreground!).Color.ShouldBe(Colors.White);
-                ((ISolidColorBrush)items[1].Foreground!).Color.ShouldBe(Colors.White);
+                // PrimeUIX steps item.label.active.color is the primary colour.
+                ((ISolidColorBrush)items[1].Foreground!).Color.ShouldBe(Color.Parse("#10B981"));
                 ((ISolidColorBrush)items[2].Foreground!).Color.ShouldBe(Color.Parse("#A1A1AA"));
                 var tokens = ControlTokenAccessor.Capture(steps);
                 tokens.GetOwn<Color, StepsTokenKind>(StepsTokenKind.FinishIconBgColor).ShouldBe(Color.Parse("#10B981"));

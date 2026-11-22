@@ -50,6 +50,10 @@ public partial class FeedbackFamilyEffectTests
             "ColorSuccess" or "SuccessShadows"   => MessageType.Success,
             "ColorWarning" or "WarningShadows"   => MessageType.Warning,
             "LoadingShadows"                     => MessageType.Loading,
+            // The severity surface tokens (SuccessBg, ErrorColor, ...) paint the message of their severity.
+            _ when token.StartsWith("Error", StringComparison.Ordinal)   => MessageType.Error,
+            _ when token.StartsWith("Success", StringComparison.Ordinal) => MessageType.Success,
+            _ when token.StartsWith("Warning", StringComparison.Ordinal) => MessageType.Warning,
             _                                    => MessageType.Information
         };
         Action<Control>? arrange = token is "SelectionBackground" or "SelectionForeground"
@@ -131,10 +135,17 @@ public partial class FeedbackFamilyEffectTests
             "ColorError" or "ErrorShadows"       => NotificationType.Error,
             "ColorSuccess" or "SuccessShadows"   => NotificationType.Success,
             "ColorWarning" or "WarningShadows"   => NotificationType.Warning,
-            // The resting shadow only paints a notification with no severity.
-            "RestingShadows"                     => NotificationType.Default,
+            // The resting shadow and the plain border only paint a notification with no severity.
+            "RestingShadows" or "NotificationBorderColor" => NotificationType.Default,
+            // The severity surface tokens (SuccessBg, ErrorTitleColor, ...) paint the card of their severity.
+            _ when token.StartsWith("Error", StringComparison.Ordinal)   => NotificationType.Error,
+            _ when token.StartsWith("Success", StringComparison.Ordinal) => NotificationType.Success,
+            _ when token.StartsWith("Warning", StringComparison.Ordinal) => NotificationType.Warning,
             _                                    => NotificationType.Information
         };
+        // The default frame border is 0: a border colour shows on a card given a start bar.
+        var bordered = token.EndsWith("BorderColor", StringComparison.Ordinal);
+        var closeIconHover = token.EndsWith("CloseIconHoverColor", StringComparison.Ordinal);
         var progress = token is "NotificationProgressBg" or "NotificationProgressHeight" or "NotificationProgressMargin"
             or "NotificationProgressTrackBg" or "ColorFillQuaternary" or "ColorPrimaryBorderHover" or "BorderRadiusLG";
         var actions = token is "NotificationActionsMargin";
@@ -146,6 +157,8 @@ public partial class FeedbackFamilyEffectTests
             "ColorBgTextHover" or "ColorIconHover" => static card => Pseudo(CloseButtonOf(card), ":pointerover"),
             _ when closeHover => static card => Pseudo(CloseButtonOf(card), ":pointerover"),
             "ColorBgTextActive" => static card => Pseudo(CloseButtonOf(card), ":pressed"),
+            _ when closeIconHover => static card => Pseudo(CloseButtonOf(card), ":pointerover"),
+            _ when bordered => static card => ((NotificationCard)card).BorderThickness = new Thickness(6, 0, 0, 0),
             // Half of the time left: the track shows next to the remaining-time indicator.
             _ when progress => static card => ((NotificationCard)card).Expiration = TimeSpan.FromSeconds(5),
             _ => null
@@ -154,6 +167,7 @@ public partial class FeedbackFamilyEffectTests
         {
             "ColorBgTextHover" or "ColorIconHover" or "ColorBgTextActive" or "ColorIcon" or "BorderRadiusSM" or
                 "IconSizeSM" => static card => CloseButtonOf(card),
+            _ when token.Contains("CloseIcon", StringComparison.Ordinal) => static card => CloseButtonOf(card),
             _ => null
         };
         Func<object, object>? perturb = token switch

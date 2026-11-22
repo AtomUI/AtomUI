@@ -50,6 +50,7 @@ public partial class SelectFamilyEffectTests
     private static Dictionary<string, string> FilterNotRendered() => new(StringComparer.Ordinal)
     {
         ["FontSizeSM"] = "the embedded filter is IsCustomFontSize=True and follows the host FontSize (TextBox renders it)",
+        ["FontHeightSM"] = "the embedded filter sits on the field's FontHeight content line (TextBox renders it)",
         ["UniformlyPaddingXXS"] =
             "spaces the TextBox inner right content and clear button; the embedded filter has neither (TextBox renders it)"
     };

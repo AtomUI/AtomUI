@@ -181,7 +181,7 @@ public partial class DataFamilyEffectTests
             case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive" or "ColorText":
                 return new Scenario(static () => CreateListBox(), static list => ((ListBox)list).SelectedIndex = 1);
             // The check mark of the selected item (compared on the mark: its colour fills a few pixels only).
-            case "ColorPrimary":
+            case "ColorPrimary" or "ItemSelectedIndicatorColor":
                 return new Scenario(static () => CreateListBox(showIndicator: true), static list => ((ListBox)list).SelectedIndex = 1,
                     new EffectOptions { Region = static list => Descendant<IconTemplatePresenter>(ListBoxItemAt(list, 1), "SelectedIndicator") });
             case "IconSize":
@@ -303,7 +303,7 @@ public partial class DataFamilyEffectTests
                 return new Scenario(() => CreateListView(), static list => Pseudo(ListViewItemAt(list, 0), ":pointerover"));
             case "ItemSelectedBgColor" or "ItemSelectedColor" or "ControlItemBgActive" or "ControlItemColorActive" or "ColorText":
                 return new Scenario(() => CreateListView(), static list => ((ListView)list).SelectedIndex = 1);
-            case "ColorPrimary":
+            case "ColorPrimary" or "ItemSelectedIndicatorColor":
                 return new Scenario(() => CreateListView(showIndicator: true), static list => ((ListView)list).SelectedIndex = 1,
                     new EffectOptions { Region = static list => Descendant<IconTemplatePresenter>(ListViewItemAt(list, 1), "SelectedIndicator") });
             case "IconSize":

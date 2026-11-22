@@ -45,7 +45,10 @@ public partial class ChoiceFamilyEffectTests
             "ColorPrimaryHover" => static c => ((AtomCheckBox)c).IsChecked = true,
             _ => null
         };
-        Action<Control>? arrange = token is "ColorPrimaryHover" ? static c => Pseudo(c, ":pointerover") : null;
+        // The unchecked indicator's hover border.
+        Action<Control>? arrange = token is "ColorPrimaryHover" or "IndicatorHoverBorderColor"
+            ? static c => Pseudo(c, ":pointerover")
+            : null;
         Run(() =>
         {
             var checkBox = new AtomCheckBox { Content = "CheckBox" };

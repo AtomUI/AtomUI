@@ -90,6 +90,17 @@ public partial class SelectFamilyEffectTests
             case "OptionFontSize" or "OptionHeight" or "OptionPadding" or "PopupContentPadding" or "ColorBgElevated":
                 Open();
                 break;
+            case "OptionSelectedIndicatorColor":
+                // The check mark shows on the selected options of a multiple Select.
+                Tags();
+                Open();
+                break;
+            case "OptionBorderRadius":
+                // Square by default: round the selected option's background so its corners change.
+                b.Perturb = static _ => new Avalonia.CornerRadius(10);
+                Selected();
+                Open();
+                break;
             case "OptionBackgroundInset" or "OptionSelectedBg" or "OptionSelectedColor" or "OptionSelectedFontWeight" or "ControlItemBgActive" or "ControlItemColorActive"
                 or "FontWeightStrong":
                 Selected();
@@ -101,7 +112,7 @@ public partial class SelectFamilyEffectTests
                 break;
 
             // ---- content and suffix ----
-            case "ColorText" or "FontSize" or "FontSizeLG":
+            case "ColorText" or "FontSize" or "FontSizeLG" or "InputFontSizeSM":
                 Selected();
                 break;
             case "InputContentMargin":

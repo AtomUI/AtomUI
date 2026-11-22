@@ -175,7 +175,7 @@ public class LineEditSemanticPartTests
     [Theory]
     [InlineData(CustomizableSizeType.Large, 40d, 40d, 38d, 39d)]
     [InlineData(CustomizableSizeType.Middle, 32d, 32d, 30d, 31d)]
-    [InlineData(CustomizableSizeType.Small, 22d, 22d, 20d, 21d)]
+    [InlineData(CustomizableSizeType.Small, 24d, 24d, 22d, 23d)]
     public void Semantic_Markers_Preserve_The_Preset_Size_And_Variant_Baseline(
         CustomizableSizeType sizeType,
         double outlinedHeight,

@@ -161,7 +161,7 @@ public partial class SelectFamilyEffectTests
                 case "SpacingXXS":
                     Tags();
                     break;
-                case "ColorText" or "FontSize" or "FontSizeLG":
+                case "ColorText" or "FontSize" or "FontSizeLG" or "InputFontSizeSM":
                     Selected();
                     break;
                 case "InputContentMargin":

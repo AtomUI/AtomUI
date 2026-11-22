@@ -50,7 +50,7 @@ public partial class ChoiceFamilyEffectTests
         switch (token)
         {
             case "ExtraInfoFontSize" or "ExtraInfoFontSizeSM" or "InnerMaxMargin" or "InnerMaxMarginSM" or "InnerMinMargin"
-                or "InnerMinMarginSM" or "ColorTextLightSolid" or "FontSizeSM":
+                or "InnerMinMarginSM" or "ColorTextLightSolid" or "FontSizeSM" or "UncheckedContentColor":
                 Text();
                 break;
             case "ContentIconSize" or "ContentIconSizeSM" or "ControlHeight" or "UniformlyPaddingXXS":

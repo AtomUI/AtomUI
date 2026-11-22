@@ -193,8 +193,16 @@ public partial class FeedbackFamilyEffectTests
         var content = token == "ToolTipMaxWidth"
             ? string.Join(' ', Enumerable.Repeat("A tooltip long enough to wrap", 8))
             : "Prompt text";
+        // The arrow outline is 7% black: it shows around the arrow where a wider outline reaches the background.
+        var arrowOutline = token == "ArrowStrokeThickness";
         Run(() => CreateToolTipHost(content), null, ToolTipTokens.Identity, token,
-            new EffectOptions { Target = static root => OpenedToolTip(root) });
+            new EffectOptions
+            {
+                Target          = static root => OpenedToolTip(root),
+                Region          = arrowOutline ? static tip => tip.GetVisualDescendants().OfType<AtomUI.Controls.ArrowIndicator>().Single() : null,
+                RegionInflation = arrowOutline ? 4 : 0,
+                Perturb         = arrowOutline ? static _ => 4d : null
+            });
     }
 
     /// <summary>A host showing an open tooltip (placement Top) through the overlay popup layer.</summary>

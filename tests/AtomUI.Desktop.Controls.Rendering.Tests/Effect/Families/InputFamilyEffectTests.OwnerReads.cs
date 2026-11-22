@@ -35,7 +35,7 @@ public partial class InputFamilyEffectTests
     internal static readonly OwnerReadList s_addOnDecoratedBox = new(Primitives + "AddOnDecoratedBoxTheme.axaml",
     [
         "ColorBorder", "ColorError", "ColorErrorText", "ColorFillAlter", "ColorText", "ColorTextDisabled",
-        "ColorTextQuaternary", "ColorWarning", "ColorWarningText", "FontHeight", "FontHeightLG", "FontHeightSM",
+        "ColorTextQuaternary", "ColorWarning", "ColorWarningText", "FontHeight", "FontHeightLG",
         "InputContentMargin", "InputPadding", "InputPaddingLG", "InputPaddingSM", "SpacingXXS"
     ], "src/AtomUI.Desktop.Controls/Primitives/AddOnDecoratedBox/AddOnDecoratedBox.cs");
 
@@ -109,7 +109,8 @@ public partial class InputFamilyEffectTests
                 s_buttonSpinner, s_numericUpDownSpinner, s_clearButton, s_textBox], new(StringComparer.Ordinal)
             {
                 ["FontSizeLG"] = "the embedded editor is SizeType=Custom and keeps the middle preset (TextBox renders it)",
-                ["FontSizeSM"] = "the embedded editor is SizeType=Custom and keeps the middle preset (TextBox renders it)"
+                ["FontSizeSM"] = "the embedded editor is SizeType=Custom and keeps the middle preset (TextBox renders it)",
+                ["FontHeightSM"] = "the embedded editor is SizeType=Custom and keeps the middle preset (TextBox renders it)"
             }),
             ["AutoComplete"] = ([s_abstractAutoComplete], new(StringComparer.Ordinal)),
             ["AutoCompleteSearchEdit"] = ([s_abstractAutoComplete], new(StringComparer.Ordinal)),

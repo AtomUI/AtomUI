@@ -215,6 +215,18 @@ public partial class DataFamilyEffectTests
             case "BorderThickness":
                 // The today outline (the selection is elsewhere in the month).
                 return Compact(value: TodayMonthValue());
+            case "CellTodayBg" or "CellTodayColor" or "CellTodayBorderColor":
+                // The today fill, text and outline, measured on the today cell.
+                return Compact(value: TodayMonthValue(),
+                    options: new EffectOptions { Region = static c => ViewerCell(c, DateTime.Today) });
+            case "CellCornerRadius":
+                // The value frame of the selected cell.
+                return Compact(options: new EffectOptions
+                {
+                    Region = static c => ViewerCell(c, s_calendarDate), Perturb = static _ => new CornerRadius(12)
+                });
+            case "HeaderTitleFontWeight":
+                return Compact(options: new EffectOptions { Region = static c => Descendant<DateViewerHeader>(c) });
             case "ColorTextLightSolid":
                 return Compact(options: new EffectOptions { Region = static c => ViewerCell(c, s_calendarDate) });
             case "BorderRadiusSM":

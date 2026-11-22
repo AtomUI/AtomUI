@@ -55,6 +55,11 @@ public partial class FeedbackFamilyEffectTests
             "ColorInfoBg" or "ColorInfoBorder" => Typed(AlertType.Info),
             "ColorWarning" or "ColorWarningBg" or "ColorWarningBorder" => Typed(AlertType.Warning),
             "ColorError" or "ColorErrorBg" or "ColorErrorBorder" => Typed(AlertType.Error),
+            // Each type's text colour shows on its own type only.
+            "SuccessMessageColor" => Typed(AlertType.Success),
+            "InfoMessageColor" => Typed(AlertType.Info),
+            "WarningMessageColor" => Typed(AlertType.Warning),
+            "ErrorMessageColor" => Typed(AlertType.Error),
             // The close button and its icon.
             "CloseIconSize" or "FontSizeIcon" => static a => a.IsClosable = true,
             // The close button's leading margin only shows when it pushes the wrapping message: perturb it widely.

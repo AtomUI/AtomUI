@@ -86,9 +86,8 @@ public partial class NavigationFamilyEffectTests
     internal static readonly FeedbackFamilyEffectTests.OwnerReadList s_paginationNavItem =
         new(PaginationThemes + "PaginationNavItemTheme.axaml",
         [
-            "BorderRadius", "BorderThickness", "ColorBgTextActive", "ColorBgTextHover", "ColorPrimary", "ColorPrimaryHover",
-            "ColorText", "ColorTextDisabled", "ColorTransparent", "FontSize", "FontWeightStrong", "IconSize", "IconSizeLG",
-            "IconSizeSM"
+            "BorderThickness", "ColorBgTextActive", "ColorPrimary", "ColorText", "ColorTextDisabled", "ColorTransparent",
+            "FontSize", "IconSize", "IconSizeLG", "IconSizeSM"
         ]);
 
     [Fact]
@@ -158,16 +157,17 @@ public partial class NavigationFamilyEffectTests
             case "ItemActiveBgDisabled" or "ItemActiveColorDisabled" or "ColorTextDisabled" or "ControlItemBgActiveDisabled":
                 return new NavScenario(static () => CreatePagination(enabled: false), null);
             // The selected page: active background, primary text and border, strong weight, radius.
-            case "ItemActiveBg" or "ColorPrimary" or "FontWeightStrong" or "BorderThickness" or "BorderRadius":
+            case "ItemActiveBg" or "ColorPrimary" or "FontWeightStrong" or "BorderThickness" or "BorderRadius" or
+                "ItemActiveColor" or "ItemActiveBorderColor" or "ItemActiveFontWeight" or "ItemBorderRadius":
                 return new NavScenario(middle, null, new EffectOptions
                 {
                     Region  = SelectedPageRegion,
-                    Perturb = token == "BorderRadius" ? static _ => new CornerRadius(14) : null
+                    Perturb = token is "BorderRadius" or "ItemBorderRadius" ? static _ => new CornerRadius(14) : null
                 });
-            case "ColorPrimaryHover":
+            case "ColorPrimaryHover" or "ItemActiveHoverColor" or "ItemActiveHoverBorderColor":
                 return new NavScenario(middle, static host => Pseudo(SelectedPage(host), ":pointerover"),
                     new EffectOptions { Region = SelectedPageRegion });
-            case "ColorBgTextHover":
+            case "ColorBgTextHover" or "ItemHoverBg" or "ItemHoverColor":
                 return new NavScenario(middle, static host => Pseudo(UnselectedPage(host), ":pointerover"),
                     new EffectOptions { Region = static host => UnselectedPage(host) });
             case "ColorBgTextActive":
@@ -222,7 +222,8 @@ public partial class NavigationFamilyEffectTests
         };
         Action<Control>? arrange = token switch
         {
-            "ColorBgTextHover" or "BorderRadius" => static host => Pseudo(NextItem(host), ":pointerover"),
+            "ColorBgTextHover" or "BorderRadius" or "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius" =>
+                static host => Pseudo(NextItem(host), ":pointerover"),
             "ColorBgTextActive"                  => static host => Pseudo(NextItem(host), ":pressed"),
             _                                    => null
         };
@@ -230,9 +231,10 @@ public partial class NavigationFamilyEffectTests
             SimplePaginationTokens.Identity, token,
             new EffectOptions
             {
-                Region = token is "ColorBgTextHover" or "ColorBgTextActive" or "BorderRadius" or "IconSize" or "IconSizeLG" or "IconSizeSM"
+                Region = token is "ColorBgTextHover" or "ColorBgTextActive" or "BorderRadius" or "IconSize" or "IconSizeLG" or "IconSizeSM" or
+                    "ItemHoverBg" or "ItemHoverColor" or "ItemBorderRadius"
                     ? static host => NextItem(host) : null,
-                Perturb = token == "BorderRadius" ? static _ => new CornerRadius(14) : null
+                Perturb = token is "BorderRadius" or "ItemBorderRadius" ? static _ => new CornerRadius(14) : null
             });
     }
 

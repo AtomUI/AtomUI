@@ -117,7 +117,8 @@ public class PrimeNGThemePackageTests
                 foreach (var (padding, height, fontHeight) in new[]
                          {
                              ("InputPadding", "ControlHeight", "FontHeight"),
-                             ("InputPaddingSM", "ControlHeightSM", "FontHeightSM"),
+                             // Small fields keep the FontHeight text line (AddOnDecoratedBox, NumericUpDown, Select).
+                             ("InputPaddingSM", "ControlHeightSM", "FontHeight"),
                              ("InputPaddingLG", "ControlHeightLG", "FontHeightLG")
                          })
                 {
@@ -141,7 +142,8 @@ public class PrimeNGThemePackageTests
                 Global<Color>(snapshot, "ColorBgContainer").ShouldBe(Color.Parse("#09090B"));
                 Global<Color>(snapshot, "ColorText").ShouldBe(Colors.White);
                 Effective<Color>(snapshot, "Card", "ColorBgContainer").ShouldBe(Color.Parse("#18181B"));
-                Own<Color>(snapshot, "ToolTip", "ToolTipColor").ShouldBe(Colors.White);
+                // Nora's dark tooltip inverts: white surface with surface.900 text.
+                Own<Color>(snapshot, "ToolTip", "ToolTipColor").ShouldBe(id == "PrimeNGNora" ? Color.Parse("#18181B") : Colors.White);
             }
         }
     }
@@ -216,7 +218,10 @@ public class PrimeNGThemePackageTests
         var config = new ThemeConfigBuilder().WithToken("ColorPrimary", "#3B82F6").Build();
         var blue = await Apply(new ThemeRequest(profile, config, ThemeTransitionReason.UserRequest));
         Global<Color>(blue, "ColorPrimary").ShouldBe(Color.Parse(expectedPrimary));
-        Global<Color>(blue, "ColorFocusBorder").ShouldBe(Global<Color>(blue, "ColorPrimary"));
+        // PrimeUIX focus.ring.color is the primary in Aura and Nora; Lara draws a 0.2rem primary.200 glow instead.
+        Global<Color>(blue, "ColorFocusBorder").ShouldBe(presetName == "Lara"
+            ? Color.Parse("#BFDBFE")
+            : Global<Color>(blue, "ColorPrimary"));
         Global<Color>(blue, "ControlItemBgActive").ShouldNotBe(emeraldSelected);
         Global<Color>(blue, "ControlItemBgActive").ShouldBe(Color.Parse(expectedSelected));
     }
@@ -304,6 +309,45 @@ public class PrimeNGThemePackageTests
     }
 
     [AvaloniaFact]
+    public async Task Toast_Severity_Surfaces_Follow_Each_Preset()
+    {
+        // PrimeUIX toast / message info: Aura and Lara tint (blue.50 at 95%) with blue.600 text; Nora fills blue.800
+        // with blue.50 text. Lara and Nora draw a 6px start bar (Lara blue.500, Nora the fill); Aura's 1px border is a
+        // ring of its shadow, so its frame border stays 0.
+        var tint = Color.FromArgb(0xF2, 0xEF, 0xF6, 0xFF);
+        var aura = await Apply("PrimeNGAura");
+        Own<Thickness>(aura, "NotificationCard", "NotificationBorderThickness").ShouldBe(default);
+        Own<Color>(aura, "NotificationCard", "InformationBg").ShouldBe(tint);
+        Own<Color>(aura, "NotificationCard", "InformationBorderColor").ShouldBe(Colors.Transparent);
+        Own<Color>(aura, "NotificationCard", "InformationTitleColor").ShouldBe(Color.Parse("#2563EB"));
+        Own<Color>(aura, "MessageCard", "InformationBg").ShouldBe(tint);
+
+        // The start bar is a 6px inset shadow (a non-uniform frame border would drop the card's box shadows), so the
+        // frame border stays 0 and the content padding takes the 6px.
+        var lara = await Apply("PrimeNGLara");
+        Own<Thickness>(lara, "NotificationCard", "NotificationBorderThickness").ShouldBe(default);
+        Own<Thickness>(lara, "NotificationCard", "NotificationPadding").Left.ShouldBe(20);
+        Own<Color>(lara, "NotificationCard", "InformationBg").ShouldBe(tint);
+        Own<BoxShadows>(lara, "NotificationCard", "InformationShadows")[0]
+            .ShouldBe(new BoxShadow { IsInset = true, OffsetX = 6, Color = Color.Parse("#3B82F6") });
+        Own<BoxShadows>(lara, "NotificationCard", "RestingShadows")[0].IsInset.ShouldBeTrue();
+        Own<Color>(lara, "NotificationCard", "InformationIconColor").ShouldBe(Color.Parse("#2563EB"));
+
+        var nora = await Apply("PrimeNGNora");
+        Own<Thickness>(nora, "NotificationCard", "NotificationBorderThickness").ShouldBe(default);
+        Own<Color>(nora, "NotificationCard", "InformationBg").ShouldBe(Color.Parse("#1E40AF"));
+        // The plain card: start bar in content.border.color (surface 400) and a ring in the same colour.
+        Own<BoxShadows>(nora, "NotificationCard", "RestingShadows")[0]
+            .ShouldBe(new BoxShadow { IsInset = true, OffsetX = 6, Color = Color.Parse("#94A3B8") });
+        Own<BoxShadows>(nora, "NotificationCard", "RestingShadows")[1].Spread.ShouldBe(1);
+        Own<Color>(nora, "NotificationCard", "InformationTitleColor").ShouldBe(Color.Parse("#EFF6FF"));
+        Own<Color>(nora, "NotificationCard", "InformationDescriptionColor").ShouldBe(Color.Parse("#EFF6FF"));
+        Own<Color>(nora, "NotificationCard", "InformationCloseIconColor").ShouldBe(Color.Parse("#EFF6FF"));
+        Own<Color>(nora, "MessageCard", "InformationBg").ShouldBe(Color.Parse("#1E40AF"));
+        Own<Color>(nora, "MessageCard", "InformationColor").ShouldBe(Color.Parse("#EFF6FF"));
+    }
+
+    [AvaloniaFact]
     public async Task Aura_Control_Overrides_Reach_Their_Owners()
     {
         var snapshot = await Apply("PrimeNGAura");
@@ -311,7 +355,21 @@ public class PrimeNGThemePackageTests
         Own<double>(snapshot, "CheckBox", "CheckIndicatorSize").ShouldBe(18);
         Own<double>(snapshot, "CheckBox", "CheckedMarkSize").ShouldBe(12);
         Own<Thickness>(snapshot, "Select", "OptionPadding").ShouldBe(new Thickness(10, 4));
-        Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(4));
+        // list.padding 4 with list.gap 2: each option background is inset 1px, so the panel keeps 4 - 1.
+        Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(4, 3));
+        Own<Thickness>(snapshot, "Select", "OptionBackgroundInset").ShouldBe(new Thickness(0, 1));
+        Own<CornerRadius>(snapshot, "Select", "OptionBorderRadius").ShouldBe(new CornerRadius(4));
+        // The other option lists follow the Select: 4px corners with a 2px gap (TreeSelect: its rows already keep the
+        // 2px tree.gap and content.border.radius corners).
+        Own<CornerRadius>(snapshot, "Cascader", "OptionBorderRadius").ShouldBe(new CornerRadius(4));
+        Own<Thickness>(snapshot, "Cascader", "OptionMargin").ShouldBe(new Thickness(0, 1));
+        Own<Thickness>(snapshot, "Cascader", "MenuPadding").ShouldBe(new Thickness(4, 3));
+        Own<CornerRadius>(snapshot, "AutoComplete", "OptionBorderRadius").ShouldBe(new CornerRadius(4));
+        Own<Thickness>(snapshot, "AutoComplete", "OptionMargin").ShouldBe(new Thickness(0, 1));
+        Own<Thickness>(snapshot, "AutoComplete", "PopupContentPadding").ShouldBe(new Thickness(4, 3));
+        Own<Thickness>(snapshot, "TreeSelect", "PopupContentPadding").ShouldBe(new Thickness(4, 4, 4, 2));
+        // Collapse headers take the Expander's padding (AtomUI deviation from accordion.header.padding 16).
+        Own<Thickness>(snapshot, "Collapse", "HeaderPadding").ShouldBe(Own<Thickness>(snapshot, "Expander", "HeaderPadding"));
         // The label sits at border + button.padding.x (10 / sm 8 / lg 12), as on primeng.dev.
         Own<Thickness>(snapshot, "Button", "ContentPadding").Left.ShouldBe(11);
         Own<Thickness>(snapshot, "Button", "ContentPaddingSM").Left.ShouldBe(9);
@@ -323,7 +381,8 @@ public class PrimeNGThemePackageTests
         Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 6));
         Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(12));
         Effective<CornerRadius>(snapshot, "Dialog", "BorderRadiusLG").ShouldBe(new CornerRadius(12));
-        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18));
+        // PrimeUIX dialog content padding: 0 under the header, overlay.modal.padding on the other sides.
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18, 0, 18, 18));
         Own<double>(snapshot, "Dialog", "HeaderFontSize").ShouldBe(18);
     }
 
@@ -336,9 +395,9 @@ public class PrimeNGThemePackageTests
     [InlineData("PrimeNGLara.Dark", "#3FFFFFFF", "#3F3F46")]
     [InlineData("PrimeNGLara.Compact", "#3F000000", "#E2E8F0")]
     [InlineData("PrimeNGLara.DarkCompact", "#3FFFFFFF", "#3F3F46")]
-    [InlineData("PrimeNGNora", "#3F000000", "#E2E8F0")]
+    // Nora light takes PrimeUIX form.field.disabled (surface 300 background): see
+    // Nora_Light_Disabled_Field_Follows_PrimeUIX.
     [InlineData("PrimeNGNora.Dark", "#3FFFFFFF", "#3F3F46")]
-    [InlineData("PrimeNGNora.Compact", "#3F000000", "#E2E8F0")]
     [InlineData("PrimeNGNora.DarkCompact", "#3FFFFFFF", "#3F3F46")]
     public async Task Disabled_Text_Stays_As_Readable_As_The_Old_Profiles(
         string id, string oldDisabledText, string oldDisabledBackground)
@@ -352,6 +411,17 @@ public class PrimeNGThemePackageTests
         var ratio = ContrastRatio.Of(Global<Color>(snapshot, "ColorTextDisabled"),
             Global<Color>(snapshot, "ColorBgContainerDisabled"));
         ratio.ShouldBeGreaterThanOrEqualTo(floor, $"{id}: {ratio:F2} < {floor:F2}");
+    }
+
+    [AvaloniaTheory]
+    [InlineData("PrimeNGNora")]
+    [InlineData("PrimeNGNora.Compact")]
+    public async Task Nora_Light_Disabled_Field_Follows_PrimeUIX(string id)
+    {
+        // PrimeUIX 3.1.1 Nora light form.field.disabled.background is surface.300 and disabled.color surface.600.
+        var snapshot = await Apply(id);
+        Global<Color>(snapshot, "ColorBgContainerDisabled").ShouldBe(Color.Parse("#CBD5E1"));
+        Effective<Color>(snapshot, "LineEdit", "ColorTextDisabled").ShouldBe(Color.Parse("#475569"));
     }
 
     [AvaloniaTheory]
@@ -437,7 +507,7 @@ public class PrimeNGThemePackageTests
         Own<Thickness>(snapshot, "Button", "ContentPaddingSM").Left.ShouldBe(9);
         Own<Thickness>(snapshot, "Button", "ContentPaddingLG").Left.ShouldBe(13);
         Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(20));
-        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(20));
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(20, 0, 20, 20));
         Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 8));
     }
 
@@ -452,7 +522,8 @@ public class PrimeNGThemePackageTests
         Own<Thickness>(snapshot, "Select", "PopupContentPadding").ShouldBe(new Thickness(0, 2));
         Own<Thickness>(snapshot, "Button", "ContentPadding").Left.ShouldBe(11);
         Own<Thickness>(snapshot, "Card", "BodyPadding").ShouldBe(new Thickness(18));
-        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18));
+        // PrimeUIX dialog content padding: 0 under the header, overlay.modal.padding on the other sides.
+        Own<Thickness>(snapshot, "Dialog", "ContentPadding").ShouldBe(new Thickness(18, 0, 18, 18));
         Own<Thickness>(snapshot, "ToolTip", "ContentPadding").ShouldBe(new Thickness(10, 6));
     }
 
@@ -466,15 +537,53 @@ public class PrimeNGThemePackageTests
     }
 
     [AvaloniaFact]
-    public async Task Nora_Disables_Motion_And_Uses_Radius_2()
+    public async Task Nora_Has_Instant_State_Transitions_And_Uses_Radius_2()
     {
         var snapshot = await Apply("PrimeNGNora");
-        Global<bool>(snapshot, "EnableMotion").ShouldBeFalse();
+        // PrimeUIX nora transition.duration 0s only times the state colours; the component enter / leave animations of
+        // @primeuix/styles keep their own durations, so motion stays on and their owners restore them.
+        Global<bool>(snapshot, "EnableMotion").ShouldBeTrue();
+        Global<TimeSpan>(snapshot, "MotionDurationMid").ShouldBe(TimeSpan.Zero);
+        Global<TimeSpan>(snapshot, "MotionDurationSlow").ShouldBe(TimeSpan.Zero);
+        Effective<TimeSpan>(snapshot, "Popup", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(300));
+        Effective<TimeSpan>(snapshot, "FlyoutHost", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(300));
+        Effective<TimeSpan>(snapshot, "Dialog", "MotionDurationSlow").ShouldBe(TimeSpan.FromMilliseconds(300));
+        Effective<TimeSpan>(snapshot, "Drawer", "MotionDurationSlow").ShouldBe(TimeSpan.FromMilliseconds(500));
+        Effective<TimeSpan>(snapshot, "Collapse", "MotionDurationSlow").ShouldBe(TimeSpan.FromMilliseconds(200));
+        Effective<TimeSpan>(snapshot, "Collapse", "MotionDurationMid").ShouldBe(TimeSpan.Zero);
+        Effective<TimeSpan>(snapshot, "TabControl", "MotionDurationSlow").ShouldBe(TimeSpan.FromMilliseconds(250));
+        Effective<TimeSpan>(snapshot, "ToggleSwitch", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(100));
+        Effective<TimeSpan>(snapshot, "NotificationCard", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(300));
+        Effective<TimeSpan>(snapshot, "Button", "MotionDurationMid").ShouldBe(TimeSpan.Zero);
+        Own<TimeSpan>(snapshot, "Spin", "IndicatorDuration").ShouldBe(TimeSpan.FromMilliseconds(1200));
+        Own<TimeSpan>(snapshot, "ToolTip", "MotionDuration").ShouldBe(TimeSpan.FromMilliseconds(250));
+        foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.Compact", "PrimeNGNora.DarkCompact" })
+        {
+            var variant = await Apply(profile);
+            Global<bool>(variant, "EnableMotion").ShouldBeTrue();
+            Global<TimeSpan>(variant, "MotionDurationMid").ShouldBe(TimeSpan.Zero);
+            Effective<TimeSpan>(variant, "Popup", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(300));
+        }
+        // AtomUI deviations for legibility: the surface 500 placeholder of Aura / Lara (PrimeUIX nora: surface 600), a
+        // panel gap equal to the DropdownButton menu (nora anchor.gutter 0 stacks the panel border on the field border) and a visible splitter grip
+        // two stops past the surface 400 gutter (nora handle.background is transparent).
+        Global<Color>(snapshot, "ColorTextPlaceholder").ShouldBe(Color.Parse("#94A3B8"));
+        Global<Color>(snapshot, "ColorTextSecondary").ShouldBe(Color.Parse("#475569"));
+        // The panel's ring sits outside its frame: frame gap = menu gap + the ring width, so the visible edges match.
+        Own<double>(snapshot, "Popup", "MarginToAnchor").ShouldBe(Own<double>(snapshot, "DropdownButton", "MarginToAnchor") + 1);
+        Own<Color>(snapshot, "Splitter", "HandleGripColor").ShouldBe(Color.Parse("#475569"));
+        Own<Color>(snapshot, "Splitter", "HandleLineColor").ShouldBe(Color.Parse("#94A3B8"));
+        // Aura keeps the Ant Design ladder (transition.duration 0.2s).
+        var aura = await Apply("PrimeNGAura");
+        Global<TimeSpan>(aura, "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(200));
+        Effective<TimeSpan>(aura, "Popup", "MotionDurationMid").ShouldBe(TimeSpan.FromMilliseconds(200));
         Global<CornerRadius>(snapshot, "BorderRadius").ShouldBe(new CornerRadius(2));
         Global<Color>(snapshot, "ColorText").ShouldBe(Color.Parse("#0F172A"));
-        Global<Color>(snapshot, "ColorBorderSecondary").ShouldBe(Color.Parse("#00000000"));
+        // PrimeUIX Nora content.border.color is surface.400.
+        Global<Color>(snapshot, "ColorBorderSecondary").ShouldBe(Color.Parse("#94A3B8"));
         Own<FontWeight>(snapshot, "Button", "FontWeight").ShouldBe(FontWeight.Bold);
-        Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(2));
+        // PrimeUIX Nora card.root.border.radius is 4px (border.radius.lg 2px + 2).
+        Effective<CornerRadius>(snapshot, "Card", "BorderRadiusLG").ShouldBe(new CornerRadius(4));
         foreach (var profile in new[] { "PrimeNGNora.Dark", "PrimeNGNora.DarkCompact" })
         {
             var dark = await ApplyEmerald(profile);
@@ -506,10 +615,8 @@ public class PrimeNGThemePackageTests
         Global<Color>(dark, "ColorPrimaryHover").ShouldBe(Color.Parse("#34D399"));
         Global<Color>(dark, "ColorPrimaryActive").ShouldBe(Color.Parse("#6EE7B7"));
         // The dark selected background is the solid primary with the zinc-950 contrast text (asserted by
-        // Nora_Disables_Motion_And_Uses_Radius_2), and the dark focus ring is the field border (zinc-500), not the
-        // primary.
-        Global<Color>(dark, "ColorFocusBorder").ShouldBe(Color.Parse("#71717A"));
-        Global<Color>(dark, "ColorFocusBorder").ShouldBe(Global<Color>(dark, "ColorBorder"));
+        // Nora_Disables_Motion_And_Uses_Radius_2), and the dark focus ring is PrimeUIX focus.ring.color, the primary.
+        Global<Color>(dark, "ColorFocusBorder").ShouldBe(Color.Parse("#10B981"));
     }
 
     [AvaloniaFact]
@@ -665,7 +772,10 @@ public class PrimeNGThemePackageTests
         // PrimeUIX checkbox / radiobutton icon.checked.color is primary.contrast.color: the checked marks take the
         // contrast colour, so they stay visible on the near-white dark primary.
         Effective<Color>(snapshot, "CheckBox", "ColorWhite").ShouldBe(Color.Parse(expected[3]), profile);
-        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(Color.Parse(expected[3]), profile);
+        // Nora keeps the field background when checked and draws the dot in the primary colour
+        // (radiobutton.icon.checked.color primary.color).
+        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(
+            Color.Parse(profile.StartsWith("PrimeNGNora", StringComparison.Ordinal) ? expected[0] : expected[3]), profile);
     }
 
     [AvaloniaTheory]
@@ -889,7 +999,10 @@ public class PrimeNGThemePackageTests
         // Only noir moves the checked marks to the contrast colour; a coloured primary keeps today's white marks.
         var snapshot = await ApplyEmerald(profile);
         Effective<Color>(snapshot, "CheckBox", "ColorWhite").ShouldBe(Colors.White);
-        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(Colors.White);
+        // Nora's radio dot is the primary colour on the field background.
+        Own<Color>(snapshot, "RadioButton", "RadioColor").ShouldBe(profile.StartsWith("PrimeNGNora", StringComparison.Ordinal)
+            ? Global<Color>(snapshot, "ColorPrimary")
+            : Colors.White);
     }
 
     private static string StripMetadata(string path, string algorithmId)

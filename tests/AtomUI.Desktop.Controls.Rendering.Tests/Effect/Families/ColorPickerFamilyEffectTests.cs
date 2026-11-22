@@ -157,7 +157,8 @@ public partial class ColorPickerFamilyEffectTests
             {
                 return token is "ColorPickerPresetPanelWidth" or "ColorPickerPresetColorGroupPadding" ? control.GetVisualDescendants().OfType<ColorPickerPaletteGroup>().Single() : control.GetVisualDescendants().OfType<PaletteColorItem>().First();
             }
-            if (token is "ColorPickerAlphaInputWidth" or "ColorPickerInputNumberHandleWidth" or "EditorFontSize")
+            // InputPaddingSM widens the alpha editor (ColorPickerAlphaInputWidth keeps its text viewport).
+            if (token is "ColorPickerAlphaInputWidth" or "ColorPickerInputNumberHandleWidth" or "EditorFontSize" or "InputPaddingSM")
             {
                 return control.GetVisualDescendants().OfType<ColorPickerInput>().Single();
             }

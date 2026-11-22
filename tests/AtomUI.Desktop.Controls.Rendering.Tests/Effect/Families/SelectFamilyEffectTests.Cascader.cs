@@ -177,6 +177,16 @@ public partial class SelectFamilyEffectTests
                     Open();
                     Item(static item => item.IsExpanded = true);
                     break;
+                case "OptionMargin":
+                    // A margin around every item moves the rows apart.
+                    Open();
+                    break;
+                case "OptionBorderRadius":
+                    // The item corners show on the expanded item's background.
+                    Open();
+                    Item(static item => item.IsExpanded = true);
+                    b.Perturb = static _ => new Avalonia.CornerRadius(16);
+                    break;
                 case "FilterHighlightColor":
                     Open();
                     // The view filters once it is loaded: the filter value is set with the drop-down open.
@@ -192,7 +202,7 @@ public partial class SelectFamilyEffectTests
                 case "SpacingXXS":
                     Tags();
                     break;
-                case "ColorText" or "FontSize" or "FontSizeLG":
+                case "ColorText" or "FontSize" or "FontSizeLG" or "InputFontSizeSM":
                     Selected();
                     break;
                 case "InputContentMargin":

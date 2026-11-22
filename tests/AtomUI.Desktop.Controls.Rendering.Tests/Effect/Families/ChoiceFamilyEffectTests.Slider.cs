@@ -42,7 +42,8 @@ public partial class ChoiceFamilyEffectTests
                 arrange = static c => Pseudo(c, ":pointerover");
                 break;
             case "ThumbCircleBorderActiveColor" or "ThumbCircleBorderThicknessHover" or "ThumbCircleSizeHover"
-                or "ThumbOutlineColor" or "ThumbOutlineThickness" or "ColorPrimary" or "WaveAnimationRange":
+                or "ThumbOutlineColor" or "ThumbOutlineThickness" or "ThumbHoverOutlineThickness" or "ColorPrimary" or
+                "WaveAnimationRange":
                 arrange = static c => Pseudo(ThumbOf(c), ":pointerover");
                 break;
             case "ThumbCircleBorderColorDisabled" or "TrackBgDisabled" or "ColorBgContainerDisabled":

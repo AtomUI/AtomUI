@@ -36,7 +36,8 @@ public partial class ChoiceFamilyEffectTests
             var radio = new RadioButton { Content = "Radio" };
             init?.Invoke(radio);
             return radio;
-        }, null, RadioButtonTokens.Identity, token);
+        }, token is "IndicatorHoverBorderColor" ? static c => Pseudo(c, ":pointerover") : null,
+            RadioButtonTokens.Identity, token);
     }
 
     public static IEnumerable<object[]> RadioButtonGroupRows() => MapRows("RadioButtonGroup");

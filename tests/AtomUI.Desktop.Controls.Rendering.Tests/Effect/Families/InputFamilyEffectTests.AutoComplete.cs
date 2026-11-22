@@ -80,11 +80,23 @@ public partial class InputFamilyEffectTests
                     };
                 return OverlayLayerHost(autoComplete);
             },
-            placeholder ? null : static control => TypeAndWaitForCandidates((AbstractAutoComplete)control),
+            placeholder
+                ? null
+                : token is "OptionSelectedColor" or "ColorText" or "OptionBorderRadius"
+                    // The selected candidate's text (ItemSelectedColor): select the first candidate.
+                    ? static control =>
+                    {
+                        TypeAndWaitForCandidates((AbstractAutoComplete)control);
+                        TopLevel.GetTopLevel(control)!.GetVisualDescendants().OfType<CandidateList>().First().SelectedIndex = 0;
+                        Dispatcher.UIThread.RunJobs();
+                    }
+                    : static control => TypeAndWaitForCandidates((AbstractAutoComplete)control),
             new EffectOptions
             {
                 Target = static root => root.GetVisualDescendants().OfType<AbstractAutoComplete>().First(),
-                Region = placeholder ? null : static control => PopupFrameOf(control)
+                Region = placeholder ? null : static control => PopupFrameOf(control),
+                // Square by default: the selected candidate's background shows rounded corners.
+                Perturb = token == "OptionBorderRadius" ? static _ => new Avalonia.CornerRadius(12) : null
             });
     }
 

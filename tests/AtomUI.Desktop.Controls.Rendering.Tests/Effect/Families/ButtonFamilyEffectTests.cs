@@ -663,6 +663,18 @@ public partial class ButtonFamilyEffectTests
                 return new(With(static g => g.IsEnabled = false), Options: Options());
             case "ColorPrimary":
                 return new(With(static _ => { }), OnOption(static b => b.IsChecked = true), Options());
+            case "ButtonOutlineCheckedHoverColor":
+                return new(With(static _ => { }), OnOption(static b =>
+                {
+                    b.IsChecked = true;
+                    ((IPseudoClasses)b.Classes).Add(":pointerover");
+                }), Options());
+            case "ButtonOutlineCheckedActiveColor":
+                return new(With(static _ => { }), OnOption(static b =>
+                {
+                    b.IsChecked = true;
+                    ((IPseudoClasses)b.Classes).Add(":pressed");
+                }), Options());
             case "ColorPrimaryHover":
                 return new(With(static _ => { }), OnOption(static b => ((IPseudoClasses)b.Classes).Add(":pointerover")), Options());
             case "ColorPrimaryActive":

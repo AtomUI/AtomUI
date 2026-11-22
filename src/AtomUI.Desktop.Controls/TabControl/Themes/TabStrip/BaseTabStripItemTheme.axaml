@@ -34,6 +34,7 @@
     <Style Selector="^:is(atom|TabStripItem)">
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Foreground" Value="{atom:TabTokenResourceBinding ItemColor}" />
+        <Setter Property="FontWeight" Value="{atom:TabTokenResourceBinding TitleFontWeight}" />
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">

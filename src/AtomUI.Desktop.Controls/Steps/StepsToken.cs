@@ -132,6 +132,9 @@ public sealed partial class StepsToken : AbstractControlDesignToken
     public partial Color ProcessTailColor { get; set; }
     public partial Color ProcessIconColor { get; set; }
     public partial Color ProcessTitleColor { get; set; }
+
+    /// <summary>The font weight of the step titles (inline steps keep the normal weight).</summary>
+    public partial FontWeight TitleFontWeight { get; set; }
     public partial Color ProcessDescriptionColor { get; set; }
     public partial Color ProcessIconBgColor { get; set; }
     public partial Color ProcessIconBorderColor { get; set; }
@@ -227,6 +230,7 @@ public sealed partial class StepsToken : AbstractControlDesignToken
 
         ProcessIconColor        = EffectiveGlobalToken.ColorTextLightSolid;
         ProcessTitleColor       = EffectiveGlobalToken.ColorText;
+        TitleFontWeight         = FontWeight.Normal;
         ProcessDescriptionColor = EffectiveGlobalToken.ColorText;
         ProcessIconBgColor      = EffectiveGlobalToken.ColorPrimary;
         ProcessIconBorderColor  = EffectiveGlobalToken.ColorPrimary;

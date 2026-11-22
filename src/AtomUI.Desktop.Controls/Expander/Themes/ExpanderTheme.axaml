@@ -106,8 +106,12 @@
             <Setter Property="Background" Value="{atom:ExpanderTokenResource ContentBg}" />
         </Style>
 
+        <!-- The header weight sits on the semantic header, so header and title semantic styles still override it. -->
+        <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
+            <Setter Property="TextElement.FontWeight" Value="{atom:ExpanderTokenResource HeaderFontWeight}" />
+        </Style>
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
-            <Setter Property="Foreground" Value="{atom:ExpanderTokenResource ColorTextHeading}" />
+            <Setter Property="Foreground" Value="{atom:ExpanderTokenResource HeaderColor}" />
             <!-- layout: one pixel optical nudge that centres the title text on the expand icon -->
             <Setter Property="Margin" Value="0, 1, 0, 0" />
         </Style>

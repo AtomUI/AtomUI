@@ -34,6 +34,18 @@ public sealed partial class ExpanderToken : AbstractControlDesignToken
     public partial Color HeaderBg { get; set; }
 
     /// <summary>
+    /// 折叠面板头部文本颜色
+    /// Text color of the header
+    /// </summary>
+    public partial Color HeaderColor { get; set; }
+
+    /// <summary>
+    /// 头部字重
+    /// Font weight of the header text
+    /// </summary>
+    public partial FontWeight HeaderFontWeight { get; set; }
+
+    /// <summary>
     /// 折叠面板内容内边距
     /// </summary>
     public partial Thickness ContentPadding { get; set; }
@@ -66,6 +78,8 @@ public sealed partial class ExpanderToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
         HeaderPadding            = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingSM);
         HeaderBg                 = EffectiveGlobalToken.ColorFillAlter;
+        HeaderColor              = EffectiveGlobalToken.ColorTextHeading;
+        HeaderFontWeight         = FontWeight.Normal;
         ContentPadding           = new Thickness(16, EffectiveGlobalToken.UniformlyPadding);
         ContentPaddingSM         = EffectiveGlobalToken.PaddingSM;
         ContentPaddingLG         = EffectiveGlobalToken.PaddingLG;

@@ -82,6 +82,8 @@
         <Setter Property="CornerRadius" Value="{atom:AlertTokenResource BorderRadiusLG}" />
         
         <Setter Property="BorderThickness" Value="{atom:AlertTokenResource BorderThickness}" />
+        <!-- On the Alert itself, so a local FontWeight and semantic section styles keep their precedence. -->
+        <Setter Property="FontWeight" Value="{atom:AlertTokenResource TextFontWeight}" />
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         
@@ -92,21 +94,25 @@
         <Style Selector="^[Type=Success]">
             <Setter Property="Background" Value="{atom:AlertTokenResource ColorSuccessBg}" />
             <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorSuccessBorder}" />
+            <Setter Property="Foreground" Value="{atom:AlertTokenResource SuccessMessageColor}" />
         </Style>
 
         <Style Selector="^[Type=Info]">
             <Setter Property="Background" Value="{atom:AlertTokenResource ColorInfoBg}" />
             <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorInfoBorder}" />
+            <Setter Property="Foreground" Value="{atom:AlertTokenResource InfoMessageColor}" />
         </Style>
 
         <Style Selector="^[Type=Warning]">
             <Setter Property="Background" Value="{atom:AlertTokenResource ColorWarningBg}" />
             <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorWarningBorder}" />
+            <Setter Property="Foreground" Value="{atom:AlertTokenResource WarningMessageColor}" />
         </Style>
 
         <Style Selector="^[Type=Error]">
             <Setter Property="Background" Value="{atom:AlertTokenResource ColorErrorBg}" />
             <Setter Property="BorderBrush" Value="{atom:AlertTokenResource ColorErrorBorder}" />
+            <Setter Property="Foreground" Value="{atom:AlertTokenResource ErrorMessageColor}" />
         </Style>
 
         <Style Selector="^:not(:has-description)">

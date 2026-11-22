@@ -22,5 +22,9 @@
                 </StackPanel>
             </ControlTemplate>
         </Setter>
+        <!-- A theme style, so semantic title styles keep their precedence over the group title weight. -->
+        <Style Selector="^ /template/ ContentPresenter#GroupTitlePresenter">
+            <Setter Property="FontWeight" Value="{atom:MenuItemGroupTokenResource TitleFontWeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

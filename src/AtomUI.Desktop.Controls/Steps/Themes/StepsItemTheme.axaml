@@ -142,6 +142,7 @@
         </Style>
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
             <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSizeLG}" />
+            <Setter Property="FontWeight" Value="{atom:StepsTokenResource TitleFontWeight}" />
         </Style>
         <Style Selector="^ /template/ ContentPresenter#SubHeaderPresenter">
             <Setter Property="FontSize" Value="{atom:StepsTokenResource FontSize}" />

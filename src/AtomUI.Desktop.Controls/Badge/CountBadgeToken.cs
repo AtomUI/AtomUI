@@ -16,6 +16,9 @@ public sealed partial class CountBadgeToken : AbstractControlDesignToken
 
     public partial double TextFontSizeSM { get; set; }
 
+    /// <summary>The font weight of the count text.</summary>
+    public partial FontWeight TextFontWeight { get; set; }
+
     public partial Color TextColor { get; set; }
 
     public partial Color IndicatorColor { get; set; }
@@ -49,6 +52,7 @@ public sealed partial class CountBadgeToken : AbstractControlDesignToken
 
         TextFontSize       = EffectiveGlobalToken.FontSizeSM;
         TextFontSizeSM     = EffectiveGlobalToken.FontSizeSM - 2;
+        TextFontWeight     = FontWeight.Normal;
         TextColor          = EffectiveGlobalToken.ColorTextLightSolid;
         IndicatorColor     = EffectiveGlobalToken.ColorError;
         ShadowSize         = lineWidth;

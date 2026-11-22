@@ -24,6 +24,24 @@ public sealed partial class CollapseToken : AbstractControlDesignToken
     public partial Color HeaderBg { get; set; }
 
     /// <summary>
+    /// 折叠面板头部文本颜色
+    /// Text color of a collapsed panel's header
+    /// </summary>
+    public partial Color HeaderColor { get; set; }
+
+    /// <summary>
+    /// 展开面板头部文本颜色
+    /// Text color of an expanded panel's header
+    /// </summary>
+    public partial Color HeaderActiveColor { get; set; }
+
+    /// <summary>
+    /// 面板头部字重
+    /// Font weight of the panel header text
+    /// </summary>
+    public partial FontWeight HeaderFontWeight { get; set; }
+
+    /// <summary>
     /// 折叠面板内容内边距
     /// </summary>
     public partial Thickness ContentPadding { get; set; }
@@ -54,6 +72,9 @@ public sealed partial class CollapseToken : AbstractControlDesignToken
         base.CalculateTokenValues(isDarkMode);
         HeaderPadding             = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingSM);
         HeaderBg                  = EffectiveGlobalToken.ColorFillAlter;
+        HeaderColor               = EffectiveGlobalToken.ColorTextHeading;
+        HeaderActiveColor         = EffectiveGlobalToken.ColorTextHeading;
+        HeaderFontWeight          = FontWeight.Normal;
         ContentPadding            = new Thickness(16, EffectiveGlobalToken.UniformlyPadding);
         CollapseContentPaddingSM  = EffectiveGlobalToken.PaddingSM;
         CollapseContentPaddingLG  = EffectiveGlobalToken.PaddingLG;

@@ -70,6 +70,9 @@ internal sealed class TabTokenResourceBindingExtension(string name) : MarkupExte
             Large: new(
                 TabControlTokenKind.TitleFontSizeLG, TabStripTokenKind.TitleFontSizeLG,
                 CardTabControlTokenKind.TitleFontSizeLG, CardTabStripTokenKind.TitleFontSizeLG, 0d)),
+        "TitleFontWeight" => new(
+            TabControlTokenKind.TitleFontWeight, TabStripTokenKind.TitleFontWeight,
+            CardTabControlTokenKind.TitleFontWeight, CardTabStripTokenKind.TitleFontWeight, FontWeight.Normal),
         "HorizontalItemMargin" => new(
             TabControlTokenKind.HorizontalItemMargin, TabStripTokenKind.HorizontalItemMargin,
             CardTabControlTokenKind.HorizontalItemMargin, CardTabStripTokenKind.HorizontalItemMargin, default(Thickness)),

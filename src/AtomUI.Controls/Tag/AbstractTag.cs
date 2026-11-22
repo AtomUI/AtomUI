@@ -1,4 +1,3 @@
-using System.Reactive.Disposables;
 using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
@@ -10,7 +9,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -129,6 +127,13 @@ public abstract class AbstractTag : TemplatedControl
     internal static readonly StyledProperty<IBrush?> CalculatedBorderBrushProperty =
         AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBorderBrush));
 
+    /// <summary>
+    /// Whether a Filled status tag paints like the Solid variant (status fill, contrast text). Set by the theme;
+    /// false (the default) keeps the light status background with the status text.
+    /// </summary>
+    internal static readonly StyledProperty<bool> IsFilledStatusSolidProperty =
+        AvaloniaProperty.Register<AbstractTag, bool>(nameof(IsFilledStatusSolid));
+
     internal IBrush? CalculatedBackground
     {
         get => GetValue(CalculatedBackgroundProperty);
@@ -145,6 +150,12 @@ public abstract class AbstractTag : TemplatedControl
     {
         get => GetValue(CalculatedBorderBrushProperty);
         set => SetValue(CalculatedBorderBrushProperty, value);
+    }
+
+    internal bool IsFilledStatusSolid
+    {
+        get => GetValue(IsFilledStatusSolidProperty);
+        set => SetValue(IsFilledStatusSolidProperty, value);
     }
 
     internal Thickness TagTextPaddingInline
@@ -293,7 +304,8 @@ public abstract class AbstractTag : TemplatedControl
                 UpdateTagColorVisualState();
             }
         }
-        else if (change.Property == VariantProperty && this.IsAttachedToVisualTree())
+        else if ((change.Property == VariantProperty || change.Property == IsFilledStatusSolidProperty) &&
+                 this.IsAttachedToVisualTree())
         {
             UpdateTagColorVisualState();
         }
@@ -416,6 +428,7 @@ public abstract class AbstractTag : TemplatedControl
             TagVariant.Solid    => (colorInfo.Color, solidText, colorInfo.Color),
             TagVariant.Outlined => (colorInfo.Background, colorInfo.Color, colorInfo.BorderColor),
             TagVariant.Outline  => (Colors.Transparent, colorInfo.Color, colorInfo.Color),
+            _ when IsFilledStatusSolid => (colorInfo.Color, solidText, Colors.Transparent),
             _                   => (colorInfo.Background, colorInfo.Color, Colors.Transparent)
         };
         ApplyCalculatedColors(background, foreground, border);

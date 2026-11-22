@@ -51,6 +51,8 @@
         <Setter Property="Foreground" Value="{CompiledBinding $self.CalculatedForeground}" />
         <Setter Property="BorderBrush" Value="{CompiledBinding $self.CalculatedBorderBrush}" />
         <Setter Property="FontSize" Value="{atom:TagTokenResource TagFontSize}" />
+        <Setter Property="FontWeight" Value="{atom:TagTokenResource TagFontWeight}" />
+        <Setter Property="IsFilledStatusSolid" Value="{atom:TagTokenResource FilledStatusSolid}" />
         <Setter Property="Padding" Value="{atom:TagTokenResource TagPadding}" />
         <Setter Property="RenderScaleAwareBorderThickness" Value="{atom:TagTokenResource BorderThickness}" />
         <Setter Property="CornerRadius" Value="{atom:TagTokenResource BorderRadiusSM}" />

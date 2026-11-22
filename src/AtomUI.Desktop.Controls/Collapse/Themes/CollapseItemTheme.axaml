@@ -97,8 +97,12 @@
             <Setter Property="Background" Value="{atom:CollapseTokenResource ContentBg}" />
         </Style>
 
+        <!-- The header weight sits on the semantic header, so header and title semantic styles still override it. -->
+        <Style Selector="^ /template/ atom|PixelAlignedBorder#PART_HeaderDecorator">
+            <Setter Property="TextElement.FontWeight" Value="{atom:CollapseTokenResource HeaderFontWeight}" />
+        </Style>
         <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
-            <Setter Property="Foreground" Value="{atom:CollapseTokenResource ColorTextHeading}" />
+            <Setter Property="Foreground" Value="{atom:CollapseTokenResource HeaderColor}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
@@ -109,6 +113,9 @@
         <Style Selector="^[IsSelected=True]">
             <Style Selector="^ /template/ atom|IconButton#PART_ExpandButton">
                 <Setter Property="RenderTransform" Value="rotate(90deg)" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#PART_HeaderPresenter">
+                <Setter Property="Foreground" Value="{atom:CollapseTokenResource HeaderActiveColor}" />
             </Style>
         </Style>
 

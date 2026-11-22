@@ -1,5 +1,6 @@
 ﻿using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -32,6 +33,12 @@ public sealed partial class GroupBoxToken : AbstractControlDesignToken
     /// </summary>
     public partial Thickness HeaderContentPadding { get; set; }
 
+    /// <summary>
+    /// Header 标题字重
+    /// Font weight of the header title
+    /// </summary>
+    public partial FontWeight HeaderFontWeight { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -40,6 +47,7 @@ public sealed partial class GroupBoxToken : AbstractControlDesignToken
             EffectiveGlobalToken.UniformlyMargin, 0);
         HeaderContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
         HeaderIconMargin     = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXXS, 0);
+        HeaderFontWeight     = FontWeight.Normal;
     }
     
 }

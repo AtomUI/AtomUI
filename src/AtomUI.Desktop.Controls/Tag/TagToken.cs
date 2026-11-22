@@ -31,12 +31,19 @@ public sealed partial class TagToken : AbstractTagToken
     /// </summary>
     public partial Color SolidTextColor { get; set; }
 
+    /// <summary>
+    /// 填充型状态标签是否使用实心底色
+    /// Whether a Filled status tag uses the solid status fill with the contrast text
+    /// </summary>
+    public partial bool FilledStatusSolid { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
         TagCloseIconSize = EffectiveGlobalToken.IconSizeXS;
         DefaultBg        = ColorUtils.OnBackground(EffectiveGlobalToken.ColorFillTertiary, EffectiveGlobalToken.ColorBgContainer);
         DefaultColor     = EffectiveGlobalToken.ColorText;
+        FilledStatusSolid = false;
         SolidTextColor   = ColorUtils.IsBright(EffectiveGlobalToken.ColorBgSolid, Colors.White)
             ? Colors.Black
             : Colors.White;

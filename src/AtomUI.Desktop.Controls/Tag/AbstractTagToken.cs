@@ -1,5 +1,6 @@
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -16,6 +17,12 @@ public abstract partial class AbstractTagToken : AbstractControlDesignToken
     /// Font size of the tag text
     /// </summary>
     public partial double TagFontSize { get; set; }
+
+    /// <summary>
+    /// 标签字重
+    /// Font weight of the tag text
+    /// </summary>
+    public partial FontWeight TagFontWeight { get; set; }
 
     /// <summary>
     /// 标签行高
@@ -45,6 +52,7 @@ public abstract partial class AbstractTagToken : AbstractControlDesignToken
     {
         base.CalculateTokenValues(isDarkMode);
         TagFontSize          = EffectiveGlobalToken.FontSizeSM;
+        TagFontWeight        = FontWeight.Normal;
         TagLineHeight        = EffectiveGlobalToken.FontHeightSM;
         TagIconSize          = EffectiveGlobalToken.FontSizeIcon;
         TagPadding           = new Thickness(EffectiveGlobalToken.SizeXS - 1, 0);

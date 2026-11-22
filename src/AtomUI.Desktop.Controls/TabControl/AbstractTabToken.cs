@@ -11,6 +11,9 @@ public abstract partial class AbstractTabToken : AbstractControlDesignToken
     public partial double TitleFontSize { get; set; }
     public partial double TitleFontSizeLG { get; set; }
     public partial double TitleFontSizeSM { get; set; }
+
+    /// <summary>The font weight of the tab titles.</summary>
+    public partial FontWeight TitleFontWeight { get; set; }
     public partial Thickness HorizontalItemMargin { get; set; }
     public partial Color ItemColor { get; set; }
     public partial Color ItemHoverColor { get; set; }
@@ -30,6 +33,7 @@ public abstract partial class AbstractTabToken : AbstractControlDesignToken
         TitleFontSize = EffectiveGlobalToken.FontSize;
         TitleFontSizeLG = EffectiveGlobalToken.FontSizeLG;
         TitleFontSizeSM = EffectiveGlobalToken.FontSize;
+        TitleFontWeight = FontWeight.Normal;
         HorizontalItemMargin = new Thickness();
         ItemColor = EffectiveGlobalToken.ColorText;
         ItemHoverColor = EffectiveGlobalToken.ColorPrimaryHover;

@@ -44,6 +44,7 @@
         </Style>
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="FontSize" Value="{atom:CountBadgeTokenResource TextFontSize}" />
+            <Setter Property="FontWeight" Value="{atom:CountBadgeTokenResource TextFontWeight}" />
             <Setter Property="Padding" Value="{atom:CountBadgeTokenResource TextPadding}" />
         </Style>
 

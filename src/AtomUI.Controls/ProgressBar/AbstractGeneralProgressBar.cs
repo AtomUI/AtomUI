@@ -615,7 +615,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         var extraInfoSize = CalculateExtraInfoSize(FontSize);
         if (Orientation == Orientation.Horizontal)
         {
-            thickness += extraInfoSize.Height;
+            thickness += CalculateInfoLineHeight(extraInfoSize, FontSize, PercentPosition.IsInner);
             FallbackMinHeight = thickness;
             FallbackMinWidth  = extraInfoSize.Width;
         }

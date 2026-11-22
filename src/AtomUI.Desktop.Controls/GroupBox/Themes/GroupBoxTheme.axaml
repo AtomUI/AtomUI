@@ -53,6 +53,7 @@
         <Setter Property="CornerRadius" Value="{atom:GroupBoxTokenResource BorderRadius}" />
         <Setter Property="HeaderTitleColor" Value="{atom:GroupBoxTokenResource ColorText}" />
         <Setter Property="HeaderFontSize" Value="{atom:GroupBoxTokenResource FontSize}" />
+        <Setter Property="HeaderFontWeight" Value="{atom:GroupBoxTokenResource HeaderFontWeight}" />
 
         <Style Selector="^ /template/ Panel#PART_HeaderContainer">
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderContainerMargin}" />

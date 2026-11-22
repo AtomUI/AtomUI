@@ -284,6 +284,23 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         return default;
     }
     
+    /// <summary>
+    /// The height the built-in info takes across a horizontal bar: the taller of the percentage text and the status
+    /// icon, so the bar keeps one height whether it shows a value or an icon (antd gives both one line box) and stacked
+    /// bars stay evenly spaced. Custom info content keeps its own measured size.
+    /// </summary>
+    private protected double CalculateInfoLineHeight(Size extraInfoSize, double fontSize, bool isInnerLabel)
+    {
+        // An inner label sits inside the bar, which keeps its own geometry.
+        if (!IsProgressInfoPresented || ProgressInfoContent is not null || isInnerLabel)
+        {
+            return extraInfoSize.Height;
+        }
+
+        var textHeight = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, 100d), fontSize, FontFamily).Height;
+        return Math.Max(extraInfoSize.Height, Math.Max(textHeight, LineInfoIconSize));
+    }
+
     private void UpdatePseudoClasses()
     {
         PseudoClasses.Set(ProgressBarPseudoClass.Vertical, Orientation == Orientation.Vertical);

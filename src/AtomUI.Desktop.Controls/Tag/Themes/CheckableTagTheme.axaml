@@ -48,6 +48,7 @@
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="FontSize" Value="{atom:CheckableTagTokenResource TagFontSize}" />
+    <Setter Property="FontWeight" Value="{atom:CheckableTagTokenResource TagFontWeight}" />
     <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorText}" />
     <Setter Property="IsMotionEnabled" Value="{atom:CheckableTagTokenResource EnableMotion}" />
     <Setter Property="MinHeight" Value="{atom:CheckableTagTokenResource TagLineHeight}" />

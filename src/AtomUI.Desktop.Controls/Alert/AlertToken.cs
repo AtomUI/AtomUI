@@ -1,5 +1,6 @@
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -57,6 +58,36 @@ public sealed partial class AlertToken : AbstractControlDesignToken
     /// </summary>
     public partial Thickness DescriptionLabelMargin { get; set; }
 
+    /// <summary>
+    /// 成功提示文字颜色
+    /// Text colour of a success alert
+    /// </summary>
+    public partial Color SuccessMessageColor { get; set; }
+
+    /// <summary>
+    /// 信息提示文字颜色
+    /// Text colour of an info alert
+    /// </summary>
+    public partial Color InfoMessageColor { get; set; }
+
+    /// <summary>
+    /// 警告提示文字颜色
+    /// Text colour of a warning alert
+    /// </summary>
+    public partial Color WarningMessageColor { get; set; }
+
+    /// <summary>
+    /// 错误提示文字颜色
+    /// Text colour of an error alert
+    /// </summary>
+    public partial Color ErrorMessageColor { get; set; }
+
+    /// <summary>
+    /// 提示文字字重
+    /// Font weight of the alert text (message and description)
+    /// </summary>
+    public partial FontWeight TextFontWeight { get; set; }
+
     protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
@@ -72,6 +103,11 @@ public sealed partial class AlertToken : AbstractControlDesignToken
 
         CloseIconSize = EffectiveGlobalToken.FontSizeIcon;
         DefaultIconSize = EffectiveGlobalToken.FontSizeLG;
+        SuccessMessageColor = EffectiveGlobalToken.ColorText;
+        InfoMessageColor    = EffectiveGlobalToken.ColorText;
+        WarningMessageColor = EffectiveGlobalToken.ColorText;
+        ErrorMessageColor   = EffectiveGlobalToken.ColorText;
+        TextFontWeight      = FontWeight.Normal;
     }
     
 }

@@ -1,5 +1,6 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Resources;
 using AtomUIGallery.Workspace;
 using Avalonia;
@@ -17,26 +18,15 @@ public class GalleryBuiltInThemeTests
         AvaloniaTestApp.EnsureInitialized();
     }
 
-    [Theory]
-    [InlineData("PolarGreen")]
-    [InlineData("SunsetOrange")]
-    [InlineData("GoldenPurple")]
-    [InlineData("Magenta")]
-    public void Gallery_Catalog_No_Longer_Contains_The_Removed_Color_Presets(string themeId)
-    {
-        var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-
-        manager.AvailableThemes.Select(theme => theme.Id).ShouldNotContain(themeId);
-    }
-
     [Fact]
     public void Gallery_Catalog_Keeps_DaybreakBlue_As_The_Seed_Based_Ant_Design_Language()
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
 
-        var theme = manager.AvailableThemes.Single(info => info.Id == "DaybreakBlue");
-        theme.DesignLanguage.ShouldBe("AntDesign");
-        theme.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
+        var theme = manager.Themes.Single(info => info.Id == "DaybreakBlue");
+        theme.Language.ShouldBe("AntDesign");
+        // The brand seed is open: the theme locks no seed.
+        theme.LockedSeeds.ShouldBeEmpty();
         theme.AccentColor.ShouldBe(Color.Parse("#1677FF"));
     }
 
@@ -87,15 +77,36 @@ public class GalleryBuiltInThemeTests
                             ]);
     }
 
+    // The twelve v1 PrimeNG profiles each declared the noir seed; the language now ships no named theme, so its
+    // implicit default entry stands for all of them and the language's seeds give every variant the noir primary.
     [Fact]
     public void PrimeNG_Themes_Default_To_Noir()
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        var themes = manager.AvailableThemes
-                            .Where(theme => theme.DesignLanguage?.StartsWith("PrimeNG.", StringComparison.Ordinal) == true)
-                            .ToArray();
-        themes.Length.ShouldBe(12);
-        themes.ShouldAllBe(theme => theme.AccentColor == Color.Parse("#020617"));
+        var entry = manager.Themes.Single(theme => theme.Id == ThemeInfo.LanguageDefaultId("PrimeNG"));
+        entry.IsLanguageDefault.ShouldBeTrue();
+        entry.Language.ShouldBe("PrimeNG");
+        entry.LockedSeeds.ShouldBeEmpty();
+        var info = manager.Languages.Single(language => language.Id == "PrimeNG");
+        info.AdjustableSeeds.ShouldContain(nameof(SharedTokenKind.ColorPrimary));
+
+        var language = new AtomUI.DesignLanguages.PrimeNG.PrimeNGLanguage();
+        var variants = 0;
+        foreach (var style in info.Styles)
+        {
+            foreach (var appearance in new[] { ThemeAppearance.Light, ThemeAppearance.Dark })
+            {
+                foreach (var density in info.Densities)
+                {
+                    var seed = new AtomUI.Theme.DesignTokens.DesignToken();
+                    language.DefineSeeds(new DesignVariant(style, appearance, density, DesignIdiom.Desktop), seed,
+                        new AtomUI.DesignLanguages.PrimeNG.PrimeNGToken());
+                    seed.ColorPrimary.ShouldBe(Color.Parse("#020617"), $"{style} {appearance} {density}");
+                    variants++;
+                }
+            }
+        }
+        variants.ShouldBe(12);
     }
 
     [Theory]
@@ -123,7 +134,7 @@ public class GalleryBuiltInThemeTests
         finally
         {
             await manager.ApplyThemeAsync(new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID,
+                AntDesignThemes.DaybreakBlue,
                 null,
                 ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);

@@ -6,7 +6,6 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
 using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.VisualTree;
 using Shouldly;
 using SkiaSharp;

@@ -11,6 +11,8 @@ public static class ThemeManagerBuilderExtensions
                                                 Action<GalleryBaseOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        // The Gallery's own controls take language-independent values (derived from the global tokens only).
+        GeneratedControlDerivationRegistration.Register(builder.Theme);
         return PackageMetadata.Definition.Register(builder, package =>
         {
             package.DependsOn(static root => Desktop.Controls.ThemeManagerBuilderExtensions.UseDesktopControls(root));

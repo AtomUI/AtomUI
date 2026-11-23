@@ -19,7 +19,7 @@ public sealed class CompiledThemePackage
         foreach (var program in copy)
         {
             ArgumentNullException.ThrowIfNull(program);
-            if (!ids.Add(program.Info.Id) || !sources.Add(program.SourceIdentity))
+            if (!ids.Add(program.Id) || !sources.Add(program.SourceIdentity))
             {
                 throw new ArgumentException("Compiled package theme and source identities must be unique.", nameof(programs));
             }

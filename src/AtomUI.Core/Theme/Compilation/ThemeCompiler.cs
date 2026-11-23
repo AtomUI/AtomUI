@@ -2,126 +2,57 @@ using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 using AtomUI.Generated.AtomUICore;
 using Avalonia.Media;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
-using AtomUI.Theme.Schema;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Compilation;
 
+/// <summary>
+/// The single-pass pipeline of spec 6.2 for one evaluation unit (a scope): the language and variant, the seeds, the
+/// language tokens, the global tokens, the core's final normalization and, lazily, every control's view. Explicit values
+/// are inputs: seeds are written before the language derives anything, explicit language, Map, Alias and control
+/// tokens are written and frozen before the step that would otherwise compute them (spec 6.3).
+/// </summary>
 internal sealed class ThemeCompiler
 {
     private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, CanonicalGlobalSchema> GlobalSchemas = new();
 
     private const string CompilerPath = "ThemeCompiler";
-    private static readonly ConditionalWeakTable<
-        PreparedThemeDefinition,
-        ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig>> s_definitionDefaults = new();
-    private static readonly ConditionalWeakTable<
-        ThemeSchemaRegistry,
-        NormalizedThemeConfig> s_libraryDefaults = new();
+    private const string MissingLanguageCode = "ATMTHM5001";
+    private const string UnsupportedVariantCode = "ATMTHM5002";
+    private const string UnknownLanguageTokenCode = "ATMTHM5003";
 
+    private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, IReadOnlySet<string>> SeedNames = new();
+    private const string SeedRejectReason = "a control derivation may override Map and Alias tokens only, not seeds.";
+    private static readonly ConditionalWeakTable<PreparedThemeDefinition, NormalizedThemeConfig> s_definitionDefaults = new();
+    private static readonly ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig> s_libraryDefaults = new();
+
+    /// <summary>
+    /// The lowest layer a theme definition gives: its language and fixed axes, and the definition itself as the value
+    /// layer matched per evaluation unit.
+    /// </summary>
     internal static NormalizedThemeConfig CreateDefinitionDefaults(
         PreparedThemeDefinition definition,
         ThemeSchemaRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(registry);
-
-        var byRegistry = s_definitionDefaults.GetValue(
-            definition,
-            static _ => new ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig>());
-        return byRegistry.GetValue(
-            registry,
-            currentRegistry => CreateDefinitionDefaultsCore(definition, currentRegistry));
+        return s_definitionDefaults.GetValue(definition, static value => NormalizedThemeConfig.CreateCanonical(
+            false, value.Axes, Array.Empty<NormalizedTokenValue>(), Array.Empty<LanguageTokenValue>(),
+            Array.Empty<NormalizedControlThemeConfig>(), value));
     }
 
-    private static NormalizedThemeConfig CreateDefinitionDefaultsCore(
-        PreparedThemeDefinition definition,
-        ThemeSchemaRegistry registry)
-    {
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms = definition.Algorithms;
-        if (algorithms.Count == 0)
-        {
-            registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm);
-            algorithms =
-            [
-                defaultAlgorithm ??
-                throw new InvalidOperationException("Default algorithm is not registered.")
-            ];
-        }
-
-        var globalTokens = new NormalizedTokenValue[definition.Tokens.Count];
-        for (var index = 0; index < globalTokens.Length; index++)
-        {
-            var token = definition.Tokens[index];
-            globalTokens[index] = new NormalizedTokenValue(
-                token.Descriptor,
-                token.Value,
-                token.CanonicalValue);
-        }
-        Array.Sort(
-            globalTokens,
-            static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
-
-        NormalizedControlThemeConfig ResolveControl(ControlTokenIdentity identity)
-        {
-            var control = definition.GetControl(identity);
-            var mode = control.AlgorithmMode == ControlAlgorithmMode.Unspecified
-                ? ControlAlgorithmMode.Disabled : control.AlgorithmMode;
-            return NormalizedControlThemeConfig.CreateCanonical(control.Descriptor.Identity, mode,
-                mode == ControlAlgorithmMode.Custom ? ThemeConfigArray.Copy(control.Algorithms) : Array.Empty<ThemeAlgorithmDescriptor>(),
-                NormalizeBoundTokens(control.GlobalTokens), NormalizeBoundTokens(control.OwnTokens));
-        }
-        if (definition.ControlRevision is { } revision)
-        {
-            return NormalizedThemeConfig.CreateDeferred(false, true, ThemeConfigArray.Copy(algorithms), globalTokens,
-                definition.ControlIdentities, identity => ResolveControl(identity), revision, (definition, registry));
-        }
-        var controls = definition.ControlIdentities.Select(ResolveControl).ToArray();
-        Array.Sort(controls, static (left, right) => CompareIdentity(left.Identity, right.Identity));
-        return NormalizedThemeConfig.CreateCanonical(false, true, ThemeConfigArray.Copy(algorithms), globalTokens, controls);
-    }
-
-    internal static NormalizedThemeConfig CreateLibraryDefaults(
-        ThemeSchemaRegistry registry)
+    /// <summary>The layer of a scope with <c>Inherit = false</c>: nothing but the language it keeps from its parent.</summary>
+    internal static NormalizedThemeConfig CreateLibraryDefaults(ThemeSchemaRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(registry);
-        return s_libraryDefaults.GetValue(registry, CreateLibraryDefaultsCore);
-    }
-
-    private static NormalizedThemeConfig CreateLibraryDefaultsCore(ThemeSchemaRegistry registry)
-    {
-        if (!registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm))
-        {
-            throw new InvalidOperationException("Default algorithm is not registered.");
-        }
-
-        return NormalizedThemeConfig.CreateCanonical(
-            false,
-            true,
-            [defaultAlgorithm],
-            Array.Empty<NormalizedTokenValue>(),
-            Array.Empty<NormalizedControlThemeConfig>());
-    }
-
-    private static NormalizedTokenValue[] NormalizeBoundTokens(
-        IReadOnlyList<BoundTokenValue> tokens)
-    {
-        var result = new NormalizedTokenValue[tokens.Count];
-        for (var index = 0; index < result.Length; index++)
-        {
-            var token = tokens[index];
-            result[index] = new NormalizedTokenValue(
-                token.Descriptor,
-                token.Value,
-                token.CanonicalValue);
-        }
-        Array.Sort(
-            result,
-            static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
-        return result;
+        return s_libraryDefaults.GetValue(registry, static _ => NormalizedThemeConfig.CreateCanonical(
+            false, ThemeAxes.None, Array.Empty<NormalizedTokenValue>(), Array.Empty<LanguageTokenValue>(),
+            Array.Empty<NormalizedControlThemeConfig>()));
     }
 
     internal ThemeCompileResult Compile(ThemeCompileInput input)
@@ -147,20 +78,29 @@ internal sealed class ThemeCompiler
         var diagnostics = new List<ThemeDefinitionDiagnostic>();
         try
         {
-            if (input.EffectiveConfig.Algorithms.Count == 0)
+            if (input.EffectiveConfig.Language is not { } language)
             {
-                AddError(diagnostics, "ATMTHM5001", "A theme compilation requires at least one algorithm.");
+                AddError(diagnostics, MissingLanguageCode, "A theme compilation requires a design language.");
+                return Failed(diagnostics);
+            }
+
+            var variant = input.EffectiveConfig.Axes.ResolveVariant();
+            if (!language.Axes.Supports(in variant))
+            {
+                AddError(diagnostics, UnsupportedVariantCode,
+                    $"Design language '{language.Id}' does not support the variant '{variant}'.");
                 return Failed(diagnostics);
             }
 
             if (preserveAppendedSlots && (input.ReusableParent is not { } previousInput ||
                 previousInput.DefinitionRevision != input.DefinitionRevision ||
-                !CanReuseGlobal(input, ResolveAppearance(input.EffectiveConfig.Algorithms))))
+                !CanReuseGlobal(input, variant)))
             {
                 throw new InvalidOperationException("Package append cannot change committed global theme inputs.");
             }
-            var global = CompileGlobal(input);
-            var controls = CompileControls(input, global, controlCompilationCache);
+            var unit = UnitInputs.Create(input.EffectiveConfig, language, variant, diagnostics);
+            var global = CompileGlobal(input, unit);
+            var controls = CompileControls(input, unit, global, controlCompilationCache);
             if (preserveAppendedSlots)
             {
                 var previous = input.ReusableParent!;
@@ -189,8 +129,7 @@ internal sealed class ThemeCompiler
             var fingerprint = ThemeContentFingerprint.Compute(
                 input.DefinitionRevision,
                 input.EffectiveConfig,
-                input.Registry.Revision,
-                global.Appearance);
+                input.Registry.Revision);
 
             return new ThemeCompileResult(
                 new ThemeSnapshot(
@@ -198,11 +137,12 @@ internal sealed class ThemeCompiler
                     input.Definition,
                     input.DefinitionRevision,
                     fingerprint,
-                    global.Appearance,
+                    variant,
                     input.Registry.Revision,
                     input.Registry,
                     input.EffectiveConfig,
                     global.Values,
+                    global.LanguageValues,
                     global.Resources,
                     global.Palettes,
                     controls),
@@ -215,93 +155,264 @@ internal sealed class ThemeCompiler
         }
     }
 
+    /// <summary>
+    /// The value inputs of one evaluation unit: the definition layer matched for the unit's variant under the unit's
+    /// explicit values (spec 7.7), the language tokens bound to the unit's language, and the per-control configuration.
+    /// </summary>
+    internal sealed class UnitInputs
+    {
+        private NormalizedControlThemeConfig[]? _controls;
+
+        private UnitInputs(DesignLanguageDescriptor language, DesignVariant variant, NormalizedThemeConfig config,
+            DefinitionLayer? layer, NormalizedTokenValue[] globalTokens, NormalizedTokenValue[] languageTokens)
+        {
+            Language       = language;
+            Variant        = variant;
+            Config         = config;
+            Layer          = layer;
+            GlobalTokens   = globalTokens;
+            LanguageTokens = languageTokens;
+        }
+
+        internal DesignLanguageDescriptor Language { get; }
+        internal DesignVariant Variant { get; }
+        internal NormalizedThemeConfig Config { get; }
+        internal DefinitionLayer? Layer { get; }
+
+        /// <summary>The unit's explicit global tokens, definition layer included, ordered by slot.</summary>
+        internal NormalizedTokenValue[] GlobalTokens { get; }
+
+        /// <summary>The unit's explicit language tokens, bound to <see cref="Language"/>, ordered by slot.</summary>
+        internal NormalizedTokenValue[] LanguageTokens { get; }
+
+        internal static UnitInputs Create(NormalizedThemeConfig config, DesignLanguageDescriptor language,
+            DesignVariant variant, List<ThemeDefinitionDiagnostic>? diagnostics)
+        {
+            var layer = config.Definition?.ValuesFor(in variant);
+            var globalTokens = Overlay(layer?.GlobalTokens, config.GlobalTokens);
+            var languageTokens = new Dictionary<int, NormalizedTokenValue>();
+            if (layer is not null && ReferenceEquals(config.Definition!.Language, language))
+            {
+                foreach (var token in layer.LanguageTokens)
+                {
+                    languageTokens[token.Descriptor.Slot] = token.Normalize();
+                }
+            }
+            foreach (var token in config.LanguageTokens)
+            {
+                if (!language.TryGetLanguageToken(token.Name, out var descriptor))
+                {
+                    // Review Focus 3: an override written for another language is ignored, with a diagnostic.
+                    AddWarning(diagnostics, UnknownLanguageTokenCode,
+                        $"'{token.Name}' is not a language Token of '{language.Id}'; the override is ignored.");
+                    continue;
+                }
+
+                try
+                {
+                    var value = descriptor.Parse(token.Value);
+                    languageTokens[descriptor.Slot] = new NormalizedTokenValue(descriptor, value, descriptor.Format(value));
+                }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                {
+                    AddWarning(diagnostics, UnknownLanguageTokenCode,
+                        $"Language Token '{token.Name}' value '{token.Value}' is invalid for '{language.Id}'; the override is ignored.");
+                }
+            }
+
+            var languageArray = languageTokens.Values.ToArray();
+            Array.Sort(languageArray, static (left, right) => left.Descriptor.Slot.CompareTo(right.Descriptor.Slot));
+            return new UnitInputs(language, variant, config, layer, globalTokens, languageArray);
+        }
+
+        /// <summary>The unit's controls: the definition layer's control entries under the explicit ones, by identity.</summary>
+        internal NormalizedControlThemeConfig[] Controls => _controls ??= BuildControls();
+
+        private NormalizedControlThemeConfig[] BuildControls()
+        {
+            if (Layer is null || Layer.Controls.Count == 0)
+            {
+                return Config.Controls as NormalizedControlThemeConfig[] ?? Config.Controls.ToArray();
+            }
+
+            var merged = new Dictionary<ControlTokenIdentity, NormalizedControlThemeConfig>(Layer.Controls);
+            foreach (var control in Config.Controls)
+            {
+                merged[control.Identity] = merged.TryGetValue(control.Identity, out var lower)
+                    ? MergeControl(lower, control)
+                    : control;
+            }
+            var result = merged.Values.ToArray();
+            Array.Sort(result, static (left, right) => CompareIdentity(left.Identity, right.Identity));
+            return result;
+        }
+
+        internal NormalizedControlThemeConfig? FindControl(ControlTokenIdentity identity)
+        {
+            var controls = Controls;
+            var low = 0;
+            var high = controls.Length - 1;
+            while (low <= high)
+            {
+                var middle = (low + high) >>> 1;
+                var comparison = CompareIdentity(controls[middle].Identity, identity);
+                if (comparison == 0)
+                {
+                    return controls[middle];
+                }
+                if (comparison < 0)
+                {
+                    low = middle + 1;
+                }
+                else
+                {
+                    high = middle - 1;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// The inputs of a control that is its own evaluation unit: the scope's configuration matched for the control's
+        /// variant (its fixed axes over the scope's), with the control's seed overrides as the highest seed layer.
+        /// </summary>
+        internal UnitInputs ForControlUnit(NormalizedControlThemeConfig control)
+        {
+            var variant = Variant with
+            {
+                Appearance = control.Appearance ?? Variant.Appearance,
+                Density = control.Density ?? Variant.Density
+            };
+            var unit = variant == Variant ? this : Create(Config, Language, variant, null);
+            var seeds = control.GlobalTokens.Where(static token => token.Descriptor.Stage == TokenStage.Seed).ToArray();
+            return seeds.Length == 0
+                ? unit
+                : new UnitInputs(Language, variant, Config, unit.Layer, Overlay(unit.GlobalTokens, seeds), unit.LanguageTokens);
+        }
+
+        private static NormalizedControlThemeConfig MergeControl(NormalizedControlThemeConfig lower,
+            NormalizedControlThemeConfig upper) =>
+            NormalizedControlThemeConfig.CreateCanonical(
+                ControlTokenIdentityCanonicalizer.Merge(lower.Identity, upper.Identity),
+                upper.Appearance ?? lower.Appearance,
+                upper.Density ?? lower.Density,
+                Overlay(lower.GlobalTokens, upper.GlobalTokens),
+                Overlay(lower.OwnTokens, upper.OwnTokens));
+    }
+
     private readonly record struct GlobalCompileOutcome(
-        ThemeAppearance Appearance,
+        DesignVariant Variant,
         bool ReuseGlobal,
         DesignToken? Builder,
+        LanguageDesignToken? Language,
         TokenValueTable Values,
+        TokenValueTable LanguageValues,
         IReadOnlyDictionary<object, object?> Resources,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> Palettes);
 
-    private static GlobalCompileOutcome CompileGlobal(ThemeCompileInput input)
+    private static GlobalCompileOutcome CompileGlobal(ThemeCompileInput input, UnitInputs unit)
     {
-        var appearance = ResolveAppearance(input.EffectiveConfig.Algorithms);
-        var reuseGlobal = CanReuseGlobal(input, appearance);
-        DesignToken? globalBuilder;
-        TokenValueTable globalValues;
-        IReadOnlyDictionary<object, object?> globalResources;
-        IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> palettes;
-        if (reuseGlobal)
+        if (CanReuseGlobal(input, unit.Variant))
         {
             var parent = input.ReusableParent!;
-            globalValues    = parent.GlobalTokenValues;
-            globalResources = parent.GlobalResources;
-            palettes        = parent.PresetColorPalettes;
-            globalBuilder   = null;
-        }
-        else
-        {
-            globalBuilder   = CompileGlobalBuilder(input);
-            globalValues    = TokenValueTable.Freeze(globalBuilder, input.Registry.GlobalTokens);
-            // Unchanged global values keep the previous publish's instances (see BuildResourceMap).
-            globalResources = BuildResourceMap(
-                globalBuilder,
-                input.Registry.GlobalTokens,
-                globalValues,
-                input.ReusableParent?.GlobalResources);
-            palettes        = FreezePresetPalettes(globalBuilder);
+            return new GlobalCompileOutcome(unit.Variant, true, null, null, parent.GlobalTokenValues,
+                parent.LanguageTokenValues, parent.GlobalResources, parent.PresetColorPalettes);
         }
 
-        return new GlobalCompileOutcome(
-            appearance,
-            reuseGlobal,
-            globalBuilder,
-            globalValues,
-            globalResources,
-            palettes);
+        var (builder, language) = CompileUnitGlobal(unit);
+        var values = TokenValueTable.Freeze(builder, input.Registry.GlobalTokens);
+        // Unchanged global values keep the previous publish's instances (see BuildResourceMap).
+        var resources = BuildResourceMap(builder, input.Registry.GlobalTokens, values,
+            input.ReusableParent?.GlobalResources);
+        return new GlobalCompileOutcome(unit.Variant, false, builder, language, values,
+            TokenValueTable.Freeze(language, unit.Language.LanguageTokens), resources, FreezePresetPalettes(builder));
     }
 
-    private static bool CanReuseGlobal(ThemeCompileInput input, ThemeAppearance appearance)
+    /// <summary>Steps 2 to 5 of the pipeline for one evaluation unit: seeds, language tokens, global tokens, normalization.</summary>
+    internal static (DesignToken Global, LanguageDesignToken Language) CompileUnitGlobal(UnitInputs unit)
+    {
+        var language = unit.Language;
+        var variant = unit.Variant;
+        var token = new DesignToken();
+        var languageToken = language.CreateLanguageToken();
+
+        // 2. Seeds: the language's defaults, then the explicit seeds of every layer (already overlaid).
+        language.Language.DefineSeedsCore(in variant, token, languageToken);
+        ApplyValues(token, unit.GlobalTokens, TokenStage.Seed);
+        ApplyValues(languageToken, unit.LanguageTokens, TokenStage.Seed);
+
+        // 3. Language tokens: explicit derived language tokens are frozen first.
+        FreezeValues(languageToken, unit.LanguageTokens, TokenStage.Language);
+        try
+        {
+            language.Language.DeriveLanguageCore(in variant, token, languageToken);
+        }
+        catch (Exception exception)
+        {
+            throw new ThemeDerivationException(language.Id, null, "language", exception);
+        }
+
+        // 4. Global tokens: explicit Map and Alias values are frozen first; seeds stay inputs the derivation may refine.
+        FreezeValues(token, unit.GlobalTokens, TokenStage.Map);
+        FreezeValues(token, unit.GlobalTokens, TokenStage.Alias);
+        try
+        {
+            language.Language.DeriveGlobalCore(in variant, languageToken, token);
+        }
+        catch (Exception exception)
+        {
+            throw new ThemeDerivationException(language.Id, null, "global", exception);
+        }
+
+        // 5. The core's language-independent final normalization.
+        token.ClearFreeze();
+        languageToken.ClearFreeze();
+        token.NormalizeFinalBehavior();
+        return (token, languageToken);
+    }
+
+    private static bool CanReuseGlobal(ThemeCompileInput input, DesignVariant variant)
     {
         var parent = input.ReusableParent;
         if (parent is null ||
             !input.Registry.ExtendsGlobalSchemaOf(parent.Registry) ||
-            parent.Appearance != appearance)
+            parent.Variant != variant ||
+            !ReferenceEquals(parent.EffectiveConfig.Language, input.EffectiveConfig.Language) ||
+            !ReferenceEquals(parent.EffectiveConfig.Definition, input.EffectiveConfig.Definition))
         {
             return false;
         }
 
         if (input.ChangesFromReusableParent is { } changes)
         {
-            return !changes.AlgorithmsChanged && !changes.GlobalTokensChanged;
+            return !changes.LanguageInputsChanged && !changes.GlobalTokensChanged;
         }
 
-        return AlgorithmSequenceEqual(
-                   parent.EffectiveConfig.Algorithms,
-                   input.EffectiveConfig.Algorithms) &&
-               TokenSequenceEqual(
-                   parent.EffectiveConfig.GlobalTokens,
-                   input.EffectiveConfig.GlobalTokens);
+        return TokenSequenceEqual(parent.EffectiveConfig.GlobalTokens, input.EffectiveConfig.GlobalTokens) &&
+               parent.EffectiveConfig.LanguageTokens.SequenceEqual(input.EffectiveConfig.LanguageTokens);
     }
 
     // 先按有序游标解析配置和复用状态，仅在首次查询时计算控件值与差量。
     private static LazyControlSnapshots CompileControls(
         ThemeCompileInput input,
+        UnitInputs unit,
         GlobalCompileOutcome global,
         ControlCompilationCache? controlCompilationCache)
     {
         var count = input.Registry.Controls.Count;
-        if (input.Registry.UsesStartupIndex || input.EffectiveConfig.HasDeferredControls ||
-            input.ReusableParent?.EffectiveConfig.HasDeferredControls == true)
+        if (input.Registry.UsesStartupIndex)
         {
-            return CompileIndexedControls(input, global, controlCompilationCache, count);
+            return CompileIndexedControls(input, unit, global, controlCompilationCache, count);
         }
         var cells = new ControlSnapshotCell[count];
         var configIndex = 0;
         var parentConfigIndex = 0;
         var changedControlIndex = 0;
-        var effectiveControls = input.EffectiveConfig.Controls;
-        var previousControls = input.ReusableParent?.EffectiveConfig.Controls;
+        var effectiveControls = unit.Controls;
+        var changedGlobals = FindReadSetReuse(input, global);
+        var previousControls = input.ReusableParent is { } parent && (global.ReuseGlobal || changedGlobals is not null)
+            ? UnitInputs.Create(parent.EffectiveConfig, unit.Language, unit.Variant, null).Controls
+            : null;
         LazyControlSnapshotSource? source = null;
         for (var slot = 0; slot < count; slot++)
         {
@@ -310,10 +421,10 @@ internal sealed class ThemeCompiler
                 effectiveControls,
                 descriptor.Identity,
                 ref configIndex);
-            var parentConfig = input.ReusableParent is null
+            var parentConfig = previousControls is null
                 ? null
                 : FindControlConfig(
-                    previousControls!,
+                    previousControls,
                     descriptor.Identity,
                     ref parentConfigIndex);
             bool? controlChanged = input.ChangesFromReusableParent is null
@@ -329,8 +440,14 @@ internal sealed class ThemeCompiler
                     config,
                     parentConfig,
                     global.ReuseGlobal,
-                    global.Appearance,
+                    global.Variant,
                     controlChanged))
+            {
+                cells[slot] = input.ReusableParent!.Controls.GetCell(slot);
+                continue;
+            }
+            if (changedGlobals is not null &&
+                CanReuseByReads(input.ReusableParent!, slot, config, parentConfig, changedGlobals))
             {
                 cells[slot] = input.ReusableParent!.Controls.GetCell(slot);
                 continue;
@@ -339,7 +456,7 @@ internal sealed class ThemeCompiler
             {
                 cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(
                     descriptor.Slot,
-                    global.Appearance,
+                    global.Variant.Appearance,
                     FrozenDictionary<int, object?>.Empty,
                     FrozenDictionary<object, object?>.Empty,
                     TokenValueTable.Empty,
@@ -347,17 +464,9 @@ internal sealed class ThemeCompiler
                 continue;
             }
 
-            source ??= new LazyControlSnapshotSource(
-                input,
-                global.Appearance,
-                global.Builder,
-                global.Values,
-                global.Resources,
-                global.Palettes,
-                controlCompilationCache);
-            var hasControlStage = input.Registry.HasControlAlgorithms && HasControlStage(input, descriptor, config);
-            cells[slot] = new ControlSnapshotCell(source, descriptor, config, FindValueDonor(input, descriptor.Identity, slot),
-                hasControlStage);
+            source ??= new LazyControlSnapshotSource(input, unit, global.Builder, global.Language, global.Values,
+                global.LanguageValues, global.Resources, global.Palettes, controlCompilationCache);
+            cells[slot] = new ControlSnapshotCell(source, descriptor, config, FindValueDonor(input, descriptor.Identity, slot));
         }
         return new LazyControlSnapshots(cells);
     }
@@ -379,19 +488,19 @@ internal sealed class ThemeCompiler
         return parent.Controls.GetCell(slot).MaterializedValue;
     }
 
-    private static LazyControlSnapshots CompileIndexedControls(ThemeCompileInput input, GlobalCompileOutcome global,
-        ControlCompilationCache? cache, int count)
+    private static LazyControlSnapshots CompileIndexedControls(ThemeCompileInput input, UnitInputs unit,
+        GlobalCompileOutcome global, ControlCompilationCache? cache, int count)
     {
         var cells = new ControlSnapshotCell[count];
-        var configured = new HashSet<ControlTokenIdentity>(input.EffectiveConfig.ControlIdentities);
-        var effectiveConfig = input.EffectiveConfig;
         var parent = input.ReusableParent;
         var canReuse = parent is not null && ReferenceEquals(parent.Registry, input.Registry) &&
-            parent.Appearance == global.Appearance && global.ReuseGlobal;
-        var allControlsUnchanged = canReuse && effectiveConfig.Equals(parent!.EffectiveConfig);
+            parent.Variant == global.Variant && global.ReuseGlobal;
+        var allControlsUnchanged = canReuse && input.EffectiveConfig.Equals(parent!.EffectiveConfig);
+        var changedGlobals = FindReadSetReuse(input, global);
         var changedControls = canReuse && input.ChangesFromReusableParent is { } changes
             ? changes.ChangedControls.ToHashSet()
             : null;
+        UnitInputs? parentUnit = null;
         LazyControlSnapshotSource? source = null;
         for (var slot = 0; slot < count; slot++)
         {
@@ -401,37 +510,129 @@ internal sealed class ThemeCompiler
                 cells[slot] = parent!.Controls.GetCell(slot);
                 continue;
             }
-            var hasConfig = configured.Contains(identity);
-            if (!hasConfig && !input.Registry.ControlHasOwnTokens(slot))
+            var config = unit.FindControl(identity);
+            if (changedGlobals is not null)
             {
-                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(slot, global.Appearance,
+                parentUnit ??= UnitInputs.Create(parent!.EffectiveConfig, unit.Language, unit.Variant, null);
+                if (CanReuseByReads(parent!, slot, config, parentUnit.FindControl(identity), changedGlobals))
+                {
+                    cells[slot] = parent!.Controls.GetCell(slot);
+                    continue;
+                }
+            }
+            if (config is null && !input.Registry.ControlHasOwnTokens(slot))
+            {
+                cells[slot] = new ControlSnapshotCell(new ControlThemeSnapshot(slot, global.Variant.Appearance,
                     FrozenDictionary<int, object?>.Empty, FrozenDictionary<object, object?>.Empty,
                     TokenValueTable.Empty, FrozenDictionary<object, object?>.Empty));
                 continue;
             }
-            source ??= new LazyControlSnapshotSource(input, global.Appearance, global.Builder, global.Values,
-                global.Resources, global.Palettes, cache);
+            source ??= new LazyControlSnapshotSource(input, unit, global.Builder, global.Language, global.Values,
+                global.LanguageValues, global.Resources, global.Palettes, cache);
             ControlThemeSnapshot? previousValue = null;
             NormalizedControlThemeConfig? previousConfig = null;
             if (canReuse && parent!.Controls.GetCell(slot).MaterializedValue is { } materialized)
             {
                 previousValue = materialized;
-                // This control was already read in the parent; its deferred config is cached.
-                // Keep only the per-control value, not the previous full effective config.
-                parent.EffectiveConfig.TryGetControl(identity, out previousConfig);
+                parentUnit ??= UnitInputs.Create(parent.EffectiveConfig, unit.Language, unit.Variant, null);
+                previousConfig = parentUnit.FindControl(identity);
             }
             var controlSlot = slot;
             var registry = input.Registry;
-            // A configured control never uses the root's shared resources directly; an unconfigured one does unless
-            // the scope chain runs a control token stage for it (its EvaluateGlobal may write its global copy).
-            var usesRootSharedResources = !hasConfig &&
-                (!registry.HasControlAlgorithms ||
-                 !HasControlStage(registry, identity, effectiveConfig.Algorithms));
-            cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot],
-                () => effectiveConfig.TryGetControl(identity, out var config) ? config : null, usesRootSharedResources,
+            cells[slot] = new ControlSnapshotCell(source, () => registry.Controls[controlSlot], () => config,
                 previousValue, previousConfig, FindValueDonor(input, identity, slot));
         }
         return new LazyControlSnapshots(cells);
+    }
+
+    /// <summary>
+    /// Spec 12.3: the global slots a child unit changed relative to its parent, when the parent's control results may be
+    /// reused by read set. <see langword="null"/> when they may not: no parent, a different registry, variant, language or
+    /// definition, a changed seed, palette or language token (then every value may differ), or a reused global layer
+    /// (the ordinary reuse applies).
+    /// </summary>
+    private static GlobalTokenReadSet? FindReadSetReuse(ThemeCompileInput input, GlobalCompileOutcome global)
+    {
+        var parent = input.ReusableParent;
+        if (global.ReuseGlobal || parent is null ||
+            parent.RegistryRevision != input.Registry.Revision ||
+            !ReferenceEquals(parent.Registry, input.Registry) ||
+            parent.Variant != global.Variant ||
+            !ReferenceEquals(parent.EffectiveConfig.Language, input.EffectiveConfig.Language) ||
+            !ReferenceEquals(parent.EffectiveConfig.Definition, input.EffectiveConfig.Definition) ||
+            !SameValues(parent.LanguageTokenValues, global.LanguageValues) ||
+            !SamePalettes(parent.PresetColorPalettes, global.Palettes))
+        {
+            return null;
+        }
+
+        var changes = GlobalTokenReadSet.Changes(parent.GlobalTokenValues, global.Values);
+        foreach (var descriptor in input.Registry.GlobalTokens)
+        {
+            if (descriptor.Stage == TokenStage.Seed && changes.Contains(descriptor.Slot))
+            {
+                return null;
+            }
+        }
+
+        return changes;
+    }
+
+    private static bool CanReuseByReads(ThemeSnapshot parent, int slot, NormalizedControlThemeConfig? config,
+        NormalizedControlThemeConfig? parentConfig, GlobalTokenReadSet changedGlobals)
+    {
+        if ((uint)slot >= (uint)parent.Controls.Count ||
+            parent.Controls.GetCell(slot).MaterializedValue is not { GlobalReads: { } reads } ||
+            !(config is null ? parentConfig is null : config.Equals(parentConfig)))
+        {
+            return false;
+        }
+
+        return !reads.Overlaps(changedGlobals);
+    }
+
+    private static bool SameValues(TokenValueTable left, TokenValueTable right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+        for (var slot = 0; slot < left.Count; slot++)
+        {
+            if (!left.ValueEquals(slot, right.GetValue(slot)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool SamePalettes(IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> left,
+        IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> right)
+    {
+        if (ReferenceEquals(left, right))
+        {
+            return true;
+        }
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+        foreach (var (key, palette) in left)
+        {
+            if (!right.TryGetValue(key, out var other) || palette.Primary != other.Primary ||
+                !palette.ColorSequence.SequenceEqual(other.ColorSequence))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool CanReuseControl(
@@ -441,7 +642,7 @@ internal sealed class ThemeCompiler
         NormalizedControlThemeConfig? config,
         NormalizedControlThemeConfig? parentConfig,
         bool reuseGlobal,
-        ThemeAppearance appearance,
+        DesignVariant variant,
         bool? controlChanged)
     {
         // slot 仅在当前 schema 内有效；演化重排后不能按旧数组下标复用其他控件的差量。
@@ -467,7 +668,7 @@ internal sealed class ThemeCompiler
         }
         if (config is null && parentConfig is null && !descriptor.HasOwnTokens)
         {
-            return parent.Appearance == appearance;
+            return parent.Variant.Appearance == variant.Appearance;
         }
 
         if (!reuseGlobal)
@@ -479,123 +680,110 @@ internal sealed class ThemeCompiler
                (config is null ? parentConfig is null : config.Equals(parentConfig));
     }
 
-    // 由独立 lazy source 在首次查询时执行，不依赖历史快照。previous 仅作为值身份复用来源
-    // （同一控件上一次物化的快照），不影响计算结果。
-    // Spec 4.3, control compilation: the effective global token (the four ControlAlgorithmMode cases), then each
-    // control stage's EvaluateGlobal on that copy, the scope's explicit Map/Alias values written back over the
-    // tokens it wrote (scopeGlobalTokens; read only on the stage path, and not in Global/Custom mode), the
-    // control-scoped global overrides, then the
-    // Own tokens through the staged evaluation. A control whose chain has no control stage takes the original path
-    // unchanged.
+    /// <summary>
+    /// Step 6 for one control: its view. The view's global tokens start as the scope's; the control's explicit global
+    /// overrides are written and frozen, its explicit control tokens likewise, then the language's derivation writes the
+    /// control token and any global token that differs for this control. A control that fixes an axis or overrides a
+    /// seed first gets its own global evaluation (spec 6.4).
+    /// </summary>
     internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? config,
-        IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms,
-        ThemeAppearance globalAppearance,
+        UnitInputs unit,
         DesignToken globalBuilder,
+        LanguageDesignToken languageToken,
         TokenValueTable globalValues,
         IReadOnlyDictionary<object, object?> globalResources,
         ThemeSchemaRegistry registry,
         ControlThemeSnapshot? previous = null,
-        IReadOnlyList<NormalizedTokenValue>? scopeGlobalTokens = null)
+        ControlViewPool? viewPool = null)
     {
         var globalDescriptors = registry.GlobalTokens;
-        // Takes the place of the stage array: still a single reference local, null on the path without stages.
-        // Checked before the call so that the no-stage path never enters (or jits) the stage machinery.
-        var stages = registry.HasControlAlgorithms
-            ? CreateControlStagePlan(registry, descriptor, config, globalAlgorithms)
-            : null;
-        var effectiveGlobalBuilder = CopyBuilder(globalBuilder, globalDescriptors);
-        var appearance = globalAppearance;
-        var effectiveGlobalMatchesRoot = config is null;
-        if (config is not null)
+        var appearance = unit.Variant.Appearance;
+        var variant = unit.Variant;
+        DesignToken viewGlobal;
+        var effectiveGlobalMatchesRoot = true;
+        if (config is { IsOwnEvaluationUnit: true })
         {
-            switch (config.AlgorithmMode)
-            {
-                case ControlAlgorithmMode.Global:
-                    effectiveGlobalBuilder = ReevaluateControlGlobal(
-                        effectiveGlobalBuilder,
-                        config.GlobalTokens,
-                        globalAlgorithms,
-                        globalAppearance,
-                        globalDescriptors);
-                    appearance = ResolveAppearance(globalAppearance, globalAlgorithms);
-                    break;
-
-                case ControlAlgorithmMode.Custom:
-                    effectiveGlobalBuilder = ReevaluateControlGlobal(
-                        effectiveGlobalBuilder,
-                        config.GlobalTokens,
-                        config.Algorithms,
-                        globalAppearance,
-                        globalDescriptors);
-                    appearance = ResolveAppearance(globalAppearance, config.Algorithms);
-                    break;
-
-                case ControlAlgorithmMode.Unspecified:
-                case ControlAlgorithmMode.Disabled:
-                    ApplyAllValues(effectiveGlobalBuilder, config.GlobalTokens);
-                    NormalizeFinalBehavior(effectiveGlobalBuilder);
-                    effectiveGlobalMatchesRoot = config.GlobalTokens.Count == 0;
-                    break;
-
-                default:
-                    throw new InvalidOperationException(
-                        $"Control '{descriptor.Identity}' has unsupported algorithm mode '{config.AlgorithmMode}'.");
-            }
-        }
-
-        if (stages is not null &&
-            RunControlGlobalStage(stages, config, scopeGlobalTokens, appearance, effectiveGlobalBuilder))
-        {
+            var controlUnit = unit.ForControlUnit(config);
+            (viewGlobal, languageToken) = CompileUnitGlobal(controlUnit);
+            appearance = controlUnit.Variant.Appearance;
+            variant = controlUnit.Variant;
             effectiveGlobalMatchesRoot = false;
-        }
-
-        IReadOnlyDictionary<int, object?> globalDelta;
-        IReadOnlyDictionary<object, object?> globalResourceDelta;
-        if (effectiveGlobalMatchesRoot)
-        {
-            globalDelta = FrozenDictionary<int, object?>.Empty;
-            globalResourceDelta = FrozenDictionary<object, object?>.Empty;
         }
         else
         {
-            var effectiveGlobalValues = TokenValueTable.Freeze(effectiveGlobalBuilder, globalDescriptors);
-            var effectiveGlobalResources = BuildResourceMap(
-                effectiveGlobalBuilder,
-                globalDescriptors,
-                effectiveGlobalValues,
-                previous?.EffectiveGlobalResourceDelta);
-            globalDelta = BuildTokenDelta(globalValues, effectiveGlobalValues);
-            globalResourceDelta = BuildDenseResourceDelta(globalResources, effectiveGlobalResources);
+            viewGlobal = viewPool?.Rent() ?? CopyBuilder(globalBuilder, globalDescriptors);
+        }
+
+        // The control's explicit global overrides are what the control sees; normalized before they are frozen, as a
+        // scope's are. A seed override made the control its own evaluation unit, so its Map and Alias tokens were
+        // derived from the seed; the seed itself is written again because the language's global derivation may refine
+        // or replace a seed input (a shadcn style's control height), and a control-level value is final for the control.
+        var overrides = config?.GlobalTokens;
+        if (overrides is { Count: > 0 })
+        {
+            foreach (var value in overrides)
+            {
+                value.Descriptor.SetValue(viewGlobal, value.Descriptor.CopyValue(value.Value));
+            }
+            viewGlobal.NormalizeFinalBehavior();
+            effectiveGlobalMatchesRoot = false;
+
+            // Every explicit value of the control is frozen against its derivation, seeds included (spec 6.3, 6.4).
+            FreezeOverrides(viewGlobal, overrides);
         }
 
         var controlBuilder = descriptor.CreateBuilder();
+        HashSet<string>? reads = null;
         var controlTokenValues = TokenValueTable.Empty;
-        IReadOnlyDictionary<object, object?> controlResources =
-            FrozenDictionary<object, object?>.Empty;
+        IReadOnlyDictionary<object, object?> controlResources = FrozenDictionary<object, object?>.Empty;
         if (controlBuilder is not null)
         {
-            controlBuilder.AssignEffectiveGlobalToken(effectiveGlobalBuilder);
-            if (stages is not null)
+            var ownTokens = config?.OwnTokens;
+            if (ownTokens is { Count: > 0 })
             {
-                RunControlOwnStage(descriptor, controlBuilder, config, appearance, effectiveGlobalBuilder, stages);
+                foreach (var value in ownTokens)
+                {
+                    value.Descriptor.SetValue(controlBuilder, value.Descriptor.CopyValue(value.Value));
+                    controlBuilder.Freeze(value.Descriptor.Name);
+                }
             }
-            else
-            {
-                var ownTokens = config?.OwnTokens;
-                if (ownTokens is not null)
-                {
-                    // Explicit overrides are written and flagged before the evaluator runs so default
-                    // calculations can see them; they are written again afterwards so they still win.
-                    MarkExplicit(controlBuilder, ownTokens);
-                }
 
-                descriptor.Evaluate(controlBuilder, appearance);
-                if (ownTokens is not null)
-                {
-                    ApplyAllValues(controlBuilder, ownTokens);
-                }
+            var derivation = registry.FindDerivation(unit.Language, descriptor.Slot) ??
+                             throw new ThemeDerivationException(unit.Language.Id, descriptor.Identity, "control",
+                                 new InvalidOperationException(
+                                     $"No control derivation is registered for '{descriptor.Identity}' under '{unit.Language.Id}'."));
+            viewGlobal.RejectWrites(GetSeedNames(globalDescriptors), SeedRejectReason);
+            viewGlobal.TrackWrites();
+            var recordReads = config is not { IsOwnEvaluationUnit: true } && overrides is not { Count: > 0 };
+            if (recordReads)
+            {
+                reads = new HashSet<string>(StringComparer.Ordinal);
+                viewGlobal.RecordReads(reads);
+            }
+            try
+            {
+                derivation.Derive(in variant, languageToken, controlBuilder, viewGlobal);
+            }
+            catch (Exception exception)
+            {
+                throw new ThemeDerivationException(unit.Language.Id, descriptor.Identity, "control", exception);
+            }
+            finally
+            {
+                viewGlobal.StopRecordingReads();
+            }
+
+            if (viewGlobal.HasAcceptedWrites)
+            {
+                effectiveGlobalMatchesRoot = false;
+            }
+            viewGlobal.ClearFreeze();
+            controlBuilder.ClearFreeze();
+            if (!effectiveGlobalMatchesRoot)
+            {
+                viewGlobal.NormalizeFinalBehavior();
             }
 
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
@@ -604,7 +792,39 @@ internal sealed class ThemeCompiler
                 descriptor.OwnTokens,
                 previousResources: previous?.ControlResources);
         }
+        else
+        {
+            viewGlobal.ClearFreeze();
+        }
 
+        IReadOnlyDictionary<int, object?> globalDelta;
+        IReadOnlyDictionary<object, object?> globalResourceDelta;
+        if (effectiveGlobalMatchesRoot)
+        {
+            // Nothing was written to the view: it still equals the scope's global tokens and serves the next control.
+            if (config is not { IsOwnEvaluationUnit: true })
+            {
+                viewPool?.Return(viewGlobal);
+            }
+            globalDelta = FrozenDictionary<int, object?>.Empty;
+            globalResourceDelta = FrozenDictionary<object, object?>.Empty;
+        }
+        else
+        {
+            var effectiveGlobalValues = TokenValueTable.Freeze(viewGlobal, globalDescriptors);
+            var effectiveGlobalResources = BuildResourceMap(
+                viewGlobal,
+                globalDescriptors,
+                effectiveGlobalValues,
+                previous?.EffectiveGlobalResourceDelta);
+            globalDelta = BuildTokenDelta(globalValues, effectiveGlobalValues);
+            globalResourceDelta = BuildDenseResourceDelta(globalResources, effectiveGlobalResources);
+        }
+
+        // The read set is kept only when the result depends on nothing but the scope's global tokens.
+        var globalReads = effectiveGlobalMatchesRoot && reads is not null
+            ? GlobalTokenReadSet.FromNames(reads, globalDescriptors)
+            : null;
         return new ControlThemeSnapshot(
             descriptor.Slot,
             appearance,
@@ -612,329 +832,21 @@ internal sealed class ThemeCompiler
             globalResourceDelta,
             controlTokenValues,
             controlResources,
-            controlBuilder?.AppearanceSettings);
+            globalReads);
     }
 
-    /// <summary>
-    /// Returns the control token stages that run for <paramref name="descriptor"/>, in chain order, or
-    /// <see langword="null"/> when none does. The chain is the control's own one in
-    /// <see cref="ControlAlgorithmMode.Custom"/> mode and <paramref name="globalAlgorithms"/> (the scope chain)
-    /// otherwise. A control without own tokens has no control stage.
-    /// </summary>
-    /// <remarks>
-    /// With no control stage registered at all (the built-in themes) this returns on the first check: no lookup,
-    /// no hashing, no allocation.
-    /// </remarks>
-    internal static ControlTokenAlgorithmDescriptor[]? ResolveControlStages(
-        ThemeSchemaRegistry registry,
-        ControlTokenDescriptor descriptor,
-        NormalizedControlThemeConfig? config,
-        IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms)
+    private static void FreezeOverrides(DesignToken viewGlobal, IReadOnlyList<NormalizedTokenValue> overrides)
     {
-        if (!registry.HasControlAlgorithms || !descriptor.HasOwnTokens)
+        foreach (var value in overrides)
         {
-            return null;
-        }
-
-        return CollectControlStages(registry, descriptor.Identity, ControlStageChain(config, globalAlgorithms));
-    }
-
-    /// <summary>
-    /// Whether a control token stage runs for <paramref name="descriptor"/> under <paramref name="input"/>'s scope chain
-    /// (or the control's own chain in Custom mode). Kept out of <see cref="CompileControls"/>, which runs for every
-    /// theme; called only when the registry has control stages.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static bool HasControlStage(
-        ThemeCompileInput input,
-        ControlTokenDescriptor descriptor,
-        NormalizedControlThemeConfig? config) =>
-        descriptor.HasOwnTokens &&
-        HasControlStage(input.Registry, descriptor.Identity, ControlStageChain(config, input.EffectiveConfig.Algorithms));
-
-    /// <summary>
-    /// Whether any algorithm of <paramref name="chain"/> has a control stage for <paramref name="control"/>. Allocates
-    /// nothing; the caller has established that the control has own tokens.
-    /// </summary>
-    private static bool HasControlStage(
-        ThemeSchemaRegistry registry,
-        ControlTokenIdentity control,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain)
-    {
-        if (!registry.HasControlAlgorithms)
-        {
-            return false;
-        }
-
-        for (var index = 0; index < chain.Count; index++)
-        {
-            if (registry.TryGetControlAlgorithm(chain[index].Algorithm, control, out _))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// The control stages of one control compilation and the algorithm context both of its parts share. The context
-    /// is created by <see cref="RunControlGlobalStage"/>, once the control's appearance is known.
-    /// </summary>
-    private sealed class ControlStagePlan(
-        ControlTokenAlgorithmDescriptor[] stages,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain)
-    {
-        internal ControlTokenAlgorithmDescriptor[] Stages { get; } = stages;
-
-        /// <summary>The chain the stages were resolved from.</summary>
-        internal IReadOnlyList<ThemeAlgorithmDescriptor> Chain { get; } = chain;
-
-        internal ThemeAlgorithmContext Context;
-    }
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static ControlStagePlan? CreateControlStagePlan(
-        ThemeSchemaRegistry registry,
-        ControlTokenDescriptor descriptor,
-        NormalizedControlThemeConfig? config,
-        IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms)
-    {
-        var stages = ResolveControlStages(registry, descriptor, config, globalAlgorithms);
-        return stages is null ? null : new ControlStagePlan(stages, ControlStageChain(config, globalAlgorithms));
-    }
-
-    private static ControlTokenAlgorithmDescriptor[]? CollectControlStages(
-        ThemeSchemaRegistry registry,
-        ControlTokenIdentity control,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain)
-    {
-        List<ControlTokenAlgorithmDescriptor>? stages = null;
-        for (var index = 0; index < chain.Count; index++)
-        {
-            if (registry.TryGetControlAlgorithm(chain[index].Algorithm, control, out var stage))
-            {
-                (stages ??= new List<ControlTokenAlgorithmDescriptor>(chain.Count - index)).Add(stage);
-            }
-        }
-
-        return stages?.ToArray();
-    }
-
-    private static IReadOnlyList<ThemeAlgorithmDescriptor> ControlStageChain(
-        NormalizedControlThemeConfig? config,
-        IReadOnlyList<ThemeAlgorithmDescriptor> globalAlgorithms) =>
-        config is { AlgorithmMode: ControlAlgorithmMode.Custom } ? config.Algorithms : globalAlgorithms;
-
-    private static ThemeAlgorithmContext CreateAlgorithmContext(
-        ThemeAppearance appearance,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
-        IReadOnlyList<NormalizedTokenValue>? scopeTokens = null,
-        IReadOnlyList<NormalizedTokenValue>? controlTokens = null)
-    {
-        var identities = new ThemeAlgorithm[chain.Count];
-        for (var index = 0; index < identities.Length; index++)
-        {
-            identities[index] = chain[index].Algorithm;
-        }
-
-        // Wrapped read-only so a stage cannot change the chain later algorithms see; this runs only when a stage does.
-        return new ThemeAlgorithmContext(appearance, Array.AsReadOnly(identities), scopeTokens, controlTokens);
-    }
-
-    /// <summary>
-    /// Runs <c>EvaluateGlobal</c> of every control stage, in chain order, on the control's own copy of its effective
-    /// global token. Then, for each token a stage wrote, the scope's explicit value is written back when the theme
-    /// sets that token and it is a Map or Alias token (seed tokens are inputs the Map stage already replaced, so an
-    /// explicit seed is not restored); in <see cref="ControlAlgorithmMode.Global"/> and
-    /// <see cref="ControlAlgorithmMode.Custom"/> mode nothing is written back (see remarks); finally the control-scoped global overrides are written again so they win
-    /// over both. The writes take effect directly, as in <see cref="ControlAlgorithmMode.Disabled"/> mode: Map and
-    /// Alias are not rerun.
-    /// </summary>
-    /// <returns>Whether any stage wrote a global token.</returns>
-    /// <remarks>
-    /// Global and Custom modes re-derive the control's global tokens without the scope's explicit Map/Alias values
-    /// (the documented existing exception of spec 4.3), so nothing is written back there either; that mode check is
-    /// made here rather than in <see cref="CompileControl"/>, which runs for every control.
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static bool RunControlGlobalStage(
-        ControlStagePlan plan,
-        NormalizedControlThemeConfig? config,
-        IReadOnlyList<NormalizedTokenValue>? scopeGlobalTokens,
-        ThemeAppearance appearance,
-        DesignToken controlGlobal)
-    {
-        plan.Context = CreateAlgorithmContext(appearance, plan.Chain, scopeGlobalTokens, config?.GlobalTokens);
-        if (config is { AlgorithmMode: ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom })
-        {
-            scopeGlobalTokens = null;
-        }
-        IReadOnlyCollection<string> names;
-        ControlTokenAlgorithmDescriptor? running = null;
-        // One recording session for the whole chain: its result is the union of the names every stage wrote.
-        controlGlobal.BeginRecordingWrites();
-        try
-        {
-            foreach (var stage in plan.Stages)
-            {
-                running = stage;
-                stage.EvaluateGlobal(in plan.Context, controlGlobal);
-            }
-        }
-        catch (Exception exception)
-        {
-            throw new ThemeAlgorithmContractException(
-                running!.Algorithm,
-                null,
-                ThemeAlgorithmContractViolationKind.Failed,
-                $"Algorithm '{running.Algorithm}' failed in the {nameof(TokenStage.Control)} stage.",
-                exception);
-        }
-        finally
-        {
-            names = controlGlobal.EndRecordingWrites();
-        }
-
-        if (names.Count != 0 && scopeGlobalTokens is { Count: > 0 })
-        {
-            RestoreExplicitDerivedValues(controlGlobal, names, scopeGlobalTokens);
-        }
-        if (config is not null)
-        {
-            ApplyAllValues(controlGlobal, config.GlobalTokens);
-        }
-        NormalizeFinalBehavior(controlGlobal);
-        return names.Count != 0;
-    }
-
-    // Spec 4.3 priority "algorithm < theme explicit value": the scope's explicit Map and Alias values are exactly the
-    // values the global compilation wrote into the root builder after the algorithms ran (ApplyValues at Map,
-    // CalculateAlias at Alias), so writing them back undoes only what a control stage overwrote. Seed values are
-    // skipped: they were consumed by the Map stage, and the compiled seed slot holds the algorithm's result.
-    private static void RestoreExplicitDerivedValues(
-        DesignToken controlGlobal,
-        IReadOnlyCollection<string> writtenNames,
-        IReadOnlyList<NormalizedTokenValue> scopeGlobalTokens)
-    {
-        foreach (var name in writtenNames)
-        {
-            for (var index = 0; index < scopeGlobalTokens.Count; index++)
-            {
-                var value = scopeGlobalTokens[index];
-                var descriptor = value.Descriptor;
-                if (descriptor.Stage is (TokenStage.Map or TokenStage.Alias) &&
-                    string.Equals(name, descriptor.Name, StringComparison.Ordinal))
-                {
-                    descriptor.SetValue(controlGlobal, descriptor.CopyValue(value.Value));
-                    break;
-                }
-            }
+            viewGlobal.Freeze(value.Descriptor.Name);
         }
     }
 
-    // Kept separate from CompileControl: the lambdas capture locals, and the closure would otherwise be allocated on
-    // entry to CompileControl, on the path without control stages too.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void RunControlOwnStage(
-        ControlTokenDescriptor descriptor,
-        AbstractControlDesignToken controlBuilder,
-        NormalizedControlThemeConfig? config,
-        ThemeAppearance appearance,
-        DesignToken effectiveGlobal,
-        ControlStagePlan plan)
-    {
-        // The context RunControlGlobalStage created for this compilation; copied so the lambdas can capture it.
-        var context = plan.Context;
-        var stages = plan.Stages;
-        var steps = new StagedAlgorithmStep[stages.Length];
-        for (var index = 0; index < steps.Length; index++)
-        {
-            var stage = stages[index];
-            steps[index] = new StagedAlgorithmStep(
-                stage.Algorithm,
-                token => EvaluateOwnStage(stage, in context, effectiveGlobal, (AbstractControlDesignToken)token));
-        }
-
-        var ownTokens = config?.OwnTokens ?? Array.Empty<NormalizedTokenValue>();
-        StagedTokenEvaluation.Run(
-            controlBuilder,
-            nameof(TokenStage.Control),
-            () => MarkExplicit(controlBuilder, ownTokens),
-            () => descriptor.Evaluate(controlBuilder, appearance),
-            () => ApplyAllValues(controlBuilder, ownTokens),
-            controlBuilder.ResetExplicit,
-            steps,
-            name => descriptor.TryGetOwnToken(name, out var token) ? token : null,
-            static token => token.Stage == TokenStage.Control,
-            token => controlBuilder.MarkExplicit(token.Slot));
-    }
-
-    // EvaluateOwn may only read the effective global token: its writes there are recorded and reported as a stage
-    // boundary violation. The exception passes through the staged evaluation unchanged.
-    private static void EvaluateOwnStage(
-        ControlTokenAlgorithmDescriptor stage,
-        in ThemeAlgorithmContext context,
-        DesignToken effectiveGlobal,
-        AbstractControlDesignToken token)
-    {
-        IReadOnlyCollection<string> names;
-        effectiveGlobal.BeginRecordingWrites();
-        try
-        {
-            stage.EvaluateOwn(in context, effectiveGlobal, token);
-        }
-        finally
-        {
-            names = effectiveGlobal.EndRecordingWrites();
-        }
-
-        if (names.Count == 0)
-        {
-            return;
-        }
-
-        // Every write here is a violation; the first one recorded is reported.
-        var first = names.First();
-        throw new ThemeAlgorithmContractException(
-            stage.Algorithm,
-            first,
-            ThemeAlgorithmContractViolationKind.StageBoundary,
-            $"Algorithm '{stage.Algorithm}' wrote token '{first}' outside the {nameof(TokenStage.Control)} stage.");
-    }
-
-    private static DesignToken ReevaluateControlGlobal(
-        DesignToken baseline,
-        IReadOnlyList<NormalizedTokenValue> overrides,
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
-        ThemeAppearance globalAppearance,
-        IReadOnlyList<TokenDescriptor> descriptors)
-    {
-        ApplyValues(baseline, overrides, TokenStage.Seed);
-        var result = EvaluateAlgorithms(baseline, algorithms, descriptors, out var aliasAlgorithms);
-        ApplyValues(result, overrides, TokenStage.Map);
-        CalculateAlias(result, overrides, aliasAlgorithms, globalAppearance, algorithms, descriptors);
-        NormalizeFinalBehavior(result);
-        return result;
-    }
-
-    private static ThemeAppearance ResolveAppearance(
-        ThemeAppearance baseline,
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms)
-    {
-        var appearance = baseline;
-        foreach (var algorithm in algorithms)
-        {
-            appearance = algorithm.AppearanceEffect switch
-            {
-                ThemeAppearanceEffect.Light => ThemeAppearance.Light,
-                ThemeAppearanceEffect.Dark  => ThemeAppearance.Dark,
-                _                           => appearance
-            };
-        }
-
-        return appearance;
-    }
+    private static IReadOnlySet<string> GetSeedNames(IReadOnlyList<TokenDescriptor> descriptors) =>
+        SeedNames.GetValue(descriptors, static list => list.Where(static token => token.Stage == TokenStage.Seed)
+                                                           .Select(static token => token.Name)
+                                                           .ToFrozenSet(StringComparer.Ordinal));
 
     private static NormalizedControlThemeConfig? FindControlConfig(
         IReadOnlyList<NormalizedControlThemeConfig> controls,
@@ -1024,26 +936,6 @@ internal sealed class ThemeCompiler
         return delta.ToFrozenDictionary();
     }
 
-    private static bool AlgorithmSequenceEqual(
-        IReadOnlyList<ThemeAlgorithmDescriptor> left,
-        IReadOnlyList<ThemeAlgorithmDescriptor> right)
-    {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-
-        for (var index = 0; index < left.Count; index++)
-        {
-            if (!ReferenceEquals(left[index].CompilationIdentity, right[index].CompilationIdentity))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private static bool TokenSequenceEqual(
         IReadOnlyList<NormalizedTokenValue> left,
         IReadOnlyList<NormalizedTokenValue> right)
@@ -1064,178 +956,52 @@ internal sealed class ThemeCompiler
         return true;
     }
 
-    private static ThemeAppearance ResolveAppearance(
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms)
+    /// <summary><paramref name="upper"/>'s values over <paramref name="lower"/>'s, by slot; both are ordered by slot.</summary>
+    internal static NormalizedTokenValue[] Overlay(
+        IReadOnlyList<NormalizedTokenValue>? lower,
+        IReadOnlyList<NormalizedTokenValue> upper)
     {
-        var appearance = ThemeAppearance.Light;
-        foreach (var algorithm in algorithms)
+        if (lower is null || lower.Count == 0)
         {
-            appearance = algorithm.AppearanceEffect switch
+            return upper as NormalizedTokenValue[] ?? upper.ToArray();
+        }
+        if (upper.Count == 0)
+        {
+            return lower as NormalizedTokenValue[] ?? lower.ToArray();
+        }
+
+        var result = new List<NormalizedTokenValue>(lower.Count + upper.Count);
+        int lowerIndex = 0, upperIndex = 0;
+        while (lowerIndex < lower.Count || upperIndex < upper.Count)
+        {
+            if (lowerIndex == lower.Count)
             {
-                ThemeAppearanceEffect.Light => ThemeAppearance.Light,
-                ThemeAppearanceEffect.Dark  => ThemeAppearance.Dark,
-                _                           => appearance
-            };
-        }
-
-        return appearance;
-    }
-
-    private static DesignToken CompileGlobalBuilder(ThemeCompileInput input)
-    {
-        var seed = new DesignToken();
-        ApplyValues(seed, input.EffectiveConfig.GlobalTokens, TokenStage.Seed);
-        var map = EvaluateAlgorithms(
-            seed, input.EffectiveConfig.Algorithms, input.Registry.GlobalTokens, out var aliasAlgorithms);
-        ApplyValues(map, input.EffectiveConfig.GlobalTokens, TokenStage.Map);
-        CalculateAlias(
-            map,
-            input.EffectiveConfig.GlobalTokens,
-            aliasAlgorithms,
-            ThemeAppearance.Light,
-            input.EffectiveConfig.Algorithms,
-            input.Registry.GlobalTokens);
-        NormalizeFinalBehavior(map);
-        return map;
-    }
-
-    // Explicit Alias values are written and flagged before the default Alias calculation so the Alias
-    // tokens derived from them follow; they are written again afterwards so they still win, and the
-    // flags are cleared so they never leak into copies of the builder. A chain whose algorithms have no
-    // Alias stage (the built-in ones) stops here: no object is created and the formulas run once.
-    internal static void CalculateAlias(
-        DesignToken builder,
-        IReadOnlyList<NormalizedTokenValue> values,
-        List<AliasStageAlgorithm>? aliasAlgorithms,
-        ThemeAppearance baselineAppearance,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
-        IReadOnlyList<TokenDescriptor> descriptors)
-    {
-        if (aliasAlgorithms is null)
-        {
-            MarkExplicit(builder, values, TokenStage.Alias);
-            builder.CalculateAliasTokenValues();
-            ApplyValues(builder, values, TokenStage.Alias);
-            builder.ResetExplicit();
-            return;
-        }
-
-        RunAliasStage(builder, values, aliasAlgorithms, baselineAppearance, chain, descriptors);
-    }
-
-    // Kept separate from CalculateAlias: the lambdas capture parameters, and the closure would otherwise be
-    // allocated on entry to CalculateAlias, on the built-in path too.
-    private static void RunAliasStage(
-        DesignToken builder,
-        IReadOnlyList<NormalizedTokenValue> values,
-        List<AliasStageAlgorithm> aliasAlgorithms,
-        ThemeAppearance baselineAppearance,
-        IReadOnlyList<ThemeAlgorithmDescriptor> chain,
-        IReadOnlyList<TokenDescriptor> descriptors)
-    {
-        var context = CreateAlgorithmContext(ResolveAppearance(baselineAppearance, chain), chain);
-        var steps = new StagedAlgorithmStep[aliasAlgorithms.Count];
-        for (var index = 0; index < steps.Length; index++)
-        {
-            var instance = aliasAlgorithms[index].Instance;
-            steps[index] = new StagedAlgorithmStep(
-                aliasAlgorithms[index].Algorithm,
-                token => instance.EvaluateAlias(in context, (DesignToken)token));
-        }
-
-        var tokensByName = GlobalTokenNames.Table.GetValue(descriptors, static list => new GlobalTokenNameIndex(list));
-        StagedTokenEvaluation.Run(
-            builder,
-            nameof(TokenStage.Alias),
-            () => MarkExplicit(builder, values, TokenStage.Alias),
-            builder.CalculateAliasTokenValues,
-            () => ApplyValues(builder, values, TokenStage.Alias),
-            builder.ResetExplicit,
-            steps,
-            tokensByName.Find,
-            static descriptor => descriptor.Stage == TokenStage.Alias,
-            descriptor => builder.MarkExplicit(descriptor.Slot));
-    }
-
-    /// <summary>
-    /// An algorithm of the chain that implements the Alias stage, with the instance that ran its Map stage.
-    /// </summary>
-    internal readonly record struct AliasStageAlgorithm(ThemeAlgorithm Algorithm, IThemeAliasAlgorithm Instance);
-
-    // Global descriptor lists are registry-owned and immutable; the name index is built only the first time an
-    // Alias stage runs against a list, never on the built-in path. The table sits in its own class so that its
-    // static initialization runs only then too, not in ThemeCompiler's static constructor.
-    private static class GlobalTokenNames
-    {
-        internal static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, GlobalTokenNameIndex> Table = new();
-    }
-
-    private sealed class GlobalTokenNameIndex(IReadOnlyList<TokenDescriptor> descriptors)
-    {
-        private readonly FrozenDictionary<string, TokenDescriptor> _byName =
-            descriptors.ToFrozenDictionary(static descriptor => descriptor.Name, StringComparer.Ordinal);
-
-        internal TokenDescriptor? Find(string name) => _byName.GetValueOrDefault(name);
-    }
-
-    /// <summary>
-    /// Runs the Map stage of every algorithm of the chain. The instances that also implement
-    /// <see cref="IThemeAliasAlgorithm"/> are returned in chain order for the Alias stage; the list is created
-    /// only when there is one, so it stays <see langword="null"/> for the built-in algorithms.
-    /// </summary>
-    internal static DesignToken EvaluateAlgorithms(
-        DesignToken effectiveSeed,
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
-        IReadOnlyList<TokenDescriptor> descriptors,
-        out List<AliasStageAlgorithm>? aliasAlgorithms)
-    {
-        aliasAlgorithms = null;
-        DesignToken? previousMap = null;
-        foreach (var algorithm in algorithms)
-        {
-            var nextMap = CopyBuilder(previousMap ?? effectiveSeed, descriptors);
-            IThemeAlgorithm instance;
-            // Every algorithm's failure, built-in or not, is reported like a failure of its Alias or control stage:
-            // a ThemeAlgorithmContractException naming the algorithm. The try region costs nothing when no
-            // exception is thrown.
-            try
-            {
-                instance = algorithm.Create();
-                instance.Evaluate(effectiveSeed, previousMap, nextMap);
+                result.Add(upper[upperIndex++]);
+                continue;
             }
-            catch (Exception exception) when (exception is not ThemeAlgorithmContractException)
+            if (upperIndex == upper.Count)
             {
-                throw CreateMapStageFailure(algorithm.Algorithm, exception);
+                result.Add(lower[lowerIndex++]);
+                continue;
             }
 
-            if (instance is IThemeAliasAlgorithm)
+            var comparison = lower[lowerIndex].Descriptor.Slot.CompareTo(upper[upperIndex].Descriptor.Slot);
+            if (comparison < 0)
             {
-                AddAliasAlgorithm(ref aliasAlgorithms, algorithm, instance);
+                result.Add(lower[lowerIndex++]);
             }
-            previousMap = nextMap;
+            else
+            {
+                result.Add(upper[upperIndex++]);
+                if (comparison == 0)
+                {
+                    lowerIndex++;
+                }
+            }
         }
 
-        return previousMap ?? throw new InvalidOperationException(
-            "A theme compilation requires at least one algorithm.");
+        return result.ToArray();
     }
-
-    // The cold parts of EvaluateAlgorithms live in their own methods: it runs for every theme, and every IL byte in it
-    // is jitted at startup, while these run only when an algorithm fails or has an Alias stage.
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static ThemeAlgorithmContractException CreateMapStageFailure(ThemeAlgorithm algorithm, Exception exception) =>
-        new(algorithm,
-            null,
-            ThemeAlgorithmContractViolationKind.Failed,
-            $"Algorithm '{algorithm}' failed in the {nameof(TokenStage.Map)} stage.",
-            exception);
-
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void AddAliasAlgorithm(
-        ref List<AliasStageAlgorithm>? aliasAlgorithms,
-        ThemeAlgorithmDescriptor algorithm,
-        IThemeAlgorithm instance) =>
-        (aliasAlgorithms ??= new List<AliasStageAlgorithm>()).Add(
-            new AliasStageAlgorithm(algorithm.Algorithm, (IThemeAliasAlgorithm)instance));
 
     private sealed class CanonicalGlobalSchema
     {
@@ -1258,7 +1024,7 @@ internal sealed class ThemeCompiler
         return GlobalSchemas.GetValue(descriptors, static value => new CanonicalGlobalSchema(value)).IsCanonical;
     }
 
-    private static DesignToken CopyBuilder(
+    internal static DesignToken CopyBuilder(
         DesignToken source,
         IReadOnlyList<TokenDescriptor> descriptors)
     {
@@ -1285,21 +1051,7 @@ internal sealed class ThemeCompiler
     }
 
     private static void ApplyValues(
-        DesignToken builder,
-        IReadOnlyList<NormalizedTokenValue> values,
-        TokenStage stage)
-    {
-        foreach (var value in values)
-        {
-            if (value.Descriptor.Stage == stage)
-            {
-                value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
-            }
-        }
-    }
-
-    private static void MarkExplicit(
-        DesignToken builder,
+        AbstractDesignToken builder,
         IReadOnlyList<NormalizedTokenValue> values,
         TokenStage stage)
     {
@@ -1310,29 +1062,23 @@ internal sealed class ThemeCompiler
             if (value.Descriptor.Stage == stage)
             {
                 value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
-                builder.MarkExplicit(value.Descriptor.Slot);
             }
         }
     }
 
-    private static void MarkExplicit(
-        AbstractControlDesignToken builder,
-        IReadOnlyList<NormalizedTokenValue> values)
-    {
-        foreach (var value in values)
-        {
-            value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
-            builder.MarkExplicit(value.Descriptor.Slot);
-        }
-    }
-
-    private static void ApplyAllValues(
+    private static void FreezeValues(
         AbstractDesignToken builder,
-        IReadOnlyList<NormalizedTokenValue> values)
+        IReadOnlyList<NormalizedTokenValue> values,
+        TokenStage stage)
     {
-        foreach (var value in values)
+        for (var index = 0; index < values.Count; index++)
         {
-            value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
+            var value = values[index];
+            if (value.Descriptor.Stage == stage)
+            {
+                value.Descriptor.SetValue(builder, value.Descriptor.CopyValue(value.Value));
+                builder.Freeze(value.Descriptor.Name);
+            }
         }
     }
 
@@ -1357,7 +1103,20 @@ internal sealed class ThemeCompiler
         return builder;
     }
 
-    private static void NormalizeFinalBehavior(DesignToken builder) => builder.NormalizeFinalBehavior();
+    /// <summary>Recreates a language token object from its frozen values (a scope that reuses its parent's global values).</summary>
+    internal static LanguageDesignToken CreateLanguageBuilder(DesignLanguageDescriptor language, TokenValueTable values)
+    {
+        var builder = language.CreateLanguageToken();
+        foreach (var descriptor in language.LanguageTokens)
+        {
+            if (descriptor.Slot < values.Count)
+            {
+                descriptor.SetValue(builder, descriptor.CopyValue(values.GetValue(descriptor.Slot)));
+            }
+        }
+
+        return builder;
+    }
 
     /// <summary>
     /// Projects and freezes the resource value of every descriptor. A value that equals the one
@@ -1461,6 +1220,18 @@ internal sealed class ThemeCompiler
             message));
     }
 
+    private static void AddWarning(List<ThemeDefinitionDiagnostic>? diagnostics, string code, string message)
+    {
+        diagnostics?.Add(new ThemeDefinitionDiagnostic(
+            code,
+            ThemeDefinitionDiagnosticSeverity.Warning,
+            string.Empty,
+            0,
+            0,
+            CompilerPath,
+            message));
+    }
+
     private static ThemeCompileResult Failed(List<ThemeDefinitionDiagnostic> diagnostics)
     {
         return new ThemeCompileResult(null, CopyDiagnostics(diagnostics), null);
@@ -1471,4 +1242,21 @@ internal sealed class ThemeCompiler
     {
         return Array.AsReadOnly(diagnostics.ToArray());
     }
+}
+
+/// <summary>A language or control derivation failed; names the language, the control (if any) and the step.</summary>
+public sealed class ThemeDerivationException : Exception
+{
+    internal ThemeDerivationException(string language, ControlTokenIdentity? control, string step, Exception innerException)
+        : base(control is { } identity
+            ? $"Design language '{language}' failed to derive the {step} view of control '{identity}'."
+            : $"Design language '{language}' failed in its {step} derivation.", innerException)
+    {
+        Language = language;
+        Control  = control;
+    }
+
+    public string Language { get; }
+
+    public ControlTokenIdentity? Control { get; }
 }

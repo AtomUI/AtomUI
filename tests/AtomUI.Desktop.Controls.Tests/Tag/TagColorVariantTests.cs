@@ -2,7 +2,7 @@ using AtomUI.Controls;
 using AtomUI.Controls.Commons;
 using AtomUI.Media;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -95,8 +95,8 @@ public class TagColorVariantTests
 
         ShowInWindow(tag, () =>
         {
-            var palette = AtomUI.Theme.Algorithms.PresetPalettes.GetPresetPalette(
-                AtomUI.Theme.Algorithms.PresetPrimaryColor.Red);
+            var palette = AtomUI.Theme.Derivation.PresetPalettes.GetPresetPalette(
+                AtomUI.Theme.Derivation.PresetPrimaryColor.Red);
             var colors = palette.ColorSequence;
 
             GetBrushColor(tag.Background).ShouldBe(
@@ -185,7 +185,7 @@ public class TagColorVariantTests
         {
             GetBrushColor(tag.Background).ShouldBe(PaletteGenerator.GeneratePalette(color)[0]);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
 
             var dark = PaletteGenerator.GeneratePalette(color, new PaletteGenerateOption { ThemeVariant = ThemeVariant.Dark })[0];
@@ -328,14 +328,14 @@ public class TagColorVariantTests
         var provider = new ThemeConfigProvider
         {
             Child  = tag,
-            Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build()
+            Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build()
         };
 
         ShowInWindow(provider, () =>
         {
             AssertPresetPalette(tag, isDark: true);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Light).Build();
             Dispatcher.UIThread.RunJobs();
 
             AssertPresetPalette(tag, isDark: false);
@@ -410,9 +410,9 @@ public class TagColorVariantTests
 
     private static void AssertPresetPalette(AtomUITag tag, bool isDark)
     {
-        var colors = AtomUI.Theme.Algorithms.PresetPalettes
+        var colors = AtomUI.Theme.Derivation.PresetPalettes
                            .GetPresetPalette(
-                               AtomUI.Theme.Algorithms.PresetPrimaryColor.Red,
+                               AtomUI.Theme.Derivation.PresetPrimaryColor.Red,
                                isDark)
                            .ColorSequence;
 

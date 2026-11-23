@@ -8,6 +8,11 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace AtomUI.Generator;
 
+/// <summary>
+/// Emits the typed theme programs (compiled theme ABI 4) of the package's theme definitions: every token is bound at
+/// build time against the referenced build contracts (the language and its language tokens, the global tokens, the
+/// controls and their control tokens) and written as a typed literal. Axes are checked against the language at startup.
+/// </summary>
 internal static class CompiledThemePackageWriter
 {
     private const string Compiled = "global::AtomUI.Theme.Definitions.Compiled.";
@@ -22,159 +27,155 @@ internal static class CompiledThemePackageWriter
         output.ReportDiagnostic(Diagnostic.Create(descriptor, string.IsNullOrEmpty(path) ? Location.None : Location.Create(path!, new TextSpan(0, 0), new LinePositionSpan(position, position)), arguments));
     }
 
-    private static string DensityName(int density) => density == 1 ? "Compact" : "Normal";
-    private static string AppearanceName(int appearance) => appearance == 1 ? "Dark" : "Light";
-    private static string BrandColorName(int brandColor) => brandColor == 1 ? "Seed" : "Fixed";
-    private static string NeutralColorName(int neutralColor) => neutralColor == 1 ? "Seed" : "Fixed";
     internal static CompiledThemeManifest? Write(GenerationOutput output, Compilation compilation, ThemeBuildContracts contracts,
         IEnumerable<(string Path, string Text)> files, string assemblyName, string packageId)
     {
         var programs = new List<string>();
         var requirements = new List<CompiledThemeRequirement>();
         var ids = new HashSet<string>(StringComparer.Ordinal);
-        var variants = new HashSet<string>(StringComparer.Ordinal);
-        var brandSupport = new Dictionary<string, int>(StringComparer.Ordinal);
-        var neutralSupport = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var file in files)
         {
             CompiledThemeInput input;
             try { input = CompiledThemeInput.Decode(file.Text); }
             catch (Exception error) { Error(output, file.Path, 0, 0, error.Message); continue; }
             if (!ids.Add(input.Id)) { Error(output, input.SourcePath, 0, 0, "Duplicate compiled theme Id: " + input.Id); continue; }
-            if (input.DesignLanguage.Length > 0)
+            if (!contracts.Languages.ContainsKey(input.Language))
             {
-                // A rejected definition takes no variant slot and does not decide brand support, as in the runtime catalog.
-                var variant = input.DesignLanguage + "\u001f" + input.Appearance + "\u001f" + input.Density;
-                if (variants.Contains(variant))
-                {
-                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageDuplicateVariant, input.SourcePath, 0, 0,
-                        input.DesignLanguage, AppearanceName(input.Appearance), DensityName(input.Density), input.Id);
-                    continue;
-                }
-                if (brandSupport.TryGetValue(input.DesignLanguage, out var support) && support != input.BrandColor)
-                {
-                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageMixedBrandColor, input.SourcePath, 0, 0,
-                        input.DesignLanguage, input.Id, BrandColorName(input.BrandColor));
-                    continue;
-                }
-                if (neutralSupport.TryGetValue(input.DesignLanguage, out var neutral) && neutral != input.NeutralColor)
-                {
-                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageMixedNeutralColor, input.SourcePath, 0, 0,
-                        input.DesignLanguage, input.Id, NeutralColorName(input.NeutralColor));
-                    continue;
-                }
-                variants.Add(variant);
-                brandSupport[input.DesignLanguage] = input.BrandColor;
-                neutralSupport[input.DesignLanguage] = input.NeutralColor;
-                // The resolver picks a variant by its declared Density; a chain that disagrees renders another density.
-                var compactChain = input.Algorithms.Any(a => a.Catalog == "AtomUI" && a.Id == "Compact");
-                if (compactChain != (input.Density == 1))
-                {
-                    Report(output, Diagnostics.AtomUIDiagnosticDescriptors.DesignLanguageDensityMismatch, input.SourcePath, 0, 0,
-                        input.Id, input.DesignLanguage, DensityName(input.Density), compactChain ? "contains" : "lacks");
-                }
+                Error(output, input.SourcePath, input.Line, input.Column,
+                    "Design language '" + input.Language + "' is not declared by any referenced language package.");
+                continue;
             }
-            var describe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");
+
+            var describe = new StringBuilder();
             var write = new StringBuilder();
-            var currentDescribe = describe;
-            var currentWrite = write;
-            var controlDescriptions = new List<string>();
-            var controlWrites = new List<string>();
-            var fields = new List<string> { "compiled-abi-v3", ThemeLiteralCodec.Identity, "generator-compiled-theme-v2", input.SourceIdentity, input.ContentDigest,
-                input.Id, input.Name, input.Appearance.ToString(CultureInfo.InvariantCulture), input.IsDefault.ToString() };
-            fields.Add(input.DesignLanguage); fields.Add(input.Density.ToString(CultureInfo.InvariantCulture)); fields.Add(input.BrandColor.ToString(CultureInfo.InvariantCulture)); fields.Add(input.NeutralColor.ToString(CultureInfo.InvariantCulture));
-            fields.AddRange(input.Algorithms.Select(a => a.Catalog + ":" + a.Id));
+            var fields = new List<string> { "compiled-abi-v4", ThemeLiteralCodec.Identity, "generator-compiled-theme-v3", input.SourceIdentity,
+                input.ContentDigest, input.Id, input.Name, input.Language, input.Style, input.Appearance.ToString(CultureInfo.InvariantCulture),
+                input.Density };
+            fields.AddRange(contracts.Languages[input.Language].Fields);
             var tokenId = 0;
+            var controlId = 0;
             var valid = true;
             var accent = "null";
-            var neutralAccent = "null";
-            void Check(IEnumerable<ThemeAlgorithmInput> algorithms)
+            var locked = new List<string>();
+
+            void Bind(ThemeLiteralInput literal, string kind, int? control, ThemeBuildOwner? owner, bool isBase)
             {
-                foreach (var algorithm in algorithms.Where(a => !contracts.Algorithms.ContainsKey(a.Catalog + "\u001f" + a.Id)))
-                { Error(output, input.SourcePath, algorithm.Line, algorithm.Column, "Unknown algorithm '" + algorithm.Catalog + ":" + algorithm.Id + "'."); valid = false; }
-            }
-            Check(input.Algorithms);
-            void Bind(ThemeLiteralInput literal, int? controlId, ThemeBuildOwner? owner)
-            {
-                var globalKey = "\u001f\u001f" + literal.Name;
-                ThemeBuildToken? contract = null;
-                var own = owner is not null && contracts.Tokens.TryGetValue(owner.Key + "\u001f" + literal.Name, out contract);
-                if (!own && !contracts.Tokens.TryGetValue(globalKey, out contract))
-                { Error(output, input.SourcePath, literal.Line, literal.Column, "Unknown Token '" + literal.Name + "'."); valid = false; return; }
-                if (own && contracts.Tokens.ContainsKey(globalKey))
-                { Error(output, input.SourcePath, literal.Line, literal.Column, "Ambiguous Own/Global Token '" + literal.Name + "'."); valid = false; return; }
+                ThemeBuildToken? contract;
+                string method;
+                if (kind == "language")
+                {
+                    if (!contracts.Tokens.TryGetValue(ThemeBuildContracts.LanguageCatalog + "\u001f" + input.Language + "\u001f" + literal.Name, out contract))
+                    { Error(output, input.SourcePath, literal.Line, literal.Column, "'" + literal.Name + "' is not a language Token of '" + input.Language + "'."); valid = false; return; }
+                    method = "Language";
+                }
+                else
+                {
+                    var globalKey = "\u001f\u001f" + literal.Name;
+                    contract = null;
+                    var own = owner is not null && contracts.Tokens.TryGetValue(owner.Key + "\u001f" + literal.Name, out contract);
+                    if (!own && !contracts.Tokens.TryGetValue(globalKey, out contract))
+                    { Error(output, input.SourcePath, literal.Line, literal.Column, "Unknown Token '" + literal.Name + "'."); valid = false; return; }
+                    if (own && contracts.Tokens.ContainsKey(globalKey))
+                    { Error(output, input.SourcePath, literal.Line, literal.Column, "Ambiguous control/global Token '" + literal.Name + "'."); valid = false; return; }
+                    method = own ? "Own" : control.HasValue ? "ControlGlobal" : "Global";
+                }
+                if (literal.Locked)
+                {
+                    if (!isBase || control.HasValue || contract!.Stage != 0)
+                    { Error(output, input.SourcePath, literal.Line, literal.Column, "Locked applies only to a seed in the base section; '" + literal.Name + "' is not one."); valid = false; return; }
+                    locked.Add(literal.Name);
+                }
                 if (contract!.Contract != 1)
-                { Error(output, input.SourcePath, literal.Line, literal.Column, "Token '" + literal.Name + "' has no v1 static literal capability (" + contract.ValueType + ")."); valid = false; return; }
+                { Error(output, input.SourcePath, literal.Line, literal.Column, "Token '" + literal.Name + "' has no static literal capability (" + contract.ValueType + ")."); valid = false; return; }
                 try
                 {
                     var value = BindLiteral(compilation, contract, literal);
                     var type = contract.ValueType;
-                    var method = own ? "Own" : controlId.HasValue ? "ControlGlobal" : "Global";
-                    var prefix = controlId.HasValue ? controlId.Value.ToString(CultureInfo.InvariantCulture) + ", " : "";
-                    currentDescribe.Append("        builder.Require").Append(method).Append('<').Append(type).Append(">(").Append(prefix).Append(tokenId)
-                        .Append(", ").Append(contract.KeyType).Append('.').Append(contract.KeyMember).Append(", ").Append(ThemeBuildContracts.Literal(contract.Name));
-                    if (!own) { currentDescribe.Append(", (global::AtomUI.Theme.Schema.TokenStage)").Append(contract.Stage); }
-                    currentDescribe.AppendLine(", 1);");
-                    currentWrite.Append("        writer.Set").Append(method).Append('<').Append(type).Append(">(").Append(prefix).Append(tokenId)
+                    var prefix = control.HasValue ? control.Value.ToString(CultureInfo.InvariantCulture) + ", " : "";
+                    describe.Append("        builder.Require").Append(method).Append('<').Append(type).Append(">(").Append(prefix).Append(tokenId);
+                    if (method != "Language")
+                    {
+                        describe.Append(", ").Append(contract.KeyType).Append('.').Append(contract.KeyMember);
+                    }
+                    describe.Append(", ").Append(ThemeBuildContracts.Literal(contract.Name));
+                    if (method != "Own") { describe.Append(", (global::AtomUI.Theme.Schema.TokenStage)").Append(contract.Stage); }
+                    describe.AppendLine(", 1);");
+                    write.Append("        writer.Set").Append(method).Append('<').Append(type).Append(">(").Append(prefix).Append(tokenId)
                         .Append(", ").Append(value.Expression).Append(", ").Append(ThemeBuildContracts.Literal(value.Canonical)).AppendLine(");");
                     fields.AddRange(contract.Fields); fields.Add(method); fields.Add(prefix); fields.Add(value.Canonical); fields.Add(value.Expression);
-                    if (!controlId.HasValue && literal.Name == "ColorPrimary" && ThemeLiteralCodec.NormalizeType(type) == "Avalonia.Media.Color") { accent = value.Expression; }
-                    if (!controlId.HasValue && literal.Name == "ColorNeutral" && ThemeLiteralCodec.NormalizeType(type) == "Avalonia.Media.Color") { neutralAccent = value.Expression; }
-                    requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id, Catalog = owner?.Catalog ?? "", ControlId = owner?.Id ?? "",
+                    fields.Add(literal.Locked ? "locked" : "");
+                    if (isBase && method == "Global" && literal.Name == "ColorPrimary" &&
+                        ThemeLiteralCodec.NormalizeType(type) == "Avalonia.Media.Color") { accent = value.Expression; }
+                    requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id,
+                        Catalog = method == "Language" ? ThemeBuildContracts.LanguageCatalog : owner?.Catalog ?? "",
+                        ControlId = method == "Language" ? input.Language : owner?.Id ?? "",
                         OwnerAssemblyName = owner is null ? "" : new System.Reflection.AssemblyName(owner.OwnerAssembly).Name!, OwnerMetadataName = owner?.OwnerType ?? "",
-                        Scope = own ? "own" : controlId.HasValue ? "controlGlobal" : "global", TokenName = contract.Name,
-                        ValueType = contract.ValueType, ValueContractVersion = contract.Contract, Stage = contract.Stage,
+                        Scope = method switch { "Own" => "own", "ControlGlobal" => "controlGlobal", "Language" => "language", _ => "global" },
+                        TokenName = contract.Name, ValueType = contract.ValueType, ValueContractVersion = contract.Contract, Stage = contract.Stage,
                         ResourceKeyType = contract.KeyType, ResourceKeyMember = contract.KeyMember });
                     tokenId++;
                 }
                 catch (Exception error) { Error(output, input.SourcePath, literal.Line, literal.Column, "Invalid static literal for '" + literal.Name + "': " + error.Message); valid = false; }
             }
-            foreach (var literal in input.Tokens) { Bind(literal, null, null); }
-            var controlIds = new HashSet<string>(StringComparer.Ordinal);
-            for (var controlId = 0; controlId < input.Controls.Length; controlId++)
+
+            void Section(int index, ThemeSectionInput section, ThemeConditionInput? condition)
             {
-                var control = input.Controls[controlId];
-                var key = control.Catalog + "\u001f" + control.Id;
-                if (!controlIds.Add(key) || !contracts.Owners.TryGetValue(key, out var owner) || control.Mode < 0 || control.Mode > 3)
-                { Error(output, input.SourcePath, control.Line, control.Column, "Unknown, repeated or invalid Control '" + control.Catalog + ":" + control.Id + "'."); valid = false; continue; }
-                Check(control.Algorithms);
-                currentDescribe = new StringBuilder("        builder.SetAlgorithms(" + Algorithms(input.Algorithms) + ");\n");
-                currentWrite = new StringBuilder();
-                var controlDeclaration = new StringBuilder();
-                controlDeclaration.Append("        builder.RequireControl(").Append(controlId).Append(", ").Append(owner.IdentityProvider).Append(".Identity, ")
-                    .Append(ThemeBuildContracts.Literal(owner.Catalog)).Append(", ").Append(ThemeBuildContracts.Literal(owner.Id)).Append(", ")
-                    .Append(ThemeBuildContracts.Literal(owner.OwnerAssembly)).Append(", ").Append(ThemeBuildContracts.Literal(owner.OwnerType))
-                    .Append(", (global::AtomUI.Theme.Configuration.ControlAlgorithmMode)").Append(control.Mode).Append(", ").Append(Algorithms(control.Algorithms)).AppendLine(");");
-                describe.Append(controlDeclaration);
-                currentDescribe.Append(controlDeclaration);
-                requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id, Catalog = owner.Catalog, ControlId = owner.Id,
-                    OwnerAssemblyName = new System.Reflection.AssemblyName(owner.OwnerAssembly).Name!, OwnerMetadataName = owner.OwnerType, Scope = "control" });
-                fields.AddRange(owner.Fields); fields.Add(control.Mode.ToString(CultureInfo.InvariantCulture)); fields.AddRange(control.Algorithms.Select(a => a.Catalog + ":" + a.Id));
-                foreach (var literal in control.Tokens) { Bind(literal, controlId, owner); }
-                controlDescriptions.Add(currentDescribe.ToString());
-                controlWrites.Add(currentWrite.ToString());
+                describe.Append("        builder.BeginSection(").Append(index).Append(", ")
+                    .Append(condition is null || condition.Style.Length == 0 ? "null" : ThemeBuildContracts.Literal(condition.Style)).Append(", ")
+                    .Append(condition?.Appearance ?? -1).Append(", ")
+                    .Append(condition is null || condition.Density.Length == 0 ? "null" : ThemeBuildContracts.Literal(condition.Density)).Append(", ")
+                    .Append(condition is null || condition.Idiom.Length == 0 ? "null" : ThemeBuildContracts.Literal(condition.Idiom)).AppendLine(");");
+                write.Append("        writer.BeginSection(").Append(index).AppendLine(");");
+                fields.Add("section"); fields.Add(index.ToString(CultureInfo.InvariantCulture));
+                if (condition is not null)
+                {
+                    fields.Add(condition.Style); fields.Add(condition.Appearance.ToString(CultureInfo.InvariantCulture));
+                    fields.Add(condition.Density); fields.Add(condition.Idiom);
+                }
+                foreach (var literal in section.Tokens) { Bind(literal, "global", null, null, condition is null); }
+                foreach (var literal in section.LanguageTokens) { Bind(literal, "language", null, null, condition is null); }
+                var controlKeys = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var control in section.Controls)
+                {
+                    var key = control.Catalog + "\u001f" + control.Id;
+                    if (!controlKeys.Add(key) || !contracts.Owners.TryGetValue(key, out var owner))
+                    { Error(output, input.SourcePath, control.Line, control.Column, "Unknown or repeated Control '" + control.Catalog + ":" + control.Id + "'."); valid = false; continue; }
+                    if (condition is not null && (control.Appearance != -1 || control.Density.Length != 0))
+                    { Error(output, input.SourcePath, control.Line, control.Column, "Control '" + control.Catalog + ":" + control.Id + "' cannot fix an axis in a condition section."); valid = false; continue; }
+                    var id = controlId++;
+                    describe.Append("        builder.RequireControl(").Append(id).Append(", ").Append(owner.IdentityProvider).Append(".Identity, ")
+                        .Append(ThemeBuildContracts.Literal(owner.Catalog)).Append(", ").Append(ThemeBuildContracts.Literal(owner.Id)).Append(", ")
+                        .Append(ThemeBuildContracts.Literal(owner.OwnerAssembly)).Append(", ").Append(ThemeBuildContracts.Literal(owner.OwnerType))
+                        .Append(", ").Append(control.Appearance).Append(", ")
+                        .Append(control.Density.Length == 0 ? "null" : ThemeBuildContracts.Literal(control.Density)).AppendLine(");");
+                    requirements.Add(new CompiledThemeRequirement { ThemeId = input.Id, Catalog = owner.Catalog, ControlId = owner.Id,
+                        OwnerAssemblyName = new System.Reflection.AssemblyName(owner.OwnerAssembly).Name!, OwnerMetadataName = owner.OwnerType, Scope = "control" });
+                    fields.AddRange(owner.Fields); fields.Add(control.Appearance.ToString(CultureInfo.InvariantCulture)); fields.Add(control.Density);
+                    foreach (var literal in control.Tokens) { Bind(literal, "control", id, owner, condition is null); }
+                }
+            }
+
+            Section(0, input.Base, null);
+            for (var index = 0; index < input.Conditions.Length; index++)
+            {
+                Section(index + 1, input.Conditions[index].Section, input.Conditions[index]);
             }
             if (!valid) { continue; }
+
             var programName = "CompiledThemeProgram_" + programs.Count;
             var source = new StringBuilder("internal sealed class " + programName + " : " + Compiled + "CompiledThemeProgram\n{\n");
-            source.Append("    internal ").Append(programName).Append("() : base(3, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
+            source.Append("    internal ").Append(programName).Append("() : base(4, ").Append(ThemeBuildContracts.Literal(input.SourceIdentity))
                 .Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest)).Append(", ").Append(ThemeBuildContracts.Literal(input.ContentDigest))
                 .Append(", ").Append(ThemeBuildContracts.Literal(ThemeBuildContracts.Digest(fields))).Append(", ").Append(ThemeBuildContracts.Literal(input.Id))
-                .Append(", ").Append(ThemeBuildContracts.Literal(input.Name)).Append(", (global::AtomUI.Theme.ThemeAppearance)").Append(input.Appearance)
-                .Append(", ").Append(input.IsDefault ? "true" : "false").Append(", ").Append(accent)
-                .Append(", ").Append(input.DesignLanguage.Length == 0 ? "null" : ThemeBuildContracts.Literal(input.DesignLanguage))
-                .Append(", (global::AtomUI.Theme.ThemeDensity)").Append(input.Density).Append(", (global::AtomUI.Theme.ThemeBrandColorSupport)").Append(input.BrandColor)
-                .Append(", (global::AtomUI.Theme.ThemeNeutralColorSupport)").Append(input.NeutralColor).Append(", ").Append(neutralAccent)
-                .Append(", new string[] { ").Append(string.Join(", ", input.Algorithms.Select(a => ThemeBuildContracts.Literal(a.Catalog + ":" + a.Id)))).AppendLine(" }) { }");
+                .Append(", ").Append(ThemeBuildContracts.Literal(input.Name)).Append(", ").Append(ThemeBuildContracts.Literal(input.Language))
+                .Append(", ").Append(input.Style.Length == 0 ? "null" : ThemeBuildContracts.Literal(input.Style))
+                .Append(", ").Append(input.Appearance)
+                .Append(", ").Append(input.Density.Length == 0 ? "null" : ThemeBuildContracts.Literal(input.Density))
+                .Append(", new string[] { ").Append(string.Join(", ", locked.Select(ThemeBuildContracts.Literal))).Append(" }")
+                .Append(", ").Append(accent).AppendLine(") { }");
             source.AppendLine("    protected override bool IsBackgroundPrepareSafe => true;");
             source.Append("    protected override void Describe(").Append(Compiled).Append("CompiledThemeBindingBuilder builder)\n    {\n").Append(describe).AppendLine("    }");
             source.Append("    protected override void WriteStaticDefaults(").Append(Compiled).Append("CompiledThemeValueWriter writer)\n    {\n").Append(write).AppendLine("    }");
-            source.Append("    protected override void DescribeControl(int controlId, ").Append(Compiled).AppendLine("CompiledThemeBindingBuilder builder)\n    {\n        switch (controlId)\n        {");
-            for (var index = 0; index < controlDescriptions.Count; index++) { source.Append("            case ").Append(index).AppendLine(":").Append(controlDescriptions[index]).AppendLine("                break;"); }
-            source.AppendLine("            default: throw new global::System.ArgumentOutOfRangeException(nameof(controlId));\n        }\n    }");
-            source.Append("    protected override void WriteControlDefaults(int controlId, ").Append(Compiled).AppendLine("CompiledThemeValueWriter writer)\n    {\n        switch (controlId)\n        {");
-            for (var index = 0; index < controlWrites.Count; index++) { source.Append("            case ").Append(index).AppendLine(":").Append(controlWrites[index]).AppendLine("                break;"); }
-            source.AppendLine("            default: throw new global::System.ArgumentOutOfRangeException(nameof(controlId));\n        }\n    }");
             source.AppendLine("}");
             programs.Add(source.ToString());
         }
@@ -189,7 +190,7 @@ internal static class CompiledThemePackageWriter
         output.AddSource("GeneratedThemePackageRegistration.g.cs", GeneratedSourceText.From(result.ToString()));
         return manifest;
     }
-    private static string Algorithms(IEnumerable<ThemeAlgorithmInput> values) => "new global::AtomUI.Theme.Algorithms.ThemeAlgorithm[] { " + string.Join(", ", values.Select(v => "new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(" + ThemeBuildContracts.Literal(v.Catalog) + ", " + ThemeBuildContracts.Literal(v.Id) + ")")) + " }";
+
     internal static (string Expression, string Canonical) BindLiteral(Compilation compilation, ThemeBuildToken token, ThemeLiteralInput literal)
     {
         var type = ThemeLiteralCodec.NormalizeType(token.ValueType);

@@ -1,5 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
-using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -12,9 +10,9 @@ namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 
 /// <summary>
 /// An explicitly set global Alias Token drives the Alias Tokens derived from it: <c>ControlOutlineWidth</c> is the spread
-/// of the focused input's outline (<c>InputActiveShadow</c>), whether it is set on the root or on a control scope that
-/// re-runs the global algorithms (<see cref="ControlAlgorithmMode.Global"/>). The outline is painted outside the input
-/// frame, so the comparison is the ring around the frame.
+/// of the focused input's outline (<c>InputActiveShadow</c>) when it is set on the root. (A control-level Alias override
+/// replaces only that value and does not re-derive the aliases computed from it, spec 7.5.) The outline is painted
+/// outside the input frame, so the comparison is the ring around the frame.
 /// </summary>
 public partial class InputFamilyEffectTests
 {
@@ -23,8 +21,6 @@ public partial class InputFamilyEffectTests
     [Theory]
     [InlineData("Root", 0)]
     [InlineData("Root", 6)]
-    [InlineData("ControlGlobal", 0)]
-    [InlineData("ControlGlobal", 6)]
     public void ControlOutlineWidth_Drives_The_Focused_Input_Outline(string scope, int width)
     {
         var lineEdit = new LineEdit { Width = 260, Text = SampleText };
@@ -56,12 +52,6 @@ public partial class InputFamilyEffectTests
         return scope switch
         {
             "Root" => builder.WithToken(nameof(SharedTokenKind.ControlOutlineWidth), value).Build(),
-            "ControlGlobal" => builder.WithControl(LineEditTokens.Identity,
-                                          new ControlThemeConfigBuilder()
-                                              .WithAlgorithm(ControlAlgorithmMode.Global)
-                                              .WithToken(nameof(SharedTokenKind.ControlOutlineWidth), value)
-                                              .Build())
-                                      .Build(),
             _ => throw new ArgumentOutOfRangeException(nameof(scope), scope, null)
         };
     }

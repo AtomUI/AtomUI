@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.Tests.Window;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -67,7 +66,7 @@ public class DrawerEdgeBorderTests
                              .Build())
                      .Build();
         await manager.ApplyThemeAsync(new AtomUI.Theme.ThemeRequest(
-            AtomUI.Theme.IThemeManager.DEFAULT_THEME_ID, config, AtomUI.Theme.ThemeTransitionReason.UserRequest));
+            AtomUI.DesignLanguages.AntDesign.AntDesignThemes.DaybreakBlue, config, AtomUI.Theme.ThemeTransitionReason.UserRequest));
         try
         {
             var drawer = new AtomUI.Desktop.Controls.Drawer
@@ -100,7 +99,7 @@ public class DrawerEdgeBorderTests
         finally
         {
             await manager.ApplyThemeAsync(new AtomUI.Theme.ThemeRequest(
-                AtomUI.Theme.IThemeManager.DEFAULT_THEME_ID, null, AtomUI.Theme.ThemeTransitionReason.UserRequest));
+                AtomUI.DesignLanguages.AntDesign.AntDesignThemes.DaybreakBlue, null, AtomUI.Theme.ThemeTransitionReason.UserRequest));
         }
     }
 

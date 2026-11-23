@@ -39,7 +39,10 @@ public partial class DataEntryFamilyEffectTests
         otp.GetVisualDescendants().OfType<OtpLineEditCell>().ElementAt(index);
 
     /// <summary>The InputControlFrame owner reads the cell theme replaces for every state, with the reason.</summary>
-    private static readonly Dictionary<string, string> s_otpNotRendered = new(StringComparer.Ordinal);
+    private static readonly Dictionary<string, string> s_otpNotRendered = new(StringComparer.Ordinal)
+    {
+        ["InputActiveBorderColor"] = "the cell theme draws its focused border with ColorPrimary"
+    };
 
     public static IEnumerable<object[]> OtpLineEditRows()
     {

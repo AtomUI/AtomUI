@@ -1,11 +1,8 @@
-using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
-using SkiaSharp;
 using Xunit;
 using AvaWindow = Avalonia.Controls.Window;
 

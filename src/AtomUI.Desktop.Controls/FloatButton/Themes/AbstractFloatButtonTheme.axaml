@@ -144,7 +144,7 @@
         </Style>
 
         <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonThemeInputs.HasOutline)=True]:not(:description)">
-            <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadiusMD}" />
         </Style>
 
         <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonThemeInputs.HasOutline)=True]:description">

@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
@@ -17,15 +16,4 @@ public sealed partial class StepsProgressBarToken : AbstractLineProgressToken
     /// Minimum width of a step (antd Progress progressStepMinWidth)
     /// </summary>
     public partial double ProgressStepMinWidth { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        if (!IsExplicit(StepsProgressBarTokenKind.ProgressStepMarginInlineEnd))
-        {
-            ProgressStepMarginInlineEnd = EffectiveGlobalToken.UniformlyMarginXXS / 2;
-        }
-
-        ProgressStepMinWidth = ProgressStepMarginInlineEnd;
-    }
 }

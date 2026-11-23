@@ -20,26 +20,26 @@ public class WindowTitleBarTokenTests
     [Fact]
     public void Caption_Button_Padding_Uses_Default_Two_Size_Units()
     {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs"));
+        var source = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/WindowTitleBar/AntDesignWindowTitleBarDerivation.cs"));
 
-        source.ShouldContain("CaptionButtonPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 2)");
+        source.ShouldContain("token.CaptionButtonPadding = new Thickness(global.SizeUnit * 2)");
     }
 
     [Fact]
     public void Windows_Caption_Button_Icons_Use_Native_Size()
     {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs"));
+        var source = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/WindowTitleBar/AntDesignWindowTitleBarDerivation.cs"));
 
-        source.ShouldContain("CaptionButtonIconSize       = EffectiveGlobalToken.IconSize;");
-        source.ShouldContain("WindowsCaptionIconSize      = 11;");
+        source.ShouldContain("token.CaptionButtonIconSize       = global.IconSize;");
+        source.ShouldContain("token.WindowsCaptionIconSize      = 11;");
     }
 
     [Fact]
     public void Title_Bar_Content_Padding_Has_No_Vertical_Inset()
     {
-        var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs"));
+        var source = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/WindowTitleBar/AntDesignWindowTitleBarDerivation.cs"));
 
-        source.ShouldContain("TitleBarPadding             = new Thickness(LogoAndTitleSpacing * 1.8, 0)");
+        source.ShouldContain("token.TitleBarPadding             = new Thickness(token.LogoAndTitleSpacing * 1.8, 0)");
     }
 
     [Fact]
@@ -51,8 +51,10 @@ public class WindowTitleBarTokenTests
             "src/AtomUI.Desktop.Controls/WindowTitleBar/Themes/WindowTitleBarTheme.axaml"));
 
         tokenSource.ShouldContain("public partial double LogoAndLeftAddOnSpacing { get; set; }");
-        tokenSource.ShouldContain(
-            "LogoAndLeftAddOnSpacing     = EffectiveGlobalToken.SpacingXXS;");
+        var derivationSource = File.ReadAllText(GetRepoFile(
+            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/WindowTitleBar/AntDesignWindowTitleBarDerivation.cs"));
+        derivationSource.ShouldContain(
+            "token.LogoAndLeftAddOnSpacing     = global.SpacingXXS;");
 
         foreach (var selector in new[] { "^[OsType=Windows]", "^[OsType=Linux]" })
         {
@@ -132,17 +134,17 @@ public class WindowTitleBarTokenTests
     public void Shared_Window_Chrome_Metrics_Do_Not_Use_Speculative_Os_Branches()
     {
         var windowTokenSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/Window/WindowToken.cs"));
+            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/Window/AntDesignWindowDerivation.cs"));
         var titleBarTokenSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBarToken.cs"));
+            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/WindowTitleBar/AntDesignWindowTitleBarDerivation.cs"));
 
-        windowTokenSource.ShouldContain("TitleBarHeight               = 40;");
+        windowTokenSource.ShouldContain("token.TitleBarHeight               = 40;");
         windowTokenSource.ShouldNotContain("GetPlatformTitleBarHeight");
         windowTokenSource.ShouldNotContain("GetPlatformFullscreenHeaderPadding");
         windowTokenSource.ShouldNotContain("OperatingSystem.");
 
-        titleBarTokenSource.ShouldContain("Height                  = 40;");
-        titleBarTokenSource.ShouldContain("HeaderHorizontalSpacing = 8;");
+        titleBarTokenSource.ShouldContain("token.Height                  = 40;");
+        titleBarTokenSource.ShouldContain("token.HeaderHorizontalSpacing = 8;");
         titleBarTokenSource.ShouldNotContain("GetPlatformTitleBarHeight");
         titleBarTokenSource.ShouldNotContain("GetPlatformFullscreenCaptionButtonSize");
         titleBarTokenSource.ShouldNotContain("GetPlatformHeaderHorizontalSpacing");

@@ -1,7 +1,4 @@
-using AtomUI.Controls;
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Theme.Algorithms;
-using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -9,14 +6,8 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public abstract partial class AbstractStandardButtonToken : AbstractButtonGeometryToken
 {
+    /// <summary>Font weight of the button label.</summary>
     public partial FontWeight FontWeight { get; set; }
+    /// <summary>Border color of a disabled button with the default color when its disabled style uses color tokens.</summary>
     public partial Color DefaultBorderColorDisabled { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        FontWeight = FontWeight.Normal;
-        DefaultBorderColorDisabled = EffectiveGlobalToken.ColorBorder;
-
-    }
 }

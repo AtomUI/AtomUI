@@ -45,11 +45,6 @@ internal class ControlTokenPropertyWalker : CSharpSyntaxWalker
             ControlTokenInfo.Diagnostics.AddRange(inheritance.Diagnostics);
             if (inheritance.IsValid)
             {
-                ControlTokenInfo.Diagnostics.AddRange(
-                    ControlTokenCalculationValidator.Validate(
-                        inheritance.Layers,
-                        _semanticModel.Compilation,
-                        _cancellationToken));
                 AddTokenProperties(classDeclaredSymbol, inheritance.Layers);
             }
         }

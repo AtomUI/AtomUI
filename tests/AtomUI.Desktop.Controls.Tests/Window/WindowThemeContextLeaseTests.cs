@@ -1,6 +1,6 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Controls;
@@ -69,10 +69,10 @@ public class WindowThemeContextLeaseTests
         var application = Application.Current.ShouldNotBeNull();
         var manager = Application.Current!.GetThemeManager()
                                      .ShouldBeOfType<ThemeManager>();
-        var darkConfig = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Dark).Build();
+        var darkConfig = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
         var darkResult = await manager.ApplyThemeAsync(
             new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID,
+                AntDesignThemes.DaybreakBlue,
                 darkConfig,
                 ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken);
@@ -107,7 +107,7 @@ public class WindowThemeContextLeaseTests
             window.Close();
             await manager.ApplyThemeAsync(
                 new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
+                    AntDesignThemes.DaybreakBlue,
                     null,
                     ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);

@@ -1,4 +1,3 @@
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
@@ -43,21 +42,5 @@ public sealed partial class RateToken : AbstractControlDesignToken
     /// Star background color
     /// </summary>
     public partial Color StarBg { get; set; }
-    
-    public RateToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        StarColor      = EffectiveGlobalToken.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
-        StarSize       = EffectiveGlobalToken.ControlHeight * 0.625;
-        StarSizeSM     = EffectiveGlobalToken.ControlHeightSM * 0.625;
-        StarSizeLG     = EffectiveGlobalToken.ControlHeightLG * 0.625;
-        StarHoverScale = 1.2;
-        StarBg         = EffectiveGlobalToken.ColorFillContent;
-    }
     
 }

@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Animations;
 using AtomUI.Core.Tests.Theme;
 using AtomUI.Data;
@@ -29,7 +30,7 @@ public class MotionSettleTests
     {
         await HeadlessTestApp.RunAsync(async () =>
         {
-            var manager = new ThemeManagerBuilder().Build();
+            var manager = new ThemeManagerBuilder().AddAntDesign().Build();
             manager.InitializeApplication(Application.Current!);
             var probe = new ArrangeProbe();
             var target = new TintedBorder { Child = probe };
@@ -51,7 +52,7 @@ public class MotionSettleTests
 
                 var result = await manager.ApplyThemeAsync(
                     new ThemeRequest(
-                        IThemeManager.DEFAULT_THEME_ID,
+                        AntDesignThemes.DaybreakBlue,
                         new ThemeConfigBuilder()
                             .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
                             .Build(),

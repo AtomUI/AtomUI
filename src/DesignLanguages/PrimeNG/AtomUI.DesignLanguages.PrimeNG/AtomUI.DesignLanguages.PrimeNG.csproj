@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.DesignLanguages.PrimeNG</RootNamespace>
+        <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
+        <Description>The PrimeNG design language for AtomUI: the Aura, Lara and Nora presets, their seeds and global derivation.</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../AtomUI.Core/AtomUI.Core.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.PrimeNG.Tests" />
+    </ItemGroup>
+</Project>

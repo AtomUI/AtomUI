@@ -22,25 +22,24 @@ public sealed partial class SkeletonToken : AbstractSkeletonToken
     /// </summary>
     public partial Thickness ParagraphMarginTop { get; set; }
     
-    /// <summary>
-    /// 头像骨架屏右间距
-    /// </summary>
+    /// <summary>Margin to the right of the avatar placeholder.</summary>
     public partial Thickness AvatarMarginRight { get; set; }
     
-    /// <summary>
-    /// 段落骨架屏单行胶囊圆角值
-    /// </summary>
+    /// <summary>Corner radius of a skeleton paragraph line when rounded ends are enabled.</summary>
     public partial CornerRadius ParagraphLineRoundCornerRadius { get; set; }
     
     // 流光动画背景定义，背景按 400% 宽度平移形成扫光效果。
+    /// <summary>Reserved background brush for the start of the skeleton shimmer animation.</summary>
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public partial IBrush? LoadingBackgroundStart { get; set; }
 
+    /// <summary>Reserved background brush for the midpoint of the skeleton shimmer animation.</summary>
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public partial IBrush? LoadingBackgroundMiddle { get; set; }
 
+    /// <summary>Reserved background brush for the end of the skeleton shimmer animation.</summary>
     [ReservedToken("antd 400% background-position shimmer keyframes. The Desktop theme draws the shimmer from " +
                    "GradientFromColor / GradientToColor (ShimmerFromColor / ShimmerToColor) and does not read these brushes.")]
     public partial IBrush? LoadingBackgroundEnd { get; set; }
@@ -51,60 +50,10 @@ public sealed partial class SkeletonToken : AbstractSkeletonToken
     /// </summary>
     public partial Color ImageColor { get; set; }
 
+    /// <summary>Width and height of the icon inside an image placeholder.</summary>
     public partial double ImageSize { get; set; }
+    /// <summary>Default width and height of the skeleton image container.</summary>
     public partial double ImageContainerSize {  get; set; }
+    /// <summary>Maximum width and height of the skeleton image container.</summary>
     public partial double ImageContainerMaxSize { get; set; }
-
-    public SkeletonToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        // The gradient colors and the paragraph line height feed the derived values below, so their defaults yield to
-        // explicit overrides; AbstractSkeletonToken leaves these three to the terminal for that reason.
-        if (!IsExplicit(SkeletonTokenKind.GradientFromColor))
-        {
-            GradientFromColor = EffectiveGlobalToken.ColorFillContent;
-        }
-        if (!IsExplicit(SkeletonTokenKind.GradientToColor))
-        {
-            GradientToColor = EffectiveGlobalToken.ColorFill;
-        }
-        if (!IsExplicit(SkeletonTokenKind.ParagraphLineHeight))
-        {
-            ParagraphLineHeight = EffectiveGlobalToken.ControlHeight / 2;
-        }
-
-        ParagraphMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginLG + EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-        AvatarMarginRight = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMargin, 0);
-        ParagraphLineRoundCornerRadius = new CornerRadius(ParagraphLineHeight / 2);
-        LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0, GradientFromColor, GradientToColor);
-        LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5, GradientFromColor, GradientToColor);
-        LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0, GradientFromColor, GradientToColor);
-        ImageColor              = Color.FromRgb(0xbf, 0xbf, 0xbf);
-
-        var imageSizeBase = EffectiveGlobalToken.ControlHeight * 1.5;
-        ImageSize             = imageSizeBase;
-        ImageContainerSize    = imageSizeBase * 2;
-        ImageContainerMaxSize = imageSizeBase * 4;
-    }
-
-
-    private static LinearGradientBrush CreateLoadingBackground(double startX, double endX, Color fromColor, Color toColor)
-    {
-        return new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(startX, 0.5, RelativeUnit.Relative),
-            EndPoint   = new RelativePoint(endX, 0.5, RelativeUnit.Relative),
-            GradientStops =
-            {
-                new GradientStop { Offset = 0.25, Color = fromColor },
-                new GradientStop { Offset = 0.37, Color = toColor },
-                new GradientStop { Offset = 0.63, Color = fromColor }
-            }
-        };
-    }
 }

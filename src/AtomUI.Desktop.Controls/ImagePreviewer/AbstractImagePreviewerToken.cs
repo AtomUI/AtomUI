@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -44,83 +43,37 @@ public abstract partial class AbstractImagePreviewerToken : AbstractControlDesig
     /// </summary>
     public partial double ErrorIconSize { get; set; }
 
-    /// <summary>
-    /// 封面的背景颜色
-    /// </summary>
+    /// <summary>Background color of the mask over the preview cover.</summary>
     public partial Color MaskBgColor { get; set; }
 
-    /// <summary>
-    /// 预览窗口最小宽度
-    /// </summary>
+    /// <summary>Minimum width of the image preview dialog.</summary>
     public partial double DialogMinWidth { get; set; }
 
-    /// <summary>
-    /// 预览窗口最小高度
-    /// </summary>
+    /// <summary>Minimum height of the image preview dialog.</summary>
     public partial double DialogMinHeight { get; set; }
 
-    /// <summary>
-    /// 预览窗口标题栏背景色
-    /// </summary>
+    /// <summary>Background color of the preview window's title bar.</summary>
     public partial Color TitleBarBackgroundColor { get; set; }
 
     /// <summary>
-    /// 浮动导航按钮背景颜色
+    /// Default background color of the floating preview navigation buttons, paired with
+    /// <see cref="PreviewOperationColor"/> .
     /// </summary>
     public partial Color NavButtonBgColor { get; set; }
 
     /// <summary>
-    /// 浮动导航按钮 Hover 背景颜色
+    /// Background color of the floating preview navigation buttons on hover or press, paired with
+    /// <see cref="PreviewOperationHoverColor"/> .
     /// </summary>
     public partial Color NavButtonBgHoverColor { get; set; }
 
-    /// <summary>
-    /// 浮动工具栏内间距
-    /// </summary>
+    /// <summary>Padding inside the floating toolbar.</summary>
     public partial Thickness FloatToolbarPadding { get; set; }
 
-    /// <summary>
-    /// 浮动工具栏索引指示器内间距
-    /// </summary>
+    /// <summary>Padding around the image index indicator in the floating toolbar.</summary>
     public partial Thickness FloatToolbarIndicatorPadding { get; set; }
 
-    /// <summary>
-    /// 封面默认的宽度
-    /// </summary>
+    /// <summary>Default width of the preview cover image.</summary>
     public partial double CoverImageWidth { get; set; }
-
-
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        // Floating controls can cover light or dark image content. Pair a dark scrim with light icons.
-        PreviewOperationColor         = EffectiveGlobalToken.ColorWhite.SetAlphaF(0.9);
-        PreviewOperationHoverColor    = EffectiveGlobalToken.ColorWhite;
-        PreviewOperationColorDisabled = EffectiveGlobalToken.ColorWhite.SetAlphaF(0.4);
-        PreviewOperationSize          = EffectiveGlobalToken.FontSizeIcon * 1.5;
-
-        ErrorIconSize                 = EffectiveGlobalToken.ControlHeightLG * 1.2;
-        MaskBgColor                   = ColorUtils.FromRgbF(0.3, 0, 0, 0);
-        DialogMinWidth                = 710;
-        DialogMinHeight               = 240;
-        CoverImageWidth               = 200;
-
-        if (isDarkMode)
-        {
-            TitleBarBackgroundColor       = EffectiveGlobalToken.ColorBorderSecondary;
-        }
-        else
-        {
-            TitleBarBackgroundColor       = EffectiveGlobalToken.ColorBorderSecondary.Darken(1);
-        }
-
-        NavButtonBgColor             = EffectiveGlobalToken.ColorBlack.SetAlphaF(0.72);
-        NavButtonBgHoverColor        = EffectiveGlobalToken.ColorBlack.SetAlphaF(0.84);
-        FloatToolbarPadding          = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, 0);
-        // The index indicator is transparent and centred above the actions, so only its block padding shows; the default
-        // adds none (the former inline-only default never rendered).
-        FloatToolbarIndicatorPadding = new Thickness(0);
-    }
 
 }

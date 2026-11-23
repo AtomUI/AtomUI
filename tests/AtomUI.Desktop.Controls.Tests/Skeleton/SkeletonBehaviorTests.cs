@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Tests.Theme;
 using AtomUI.Controls;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
@@ -24,7 +25,7 @@ public class SkeletonBehaviorTests
     public void Loading_Background_Uses_AntDesign_Shimmer_Geometry()
     {
         var token = new SkeletonToken();
-        token.AssignEffectiveGlobalToken(new DesignToken
+        AntDesignDerivationRunner.Derive(token, new DesignToken
         {
             ColorFillContent   = Colors.LightGray,
             ColorFill          = Colors.WhiteSmoke,
@@ -35,7 +36,6 @@ public class SkeletonBehaviorTests
             UniformlyMarginXXS = 4,
             ControlHeightXS    = 16
         });
-        token.RunDefaultCalculation(isDarkMode: false);
 
         // The band: base colour, highlight at 0.316 of 1.52W, base colour; absolute units so the host width rules.
         var width = 300d;

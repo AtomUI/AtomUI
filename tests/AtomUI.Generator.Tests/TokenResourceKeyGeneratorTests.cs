@@ -906,175 +906,6 @@ public class TokenResourceKeyGeneratorTests
     }
 
     [Fact]
-    public void Accepts_A_Later_Calculation_Override_With_One_First_Base_Call()
-    {
-        var outputCompilation = RunGenerator(CreateCompilation("""
-            using Avalonia.Controls;
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                public sealed class Button : Control
-                {
-                }
-
-                [ControlDesignToken]
-                internal abstract class CommonButtonToken : AbstractControlDesignToken
-                {
-                    public double ContentHeight { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        ContentHeight = isDarkMode ? 40 : 32;
-                    }
-                }
-
-                [ControlDesignToken]
-                internal sealed class ButtonToken : CommonButtonToken
-                {
-                    public double CornerRadius { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        base.CalculateTokenValues(isDarkMode);
-                        CornerRadius = isDarkMode ? 8 : 6;
-                    }
-                }
-            }
-            """), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-        var schema = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        schema.ShouldContain(
-            "((global::Demo.ButtonToken)token).RunDefaultCalculation(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
-        schema.ShouldNotContain("CommonButtonToken)token).RunDefaultCalculation");
-    }
-
-    [Theory]
-    [InlineData("public void CalculateTokenValues(ref bool isDarkMode) { }")]
-    [InlineData("public void CalculateTokenValues<T>(bool isDarkMode) { }")]
-    public void Ignores_Non_Target_Calculation_Overloads(string overloadDeclaration)
-    {
-        RunGenerator(CreateCompilation($$"""
-            using Avalonia.Controls;
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                public sealed class Button : Control
-                {
-                }
-
-                [ControlDesignToken]
-                internal abstract class CommonButtonToken : AbstractControlDesignToken
-                {
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                    }
-                }
-
-                [ControlDesignToken]
-                internal sealed class ButtonToken : CommonButtonToken
-                {
-                    {{overloadDeclaration}}
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        base.CalculateTokenValues(isDarkMode);
-                    }
-                }
-            }
-            """), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Ignores_A_Base_Call_To_A_Non_Target_Calculation_Overload()
-    {
-        RunGenerator(CreateCompilation("""
-            using Avalonia.Controls;
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                public sealed class Button : Control
-                {
-                }
-
-                [ControlDesignToken]
-                internal abstract class CommonButtonToken : AbstractControlDesignToken
-                {
-                    public void CalculateTokenValues(int mode)
-                    {
-                    }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                    }
-                }
-
-                [ControlDesignToken]
-                internal sealed class ButtonToken : CommonButtonToken
-                {
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        base.CalculateTokenValues(isDarkMode);
-                        base.CalculateTokenValues(1);
-                    }
-                }
-            }
-            """), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-    }
-
-    [Theory]
-    [InlineData("missing", "protected override void CalculateTokenValues(bool isDarkMode) { }")]
-    [InlineData("duplicate", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); base.CalculateTokenValues(isDarkMode); }")]
-    [InlineData("not first", "protected override void CalculateTokenValues(bool isDarkMode) { CornerRadius = 4; base.CalculateTokenValues(isDarkMode); }")]
-    [InlineData("conditional", "protected override void CalculateTokenValues(bool isDarkMode) { if (isDarkMode) { base.CalculateTokenValues(isDarkMode); } }")]
-    [InlineData("wrong argument", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(!isDarkMode); }")]
-    [InlineData("expression body", "protected override void CalculateTokenValues(bool isDarkMode) => base.CalculateTokenValues(isDarkMode);")]
-    [InlineData("nested local function", "protected override void CalculateTokenValues(bool isDarkMode) { base.CalculateTokenValues(isDarkMode); void Recalculate() { base.CalculateTokenValues(isDarkMode); } }")]
-    public void Reports_Diagnostic_For_Invalid_Calculation_Base_Call(
-        string expectedReason,
-        string methodDeclaration)
-    {
-        RunGenerator(CreateCompilation($$"""
-            using Avalonia.Controls;
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                public sealed class Button : Control
-                {
-                }
-
-                [ControlDesignToken]
-                internal abstract class CommonButtonToken : AbstractControlDesignToken
-                {
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                    }
-                }
-
-                [ControlDesignToken]
-                internal sealed class ButtonToken : CommonButtonToken
-                {
-                    public double CornerRadius { get; set; }
-
-                    {{methodDeclaration}}
-                }
-            }
-            """), out var diagnostics);
-
-        var diagnostic = diagnostics.ShouldHaveSingleItem();
-        diagnostic.Id.ShouldBe("ATOMUIGEN024");
-        diagnostic.GetMessage().ShouldContain(expectedReason);
-    }
-
-    [Fact]
     public void Flattens_A_Public_Abstract_Control_Token_From_A_Metadata_Reference()
     {
         var runtimeReference = CreateThemeRuntimeReference();
@@ -1114,8 +945,6 @@ public class TokenResourceKeyGeneratorTests
                 internal sealed class ButtonToken : CommonButtonToken
                 {
                     public double CornerRadius { get; set; }
-
-                    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
                 }
             }
             """,
@@ -1229,7 +1058,7 @@ public class TokenResourceKeyGeneratorTests
     }
 
     [Fact]
-    public void Generated_Descriptors_Execute_Inherited_Calculations_And_Isolate_Siblings()
+    public void Generated_Descriptors_Create_Their_Own_Terminal_Token_With_The_Inherited_Properties()
     {
         var output = RunGenerator(CreateCompilation("""
             using Avalonia.Controls;
@@ -1248,36 +1077,19 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal abstract class CommonInteractiveToken : AbstractControlDesignToken
                 {
-                    public double ContentHeight { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        ContentHeight = isDarkMode ? 40 : 32;
-                    }
+                    public double ContentHeight { get; set; } = 32;
                 }
 
                 [ControlDesignToken]
                 internal sealed class ButtonToken : CommonInteractiveToken
                 {
-                    public double TerminalValue { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        base.CalculateTokenValues(isDarkMode);
-                        TerminalValue = isDarkMode ? 2 : 1;
-                    }
+                    public double TerminalValue { get; set; } = 1;
                 }
 
                 [ControlDesignToken]
                 internal sealed class LinkToken : CommonInteractiveToken
                 {
-                    public double TerminalValue { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDarkMode)
-                    {
-                        base.CalculateTokenValues(isDarkMode);
-                        TerminalValue = isDarkMode ? 20 : 10;
-                    }
+                    public double TerminalValue { get; set; } = 10;
                 }
             }
             """, "RuntimeControlTokenInheritance"), out var diagnostics);
@@ -1286,6 +1098,10 @@ public class TokenResourceKeyGeneratorTests
         output.GetDiagnostics(TestContext.Current.CancellationToken)
               .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
               .ShouldBeEmpty();
+        var schema = GetGeneratedSource(output, "GeneratedThemeSchema.g.cs");
+        // Values come from the control derivations of a language; the descriptor only creates the token.
+        schema.ShouldNotContain("RunDefaultCalculation");
+        schema.ShouldNotContain("appearance");
 
         using var stream = new MemoryStream();
         var emitResult = output.Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
@@ -1300,21 +1116,14 @@ public class TokenResourceKeyGeneratorTests
 
         foreach (var descriptor in descriptors)
         {
-            var descriptorType = descriptor.GetType();
-            var factory = (Delegate)descriptorType.GetProperty("Factory")!.GetValue(descriptor)!;
-            var evaluator = (Delegate)descriptorType.GetProperty("Evaluator")!.GetValue(descriptor)!;
-            var appearanceType = assembly.GetType("AtomUI.Theme.ThemeAppearance", throwOnError: true)!;
-            foreach (var appearanceName in new[] { "Light", "Dark" })
-            {
-                var token = factory.DynamicInvoke()!;
-                evaluator.DynamicInvoke(token, Enum.Parse(appearanceType, appearanceName));
-                var isDark = appearanceName == "Dark";
-                var expectedTerminalValue = token.GetType().Name == "ButtonToken"
-                    ? isDark ? 2d : 1d
-                    : isDark ? 20d : 10d;
-                token.GetType().GetProperty("ContentHeight")!.GetValue(token).ShouldBe(isDark ? 40d : 32d);
-                token.GetType().GetProperty("TerminalValue")!.GetValue(token).ShouldBe(expectedTerminalValue);
-            }
+            var factory = (Delegate)descriptor.GetType().GetProperty("Factory")!.GetValue(descriptor)!;
+            var first = factory.DynamicInvoke()!;
+            var second = factory.DynamicInvoke()!;
+            // Every call creates a fresh instance of the terminal token, never a shared one.
+            second.ShouldNotBeSameAs(first);
+            first.GetType().GetProperty("ContentHeight")!.GetValue(first).ShouldBe(32d);
+            first.GetType().GetProperty("TerminalValue")!.GetValue(first)
+                 .ShouldBe(first.GetType().Name == "ButtonToken" ? 1d : 10d);
         }
     }
 
@@ -1366,56 +1175,6 @@ public class TokenResourceKeyGeneratorTests
     }
 
     [Fact]
-    public void Reports_Diagnostic_For_Hidden_Calculation_Method_From_Metadata()
-    {
-        var runtimeReference = CreateThemeRuntimeReference();
-        var sharedReference = EmitToPortableExecutableReference(CreateCompilationWithReferences(
-            """
-            using AtomUI.Theme.DesignTokens;
-
-            namespace SharedTokens
-            {
-                [ControlDesignToken]
-                public abstract class CommonButtonToken : AbstractControlDesignToken
-                {
-                    public new void CalculateTokenValues(bool isDarkMode)
-                    {
-                    }
-                }
-            }
-            """,
-            "SharedTokens",
-            runtimeReference));
-        var platformCompilation = CreateCompilationWithReferences(
-            """
-            using Avalonia.Controls;
-            using AtomUI.Theme.DesignTokens;
-            using SharedTokens;
-
-            namespace PlatformControls
-            {
-                public sealed class Button : Control
-                {
-                }
-
-                [ControlDesignToken]
-                internal sealed class ButtonToken : CommonButtonToken
-                {
-                }
-            }
-            """,
-            "PlatformControls",
-            runtimeReference,
-            sharedReference);
-
-        RunGenerator(platformCompilation, out var diagnostics);
-
-        var diagnostic = diagnostics.ShouldHaveSingleItem();
-        diagnostic.Id.ShouldBe("ATOMUIGEN024");
-        diagnostic.GetMessage().ShouldContain("must be an override");
-    }
-
-    [Fact]
     public void Flattens_An_Internal_Metadata_Layer_When_Internals_Are_Visible()
     {
         var runtimeReference = CreateThemeRuntimeReference();
@@ -1449,7 +1208,6 @@ public class TokenResourceKeyGeneratorTests
                 [ControlDesignToken]
                 internal sealed class ButtonToken : CommonButtonToken
                 {
-                    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
                 }
             }
             """,
@@ -1844,7 +1602,6 @@ public class TokenResourceKeyGeneratorTests
             {
                 public ControlTokenIdentity Identity { get; }
                 public System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken>? Factory { get; }
-                public System.Action<AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.ThemeAppearance>? Evaluator { get; }
 
                 public ControlTokenDescriptor(
                     System.Type controlType,
@@ -1857,12 +1614,10 @@ public class TokenResourceKeyGeneratorTests
                     System.Type controlType,
                     ControlTokenIdentity identity,
                     System.Collections.Generic.IReadOnlyList<TokenDescriptor> ownTokens,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory,
-                    System.Action<AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.ThemeAppearance> evaluator)
+                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory)
                 {
                     Identity = identity;
                     Factory = factory;
-                    Evaluator = evaluator;
                 }
             }
 
@@ -1871,10 +1626,6 @@ public class TokenResourceKeyGeneratorTests
                 public ControlTokenIdentity OwnerIdentity { get; }
                 public System.Collections.Generic.IReadOnlyList<ControlTokenIdentity> ReferencedControlIdentities { get; } =
                     System.Array.Empty<ControlTokenIdentity>();
-            }
-
-            public sealed class ThemeAlgorithmDescriptor
-            {
             }
 
             public static class ThemeTokenValueParser
@@ -1910,11 +1661,6 @@ public class TokenResourceKeyGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
-                protected virtual void CalculateTokenValues(bool isDark)
-                {
-                }
-
-                internal void RunDefaultCalculation(bool isDark) => CalculateTokenValues(isDark);
             }
         }
 

@@ -1,13 +1,10 @@
-using AtomUI.Controls;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
-using AvaloniaWindow = Avalonia.Controls.Window;
 using AtomUIWindow = AtomUI.Desktop.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Tests.Segmented;
@@ -60,7 +57,7 @@ public class SegmentedThemeSwitchThumbTests
         {
             window.Close();
             Dispatcher.UIThread.RunJobs();
-            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest));
+            await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest));
         }
     }
 
@@ -108,7 +105,7 @@ public class SegmentedThemeSwitchThumbTests
         {
             window.Close();
             Dispatcher.UIThread.RunJobs();
-            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest));
+            await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest));
         }
     }
 
@@ -117,7 +114,7 @@ public class SegmentedThemeSwitchThumbTests
     {
         var manager = (ThemeManager)Application.Current!.GetThemeManager()!;
         var noMotion = new ThemeConfigBuilder().WithToken("EnableMotion", "false").Build();
-        await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, noMotion, ThemeTransitionReason.UserRequest));
+        await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, noMotion, ThemeTransitionReason.UserRequest));
         var segmented = new AtomUI.Desktop.Controls.Segmented { Width = 320, IsExpanding = true };
         var items = new List<AtomUI.Desktop.Controls.SegmentedItem>();
         for (var i = 1; i <= 4; i++)
@@ -147,7 +144,7 @@ public class SegmentedThemeSwitchThumbTests
         {
             window.Close();
             Dispatcher.UIThread.RunJobs();
-            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest));
+            await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest));
         }
     }
 }

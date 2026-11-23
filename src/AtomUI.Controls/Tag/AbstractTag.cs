@@ -365,7 +365,10 @@ public abstract class AbstractTag : TemplatedControl
 
         if (table.TryGetStatus(colorSpan, out var statusColor))
         {
-            ApplyStatusColor(ResolveEffectiveStatusColor(colorSpan, Global) ?? statusColor, solidTextColor);
+            ApplyStatusColor(ResolveEffectiveStatusColor(colorSpan, Global, controlSlot is { } own
+                    ? status => s_themeTokenResolver.GetOwn<Color>(snapshot, own, StatusColorTokenKey(status)!)
+                    : null) ?? statusColor,
+                solidTextColor);
             PseudoClasses.Set(TagPseudoClass.StatusColor, true);
             return true;
         }
@@ -382,7 +385,14 @@ public abstract class AbstractTag : TemplatedControl
         return false;
     }
 
-    private static TagStatusCalcColor? ResolveEffectiveStatusColor(ReadOnlySpan<char> name, Func<SharedTokenKind, Color> global)
+    /// <summary>
+    /// The control token that holds the main colour of a status tag (spec 6.1: a language gives a control its own
+    /// status colours through control tokens); <see langword="null"/> reads the global status colour.
+    /// </summary>
+    private protected virtual object? StatusColorTokenKey(TagStatus status) => null;
+
+    private TagStatusCalcColor? ResolveEffectiveStatusColor(ReadOnlySpan<char> name, Func<SharedTokenKind, Color> global,
+        Func<TagStatus, Color>? own)
     {
         (SharedTokenKind Color, SharedTokenKind Background, SharedTokenKind Border)? kinds =
             name.Equals(nameof(TagStatus.Success), StringComparison.OrdinalIgnoreCase)
@@ -400,9 +410,16 @@ public abstract class AbstractTag : TemplatedControl
             return null;
         }
 
+        var status = k.Color switch
+        {
+            SharedTokenKind.ColorSuccess => TagStatus.Success,
+            SharedTokenKind.ColorInfo    => TagStatus.Info,
+            SharedTokenKind.ColorWarning => TagStatus.Warning,
+            _                            => TagStatus.Error
+        };
         return new TagStatusCalcColor
         {
-            Color       = global(k.Color),
+            Color       = own is not null && StatusColorTokenKey(status) is not null ? own(status) : global(k.Color),
             Background  = global(k.Background),
             BorderColor = global(k.Border)
         };

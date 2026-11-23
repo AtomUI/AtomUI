@@ -51,15 +51,12 @@ internal sealed class ThemeDefinitionLoadCache : IDisposable
         var document = entry.Document;
         var bytes = ThemeRetainedBytesEstimator.Add(192, EstimateStrings(document.Id, document.Name));
         bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateLocation(document.Location));
-        bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateTokens(document.Tokens));
-        bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateAlgorithms(document.Algorithms));
-        foreach (var control in document.Controls)
+        bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateSection(document.Values));
+        foreach (var condition in document.Conditions)
         {
             bytes = ThemeRetainedBytesEstimator.Add(bytes, 128);
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateStrings(control.Identity.Catalog, control.Identity.Id));
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateLocation(control.Location));
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateTokens(control.Tokens));
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateAlgorithms(control.Algorithms));
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateLocation(condition.Location));
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateSection(condition.Values));
         }
         return ThemeRetainedBytesEstimator.Add(bytes, EstimateDiagnostics(entry.Diagnostics));
     }
@@ -76,13 +73,16 @@ internal sealed class ThemeDefinitionLoadCache : IDisposable
         return bytes;
     }
 
-    private static long EstimateAlgorithms(IReadOnlyList<ThemeAlgorithmDocument> algorithms)
+    private static long EstimateSection(ThemeSectionDocument section)
     {
-        var bytes = 64L;
-        foreach (var algorithm in algorithms)
+        var bytes = ThemeRetainedBytesEstimator.Add(64, EstimateTokens(section.Tokens));
+        bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateTokens(section.LanguageTokens));
+        foreach (var control in section.Controls)
         {
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, 64);
-            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateLocation(algorithm.Location));
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, 128);
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateStrings(control.Identity.Catalog, control.Identity.Id));
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateLocation(control.Location));
+            bytes = ThemeRetainedBytesEstimator.Add(bytes, EstimateTokens(control.Tokens));
         }
         return bytes;
     }

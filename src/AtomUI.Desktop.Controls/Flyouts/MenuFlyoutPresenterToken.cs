@@ -1,5 +1,4 @@
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -21,16 +20,4 @@ public sealed partial class MenuFlyoutPresenterToken : AbstractMenuPopupToken
     /// border sets it.
     /// </summary>
     public partial Thickness MenuPopupBorderThickness { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        MenuPopupBorderColor = EffectiveGlobalToken.ColorBorderSecondary;
-        MenuPopupBorderThickness = new Thickness();
-        if (!IsExplicit(MenuFlyoutPresenterTokenKind.ItemColor))
-        {
-            ItemColor = EffectiveGlobalToken.ColorText;
-        }
-        ItemHoverColor = ItemColor;
-    }
 }

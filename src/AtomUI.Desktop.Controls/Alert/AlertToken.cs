@@ -7,40 +7,47 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class AlertToken : AbstractControlDesignToken
 {
-
-    public AlertToken()
-
-    {
-    }
+    /// <summary>
+    /// 成功提示的图标颜色
+    /// Icon colour of a success alert.
+    /// </summary>
+    public partial Color SuccessIconColor { get; set; }
 
     /// <summary>
-    /// 默认内间距
+    /// 信息提示的图标颜色
+    /// Icon colour of an info alert.
     /// </summary>
+    public partial Color InfoIconColor { get; set; }
+
+    /// <summary>
+    /// 警告提示的图标颜色
+    /// Icon colour of a warning alert.
+    /// </summary>
+    public partial Color WarningIconColor { get; set; }
+
+    /// <summary>
+    /// 错误提示的图标颜色
+    /// Icon colour of an error alert.
+    /// </summary>
+    public partial Color ErrorIconColor { get; set; }
+
+
+    /// <summary>Inset of the content in an alert with a title only.</summary>
     public partial Thickness DefaultPadding { get; set; }
 
-    /// <summary>
-    /// 带有描述的内间距
-    /// </summary>
+    /// <summary>Inset of the content in an alert that includes a description.</summary>
     public partial Thickness WithDescriptionPadding { get; set; }
 
-    /// <summary>
-    /// 图标默认外间距
-    /// </summary>
+    /// <summary>Space around the status icon in a title-only alert.</summary>
     public partial Thickness IconDefaultMargin { get; set; }
 
-    /// <summary>
-    /// 图标带描述信息外间距
-    /// </summary>
+    /// <summary>Space around the status icon when the alert includes a description.</summary>
     public partial Thickness IconWithDescriptionMargin { get; set; }
 
-    /// <summary>
-    /// 没有描述时的图标尺寸
-    /// </summary>
+    /// <summary>Width and height of the status icon in a title-only alert.</summary>
     public partial double DefaultIconSize { get; set; }
 
-    /// <summary>
-    /// 带有描述时的图标尺寸
-    /// </summary>
+    /// <summary>Width and height of the status icon when an alert has a description.</summary>
     public partial double WithDescriptionIconSize { get; set; }
 
     /// <summary>
@@ -48,14 +55,10 @@ public sealed partial class AlertToken : AbstractControlDesignToken
     /// </summary>
     public partial double CloseIconSize { get; set; }
 
-    /// <summary>
-    /// 额外元素的外间距
-    /// </summary>
+    /// <summary>Space around the optional extra element in the alert.</summary>
     public partial Thickness ExtraElementMargin { get; set; }
     
-    /// <summary>
-    /// 描述标签外间距
-    /// </summary>
+    /// <summary>Space around the description label under the alert title.</summary>
     public partial Thickness DescriptionLabelMargin { get; set; }
 
     /// <summary>
@@ -87,27 +90,5 @@ public sealed partial class AlertToken : AbstractControlDesignToken
     /// Font weight of the alert text (message and description)
     /// </summary>
     public partial FontWeight TextFontWeight { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        const double paddingHorizontal = 12; // Fixed value here.
-        WithDescriptionIconSize = EffectiveGlobalToken.FontSizeHeading3;
-        DefaultPadding          = new Thickness(paddingHorizontal, EffectiveGlobalToken.PaddingContentVerticalSM);
-        WithDescriptionPadding  = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingMD);
-
-        IconDefaultMargin            = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        IconWithDescriptionMargin    = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
-        ExtraElementMargin           = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-        DescriptionLabelMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-
-        CloseIconSize = EffectiveGlobalToken.FontSizeIcon;
-        DefaultIconSize = EffectiveGlobalToken.FontSizeLG;
-        SuccessMessageColor = EffectiveGlobalToken.ColorText;
-        InfoMessageColor    = EffectiveGlobalToken.ColorText;
-        WarningMessageColor = EffectiveGlobalToken.ColorText;
-        ErrorMessageColor   = EffectiveGlobalToken.ColorText;
-        TextFontWeight      = FontWeight.Normal;
-    }
     
 }

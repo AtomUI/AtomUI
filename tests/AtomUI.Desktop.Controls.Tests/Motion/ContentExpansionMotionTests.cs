@@ -1,5 +1,4 @@
 using System.Reflection;
-using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Animation;

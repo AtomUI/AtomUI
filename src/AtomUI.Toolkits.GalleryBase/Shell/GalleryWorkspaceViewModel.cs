@@ -3,8 +3,8 @@ using System.Reactive;
 using AtomUI.Localization;
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Configuration;
 using AtomUI.Toolkits.GalleryBase.Navigation;
@@ -48,9 +48,11 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     // Until the user touches the toggles, the declaration wins; an explicit user choice then overrides it.
     private bool _motionTouched;
     private bool _waveSpiritTouched;
-    private ThemeAlgorithm[] _baseAlgorithms = [ThemeAlgorithm.Default];
     private IReadOnlyList<ThemeInfo> _availableThemes = Array.Empty<ThemeInfo>();
-    private string _currentThemeId = IThemeManager.DEFAULT_THEME_ID;
+    private string _currentThemeId = string.Empty;
+    // The language and style of the applied theme, the gallery's "design language" key being "Language[.Style]".
+    private string? _currentLanguage;
+    private DesignStyle? _currentStyle;
     private ThemePreference _appearanceMode = ThemePreference.Light;
 
     private bool _isZhCN;
@@ -110,15 +112,19 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     }
 
     /// <summary>
-    /// Gets the design language of the current theme, or <see langword="null"/> for a theme that declares none.
+    /// Gets the design language key of the current theme: the language identity, followed by <c>.Style</c> for a
+    /// language that offers several styles (<c>AntDesign</c>, <c>Shadcn.Nova</c>).
     /// </summary>
-    public string? CurrentDesignLanguage => FindTheme(CurrentThemeId)?.DesignLanguage;
+    public string? CurrentDesignLanguage => _currentLanguage is { } language ? Key(language, _currentStyle) : null;
 
-    /// <summary>
-    /// Gets whether the current design language accepts a replaceable brand color.
-    /// </summary>
-    public bool CanChooseBrandColor =>
-        FindTheme(CurrentThemeId) is { DesignLanguage: not null, BrandColor: ThemeBrandColorSupport.Seed };
+    /// <summary>The design language keys of the enabled languages, in catalog order.</summary>
+    public IReadOnlyList<string> DesignLanguages => Languages.SelectMany(static language =>
+        language.Styles.Count == 1
+            ? [language.Id]
+            : language.Styles.Select(style => language.Id + "." + style.Id)).ToArray();
+
+    /// <summary>Gets whether the current design language accepts a replaceable brand color.</summary>
+    public bool CanChooseBrandColor => IsAdjustable(nameof(SharedTokenKind.ColorPrimary));
 
     /// <summary>
     /// Gets the brand color remembered for the current design language, or <see langword="null"/> when the theme's own
@@ -135,9 +141,14 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         private set => SetAppearanceModeState(value);
     }
 
+    /// <summary>
+    /// The language seed a neutral colour family choice writes: the base colour of shadcn/ui (ui.shadcn.com/create
+    /// Base Color). A language that declares it as an adjustable seed offers the neutral picker.
+    /// </summary>
+    public const string NeutralSeedName = "BaseColor";
+
     /// <summary>Gets whether the current design language accepts a replaceable neutral color family.</summary>
-    public bool CanChooseNeutralColor =>
-        FindTheme(CurrentThemeId) is { DesignLanguage: not null, NeutralColor: ThemeNeutralColorSupport.Seed };
+    public bool CanChooseNeutralColor => IsAdjustable(NeutralSeedName);
 
     /// <summary>Gets the neutral color remembered for the current design language, if it accepts one.</summary>
     public Color? NeutralColor =>
@@ -195,7 +206,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         _languageManager = languageManager ?? (Application.Current is { } application
             ? global::AtomUI.ApplicationExtensions.GetLanguageManager(application)
             : null);
-        AvailableThemes = CaptureThemes(_themeManager?.AvailableThemes);
+        AvailableThemes = CaptureThemes(_themeManager?.Themes);
         SyncThemeState(_themeManager?.CurrentTheme, null);
         SyncLanguageState(_languageManager?.Current);
 
@@ -271,7 +282,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         {
             SubscribeSystemAppearance();
             _isDark = _systemAppearanceSource.GetCurrentAppearance() == ThemeAppearance.Dark;
-            await ApplyThemeSettingsAsync(reason: ThemeTransitionReason.FollowSystem);
+            await ApplyThemeSettingsAsync(ThemeTransitionReason.FollowSystem);
             return;
         }
 
@@ -313,17 +324,17 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private async Task SwitchThemeAsync(string themeId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
-        if (string.Equals(themeId, CurrentThemeId, StringComparison.Ordinal))
+        if (string.Equals(themeId, CurrentThemeId, StringComparison.Ordinal) || FindTheme(themeId) is not { } theme)
         {
             return;
         }
-        // A base theme that takes the toggles keeps the gallery's appearance; only a profile applied as defined
-        // decides it.
-        var takesToggles = ResolveBaseThemeWithToggles(themeId) is not null;
-        await ApplyThemeSettingsAsync(themeId);
-        if (!takesToggles)
+
+        // A theme that fixes the appearance decides it; an open theme takes the gallery's toggles.
+        var style = theme.Style ?? (string.Equals(theme.Language, _currentLanguage, StringComparison.Ordinal) ? _currentStyle : null);
+        await ApplyThemeSettingsAsync(theme.Language, style, themeId);
+        if (theme.Appearance is not null)
         {
-            FollowAppliedProfileAppearance(themeId);
+            FollowAppliedProfileAppearance();
         }
     }
 
@@ -336,12 +347,11 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
         // The catalog may have changed since the caller listed the language; an unknown language is ignored instead of
         // faulting the command.
-        if (!AvailableThemes.Any(theme => string.Equals(theme.DesignLanguage, designLanguage, StringComparison.Ordinal)))
+        if (!TryParseKey(designLanguage, out var language, out var style))
         {
             return;
         }
-        await ApplyThemeSettingsAsync(designLanguage: designLanguage);
-        FollowAppliedProfileAppearance(null);
+        await ApplyThemeSettingsAsync(language, style, null);
     }
 
     private async Task SetNeutralColorAsync(Color? color)
@@ -352,7 +362,8 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
 
         // A color equal to the theme's own neutral seed means "no custom neutral".
-        if (color is { } chosenNeutral && FindTheme(CurrentThemeId)?.NeutralAccentColor == chosenNeutral)
+        if (color is { } chosenNeutral && FindTheme(CurrentThemeId)?.SeedValues.TryGetValue(NeutralSeedName, out var own) == true &&
+            Color.TryParse(own, out var ownNeutral) && ownNeutral == chosenNeutral)
         {
             color = null;
         }
@@ -388,13 +399,10 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         await ApplyThemeSettingsAsync();
     }
 
-    // Picking a language profile picks its appearance: the appearance mode follows the applied profile, unless the
-    // system mode already yields that appearance.
-    private void FollowAppliedProfileAppearance(string? requestedThemeId)
+    // A theme that fixes the appearance decides it: the appearance mode follows, unless the system mode yields it.
+    private void FollowAppliedProfileAppearance()
     {
-        if (_themeManager?.CurrentTheme is not { } state ||
-            (requestedThemeId is not null && !string.Equals(state.ThemeId, requestedThemeId, StringComparison.Ordinal)) ||
-            FindTheme(state.ThemeId)?.DesignLanguage is null)
+        if (_themeManager?.CurrentTheme is not { } state)
         {
             return;
         }
@@ -407,104 +415,57 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             ReleaseSystemAppearanceSubscription();
             AppearanceMode = isDark ? ThemePreference.Dark : ThemePreference.Light;
         }
+        _isDark = isDark;
     }
 
-    private async Task ApplyThemeSettingsAsync(string? requestedThemeId = null,
-                                               string? designLanguage = null,
-                                               ThemeTransitionReason reason = ThemeTransitionReason.UserRequest)
+    private Task ApplyThemeSettingsAsync(ThemeTransitionReason reason = ThemeTransitionReason.UserRequest) =>
+        _currentLanguage is { } language
+            ? ApplyThemeSettingsAsync(language, _currentStyle, IsLanguageDefault(CurrentThemeId) ? null : CurrentThemeId)
+            : Task.CompletedTask;
+
+    // The gallery's selection: the language and style, the named theme (if any), its appearance and density toggles,
+    // the brand and neutral colors remembered for the language, and the motion switches once the user touched them.
+    private async Task ApplyThemeSettingsAsync(string language, DesignStyle? style, string? themeId)
     {
         if (_themeManager is null)
         {
             return;
         }
 
-        var currentThemeId = _themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID;
-        var currentLanguage = FindTheme(currentThemeId)?.DesignLanguage;
-        var builder        = new ThemeConfigBuilder();
-        string themeId;
-        Color? brandSeed = null;
-        var requestedLanguage = requestedThemeId is not null ? FindTheme(requestedThemeId)?.DesignLanguage : null;
-
-        ThemeSelectionResult? resolved = null;
-        if (designLanguage is not null || (requestedThemeId is null && currentLanguage is not null))
+        var key = Key(language, style);
+        var selection = ThemeSelection.Of(language, style)
+                                      .WithAppearance(_isDark ? ThemeAppearance.Dark : ThemeAppearance.Light);
+        if (themeId is not null)
         {
-            // The resolver picks the profile that matches the appearance and density, or falls back to a definition of
-            // the language with the built-in dark and compact algorithms.
-            resolved = ThemeSelectionResolver.Resolve(AvailableThemes, CreateSelection(designLanguage ?? currentLanguage!));
+            selection = selection.WithTheme(themeId);
         }
-        else if (requestedThemeId is not null)
+        var info = Languages.FirstOrDefault(candidate => candidate.Id == language);
+        if (_isCompact && info?.Densities.Contains(DesignDensity.Compact) == true)
         {
-            resolved = ResolveBaseThemeWithToggles(requestedThemeId);
+            selection = selection.WithDensity(DesignDensity.Compact);
         }
-
-        if (resolved is not null)
+        if (info?.AdjustableSeeds.Contains(nameof(SharedTokenKind.ColorPrimary)) == true &&
+            _brandByLanguage.GetValueOrDefault(key) is { } brand)
         {
-            themeId   = resolved.ThemeId;
-            brandSeed = resolved.BrandSeed;
-            if (resolved.Algorithms is not null)
-            {
-                builder.WithAlgorithms(resolved.Algorithms.ToArray());
-            }
+            selection = selection.WithSeed(nameof(SharedTokenKind.ColorPrimary), FormatColor(brand));
         }
-        else if (requestedLanguage is not null)
+        if (info?.AdjustableSeeds.Contains(NeutralSeedName) == true &&
+            _neutralByLanguage.GetValueOrDefault(key) is { } neutral)
         {
-            // A picked language profile applies as defined, with the brand color remembered for its language.
-            themeId = requestedThemeId!;
-            if (FindTheme(themeId)?.BrandColor == ThemeBrandColorSupport.Seed)
-            {
-                brandSeed = _brandByLanguage.GetValueOrDefault(requestedLanguage);
-            }
-        }
-        else
-        {
-            // Plain themes take the gallery's appearance and density as algorithms. A theme that replaces a language
-            // profile starts from Default instead of carrying the profile's own algorithm.
-            themeId = requestedThemeId ?? currentThemeId;
-            var baseAlgorithms = requestedThemeId is not null && currentLanguage is not null
-                ? [ThemeAlgorithm.Default]
-                : _baseAlgorithms;
-            var algorithms = new List<ThemeAlgorithm>(baseAlgorithms.Length + 2);
-            algorithms.AddRange(baseAlgorithms);
-            if (_isCompact)
-            {
-                algorithms.Add(ThemeAlgorithm.Compact);
-            }
-            if (_isDark)
-            {
-                algorithms.Add(ThemeAlgorithm.Dark);
-            }
-            builder.WithAlgorithms(algorithms.ToArray());
-        }
-
-        if (brandSeed is { } seed)
-        {
-            builder.WithToken(nameof(SharedTokenKind.ColorPrimary), FormatColor(seed));
-        }
-
-        Color? neutralSeed = null;
-        if (resolved?.NeutralColorIgnored != true &&
-            (resolved is not null || (requestedLanguage is not null && FindTheme(themeId)?.NeutralColor == ThemeNeutralColorSupport.Seed)))
-        {
-            neutralSeed = resolved?.NeutralSeed ??
-                          (requestedLanguage is not null ? _neutralByLanguage.GetValueOrDefault(requestedLanguage) : null);
-        }
-
-        if (neutralSeed is { } neutral)
-        {
-            builder.WithToken(nameof(SharedTokenKind.ColorNeutral), FormatColor(neutral));
+            selection = selection.WithLanguageSeed(NeutralSeedName, FormatColor(neutral));
         }
 
         // Only an explicit user choice overrides the theme's own declarations.
         if (_motionTouched)
         {
-            builder.WithToken(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false");
+            selection = selection.WithSeed(nameof(SharedTokenKind.EnableMotion), _isMotionEnabled ? "true" : "false");
         }
         if (_waveSpiritTouched)
         {
-            builder.WithToken(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false");
+            selection = selection.WithSeed(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false");
         }
-        var config = builder.Build();
-        var result = await _themeManager.ApplyThemeAsync(new ThemeRequest(themeId, config, reason));
+
+        var result = await _themeManager.ApplyAsync(selection);
         if (result.Status == ThemeTransitionStatus.Failed)
         {
             this.RaisePropertyChanged(nameof(CurrentThemeId));
@@ -517,32 +478,43 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
     }
 
-    private ThemeSelection CreateSelection(string language)
-    {
-        return new ThemeSelection(
-            language,
-            _isDark ? ThemeAppearance.Dark : ThemeAppearance.Light,
-            _isCompact ? ThemeDensity.Compact : ThemeDensity.Normal,
-            _brandByLanguage.GetValueOrDefault(language),
-            _neutralByLanguage.GetValueOrDefault(language));
-    }
+    private IReadOnlyList<DesignLanguageInfo> Languages => _themeManager?.Languages ?? Array.Empty<DesignLanguageInfo>();
 
-    // A requested theme that is its language's light, normal base, while the language has no variant for the current
-    // Dark/Compact toggles, takes the toggles the way a theme without a language does (SwitchThemeCommand keeps its
-    // contract). Returns null when the theme applies as defined instead.
-    private ThemeSelectionResult? ResolveBaseThemeWithToggles(string themeId)
+    private static string Key(string language, DesignStyle? style) =>
+        style is { } value && value.Id != "Default" ? language + "." + value.Id : language;
+
+    private bool TryParseKey(string key, out string language, out DesignStyle? style)
     {
-        if (FindTheme(themeId) is not
-            { DesignLanguage: { } language, Appearance: ThemeAppearance.Light, Density: ThemeDensity.Normal })
+        foreach (var info in Languages)
         {
-            return null;
+            if (string.Equals(info.Id, key, StringComparison.Ordinal))
+            {
+                language = info.Id;
+                style = null;
+                return true;
+            }
+            foreach (var candidate in info.Styles)
+            {
+                if (string.Equals(info.Id + "." + candidate.Id, key, StringComparison.Ordinal))
+                {
+                    language = info.Id;
+                    style = candidate;
+                    return true;
+                }
+            }
         }
 
-        var resolved = ThemeSelectionResolver.Resolve(AvailableThemes, CreateSelection(language));
-        return resolved.Algorithms is not null && string.Equals(resolved.ThemeId, themeId, StringComparison.Ordinal)
-            ? resolved
-            : null;
+        language = "";
+        style = null;
+        return false;
     }
+
+    private bool IsAdjustable(string seed) =>
+        _currentLanguage is { } language &&
+        Languages.FirstOrDefault(info => info.Id == language)?.AdjustableSeeds.Contains(seed) == true &&
+        FindTheme(CurrentThemeId)?.LockedSeeds.Contains(seed) != true;
+
+    private bool IsLanguageDefault(string themeId) => FindTheme(themeId)?.IsLanguageDefault == true;
 
     private static string FormatColor(Color color)
     {
@@ -579,7 +551,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         _isDark = isDark;
         try
         {
-            await ApplyThemeSettingsAsync(reason: ThemeTransitionReason.FollowSystem).ConfigureAwait(true);
+            await ApplyThemeSettingsAsync(ThemeTransitionReason.FollowSystem).ConfigureAwait(true);
         }
         catch (Exception exception)
         {
@@ -602,7 +574,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             return;
         }
 
-        AvailableThemes = CaptureThemes(args.AvailableThemes);
+        AvailableThemes = CaptureThemes(args.Themes);
         if (args.CurrentTheme is not null)
         {
             CurrentThemeId = args.CurrentTheme.ThemeId;
@@ -641,16 +613,10 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
                     ? ThemePreference.Dark
                     : ThemePreference.Light;
             }
-            _isCompact = state.Algorithms.Contains(ThemeAlgorithm.Compact) ||
-                         FindTheme(state.ThemeId)?.Density == ThemeDensity.Compact;
-            _baseAlgorithms = state.Algorithms
-                                   .Where(static algorithm =>
-                                       algorithm != ThemeAlgorithm.Compact && algorithm != ThemeAlgorithm.Dark)
-                                   .ToArray();
-            if (_baseAlgorithms.Length == 0)
-            {
-                _baseAlgorithms = [ThemeAlgorithm.Default];
-            }
+            _isCompact = state.Variant.Density == DesignDensity.Compact;
+            _currentLanguage = state.Language;
+            _currentStyle = state.Variant.Style;
+            RaiseDesignLanguageChanged();
         }
 
         // Read the applied snapshot, not the request config: a declaration that was not overridden (Shadcn's

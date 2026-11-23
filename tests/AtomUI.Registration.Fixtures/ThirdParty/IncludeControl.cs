@@ -6,6 +6,9 @@ public class IncludeControl : ContentControl;
 public class UnusedThirdPartyControl : ContentControl;
 public static class Registration
 {
-    public static IAtomUIBuilder UseFixtureControls(this IAtomUIBuilder builder) =>
-        AtomUI.Generated.AtomUIRegistrationFixturesThirdParty.PackageMetadata.Definition.Register(builder);
+    public static IAtomUIBuilder UseFixtureControls(this IAtomUIBuilder builder)
+    {
+        AtomUI.Generated.AtomUIRegistrationFixturesThirdParty.GeneratedControlDerivationRegistration.Register(builder.Theme);
+        return AtomUI.Generated.AtomUIRegistrationFixturesThirdParty.PackageMetadata.Definition.Register(builder);
+    }
 }

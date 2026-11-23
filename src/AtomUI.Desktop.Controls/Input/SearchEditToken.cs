@@ -10,10 +10,4 @@ public sealed partial class SearchEditToken : AbstractControlDesignToken
     /// Font size of the small input, the middle font size by default (as in antd)
     /// </summary>
     public partial double InputFontSizeSM { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        InputFontSizeSM = EffectiveGlobalToken.FontSize;
-    }
 }

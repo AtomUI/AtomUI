@@ -7,11 +7,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Presenters;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Media.Transformation;
 using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;

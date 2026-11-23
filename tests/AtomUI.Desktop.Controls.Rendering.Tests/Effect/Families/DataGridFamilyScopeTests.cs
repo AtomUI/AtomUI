@@ -1,6 +1,5 @@
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Tests.DataGrid.Theme;
-using AtomUI.Desktop.Controls.Rendering.Tests;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -48,7 +47,12 @@ public class DataGridFamilyScopeTests
             using var own = FrameCapture.Capture(window);
             Differences(before, own, grid, window).ShouldBeGreaterThan(0);
             Differences(before, own, nested, window).ShouldBe(0);
-            Differences(before, own, selector, window).ShouldBe(0);
+            // A control-level ColorPrimary seed re-derives the grid's global view (spec 7.5), so the selected row
+            // background behind the selector follows it and shows through the box's rounded corners. The selector's own
+            // values keep their boundary: its seed is unchanged and the box interior paints the same pixels.
+            ControlTokenAccessor.Capture<CheckBox>(selector).GetEffectiveGlobal<Color>(SharedTokenKind.ColorPrimary)
+                                .ShouldBe(Color.Parse("#1677FF"));
+            Differences(before, own, selector, window, inset: 3).ShouldBe(0);
             ThemeScope.GetTokenOwner(selector).ShouldBe(CheckBoxTokens.Identity);
             Differences(before, own, unrelated, window).ShouldBe(0);
             ThemeScope.GetTokenOwner(grid.GetVisualDescendants().OfType<DataGridRow>().First()).ShouldBe(DataGridTokens.Identity);
@@ -126,10 +130,12 @@ public class DataGridFamilyScopeTests
     private static void WaitForColor(GridControl grid, Color color) => DataGridThemeTestFixture.PumpUntil(() =>
         ControlTokenAccessor.Capture<GridControl>(grid).GetEffectiveGlobal<Color>(SharedTokenKind.ColorPrimary) == color);
 
-    private static int Differences(SKBitmap before, SKBitmap after, Control control, Avalonia.Controls.Window window)
+    private static int Differences(SKBitmap before, SKBitmap after, Control control, Avalonia.Controls.Window window,
+                                   int inset = 0)
     {
         var point = control.TranslatePoint(default, window)!.Value;
-        return FrameCapture.CountDifferentPixels(before, after, new SKRectI((int)point.X, (int)point.Y,
-            (int)Math.Ceiling(point.X + control.Bounds.Width), (int)Math.Ceiling(point.Y + control.Bounds.Height)), 8);
+        return FrameCapture.CountDifferentPixels(before, after, new SKRectI((int)point.X + inset, (int)point.Y + inset,
+            (int)Math.Ceiling(point.X + control.Bounds.Width) - inset,
+            (int)Math.Ceiling(point.Y + control.Bounds.Height) - inset), 8);
     }
 }

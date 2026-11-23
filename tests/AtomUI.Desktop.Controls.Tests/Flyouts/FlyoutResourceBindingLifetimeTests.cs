@@ -5,8 +5,6 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
-using Avalonia;
-using Avalonia.Controls.Primitives;
 using System.Text.RegularExpressions;
 using Avalonia.Controls;
 using Avalonia.Headless;

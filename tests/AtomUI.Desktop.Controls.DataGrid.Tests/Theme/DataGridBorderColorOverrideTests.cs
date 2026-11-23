@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
@@ -35,7 +36,7 @@ public class DataGridBorderColorOverrideTests
 
             var accessor = ControlTokenAccessor.Capture<global::AtomUI.Desktop.Controls.DataGrid>(grid);
             accessor.GetOwn<Color>(DataGridTokenKind.BorderColor).ShouldBe(red);
-            // TableBorderColor is derived from BorderColor inside CalculateTokenValues.
+            // TableBorderColor is derived from BorderColor by the Ant Design DataGrid derivation.
             accessor.GetOwn<Color>(DataGridTokenKind.TableBorderColor).ShouldBe(red);
 
             var frame = grid.GetVisualDescendants()
@@ -55,7 +56,7 @@ public class DataGridBorderColorOverrideTests
     private static async Task Apply(ThemeManager manager, ThemeConfig? config)
     {
         var result = await manager.ApplyThemeAsync(
-            new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, config, ThemeTransitionReason.UserRequest),
+            new ThemeRequest(AntDesignThemes.DaybreakBlue, config, ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken);
         result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);
     }

@@ -49,9 +49,10 @@ internal sealed class CompiledThemeManifest
             };
             var value = values[index];
             if (string.IsNullOrWhiteSpace(value.ThemeId) ||
-                value.Scope is not ("control" or "global" or "controlGlobal" or "own") ||
-                (value.Scope != "control" && (string.IsNullOrWhiteSpace(value.TokenName) || value.ValueContractVersion != 1 || value.Stage < 0 || value.Stage > 3)) ||
-                (value.Scope != "global" && (string.IsNullOrWhiteSpace(value.Catalog) || string.IsNullOrWhiteSpace(value.ControlId) || string.IsNullOrWhiteSpace(value.OwnerMetadataName))))
+                value.Scope is not ("control" or "global" or "controlGlobal" or "own" or "language") ||
+                (value.Scope != "control" && (string.IsNullOrWhiteSpace(value.TokenName) || value.ValueContractVersion != 1 || value.Stage < 0 || value.Stage > 4)) ||
+                (value.Scope == "language" && (value.Catalog != "$language" || string.IsNullOrWhiteSpace(value.ControlId))) ||
+                (value.Scope is not ("global" or "language") && (string.IsNullOrWhiteSpace(value.Catalog) || string.IsNullOrWhiteSpace(value.ControlId) || string.IsNullOrWhiteSpace(value.OwnerMetadataName))))
             { throw new InvalidDataException("Invalid compiled theme requirement."); }
         }
         if (stream.Position != stream.Length) { throw new InvalidDataException("Unexpected compiled theme manifest data."); }

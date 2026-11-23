@@ -1,5 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Xml.Linq;
 using AtomUI.Theme;
@@ -54,20 +54,6 @@ public class WorkspaceWindowLayoutTests
     }
 
     [Fact]
-    public void Workspace_Window_Theme_Choices_Use_Available_Theme_Ids()
-    {
-        var source = File.ReadAllText(GetRepoFile("controlgallery/AtomUIGallery/Workspace/Views/GalleryThemeMenu.cs"));
-
-        source.ShouldContain("_viewModel.AvailableThemes");
-        source.ShouldContain("new StableCommand(viewModel.SwitchThemeCommand)");
-        Regex.IsMatch(source, @"\bToggleType\s*=\s*MenuItemToggleType\.Radio\b").ShouldBeTrue();
-        Regex.IsMatch(source, @"\bGroupName\s*=\s*OtherThemeGroupName\b").ShouldBeTrue();
-        source.ShouldContain("string.Equals(theme.Id, _viewModel.CurrentThemeId");
-        Regex.IsMatch(source, @"\bCommand\s*=\s*_switchThemeCommand\b").ShouldBeTrue();
-        source.ShouldContain("CommandParameter = theme.Id");
-    }
-
-    [Fact]
     public void Workspace_Window_Theme_Command_Does_Not_Forward_CanExecuteChanged_To_Menu_Items()
     {
         var innerCommand  = new RecordingCommand();
@@ -93,23 +79,22 @@ public class WorkspaceWindowLayoutTests
         using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
         try
         {
-            // Single-variant languages stay top-level; multi-variant families (Shadcn, PrimeNG) fold into a
-            // submenu whose children carry the language tags.
+            // Single-style languages stay top-level; the language items follow the enabled design languages.
             var menuItems = languageItem.Items.OfType<MenuItem>().ToList();
             var topLevelTags = menuItems.Where(item => item.Items.Count == 0).Select(item => (string?)item.Tag).ToList();
-            var familyItems = menuItems.Where(item => item.Items.Count > 0).ToList();
-            topLevelTags.ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
-                .Where(l => l.Split('.')[0..^1].Length == 0 || ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
-                    .Count(o => o.Split('.')[0] == l.Split('.')[0]) == 1));
-            familyItems.Select(item => (string)item.Header!).ShouldBe(new[] { "PrimeNG", "Shadcn" });
-            familyItems.Single(f => (string)f.Header! == "Shadcn").Items.OfType<MenuItem>()
-                       .Select(item => (string?)item.Tag)
-                       .ShouldBe(ThemeSelectionResolver.DesignLanguages(viewModel.AvailableThemes)
-                                  .Where(l => l.StartsWith("Shadcn.", StringComparison.Ordinal)));
-            otherItem.Items.OfType<MenuItem>().Select(item => (string?)item.Tag)
-                     .ShouldBe(viewModel.AvailableThemes.Where(theme => theme.DesignLanguage is null)
-                                        .Select(theme => theme.Id));
-
+            topLevelTags.ShouldBe(viewModel.DesignLanguages.Where(language => !language.Contains('.')));
+            topLevelTags.ShouldContain("AntDesign");
+            // The named themes are listed under the other themes item; the implicit language defaults are not.
+            var namedThemes = otherItem.Items.OfType<MenuItem>().ToList();
+            namedThemes.Select(item => (string?)item.CommandParameter)
+                       .ShouldBe(viewModel.AvailableThemes.Where(theme => !theme.IsLanguageDefault)
+                                          .Select(theme => theme.Id));
+            var preview = namedThemes.Single(item => Equals(item.CommandParameter, "GalleryPreviewFixture"));
+            preview.Command!.Execute(preview.CommandParameter);
+            Dispatcher.UIThread.RunJobs();
+            viewModel.CurrentThemeId.ShouldBe("GalleryPreviewFixture");
+            otherItem.Items.OfType<MenuItem>()
+                     .Single(item => item.IsChecked == true).CommandParameter.ShouldBe("GalleryPreviewFixture");
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
             Dispatcher.UIThread.RunJobs();
@@ -117,6 +102,32 @@ public class WorkspaceWindowLayoutTests
             languageItem.Items.OfType<MenuItem>().Single(item => item.IsChecked == true).Tag.ShouldBe("AntDesign");
             brandItem.IsEnabled.ShouldBeTrue();
             brandItem.Items.OfType<MenuItem>().Select(item => item.Tag).ShouldContain(Color.Parse("#52C41A"));
+        }
+        finally
+        {
+            viewModel.Dispose();
+            await manager.ApplyThemeAsync(new ThemeRequest(
+                AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest),
+                TestContext.Current.CancellationToken);
+        }
+    }
+
+    [Fact]
+    public async Task Theme_Menu_Folds_Multi_Style_Families()
+    {
+        AvaloniaTestApp.EnsureInitialized();
+        var manager   = Application.Current!.GetThemeManager()!;
+        var viewModel = new WorkspaceWindowViewModel();
+        var (languageItem, brandItem, neutralItem, otherItem) = (new MenuItem(), new MenuItem(), new MenuItem(), new MenuItem());
+        using var menu = new GalleryThemeMenu(viewModel, languageItem, brandItem, neutralItem, otherItem);
+        try
+        {
+            // Multi-style families (Shadcn, PrimeNG) fold into a submenu whose children carry the language keys.
+            var familyItems = languageItem.Items.OfType<MenuItem>().Where(item => item.Items.Count > 0).ToList();
+            familyItems.Select(item => (string)item.Header!).ShouldBe(new[] { "PrimeNG", "Shadcn" });
+            familyItems.Single(f => (string)f.Header! == "Shadcn").Items.OfType<MenuItem>()
+                       .Select(item => (string?)item.Tag)
+                       .ShouldBe(viewModel.DesignLanguages.Where(l => l.StartsWith("Shadcn.", StringComparison.Ordinal)));
 
             // A folded family: switching to one of its styles checks the child radio inside the submenu and
             // bolds the family parent.
@@ -132,13 +143,13 @@ public class WorkspaceWindowLayoutTests
         {
             viewModel.Dispose();
             await manager.ApplyThemeAsync(new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);
         }
     }
 
     [Fact]
-    public async Task Brand_Swatches_Disabled_For_Fixed_Language()
+    public async Task Brand_Swatches_Disabled_For_A_Locked_Brand_Seed()
     {
         AvaloniaTestApp.EnsureInitialized();
         var manager   = Application.Current!.GetThemeManager()!;
@@ -151,7 +162,8 @@ public class WorkspaceWindowLayoutTests
             Dispatcher.UIThread.RunJobs();
             brandItem.IsEnabled.ShouldBeTrue();
 
-            await viewModel.SwitchDesignLanguageCommand.Execute("GalleryFixed").ToTask();
+            // A theme that locks the brand seed disables the swatches and explains why.
+            await viewModel.SwitchThemeCommand.Execute("GalleryFixedBrandFixture").ToTask();
             Dispatcher.UIThread.RunJobs();
 
             brandItem.IsEnabled.ShouldBeFalse();
@@ -159,20 +171,18 @@ public class WorkspaceWindowLayoutTests
             var fixedHint = ResolveTipText(brandItem);
             fixedHint.ShouldNotBeNullOrEmpty();
 
-            // A theme without a design language gets its own hint instead of the "fixed brand color" one.
+            // A named theme that leaves the seed open offers the swatches again.
             await viewModel.SwitchThemeCommand.Execute("GalleryPreviewFixture").ToTask();
             Dispatcher.UIThread.RunJobs();
 
-            brandItem.IsEnabled.ShouldBeFalse();
-            var noLanguageHint = ResolveTipText(brandItem);
-            noLanguageHint.ShouldNotBeNullOrEmpty();
-            noLanguageHint.ShouldNotBe(fixedHint);
+            brandItem.IsEnabled.ShouldBeTrue();
+            brandItem.Items.Count.ShouldBeGreaterThan(0);
         }
         finally
         {
             viewModel.Dispose();
             await manager.ApplyThemeAsync(new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);
         }
     }
@@ -214,7 +224,7 @@ public class WorkspaceWindowLayoutTests
             menu.Dispose();
             viewModel.Dispose();
             await manager.ApplyThemeAsync(new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest),
+                AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);
         }
     }

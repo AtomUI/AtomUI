@@ -1,7 +1,6 @@
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Resources;
-using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;

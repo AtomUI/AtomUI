@@ -6,7 +6,6 @@
 using System.Diagnostics;
 using AtomUI.Utils;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;

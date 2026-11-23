@@ -5,11 +5,9 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -55,7 +53,7 @@ public partial class ButtonFamilyEffectTests
     public async Task FloatButton_Token_Has_Effect(string token, bool isOwn)
     {
         _ = isOwn;
-        if (token is "ColorBorder" or "BorderThickness" or "BorderRadius" or "IconSize" or "FontSize" or "SpacingXS" or "PaddingLG" or "ControlHeight")
+        if (token is "ColorBorder" or "BorderThickness" or "BorderRadius" or "BorderRadiusMD" or "IconSize" or "FontSize" or "SpacingXS" or "PaddingLG" or "ControlHeight")
         {
             await ApplyShadcnRecipeTheme();
         }
@@ -189,7 +187,7 @@ public partial class ButtonFamilyEffectTests
 
         switch (token)
         {
-            case "BorderRadius":
+            case "BorderRadius" or "BorderRadiusMD":
                 return new(With(static b => b.Shape = FloatButtonShape.Square));
             case "IconSize" or "FontSize" or "SpacingXS" or "PaddingLG" or "ControlHeight":
                 return new(With(static b =>
@@ -197,12 +195,19 @@ public partial class ButtonFamilyEffectTests
                     b.Shape = FloatButtonShape.Square;
                     b.Content = "Help info";
                 }));
-            case "DescriptionLineHeight" or "FontSizeSM" or "PaddingXXS" or "BorderRadiusLG":
+            case "DescriptionLineHeight" or "FontSizeSM" or "PaddingXXS" or "BorderRadiusLG" or "DescriptionWeight":
                 return new(With(static b =>
                 {
                     b.Shape   = FloatButtonShape.Square;
                     b.Content = "Help";
                 }));
+            case "OutlineDescriptionLineHeight":
+                // The outline line height starts at 0 (unused while the outline is off); a clear value makes it show.
+                return new(With(static b =>
+                {
+                    b.Shape   = FloatButtonShape.Square;
+                    b.Content = "Help";
+                }), Options: new EffectOptions { Perturb = static _ => 24.0 });
             case "BorderRadiusSM" or "MarginXXS":
                 // Embedded square buttons (inside a group) use the small radius and an inner margin.
                 return new(With(static b =>

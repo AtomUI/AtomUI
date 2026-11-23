@@ -47,15 +47,4 @@ public abstract partial class AbstractTagToken : AbstractControlDesignToken
     /// Inline gap between the tag text and its icon
     /// </summary>
     public partial Thickness TagTextPaddingInline { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        TagFontSize          = EffectiveGlobalToken.FontSizeSM;
-        TagFontWeight        = FontWeight.Normal;
-        TagLineHeight        = EffectiveGlobalToken.FontHeightSM;
-        TagIconSize          = EffectiveGlobalToken.FontSizeIcon;
-        TagPadding           = new Thickness(EffectiveGlobalToken.SizeXS - 1, 0);
-        TagTextPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-    }
 }

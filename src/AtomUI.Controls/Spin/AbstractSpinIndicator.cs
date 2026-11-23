@@ -10,7 +10,6 @@ using Avalonia.Metadata;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 

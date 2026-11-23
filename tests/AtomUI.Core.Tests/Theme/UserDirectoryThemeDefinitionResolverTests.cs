@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using AtomUI.Theme;
@@ -170,14 +171,15 @@ public class UserDirectoryThemeDefinitionResolverTests
         {
             using var directory = new TemporaryDirectory();
             File.WriteAllText(System.IO.Path.Combine(directory.Path, "invalid.theme.xml"), "<Theme>");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
 
             manager.InitializeApplication(Application.Current!);
 
-            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
-                IThemeManager.DEFAULT_THEME_ID
+            manager.Themes.Select(static theme => theme.Id).ShouldBe([
+                "$AntDesign",
+                AntDesignThemes.DaybreakBlue
             ]);
             manager.ThemeCatalogDiagnostics.ShouldContain(static diagnostic =>
                 diagnostic.Severity == ThemeDiagnosticSeverity.Error);
@@ -192,16 +194,45 @@ public class UserDirectoryThemeDefinitionResolverTests
             using var directory = new TemporaryDirectory();
             File.WriteAllText(System.IO.Path.Combine(directory.Path, "green.theme.xml"),
                 ThemeXml("PolarGreen"));
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
 
             manager.InitializeApplication(Application.Current!);
 
-            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
-                IThemeManager.DEFAULT_THEME_ID,
+            manager.Themes.Select(static theme => theme.Id).ShouldBe([
+                "$AntDesign",
+                AntDesignThemes.DaybreakBlue,
                 "PolarGreen"
             ]);
+        });
+    }
+
+    [Fact]
+    public void A_V1_User_Theme_Is_Not_Read_And_Its_Diagnostic_Names_The_Conversion_Command()
+    {
+        // Review Focus 1: the application starts, the v1 file is unavailable, and the diagnostic says why and how to fix it.
+        HeadlessTestApp.Run(() =>
+        {
+            using var directory = new TemporaryDirectory();
+            File.WriteAllText(System.IO.Path.Combine(directory.Path, "legacy.theme.xml"), """
+                <Theme xmlns="https://atomui.net/schemas/theme/v1" Id="Legacy" Name="Legacy" Appearance="Light">
+                  <Algorithms><Algorithm Id="Default" /></Algorithms>
+                </Theme>
+                """);
+            File.WriteAllText(System.IO.Path.Combine(directory.Path, "green.theme.xml"), ThemeXml("PolarGreen"));
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
+            builder.UseUserThemeDirectory(directory.Path);
+            var manager = builder.Build();
+
+            manager.InitializeApplication(Application.Current!);
+
+            // An invalid file keeps the whole user directory out (the static catalog stays), as for any invalid theme.
+            manager.Themes.Select(static theme => theme.Id).ShouldBe(["$AntDesign", AntDesignThemes.DaybreakBlue]);
+            var diagnostic = manager.ThemeCatalogDiagnostics.ShouldHaveSingleItem();
+            diagnostic.Code.ShouldBe("ATMTHM1004");
+            diagnostic.Message.ShouldContain("v1");
+            diagnostic.Message.ShouldContain("ConvertAtomUIThemeDefinitions");
         });
     }
 
@@ -213,12 +244,11 @@ public class UserDirectoryThemeDefinitionResolverTests
     private static string ThemeXml(string id)
     {
         return $$"""
-                 <Theme xmlns="https://atomui.net/schemas/theme/v1"
+                 <Theme xmlns="https://atomui.net/schemas/theme/v2"
                         Id="{{id}}"
                         Name="{{id}}"
-                        Appearance="Light">
-                   <Algorithms><Algorithm Id="Default" /></Algorithms>
-                 </Theme>
+                        Language="AntDesign"
+                        Appearance="Light" />
                  """;
     }
 

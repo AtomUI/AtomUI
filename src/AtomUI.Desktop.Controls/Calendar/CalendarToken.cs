@@ -5,18 +5,10 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class CalendarToken : AbstractCalendarToken
 {
+    /// <summary>Width of the inner month cell in the compact calendar's year view.</summary>
     public partial double YearMonthCellWidth { get; set; }
+    /// <summary>Height of the compact calendar content area.</summary>
     public partial double MiniContentHeight { get; set; }
+    /// <summary>Minimum desired height of a calendar cell in the content presentation.</summary>
     public partial double FullCellMinHeight { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        YearMonthCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;
-        MiniContentHeight = 256;
-        var dateContentHeight = (EffectiveGlobalToken.FontHeightSM + EffectiveGlobalToken.UniformlyMarginXS) * 3 +
-                                EffectiveGlobalToken.LineWidth * 2;
-        FullCellMinHeight = EffectiveGlobalToken.ControlHeightSM + dateContentHeight +
-                            EffectiveGlobalToken.UniformlyPaddingXS / 2 + EffectiveGlobalToken.LineWidthBold;
-    }
 }

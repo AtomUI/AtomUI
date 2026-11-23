@@ -16,11 +16,4 @@ public sealed partial class AvatarGroupToken : AbstractControlDesignToken
     /// Overlapping width of adjacent avatars in the group (antd Avatar groupOverlapping)
     /// </summary>
     public partial double GroupOverlapping { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        GroupSpace       = EffectiveGlobalToken.UniformlyMarginXXS;
-        GroupOverlapping = EffectiveGlobalToken.UniformlyMarginXS;
-    }
 }

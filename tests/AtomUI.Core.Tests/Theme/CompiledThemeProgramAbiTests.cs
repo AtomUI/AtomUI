@@ -1,113 +1,98 @@
+using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Definitions.Compiled;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 using Avalonia.Media;
 using Shouldly;
 using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
+/// <summary>The compiled theme program ABI 4 (spec 7.12): language, fixed axes, locked seeds and accent color.</summary>
 public class CompiledThemeProgramAbiTests
 {
     [Fact]
-    public void Abi1_Program_Loads_With_Default_Metadata()
+    public void Abi4_Program_Publishes_The_Language_Fixed_Axes_Locked_Seeds_And_Accent()
     {
-        var program = new Abi1Program(1);
+        var program = new Abi4Program(4, "Default", 1, "Compact", ["ColorPrimary"], Color.Parse("#722ED1"));
 
-        program.PublishedInfo.DesignLanguage.ShouldBeNull();
-        program.PublishedInfo.Density.ShouldBe(ThemeDensity.Normal);
-        program.PublishedInfo.BrandColor.ShouldBe(ThemeBrandColorSupport.Fixed);
-        program.PublishedInfo.Algorithms.ShouldBeEmpty();
+        program.Language.ShouldBe("AntDesign");
+        program.Style.ShouldBe(new DesignStyle("Default"));
+        program.Appearance.ShouldBe(ThemeAppearance.Dark);
+        program.Density.ShouldBe(DesignDensity.Compact);
+        program.LockedSeeds.ShouldBe(["ColorPrimary"]);
+        program.AccentColor.ShouldBe(Color.Parse("#722ED1"));
     }
 
     [Fact]
-    public void Abi2_Program_Publishes_Metadata_And_Algorithms()
+    public void Abi4_Program_Leaves_The_Axes_It_Does_Not_Fix_Open()
     {
-        var program = new Abi2Program(2, ["PrimeNG:Aura", "AtomUI:Compact"]);
+        var program = new Abi4Program(4, null, -1, null, [], null);
 
-        var info = program.PublishedInfo;
-        info.DesignLanguage.ShouldBe("PrimeNG.Aura");
-        info.Density.ShouldBe(ThemeDensity.Compact);
-        info.BrandColor.ShouldBe(ThemeBrandColorSupport.Seed);
-        info.Algorithms.ShouldBe([new ThemeAlgorithm("PrimeNG", "Aura"), new ThemeAlgorithm("AtomUI", "Compact")]);
+        program.Style.ShouldBeNull();
+        program.Appearance.ShouldBeNull();
+        program.Density.ShouldBeNull();
+        program.LockedSeeds.ShouldBeEmpty();
+        program.AccentColor.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void Another_Abi_Is_Rejected_With_A_Rebuild_Hint(int abi)
+    {
+        Should.Throw<NotSupportedException>(() => new Abi4Program(abi, null, -1, null, [], null))
+              .Message.ShouldContain("rebuild the package");
     }
 
     [Fact]
-    public void Abi3_Program_Publishes_NeutralColor_And_NeutralAccentColor()
+    public void Invalid_Program_Metadata_Is_Rejected()
     {
-        var program = new Abi3Program(3, ThemeNeutralColorSupport.Seed, Color.Parse("#71717B"));
-
-        program.PublishedInfo.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Seed);
-        program.PublishedInfo.NeutralAccentColor.ShouldBe(Color.Parse("#71717B"));
+        Should.Throw<ArgumentOutOfRangeException>(() => new Abi4Program(4, null, 2, null, [], null));
+        Should.Throw<ArgumentNullException>(() => new Abi4Program(4, null, -1, null, null!, null));
     }
 
     [Fact]
-    public void Abi2_Program_Keeps_Loading_With_Neutral_Defaults()
+    public void Bind_Checks_The_Program_Against_The_Enabled_Language()
     {
-        var program = new Abi2Program(2, ["PrimeNG:Aura"]);
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), [], [TestDesignLanguages.AntDesign]);
 
-        program.PublishedInfo.NeutralColor.ShouldBe(ThemeNeutralColorSupport.Fixed);
-        program.PublishedInfo.NeutralAccentColor.ShouldBeNull();
+        var definition = new Abi4Program(4, "Default", 0, "Compact", ["ColorPrimary"], null).Bind(registry);
+        definition.Language.ShouldBeSameAs(TestDesignLanguages.AntDesign);
+        definition.Appearance.ShouldBe(ThemeAppearance.Light);
+        definition.LockedSeeds.ShouldBe(["ColorPrimary"]);
+
+        Should.Throw<ThemeSchemaException>(() => new Abi4Program(4, "Nova", -1, null, [], null).Bind(registry))
+              .Message.ShouldContain("style 'Nova'");
+        Should.Throw<ThemeSchemaException>(() => new Abi4Program(4, null, -1, "Spacious", [], null).Bind(registry))
+              .Message.ShouldContain("density 'Spacious'");
+        Should.Throw<ThemeSchemaException>(() => new Abi4Program(4, null, -1, null, ["BorderRadius"], null).Bind(registry))
+              .Message.ShouldContain("not an adjustable seed");
+        Should.Throw<ThemeSchemaException>(() => new Abi4Program(4, null, -1, null, [], null, "Shadcn").Bind(registry))
+              .Message.ShouldContain("'Shadcn', which is not enabled");
     }
 
     [Fact]
-    public void Abi2_Program_Rejects_Null_Algorithms()
+    public void ThemeInfo_LockedSeeds_Are_Copied_Ordered_And_Reject_Null()
     {
-        Should.Throw<ArgumentNullException>(() => new Abi2Program(2, null!));
-        Should.Throw<ArgumentNullException>(() => new Abi2Program(2, ["PrimeNG:Aura", null!]));
+        string[] source = ["ColorPrimary", "BaseColor"];
+        var info = new ThemeInfo("T", "T", "Shadcn") { LockedSeeds = source };
+        source[0] = "Changed";
+
+        info.LockedSeeds.ShouldBe(["BaseColor", "ColorPrimary"]);
+        Should.Throw<ArgumentNullException>(() => new ThemeInfo("T", "T", "Shadcn") { LockedSeeds = null! });
     }
 
-    [Fact]
-    public void Published_Algorithms_Cannot_Be_Mutated_Through_A_Cast()
+    private sealed class Abi4Program(
+        int abi, string? style, int appearance, string? density, string[] lockedSeeds, Color? accent,
+        string language = "AntDesign")
+        : CompiledThemeProgram(abi, "Themes/T.xml", "rev", "digest", "program", "T", "T", language, style, appearance,
+            density, lockedSeeds, accent)
     {
-        var program = new Abi2Program(2, ["PrimeNG:Aura"]);
-
-        program.PublishedInfo.Algorithms.ShouldNotBeAssignableTo<ThemeAlgorithm[]>();
-        ((IList<ThemeAlgorithm>)program.PublishedInfo.Algorithms).IsReadOnly.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ThemeInfo_Algorithms_Copies_And_Rejects_Null()
-    {
-        ThemeAlgorithm[] source = [ThemeAlgorithm.Default];
-        var info = new ThemeInfo("T", "T", ThemeAppearance.Light, false) { Algorithms = source };
-        source[0] = ThemeAlgorithm.Dark;
-
-        info.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
-        Should.Throw<ArgumentNullException>(() => new ThemeInfo("T", "T", ThemeAppearance.Light, false) { Algorithms = null! });
-    }
-
-    [Fact]
-    public void Abi_Mismatch_Throws()
-    {
-        Should.Throw<NotSupportedException>(() => new Abi1Program(2));
-        Should.Throw<NotSupportedException>(() => new Abi2Program(1, []));
-        Should.Throw<NotSupportedException>(() => new Abi3Program(2, ThemeNeutralColorSupport.Fixed, null));
-    }
-
-    private sealed class Abi1Program : CompiledThemeProgram
-    {
-        public Abi1Program(int abi) : base(abi, "Themes/T.xml", "rev", "digest", "program", "T", "T", ThemeAppearance.Light, false, null) { }
-        public ThemeInfo PublishedInfo => Info;
-        protected override void Describe(CompiledThemeBindingBuilder builder) { }
-        protected override void WriteStaticDefaults(CompiledThemeValueWriter writer) { }
-    }
-
-    private sealed class Abi2Program : CompiledThemeProgram
-    {
-        public Abi2Program(int abi, string[] algorithms) : base(abi, "Themes/T.xml", "rev", "digest", "program", "T", "T",
-            ThemeAppearance.Light, false, null, "PrimeNG.Aura", ThemeDensity.Compact, ThemeBrandColorSupport.Seed, algorithms) { }
-        public ThemeInfo PublishedInfo => Info;
-        protected override void Describe(CompiledThemeBindingBuilder builder) { }
-        protected override void WriteStaticDefaults(CompiledThemeValueWriter writer) { }
-    }
-
-    private sealed class Abi3Program : CompiledThemeProgram
-    {
-        public Abi3Program(int abi, ThemeNeutralColorSupport neutralColor, Color? neutralAccent) : base(abi, "Themes/T.xml", "rev", "digest", "program", "T", "T",
-            ThemeAppearance.Light, false, null, "PrimeNG.Aura", ThemeDensity.Normal, ThemeBrandColorSupport.Seed, neutralColor, neutralAccent, []) { }
-        public ThemeInfo PublishedInfo => Info;
-        protected override void Describe(CompiledThemeBindingBuilder builder) { }
+        protected override void Describe(CompiledThemeBindingBuilder builder) => builder.BeginSection(0, null, -1, null, null);
         protected override void WriteStaticDefaults(CompiledThemeValueWriter writer) { }
     }
 }

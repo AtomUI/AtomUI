@@ -6,26 +6,10 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class MarqueeLabelToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 周期这件的间隔
-    /// </summary>
+    /// <summary>Gap between successive copies of the scrolling text.</summary>
     public partial double CycleSpace { get; set; }
 
-    /// <summary>
-    /// 默认速度，像素每秒
-    /// </summary>
+    /// <summary>Default scrolling speed, in pixels per second.</summary>
     public partial double DefaultSpeed { get; set; }
-
-    public MarqueeLabelToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CycleSpace   = 200;
-        DefaultSpeed = 150;
-    }
     
 }

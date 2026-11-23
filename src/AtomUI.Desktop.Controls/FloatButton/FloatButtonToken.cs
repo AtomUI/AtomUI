@@ -6,86 +6,62 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class FloatButtonToken : AbstractControlDesignToken
 {
-
-    public FloatButtonToken()
-
-    {
-    }
     
-    /// <summary>
-    /// FloatButton 尺寸
-    /// Size of FloatButton
-    /// </summary>
+    /// <summary>Side length of a floating button before any description changes its content layout.</summary>
     public partial double FloatButtonSize { get; set; }
     
-    /// <summary>
-    /// FloatButton 图标尺寸
-    /// Icon size of FloatButton
-    /// </summary>
+    /// <summary>Size of the glyph in a floating button.</summary>
     public partial double FloatButtonIconSize { get; set; }
     
-    /// <summary>
-    /// 主要按钮文本颜色
-    /// </summary>
+    /// <summary>Icon and description foreground over a primary floating button's fill.</summary>
     public partial Color PrimaryColor { get; set; }
     
-    /// <summary>
-    /// 描述文本行高
-    /// </summary>
+    /// <summary>Line height of the floating button label without an outline.</summary>
     public partial double DescriptionLineHeight { get; set; }
     
-    /// <summary>
-    /// 默认的基于定位的水平偏移值
-    /// </summary>
+    /// <summary>Horizontal inset of the floating button in its host.</summary>
     public partial double FloatOffsetX { get; set; }
     
-    /// <summary>
-    /// 默认的基于定位的垂直偏移值
-    /// </summary>
+    /// <summary>Vertical inset of the floating button in its host.</summary>
     public partial double FloatOffsetY { get; set; }
 
-    /// <summary>
-    /// 悬浮按钮阴影
-    /// Shadow of the floating button
-    /// </summary>
+    /// <summary>Elevation shadow underneath a floating button.</summary>
     public partial BoxShadows FloatButtonShadows { get; set; }
 
-    /// <summary>
-    /// 默认类型悬浮按钮底色（BackgroundFrame）
-    /// </summary>
+    /// <summary>Resting fill of the default floating button, paired with <see cref="DefaultIconColor"/>.</summary>
     public partial Color DefaultBg { get; set; }
 
-    /// <summary>
-    /// 默认类型悬浮按钮悬停底色
-    /// </summary>
+    /// <summary>Fill of a default floating button under the pointer.</summary>
     public partial Color DefaultHoverBg { get; set; }
 
-    /// <summary>
-    /// 默认类型悬浮按钮按下底色
-    /// </summary>
+    /// <summary>Fill of a default floating button while pressed.</summary>
     public partial Color DefaultActiveBg { get; set; }
 
-    /// <summary>
-    /// 默认类型悬浮按钮前景色
-    /// </summary>
+    /// <summary>Icon foreground on the default floating button's fill.</summary>
     public partial Color DefaultIconColor { get; set; }
 
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        FloatButtonShadows    = EffectiveGlobalToken.BoxShadowsSecondary;
-        DefaultBg             = EffectiveGlobalToken.ColorBgElevated;
-        DefaultHoverBg        = EffectiveGlobalToken.ColorBgTextHover;
-        // Ant Design has no pressed reaction for the default (white) type: the frame stays transparent so the
-        // elevated layer below shows through, exactly as before this token existed.
-        DefaultActiveBg       = Colors.Transparent;
-        DefaultIconColor      = EffectiveGlobalToken.ColorText;
-        PrimaryColor          = EffectiveGlobalToken.ColorTextLightSolid;
-        FloatButtonIconSize   = EffectiveGlobalToken.FontSizeIcon * 1.5;
-        FloatButtonSize       = EffectiveGlobalToken.ControlHeightLG;
-        DescriptionLineHeight = EffectiveGlobalToken.FontSizeSM * 1.2;
-        FloatOffsetX          = EffectiveGlobalToken.UniformlyMargin;
-        FloatOffsetY          = EffectiveGlobalToken.UniformlyMargin;
-    }
+    /// <summary>
+    /// Whether float buttons draw an outline frame: outlined default and square buttons, disabled buttons at reduced
+    /// opacity, and the description styling Tokens below.
+    /// </summary>
+    public partial bool HasOutline { get; set; }
+
+    /// <summary>Whether an outlined primary button uses <see cref="FloatButtonShadows"/> instead of its preset shadow.</summary>
+    public partial bool OutlineOnlyShadow { get; set; }
+
+    /// <summary>Whether an outlined button with a description rounds into a capsule.</summary>
+    public partial bool CapsuleDescription { get; set; }
+
+    /// <summary>Whether an outlined button shows its plain description in upper case.</summary>
+    public partial bool UppercaseDescription { get; set; }
+
+    /// <summary>The description font weight of an outlined button.</summary>
+    public partial FontWeight DescriptionWeight { get; set; }
+
+    /// <summary>
+    /// The description line height of an outlined button, used unless the application sets
+    /// <see cref="DescriptionLineHeight"/>.
+    /// </summary>
+    public partial double OutlineDescriptionLineHeight { get; set; }
     
 }

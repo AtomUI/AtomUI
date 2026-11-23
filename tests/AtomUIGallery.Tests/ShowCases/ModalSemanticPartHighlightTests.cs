@@ -1,4 +1,3 @@
-using AtomUI.Controls.Primitives;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia;
 using Avalonia.Controls;

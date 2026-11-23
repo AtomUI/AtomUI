@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Tests.Theme;
 using System.Xml.Linq;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Theme.DesignTokens;
@@ -52,9 +53,7 @@ public class LunarCalendarThemeTests
             ColorError = Colors.Red
         };
         var token = new LunarCalendarToken();
-        token.AssignEffectiveGlobalToken(shared);
-
-        token.RunDefaultCalculation(isDarkMode: false);
+        AntDesignDerivationRunner.Derive(token, shared);
 
         token.MiniDateCellSize.ShouldBe(40);
         token.MiniDateCellHeight.ShouldBe(48);

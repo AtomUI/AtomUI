@@ -1,4 +1,3 @@
-﻿using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -9,9 +8,7 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
 {
 
-    /// <summary>
-    /// 箭头三角形大小
-    /// </summary>
+    /// <summary>Size of the triangular arrow.</summary>
     public partial double ArrowSize { get; set; }
 
     /// <summary>
@@ -26,19 +23,13 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
     /// </summary>
     public partial double ArrowBaseRadius { get; set; }
 
-    /// <summary>
-    /// 默认的内边距
-    /// </summary>
+    /// <summary>Padding inside the decorated box.</summary>
     public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// 箭头描边颜色
-    /// </summary>
+    /// <summary>Color of the arrow outline.</summary>
     public partial Color ArrowStrokeColor { get; set; }
 
-    /// <summary>
-    /// 箭头描边粗细
-    /// </summary>
+    /// <summary>Thickness of the arrow outline.</summary>
     public partial double ArrowStrokeThickness { get; set; }
 
     /// <summary>
@@ -57,26 +48,5 @@ public sealed partial class ArrowDecoratedBoxToken : AbstractControlDesignToken
     /// Minimum height of the box.
     /// </summary>
     public partial double ContentMinHeight { get; set; }
-
-    public ArrowDecoratedBoxToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        // antd genRoundedArrow: sizePopupArrow wide, half as high, borderRadiusXS at the tip and borderRadiusOuter
-        // where the sides meet the box.
-        ArrowSize            = EffectiveGlobalToken.SizePopupArrow;
-        ArrowTipRadius       = EffectiveGlobalToken.BorderRadiusXS.TopLeft;
-        ArrowBaseRadius      = EffectiveGlobalToken.BorderRadiusOuter.TopLeft;
-        ContentPadding       = EffectiveGlobalToken.PaddingXS;
-        ArrowStrokeColor     = ColorUtils.FromRgbF(0.07, 0, 0, 0);
-        ArrowStrokeThickness = 1;
-        ContentBorderColor     = EffectiveGlobalToken.ColorBorderSecondary;
-        ContentBorderThickness = default;
-        ContentMinHeight       = EffectiveGlobalToken.ControlHeight;
-    }
 
 }

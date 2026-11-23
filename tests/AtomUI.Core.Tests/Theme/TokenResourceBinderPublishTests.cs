@@ -1,6 +1,5 @@
 using AtomUI.Data;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
@@ -103,7 +102,7 @@ public class TokenResourceBinderPublishTests
             Dispatcher.UIThread.RunJobs();
             OwnerTokenResourceTests.BorderColor(control).ShouldBe(light);
 
-            fixture.Apply(new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build(),
+            fixture.Apply(new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build(),
                 ThemeTransitionReason.UserRequest);
             OwnerTokenResourceTests.BorderColor(control).ShouldNotBe(light, "a variant switch republishes the binding");
             OwnerTokenResourceTests.BorderColor(control).ShouldBe(fixture.GlobalBorderColor());

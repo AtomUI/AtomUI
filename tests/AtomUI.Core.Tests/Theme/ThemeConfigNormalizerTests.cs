@@ -1,8 +1,9 @@
 using System.Globalization;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
-using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 using Shouldly;
 using Xunit;
 
@@ -11,16 +12,18 @@ namespace AtomUI.Core.Tests.Theme;
 public class ThemeConfigNormalizerTests
 {
     [Fact]
-    public void Normalize_Captures_Typed_Values_And_Classifies_Control_Tokens()
+    public void Normalize_Captures_Typed_Values_Axes_And_Classifies_Control_Tokens()
     {
         var schema = ThemeConfigTestSchema.Create();
         var buttonConfig = new ControlThemeConfigBuilder()
-                           .WithAlgorithm(ControlAlgorithmMode.Global)
+                           .WithDensity(DesignDensity.Compact)
+                           .WithAppearance(ThemeAppearance.Dark)
                            .WithToken("Alpha", "2.5")
                            .WithToken("Height", "32")
                            .Build();
         var input = new ThemeConfigBuilder()
-                    .WithAlgorithms(ThemeAlgorithm.Default)
+                    .WithLanguage("Probe")
+                    .WithDensity(DesignDensity.Compact)
                     .WithToken("Alpha", "1.5")
                     .WithControl(ThemeConfigTestSchema.ButtonIdentity, buttonConfig)
                     .Build();
@@ -29,11 +32,13 @@ public class ThemeConfigNormalizerTests
 
         result.Success.ShouldBeTrue();
         var normalized = result.Config.ShouldNotBeNull();
-        normalized.AlgorithmsSpecified.ShouldBeTrue();
-        normalized.Algorithms.Select(static item => item.Algorithm).ShouldBe([ThemeAlgorithm.Default]);
+        normalized.Language.ShouldNotBeNull().Id.ShouldBe("Probe");
+        normalized.Axes.Density.ShouldBe(DesignDensity.Compact);
+        normalized.Axes.Appearance.ShouldBeNull();
         normalized.GlobalTokens.Single().Value.ShouldBe(1.5d);
         var button = normalized.Controls.Single();
-        button.AlgorithmMode.ShouldBe(ControlAlgorithmMode.Global);
+        button.Density.ShouldBe(DesignDensity.Compact);
+        button.Appearance.ShouldBe(ThemeAppearance.Dark);
         button.GlobalTokens.Single().Value.ShouldBe(2.5d);
         button.OwnTokens.ShouldHaveSingleItem().Value.ShouldBe(32d);
     }
@@ -63,12 +68,14 @@ public class ThemeConfigNormalizerTests
     {
         var schema = ThemeConfigTestSchema.Create();
         var first = new ThemeConfigBuilder()
-                    .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
+                    .WithLanguage("Probe")
+                    .WithDensity(DesignDensity.Compact)
                     .WithToken("Beta", "2.50")
                     .WithToken("Alpha", "1.50")
                     .Build();
         var second = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
+                     .WithDensity(DesignDensity.Compact)
+                     .WithLanguage("Probe")
                      .WithToken("Alpha", "1.5")
                      .WithToken("Beta", "2.5")
                      .Build();
@@ -85,26 +92,19 @@ public class ThemeConfigNormalizerTests
     }
 
     [Fact]
-    public void Normalize_Treats_An_Empty_Global_Algorithm_List_As_Explicit_Default()
+    public void Normalize_Leaves_Unwritten_Axes_To_The_Lower_Layer()
     {
-        var input = new ThemeConfigBuilder()
-                    .WithAlgorithms()
-                    .Build();
-
-        var result = ThemeConfigNormalizer.Normalize(input, ThemeConfigTestSchema.Create());
+        var result = ThemeConfigNormalizer.Normalize(new ThemeConfigBuilder().Build(), ThemeConfigTestSchema.Create());
 
         result.Success.ShouldBeTrue();
-        result.Diagnostics.ShouldBeEmpty();
-        var normalized = result.Config.ShouldNotBeNull();
-        normalized.AlgorithmsSpecified.ShouldBeTrue();
-        normalized.Algorithms.Select(static algorithm => algorithm.Algorithm).ShouldBe([ThemeAlgorithm.Default]);
+        result.Config.ShouldNotBeNull().Axes.IsEmpty.ShouldBeTrue();
     }
 
     [Fact]
-    public void Normalize_Rejects_An_Unregistered_Algorithm()
+    public void Normalize_Rejects_A_Language_That_Is_Not_Enabled()
     {
         var input = new ThemeConfigBuilder()
-                    .WithAlgorithms(new ThemeAlgorithm("Test", "Unregistered"))
+                    .WithLanguage("Unregistered")
                     .Build();
 
         var result = ThemeConfigNormalizer.Normalize(input, ThemeConfigTestSchema.Create());
@@ -113,34 +113,38 @@ public class ThemeConfigNormalizerTests
         result.Config.ShouldBeNull();
         result.Diagnostics.ShouldContain(static diagnostic =>
             diagnostic.Code == "ATMTHM4004" &&
-            diagnostic.Path == "$.Algorithms[0]");
+            diagnostic.Path == "$.Language");
     }
 
-    [Fact]
-    public void Normalize_Rejects_Duplicate_Global_Algorithm_Values()
+    [Theory]
+    [InlineData("$.Style")]
+    [InlineData("$.Density")]
+    [InlineData("$.Idiom")]
+    public void Normalize_Rejects_An_Axis_Value_The_Language_Does_Not_Declare(string path)
     {
-        var input = new ThemeConfigBuilder()
-                    .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Default)
-                    .Build();
+        var builder = new ThemeConfigBuilder().WithLanguage("Probe");
+        _ = path switch
+        {
+            "$.Style" => builder.WithStyle(new DesignStyle("Undeclared")),
+            "$.Density" => builder.WithDensity(new DesignDensity("Spacious")),
+            _ => builder.WithIdiom(DesignIdiom.Mobile)
+        };
 
-        var result = ThemeConfigNormalizer.Normalize(input, ThemeConfigTestSchema.Create());
+        var result = ThemeConfigNormalizer.Normalize(builder.Build(), ThemeConfigTestSchema.Create());
 
         result.Success.ShouldBeFalse();
-        result.Config.ShouldBeNull();
-        result.Diagnostics.ShouldContain(static diagnostic =>
-            diagnostic.Code == "ATMTHM4004" &&
-            diagnostic.Path == "$.Algorithms[1]");
+        result.Diagnostics.ShouldContain(diagnostic => diagnostic.Code == "ATMTHM4005" && diagnostic.Path == path);
     }
 
     [Fact]
-    public void Normalize_Rejects_Duplicate_Control_Custom_Algorithm_Values()
+    public void Normalize_Rejects_A_Control_Density_The_Language_Does_Not_Declare()
     {
         var input = new ThemeConfigBuilder()
+                    .WithLanguage("Probe")
                     .WithControl(
                         ThemeConfigTestSchema.ButtonIdentity,
                         new ControlThemeConfigBuilder()
-                            .WithAlgorithm(ControlAlgorithmMode.Custom)
-                            .WithAlgorithms(ThemeAlgorithm.Compact, ThemeAlgorithm.Compact)
+                            .WithDensity(new DesignDensity("Spacious"))
                             .Build())
                     .Build();
 
@@ -149,8 +153,8 @@ public class ThemeConfigNormalizerTests
         result.Success.ShouldBeFalse();
         result.Config.ShouldBeNull();
         result.Diagnostics.ShouldContain(static diagnostic =>
-            diagnostic.Code == "ATMTHM4004" &&
-            diagnostic.Path == "$.Controls['AtomUI:Button'].Algorithms[1]");
+            diagnostic.Code == "ATMTHM4005" &&
+            diagnostic.Path == "$.Controls['AtomUI:Button'].Density");
     }
 
     [Fact]
@@ -158,7 +162,7 @@ public class ThemeConfigNormalizerTests
     {
         var schema = ThemeConfigTestSchema.Create();
         var input = new ThemeConfigBuilder()
-                    .WithAlgorithms(new ThemeAlgorithm("Test", "Unregistered"))
+                    .WithLanguage("Unregistered")
                     .WithToken("Alpha", "not-a-number")
                     .WithToken("Missing", "1")
                     .WithControl(
@@ -167,7 +171,7 @@ public class ThemeConfigNormalizerTests
                     .WithControl(
                         ThemeConfigTestSchema.ButtonIdentity,
                         new ControlThemeConfigBuilder()
-                            .WithAlgorithm(ControlAlgorithmMode.Custom)
+                            .WithAppearance((ThemeAppearance)42)
                             .Build())
                     .Build();
 
@@ -183,25 +187,13 @@ public class ThemeConfigNormalizerTests
     }
 
     [Fact]
-    public void Normalize_Fingerprint_Changes_With_Algorithm_Revision()
+    public void Config_Fingerprint_Is_Deterministic_Across_Processes()
     {
+        // No language: a language's revision is its assembly's module version, which changes with every build.
         var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Default)
-                     .Build();
-
-        var first = ThemeConfigNormalizer.Normalize(config, ThemeConfigTestSchema.Create()).Config.ShouldNotBeNull();
-        var changed = ThemeConfigNormalizer.Normalize(
-            config,
-            ThemeConfigTestSchema.Create(defaultAlgorithmRevision: 2)).Config.ShouldNotBeNull();
-
-        changed.Fingerprint.ShouldNotBe(first.Fingerprint);
-    }
-
-    [Fact]
-    public void Config_Fingerprint_Is_Deterministic_For_Algorithm_Identities()
-    {
-        var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
+                     .WithDensity(DesignDensity.Compact)
+                     .WithAppearance(ThemeAppearance.Dark)
+                     .WithToken("Alpha", "1.5")
                      .Build();
 
         var first = ThemeConfigNormalizer.Normalize(config, ThemeConfigTestSchema.Create()).Config.ShouldNotBeNull();
@@ -209,13 +201,12 @@ public class ThemeConfigNormalizerTests
 
         second.Fingerprint.ShouldBe(first.Fingerprint);
         // Pins cross-process stability: the fingerprint must never depend on string.GetHashCode().
-        first.Fingerprint.Value.ShouldBe(0xE1D2F0E3E24383E2UL);
+        first.Fingerprint.Value.ShouldBe(17367421940583163063UL);
     }
 
     [Fact]
     public void Normalize_Rejects_A_Parser_Result_That_Does_Not_Match_The_Token_Value_Type()
     {
-        var schema = ThemeConfigTestSchema.Create();
         var badToken = new TokenDescriptor(
             "Alpha",
             0,
@@ -230,7 +221,7 @@ public class ThemeConfigNormalizerTests
         var registry = new ThemeSchemaRegistry(
             [badToken],
             Array.Empty<ControlTokenDescriptor>(),
-            schema.Algorithms);
+            Array.Empty<DesignLanguageDescriptor>());
         var input = new ThemeConfigBuilder()
                     .WithToken("Alpha", "1")
                     .Build();
@@ -267,11 +258,15 @@ public class ThemeConfigNormalizerTests
     }
 }
 
+/// <summary>
+/// A two-token schema (seed <c>Alpha</c>, alias <c>Beta</c>), the probe language and a button with one own token
+/// (<c>Height</c>) and its probe derivation.
+/// </summary>
 internal static class ThemeConfigTestSchema
 {
-    internal static readonly ControlTokenIdentity ButtonIdentity = new("AtomUI", "Button");
+    internal static readonly ControlTokenIdentity ButtonIdentity = TestControlToken.ControlIdentity;
 
-    internal static ThemeSchemaRegistry Create(int defaultAlgorithmRevision = 1)
+    internal static ThemeSchemaRegistry Create()
     {
         var globalTokens = new[]
         {
@@ -286,22 +281,9 @@ internal static class ThemeConfigTestSchema
             ThemeTestControlTypes.For("AtomUI", "Button"),
             ButtonIdentity,
             ownTokens,
-            static () => new TestControlToken(),
-            static (_, _) => { });
-        var algorithms = new[]
-        {
-            new ThemeAlgorithmDescriptor(
-                ThemeAlgorithm.Compact,
-                revision: 1,
-                ThemeAppearanceEffect.Preserve,
-                static () => new TestAlgorithm()),
-            new ThemeAlgorithmDescriptor(
-                ThemeAlgorithm.Default,
-                revision: defaultAlgorithmRevision,
-                ThemeAppearanceEffect.Light,
-                static () => new TestAlgorithm())
-        };
-        return new ThemeSchemaRegistry(globalTokens, [control], algorithms);
+            static () => new TestControlToken());
+        return new ThemeSchemaRegistry(globalTokens, [control], [TestDesignLanguages.Probe()], null,
+            [ControlDerivationDescriptor.Create<ProbeLanguageToken, TestControlToken, TestControlDerivation>()]);
     }
 
     private static TokenDescriptor Token(string name, int slot, TokenStage stage)
@@ -324,19 +306,15 @@ internal static class ThemeConfigTestSchema
         internal double Value { get; set; }
     }
 
-    private sealed class TestControlToken : AbstractControlDesignToken
+    internal sealed class TestControlToken : AbstractControlDesignToken, IControlToken
     {
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", "Button");
     }
 
-    private sealed class TestAlgorithm : IThemeAlgorithm
+    internal sealed class TestControlDerivation : IControlDerivation<ProbeLanguageToken, TestControlToken>
     {
-        public void Evaluate(DesignToken effectiveSeed, DesignToken? previousMap, DesignToken nextMap)
+        public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<TestControlToken> view)
         {
         }
-    }
-
-    private enum TestTokenKind
-    {
-        Value
     }
 }

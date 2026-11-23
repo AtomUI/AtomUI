@@ -1,5 +1,4 @@
 using System.Globalization;
-using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Resources;
@@ -145,7 +144,7 @@ internal sealed class FocusOutlineAdorner : Control
             {
                 // The adorned control and the adorner layer are in separate resource scopes.
                 // Read the button's scoped recipe and also observe explicit legacy adorner overrides.
-                var owner = ButtonThemeRecipe.OwnerOf(buttonSource);
+                var owner = ButtonBehavior.OwnerOf(buttonSource);
                 _outlineTokens = new OwnerTokenSet(source, 9, RefreshOutline);
                 _outlineTokens.SetKind(0, SharedTokenKind.ColorFocusBorder);
                 _outlineTokens.SetKind(1, SharedTokenKind.LineWidthFocus);

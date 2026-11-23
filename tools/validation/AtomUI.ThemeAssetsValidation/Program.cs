@@ -1,8 +1,10 @@
 using System.Diagnostics.Tracing;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.DesignLanguages.PrimeNG;
+using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Localization;
-using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery;
 using Avalonia;
 using Avalonia.Headless;
@@ -29,8 +31,11 @@ internal static class Program
                     builder.UseDesktopDataGrid();
                     builder.UseDesktopColorPicker();
                     builder.UseDesktopExtras();
-                    builder.UseGalleryBase(AtomUIGalleryModule.Configure);
                     builder.UseGalleryControls();
+                    builder.UseAntDesign(static ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
+                    builder.UsePrimeNG();
+                    builder.UseShadcn();
+                    builder.WithInitialDesignLanguage<AntDesignLanguage>();
                     builder.UseSplash(SplashMode.Off);
                 })
                 .SetupWithoutStarting();

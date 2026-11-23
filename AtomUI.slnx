@@ -27,9 +27,32 @@
     <Project Path="src/LanguagePacks/pt-BR/AtomUI.Desktop.Controls.I18n.PtBR/AtomUI.Desktop.Controls.I18n.PtBR.csproj" />
     <Project Path="src/LanguagePacks/pt-BR/AtomUI.I18n.PtBR/AtomUI.I18n.PtBR.csproj" />
   </Folder>
-  <Folder Name="/Themes/">
-    <Project Path="src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
-    <Project Path="src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
+  <Folder Name="/DesignLanguages/AntDesign/">
+    <Project Path="src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign/AtomUI.DesignLanguages.AntDesign.csproj" />
+    <Project Path="src/DesignLanguages/AntDesign/AtomUI.Controls.Themes.AntDesign/AtomUI.Controls.Themes.AntDesign.csproj" />
+    <Project Path="src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign.csproj" />
+    <Project Path="src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign.csproj" />
+    <Project Path="src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj" />
+  </Folder>
+  <Folder Name="/DesignLanguages/Shadcn/">
+    <Project Path="src/DesignLanguages/Shadcn/AtomUI.DesignLanguages.Shadcn/AtomUI.DesignLanguages.Shadcn.csproj" />
+    <Project Path="src/DesignLanguages/Shadcn/AtomUI.Controls.Themes.Shadcn/AtomUI.Controls.Themes.Shadcn.csproj" />
+    <Project Path="src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn.csproj" />
+    <Project Path="src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn.csproj" />
+    <Project Path="src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn.csproj" />
+  </Folder>
+  <Folder Name="/DesignLanguages/PrimeNG/">
+    <Project Path="src/DesignLanguages/PrimeNG/AtomUI.DesignLanguages.PrimeNG/AtomUI.DesignLanguages.PrimeNG.csproj" />
+    <Project Path="src/DesignLanguages/PrimeNG/AtomUI.Controls.Themes.PrimeNG/AtomUI.Controls.Themes.PrimeNG.csproj" />
+    <Project Path="src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG.csproj" />
+    <Project Path="src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG.csproj" />
+    <Project Path="src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Fixtures/DesignLanguageParity/">
+    <Project Path="tests/fixtures/DesignLanguageParity/Sample.DesignLanguage/Sample.DesignLanguage.csproj" />
+    <Project Path="tests/fixtures/DesignLanguageParity/Sample.Controls/Sample.Controls.csproj" />
+    <Project Path="tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.AntDesign/Sample.Controls.Themes.AntDesign.csproj" />
+    <Project Path="tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.Sample/Sample.Controls.Themes.Sample.csproj" />
   </Folder>
   <Folder Name="/Fonts/">
     <Project Path="src/AtomUI.Fonts.AlibabaPuHuiTi/AtomUI.Fonts.AlibabaPuHuiTi.csproj" />
@@ -45,10 +68,12 @@
     <Project Path="src/AtomUI.Toolchain/AtomUI.Toolchain.csproj" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="tests/AtomUI.Themes.Tests/AtomUI.Themes.Tests.csproj" />
     <Project Path="tests/AtomUI.Build.Tasks.Tests/AtomUI.Build.Tasks.Tests.csproj" />
     <Project Path="tests/AtomUI.Controls.Tests/AtomUI.Controls.Tests.csproj" />
     <Project Path="tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj" />
+    <Project Path="tests/AtomUI.DesignLanguages.Parity.Tests/AtomUI.DesignLanguages.Parity.Tests.csproj" />
+    <Project Path="tests/AtomUI.DesignLanguages.PrimeNG.Tests/AtomUI.DesignLanguages.PrimeNG.Tests.csproj" />
+    <Project Path="tests/AtomUI.DesignLanguages.Shadcn.Tests/AtomUI.DesignLanguages.Shadcn.Tests.csproj" />
     <Project Path="tests/AtomUI.Theme.ContractTests/AtomUI.Theme.ContractTests.csproj" />
     <Project Path="tests/AtomUI.Localization.IntegrationTests/AtomUI.Localization.IntegrationTests.csproj" />
     <Project Path="tests/AtomUI.Localization.Tests/AtomUI.Localization.Tests.csproj" />

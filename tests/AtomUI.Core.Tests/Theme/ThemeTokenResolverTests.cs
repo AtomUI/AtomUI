@@ -1,7 +1,7 @@
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Resources;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Controls;
 using Avalonia.Media;

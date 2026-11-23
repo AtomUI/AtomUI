@@ -52,6 +52,7 @@ internal static class TaskProcessHost
             nameof(ResolveRegistrationToolsTask) => new ResolveRegistrationToolsTask(),
             nameof(GenerateThemeAssetWrappersTask) => new GenerateThemeAssetWrappersTask(),
             nameof(GenerateCompiledThemeInputTask) => new GenerateCompiledThemeInputTask(),
+            nameof(ConvertThemeDefinitionsTask) => new ConvertThemeDefinitionsTask(),
             nameof(ExportLanguageTemplatesTask) => new ExportLanguageTemplatesTask(),
             nameof(PrepareLanguagePackageAssetsTask) => new PrepareLanguagePackageAssetsTask(),
             nameof(PrepareLanguagePackageTask) => new PrepareLanguagePackageTask(),

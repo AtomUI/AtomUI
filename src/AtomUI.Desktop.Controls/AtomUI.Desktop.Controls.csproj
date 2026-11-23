@@ -25,8 +25,6 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
-        <InternalsVisibleTo Include="AtomUI.Themes.Shadcn" />
-        <InternalsVisibleTo Include="AtomUI.Themes.PrimeNG" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.Performance" />
         <InternalsVisibleTo Include="AtomUI.AI.Controls" />

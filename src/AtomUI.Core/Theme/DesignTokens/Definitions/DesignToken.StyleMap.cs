@@ -33,6 +33,15 @@ public partial class DesignToken
     public partial CornerRadius BorderRadiusSM { get; set; } = new CornerRadius(4);
 
     /// <summary>
+    /// MD号圆角
+    /// MD号圆角，组件默认尺寸下的圆角，与种子 <see cref="BorderRadius"/> 同值；控件读这一项而不是种子，语言可以为某个控件覆盖它。
+    /// Medium corner radius: the radius of a control at its default size, equal to the seed BorderRadius. Controls read
+    /// this Map token, not the seed, so a language can override it for one control.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial CornerRadius BorderRadiusMD { get; set; } = new CornerRadius(6);
+
+    /// <summary>
     /// LG号圆角
     /// LG号圆角，用于组件中的一些大圆角，如 Card、Modal 等一些组件样式。
     /// </summary>

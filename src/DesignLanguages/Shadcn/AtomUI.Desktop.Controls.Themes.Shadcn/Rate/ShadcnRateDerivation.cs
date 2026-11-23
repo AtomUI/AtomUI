@@ -1,0 +1,22 @@
+using AtomUI.DesignLanguages.Shadcn;
+using AtomUI.Theme.Derivation;
+using AtomUI.Theme.Languages;
+
+namespace AtomUI.Desktop.Controls.Themes.Shadcn;
+
+/// <summary>The shadcn view of <see cref="RateToken"/>.</summary>
+[ControlDerivation]
+internal sealed class ShadcnRateDerivation : IControlDerivation<ShadcnToken, RateToken>
+{
+    public void Derive(in DerivationContext<ShadcnToken> context, ControlView<RateToken> view)
+    {
+        var token  = view.Token;
+        var global = view.Global;
+        token.StarColor      = global.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
+        token.StarSize       = global.ControlHeight * 0.625;
+        token.StarSizeSM     = global.ControlHeightSM * 0.625;
+        token.StarSizeLG     = global.ControlHeightLG * 0.625;
+        token.StarHoverScale = 1.2;
+        token.StarBg         = global.ColorFillContent;
+    }
+}

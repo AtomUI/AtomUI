@@ -1,5 +1,4 @@
 using Avalonia.Headless;
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme.Resources;

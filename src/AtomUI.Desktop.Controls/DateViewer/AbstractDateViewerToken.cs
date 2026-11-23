@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -8,8 +7,11 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public abstract partial class AbstractDateViewerToken : AbstractControlDesignToken
 {
+    /// <summary>Background shared by the calendar panel and the range panels.</summary>
     public partial Color PanelBg { get; set; }
+    /// <summary>Fill behind the cell value on pointer hover.</summary>
     public partial Color CellHoverBg { get; set; }
+    /// <summary>Fill connecting cells inside the selected range.</summary>
     public partial Color CellRangeBg { get; set; }
 
     /// <summary>The corner radius of a date cell's value frame.</summary>
@@ -39,19 +41,33 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
     /// the solid primary sets the contrast colour.
     /// </summary>
     public partial Color CellActiveColor { get; set; }
+    /// <summary>Width of one date viewer panel.</summary>
     public partial double PanelWidth { get; set; }
+    /// <summary>Height of the cell value area.</summary>
     public partial double CellHeight { get; set; }
+    /// <summary>Width of the cell value area.</summary>
     public partial double CellWidth { get; set; }
+    /// <summary>Minimum row height for date cells and the weekday header.</summary>
     public partial double CellRowHeight { get; set; }
+    /// <summary>Width of a value cell in the period selection view.</summary>
     public partial double PeriodCellWidth { get; set; }
+    /// <summary>Padding between the edge and value of a period cell.</summary>
     public partial Thickness PeriodCellPadding { get; set; }
+    /// <summary>Minimum height of a date cell that displays additional content.</summary>
     public partial double ContentCellMinHeight { get; set; }
+    /// <summary>Inset of the painted surface inside the interactive content cell.</summary>
     public partial Thickness ContentCellSurfaceMargin { get; set; }
+    /// <summary>Thickness of the separator at the top of a content cell.</summary>
     public partial Thickness ContentCellTopBorderThickness { get; set; }
+    /// <summary>Space around the date value inside a content cell.</summary>
     public partial Thickness ContentCellValueMargin { get; set; }
+    /// <summary>Space around the additional content below the date value.</summary>
     public partial Thickness ContentCellContentMargin { get; set; }
+    /// <summary>Space between the panel edge and its header and body.</summary>
     public partial Thickness PanelPadding { get; set; }
+    /// <summary>Horizontal inset of the header navigation and period label.</summary>
     public partial Thickness HeaderHorizontalPadding { get; set; }
+    /// <summary>Padding around the weekday row and date grid.</summary>
     public partial Thickness DateBodyPadding { get; set; }
 
     /// <summary>
@@ -67,42 +83,4 @@ public abstract partial class AbstractDateViewerToken : AbstractControlDesignTok
     /// Opacity of the week numbers in week mode (antd dims the selected row's week number to half alpha).
     /// </summary>
     public partial double WeekNumberOpacity { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PanelBg = EffectiveGlobalToken.ColorBgContainer;
-        CellHoverBg = EffectiveGlobalToken.ControlItemBgHover;
-        CellRangeBg = EffectiveGlobalToken.ControlItemBgActive;
-        CellCornerRadius     = EffectiveGlobalToken.BorderRadiusSM;
-        CellTodayBg          = Colors.Transparent;
-        CellTodayColor       = EffectiveGlobalToken.ColorText;
-        CellTodayBorderColor = EffectiveGlobalToken.ColorPrimary;
-        HeaderTitleFontWeight = FontWeight.Bold;
-        WeekHeaderHeight      = 0;
-        WeekHeaderFontWeight  = FontWeight.Normal;
-        CellActiveColor = EffectiveGlobalToken.ColorPrimary;
-        var dateColumnWidth = EffectiveGlobalToken.ControlHeightSM * 1.5;
-        var bodyHorizontalPadding = EffectiveGlobalToken.UniformlyPadding + EffectiveGlobalToken.UniformlyPaddingXXS / 2;
-        PanelWidth = dateColumnWidth * 7 + bodyHorizontalPadding * 2;
-
-CellWidth = EffectiveGlobalToken.ControlHeightSM;
-        PeriodCellWidth = EffectiveGlobalToken.ControlHeightLG * 1.5;
-        PeriodCellPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        ContentCellMinHeight = EffectiveGlobalToken.ControlHeightLG * 2;
-        var contentSurfaceInset = EffectiveGlobalToken.UniformlyMarginXXS;
-        var contentHorizontalInset = contentSurfaceInset + EffectiveGlobalToken.UniformlyPaddingXS;
-        var contentTopInset = EffectiveGlobalToken.LineWidthBold + EffectiveGlobalToken.UniformlyPaddingXS / 2;
-        ContentCellSurfaceMargin = new Thickness(contentSurfaceInset, 0);
-        ContentCellTopBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidthBold, 0, 0);
-        ContentCellValueMargin = new Thickness(contentHorizontalInset, contentTopInset, contentHorizontalInset, 0);
-        ContentCellContentMargin = new Thickness(contentHorizontalInset, 0);
-        PanelPadding = new Thickness(0);
-        HeaderHorizontalPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        DateBodyPadding = new Thickness(bodyHorizontalPadding, EffectiveGlobalToken.UniformlyPaddingXS);
-        HeaderBorderThickness = new Thickness(0, 0, 0, EffectiveGlobalToken.LineWidth);
-        WeekNumberOpacity = 0.5;
-    }
-    protected double CalculateCellRowHeight(double cellHeight) =>
-        cellHeight + EffectiveGlobalToken.UniformlyPaddingXXS * 3;
 }

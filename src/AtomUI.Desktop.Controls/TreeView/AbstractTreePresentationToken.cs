@@ -7,8 +7,11 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public abstract partial class AbstractTreePresentationToken : AbstractControlDesignToken
 {
+    /// <summary>Minimum height of a node header and the size of its expand and collapse button.</summary>
     public partial double HeaderHeight { get; set; }
+    /// <summary>Background color of a hovered tree node.</summary>
     public partial Color NodeHoverBg { get; set; }
+    /// <summary>Background color behind <see cref="NodeSelectedColor"/> for a selected tree node.</summary>
     public partial Color NodeSelectedBg { get; set; }
 
     /// <summary>
@@ -17,26 +20,16 @@ public abstract partial class AbstractTreePresentationToken : AbstractControlDes
     /// selected background (antd Tree <c>nodeSelectedColor</c>).
     /// </summary>
     public partial Color NodeSelectedColor { get; set; }
+    /// <summary>Margin around the tree item header.</summary>
     public partial Thickness TreeItemMargin { get; set; }
+    /// <summary>Padding inside the tree item header's content frame.</summary>
     public partial Thickness TreeItemHeaderPadding { get; set; }
+    /// <summary>Margin around the tree item header's content frame.</summary>
     public partial Thickness TreeItemHeaderMargin { get; set; }
+    /// <summary>Margin around a tree node's expand and collapse button.</summary>
     public partial Thickness TreeNodeSwitcherMargin { get; set; }
+    /// <summary>Margin around the icon next to a tree node's label.</summary>
     public partial Thickness TreeNodeIconMargin { get; set; }
+    /// <summary>Foreground color used to highlight matching text when the tree is filtered.</summary>
     public partial Color FilterHighlightColor { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var presentation = TreePresentationTokenValues.Calculate(EffectiveGlobalToken);
-        HeaderHeight = presentation.HeaderHeight;
-        NodeHoverBg = presentation.NodeHoverBg;
-        NodeSelectedBg = presentation.NodeSelectedBg;
-        NodeSelectedColor = presentation.NodeSelectedColor;
-        TreeItemMargin = presentation.TreeItemMargin;
-        TreeItemHeaderPadding = presentation.TreeItemHeaderPadding;
-        TreeItemHeaderMargin = presentation.TreeItemHeaderMargin;
-        TreeNodeSwitcherMargin = presentation.TreeNodeSwitcherMargin;
-        TreeNodeIconMargin = presentation.TreeNodeIconMargin;
-        FilterHighlightColor = presentation.FilterHighlightColor;
-    }
 }

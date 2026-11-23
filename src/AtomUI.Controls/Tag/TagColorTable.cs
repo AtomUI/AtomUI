@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Resources;
 using Avalonia.Media;

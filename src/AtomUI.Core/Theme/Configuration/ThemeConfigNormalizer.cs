@@ -1,4 +1,3 @@
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Schema;
 
@@ -9,8 +8,8 @@ internal static class ThemeConfigNormalizer
     private const string UnknownGlobalTokenCode = "ATMTHM4001";
     private const string UnknownControlCode = "ATMTHM4002";
     private const string UnknownControlTokenCode = "ATMTHM4003";
-    private const string UnknownAlgorithmCode = "ATMTHM4004";
-    private const string InvalidAlgorithmPolicyCode = "ATMTHM4005";
+    private const string UnknownLanguageCode = "ATMTHM4004";
+    private const string InvalidAxisCode = "ATMTHM4005";
     private const string InvalidTokenValueCode = "ATMTHM4006";
     private const string InvalidInputCode = "ATMTHM4007";
     private const string Source = "<ThemeConfig>";
@@ -21,12 +20,10 @@ internal static class ThemeConfigNormalizer
         ArgumentNullException.ThrowIfNull(registry);
 
         var diagnostics = new List<ThemeDefinitionDiagnostic>();
-        var algorithmsSpecified = config.Algorithms is not null;
-        var algorithms = algorithmsSpecified && config.Algorithms!.Count == 0
-            ? BindDefaultAlgorithm(registry, diagnostics, "$.Algorithms")
-            : BindAlgorithms(config.Algorithms, registry, diagnostics, "$.Algorithms");
+        var axes = BindAxes(config, registry, diagnostics);
         var globalTokens = BindGlobalTokens(config.Tokens, registry, diagnostics);
-        var controls = BindControls(config.Controls, registry, diagnostics);
+        var languageTokens = CopyLanguageTokens(config.LanguageTokens, diagnostics);
+        var controls = BindControls(config.Controls, axes.Language, registry, diagnostics);
 
         if (diagnostics.Count != 0)
         {
@@ -36,70 +33,69 @@ internal static class ThemeConfigNormalizer
         return new ThemeConfigNormalizeResult(
             new NormalizedThemeConfig(
                 config.Inherit,
-                algorithmsSpecified,
-                algorithms,
+                axes,
                 globalTokens,
+                languageTokens,
                 controls),
             Array.Empty<ThemeDefinitionDiagnostic>());
     }
 
-    private static IReadOnlyList<ThemeAlgorithmDescriptor> BindAlgorithms(
-        IReadOnlyList<ThemeAlgorithm>? algorithms,
-        ThemeSchemaRegistry registry,
-        List<ThemeDefinitionDiagnostic> diagnostics,
-        string path)
+    private static ThemeAxes BindAxes(ThemeConfig config, ThemeSchemaRegistry registry,
+        List<ThemeDefinitionDiagnostic> diagnostics)
     {
-        if (algorithms is null)
+        DesignLanguageDescriptor? language = null;
+        if (config.Language is { } id && !registry.TryGetLanguage(id, out language))
         {
-            return Array.Empty<ThemeAlgorithmDescriptor>();
+            AddError(diagnostics, UnknownLanguageCode, "$.Language", $"Design language '{id}' is not enabled.");
         }
 
-        var descriptors = new List<ThemeAlgorithmDescriptor>(algorithms.Count);
-        var seen = new HashSet<ThemeAlgorithm>();
-        for (var index = 0; index < algorithms.Count; index++)
+        if (language is not null)
         {
-            var algorithm = algorithms[index];
-            var itemPath = $"{path}[{index}]";
-            if (algorithm.IsUninitialized)
+            if (config.Style is { } style && !language.Axes.Styles.Contains(style))
             {
-                AddError(diagnostics, UnknownAlgorithmCode, itemPath, "Algorithm identity is uninitialized.");
-                continue;
+                AddError(diagnostics, InvalidAxisCode, "$.Style",
+                    $"Design language '{language.Id}' does not declare the style '{style}'.");
             }
-
-            if (!seen.Add(algorithm))
+            if (config.Density is { } density && !language.Axes.Densities.Contains(density))
             {
-                AddError(diagnostics, UnknownAlgorithmCode, itemPath, $"Algorithm '{algorithm}' is duplicated.");
-                continue;
+                AddError(diagnostics, InvalidAxisCode, "$.Density",
+                    $"Design language '{language.Id}' does not declare the density '{density}'.");
             }
-
-            if (!registry.TryGetAlgorithm(algorithm, out var descriptor))
+            if (config.Idiom is { } idiom && !language.Axes.Idioms.Contains(idiom))
             {
-                AddError(diagnostics, UnknownAlgorithmCode, itemPath, $"Algorithm '{algorithm}' is not registered.");
-                continue;
+                AddError(diagnostics, InvalidAxisCode, "$.Idiom",
+                    $"Design language '{language.Id}' does not declare the idiom '{idiom}'.");
             }
-
-            descriptors.Add(descriptor);
         }
 
-        return descriptors;
+        return new ThemeAxes(language, config.Style, config.Appearance, config.Density, config.Idiom);
     }
 
-    private static IReadOnlyList<ThemeAlgorithmDescriptor> BindDefaultAlgorithm(
-        ThemeSchemaRegistry registry,
-        List<ThemeDefinitionDiagnostic> diagnostics,
-        string path)
+    // Language tokens stay text until the effective language is known: a scope may set them without naming the
+    // language, and they apply only while that language is in effect (bound by the compiler).
+    private static IReadOnlyList<LanguageTokenValue> CopyLanguageTokens(
+        IReadOnlyDictionary<string, string>? values,
+        List<ThemeDefinitionDiagnostic> diagnostics)
     {
-        if (!registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var descriptor))
+        if (values is null)
         {
-            AddError(
-                diagnostics,
-                UnknownAlgorithmCode,
-                path,
-                "Default algorithm is not registered.");
-            return Array.Empty<ThemeAlgorithmDescriptor>();
+            AddError(diagnostics, InvalidInputCode, "$.LanguageTokens", "LanguageTokens cannot be null.");
+            return Array.Empty<LanguageTokenValue>();
         }
 
-        return [descriptor];
+        var result = new List<LanguageTokenValue>(values.Count);
+        foreach (var entry in values)
+        {
+            if (entry.Value is null)
+            {
+                AddError(diagnostics, InvalidTokenValueCode, $"$.LanguageTokens['{entry.Key}']",
+                    $"Language Token '{entry.Key}' value cannot be null.");
+                continue;
+            }
+            result.Add(new LanguageTokenValue(entry.Key, entry.Value));
+        }
+        result.Sort(static (left, right) => string.CompareOrdinal(left.Name, right.Name));
+        return result;
     }
 
     private static IReadOnlyList<NormalizedTokenValue> BindGlobalTokens(
@@ -136,6 +132,7 @@ internal static class ThemeConfigNormalizer
 
     private static IReadOnlyList<NormalizedControlThemeConfig> BindControls(
         IReadOnlyDictionary<ControlTokenIdentity, ControlThemeConfig>? values,
+        DesignLanguageDescriptor? language,
         ThemeSchemaRegistry registry,
         List<ThemeDefinitionDiagnostic> diagnostics)
     {
@@ -169,29 +166,17 @@ internal static class ThemeConfigNormalizer
             }
 
             var config = entry.Value;
-            if (!Enum.IsDefined(config.Algorithm))
+            if (config.Appearance is { } appearance && !Enum.IsDefined(appearance))
             {
-                AddError(
-                    diagnostics,
-                    InvalidAlgorithmPolicyCode,
-                    $"{path}.Algorithm",
-                    $"Control '{identity}' has an invalid algorithm mode.");
-                continue;
+                AddError(diagnostics, InvalidAxisCode, $"{path}.Appearance",
+                    $"Control '{identity}' has an invalid appearance.");
+            }
+            if (language is not null && config.Density is { } density && !language.Axes.Densities.Contains(density))
+            {
+                AddError(diagnostics, InvalidAxisCode, $"{path}.Density",
+                    $"Design language '{language.Id}' does not declare the density '{density}'.");
             }
 
-            var hasCustomAlgorithms = config.Algorithms is { Count: > 0 };
-            if (config.Algorithm == ControlAlgorithmMode.Custom != hasCustomAlgorithms)
-            {
-                AddError(
-                    diagnostics,
-                    InvalidAlgorithmPolicyCode,
-                    $"{path}.Algorithms",
-                    $"Control '{identity}' custom algorithms must be present only when Algorithm is Custom.");
-            }
-
-            var algorithms = config.Algorithm == ControlAlgorithmMode.Custom
-                ? BindAlgorithms(config.Algorithms, registry, diagnostics, $"{path}.Algorithms")
-                : Array.Empty<ThemeAlgorithmDescriptor>();
             BindControlTokens(
                 config.Tokens,
                 descriptor,
@@ -202,8 +187,8 @@ internal static class ThemeConfigNormalizer
                 out var ownTokens);
             result.Add(new NormalizedControlThemeConfig(
                 ControlTokenIdentity.ForControl(descriptor.ControlType, identity.Catalog, identity.Id),
-                config.Algorithm,
-                algorithms,
+                config.Appearance,
+                config.Density,
                 globalTokens,
                 ownTokens));
         }

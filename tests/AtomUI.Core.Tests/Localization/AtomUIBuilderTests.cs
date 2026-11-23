@@ -65,7 +65,7 @@ public class AtomUIBuilderTests
 
         returned.ShouldBeSameAs(builder);
         builder.ThemeManagerBuilder.ApplicationId.ShouldBe("Acme.App");
-        builder.ThemeManagerBuilder.InitialRequest.ThemeId.ShouldBe("atomui-default");
+        builder.ThemeManagerBuilder.InitialRequest.ShouldNotBeNull().ThemeId.ShouldBe("atomui-default");
         builder.ThemeManagerBuilder.FontFamily.ShouldNotBeNull();
     }
 }

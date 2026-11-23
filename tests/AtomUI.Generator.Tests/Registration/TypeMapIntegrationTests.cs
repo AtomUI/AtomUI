@@ -88,7 +88,7 @@ public partial class TypeMapIntegrationTests
             public class DesktopOnly : Avalonia.Controls.Control { }
             [AtomUI.Theme.DesignTokens.ControlDesignToken]
             internal sealed class DesktopOnlyToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
-            { public double Height { get; set; } protected override void CalculateTokenValues(bool dark) { } internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark); }
+            { public double Height { get; set; } }
             """, Asset("Any", """
             <ControlTheme x:Key="Any" TargetType="local:Any" xmlns:tokens="using:Demo.DesignTokens">
                 <Setter Property="Tag" Value="{tokens:DesktopOnlyTokenResource Height}" />
@@ -149,8 +149,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class DesktopOnlyToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double Height { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("Mixed", """
             <ControlTheme x:Key="Any" TargetType="local:AnyPlatform" />
@@ -173,8 +171,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         var extensionType = assembly.GetType("Demo.DesignTokens.ButtonTokenResourceExtension")!;
@@ -261,7 +257,7 @@ public partial class TypeMapIntegrationTests
         var expected = registryType.GetMethod("ComputeResourceKeySchemaFingerprint", BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, new[] { descriptor, globals });
         descriptor.GetType().GetProperty("ResourceKeySchemaFingerprint")!.GetValue(descriptor).ShouldBe(expected);
         var registry = Activator.CreateInstance(registryType, BindingFlags.Instance | BindingFlags.NonPublic, null,
-            new object[] { globals!, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlTokenDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ThemeAlgorithmDescriptor")!, 0), TypedArray(descriptor) }, null);
+            new object[] { globals!, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlTokenDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.DesignLanguageDescriptor")!, 0), TypedArray(descriptor), null! }, null);
         Activator.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlThemeAssetManifest")!, BindingFlags.Instance | BindingFlags.NonPublic, null,
             new[] { registry, TypedArray(descriptor) }, null).ShouldNotBeNull();
     }
@@ -310,8 +306,6 @@ public partial class TypeMapIntegrationTests
             {
                 [AtomUI.Theme.DesignTokens.ReservedToken("fixture field without a theme asset")]
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         result.Diagnostics.ShouldBeEmpty();
@@ -344,8 +338,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """;
         var builtin = EmitCompilation(Compilation("namespace BuiltIn { " + body + " }", [], "BuiltInControls"), [],
@@ -360,7 +352,7 @@ public partial class TypeMapIntegrationTests
         var globals = core.GetType("AtomUI.Generated.AtomUICore.GeneratedThemeSchema")!.GetMethod("GetGlobalTokens", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null);
         var registry = core.GetType("AtomUI.Theme.Schema.ThemeSchemaRegistry")!;
         var instance = Activator.CreateInstance(registry, BindingFlags.Instance | BindingFlags.NonPublic, null,
-            new object[] { globals!, descriptors, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ThemeAlgorithmDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlThemeAssetDescriptor")!, 0) }, null);
+            new object[] { globals!, descriptors, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.DesignLanguageDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlThemeAssetDescriptor")!, 0), null! }, null);
         instance.ShouldNotBeNull();
     }
 
@@ -374,8 +366,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("Button", """
                 <ControlTheme x:Key="Button" TargetType="local:Button" xmlns:wrong="using:Missing.DesignTokens">
@@ -428,8 +418,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class WidgetToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, [asset]).AddReferences(definingReference, facade);
         LoadCore();
@@ -647,8 +635,6 @@ public partial class TypeMapIntegrationTests
             internal sealed class ScrollViewerToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double LocalHeight { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """, Asset("ScrollViewer", """
                 <ControlTheme x:Key="Mine" TargetType="local:ScrollViewer" />
@@ -690,7 +676,7 @@ public partial class TypeMapIntegrationTests
         var export = exports.Cast<object>().Single();
         ((Type)export.GetType().GetProperty("TargetType")!.GetValue(export)!).FullName.ShouldBe("Demo.Host+Presenter");
         var instance = Activator.CreateInstance(registry, BindingFlags.Instance | BindingFlags.NonPublic, null,
-            new object[] { globals!, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlTokenDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ThemeAlgorithmDescriptor")!, 0), TypedArray(descriptor) }, null);
+            new object[] { globals!, Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.ControlTokenDescriptor")!, 0), Array.CreateInstance(core.GetType("AtomUI.Theme.Schema.DesignLanguageDescriptor")!, 0), TypedArray(descriptor), null! }, null);
         instance.ShouldNotBeNull();
     }
 

@@ -48,7 +48,7 @@
             <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource LoadingShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:MessageCardTokenResource ColorPrimary}" />
+                        Value="{atom:MessageCardTokenResource LoadingIconColor}" />
             </Style>
         </Style>
 

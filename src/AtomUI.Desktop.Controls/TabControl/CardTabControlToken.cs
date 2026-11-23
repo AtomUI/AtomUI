@@ -1,23 +1,10 @@
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Media;
-using AtomUI.Desktop.Controls.DesignTokens;
-using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
 public sealed partial class CardTabControlToken : AbstractCardTabToken
 {
+    /// <summary>Gap between the card tab strip and the selected tab's content.</summary>
     public partial double TabAndContentGutter { get; set; }
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        if (!IsExplicit(CardTabControlTokenKind.CardSize))
-        {
-            CardSize = EffectiveGlobalToken.ControlHeightLG;
-        }
-        CardPadding = CalculateCardPadding(CardSize);
-        TabAndContentGutter = EffectiveGlobalToken.UniformlyMarginSM;
-    }
 }

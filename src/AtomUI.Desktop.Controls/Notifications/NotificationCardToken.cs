@@ -1,5 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -9,360 +8,233 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class NotificationCardToken : AbstractControlDesignToken
 {
 
-    public NotificationCardToken()
-
-    {
-    }
-
     /// <summary>
-    /// 提醒框背景色
+    /// Fill of the default notification card frame behind the title, description and close button.
     /// </summary>
     public partial Color NotificationBg { get; set; }
 
-    /// <summary>
-    /// 提醒框内边距
-    /// </summary>
+    /// <summary>Padding inside the content area around the notification's text and actions.</summary>
     public partial Thickness NotificationPadding { get; set; }
 
-    /// <summary>
-    /// 提醒框图标尺寸
-    /// </summary>
+    /// <summary>Width and height of the status icon preceding the notification text.</summary>
     public partial double NotificationIconSize { get; set; }
 
-    /// <summary>
-    /// 提醒框图标外边距
-    /// </summary>
+    /// <summary>Margin around the status icon preceding the notification text.</summary>
     public partial Thickness NotificationIconMargin { get; set; }
 
-    /// <summary>
-    /// 提醒框关闭按钮尺寸
-    /// </summary>
+    /// <summary>Width and height of the close button at the upper-right corner of the card.</summary>
     public partial double NotificationCloseButtonSize { get; set; }
     
-    /// <summary>
-    /// 内容区域标题与描述之间的间距
-    /// </summary>
+    /// <summary>Vertical gap between the notification title and description.</summary>
     public partial double NotificationSectionSpacing { get; set; }
 
     /// <summary>
-    /// 标题与描述的右侧留白，避免文本压到关闭按钮
+    /// Inset at the right edge of the title, leaving room for the overlaid close button.
     /// </summary>
     public partial Thickness NotificationTitlePadding { get; set; }
 
-    /// <summary>
-    /// 操作组的上边距
-    /// </summary>
+    /// <summary>Margin above the row of notification action buttons.</summary>
     public partial Thickness NotificationActionsMargin { get; set; }
 
     /// <summary>
-    /// 关闭按钮由卡片内容区左上角偏移到内容区右上角的覆盖层外边距
+    /// Margin positioning the overlaid close button at the upper-right edge of the card.
     /// </summary>
     public partial Thickness NotificationCloseButtonMargin { get; set; }
 
     /// <summary>
-    /// 提醒框进度条背景色
+    /// Fill of the remaining-time segment along the bottom edge of the notification. Drawn over
+    /// <see cref="NotificationProgressTrackBg"/>.
     /// </summary>
     public partial IImmutableBrush? NotificationProgressBg { get; set; }
 
     /// <summary>
-    /// 提醒框进度条底槽色。进度条先以该色铺满整条作为底槽，再叠加彩色进度值；
-    /// 缺底槽时剩余时间在卡片背景上不可见。
+    /// Fill of the full-width remaining-time track behind <see cref="NotificationProgressBg"/>.
     /// </summary>
     public partial Color NotificationProgressTrackBg { get; set; }
 
-    /// <summary>
-    /// 提醒框进度条高度
-    /// </summary>
+    /// <summary>Height of the remaining-time bar at the bottom edge of the notification.</summary>
     public partial double NotificationProgressHeight { get; set; }
 
-    /// <summary>
-    /// 进度条外边距
-    /// </summary>
+    /// <summary>Margin around the remaining-time bar at the bottom edge of the notification.</summary>
     public partial Thickness NotificationProgressMargin { get; set; }
 
-    /// <summary>
-    /// 提醒框宽度
-    /// </summary>
+    /// <summary>Width of the notification card.</summary>
     public partial double NotificationWidth { get; set; }
 
 
     /// <summary>
-    /// 提醒框上边缘外边距
+    /// Padding around the notification stack when the manager places it at the top of the window.
     /// </summary>
     public partial Thickness NotificationTopMargin { get; set; }
 
     /// <summary>
-    /// 提醒框下边缘外边距
+    /// Padding around the notification stack when the manager places it at the bottom of the window.
     /// </summary>
     public partial Thickness NotificationBottomMargin { get; set; }
 
-    /// <summary>
-    /// 提醒框默认阴影（Default 类型回退值）
-    /// </summary>
+    /// <summary>Shadows cast by the frame of a default notification.</summary>
     public partial BoxShadows RestingShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框信息样式阴影
-    /// </summary>
+    /// <summary>Shadows cast by the frame of an information notification.</summary>
     public partial BoxShadows InformationShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框成功样式阴影
-    /// </summary>
+    /// <summary>Shadows cast by the frame of a success notification.</summary>
     public partial BoxShadows SuccessShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框警告样式阴影
-    /// </summary>
+    /// <summary>Shadows cast by the frame of a warning notification.</summary>
     public partial BoxShadows WarningShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框错误样式阴影
-    /// </summary>
+    /// <summary>Shadows cast by the frame of an error notification.</summary>
     public partial BoxShadows ErrorShadows { get; set; }
 
     /// <summary>
-    /// Border thickness of the card frame; a design language draws a start bar with a thick leading side.
+    /// Thickness of each edge of the notification card frame. The leading edge can be thicker to form a status stripe.
     /// </summary>
     public partial Thickness NotificationBorderThickness { get; set; }
 
     /// <summary>
-    /// Border colour of a notification without a severity.
+    /// Colour of the frame outline of a default notification, paired with <see cref="NotificationBg"/>.
     /// </summary>
     public partial Color NotificationBorderColor { get; set; }
 
     /// <summary>
-    /// Background of an information notification.
+    /// Fill of the information card frame behind the status icon, title, description and close button. Pairs with
+    /// <see cref="InformationIconColor"/>, <see cref="InformationTitleColor"/>,
+    /// <see cref="InformationDescriptionColor"/> and <see cref="InformationCloseIconColor"/>.
     /// </summary>
     public partial Color InformationBg { get; set; }
 
     /// <summary>
-    /// Icon colour of an information notification.
+    /// Foreground of the information status icon next to the text. Pairs with <see cref="InformationBg"/>.
     /// </summary>
     public partial Color InformationIconColor { get; set; }
 
     /// <summary>
-    /// Border colour of an information notification.
+    /// Colour of the information card frame outline. Pairs with <see cref="InformationBg"/>.
     /// </summary>
     public partial Color InformationBorderColor { get; set; }
 
     /// <summary>
-    /// Title colour of an information notification.
+    /// Foreground of the information notification title. Pairs with <see cref="InformationBg"/>.
     /// </summary>
     public partial Color InformationTitleColor { get; set; }
 
     /// <summary>
-    /// Description colour of an information notification.
+    /// Foreground of the information notification description. Pairs with <see cref="InformationBg"/>.
     /// </summary>
     public partial Color InformationDescriptionColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an information notification.
+    /// Foreground of the close icon on an information card at rest. Pairs with <see cref="InformationBg"/>.
     /// </summary>
     public partial Color InformationCloseIconColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an information notification while the close button is hovered or pressed.
+    /// Foreground of the close icon on an information card while the close button is under the pointer or pressed.
     /// </summary>
     public partial Color InformationCloseIconHoverColor { get; set; }
 
     /// <summary>
-    /// Background of an success notification.
+    /// Fill of the success card frame behind the status icon, title, description and close button. Pairs with
+    /// <see cref="SuccessIconColor"/>, <see cref="SuccessTitleColor"/>, <see cref="SuccessDescriptionColor"/> and
+    /// <see cref="SuccessCloseIconColor"/>.
     /// </summary>
     public partial Color SuccessBg { get; set; }
 
     /// <summary>
-    /// Icon colour of an success notification.
+    /// Foreground of the success status icon next to the text. Pairs with <see cref="SuccessBg"/>.
     /// </summary>
     public partial Color SuccessIconColor { get; set; }
 
-    /// <summary>
-    /// Border colour of an success notification.
-    /// </summary>
+    /// <summary>Colour of the success card frame outline. Pairs with <see cref="SuccessBg"/>.</summary>
     public partial Color SuccessBorderColor { get; set; }
 
     /// <summary>
-    /// Title colour of an success notification.
+    /// Foreground of the success notification title. Pairs with <see cref="SuccessBg"/>.
     /// </summary>
     public partial Color SuccessTitleColor { get; set; }
 
     /// <summary>
-    /// Description colour of an success notification.
+    /// Foreground of the success notification description. Pairs with <see cref="SuccessBg"/>.
     /// </summary>
     public partial Color SuccessDescriptionColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an success notification.
+    /// Foreground of the close icon on a success card at rest. Pairs with <see cref="SuccessBg"/>.
     /// </summary>
     public partial Color SuccessCloseIconColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an success notification while the close button is hovered or pressed.
+    /// Foreground of the close icon on a success card while the close button is under the pointer or pressed.
     /// </summary>
     public partial Color SuccessCloseIconHoverColor { get; set; }
 
     /// <summary>
-    /// Background of an warning notification.
+    /// Fill of the warning card frame behind the status icon, title, description and close button. Pairs with
+    /// <see cref="WarningIconColor"/>, <see cref="WarningTitleColor"/>, <see cref="WarningDescriptionColor"/> and
+    /// <see cref="WarningCloseIconColor"/>.
     /// </summary>
     public partial Color WarningBg { get; set; }
 
     /// <summary>
-    /// Icon colour of an warning notification.
+    /// Foreground of the warning status icon next to the text. Pairs with <see cref="WarningBg"/>.
     /// </summary>
     public partial Color WarningIconColor { get; set; }
 
-    /// <summary>
-    /// Border colour of an warning notification.
-    /// </summary>
+    /// <summary>Colour of the warning card frame outline. Pairs with <see cref="WarningBg"/>.</summary>
     public partial Color WarningBorderColor { get; set; }
 
     /// <summary>
-    /// Title colour of an warning notification.
+    /// Foreground of the warning notification title. Pairs with <see cref="WarningBg"/>.
     /// </summary>
     public partial Color WarningTitleColor { get; set; }
 
     /// <summary>
-    /// Description colour of an warning notification.
+    /// Foreground of the warning notification description. Pairs with <see cref="WarningBg"/>.
     /// </summary>
     public partial Color WarningDescriptionColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an warning notification.
+    /// Foreground of the close icon on a warning card at rest. Pairs with <see cref="WarningBg"/>.
     /// </summary>
     public partial Color WarningCloseIconColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an warning notification while the close button is hovered or pressed.
+    /// Foreground of the close icon on a warning card while the close button is under the pointer or pressed.
     /// </summary>
     public partial Color WarningCloseIconHoverColor { get; set; }
 
     /// <summary>
-    /// Background of an error notification.
+    /// Fill of the error card frame behind the status icon, title, description and close button. Pairs with
+    /// <see cref="ErrorIconColor"/>, <see cref="ErrorTitleColor"/>, <see cref="ErrorDescriptionColor"/> and
+    /// <see cref="ErrorCloseIconColor"/>.
     /// </summary>
     public partial Color ErrorBg { get; set; }
 
     /// <summary>
-    /// Icon colour of an error notification.
+    /// Foreground of the error status icon next to the text. Pairs with <see cref="ErrorBg"/>.
     /// </summary>
     public partial Color ErrorIconColor { get; set; }
 
-    /// <summary>
-    /// Border colour of an error notification.
-    /// </summary>
+    /// <summary>Colour of the error card frame outline. Pairs with <see cref="ErrorBg"/>.</summary>
     public partial Color ErrorBorderColor { get; set; }
 
-    /// <summary>
-    /// Title colour of an error notification.
-    /// </summary>
+    /// <summary>Foreground of the error notification title. Pairs with <see cref="ErrorBg"/>.</summary>
     public partial Color ErrorTitleColor { get; set; }
 
     /// <summary>
-    /// Description colour of an error notification.
+    /// Foreground of the error notification description. Pairs with <see cref="ErrorBg"/>.
     /// </summary>
     public partial Color ErrorDescriptionColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an error notification.
+    /// Foreground of the close icon on an error card at rest. Pairs with <see cref="ErrorBg"/>.
     /// </summary>
     public partial Color ErrorCloseIconColor { get; set; }
 
     /// <summary>
-    /// Close icon colour of an error notification while the close button is hovered or pressed.
+    /// Foreground of the close icon on an error card while the close button is under the pointer or pressed.
     /// </summary>
     public partial Color ErrorCloseIconHoverColor { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        RestingShadows     = EffectiveGlobalToken.BoxShadows;
-        InformationShadows = EffectiveGlobalToken.BoxShadows;
-        SuccessShadows     = EffectiveGlobalToken.BoxShadows;
-        WarningShadows     = EffectiveGlobalToken.BoxShadows;
-        ErrorShadows       = EffectiveGlobalToken.BoxShadows;
-
-        // 间距直接取全局 Token 的同名值，不再做控件级缩放：
-        //   卡片内边距         = paddingMD(纵向) / paddingLG(横向)
-        //   图标与内容间距     = marginSM
-        //   标题与描述间距     = marginXS
-        //   操作组上边距       = marginSM
-        //   标题右侧留白       = paddingLG
-        //   关闭按钮偏移       = paddingMD(纵向) / paddingLG(横向)
-        // 之前这里对四个值统一乘了 2/3，让卡片比对照实现矮一截，属于本控件自创的缩放，已移除。
-        var paddingMD = EffectiveGlobalToken.UniformlyPaddingMD;
-        var paddingLG = EffectiveGlobalToken.UniformlyPaddingLG;
-        var marginXS  = EffectiveGlobalToken.UniformlyMarginXS;
-        var marginSM  = EffectiveGlobalToken.UniformlyMarginSM;
-
-        // 卡片内边距上下对称：纵向 paddingMD、横向 paddingLG。
-        NotificationPadding = new Thickness(paddingLG, paddingMD, paddingLG, paddingMD);
-        // The severity backgrounds below default to this card background, so an explicit value carries over.
-        if (!IsExplicit(NotificationCardTokenKind.NotificationBg))
-        {
-            NotificationBg = EffectiveGlobalToken.ColorBgElevated;
-        }
-        // The severity surfaces default to the plain card: only the icon carries the severity.
-        NotificationBorderThickness = default;
-        NotificationBorderColor     = Colors.Transparent;
-        InformationBg               = NotificationBg;
-        InformationIconColor        = EffectiveGlobalToken.ColorPrimary;
-        InformationBorderColor      = Colors.Transparent;
-        InformationTitleColor       = EffectiveGlobalToken.ColorTextHeading;
-        InformationDescriptionColor = EffectiveGlobalToken.ColorText;
-        InformationCloseIconColor   = EffectiveGlobalToken.ColorIcon;
-        InformationCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
-        SuccessBg               = NotificationBg;
-        SuccessIconColor        = EffectiveGlobalToken.ColorSuccess;
-        SuccessBorderColor      = Colors.Transparent;
-        SuccessTitleColor       = EffectiveGlobalToken.ColorTextHeading;
-        SuccessDescriptionColor = EffectiveGlobalToken.ColorText;
-        SuccessCloseIconColor   = EffectiveGlobalToken.ColorIcon;
-        SuccessCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
-        WarningBg               = NotificationBg;
-        WarningIconColor        = EffectiveGlobalToken.ColorWarning;
-        WarningBorderColor      = Colors.Transparent;
-        WarningTitleColor       = EffectiveGlobalToken.ColorTextHeading;
-        WarningDescriptionColor = EffectiveGlobalToken.ColorText;
-        WarningCloseIconColor   = EffectiveGlobalToken.ColorIcon;
-        WarningCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
-        ErrorBg               = NotificationBg;
-        ErrorIconColor        = EffectiveGlobalToken.ColorError;
-        ErrorBorderColor      = Colors.Transparent;
-        ErrorTitleColor       = EffectiveGlobalToken.ColorTextHeading;
-        ErrorDescriptionColor = EffectiveGlobalToken.ColorText;
-        ErrorCloseIconColor   = EffectiveGlobalToken.ColorIcon;
-        ErrorCloseIconHoverColor = EffectiveGlobalToken.ColorIconHover;
-        NotificationIconSize = EffectiveGlobalToken.FontSizeLG * EffectiveGlobalToken.RelativeLineHeightLG;
-        NotificationCloseButtonSize = EffectiveGlobalToken.ControlHeightLG * 0.55;
-
-        // 标题与描述之间的纵向间距。
-        NotificationSectionSpacing = marginXS;
-        // 操作组与上方内容之间的间距。
-        NotificationActionsMargin = new Thickness(0, marginSM, 0, 0);
-        // 关闭按钮是贴卡片右上角的覆盖层：纵向离顶 paddingMD、横向离右 paddingLG。
-        NotificationCloseButtonMargin = new Thickness(0, paddingMD, paddingLG, 0);
-        // 标题右侧留白，避免文本压到关闭按钮。
-        NotificationTitlePadding = new Thickness(0, 0, paddingLG, 0);
-        // 进度条贴卡片底边，左右各内缩一个圆角半径，避免盖住圆角。
-        NotificationProgressHeight = 2;
-        NotificationProgressTrackBg = EffectiveGlobalToken.ColorFillQuaternary;
-        NotificationProgressMargin = new Thickness(EffectiveGlobalToken.BorderRadiusLG.TopLeft, 0, EffectiveGlobalToken.BorderRadiusLG.TopRight, 0);
-
-        NotificationProgressBg = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
-            EndPoint   = new RelativePoint(1, 0.5, RelativeUnit.Relative),
-            GradientStops = new GradientStops
-            {
-                new() { Color = EffectiveGlobalToken.ColorPrimaryBorderHover, Offset = 0 },
-                new() { Color = EffectiveGlobalToken.ColorPrimary, Offset      = 1 }
-            }
-        }.ToImmutable();
-        NotificationWidth = 384;
-        // 图标与右侧内容之间的横向间距。
-        NotificationIconMargin         = new Thickness(0, 0, marginSM, 0);
-        NotificationTopMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG, 0);
-        NotificationBottomMargin =
-            new Thickness(EffectiveGlobalToken.UniformlyMarginLG, 0, EffectiveGlobalToken.UniformlyMarginLG, EffectiveGlobalToken.UniformlyMarginLG);
-    }
     
 }

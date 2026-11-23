@@ -149,15 +149,6 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    public static readonly DiagnosticDescriptor ControlTokenInvalidCalculationChain = new(
-        AtomUIDiagnosticIds.ControlTokenInvalidCalculationChain,
-        "Control design token calculation chain is invalid",
-        "CalculateTokenValues on Control design token type '{0}' has an invalid calculation chain: {1}",
-        AtomUIDiagnosticCategories.Generator,
-        DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        customTags: [WellKnownDiagnosticTags.Telemetry]);
-
     public static readonly DiagnosticDescriptor AbstractControlTokenInvalidName = new(
         AtomUIDiagnosticIds.AbstractControlTokenInvalidName,
         "Abstract Control design token name does not follow convention",
@@ -292,26 +283,44 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    public static readonly DiagnosticDescriptor OwnTokenSentinel = new(
-        AtomUIDiagnosticIds.OwnTokenSentinel,
-        "Token explicit override must be detected with IsExplicit",
-        "Token '{0}' is checked with IsNaN in {2}; use IsExplicit({1}.{0}) instead",
+    // Spec 14: a derivation writes every token of its control; it does not read a token of its own before writing it.
+    public static readonly DiagnosticDescriptor DerivationLeavesTokenUnwritten = new(
+        AtomUIDiagnosticIds.DerivationLeavesTokenUnwritten,
+        "A control derivation must write every token of its control",
+        "'{0}' never writes token '{1}' of '{2}'",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        customTags: [WellKnownDiagnosticTags.Telemetry]);
+        isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor OwnTokenDerivationBaseUnguarded = new(
-        AtomUIDiagnosticIds.OwnTokenDerivationBaseUnguarded,
-        "Token read by a derived value must be assigned under an IsExplicit guard",
-        "Token '{0}' is assigned unconditionally in {2} but read afterwards; guard the assignment with if (!IsExplicit({1}.{0})) so user overrides survive",
+    public static readonly DiagnosticDescriptor DerivationReadsUnwrittenToken = new(
+        AtomUIDiagnosticIds.DerivationReadsUnwrittenToken,
+        "A control derivation must not read a token of its own before writing it",
+        "'{0}' reads token '{1}' before writing it",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        customTags: [WellKnownDiagnosticTags.Telemetry]);
+        isEnabledByDefault: true);
 
-    // Enabled by default: the generator implements every token property (getter and write-recording setter), so a
-    // property that is not partial, or a token class that is not partial, cannot be supported.
+    // Spec 14 (coverage): a value package derives every token class of the control packages it covers.
+    public static readonly DiagnosticDescriptor ValuePackageMissesDerivation = new(
+        AtomUIDiagnosticIds.ValuePackageMissesDerivation,
+        "A value package must derive every token class of the control packages it covers",
+        "This value package derives tokens of '{0}' for '{1}' but has no derivation for '{2}'",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Spec 3.3: language packages do not reference control packages; control packages do not reference the language
+    // side; value packages hold no controls.
+    public static readonly DiagnosticDescriptor PackageDependencyDirection = new(
+        AtomUIDiagnosticIds.PackageDependencyDirection,
+        "Package dependency direction",
+        "{0}",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Enabled by default: the generator implements every token property (a read-reporting getter and a freeze-checking
+    // setter), so a property that is not partial, or a token class that is not partial, cannot be supported.
     public static readonly DiagnosticDescriptor TokenPropertyNotPartial = new(
         AtomUIDiagnosticIds.TokenPropertyNotPartial,
         "Token property must be a partial property of a partial class",

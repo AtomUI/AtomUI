@@ -1,5 +1,5 @@
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Compilation;
 using Avalonia.Media;
 using Avalonia.Styling;

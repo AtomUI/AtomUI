@@ -1,6 +1,4 @@
 using System.Windows.Input;
-using AtomUI.Animations;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;

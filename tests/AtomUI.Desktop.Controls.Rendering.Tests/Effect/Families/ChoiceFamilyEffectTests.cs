@@ -2,7 +2,6 @@ using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Schema;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Xunit;
 using AtomCheckBox = AtomUI.Desktop.Controls.CheckBox;
 

@@ -1,13 +1,10 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 using Avalonia.Animation;
-using Avalonia.Controls.Presenters;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 

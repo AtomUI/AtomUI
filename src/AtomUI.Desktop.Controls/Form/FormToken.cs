@@ -8,11 +8,6 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class FormToken : AbstractControlDesignToken
 {
     
-    public FormToken()
-
-    {
-    }
-    
     /// <summary>
     /// 必填项标记颜色
     /// Required mark color
@@ -60,18 +55,5 @@ public sealed partial class FormToken : AbstractControlDesignToken
     /// Vertical layout label margin
     /// </summary>
     public partial Thickness VerticalLabelMargin { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LabelRequiredMarkColor = EffectiveGlobalToken.ColorError;
-        LabelColor             = EffectiveGlobalToken.ColorTextHeading;
-        LabelFontSize          = EffectiveGlobalToken.FontSize;
-        LabelColonMargin       = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS / 2, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        FormItemSpacing        = EffectiveGlobalToken.SpacingLG;
-        VerticalLabelPadding   = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyPaddingXS);
-        InlineItemSpacing      = EffectiveGlobalToken.Spacing;
-        VerticalLabelMargin    = default;
-    }
     
 }

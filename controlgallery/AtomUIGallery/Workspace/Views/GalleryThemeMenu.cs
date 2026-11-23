@@ -135,7 +135,7 @@ internal sealed class GalleryThemeMenu : IDisposable
     private void RebuildDesignLanguages(IReadOnlyList<ThemeInfo> themes)
     {
         _designLanguageItem.Items.Clear();
-        var languages = ThemeSelectionResolver.DesignLanguages(themes).ToList();
+        var languages = _viewModel.DesignLanguages.ToList();
 
         // Languages sharing the family prefix (Shadcn.*, PrimeNG.*) fold into one submenu; single-variant
         // languages stay top-level. Grouping is data-driven off the prefix, so a future style package
@@ -151,7 +151,7 @@ internal sealed class GalleryThemeMenu : IDisposable
             {
                 single.Add(language);
             }
-            else if (existing == default)
+            else if (existing.Languages is null)
             {
                 families.Add((family, [language]));
             }
@@ -274,8 +274,8 @@ internal sealed class GalleryThemeMenu : IDisposable
 
         AtomUI.Desktop.Controls.ToolTip.SetTip(_neutralColorItem, null);
         var baseTheme = FindBaseTheme(themes, language);
-        var selected  = _viewModel.NeutralColor ?? baseTheme?.NeutralAccentColor;
-        foreach (var swatch in GalleryNeutralSwatches.For(language, baseTheme?.NeutralAccentColor))
+        var selected  = _viewModel.NeutralColor;
+        foreach (var swatch in GalleryNeutralSwatches.For(language, null))
         {
             var item = new MenuItem
             {
@@ -308,7 +308,8 @@ internal sealed class GalleryThemeMenu : IDisposable
         _otherThemesItem.Items.Clear();
         foreach (var theme in themes)
         {
-            if (theme.DesignLanguage is not null)
+            // The language defaults are offered by the design language items; the named themes are listed here.
+            if (theme.IsLanguageDefault)
             {
                 continue;
             }
@@ -329,25 +330,15 @@ internal sealed class GalleryThemeMenu : IDisposable
         _otherThemesItem.IsVisible = _otherThemesItem.Items.Count > 0;
     }
 
-    // The base definition of a language is its light, normal variant, matching ThemeSelectionResolver.
-    private static ThemeInfo? FindBaseTheme(IReadOnlyList<ThemeInfo> themes, string language)
+    // A design language key is the language identity, optionally followed by ".Style"; its base theme is the
+    // language's implicit default entry.
+    private static ThemeInfo? FindBaseTheme(IReadOnlyList<ThemeInfo> themes, string key)
     {
-        ThemeInfo? first = null;
-        foreach (var theme in themes)
-        {
-            if (!string.Equals(theme.DesignLanguage, language, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            first ??= theme;
-            if (theme.Appearance == ThemeAppearance.Light && theme.Density == ThemeDensity.Normal)
-            {
-                return theme;
-            }
-        }
-
-        return first;
+        var separator = key.IndexOf('.');
+        var language  = separator < 0 ? key : key[..separator];
+        var defaultId = ThemeInfo.LanguageDefaultId(language);
+        return themes.FirstOrDefault(theme => theme.Id == defaultId) ??
+               themes.FirstOrDefault(theme => string.Equals(theme.Language, language, StringComparison.Ordinal));
     }
 
     private static void BindLanguageName(Avalonia.Controls.TextBlock text, string language, ThemeInfo? baseTheme)

@@ -712,7 +712,7 @@ public partial class SplitButton : ContentControl,
     {
         SetValue(UseInsetSeparatorProperty, snapshot is not null &&
             snapshot.Registry.TryGetControl(SplitButtonTokens.Identity, out var descriptor) &&
-            snapshot.Controls[descriptor.Slot].AppearanceSettings is true);
+            s_themeTokenResolver.GetOwn<bool>(snapshot, descriptor.Slot, SplitButtonTokenKind.InsetSeparator));
     }
 
     private void ConfigureButtonCornerRadius(double height)

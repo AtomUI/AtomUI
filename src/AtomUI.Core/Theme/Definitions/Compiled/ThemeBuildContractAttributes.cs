@@ -38,18 +38,18 @@ public sealed class ThemeBuildTokenAttribute(
 }
 
 /// <summary>
-/// Publishes one theme algorithm declared by the assembly, so that compiled theme packages referencing it
-/// can verify algorithm identities at build time.
+/// Publishes one design language declared by the assembly and its language token class, so that compiled theme
+/// packages naming the language can verify it and bind its language tokens at build time.
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class ThemeBuildAlgorithmAttribute(int version, string catalog, string id, int revision, int appearanceEffect) : Attribute
+public sealed class ThemeBuildLanguageAttribute(int version, string id, string languageTokenType,
+    string languageTokenAssemblyIdentity) : Attribute
 {
     public int Version { get; } = version;
-    public string Catalog { get; } = catalog;
     public string Id { get; } = id;
-    public int Revision { get; } = revision;
-    public int AppearanceEffect { get; } = appearanceEffect;
+    public string LanguageTokenType { get; } = languageTokenType;
+    public string LanguageTokenAssemblyIdentity { get; } = languageTokenAssemblyIdentity;
 }
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

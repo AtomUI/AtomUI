@@ -51,7 +51,7 @@ public partial class CardTabControl : BaseTabControl
     private static readonly object[] s_cardRadiusKeys =
     [
         ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusSM),
-        ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadius),
+        ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusMD),
         ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusLG)
     ];
 

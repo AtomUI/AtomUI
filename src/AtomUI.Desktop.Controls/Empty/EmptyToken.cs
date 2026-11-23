@@ -1,4 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
@@ -7,33 +7,19 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class EmptyToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 空图片的高度
-    /// </summary>
+    /// <summary>Default height of the empty-state illustration.</summary>
     public partial double EmptyImgHeight { get; set; }
 
+    /// <summary>Height of the empty-state illustration in the small variant.</summary>
     public partial double EmptyImgHeightSM { get; set; }
+    /// <summary>Height of the empty-state illustration in the medium variant.</summary>
     public partial double EmptyImgHeightMD { get; set; }
     
+    /// <summary>Space around the empty-state description.</summary>
     public partial Thickness DescriptionMargin { get; set; }
+    /// <summary>Space around the description in the small empty state.</summary>
     public partial Thickness DescriptionMarginSM { get; set; }
+    /// <summary>Space around the optional footer below the description.</summary>
     public partial Thickness FooterMargin { get; set; }
-
-    public EmptyToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
-        EmptyImgHeight      = controlHeightLG * 2.5;
-        EmptyImgHeightMD    = controlHeightLG * 1.85;
-        EmptyImgHeightSM    = controlHeightLG * 0.875;
-        DescriptionMargin   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginSM, 0, 0);
-        DescriptionMarginSM = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        FooterMargin        = new Thickness(0, EffectiveGlobalToken.UniformlyMargin, 0, 0);
-    }
     
 }

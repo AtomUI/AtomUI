@@ -222,8 +222,10 @@ public class GalleryShowCaseHeaderTests
     [Fact]
     public void Metadata_Font_Uses_The_Global_Ui_Font_Token()
     {
-        var tokenSource = File.ReadAllText(GetRepoFile("src/AtomUI.Toolkits.GalleryBase/Controls/GalleryShowCaseHeaderToken.cs"));
-        Regex.IsMatch(tokenSource, @"\bMetadataValueFontFamily\s*=\s*EffectiveGlobalToken\.FontFamily\b")
+        // The token class only declares the slot; the value comes from the gallery's generic derivation.
+        var tokenSource = File.ReadAllText(GetRepoFile(
+            "src/AtomUI.Toolkits.GalleryBase/Derivations/Controls/GenericGalleryShowCaseHeaderDerivation.cs"));
+        Regex.IsMatch(tokenSource, @"\bMetadataValueFontFamily\s*=\s*global\.FontFamily\b")
             .ShouldBeTrue();
 
         var theme = XDocument.Load(GetRepoFile(

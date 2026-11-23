@@ -34,7 +34,6 @@ public class OwnerTokenResourceAxamlTests
                      .WithControl(
                          ButtonTokens.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.ColorBorder), "#FF0000")
                              .Build())
                      .Build()

@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using AtomUI.Startup.Data;
+using AtomUI.Theme.Languages;
 
 namespace AtomUI.Registration;
 
-/// <summary>Build-linked immutable startup metadata.</summary>
+/// <summary>Build-linked immutable startup metadata and static value package entries.</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class StartupImage
 {
@@ -15,7 +16,8 @@ public sealed class StartupImage
 
     public StartupImage(uint formatId, ulong stamp, IReadOnlyList<StartupPackageProof> packages,
         IReadOnlyList<string> controlOrder, IEnumerable<KeyValuePair<string, string>>? resourceOwners = null,
-        IEnumerable<string>? verifiedLanguages = null, IEnumerable<KeyValuePair<string, string>>? languageModules = null)
+        IEnumerable<string>? verifiedLanguages = null, IEnumerable<KeyValuePair<string, string>>? languageModules = null,
+        IReadOnlyList<ControlValuePackage>? controlValuePackages = null)
     {
         if (formatId != StartupImageFormat.Id)
         {
@@ -48,12 +50,14 @@ public sealed class StartupImage
         }
         VerifiedLanguages = (verifiedLanguages ?? []).ToHashSet(StringComparer.Ordinal);
         LanguageModules = languageModules?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) ?? new(StringComparer.Ordinal);
+        ControlValuePackages = controlValuePackages?.ToArray() ?? [];
     }
 
     internal ulong Stamp { get; }
     internal IReadOnlyList<string> ControlOrder { get; }
     internal IReadOnlySet<string> VerifiedLanguages { get; }
     internal IReadOnlyDictionary<string, string> LanguageModules { get; }
+    internal IReadOnlyList<ControlValuePackage> ControlValuePackages { get; }
     internal bool TryGetResourceOwner(string key, out string? packageId) => _resourceOwners.TryGetValue(key, out packageId);
     internal bool TryGetStringResourceOwner(string name, [NotNullWhen(true)] out string? packageId) =>
         _stringResourceOwners.TryGetValue(name, out packageId);

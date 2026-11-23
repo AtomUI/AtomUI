@@ -1,70 +1,68 @@
-using System.Collections.ObjectModel;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using Avalonia.Media;
 
 namespace AtomUI.Theme;
 
-public sealed record ThemeInfo(
-    string Id,
-    string Name,
-    ThemeAppearance Appearance,
-    bool IsDefault)
+/// <summary>
+/// A named theme of the catalog (spec 7.8): its language, the axes it fixes, the seeds it locks, its declared primary
+/// colour. Every enabled language also has an implicit entry for its default appearance
+/// (<see cref="IsLanguageDefault"/>), so a language is selectable without any theme file.
+/// </summary>
+public sealed record ThemeInfo(string Id, string Name, string Language)
 {
-    public ThemeInfo(
-        string id,
-        string name,
-        ThemeAppearance appearance,
-        bool isDefault,
-        Color? accentColor)
-        : this(id, name, appearance, isDefault)
+    private static readonly IReadOnlyDictionary<string, string> s_noSeedValues =
+        new SortedDictionary<string, string>(StringComparer.Ordinal);
+    private readonly IReadOnlyList<string> _lockedSeeds = Array.Empty<string>();
+    private IReadOnlyDictionary<string, string> _seedValues = s_noSeedValues;
+
+    /// <summary>The style the theme fixes, or <see langword="null"/> when the style is open.</summary>
+    public DesignStyle? Style { get; init; }
+
+    /// <summary>The appearance the theme fixes, or <see langword="null"/> when it is open.</summary>
+    public ThemeAppearance? Appearance { get; init; }
+
+    /// <summary>The density the theme fixes, or <see langword="null"/> when it is open.</summary>
+    public DesignDensity? Density { get; init; }
+
+    /// <summary>The adjustable seeds the theme locks; the end user's selection does not replace them.</summary>
+    public IReadOnlyList<string> LockedSeeds
     {
-        AccentColor = accentColor;
-    }
-
-    public Color? AccentColor { get; }
-
-    /// <summary>
-    /// Gets the design language identifier the definition belongs to, or <see langword="null"/> when it declares none.
-    /// </summary>
-    public string? DesignLanguage { get; init; }
-
-    /// <summary>
-    /// Gets the density the definition is authored for.
-    /// </summary>
-    public ThemeDensity Density { get; init; }
-
-    /// <summary>
-    /// Gets whether the brand color of the definition can be replaced.
-    /// </summary>
-    public ThemeBrandColorSupport BrandColor { get; init; }
-
-    /// <summary>
-    /// Gets whether the neutral color family of the definition can be replaced.
-    /// </summary>
-    public ThemeNeutralColorSupport NeutralColor { get; init; }
-
-    /// <summary>
-    /// Gets the definition's own <c>ColorNeutral</c> seed, or <see langword="null"/> when it declares none.
-    /// </summary>
-    public Color? NeutralAccentColor { get; init; }
-
-    private readonly IReadOnlyList<ThemeAlgorithm> _algorithms = ReadOnlyCollection<ThemeAlgorithm>.Empty;
-
-    /// <summary>
-    /// Gets the definition's own algorithm chain. The assigned list is copied into a read-only snapshot.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">The assigned list is <see langword="null"/>.</exception>
-    public IReadOnlyList<ThemeAlgorithm> Algorithms
-    {
-        get => _algorithms;
+        get => _lockedSeeds;
         init
         {
             ArgumentNullException.ThrowIfNull(value);
-            _algorithms = value.Count == 0
-                ? ReadOnlyCollection<ThemeAlgorithm>.Empty
-                : Array.AsReadOnly(value.ToArray());
+            _lockedSeeds = value.Count == 0 ? Array.Empty<string>() : value.Order(StringComparer.Ordinal).ToArray();
         }
     }
+
+    /// <summary>
+    /// The theme's own <c>ColorPrimary</c> seed, if it declares one; for the implicit entry of a language, the seed the
+    /// language gives in its default variant.
+    /// </summary>
+    public Color? AccentColor { get; init; }
+
+    /// <summary>
+    /// The values the theme gives its language's adjustable seeds (global and language seeds), by seed name and in the
+    /// canonical token text; for the implicit entry of a language, the seeds the language gives in its default variant.
+    /// A picker uses them to tell the theme's own value from a user's choice.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> SeedValues
+    {
+        get => _seedValues;
+        init
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            _seedValues = value.Count == 0
+                ? s_noSeedValues
+                : new SortedDictionary<string, string>(value.ToDictionary(), StringComparer.Ordinal);
+        }
+    }
+
+    /// <summary>Whether this is the implicit entry of the language's default appearance (no theme file).</summary>
+    public bool IsLanguageDefault { get; init; }
+
+    /// <summary>The identity of the implicit entry of <paramref name="language"/>.</summary>
+    public static string LanguageDefaultId(string language) => "$" + language;
 
     public bool Equals(ThemeInfo? other)
     {
@@ -76,15 +74,14 @@ public sealed record ThemeInfo(
         return other is not null &&
                Id == other.Id &&
                Name == other.Name &&
+               Language == other.Language &&
+               Style == other.Style &&
                Appearance == other.Appearance &&
-               IsDefault == other.IsDefault &&
-               AccentColor == other.AccentColor &&
-               DesignLanguage == other.DesignLanguage &&
                Density == other.Density &&
-               BrandColor == other.BrandColor &&
-               NeutralColor == other.NeutralColor &&
-               NeutralAccentColor == other.NeutralAccentColor &&
-               Algorithms.SequenceEqual(other.Algorithms);
+               AccentColor == other.AccentColor &&
+               SeedValues.SequenceEqual(other.SeedValues) &&
+               IsLanguageDefault == other.IsLanguageDefault &&
+               LockedSeeds.SequenceEqual(other.LockedSeeds);
     }
 
     public override int GetHashCode()
@@ -92,19 +89,31 @@ public sealed record ThemeInfo(
         var hash = new HashCode();
         hash.Add(Id);
         hash.Add(Name);
+        hash.Add(Language);
+        hash.Add(Style);
         hash.Add(Appearance);
-        hash.Add(IsDefault);
-        hash.Add(AccentColor);
-        hash.Add(DesignLanguage);
         hash.Add(Density);
-        hash.Add(BrandColor);
-        hash.Add(NeutralColor);
-        hash.Add(NeutralAccentColor);
-        foreach (var algorithm in Algorithms)
+        hash.Add(AccentColor);
+        foreach (var (name, value) in SeedValues)
         {
-            hash.Add(algorithm);
+            hash.Add(name);
+            hash.Add(value);
+        }
+        hash.Add(IsLanguageDefault);
+        foreach (var seed in LockedSeeds)
+        {
+            hash.Add(seed);
         }
 
         return hash.ToHashCode();
     }
 }
+
+/// <summary>An enabled design language and what it offers: its axes and the seeds an application may adjust.</summary>
+public sealed record DesignLanguageInfo(
+    string Id,
+    IReadOnlyList<DesignStyle> Styles,
+    DesignStyle DefaultStyle,
+    IReadOnlyList<DesignDensity> Densities,
+    IReadOnlyList<DesignIdiom> Idioms,
+    IReadOnlyList<string> AdjustableSeeds);

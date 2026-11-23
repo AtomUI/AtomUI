@@ -1,237 +1,227 @@
-using AtomUI.Theme.Algorithms;
-using Avalonia.Media;
+using AtomUI.Theme.Configuration;
+using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
 
 namespace AtomUI.Theme;
 
 /// <summary>
-/// A user's theme selection: the design language, appearance, density and optional brand and neutral colors.
+/// The end user's selection (spec 7.8): a language, optionally a named theme of it, the appearance (or following the
+/// system), the density and the seeds the user picked. Immutable; every <c>With</c> method returns a new selection.
 /// </summary>
-/// <param name="DesignLanguage">The design language identifier, as listed by <see cref="ThemeSelectionResolver.DesignLanguages"/>.</param>
-/// <param name="Appearance">The requested appearance.</param>
-/// <param name="Density">The requested density.</param>
-/// <param name="BrandColor">The chosen brand color, or <see langword="null"/> to keep the definition's own.</param>
-/// <param name="NeutralColor">The chosen neutral color, or <see langword="null"/> to keep the definition's own.</param>
-public sealed record ThemeSelection(
-    string DesignLanguage,
-    ThemeAppearance Appearance,
-    ThemeDensity Density,
-    Color? BrandColor,
-    Color? NeutralColor = null);
+public sealed record ThemeSelection
+{
+    private ThemeSelection(string language)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(language);
+        Language = language;
+    }
 
-/// <summary>
-/// The outcome of resolving a <see cref="ThemeSelection"/> against a theme catalog.
-/// </summary>
-/// <param name="ThemeId">The id of the selected theme definition.</param>
-/// <param name="Algorithms">
-/// The algorithm chain to request, or <see langword="null"/> to keep the definition's own chain.
-/// </param>
-/// <param name="BrandSeed">
-/// The seed to write into <c>ColorPrimary</c>, or <see langword="null"/> when the language is fixed or no color was chosen.
-/// </param>
-/// <param name="BrandColorIgnored">A brand color was chosen but the design language does not accept one.</param>
-/// <param name="NeutralSeed">
-/// The seed to write into <c>ColorNeutral</c>, or <see langword="null"/> when the language is fixed or no color was chosen.
-/// </param>
-/// <param name="NeutralColorIgnored">A neutral color was chosen but the design language does not accept one.</param>
+    /// <summary>The design language identity.</summary>
+    public string Language { get; init; }
+
+    /// <summary>The style, or <see langword="null"/> for the language's default (or the theme's fixed one).</summary>
+    public DesignStyle? Style { get; init; }
+
+    /// <summary>The named theme, or <see langword="null"/> to use the configured language default.</summary>
+    public string? ThemeId { get; init; }
+
+    internal bool UseImplicitTheme { get; init; }
+
+    /// <summary>The appearance, or <see langword="null"/> for light (or the theme's fixed one, or the system's).</summary>
+    public ThemeAppearance? Appearance { get; init; }
+
+    /// <summary>Whether the appearance follows the platform; the manager re-applies when the platform changes.</summary>
+    public bool FollowSystem { get; init; }
+
+    /// <summary>The density, or <see langword="null"/> for the language's default (or the theme's fixed one).</summary>
+    public DesignDensity? Density { get; init; }
+
+    /// <summary>Global seeds the user picked, by token name and lexical value.</summary>
+    public IReadOnlyDictionary<string, string> Seeds { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>Language seeds the user picked, by language token name and lexical value.</summary>
+    public IReadOnlyDictionary<string, string> LanguageSeeds { get; init; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>Seeds written through <see cref="WithSeed(Action{DesignToken})"/>, captured when the selection is resolved.</summary>
+    internal IReadOnlyList<Action<DesignToken>> SeedWriters { get; init; } = Array.Empty<Action<DesignToken>>();
+
+    /// <summary>Language seeds written through <see cref="WithLanguageSeed{TToken}"/>, captured when resolved.</summary>
+    internal IReadOnlyList<Action<LanguageDesignToken>> LanguageSeedWriters { get; init; } =
+        Array.Empty<Action<LanguageDesignToken>>();
+
+    /// <summary>Selects <typeparamref name="TLanguage"/>, optionally in <paramref name="style"/>.</summary>
+    public static ThemeSelection Of<TLanguage>(DesignStyle? style = null)
+        where TLanguage : DesignLanguage, new() =>
+        new(new TLanguage().Id) { Style = style };
+
+    /// <summary>Selects the language with the identity <paramref name="language"/>, optionally in <paramref name="style"/>.</summary>
+    public static ThemeSelection Of(string language, DesignStyle? style = null) => new(language) { Style = style };
+
+    public ThemeSelection WithStyle(DesignStyle style) => this with { Style = style };
+
+    public ThemeSelection WithTheme(string themeId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
+        return this with { ThemeId = themeId, UseImplicitTheme = false };
+    }
+
+    /// <summary>Uses the language's implicit theme even when the application configured a named default.</summary>
+    public ThemeSelection WithoutTheme() => this with { ThemeId = null, UseImplicitTheme = true };
+
+    public ThemeSelection WithAppearance(ThemeAppearance appearance) => this with { Appearance = appearance, FollowSystem = false };
+
+    public ThemeSelection FollowSystemAppearance() => this with { FollowSystem = true, Appearance = null };
+
+    public ThemeSelection WithDensity(DesignDensity density) => this with { Density = density };
+
+    public ThemeSelection WithSeed(string name, string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(value);
+        return this with { Seeds = new Dictionary<string, string>(Seeds, StringComparer.Ordinal) { [name] = value } };
+    }
+
+    /// <summary>Writes global seeds; only the seeds the action changes are taken.</summary>
+    public ThemeSelection WithSeed(Action<DesignToken> seeds)
+    {
+        ArgumentNullException.ThrowIfNull(seeds);
+        return this with { SeedWriters = [.. SeedWriters, seeds] };
+    }
+
+    public ThemeSelection WithLanguageSeed(string name, string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(value);
+        return this with
+        {
+            LanguageSeeds = new Dictionary<string, string>(LanguageSeeds, StringComparer.Ordinal) { [name] = value }
+        };
+    }
+
+    /// <summary>Writes language seeds of <typeparamref name="TToken"/>; only the seeds the action changes are taken.</summary>
+    public ThemeSelection WithLanguageSeed<TToken>(Action<TToken> seeds)
+        where TToken : LanguageDesignToken
+    {
+        ArgumentNullException.ThrowIfNull(seeds);
+        return this with { LanguageSeedWriters = [.. LanguageSeedWriters, token => seeds((TToken)token)] };
+    }
+}
+
+/// <summary>What resolving a <see cref="ThemeSelection"/> gave: the request to apply and what the theme kept fixed.</summary>
+/// <param name="Request">The theme request: the selected theme (or the language default) and the configuration.</param>
+/// <param name="IgnoredAxes">The axes the selection named that the theme fixes (rule 2).</param>
+/// <param name="IgnoredSeeds">The seeds the selection named that the theme locks (rule 3).</param>
 public sealed record ThemeSelectionResult(
-    string ThemeId,
-    IReadOnlyList<ThemeAlgorithm>? Algorithms,
-    Color? BrandSeed,
-    bool BrandColorIgnored,
-    Color? NeutralSeed = null,
-    bool NeutralColorIgnored = false);
+    ThemeRequest Request,
+    IReadOnlyList<string> IgnoredAxes,
+    IReadOnlyList<string> IgnoredSeeds);
+
+/// <summary>The selection could not be resolved: the language, theme or an axis value is not available.</summary>
+public sealed class ThemeSelectionException : Exception
+{
+    public ThemeSelectionException(string message) : base(message)
+    {
+    }
+}
 
 /// <summary>
-/// Turns a <see cref="ThemeSelection"/> into the theme id, algorithm chain and brand seed to apply.
-/// The resolver is a pure function and reads or writes no state.
+/// Resolves a <see cref="ThemeSelection"/> (spec 7.8). A pure function with three rules and no fallback search: the
+/// language must be enabled, the theme must belong to it and the axes must be declared by it; the theme's fixed axes
+/// win over the selection; the theme's locked seeds are not replaced.
 /// </summary>
 public static class ThemeSelectionResolver
 {
-    /// <summary>
-    /// Resolves a selection against the catalog.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// An exact (appearance, density) variant of the language is used as is, with its own algorithm chain.
-    /// </para>
-    /// <para>
-    /// Otherwise a fallback definition of the language is chosen and its chain, without the built-in dark and compact
-    /// algorithms, gets the built-in compact and dark algorithms the selection asks for appended. The fallback is the
-    /// language's light, normal definition (its base). A language without a base falls back to its nearest declared
-    /// definition: the first one in catalog order with the requested appearance, else the first one with the requested
-    /// density, else the language's first definition. A language therefore never needs a light, normal definition to
-    /// be selectable in every appearance and density.
-    /// </para>
-    /// </remarks>
-    /// <exception cref="ArgumentException">The language is not present in the catalog.</exception>
-    public static ThemeSelectionResult Resolve(IReadOnlyList<ThemeInfo> catalog, ThemeSelection selection)
+    /// <exception cref="ThemeSelectionException">Rule 1 fails.</exception>
+    public static ThemeSelectionResult Resolve(
+        IReadOnlyList<DesignLanguageInfo> languages,
+        IReadOnlyList<ThemeInfo> themes,
+        ThemeSelection selection,
+        ThemeAppearance systemAppearance = ThemeAppearance.Light)
     {
-        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(languages);
+        ArgumentNullException.ThrowIfNull(themes);
         ArgumentNullException.ThrowIfNull(selection);
 
-        ThemeInfo? first = null;
-        ThemeInfo? exact = null;
-        ThemeInfo? baseInfo = null;
-        ThemeInfo? sameAppearance = null;
-        ThemeInfo? sameDensity = null;
-        foreach (var info in catalog)
+        var language = languages.FirstOrDefault(info => string.Equals(info.Id, selection.Language, StringComparison.Ordinal)) ??
+                       throw new ThemeSelectionException($"Design language '{selection.Language}' is not enabled.");
+        var themeId = selection.ThemeId ?? ThemeInfo.LanguageDefaultId(language.Id);
+        var theme = themes.FirstOrDefault(info => string.Equals(info.Id, themeId, StringComparison.Ordinal)) ??
+                    throw new ThemeSelectionException($"Theme '{themeId}' is not in the catalog.");
+        if (!string.Equals(theme.Language, language.Id, StringComparison.Ordinal))
         {
-            if (!string.Equals(info.DesignLanguage, selection.DesignLanguage, StringComparison.Ordinal))
+            throw new ThemeSelectionException(
+                $"Theme '{themeId}' belongs to '{theme.Language}', not to the selected language '{language.Id}'.");
+        }
+        if (selection.Style is { } style && !language.Styles.Contains(style))
+        {
+            throw new ThemeSelectionException($"Design language '{language.Id}' does not declare the style '{style}'.");
+        }
+        if (selection.Density is { } density && !language.Densities.Contains(density))
+        {
+            throw new ThemeSelectionException($"Design language '{language.Id}' does not declare the density '{density}'.");
+        }
+
+        var ignoredAxes = new List<string>();
+        var builder = new ThemeConfigBuilder().WithLanguage(language.Id);
+        if (selection.Style is { } selectedStyle)
+        {
+            if (theme.Style is { } fixedStyle && fixedStyle != selectedStyle)
             {
+                ignoredAxes.Add("Style");
+            }
+            else if (theme.Style is null)
+            {
+                builder.WithStyle(selectedStyle);
+            }
+        }
+
+        var appearance = selection.FollowSystem ? systemAppearance : selection.Appearance;
+        if (appearance is { } selectedAppearance)
+        {
+            if (theme.Appearance is { } fixedAppearance && fixedAppearance != selectedAppearance)
+            {
+                ignoredAxes.Add("Appearance");
+            }
+            else if (theme.Appearance is null)
+            {
+                builder.WithAppearance(selectedAppearance);
+            }
+        }
+
+        if (selection.Density is { } selectedDensity)
+        {
+            if (theme.Density is { } fixedDensity && fixedDensity != selectedDensity)
+            {
+                ignoredAxes.Add("Density");
+            }
+            else if (theme.Density is null)
+            {
+                builder.WithDensity(selectedDensity);
+            }
+        }
+
+        var ignoredSeeds = new List<string>();
+        foreach (var (name, value) in selection.Seeds.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        {
+            if (theme.LockedSeeds.Contains(name))
+            {
+                ignoredSeeds.Add(name);
                 continue;
             }
-
-            first ??= info;
-            if (info.Appearance == selection.Appearance && info.Density == selection.Density)
-            {
-                exact ??= info;
-            }
-
-            if (info.Appearance == ThemeAppearance.Light && info.Density == ThemeDensity.Normal)
-            {
-                baseInfo ??= info;
-            }
-
-            if (info.Appearance == selection.Appearance)
-            {
-                sameAppearance ??= info;
-            }
-
-            if (info.Density == selection.Density)
-            {
-                sameDensity ??= info;
-            }
+            builder.WithToken(name, value);
         }
-
-        if (first is null)
+        foreach (var (name, value) in selection.LanguageSeeds.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
         {
-            throw new ArgumentException(
-                $"Design language '{selection.DesignLanguage}' is not present in the theme catalog.",
-                nameof(selection));
+            if (theme.LockedSeeds.Contains(name))
+            {
+                ignoredSeeds.Add(name);
+                continue;
+            }
+            builder.WithLanguageToken(name, value);
         }
 
-        string themeId;
-        IReadOnlyList<ThemeAlgorithm>? algorithms;
-        if (exact is not null)
-        {
-            themeId    = exact.Id;
-            algorithms = null;
-        }
-        else
-        {
-            var fallback = baseInfo ?? sameAppearance ?? sameDensity ?? first;
-            themeId = fallback.Id;
-            var chain = new List<ThemeAlgorithm>(fallback.Algorithms.Count + 2);
-            foreach (var algorithm in fallback.Algorithms)
-            {
-                if (algorithm != ThemeAlgorithm.Dark && algorithm != ThemeAlgorithm.Compact)
-                {
-                    chain.Add(algorithm);
-                }
-            }
-
-            if (selection.Density == ThemeDensity.Compact)
-            {
-                chain.Add(ThemeAlgorithm.Compact);
-            }
-
-            if (selection.Appearance == ThemeAppearance.Dark)
-            {
-                chain.Add(ThemeAlgorithm.Dark);
-            }
-
-            algorithms = chain;
-        }
-
-        Color? seed = null;
-        var ignored = false;
-        if (selection.BrandColor is not null)
-        {
-            if (first.BrandColor == ThemeBrandColorSupport.Seed)
-            {
-                seed = selection.BrandColor;
-            }
-            else
-            {
-                ignored = true;
-            }
-        }
-
-        Color? neutralSeed = null;
-        var neutralIgnored = false;
-        if (selection.NeutralColor is not null)
-        {
-            if (first.NeutralColor == ThemeNeutralColorSupport.Seed)
-            {
-                neutralSeed = selection.NeutralColor;
-            }
-            else
-            {
-                neutralIgnored = true;
-            }
-        }
-
-        return new ThemeSelectionResult(themeId, algorithms, seed, ignored, neutralSeed, neutralIgnored);
-    }
-
-    /// <summary>
-    /// Lists the design languages of the catalog in catalog order, without duplicates. Themes that declare none are skipped.
-    /// </summary>
-    public static IReadOnlyList<string> DesignLanguages(IReadOnlyList<ThemeInfo> catalog)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-
-        var result = new List<string>();
-        foreach (var info in catalog)
-        {
-            if (info.DesignLanguage is { } language && !result.Contains(language))
-            {
-                result.Add(language);
-            }
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Gets whether the design language accepts a replaceable brand color.
-    /// </summary>
-    /// <exception cref="ArgumentException">The language is not present in the catalog.</exception>
-    public static ThemeBrandColorSupport BrandColorSupport(IReadOnlyList<ThemeInfo> catalog, string designLanguage)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(designLanguage);
-
-        foreach (var info in catalog)
-        {
-            if (string.Equals(info.DesignLanguage, designLanguage, StringComparison.Ordinal))
-            {
-                return info.BrandColor;
-            }
-        }
-
-        throw new ArgumentException(
-            $"Design language '{designLanguage}' is not present in the theme catalog.", nameof(designLanguage));
-    }
-
-    /// <summary>
-    /// Gets whether the design language accepts a replaceable neutral color family.
-    /// </summary>
-    /// <exception cref="ArgumentException">The language is not present in the catalog.</exception>
-    public static ThemeNeutralColorSupport NeutralColorSupport(IReadOnlyList<ThemeInfo> catalog, string designLanguage)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(designLanguage);
-
-        foreach (var info in catalog)
-        {
-            if (string.Equals(info.DesignLanguage, designLanguage, StringComparison.Ordinal))
-            {
-                return info.NeutralColor;
-            }
-        }
-
-        throw new ArgumentException(
-            $"Design language '{designLanguage}' is not present in the theme catalog.", nameof(designLanguage));
+        return new ThemeSelectionResult(new ThemeRequest(themeId, builder.Build(), ThemeTransitionReason.UserRequest),
+            ignoredAxes, ignoredSeeds);
     }
 }

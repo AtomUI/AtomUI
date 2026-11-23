@@ -67,7 +67,9 @@ public class AssetsLoaderTests
     [Fact]
     public void OpenStream_Keeps_Avalonia_Asset_Uri_Support()
     {
-        using var stream = AssetsLoader.OpenStream("avares://AtomUI.Core/Assets/Themes/DaybreakBlue.theme.xml");
+        // The built-in theme XML is compiled into its language package now, so a test-owned resource stands in.
+        using var stream = AssetsLoader.OpenStream(
+            "avares://AtomUI.Desktop.Controls.Tests/ImagePreviewer/Assets/asset-loader-sample.xml");
         using var reader = new StreamReader(stream);
 
         reader.ReadLine().ShouldNotBeNull().ShouldContain("xml");

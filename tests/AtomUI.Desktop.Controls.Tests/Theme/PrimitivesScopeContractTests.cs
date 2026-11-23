@@ -13,7 +13,6 @@ using Avalonia.Controls.Embedding;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomWindow = AtomUI.Desktop.Controls.Window;

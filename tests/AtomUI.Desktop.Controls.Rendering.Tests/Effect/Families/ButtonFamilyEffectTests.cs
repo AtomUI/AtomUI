@@ -6,7 +6,6 @@ using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
@@ -171,8 +170,9 @@ public partial class ButtonFamilyEffectTests
 
     private static async Task ApplyShadcnRecipeTheme()
     {
+        // The v1 ShadcnLuma profile is the Shadcn language's Luma style.
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        var result = await manager.ApplyThemeAsync(new ThemeRequest("ShadcnLuma", null, ThemeTransitionReason.UserRequest),
+        var result = await manager.ApplyAsync(ThemeSelection.Of("Shadcn", new AtomUI.Theme.Languages.DesignStyle("Luma")),
             TestContext.Current.CancellationToken);
         result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);
     }
@@ -184,7 +184,29 @@ public partial class ButtonFamilyEffectTests
             identity,
             token,
             setup.Arrange,
-            options: setup.Options);
+            options: WithSwitch(setup.Options, identity, token));
+    }
+
+    // A Token governed by a behaviour switch shows only while the switch is on; the Ant Design default leaves it off,
+    // so the switch is a companion override of both captures.
+    private static EffectOptions? WithSwitch(EffectOptions? options, ControlTokenIdentity identity, string token)
+    {
+        var companion = token switch
+        {
+            "DisabledOpacity"                                        => "DisabledByOpacity",
+            "OutlineDescriptionLineHeight" or "DescriptionWeight"    => "HasOutline",
+            _                                                        => null
+        };
+        if (companion is null)
+        {
+            return options;
+        }
+
+        options ??= new EffectOptions();
+        return options with
+        {
+            Companions = [.. options.Companions ?? [], (identity, companion, "true")]
+        };
     }
 
     private static Action<Control> Pseudo(params string[] pseudoClasses) => control =>
@@ -325,6 +347,9 @@ public partial class ButtonFamilyEffectTests
                 }));
             case "OpacityLoading":
                 return new(With(static b => b.IsLoading = true));
+            case "DisabledOpacity":
+                // Opacity is clamped at 1, so the effect shows only when the Token decreases.
+                return new(With(static b => b.IsEnabled = false), Options: new EffectOptions { Perturb = static _ => 0.5 });
             case "FocusVisualBorderThickness" or "ColorFocusBorder":
                 return new(With(static _ => { }), Pseudo(":focus-visible"));
 
@@ -371,7 +396,8 @@ public partial class ButtonFamilyEffectTests
                     b.ButtonType = ButtonType.Primary;
                     b.IsDanger   = true;
                 }), Options: s_shadowMargin);
-            case "ColorError":
+            // DangerAccentColor: the colour the danger variants are built from (default ColorError).
+            case "ColorError" or "DangerAccentColor":
                 return new(With(static b => b.IsDanger = true));
             case "ColorErrorHover":
                 return new(With(static b =>
@@ -415,7 +441,8 @@ public partial class ButtonFamilyEffectTests
                 return new(With(static b => b.ButtonType = ButtonType.Text), Pseudo(":pressed"));
 
             // Link
-            case "ColorLink":
+            // LinkColor: the link button's resting colour (default ColorLink).
+            case "ColorLink" or "LinkColor":
                 return new(With(static b => b.ButtonType = ButtonType.Link));
             case "ColorLinkHover" or "LinkHoverBg":
                 return new(With(static b => b.ButtonType = ButtonType.Link), Pseudo(":pointerover"));

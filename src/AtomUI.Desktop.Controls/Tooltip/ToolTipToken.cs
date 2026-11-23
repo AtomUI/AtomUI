@@ -1,4 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -7,35 +7,32 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class ToolTipToken : AbstractControlDesignToken
 {
-    
-    public ToolTipToken()
 
-    {
-    }
-
-    /// <summary>
-    /// tooltip 的最大宽度，超过了就换行
-    /// </summary>
+    /// <summary>Maximum width of the tooltip, which constrains wrapping of its text.</summary>
     public partial double ToolTipMaxWidth { get; set; }
 
     /// <summary>
-    /// ToolTip 默认的前景色
+    /// 提示文本的字号
+    /// Font size of the tooltip text.
     /// </summary>
+    public partial double ToolTipFontSize { get; set; }
+
+    /// <summary>
+    /// 提示框的最小高度
+    /// Minimum height of the tooltip box.
+    /// </summary>
+    public partial double ToolTipMinHeight { get; set; }
+
+    /// <summary>Tooltip content foreground on <see cref="ToolTipBackground"/>.</summary>
     public partial Color ToolTipColor { get; set; }
 
-    /// <summary>
-    /// ToolTip 默认的背景色
-    /// </summary>
+    /// <summary>Fill behind the tooltip content. Pair with <see cref="ToolTipColor"/>.</summary>
     public partial Color ToolTipBackground { get; set; }
 
-    /// <summary>
-    /// ToolTip 默认的圆角
-    /// </summary>
+    /// <summary>Corner radius of the tooltip surface.</summary>
     public partial CornerRadius ToolTipCornerRadius { get; set; }
 
-    /// <summary>
-    /// ToolTip 默认的内间距
-    /// </summary>
+    /// <summary>Space inside the tooltip frame around its content.</summary>
     public partial Thickness ContentPadding { get; set; }
     
     /// <summary>
@@ -77,23 +74,5 @@ public sealed partial class ToolTipToken : AbstractControlDesignToken
     /// arrow (PrimeNG's tooltip arrow is a border triangle without an outline).
     /// </summary>
     public partial double ArrowStrokeThickness { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        ToolTipMaxWidth   = 250;
-        ToolTipColor      = EffectiveGlobalToken.ColorTextLightSolid;
-        ToolTipBackground = EffectiveGlobalToken.ColorBgSpotlight;
-        ToolTipCornerRadius = new CornerRadius(4);
-        ContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
-        MotionDuration = EffectiveGlobalToken.MotionDurationFast;
-        ToolTipShadows = EffectiveGlobalToken.BoxShadowsSecondary;
-        MarginToAnchor       = 4;
-        ArrowSize            = EffectiveGlobalToken.SizePopupArrow;
-        ArrowTipRadius       = EffectiveGlobalToken.BorderRadiusXS.TopLeft;
-        ArrowBaseRadius      = EffectiveGlobalToken.BorderRadiusOuter.TopLeft;
-        ArrowStrokeThickness = 1;
-    }
     
 }

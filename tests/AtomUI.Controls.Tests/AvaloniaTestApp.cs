@@ -1,3 +1,5 @@
+using AtomUI.Controls.Themes.AntDesign;
+using AtomUI.DesignLanguages.AntDesign;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -36,7 +38,11 @@ public static class TestAppBuilder
     {
         return AppBuilder.Configure<TestApplication>()
                          .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                         .UseAtomUI(builder => builder.UseCommonControls());
+                         .UseAtomUI(builder =>
+                         {
+                             builder.UseCommonControls();
+                             builder.UseAntDesign(static language => language.AddCommonControls());
+                         });
     }
 }
 

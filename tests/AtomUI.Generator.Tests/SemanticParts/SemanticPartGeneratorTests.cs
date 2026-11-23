@@ -2415,10 +2415,6 @@ public class SemanticPartGeneratorTests
                     Identity = identity;
                 }
             }
-
-            public sealed class ThemeAlgorithmDescriptor
-            {
-            }
         }
 
         namespace AtomUI.Theme.DesignTokens
@@ -2434,9 +2430,6 @@ public class SemanticPartGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
-                public virtual void CalculateTokenValues(bool isDark)
-                {
-                }
             }
         }
 

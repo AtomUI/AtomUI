@@ -1,5 +1,6 @@
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Resources;
@@ -347,7 +348,7 @@ internal class InputControlFrame : ContentControl,
         if (snapshot is null ||
             ThemeScope.GetTokenOwner(this) is not { } identity ||
             !snapshot.Registry.TryGetControl(identity, out var owner) ||
-            snapshot.Controls[owner.Slot].AppearanceSettings is not InputFrameAppearance appearance)
+            ReadAppearance(snapshot, identity, owner.Slot) is var appearance && appearance == 0)
         {
             UsesTransparentBorder = false;
             UsesTransparentHoverBorder = false;
@@ -383,6 +384,36 @@ internal class InputControlFrame : ContentControl,
                 MutedIndicatorForeground = new ImmutableSolidColorBrush(color);
             }
         }
+    }
+
+    // The frame Tokens of the input owners that declare them; other owners keep the Ant Design frame.
+    private static InputFrameAppearance ReadAppearance(ThemeSnapshot snapshot, ControlTokenIdentity identity, int slot)
+    {
+        bool transparent, bottom, muted = false;
+        if (identity == LineEditTokens.Identity)
+        {
+            transparent = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, LineEditTokenKind.TransparentOutlineBorder);
+            bottom      = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, LineEditTokenKind.BottomOutlineBorder);
+        }
+        else if (identity == TextAreaTokens.Identity)
+        {
+            transparent = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, TextAreaTokenKind.TransparentOutlineBorder);
+            bottom      = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, TextAreaTokenKind.BottomOutlineBorder);
+        }
+        else if (identity == SelectTokens.Identity)
+        {
+            transparent = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, SelectTokenKind.TransparentOutlineBorder);
+            bottom      = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, SelectTokenKind.BottomOutlineBorder);
+            muted       = s_themeTokenResolver.GetOwn<bool>(snapshot, slot, SelectTokenKind.MutedSelectIndicator);
+        }
+        else
+        {
+            return 0;
+        }
+
+        return (transparent ? InputFrameAppearance.TransparentOutlineBorder : 0) |
+               (muted ? InputFrameAppearance.MutedSelectIndicator : 0) |
+               (bottom ? InputFrameAppearance.BottomOutlineBorder : 0);
     }
 
     private bool HasExplicitThemeResource(ControlTokenIdentity identity, SharedTokenKind kind) =>
@@ -559,7 +590,7 @@ internal class InputControlFrame : ContentControl,
                 background = SharedTokenKind.ColorBgContainer;
                 hoverBorder = ByStatus(status, SharedTokenKind.ColorPrimaryHover, SharedTokenKind.ColorErrorBorderHover,
                     SharedTokenKind.ColorWarningBorderHover);
-                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                activeBorder = ByStatus(status, SharedTokenKind.InputActiveBorderColor, SharedTokenKind.ColorError,
                     SharedTokenKind.ColorWarning);
                 activeShadow = ByStatus(status, SharedTokenKind.InputActiveShadow,
                     SharedTokenKind.InputErrorActiveShadow, SharedTokenKind.InputWarningActiveShadow);
@@ -570,7 +601,7 @@ internal class InputControlFrame : ContentControl,
                 background = border;
                 hoverBackground = ByStatus(status, SharedTokenKind.ColorFillSecondary, SharedTokenKind.ColorErrorBgHover,
                     SharedTokenKind.ColorWarningBgHover);
-                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                activeBorder = ByStatus(status, SharedTokenKind.InputActiveBorderColor, SharedTokenKind.ColorError,
                     SharedTokenKind.ColorWarning);
                 break;
             case InputControlStyleVariant.Underlined:
@@ -578,7 +609,7 @@ internal class InputControlFrame : ContentControl,
                     SharedTokenKind.ColorWarning);
                 hoverBorder = ByStatus(status, SharedTokenKind.ColorPrimaryHover, SharedTokenKind.ColorErrorBorderHover,
                     SharedTokenKind.ColorWarningBorderHover);
-                activeBorder = ByStatus(status, SharedTokenKind.ColorPrimary, SharedTokenKind.ColorError,
+                activeBorder = ByStatus(status, SharedTokenKind.InputActiveBorderColor, SharedTokenKind.ColorError,
                     SharedTokenKind.ColorWarning);
                 break;
         }

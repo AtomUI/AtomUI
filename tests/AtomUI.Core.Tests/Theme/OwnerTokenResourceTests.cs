@@ -1,7 +1,8 @@
+using AtomUI.Theme.Languages;
+using AtomUI.DesignLanguages.AntDesign;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
@@ -265,14 +266,14 @@ public class OwnerTokenResourceTests
 
             // The failure surfaces from the refresh on attach, exactly where a DynamicResource refresh of the
             // same key would surface it.
-            Should.Throw<InvalidOperationException>(
+            Should.Throw<ThemeDerivationException>(
                       () => fixture.Show(fixture.CreateOwner(typeof(LineEditThemeTestControl), primitive)))
-                  .Message.ShouldBe(ThrowingEvaluatorMessage);
+                  .InnerException.ShouldNotBeNull().Message.ShouldBe(ThrowingEvaluatorMessage);
 
             primitive.GetValue(ThemeScope.TokenOwnerProperty).ShouldBe(s_lineEditIdentity);
-            Should.Throw<InvalidOperationException>(
+            Should.Throw<ThemeDerivationException>(
                       () => primitive.TryFindResource(ownerKey, primitive.ActualThemeVariant, out _))
-                  .Message.ShouldBe(ThrowingEvaluatorMessage);
+                  .InnerException.ShouldNotBeNull().Message.ShouldBe(ThrowingEvaluatorMessage);
             primitive.BorderBrush.ShouldBeNull("a failing owner snapshot must not be masked as the global value");
         });
     }
@@ -406,7 +407,7 @@ public class OwnerTokenResourceTests
             fixture.Show(fixture.CreateOwner(typeof(ButtonThemeTestControl), primitive));
             var light = BorderColor(primitive);
 
-            fixture.Apply(new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build(),
+            fixture.Apply(new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build(),
                 ThemeTransitionReason.UserRequest);
 
             fixture.Manager.RootContext.Appearance.ShouldBe(ThemeAppearance.Dark);
@@ -491,22 +492,35 @@ public class OwnerTokenResourceTests
     private static ControlTokenDescriptor ThrowingLineEditDescriptor()
     {
         var height = new TokenDescriptor(
-            nameof(CompilerButtonToken.Height),
+            nameof(ThrowingLineEditToken.Height),
             0,
             TokenStage.Control,
             typeof(double),
             CompilerButtonTokenKind.Height,
             static value => ThemeTokenValueParser.Parse<double>(value),
             static value => ThemeTokenValueFormatter.Format((double)value!),
-            static token => ((CompilerButtonToken)token).Height,
-            static (token, value) => ((CompilerButtonToken)token).Height = (double)value!,
-            static token => ((CompilerButtonToken)token).Height);
+            static token => ((ThrowingLineEditToken)token).Height,
+            static (token, value) => ((ThrowingLineEditToken)token).Height = (double)value!,
+            static token => ((ThrowingLineEditToken)token).Height);
         return new ControlTokenDescriptor(
             typeof(LineEditThemeTestControl),
             s_lineEditIdentity,
             [height],
-            static () => new CompilerButtonToken(),
-            static (_, _) => throw new InvalidOperationException(ThrowingEvaluatorMessage));
+            static () => new ThrowingLineEditToken());
+    }
+
+    internal sealed class ThrowingLineEditToken : AbstractControlDesignToken, IControlToken
+    {
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", "LineEdit");
+
+        public double Height { get; set; }
+    }
+
+    /// <summary>The LineEdit's derivation fails; the compiler reports it when the control is first queried.</summary>
+    internal sealed class ThrowingLineEditDerivation : IControlDerivation<AntDesignToken, ThrowingLineEditToken>
+    {
+        public void Derive(in DerivationContext<AntDesignToken> context, ControlView<ThrowingLineEditToken> view) =>
+            throw new InvalidOperationException(ThrowingEvaluatorMessage);
     }
 
     private static ControlThemeConfig BorderConfig(string color) =>
@@ -685,17 +699,7 @@ public class OwnerTokenResourceTests
 
         private static ThemeTransactionPreparation Prepare(ThemeSchemaRegistry registry, ThemeConfig? config)
         {
-            registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm).ShouldBeTrue();
-            var definition = new PreparedThemeDefinition(
-                "TestTheme",
-                "Test Theme",
-                ThemeAppearance.Light,
-                ThemeAppearance.Light,
-                true,
-                [defaultAlgorithm!],
-                Array.Empty<BoundTokenValue>(),
-                Array.Empty<ControlThemeDefinition>(),
-                new ThemeSourceLocation("test", 1, 1, "/Theme"));
+            var definition = ThemeTestSnapshotFactory.CreateLanguageDefinition(registry.Languages[0]);
             var normalized = ThemeConfigNormalizer.Normalize(config ?? new ThemeConfigBuilder().Build(), registry);
             normalized.Success.ShouldBeTrue();
             var effective = ThemeConfigMerger.Merge(

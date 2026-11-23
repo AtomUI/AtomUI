@@ -104,7 +104,8 @@ internal enum SchemaTokenStage
     Seed,
     Map,
     Alias,
-    Control
+    Control,
+    Language
 }
 
 internal sealed class SchemaTokenInfo : IEquatable<SchemaTokenInfo>

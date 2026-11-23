@@ -9,17 +9,18 @@ namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
 /// Reads every complete theme XML example of the theming documents with the real <see cref="ThemeDocumentReader"/>,
-/// so that a documented example cannot drift away from the v1 XSD and the reader.
+/// so that a documented example cannot drift away from the v2 XSD and the reader.
 /// </summary>
 public class ThemeDocumentationExampleTests
 {
-    private const string Namespace = "https://atomui.net/schemas/theme/v1";
+    private const string Namespace = "https://atomui.net/schemas/theme/v2";
 
     private static readonly string[] Documents =
     [
-        "docs/reference/theming/theme-definition-xml-v1.md",
-        "docs/guides/theming/writing-theme-algorithms.md",
+        "docs/reference/theming/theme-definition-xml-v2.md",
+        "docs/guides/theming/writing-design-languages.md",
         "docs/guides/theming/customization.md",
+        "docs/guides/theming/design-language-packages.md",
         "docs/architecture/systems/theming/runtime.md"
     ];
 
@@ -52,7 +53,7 @@ public class ThemeDocumentationExampleTests
         foreach (Match match in XmlBlock.Matches(File.ReadAllText(path)))
         {
             var body = match.Groups["body"].Value;
-            // Only complete theme documents are readable; fragments such as a bare <Algorithms> element are skipped.
+            // Only complete theme documents are readable; fragments such as a bare <When> element are skipped.
             if (ThemeRoot.IsMatch(body) && body.Contains(Namespace, StringComparison.Ordinal))
             {
                 examples.Add((index, body));

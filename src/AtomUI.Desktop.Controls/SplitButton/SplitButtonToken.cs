@@ -6,23 +6,17 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class SplitButtonToken : AbstractControlDesignToken
 {
+    /// <summary>Gap between the split button and its flyout.</summary>
     public partial double GutterToFlyout { get; set; }
 
-    /// <summary>
-    /// 实心（Primary）形态接缝分隔色
-    /// </summary>
+    /// <summary>Color of the seam between the primary action and flyout toggle in the solid primary style.</summary>
     public partial Color SolidSeparatorColor { get; set; }
 
-    /// <summary>
-    /// 实心危险（Danger）形态接缝分隔色
-    /// </summary>
+    /// <summary>Color of the seam between the primary action and flyout toggle in the solid danger style.</summary>
     public partial Color DangerSeparatorColor { get; set; }
 
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        GutterToFlyout         = EffectiveGlobalToken.UniformlyMarginXXS;
-        SolidSeparatorColor    = EffectiveGlobalToken.ColorPrimaryHover;
-        DangerSeparatorColor   = EffectiveGlobalToken.ColorErrorHover;
-    }
+    /// <summary>
+    /// Whether a primary split button reserves a layout slot for an inset separator between its two buttons.
+    /// </summary>
+    public partial bool InsetSeparator { get; set; }
 }

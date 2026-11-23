@@ -487,7 +487,7 @@ public partial class DataFamilyEffectTests
             case "ColorPrimaryHover":
                 b.Hover();
                 break;
-            case "ColorPrimary" or "InputActiveShadow":
+            case "ColorPrimary" or "InputActiveBorderColor" or "InputActiveShadow":
                 // The focus border; the focus ring around the frame (the picker does not clip it).
                 b.Focus();
                 break;

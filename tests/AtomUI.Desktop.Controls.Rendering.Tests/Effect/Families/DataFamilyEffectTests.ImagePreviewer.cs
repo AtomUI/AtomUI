@@ -1,15 +1,10 @@
-using AtomUI.Desktop.Controls.Primitives;
-using Avalonia.Controls.Primitives;
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
-using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
-using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -17,7 +12,6 @@ using Shouldly;
 using Xunit;
 using AvaloniaBorder = Avalonia.Controls.Border;
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
-using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 

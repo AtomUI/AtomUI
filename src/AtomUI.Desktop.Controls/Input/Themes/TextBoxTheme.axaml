@@ -159,7 +159,7 @@
         </Style>
         <Style Selector="^[SizeType=Middle]">
             <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
             <Setter Property="Padding" Value="{atom:TextBoxTokenResource ContentPadding}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
@@ -169,7 +169,7 @@
         </Style>
         <Style Selector="^[SizeType=Custom]">
             <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
         </Style>
     
         <Style Selector="^[IsCustomFontSize=False]">
@@ -179,7 +179,7 @@
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                 <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
-                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />

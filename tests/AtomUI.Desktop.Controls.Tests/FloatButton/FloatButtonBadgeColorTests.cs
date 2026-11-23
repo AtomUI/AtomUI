@@ -1,6 +1,6 @@
 using AtomUI.Controls.Commons;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia.Controls;
@@ -42,7 +42,7 @@ public class FloatButtonBadgeColorTests
         {
             ReadIndicator(button, isDot).ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Blue).ColorSequence[5]);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             ReadIndicator(button, isDot)
                 .ShouldBe(PresetPalettes.GetPresetPalette(PresetPrimaryColor.Blue, isDark: true).ColorSequence[5]);
@@ -58,7 +58,7 @@ public class FloatButtonBadgeColorTests
         {
             ReadIndicator(button, false).ShouldBe(Color.Parse("#ff00b96b"));
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             ReadIndicator(button, false).ShouldBe(Color.Parse("#ff00b96b"));
         });

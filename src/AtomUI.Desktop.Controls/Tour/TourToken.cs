@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -27,14 +26,10 @@ public sealed partial class TourToken : AbstractControlDesignToken
     /// </summary>
     public partial Color PrimaryNextBtnHoverBg { get; set; }
     
-    /// <summary>
-    /// Tour 内容视图的最小宽度
-    /// </summary>
+    /// <summary>Minimum width of the tour content view.</summary>
     public partial double TourViewMinWidth { get; set; }
     
-    /// <summary>
-    /// Tour 内容视图的最小高度
-    /// </summary>
+    /// <summary>Minimum height of the tour content view.</summary>
     public partial double TourViewMinHeight { get; set; }
     
     /// <summary>
@@ -45,29 +40,12 @@ public sealed partial class TourToken : AbstractControlDesignToken
 
     #region 内部使用
     
+    /// <summary>Width and height of a step dot in the default tour indicator.</summary>
     public partial double IndicatorSize { get; set; }
+    /// <summary>Default gap between the tour popup and the highlighted target.</summary>
     public partial double PopupMarginToAnchor { get; set; }
+    /// <summary>Corner radius of the tour popup.</summary>
     public partial CornerRadius TourBorderRadius { get; set; }
     
     #endregion
-    
-    public TourToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CloseBtnSize          = EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight;
-        PrimaryPrevBtnBg      = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.15);
-        PrimaryNextBtnHoverBg = ColorUtils.OnBackground(EffectiveGlobalToken.ColorBgTextHover, EffectiveGlobalToken.ColorWhite);
-        IndicatorSize         = 6;
-        TourBorderRadius      = EffectiveGlobalToken.BorderRadiusLG;
-        TourViewMinWidth      = 200;
-        TourViewMinHeight     = 120;
-        HeaderColor           = EffectiveGlobalToken.ColorTextHeading;
-        PopupMarginToAnchor   = EffectiveGlobalToken.SpacingXXS;
-    }
-    
 }

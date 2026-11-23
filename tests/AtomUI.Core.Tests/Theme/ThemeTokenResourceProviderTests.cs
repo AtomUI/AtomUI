@@ -1,4 +1,5 @@
-using AtomUI.Theme;
+using AtomUI.Theme.Languages;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -237,7 +238,6 @@ public class ThemeTokenResourceProviderTests
             builder.WithControl(
                 new AtomUI.Theme.Schema.ControlTokenIdentity("AtomUI", CompilerButtonToken.ID),
                 new ControlThemeConfigBuilder()
-                    .WithAlgorithm(ControlAlgorithmMode.Disabled)
                     .WithToken(nameof(DesignToken.ColorPrimary), controlPrimary)
                     .Build());
         }
@@ -282,7 +282,6 @@ public class ThemeTokenResourceProviderTests
             builder.WithControl(
                 new AtomUI.Theme.Schema.ControlTokenIdentity("AtomUI", entry.Key),
                 new ControlThemeConfigBuilder()
-                    .WithAlgorithm(ControlAlgorithmMode.Disabled)
                     .WithToken(nameof(DesignToken.ColorPrimary), entry.Value)
                     .Build());
         }
@@ -303,14 +302,12 @@ public class ThemeTokenResourceProviderTests
                      .WithControl(
                          first.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
-                             .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
+                                      .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
                              .Build())
                      .WithControl(
                          second.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
-                             .WithToken(nameof(DesignToken.ColorPrimary), "#ff4d4f")
+                                      .WithToken(nameof(DesignToken.ColorPrimary), "#ff4d4f")
                              .Build())
                      .Build();
         return ThemeTestSnapshotFactory.Compile(config, first, second);
@@ -343,9 +340,7 @@ public class ThemeTokenResourceProviderTests
             ThemeTestControlTypes.For("AtomUI", BrushControlToken.ID),
             new AtomUI.Theme.Schema.ControlTokenIdentity("AtomUI", BrushControlToken.ID),
             [brush],
-            static () => new BrushControlToken(),
-            static (token, appearance) =>
-                ((BrushControlToken)token).RunDefaultCalculation(appearance == ThemeAppearance.Dark));
+            static () => new BrushControlToken());
     }
 
     private static readonly (string ParentControl, string ChildControl)[] CrossControlPairs =
@@ -369,16 +364,10 @@ public class ThemeTokenResourceProviderTests
     }
 }
 
+// Controls without own tokens: they only carry their effective global tokens, so they need no derivation.
 internal abstract class CrossControlCompilerToken : AbstractControlDesignToken
 {
     public double Height { get; set; }
-
-    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        Height = EffectiveGlobalToken.ControlHeight;
-    }
 }
 
 internal sealed class CompilerIconToken : CrossControlCompilerToken
@@ -421,16 +410,18 @@ internal enum BrushTokenKind
     Brush
 }
 
-internal sealed class BrushControlToken : AbstractControlDesignToken
+internal sealed class BrushControlToken : AbstractControlDesignToken, IControlToken
 {
     internal const string ID = "BrushControl";
 
+    public static AtomUI.Theme.Schema.ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", ID);
+
     public SolidColorBrush? Brush { get; set; }
+}
 
-    internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        Brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
-    }
+/// <summary>The test brush control gets a mutable brush, which the compiler must copy into the snapshot.</summary>
+internal sealed class BrushControlDerivation : IControlDerivation<AntDesignToken, BrushControlToken>
+{
+    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<BrushControlToken> view) =>
+        view.Token.Brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
 }

@@ -49,7 +49,7 @@ public partial class FeedbackFamilyEffectTests
             "ColorError" or "ErrorShadows"       => MessageType.Error,
             "ColorSuccess" or "SuccessShadows"   => MessageType.Success,
             "ColorWarning" or "WarningShadows"   => MessageType.Warning,
-            "LoadingShadows"                     => MessageType.Loading,
+            "LoadingShadows" or "LoadingIconColor" => MessageType.Loading,
             // The severity surface tokens (SuccessBg, ErrorColor, ...) paint the message of their severity.
             _ when token.StartsWith("Error", StringComparison.Ordinal)   => MessageType.Error,
             _ when token.StartsWith("Success", StringComparison.Ordinal) => MessageType.Success,
@@ -60,8 +60,12 @@ public partial class FeedbackFamilyEffectTests
             ? static card => card.GetVisualDescendants().OfType<Avalonia.Controls.SelectableTextBlock>().First().SelectAll()
             : null;
         Func<object, object>? perturb = token is "BorderRadiusLG" ? static _ => new CornerRadius(20) : null;
+        // The loading icon is a thin ring: compare its own presenter, not the whole card.
+        Func<Control, Control>? region = token is "LoadingIconColor"
+            ? static card => card.GetVisualDescendants().OfType<AtomUI.Controls.IconPresenter>().First()
+            : null;
         Run(() => new MessageCard { Message = "This is a normal message", MessageType = type, IsMotionEnabled = false },
-            arrange, MessageCardTokens.Identity, token, new EffectOptions { Perturb = perturb });
+            arrange, MessageCardTokens.Identity, token, new EffectOptions { Perturb = perturb, Region = region });
     }
 
     [Theory]

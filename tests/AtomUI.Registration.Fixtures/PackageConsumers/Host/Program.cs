@@ -1,7 +1,8 @@
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Threading;
@@ -9,7 +10,7 @@ using Avalonia.VisualTree;
 
 AppBuilder.Configure<ConsumerApp>()
           .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-          .UseAtomUI(builder => builder.UseDesktopControls())
+          .UseAtomUI(builder => builder.UseDesktopControls().UseAntDesign(language => language.AddDesktopControls()))
           .SetupWithoutStarting();
 var control = Fixture.BinaryAdapter.Adapter.CreateControl();
 var window = new Avalonia.Controls.Window { Content = control };

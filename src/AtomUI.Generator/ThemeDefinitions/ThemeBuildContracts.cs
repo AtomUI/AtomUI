@@ -33,13 +33,13 @@ internal sealed class ThemeBuildOwner
     internal string Key => Catalog + "\u001f" + Id;
     internal string[] Fields => new[] { Catalog, Id, OwnerAssembly, OwnerType, IdentityProvider, Digest };
 }
-internal sealed class ThemeBuildAlgorithm
+/// <summary>A design language a theme definition may name: its identity and its language token class.</summary>
+internal sealed class ThemeBuildLanguage
 {
-    internal string Catalog = "";
     internal string Id = "";
-    internal int Revision;
-    internal int AppearanceEffect;
-    internal string Key => Catalog + "\u001f" + Id;
+    internal string TokenType = "";
+    internal string TokenAssembly = "";
+    internal string[] Fields => new[] { Id, TokenType, TokenAssembly };
 }
 internal sealed class ThemeBuildContracts
 {
@@ -48,13 +48,16 @@ internal sealed class ThemeBuildContracts
     internal readonly Dictionary<string, ThemeBuildOwner> Owners = new(StringComparer.Ordinal);
     internal readonly List<ThemeBuildToken> LocalTokens = new();
     internal readonly List<ThemeBuildOwner> LocalOwners = new();
-    internal readonly Dictionary<string, ThemeBuildAlgorithm> Algorithms = new(StringComparer.Ordinal);
-    internal readonly List<ThemeBuildAlgorithm> LocalAlgorithms = new();
+    internal readonly Dictionary<string, ThemeBuildLanguage> Languages = new(StringComparer.Ordinal);
+    internal readonly List<ThemeBuildLanguage> LocalLanguages = new();
+
+    /// <summary>The catalog marker of a language token contract; its owner id is the language identity.</summary>
+    internal const string LanguageCatalog = "$language";
     internal static bool HasAbi(Compilation compilation) => compilation.GetTypeByMetadataName(Prefix + "ThemeBuildTokenAttribute") is not null &&
-        compilation.GetTypeByMetadataName(Prefix + "ThemeBuildAlgorithmAttribute") is not null &&
+        compilation.GetTypeByMetadataName(Prefix + "ThemeBuildLanguageAttribute") is not null &&
         compilation.GetTypeByMetadataName("AtomUI.Theme.Schema.TokenDescriptor")?.GetMembers("CreateGenerated").OfType<IMethodSymbol>().Any(m => m.Parameters.Length == 7) == true;
     internal static ThemeBuildContracts Build(Compilation compilation, string catalog, IEnumerable<SchemaTokenInfo> globalTokens,
-        IEnumerable<ControlThemeInfo> controls, IEnumerable<ThemeAlgorithmInfo> algorithms, GenerationOutput output)
+        IEnumerable<ControlThemeInfo> controls, IEnumerable<LocalLanguage> languages, GenerationOutput output)
     {
         var result = new ThemeBuildContracts();
         foreach (var assembly in compilation.SourceModule.ReferencedAssemblySymbols)
@@ -62,7 +65,7 @@ internal sealed class ThemeBuildContracts
             foreach (var attribute in assembly.GetAttributes())
             {
                 var name = attribute.AttributeClass?.ToDisplayString();
-                if (name != Prefix + "ThemeBuildOwnerAttribute" && name != Prefix + "ThemeBuildTokenAttribute" && name != Prefix + "ThemeBuildAlgorithmAttribute") { continue; }
+                if (name != Prefix + "ThemeBuildOwnerAttribute" && name != Prefix + "ThemeBuildTokenAttribute" && name != Prefix + "ThemeBuildLanguageAttribute") { continue; }
                 try
                 {
                     var values = attribute.ConstructorArguments;
@@ -89,25 +92,33 @@ internal sealed class ThemeBuildContracts
                         { throw new InvalidOperationException("Invalid public identity provider: " + owner.IdentityProvider); }
                         result.Add(owner);
                     }
-                    else if (name == Prefix + "ThemeBuildAlgorithmAttribute")
+                    else if (name == Prefix + "ThemeBuildLanguageAttribute")
                     {
-                        if (values.Length != 5) { throw new InvalidOperationException("Invalid algorithm metadata arity."); }
-                        var algorithm = new ThemeBuildAlgorithm { Catalog = S(1), Id = S(2), Revision = N(3), AppearanceEffect = N(4) };
-                        if (!ThemeBuildIdentifier.IsValid(algorithm.Catalog) || !ThemeBuildIdentifier.IsValid(algorithm.Id) || algorithm.Revision <= 0 ||
-                            algorithm.AppearanceEffect < 0 || algorithm.AppearanceEffect > 2)
-                        { throw new InvalidOperationException("Invalid algorithm identity/revision/appearance effect."); }
-                        result.Add(algorithm);
+                        if (values.Length != 4) { throw new InvalidOperationException("Invalid language metadata arity."); }
+                        var language = new ThemeBuildLanguage { Id = S(1), TokenType = S(2), TokenAssembly = S(3) };
+                        if (!ThemeBuildIdentifier.IsValid(language.Id) || string.IsNullOrWhiteSpace(language.TokenType))
+                        { throw new InvalidOperationException("Invalid language identity."); }
+                        result.Add(language);
                     }
                     else
                     {
                         if (values.Length != 11) { throw new InvalidOperationException("Invalid Token metadata arity."); }
                         var token = new ThemeBuildToken { Catalog = S(1), OwnerId = S(2), Name = S(3), ValueType = S(4), ValueAssembly = S(5), KeyType = S(6), KeyAssembly = S(7), KeyMember = S(8), Stage = N(9), Contract = N(10) };
-                        if (string.IsNullOrWhiteSpace(token.Name) || token.Name != token.KeyMember || token.Stage < 0 || token.Stage > 3 || token.Contract < 0 || token.Contract > 1 || (token.Catalog.Length == 0) != (token.OwnerId.Length == 0))
+                        if (string.IsNullOrWhiteSpace(token.Name) || token.Name != token.KeyMember || token.Stage < 0 || token.Stage > 4 || token.Contract < 0 || token.Contract > 1 || (token.Catalog.Length == 0) != (token.OwnerId.Length == 0))
                         { throw new InvalidOperationException("Invalid Token contract."); }
                         var valueType = Resolve(compilation, token.ValueType, token.ValueAssembly);
-                        var keyType = Resolve(compilation, token.KeyType, token.KeyAssembly);
-                        if (valueType is null || keyType is null || keyType.TypeKind != TypeKind.Enum || (token.Contract == 1 && !IsPublic(valueType)) || !IsPublic(keyType) || keyType.GetMembers(token.KeyMember).OfType<IFieldSymbol>().SingleOrDefault()?.HasConstantValue != true)
-                        { throw new InvalidOperationException("Unavailable value/resource-key contract: " + token.Name); }
+                        if (token.Catalog == LanguageCatalog)
+                        {
+                            // Language tokens are bound by name: they have no resource key.
+                            if (valueType is null || (token.Contract == 1 && !IsPublic(valueType)))
+                            { throw new InvalidOperationException("Unavailable value contract: " + token.Name); }
+                        }
+                        else
+                        {
+                            var keyType = Resolve(compilation, token.KeyType, token.KeyAssembly);
+                            if (valueType is null || keyType is null || keyType.TypeKind != TypeKind.Enum || (token.Contract == 1 && !IsPublic(valueType)) || !IsPublic(keyType) || keyType.GetMembers(token.KeyMember).OfType<IFieldSymbol>().SingleOrDefault()?.HasConstantValue != true)
+                            { throw new InvalidOperationException("Unavailable value/resource-key contract: " + token.Name); }
+                        }
                         if (token.Contract == 1 && !ThemeLiteralCodec.Supports(token.ValueType)) { throw new InvalidOperationException("Unknown v1 literal capability: " + token.ValueType); }
                         result.Add(token);
                     }
@@ -115,12 +126,22 @@ internal sealed class ThemeBuildContracts
                 catch (Exception error) { CompiledThemePackageWriter.Error(output, null, 0, 0, "Invalid Token build metadata in '" + assembly.Identity + "': " + error.Message); }
             }
         }
-        // Local algorithms come from source, so this also covers AtomUI.Core, which declares the attribute itself.
-        foreach (var info in ThemeAlgorithmInfo.Order(algorithms))
+        // Local languages come from source: the language package declares its language and language token class.
+        foreach (var local in languages.OrderBy(static language => language.Id, StringComparer.Ordinal))
         {
-            var algorithm = new ThemeBuildAlgorithm { Catalog = info.Catalog, Id = info.Id, Revision = info.Revision,
-                AppearanceEffect = info.AppearanceEffect switch { "Light" => 1, "Dark" => 2, _ => 0 } };
-            try { result.Add(algorithm); result.LocalAlgorithms.Add(algorithm); }
+            var language = new ThemeBuildLanguage { Id = local.Id, TokenType = local.Schema.TypeName.Replace("global::", ""),
+                TokenAssembly = compilation.Assembly.Identity.ToString() };
+            try
+            {
+                result.Add(language);
+                result.LocalLanguages.Add(language);
+                foreach (var token in local.Schema.Tokens)
+                {
+                    var created = CreateToken(compilation, token, LanguageCatalog, local.Id, "");
+                    created.KeyAssembly = "";
+                    result.AddLocal(created);
+                }
+            }
             catch (InvalidOperationException error) { CompiledThemePackageWriter.Error(output, null, 0, 0, error.Message); }
         }
         foreach (var token in globalTokens.OrderBy(t => t.Name, StringComparer.Ordinal))
@@ -139,12 +160,15 @@ internal sealed class ThemeBuildContracts
                 Digest = Digest(new[] { catalog, control.ControlName, ownerType.ContainingAssembly.Identity.ToString(), control.ControlMetadataName }.Concat(own.SelectMany(t => t.Fields))) };
             result.Add(owner); result.LocalOwners.Add(owner);
         }
-        foreach (var token in result.Tokens.Values.Where(t => t.Catalog.Length != 0))
+        foreach (var token in result.Tokens.Values.Where(t => t.Catalog.Length != 0 && t.Catalog != LanguageCatalog))
         {
             if (!result.Owners.ContainsKey(token.Catalog + "\u001f" + token.OwnerId)) { CompiledThemePackageWriter.Error(output, null, 0, 0, "Token metadata has no owner: " + token.Key); }
         }
         return result;
     }
+    /// <summary>A language declared in this compilation: its identity and the schema of its language token class.</summary>
+    internal sealed record LocalLanguage(string Id, Derivation.LanguageTokenSchema Schema);
+
     private static ThemeBuildToken CreateToken(Compilation compilation, SchemaTokenInfo info, string catalog, string owner, string key)
     {
         var type = ResolvePropertyType(compilation, info);
@@ -213,10 +237,10 @@ internal sealed class ThemeBuildContracts
         { throw new InvalidOperationException("Duplicate Token name/resource-key contract: " + token.Key); }
         Tokens.Add(token.Key, token);
     }
-    private void Add(ThemeBuildAlgorithm algorithm)
+    private void Add(ThemeBuildLanguage language)
     {
-        if (Algorithms.ContainsKey(algorithm.Key)) { throw new InvalidOperationException("Duplicate algorithm build contract: " + algorithm.Catalog + ":" + algorithm.Id); }
-        Algorithms.Add(algorithm.Key, algorithm);
+        if (Languages.ContainsKey(language.Id)) { throw new InvalidOperationException("Duplicate language build contract: " + language.Id); }
+        Languages.Add(language.Id, language);
     }
     private void AddLocal(ThemeBuildToken token) { Add(token); LocalTokens.Add(token); }
     internal void Write(GenerationOutput output)
@@ -228,10 +252,10 @@ internal sealed class ThemeBuildContracts
             source.Append("[assembly: global::").Append(Prefix).Append("ThemeBuildTokenAttribute(1, ").Append(string.Join(", ", token.Fields.Take(8).Select(Literal)))
                 .Append(", ").Append(token.Stage).Append(", ").Append(token.Contract).AppendLine(")]");
         }
-        foreach (var algorithm in LocalAlgorithms)
+        foreach (var language in LocalLanguages)
         {
-            source.Append("[assembly: global::").Append(Prefix).Append("ThemeBuildAlgorithmAttribute(1, ").Append(Literal(algorithm.Catalog)).Append(", ")
-                .Append(Literal(algorithm.Id)).Append(", ").Append(algorithm.Revision).Append(", ").Append(algorithm.AppearanceEffect).AppendLine(")]");
+            source.Append("[assembly: global::").Append(Prefix).Append("ThemeBuildLanguageAttribute(1, ")
+                .Append(string.Join(", ", language.Fields.Select(Literal))).AppendLine(")]");
         }
         output.AddSource("GeneratedThemeBuildContracts.g.cs", GeneratedSourceText.From(source.ToString()));
     }

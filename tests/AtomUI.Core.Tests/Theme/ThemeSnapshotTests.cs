@@ -1,6 +1,6 @@
 using System.Reflection;
 using AtomUI.Theme.Compilation;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;

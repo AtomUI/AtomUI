@@ -1,31 +1,37 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 
 namespace AtomUI.Theme;
 
+/// <summary>The theme the root scope currently shows: the theme, its language and the variant it was derived for.</summary>
 public sealed record ThemeState
 {
-    private readonly IReadOnlyList<ThemeAlgorithm> _algorithms;
-
     public ThemeState(
         string themeId,
-        IReadOnlyList<ThemeAlgorithm> algorithms,
-        ThemeAppearance appearance,
+        string language,
+        DesignVariant variant,
         ulong fingerprint,
         long transitionId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
-        ArgumentNullException.ThrowIfNull(algorithms);
+        ArgumentException.ThrowIfNullOrWhiteSpace(language);
 
         ThemeId      = themeId;
-        _algorithms  = Array.AsReadOnly(algorithms.ToArray());
-        Appearance   = appearance;
+        Language     = language;
+        Variant      = variant;
         Fingerprint  = fingerprint;
         TransitionId = transitionId;
     }
 
     public string ThemeId { get; }
-    public IReadOnlyList<ThemeAlgorithm> Algorithms => _algorithms;
-    public ThemeAppearance Appearance { get; }
+
+    /// <summary>The design language identity.</summary>
+    public string Language { get; }
+
+    /// <summary>The style, appearance, density and idiom the root scope was derived for.</summary>
+    public DesignVariant Variant { get; }
+
+    public ThemeAppearance Appearance => Variant.Appearance;
+
     public ulong Fingerprint { get; }
     public long TransitionId { get; }
 }

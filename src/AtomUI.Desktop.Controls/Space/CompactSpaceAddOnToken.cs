@@ -12,28 +12,12 @@ public sealed partial class CompactSpaceAddOnToken : AbstractControlDesignToken
     /// </summary>
     public partial Color AddonBg { get; set; }
 
-    /// <summary>
-    /// AddOn 内边距
-    /// </summary>
+    /// <summary>Padding inside the add-on at the default size.</summary>
     public partial Thickness AddOnPadding { get; set; }
 
-    /// <summary>
-    /// AddOn 小号内边距
-    /// </summary>
+    /// <summary>Padding inside a small add-on.</summary>
     public partial Thickness AddOnPaddingSM { get; set; }
 
-    /// <summary>
-    /// AddOn 大号内边距
-    /// </summary>
+    /// <summary>Padding inside a large add-on.</summary>
     public partial Thickness AddOnPaddingLG { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        AddonBg       = EffectiveGlobalToken.ColorFillAlter;
-
-        AddOnPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-        AddOnPaddingSM = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontalSM, 0);
-        AddOnPaddingLG = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontal, 0);
-    }
 }

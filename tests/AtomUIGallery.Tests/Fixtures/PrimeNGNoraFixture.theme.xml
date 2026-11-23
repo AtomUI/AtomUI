@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="PrimeNGNoraFixture" Name="PrimeNG Nora fixture" Language="PrimeNG" Style="Nora">
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#020617" />
+  </Tokens>
+</Theme>

@@ -1,13 +1,7 @@
-using System.Reflection;
 using AtomUI.Desktop.Controls.DesignTokens;
-using AtomUI.Desktop.Controls.Rendering.Tests.Effect;
 using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Threading;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Shouldly;

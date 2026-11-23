@@ -1,6 +1,5 @@
 using AtomUI.Controls;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -35,7 +34,7 @@ public class ResultStatusIconColorTests
         {
             AssertStatusIcon(result);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             AssertStatusIcon(result);
 
@@ -63,7 +62,7 @@ public class ResultStatusIconColorTests
             Dispatcher.UIThread.RunJobs();
             FindStatusIcon(result).ShouldBeSameAs(custom);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             custom.FillBrush.ShouldBeSameAs(Brushes.Purple);
             custom.Width.ShouldBe(20);

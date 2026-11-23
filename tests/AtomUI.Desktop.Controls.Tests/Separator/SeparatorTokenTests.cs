@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Tests.Theme;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Shouldly;
@@ -17,9 +18,7 @@ public class SeparatorTokenTests
             UniformlyMarginLG = 24
         };
         var separatorToken = new SeparatorToken();
-        separatorToken.AssignEffectiveGlobalToken(sharedToken);
-
-        separatorToken.RunDefaultCalculation(isDarkMode: false);
+        AntDesignDerivationRunner.Derive(separatorToken, sharedToken);
 
         separatorToken.HorizontalMarginBlockSM.ShouldBe(new Thickness(0, sharedToken.UniformlyMarginXS));
         separatorToken.HorizontalMarginBlock.ShouldBe(new Thickness(0, sharedToken.UniformlyMargin));

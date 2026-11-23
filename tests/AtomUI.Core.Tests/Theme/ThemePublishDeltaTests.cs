@@ -52,14 +52,16 @@ public class ThemePublishDeltaTests
 
         // Cold Own cells: unknown, so changed.
         delta.IsOwnChanged(button.Slot, heightKey).ShouldBeTrue();
-        // Unconfigured owner: the effective ColorBorder is the root value, which did not change.
-        delta.IsOwnerGlobalChanged(button.Slot, borderKey).ShouldBeFalse();
-        delta.IsChanged(ControlTokenResourceKey.Global(s_button, SharedTokenKind.ColorBorder)).ShouldBeFalse();
+        // Cold owner: its derivation may write its global view, so until it is materialized it counts as changed.
+        delta.IsOwnerGlobalChanged(button.Slot, borderKey).ShouldBeTrue();
         delta.IsChanged(ControlTokenResourceKey.Global(s_button, SharedTokenKind.ColorPrimary)).ShouldBeTrue();
 
-        // Both cells materialized: Own values compare by value.
+        // Both cells materialized: the owner's effective ColorBorder is the root value, which did not change, and Own
+        // values compare by value.
         _ = previous.Controls[button.Slot];
         _ = current.Controls[button.Slot];
+        delta.IsOwnerGlobalChanged(button.Slot, borderKey).ShouldBeFalse();
+        delta.IsChanged(ControlTokenResourceKey.Global(s_button, SharedTokenKind.ColorBorder)).ShouldBeFalse();
         delta.IsOwnChanged(button.Slot, heightKey).ShouldBeFalse("Height follows ControlHeight, which did not change");
         delta.IsChanged(ControlTokenResourceKey.Own(s_button, heightKey)).ShouldBeFalse();
         delta.IsChanged(heightKey).ShouldBeFalse("the plain Own resource key resolves to the same slot");

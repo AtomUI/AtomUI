@@ -1,5 +1,4 @@
 using AtomUI.Theme.Compilation;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 
 namespace AtomUI.Theme;
@@ -231,8 +230,9 @@ internal sealed record PendingThemeScopeUpdate(
 
 internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
 {
-    private readonly ThemeAlgorithm[]? _algorithms;
+    private readonly string? _axes;
     private readonly KeyValuePair<string, string>[]? _tokens;
+    private readonly KeyValuePair<string, string>[]? _languageTokens;
     private readonly ControlRequestCacheKey[]? _controls;
     private readonly int _hashCode;
 
@@ -240,16 +240,18 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
     {
         ThemeId = request.ThemeId;
         Reason  = request.Reason;
-        if (request.Config is not null)
+        if (request.Config is { } config)
         {
-            Inherit     = request.Config.Inherit;
-            _algorithms = request.Config.Algorithms?.ToArray();
-            _tokens     = request.Config.Tokens.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray();
-            _controls   = request.Config.Controls
-                                        .OrderBy(static item => item.Key.Catalog, StringComparer.Ordinal)
-                                        .ThenBy(static item => item.Key.Id, StringComparer.Ordinal)
-                                        .Select(static item => new ControlRequestCacheKey(item.Key, item.Value))
-                                        .ToArray();
+            Inherit         = config.Inherit;
+            _axes           = string.Join("\u001f", config.Language, config.Style?.Id, config.Appearance?.ToString(),
+                config.Density?.Id, config.Idiom?.Id);
+            _tokens         = config.Tokens.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray();
+            _languageTokens = config.LanguageTokens.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray();
+            _controls       = config.Controls
+                                    .OrderBy(static item => item.Key.Catalog, StringComparer.Ordinal)
+                                    .ThenBy(static item => item.Key.Id, StringComparer.Ordinal)
+                                    .Select(static item => new ControlRequestCacheKey(item.Key, item.Value))
+                                    .ToArray();
         }
         _hashCode = ComputeHashCode();
     }
@@ -269,8 +271,9 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
                string.Equals(ThemeId, other.ThemeId, StringComparison.Ordinal) &&
                Reason == other.Reason &&
                Inherit == other.Inherit &&
-               NullableSequenceEqual(_algorithms, other._algorithms) &&
+               string.Equals(_axes, other._axes, StringComparison.Ordinal) &&
                NullableSequenceEqual(_tokens, other._tokens) &&
+               NullableSequenceEqual(_languageTokens, other._languageTokens) &&
                NullableSequenceEqual(_controls, other._controls);
     }
 
@@ -284,8 +287,9 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
         hash.Add(ThemeId, StringComparer.Ordinal);
         hash.Add(Reason);
         hash.Add(Inherit);
-        Add(ref hash, _algorithms);
+        hash.Add(_axes, StringComparer.Ordinal);
         Add(ref hash, _tokens);
+        Add(ref hash, _languageTokens);
         Add(ref hash, _controls);
         return hash.ToHashCode();
     }
@@ -314,7 +318,6 @@ internal sealed class ThemeRequestCacheKey : IEquatable<ThemeRequestCacheKey>
 
 internal sealed class ControlRequestCacheKey : IEquatable<ControlRequestCacheKey>
 {
-    private readonly ThemeAlgorithm[]? _algorithms;
     private readonly KeyValuePair<string, string>[] _tokens;
     private readonly int _hashCode;
 
@@ -322,24 +325,23 @@ internal sealed class ControlRequestCacheKey : IEquatable<ControlRequestCacheKey
         Schema.ControlTokenIdentity identity,
         Configuration.ControlThemeConfig config)
     {
-        Identity    = identity;
-        Algorithm   = config.Algorithm;
-        _algorithms = config.Algorithms?.ToArray();
-        _tokens     = config.Tokens.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray();
-        _hashCode   = ComputeHashCode();
+        Identity   = identity;
+        Appearance = config.Appearance;
+        Density    = config.Density;
+        _tokens    = config.Tokens.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray();
+        _hashCode  = ComputeHashCode();
     }
 
     internal Schema.ControlTokenIdentity Identity { get; }
-    internal Configuration.ControlAlgorithmMode Algorithm { get; }
+    internal ThemeAppearance? Appearance { get; }
+    internal Languages.DesignDensity? Density { get; }
 
     public bool Equals(ControlRequestCacheKey? other)
     {
         return other is not null &&
                Identity == other.Identity &&
-               Algorithm == other.Algorithm &&
-               (_algorithms is null
-                   ? other._algorithms is null
-                   : other._algorithms is not null && _algorithms.AsSpan().SequenceEqual(other._algorithms)) &&
+               Appearance == other.Appearance &&
+               Density == other.Density &&
                _tokens.AsSpan().SequenceEqual(other._tokens);
     }
 
@@ -351,19 +353,8 @@ internal sealed class ControlRequestCacheKey : IEquatable<ControlRequestCacheKey
     {
         var hash = new HashCode();
         hash.Add(Identity);
-        hash.Add(Algorithm);
-        if (_algorithms is null)
-        {
-            hash.Add(-1);
-        }
-        else
-        {
-            hash.Add(_algorithms.Length);
-            foreach (var algorithm in _algorithms)
-            {
-                hash.Add(algorithm);
-            }
-        }
+        hash.Add(Appearance);
+        hash.Add(Density);
         foreach (var token in _tokens)
         {
             hash.Add(token);

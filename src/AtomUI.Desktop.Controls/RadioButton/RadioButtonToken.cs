@@ -8,19 +8,13 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class RadioButtonToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 单选框大小，除去文字部分的
-    /// </summary>
+    /// <summary>Width and height of the indicator circle beside the label.</summary>
     public partial double RadioSize { get; set; }
 
-    /// <summary>
-    /// 单选框圆点大小
-    /// </summary>
+    /// <summary>Diameter of the inner mark shown when checked.</summary>
     public partial double DotSize { get; set; }
 
-    /// <summary>
-    /// 单选框圆点禁用颜色
-    /// </summary>
+    /// <summary>Fill of the inner mark when the checked radio button is disabled.</summary>
     public partial Color DotColorDisabled { get; set; }
 
     /// <summary>
@@ -35,41 +29,13 @@ public sealed partial class RadioButtonToken : AbstractControlDesignToken
     /// </summary>
     public partial Color RadioBgColor { get; set; }
 
+    /// <summary>Inset used to position the inner mark within the radio indicator.</summary>
     public partial double DotPadding { get; set; }
 
+    /// <summary>Space between the radio indicator and its label.</summary>
     public partial Thickness TextMargin { get; set; }
 
     /// <summary>The border of an unchecked indicator under the pointer.</summary>
     public partial Color IndicatorHoverBorderColor { get; set; }
-
-    public RadioButtonToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var lineWidth        = EffectiveGlobalToken.LineWidth;
-        var fontSizeLG       = EffectiveGlobalToken.FontSizeLG;
-        var colorPrimary     = EffectiveGlobalToken.ColorPrimary;
-        var colorWhite       = EffectiveGlobalToken.ColorWhite;
-
-        var dotPadding = 4; // 魔术值，需要看有没有好办法消除
-        var radioSize  = fontSizeLG;
-
-        var radioDotSize = radioSize - (dotPadding + lineWidth) * 2;
-
-        DotPadding       = dotPadding;
-        RadioSize        = radioSize;
-        DotSize          = radioDotSize;
-        DotColorDisabled = EffectiveGlobalToken.ColorTextDisabled;
-
-        // internal
-        RadioColor   = colorWhite;
-        RadioBgColor = colorPrimary;
-        IndicatorHoverBorderColor = colorPrimary;
-        TextMargin   = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-    }
     
 }

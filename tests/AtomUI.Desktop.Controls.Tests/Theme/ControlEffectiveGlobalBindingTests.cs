@@ -32,7 +32,6 @@ public class ControlEffectiveGlobalBindingTests
                      .WithControl(
                          DrawerTokens.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.EnableMotion), "true")
                              .Build())
                      .Build()
@@ -65,7 +64,6 @@ public class ControlEffectiveGlobalBindingTests
                      .WithControl(
                          TimePickerTokens.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.LineWidth), "4")
                              .Build())
                      .Build()

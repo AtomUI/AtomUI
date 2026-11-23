@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -9,34 +8,18 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class CheckBoxToken : AbstractControlDesignToken
 {
     
-    public CheckBoxToken()
-
-    {
-    }
-    
+    /// <summary>Width and height of the checkbox indicator.</summary>
     public partial double CheckIndicatorSize { get; set; }
+    /// <summary>Size of the check mark inside a checked checkbox indicator.</summary>
     public partial double CheckedMarkSize { get; set; }
 
+    /// <summary>Size of the mark inside an indeterminate checkbox indicator.</summary>
     public partial double IndicatorTristateMarkSize { get; set; }
     
+    /// <summary>Margin around the content displayed beside the checkbox indicator.</summary>
     public partial Thickness TextMargin { get; set; }
 
     /// <summary>The border of an unchecked (or indeterminate) indicator under the pointer.</summary>
     public partial Color IndicatorHoverBorderColor { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        if (!IsExplicit(CheckBoxTokenKind.CheckIndicatorSize))
-        {
-            CheckIndicatorSize        = EffectiveGlobalToken.ControlInteractiveSize;
-        }
-
-        CheckedMarkSize           = CheckIndicatorSize * 0.6;
-        IndicatorTristateMarkSize = EffectiveGlobalToken.FontSizeLG / 2;
-        IndicatorHoverBorderColor = EffectiveGlobalToken.ColorPrimaryHover;
-        TextMargin                = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-    }
     
 }

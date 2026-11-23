@@ -55,8 +55,6 @@ public class TypeMapRegistrationGeneratorTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double Height { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         var source = Source(result, "GeneratedTypeMapRegistration.g.cs");
@@ -98,8 +96,6 @@ public class TypeMapRegistrationGeneratorTests
             internal sealed class ButtonToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken
             {
                 public double Height { get; set; }
-                protected override void CalculateTokenValues(bool dark) { }
-                internal void RunDefaultCalculation(bool dark) => CalculateTokenValues(dark);
             }
             """);
         var source = Source(result, "GeneratedTypeMapRegistration.g.cs");

@@ -1,3 +1,4 @@
+using AtomUI.Core.Tests.Theme;
 using AtomUI.Controls;
 using Shouldly;
 using Xunit;
@@ -15,8 +16,8 @@ public class ImageLoadingApplicationBuilderTests
             var secondApplication = new Avalonia.Application();
             try
             {
-                ApplicationStartup.AttachWith(firstApplication, builder => builder.UseImageLoading());
-                ApplicationStartup.AttachWith(secondApplication, builder => builder.UseImageLoading());
+                TestDesignLanguages.AttachWithAntDesign(firstApplication, builder => builder.UseImageLoading());
+                TestDesignLanguages.AttachWithAntDesign(secondApplication, builder => builder.UseImageLoading());
 
                 var firstLoader = firstApplication.GetImageLoader();
                 var secondLoader = secondApplication.GetImageLoader();

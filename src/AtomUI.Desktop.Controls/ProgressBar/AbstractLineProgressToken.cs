@@ -26,12 +26,4 @@ public abstract partial class AbstractLineProgressToken : AbstractProgressToken
     /// Size of the status icon of small and middle progress bars
     /// </summary>
     public partial double LineInfoIconSizeSM { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LineInfoIconSize    = EffectiveGlobalToken.IconSize;
-        LineInfoIconSizeSM  = EffectiveGlobalToken.IconSizeSM;
-        LineExtraInfoMargin = EffectiveGlobalToken.ControlPaddingHorizontalSM;
-    }
 }

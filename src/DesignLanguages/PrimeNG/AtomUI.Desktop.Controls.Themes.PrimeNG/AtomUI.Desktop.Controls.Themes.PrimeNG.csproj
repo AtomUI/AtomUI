@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.Desktop.Controls.Themes.PrimeNG</RootNamespace>
+        <Description>The Ant Design values of the desktop controls (AtomUI.Desktop.Controls).</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../../../AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../AtomUI.Controls.Themes.PrimeNG/AtomUI.Controls.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../AtomUI.DesignLanguages.PrimeNG/AtomUI.DesignLanguages.PrimeNG.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- The tests check the per-control global overrides against the preset stages directly. -->
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.PrimeNG.Tests" />
+    </ItemGroup>
+</Project>

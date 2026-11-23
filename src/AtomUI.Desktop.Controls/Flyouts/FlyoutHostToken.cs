@@ -1,4 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -7,44 +7,19 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class FlyoutHostToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 默认 Popup 和 PlacementTarget 的间距
-    /// </summary>
+    /// <summary>Default gap between the flyout and its placement target.</summary>
     public partial double MarginToAnchor { get; set; }
     
-    /// <summary>
-    /// OverlayHost 类型的阴影
-    /// </summary>
+    /// <summary>Shadow around the flyout when it is hosted in an overlay.</summary>
     public partial BoxShadows OverlayHostShadow { get; set; }
     
-    /// <summary>
-    /// PopupRoot 类型的阴影
-    /// </summary>
+    /// <summary>Shadow around the flyout when it is hosted in a separate popup root.</summary>
     public partial BoxShadows PopupRootShadow { get; set; }
     
-    /// <summary>
-    /// Flyout 水平偏移
-    /// </summary>
+    /// <summary>Horizontal offset of the flyout from its calculated placement.</summary>
     public partial double HorizontalOffset { get; set; }
     
-    /// <summary>
-    /// Flyout 垂直偏移
-    /// </summary>
+    /// <summary>Vertical offset of the flyout from its calculated placement.</summary>
     public partial double VerticalOffset { get; set; }
-
-    public FlyoutHostToken()
-
-    {
-    }
-    
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        MarginToAnchor    = EffectiveGlobalToken.UniformlyMarginXXS;
-        OverlayHostShadow = EffectiveGlobalToken.BoxShadowsSecondary;
-        PopupRootShadow   = EffectiveGlobalToken.BoxShadowsSecondary;
-        HorizontalOffset = EffectiveGlobalToken.UniformlyMarginXS;
-        VerticalOffset   = EffectiveGlobalToken.UniformlyMarginXS;
-    }
     
 }

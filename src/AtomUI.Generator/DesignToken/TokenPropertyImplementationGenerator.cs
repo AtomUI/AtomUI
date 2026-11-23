@@ -7,8 +7,8 @@ using Microsoft.CodeAnalysis.Text;
 namespace AtomUI.Generator.DesignToken;
 
 /// <summary>
-/// Emits the implementing half of every partial token property: a plain field read and a setter that
-/// records the write. Uses <c>RegisterSourceOutput</c> so the implementation is visible at IDE design time.
+/// Emits the implementing half of every partial token property of the global, control and language token classes: a
+/// plain field read and a setter that skips frozen properties. Uses <c>RegisterSourceOutput</c> so the implementation is visible at IDE design time.
 /// </summary>
 [Generator]
 public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
@@ -31,8 +31,15 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
                 static (context, token) => CreateModel(context, TargetMarkConstants.GlobalDesignTokenAttribute, isControlToken: false, token))
             .WithTrackingName(ModelStepName);
 
+        var languageTokens = initContext.SyntaxProvider.ForAttributeWithMetadataName(
+                TargetMarkConstants.LanguageDesignTokenAttribute,
+                static (node, _) => node is ClassDeclarationSyntax,
+                static (context, token) => CreateModel(context, TargetMarkConstants.LanguageDesignTokenAttribute, isControlToken: true, token))
+            .WithTrackingName(ModelStepName);
+
         initContext.RegisterSourceOutput(controlTokens, static (context, model) => Emit(context, model));
         initContext.RegisterSourceOutput(globalTokens, static (context, model) => Emit(context, model));
+        initContext.RegisterSourceOutput(languageTokens, static (context, model) => Emit(context, model));
     }
 
     private static void Emit(SourceProductionContext context, TokenTypeImplementationModel model)
@@ -46,7 +53,7 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
                 diagnostic.TypeName));
         }
 
-        if (model.Properties.Count != 0 || model.EmitRunDefaultCalculation)
+        if (model.Properties.Count != 0)
         {
             context.AddSource(model.HintName, GeneratedSourceText.From(TokenPropertyImplementationWriter.Write(model)));
         }
@@ -70,7 +77,7 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
         if (type.ContainingType is not null || type.IsGenericType)
         {
             // Nested and generic token types are rejected by the token model diagnostics.
-            return new TokenTypeImplementationModel(hintName, null, type.Name, false,
+            return new TokenTypeImplementationModel(hintName, null, type.Name,
                 new ValueArray<TokenPropertyImplementation>([]), new ValueArray<TokenPropertyDiagnostic>([]));
         }
 
@@ -132,7 +139,6 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
             hintName,
             namespaceName,
             type.Name,
-            isControlToken && isPrimary && classIsPartial && type.IsSealed,
             new ValueArray<TokenPropertyImplementation>(properties),
             new ValueArray<TokenPropertyDiagnostic>(diagnostics));
     }
@@ -246,7 +252,6 @@ internal sealed record TokenTypeImplementationModel(
     string HintName,
     string? Namespace,
     string TypeName,
-    bool EmitRunDefaultCalculation,
     ValueArray<TokenPropertyImplementation> Properties,
     ValueArray<TokenPropertyDiagnostic> Diagnostics);
 

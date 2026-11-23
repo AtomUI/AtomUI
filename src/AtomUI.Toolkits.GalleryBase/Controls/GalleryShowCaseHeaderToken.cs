@@ -27,36 +27,6 @@ internal sealed partial class GalleryShowCaseHeaderToken : AbstractControlDesign
     public partial double MetadataLabelWidth { get; set; }
     public partial double MetadataValueWidth { get; set; }
     public partial double MetadataLineHeight { get; set; }
-    public partial FontFamily MetadataValueFontFamily { get; set; } = FontFamily.Default;
-
-    public GalleryShowCaseHeaderToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        HeaderMargin              = new Thickness(EffectiveGlobalToken.SizeUnit * 7, EffectiveGlobalToken.SizeUnit * 6, EffectiveGlobalToken.SizeUnit * 7, EffectiveGlobalToken.SizeUnit * 4 + 2);
-        HeaderSpacing             = EffectiveGlobalToken.SizeUnit * 4;
-        SummarySpacing            = EffectiveGlobalToken.SizeUnit + 2;
-        TitleFontSize             = EffectiveGlobalToken.FontSizeHeading2;
-        TitleFontWeight           = EffectiveGlobalToken.FontWeightStrong;
-        TagsMargin                = new Thickness(EffectiveGlobalToken.SizeUnit * 2 + 2, 0, 0, 0);
-        TagItemSpacing            = EffectiveGlobalToken.SizeUnit * 2 + 2;
-        TagLineSpacing            = EffectiveGlobalToken.SizeUnit + 2;
-        SubtitleFontSize          = EffectiveGlobalToken.FontSizeLG;
-        MetadataPadding           = new Thickness(EffectiveGlobalToken.SizeUnit * 4, EffectiveGlobalToken.SizeUnit * 2);
-        MetadataCornerRadius      = EffectiveGlobalToken.BorderRadiusLG;
-        MetadataMinHeight         = EffectiveGlobalToken.SizeUnit * 12;
-        MetadataItemSpacing       = EffectiveGlobalToken.SizeUnit * 12;
-        MetadataLineSpacing       = EffectiveGlobalToken.SizeUnit * 2;
-        MetadataPairSpacing       = EffectiveGlobalToken.SizeUnit * 2 + 2;
-        MetadataLabelWidth        = EffectiveGlobalToken.SizeUnit * 21;
-        MetadataValueWidth        = EffectiveGlobalToken.SizeUnit * 50;
-        MetadataLineHeight        = EffectiveGlobalToken.SizeUnit * 5 + 2;
-        MetadataValueFontFamily   = EffectiveGlobalToken.FontFamily ?? FontFamily.Default;
-    }
+    public partial FontFamily? MetadataValueFontFamily { get; set; }
 
 }

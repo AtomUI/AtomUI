@@ -5,11 +5,6 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class ListTransferToken : AbstractTransferToken
 {
+    /// <summary>Width of each list in the large list transfer layout.</summary>
     public partial double ListWidthLG { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ListWidthLG = 250;
-    }
 }

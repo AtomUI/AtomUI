@@ -80,30 +80,8 @@ public sealed partial class PaginationToken : AbstractPaginationToken
     /// Font weight of the active Pagination item
     /// </summary>
     public partial FontWeight ItemActiveFontWeight { get; set; }
-
-    public PaginationToken()
-
-    {
-    }
     
+    /// <summary>Inline padding between the page number and the edges of its pagination item.</summary>
     public partial Thickness PaginationItemPaddingInline { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PaginationItemPaddingInline = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS * 1.5, 0);
-        ItemBg                    = EffectiveGlobalToken.ColorBgContainer;
-        ItemActiveBg              = EffectiveGlobalToken.ColorBgContainer;
-        ItemLinkBg                = EffectiveGlobalToken.ColorBgContainer;
-        ItemActiveBgDisabled      = EffectiveGlobalToken.ControlItemBgActiveDisabled;
-        ItemActiveColor            = EffectiveGlobalToken.ColorPrimary;
-        ItemActiveBorderColor      = EffectiveGlobalToken.ColorPrimary;
-        ItemActiveHoverColor       = EffectiveGlobalToken.ColorPrimaryHover;
-        ItemActiveHoverBorderColor = EffectiveGlobalToken.ColorPrimaryHover;
-        ItemActiveFontWeight       = EffectiveGlobalToken.FontWeightStrong;
-
-        InputOutlineOffset                  = new Thickness(0);
-        
-    }
     
 }

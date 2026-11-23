@@ -1,6 +1,5 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
-using Avalonia.Controls;
 using Xunit;
 
 namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;

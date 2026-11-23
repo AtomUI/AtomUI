@@ -190,7 +190,7 @@ public partial class SelectFamilyEffectTests
             case "ColorPrimaryHover":
                 b.Hover();
                 return true;
-            case "ColorPrimary" or "InputActiveShadow":
+            case "ColorPrimary" or "InputActiveBorderColor" or "InputActiveShadow":
                 b.Focus();
                 return true;
             case "ColorError":

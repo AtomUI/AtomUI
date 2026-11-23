@@ -1,5 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;

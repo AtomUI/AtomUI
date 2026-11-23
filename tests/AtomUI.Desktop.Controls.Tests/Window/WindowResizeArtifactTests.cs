@@ -115,14 +115,14 @@ public class WindowResizeArtifactTests
     [Fact]
     public void Linux_Window_Preserves_Shadow_And_Scales_Only_The_Managed_Resize_Grip()
     {
-        var tokenSource  = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/WindowToken.cs"));
+        var tokenSource  = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/Window/AntDesignWindowDerivation.cs"));
         var chromeSource = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Chrome/AbstractLinuxWindowChromeManager.cs"));
         var reflectionSource = File.ReadAllText(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Utils/WindowDrawnDecorationsReflectionExtensions.cs"));
         var waylandSource = File.ReadAllText(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Chrome/WaylandWindowChromeManager.cs"));
 
-        tokenSource.ShouldContain("FrameShadows             = EffectiveGlobalToken.BoxShadowsSecondary;");
+        tokenSource.ShouldContain("token.FrameShadows             = global.BoxShadowsSecondary;");
         tokenSource.ShouldNotContain("ScaleFrameShadows");
         waylandSource.ShouldContain("private const double ManagedResizeGripScale = 1.0 / 3.0;");
         waylandSource.ShouldContain("Window.TryTakeOverManagedResizeGrip(");

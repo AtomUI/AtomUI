@@ -13,7 +13,7 @@ internal class CaptionButtonFrame : ContentControl
         AvaloniaProperty.Register<CaptionButtonFrame, Thickness>(nameof(BackgroundInset));
 
     /// <summary>
-    /// 背景层相对布局盒的内缩。它只影响背景视觉，布局盒始终由内容层与 <see cref="Avalonia.Controls.TemplatedControl.Padding"/> 决定。
+    /// 背景层相对布局盒的内缩。它只影响背景视觉，布局盒始终由内容层与 <c>Padding</c> 决定。
     /// </summary>
     public Thickness BackgroundInset
     {

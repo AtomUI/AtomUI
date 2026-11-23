@@ -1,262 +1,163 @@
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
-using Avalonia.Media;
+using AtomUI.Theme.Languages;
 using Shouldly;
 using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
+/// <summary>
+/// The selection resolver (spec 7.8): a pure function with three rules and no fallback search — the language, theme and
+/// axis values must be available; the theme's fixed axes win; the theme's locked seeds are not replaced.
+/// </summary>
 public class ThemeSelectionResolverTests
 {
-    private static ThemeInfo Info(
-        string id,
-        string? language,
-        ThemeAppearance appearance,
-        ThemeDensity density,
-        ThemeBrandColorSupport brand,
-        params ThemeAlgorithm[] algorithms)
-    {
-        return new ThemeInfo(id, id, appearance, false)
+    private static readonly DesignStyle Nova = new("Nova");
+    private static readonly DesignStyle Vega = new("Vega");
+
+    private static readonly DesignLanguageInfo Shadcn = new("Shadcn", [Vega, Nova], Vega,
+        [DesignDensity.Default, DesignDensity.Compact], [DesignIdiom.Desktop], ["ColorPrimary", "BaseColor"]);
+
+    private static readonly DesignLanguageInfo Ant = new("AntDesign", [new DesignStyle("Default")], new DesignStyle("Default"),
+        [DesignDensity.Default, DesignDensity.Compact], [DesignIdiom.Desktop], ["ColorPrimary"]);
+
+    private static readonly IReadOnlyList<ThemeInfo> Themes =
+    [
+        new("$Shadcn", "Shadcn", "Shadcn") { IsLanguageDefault = true },
+        new("$AntDesign", "AntDesign", "AntDesign") { IsLanguageDefault = true },
+        new("DaybreakBlue", "Daybreak Blue", "AntDesign"),
+        new("Midnight", "Midnight", "Shadcn")
         {
-            DesignLanguage = language,
-            Density        = density,
-            BrandColor     = brand,
-            Algorithms     = algorithms
-        };
-    }
+            Style = Nova, Appearance = ThemeAppearance.Dark, Density = DesignDensity.Compact,
+            LockedSeeds = ["ColorPrimary"]
+        }
+    ];
 
-    private static List<ThemeInfo> CreateCatalog()
+    [Fact]
+    public void Without_A_Theme_The_Language_Default_Entry_Is_Selected()
     {
-        return
-        [
-            Info("DaybreakBlue", "AntDesign", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
-                 ThemeAlgorithm.Default),
-            Info("Loose", null, ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed),
-            Info("PrimeNGAura", "PrimeNG.Aura", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
-                 new ThemeAlgorithm("PrimeNG", "Aura")),
-            Info("PrimeNGAura.Dark", "PrimeNG.Aura", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
-                 new ThemeAlgorithm("PrimeNG", "Aura.Dark")),
-            Info("PrimeNGAura.Compact", "PrimeNG.Aura", ThemeAppearance.Light, ThemeDensity.Compact,
-                 ThemeBrandColorSupport.Seed, new ThemeAlgorithm("PrimeNG", "Aura"), ThemeAlgorithm.Compact),
-            Info("PrimeNGAura.DarkCompact", "PrimeNG.Aura", ThemeAppearance.Dark, ThemeDensity.Compact,
-                 ThemeBrandColorSupport.Seed, new ThemeAlgorithm("PrimeNG", "Aura.Dark"), ThemeAlgorithm.Compact),
-            Info("Bootstrap", "Bootstrap", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default)
-        ];
+        var result = Resolve(ThemeSelection.Of("Shadcn", Nova).WithAppearance(ThemeAppearance.Dark)
+                                           .WithDensity(DesignDensity.Compact));
+
+        result.Request.ThemeId.ShouldBe("$Shadcn");
+        var config = result.Request.Config.ShouldNotBeNull();
+        config.Language.ShouldBe("Shadcn");
+        config.Style.ShouldBe(Nova);
+        config.Appearance.ShouldBe(ThemeAppearance.Dark);
+        config.Density.ShouldBe(DesignDensity.Compact);
+        result.IgnoredAxes.ShouldBeEmpty();
+        result.IgnoredSeeds.ShouldBeEmpty();
+        result.Request.Reason.ShouldBe(ThemeTransitionReason.UserRequest);
     }
 
     [Fact]
-    public void Exact_Variant_Uses_The_Profile_Chain()
+    public void A_Named_Theme_Of_The_Language_Is_Selected()
     {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateCatalog(),
-            new ThemeSelection("PrimeNG.Aura", ThemeAppearance.Dark, ThemeDensity.Compact, null));
+        var result = Resolve(ThemeSelection.Of("AntDesign").WithTheme("DaybreakBlue"));
 
-        result.ThemeId.ShouldBe("PrimeNGAura.DarkCompact");
-        result.Algorithms.ShouldBeNull();
+        result.Request.ThemeId.ShouldBe("DaybreakBlue");
+        result.Request.Config.ShouldNotBeNull().Language.ShouldBe("AntDesign");
     }
 
     [Fact]
-    public void Missing_Variant_Falls_Back_To_Base_Chain_Plus_BuiltIns()
+    public void A_Language_That_Is_Not_Enabled_Fails()
     {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateCatalog(),
-            new ThemeSelection("AntDesign", ThemeAppearance.Dark, ThemeDensity.Compact, null));
-
-        result.ThemeId.ShouldBe("DaybreakBlue");
-        result.Algorithms.ShouldNotBeNull();
-        result.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark]);
+        Should.Throw<ThemeSelectionException>(() => Resolve(ThemeSelection.Of("PrimeNG")))
+              .Message.ShouldContain("'PrimeNG' is not enabled");
     }
 
     [Fact]
-    public void Fallback_Removes_BuiltIn_Dark_And_Compact_From_The_Base_Chain()
+    public void A_Theme_Of_Another_Language_Fails()
     {
-        var catalog = new List<ThemeInfo>
-        {
-            Info("Base", "Lang", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Dark, ThemeAlgorithm.Compact)
-        };
-
-        var result = ThemeSelectionResolver.Resolve(
-            catalog, new ThemeSelection("Lang", ThemeAppearance.Dark, ThemeDensity.Compact, null));
-
-        result.ThemeId.ShouldBe("Base");
-        result.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark]);
+        Should.Throw<ThemeSelectionException>(() => Resolve(ThemeSelection.Of("AntDesign").WithTheme("Midnight")))
+              .Message.ShouldContain("belongs to 'Shadcn'");
     }
 
     [Fact]
-    public void Seed_Language_Returns_The_Brand_Seed()
+    public void A_Theme_That_Is_Not_In_The_Catalog_Fails()
     {
-        var seed = Color.Parse("#52C41A");
-        var result = ThemeSelectionResolver.Resolve(
-            CreateCatalog(),
-            new ThemeSelection("AntDesign", ThemeAppearance.Light, ThemeDensity.Normal, seed));
+        Should.Throw<ThemeSelectionException>(() => Resolve(ThemeSelection.Of("AntDesign").WithTheme("Missing")))
+              .Message.ShouldContain("'Missing' is not in the catalog");
+    }
 
-        result.BrandSeed.ShouldBe(seed);
-        result.BrandColorIgnored.ShouldBeFalse();
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void An_Axis_Value_The_Language_Does_Not_Declare_Fails(bool style)
+    {
+        var selection = style
+            ? ThemeSelection.Of("AntDesign", Nova)
+            : ThemeSelection.Of("AntDesign").WithDensity(new DesignDensity("Spacious"));
+
+        Should.Throw<ThemeSelectionException>(() => Resolve(selection));
     }
 
     [Fact]
-    public void Fixed_Language_Ignores_The_Brand()
+    public void The_Axes_A_Theme_Fixes_Win_And_Are_Reported()
     {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateCatalog(),
-            new ThemeSelection("Bootstrap", ThemeAppearance.Light, ThemeDensity.Normal, Color.Parse("#52C41A")));
+        var result = Resolve(ThemeSelection.Of("Shadcn", Vega).WithTheme("Midnight")
+                                           .WithAppearance(ThemeAppearance.Light).WithDensity(DesignDensity.Default));
 
-        result.BrandSeed.ShouldBeNull();
-        result.BrandColorIgnored.ShouldBeTrue();
+        result.IgnoredAxes.ShouldBe(["Style", "Appearance", "Density"]);
+        var config = result.Request.Config.ShouldNotBeNull();
+        config.Style.ShouldBeNull();
+        config.Appearance.ShouldBeNull();
+        config.Density.ShouldBeNull();
     }
 
     [Fact]
-    public void Null_Brand_Is_Not_Ignored()
+    public void A_Selection_That_Agrees_With_The_Fixed_Axes_Is_Not_Reported()
     {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateCatalog(),
-            new ThemeSelection("Bootstrap", ThemeAppearance.Light, ThemeDensity.Normal, null));
+        var result = Resolve(ThemeSelection.Of("Shadcn", Nova).WithTheme("Midnight")
+                                           .WithAppearance(ThemeAppearance.Dark).WithDensity(DesignDensity.Compact));
 
-        result.BrandSeed.ShouldBeNull();
-        result.BrandColorIgnored.ShouldBeFalse();
+        result.IgnoredAxes.ShouldBeEmpty();
     }
 
     [Fact]
-    public void Unknown_Language_Throws()
+    public void Locked_Seeds_Are_Not_Replaced_And_Are_Reported()
     {
-        Should.Throw<ArgumentException>(() => ThemeSelectionResolver.Resolve(
-                                            CreateCatalog(),
-                                            new ThemeSelection("Nope", ThemeAppearance.Light, ThemeDensity.Normal, null)));
+        var result = Resolve(ThemeSelection.Of("Shadcn").WithTheme("Midnight")
+                                           .WithSeed("ColorPrimary", "#FF0000")
+                                           .WithLanguageSeed("BaseColor", "#737373"));
+
+        result.IgnoredSeeds.ShouldBe(["ColorPrimary"]);
+        var config = result.Request.Config.ShouldNotBeNull();
+        config.Tokens.ShouldNotContainKey("ColorPrimary");
+        config.LanguageTokens["BaseColor"].ShouldBe("#737373");
     }
 
     [Fact]
-    public void Dark_Only_Language_Requested_In_Light_Falls_Back_To_Its_Definition()
+    public void Language_Seeds_Are_Written_As_Language_Tokens()
     {
-        var seed = Color.Parse("#52C41A");
-        var catalog = new List<ThemeInfo>
-        {
-            Info("MyNight", "MyBrand", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
-        };
+        var result = Resolve(ThemeSelection.Of("Shadcn").WithLanguageSeed("Radius", "0.5rem"));
 
-        var light = ThemeSelectionResolver.Resolve(
-            catalog, new ThemeSelection("MyBrand", ThemeAppearance.Light, ThemeDensity.Normal, seed));
-        var lightCompact = ThemeSelectionResolver.Resolve(
-            catalog, new ThemeSelection("MyBrand", ThemeAppearance.Light, ThemeDensity.Compact, null));
+        result.Request.Config.ShouldNotBeNull().LanguageTokens["Radius"].ShouldBe("0.5rem");
+    }
 
-        light.ThemeId.ShouldBe("MyNight");
-        light.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
-        light.BrandSeed.ShouldBe(seed);
-        lightCompact.ThemeId.ShouldBe("MyNight");
-        lightCompact.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact]);
+    [Theory]
+    [InlineData(ThemeAppearance.Light)]
+    [InlineData(ThemeAppearance.Dark)]
+    public void Following_The_System_Uses_The_System_Appearance(ThemeAppearance system)
+    {
+        var result = ThemeSelectionResolver.Resolve([Shadcn, Ant], Themes,
+            ThemeSelection.Of("AntDesign").WithAppearance(ThemeAppearance.Dark).FollowSystemAppearance(), system);
+
+        result.Request.Config.ShouldNotBeNull().Appearance.ShouldBe(system);
     }
 
     [Fact]
-    public void Compact_Only_Language_Requested_Normal_Falls_Back_To_The_Same_Appearance()
+    public void The_Resolver_Is_Pure()
     {
-        var catalog = new List<ThemeInfo>
-        {
-            Info("Tight.Dark", "Tight", ThemeAppearance.Dark, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark),
-            Info("Tight", "Tight", ThemeAppearance.Light, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
-        };
+        var selection = ThemeSelection.Of("Shadcn", Nova).WithSeed("ColorPrimary", "#FF0000");
 
-        var light = ThemeSelectionResolver.Resolve(
-            catalog, new ThemeSelection("Tight", ThemeAppearance.Light, ThemeDensity.Normal, null));
-        var dark = ThemeSelectionResolver.Resolve(
-            catalog, new ThemeSelection("Tight", ThemeAppearance.Dark, ThemeDensity.Normal, null));
+        var first = Resolve(selection);
+        var second = Resolve(selection);
 
-        light.ThemeId.ShouldBe("Tight");
-        light.Algorithms.ShouldBe([ThemeAlgorithm.Default]);
-        dark.ThemeId.ShouldBe("Tight.Dark");
-        dark.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+        second.Request.ThemeId.ShouldBe(first.Request.ThemeId);
+        second.Request.Config.ShouldNotBeNull().Tokens.ShouldBe(first.Request.Config.ShouldNotBeNull().Tokens);
+        selection.Seeds.Count.ShouldBe(1);
     }
 
-    [Fact]
-    public void Fallback_Prefers_Same_Density_Then_Catalog_Order_When_No_Appearance_Matches()
-    {
-        var catalog = new List<ThemeInfo>
-        {
-            Info("Night.Compact", "Night", ThemeAppearance.Dark, ThemeDensity.Compact, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark),
-            Info("Night", "Night", ThemeAppearance.Dark, ThemeDensity.Normal, ThemeBrandColorSupport.Fixed,
-                 ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
-        };
-
-        ThemeSelectionResolver.Resolve(catalog, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Normal, null))
-                              .ThemeId.ShouldBe("Night");
-        ThemeSelectionResolver.Resolve(catalog, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Compact, null))
-                              .ThemeId.ShouldBe("Night.Compact");
-
-        var single = new List<ThemeInfo> { catalog[0] };
-        ThemeSelectionResolver.Resolve(single, new ThemeSelection("Night", ThemeAppearance.Light, ThemeDensity.Normal, null))
-                              .ThemeId.ShouldBe("Night.Compact");
-    }
-
-    [Fact]
-    public void DesignLanguages_Skips_Ungrouped_Themes()
-    {
-        ThemeSelectionResolver.DesignLanguages(CreateCatalog())
-                              .ShouldBe(["AntDesign", "PrimeNG.Aura", "Bootstrap"]);
-    }
-
-    [Fact]
-    public void BrandColorSupport_Reads_The_Language_Declaration()
-    {
-        var catalog = CreateCatalog();
-
-        ThemeSelectionResolver.BrandColorSupport(catalog, "AntDesign").ShouldBe(ThemeBrandColorSupport.Seed);
-        ThemeSelectionResolver.BrandColorSupport(catalog, "Bootstrap").ShouldBe(ThemeBrandColorSupport.Fixed);
-        Should.Throw<ArgumentException>(() => ThemeSelectionResolver.BrandColorSupport(catalog, "Nope"));
-    }
-
-    private static List<ThemeInfo> CreateNeutralCatalog(ThemeNeutralColorSupport support)
-    {
-        return
-        [
-            Info("Nova", "Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, ThemeBrandColorSupport.Seed,
-                 ThemeAlgorithm.Default) with { NeutralColor = support }
-        ];
-    }
-
-    [Fact]
-    public void Seed_Language_Passes_Neutral_Seed()
-    {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateNeutralCatalog(ThemeNeutralColorSupport.Seed),
-            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null, Color.Parse("#71717B")));
-
-        result.ThemeId.ShouldBe("Nova");
-        result.NeutralSeed.ShouldBe(Color.Parse("#71717B"));
-        result.NeutralColorIgnored.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void Fixed_Language_Ignores_Neutral_Color()
-    {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateNeutralCatalog(ThemeNeutralColorSupport.Fixed),
-            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null, Color.Parse("#71717B")));
-
-        result.NeutralSeed.ShouldBeNull();
-        result.NeutralColorIgnored.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void No_Neutral_Color_Leaves_Seed_Null()
-    {
-        var result = ThemeSelectionResolver.Resolve(
-            CreateNeutralCatalog(ThemeNeutralColorSupport.Seed),
-            new ThemeSelection("Shadcn.Nova", ThemeAppearance.Light, ThemeDensity.Normal, null));
-
-        result.NeutralSeed.ShouldBeNull();
-        result.NeutralColorIgnored.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void NeutralColorSupport_Reports_First_Definition()
-    {
-        var catalog = CreateNeutralCatalog(ThemeNeutralColorSupport.Seed);
-
-        ThemeSelectionResolver.NeutralColorSupport(catalog, "Shadcn.Nova").ShouldBe(ThemeNeutralColorSupport.Seed);
-        Should.Throw<ArgumentException>(() => ThemeSelectionResolver.NeutralColorSupport(catalog, "Nope"));
-    }
+    private static ThemeSelectionResult Resolve(ThemeSelection selection) =>
+        ThemeSelectionResolver.Resolve([Shadcn, Ant], Themes, selection);
 }

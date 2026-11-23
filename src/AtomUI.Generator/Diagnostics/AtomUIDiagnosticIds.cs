@@ -3,10 +3,6 @@ namespace AtomUI.Generator.Diagnostics;
 internal static class AtomUIDiagnosticIds
 {
     public const string CompiledThemeBindingFailed = "ATOMUITOKEN002";
-    public const string DesignLanguageDuplicateVariant = "ATMTHM3103";
-    public const string DesignLanguageMixedBrandColor = "ATMTHM3104";
-    public const string DesignLanguageDensityMismatch = "ATMTHM3105";
-    public const string DesignLanguageMixedNeutralColor = "ATMTHM3108";
     public const string RegistrationAmbiguousThemeExport = "ATOMUIREG001";
     public const string RegistrationInvalidTokenOwner = "ATOMUIREG002";
     public const string RegistrationInaccessibleType = "ATOMUIREG003";
@@ -39,7 +35,6 @@ internal static class AtomUIDiagnosticIds
     public const string ControlTokenGenericLayer = "ATOMUIGEN021";
     public const string ControlTokenPropertyConflict = "ATOMUIGEN022";
     public const string ControlTokenInvalidProperty = "ATOMUIGEN023";
-    public const string ControlTokenInvalidCalculationChain = "ATOMUIGEN024";
     public const string AbstractControlTokenInvalidName = "ATOMUIGEN025";
     public const string ControlTokenNestedType = "ATOMUIGEN026";
     public const string SemanticPartInvalidDeclaration = "ATOMUIGEN027";
@@ -55,7 +50,6 @@ internal static class AtomUIDiagnosticIds
     public const string SemanticPartStyleTypeConflict = "ATOMUIGEN037";
     public const string SemanticPartInvalidSince = "ATOMUIGEN038";
     public const string StartupHookMissingAttach = "ATOMUIGEN039";
-    public const string OwnTokenSentinel = "ATOMUIGEN040";
     public const string ThemeAssetSharedReadMismatch = "ATOMUIGEN041";
     public const string OwnTokenUnreferenced = "ATOMUIGEN042";
     public const string ControlCodeScopedTokenRead = "ATOMUIGEN043";
@@ -66,8 +60,11 @@ internal static class AtomUIDiagnosticIds
     [Obsolete("ATOMUIGEN046 is retired and never reported; the ID is reserved and must not be reused.")]
     public const string ThemeAssetTemplateAttributeMasksSetter = "ATOMUIGEN046";
     public const string ControlCodeLocalValueVisualWrite = "ATOMUIGEN047";
-    public const string OwnTokenDerivationBaseUnguarded = "ATOMUIGEN048";
     public const string TokenPropertyNotPartial = "ATOMUIGEN049";
+    public const string DerivationLeavesTokenUnwritten = "ATOMUIGEN050";
+    public const string DerivationReadsUnwrittenToken = "ATOMUIGEN051";
+    public const string ValuePackageMissesDerivation = "ATOMUIGEN052";
+    public const string PackageDependencyDirection = "ATOMUIGEN053";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

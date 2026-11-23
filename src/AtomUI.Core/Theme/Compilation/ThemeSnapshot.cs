@@ -1,6 +1,7 @@
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Compilation;
@@ -12,11 +13,12 @@ internal sealed class ThemeSnapshot
         PreparedThemeDefinition definition,
         ThemeDefinitionRevision definitionRevision,
         ThemeContentFingerprint contentFingerprint,
-        ThemeAppearance appearance,
+        DesignVariant variant,
         ThemeSchemaRevision registryRevision,
         ThemeSchemaRegistry registry,
         NormalizedThemeConfig effectiveConfig,
         TokenValueTable globalTokenValues,
+        TokenValueTable languageTokenValues,
         IReadOnlyDictionary<object, object?> globalResources,
         IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> presetColorPalettes,
         LazyControlSnapshots controlSlots)
@@ -25,11 +27,12 @@ internal sealed class ThemeSnapshot
         Definition = definition;
         DefinitionRevision = definitionRevision;
         ContentFingerprint = contentFingerprint;
-        Appearance = appearance;
+        Variant = variant;
         RegistryRevision = registryRevision;
         Registry = registry;
         EffectiveConfig = effectiveConfig;
         GlobalTokenValues = globalTokenValues;
+        LanguageTokenValues = languageTokenValues;
         GlobalResources = globalResources;
         PresetColorPalettes = presetColorPalettes;
         Controls = controlSlots;
@@ -43,11 +46,20 @@ internal sealed class ThemeSnapshot
     internal PreparedThemeDefinition Definition { get; }
     internal ThemeDefinitionRevision DefinitionRevision { get; }
     internal ThemeContentFingerprint ContentFingerprint { get; }
-    internal ThemeAppearance Appearance { get; }
+    /// <summary>The variant the scope's global tokens were derived for.</summary>
+    internal DesignVariant Variant { get; }
+
+    internal ThemeAppearance Appearance => Variant.Appearance;
+
+    /// <summary>The language this snapshot was derived by.</summary>
+    internal Schema.DesignLanguageDescriptor Language => EffectiveConfig.Language!;
     internal ThemeSchemaRevision RegistryRevision { get; }
     internal ThemeSchemaRegistry Registry { get; }
     internal NormalizedThemeConfig EffectiveConfig { get; }
     internal TokenValueTable GlobalTokenValues { get; }
+
+    /// <summary>The language token values, by language token slot.</summary>
+    internal TokenValueTable LanguageTokenValues { get; }
     internal IReadOnlyDictionary<object, object?> GlobalResources { get; }
     internal IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo> PresetColorPalettes { get; }
     internal LazyControlSnapshots Controls { get; }

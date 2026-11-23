@@ -218,6 +218,13 @@ public partial class DesignToken
     public partial Thickness InputContentMargin { get; set; }
 
     /// <summary>
+    /// 输入类控件聚焦（激活）态的边框颜色。
+    /// Border colour of a focused (active) input control; pairs with <see cref="InputActiveShadow"/>.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public partial Color InputActiveBorderColor { get; set; }
+
+    /// <summary>
     /// 输入类控件激活态外轮廓阴影。
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]

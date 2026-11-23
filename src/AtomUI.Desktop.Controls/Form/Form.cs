@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,7 +10,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 

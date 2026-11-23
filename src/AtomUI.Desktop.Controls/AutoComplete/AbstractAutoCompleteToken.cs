@@ -8,9 +8,7 @@ namespace AtomUI.Desktop.Controls;
 public abstract partial class AbstractAutoCompleteToken : AbstractControlDesignToken
 {
 
-    /// <summary>
-    /// 菜单内容边距
-    /// </summary>
+    /// <summary>Padding inside the suggestion popup.</summary>
     public partial Thickness PopupContentPadding { get; set; }
 
     /// <summary>
@@ -41,27 +39,10 @@ public abstract partial class AbstractAutoCompleteToken : AbstractControlDesignT
     /// </summary>
     public partial Color OptionSelectedColor { get; set; }
 
-    /// <summary>
-    /// 候选列表弹窗最小宽度
-    /// </summary>
+    /// <summary>Minimum width of the suggestion popup.</summary>
     public partial double MinPopupWidth { get; set; }
 
-    /// <summary>
-    /// 在不跟随 Anchor 宽度时候的 Popup 最大宽度
-    /// </summary>
+    /// <summary>Maximum width of the suggestion popup when its width does not follow the anchor.</summary>
     public partial double MaxPopupWidth { get; set; }
-
-protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        OptionHeight        = EffectiveGlobalToken.ControlHeight;
-        OptionMargin        = default;
-        OptionBorderRadius  = default;
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        MinPopupWidth       = 120;
-        OptionColor         = EffectiveGlobalToken.ColorTextSecondary;
-        OptionSelectedColor = EffectiveGlobalToken.ColorText;
-        MaxPopupWidth       = 200;
-    }
 
 }

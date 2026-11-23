@@ -3,8 +3,8 @@ using System.Text;
 namespace AtomUI.Generator.DesignToken;
 
 /// <summary>
-/// Writes the implementing half of a token type's partial properties. The getter is a plain field read;
-/// the setter adds only the <c>RecordWrite</c> call, which is a single null check while recording is off.
+/// Writes the implementing half of a token type's partial properties. The getter is a plain field read; the setter
+/// drops the write when the property is frozen, which is a single null check while nothing is frozen.
 /// </summary>
 internal static class TokenPropertyImplementationWriter
 {
@@ -47,26 +47,15 @@ internal static class TokenPropertyImplementationWriter
                 builder.Append(accessor.Keyword);
                 if (accessor.Keyword == "get")
                 {
-                    builder.Append(" => field;\n");
+                    builder.Append(" { OnRead(nameof(").Append(property.Name).Append(")); return field; }\n");
                 }
                 else
                 {
-                    builder.Append(" { field = value; RecordWrite(nameof(").Append(property.Name).Append(")); }\n");
+                    builder.Append(" { if (IsFrozen(nameof(").Append(property.Name).Append("))) return; field = value; }\n");
                 }
             }
 
             builder.Append(memberIndent).Append("}\n");
-        }
-
-        if (model.EmitRunDefaultCalculation)
-        {
-            if (!first)
-            {
-                builder.Append('\n');
-            }
-
-            builder.Append(memberIndent)
-                   .Append("internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);\n");
         }
 
         builder.Append(indent).Append("}\n");

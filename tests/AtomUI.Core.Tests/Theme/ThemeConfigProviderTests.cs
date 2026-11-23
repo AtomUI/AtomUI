@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
@@ -188,6 +188,7 @@ public class ThemeConfigProviderTests
             manager.ConfigureStartup(
                 new ThemeRequest("Test", null, ThemeTransitionReason.Startup),
                 null,
+                null,
                 null);
             manager.InitializeApplication(Application.Current!);
             var provider = new ThemeConfigProvider
@@ -250,13 +251,33 @@ public class ThemeConfigProviderTests
     }
 
     [Fact]
-    public void Local_Explicit_Algorithm_List_Replaces_Parent_Dark_Algorithms()
+    public void Local_Density_Keeps_The_Parent_Appearance()
     {
-        var manager = CreateInitializedManager(CreatePreparedWithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark));
+        var manager = CreateInitializedManager(CreatePreparedWithAxes(ThemeAppearance.Dark, null));
         var provider = new ThemeConfigProvider
         {
             Config = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Compact)
+                     .WithDensity(DesignDensity.Compact)
+                     .Build(),
+            Child = new Border()
+        };
+
+        using var root = Attach(manager, provider);
+
+        var context = provider.GetValue(ThemeScope.ContextProperty).ShouldNotBeNull();
+        context.Snapshot.Appearance.ShouldBe(ThemeAppearance.Dark);
+        context.Snapshot.Variant.Density.ShouldBe(DesignDensity.Compact);
+        provider.RequestedThemeVariant.ShouldBe(ThemeVariant.Dark);
+    }
+
+    [Fact]
+    public void Local_Appearance_Overrides_The_Parent_Appearance()
+    {
+        var manager = CreateInitializedManager(CreatePreparedWithAxes(ThemeAppearance.Dark, DesignDensity.Compact));
+        var provider = new ThemeConfigProvider
+        {
+            Config = new ThemeConfigBuilder()
+                     .WithAppearance(ThemeAppearance.Light)
                      .Build(),
             Child = new Border()
         };
@@ -265,8 +286,7 @@ public class ThemeConfigProviderTests
 
         var context = provider.GetValue(ThemeScope.ContextProperty).ShouldNotBeNull();
         context.Snapshot.Appearance.ShouldBe(ThemeAppearance.Light);
-        context.Snapshot.EffectiveConfig.Algorithms.Select(static algorithm => algorithm.Algorithm)
-               .ShouldBe([ThemeAlgorithm.Compact]);
+        context.Snapshot.Variant.Density.ShouldBe(DesignDensity.Compact);
         provider.RequestedThemeVariant.ShouldBe(ThemeVariant.Light);
     }
 
@@ -383,13 +403,10 @@ public class ThemeConfigProviderTests
         return ThemeTransactionPreparation.Succeeded(snapshot, ThemeSnapshotCacheKey.Create(input));
     }
 
-    private static ThemeTransactionPreparation CreatePreparedWithAlgorithms(params ThemeAlgorithm[] algorithms)
+    private static ThemeTransactionPreparation CreatePreparedWithAxes(ThemeAppearance? appearance, DesignDensity? density)
     {
         var registry = TypedThemeSnapshotCacheTests.CreateRegistry();
-        var descriptors = algorithms
-                          .Select(algorithm => registry.Algorithms.Single(descriptor => descriptor.Algorithm == algorithm))
-                          .ToArray();
-        var input = TypedThemeSnapshotCacheTests.CreateInput(registry, descriptors);
+        var input = TypedThemeSnapshotCacheTests.CreateInput(registry, appearance: appearance, density: density);
         var snapshot = new ThemeCompiler().Compile(input).Snapshot!;
         return ThemeTransactionPreparation.Succeeded(snapshot, ThemeSnapshotCacheKey.Create(input));
     }

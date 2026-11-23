@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="ShadcnSeraFixture" Name="Shadcn Sera fixture" Language="Shadcn" Style="Sera">
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#171717" />
+  </Tokens>
+</Theme>

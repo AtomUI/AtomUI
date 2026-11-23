@@ -12,7 +12,7 @@ public class TokenPropertyImplementationGeneratorTests
     private const string DiagnosticId = "ATOMUIGEN049";
 
     [Fact]
-    public void Emits_Field_Backed_Getter_And_Recording_Setter_For_Each_Token_Property()
+    public void Emits_Field_Backed_Getter_And_Freeze_Checking_Setter_For_Each_Token_Property()
     {
         var output = Run(Compile(("ButtonToken.cs", """
             using AtomUI.Theme.DesignTokens;
@@ -35,10 +35,11 @@ public class TokenPropertyImplementationGeneratorTests
         source.ShouldContain("partial class ButtonToken");
         source.ShouldContain("public partial double Height");
         source.ShouldContain("public partial string? Label");
-        source.ShouldContain("get => field;");
-        source.ShouldContain("RecordWrite(nameof(Height));");
-        source.ShouldContain("RecordWrite(nameof(Label));");
-        source.ShouldContain("set { field = value; RecordWrite(nameof(Height)); }");
+        source.ShouldContain("get { OnRead(nameof(Height)); return field; }");
+        source.ShouldContain("if (IsFrozen(nameof(Height))) return; field = value;");
+        source.ShouldContain("if (IsFrozen(nameof(Label))) return; field = value;");
+        source.ShouldContain("set { if (IsFrozen(nameof(Height))) return; field = value; }");
+        source.ShouldNotContain("RecordWrite");
     }
 
     [Fact]
@@ -64,11 +65,11 @@ public class TokenPropertyImplementationGeneratorTests
         var source = GeneratedSource(output, "Demo.DataGridToken.TokenProperties.g.cs");
         source.ShouldContain("internal partial double RowHeight");
         source.ShouldContain("public partial double HeaderHeight");
-        source.ShouldContain("private set { field = value; RecordWrite(nameof(FooterHeight)); }");
+        source.ShouldContain("private set { if (IsFrozen(nameof(FooterHeight))) return; field = value; }");
     }
 
     [Fact]
-    public void Emits_RunDefaultCalculation_Only_On_Sealed_Control_Tokens()
+    public void Emits_Only_Property_Halves_For_Abstract_Sealed_And_Global_Token_Declarations()
     {
         var output = Run(Compile(
             ("AbstractButtonToken.cs", """
@@ -86,12 +87,6 @@ public class TokenPropertyImplementationGeneratorTests
                     public sealed partial class ButtonToken : AbstractButtonToken
                     {
                         public partial double IconSize { get; set; }
-
-                        protected override void CalculateTokenValues(bool isDarkMode)
-                        {
-                            base.CalculateTokenValues(isDarkMode);
-                            IconSize = Height / 2;
-                        }
                     }
                 }
                 """),
@@ -110,10 +105,124 @@ public class TokenPropertyImplementationGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
-        const string entry = "internal void RunDefaultCalculation(bool isDarkMode) => CalculateTokenValues(isDarkMode);";
-        GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs").ShouldContain(entry);
-        GeneratedSource(output, "Demo.AbstractButtonToken.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
-        GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs").ShouldNotContain("RunDefaultCalculation");
+        var button = GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs");
+        button.ShouldContain("if (IsFrozen(nameof(IconSize))) return; field = value;");
+        button.ShouldNotContain("Height");
+        GeneratedSource(output, "Demo.AbstractButtonToken.TokenProperties.g.cs")
+            .ShouldContain("if (IsFrozen(nameof(Height))) return; field = value;");
+        GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs")
+            .ShouldContain("if (IsFrozen(nameof(FontSize))) return; field = value;");
+        // The calculation entry point went away with the theme algorithms.
+        GeneratedTrees(output).Select(static tree => tree.GetText(TestContext.Current.CancellationToken).ToString())
+            .ShouldAllBe(static source => !source.Contains("RunDefaultCalculation"));
+    }
+
+    [Fact]
+    public void Emits_Freeze_Checking_Setters_For_Language_Token_Properties()
+    {
+        var output = Run(Compile(("ShadcnToken.cs", """
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Acme.Languages
+            {
+                [LanguageDesignToken]
+                public sealed partial class ShadcnToken : LanguageDesignToken
+                {
+                    [DesignTokenKind(DesignTokenKind.Seed)]
+                    public partial string BaseColor { get; set; }
+
+                    public partial double InputRadius { get; set; }
+
+                    [NotTokenDefinition] public double Scratch { get; set; }
+                }
+            }
+            """)), out var diagnostics);
+
+        diagnostics.ShouldBeEmpty();
+        AssertNoErrors(output);
+        GeneratedTrees(output).Select(static tree => Path.GetFileName(tree.FilePath))
+            .ShouldBe(["Acme.Languages.ShadcnToken.TokenProperties.g.cs"]);
+        var source = GeneratedSource(output, "Acme.Languages.ShadcnToken.TokenProperties.g.cs");
+        source.ShouldContain("namespace Acme.Languages");
+        source.ShouldContain("partial class ShadcnToken");
+        // A language seed gets the same setter: seeds are frozen the same way as derived values.
+        source.ShouldContain("public partial string BaseColor");
+        source.ShouldContain("set { if (IsFrozen(nameof(BaseColor))) return; field = value; }");
+        source.ShouldContain("public partial double InputRadius");
+        source.ShouldContain("set { if (IsFrozen(nameof(InputRadius))) return; field = value; }");
+        source.ShouldNotContain("Scratch");
+    }
+
+    [Fact]
+    public void Emits_A_Derived_Language_Token_Without_Repeating_The_Base_Language_Properties()
+    {
+        var baseOutput = Run(Compile("Acme.AntDesign", ("AntDesignToken.cs", """
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Acme.AntDesign
+            {
+                [LanguageDesignToken]
+                public partial class AntDesignToken : LanguageDesignToken
+                {
+                    public partial double TableRadius { get; set; }
+                }
+            }
+            """)), out var baseDiagnostics);
+        baseDiagnostics.ShouldBeEmpty();
+        AssertNoErrors(baseOutput);
+
+        var derived = CSharpCompilation.Create(
+            "Acme.Brand",
+            [Parse("BrandToken.cs", """
+                using AtomUI.Theme.DesignTokens;
+
+                namespace Acme.Brand
+                {
+                    [LanguageDesignToken]
+                    public sealed partial class BrandToken : Acme.AntDesign.AntDesignToken
+                    {
+                        public partial double BrandRadius { get; set; }
+                    }
+                }
+                """)],
+            PlatformReferences().Add(Emit(baseOutput)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var derivedOutput = Run(derived, out var derivedDiagnostics);
+
+        derivedDiagnostics.ShouldBeEmpty();
+        AssertNoErrors(derivedOutput);
+        var generated = GeneratedTrees(derivedOutput);
+        generated.Select(static tree => Path.GetFileName(tree.FilePath)).ShouldBe(["Acme.Brand.BrandToken.TokenProperties.g.cs"]);
+        var source = generated[0].GetText(TestContext.Current.CancellationToken).ToString();
+        source.ShouldContain("if (IsFrozen(nameof(BrandRadius))) return; field = value;");
+        source.ShouldNotContain("TableRadius");
+    }
+
+    [Fact]
+    public void Reports_ATOMUIGEN049_For_A_Non_Partial_Language_Token_Property()
+    {
+        var output = Run(Compile(("ShadcnToken.cs", """
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Acme.Languages
+            {
+                [LanguageDesignToken]
+                public sealed partial class ShadcnToken : LanguageDesignToken
+                {
+                    public partial double Ring { get; set; }
+                    public double Input { get; set; }
+                }
+            }
+            """)), out var diagnostics);
+
+        var diagnostic = diagnostics.ShouldHaveSingleItem();
+        diagnostic.Id.ShouldBe(DiagnosticId);
+        diagnostic.GetMessage(System.Globalization.CultureInfo.InvariantCulture).ShouldBe(
+            "Token property 'Input' on 'Acme.Languages.ShadcnToken' must be declared partial, and 'Acme.Languages.ShadcnToken' must be a partial class");
+        diagnostic.Location.GetLineSpan().StartLinePosition.Line.ShouldBe(8);
+        var generated = GeneratedSource(output, "Acme.Languages.ShadcnToken.TokenProperties.g.cs");
+        generated.ShouldContain("if (IsFrozen(nameof(Ring))) return; field = value;");
+        generated.ShouldNotContain("Input");
     }
 
     [Fact]
@@ -134,7 +243,7 @@ public class TokenPropertyImplementationGeneratorTests
         baseDiagnostics.ShouldBeEmpty();
         AssertNoErrors(baseOutput);
         GeneratedSource(baseOutput, "Demo.Controls.AbstractSkeletonToken.TokenProperties.g.cs")
-            .ShouldContain("RecordWrite(nameof(BlockRadius));");
+            .ShouldContain("if (IsFrozen(nameof(BlockRadius))) return; field = value;");
 
         var derived = CSharpCompilation.Create(
             "Demo.Desktop.Controls",
@@ -159,7 +268,7 @@ public class TokenPropertyImplementationGeneratorTests
         var generated = GeneratedTrees(derivedOutput);
         generated.Select(static tree => Path.GetFileName(tree.FilePath)).ShouldBe(["Demo.Desktop.Controls.SkeletonToken.TokenProperties.g.cs"]);
         var source = generated[0].GetText(TestContext.Current.CancellationToken).ToString();
-        source.ShouldContain("RecordWrite(nameof(TitleHeight));");
+        source.ShouldContain("if (IsFrozen(nameof(TitleHeight))) return; field = value;");
         source.ShouldNotContain("BlockRadius");
     }
 
@@ -227,12 +336,12 @@ public class TokenPropertyImplementationGeneratorTests
                 "Demo.ButtonToken.TokenProperties.g.cs"
             ]);
         var seed = GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Seed.TokenProperties.g.cs");
-        seed.ShouldContain("RecordWrite(nameof(FontSize));");
+        seed.ShouldContain("if (IsFrozen(nameof(FontSize))) return; field = value;");
         seed.ShouldNotContain("LineHeight");
         seed.ShouldNotContain("Helper");
         seed.ShouldNotContain("ColorPalettes");
         var alias = GeneratedSource(output, "AtomUI.Theme.DesignTokens.DesignToken.Alias.TokenProperties.g.cs");
-        alias.ShouldContain("RecordWrite(nameof(LineHeight));");
+        alias.ShouldContain("if (IsFrozen(nameof(LineHeight))) return; field = value;");
         alias.ShouldNotContain("FontSize");
         GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs").ShouldNotContain("Scratch");
     }
@@ -264,7 +373,7 @@ public class TokenPropertyImplementationGeneratorTests
         diagnostic.Location.GetLineSpan().Path.ShouldEndWith("ButtonToken.cs");
         diagnostic.Location.GetLineSpan().StartLinePosition.Line.ShouldBe(8);
         var generated = GeneratedSource(output, "Demo.ButtonToken.TokenProperties.g.cs");
-        generated.ShouldContain("RecordWrite(nameof(Height));");
+        generated.ShouldContain("if (IsFrozen(nameof(Height))) return; field = value;");
         generated.ShouldNotContain("Width");
     }
 
@@ -348,8 +457,82 @@ public class TokenPropertyImplementationGeneratorTests
 
         diagnostics.ShouldBeEmpty();
         AssertNoErrors(output);
-        GeneratedSource(output, "Demo.Alpha.ButtonToken.TokenProperties.g.cs").ShouldContain("RecordWrite(nameof(Height));");
-        GeneratedSource(output, "Demo.Beta.ButtonToken.TokenProperties.g.cs").ShouldContain("RecordWrite(nameof(Width));");
+        GeneratedSource(output, "Demo.Alpha.ButtonToken.TokenProperties.g.cs").ShouldContain("if (IsFrozen(nameof(Height))) return; field = value;");
+        GeneratedSource(output, "Demo.Beta.ButtonToken.TokenProperties.g.cs").ShouldContain("if (IsFrozen(nameof(Width))) return; field = value;");
+    }
+
+    [Fact]
+    public void Generated_Setter_Drops_A_Write_To_A_Frozen_Property_At_Run_Time()
+    {
+        // A runtime whose freeze check reads a set of frozen names, as Core's freeze bits do per slot.
+        const string runtime = """
+            namespace AtomUI.Theme.DesignTokens
+            {
+                [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false)]
+                public sealed class ControlDesignTokenAttribute : System.Attribute { }
+
+                [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false)]
+                public sealed class LanguageDesignTokenAttribute : System.Attribute { }
+
+                public abstract class AbstractDesignToken
+                {
+                    public System.Collections.Generic.HashSet<string> Frozen { get; } = new();
+                    protected bool IsFrozen(string tokenName) => Frozen.Contains(tokenName);
+                    protected void OnRead(string tokenName) { }
+                }
+
+                public abstract class AbstractControlDesignToken : AbstractDesignToken { }
+
+                public abstract class LanguageDesignToken : AbstractDesignToken { }
+            }
+            """;
+        var compilation = CSharpCompilation.Create("FreezeRuntime",
+            [Parse("Runtime.cs", runtime), Parse("Tokens.cs", """
+                using AtomUI.Theme.DesignTokens;
+
+                namespace Demo
+                {
+                    [ControlDesignToken]
+                    public sealed partial class ButtonToken : AbstractControlDesignToken
+                    {
+                        public partial double Height { get; set; }
+                        public partial double Width { get; set; }
+                    }
+
+                    [LanguageDesignToken]
+                    public sealed partial class DemoLanguageToken : LanguageDesignToken
+                    {
+                        public partial string Ring { get; set; }
+                    }
+                }
+                """)],
+            PlatformReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        var output = Run(compilation, out var diagnostics);
+        diagnostics.ShouldBeEmpty();
+
+        using var stream = new MemoryStream();
+        var emitted = output.Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
+        emitted.Success.ShouldBeTrue(string.Join(Environment.NewLine, emitted.Diagnostics));
+        var assembly = System.Reflection.Assembly.Load(stream.ToArray());
+
+        var button = Activator.CreateInstance(assembly.GetType("Demo.ButtonToken", true)!)!;
+        var frozen = (HashSet<string>)button.GetType().GetProperty("Frozen")!.GetValue(button)!;
+        var height = button.GetType().GetProperty("Height")!;
+        var width = button.GetType().GetProperty("Width")!;
+        height.SetValue(button, 32d);
+        frozen.Add("Height");
+        height.SetValue(button, 40d);
+        width.SetValue(button, 80d);
+        // The frozen slot keeps the explicit value; the others are written normally.
+        height.GetValue(button).ShouldBe(32d);
+        width.GetValue(button).ShouldBe(80d);
+
+        var language = Activator.CreateInstance(assembly.GetType("Demo.DemoLanguageToken", true)!)!;
+        var ring = language.GetType().GetProperty("Ring")!;
+        ((HashSet<string>)language.GetType().GetProperty("Frozen")!.GetValue(language)!).Add("Ring");
+        ring.SetValue(language, "#FB7185");
+        ring.GetValue(language).ShouldBeNull();
     }
 
     [Fact]
@@ -394,17 +577,29 @@ public class TokenPropertyImplementationGeneratorTests
             [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
             public class GlobalDesignTokenAttribute : System.Attribute { }
 
+            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+            public sealed class LanguageDesignTokenAttribute : System.Attribute { }
+
             [System.AttributeUsage(System.AttributeTargets.Property, Inherited = false)]
             public class NotTokenDefinitionAttribute : System.Attribute { }
 
+            public enum DesignTokenKind { Seed, Map, Alias }
+
+            [System.AttributeUsage(System.AttributeTargets.Property)]
+            public sealed class DesignTokenKindAttribute : System.Attribute { public DesignTokenKindAttribute(DesignTokenKind kind) { } }
+
             public abstract class AbstractDesignToken
             {
-                protected void RecordWrite(string tokenName) { }
+                protected bool IsFrozen(string tokenName) => false;
+                protected void OnRead(string tokenName) { }
             }
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
-                protected virtual void CalculateTokenValues(bool isDarkMode) { }
+            }
+
+            public abstract class LanguageDesignToken : AbstractDesignToken
+            {
             }
         }
         """;

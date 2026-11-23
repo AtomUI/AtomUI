@@ -1,9 +1,7 @@
-using AtomUI.Desktop.Controls.Rendering.Tests.Effect;
 using AtomUI.Theme.Schema;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 using Xunit;
 

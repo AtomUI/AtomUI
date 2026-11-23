@@ -9,10 +9,13 @@ public sealed partial class TreeSelectToken : AbstractSelectInputToken
 {
     
     /// <summary>
-    /// 最小的弹窗的宽度
+    /// Minimum height of a tree item header in the drop-down. Also sets the size of the expand and collapse
+    /// switcher.
     /// </summary>
     public partial double HeaderHeight { get; set; }
+    /// <summary>Background color of a hovered tree node.</summary>
     public partial Color NodeHoverBg { get; set; }
+    /// <summary>Background color of a selected tree node.</summary>
     public partial Color NodeSelectedBg { get; set; }
 
     /// <summary>
@@ -20,38 +23,23 @@ public sealed partial class TreeSelectToken : AbstractSelectInputToken
     /// the global <c>ControlItemColorActive</c>.
     /// </summary>
     public partial Color NodeSelectedColor { get; set; }
+    /// <summary>Margin around a tree item.</summary>
     public partial Thickness TreeItemMargin { get; set; }
+    /// <summary>Padding inside a tree item header.</summary>
     public partial Thickness TreeItemHeaderPadding { get; set; }
+    /// <summary>Margin around a tree item header.</summary>
     public partial Thickness TreeItemHeaderMargin { get; set; }
+    /// <summary>Margin around the tree node's expand and collapse switcher.</summary>
     public partial Thickness TreeNodeSwitcherMargin { get; set; }
+    /// <summary>Margin around the tree node icon.</summary>
     public partial Thickness TreeNodeIconMargin { get; set; }
+    /// <summary>Foreground color of text that matches the filter.</summary>
     public partial Color FilterHighlightColor { get; set; }
 
+    /// <summary>Padding inside the drop-down content area.</summary>
     public partial Thickness PopupContentPadding { get; set; }
 
+    /// <summary>Minimum width of the drop-down.</summary>
     public partial double MinPopupWidth { get; set; }
-
-    public TreeSelectToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var presentation = TreePresentationTokenValues.Calculate(EffectiveGlobalToken);
-        HeaderHeight = presentation.HeaderHeight;
-        NodeHoverBg = presentation.NodeHoverBg;
-        NodeSelectedBg = presentation.NodeSelectedBg;
-        NodeSelectedColor = presentation.NodeSelectedColor;
-        TreeItemMargin = presentation.TreeItemMargin;
-        TreeItemHeaderPadding = presentation.TreeItemHeaderPadding;
-        TreeItemHeaderMargin = presentation.TreeItemHeaderMargin;
-        TreeNodeSwitcherMargin = presentation.TreeNodeSwitcherMargin;
-        TreeNodeIconMargin = presentation.TreeNodeIconMargin;
-        FilterHighlightColor = EffectiveGlobalToken.ColorPrimary;
-        MinPopupWidth = 300;
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-    }
     
 }

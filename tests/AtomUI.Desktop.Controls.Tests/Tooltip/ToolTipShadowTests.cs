@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Shouldly;
-using Xunit;
 
 namespace AtomUI.Desktop.Controls.Tests.Tooltip;
 
@@ -19,7 +18,7 @@ public class ToolTipShadowTests
     {
         var manager = (AtomUI.Theme.ThemeManager)Application.Current!.GetThemeManager()!;
         await manager.ApplyThemeAsync(new AtomUI.Theme.ThemeRequest(
-            AtomUI.Theme.IThemeManager.DEFAULT_THEME_ID, null, AtomUI.Theme.ThemeTransitionReason.UserRequest));
+            AtomUI.DesignLanguages.AntDesign.AntDesignThemes.DaybreakBlue, null, AtomUI.Theme.ThemeTransitionReason.UserRequest));
         var snapshot = manager.CurrentSnapshot!;
 
         Own<BoxShadows>(snapshot, "ToolTipShadows").ShouldBe(Global<BoxShadows>(snapshot, "BoxShadowsSecondary"));

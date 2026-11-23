@@ -67,25 +67,5 @@ public sealed partial class DescriptionsToken : AbstractControlDesignToken
     /// Text color of extra area
     /// </summary>
     public partial Color ExtraColor { get; set; }
-
-    public DescriptionsToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LabelBg      = EffectiveGlobalToken.ColorFillAlter;
-        LabelColor   = EffectiveGlobalToken.ColorTextTertiary;
-        TitleColor   = EffectiveGlobalToken.ColorText;
-        HeaderMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM);
-        ItemPaddingLG  = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, EffectiveGlobalToken.UniformlyPadding);
-        ItemPadding  = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG, EffectiveGlobalToken.UniformlyPaddingSM);
-        ItemPaddingSM  = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXS);
-        ColonMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS / 2, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ContentColor = EffectiveGlobalToken.ColorText;
-        ExtraColor   = EffectiveGlobalToken.ColorText;
-    }
     
 }

@@ -18,19 +18,19 @@
                                DockPanel.Dock="Left">
                             <antdicons:CheckCircleFilled Name="SuccessIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:AlertTokenResource ColorSuccess}"
+                                                         FillBrush="{atom:AlertTokenResource SuccessIconColor}"
                                                          IsVisible="False"/>
                             <antdicons:InfoCircleFilled Name="InfoIcon"
                                                         Classes.semantic-icon="True"
-                                                        FillBrush="{atom:AlertTokenResource ColorPrimary}"
+                                                        FillBrush="{atom:AlertTokenResource InfoIconColor}"
                                                         IsVisible="False"/>
                             <antdicons:ExclamationCircleFilled Name="WarningIcon"
                                                                Classes.semantic-icon="True"
-                                                               FillBrush="{atom:AlertTokenResource ColorWarning}"
+                                                               FillBrush="{atom:AlertTokenResource WarningIconColor}"
                                                                IsVisible="False"/>
                             <antdicons:CloseCircleFilled Name="ErrorIcon"
                                                          Classes.semantic-icon="True"
-                                                         FillBrush="{atom:AlertTokenResource ColorError}"
+                                                         FillBrush="{atom:AlertTokenResource ErrorIconColor}"
                                                          IsVisible="False"/>
                         </Panel>
                         

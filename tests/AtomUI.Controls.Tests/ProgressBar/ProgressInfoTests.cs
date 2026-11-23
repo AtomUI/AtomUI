@@ -3,15 +3,12 @@ using AtomUI.Media;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless.XUnit;
-using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
-using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Controls.Tests.ProgressBar;

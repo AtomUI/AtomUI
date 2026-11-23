@@ -5,7 +5,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using AtomUI.Controls.Primitives;
 using System.Runtime.CompilerServices;
 using Shouldly;
 using Xunit;

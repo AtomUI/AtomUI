@@ -1,7 +1,7 @@
 using AtomUI.Controls.Commons;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia.Controls;
@@ -41,7 +41,7 @@ public class BadgePresetColorTests
             dark.ShouldNotBe(light, "the dark palette must differ for the test to observe the theme.");
             read().ShouldBe(light);
 
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             read().ShouldBe(dark, $"{kind} preset colour did not follow the dark palette.");
 
@@ -81,7 +81,7 @@ public class BadgePresetColorTests
 
             host.Children.Remove(badge);
             Dispatcher.UIThread.RunJobs();
-            provider.Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+            provider.Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
             Dispatcher.UIThread.RunJobs();
             host.Children.Add(badge);
             Dispatcher.UIThread.RunJobs();
@@ -102,7 +102,7 @@ public class BadgePresetColorTests
         var dark = new ThemeConfigProvider
         {
             Child  = darkHost,
-            Config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build()
+            Config = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build()
         };
         Show(new StackPanel { Children = { light, dark } }, () =>
         {

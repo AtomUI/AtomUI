@@ -1,65 +1,17 @@
-using AtomUI.Controls;
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
 public sealed partial class DropdownButtonToken : AbstractButtonGeometryToken
 {
+    /// <summary>Margin around the drop-down indicator at the default button size.</summary>
     public partial Thickness ExtraContentMargin { get; set; }
+    /// <summary>Margin around the drop-down indicator on a large button.</summary>
     public partial Thickness ExtraContentMarginLG { get; set; }
+    /// <summary>Margin around the drop-down indicator on a small button.</summary>
     public partial Thickness ExtraContentMarginSM { get; set; }
+    /// <summary>Gap between the drop-down popup and its anchor.</summary>
     public partial double MarginToAnchor { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSize))
-        {
-            ContentFontSize = EffectiveGlobalToken.FontSize;
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeight))
-        {
-            ContentLineHeight = CalculateContentLineHeight(ContentFontSize);
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentPadding))
-        {
-            ContentPadding = CalculateContentPadding(ContentLineHeight, CustomizableSizeType.Middle);
-        }
-        IconOnyPadding = CalculateIconPadding(ContentLineHeight, CustomizableSizeType.Middle);
-        ExtraContentMargin = new Thickness(ContentPadding.Left / 2, 0, 0, 0);
-        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSizeSM))
-        {
-            ContentFontSizeSM = EffectiveGlobalToken.FontSize;
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeightSM))
-        {
-            ContentLineHeightSM = CalculateContentLineHeight(ContentFontSizeSM);
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentPaddingSM))
-        {
-            ContentPaddingSM = CalculateContentPadding(ContentLineHeightSM, CustomizableSizeType.Small);
-        }
-        IconOnyPaddingSM = CalculateIconPadding(ContentLineHeightSM, CustomizableSizeType.Small);
-        ExtraContentMarginSM = new Thickness(ContentPaddingSM.Left / 2, 0, 0, 0);
-        if (!IsExplicit(DropdownButtonTokenKind.ContentFontSizeLG))
-        {
-            ContentFontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentLineHeightLG))
-        {
-            ContentLineHeightLG = CalculateContentLineHeight(ContentFontSizeLG);
-        }
-        if (!IsExplicit(DropdownButtonTokenKind.ContentPaddingLG))
-        {
-            ContentPaddingLG = CalculateContentPadding(ContentLineHeightLG, CustomizableSizeType.Large);
-        }
-        IconOnyPaddingLG = CalculateIconPadding(ContentLineHeightLG, CustomizableSizeType.Large);
-        ExtraContentMarginLG = new Thickness(ContentPaddingLG.Left / 2, 0, 0, 0);
-        CirclePadding = new Thickness(ContentPaddingSM.Left / 2);
-        MarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
-    }
 }

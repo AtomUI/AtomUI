@@ -9,12 +9,34 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+// The outline Tokens of FloatButtonToken; null when the theme draws no outline (the Ant Design look).
 internal sealed record FloatButtonOutlineAppearance(
     bool OutlineOnlyShadow,
     bool CapsuleDescription,
     bool UppercaseDescription,
     FontWeight DescriptionWeight,
-    double DescriptionLineHeight);
+    double DescriptionLineHeight)
+{
+    private static readonly ThemeTokenResolver s_resolver = new();
+
+    internal static FloatButtonOutlineAppearance? Read(ThemeSnapshot? snapshot)
+    {
+        if (snapshot is null ||
+            !snapshot.Registry.TryGetControl(FloatButtonTokens.Identity, out var descriptor) ||
+            !s_resolver.GetOwn<bool>(snapshot, descriptor.Slot, FloatButtonTokenKind.HasOutline))
+        {
+            return null;
+        }
+
+        var slot = descriptor.Slot;
+        return new FloatButtonOutlineAppearance(
+            s_resolver.GetOwn<bool>(snapshot, slot, FloatButtonTokenKind.OutlineOnlyShadow),
+            s_resolver.GetOwn<bool>(snapshot, slot, FloatButtonTokenKind.CapsuleDescription),
+            s_resolver.GetOwn<bool>(snapshot, slot, FloatButtonTokenKind.UppercaseDescription),
+            s_resolver.GetOwn<FontWeight>(snapshot, slot, FloatButtonTokenKind.DescriptionWeight),
+            s_resolver.GetOwn<double>(snapshot, slot, FloatButtonTokenKind.OutlineDescriptionLineHeight));
+    }
+}
 
 internal sealed class FloatButtonThemeInputs : IDisposable
 {
@@ -92,10 +114,7 @@ internal sealed class FloatButtonThemeInputs : IDisposable
 
     private void Update(ThemeSnapshot? snapshot)
     {
-        var appearance = snapshot is not null &&
-                         snapshot.Registry.TryGetControl(FloatButtonTokens.Identity, out var descriptor)
-            ? snapshot.Controls[descriptor.Slot].AppearanceSettings as FloatButtonOutlineAppearance
-            : null;
+        var appearance = FloatButtonOutlineAppearance.Read(snapshot);
         var useExplicitPrimaryShadow = _control is AbstractFloatButton &&
                                        appearance is { OutlineOnlyShadow: true };
         _appearance = appearance;

@@ -5,11 +5,6 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class CarouselToken : AbstractControlDesignToken
 {
-
-    public CarouselToken()
-
-    {
-    }
     
     /// <summary>
     /// 指示点宽度
@@ -58,18 +53,5 @@ public sealed partial class CarouselToken : AbstractControlDesignToken
     /// Opacity of the resting switch arrows (an AtomUI extension; antd fixes 0.4); hovered arrows are opaque
     /// </summary>
     public partial double ArrowOpacity { get; set; }
-    
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        IndicatorActiveWidth = 24;
-        ArrowSize            = 16;
-        ArrowOffset          = EffectiveGlobalToken.SpacingXS;
-        ArrowOpacity         = 0.2;
-        IndicatorWidth       = 16;
-        IndicatorHeight      = 3;
-        IndicatorGap         = EffectiveGlobalToken.UniformlyMarginXS;
-        PaginationOffset     = 12;
-    }
     
 }

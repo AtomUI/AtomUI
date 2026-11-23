@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
@@ -149,7 +150,7 @@ public class ButtonTokenExplicitOverrideTests
     private static async Task Apply(ThemeManager manager, ThemeConfig? config)
     {
         var result = await manager.ApplyThemeAsync(
-            new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, config, ThemeTransitionReason.UserRequest),
+            new ThemeRequest(AntDesignThemes.DaybreakBlue, config, ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken);
         result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);
     }

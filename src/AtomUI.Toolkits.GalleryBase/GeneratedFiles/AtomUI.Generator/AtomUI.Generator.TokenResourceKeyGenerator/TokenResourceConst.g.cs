@@ -14,6 +14,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -75,7 +76,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -156,6 +156,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -294,7 +295,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -313,6 +314,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -374,7 +376,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -455,6 +456,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -591,7 +593,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -606,6 +608,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -667,7 +670,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -748,6 +750,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -884,7 +887,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -922,6 +925,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -983,7 +987,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -1064,6 +1067,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -1219,7 +1223,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1238,6 +1242,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -1299,7 +1304,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -1380,6 +1384,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -1516,7 +1521,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1538,6 +1543,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -1599,7 +1605,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -1680,6 +1685,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -1819,7 +1825,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1844,6 +1850,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -1905,7 +1912,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -1986,6 +1992,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -2124,7 +2131,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2143,6 +2150,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -2204,7 +2212,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -2285,6 +2292,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -2421,7 +2429,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2441,6 +2449,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -2502,7 +2511,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -2583,6 +2591,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -2720,7 +2729,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2739,6 +2748,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -2800,7 +2810,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -2881,6 +2890,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -3017,7 +3027,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3045,6 +3055,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -3106,7 +3117,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -3187,6 +3197,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -3332,7 +3343,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3360,6 +3371,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -3421,7 +3433,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -3502,6 +3513,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -3643,7 +3655,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3670,6 +3682,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
     {
         BorderRadius = (int)SharedTokenKind.BorderRadius,
         BorderRadiusLG = (int)SharedTokenKind.BorderRadiusLG,
+        BorderRadiusMD = (int)SharedTokenKind.BorderRadiusMD,
         BorderRadiusOuter = (int)SharedTokenKind.BorderRadiusOuter,
         BorderRadiusSM = (int)SharedTokenKind.BorderRadiusSM,
         BorderRadiusXS = (int)SharedTokenKind.BorderRadiusXS,
@@ -3731,7 +3744,6 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ColorLink = (int)SharedTokenKind.ColorLink,
         ColorLinkActive = (int)SharedTokenKind.ColorLinkActive,
         ColorLinkHover = (int)SharedTokenKind.ColorLinkHover,
-        ColorNeutral = (int)SharedTokenKind.ColorNeutral,
         ColorPrimary = (int)SharedTokenKind.ColorPrimary,
         ColorPrimaryActive = (int)SharedTokenKind.ColorPrimaryActive,
         ColorPrimaryBg = (int)SharedTokenKind.ColorPrimaryBg,
@@ -3812,6 +3824,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         IconSizeLG = (int)SharedTokenKind.IconSizeLG,
         IconSizeSM = (int)SharedTokenKind.IconSizeSM,
         IconSizeXS = (int)SharedTokenKind.IconSizeXS,
+        InputActiveBorderColor = (int)SharedTokenKind.InputActiveBorderColor,
         InputActiveShadow = (int)SharedTokenKind.InputActiveShadow,
         InputContentMargin = (int)SharedTokenKind.InputContentMargin,
         InputErrorActiveShadow = (int)SharedTokenKind.InputErrorActiveShadow,
@@ -3952,7 +3965,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 257u)
+                if ((uint)slot >= 258u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }

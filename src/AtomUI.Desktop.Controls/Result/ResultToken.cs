@@ -8,65 +8,40 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class ResultToken : AbstractControlDesignToken
 {
 
-    /// <summary>
-    /// 标题字体大小
-    /// </summary>
+    /// <summary>Font size of the result title.</summary>
     public partial double HeaderFontSize { get; set; }
 
-    /// <summary>
-    /// 副标题字体大小
-    /// </summary>
+    /// <summary>Font size of the result subtitle.</summary>
     public partial double SubHeaderFontSize { get; set; }
 
-    /// <summary>
-    /// 图标大小
-    /// </summary>
+    /// <summary>Size of the result status icon.</summary>
     public partial double StatusIconSize { get; set; }
 
-    /// <summary>
-    /// 额外区域外间距
-    /// </summary>
+    /// <summary>Margin around the extra content area.</summary>
     public partial Thickness ExtraMargin { get; set; }
 
+    /// <summary>Width of the error-code illustration.</summary>
     public partial double ImageWidth { get; set; }
+    /// <summary>Height of the error-code illustration.</summary>
     public partial double ImageHeight { get; set; }
 
+    /// <summary>Color of the informational status icon.</summary>
     public partial Color ResultInfoIconColor { get; set; }
+    /// <summary>Color of the success status icon.</summary>
     public partial Color ResultSuccessIconColor { get; set; }
+    /// <summary>Color of the warning status icon.</summary>
     public partial Color ResultWarningIconColor { get; set; }
+    /// <summary>Color of the error status icon.</summary>
     public partial Color ResultErrorIconColor { get; set; }
+    /// <summary>Padding inside the result's outer frame.</summary>
     public partial Thickness FramePadding { get; set; }
+    /// <summary>Padding inside the result's main content area.</summary>
     public partial Thickness ContentPadding { get; set; }
+    /// <summary>Margin around the result's main content area.</summary>
     public partial Thickness ContentMargin { get; set; }
+    /// <summary>Margin around the result header.</summary>
     public partial Thickness HeaderMargin { get; set; }
+    /// <summary>Margin around the status icon or illustration.</summary>
     public partial Thickness StatusImageMargin { get; set; }
-
-    public ResultToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderFontSize    = EffectiveGlobalToken.FontSizeHeading3;
-        SubHeaderFontSize = EffectiveGlobalToken.FontSize;
-        StatusIconSize    = EffectiveGlobalToken.FontSizeHeading3 * 3;
-        ExtraMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMargin, 0, 0);
-
-        ImageWidth  = 250;
-        ImageHeight = 295;
-
-        ResultInfoIconColor    = EffectiveGlobalToken.ColorInfo;
-        ResultSuccessIconColor = EffectiveGlobalToken.ColorSuccess;
-        ResultWarningIconColor = EffectiveGlobalToken.ColorWarning;
-        ResultErrorIconColor   = EffectiveGlobalToken.ColorError;
-
-        ContentPadding    = new Thickness(EffectiveGlobalToken.UniformlyPadding * 2.5, EffectiveGlobalToken.UniformlyPaddingLG);
-        ContentMargin     = new Thickness(0, EffectiveGlobalToken.UniformlyPaddingLG, 0, 0);
-        StatusImageMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMargin);
-        HeaderMargin      = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS);
-        FramePadding      = new Thickness(EffectiveGlobalToken.UniformlyPaddingLG * 2, EffectiveGlobalToken.UniformlyMarginXL);
-    }
     
 }

@@ -1,7 +1,8 @@
 using System.Xml.Linq;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 using AtomUIGallery.ShowCases.ThemePresets;
 using Shouldly;
 using Xunit;
@@ -9,83 +10,67 @@ using Xunit;
 namespace AtomUIGallery.Tests;
 
 /// <summary>
-/// The Theme Presets page agrees with the theme selection rules: a definition without a design language falls back to
-/// the <see cref="ThemeSelectionResolver"/> chain, and the exported XML declares only what the export really is.
+/// The Theme Presets page exports the previewed configuration as a v2 theme definition that declares exactly what the
+/// preview is: its language, the fixed axes and the token values, readable by the theme document reader.
 /// </summary>
 public class ThemePresetsDeclarationTests
 {
-    public static TheoryData<ThemeAlgorithm[], bool, bool> Chains() => new()
-    {
-        { [ThemeAlgorithm.Default], false, false },
-        { [ThemeAlgorithm.Default], true, false },
-        { [ThemeAlgorithm.Default], false, true },
-        { [ThemeAlgorithm.Default], true, true },
-        { [new ThemeAlgorithm("Vendor", "Base"), ThemeAlgorithm.Compact], true, false },
-        { [new ThemeAlgorithm("Vendor", "Base"), ThemeAlgorithm.Dark, ThemeAlgorithm.Compact], false, true }
-    };
-
     [Theory]
-    [MemberData(nameof(Chains))]
-    public void Fallback_Chain_Of_A_Definition_Without_A_Language_Follows_The_Resolver(
-        ThemeAlgorithm[] baseChain, bool dark, bool compact)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void Export_Declares_The_Language_And_The_Previewed_Axes(bool dark, bool compact)
     {
-        // The same base definition declared in a language: the resolver's fallback chain is the reference.
-        var catalog = new[]
-        {
-            new ThemeInfo("Base", "Base", ThemeAppearance.Light, false)
-            {
-                DesignLanguage = "Reference", Density = ThemeDensity.Normal, Algorithms = baseChain
-            }
-        };
-        var expected = ThemeSelectionResolver.Resolve(catalog,
-            new ThemeSelection("Reference", dark ? ThemeAppearance.Dark : ThemeAppearance.Light,
-                compact ? ThemeDensity.Compact : ThemeDensity.Normal, null));
+        var appearance = dark ? ThemeAppearance.Dark : ThemeAppearance.Light;
+        var density    = compact ? DesignDensity.Compact : DesignDensity.Default;
+        var config = new ThemeConfigBuilder().WithInherit(false).WithLanguage("AntDesign")
+                                             .WithAppearance(appearance).WithDensity(density)
+                                             .WithToken("ColorPrimary", "#52C41A").Build();
 
-        var chain = ThemePresetsViewModel.FallbackChain(baseChain, dark, compact);
+        var xml  = ThemePresetCatalog.Export("Kept", "Kept", config);
+        var root = XDocument.Parse(xml).Root!;
 
-        if (expected.Algorithms is null)
-        {
-            // The light, normal selection is the base definition itself; its own chain without built-ins appended.
-            chain.ShouldBe(baseChain.Where(algorithm => algorithm != ThemeAlgorithm.Dark && algorithm != ThemeAlgorithm.Compact));
-        }
-        else
-        {
-            chain.ShouldBe(expected.Algorithms);
-        }
+        root.Name.NamespaceName.ShouldBe("https://atomui.net/schemas/theme/v2");
+        root.Attribute("Language")!.Value.ShouldBe("AntDesign");
+        root.Attribute("Appearance")!.Value.ShouldBe(appearance.ToString());
+        root.Attribute("Density")!.Value.ShouldBe(density.Id);
+        root.Attribute("DesignLanguage").ShouldBeNull();
+        root.Attribute("BrandColor").ShouldBeNull();
+        root.Attribute("IsDefault").ShouldBeNull();
+        root.Nodes().OfType<XComment>().ShouldBeEmpty();
+        root.Descendants(root.Name.Namespace + "Token")
+            .Single(token => token.Attribute("Name")!.Value == "ColorPrimary")
+            .Attribute("Value")!.Value.ShouldBe("#52C41A");
+        root.Element(root.Name.Namespace + "Controls").ShouldBeNull();
+        ReadDiagnostics(xml).ShouldBeEmpty();
     }
 
     [Fact]
-    public void Export_That_Must_Fall_Back_To_Fixed_Drops_The_Seed_Design_Language()
+    public void Export_Writes_Control_Entries_With_Their_Fixed_Axes()
     {
-        var config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default)
-            .WithToken("ColorPrimary", "#1677FF").WithToken("ColorPrimaryHover", "#4096FF").Build();
+        var config = new ThemeConfigBuilder().WithLanguage("AntDesign")
+            .WithToken("ColorPrimary", "#1677FF")
+            .WithControl(new ControlTokenIdentity("AtomUI", "Button"),
+                new ControlThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark)
+                                               .WithToken("DefaultBg", "#FF00FF").Build())
+            .Build();
 
-        var xml = ThemePresetCatalog.Export("Pinned", "Pinned", config, designLanguage: "AntDesign",
-            brandColor: ThemeBrandColorSupport.Seed);
+        var xml     = ThemePresetCatalog.Export("Pinned", "Pinned", config);
+        var ns      = XDocument.Parse(xml).Root!.Name.Namespace;
+        var control = XDocument.Parse(xml).Root!.Element(ns + "Controls")!.Element(ns + "Control")!;
 
-        var document = XDocument.Parse(xml);
-        var root     = document.Root!;
-        root.Attribute("BrandColor")!.Value.ShouldBe("Fixed");
-        root.Attribute("DesignLanguage").ShouldBeNull();
-        root.Nodes().OfType<XComment>().ShouldContain(comment => comment.Value.Contains("DesignLanguage=\"AntDesign\" omitted"));
-        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
-        AtomUI.Theme.Definitions.ThemeDocumentReader.Read(stream, "pinned.theme.xml").Diagnostics.ShouldBeEmpty();
+        control.Attribute("Catalog")!.Value.ShouldBe("AtomUI");
+        control.Attribute("Id")!.Value.ShouldBe("Button");
+        control.Attribute("Appearance")!.Value.ShouldBe("Dark");
+        control.Element(ns + "Tokens")!.Element(ns + "Token")!.Attribute("Name")!.Value.ShouldBe("DefaultBg");
+        ReadDiagnostics(xml).ShouldBeEmpty();
     }
 
-    [Theory]
-    [InlineData(ThemeBrandColorSupport.Seed)]
-    [InlineData(ThemeBrandColorSupport.Fixed)]
-    public void Export_That_Matches_Its_Language_Keeps_It(ThemeBrandColorSupport brandColor)
+    private static IReadOnlyList<string> ReadDiagnostics(string xml)
     {
-        // A brand seed is what a Seed language accepts; a Fixed language exports its own pins unchanged.
-        var config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default)
-            .WithToken("ColorPrimary", "#52C41A").Build();
-
-        var root = XDocument.Parse(ThemePresetCatalog.Export("Kept", "Kept", config, designLanguage: "Lang",
-            brandColor: brandColor)).Root!;
-
-        root.Attribute("DesignLanguage")!.Value.ShouldBe("Lang");
-        root.Attribute("BrandColor")!.Value.ShouldBe(brandColor.ToString());
-        root.Nodes().OfType<XComment>().ShouldBeEmpty();
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(xml));
+        return AtomUI.Theme.Definitions.ThemeDocumentReader.Read(stream, "exported.theme.xml").Diagnostics
+                     .Select(static diagnostic => diagnostic.ToString()).ToArray();
     }
 }

@@ -20,6 +20,15 @@ public class SplashDefaultThemeTests
         "Splash", "SplashWindow", "SplashProgressBar", "SharedTokenResource", "OwnerTokenResource"
     };
 
+    // Startup preparation needs an enabled design language; register Ant Design the way UseAntDesign does.
+    private static PreparedThemeStartup PrepareAntDesign()
+    {
+        var builder = new ThemeManagerBuilder(typeof(Avalonia.Application));
+        AtomUI.Generated.AtomUIDesignLanguagesAntDesign.GeneratedDesignLanguageRegistration.Register(builder);
+        AtomUI.Generated.AtomUIDesignLanguagesAntDesign.GeneratedThemePackageRegistration.Register(builder);
+        return ThemeStartupPreparation.Prepare(builder.CaptureStartupInputs());
+    }
+
     [Fact]
     public void Default_theme_references_only_global_tokens_and_splash_types()
     {
@@ -30,8 +39,7 @@ public class SplashDefaultThemeTests
         Regex.Matches(source, @"(?<!(?:Shared|Owner))TokenResource ").Count.ShouldBe(0);
         source.ShouldNotContain("FontFamily");
 
-        var prepared = ThemeStartupPreparation.Prepare(
-            new ThemeManagerBuilder(typeof(Avalonia.Application)).CaptureStartupInputs());
+        var prepared = PrepareAntDesign();
         var resources = prepared.GlobalResources(ThemeAppearance.Light);
         var used = Regex.Matches(source, @"(?:Shared|Owner)TokenResource (\w+)").Select(match => match.Groups[1].Value).Distinct();
         used.Where(name => !resources.ContainsKey(Enum.Parse<SharedTokenKind>(name))).ShouldBeEmpty();
@@ -58,8 +66,7 @@ public class SplashDefaultThemeTests
     [AvaloniaFact]
     public void Splash_window_applies_the_default_theme_from_its_own_resources()
     {
-        var prepared = ThemeStartupPreparation.Prepare(
-            new ThemeManagerBuilder(typeof(Avalonia.Application)).CaptureStartupInputs());
+        var prepared = PrepareAntDesign();
         var window = new SplashWindow();
         window.Initialize(prepared.GlobalResources(ThemeAppearance.Light),
             new SplashContent(null, null, "Title", "Message", null));

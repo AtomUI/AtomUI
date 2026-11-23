@@ -11,9 +11,7 @@ namespace AtomUI.Desktop.Controls;
 public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
 {
 
-/// <summary>
-    /// 完整 Calendar 背景，派生自容器背景。
-    /// </summary>
+    /// <summary>Background behind the full-size calendar grid.</summary>
     public partial Color FullBg { get; set; }
 
     /// <summary>
@@ -43,75 +41,29 @@ public abstract partial class AbstractCalendarToken : AbstractControlDesignToken
     /// </summary>
     public partial double MonthControlWidth { get; set; }
 
-    /// <summary>
-    /// Year 模式月份单元的内容宽度。
-    /// </summary>
+    /// <summary>Height of the weekday header row in the full-size calendar.</summary>
 
-    /// <summary>
-    /// Mini 内容高度。
-    /// </summary>
 
-    /// <summary>
-    /// Fullscreen 周标题的总高度和文字内边距。
-    /// </summary>
     public partial double WeekHeaderHeight { get; set; }
+    /// <summary>Inset of the weekday labels in the full-size header.</summary>
     public partial Thickness WeekHeaderPadding { get; set; }
 
-    /// <summary>
-    /// Fullscreen 日期/月单元最小高度。
-    /// </summary>
+    /// <summary>Outer spacing between day or month cells in the full-size grid.</summary>
 
-    /// <summary>
-    /// Fullscreen 日期/月单元的水平外边距（antd 全屏单元 margin: 0 marginXS/2）。
-    /// </summary>
     public partial Thickness FullCellMargin { get; set; }
 
-    /// <summary>
-    /// Fullscreen 日期/月单元的内边距（antd 全屏单元 padding: paddingXS/2 paddingXS 0）。
-    /// </summary>
+    /// <summary>Inset of the value and content of a full-size day or month cell.</summary>
     public partial Thickness FullCellPadding { get; set; }
 
-    /// <summary>
-    /// Fullscreen 日期/月单元顶部分隔线的线宽（antd 全屏单元 borderTop: lineWidthBold）。
-    /// </summary>
+    /// <summary>Thickness of the separator above a day or month cell in the full-size grid.</summary>
     public partial Thickness FullCellBorderThickness { get; set; }
 
-    /// <summary>
-    /// Fullscreen 日期范围条默认高度。
-    /// </summary>
+    /// <summary>Height of a range bar inside a full-size date cell.</summary>
     public partial double RangeBarHeight { get; set; }
 
-    /// <summary>
-    /// Fullscreen 同一单元内上下堆叠的日期范围条之间的间距。
-    /// </summary>
+    /// <summary>Vertical gap between range bars stacked in the same date cell.</summary>
     public partial double RangeBarGap { get; set; }
 
-    /// <summary>
-    /// Fullscreen 日期范围条标签的水平内边距。
-    /// </summary>
+    /// <summary>Horizontal inset of the label inside a range bar.</summary>
     public partial Thickness RangeBarLabelPadding { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-
-        FullBg = EffectiveGlobalToken.ColorBgContainer;
-        FullPanelBg = EffectiveGlobalToken.ColorBgContainer;
-        ItemActiveBg = EffectiveGlobalToken.ControlItemBgActive;
-        ItemActiveColor = EffectiveGlobalToken.ColorPrimary;
-        YearControlWidth = 80;
-        MonthControlWidth = 70;
-        WeekHeaderHeight = EffectiveGlobalToken.ControlHeightSM * 0.75 +
-                           EffectiveGlobalToken.UniformlyPaddingXXS;
-        WeekHeaderPadding = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.UniformlyPaddingXXS);
-        FullCellMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXS / 2, 0);
-        FullCellPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, EffectiveGlobalToken.UniformlyPaddingXS / 2,
-            EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        FullCellBorderThickness = new Thickness(0, EffectiveGlobalToken.LineWidthBold, 0, 0);
-        RangeBarHeight = EffectiveGlobalToken.ControlHeightSM - EffectiveGlobalToken.UniformlyMarginXXS;
-        RangeBarGap = EffectiveGlobalToken.UniformlyMarginXXS / 2;
-        RangeBarLabelPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-    }
 }

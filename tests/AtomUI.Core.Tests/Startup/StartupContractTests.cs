@@ -1,4 +1,4 @@
-using AtomUI.Theme;
+using AtomUI.DesignLanguages.AntDesign;
 using Avalonia;
 using Avalonia.Headless;
 using Shouldly;
@@ -62,7 +62,8 @@ public class StartupContractTests
                                  platformReady.ShouldBeTrue();
                                  configureCount++;
                                  GC.KeepAlive(new AvaloniaObject());
-                                 builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                                 builder.UseAntDesign();
+                                 builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
                              })
                              .AfterApplicationSetup(_ => configureCount.ShouldBe(1));
         }

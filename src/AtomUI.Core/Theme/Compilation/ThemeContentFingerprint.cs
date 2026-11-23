@@ -12,8 +12,7 @@ internal readonly record struct ThemeContentFingerprint(ulong Value)
     internal static ThemeContentFingerprint Compute(
         ThemeDefinitionRevision definitionRevision,
         NormalizedThemeConfig effectiveConfig,
-        ThemeSchemaRevision registryRevision,
-        ThemeAppearance appearance)
+        ThemeSchemaRevision registryRevision)
     {
         var builder = new FingerprintBuilder();
         builder.Add(definitionRevision.SourceIdentity);
@@ -22,7 +21,6 @@ internal readonly record struct ThemeContentFingerprint(ulong Value)
         builder.Add(definitionRevision.ProgramDigest ?? string.Empty);
         builder.Add(effectiveConfig.Fingerprint.Value);
         builder.Add(registryRevision.Value);
-        builder.Add((byte)appearance);
         return new ThemeContentFingerprint(builder.Value);
     }
 

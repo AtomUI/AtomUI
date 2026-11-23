@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using AtomUI.Generator.Diagnostics;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AtomUI.Generator;
@@ -198,7 +197,7 @@ internal static class OwnTokenReferenceAnalysis
 
         /// <summary>
         /// Maps every abstract <c>[ControlDesignToken]</c> layer to the terminal controls that inherit it, so the
-        /// derivations and global reads in a layer's <c>CalculateTokenValues</c> count for each of those controls. The
+        /// global reads of a layer count for each of those controls. The
         /// chain is followed syntactically by base-type name within the package's own sources.
         /// </summary>
         internal void CollectTokenLayers(IEnumerable<SyntaxNode> roots)
@@ -259,36 +258,11 @@ internal static class OwnTokenReferenceAnalysis
         // Members of a Token class read by AXAML or by code outside the Token class.
         private readonly HashSet<(string Control, string Member)> _referenced = new();
 
-        // control -> assigned member -> members read on the right-hand side of those assignments in CalculateTokenValues.
-        private readonly Dictionary<(string Control, string Member), HashSet<string>> _derivations = new();
-
         /// <summary>
-        /// Members that are consumed: referenced directly, or read to derive another consumed member (transitively, any order).
-        /// A member that only feeds members nobody consumes stays out of the set.
+        /// Members that are consumed: referenced by the theme AXAML or by code outside the token class. Token values are
+        /// computed in the value packages, so a control package sees no member that feeds another one.
         /// </summary>
-        internal HashSet<(string Control, string Member)> ResolveActiveMembers()
-        {
-            var active = new HashSet<(string Control, string Member)>(_referenced);
-            var pending = new Stack<(string Control, string Member)>(_referenced);
-            while (pending.Count != 0)
-            {
-                var current = pending.Pop();
-                if (!_derivations.TryGetValue(current, out var sources))
-                {
-                    continue;
-                }
-
-                foreach (var source in sources)
-                {
-                    if (active.Add((current.Control, source)))
-                    {
-                        pending.Push((current.Control, source));
-                    }
-                }
-            }
-
-            return active;
-        }
+        internal HashSet<(string Control, string Member)> ResolveActiveMembers() => new(_referenced);
 
         internal IEnumerable<GlobalConsumerAnalysisEntry> GlobalConsumers => _consumers;
 
@@ -477,11 +451,7 @@ internal static class OwnTokenReferenceAnalysis
         {
             foreach (var node in root.DescendantNodes())
             {
-                if (node is ClassDeclarationSyntax declaration)
-                {
-                    CollectDerivations(declaration);
-                }
-                else if (node is MemberAccessExpressionSyntax access)
+                if (node is MemberAccessExpressionSyntax access)
                 {
                     CollectMemberAccess(access);
                 }
@@ -547,60 +517,6 @@ internal static class OwnTokenReferenceAnalysis
                 }
             }
         }
-
-        // `Y = f(X)` in `<Control>Token.CalculateTokenValues` makes X a source of Y: X is consumed when Y is.
-        private void CollectDerivations(ClassDeclarationSyntax declaration)
-        {
-            foreach (var control in GetTokenClassControls(declaration.Identifier.ValueText))
-            {
-                CollectDerivations(declaration, control, _ownByControl[control]);
-            }
-        }
-
-        private void CollectDerivations(ClassDeclarationSyntax declaration, string control, HashSet<string> own)
-        {
-            foreach (var method in declaration.Members.OfType<MethodDeclarationSyntax>()
-                                              .Where(static method => method.Identifier.ValueText == "CalculateTokenValues"))
-            {
-                foreach (var assignment in method.DescendantNodes().OfType<AssignmentExpressionSyntax>())
-                {
-                    var target = assignment.Left switch
-                    {
-                        IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-                        MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax } member => member.Name.Identifier.ValueText,
-                        _ => null
-                    };
-                    if (target is null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var read in assignment.Right.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>())
-                    {
-                        var name = read.Identifier.ValueText;
-                        if (!own.Contains(name) || IsForeignMemberName(read))
-                        {
-                            continue;
-                        }
-
-                        if (!_derivations.TryGetValue((control, target), out var sources))
-                        {
-                            _derivations.Add((control, target), sources = new HashSet<string>(StringComparer.Ordinal));
-                        }
-
-                        sources.Add(name);
-                    }
-                }
-            }
-        }
-
-        // `other.X` / `a?.X`: the name belongs to another object, only `this.X` and bare `X` are fields of the Token class.
-        private static bool IsForeignMemberName(IdentifierNameSyntax name) => name.Parent switch
-        {
-            MemberAccessExpressionSyntax member => member.Name == name && member.Expression is not ThisExpressionSyntax,
-            MemberBindingExpressionSyntax => true,
-            _ => false
-        };
 
         private static string? GetRightmostName(ExpressionSyntax expression) => expression switch
         {

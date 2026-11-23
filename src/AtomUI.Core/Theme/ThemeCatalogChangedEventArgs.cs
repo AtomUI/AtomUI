@@ -4,18 +4,18 @@ public sealed class ThemeCatalogChangedEventArgs : EventArgs
 {
     public ThemeCatalogChangedEventArgs(
         long generation,
-        IReadOnlyList<ThemeInfo> availableThemes,
+        IReadOnlyList<ThemeInfo> themes,
         ThemeState? currentTheme)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(generation);
-        ArgumentNullException.ThrowIfNull(availableThemes);
+        ArgumentNullException.ThrowIfNull(themes);
 
         Generation      = generation;
-        AvailableThemes = Array.AsReadOnly(availableThemes.ToArray());
+        Themes = Array.AsReadOnly(themes.ToArray());
         CurrentTheme    = currentTheme;
     }
 
     public long Generation { get; }
-    public IReadOnlyList<ThemeInfo> AvailableThemes { get; }
+    public IReadOnlyList<ThemeInfo> Themes { get; }
     public ThemeState? CurrentTheme { get; }
 }

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -358,7 +358,7 @@ public partial class Button : AbstractButton,
 
     private bool _usesThemeRecipe;
 
-    // The recipe's colour model; see ButtonThemeRecipe.UsesRecipeVariants.
+    // The recipe colour model; see AbstractButtonGeometryToken.RecipeVariants.
     internal bool UsesThemeRecipe
     {
         get => _usesThemeRecipe;
@@ -609,14 +609,14 @@ public partial class Button : AbstractButton,
 
     private void ConfigureThemeAppearance()
     {
-        var recipe = ButtonThemeRecipe.Get(this);
-        _themeRecipe = recipe;
-        UsesThemeRecipe = recipe is { UsesRecipeVariants: true };
-        DisablesWithOpacity   = recipe?.DisabledOpacity is not null;
-        ThemeDisabledOpacity  = recipe?.DisabledOpacity ?? 1;
-        PressMoves            = recipe is { PressMoves: true };
-        UnderlinesLinkOnHover = recipe is { UnderlineLinkOnHover: true };
-        PseudoClasses.Set(":link-underlined", recipe?.UnderlineLinkAtRest == true);
+        var behavior = ButtonBehavior.Get(this);
+        _behavior             = behavior;
+        UsesThemeRecipe       = behavior.RecipeVariants;
+        DisablesWithOpacity   = behavior.DisabledByOpacity;
+        ThemeDisabledOpacity  = behavior.DisabledByOpacity ? behavior.DisabledOpacity : 1;
+        PressMoves            = behavior.PressMoves;
+        UnderlinesLinkOnHover = behavior.UnderlineLinkOnHover;
+        PseudoClasses.Set(":link-underlined", behavior.UnderlineLinkAtRest);
         ConfigureVariantThemeVariables();
     }
 

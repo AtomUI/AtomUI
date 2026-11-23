@@ -9,6 +9,15 @@
     <ItemGroup>
         <AtomUIThemeDefinition Include="Fixtures/GalleryPreviewFixture.theme.xml" />
         <AtomUIThemeDefinition Include="Fixtures/GalleryFixedBrandFixture.theme.xml" />
+        <!-- Named themes of the PrimeNG and Shadcn languages (which ship none): the preview page and the workspace
+             exercise them where the v1 profiles of those packages used to be. -->
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPrimeNGLaraDarkFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPrimeNGLaraCompactFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/PrimeNGAuraFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/PrimeNGNoraFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/ShadcnNovaFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/ShadcnMaiaFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/ShadcnSeraFixture.theme.xml" />
     </ItemGroup>
 
     <ItemGroup>

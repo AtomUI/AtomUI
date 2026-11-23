@@ -1,10 +1,10 @@
+using AtomUI.DesignLanguages.AntDesign;
 using System.Collections.Immutable;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Resources;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -51,21 +51,28 @@ public class PrimeNGDataGridHighlightTests
         }
     }
 
+    // The v1 profiles PrimeNGAura, PrimeNGAura.Dark, PrimeNGNora and PrimeNGNora.Dark are the PrimeNG language's
+    // Aura and Nora styles in the light and dark appearances.
     [Theory]
-    [InlineData("PrimeNGAura", null, "#020617", "#FFFFFF")]
-    [InlineData("PrimeNGAura.Dark", null, "#FAFAFA", "#09090B")]
-    [InlineData("PrimeNGNora", "#10B981", "#059669", "#FFFFFF")]
-    [InlineData("PrimeNGNora.Dark", "#10B981", "#10B981", "#09090B")]
-    [InlineData("PrimeNGNora", "#6366F1", "#4F46E5", "#FFFFFF")]
-    [InlineData("PrimeNGNora.Dark", "#6366F1", "#6366F1", "#09090B")]
-    public async Task Selected_Row_Text_Is_The_Highlight_Color(string themeId, string? seed, string background, string text)
+    [InlineData("Aura", false, null, "#020617", "#FFFFFF")]
+    [InlineData("Aura", true, null, "#FAFAFA", "#09090B")]
+    [InlineData("Nora", false, "#10B981", "#059669", "#FFFFFF")]
+    [InlineData("Nora", true, "#10B981", "#10B981", "#09090B")]
+    [InlineData("Nora", false, "#6366F1", "#4F46E5", "#FFFFFF")]
+    [InlineData("Nora", true, "#6366F1", "#6366F1", "#09090B")]
+    public async Task Selected_Row_Text_Is_The_Highlight_Color(string style, bool dark, string? seed, string background, string text)
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
         // Motion off: the selected row's Foreground transitions with its background and would be read mid-way.
-        var builder = new ThemeConfigBuilder().WithToken("EnableMotion", "false");
-        var config = (seed is null ? builder : builder.WithToken("ColorPrimary", seed)).Build();
-        (await manager.ApplyThemeAsync(new ThemeRequest(themeId, config, ThemeTransitionReason.UserRequest),
-            TestContext.Current.CancellationToken)).Status.ShouldBe(ThemeTransitionStatus.Committed);
+        var selection = ThemeSelection.Of("PrimeNG", new DesignStyle(style))
+                                      .WithAppearance(dark ? ThemeAppearance.Dark : ThemeAppearance.Light)
+                                      .WithSeed("EnableMotion", "false");
+        if (seed is not null)
+        {
+            selection = selection.WithSeed("ColorPrimary", seed);
+        }
+        (await manager.ApplyAsync(selection, TestContext.Current.CancellationToken)).Status
+            .ShouldBe(ThemeTransitionStatus.Committed);
         var grid = new DataGrid
         {
             AutoGenerateColumns = false,
@@ -92,7 +99,7 @@ public class PrimeNGDataGridHighlightTests
         finally
         {
             window.Close();
-            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null,
+            await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, null,
                 ThemeTransitionReason.UserRequest), TestContext.Current.CancellationToken);
         }
     }

@@ -1,4 +1,4 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.DesignLanguages.AntDesign;
 using System.Reflection;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
@@ -21,9 +21,9 @@ public class ThemeManagerTests
     {
         await HeadlessTestApp.RunAsync(async () =>
         {
-            var builder = new ThemeManagerBuilder();
+            var builder = new ThemeManagerBuilder().AddAntDesign();
             builder.WithInitialTheme(
-                IThemeManager.DEFAULT_THEME_ID,
+                AntDesignThemes.DaybreakBlue,
                 new ThemeConfigBuilder()
                     .WithToken(nameof(DesignToken.BorderRadius), "12")
                     .Build());
@@ -36,7 +36,7 @@ public class ThemeManagerTests
 
             var result = await manager.ApplyThemeAsync(
                 new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
+                    AntDesignThemes.DaybreakBlue,
                     new ThemeConfigBuilder()
                         .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
                         .Build(),
@@ -53,7 +53,7 @@ public class ThemeManagerTests
     {
         await HeadlessTestApp.RunAsync(async () =>
         {
-            var manager = new ThemeManagerBuilder().Build();
+            var manager = new ThemeManagerBuilder().AddAntDesign().Build();
             manager.InitializeApplication(Application.Current!);
             var state = manager.CurrentTheme;
             var snapshot = manager.CurrentSnapshot;
@@ -73,24 +73,22 @@ public class ThemeManagerTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var manager = new ThemeManagerBuilder().Build();
+            var manager = new ThemeManagerBuilder().AddAntDesign().Build();
 
             manager.InitializeApplication(Application.Current!);
 
-            manager.AvailableThemes.ShouldBe(
-            [
-                new ThemeInfo(
-                    IThemeManager.DEFAULT_THEME_ID,
-                    "Daybreak Blue",
-                    ThemeAppearance.Light,
-                    true,
-                    Color.Parse("#1677FF"))
-                {
-                    DesignLanguage = "AntDesign",
-                    BrandColor = ThemeBrandColorSupport.Seed,
-                    Algorithms = [new ThemeAlgorithm("AtomUI", "Default")]
-                }
-            ]);
+            manager.Themes.Select(static theme => theme.Id).ShouldBe(
+                [ThemeInfo.LanguageDefaultId("AntDesign"), AntDesignThemes.DaybreakBlue], ignoreOrder: true);
+            // The implicit entry declares the language's own primary seed (antd #1677FF), as DaybreakBlue does; Ant Design
+            // has no neutral seed.
+            foreach (var theme in manager.Themes)
+            {
+                theme.Language.ShouldBe("AntDesign");
+                theme.IsLanguageDefault.ShouldBe(theme.Id == ThemeInfo.LanguageDefaultId("AntDesign"));
+                theme.AccentColor.ShouldBe(Color.Parse("#1677FF"));
+                theme.SeedValues.Keys.ShouldBe(["ColorPrimary"]);
+                Color.Parse(theme.SeedValues["ColorPrimary"]).ShouldBe(Color.Parse("#1677FF"));
+            }
         });
     }
 
@@ -100,7 +98,7 @@ public class ThemeManagerTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            var manager = new ThemeManagerBuilder().Build();
+            var manager = new ThemeManagerBuilder().AddAntDesign().Build();
             manager.InitializeApplication(application);
             var provider = new ThemeConfigProvider
             {
@@ -124,7 +122,7 @@ public class ThemeManagerTests
                     .ShouldBeEmpty();
             Should.Throw<ObjectDisposedException>(() => manager.ApplyThemeAsync(
                 new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
+                    AntDesignThemes.DaybreakBlue,
                     null,
                     ThemeTransitionReason.UserRequest)));
             root.Child = null;
@@ -137,7 +135,7 @@ public class ThemeManagerTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            var manager = new ThemeManagerBuilder().Build();
+            var manager = new ThemeManagerBuilder().AddAntDesign().Build();
             manager.InitializeApplication(application);
             var provider = new ThrowingThemeConfigProvider
             {

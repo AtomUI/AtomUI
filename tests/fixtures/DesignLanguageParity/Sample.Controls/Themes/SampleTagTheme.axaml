@@ -1,0 +1,14 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sample="https://atomui.net/samples/controls">
+
+    <ControlTheme x:Key="{x:Type sample:SampleTag}" TargetType="{x:Type sample:SampleTag}">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type sample:SampleTag}">
+                <Border Name="PART_Surface"
+                        Background="{sample:SampleTagTokenResource TagBackground}" />
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

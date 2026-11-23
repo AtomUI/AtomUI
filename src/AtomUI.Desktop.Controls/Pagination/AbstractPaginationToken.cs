@@ -7,12 +7,19 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public abstract partial class AbstractPaginationToken : AbstractControlDesignToken
 {
+    /// <summary>Height and minimum width of a pagination item at the default size.</summary>
     public partial double ItemSize { get; set; }
+    /// <summary>Height and minimum width of a small pagination item.</summary>
     public partial double ItemSizeSM { get; set; }
+    /// <summary>Foreground color of disabled pagination items.</summary>
     public partial Color ItemActiveColorDisabled { get; set; }
+    /// <summary>Gap between pagination elements at the default size.</summary>
     public partial double PaginationLayoutSpacing { get; set; }
+    /// <summary>Gap between pagination elements at the small size.</summary>
     public partial double PaginationLayoutMiniSpacing { get; set; }
+    /// <summary>Width of the go-to-page input at the default size.</summary>
     public partial double PaginationQuickJumperInputWidth { get; set; }
+    /// <summary>Width of the go-to-page input at the small size.</summary>
     public partial double PaginationMiniQuickJumperInputWidth { get; set; }
 
     /// <summary>
@@ -38,21 +45,4 @@ public abstract partial class AbstractPaginationToken : AbstractControlDesignTok
     /// Corner radius of a Pagination item
     /// </summary>
     public partial CornerRadius ItemBorderRadius { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ItemSize                  = EffectiveGlobalToken.ControlHeight;
-        ItemSizeSM                = EffectiveGlobalToken.ControlHeightSM;
-        ItemActiveColorDisabled   = EffectiveGlobalToken.ColorTextDisabled;
-        PaginationLayoutSpacing             = EffectiveGlobalToken.UniformlyMarginXS;
-        PaginationLayoutMiniSpacing         = Math.Max(EffectiveGlobalToken.UniformlyMarginXXS / 2,
-                                                       EffectiveGlobalToken.ControlOutlineWidth);
-        PaginationQuickJumperInputWidth     = EffectiveGlobalToken.ControlHeightLG * 1.25;
-        PaginationMiniQuickJumperInputWidth = EffectiveGlobalToken.ControlHeightLG * 1.1;
-        ItemColor                           = EffectiveGlobalToken.ColorText;
-        ItemHoverColor                      = EffectiveGlobalToken.ColorText;
-        ItemHoverBg                         = EffectiveGlobalToken.ColorBgTextHover;
-        ItemBorderRadius                    = EffectiveGlobalToken.BorderRadius;
-    }
 }

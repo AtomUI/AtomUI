@@ -80,11 +80,15 @@ public sealed class GenerateCompiledThemeInputTask : ITask
             var neutral = new CompiledThemeInput
             {
                 SourceIdentity = input.SourceIdentity.Replace('\\', '/'), SourcePath = Path.GetFullPath(input.SourcePath), ContentDigest = digest,
-                Id = document.Id, Name = document.Name, Appearance = (int)document.Appearance, IsDefault = document.IsDefault,
-                DesignLanguage = document.DesignLanguage ?? "", Density = (int)document.Density, BrandColor = (int)document.BrandColor, NeutralColor = (int)document.NeutralColor,
-                Algorithms = Algorithms(document.Algorithms), Tokens = Tokens(document.Tokens),
-                Controls = document.Controls.Select(c => new ThemeControlInput { Catalog = c.Identity.Catalog, Id = c.Identity.Id,
-                    Mode = (int)c.AlgorithmMode, Algorithms = Algorithms(c.Algorithms), Tokens = Tokens(c.Tokens), Line = c.Location.Line, Column = c.Location.Column }).ToArray()
+                Id = document.Id, Name = document.Name, Language = document.Language, Style = document.Style ?? "",
+                Appearance = document.Appearance is { } appearance ? (int)appearance : -1, Density = document.Density ?? "",
+                Line = document.Location.Line, Column = document.Location.Column,
+                Base = Section(document.Values),
+                Conditions = document.Conditions.Select(c => new ThemeConditionInput
+                {
+                    Style = c.Style ?? "", Appearance = c.Appearance is { } a ? (int)a : -1, Density = c.Density ?? "", Idiom = c.Idiom ?? "",
+                    Line = c.Location.Line, Column = c.Location.Column, Section = Section(c.Values)
+                }).ToArray()
             };
             var content = neutral.Encode();
             var output = Path.GetFullPath(input.OutputPath);
@@ -126,12 +130,15 @@ public sealed class GenerateCompiledThemeInputTask : ITask
         return result;
     }
 
-    private static ThemeAlgorithmInput[] Algorithms(IReadOnlyList<ThemeAlgorithmDocument> algorithms) => algorithms.Select(a => new ThemeAlgorithmInput
+    private ThemeSectionInput Section(ThemeSectionDocument section) => new()
     {
-        Catalog = a.Algorithm.Catalog, Id = a.Algorithm.Id, Line = a.Location.Line, Column = a.Location.Column
-    }).ToArray();
+        Tokens = Tokens(section.Tokens), LanguageTokens = Tokens(section.LanguageTokens),
+        Controls = section.Controls.Select(c => new ThemeControlInput { Catalog = c.Identity.Catalog, Id = c.Identity.Id,
+            Appearance = c.Appearance is { } appearance ? (int)appearance : -1, Density = c.Density ?? "",
+            Tokens = Tokens(c.Tokens), Line = c.Location.Line, Column = c.Location.Column }).ToArray()
+    };
     private ThemeLiteralInput[] Tokens(IReadOnlyList<ThemeTokenDocument> tokens) => tokens.Select(t => new ThemeLiteralInput
-    { Name = t.Name, Value = t.Value, Values = CompileLiteral(t.Value), Line = t.Location.Line, Column = t.Location.Column, Path = t.Location.Path }).ToArray();
+    { Name = t.Name, Value = t.Value, Locked = t.Locked, Values = CompileLiteral(t.Value), Line = t.Location.Line, Column = t.Location.Column, Path = t.Location.Path }).ToArray();
 
     private readonly record struct Input(string SourcePath, string SourceIdentity, string OutputPath);
 }

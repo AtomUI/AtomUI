@@ -18,9 +18,8 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/**/*.*"/>
-        <AtomUIThemeDefinition Include="Assets/Themes/DaybreakBlue.theme.xml" />
-        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v1.xsd"
-                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
+        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v2.xsd"
+                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v2.xsd" />
     </ItemGroup>
 
     <ItemGroup>
@@ -41,14 +40,13 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras"/>
-        <InternalsVisibleTo Include="AtomUI.Themes.Shadcn"/>
-        <InternalsVisibleTo Include="AtomUI.Themes.PrimeNG"/>
         <InternalsVisibleTo Include="AtomUI.Mobile.Controls"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
-        <InternalsVisibleTo Include="AtomUI.Themes.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.Shadcn.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.PrimeNG.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Theme.ContractTests"/>
         <InternalsVisibleTo Include="AtomUIGallery"/>
         <InternalsVisibleTo Include="AtomUIGallery.Tests"/>

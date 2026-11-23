@@ -87,9 +87,10 @@ internal sealed class StartupRun
     }
 
     private ThemeAppearance ResolveAppearance(AtomUIBuilder builder) =>
-        builder.ThemeManagerBuilder.FollowSystemLightRequest is null
-            ? ThemeAppearance.Light
-            : ThemeManager.ResolveSystemAppearance(_application);
+        builder.ThemeManagerBuilder.FollowSystemLightRequest is not null ||
+        builder.ThemeManagerBuilder.InitialSelection?.FollowSystem == true
+            ? ThemeManager.ResolveSystemAppearance(_application)
+            : ThemeAppearance.Light;
 
     private PreparedThemeStartup? ResolvePrepared(EarlyStartup? early, AtomUIBuilder builder)
     {

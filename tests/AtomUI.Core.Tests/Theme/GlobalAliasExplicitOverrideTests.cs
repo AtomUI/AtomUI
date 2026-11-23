@@ -1,9 +1,7 @@
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
-using AtomUI.Theme.DesignTokens;
-using AtomUI.Theme.Resources;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Media;
@@ -89,18 +87,20 @@ public class GlobalAliasExplicitOverrideTests
     }
 
     [Fact]
-    public void Control_Scoped_Global_Override_Honors_The_Same_Order()
+    public void Control_Scoped_Override_Replaces_Only_That_Value()
     {
         var control = new ControlThemeConfigBuilder()
-                      .WithAlgorithm(ControlAlgorithmMode.Global)
                       .WithToken("ControlOutlineWidth", "0")
                       .Build();
         var config = new ThemeConfigBuilder().WithControl(s_button, control).Build();
 
         var snapshot = ThemeTestSnapshotFactory.Compile(config, ThemeCompilerTests.CreateCompilerButtonDescriptor());
 
-        snapshot.EffectiveGlobal<BoxShadows>(s_button, "InputActiveShadow")[0].Spread.ShouldBe(0);
-        snapshot.Global<BoxShadows>("InputActiveShadow")[0].Spread.ShouldBe(2);
+        // Spec 6.4: a control's Map or Alias override replaces that one value and triggers no derivation; only a
+        // control that overrides a seed or fixes an axis is its own evaluation unit.
+        snapshot.EffectiveGlobal<double>(s_button, "ControlOutlineWidth").ShouldBe(0);
+        snapshot.EffectiveGlobal<BoxShadows>(s_button, "InputActiveShadow")[0].Spread.ShouldBe(2);
+        snapshot.Global<double>("ControlOutlineWidth").ShouldBe(2);
     }
 
     [Theory]
@@ -113,18 +113,18 @@ public class GlobalAliasExplicitOverrideTests
     {
         // Every global slot is compared one by one with the same chain compiled without the explicit value; the
         // slots that differ are named, so a failure says which derivation appeared or disappeared.
-        ThemeAlgorithm[][] chains =
+        (ThemeAppearance Appearance, DesignDensity Density)[] variants =
         [
-            [ThemeAlgorithm.Default],
-            [ThemeAlgorithm.Dark],
-            [ThemeAlgorithm.Default, ThemeAlgorithm.Compact],
-            [ThemeAlgorithm.Dark, ThemeAlgorithm.Compact]
+            (ThemeAppearance.Light, DesignDensity.Default),
+            (ThemeAppearance.Dark, DesignDensity.Default),
+            (ThemeAppearance.Light, DesignDensity.Compact),
+            (ThemeAppearance.Dark, DesignDensity.Compact)
         ];
-        foreach (var chain in chains)
+        foreach (var chain in variants)
         {
-            var baseline = ThemeTestSnapshotFactory.Compile(new ThemeConfigBuilder().WithAlgorithms(chain).Build());
-            var overridden = ThemeTestSnapshotFactory.Compile(
-                new ThemeConfigBuilder().WithAlgorithms(chain).WithToken(name, value).Build());
+            ThemeConfigBuilder Variant() => new ThemeConfigBuilder().WithAppearance(chain.Appearance).WithDensity(chain.Density);
+            var baseline = ThemeTestSnapshotFactory.Compile(Variant().Build());
+            var overridden = ThemeTestSnapshotFactory.Compile(Variant().WithToken(name, value).Build());
 
             var changed = baseline.Registry.GlobalTokens
                                   .Where(descriptor => descriptor.Format(baseline.GlobalTokenValues.GetValue(descriptor.Slot)) !=
@@ -133,23 +133,8 @@ public class GlobalAliasExplicitOverrideTests
                                   .OrderBy(static slot => slot, StringComparer.Ordinal)
                                   .ToArray();
 
-            changed.ShouldBe(expectedChangedSlots, string.Join(" + ", chain));
+            changed.ShouldBe(expectedChangedSlots, chain.ToString());
         }
-    }
-
-    [Fact]
-    public void Explicit_Bits_Are_Per_Slot_And_Can_Be_Reset()
-    {
-        var token = new DesignToken();
-        var outlineWidth = (int)SharedTokenKind.ControlOutlineWidth;
-        var outlineColor = (int)SharedTokenKind.ColorControlOutline;
-
-        token.IsExplicitSlot(outlineWidth).ShouldBeFalse();
-        token.MarkExplicit(outlineWidth);
-        token.IsExplicitSlot(outlineWidth).ShouldBeTrue();
-        token.IsExplicitSlot(outlineColor).ShouldBeFalse();
-        token.ResetExplicit();
-        token.IsExplicitSlot(outlineWidth).ShouldBeFalse();
     }
 
     private static ThemeSnapshot Compile(params (string Name, string Value)[] tokens)

@@ -1,9 +1,8 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Schema;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
@@ -25,7 +24,8 @@ public partial class SelectFamilyEffectTests
     {
         InputFamilyEffectTests.s_inputControlFrameAppearanceReads.ShouldContain(token);
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        (await manager.ApplyThemeAsync(new ThemeRequest("ShadcnLuma", null, ThemeTransitionReason.UserRequest),
+        // The v1 ShadcnLuma profile is the Shadcn language's Luma style.
+        (await manager.ApplyAsync(ThemeSelection.Of("Shadcn", new AtomUI.Theme.Languages.DesignStyle("Luma")),
             TestContext.Current.CancellationToken)).Status.ShouldBeOneOf(ThemeTransitionStatus.Committed,
             ThemeTransitionStatus.NoOp);
         try
@@ -35,7 +35,7 @@ public partial class SelectFamilyEffectTests
         }
         finally
         {
-            await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null,
+            await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue, null,
                 ThemeTransitionReason.UserRequest), TestContext.Current.CancellationToken);
         }
     }

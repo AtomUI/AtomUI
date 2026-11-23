@@ -1,5 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -296,13 +296,10 @@ public class WatermarkTileRendererTests
     private static async Task ApplyAppearanceAsync(ThemeAppearance appearance)
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        var algorithms = appearance == ThemeAppearance.Dark
-            ? new[] { ThemeAlgorithm.Default, ThemeAlgorithm.Dark }
-            : new[] { ThemeAlgorithm.Default };
         var result = await manager.ApplyThemeAsync(
             new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID,
-                new ThemeConfigBuilder().WithAlgorithms(algorithms).Build(),
+                AntDesignThemes.DaybreakBlue,
+                new ThemeConfigBuilder().WithAppearance(appearance).Build(),
                 ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken);
         result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);

@@ -1,7 +1,9 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 using Avalonia.Media;
 using Shouldly;
 using Xunit;
@@ -11,33 +13,32 @@ namespace AtomUI.Desktop.Controls.Tests.Theme;
 public class ThemeInitialModeTests
 {
     [Fact]
-    public void Builder_Initial_Theme_Keeps_Theme_Id_And_Dark_Algorithm_Config()
+    public void Builder_Initial_Theme_Keeps_Theme_Id_And_Dark_Appearance_Config()
     {
         var builder = new TestThemeManagerBuilder();
-        var config = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+        var config  = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
 
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID, config);
+        builder.WithInitialTheme(AntDesignThemes.DaybreakBlue, config);
 
-        builder.ThemeId.ShouldBe(IThemeManager.DEFAULT_THEME_ID);
+        builder.ThemeId.ShouldBe(AntDesignThemes.DaybreakBlue);
         builder.InitialConfig.ShouldBeSameAs(config);
-        builder.InitialConfig!.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+        builder.InitialConfig!.Appearance.ShouldBe(ThemeAppearance.Dark);
+        builder.InitialConfig.Density.ShouldBeNull();
     }
 
     [Fact]
-    public void Builder_Initial_Theme_Preserves_Explicit_Algorithm_Order()
+    public void Builder_Initial_Theme_Preserves_Explicit_Density_And_Appearance()
     {
         var builder = new TestThemeManagerBuilder();
         var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark)
+                     .WithDensity(DesignDensity.Compact)
+                     .WithAppearance(ThemeAppearance.Dark)
                      .Build();
 
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID, config);
+        builder.WithInitialTheme(AntDesignThemes.DaybreakBlue, config);
 
-        builder.InitialConfig!.Algorithms.ShouldBe([
-            ThemeAlgorithm.Default,
-            ThemeAlgorithm.Compact,
-            ThemeAlgorithm.Dark
-        ]);
+        builder.InitialConfig!.Density.ShouldBe(DesignDensity.Compact);
+        builder.InitialConfig.Appearance.ShouldBe(ThemeAppearance.Dark);
     }
 
     [Fact]
@@ -45,18 +46,35 @@ public class ThemeInitialModeTests
     {
         var builder = new TestThemeManagerBuilder();
 
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+        builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
 
-        builder.ThemeId.ShouldBe(IThemeManager.DEFAULT_THEME_ID);
+        builder.ThemeId.ShouldBe(AntDesignThemes.DaybreakBlue);
         builder.InitialConfig.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Builder_Initial_Selection_Keeps_Appearance_And_Density()
+    {
+        var builder = new TestThemeManagerBuilder();
+        var selection = ThemeSelection.Of("AntDesign")
+                                      .WithAppearance(ThemeAppearance.Dark)
+                                      .WithDensity(DesignDensity.Compact);
+
+        builder.WithInitialTheme(selection);
+
+        builder.InitialSelection.ShouldBeSameAs(selection);
+        builder.InitialSelection!.Language.ShouldBe("AntDesign");
+        builder.InitialSelection.Appearance.ShouldBe(ThemeAppearance.Dark);
+        builder.InitialSelection.Density.ShouldBe(DesignDensity.Compact);
     }
 
     private sealed class TestThemeManagerBuilder : IThemeManagerBuilder
     {
         public IList<ControlPackageRegistration> ControlPackages { get; } = new List<ControlPackageRegistration>();
         public IList<Action<IThemeManager>> Initializers { get; } = new List<Action<IThemeManager>>();
-        public string ThemeId { get; private set; } = IThemeManager.DEFAULT_THEME_ID;
+        public string ThemeId { get; private set; } = AntDesignThemes.DaybreakBlue;
         public ThemeConfig? InitialConfig { get; private set; }
+        public ThemeSelection? InitialSelection { get; private set; }
         public ThemeRequest? FollowSystemLight { get; private set; }
         public ThemeRequest? FollowSystemDark { get; private set; }
 
@@ -68,11 +86,9 @@ public class ThemeInitialModeTests
         {
         }
 
-        public IThemeManagerBuilder AddThemeAlgorithms(
-            IEnumerable<AtomUI.Theme.Schema.ThemeAlgorithmDescriptor> algorithms) => this;
+        public IThemeManagerBuilder AddDesignLanguage(DesignLanguageDescriptor language) => this;
 
-        public IThemeManagerBuilder AddControlTokenAlgorithms(
-            IEnumerable<AtomUI.Theme.Schema.ControlTokenAlgorithmDescriptor> algorithms) => this;
+        public IThemeManagerBuilder AddControlDerivations(IEnumerable<ControlDerivationDescriptor> derivations) => this;
 
         public void AddControlPackage(ControlPackageRegistration package)
         {
@@ -86,9 +102,23 @@ public class ThemeInitialModeTests
 
         public void WithInitialTheme(string themeId, ThemeConfig? config = null)
         {
-            ThemeId      = themeId;
+            ThemeId       = themeId;
             InitialConfig = config;
         }
+
+        public void WithInitialTheme(ThemeSelection selection)
+        {
+            InitialSelection = selection;
+        }
+
+        public void WithInitialDesignLanguage<TLanguage>() where TLanguage : DesignLanguage =>
+            throw new NotSupportedException();
+
+        public void SetDefaultTheme<TLanguage>(string themeId) where TLanguage : DesignLanguage =>
+            throw new NotSupportedException();
+
+        public void SelectValuePackage<TLanguage>(ControlValuePackage package) where TLanguage : DesignLanguage =>
+            throw new NotSupportedException();
 
         public void WithFollowSystemThemes(ThemeRequest light, ThemeRequest dark)
         {
@@ -115,6 +145,5 @@ public class ThemeInitialModeTests
         public void WithDefaultFontFamily(string fontFamily)
         {
         }
-
     }
 }

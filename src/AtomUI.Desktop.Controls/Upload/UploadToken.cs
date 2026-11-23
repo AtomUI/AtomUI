@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -14,103 +13,40 @@ public sealed partial class UploadToken : AbstractControlDesignToken
     /// </summary>
     public partial Color ActionsColor { get; set; }
     
-    /// <summary>
-    /// 卡片类型文件列表项的尺寸（对 picture-card 和 picture-circle 生效）
-    /// 
-    /// </summary>
+    /// <summary>Width and height of picture-card and picture-circle upload items and their trigger.</summary>
     public partial double PictureCardSize { get; set; }
     
-    /// <summary>
-    /// 文本列表的外间距
-    /// </summary>
+    /// <summary>Margin around the file header in a text-list item.</summary>
     public partial Thickness TextListItemMargin { get; set; }
     
-    /// <summary>
-    /// 文本列表文件名的内间距
-    /// </summary>
+    /// <summary>Padding inside the file name element of a text-list item.</summary>
     public partial Thickness TextListNamePadding { get; set; }
 
-    /// <summary>
-    /// 文本列表项的水平与垂直内间距
-    /// </summary>
+    /// <summary>Padding inside the file header of a text-list item.</summary>
     public partial Thickness TextListItemPadding { get; set; }
 
-    /// <summary>
-    /// 文本列表上传进度线的高度
-    /// </summary>
+    /// <summary>Height of the upload progress line in a text-list item.</summary>
     public partial double TextListProgressLineHeight { get; set; }
 
-    /// <summary>
-    /// 文本列表上传进度的内间距
-    /// </summary>
+    /// <summary>Padding around the upload progress line in a text-list item.</summary>
     public partial Thickness TextListProgressPadding { get; set; }
     
-    /// <summary>
-    /// 文件类型图标大小
-    /// </summary>
+    /// <summary>Width and height of the file-type icon in an upload item.</summary>
     public partial double UploadThumbnailSize { get; set; }
     
-    /// <summary>
-    /// 拖动上传区域图标大小
-    /// </summary>
+    /// <summary>Size of the icon in the upload drop area.</summary>
     public partial double DragIconSize { get; set; }
     
-    /// <summary>
-    /// 拖动上传区域图标外间距
-    /// </summary>
+    /// <summary>Margin around the icon in the upload drop area.</summary>
     public partial Thickness DragIconMargin { get; set; }
     
-    /// <summary>
-    /// 拖动上传区域主标题的外间距
-    /// </summary>
+    /// <summary>Margin around the main heading in the upload drop area.</summary>
     public partial Thickness DragHeaderMargin { get; set; }
     
-    /// <summary>
-    /// 图片列表的外间距
-    /// </summary>
+    /// <summary>Margin around an item in the picture list.</summary>
     public partial Thickness PictureListItemMargin { get; set; }
     
-    /// <summary>
-    /// 图片列表图片预览大小
-    /// </summary>
+    /// <summary>Size reserved for an image preview in a picture-list item.</summary>
     public partial double PictureListPreviewerSize { get; set; }
-    
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ActionsColor             = EffectiveGlobalToken.ColorIcon;
-        PictureCardSize          = EffectiveGlobalToken.ControlHeightLG * 2.55;
-        TextListItemMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        if (!IsExplicit(UploadTokenKind.TextListNamePadding))
-        {
-            TextListNamePadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        }
-
-        if (!IsExplicit(UploadTokenKind.TextListItemPadding))
-        {
-            TextListItemPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, EffectiveGlobalToken.UniformlyPaddingXXS);
-        }
-
-        TextListProgressLineHeight = 2;
-        if (!IsExplicit(UploadTokenKind.TextListProgressPadding))
-        {
-            TextListProgressPadding = new Thickness(
-                TextListItemPadding.Left + EffectiveGlobalToken.FontSize + TextListNamePadding.Left,
-                0, TextListItemPadding.Right, 0);
-        }
-
-        UploadThumbnailSize      = EffectiveGlobalToken.FontSizeHeading2;
-        DragIconSize             = EffectiveGlobalToken.FontSizeHeading3 * 2;
-        DragIconMargin           = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMargin);
-        DragHeaderMargin         = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXXS);
-        if (!IsExplicit(UploadTokenKind.PictureListItemMargin))
-        {
-            // Keep the outline inside the scroll viewport's horizontal clip edges.
-            var sideInset = EffectiveGlobalToken.LineWidth;
-            PictureListItemMargin = new Thickness(sideInset, EffectiveGlobalToken.UniformlyMarginXS, sideInset, 0);
-        }
-
-        PictureListPreviewerSize = EffectiveGlobalToken.SizeXXL;
-    }
     
 }

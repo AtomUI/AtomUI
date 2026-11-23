@@ -18,5 +18,7 @@
         <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../controlgallery/AtomUIGallery/AtomUIGallery.csproj" />
+        <ProjectReference Include="../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     </ItemGroup>
 </Project>

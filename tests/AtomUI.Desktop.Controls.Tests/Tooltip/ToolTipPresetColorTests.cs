@@ -1,6 +1,5 @@
-using AtomUI.Controls;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -139,7 +138,7 @@ public class ToolTipPresetColorTests
         window.GetVisualDescendants().OfType<ToolTip>().Single(static tip => tip.Classes.Contains(ToolTipPseudoClass.Open));
 
     private static ThemeConfig DarkConfig() =>
-        new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build();
+        new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
 
     private static Button CreateHost()
     {

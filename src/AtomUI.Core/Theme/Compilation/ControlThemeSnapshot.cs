@@ -11,7 +11,7 @@ internal sealed class ControlThemeSnapshot
         IReadOnlyDictionary<object, object?> effectiveGlobalResourceDelta,
         TokenValueTable controlTokenValues,
         IReadOnlyDictionary<object, object?> controlResources,
-        object? appearanceSettings = null)
+        GlobalTokenReadSet? globalReads = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(controlSlot);
         ArgumentNullException.ThrowIfNull(effectiveGlobalTokenDelta);
@@ -25,7 +25,7 @@ internal sealed class ControlThemeSnapshot
         EffectiveGlobalResourceDelta = effectiveGlobalResourceDelta;
         ControlTokenValues           = controlTokenValues;
         ControlResources             = controlResources;
-        AppearanceSettings           = appearanceSettings;
+        GlobalReads                  = globalReads;
         EstimatedRetainedBytes        = ThemeRetainedBytesEstimator.EstimateControl(this);
     }
 
@@ -35,7 +35,13 @@ internal sealed class ControlThemeSnapshot
     internal IReadOnlyDictionary<object, object?> EffectiveGlobalResourceDelta { get; }
     internal TokenValueTable ControlTokenValues { get; }
     internal IReadOnlyDictionary<object, object?> ControlResources { get; }
-    internal object? AppearanceSettings { get; }
+
+    /// <summary>
+    /// The global token slots the control's derivation read, when its result depends on nothing else of the scope:
+    /// no global override, no own evaluation unit and an empty global delta. <see langword="null"/> otherwise; then a
+    /// child unit always derives the control again.
+    /// </summary>
+    internal GlobalTokenReadSet? GlobalReads { get; }
     internal long EstimatedRetainedBytes { get; }
 
     internal T GetEffectiveGlobalValue<T>(TokenValueTable globalValues, int slot)

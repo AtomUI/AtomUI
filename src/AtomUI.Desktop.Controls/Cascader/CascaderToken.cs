@@ -8,9 +8,7 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class CascaderToken : AbstractSelectInputToken
 {
     
-    /// <summary>
-    /// 节点标题高度
-    /// </summary>
+    /// <summary>Minimum height of a cascader item header.</summary>
     public partial double HeaderHeight { get; set; }
     
     /// <summary>
@@ -77,39 +75,10 @@ public sealed partial class CascaderToken : AbstractSelectInputToken
     /// </summary>
     public partial CornerRadius OptionBorderRadius { get; set; }
     
-    /// <summary>
-    /// 过滤高亮颜色
-    /// </summary>
+    /// <summary>Foreground color of text that matches the filter.</summary>
     public partial Color FilterHighlightColor { get; set; }
     
-    /// <summary>
-    /// Item 头的元素间距
-    /// </summary>
+    /// <summary>Gap between elements inside a cascader item header.</summary>
     public partial double ItemHeaderSpacing { get; set; }
-
-    public CascaderToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var itemPaddingVertical = Math.Round((EffectiveGlobalToken.ControlHeight - EffectiveGlobalToken.FontHeight) / 2);
-        ControlWidth             = 184;
-        ControlItemWidth         = 111;
-        DropdownHeight           = 180;
-        OptionHoverBg            = EffectiveGlobalToken.ControlItemBgHover;
-        OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
-        OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
-        OptionPadding            = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, itemPaddingVertical);
-        MenuPadding              = EffectiveGlobalToken.PaddingXXS;
-        OptionMargin             = default;
-        OptionBorderRadius       = EffectiveGlobalToken.BorderRadius;
-        OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
-        HeaderHeight             = EffectiveGlobalToken.ControlHeightSM;
-        FilterHighlightColor     = EffectiveGlobalToken.ColorError;
-        ItemHeaderSpacing        = EffectiveGlobalToken.SpacingXXS;
-    }
     
 }

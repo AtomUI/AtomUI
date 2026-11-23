@@ -6,7 +6,6 @@ using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Theme.Schema;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
 using Xunit;
 using AtomButton = AtomUI.Desktop.Controls.Button;
@@ -271,7 +270,7 @@ public partial class InputFamilyEffectTests
             case (_, "ColorPrimaryHover"):
                 Hover();
                 break;
-            case (_, "ColorPrimary" or "InputActiveShadow"):
+            case (_, "ColorPrimary" or "InputActiveBorderColor" or "InputActiveShadow"):
                 Focus();
                 break;
             case (_, "ColorError"):

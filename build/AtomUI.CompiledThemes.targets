@@ -23,4 +23,13 @@
             <FileWrites Include="@(_AtomUIThemeInputSource->'%(InputPath)')" />
         </ItemGroup>
     </Target>
+    <!-- One-shot rewrite of v1 theme definitions as v2 (spec 7.11):
+         dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory>
+         [-p:AtomUIThemeDefinitionOutput=<directory>]; without an output directory the files are replaced in place. -->
+    <Target Name="ConvertAtomUIThemeDefinitions">
+        <Error Condition="'$(AtomUIThemeDefinitionInput)' == ''" Text="Set AtomUIThemeDefinitionInput to the directory that holds the v1 *.theme.xml files." />
+        <Error Condition="!Exists('$(AtomUIBuildTasksAssembly)')" Text="AtomUI.Build.Tasks could not be found at '$(AtomUIBuildTasksAssembly)'." />
+        <AtomUI.Build.Tasks.ConvertThemeDefinitionsTask TaskAssembly="$(AtomUIBuildTasksAssembly)" DotNetPath="$(DOTNET_HOST_PATH)"
+            InputDirectory="$(AtomUIThemeDefinitionInput)" OutputDirectory="$(AtomUIThemeDefinitionOutput)" />
+    </Target>
 </Project>

@@ -1,20 +1,59 @@
+using System.Globalization;
 using System.Xml.Linq;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
+using AtomUI.Toolkits.GalleryBase.Shell;
 
 namespace AtomUIGallery.ShowCases.ThemePresets;
+
+internal sealed record ThemePresetChoice(ThemeInfo Info, DesignStyle? Style = null, bool ShowInBar = true)
+{
+    // The catalog reserves the implicit entry's dollar prefix outside the XML theme Id syntax.
+    internal string SelectionId => Style is { } style ? $"{Info.Id}.{style.Id}" : Info.Id;
+    internal string PreviewId => Style is { } style ? Info.Language + style.Id : Info.Id;
+    internal string Name => Style is { } style ? $"{Info.Language} {style.Id}" : Info.Name;
+}
 
 // The Gallery is an internal friend of Core solely for this adapter. It reads the committed
 // compiled catalog; preview never publishes a root request or discovers packages by reflection.
 internal sealed class ThemePresetCatalog(ThemeManager manager)
 {
     private CompiledThemeCatalog? _catalog;
-    private readonly Dictionary<string, ThemeConfig> _configs = new(StringComparer.Ordinal);
+    private readonly Dictionary<(string ThemeId, DesignStyle Style, ThemeAppearance Appearance,
+        DesignDensity Density, string? Primary, string? Neutral), ThemeConfig> _configs = new();
 
-    internal IReadOnlyList<(ThemeInfo Info, string Package)> Read()
+    /// <summary>The Gallery's language style previews, followed by named themes compiled into packages.</summary>
+    internal IReadOnlyList<ThemePresetChoice> Read()
+    {
+        var catalog = GetCatalog();
+        var choices = new List<ThemePresetChoice>();
+        foreach (var language in catalog.Languages.Where(language => language.Id is "PrimeNG" or "Shadcn")
+                                        .OrderBy(language => language.Id, StringComparer.Ordinal))
+        {
+            var definition = catalog.Get(ThemeInfo.LanguageDefaultId(language.Id)).Info;
+            foreach (var style in language.Styles.OrderBy(style => style.Id, StringComparer.Ordinal))
+            {
+                choices.Add(new ThemePresetChoice(definition, style));
+            }
+        }
+        var hasStylePreviews = choices.Count > 0;
+        var compiled = catalog.ResolverSlices
+            .SelectMany(slice => slice.Definitions
+                .Where(entry => entry.Revision.ProgramDigest is not null && !entry.Info.IsLanguageDefault)
+                .Select(entry => (catalog.Get(entry.Info.Id).Info, Package: slice.ResolverId))).ToArray();
+        var packages = compiled.Where(item => item.Package != "AtomUIGallery").ToArray();
+        foreach (var item in packages.Length == 0 ? compiled : packages)
+        {
+            // Daybreak Blue is the built-in fallback when the language previews are unavailable.
+            choices.Add(new ThemePresetChoice(item.Info, ShowInBar: !hasStylePreviews || item.Info.Id != "DaybreakBlue"));
+        }
+        return choices;
+    }
+
+    private CompiledThemeCatalog GetCatalog()
     {
         var catalog = manager.CompiledThemeCatalog;
         if (!ReferenceEquals(_catalog, catalog))
@@ -22,153 +61,115 @@ internal sealed class ThemePresetCatalog(ThemeManager manager)
             _catalog = catalog;
             _configs.Clear();
         }
-        // Slices keep each definition's original Info; the published Info carries the design language demotion
-        // (ATMTHM3103/3104), so grouping here agrees with the Gallery menu.
-        var compiled = catalog.ResolverSlices
-            .SelectMany(slice => slice.Definitions
-                .Where(entry => entry.Revision.ProgramDigest is not null)
-                .Select(entry => (catalog.Get(entry.Info.Id).Info, Package: slice.ResolverId))).ToArray();
-        var packages = compiled.Where(item => item.Package != "AtomUIGallery" && item.Package != "AtomUI.Core").ToArray();
-        return packages.Length == 0 ? compiled : packages;
+        return catalog;
     }
 
-    // A null chain keeps the definition's own chain: a mode profile may run a package algorithm (for example
-    // PrimeNG:Aura.Dark) that the built-in Default/Dark/Compact toggles cannot stand in for.
-    // A non-null primary replaces the definition's ColorPrimary seed; null leaves the declarations untouched.
-    internal ThemeConfig CreateConfig(string themeId, IReadOnlyList<ThemeAlgorithm>? algorithms, string? primary = null,
-        string? neutral = null)
+    /// <summary>The language of a theme, as the catalog describes it.</summary>
+    internal DesignLanguageInfo? Language(ThemeInfo info) =>
+        GetCatalog().Languages.FirstOrDefault(language => language.Id == info.Language);
+
+    internal ThemeInfo LanguageDefaults(ThemeInfo info) =>
+        GetCatalog().Get(ThemeInfo.LanguageDefaultId(info.Language)).Info;
+
+    /// <summary>
+    /// Resolves a language style or named theme in an isolated local scope, with the selected variant and seeds.
+    /// </summary>
+    internal ThemeConfig CreateConfig(ThemePresetChoice choice, bool dark, bool compact, string? primary, string? neutral)
     {
-        _ = Read();
-        var definition = _catalog!.Get(themeId).Definition;
-        algorithms ??= definition.Algorithms.Select(descriptor => descriptor.Algorithm).ToArray();
-        var key = themeId + ":" + string.Join(",", algorithms) + ":" + primary + ":" + neutral;
+        var definition = GetCatalog().Get(choice.Info.Id).Definition;
+        var language = definition.Language;
+        var appearance = definition.Appearance ?? (dark ? ThemeAppearance.Dark : ThemeAppearance.Light);
+        var density = definition.Density ??
+                      (compact && language.Axes.Densities.Contains(DesignDensity.Compact) ? DesignDensity.Compact : DesignDensity.Default);
+        var style = definition.Style ?? choice.Style ?? language.Axes.DefaultStyle;
+        var key = (choice.Info.Id, style, appearance, density, primary, neutral);
         if (_configs.TryGetValue(key, out var cached))
         {
             return cached;
         }
-        // Inherit=false starts from library defaults, so unrelated root aliases and Own
-        // overrides cannot leak into this preview. Keep every declaration, including Own tokens.
-        var builder = new ThemeConfigBuilder().WithInherit(false).WithAlgorithms(algorithms.ToArray());
-        foreach (var token in definition.Tokens)
+
+        var builder = new ThemeConfigBuilder().WithInherit(false).WithLanguage(language.Id).WithStyle(style)
+                                              .WithAppearance(appearance).WithDensity(density);
+        var layer = definition.ValuesFor(new DesignVariant(style, appearance, density, DesignIdiom.Desktop));
+        foreach (var token in layer.GlobalTokens)
         {
             builder.WithToken(token.Descriptor.Name, token.CanonicalValue);
         }
-        if (primary is not null)
+        foreach (var token in layer.LanguageTokens)
+        {
+            builder.WithLanguageToken(token.Descriptor.Name, token.CanonicalValue);
+        }
+        if (primary is not null && !definition.LockedSeeds.Contains(nameof(DesignToken.ColorPrimary)))
         {
             builder.WithToken(nameof(DesignToken.ColorPrimary), primary);
         }
-        if (neutral is not null)
+        if (neutral is not null && !definition.LockedSeeds.Contains(GalleryWorkspaceViewModel.NeutralSeedName))
         {
-            builder.WithToken(nameof(DesignToken.ColorNeutral), neutral);
+            builder.WithLanguageToken(GalleryWorkspaceViewModel.NeutralSeedName, neutral);
         }
-        foreach (var control in definition.Controls)
+        foreach (var (identity, control) in layer.Controls)
         {
-            var mode = control.AlgorithmMode == ControlAlgorithmMode.Unspecified
-                ? ControlAlgorithmMode.Disabled : control.AlgorithmMode;
-            var local = new ControlThemeConfigBuilder().WithAlgorithm(mode);
-            if (mode == ControlAlgorithmMode.Custom)
+            var local = new ControlThemeConfigBuilder();
+            if (control.Appearance is { } controlAppearance)
             {
-                local.WithAlgorithms(control.Algorithms.Select(value => value.Algorithm).ToArray());
+                local.WithAppearance(controlAppearance);
+            }
+            if (control.Density is { } controlDensity)
+            {
+                local.WithDensity(controlDensity);
             }
             foreach (var token in control.GlobalTokens.Concat(control.OwnTokens))
             {
                 local.WithToken(token.Descriptor.Name, token.CanonicalValue);
             }
-            builder.WithControl(control.Descriptor.Identity, local.Build());
+            builder.WithControl(identity, local.Build());
         }
         var config = builder.Build();
         _configs.Add(key, config);
         return config;
     }
 
-    // Tokens derived from the brand color; a theme declaring BrandColor="Seed" must not pin them (rule ATMTHM3101).
-    internal static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
+    internal string Export(ThemePresetChoice choice, ThemeConfig config)
     {
-        nameof(DesignToken.ColorPrimaryHover), nameof(DesignToken.ColorPrimaryActive),
-        nameof(DesignToken.ColorPrimaryBg), nameof(DesignToken.ColorPrimaryBgHover),
-        nameof(DesignToken.ColorPrimaryBorder), nameof(DesignToken.ColorPrimaryBorderHover),
-        nameof(DesignToken.ColorPrimaryText), nameof(DesignToken.ColorPrimaryTextHover),
-        nameof(DesignToken.ColorPrimaryTextActive), nameof(DesignToken.ColorControlOutline)
-    };
-
-    // Tokens derived from the neutral family; a theme declaring NeutralColor="Seed" must not pin them (rule
-    // ATMTHM3106). Mirrors ThemeDocumentReader.s_neutralDerivedTokens.
-    internal static readonly HashSet<string> s_neutralDerivedTokens = new(StringComparer.Ordinal)
-    {
-        nameof(DesignToken.ColorBgLayout), nameof(DesignToken.ColorBgContainer), nameof(DesignToken.ColorBgElevated),
-        nameof(DesignToken.ColorBgSpotlight), nameof(DesignToken.ColorBgSolid), nameof(DesignToken.ColorBgSolidHover),
-        nameof(DesignToken.ColorBgSolidActive), nameof(DesignToken.ColorText), nameof(DesignToken.ColorTextHeading),
-        nameof(DesignToken.ColorTextSecondary), nameof(DesignToken.ColorTextTertiary),
-        nameof(DesignToken.ColorTextQuaternary), nameof(DesignToken.ColorTextDescription),
-        nameof(DesignToken.ColorTextPlaceholder), nameof(DesignToken.ColorTextDisabled), nameof(DesignToken.ColorIcon),
-        nameof(DesignToken.ColorIconHover), nameof(DesignToken.ColorFill), nameof(DesignToken.ColorFillSecondary),
-        nameof(DesignToken.ColorFillTertiary), nameof(DesignToken.ColorFillQuaternary),
-        nameof(DesignToken.ColorFillContent), nameof(DesignToken.ColorBgContainerDisabled),
-        nameof(DesignToken.ColorBorder), nameof(DesignToken.ColorBorderSecondary), nameof(DesignToken.ColorSplit),
-        nameof(DesignToken.ControlItemBgHover), nameof(DesignToken.ControlItemBgActive),
-        nameof(DesignToken.ControlItemColorActive)
-    };
-
-    internal static string Export(string id, string name, ThemeConfig config, ThemeAppearance? appearance = null,
-        string? designLanguage = null, ThemeBrandColorSupport brandColor = ThemeBrandColorSupport.Fixed,
-        ThemeDensity density = ThemeDensity.Normal, ThemeNeutralColorSupport neutralColor = ThemeNeutralColorSupport.Fixed)
-    {
-        // A Seed theme that pins a brand-derived token would be rejected on read (ATMTHM3101), so export it as Fixed.
-        // The export then no longer matches its design language, whose definitions all accept a seed: a Fixed
-        // definition in a Seed language is demoted out of the group at runtime (ATMTHM3104) and fails a package build.
-        // The declaration written is the one that matches what is exported, so the language is dropped and a comment
-        // says why; the theme stays usable by its Id.
-        XComment? note = null;
-        if (brandColor == ThemeBrandColorSupport.Seed &&
-            (config.Tokens.Keys.Any(s_brandDerivedTokens.Contains) ||
-             config.Controls.Values.Any(control => control.Tokens.Keys.Any(s_brandDerivedTokens.Contains))))
+        var id = choice.PreviewId;
+        var catalog = GetCatalog();
+        if (choice.Style is not null && catalog.Contains(id))
         {
-            brandColor = ThemeBrandColorSupport.Fixed;
-            if (designLanguage is not null)
+            var previewId = id + ".Preview";
+            id = previewId;
+            for (var suffix = 2; catalog.Contains(id); suffix++)
             {
-                note = new XComment($" DesignLanguage=\"{designLanguage}\" omitted: this export sets brand-derived tokens, " +
-                                    "so it is BrandColor=\"Fixed\" while that design language accepts a brand seed. ");
-                designLanguage = null;
+                id = previewId + "." + suffix.ToString(CultureInfo.InvariantCulture);
             }
         }
-        // Symmetric with the brand rule above: a Seed definition pinning a neutral-derived token would be rejected
-        // on read (ATMTHM3106), so export it as Fixed too.
-        if (neutralColor == ThemeNeutralColorSupport.Seed &&
-            (config.Tokens.Keys.Any(s_neutralDerivedTokens.Contains) ||
-             config.Controls.Values.Any(control => control.Tokens.Keys.Any(s_neutralDerivedTokens.Contains))))
-        {
-            neutralColor = ThemeNeutralColorSupport.Fixed;
-        }
-        XNamespace ns = "https://atomui.net/schemas/theme/v1";
-        XElement Algorithms(IEnumerable<ThemeAlgorithm> values) => new(ns + "Algorithms",
-            values.Select(value => new XElement(ns + "Algorithm",
-                value.Catalog == ThemeAlgorithm.BuiltInCatalog ? null : new XAttribute("Catalog", value.Catalog),
-                new XAttribute("Id", value.Id))));
-        XElement Tokens(IReadOnlyDictionary<string, string> values) => new(ns + "Tokens",
-            values.Select(value => new XElement(ns + "Token", new XAttribute("Name", value.Key), new XAttribute("Value", value.Value))));
+        return Export(id, choice.Name, config, choice.Info.LockedSeeds);
+    }
+
+    /// <summary>
+    /// The previewed configuration as a v2 theme definition (spec 7.2): the language, the style and the variant's axes
+    /// fixed, the global and language tokens, and the control entries.
+    /// </summary>
+    internal static string Export(string id, string name, ThemeConfig config, IReadOnlyCollection<string>? lockedSeeds = null)
+    {
+        XNamespace ns = "https://atomui.net/schemas/theme/v2";
+        XElement? Tokens(string element, IReadOnlyDictionary<string, string> values,
+            IReadOnlyCollection<string>? locks = null) => values.Count == 0
+            ? null
+            : new XElement(ns + element, values.OrderBy(static value => value.Key, StringComparer.Ordinal).Select(value =>
+                new XElement(ns + "Token", new XAttribute("Name", value.Key), new XAttribute("Value", value.Value),
+                    locks?.Contains(value.Key) == true ? new XAttribute("Locked", true) : null)));
         var root = new XElement(ns + "Theme", new XAttribute("Id", id), new XAttribute("Name", name),
-            new XAttribute("Appearance",
-                (appearance ?? (config.Algorithms!.Contains(ThemeAlgorithm.Dark) ? ThemeAppearance.Dark : ThemeAppearance.Light)).ToString()),
-            designLanguage is null ? null : new XAttribute("DesignLanguage", designLanguage),
-            new XAttribute("BrandColor", brandColor.ToString()),
-            new XAttribute("NeutralColor", neutralColor.ToString()), new XAttribute("Density", density.ToString()),
-            new XAttribute("IsDefault", false), note, Algorithms(config.Algorithms!), Tokens(config.Tokens),
+            new XAttribute("Language", config.Language ?? "AntDesign"),
+            config.Style is { } style ? new XAttribute("Style", style.Id) : null,
+            config.Appearance is { } appearance ? new XAttribute("Appearance", appearance.ToString()) : null,
+            config.Density is { } density ? new XAttribute("Density", density.Id) : null,
+            Tokens("Tokens", config.Tokens, lockedSeeds), Tokens("LanguageTokens", config.LanguageTokens, lockedSeeds),
             // The schema requires at least one Control inside Controls, so a profile without control values omits it.
             config.Controls.Count == 0 ? null : new XElement(ns + "Controls", config.Controls.Select(pair =>
-            {
-                var control = new XElement(ns + "Control", new XAttribute("Catalog", pair.Key.Catalog),
-                    new XAttribute("Id", pair.Key.Id));
-                if (pair.Value.Algorithm is ControlAlgorithmMode.Disabled or ControlAlgorithmMode.Global)
-                {
-                    control.Add(new XAttribute("Algorithm", pair.Value.Algorithm));
-                }
-                if (pair.Value.Algorithms is { } algorithms)
-                {
-                    control.Add(Algorithms(algorithms));
-                }
-                control.Add(Tokens(pair.Value.Tokens));
-                return control;
-            })));
+                new XElement(ns + "Control", new XAttribute("Catalog", pair.Key.Catalog), new XAttribute("Id", pair.Key.Id),
+                    pair.Value.Appearance is { } controlAppearance ? new XAttribute("Appearance", controlAppearance.ToString()) : null,
+                    pair.Value.Density is { } controlDensity ? new XAttribute("Density", controlDensity.Id) : null,
+                    Tokens("Tokens", pair.Value.Tokens)))));
         return new XDocument(new XDeclaration("1.0", "utf-8", null), root).ToString();
     }
 }

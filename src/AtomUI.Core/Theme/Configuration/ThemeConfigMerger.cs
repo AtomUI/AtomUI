@@ -15,7 +15,9 @@ internal static class ThemeConfigMerger
         var effectiveParent = parent is null
             ? defaults
             : parent;
-        var mergeBase = current.Inherit ? effectiveParent : defaults;
+        // Inherit = false (spec 7.7): keep the parent's language and idiom, drop everything else the parent and the
+        // selected definition give; the axes the defaults themselves write (a root definition's fixed axes) remain.
+        var mergeBase = current.Inherit ? effectiveParent : KeepLanguage(defaults, effectiveParent);
         var candidate = Apply(mergeBase, current);
         if (candidate.Equals(effectiveParent))
         {
@@ -25,35 +27,70 @@ internal static class ThemeConfigMerger
         return new ThemeConfigMergeResult(candidate, Compare(effectiveParent, candidate));
     }
 
+    private static NormalizedThemeConfig KeepLanguage(NormalizedThemeConfig defaults, NormalizedThemeConfig parent)
+    {
+        var axes = new ThemeAxes(
+            defaults.Axes.Language ?? parent.Axes.Language,
+            defaults.Axes.Style,
+            defaults.Axes.Appearance,
+            defaults.Axes.Density,
+            defaults.Axes.Idiom ?? parent.Axes.Idiom);
+        if (axes.Equals(defaults.Axes))
+        {
+            return defaults;
+        }
+
+        return NormalizedThemeConfig.CreateCanonical(defaults.Inherit, axes, ThemeConfigArray.Copy(defaults.GlobalTokens),
+            ThemeConfigArray.Copy(defaults.LanguageTokens), ThemeConfigArray.Copy(defaults.Controls), defaults.Definition);
+    }
+
     private static NormalizedThemeConfig Apply(
         NormalizedThemeConfig effectiveBase,
         NormalizedThemeConfig current)
     {
-        if (!current.AlgorithmsSpecified &&
+        if (current.Axes.IsEmpty &&
             current.GlobalTokens.Count == 0 &&
+            current.LanguageTokens.Count == 0 &&
             current.ControlIdentities.Count == 0)
         {
             return effectiveBase;
         }
 
-        var algorithms = current.AlgorithmsSpecified
-            ? ThemeConfigArray.Copy(current.Algorithms)
-            : ThemeConfigArray.Copy(effectiveBase.Algorithms);
+        var axes = current.Axes.Over(effectiveBase.Axes);
         var globalTokens = MergeTokens(effectiveBase.GlobalTokens, current.GlobalTokens);
-        if (effectiveBase.HasDeferredControls || current.HasDeferredControls)
-        {
-            var identities = effectiveBase.ControlIdentities.Concat(current.ControlIdentities).Distinct().ToArray();
-            return NormalizedThemeConfig.CreateDeferred(false, true, algorithms, globalTokens, identities, identity =>
-            {
-                effectiveBase.TryGetControl(identity, out var inherited);
-                return current.TryGetControl(identity, out var local)
-                    ? MergeControl(inherited, local)
-                    : inherited is null ? null : ResolveInheritedControl(inherited);
-            }, "merge:" + effectiveBase.Fingerprint + ":" + current.Fingerprint,
-                (effectiveBase, current));
-        }
+        // Language tokens belong to the language they were written for: a layer that switches the language drops the
+        // lower layers' ones.
+        var languageChanged = current.Axes.Language is not null && effectiveBase.Axes.Language is not null &&
+                              !ReferenceEquals(current.Axes.Language, effectiveBase.Axes.Language);
+        var languageTokens = MergeLanguageTokens(
+            languageChanged ? Array.Empty<LanguageTokenValue>() : effectiveBase.LanguageTokens, current.LanguageTokens);
         var controls = MergeControls(effectiveBase.Controls, current.Controls);
-        return NormalizedThemeConfig.CreateCanonical(false, true, algorithms, globalTokens, controls);
+        // The definition layer stays the base's: a layer cannot select another definition (the request's theme does).
+        return NormalizedThemeConfig.CreateCanonical(false, axes, globalTokens, languageTokens, controls,
+            effectiveBase.Definition);
+    }
+
+    private static LanguageTokenValue[] MergeLanguageTokens(
+        IReadOnlyList<LanguageTokenValue> inherited,
+        IReadOnlyList<LanguageTokenValue> current)
+    {
+        if (current.Count == 0)
+        {
+            return ThemeConfigArray.Copy(inherited);
+        }
+
+        var result = new Dictionary<string, LanguageTokenValue>(StringComparer.Ordinal);
+        foreach (var token in inherited)
+        {
+            result[token.Name] = token;
+        }
+        foreach (var token in current)
+        {
+            result[token.Name] = token;
+        }
+        var array = result.Values.ToArray();
+        Array.Sort(array, static (left, right) => string.CompareOrdinal(left.Name, right.Name));
+        return array;
     }
 
     private static NormalizedTokenValue[] MergeTokens(
@@ -125,7 +162,7 @@ internal static class ThemeConfigMerger
             }
             if (currentIndex == current.Count)
             {
-                result[resultIndex++] = ResolveInheritedControl(inherited[inheritedIndex++]);
+                result[resultIndex++] = inherited[inheritedIndex++];
                 continue;
             }
 
@@ -134,7 +171,7 @@ internal static class ThemeConfigMerger
             var comparison = CompareIdentity(parent.Identity, local.Identity);
             if (comparison < 0)
             {
-                result[resultIndex++] = ResolveInheritedControl(parent);
+                result[resultIndex++] = parent;
                 inheritedIndex++;
             }
             else if (comparison > 0)
@@ -161,44 +198,12 @@ internal static class ThemeConfigMerger
         NormalizedControlThemeConfig? parent,
         NormalizedControlThemeConfig local)
     {
-        var mode = local.AlgorithmMode == ControlAlgorithmMode.Unspecified
-            ? parent?.AlgorithmMode ?? ControlAlgorithmMode.Disabled
-            : local.AlgorithmMode;
-        ThemeAlgorithmDescriptor[] algorithms;
-        if (local.AlgorithmMode == ControlAlgorithmMode.Unspecified)
-        {
-            algorithms = mode == ControlAlgorithmMode.Custom && parent is not null
-                ? ThemeConfigArray.Copy(parent.Algorithms)
-                : Array.Empty<ThemeAlgorithmDescriptor>();
-        }
-        else
-        {
-            algorithms = mode == ControlAlgorithmMode.Custom
-                ? ThemeConfigArray.Copy(local.Algorithms)
-                : Array.Empty<ThemeAlgorithmDescriptor>();
-        }
-
         return NormalizedControlThemeConfig.CreateCanonical(
             parent is null ? local.Identity : ControlTokenIdentityCanonicalizer.Merge(parent.Identity, local.Identity),
-            mode,
-            algorithms,
+            local.Appearance ?? parent?.Appearance,
+            local.Density ?? parent?.Density,
             MergeTokens(parent?.GlobalTokens ?? Array.Empty<NormalizedTokenValue>(), local.GlobalTokens),
             MergeTokens(parent?.OwnTokens ?? Array.Empty<NormalizedTokenValue>(), local.OwnTokens));
-    }
-
-    private static NormalizedControlThemeConfig ResolveInheritedControl(NormalizedControlThemeConfig control)
-    {
-        if (control.AlgorithmMode != ControlAlgorithmMode.Unspecified)
-        {
-            return control;
-        }
-
-        return new NormalizedControlThemeConfig(
-            control.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            control.GlobalTokens,
-            control.OwnTokens);
     }
 
     internal static ThemeConfigChangeSet Compare(
@@ -212,14 +217,20 @@ internal static class ThemeConfigMerger
             return ThemeConfigChangeSet.Empty;
         }
 
-        var algorithmsChanged = !AlgorithmSequenceEqual(previous.Algorithms, current.Algorithms);
+        var axesChanged = !previous.Axes.Equals(current.Axes) ||
+                          !previous.LanguageTokens.SequenceEqual(current.LanguageTokens);
         var globalTokensChanged = !TokenSequenceEqual(previous.GlobalTokens, current.GlobalTokens);
-        var changedControls = previous.HasDeferredControls || current.HasDeferredControls
-            ? previous.ControlRevision == current.ControlRevision && Equals(previous.ControlBindingIdentity, current.ControlBindingIdentity)
-                ? Array.Empty<ControlTokenIdentity>()
-                : previous.ControlIdentities.Concat(current.ControlIdentities).Distinct().ToArray()
-            : FindChangedControls(previous.Controls, current.Controls);
-        return new ThemeConfigChangeSet(algorithmsChanged, globalTokensChanged, changedControls);
+        var changedControls = FindChangedControls(previous.Controls, current.Controls);
+        if (!ReferenceEquals(previous.Definition, current.Definition))
+        {
+            // Another definition layer may configure any control: every control of either definition changed.
+            changedControls = changedControls
+                .Concat(previous.Definition?.ControlIdentities ?? Array.Empty<ControlTokenIdentity>())
+                .Concat(current.Definition?.ControlIdentities ?? Array.Empty<ControlTokenIdentity>())
+                .Distinct().ToArray();
+            axesChanged = true;
+        }
+        return new ThemeConfigChangeSet(axesChanged, globalTokensChanged, changedControls);
     }
 
     private static IReadOnlyList<ControlTokenIdentity> FindChangedControls(
@@ -269,24 +280,6 @@ internal static class ThemeConfigMerger
         return result;
     }
 
-    private static bool AlgorithmSequenceEqual(
-        IReadOnlyList<ThemeAlgorithmDescriptor> left,
-        IReadOnlyList<ThemeAlgorithmDescriptor> right)
-    {
-        if (left.Count != right.Count)
-        {
-            return false;
-        }
-        for (var index = 0; index < left.Count; index++)
-        {
-            if (!ReferenceEquals(left[index], right[index]))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static bool TokenSequenceEqual(
         IReadOnlyList<NormalizedTokenValue> left,
         IReadOnlyList<NormalizedTokenValue> right)
@@ -332,7 +325,7 @@ internal sealed class ThemeConfigChangeSet
         Array.Empty<ControlTokenIdentity>());
 
     internal ThemeConfigChangeSet(
-        bool algorithmsChanged,
+        bool languageInputsChanged,
         bool globalTokensChanged,
         IEnumerable<ControlTokenIdentity> changedControls)
     {
@@ -346,13 +339,14 @@ internal sealed class ThemeConfigChangeSet
                 ? catalog
                 : string.Compare(left.Id, right.Id, StringComparison.Ordinal);
         });
-        AlgorithmsChanged  = algorithmsChanged;
+        LanguageInputsChanged = languageInputsChanged;
         GlobalTokensChanged = globalTokensChanged;
         ChangedControls     = Array.AsReadOnly(changedControlArray);
     }
 
-    public bool AlgorithmsChanged { get; }
+    /// <summary>Whether the language, an axis or a language token changed: the global tokens must be derived again.</summary>
+    public bool LanguageInputsChanged { get; }
     public bool GlobalTokensChanged { get; }
     public IReadOnlyList<ControlTokenIdentity> ChangedControls { get; }
-    public bool IsEmpty => !AlgorithmsChanged && !GlobalTokensChanged && ChangedControls.Count == 0;
+    public bool IsEmpty => !LanguageInputsChanged && !GlobalTokensChanged && ChangedControls.Count == 0;
 }

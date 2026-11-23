@@ -6,8 +6,6 @@ using AtomUIGallery.Workspace.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
-using Avalonia.Media;
 using DesktopMenu = AtomUI.Desktop.Controls.Menu;
 using MenuItem = AtomUI.Desktop.Controls.MenuItem;
 

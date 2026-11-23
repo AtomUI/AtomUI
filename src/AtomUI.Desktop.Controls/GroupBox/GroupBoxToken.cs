@@ -1,4 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -7,30 +7,17 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class GroupBoxToken : AbstractControlDesignToken
 {
-    
-    public GroupBoxToken()
 
-    {
-    }
-
-    /// <summary>
-    /// 内容区域内间距
-    /// </summary>
+    /// <summary>Inset of the group's content inside its frame.</summary>
     public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// Header 容器外间距
-    /// </summary>
+    /// <summary>Space around the group header container.</summary>
     public partial Thickness HeaderContainerMargin { get; set; }
 
-    /// <summary>
-    /// 头部图标的外间距
-    /// </summary>
+    /// <summary>Space around the optional header icon beside the label.</summary>
     public partial Thickness HeaderIconMargin { get; set; }
 
-    /// <summary>
-    /// Header 内容区域内间距
-    /// </summary>
+    /// <summary>Padding around the content inside the group header.</summary>
     public partial Thickness HeaderContentPadding { get; set; }
 
     /// <summary>
@@ -38,16 +25,5 @@ public sealed partial class GroupBoxToken : AbstractControlDesignToken
     /// Font weight of the header title
     /// </summary>
     public partial FontWeight HeaderFontWeight { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ContentPadding           = EffectiveGlobalToken.PaddingXS;
-        HeaderContainerMargin = new Thickness(EffectiveGlobalToken.UniformlyMargin, EffectiveGlobalToken.UniformlyMarginXS,
-            EffectiveGlobalToken.UniformlyMargin, 0);
-        HeaderContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        HeaderIconMargin     = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXXS, 0);
-        HeaderFontWeight     = FontWeight.Normal;
-    }
     
 }

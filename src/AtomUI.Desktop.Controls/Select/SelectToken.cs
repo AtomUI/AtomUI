@@ -7,65 +7,31 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public sealed partial class SelectToken : AbstractSelectInputToken
 {
-
-
-
-
-
-
-
-    /// <summary>
-    /// 选项选中时文本颜色
-    /// Text color when option is selected
-    /// </summary>
+    /// <summary>Text foreground of a selected dropdown option. Pair with <see cref="OptionSelectedBg"/>.</summary>
     public partial Color OptionSelectedColor { get; set; }
 
-    /// <summary>
-    /// Colour of the check mark on a selected item.
-    /// </summary>
+    /// <summary>Foreground of the check mark on a selected dropdown option.</summary>
     public partial Color OptionSelectedIndicatorColor { get; set; }
 
-    /// <summary>
-    /// 选项选中时文本字重
-    /// Font weight when option is selected
-    /// </summary>
+    /// <summary>Weight of the selected option label.</summary>
     public partial FontWeight OptionSelectedFontWeight { get; set; }
 
-    /// <summary>
-    /// 选项选中时背景色
-    /// Font weight when option is selected
-    /// </summary>
+    /// <summary>Fill of a selected dropdown option. Pair with <see cref="OptionSelectedColor"/>.</summary>
     public partial Color OptionSelectedBg { get; set; }
 
-    /// <summary>
-    /// 选项激活态时背景色
-    /// Background color when option is active
-    /// </summary>
+    /// <summary>Fill of the active option in the dropdown, for example during keyboard navigation.</summary>
     public partial Color OptionActiveBg { get; set; }
 
-    /// <summary>
-    /// 选项背景相对于交互区域的内缩距离
-    /// Insets the option background within its interactive row.
-    /// </summary>
+    /// <summary>Distance between the painted option background and the edge of its interactive row.</summary>
     public partial Thickness OptionBackgroundInset { get; set; }
 
-    /// <summary>
-    /// 选项背景圆角，默认 0（AtomUI 一直以来的直角选项）
-    /// Corner radius of the option background; 0 by default (AtomUI's square options).
-    /// </summary>
+    /// <summary>Corner radius of the option background painted inside <see cref="OptionBackgroundInset"/>.</summary>
     public partial CornerRadius OptionBorderRadius { get; set; }
 
-    /// <summary>
-    /// 选项内间距
-    /// Padding of option
-    /// </summary>
+    /// <summary>Space between the option row edge and its label and selection mark.</summary>
     public partial Thickness OptionPadding { get; set; }
 
-
-    /// <summary>
-    /// 选项高度
-    /// Height of option
-    /// </summary>
+    /// <summary>Height of an option row in the dropdown list.</summary>
     public partial double OptionHeight { get; set; }
 
     /// <summary>
@@ -84,28 +50,15 @@ public sealed partial class SelectToken : AbstractSelectInputToken
                    "the tag panels (SpacingXXS) and sized by MultipleItemHeight*, so no tag margin is applied yet.")]
     public partial Thickness FixedItemMargin { get; set; }
 
-    /// <summary>
-    /// 菜单内容边距
-    /// </summary>
+    /// <summary>Space inside the popup frame around the dropdown list.</summary>
     public partial Thickness PopupContentPadding { get; set; }
-    
-    public SelectToken()
 
-    {
-    }
+    /// <summary>Whether the input frame keeps a transparent border at rest and on hover.</summary>
+    public partial bool TransparentOutlineBorder { get; set; }
 
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        OptionSelectedColor      = EffectiveGlobalToken.ControlItemColorActive;
-        OptionSelectedIndicatorColor = EffectiveGlobalToken.ColorPrimary;
-        OptionSelectedFontWeight = EffectiveGlobalToken.FontWeightStrong;
-        OptionSelectedBg         = EffectiveGlobalToken.ControlItemBgActive;
-        OptionActiveBg           = EffectiveGlobalToken.ControlItemBgHover;
-        OptionPadding            = new Thickness(EffectiveGlobalToken.ControlPaddingHorizontal, (EffectiveGlobalToken.ControlHeight - EffectiveGlobalToken.FontHeight) / 2);
-        OptionHeight = EffectiveGlobalToken.ControlHeight;
-        SelectAffixPadding = EffectiveGlobalToken.PaddingXXS;
-        FixedItemMargin = new Thickness(Math.Floor(EffectiveGlobalToken.UniformlyPaddingXXS / 2));
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-    }
+    /// <summary>Whether the input frame draws only its bottom border.</summary>
+    public partial bool BottomOutlineBorder { get; set; }
+
+    /// <summary>Whether the select indicator uses the muted description colour.</summary>
+    public partial bool MutedSelectIndicator { get; set; }
 }

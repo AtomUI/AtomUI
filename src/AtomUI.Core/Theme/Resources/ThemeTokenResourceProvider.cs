@@ -173,8 +173,7 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         var config = snapshot.EffectiveConfig;
         config.TryGetControl(snapshot.Registry.GetControlIdentity(controlSlot), out var control);
         return (control is not null && ContainsToken(control.GlobalTokens, key)) ||
-               (control?.AlgorithmMode is not (ControlAlgorithmMode.Global or ControlAlgorithmMode.Custom) &&
-                ContainsToken(config.GlobalTokens, key));
+               (control is not { IsOwnEvaluationUnit: true } && ContainsToken(config.GlobalTokens, key));
     }
 
     private static bool IsExplicitOwnToken(ThemeSnapshot snapshot, int controlSlot, object key) =>

@@ -1,7 +1,5 @@
-using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -264,7 +262,7 @@ public partial class NavigationFamilyEffectTests
                 return Overflow(kind, host => OverflowMenuPart(host, token));
             case "SpacingXS":
                 return Tabs(kind, null, extraContent: true);
-            case "BorderRadius" or "BorderRadiusLG" or "BorderRadiusSM":
+            case "BorderRadius" or "BorderRadiusMD" or "BorderRadiusLG" or "BorderRadiusSM":
                 // The card corners: a clearly rounder radius on the selected card.
                 var size = token switch
                 {
@@ -321,7 +319,7 @@ public partial class NavigationFamilyEffectTests
         }
         switch (token)
         {
-            case "BorderRadius" or "BorderRadiusLG" or "BorderRadiusSM":
+            case "BorderRadius" or "BorderRadiusMD" or "BorderRadiusLG" or "BorderRadiusSM":
                 return TabHostScenario(kind, token);
             // ---- card tabs and card strips draw the card Own Tokens: compare the card host -------------------------
             case "CardBg" or "ColorFillAlter" or "CardSize" or "ControlHeightLG" or "CardPadding" or "RelativeLineHeight" or

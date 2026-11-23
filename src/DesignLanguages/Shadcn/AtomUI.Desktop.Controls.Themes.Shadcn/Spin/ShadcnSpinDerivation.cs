@@ -1,0 +1,27 @@
+using AtomUI.DesignLanguages.Shadcn;
+using AtomUI.Theme.Languages;
+
+namespace AtomUI.Desktop.Controls.Themes.Shadcn;
+
+/// <summary>The shadcn view of <see cref="SpinToken"/>.</summary>
+[ControlDerivation]
+internal sealed class ShadcnSpinDerivation : IControlDerivation<ShadcnToken, SpinToken>
+{
+    public void Derive(in DerivationContext<ShadcnToken> context, ControlView<SpinToken> view)
+    {
+        var token  = view.Token;
+        var global = view.Global;
+        var controlHeightLG = global.ControlHeightLG;
+        var controlHeight   = global.ControlHeight;
+        var indicatorSize     = controlHeightLG / 2;
+        var indicatorSizeSM   = controlHeightLG * 0.35;
+        var indicatorSizeLG   = controlHeight;
+        token.IndicatorDuration = global.MotionDurationSlow * 4;
+        token.DotSize           = ((indicatorSize - global.UniformlyMarginXXS / 2) / 2) * 0.75;
+        token.DotSizeLG         = ((indicatorSizeLG - global.UniformlyMarginXXS) / 2) * 0.75;
+        token.DotSizeSM         = ((indicatorSizeSM - global.UniformlyMarginXXS / 2) / 2) * 0.75;
+        token.IndicatorSize     = indicatorSize + 2;
+        token.IndicatorSizeSM   = indicatorSizeSM + 1;
+        token.IndicatorSizeLG   = indicatorSizeLG + 4;
+    }
+}

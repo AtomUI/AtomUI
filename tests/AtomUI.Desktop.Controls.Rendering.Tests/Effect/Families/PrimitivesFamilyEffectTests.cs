@@ -7,7 +7,6 @@ using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Avalonia.Headless;
-using AtomUI.Controls.Primitives;
 using AtomUI.Controls.Commons;
 using AtomUI.Desktop.Controls.Primitives;
 using Xunit;

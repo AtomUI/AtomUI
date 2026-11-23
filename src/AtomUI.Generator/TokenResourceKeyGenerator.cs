@@ -14,9 +14,9 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 static (context, _) => RegistrationType.MetadataNameOf((INamedTypeSymbol)context.TargetSymbol)).Collect();
         var declarations = Declarations(TargetMarkConstants.GlobalDesignTokenAttribute)
             .Combine(Declarations(TargetMarkConstants.ControlDesignTokenAttribute))
-            .Combine(Declarations(TargetMarkConstants.ThemeAlgorithmAttribute))
+            .Combine(Declarations(TargetMarkConstants.LanguageDesignTokenAttribute))
             .Combine(Declarations(TargetMarkConstants.SemanticPartAttribute))
-            .Combine(Declarations(TargetMarkConstants.ControlTokenAlgorithmAttribute));
+            .Combine(Declarations(TargetMarkConstants.DesignLanguageAttribute));
         var assets = initContext.AdditionalTextsProvider
             .Where(static text => text.Path.EndsWith(".axaml", StringComparison.OrdinalIgnoreCase))
             .Combine(initContext.AnalyzerConfigOptionsProvider)
@@ -48,7 +48,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             var compilation = input.Left.Left.Left;
             var options = input.Left.Left.Right;
             var declarations = input.Left.Right.Left;
-            var controlAlgorithmDeclarations = input.Left.Right.Right;
+            var languageDeclarations = input.Left.Right.Right;
             var documents = new Dictionary<string, System.Xml.Linq.XElement>(StringComparer.Ordinal);
             var assets = input.Right.Select(asset =>
             {
@@ -105,10 +105,8 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 walker.Visit(reference.GetSyntax(cancellationToken));
                 ownTokens.Add(walker.ControlTokenInfo);
             }
-            var algorithms = declarations.Left.Right.Distinct(StringComparer.Ordinal).Select(compilation.GetTypeByMetadataName)
-                .Where(static symbol => symbol is not null)
-                .Select(symbol => ThemeAlgorithmInfo.Create(symbol!, context.ReportDiagnostic, cancellationToken))
-                .Where(static algorithm => algorithm is not null).Select(static algorithm => algorithm!).ToArray();
+            var localLanguages = Derivation.LocalLanguageModel.Collect(compilation, declarations.Left.Right,
+                languageDeclarations, context.ReportDiagnostic, cancellationToken);
             var semanticDeclarations = declarations.Right.Distinct(StringComparer.Ordinal).Select(compilation.GetTypeByMetadataName)
                 .Where(static symbol => symbol is not null).Select(symbol => SemanticControlDeclaration.Create(symbol!, cancellationToken)).ToArray();
             var globalNames = compilation.GetTypeByMetadataName("AtomUI.Theme.Resources.SharedTokenKind")?.GetMembers().OfType<IFieldSymbol>()
@@ -156,7 +154,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             AtomUI.Theme.Definitions.Compiled.CompiledThemeManifest? ownTheme = null;
             if (ThemeBuildContracts.HasAbi(compilation))
             {
-                contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, algorithms, context);
+                contracts = ThemeBuildContracts.Build(compilation, catalog, info.SchemaTokens, controlInfos, localLanguages, context);
                 contracts.Write(context);
                 ownTheme = CompiledThemePackageWriter.Write(context, compilation, contracts, themeInputs, assemblyName, packageId);
             }
@@ -188,17 +186,14 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             new GeneratedThemeConsumptionWriter(context, assemblyName, consumption).Write();
             StartupImageWriter.Write(context, compilation, ownRegistration, references, localization, contracts, ownTheme);
             ThemeControlCatalogMetadataWriter.Write(context, catalog);
-            if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0 || algorithms.Length > 0)
+            if (info.SchemaTokens.Count > 0 || controlInfos.Count > 0)
             {
-                new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, algorithms, ThemeBuildContracts.HasAbi(compilation)).Write();
+                new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, ThemeBuildContracts.HasAbi(compilation)).Write();
             }
-            // Bound terminal tokens get their IControlToken half; control stages are checked against the same facts.
-            var controlTokenBindings = ControlTokenStageModel.GetBindings(compilation, controlInfos);
-            ControlTokenIdentityWriter.Write(context, controlTokenBindings);
-            var controlAlgorithms = ControlTokenStageModel.Collect(compilation, controlAlgorithmDeclarations,
-                controlTokenBindings, context.ReportDiagnostic, cancellationToken);
-            ThemeAlgorithmRegistrationWriter.Write(context, compilation,
-                ThemeGeneratorOptions.GetRootNamespace(options), algorithms, controlAlgorithms);
+            // Bound terminal tokens get their IControlToken half.
+            ControlTokenIdentityWriter.Write(context, ControlTokenBindings.GetBindings(compilation, controlInfos));
+            // The token schema digest a value package records and the runtime compares (spec 3.3).
+            TokenSchemaDigestWriter.Write(context, compilation, controlInfos);
 
             if (hasSemanticRuntime)
             {

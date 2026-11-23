@@ -1,5 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
-using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
@@ -9,50 +8,33 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class MessageCardToken : AbstractControlDesignToken
 {
 
-    /// <summary>
-    /// 提示框背景色
-    /// </summary>
+    /// <summary>Default card fill behind the message text and status icon.</summary>
     public partial Color ContentBg { get; set; }
 
-    /// <summary>
-    /// 提示框内边距
-    /// </summary>
+    /// <summary>Inset of the icon and text from the card edge.</summary>
     public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// 提醒框图标尺寸
-    /// </summary>
+    /// <summary>Width and height of the leading message icon.</summary>
     public partial double MessageIconSize { get; set; }
 
-    /// <summary>
-    /// 提醒框图标外边距
-    /// </summary>
+    /// <summary>Space between the leading message icon and the message content.</summary>
     public partial Thickness MessageIconMargin { get; set; }
+    /// <summary>Space above the card in the message stack.</summary>
     public partial Thickness MessageTopMargin { get; set; }
 
-    /// <summary>
-    /// 提醒框信息样式阴影
-    /// </summary>
+    /// <summary>Shadow below a card with the information type.</summary>
     public partial BoxShadows InformationShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框成功样式阴影
-    /// </summary>
+    /// <summary>Shadow below a card with the success type.</summary>
     public partial BoxShadows SuccessShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框警告样式阴影
-    /// </summary>
+    /// <summary>Shadow below a card with the warning type.</summary>
     public partial BoxShadows WarningShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框错误样式阴影
-    /// </summary>
+    /// <summary>Shadow below a card with the error type.</summary>
     public partial BoxShadows ErrorShadows { get; set; }
 
-    /// <summary>
-    /// 提醒框加载样式阴影
-    /// </summary>
+    /// <summary>Shadow below a card with the loading type.</summary>
     public partial BoxShadows LoadingShadows { get; set; }
 
     /// <summary>
@@ -64,6 +46,12 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
     /// Icon colour of an information message.
     /// </summary>
     public partial Color InformationIconColor { get; set; }
+
+    /// <summary>
+    /// 加载中消息的图标颜色
+    /// Icon colour of a loading message.
+    /// </summary>
+    public partial Color LoadingIconColor { get; set; }
 
     /// <summary>
     /// Text colour of an information message.
@@ -114,47 +102,5 @@ public sealed partial class MessageCardToken : AbstractControlDesignToken
     /// Text colour of an error message.
     /// </summary>
     public partial Color ErrorColor { get; set; }
-
-    public MessageCardToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        // Every MessageType has a severity shadow slot, so there is no resting shadow: the theme sets the card shadow
-        // from the slot matching the current MessageType.
-        InformationShadows  = EffectiveGlobalToken.BoxShadows;
-        SuccessShadows      = EffectiveGlobalToken.BoxShadows;
-        WarningShadows      = EffectiveGlobalToken.BoxShadows;
-        ErrorShadows        = EffectiveGlobalToken.BoxShadows;
-        LoadingShadows      = EffectiveGlobalToken.BoxShadows;
-        // The severity backgrounds below default to this card background, so an explicit value carries over.
-        if (!IsExplicit(MessageCardTokenKind.ContentBg))
-        {
-            ContentBg = EffectiveGlobalToken.ColorBgElevated;
-        }
-        // The severity surfaces default to the plain card: only the icon carries the severity.
-        InformationBg    = ContentBg;
-        InformationIconColor = EffectiveGlobalToken.ColorPrimary;
-        InformationColor = EffectiveGlobalToken.ColorText;
-        SuccessBg    = ContentBg;
-        SuccessIconColor = EffectiveGlobalToken.ColorSuccess;
-        SuccessColor = EffectiveGlobalToken.ColorText;
-        WarningBg    = ContentBg;
-        WarningIconColor = EffectiveGlobalToken.ColorWarning;
-        WarningColor = EffectiveGlobalToken.ColorText;
-        ErrorBg    = ContentBg;
-        ErrorIconColor = EffectiveGlobalToken.ColorError;
-        ErrorColor = EffectiveGlobalToken.ColorText;
-        ContentPadding = new Thickness(
-            (EffectiveGlobalToken.ControlHeightLG -
-             EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) / 2,
-            EffectiveGlobalToken.UniformlyPaddingXS);
-        MessageIconMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        MessageTopMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXS);
-        MessageIconSize   = EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM;
-    }
     
 }

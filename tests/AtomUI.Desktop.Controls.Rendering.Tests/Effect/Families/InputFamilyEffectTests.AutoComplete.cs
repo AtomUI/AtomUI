@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Reflection;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Primitives;
-using AtomUI.Theme.Schema;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;

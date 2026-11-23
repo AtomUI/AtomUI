@@ -10,7 +10,6 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
-using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
 using ProgressPath = Avalonia.Controls.Shapes.Path;
 

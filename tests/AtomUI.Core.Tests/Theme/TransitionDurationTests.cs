@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
@@ -535,17 +534,7 @@ public class TransitionDurationTests
 
         private static ThemeTransactionPreparation Prepare(ThemeSchemaRegistry registry, ThemeConfig? config)
         {
-            registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm).ShouldBeTrue();
-            var definition = new PreparedThemeDefinition(
-                "TestTheme",
-                "Test Theme",
-                ThemeAppearance.Light,
-                ThemeAppearance.Light,
-                true,
-                [defaultAlgorithm!],
-                Array.Empty<BoundTokenValue>(),
-                Array.Empty<ControlThemeDefinition>(),
-                new ThemeSourceLocation("test", 1, 1, "/Theme"));
+            var definition = ThemeTestSnapshotFactory.CreateLanguageDefinition(registry.Languages[0]);
             var normalized = ThemeConfigNormalizer.Normalize(config ?? new ThemeConfigBuilder().Build(), registry);
             normalized.Success.ShouldBeTrue();
             var effective = ThemeConfigMerger.Merge(

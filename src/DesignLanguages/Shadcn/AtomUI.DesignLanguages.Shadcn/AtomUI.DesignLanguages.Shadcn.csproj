@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.DesignLanguages.Shadcn</RootNamespace>
+        <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
+        <Description>The shadcn/ui design language for AtomUI: its eight styles, seeds, language tokens and global derivation.</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../AtomUI.Core/AtomUI.Core.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- The language tests check the palette and the colour resolution directly. -->
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.Shadcn.Tests" />
+    </ItemGroup>
+</Project>

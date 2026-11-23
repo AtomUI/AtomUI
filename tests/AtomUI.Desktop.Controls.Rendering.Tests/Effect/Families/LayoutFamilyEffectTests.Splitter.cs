@@ -1,5 +1,4 @@
 using AtomUI.Desktop.Controls.DesignTokens;
-using AtomUI.Theme;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Animation;
@@ -14,7 +13,6 @@ using Xunit;
 using AvaloniaBorder = Avalonia.Controls.Border;
 using AvaloniaSplitViewDisplayMode = Avalonia.Controls.SplitViewDisplayMode;
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
-using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect.Families;
 

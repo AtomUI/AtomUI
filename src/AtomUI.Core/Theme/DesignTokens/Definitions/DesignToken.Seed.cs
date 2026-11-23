@@ -63,14 +63,6 @@ public partial class DesignToken
     public partial Color? ColorLink { get; set; }
 
     /// <summary>
-    /// Neutral family representative color
-    /// An optional seed for design languages whose neutral surfaces are parameterized (shadcn base colors, for
-    /// example). Null by default; the Ant Design calculators ignore it.
-    /// </summary>
-    [DesignTokenKind(DesignTokenKind.Seed)]
-    public partial Color? ColorNeutral { get; set; }
-
-    /// <summary>
     /// 透明色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]

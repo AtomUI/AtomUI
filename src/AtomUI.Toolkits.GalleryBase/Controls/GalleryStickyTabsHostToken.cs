@@ -12,17 +12,4 @@ internal sealed partial class GalleryStickyTabsHostToken : AbstractControlDesign
     public partial IBrush? StickyBackground { get; set; }
     public partial IBrush? StickyBorderBrush { get; set; }
 
-    public GalleryStickyTabsHostToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        StickyContentPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 7, 0);
-        StickyBackground     = new SolidColorBrush(EffectiveGlobalToken.ColorBgLayout);
-        StickyBorderBrush    = new SolidColorBrush(EffectiveGlobalToken.ColorBorderSecondary);
-    }
-
 }

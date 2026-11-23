@@ -43,25 +43,24 @@ internal partial class ThemeManager
         builder.ControlRegistrationState.Freeze();
         var manual = builder.ControlPackages;
         var manualControls = manual.SelectMany(package => package.Controls).ToArray();
-        // Committed algorithms stay by reference (global reuse depends on it); the appended packages add theirs.
-        var algorithms = builder.ThemeAlgorithms.Count == 0 ? _startupRegistry!.Algorithms
-            : _startupRegistry!.Algorithms.Concat(builder.ThemeAlgorithms).ToArray();
+        // Committed languages stay by reference (global reuse depends on it); the appended packages add theirs.
+        var languages = builder.Languages.Count == 0 ? _startupRegistry!.Languages
+            : _startupRegistry!.Languages.Concat(builder.Languages.Where(language => !_startupRegistry.Languages.Contains(language))).ToArray();
         var manualRegistry = manualControls.Length == 0 ? null : new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(), manualControls, algorithms);
+            GeneratedThemeSchema.GetGlobalTokens(), manualControls, Array.Empty<DesignLanguageDescriptor>());
         var newSemantics = manual.SelectMany(package => package.SemanticControls).ToArray();
         var newAssets = manual.SelectMany(package => package.ThemeAssets).ToArray();
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        // Committed control stages stay; the appended ones are accepted only where they cannot change committed values.
-        IEnumerable<ControlTokenAlgorithmDescriptor>? controlAlgorithms = builder.ControlTokenAlgorithms.Count == 0
-            ? _startupRegistry.HasControlAlgorithms ? _startupRegistry.ControlAlgorithms : null
-            : _startupRegistry.ControlAlgorithms.Concat(builder.ControlTokenAlgorithms).ToArray();
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, algorithms,
-            controlAlgorithms);
-        if (builder.ControlTokenAlgorithms.Count != 0)
+        // Committed derivations stay; the appended ones are accepted only where they cannot change committed values.
+        var derivations = builder.Derivations.Count == 0
+            ? _startupRegistry.ControlDerivations
+            : _startupRegistry.ControlDerivations.Concat(builder.Derivations.Where(derivation => !_startupRegistry.ControlDerivations.Contains(derivation))).ToArray();
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, languages, derivations);
+        if (builder.Derivations.Count != 0)
         {
-            registry.ValidateAppendedControlAlgorithms(_startupRegistry);
+            registry.ValidateAppendedDerivations(_startupRegistry);
         }
         var semantics = new SemanticPartRegistry(index);
         _ = new ControlThemeAssetManifest(registry, newAssets);

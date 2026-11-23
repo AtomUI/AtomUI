@@ -25,10 +25,10 @@ public partial class InputFamilyEffectTests
 
     internal static readonly OwnerReadList s_inputControlFrame = new(Primitives + "InputControlFrameTheme.axaml",
     [
-        "BorderRadius", "BorderRadiusLG", "BorderRadiusSM", "BorderThickness", "ColorBgContainer", "ColorBgContainerDisabled",
+        "BorderRadiusLG", "BorderRadiusMD", "BorderRadiusSM", "BorderThickness", "ColorBgContainer", "ColorBgContainerDisabled",
         "ColorBorder", "ColorError", "ColorErrorBg", "ColorErrorBgHover", "ColorErrorBorderHover", "ColorFillSecondary",
-        "ColorFillTertiary", "ColorPrimary", "ColorPrimaryHover", "ColorText", "ColorTextDisabled", "ColorWarning",
-        "ColorWarningBg", "ColorWarningBgHover", "ColorWarningBorderHover", "EnableMotion", "InputActiveShadow",
+        "ColorFillTertiary", "ColorPrimaryHover", "ColorText", "ColorTextDisabled", "ColorWarning",
+        "ColorWarningBg", "ColorWarningBgHover", "ColorWarningBorderHover", "EnableMotion", "InputActiveBorderColor", "InputActiveShadow",
         "InputErrorActiveShadow", "InputWarningActiveShadow"
     ], "src/AtomUI.Desktop.Controls/Primitives/InputControlFrame.cs");
 
@@ -61,7 +61,7 @@ public partial class InputFamilyEffectTests
     /// <summary>TextBoxTheme reads its globals from the owner: the theme is also the base of identity-less embedded editors.</summary>
     internal static readonly OwnerReadList s_textBox = new(Input + "TextBoxTheme.axaml",
     [
-        "BorderRadius", "BorderRadiusLG", "BorderRadiusSM", "BorderThickness", "ColorText", "ColorTextPlaceholder",
+        "BorderRadiusLG", "BorderRadiusMD", "BorderRadiusSM", "BorderThickness", "ColorText", "ColorTextPlaceholder",
         "EnableMotion", "FontHeight", "FontHeightLG", "FontHeightSM", "FontSize", "FontSizeLG", "FontSizeSM",
         "SelectionBackground", "SelectionForeground", "SpacingXXS", "UniformlyPaddingXXS"
     ]);

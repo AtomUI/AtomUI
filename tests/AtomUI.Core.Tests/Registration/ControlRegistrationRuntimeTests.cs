@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Core.Tests.Theme;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Registration;
@@ -21,6 +22,7 @@ public class ControlRegistrationRuntimeTests
         {
             var calls = new List<string>();
             var builder = new AtomUIBuilder(Application.Current!.GetType());
+            builder.UseAntDesign();
             Register("Desktop", prepare: _ =>
             {
                 calls.Add("prepare-desktop");
@@ -67,10 +69,12 @@ public class ControlRegistrationRuntimeTests
         HeadlessTestApp.Run(() =>
         {
             var builder = new AtomUIBuilder(typeof(Application));
+            builder.UseAntDesign();
             Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test",
                 () => { Fail("provider"); return new Provider("Test"); }, _ => Fail("collect"), _ => Fail("prepare"), _ => Fail("complete")));
             Should.Throw<InvalidOperationException>(() => builder.ThemeManagerBuilder.Build());
             var other = new AtomUIBuilder(typeof(Application));
+            other.UseAntDesign();
             ControlRegistrationRuntime.RegisterPackage(other, "Test", static () => new Provider("Test"), static _ => { });
             using var manager = other.ThemeManagerBuilder.Build();
             return;
@@ -84,6 +88,7 @@ public class ControlRegistrationRuntimeTests
     public void Duplicate_And_Reentry_Fail_Before_Prepare_And_Poison_Build(bool recurse)
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         var prepares = 0;
         Action<IAtomUIBuilder> prepare = _ => prepares++;
         void Register() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { }, prepare);
@@ -105,6 +110,7 @@ public class ControlRegistrationRuntimeTests
     public void Shared_Asset_Deduplicates_But_Conflicting_Metadata_Or_Factory_Fails()
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
         {
             collection.AddResource(new("shared", ControlResourcePhase.Shared, 0, CreateResource));
@@ -118,6 +124,7 @@ public class ControlRegistrationRuntimeTests
         })
         {
             var invalid = new AtomUIBuilder(typeof(Application));
+            invalid.UseAntDesign();
             Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(invalid, "Test", static () => new Provider("Test"), collection =>
             {
                 collection.AddResource(new("shared", ControlResourcePhase.Shared, 0, CreateResource));
@@ -135,6 +142,7 @@ public class ControlRegistrationRuntimeTests
         HeadlessTestApp.Run(() =>
         {
             var builder = new AtomUIBuilder(typeof(Application));
+            builder.UseAntDesign();
             var owner = ControlTokenIdentity.ForControl(typeof(Button), "Foreign", "Button");
             var factories = 0;
             var asset = ControlThemeAssetContractTests.Asset([], [owner], globals: GeneratedThemeSchema.GetGlobalTokens());
@@ -162,6 +170,7 @@ public class ControlRegistrationRuntimeTests
         HeadlessTestApp.Run(() =>
         {
             var builder = new AtomUIBuilder(typeof(Application));
+            builder.UseAntDesign();
             var identity = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
             ControlRegistrationRuntime.RegisterPackage(builder, "Semantic", static () => new Provider("Semantic"), collection =>
                 collection.AddSemanticControl(new(typeof(Button), identity,
@@ -170,6 +179,8 @@ public class ControlRegistrationRuntimeTests
             manager.SemanticParts.TryGetControl(identity, out _).ShouldBeTrue();
 
             var conflicting = new AtomUIBuilder(typeof(Application));
+
+            conflicting.UseAntDesign();
             ControlRegistrationRuntime.RegisterPackage(conflicting, "Semantic", static () => new Provider("Semantic"), collection =>
                 collection.AddSemanticControl(builder.ThemeManagerBuilder.ControlPackages.Single().SemanticControls.Single()));
             ControlRegistrationRuntime.RegisterPackage(conflicting, "Token", static () => new Provider("Token"), collection =>
@@ -184,6 +195,7 @@ public class ControlRegistrationRuntimeTests
         HeadlessTestApp.Run(() =>
         {
             var builder = new AtomUIBuilder(typeof(Application));
+            builder.UseAntDesign();
             var prepares = 0;
             ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { });
             ControlRegistrationRuntime.EnsurePackage(builder, "Test", static () => new Provider("Test"), static _ => { }, _ => prepares++);
@@ -198,6 +210,7 @@ public class ControlRegistrationRuntimeTests
     public void Ensure_Cannot_Reenter_During_Complete_Or_Build_A_Partial_Application()
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), static _ => { },
             complete: _ => ControlRegistrationRuntime.EnsurePackage(builder, "Test", static () => new Provider("Test"), static _ => { })));
         Should.Throw<InvalidOperationException>(() => builder.ThemeManagerBuilder.Build());
@@ -208,6 +221,7 @@ public class ControlRegistrationRuntimeTests
     {
         SelectedFragmentAttribute.Activations = 0;
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
             ControlRegistrationRuntime.CollectFragments(collection, new TryOnlyMap(new Dictionary<string, Type>
             {
@@ -226,6 +240,7 @@ public class ControlRegistrationRuntimeTests
     public void Collector_Rejects_Invalid_Proxy_And_Fragment_Identity_Conflicts(string scenario)
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         var types = scenario switch
         {
             "missing" => new[] { typeof(MissingFragmentAttribute) },
@@ -242,6 +257,7 @@ public class ControlRegistrationRuntimeTests
     public void Caught_Invalid_Proxy_Still_Poisons_The_Package_Collection()
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         Should.Throw<InvalidOperationException>(() => ControlRegistrationRuntime.RegisterPackage(builder, "Test", static () => new Provider("Test"), collection =>
         {
             try { ControlRegistrationRuntime.CollectFragments(collection, new Dictionary<string, Type> { ["bad"] = typeof(Button) }, ["bad"]); }
@@ -254,6 +270,7 @@ public class ControlRegistrationRuntimeTests
     public void Cross_Package_Shared_Resource_Metadata_Is_Validated_Before_Any_Factory()
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         var calls = 0;
         Func<IResourceProvider> factory = () => { calls++; return new ResourceDictionary(); };
         foreach (var id in new[] { "First", "Later" })
@@ -271,6 +288,7 @@ public class ControlRegistrationRuntimeTests
         await HeadlessTestApp.RunAsync(() =>
         {
             var builder = new AtomUIBuilder(Application.Current!.GetType());
+            builder.UseAntDesign();
             var calls = 0;
             Func<IResourceProvider> factory = () => { calls++; return new ResourceDictionary(); };
             var asset = ControlThemeAssetContractTests.Asset(
@@ -303,6 +321,7 @@ public class ControlRegistrationRuntimeTests
         HeadlessTestApp.Run(() =>
         {
             var builder = new AtomUIBuilder(typeof(Application));
+            builder.UseAntDesign();
             var owner = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
             var semantic = new ControlSemanticDescriptor(typeof(Button), owner,
             [
@@ -347,6 +366,7 @@ public class ControlRegistrationRuntimeTests
     private static AtomUIBuilder BuildSemanticBinding(Type declaredTarget, Type boundTarget)
     {
         var builder = new AtomUIBuilder(typeof(Application));
+        builder.UseAntDesign();
         var owner = ControlTokenIdentity.ForControl(typeof(Button), "Test", "Button");
         var semantic = new ControlSemanticDescriptor(typeof(Button), owner,
         [

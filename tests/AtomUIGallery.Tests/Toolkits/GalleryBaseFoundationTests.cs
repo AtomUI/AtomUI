@@ -1,9 +1,10 @@
+using AtomUI.DesignLanguages.AntDesign;
 using System.Reflection;
 using System.Reactive.Threading.Tasks;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUI.Controls;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Configuration;
@@ -396,7 +397,7 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            viewModel.AvailableThemes.ShouldBe(manager.AvailableThemes);
+            viewModel.AvailableThemes.ShouldBe(manager.Themes);
             viewModel.CurrentThemeId.ShouldBe(manager.CurrentTheme!.ThemeId);
 
             await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
@@ -411,11 +412,7 @@ public class GalleryBaseFoundationTests
             manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
             ReadToken(committedRequest!.Config, nameof(SharedTokenKind.ColorPrimary)).ShouldBe("#52C41A");
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
-            manager.CurrentTheme.Algorithms.ShouldBe([
-                ThemeAlgorithm.Default,
-                ThemeAlgorithm.Compact,
-                ThemeAlgorithm.Dark
-            ]);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             committedRequest.ShouldNotBeNull();
             ReadToken(committedRequest!.Config, nameof(SharedTokenKind.EnableMotion)).ShouldBe("false");
             ReadToken(committedRequest.Config, nameof(SharedTokenKind.EnableWaveSpirit)).ShouldBe("false");
@@ -428,10 +425,10 @@ public class GalleryBaseFoundationTests
         }
     }
 
-    // Profile families (PrimeNG, shadcn/ui) ship explicit .Dark / .Compact / .DarkCompact profiles
-    // whose own algorithms decide appearance and density; the gallery must not replace them with the previous theme's.
+    // A named theme may fix the appearance or the density (the v2 successor of the PrimeNG / shadcn/ui .Dark / .Compact
+    // profiles); the fixed axis decides, and the gallery must not replace it with the previous theme's toggles.
     [Fact]
-    public async Task Workspace_ViewModel_Applies_A_Profile_With_Its_Own_Algorithms()
+    public async Task Workspace_ViewModel_Applies_A_Theme_With_Its_Own_Fixed_Appearance()
     {
         var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
         var manager = Application.Current!.GetThemeManager()!;
@@ -440,11 +437,12 @@ public class GalleryBaseFoundationTests
         {
             manager.CurrentTheme!.Appearance.ShouldBe(ThemeAppearance.Light);
 
-            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Dark").ToTask();
+            await viewModel.SwitchThemeCommand.Execute("GalleryPrimeNGLaraDarkFixture").ToTask();
 
-            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.Dark");
+            manager.CurrentTheme!.ThemeId.ShouldBe("GalleryPrimeNGLaraDarkFixture");
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
-            manager.CurrentTheme.Algorithms.ShouldBe([new ThemeAlgorithm("PrimeNG", "Lara.Dark")]);
+            manager.CurrentTheme.Language.ShouldBe("PrimeNG");
+            manager.CurrentTheme.Variant.Style.ShouldBe(new DesignStyle("Lara"));
             viewModel.AppearanceMode.ShouldBe(ThemePreference.Dark);
         }
         finally
@@ -454,48 +452,65 @@ public class GalleryBaseFoundationTests
         }
     }
 
+    // The toggles select the matching variant of a multi-style language: the theme stays the language's default
+    // entry and its style, only the appearance and density axes follow the toggles.
     [Fact]
-    public async Task Workspace_ViewModel_Toggles_Select_The_Matching_Profile_Variant()
+    public async Task Workspace_ViewModel_Toggles_Select_The_Matching_Variant()
     {
         var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
         var manager = Application.Current!.GetThemeManager()!;
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Dark").ToTask();
+            await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
+            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Lara").ToTask();
+            AssertVariant(ThemeAppearance.Dark, DesignDensity.Default);
 
             await viewModel.ToggleCompactModeCommand.Execute(true).ToTask();
-            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.DarkCompact");
+            AssertVariant(ThemeAppearance.Dark, DesignDensity.Compact);
 
             await viewModel.SetAppearanceModeCommand.Execute(ThemePreference.Light).ToTask();
-            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara.Compact");
-            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Light);
+            AssertVariant(ThemeAppearance.Light, DesignDensity.Compact);
 
             await viewModel.ToggleCompactModeCommand.Execute(false).ToTask();
-            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGLara");
-            viewModel.CurrentThemeId.ShouldBe("PrimeNGLara");
+            AssertVariant(ThemeAppearance.Light, DesignDensity.Default);
+            viewModel.CurrentThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("PrimeNG"));
+            viewModel.CurrentDesignLanguage.ShouldBe("PrimeNG.Lara");
         }
         finally
         {
             viewModel.Dispose();
             await RestoreDefaultThemeAsync(manager);
         }
+
+        void AssertVariant(ThemeAppearance appearance, DesignDensity density)
+        {
+            manager.CurrentTheme!.ThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("PrimeNG"));
+            manager.CurrentTheme.Variant.Style.ShouldBe(new DesignStyle("Lara"));
+            manager.CurrentTheme.Appearance.ShouldBe(appearance);
+            manager.CurrentTheme.Variant.Density.ShouldBe(density);
+        }
     }
 
     [Fact]
-    public async Task Workspace_ViewModel_Leaving_A_Profile_Does_Not_Carry_Its_Algorithm()
+    public async Task Workspace_ViewModel_Leaving_A_Language_Does_Not_Carry_Its_Style()
     {
         var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
         var manager = Application.Current!.GetThemeManager()!;
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchThemeCommand.Execute("PrimeNGAura.Dark").ToTask();
+            await viewModel.SwitchThemeCommand.Execute("GalleryPrimeNGLaraDarkFixture").ToTask();
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
 
-            manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
-            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
+            // Switching the language selects its implicit default entry (the successor of the v1 IsDefault theme
+            // DaybreakBlue), never the previous language's theme.
+            manager.CurrentTheme!.ThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("AntDesign"));
+            manager.CurrentTheme.Language.ShouldBe("AntDesign");
+            manager.CurrentTheme.Variant.Style.ShouldBe(manager.Languages.Single(language => language.Id == "AntDesign").DefaultStyle);
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Default);
         }
         finally
         {
@@ -504,8 +519,8 @@ public class GalleryBaseFoundationTests
         }
     }
 
-    // SwitchThemeCommand keeps its pre-design-language contract: a theme that is its language's only (base) definition
-    // takes the gallery's current Dark/Compact toggles instead of resetting them to its own light, normal profile.
+    // SwitchThemeCommand keeps its pre-design-language contract: a theme that fixes no axis takes the gallery's current
+    // Dark/Compact toggles (here left by a theme that fixed them) instead of resetting them to light, normal.
     [Fact]
     public async Task Workspace_ViewModel_SwitchTheme_To_A_Base_Theme_Keeps_Dark_Toggle()
     {
@@ -514,13 +529,13 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchThemeCommand.Execute("PrimeNGAura.Dark").ToTask();
+            await viewModel.SwitchThemeCommand.Execute("GalleryPrimeNGLaraDarkFixture").ToTask();
 
             await viewModel.SwitchThemeCommand.Execute("DaybreakBlue").ToTask();
 
             manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
-            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Dark]);
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Default);
             viewModel.AppearanceMode.ShouldBe(ThemePreference.Dark);
         }
         finally
@@ -538,20 +553,19 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchThemeCommand.Execute("PrimeNGLara.Compact").ToTask();
+            await viewModel.SwitchThemeCommand.Execute("GalleryPrimeNGLaraCompactFixture").ToTask();
+            manager.CurrentTheme!.Variant.Density.ShouldBe(DesignDensity.Compact);
 
             await viewModel.SwitchThemeCommand.Execute("DaybreakBlue").ToTask();
 
             manager.CurrentTheme!.ThemeId.ShouldBe("DaybreakBlue");
-            manager.CurrentTheme.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact]);
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Light);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             viewModel.AppearanceMode.ShouldBe(ThemePreference.Light);
 
             await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
-            manager.CurrentTheme!.Algorithms.ShouldBe([
-                ThemeAlgorithm.Default,
-                ThemeAlgorithm.Compact,
-                ThemeAlgorithm.Dark
-            ]);
+            manager.CurrentTheme!.Appearance.ShouldBe(ThemeAppearance.Dark);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
         }
         finally
         {
@@ -574,7 +588,7 @@ public class GalleryBaseFoundationTests
             await viewModel.SwitchDesignLanguageCommand.Execute("NoSuchLanguage").ToTask();
 
             ReadNextThemeTransitionId(manager).ShouldBe(transitionId);
-            manager.CurrentTheme!.ThemeId.ShouldBe(IThemeManager.DEFAULT_THEME_ID);
+            manager.CurrentTheme!.ThemeId.ShouldBe(AntDesignThemes.DaybreakBlue);
         }
         finally
         {
@@ -694,15 +708,18 @@ public class GalleryBaseFoundationTests
     }
 
     [Fact]
-    public async Task Fixed_Language_Ignores_SetBrandColor()
+    public async Task Locked_Brand_Seed_Ignores_SetBrandColor()
     {
         var configuration = CreateNavigationConfiguration(new Dictionary<EntityKey, int>());
         var manager = Application.Current!.GetThemeManager()!;
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchDesignLanguageCommand.Execute("GalleryFixed").ToTask();
+            await viewModel.SwitchThemeCommand.Execute("GalleryFixedBrandFixture").ToTask();
+            manager.CurrentTheme!.ThemeId.ShouldBe("GalleryFixedBrandFixture");
+            viewModel.CanChooseBrandColor.ShouldBeFalse();
             var before = ReadRootColorPrimary(manager);
+            before.ShouldBe(Color.Parse("#7C3AED"));
 
             await viewModel.SetBrandColorCommand.Execute(Color.Parse("#FF0000")).ToTask();
 
@@ -724,14 +741,16 @@ public class GalleryBaseFoundationTests
         var viewModel = new GalleryWorkspaceViewModel(configuration);
         try
         {
-            await viewModel.SwitchDesignLanguageCommand.Execute("PrimeNG.Aura").ToTask();
+            await viewModel.SwitchThemeCommand.Execute(AntDesignThemes.DaybreakBlue).ToTask();
             var defaultPrimary = ReadRootColorPrimary(manager);
             await viewModel.SetBrandColorCommand.Execute(Color.Parse("#123456")).ToTask();
 
             await viewModel.ToggleDarkModeCommand.Execute(true).ToTask();
             await viewModel.ToggleCompactModeCommand.Execute(true).ToTask();
 
-            manager.CurrentTheme!.ThemeId.ShouldBe("PrimeNGAura.DarkCompact");
+            manager.CurrentTheme!.ThemeId.ShouldBe(AntDesignThemes.DaybreakBlue);
+            manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             viewModel.BrandColor.ShouldBe(Color.Parse("#123456"));
             ReadRootColorPrimary(manager).ShouldNotBe(defaultPrimary);
         }
@@ -862,13 +881,14 @@ public class GalleryBaseFoundationTests
     private static async Task RestoreDefaultThemeAsync(IThemeManager manager)
     {
         var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(ThemeAlgorithm.Default)
+                     .WithAppearance(ThemeAppearance.Light)
+                     .WithDensity(DesignDensity.Default)
                      .WithToken(nameof(SharedTokenKind.EnableMotion), "true")
                      .WithToken(nameof(SharedTokenKind.EnableWaveSpirit), "true")
                      .Build();
         await manager.ApplyThemeAsync(
             new ThemeRequest(
-                IThemeManager.DEFAULT_THEME_ID,
+                AntDesignThemes.DaybreakBlue,
                 config,
                 ThemeTransitionReason.UserRequest));
     }

@@ -22,10 +22,4 @@ public abstract partial class AbstractProgressToken : AbstractControlDesignToken
     /// Color of the remaining (unfilled) part of the progress bar
     /// </summary>
     public partial Color RemainingColor { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        DefaultColor   = EffectiveGlobalToken.ColorInfo;
-        RemainingColor = EffectiveGlobalToken.ColorFillSecondary;
-    }
 }

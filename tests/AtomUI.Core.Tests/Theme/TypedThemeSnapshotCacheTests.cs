@@ -1,11 +1,10 @@
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Schema;
-using AtomUI.Theme.DesignTokens;
 using Shouldly;
 using Xunit;
 
@@ -14,47 +13,34 @@ namespace AtomUI.Core.Tests.Theme;
 public class TypedThemeSnapshotCacheTests
 {
     [Fact]
-    public void Algorithm_Cache_Key_Is_Identified_By_The_Descriptor_Instance()
+    public void Snapshot_Key_Is_Identified_By_The_Language_Descriptor_Instance()
     {
-        var descriptor = new ThemeAlgorithmDescriptor(
-            ThemeAlgorithm.Dark,
-            1,
-            ThemeAppearanceEffect.Dark,
-            () => new DarkThemeVariantCalculator());
-        var sameShape = new ThemeAlgorithmDescriptor(
-            ThemeAlgorithm.Dark,
-            1,
-            ThemeAppearanceEffect.Dark,
-            () => new DarkThemeVariantCalculator());
-
-        var first = AlgorithmCacheKey.Create(descriptor);
-        var second = AlgorithmCacheKey.Create(descriptor);
-        var other = AlgorithmCacheKey.Create(sameShape);
+        var language = TestDesignLanguages.Probe();
+        var sameShape = TestDesignLanguages.Probe();
+        var registry = CreateRegistry(languages: [language]);
+        var first = ThemeSnapshotCacheKey.Create(CreateInput(registry));
+        var second = ThemeSnapshotCacheKey.Create(CreateInput(registry));
+        var other = ThemeSnapshotCacheKey.Create(CreateInput(CreateRegistry(languages: [sameShape])));
 
         first.ShouldBe(second);
         first.GetHashCode().ShouldBe(second.GetHashCode());
-        first.ShouldNotBe(other, "a different descriptor instance may carry a different factory");
+        first.ShouldNotBe(other, "a different descriptor instance may carry a different language");
     }
 
     [Fact]
     public async Task Equivalent_Typed_Inputs_Reuse_One_Snapshot_And_Compile_Once()
     {
-        var evaluations = 0;
-        var algorithm = new ThemeAlgorithmDescriptor(
-            ThemeAlgorithm.Default,
-            1,
-            ThemeAppearanceEffect.Light,
-            () => new CountingAlgorithm(() => Interlocked.Increment(ref evaluations)));
-        var registry = CreateRegistry(Array.Empty<ControlTokenDescriptor>(), [algorithm]);
+        var language = new ProbeLanguage();
+        var registry = CreateRegistry(languages: [TestDesignLanguages.Probe(language)]);
         var cache = new ThemeSnapshotCache();
         var compiler = new ThemeCompiler();
 
-        var first = await CompileAsync(cache, CreateInput(registry, [algorithm]), compiler);
-        var second = await CompileAsync(cache, CreateInput(registry, [algorithm]), compiler);
+        var first = await CompileAsync(cache, CreateInput(registry), compiler);
+        var second = await CompileAsync(cache, CreateInput(registry), compiler);
 
         first.Success.ShouldBeTrue();
         second.Snapshot.ShouldBeSameAs(first.Snapshot);
-        evaluations.ShouldBe(1);
+        language.DeriveGlobalCalls.ShouldBe(1);
         cache.Count.ShouldBe(1);
     }
 
@@ -102,7 +88,7 @@ public class TypedThemeSnapshotCacheTests
         var cache = new ThemeSnapshotCache(new ThemeCacheOptions(
             SnapshotEntryLimit: 4,
             SnapshotRetainedBytesLimit: 1));
-        var invalidInput = CreateInput(registry, Array.Empty<ThemeAlgorithmDescriptor>());
+        var invalidInput = CreateInput(CreateRegistry(languages: [TestDesignLanguages.Probe(new ProbeLanguage { FailGlobal = true })]));
 
         var firstFailure = await CompileAsync(cache, invalidInput, compiler);
         var secondFailure = await CompileAsync(cache, invalidInput, compiler);
@@ -121,44 +107,45 @@ public class TypedThemeSnapshotCacheTests
         cache.RetainedBytes.ShouldBe(0);
     }
 
+    /// <summary>
+    /// A registry with the generated global tokens, the controls and (by default) Ant Design with the test derivations
+    /// of <see cref="TestControlDerivations"/>.
+    /// </summary>
     internal static ThemeSchemaRegistry CreateRegistry(
         IReadOnlyList<ControlTokenDescriptor>? controls = null,
-        IReadOnlyList<ThemeAlgorithmDescriptor>? algorithms = null,
-        IReadOnlyList<ControlThemeAssetDescriptor>? themeAssets = null)
+        IReadOnlyList<DesignLanguageDescriptor>? languages = null,
+        IReadOnlyList<ControlThemeAssetDescriptor>? themeAssets = null,
+        IReadOnlyList<ControlDerivationDescriptor>? derivations = null)
     {
         return new ThemeSchemaRegistry(
             GeneratedThemeSchema.GetGlobalTokens(),
             controls ?? Array.Empty<ControlTokenDescriptor>(),
-            algorithms ?? GeneratedThemeSchema.GetAlgorithms(),
-            themeAssets ?? Array.Empty<ControlThemeAssetDescriptor>());
+            languages ?? [TestDesignLanguages.AntDesign],
+            themeAssets ?? Array.Empty<ControlThemeAssetDescriptor>(),
+            derivations ?? TestControlDerivations.All);
     }
 
+    /// <summary>
+    /// The input of a scope that shows the language default of the registry's first language, with the given values on
+    /// top; <paramref name="axes"/> writes the scope's axes.
+    /// </summary>
     internal static ThemeCompileInput CreateInput(
         ThemeSchemaRegistry registry,
-        IReadOnlyList<ThemeAlgorithmDescriptor>? algorithms = null,
         IReadOnlyList<NormalizedTokenValue>? globalTokens = null,
         IReadOnlyList<NormalizedControlThemeConfig>? controls = null,
-        ThemeSnapshot? reusableParent = null)
+        ThemeSnapshot? reusableParent = null,
+        ThemeAppearance? appearance = null,
+        DesignDensity? density = null)
     {
-        var effectiveAlgorithms = algorithms ??
-            [registry.Algorithms.Single(static algorithm => algorithm.Algorithm == ThemeAlgorithm.Default)];
-        var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new PreparedThemeDefinition(
-            "TestTheme",
-            "Test Theme",
-            ThemeAppearance.Light,
-            ThemeAppearance.Light,
-            true,
-            effectiveAlgorithms,
-            Array.Empty<BoundTokenValue>(),
-            Array.Empty<ControlThemeDefinition>(),
-            location);
+        var definition = ThemeTestSnapshotFactory.CreateLanguageDefinition(registry.Languages[0]);
+        var axes = ThemeCompiler.CreateDefinitionDefaults(definition, registry).Axes;
         var config = new NormalizedThemeConfig(
             false,
-            true,
-            effectiveAlgorithms,
+            axes with { Appearance = appearance ?? axes.Appearance, Density = density ?? axes.Density },
             globalTokens ?? Array.Empty<NormalizedTokenValue>(),
-            controls ?? Array.Empty<NormalizedControlThemeConfig>());
+            Array.Empty<LanguageTokenValue>(),
+            controls ?? Array.Empty<NormalizedControlThemeConfig>(),
+            definition);
         return new ThemeCompileInput(
             definition,
             new ThemeDefinitionRevision("test", "1", "A1"),
@@ -176,13 +163,5 @@ public class TypedThemeSnapshotCacheTests
             input,
             compiler,
             TestContext.Current.CancellationToken);
-    }
-
-    private sealed class CountingAlgorithm(Action onEvaluate) : IThemeAlgorithm
-    {
-        public void Evaluate(DesignToken effectiveSeed, DesignToken? previousMap, DesignToken nextMap)
-        {
-            onEvaluate();
-        }
     }
 }

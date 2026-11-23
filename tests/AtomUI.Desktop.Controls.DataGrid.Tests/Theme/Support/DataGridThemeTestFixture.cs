@@ -1,6 +1,4 @@
 using System.Reflection;
-using AtomUI.Desktop.Controls.DesignTokens;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;

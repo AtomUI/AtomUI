@@ -1,71 +1,23 @@
 using System.Xml;
 using System.Xml.Schema;
-using AtomUI.Theme.Algorithms;
-using AtomUI.Theme.Configuration;
-using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Definitions;
 
 internal static class ThemeDocumentReader
 {
-    internal const string XmlNamespace = "https://atomui.net/schemas/theme/v1";
+    internal const string XmlNamespace = "https://atomui.net/schemas/theme/v2";
+    internal const string V1XmlNamespace = "https://atomui.net/schemas/theme/v1";
+
+    /// <summary>The toolchain command that rewrites v1 theme files as v2 (spec 7.11).</summary>
+    internal const string ConversionCommand =
+        "dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory> " +
+        "[-p:AtomUIThemeDefinitionOutput=<directory>]";
 
     private const string MalformedXmlCode = "ATMTHM1001";
     private const string SchemaValidationCode = "ATMTHM1002";
     private const string ResourceLimitCode = "ATMTHM1003";
-    private const string SeedPinsBrandTokenCode = "ATMTHM3101";
-    private const string SeedPinsNeutralTokenCode = "ATMTHM3106";
-    private const string SeedNeutralWithoutSeedCode = "ATMTHM3107";
-    private const string XsdResourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd";
-
-    // Tokens derived from the brand color; a Seed-capable definition must let the brand algorithm produce them.
-    internal static readonly HashSet<string> s_brandDerivedTokens = new(StringComparer.Ordinal)
-    {
-        "ColorPrimaryHover",
-        "ColorPrimaryActive",
-        "ColorPrimaryBg",
-        "ColorPrimaryBgHover",
-        "ColorPrimaryBorder",
-        "ColorPrimaryBorderHover",
-        "ColorPrimaryText",
-        "ColorPrimaryTextHover",
-        "ColorPrimaryTextActive",
-        "ColorControlOutline"
-    };
-
-    // Tokens derived from the neutral color family; a neutral-Seed definition must let its algorithm produce them.
-    internal static readonly HashSet<string> s_neutralDerivedTokens = new(StringComparer.Ordinal)
-    {
-        "ColorBgLayout",
-        "ColorBgContainer",
-        "ColorBgElevated",
-        "ColorBgSpotlight",
-        "ColorBgSolid",
-        "ColorBgSolidHover",
-        "ColorBgSolidActive",
-        "ColorText",
-        "ColorTextHeading",
-        "ColorTextSecondary",
-        "ColorTextTertiary",
-        "ColorTextQuaternary",
-        "ColorTextDescription",
-        "ColorTextPlaceholder",
-        "ColorTextDisabled",
-        "ColorIcon",
-        "ColorIconHover",
-        "ColorFill",
-        "ColorFillSecondary",
-        "ColorFillTertiary",
-        "ColorFillQuaternary",
-        "ColorFillContent",
-        "ColorBgContainerDisabled",
-        "ColorBorder",
-        "ColorBorderSecondary",
-        "ColorSplit",
-        "ControlItemBgHover",
-        "ControlItemBgActive",
-        "ControlItemColorActive"
-    };
+    private const string UnsupportedVersionCode = "ATMTHM1004";
+    private const string XsdResourceName = "AtomUI.Theme.Definitions.Schemas.atomui-theme-v2.xsd";
 
     private static readonly Lazy<XmlSchemaSet> s_schemaSet = new(CreateSchemaSet);
 
@@ -99,6 +51,10 @@ internal static class ThemeDocumentReader
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
+                    if (elementCount == 0 && !string.Equals(reader.NamespaceURI, XmlNamespace, StringComparison.Ordinal))
+                    {
+                        return UnsupportedRoot(source, reader);
+                    }
                     elementCount++;
                     if (elementCount > options.MaxElements)
                     {
@@ -147,118 +103,8 @@ internal static class ThemeDocumentReader
                                 "/",
                                 "The theme definition does not contain a Theme root."));
         }
-        else
-        {
-            ValidateSeedBrandTokens(document, diagnostics);
-            ValidateSeedNeutralTokens(document, diagnostics);
-        }
 
         return new ThemeDocumentReadResult(document, diagnostics);
-    }
-
-    private static void ValidateSeedBrandTokens(
-        ThemeDocument document,
-        List<ThemeDefinitionDiagnostic> diagnostics)
-    {
-        if (document.BrandColor != ThemeBrandColorSupport.Seed)
-        {
-            return;
-        }
-
-        foreach (var token in document.Tokens)
-        {
-            ReportSeedPinnedToken(token, diagnostics);
-        }
-
-        foreach (var control in document.Controls)
-        {
-            foreach (var token in control.Tokens)
-            {
-                ReportSeedPinnedToken(token, diagnostics);
-            }
-        }
-    }
-
-    private static void ValidateSeedNeutralTokens(
-        ThemeDocument document,
-        List<ThemeDefinitionDiagnostic> diagnostics)
-    {
-        if (document.NeutralColor != ThemeNeutralColorSupport.Seed)
-        {
-            return;
-        }
-
-        foreach (var token in document.Tokens)
-        {
-            ReportSeedPinnedNeutralToken(token, diagnostics);
-        }
-
-        foreach (var control in document.Controls)
-        {
-            foreach (var token in control.Tokens)
-            {
-                ReportSeedPinnedNeutralToken(token, diagnostics);
-            }
-        }
-
-        // A built-in chain cannot derive a neutral family; a vendor algorithm may provide its own default seed.
-        var hasSeed = document.Tokens.Any(static token => token.Name == "ColorNeutral");
-        var builtinOnlyChain = document.Algorithms.All(static entry =>
-            entry.Algorithm.Catalog == ThemeAlgorithm.BuiltInCatalog);
-        if (!hasSeed && builtinOnlyChain)
-        {
-            diagnostics.Add(new ThemeDefinitionDiagnostic(
-                                SeedNeutralWithoutSeedCode,
-                                ThemeDefinitionDiagnosticSeverity.Warning,
-                                document.Location.Source,
-                                document.Location.Line,
-                                document.Location.Column,
-                                "/Theme",
-                                "The theme declares NeutralColor=\"Seed\" without a ColorNeutral seed and its " +
-                                "algorithm chain is built-in only; the neutral family falls back to the algorithm's default."));
-        }
-    }
-
-    private static void ReportSeedPinnedNeutralToken(
-        ThemeTokenDocument token,
-        List<ThemeDefinitionDiagnostic> diagnostics)
-    {
-        if (!s_neutralDerivedTokens.Contains(token.Name))
-        {
-            return;
-        }
-
-        var location = token.Location;
-        diagnostics.Add(new ThemeDefinitionDiagnostic(
-                            SeedPinsNeutralTokenCode,
-                            ThemeDefinitionDiagnosticSeverity.Error,
-                            location.Source,
-                            location.Line,
-                            location.Column,
-                            location.Path,
-                            $"Token '{token.Name}' is derived from the neutral color family and cannot be set " +
-                            "when the theme declares NeutralColor=\"Seed\"; declare NeutralColor=\"Fixed\" or remove the token."));
-    }
-
-    private static void ReportSeedPinnedToken(
-        ThemeTokenDocument token,
-        List<ThemeDefinitionDiagnostic> diagnostics)
-    {
-        if (!s_brandDerivedTokens.Contains(token.Name))
-        {
-            return;
-        }
-
-        var location = token.Location;
-        diagnostics.Add(new ThemeDefinitionDiagnostic(
-                            SeedPinsBrandTokenCode,
-                            ThemeDefinitionDiagnosticSeverity.Error,
-                            location.Source,
-                            location.Line,
-                            location.Column,
-                            location.Path,
-                            $"Token '{token.Name}' is derived from the brand color and cannot be set " +
-                            "when the theme declares BrandColor=\"Seed\"; declare BrandColor=\"Fixed\" or remove the token."));
     }
 
     private static XmlReaderSettings CreateReaderSettings(
@@ -328,6 +174,18 @@ internal static class ThemeDocumentReader
         }
     }
 
+    // Spec 7.11 and Review Focus 1: a v1 file is not read; the diagnostic names the format and the conversion command.
+    private static ThemeDocumentReadResult UnsupportedRoot(string source, XmlReader reader)
+    {
+        var lineInfo = (IXmlLineInfo)reader;
+        var message = string.Equals(reader.NamespaceURI, V1XmlNamespace, StringComparison.Ordinal)
+            ? "The theme definition uses the v1 format, which is no longer read. Convert it to v2 with " +
+              $"'{ConversionCommand}'."
+            : $"The theme definition root must be <Theme xmlns=\"{XmlNamespace}\">.";
+        return Failure(source, UnsupportedVersionCode, lineInfo.HasLineInfo() ? lineInfo.LineNumber : 0,
+            lineInfo.HasLineInfo() ? lineInfo.LinePosition : 0, "/", message);
+    }
+
     private static ThemeDocumentReadResult LimitFailure(string source, string message)
     {
         return Failure(source, ResourceLimitCode, 0, 0, "/", message);
@@ -359,18 +217,16 @@ internal static class ThemeDocumentReader
         private readonly List<ThemeDefinitionDiagnostic> _diagnostics;
         private string? _id;
         private string? _name;
-        private ThemeAppearance _appearance;
-        private bool _isDefault;
-        private string? _designLanguage;
-        private ThemeDensity _density;
-        private ThemeBrandColorSupport _brandColor;
-        private ThemeNeutralColorSupport _neutralColor;
+        private string? _language;
+        private string? _style;
+        private ThemeAppearance? _appearance;
+        private string? _density;
         private ThemeSourceLocation _location;
-        private readonly List<ThemeAlgorithmDocument> _algorithms = new();
-        private readonly HashSet<ThemeAlgorithm> _algorithmIdentities = new();
-        private readonly List<ThemeTokenDocument> _tokens = new();
-        private readonly List<ControlThemeDocument> _controls = new();
-        private ControlBuilder? _currentControl;
+        private readonly SectionBuilder _base = new("/Theme");
+        private readonly List<ThemeConditionDocument> _conditions = new();
+        private ConditionBuilder? _currentCondition;
+        private string _container = "/Theme";
+        private bool _inLanguageTokens;
 
         internal ThemeDocumentBuilder(
             string source,
@@ -380,6 +236,8 @@ internal static class ThemeDocumentReader
             _diagnostics = diagnostics;
         }
 
+        private SectionBuilder Section => _currentCondition?.Section ?? _base;
+
         internal string ReadElement(XmlReader reader)
         {
             if (!string.Equals(reader.NamespaceURI, XmlNamespace, StringComparison.Ordinal))
@@ -387,158 +245,128 @@ internal static class ThemeDocumentReader
                 return "/";
             }
 
-            return reader.LocalName switch
+            switch (reader.LocalName)
             {
-                "Theme"      => ReadTheme(reader),
-                "Algorithms" => ReadAlgorithms(reader),
-                "Algorithm"  => ReadAlgorithm(reader),
-                "Tokens"     => CurrentContainerPath("Tokens"),
-                "Token"      => ReadToken(reader),
-                "Controls"   => "/Theme/Controls",
-                "Control"    => ReadControl(reader),
-                _            => "/Theme"
-            };
+                case "Theme":
+                    return ReadTheme(reader);
+                case "When":
+                    return ReadWhen(reader);
+                case "Tokens":
+                    _inLanguageTokens = false;
+                    _container = Section.CurrentControl is { } control ? control.Path + "/Tokens" : Section.Path + "/Tokens";
+                    return _container;
+                case "LanguageTokens":
+                    _inLanguageTokens = true;
+                    _container = Section.Path + "/LanguageTokens";
+                    return _container;
+                case "Controls":
+                    _container = Section.Path + "/Controls";
+                    return _container;
+                case "Control":
+                    return ReadControl(reader);
+                case "Token":
+                    return ReadToken(reader);
+                default:
+                    return _container;
+            }
         }
 
         internal string ReadEndElement(XmlReader reader)
         {
-            if (string.Equals(reader.NamespaceURI, XmlNamespace, StringComparison.Ordinal) &&
-                string.Equals(reader.LocalName, "Control", StringComparison.Ordinal))
+            if (!string.Equals(reader.NamespaceURI, XmlNamespace, StringComparison.Ordinal))
             {
-                CompleteCurrentControl();
-                return "/Theme/Controls";
+                return _container;
             }
 
-            return _currentControl?.Path ?? "/Theme";
+            switch (reader.LocalName)
+            {
+                case "Control":
+                    Section.CompleteControl();
+                    _container = Section.Path + "/Controls";
+                    break;
+                case "When":
+                    CompleteCondition();
+                    _container = "/Theme";
+                    break;
+                case "Tokens" or "LanguageTokens":
+                    _inLanguageTokens = false;
+                    _container = Section.CurrentControl?.Path ?? Section.Path;
+                    break;
+                case "Controls":
+                    _container = Section.Path;
+                    break;
+            }
+
+            return _container;
         }
 
         internal ThemeDocument? Build()
         {
-            if (_id is null || _name is null)
+            if (_id is null || _name is null || _language is null)
             {
                 return null;
             }
 
-            CompleteCurrentControl();
-            return new ThemeDocument(
-                _id,
-                _name,
-                _appearance,
-                _isDefault,
-                _algorithms,
-                _tokens,
-                _controls,
-                _location,
-                _designLanguage,
-                _density,
-                _brandColor,
-                _neutralColor);
+            CompleteCondition();
+            _base.CompleteControl();
+            return new ThemeDocument(_id, _name, _language, _style, _appearance, _density, _base.Build(), _conditions,
+                _location);
         }
 
         private string ReadTheme(XmlReader reader)
         {
             _id         = reader.GetAttribute("Id");
             _name       = reader.GetAttribute("Name");
-            _appearance = string.Equals(reader.GetAttribute("Appearance"), "Dark", StringComparison.Ordinal)
-                ? ThemeAppearance.Dark
-                : ThemeAppearance.Light;
-            _isDefault = string.Equals(reader.GetAttribute("IsDefault"), "true", StringComparison.Ordinal);
-            _location  = Location(reader, "/Theme");
-            _designLanguage = reader.GetAttribute("DesignLanguage");
-            _density = string.Equals(reader.GetAttribute("Density"), "Compact", StringComparison.Ordinal)
-                ? ThemeDensity.Compact
-                : ThemeDensity.Normal;
-            _brandColor = string.Equals(reader.GetAttribute("BrandColor"), "Seed", StringComparison.Ordinal)
-                ? ThemeBrandColorSupport.Seed
-                : ThemeBrandColorSupport.Fixed;
-            _neutralColor = string.Equals(reader.GetAttribute("NeutralColor"), "Seed", StringComparison.Ordinal)
-                ? ThemeNeutralColorSupport.Seed
-                : ThemeNeutralColorSupport.Fixed;
+            _language   = reader.GetAttribute("Language");
+            _style      = reader.GetAttribute("Style");
+            _appearance = ParseAppearance(reader.GetAttribute("Appearance"));
+            _density    = reader.GetAttribute("Density");
+            _location   = Location(reader, "/Theme");
+            _container  = "/Theme";
             return "/Theme";
         }
 
-        private string ReadAlgorithms(XmlReader reader)
+        private string ReadWhen(XmlReader reader)
         {
-            if (_currentControl is not null)
+            CompleteCondition();
+            var index = _conditions.Count + 1;
+            var path = $"/Theme/When[{index}]";
+            _currentCondition = new ConditionBuilder(
+                reader.GetAttribute("Style"),
+                ParseAppearance(reader.GetAttribute("Appearance")),
+                reader.GetAttribute("Density"),
+                reader.GetAttribute("Idiom"),
+                Location(reader, path),
+                path);
+            _container = path;
+            if (reader.IsEmptyElement)
             {
-                _currentControl.HasCustomAlgorithms = true;
-                if (_currentControl.AlgorithmMode == ControlAlgorithmMode.Unspecified)
-                {
-                    _currentControl.AlgorithmMode = ControlAlgorithmMode.Custom;
-                }
-            }
-
-            return CurrentContainerPath("Algorithms");
-        }
-
-        private string ReadAlgorithm(XmlReader reader)
-        {
-            var declaredCatalog = reader.GetAttribute("Catalog");
-            var catalog = declaredCatalog ?? ThemeAlgorithm.BuiltInCatalog;
-            var id = reader.GetAttribute("Id") ?? string.Empty;
-            var path = declaredCatalog is null
-                ? $"{CurrentContainerPath("Algorithms")}/Algorithm[@Id='{id}']"
-                : $"{CurrentContainerPath("Algorithms")}/Algorithm[@Catalog='{declaredCatalog}'][@Id='{id}']";
-            var location = Location(reader, path);
-            if (!SchemaIdentifier.IsValid(catalog) || !SchemaIdentifier.IsValid(id))
-            {
-                // The XSD normally reports this first; keep one diagnostic per element.
-                if (!_diagnostics.Any(diagnostic =>
-                        diagnostic.Code == SchemaValidationCode &&
-                        diagnostic.Line == location.Line))
-                {
-                    AddSchemaError(location, $"Theme algorithm identity '{catalog}:{id}' is not a valid identifier.");
-                }
-                return path;
-            }
-
-            var algorithm = new ThemeAlgorithm(catalog, id);
-            var seen = _currentControl?.AlgorithmIdentities ?? _algorithmIdentities;
-            if (!seen.Add(algorithm))
-            {
-                // xs:unique ignores an omitted Catalog, so the reader owns duplicate detection.
-                AddSchemaError(location, $"Theme algorithm '{algorithm}' is duplicated.");
-                return path;
-            }
-
-            var document = new ThemeAlgorithmDocument(algorithm, location);
-            if (_currentControl is null)
-            {
-                _algorithms.Add(document);
-            }
-            else
-            {
-                _currentControl.Algorithms.Add(document);
+                CompleteCondition();
+                _container = "/Theme";
             }
 
             return path;
-        }
-
-        private void AddSchemaError(ThemeSourceLocation location, string message)
-        {
-            _diagnostics.Add(new ThemeDefinitionDiagnostic(
-                SchemaValidationCode,
-                ThemeDefinitionDiagnosticSeverity.Error,
-                location.Source,
-                location.Line,
-                location.Column,
-                location.Path,
-                message));
         }
 
         private string ReadToken(XmlReader reader)
         {
             var name = reader.GetAttribute("Name") ?? string.Empty;
             var value = reader.GetAttribute("Value") ?? string.Empty;
-            var path = $"{CurrentContainerPath("Tokens")}/Token[@Name='{name}']";
-            var document = new ThemeTokenDocument(name, value, Location(reader, path));
-            if (_currentControl is null)
+            var locked = string.Equals(reader.GetAttribute("Locked"), "true", StringComparison.Ordinal);
+            var path = $"{_container}/Token[@Name='{name}']";
+            var document = new ThemeTokenDocument(name, value, Location(reader, path), locked);
+            var section = Section;
+            if (section.CurrentControl is { } control)
             {
-                _tokens.Add(document);
+                control.Tokens.Add(document);
+            }
+            else if (_inLanguageTokens)
+            {
+                section.LanguageTokens.Add(document);
             }
             else
             {
-                _currentControl.Tokens.Add(document);
+                section.Tokens.Add(document);
             }
 
             return path;
@@ -546,39 +374,37 @@ internal static class ThemeDocumentReader
 
         private string ReadControl(XmlReader reader)
         {
-            CompleteCurrentControl();
+            var section = Section;
+            section.CompleteControl();
             var catalog = reader.GetAttribute("Catalog") ?? string.Empty;
             var id = reader.GetAttribute("Id") ?? string.Empty;
-            var path = $"/Theme/Controls/Control[@Catalog='{catalog}'][@Id='{id}']";
-            _currentControl = new ControlBuilder(
+            var path = $"{section.Path}/Controls/Control[@Catalog='{catalog}'][@Id='{id}']";
+            section.CurrentControl = new ControlBuilder(
                 new ThemeControlDocumentIdentity(catalog, id),
-                ParseAlgorithmMode(reader.GetAttribute("Algorithm")),
+                ParseAppearance(reader.GetAttribute("Appearance")),
+                reader.GetAttribute("Density"),
                 Location(reader, path),
                 path);
+            _container = path;
             if (reader.IsEmptyElement)
             {
-                CompleteCurrentControl();
+                section.CompleteControl();
+                _container = section.Path + "/Controls";
             }
 
             return path;
         }
 
-        private string CurrentContainerPath(string container)
+        private void CompleteCondition()
         {
-            return _currentControl is null
-                ? $"/Theme/{container}"
-                : $"{_currentControl.Path}/{container}";
-        }
-
-        private void CompleteCurrentControl()
-        {
-            if (_currentControl is null)
+            if (_currentCondition is null)
             {
                 return;
             }
 
-            _controls.Add(_currentControl.Build());
-            _currentControl = null;
+            _currentCondition.Section.CompleteControl();
+            _conditions.Add(_currentCondition.Build());
+            _currentCondition = null;
         }
 
         private ThemeSourceLocation Location(XmlReader reader, string path)
@@ -591,46 +417,60 @@ internal static class ThemeDocumentReader
                 path);
         }
 
-        private static ControlAlgorithmMode ParseAlgorithmMode(string? value)
+        private static ThemeAppearance? ParseAppearance(string? value) => value switch
         {
-            return value switch
+            "Light" => ThemeAppearance.Light,
+            "Dark"  => ThemeAppearance.Dark,
+            _       => null
+        };
+
+        private sealed class SectionBuilder(string path)
+        {
+            internal string Path { get; } = path;
+            internal List<ThemeTokenDocument> Tokens { get; } = new();
+            internal List<ThemeTokenDocument> LanguageTokens { get; } = new();
+            internal List<ControlThemeDocument> Controls { get; } = new();
+            internal ControlBuilder? CurrentControl { get; set; }
+
+            internal void CompleteControl()
             {
-                "Disabled" => ControlAlgorithmMode.Disabled,
-                "Global"   => ControlAlgorithmMode.Global,
-                _          => ControlAlgorithmMode.Unspecified
-            };
+                if (CurrentControl is null)
+                {
+                    return;
+                }
+
+                Controls.Add(CurrentControl.Build());
+                CurrentControl = null;
+            }
+
+            internal ThemeSectionDocument Build() => new(Tokens, LanguageTokens, Controls);
         }
 
-        private sealed class ControlBuilder
+        private sealed class ConditionBuilder(
+            string? style,
+            ThemeAppearance? appearance,
+            string? density,
+            string? idiom,
+            ThemeSourceLocation location,
+            string path)
         {
-            internal ControlBuilder(
-                ThemeControlDocumentIdentity identity,
-                ControlAlgorithmMode algorithmMode,
-                ThemeSourceLocation location,
-                string path)
-            {
-                Identity      = identity;
-                AlgorithmMode = algorithmMode;
-                Location      = location;
-                Path          = path;
-            }
+            internal SectionBuilder Section { get; } = new(path);
 
-            internal ThemeControlDocumentIdentity Identity { get; }
-            internal ControlAlgorithmMode AlgorithmMode { get; set; }
-            internal bool HasCustomAlgorithms { get; set; }
-            internal ThemeSourceLocation Location { get; }
-            internal string Path { get; }
-            internal List<ThemeAlgorithmDocument> Algorithms { get; } = new();
-            internal HashSet<ThemeAlgorithm> AlgorithmIdentities => field ??= new();
+            internal ThemeConditionDocument Build() =>
+                new(style, appearance, density, idiom, Section.Build(), location);
+        }
+
+        private sealed class ControlBuilder(
+            ThemeControlDocumentIdentity identity,
+            ThemeAppearance? appearance,
+            string? density,
+            ThemeSourceLocation location,
+            string path)
+        {
+            internal string Path { get; } = path;
             internal List<ThemeTokenDocument> Tokens { get; } = new();
 
-            internal ControlThemeDocument Build()
-            {
-                var mode = HasCustomAlgorithms && AlgorithmMode == ControlAlgorithmMode.Unspecified
-                    ? ControlAlgorithmMode.Custom
-                    : AlgorithmMode;
-                return new ControlThemeDocument(Identity, mode, Algorithms, Tokens, Location);
-            }
+            internal ControlThemeDocument Build() => new(identity, appearance, density, Tokens, location);
         }
     }
 

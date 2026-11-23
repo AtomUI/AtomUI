@@ -1,6 +1,7 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Resources;
 using Avalonia;
@@ -97,7 +98,7 @@ public class OptionButtonTokenTests
     {
         var config = fontSize is null ? null : new ThemeConfigBuilder().WithToken("FontSize", fontSize).Build();
         var result = await manager.ApplyThemeAsync(
-            new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, config, ThemeTransitionReason.UserRequest),
+            new ThemeRequest(AntDesignThemes.DaybreakBlue, config, ThemeTransitionReason.UserRequest),
             TestContext.Current.CancellationToken);
         result.Status.ShouldBeOneOf(ThemeTransitionStatus.Committed, ThemeTransitionStatus.NoOp);
     }

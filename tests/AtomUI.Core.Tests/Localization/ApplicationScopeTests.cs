@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Core.Tests.Theme;
 using AtomUI.Localization;
 using AtomUI.Registration;
 using AtomUI.Theme;
@@ -231,7 +233,7 @@ public class ApplicationScopeTests
             var first = new TrackingOwnedService("first", log);
             var second = new TrackingOwnedService("second", log);
 
-            var exception = Should.Throw<InvalidOperationException>(() => ApplicationStartup.AttachWith(application, builder =>
+            var exception = Should.Throw<InvalidOperationException>(() => TestDesignLanguages.AttachWithAntDesign(application, builder =>
             {
                 var atomBuilder = (AtomUIBuilder)builder;
                 atomBuilder.AddOwnedService("first", _ => first);
@@ -256,6 +258,7 @@ public class ApplicationScopeTests
         IReadOnlyList<IAtomUIOwnedService>? ownedServices = null)
     {
         var builder = new AtomUIBuilder(application.GetType());
+        builder.UseAntDesign();
         configure?.Invoke(builder);
         return new ApplicationScope(
             application,

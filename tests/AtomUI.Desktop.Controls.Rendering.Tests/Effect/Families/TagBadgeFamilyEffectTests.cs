@@ -2,10 +2,7 @@ using System.Text.RegularExpressions;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Schema;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Media;
 using Shouldly;
 using Xunit;
 
@@ -67,16 +64,16 @@ public partial class TagBadgeFamilyEffectTests
             "TagIconSize" or "FontSizeIcon" => static t => t.Icon = new AtomUI.Icons.AntDesign.UserOutlined(),
             "TagCloseIconSize" or "IconSizeXS" => static t => t.IsClosable = true,
             // Status colours: the solid fill, the light background, the outlined border.
-            "ColorSuccess" => Status("success", TagVariant.Solid),
+            "ColorSuccess" or "SuccessColor" => Status("success", TagVariant.Solid),
             "ColorSuccessBg" => Status("success", TagVariant.Filled),
             "ColorSuccessBorder" => Status("success", TagVariant.Outlined),
-            "ColorInfo" => Status("processing", TagVariant.Solid),
+            "ColorInfo" or "InfoColor" => Status("processing", TagVariant.Solid),
             "ColorInfoBg" => Status("processing", TagVariant.Filled),
             "ColorInfoBorder" => Status("processing", TagVariant.Outlined),
-            "ColorWarning" => Status("warning", TagVariant.Solid),
+            "ColorWarning" or "WarningColor" => Status("warning", TagVariant.Solid),
             "ColorWarningBg" => Status("warning", TagVariant.Filled),
             "ColorWarningBorder" => Status("warning", TagVariant.Outlined),
-            "ColorError" => Status("error", TagVariant.Solid),
+            "ColorError" or "ErrorColor" => Status("error", TagVariant.Solid),
             "ColorErrorBg" => Status("error", TagVariant.Filled),
             "ColorErrorBorder" => Status("error", TagVariant.Outlined),
             // The text of a solid preset-coloured tag.

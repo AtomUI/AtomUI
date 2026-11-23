@@ -17,7 +17,7 @@ internal static class GalleryNeutralSwatches
 {
     /// <summary>
     /// The seven shadcn base colors (ui.shadcn.com/create), in site order. A swatch writes the base color's light
-    /// <c>--muted-foreground</c> — its neutral family's 500 stop — which is exactly the <c>ColorNeutral</c> seed.
+    /// <c>--muted-foreground</c> — its neutral family's 500 stop — which is exactly the shadcn language seed <c>BaseColor</c>.
     /// </summary>
     public static IReadOnlyList<GalleryNeutralSwatch> Shadcn { get; } =
     [

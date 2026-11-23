@@ -1,4 +1,4 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
@@ -18,18 +18,5 @@ public sealed partial class QRCodeToken : AbstractControlDesignToken
     /// Mask background color of QRCode
     /// </summary>
     public partial Color QRCodeMaskBackgroundColor { get; set; }
-
-    public QRCodeToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorBgContainer = EffectiveGlobalToken.ColorBgContainer;
-        QRCodeTextColor           = EffectiveGlobalToken.ColorText;
-        QRCodeMaskBackgroundColor = Color.FromArgb(244, colorBgContainer.R, colorBgContainer.G, colorBgContainer.B);
-    }
     
 }

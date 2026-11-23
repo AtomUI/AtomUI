@@ -8,9 +8,7 @@ namespace AtomUI.Desktop.Controls;
 public sealed partial class MentionsToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 菜单内容边距
-    /// </summary>
+    /// <summary>Space around the candidate list inside the suggestion popup.</summary>
     public partial Thickness PopupContentPadding { get; set; }
     
     /// <summary>
@@ -31,24 +29,7 @@ public sealed partial class MentionsToken : AbstractControlDesignToken
     /// </summary>
     public partial Color OptionSelectedColor { get; set; }
 
-    /// <summary>
-    /// 候选列表弹窗最小宽度
-    /// </summary>
+    /// <summary>Minimum width of the mention suggestion popup.</summary>
     public partial double MinPopupWidth { get; set; }
-    
-    public MentionsToken()
-
-    {
-    }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        OptionHeight        = EffectiveGlobalToken.ControlHeight;
-        PopupContentPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS / 2);
-        MinPopupWidth       = 120;
-        OptionColor         = EffectiveGlobalToken.ColorTextSecondary;
-        OptionSelectedColor = EffectiveGlobalToken.ColorText;
-    }
     
 }

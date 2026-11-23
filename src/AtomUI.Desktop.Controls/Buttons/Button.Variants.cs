@@ -12,7 +12,7 @@ namespace AtomUI.Desktop.Controls;
 
 /// <summary>
 /// Variant theme variables: the text, background, border and shadow values a Button shows per state, chosen from
-/// <see cref="EffectiveColor"/> and <see cref="EffectiveVariant"/>.
+/// the effective color and variant of the button.
 /// </summary>
 /// <remarks>
 /// Token-backed variables are read from the same resource keys the ControlTheme's <c>ButtonTokenResource</c> setters use
@@ -41,16 +41,16 @@ public partial class Button
     private OwnerTokenSet? _variantTokens;
     private int _configuringVariantSlot = -1;
 
-    // The recipe only changes with the theme snapshot, so ConfigureThemeAppearance resolves it and every
+    // The behaviour Tokens only change with the theme snapshot, so ConfigureThemeAppearance resolves them and every
     // variant pass reads the cached value.
-    private ButtonThemeRecipe? _themeRecipe;
+    private ButtonBehavior _behavior = ButtonBehavior.Default;
 
     private void ConfigureVariantThemeVariables()
     {
-        var tokens = new VariantTokens(this, _themeRecipe);
+        var tokens = new VariantTokens(this, _behavior);
         if (EffectiveColor == ButtonColor.Default ||
             (EffectiveColor == ButtonColor.Primary && EffectiveVariant == ButtonVariant.Link &&
-             tokens.Recipe is { UsesRecipeVariants: true }))
+             tokens.Behavior.RecipeVariants))
         {
             ConfigureDefaultVariantThemeVariables(tokens);
         }
@@ -106,7 +106,7 @@ public partial class Button
                 VariantValue.Of(colors[1]),
                 VariantValue.Of(colors[2]),
                 tokens.Own(ButtonTokenKind.SolidTextColor),
-                tokens.Recipe is not { UsesRecipeVariants: true }
+                !tokens.Behavior.RecipeVariants
                     ? VariantValue.Of(CreatePresetShadow(snapshotTokens, colors[0]))
                     : NoShadowVariant);
         }
@@ -125,7 +125,7 @@ public partial class Button
         SharedTokenKind bgHoverColor,
         SharedTokenKind borderColor)
     {
-        var shadow = tokens.Recipe is not { UsesRecipeVariants: true } && TryCaptureSnapshotTokens(out var snapshotTokens)
+        var shadow = !tokens.Behavior.RecipeVariants && TryCaptureSnapshotTokens(out var snapshotTokens)
             ? VariantValue.Of(CreatePresetShadow(snapshotTokens, snapshotTokens.GetEffectiveGlobal<Color>(bgColor)))
             : NoShadowVariant;
         ConfigureSemanticVariantThemeVariables(
@@ -144,12 +144,12 @@ public partial class Button
     {
         var dangerColor      = tokens.Own(ButtonTokenKind.DangerColor);
         var dangerShadow     = EffectiveIsGhost ? NoShadowVariant : tokens.Own(ButtonTokenKind.DangerShadow);
-        var colorError       = tokens.Global(SharedTokenKind.ColorError);
+        var colorError       = tokens.Own(ButtonTokenKind.DangerAccentColor);
         var colorErrorHover  = tokens.Global(SharedTokenKind.ColorErrorHover);
         var colorErrorActive = tokens.Global(SharedTokenKind.ColorErrorActive);
         switch (EffectiveVariant)
         {
-            case ButtonVariant.Solid when tokens.Recipe is { UsesRecipeVariants: true }:
+            case ButtonVariant.Solid when tokens.Behavior.RecipeVariants:
                 SetVariantThemeVariables(
                     dangerColor,
                     dangerColor,
@@ -284,7 +284,7 @@ public partial class Button
                 break;
             case ButtonVariant.Filled:
             {
-                var text = tokens.Recipe is not { UsesRecipeVariants: true }
+                var text = !tokens.Behavior.RecipeVariants
                     ? tokens.Own(ButtonTokenKind.DefaultColor)
                     : tokens.OwnOverride(ButtonTokenKind.DefaultColor, SharedTokenKind.ControlItemColorActive);
                 SetVariantThemeVariables(
@@ -315,7 +315,7 @@ public partial class Button
                 break;
             case ButtonVariant.Link:
                 SetVariantThemeVariables(
-                    tokens.Global(SharedTokenKind.ColorLink),
+                    tokens.Own(ButtonTokenKind.LinkColor),
                     tokens.Global(SharedTokenKind.ColorLinkHover),
                     tokens.Global(EffectiveColor == ButtonColor.Primary
                         ? SharedTokenKind.ColorPrimaryActive
@@ -418,7 +418,7 @@ public partial class Button
 
     private VariantValue GetDefaultShadow(VariantTokens tokens)
     {
-        if (EffectiveVariant != ButtonVariant.Outlined && tokens.Recipe is { OutlineOnlyDefaultShadow: true })
+        if (EffectiveVariant != ButtonVariant.Outlined && tokens.Behavior.OutlineOnlyDefaultShadow)
         {
             return tokens.OwnOverride(ButtonTokenKind.DefaultShadow);
         }
@@ -611,14 +611,14 @@ public partial class Button
     {
         private readonly ControlTokenIdentity _identity;
 
-        internal VariantTokens(Button owner, ButtonThemeRecipe? recipe)
+        internal VariantTokens(Button owner, ButtonBehavior behavior)
         {
             // Variant globals and Own values use the same terminal identity.
-            _identity = ButtonThemeRecipe.OwnerOf(owner);
-            Recipe = recipe;
+            _identity = ButtonBehavior.OwnerOf(owner);
+            Behavior  = behavior;
         }
 
-        internal ButtonThemeRecipe? Recipe { get; }
+        internal ButtonBehavior Behavior { get; }
 
         internal VariantValue Global(SharedTokenKind kind)
         {
@@ -667,6 +667,8 @@ public partial class Button
                     ButtonTokenKind.DefaultShadow => DropdownButtonTokenKind.DefaultShadow,
                     ButtonTokenKind.GhostBg => DropdownButtonTokenKind.GhostBg,
                     ButtonTokenKind.LinkHoverBg => DropdownButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.LinkColor => DropdownButtonTokenKind.LinkColor,
+                    ButtonTokenKind.DangerAccentColor => DropdownButtonTokenKind.DangerAccentColor,
                     ButtonTokenKind.PrimaryColor => DropdownButtonTokenKind.PrimaryColor,
                     ButtonTokenKind.PrimaryShadow => DropdownButtonTokenKind.PrimaryShadow,
                     ButtonTokenKind.SolidTextColor => DropdownButtonTokenKind.SolidTextColor,
@@ -693,6 +695,8 @@ public partial class Button
                     ButtonTokenKind.DefaultShadow => SubmitButtonTokenKind.DefaultShadow,
                     ButtonTokenKind.GhostBg => SubmitButtonTokenKind.GhostBg,
                     ButtonTokenKind.LinkHoverBg => SubmitButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.LinkColor => SubmitButtonTokenKind.LinkColor,
+                    ButtonTokenKind.DangerAccentColor => SubmitButtonTokenKind.DangerAccentColor,
                     ButtonTokenKind.PrimaryColor => SubmitButtonTokenKind.PrimaryColor,
                     ButtonTokenKind.PrimaryShadow => SubmitButtonTokenKind.PrimaryShadow,
                     ButtonTokenKind.SolidTextColor => SubmitButtonTokenKind.SolidTextColor,
@@ -719,6 +723,8 @@ public partial class Button
                     ButtonTokenKind.DefaultShadow => ResetButtonTokenKind.DefaultShadow,
                     ButtonTokenKind.GhostBg => ResetButtonTokenKind.GhostBg,
                     ButtonTokenKind.LinkHoverBg => ResetButtonTokenKind.LinkHoverBg,
+                    ButtonTokenKind.LinkColor => ResetButtonTokenKind.LinkColor,
+                    ButtonTokenKind.DangerAccentColor => ResetButtonTokenKind.DangerAccentColor,
                     ButtonTokenKind.PrimaryColor => ResetButtonTokenKind.PrimaryColor,
                     ButtonTokenKind.PrimaryShadow => ResetButtonTokenKind.PrimaryShadow,
                     ButtonTokenKind.SolidTextColor => ResetButtonTokenKind.SolidTextColor,

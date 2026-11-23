@@ -121,12 +121,8 @@ public class TextBoxVisualStateTests
         }, window => window.Width = 480);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global, true)]
-    [InlineData(ControlAlgorithmMode.Disabled, false)]
-    public void LineEdit_Hover_Uses_Control_Effective_ColorPrimaryHover(
-        ControlAlgorithmMode algorithm,
-        bool expectDerivedHover)
+    [Fact]
+    public void LineEdit_Hover_Uses_Control_Effective_ColorPrimaryHover()
     {
         AssertCompositeInputHoverUsesSharedColorPrimaryHover(
             new AtomUILineEdit
@@ -134,15 +130,11 @@ public class TextBoxVisualStateTests
                 Width           = 180,
                 IsMotionEnabled = false
             },
-            LineEditTokens.Identity,
-            algorithm,
-            expectDerivedHover);
+            LineEditTokens.Identity);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global)]
-    [InlineData(ControlAlgorithmMode.Disabled)]
-    public void LineEdit_FocusWithin_Uses_Control_Effective_ColorPrimary(ControlAlgorithmMode algorithm)
+    [Fact]
+    public void LineEdit_FocusWithin_Uses_Control_Effective_ColorPrimary()
     {
         AssertCompositeInputFocusWithinUsesControlEffectiveColorPrimary(
             new AtomUILineEdit
@@ -150,16 +142,11 @@ public class TextBoxVisualStateTests
                 Width           = 180,
                 IsMotionEnabled = false
             },
-            LineEditTokens.Identity,
-            algorithm);
+            LineEditTokens.Identity);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global, true)]
-    [InlineData(ControlAlgorithmMode.Disabled, false)]
-    public void SearchEdit_Hover_Uses_Control_Effective_ColorPrimaryHover(
-        ControlAlgorithmMode algorithm,
-        bool expectDerivedHover)
+    [Fact]
+    public void SearchEdit_Hover_Uses_Control_Effective_ColorPrimaryHover()
     {
         AssertCompositeInputHoverUsesSharedColorPrimaryHover(
             new AtomUISearchEdit
@@ -167,15 +154,11 @@ public class TextBoxVisualStateTests
                 Width           = 180,
                 IsMotionEnabled = false
             },
-            SearchEditTokens.Identity,
-            algorithm,
-            expectDerivedHover);
+            SearchEditTokens.Identity);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global)]
-    [InlineData(ControlAlgorithmMode.Disabled)]
-    public void SearchEdit_FocusWithin_Uses_Control_Effective_ColorPrimary(ControlAlgorithmMode algorithm)
+    [Fact]
+    public void SearchEdit_FocusWithin_Uses_Control_Effective_ColorPrimary()
     {
         AssertCompositeInputFocusWithinUsesControlEffectiveColorPrimary(
             new AtomUISearchEdit
@@ -183,16 +166,11 @@ public class TextBoxVisualStateTests
                 Width           = 180,
                 IsMotionEnabled = false
             },
-            SearchEditTokens.Identity,
-            algorithm);
+            SearchEditTokens.Identity);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global, true)]
-    [InlineData(ControlAlgorithmMode.Disabled, false)]
-    public void TextArea_Hover_Uses_Control_Effective_ColorPrimaryHover(
-        ControlAlgorithmMode algorithm,
-        bool expectDerivedHover)
+    [Fact]
+    public void TextArea_Hover_Uses_Control_Effective_ColorPrimaryHover()
     {
         AssertCompositeInputHoverUsesSharedColorPrimaryHover(
             new AtomUITextArea
@@ -201,15 +179,11 @@ public class TextBoxVisualStateTests
                 Height          = 80,
                 IsMotionEnabled = false
             },
-            TextAreaTokens.Identity,
-            algorithm,
-            expectDerivedHover);
+            TextAreaTokens.Identity);
     }
 
-    [Theory]
-    [InlineData(ControlAlgorithmMode.Global)]
-    [InlineData(ControlAlgorithmMode.Disabled)]
-    public void TextArea_FocusWithin_Uses_Control_Effective_ColorPrimary(ControlAlgorithmMode algorithm)
+    [Fact]
+    public void TextArea_FocusWithin_Uses_Control_Effective_ColorPrimary()
     {
         AssertCompositeInputFocusWithinUsesControlEffectiveColorPrimary(
             new AtomUITextArea
@@ -218,8 +192,7 @@ public class TextBoxVisualStateTests
                 Height          = 80,
                 IsMotionEnabled = false
             },
-            TextAreaTokens.Identity,
-            algorithm);
+            TextAreaTokens.Identity);
     }
 
     [Fact]
@@ -719,13 +692,11 @@ public class TextBoxVisualStateTests
 
     private static void AssertCompositeInputHoverUsesSharedColorPrimaryHover(
         Control control,
-        ControlTokenIdentity identity,
-        ControlAlgorithmMode algorithm,
-        bool expectDerivedHover)
+        ControlTokenIdentity identity)
     {
         var provider = new ThemeConfigProvider
         {
-            Config = CreateControlPrimaryConfig(identity, algorithm),
+            Config = CreateControlPrimaryConfig(identity),
             Child  = control
         };
 
@@ -751,12 +722,11 @@ public class TextBoxVisualStateTests
 
     private static void AssertCompositeInputFocusWithinUsesControlEffectiveColorPrimary(
         Control control,
-        ControlTokenIdentity identity,
-        ControlAlgorithmMode algorithm)
+        ControlTokenIdentity identity)
     {
         var provider = new ThemeConfigProvider
         {
-            Config = CreateControlPrimaryConfig(identity, algorithm),
+            Config = CreateControlPrimaryConfig(identity),
             Child  = control
         };
 
@@ -782,8 +752,7 @@ public class TextBoxVisualStateTests
     }
 
     private static ThemeConfig CreateControlPrimaryConfig(
-        ControlTokenIdentity identity,
-        ControlAlgorithmMode algorithm)
+        ControlTokenIdentity identity)
     {
         return new ThemeConfigBuilder()
                .WithToken(nameof(SharedTokenKind.ColorPrimary), "#eb2f96")

@@ -1,4 +1,3 @@
-using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -15,9 +14,7 @@ public abstract partial class AbstractDialogToken : AbstractControlDesignToken
     /// </summary>
     public partial Color HeaderBg { get; set; }
 
-    /// <summary>
-    /// 头部外边距
-    /// </summary>
+    /// <summary>Space below the dialog header.</summary>
     public partial Thickness HeaderMarginBottom { get; set; }
 
     /// <summary>
@@ -43,19 +40,13 @@ public abstract partial class AbstractDialogToken : AbstractControlDesignToken
     /// </summary>
     public partial Color ContentBg { get; set; }
 
-    /// <summary>
-    /// 标题区域内间距
-    /// </summary>
+    /// <summary>Padding inside the dialog's title area.</summary>
     public partial Thickness HeaderPadding { get; set; }
 
-    /// <summary>
-    /// 内容区域内间距
-    /// </summary>
+    /// <summary>Padding inside the dialog content area.</summary>
     public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// 原生窗口宿主内容区域内间距
-    /// </summary>
+    /// <summary>Padding inside the content area of a dialog hosted in a native window.</summary>
     public partial Thickness WindowContentPadding { get; set; }
 
     /// <summary>
@@ -64,76 +55,24 @@ public abstract partial class AbstractDialogToken : AbstractControlDesignToken
     /// </summary>
     public partial Color FooterBg { get; set; }
 
-    /// <summary>
-    /// 底部区域内间距
-    /// </summary>
+    /// <summary>Padding inside the dialog footer.</summary>
     public partial Thickness FooterPadding { get; set; }
 
-    /// <summary>
-    /// 底部区域外间距
-    /// </summary>
+    /// <summary>Space above the dialog footer.</summary>
     public partial Thickness FooterMarginTop { get; set; }
 
-    /// <summary>
-    /// 关闭按钮大小
-    /// </summary>
+    /// <summary>Size of the dialog's close button.</summary>
     public partial double CloseBtnSize { get; set; }
 
-    /// <summary>
-    /// 默认最小高度
-    /// </summary>
+    /// <summary>Default minimum height of the dialog.</summary>
     public partial double MinHeight { get; set; }
 
-    /// <summary>
-    /// 默认最小宽度
-    /// </summary>
+    /// <summary>Default minimum width of the dialog.</summary>
     public partial double MinWidth { get; set; }
 
-    /// <summary>
-    /// 底部按钮间隔大小
-    /// </summary>
+    /// <summary>Horizontal spacing between buttons in the dialog footer.</summary>
     public partial double ButtonGroupSpacing { get; set; }
 
-    /// <summary>
-    /// 加载器的外间距
-    /// </summary>
+    /// <summary>Margin around the dialog's loading indicator.</summary>
     public partial Thickness LoadingIndicatorMargin { get; set; }
-
-
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        HeaderBg       = Colors.Transparent;
-        HeaderFontSize = EffectiveGlobalToken.FontSizeHeading5;
-        ContentBg      = EffectiveGlobalToken.ColorBgElevated;
-        HeaderColor    = EffectiveGlobalToken.ColorTextHeading;
-        ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, 0,
-            EffectiveGlobalToken.PaddingContentHorizontalLG, 0);
-        WindowContentPadding = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontalLG,
-            EffectiveGlobalToken.PaddingContentVerticalLG,
-            EffectiveGlobalToken.PaddingContentHorizontalLG,
-            EffectiveGlobalToken.PaddingContentVerticalLG);
-
-
-
-        HeaderMarginBottom = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        LogoSize           = EffectiveGlobalToken.SizeLG;
-
-        CloseBtnSize = EffectiveGlobalToken.ControlHeight;
-        FooterPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, 0,
-            EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingMD);
-        FooterMarginTop    = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        FooterBg           = Colors.Transparent;
-        ButtonGroupSpacing = EffectiveGlobalToken.SpacingXS;
-        LoadingIndicatorMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMargin);
-    }
-
-    protected Thickness CalculateHeaderPadding() =>
-        new(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingSM,
-            EffectiveGlobalToken.PaddingContentHorizontalSM, 0);
-
-    protected double CalculateMinimumHeight(Thickness headerPadding) =>
-        EffectiveGlobalToken.ControlHeightLG + headerPadding.Top + headerPadding.Bottom + EffectiveGlobalToken.UniformlyMarginXS;
 }

@@ -7,7 +7,6 @@ using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Data;

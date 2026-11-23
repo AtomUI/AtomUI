@@ -50,11 +50,11 @@ public partial class FeedbackFamilyEffectTests
             "DefaultIconSize" or "IconDefaultMargin" or "SpacingXXS" or "UniformlyMarginXS" => static a =>
                 a.IsShowIcon = true,
             // Each type fills its icon and frame with its status colours.
-            "ColorSuccess" => Typed(AlertType.Success),
-            "ColorPrimary" => Typed(AlertType.Info),
+            "ColorSuccess" or "SuccessIconColor" => Typed(AlertType.Success),
+            "ColorPrimary" or "InfoIconColor" => Typed(AlertType.Info),
             "ColorInfoBg" or "ColorInfoBorder" => Typed(AlertType.Info),
-            "ColorWarning" or "ColorWarningBg" or "ColorWarningBorder" => Typed(AlertType.Warning),
-            "ColorError" or "ColorErrorBg" or "ColorErrorBorder" => Typed(AlertType.Error),
+            "ColorWarning" or "ColorWarningBg" or "ColorWarningBorder" or "WarningIconColor" => Typed(AlertType.Warning),
+            "ColorError" or "ColorErrorBg" or "ColorErrorBorder" or "ErrorIconColor" => Typed(AlertType.Error),
             // Each type's text colour shows on its own type only.
             "SuccessMessageColor" => Typed(AlertType.Success),
             "InfoMessageColor" => Typed(AlertType.Info),

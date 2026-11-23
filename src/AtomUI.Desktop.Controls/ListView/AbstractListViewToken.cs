@@ -7,108 +7,44 @@ namespace AtomUI.Desktop.Controls;
 [ControlDesignToken]
 public abstract partial class AbstractListViewToken : AbstractControlDesignToken
 {
-    /// <summary>
-    /// List 内边距
-    /// </summary>
+    /// <summary>Padding inside the list content area.</summary>
     public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// 列表项文字颜色
-    /// </summary>
+    /// <summary>Resting text color of a list item over <see cref="ItemBgColor"/>.</summary>
     public partial Color ItemColor { get; set; }
 
-    /// <summary>
-    /// 列表项文字悬浮颜色
-    /// </summary>
+    /// <summary>Text color of a hovered list item over <see cref="ItemHoverBgColor"/>.</summary>
     public partial Color ItemHoverColor { get; set; }
 
-    /// <summary>
-    /// 列表项文字选中颜色
-    /// </summary>
+    /// <summary>Text color of a selected list item over <see cref="ItemSelectedBgColor"/>.</summary>
     public partial Color ItemSelectedColor { get; set; }
 
-    /// <summary>
-    /// 列表项文字禁用颜色
-    /// </summary>
+    /// <summary>Text color of a disabled list item.</summary>
     public partial Color ItemDisabledColor { get; set; }
 
-    /// <summary>
-    /// 列表项背景色
-    /// </summary>
+    /// <summary>Resting background color behind <see cref="ItemColor"/>.</summary>
     public partial Color ItemBgColor { get; set; }
 
-    /// <summary>
-    /// 列表项悬浮态背景色
-    /// </summary>
+    /// <summary>Background color of a hovered list item behind <see cref="ItemHoverColor"/>.</summary>
     public partial Color ItemHoverBgColor { get; set; }
 
-    /// <summary>
-    /// 列表项选中背景色
-    /// </summary>
+    /// <summary>Background color of a selected list item behind <see cref="ItemSelectedColor"/>.</summary>
     public partial Color ItemSelectedBgColor { get; set; }
 
-    /// <summary>
-    /// 列表项小号内间距
-    /// </summary>
+    /// <summary>Padding inside a small list item.</summary>
     public partial Thickness ItemPaddingSM { get; set; }
 
-    /// <summary>
-    /// 列表项内间距
-    /// </summary>
+    /// <summary>Padding inside a standard list item.</summary>
     public partial Thickness ItemPadding { get; set; }
 
-    /// <summary>
-    /// 列表项大号内间距
-    /// </summary>
+    /// <summary>Padding inside a large list item.</summary>
     public partial Thickness ItemPaddingLG { get; set; }
 
-    /// <summary>
-    /// 列表项外边距
-    /// </summary>
+    /// <summary>Margin around each list item.</summary>
     public partial Thickness ItemMargin { get; set; }
 
-    /// <summary>
-    /// 分页器的外边距
-    /// </summary>
+    /// <summary>Text color of a list group heading.</summary>
 
-    /// <summary>
-    /// 分组标题的颜色
-    /// </summary>
     public partial Color GroupHeaderColor { get; set; }
-
-    /// <summary>
-    /// 分组标题的内间距
-    /// </summary>
-
-    /// <summary>
-    /// 列表项选中标记的外间距
-    /// </summary>
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
-        var colorTextSecondary = EffectiveGlobalToken.ColorTextSecondary;
-        var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
-
-        ItemColor         = colorTextSecondary;
-        ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ControlItemColorActive;
-
-        ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
-        ItemHoverBgColor    = colorBgTextHover;
-        ItemSelectedBgColor = EffectiveGlobalToken.ControlItemBgActive;
-
-        ItemDisabledColor = colorTextDisabled;
-
-        ItemPaddingLG = new Thickness(EffectiveGlobalToken.UniformlyPadding, 0);
-        ItemPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        ItemPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-
-        ContentPadding          = new Thickness(0);
-        ItemMargin              = new Thickness(0);
-        GroupHeaderColor        = EffectiveGlobalToken.ColorTextDescription;
-
-    }
 
 }

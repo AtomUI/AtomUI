@@ -1,10 +1,11 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Theme.Languages;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
@@ -42,8 +43,8 @@ namespace AtomUI.Desktop.Controls.Tests.Theme.Performance;
 /// work, so the same source compiles against the pre-change tree for comparisons.
 /// Cold samples build the effective theme config (and so its cache key) from scratch; process-wide memos keyed by
 /// the schema registry or the theme definition stay warm, as they do in a running application. The uncached switch
-/// and the fresh definition defaults reach private members (<c>ThemeManager._themeSnapshotCache</c>,
-/// <c>ThemeCompiler.CreateDefinitionDefaultsCore</c>) by reflection; renaming either breaks this tool.
+/// reaches the private <c>ThemeManager._themeSnapshotCache</c> by reflection (renaming it breaks this tool); the fresh
+/// definition defaults are built the way <c>ThemeCompiler.CreateDefinitionDefaults</c> builds them.
 /// </remarks>
 public class ThemeCompileMeasurement
 {
@@ -80,17 +81,16 @@ public class ThemeCompileMeasurement
         var chains = new (string Name, ThemeConfig? Config, bool Memoised)[]
         {
             ("default", null, false),
-            ("dark", new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Dark).Build(), false),
-            ("compact", new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Compact).Build(), false),
+            ("dark", new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build(), false),
+            ("compact", new ThemeConfigBuilder().WithDensity(DesignDensity.Compact).Build(), false),
             ("defaultMemoised", null, true)
         };
 
-        // ThemeCompiler.CreateDefinitionDefaults memoises per (definition, registry); the private core
-        // builds the same content as a new object.
-        var createDefaultsCore = typeof(ThemeCompiler).GetMethod(
-                                     "CreateDefinitionDefaultsCore", BindingFlags.Static | BindingFlags.NonPublic)
-                                 ?? throw new InvalidOperationException(
-                                     "ThemeCompiler.CreateDefinitionDefaultsCore was not found.");
+        // ThemeCompiler.CreateDefinitionDefaults memoises per definition; a cold sample builds the same content as a
+        // new object, the way the memo's factory does.
+        static NormalizedThemeConfig CreateDefaultsCold(AtomUI.Theme.Definitions.PreparedThemeDefinition definition) =>
+            NormalizedThemeConfig.CreateCanonical(false, definition.Axes, Array.Empty<NormalizedTokenValue>(),
+                Array.Empty<LanguageTokenValue>(), Array.Empty<NormalizedControlThemeConfig>(), definition);
 
         ThemeCompileInput PrepareInput(ThemeConfig? config, bool memoised)
         {
@@ -102,7 +102,7 @@ public class ThemeCompileMeasurement
                     ThemeStartupCompilation.AddDefaultFont(config, manager.FontFamily)!, registry);
             var defaults = memoised
                 ? ThemeCompiler.CreateDefinitionDefaults(definition, registry)
-                : (NormalizedThemeConfig)createDefaultsCore.Invoke(null, [definition, registry])!;
+                : CreateDefaultsCold(definition);
             var effective = ThemeStartupCompilation.MergeEffectiveConfig(
                 defaults, runtimeDefault.Config!, runtime.Config!);
             // No reusable parent and no change set: nothing can be reused from an earlier snapshot.
@@ -156,12 +156,12 @@ public class ThemeCompileMeasurement
             output.Write($"sanity.{name}.configContentEqualsMemoised", first.Equals(reference) ? "true" : "false");
 
             // Token instance count of one cold compile, derived from the compiler's construction rules:
-            // the global builder chain creates one seed plus one copy per algorithm; every lazily compiled
-            // Control creates one effective global copy (plus one per algorithm for Global/Custom modes) and
-            // one Control builder when it has own tokens.
+            // the evaluation unit's global derivation creates one global token; every lazily compiled
+            // Control creates one effective global copy (plus one more global token when its config fixes
+            // an appearance or density, which makes it its own evaluation unit) and one Control builder when
+            // it has own tokens.
             var probe = ColdCompile(config, memoised);
-            var algorithmCount = probe.EffectiveConfig.Algorithms.Count;
-            long designTokens = 1 + algorithmCount;
+            long designTokens = 1;
             long controlTokens = 0;
             long lazyControls = 0;
             for (var slot = 0; slot < probe.Controls.Count; slot++)
@@ -175,12 +175,10 @@ public class ThemeCompileMeasurement
                 designTokens++;
                 if (probe.EffectiveConfig.TryGetControl(descriptor.Identity, out var controlConfig))
                 {
-                    designTokens += controlConfig.AlgorithmMode switch
+                    if (controlConfig.Appearance is not null || controlConfig.Density is not null)
                     {
-                        ControlAlgorithmMode.Global => algorithmCount,
-                        ControlAlgorithmMode.Custom => controlConfig.Algorithms.Count,
-                        _                           => 0
-                    };
+                        designTokens++;
+                    }
                 }
                 if (descriptor.HasOwnTokens)
                 {
@@ -247,8 +245,8 @@ public class ThemeCompileMeasurement
         // "uncached": the manager's snapshot cache is dropped before every switch, so each switch compiles
         // (the first switch an app makes to a theme it has not shown yet).
         var cancellation = TestContext.Current.CancellationToken;
-        var lightRequest = new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, null, ThemeTransitionReason.UserRequest);
-        var darkRequest = new ThemeRequest(IThemeManager.DEFAULT_THEME_ID, chains[1].Config,
+        var lightRequest = new ThemeRequest(AntDesignThemes.DaybreakBlue, null, ThemeTransitionReason.UserRequest);
+        var darkRequest = new ThemeRequest(AntDesignThemes.DaybreakBlue, chains[1].Config,
             ThemeTransitionReason.UserRequest);
         var window = CreateHostWindow();
         var statuses = new HashSet<string>(StringComparer.Ordinal);

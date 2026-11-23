@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+    Parity sample (spec 15): a brand language derived from Ant Design (spec 5.6) that uses only the public AtomUI API.
+    A derived language references its base language package (spec 3.3) and no control package.
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Sample.DesignLanguage</RootNamespace>
+        <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../../../../src/AtomUI.Core/AtomUI.Core.csproj" />
+        <ProjectReference Include="../../../../src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign/AtomUI.DesignLanguages.AntDesign.csproj" />
+        <ProjectReference Include="../../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

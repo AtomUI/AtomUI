@@ -1,12 +1,9 @@
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
-using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;

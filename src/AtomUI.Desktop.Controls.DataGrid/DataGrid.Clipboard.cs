@@ -6,7 +6,6 @@
 using System.Diagnostics;
 using System.Text;
 using AtomUI.Desktop.Controls.Utils;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;

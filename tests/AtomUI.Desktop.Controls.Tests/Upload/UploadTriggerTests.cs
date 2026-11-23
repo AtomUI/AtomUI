@@ -1,4 +1,4 @@
-using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Tests.Theme;
 using AtomUI.Theme.DesignTokens;
 using Shouldly;
 using Xunit;
@@ -110,8 +110,7 @@ public class UploadTriggerTests
             UniformlyPaddingXXS = 4
         };
         var token = new UploadToken();
-        token.AssignEffectiveGlobalToken(global);
-        token.RunDefaultCalculation(isDarkMode: false);
+        AntDesignDerivationRunner.Derive(token, global);
 
         token.TextListItemPadding.Left.ShouldBe(8);
         token.TextListProgressPadding.Left.ShouldBe(

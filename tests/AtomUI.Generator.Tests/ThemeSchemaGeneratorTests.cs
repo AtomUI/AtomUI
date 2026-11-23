@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Shouldly;
 using Xunit;
 
@@ -39,14 +38,40 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("static value =>");
         source.ShouldNotContain("static token =>");
         source.ShouldNotContain("static (token, value) =>");
-        source.ShouldContain("static () => new global::Demo.ButtonToken()");
-        source.ShouldContain("((global::Demo.ButtonToken)token).RunDefaultCalculation(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
-        source.ShouldContain("new ThemeAlgorithmDescriptor(new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"AtomUI\", \"Dark\"), 1, ThemeAppearanceEffect.Dark");
-        source.ShouldContain("new ThemeAlgorithmDescriptor(new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"AtomUI\", \"Default\"), 1, ThemeAppearanceEffect.Light");
-        source.ShouldNotContain("(global::AtomUI.Theme.Algorithms.ThemeAlgorithm)");
+        // The descriptor only creates the token: values come from the language's control derivations.
+        source.ShouldContain("static () => new global::Demo.ButtonToken()" + Environment.NewLine);
+        source.ShouldNotContain("RunDefaultCalculation");
+        source.ShouldNotContain("static (token, appearance)");
+        // Theme algorithms are gone from the schema.
+        source.ShouldNotContain("ThemeAlgorithmDescriptor");
+        source.ShouldNotContain("GetAlgorithms");
         source.ShouldNotContain("Activator.CreateInstance");
         source.ShouldNotContain("PropertyInfo");
         source.ShouldNotContain("typeof(global::Demo.ButtonToken)");
+    }
+
+    [Fact]
+    public void Global_Schema_Fingerprint_Is_Emitted_Only_For_An_Assembly_With_Global_Tokens()
+    {
+        var withGlobals = GetGeneratedSource(RunGenerator(CreateCompilation(TokenSource), out _), "GeneratedThemeSchema.g.cs");
+        withGlobals.ShouldContain("internal const ulong GlobalSchemaFingerprint = 0x");
+
+        var controlsOnly = GetGeneratedSource(RunGenerator(CreateCompilation("""
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Demo
+            {
+                [ControlDesignToken]
+                internal sealed class ButtonToken : AbstractControlDesignToken
+                {
+                    public double Height { get; set; }
+                }
+            }
+            """), out var diagnostics), "GeneratedThemeSchema.g.cs");
+
+        diagnostics.ShouldBeEmpty();
+        controlsOnly.ShouldNotContain("GlobalSchemaFingerprint");
+        controlsOnly.ShouldNotContain("CopyGlobalValues");
     }
 
     [Fact]
@@ -60,26 +85,6 @@ public class ThemeSchemaGeneratorTests
             "GeneratedThemeSchema.g.cs");
 
         second.ShouldBe(first);
-    }
-
-    [Fact]
-    public void Reports_And_Skips_A_ThemeAlgorithm_Attribute_With_An_Invalid_Identifier()
-    {
-        var invalidSource = TokenSource.Replace(
-            "\"AtomUI\", \"Dark\", 1, ThemeAppearanceEffect.Dark",
-            "\"AtomUI\", \"1Bad\", 1, ThemeAppearanceEffect.Dark",
-            StringComparison.Ordinal);
-
-        var outputCompilation = RunGenerator(CreateCompilation(invalidSource), out var diagnostics);
-
-        var diagnostic = diagnostics.ShouldHaveSingleItem();
-        diagnostic.Id.ShouldBe("ATOMUITOKEN002");
-        diagnostic.GetMessage(null).ShouldBe(
-            "'Demo.DarkAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.");
-        var source = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        source.ShouldContain("ThemeAlgorithm(\"AtomUI\", \"Default\")");
-        source.ShouldNotContain("\"Dark\"");
-        source.ShouldNotContain("1Bad");
     }
 
     [Theory]
@@ -99,239 +104,10 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("namespace AtomUI.Generated._");
     }
 
-    [Fact]
-    public void Ignores_Non_Token_Effective_Global_Calculation_Helpers()
-    {
-        var outputCompilation = RunGenerator(CreateCompilation("""
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                [ControlDesignToken]
-                internal sealed class ButtonToken : AbstractControlDesignToken
-                {
-                    public double Height { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDark)
-                    {
-                        _ = EffectiveGlobalToken.ColorPalettes.Count;
-                        Height = EffectiveGlobalToken.ControlHeight;
-                    }
-                }
-            }
-            """), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-        var source = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        source.ShouldNotContain("\"ColorPalettes\"");
-    }
-
-    [Fact]
-    public void Generates_Public_Algorithm_Registration_And_Catalog_Identity_Class()
-    {
-        var outputCompilation = RunGenerator(CreatePackageCompilation(PackageAlgorithmSource), out var diagnostics,
-            new Dictionary<string, string> { ["build_property.RootNamespace"] = "Acme.Themes" });
-
-        diagnostics.ShouldBeEmpty();
-        outputCompilation.GetDiagnostics(TestContext.Current.CancellationToken)
-                         .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                         .ShouldBeEmpty();
-        var registration = GetGeneratedSource(outputCompilation, "GeneratedThemeAlgorithmRegistration.g.cs");
-        registration.ShouldContain("namespace AtomUI.Generated.AtomUIThemesPrimeNG;");
-        registration.ShouldContain("public static class GeneratedThemeAlgorithmRegistration");
-        registration.ShouldContain("public static void Register(global::AtomUI.Theme.IThemeManagerBuilder builder)");
-        registration.ShouldContain("builder.AddThemeAlgorithms(GeneratedThemeSchema.GetAlgorithms());");
-        var identities = GetGeneratedSource(outputCompilation, "PrimeNGAlgorithms.g.cs");
-        identities.ShouldContain("namespace Acme.Themes;");
-        identities.ShouldContain("public static class PrimeNGAlgorithms");
-        identities.ShouldContain(
-            "public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm Aura { get; } = new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"PrimeNG\", \"Aura\");");
-        identities.ShouldContain(
-            "public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm AuraDark { get; } = new global::AtomUI.Theme.Algorithms.ThemeAlgorithm(\"PrimeNG\", \"Aura.Dark\");");
-        GetGeneratedSource(outputCompilation, "AcmeAlgorithms.g.cs")
-            .ShouldContain("public static global::AtomUI.Theme.Algorithms.ThemeAlgorithm FlatV2 { get; }");
-
-        var fallback = RunGenerator(CreatePackageCompilation(PackageAlgorithmSource), out _);
-        GetGeneratedSource(fallback, "PrimeNGAlgorithms.g.cs").ShouldContain("namespace AtomUI.Themes.PrimeNG;");
-    }
-
-    [Fact]
-    public void Reports_Colliding_Algorithm_Member_Names()
-    {
-        var source = PackageAlgorithmSource.Replace("\"Acme\", \"Flat-V2\"", "\"PrimeNG\", \"AuraDark\"", StringComparison.Ordinal);
-
-        RunGenerator(CreatePackageCompilation(source), out var diagnostics);
-
-        diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUITOKEN002" &&
-            diagnostic.GetMessage(null) == "Algorithm ids 'Aura.Dark' and 'AuraDark' in catalog 'PrimeNG' map to the same member name.");
-    }
-
-    // An invalid [ThemeAlgorithm] declaration is reported at the attribute instead of being dropped silently, so the
-    // author does not first meet it as "Unknown algorithm" on a theme XML.
-    [Theory]
-    [InlineData("""[ThemeAlgorithm("Bad Catalog", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
-        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Bad Id", 1, ThemeAppearanceEffect.Preserve)]""",
-        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 0, ThemeAppearanceEffect.Preserve)]""",
-        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid catalog, id or revision.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, (ThemeAppearanceEffect)7)]""",
-        "public sealed class BrokenAlgorithm : IThemeAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' declares a theme algorithm with an invalid appearance effect.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
-        "public sealed class BrokenAlgorithm : IThemeAlgorithm { public BrokenAlgorithm(int seed) { } }",
-        "'Acme.Themes.BrokenAlgorithm' must have a public parameterless constructor.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
-        "public abstract class BrokenAlgorithm : IThemeAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' must be a non-abstract, non-generic class that implements IThemeAlgorithm.")]
-    [InlineData("""[ThemeAlgorithm("Acme", "Flat", 1, ThemeAppearanceEffect.Preserve)]""",
-        "public sealed class BrokenAlgorithm { }",
-        "'Acme.Themes.BrokenAlgorithm' must be a non-abstract, non-generic class that implements IThemeAlgorithm.")]
-    public void Reports_An_Invalid_Theme_Algorithm_Declaration_At_The_Attribute(
-        string attribute, string declaration, string message)
-    {
-        var source = $$"""
-            using AtomUI.Theme.Algorithms;
-            using AtomUI.Theme.Schema;
-
-            namespace Acme.Themes
-            {
-                {{attribute}}
-                {{declaration}}
-
-                [ThemeAlgorithm("Acme", "Valid", 1, ThemeAppearanceEffect.Preserve)]
-                public sealed class ValidAlgorithm : IThemeAlgorithm
-                {
-                }
-            }
-            """;
-
-        var output = RunGenerator(CreatePackageCompilation(source), out var diagnostics);
-
-        var diagnostic = diagnostics.ShouldHaveSingleItem();
-        diagnostic.Id.ShouldBe("ATOMUITOKEN002");
-        diagnostic.GetMessage(null).ShouldBe(message);
-        var span = diagnostic.Location.GetLineSpan();
-        span.Path.ShouldBe("PackageSource.cs");
-        span.StartLinePosition.Line.ShouldBe(5);
-        source.Split('\n')[5].Substring(span.StartLinePosition.Character).ShouldStartWith("ThemeAlgorithm(");
-        // The valid declaration next to it is still registered; the broken one is not.
-        var identities = GetGeneratedSource(output, "AcmeAlgorithms.g.cs");
-        identities.ShouldContain("Valid");
-        identities.ShouldNotContain("BrokenAlgorithm");
-        identities.ShouldNotContain("Flat");
-    }
-
-    [Fact]
-    public void Does_Not_Generate_Algorithm_Registration_For_An_Assembly_Without_Algorithms()
-    {
-        var source = """
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                [ControlDesignToken]
-                internal sealed class ButtonToken : AbstractControlDesignToken
-                {
-                    public double Height { get; set; }
-
-                    protected override void CalculateTokenValues(bool isDark)
-                    {
-                        Height = EffectiveGlobalToken.ControlHeight;
-                    }
-                }
-            }
-            """;
-
-        var outputCompilation = RunGenerator(CreatePackageCompilation(source), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-        outputCompilation.SyntaxTrees.ShouldNotContain(tree =>
-            tree.FilePath.EndsWith("GeneratedThemeAlgorithmRegistration.g.cs", StringComparison.Ordinal));
-        outputCompilation.SyntaxTrees.ShouldNotContain(tree =>
-            tree.FilePath.EndsWith("Algorithms.g.cs", StringComparison.Ordinal));
-        // The assembly that defines IThemeManagerBuilder (Core) keeps its algorithms internal.
-        var core = RunGenerator(CreateCompilation(TokenSource + BuilderStub), out _);
-        core.SyntaxTrees.ShouldNotContain(tree =>
-            tree.FilePath.EndsWith("GeneratedThemeAlgorithmRegistration.g.cs", StringComparison.Ordinal));
-        core.SyntaxTrees.ShouldNotContain(tree =>
-            tree.FilePath.EndsWith("AtomUIAlgorithms.g.cs", StringComparison.Ordinal));
-    }
-
-    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
-        IReadOnlyDictionary<string, string> globalOptions)
+    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics)
     {
         var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],
             ImmutableArray<AdditionalText>.Empty, (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
-            new BuiltinCatalogOptionsProvider(new TestAnalyzerConfigOptionsProvider(globalOptions)));
-        driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics, TestContext.Current.CancellationToken);
-        diagnostics = diagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ToImmutableArray();
-        return (CSharpCompilation)output;
-    }
-
-    // A package assembly: the AtomUI runtime (including IThemeManagerBuilder) comes from a referenced assembly.
-    private static CSharpCompilation CreatePackageCompilation(string source)
-    {
-        var references = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))!
-                         .Split(Path.PathSeparator)
-                         .Select(path => MetadataReference.CreateFromFile(path))
-                         .Cast<MetadataReference>()
-                         .ToImmutableArray();
-        var runtime = CSharpCompilation.Create(
-            "AtomUI.Core",
-            [CSharpSyntaxTree.ParseText(AtomUIStubs + BuilderStub)],
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        return CSharpCompilation.Create(
-            "AtomUI.Themes.PrimeNG",
-            [CSharpSyntaxTree.ParseText(source, path: "PackageSource.cs")],
-            references.Add(runtime.ToMetadataReference()),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-    }
-
-    private const string BuilderStub = """
-
-        namespace AtomUI.Theme
-        {
-            public interface IThemeManagerBuilder
-            {
-                IThemeManagerBuilder AddThemeAlgorithms(
-                    System.Collections.Generic.IEnumerable<AtomUI.Theme.Schema.ThemeAlgorithmDescriptor> algorithms);
-            }
-        }
-        """;
-
-    private const string PackageAlgorithmSource = """
-        using AtomUI.Theme.Algorithms;
-        using AtomUI.Theme.Schema;
-
-        namespace Acme.Themes
-        {
-            [ThemeAlgorithm("PrimeNG", "Aura.Dark", 1, ThemeAppearanceEffect.Dark)]
-            public sealed class AuraDarkAlgorithm : IThemeAlgorithm
-            {
-            }
-
-            [ThemeAlgorithm("PrimeNG", "Aura", 1, ThemeAppearanceEffect.Light)]
-            public sealed class AuraAlgorithm : IThemeAlgorithm
-            {
-            }
-
-            [ThemeAlgorithm("Acme", "Flat-V2", 1, ThemeAppearanceEffect.Preserve)]
-            public sealed class FlatAlgorithm : IThemeAlgorithm
-            {
-            }
-        }
-        """;
-
-    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
-        params AdditionalText[] additionalTexts)
-    {
-        var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],
-            additionalTexts.ToImmutableArray(), (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
             new BuiltinCatalogOptionsProvider(null));
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics, TestContext.Current.CancellationToken);
         // These fixtures declare Token shapes without theme assets; ATOMUIGEN042 has dedicated coverage in OwnTokenReferenceAnalysisTests.
@@ -366,7 +142,6 @@ public class ThemeSchemaGeneratorTests
     }
 
     private const string TokenSource = """
-        using AtomUI.Theme.Algorithms;
         using AtomUI.Theme.Schema;
         using AtomUI.Theme.DesignTokens;
 
@@ -387,64 +162,21 @@ public class ThemeSchemaGeneratorTests
             {
                 public string Label { get; set; } = string.Empty;
                 public double Height { get; set; }
-
-                protected override void CalculateTokenValues(bool isDark)
-                {
-                    Height = EffectiveGlobalToken.ControlHeight;
-                }
-            }
-
-            [ThemeAlgorithm("AtomUI", "Default", 1, ThemeAppearanceEffect.Light)]
-            internal sealed class DefaultAlgorithm : IThemeAlgorithm
-            {
-                public DefaultAlgorithm()
-                {
-                }
-            }
-
-            [ThemeAlgorithm("AtomUI", "Dark", 1, ThemeAppearanceEffect.Dark)]
-            internal sealed class DarkAlgorithm : IThemeAlgorithm
-            {
-                public DarkAlgorithm()
-                {
-                }
             }
         }
         """;
 
     private const string ReorderedTokenSource = """
-        using AtomUI.Theme.Algorithms;
         using AtomUI.Theme.Schema;
         using AtomUI.Theme.DesignTokens;
 
         namespace Demo
         {
-            [ThemeAlgorithm("AtomUI", "Dark", 1, ThemeAppearanceEffect.Dark)]
-            internal sealed class DarkAlgorithm : IThemeAlgorithm
-            {
-                public DarkAlgorithm()
-                {
-                }
-            }
-
-            [ThemeAlgorithm("AtomUI", "Default", 1, ThemeAppearanceEffect.Light)]
-            internal sealed class DefaultAlgorithm : IThemeAlgorithm
-            {
-                public DefaultAlgorithm()
-                {
-                }
-            }
-
             [ControlDesignToken]
             internal sealed class ButtonToken : AbstractControlDesignToken
             {
                 public double Height { get; set; }
                 public string Label { get; set; } = string.Empty;
-
-                protected override void CalculateTokenValues(bool isDark)
-                {
-                    Height = EffectiveGlobalToken.ControlHeight;
-                }
             }
 
             [GlobalDesignToken]
@@ -522,14 +254,8 @@ public class ThemeSchemaGeneratorTests
                 Seed,
                 Map,
                 Alias,
-                Control
-            }
-
-            public enum ThemeAppearanceEffect : byte
-            {
-                Preserve,
-                Light,
-                Dark
+                Control,
+                Language
             }
 
             public readonly record struct ControlTokenIdentity(string Catalog, string Id)
@@ -558,41 +284,19 @@ public class ThemeSchemaGeneratorTests
             {
                 public static TokenDescriptor CreateGenerated(
                     string name, int slot, TokenStage stage, TokenValueCodec codec, object resourceKey, TokenValueAccessor accessor) => null!;
-
-                public TokenDescriptor(
-                    string name,
-                    int slot,
-                    TokenStage stage,
-                    System.Type valueType,
-                    object resourceKey,
-                    System.Func<string, object?> parser,
-                    System.Func<object?, string> formatter,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> getter,
-                    System.Action<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> setter,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> resourceProjector)
-                {
-                }
             }
 
             public sealed class ControlTokenDescriptor
             {
+                public ControlTokenDescriptor(System.Type controlType, ControlTokenIdentity identity)
+                {
+                }
+
                 public ControlTokenDescriptor(
                     System.Type controlType,
                     ControlTokenIdentity identity,
                     System.Collections.Generic.IReadOnlyList<TokenDescriptor> ownTokens,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory,
-                    System.Action<AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.ThemeAppearance> evaluator)
-                {
-                }
-            }
-
-            public sealed class ThemeAlgorithmDescriptor
-            {
-                public ThemeAlgorithmDescriptor(
-                    AtomUI.Theme.Algorithms.ThemeAlgorithm algorithm,
-                    int revision,
-                    ThemeAppearanceEffect appearanceEffect,
-                    System.Func<AtomUI.Theme.Algorithms.IThemeAlgorithm> factory)
+                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory)
                 {
                 }
             }
@@ -618,32 +322,6 @@ public class ThemeSchemaGeneratorTests
                 public static object? Project<T>(T value)
                 {
                     return value;
-                }
-            }
-        }
-
-        namespace AtomUI.Theme.Algorithms
-        {
-            public readonly struct ThemeAlgorithm
-            {
-                public ThemeAlgorithm(string catalog, string id)
-                {
-                }
-            }
-
-            public interface IThemeAlgorithm
-            {
-            }
-
-            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false)]
-            public sealed class ThemeAlgorithmAttribute : System.Attribute
-            {
-                public ThemeAlgorithmAttribute(
-                    string catalog,
-                    string id,
-                    int revision,
-                    AtomUI.Theme.Schema.ThemeAppearanceEffect appearanceEffect)
-                {
                 }
             }
         }
@@ -693,6 +371,8 @@ public class ThemeSchemaGeneratorTests
 
             public abstract class AbstractDesignToken
             {
+                protected bool IsFrozen(string tokenName) => false;
+                protected void OnRead(string tokenName) { }
             }
 
             public sealed class DesignToken : AbstractDesignToken
@@ -706,67 +386,14 @@ public class ThemeSchemaGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
+                // Core no longer has these members; OwnTokenReferenceAnalysis still recognizes them by name, so the
+                // fixtures of its tests keep compiling against this stub.
                 protected DesignToken EffectiveGlobalToken { get; } = new DesignToken();
 
                 protected virtual void CalculateTokenValues(bool isDark)
                 {
                 }
-
-
-                internal void RunDefaultCalculation(bool isDark) => CalculateTokenValues(isDark);
             }
         }
         """;
-
-    private sealed class InMemoryAdditionalText : AdditionalText
-    {
-        private readonly Microsoft.CodeAnalysis.Text.SourceText _text;
-
-        internal InMemoryAdditionalText(string path, string text)
-        {
-            Path = path;
-            _text = Microsoft.CodeAnalysis.Text.SourceText.From(text);
-        }
-
-        public override string Path { get; }
-
-        public override Microsoft.CodeAnalysis.Text.SourceText GetText(
-            CancellationToken cancellationToken = default)
-        {
-            return _text;
-        }
-    }
-
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private static readonly AnalyzerConfigOptions s_empty =
-            new TestAnalyzerConfigOptions(new Dictionary<string, string>());
-        private readonly AnalyzerConfigOptions _globalOptions;
-
-        internal TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions)
-        {
-            _globalOptions = new TestAnalyzerConfigOptions(globalOptions);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => s_empty;
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => s_empty;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly IReadOnlyDictionary<string, string> _values;
-
-        internal TestAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values)
-        {
-            _values = values;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _values.TryGetValue(key, out value!);
-        }
-    }
 }

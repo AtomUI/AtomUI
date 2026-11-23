@@ -56,17 +56,4 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
     [ReservedToken("antd Progress progressActiveMotionDuration. The Active status shimmer animation over the track " +
                    "is not implemented yet; Active renders like Normal.")]
     public partial TimeSpan ProgressActiveMotionDuration { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LineBorderRadius      = new CornerRadius(100); // magic for capsule shape, should be a very large number
-        LineStrokeThicknessLG = 8;   // antd progress line default
-        LineStrokeThickness   = 6;
-        LineStrokeThicknessSM = 4;
-        LineProgressPadding = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
-        InnerLabelColor = EffectiveGlobalToken.ColorTextLabel;
-        InnerLabelEmptyOpacity = 1;
-        ProgressActiveMotionDuration = TimeSpan.FromSeconds(2.4); // antd progressActiveMotionDuration: '2.4s'
-    }
 }

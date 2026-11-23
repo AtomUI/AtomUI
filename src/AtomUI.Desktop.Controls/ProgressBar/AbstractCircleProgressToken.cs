@@ -26,12 +26,4 @@ public abstract partial class AbstractCircleProgressToken : AbstractProgressToke
     /// Minimum size of the circle status icon
     /// </summary>
     public partial double CircleMinimumIconSize { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CircleTextColor           = EffectiveGlobalToken.ColorText;
-        CircleMinimumIconSize     = EffectiveGlobalToken.SizeXS;
-        CircleMinimumTextFontSize = EffectiveGlobalToken.FontSizeSM - 2;
-    }
 }

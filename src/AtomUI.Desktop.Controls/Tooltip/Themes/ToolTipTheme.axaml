@@ -32,10 +32,10 @@
         <Setter Property="ThemeMarginToAnchor" Value="{atom:ToolTipTokenResource MarginToAnchor}" />
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
-            <Setter Property="FontSize" Value="{atom:ToolTipTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:ToolTipTokenResource ToolTipFontSize}" />
             <Setter Property="MaxWidth" Value="{atom:ToolTipTokenResource ToolTipMaxWidth}" />
             <Setter Property="Foreground" Value="{atom:ToolTipTokenResource ToolTipColor}" />
-            <Setter Property="MinHeight" Value="{atom:ToolTipTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:ToolTipTokenResource ToolTipMinHeight}" />
             <Setter Property="Padding" Value="{atom:ToolTipTokenResource ContentPadding}" />
             <Setter Property="CornerRadius" Value="{atom:ToolTipTokenResource ToolTipCornerRadius}" />
             <!-- A tooltip has no border, whatever the arrow box's border width (PrimeUIX tooltip has none either). -->

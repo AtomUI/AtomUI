@@ -6,7 +6,7 @@
 ## 包入口
 
 包项目沿用普通 AtomUI Control、Token、Semantic Part 和 AXAML 声明。当前版本的生成器自动生成
-`AtomUI.Generated.<AssemblyOwner>.GeneratedControlPackageRegistration.Definition`；空包和只有资产的包也有清单。
+`AtomUI.Generated.<AssemblyOwner>.PackageMetadata.Definition`；空包和只有资产的包也有清单。
 不要手写清单、TypeMap key、schema 指纹或代理类型。
 
 以下示例假定包程序集名为 `Acme.Charts`：
@@ -23,7 +23,7 @@ public static class AcmeChartsBuilderExtensions
         this IAtomUIBuilder builder,
         Action<ControlPackageOptions>? configure = null)
     {
-        return GeneratedControlPackageRegistration.Definition.Register(builder, package =>
+        return PackageMetadata.Definition.Register(builder, package =>
         {
             package.DependsOn(static dependency => dependency.UseDesktopControls());
             package.OnCommit(static context =>

@@ -159,7 +159,7 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
 ## 控件包注册顺序
 
 应用仍通过 `UseDesktopControls()`、`UseDesktopDataGrid()`、`UseDesktopColorPicker()` 等正常包入口启用能力。
-入口调用生成的 `GeneratedControlPackageRegistration.Definition`，不声明方法名身份或 AOT 专用分支。统一顺序是：
+入口调用生成的 `PackageMetadata.Definition`，不声明方法名身份或 AOT 专用分支。统一顺序是：
 
 1. 拒绝直接重复和循环声明；按 `DependsOn` 幂等启用依赖。
 2. 记录包元数据、语言数据、`OnCommit` 和 `OnFirstUse`，配置期不创建 Provider 或控件。

@@ -122,7 +122,7 @@ namespace Acme.Controls;
 public static class ThemeManagerBuilderExtensions
 {
     public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-        => GeneratedControlPackageRegistration.Definition.Register(builder);
+        => PackageMetadata.Definition.Register(builder);
 }
 ```
 

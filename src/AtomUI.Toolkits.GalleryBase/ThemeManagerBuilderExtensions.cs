@@ -11,7 +11,7 @@ public static class ThemeManagerBuilderExtensions
                                                 Action<GalleryBaseOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Definition.Register(builder, package =>
+        return PackageMetadata.Definition.Register(builder, package =>
         {
             package.DependsOn(static root => Desktop.Controls.ThemeManagerBuilderExtensions.UseDesktopControls(root));
             if (configure is not null)

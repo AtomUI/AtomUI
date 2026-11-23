@@ -215,7 +215,7 @@ public class TypeMapRegistrationGeneratorTests
         var root = CSharpSyntaxTree.ParseText(source, cancellationToken: TestContext.Current.CancellationToken)
             .GetRoot(TestContext.Current.CancellationToken);
         var collector = root.DescendantNodes().OfType<ClassDeclarationSyntax>()
-            .Single(type => type.Identifier.ValueText == "GeneratedControlPackageRegistration");
+            .Single(type => type.Identifier.ValueText == "PackageMetadata");
         // ILC8 dispatch calls the thunks directly, so their owner must not gain a static constructor.
         collector.Members.OfType<FieldDeclarationSyntax>().ShouldBeEmpty();
         collector.Members.OfType<ConstructorDeclarationSyntax>().ShouldBeEmpty();

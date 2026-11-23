@@ -110,7 +110,7 @@ marker 和 assembly target 不是启用动作。没有调用可选包入口时�
 
 ```csharp
 public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-    => GeneratedControlPackageRegistration.Register(
+    => PackageMetadata.Register(
         builder, static () => new AcmeControlThemesProvider());
 ```
 

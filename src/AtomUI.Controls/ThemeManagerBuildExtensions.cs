@@ -9,7 +9,7 @@ internal static class ThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseCommonControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        GeneratedControlPackageRegistration.Definition.Ensure(builder, static package => package
+        PackageMetadata.Definition.Ensure(builder, static package => package
             .DependsOn(static builder =>
             {
                 builder.UseImageLoading();

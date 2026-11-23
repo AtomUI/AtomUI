@@ -14,7 +14,7 @@ public static class ThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseDesktopControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+        return PackageMetadata.Definition.Register(builder, static package => package
             .DependsOn(static builder => builder.UseCommonControls())
             .OnCommit(InitializeDesktopRuntime));
     }

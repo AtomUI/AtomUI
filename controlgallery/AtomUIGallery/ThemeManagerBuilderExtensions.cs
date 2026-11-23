@@ -14,7 +14,7 @@ public static class ThemeManagerBuilderExtensions
     public static IAtomUIBuilder UseGalleryControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return GeneratedControlPackageRegistration.Definition.Register(builder, static package => package
+        return PackageMetadata.Definition.Register(builder, static package => package
             .DependsOn(static root => root.UseGalleryBase(AtomUIGalleryModule.Configure))
             .DependsOn(static root => root.Theme.UsePrimeNGThemes().UseShadcnThemes()));
     }

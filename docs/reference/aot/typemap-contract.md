@@ -124,7 +124,7 @@ internal static IAtomUIBuilder Register(
 内部基础包依赖另有同签名 `Ensure`，已成功注册的包不重复执行；公共入口使用 `Register`。调用示例：
 
 ```csharp
-GeneratedControlPackageRegistration.Register(
+PackageMetadata.Register(
     builder,
     static () => new AcmeControlThemesProvider(),
     prepare: PreparePackageCore,

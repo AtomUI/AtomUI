@@ -84,6 +84,8 @@ internal readonly struct ValueArray<T> : IEquatable<ValueArray<T>>, IEnumerable<
 
 internal static class RegistrationNames
 {
+    internal const string PackageMetadata = "PackageMetadata";
+
     internal static string Literal(string value) => SymbolDisplay.FormatLiteral(value, true);
     internal static string Hash(string value)
     {

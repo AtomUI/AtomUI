@@ -77,7 +77,7 @@ internal static class TypeMapRegistrationWriter
         source.AppendLine("        [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]");
         source.AppendLine("        public static global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Type> Complete(global::System.Collections.Generic.Dictionary<string, global::System.Type> map) => map;");
         source.AppendLine("    }\n}");
-        source.AppendLine("internal static partial class GeneratedControlPackageRegistration\n{");
+        source.Append("internal static partial class ").Append(RegistrationNames.PackageMetadata).AppendLine("\n{");
         if (package.SupportsStartupManifest)
         {
             StartupManifestWriter.WriteDefinition(source, package, mapEntries, supportsTypeMap);

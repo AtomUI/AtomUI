@@ -116,7 +116,7 @@ CollectSelected(builder) -> throw InvalidOperationException(固定未物化诊�
 Register_<stableId>      -> builder.AddFragment(new 对应Proxy())
 ```
 
-四类方法同属生成承载类型 `GeneratedControlPackageRegistration`，该类型不得有静态构造器：ILC8 固定 dispatch
+四类方法同属生成承载类型 `PackageMetadata`，该类型不得有静态构造器：ILC8 固定 dispatch
 直接调用所选 thunk，不为其所属类型补触发类初始化。包定义、选中片段集合等带初始值的静态状态放在嵌套持有类型
 `PackageState` 中，承载类型只暴露无后备字段的 `Definition` 访问器。只有 ILC8 绑定器拒绝带 `.cctor` 的承载类型；
 ILLink8 与桥接产出的仍是由运行时正常触发类初始化的 IL，继续接受 6.2.6–6.2.13 生成器产出、承载类型带 `.cctor` 的包。

@@ -14,7 +14,7 @@ ILLink/ILC 依赖图选择注册片段。禁止全包保留、源代码使用清
 恢复的官方 ILC 8.x native helper；8.0.27→8.0.34 的 ILC/ILLink 源码与 JIT-EE 接口未变。工具宿主按 Major 前滚，
 只装 .NET 11 运行时也可执行。原生接线仍限定 macOS arm64 工具宿主，以及 osx-arm64 / osx-x64 完整应用目标。
 已验证：SDK 11.0.100 / 10.0.403 下 osx-arm64 的 net8 托管裁剪（ILLink 8.0.34 / 8.0.33）与 Native8（8.0.27 托管编译器配
-ILC 8.0.34 / 8.0.33 native helper）均发布并运行。生成的 `GeneratedControlPackageRegistration` 不带静态构造器，包定义等静态
+ILC 8.0.34 / 8.0.33 native helper）均发布并运行。生成的 `PackageMetadata` 不带静态构造器，包定义等静态
 状态位于嵌套 `PackageState`（见[条件注册契约](../../reference/aot/conditional-registration-contract.md)）。
 Windows/Linux 原生消费和这些平台上的维护者编译器构建尚无验收证据，不能据本机成功宣布支持。
 Browser 仍采用 .NET 10；不新增 net8 Browser 宿主。

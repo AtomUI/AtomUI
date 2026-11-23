@@ -216,7 +216,7 @@ public partial class TypeMapIntegrationTests
             public class Chrome : Avalonia.StyledElement { }
             public static class Probe
             {
-                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Definition.Register(builder);
+                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.PackageMetadata.Definition.Register(builder);
             }
             """, Asset("Chrome", "<ControlTheme x:Key=\"Chrome\" TargetType=\"local:Chrome\" />"));
         var descriptor = GeneratedAsset(assembly);
@@ -460,7 +460,7 @@ public partial class TypeMapIntegrationTests
             public static class Probe
             {
                 public static int Providers;
-                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.Definition.Register(builder);
+                public static void Register(AtomUI.IAtomUIBuilder builder) => AtomUI.Generated.TypeMapFixture.PackageMetadata.Definition.Register(builder);
             }
             """, Asset("Button", "<ControlTheme x:Key=\"Button\" TargetType=\"local:Button\" />"));
         var core = LoadCore();
@@ -491,12 +491,12 @@ public partial class TypeMapIntegrationTests
             public static class Probe
             {
                 public static void Register(AtomUI.IAtomUIBuilder builder) =>
-                    AtomUI.Generated.TypeMapFixture.GeneratedControlPackageRegistration.RegisterManualValidation(builder);
+                    AtomUI.Generated.TypeMapFixture.PackageMetadata.RegisterManualValidation(builder);
             }
             }
             namespace AtomUI.Generated.TypeMapFixture
             {
-                internal static partial class GeneratedControlPackageRegistration
+                internal static partial class PackageMetadata
                 {
                     internal static void RegisterManualValidation(AtomUI.IAtomUIBuilder builder) =>
                         AtomUI.Registration.ControlRegistrationRuntime.RegisterPackage(builder, "Demo.Controls", static () => new Demo.Provider(), Collect);

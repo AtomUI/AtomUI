@@ -22,7 +22,7 @@ internal static class Program
         if (!HarnessOptions.TryParse(args, out var options, out var error))
         {
             Console.Error.WriteLine(error);
-            Console.Error.WriteLine("usage: AtomUI.StartupPerformance [--scenario plain|atom-plain|atom-window|atom-splash] [--multicorejit <dir>] [--platform-defaults-off]");
+            Console.Error.WriteLine("usage: AtomUI.StartupPerformance [--scenario plain|atom-plain|atom-window|atom-splash] [--multicorejit <dir>] [--platform-defaults-off] [--all-languages]");
             return 2;
         }
         HarnessOptions.Current = options;
@@ -48,8 +48,8 @@ internal static class Program
         // Capturing the dispatcher before platform setup gives its timers a different
         // clock origin from the native dispatcher and changes the behavior being measured.
         builder = builder.AfterPlatformServicesSetup(static _ => UiGapTracker.Start());
-        builder.StartWithClassicDesktopLifetime(args);
+        var exitCode = builder.StartWithClassicDesktopLifetime(args);
         StartupTimeline.Report();
-        return 0;
+        return exitCode;
     }
 }

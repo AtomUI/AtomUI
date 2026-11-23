@@ -25,6 +25,9 @@
     <ItemGroup>
         <ProjectReference Include="../../../src/AtomUI.Core/AtomUI.Core.csproj"/>
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj"/>
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Fonts.AlibabaSans/AtomUI.Fonts.AlibabaSans.csproj"/>
     </ItemGroup>
 

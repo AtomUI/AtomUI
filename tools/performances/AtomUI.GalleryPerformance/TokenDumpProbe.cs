@@ -1,6 +1,7 @@
 using System.Text;
+using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme;
-using AtomUI.Themes.Tests;
+using AtomUI.Theme.Testing;
 using Avalonia;
 using Avalonia.Media;
 
@@ -64,7 +65,7 @@ internal static class TokenDumpProbe
                 var fileName = seeds.FileName(variant);
                 try
                 {
-                    var request = DesignLanguageVariants.CreateRequest(manager.AvailableThemes, variant, seeds.Brand, seeds.Neutral);
+                    var request = DesignLanguageVariants.CreateRequest(manager, variant, seeds.Brand, seeds.Neutral);
                     var result  = DesignLanguageVariants.WaitFor(manager.ApplyThemeAsync(request), s_timeout);
                     if (result.Status is not (ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp))
                     {
@@ -74,7 +75,15 @@ internal static class TokenDumpProbe
                     }
                     var snapshot = manager.CurrentSnapshot
                                    ?? throw new InvalidOperationException("no current snapshot after the request.");
-                    File.WriteAllText(Path.Combine(directory, fileName), ThemeSnapshotDump.Dump(snapshot), Encoding.UTF8);
+                    // M0 wrote the Shadcn base colour as a global seed. Keep that key in the comparison output
+                    // so the guard checks the migrated language seed on every base-colour case. The other two
+                    // languages never set the old optional seed.
+                    var legacyNeutral = snapshot.Language.Id == "Shadcn" &&
+                                        snapshot.Language.TryGetLanguageToken(nameof(ShadcnToken.BaseColor), out var baseColor)
+                        ? baseColor.Format(snapshot.LanguageTokenValues.GetValue(baseColor.Slot))
+                        : "null";
+                    var dump = ThemeSnapshotDump.Dump(snapshot) + $"G ColorNeutral = {legacyNeutral}\n";
+                    File.WriteAllText(Path.Combine(directory, fileName), dump, Encoding.UTF8);
                     written++;
                 }
                 catch (Exception ex)

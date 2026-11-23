@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj" />
     </ItemGroup>
 
     <ItemGroup>

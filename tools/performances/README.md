@@ -44,6 +44,35 @@
 
 ## 当前命令
 
+### 设计语言编译与切换
+
+先分别在 M0 基线与候选工作目录构建 `tests/AtomUI.Desktop.Controls.Tests` 的 Release `net10.0`，
+再对候选构建 `tests/AtomUIGallery.Tests`。复用已有且与源码匹配的产物。采样期间暂停并行构建和测试。
+从两个工作目录的 Release 产物交错运行显式测量。`baseline` 和 `candidate` 为两个工作目录的绝对路径。
+
+```bash
+out=$(mktemp -d)
+sample_ant() {
+  ATOMUI_MEASURE_OUTPUT="$out/$2-$3.txt" ATOMUI_MEASURE_LABEL="$2" \
+    dotnet "$1/.artifacts/bin/Release/net10.0/AtomUI.Desktop.Controls.Tests.dll" \
+    -explicit only -method '*.ThemeCompileMeasurement.Measure_Default_Theme_Compile_And_Switch'
+}
+sample_ant "$baseline" baseline 1 && sample_ant "$candidate" candidate 1 &&
+  sample_ant "$candidate" candidate 2 && sample_ant "$baseline" baseline 2
+
+ATOMUI_MEASURE_OUTPUT="$out/design-language-scenarios.txt" \
+  dotnet "$candidate/.artifacts/bin/Release/net10.0/AtomUIGallery.Tests.dll" \
+  -explicit only -method '*.DesignLanguageScenarioMeasurement.Measure_Design_Language_Scenarios'
+```
+
+用 Ant Design 的 `compile.{default,dark,compact}` 冷编译中位数、分配和取值哈希，以及同名 `switch.*`
+的缓存与未缓存往返中位数做 M0 对照。默认每项 15 个样本、3 次预热。新场景报告 Ant Design → Shadcn →
+PrimeNG → Ant Design 的冷切换和缓存命中、Ant Design 两种 idiom 冷编译、Button 固定外观与覆盖种子的独立求值，
+以及局部作用域单 Alias 变更的读集命中和重算。切换由公开主题 API 触发，窗口在 Headless 宿主内显示，不采样鼠标输入
+和 GPU 上屏。局部场景在每次计时前清快照缓存，计时包含 scope 挂载和惰性控件求值。
+单 Alias 输出将有读集的重算、缺读集时的保守重算与替换的空控件结果分开。M0 的显式测量只提供 Ant Design 三条链的对照。
+启动另见 [启动采样](AtomUI.StartupPerformance/README.md#设计语言启动对比)。
+
 ### 原生 Gallery 动效采样
 
 `AtomUI.GalleryPerformance --native-motion` 是单独的原生宿主模式，运行真实 `GalleryApplication`、Workspace和页面。
@@ -338,6 +367,12 @@ tools/performances/run_perf_guards.sh <未优化构建的 Release 输出目录> 
   - `--freeze-loading-icons`：截图前停止加载图标的持续旋转并复位角度，使同一构建的多次截图逐像素一致。基线构建也必须支持
     这个参数，否则两边一边旋转一边静止。
   - `--ignore-near-animation`：离自带动画像素 `--near`（默认 6）像素以内的变化照常列出但不计失败，更远的仍计失败。
+- `REPEAT_UNSTABLE_PAGES=1` 对已观察到同构建帧差且首轮像素检查失败的页面，每侧补拍两次。比较器要求每一张补拍到齐，按真实的
+  同构建帧差更新动画遮罩，尺寸和剩余稳定像素仍须相等。
+- `NORMALIZE_PALETTE_NAMESPACE=1` 只用于设计语言迁移时与 M0 基线比较。候选工具抓拍 Palette 时把已批准改名的
+  `PresetPalettes` 命名空间标签写为基线文字，正常运行时仍显示当前命名空间。
+- 状态图和泄漏记录会核对两侧实际覆盖。设计语言守卫还检查 M0 已知的四项状态图采集失败名单。页面泄漏测量缺行、
+  控件泄漏 JSON 缺项或候选新增测量错误均导致失败。
 
 ### 设计语言守卫
 
@@ -349,7 +384,8 @@ tools/performances/run_design_language_guards.sh <基线构建的 Release 输出
 ```
 
 - 默认 48 个变体全跑；第 5 个参数是匹配 `--list-variants` 输出行的扩展正则，例如 `"^Shadcn.Nova "` 只跑 Nova 的 4 个变体。
-- 自动带上 `--freeze-loading-icons` 与 `--ignore-near-animation`。
+- 自动带上 `--freeze-loading-icons` 与 `--ignore-near-animation`；状态截图的稳定轮数默认 40（`ATOMUI_STATE_SETTLE_PASSES`
+  可覆盖），机器繁忙时 6 轮可能截到禁用按钮颜色过渡的中途。每次截图约多 11 秒。
 - 取值比对：两边各运行一次 `AtomUI.GalleryPerformance --dump-tokens <dir>`（48 个变体 × 种子组合，共 484 个文件，格式同
   `tests/AtomUI.Themes.Tests/ThemeSnapshotDump.cs`），再由 `compare_token_dumps.py` 按键比对。同目录下存在
   `design_language_token_renames.txt`（每行 `旧键 -> 新键`）或 `design_language_token_exceptions.txt`（每行一个键）时自动带上；

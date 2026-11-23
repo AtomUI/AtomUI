@@ -1,7 +1,8 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Theme.Languages;
 using System.Reflection;
 using AtomUI.Desktop.Controls;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Controls.Primitives;
@@ -228,14 +229,11 @@ internal static partial class Program
 
     private static void ApplyCompactThemeMode(IThemeManager themeManager, bool isCompact)
     {
-        var algorithms = isCompact
-            ? new[] { ThemeAlgorithm.Default, ThemeAlgorithm.Compact }
-            : new[] { ThemeAlgorithm.Default };
         var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(algorithms)
+                     .WithDensity(isCompact ? DesignDensity.Compact : DesignDensity.Default)
                      .Build();
         themeManager.ApplyThemeAsync(new ThemeRequest(
-            themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID,
+            themeManager.CurrentTheme?.ThemeId ?? AntDesignThemes.DaybreakBlue,
             config,
             ThemeTransitionReason.UserRequest)).GetAwaiter().GetResult();
     }

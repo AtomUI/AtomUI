@@ -22,9 +22,13 @@
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
-        <!-- Theme catalog entries for the design-language variants of the state snapshots. -->
-        <ProjectReference Include="../../../src/AtomUI.Themes.PrimeNG/AtomUI.Themes.PrimeNG.csproj" />
-        <ProjectReference Include="../../../src/AtomUI.Themes.Shadcn/AtomUI.Themes.Shadcn.csproj" />
+        <!-- The design languages and their control values, for the design-language variants of the state snapshots. -->
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn.csproj" />
         <ProjectReference Include="../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
                           OutputItemType="Analyzer"
                           ReferenceOutputAssembly="false"

@@ -33,6 +33,9 @@ PROJECTS=(
     AtomUI.Generator.Tests
     AtomUI.TypeMap.Linker.Tests
     AtomUI.Core.Tests
+    AtomUI.DesignLanguages.Shadcn.Tests
+    AtomUI.DesignLanguages.PrimeNG.Tests
+    AtomUI.DesignLanguages.Parity.Tests
     AtomUI.Toolkits.GalleryBase.Tests
     AtomUI.Controls.Shared.Tests
     AtomUI.Desktop.Controls.DataGrid.Tests
@@ -116,7 +119,7 @@ for p in "${PROJECTS[@]}"; do
         echo "[ERROR] 测试项目不存在: $cs"
         exit 1
     fi
-    out="$(dotnet test "$cs" --framework "$FRAMEWORK" --list-tests $filter_args 2>&1)"
+    out="$(dotnet test "$cs" --framework "$FRAMEWORK" --disable-build-servers -nodeReuse:false --list-tests $filter_args 2>&1)"
     if [ $? -ne 0 ]; then
         echo "[ERROR] $p 构建/枚举失败:"
         printf '%s\n' "$out" | tail -15 | sed 's/^/    /'
@@ -137,7 +140,7 @@ run_one() { # $1=项目名 $2=预期数 $3=全局已完成基数
     : > "$log"
 
     echo "[RUN] $p ($expected tests)"
-    dotnet test "$cs" --framework "$FRAMEWORK" --no-build $filter_args \
+    dotnet test "$cs" --framework "$FRAMEWORK" --disable-build-servers -nodeReuse:false --no-build $filter_args \
         --logger 'console;verbosity=detailed' > "$log" 2>&1 &
     local pid=$!
     local t0 lastprog lastdone stalled

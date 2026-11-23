@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
+using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.Workspace.Views;
 using Avalonia;
 using Avalonia.Controls;
@@ -18,6 +19,8 @@ namespace AtomUI.GalleryPerformance;
 /// </summary>
 internal static class GalleryGuardProbe
 {
+    internal const string NormalizePaletteNamespaceArgument = "--normalize-palette-namespace";
+
     // Bounds the capture surface; taller pages are clipped at this height in both builds alike.
     private const double MaxSnapshotHeight = 12000;
 
@@ -25,7 +28,8 @@ internal static class GalleryGuardProbe
                                    IReadOnlyList<string> keys,
                                    TimeSpan timeout,
                                    string directory,
-                                   bool freezeLoadingIcons = false)
+                                   bool freezeLoadingIcons,
+                                   bool normalizePaletteNamespace)
     {
         Directory.CreateDirectory(directory);
         var failures = 0;
@@ -42,6 +46,18 @@ internal static class GalleryGuardProbe
             {
                 Program.TriggerNavigation(window, showCase);
                 var route = WaitForStableRoute(window, showCase, timeout);
+                if (normalizePaletteNamespace && string.Equals(key, "palette", StringComparison.OrdinalIgnoreCase))
+                {
+                    var header = route.GetSelfAndVisualDescendants().OfType<GalleryShowCaseHeader>()
+                                      .Single(header => header.BaseClass == "PresetPalettes");
+                    if (header.Namespace != "AtomUI.Theme.Derivation")
+                    {
+                        throw new InvalidOperationException($"Unexpected Palette namespace '{header.Namespace}'.");
+                    }
+                    // The reference build still displays the old location of the same palette utilities.
+                    header.SetCurrentValue(GalleryShowCaseHeader.NamespaceProperty, "AtomUI.Theme.Algorithms");
+                    Console.WriteLine("palette: comparing with the approved baseline namespace label");
+                }
                 var height = ResolveFullHeight(window, route);
                 LayoutAt(window, height);
                 LayoutAt(window, height);

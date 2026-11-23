@@ -18,7 +18,7 @@
 
     <ItemGroup>
         <!-- The token dump format of the theme equivalence tests, reused by dump-tokens. -->
-        <Compile Include="../../../tests/AtomUI.Themes.Tests/ThemeSnapshotDump.cs" Link="Theme/ThemeSnapshotDump.cs" />
+        <Compile Include="../../../tests/Shared/ThemeSnapshotDump.cs" Link="Theme/ThemeSnapshotDump.cs" />
     </ItemGroup>
 
 </Project>

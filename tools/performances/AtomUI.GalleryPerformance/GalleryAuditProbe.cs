@@ -51,6 +51,7 @@ internal static class GalleryAuditProbe
         var appearance        = default(string);
         var density           = default(string);
         var freezeLoadingIcons = false;
+        var normalizePaletteNamespace = false;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -58,6 +59,9 @@ internal static class GalleryAuditProbe
             {
                 case SnapshotFreeze.Argument:
                     freezeLoadingIcons = true;
+                    break;
+                case GalleryGuardProbe.NormalizePaletteNamespaceArgument:
+                    normalizePaletteNamespace = true;
                     break;
                 case "--design-language" when i + 1 < args.Length:
                     designLanguage = args[++i];
@@ -155,7 +159,8 @@ internal static class GalleryAuditProbe
 
         if (!string.IsNullOrWhiteSpace(snapshotDirectory))
         {
-            var snapshotResult = GalleryGuardProbe.RunSnapshots(window, keys, timeout, snapshotDirectory, freezeLoadingIcons);
+            var snapshotResult = GalleryGuardProbe.RunSnapshots(window, keys, timeout, snapshotDirectory,
+                freezeLoadingIcons, normalizePaletteNamespace);
             window.Close();
             Dispatcher.UIThread.RunJobs();
             return snapshotResult;

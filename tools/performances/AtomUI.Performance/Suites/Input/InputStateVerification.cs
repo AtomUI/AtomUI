@@ -1,6 +1,8 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Languages;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
 using AtomUI.Icons.AntDesign;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -36,13 +38,22 @@ internal static partial class Program
         return false;
     }
 
+    private static DesignToken DeriveAntDesign(ThemeAppearance appearance)
+    {
+        var language = new AntDesignLanguage();
+        var variant  = new DesignVariant(AntDesignLanguage.DefaultStyle, appearance, DesignDensity.Default, DesignIdiom.Desktop);
+        var token    = new DesignToken();
+        var seeds    = new AntDesignToken();
+        language.DefineSeeds(variant, token, seeds);
+        language.DeriveLanguage(variant, token, seeds);
+        language.DeriveGlobal(new DerivationContext<AntDesignToken>(variant, seeds), token);
+        return token;
+    }
+
     private static void VerifyInputSelectionTokenMapping(ICollection<string> failures)
     {
-        // 主题算法 API 演进：Calculate(token) → Evaluate(effectiveSeed, previousMap, nextMap)。
-        // 与 ThemeCompiler 一致，seed 与 map 使用独立实例（Dark 算法在 previousMap 为 null 时
-        // 会先执行 Default 算法并写回 nextMap，若 seed 与 map 同实例会污染 Dark 的基色读取）。
-        var defaultToken = new DesignToken();
-        new DefaultThemeVariantCalculator().Evaluate(new DesignToken(), null, defaultToken);
+        // The Ant Design derivation of the light and dark variants, in the order ThemeCompiler runs it.
+        var defaultToken = DeriveAntDesign(ThemeAppearance.Light);
 
         Expect(defaultToken.SelectionBackground == defaultToken.ColorPrimary,
             $"Default SelectionBackground should use ColorPrimary ({defaultToken.ColorPrimary}), actual {defaultToken.SelectionBackground}.",
@@ -51,8 +62,7 @@ internal static partial class Program
             $"Default SelectionForeground should use ColorWhite ({defaultToken.ColorWhite}), actual {defaultToken.SelectionForeground}.",
             failures);
 
-        var darkToken = new DesignToken();
-        new DarkThemeVariantCalculator().Evaluate(new DesignToken(), null, darkToken);
+        var darkToken = DeriveAntDesign(ThemeAppearance.Dark);
 
         Expect(darkToken.SelectionBackground == darkToken.ColorPrimary,
             $"Dark SelectionBackground should use ColorPrimary ({darkToken.ColorPrimary}), actual {darkToken.SelectionBackground}.",

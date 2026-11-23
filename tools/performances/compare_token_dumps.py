@@ -48,6 +48,8 @@ def parse_dump(path):
             if key in entries:
                 raise SystemExit(f'{path}: duplicate key: {key!r}')
             entries[key] = value
+    if not entries:
+        raise SystemExit(f'{path}: no token values')
     return entries
 
 
@@ -67,6 +69,9 @@ def main():
         return {name for name in os.listdir(directory) if name.endswith('.tokens.txt')}
 
     base_files, candidate_files = dumps(args.base_dir), dumps(args.candidate_dir)
+    if not base_files or not candidate_files:
+        print('Both builds must provide token dumps.', file=sys.stderr)
+        return 1
     failures = 0
     counts = {'only-base-file': 0, 'only-candidate-file': 0, 'only-base': 0, 'only-candidate': 0, 'changed': 0}
     skipped = set()

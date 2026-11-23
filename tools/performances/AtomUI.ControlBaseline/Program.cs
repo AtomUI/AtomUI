@@ -5,8 +5,12 @@ using System.Text.Json;
 using AtomUI.Desktop.Controls;
 using AtomUI.GalleryPerformance;
 using AtomUI.Theme;
-using AtomUI.Themes.PrimeNG;
-using AtomUI.Themes.Shadcn;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.DesignLanguages.PrimeNG;
+using AtomUI.DesignLanguages.Shadcn;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
+using AtomUI.Desktop.Controls.Themes.PrimeNG;
+using AtomUI.Desktop.Controls.Themes.Shadcn;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -139,12 +143,14 @@ internal static class Program
             builder.UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = stateSnapshotDirectory is null })
                       .UseAtomUI(atom =>
                       {
-                          atom.Theme.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                          atom.Theme.WithInitialTheme(AntDesignThemes.DaybreakBlue);
                           atom.UseDesktopControls();
                           atom.UseDesktopColorPicker();
                           atom.UseDesktopDataGrid();
-                          // Catalog entries only: the initial theme stays DaybreakBlue unless a variant is applied.
-                          atom.Theme.UsePrimeNGThemes().UseShadcnThemes();
+                          // The initial theme stays DaybreakBlue unless a variant is applied.
+                          atom.UseAntDesign(static language => language.AddDesktopColorPicker().AddDesktopDataGrid());
+                          atom.UsePrimeNG(static language => language.AddDesktopColorPicker().AddDesktopDataGrid());
+                          atom.UseShadcn(static language => language.AddDesktopColorPicker().AddDesktopDataGrid());
                       })
                       .SetupWithLifetime(CreateLifetime());
             assemblies =
@@ -425,7 +431,7 @@ internal static class Program
 
         try
         {
-            var request = DesignLanguageVariants.CreateRequest(manager.AvailableThemes, variant, null, null);
+            var request = DesignLanguageVariants.CreateRequest(manager, variant, null, null);
             var result  = DesignLanguageVariants.WaitFor(manager.ApplyThemeAsync(request), TimeSpan.FromSeconds(60));
             var state   = manager.CurrentTheme;
             if (result.Status is not (ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp) ||

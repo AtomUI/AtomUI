@@ -573,6 +573,12 @@ internal static class Program
                 AtomUIGallery.ShowCases.Splash.SplashViewModel.ID,
                 "AtomUIGallery.ShowCases.Splash.SplashShowCase",
                 "controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml",
+                stats => stats.VisualCount > 0),
+            ["themepresets"] = new(
+                "ThemePresetsShowCase",
+                AtomUIGallery.ShowCases.ThemePresets.ThemePresetsViewModel.ID,
+                "AtomUIGallery.ShowCases.ThemePresets.ThemePresetsShowCase",
+                "controlgallery/AtomUIGallery/ShowCases/General/ThemePresets/Views/ThemePresetsShowCase.axaml",
                 stats => stats.VisualCount > 0)
         };
 
@@ -817,14 +823,18 @@ internal static class Program
             DesignLanguageVariants.WaitFor(viewModel.SetAppearanceModeCommand
                              .Execute(variant.Appearance == ThemeAppearance.Dark ? ThemePreference.Dark : ThemePreference.Light)
                              .ToTask(), timeout);
-            DesignLanguageVariants.WaitFor(viewModel.ToggleCompactModeCommand.Execute(variant.Density == ThemeDensity.Compact).ToTask(), timeout);
+            DesignLanguageVariants.WaitFor(viewModel.ToggleCompactModeCommand.Execute(variant.IsCompact).ToTask(), timeout);
             DesignLanguageVariants.WaitFor(viewModel.SwitchDesignLanguageCommand.Execute(variant.DesignLanguage).ToTask(), timeout);
             var menuState = manager.CurrentTheme
                             ?? throw new InvalidOperationException("No theme is current after the menu commands.");
 
             // Applying the resolver's request after the menu path is a no-op when both agree; any difference shows up
             // as a different fingerprint, including a menu path that left the previous theme in place.
-            var request = DesignLanguageVariants.CreateRequest(manager.AvailableThemes, variant, null, null);
+            // The menu keeps the Gallery's named theme of the language (DaybreakBlue for Ant Design); the resolver
+            // request selects the same theme so the two paths are compared on the same definition.
+            var menuTheme = manager.Themes.FirstOrDefault(theme => theme.Id == menuState.ThemeId);
+            var themeId = menuTheme is { IsLanguageDefault: false } && menuTheme.Language == variant.Language ? menuTheme.Id : null;
+            var request = DesignLanguageVariants.CreateRequest(manager, variant, null, null, themeId);
             var result  = DesignLanguageVariants.WaitFor(manager.ApplyThemeAsync(request), timeout);
             if (result.Status is not (ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp))
             {

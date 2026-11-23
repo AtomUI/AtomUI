@@ -1,5 +1,7 @@
 using AtomUI.Controls;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 
@@ -9,7 +11,8 @@ namespace AtomUI.GalleryPerformance;
 /// Stops the endless loading-icon rotations (<see cref="Icon.LoadingAnimation"/>) before a pixel capture. The rotation
 /// is a compositor animation that runs whenever the icon is visible and does not follow the motion switch, so two
 /// captures of one build can catch it at angles the two-capture animation mask does not cover. Freezing leaves every
-/// icon at angle 0, so every capture, of either build, draws the same frame.
+/// icon at angle 0, so every capture, of either build, draws the same frame. The text caret of a focused text box
+/// blinks on a timer for the same reason; freezing stops the blink with the caret shown.
 /// </summary>
 /// <remarks>Opt-in through <see cref="Argument"/>; a baseline build must support it for the captures to match.</remarks>
 internal static class SnapshotFreeze
@@ -30,6 +33,7 @@ internal static class SnapshotFreeze
     /// <param name="pump">Runs the dispatcher and renders at least one frame.</param>
     public static int FreezeLoadingIcons(Visual root, Action pump)
     {
+        FreezeCarets(root);
         var icons = root.GetSelfAndVisualDescendants()
                         .OfType<Icon>()
                         .Where(icon => icon.LoadingAnimation != IconAnimation.None)
@@ -59,5 +63,19 @@ internal static class SnapshotFreeze
         }
         pump();
         return icons.Count;
+    }
+
+    // Without a blink interval the presenter runs no blink timer; ShowCaret then leaves the caret shown, whatever
+    // phase the blink had reached. Only presenters of a focused text box draw a caret.
+    private static void FreezeCarets(Visual root)
+    {
+        foreach (var presenter in root.GetSelfAndVisualDescendants().OfType<TextPresenter>())
+        {
+            presenter.CaretBlinkInterval = TimeSpan.Zero;
+            if (presenter.TemplatedParent is TextBox { IsFocused: true })
+            {
+                presenter.ShowCaret();
+            }
+        }
     }
 }

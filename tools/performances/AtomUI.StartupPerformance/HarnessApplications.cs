@@ -1,6 +1,12 @@
+using System.Runtime.CompilerServices;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.DesignLanguages.PrimeNG;
+using AtomUI.DesignLanguages.Shadcn;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
+using AtomUI.Desktop.Controls.Themes.PrimeNG;
+using AtomUI.Desktop.Controls.Themes.Shadcn;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
-using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -24,6 +30,9 @@ internal sealed class HarnessOptions
     internal HarnessScenario Scenario { get; private set; } = HarnessScenario.AtomPlain;
     internal string? MultiCoreJitDirectory { get; private set; }
     internal bool PlatformDefaultsOff { get; private set; }
+
+    /// <summary>Also enables Shadcn and PrimeNG while still showing Ant Design (spec 12.5 startup scenario).</summary>
+    internal bool AllLanguages { get; private set; }
 
     internal static bool TryParse(string[] args, out HarnessOptions options, out string? error)
     {
@@ -60,6 +69,10 @@ internal sealed class HarnessOptions
             else if (argument == "--multicorejit" && index + 1 < args.Length)
             {
                 options.MultiCoreJitDirectory = Path.GetFullPath(args[++index]);
+            }
+            else if (argument == "--all-languages")
+            {
+                options.AllLanguages = true;
             }
             else if (argument == "--platform-defaults-off")
             {
@@ -102,16 +115,45 @@ internal sealed partial class AtomUIHarnessApplication : Application
         ArgumentNullException.ThrowIfNull(builder);
         var start = StartupTimeline.Now();
         builder.WithApplicationId("AtomUI.StartupPerformance");
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+        builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
         builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS]);
         builder.UseAlibabaSansFont();
         builder.UseDesktopControls();
+        builder.UseAntDesign(static language => language.AddDesktopControls());
+        if (HarnessOptions.Current.AllLanguages)
+        {
+            EnableAdditionalDesignLanguages(builder);
+        }
         if (HarnessOptions.Current.Scenario == HarnessScenario.AtomSplash)
         {
             // Always：测量需要在 JIT 与 NativeAOT 下都显示 Splash。
             AtomUI.Controls.SplashBuilderExtensions.UseSplash(builder, SplashMode.Always);
         }
         StartupTimeline.Duration("UseAtomUI.SyncTotal", start, StartupTimeline.Now());
+    }
+
+    // Keep JIT resolution of the optional packages out of the Ant-only Configure method.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void EnableAdditionalDesignLanguages(IAtomUIBuilder builder)
+    {
+        builder.UseShadcn(static language => language.AddDesktopControls());
+        builder.UsePrimeNG(static language => language.AddDesktopControls());
+    }
+
+    // Check the committed configuration after the measured startup milestones and before scope teardown.
+    internal int VerifyDesignLanguages()
+    {
+        var manager = this.GetThemeManager();
+        var enabled = manager?.Languages.Select(static language => language.Id).ToHashSet(StringComparer.Ordinal);
+        string[] expected = HarnessOptions.Current.AllLanguages ? ["AntDesign", "Shadcn", "PrimeNG"] : ["AntDesign"];
+        if (enabled is null || !enabled.SetEquals(expected) ||
+            manager?.CurrentTheme is not { Language: "AntDesign", ThemeId: AntDesignThemes.DaybreakBlue })
+        {
+            Console.Error.WriteLine("The configured design languages did not start on Ant Design DaybreakBlue.");
+            return 1;
+        }
+        StartupTimeline.Set("Config.DesignLanguageCount", enabled.Count);
+        return 0;
     }
 
     public override void Initialize()

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
-using AtomUI;
 using AtomUIGallery;
 using AtomUIGallery.Desktop;
 using AtomUIGallery.Workspace.Views;

@@ -25,6 +25,44 @@
       ]
     },
     {
+      "id": "design-language-ant-design",
+      "roots": ["src/DesignLanguages/AntDesign"],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Core.Tests/Theme/DesignLanguageContractTests.cs",
+        "tests/AtomUI.DesignLanguages.Parity.Tests/**/*.cs"
+      ]
+    },
+    {
+      "id": "design-language-prime-ng",
+      "roots": ["src/DesignLanguages/PrimeNG", "src/AtomUI.Themes.PrimeNG"],
+      "depth": 0,
+      "tests": ["tests/AtomUI.DesignLanguages.PrimeNG.Tests/**/*.cs"]
+    },
+    {
+      "id": "design-language-shadcn",
+      "roots": ["src/DesignLanguages/Shadcn", "src/AtomUI.Themes.Shadcn"],
+      "depth": 0,
+      "tests": ["tests/AtomUI.DesignLanguages.Shadcn.Tests/**/*.cs"]
+    },
+    {
+      "id": "design-language-parity-fixtures",
+      "roots": ["tests/fixtures/DesignLanguageParity"],
+      "depth": 0,
+      "tests": ["tests/AtomUI.DesignLanguages.Parity.Tests/**/*.cs"]
+    },
+    {
+      "id": "design-language-contract-fixtures",
+      "roots": ["tests/AtomUI.Theme.ContractTests"],
+      "depth": 0,
+      "tests": [
+        "tests/AtomUI.Core.Tests/Theme/DesignLanguageContractTests.cs",
+        "tests/AtomUI.DesignLanguages.Parity.Tests/**/*.cs",
+        "tests/AtomUI.DesignLanguages.PrimeNG.Tests/**/*.cs",
+        "tests/AtomUI.DesignLanguages.Shadcn.Tests/**/*.cs"
+      ]
+    },
+    {
       "id": "shared",
       "roots": [
         "src/AtomUI.Controls.Shared"

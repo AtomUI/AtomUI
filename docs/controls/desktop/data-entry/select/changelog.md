@@ -3,6 +3,11 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Token：输入框外框形态不再经 `AppearanceSettings` 传入，改为公开 Own Token `SelectToken.TransparentOutlineBorder`、`BottomOutlineBorder`、`MutedSelectIndicator`（默认 `false`，见
+  [Token 设计](token.md)）。各设计语言渲染不变。
+
 ## 2026-11-21（勾选图标）
 
 - Token：`SelectToken` 新增 `OptionSelectedIndicatorColor`（多选下选中项的勾选图标颜色，默认 `ColorPrimary`）。PrimeNG 取

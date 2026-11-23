@@ -79,7 +79,7 @@ active/inactive 是控件实例状态。Token 只提供对应颜色，实际选�
 
 ```text
 SharedToken
-  -> WindowTitleBarToken.CalculateTokenValues(isDarkMode)
+  -> WindowTitleBarToken 的控件推导（Ant Design：AntDesignWindowTitleBarDerivation）
   -> generated WindowTitleBarTokenKind / WindowTitleBarTokenResource
   -> WindowTitleBar, CaptionButton, Window and ImagePreviewer Themes
 ```
@@ -130,4 +130,4 @@ SharedToken
 
 ## 独立 Token 身份与共享计算
 
-WindowTitleBarButton / WindowTitleBarToggleButton 为独立公开动作控件，各有实际颜色、图标与padding Own，复用 AbstractTitleBarActionToken；不会随 WindowTitleBar Own 覆盖改变。CaptionButtonCornerRadius 只属于两个 AddOn 按钮，原 WindowTitleBar 配置需迁移；原生 caption 仍按实际布局求圆角。Inactive hover 使用各自 InactiveHoverBgColor，避免被 active hover Setter 覆盖。Window 装饰与真正 caption/host 部件继续遵循已有 Window/WindowTitleBar 宿主契约。
+WindowTitleBarButton / WindowTitleBarToggleButton 为独立公开动作控件，各有实际颜色、图标与padding Own，复用 AbstractTitleBarActionToken 的定义（Ant Design 的取值规则在共享辅助类 `AntDesignAbstractTitleBarActionDerivation`）；不会随 WindowTitleBar Own 覆盖改变。CaptionButtonCornerRadius 只属于两个 AddOn 按钮，原 WindowTitleBar 配置需迁移；原生 caption 仍按实际布局求圆角。Inactive hover 使用各自 InactiveHoverBgColor，避免被 active hover Setter 覆盖。Window 装饰与真正 caption/host 部件继续遵循已有 Window/WindowTitleBar 宿主契约。

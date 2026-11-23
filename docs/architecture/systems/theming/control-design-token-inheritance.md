@@ -7,7 +7,7 @@ ThemeConfig 继承和 Control CLR 继承不属于本文范围。
 
 ## 设计定位
 
-Control Design Token 继承用于复用平台无关的 Control Own Token 定义和默认计算。Desktop、Mobile 或第三方产品包可以从
+Control Design Token 继承用于复用平台无关的 Control Own Token 定义。Desktop、Mobile 或第三方产品包可以从
 共同上游继承同一抽象 Token 层，同时继续拥有独立的 Control identity、配置、snapshot 和资源投影。
 
 继承是生成期的源码定义复用机制，不是运行时 Token identity 继承机制。Generator 将完整继承链扁平化为每个终端
@@ -19,7 +19,7 @@ Control 的独立 Own Token schema；运行时只消费终端 descriptor，不�
   `ControlDesignTokenDefinition` 或泛型 Attribute。
 - 标记的 `abstract` 类是无 identity 的非终端复用层；标记的具体类是终端 Token，而且必须 `sealed`。
 - 除 `AbstractControlDesignToken` 根类型外，继承链每一层都必须显式标记 `[ControlDesignToken]`。
-- 抽象层只贡献 Own Token 属性与默认计算，不生成 identity、descriptor、slot、资源键或注册产物。
+- 抽象层只贡献 Own Token 属性声明，不生成 identity、descriptor、slot、资源键或注册产物。
 - 终端 Token 是链中唯一的 Control identity owner，生成完整且独立的扁平 schema。
 - identity、配置、snapshot、资源作用域和运行时值不沿 Token CLR 继承链共享或回退。
 - 继承层次不进入 schema fingerprint；只移动属性声明位置不能改变终端 schema revision。
@@ -46,14 +46,11 @@ public sealed class ControlDesignTokenAttribute : Attribute
 [ControlDesignToken]
 public abstract partial class CommonButtonToken : AbstractControlDesignToken
 {
+    /// <summary>Height of the button content box.</summary>
     public partial double ContentHeight { get; set; }
-    public partial Thickness ContentPadding { get; set; }
 
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        ContentHeight = EffectiveGlobalToken.ControlHeight;
-        ContentPadding = EffectiveGlobalToken.InputPadding;
-    }
+    /// <summary>Padding around the button content.</summary>
+    public partial Thickness ContentPadding { get; set; }
 }
 ```
 
@@ -61,12 +58,12 @@ public abstract partial class CommonButtonToken : AbstractControlDesignToken
 
 - 可以形成多层单继承链，也可以在自身程序集没有终端派生类时独立编译；
 - 不按类型名称匹配 Control，名称只需以 `Token` 结尾；
-- 不拥有 Catalog、Control ID、factory、evaluator、descriptor、slot、资源键或注册片段；
+- 不拥有 Catalog、Control ID、factory、descriptor、slot、资源键、注册片段或控件推导；
 - 必须是非泛型顶级类；
 - 对第三方开放时使用 `public abstract`，仅供已知第一方下游包复用时可以使用 `internal abstract` 与正常的
   `InternalsVisibleTo`；公开的终端类不能继承内部抽象层，所以 AtomUI 四个控件包的抽象层随终端类一起是 `public`；
-- 公开的抽象层可以被外部程序集继承，它的 `protected` 成员（`CalculateTokenValues` 重写与
-  `AbstractButtonGeometryToken.CalculateContentPadding` 这类辅助方法）因此属于公开 API；
+- 只有属性声明与语义说明：不包含计算方法、默认值初始化器或对全局 Token 的引用。取值由各设计语言的取值包给出（见下文
+  「取值」）；
 - 类是 `partial` 类，Token 属性是 partial 属性，实现部分由生成器产出（见下文「属性扁平化」）；
 - 使用表达稳定视觉语义的家族名称，不要求 `Base` 或 `Definition` 后缀。
 
@@ -78,13 +75,8 @@ namespace AtomUI.Desktop.Controls
     [ControlDesignToken]
     public sealed partial class ButtonToken : CommonButtonToken
     {
+        /// <summary>Shadow of a default button at rest.</summary>
         public partial BoxShadows DefaultShadow { get; set; }
-
-        protected override void CalculateTokenValues(bool isDarkMode)
-        {
-            base.CalculateTokenValues(isDarkMode);
-            DefaultShadow = EffectiveGlobalToken.BoxShadows;
-        }
     }
 }
 ```
@@ -95,7 +87,8 @@ namespace AtomUI.Desktop.Controls
 - 继续按照现有名称和命名空间约定匹配 public Control；
 - 可以直接继承 `AbstractControlDesignToken`，也可以继承一层或多层显式标记的抽象 Token；
 - 不能继承另一个具体 `[ControlDesignToken]`；
-- 是继承链中唯一生成 Control identity、descriptor、factory、evaluator、资源键和注册产物的类型。
+- 是继承链中唯一生成 Control identity、descriptor、factory、资源键和注册产物的类型，也是控件推导绑定的类型
+  （`IControlDerivation<TLanguageToken, ButtonToken>`）。
 
 合法结构为：
 
@@ -117,8 +110,9 @@ Generator 从终端沿 `BaseType` 遍历到准确的 `AbstractControlDesignToken
 - 未标记 `[NotTokenDefinition]`；
 - 不是 `virtual`、`abstract`、`override` 或使用 `new` 隐藏的属性；
 - 是 partial 属性，且所在类是 partial 类（否则 `ATOMUIGEN049`）。实现部分由 `TokenPropertyImplementationGenerator` 按声明层
-  逐层生成：getter 为 `get => field`，setter 写入后调用 `RecordWrite(nameof(P))`。记账按属性名而不按 slot，因为同一个
-  抽象层属性在不同终端里的 slot 不同；编译器在记账结束后经终端 descriptor 把名称解析成 slot。
+  逐层生成：getter 为 `get => field`，setter 为 `if (IsFrozen(nameof(P))) return; field = value;`——显式值在推导之前冻结，
+  推导对冻结属性的写入被忽略。冻结按属性名而不按 slot，因为同一个抽象层属性在不同终端里的 slot 不同；属性名是生成代码里的
+  字面量，没有冻结项时只是一次空判断。
 
 不同层声明同名属性、同名不同类型或任何隐藏关系都必须构建失败。继承属性与任一 Global Token 同名时继续使用
 Own/Global 名称冲突诊断，不能通过声明层或类型限定符消除歧义。
@@ -138,25 +132,16 @@ static (token, value) =>
 扁平 schema 只包含终端 identity、Token 名称、值类型、stage、slot 和 resource key。声明层类型、程序集、继承深度和
 源码顺序只用于诊断，不进入 schema 或 revision。
 
-## 默认值计算链
+## 取值
 
-`CalculateTokenValues(bool isDarkMode)` 使用普通 C# virtual dispatch。Generator 只为终端生成一个 evaluator，运行时调用
-终端实现；各继承层由显式 `base` 调用组成确定的计算链，不生成逐层 evaluator pipeline。
+Token 类只声明词汇，取值属于设计语言。每种语言的取值包为每个**终端** Token 类写一个控件推导
+（`IControlDerivation<TLanguageToken, TToken>`），推导必须写全终端的全部属性，包括从抽象层继承的属性；抽象层本身没有推导，
+也不会被单独登记。
 
-当某层 override 位于复用链的后续层时，方法必须：
-
-1. 使用 block body；
-2. 将 `base.CalculateTokenValues(isDarkMode)` 作为第一条可执行语句；
-3. 原样转发当前 `isDarkMode` 参数；
-4. 整个方法体只调用一次直接基类实现；
-5. 在 base 返回后计算当前层属性。
-
-base 调用不能放在条件、循环、异常块、lambda 或局部函数中，也不能在调用前写入 Token。某层没有 override 时正常继承
-基类实现。直接继承根类型的终端和直接重写根方法的第一层抽象 Token 不要求调用根类型的空实现；后续层再次 override
-时必须调用直接基类。
-
-定义抽象层的程序集负责验证自身源码方法体。下游 Generator 可以从 metadata 验证类型结构和方法签名，但不能重新证明
-已编译的方法体；因此发布可复用抽象 Token 的程序集也必须使用兼容版本的 AtomUI Generator。
+抽象层的属性在多个终端之间共享取值规则时，规则写在取值包里的普通静态辅助方法中，由各终端的推导调用，例如 Ant Design 的
+`AntDesignAbstractStandardButtonDerivation.DeriveShared(in context, global, token)`。抽象层位于跨端共用的 `AtomUI.Controls` 时，
+由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导方法，各端的取值包在自己的推导里调用。推导只使用 Token 类及其属性的类型，
+不调用控件的行为代码。规则见[编写设计语言](../../../guides/theming/writing-design-languages.md#4-取值包)。
 
 ## Identity 与运行时边界
 
@@ -166,10 +151,9 @@ base 调用不能放在条件、循环、异常块、lambda 或局部函数中�
 运行时流程保持：
 
 1. 终端 descriptor factory 直接构造终端 Token；
-2. `ThemeCompiler` 注入该 identity 的 Effective Global Token；
-3. evaluator 通过 virtual dispatch 执行完整默认计算链；
-4. 当前终端 identity 的 Own Token override 在默认计算后应用；
-5. descriptor 把扁平值投影到当前终端的资源键。
+2. `ThemeCompiler` 写入该 identity 的显式 Own Token 值并冻结这些槽位；
+3. 按当前语言的语言 Token 类型的继承链找到该终端的控件推导，在该控件的视图（终端 Token + 它所见的全局 Token）上运行一次；
+4. descriptor 把扁平值投影到当前终端的资源键。
 
 `ControlTokenDescriptor`、`ThemeCompiler`、`ThemeSchemaRegistry`、`ThemeSnapshot`、`ThemeTokenResourceProvider`、
 `ControlTokenAccessor` 和 `TokenResourceBinder` 不需要理解 Token 类型继承。未注册 exact Control type 继续明确失败，不能从
@@ -199,7 +183,6 @@ Generator 将标记类型分为两类：
 | `ATOMUIGEN021` | 抽象层或终端 Token 使用泛型 |
 | `ATOMUIGEN022` | 继承属性同名、隐藏或形成重复 schema key |
 | `ATOMUIGEN023` | 属性是 indexer、访问器不可访问、`init`-only/`required`，或使用 virtual/abstract/override 等无效形态 |
-| `ATOMUIGEN024` | `CalculateTokenValues` base 调用缺失、重复、非首条或参数错误 |
 | `ATOMUIGEN025` | 抽象 Token 名称不符合 `*Token` 约定 |
 | `ATOMUIGEN026` | Control Token 声明为嵌套类型；位于泛型容器时仍使用 `ATOMUIGEN021` |
 
@@ -215,9 +198,9 @@ Generator 将标记类型分为两类：
 - Control 产品视觉语义不下沉到 `AtomUI.Core`；
 - `AtomUI.Controls.Shared` 不因代码复用接管 Control Theme 语义。
 
-只有至少两个真实终端使用、名称和含义一致、默认计算依赖一致、平台差异能由终端继续表达时才提取共享抽象层。
+只有至少两个真实终端使用、名称和含义一致、各语言下的取值规则一致、平台差异能由终端继续表达时才提取共享抽象层。
 
-第三方包可以公开 `public abstract` Token 作为扩展契约。其属性名称、值类型、可访问性和默认计算语义都是公共兼容性
+第三方包可以公开 `public abstract` Token 作为扩展契约。其属性名称、值类型、可访问性和语义说明都是公共兼容性
 边界；普通 Package 仍按现有包级入口、逐控件片段和静态 descriptor 规则注册终端 Control。
 
 抽象 Token 不拥有 注册片段、factory 或动态 root。终端 factory 对具体类型的静态引用
@@ -226,7 +209,7 @@ Generator 将标记类型分为两类：
 ## 兼容性、性能与 AOT
 
 直接继承 `AbstractControlDesignToken` 的既有终端在增加 `sealed` 后，其 identity、Token 名称和值类型、slot、resource key、
-factory、evaluator、AXAML 用法和 schema revision 必须保持不变。
+factory、AXAML 用法和 schema revision 必须保持不变。
 
 把属性从终端移入抽象层时，只要终端类型、属性名称和值类型、stage、排序、resource key 和 identity 不变，终端 schema revision
 必须保持一致。schema fingerprint 不得包含声明层类型、程序集或继承深度。
@@ -247,8 +230,8 @@ factory、evaluator、AXAML 用法和 schema revision 必须保持不变。
 - 验证抽象 Token 可独立编译且不生成 identity 或注册产物；
 - 验证同程序集、跨程序集、NuGet metadata reference、多层和 sibling 终端；
 - 验证非 sealed、泛型、未标记或具体中间层、错误根类型、属性冲突和非法属性形态均构建失败；
-- 验证 base 调用正确、缺失、重复、条件性、非首条、错误参数和无 override 场景；
-- 验证 Light/Dark 参数和默认计算顺序贯穿完整继承链；
+- 验证每种已启用语言的取值包都为每个终端写全了继承来的属性（设计语言契约测试的 `ControlComplete`）；
+- 验证显式 Own Token 值在推导之前冻结，对继承来的属性同样生效；
 - 验证 sibling 终端的配置、snapshot、资源和值完全隔离；
 - 对比属性移动前后的 Token 名称、类型、slot、resource key 和 schema revision；
 - 验证生成源码不包含反射或动态构造，并执行真实 trimmed build、NativeAOT publish 和启动 smoke。

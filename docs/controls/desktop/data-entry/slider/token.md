@@ -82,7 +82,7 @@ Mark Token 服务 mark 点的尺寸和边框状态色。Mark 文本使用 Slider
 ```text
 SharedToken
     ↓
-SliderToken.CalculateTokenValues()
+SliderToken 的控件推导（Ant Design：AntDesignSliderDerivation）
     ↓
 SliderTheme / SliderTrackTheme / SliderThumbTheme
     ↓
@@ -116,7 +116,8 @@ SliderTrack、SliderThumb 是注册控件，但只作为 Slider 的模板部件�
 
 ## 5. 兼容性要求
 
-`SliderToken.CalculateTokenValues()` 使用 SharedToken 推导：
+`SliderToken` 只声明属性；取值由各设计语言取值包里的控件推导给出，Ant Design 为
+`AtomUI.Desktop.Controls.Themes.AntDesign/Slider/AntDesignSliderDerivation.cs`，它使用 SharedToken 推导：
 
 - rail 厚度。
 - thumb 圆点尺寸。

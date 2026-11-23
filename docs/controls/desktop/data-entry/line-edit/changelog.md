@@ -1,5 +1,10 @@
 # LineEdit Changelog
 
+## 2026-11-22
+
+- Token：输入框外框形态不再经 `AppearanceSettings` 传入，改为公开 Own Token `LineEditToken.TransparentOutlineBorder` / `BottomOutlineBorder`、`TextAreaToken.TransparentOutlineBorder` / `BottomOutlineBorder`（默认 `false`，见
+  [Token 设计](token.md)）。各设计语言渲染不变。
+
 ## 2026-11-21
 
 - Theme

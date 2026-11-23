@@ -64,6 +64,15 @@ TextArea 没有字号 Own Token：`TextAreaTheme.axaml` 按 `SizeType` 读取 Te
 `ResizeHandle` 叠放在输入表面之上，自己绘制两条斜线指示：命中区与指示边长都是 `ResizeHandleSize`，线条按边长比例排布，
 线宽读取 TextArea 的有效 `LineWidth`。
 
+### 2.6 外框形态 Token
+
+- `LineEdit.TransparentOutlineBorder`、`LineEdit.BottomOutlineBorder`
+- `TextArea.TransparentOutlineBorder`、`TextArea.BottomOutlineBorder`
+
+由设计语言选择的输入框外框形态：`TransparentOutlineBorder` 为真时外框在常态与悬停时保持透明边框，`BottomOutlineBorder`
+为真时只画底边。应用显式设置了对应全局 Token（`ColorBorder`、`ColorPrimaryHover`、`BorderThickness`）时以显式值为准。
+`InputControlFrame` 在主题快照变化时读取。Ant Design 与 PrimeNG 均为 `false`；Shadcn Luma、Rhea 透明边框，Sera 只画底边。
+
 ## 3. 控件专项模型中的 Token 使用
 
 LineEdit 家族 Token 使用路径：

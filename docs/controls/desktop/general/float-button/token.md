@@ -21,8 +21,15 @@ Token 按控件语义分类维护：
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `PrimaryColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `FloatButtonShadows`、`DescriptionLineHeight` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `DefaultBg`、`DefaultHoverBg`、`DefaultActiveBg`、`DefaultIconColor`、`PrimaryColor` |
+| 描边外观 | 设计语言选择的描边形态与说明文字样式。 | `HasOutline`、`OutlineOnlyShadow`、`CapsuleDescription`、`UppercaseDescription`、`DescriptionWeight`、`OutlineDescriptionLineHeight` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+描边外观 Token 只在 `HasOutline` 为真时生效：描边默认按钮与方形按钮、禁用时降低透明度，并启用其余五个 Token——
+`OutlineOnlyShadow` 让主色按钮改用 `FloatButtonShadows`，`CapsuleDescription` 让带说明的按钮成为胶囊形，
+`UppercaseDescription` 把纯文字说明转为大写，`DescriptionWeight` 是说明字重，`OutlineDescriptionLineHeight` 是说明行高
+（应用显式设置了 `DescriptionLineHeight` 时以后者为准）。Ant Design 与 PrimeNG 保持默认（`HasOutline` 为 `false`），
+Shadcn 打开描边。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -41,9 +48,8 @@ FloatButton 的控件专项模型通过 Theme 消费 Token：
 公开 owner 的有效值；图标颜色跟随按钮 `Foreground`，因为 `IconPresenter` 本身是带 Token 身份的公开控件，在它上面读取
 `OwnerTokenResource` 会落到 IconPresenter 自己的身份。
 
-浮动按钮族的阴影由自有 Token `FloatButtonShadows` 表达（默认取全局 `BoxShadowsSecondary`，Ant Design 渲染不变）：
-`AbstractFloatButtonTheme` 的独立按钮与嵌入圆钮、`FloatButtonGroupTheme` 与 `FloatButtonGroupHostTheme` 的方形容器均读该
-Token，设计语言算法（如 `AtomUI.Themes.PrimeNG` 的 `PrimeNGFloatButtonTokens`）可按语言覆盖，PrimeNG 下无阴影。
+`FloatButtonShadows` 控制独立按钮、嵌入圆钮及两个组主题中的方形容器阴影。Ant Design 取全局
+`BoxShadowsSecondary`，PrimeNG 取值包为这些表面提供空阴影。
 
 默认（Default）类型的表面与前景同样由自有槽位表达：`DefaultBg` 画在底层 `BackgroundFrame`，`DefaultHoverBg` /
 `DefaultActiveBg` 由 `:pointerover` / `:pressed` 样式块覆盖上层 `Frame`，`DefaultIconColor` 是按钮 `Foreground`（图标

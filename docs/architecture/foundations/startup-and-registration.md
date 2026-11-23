@@ -57,11 +57,12 @@ AppBuilder.Configure<App>()
               builder.UseLanguages(
                   LanguageTags.EnUS,
                   [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-              builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
               builder.UseAlibabaSansFont();
               builder.UseDesktopControls();
               builder.UseDesktopColorPicker();
               builder.UseDesktopDataGrid();
+              builder.UseAntDesign(ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
+              builder.WithInitialDesignLanguage<AntDesignLanguage>();
           })
           .StartWithClassicDesktopLifetime(args);
 ```
@@ -70,17 +71,26 @@ AppBuilder.Configure<App>()
 回调收集声明。提交时，应用生成的本地化 bootstrap 先注册应用 Catalog 和外部语言包 Bundle；随后分别构建全部支持语言
 Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot、Root ThemeContext 和唯一 ThemeManager。
 
+控件包声明 Token，取值来自设计语言。`UseAntDesign(...)` 登记语言和具名主题 Daybreak Blue，`WithDefaultTheme` 为该语言选择应用默认主题。
+应用启动映像链接已引用的取值包，提交时按已启用的控件包和语言匹配推导。只有初始语言进入主题求值。
+注册与启动规则见[设计语言架构](../systems/theming/design-languages.md#应用注册与启动-api)。
+
 构建后的主题运行流见 [AtomUI 主题系统](../systems/theming/runtime.md)。简化顺序是：
 
 1. 本地化 Builder 冻结 Catalog/Bundle Registry，为全部支持语言生成完整 Snapshot，并以默认语言初始化稳定
    `LanguageResourceProvider`、`ILanguageManager` 与 `ILocalizer`。
 2. 主题 Builder 解析 Application Id，收集生成式 Control descriptor、ControlTheme asset manifest、
-   `IThemeDefinitionResolver`、算法 descriptor 和不可变初始 `ThemeRequest` 模板。
-3. `ThemeSchemaRegistry` 构建并冻结 exact CLR type/identity、完整 Global Token schema、Control Own Token schema、
-   资产导出主题、RequiredTokenOwners 和 Semantic Part 契约。跨包校验在全部包收集后执行；无效 descriptor、
-   重复 type/identity、错误 Token owner、资源 URI 或 Semantic Part Theme 冲突在此失败。
+   `IThemeDefinitionResolver`、编译主题包、设计语言 descriptor（`DesignLanguageDescriptor`）、控件推导 descriptor
+   （`ControlDerivationDescriptor`），以及初始选择（`ThemeSelection`）或不可变初始 `ThemeRequest` 模板。
+3. `ThemeSchemaRegistry` 构建并冻结 exact CLR type/identity、完整 Global Token schema、Control Own Token schema、语言 Token
+   schema、资产导出主题、RequiredTokenOwners 和 Semantic Part 契约。跨包校验在全部包收集后执行；无效 descriptor、
+   重复 type/identity、错误 Token owner、资源 URI 或 Semantic Part Theme 冲突在此失败。同时执行设计语言的提交校验：至少
+   启用一种语言；每个已启用语言 × 每个已启用 Control 都能找到推导；同一（语言 Token 类型，Control）没有重复推导；取值包
+   记录的 Token Schema 摘要（`[assembly: CoversTokenSchema]`）与实际加载的控件包（`[assembly: TokenSchemaDigest]`）一致。
+   任一不满足即启动失败并指出缺少或过期的包。
 4. `ThemeCatalog` 执行内置、应用资源及可选用户目录 Resolver，并通过统一 Reader 和 Binder 生成 typed theme
-   definition。静态来源失败终止启动；用户来源失败时使用静态 Catalog 启动并保留 diagnostics。
+   definition，再为每个已启用语言加入隐式条目 `$<LanguageId>`。初始选择按语言已启用、主题属于该语言、轴在语言声明的
+   范围内解析为首帧 request，否则启动失败。静态来源失败终止启动；用户来源失败时使用静态 Catalog 启动并保留 diagnostics。
 5. FollowSystem 在编译前解析初始系统 appearance，并选择完整的 Light/Dark request 模板。
 6. `ThemeCompiler` 在 ThemeManager 挂载前同步生成首个不可变 `ThemeSnapshot`。
 7. Root ThemeContext 和唯一的 `ThemeTokenResourceProvider` 使用该 snapshot 初始化；ThemeManager 同时准备向
@@ -89,27 +99,29 @@ Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot�
    并且只发布一次初始 Token 资源通知。
 9. 后续主题更新由 ThemeManager 的五阶段 `ThemeTransaction` 提交；语言更新由 `LanguageManager` 独立交换预构建 Snapshot。
 
-如果应用需要首帧就是暗色或紧凑主题，应在 builder 阶段通过 `ThemeConfig` 配置初始主题算法，而不是在
-启动后调用运行期切换 API：
+如果应用需要首帧就是暗色或紧凑主题，应在 builder 阶段通过初始选择给出明暗与密度，而不是在启动后调用运行期切换 API：
 
 ```csharp
 .UseAtomUI(builder =>
 {
-    builder.WithInitialTheme(
-        IThemeManager.DEFAULT_THEME_ID,
-        new ThemeConfigBuilder()
-            .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
-            .Build());
     builder.UseDesktopControls();
+    builder.UseAntDesign(language => language.AddDesktopControls());
+    builder.WithInitialTheme(ThemeSelection
+        .Of<AntDesignLanguage>()
+        .WithAppearance(ThemeAppearance.Dark)
+        .WithDensity(DesignDensity.Compact));
 })
 ```
 
-`ThemeConfigBuilder` 只用于一次性构造并在 `Build()` 时防御性复制；传入 Manager 或
-`ThemeConfigProvider.Config` 的 `ThemeConfig` 及其集合均不可变。运行时更新必须替换完整 Config，不能修改已
-提交对象中的 Algorithms、Tokens 或 Controls 集合。
+只启用了一种语言且没有调用 `WithInitialTheme` 时，初始主题是该语言的默认变体。需要直接给出一份配置时仍可使用
+`WithInitialTheme(themeId, config)`，其中 `ThemeConfig` 以 `ThemeConfigBuilder` 的 `WithLanguage`、`WithStyle`、
+`WithAppearance`、`WithDensity`、`WithIdiom`、`WithToken`、`WithLanguageToken`、`WithControl` 构造。`ThemeConfigBuilder`
+只用于一次性构造并在 `Build()` 时防御性复制；传入 Manager 或 `ThemeConfigProvider.Config` 的 `ThemeConfig` 及其集合均不可变。
+运行时更新必须替换完整 Config，不能修改已提交对象中的 Tokens、LanguageTokens 或 Controls 集合。
 
-应用启动后的主题变化使用 `IThemeManager.ApplyThemeAsync(ThemeRequest)`。AtomUI 的主题 id 和 Compact
-算法不编码进 Avalonia `ThemeVariant`；运行时只根据已提交 snapshot 设置 Avalonia Light 或 Dark。
+应用启动后，面向最终用户的切换使用 `IThemeManager.ApplyAsync(ThemeSelection)`，直接提交一份配置使用
+`IThemeManager.ApplyThemeAsync(ThemeRequest)`。AtomUI 的主题 id、语言、风格与密度不编码进 Avalonia `ThemeVariant`；运行时
+只根据已提交 snapshot 设置 Avalonia Light 或 Dark。
 
 应用可以显式启用用户主题目录：
 
@@ -150,8 +162,10 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
   关联、资源优先级与构建期校验结果。internal 主题目标不被迫拥有 Token descriptor。
 - `ControlThemesProviders`：AXAML 主题 Provider。
 - `ThemeDefinitionResolvers`：内置资源、应用 `avares://` 资源和可选用户配置目录的统一主题来源解析器。
-- `ThemeAlgorithmDescriptors`：`ThemeAlgorithm.Default`、`Dark`、`Compact` 的生成式 descriptor。
-- `InitialThemeRequests`：固定主题或 FollowSystem 的 Light/Dark 不可变 root request 模板。
+- 编译主题包：语言包与应用的 `AtomUIThemeDefinition` 生成的 `GeneratedThemePackageRegistration`（例如 Ant Design 的 Daybreak Blue）。
+- `Languages`：语言包生成的 `GeneratedDesignLanguageRegistration` 登记的 `DesignLanguageDescriptor`（语言、轴与语言 Token schema）。
+- `Derivations`：取值包生成的 `GeneratedControlDerivationRegistration` 登记的 `ControlDerivationDescriptor`（静态、无捕获的委托）。
+- 初始主题：`WithInitialTheme(ThemeSelection)` 的初始选择，或固定主题 / FollowSystem 的 Light/Dark 不可变 root request 模板。
 - `ModuleInitializers`：与 ThemeLoaded 等主题生命周期无关的模块初始化回调。
 
 构建时会把这些内容注册到 `ThemeManager`。

@@ -106,15 +106,14 @@ marker 和 assembly target 不是启用动作。没有调用可选包入口时�
 
 ## 6. 包入口与执行模式
 
-普通无状态第三方入口只需正常注册 Provider：
+普通第三方包在入口注册生成的包定义。
 
 ```csharp
 public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-    => PackageMetadata.Register(
-        builder, static () => new AcmeControlThemesProvider());
+    => PackageMetadata.Definition.Register(builder);
 ```
 
-有生命周期逻辑的入口向生成 helper 提供明确的 provider factory、prepare 和 complete 回调。
+有依赖或生命周期逻辑的包可向 `Register` 传入配置回调，声明 `DependsOn`、`OnCommit` 和 `OnFirstUse`。
 生成器不读取入口方法体猜调用顺序；作者不写 TypeMap、入口身份 Attribute、AOT 模式分支或依赖名单。
 应用仍通过真实 `UseXxxControls()` 启用包。
 

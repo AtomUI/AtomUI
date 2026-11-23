@@ -1,37 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1"
+<!-- The Daybreak Blue theme of the Ant Design language, extended with control-level configuration and condition
+     sections to show the whole v2 format. The shipped theme is
+     src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign/Themes/DaybreakBlue.theme.xml.
+     The Controls reference AtomUI.Desktop.Controls and AtomUI.Desktop.Controls.DataGrid. -->
+<Theme xmlns="https://atomui.net/schemas/theme/v2"
        Id="DaybreakBlue"
        Name="Daybreak Blue"
-       Appearance="Light"
-       IsDefault="true">
-  <Algorithms>
-    <Algorithm Id="Default" />
-  </Algorithms>
+       Language="AntDesign">
   <Tokens>
     <Token Name="ColorPrimary" Value="#1677FF" />
     <Token Name="ColorLink" Value="#1677FF" />
     <Token Name="BorderRadius" Value="6" />
   </Tokens>
   <Controls>
-    <Control Catalog="AtomUI" Id="Button" Algorithm="Global">
+    <Control Catalog="AtomUI" Id="Button">
       <Tokens>
-        <Token Name="ColorPrimary" Value="#0958D9" />
+        <Token Name="ColorPrimaryHover" Value="#0958D9" />
         <Token Name="ContentFontSize" Value="14" />
       </Tokens>
     </Control>
-    <Control Catalog="AtomUI" Id="Input" Algorithm="Disabled">
-      <Tokens>
-        <Token Name="ActiveBorderColor" Value="#1677FF" />
-      </Tokens>
-    </Control>
-    <Control Catalog="AtomUI" Id="DataGrid">
-      <Algorithms>
-        <Algorithm Id="Default" />
-        <Algorithm Id="Compact" />
-      </Algorithms>
+    <Control Catalog="AtomUI" Id="ToolTip" Appearance="Dark" />
+    <Control Catalog="AtomUI" Id="DataGrid" Density="Compact">
       <Tokens>
         <Token Name="HeaderBg" Value="#FAFAFA" />
       </Tokens>
     </Control>
   </Controls>
+  <When Appearance="Dark">
+    <Controls>
+      <Control Catalog="AtomUI" Id="DataGrid">
+        <Tokens>
+          <Token Name="HeaderBg" Value="#1D1D1D" />
+        </Tokens>
+      </Control>
+    </Controls>
+  </When>
+  <When Density="Compact">
+    <Tokens>
+      <Token Name="BorderRadius" Value="4" />
+    </Tokens>
+  </When>
 </Theme>

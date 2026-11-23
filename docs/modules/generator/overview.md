@@ -31,9 +31,9 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | 能力 | 说明 |
 | --- | --- |
 | Token/schema 生成 | 生成 exact CLR type、owner-bearing identity、强类型资源键与单项 descriptor；抽象 Token 不产生运行时身份 |
-| Token 属性实现（`TokenPropertyImplementationGenerator`） | IDE 设计期可见的增量生成器，为 `[ControlDesignToken]`/`[GlobalDesignToken]` 的 partial Token 属性产出 `get => field` 与记录写入的 setter，并为 sealed 控件 Token 产出内部 `RunDefaultCalculation`；非 partial 报 `ATOMUIGEN049` |
-| 主题算法注册 | 为声明了 `[ThemeAlgorithm]` 或 `[ControlTokenAlgorithm]` 的包生成 `GeneratedThemeAlgorithmRegistration` 与每个 Catalog 的 `<Catalog>Algorithms`；为绑定了控件的终端 Token 生成 `IControlToken` 实现（只在完整构建时可见）；构建契约携带 `ThemeBuildAlgorithmAttribute`。见[编写主题算法](../../guides/theming/writing-theme-algorithms.md) |
-| 主题定义生成 | 从 XML 声明及 Token 契约生成注册与类型化默认值，保留运行时配置及算法语义；算法链引用构建期看不到的算法时报 `ATOMUITOKEN002` |
+| Token 属性实现（`TokenPropertyImplementationGenerator`） | IDE 设计期可见的增量生成器，为 `[ControlDesignToken]`/`[GlobalDesignToken]` 的 partial Token 属性产出 `get => field` 与检查冻结位的 setter（`IsFrozen(nameof(P))`）；非 partial 报 `ATOMUIGEN049` |
+| 设计语言与控件推导注册 | 为语言包生成 `GeneratedDesignLanguageRegistration`（每个 `[DesignLanguage]` 类连同 `[LanguageDesignToken]` 的 schema）与 `GeneratedLanguageTokenSchema`，为取值包生成 `GeneratedControlDerivationRegistration`（每个 `[ControlDerivation]` 类）；为绑定了控件的终端 Token 生成 `IControlToken` 实现（只在完整构建时可见）；构建契约携带 `ThemeBuildLanguageAttribute`。见[编写设计语言](../../guides/theming/writing-design-languages.md) |
+| 主题定义生成 | 从 XML v2 声明及语言 / Token 契约生成注册与类型化默认值（ABI v4），保留运行时配置语义；主题引用构建期看不到的语言、Control 或 Token 时报 `ATOMUITOKEN002` |
 | 主题资产生成 | 生成主题导出、RequiredTokenOwners、资产 factory 与顺序元数据；资源 wrapper 由构建任务提供 |
 | 承诺面与消费图 | Own Token 包内引用分析（Active / Reserved / 未引用）、全局 Token 消费图、生效测试骨架；分析产物不进入 schema 或 revision |
 | 主题消费 analyzer | `ATOMUIGEN040`–`048`（`046` 已退役）：读法与身份匹配、视觉字面量、作用域旁路、哨兵、LocalValue 覆盖、派生基值；见[编译期诊断规范](../../engineering/development/compiler-diagnostics-guidelines.md) |

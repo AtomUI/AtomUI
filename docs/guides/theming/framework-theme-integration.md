@@ -70,7 +70,9 @@ AtomUI 包应使用同一发布版本。`MyApp` 是本例的程序集名；替�
 ```csharp
 // Program.cs
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Localization;
 using AtomUI.Theme;
 using Avalonia;
@@ -90,8 +92,9 @@ internal static class Program
             .UseAtomUI(builder =>
             {
                 builder.UseDesktopControls();
+                builder.UseAntDesign(language => language.AddDesktopControls());
                 builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
-                builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                builder.WithInitialTheme(ThemeSelection.Of<AntDesignLanguage>().WithTheme(AntDesignThemes.DaybreakBlue));
             });
 }
 ```
@@ -219,9 +222,8 @@ ThemeVariant 的 Fluent 控件和应用 ThemeDictionaries 因此可以一起切�
 ```csharp
 // AppTheme.cs
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
-using AtomUI.Theme.Configuration;
 using Avalonia;
 
 namespace MyApp;
@@ -232,21 +234,21 @@ public static class AppTheme
     {
         var manager = Application.Current?.GetThemeManager()
             ?? throw new InvalidOperationException("Application is not initialized.");
-        var config = dark
-            ? new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build()
-            : new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default).Build();
-        return manager.ApplyThemeAsync(new ThemeRequest(
-            IThemeManager.DEFAULT_THEME_ID, config, ThemeTransitionReason.UserRequest));
+        var selection = (manager.CurrentSelection ?? ThemeSelection.Of<AntDesignLanguage>())
+            .WithAppearance(dark ? ThemeAppearance.Dark : ThemeAppearance.Light);
+        return manager.ApplyAsync(selection);
     }
 }
 ```
 
-本例基于内置默认主题。已有自定义主题的应用应在自己的不可变配置构建流程中保留主题 Id、Token 和 Control 配置，
-不要直接用示例配置替换整套产品配置。调用从 UI 线程发起；调用者必须处理返回状态和诊断：Committed/NoOp 表示
+本例在当前选择（语言、具名主题、密度、品牌色）之上只改明暗；还没有选择时从 Ant Design 的默认外观开始。明暗是设计语言的一个轴，
+由当前语言按自己的规则给出暗色取值，不需要拼算法链。所选主题固定了明暗时，选择里的明暗被忽略（解析结果的 `IgnoredAxes` 标明），
+应用的明暗开关应据此禁用。调用从 UI 线程发起；调用者必须处理返回状态和诊断：Committed/NoOp 表示
 已提交或无需更新，Superseded 表示被更新请求取代，Failed 表示失败。PublishDiagnostics 也需检查，不能把通知异常
 视为成功传播到所有消费者。
 
-跟随系统使用 `WithFollowSystemThemes(light, dark)` 注册两个有效 ThemeRequest，由 AtomUI 的现有流程接收系统变化。
+跟随系统使用 `ThemeSelection.FollowSystemAppearance()`：主题管理器按平台当前的明暗解析选择，平台变化时重新应用。需要在两种明暗下
+使用两份不同的请求时，也可以用 `WithFollowSystemThemes(light, dark)` 注册两个有效 ThemeRequest，由 AtomUI 的现有流程接收系统变化。
 第三方框架若有独立 ThemeManager，由应用在其公开 API 边界做明确适配；不建立两个管理器互相写回的循环。
 局部页面的 ThemeConfigProvider、独立 Window 和 Popup 需分别验证，不能从全局窗口的切换结果推断全部作用域已同步。
 

@@ -80,10 +80,10 @@ Flyout 的弹层表面 `FlyoutPresenter` 是 `ArrowDecoratedBox`，其外观 Tok
 | `ContentMinHeight` | `ControlHeight` | 框体最小高度。 |
 | `ArrowStrokeColor` / `ArrowStrokeThickness` | 7% 黑 / 1 | 无边框时箭头自身的描边。 |
 
-Ant Design 默认 `ContentBorderThickness` 为 0，渲染与此前逐像素一致。ToolTip 主题把自身箭头框体的 `BorderThickness`
-固定为 0，不受该 Token 影响。PrimeNG 预设经控件算法写入这些 Token，取值见 `src/AtomUI.Themes.PrimeNG/README.md` 的
-Overlays 一节。
+Ant Design 的 `ContentBorderThickness` 默认为 0。ToolTip 主题将自身箭头框体的 `BorderThickness` 固定为 0。
+PrimeNG 的取值包从 Popover 配方读取框体内边距和边框颜色，框体描边厚度使用当前 `LineWidth`。
+[PrimeNG 弹层取值](../../../../../src/DesignLanguages/PrimeNG/AtomUI.DesignLanguages.PrimeNG/README.md#overlays-popovers-select-panels-menus)
 
 ## 独立 Token 身份与共享计算
 
-公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 公式；Controls[Popup] 的圆角不再改变这个公开 presenter。
+公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 的定义与取值公式（Ant Design：共享辅助类 `AntDesignAbstractPopupCornerDerivation`）；Controls[Popup] 的圆角不再改变这个公开 presenter。

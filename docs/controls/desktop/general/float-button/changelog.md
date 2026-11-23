@@ -16,6 +16,9 @@
   - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - Known limits
   - Windows 10 实机（Gallery，150% 缩放）只验证了 FloatButton 自身 Badge 画在各自表面之上、未被相邻 FloatButton 盖住。FloatButton 盖住内容 Badge 没有 Gallery 示例，Windows 未实测，仅有 Headless 证据；macOS 与 Linux 未实测。
+- Token：`FloatButtonOutlineAppearance` 不再经 `AppearanceSettings` 传入，它的字段改为 `FloatButtonToken` 上的六个公开 Own Token：
+  `HasOutline`、`OutlineOnlyShadow`、`CapsuleDescription`、`UppercaseDescription`、`DescriptionWeight`、
+  `OutlineDescriptionLineHeight`（见 [FloatButton Token 设计](token.md)）。默认值等于此前没有描边外观时的行为，各设计语言渲染不变。
 
 ## 2026-11-20
 

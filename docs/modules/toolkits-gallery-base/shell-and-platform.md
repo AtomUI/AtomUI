@@ -81,12 +81,21 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
 
     public IReadOnlyList<ThemeInfo> AvailableThemes { get; }
     public string CurrentThemeId { get; }
+    public IReadOnlyList<string> DesignLanguages { get; }
+    public string? CurrentDesignLanguage { get; }
+    public bool CanChooseBrandColor { get; }
+    public Color? BrandColor { get; }
+    public bool CanChooseNeutralColor { get; }
+    public Color? NeutralColor { get; }
     public ThemePreference AppearanceMode { get; }
     public bool IsLightAppearanceMode { get; }
     public bool IsDarkAppearanceMode { get; }
     public bool IsSystemAppearanceMode { get; }
 
     public ReactiveCommand<string, Unit> SwitchThemeCommand { get; }
+    public ReactiveCommand<string, Unit> SwitchDesignLanguageCommand { get; }
+    public ReactiveCommand<Color?, Unit> SetBrandColorCommand { get; }
+    public ReactiveCommand<Color?, Unit> SetNeutralColorCommand { get; }
     public ReactiveCommand<ThemePreference, Unit> SetAppearanceModeCommand { get; }
     public ReactiveCommand<bool, Unit> ToggleDarkModeCommand { get; }
     public ReactiveCommand<bool, Unit> ToggleCompactModeCommand { get; }
@@ -203,11 +212,11 @@ Footer
 | 菜单 | 配置开关 | 职责 |
 |---|---|---|
 | Window Options | `IsWindowOptionsMenuEnabled` | 控制 caption button、移动、缩放 |
-| Theme | `IsThemeMenuEnabled` | 主题目录、Light/Dark/Follow System、紧凑、动效、WaveSpirit |
+| Theme | `IsThemeMenuEnabled` | 设计语言、品牌色与中性色、具名主题、Light/Dark/Follow System、紧凑、动效、WaveSpirit |
 | Language | `IsLanguageMenuEnabled` | 切换应用支持的 `LanguageTag` |
 
-AtomUIGallery Desktop 窗口根据 `AvailableThemes` 动态建立同组 Radio 项，并以 `CurrentThemeId` 设置选中态；菜单不
-写死主题 Id、名称或颜色。主题选择、Appearance 三态和运行时算法组合的完整规则见
+AtomUIGallery Desktop 窗口根据 `DesignLanguages` 与 `AvailableThemes` 动态建立同组 Radio 项，并以 `CurrentDesignLanguage`、
+`CurrentThemeId` 设置选中态；菜单不写死主题 Id、名称或颜色。设计语言与主题选择、品牌色、Appearance 三态和密度的完整规则见
 [GalleryBase 主题与本地化设计](theming-localization.md)。
 
 语言菜单第一阶段提供 AtomUI 已支持的语言：

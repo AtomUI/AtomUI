@@ -4,14 +4,14 @@
 
 ## 1. Scope 与边界
 
-`NumericUpDownToken` 与 `ButtonSpinnerToken` 继承 `AbstractButtonSpinnerToken`。它们各自按有效 Global Token 计算
-Own 值；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，NumericUpDown 的配置也不改变独立 ButtonSpinner。
+`NumericUpDownToken` 与 `ButtonSpinnerToken` 继承 `AbstractButtonSpinnerToken`。它们的 Own 值由各自的控件推导按该终端的有效
+Global Token 给出（Ant Design 以共享辅助类 `AntDesignAbstractButtonSpinnerDerivation` 复用抽象层的取值规则）；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，NumericUpDown 的配置也不改变独立 ButtonSpinner。
 
 ## 2. Own Token
 
 - `HandleWidth`、`HandleIconSize`：浮动步进柄的宽度与上下箭头尺寸。
 - `HandleBg`、`FilledHandleBg`、`HandleHoverBg`、`HandleActiveBg`、`HandleIconColor`、`HandleHoverColor`、`HandlePressedColor`、`HandleBorderColor`：正常、Filled、悬停、按下、图标与边框视觉。
-- `FilledHandleBg` 根据该终端的有效 `HandleBg` 派生；显式 `HandleBg` 先保留，再计算派生值。
+- `FilledHandleBg` 根据该终端的有效 `HandleBg` 派生；显式给出的 `HandleBg` 在推导之前冻结，派生值随之跟随。
 
 - `InputFontSizeSM`：Small 字号，默认等于 `FontSize`（与 antd 一致：小号输入框不缩小字号）；PrimeNG 取 `FontSizeSM`。
 

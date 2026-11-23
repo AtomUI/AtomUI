@@ -1,378 +1,237 @@
-# 主题算法策略化迁移指南（未发布）
+# 设计语言迁移指南（未发布）
 
 [English](unreleased-theme-algorithms-api-changes.md)
 
-本文说明在 6.2.14 之上主题算法的变更。主题算法现在是可插拔的策略：算法身份从封闭的枚举改为开放的
-`(Catalog, Id)`，主题包和应用可以注册自己的算法，一个算法除了 Map Token 还可以计算 Alias Token 和逐控件的 Token。
-`AtomUI.Themes.PrimeNG` 是第一个这样做的包。发布版本号尚未确定，发布时由发布负责人把本文并入
-`docs/releases/<version>-api-changes.zh-CN.md`。版本要点见[更新日志](../../CHANGELOG.zh-CN.md)，算法作者指南见
-[编写主题算法](../guides/theming/writing-theme-algorithms.md)。
+本指南说明从 6.2.15 升级的改动。主题系统改为以**设计语言**组织：语言包（例如 `AtomUI.DesignLanguages.AntDesign`）
+负责种子与全局推导，控件包只声明自己的 Token，每个控件包在每种语言下有一个取值包（例如
+`AtomUI.Desktop.Controls.Themes.AntDesign`）写出控件取值。主题按语言、风格、明暗与密度选择，不再按算法链。发布版本
+尚未确定，由发布负责人并入 `docs/releases/<版本>-api-changes.md`。细节见[编写设计语言](../guides/theming/writing-design-languages.md)、
+[主题定义 XML v2](../reference/theming/theme-definition-xml-v2.md) 与[编译主题包生成 ABI v4](../reference/theming/compiled-theme-abi-v4.md)。
+
+除[新增 Token 与修正](#新增-token-与修正)列出的有意修正外，Ant Design 的渲染与 6.2.15 完全一致。
 
 ## 速查
 
-| 范围 | 6.2.14 | 现在 / 迁移 |
+| 范围 | 6.2.15 | 现在 / 迁移 |
 | --- | --- | --- |
-| `ThemeAlgorithm` | `enum`（`Default = 0`、`Dark = 1`、`Compact = 2`） | 只读结构体身份 `(Catalog, Id)`；`ThemeAlgorithm.Default` / `Dark` / `Compact` 名称不变。二进制不兼容；`switch`/`case`、`(int)` 转换、`const`、`Enum.*`、把 `default(ThemeAlgorithm)` 当作 Default 都不再可用；用 `==` 比较 |
-| `ThemeAlgorithmAttribute` | `(ThemeAlgorithm algorithm, int revision, ThemeAppearanceEffect appearanceEffect)` | `(string catalog, string id, int revision, ThemeAppearanceEffect appearanceEffect)` |
-| `ThemeAlgorithmDescriptor` | 构造参数与 `Algorithm` 属性为枚举 | 形状不变，类型为结构体；拒绝 `default(ThemeAlgorithm)` |
-| `DefaultThemeVariantCalculator.Algorithm`、`DarkThemeVariantCalculator.Algorithm`、`CompactThemeVariantCalculator.Algorithm` | `public const ThemeAlgorithm` | 已删除；改用 `ThemeAlgorithm.Default` / `Dark` / `Compact` |
-| `ThemeAlgorithmTypeConverter`（AXAML） | `DefaultAlgorithm`、`DarkAlgorithm`、`CompactAlgorithm` | `Default`、`Dark`、`Compact` 或 `Catalog:Id`；`...Algorithm` 写法被拒绝 |
-| `IThemeManagerBuilder` | — | 新增 `AddThemeAlgorithms`、`AddControlTokenAlgorithms`；自己实现该接口的代码要补上 |
-| 新的算法 API | — | `IThemeAliasAlgorithm`、`IControlTokenAlgorithm<TToken>`、`ControlTokenAlgorithmAttribute`、`ThemeAlgorithmContext`、`ThemeAlgorithmContractException`、`ThemeAlgorithmContractViolationKind`、`IControlToken`、`ControlTokenAlgorithmDescriptor`、`ThemeBuildAlgorithmAttribute`；无需操作 |
-| 生成的 `<Catalog>Algorithms` | — | 包里每个算法 Catalog 一个公开静态类（例如 `PrimeNGAlgorithms.AuraDark`）；无需操作 |
-| `AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid 的控件 Token 类 | 148 个 `internal`，2 个 `public` | 全部 150 个为 `public partial`（117 个终端类、33 个抽象中间层），Token 属性为 partial 属性。公开 API 面增大；抽象中间层可被继承，其 `protected` 辅助方法属于公开 API |
-| 第三方控件 Token 类 | 普通类、自动属性、`public override CalculateTokenValues` | `partial` 类、`partial` 属性（否则 `ATOMUIGEN049`）、`protected override CalculateTokenValues`（否则 CS0507） |
-| `DesignToken` 的全局 Token 属性（256 个） | 自动属性 | partial 属性；调用方无变化 |
-| 新增全局 Alias Token `ControlItemColorActive` | — | `ControlItemBgActive`（选中项）上的文字色，默认 `ColorText`，主题不设置时不变；各控件的选中文字 Token 默认取它（见下文） |
-| `AbstractControlDesignToken.CalculateTokenValues` | `public virtual` | `protected virtual`；外部不能再调用 |
-| `AbstractDesignToken` | — | 新增 `protected void RecordWrite(string)`，由生成的 setter 调用，不要自己调用 |
-| 主题 XML `<Algorithm>` | `Id` 只能是 `Default`、`Dark`、`Compact` | 新增可选 `Catalog`（缺省 `AtomUI`）；`Id` 接受任意合法标识符。现有文件仍然有效 |
-| 全局 Alias 显式值 | 在 Alias 公式之后写入，派生 Alias 不跟随 | 带动由它派生的 Alias（修复）。显式设置过 Alias Token 的主题，编译结果可能变化 |
-| 编译主题输入（构建工具中间文件） | 格式版本 4，算法为整数 | 版本 6，算法为 `Catalog`/`Id`，并携带设计语言元数据；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」 |
-| 设计语言与品牌色 | — | 新增 `ThemeDensity`（`Normal`、`Compact`）与 `ThemeBrandColorSupport`（`Fixed`、`Seed`）两个枚举；`ThemeInfo` 新增 `init` 属性 `DesignLanguage`、`Density`、`BrandColor`、`Algorithms`（定义自身的算法链）；新增 `ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`；`CompiledThemeProgram` 新增受保护的 ABI 2 构造函数。ABI 1 编译包继续加载并取缺省值；无需处理（见下文） |
-| 中性色轴 | — | 新增可空种子 `DesignToken.ColorNeutral`（中性色阶代表色，Ant Design 计算器忽略）、`ThemeInfo.NeutralColor` / `NeutralAccentColor`、`ThemeSelection.NeutralColor`、`ThemeSelectionResult.NeutralSeed` / `NeutralColorIgnored`、`ThemeSelectionResolver.NeutralColorSupport`、XML 属性 `NeutralColor="Seed|Fixed"`、诊断 `ATMTHM3106`–`ATMTHM3108`；编译主题包以 ABI 3 发布（ABI 1/2 照常加载并取默认值） |
-| `AtomUI.Themes.Shadcn` 主题 Id | — | 按 shadcn/ui 现行标准重做：旧 `ShadcnZinc` / `ShadcnSlate` / `ShadcnStone`（未发布到 NuGet）替换为 8 种 Style `ShadcnVega` … `ShadcnRhea`，均为 `BrandColor="Seed"` 且 `NeutralColor="Seed"`；按设计语言 `Shadcn.<Style>` 切换 |
-| `ToolTipToken.ToolTipShadows`、`DrawerToken.EdgeBorderColor` / `EdgeBorderThickness` | — | 新增 Own Token；默认值等于既有渲染，Ant Design 不变 |
-| 编译主题输入（构建工具中间文件） | 格式版本 6 | 版本 7，携带 `NeutralColor`；旧中间文件照旧报「Compiled theme input format is out of date; rebuild the project.」 |
-| PrimeNG 预设 | XML 值表加 Ant 派生值 | 由六个 PrimeNG 算法计算；颜色有可见变化（见下文） |
-| `ProgressBarToken.InnerLabelColor` | — | 新增公开 Own Token：内嵌百分比文字的深色候选（默认 `ColorTextLabel`，即主题原先读取的值）；主题不设置时不变 |
-| 带边框的 `ArrowDecoratedBox` | `BorderThickness` 非零时内置主题隐藏箭头 | 保留箭头，框体与箭头绘制为一条整体描边。新增公开 Own Token `ArrowDecoratedBoxToken.ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`；默认值保持 Ant Design 不变（见下文） |
+| 启动 | `UseDesktopControls()`（以及 ColorPicker、DataGrid）自带 Ant Design 主题 | 显式启用语言：`UseAntDesign(language => language.AddDesktopControls())`；一种语言都没启用时启动抛出 "No design language is enabled; enable one (for example builder.UseAntDesign(...))." |
+| 包 | Ant Design 公式在 `AtomUI.Core` 与各控件 Token 类里 | 新包 `AtomUI.DesignLanguages.AntDesign`、`AtomUI.Controls.Themes.AntDesign`、`AtomUI.Desktop.Controls.Themes.AntDesign`、`AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign`、`AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign` |
+| `ThemeAlgorithm` 与算法链 | 枚举 `Default` / `Dark` / `Compact`、`ThemeConfigBuilder.WithAlgorithms`、主题 XML 的 `<Algorithms>` | 删除。明暗（`ThemeAppearance`）、密度（`DesignDensity`）、风格（`DesignStyle`）、形态（`DesignIdiom`）是相互独立的参数 |
+| 计算器 | `DefaultThemeVariantCalculator`、`DarkThemeVariantCalculator`、`CompactThemeVariantCalculator`、`AbstractThemeVariantCalculator`、`IThemeVariantCalculator`、`IThemeVariantCalculatorFactory`、`IThemeAlgorithm`、`ThemeAlgorithmAttribute`、`ThemeAlgorithmDescriptor`、`ThemeAppearanceEffect`、`ThemeAlgorithmTypeConverter` | 删除；Ant Design 的公式在 Ant Design 语言包里 |
+| 色彩工具 | `AtomUI.Theme.Algorithms`（`PaletteGenerator`、`PresetPalettes`、`PresetPrimaryColor`、`PresetColorType`、`PaletteInfo`、`PaletteGenerateOption`、`ColorMap`） | 同名类型移到 `AtomUI.Theme.Derivation`，改 `using` 即可；同一命名空间新增公开的 `CalculatorUtils`、`FontSizeInfo`、`RadiusInfo` |
+| `IThemeManager` | `AvailableThemes` | `Themes`（另列出每种已启用语言的隐式默认条目 `$<语言>`）；新增 `Languages`、`CurrentSelection`、`ApplyAsync(ThemeSelection)` |
+| `ThemeCatalogReloadResult` | `AvailableThemes` | `Themes` |
+| `ThemeInfo` | `(Id, Name, Appearance, IsDefault)` 及 `AccentColor` | `(Id, Name, Language)`，`init` 属性 `Style`、`Appearance`（可空）、`Density`、`LockedSeeds`、`SeedValues`（主题自己给出的可调种子值）、`AccentColor`、`IsLanguageDefault`；`IsDefault` 删除 |
+| `ThemeConfig` / `ThemeConfigBuilder` | `Algorithms`、`WithAlgorithms(...)` | `Language`、`Style`、`Appearance`、`Density`、`Idiom`、`LanguageTokens`；`WithLanguage`、`WithStyle`、`WithAppearance`、`WithDensity`、`WithIdiom`、`WithLanguageToken` |
+| `ControlAlgorithmMode` | 控件配置的四种控件算法模式 | 删除；控件级取值只替换该值，控件级种子或轴使该控件成为独立的求值单元 |
+| 主题定义 XML | v1 | 只支持 v2；用 `dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<目录> [-p:AtomUIThemeDefinitionOutput=<目录>]` 一次性换写 |
+| 编译主题包 | ABI 1 | ABI 4；用当前生成器重新构建 |
+| 控件 Token 类 | 多数为 `internal`，取值在 `CalculateTokenValues` 里计算 | `public partial`，只有声明；取值来自所用语言的取值包 |
+| `SharedTokenResourceValue` | 公开 | 删除 |
 
-## `ThemeAlgorithm` 改为身份结构体
+## 启用设计语言
 
 ```csharp
-public readonly struct ThemeAlgorithm : IEquatable<ThemeAlgorithm>
-{
-    public ThemeAlgorithm(string catalog, string id); // both validated as theme schema identifiers
-    public string Catalog { get; }
-    public string Id { get; }
-    public static ThemeAlgorithm Default { get; } // AtomUI:Default
-    public static ThemeAlgorithm Dark { get; }    // AtomUI:Dark
-    public static ThemeAlgorithm Compact { get; } // AtomUI:Compact
-}
+// 以前（6.2.15）
+builder.UseAtomUI(root => root
+    .UseDesktopControls()
+    .UseDesktopColorPicker()
+    .UseDesktopDataGrid());
+
+// 现在
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;   // AddDesktopControls, AddDesktopColorPicker, AddDesktopDataGrid
+
+builder.UseAtomUI(root => root
+    .UseDesktopControls()
+    .UseDesktopColorPicker()
+    .UseDesktopDataGrid()
+    .UseAntDesign(language => language
+        .AddDesktopControls()
+        .AddDesktopColorPicker()
+        .AddDesktopDataGrid()));
 ```
 
-相等性按 `Catalog`、`Id` 的序数比较；`ToString()` 返回 `Catalog:Id`（`AtomUI:Dark`，原来是 `Dark`）。
+- `UseDesktopControls()`、`UseDesktopColorPicker()`、`UseDesktopDataGrid()` 照旧启用控件包。
+- `UseAntDesign(...)` 启用语言及其官方主题（Daybreak Blue）。`Add*()` 只登记取值包，不启用控件包。
+- 每个已启用的控件包在每种已启用的语言下都要有取值包；缺了的在启动时报错，消息写出缺少的取值包名。
 
-最常见的写法不用改：
+## 选择主题
 
 ```csharp
+// 以前
+await themeManager.ApplyThemeAsync(new ThemeRequest("DaybreakBlue", config, ThemeTransitionReason.UserRequest));
+
+// 现在：按语言与变体
+await themeManager.ApplyAsync(
+    ThemeSelection.Of("AntDesign")
+        .WithAppearance(ThemeAppearance.Dark)
+        .WithDensity(DesignDensity.Compact)
+        .WithSeed("ColorPrimary", "#1677FF"));
+```
+
+- `ThemeSelection` 携带 `Language`、`Style`、可选的具名主题 `ThemeId`、`Appearance`（或 `FollowSystemAppearance()`）、
+  `Density`、全局种子 `Seeds` 与语言种子 `LanguageSeeds`。`ThemeSelection.Of<TLanguage>()` 用语言类型代替 Id。
+- `IThemeManager.Languages` 以 `DesignLanguageInfo`（`Id`、`Styles`、`DefaultStyle`、`Densities`、`Idioms`、
+  `AdjustableSeeds`）列出每种已启用的语言；语言、风格、密度与品牌色菜单由它生成。
+- 每种已启用的语言在主题目录里有隐式条目 `$<语言>`（`ThemeInfo.LanguageDefaultId`，标记 `IsLanguageDefault`），
+  没有主题文件也能选中该语言。
+- 未知的语言、主题或轴取值抛出 `ThemeSelectionException`。
+- `ApplyThemeAsync(ThemeRequest)` 提交一份带完整运行时配置（含控件级取值）的主题请求。`IThemeManager.DEFAULT_THEME_ID` 已删除：
+  核心不再写死任何语言的主题 id，改用 Ant Design 语言包的 `AntDesignThemes.DaybreakBlue`。
+- `IThemeManagerBuilder.WithInitialTheme(ThemeSelection)` 设定启动时的选择。
+
+## 主题配置
+
+`ThemeConfig.Algorithms` 与 `ThemeConfigBuilder.WithAlgorithms` 已删除，直接写变体：
+
+```csharp
+// 以前
+new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark, ThemeAlgorithm.Compact).Build();
+
+// 现在
 new ThemeConfigBuilder()
-    .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+    .WithAppearance(ThemeAppearance.Dark)
+    .WithDensity(DesignDensity.Compact)
     .Build();
 ```
 
-依赖枚举的代码要改写：
+每个轴各自从外层作用域继承，内层不再整体替换算法链。显式取值在任何推导运行之前就固定下来：主题或配置给出的值不会被
+覆盖，由它派生的值跟着它变。
 
-```csharp
-// Before
-switch (algorithm)
-{
-    case ThemeAlgorithm.Dark:
-        ...
-}
-var code = (int)algorithm;
-const ThemeAlgorithm fallback = ThemeAlgorithm.Default;
+## 主题定义 XML v2
 
-// After
-if (algorithm == ThemeAlgorithm.Dark)
-{
-    ...
-}
-var key = algorithm.ToString();                       // "AtomUI:Dark"
-static readonly ThemeAlgorithm Fallback = ThemeAlgorithm.Default;
+主题文件改用 v2 格式。同一语言、同一风格的四个文件（浅色、深色、紧凑、深色紧凑）合为一个文件，差异写在 `<When>` 段里。
+`<Algorithms>`、`IsDefault`、`DesignLanguage`、`BrandColor`、`NeutralColor` 已删除：`<Theme>` 上的 `Language` 与 `Style`
+给出分组，Token 上的 `Locked` 说明哪些值用户不能替换。v1 文件不再读取；用户主题目录里的 v1 文件报 `ATMTHM1004` 并
+给出换写命令，换写之前该目录不生效。一次性换写：
+
+```bash
+dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<目录>
 ```
 
-`default(ThemeAlgorithm)` 不再表示 `Default`：它的 `Catalog` 为空。配置规范化报 `ATMTHM4004`（「Algorithm identity is uninitialized.」），
-描述符构造函数抛 `ArgumentException`（「Theme algorithm identity is uninitialized.」）。持久化的整数值
-无法换回身份，改为持久化 `Catalog` 与 `Id`。
+命令缺省就地改写，并删除被合并的变体文件；另可用 `-p:AtomUIThemeDefinitionOutput=<目录>` 输出到别处。见
+[主题定义 XML v2](../reference/theming/theme-definition-xml-v2.md) 第 14 节。
 
-针对 6.2.14 编译、用到 `ThemeAlgorithm` 的程序集（包括原来输出 `(ThemeAlgorithm)1` 的编译主题程序）必须重新构建。
+## 编译主题包
 
-## 声明算法
+生成器产出编译主题 ABI 4，记录包所需的语言（清单作用域 `language`）。按 ABI 1 构建的包不再加载，需重新构建。
 
-```csharp
-// Before
-[ThemeAlgorithm(ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark)]
+## 控件 Token 类与第三方控件包
 
-// After
-[ThemeAlgorithm("Acme", "Brand.Dark", 1, ThemeAppearanceEffect.Dark)]
-```
+`AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid 的全部控件 Token 类为 `public partial`，只含声明。
+`CalculateTokenValues` 与在构造函数里赋值的写法已删除；Ant Design 的取值原样移入各 Ant Design 取值包的
+`[ControlDerivation]` 类。
 
-用自己的 Catalog；`AtomUI` 是三个内置算法的 Catalog。手工构造描述符的形状不变，只是改用结构体：
-`new ThemeAlgorithmDescriptor(new ThemeAlgorithm("Acme", "Brand"), 1, ThemeAppearanceEffect.Light, static () => new AcmeBrandAlgorithm())`。
-
-`DefaultThemeVariantCalculator`、`DarkThemeVariantCalculator`、`CompactThemeVariantCalculator` 的
-`public const ThemeAlgorithm Algorithm` 已删除。把 `DefaultThemeVariantCalculator.Algorithm` 换成
-`ThemeAlgorithm.Default`（`Dark`、`Compact` 同理）。
-
-## AXAML 类型转换器的写法
-
-`ThemeAlgorithmTypeConverter` 现在接受 `Default`、`Dark`、`Compact` 和 `Catalog:Id`。把 AXAML 里的
-`DefaultAlgorithm`、`DarkAlgorithm`、`CompactAlgorithm` 换成 `Default`、`Dark`、`Compact`。
-
-## `IThemeManagerBuilder` 新增两个成员
+第三方控件包声明自己的 Token，并为支持的每种语言发布一个取值包：
 
 ```csharp
-IThemeManagerBuilder AddThemeAlgorithms(IEnumerable<ThemeAlgorithmDescriptor> algorithms);
-IThemeManagerBuilder AddControlTokenAlgorithms(IEnumerable<ControlTokenAlgorithmDescriptor> algorithms);
-```
-
-生成的 `GeneratedThemeAlgorithmRegistration.Register(builder)` 调用它们。只有自己实现 `IThemeManagerBuilder` 的代码
-（例如测试替身）需要补上。
-
-## 新的算法阶段
-
-算法现在有三个阶段。Map 阶段（`IThemeAlgorithm.Evaluate`）不变，新增两个可选阶段：
-
-| 类型 | 用途 |
-| --- | --- |
-| `IThemeAliasAlgorithm : IThemeAlgorithm` | `EvaluateAlias(in ThemeAlgorithmContext, DesignToken)` 写 Alias 阶段的全局 Token，与 Map 阶段是同一个类 |
-| `IControlTokenAlgorithm<TToken>` | `EvaluateGlobal` 写只对该控件生效的全局 Token，`EvaluateOwn` 写该控件的 Own Token；每个控件一个类 |
-| `ControlTokenAlgorithmAttribute(catalog, id, revision)` | 把控件阶段类关联到算法，可重复 |
-| `ThemeAlgorithmContext` | 整条链的 `Appearance` 与链上的 `Algorithms` |
-| `ThemeAlgorithmContractException`、`ThemeAlgorithmContractViolationKind` | 阶段写了本阶段之外的 Token、写入不稳定或自身抛异常时抛出 |
-| `IControlToken`、`ControlTokenAlgorithmDescriptor` | Token 类生成的控件身份；不用反射的控件阶段描述符 |
-| `ThemeBuildAlgorithmAttribute` | 把算法身份传给引用方程序集的构建契约 |
-
-优先级固定为：Ant 默认公式 < 算法 < 主题显式值 < 更内层作用域的显式值。内置主题的编译结果与之前相同。不写算法就
-不需要做任何事；写算法见[编写主题算法](../guides/theming/writing-theme-algorithms.md)。
-
-## 控件 Token 类改为 public partial
-
-`AtomUI.Controls`、`AtomUI.Desktop.Controls`、`AtomUI.Desktop.Controls.ColorPicker`、`AtomUI.Desktop.Controls.DataGrid`
-有 148 个控件 Token 类（116 个终端类加 32 个抽象中间层）改为公开；加上原本就公开的 `ColorPickerToken` 与
-`AbstractColorPickerToken`，这四个包的 150 个控件 Token 类（117 个终端类、33 个抽象中间层）现在都是 `public partial`，主题包可以在控件阶段直接写它们。`AtomUI.Toolkits.GalleryBase` 的 8 个 Token 类保持 `internal`。
-Token 的名称和类型此前已通过 `XxxTokenKind` 和 `ThemeBuildToken` 特性公开，这次多出的是类型本身。
-
-公开的抽象中间层（例如 `AbstractButtonGeometryToken`）现在可以被其他程序集继承，它们的 `protected` 成员（例如
-`CalculateContentPadding`）从此属于公开 API。
-
-第三方 Token 类要改成新写法：
-
-```csharp
-// Before
-[ControlDesignToken]
-internal sealed class RatingToken : AbstractControlDesignToken
-{
-    public double StarSize { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        StarSize = EffectiveGlobalToken.ControlHeight;
-    }
-}
-
-// After
+// 控件包：只有声明
 [ControlDesignToken]
 public sealed partial class RatingToken : AbstractControlDesignToken
 {
     public partial double StarSize { get; set; }
+}
 
-    protected override void CalculateTokenValues(bool isDarkMode)
+// 取值包（例如 Acme.Controls.Themes.AntDesign）
+[ControlDerivation]
+internal sealed class AntDesignRatingDerivation : IControlDerivation<AntDesignToken, RatingToken>
+{
+    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<RatingToken> view)
     {
-        StarSize = EffectiveGlobalToken.ControlHeight;
+        view.Token.StarSize = view.Global.ControlHeight * 0.625;
     }
 }
 ```
 
-- 生成器为每个 partial Token 属性产出另一半（`get => field;` 和调用 `RecordWrite` 的 setter）。Token 类或属性不是
-  partial 时报 `ATOMUIGEN049`（Error），该属性不产出实现。属性初始化器可以留在声明处。
-- `AbstractControlDesignToken.CalculateTokenValues` 现在是 `protected virtual`，写 `public override` 会报 CS0507，
-  Token 类之外的代码不能再调用它。
-- 类可以保持 `internal`；那样只有本程序集能为它声明控件阶段。
+- Token 类或 Token 属性不是 `partial` 时报 `ATOMUIGEN049`。
+- 推导必须写全所属类的每个 Token（`ATOMUIGEN050`），不得先读后写（`ATOMUIGEN051`）。对 `view.Global` 的写入是控件
+  作用域内对 Map 与 Alias Token 的覆盖；写种子会抛出。
+- 生成器为控件包产出 `[assembly: TokenSchemaDigest]`，为取值包产出 `[assembly: CoversTokenSchema]`。取值包若针对另一
+  版本的控件 Token 构建，启动时被拒绝，消息写出两个包名与两个摘要。
+- 见[编写设计语言](../guides/theming/writing-design-languages.md)第 4 节与[第三方控件包](../guides/theming/third-party-control-packages.md)。
 
-`DesignToken` 的 256 个全局 Token 属性也是 partial 属性，调用方不受影响。
+## 编写设计语言
 
-## 全局 Alias 显式值现在带动派生 Alias
+语言是一个派生自 `DesignLanguage<TLanguageToken>`、标注 `[DesignLanguage]` 的类：声明 `Axes`（`DesignLanguageAxes`：
+风格、明暗、密度、形态、可调种子），实现 `DefineSeeds`、`DeriveLanguage` 与 `DeriveGlobal`。语言 Token 派生自
+`LanguageDesignToken` 并标注 `[LanguageDesignToken]`。取值包实现 `IControlDerivation<TLanguageToken, TToken>`；查找沿语言
+Token 的继承链进行，所以派生语言继承其基础语言的控件取值，只覆盖不同之处。契约测试库 `AtomUI.Theme.ContractTests`
+（`DesignLanguageContract.Verify`）逐变体检查身份、完整、纯净、确定与可读。
 
-此前显式 Alias 值在 `CalculateAliasTokenValues` 之后才写入，由它派生的 Alias Token 仍是公式值。现在显式 Alias 值在
-公式之前写入并标记，公式之后再写一次。受影响的派生关系：
+新增公开类型：`DesignLanguage`、`DesignLanguage<TLanguageToken>`、`DesignLanguageAttribute`、`DesignLanguageAxes`、
+`DesignLanguageBuilder<TLanguage>`、`DesignStyle`、`DesignDensity`、`DesignIdiom`、`DesignVariant`、
+`DerivationContext<TLanguageToken>`、`ControlView<TToken>`、`IControlDerivation<TLanguageToken, TToken>`、
+`ControlDerivationAttribute`、`LanguageDesignToken`、`LanguageDesignTokenAttribute`、`ReservedTokenAttribute`、
+`IControlToken`、`DesignLanguageDescriptor`、`ControlDerivationDescriptor`、`GlobalTokenSchema`、
+`TokenSchemaDigestAttribute`、`CoversTokenSchemaAttribute`、`ThemeBuildLanguageAttribute`、`ThemeDerivationException`、
+`DesignLanguageInfo`、`ThemeSelection`、`ThemeSelectionResult`、`ThemeSelectionResolver`、`ThemeSelectionException`。
+`IThemeManagerBuilder` 新增 `AddDesignLanguage`、`AddControlDerivations`（由生成的注册代码调用，只有自行实现该接口的代码
+需要补上）与 `WithInitialTheme`。
 
-| 显式设置的 Token | 现在带动 |
+## Shadcn 与 PrimeNG
+
+`AtomUI.Themes.Shadcn`、`AtomUI.Themes.PrimeNG`（从未发布到 NuGet）由设计语言 `Shadcn`、`PrimeNG` 取代，结构与 Ant Design 相同：
+
+| 语言 | 包 | 风格 | 可调种子 | 入口 |
+| --- | --- | --- | --- | --- |
+| `Shadcn` | `AtomUI.DesignLanguages.Shadcn`、`AtomUI.Controls.Themes.Shadcn`、`AtomUI.Desktop.Controls.Themes.Shadcn`、`AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn`、`AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn` | `Vega`、`Nova`（缺省）、`Maia`、`Lyra`、`Mira`、`Luma`、`Sera`、`Rhea` | `ColorPrimary`、语言种子 `BaseColor` | `UseShadcn(language => language.AddDesktopControls())` |
+| `PrimeNG` | `AtomUI.DesignLanguages.PrimeNG`、`AtomUI.Controls.Themes.PrimeNG`、`AtomUI.Desktop.Controls.Themes.PrimeNG`、`AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG`、`AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG` | `Aura`（缺省）、`Lara`、`Nora` | `ColorPrimary` | `UsePrimeNG(language => language.AddDesktopControls())` |
+
+两种语言不带具名主题：原来的 profile id（`ShadcnNova`、`ShadcnNova.Dark`、`PrimeNGAura.DarkCompact` 等）已删除，改用
+`ThemeSelection.Of("Shadcn", new DesignStyle("Nova")).WithAppearance(ThemeAppearance.Dark)` 等选择；语言自己的条目是
+`$Shadcn` / `$PrimeNG`。每个变体与种子用例编译出的
+Token 值与原 profile 相同。各包 README 列出规则、来源与不支持清单。
+
+## 新增 Token 与修正
+
+新增的 Token；除特别说明外，缺省值保持 6.2.15 的 Ant Design 渲染：
+
+| Token | 含义 |
 | --- | --- |
-| `ControlOutlineWidth` | `InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`（扩散） |
-| `ColorControlOutline` | `InputActiveShadow`（颜色） |
-| `ColorErrorOutline` | `InputErrorActiveShadow`（颜色） |
-| `ColorWarningOutline` | `InputWarningActiveShadow`（颜色） |
-| `LineWidthFocus` | `FocusVisualBorderThickness` |
-| `ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` | `InputPaddingLG`、`InputPaddingSM`、`InputPadding` |
+| `DesignToken.BorderRadiusMD`（Map） | 中号圆角（默认尺寸），与种子 `BorderRadius` 同值；控件读它而不是种子 |
+| `DesignToken.InputActiveBorderColor`（Alias） | 输入框聚焦态边框色，缺省 `ColorPrimary` |
+| `AbstractButtonVariantToken.LinkColor`、`DangerAccentColor` | 链接按钮静止态颜色（缺省 `ColorLink`）与危险按钮各变体的基色（缺省 `ColorError`） |
+| `AlertToken.SuccessIconColor`、`InfoIconColor`、`WarningIconColor`、`ErrorIconColor`；`MessageCardToken.LoadingIconColor` | 状态图标色（缺省为各状态种子；信息与加载图标为 `ColorPrimary`） |
+| `TagToken.SuccessColor`、`InfoColor`、`WarningColor`、`ErrorColor` | 状态标签的主色（缺省为各状态种子） |
+| `ToolTipToken.ToolTipFontSize`、`ToolTipMinHeight` | 提示框字号与最小高度（缺省 `FontSize`、`ControlHeight`） |
+| `DesignToken.ControlItemColorActive`（Alias） | `ControlItemBgActive` 上的文字颜色，缺省为 `ColorText`。Select、Cascader、ComboBox、ListBox、ListView、TransferListView、TreeView、TransferTreeView、TreeSelect 的选中文字 Token 与新增的 `DataGridToken.RowSelectedColor` 缺省取它 |
+| `AbstractCalendarToken.ItemActiveColor`、`AbstractDateViewerToken.CellActiveColor` | 选中格子上的主色文字，缺省 `ColorPrimary` |
+| `ArrowDecoratedBoxToken.ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight` | 箭头框体的边框与最小高度；边框不为 0 时绘制框体与箭头的一条轮廓，不再隐藏箭头 |
+| `ArrowDecoratedBoxToken.ArrowTipRadius`、`ArrowBaseRadius`（`ToolTipToken` 上也有） | 圆角箭头几何 |
+| `ProgressBarToken.InnerLabelColor` | 内嵌百分比标签的深色候选，缺省 `ColorTextLabel` |
+| `ToolTipToken.ToolTipShadows`、`DrawerToken.EdgeBorderColor`、`EdgeBorderThickness` | 阴影与边缘边框 |
+| `AbstractButtonGeometryToken.RecipeVariants`、`OutlineOnlyDefaultShadow`、`DisabledByOpacity`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`、`UnderlineLinkAtRest`；`SplitButtonToken.InsetSeparator`；`LineEditToken` / `TextAreaToken` / `SelectToken` 的 `TransparentOutlineBorder`、`BottomOutlineBorder`；`SelectToken.MutedSelectIndicator`、`OptionBackgroundInset`、`OptionBorderRadius`；`FloatButtonToken.HasOutline`、`OutlineOnlyShadow`、`CapsuleDescription`、`UppercaseDescription`、`DescriptionWeight`、`OutlineDescriptionLineHeight`；`OtpLineEditToken.JoinCells`；`AbstractTimePickerToken.CenterItemContent`、`ItemBackgroundInset` | 由语言设置的行为开关；缺省值即 6.2.15 的行为 |
 
-没有设置这些 Token 的主题编译结果完全不变（`Default`、`Dark`、`Compact` 与 DaybreakBlue 不变）。预设包里
-PrimeNG 的 profile 有变化：例如 PrimeNG Aura 的焦点阴影扩散现在是 0（它的 `ControlOutlineWidth` 是 0）。如果依赖旧结果，把派生 Token 也显式设置。分析器
-`ATOMUIGEN040`、`ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
+Ant Design 中有意的视觉修正：
 
-## 新增全局 Alias Token `ControlItemColorActive`
+- `ArrowIndicator` 按 antd 的圆角箭头构造（等腰直角三角形，尖端为半径 `ArrowTipRadius` 的圆弧，底边两侧为半径
+  `ArrowBaseRadius` 的内凹圆弧）；`ArrowDecoratedBoxToken.ArrowSize` 缺省由 `SizePopupArrow / 1.3` 改为
+  `SizePopupArrow`。箭头形状略有变化。
+- ToolTip 主题把箭头框体的 `BorderThickness` 设为 0；PopupConfirm 与锚点的间距改读 `FlyoutHostToken.MarginToAnchor`
+  （缺省值相同）。
+- 显式给出的全局 Alias 值现在带动由它派生的 Alias Token。6.2.15 中显式 Alias 值在 Alias 公式之后才写入，例如显式的
+  `ControlOutlineWidth` 传不到 `InputActiveShadow`。没有设置 `ControlOutlineWidth`、`ColorControlOutline`、
+  `ColorErrorOutline`、`ColorWarningOutline`、`LineWidthFocus`、`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、
+  `UniformlyPaddingSM` 的主题编译结果不变。控件级的 Alias 值只替换该值，不重新推导该控件的其他 Token。
 
-`ControlItemColorActive` 是选中（激活）项画在 `ControlItemBgActive` 与 `ControlItemBgActiveHover` 上的文字色。默认 Alias
-公式取 `ColorText`，因此默认、暗色、紧凑主题以及所有不设置它的主题渲染不变。选中底色为实色的主题（PrimeNG Nora 与
-noir 的高亮）只需在全局设置一次对比色，不必逐控件设置。选中与选中悬停共用一个 Token：PrimeUIX `highlight.focusColor`
-除 Aura / Lara 浅色（主色 800 级而非 700 级）外都等于 `highlight.color`，AtomUI 控件也没有单独的选中悬停文字位。
+## 诊断
 
-下列选中文字 Token 的默认值改为它（默认取值不变）：Select 与 Cascader 的 `OptionSelectedColor`；ComboBox、ListBox、
-ListView、TransferListView 的 `ItemSelectedColor`；TreeView、TransferTreeView、TreeSelect 的 `NodeSelectedColor`；新增的
-DataGrid `RowSelectedColor`（选中行文字，设在行上，单元格继承）。TimePicker / RangeTimePicker / DatePicker /
-RangeDatePicker 的选中时间格与日期面板的范围中段直接读取它。Content 呈现在 `ControlItemBgActive` 上绘制的主色文字由两个
-新 Own Token 承担：Calendar `ItemActiveColor`（Fullscreen 选中单元）与 DateViewer `CellActiveColor`（Content 的今天与选中
-单元），默认均为 `ColorPrimary`。
-
-## 带边框的箭头框体及其 Token
-
-`ArrowDecoratedBox`（InfoFlyout / Popover、PopupConfirm、各 Picker 面板、下拉菜单、树形 flyout、Tour、DataGrid 筛选
-flyout 和 ColorPicker 面板的表面）以前只要 `BorderThickness` 非零就隐藏箭头，因为箭头无法与边框融合。现在带边框时由框体
-自己绘制背景和边框，作为框体与箭头的一条整体描边：边框沿箭头两条斜边延续，箭头底边处没有横线。布局、箭头位置和命中区域
-不变；模板里的容器 `Border` 保留边框宽度参与布局，但不再绘制边框及其下方的背景，箭头指示器保留布局但不绘制。应用若给箭头
-框体设置了 `BorderThickness`（直接设置或经样式），现在会重新看到带边框的箭头；需要旧外观时设置 `IsArrowVisible="False"`。
-箭头框体带边框时，宿主弹层 frame 阴影中的 `0 0 0 N` 描边环不再绘制，保证只有一条描边。
-
-由 `ArrowDecoratedBoxToken` 上三个公开 Own Token 驱动；默认值即原有取值，Ant Design 及不设置它们的主题渲染完全不变：
-
-| Token | 类型 | 默认值 | 含义 |
-| --- | --- | --- | --- |
-| `ContentBorderColor` | `Color` | `ColorBorderSecondary`（原 `BorderBrush`） | 框体及箭头的边框色 |
-| `ContentBorderThickness` | `Thickness` | `0`（原 `BorderThickness`） | 边框宽度；非零时绘制整体描边 |
-| `ContentMinHeight` | `double` | `ControlHeight`（原 `MinHeight`） | 框体最小高度 |
-
-ToolTip 主题现在显式把其箭头框体的 `BorderThickness` 设为 0，主题给箭头框体加边框时 Tooltip 不受影响。PopupConfirm 与
-anchor 的间距改读 `FlyoutHostToken.MarginToAnchor`（原为 `PopupToken.MarginToAnchor`），与其阴影来源一致（两者默认都是
-`UniformlyMarginXXS`，主题不设置时不变）。
-
-### 箭头几何
-
-`ArrowIndicator` 改按 antd `genRoundedArrow` 的构造绘制：宽 `ArrowSize`、高为宽的一半的直角等腰三角，尖角是半径
-`TipRadius` 的真圆弧，两条斜边以半径 `BaseRadius` 的内凹圆弧平滑并入框体边缘；两个半径都为 0 时就是 CSS 框架的直角
-边框三角。描边只画两条斜边，箭头与框体交界处不再有描边线。此前箭头高约为宽的一半减 0.25，尖角是固定 1.5 的二次曲线，
-底边与斜边直角相接，描边绕整个三角形（含底边）。`ArrowDecoratedBoxToken` 新增 `ArrowTipRadius`（默认 `BorderRadiusXS`）
-与 `ArrowBaseRadius`（默认 `BorderRadiusOuter`），`ArrowSize` 默认值由 `SizePopupArrow / 1.3` 改为 `SizePopupArrow`，与 antd
-的箭头一致（同为 16 宽，可见高度约 5.5，与旧箭头相近）。带边框的整体描边沿用同一几何。这是对旧画法的有意修正，Ant Design
-的箭头外形随之变化。PrimeNG 的 Tooltip 与 Popover 箭头为直角边框三角（两个半径都为 0）；Shadcn 的 Tooltip 和箭头浮层改用官方
-`TooltipPrimitive.Arrow` 的旋转方块形状（宽 `2 × (5√2 − 2)`、尖角圆角 2），不再随样式的大号 `BorderRadiusXS` 变成圆包。
-
-## 主题 XML：`<Algorithm>` 的 `Catalog`
-
-```xml
-<Algorithms>
-  <Algorithm Catalog="PrimeNG" Id="Aura.Dark" />
-  <Algorithm Id="Compact" />
-</Algorithms>
-```
-
-`Catalog` 可选，缺省为 `AtomUI`，现有文件不变。XSD 中 `Id` 的类型是三个内置值与 `Identifier` 的并集。标识符不合法在
-Reader 失败；合法但未注册在 Binder 失败（`ATMTHM2001`），编译主题包则在构建期失败（`ATOMUITOKEN002`，
-「Unknown algorithm 'Catalog:Id'.」）。同一条链里重复的身份报 `ATMTHM1002`。
-
-## 编译主题输入格式版本 6
-
-Toolchain 任务交给生成器的中立中间文件，格式版本由 4 升为 6：算法项带 `Catalog`、`Id`、行、列，不再是整数（版本 5）；
-每个定义还携带 `DesignLanguage`、`Density` 和 `BrandColor`（版本 6）。它是构建工具的私有协议。生成器现在输出运行时
-ABI 2 的编译主题程序（携带设计语言元数据和算法链的 `CompiledThemeProgram` 构造函数）；旧生成器构建的 ABI 1 编译包仍可
-加载，元数据取缺省值。旧构建留下的中间文件会报「Compiled theme input format is out of date; rebuild the project.」，
-重新构建（或清理）项目即可。
-
-## 新增与扩展的诊断
-
-| 诊断 / 异常 | 变化 |
+| Id | 变化 |
 | --- | --- |
-| `ATOMUIGEN049`（Error） | 新增：`[ControlDesignToken]` 或 `[GlobalDesignToken]` 的 Token 属性或其所在类不是 partial |
-| `ATOMUIGEN040`、`ATOMUIGEN048` | 范围扩展到 `DesignToken.CalculateAliasTokenValues`（Alias 属性，守卫为 `IsExplicit(SharedTokenKind.X)`）；消息改为指明 Kind 枚举和方法名 |
-| `ATOMUITOKEN002` | 新的触发情形：主题 XML 引用未知算法、算法构建契约无效或重复、`<Catalog>Algorithms` 成员名撞名、`[ControlTokenAlgorithm]` 类不合规、`[ThemeAlgorithm]` 声明不合规（不是实现 `IThemeAlgorithm` 的非抽象非泛型类、没有公开无参构造函数，或 catalog、id、revision、appearanceEffect 无效；以前会被静默跳过） |
-| `ATMTHM1002` | Reader 的新消息：「Theme algorithm 'Catalog:Id' is duplicated.」（判重由 XSD 移入 Reader）；以及仅在 XSD 尚未对该元素报错时出现的「Theme algorithm identity 'Catalog:Id' is not a valid identifier.」 |
-| `ATMTHM4004` | 新消息：「Algorithm identity is uninitialized.」 |
-| `ThemeSchemaException` | 「Duplicate algorithm identity 'Catalog:Id'.」「Duplicate control algorithm '{algorithm}' for control '{control}'.」 |
-| `ThemeLoadException` | 运行时追加包：「Package append cannot add a control algorithm for the already registered algorithm '{algorithm}' and control '{control}'.」 |
-| `ThemeAlgorithmContractException` | 可选算法阶段违反契约：`StageBoundary`、`Unstable` 或 `Failed`；算法的 Map 阶段抛异常时也报 `Failed`（内置算法也一样）。控件阶段的违规在该控件第一次被读取时抛出，不是编译期诊断 |
+| `ATOMUIGEN049` | 新增（Error）：Token 类或 Token 属性不是 `partial` |
+| `ATOMUIGEN050` | 新增（Error）：控件推导没有写全 Token |
+| `ATOMUIGEN051` | 新增（Error）：控件推导先读后写 |
+| `ATOMUIGEN052` | 新增（Error）：取值包缺少其覆盖的某个控件 Token 类的推导 |
+| `ATOMUIGEN053` | 新增（Error）：违反包依赖方向（语言包引用控件包、控件包引用语言一侧，或取值包声明控件） |
+| `ATOMUIGEN024` | 随 `CalculateTokenValues` 删除 |
+| `ATMTHM1004` | v1 主题文件；消息给出换写命令 |
 
-## 设计语言与品牌色
-
-主题定义可以在 `<Theme>` 元素上声明 `DesignLanguage`、`Density`（`Normal` 或 `Compact`，缺省 `Normal`）和 `BrandColor`
-（`Seed` 或 `Fixed`，缺省 `Fixed`）。所有新增都源码兼容：`ThemeInfo` 只追加 `init` 属性，`ThemeRequest` 与 `ThemeConfig` 不变。
-
-| API | 说明 |
-| --- | --- |
-| `ThemeDensity`、`ThemeBrandColorSupport` | 两个新枚举 |
-| `ThemeInfo.DesignLanguage`、`Density`、`BrandColor`、`Algorithms` | 新增 `init` 属性；`Algorithms` 是定义自身的算法链，保存为只读副本（赋 `null` 抛 `ArgumentNullException`），参与相等比较 |
-| `ThemeSelection`、`ThemeSelectionResult` | 选择，以及解析出的主题 Id、算法链和品牌种子 |
-| `ThemeSelectionResolver` | 纯函数 `Resolve`、`DesignLanguages`、`BrandColorSupport`。没有精确变体时，`Resolve` 回退到该语言的 Light + Normal 定义，没有则回退到最近的已声明定义（同 Appearance，其次同 Density，最后取第一个）；只有语言不存在时抛 `ArgumentException` |
-| `CompiledThemeProgram` ABI 2 构造函数 | 受保护，供生成代码使用；携带设计语言元数据和算法链。ABI 1 编译包仍可加载 |
-
-`Seed` 主题不得手写品牌派生 Token（`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、
-`ColorPrimaryBorder`、`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、
-`ColorControlOutline`），否则报 `ATMTHM3101`；`ColorLink` 不在其中。没有声明 `BrandColor` 的主题按 `Fixed` 处理。Gallery 的 Theme Presets 页只列出编译主题包，因此不再为未声明 `BrandColor` 的编译主题包（包括 ABI 1 编译包）提供品牌色色块；要启用请声明 `BrandColor="Seed"`。`ATMTHM3103`（同一设计语言内 `Appearance` 与
-`Density` 重复）和 `ATMTHM3104`（混用 `Seed` 与 `Fixed`）在编译主题包内是 Error，在运行时目录是 Warning：在后的冲突定义退出分组，
-仍可按 Id 使用。生成器为这两个码使用专用的诊断描述符（诊断 Id 即该码，带标题和参数化消息），不再借用通用的
-`ATOMUITOKEN002`。`ATMTHM3105`（两处都是 Warning，定义留在分组内）检查声明了设计语言的定义：`Density` 与算法链不符，
-即 `Compact` 却没有内置 `Compact` 算法，或 `Normal` 却带了它。规则和解析器示例见[主题定制指南](../guides/theming/customization.md)。
-
-## PrimeNG 预设改由算法计算
-
-`AtomUI.Themes.PrimeNG`（尚未发布到 NuGet）现在注册六个算法：`PrimeNG:Aura`、`PrimeNG:Aura.Dark`、`PrimeNG:Lara`、
-`PrimeNG:Lara.Dark`、`PrimeNG:Nora`、`PrimeNG:Nora.Dark`，带 Alias 和控件阶段。12 个 profile ID 保留，每份 XML 只剩
-算法链和 Seed Token（主色、错误色、圆角、控件高度），只有 Lara 的两个紧凑 profile 另保留一项 Select
-覆盖。可见的变化：
-
-- PrimeNG 主题里的 `ColorPrimary`、`ColorError` 等状态色是种子（色阶的 500 级），由算法映射到实际显示的级。换主色种子
-  后，悬停、按下、焦点环和选中底色都会跟着变。
-- 十二个 profile 的默认主色改为 **noir**，即 primeng.dev（primeng 22.1.5）的默认主色：`ColorPrimary` 由 emerald
-  `#10B981` 改为 `#020617`（slate-950）。中性色 950 级的种子让主色色阶取表面色阶：浅色 `#020617` / `#1E293B` /
-  `#334155` 配白字，暗色 `#FAFAFA` / `#E4E4E7` / `#D4D4D8` 配 `#09090B` 字，选中项使用站点的实色 noir 高亮，CheckBox /
-  Radio 的选中标记取对比色。要恢复原来的颜色，把 `ColorPrimary` 设为 `#10B981`；其他种子行为不变。下表中的 emerald 值即 emerald
-  种子下的值。
-- 选中项严格按 PrimeUIX 3.1.1 的 `highlight`：选中底色为 `ControlItemBgActive`（Nora 浅色主色 600 / 悬停 700，暗色
-  500 / 400；noir 950 / 700，暗色 50 / 300；Aura 与 Lara 保持浅淡的主色 50 / 100），Select、Cascader、ComboBox、ListBox、
-  ListView、TransferListView、TreeView、TransferTreeView、TreeSelect 的选中文字为 `highlight.color`（Aura / Lara 浅色为
-  主色 700，不再是正文色）。`ColorPrimaryBg` 保持浅淡主色（Nora 暗色为主色 16%，不再是实色 500），Filled 按钮与 Tag
-  不再需要补偿；Nora 暗色 `ColorPrimaryText` 改为可读的主色 400，不再是 zinc-950。选中文字只写一次到全局 `ControlItemColorActive`，DataGrid 选中行、时间格与日期选择器的范围中段随之跟随（PrimeUIX
-  `datepicker`）。
-  ToggleSwitch 选中把手按 PrimeUIX（Aura / Lara 暗色 zinc-900，Nora 为对比色）。
-- 暗色的主色和错误色变了。旧的暗色 profile 让 `AtomUI:Dark` 对已经是最终值的颜色又推导了一遍：
-
-  | Profile | `ColorPrimary` | `ColorError` |
-  | --- | --- | --- |
-  | `PrimeNGAura.Dark`、`PrimeNGAura.DarkCompact` | `#2FB685` → `#34D399` | `#D98F8F` → `#FCA5A5` |
-  | `PrimeNGLara.Dark`、`PrimeNGLara.DarkCompact` | `#2FB685` → `#34D399` | `#D98F8F` → `#FCA5A5` |
-  | `PrimeNGNora.Dark`、`PrimeNGNora.DarkCompact` | `#11A071` → `#10B981` | `#D66363` → `#F87171` |
-
-- 原来由 Ant 公式派生的颜色改按 PrimeNG 色阶取级：成功、警告、信息、错误家族的悬停、按下、底色、边框和文字状态；
-  链接色（取主色种子色阶中的一档；浅色下链接取比主色填充更深的级，即 700 / 800 / 900 级，保证白底上的链接文字可读）；中性填充、实色底与提示底色；第三、第四级文字与禁用文字；实色主色上的对比文字（暗色为中性
-  900，Nora 暗色为中性 950）。Nora 还把成功、警告、信息的基准色移到 600 级（暗色 500 级）。原来半透明的填充色现在是
-  不透明的色阶颜色。
-- Link 按钮按 PrimeUIX `button.link.color`（`{primary.color}`）：Button 作用域内 `ColorLink` / `Hover` / `Active` 取主色
-  三态。默认 noir 主色下不变；彩色种子下 Link 按钮为主色（emerald 浅色 `#10B981`，原为 `#047857`）。超链接等其他链接文字
-  仍用全局链接色。
-- 进度类控件按 PrimeUIX `progressbar`：进度色取主色（原为 Ant 的 `ColorInfo` 蓝），轨道为 `content.border.color`（Nora
-  为 surface 300 / 600），线形圆角取 `BorderRadius`，内嵌百分比取对比色。新增公开 Own Token
-  `ProgressBarToken.InnerLabelColor`（默认 `ColorTextLabel`，即主题原先直接读取的内嵌文字深色候选；Ant Design 不变）。
-- 弹层按 PrimeUIX `overlay.popover` / `overlay.select`（3.1.1，并在 primeng.dev/popover 实测）：箭头 flyout（Popover、
-  PopupConfirm、Picker 面板、下拉菜单）框体与箭头带 1px 边框，颜色为 `overlay.popover.border.color`（Aura / Lara
-  slate-200，暗色 zinc-700；Nora 透明，暗色 zinc-700），内边距 10（Lara 14），无最小高度，框体距 anchor 10
-  （`popover.gutter`），阴影为 `overlay.popover.shadow`（Lara `0 1 3 0 #1A000000`）；Select、Cascader、ComboBox、
-  AutoComplete、Mentions 面板与右键菜单以阴影前的 `0 0 0 1` 描边环表示边框，Aura / Lara 圆角由 8 改为 6（Nora 仍为 2），距 anchor 由 4
-  改为 2（Nora 0，`anchor.gutter`）。Tooltip 保持无边框。
-- 除上文的 Alias 派生修复和弹层取值外，算法迁移没有改变任何尺寸、内边距、圆角、字体、线宽、动效或阴影几何。
-- Nora 恢复动画。Nora profile 原先按 PrimeUIX `transition.duration: 0s` 设置 `EnableMotion false`，连弹层、抽屉、折叠面板、
-  通知卡片和加载指示器也一起冻结；PrimeNG 只用这个值控制状态颜色过渡，组件进出场动画在所有预设中相同。现在 Nora
-  保持动画开启，把全局 `MotionDurationFast` / `Mid` / `Slow` 设为 0（悬停、聚焦颜色瞬时切换），并在各动画所属控件的
-  作用域内恢复其时长（弹层与对话框 300ms、抽屉 500ms、折叠内容 200ms、通知卡片 300ms、Tabs 指示条 250ms、走马灯
-  500ms、Tooltip 淡入 250ms、开关滑块 100ms）。显式设置 `EnableMotion false` 仍会关闭全部动画。Aura、Lara 不变。
-- `[PrimeNG:Aura.Dark]` 与 `PrimeNGAura.Dark` profile 相同，基础链后接 `AtomUI:Compact` 与 `.Compact` profile 相同
-  （Lara 的紧凑 profile 保留一项列出的差异）。在浅色 PrimeNG 链后接 `AtomUI:Dark` 是混合链，不是 PrimeNG 的暗色。
-
-包的 README 列出了每条规则及其来源。
+主题 XML v2 的 Reader 与 Binder 诊断见[主题定义 XML v2](../reference/theming/theme-definition-xml-v2.md)第 10 节。
 
 ## 性能
 
-Token 写入记账让每个生成的 Token setter 多一次空引用判断，每个 Token 实例多 8 字节。与改造前的树对比实测
-（2026-11-13，默认 Ant 主题）：主题冷编译按门槛统计量（25 分位数）慢 2.3%–2.7%（约 0.018 毫秒），按中位数慢
-3.4%–3.7%。启动检查按字面规则没有通过（越界大多在更快一侧；变慢一侧，普通窗口的预编译分段高出基线最大值 0.005 毫秒，
-带启动屏的提交分段高出 0.17 毫秒）。主题切换、分配、程序集与 NativeAOT 体积、编译结果都通过。这没有达到设计时定的 2%
-门槛，项目负责人决定按此结果通过，是对门槛的一次明确放宽。渲染和资源查找不经过 Token 属性，不受影响。
-
-该决定之后加入的全部内容（Alias 阶段与控件阶段）在 2026-11-14 与提交 `3a87bba25`（接受记账代价时的树）对比复测。
-内置 Default、Dark、Compact 三条链的冷编译（25 分位数 −0.87% / −1.24% / −1.21%）与主题切换在波动范围内，每次冷编译的
-分配（1,138,032 / 1,143,224 / 1,138,416 字节）与编译结果不变；当天这台机器冷编译的分辨力只有 8%–9%，分辨不出 2% 的差异。
-启动时即使控件阶段注册表为空也会被 JIT，由此多出约 1 毫秒，这一问题已在发布前发现并修复；现在启动期间 JIT 的方法与基线
-相同，耗时在机器约 1 毫秒的分辨力内不变（注册了控件阶段的应用没有测量）。`AtomUI.Core.dll` 增大 2.05%（1,125,888 →
-1,148,928 字节），超过计划定的 1% 程序集体积门槛；门槛没有达到，项目负责人在 2026-11-14 决定接受这一增长，这是只限
-这一个程序集的一次明确放宽。其他受门槛约束的程序集增长不超过 0.10%，NativeAOT Gallery
-可执行文件小 0.09%。使用阶段的主题要为阶段付出代价：`PrimeNGAura` 冷编译约 0.88 毫秒，内置默认主题约 0.74 毫秒（+18%），
-分配 1,249,256 字节对 1,138,032 字节（+9.8%）；`PrimeNGAura.Dark` 约 0.89 毫秒（+20%），1,254,568 字节（+10.2%）。
+2026-11-22 对照不含此改动的同一棵树测量（缺省 Ant Design 主题，Release，30 个样本，两轮交替）：一次冷编译的分配由 1,202,392
+字节降到 712,792 字节（-41%），中位耗时由 2.44 ms 降到 1.92 ms。同一作用域的控件共用推导起点的全局视图（推导改写了全局 Token
+的控件除外）；只覆盖 Map 或 Alias Token 的局部作用域，对推导没有读到这些 Token 的控件直接复用父作用域的结果。编译结果逐值相同；
+明暗切换在本机分辨力内无变化。

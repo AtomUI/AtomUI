@@ -52,8 +52,8 @@ Gallery Desktop 以 `PublishAot=true` 和 `IsTrimmable=true` 发布，字体包�
 
 1. `CalculateFontSize` 在典型基数（12–20）下的档位输出与取偶行为。
 2. `CalculateLineHeight` 公式与 `FontHeight*` 的取整结果。
-3. Default 与 Compact 两条算法路径的字体 Token 输出，并显式断言二者的差异语义。
-4. Dark 算法不改变字体 Token。
+3. Ant Design 语言默认密度与紧凑密度两个变体的字体 Token 输出，并显式断言二者的差异语义。
+4. 暗色变体不改变字体 Token。
 5. `AddDefaultFont` 的注入与不覆盖语义：无 Builder 默认值、有默认值、配置已含 `FontFamily` 三种情况。
 6. `FontFamilyTokenValueConverter` 的解析成功与失败路径。
 7. 主题定义文件中字体族与字号 Token 的读取、绑定与规范化。

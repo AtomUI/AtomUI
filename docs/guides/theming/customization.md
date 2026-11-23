@@ -52,12 +52,10 @@ flowchart LR
 AtomUI 把 Token 分成 Global Token、Effective Global Token、Control Own Token 和 Effective Control Token。
 
 ```text
-Global Token
-    -> Control-specific Global Override
-Effective Global Token
-    -> calculate Control Own Token defaults
-    -> Control Own Token Override
-Effective Control Token
+Design Language (seeds -> language tokens -> Global Token)
+    -> control derivation of the language: Control-specific Global Override + Control Own Token
+    -> theme / scope Control configuration (frozen before the derivation runs)
+Effective Control Token (the control view)
     -> ControlTheme
     -> Semantic Part Selector
     -> optional Semantic Part Theme
@@ -69,8 +67,9 @@ Effective Control Token
 Global Token 描述整个设计语言，例如主色、通用文字颜色、Control 高度、圆角、排版、间距和动效时长。修改全局
 `ColorPrimary` 的含义是改变整个应用的主色体系，而不是只改变某一个 Button。
 
-Global Token 还可以经过 Default、Dark、Compact 等算法派生 Map Token 和 Alias Token。主题作者通常修改少量
-Seed Token，再由算法计算完整结果，而不是手工维护每一种状态颜色。
+Global Token 的取值全部来自当前**设计语言**：语言为种子给默认值，再从种子推导出 Map Token 和 Alias Token；明暗、密度、
+风格与形态是推导的参数，暗色与紧凑是语言自己的规则。主题作者通常修改少量 Seed Token，由语言推导完整结果，而不是手工维护
+每一种状态颜色。显式写出的 Map / Alias 值在推导之前冻结，由它们算出的值同样跟着变。
 
 ### 2.2 Effective Global Token
 
@@ -85,7 +84,8 @@ DatePicker Effective ColorPrimary = Blue
 ```
 
 Control 级 Global Token 覆盖不会修改全局 snapshot，也不会形成一棵新的资源子树。它只是当前 ThemeContext 的
-snapshot 中，属于特定 Control identity 的稀疏差量。
+snapshot 中，属于特定 Control identity 的稀疏差量。语言的控件推导也可以写这份差量（例如某种语言让 Select 看到不同的边框色），
+它与主题、作用域的 Control 配置写的是同一份控件视图，优先级最低。
 
 ### 2.3 Control Own Token
 
@@ -100,6 +100,9 @@ Own Token。它直接从 Rating 的 Effective Global Token 读取 `ControlHeight
 
 Own Token 类型使用无参数 `[ControlDesignToken]` 标记，使生成器可以直接发现 Token 定义。该标记不接收 Control
 类型、identity、ID 或主题路径；`[ControlDesignToken<Rating>]` 这类泛型关联不属于设计。
+
+Own Token 类只有声明，不含计算：它们在每种设计语言下等于多少，由该语言的取值包里的控件推导给出
+（见[编写设计语言](writing-design-languages.md#4-取值包)）。
 
 ### 2.4 Effective Control Token
 
@@ -216,8 +219,9 @@ Global Token schema；两处都不存在才报错。Own Token 与任意 Global T
 
 一个合法 Global Token 如果没有被当前 Control 直接或间接使用，覆盖后可以没有视觉效果。这是允许的确定行为，
 不能因此影响其他 Control identity 或真正的 Global Token snapshot。Own Token 则不同：每个没有标为 Reserved 的 Own
-Token 都承诺有效果，并由生效测试证明；设置了没有效果是缺陷，不是"允许的确定行为"。启用 `Global` 或 `Custom` Control 算法时，
-Seed/Map 覆盖可能重新派生其他 Token，因此一个看似未直接使用的 Token 仍可能产生局部间接效果。
+Token 都承诺有效果，并由生效测试证明；设置了没有效果是缺陷，不是"允许的确定行为"。Control 级覆盖 Seed Token 时会为该
+Control 重新派生一份全局 Token，覆盖 Map / Alias 时显式值也会被该 Control 的控件推导读到，因此一个看似未直接使用的 Token 仍可能
+产生局部间接效果。
 
 ### 5.1 AXAML 和 C# 使用同一语义
 
@@ -254,7 +258,7 @@ Token，并提供统一、可搜索的 Global Token 目录。
 | 边界 | 负责什么 | 不负责什么 |
 | --- | --- | --- |
 | Resolver / Definition | 发现和读取主题来源 | 不计算 Token，不加载 Control 实例 |
-| Schema | 描述 Token、Control、算法和主题资产 | 不保存当前主题值 |
+| Schema | 描述 Token、Control、设计语言、控件推导和主题资产 | 不保存当前主题值 |
 | Configuration | 绑定、验证和合并用户输入 | 不访问 Visual Tree |
 | Compiler / Snapshot | 计算并冻结完整主题结果 | 不发布 Avalonia 通知 |
 | ThemeContext / Resources | 发布 snapshot 并投影为资源 | 不维护第二份 Token 状态 |
@@ -262,7 +266,8 @@ Token，并提供统一、可搜索的 Global Token 目录。
 ### 6.1 ThemeSchemaRegistry
 
 Registry 在应用初始化时由生成 descriptor 构建，包含 Global Token schema、带 exact CLR type 的 Control
-descriptor、算法 descriptor 和 ControlTheme asset manifest。首个 snapshot 编译前冻结，之后不能动态追加类型。
+descriptor、已启用的设计语言（含语言 Token schema 与轴）、控件推导 descriptor 和 ControlTheme asset manifest。构建时校验每个
+已启用语言都为每个已启用 Control 找得到推导。首个 snapshot 编译前冻结，之后不能动态追加类型。
 
 ### 6.2 ThemeConfig 与 ThemeDefinition
 
@@ -322,15 +327,11 @@ Theme Definition XML 适合声明可命名、可切换、可放入应用资源�
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1"
+<Theme xmlns="https://atomui.net/schemas/theme/v2"
        Id="AcmeLight"
        Name="Acme Light"
-       Appearance="Light"
-       IsDefault="false">
-  <Algorithms>
-    <Algorithm Id="Default" />
-  </Algorithms>
-
+       Language="AntDesign"
+       Appearance="Light">
   <Tokens>
     <Token Name="ColorPrimary" Value="#0F6CBD" />
     <Token Name="BorderRadius" Value="4" />
@@ -338,34 +339,41 @@ Theme Definition XML 适合声明可命名、可切换、可放入应用资源�
   </Tokens>
 
   <Controls>
-    <Control Catalog="AtomUI" Id="Button" Algorithm="Disabled">
+    <Control Catalog="AtomUI" Id="Button">
       <Tokens>
-        <Token Name="ColorPrimary" Value="#115EA3" />
+        <Token Name="ColorPrimaryHover" Value="#115EA3" />
         <Token Name="ContentFontSize" Value="14" />
       </Tokens>
     </Control>
   </Controls>
+
+  <When Density="Compact">
+    <Tokens>
+      <Token Name="BorderRadius" Value="2" />
+    </Tokens>
+  </When>
 </Theme>
 ```
 
-这份主题表达了三层意图：
+这份主题表达了四层意图：
 
-1. `ColorPrimary`、`BorderRadius` 和 `FontSize` 改变全局设计语言。
-2. Button 在自己的 Effective Global Token 中进一步覆盖 `ColorPrimary`。
-3. `ContentFontSize` 覆盖 Button Own Token。
+1. 它属于 Ant Design，固定亮色；密度开放，跟随选择与作用域。
+2. `ColorPrimary`、`BorderRadius` 和 `FontSize` 是种子，改变全局设计语言；由它们派生的值跟着变。
+3. Button 在自己的 Effective Global Token 中覆盖 `ColorPrimaryHover`（Map），只替换这一个值；`ContentFontSize` 覆盖 Button Own Token。
+4. 紧凑密度下圆角另取 `2`。
 
-Binder 会根据当前 registry revision 验证 Button identity、Token 名和值类型。Button Own Token 与任意已注册
+Binder 会根据当前 registry revision 验证语言、Button identity、Token 名和值类型。Button Own Token 与任意已注册
 Global Token 都可以配置；只有名称在这两个 schema 中都不存在时才失败。
 
-完整 XML 协议、算法形态和安全限制见 [主题定义 XML v1 规范](../../reference/theming/theme-definition-xml-v1.md)。
+完整 XML 协议、条件段、诊断和安全限制见 [主题定义 XML v2 规范](../../reference/theming/theme-definition-xml-v2.md)。
+旧的 v1 文件不再被读取，用 `dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory>` 换写。
 
 ### 8.1 让主题进入 ThemeCatalog
 
 主题定义通过两种明确入口进入同一个 ThemeCatalog：
 
-- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。Core 默认主题和
-  `AtomUI.Themes.*` 预设主题包（PrimeNG、Shadcn）都使用此路径；引用预设包的方式见
-  [预设主题包指南](preset-theme-packages.md)。
+- 包内固定 XML 声明为 `AtomUIThemeDefinition` 构建项，通过生成的主题包注册入口接入。语言包自带的具名主题（Ant Design 的
+  Daybreak Blue，由 `UseAntDesign()` 注册）使用此路径；选择语言与具名主题的方式见[设计语言包指南](design-language-packages.md)。
 - 动态 XML 通过 Resolver、Reader 和 Binder 加载；包括显式 avares URI 与主动启用的用户主题目录。
 
 例如程序集 `Acme.Themes` 可声明：
@@ -377,8 +385,8 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 ```
 
 应用显式调用 `AtomUI.Generated.AcmeThemes.GeneratedThemePackageRegistration.Register(builder.Theme)`。
-构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行现有算法，支持主色、暗色与紧凑设置变化。
-注册不自动启用控件包；XML 中显式覆盖的 Control 必须已登记在启动时的 registry。静态主题与动态 XML 的 Id
+构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行语言推导，支持主色、明暗与密度变化。
+注册不自动启用语言或控件包；XML 引用的语言与显式覆盖的 Control 必须已登记在启动时的 registry。静态主题与动态 XML 的 Id
 不能重复。完整支持域、生成协议与验收状态见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md)。
 
 应用启用用户主题目录时必须提供稳定 Application Id：
@@ -389,6 +397,7 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
     builder.WithApplicationId("Acme.Editor");
     builder.UseUserThemeDirectory();
     builder.UseDesktopControls();
+    builder.UseAntDesign(language => language.AddDesktopControls());
 })
 ```
 
@@ -398,39 +407,37 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 刷新会整批读取用户目录并原子提交 Catalog。任一用户主题无效时，不提交一半新、一半旧的结果；当前 Catalog、
 根 snapshot 和局部 snapshot 全部保持原值。
 
-## 9. 暗色、紧凑和 Control 算法
+## 9. 明暗、密度和 Control 级配置
 
-Global Algorithm 是有序派生链。例如暗色主题可以使用：
+主题由**设计语言**加四个轴确定：风格（语言内部的外观族）、明暗（`Light` / `Dark`）、密度（核心预定义 `Default` 与
+`Compact`，语言可以声明更多档）和形态（`Desktop` / `Mobile`，由界面根决定）。轴是推导的参数，不是算法：暗色、紧凑怎么算是
+语言自己的规则，同一份主题在任意变体下都能直接使用，不需要为每个组合准备文件。主题写在根上的轴是固定的，不写的轴是开放的；
+明暗与密度是两个独立的轴，各自继承——父作用域是暗色、子作用域只写 `Density = Compact`，结果是暗色紧凑。
+
+主题里某个变体下取值不同的部分写在 `<When>` 条件段里：
 
 ```xml
-<Algorithms>
-  <Algorithm Id="Default" />
-  <Algorithm Id="Dark" />
-</Algorithms>
+<When Appearance="Dark" Density="Compact">
+  <Tokens>
+    <Token Name="ColorBgContainer" Value="#141414" />
+  </Tokens>
+</When>
 ```
 
-Compact 算法可以继续追加，并声明为保持当前 appearance。算法不是简单的布尔开关；顺序属于主题语义。
-`ThemeAlgorithm` 是算法身份的唯一类型，由 `(Catalog, Id)` 组成。Core 内置 `AtomUI:Default`、`AtomUI:Dark` 和
-`AtomUI:Compact`（`ThemeAlgorithm.Default` 等）；主题包可以注册自己的算法，例如 PrimeNG 包的 `PrimeNG:Aura` 与
-`PrimeNG:Aura.Dark`。XML 里写 `<Algorithm Catalog="PrimeNG" Id="Aura" />`，省略 `Catalog` 即为 `AtomUI`。C# 配置、
-运行时状态、descriptor 和缓存都使用身份结构体，不使用字符串。
+条件按求值单元的有效变体匹配；先应用基础段，再按文档顺序应用所有匹配的条件段，后者覆盖前者。编写自己的语言见
+[编写设计语言](writing-design-languages.md)。
 
-算法除了从 Seed 推出 Map，还可以改写 Alias Token 和单个控件的 Token；它写入的值与 XML 显式值一样带动派生值，但
-优先级低于主题的显式值。把 `[PrimeNG:Aura]` 后面接上 `AtomUI:Dark` 得到的是混合链，不等于 `PrimeNG:Aura.Dark`；要
-某个设计语言的暗色，选它自己的暗色算法或暗色 profile。编写自己的算法见[编写主题算法](writing-theme-algorithms.md)。
+Control 级配置由两条规则决定，没有「算法模式」：
 
-Control 级算法有四种状态：
-
-| 模式 | 含义 |
+| 写什么 | 结果 |
 | --- | --- |
-| `Unspecified` | 继承父 ThemeConfig 中同一 Control 的策略 |
-| `Disabled` | 应用 Control 级覆盖，但不重新运行派生链 |
-| `Global` | 使用当前全局算法链重新派生该 Control 的有效 Token |
-| `Custom` | 使用该 Control 配置声明的算法链 |
+| Map、Alias 或 Own Token | 只替换那一个值，不触发派生 |
+| Seed Token | 该 Control 自成一个求值单元，按新种子为它单独推导一份全局 Token，再求它的视图 |
+| `Appearance` / `Density`（只能写在基础段） | 该 Control 固定使用这个明暗或密度，自成一个求值单元（例如 ToolTip 始终暗色、表格始终紧凑） |
 
-大多数只调整少量颜色或尺寸的主题应使用 `Disabled`。只有当 Control 级 Seed Token 需要重新生成完整 Map/Alias
-关系时，才使用 `Global` 或 `Custom`。注意这两种模式以根主题编译后的全局值为种子重新推导：根上显式设置的 Map 与 Alias
-值在该控件作用域里会被默认公式取代，对自身输出不幂等的算法（PrimeNG 预设算法、`AtomUI:Dark`）还会让颜色再偏一档。
+大多数只调整少量颜色或尺寸的主题应覆盖具体的 Map、Alias 或 Own Token。只有确实需要让某个 Control 的一整套派生值跟着新种子走时，
+才在 Control 上覆盖种子。根上显式写的全局 Token 改变的是共享全局值；语言对某个控件视图的覆盖仍然生效，要改这个控件，写它的
+Control 配置。
 
 ## 10. 在运行时切换主题
 
@@ -439,30 +446,52 @@ Control 级算法有四种状态：
 ```csharp
 .UseAtomUI(builder =>
 {
-    builder.WithInitialTheme(
-        "AcmeLight",
-        new ThemeConfigBuilder()
-            .WithAlgorithms(ThemeAlgorithm.Default)
-            .Build());
-
     builder.UseDesktopControls();
+    builder.UseAntDesign(language => language.AddDesktopControls());
+
+    builder.WithInitialTheme(ThemeSelection
+        .Of<AntDesignLanguage>()
+        .WithTheme("AcmeLight")
+        .WithDensity(DesignDensity.Compact));
 })
 ```
 
-启动后的切换使用 `IThemeManager.ApplyThemeAsync(ThemeRequest)`。`ThemeConfig` 是深度不可变值；更新主题意味着创建
-并提交新的 Config，不能修改已经进入 Manager 的集合或 Token entry。
-
-Control 级配置使用生成的强类型 identity 和 Token key。目标 API 形态为：
+只启用了一种语言且没有调用 `WithInitialTheme` 时，初始主题是该语言的默认变体。面向最终用户的切换（语言、具名主题、明暗、密度、
+品牌色）使用 `IThemeManager.ApplyAsync(ThemeSelection)`，见本文末节「设计语言与品牌色」。需要直接提交一份配置时使用
+`IThemeManager.ApplyThemeAsync(ThemeRequest)`：
 
 ```csharp
-theme.ControlTokens
-    .For(ButtonTokens.Identity)
-    .Set(GlobalTokens.ColorPrimary, Colors.SeaGreen)
-    .Set(ButtonTokens.ContentFontSize, 15);
+var config = new ThemeConfigBuilder()
+    .WithAppearance(ThemeAppearance.Dark)
+    .WithToken("ColorPrimary", "#0F6CBD")
+    .WithControl(ButtonTokens.Identity, new ControlThemeConfigBuilder()
+        .WithToken("ContentFontSize", "15")
+        .Build())
+    .Build();
+await themeManager.ApplyThemeAsync(new ThemeRequest("AcmeLight", config, ThemeTransitionReason.UserRequest));
 ```
 
-配置入口与 Theme Definition XML 使用同一个 schema，所以两者对 identity、Own/Global Token 分类、值类型和
-算法的判断完全一致。
+`ThemeConfig` 是深度不可变值；更新主题意味着创建并提交新的 Config，不能修改已经进入 Manager 的集合或 Token entry。
+没有写的轴（`WithLanguage`、`WithStyle`、`WithAppearance`、`WithDensity`、`WithIdiom`）继承。
+
+Control 级配置以生成的强类型 identity（`XxxTokens.Identity`）为键，Token 按名称与词法值写入；同一个集合既可写该 Control 的 Own
+Token，也可写它看到的任意 Global Token，还可以固定它的明暗或密度：
+
+```csharp
+var config = new ThemeConfigBuilder()
+    .WithControl(ButtonTokens.Identity, new ControlThemeConfigBuilder()
+        .WithToken("ColorPrimaryHover", "#2E8B57") // Map: replaces this one value for Button only
+        .WithToken("ColorPrimary", "#2E8B57")      // Seed: Button becomes its own unit and re-derives from it
+        .WithToken("ContentFontSize", "15")        // Button Own Token
+        .Build())
+    .WithControl(ToolTipTokens.Identity, new ControlThemeConfigBuilder()
+        .WithAppearance(ThemeAppearance.Dark)      // fixed axis: ToolTip becomes its own evaluation unit
+        .Build())
+    .Build();
+```
+
+配置入口与 Theme Definition XML 使用同一个 schema，所以两者对语言、identity、Own/Global Token 分类、值类型和
+阶段的判断完全一致。
 
 ## 11. 为页面建立局部主题
 
@@ -480,8 +509,9 @@ Root ThemeContext
 需要注意：
 
 - Provider 每次更新仍使用同一个 ThemeContext 和 ResourceProvider。
-- `Inherit=true` 在父有效配置上叠加本地配置。
-- `Inherit=false` 从 AtomUI library baseline 重新开始，不复制父主题。
+- `Inherit=true` 在父有效配置上叠加本地配置；没写的轴（语言、风格、明暗、密度、形态）各自继承父作用域的有效值。
+- `Inherit=false` 保留父作用域的语言与形态，丢弃所选主题定义与父作用域的全部显式值，风格、明暗、密度回到语言默认，再应用本作用域的配置。
+- 作用域可以整体换语言（`ThemeConfigBuilder.WithLanguage`），该语言必须已启用。
 - 普通 Popup/Flyout 通过逻辑树继承。
 - 独立 Window、Dialog、Notification TopLevel 必须从显式 owner 获得 ThemeContextLease。
 - 无 owner 的静态 API 只能使用根主题，不能根据焦点或调用栈猜测局部主题。
@@ -606,19 +636,22 @@ Semantic Part Theme 是 Selector 的可选扩展，不是 Popup、Overlay 或普
 验证与发布状态见 [AOT 与裁剪架构](../../architecture/foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 ```text
-Acme.Controls
-+-- 正常 Control、可选 Own Token、Semantic Part 和 Themes/
-+-- AcmeControlThemesProvider
+Acme.Controls                          control package: no values, references no design language
++-- 正常 Control、可选 Own Token 声明、Semantic Part 和 Themes/
 \-- UseAcmeControls() 调用生成的包注册 helper
+Acme.Controls.Themes.AntDesign         value package: one [ControlDerivation] per Own Token class
+\-- AddAcmeControls() 登记 Ant Design 下的取值
 ```
 
-应用保持普通包启用方式：
+控件包只声明 Token，取值由每种语言的取值包（`Acme.Controls.Themes.AntDesign` 等）给出。应用启用控件包，并在启用的每种语言下
+登记它的取值：
 
 ```csharp
 .UseAtomUI(builder =>
 {
     builder.UseDesktopControls();
     builder.UseAcmeControls();
+    builder.UseAntDesign(language => language.AddDesktopControls().AddAcmeControls());
 })
 ```
 
@@ -629,7 +662,7 @@ ResourceInclude 由统一的资源契约处理，不因为注册一个公开控�
 NativeAOT/CoreCLR 使用官方映射，Browser 裁剪与 AOT 使用链接结果转换后端，应用与包入口不切换写法。
 正常静态用法无 AOT 专用配置；真正动态输入仍需类型化工厂或明确边界。
 
-项目、Provider 与目标入口示例见[第三方控件包指南](third-party-control-packages.md)，资源与 Token 语义见
+项目、取值包与入口示例见[第三方控件包指南](third-party-control-packages.md)，资源与 Token 语义见
 [控件与资源注册契约](../../architecture/foundations/control-registration-contracts.md)。
 
 ## 15. 一次主题切换为什么不会暴露半成品
@@ -688,7 +721,8 @@ Control 使用同一条确定性路径。
 | 把合法但未消费的 Global Token 当成配置错误 | 重新引入不完整消费白名单 | 接受全部 Global Token，未知名称才失败 |
 | 用 `SharedTokenResource` 期待 Rating 局部覆盖 | Shared 始终读取全局值 | 改用 `RatingTokenResource` |
 | 共享基元（InputControlFrame 等）的主题用 `SharedTokenResource` | 用户对 LineEdit 的覆盖传不进基元 | 改用 `OwnerTokenResource` |
-| 在 `CalculateTokenValues` 里用 `double.IsNaN` 判断用户是否设置了某字段 | 编译器已先写入显式值，哨兵永远判为未设置；Color 等类型也没有哨兵 | 用 `IsExplicit(kind)` |
+| 在控件推导里判断用户是否设置了某字段 | 显式值在推导之前已冻结，推导对它的写入被忽略、读取得到显式值 | 直接顺序赋值，不做判断 |
+| 在 Token 类里写计算方法或默认值初始化器 | Token 类只有声明；取值属于设计语言 | 写进该语言取值包的控件推导 |
 | 控件代码用 `Application.Current.TryGetResource` 读 Token，失败回落写死值 | 局部 ThemeConfigProvider 的覆盖对它无效 | `ControlTokenAccessor` 或 `TokenResourceBinder` |
 | 预设色用 RGB 常量写在代码里 | 不跟随主题色板，暗色下也不变 | 从快照 `PresetPalettes` 读取并按快照缓存 |
 | 同节点同属性同时在模板节点属性与非触发 Style Setter 写默认值 | 模板节点属性为 Template 优先级，非触发 Style Setter 不生效 | 只在一处写默认值 |
@@ -700,13 +734,13 @@ Control 使用同一条确定性路径。
 
 1. 先确定修改属于全局设计语言、Control 有效 Global Token、Own Token、Semantic Selector、ControlTheme 还是
    Semantic Part Theme。
-2. 从 Global Token 开始定制，让算法生成完整派生值。
+2. 从 Global Token 的种子开始定制，让设计语言推导完整派生值。
 3. 只有单个 Control 需要偏离时，优先选择已有 Global Token；只有 Control 独有语义才使用 Own Token。
 4. Token 能表达的视觉差异不要复制模板。
 5. 只有结构、selector 或状态映射需要改变时才创建自定义 ControlTheme。
 6. 稳定内部区域优先使用 Semantic Selector；只有完整替换真实 public 子 Control 时才使用 Semantic Part Theme。
 7. 新主题资产通过生成 manifest 注册，在 ThemeManager 构建前冻结 owner、引用 identity 和结构契约。
-8. 验证 Light/Dark、Control 算法、局部 ThemeContext、Popup/TopLevel 和 NativeAOT 路径。
+8. 验证 Light/Dark、各密度、Control 固定轴与种子覆盖、局部 ThemeContext、Popup/TopLevel 和 NativeAOT 路径。
 
 ## 19. 最终心智模型
 
@@ -722,96 +756,79 @@ Control 使用同一条确定性路径。
 
 ## 设计语言与品牌色
 
-一个主题定义可以声明自己属于哪个设计语言、是哪种明暗和密度的变体，以及是否允许替换品牌色。这些属性写在
-`<Theme>` 元素上，供界面把一组 profile 归成一个选项（例如 Gallery 的设计语言菜单）：
+主题属于一种设计语言，并可以固定这种语言的某些轴。这些写在 `<Theme>` 根元素上，界面据此把主题归到语言之下（例如 Gallery 的
+设计语言菜单）：
 
 ```xml
-<Theme Id="PrimeNGAura.Dark" Name="PrimeNG Aura Dark" Appearance="Dark"
-       DesignLanguage="PrimeNG.Aura" Density="Normal" BrandColor="Seed">
+<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="AcmeNight" Name="Acme Night" Language="AntDesign" Appearance="Dark">
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#0F6CBD" Locked="true" />
+  </Tokens>
+</Theme>
 ```
 
 | 属性 | 取值 | 缺省 | 含义 |
 | --- | --- | --- | --- |
-| `DesignLanguage` | 标识符 | 不声明 | 同一设计语言的定义归为一组；不声明的主题不进入任何分组，但仍可按 Id 使用 |
-| `Density` | `Normal`、`Compact` | `Normal` | 该定义按哪种密度编写；与 `Appearance` 一起构成变体 |
-| `BrandColor` | `Seed`、`Fixed` | `Fixed` | `Seed`：品牌色可替换，品牌派生 Token 由算法从 `ColorPrimary` 推出；`Fixed`：品牌色由定义写死 |
+| `Language` | 已启用语言的身份 | 必须写 | 主题所属的设计语言 |
+| `Style` | 该语言声明的风格 | 开放（语言的默认风格） | 写了即固定 |
+| `Appearance` | `Light`、`Dark` | 开放 | 写了即固定 |
+| `Density` | 该语言声明的密度档 | 开放 | 写了即固定 |
 
-同一设计语言内，(`Appearance`, `Density`) 不能重复，各定义的 `BrandColor` 必须一致。`ThemeInfo` 暴露
-`DesignLanguage`、`Density`、`BrandColor` 和定义自身的算法链 `Algorithms`。
+固定只约束最终用户的选择：主题固定了明暗，选择里的明暗对它不生效，界面据此禁用开关；开发者写的 `ThemeConfig` 与局部作用域不受
+约束。v1 的 `DesignLanguage`、`Density="Normal"`、`BrandColor`、`NeutralColor`、`IsDefault` 以及 `ATMTHM3101`–`ATMTHM3108`
+已全部取消：分组由 `Language` 与 `Style` 直接给出，同一语言的不同变体不再是不同的文件。
 
-### Seed 与 Fixed
+### 可调种子与 Locked
 
-`BrandColor="Seed"` 的主题把 `ColorPrimary` 当作种子，下面这组品牌派生 Token 必须由算法计算，不能在该主题里手写：
+每种语言声明哪些种子适合交给最终用户更换（**可调种子**；Ant Design：`ColorPrimary`）。品牌色、中性基调都通过种子表达，换了种子，
+语言推导出全部派生值——悬停、按下、焦点环、选中底色都跟着变，主题里不需要也不应该手写它们。
 
-`ColorPrimaryHover`、`ColorPrimaryActive`、`ColorPrimaryBg`、`ColorPrimaryBgHover`、`ColorPrimaryBorder`、
-`ColorPrimaryBorderHover`、`ColorPrimaryText`、`ColorPrimaryTextHover`、`ColorPrimaryTextActive`、`ColorControlOutline`。
+主题对某个可调种子写 `Locked="true"`，表示最终用户的选择不能替换它，界面也不再为它提供色板。`Locked` 只能写在基础段的种子上，
+写在 Map / Alias、非可调种子、Control 的 Token 或条件段里都报 `ATMTHM3004`。语言还可以声明每个可调种子派生出哪些 Token：主题没有
+锁定种子却显式写了其派生 Token 时，Binder 给出 `ATMTHM3006` 警告——用户换了种子之后那个值不会跟着变。
 
-手写其中任何一个会报 `ATMTHM3101`（Error），改为声明 `BrandColor="Fixed"` 或删掉该 Token。`ColorLink` 不在这组里：
-它是独立种子，Seed 主题可以显式设置。`Fixed` 的主题自己决定品牌色，选择器不会向它写入种子。
-没有声明 `BrandColor` 的主题按缺省 `Fixed` 处理。Gallery 的 Theme Presets 页只列出编译主题包，因此未声明 `BrandColor` 的编译主题包（包括 ABI 1 编译包）不再提供品牌色色块；要启用，请声明 `BrandColor="Seed"`。
+### 主题管理器提供的数据
 
-### 目录诊断
+主题管理器对外提供三样只读数据，菜单直接由它们生成：
 
-同一设计语言的跨定义冲突按两处不同的级别处理：
+- `IThemeManager.Languages`：已启用的语言（`DesignLanguageInfo`），及各自的风格、密度、形态与可调种子；
+- `IThemeManager.Themes`：主题目录（`ThemeInfo`），每个具名主题的语言、固定的轴、锁定的种子（`LockedSeeds`）、声明的主色
+  （`AccentColor`）；另有每个已启用语言的隐式条目 `$<LanguageId>`（`IsLanguageDefault = true`），代表「该语言、不带主题文件」；
+- `IThemeManager.CurrentSelection` 与 `CurrentTheme`：当前选择与当前主题状态（语言、有效变体）。
 
-- 编译主题包内：`ATMTHM3103`（同一设计语言里 `Appearance` 与 `Density` 重复）和 `ATMTHM3104`（同一设计语言混用
-  `Seed` 与 `Fixed`）是 Error，包不能通过生成。
-- 运行时目录合并所有来源（包、用户目录、热重载）后检查，发的是 Warning，不阻止应用启动。冲突的定义（按加载顺序在后者）
-  退出分组，按 `DesignLanguage = null` 处理，仍可按 Id 使用；用户目录也可以给已有设计语言补充变体，只要变体不重复、
-  `BrandColor` 一致。
+### 用选择切换主题
 
-另有一条单定义规则 `ATMTHM3105`（编译主题包内与运行时目录都是 Warning，定义留在分组内）：声明了设计语言的定义，
-`Density` 必须与算法链一致。`Density="Compact"` 却没有内置 `Compact` 算法，或 `Density="Normal"`（含不写）却带了
-`Compact` 算法，解析器按声明选中的变体就会以另一种密度渲染。没有设计语言的定义不检查。
-
-与品牌色轴对称，另有一条中性色轴：声明了 `NeutralColor="Seed"` 的设计语言接受一个可空的 `ColorNeutral` 种子
-（语义是"中性色阶的代表色"，如 shadcn Base Color 浅色的 `--muted-foreground`）。`ThemeSelectionResolver` 把
-选择解析成 `NeutralSeed` / `NeutralColorIgnored`；Ant Design 等固定语言忽略该种子，渲染不变。配套诊断为
-`ATMTHM3106`（Seed 定义钉中性派生 Token）、`ATMTHM3107`（Seed 无种子且链仅内置算法）、`ATMTHM3108`
-（语言内中性声明不一致）。
-
-### 用解析器把选择变成主题请求
-
-`ThemeSelectionResolver` 是 Core 里的纯函数，不读写任何状态。它把用户的选择（设计语言、明暗、密度、品牌色）解析成要应用的
-主题 Id、算法链和品牌种子：
+`ThemeSelection` 是面向最终用户的那一层：选哪种语言、哪个具名主题、明暗、密度、品牌色。它是不可变值，每个 `With…` 返回新的选择：
 
 ```csharp
-var catalog = themeManager.AvailableThemes;      // IReadOnlyList<ThemeInfo>
-var languages = ThemeSelectionResolver.DesignLanguages(catalog);
-var support = ThemeSelectionResolver.BrandColorSupport(catalog, "AntDesign");
-
-var result = ThemeSelectionResolver.Resolve(
-    catalog,
-    new ThemeSelection("AntDesign", ThemeAppearance.Dark, ThemeDensity.Compact, Color.Parse("#52C41A")));
-
-// result.ThemeId     = "DaybreakBlue"
-// result.Algorithms  = [Default, Compact, Dark]  (null 表示沿用 profile 自己的链)
-// result.BrandSeed   = #52C41A                   (Fixed 语言为 null，且 BrandColorIgnored = true)
+await themeManager.ApplyAsync(ThemeSelection
+    .Of<AntDesignLanguage>()
+    .WithTheme("AcmeNight")                    // optional named theme
+    .WithAppearance(ThemeAppearance.Dark)
+    .WithDensity(DesignDensity.Compact)
+    .WithSeed("ColorPrimary", "#52C41A"));
 ```
 
-规则：
+- 具名主题是可选的。不选主题时，结果就是该语言在所选变体下的默认外观（目录条目 `$<LanguageId>`）。
+- 明暗可以 `FollowSystemAppearance()`：由主题管理器按平台当前的明暗解析，平台变化时重新应用。
+- 语言种子用 `WithLanguageSeed(name, value)` 或 `WithLanguageSeed<TToken>(seed => …)` 选择。
 
-1. 先找同一设计语言里 (`Appearance`, `Density`) 精确匹配的定义，用它自己的链（`Algorithms = null`）。
-2. 没有精确匹配时选一个回退定义，从它的链里去掉 `Dark`、`Compact`，再按选择追加 `Compact`、`Dark`（Ant Design 只有一个
-   基础 profile，明暗和紧凑靠内置算法）。回退定义按下面的顺序确定，每一步都取目录顺序中的第一个：
-   - 该语言的 Light + Normal 定义（基础定义）；
-   - 没有基础定义时，与所选 `Appearance` 相同的定义；
-   - 再没有时，与所选 `Density` 相同的定义；
-   - 都没有时，该语言的第一个定义。
+选择由 `ThemeSelectionResolver.Resolve` 解析成一个 `ThemeRequest`。它是纯函数，规则只有三条，没有回退搜索：
 
-   因此设计语言不必提供 Light + Normal 定义。例如用户目录里只有 `Appearance="Dark"` 的 `MyNight` 声明了
-   `DesignLanguage="MyBrand"`，在亮色下选择 `MyBrand` 会得到 `MyNight` 加去掉 `Dark` 后的链，而不是异常。
-3. 只有语言在目录中不存在时才抛 `ArgumentException`。
+1. 语言必须已启用；所选主题必须属于该语言；所选风格、密度必须在语言声明的范围内。否则抛 `ThemeSelectionException`。
+2. 主题固定的轴取主题的值，选择里对应的值被忽略，在结果的 `IgnoredAxes` 中标明。
+3. 主题锁定的种子不被选择替换，在结果的 `IgnoredSeeds` 中标明。
 
-调用方用结果组装 `ThemeRequest`：`ThemeId`、`Algorithms`（为 null 时不指定）和 `ColorPrimary = BrandSeed`（为 null 时不写）。
+当前所选的具名主题因目录刷新而消失时，回到「同一语言、同样的变体、不带主题」，而不是换成另一个主题。
 
 ## 相关文档
 
 - [AtomUI 主题系统架构](../../architecture/systems/theming/runtime.md)：完整运行时模型、事务、缓存、生命周期和验收标准。
 - [Semantic Part 系统设计](../../architecture/systems/theming/semantic-parts.md)：稳定视觉区域、Selector、ContractType、Popup 和兼容性契约。
 - [Control Token 设计规范](../../engineering/development/control-token-guidelines.md)：Control 和第三方 Control 的研发约束。
-- [预设主题包指南](preset-theme-packages.md)：引用 PrimeNG、Shadcn 预设包，以及制作自己的预设包。
-- [编写主题算法](writing-theme-algorithms.md)：声明、注册、测试和发布自己的主题算法。
+- [设计语言架构](../../architecture/systems/theming/design-languages.md)：设计语言的概念、包与依赖规则、单遍管线与启动校验。
+- [设计语言包指南](design-language-packages.md)：选择设计语言、引用取值包，以及制作自己的具名主题包。
+- [编写设计语言](writing-design-languages.md)：语言包、取值包、覆盖校验与契约测试。
 - [主题生效测试规范](../../engineering/development/theme-effect-tests.md)：承诺面中每个 Token 如何被证明有效。
-- [主题定义 XML v1 规范](../../reference/theming/theme-definition-xml-v1.md)：主题文件格式、算法和验证规则。
+- [主题定义 XML v2 规范](../../reference/theming/theme-definition-xml-v2.md)：主题文件格式、条件段和验证规则。
 - [启动与注册链路](../../architecture/foundations/startup-and-registration.md)：应用、Control 包和 ThemeManager 的构建顺序。

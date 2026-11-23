@@ -148,7 +148,7 @@ public BrowserGalleryView()
 `FontFamily` 是复合值，文本形态由专用 converter 定义。`FontFamilyTokenValueConverter` 用 `FontFamily.Parse`
 解析，失败时抛 `InvalidOperationException`，不静默回退——这与字族解析失败时的静默跳过是两件事：**Token 字符串
 本身格式错误会炸，字符串里的某个字族不存在则不会。** 主题定义 XML 中的字体族值走同一个 parser，格式见
-[主题定义 XML v1](../../../reference/theming/theme-definition-xml-v1.md)。
+[主题定义 XML v2](../../../reference/theming/theme-definition-xml-v2.md)。
 
 在 Token 值表里 `FontFamily` 被当作引用类型值处理，和 `ImmutableTransform` 同类，不走值类型的装箱优化路径。
 `ThemeRetainedBytesEstimator` 按 `ObjectOverhead + 字族名字符串` 估算它的驻留开销并计入主题缓存容量，所以往链里

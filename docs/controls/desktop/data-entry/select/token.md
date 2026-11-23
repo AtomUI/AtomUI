@@ -80,6 +80,17 @@ padding 内，标为 `[ReservedToken]`，见 §7。
 
 该 Token 控制 `PopupFrame` 内部 padding，并参与 `MaxPopupHeight` 计算。
 
+### 2.5 外框形态 Token
+
+- `TransparentOutlineBorder`
+- `BottomOutlineBorder`
+- `MutedSelectIndicator`
+
+由设计语言选择的输入框外框形态：`TransparentOutlineBorder` 为真时外框在常态与悬停时保持透明边框，`BottomOutlineBorder`
+为真时只画底边。应用显式设置了对应全局 Token（`ColorBorder`、`ColorPrimaryHover`、`BorderThickness`）时以显式值为准。
+`InputControlFrame` 在主题快照变化时读取。Ant Design 与 PrimeNG 均为 `false`；Shadcn Luma、Rhea 透明边框，Sera 只画底边。 `MutedSelectIndicator` 为真时选择指示器使用 `ColorTextDescription`（应用显式设置了
+`ColorTextQuaternary` 时不生效），Shadcn Luma 打开。
+
 ## 3. 控件专项模型中的 Token 使用
 
 SelectToken 使用路径：

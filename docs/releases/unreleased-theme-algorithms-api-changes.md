@@ -1,437 +1,259 @@
-# Theme algorithm strategy migration guide (unreleased)
+# Design language migration guide (unreleased)
 
 [简体中文](unreleased-theme-algorithms-api-changes.zh-CN.md)
 
-This guide covers the theme algorithm changes on top of 6.2.14. The theme algorithm is now a pluggable strategy:
-algorithm identities are open `(Catalog, Id)` pairs instead of a closed enum, theme packages and applications can
-register their own algorithms, and an algorithm can compute Alias tokens and per-control tokens as well as Map
-tokens. `AtomUI.Themes.PrimeNG` is the first package built this way. The release version is not decided yet; the
-release owner folds this file into `docs/releases/<version>-api-changes.md`. See the [Changelog](../../CHANGELOG.md)
-for release highlights and [Writing theme algorithms](../guides/theming/writing-theme-algorithms.md) (Chinese) for
-the author's guide.
+This guide covers upgrading from 6.2.15. The theme system is now organised around **design languages**: a language
+package (for example `AtomUI.DesignLanguages.AntDesign`) owns the seeds and the global derivation, control packages
+only declare their tokens, and a value package per control package and language (for example
+`AtomUI.Desktop.Controls.Themes.AntDesign`) writes the control values. Themes are selected by language, style,
+appearance and density instead of by a chain of algorithms. The release version is not decided yet; the release owner
+folds this file into `docs/releases/<version>-api-changes.md`. See [Writing design languages](../guides/theming/writing-design-languages.md)
+(Chinese), [Theme definition XML v2](../reference/theming/theme-definition-xml-v2.md) (Chinese) and
+[Compiled theme ABI 4](../reference/theming/compiled-theme-abi-v4.md) (Chinese) for the details.
+
+Ant Design renders exactly as in 6.2.15 apart from the deliberate corrections listed under
+[Token additions and corrections](#token-additions-and-corrections).
 
 ## Quick reference
 
-| Area | 6.2.14 | Now / migration |
+| Area | 6.2.15 | Now / migration |
 | --- | --- | --- |
-| `ThemeAlgorithm` | `enum` (`Default = 0`, `Dark = 1`, `Compact = 2`) | `readonly struct` identity `(Catalog, Id)`; `ThemeAlgorithm.Default` / `Dark` / `Compact` keep their names. Binary incompatible; `switch`/`case`, `(int)` casts, `const`, `Enum.*` and `default(ThemeAlgorithm)`-as-Default no longer work; compare with `==` |
-| `ThemeAlgorithmAttribute` | `(ThemeAlgorithm algorithm, int revision, ThemeAppearanceEffect appearanceEffect)` | `(string catalog, string id, int revision, ThemeAppearanceEffect appearanceEffect)` |
-| `ThemeAlgorithmDescriptor` | constructor and `Algorithm` typed as the enum | same shape, typed as the struct; rejects `default(ThemeAlgorithm)` |
-| `DefaultThemeVariantCalculator.Algorithm`, `DarkThemeVariantCalculator.Algorithm`, `CompactThemeVariantCalculator.Algorithm` | `public const ThemeAlgorithm` | removed; use `ThemeAlgorithm.Default` / `Dark` / `Compact` |
-| `ThemeAlgorithmTypeConverter` (AXAML) | `DefaultAlgorithm`, `DarkAlgorithm`, `CompactAlgorithm` | `Default`, `Dark`, `Compact` or `Catalog:Id`; the `...Algorithm` spellings are rejected |
-| `IThemeManagerBuilder` | — | new `AddThemeAlgorithms`, `AddControlTokenAlgorithms`; custom implementations of the interface must add them |
-| New algorithm API | — | `IThemeAliasAlgorithm`, `IControlTokenAlgorithm<TToken>`, `ControlTokenAlgorithmAttribute`, `ThemeAlgorithmContext`, `ThemeAlgorithmContractException`, `ThemeAlgorithmContractViolationKind`, `IControlToken`, `ControlTokenAlgorithmDescriptor`, `ThemeBuildAlgorithmAttribute`; no action |
-| Generated `<Catalog>Algorithms` | — | one public static class per algorithm catalog in a package (e.g. `PrimeNGAlgorithms.AuraDark`); no action |
-| Control token classes of `AtomUI.Controls`, `AtomUI.Desktop.Controls`, ColorPicker, DataGrid | 148 `internal`, 2 `public` | all 150 `public partial` (117 terminal, 33 abstract); token properties are partial properties. Larger public surface; abstract layers can be inherited and their `protected` helpers are public API |
-| Third-party control token classes | ordinary class, auto-properties, `public override CalculateTokenValues` | `partial` class, `partial` properties (`ATOMUIGEN049` otherwise), `protected override CalculateTokenValues` (CS0507 otherwise) |
-| `DesignToken` global token properties (256) | auto-properties | partial properties; no change for callers |
-| New global Alias token `ControlItemColorActive` | — | the text colour on `ControlItemBgActive` (selected items); defaults to `ColorText`, so nothing changes unless a theme sets it; the controls' selected-text tokens default to it (see below) |
-| Neutral color axis | — | new nullable seed `DesignToken.ColorNeutral` (the neutral family's representative color; ignored by the Ant Design calculators), `ThemeInfo.NeutralColor` / `NeutralAccentColor`, `ThemeSelection.NeutralColor`, `ThemeSelectionResult.NeutralSeed` / `NeutralColorIgnored`, `ThemeSelectionResolver.NeutralColorSupport`, XML attribute `NeutralColor="Seed|Fixed"`, diagnostics `ATMTHM3106`–`ATMTHM3108`; compiled theme packages publish it as ABI 3 (ABI 1/2 keep loading with defaults) |
-| `AtomUI.Themes.Shadcn` theme ids | — | rebuilt against the current shadcn/ui: the old `ShadcnZinc` / `ShadcnSlate` / `ShadcnStone` ids (never published to NuGet) are replaced by eight styles `ShadcnVega` … `ShadcnRhea`, each `BrandColor="Seed"` and `NeutralColor="Seed"`; switch by design language `Shadcn.<Style>` |
-| Compiled theme input (build-task intermediate file) | format version 6 | version 7, carrying `NeutralColor`; old intermediates keep reporting "Compiled theme input format is out of date; rebuild the project." |
-| `ToolTipToken.ToolTipShadows`, `DrawerToken.EdgeBorderColor` / `EdgeBorderThickness` | — | new own tokens; defaults equal the previous rendering, so Ant Design is unchanged |
-| `AbstractControlDesignToken.CalculateTokenValues` | `public virtual` | `protected virtual`; cannot be called from outside |
-| `AbstractDesignToken` | — | new `protected void RecordWrite(string)` called by the generated setters; do not call it yourself |
-| Theme XML `<Algorithm>` | `Id` is `Default`, `Dark` or `Compact` | optional `Catalog` (default `AtomUI`); `Id` accepts any identifier. Existing files stay valid |
-| Explicit global Alias values | written after the Alias formulas; derived Alias tokens ignored them | drive the Alias tokens derived from them (a fix). Themes that set Alias tokens explicitly can compile differently |
-| Compiled theme input (build-tool intermediate) | format version 4, algorithms as integers | version 6, algorithms as `Catalog`/`Id` plus the design language metadata; stale intermediates fail with "Compiled theme input format is out of date; rebuild the project." |
-| Design language and brand color | — | new `ThemeDensity` (`Normal`, `Compact`) and `ThemeBrandColorSupport` (`Fixed`, `Seed`) enums; `ThemeInfo` gains the `init` properties `DesignLanguage`, `Density`, `BrandColor` and `Algorithms` (the definition's own chain); new `ThemeSelection`, `ThemeSelectionResult` and `ThemeSelectionResolver`; `CompiledThemeProgram` gains a protected ABI 2 constructor. ABI 1 packages keep loading with the defaults; no action (see below) |
-| PrimeNG presets | XML value tables with Ant-derived fill-ins | produced by six PrimeNG algorithms; visible colour changes (see below) |
-| `ProgressBarToken.InnerLabelColor` | — | new public Own token: the inner percentage label's dark candidate (default `ColorTextLabel`, the value the theme read before); no change unless a theme sets it |
-| `ArrowDecoratedBox` with a border | the built-in theme hid the arrow while `BorderThickness` was not zero | the arrow stays; the box draws one outline around box and arrow. New public Own tokens `ArrowDecoratedBoxToken.ContentBorderColor`, `ContentBorderThickness`, `ContentMinHeight`; defaults keep Ant Design unchanged (see below) |
+| Startup | `UseDesktopControls()` (and ColorPicker / DataGrid) brought the Ant Design themes with it | Enable a language explicitly: `UseAntDesign(language => language.AddDesktopControls())`; without any language startup throws "No design language is enabled; enable one (for example builder.UseAntDesign(...))." |
+| Packages | Ant Design formulas inside `AtomUI.Core` and each control token class | New `AtomUI.DesignLanguages.AntDesign`, `AtomUI.Controls.Themes.AntDesign`, `AtomUI.Desktop.Controls.Themes.AntDesign`, `AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign`, `AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign` |
+| `ThemeAlgorithm` and the algorithm chain | `enum` `Default` / `Dark` / `Compact`, `ThemeConfigBuilder.WithAlgorithms`, `<Algorithms>` in theme XML | Removed. Appearance (`ThemeAppearance`), density (`DesignDensity`), style (`DesignStyle`) and idiom (`DesignIdiom`) are independent parameters |
+| Calculators | `DefaultThemeVariantCalculator`, `DarkThemeVariantCalculator`, `CompactThemeVariantCalculator`, `AbstractThemeVariantCalculator`, `IThemeVariantCalculator`, `IThemeVariantCalculatorFactory`, `IThemeAlgorithm`, `ThemeAlgorithmAttribute`, `ThemeAlgorithmDescriptor`, `ThemeAppearanceEffect`, `ThemeAlgorithmTypeConverter` | Removed; the Ant Design formulas live in the Ant Design language package |
+| Colour utilities | `AtomUI.Theme.Algorithms` (`PaletteGenerator`, `PresetPalettes`, `PresetPrimaryColor`, `PresetColorType`, `PaletteInfo`, `PaletteGenerateOption`, `ColorMap`) | Same types in `AtomUI.Theme.Derivation`; change the `using`. New public `CalculatorUtils`, `FontSizeInfo`, `RadiusInfo` there too |
+| `IThemeManager` | `AvailableThemes` | `Themes` (also lists the implicit `$<Language>` default entry of every enabled language); new `Languages`, `CurrentSelection`, `ApplyAsync(ThemeSelection)` |
+| `ThemeCatalogReloadResult` | `AvailableThemes` | `Themes` |
+| `ThemeInfo` | `(Id, Name, Appearance, IsDefault)` plus `AccentColor` | `(Id, Name, Language)` with `init` properties `Style`, `Appearance` (nullable), `Density`, `LockedSeeds`, `SeedValues` (the theme's own adjustable seed values), `AccentColor`, `IsLanguageDefault`; `IsDefault` is gone |
+| `ThemeConfig` / `ThemeConfigBuilder` | `Algorithms`, `WithAlgorithms(...)` | `Language`, `Style`, `Appearance`, `Density`, `Idiom`, `LanguageTokens`; `WithLanguage`, `WithStyle`, `WithAppearance`, `WithDensity`, `WithIdiom`, `WithLanguageToken` |
+| `ControlAlgorithmMode` | four control algorithm modes in control configuration | Removed; a control-level value replaces only that value, a control-level seed or axis makes the control its own evaluation unit |
+| Theme definition XML | v1 | v2 only; convert once with `dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory> [-p:AtomUIThemeDefinitionOutput=<directory>]` |
+| Compiled theme packages | ABI 1 | ABI 4; rebuild packages with the current generator |
+| Control token classes | mostly `internal`, values computed in `CalculateTokenValues` | `public partial` declarations only; the values come from the language's value package |
+| `SharedTokenResourceValue` | public | removed |
 
-## `ThemeAlgorithm` becomes an identity struct
-
-`ThemeAlgorithm` is now:
+## Enabling a design language
 
 ```csharp
-public readonly struct ThemeAlgorithm : IEquatable<ThemeAlgorithm>
-{
-    public ThemeAlgorithm(string catalog, string id); // both validated as theme schema identifiers
-    public string Catalog { get; }
-    public string Id { get; }
-    public static ThemeAlgorithm Default { get; } // AtomUI:Default
-    public static ThemeAlgorithm Dark { get; }    // AtomUI:Dark
-    public static ThemeAlgorithm Compact { get; } // AtomUI:Compact
-}
+// Before (6.2.15)
+builder.UseAtomUI(root => root
+    .UseDesktopControls()
+    .UseDesktopColorPicker()
+    .UseDesktopDataGrid());
+
+// After
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;   // AddDesktopControls, AddDesktopColorPicker, AddDesktopDataGrid
+
+builder.UseAtomUI(root => root
+    .UseDesktopControls()
+    .UseDesktopColorPicker()
+    .UseDesktopDataGrid()
+    .UseAntDesign(language => language
+        .AddDesktopControls()
+        .AddDesktopColorPicker()
+        .AddDesktopDataGrid()));
 ```
 
-Equality is ordinal on `Catalog` and `Id`; `ToString()` returns `Catalog:Id` (`AtomUI:Dark`, previously `Dark`).
+- `UseDesktopControls()`, `UseDesktopColorPicker()` and `UseDesktopDataGrid()` enable the control packages, as before.
+- `UseAntDesign(...)` enables the language and its official theme (Daybreak Blue). The `Add*()` methods register the
+  value packages only; they do not enable the control packages.
+- Every enabled control package needs a value package for every enabled language. A missing one fails at startup with
+  a message that names the missing value package.
 
-The most common call sites compile unchanged:
+## Selecting a theme
 
 ```csharp
+// Before
+await themeManager.ApplyThemeAsync(new ThemeRequest("DaybreakBlue", config, ThemeTransitionReason.UserRequest));
+
+// After: by language and variant
+await themeManager.ApplyAsync(
+    ThemeSelection.Of("AntDesign")
+        .WithAppearance(ThemeAppearance.Dark)
+        .WithDensity(DesignDensity.Compact)
+        .WithSeed("ColorPrimary", "#1677FF"));
+```
+
+- `ThemeSelection` carries `Language`, `Style`, an optional named `ThemeId`, `Appearance` (or `FollowSystemAppearance()`),
+  `Density`, global `Seeds` and `LanguageSeeds`. `ThemeSelection.Of<TLanguage>()` takes the language type instead of the id.
+- `IThemeManager.Languages` lists each enabled language as a `DesignLanguageInfo` (`Id`, `Styles`, `DefaultStyle`,
+  `Densities`, `Idioms`, `AdjustableSeeds`); build language, style, density and brand-colour menus from it.
+- Every enabled language has an implicit catalog entry `$<Language>` (`ThemeInfo.LanguageDefaultId`, flagged
+  `IsLanguageDefault`), so a language is selectable without a theme file.
+- An unknown language, theme or axis value throws `ThemeSelectionException`.
+- `ApplyThemeAsync(ThemeRequest)` applies a theme request with a full runtime configuration (control-level values
+  included). `IThemeManager.DEFAULT_THEME_ID` is removed: core names no language's theme; use
+  `AntDesignThemes.DaybreakBlue` from the Ant Design language package.
+- `IThemeManagerBuilder.WithInitialTheme(ThemeSelection)` sets the startup selection.
+
+## Theme configuration
+
+`ThemeConfig.Algorithms` and `ThemeConfigBuilder.WithAlgorithms` are removed. Write the variant directly:
+
+```csharp
+// Before
+new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark, ThemeAlgorithm.Compact).Build();
+
+// After
 new ThemeConfigBuilder()
-    .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+    .WithAppearance(ThemeAppearance.Dark)
+    .WithDensity(DesignDensity.Compact)
     .Build();
 ```
 
-Rewrite code that relied on the enum:
+Each axis inherits independently from the outer scope; an inner scope no longer replaces the whole chain. Explicit
+values are fixed before any derivation runs, so a value a theme or configuration supplies is never overwritten and the
+values derived from it follow it.
 
-```csharp
-// Before
-switch (algorithm)
-{
-    case ThemeAlgorithm.Dark:
-        ...
-}
-var code = (int)algorithm;
-const ThemeAlgorithm fallback = ThemeAlgorithm.Default;
+## Theme definition XML v2
 
-// After
-if (algorithm == ThemeAlgorithm.Dark)
-{
-    ...
-}
-var key = algorithm.ToString();                       // "AtomUI:Dark"
-static readonly ThemeAlgorithm Fallback = ThemeAlgorithm.Default;
+Theme files use format v2. The four files of one language and style (light, dark, compact, dark compact) become one
+file with `<When>` sections. `<Algorithms>`, `IsDefault`, `DesignLanguage`, `BrandColor` and `NeutralColor` are gone:
+`Language` and `Style` on `<Theme>` group the theme, and `Locked` on a token says what users may not replace. v1 files
+are not read; a v1 file in a user theme directory is reported as `ATMTHM1004` with the conversion command, and the
+directory does not take effect until it is converted. Convert once:
+
+```bash
+dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory>
 ```
 
-`default(ThemeAlgorithm)` no longer means `Default`: it has a null `Catalog`. The configuration normalizer reports
-it as `ATMTHM4004` ("Algorithm identity is uninitialized."), and the descriptor constructors throw
-`ArgumentException` ("Theme algorithm identity is uninitialized."). Persisted integer values cannot be converted
-back; persist `Catalog` and `Id` instead.
+By default the command rewrites in place and deletes the merged variant files; pass
+`-p:AtomUIThemeDefinitionOutput=<directory>` to write elsewhere. See [Theme definition XML v2](../reference/theming/theme-definition-xml-v2.md)
+section 14.
 
-Assemblies compiled against 6.2.14 that use `ThemeAlgorithm` (including generated compiled theme programs, which
-used to emit `(ThemeAlgorithm)1`) must be rebuilt.
+## Compiled theme packages
 
-## Declaring an algorithm
+The generator emits compiled theme ABI 4, which records the language a package requires (manifest scope `language`).
+Packages built for ABI 1 do not load; rebuild them.
 
-```csharp
-// Before
-[ThemeAlgorithm(ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark)]
+## Control token classes and third-party control packages
 
-// After
-[ThemeAlgorithm("Acme", "Brand.Dark", 1, ThemeAppearanceEffect.Dark)]
-```
+All control token classes of `AtomUI.Controls`, `AtomUI.Desktop.Controls`, ColorPicker and DataGrid are `public
+partial` and contain declarations only. `CalculateTokenValues` and value-setting token constructors are gone; the Ant
+Design values moved, unchanged, into `[ControlDerivation]` classes in the Ant Design value packages.
 
-Use your own catalog; `AtomUI` is the catalog of the three built-in algorithms. Hand-built descriptors keep the
-same constructor shape with the struct: `new ThemeAlgorithmDescriptor(new ThemeAlgorithm("Acme", "Brand"), 1,
-ThemeAppearanceEffect.Light, static () => new AcmeBrandAlgorithm())`.
-
-The `public const ThemeAlgorithm Algorithm` fields of `DefaultThemeVariantCalculator`, `DarkThemeVariantCalculator`
-and `CompactThemeVariantCalculator` are removed. Replace `DefaultThemeVariantCalculator.Algorithm` with
-`ThemeAlgorithm.Default` (likewise `Dark`, `Compact`).
-
-## AXAML type converter spellings
-
-`ThemeAlgorithmTypeConverter` now accepts `Default`, `Dark`, `Compact` and `Catalog:Id`. Replace
-`DefaultAlgorithm`, `DarkAlgorithm` and `CompactAlgorithm` in AXAML with `Default`, `Dark` and `Compact`.
-
-## `IThemeManagerBuilder` gains two members
+A third-party control package declares its tokens and ships one value package per language it supports:
 
 ```csharp
-IThemeManagerBuilder AddThemeAlgorithms(IEnumerable<ThemeAlgorithmDescriptor> algorithms);
-IThemeManagerBuilder AddControlTokenAlgorithms(IEnumerable<ControlTokenAlgorithmDescriptor> algorithms);
-```
-
-Generated `GeneratedThemeAlgorithmRegistration.Register(builder)` calls them. Only code that implements
-`IThemeManagerBuilder` itself (for example a test double) needs to add the members.
-
-## New algorithm stages
-
-An algorithm now has three stages. The Map stage (`IThemeAlgorithm.Evaluate`) is unchanged. Two optional stages are
-new:
-
-| Type | Purpose |
-| --- | --- |
-| `IThemeAliasAlgorithm : IThemeAlgorithm` | `EvaluateAlias(in ThemeAlgorithmContext, DesignToken)` writes Alias-stage global tokens, on the same class as the Map stage |
-| `IControlTokenAlgorithm<TToken>` | `EvaluateGlobal` writes control-scoped global tokens, `EvaluateOwn` writes the control's own tokens; one class per control |
-| `ControlTokenAlgorithmAttribute(catalog, id, revision)` | links a control stage class to an algorithm; repeatable |
-| `ThemeAlgorithmContext` | `Appearance` of the whole chain and the chain's `Algorithms` |
-| `ThemeAlgorithmContractException`, `ThemeAlgorithmContractViolationKind` | thrown when a stage writes outside its stage, does not stabilize, or throws |
-| `IControlToken`, `ControlTokenAlgorithmDescriptor` | generated control identity of a token class; reflection-free control stage descriptor |
-| `ThemeBuildAlgorithmAttribute` | build contract that carries algorithm identities to referencing assemblies |
-
-Priority is fixed: Ant default formulas < algorithm < explicit theme values < explicit values of an inner scope.
-Built-in themes compile to the same values as before. Nothing needs to change unless you write algorithms; see
-[Writing theme algorithms](../guides/theming/writing-theme-algorithms.md).
-
-## Control token classes become public partial classes
-
-In `AtomUI.Controls`, `AtomUI.Desktop.Controls`, `AtomUI.Desktop.Controls.ColorPicker` and
-`AtomUI.Desktop.Controls.DataGrid`, 148 control token classes (116 terminal classes and 32 abstract layers) became
-public; with the two that were already public (`ColorPickerToken` and `AbstractColorPickerToken`), all 150 (117
-terminal, 33 abstract) are now `public partial`, so theme packages can write them from control stages.
-`AtomUI.Toolkits.GalleryBase` keeps its 8 token classes `internal`. The token names and types were already public
-through `XxxTokenKind` and the `ThemeBuildToken` attributes; what is new is the types themselves.
-
-The public abstract layers (for example `AbstractButtonGeometryToken`) can now be inherited by other assemblies.
-Their `protected` members, such as `CalculateContentPadding`, are part of the public API from now on.
-
-Third-party token classes must follow the new shape:
-
-```csharp
-// Before
-[ControlDesignToken]
-internal sealed class RatingToken : AbstractControlDesignToken
-{
-    public double StarSize { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        StarSize = EffectiveGlobalToken.ControlHeight;
-    }
-}
-
-// After
+// Control package: declarations only
 [ControlDesignToken]
 public sealed partial class RatingToken : AbstractControlDesignToken
 {
     public partial double StarSize { get; set; }
+}
 
-    protected override void CalculateTokenValues(bool isDarkMode)
+// Value package (for example Acme.Controls.Themes.AntDesign)
+[ControlDerivation]
+internal sealed class AntDesignRatingDerivation : IControlDerivation<AntDesignToken, RatingToken>
+{
+    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<RatingToken> view)
     {
-        StarSize = EffectiveGlobalToken.ControlHeight;
+        view.Token.StarSize = view.Global.ControlHeight * 0.625;
     }
 }
 ```
 
-- The generator emits the other half of every partial token property (`get => field;` and a setter that calls
-  `RecordWrite`). A token class or property that is not partial reports `ATOMUIGEN049` (Error) and gets no
-  implementation. Property initializers can stay on the declaration.
-- `AbstractControlDesignToken.CalculateTokenValues` is now `protected virtual`. `public override` reports CS0507.
-  Code outside the token class can no longer call it.
-- The class may stay `internal`; then only its own assembly can declare control stages for it.
+- A token class or token property that is not `partial` reports `ATOMUIGEN049`.
+- A derivation must write every token of its class (`ATOMUIGEN050`) and may not read a token before writing it
+  (`ATOMUIGEN051`). Writes to `view.Global` are control-scoped overrides of Map and Alias tokens;
+  a seed write throws.
+- The control package gets `[assembly: TokenSchemaDigest]` and the value package `[assembly: CoversTokenSchema]` from the
+  generator. At startup a value package built against a different version of the control package's tokens is
+  rejected with both package names and both digests.
+- See [Writing design languages](../guides/theming/writing-design-languages.md) section 4 and
+  [Third-party control packages](../guides/theming/third-party-control-packages.md).
 
-The 255 global token properties of `DesignToken` are partial properties too; callers are unaffected.
+## Writing a design language
 
-## Explicit global Alias values now drive derived Alias tokens
+A language is a class derived from `DesignLanguage<TLanguageToken>` with `[DesignLanguage]`, declaring its `Axes`
+(`DesignLanguageAxes`: styles, appearances, densities, idioms, adjustable seeds) and implementing `DefineSeeds`,
+`DeriveLanguage` and `DeriveGlobal`. Its language tokens derive from `LanguageDesignToken` with
+`[LanguageDesignToken]`. Value packages implement `IControlDerivation<TLanguageToken, TToken>`; the lookup walks the
+language token's inheritance chain, so a language derived from another language inherits its control values and
+overrides only what differs. The contract test library `AtomUI.Theme.ContractTests` (`DesignLanguageContract.Verify`)
+checks identity, completeness, purity, determinism and readability for every variant.
 
-Before, explicit Alias values were written after `CalculateAliasTokenValues`, so Alias tokens derived from them kept
-the formula values. Now explicit Alias values are written and marked before the formulas and again afterwards. The
-affected derivations:
+New public types: `DesignLanguage`, `DesignLanguage<TLanguageToken>`, `DesignLanguageAttribute`, `DesignLanguageAxes`,
+`DesignLanguageBuilder<TLanguage>`, `DesignStyle`, `DesignDensity`, `DesignIdiom`, `DesignVariant`,
+`DerivationContext<TLanguageToken>`, `ControlView<TToken>`, `IControlDerivation<TLanguageToken, TToken>`,
+`ControlDerivationAttribute`, `LanguageDesignToken`, `LanguageDesignTokenAttribute`, `ReservedTokenAttribute`,
+`IControlToken`, `DesignLanguageDescriptor`, `ControlDerivationDescriptor`, `GlobalTokenSchema`,
+`TokenSchemaDigestAttribute`, `CoversTokenSchemaAttribute`, `ThemeBuildLanguageAttribute`, `ThemeDerivationException`,
+`DesignLanguageInfo`, `ThemeSelection`, `ThemeSelectionResult`, `ThemeSelectionResolver`, `ThemeSelectionException`.
+`IThemeManagerBuilder` gains `AddDesignLanguage` and `AddControlDerivations` (called by generated registration code;
+only custom implementations of the interface need them) and `WithInitialTheme`.
 
-| Explicit token | Now drives |
+## Shadcn and PrimeNG
+
+`AtomUI.Themes.Shadcn` and `AtomUI.Themes.PrimeNG` (never published to NuGet) are replaced by the design languages
+`Shadcn` and `PrimeNG`, built the same way as Ant Design:
+
+| Language | Packages | Styles | Adjustable seeds | Entry point |
+| --- | --- | --- | --- | --- |
+| `Shadcn` | `AtomUI.DesignLanguages.Shadcn`, `AtomUI.Controls.Themes.Shadcn`, `AtomUI.Desktop.Controls.Themes.Shadcn`, `AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn`, `AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn` | `Vega`, `Nova` (default), `Maia`, `Lyra`, `Mira`, `Luma`, `Sera`, `Rhea` | `ColorPrimary`, language seed `BaseColor` | `UseShadcn(language => language.AddDesktopControls())` |
+| `PrimeNG` | `AtomUI.DesignLanguages.PrimeNG`, `AtomUI.Controls.Themes.PrimeNG`, `AtomUI.Desktop.Controls.Themes.PrimeNG`, `AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG`, `AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG` | `Aura` (default), `Lara`, `Nora` | `ColorPrimary` | `UsePrimeNG(language => language.AddDesktopControls())` |
+
+The languages ship no named themes: the former profile ids (`ShadcnNova`, `ShadcnNova.Dark`,
+`PrimeNGAura.DarkCompact`, …) are gone. Select `ThemeSelection.Of("Shadcn", new DesignStyle("Nova"))
+.WithAppearance(ThemeAppearance.Dark)` and so on; the language's own entry is `$Shadcn` / `$PrimeNG`. Every variant and
+seed case compiles to the same token values as the former profiles. The package READMEs list the rules, their sources
+and what is not supported.
+
+## Token additions and corrections
+
+New tokens; their defaults keep the 6.2.15 Ant Design rendering unless stated otherwise:
+
+| Token | Meaning |
 | --- | --- |
-| `ControlOutlineWidth` | `InputActiveShadow`, `InputErrorActiveShadow`, `InputWarningActiveShadow` (spread) |
-| `ColorControlOutline` | `InputActiveShadow` (colour) |
-| `ColorErrorOutline` | `InputErrorActiveShadow` (colour) |
-| `ColorWarningOutline` | `InputWarningActiveShadow` (colour) |
-| `LineWidthFocus` | `FocusVisualBorderThickness` |
-| `ControlPaddingHorizontal`, `ControlPaddingHorizontalSM`, `UniformlyPaddingSM` | `InputPaddingLG`, `InputPaddingSM`, `InputPadding` |
+| `DesignToken.BorderRadiusMD` (Map) | the medium radius (default size), equal to the seed `BorderRadius`; controls read it instead of the seed |
+| `DesignToken.InputActiveBorderColor` (Alias) | border of a focused input; defaults to `ColorPrimary` |
+| `AbstractButtonVariantToken.LinkColor`, `DangerAccentColor` | the link button's resting colour (default `ColorLink`) and the colour the danger variants are built from (default `ColorError`) |
+| `AlertToken.SuccessIconColor`, `InfoIconColor`, `WarningIconColor`, `ErrorIconColor`; `MessageCardToken.LoadingIconColor` | status icon colours (defaults: the status seeds; the info and loading icons `ColorPrimary`) |
+| `TagToken.SuccessColor`, `InfoColor`, `WarningColor`, `ErrorColor` | main colour of a status tag (defaults: the status seeds) |
+| `ToolTipToken.ToolTipFontSize`, `ToolTipMinHeight` | tooltip text size and minimum height (defaults `FontSize`, `ControlHeight`) |
+| `DesignToken.ControlItemColorActive` (Alias) | text colour on `ControlItemBgActive`; defaults to `ColorText`. The selected-text tokens of Select, Cascader, ComboBox, ListBox, ListView, TransferListView, TreeView, TransferTreeView, TreeSelect and the new `DataGridToken.RowSelectedColor` default to it |
+| `AbstractCalendarToken.ItemActiveColor`, `AbstractDateViewerToken.CellActiveColor` | primary text on the selected cell; default `ColorPrimary` |
+| `ArrowDecoratedBoxToken.ContentBorderColor`, `ContentBorderThickness`, `ContentMinHeight` | border and minimum height of arrow boxes; a non-zero border now draws one outline around box and arrow instead of hiding the arrow |
+| `ArrowDecoratedBoxToken.ArrowTipRadius`, `ArrowBaseRadius` (also on `ToolTipToken`) | rounded arrow geometry |
+| `ProgressBarToken.InnerLabelColor` | dark candidate of the inner percentage label; default `ColorTextLabel` |
+| `ToolTipToken.ToolTipShadows`, `DrawerToken.EdgeBorderColor`, `EdgeBorderThickness` | shadow and edge border |
+| `AbstractButtonGeometryToken.RecipeVariants`, `OutlineOnlyDefaultShadow`, `DisabledByOpacity`, `DisabledOpacity`, `PressMoves`, `UnderlineLinkOnHover`, `UnderlineLinkAtRest`; `SplitButtonToken.InsetSeparator`; `TransparentOutlineBorder`, `BottomOutlineBorder` on `LineEditToken` / `TextAreaToken` / `SelectToken`; `SelectToken.MutedSelectIndicator`, `OptionBackgroundInset`, `OptionBorderRadius`; `FloatButtonToken.HasOutline`, `OutlineOnlyShadow`, `CapsuleDescription`, `UppercaseDescription`, `DescriptionWeight`, `OutlineDescriptionLineHeight`; `OtpLineEditToken.JoinCells`; `AbstractTimePickerToken.CenterItemContent`, `ItemBackgroundInset` | behaviour switches that languages set; the defaults are the 6.2.15 behaviour |
 
-Themes that set none of these compile exactly as before (`Default`, `Dark`, `Compact` and DaybreakBlue are
-unchanged). Among the preset packages the PrimeNG profiles changed: for example the PrimeNG Aura focus
-shadow now has a spread of 0 because its `ControlOutlineWidth` is 0. If you relied on the old result, set the derived token
-explicitly too. The analyzers `ATOMUIGEN040` and `ATOMUIGEN048` now also check `DesignToken.CalculateAliasTokenValues`.
+Deliberate visual corrections in Ant Design:
 
-## New global Alias token `ControlItemColorActive`
+- `ArrowIndicator` follows the antd rounded-arrow construction (a right-angled isosceles triangle with an arc tip of
+  `ArrowTipRadius` and concave base arcs of `ArrowBaseRadius`); `ArrowDecoratedBoxToken.ArrowSize` defaults to
+  `SizePopupArrow` instead of `SizePopupArrow / 1.3`. The arrow shape changes slightly.
+- The ToolTip theme sets its arrow box's `BorderThickness` to 0, and PopupConfirm reads its gap to the anchor from
+  `FlyoutHostToken.MarginToAnchor` (same default).
+- An explicit global Alias value now drives the Alias tokens derived from it. In 6.2.15 explicit Alias values were
+  written after the Alias formulas, so for example an explicit `ControlOutlineWidth` did not reach `InputActiveShadow`.
+  Themes that set none of `ControlOutlineWidth`, `ColorControlOutline`, `ColorErrorOutline`, `ColorWarningOutline`,
+  `LineWidthFocus`, `ControlPaddingHorizontal`, `ControlPaddingHorizontalSM` or `UniformlyPaddingSM` compile exactly as
+  before. A control-level Alias value replaces only that value and does not re-derive other tokens of the control.
 
-`ControlItemColorActive` is the text colour of a selected (active) item drawn on `ControlItemBgActive` and
-`ControlItemBgActiveHover`. The default Alias formula sets it to `ColorText`, so the default, dark and compact themes
-and every theme that does not set it render exactly as before. A theme whose selected background is a solid colour
-(the PrimeNG Nora and noir highlights) sets the matching contrast colour once, globally, instead of per control. One
-token covers the selected and the selected-hover background: PrimeUIX `highlight.focusColor` equals
-`highlight.color` in every preset except Aura / Lara light (primary 800 instead of 700), and AtomUI controls have no
-separate selected-hover text slot.
+## Diagnostics
 
-These selected-text tokens now default to it instead of `ColorText` (same value by default): Select and Cascader
-`OptionSelectedColor`; ComboBox, ListBox, ListView and TransferListView `ItemSelectedColor`; TreeView,
-TransferTreeView and TreeSelect `NodeSelectedColor`; the new DataGrid `RowSelectedColor` (the selected row's text, set on
-the row so the cells inherit it). The selected time cell of TimePicker / RangeTimePicker / DatePicker /
-RangeDatePicker and the range middle of the date panels read it directly. Two new Own tokens cover the primary text the
-content presentation draws on `ControlItemBgActive`: Calendar `ItemActiveColor` (fullscreen selected cell) and
-DateViewer `CellActiveColor` (today's and the selected content cell), both defaulting to `ColorPrimary`.
-
-## Bordered arrow boxes and their tokens
-
-`ArrowDecoratedBox` (the surface of InfoFlyout / Popover, PopupConfirm, the picker panels, dropdown menus, tree
-flyouts, Tour, the DataGrid filter flyouts and the ColorPicker panel) used to hide its arrow whenever its
-`BorderThickness` was not zero, because the arrow could not join the border. With a border the box now draws its
-background and border itself, as one outline around the content box and the arrow: the border runs along the arrow's
-two sides and nothing crosses the arrow's base. Layout, the arrow's position and the hit region are unchanged; the
-template's container `Border` keeps its border width for layout but paints neither the border nor the background under
-it, and the arrow indicator keeps its layout but paints nothing. Applications that set `BorderThickness` on an
-arrow box (directly or through a style) now get the arrow back with the border around it; set `IsArrowVisible="False"`
-to keep the previous look. A `0 0 0 N` outline ring in the hosting popup's frame shadow is not painted while the
-arrow box has a border, so it keeps one outline.
-
-Three public Own tokens on `ArrowDecoratedBoxToken` drive it; their defaults are the previous values, so Ant Design
-and every theme that does not set them render exactly as before:
-
-| Token | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `ContentBorderColor` | `Color` | `ColorBorderSecondary` (the previous `BorderBrush`) | border colour of the box and its arrow |
-| `ContentBorderThickness` | `Thickness` | `0` (the previous `BorderThickness`) | border width; not zero draws the combined outline |
-| `ContentMinHeight` | `double` | `ControlHeight` (the previous `MinHeight`) | minimum height of the box |
-
-The ToolTip theme now sets its arrow box's `BorderThickness` to 0 explicitly, so a theme that gives arrow boxes a
-border does not give tooltips one. PopupConfirm reads its gap to the anchor from `FlyoutHostToken.MarginToAnchor`
-instead of `PopupToken.MarginToAnchor`, like its shadows (both default to `UniformlyMarginXXS`, so nothing changes
-unless a theme sets one of them).
-
-### Arrow geometry
-
-`ArrowIndicator` now follows the antd `genRoundedArrow` construction: a right-angled isosceles triangle `ArrowSize` wide
-and half as high, its tip a true arc of radius `TipRadius`, its sides joining the box edge through concave arcs of
-radius `BaseRadius`; with both radii 0 it is the plain border triangle of CSS frameworks. The outline strokes only the
-two sides, so no line runs where the arrow meets the box. Before, the arrow was about half as high as wide minus 0.25,
-its tip a fixed 1.5 quadratic curve, its sides met the base at a corner and the stroke ran around the whole triangle,
-base included. `ArrowDecoratedBoxToken` gains `ArrowTipRadius` (default `BorderRadiusXS`) and `ArrowBaseRadius` (default
-`BorderRadiusOuter`), and the `ArrowSize` default changes from `SizePopupArrow / 1.3` to `SizePopupArrow`, as in antd
-(16 wide, about 5.5 visible height, close to the old arrow). The bordered outline follows the same geometry. This is a
-deliberate correction of the old drawing, so the Ant Design arrow shape changes with it. PrimeNG's tooltip and popover arrows are sharp border triangles (both
-radii 0); Shadcn's tooltip and arrow flyouts take the official `TooltipPrimitive.Arrow` rotated square
-(`2 × (5√2 − 2)` wide, a 2px tip) instead of following the style's large `BorderRadiusXS` into a blob.
-
-## Theme XML: `Catalog` on `<Algorithm>`
-
-```xml
-<Algorithms>
-  <Algorithm Catalog="PrimeNG" Id="Aura.Dark" />
-  <Algorithm Id="Compact" />
-</Algorithms>
-```
-
-`Catalog` is optional and defaults to `AtomUI`; existing files are unchanged. The XSD type of `Id` is the union of
-the three built-in values and `Identifier`. An invalid identifier fails in the reader; a valid but unregistered
-identity fails in the binder (`ATMTHM2001`) or, for compiled theme packages, at build time (`ATOMUITOKEN002`,
-"Unknown algorithm 'Catalog:Id'."). A repeated identity in one chain reports `ATMTHM1002`.
-
-## Compiled theme input format version 6
-
-The neutral intermediate file that the Toolchain task passes to the generator moves from format version 4 to 6:
-algorithm entries carry `Catalog`, `Id`, line and column instead of an integer (version 5), and each definition also
-carries its `DesignLanguage`, `Density` and `BrandColor` (version 6). It is a private build-tool protocol. The
-generator now emits compiled theme programs with runtime ABI 2 (the `CompiledThemeProgram` constructor that carries the
-design language metadata and the algorithm chain); the runtime still loads ABI 1 packages built by older generators,
-with the metadata at its defaults. An intermediate left over from an older build fails with
-"Compiled theme input format is out of date; rebuild the project." Rebuild (or clean) the project.
-
-## New and extended diagnostics
-
-| Id / exception | Change |
+| Id | Change |
 | --- | --- |
-| `ATOMUIGEN049` (Error) | New: a `[ControlDesignToken]` or `[GlobalDesignToken]` token property or its class is not partial |
-| `ATOMUIGEN040`, `ATOMUIGEN048` | Scope extended to `DesignToken.CalculateAliasTokenValues` (Alias properties, `IsExplicit(SharedTokenKind.X)` guards); messages now name the Kind enum and the method |
-| `ATOMUITOKEN002` | New triggers: unknown algorithm in theme XML, invalid or duplicate algorithm build contracts, colliding `<Catalog>Algorithms` member names, invalid `[ControlTokenAlgorithm]` classes, invalid `[ThemeAlgorithm]` declarations (not a non-abstract, non-generic `IThemeAlgorithm` class; no public parameterless constructor; invalid catalog, id, revision or appearance effect), which used to be skipped silently |
-| `ATMTHM1002` | New reader messages: "Theme algorithm 'Catalog:Id' is duplicated." (duplicate detection moved from the XSD to the reader) and, only when the XSD has not already reported the element, "Theme algorithm identity 'Catalog:Id' is not a valid identifier." |
-| `ATMTHM4004` | New message: "Algorithm identity is uninitialized." |
-| `ThemeSchemaException` | "Duplicate algorithm identity 'Catalog:Id'." and "Duplicate control algorithm '{algorithm}' for control '{control}'." |
-| `ThemeLoadException` | Runtime package append: "Package append cannot add a control algorithm for the already registered algorithm '{algorithm}' and control '{control}'." |
-| `ThemeAlgorithmContractException` | `StageBoundary`, `Unstable` or `Failed` violation of an optional algorithm stage; also `Failed` when an algorithm's Map stage throws (built-in algorithms included). A control-stage violation is thrown when that control is first read, not at compile time |
+| `ATOMUIGEN049` | New (Error): a token class or token property is not `partial` |
+| `ATOMUIGEN050` | New (Error): a control derivation leaves a token unwritten |
+| `ATOMUIGEN051` | New (Error): a control derivation reads a token before writing it |
+| `ATOMUIGEN052` | New (Error): a value package misses the derivation of a control token class it covers |
+| `ATOMUIGEN053` | New (Error): package dependency direction violated (a language package references a control package, a control package references the language side, or a value package declares controls) |
+| `ATOMUIGEN024` | Removed with `CalculateTokenValues` |
+| `ATMTHM1004` | A v1 theme file; the message names the conversion command |
 
-## Design language and brand color
-
-Theme definitions can declare `DesignLanguage`, `Density` (`Normal` or `Compact`, default `Normal`) and `BrandColor`
-(`Seed` or `Fixed`, default `Fixed`) on the `<Theme>` element. All additions are source compatible; `ThemeInfo` only
-gains `init` properties and `ThemeRequest` / `ThemeConfig` are unchanged.
-
-| API | Description |
-| --- | --- |
-| `ThemeDensity`, `ThemeBrandColorSupport` | The two new enums |
-| `ThemeInfo.DesignLanguage`, `Density`, `BrandColor`, `Algorithms` | New `init` properties; `Algorithms` is the definition's own chain, stored as a read-only copy (assigning `null` throws `ArgumentNullException`), and takes part in equality |
-| `ThemeSelection`, `ThemeSelectionResult` | Records for the selection and the resolved theme id, algorithm chain and brand seed |
-| `ThemeSelectionResolver` | Pure functions `Resolve`, `DesignLanguages` and `BrandColorSupport`. Without an exact variant, `Resolve` falls back to the language's light, normal definition, else its nearest declared definition (same appearance, then same density, then the first one); only an unknown language throws `ArgumentException` |
-| `CompiledThemeProgram` ABI 2 constructor | Protected, for generated code; carries the design language metadata and the algorithm chain. ABI 1 packages still load |
-
-A `Seed` theme must not set the brand-derived tokens (`ColorPrimaryHover`, `ColorPrimaryActive`, `ColorPrimaryBg`,
-`ColorPrimaryBgHover`, `ColorPrimaryBorder`, `ColorPrimaryBorderHover`, `ColorPrimaryText`, `ColorPrimaryTextHover`,
-`ColorPrimaryTextActive`, `ColorControlOutline`); doing so reports `ATMTHM3101`. `ColorLink` is not in the set. A theme that declares no `BrandColor` counts as `Fixed`. The Gallery Theme Presets page,
-which lists compiled theme packages only, therefore no longer offers brand swatches for compiled packages that do not
-declare `BrandColor` (including ABI 1 packages); declare `BrandColor="Seed"` to opt in.
-`ATMTHM3103` (duplicate appearance and density inside one design language) and `ATMTHM3104` (mixed `Seed` and
-`Fixed`) are errors inside a compiled theme package and warnings in the runtime catalog, where the later conflicting
-definition leaves the group and stays usable by id. The generator reports them with dedicated descriptors (the
-diagnostic id is the code, with a title and a parameterized message) instead of the generic `ATOMUITOKEN002`.
-`ATMTHM3105` (a warning in both places; the definition keeps its group) flags a design language definition whose
-`Density` disagrees with its chain: `Compact` without the built-in `Compact` algorithm, or `Normal` with it. See [Theme customization](../guides/theming/customization.md)
-(Chinese) for the rules and a resolver example.
-
-## PrimeNG presets are produced by algorithms
-
-`AtomUI.Themes.PrimeNG` (not yet published to NuGet) now registers six algorithms, `PrimeNG:Aura`,
-`PrimeNG:Aura.Dark`, `PrimeNG:Lara`, `PrimeNG:Lara.Dark`, `PrimeNG:Nora` and `PrimeNG:Nora.Dark`, with Alias and
-control stages. The twelve profile IDs are kept; each XML file now holds the chain and Seed tokens (primary, error,
-radius, control height), and only the two Lara compact profiles keep one Select override. Visible
-changes:
-
-- `ColorPrimary`, `ColorError` and the other status colours in a PrimeNG theme are seeds (the 500 stop of their
-  scale); the algorithm maps them to the displayed stop. Changing the primary seed now also moves hover, active,
-  focus ring and selected backgrounds.
-- The default primary of all twelve profiles is now **noir**, the default of primeng.dev (primeng 22.1.5):
-  `ColorPrimary` is `#020617` (slate-950) instead of emerald `#10B981`. A neutral-950 seed makes the primary scale the
-  surface scale: light `#020617` / `#1E293B` / `#334155` with white text, dark `#FAFAFA` / `#E4E4E7` / `#D4D4D8` with
-  `#09090B` text, the site's solid noir highlight for selected items, and checked CheckBox / Radio marks in the
-  contrast colour. Set
-  `ColorPrimary` to `#10B981` to get the previous colours back; every other seed behaves as before. The emerald values
-  in the table below are those of the emerald seed.
-- Selected items follow PrimeUIX `highlight` (3.1.1) exactly: the selected background is `ControlItemBgActive`
-  (Nora light primary 600 / hover 700, dark 500 / 400; noir 950 / 700, dark 50 / 300; Aura and Lara keep the pale
-  primary 50 / 100) and the selected text of Select, Cascader, ComboBox, ListBox, ListView, TransferListView, TreeView,
-  TransferTreeView and TreeSelect is `highlight.color` (Aura / Lara light: primary 700 instead of the body text).
-  `ColorPrimaryBg` stays the pale primary (Nora dark: primary at 16% instead of the solid 500), so filled buttons and
-  tags no longer need a compensation; Nora dark `ColorPrimaryText` is the readable primary 400 instead of zinc-950.
-  The selected text is written once to the global `ControlItemColorActive`, so DataGrid rows, the time cells and the
-  range middle of the date pickers follow too (PrimeUIX `datepicker`). The checked ToggleSwitch handle follows PrimeUIX
-  (Aura / Lara dark zinc-900, Nora the contrast colour).
-- Dark primary and error colours change, because the old dark profiles ran `AtomUI:Dark` over values that were
-  already final:
-
-  | Profiles | `ColorPrimary` | `ColorError` |
-  | --- | --- | --- |
-  | `PrimeNGAura.Dark`, `PrimeNGAura.DarkCompact` | `#2FB685` → `#34D399` | `#D98F8F` → `#FCA5A5` |
-  | `PrimeNGLara.Dark`, `PrimeNGLara.DarkCompact` | `#2FB685` → `#34D399` | `#D98F8F` → `#FCA5A5` |
-  | `PrimeNGNora.Dark`, `PrimeNGNora.DarkCompact` | `#11A071` → `#10B981` | `#D66363` → `#F87171` |
-
-- Colours that used to be derived by the Ant formulas now follow the PrimeNG scales: the hover, active, background,
-  border and text states of the success, warning, info and error families; link colours (stops of the primary
-  seed's scale; in light the links take deeper stops than the primary fill, 700 / 800 / 900, so link text stays
-  readable on white); neutral fills, solid and spotlight backgrounds; tertiary, quaternary and disabled text; the contrast
-  foreground on solid primary (dark: neutral 900, Nora dark: neutral 950). Nora also moves its success, warning and
-  info base colours to the 600 stop (dark 500). Fills that were translucent are now opaque scale colours.
-- Link buttons take PrimeUIX `button.link.color` (`{primary.color}`): within the Button, `ColorLink` / `Hover` / `Active`
-  are the primary states. Unchanged under the default noir primary; with a coloured seed the link button is the primary
-  fill colour (emerald light `#10B981` instead of `#047857`). Hyperlinks and other link text keep the global link
-  colours.
-- Progress controls follow PrimeUIX `progressbar`: the value is the primary colour (was Ant's `ColorInfo` blue), the
-  track `content.border.color` (Nora surface 300 / 600), the line bar's radius `BorderRadius` and the inner label the
-  contrast colour. New public Own token `ProgressBarToken.InnerLabelColor` (default `ColorTextLabel`, the inner
-  label's dark candidate the theme used to read directly; Ant Design unchanged).
-- Overlays follow PrimeUIX `overlay.popover` / `overlay.select` (3.1.1, measured on primeng.dev/popover): arrow
-  flyouts (Popover, PopupConfirm, picker panels, dropdown menus) get a 1px border in `overlay.popover.border.color`
-  (Aura / Lara slate-200, dark zinc-700; Nora transparent, dark zinc-700) around box and arrow, padding 10 (Lara 14),
-  no minimum height, the box 10 from the anchor (`popover.gutter`) and `overlay.popover.shadow` (Lara `0 1 3 0
-  #1A000000`); select panels, Cascader, ComboBox, AutoComplete, Mentions and context menus get the border as a
-  `0 0 0 1` ring ahead of their shadow, Aura / Lara radius 6 instead of 8 (Nora stays 2), and 2 (Nora 0) from the anchor
-  (`anchor.gutter`) instead of 4. Tooltips stay borderless.
-- Beyond the Alias-derivation fix above and the overlay values, the algorithm migration changed no size, padding,
-  radius, font, line width, motion or shadow geometry value.
-- Nora animates again. The Nora profiles used to set `EnableMotion false` for PrimeUIX `transition.duration: 0s`,
-  which also froze every popup, drawer, collapse, notification and spinner; PrimeNG only uses that value for state
-  colours, while its component animations are the same in every preset. Nora now keeps motion on, sets the global
-  `MotionDurationFast` / `Mid` / `Slow` to 0 (instant hover and focus colours) and restores each animation's own
-  duration in its owner's scope (overlays and dialogs 300ms, drawer 500ms, collapsible content 200ms, toast cards
-  300ms, tabs ink bar 250ms, carousel 500ms, tooltip fade 250ms, switch knob 100ms). An explicit `EnableMotion false`
-  still turns everything off. Aura and Lara are unchanged.
-- `[PrimeNG:Aura.Dark]` equals the `PrimeNGAura.Dark` profile, and appending `AtomUI:Compact` equals the
-  `.Compact` profile (Lara compact keeps one listed difference). Appending `AtomUI:Dark` to a light PrimeNG chain is
-  a hybrid chain and is not the PrimeNG dark theme.
-
-The package README lists every rule and its source.
+The theme XML v2 reader and binder diagnostics are listed in [Theme definition XML v2](../reference/theming/theme-definition-xml-v2.md)
+section 10.
 
 ## Performance
 
-Token write recording adds a null check to every generated token setter and 8 bytes to every token instance. It was
-measured against the tree before the change (2026-11-13, default Ant theme): cold theme compilation is 2.3%–2.7%
-slower by the gated statistic (25th percentile, about 0.018 ms) and 3.4%–3.7% slower by median. The startup check
-failed its literal rule (most out-of-range values were on the faster side; on the slower side the plain-window
-prepare phase exceeded the baseline maximum by 0.005 ms and the splash commit phase by 0.17 ms). Theme switching,
-allocations, assembly and NativeAOT sizes and compiled values passed. This misses the design's 2% threshold; the
-project owner accepted the result as an explicit relaxation. Rendering and resource lookup do not go through token
-properties and are unaffected.
-
-Everything added after that decision (the Alias and control stages) was re-measured on 2026-11-14 against commit
-`3a87bba25`, the tree at which the recording cost was accepted. For the built-in Default, Dark and Compact chains,
-cold compilation (−0.87% / −1.24% / −1.21%, 25th percentile) and theme switching are within noise, and allocation per
-cold compile (1,138,032 / 1,143,224 / 1,138,416 bytes) and compiled values are unchanged; the machine resolved cold
-compilation only to 8%–9% that day, so a 2% difference could not be detected. About 1 ms of extra startup time, caused
-by jitting the control-stage registry even when it was empty, was found and fixed before release; startup now jits the
-same methods as the baseline and is unchanged within the machine's resolution of about 1 ms (applications that register
-control stages were not measured). `AtomUI.Core.dll` grew by 2.05% (1,125,888 → 1,148,928 bytes), which is above the
-plan's 1% assembly-size gate; the gate was not met, and the project owner accepted this growth on 2026-11-14 as an
-explicit relaxation limited to this assembly. Other gated assemblies grew by at most 0.10%, and the NativeAOT
-Gallery executable is 0.09% smaller. A theme that uses the stages pays for them: `PrimeNGAura` compiles in about
-0.88 ms versus about 0.74 ms for the built-in default theme (+18%) and allocates 1,249,256 versus 1,138,032 bytes
-(+9.8%); `PrimeNGAura.Dark` takes about 0.89 ms (+20%) and 1,254,568 bytes (+10.2%).
+Measured on 2026-11-22 against the same tree without the change (default Ant Design theme, Release, 30 samples, two
+alternating rounds): a cold theme compilation allocates 712,792 instead of 1,202,392 bytes (-41%), and its median time
+drops from 2.44 to 1.92 ms. The controls of one scope now share the global view their derivations start from unless a
+derivation overrides a global token, and a local scope that overrides only Map or Alias tokens reuses the parent's
+result for every control whose derivation did not read them. Compiled values are identical; light/dark switching is
+unchanged within the machine's resolution.

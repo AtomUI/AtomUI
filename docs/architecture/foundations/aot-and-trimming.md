@@ -73,6 +73,8 @@ Chrome 自动化在本轮不可用，Browser 执行证据来自真实 IAB；此�
 | [Control 注册契约](control-registration-contracts.md) | 类型、Token、Semantic Part、主题导出、资源作用域及优先级 |
 | [浏览器链接架构](aot-browser-linking.md) | Mono 已选映射转换、链接阶段、构建与失败边界，含 iOS/Android 接入 |
 | [控件注册生成器](../../modules/generator/control-registration.md) | 普通生成器的职责与实现入口 |
+| [控件注册生成物体积评估](generated-registration-size-review.md) | 生成源码、托管产物的体积分布与优化候选的裁剪门槛 |
+| [控件注册生成与启动清单优化架构](control-registration-optimization.md) | 统一生成入口、紧凑清单、各后端的不变量与待实施阶段 |
 | [TypeMap 链接工具](../../modules/typemap-linker/overview.md) | 浏览器构建工具的模块边界 |
 | [TypeMap ABI 契约](../../reference/aot/typemap-contract.md) | 隐藏生成 ABI、标记与版本化协议 |
 | [.NET 8 条件后端](aot-net8-conditional-backends.md) | 真实 ILLink8/ILC8 接线、混合 ABI、工具分发与当前支持边界 |

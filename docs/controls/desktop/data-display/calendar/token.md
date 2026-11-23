@@ -65,7 +65,7 @@ CalendarDateCellTheme 与 LunarCalendar 的 CellTheme 资源消费对应产品�
 Token owner：Calendar 把自己的 Token owner 转发给模板中的 DateViewer（`TokenOwnerForwarding`），因此 Calendar 提供的面板与单元主题以
 `OwnerTokenResource` 读取宿主 Calendar / LunarCalendar 的有效全局 Token，`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格；
 DateViewer 自己的 Own Token 仍读 DateViewer 身份。Header 中的 ComboBox、OptionButtonGroup 保持各自身份。
-LunarCalendar 复用模板和 `AbstractCalendarToken` 的计算，并从自己的 Token owner 读取令牌。两种日历分别持有
+LunarCalendar 复用模板和 `AbstractCalendarToken` 的属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`AntDesignAbstractCalendarDerivation`），并从自己的 Token owner 读取令牌。两种日历分别持有
 `ItemActiveBg` 和 `ItemActiveColor`。普通 Calendar 的全屏选中单元和 LunarCalendar 的全屏选中月份使用这组令牌。
 LunarCalendar 的全屏月视图在暗色外观下也使用这组令牌。日期格绘制 `ItemActiveBg`，公历和农历两行文字均使用
 `ItemActiveColor`。Ant Design 暗色使用选中项色与正文色。Shadcn 暗色在选中项色上叠加 14% 的正文色，区分悬停与选中。

@@ -14,7 +14,7 @@ public static void Configure(IAtomUIBuilder builder)
     builder.UseLanguages(
         GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
         [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
-    builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+    builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
     builder.UseAlibabaSansFont();
     builder.UseAlibabaPuHuiTiFont();
     builder.WithDefaultFontFamily(FontFamily.Parse(

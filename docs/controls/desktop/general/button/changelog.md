@@ -8,6 +8,14 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-22
+
+- Token
+  - `ButtonThemeRecipe` 删除，它的开关改为 `AbstractButtonGeometryToken` 上的七个公开 Own Token：`RecipeVariants`、
+    `OutlineOnlyDefaultShadow`、`DisabledByOpacity`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`、
+    `UnderlineLinkAtRest`（见 [Button Token 设计](token.md) 2.8）。各设计语言的取值包在 Button 的控件推导里给它们赋值，不再经
+    `AppearanceSettings` 传递对象；Button 在主题快照变化时读取。各设计语言渲染不变。
+
 ## 2026-11-20
 
 - Token

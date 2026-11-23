@@ -2,6 +2,11 @@
 
 本文档记录 SplitButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Token：新增公开 Own Token `SplitButtonToken.InsetSeparator`（默认 `false`）。为真时实心 SplitButton 为内缩细线预留布局位置；
+  取代此前设计语言经 `AppearanceSettings` 传入的布尔值。Shadcn 设为 `true`，各设计语言渲染不变。
+
 ## 2026-11-20
 
 - Shadcn 的实心 SplitButton 使用独立的内缩细线，两段共用按实际高度约束的外侧圆角。危险色填充铺到接缝边缘，主段按压时由内容移动提供反馈。下拉触发器在展开时使用悬停配色。

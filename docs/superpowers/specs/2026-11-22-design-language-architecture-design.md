@@ -21,7 +21,7 @@ Shadcn 只能挂在这套结构之外，以补丁方式生效：
 | --- | --- |
 | 语言算法先跑一遍 Ant 计算器，再改写自己的值；调用前临时改写种子、调用后还原 | 语言是叠在 Ant 之上的补丁 |
 | Alias 阶段在 Ant 公式之后抢写，编译器多轮重跑直到稳定，超过 3 轮判 `Unstable` | 两套规则争同一批值 |
-| 控件阶段只写与 Ant 不同的值；`EvaluateGlobal` 为单个控件伪造全局 Token，让控件的 Ant 公式「算对」 | 不能直接说要什么，只能骗上游 |
+| 控件阶段只写与 Ant 不同的值；`EvaluateGlobal` 改写一份全局副本，再让 Ant 的公式在副本上重跑 | 语言的意图藏在别人的公式里，靠重跑与写入记账才能收敛 |
 | 语言是算法链上的一个环节：`Nova.Dark` 式身份、每个阶段类 16 个特性、每个风格四份主题 XML、合法但无意义的混链 | 链是 Ant 的概念，其他语言没有这个结构 |
 | Token 表达不了的行为差异走 `AppearanceSettings`（`internal object?`）；语言包靠 `InternalsVisibleTo` 才写得出来 | 第一方有特权，第三方与商业产品做不到同样的事 |
 | 商业产品只能从全局 Token 推导，在非 Ant 语言下状态塌缩、前景背景失配 | 产品没有按语言给值的通道 |
@@ -48,17 +48,17 @@ Shadcn 只能挂在这套结构之外，以补丁方式生效：
 
 **词汇是契约，设计语言是契约的完整实现。**
 
-- **词汇**：有哪些 Token、各自表达什么。全局词汇由核心定义，控件的 Own Token 由各控件包在控件定义处声明。所有语言共用。
+- **词汇**：有哪些 Token、各自表达什么。全局词汇由核心定义，控件 Token 由各控件包在控件定义处声明。所有语言共用。
 - **取值**：每个 Token 等于多少、怎么从种子推出来。全部归设计语言，核心与控件不含任何取值规则。
 - **控件实现**：只消费 Token，不知道当前是哪种语言。
 
 ### 2.2 设计原则
 
 1. **控件只声明，不计算。** Token 类是纯声明；`CalculateTokenValues` 与 `CalculateAliasTokenValues` 不复存在。
-2. **语言拥有整条推导。** 种子 → 全局 Token → 每个控件的 Own Token，由当前语言一次算出。
+2. **语言拥有整条推导。** 种子 → 全局 Token → 每个控件的视图（对全局 Token 的覆盖与该控件的控件 Token），由当前语言一次算出。
 3. **语言是一等对象。** 主题 = 语言 + 风格 + 明暗 + 密度 + 种子 + 显式覆盖。「算法链」从核心移除。
-4. **Token 的声明跟着控件，取值跟着语言。** 控件的 Own Token 声明在控件定义处；它们等于多少，由各语言的取值包给出。
-5. **三类词汇，同一套机制。** 全局 Token 归核心，Own Token 归控件，装不进全局词汇的概念（Shadcn 的 `--input`、PrimeNG 的
+4. **Token 的声明跟着控件，取值跟着语言。** 控件 Token 声明在控件定义处；它们等于多少、控件看到的全局 Token 是否不同，由各语言的取值包给出。
+5. **三类词汇，同一套机制。** 全局 Token 归核心，控件 Token 归控件，装不进全局词汇的概念（Shadcn 的 `--input`、PrimeNG 的
    highlight）成为该语言自己的「语言 Token」。三者的声明、给值、覆盖方式完全相同，核心不为语言的概念建立跨语言抽象。
 6. **差异只通过 Token 表达。** 包括行为差异：它们是 Token 上有类型的开关。模板不得判断当前语言。
 7. **单遍求值。** 没有重跑、没有收敛判定；显式值是输入而不是事后补丁。
@@ -73,11 +73,11 @@ Shadcn 只能挂在这套结构之外，以补丁方式生效：
                  ^                              ^
                  |                              |
             <控件包>                    AtomUI.DesignLanguages.<Lang>
-   控件 · ControlTheme · Own Token 声明   语言包：语言定义、语言 Token、全局推导
+   控件 · ControlTheme · 控件 Token 声明   语言包：语言定义、语言 Token、全局推导
                  ^                              ^
                  |                              |
                  +---- <控件包>.Themes.<Lang> ---+
-                       取值包：该控件包的 Own Token 在该语言下的控件推导
+                       取值包：该控件包的控件 Token 在该语言下的控件推导
 ```
 
 控件包与语言包之间没有任何引用，它们只在取值包里相遇。
@@ -87,13 +87,14 @@ Shadcn 只能挂在这套结构之外，以补丁方式生效：
 | 概念 | 定义 | 所在 |
 | --- | --- | --- |
 | 全局 Token | Seed（输入）/ Map（色阶与尺寸阶梯）/ Alias（语义角色），共 257 个，纯声明 | 核心 |
-| Own Token | 某个控件的可主题化取值与行为开关，纯声明 | 控件包，与控件定义在一起 |
+| 控件 Token | 某个控件特有的可主题化取值与行为开关，全局 Token 里没有对应项；纯声明 | 控件包，与控件定义在一起 |
+| 控件视图 | 一个控件实际读到的全部 Token：全局 Token 加该控件的控件 Token，其中任意一项都可以只对该控件取不同的值。语言、主题、作用域写入的是同一份视图 | 运行时值 |
 | 设计语言 | 实现语言契约的类型：声明自己的轴，推导全部全局 Token | 语言包 |
 | 变体 | 风格 × 明暗 × 密度 × 形态的一个组合；风格、密度、形态的取值集合由语言声明 | 运行时值 |
 | 形态 | 桌面或移动。由界面根决定，不由主题决定 | 运行时值 |
-| 语言 Token | 语言自己的词汇：全局 Token 里没有位置的角色、几何与色阶。与全局 Token、Own Token 同等地位，可被显式覆盖 | 语言包 |
+| 语言 Token | 语言自己的词汇：全局 Token 里没有位置的角色、几何与色阶。与全局 Token、控件 Token 同等地位，可被显式覆盖 | 语言包 |
 | 组件配方 | 语言 Token 上按官方组件给出的成组只读视图（Table、ListItem、Overlay、Field…） | 语言包 |
-| 控件推导 | 「某语言下某个 Own Token 类怎么算」的一个类 | 取值包 |
+| 控件推导 | 「某语言下某个控件的视图怎么算」的一个类 | 取值包 |
 | 主题 | 语言 + 风格 + 明暗 + 密度 + 种子 + 显式覆盖的一份配置 | 应用或任意包 |
 
 ---
@@ -105,9 +106,9 @@ Shadcn 只能挂在这套结构之外，以补丁方式生效：
 | 类别 | 命名 | 包含 | 引用 |
 | --- | --- | --- | --- |
 | 核心 | `AtomUI.Core` | 全局 Token 声明；语言契约；推导管线；主题定义、选择、注册；中性工具 | — |
-| 控件包 | `AtomUI.Controls`、`AtomUI.Desktop.Controls`、`AtomUI.Mobile.Controls`、`AtomUI.MachGrid`… | 控件、ControlTheme、**Own Token 的声明**及其生成物（资源键枚举、Schema、Token 标记扩展） | 核心、所依赖的控件包 |
+| 控件包 | `AtomUI.Controls`、`AtomUI.Desktop.Controls`、`AtomUI.Mobile.Controls`、`AtomUI.MachGrid`… | 控件、ControlTheme、**控件 Token 的声明**及其生成物（资源键枚举、Schema、Token 标记扩展） | 核心、所依赖的控件包 |
 | 语言包 | `AtomUI.DesignLanguages.<Lang>` | 语言定义、语言 Token 声明、语言与全局的推导、组件配方、具名主题 | 核心 |
-| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包的全部 Own Token 在该语言下的控件推导 | 该控件包、对应语言包、所依赖控件包的取值包 |
+| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包的全部控件 Token 在该语言下的控件推导 | 该控件包、对应语言包、所依赖控件包的取值包 |
 
 AtomUI 的控件不是 lookless 的：一个控件的 Token 与它的模板一一对应、一起演进。所以 **Token 的声明留在控件定义处**——
 与控件类、ControlTheme 同一个目录、同一个程序集，生成的 Token 枚举与标记扩展在控件包内直接可用。移出控件包的只有
@@ -151,7 +152,7 @@ AtomUI.MachGrid                            AtomUI.MachGrid.Themes.AntDesign / �
   AtomUI.MachGrid.Themes.<Lang>                         其他语言按规划
 ```
 
-`<Lang>` 取 `AntDesign`、`Shadcn`、`PrimeNG`。没有 Own Token 的控件包（如 `AtomUI.Desktop.Controls.Extras`）不需要取值包。
+`<Lang>` 取 `AntDesign`、`Shadcn`、`PrimeNG`。没有控件 Token 的控件包（如 `AtomUI.Desktop.Controls.Extras`）不需要取值包。
 
 **仓库里的组织。** 每个仓库把设计语言相关的工程按语言归拢，磁盘目录与解决方案分组一致，做法与本地化包
 （`src/LanguagePacks/pt-BR/`、`/Localization/pt-BR/`）相同：
@@ -235,7 +236,7 @@ MachGrid 再装 `AtomUI.MachGrid.Themes.AntDesign`。`AtomUI.Controls.Themes.<La
   | `ColorBgSpotlight` | `ColorTextLightSolid` |
   | `ColorBgContainer`、`ColorBgElevated`、`ColorBgLayout` | `ColorText` 族 |
 
-### 4.2 Own Token
+### 4.2 控件 Token
 
 ```csharp
 // AtomUI.Desktop.Controls/Tag/TagToken.cs, next to Tag.cs and Themes/TagTheme.axaml
@@ -253,15 +254,17 @@ public sealed partial class TagToken : AbstractTagToken
 }
 ```
 
+- **控件 Token 只表达全局里没有的东西。** 一个值如果只是「这个控件上的某个全局值」，它不是新的控件 Token，而是该
+  控件视图里对那个全局 Token 的覆盖（6.1）。不得声明只是给全局 Token 换个名字的控件 Token。
 - Token 类位于控件包，与控件类、ControlTheme 同目录，`public partial`，只有属性声明与语义说明。不得包含计算方法、
   默认值初始化器或对全局 Token 的引用。
 - 属性类型可以是核心与 Avalonia 的基础类型（颜色、厚度、圆角、阴影、字重、时长、数值、布尔），也可以是控件包里
   定义的枚举。
-- 控件模板与代码中的每个可主题化取值必须来自 Own Token 或全局 Token，不得写死。
+- 控件模板与代码中的每个可主题化取值必须来自控件 Token 或全局 Token，不得写死。
 - **并存状态各有其名。** 一个控件上可能同时出现的状态（悬停、选中、选中悬停、聚焦、禁用、排序、分组等）各有独立的
-  Own Token，背景类 Token 有对应的前景类 Token。不得让两个状态共用一个 Token。
+  控件 Token，背景类 Token 有对应的前景类 Token。不得让两个状态共用一个 Token。
 - **行为开关是 Token。** 取值表达不了的语言差异——禁用用透明度还是灰色、按下是位移还是变色、链接是否带下划线、
-  分隔线是否内嵌——声明为有类型的 Own Token 属性，由语言像其他 Token 一样给值。模板通过它切换样式或伪类。不得存在
+  分隔线是否内嵌——声明为有类型的控件 Token 属性，由语言像其他 Token 一样给值。模板通过它切换样式或伪类。不得存在
   任何无类型的旁路通道。
 - **语义说明是语言作者的唯一依据**，必须写清画在哪里、表达什么状态、与哪个 Token 成对。
 - 抽象中间层只用于在多个 Token 类之间共享声明。
@@ -271,9 +274,9 @@ public sealed partial class TagToken : AbstractTagToken
 
 控件内部用到的图标（关闭、展开箭头、勾选、加载等）与动效（时长、缓动曲线、进出场方式）属于设计语言的一部分：
 
-- 控件内置图标声明为图标类型的 Own Token，由语言给值；模板从 Token 取图标，不写死某个图标库。取值包因此可以引用
+- 控件内置图标声明为图标类型的控件 Token，由语言给值；模板从 Token 取图标，不写死某个图标库。取值包因此可以引用
   该语言对应的图标包（Ant Design 的取值包引用 `AtomUI.Icons.AntDesign`）。应用自己使用的图标库不在本方案范围内。
-- 动效的时长与曲线是全局 Token，进出场方式等选择是 Own Token 上的枚举开关。
+- 动效的时长与曲线是全局 Token，进出场方式等选择是控件 Token 上的枚举开关。
 - 关闭动效这类与语言无关的可访问性规则由核心在最终规范化阶段统一执行（6.2），不依赖各语言自觉处理。
 
 ### 4.4 Token 的生成物
@@ -359,7 +362,7 @@ public readonly ref struct DerivationContext<TLanguageToken>   // Variant, Langu
 surface 色阶与 highlight，在全局 Token 里没有一一对应的位置。把它们硬塞进全局 Token，或者让各个控件推导各自反推，
 都是补丁。
 
-解法是承认每种语言有**自己的词汇**，并让它成为与全局 Token、Own Token 同等地位的第三类 Token：
+解法是承认每种语言有**自己的词汇**，并让它成为与全局 Token、控件 Token 同等地位的第三类 Token：
 
 ```csharp
 // AtomUI.DesignLanguages.Shadcn
@@ -386,12 +389,12 @@ public sealed partial class ShadcnToken : LanguageDesignToken
 }
 ```
 
-| | 全局 Token | 语言 Token | Own Token |
+| | 全局 Token | 语言 Token | 控件 Token |
 | --- | --- | --- | --- |
 | 声明在 | 核心 | 语言包 | 控件包 |
 | 表达 | 跨语言通用的角色 | 该语言独有的角色、几何表、色阶 | 某个控件的取值与行为开关 |
-| 谁给值 | 语言的 `DeriveGlobal` | 语言的 `DeriveLanguage` | 控件推导 |
-| 谁能读 | 语言、全部控件推导、控件模板、应用 | 该语言的全局推导与控件推导 | 该控件的模板 |
+| 谁给值 | 语言的 `DeriveGlobal`；对单个控件，由控件推导在其视图中覆盖 | 语言的 `DeriveLanguage` | 控件推导 |
+| 谁能读 | 语言、全部控件推导、控件模板（经控件视图）、应用 | 该语言的全局推导与控件推导 | 该控件的模板与代码 |
 | 用户可否显式覆盖 | 可以 | 可以 | 可以 |
 
 - 语言 Token 与另外两类 Token 用同一套机制：`partial` 属性、生成的 Schema、冻结语义、主题定义里可覆盖
@@ -438,26 +441,29 @@ public sealed partial class ShadcnToken : LanguageDesignToken
 ```csharp
 // AtomUI.Desktop.Controls.Themes.Shadcn
 [ControlDerivation]
-internal sealed class ShadcnTagDerivation : IControlDerivation<ShadcnToken, TagToken>
+internal sealed class ShadcnSelectDerivation : IControlDerivation<ShadcnToken, SelectToken>
 {
-    public void Derive(in DerivationContext<ShadcnToken> context, TagToken token)
+    public void Derive(in DerivationContext<ShadcnToken> context, ControlView<SelectToken> view)
     {
         var language = context.Language;
-        token.DefaultBg         = context.Global.ColorFillSecondary;
-        token.DefaultColor      = context.Global.ColorText;
-        token.TagCloseIconSize  = context.Global.IconSizeXS;
-        token.TagCornerRadius   = language.InputRadius;
-        token.SolidTextColor    = context.Global.ColorTextLightSolid;
-        token.FilledStatusSolid = false;
+        view.Global.ColorBorder  = language.Input;   // Select 看到的边框色
+        view.Global.ColorPrimary = language.Ring;    // Select 看到的焦点色
+        view.Token.OptionSelectedColor   = language.AccentForeground;
+        view.Token.OptionBackgroundInset = new Thickness(0, view.Global.LineWidth);
+        view.Token.MutedSelectIndicator  = context.Variant.Style == ShadcnStyle.Luma;
     }
 }
 ```
 
 - **身份是类型。** 推导类通过泛型参数绑定到语言 Token 类型与控件 Token 类型，写错在编译期报错。风格、明暗、密度、
   形态都是 `context.Variant` 里的参数：一个 Token 类、一种语言，只有一个推导类。
-- **必须写全**该 Token 类的每个属性，包括行为开关与从抽象层继承的属性。漏写由分析器在构建期报错。
-- **只能写自己的 Own Token。** `context.Global` 与 `context.Language` 只读；不存在为某个控件改写全局 Token 的入口。
-- 可以读：`context.Language`、`context.Global`、`context.Variant`，以及本方法内已经写过的本 Token 属性。
+- **推导的输出是该控件的视图。** `view.Token` 是控件 Token，**必须写全**，包括行为开关与从抽象层继承的属性，漏写由
+  分析器在构建期报错。`view.Global` 是该控件看到的全局 Token：读时得到该控件的值，写时只对这个控件生效；只写与全局
+  不同的项。
+- **只能覆盖 Map 与 Alias。** 种子不能在控件推导里覆盖：改种子要重新派生，违反单遍。
+- **读取顺序：** `view.Global.X` 若本方法已经写过就返回写入的值，否则返回共享的全局值；`view.Token.X` 只能读本方法
+  已经写过的。另可读 `context.Language`、`context.Variant`。
+- **显式值优先：** 主题与作用域对该控件写过的值（6.4）在推导之前冻结，推导对它们的写入被忽略（6.3）。
 - 推导类位于取值包，通过引用控件包拿到 Token 类型；它只使用 Token 类及其属性的类型，不调用控件的行为代码。
 - **共享逻辑**：同一语言内多个控件共用的推导放在取值包内的普通基类或辅助类中（例如按钮族共用一个泛型基类）。
   跨端共用的抽象 Token 层（位于 `AtomUI.Controls`）的取值，由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导
@@ -486,7 +492,7 @@ IControlDerivation<LanguageDesignToken, TagToken>    不绑定语言的通用推
 3  语言 Token            DeriveLanguage
 4  全局 Token            DeriveGlobal
 5  最终规范化            核心执行的与语言无关的规则（例如关闭动效时全部标准时长归零）
-6  控件 Token            各 Own Token 类的推导；按需惰性求值
+6  控件视图             各控件的推导：对全局 Token 的覆盖与控件 Token；按需惰性求值
 7  发布快照              交给运行时发布层（6.5）
 ```
 
@@ -499,7 +505,7 @@ IControlDerivation<LanguageDesignToken, TagToken>    不绑定语言的通用推
 
 - 推导代码就是普通的顺序赋值，不需要任何「是否显式」的判断；
 - 用户显式改了 A，后面由 A 算出的 B 自动跟随——不论 A 与 B 是同一类 Token 还是跨类（语言 Token → 全局 Token →
-  Own Token）；
+  控件 Token）；
 - 优先级只有一条：**语言推导 < 主题显式值 < 更内层作用域的显式值**。
 
 实现上，冻结是每个 Token 对象上按槽位的一组位；生成的 setter 在写入前检查对应的位。Token 对象只在求值期间存在，
@@ -509,10 +515,14 @@ IControlDerivation<LanguageDesignToken, TagToken>    不绑定语言的通用推
 
 - 作用域（`ThemeConfigProvider`）可以覆盖种子、三类 Token 中的任意值、明暗、密度、形态，也可以整体换语言。每个
   作用域是一个求值单元，按 6.2 独立求值。
-- 针对某一类控件的配置（主题定义与 `ThemeConfig` 里的 Control）只对该控件生效：可以写它的 Own Token，可以写它所见的
-  任意全局 Token，也可以为它固定明暗或密度。控件覆盖了种子或固定了轴时，它自成一个求值单元，管线为它单独求一份
-  全局视图（7.5），再求它的 Own Token；只覆盖 Map、Alias 或 Own Token 时不触发重新派生。这两条规则取代现有的四种
-  控件算法模式。
+- 针对某一类控件的配置（主题定义与 `ThemeConfig` 里的 Control）写入的就是该控件的视图，与控件推导写入的是同一份，
+  优先级为「语言推导 < 主题定义 < 作用域与运行时配置」。它可以写控件 Token，可以写该控件看到的任意全局 Token，也可以
+  为它固定明暗或密度（7.5）。
+- 只写 Map、Alias 或控件 Token 时只替换那一项，不触发派生。覆盖了种子或固定了轴的控件自成一个求值单元，管线为它单独
+  求一份全局 Token，再求它的视图。这两条规则取代现有的四种控件算法模式。
+- 根上显式写的全局 Token 改变的是共享全局值；语言对某个控件视图的覆盖仍然生效，与 antd 组件级 Token 优先于全局
+  Token 一致。要改这个控件，写它的 Control 配置；要让一类控件一起变，覆盖语言 Token（例如 Shadcn 的 `Input`），因为
+  语言的覆盖值就是从它推导出来的。
 - 推导是纯函数，可以在后台线程求值并被并发调用。
 
 ### 6.5 与运行时发布层的关系
@@ -521,7 +531,7 @@ IControlDerivation<LanguageDesignToken, TagToken>    不绑定语言的通用推
 
 | 保留的机制 | 作用 |
 | --- | --- |
-| 按槽位的值表与 `ThemeSnapshot` | 全局值只存一份；控件快照只存 Own Token 值与相对全局的差量 |
+| 按槽位的值表与 `ThemeSnapshot` | 全局值只存一份；控件快照只存控件 Token 值与相对全局的差量 |
 | `ThemeContext`、`ThemeScopeGraph`、`ThemeConfigProvider` | 嵌套作用域与稳定的上下文 |
 | 事务与发布顺序 | 后台准备、UI 线程原子提交、请求合并、陈旧结果丢弃 |
 | 惰性控件槽 | 控件 Token 首次查询时才求值，结果与急切求值逐位相同 |
@@ -690,9 +700,10 @@ MachGrid 的表格始终紧凑；暗色下另有两处覆盖，移动端圆角�
 | `Density` | 否 | 该控件固定使用的密度；只能写在基础段 |
 
 - 同一个 `Controls` 容器内 `(Catalog, Id)` 不得重复。Control 必须至少有一个轴属性或一个 `Tokens`。
-- Control 的 `Tokens` 用一个集合表达两类覆盖，与 v1 相同：该控件的 Own Token，以及该控件所见的任意全局 Token。
-  Binder 先按控件的 Own Token 匹配，未命中再按全局 Token 分类；两处都没有是错误。Own Token 与全局 Token 禁止同名。
+- Control 的 `Tokens` 用一个集合表达两类覆盖，与 v1 相同：该控件的控件 Token，以及该控件所见的任意全局 Token。
+  Binder 先按该控件的控件 Token 匹配，未命中再按全局 Token 分类；两处都没有是错误。控件 Token 与全局 Token 禁止同名。
 - 控件级的全局覆盖只影响该控件，不改变其他控件，也不改变作用域的全局快照。
+- 语言的控件推导写入的覆盖与这里是同一份控件视图，优先级最低（6.4）。
 
 **算法四态取消。** v1 用 `Unspecified / Disabled / Global / Custom` 回答两个问题，v2 各用一条规则直接回答：
 
@@ -701,7 +712,7 @@ MachGrid 的表格始终紧凑；暗色下另有两处覆盖，移动端圆角�
 | 在控件上覆盖一个种子，要不要为它重新派生？（`Disabled` / `Global`） | 永远按阶段处理：覆盖种子就为该控件重新求一份全局视图，覆盖 Map 或 Alias 就只替换那一个值。种子是输入，输入变了派生值跟着变，与全局层的语义一致 |
 | 控件要不要用一条不同的算法链？（`Custom`，例如表格固定紧凑） | 在 Control 上固定轴：`Density="Compact"`、`Appearance="Dark"` |
 
-只想替换某一个值而不触发派生时，覆盖对应的 Map、Alias 或 Own Token，而不是种子。
+只想替换某一个值而不触发派生时，覆盖对应的 Map、Alias 或控件 Token，而不是种子。
 
 ### 7.6 When 条件段
 
@@ -738,7 +749,7 @@ ThemeConfig                       不可变
 +-- LanguageTokens                                        当前语言的语言 Token 覆盖
 \-- Controls[ControlTokenIdentity]
     +-- Appearance?  Density?
-    \-- Tokens                                            Own Token 与该控件所见的全局 Token
+    \-- Tokens                                            控件 Token 与该控件所见的全局 Token
 ```
 
 - 没有 `Algorithms`。明暗与密度是两个独立字段，各自继承：父作用域是暗色、子作用域只写 `Density = Compact`，结果是
@@ -766,7 +777,7 @@ ThemeConfig                       不可变
 <- 局部 ThemeConfigProvider.Config
 ```
 
-每一层的种子进入管线第 2 步；语言 Token、全局 Token、Own Token 的显式值分别在第 3、4、6 步之前冻结（6.2、6.3）。
+每一层的种子进入管线第 2 步；语言 Token、全局 Token、控件 Token 的显式值分别在第 3、4、6 步之前冻结（6.2、6.3）。
 
 `Inherit = false` 的含义沿用现状并按新模型表述：
 
@@ -824,7 +835,7 @@ await themeManager.ApplyAsync(ThemeSelection
 
 **编译主题包。** 包内的主题 XML 在构建期用与运行时相同的 Reader 与 XSD 校验，并对照所引用程序集携带的构建契约
 （语言的身份、风格与可调种子；各控件包的 Token Schema）完成绑定，生成类型化的主题程序。运行时不解析 XML。条件段
-编译为对变体的分支；种子、Map、Alias、Own 四类写入保留各自的阶段，不压平成一张最终值表。生成 ABI 升为 v2。
+编译为对变体的分支；种子、Map、Alias、控件 Token 四类写入保留各自的阶段，不压平成一张最终值表。生成 ABI 升为 v2。
 
 **校验管线**与 v1 相同的五层：XML 良构 → XSD → 注册表绑定 → 值转换 → 语义校验；任一层失败都不产生可发布的部分
 定义。每条诊断包含稳定代码、级别、来源身份、行列与元素路径。代码分段沿用：`ATMTHM1xxx` 结构、`2xxx` 绑定、
@@ -870,13 +881,16 @@ Reader 不兼容 v1。现有主题文件按下表一次性换写，工具链提�
 | `BrandColor="Fixed"` / `NeutralColor="Fixed"` | 对应种子加 `Locked="true"`；`Seed` 是缺省行为，删除属性 |
 | `IsDefault="true"` | 删除；应用用 `WithInitialTheme` 指定 |
 | Control `Algorithm="Global"` | 删除属性（已是固定行为） |
-| Control `Algorithm="Disabled"` 且覆盖了种子 | 行为有变：v2 会重新派生。要保持原值，改为覆盖具体的 Map、Alias 或 Own Token。转换命令对这类条目给出提示而不自动改写 |
+| Control `Algorithm="Disabled"` 且覆盖了种子 | 行为有变：v2 会重新派生。要保持原值，改为覆盖具体的 Map、Alias 或控件 Token。转换命令对这类条目给出提示而不自动改写 |
 | Control 内的 `<Algorithms>` | 换成 Control 的 `Appearance` / `Density` 属性 |
 | `ThemeConfig.Algorithms` | `ThemeConfig.Appearance` / `Density` / `Style` |
 
 ---
 
 ## 8. 注册、启动与校验
+
+> 本节保留原方案。后续的取值包自动匹配、语言默认主题、初始语言选择和按需求值边界见
+> [应用注册与启动 API](../../architecture/systems/theming/design-languages.md#应用注册与启动-api)。
 
 桌面应用：
 
@@ -907,7 +921,7 @@ builder.WithInitialTheme(ThemeSelection.Of<AntDesignLanguage>());
 
 **配置提交时的校验**（任一不满足即启动失败，并指出缺少哪个包）：
 
-1. 每个已启用的语言 × 每个已启用的控件包，其全部 Own Token 类都能按 6.1 的规则找到推导。
+1. 每个已启用的语言 × 每个已启用的控件包，其全部控件 Token 类都能按 6.1 的规则找到推导。
 2. 每个已启用的控件包所要求的形态，都在每个已启用语言声明的形态之内。
 3. 初始主题的语言已启用，其风格、明暗、密度在该语言声明的范围内。
 4. 每个取值包记录的 Token Schema 摘要与实际加载的控件包一致（3.3）。
@@ -1030,8 +1044,8 @@ public readonly record struct DesignIdiom(string Id)
 
 | 现有开销 | 来源 | 新架构 |
 | --- | --- | --- |
-| 每个控件一份完整的全局 Token 副本 | 控件的 `CalculateTokenValues` 读自己的 `EffectiveGlobalToken`；`EvaluateGlobal` 可以改写它 | 控件推导只读共享的全局 Token，只写 Own Token。只有覆盖了种子或固定了轴的控件才有自己的全局视图。占冷编译 94% 的那批写入不再发生 |
-| Alias 与 Own 阶段的多轮重跑 | 语言算法在 Ant 公式之后抢写，靠重跑收敛 | 单遍，每个推导只执行一次 |
+| 每个控件一份完整的全局 Token 副本 | 控件的 `CalculateTokenValues` 读自己的 `EffectiveGlobalToken`；`EvaluateGlobal` 可以改写它 | 控件推导写的是该控件的视图：没有覆盖的控件与全局共用同一份值表，有覆盖的控件只存相对全局的差量。只有覆盖了种子或固定了轴的控件才单独求一份全局 Token。占冷编译 94% 的那批写入不再发生 |
+| Alias 与控件阶段的多轮重跑 | 语言算法在 Ant 公式之后抢写，靠重跑收敛 | 单遍，每个推导只执行一次 |
 | 写入记账（记录写过的属性名，再解析成槽位） | 需要知道算法写了哪些字段 | 取消。setter 只检查冻结位 |
 | 先跑 Ant 计算器再覆盖 | 非 Ant 语言叠在 Ant 之上 | 每种语言只跑自己的推导 |
 | 逐身份的算法与控件阶段查表（以值元组为键的字典） | 算法链 × 控件 | 每种语言一张按控件槽位索引的数组 |
@@ -1041,7 +1055,7 @@ public readonly record struct DesignIdiom(string Id)
 
 **保持不变**（6.5）：按槽位的值表、惰性控件槽、结构共享、两级缓存、事务与请求合并、零分配的资源查询。
 
-**读集与更细的结构共享。** 现有规则是「全局 Token 一变，所有带 Own Token 的控件重算」。新架构里推导是纯函数，输入
+**读集与更细的结构共享。** 现有规则是「全局 Token 一变，所有带控件 Token 的控件重算」。新架构里推导是纯函数，输入
 可以精确记录：
 
 - 求值期间，Token 的 getter 把被读的槽位记进当前推导的读集（一组位）。读集随求值结果一起缓存。
@@ -1111,8 +1125,8 @@ public readonly record struct DesignIdiom(string Id)
 | 由一个源色生成整套色调板（Material 3） | 语言种子 + `DeriveLanguage` 里的色板生成 |
 | 对比度等级（Material 3 的标准 / 中 / 高） | 语言种子；需要给最终用户选择时声明为可调种子 |
 | 多档密度（Material 的 0 到 -3） | 语言声明更多密度档 |
-| 状态层：悬停与按下是叠在底色上的半透明层 | 控件推导把叠加结果合成为各状态的 Own Token；确需真实叠加层时由控件增加行为开关 |
-| 双环焦点指示（Fluent 2） | 控件的行为开关与对应的 Own Token |
+| 状态层：悬停与按下是叠在底色上的半透明层 | 控件推导把叠加结果合成为各状态的控件 Token；确需真实叠加层时由控件增加行为开关 |
+| 双环焦点指示（Fluent 2） | 控件的行为开关与对应的控件 Token |
 | 中性色阶与强调色阶各自独立（Fluent 2、Carbon） | 语言 Token 中的色阶 |
 | 每种语言有自己的图标集与动效曲线 | 图标与动效都是 Token（4.4） |
 | 平台各有规范（HIG、Material 的移动与大屏） | 形态轴 |
@@ -1141,7 +1155,7 @@ public readonly record struct DesignIdiom(string Id)
 | 取值溯源 | 给定一个作用域与一个 Token，说明它的值来自哪一层（语言推导、主题的哪一段、哪个作用域的显式值）。按需重新求值得出，不在快照里常驻额外数据 |
 | 设计时与测试支持 | 控件库工程的设计器预览与无头测试需要一种已启用的语言；工具链提供一行启用 Ant Design 及其取值包的测试入口 |
 
-控件包新增或修改 Own Token 后，它的每个取值包会在构建期失败，直到补上取值。
+控件包新增或修改控件 Token 后，它的每个取值包会在构建期失败，直到补上取值。
 
 ---
 
@@ -1173,14 +1187,14 @@ public readonly record struct DesignIdiom(string Id)
 | `ThemeSelectionResolver` 在静态 profile 间的回退搜索 | 删除，变体是参数，选择的解析只剩三条规则 |
 | `ThemeConfig.Algorithms`、算法链整体替换的合并语义 | 删除，明暗与密度是各自继承的独立字段 |
 | 算法与控件阶段手工维护的 `revision` | 删除，修订身份取自确定性构建的程序集标识 |
-| `IControlTokenAlgorithm` 及 `EvaluateGlobal`、四种控件算法模式 | 删除，由控件推导与 6.3 的控件作用域取代 |
+| `IControlTokenAlgorithm` 及 `EvaluateGlobal`、四种控件算法模式 | 删除。由输出控件视图的控件推导（6.1）与控件级配置（6.4）取代；原 `EvaluateGlobal` 中的改写换写为 `view.Global` 上的覆盖 |
 | `Nova.Dark` 式逐明暗身份、每个阶段类 16 个特性、每个风格四份主题 XML | 删除，明暗、风格、密度是参数，主题按轴选择 |
 | 先跑 Ant 计算器再改写、临时改写种子再还原 | 删除，语言自己写全 |
 | 多轮重跑与 `Unstable` 判定、`IsExplicit` 守卫、`ATOMUIGEN048` | 删除，由冻结槽位的单遍求值取代 |
 | `AppearanceSettings` 无类型旁路 | 删除，成为行为开关 Token |
 | 核心里为 Shadcn 增设的 `ColorNeutral` 种子 | 迁入 Shadcn 的语言种子 `BaseColor` |
 | 语言包内部的 `ShadcnStyle`、`ShadcnSurface`、`PrimeNGPreset` 等 `internal` 表 | 整理为各语言公开的语言 Token 与组件配方 |
-| 写入记账（`RecordWrite`）与每个控件一份的全局 Token 副本 | 删除；setter 只检查冻结位，控件推导只读共享的全局 Token |
+| 写入记账（`RecordWrite`）与每个控件一份的全局 Token 副本 | 删除；setter 只检查冻结位，控件视图只存相对全局的差量 |
 | 语言包对核心与控件库的 `InternalsVisibleTo` | 删除 |
 | 移动控件中写死的几何值、借用桌面字号阶梯 | 进入 Ant Design 的移动形态与 `AtomUI.Mobile.Controls.Themes.AntDesign` |
 | 产品自建的主题包机制（如 MachGrid 的 BrandWarm） | 删除，用具名主题或派生语言 |
@@ -1207,9 +1221,9 @@ public readonly record struct DesignIdiom(string Id)
 
 - **取值代码按语言数增长。** 每加一种语言，要为每个受支持的控件包写一套完整的控件推导。这是「语言各自负责取值」的
   直接代价，换来的是没有隐式回退、没有叠加关系、每个取值有明确的负责人。
-- **控件加 Token 的成本上升。** 新增一个 Own Token 要同时在覆盖它的每个取值包里给值。这是有意的：不允许出现某语言
+- **控件加 Token 的成本上升。** 新增一个控件 Token 要同时在覆盖它的每个取值包里给值。这是有意的：不允许出现某语言
   下没人负责的 Token。
-- **包数量。** 每个带 Own Token 的控件包有「语言数」个取值包，一对一，不合并。主仓有 4 个这样的控件包，3 种语言
+- **包数量。** 每个带控件 Token 的控件包有「语言数」个取值包，一对一，不合并。主仓有 4 个这样的控件包，3 种语言
   共 12 个取值包。应用开发者只需要记住「用了哪个控件包，就装它的 `.Themes.<Lang>`」，语言包与共用控件的取值包随
   传递依赖进来。
 - **跨仓协同。** 核心契约变更会同时影响主仓、移动仓与各产品仓。步骤 1 的公开面要在步骤 2 用 Ant Design 验证后再
@@ -1236,7 +1250,7 @@ public readonly record struct DesignIdiom(string Id)
 2. 完整性分析器对条件分支的要求：强制所有路径写全，还是允许「先写默认、再按条件改写」。
 3. 三个语言包的语言 Token 类与组件配方的具体清单与命名：步骤 2、3 评审，步骤 5 用首个产品取值包检验后冻结。
 4. Shadcn 与 PrimeNG 是否提供移动形态，以及提供时的取值依据。
-5. 语言 Token 是否作为资源发布给应用。现设计不发布：应用通过全局 Token 与 Own Token 取值，避免应用界面绑定到某一种语言。
+5. 语言 Token 是否作为资源发布给应用。现设计不发布：应用通过全局 Token 与控件 Token 取值，避免应用界面绑定到某一种语言。
 6. 明暗是否需要第三个取值（高对比度）。现设计固定为 Light / Dark，与 Avalonia 的主题变体对应。
 7. 读集带来的结构共享能省多少，取决于实际的作用域用法；若测量显示收益不抵 getter 的判断开销，退回「全局一变、
-   带 Own Token 的控件全部重算」的现有规则，其余设计不受影响。
+   带控件 Token 的控件全部重算」的现有规则，其余设计不受影响。

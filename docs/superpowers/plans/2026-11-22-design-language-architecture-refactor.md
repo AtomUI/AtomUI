@@ -1,6 +1,6 @@
 # AtomUI 设计语言架构重构 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Follow the implementation steps and track progress with Markdown checkboxes (`- [ ]`).
 
 **Goal:** 把 AtomUI 的主题系统重构为《AtomUI 设计语言架构方案》规定的形态——Ant Design、Shadcn、PrimeNG 三种设计语言平级，控件只声明 Token、取值全部归语言一侧——并且重构完成后现有每种设计语言、每个变体的渲染与现状逐像素一致。
 
@@ -17,8 +17,8 @@
 ## Global Constraints
 
 - **基准树：** release/6.0 `8c946e4f5`。所有「与现状一致」都指与这棵树一致。
-- **像素一致是硬门槛：** 48 个变体下，Gallery 全部 92 个 showcase 的整页截图与每个控件类型的全部状态截图，稳定像素差异必须为 0。48 个变体 = Ant Design 4 个（常规、暗色、紧凑、暗色紧凑）+ PrimeNG 12 个（Aura / Lara / Nora × 4）+ Shadcn 32 个（Vega / Nova / Maia / Lyra / Mira / Luma / Sera / Rhea × 4）。
-- **Ant Design 零例外：** Ant Design 的 4 个变体在任何里程碑都不允许出现例外条目。
+- **像素一致是硬门槛：** 48 个变体下，Gallery 全部 77 个已注册独立 showcase 的整页截图（另有 15 个子视图文件，由所属页承载）与每个控件类型的全部状态截图，稳定像素差异必须为 0。48 个变体 = Ant Design 4 个（常规、暗色、紧凑、暗色紧凑）+ PrimeNG 12 个（Aura / Lara / Nora × 4）+ Shadcn 32 个（Vega / Nova / Maia / Lyra / Mira / Luma / Sera / Rhea × 4）。
+- **Ant Design 零渲染差异：** Ant Design 的 4 个变体均要求稳定渲染一致。Palette 命名空间文字按台账中记录的批准在抓拍时统一，整帧仍逐像素比较。
 - **其他语言的例外须经批准：** Shadcn 与 PrimeNG 如有无法保持的差异，逐条写入例外清单（位置、原因、前后截图路径），经项目负责人批准后才算通过。预期只有一类：非 Ant 语言页面里使用局部算法链的区域（方案 7.7 取消了算法链整体替换）。
 - **取值一致先于像素一致：** 每个工作包先过取值比对，再过像素比对。取值比对按 Token 名逐项相等；重构中改名或迁移的 Token 记在映射表里。
 - **不提交、不推送：** 执行过程中不做 `git commit`。每个里程碑到达门槛后停下，由项目负责人评审，再分组提交。唯一的例外是 M0-5：M0 的工具改动评审通过后提交一次，作为基线构建的固定提交。提交信息不带任何署名或工具标记，经 `commit-msg` 技能生成。
@@ -29,7 +29,7 @@
 - **代码内的 XML 文档注释用英文**；文档用中文。`docs/superpowers/` 只放 Markdown，截图与基线产物放 `.artifacts/`，不进仓库。
 - **第一方无特权：** 语言包与取值包不得使用 `InternalsVisibleTo`；M1 完成后这一条由构建校验。
 - **性能不退化：** 每个里程碑按现有门槛对照基准树测量（方案 12.5）。
-- **命名：** 语言包 `AtomUI.DesignLanguages.<Lang>`；取值包 `<控件包名>.Themes.<Lang>`，每个带 Own Token 的控件包一对一，不合并。`<Lang>` 取 `AntDesign`、`Shadcn`、`PrimeNG`。
+- **命名：** 语言包 `AtomUI.DesignLanguages.<Lang>`；取值包 `<控件包名>.Themes.<Lang>`，每个带控件 Token 的控件包一对一，不合并。`<Lang>` 取 `AntDesign`、`Shadcn`、`PrimeNG`。
 - **Token 声明不搬家：** 控件的 Token 类留在控件包里、与控件定义同目录，只移走其中的取值公式。
 
 ## Review Focus
@@ -52,7 +52,7 @@
 src/
   AtomUI.Core/                                          改：Theme/ 下的编译前半段、配置、定义、Schema
   AtomUI.Controls/                                      改：3 个 Token 类清为纯声明，留在原处
-  AtomUI.Desktop.Controls/                              改：142 个 Token 类清为纯声明；模板改读新增的 Own Token
+  AtomUI.Desktop.Controls/                              改：142 个 Token 类清为纯声明
   AtomUI.Desktop.Controls.ColorPicker/                  改：6 个 Token 类清为纯声明
   AtomUI.Desktop.Controls.DataGrid/                     改：1 个 Token 类清为纯声明
   AtomUI.Toolkits.GalleryBase/                          改：8 个 Token 类清为纯声明 + 同程序集内的通用推导
@@ -77,7 +77,7 @@ tools/performances/run_design_language_guards.sh        新：逐变体运行守
 tools/performances/compare_token_dumps.py               新：取值导出的比对（M0）
 ```
 
-主仓共 4 个带 Own Token 的控件包，3 种语言，12 个取值包，加 3 个语言包，共 15 个新工程。取值包引用对应的控件包（为了拿到
+主仓共 4 个带控件 Token 的控件包，3 种语言，12 个取值包，加 3 个语言包，共 15 个新工程。取值包引用对应的控件包（为了拿到
 Token 类型）与对应的语言包；依赖其他控件包的，还引用那个控件包在同一语言下的取值包（例如
 `AtomUI.Desktop.Controls.Themes.AntDesign` 引用 `AtomUI.Controls.Themes.AntDesign`）。
 
@@ -113,7 +113,7 @@ Token 类型）与对应的语言包；依赖其他控件包的，还引用那�
 
 | 门槛 | 含义 | 通过标准 |
 | --- | --- | --- |
-| G-取值 | 48 个变体 × 种子组合（共 484 份），基线构建与候选构建各导出全部全局 Token 与控件 Own Token，逐键比对 | `compare_token_dumps.py` 退出 0；差异只能出现在已批准的改名映射或例外清单里 |
+| G-取值 | 48 个变体 × 种子组合（共 484 份），基线构建与候选构建各导出全部全局 Token 与控件控件 Token，逐键比对 | `compare_token_dumps.py` 退出 0；差异只能出现在已批准的改名映射或例外清单里 |
 | G-像素 | 48 个变体，各跑一遍 `run_perf_guards.sh`：Gallery 全部页面整页截图与每个控件类型的全部状态截图，基线与候选各两遍 | 稳定像素差异为 0；尺寸不变；例外清单按 Global Constraints |
 | G-性能 | 主题编译与切换（Ant Design 三条链）、启动，方法见 M0-7；资源查询零分配由现有测试保证 | 按现有门槛不退化 |
 | G-回归 | `scripts/run-full-regression.sh` | 全部通过 |
@@ -279,13 +279,15 @@ Token 类型）与对应的语言包；依赖其他控件包的，还引用那�
 已知缺口：现有的编译测量只覆盖 Ant Design 默认主题的三条链（默认、暗色、紧凑），Shadcn 与 PrimeNG 的编译耗时没有现成工具，
 M0 不补。这个测量依赖的编译器内部接口会在 M2 被替换，M2-3 需要一并改写它。
 
+稳态正式验收沿用既有 R2 口径。关闭 .NET 分层编译，冷编译 3001 次计时与 300 次预热，切换 501 次计时与 50 次预热，每侧至少 7 次交错。冷编译与缓存切换使用 P25，未缓存切换使用中位数。原生启动采样保持默认分层。[R2 采样与统计口径](../progress/2026-11-13-theme-algorithm-strategy.md)
+
 **M0 门槛：** M0-1…7 完成：基线 worktree 构建完毕，单变体全量自检 PASS，全量运行频率已定，性能基线已记录。停下评审。
 
 ---
 
 ## M1 旧架构内的等价清理
 
-目标：趁管线还没换，把所有「靠旁路实现」的东西变成普通 Token。每一项都能单独用 G-取值 与 G-像素 验证，出问题时范围很小。M1 结束时，语言包里不再有任何逐控件改写全局 Token 的代码，也不再依赖内部 API。
+目标：趁管线还没换，把所有「靠旁路实现」的东西变成普通 Token。每一项都能单独用 G-取值 与 G-像素 验证，出问题时范围很小。M1 结束时，语言包不再使用无类型旁路，也不再依赖内部 API。逐控件的全局改写（`EvaluateGlobal`）留到 M2，由新管线的控件视图直接取代（方案 6.1）。
 
 ### Task M1-1：行为开关 Token 化
 
@@ -300,7 +302,7 @@ M0 不补。这个测量依赖的编译器内部接口会在 M2 被替换，M2-3
 - Test: `tests/AtomUI.Desktop.Controls.Tests/` 下对应控件的测试
 
 **Interfaces:**
-- Produces（新增的 Own Token 属性，名字此处定死）：
+- Produces（新增的控件 Token 属性，名字此处定死）：
   - `AbstractButtonGeometryToken` 新增七个属性，对应 `ButtonThemeRecipe` 的六个字段（可空的 `DisabledOpacity` 拆成一个开关加一个数值）：
 
     | 属性 | 类型 | Ant 默认值 |
@@ -329,27 +331,8 @@ M0 不补。这个测量依赖的编译器内部接口会在 M2 被替换，M2-3
 - Create: `docs/superpowers/progress/2026-11-22-control-global-rewrite-inventory.md`
 
 - [ ] **Step 1：** 列出全部改写，一行一条：`语言 | 阶段类 | 控件 Token 类 | 被改写的全局 Token | 新值的表达式 | 条件（风格、明暗）`。来源：`grep -rnE 'controlGlobal\.[A-Za-z0-9]+ *=' src/AtomUI.Themes.Shadcn src/AtomUI.Themes.PrimeNG`，加上被 `EvaluateGlobal` 调用的辅助方法（`ShadcnButtonAppearance.ApplyGlobal` 等）里的写入。
-- [ ] **Step 2：** 对每个「控件 × 全局 Token」对，查出它被谁读：该控件 Token 类的 `CalculateTokenValues`（记下读它的 Own Token）；该控件及其部件的 ControlTheme（`{atom:<Control>TokenResource <SharedKind>}` 与 `OwnerTokenResource`）；控件 C# 代码里的强类型读取。写进同一张表的后三列。
-- [ ] **Step 3：** 给每一对定去向，只有三种：**A** 只被默认公式读 → 语言在 `EvaluateOwn` 里直接给那些 Own Token 赋值；**B** 被模板或代码直接读 → 新增一个 Own Token，Ant 默认公式取该全局 Token 的值，模板与代码改读它；**C** 没有人读 → 删除。表里每一行都必须有去向，新增的 Own Token 写出名字。
-
-### Task M1-3：按清点表消除逐控件全局改写
-
-**Files:**
-- Modify: 清点表列出的全部阶段类（`src/AtomUI.Themes.Shadcn/Algorithms/Controls/*.cs` 10 个、`src/AtomUI.Themes.PrimeNG/Algorithms/Controls/*.cs` 12 个）
-- Modify: 清点表中去向为 B 的控件：其 Token 类、ControlTheme AXAML、相关 C# 代码
-- Modify: `src/AtomUI.Core/Theme/Algorithms/IControlTokenAlgorithm.cs`（删 `EvaluateGlobal`）、`Theme/Compilation/ThemeCompiler.cs`（删 `RunControlGlobalStage`、`RestoreExplicitDerivedValues`）
-- Test: `tests/AtomUI.Themes.Tests/` 下按控件族的取值测试
-
-**Interfaces:**
-- Produces: `IControlTokenAlgorithm<TToken>` 只剩 `EvaluateOwn(in ThemeAlgorithmContext context, DesignToken effectiveGlobal, TToken token)`。
-
-按控件族分批，每批走完下面的步骤再做下一批。批次：按钮族（Button、DropdownButton、SubmitButton、ResetButton、SplitButton、FloatButton）→ 输入族 → 选择与菜单族 → 卡片与容器 → 反馈类（Dialog、Drawer、Message、Notification、ToolTip）→ 其余。
-
-- [ ] **Step 1：** 对本批的每个去向 B 条目，新增 Own Token，Ant 的 `CalculateTokenValues` 赋为对应的全局 Token；模板与代码改读它。此时只改了读取路径，语言包未动。跑 G-取值 与本批控件所在 showcase 的 G-像素，期望全部相等（包括 Shadcn 与 PrimeNG，因为 `EvaluateGlobal` 仍在生效且新 Token 的默认公式读到的是改写后的全局值）。
-- [ ] **Step 2：** 对本批的每个阶段类：把 `EvaluateGlobal` 里的每一处改写，按去向 A 或 B 改成 `EvaluateOwn` 里对相应 Own Token 的赋值；然后把该 `EvaluateGlobal` 清空。
-- [ ] **Step 3：** 跑 G-取值：本批控件的 Own Token 逐项相等。不相等说明漏了某个由该全局 Token 派生的 Own Token，回到清点表补上。
-- [ ] **Step 4：** 跑本批控件所在 showcase 的 G-像素，44 个非 Ant 变体与 4 个 Ant 变体都为 0。
-- [ ] **Step 5（最后一批之后）：** 全仓 `EvaluateGlobal` 已全部为空，删除该成员及编译器里的相应路径；跑完整的 G-取值、G-像素、G-回归。
+- [ ] **Step 2：** 对每个「控件 × 全局 Token」对，查出它被谁读：该控件 Token 类的 `CalculateTokenValues`（记下读它的控件 Token）；该控件及其部件的 ControlTheme（`{atom:<Control>TokenResource <SharedKind>}` 与 `OwnerTokenResource`）；控件 C# 代码里的强类型读取。写进同一张表的后三列。
+- [ ] **Step 3：** 清点表的用途：M4 移植语言代码时，作为把每处改写换写为 `view.Global` 覆盖（方案 6.1）的对照清单；「EvaluateOwn 依赖」列标出语言自己的推导读了改写值的地方，换写时改为读 `view.Global`（得到覆盖后的值）。
 
 ### Task M1-4：去掉语言包对内部 API 的依赖
 
@@ -431,6 +414,13 @@ public readonly ref struct DerivationContext<TLanguageToken> where TLanguageToke
 {
     public DesignVariant Variant { get; }
     public TLanguageToken Language { get; }
+}
+
+// 一个控件的视图（方案 6.1）：Token 是它的控件 Token；Global 是它看到的全局 Token，读得到该控件的值，
+// 写入只对该控件生效，只允许 Map 与 Alias。
+public sealed class ControlView<TToken> where TToken : AbstractControlDesignToken
+{
+    public TToken Token { get; }
     public DesignToken Global { get; }
 }
 
@@ -438,7 +428,7 @@ public interface IControlDerivation<TLanguageToken, TToken>
     where TLanguageToken : LanguageDesignToken
     where TToken : AbstractControlDesignToken
 {
-    void Derive(in DerivationContext<TLanguageToken> context, TToken token);
+    void Derive(in DerivationContext<TLanguageToken> context, ControlView<TToken> view);
 }
 ```
 
@@ -458,9 +448,9 @@ public interface IControlDerivation<TLanguageToken, TToken>
 
 **Interfaces:**
 - Consumes: M2-1、M2-2 的全部产出。
-- Produces: 管线按方案 6.2 的七步执行；`ThemeSnapshot.LanguageTokenValues`；缓存键包含（语言身份、变体、种子、显式值）。运行时发布层（`ThemeContext`、`ThemeScopeGraph`、`ThemeTransaction`、`LazyControlSnapshots`、资源解析）的公开行为不变。
+- Produces: 管线按方案 6.2 的七步执行；控件快照相对全局的差量由控件推导写入的 `view.Global` 覆盖与控件级配置合成；`ThemeSnapshot.LanguageTokenValues`；缓存键包含（语言身份、变体、种子、显式值）。运行时发布层（`ThemeContext`、`ThemeScopeGraph`、`ThemeTransaction`、`LazyControlSnapshots`、资源解析）的公开行为不变。
 
-验收：显式值冻结后跨类传递（语言 Token → 全局 → Own）；覆盖了种子或固定了轴的控件自成求值单元，其余控件共享全局对象（用引用相等断言）；每个推导在一次编译中恰好执行一次。
+验收：显式值冻结后跨类传递（语言 Token → 全局 → 控件 Token）；推导对 `view.Global` 的覆盖只出现在该控件的快照里，推导覆盖种子被拒绝，控件级显式值冻结后推导对它的写入被忽略；覆盖了种子或固定了轴的控件自成求值单元，其余控件共享全局对象（用引用相等断言）；每个推导在一次编译中恰好执行一次。
 
 ### Task M2-4：配置、选择与主题管理器
 
@@ -567,18 +557,18 @@ Token 类不移动、不改名、不改命名空间，生成的枚举与标记�
 
 **Interfaces:**
 - Consumes: M3-1 清理后的 Token 类与存下的公式、M3-2 的 `AntDesignToken`。
-- Produces: 上表的四个入口。重复调用同一个入口是幂等的。跨端共用的抽象 Token 层（`AtomUI.Controls` 里的 `AbstractSkeletonToken` 等）的取值，由 `AtomUI.Controls.Themes.AntDesign` 以公开静态方法 `AntDesign<Base>Derivation.DeriveShared(in DerivationContext<AntDesignToken> context, <Base> token)` 提供，下游取值包调用。
+- Produces: 上表的四个入口。重复调用同一个入口是幂等的。跨端共用的抽象 Token 层（`AtomUI.Controls` 里的 `AbstractSkeletonToken` 等）的取值，由 `AtomUI.Controls.Themes.AntDesign` 以公开静态方法 `AntDesign<Base>Derivation.DeriveShared(in DerivationContext<AntDesignToken> context, DesignToken global, <Base> token)` 提供，下游取值包调用（`ControlView<T>` 是不变泛型，共享推导接收视图的两个部分）。
 
 每个 Token 类的推导由 M3-1 存下的公式按固定规则换写，不做任何取值上的改动：
 
 | 原公式里的写法 | 推导里的写法 |
 | --- | --- |
-| `protected override void CalculateTokenValues(bool isDarkMode)` | `public void Derive(in DerivationContext<AntDesignToken> context, XxxToken token)` |
-| `EffectiveGlobalToken.P` | `context.Global.P` |
+| `protected override void CalculateTokenValues(bool isDarkMode)` | `public void Derive(in DerivationContext<AntDesignToken> context, ControlView<XxxToken> view)`，方法体开头 `var token = view.Token; var global = view.Global;` |
+| `EffectiveGlobalToken.P` | `global.P` |
 | 对本类属性的写 `P = …` 与读 `P` | `token.P = …` 与 `token.P` |
 | `isDarkMode` | `context.Variant.Appearance == ThemeAppearance.Dark` |
 | `if (!IsExplicit(Kind.P)) P = v;` | `token.P = v;`（冻结语义已保证显式值不被覆盖） |
-| `base.CalculateTokenValues(isDarkMode)` | 调用基类 Token 对应的共享推导方法 `AntDesign<Base>Derivation.DeriveShared(in context, token)` |
+| `base.CalculateTokenValues(isDarkMode)` | 调用基类 Token 对应的共享推导方法 `AntDesign<Base>Derivation.DeriveShared(in context, global, token)` |
 
 - [ ] 先做 `AtomUI.Controls.Themes.AntDesign`（3 个 Token 类），再做桌面控件。桌面控件按目录字母序分批，每批约 15 个 Token 类（批次清单由 `find src/AtomUI.Desktop.Controls -name '*Token.cs' -not -path '*/GeneratedFiles/*' | sort` 生成并写进本工作包的步骤级计划）。每批换写后构建，完整性分析器无报错，然后对该批控件跑取值比对（只比这些控件的行，4 个 Ant 变体 × 种子矩阵），逐项相等才进下一批。最后做 ColorPicker 与 DataGrid。
 - [ ] 全部完成后，四个取值包的覆盖校验无报错：各自对应的控件包里的每个 Token 类都有且只有一个 Ant Design 推导。
@@ -632,7 +622,7 @@ Token 类不移动、不改名、不改命名空间，生成的枚举与标记�
 **Files（以 Shadcn 为例，PrimeNG 同构）:**
 - Create: 与 M3-3 同构的四个取值包工程：`src/DesignLanguages/Shadcn/AtomUI.Controls.Themes.Shadcn/`、`src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn/`、`src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn/`、`src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn/`，引用关系与 M3-3 的表相同（把 `AntDesign` 换成 `Shadcn`）；`AtomUI.Desktop.Controls.Themes.Shadcn` 带 `README.md`
 - Create: 每个取值包内 `<控件目录>/Shadcn<Xxx>Derivation.cs`，每个 Token 类一个
-- Source: `src/AtomUI.Themes.Shadcn/Algorithms/Controls/*.cs`（M1 之后只剩 `EvaluateOwn`）与 M3-3 的 Ant Design 推导（公式的起点）
+- Source: `src/AtomUI.Themes.Shadcn/Algorithms/Controls/*.cs`（`EvaluateGlobal` 与 `EvaluateOwn`）、M1-2 清点表与 M3-3 的 Ant Design 推导（公式的起点）
 - Test: `tests/AtomUI.Themes.Shadcn.Tests/`（覆盖四个取值包）
 
 **Interfaces:**
@@ -641,7 +631,7 @@ Token 类不移动、不改名、不改命名空间，生成的枚举与标记�
 每个 Token 类的推导按固定办法得到，使结果与「Ant 公式之后再由语言阶段覆盖」相同：
 
 - [ ] **该 Token 类在现有语言包里没有阶段**（Shadcn 约 110 个、PrimeNG 约 70 个）：复制 Ant Design 的推导，泛型参数换成本语言的语言 Token 类型，方法体不变。
-- [ ] **有阶段**：复制 Ant Design 的推导作为起点；把现有 `EvaluateOwn` 的每一条赋值并入——若被赋值的属性在 Ant 公式里后面还被读取（原来带 `IsExplicit` 守卫的那些），就在原赋值处直接换成本语言的值；否则追加在方法末尾。其中读内部表的地方改读 `context.Language`。
+- [ ] **有阶段**：复制 Ant Design 的推导作为起点；把现有 `EvaluateOwn` 的每一条赋值并入——若被赋值的属性在 Ant 公式里后面还被读取（原来带 `IsExplicit` 守卫的那些），就在原赋值处直接换成本语言的值；否则追加在方法末尾。现有 `EvaluateGlobal` 的每一处改写，按 M1-2 清点表换写为方法开头对 `view.Global` 的覆盖；原先读改写值的地方（清点表的「EvaluateOwn 依赖」）改读 `view.Global`。其中读内部表的地方改读 `context.Language`。
 - [ ] 分批与 M3-3 相同。每批跑取值比对：本语言的全部变体 × 种子矩阵，该批控件的行逐项相等。
 - [ ] 覆盖校验与完整性分析器无报错。
 - [ ] 把 `README.md` 里的映射表、不支持清单从旧包迁来，并为每个控件写上目标等级（方案 11.1）。
@@ -670,7 +660,7 @@ Token 类不移动、不改名、不改命名空间，生成的枚举与标记�
 - Test: `tests/AtomUI.Core.Tests/Theme/Performance/`、`ControlCompilationCacheTests.cs`
 
 - [ ] 控件求值结果连同读集一起缓存；子求值单元相对父单元的变更集与读集不相交时复用父结果（引用相等）。
-- [ ] 按方案 12.5 增加五个场景的测量，与 M0 的性能基线对照。读集带来的收益抵不过 getter 判断的开销时，按方案第 18 章待定点 7 退回「全局一变、带 Own Token 的控件全部重算」，并把测量数据写进进度文档。
+- [ ] 按方案 12.5 增加五个场景的测量，与 M0 的性能基线对照。读集带来的收益抵不过 getter 判断的开销时，按方案第 18 章待定点 7 退回「全局一变、带控件 Token 的控件全部重算」，并把测量数据写进进度文档。
 - [ ] 启动：只启用 Ant Design 与启用三种语言只用一种，差值不超过现有启动门槛。超出时把语言包与取值包的程序集加载推迟到首次求值。
 
 ### Task M5-2：Gallery 的语言与变体选择
@@ -723,14 +713,14 @@ Token 类不移动、不改名、不改命名空间，生成的枚举与标记�
 ## M7 商业产品（各产品仓库，各立计划，先 MachGrid）
 
 - 现状（MachGrid）：Token 类为 `internal`、仍是旧契约；表头、行悬停、分组行共用同一个全局 Token，选中行只取了底色没取前景；另有自建的 `ThemePackages/BrandWarm` 机制。
-- 工作：Token 类改为 `public partial` 并清为纯声明，留在产品的控件包内；按方案 4.2 补齐并存状态各自的 Own Token 与成对的前景；建立 `<产品>.Themes.AntDesign`（公式按 M3-3 的规则换写）；BrandWarm 改为具名主题或派生语言；再按产品规划建立其他语言的取值包。
+- 工作：Token 类改为 `public partial` 并清为纯声明，留在产品的控件包内；按方案 4.2 补齐并存状态各自的控件 Token 与成对的前景；建立 `<产品>.Themes.AntDesign`（公式按 M3-3 的规则换写）；BrandWarm 改为具名主题或派生语言；再按产品规划建立其他语言的取值包。
 - 门槛：Ant Design 下与迁移前逐像素一致；其他语言按各取值包 README 声明的等级验收。
 
 ---
 
 ## Self-Review
 
-- **方案覆盖：** 第 3 章包结构 → M3-2、M3-3、M4；第 4 章词汇 → M1-1、M1-3、M2-1、M3-1；第 5 章语言 → M2-2、M3-2、M4-1、M4-3；第 6 章推导与管线 → M2-2、M2-3；第 7 章主题定义与选择 → M2-4、M2-5；第 8 章注册与校验 → M2-6；第 9 章形态 → M2-2（类型）、M6（落地）；第 12 章性能 → M0-4、M5-1；第 13 章扩展点 → M5-3；第 14 章工具链 → M2-6（取值溯源与设计时支持未排入，见下）；第 16 章迁移 → 全部里程碑。
+- **方案覆盖：** 第 3 章包结构 → M3-2、M3-3、M4；第 4 章词汇 → M1-1、M2-1、M3-1；第 5 章语言 → M2-2、M3-2、M4-1、M4-3；第 6 章推导与管线 → M2-2、M2-3；第 7 章主题定义与选择 → M2-4、M2-5；第 8 章注册与校验 → M2-6；第 9 章形态 → M2-2（类型）、M6（落地）；第 12 章性能 → M0-4、M5-1；第 13 章扩展点 → M5-3；第 14 章工具链 → M2-6（取值溯源与设计时支持未排入，见下）；第 16 章迁移 → 全部里程碑。
 - **未排入的两项：** 方案 14 章的「取值溯源」与「设计时预览支持」不影响任何门槛，放在 M5 之后单独安排，不在本方案的完成定义之内。
-- **类型一致性：** `DesignLanguage<TLanguageToken>`、`DerivationContext<TLanguageToken>`、`IControlDerivation<TLanguageToken, TToken>`、`DesignVariant`、`ThemeSelection`、`DesignLanguageProfile.Key` 在各工作包中的写法一致；`AddSharedControls()`、`AddDesktopControls()`、`AddDesktopColorPicker()`、`AddDesktopDataGrid()` 在三种语言的构建器上同名。
+- **类型一致性：** `DesignLanguage<TLanguageToken>`、`DerivationContext<TLanguageToken>`、`IControlDerivation<TLanguageToken, TToken>`、`ControlView<TToken>`、`DesignVariant`、`ThemeSelection`、`DesignLanguageProfile.Key` 在各工作包中的写法一致；`AddSharedControls()`、`AddDesktopControls()`、`AddDesktopColorPicker()`、`AddDesktopDataGrid()` 在三种语言的构建器上同名。
 - **Review Focus：** 五条分别落在 M2-4（3）、M2-5（1、5）、M2-6（2、4）。

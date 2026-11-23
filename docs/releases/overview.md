@@ -5,8 +5,8 @@
 
 ## Unreleased
 
-- [Theme algorithm strategy: API changes](unreleased-theme-algorithms-api-changes.md)
-- [主题算法策略化：API 变更](unreleased-theme-algorithms-api-changes.zh-CN.md)
+- [Design languages: API changes](unreleased-theme-algorithms-api-changes.md)
+- [设计语言：API 变更](unreleased-theme-algorithms-api-changes.zh-CN.md)
 
 发布时并入该版本的 `<version>-api-changes` 文档。
 

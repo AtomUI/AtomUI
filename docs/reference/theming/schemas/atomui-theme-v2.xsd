@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:theme="https://atomui.net/schemas/theme/v2"
+           targetNamespace="https://atomui.net/schemas/theme/v2"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="2.0">
+
+  <xs:annotation>
+    <xs:documentation>
+      AtomUI theme definition XML schema, version 2. A theme describes configuration only: which design language it
+      belongs to, which axes it fixes and which values it overrides; every computation belongs to the language.
+    </xs:documentation>
+  </xs:annotation>
+
+  <xs:simpleType name="IdentifierType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+      <xs:maxLength value="128" />
+      <xs:pattern value="[A-Za-z_][A-Za-z0-9_.-]{0,127}" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DisplayNameType">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1" />
+      <xs:maxLength value="128" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TokenValueType">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+      <xs:maxLength value="4096" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="StrictBooleanType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true" />
+      <xs:enumeration value="false" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="AppearanceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Light" />
+      <xs:enumeration value="Dark" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="TokenType">
+    <xs:attribute name="Name" type="theme:IdentifierType" use="required" />
+    <xs:attribute name="Value" type="theme:TokenValueType" use="required" />
+    <xs:attribute name="Locked" type="theme:StrictBooleanType" use="optional" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Only for an adjustable seed in the base section: the end user's selection cannot replace it.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="TokensType">
+    <xs:sequence>
+      <xs:element name="Token" type="theme:TokenType" minOccurs="1" maxOccurs="4096" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ControlType">
+    <xs:sequence>
+      <xs:element name="Tokens" type="theme:TokensType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="Catalog" type="theme:IdentifierType" use="required" />
+    <xs:attribute name="Id" type="theme:IdentifierType" use="required" />
+    <xs:attribute name="Appearance" type="theme:AppearanceType" use="optional">
+      <xs:annotation>
+        <xs:documentation>The appearance this control always uses; base section only.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Density" type="theme:IdentifierType" use="optional">
+      <xs:annotation>
+        <xs:documentation>The density this control always uses; base section only.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="ControlsType">
+    <xs:sequence>
+      <xs:element name="Control" type="theme:ControlType" minOccurs="1" maxOccurs="1024">
+        <xs:unique name="UniqueControlTokenName">
+          <xs:selector xpath="theme:Tokens/theme:Token" />
+          <xs:field xpath="@Name" />
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="WhenType">
+    <xs:sequence>
+      <xs:element name="Tokens" type="theme:TokensType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="LanguageTokens" type="theme:TokensType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Controls" type="theme:ControlsType" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="Style" type="theme:IdentifierType" use="optional" />
+    <xs:attribute name="Appearance" type="theme:AppearanceType" use="optional" />
+    <xs:attribute name="Density" type="theme:IdentifierType" use="optional" />
+    <xs:attribute name="Idiom" type="theme:IdentifierType" use="optional" />
+  </xs:complexType>
+
+  <xs:complexType name="ThemeType">
+    <xs:sequence>
+      <xs:element name="Tokens" type="theme:TokensType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="LanguageTokens" type="theme:TokensType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="Controls" type="theme:ControlsType" minOccurs="0" maxOccurs="1" />
+      <xs:element name="When" type="theme:WhenType" minOccurs="0" maxOccurs="64">
+        <xs:unique name="UniqueWhenTokenName">
+          <xs:selector xpath="theme:Tokens/theme:Token" />
+          <xs:field xpath="@Name" />
+        </xs:unique>
+        <xs:unique name="UniqueWhenLanguageTokenName">
+          <xs:selector xpath="theme:LanguageTokens/theme:Token" />
+          <xs:field xpath="@Name" />
+        </xs:unique>
+        <xs:unique name="UniqueWhenControlIdentity">
+          <xs:selector xpath="theme:Controls/theme:Control" />
+          <xs:field xpath="@Catalog" />
+          <xs:field xpath="@Id" />
+        </xs:unique>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="Id" type="theme:IdentifierType" use="required" />
+    <xs:attribute name="Name" type="theme:DisplayNameType" use="required" />
+    <xs:attribute name="Language" type="theme:IdentifierType" use="required" />
+    <xs:attribute name="Style" type="theme:IdentifierType" use="optional" />
+    <xs:attribute name="Appearance" type="theme:AppearanceType" use="optional" />
+    <xs:attribute name="Density" type="theme:IdentifierType" use="optional" />
+  </xs:complexType>
+
+  <xs:element name="Theme" type="theme:ThemeType">
+    <xs:unique name="UniqueGlobalTokenName">
+      <xs:selector xpath="theme:Tokens/theme:Token" />
+      <xs:field xpath="@Name" />
+    </xs:unique>
+    <xs:unique name="UniqueLanguageTokenName">
+      <xs:selector xpath="theme:LanguageTokens/theme:Token" />
+      <xs:field xpath="@Name" />
+    </xs:unique>
+    <xs:unique name="UniqueControlIdentity">
+      <xs:selector xpath="theme:Controls/theme:Control" />
+      <xs:field xpath="@Catalog" />
+      <xs:field xpath="@Id" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

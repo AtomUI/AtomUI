@@ -6,14 +6,16 @@
 本文定义当前架构。既有兼容对象不得成为绕过这些约束的旁路。面向主题作者和 Control 开发者的分层讲解与定制
 示例见 [AtomUI 主题定制指南](../../../guides/theming/customization.md)。
 
-包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。派生算法统一在运行时执行，
+设计语言的概念、包结构、依赖规则与选择模型见[设计语言架构](design-languages.md)。
+包内 XML 类型化注册与默认赋值见[编译主题包](compiled-theme-packages/overview.md)。设计语言的推导统一在运行时执行，
 并遵守本文的配置、Snapshot、事务与资源语义；当前验证状态由编译主题包文档维护，已发布能力以对应发布记录为准。
 
 ## 1. 设计目标
 
 主题系统必须满足以下不可协商的约束：
 
-- 建立完整的 Seed Token、Map Token、Alias Token、Control Token、算法和嵌套配置模型。
+- 建立完整的 Seed Token、Map Token、Alias Token、Control Token、语言 Token、设计语言与四个轴（风格、明暗、密度、形态）和
+  嵌套配置模型；核心与控件包只声明词汇，全部取值属于设计语言。
 - AtomUI 的公开 API、内部类型、资源键和文档统一使用 `Control` 术语。
 - `ThemeSnapshot` 是运行时 Token 值的唯一真源。
 - 全局主题和局部主题使用同一个配置合并器、编译器、缓存和提交协议。
@@ -31,8 +33,8 @@
   Token。Control 级配置对该 Control 模板内的全部消费点生效。
 - ControlTheme 不携带 ambient Token scope；Token 所属 Control 由资源扩展名显式表达，或由默认 ControlTheme 注入的可
   继承 `ThemeScope.TokenOwner` identity 表达。
-- 显式 Control Own Token 覆盖先于 Own Token 默认计算写入，默认计算只为未显式设置的字段求值；覆盖一个 Own Token
-  必须传导到依赖它的全部派生默认值。
+- 显式值是推导的输入：主题与作用域给出的显式值在对应推导之前冻结，推导对冻结槽位的写入被忽略；覆盖一个 Token
+  必须传导到依赖它的全部派生值（同类或跨类：语言 Token → 全局 Token → 控件 Token）。
 - 承诺面真实：每个全局 Token 和每个 Active Own Token 设置后都在渲染层产生可观测变化；没有消费者的 Own Token 要么
   标为 Reserved，要么删除。
 - Token 资源查询热路径不分配对象，不执行字符串解析、反射或 LINQ。
@@ -52,15 +54,17 @@
 ### 2.1 主题语义与 Avalonia 映射
 
 AtomUI 主题系统使用静态 `ControlTheme`、typed resource key、snapshot-backed `ResourceProvider` 和显式生命周期
-宿主实现主题配置合并、Token 派生、算法替换、Control 级算法策略和嵌套作用域。本文定义这些能力的长期功能契约；
+宿主实现主题配置合并、设计语言推导、轴的选择、Control 级配置和嵌套作用域。本文定义这些能力的长期功能契约；
 代码、配置模型、主题资产和其他文档必须与本文保持一致：
 
-- `ThemeConfig` 对 Token 按 key 合并，对 Control 配置先按 identity、再按字段合并；`Algorithms` 整体替换。
-- `Inherit=false` 切断父配置继承；root 运行时请求保留当前所选 `ThemeDefinition` 基线，局部 Provider 回到
-  AtomUI library defaults。
-- Token 按 Seed、Map、Alias、Control 四层派生；每个 Control 都可以覆盖当前 registry 中的任意 Global Token。
-- 算法是有序 derivative 链；每个算法接收同一份 Seed 和前一算法的 Map 结果。
-- 主题计算和 Control 计算按完整内容缓存，缓存身份包含算法链和所有会改变结果的配置。
+- `ThemeConfig` 对 Token 按 key 合并，对 Control 配置先按 identity、再按字段合并；语言、风格、明暗、密度、形态是
+  各自独立继承的轴。
+- `Inherit=false` 切断父配置继承；root 运行时请求保留「语言 + 当前所选 `ThemeDefinition`」基线，局部 Provider 保留
+  父作用域的语言与形态，其余回到语言默认。
+- Token 按 Seed、Map、Alias、Control 四层组织，另有设计语言自己的语言 Token；每个 Control 都可以覆盖当前 registry
+  中的任意 Global Token。
+- 推导是单遍的：种子 → 语言 Token → 全局 Token → 每个控件的视图，每一步只执行一次，没有重跑或收敛判定。
+- 主题计算和 Control 计算按完整内容缓存，缓存身份包含语言身份与修订、变体和所有会改变结果的配置。
 - 嵌套主题依赖上下文隔离；脱离上下文的新渲染根不能自动获得调用点主题。
 - 样式结构保持稳定，主题切换只替换作用域内 Token 值。
 
@@ -81,25 +85,22 @@ AtomUI 使用统一的 `ThemeConfig` 描述全局主题和局部主题输入：
 
 | 配置项 | 设计结论 |
 |---|---|
-| `ThemeConfig.Tokens` | 覆盖当前作用域的全局 Token |
-| `ThemeConfig.Controls[ControlTokenIdentity]` | 覆盖目标 Control 的 Own Token 和当前 registry 中的任意 Global Token |
-| `ThemeConfig.Algorithms` | 定义 Seed 到 Map、Alias 的有序算法链 |
+| `ThemeConfig.Language` | 当前作用域使用的设计语言；`null` 继承 |
+| `ThemeConfig.Style` / `Appearance` / `Density` / `Idiom` | 四个轴的取值；`null` 继承，形态缺省由界面根给出 |
+| `ThemeConfig.Tokens` | 覆盖当前作用域的全局 Token（种子、Map、Alias） |
+| `ThemeConfig.LanguageTokens` | 覆盖当前语言的语言 Token；在其他语言下被忽略 |
+| `ThemeConfig.Controls[ControlTokenIdentity]` | 覆盖目标 Control 的 Own Token 和当前 registry 中的任意 Global Token，并可固定其明暗、密度 |
 | `ThemeConfig.Inherit` | 决定是否继承父作用域有效配置，默认 `true` |
-| `ControlThemeConfig.Algorithm` | 定义目标 Control 的局部算法策略 |
+| `ControlThemeConfig.Appearance` / `Density` | 目标 Control 固定使用的明暗、密度 |
 
-AtomUI 的控件算法必须能表达四种状态：
+Control 级配置不再有算法模式（v1 的 `Unspecified / Disabled / Global / Custom` 四态与 `ControlAlgorithmMode` 已移除），
+由两条规则取代：
 
-1. 未指定：继承父配置中同一 Control 的算法策略。
-2. 禁用：Control 内覆盖的 Seed Token 不重新派生 Map 和 Alias Token。
-3. 使用全局算法：使用当前作用域的全局算法链重新派生该 Control 的有效 Token。
-4. 自定义算法：使用 Control 自己声明的有序算法链。
+1. 只写 Map、Alias 或 Own Token 时只替换那一项，不触发派生。
+2. 覆盖了 Seed Token 或固定了轴（`Appearance` / `Density`）的 Control 自成一个**求值单元**：管线按它的有效变体与种子
+   为它单独求一份全局 Token，再求它的视图。
 
-继承链没有提供 Control 算法策略时，未指定最终解析为 AtomUI 默认策略“禁用”。
-
-算法配置的领域模型是 `Unspecified / Disabled / Global / Custom` 四态策略。可空 `bool` 加自定义算法列表
-虽然可以间接编码这些状态，但会把一个领域值拆成两个耦合字段，并产生布尔值与自定义列表同时声明等无效
-组合。因此配置规范化后必须使用 `ControlAlgorithmMode` 枚举；Custom 的有序 `ThemeAlgorithm` 身份作为不可变
-payload 保存，并且只允许在 Mode 为 `Custom` 时非空。`bool` 或 `bool?` 不能作为内部真源。
+只想替换某一个值而不触发派生时，覆盖对应的 Map、Alias 或 Own Token，而不是种子。
 
 `ThemeConfig`、`ControlThemeConfig` 及其全部集合在构造完成后不可修改。公开构造器或
 `ThemeConfigBuilder` 必须防御性复制输入；Builder 只是一次性构造工具，不进入 Provider、Manager、snapshot 或
@@ -187,13 +188,14 @@ ThemeSchemaRegistry 还为 Binder、Normalizer 和资源投影提供 descriptor�
 `ThemeConfig` 是面向 C#、AXAML 和绑定的不可变配置输入：
 
 ```text
-ThemeConfig
+ThemeConfig                                   immutable
 +-- Inherit = true
-+-- Algorithms: optional ordered ThemeAlgorithm list
-+-- Tokens: global token overrides
++-- Language?  Style?  Appearance?  Density?  Idiom?      null = inherited
++-- Tokens: global token overrides (Seed / Map / Alias)
++-- LanguageTokens: language token overrides of the current language
 \-- Controls[ControlTokenIdentity]
     \-- ControlThemeConfig
-        +-- Algorithm: unspecified / disabled / global / custom
+        +-- Appearance?  Density?                          fixes the axis; the control becomes its own unit
         \-- Tokens: control-own and global token overrides
 ```
 
@@ -210,25 +212,23 @@ Provider 不订阅 Config 内部对象图。Capture 在 UI 线程读取一个深
 复制，也不会观察到中途变化。旧 Config 在属性替换后不再被 Provider、Manager、Compiler、snapshot 或缓存
 保留；缓存只保存规范化后的结构化 key。
 
-`Algorithms=null` 表示“未指定”；非空集合表示显式算法链；空集合表示显式替换为 AtomUI 默认算法链。
-Control 自定义算法链仍必须声明至少一个算法。
-
-公开配置只接受 `ThemeAlgorithm`：
+轴的取值是开放的标识符值类型：`DesignStyle`、`DesignDensity`（核心预定义 `Default`、`Compact`）、`DesignIdiom`
+（核心预定义 `Desktop`、`Mobile`），明暗是 `ThemeAppearance`（`Light` / `Dark`）。未写的轴继承：
 
 ```csharp
 new ThemeConfigBuilder()
-    .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
+    .WithAppearance(ThemeAppearance.Dark)
+    .WithDensity(DesignDensity.Compact)
+    .WithToken("ColorPrimary", "#0F6CBD")
     .Build();
 ```
 
-`ThemeAlgorithm` 是 `(Catalog, Id)` 只读结构体，内置算法通过 `ThemeAlgorithm.Default`、`Dark`、`Compact` 取得，
-包里的算法通过生成的 `<Catalog>Algorithms` 类（例如 `PrimeNGAlgorithms.AuraDark`）或 `new ThemeAlgorithm(catalog, id)`
-取得。`ThemeConfig.Algorithms`、`ControlThemeConfig.Algorithms` 和 `ThemeState.Algorithms` 都是只读身份列表。系统不提供
-`"Catalog:Id"` 字符串 Builder 重载；配置、状态、registry 与 cache key 以结构体为键，按 `Catalog`、`Id` 序数排序。
-`default(ThemeAlgorithm)` 与未注册的身份由 Normalizer 拒绝（`ATMTHM4004`）。
+`ThemeConfig` 没有条件段：它由代码构造，需要按变体区分时由调用方给出不同的配置。语言未启用报 `ATMTHM4004`，轴的取值
+不在语言声明的范围内报 `ATMTHM4005`；未知全局 Token、Control、Own Token 分别报 `ATMTHM4001`–`4003`，值转换失败报
+`ATMTHM4006`。
 
 `ThemeConfigProvider` 是轻量局部 ThemeVariant 宿主，只公开一个 `Config` 和继承的内容子节点。旧的
-`SharedTokenSetters`、`ControlTokenInfoSetters`、字符串算法集合以及 Token 查询属性不属于新架构。
+`SharedTokenSetters`、`ControlTokenInfoSetters`、算法集合以及 Token 查询属性不属于新架构。
 
 ### 4.2 规范化配置
 
@@ -236,7 +236,7 @@ new ThemeConfigBuilder()
 
 - 解析并验证 Token key 和 value。
 - 把 Control id 解析为 `ControlTokenIdentity`。
-- 保留算法的“未指定”状态。
+- 保留每个轴的“未指定”状态，并按当前语言校验轴的取值与语言 Token 名。
 - 将公开 identity 和 value 绑定为当前 registry revision 下不可变、有确定顺序的值对象。
 - 计算稳定的结构 fingerprint。
 - 返回 diagnostics，不抛出缺少上下文的反射异常。
@@ -250,44 +250,54 @@ new ThemeConfigBuilder()
 配置优先级从低到高固定为：
 
 ```text
-ThemeSchemaRegistry / AtomUI library defaults
--> selected ThemeDefinition
+design language derivation (for the evaluation unit's effective variant)
+-> selected ThemeDefinition: base section, then each matching <When> section in document order
 -> builder/application initial config
--> runtime ThemeRequest.Config
+-> runtime ThemeRequest.Config (including the seeds a ThemeSelection brings)
 -> parent scope effective config
 -> local ThemeConfigProvider.Config
 ```
 
-根事务先把所选 `ThemeDefinition` 应用到 AtomUI library defaults，再应用 builder/application initial config。
-`ThemeRequest.Config` 为 `null` 时保留该根配置；非空时按 `Inherit` 合并：`Inherit=true` 继续继承应用初始
-配置，`Inherit=false` 只丢弃较低优先级的应用初始 config，以“AtomUI library defaults + 当前所选
-ThemeDefinition”为根基线。选择某个主题后，runtime config 不能通过 `Inherit=false` 意外删除该主题定义。
+每一层的种子在语言推导之前生效；语言 Token、全局 Token、Own Token 的显式值分别在对应推导之前冻结（第 7 节），
+所以较高层的显式值总是胜过语言推导，且由它算出的值跟着变。
 
-局部 `ThemeConfigProvider` 的父输入是父 `ThemeContext` 的完整有效配置。局部 `Inherit=false` 的基线是
-AtomUI library defaults，不继承父作用域、当前所选主题定义、应用初始配置或 runtime override；随后只应用
-当前 Provider 的本地配置。
+轴的确定先于取值：
+
+```text
+root:    language default <- selection (axes the theme fixes take the theme's value) <- initial config <- runtime request
+scope:   parent scope's effective axes <- axes written in this scope's Config
+control: scope's effective axes <- axes the definition and the configs fix for that Control
+idiom:   given by the interface root; a scope may override it explicitly
+```
+
+根事务先把所选 `ThemeDefinition` 作为语言推导之上的第一层，再应用 builder/application initial config。
+`ThemeRequest.Config` 为 `null` 时保留该根配置；非空时按 `Inherit` 合并：`Inherit=true` 继续继承应用初始
+配置，`Inherit=false` 只丢弃较低优先级的应用初始 config，以「语言 + 当前所选 ThemeDefinition」为根基线（主题固定的轴保留）。
+选择某个主题后，runtime config 不能通过 `Inherit=false` 意外删除该主题定义；配置层也不能选另一个主题定义，主题只由请求的
+`ThemeId` 决定。
+
+局部 `ThemeConfigProvider` 的父输入是父 `ThemeContext` 的完整有效配置。局部 `Inherit=false` 保留父作用域的语言与形态，
+丢弃所选主题定义与父作用域的全部显式值，风格、明暗、密度回到语言默认，随后只应用当前 Provider 的本地配置。
 
 - `Inherit=true` 时以父作用域的有效配置为基础。
 - `Inherit=false` 时使用上述入口对应的基线，不隐式复制父有效配置。
 - `Config=null` 等价于不可变空配置 `Inherit=true`，只共享父有效结果。
 - 当前 `Tokens` 按 key 覆盖父 `Tokens`。
 - `Controls` 先按 `ControlTokenIdentity` 合并，再按 Token key 合并。
-- Control 的算法未指定时继承父策略；显式 disabled、global 或 custom 时替换父策略。
-- 当前 `Algorithms` 为 `null` 时继承基线算法；显式提供列表时整体替换，不和基线算法拼接；空列表先规范化为
-  AtomUI 默认算法链。
+- Control 固定的 `Appearance` / `Density` 按字段覆盖父层的同一 Control 配置；未写时继承。
+- 语言、风格、明暗、密度、形态各自独立继承：当前层写了哪个轴就只替换哪个轴。
+- `LanguageTokens` 按名称覆盖；当前层换了语言时，丢弃较低层为另一语言写的语言 Token。
 - 主题定义、应用级配置和运行时请求都先转换为规范化配置，再按同一规则合并。
 
-运行时算法列表是整体替换，不和父层或 definition 的算法链拼接。编译器始终从 Light baseline 重新折叠当前
-有效算法链，因此父 Dark + 子 Compact 的结果是 Light Compact，而不是保留父 Dark。要得到 Dark Compact，
-必须显式提供完整算法链。全局算法 descriptor 的 appearance effect 按顺序折叠，最后一个非 `Preserve`
-effect 决定结果。Control 自定义算法只影响该 Control 的 Token 和 Control appearance，不改变所在
-ThemeContext 的 Avalonia ThemeVariant。
+明暗与密度是两个独立字段，各自继承：父作用域是暗色、子作用域只写 `Density = Compact`，结果是暗色紧凑。v1 里
+「算法链整体替换、从 Light baseline 折叠」导致父 Dark + 子 Compact 变成亮色紧凑的行为不复存在。Control 固定的轴只影响该
+Control 的 Token，不改变所在 ThemeContext 的 Avalonia ThemeVariant。
 
 Control 的 `Tokens` 使用一个扁平集合表达 Own Token 和 Control 级 Global Token 覆盖。每个 Control 天然可以
 覆盖当前 registry 中的任意 Global Token，不维护或推导 Global Token 白名单。Schema Binder 先在当前
 `ControlTokenDescriptor.OwnTokens` 中查找名称，未命中时再在完整 Global Token schema 中查找；两处都未命中
 才产生未知 Token 错误。Own Token 与任意 Global Token 禁止同名，因此分类没有歧义。一个合法 Global Token
-即使未被当前 Control 的计算或主题资产消费也允许配置，结果可能没有视觉效果，但不能影响其他 Control 或真正的
+即使未被当前 Control 的推导或主题资产消费也允许配置，结果可能没有视觉效果，但不能影响其他 Control 或真正的
 Global Token snapshot。
 
 ## 5. Theme Schema 与注册
@@ -295,7 +305,7 @@ Global Token snapshot。
 > 本节注册与资产模型对应本地已实现的 TypeMap 契约，验证与发布状态见 [AOT 与裁剪架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 `ThemeSchemaRegistry` 在应用主题初始化前一次性构建。Control、Token 和主题资产只来自源生成结果；
-主题算法与控件阶段通过显式描述符注册：
+设计语言与控件推导通过显式描述符注册：
 
 ```text
 ThemeSchemaRegistry
@@ -305,52 +315,41 @@ ThemeSchemaRegistry
 |   \-- exact CLR type, factory, own token schema, evaluator, resource projector
 +-- ControlThemeAssetManifest
 |   \-- asset identity, exported themes, required Token owners, semantic bindings, resource order
-+-- ThemeAlgorithmDescriptor[ThemeAlgorithm (Catalog, Id)]
-|   \-- revision, AOT factory, appearance effect
-\-- ControlTokenAlgorithmDescriptor[(ThemeAlgorithm, ControlTokenIdentity)]
-    \-- revision, one instance of the control stage class
++-- DesignLanguageDescriptor[Id]
+|   \-- language instance, axes, language token schema
+\-- ControlDerivationDescriptor[(language token type, ControlTokenIdentity)]
+    \-- revision, static non-capturing derive delegate
 ```
 
-算法身份是开放的 `(Catalog, Id)`。Core 的三个内置算法 `AtomUI:Default`、`AtomUI:Dark`、`AtomUI:Compact` 是这套契约的
-第一批实现，不享有特殊通道。算法类用 `[ThemeAlgorithm(catalog, id, revision, appearanceEffect)]` 声明，控件阶段类用
-`[ControlTokenAlgorithm(catalog, id, revision)]` 声明；生成器为每个声明了二者之一的包产出
-`GeneratedThemeAlgorithmRegistration.Register(builder)`，经 `IThemeManagerBuilder.AddThemeAlgorithms` 与
-`AddControlTokenAlgorithms` 进入注册表。启动索引、仅含全局 Token 的启动注册表与运行时追加包三条路径都携带包算法。
-运行时不反射扫描算法，也不建立字符串注册路径；控件阶段描述符由泛型约束构造（`ControlTokenAlgorithmDescriptor.Create<TToken, TAlgorithm>`），
-不使用 `Activator`。重复的算法身份报 `Duplicate algorithm identity 'Catalog:Id'.`，同一（算法，控件）的两个控件阶段报
-`Duplicate control algorithm '{algorithm}' for control '{control}'.`。算法或控件未注册的控件阶段保留在注册表里，但
-不会被调用。
+语言由语言包注册：语言类派生自 `DesignLanguage<TLanguageToken>` 并标 `[DesignLanguage]`，语言 Token 类派生自
+`LanguageDesignToken` 并标 `[LanguageDesignToken]`；生成器为语言包产出 `GeneratedDesignLanguageRegistration.Register(builder)`，
+经 `IThemeManagerBuilder.AddDesignLanguage` 进入注册表，由语言包的 `Use<Lang>()` 入口调用。控件推导类实现
+`IControlDerivation<TLanguageToken, TToken>` 并标 `[ControlDerivation]`；生成器为取值包产出
+`GeneratedControlDerivationRegistration.Register(builder)`，经 `IThemeManagerBuilder.AddControlDerivations` 进入注册表，由
+取值包的 `Add<控件包>()` 扩展方法调用。Core 不内置任何语言，Ant Design 自己也只用这套公开 API 写成。运行时不反射扫描，
+也不建立字符串注册路径；描述符由生成代码以静态无捕获委托构造，不使用 `Activator`。
 
-每个 descriptor 必须声明显式 revision。算法实现、默认参数、依赖 Token 或输出语义发生变化时必须提升 revision，
-不能只保留相同身份让旧缓存继续命中。
+注册表构建时校验：同一语言 Token 类型与同一控件只能有一个推导（`Duplicate control derivation for '…' and control '…'.`）；
+语言 Token 只能是 Seed 或 Language 阶段，且不得与全局 Token 同名；可调种子必须是种子；每个已启用的语言 × 每个已启用且
+声明了控件 Token 的 Control 都能沿语言 Token 类型的继承链（由具体到 `LanguageDesignToken`）找到推导，否则报
+`Controls without a derivation in an enabled design language: '<control>' under '<language>' (install and enable
+'<assembly>.Themes.<language>'), …`；取值包记录的控件包 Token Schema 摘要与实际加载的控件包不一致时失败。
 
-算法有三个阶段：
-
-```text
-Map     (required)  IThemeAlgorithm.Evaluate(effectiveSeed, previousMap?, nextMap)
-Alias   (optional)  IThemeAliasAlgorithm.EvaluateAlias(in context, token)       same class as Map
-Control (optional)  IControlTokenAlgorithm<TToken>.EvaluateGlobal / EvaluateOwn one class per control
-```
-
-同一算法链中的 `effectiveSeed` 引用和值保持不变；编译器为每个算法新建 `nextMap`（复制自 `previousMap`，第一个算法
-复制自 Seed），第一个算法接收 `previousMap=null`。算法不得修改 Seed 或 previous Map。Dark、Compact 在没有
-previous Map 时可以内部调用 Default，但这种 fallback 属于算法实现，不能改变通用链契约。三个阶段可以写什么、
-`ThemeAlgorithmContext` 的含义与作者须遵守的约束见[编写主题算法](../../../guides/theming/writing-theme-algorithms.md)。
+推导没有手工 revision：语言程序集与取值包程序集的修订取自确定性构建的程序集标识，推导代码一变它就变，缓存据此失效。
+语言契约、推导阶段与作者须遵守的约束见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
 
 `ThemeSchemaRegistry.Revision` 根据排序后的完整 descriptor schema 确定性计算，输入至少包含 Global Token
 schema、Control identity、Control CLR type、Own Token name/kind/stage/value type/resource key schema、主题资产
-结构、算法 `Catalog`/`Id`/revision 及其外观声明，以及每个控件阶段的（算法身份，控件身份，revision）。字符串一律
-经确定性指纹构建器逐字符计入。没有注册任何包算法与控件阶段时，修订号与只有 Core 算法时相同。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
+结构、已启用语言的身份、轴与语言 Token schema，以及每个控件推导的（语言 Token 类型，控件身份，程序集修订）。字符串一律
+经确定性指纹构建器逐字符计入。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
 revision。Control Own Token 属性声明在终端类型还是显式标记的抽象定义层、定义层所在程序集和继承深度也不进入
 revision。Own Token 的 Active / Reserved 分类与全局 Token 消费图是生成器的分析产物，不进入 schema 和 revision。
 注册顺序不影响 revision；任何会改变配置绑定、Token 类型或资源投影结构的 descriptor 变化都必须改变 revision。
 
-Registry 在首个 snapshot 编译前冻结，已提交的 registry 不再修改。可选控件包、主题包与算法包在 `UseAtomUI` Builder
-阶段显式注册；启动后经 `LoadPackages` 追加的包生成一份新的 registry，规则是追加不得改变已提交的编译结果：
-追加可以带来新算法；控件阶段只有在它的算法或它的控件是同一次追加新注册的时才被接受，为已注册的算法和已注册的
-控件补控件阶段会被拒绝（`Package append cannot add a control algorithm for the already registered algorithm
-'{algorithm}' and control '{control}'.`），整次追加不提交。算法与控件都未注册的「休眠」控件阶段与启动时一样被接受
-并保留，代价是身份写错时没有诊断。
+Registry 在首个 snapshot 编译前冻结，已提交的 registry 不再修改。控件包、语言包与取值包在 `UseAtomUI` Builder
+阶段显式启用（安装包不等于启用）；应用至少启用一种语言。启动后经 `LoadPackages` 追加的包生成一份新的 registry，在追加
+提交处执行与启动相同的覆盖校验，规则是追加不得改变已提交的编译结果：新推导若会被已提交的语言为已提交的控件找到，整次
+追加被拒绝、不提交。
 
 Token schema slot 与冻结时绑定的 Control slot 只保证在同一 registry revision 生命周期内稳定。不同 revision 可以重新
 分配 slot，公开协议、持久化配置和跨版本缓存不得依赖整数 slot 不变，而应使用稳定 identity 并在绑定后解析
@@ -403,55 +402,58 @@ TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官�
 
 ### 6.1 文件结构
 
-主题定义 XML v1 使用版本化 namespace、显式 identity 和 Control 术语：
+主题定义 XML v2 使用版本化 namespace、显式 identity 和 Control 术语。主题只描述配置——所属语言、固定的轴、覆盖的值——
+不描述计算：
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v1"
+<Theme xmlns="https://atomui.net/schemas/theme/v2"
        Id="DaybreakBlue"
        Name="Daybreak Blue"
-       Appearance="Light"
-       IsDefault="true">
-  <Algorithms>
-    <Algorithm Id="Default" />
-  </Algorithms>
+       Language="AntDesign">
   <Tokens>
     <Token Name="ColorPrimary" Value="#1677FF" />
     <Token Name="ColorLink" Value="#1677FF" />
   </Tokens>
   <Controls>
-    <Control Catalog="AtomUI" Id="Button" Algorithm="Global">
+    <Control Catalog="AtomUI" Id="Button">
       <Tokens>
-        <Token Name="ColorPrimary" Value="#0958D9" />
+        <Token Name="ColorPrimaryHover" Value="#0958D9" />
         <Token Name="ContentFontSize" Value="14" />
       </Tokens>
     </Control>
+    <Control Catalog="AtomUI" Id="ToolTip" Appearance="Dark" />
   </Controls>
+  <When Density="Compact">
+    <Tokens>
+      <Token Name="BorderRadius" Value="4" />
+    </Tokens>
+  </When>
 </Theme>
 ```
 
 规则如下：
 
-- namespace `https://atomui.net/schemas/theme/v1` 是格式版本，必须显式声明。
-- `Theme.Id`、`Appearance` 和顶层 `Algorithms` 必须显式声明。
-- `Appearance` 是从 library Light baseline 折叠 definition 算法 effect 后的最终断言，不是覆盖算法结果的独立
-  开关。
-- 算法使用有序 `Algorithm` 元素，不使用逗号分隔字符串。
-- Control 使用 `(Catalog, Id)` 组成稳定身份。
-- Control 的 `Algorithm` 省略表示未指定，`Disabled` 表示禁用，`Global` 表示使用全局算法链。
-- Control 自定义算法使用子元素 `Algorithms`，并且不能同时声明 `Algorithm` 属性。
-- Token 是空元素，必须通过 `Value` 属性提供非空值，不允许正文值或类型分类属性。
+- namespace `https://atomui.net/schemas/theme/v2` 是格式版本，必须显式声明；v1 文档在 Reader 边界报 `ATMTHM1004`，消息给出
+  换写命令 `dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory>`。
+- `Theme.Id`、`Name` 和 `Language` 必须显式声明；`Style`、`Appearance`、`Density` 写了即固定，不写则开放。没有
+  `<Algorithms>` 与 `IsDefault`。
+- 元素顺序固定为 `Tokens`、`LanguageTokens`、`Controls`、`When`；容器出现就不能为空。
+- Control 使用 `(Catalog, Id)` 组成稳定身份；它可以在基础段固定 `Appearance` / `Density`，成为独立的求值单元。
+- `<When>` 条件段按求值单元的有效变体匹配，先应用基础段，再按文档顺序应用所有匹配的条件段；条件段里不能固定轴，也不能写
+  `Locked`。
+- Token 是空元素，必须通过 `Value` 属性提供非空值，不允许正文值或类型分类属性；可调种子可以标 `Locked="true"`。
 
 完整格式、词法、安全限制、diagnostic 和版本演进规则见
-[主题定义 XML v1 规范](../../../reference/theming/theme-definition-xml-v1.md)，机器可读标准见
-[AtomUI Theme Definition XML Schema v1](../../../reference/theming/schemas/atomui-theme-v1.xsd)。
+[主题定义 XML v2 规范](../../../reference/theming/theme-definition-xml-v2.md)，机器可读标准见
+[AtomUI Theme Definition XML Schema v2](../../../reference/theming/schemas/atomui-theme-v2.xsd)。
 
 ### 6.2 两阶段处理
 
 `ThemeDocumentReader` 只负责：
 
 - 使用禁止 DTD、外部实体和网络解析的 validating `XmlReader`，并显式启用 XSD identity constraint。
-- 通过进程级复用的 v1 XSD 校验 namespace、结构、属性、容量和局部唯一性。
+- 通过进程级复用的 v2 XSD 校验 namespace、结构、属性、容量和局部唯一性；根元素不在 v2 namespace 时报 `ATMTHM1004`。
 - 保留源码位置并执行 XML 元素总数等 Reader 级资源限制。
 - 输出不依赖当前 Control 注册集合的 `ThemeDocument`。
 
@@ -461,9 +463,9 @@ TypeMap 条件及包引导信息；Runtime 只查询映射和收集记录，官�
 
 `ThemeDefinitionBinder` 负责：
 
-- 使用 `ThemeSchemaRegistry` 解析 Token，并按 Reader 已转换的 `ThemeAlgorithm` 身份绑定算法 descriptor。
-- 将字符串值一次性转换为目标类型。
-- 校验未知 Token、未知 Control、算法冲突、Appearance 一致性和跨字段语义。
+- 使用 `ThemeSchemaRegistry` 解析所属语言（`ATMTHM2001`）、Control（`2002`）、全局与 Own Token（`2003`）和语言 Token（`2004`）。
+- 将字符串值一次性转换为目标类型（`ATMTHM3002`）。
+- 校验轴的取值是否由语言声明、`Locked` 的位置、条件段与 Control 的形状等语义（`ATMTHM3001`、`3003`–`3008`）。
 - 输出不可变、typed `ThemeDefinition` 和结构化 diagnostics。
 
 Reader 不得因为某个可选控件包没有安装而修改或过滤语法树。Catalog 保存完整 diagnostic，并决定某个
@@ -476,8 +478,8 @@ identity、source revision 和内容摘要：文件来源使用实际字节内�
 ### 6.3 Theme Definition Resolver
 
 动态 XML 来源通过 Resolver 发现。Resolver 只描述“有哪些来源以及如何读取原始字节”，不得自行执行 XML 解析、
-Token 绑定、算法求值或资源发布。公开契约使用 `Definition` 而不是 `Config` 术语，因为 `ThemeConfig` 已经专指
-运行时 Token/Algorithm 覆盖；主题 XML 是包含 Id、Name、Appearance、默认标记和 revision 的完整 definition。
+Token 绑定、语言推导或资源发布。公开契约使用 `Definition` 而不是 `Config` 术语，因为 `ThemeConfig` 已经专指
+运行时的轴与 Token 覆盖；主题 XML 是包含 Id、Name、Language、固定的轴、锁定的种子、条件段和 revision 的完整 definition。
 
 ```csharp
 public interface IThemeDefinitionResolver
@@ -527,8 +529,9 @@ void UseUserThemeDirectory();
 void UseUserThemeDirectory(string directory);
 ```
 
-Resolver 与编译包使用显式来源联合；注册 Id 在一次 Builder 中必须非空且唯一。Core 生成的默认主题包最先注册，
-应用 Resolver/编译包按显式注册顺序追加。编译包不伪造 OpenRead 字节流；两者共用 Catalog 的冲突、唯一默认与刷新规则。
+Resolver 与编译包使用显式来源联合；注册 Id 在一次 Builder 中必须非空且唯一。语言包的具名主题（Ant Design 的
+Daybreak Blue）由 `Use<Lang>()` 注册，应用 Resolver/编译包按显式注册顺序追加。编译包不伪造 OpenRead 字节流；两者共用
+Catalog 的冲突与刷新规则。
 不执行程序集扫描、资源目录枚举或基于命名约定的类型发现。
 
 ### 6.4 Application Id 与用户主题目录
@@ -565,21 +568,23 @@ Resolver 在枚举前冻结规范化后的目录真实路径；打开文件时�
 
 ### 6.5 来源优先级与冲突
 
-来源顺序只决定 `AvailableThemes` 的稳定展示顺序，不提供覆盖语义：
+来源顺序只决定 `IThemeManager.Themes` 的稳定展示顺序，不提供覆盖语义：
 
 ```text
-Core compiled package -> application compiled packages / XML resolvers -> user directory
+language default entries ($<LanguageId>) -> language / application compiled packages / XML resolvers -> user directory
 ```
 
+- 每个已启用的语言在目录里有一个隐式条目 `$<LanguageId>`（`ThemeInfo.IsLanguageDefault`），代表「该语言、不带主题文件」
+  的默认外观；语言本身不需要任何主题文件。主题文件的 `Id` 不能以 `$` 开头（不符合 Identifier 词法）。
 - 任意来源之间重复 `Theme.Id` 都是错误，不使用 first-wins、last-wins 或静默覆盖。
-- 可刷新 Resolver 不得提供 `IsDefault=true` 的 definition；默认主题只能来自不可刷新、随应用发布的来源。
-- 合并后的静态 Catalog 必须恰好有一个默认主题。
-- 用户主题只能引用当前冻结 registry 已注册的 Token、Control 和 Algorithm；XML 不能加载代码、程序集、脚本、
+- 没有默认主题声明（v1 的 `IsDefault` 与「恰好一个默认主题」的跨文件约束已取消）：应用的初始主题由
+  `WithInitialTheme(ThemeSelection)` 指定；只启用了一种语言且未指定时，取该语言的默认变体。
+- 用户主题只能引用当前冻结 registry 已注册的语言、风格、Token 和 Control；XML 不能加载代码、程序集、脚本、
   include/import、网络资源或环境变量表达式。
 - Core 和应用资源错误属于损坏的发布产物，阻止应用启动；用户目录首次加载错误不阻止应用启动，初始 Catalog
   降级为全部不可刷新来源，并通过 `IThemeManager.ThemeCatalogDiagnostics` 暴露本次错误。
 
-用户目录是一个刷新单元。任一用户主题 XML、目录容量、重复 Id、默认主题声明或 Binder 校验失败时，本次用户
+用户目录是一个刷新单元。任一用户主题 XML、目录容量、重复 Id 或 Binder 校验失败时，本次用户
 目录解析失败，不提交有效子集，也不维护逐文件 Last Known Good。这样目录内容、候选 Catalog 和刷新结果只有一个
 明确版本。
 
@@ -590,7 +595,7 @@ Catalog 对外部 Resolver 结果执行以下管线：
 ```text
 Resolver source
     -> bounded byte copy + SHA-256
-    -> ThemeDocumentReader + v1 XSD
+    -> ThemeDocumentReader + v2 XSD
     -> ThemeDefinitionBinder + frozen ThemeSchemaRegistry
     -> PreparedThemeDefinition + ThemeDefinitionRevision
     -> immutable CompiledThemeCatalog
@@ -601,9 +606,9 @@ Resolver source
 Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改造成 Reader 与 digest 针对不同内容。
 
 包内 `AtomUIThemeDefinition` 使用构建期类型化入口，直接在实际 registry 校验契约并产生同一 PreparedThemeDefinition，
-不创建 ThemeDocument 或重复解析静态值。Core 默认主题与 Gallery 产品主题已按此路径接线，原始 avares XML 仍可显式
+不创建 ThemeDocument 或重复解析静态值。语言包的具名主题（Ant Design 的 Daybreak Blue）已按此路径接线，原始 avares XML 仍可显式
 读取。程序摘要和实际 registry 身份共同限定复用边界；生成 ABI 与实施验收状态见
-[编译主题包](compiled-theme-packages/overview.md)及[生成 ABI](../../../reference/theming/compiled-theme-abi-v1.md)。
+[编译主题包](compiled-theme-packages/overview.md)及[生成 ABI v4](../../../reference/theming/compiled-theme-abi-v4.md)。
 
 外部 bounded byte copy 使用小型池化 scratch buffer，完整读取到 EOF，不依赖流的 Length/CanSeek/Position；
 实际字节数决定限额和摘要。用户目录完整枚举并规范化路径，只保留上限内的路径；超限保留精确计数和后续枚举
@@ -611,149 +616,96 @@ Catalog 构建期间只使用本次复制的字节，避免文件枚举后修改
 
 ## 7. 编译器
 
-`ThemeCompiler` 是无 UI、无资源宿主、无全局服务访问的纯计算入口：
+`ThemeCompiler` 是无 UI、无资源宿主、无全局服务访问的纯计算入口。它对每个**求值单元**（一个作用域，或一个固定了轴、
+覆盖了种子的 Control）执行一次单遍管线：
 
 ```text
 ThemeCompileInput
-  -> merge effective config
-  -> initialize effective Seed Token
-  -> run ordered Evaluate(seed, previousMap, nextMap) algorithms (Map stage)
-  -> apply Map overrides
-  -> Alias stage: explicit Alias values, Ant Alias formulas, algorithm Alias stages
-  -> AtomUI final normalization
+  -> merge effective config; resolve language and variant (style, appearance, density, idiom)
+  -> match the definition layer: base section, then every matching <When> section in document order
+  -> 2 seeds:            DefineSeeds  <- explicit seeds of every layer
+  -> 3 language tokens:  freeze explicit language tokens, DeriveLanguage
+  -> 4 global tokens:    freeze explicit Map and Alias tokens, DeriveGlobal
+  -> 5 AtomUI final normalization
   -> resolve each registered Control slot state (cheap config comparison)
-  -> freeze global token values and resources
-  -> ThemeSnapshot (control slots compile on first query)
+  -> freeze global token values, language token values and resources
+  -> ThemeSnapshot (6: control views compile on first query)
 ```
 
-编译阶段允许使用可变 builder，因为算法天然需要逐步派生。目标是将其生命周期限制在一次编译，并且不通过
-公开 API 返回。惰性 cell 持有独立编译 source；全局结果复用时，仅首次实际编译控件才恢复可变 builder，
-不捕获历史 snapshot。详见[惰性物化设计](lazy-materialization.md)。
+每一步只执行一次，没有重跑、没有收敛判定、没有写入记账。编译阶段允许使用可变 Token 对象，因为推导是顺序赋值；
+目标是将其生命周期限制在一次编译，并且不通过公开 API 返回。惰性 cell 持有独立编译 source；全局结果复用时，仅首次实际
+编译控件才恢复可变对象，不捕获历史 snapshot。详见[惰性物化设计](lazy-materialization.md)。
 
-优先级从低到高固定为：**Ant 默认公式 < 算法 < 主题显式值（XML 或 `ThemeConfig`）< 更内层作用域的显式值**。
-算法写入的值与显式值一样参与派生，但用户显式设置的字段不被算法覆盖。
+**显式值的冻结语义。** 显式值是输入，不是事后补丁。进入第 3、4、6 步之前，编译器先把各层显式给出的值写入 Token 对象并
+冻结这些槽位：推导对冻结槽位的写入被忽略，读取得到显式值。因此推导代码就是普通的顺序赋值，不需要任何「是否显式」的
+判断；用户显式改了 A，后面由 A 算出的 B 自动跟随，不论 A 与 B 是同一类 Token 还是跨类（语言 Token → 全局 Token → 控件
+Token）。优先级只有一条：**语言推导 < 主题显式值（XML 或 `ThemeConfig`）< 更内层作用域的显式值**。冻结是 Token 对象上
+按名称记录的一组冻结项，生成的 setter 写入前检查；Token 对象只在求值期间存在，渲染与资源查找读冻结后的值表。
 
 全局计算顺序固定为：
 
-1. 从 AtomUI library Seed defaults、ThemeDefinition 和有效配置构造唯一的 effective Seed。
-2. 将同一 effective Seed 依次传给算法链的 Map 阶段；第一个算法的 previous Map 为空，后续算法接收前序 Map。
-3. 对最终 Map 应用显式 Map Token override。
-4. Alias 阶段，按下文的三步流程执行：先标记并写入显式 Alias 值，运行 `CalculateAliasTokenValues()`，再写一次
-   显式值，使派生 Alias 跟随显式值；链上实现了 `IThemeAliasAlgorithm` 的算法按链的顺序运行，后者覆盖前者。
-5. 执行 AtomUI 最终语义规范化。`MotionEnabled=false` 时，Motion 服务被禁用且全部标准 duration Token 强制为
-   `TimeSpan.Zero`；`WaveEnabled=false` 时 Wave 行为不创建动画。该后置条件不依赖单个控件是否正确消费时长。
+1. 确定语言与变体：语言、风格、明暗、密度来自主题、选择与作用域（按 4.3 的轴规则），形态来自界面根；语言未启用或变体
+   不在语言声明的范围内时编译失败。
+2. 语言的 `DefineSeeds` 给出该变体下的全局种子与语言种子默认值，再写入各层的显式种子。
+3. 冻结显式的派生语言 Token，运行 `DeriveLanguage`。
+4. 冻结显式的 Map 与 Alias Token，运行 `DeriveGlobal`：语言在同一个方法里先写 Map、再写 Alias，Alias 读到的就是显式 Map 值。
+5. 执行 AtomUI 最终语义规范化。`EnableMotion=false` 时，Motion 服务被禁用且全部标准 duration Token（`MotionDurationFast` /
+   `Mid` / `Slow` / `VerySlow`）强制为 `TimeSpan.Zero`；`EnableWaveSpirit=false` 时 `WaveAnimationRange` 与 `WaveStartOpacity` 归零，Wave
+   行为不创建动画。该后置条件不依赖单个控件或语言是否正确处理时长。
 
-每个 Control 的计算顺序为：
+每个 Control 的视图（第 6 步）按以下顺序计算：
 
-1. 以全局最终 Token 为基线，接受并叠加该 Control 配置中的任意已注册 Global Token 覆盖。
-2. `Disabled` 时只保留直接覆盖，不重新派生；`Global` 或 `Custom` 时，以根主题编译后的全局值为种子，按相应算法链
-   重新生成 Map 和 Alias（含算法的 Alias 阶段）。
-3. 在重新派生后应用该 Control 的 Map、Alias override 和 Motion 最终规范化。
-4. 控件阶段的 `EvaluateGlobal`：链上关联了该控件的每个控件阶段按链的顺序在该控件自己的全局 Token 副本上运行，写入
-   直接生效，不重跑 Map 和 Alias。在未指定与 `Disabled` 模式下，阶段写过的 Token 中，作用域有效配置显式设置了的
-   Map/Alias Token 写回主题显式值（主题显式值胜过 `EvaluateGlobal`）；Seed Token 是已被 Map 阶段消费的输入，不写回；
-   `Global` 与 `Custom` 模式不写回（见下文的既有例外）。随后再写一次该控件的全局
-   覆盖并做最终规范化。`Custom` 用控件自己的链，其余三种
-   模式用作用域链。没有 Own Token 类的控件没有控件阶段。
-5. Own Token 按三步流程执行：显式 Own Token override 写入 builder 并置显式位，使用 Control 的有效全局 Token 运行
-   `CalculateTokenValues`，再次写入全部显式值；链上有控件阶段时，再运行各控件阶段的 `EvaluateOwn`。evaluator 通过
-   `IsExplicit(kind)` 判断字段是否已被显式设置，不得以 `double.NaN` 等哨兵值判断；无论 evaluator 与算法如何写字段，
-   显式值最终胜出。
-6. 根据全局 appearance 和 Control 算法 effect 计算 Control appearance；它提供给该 Control evaluator 和控件阶段，不
-   修改 ThemeContext appearance。
-7. 生成 Effective Global Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。`EvaluateGlobal` 写过任何
-   Token 的控件不再与根共享全局资源。
+1. Control 固定了轴或覆盖了 Seed Token 时，它自成求值单元：以所在作用域的配置为基础、叠加它固定的轴与种子，按上面的
+   第 1–5 步为它单独求一份全局 Token；条件段按它的有效变体匹配。否则以作用域的全局最终 Token 为基线。
+2. 写入并冻结该 Control 配置中的全局覆盖（与作用域的覆盖一样先做规范化），再写入并冻结显式 Own Token。种子也写入：它已是第 1 步
+   求值单元的输入（派生的 Map / Alias 随它而变），但语言的全局推导可以细化或替换种子（如 Shadcn 风格的控件高度），控件级取值对该
+   控件是终值——与 antd 组件级 Token 覆盖一致。
+3. 沿当前语言的语言 Token 类型的继承链找到该控件 Token 类的推导（`IControlDerivation<TLanguageToken, TToken>`），运行
+   `Derive(context, view)`：`view.Token` 是控件 Token，推导必须写全；`view.Global` 是该控件看到的全局 Token，读时得到该控件的
+   值，写时只对该控件生效，且只能写 Map 与 Alias：写种子直接抛出（`a control derivation may override Map and Alias tokens only,
+   not seeds.`），按下文的控件维度失败处理。推导对冻结槽位的写入被忽略。
+4. 生成该 Control 的全局 Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。推导或配置改写过全局 Token 的
+   Control 只存相对作用域全局值的差量，其余 Control 与作用域共用同一份全局资源。
 
-`Global` 与 `Custom` 模式有一个既有例外：主题在根上显式设置的 Map 与 Alias 值不参与第 2 步的重新推导，在该控件
-作用域里会被默认公式或算法的 Alias 阶段取代；「算法 < 主题显式值」在这两种模式下只对该控件自己的覆盖成立。而且
-算法链是在已推导过的种子上重跑的，对自身输出不幂等的算法（PrimeNG 预设算法、Ant 的 Dark 算法）会让该控件的颜色
-再偏一档。是否让根显式值参与重新推导，需要单独决定。
-
-Control 默认 Token evaluator 必须接收 Control appearance 和 Effective Global Token，不能继续只读取全局
-`IsDark`。
-
-第 5 步的默认部分固定为 `MarkExplicit(config.OwnTokens)` → `Evaluate(builder, appearance)` → `ApplyExplicit()`。
-求值器对字段的默认赋值是无条件的，所以被其他字段读取的基字段（例如 DataGrid 的 `BorderColor`）必须以
-`if (!IsExplicit(kind)) Field = …;` 守卫默认赋值；只被消费的字段不需要守卫，最后的 `ApplyExplicit()` 已保证其最终值。
-这样内部派生字段（`TableBorderColor = BorderColor`）在 `Evaluate` 中读到的就是显式值，用户覆盖公开字段后派生字段跟随变化。编译器不引入 Own Token 依赖图、求值版本或别名机制；`CalculateTokenValues`
-仍是唯一默认计算入口。
+只写 Map、Alias 或 Own Token 的 Control 配置只替换那一项，不触发派生；这两条规则取代了 v1 的四种控件算法模式。Control 的
+appearance 是它所在求值单元的有效明暗，只提供给该 Control 的推导，不修改 ThemeContext appearance。
 
 控件槽位编译契约：`ApplyTheme` 返回时全局 token 与资源完整提交；控件级 `ControlThemeSnapshot`
 按槽位惰性编译，首次查询时经同一 `CompileControl` 函数与同一缓存键编译，结果值与急切编译逐位
-相等；编译结果由现有 Token 值、算法、资源投影与缓存契约测试验证，不保留未被执行的急切参考实现。
+相等；编译结果由现有 Token 值、推导、资源投影与缓存契约测试验证，不保留未被执行的急切参考实现。
 首帧内首次查询的控件一次性支付内联编译成本，具体耗时依赖控件与运行环境。
 跨快照复用独立 cell，物化结果不保留历史 snapshot，见[惰性槽生命周期设计](lazy-materialization.md#2-独立惰性槽与历史快照释放)。
-失败语义同步后移：控件级编译错误（不支持的算法模式、evaluator 抛出等）不再使
+失败语义同步后移：控件级编译错误（控件推导抛出等）不再使
 `ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
 
-任何 validation、conversion 或 algorithm 错误都返回失败结果，不返回部分 snapshot——该原子性指
-全局维度（Seed/算法链/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。
+任何 validation、conversion 或推导错误都返回失败结果，不返回部分 snapshot——该原子性指全局维度
+（语言/变体/种子/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。语言或控件推导抛出的异常包装为
+`ThemeDerivationException`（`Design language '…' failed in its … derivation.` / `… failed to derive the … view of control '…'.`），
+带语言身份与控件身份；编译期诊断代码为 `ATMTHM5001`（语言缺失）、`5002`（变体不受语言支持）、`5003`（未知语言 Token）。
+语言契约与作者须遵守的约束见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
 
-### 7.1 可选阶段的三步流程
+### 7.1 推导的纯函数性与契约校验
 
-全局 Alias 阶段与控件 Own Token 阶段共用一个流程（`StagedTokenEvaluation`）：
+语言的三个方法与控件推导都是输入的纯函数：相同输入给出相同输出，不读时钟、环境或可变静态状态，不修改不归自己写的对象，
+可以在后台线程求值并被并发调用。推导是否写全应写的 Token、是否纯、是否确定、成对角色是否可读，不由编译器在运行时判定，
+而由契约测试库 `tests/AtomUI.Theme.ContractTests`（`DesignLanguageContract`）在语言声明的每个变体下校验
+（`Identity`、`LanguageComplete`、`GlobalComplete`、`ControlComplete`、`Pure`、`Deterministic`、`Readable`）。
 
-1. 标记并写入用户显式值，运行默认计算，再写一次显式值。链上没有算法实现该阶段时到此结束；内置三个算法没有可选
-   阶段，内置主题只走这一步，不创建对象、不打开记账、默认公式只运行一次。
-2. 对链上每个实现了该阶段的算法分别打开写入记账，运行该阶段，在 `finally` 中关闭记账。记下的属性名经 Token
-   descriptor 解析成槽位，不属于本阶段的写入立即报 `StageBoundary`。没有写入时结束。
-3. 把算法写过的槽位与用户显式槽位一起标记为显式，写一次显式值，重跑默认计算，再运行各算法，最后写一次显式值。
-   与上一轮比较写入的槽位与值，不同则并入新槽位再来一轮；第 3 轮仍不同时报 `Unstable`。
+### 7.2 性能基线
 
-显式标记在所有出口（含异常）清除，不随 builder 复制泄漏。`EvaluateOwn` 运行期间同时记录有效全局 Token 的写入，
-有写入即报 `StageBoundary`。
+v1 的写入记账（`RecordWrite`）、Alias 与控件阶段的多轮重跑与 `Unstable` 判定、每个控件一份完整的全局 Token 副本随算法链
+一起移除；setter 只检查冻结项。新管线的性能要求是：在每一项现有性能验收上不得退化，并以改造前的同一棵树为基线按现有门槛
+比较（见[设计语言架构方案](../../../superpowers/specs/2026-11-22-design-language-architecture-design.md)第 12 章）。
 
-违反阶段契约时抛 `ThemeAlgorithmContractException`（`Violation` 为 `StageBoundary`、`Unstable` 或 `Failed`）；
-算法的 Map 阶段（含创建实例）抛出的异常同样包装为 `Failed`，内置算法也一样。全局 Map 与 Alias 阶段的违规让整次
-编译失败，异常放进编译结果；控件阶段的违规在该控件槽位首次被查询时抛出（见上文的控件槽位
-编译契约），不是编译期诊断。异常文本与修正方法见[编写主题算法](../../../guides/theming/writing-theme-algorithms.md#9-违反契约时会看到什么)。
+以下数据是**旧算法管线**上的历史实测，只作为新管线对照的基线，不描述当前实现：
 
-### 7.2 Token 写入记账与性能
+- 默认 Ant 主题一次冷编译约 0.74 毫秒，分配约 1.14 MB（1,138,032 字节）；Dark / Compact 链分别为 1,143,224 / 1,138,416 字节。
+- 一次冷编译约 31,600 次 Token 属性写入，其中 94% 是编译器为每个控件复制一份全局 Token（117 份副本 × 255 个属性）；
+  新管线里没有覆盖的控件与全局共用同一份值表，这批写入不再发生。
+- 带 Alias 与控件阶段的 PrimeNGAura 冷编译约 0.88 毫秒，分配 1,249,256 字节。
+- 资源查询稳态 0 字节 / 次。
 
-Token 对象只在编译期间存在；渲染与资源查找读冻结后的表，不经过 Token 属性。为了知道算法写了哪些字段，
-`DesignToken` 的 255 个全局 Token 属性和全部控件 Token 属性是 partial 属性，生成的另一半 getter 为 `get => field`，
-setter 写入字段后调用 `RecordWrite(nameof(P))`。`AbstractDesignToken` 只多一个可空引用字段：为空表示不记账，此时
-`RecordWrite` 只做一次空引用判断（内联），真正记账的冷路径放在禁止内联的独立方法里；记录列表在第一次记账时才
-分配。每个 Token 实例因此多 8 字节，不记账时不分配内存。记账只在算法的 Alias 与控件阶段运行期间打开。
-
-实测代价（2026-11-13，与改造前的树对比，默认 Ant 主题；编译与切换在 `DOTNET_TieredCompilation=0` 下测量，启动采样使用默认分层编译）：
-
-- 冷编译按门槛统计量（25 分位数）慢 2.3%–2.7%，约 0.018 毫秒；按中位数慢 3.4%–3.7%。这超过了设计时定的
-  门槛（差异落在基线波动内且不超过 2%）。
-- 启动耗时按字面规则（新树中位数落在基线取值范围内）没有通过：越界大多在更快一侧；变慢一侧有两项，普通窗口的
-  预编译分段高出基线最大值 0.005 毫秒，带启动屏的提交分段高出基线最大值 0.17 毫秒（差值 0.49 毫秒，小于基线自身
-  的波动）。
-- 明暗切换、编译分配（每个 Token 实例 +8 字节）、程序集与 NativeAOT 体积、编译结果哈希都在门槛内。
-- 一次冷编译约 31,600 次属性写入，94% 是编译器内部对全局 Token 的逐属性复制（117 份副本 × 255 个属性），每次都
-  经过带判断的 setter，这是剩余差距的主要来源。
-
-项目负责人决定按这个结果通过，这是对门槛的一次明确放宽，门槛本身没有达到。之后的工作以该次验收时的树为性能
-基线，不得在此基础上再退化。已知但未采用的改进：把全局 Token 的复制改成整体克隆，使那 94% 的写入不再经过 setter；
-未实测。详细数据见规格 `docs/superpowers/specs/2026-11-13-theme-algorithm-strategy-design.md` 第 4.11 节。
-
-上述决定之后加入的全部内容（Alias 阶段、控件阶段及相关代码）另做了一次最终复测（2026-11-14，同一台机器、同一套
-流程，基线为提交 `3a87bba25`，即接受记账代价时的树）：
-
-- 内置主题（Default / Dark / Compact 三条链）：冷编译按 25 分位数为 −0.87% / −1.24% / −1.21%，在波动范围内；但当天
-  这台机器冷编译的分辨力只有 8%–9%（上一次测量时为 2.3%–3.0%），这批数据分辨不出 2% 的差异。主题切换往返未缓存
-  +0.37%（按中位数 +0.18%），缓存 +0.71%，在波动范围内（分辨力 2.1%–2.8%）。每次冷编译的分配逐字节不变（1,138,032 /
-  1,143,224 / 1,138,416 字节），编译结果的值哈希不变。计时批次跑在编译器最后一次不改变行为的重构之前；重构后重新核对了
-  分配字节数与值哈希，二者相同。
-- 启动：第一次测量发现即使没有注册任何 Alias 或控件阶段，启动也多出约 1 毫秒（普通窗口的预编译分段 +1.0 到 +1.3 毫秒，
-  带启动屏的提交分段 +1.1 到 +1.6 毫秒），原因是控件阶段注册表的代码在空表上运行也要即时编译（多 JIT 了 11 个方法，
-  其中有以值元组为键的泛型字典实例化）。该问题已在发布前修复：没有注册控件阶段时不再进入这段代码，只供阶段使用的代码也
-  移出了每次都执行的方法。修复后启动期间 JIT 的方法集合与基线相同（数量相同，没有控件阶段的方法），两个分段指标在两批
-  测量中都落在基线取值范围内（普通窗口预编译分段 −0.3 毫秒与 +0.8 毫秒，带启动屏的提交分段 +0.8 毫秒与 −0.5 毫秒；两批
-  符号相反，即剩余差异低于机器约 1 毫秒的分辨力）。启动期间 JIT 的 IL 总量比基线多 579 字节。启动工具不加载 Gallery 和
-  PrimeNG 包，因此注册了控件阶段的应用的启动耗时没有测量。
-- 体积：`AtomUI.Core.dll` 自该基线由 1,125,888 字节增至 1,148,928 字节（+2.05%），增加的是 Alias 阶段与控件阶段的
-  代码。这超过了计划定的 1% 程序集体积门槛，门槛没有达到；项目负责人在 2026-11-14 决定接受这一增长，这是对体积门槛
-  的一次明确放宽，范围只限 `AtomUI.Core.dll` 的这 2.05%。其他受门槛约束的程序集
-  增长不超过 0.10%。NativeAOT Gallery 可执行文件小 0.09%（93,237,496 → 93,156,072 字节，在启动修复之前测量）：PrimeNG
-  包主题数据减少的量多于新增代码。
-- 使用阶段的主题的代价（只记录，不设门槛）：同一进程内 PrimeNGAura 冷编译约 0.88 毫秒，内置默认主题约 0.74 毫秒
-  （+18%），分配 1,249,256 字节对 1,138,032 字节（+9.8%）；PrimeNGAura.Dark 约 0.89 毫秒（+20%），1,254,568 字节
-  （+10.2%）。只注册 PrimeNG 的算法与控件阶段而不使用时，内置主题的分配仍正好是 1,138,032 字节。
+旧管线的逐项测量与当时的门槛放宽记录见规格 `docs/superpowers/specs/2026-11-13-theme-algorithm-strategy-design.md` 第 4.11 节。
 
 ## 8. ThemeSnapshot
 
@@ -762,10 +714,11 @@ setter 写入字段后调用 `RecordWrite(nameof(P))`。`AbstractDesignToken` �
 ```text
 ThemeSnapshot
 +-- ThemeId / DefinitionRevision / ContentFingerprint
-+-- Algorithms[(id, revision)] / Appearance
++-- Language / Variant (Style, Appearance, Density, Idiom)
 +-- RegistryRevision
 +-- EffectiveConfig
 +-- GlobalTokenValues: dense immutable TokenValueTable
++-- LanguageTokenValues: dense immutable TokenValueTable (not published as resources)
 +-- GlobalResources
 +-- PresetColorPalettes
 \-- Controls: LazyControlSnapshots[registry control slot]  (compile on first query)
@@ -796,7 +749,7 @@ ThemeSnapshot
 - `ContentFingerprint` 是规范化内容的快速 hash，不是无碰撞的唯一身份。snapshot 的语义相等性必须比较对应的
   结构化不可变 key，不使用父 snapshot 的递增版本表达语义身份。
 - `Appearance` 是 `Light` 或 `Dark` 的已提交结果，是根 Application 和局部 ThemeVariantScope 发布
-  Avalonia variant 的唯一依据；不能通过算法名称字符串猜测。
+  Avalonia variant 的唯一依据，取自求值单元的有效变体；不能通过主题 Id 或语言名称字符串猜测。
 
 ## 9. 缓存
 
@@ -804,7 +757,8 @@ ThemeSnapshot
 
 - 完整的不可变 `ThemeDefinition` 结构化 key，包括 definition revision 和 typed 内容。
 - 完整的不可变 `NormalizedThemeConfig` 结构化 key。
-- 有序算法 descriptor `(id, revision)`。
+- 语言的编译身份与语言修订（取自语言程序集与取值包程序集的确定性构建标识，推导代码一变它就变）。
+- 求值单元的有效变体与语言 Token 显式值。
 - `ThemeSchemaRegistry` revision 与实际绑定身份；相同元数据的不同委托实现不能共享结果。
 
 父主题的影响已经包含在合并后的有效配置中，因此 cache key 不包含父 snapshot 的发布序号。
@@ -812,7 +766,7 @@ ThemeSnapshot
 缓存要求：
 
 - fingerprint 只用于定位候选 bucket 或加速拒绝；命中后必须比较结构化不可变 key。有限位 hash 相同但结构不同
-  的 definition、config、算法链或 schema 不能共享结果。
+  的 definition、config、语言、变体或 schema 不能共享结果。
 - 等价内容返回同一个 snapshot 引用。
 - 并发等价请求只执行一次编译。
 - 失败结果不进入缓存。
@@ -841,8 +795,8 @@ cache 上限为 2048 entry 和 32 MiB。应用可以调小；扩大默认值必�
 `ThemeTransaction`；规范化、合并、编译、缓存和事件调用分别委托给对应对象。合并运行时所有者不等于把这些
 职责的实现代码并入 `ThemeManager`。
 
-作为 `Styles` 宿主，Manager 挂载根 Token Provider、Control themes 和语言资源入口；语言切换及资源构建委托给
-Language 子系统，不进入 ThemeTransaction，也不能修改 `ThemeState`。Manager 不实现 Token 算法、XML 读取、
+作为 `Styles` 宿主，Manager 挂载根 Token Provider、Control themes 和本地化语言资源入口；本地化语言切换及资源构建委托给
+Localization 子系统，不进入 ThemeTransaction，也不能修改 `ThemeState`（本地化语言与设计语言无关）。Manager 不实现 Token 推导、XML 读取、
 schema binding 或资源查询细节。
 
 不存在供多个 Manager 共享的 headless engine，也不存在一个 Manager 切换多个 Styles 宿主的场景。纯计算复用
@@ -851,37 +805,46 @@ schema binding 或资源查询细节。
 
 新公开模型由以下对象组成：
 
-- `ThemeInfo`：Catalog 中可选择主题的只读元数据；`AccentColor` 只投影 Theme Definition 中显式绑定成功的
-  `ColorPrimary`，未声明时为 `null`，不从运行时 Snapshot 或算法派生结果反向推断。
+- `DesignLanguageInfo`：`IThemeManager.Languages` 中已启用语言的只读元数据：身份、风格、密度、形态与可调种子。
+- `ThemeInfo`：`IThemeManager.Themes` 中可选择主题的只读元数据：语言、固定的轴（`Style` / `Appearance` / `Density`）、锁定的
+  种子（`LockedSeeds`）；`AccentColor` 只投影 Theme Definition 基础段中显式绑定成功的 `ColorPrimary`，未声明时为 `null`，不从
+  运行时 Snapshot 或推导结果反向推断。每个已启用语言另有隐式条目 `$<LanguageId>`（`IsLanguageDefault = true`）。
+- `ThemeSelection`：面向最终用户的选择——语言、可选的具名主题、风格、明暗（或跟随系统）、密度和种子；由
+  `ThemeSelectionResolver` 按三条规则（语言已启用且主题属于它、轴在语言声明的范围内；主题固定的轴胜出；锁定的种子不被替换）
+  解析为 `ThemeRequest`，被忽略的轴与种子记在 `ThemeSelectionResult.IgnoredAxes` / `IgnoredSeeds` 中，没有回退搜索。
 - `ThemeRequest`：主题 id、`ThemeConfig` 和变更原因。
-- `ThemeState`：当前已提交主题的 id、算法、`Appearance`、仅用于观察和快速比较的 fingerprint，以及
+- `ThemeState`：当前已提交主题的 id、语言、有效变体（`Variant`，含 `Appearance`）、仅用于观察和快速比较的 fingerprint，以及
   transition id。
 - `ThemeTransitionResult`：一次请求的 transition id、`Committed / NoOp / Superseded / Failed` 状态、已提交
   `ThemeState`、失败 diagnostics/exception 以及独立的 `PublishDiagnostics`。
+- `IThemeManager.ApplyAsync(ThemeSelection)`：解析并应用最终用户的选择；`CurrentSelection` 记录最后一次应用的选择。
+  语言、主题或轴不可用时抛 `ThemeSelectionException`。
 - `IThemeManager.ApplyThemeAsync(...)`：返回 `Task<ThemeTransitionResult>` 的运行时主题请求入口。
 - `ThemeCatalogReloadResult`：一次 Catalog 刷新的 generation、`Committed / NoOp / Superseded / Failed` 状态、
-  新主题列表、diagnostics、publish diagnostics 和 exception。
+  新主题列表（`Themes`）、diagnostics、publish diagnostics 和 exception。
 - `IThemeManager.ReloadThemesAsync(...)`：只重新执行 `SupportsReload=true` 的 Resolver，并原子更新 Catalog 与
   当前主题作用域图。
 - `IThemeManager.ThemeCatalogChanged`：成功提交新 Catalog 后的结果事件。
 - `IThemeManager.ThemeCatalogDiagnostics`：最近一次启动加载或手动刷新的只读 diagnostics。
 - `IThemeManager.CurrentTheme`：只读 `ThemeState`。
-- `IThemeManagerBuilder.WithInitialTheme(...)`：首帧主题 id 和 ThemeConfig 的唯一配置入口。
+- `IThemeManagerBuilder.WithInitialTheme(ThemeSelection)`：首帧选择的唯一配置入口（另保留 `WithInitialTheme(themeId, config)`
+  重载）；只启用了一种语言且未指定时，取该语言的默认变体。
 
-删除 `Theme` 和 `ITheme`。Catalog 只保存 definition，不为 Default、Dark、Compact 预先创建 Theme 对象。
-每个请求都由 definition、配置和算法构成规范化输入，因此同一主题的新 runtime override 必须重新查询缓存
+删除 `Theme` 和 `ITheme`。Catalog 只保存 definition，不为任何变体预先创建 Theme 对象：明暗、密度、风格是参数。
+每个请求都由 definition、配置、语言与变体构成规范化输入，因此同一主题的新 runtime override 必须重新查询缓存
 或编译。
 
 AtomUI 主题身份与 Avalonia `ThemeVariant` 解耦：
 
-- AtomUI 使用 `ThemeRequest` 表达主题 id 和算法。
+- AtomUI 使用 `ThemeRequest` 表达主题 id 与配置（语言、轴、Token）。
 - `Application.RequestedThemeVariant` 只根据已提交 snapshot 设置为 Avalonia Light 或 Dark。
 - Compact 和自定义主题 id 不编码进 `ThemeVariant` 名称。
 - `Application.RequestedThemeVariant` 是 ThemeManager 的发布输出；应用不得把它作为第二个主题写入口。
 - 跟随系统主题是一种明确的 Manager 策略，不通过双向绑定或让 Application 长期保持
   `ThemeVariant.Default` 实现。
 
-FollowSystem 在 Builder 阶段获得 Light 和 Dark 两个完整、不可变的 root request 模板。Manager 监听平台外观
+FollowSystem 有两种表达：选择的 `FollowSystemAppearance()`（解析时取平台当前明暗，平台变化时重新应用同一选择），或在 Builder
+阶段用 `WithFollowSystemThemes(light, dark)` 给出 Light 和 Dark 两个完整、不可变的 root request 模板。Manager 监听平台外观
 变化，先根据目标外观 Capture/Prepare 对应 snapshot，再在 Publish 阶段显式设置
 `Application.RequestedThemeVariant=Light/Dark`。平台先改变 appearance、AtomUI 后编译 Token 的中间状态不得
 暴露。初始系统 appearance 必须在首个 snapshot 编译前解析。
@@ -896,8 +859,8 @@ Motion 和 Wave 配置也是 ThemeConfig Token override。任何入口改变这�
 `ResourceDictionary`。
 
 ThemeManager 还保存最后一次已提交的完整 root `ThemeRequest`。Catalog 刷新导致当前 definition 内容变化或当前
-Theme Id 被删除时，Manager 使用该 request 的不可变 `ThemeConfig` 重新编译或回退，确保 Dark、Compact、Motion
-和其他 runtime override 不因刷新而丢失。
+Theme Id 被删除时，Manager 使用该 request 的不可变 `ThemeConfig` 重新编译，或回退到「同一语言、同样的变体、不带主题」
+（`$<LanguageId>`），而不是换成另一个主题，确保明暗、密度、Motion 和其他 runtime override 不因刷新而丢失。
 
 ## 11. 动态作用域
 
@@ -1080,13 +1043,13 @@ ThemeTransaction 之外直接替换 `_compiledThemeCatalog`。一次刷新同样
 1. **Capture（UI thread）**：捕获 Catalog generation、最后一次已提交 root request、当前 ThemeState、
    ScopeGraph stamp 和全部可刷新 Resolver 的不可变快照。
 2. **Resolve/Prepare（background）**：重新执行可刷新 Resolver，读取和绑定全部候选来源，合并不可刷新定义，
-   构建候选 Catalog。当前 Theme Id 仍存在时使用候选 definition 重编译；不存在时选择静态默认主题，并保留当前
-   request 的 `ThemeConfig`。随后按拓扑准备全部局部 snapshot。
+   构建候选 Catalog。当前 Theme Id 仍存在时使用候选 definition 重编译；不存在时回到当前语言的隐式条目
+   `$<LanguageId>`（同一语言、同样的变体、不带主题），并保留当前 request 的 `ThemeConfig`。随后按拓扑准备全部局部 snapshot。
 3. **CommitCore（UI thread）**：复核 manager generation、Catalog generation、TopologyRevision 和全部 node
    stamp；一次性交换 Catalog、根/局部 snapshot、ThemeState、最后 request 和 cache key。该阶段不通知、不分配、
    不调用 Resolver 或观察者。
 4. **Publish（UI thread）**：snapshot 发生变化时依次发布 Application/局部 variant、资源和 `ThemeChanged`；随后
-   发布 `ThemeCatalogChanged`。所有事件开始前 `AvailableThemes`、`CurrentTheme` 和全部 Context 已经指向同一代
+   发布 `ThemeCatalogChanged`。所有事件开始前 `Themes`、`CurrentTheme` 和全部 Context 已经指向同一代
    状态。
 5. **Complete**：返回 `ThemeCatalogReloadResult`。调用方取消只取消自己的等待，不撤销已进入 Commit 的刷新。
 
@@ -1102,9 +1065,9 @@ ThemeTransaction 之外直接替换 `_compiledThemeCatalog`。一次刷新同样
 用户 Resolver 失败只排除整个用户来源层，应用使用完整静态 Catalog 启动，并把 diagnostics 保存到
 `ThemeCatalogDiagnostics`。Core/应用资源 Resolver 失败仍阻止启动。
 
-如果用户删除当前主题且其余候选定义全部有效，刷新提交静态默认 Theme Id，并复用最后 request 的 runtime
-`ThemeConfig`。这属于 `Committed`，同时发布 `ThemeChanged` 和 `ThemeCatalogChanged`。不保留“CurrentTheme 不在
-AvailableThemes 中”的悬空状态。
+如果用户删除当前主题且其余候选定义全部有效，刷新提交当前语言的 `$<LanguageId>`，并复用最后 request 的 runtime
+`ThemeConfig`，而不是换成另一个具名主题。这属于 `Committed`，同时发布 `ThemeChanged` 和 `ThemeCatalogChanged`。不保留
+“CurrentTheme 不在 Themes 中”的悬空状态。
 
 事件处理期间发起新请求遵守现有重入队列。`ThemeCatalogChanged` 观察者异常只形成 publish warning，不回滚已经
 提交的 Catalog；刷新结果仍为 `Committed`。
@@ -1300,7 +1263,7 @@ ControlTheme 不声明 `ControlTokenScope.Identity`。强类型 Token key 在 AX
 资产生成器分析 owner、引用的 Control identity、URI、资源结构和 Semantic Part Theme 资产关系。它另外产出一份
 全局 Token 消费图（哪个 Control 的主题与代码消费了哪个全局 Token）；消费图只用于生效测试骨架、文档和将来的
 主题工具，不进入 schema、不限制配置、不参与 registry revision。Semantic Part Generator 独立分析 Control 声明和 `.semantic-*` marker；
-`EffectiveGlobalToken.X`、`XxxTokenResource X` 和 C# Binding 都不会扩展 schema。
+控件推导读写的 `view.Global.X`、`XxxTokenResource X` 和 C# Binding 都不会扩展 schema。
 
 - 引用 Own Token 时必须属于显式 Xxx Control。
 - 引用任意已注册 Global Token 都合法，不产生 dependency manifest。
@@ -1414,7 +1377,7 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 - 独立 TopLevel 中的 imperative 查询使用 lease 注入的同一个 owner ThemeContext。无 owner 的静态 API 只能
   显式解析 Root ThemeContext，并遵守根主题语义。
 
-优先把固定视觉结果编译为 Control 资源。只有值确实参与控件运行时算法时才使用 resolver。
+优先把固定视觉结果编译为 Control 资源。只有值确实参与控件运行时计算时才使用 resolver。
 
 ## 15. 事件契约
 
@@ -1447,12 +1410,16 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 内核提交（见[启动生命周期](../startup/lifecycle.md#4-提交一次)）时的主题启动顺序固定为：
 
-1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、算法 descriptor、Control theme asset
-   manifest、不可变初始 root request 模板和语言配置。
+1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、编译主题包、设计语言 descriptor、控件推导
+   descriptor、Control theme asset manifest、初始选择（`WithInitialTheme(ThemeSelection)`）或不可变初始 root request 模板和
+   本地化语言配置。
 2. 构建并冻结 `ThemeSchemaRegistry`；在此时拒绝重复 Control identity、无效 descriptor、资产 identity/URI
-   冲突以及 manifest 与 registry 不一致。
+   冲突以及 manifest 与 registry 不一致，并执行配置提交时的校验：至少启用一种语言；每个已启用语言 × 每个已启用
+   Control 都找得到推导；同一（语言 Token 类型，Control）没有重复推导；取值包记录的 Token Schema 摘要与实际加载的
+   控件包一致。任一不满足即启动失败并指出缺少的包。
 3. 同步执行不可刷新 Resolver；如启用用户主题目录，再同步执行用户 Resolver。Catalog 统一读取并绑定全部成功
-   来源，确定静态默认主题和 definition revision。静态来源失败终止启动；用户来源失败降级到静态 Catalog 并
+   来源，加入每个已启用语言的隐式条目 `$<LanguageId>`，确定 definition revision；初始选择按三条规则解析为首帧
+   request（语言已启用、主题属于该语言、轴在语言声明的范围内，否则启动失败）。静态来源失败终止启动；用户来源失败降级到静态 Catalog 并
    保存 diagnostics。
 4. 如果启用 FollowSystem，先同步读取初始系统 appearance，再从 Light/Dark 不可变 request 模板中选择首帧
    request；不得先按 Default 编译后再补一次 Dark/Light 切换。
@@ -1536,7 +1503,7 @@ runtime       = O(active scopes + bounded cache + one in-flight transaction)
 
 `ThemeConfigMerger` 除有效配置外还输出确定的 change set：
 
-- 算法或全局 Token 改变时，重新计算全局表，并重新计算拥有 Own Token 或有效 Control 配置的 Control；没有
+- 语言、轴、种子、语言 Token 或全局 Token 改变时，重新推导全局表，并重新计算拥有 Own Token 或有效 Control 配置的 Control；没有
   Own Token 且没有配置的 Control 可以继续复用只执行 Global fallback 的空差量 snapshot。这里不使用消费白名单。
 - 只修改某个 Control 配置时，仅重新计算该 Control。
 - 只修改局部作用域 Button 时，复用父 snapshot 的全局表、palette、资源表和其他 Control snapshot。
@@ -1562,9 +1529,8 @@ Child snapshot C (Button override only)
 编译缓存分两级：
 
 - 完整 snapshot cache：复用完全等价的有效主题。
-- Control compilation cache：以 global token 结构化 key、Control identity、Control config 结构化 key、
-  算法 descriptor（实例身份、revision、appearance effect）和 registry revision 为 key，复用跨作用域的 Control 计算
-  结果；链上有该控件的控件阶段时，key 另含按链顺序的各阶段 revision 与描述符实例身份，没有时 key 与此前逐位相同。
+- Control compilation cache：以 global token 结构化 key（含语言身份与修订、变体）、Control identity、Control config
+  结构化 key、找到的控件推导描述符（实例身份与程序集修订）和 registry revision 为 key，复用跨作用域的 Control 计算结果。
   fingerprint 只用于候选定位，命中后仍执行结构相等比较。
 
 两级缓存共用容量策略，失败和取消结果不缓存。
@@ -1643,10 +1609,11 @@ snapshot 视为内存泄漏。
 
 主题系统必须建立可重复的 benchmark 和 allocation 场景：
 
-- 冷启动：registry、主题文件绑定、默认主题编译和首次挂载。
+- 冷启动：registry、主题文件绑定、初始主题编译和首次挂载。
 - 热启动：相同 definition 和 config 的缓存命中。
-- 全局切换：Default、Dark、Compact、Dark + Compact。
-- 局部变更：只覆盖一个 Control、只覆盖一个全局 Token、十层嵌套作用域。
+- 全局切换：同一语言的 Light / Dark × Default / Compact；语言切换（首次冷切换与再次切换的缓存命中）。
+- 局部变更：只覆盖一个 Control、只覆盖一个全局 Token、十层嵌套作用域；Control 固定轴与 Control 覆盖种子只多出该 Control
+  自己的全局视图。
 - 高频变更：连续 100 次配置更新后的请求合并和 stale result 丢弃。
 - 拓扑竞争：Prepare 期间执行 scope detach、reattach、reparent 和 Config 替换，验证旧 graph stamp 从不提交。
 - FollowSystem：启动时分别模拟 Light/Dark，并连续切换平台 appearance，验证不存在 `Default` variant 或
@@ -1680,9 +1647,10 @@ snapshot 视为内存泄漏。
   `*.theme.xml`，不反射发现 Resolver、Theme 或 Token。
 - 手动刷新不使用 `FileSystemWatcher`、动态代码生成或运行时类型构造。
 - 第三方 Control 的 identity、Token descriptor 和资源投影必须由 AtomUI generator 生成并通过真实包级入口注册；默认
-  Package 粒度必须完整保留内部 Control 和主题资源。算法 descriptor 由生成的注册类以类型化工厂构造，控件阶段
-  descriptor 由 `ControlTokenAlgorithmDescriptor.Create<TToken, TAlgorithm>` 的泛型约束构造，都不使用反射或
-  `Activator`，并提供显式 revision。
+  Package 粒度必须完整保留内部 Control 和主题资源。设计语言 descriptor 由生成的 `GeneratedDesignLanguageRegistration`
+  以 `new TLanguage()` 与生成的语言 Token schema 构造，控件推导 descriptor 由生成的 `GeneratedControlDerivationRegistration`
+  以静态无捕获委托构造，都不使用反射或 `Activator`；修订取自确定性构建的程序集标识。未启用的语言不触碰其注册表，
+  也不加载其取值包程序集。
 - 生成器测试必须验证 exact CLR type/identity、Own Token、统一强类型 key、常量时间 key 映射、资源投影、资产
   manifest 和输出稳定性，并限制生成源码体积回归。
 - 主题系统完成后必须执行真实 Gallery NativeAOT publish，不能只依赖 analyzer。
@@ -1721,27 +1689,34 @@ Theme/
 +-- ThemeAppearance.cs                snapshot 的 Light/Dark 外观
 +-- ThemeInfo.cs                      可用主题元数据
 |
-+-- Algorithms/
-|   +-- 算法身份、attribute、三个阶段的接口、ThemeAlgorithmContext、契约异常与内置算法
-|   +-- Default、Dark、Compact 计算器
-|   \-- 调色板、颜色映射和算法计算辅助
++-- ThemeSelection.cs                 最终用户选择与三条规则的 ThemeSelectionResolver
++-- ThemeInfo.cs / DesignLanguageInfo 目录与已启用语言的只读元数据
+|
++-- Languages/
+|   +-- DesignLanguage、DesignLanguage<TLanguageToken>、[DesignLanguage]
+|   +-- DesignLanguageAxes、DesignVariant、DesignStyle、DesignDensity、DesignIdiom
+|   +-- IControlDerivation<TLanguageToken, TToken>、[ControlDerivation]、ControlView、DerivationContext
+|   \-- DesignLanguageBuilder（Use<Lang>() 交给取值包扩展方法的构建器）
+|
++-- Derivation/
+|   \-- 与语言无关的中性工具：调色板生成、预设色、ColorMap 和计算辅助（语言的公式在各语言包里）
 |
 +-- Configuration/
-|   +-- ThemeConfig、ControlThemeConfig
-|   +-- ControlAlgorithmMode
+|   +-- ThemeConfig、ControlThemeConfig 及其一次性 Builder
 |   +-- Normalizer、Merger 和 immutable normalized config
 |   \-- 一次性 immutable config builder 与结构化 value key
 |
 +-- Definitions/
 |   +-- Resolver/source contracts、内置/avares/用户目录 Resolver
-|   +-- CompiledThemeCatalog、ThemeInfo、definition revision 和默认主题选择
-|   +-- XML reader、syntax document 和 diagnostics
+|   +-- CompiledThemeCatalog、definition revision 和语言隐式条目
+|   +-- v2 XML reader、syntax document（基础段与条件段）和 diagnostics
+|   +-- Compiled/：编译主题 ABI 4 的程序、绑定 builder、值 writer 与构建契约 attribute
 |   \-- Binder、typed ThemeDefinition 和 bind result
 |
 +-- Schema/
 |   +-- ThemeSchemaRegistry
 |   +-- TokenDescriptor、ControlTokenDescriptor
-|   +-- ThemeAlgorithmDescriptor、ControlTokenAlgorithmDescriptor
+|   +-- DesignLanguageDescriptor、ControlDerivationDescriptor、TokenSchemaDigestAttribute
 |   +-- ControlThemeAssetDescriptor 和 asset manifest contracts
 |   \-- identity、stage、parser 和 resource projector contracts
 |
@@ -1759,7 +1734,7 @@ Theme/
 |   \-- snapshot lookup、style/template 和 Control theme 加载辅助
 |
 +-- DesignTokens/
-|   +-- global/control compile-only builders（含 Own Token 显式位与 IsExplicit）
+|   +-- global/control/language Token 类型（`DesignToken`、`AbstractControlDesignToken`、`LanguageDesignToken`，含冻结语义）
 |   +-- Token definitions、kind metadata 和 ReservedTokenAttribute
 |   \-- Token value converters
 ```
@@ -1779,7 +1754,8 @@ ControlTheme、Semantic Part marker 和可选 Part Theme。运行时 `Theme/Sche
 | 物理边界 | CLR namespace |
 |---|---|
 | `Theme/*.cs` | `AtomUI.Theme` |
-| `Theme/Algorithms/**` | `AtomUI.Theme.Algorithms` |
+| `Theme/Languages/**` | `AtomUI.Theme.Languages` |
+| `Theme/Derivation/**` | `AtomUI.Theme.Derivation` |
 | `Theme/Compilation/**` | `AtomUI.Theme.Compilation` |
 | `Theme/Configuration/**` | `AtomUI.Theme.Configuration` |
 | `Theme/Definitions/**` | `AtomUI.Theme.Definitions` |
@@ -1790,10 +1766,11 @@ ControlTheme、Semantic Part marker 和可选 Part Theme。运行时 `Theme/Sche
 职责目录下用于拆分 partial class 或文件数量的组织子目录不继续创建 CLR namespace，例如
 `Theme/DesignTokens/Definitions/**` 仍使用 `AtomUI.Theme.DesignTokens`。根目录不保留 `.Scope`、
 `.Transitions` 等已经被物理结构删除的 namespace。
-`Theme/Algorithms` 与 `AtomUI.Theme.Algorithms` 一一对应：`ThemeAlgorithm`、算法 contract/attribute、内置
-calculator、调色板生成、预设色、`ColorMap` 和计算辅助均归该命名空间所有。调色板不是独立运行时子系统，
-因此不保留 `AtomUI.Theme.Palette`；算法实现也不属于资源样式层，因此不保留
-`AtomUI.Theme.Styling` 兼容命名空间。
+`Theme/Languages` 与 `AtomUI.Theme.Languages` 一一对应：语言契约、轴、变体与控件推导契约归该命名空间所有。
+`Theme/Derivation` 只保留与语言无关的中性工具（调色板生成、预设色、`ColorMap` 和计算辅助）；核心不含任何语言的取值
+规则，Ant Design 的 Default / Dark / Compact 计算器属于 `AtomUI.DesignLanguages.AntDesign`。调色板不是独立运行时子系统，
+因此不保留 `AtomUI.Theme.Palette`；推导工具也不属于资源样式层，因此不保留 `AtomUI.Theme.Styling` 兼容命名空间。
+`AtomUI.Theme.Algorithms` 随主题算法一起删除。
 AXAML Control theme 的发现、聚合和加载属于主题资源所有权，统一位于 `AtomUI.Theme.Resources`，不参与 Token
 编译。`SharedTokenKind`、Token Resource markup extension 和相关生成代码同样输出到该 namespace；不保留
 `AtomUI.Theme.Styling`。Token builder、Token kind、Token attribute 和 value converter 统一位于
@@ -1818,6 +1795,10 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
   `ThemeConfigProvider.ControlTokens` 和所有 clone compatibility map。
 - `SharedTokenSetters`、`ControlTokenInfoSetters`、字符串算法集合、Token 查询属性以及对可变配置对象图的
   collection/property changed 订阅。
+- 主题算法与算法链（`ThemeAlgorithm`、`IThemeAlgorithm`、`IThemeAliasAlgorithm`、`IControlTokenAlgorithm` 及其
+  `EvaluateGlobal` / `EvaluateOwn`）、`ThemeConfig.Algorithms`、控件算法模式、Token 类上的 `CalculateTokenValues` /
+  `CalculateAliasTokenValues`、写入记账与多轮重跑；先跑一种语言再改写其结果、临时改写种子再还原等叠加式语言实现。
+- 模板或控件代码判断当前设计语言；控件包引用语言包或取值包；语言包引用控件包。
 - snapshot 中的 `DesignToken`、`IControlDesignToken` 和对应 Clone API。
 - `IDesignToken`、`IControlDesignToken` 中面向运行时修改和资源构建的接口。
 - `ThemeScope.SnapshotProperty` 和基于 snapshot attached value 的父级订阅。
@@ -1835,8 +1816,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - `ControlThemeAssets` glob Attribute、逐 Theme Module、手工 asset manifest 和只为聚合主题创建的额外 AXAML。
 - cache pin、父 snapshot Version cache key 和字符串拼接 cache key。
 - 旧主题 XML 的 `ControlTokens/ControlToken` 结构。
-- 在 `CalculateTokenValues` 中以 `double.NaN` 或其他哨兵值判断 Own Token 是否被显式设置；显式性只由 `IsExplicit`
-  表达。
+- 在控件推导中以 `double.NaN` 或其他哨兵值判断 Token 是否被显式设置；显式值在推导之前冻结，推导只做顺序赋值。
 - Control 代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token，以及读取失败时
   回落到写死的视觉值；Token 只经 `ControlTokenAccessor`、`TokenResourceBinder` 和三种 TokenResource 读取。
 - 有 Token 身份的 Control 的 ControlTheme 用 `SharedTokenResource` 读全局 Token，使 Control 级覆盖对该消费点失效。
@@ -1847,20 +1827,21 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 
 ### 22.1 语义
 
-- 全局 Tokens、Controls、Algorithms 和 Inherit 遵守本文定义的配置合并规则。
+- 全局 Tokens、LanguageTokens、Controls、各个轴和 Inherit 遵守本文定义的配置合并规则。
 - 顶层 ThemeConfigProvider 默认继承当前全局主题。
-- 嵌套 Provider 正确合并父 Tokens、Control 配置和算法四态。
-- 局部 `Inherit=false` 从 AtomUI library defaults 开始，不继承当前主题定义或父作用域配置。
+- 嵌套 Provider 正确合并父 Tokens、Control 配置和各个轴；父 Dark + 子 Compact 的结果是 Dark Compact。
+- 局部 `Inherit=false` 保留父作用域的语言与形态，不继承当前主题定义或父作用域的显式值，其余轴回到语言默认。
 - Control 覆盖不修改全局 Token，也不创建实例私有作用域；同一 ThemeContext 中全部同 identity Control
   使用一致的覆盖结果。
 - 同一主题的新 runtime override 会产生新有效配置，不复用过期 Theme 对象。
-- `Algorithms=null` 继承基线算法，空算法列表显式替换为 AtomUI 默认算法链。
+- 未写的轴继承；写了语言未声明的风格、密度或形态，在配置提交或主题应用时失败，不做静默替换。
+- 显式值在推导之前冻结：覆盖种子、语言 Token、Map 或 Alias 后，由它们派生的值跟随变化；推导对冻结槽位的写入无效。
+- Control 只写 Map、Alias 或 Own Token 时只替换该值；覆盖种子或固定轴时自成求值单元，其余 Control 的结果引用不变。
 - `ThemeConfig`、`ControlThemeConfig`、`ThemeRequest` 及其全部集合深度不可变；替换 Provider.Config 是唯一局部
   动态配置入口，修改旧输入对象不可能触发事务。
-- 所有全局和 Control 算法严格遵守 `Evaluate(sameEffectiveSeed, previousMap?) -> nextMap`；后续算法不能把前一
-  Map 当作新的 Seed，也不能修改输入。
+- 语言与控件推导是输入的纯函数，单遍执行；每个已启用语言 × 每个已启用 Control 在启动时都找得到推导，否则启动失败。
 - 根和每个 `ThemeConfigProvider` 的 snapshot appearance 始终等于其 Avalonia
-  `ActualThemeVariant`；Control custom algorithm 的 appearance 不泄漏到作用域 variant。
+  `ActualThemeVariant`；Control 固定的明暗不泄漏到作用域 variant。
 - 无 owner 的静态 Dialog、Notification 等 API 始终使用 Root ThemeContext，并产生可诊断的根主题语义，不能
   根据当前焦点猜测局部作用域。
 - 公开 Resolver 只产生 source，不产生 `ThemeConfig`、`ThemeDocument`、Token 或 snapshot；所有来源使用标准
@@ -1868,7 +1849,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - 默认 Application Id 来自具体 Application 类型程序集名，显式 `WithApplicationId` 可稳定覆盖；
   `Application.Name` 不参与路径身份。
 - 用户主题目录固定为应用配置根下 `{ApplicationId}/Themes`，不递归、不跟随链接、不访问网络。
-- 用户主题不得覆盖静态 Theme Id、不得声明默认主题；任意重复 Id 都产生确定 diagnostic。
+- 用户主题不得覆盖静态 Theme Id；任意重复 Id 都产生确定 diagnostic。v1 文档被拒绝并给出换写命令。
 
 ### 22.2 事务
 
@@ -1892,7 +1873,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - `ReloadThemesAsync` 对用户目录执行整批原子刷新；任一文件失败时旧 Catalog 与全部 snapshot 保持不变。
 - Catalog 刷新提交前同时验证 Catalog generation 和 ScopeGraph stamps；任何观察者只能看到同一代 Catalog、
   CurrentTheme 和 root/local snapshots。
-- 当前用户主题被删除时刷新原子回退静态默认主题，并保留最后一次 runtime ThemeConfig。
+- 当前用户主题被删除时刷新原子回退当前语言的 `$<LanguageId>`，并保留最后一次 runtime ThemeConfig。
 - Catalog 内容相等时返回 `NoOp`，较新主题或刷新请求使旧刷新返回 `Superseded`。
 - `ThemeCatalogChanged` 在完整提交与必要的资源/ThemeChanged 发布后派发，先于 reload Task 完成；订阅者异常只形成
   publish warning。
@@ -1906,7 +1887,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
   Effective Global Token 和 Own Token；`{atom:OwnerTokenResource ...}` 读取继承到的 owner Control 的 Effective
   Global Token，无 owner 时读取全局值。三者都没有 ambient snapshot 行为。
 - `Controls[X].Tokens[全局名]` 只改变 X 及其模板内的共享基元，不改变其他 Control；根 `Tokens[全局名]` 改变全部。
-- 显式 Own Token override 先于默认计算写入并最终胜出；覆盖 `DataGrid.BorderColor` 后表格边框变色，覆盖 Button
+- 显式 Own Token override 在控件推导之前冻结并最终胜出；覆盖 `DataGrid.BorderColor` 后表格边框变色，覆盖 Button
   `ContentFontSize` 后 `ContentLineHeight` 跟随。
 - 每个 Active Own Token 和消费图中该 Control 消费的全局 Token 都有生效测试：改变 Token 后控件边界内像素发生变化。
   未引用且未标 `[ReservedToken]` 的 Own Token 字段构建失败。
@@ -1931,7 +1912,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 ### 22.4 性能、内存与 AOT
 
 - 同一 definition revision 只成功读取一次，同一 `(definition revision, registry revision)` 只成功绑定一次；
-  来源内容变化使 Reader/Binder 缓存失效，descriptor revision 变化只使 Binder/Compiler 缓存失效。
+  来源内容变化使 Reader/Binder 缓存失效，registry 或语言 / 取值包程序集修订变化只使 Binder/Compiler 缓存失效。
 - 用户目录文件数、总字节和单文件字节均受限；超限、symlink/reparse point、目录逃逸和读取竞态有覆盖测试。
 - NativeAOT 下可以使用默认程序集名解析 Application Id、读取用户目录、手动刷新并切换到用户主题。
 - 等价有效配置只编译一次。

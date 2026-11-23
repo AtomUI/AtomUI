@@ -111,7 +111,8 @@ NativeAOT/CoreCLR 执行官方 accessor。Browser 后端在官方标记完成后
 
 ## 5. 包注册 helper
 
-生成命名空间中的内部 helper 签名如下；包作者在同一次编译中调用它，不手写或分发这些声明：
+有启动清单的包使用 `PackageMetadata.Definition.Register(builder, configure)`。需要幂等启用时使用
+`PackageMetadata.Definition.Ensure(builder, configure)`。无启动清单的生成路径保留以下内部 helper，包作者在同一次编译中调用。
 
 ```csharp
 internal static IAtomUIBuilder Register(

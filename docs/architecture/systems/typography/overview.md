@@ -108,5 +108,5 @@ AtomUI 的文本外观由两件互不相干的事情决定：字体文件有没�
 所有权见 [AtomUI.Core 模块](../../../modules/core/overview.md)。
 
 应用侧的操作路径见 [主题定制指南](../../../guides/theming/customization.md)，主题文件里字体 Token 的书写格式见
-[主题定义 XML v1](../../../reference/theming/theme-definition-xml-v1.md)。要新做一个字体包，操作步骤见
+[主题定义 XML v2](../../../reference/theming/theme-definition-xml-v2.md)。要新做一个字体包，操作步骤见
 [制作 AtomUI 字体包](../../../guides/typography/creating-a-font-package.md)。

@@ -46,6 +46,8 @@ public static class ThemeManagerBuilderExtensions
 入口职责：
 
 - 注册 GalleryBase 生成的 exact CLR type/identity Control descriptor、ControlTheme asset manifest 和主题 Provider。
+- 登记 GalleryBase 控件的通用推导（生成的 `GeneratedControlDerivationRegistration`，见下文「Control Token」），并以
+  `DependsOn` 启用 `UseDesktopControls()`。
 - 通过 `GeneratedLanguageModuleRegistration` 把 GalleryBase Catalog 与内置 Translation Bundle 注册到
   `builder.Localization`。
 - 构建并保存 `GalleryBaseConfiguration`。
@@ -60,25 +62,29 @@ public static class ThemeManagerBuilderExtensions
     builder.UseDesktopControls();
     builder.UseDesktopColorPicker();
     builder.UseDesktopDataGrid();
+    builder.UseAntDesign(language => language.AddDesktopColorPicker().AddDesktopDataGrid());
     builder.UseGalleryBase(...);
 })
 ```
 
-GalleryBase 依赖 AtomUI Desktop 控件作为 Shell 默认 UI，因此产品应先注册 Desktop 控件主题。
+GalleryBase 依赖 AtomUI Desktop 控件作为 Shell 默认 UI，因此产品要启用 Desktop 控件包，并至少启用一种设计语言、登记 Desktop
+控件在该语言下的取值包（`AddDesktopControls()` 等只登记取值，控件包仍由 `Use…()` 启用）。GalleryBase 自己的控件不需要
+逐语言的取值包。
 
-GalleryBase 本身不注册产品主题定义。具体产品通过生成的编译主题包或 `IThemeDefinitionResolver` 显式追加定义；例如
-AtomUIGallery 在 `UseGalleryControls()` 中直接注册 PrimeNG、Shadcn 两个主题包
-（`UsePrimeNGThemes().UseShadcnThemes()`），而单独使用 `UseGalleryBase()` 的应用不会看到这些主题。
-`DaybreakBlue` 来自 AtomUI Core 默认 definition；Gallery 自身不再包含任何主题 XML，也不再生成 `GeneratedThemePackageRegistration`。
+GalleryBase 本身不启用设计语言，也不注册产品主题定义。AtomUIGallery 在 `UseGalleryControls()` 中以 `DependsOn` 启用
+`UseGalleryBase(...)` 与 `UseAntDesign(language => language.AddDesktopColorPicker().AddDesktopDataGrid())`；单独使用
+`UseGalleryBase()` 的应用自行选择语言。`DaybreakBlue` 是 Ant Design 语言包 `AtomUI.DesignLanguages.AntDesign` 中的编译主题，由
+`UseAntDesign(...)` 注册；目录里另有每个已启用语言的隐式条目 `$<LanguageId>`。Gallery 自身不包含任何主题 XML，也不生成
+`GeneratedThemePackageRegistration`。
 原先的 Polar Green、Sunset Orange、Golden Purple、Magenta 四个预设已删除，改为 Theme 菜单 Brand color 中 `AntDesign` 语言专属的命名色块
 （`#52C41A`、`#FA8C16`、`#722ED1`、`#EB2F96`，另有 Daybreak Blue `#1677FF`），由 `GalleryBrandSwatches` 统一维护。
 `PrimeNG.*` 语言使用自己的列表 `GalleryBrandSwatches.PrimeNG`：primeng.dev（primeng 22.1.5）配置器的主色，依站点顺序为
 Noir `#020617`（站点默认，也是 PrimeNG 主题的 `AccentColor`）和 emerald、green、lime、orange、amber、yellow、teal、cyan、
-sky、blue、indigo、violet、purple、fuchsia、pink、rose 十六个 Tailwind 500 色（站点没有 red）；其他 `Seed` 语言仍用
-`Tailwind500`。
+sky、blue、indigo、violet、purple、fuchsia、pink、rose 十六个 Tailwind 500 色（站点没有 red）；其他把 `ColorPrimary` 声明为
+可调种子的语言用 `Tailwind500`。
 
-Core 默认主题由构建期生成类型化主题包，生成内容只有强类型注册与默认赋值，主题派生仍由运行时算法计算。
-不扫描程序集或资源目录。Desktop Gallery 另外使用 `WithApplicationId("AtomUIGallery")` 和
+具名主题由构建期生成类型化主题包（[编译主题 ABI v4](../../reference/theming/compiled-theme-abi-v4.md)），生成内容只有强类型
+注册与显式值，派生由运行时的设计语言推导完成。不扫描程序集或资源目录。Desktop Gallery 另外使用 `WithApplicationId("AtomUIGallery")` 和
 `UseUserThemeDirectory()` 追加用户目录；Browser Gallery 使用随应用发布的编译包。Gallery 不提供独立的
 reload command 或菜单，宿主需要刷新用户主题时直接调用 `IThemeManager.ReloadThemesAsync()`。Catalog 的冲突、
 首次用户来源降级、整批原子刷新和删除当前用户主题后的默认回退语义以
@@ -88,22 +94,33 @@ reload command 或菜单，宿主需要刷新用户主题时直接调用 `ITheme
 
 `GalleryWorkspaceViewModel` 把 ThemeManager 已提交的 Catalog 和主题状态投影成 Shell 可消费的只读状态：
 
-- `AvailableThemes`：`IThemeManager.AvailableThemes` 的防御性快照；`ThemeCatalogChanged` 后整体替换。
+- `AvailableThemes`：`IThemeManager.Themes` 的防御性快照（含每个已启用语言的隐式条目）；`ThemeCatalogChanged` 后以事件参数的
+  `Themes` 整体替换。
 - `CurrentThemeId`：只由已提交的 `ThemeChanged`/Catalog 回退状态更新，不把菜单点击当成提交结果。
-- `SwitchThemeCommand`：接收 Theme Id，用于未声明设计语言的"其他主题"，沿统一请求路径组合基础算法、Appearance、Compact、Motion 和 Wave Spirit 设置。选择已声明设计语言的 profile 时按该 profile 原样应用，Appearance 跟随它；但如果所选主题是其设计语言的 Light + Normal 基础定义，而该语言没有与当前 Dark/Compact 开关对应的变体（例如只有一个 `DaybreakBlue` 的 `AntDesign`），则与设计语言切换一样按当前开关解析（基础链追加内置 Compact/Dark），保留用户当前的 Dark/Compact，与引入设计语言之前的行为一致。
-- `CurrentDesignLanguage`、`CanChooseBrandColor`、`BrandColor`：当前主题的设计语言（`null` 表示其他主题）、该语言是否为 `Seed`（可替换品牌色）、该语言记忆的品牌色（`null` 表示使用主题自身色）。
-- `SwitchDesignLanguageCommand`：按设计语言切换，经 `ThemeSelectionResolver` 选出匹配当前 Appearance/Compact 的 profile（缺少变体时回退到基础定义，没有基础定义时回退到该语言最近的已声明定义，再追加内置 Dark/Compact），并带上该语言记忆的品牌色。目录中不存在的设计语言（例如菜单生成后目录已变化）被忽略，不会让命令出错。
-- `SetBrandColorCommand`：设置当前语言的品牌色，写入请求 `ThemeConfig` 的 `ColorPrimary`；`Fixed` 语言上为 no-op，与主题 `AccentColor` 相同的颜色视为清除。品牌色按设计语言记忆在 ViewModel 内存中（`_brandByLanguage`），不持久化；切到别的语言再切回时恢复。Dark、Compact、Motion 变化沿用同一份记忆。
+- `DesignLanguages`、`CurrentDesignLanguage`：设计语言键为语言 `Id`，语言声明了多个风格时加 `.Style`（`AntDesign`、`Shadcn.Nova`）。
+  `DesignLanguages` 按目录顺序列出 `IThemeManager.Languages` 中已启用语言的键；`CurrentDesignLanguage` 是已提交主题的语言与风格
+  （尚未同步主题状态时为 `null`）。
+- `SwitchThemeCommand`：接收 Theme Id，切到该主题及其所属语言（风格取主题声明的风格，同语言时沿用当前风格），带上当前的
+  Appearance、Compact、该语言记忆的品牌色与中性色和用户动过的 Motion / Wave Spirit。主题固定了明暗时 Appearance 跟随它；
+  Follow System 下与系统当前明暗一致时保持 Follow System。
+- `SwitchDesignLanguageCommand`：按设计语言键切换语言与风格，不带具名主题（即该语言的隐式条目），保留 Appearance、Compact
+  与该语言记忆的品牌色、中性色。目录中不存在的键（例如菜单生成后目录已变化）被忽略，不会让命令出错。
+- `CanChooseBrandColor`、`BrandColor`：当前语言把 `ColorPrimary` 声明为可调种子（`DesignLanguageInfo.AdjustableSeeds`）且当前主题
+  没有锁定它（`ThemeInfo.LockedSeeds`）时可选；`BrandColor` 是该语言记忆的品牌色，`null` 表示使用主题自身色。
+- `SetBrandColorCommand`：设置当前语言的品牌色；不可选时为 no-op，与主题 `AccentColor` 相同的颜色视为清除。品牌色按设计语言
+  记忆在 ViewModel 内存中（`_brandByLanguage`），不持久化；切到别的语言再切回时恢复。Dark、Compact、Motion 变化沿用同一份记忆。
+- `CanChooseNeutralColor`、`NeutralColor`、`SetNeutralColorCommand`：中性色（种子 `ColorNeutral`）的同一套规则，记忆在
+  `_neutralByLanguage`，`null` 表示使用主题自身的中性色。
 - `AppearanceMode` 与 `IsLightAppearanceMode` / `IsDarkAppearanceMode` / `IsSystemAppearanceMode`：投影 Light、Dark、Follow System 三态；`SetAppearanceModeCommand` 负责显式切换，`ToggleDarkModeCommand` 保留 bool 到 Light/Dark 的便捷映射。
 
-每次主题请求都重建并携带完整的运行时 `ThemeConfig`。品牌色不再通过切换主题 Id 实现：AtomUIGallery 不再提供
-PolarGreen 等 Ant 色彩预设主题文件，而是把品牌色作为 `ColorPrimary` 种子写入请求 `ThemeConfig`（仅当当前设计语言为
-`Seed` 且已选色时），由算法派生 Hover/Active/Bg 等状态和焦点光晕 `ColorControlOutline`；`ColorLink`、`ColorInfo`
-等其他种子保持独立，不随品牌色变化。未声明设计语言的主题沿用旧做法：从最近一次已提交 `ThemeState.Algorithms`
-提取除 `Compact`、`Dark` 之外的基础链；基础链为空时回退 `Default`，随后按顺序追加可选 `Compact` 和 `Dark`。因此
-Dark + Compact 的当前标准链是 `Default -> Compact -> Dark`，不是用 `[Dark]` 或 `[Compact, Dark]` 丢弃 definition 的
-基础算法；`ThemeSelectionResolver` 的回退使用同一公式。Motion 和 Wave Spirit 作为完整请求中的 Token override 一并
-提交；关闭 Motion 会同时关闭 Wave Spirit，启用 Wave Spirit 会同时启用 Motion。
+每次切换都由 ViewModel 重建一份完整的 `ThemeSelection`，经 `IThemeManager.ApplyAsync(ThemeSelection)` 提交：语言与风格、
+具名主题（隐式条目不写主题）、`WithAppearance(Light/Dark)`、Compact（仅当语言声明了 `DesignDensity.Compact` 时
+`WithDensity(DesignDensity.Compact)`）、品牌色与中性色种子，以及用户动过的 Motion / Wave Spirit。品牌色不通过切换主题 Id
+实现：AtomUIGallery 不提供 PolarGreen 等 Ant 色彩预设主题文件，而是把品牌色作为 `ColorPrimary` 种子写入选择
+（`WithSeed`，仅当它可选且已选色时），由语言的全局推导派生 Hover/Active/Bg 等状态和焦点光晕 `ColorControlOutline`；
+`ColorLink`、`ColorInfo` 等其他种子保持独立，不随品牌色变化。Motion 和 Wave Spirit 在用户动过开关后作为 `EnableMotion`、
+`EnableWaveSpirit` 种子写入，之前以主题自己的声明为准；关闭 Motion 会同时关闭 Wave Spirit，启用 Wave Spirit 会同时启用
+Motion。提交失败时命令抛出 `ThemeLoadException`，失败或被更新请求替代时重新投影已提交状态。
 
 Follow System 通过 `IGallerySystemAppearanceSource` 更新 Dark 状态，并以 `ThemeTransitionReason.FollowSystem` 提交同一
 完整请求。主题 Id、Appearance、Compact、Motion 和 Wave Spirit 保持正交；失败或被更新请求替代时，Shell 会重新
@@ -112,10 +129,11 @@ Follow System 通过 `IGallerySystemAppearanceSource` 更新 Dark 状态，并�
 ViewModel 对 `ThemeChanged`、`ThemeCatalogChanged` 和语言事件都保存对称的 handler，并在 `Dispose()` 中解除这些
 handler 及当前 Follow System appearance 订阅。
 产品窗口可以基于 `AvailableThemes` 动态创建同组 Radio 菜单，但不应复制主题名称/Id，也不应自行解析 XML。
-AtomUIGallery 的 Theme 菜单（`GalleryThemeMenu`）分为三个子菜单：Design language（按 `DesignLanguage` 分组的 Radio
-项）、Brand color（当前语言的色块与 Reset；`Fixed` 语言或未声明设计语言的主题整组禁用，并以悬停提示说明原因）和
-Other themes（未声明设计语言的主题，没有时隐藏）。主题或语言声明了 `AccentColor` 时，菜单项在文字右侧显示
-`12 × 12`、`2px` 圆角的实心正方形色块，未声明时不创建占位色块。Light、Dark、Follow System 位于 Appearance 子菜单，
+AtomUIGallery 的 Theme 菜单（`GalleryThemeMenu`）分为四个子菜单：Design language（每个设计语言键一个 Radio 项，同一语言的
+多个风格折叠进以语言命名的子菜单）、Brand color 与 Neutral color（当前语言的色块与 Reset；种子不可调或被当前主题锁定时整组
+禁用，并以悬停提示说明原因）和 Other themes（目录中的具名主题，隐式条目由 Design language 项提供；没有时隐藏）。主题声明了
+`AccentColor` 时（设计语言项取该语言隐式条目的值），菜单项在文字右侧显示 `12 × 12`、`2px` 圆角的实心正方形色块，未声明时
+不创建占位色块。Light、Dark、Follow System 位于 Appearance 子菜单，
 Compact、Motion 和 Wave Spirit 保留为外层 Theme 菜单中的正交开关。
 
 ## 主题资产与生成注册
@@ -164,19 +182,32 @@ Own Token 类只在 Control 存在独有设计值时创建，并由 AtomUI gener
 [ControlDesignToken]
 internal sealed partial class ShowCaseItemToken : AbstractControlDesignToken
 {
+    /// <summary>Padding inside a showcase card.</summary>
     public partial Thickness CardPadding { get; set; }
-
-    protected override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CardPadding = new Thickness(EffectiveGlobalToken.SizeUnit * 5);
-    }
 }
 ```
 
 GalleryBase 的 Token 类保持 `internal`，但与 AtomUI 控件包一样必须是 `partial` 类、Token 属性必须是 partial 属性
-（实现部分由生成器产出，否则报 `ATOMUIGEN049`），`CalculateTokenValues` 用 `protected override`。因为是 `internal`，
-其他程序集的主题算法不能为 GalleryBase 控件写控件阶段。
+（实现部分由生成器产出，否则报 `ATOMUIGEN049`），只有声明，不含计算方法。因为是 `internal`，其他程序集的取值包不能为
+GalleryBase 控件写推导；GalleryBase 在自己的 `Derivations/Controls/` 里为每个 Token 类提供一个绑定根类型 `LanguageDesignToken`
+的**通用推导**，只读全局 Token，在任何已启用语言下都给出取值，由 `UseGalleryBase()` 登记：
+
+```csharp
+[ControlDerivation]
+internal sealed class GenericShowCaseItemDerivation : IControlDerivation<LanguageDesignToken, ShowCaseItemToken>
+{
+    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<ShowCaseItemToken> view)
+    {
+        var token  = view.Token;
+        var global = view.Global;
+        token.CardPadding = new Thickness(global.SizeUnit * 5);
+        // ... every other ShowCaseItemToken property
+    }
+}
+```
+
+GalleryBase 自己声明控件 Token，同时带推导，因此不受「取值包不含控件」（`ATOMUIGEN053`）的约束。推导契约见
+[编写设计语言](../../guides/theming/writing-design-languages.md#44-通用推导)。
 
 `[ControlDesignToken]` 只标记 Own Token 类型，不携带 Control 类型、identity 或 ID。禁止泛型
 `[ControlDesignToken<TControl>]` 和手写 ID。即使某个 GalleryBase Control 没有 Own Token，生成器仍为它生成独立

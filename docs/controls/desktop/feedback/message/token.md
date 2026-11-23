@@ -26,16 +26,15 @@ Token 按控件语义分类维护：
 
 ### 阴影按 severity 分槽
 
-卡片阴影由与当前 `MessageType` 对应的自有槽位提供（`Information` / `Success` / `Warning` / `Error` / `Loading`），
-没有无 severity 的兜底槽：`MessageType` 的每个取值都有样式块，基础 Shadow setter 会被遮蔽而非生效。Ant Design 基线
-下五个槽位同为全局 `BoxShadows`，渲染与引入槽位前一致；设计语言算法（如 `AtomUI.Themes.PrimeNG` 的
-`PrimeNGMessageCardTokens`）可按 severity 覆盖（PrimeNG 为 `0 4 8 0` 的 severity 彩色 4% 阴影，`Loading` 取 neutral）。
+每个 `MessageType` 都用对应的控件 Token 绘制阴影。Ant Design 的五个类型均使用全局 `BoxShadows`。
+PrimeNG Aura 给四个状态类型绘制状态色边框和 不透明度为 4% 的状态色阴影。Lara 和 Nora 使用 Popover 阴影。
+PrimeNG 的 `Loading` 以 Popover 阴影叠加中性边框。
 
 ### 类型表面
 
 `Information` / `Success` / `Warning` / `Error` 各有 `*Bg`、`*IconColor`、`*Color`（文字）槽位，默认等于普通卡片
-（`ContentBg`、状态色图标、`ColorText`），`Loading` 不分槽。设计语言算法据此绘制着色或实底的类型卡片（PrimeNG
-`message`：Aura / Lara 浅色着底，Nora 实底）。
+（`ContentBg`、状态色图标、`ColorText`），`Loading` 不按状态分组。PrimeNG 取值包按 PrimeUIX `message` 规则映射这些槽位。
+Aura 与 Lara 使用着色背景，Nora 使用实色背景。
 
 ### 主题读取与裁决
 

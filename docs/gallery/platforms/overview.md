@@ -26,8 +26,10 @@ Desktop Gallery 在 `GalleryApplication.Configure` 中声明全部包与 `UseSpl
 标题，NativeAOT 下不显示）。AtomUI 内核在 `Initialize()` 之前提交，`WorkspaceWindow` 在构造函数中直接构建导航与
 `GalleryShellView`，主窗体出现时就是完整内容，没有加载占位。Splash 在主窗体首个渲染批次完成后淡出。
 
-Gallery 的附加内置主题随 `UseGalleryControls` 进入目录。Workspace ViewModel 通过 Core 的 `ThemeCatalogChanged` 更新
-AvailableThemes，窗口菜单沿用现有属性通知生成主题项；主题切换与手动目录刷新共用这条目录订阅链路。
+Gallery 启用的设计语言（`UseAntDesign(...)`）随 `UseGalleryControls` 进入目录，语言包自带的具名主题与每个语言的隐式条目
+`$<LanguageId>` 一并出现。Workspace ViewModel 通过 Core 的 `ThemeCatalogChanged`（事件参数的 `Themes`）更新
+`AvailableThemes` 与 `DesignLanguages`，窗口菜单沿用现有属性通知生成设计语言与主题项；主题切换与手动目录刷新共用这条
+目录订阅链路。
 
 启动生命周期见[启动系统](../../architecture/systems/startup/overview.md)；Shell 所有权见
 [GalleryBase Shell](../../modules/toolkits-gallery-base/shell-and-platform.md)。

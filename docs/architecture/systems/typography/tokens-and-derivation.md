@@ -1,7 +1,13 @@
 # 字体 Token 与派生算法
 
 整个文本尺寸体系只有一个可调输入：`FontSize`。其余 21 个字号、行高与文本高度 Token 都从它算出来。本文讲这些
-Token 怎么分级、阶梯算法长什么样、以及三个算法变体各自做了什么——其中 Compact 的行为与 Ant Design 不一致。
+Token 怎么分级、阶梯算法长什么样、以及 Ant Design 语言在默认密度、紧凑密度与暗色下各自做了什么——其中紧凑密度的行为
+与 Ant Design 不一致。
+
+Token 的分级与声明在核心（`AtomUI.Core`），取值规则属于设计语言：下文的派生是 Ant Design 语言包
+`AtomUI.DesignLanguages.AntDesign` 的全局推导（`AntDesignLanguage.DeriveGlobal` 先调用 `AntDesignMapDerivation`、再调用
+`AntDesignAliasDerivation`），阶梯函数是核心的中性工具 `AtomUI.Theme.Derivation.CalculatorUtils`。其他语言可以给出不同的字号
+规则，见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
 
 字体族的解析是另一条线，见 [font-family-resolution.md](font-family-resolution.md)；Token 怎么被消费见
 [consumption.md](consumption.md)。
@@ -9,7 +15,7 @@ Token 怎么分级、阶梯算法长什么样、以及三个算法变体各自�
 ## Token 分级
 
 字体相关共 23 个 Token，分 Seed、Map、Alias 三级。分级由 `[DesignTokenKind]` 声明、Generator 写进
-`TokenDescriptor`，决定一个 Token 会不会被算法重算。
+`TokenDescriptor`；它说明 Token 的角色，也决定控件级覆盖一个值时是否为该控件重新派生（只有覆盖种子才重新派生）。
 
 Seed 只有两个，是唯一的外部输入：
 
@@ -18,11 +24,11 @@ Seed 只有两个，是唯一的外部输入：
 | `FontFamily` | `FontFamily?` | 见 [默认链](font-family-resolution.md) | 全局字体族 |
 | `FontSize` | `double` | `14` | 基准字号，整条阶梯的派生基数 |
 
-`FontSize` 有个容易看错的地方：它既是 Seed，又会被派生算法重新写一遍。算法把它设为阶梯的第 1 档，而第 1 档被
-强制等于基数本身，所以这次写回是幂等的，不会每轮编译漂移一点。Ant Design 里 `fontSize` 同时属于 `SeedToken`
-和 `MapToken`，模型是一致的。
+`FontSize` 有个容易看错的地方：它既是 Seed，又会被 Map 推导重新写一遍。推导把它设为阶梯的第 1 档，而第 1 档被
+强制等于基数本身，所以这次写回是幂等的；用户显式给出的 `FontSize` 在推导之前冻结，写回被忽略。Ant Design 里 `fontSize`
+同时属于 `SeedToken` 和 `MapToken`，模型是一致的。
 
-Map 级 19 项全部由 `CalculateFontMapTokenValues` 从 `FontSize` 派生：
+Map 级 19 项全部由 `CalculatorUtils.CalculateFontMapTokenValues` 从 `FontSize` 派生：
 
 | 分组 | Token | 语义 |
 |---|---|---|
@@ -36,7 +42,7 @@ Map 级 19 项全部由 `CalculateFontMapTokenValues` 从 `FontSize` 派生：
 `TextBlock.LineHeight` 是绝对像素，沿用 `LineHeight` 会和框架属性撞语义，让人以为可以直接赋值。`Relative` 前缀
 把"这是个比值、必须乘字号"写进了名字里。那次乘法归谁做，见 [consumption.md](consumption.md)。
 
-Alias 级两项在 `DesignToken.CalculateAliasTokenValues` 里赋值，是固定关系而不是独立参数：
+Alias 级两项在 Ant Design 的 `AntDesignAliasDerivation.Derive` 里赋值，是固定关系而不是独立参数：
 
 | Token | 类型 | 派生 | 语义 |
 |---|---|---|---|
@@ -95,24 +101,27 @@ relativeLineHeight(fontSize) = (fontSize + 8) / fontSize
 
 标题相对行高随级别递减：`H1 1.2105`、`H2 1.2667`、`H3 1.3333`、`H4 1.4`、`H5 1.5`。
 
-`DesignToken.FontMap.cs` 里 `FontSizeHeading1..5` 带着 `38 / 30 / 24 / 20 / 16` 的字段初始值。这些数字正是
-`FontSize = 14` 的派生结果，派生跑完会被同值覆盖。它们的作用是让类型在主题还没编译时也持有合理默认，不是第二处
+`DesignTokens/Definitions/DesignToken.FontMap.cs` 里 `FontSizeHeading1..5` 带着 `38 / 30 / 24 / 20 / 16` 的属性初始值。这些
+数字正是 `FontSize = 14` 的派生结果，推导跑完会被同值覆盖。它们的作用是让类型在主题还没编译时也持有合理默认，不是第二处
 真源，改基准字号时不需要跟着改。
 
-## 三个算法变体
+## Ant Design 的三个计算器
 
-| 算法 | 是否重算字体 Map Token | 派生基数 |
-|---|---|---|
-| `DefaultThemeVariantCalculator` | 是 | `designToken.FontSize` |
-| `CompactThemeVariantCalculator` | 是 | `designToken.FontSize` |
-| `DarkThemeVariantCalculator` | 否 | 不适用 |
+`AntDesignMapDerivation.Derive` 按 antd 的组合方式先跑默认计算器，变体的密度为 `DesignDensity.Compact` 时再叠加紧凑计算器，
+明暗为 `ThemeAppearance.Dark` 时再叠加暗色计算器。这些计算器是语言包的内部实现：
 
-Dark 完全不碰字体，这是对的——外观变化只该影响色彩，不该改排版度量。Dark 与 Default 或 Compact 组合时，字体
-Token 由后者决定。
+| 计算器 | 何时运行 | 是否重算字体 Map Token | 派生基数 |
+|---|---|---|---|
+| `AntDesignDefaultCalculator` | 总是 | 是 | `designToken.FontSize` |
+| `AntDesignCompactCalculator` | 紧凑密度 | 是 | `designToken.FontSize` |
+| `AntDesignDarkCalculator` | 暗色 | 否 | 不适用 |
 
-### Compact 实际上没有压缩字号
+暗色完全不碰字体，这是对的——外观变化只该影响色彩，不该改排版度量。暗色与默认或紧凑密度组合时，字体 Token 由后者
+决定。
 
-`CompactThemeVariantCalculator.Evaluate` 里字体那部分是：
+### 紧凑密度实际上没有压缩字号
+
+`AntDesignCompactCalculator.Evaluate` 里字体那部分是：
 
 ```csharp
 CalculateCompactSizeMapTokenValues(nextMap);
@@ -121,10 +130,10 @@ nextMap.ControlHeight = controlHeight;                  // controlHeight - 4
 CalculatorUtils.CalculateControlHeightMapTokenValues(nextMap);
 ```
 
-`CalculateFontMapTokenValues` 内部拿的是 `designToken.FontSize`，而这个值在此之前已经被 Default 算法写成了 Seed
+`CalculateFontMapTokenValues` 内部拿的是 `designToken.FontSize`，而这个值在此之前已经被默认计算器写成了 Seed
 基数本身。加上第 1 档强制等于基数，这次重新派生是幂等的——算完和没算一样。
 
-结论是 **Compact 只压缩尺寸阶梯和控件高度，字号与行高原封不动**。`FontSize = 14` 时 Compact 与 Default 的全部
+结论是 **紧凑密度只压缩尺寸阶梯和控件高度，字号与行高原封不动**。`FontSize = 14` 时紧凑与默认密度的全部
 字体 Token 完全相同：`FontSize 14`、`FontSizeSM 12`、`FontSizeLG 16`、`FontSizeXL 20`、`FontSizeHeading1 38`。
 
 ### 与 Ant Design 的差异
@@ -148,7 +157,7 @@ return { ...mergedMapToken, ...genCompactSizeMapToken(...), ...genFontMapToken(f
 
 有一条线索表明这是疏漏而非取舍：`CalculateFontMapTokenValues` 里留着上游那句注释 `// Smaller size font-size as
 base`。它在 Ant Design 中位于 compact 算法内部、专门解释为什么取 `fontSizeSM`；搬进 AtomUI 的共享派生函数之后就
-不再成立了，因为这个函数同时服务 Default 和 Compact，基数始终是 `FontSize`。注释与代码说的是两件事。
+不再成立了，因为这个函数同时服务默认与紧凑两个计算器，基数始终是 `FontSize`。注释与代码说的是两件事。
 
-修正方向是让 Compact 以 `FontSizeSM` 为基数派生字体 Map Token，同时不改变 Default 路径的输出。这属于视觉破坏性
-变更，会影响所有启用 Compact 的应用，须按 [verification.md](verification.md) 的兼容性矩阵评估。
+修正方向是让紧凑计算器以 `FontSizeSM` 为基数派生字体 Map Token，同时不改变默认密度的输出。这属于视觉破坏性
+变更，会影响所有在 Ant Design 语言下使用紧凑密度的应用，须按 [verification.md](verification.md) 的兼容性矩阵评估。

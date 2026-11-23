@@ -239,7 +239,7 @@ using Avalonia.Metadata;
 ```csharp
 .UseAtomUI(builder =>
 {
-    builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+    builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
     builder.UseMyFontFont();
     builder.WithDefaultFontFamily(FontFamily.Parse(
         $"{MyFontFontConstants.FontFamily}, Segoe UI, PingFang SC, $Default"));

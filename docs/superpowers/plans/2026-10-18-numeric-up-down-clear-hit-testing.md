@@ -1,6 +1,6 @@
 # NumericUpDown 清除按钮几何重叠根因修复方案
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 从布局源头消除 IKLPBR 中浮动 Handle 出现时，suffix 与文本编辑区的几何重叠，保留现有后缀运动轨迹和控件外部尺寸。
 

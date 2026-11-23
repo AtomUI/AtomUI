@@ -1,6 +1,6 @@
 # Popup In Dialog Global Regression Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Preserve the Issue #441 reproduction as a permanent Desktop Controls TestApp and prove that every AtomUI popup creation path keeps the owning Window `TopLevel` when used inside an Overlay Dialog.
 

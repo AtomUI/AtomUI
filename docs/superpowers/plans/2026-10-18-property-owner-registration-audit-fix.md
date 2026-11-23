@@ -1,6 +1,6 @@
 # Property and Routed Event Owner Registration Fixes Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> Execute the plan task by task.
 
 **Goal:** 修复全局扫描发现的 45 个 Avalonia property owner 注册错误和 6 个 routed event owner 注册错误，恢复每个属性/事件与其声明控件的注册边界。
 

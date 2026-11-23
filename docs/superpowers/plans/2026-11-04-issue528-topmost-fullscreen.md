@@ -8,7 +8,7 @@
 
 **Spec:** [AtomUI #528](https://github.com/AtomUI/AtomUI/issues/528)、[前次分析会话](codex://threads/01a1a52d-5848-7fe2-b666-b5603e380d92)及用户要求。
 
-**执行方式:** `superpowers:executing-plans`；过程与验收证据见[执行记录](../progress/2026-11-04-issue528-fullscreen-repair.md)。
+过程与验收证据见[执行记录](../progress/2026-11-04-issue528-fullscreen-repair.md)。
 
 ## 约束
 

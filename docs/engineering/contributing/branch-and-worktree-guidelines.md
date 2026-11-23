@@ -1,6 +1,6 @@
 # 分支与 Worktree 管理规范
 
-本文是 AtomUI 的全局强约束，适用于所有 AI 编程助手及其派生的子代理、子会话和工作流。它规定开发时在哪里改代码、何时可以创建分支或 worktree，以及完成后如何收尾。与 Superpowers 技能、工具默认行为或会话框架的默认建议冲突时，以本文为准。
+本文是 AtomUI 的全局强约束，适用于所有 AI 编程助手及其派生的子代理、子会话和工作流。它规定开发时在哪里改代码、何时可以创建分支或 worktree，以及完成后如何收尾。工具与会话框架的默认行为须遵循本文规定。
 
 ## 主线与默认工作位置
 
@@ -14,7 +14,7 @@
 
 - `git branch <name>`、`git checkout -b`、`git switch -c`、`git checkout <other-branch>`、`git switch <other-branch>`；
 - `git worktree add`（含 `--detach` 的基线对照 worktree），以及放在临时目录、`.claude/worktrees/` 或仓库外的任何 worktree；
-- 会隐式创建 worktree 或分支的工具与流程：`EnterWorktree`、子代理 `isolation: "worktree"`、新会话 `use_worktree: true`、`superpowers:using-git-worktrees`、`superpowers:finishing-a-development-branch` 中的建分支步骤等。
+- 会隐式创建 worktree 或分支的工具与流程：`EnterWorktree`、子代理 `isolation: "worktree"`、新会话 `use_worktree: true`及其他会自动创建分支或 worktree 的步骤。
 
 技能或工作流要求“先建隔离 worktree / 新分支”时，默认留在当前工作区执行；确实需要隔离时，先按下一节申请许可。
 

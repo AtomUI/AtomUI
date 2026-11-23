@@ -1,6 +1,6 @@
 # Motion Library Refactor Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task in the approved worktree. Do not create another branch/worktree or commit without a separate user instruction.
+> Execute the plan task by task in the approved worktree. Do not create another branch, worktree, or commit without a separate user instruction.
 
 **Goal:** 用可扩展 Motion 继承体系替换 Actor 依赖，统一执行/终态和布局接入，校准内置轨迹并完成定向与真实 Gallery 验证。
 

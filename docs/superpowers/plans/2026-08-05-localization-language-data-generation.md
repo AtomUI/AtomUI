@@ -1,6 +1,6 @@
 # AtomUI Localization Language Data Generation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Generate the public `LanguageTags` constants and standard `LanguageDefinition` metadata from version-pinned language data without introducing a closed locale enum or runtime culture enumeration.
 

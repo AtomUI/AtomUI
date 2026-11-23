@@ -1,6 +1,6 @@
 # Localization Application Integration Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Integrate the new localization runtime into the root `Application.UseAtomUI(...)` startup path with a root builder, generated application bootstrap hook, stable Application resource-provider mount, DI-neutral service access, and atomic root FlowDirection projection.
 

@@ -1,6 +1,6 @@
 # Semantic Part 第三批输入与选择实施计划
 
-> **供智能体执行者使用：** 使用 `superpowers:executing-plans` 在当前会话中执行，不得使用 subagent。即使多个控件共享源码目录或 Gallery 页面，每套正式控件文档仍分别执行独立的 Gate A。每个控件家族在自己的专用 worktree（`feature/semantic-<Control>`）中执行，见[总计划](2026-08-12-semantic-part-control-rollout.md)全局约束。
+> 在当前会话中执行计划，不得使用子代理。即使多个控件共享源码目录或 Gallery 页面，每套正式控件文档仍分别执行独立的 Gate A。每个控件家族在自己的专用 worktree（`feature/semantic-<Control>`）中执行，见[总计划](2026-08-12-semantic-part-control-rollout.md)全局约束。
 
 **目标：** 为 16 个具有 Ant Design 6.6.0 稳定发布源码公开 Semantic DOM 对应 API 的输入与选择控件家族建立 Semantic Part 契约，同时保持 SizeType、原生文本编辑、Popup、候选项容器和可选包行为。（其中 `ComboBox` 为 2026-09-16 用户指令追加，**非 §2.1 Gate 通过**：上游无公开 `ComboBox` owner，准入依据为用户指令 + 其自身即职责完整的 public owner，见任务 16。）
 

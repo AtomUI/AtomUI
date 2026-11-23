@@ -1,6 +1,6 @@
 # ComboBox 统一空态实施计划
 
-> **For agentic workers:** 使用 `superpowers:executing-plans` 在本会话执行。用户已要求按现有设计开始修复，不重复申请研发授权。
+> 在本会话中按现有设计修复。用户已授权研发。
 
 **Goal:** 修复普通空数据与过滤无匹配的空态，接入四个公开属性并同步 Gallery。
 

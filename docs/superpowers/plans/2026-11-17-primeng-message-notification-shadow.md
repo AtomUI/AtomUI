@@ -1,6 +1,6 @@
 # PrimeNG Message/Notification 卡阴影对齐官方 实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** PrimeNG 设计语言下 MessageCard 与 NotificationCard 的阴影对齐官方 `@primeuix/themes` 3.1.1 的 message/toast 取值：无 severity（normal/Default）= 各 preset 的 `overlay.popover.shadow`；info/success/warn/error = `0px 4px 8px 0px` 按 severity 着色 4% 单层阴影（blue/green/yellow/red 的 500 档）；Ant Design 基线渲染不变。
 

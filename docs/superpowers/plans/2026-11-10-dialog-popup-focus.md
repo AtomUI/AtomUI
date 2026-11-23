@@ -1,6 +1,6 @@
 # Dialog 嵌套弹层焦点修复计划与证据
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 从 Dialog 宿主消除内容弹层点击时的额外失焦和激活时的内容卸载，保持选择器与普通窗口一致。
 

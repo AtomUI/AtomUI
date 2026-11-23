@@ -1,6 +1,6 @@
 # Startup configuration platform boundary implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
+> Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Prevent application configuration registered by `UseAtomUI` from creating the first Dispatcher before platform initialization.
 

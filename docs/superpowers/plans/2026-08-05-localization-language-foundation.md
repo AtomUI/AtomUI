@@ -1,6 +1,6 @@
 # AtomUI Localization Language Foundation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Create the independent `AtomUI.Localization` runtime package and implement its open BCP 47 `LanguageTag` plus immutable language metadata/state/change contracts without coupling them to ThemeManager.
 

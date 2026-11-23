@@ -1,6 +1,6 @@
 # Performance tool build repair
 
-> Execute inline with superpowers:executing-plans. User requested fixing the reported build errors.
+> Fix the reported build errors in the current session.
 
 **Goal:** Restore compilation and the affected Input/TabControl verification entry points.
 **Architecture:** Import the existing registration/theme namespaces and migrate stale Tab overflow verification consumers to the existing typed TabScrollViewer/Popup/context contract. No production control behavior or dependency changes.

@@ -1,6 +1,6 @@
 # PrimeNG FloatButton 阴影对齐官方 实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** PrimeNG 设计语言（Aura/Lara/Nora × 亮/暗）下 FloatButton 族（FloatButton、BackTopFloatButton、FloatButtonGroup、FloatButtonGroupHost）不再绘制阴影，与官方 `@primeuix/themes` 3.1.1 的按钮族（button 所有 severity、speeddial）无 resting 阴影一致；Ant Design 基线渲染不变。
 

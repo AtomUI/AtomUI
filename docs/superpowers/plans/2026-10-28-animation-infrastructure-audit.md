@@ -1,6 +1,6 @@
 # Animation infrastructure audit and refinement
 
-> For agentic workers: use superpowers:executing-plans inline. Each implementation change is verified; no automatic commits. Follow project temporary-test lifecycle and focused verification constraints.
+> Implement in this session and verify each change. Follow the project's temporary-test lifecycle and focused verification requirements. Leave changes uncommitted.
 
 **Goal:** Audit the whole animation infrastructure, eliminate unjustified duplication, align names with ownership, and deliver measured, reviewable improvements without changing the approved public Motion model or existing UX.
 
@@ -63,7 +63,7 @@
 - [x] Run Gallery NativeAOT after final runtime changes; distinguish third-party warnings and platform gaps.
 
 ### Task5: Independent final review and clean delivery
-- [x] Dispatch one fresh whole-diff reviewer under executing-plans/requesting-code-review; no implementation delegation.
+- [x] Arrange one independent review of the full change. Do not delegate implementation.
 - [x] Re-grade findings, perform one important-fix pass with valid RED→GREEN, and ledger every deferred item or unsupported judgment.
 - [x] Delete temporary tests, probes, media and dedicated artifacts; rebuild normal tools and verify the final cleaned modules and documentation links.
 - [x] Deliver code, formal docs, measurements and limitations for user review; preserve worktree, do not commit.

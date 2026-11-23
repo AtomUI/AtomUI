@@ -1,6 +1,6 @@
 # 删除 Bootstrap / Material 预设主题包 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 彻底删除 `AtomUI.Themes.Bootstrap` 与 `AtomUI.Themes.Material` 两个预设主题包（从未发版，NuGet 上不存在），并清空全仓所有引用。
 

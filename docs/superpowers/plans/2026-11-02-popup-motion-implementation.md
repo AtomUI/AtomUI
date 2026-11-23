@@ -1,6 +1,6 @@
 # 弹层组件动效实现计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
+> Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 完成已定稿的 Ant Design 对应弹层动效接入，保持原始 UX，并以可比较测量约束布局、分配与资源成本。
 
@@ -81,6 +81,6 @@
 
 - [x] 复用本地 Gallery 启动技能和脚本视觉验收，原始限高/内容/操作保持不变；可访问的平台分别取证，未验证范围如实记录。
 - [x] 源码稳定后集中执行需要的 Release/NativeAOT 发布、功能与性能采样，不按小实验重复发布。
-- [x] 按 executing-plans 做一次独立整体代码审阅；重要发现取得 RED/GREEN 后修复。
+- [x] 做一次独立整体代码审阅；重要发现取得 RED/GREEN 后修复。
 - [x] 删除临时测试、专用探针和产物，清理后显式模块 iterate/exact filter 验证，git diff --check；更新实现差距与实际验证状态。
 - [x] 报告实际功能结果、性能数字/比较口径、测试处置及残余平台限制；等待用户审查，不提交。

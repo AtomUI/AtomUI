@@ -1,6 +1,6 @@
 # Empty 图片生命周期修复 Implementation Plan
 
-> **For agentic workers:** Use superpowers:executing-plans in the current checkout. Follow the checkbox steps; do not create a branch/worktree or commit.
+> Follow the checkbox steps in the current checkout. Do not create branches or worktrees, or commit.
 
 **Goal:** 修复同一 Empty 实例从 ContentControl 摘出再挂回后图案消失，并满足已确认的图片状态维护契约。
 

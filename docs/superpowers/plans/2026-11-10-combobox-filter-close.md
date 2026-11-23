@@ -1,6 +1,6 @@
 # ComboBox 过滤提交与离场稳定性修复
 
-> 使用 writing-plans / executing-plans，在现有 release/6.0 checkout 执行；不建分支/worktree、不提交。
+> 在现有 release/6.0 checkout 执行本计划；不建分支/worktree、不提交。
 
 **Goal:** 选中提交正常更新业务值和绑定，同时保持候选过滤投影、自然高度、空态与滚动直到物理 Popup.Closed。
 **Architecture:** 复用原有选中提交边界，将单层事件标记收敛为可嵌套的提交深度；过滤投影在提交/离场期间延后，物理关闭或同步提交结束时收敛。重开和 pinned 状态按实时查询投影，不修改通用 Popup 动效。

@@ -1,6 +1,6 @@
 # Test Suite Value Cleanup — Third Pass Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task by task.
+> Execute the plan task by task.
 
 **Goal:** Continue deleting permanent tests that only preserve completed migrations, retired APIs, or private Gallery implementation details.
 

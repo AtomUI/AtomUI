@@ -1,6 +1,6 @@
 # .NET 11 SDK 构建、三框架发布与发布路径去版本绑定 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** SDK 10/11 都能构建 AtomUI；CI Release 包含 net8.0/net10.0/net11.0；net8 裁剪、Native8、条件桥接发布不再绑定 SDK 或补丁版本。
 

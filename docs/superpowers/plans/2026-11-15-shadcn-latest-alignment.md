@@ -1,6 +1,6 @@
 # Shadcn 对齐 shadcn/ui 现行标准 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 把 `AtomUI.Themes.Shadcn` 重做为 shadcn/ui 现行的 8 种 Style × 7 种 Base Color × 18 种 Theme，弹层阴影与描边逐项对齐官方；Core 新增与品牌色对称的中性色轴。
 

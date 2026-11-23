@@ -1,6 +1,6 @@
 # Popup Default Surface Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make direct `AtomUI.Desktop.Controls.Popup` render a theme-aware elevated surface from the shared popup frame while preserving every existing Popup-bearing control's current visuals.
 

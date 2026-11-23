@@ -1,6 +1,6 @@
 # ComboBox IsAllowClear 修复计划与验收记录
 
-> 使用 `superpowers:executing-plans` 在当前分支内执行；不创建分支/worktree，不提交。任务结束进行一次独立代码审查。
+> 在当前分支内执行，不创建分支或 worktree，不提交。任务结束时进行一次独立代码审查。
 
 **Goal:** 修复 #533 已有 `IsAllowClear` 属性的实际功能，保留原下拉、编辑、过滤、绑定和主题行为。
 

@@ -1,6 +1,6 @@
 # Layout Geometry Audit Implementation Plan
 
-> **For agentic workers:** Use `superpowers:executing-plans` for the remaining work. Keep changes uncommitted for user review.
+> Follow the remaining steps. Keep changes uncommitted for user review.
 
 **Goal:** Repair the shared layout contract behind disappearing zoomed Watermarks and verified related geometry defects.
 

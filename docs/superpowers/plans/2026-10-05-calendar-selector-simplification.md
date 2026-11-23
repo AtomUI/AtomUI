@@ -1,6 +1,6 @@
 # Calendar Cell Selector Simplification Plan
 
-> **For agentic workers:** Use superpowers:executing-plans task by task. Do not create a commit without explicit user authorization.
+> Execute the plan task by task. Do not create a commit without explicit user authorization.
 
 **Goal:** Simplify the Calendar DateViewerCell theme without changing rendered states or interaction, and assess whether selector cost changes in realistic calendar scenarios.
 

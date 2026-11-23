@@ -1,6 +1,6 @@
 # Retire the InputTextPresenter compatibility layer
 
-> Execute inline with the executing-plans skill. User approved implementation on 2026-11-05.
+> Execute this plan in the current session. User approved implementation on 2026-11-05.
 
 **Goal:** Remove the obsolete internal selection-cache workaround while preserving input behavior and public contracts.
 **Architecture:** Six AXAML templates use Avalonia TextPresenter directly. OTP uses the existing TextPresenter contract. No replacement hook, binding or subscription.

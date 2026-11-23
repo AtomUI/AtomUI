@@ -1,6 +1,6 @@
 # 弹层基类 Motion 配置统一实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans inline; one fresh whole-change review after implementation. No per-task implementer delegation.
+> Implement in this session without per-task delegation. Request one independent review of the full change after implementation.
 
 **Goal:** 将正式文档中的族基类 OpenMotion/CloseMotion 和统一禁用策略落地，删除预设/镜像开关，证明可回收性与同条件成本后暂存供审查。
 

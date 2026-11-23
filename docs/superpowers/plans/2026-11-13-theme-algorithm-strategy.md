@@ -1,6 +1,6 @@
 # 主题算法策略化 实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让主题算法成为可注册、可设置的策略，算法可以计算全部 Token（Map 必写，Alias 与控件 Token 可选改写，Ant 公式兜底），并用 PrimeNG 六个预制算法重做 PrimeNG 预设包，全程不影响性能。
 

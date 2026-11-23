@@ -1,6 +1,6 @@
 # AtomUI Startup Algorithm Optimization Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. No commits are authorized.
+> Execute the plan task by task. No commits are authorized.
 
 **Goal:** Reduce real empty-window startup cost by removing evidenced redundant work while preserving every registration, theme, localization, resource and lifecycle contract.
 

@@ -1,6 +1,6 @@
 # Test Suite Value Cleanup — Fourth Pass Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task by task.
+> Execute the plan task by task.
 
 **Goal:** Aggressively remove tests whose failure-detection capability is already fully supplied by approved Gallery snapshots or package/API validation.
 

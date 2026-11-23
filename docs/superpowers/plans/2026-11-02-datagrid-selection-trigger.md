@@ -1,6 +1,6 @@
 # DataGrid Selection Trigger Implementation Plan
 
-> **For agentic workers:** Use `superpowers:executing-plans` and TDD for the task below.
+> Use a failing test to verify each behavior change before implementing the fix.
 
 **Goal:** 对齐选择框驱动的表格左键选择行为，避免误点行或选择列空白导致已有多选丢失。
 

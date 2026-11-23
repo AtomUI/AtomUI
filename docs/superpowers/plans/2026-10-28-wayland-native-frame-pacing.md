@@ -1,6 +1,6 @@
 # Wayland Native Frame Pacing Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans. Steps use checkbox syntax for tracking.
+> Steps use checkbox syntax for tracking.
 
 **Goal:** Implement and measure a bounded prepared-frame adapter for the current native Wayland EGL backend.
 

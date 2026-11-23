@@ -1,6 +1,6 @@
 # Semantic Part 第四批 Popup 与独立宿主实施计划
 
-> **供智能体执行者使用：** 使用 `superpowers:executing-plans` 在当前会话中执行，不得使用 subagent。每个控件修改源码前都必须明确 Visual root ownership 并获得批准。
+> 在当前会话中执行计划，不得使用子代理。每个控件修改源码前都必须明确 Visual root ownership 并获得批准。
 
 **目标：** 为 10 个具有 Ant Design 6.6.0 稳定发布源码公开 Semantic DOM 对应 API 的 Popup、Overlay 和服务宿主控件家族建立 Semantic Part 契约，并覆盖完整生命周期与多 root 隔离。2026-09-15 用户指令新增任务 11 `SplitButton`（原排除判定撤销），随本计划执行。
 

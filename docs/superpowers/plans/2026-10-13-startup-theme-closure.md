@@ -1,6 +1,6 @@
 # 首阶段主题依赖补齐实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans. Steps use checkbox syntax for tracking.
+> Steps use checkbox syntax for tracking.
 
 **Goal:** 修复分阶段启动中 Linux/Windows 标题栏、AddOn 及同类首阶段控件的主题遗漏。
 **Architecture:** 保留现有 TypeMap 分区与 opt-in 启动机制，补齐 Desktop 关键集的递归模板依赖。复用真实包注册测试保护首阶段资源，并以临时 Headless 测试验证首阶段可见树及第二阶段演化。

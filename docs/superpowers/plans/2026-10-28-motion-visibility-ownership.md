@@ -1,6 +1,6 @@
 # Motion Visibility Ownership Implementation Plan
 
-> REQUIRED SUB-SKILL: superpowers:executing-plans; inline implementation, one fresh final reviewer.
+> Implement in this session and request one independent review of the full change.
 
 **Goal:** Fix all confirmed preparation/reentry/cleanup defects within MotionVisibility against79af86f4e.
 **Spec:** ../specs/2026-10-28-motion-visibility-ownership-design.md

@@ -1,6 +1,6 @@
 # 主题定制精确生效与设计语言模拟 实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 AtomUI 声称可定制的每个 Token 设置后都在渲染层精确生效，并以 NuGet 主题包（PrimeNG、Shadcn、Bootstrap、Material）证明只靠主题定义就能模拟其他设计语言的大致观感。
 

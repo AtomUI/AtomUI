@@ -5,7 +5,7 @@ custom Avalonia builds are prohibited by the user. The remaining items below
 belong to historical experiments and do not authorize implementation. Current
 evidence and acceptance gaps: ../progress/2026-10-29-overlay-dialog-mask-performance-investigation.md.
 
-> Execute inline with superpowers:executing-plans. The user has authorized continuing the existing investigation; do not commit or push.
+> Continue the authorized investigation in this session. Leave local changes uncommitted and unpushed.
 
 **Goal:** Find and repair the measured cause of missed presentations during the real Gallery Overlay Dialog mask fade.
 

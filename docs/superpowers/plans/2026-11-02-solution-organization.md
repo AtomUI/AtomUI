@@ -1,6 +1,6 @@
 # Solution Organization Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 落实 Issue #527，减少解决方案树的平铺项目，并集中 Gallery 入口。
 

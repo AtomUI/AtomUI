@@ -1,6 +1,6 @@
 # 设计语言与品牌色分离 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 主题定义显式声明所属设计语言、品牌色能力（`Seed`/`Fixed`）与变体（外观、密度）；Core 据此解析选择；Gallery 让每种设计语言独立记住品牌色，`Fixed` 语言禁用选色。
 

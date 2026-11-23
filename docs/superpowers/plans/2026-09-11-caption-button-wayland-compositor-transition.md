@@ -1,6 +1,6 @@
 # Caption Button Wayland Compositor Transition Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move generic caption-button background interpolation from Wayland-throttled UI-thread transitions to a premultiplied-alpha compositor animation.
 

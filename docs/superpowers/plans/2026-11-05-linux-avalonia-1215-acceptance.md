@@ -1,6 +1,6 @@
 # Linux Avalonia 12.1.5 验收与菜单淡出修复计划
 
-> **For agentic workers:** 使用 superpowers:executing-plans 在当前分支逐项执行；不提交、不创建新 worktree。
+> 在当前分支逐项执行，不提交、不创建新 worktree。
 
 **Goal:** 验证升级在 Linux Wayland 的实际表现，复现并修复用户追加指出的菜单底色与菜单项淡出不一致。
 
@@ -57,7 +57,7 @@
 
 ## 追加：源码、动效时钟与性能评估
 
-使用 writing-plans / executing-plans 继续当前验收，仅研究和临时测量，不修改产品源码或依赖版本，不提交。
+按本计划继续当前验收，仅研究和临时测量，不修改产品源码或依赖版本，不提交。
 
 - [x] 重新核对上游 339 文件完整清单，逐段阅读 Dispatcher、渲染/合成、Wayland、Skia 与布局/文本性能相关生产 diff；将“未变更”和“没有影响”分开。
 - [x] 推导 Dispatcher 毫秒时间轴、GlobalClock 相对时间、Wayland CLOCK_MONOTONIC 纳秒呈现时间的转换关系，核对删除旧 hook 的必要性及剩余风险。

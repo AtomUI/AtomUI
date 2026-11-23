@@ -1,6 +1,6 @@
 # AXAML 名称绑定解析修复计划
 
-> **For agentic workers:** 使用 superpowers:executing-plans 在当前目录执行。用户已要求全部修复；不另行请求执行方式确认。
+> 在当前目录执行。用户已要求全部修复，执行方式无需另行确认。
 
 **Goal:** 修复截图及仓库内同源 AXAML 名称绑定解析错误，保持模板与绑定行为。
 

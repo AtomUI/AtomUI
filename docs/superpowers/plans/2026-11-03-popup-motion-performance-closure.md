@@ -1,6 +1,6 @@
 # 弹层动效性能与原生验证闭环
 
-用户授权：解决上一轮披露的新增分配、探针提前关闭及性能证据不可比。沿用 feature/motion 当前目录，保留124个暂存路径，不创建分支/worktree，不commit。采用systematic-debugging、TDD、executing-plans与性能/资源生命周期技能；按项目规则只保留文字记录、临时测试验证后删除。
+用户授权：解决上一轮披露的新增分配、探针提前关闭及性能证据不可比。沿用 feature/motion 当前目录，保留124个暂存路径，不创建分支/worktree，不commit。按项目规范定位根因，先复现失败，再验证修复，并核对性能与资源生命周期；按项目规则只保留文字记录、临时测试验证后删除。
 
 正式功能合同沿用 [popup-motion](../../architecture/systems/motion/popup-motion.md)，上一轮证据见 [记录](../progress/2026-11-03-popup-motion-unification.md)。
 

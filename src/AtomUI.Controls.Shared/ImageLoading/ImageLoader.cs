@@ -61,8 +61,11 @@ internal sealed class ImageLoader : IImageLoader, IAtomUIOwnedService
             _rootCancellation.Token);
         try
         {
+            // Shared work captures the normalized request. Keep this caller's observer with its own waiter so
+            // canceling the waiter releases the observer even while the transport continues for another caller.
             var result = await _pipeline.LoadAsync(
                 normalized,
+                normalized.Timing.Wrap(request.Progress),
                 linked.Token).ConfigureAwait(false);
             if (result.Origin is ImageLoadOrigin.DecodedMemory or ImageLoadOrigin.EncodedMemory or
                 ImageLoadOrigin.Persistent || result.SourceValidation == ImageSourceValidation.Revalidated)

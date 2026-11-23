@@ -54,7 +54,6 @@ internal sealed record NormalizedImageRequest(
     int DecodePixelWidth,
     int DecodePixelHeight,
     bool DecodeToCover,
-    IProgress<ImageLoadProgress>? Progress,
     ImageLoadTimingTracker Timing,
     ImageSourceKey SourceKey,
     ImageSourceOperationKey SourceOperationKey,
@@ -111,7 +110,6 @@ internal static class ImageCacheKey
 
         var partitionHash = partition is null ? string.Empty : Hash(partition);
         var timing = new ImageLoadTimingTracker();
-        var progress = timing.Wrap(request.Progress);
         var headerHash = HashHeaders(headers);
         var shareScope = privateUnpartitioned ? Guid.NewGuid().ToString("N") : string.Empty;
         var sourceIdentity = string.Join(
@@ -141,7 +139,6 @@ internal static class ImageCacheKey
             request.DecodePixelWidth,
             request.DecodePixelHeight,
             request.DecodeToCover && request.DecodePixelWidth > 0 && request.DecodePixelHeight > 0,
-            progress,
             timing,
             sourceKey,
             new ImageSourceOperationKey(sourceKey, cacheRead, cacheStorage, shareScope),

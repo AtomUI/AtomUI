@@ -4,27 +4,39 @@ using AtomUI.Startup.Data;
 
 namespace AtomUI.Registration;
 
-/// <summary>Build-linked immutable startup contracts; carries no control CLR references.</summary>
+/// <summary>Build-linked immutable startup metadata.</summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class StartupImage
 {
-    private readonly Dictionary<string, string> _packages;
+    private readonly Dictionary<string, StartupPackageProof> _packages;
     private readonly Dictionary<string, string> _resourceOwners;
     // "s:" owners keyed by the bare resource name, so string key misses check ownership without concatenation.
     private readonly Dictionary<string, string> _stringResourceOwners = new(StringComparer.Ordinal);
 
-    public StartupImage(int version, ulong stamp, IReadOnlyList<KeyValuePair<string, string>> packages,
+    public StartupImage(uint formatId, ulong stamp, IReadOnlyList<StartupPackageProof> packages,
         IReadOnlyList<string> controlOrder, IEnumerable<KeyValuePair<string, string>>? resourceOwners = null,
         IEnumerable<string>? verifiedLanguages = null, IEnumerable<KeyValuePair<string, string>>? languageModules = null)
     {
-        if (version != StartupManifestCodec.Version)
+        if (formatId != StartupImageFormat.Id)
         {
             throw new NotSupportedException("Unsupported application startup image; rebuild the application.");
         }
         ArgumentNullException.ThrowIfNull(packages);
         ArgumentNullException.ThrowIfNull(controlOrder);
         Stamp = stamp;
-        _packages = packages.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        _packages = new Dictionary<string, StartupPackageProof>(packages.Count, StringComparer.Ordinal);
+        foreach (var proof in packages)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(proof.PackageId);
+            if (proof.ManifestFormatId != StartupManifestCodec.Version ||
+                proof.Encoding != StartupPackageProof.DirectText ||
+                proof.OriginalAsciiLength == 0 || proof.OriginalAsciiLength > StartupManifestCodec.MaximumBase64Length ||
+                proof.Payload is null || proof.OriginalAsciiLength != proof.Payload.Length)
+            {
+                throw new InvalidDataException($"Invalid startup package proof for '{proof.PackageId}'; rebuild the application.");
+            }
+            _packages.Add(proof.PackageId, proof);
+        }
         ControlOrder = controlOrder.ToArray();
         _resourceOwners = resourceOwners?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) ?? new(StringComparer.Ordinal);
         foreach (var (key, packageId) in _resourceOwners)
@@ -48,8 +60,8 @@ public sealed class StartupImage
 
     internal StartupPackageData GetPackage(ControlPackageDefinition definition)
     {
-        if (!_packages.TryGetValue(definition.Id, out var data) ||
-            !string.Equals(data, definition.EncodedManifest, StringComparison.Ordinal))
+        if (!_packages.TryGetValue(definition.Id, out var proof) ||
+            !string.Equals(proof.Payload, definition.EncodedManifest, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("Control package '" + definition.Id +
                 "' does not match the linked startup image; rebuild the application or use runtime package loading.");
@@ -58,6 +70,14 @@ public sealed class StartupImage
         // snapshots or callbacks are cached in the image or across application instances.
         return definition.Data;
     }
+}
+
+/// <summary>Exact build-time package evidence for the generated startup image.</summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public readonly record struct StartupPackageProof(
+    string PackageId, uint ManifestFormatId, uint OriginalAsciiLength, byte Encoding, string Payload)
+{
+    internal const byte DirectText = 0;
 }
 
 [EditorBrowsable(EditorBrowsableState.Never)]

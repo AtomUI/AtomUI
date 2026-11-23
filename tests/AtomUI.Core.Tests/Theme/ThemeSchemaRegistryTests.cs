@@ -239,7 +239,7 @@ public class ThemeSchemaRegistryTests
         var index = StartupPackageIndex.Create([]);
         new ThemeSchemaRegistry(globals, index, withPackage).Revision
             .ShouldNotBe(new ThemeSchemaRegistry(globals, index, core).Revision);
-        var stamped = StartupPackageIndex.Create([], new StartupImage(StartupManifestCodec.Version, 0x1234UL, [], []));
+        var stamped = StartupPackageIndex.Create([], new StartupImage(StartupImageFormat.Id, 0x1234UL, [], []));
         new ThemeSchemaRegistry(globals, stamped, withPackage).Revision
             .ShouldNotBe(new ThemeSchemaRegistry(globals, stamped, core).Revision);
         // Core-only registries keep their existing revision values.

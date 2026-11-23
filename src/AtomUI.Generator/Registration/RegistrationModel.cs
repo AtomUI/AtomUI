@@ -56,7 +56,6 @@ internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, s
     RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0)
 {
     internal bool SupportsResourceKeys { get; init; }
-    internal bool SupportsStartupManifest { get; init; }
     internal bool HasLanguageModule { get; init; }
 }
 

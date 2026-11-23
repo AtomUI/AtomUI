@@ -499,7 +499,8 @@ public partial class TypeMapIntegrationTests
                 internal static partial class PackageMetadata
                 {
                     internal static void RegisterManualValidation(AtomUI.IAtomUIBuilder builder) =>
-                        AtomUI.Registration.ControlRegistrationRuntime.RegisterPackage(builder, "Demo.Controls", static () => new Demo.Provider(), Collect);
+                        AtomUI.Registration.ControlRegistrationRuntime.RegisterPackage(builder, "Demo.Controls",
+                            static () => new Demo.Provider(), static fragments => fragments.AddFragment(null!));
                 }
             }
             """;
@@ -511,11 +512,15 @@ public partial class TypeMapIntegrationTests
             @"(?<=CompiledResourceKeyFingerprintPrefix\), )0x[0-9A-F]+UL",
             "0x0UL");
         invalidRegistration.ShouldNotBe(registration.ToString());
+        var proxy = registration.GetRoot(TestContext.Current.CancellationToken).DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax>()
+            .Single(type => type.Identifier.ValueText.StartsWith("ControlFragment_", StringComparison.Ordinal)).Identifier.ValueText;
         var trees = generated.Select(tree => tree == registration
             ? CSharpSyntaxTree.ParseText(invalidRegistration, (CSharpParseOptions)tree.Options, tree.FilePath)
             : tree);
         using var stream = new MemoryStream();
-        var emit = Compilation(source, [asset]).AddSyntaxTrees(trees).Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
+        var emit = Compilation(source.Replace("AddFragment(null!)", $"AddFragment(new {proxy}())", StringComparison.Ordinal), [asset])
+            .AddSyntaxTrees(trees).Emit(stream, cancellationToken: TestContext.Current.CancellationToken);
         emit.Diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
         LoadCore();
         var assembly = Assembly.Load(stream.ToArray());

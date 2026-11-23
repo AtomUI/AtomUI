@@ -13,7 +13,7 @@ public class StartupPackageIndexDisabledPackageTests
     [Fact]
     public void Resources_Owned_By_A_Disabled_Package_Fail_Explicitly_By_String_And_Type_Key()
     {
-        var image = new StartupImage(StartupManifestCodec.Version, 0, [], [],
+        var image = new StartupImage(StartupImageFormat.Id, 0, [], [],
         [
             new("s:Fixture.DisabledResource", "Fixture.Disabled"),
             new(StartupPackageIndex.ResourceKey(typeof(Border))!, "Fixture.Disabled")

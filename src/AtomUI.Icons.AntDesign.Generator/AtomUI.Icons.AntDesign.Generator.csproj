@@ -9,8 +9,4 @@
         <ProjectReference Include="../AtomUI.Icons.Shared/AtomUI.Icons.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="Assets\.DS_Store" />
-    </ItemGroup>
-
 </Project>

@@ -120,7 +120,8 @@ NoOp、Superseded 和 CommitCore 前失败的事务不开启窗口。局部作�
 
 `Reflection/GlobalClockReflection` 按名称读取 `Avalonia.Media.MediaContext+MediaContextClock` 的
 `_observers`（`List<IObserver<TimeSpan>>`）和 `_currentAnimationTimestamp`，并以 `DynamicDependency` 声明保留。
-成员缺失、类型不符或全局时钟未注册时记录 Warning 并退化为不收束。
+每个字段在同一个延迟工厂内解析常量类型名并查找成员，裁剪器可沿该类型值分析字段访问。工厂缓存 `FieldInfo`。
+全局时钟服务未注册时跳过收束。首次读取观察者列表遇到成员缺失或类型不符时，记录 Warning 并让动画正常播放。
 
 升级 Avalonia 时逐项核对：
 

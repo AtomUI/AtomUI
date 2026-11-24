@@ -8,6 +8,8 @@ internal static class GlobalClockReflection
 {
     #region 反射信息定义
 
+    private const string MediaContextClockName = "Avalonia.Media.MediaContext+MediaContextClock";
+
     // IGlobalClock is internal; Animation instances resolve it from the locator the same way.
     // The constant assembly-qualified name keeps the lookup analyzable by the trimmer.
     [DynamicDependency(DynamicallyAccessedMemberTypes.Interfaces, "Avalonia.Animation.IGlobalClock", "Avalonia.Base")]
@@ -15,25 +17,26 @@ internal static class GlobalClockReflection
         Type.GetType("Avalonia.Animation.IGlobalClock, Avalonia.Base")
         ?? throw new TypeLoadException("Avalonia.Animation.IGlobalClock was not found."));
 
-    // MediaContext's clock: every transition, keyframe animation and motion frame driver is one of its observers,
-    // and it records the time of the frame it last pulsed.
+    // Resolve the known type and look up the named field in the same factory so the trimmer can track the type.
+    // Cache each FieldInfo separately to keep lookup deferred until the field is used.
     [DynamicDependency("_observers", "Avalonia.Media.MediaContext.MediaContextClock", "Avalonia.Base")]
+    private static readonly Lazy<FieldInfo> ObserversFieldInfo = new(static () =>
+    {
+        var type = Type.GetType(MediaContextClockName + ", Avalonia.Base")
+                   ?? throw new TypeLoadException($"{MediaContextClockName} was not found.");
+        return FixedMemberReflection.RequireField(
+            type.GetField("_observers", BindingFlags.Instance | BindingFlags.NonPublic), type, "_observers");
+    });
+
     [DynamicDependency("_currentAnimationTimestamp", "Avalonia.Media.MediaContext.MediaContextClock", "Avalonia.Base")]
-    private static readonly Lazy<Type> MediaContextClockType = new(() =>
-        Type.GetType("Avalonia.Media.MediaContext+MediaContextClock, Avalonia.Base")
-        ?? throw new TypeLoadException("Avalonia.Media.MediaContext+MediaContextClock was not found."));
-
-    private static readonly Lazy<FieldInfo> ObserversFieldInfo = new(() =>
-        FixedMemberReflection.RequireField(
-            MediaContextClockType.Value.GetField("_observers", BindingFlags.Instance | BindingFlags.NonPublic),
-            MediaContextClockType.Value,
-            "_observers"));
-
-    private static readonly Lazy<FieldInfo> CurrentTimestampFieldInfo = new(() =>
-        FixedMemberReflection.RequireField(
-            MediaContextClockType.Value.GetField("_currentAnimationTimestamp", BindingFlags.Instance | BindingFlags.NonPublic),
-            MediaContextClockType.Value,
-            "_currentAnimationTimestamp"));
+    private static readonly Lazy<FieldInfo> CurrentTimestampFieldInfo = new(static () =>
+    {
+        var type = Type.GetType(MediaContextClockName + ", Avalonia.Base")
+                   ?? throw new TypeLoadException($"{MediaContextClockName} was not found.");
+        return FixedMemberReflection.RequireField(
+            type.GetField("_currentAnimationTimestamp", BindingFlags.Instance | BindingFlags.NonPublic),
+            type, "_currentAnimationTimestamp");
+    });
 
     #endregion
 

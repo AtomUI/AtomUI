@@ -75,12 +75,13 @@ public class SplitButtonSemanticPartTests
             .Where(static element => element.Name.LocalName == "ControlTemplate").ToArray();
         themeTemplates.Length.ShouldBe(1);
 
+        XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
         var primaryButton = themeTemplates[0].Descendants()
-            .Single(static element => (string?)element.Attribute("Name") == "PART_PrimaryButton");
+            .Single(element => (string?)(element.Attribute(xaml + "Name") ?? element.Attribute("Name")) == "PART_PrimaryButton");
         primaryButton.Attribute("Classes.semantic-primary").ShouldNotBeNull();
 
         var secondaryButton = themeTemplates[0].Descendants()
-            .Single(static element => (string?)element.Attribute("Name") == "PART_SecondaryButton");
+            .Single(element => (string?)(element.Attribute(xaml + "Name") ?? element.Attribute("Name")) == "PART_SecondaryButton");
         secondaryButton.Attribute("Classes.semantic-secondary").ShouldNotBeNull();
     }
 

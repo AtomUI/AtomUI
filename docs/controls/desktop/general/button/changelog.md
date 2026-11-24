@@ -8,6 +8,11 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-24
+
+- API
+  - `Button.ContentPadding` 成为可设置的标准属性，SubmitButton 和 ResetButton 继承该入口并使用各自的 Token 默认值。
+
 ## 2026-11-22
 
 - Token
@@ -21,7 +26,7 @@
 - Token
   - `ButtonThemeRecipe` 拆为相互独立的开关：`UsesRecipeVariants`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`；Button 新增对应的内部直接属性 `DisablesWithOpacity`、`ThemeDisabledOpacity`、`PressMoves`、`UnderlinesLinkOnHover`，主题选择器按开关生效。无 recipe 的 Ant Design 与既有 Shadcn recipe 行为不变；PrimeNG recipe 关闭变体配方与按压位移，禁用透明度 0.6，链接悬停下划线。
 - Performance
-  - 去掉 `ButtonThemeInputs` 的 10 个可继承主题输入。Button、SubmitButton、ResetButton 的主题把 Own Token 赋给按钮自身的
+  - 去掉按钮的 10 个可继承中转属性。Button、SubmitButton、ResetButton 的主题把 Own Token 赋给按钮自身的
     普通属性，按钮主题用编译绑定和 `TemplateBinding` 读取，值不再沿按钮内容继承。渲染不变，每个按钮分配约少 13 KB（约 5%）。
 
 - 改善 Shadcn 暗色 Button 的链接文字、危险描边与虚线变体在普通、悬停和按下状态的可读性。

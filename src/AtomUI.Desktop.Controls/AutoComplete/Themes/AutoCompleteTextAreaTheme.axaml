@@ -12,7 +12,6 @@
             <Setter Property="MaxWidth" Value="{atom:AutoCompleteTextAreaTokenResource MaxPopupWidth}" />
         </Style>
 
-
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>

@@ -4,27 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ContextMenu}" TargetType="atom:ContextMenu" x:DataType="atom:ContextMenu">
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding" Value="{atom:ContextMenuTokenResource MenuPopupContentPadding}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth" Value="{atom:ContextMenuTokenResource MenuPopupMinWidth}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth" Value="{atom:ContextMenuTokenResource MenuPopupMaxWidth}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupBgColor" Value="{atom:ContextMenuTokenResource MenuPopupBgColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemColor" Value="{atom:ContextMenuTokenResource ItemColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeKeyGestureColor" Value="{atom:ContextMenuTokenResource KeyGestureColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemMargin" Value="{atom:ContextMenuTokenResource ItemMargin}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHoverColor" Value="{atom:ContextMenuTokenResource ItemHoverColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemDisabledColor" Value="{atom:ContextMenuTokenResource ItemDisabledColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeDangerItemColor" Value="{atom:ContextMenuTokenResource DangerItemColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeDangerItemHoverColor" Value="{atom:ContextMenuTokenResource DangerItemHoverColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemBg" Value="{atom:ContextMenuTokenResource ItemBg}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHoverBg" Value="{atom:ContextMenuTokenResource ItemHoverBg}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHeight" Value="{atom:ContextMenuTokenResource ItemHeight}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemIconSize" Value="{atom:ContextMenuTokenResource ItemIconSize}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemIconMarginInlineEnd" Value="{atom:ContextMenuTokenResource ItemIconMarginInlineEnd}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeGroupTitlePadding" Value="{atom:ContextMenuTokenResource GroupTitlePadding}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemBorderRadius" Value="{atom:ContextMenuTokenResource ItemBorderRadius}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemPaddingInline" Value="{atom:ContextMenuTokenResource ItemPaddingInline}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeSeparatorItemHeight" Value="{atom:ContextMenuTokenResource SeparatorItemHeight}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupShadows" Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupContentPadding" Value="{atom:ContextMenuTokenResource MenuPopupContentPadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMinWidth" Value="{atom:ContextMenuTokenResource MenuPopupMinWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMaxWidth" Value="{atom:ContextMenuTokenResource MenuPopupMaxWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupBackground" Value="{atom:ContextMenuTokenResource MenuPopupBgColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemForeground" Value="{atom:ContextMenuTokenResource ItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.KeyGestureForeground" Value="{atom:ContextMenuTokenResource KeyGestureColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemMargin" Value="{atom:ContextMenuTokenResource ItemMargin}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverForeground" Value="{atom:ContextMenuTokenResource ItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemDisabledForeground" Value="{atom:ContextMenuTokenResource ItemDisabledColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemForeground" Value="{atom:ContextMenuTokenResource DangerItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemHoverForeground" Value="{atom:ContextMenuTokenResource DangerItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemBackground" Value="{atom:ContextMenuTokenResource ItemBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverBackground" Value="{atom:ContextMenuTokenResource ItemHoverBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHeight" Value="{atom:ContextMenuTokenResource ItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconSize" Value="{atom:ContextMenuTokenResource ItemIconSize}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconEndMargin" Value="{atom:ContextMenuTokenResource ItemIconMarginInlineEnd}" />
+        <Setter Property="atom:MenuPopupScrollHost.GroupTitlePadding" Value="{atom:ContextMenuTokenResource GroupTitlePadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemCornerRadius" Value="{atom:ContextMenuTokenResource ItemBorderRadius}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemInlinePadding" Value="{atom:ContextMenuTokenResource ItemPaddingInline}" />
+        <Setter Property="atom:MenuPopupScrollHost.SeparatorItemHeight" Value="{atom:ContextMenuTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupShadows" Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
 
         <Setter Property="Template">
             <ControlTemplate>
@@ -54,11 +54,11 @@
         <Setter Property="IsMotionEnabled" Value="{atom:ContextMenuTokenResource EnableMotion}" />
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
         <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
-        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding)}" />
-        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
-        <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
-        <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
-        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemHeight)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupContentPadding)}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
+        <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMinWidth)}" />
+        <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMaxWidth)}" />
+        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
         <Setter Property="DisplayPageSize" Value="8" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="MotionDuration" Value="{atom:ContextMenuTokenResource MotionDurationMid}"/>

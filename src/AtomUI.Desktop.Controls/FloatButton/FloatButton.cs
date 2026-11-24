@@ -8,12 +8,12 @@ using ToolTipControl = AtomUI.Desktop.Controls.ToolTip;
 
 public partial class FloatButton : AbstractFloatButton
 {
-    private FloatButtonThemeInputs? _themeInputs;
+    private FloatButtonAppearanceBinding? _themeInputs;
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        _themeInputs = new FloatButtonThemeInputs(this);
+        _themeInputs = new FloatButtonAppearanceBinding(this);
     }
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

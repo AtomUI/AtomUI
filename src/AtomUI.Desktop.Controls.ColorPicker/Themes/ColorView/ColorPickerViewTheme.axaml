@@ -5,29 +5,29 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorPickerView}" TargetType="atom:ColorPickerView">
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerWidth}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorSpectrumHeight" Value="{atom:ColorPickerViewTokenResource ColorSpectrumHeight}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow" Value="{atom:ColorPickerViewTokenResource ColorPickerInsetShadow}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSizeLG}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerLightColor}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerDarkColor}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerSliderSize" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerSliderTrackSize" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderTrackSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerSliderThumbSize" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderThumbSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerPreviewSize" Value="{atom:ColorPickerViewTokenResource ColorPickerPreviewSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerAlphaInputWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerAlphaInputWidth}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerInputNumberHandleWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerInputNumberHandleWidth}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorSize" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetColorSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerPresetPanelWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetPanelWidth}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeCheckedMarkSize" Value="{atom:ColorPickerViewTokenResource CheckedMarkSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorPickerPresetColorGroupPadding" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetColorGroupPadding}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeSliderContainerMargin" Value="{atom:ColorPickerViewTokenResource SliderContainerMargin}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows" Value="{atom:ColorPickerViewTokenResource ColorBlockInnerShadows}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTransparentBgSize" Value="{atom:ColorPickerViewTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumMinWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHeight" Value="{atom:ColorPickerViewTokenResource ColorSpectrumHeight}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.InsetShadows" Value="{atom:ColorPickerViewTokenResource ColorPickerInsetShadow}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.OuterSpectrumHandleSize" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSizeLG}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleSize" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleLightBrush" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerLightColor}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleDarkBrush" Value="{atom:ColorPickerViewTokenResource ColorPickerHandlerDarkColor}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderHeight" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderSize}" />
+        <Setter Property="SliderTrackHeight" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderTrackSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderThumbSize" Value="{atom:ColorPickerViewTokenResource ColorPickerSliderThumbSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PreviewSize" Value="{atom:ColorPickerViewTokenResource ColorPickerPreviewSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.AlphaInputWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerAlphaInputWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.NumberInputSpinnerHandleWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerInputNumberHandleWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetColorSize" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetColorSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetPanelWidth" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetPanelWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckedMarkSize" Value="{atom:ColorPickerViewTokenResource CheckedMarkSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetColorGroupPadding" Value="{atom:ColorPickerViewTokenResource ColorPickerPresetColorGroupPadding}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderContainerMargin" Value="{atom:ColorPickerViewTokenResource SliderContainerMargin}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.ColorBlockInnerShadows" Value="{atom:ColorPickerViewTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckerboardTileSize" Value="{atom:ColorPickerViewTokenResource TransparentBgSize}" />
 
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeEditorFontSize" Value="{atom:ColorPickerViewTokenResource EditorFontSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeSeparatorThickness" Value="{atom:ColorPickerViewTokenResource BorderThickness}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.EditorFontSize" Value="{atom:ColorPickerViewTokenResource EditorFontSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SeparatorThickness" Value="{atom:ColorPickerViewTokenResource BorderThickness}" />
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerViewTheme TargetType="atom:ColorPickerView" />
         </ControlTheme.BasedOn>

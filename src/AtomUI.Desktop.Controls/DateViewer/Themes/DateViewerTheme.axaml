@@ -5,42 +5,42 @@
               xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
               x:Class="AtomUI.Desktop.Controls.Themes.DateViewerTheme"
               x:ClassModifier="internal" TargetType="atom:DateViewer">
-    <Setter Property="tokeninputs:DateViewerCell.ThemePanelBg" Value="{atom:DateViewerTokenResource PanelBg}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellHoverBg" Value="{atom:DateViewerTokenResource CellHoverBg}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellRangeBg" Value="{atom:DateViewerTokenResource CellRangeBg}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellActiveColor"
+    <Setter Property="tokeninputs:DateViewerCell.PanelBackground" Value="{atom:DateViewerTokenResource PanelBg}" />
+    <Setter Property="tokeninputs:DateViewerCell.CellHoverBackground" Value="{atom:DateViewerTokenResource CellHoverBg}" />
+    <Setter Property="tokeninputs:DateViewerCell.RangeCellBackground" Value="{atom:DateViewerTokenResource CellRangeBg}" />
+    <Setter Property="tokeninputs:DateViewerCell.ActiveCellForeground"
             Value="{atom:DateViewerTokenResource CellActiveColor}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemePanelWidth" Value="{atom:DateViewerTokenResource PanelWidth}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellHeight" Value="{atom:DateViewerTokenResource CellHeight}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellWidth" Value="{atom:DateViewerTokenResource CellWidth}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeCellRowHeight"
+    <Setter Property="tokeninputs:DateViewerCell.PanelWidth" Value="{atom:DateViewerTokenResource PanelWidth}" />
+    <Setter Property="tokeninputs:DateViewerCell.CellHeight" Value="{atom:DateViewerTokenResource CellHeight}" />
+    <Setter Property="tokeninputs:DateViewerCell.CellWidth" Value="{atom:DateViewerTokenResource CellWidth}" />
+    <Setter Property="tokeninputs:DateViewerCell.CellRowHeight"
             Value="{atom:DateViewerTokenResource CellRowHeight}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemePeriodCellWidth"
+    <Setter Property="tokeninputs:DateViewerCell.PeriodCellWidth"
             Value="{atom:DateViewerTokenResource PeriodCellWidth}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemePeriodCellPadding"
+    <Setter Property="tokeninputs:DateViewerCell.PeriodCellPadding"
             Value="{atom:DateViewerTokenResource PeriodCellPadding}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeContentCellMinHeight"
+    <Setter Property="tokeninputs:DateViewerCell.ContentCellMinHeight"
             Value="{atom:DateViewerTokenResource ContentCellMinHeight}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeContentCellSurfaceMargin"
+    <Setter Property="tokeninputs:DateViewerCell.ContentCellSurfaceMargin"
             Value="{atom:DateViewerTokenResource ContentCellSurfaceMargin}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeContentCellTopBorderThickness"
+    <Setter Property="tokeninputs:DateViewerCell.ContentCellTopBorderThickness"
             Value="{atom:DateViewerTokenResource ContentCellTopBorderThickness}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeContentCellValueMargin"
+    <Setter Property="tokeninputs:DateViewerCell.ContentCellValueMargin"
             Value="{atom:DateViewerTokenResource ContentCellValueMargin}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeContentCellContentMargin"
+    <Setter Property="tokeninputs:DateViewerCell.ContentCellContentMargin"
             Value="{atom:DateViewerTokenResource ContentCellContentMargin}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemePanelPadding" Value="{atom:DateViewerTokenResource PanelPadding}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeHeaderHorizontalPadding"
+    <Setter Property="tokeninputs:DateViewerCell.PanelPadding" Value="{atom:DateViewerTokenResource PanelPadding}" />
+    <Setter Property="tokeninputs:DateViewerCell.HeaderHorizontalPadding"
             Value="{atom:DateViewerTokenResource HeaderHorizontalPadding}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeDateBodyPadding"
+    <Setter Property="tokeninputs:DateViewerCell.DateBodyPadding"
             Value="{atom:DateViewerTokenResource DateBodyPadding}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeHeaderBorderThickness"
+    <Setter Property="tokeninputs:DateViewerCell.HeaderBorderThickness"
             Value="{atom:DateViewerTokenResource HeaderBorderThickness}" />
-    <Setter Property="tokeninputs:DateViewerCell.ThemeWeekNumberOpacity"
+    <Setter Property="tokeninputs:DateViewerCell.WeekNumberOpacity"
             Value="{atom:DateViewerTokenResource WeekNumberOpacity}" />
 
-    <Setter Property="Background" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelBg)}" />
-    <Setter Property="Padding" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.ThemePanelPadding)}" />
+    <Setter Property="Background" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.PanelBackground)}" />
+    <Setter Property="Padding" Value="{CompiledBinding $self.(tokeninputs:DateViewerCell.PanelPadding)}" />
     <Setter Property="HorizontalAlignment" Value="Left" />
     <!-- The panels and headers take these from this viewer's Token as plain properties (no inherited inputs). -->
     <Style Selector="^ /template/ viewer|DatePanel">

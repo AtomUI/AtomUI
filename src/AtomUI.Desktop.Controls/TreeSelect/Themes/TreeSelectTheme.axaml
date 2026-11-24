@@ -4,27 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
-        <Setter Property="atom:SelectTag.ThemeMultipleItemBg" Value="{atom:TreeSelectTokenResource MultipleItemBg}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeight}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleSelectorBgDisabled" Value="{atom:TreeSelectTokenResource MultipleSelectorBgDisabled}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemColorDisabled" Value="{atom:TreeSelectTokenResource MultipleItemColorDisabled}" />
-        <Setter Property="atom:SelectTag.ThemeOptionFontSize" Value="{atom:TreeSelectTokenResource OptionFontSize}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeCompactMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndent}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePadding}" />
+        <Setter Property="atom:SelectTag.TagBackground" Value="{atom:TreeSelectTokenResource MultipleItemBg}" />
+        <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeight}" />
+        <Setter Property="atom:SelectTag.DisabledSelectorBackground" Value="{atom:TreeSelectTokenResource MultipleSelectorBgDisabled}" />
+        <Setter Property="atom:SelectTag.DisabledTagForeground" Value="{atom:TreeSelectTokenResource MultipleItemColorDisabled}" />
+        <Setter Property="atom:SelectTag.OptionFontSize" Value="{atom:TreeSelectTokenResource OptionFontSize}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePadding}" />
+        <Setter Property="atom:SelectTag.CompactMultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePaddingSM}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndent}" />
+        <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePadding}" />
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightSM}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{CompiledBinding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentSM}" />
-            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePaddingSM}" />
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightSM}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentSM}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePaddingSM}" />
         </Style>
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightLG}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:TreeSelectTokenResource MultiModePaddingLG}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentLG}" />
-            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:TreeSelectTokenResource SingleModePaddingLG}" />
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePaddingLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentLG}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePaddingLG}" />
         </Style>
 
     <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />

@@ -15,7 +15,7 @@
                                              Bottom="False" />
     </ControlTheme.Resources>
 
-    <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeTitleBarBackgroundColor)}" />
+    <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.TitleBarBackground)}" />
 
     <Style Selector="^[OsType=Linux]">
         <Setter Property="Template">
@@ -46,8 +46,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
-                                                Height="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -122,8 +122,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
-                                                Height="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -198,8 +198,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
-                                                Height="{CompiledBinding $self.(atom:ImageViewer.ThemeIconSize)}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />

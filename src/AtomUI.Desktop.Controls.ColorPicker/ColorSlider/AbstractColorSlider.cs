@@ -120,7 +120,7 @@ internal abstract class AbstractColorSlider : RangeBase
 
         if (this.IsAttachedToVisualTree() &&
             (change.Property == TransparentBgIntervalColorProperty ||
-             change.Property == ColorPickerThemeInputs.ThemeTransparentBgSizeProperty))
+             change.Property == ColorPickerAttachedProperties.CheckerboardTileSizeProperty))
         {
             UpdateTransparentBgBrush();
         }
@@ -139,7 +139,7 @@ internal abstract class AbstractColorSlider : RangeBase
         if (TransparentBgIntervalColor is ISolidColorBrush interval)
         {
             TransparentBgBrush = TransparentBgBrushUtils.Build(
-                ColorPickerThemeInputs.GetThemeTransparentBgSize(this), interval.Color);
+                ColorPickerAttachedProperties.GetCheckerboardTileSize(this), interval.Color);
         }
     }
 

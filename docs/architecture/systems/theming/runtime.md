@@ -1110,6 +1110,10 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
 `ThemeConfig.Controls[X].Tokens[全局名]` 对 X 的全部消费点生效，包括其模板内复用的共享基元；这与 Ant Design
 `components[Comp]` 的语义一致。
 
+实例可配置的视觉值由对应控件的普通 `StyledProperty` 承载。默认 ControlTheme 使用原有 Token 资源设置默认值，
+模板读取属性有效值。作用范围跨多层部件时，内部绑定或可继承附加属性负责传值。公开属性的形态、命名和验收见
+[控件属性形态与命名](../../../engineering/development/control-development-guidelines.md#控件属性形态与命名)。
+
 `OwnerTokenResource` 的机制：
 
 - 每个有 Token 身份的公开 Control 的实例都带有可继承附加属性 `ThemeScope.TokenOwner`，值是它的
@@ -1143,7 +1147,7 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
   - 注册标识回退：转发值是宿主自己的 `TokenOwner`；宿主未在任何样式树中（经放置目标打开的 Dialog、单独展示弹层 Presenter 的
     Picker）时没有注入值，转发改用宿主类型（沿基类向上）在 registry 中的注册标识，即默认 ControlTheme 本会注入的同一身份；
     部件挂接到逻辑树后重新求值。转发仍是 LocalValue 写入，释放时清除。
-- 部件自行解析 owner 输入（`Primitives/OwnerThemeInputs.BindFromOwner(part, inputsByOwner)`）：部件把 owner 的 Own Token 绑定
+- 部件自行解析 owner 输入（`Primitives/PartTokenBinder.BindFromOwner(part, inputsByOwner)`）：部件把 owner 的 Own Token 绑定
   到自身的普通（非继承）属性，按 owner 控件类型给出属性与生成的 `TokenKind` 键对照表（保持 Token 消费分析可见），只在部件已挂接
   且 `TokenOwner` 属于这些类型时绑定，挂接解除即释放。`TimeView` 用它读取四个时间/日期 picker 终端的度量，再经 `TemplateBinding`
   与 `DateTimePickerPanel` 的直接绑定传给模板部件和各行；这些值不再沿 picker 与弹层的整棵树继承。
@@ -1151,10 +1155,10 @@ TokenTransitions.Duration(X), X is a MotionDuration* Global Token
   祖先链的继承值并对差异重发。终端值只被根或一层模板部件读取时，改用终端上的普通属性加根 Setter 与 `TemplateBinding`
   （Calendar、Button），或由列表在准备容器时直接绑定（ListView 的项目颜色与边距、Pagination 导航项的尺寸与禁用色）。按节点逐值转发很多值会比继承更贵
   （TreeView 实测分配 +8%），这类场景保留继承。
-- 读取可继承主题输入的 Setter 一律使用编译绑定 `{CompiledBinding $self.(atom:Owner.ThemeX)}`；项目默认不编译绑定，
+- 读取可继承附加属性的 Setter 一律使用编译绑定 `{CompiledBinding $self.(atom:Owner.PropertyName)}`；项目默认不编译绑定，
   `{Binding $self.(...)}` 或 `RelativeSource Self` 写法会在每个元素上构造反射绑定。改写只换绑定实现，数据流与优先级不变。
-- 托管与独立部件的主题输入映射（`Primitives/OwnerThemeInputs.Bind(part, host, fallbackOwnerType, inputs)`）：共享部件的可继承
-  主题输入（`DialogSurface.Theme*`、`ImageViewer.Theme*`）由 owner 的 ControlTheme Setter 沿继承链提供；当
+- 托管与独立部件的主题输入映射（`Primitives/PartTokenBinder.Bind(part, host, fallbackOwnerType, inputs)`）：共享部件的可继承
+  附加属性（在 `DialogSurface`、`ImageViewer` 上声明）由 owner 的 ControlTheme Setter 沿继承链提供；当
   部件不在 owner 的样式树内（运行时对话框 surface、单独展示的 TimePickerPresenter、单独创建的 ImagePreviewerCover），部件按
   Token 名从自己 `TokenOwner` 的 descriptor 取 Own 键（否则 owner 有效全局键），用 `TokenResourceBinder.CreateTokenResourceBinding`
   以 Style 优先级绑定到自身——与 AXAML TokenResource 相同的解析链（元素级 Resources、作用域 Provider、发布与 variant 都生效），

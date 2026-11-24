@@ -413,8 +413,11 @@ Control。组合关系不能通过借用 Token identity 表达。
 Own Token 表达稳定 Control 语义，例如 `DefaultHoverColor`、`PrimaryShadow`、`ContentFontSizeLG`。不要使用
 `Panel1Padding`、`FrameBorderPointerOverBrush` 等模板节点名称，也不要展开颜色、variant 和状态的笛卡尔积。
 
-`IsPressed`、`IsPointerOver`、`IsLoading`、模板节点可见性和实例 API 解析结果属于运行时状态。需要通过 Selector
-参与状态映射的最终变量使用 internal StyledProperty Theme Variables，不进入 Control Token。
+`IsPressed`、`IsPointerOver`、`IsLoading`、模板节点可见性和实例 API 解析结果属于运行时状态。仅供内部 Selector
+消费的最终值使用内部 `StyledProperty` 承载。Control Token 定义稳定的设计值，由 ControlTheme 读取并提供默认值。
+
+调用方需要直接设置的实例值由控件的标准属性承载。属性形态和名称按其所有者和作用确定，见
+[控件属性形态与命名](control-development-guidelines.md#控件属性形态与命名)。
 
 ## 第三方 Control 包
 

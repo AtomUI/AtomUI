@@ -60,7 +60,7 @@
             <Setter Property="SeparatorBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
         </Style>
 
-        <Style Selector="^[Shape=Square][(atom|FloatButtonThemeInputs.HasOutline)=True] /template/ Border#OutlineFrame">
+        <Style Selector="^[Shape=Square][(atom|FloatButtonAppearanceBinding.HasOutline)=True] /template/ Border#OutlineFrame">
             <Setter Property="IsVisible" Value="True" />
             <Setter Property="BorderBrush" Value="{atom:FloatButtonTokenResource ColorBorder}" />
             <Setter Property="BorderThickness" Value="{atom:FloatButtonTokenResource BorderThickness}" />

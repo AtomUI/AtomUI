@@ -131,7 +131,7 @@
                     <gallery:ShowCaseItem.Styles>
                         <Style Selector="atom|Button.size-demo-button[SizeType=Custom]">
                             <Setter Property="Height" Value="44" />
-                            <Setter Property="Padding" Value="18,0" />
+                            <Setter Property="ContentPadding" Value="18,0" />
                             <Setter Property="FontSize" Value="15" />
                             <Setter Property="IconWidth" Value="18" />
                             <Setter Property="IconHeight" Value="18" />

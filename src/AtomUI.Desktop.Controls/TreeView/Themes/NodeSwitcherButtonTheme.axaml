@@ -50,7 +50,7 @@
         </Style>
 
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeHoverBg)}"/>
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}"/>
         </Style>
 
         <Style Selector="^:checked[IconMode=Rotation]">

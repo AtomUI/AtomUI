@@ -75,6 +75,17 @@
     </gallery:ShowCaseItem>
 
     <gallery:ShowCaseItem
+        SourceKey="color-picker-slider-track-height"
+        Title="SliderTrackHeight"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:ColorPickerViewModel">
+                <atom:ColorPickerView Value="#1677ff" SliderTrackHeight="6" HorizontalAlignment="Left" />
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
         Title="{gallery:ColorPickerShowCaseLangResource ValueBindingTitle}"
         Description="{gallery:ColorPickerShowCaseLangResource ValueBindingDescription}"
         BadgeText="v6.0.8"

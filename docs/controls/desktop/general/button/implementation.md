@@ -20,6 +20,7 @@ Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可�
 - `src/AtomUI.Desktop.Controls/GeneratedFiles/.../ButtonSemanticParts.g.cs`：生成的 Part 名称与 selector class 常量，仅用于构建检查、测试和 runtime-created 节点场景。
 - `src/AtomUI.Desktop.Controls/GeneratedFiles/.../GeneratedSemanticPartManifest.g.cs`：Button `root/icon/content` 静态 descriptor。
 - `src/AtomUI.Desktop.Controls/Buttons/ButtonToken.cs`：Button 控件 Token 定义与派生。
+- `Button.Properties.cs` 声明按钮自身的内部样式属性。`ButtonStyleValues.cs` 提供 AXAML 引用的固定样式值。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml`：Button 跨平台模板、状态 selector 和主题变量映射。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/DropdownButtonBaseTheme.axaml`、`DropdownButtonTheme.axaml`：DropdownButton 对 Button 图标尺寸和状态语义的跨平台投影。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/IconButtonTheme.axaml`：IconButton 默认主题叶子。
@@ -35,6 +36,10 @@ Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可�
 `ButtonToken` 只提供组件级语义值，不保存实例状态。主题变量由 Button internal `StyledProperty` 承载，使 AXAML
 selector 和动态资源可以消费状态结果。`Button.cs` 是颜色状态矩阵的唯一计算所有者；Button 家族 ControlTheme
 不得按平台、`ButtonType`、Danger 或 Ghost 复制一套颜色计算。
+
+Button、SubmitButton 和 ResetButton 的主题各自读取 Own Token，为公开的 `ContentPadding` 和内部的圆形、仅图标内边距
+属性提供默认值。共享样式按内容、图标和形状选择相应值并设置 `Padding`，最终布局读取 `Padding` 的有效值。属性形态和命名见
+[控件研发标准](../../../../engineering/development/control-development-guidelines.md#控件属性形态与命名)。
 
 Button 家族控件复用 Button 的动作语义。派生控件可以替换模板或增加行为入口，但不得重新解释 `ButtonType`、`Color`、`Variant`、`IsDanger`、`IsGhost`、loading 和 disabled 语义。
 

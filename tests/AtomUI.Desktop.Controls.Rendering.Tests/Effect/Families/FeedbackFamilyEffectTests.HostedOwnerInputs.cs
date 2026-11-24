@@ -45,9 +45,9 @@ public partial class FeedbackFamilyEffectTests
             {
                 ThemeScope.GetTokenOwner(surface).ShouldBe(identity);
                 var defaults = ControlTokenAccessorFor(messageBox, surface);
-                DialogSurface.GetThemeMinWidth(surface).ShouldBe(defaults.MinWidth);
-                DialogSurface.GetThemeHeaderFontSize(surface).ShouldBe(defaults.HeaderFontSize);
-                DialogSurface.GetThemeContentPadding(surface).ShouldBe(defaults.ContentPadding);
+                DialogSurface.GetDefaultViewportMinWidth(surface).ShouldBe(defaults.MinWidth);
+                DialogSurface.GetHeaderFontSize(surface).ShouldBe(defaults.HeaderFontSize);
+                DialogSurface.GetContentPadding(surface).ShouldBe(defaults.ContentPadding);
 
                 using var before = capture();
                 provider.Config = IsolationConfig(control: (identity, "HeaderBg", IsolationColor));

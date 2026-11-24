@@ -4,27 +4,27 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Select}" TargetType="atom:Select">
-        <Setter Property="atom:SelectTag.ThemeMultipleItemBg" Value="{atom:SelectTokenResource MultipleItemBg}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeight}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleSelectorBgDisabled" Value="{atom:SelectTokenResource MultipleSelectorBgDisabled}" />
-        <Setter Property="atom:SelectTag.ThemeMultipleItemColorDisabled" Value="{atom:SelectTokenResource MultipleItemColorDisabled}" />
-        <Setter Property="atom:SelectTag.ThemeOptionFontSize" Value="{atom:SelectTokenResource OptionFontSize}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:SelectTokenResource MultiModePadding}" />
-        <Setter Property="atom:SelectTag.ThemeCompactMultiModePadding" Value="{atom:SelectTokenResource MultiModePaddingSM}" />
-        <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndent}" />
-        <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePadding}" />
+        <Setter Property="atom:SelectTag.TagBackground" Value="{atom:SelectTokenResource MultipleItemBg}" />
+        <Setter Property="atom:SelectTag.TagHeight" Value="{atom:SelectTokenResource MultipleItemHeight}" />
+        <Setter Property="atom:SelectTag.DisabledSelectorBackground" Value="{atom:SelectTokenResource MultipleSelectorBgDisabled}" />
+        <Setter Property="atom:SelectTag.DisabledTagForeground" Value="{atom:SelectTokenResource MultipleItemColorDisabled}" />
+        <Setter Property="atom:SelectTag.OptionFontSize" Value="{atom:SelectTokenResource OptionFontSize}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:SelectTokenResource MultiModePadding}" />
+        <Setter Property="atom:SelectTag.CompactMultipleSelectionPadding" Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndent}" />
+        <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:SelectTokenResource SingleModePadding}" />
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{CompiledBinding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
-            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:SelectTokenResource SingleModePaddingSM}" />
         </Style>
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="atom:SelectTag.ThemeMultipleItemHeight" Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePadding" Value="{atom:SelectTokenResource MultiModePaddingLG}" />
-            <Setter Property="atom:SelectTag.ThemeMultiModePrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
-            <Setter Property="atom:SelectTag.ThemeSingleModePadding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:SelectTokenResource SingleModePaddingLG}" />
         </Style>
 
         <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />

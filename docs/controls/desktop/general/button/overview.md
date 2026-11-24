@@ -133,6 +133,14 @@ Button 支持以下 Semantic Part：
 [Button Semantic Part 契约](semantic-part.md)。`PART_WaveSpirit`、`ShadowsFrame`、`Frame` 和
 `PART_RootLayout` 属于 Button Composition Model，不是公开 Semantic Part。
 
+**普通内容内边距。** `ContentPadding` 可通过实例值、绑定或样式设置，由普通内容状态的默认样式应用到 `Padding`。
+`SubmitButton` 和 `ResetButton` 继承该属性，并各自提供 Token 默认值。圆形、仅图标和显式 `Padding` 分别遵循现有优先级。
+清除 `ContentPadding` 的覆盖值后，恢复当前尺寸和主题的默认值。
+
+```xml
+<atom:Button Content="Action" ContentPadding="18,4" />
+```
+
 ## 4. 行为与状态模型
 
 Button 的交互优先级：

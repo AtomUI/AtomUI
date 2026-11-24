@@ -5,11 +5,11 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorPicker}" TargetType="atom:ColorPicker">
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockDisabledOpacity" Value="{atom:ColorPickerTokenResource ColorBlockDisabledOpacity}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows" Value="{atom:ColorPickerTokenResource ColorBlockInnerShadows}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTransparentBgSize" Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerPadding" Value="{atom:ColorPickerTokenResource TriggerPadding}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerTextMargin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.DisabledColorBlockOpacity" Value="{atom:ColorPickerTokenResource ColorBlockDisabledOpacity}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.ColorBlockInnerShadows" Value="{atom:ColorPickerTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckerboardTileSize" Value="{atom:ColorPickerTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerPadding" Value="{atom:ColorPickerTokenResource TriggerPadding}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerTextMargin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
 
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerTheme TargetType="atom:ColorPicker" />

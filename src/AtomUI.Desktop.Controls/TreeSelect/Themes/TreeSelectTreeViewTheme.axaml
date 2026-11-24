@@ -6,15 +6,15 @@
         <ControlTheme.BasedOn>
             <atom:TreeViewTheme TargetType="atom:TreeSelectTreeView" />
         </ControlTheme.BasedOn>
-        <Setter Property="atom:TreeViewItemHeader.ThemeHeaderHeight" Value="{atom:TreeSelectTokenResource HeaderHeight}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeHoverBg" Value="{atom:TreeSelectTokenResource NodeHoverBg}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedBg" Value="{atom:TreeSelectTokenResource NodeSelectedBg}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedColor" Value="{atom:TreeSelectTokenResource NodeSelectedColor}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemMargin" Value="{atom:TreeSelectTokenResource TreeItemMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderPadding" Value="{atom:TreeSelectTokenResource TreeItemHeaderPadding}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderMargin" Value="{atom:TreeSelectTokenResource TreeItemHeaderMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeSwitcherMargin" Value="{atom:TreeSelectTokenResource TreeNodeSwitcherMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeIconMargin" Value="{atom:TreeSelectTokenResource TreeNodeIconMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeFilterHighlightColor" Value="{atom:TreeSelectTokenResource FilterHighlightColor}" />
+        <Setter Property="atom:TreeViewItemHeader.HeaderHeight" Value="{atom:TreeSelectTokenResource HeaderHeight}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeHoverBackground" Value="{atom:TreeSelectTokenResource NodeHoverBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedBackground" Value="{atom:TreeSelectTokenResource NodeSelectedBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedForeground" Value="{atom:TreeSelectTokenResource NodeSelectedColor}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemMargin" Value="{atom:TreeSelectTokenResource TreeItemMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderPadding" Value="{atom:TreeSelectTokenResource TreeItemHeaderPadding}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderMargin" Value="{atom:TreeSelectTokenResource TreeItemHeaderMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSwitcherMargin" Value="{atom:TreeSelectTokenResource TreeNodeSwitcherMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeIconMargin" Value="{atom:TreeSelectTokenResource TreeNodeIconMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.FilterHighlightBrush" Value="{atom:TreeSelectTokenResource FilterHighlightColor}" />
     </ControlTheme>
 </ResourceDictionary>

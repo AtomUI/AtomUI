@@ -115,8 +115,8 @@
             </Style>
         </Style>
 
-        <Style Selector="^[ButtonType=Default][IsEmbedMode=False][(atom|FloatButtonThemeInputs.HasOutline)=True],
-                         ^[ButtonType=Default][Shape=Circle][(atom|FloatButtonThemeInputs.HasOutline)=True]">
+        <Style Selector="^[ButtonType=Default][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True],
+                         ^[ButtonType=Default][Shape=Circle][(atom|FloatButtonAppearanceBinding.HasOutline)=True]">
             <Setter Property="BorderBrush" Value="{atom:FloatButtonTokenResource ColorBorder}" />
             <Setter Property="BorderThickness" Value="{atom:FloatButtonTokenResource BorderThickness}" />
             <!-- Paint the outline over the face so its thickness does not shrink wrapping content. -->
@@ -128,13 +128,13 @@
             </Style>
         </Style>
 
-        <Style Selector="^[ButtonType=Primary][IsEmbedMode=False][(atom|FloatButtonThemeInputs.UseExplicitPrimaryShadow)=True],
-                         ^[ButtonType=Primary][Shape=Circle][(atom|FloatButtonThemeInputs.UseExplicitPrimaryShadow)=True]">
-            <Setter Property="BoxShadow" Value="{CompiledBinding $self.(atom:FloatButtonThemeInputs.ExplicitPrimaryShadow)}" />
+        <Style Selector="^[ButtonType=Primary][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.UseExplicitPrimaryShadow)=True],
+                         ^[ButtonType=Primary][Shape=Circle][(atom|FloatButtonAppearanceBinding.UseExplicitPrimaryShadow)=True]">
+            <Setter Property="BoxShadow" Value="{CompiledBinding $self.(atom:FloatButtonAppearanceBinding.ExplicitPrimaryShadow)}" />
         </Style>
 
-        <Style Selector="^:is(atomc|AbstractFloatButton)[(atom|FloatButtonThemeInputs.HasOutline)=True]:disabled">
-            <Setter Property="Opacity" Value="{x:Static atom:ButtonThemeInputs.DisabledOpacity}" />
+        <Style Selector="^:is(atomc|AbstractFloatButton)[(atom|FloatButtonAppearanceBinding.HasOutline)=True]:disabled">
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonStyleValues.DisabledOpacity}" />
             <Style Selector="^[ButtonType=Default]">
                 <Setter Property="Background" Value="Transparent" />
             </Style>
@@ -143,24 +143,24 @@
             </Style>
         </Style>
 
-        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonThemeInputs.HasOutline)=True]:not(:description)">
+        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True]:not(:description)">
             <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadiusMD}" />
         </Style>
 
-        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonThemeInputs.HasOutline)=True]:description">
+        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True]:description">
             <Setter Property="UseContentMeasure" Value="True" />
             <Setter Property="Width" Value="NaN" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="MinWidth" Value="{atom:FloatButtonTokenResource ControlHeight}" />
             <Setter Property="MinHeight" Value="{atom:FloatButtonTokenResource ControlHeight}" />
             <Setter Property="FontSize" Value="{atom:FloatButtonTokenResource FontSize}" />
-            <Setter Property="FontWeight" Value="{CompiledBinding $self.(atom:FloatButtonThemeInputs.DescriptionWeight)}" />
+            <Setter Property="FontWeight" Value="{CompiledBinding $self.(atom:FloatButtonAppearanceBinding.DescriptionWeight)}" />
             <Setter Property="Padding" Value="{atom:FloatButtonTokenResource PaddingLG}" />
             <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadiusLG}" />
         </Style>
 
-        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonThemeInputs.CapsuleDescription)=True]">
-            <Setter Property="CornerRadius" Value="{CompiledBinding $self.Bounds.Height, Converter={x:Static atom:FloatButtonThemeInputs.CapsuleRadius}}" />
+        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonAppearanceBinding.CapsuleDescription)=True]">
+            <Setter Property="CornerRadius" Value="{CompiledBinding $self.Bounds.Height, Converter={x:Static atom:FloatButtonAppearanceBinding.CapsuleRadius}}" />
         </Style>
 
         <Style Selector="^[UseContentMeasure=True] /template/ DockPanel#RootLayout">
@@ -177,7 +177,7 @@
         <Style Selector="^[UseContentMeasure=True] /template/ ContentPresenter#Description">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="LineHeight"
-                    Value="{CompiledBinding $parent[atomc:AbstractFloatButton].(atom:FloatButtonThemeInputs.DescriptionLineHeight)}" />
+                    Value="{CompiledBinding $parent[atomc:AbstractFloatButton].(atom:FloatButtonAppearanceBinding.DescriptionLineHeight)}" />
         </Style>
 
         <Style Selector="^[UseContentMeasure=True]:plain-description">
@@ -192,12 +192,12 @@
             </Style>
         </Style>
 
-        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonThemeInputs.UppercaseDescription)=True]:plain-description /template/ ContentPresenter#Description">
+        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonAppearanceBinding.UppercaseDescription)=True]:plain-description /template/ ContentPresenter#Description">
             <Setter Property="ContentTemplate">
                 <DataTemplate x:DataType="x:String">
-                    <TextBlock Text="{CompiledBinding Converter={x:Static atom:FloatButtonThemeInputs.UppercaseLabel}}"
+                    <TextBlock Text="{CompiledBinding Converter={x:Static atom:FloatButtonAppearanceBinding.UppercaseLabel}}"
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis" TextAlignment="Center"
-                               MaxLines="2" LetterSpacing="{x:Static atom:FloatButtonThemeInputs.UppercaseLetterSpacing}" />
+                               MaxLines="2" LetterSpacing="{x:Static atom:FloatButtonAppearanceBinding.UppercaseLetterSpacing}" />
                 </DataTemplate>
             </Setter>
         </Style>

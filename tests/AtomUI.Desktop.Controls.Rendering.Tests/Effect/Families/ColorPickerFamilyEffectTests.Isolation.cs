@@ -47,13 +47,13 @@ public partial class ColorPickerFamilyEffectTests
             using var ownSource = capture();
             if (views)
             {
-                source.GetValue(ColorPickerThemeInputs.ThemeColorPickerWidthProperty).ShouldBe(330);
-                target.GetValue(ColorPickerThemeInputs.ThemeColorPickerWidthProperty).ShouldBe(234);
+                source.GetValue(ColorPickerAttachedProperties.SpectrumMinWidthProperty).ShouldBe(330);
+                target.GetValue(ColorPickerAttachedProperties.SpectrumMinWidthProperty).ShouldBe(234);
             }
             else
             {
-                source.GetValue(ColorPickerThemeInputs.ThemeTriggerPaddingProperty).ShouldBe(new Thickness(16));
-                target.GetValue(ColorPickerThemeInputs.ThemeTriggerPaddingProperty).ShouldNotBe(new Thickness(16));
+                source.GetValue(ColorPickerAttachedProperties.TriggerPaddingProperty).ShouldBe(new Thickness(16));
+                target.GetValue(ColorPickerAttachedProperties.TriggerPaddingProperty).ShouldNotBe(new Thickness(16));
             }
             provider.Config = IsolationConfig(root: (views ? "ColorFillSecondary" : "ColorBorder", "#ff00b96b"));
             using var rootChanged = capture();
@@ -117,10 +117,10 @@ public partial class ColorPickerFamilyEffectTests
                     .WithToken("ColorPickerSliderTrackSize", "12")
                     .WithToken("ColorPickerPresetColorSize", "30").Build()).Build();
             using var changed = capture();
-            view.GetValue(ColorPickerThemeInputs.ThemeColorPickerSliderSizeProperty).ShouldBe(20);
-            view.GetValue(ColorPickerThemeInputs.ThemeColorPickerSliderThumbSizeProperty).ShouldBe(22);
-            view.GetValue(ColorPickerThemeInputs.ThemeColorPickerPreviewSizeProperty).ShouldBe(36);
-            view.GetValue(ColorPickerThemeInputs.ThemeCheckedMarkSizeProperty).ShouldBe(18);
+            view.GetValue(ColorPickerAttachedProperties.SliderHeightProperty).ShouldBe(20);
+            view.GetValue(ColorPickerAttachedProperties.SliderThumbSizeProperty).ShouldBe(22);
+            view.GetValue(ColorPickerAttachedProperties.PreviewSizeProperty).ShouldBe(36);
+            view.GetValue(ColorPickerAttachedProperties.CheckedMarkSizeProperty).ShouldBe(18);
             var thumb = view.GetVisualDescendants().OfType<ColorSliderThumb>().First();
             thumb.Bounds.Width.ShouldBe(22);
             view.GetVisualDescendants().OfType<ColorBlock>().Single(c => c.Name == "ColorPreview").Bounds.Width.ShouldBe(36);
@@ -154,7 +154,7 @@ public partial class ColorPickerFamilyEffectTests
             using var font = capture();
             number.FontSize.ShouldBe(19);
             editor.FontSize.ShouldBe(19);
-            view.GetValue(ColorPickerThemeInputs.ThemeEditorFontSizeProperty).ShouldBe(29);
+            view.GetValue(ColorPickerAttachedProperties.EditorFontSizeProperty).ShouldBe(29);
             var swatch = view.GetVisualDescendants().OfType<PaletteColorItem>().First();
             ThemeScope.GetTokenOwner(swatch).ShouldBe(Identity(id));
             swatch.IsSet(ThemeScope.TokenOwnerProperty).ShouldBeTrue();

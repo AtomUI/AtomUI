@@ -20,9 +20,9 @@
                         <Border Name="PART_LoadingPresenter"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                MinWidth="{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
-                                MinHeight="{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
-                                Background="{CompiledBinding $self.(atom:ImageViewer.ThemeColorFillTertiary)}"
+                                MinWidth="{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}"
+                                MinHeight="{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}"
+                                Background="{CompiledBinding $self.(atom:ImageViewer.TertiaryFill)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="False">
                             <Panel HorizontalAlignment="Center"
@@ -40,9 +40,9 @@
                         <Border Name="PART_ErrorPresenter"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                MinWidth="{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
-                                MinHeight="{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}"
-                                Background="{CompiledBinding $self.(atom:ImageViewer.ThemeColorFillTertiary)}"
+                                MinWidth="{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}"
+                                MinHeight="{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}"
+                                Background="{CompiledBinding $self.(atom:ImageViewer.TertiaryFill)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 IsVisible="{TemplateBinding HasError}">
                             <Panel HorizontalAlignment="Center"
@@ -50,7 +50,7 @@
                                 <StackPanel Name="DefaultErrorLayout"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Spacing="{CompiledBinding $self.(atom:ImageViewer.ThemeSpacingXXS)}"
+                                            Spacing="{CompiledBinding $self.(atom:ImageViewer.SpacingXXS)}"
                                             IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                     <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                               HorizontalAlignment="Center" />
@@ -70,8 +70,8 @@
                                 Classes.semantic-cover="True"
                                 Opacity="{TemplateBinding MaskOpacity}"
                                 IsVisible="{TemplateBinding IsCoverMaskVisible}"
-                                Background="{CompiledBinding $self.(atom:ImageViewer.ThemeMaskBgColor)}"
-                                TextBlock.Foreground="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextLightSolid)}"
+                                Background="{CompiledBinding $self.(atom:ImageViewer.MaskBackground)}"
+                                TextBlock.Foreground="{CompiledBinding $self.(atom:ImageViewer.InverseTextForeground)}"
                                 CornerRadius="{TemplateBinding OwnerCornerRadius}"
                                 Margin="{Binding OwnerMaskMargin, RelativeSource={RelativeSource TemplatedParent}}">
                             <ContentPresenter Name="MaskContentPresenter"
@@ -87,14 +87,14 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
       
-        <Setter Property="IsMotionEnabled" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeEnableMotion)}" />
+        <Setter Property="IsMotionEnabled" Value="{CompiledBinding $self.(atom:ImageViewer.DefaultMotionEnabled)}" />
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:ImageViewer.TertiaryTextForeground)}" />
         </Style>
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
-            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
-            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}" />
-            <Setter Property="StrokeBrush" Value="{CompiledBinding $self.(atom:ImageViewer.ThemeColorTextTertiary)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}" />
+            <Setter Property="StrokeBrush" Value="{CompiledBinding $self.(atom:ImageViewer.TertiaryTextForeground)}" />
         </Style>
 
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">

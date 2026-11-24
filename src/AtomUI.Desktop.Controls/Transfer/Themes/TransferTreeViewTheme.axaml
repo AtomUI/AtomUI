@@ -4,18 +4,18 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TransferTreeView}" TargetType="atom:TransferTreeView">
-        <Setter Property="atom:TreeViewItemHeader.ThemeHeaderHeight" Value="{atom:TransferTreeViewTokenResource HeaderHeight}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeHoverBg" Value="{atom:TransferTreeViewTokenResource NodeHoverBg}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedBg" Value="{atom:TransferTreeViewTokenResource NodeSelectedBg}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeNodeSelectedColor" Value="{atom:TransferTreeViewTokenResource NodeSelectedColor}" />
+        <Setter Property="atom:TreeViewItemHeader.HeaderHeight" Value="{atom:TransferTreeViewTokenResource HeaderHeight}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeHoverBackground" Value="{atom:TransferTreeViewTokenResource NodeHoverBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedBackground" Value="{atom:TransferTreeViewTokenResource NodeSelectedBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedForeground" Value="{atom:TransferTreeViewTokenResource NodeSelectedColor}" />
 
 
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemMargin" Value="{atom:TransferTreeViewTokenResource TreeItemMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderPadding" Value="{atom:TransferTreeViewTokenResource TreeItemHeaderPadding}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeItemHeaderMargin" Value="{atom:TransferTreeViewTokenResource TreeItemHeaderMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeSwitcherMargin" Value="{atom:TransferTreeViewTokenResource TreeNodeSwitcherMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeTreeNodeIconMargin" Value="{atom:TransferTreeViewTokenResource TreeNodeIconMargin}" />
-        <Setter Property="atom:TreeViewItemHeader.ThemeFilterHighlightColor" Value="{atom:TransferTreeViewTokenResource FilterHighlightColor}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemMargin" Value="{atom:TransferTreeViewTokenResource TreeItemMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderPadding" Value="{atom:TransferTreeViewTokenResource TreeItemHeaderPadding}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderMargin" Value="{atom:TransferTreeViewTokenResource TreeItemHeaderMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSwitcherMargin" Value="{atom:TransferTreeViewTokenResource TreeNodeSwitcherMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeIconMargin" Value="{atom:TransferTreeViewTokenResource TreeNodeIconMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.FilterHighlightBrush" Value="{atom:TransferTreeViewTokenResource FilterHighlightColor}" />
 
         <ControlTheme.BasedOn>
             <atom:TreeViewTheme TargetType="atom:TransferTreeView"/>

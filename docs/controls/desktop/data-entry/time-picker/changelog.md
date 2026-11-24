@@ -7,7 +7,7 @@
 - Token
   - `AbstractTimeViewToken.PopupArrowVisible`（默认 `true`）：TimePicker、RangeTimePicker 弹层是否绘制箭头；PrimeNG 设为 `false`。
 - Performance
-  - 去掉 `TimeView` 的 8 个可继承主题输入。TimeView 经 `OwnerThemeInputs.BindFromOwner` 从自身 Token owner（四个时间/日期
+  - 去掉 `TimeView` 的 8 个可继承主题输入。TimeView 经共享的部件 Token 绑定 从自身 Token owner（四个时间/日期
     picker 终端）读取 Own Token 到普通属性，再经 `TemplateBinding` 与 `DateTimePickerPanel` 的直接绑定传给各行；终端主题不再
     设置这些输入，值也不再沿 picker 与弹层的整棵树继承。渲染不变。
 

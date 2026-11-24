@@ -81,8 +81,8 @@
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
             <Setter Property="PopupPadding"
-                    Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding)}" />
-            <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemHeight)}" />
+                    Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupContentPadding)}" />
+            <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
 
             <Style Selector="^:pointerover">
                 <Setter Property="Background"
@@ -139,22 +139,22 @@
 
             <Style Selector="^ /template/ Border#PopupFrame">
                 <Setter Property="Background"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
                 <Setter Property="CornerRadius"
                         Value="{atom:PopupTokenResource PopupCornerRadius}" />
                 <Setter Property="MinWidth"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMinWidth)}" />
                 <Setter Property="MaxWidth"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMaxWidth)}" />
             </Style>
 
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="MarginToAnchor"
                         Value="{atom:MenuTokenResource TopLevelItemPopupMarginToAnchor}" />
                 <Setter Property="PopupRootShadow"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupShadows)}" />
                 <Setter Property="OverlayHostShadow"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupShadows)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupShadows)}" />
             </Style>
 
             <Style Selector="^[ShouldUseOverlayPopup=False] /template/ atom|Popup#PART_Popup">
@@ -163,7 +163,7 @@
 
             <Style Selector="^:disabled">
                 <Setter Property="Foreground"
-                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemDisabledColor)}" />
+                        Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemDisabledForeground)}" />
             </Style>
 
             <Style Selector="^[IsMotionEnabled=True]">
@@ -181,10 +181,10 @@
         <!-- 菜单栏一级项的图标必须与弹层内菜单项同样显式定尺寸：IconPresenter 自身不测量图标，
              缺少尺寸时图标渲染为 0x0，而图标与文字的间距仍会占位，菜单栏文字被无谓右移。
              图标为空时由 IsVisible 折叠，间距随节点一起消失。 -->
-        <Setter Property="IconMarginInlineEnd" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemIconMarginInlineEnd)}" />
+        <Setter Property="IconMarginInlineEnd" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconEndMargin)}" />
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
-            <Setter Property="Width" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemIconSize)}" />
-            <Setter Property="Height" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemIconSize)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconSize)}" />
         </Style>
 
 

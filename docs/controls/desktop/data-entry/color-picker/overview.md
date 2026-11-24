@@ -105,6 +105,13 @@ AbstractColorPicker 声明 OpenMotion/CloseMotion，两类颜色选择器继承�
 
 配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
 
+**滑轨高度。** `ColorPickerView` 与 `GradientColorPickerView` 提供 `SliderTrackHeight`，可通过实例值、绑定或样式设置。
+默认值来自各自的 `ColorPickerSliderTrackSize` Token。清除覆盖值后，恢复当前主题的滑轨高度。
+
+```xml
+<atom:ColorPickerView SliderTrackHeight="6" />
+```
+
 ## 4. 行为与状态模型
 
 ColorPicker 的状态流按以下路径收敛：

@@ -12,7 +12,9 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 
 ## 2. 源码文件结构
 
-Token 实现包括 `AbstractColorPickerToken`（trigger 公共字段）、`AbstractColorPickerViewToken`（面板字段）、四个终端 Token 和 `ColorPickerThemeInputs`（具体可继承样式输入）。终端只拥有真实可渲染字段，显式基值的默认守卫使用终端自己的 TokenKind。
+Token 声明由 `AbstractColorPickerToken`（trigger 公共字段）、`AbstractColorPickerViewToken`（面板字段）和四个终端 Token 组成。
+终端只拥有真实可渲染字段，显式基值的默认守卫使用终端自己的 TokenKind。`ColorPickerAttachedProperties` 注册可继承的内部附加属性，
+供共享模板取值。属性形态和命名见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md#控件属性形态与命名)。
 
 主要源码文件：
 
@@ -178,7 +180,9 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 渐变 trigger 代码只按当前 stop index 维护文本子节点的 active-stop 样式类。ControlTheme 对该类编译绑定宿主当前 InactiveStopTextColor；取消激活后由面板 TextElement.Foreground 继承，局部主题发布及禁用往返不会保留一次性拷贝的画刷，用户本地前景仍优先。
 
-四个公开终端从自身 TokenResource 读取 Own，经 `ColorPickerThemeInputs` 的具体可继承属性传给共享模板；抽象 Token 层只复用公式。Popup 中公开 View 的动效默认来自自身 EnableMotion；运行时宿主只绑定内部 HostIsMotionEnabled 输入，false 状态由 AXAML Setter 关闭 View 动效，用户显式 View.IsMotionEnabled 本地值仍优先。该 Content 节点不在 trigger 模板 selector 链内，宿主输入沿既有一致生命周期绑定传递。
+四个公开终端通过各自的 TokenResource 读取 Own Token，并用 Setter 将共享部件需要的值传给内部附加属性。普通和渐变视图
+分别用自己的 Token 设置公开 `SliderTrackHeight`。视图通过 `AddOwner` 复用原有附加属性注册，滑轨模板通过编译绑定读取同一个
+继承值。Popup 中公开 View 的动效默认来自自身 EnableMotion；运行时宿主只绑定内部 HostIsMotionEnabled 输入，false 状态由 AXAML Setter 关闭 View 动效，用户显式 View.IsMotionEnabled 本地值仍优先。该 Content 节点不在 trigger 模板 selector 链内，宿主输入沿既有一致生命周期绑定传递。
 
 Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立身份，View 明确指定数值编辑器的紧凑字号及布局。
 

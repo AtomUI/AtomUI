@@ -80,7 +80,7 @@ internal class FloatButtonItemsControl : TemplatedControl
     #endregion
     
     private StackPanel? _itemsLayout;
-    private FloatButtonThemeInputs? _themeInputs;
+    private FloatButtonAppearanceBinding? _themeInputs;
 
     static FloatButtonItemsControl()
     {
@@ -103,7 +103,7 @@ internal class FloatButtonItemsControl : TemplatedControl
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        _themeInputs = new FloatButtonThemeInputs(this);
+        _themeInputs = new FloatButtonAppearanceBinding(this);
     }
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

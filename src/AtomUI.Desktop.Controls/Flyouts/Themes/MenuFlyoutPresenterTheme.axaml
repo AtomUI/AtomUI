@@ -4,27 +4,27 @@
               x:Class="AtomUI.Desktop.Controls.Themes.MenuFlyoutPresenterTheme"
               TargetType="atom:MenuFlyoutPresenter"
               x:ClassModifier="internal">
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupContentPadding}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupMinWidth}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupMaxWidth}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupBgColor" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBgColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemColor" Value="{atom:MenuFlyoutPresenterTokenResource ItemColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeKeyGestureColor" Value="{atom:MenuFlyoutPresenterTokenResource KeyGestureColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemMargin" Value="{atom:MenuFlyoutPresenterTokenResource ItemMargin}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHoverColor" Value="{atom:MenuFlyoutPresenterTokenResource ItemHoverColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemDisabledColor" Value="{atom:MenuFlyoutPresenterTokenResource ItemDisabledColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeDangerItemColor" Value="{atom:MenuFlyoutPresenterTokenResource DangerItemColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeDangerItemHoverColor" Value="{atom:MenuFlyoutPresenterTokenResource DangerItemHoverColor}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemBg" Value="{atom:MenuFlyoutPresenterTokenResource ItemBg}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHoverBg" Value="{atom:MenuFlyoutPresenterTokenResource ItemHoverBg}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemHeight" Value="{atom:MenuFlyoutPresenterTokenResource ItemHeight}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemIconSize" Value="{atom:MenuFlyoutPresenterTokenResource ItemIconSize}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemIconMarginInlineEnd" Value="{atom:MenuFlyoutPresenterTokenResource ItemIconMarginInlineEnd}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeGroupTitlePadding" Value="{atom:MenuFlyoutPresenterTokenResource GroupTitlePadding}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemBorderRadius" Value="{atom:MenuFlyoutPresenterTokenResource ItemBorderRadius}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeItemPaddingInline" Value="{atom:MenuFlyoutPresenterTokenResource ItemPaddingInline}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeSeparatorItemHeight" Value="{atom:MenuFlyoutPresenterTokenResource SeparatorItemHeight}" />
-        <Setter Property="atom:MenuPopupScrollHost.ThemeMenuPopupShadows" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupShadows}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupContentPadding" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupContentPadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMinWidth" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupMinWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMaxWidth" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupMaxWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupBackground" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBgColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemForeground" Value="{atom:MenuFlyoutPresenterTokenResource ItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.KeyGestureForeground" Value="{atom:MenuFlyoutPresenterTokenResource KeyGestureColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemMargin" Value="{atom:MenuFlyoutPresenterTokenResource ItemMargin}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverForeground" Value="{atom:MenuFlyoutPresenterTokenResource ItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemDisabledForeground" Value="{atom:MenuFlyoutPresenterTokenResource ItemDisabledColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemForeground" Value="{atom:MenuFlyoutPresenterTokenResource DangerItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemHoverForeground" Value="{atom:MenuFlyoutPresenterTokenResource DangerItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemBackground" Value="{atom:MenuFlyoutPresenterTokenResource ItemBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverBackground" Value="{atom:MenuFlyoutPresenterTokenResource ItemHoverBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHeight" Value="{atom:MenuFlyoutPresenterTokenResource ItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconSize" Value="{atom:MenuFlyoutPresenterTokenResource ItemIconSize}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconEndMargin" Value="{atom:MenuFlyoutPresenterTokenResource ItemIconMarginInlineEnd}" />
+        <Setter Property="atom:MenuPopupScrollHost.GroupTitlePadding" Value="{atom:MenuFlyoutPresenterTokenResource GroupTitlePadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemCornerRadius" Value="{atom:MenuFlyoutPresenterTokenResource ItemBorderRadius}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemInlinePadding" Value="{atom:MenuFlyoutPresenterTokenResource ItemPaddingInline}" />
+        <Setter Property="atom:MenuPopupScrollHost.SeparatorItemHeight" Value="{atom:MenuFlyoutPresenterTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupShadows" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupShadows}" />
 
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuFlyoutPresenter">
@@ -49,18 +49,18 @@
     <Style Selector="^:is(atom|MenuFlyoutPresenter)">
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
         <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
         <Setter Property="IsMotionEnabled" Value="{atom:MenuFlyoutPresenterTokenResource EnableMotion}" />
-        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupContentPadding)}" />
-        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeItemHeight)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupContentPadding)}" />
+        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
 
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
-            <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupBgColor)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
             <Setter Property="BorderBrush" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBorderColor}" />
             <Setter Property="BorderThickness" Value="{atom:MenuFlyoutPresenterTokenResource MenuPopupBorderThickness}" />
-            <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMinWidth)}" />
-            <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ThemeMenuPopupMaxWidth)}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMinWidth)}" />
+            <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMaxWidth)}" />
         </Style>
     </Style>
 

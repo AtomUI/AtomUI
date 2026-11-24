@@ -23,9 +23,9 @@ public class ImagePreviewerLoadingVisualTests
 
         theme.ShouldContain("Name=\"PART_LoadingPresenter\"");
         // The shared cover reads the owner's CoverImageWidth through the ImageViewer theme input.
-        ownerTheme.ShouldContain("<Setter Property=\"atom:ImageViewer.ThemeCoverImageWidth\" Value=\"{atom:ImagePreviewerTokenResource CoverImageWidth}\" />");
-        theme.ShouldContain("MinWidth=\"{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}\"");
-        theme.ShouldContain("MinHeight=\"{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}\"");
+        ownerTheme.ShouldContain("<Setter Property=\"atom:ImageViewer.CoverImageSize\" Value=\"{atom:ImagePreviewerTokenResource CoverImageWidth}\" />");
+        theme.ShouldContain("MinWidth=\"{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}\"");
+        theme.ShouldContain("MinHeight=\"{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}\"");
         theme.ShouldContain("atom:SkeletonImage");
         theme.ShouldContain("Name=\"PART_LoadingSkeleton\"");
         theme.ShouldContain("IsActive=\"False\"");
@@ -47,8 +47,8 @@ public class ImagePreviewerLoadingVisualTests
         viewerTheme.ShouldNotContain("Image load failed");
         coverTheme.ShouldContain("Name=\"PART_ErrorPresenter\"");
         coverTheme.ShouldContain("IsVisible=\"{TemplateBinding HasError}\"");
-        coverTheme.ShouldContain("MinWidth=\"{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}\"");
-        coverTheme.ShouldContain("MinHeight=\"{CompiledBinding $self.(atom:ImageViewer.ThemeCoverImageWidth)}\"");
+        coverTheme.ShouldContain("MinWidth=\"{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}\"");
+        coverTheme.ShouldContain("MinHeight=\"{CompiledBinding $self.(atom:ImageViewer.CoverImageSize)}\"");
         coverTheme.ShouldContain("{atom:ImagePreviewerLangResource ImageLoadFailed}");
         viewerTheme.ShouldContain("{atom:ImagePreviewerLangResource ImageLoadFailed}");
         enUS.ContainsKey("ImageLoadFailed").ShouldBeTrue();
@@ -65,11 +65,11 @@ public class ImagePreviewerLoadingVisualTests
         // Cover and viewer are shared parts: the ImagePreviewer theme maps its ErrorIconSize Token to the
         // ImageViewer theme input, and both parts size the error icon from that input.
         ReadRepoFile("src/AtomUI.Desktop.Controls/ImagePreviewer/Themes/ImagePreviewerTheme.axaml")
-            .ShouldContain("<Setter Property=\"atom:ImageViewer.ThemeErrorIconSize\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
-        coverTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}\" />");
-        coverTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}\" />");
-        viewerTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}\" />");
-        viewerTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ThemeErrorIconSize)}\" />");
+            .ShouldContain("<Setter Property=\"atom:ImageViewer.ErrorIconSize\" Value=\"{atom:ImagePreviewerTokenResource ErrorIconSize}\" />");
+        coverTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}\" />");
+        coverTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}\" />");
+        viewerTheme.ShouldContain("<Setter Property=\"Width\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}\" />");
+        viewerTheme.ShouldContain("<Setter Property=\"Height\" Value=\"{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}\" />");
     }
 
     [Fact]

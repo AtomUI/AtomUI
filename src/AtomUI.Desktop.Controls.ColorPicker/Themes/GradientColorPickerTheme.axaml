@@ -5,11 +5,11 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:GradientColorPicker}" TargetType="atom:GradientColorPicker">
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockDisabledOpacity" Value="{atom:GradientColorPickerTokenResource ColorBlockDisabledOpacity}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeColorBlockInnerShadows" Value="{atom:GradientColorPickerTokenResource ColorBlockInnerShadows}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTransparentBgSize" Value="{atom:GradientColorPickerTokenResource TransparentBgSize}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerPadding" Value="{atom:GradientColorPickerTokenResource TriggerPadding}" />
-        <Setter Property="atom:ColorPickerThemeInputs.ThemeTriggerTextMargin" Value="{atom:GradientColorPickerTokenResource TriggerTextMargin}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.DisabledColorBlockOpacity" Value="{atom:GradientColorPickerTokenResource ColorBlockDisabledOpacity}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.ColorBlockInnerShadows" Value="{atom:GradientColorPickerTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckerboardTileSize" Value="{atom:GradientColorPickerTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerPadding" Value="{atom:GradientColorPickerTokenResource TriggerPadding}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerTextMargin" Value="{atom:GradientColorPickerTokenResource TriggerTextMargin}" />
 
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerTheme TargetType="atom:GradientColorPicker" />
@@ -76,7 +76,7 @@
         <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
             <Setter Property="TextElement.Foreground"
                     Value="{atom:GradientColorPickerTokenResource ColorText}" />
-            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeTriggerTextMargin)}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.TriggerTextMargin)}" />
         </Style>
 
         <Style Selector="^:disabled">

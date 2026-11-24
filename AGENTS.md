@@ -96,6 +96,7 @@ Read the relevant document before touching the corresponding area:
 - AOT programming, dynamic data, source generators: [docs/engineering/development/aot-programming-guidelines.md](docs/engineering/development/aot-programming-guidelines.md)
 - Compiler diagnostics: [docs/engineering/development/compiler-diagnostics-guidelines.md](docs/engineering/development/compiler-diagnostics-guidelines.md)
 - Code style: [docs/engineering/development/code-style-guidelines.md](docs/engineering/development/code-style-guidelines.md)
+- New controls and new or changed control properties must follow [Control property forms and naming](docs/engineering/development/control-development-guidelines.md#控件属性形态与命名).
 - Documentation structure and file naming: [docs/engineering/contributing/documentation-structure-guidelines.md](docs/engineering/contributing/documentation-structure-guidelines.md)
 - Changelog and release notes: [docs/engineering/contributing/changelog-guidelines.md](docs/engineering/contributing/changelog-guidelines.md)
 - Apple iOS development environment: [docs/engineering/platforms/apple-ios/overview.md](docs/engineering/platforms/apple-ios/overview.md)

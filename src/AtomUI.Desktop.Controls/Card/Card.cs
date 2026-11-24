@@ -26,9 +26,9 @@ internal enum CardContentType
 }
 
 public partial class Card : AbstractCard,
-                    ISizeTypeAware,
-                    IMotionAwareControl,
-                    IBorderBeamAwareControl
+                            ISizeTypeAware,
+                            IMotionAwareControl,
+                            IBorderBeamAwareControl
 {
     #region IBorderBeamAwareControl 实现
 

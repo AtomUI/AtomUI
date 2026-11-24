@@ -10,7 +10,7 @@ using Avalonia.LogicalTree;
 namespace AtomUI.Desktop.Controls.Primitives;
 
 /// <summary>One inheritable theme input and the owner Token name it is mapped from.</summary>
-internal readonly record struct OwnerThemeInput(AvaloniaProperty Property, string Token);
+internal readonly record struct PartTokenMapping(AvaloniaProperty Property, string Token);
 
 /// <summary>
 /// Maps a part's inheritable theme inputs from its Token owner's Own and effective global Tokens when no attached
@@ -25,7 +25,7 @@ internal readonly record struct OwnerThemeInput(AvaloniaProperty Property, strin
 /// ancestor (it sits in the owner's styled tree) or its runtime host is attached, the owner's setters are authoritative
 /// and nothing is mapped.
 /// </summary>
-internal static class OwnerThemeInputs
+internal static class PartTokenBinder
 {
     /// <param name="part">The hosted or standalone part whose inputs are mapped.</param>
     /// <param name="host">
@@ -39,7 +39,7 @@ internal static class OwnerThemeInputs
         Control part,
         Control? host,
         Type? fallbackOwnerType,
-        IReadOnlyList<OwnerThemeInput> inputs,
+        IReadOnlyList<PartTokenMapping> inputs,
         Type? alternateOwnerType = null)
     {
         ArgumentNullException.ThrowIfNull(part);
@@ -169,14 +169,14 @@ internal static class OwnerThemeInputs
         private readonly Control? _host;
         private readonly Type? _fallbackOwnerType;
         private readonly Type? _alternateOwnerType;
-        private readonly IReadOnlyList<OwnerThemeInput> _inputs;
+        private readonly IReadOnlyList<PartTokenMapping> _inputs;
         private readonly IDisposable _ownerSubscription;
         private OwnerTokenPropertyBindings? _bindings;
         private ControlTokenIdentity? _boundOwner;
         private IDisposable? _fallbackOwner;
         private bool _disposed;
 
-        internal Binding(Control part, Control? host, Type? fallbackOwnerType, IReadOnlyList<OwnerThemeInput> inputs,
+        internal Binding(Control part, Control? host, Type? fallbackOwnerType, IReadOnlyList<PartTokenMapping> inputs,
             Type? alternateOwnerType)
         {
             _part = part;

@@ -329,7 +329,7 @@ internal partial class TimeView : TemplatedControl
 
     public TimeView()
     {
-        _ownerInputs = OwnerThemeInputs.BindFromOwner(this, s_ownerInputs);
+        _ownerInputs = PartTokenBinder.BindFromOwner(this, s_ownerInputs);
         // Each column handles its own scrolling first. Unconsumed focus requests
         // must not continue through the popup's logical owner into the page.
         AddHandler(RequestBringIntoViewEvent, (_, e) =>

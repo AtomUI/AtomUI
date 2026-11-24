@@ -38,30 +38,30 @@ internal sealed record FloatButtonOutlineAppearance(
     }
 }
 
-internal sealed class FloatButtonThemeInputs : IDisposable
+internal sealed class FloatButtonAppearanceBinding : IDisposable
 {
     #region 公共属性定义
 
     public static readonly AttachedProperty<bool> HasOutlineProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, bool>("HasOutline");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, bool>("HasOutline");
 
     public static readonly AttachedProperty<bool> UseExplicitPrimaryShadowProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, bool>("UseExplicitPrimaryShadow");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, bool>("UseExplicitPrimaryShadow");
 
     public static readonly AttachedProperty<BoxShadows> ExplicitPrimaryShadowProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, BoxShadows>("ExplicitPrimaryShadow");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, BoxShadows>("ExplicitPrimaryShadow");
 
     public static readonly AttachedProperty<bool> CapsuleDescriptionProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, bool>("CapsuleDescription");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, bool>("CapsuleDescription");
 
     public static readonly AttachedProperty<bool> UppercaseDescriptionProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, bool>("UppercaseDescription");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, bool>("UppercaseDescription");
 
     public static readonly AttachedProperty<FontWeight> DescriptionWeightProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, FontWeight>("DescriptionWeight");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, FontWeight>("DescriptionWeight");
 
     public static readonly AttachedProperty<double> DescriptionLineHeightProperty =
-        AvaloniaProperty.RegisterAttached<FloatButtonThemeInputs, StyledElement, double>("DescriptionLineHeight");
+        AvaloniaProperty.RegisterAttached<FloatButtonAppearanceBinding, StyledElement, double>("DescriptionLineHeight");
 
     public static bool GetHasOutline(StyledElement control) => control.GetValue(HasOutlineProperty);
     public static bool GetUseExplicitPrimaryShadow(StyledElement control) => control.GetValue(UseExplicitPrimaryShadowProperty);
@@ -91,7 +91,7 @@ internal sealed class FloatButtonThemeInputs : IDisposable
     private FloatButtonOutlineAppearance? _appearance;
     private OwnerTokenSet? _buttonTokens;
 
-    internal FloatButtonThemeInputs(StyledElement control)
+    internal FloatButtonAppearanceBinding(StyledElement control)
     {
         _control = control;
         _subscription = s_resolver.Subscribe(control, Update);

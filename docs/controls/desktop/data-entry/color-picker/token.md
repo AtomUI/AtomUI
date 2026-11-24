@@ -8,7 +8,7 @@ ColorPicker Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 当前有四个独立 scope：`ColorPicker`、`GradientColorPicker`、`ColorPickerView`、`GradientColorPickerView`。前两个只拥有 trigger 实际消费的五项，后两个拥有编辑面板实际消费的字段；抽象 Token 层共享公式，各终端按自己的 TokenKind 守卫显式基值，不借用其他公开控件的快照。
 
-`ColorPickerThemeInputs` 是内部可继承样式输入，各终端 AXAML 读取自己的 Own 值，再传给共享的色块、色谱、预设项和滑块主题。它不产生运行时 Token 别名。
+各终端 AXAML 读取自己的 Own 值，经 `ColorPickerAttachedProperties` 传给共享的色块、色谱、预设项和滑块。两个视图用各自的 `ColorPickerSliderTrackSize` Token 设置 `SliderTrackHeight` 的默认值。视图公开属性与滑轨继承入口共用同一注册。
 
 ## 2. Token 分类
 

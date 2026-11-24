@@ -22,7 +22,7 @@ public class ImagePreviewerCoverOwnerInputTests
         Dispatcher.UIThread.Invoke(() =>
         {
             var previewer = new global::AtomUI.Desktop.Controls.ImagePreviewer { Width = 200, Height = 200 };
-            ImageViewer.SetThemeCoverImageWidth(previewer, 300);
+            ImageViewer.SetCoverImageSize(previewer, 300);
             var window = new AvaloniaWindow { Content = previewer, Width = 400, Height = 400 };
             try
             {
@@ -35,8 +35,8 @@ public class ImagePreviewerCoverOwnerInputTests
                 var cover = previewer.GetVisualDescendants().OfType<ImagePreviewerCover>().Single();
                 ThemeScope.GetTokenOwner(cover).ShouldBe(ThemeScope.GetTokenOwner(previewer));
                 cover.IsSet(ThemeScope.TokenOwnerProperty).ShouldBeFalse("the hosted cover inherits its owner");
-                ImageViewer.GetThemeCoverImageWidth(cover).ShouldBe(300d, "the owner's explicit input must reach the hosted cover");
-                cover.IsSet(ImageViewer.ThemeCoverImageWidthProperty).ShouldBeFalse("no mapped value may sit on the hosted cover");
+                ImageViewer.GetCoverImageSize(cover).ShouldBe(300d, "the owner's explicit input must reach the hosted cover");
+                cover.IsSet(ImageViewer.CoverImageSizeProperty).ShouldBeFalse("no mapped value may sit on the hosted cover");
             }
             finally
             {
@@ -64,8 +64,8 @@ public class ImagePreviewerCoverOwnerInputTests
                 var registry = ThemeScope.ResolveContext(cover).ShouldNotBeNull().Snapshot.Registry;
                 registry.TryGetControl(previewer.GetType(), out var descriptor).ShouldBeTrue();
                 ThemeScope.GetTokenOwner(cover).ShouldBe(descriptor!.Identity);
-                ImageViewer.GetThemeMaskBgColor(cover).ShouldNotBeNull();
-                ImageViewer.GetThemeCoverImageWidth(cover).ShouldBeGreaterThan(0);
+                ImageViewer.GetMaskBackground(cover).ShouldNotBeNull();
+                ImageViewer.GetCoverImageSize(cover).ShouldBeGreaterThan(0);
             }
             finally
             {

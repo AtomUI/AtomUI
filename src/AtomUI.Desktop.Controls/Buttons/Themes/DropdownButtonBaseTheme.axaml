@@ -378,7 +378,7 @@
 
         <Style
             Selector="^[UnderlinesLinkOnHover=True][EffectiveVariant=Link]:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter, ^[EffectiveVariant=Link]:link-underlined /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="documents:Inline.TextDecorations" Value="{x:Static atom:ButtonThemeInputs.LinkUnderline}" />
+            <Setter Property="documents:Inline.TextDecorations" Value="{x:Static atom:ButtonStyleValues.LinkUnderline}" />
         </Style>
 
         <Style Selector="^[UsesThemeRecipe=True][EffectiveColor=Default]:not(:disabled)">

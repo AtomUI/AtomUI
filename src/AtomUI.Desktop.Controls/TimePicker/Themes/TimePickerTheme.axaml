@@ -4,7 +4,7 @@
     x:ClassModifier="internal"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:TimePicker}" TargetType="atom:TimePicker">
-        <Setter Property="atom:TimePickerPresenter.ThemeButtonsMargin" Value="{atom:TimePickerTokenResource ButtonsMargin}" />
+        <Setter Property="atom:TimePickerPresenter.ButtonsMargin" Value="{atom:TimePickerTokenResource ButtonsMargin}" />
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:TimePicker" />
         </ControlTheme.BasedOn>

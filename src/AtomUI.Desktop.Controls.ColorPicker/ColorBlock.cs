@@ -127,7 +127,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             UpdatePreviewPaintTokenSubscription();
         }
         else if (change.Property == IsEmptyColorModeProperty ||
-                 change.Property == ColorPickerThemeInputs.ThemeTransparentBgSizeProperty)
+                 change.Property == ColorPickerAttachedProperties.CheckerboardTileSizeProperty)
         {
             if (this.IsAttachedToVisualTree())
             {
@@ -161,7 +161,7 @@ internal class ColorBlock : TemplatedControl, ICustomizableSizeTypeAware
             if (_paintTokens?.GetValue(2) is ISolidColorBrush interval)
             {
                 TransparentBgBrush = TransparentBgBrushUtils.Build(
-                    ColorPickerThemeInputs.GetThemeTransparentBgSize(this), interval.Color);
+                    ColorPickerAttachedProperties.GetCheckerboardTileSize(this), interval.Color);
             }
             return;
         }

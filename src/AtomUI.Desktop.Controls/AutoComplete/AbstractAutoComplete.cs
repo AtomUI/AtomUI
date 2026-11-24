@@ -549,7 +549,6 @@ public abstract class AbstractAutoComplete : TemplatedControl,
 
     #region 内部属性定义
 
-
     internal static readonly StyledProperty<CandidatePopupLayoutTokenResourceKeys?> PopupLayoutTokenResourceKeysProperty =
         AvaloniaProperty.Register<AbstractAutoComplete, CandidatePopupLayoutTokenResourceKeys?>(nameof(PopupLayoutTokenResourceKeys));
 

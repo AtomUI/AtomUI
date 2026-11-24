@@ -29,11 +29,11 @@ public enum ButtonType
     ButtonPseudoClass.LinkType,
     ButtonPseudoClass.TextType)]
 public partial class Button : AbstractButton,
-                      ICustomizableSizeTypeAware,
-                      IWaveSpiritAwareControl,
-                      ICompactSpaceAware,
-                      IFormItemAware,
-                      IFocusOutlineShapeProvider
+                              ICustomizableSizeTypeAware,
+                              IWaveSpiritAwareControl,
+                              ICompactSpaceAware,
+                              IFormItemAware,
+                              IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
@@ -54,6 +54,9 @@ public partial class Button : AbstractButton,
 
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Button>();
+
+    public static readonly StyledProperty<Thickness> ContentPaddingProperty =
+        AvaloniaProperty.Register<Button, Thickness>(nameof(ContentPadding));
 
     public new static readonly StyledProperty<PathIcon?> IconProperty =
         AbstractButton.IconProperty.AddOwner<Button>();
@@ -113,6 +116,15 @@ public partial class Button : AbstractButton,
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the padding used by the default theme for regular button content.
+    /// </summary>
+    public Thickness ContentPadding
+    {
+        get => GetValue(ContentPaddingProperty);
+        set => SetValue(ContentPaddingProperty, value);
     }
 
     public new PathIcon? Icon
@@ -200,12 +212,12 @@ public partial class Button : AbstractButton,
 
     internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
         WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
-    
+
     internal static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
             o => o.EffectiveCornerRadius,
             (o, v) => o.EffectiveCornerRadius = v);
-    
+
     /// <summary>
     /// Corner radius imposed by a hosting control that splits one visual frame over several Buttons (SplitButton). It
     /// replaces <see cref="TemplatedControl.CornerRadius"/> as the base of <see cref="EffectiveCornerRadius"/> so the
@@ -214,36 +226,39 @@ public partial class Button : AbstractButton,
     internal static readonly StyledProperty<CornerRadius?> HostCornerRadiusProperty =
         AvaloniaProperty.Register<Button, CornerRadius?>(nameof(HostCornerRadius));
 
-    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
+    internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty =
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<Button>();
-    
-    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty = 
+
+    internal static readonly StyledProperty<Orientation> CompactSpaceOrientationProperty =
         CompactSpaceAwareControlProperty.CompactSpaceOrientationProperty.AddOwner<Button>();
-    
-    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
+
+    internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<Button>();
 
     internal static readonly DirectProperty<Button, bool> UsesThemeRecipeProperty =
         AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UsesThemeRecipe), button => button.UsesThemeRecipe);
 
     internal static readonly DirectProperty<Button, bool> DisablesWithOpacityProperty =
-        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(DisablesWithOpacity), button => button.DisablesWithOpacity);
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(DisablesWithOpacity),
+            button => button.DisablesWithOpacity);
 
     internal static readonly DirectProperty<Button, double> ThemeDisabledOpacityProperty =
-        AvaloniaProperty.RegisterDirect<Button, double>(nameof(ThemeDisabledOpacity), button => button.ThemeDisabledOpacity);
+        AvaloniaProperty.RegisterDirect<Button, double>(nameof(ThemeDisabledOpacity),
+            button => button.ThemeDisabledOpacity);
 
     internal static readonly DirectProperty<Button, bool> PressMovesProperty =
         AvaloniaProperty.RegisterDirect<Button, bool>(nameof(PressMoves), button => button.PressMoves);
 
     internal static readonly DirectProperty<Button, bool> UnderlinesLinkOnHoverProperty =
-        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UnderlinesLinkOnHover), button => button.UnderlinesLinkOnHover);
+        AvaloniaProperty.RegisterDirect<Button, bool>(nameof(UnderlinesLinkOnHover),
+            button => button.UnderlinesLinkOnHover);
 
     internal static readonly StyledProperty<bool> IsExternalPopupTriggerProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsExternalPopupTrigger));
 
     internal static readonly StyledProperty<bool> IsExternalPopupOpenProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsExternalPopupOpen));
-    
+
     internal bool IsIconVisible
     {
         get => GetValue(IsIconVisibleProperty);
@@ -303,6 +318,7 @@ public partial class Button : AbstractButton,
     internal ButtonVariantAppearance VariantAppearance
     {
         get => _variantAppearance;
+
         private set
         {
             SetAndRaise(VariantAppearanceProperty, ref _variantAppearance, value);
@@ -320,7 +336,7 @@ public partial class Button : AbstractButton,
         get => GetValue(WaveSpiritTypeProperty);
         set => SetValue(WaveSpiritTypeProperty, value);
     }
-    
+
     private CornerRadius _effectiveCornerRadius;
 
     internal CornerRadius EffectiveCornerRadius
@@ -331,7 +347,7 @@ public partial class Button : AbstractButton,
 
     // Round and circle shapes are expressed by the effective radius, not by CornerRadius.
     CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius => EffectiveCornerRadius;
-    
+
     internal CornerRadius? HostCornerRadius
     {
         get => GetValue(HostCornerRadiusProperty);
@@ -343,13 +359,13 @@ public partial class Button : AbstractButton,
         get => GetValue(CompactSpaceItemPositionProperty);
         set => SetValue(CompactSpaceItemPositionProperty, value);
     }
-    
+
     internal Orientation CompactSpaceOrientation
     {
         get => GetValue(CompactSpaceOrientationProperty);
         set => SetValue(CompactSpaceOrientationProperty, value);
     }
-    
+
     internal bool IsUsedInCompactSpace
     {
         get => GetValue(IsUsedInCompactSpaceProperty);
@@ -410,9 +426,9 @@ public partial class Button : AbstractButton,
         get => GetValue(IsExternalPopupOpenProperty);
         set => SetValue(IsExternalPopupOpenProperty, value);
     }
-    
+
     #endregion
-    
+
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private IDisposable? _themeScopeSubscription;
@@ -558,7 +574,7 @@ public partial class Button : AbstractButton,
 
         return new Size(targetWidth, targetHeight);
     }
-    
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -678,9 +694,9 @@ public partial class Button : AbstractButton,
     {
         WaveSpiritType = Shape switch
         {
-            ButtonShape.Round  => WaveSpiritType.PillWave,
+            ButtonShape.Round => WaveSpiritType.PillWave,
             ButtonShape.Circle => WaveSpiritType.CircleWave,
-            _                  => WaveSpiritType.RoundRectWave
+            _ => WaveSpiritType.RoundRectWave
         };
     }
 
@@ -716,10 +732,10 @@ public partial class Button : AbstractButton,
             var variant = ButtonType switch
             {
                 ButtonType.Primary => ButtonVariant.Solid,
-                ButtonType.Dashed  => ButtonVariant.Dashed,
-                ButtonType.Link    => ButtonVariant.Link,
-                ButtonType.Text    => ButtonVariant.Text,
-                _                  => ButtonVariant.Outlined
+                ButtonType.Dashed => ButtonVariant.Dashed,
+                ButtonType.Link => ButtonVariant.Link,
+                ButtonType.Text => ButtonVariant.Text,
+                _ => ButtonVariant.Outlined
             };
             return (IsDanger ? ButtonColor.Danger : ResolveCompatibilityColor(ButtonType), variant);
         }
@@ -737,7 +753,7 @@ public partial class Button : AbstractButton,
         return buttonType switch
         {
             ButtonType.Primary => ButtonColor.Primary,
-            _                  => ButtonColor.Default
+            _ => ButtonColor.Default
         };
     }
 
@@ -804,7 +820,7 @@ public partial class Button : AbstractButton,
     {
         EffectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
             Shape == ButtonShape.Rectangular ? default : _shapeCornerRadius ?? HostCornerRadius ?? CornerRadius,
-            IsUsedInCompactSpace, 
+            IsUsedInCompactSpace,
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
     }
@@ -833,5 +849,4 @@ public partial class Button : AbstractButton,
         PseudoClasses.Set(ButtonPseudoClass.LinkType, ButtonType == ButtonType.Link);
         PseudoClasses.Set(ButtonPseudoClass.TextType, ButtonType == ButtonType.Text);
     }
-
 }

@@ -3,28 +3,28 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net">
     <ControlTheme x:Key="{x:Type atom:SubmitButton}" TargetType="atom:SubmitButton">
-        <Setter Property="ThemeBorderColorDisabled" Value="{atom:SubmitButtonTokenResource BorderColorDisabled}" />
-        <Setter Property="ThemeCirclePadding" Value="{atom:SubmitButtonTokenResource CirclePadding}" />
-        <Setter Property="ThemeContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSize}" />
-        <Setter Property="ThemeContentPadding" Value="{atom:SubmitButtonTokenResource ContentPadding}" />
-        <Setter Property="ThemeDefaultBorderColorDisabled" Value="{atom:SubmitButtonTokenResource DefaultBorderColorDisabled}" />
-        <Setter Property="ThemeFontWeight" Value="{atom:SubmitButtonTokenResource FontWeight}" />
-        <Setter Property="ThemeIconEndMargin" Value="{atom:SubmitButtonTokenResource IconEndMargin}" />
-        <Setter Property="ThemeIconMargin" Value="{atom:SubmitButtonTokenResource IconMargin}" />
-        <Setter Property="ThemeIconOnyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPadding}" />
-        <Setter Property="ThemeOnlyIconSize" Value="{atom:SubmitButtonTokenResource OnlyIconSize}" />
+        <Setter Property="DisabledBorderBrush" Value="{atom:SubmitButtonTokenResource BorderColorDisabled}" />
+        <Setter Property="CirclePadding" Value="{atom:SubmitButtonTokenResource CirclePadding}" />
+        <Setter Property="ContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSize}" />
+        <Setter Property="ContentPadding" Value="{atom:SubmitButtonTokenResource ContentPadding}" />
+        <Setter Property="DefaultDisabledBorderBrush" Value="{atom:SubmitButtonTokenResource DefaultBorderColorDisabled}" />
+        <Setter Property="DefaultFontWeight" Value="{atom:SubmitButtonTokenResource FontWeight}" />
+        <Setter Property="IconEndMargin" Value="{atom:SubmitButtonTokenResource IconEndMargin}" />
+        <Setter Property="IconMargin" Value="{atom:SubmitButtonTokenResource IconMargin}" />
+        <Setter Property="IconOnlyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPadding}" />
+        <Setter Property="IconOnlySize" Value="{atom:SubmitButtonTokenResource OnlyIconSize}" />
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="ThemeContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSizeSM}" />
-            <Setter Property="ThemeContentPadding" Value="{atom:SubmitButtonTokenResource ContentPaddingSM}" />
-            <Setter Property="ThemeIconOnyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPaddingSM}" />
-            <Setter Property="ThemeOnlyIconSize" Value="{atom:SubmitButtonTokenResource OnlyIconSizeSM}" />
+            <Setter Property="ContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSizeSM}" />
+            <Setter Property="ContentPadding" Value="{atom:SubmitButtonTokenResource ContentPaddingSM}" />
+            <Setter Property="IconOnlyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPaddingSM}" />
+            <Setter Property="IconOnlySize" Value="{atom:SubmitButtonTokenResource OnlyIconSizeSM}" />
         </Style>
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="ThemeContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSizeLG}" />
-            <Setter Property="ThemeContentPadding" Value="{atom:SubmitButtonTokenResource ContentPaddingLG}" />
-            <Setter Property="ThemeIconOnyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPaddingLG}" />
-            <Setter Property="ThemeOnlyIconSize" Value="{atom:SubmitButtonTokenResource OnlyIconSizeLG}" />
+            <Setter Property="ContentFontSize" Value="{atom:SubmitButtonTokenResource ContentFontSizeLG}" />
+            <Setter Property="ContentPadding" Value="{atom:SubmitButtonTokenResource ContentPaddingLG}" />
+            <Setter Property="IconOnlyPadding" Value="{atom:SubmitButtonTokenResource IconOnyPaddingLG}" />
+            <Setter Property="IconOnlySize" Value="{atom:SubmitButtonTokenResource OnlyIconSizeLG}" />
         </Style>
 
         <ControlTheme.BasedOn>

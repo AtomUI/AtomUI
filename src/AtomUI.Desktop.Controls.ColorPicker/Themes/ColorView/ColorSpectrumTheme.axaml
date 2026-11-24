@@ -57,7 +57,7 @@
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="BoxShadow"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerInsetShadow)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.InsetShadows)}" />
         </Style>
 
         <!-- Focus -->
@@ -71,12 +71,12 @@
         <!-- Selector Color -->
         <Style Selector="^ /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerDarkColor)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumHandleDarkBrush)}" />
         </Style>
 
         <Style Selector="^:light-selector /template/ Ellipse#SelectionEllipse">
             <Setter Property="Stroke"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerLightColor)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumHandleLightBrush)}" />
         </Style>
 
         <!-- Selector Size -->
@@ -84,16 +84,16 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Width"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumHandleSize)}" />
             <Setter Property="Height"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSize)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumHandleSize)}" />
         </Style>
 
         <Style Selector="^:large-selector /template/ Panel#PART_SelectionEllipsePanel">
             <Setter Property="Width"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.OuterSpectrumHandleSize)}" />
             <Setter Property="Height"
-                    Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorPickerHandlerSizeLG)}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.OuterSpectrumHandleSize)}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

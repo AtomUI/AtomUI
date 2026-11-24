@@ -5,10 +5,10 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:RangeTimePicker}" TargetType="atom:RangeTimePicker">
-        <Setter Property="atom:RangeInfoPickerInputTheme.ThemeRangePickerArrowMargin" Value="{atom:RangeTimePickerTokenResource RangePickerArrowMargin}" />
-        <Setter Property="atom:RangeInfoPickerInputTheme.ThemeRangePickerIndicatorThickness" Value="{atom:RangeTimePickerTokenResource RangePickerIndicatorThickness}" />
+        <Setter Property="atom:RangeInfoPickerInputTheme.RangeArrowMargin" Value="{atom:RangeTimePickerTokenResource RangePickerArrowMargin}" />
+        <Setter Property="atom:RangeInfoPickerInputTheme.RangeIndicatorThickness" Value="{atom:RangeTimePickerTokenResource RangePickerIndicatorThickness}" />
 
-        <Setter Property="atom:TimePickerPresenter.ThemeButtonsMargin" Value="{atom:RangeTimePickerTokenResource ButtonsMargin}" />
+        <Setter Property="atom:TimePickerPresenter.ButtonsMargin" Value="{atom:RangeTimePickerTokenResource ButtonsMargin}" />
         
         <ControlTheme.BasedOn>
             <atom:RangeInfoPickerInputTheme TargetType="atom:RangeTimePicker" />

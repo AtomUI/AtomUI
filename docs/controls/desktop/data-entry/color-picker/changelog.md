@@ -2,6 +2,11 @@
 
 本文档记录 ColorPicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-24
+
+- API
+  - `ColorPickerView` 和 `GradientColorPickerView` 增加标准属性 `SliderTrackHeight`。两个视图各自读取已有的滑轨高度 Token 作为默认值。
+
 ## 2026-11-21
 
 - Theme

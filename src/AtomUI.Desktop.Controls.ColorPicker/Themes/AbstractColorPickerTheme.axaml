@@ -16,8 +16,8 @@
         <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
-        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeTriggerPadding)}" />
-        <Setter Property="TriggerPadding" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeTriggerPadding)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.TriggerPadding)}" />
+        <Setter Property="TriggerPadding" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.TriggerPadding)}" />
         <Setter Property="EmptyColorText" Value="{atom:ColorPickerLangResource EmptyColorText}" />
         <Setter Property="IsArrowVisible" Value="True" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
@@ -72,7 +72,7 @@
 
         <Style Selector="^ /template/ TextBlock#PART_ColorText">
             <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
-            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeTriggerTextMargin)}"/>
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.TriggerTextMargin)}"/>
         </Style>
 
         <Style Selector="^:disabled">
@@ -84,7 +84,7 @@
                     Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Style Selector="^ /template/ atom|ColorBlock#PART_ColorIndicator">
                 <Setter Property="Opacity"
-                        Value="{CompiledBinding $self.(atom:ColorPickerThemeInputs.ThemeColorBlockDisabledOpacity)}" />
+                        Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.DisabledColorBlockOpacity)}" />
             </Style>
         </Style>
     </Style>

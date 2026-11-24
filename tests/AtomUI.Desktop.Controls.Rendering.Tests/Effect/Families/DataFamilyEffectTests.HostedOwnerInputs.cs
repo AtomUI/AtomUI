@@ -56,15 +56,15 @@ public partial class DataFamilyEffectTests
         WithIsolationWindow(host, (provider, capture) =>
         {
             var accessor = ControlTokenAccessor.Capture<ImagePreviewer>(cover);
-            ImageViewer.GetThemeCoverImageWidth(cover).ShouldBe(accessor.GetOwn<double>(ImagePreviewerTokenKind.CoverImageWidth));
-            ImageViewer.GetThemeMaskBgColor(cover).ShouldNotBeNull();
+            ImageViewer.GetCoverImageSize(cover).ShouldBe(accessor.GetOwn<double>(ImagePreviewerTokenKind.CoverImageWidth));
+            ImageViewer.GetMaskBackground(cover).ShouldNotBeNull();
             var mask = cover.GetVisualDescendants().OfType<AvaloniaBorder>().Single(static border => border.Name == "Mask");
             mask.Background.ShouldNotBeNull();
 
             using var before = capture();
             provider.Config = IsolationConfig(control: (ImagePreviewerTokens.Identity, "CoverImageWidth", "300"));
             using var after = capture();
-            ImageViewer.GetThemeCoverImageWidth(cover).ShouldBe(300d);
+            ImageViewer.GetCoverImageSize(cover).ShouldBe(300d);
             ChangedRatioOf(before, after, host).ShouldBeGreaterThan(0d, "Controls[ImagePreviewer].CoverImageWidth did not reach the standalone cover");
         });
     }

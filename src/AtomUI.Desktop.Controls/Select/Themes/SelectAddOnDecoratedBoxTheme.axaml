@@ -14,14 +14,14 @@
             <Style Selector="^:not(^[Mode=Single])">
                 <Style Selector="^[IsSelectionEmpty=False]">
                     <Setter Property="ContentFramePadding"
-                            Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultiModePadding)}" />
+                            Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPadding)}" />
                     <Setter Property="CompactContentFramePadding"
-                            Value="{CompiledBinding $self.(atom:SelectTag.ThemeCompactMultiModePadding)}" />
+                            Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
                     <Setter Property="ContentMinHeight"
-                            Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultipleItemHeight)}" />
+                            Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
                     <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                         <Setter Property="Margin"
-                                Value="{CompiledBinding $self.(atom:SelectTag.ThemeMultiModePrefixIndent)}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPrefixIndent)}" />
                     </Style>
                     <Style Selector="^[SizeType=Custom] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                         <Setter Property="Padding"
@@ -49,7 +49,7 @@
                 </Style>
 
                 <Style Selector="^[IsSelectionEmpty=True] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
-                    <Setter Property="Padding" Value="{CompiledBinding $self.(atom:SelectTag.ThemeSingleModePadding)}" />
+                    <Setter Property="Padding" Value="{CompiledBinding $self.(atom:SelectTag.SingleSelectionPadding)}" />
                 </Style>
             </Style>
 

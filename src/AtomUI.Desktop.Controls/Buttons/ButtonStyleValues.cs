@@ -2,9 +2,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-internal sealed class ButtonThemeInputs
+internal sealed class ButtonStyleValues
 {
-    private ButtonThemeInputs() { }
+    private ButtonStyleValues() { }
 
     public const double DisabledOpacity = 0.5;
 

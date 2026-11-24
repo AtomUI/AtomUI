@@ -18,12 +18,12 @@ internal static class BackTopRingResources
 
 public partial class BackTopFloatButton : AbstractBackTopFloatButton
 {
-    private FloatButtonThemeInputs? _themeInputs;
+    private FloatButtonAppearanceBinding? _themeInputs;
 
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        _themeInputs = new FloatButtonThemeInputs(this);
+        _themeInputs = new FloatButtonAppearanceBinding(this);
     }
 
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)

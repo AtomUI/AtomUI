@@ -27,12 +27,12 @@
                             DockPanel.Dock="Right"
                             IsVisible="False"
                             IsHitTestVisible="False"
-                            Background="{CompiledBinding Background, ElementName=PART_PrimaryButton}">
+                            Background="{CompiledBinding #PART_PrimaryButton.Background}">
                         <!-- layout: shadcn ButtonGroupSeparator is inset by 1 DIP above and below. -->
                         <Border Margin="0,1,0,1"
                                 Background="{TemplateBinding SplitSeparatorBrush}" />
                     </Border>
-                    <atom:Button Name="PART_PrimaryButton"
+                    <atom:Button x:Name="PART_PrimaryButton"
                                  Classes.semantic-primary="True"
                                  Content="{TemplateBinding Content}"
                                  ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -74,7 +74,7 @@
             <Setter Property="Width" Value="{CompiledBinding $parent[atom:SplitButton].BorderThickness.Left}" />
         </Style>
         <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True]:disabled /template/ Border#PART_SeparatorSpace">
-            <Setter Property="Opacity" Value="{x:Static atom:ButtonThemeInputs.DisabledOpacity}" />
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonStyleValues.DisabledOpacity}" />
         </Style>
 
         <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True][IsDanger=True] /template/ atom|Button">

@@ -98,8 +98,8 @@
 
     <Style Selector="^:is(atom|TreeViewItemHeader)">
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="MinHeight" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeHeaderHeight)}" />
-        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeTreeItemMargin)}" />
+        <Setter Property="MinHeight" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemMargin)}" />
         <Setter Property="CornerRadius"
                 Value="{atom:OwnerTokenResource BorderRadius}" />
 
@@ -109,14 +109,14 @@
         <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorText}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeTreeNodeIconMargin)}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeIconMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ Border#PART_HeaderContentFrame">
             <Setter Property="CornerRadius"
                     Value="{atom:OwnerTokenResource BorderRadius}" />
-            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeTreeItemHeaderMargin)}" />
-            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeTreeItemHeaderPadding)}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemHeaderMargin)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemHeaderPadding)}" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
@@ -137,18 +137,18 @@
         <Style Selector="^[NodeHoverMode=Default], ^[NodeHoverMode=Block]">
             <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="ContentFrameBackground"
-                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeHoverBg)}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}" />
             </Style>
 
             <Style Selector="^[IsSelectable=True]">
                 <Style Selector="^[IsSelected=True]">
                     <Setter Property="ContentFrameBackground"
-                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedBg)}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
 
                 <Style Selector="^[IsPressed=True]">
                     <Setter Property="ContentFrameBackground"
-                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedBg)}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
             </Style>
         </Style>
@@ -160,17 +160,17 @@
             </Style>
             <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="Background"
-                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeHoverBg)}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}" />
             </Style>
 
             <Style Selector="^[IsSelectable=True]">
                 <Style Selector="^[IsSelected=True]">
                     <Setter Property="Background"
-                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedBg)}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
                 <Style Selector="^[IsPressed=True]">
                     <Setter Property="Background"
-                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedBg)}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
             </Style>
         </Style>
@@ -179,11 +179,11 @@
         <Style Selector="^[IsSelectable=True][IsSelected=True]:not(:disabled)">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedColor)}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedForeground)}" />
             </Style>
             <Style Selector="^ /template/ TextBlock#FilterHighlighter">
                 <Setter Property="Foreground"
-                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeNodeSelectedColor)}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedForeground)}" />
             </Style>
         </Style>
 
@@ -200,8 +200,8 @@
         </Style>
 
         <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-            <Setter Property="Width" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeHeaderHeight)}" />
-            <Setter Property="Height" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeHeaderHeight)}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
@@ -220,7 +220,7 @@
         <Style Selector="^[ToggleType=CheckBox], ^[ToggleType=Radio]">
             <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
                 <Setter Property="Margin"
-                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ThemeTreeNodeSwitcherMargin)}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSwitcherMargin)}" />
             </Style>
         </Style>
 

@@ -47,6 +47,9 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
             nameof(IsColorSpectrumSliderVisible),
             true);
 
+    public static readonly StyledProperty<double> SliderTrackHeightProperty =
+        ColorPickerAttachedProperties.SliderTrackHeightProperty.AddOwner<AbstractColorPickerView>();
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractColorPickerView>();
 
@@ -135,6 +138,15 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     {
         get => GetValue(IsColorSpectrumSliderVisibleProperty);
         set => SetValue(IsColorSpectrumSliderVisibleProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the height of the slider tracks in the color picker view.
+    /// </summary>
+    public double SliderTrackHeight
+    {
+        get => GetValue(SliderTrackHeightProperty);
+        set => SetValue(SliderTrackHeightProperty, value);
     }
 
     public int MaxHue

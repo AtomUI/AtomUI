@@ -5,11 +5,11 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:RangeDatePicker}" TargetType="atom:RangeDatePicker">
-        <Setter Property="atom:RangeInfoPickerInputTheme.ThemeRangePickerArrowMargin" Value="{atom:RangeDatePickerTokenResource RangePickerArrowMargin}" />
-        <Setter Property="atom:RangeInfoPickerInputTheme.ThemeRangePickerIndicatorThickness" Value="{atom:RangeDatePickerTokenResource RangePickerIndicatorThickness}" />
+        <Setter Property="atom:RangeInfoPickerInputTheme.RangeArrowMargin" Value="{atom:RangeDatePickerTokenResource RangePickerArrowMargin}" />
+        <Setter Property="atom:RangeInfoPickerInputTheme.RangeIndicatorThickness" Value="{atom:RangeDatePickerTokenResource RangePickerIndicatorThickness}" />
 
-        <Setter Property="atom:DatePickerPresenter.ThemePanelContentPadding" Value="{atom:RangeDatePickerTokenResource PanelContentPadding}" />
-        <Setter Property="atom:DatePickerPresenter.ThemeButtonsPanelMargin" Value="{atom:RangeDatePickerTokenResource ButtonsPanelMargin}" />
+        <Setter Property="atom:DatePickerPresenter.PanelContentPadding" Value="{atom:RangeDatePickerTokenResource PanelContentPadding}" />
+        <Setter Property="atom:DatePickerPresenter.ButtonsPanelMargin" Value="{atom:RangeDatePickerTokenResource ButtonsPanelMargin}" />
 
 
 

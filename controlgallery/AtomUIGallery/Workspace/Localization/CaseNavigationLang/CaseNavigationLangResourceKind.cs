@@ -16,7 +16,6 @@ public enum CaseNavigationLangResourceKind
     General_FloatButton,
     General_SplitButton,
     General_Separator,
-    General_ThemePresets,
     General_CustomizeTheme,
     General_Window,
     Layout,

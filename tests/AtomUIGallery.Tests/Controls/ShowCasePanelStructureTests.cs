@@ -159,9 +159,7 @@ public class ShowCasePanelStructureTests
     {
         var fileName     = Path.GetFileNameWithoutExtension(path);
         var controlName  = Directory.GetParent(path)?.Parent?.Name;
-        // ThemePresets is an interactive theme page with its own preview card, not a control showcase.
-        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal) &&
-               !string.Equals(controlName, "ThemePresets", StringComparison.Ordinal);
+        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal);
     }
 
     [Fact]

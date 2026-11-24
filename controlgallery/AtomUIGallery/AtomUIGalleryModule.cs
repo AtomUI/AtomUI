@@ -49,7 +49,6 @@ using AtomUIGallery.ShowCases.NumberUpDown;
 using AtomUIGallery.ShowCases.Overview;
 using AtomUIGallery.ShowCases.Pagination;
 using AtomUIGallery.ShowCases.Palette;
-using AtomUIGallery.ShowCases.ThemePresets;
 using AtomUIGallery.ShowCases.PopupConfirm;
 using AtomUIGallery.ShowCases.ProgressBar;
 using AtomUIGallery.ShowCases.QRCode;
@@ -163,7 +162,6 @@ public static class AtomUIGalleryModule
                   .AddPage(FloatButtonViewModel.ID, Nav(CaseNavigationLangResourceKind.General_FloatButton, "FloatButton"))
                   .AddPage(SplitButtonViewModel.ID, Nav(CaseNavigationLangResourceKind.General_SplitButton, "SplitButton"))
                   .AddPage(SeparatorViewModel.ID, Nav(CaseNavigationLangResourceKind.General_Separator, "Separator"))
-                  .AddPage(ThemePresetsViewModel.ID, Nav(CaseNavigationLangResourceKind.General_ThemePresets, "ThemePresets"))
                   .AddPage(CustomizeThemeViewModel.ID, Nav(CaseNavigationLangResourceKind.General_CustomizeTheme, "CustomizeTheme"))
                   .AddPage(WindowViewModel.ID, Nav(CaseNavigationLangResourceKind.General_Window, "Window"));
 
@@ -265,7 +263,6 @@ public static class AtomUIGalleryModule
         routes.Map(CommunityViewModel.ID, screen => new CommunityViewModel(screen), () => new CommunityPage());
         routes.Map(PaletteViewModel.ID, screen => new PaletteViewModel(screen), () => new PaletteShowCase());
         routes.Map(IconViewModel.ID, screen => new IconViewModel(screen), () => new IconShowCase());
-        routes.Map(ThemePresetsViewModel.ID, screen => new ThemePresetsViewModel(screen), () => new ThemePresetsShowCase());
         routes.Map(CustomizeThemeViewModel.ID, screen => new CustomizeThemeViewModel(screen), () => new CustomizeThemeShowCase());
         routes.Map(ButtonViewModel.ID, screen => new ButtonViewModel(screen), () => new ButtonShowCase());
         routes.Map(FloatButtonViewModel.ID, screen => new FloatButtonViewModel(screen), () => new FloatButtonShowCase());

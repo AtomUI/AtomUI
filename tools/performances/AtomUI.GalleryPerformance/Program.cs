@@ -573,12 +573,6 @@ internal static class Program
                 AtomUIGallery.ShowCases.Splash.SplashViewModel.ID,
                 "AtomUIGallery.ShowCases.Splash.SplashShowCase",
                 "controlgallery/AtomUIGallery/ShowCases/Other/Splash/Views/SplashShowCase.axaml",
-                stats => stats.VisualCount > 0),
-            ["themepresets"] = new(
-                "ThemePresetsShowCase",
-                AtomUIGallery.ShowCases.ThemePresets.ThemePresetsViewModel.ID,
-                "AtomUIGallery.ShowCases.ThemePresets.ThemePresetsShowCase",
-                "controlgallery/AtomUIGallery/ShowCases/General/ThemePresets/Views/ThemePresetsShowCase.axaml",
                 stats => stats.VisualCount > 0)
         };
 

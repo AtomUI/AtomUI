@@ -49,7 +49,8 @@ public class GalleryBasePackagingTests
 
         baseOutputLeaf.ShouldNotStartWith(".");
         var uploadStep = GetWorkflowStep(workflow, "-  name: Upload NuGet artifacts");
-        uploadStep.ShouldContain("path: ${{ env.BASE_OUTPUT_DIR }}/*.nupkg");
+        uploadStep.ShouldContain("${{ env.BASE_OUTPUT_DIR }}/*.nupkg");
+        uploadStep.ShouldContain("${{ env.BASE_OUTPUT_DIR }}/release-manifest.json");
         uploadStep.ShouldContain("if-no-files-found: error");
     }
 

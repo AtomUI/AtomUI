@@ -1,6 +1,6 @@
 # AtomUI 版本发布准备规范
 
-本文档定义 AtomUI 版本发布准备中「破坏性变更」的判定口径、强制审计步骤、发布就绪清单和发布后缺陷处理策略。
+本文档定义 AtomUI 版本发布的破坏性变更审计、发布就绪门禁、NuGet 可信发布流程和发布后缺陷处理策略。
 `version-release` skill 负责执行流程，本文档是它的规则来源。
 
 ## 适用范围
@@ -113,6 +113,58 @@
 - [ ] 包 API 校验与包布局校验以上一版本为基线通过（有意破坏已写入抑制文件或布局清单）
 - [ ] 默认项目集的全量回归通过（仅按用户明确要求额外包含端到端集成测试）
 - [ ] `git diff --check` 干净
+
+## NuGet 可信发布
+
+[AtomUI NuGet 发布 workflow](../../../.github/workflows/release-nuget-packages.yml) 是 `AtomUI/AtomUI` 正式推送
+NuGet 包到 nuget.org 的入口。推包使用 GitHub OIDC 换取临时 NuGet 凭据。线上切换以首次获准的正式运行通过下述验收为准。
+
+### 构建与推送
+
+1. 手动触发 workflow。`PublishToNuget` 默认为 `false`。仅构建时可用 `TargetRef` 选择分支、标签或提交，
+   构建 Job 完成验包并上传产物，推送 Job 跳过。
+2. 正式发布需经授权，从 `release/6.0` 触发，设置 `PublishToNuget=true` 和 `BuildType=Release`。
+   正式构建固定检出本次运行的 `github.sha`。`TargetRef` 须为 `release/6.0` 或本次运行的提交 SHA，
+   其他值应在构建前报错。
+3. 构建 Job 调用 [BuildNuGetPackages.ps1](../../../scripts/BuildNuGetPackages.ps1)，按
+   [正式包清单](../../../scripts/NuGetPackageProjects.ps1) 打包。包校验和本地 feed 验证通过后，上传本次运行的
+   `.nupkg` 与产物清单。清单记录源码提交、包 ID、版本及每个包文件的 SHA-256。正式发布仍须满足本文的发布就绪门禁。
+4. 推送使用独立 Job，绑定 GitHub 的 `production` 环境，且仅此 Job 获得 `id-token: write`。该 Job 按构建 Job 给出的 ID 下载本次运行的
+   artifact，并复核提交、包清单、文件哈希及目标版本状态，通过后才申请凭据。
+5. 固定到官方发布版本的完整提交 SHA 来调用 `NuGet/login`。以 `chinware` 换取一小时有效的临时 API Key，
+   将 `NUGET_API_KEY` 输出作为推包步骤的环境变量传入 `dotnet nuget push`，目标源为
+   `https://api.nuget.org/v3/index.json`。凭据仅用于该步骤，换钥失败或任一推包命令失败时结束推送 Job。
+   详见 [NuGet Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)。
+
+### 信任策略
+
+| 配置项 | 值 |
+| --- | --- |
+| GitHub 仓库所有者 | `AtomUI` |
+| GitHub 仓库 | `AtomUI` |
+| Workflow File | `release-nuget-packages.yml` |
+| GitHub Environment | `production` |
+| NuGet 包所有者和登录账号 | `chinware` |
+| Scopes | **Push new packages and package versions** |
+| 包范围 | 与正式包清单一致。已发布的包选择具体包 ID，待首发的包使用精确匹配其 ID 的 glob。 |
+
+`production` 的部署分支限定为 `release/6.0`。正式包清单变更时，发布前同步复核 NuGet 策略范围。
+如果策略显示 7 天待激活，在获准的首次发布窗口内激活，推包成功后确认状态为 `Active`。
+详见 [GitHub 部署环境](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
+与 [NuGet 策略激活](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing#policies-pending-full-activation)。
+
+### 切换验收与失败重试
+
+1. 静态检查 workflow，然后以 `PublishToNuget=false` 运行一次。核对完整包清单和 artifact，确认推送 Job 跳过。
+   验证从其他 ref 启动的发布、指向其他提交的 `TargetRef` 以及 `Debug` 发布均被拒绝。
+2. 首次正式 OIDC 发布使用下一个已批准的新版本。推送前逐个核对目标包 ID 和版本，确认该版本尚未发布。
+   推送后按 artifact 清单逐个确认指定版本已可从 nuget.org 下载，并记录 Actions 运行及提交 SHA。
+   远端检查使用 [NuGet 包内容接口](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource)。
+3. 部分推送失败时，先盘点已发布项，确认其对应本次产物，再重跑同一次运行的推送 Job 并复用原 artifact。
+   推送 Job 比较已公开包和原产物的内容，允许 NuGet.org 附加仓库签名。仅补推缺失包，最终仍须逐包确认。
+   已有同版本包若内容不同，按发布后前向修复流程处理。
+4. 首次 OIDC 发布整批验收通过后，核对旧密钥的使用范围，再移除 GitHub 的 `NUGET_API_KEY` Secret 并在
+   NuGet.org 撤销旧密钥。
 
 ## 发布后缺陷处理
 

@@ -48,7 +48,6 @@
         <InternalsVisibleTo Include="AtomUI.DesignLanguages.Shadcn.Tests"/>
         <InternalsVisibleTo Include="AtomUI.DesignLanguages.PrimeNG.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Theme.ContractTests"/>
-        <InternalsVisibleTo Include="AtomUIGallery"/>
         <InternalsVisibleTo Include="AtomUIGallery.Tests"/>
         <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
         <InternalsVisibleTo Include="AtomUI.GalleryPerformance"/>

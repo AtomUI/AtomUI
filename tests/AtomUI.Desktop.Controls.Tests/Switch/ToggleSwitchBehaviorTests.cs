@@ -3,6 +3,9 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -135,32 +138,54 @@ public class ToggleSwitchBehaviorTests
         public bool IsOn { get; set; } = true;
     }
 
-    // A switch checked through a binding after it is shown animates its knob. The knob's final position must survive the
-    // end of that transition: written into the animation layer, it was dropped with the transition and the knob fell
-    // back to the start while the groove showed checked.
     [Fact]
-    public void Knob_Stays_At_The_Checked_End_After_A_Bound_Check_Animates()
+    public void Knob_Reaches_Both_Ends_After_TwoWay_Binding_Transitions()
     {
         var toggleSwitch = new AtomToggleSwitch { IsMotionEnabled = true };
-        toggleSwitch.Bind(ToggleButton.IsCheckedProperty, new Avalonia.Data.Binding(nameof(CheckedModel.IsOn)));
+        toggleSwitch.Bind(ToggleButton.IsCheckedProperty, new ReflectionBinding(nameof(CheckedModel.IsOn))
+        {
+            Mode = BindingMode.TwoWay
+        });
         var host = new StackPanel { Children = { toggleSwitch } };
+        var model = new CheckedModel();
 
         ShowInWindow(host, () =>
         {
-            host.DataContext = new CheckedModel();
+            host.DataContext = model;
+            AssertSettled(true);
+
+            var window = TopLevel.GetTopLevel(toggleSwitch).ShouldBeOfType<AvaloniaWindow>();
+            var center = new Point(toggleSwitch.Bounds.Width / 2, toggleSwitch.Bounds.Height / 2);
+            var pointerPosition = toggleSwitch.TranslatePoint(center, window).ShouldNotBeNull();
+
+            window.MouseDown(pointerPosition, MouseButton.Left);
+            window.MouseUp(pointerPosition, MouseButton.Left);
+            AssertSettled(false);
+
+            window.MouseDown(pointerPosition, MouseButton.Left);
+            window.MouseUp(pointerPosition, MouseButton.Left);
+            AssertSettled(true);
+        });
+
+        void AssertSettled(bool isChecked)
+        {
             Dispatcher.UIThread.RunJobs();
             for (var tick = 0; tick < 60; tick++)
             {
-                Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
                 Dispatcher.UIThread.RunJobs();
                 Thread.Sleep(5);
             }
 
-            toggleSwitch.IsChecked.ShouldBe(true);
+            toggleSwitch.IsChecked.ShouldBe(isChecked);
+            model.IsOn.ShouldBe(isChecked);
             var knob = FindIndicator(toggleSwitch);
-            GetIndicatorBounds(knob, toggleSwitch).X.ShouldBe(
-                toggleSwitch.Bounds.Width - toggleSwitch.TrackPadding - knob.Bounds.Width, 1e-6);
-        });
+            var bounds = GetIndicatorBounds(knob, toggleSwitch);
+            var padding = toggleSwitch.TrackPadding;
+            var expectedX = isChecked ? toggleSwitch.Bounds.Width - padding - knob.Bounds.Width : padding;
+            bounds.X.ShouldBe(expectedX, 1e-6);
+            bounds.Y.ShouldBe(padding, 1e-6);
+        }
     }
 
     private static Rect GetIndicatorBounds(TemplatedControl knob, AtomToggleSwitch owner) =>

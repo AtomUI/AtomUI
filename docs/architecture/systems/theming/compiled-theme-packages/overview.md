@@ -202,5 +202,5 @@ Token 类型、stage、资源键和值能力版本验证全部静态主题；仅
 `src/DesignLanguages/Shadcn/`、`src/DesignLanguages/PrimeNG/` 下的语言包及各控件包的取值包，风格与种子由语言的轴给出，
 不再以每个变体一份主题文件表达。
 
-Gallery 用「主题预设」页展示语言与具名主题的切换效果，见 [Gallery 主题预设页](../../../../gallery/authoring/theme-presets-page.md)。
+Gallery 的顶部主题菜单提供设计语言及具名主题的切换入口。
 第三方做自己的具名主题包走完全相同的路径，见[设计语言包指南](../../../../guides/theming/design-language-packages.md)。

@@ -373,12 +373,6 @@
         <target state="translated">Button 按鈕</target>
       </segment>
     </unit>
-    <unit id="General_ThemePresets">
-      <segment>
-        <source>Theme presets</source>
-        <target state="translated">主題預設</target>
-      </segment>
-    </unit>
     <unit id="General_CustomizeTheme">
       <segment>
         <source>CustomizeTheme</source>

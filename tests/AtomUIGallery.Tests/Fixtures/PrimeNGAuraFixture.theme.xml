@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="PrimeNGAuraFixture" Name="PrimeNG Aura fixture" Language="PrimeNG" Style="Aura">
-  <Tokens>
-    <Token Name="ColorPrimary" Value="#020617" />
-  </Tokens>
-</Theme>

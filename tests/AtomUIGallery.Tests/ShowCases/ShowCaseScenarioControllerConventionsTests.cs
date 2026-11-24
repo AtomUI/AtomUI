@@ -92,9 +92,7 @@ public class ShowCaseScenarioControllerConventionsTests
     {
         var fileName    = Path.GetFileNameWithoutExtension(path);
         var controlName = Directory.GetParent(path)?.Parent?.Name;
-        // ThemePresets is an interactive theme page without an examples body, not a documented control showcase.
-        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal) &&
-               !string.Equals(controlName, "ThemePresets", StringComparison.Ordinal);
+        return string.Equals(fileName, $"{controlName}ShowCase", StringComparison.Ordinal);
     }
 
     private static string GetRepoRoot()

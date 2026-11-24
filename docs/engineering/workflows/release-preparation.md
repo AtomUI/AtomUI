@@ -110,7 +110,7 @@
 - [ ] 中英文 README 四处版本一致，Release Notes 段落已按本版本重写
 - [ ] 中英文 CHANGELOG 同版本、同日期、同信息量，`Breaking Changes` 组在最前
 - [ ] 破坏性变更的迁移文档与 `overview.md` 链接齐备
-- [ ] 包 API 校验与包布局校验以上一版本为基线通过（有意破坏已写入抑制文件或布局清单）
+- [ ] 对照上一版本完成包 API 和包布局校验。按「有意破坏的处理」记录 API 破坏与基线策略，以及获准的包布局例外。
 - [ ] 默认项目集的全量回归通过（仅按用户明确要求额外包含端到端集成测试）
 - [ ] `git diff --check` 干净
 
@@ -146,7 +146,7 @@ NuGet 包到 nuget.org 的入口。推包使用 GitHub OIDC 换取临时 NuGet �
 | GitHub Environment | `production` |
 | NuGet 包所有者和登录账号 | `chinware` |
 | Scopes | **Push new packages and package versions** |
-| 包范围 | 与正式包清单一致。已发布的包选择具体包 ID，待首发的包使用精确匹配其 ID 的 glob。 |
+| 包范围 | NuGet 策略使用 `AtomUI.*`。workflow 按正式包清单逐包验证与推送。 |
 
 `production` 的部署分支限定为 `release/6.0`。正式包清单变更时，发布前同步复核 NuGet 策略范围。
 如果策略显示 7 天待激活，在获准的首次发布窗口内激活，推包成功后确认状态为 `Active`。

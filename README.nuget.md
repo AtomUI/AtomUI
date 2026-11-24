@@ -20,6 +20,16 @@ Windows, macOS and Linux.
 - `AtomUI.Desktop.Controls.Extras`: stable supplemental controls beyond the Ant Design core set.
 - `AtomUI.Icons.AntDesign`: Ant Design icon assets for AtomUI controls and applications.
 
+### Design languages
+
+Enable a design language and register its value packages for the controls used by your application. For desktop
+Ant Design, install `AtomUI.Desktop.Controls.Themes.AntDesign` and configure
+`UseAntDesign(language => language.AddDesktopControls())` alongside `UseDesktopControls()`.
+ColorPicker and DataGrid each have an additional Ant Design value package.
+Shadcn and PrimeNG follow the same package structure.
+
+[Migration guide for 6.2.15 users](https://github.com/AtomUI/AtomUI/blob/v6.3.0/docs/releases/6.3.0-api-changes.md)
+
 ### Requirements
 
 - .NET 10.

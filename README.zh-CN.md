@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview-cn)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.15-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.3.0-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-license-shield]][github-license-link]
 
@@ -76,10 +76,9 @@ net8-only 包兼容桥接面向 .NET 10 及以后，net8 裁剪与 NativeAOT 后
 
 #### 最新版本说明
 
-AtomUI 6.2.15 修复 DataGrid 在分数缩放下滚动崩溃，保留 TreeView 虚拟化时的状态，并恢复 ListBox、ListView 和
-Transfer 的条目键盘焦点。Form 新增按字段校验与静默校验。本版本调整自定义 `IForm` 的契约，将共享评分控件的提示
-移到桌面 `Rate`，并调整 Carousel 自动播放条件。详见[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md)和
-[更新日志](./CHANGELOG.zh-CN.md)。
+AtomUI 6.3.0 将 Ant Design、Shadcn 和 PrimeNG 作为独立设计语言发布，并改进作用域 Token 更新、启动数据和
+桌面控件行为。从 6.2.15 升级时，需要显式注册设计语言，并迁移自定义主题定义和取值规则。详见
+[迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md)和[更新日志](./CHANGELOG.zh-CN.md#630)。
 
 #### 感谢通明湖中心孵化 AtomUI OSS
 
@@ -136,10 +135,13 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.15
+dotnet add package AtomUI.Desktop.Controls --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.Themes.AntDesign --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign --version 6.3.0
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -166,10 +168,13 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.15"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign" Version="6.3.0"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -183,7 +188,9 @@ NuGet -> 软件包
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Localization;
 using AtomUI.Theme;
 using ReactiveUI.Avalonia;
@@ -207,11 +214,14 @@ internal class Program
                              builder.UseLanguages(
                                  LanguageTags.ZhCN,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
                              builder.UseAlibabaSansFont();
                              builder.UseDesktopControls();
                              builder.UseDesktopColorPicker();   // 可选
                              builder.UseDesktopDataGrid();      // 可选
+                             builder.UseAntDesign(language => language
+                                 .AddDesktopControls()
+                                 .AddDesktopColorPicker()
+                                 .AddDesktopDataGrid());
                          })
                          .WithDeveloperTools()
                          .LogToTrace();

@@ -8,26 +8,31 @@ AtomUI 的重要变更记录在此文件中。
 
 ## Unreleased
 
-- 新增预设主题包 `AtomUI.Themes.PrimeNG`、`AtomUI.Themes.Shadcn`：已实现并在本地验证，尚未发布到 NuGet；`AtomUI.Core` 仍只内置 DaybreakBlue。
+## 6.3.0
+
+`2026-11-24`
+
+- Breaking Changes
+  - 在启动时显式选择并注册设计语言。为启用的控件包安装对应取值包，包括按需使用的 DataGrid 和 ColorPicker。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#启用设计语言)
+  - 用 `ThemeSelection` 取代主题算法链和旧主题选择入口。更新更名的主题 API，并改用语言、风格、明暗和密度。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#选择主题)
+  - 将主题定义转换为 XML v2，并以 ABI 4 重新构建编译主题包。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#主题定义-xml-v2)
+  - 将自定义控件 Token 迁移为公开 partial 声明，使用 `IControlTokenRule.Apply` 将取值规则移到对应语言包。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#控件-token-类与第三方控件包)
+  - 将对公开 Token 计算器的直接引用改到各语言命名空间下的新名称。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#取值包计算器命名)
+  - 将自定义控件 Token 覆盖迁到当前所有者，更新变化的值类型，并迁移已删除的 `SharedTokenResourceValue`。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#控件-token-覆盖迁移)
+  - 同步升级相关包和 Generator，重新生成启动数据，再发布裁剪与 NativeAOT 应用。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#生成注册与启动镜像)
+
+- 设计语言
+  - 发布 Ant Design、Shadcn、PrimeNG 三个设计语言包，各提供 Controls、Desktop Controls、DataGrid 和 ColorPicker 取值包。Gallery 与应用通过同一套框架 API 切换语言、风格、明暗和密度。
+- 启动与控件
+  - 压缩生成的启动清单，应用主题变更时复用 Token 资源和不受影响的控件快照。
+  - 修复绑定动画结束后的 ToggleSwitch 把手位置、子项尺寸变化后的 FlexPanel 重排，以及局部作用域弹层定位和窗口边框行为。
+  - 公开 `Button.ContentPadding` 和 ColorPicker 视图的 `SliderTrackHeight`，便于定制。
+
 - 启动注册表的热查询不再逐次进入条目锁或格式化控件身份字符串；生成启动的身份、校验与类型三条路径上，已注册（命中）的查询预热后零分配（未命中仍会格式化诊断键）。
 - 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
 - Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
 - 主题发布开销：未变化的 Token 在发布间保持同一资源实例（全局表、控件有效全局差量与 Own 表），`OwnerTokenResource`、`TokenTransitions` 与 `TokenResourceBinder` 绑定在发布的变更键不含自己的键时跳过解析，不再对每次 `ResourcesChanged` 重新解析；`OwnerTokenResource` / `TokenTransitions` 经一个静态观察者只观察 `ThemeScope.TokenOwner`，不再订阅目标的全部属性变化。变体切换、局部 `ThemeConfigProvider` 变化、运行时 owner 变化、时长变化与局部资源变化照常刷新。
-- 新增公开 API：`AtomUI.Theme.Resources.OwnerTokenResourceExtension`（`{atom:OwnerTokenResource Kind}`，共享基元按 owner 有效全局值读取 Token）、`AtomUI.Theme.Resources.TokenTransitions`（`<atom:TokenTransitions>` 及过渡上的附加属性 `atom:TokenTransitions.Duration`）、`AtomUI.Theme.DesignTokens.ReservedTokenAttribute`（标记已声明但尚未消费的 Own Token）与受保护的 `AbstractControlDesignToken.IsExplicit<TKind>(TKind)`（判断用户是否显式设置了某 Own Token，派生默认值据此跳过）。
-
-- 主题算法
-  - 主题算法改为可插拔的策略：算法身份是开放的 `Catalog:Id`，主题包和应用用 `[ThemeAlgorithm("Acme", "Brand", 1, ThemeAppearanceEffect.Light)]` 声明自己的算法，经生成的 `GeneratedThemeAlgorithmRegistration.Register(builder)` 注册。内置三个算法为 `AtomUI:Default`、`AtomUI:Dark`、`AtomUI:Compact`。主题 XML 用 `<Algorithm Catalog="PrimeNG" Id="Aura" />` 引用包里的算法（`Catalog` 缺省为 `AtomUI`）；C# 用生成的 `<Catalog>Algorithms` 类，例如 `PrimeNGAlgorithms.AuraDark`。[指南](docs/guides/theming/writing-theme-algorithms.md)
-  - 算法除 Map 阶段外，还可以实现 Alias 阶段（`IThemeAliasAlgorithm`）和逐控件阶段（`IControlTokenAlgorithm<TToken>` 加 `[ControlTokenAlgorithm]`）。优先级为 Ant 默认公式 < 算法 < 主题显式值 < 更内层作用域的显式值；算法写入的值带动由它派生的默认值。没有 Own Token 类的控件没有控件阶段。内置主题的编译结果不变。
-  - 阶段写了本阶段之外的 Token、3 轮内不稳定或自身抛异常时抛 `ThemeAlgorithmContractException`（`StageBoundary`、`Unstable`、`Failed`）；算法的 Map 阶段抛异常时（内置算法也一样）同样以 `Failed`（「failed in the Map stage」）报告。Map 或 Alias 阶段的违规让主题编译失败；控件阶段的违规在该控件第一次被读取时抛出，不是编译期诊断。
-  - 运行时追加包（`LoadPackages`）可以带来新算法；控件阶段只有在它的算法或它的控件是同一次追加新注册的时才被接受，算法或控件在任何地方都没有注册的控件阶段作为休眠实现保留，所以身份写错时没有诊断。
-  - 混合链（例如 `[PrimeNG:Aura, AtomUI:Dark]`）合法，但不是 PrimeNG 的暗色。`ControlAlgorithmMode.Global` / `Custom` 下算法链在已推导过的种子上重跑，对自身输出不幂等的算法（PrimeNG 的算法、`AtomUI:Dark`）会让该控件的颜色再偏一档，根上的显式 Map/Alias 值也不参与（既有行为）。
-  - 修复：显式设置的全局 Alias 值现在带动由它派生的 Alias Token：`ControlOutlineWidth`、`ColorControlOutline`、`ColorErrorOutline`、`ColorWarningOutline` 带动 `InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`；`LineWidthFocus` 带动 `FocusVisualBorderThickness`；`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM`、`UniformlyPaddingSM` 带动 `InputPaddingLG`、`InputPaddingSM`、`InputPadding`。没有设置这些 Token 的主题不变；PrimeNG 的输入框焦点阴影有变化。`ATOMUIGEN040` / `ATOMUIGEN048` 现在也检查 `DesignToken.CalculateAliasTokenValues`。
-  - 性能：Token 写入记账让主题冷编译慢 2.3%–2.7%（25 分位数，约 0.018 毫秒）或 3.4%–3.7%（中位数），启动检查按字面规则在两个分段指标上分别越界 0.005 毫秒和 0.17 毫秒；项目负责人决定按此结果通过，是对 2% 门槛的一次明确放宽。就记账这一项改动而言，主题切换、分配（每个 Token 实例 +8 字节）、体积与编译结果都通过，渲染不受影响。
-  - Alias 阶段与控件阶段的性能（与接受记账代价时的树对比复测）：内置主题的冷编译、主题切换与分配没有可测量的代价（分配逐字节不变；当天冷编译的分辨力只有 8%–9%，分辨不出 2% 的差异），启动耗时在测量分辨力（约 1 毫秒）内不变。`AtomUI.Core.dll` 增大 2.05%。使用阶段的主题要为阶段付出代价：PrimeNG 预设冷编译约 0.88 毫秒，内置默认主题约 0.74 毫秒（+18%），分配多约 111 KB。
-- PrimeNG 预设
-  - Aura、Lara、Nora 三个预设改由六个算法（`PrimeNG:Aura`、`PrimeNG:Aura.Dark`、`PrimeNG:Lara`、`PrimeNG:Lara.Dark`、`PrimeNG:Nora`、`PrimeNG:Nora.Dark`）及其 Alias、控件阶段计算；12 个 profile ID 保留，每份 XML 只剩算法链和 Seed Token（Lara 的两个紧凑 profile 另保留一项 Select 覆盖）。换主色种子后悬停、按下、焦点环和选中底色跟着变；把链换成暗色算法与 `.Dark` profile 相同。
-  - 暗色的主色与错误色变化：Aura、Lara 由 `#2FB685` 改为 `#34D399`、`#D98F8F` 改为 `#FCA5A5`；Nora 由 `#11A071` 改为 `#10B981`、`#D66363` 改为 `#F87171`（旧值是 `AtomUI:Dark` 对已是最终值的颜色再次推导的结果）。
-  - 原由 Ant 公式派生的颜色改按 PrimeNG 色阶取级：成功、警告、信息、错误家族的各状态，链接色（浅色下取主色色阶中比主色填充更深的级，即 700 / 800 / 900 级，保证链接文字可读），中性填充，实色底与提示底色，第三、第四级与禁用文字；Nora 的状态色基准移到 600 级（暗色 500 级）。除上文的 Alias 派生修复外，算法迁移没有改变任何尺寸、内边距、圆角、字体、线宽、动效或阴影几何。
+- 新增公开 API：`AtomUI.Theme.Resources.OwnerTokenResourceExtension`（`{atom:OwnerTokenResource Kind}`，共享基元按 owner 有效全局值读取 Token）、`AtomUI.Theme.Resources.TokenTransitions`（`<atom:TokenTransitions>` 及过渡上的附加属性 `atom:TokenTransitions.Duration`）、`AtomUI.Theme.DesignTokens.ReservedTokenAttribute`（标记已声明但尚未消费的 Own Token）。
 
 - ColorPicker
   - 渐变 stop 文本在实时 Token 发布及禁用/启用往返后持续更新；关闭后恢复面板 ColorText 继承，不再保留拷贝的 trigger 画刷，并保留本地前景。Popup View 默认采用自身 EnableMotion，trigger false 作为关闭门控，显式 View 本地值优先。
@@ -40,43 +45,6 @@ AtomUI 的重要变更记录在此文件中。
   - 表头悬停图标使用 ColorIconHover 的 RGB；分组头尺寸/单侧 margin 与分隔线读取既有全局 Token，保留默认尺寸、滚动和布局行为。
   - CSS 展开几何、独立 sticky 表头、筛选搜索/高度及自动列宽共 11 字段保留为 Reserved；选择列和详情列保持自动测量与显式 Column.Width 行为。
 
-
-- Breaking Changes
-  - 控件取值包采用 `[ControlTokenRule]` 与 `IControlTokenRule.Apply`，求值参数为 `TokenEvaluationContext` 和 `ControlTokenTarget`。更新自定义取值规则、共享取值类调用、`DeriveGlobal` 签名和显式注册调用，再重新编译受影响的包和应用。[API 迁移](docs/architecture/systems/theming/control-token-rules.md#兼容性与验证)
-  - Ant Design、PrimeNG 和 Shadcn 取值包的公开 Token 计算器在各自命名空间下使用短名。例如将 `AntDesignSkeletonTokenCalculator` 的引用改为 `SkeletonTokenCalculator`，随后重新编译消费程序集。TreeView 中原带语言前缀的展示层计算器改名为 `TreePresentationLayerTokenCalculator`。[命名迁移](docs/engineering/development/value-package-naming.md#统一命名与重名处理)
-  - 主题算法：`ThemeAlgorithm` 由枚举改为 `(Catalog, Id)` 结构体。`ThemeAlgorithm.Default` / `Dark` / `Compact` 照常可用；`switch` 分支、整数转换、`const` 与 `Enum.*` 改用 `==` 和静态成员，针对枚举构建的程序集（含编译主题程序）需重新构建。`default(ThemeAlgorithm)` 被拒绝，`ToString()` 返回 `AtomUI:Dark`。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#themealgorithm-改为身份结构体)
-  - 主题算法：`ThemeAlgorithmAttribute` 参数改为 `(catalog, id, revision, appearanceEffect)`；`ThemeAlgorithmDescriptor` 的参数与属性改为结构体；`DefaultThemeVariantCalculator`、`DarkThemeVariantCalculator`、`CompactThemeVariantCalculator` 的 `Algorithm` 常量删除（改用 `ThemeAlgorithm.Default` 等）；AXAML 的 `DefaultAlgorithm` / `DarkAlgorithm` / `CompactAlgorithm` 改为 `Default` / `Dark` / `Compact`。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#声明算法)
-  - 主题算法：不合规的 `[ThemeAlgorithm]` 声明（不是实现 `IThemeAlgorithm` 的非抽象非泛型类、没有公开无参构造函数，或 catalog、id、revision、appearanceEffect 无效）现在在特性上报构建错误 `ATOMUITOKEN002`，不再被静默跳过。
-  - 主题算法：`IThemeManagerBuilder` 新增 `AddThemeAlgorithms` 与 `AddControlTokenAlgorithms`，自行实现该接口的代码需补上。新增公开类型：`IThemeAliasAlgorithm`、`IControlTokenAlgorithm<TToken>`、`ControlTokenAlgorithmAttribute`、`ThemeAlgorithmContext`、`ThemeAlgorithmContractException`、`ThemeAlgorithmContractViolationKind`、`IControlToken`、`ControlTokenAlgorithmDescriptor`、`ThemeBuildAlgorithmAttribute`，以及每个算法包生成的 `<Catalog>Algorithms` 类。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#ithememanagerbuilder-新增两个成员)
-  - 控件 Token：`AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid 有 148 个控件 Token 类（116 个终端类、32 个抽象中间层）改为公开，加上原已公开的 2 个，150 个全部为 `public partial`，Token 属性（含 `DesignToken` 的 255 个）改为 partial 属性。公开的抽象中间层可被继承，其 `protected` 辅助方法属于公开 API。`AbstractControlDesignToken.CalculateTokenValues` 改为 `protected virtual`。第三方 Token 类须为 `partial` 类与 `partial` 属性（`ATOMUIGEN049`），并使用 `protected override`（CS0507）。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#控件-token-类改为-public-partial)
-  - 主题：显式设置的全局 Alias 值现在带动派生 Alias；显式设置了 `ControlOutlineWidth`、`ColorControlOutline`、`ColorErrorOutline`、`ColorWarningOutline`、`LineWidthFocus`、`ControlPaddingHorizontal`、`ControlPaddingHorizontalSM` 或 `UniformlyPaddingSM` 的主题，编译结果可能变化。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#全局-alias-显式值现在带动派生-alias)
-  - 构建：编译主题输入中间文件的格式版本由 4 升为 5（算法改为 `Catalog`/`Id`）；旧中间文件报「Compiled theme input format is out of date; rebuild the project.」，重新构建即可。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#编译主题输入格式版本-5)
-  - PrimeNG 预设：暗色主色与错误色，以及原由 Ant 派生的状态色、链接色、填充色与文字色，按上文「PrimeNG 预设」所列变化。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#primeng-预设改由算法计算)
-  - 删除公开标记扩展 `AtomUI.Data.SharedTokenResourceValue`：它在加载时一次性读取应用级值，无法跟随控件级（`Controls[X]`）或作用域（`ThemeConfigProvider`）的动效 Token。请把 `<Setter Property="Transitions"><Transitions><DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" /></Transitions></Setter>` 改写为 `<Setter Property="Transitions"><atom:TokenTransitions><Transitions><DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" /></Transitions></atom:TokenTransitions></Setter>`；仍引用 `SharedTokenResourceValue` 的主题无法编译，ControlTheme 中出现该名称时 ATOMUIGEN041 报告。
-  - Token owner 注入按注册控件类型精确匹配：注册控件的默认 ControlTheme 带一个嵌套的 `^:OfType(Control)` 样式来设置 `ThemeScope.TokenOwner`，应用子类只有在样式键仍为注册类型（`StyleKeyOverride => typeof(Button)`）时才得到 owner；拥有自己样式键、经 `BasedOn` 复用主题的子类不会得到 owner，需要注册自己的 Token 身份。
-  - ProgressBar：圆头（`StrokeLineCap=Round`）线形进度的 rail/track/success 圆角改为跟随 `ProgressBar.LineBorderRadius` Token（默认 100），不再是主题硬编码的 `CornerRadius="1000"`；对高度小于 200px 的进度条两者都呈胶囊形，只有设置了 `LineBorderRadius` 的主题会看到差别。`ProgressBar.ProgressActiveMotionDuration` 改为 `TimeSpan`（antd `progressActiveMotionDuration`，默认 2.4s），仍为保留 Token（Active 闪光动画尚未实现）；以数字设置过它的主题 XML 需改写为时长（`00:00:02.4`）。
-  - ColorPicker Own：19项editor/palette/spectrum/slider字段移到Controls[ColorPickerView] / Controls[GradientColorPickerView]；trigger保留TriggerPadding、TriggerTextMargin、ColorBlockDisabledOpacity、ColorBlockInnerShadows与TransparentBgSize，后两项也由各View独立拥有。旧ColorPicker覆盖不再传入GradientColorPicker或公开View。逐字段迁移见color-picker/token.md；旧无效Alpha字段默认44，新View保持实际原48。
-  - DataGrid 行、单元格、行头和分组头实现容器的有效全局值与动效时长改随宿主 DataGrid，请经 Controls[DataGrid] 配置；嵌套公开编辑器、选择器、按钮和分页器保持各自作用域。
-  - LunarCalendar：Fullscreen Year 的选中月份背景使用独立的 LunarCalendar.ItemActiveBg，不再受 Calendar 同名 Own 覆盖；保留月份默认浅蓝色及日期主色。
-  - Theme Own 作用域独立：DropdownButton、SubmitButton/ResetButton、NumericUpDown、AutoComplete 派生控件、Cascader/TreeSelect、MessageBox、ContextMenu/MenuFlyoutPresenter、卡片/条形页签、SimplePagination、Transfer 视图、TimerStatistic/StatisticCountUp、ImageGroupPreviewer、LunarCalendar、RangeDateViewer 与日期/时间范围选择器均通过实际控件身份配置。原来源控件的覆盖不再传播到其他终端；抽象层只共享计算。SplitButton 的两个公开 Button 与 SearchEdit 搜索 Button 保持 Button 颜色/动效身份。
-  - Own 键迁移：`Space.AddonBg`/`AddOnPadding*` → `CompactSpaceAddOn`；`Menu.ContextMenuOffsetX/Y` → `ContextMenu`；`Pagination.ItemInputBg` → `SimplePagination`；`DateViewer.PanelSpacing` → `RangeDateViewer`；`DatePicker.RangePanelSpacing` → `RangeDatePicker`；`TimePicker.HeaderMargin` → `DatePicker`/`RangeDatePicker`；`InfoPickerInput.RangePickerArrowMargin`/`RangePickerIndicatorThickness` → 实际 range 控件，`RangeMarginToAnchor` → `RangeTimePicker`。TabControl 的卡片/添加按钮/垂直卡片 padding 键移到 CardTabControl/CardTabStrip；`WindowTitleBar.CaptionButtonCornerRadius` 移到公开标题栏 Button/ToggleButton。仅来源可渲染或 Reserved 的字段不复制到无关终端。
-  - Mentions/AutoCompleteTextArea 内部编辑器和 TreeSelect 内部树跟随实际宿主；CandidateList 部件使用宿主 globals，不再借用 ListBox Own；TabItem/TabStripItem 动效跟随实际页签宿主。独立公开控件保持各自身份，Dialog surface 在 Window/Overlay 下均跟随真实 Dialog/MessageBox。
-  - Theme Tokens：删除从未消费的 `WindowTitleBar.ForegroundColor`、`HoverBackgroundColor`、`PressedBackgroundColor`、`CloseHoverBackgroundColor` 与 `ClosePressedBackgroundColor`；请从主题配置移除，按平台/状态改用现有 Active*、Inactive* 与 WindowsClose* Token。ScrollBar / ScrollBarThumb 对继承的动效读取采用 owner 透明语义。
-  - 展示类主题作用域：TransferListItem / TransferTreeViewItem 与 SpinIndicator 对 Token owner 透明，全局值通过实际视图或 Spin 宿主配置。TreeTransfer 不支持分页，ListWidthLG 保留为 Reserved，普通宽度使用 ListWidth。
-  - 录入类主题作用域：FormItem / FormItemDecorator、Upload 触发器与拖拽区域、SegmentedItem、CandidateList / CandidateListItem 为 Token owner 透明部件；有效全局值经宿主 Form、Upload、Segmented、Mentions 或 AutoComplete 设置，部件自身的控件级全局覆盖不再生效。嵌套的注册输入框与动作控件保留各自 identity。
-  - Theme Tokens：删除 Button 家族中没有消费者的 Own Token。请从主题配置中移除 `Button.ExtraContentItemSpacing`、`Button.ExtraContentMargin`、`Button.ExtraContentMarginLG`、`Button.ExtraContentMarginSM`、`Button.GutterToFlyout`、`HyperLinkButton.BorderColorDisabled`、`FloatButton.SquareBadgeOffset` 和 `FloatButton.CircleBadgeOffset`；改用 `DropdownButton.ExtraContentMargin*`/`MarginToAnchor`、`SplitButton.GutterToFlyout` 或 `FloatButton.BadgeOffset`。
-  - Theme Tokens：`Button.FontWeight` 改为 `FontWeight` 值（`500` 或 `Medium`）并设置 Button 字重；`Button.GroupBorderColor` 标为保留，暂无视觉效果。
-  - Theme Tokens：各进度控件拥有各自的 Own Token。`ProgressBar.CircleTextColor`、`ProgressBar.CircleMinimumTextFontSize`、`ProgressBar.CircleMinimumIconSize` 移到 `CircleProgress` / `DashboardProgress`，`ProgressBar.ProgressStepMarginInlineEnd` / `ProgressBar.ProgressStepMinWidth` 移到 `StepsProgressBar`（`ProgressStepMarginInlineEnd` 改为 `double` 间距）；`Controls[ProgressBar]` 不再改变步骤、圆形与仪表盘进度条。
-  - 进度控件：受保护成员 `AbstractProgressBar.StrokeThickness` 更名为 `EffectiveStrokeThickness`（计算值），子类需改用新名称。
-  - Theme Tokens：CheckableTag 拥有自己的 Own Token `TagFontSize`、`TagLineHeight`、`TagIconSize`、`TagPadding`、`TagTextPaddingInline`，请经 `Controls[CheckableTag]` 设置；`Controls[Tag]` 不再改变 CheckableTag。
-  - Theme Tokens：删除没有消费者的 `Alert.MessageWithDescriptionMargin`；标题与描述的间距由 `Alert.DescriptionLabelMargin` 表达。
-  - Theme Tokens：删除从未被消费的 `MessageCard.CardHeight`、`PopupConfirm.PopupMinWidth`、`PopupConfirm.PopupMinHeight`，以及固定尺寸关闭按钮无法体现的 `NotificationCard.NotificationCloseButtonPadding`；请从主题配置中移除。
-  - Theme Tokens：`TabControl.HorizontalMargin` 标为保留，暂无视觉效果（页签栏与内容的间距为 `TabControl.TabAndContentGutter`）；`TabControl.MenuEdgeThickness` 标为保留（溢出阴影载体位于视口外，厚度改为布局常量，默认 32px 不变）。
-  - Theme Tokens：`Pagination.ItemLinkBg`（antd bordered 上一页/下一页按钮）与 `Pagination.InputOutlineOffset` 标为保留，暂无视觉效果。
-  - Theme Tokens：删除从未被消费的 `NavMenu.ItemBackgroundMotionEasing`、`NavMenu.KeyGestureColor` 与 `Menu.MenuTearOffHeight`（antd 无对应 Token；NavMenu 不显示快捷键，Menu 没有 tear-off 项）；请从主题配置中移除。`NavMenu.CollapsedWidth`、`NavMenu.MenuSubMenuBg`、`NavMenu.HorizontalItemHoverColor` 标为保留，暂无视觉效果。
-  - Theme Tokens：删除从未被消费的 `Expander.LeftExpandButtonVMargin` / `RightExpandButtonVMargin`（头部随展开方向旋转，`LeftExpandButtonHMargin` / `RightExpandButtonHMargin` 已覆盖所有方向）与 `GroupBox.TextPaddingInline`、`GroupBox.OrientationMarginPercent`、`GroupBox.VerticalMarginInline`（复制自 Separator 的 Token；GroupBox 标题缺口与边距由 `HeaderContentPadding` / `HeaderContainerMargin` 表达），请从主题配置中移除。`Card.ActionsSpacing`、`Card.TabsMarginBottom`、`Card.CardHeadPadding`、`Card.CardPaddingBase`（antd `actionsLiMargin`、`tabsMarginBottom`、`cardHeadPadding`、`cardPaddingBase`）标为保留，暂无视觉效果。
-  - Theme Tokens：`Avatar.GroupSpace` 与 `Avatar.GroupOverlapping` 移到新的 AvatarGroup Own Token（`Controls[AvatarGroup].GroupSpace` / `GroupOverlapping`，默认值不变），它们只被 AvatarGroup 消费；删除从未被消费的 `Timeline.LastItemContentMinHeight`（antd 6.7 Timeline 无此样式）。`ImagePreviewer.ImagePreviewSwitchSize`（antd `imagePreviewSwitchSize`，antd 6.7 样式未读取）标为保留，暂无视觉效果。
-  - Theme Tokens：删除从未被消费的 `TimePicker.RangePickerArrowMargin` 与 `TimePicker.RangePickerIndicatorThickness`（antd TimePicker 无此 Token）；范围箭头间距与激活条厚度请经实际 `RangeDatePicker` / `RangeTimePicker` 终端 Own Token 设置。
 - 主题一致性
   - 主题一致性：NumericUpDown Large 字号使用 FontSizeLG（默认16），Small/Middle 保持 FontSize（默认14）；Small 空多选 Cascader 使用小号 padding；公开标题栏 AddOn 按钮在非激活窗口中使用非激活悬停色。
 

@@ -3,7 +3,7 @@
 <div align="center">
 
 [![AntDesign](https://img.shields.io/badge/AntDesign%20-6.0-1677ff?style=flat-square&logo=antdesign)](https://ant-design.antgroup.com/components/overview)
-[![AtomUI](https://img.shields.io/badge/AtomUI-6.2.15-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
+[![AtomUI](https://img.shields.io/badge/AtomUI-6.3.0-1677ff?style=flat-square)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-stars-shield]][github-stars-link]
 [![NuGet Download](https://img.shields.io/nuget/dt/AtomUI.Desktop.Controls?style=flat-square&logo=nuget&label=downloads)](https://www.nuget.org/packages/AtomUI.Desktop.Controls)
@@ -85,10 +85,10 @@ and consumed outputs.
 
 #### Latest Release Notes
 
-AtomUI 6.2.15 fixes fractional-scale DataGrid scrolling, preserves TreeView state during virtualization, and
-restores keyboard focus to ListBox, ListView and Transfer rows. Form adds field-level and silent validation.
-This release changes the custom `IForm` contract, moves shared Rate tooltips to Desktop `Rate`, and changes when
-Carousel autoplay runs. See the [migration guide](docs/releases/6.2.15-api-changes.md) and [Changelog](./CHANGELOG.md).
+AtomUI 6.3.0 ships Ant Design, Shadcn and PrimeNG as independent design languages. The release also improves
+scoped token updates, generated startup data and desktop control behavior. Upgrading from 6.3.0 requires
+explicit language registration and migration of custom theme definitions and rules. See the
+[migration guide](docs/releases/6.3.0-api-changes.md) and [Changelog](./CHANGELOG.md#630).
 
 #### Incubator
 
@@ -143,10 +143,13 @@ The packages we have released are as follows:
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.2.15
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.2.15
+dotnet add package AtomUI.Desktop.Controls --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.Extras --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.Themes.AntDesign --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign --version 6.3.0
+dotnet add package AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign --version 6.3.0
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -174,10 +177,13 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.2.15"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.2.15"/>
+        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign" Version="6.3.0"/>
+        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign" Version="6.3.0"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -191,7 +197,9 @@ Enable AtomUI on the `AppBuilder` chain:
 using Avalonia;
 using System;
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Localization;
 using AtomUI.Theme;
 using ReactiveUI.Avalonia;
@@ -215,11 +223,14 @@ internal class Program
                              builder.UseLanguages(
                                  LanguageTags.EnUS,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
-                             builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
                              builder.UseAlibabaSansFont();
                              builder.UseDesktopControls();
                              builder.UseDesktopColorPicker();   // optional
                              builder.UseDesktopDataGrid();      // optional
+                             builder.UseAntDesign(language => language
+                                 .AddDesktopControls()
+                                 .AddDesktopColorPicker()
+                                 .AddDesktopDataGrid());
                          })
                          .WithDeveloperTools()
                          .LogToTrace();
@@ -241,23 +252,15 @@ public partial class App : Application
 }
 ```
 
-To make the first rendered frame use the dark theme, configure the initial theme algorithm in the builder:
+To start in dark mode, also set the initial selection inside the `UseAtomUI` callback.
 
 ```csharp
-.UseAtomUI(builder =>
-{
-    builder.WithInitialTheme(
-        IThemeManager.DEFAULT_THEME_ID,
-        new ThemeConfigBuilder()
-            .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark)
-            .Build());
-    builder.UseDesktopControls();
-})
+builder.WithInitialTheme(
+    ThemeSelection.Of<AntDesignLanguage>().WithAppearance(ThemeAppearance.Dark));
 ```
 
-`ThemeConfigBuilder` is in `AtomUI.Theme.Configuration` and `ThemeAlgorithm` is in `AtomUI.Theme.Algorithms`. Use
-`IThemeManager.ApplyThemeAsync` to switch themes at runtime. To show a startup splash, see the
-[startup guide](docs/guides/startup/overview.md).
+Use `IThemeManager.ApplyAsync` to change the selection at runtime. See the [startup guide](docs/guides/startup/overview.md)
+to add a splash screen.
 
 ###### Start building with AtomUI
 

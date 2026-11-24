@@ -113,10 +113,10 @@ AtomUI 6.3.0 将 Ant Design、Shadcn 和 PrimeNG 作为独立设计语言发布�
 
 #### 开始使用
 
-AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用需要按需添加 DataGrid、ColorPicker、Extras 等可选包。
-下面示例使用当前项目最新版本。
+在使用 Ant Design 的 Avalonia 桌面项目中，安装 `AtomUI.Desktop.Controls.Themes.AntDesign`。该包会引入桌面控件和 Ant Design 设计语言。
+DataGrid、ColorPicker 和 Extras 按需添加。
 
-目前我们已经发布的包如下：
+常用 NuGet 包如下。
 
 | 包名                                  | 描述                              |
 |-------------------------------------|---------------------------------|
@@ -129,19 +129,14 @@ AtomUI 推荐通过 NuGet 安装。先安装主桌面控件包，再根据应用
 | AtomUI.Controls.Shared              | 面向控件开发的共享接口与枚举                 |
 | AtomUI.Controls                     | 基础控件与通用能力                       |
 | AtomUI.Desktop.Controls             | 桌面控件库 — 主要安装包                  |
+| AtomUI.Desktop.Controls.Themes.AntDesign | 桌面控件的 Ant Design 取值包          |
 | AtomUI.Desktop.Controls.DataGrid    | DataGrid 数据表格控件（按需引入）          |
 | AtomUI.Desktop.Controls.ColorPicker | ColorPicker 颜色选择器控件（按需引入）      |
 | AtomUI.Desktop.Controls.Extras      | 补充桌面控件（按需引入）                    |
 | AtomUI.Generator                    | 面向自定义控件、Token 与本地化开发的源代码生成器   |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.3.0
 dotnet add package AtomUI.Desktop.Controls.Themes.AntDesign --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign --version 6.3.0
 ```
 
 您也可以在 IDE 的 NuGet 包管理器中安装。以 Rider 为例，可以依次点击：
@@ -156,7 +151,7 @@ NuGet -> 软件包
 
 ###### 配置项目文件
 
-```xaml
+```xml
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -168,13 +163,7 @@ NuGet -> 软件包
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.3.0"/>
         <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign" Version="6.3.0"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -182,7 +171,7 @@ NuGet -> 软件包
 
 ###### 配置程序入口文件
 
-在 `AppBuilder` 链上启用 AtomUI：
+在 `AppBuilder` 链上启用 AtomUI，并将 `MyApp` 替换为项目的命名空间。
 
 ```csharp
 using Avalonia;
@@ -190,12 +179,9 @@ using System;
 using AtomUI;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
-using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Localization;
-using AtomUI.Theme;
-using ReactiveUI.Avalonia;
 
-namespace AtomUIProgressApp;
+namespace MyApp;
 
 internal class Program
 {
@@ -206,7 +192,6 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<App>()
-                         .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
                          .UseAtomUI(builder =>
@@ -216,12 +201,7 @@ internal class Program
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
                              builder.UseAlibabaSansFont();
                              builder.UseDesktopControls();
-                             builder.UseDesktopColorPicker();   // 可选
-                             builder.UseDesktopDataGrid();      // 可选
-                             builder.UseAntDesign(language => language
-                                 .AddDesktopControls()
-                                 .AddDesktopColorPicker()
-                                 .AddDesktopDataGrid());
+                             builder.UseAntDesign(static ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
                          })
                          .WithDeveloperTools()
                          .LogToTrace();
@@ -231,11 +211,14 @@ internal class Program
 
 ###### 把 `Application` 类声明为 `partial`
 
-AtomUI 生成器会把 `partial` 应用类挂接到启动流程，`Initialize()` 执行时 AtomUI 已经就绪：
+AtomUI 生成器会把 `partial` 应用类挂接到启动流程，`Initialize()` 执行时 AtomUI 已经就绪。
+保留项目中用于创建主窗体的 `OnFrameworkInitializationCompleted()` 重写方法。
 
 ```csharp
 using Avalonia;
 using Avalonia.Markup.Xaml;
+
+namespace MyApp;
 
 public partial class App : Application
 {
@@ -244,6 +227,18 @@ public partial class App : Application
 ```
 
 需要启动 Splash 时见[启动指南](docs/guides/startup/overview.md)。
+
+###### 按需添加控件
+
+安装同版本的 NuGet 包，并在 `UseAtomUI` 回调中加入对应的调用。
+
+| 控件 | NuGet 包 | 启动调用 |
+| --- | --- | --- |
+| DataGrid | `AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign` | `builder.UseDesktopDataGrid();` |
+| ColorPicker | `AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign` | `builder.UseDesktopColorPicker();` |
+| Extras | `AtomUI.Desktop.Controls.Extras` | `builder.UseDesktopExtras();` |
+
+AtomUI 在启动时为已启用的控件自动匹配项目引用的 Ant Design 取值包。详见[设计语言包指南](docs/guides/theming/design-language-packages.md)。
 
 ###### 开始使用 AtomUI
 

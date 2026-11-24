@@ -121,10 +121,10 @@ Thanks to Tongming Lake Center for their incubation support of AtomUI OSS
 
 ##### Add NuGet packages
 
-AtomUI is distributed through NuGet. Install the main desktop controls package first, then add optional packages such as
-DataGrid, ColorPicker and Extras only when your application needs them. The examples below use the latest project version.
+For an Avalonia desktop application using Ant Design, install `AtomUI.Desktop.Controls.Themes.AntDesign`. It brings in
+the desktop controls and the Ant Design design language. Add DataGrid, ColorPicker and Extras as needed.
 
-The packages we have released are as follows:
+The following packages are available on NuGet.
 
 | Package                             | Description                                                                |
 |-------------------------------------|----------------------------------------------------------------------------|
@@ -137,19 +137,14 @@ The packages we have released are as follows:
 | AtomUI.Controls.Shared              | Shared interfaces and enums for control development                        |
 | AtomUI.Controls                     | Base controls and shared control capabilities                              |
 | AtomUI.Desktop.Controls             | Desktop control library — the main package                                 |
+| AtomUI.Desktop.Controls.Themes.AntDesign | Ant Design values for the desktop controls                             |
 | AtomUI.Desktop.Controls.DataGrid    | DataGrid control (opt-in)                                                  |
 | AtomUI.Desktop.Controls.ColorPicker | ColorPicker control (opt-in)                                               |
 | AtomUI.Desktop.Controls.Extras      | Supplemental desktop controls (opt-in)                                     |
 | AtomUI.Generator                    | Source generators for custom controls, tokens and localization             |
 
 ```bash
-dotnet add package AtomUI.Desktop.Controls --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.DataGrid --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.ColorPicker --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.Extras --version 6.3.0
 dotnet add package AtomUI.Desktop.Controls.Themes.AntDesign --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign --version 6.3.0
-dotnet add package AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign --version 6.3.0
 ```
 
 You can also install the packages from your IDE's NuGet package manager. In Rider, open:
@@ -165,7 +160,7 @@ Search for "AtomUI" and install the packages your project needs.
 
 ###### Project Configure
 
-```xaml
+```xml
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -177,13 +172,7 @@ Search for "AtomUI" and install the packages your project needs.
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AtomUI.Desktop.Controls" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.Extras" Version="6.3.0"/>
         <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign" Version="6.3.0"/>
-        <PackageReference Include="AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign" Version="6.3.0"/>
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1"/>
     </ItemGroup>
 </Project>
@@ -191,7 +180,7 @@ Search for "AtomUI" and install the packages your project needs.
 
 ###### Program.cs Configure
 
-Enable AtomUI on the `AppBuilder` chain:
+Enable AtomUI on the `AppBuilder` chain and replace `MyApp` with your project's namespace.
 
 ```csharp
 using Avalonia;
@@ -199,12 +188,10 @@ using System;
 using AtomUI;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
-using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Localization;
 using AtomUI.Theme;
-using ReactiveUI.Avalonia;
 
-namespace AtomUIProgressApp;
+namespace MyApp;
 
 internal class Program
 {
@@ -215,7 +202,6 @@ internal class Program
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder.Configure<App>()
-                         .UseReactiveUI()
                          .UseAtomUIPlatformDetect()
                          .WithAtomUIDefaultOptions()
                          .UseAtomUI(builder =>
@@ -225,12 +211,7 @@ internal class Program
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW]);
                              builder.UseAlibabaSansFont();
                              builder.UseDesktopControls();
-                             builder.UseDesktopColorPicker();   // optional
-                             builder.UseDesktopDataGrid();      // optional
-                             builder.UseAntDesign(language => language
-                                 .AddDesktopControls()
-                                 .AddDesktopColorPicker()
-                                 .AddDesktopDataGrid());
+                             builder.UseAntDesign(static ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
                          })
                          .WithDeveloperTools()
                          .LogToTrace();
@@ -240,11 +221,14 @@ internal class Program
 
 ###### Declare the `Application` Class as `partial`
 
-The AtomUI generator hooks the `partial` application class into startup, so AtomUI is ready before `Initialize()` runs:
+The AtomUI generator hooks the `partial` application class into startup, so AtomUI is ready before `Initialize()` runs.
+Keep your existing `OnFrameworkInitializationCompleted()` override to create the main window.
 
 ```csharp
 using Avalonia;
 using Avalonia.Markup.Xaml;
+
+namespace MyApp;
 
 public partial class App : Application
 {
@@ -261,6 +245,19 @@ builder.WithInitialTheme(
 
 Use `IThemeManager.ApplyAsync` to change the selection at runtime. See the [startup guide](docs/guides/startup/overview.md)
 to add a splash screen.
+
+###### Add optional controls
+
+Install the package at the same AtomUI version and add the matching call inside `UseAtomUI`.
+
+| Controls | NuGet package | Startup call |
+| --- | --- | --- |
+| DataGrid | `AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign` | `builder.UseDesktopDataGrid();` |
+| ColorPicker | `AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign` | `builder.UseDesktopColorPicker();` |
+| Extras | `AtomUI.Desktop.Controls.Extras` | `builder.UseDesktopExtras();` |
+
+At startup, AtomUI matches the referenced Ant Design value packages to the enabled controls.
+See the [design language guide](docs/guides/theming/design-language-packages.md) for details.
 
 ###### Start building with AtomUI
 

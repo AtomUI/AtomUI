@@ -13,17 +13,17 @@ public interface IThemeManagerBuilder
     void AddCompiledThemePackage(CompiledThemePackage package);
 
     /// <summary>
-    /// Enables a design language. The generated <c>GeneratedDesignLanguageRegistration.Register</c> of a language package
+    /// Enables a design language. The generated <c>DesignLanguageRegistration.Register</c> of a language package
     /// calls this; two languages with the same identity are rejected when the theme schema registry is built.
     /// </summary>
     IThemeManagerBuilder AddDesignLanguage(DesignLanguageDescriptor language);
 
     /// <summary>
-    /// Registers the control derivations of a value package. The generated
-    /// <c>GeneratedControlDerivationRegistration.Register</c> calls this; two derivations for the same language token type
+    /// Registers the control rules of a value package. The generated
+    /// <c>GeneratedControlTokenRuleRegistration.Register</c> calls this; two rules for the same language token type
     /// and control are rejected when the theme schema registry is built.
     /// </summary>
-    IThemeManagerBuilder AddControlDerivations(IEnumerable<ControlDerivationDescriptor> derivations);
+    IThemeManagerBuilder AddControlTokenRules(IEnumerable<ControlTokenRuleDescriptor> rules);
     void AddControlPackage(ControlPackageRegistration package);
     void AddInitializer(Action<IThemeManager> initializer);
     void WithInitialTheme(string themeId, ThemeConfig? config = null);

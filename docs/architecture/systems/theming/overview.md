@@ -2,7 +2,9 @@
 
 AtomUI 主题系统跨越 Core 运行时、Control 包、主题资产、Source Generator、配置文件和 Gallery 工具。
 
-- [设计语言架构](design-languages.md)：词汇与取值的分离、四类包与依赖规则、语言契约与四个轴、控件推导、单遍管线与冻结语义、选择与启动校验。
+- [设计语言架构](design-languages.md)：词汇与取值的分离、四类包与依赖规则、语言契约与四个轴、控件取值规则、单遍管线与冻结语义、选择与启动校验。
+- [语言包 Token 求值设计](language-token-evaluation.md)定义三套语言包内部的求值规则、命名与迁移验收。
+- [控件 Token 取值规则设计](control-token-rules.md)定义 `IControlTokenRule`、求值上下文、写入目标与生成注册。
 - [主题系统架构](runtime.md)：配置、编译、Snapshot、资源、作用域、事务、缓存、生命周期和 AOT。
 - [应用资源宿主设计](application-resource-host.md)：主题与语言共同挂载、外部主题优先级及单一所有权契约。
 - [应用资源宿主验证](application-resource-host-verification.md)：源码实现证据、性能对照和验收边界。

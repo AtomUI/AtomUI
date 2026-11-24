@@ -32,7 +32,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | --- | --- |
 | Token/schema 生成 | 生成 exact CLR type、owner-bearing identity、强类型资源键与单项 descriptor；抽象 Token 不产生运行时身份 |
 | Token 属性实现（`TokenPropertyImplementationGenerator`） | IDE 设计期可见的增量生成器，为 `[ControlDesignToken]`/`[GlobalDesignToken]` 的 partial Token 属性产出 `get => field` 与检查冻结位的 setter（`IsFrozen(nameof(P))`）；非 partial 报 `ATOMUIGEN049` |
-| 设计语言与控件推导注册 | 为语言包生成 `GeneratedDesignLanguageRegistration`（每个 `[DesignLanguage]` 类连同 `[LanguageDesignToken]` 的 schema）与 `GeneratedLanguageTokenSchema`，为取值包生成 `GeneratedControlDerivationRegistration`（每个 `[ControlDerivation]` 类）；为绑定了控件的终端 Token 生成 `IControlToken` 实现（只在完整构建时可见）；构建契约携带 `ThemeBuildLanguageAttribute`。见[编写设计语言](../../guides/theming/writing-design-languages.md) |
+| 设计语言与控件取值规则注册 | 为语言包生成 `DesignLanguageRegistration`（每个 `[DesignLanguage]` 类连同 `[LanguageDesignToken]` 的 schema）与 `GeneratedLanguageTokenSchema`，为取值包生成 `GeneratedControlTokenRuleRegistration`（每个 `[ControlTokenRule]` 类）；为绑定了控件的终端 Token 生成 `IControlToken` 实现（只在完整构建时可见）；构建契约携带 `ThemeBuildLanguageAttribute`。见[编写设计语言](../../guides/theming/writing-design-languages.md) |
 | 主题定义生成 | 从 XML v2 声明及语言 / Token 契约生成注册与类型化默认值（ABI v4），保留运行时配置语义；主题引用构建期看不到的语言、Control 或 Token 时报 `ATOMUITOKEN002` |
 | 主题资产生成 | 生成主题导出、RequiredTokenOwners、资产 factory 与顺序元数据；资源 wrapper 由构建任务提供 |
 | 承诺面与消费图 | Own Token 包内引用分析（Active / Reserved / 未引用）、全局 Token 消费图、生效测试骨架；分析产物不进入 schema 或 revision |
@@ -66,6 +66,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | 文档 | 所有权 |
 | --- | --- |
 | [控件注册生成](control-registration.md) | 本模块的注册输入、输出、增量模型和验证边界 |
+| [控件 Token 取值规则设计](../../architecture/systems/theming/control-token-rules.md) | 取值规则的标记、`Apply` 分析与静态注册输出契约 |
 | [Semantic Part Generator](semantic-part-generator.md) | 语义声明、AXAML 路由验证与专用 Style 生成 |
 | [Scoped Resource Host Generator](scoped-resource-host-generator.md) | scoped resource host 的识别、生成与生命周期 |
 | [编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md) | 类型化注册与默认赋值、字面量解析、构建契约和 AOT 保留边界 |

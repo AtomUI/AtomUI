@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsDataGridThemesAntDesign;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class AntDesignDataGridExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsDataGridThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

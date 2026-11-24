@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesignLanguagesPrimeNG;
 using AtomUI.Theme.Languages;
 
 namespace AtomUI.DesignLanguages.PrimeNG;
@@ -13,7 +14,7 @@ public static class PrimeNGBuilderExtensions
         Action<DesignLanguageBuilder<PrimeNGLanguage>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        Generated.AtomUIDesignLanguagesPrimeNG.GeneratedDesignLanguageRegistration.Register(builder.Theme);
+        DesignLanguageRegistration.Register(builder.Theme);
         configure?.Invoke(new DesignLanguageBuilder<PrimeNGLanguage>(builder));
         return builder;
     }

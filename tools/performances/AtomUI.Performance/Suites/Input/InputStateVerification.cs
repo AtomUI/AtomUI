@@ -46,7 +46,7 @@ internal static partial class Program
         var seeds    = new AntDesignToken();
         language.DefineSeeds(variant, token, seeds);
         language.DeriveLanguage(variant, token, seeds);
-        language.DeriveGlobal(new DerivationContext<AntDesignToken>(variant, seeds), token);
+        language.DeriveGlobal(new TokenEvaluationContext<AntDesignToken>(variant, seeds), token);
         return token;
     }
 

@@ -33,8 +33,8 @@
 | 语言 Token | `[LanguageDesignToken]` 的 `partial` 类，派生自 `LanguageDesignToken` | 语言包 |
 | 设计语言 | `[DesignLanguage]` 类，派生自 `DesignLanguage<TLanguageToken>` | 语言包 |
 | 变体 | `DesignVariant(Style, Appearance, Density, Idiom)` | 运行时值 |
-| 控件视图 | `ControlView<TToken>`：`Token` 是该控件的控件 Token，`Global` 是它看到的全局 Token | 求值期间的值 |
-| 控件推导 | `[ControlDerivation]` 类，实现 `IControlDerivation<TLanguageToken, TToken>` | 取值包 |
+| 写入目标 | `ControlTokenTarget<TToken>` 的 `Own` 与 `Global` 分别承载控件自身 Token 和该控件可见的全局 Token | 控件求值期间 |
+| 控件取值规则 | `[ControlTokenRule]` 类，实现 `IControlTokenRule<TLanguageToken, TToken>` | 取值包 |
 | 主题 | 语言 + 固定的轴 + 种子 + 显式覆盖的一份配置：XML v2 主题定义，或 `ThemeConfig` | 应用或任意包 |
 | 选择 | `ThemeSelection`：最终用户选的语言、具名主题、明暗、密度与种子 | 运行时值 |
 
@@ -47,7 +47,7 @@
 | 核心 | `AtomUI.Core` | 全局 Token 声明、语言契约、单遍管线、主题定义、选择与注册、中性工具（`AtomUI.Theme.Derivation`） | — |
 | 控件包 | `AtomUI.Controls`、`AtomUI.Desktop.Controls`、`AtomUI.Desktop.Controls.ColorPicker`、`AtomUI.Desktop.Controls.DataGrid`… | 控件、ControlTheme、控件 Token 声明及其生成物（资源键、Schema、`XxxTokenResource`、`TokenSchemaDigest`） | 核心、所依赖的控件包 |
 | 语言包 | `AtomUI.DesignLanguages.<Lang>` | 语言类、语言 Token、种子默认值与全局推导、具名主题、`Use<Lang>()` | 核心（派生语言另引用基语言的语言包） |
-| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包每个控件 Token 类在该语言下的控件推导、`Add<控件包>()` | 对应控件包、对应语言包、所依赖控件包在同一语言下的取值包 |
+| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包每个控件 Token 类在该语言下的控件取值规则、`Add<控件包>()` | 对应控件包、对应语言包、所依赖控件包在同一语言下的取值包 |
 
 - 每个带控件 Token 的控件包对应「语言数」个取值包，一对一，不合并：可选的控件包（ColorPicker、DataGrid）必须保持可选。
   没有控件 Token 的控件包（`AtomUI.Desktop.Controls.Extras`）不需要取值包。
@@ -59,9 +59,9 @@
 - 语言包与取值包不使用 `InternalsVisibleTo` 访问核心或控件包：第一方没有特权通道。
 
 构建期由生成器检查依赖方向，违反报 `ATOMUIGEN053`：语言包引用了控件包
-（`src/AtomUI.Generator/Derivation/DesignLanguageRegistrationGenerator.cs:68`）、控件包引用了语言一侧
+（`src/AtomUI.Generator/DesignLanguages/DesignLanguageRegistrationGenerator.cs:68`）、控件包引用了语言一侧
 （`src/AtomUI.Generator/ThemeSchema/TokenSchemaDigestWriter.cs:44`）、取值包里声明了控件
-（`src/AtomUI.Generator/Derivation/DerivationAnalysis.cs:216`）。自带通用推导的控件包（如 GalleryBase）不受最后一条限制。
+（`ControlTokenRuleAnalysis.ReportControlsInValuePackage`）。自带通用取值规则的控件包（如 GalleryBase）不受最后一条限制。
 
 ## 4. 词汇层
 
@@ -72,8 +72,8 @@
 | --- | --- | --- | --- |
 | 声明在 | 核心 | 语言包 | 控件包 |
 | 表达 | 跨语言通用的角色 | 该语言独有的角色、几何、色阶 | 某个控件的取值与行为开关 |
-| 谁给值 | 语言的 `DeriveGlobal`；对单个控件，由控件推导在其视图中覆盖 | 语言的 `DeriveLanguage` | 控件推导 |
-| 谁能读 | 语言、全部控件推导、模板（经控件视图）、应用 | 该语言的全局推导与控件推导 | 该控件的模板与代码 |
+| 谁给值 | 语言的 `DeriveGlobal`；对单个控件，由控件取值规则在其视图中覆盖 | 语言的 `DeriveLanguage` | 控件取值规则 |
+| 谁能读 | 语言、全部控件取值规则、模板（经控件视图）、应用 | 该语言的全局推导与控件取值规则 | 该控件的模板与代码 |
 | 主题覆盖 | `<Tokens>`、`ThemeConfig.Tokens` | `<LanguageTokens>`、`ThemeConfig.LanguageTokens` | `<Control>/<Tokens>`、`ThemeConfig.Controls` |
 | Schema 阶段（`TokenStage`） | `Seed` / `Map` / `Alias` | `Seed`（语言种子）/ `Language` | `Control` |
 
@@ -90,6 +90,8 @@
 
 ## 5. 语言契约与四个轴
 
+Ant Design、PrimeNG 和 Shadcn 的包内求值结构与命名见[语言包 Token 求值设计](language-token-evaluation.md)。
+
 ```csharp
 public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
     where TLanguageToken : LanguageDesignToken, new()
@@ -99,12 +101,12 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
 
     public abstract void DefineSeeds(in DesignVariant variant, DesignToken seed, TLanguageToken languageSeed);
     public abstract void DeriveLanguage(in DesignVariant variant, DesignToken seed, TLanguageToken language);
-    public abstract void DeriveGlobal(in DerivationContext<TLanguageToken> context, DesignToken token);
+    public abstract void DeriveGlobal(in TokenEvaluationContext<TLanguageToken> context, DesignToken token);
 }
 ```
 
-- 三个方法分别写全：该变体下的种子默认值（全局种子与语言种子）、每个非种子语言 Token、每个 Map 与 Alias Token。全局推导不拆成
-  Map 与 Alias 两步：显式值已在推导前冻结，同一方法里先写 Map 再写 Alias，Alias 读到的就是显式 Map 值。
+- 三个方法分别写全该变体下的全局与语言种子默认值、非种子语言 Token，以及 Map 与 Alias Token。
+  `DeriveGlobal` 是一次运行时阶段，入口先应用 Map 规则再应用 Alias 规则。显式 Map / Alias 值在调用前冻结，Alias 读取已生效的 Map 值。
 - 所有方法是输入的纯函数，可能在后台线程并发调用。通用色彩数学调用核心的中性工具（`PaletteGenerator`、`ColorMap`、
   `CalculatorUtils`），不得调用另一种语言。
 - `Id` 必须返回常量字符串（构建契约从常量读取），符合 Identifier 词法。
@@ -119,7 +121,7 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
 | 形态 | `DesignIdiom` | 语言声明；核心预定义 `Desktop`、`Mobile` | 界面根；作用域可以显式覆盖 |
 
 风格、密度、形态是开放的标识符值类型，新的语言或设备形态不需要改核心。明暗怎么算、每个密度档怎么算是语言自己的规则
-（Ant Design 的 `AntDesignMapDerivation` 先跑默认算法，紧凑再叠紧凑算法，暗色再叠暗色算法，都是语言包的内部实现）。
+（Ant Design 的 `MapTokenRules` 先跑默认算法，紧凑再叠紧凑算法，暗色再叠暗色算法，都是语言包的内部实现）。
 请求了语言未声明的取值时，配置提交或主题应用时失败（`ATMTHM4005`、`ATMTHM5002`、`ThemeSelectionException`），不做静默替换。
 语言独有的其他选择（Base Color、对比度等级）不新增轴，用语言种子表达。
 
@@ -140,14 +142,14 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
 
 ## 7. 派生语言
 
-派生语言继承基语言的种子默认值、语言 Token、全局推导与全部控件推导，只重写不同的部分，用于品牌化。代码里它不是一个特殊的
+派生语言继承基语言的种子默认值、语言 Token、全局推导与全部控件取值规则，只重写不同的部分，用于品牌化。代码里它不是一个特殊的
 声明，而是两条普通规则的结果：
 
 1. 派生语言的语言 Token 类派生自基语言的语言 Token 类（单继承），例如 `SampleToken : AntDesignToken`。
-2. 派生语言类本身是 `DesignLanguage<SampleToken>`，三个方法委托给基语言的一个实例再改写差异；`DerivationContext` 的构造函数是公开的，
+2. 派生语言类本身是 `DesignLanguage<SampleToken>`，三个方法委托给基语言的一个实例再改写差异；`TokenEvaluationContext` 的构造函数是公开的，
    把同一个语言 Token 对象当作基语言的 Token 传入。
 
-控件推导的查找沿语言 Token 类型的继承链进行（第 8 节），所以派生语言只为改动的控件写推导，其余落到基语言的推导上。基语言的取值包
+控件取值规则的查找沿语言 Token 类型的继承链进行（第 8 节），所以派生语言只为改动的控件写推导，其余落到基语言的推导上。基语言的取值包
 仍要登记，但不必启用基语言本身：派生语言的入口用 `new DesignLanguageBuilder<AntDesignLanguage>(language.Root)` 调用基语言取值包的
 `Add…()`。派生语言有自己的 `Id`，在目录里有自己的隐式条目。三种第一方语言之间不建立派生关系。
 
@@ -155,33 +157,35 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
 （只有声明的样例控件包）、`Sample.Controls.Themes.AntDesign` 与 `Sample.Controls.Themes.Sample`（两个取值包，后者只覆盖 Badge，Tag 沿
 继承链取 Ant Design 的推导），由 `tests/AtomUI.DesignLanguages.Parity.Tests` 验证。
 
-## 8. 控件推导
+## 8. 控件取值规则
+
+公开接口与生成注册见[控件 Token 取值规则设计](control-token-rules.md)。
 
 ```csharp
-[ControlDerivation]
-internal sealed class AntDesignSampleBadgeDerivation : IControlDerivation<AntDesignToken, SampleBadgeToken>
+[ControlTokenRule]
+internal sealed class AntDesignSampleBadgeTokenRule : IControlTokenRule<AntDesignToken, SampleBadgeToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<SampleBadgeToken> view)
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<SampleBadgeToken> target)
     {
-        view.Token.BadgeBackground = view.Global.ColorPrimary;
-        view.Token.BadgeSize       = view.Global.ControlHeightSM;
+        target.Own.BadgeBackground = target.Global.ColorPrimary;
+        target.Own.BadgeSize       = target.Global.ControlHeightSM;
     }
 }
 ```
 
 - **身份是类型。** 推导通过泛型参数绑定到语言 Token 类型与控件 Token 类型；风格、明暗、密度、形态都是 `context.Variant` 里的参数。
   一种语言 Token 类型、一个控件只有一个推导，重复登记在注册表构建时报
-  `Duplicate control derivation for '…' and control '…'.`。
-- **输出是控件视图。** `view.Token` 必须写全（构建期 `ATOMUIGEN050`；基类在别的包里声明的属性由契约测试检查）；不得先读后写
-  （`ATOMUIGEN051`）。`view.Global` 读时得到该控件的值，写时只对该控件生效，**只能写 Map 与 Alias**：写种子在运行时直接抛出
-  （`a control derivation may override Map and Alias tokens only, not seeds.`），包装为 `ThemeDerivationException`。语言要让
+  `Duplicate control token rule for '…' and control '…'.`。
+- **写入目标。** `target.Own` 必须写全（构建期 `ATOMUIGEN050`；基类在别的包里声明的属性由契约测试检查）；不得先读后写
+  （`ATOMUIGEN051`）。`target.Global` 读时得到该控件的值，写时只对该控件生效，**只能写 Map 与 Alias**：写种子在运行时直接抛出
+  （`a control token rule may override Map and Alias tokens only, not seeds.`），包装为 `ThemeDerivationException`。语言要让
   某个控件的取值与全局不同时，模板读的是表达这个角色的 Map / Alias Token（如 `BorderRadiusMD`、`InputActiveBorderColor`）
   或控件 Token（如 Button 的 `LinkColor`、`DangerAccentColor`），语言在视图里覆盖前者、在控件 Token 上给后者赋值。
 - **共享逻辑**放在取值包内的普通辅助类；跨端共用的抽象 Token 层（`AtomUI.Controls`）的取值由 `AtomUI.Controls.Themes.<Lang>` 提供公开的
   共享推导方法，各端取值包调用。
 
-**组件配方**由语言 Token 提供。Shadcn 和 PrimeNG 的取值包通过 `context.Language` 和 `view.Global` 读取表格、列表项、
-弹层与输入框各组角色。配方在本次控件推导期间按需读取源 Token，适用于同一语言的控件取值包及产品取值包。主题通过覆盖配方所读的
+**组件配方**由语言 Token 提供。Shadcn 和 PrimeNG 的取值包通过 `context.Language` 和 `target.Global` 读取表格、列表项、
+弹层与输入框各组角色。配方在本次控件取值规则期间按需读取源 Token，适用于同一语言的控件取值包及产品取值包。主题通过覆盖配方所读的
 语言或全局 Token 改变取值。PrimeNG 的桌面取值包通过公开角色读取预设组件值与状态色阶，预设规则表和调色实现由语言包维护。
 
 **查找只有一条规则**：沿当前语言的语言 Token 类型的继承链，由最具体到最一般，取第一个为该控件登记的推导。
@@ -189,12 +193,12 @@ internal sealed class AntDesignSampleBadgeDerivation : IControlDerivation<AntDes
 ```text
 SampleToken : AntDesignToken : LanguageDesignToken
 
-IControlDerivation<SampleToken, SampleBadgeToken>            derived language's own derivation
-IControlDerivation<AntDesignToken, SampleTagToken>           base language's derivation
-IControlDerivation<LanguageDesignToken, RatingToken>         language-independent (generic) derivation
+IControlTokenRule<SampleToken, SampleBadgeToken>            derived language's own derivation
+IControlTokenRule<AntDesignToken, SampleTagToken>           base language's derivation
+IControlTokenRule<LanguageDesignToken, RatingToken>         language-independent (generic) derivation
 ```
 
-绑定到根类型 `LanguageDesignToken` 的**通用推导**只能读全局 Token，在任何语言下都能给出取值，供不打算逐语言适配的第三方控件使用；
+绑定到根类型 `LanguageDesignToken` 的**通用取值规则**只能读全局 Token，在任何语言下都能给出取值，供不打算逐语言适配的第三方控件使用；
 第一方控件包不用它代替语言专属推导。
 
 ## 9. 单遍管线与冻结语义
@@ -224,8 +228,8 @@ IControlDerivation<LanguageDesignToken, RatingToken>         language-independen
 冻结按 Token **名称**记录（`AbstractDesignToken.Freeze(string)`，内部是一个按序数比较的名称集合），第 5 步之前清空。Token 对象只在
 求值期间存在，渲染与资源查找读冻结后的值表。
 
-**错误模型。** 语言的推导抛出时整次编译失败（`Design language '…' failed in its language|global derivation.`）；控件推导抛出或缺少
-推导时，在首次查询该控件时抛出 `ThemeDerivationException`（`… failed to derive the control view of control '…'.`），不使整次应用失败。
+**错误模型。** 语言的推导抛出时整次编译失败（`Design language '…' failed in its language|global derivation.`）；控件取值规则抛出或缺少
+推导时，在首次查询该控件时抛出 `ThemeDerivationException`（`… failed to apply the token rule for control '…'.`），不使整次应用失败。
 
 **发布层不变。** 本架构只替换「值怎么算」；按槽位的值表、`ThemeSnapshot`、只存相对全局差量的控件快照、惰性控件槽、两级缓存、
 事务与发布顺序、零分配资源查询都沿用（见[主题系统架构](runtime.md)第 8、9、12、13 节与[惰性物化](lazy-materialization.md)）。
@@ -235,7 +239,7 @@ IControlDerivation<LanguageDesignToken, RatingToken>         language-independen
 
 - 作用域（`ThemeConfigProvider`）可以覆盖种子、三类 Token 中的任意值、明暗、密度、形态，也可以整体换语言
   （`ThemeConfigBuilder.WithLanguage`）。每个作用域是一个求值单元。
-- 控件级配置（主题定义的 `<Control>`、`ThemeConfig.Controls`）写的就是该控件的视图，与控件推导写的是同一份，优先级为
+- 控件级配置（主题定义的 `<Control>`、`ThemeConfig.Controls`）写的就是该控件的视图，与控件取值规则写的是同一份，优先级为
   「语言推导 < 主题定义 < 作用域与运行时配置」。规则只有两条，取代 v1 的四种控件算法模式：
   1. 只写 Map、Alias 或控件 Token：只替换那一项，不触发派生。
   2. 覆盖了种子，或固定了 `Appearance` / `Density`：该控件自成求值单元，管线为它单独求一份全局 Token（条件段按它的有效变体匹配），再求
@@ -302,19 +306,19 @@ await themeManager.ApplyAsync(ThemeSelection
 })
 ```
 
-- `Use<Lang>()` 由语言包提供：调用生成的 `GeneratedDesignLanguageRegistration.Register`（经 `IThemeManagerBuilder.AddDesignLanguage`
+- `Use<Lang>()` 由语言包提供：调用生成的 `DesignLanguageRegistration.Register`（经 `IThemeManagerBuilder.AddDesignLanguage`
   登记 `DesignLanguageDescriptor`），并注册语言自带的编译主题包。
 - `Add<控件包>()` 由取值包提供，是 `DesignLanguageBuilder<TLanguage>` 上的扩展方法：调用生成的
-  `GeneratedControlDerivationRegistration.Register`（经 `AddControlDerivations` 登记 `ControlDerivationDescriptor`），并带上所依赖控件包的取值
+  `GeneratedControlTokenRuleRegistration.Register`（经 `AddControlTokenRules` 登记 `ControlTokenRuleDescriptor`），并带上所依赖控件包的取值
   （`AddDesktopControls()` 调用 `AddCommonControls()`）。它**只登记取值**，不启用控件包。
 - 控件包由 `Use<控件包>()` 启用，应用至少启用一种语言。显式登记的取值优先用于对应的控件包与语言组合。
 - 注册表由生成代码产出（静态、无捕获的委托），不依赖反射，满足裁剪与 AOT。语言与取值包的修订取自程序集 MVID（确定性构建），不手工维护
   revision。
 
-**配置提交时的校验**（注册表构建，任一失败即启动失败，`ThemeSchemaRegistry.ValidateDerivationCoverage`）：
+**配置提交时的校验**（注册表构建，任一失败即启动失败，`ThemeSchemaRegistry.ValidateTokenRuleCoverage`）：
 
 1. **覆盖**：每个已启用语言 × 每个已启用控件里有控件 Token 的类，都能按第 8 节规则找到推导；否则报
-   `Controls without a derivation in an enabled design language: '<control>' under '<language>' (install and enable '<assembly>.Themes.<language>')`。
+   `Controls without a token rule in an enabled design language: '<control>' under '<language>' (install and enable '<assembly>.Themes.<language>')`。
 2. **Token Schema 摘要**：控件包生成 `[assembly: TokenSchemaDigest]`，取值包为它覆盖的每个控件包生成
    `[assembly: CoversTokenSchema(assemblyName, digest)]`；两者不一致（应用升级了控件包而取值包是旧的）即失败，消息写出两个包名与两个摘要。
 3. **初始选择**：语言已启用，风格、明暗、密度在语言声明的范围内（选择解析的规则 1）。
@@ -322,7 +326,7 @@ await themeManager.ApplyAsync(ThemeSelection
    声明的风格里时，`DesignLanguageDescriptor` 构造即失败。
 
 运行时经 `LoadPackages` 追加包时执行同样的校验，另加一条：新推导若会被已提交的语言为已提交的控件找到（会改变已提交的取值），整次追加
-被拒绝（`ThemeSchemaRegistry.ValidateAppendedDerivations`）。构建期另有 `ATOMUIGEN052`：取值包缺少它所覆盖控件包某个控件 Token 类的推导。
+被拒绝（`ThemeSchemaRegistry.ValidateAppendedTokenRules`）。构建期另有 `ATOMUIGEN052`：取值包缺少它所覆盖控件包某个控件 Token 类的推导。
 
 **契约测试库** `tests/AtomUI.Theme.ContractTests`（`DesignLanguageContract.Verify`）在语言声明的每个变体下检查 `Identity`、`LanguageComplete`、
 `GlobalComplete`、`ControlComplete`、`Pure`、`Deterministic`、`Readable`，第三方语言与取值包可以直接复用。
@@ -348,7 +352,7 @@ builder.WithInitialDesignLanguage<AntDesignLanguage>();
 - **取值包匹配。** 生成器根据应用引用的取值包生成静态注册入口。提交配置时，按已启用的「控件包 × 语言」匹配注册入口，
   并保留覆盖、Token Schema 摘要和语言继承校验。可选控件包保持独立，未启用的控件包不参与匹配。绑定使用直接调用，支持裁剪和 NativeAOT。
 - **匹配结果。** 唯一候选自动选用。缺少必需的取值包时报出控件包、语言和应引用的包。多个候选时报出冲突来源，
-  应用可通过 `ant.UseValues(GeneratedControlDerivationRegistration.Package)` 指定对应取值包的生成入口。包引用与注册顺序不决定选用哪一套。
+  应用可通过 `ant.UseValues(GeneratedControlTokenRuleRegistration.Package)` 指定对应取值包的生成入口。包引用与注册顺序不决定选用哪一套。
 - **语言内的默认主题。** `WithDefaultTheme` 只记录所属语言的具名主题，提交时校验其归属。首次切入该语言且没有显式选择时使用这个默认主题；
   没有配置时使用语言本身的默认风格与隐式主题。显式选择的主题或风格优先，主题已有的固定轴和锁定种子继续生效。
 - **初始根选择。** `WithInitialDesignLanguage<TLanguage>()` 选择已启用语言及它的默认主题。只启用一种时可省略；
@@ -357,7 +361,7 @@ builder.WithInitialDesignLanguage<AntDesignLanguage>();
 #### 启动求值边界
 
 应用可登记多种设计语言。启动时，初始根选择决定唯一需要求值的语言。其余语言只参与描述符、主题目录与取值包登记及静态覆盖校验。
-这些步骤和语言菜单均不得为尚未应用的语言创建 Token 或调用 `DefineSeeds`、语言推导、全局推导或控件推导。
+这些步骤和语言菜单均不得为尚未应用的语言创建 Token 或调用 `DefineSeeds`、语言推导、全局推导或控件取值规则。
 该语言首次被根、作用域或预览实际应用时，才按目标变体求值。目录展示使用声明的元数据，控件快照仍按资源查询求值。
 
 隐式主题的色样与种子文本来自语言声明的 `DefaultThemeSeeds`。未声明时目录省略这些展示值。主题计算仍由
@@ -376,7 +380,7 @@ Token 与全局 Token。Ant Design 语言声明 `Desktop` 与 `Mobile`；主仓�
 | 在某种语言上做品牌化 | 具名主题；需要不同推导规则时写派生语言 | 不需要 |
 | 新增一种设计语言 | 一个语言包，加上为要支持的控件包各写一个取值包 | 不需要 |
 | 为别人的控件包追加一种语言 | 引用它的控件包与语言包，写一个取值包 | 不需要 |
-| 新增一个控件包 | 控件包 + 各语言取值包；或只提供通用推导；或控件与推导放在同一个程序集 | 不需要 |
+| 新增一个控件包 | 控件包 + 各语言取值包；或只提供通用取值规则；或控件与推导放在同一个程序集 | 不需要 |
 | 语言需要自己的输入或概念 | 语言种子、语言 Token | 不需要 |
 | 给语言增加风格、密度档 | 在该语言的 `Axes` 里声明 | 只改该语言包及其取值包 |
 | 新增设备形态 | 新的 `DesignIdiom` 标识；语言声明支持；界面根给出 | 不需要 |
@@ -393,13 +397,13 @@ Token 与全局 Token。Ant Design 语言声明 `Desktop` 与 `Mobile`；主仓�
 | 方案 | 代码 | 依据 |
 | --- | --- | --- |
 | 6.3：冻结是每个 Token 对象上按槽位的一组位 | 按名称冻结：生成的 setter 检查 `IsFrozen(nameof(X))`，冻结项是名称集合。抽象中间层的同一属性在不同终端类里槽位不同，按名称省去逐终端的映射表 | `src/AtomUI.Core/Theme/DesignTokens/AbstractDesignToken.cs` 的 `IsFrozen` / `Freeze` / `TokenFreezeSet` |
-| 14 的覆盖校验：取值包对其控件包的每个 Token 类有且只有一个推导 | `ATOMUIGEN052` 不要求派生语言的取值包写全：派生语言只写改动的控件，其余由启动时的覆盖校验沿继承链确认 | `src/AtomUI.Generator/Derivation/DerivationAnalysis.cs:174` |
+| 14 的覆盖校验：取值包为其控件包的每个 Token 类声明一条规则 | 派生语言只写改动的控件，其余由启动时的覆盖校验沿继承链确认 | `ControlTokenRuleAnalysis.ReportMissingCoverage`（`ATOMUIGEN052`） |
 | 5.6：语言「声明一个基语言」 | 没有基语言声明：派生关系就是语言 Token 类的继承加上对基语言实例的委托；派生语言的取值包引用基语言的取值包以便登记它们（方案 3.3 的引用规则没有列出这一例外，`ATOMUIGEN053` 也不检查取值包之间的引用） | `tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.Sample/Sample.Controls.Themes.Sample.csproj` |
 | 8 的校验 2：控件包要求的形态都在已启用语言声明的形态内 | 未实现：控件包注册不声明形态，形态缺省 `Desktop` | `src/AtomUI.Core/Theme/Configuration/NormalizedThemeConfig.cs:81`、`src/AtomUI.Core/Theme/ControlPackageRegistration.cs` |
-| 12.3：读集记录与更细的结构共享 | 只记录控件推导对全局 Token 的读集：子求值单元只改了 Map / Alias 时，读集不相交的控件复用父单元的结果。语言 Token 由各控件共享、可能并发求值，不在其上记读集：语言 Token 一变，全部控件重算；改了种子或调色板时同样全部重算 | `src/AtomUI.Core/Theme/Compilation/GlobalTokenReadSet.cs`、`ThemeCompiler.FindReadSetReuse` |
+| 12.3：读集记录与更细的结构共享 | 只记录控件取值规则对全局 Token 的读集：子求值单元只改了 Map / Alias 时，读集不相交的控件复用父单元的结果。语言 Token 由各控件共享、可能并发求值，不在其上记读集：语言 Token 一变，全部控件重算；改了种子或调色板时同样全部重算 | `src/AtomUI.Core/Theme/Compilation/GlobalTokenReadSet.cs`、`ThemeCompiler.FindReadSetReuse` |
 | 5.5：组件配方（Table、ListItem、Overlay、Field…） | Shadcn 与 PrimeNG 提供 Table、ListItem、Overlay、Field 配方，沿用各桌面取值包的现有映射。Shadcn 另提供 Chart 系列色，PrimeNG Table 提供条纹背景角色。Touch 属于移动形态，Ant Design 的跨产品配方仍由消费阶段核对 | `ShadcnComponentRecipes.cs`、`PrimeNGComponentRecipes.cs`、`AntDesignToken.cs` |
 | 7.10：编译主题「ABI v2」 | 编号为 ABI 4（1–3 已用过），即方案所说的第二代格式 | `docs/reference/theming/compiled-theme-abi-v4.md` |
-| 8：追加包执行与启动相同的四项校验 | 另加一条：追加的推导不得改变已提交语言下已提交控件的取值 | `src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs` 的 `ValidateAppendedDerivations` |
+| 8：追加包执行与启动相同的四项校验 | 另加一条：追加的推导不得改变已提交语言下已提交控件的取值 | `src/AtomUI.Core/Theme/Schema/ThemeSchemaRegistry.cs` 的 `ValidateAppendedTokenRules` |
 
 ## 相关文档
 

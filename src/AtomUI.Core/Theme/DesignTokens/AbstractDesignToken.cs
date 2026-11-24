@@ -11,7 +11,7 @@ public abstract class AbstractDesignToken
     // Null while nothing is frozen: then the check in every generated setter is a single null test.
     private TokenFreezeSet? _freeze;
 
-    // Null unless the compiler records what a control derivation reads (spec 12.3); then every getter adds its name.
+    // Null unless the compiler records what a control token rule reads (spec 12.3); then every getter adds its name.
     private HashSet<string>? _reads;
 
     /// <summary>
@@ -43,7 +43,7 @@ public abstract class AbstractDesignToken
     internal void Freeze(string tokenName) => (_freeze ??= new TokenFreezeSet()).Add(tokenName);
 
     /// <summary>
-    /// Makes a write to any of <paramref name="tokenNames"/> throw; used for the global view of a control derivation,
+    /// Makes a write to any of <paramref name="tokenNames"/> throw; used for the global view of a control token rule,
     /// which may override Map and Alias tokens but never a seed (spec 6.1).
     /// </summary>
     internal void RejectWrites(IReadOnlySet<string> tokenNames, string reason) =>
@@ -57,7 +57,7 @@ public abstract class AbstractDesignToken
 
     /// <summary>
     /// Starts tracking whether any write through a token property is accepted (not frozen); the compiler uses it to
-    /// know whether a control derivation overrode a global token in the control's view.
+    /// know whether a control token rule overrode a global token in the control's view.
     /// </summary>
     internal void TrackWrites() => (_freeze ??= new TokenFreezeSet()).TrackWrites = true;
 

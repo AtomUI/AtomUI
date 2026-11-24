@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesignLanguagesAntDesign;
 using AtomUI.Theme.Languages;
 
 namespace AtomUI.DesignLanguages.AntDesign;
@@ -13,10 +14,10 @@ public static class AntDesignBuilderExtensions
         Action<DesignLanguageBuilder<AntDesignLanguage>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        Generated.AtomUIDesignLanguagesAntDesign.GeneratedDesignLanguageRegistration.Register(builder.Theme);
+        DesignLanguageRegistration.Register(builder.Theme);
         if (s_registeredThemes.TryAdd(builder.Theme, s_marker))
         {
-            Generated.AtomUIDesignLanguagesAntDesign.GeneratedThemePackageRegistration.Register(builder.Theme);
+            ThemePackageRegistration.Register(builder.Theme);
         }
         configure?.Invoke(new DesignLanguageBuilder<AntDesignLanguage>(builder));
         return builder;

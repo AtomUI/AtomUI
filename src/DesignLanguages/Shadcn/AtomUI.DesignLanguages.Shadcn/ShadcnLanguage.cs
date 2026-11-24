@@ -1,4 +1,4 @@
-using AtomUI.DesignLanguages.Shadcn.Derivation;
+using AtomUI.DesignLanguages.Shadcn.TokenEvaluation;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
@@ -40,19 +40,19 @@ public sealed class ShadcnLanguage : DesignLanguage<ShadcnToken>
     /// </summary>
     public override void DefineSeeds(in DesignVariant variant, DesignToken seed, ShadcnToken languageSeed)
     {
-        ShadcnLanguageTokens.DefineSeeds(seed, languageSeed);
+        LanguageTokenRules.DefineSeeds(seed, languageSeed);
     }
 
     /// <summary>The base-colour variables of the appearance, the resolved theme and the style's tables.</summary>
     public override void DeriveLanguage(in DesignVariant variant, DesignToken seed, ShadcnToken language)
     {
-        ShadcnLanguageTokens.Derive(in variant, seed, language);
+        LanguageTokenRules.Apply(in variant, seed, language);
     }
 
     /// <summary>The shadcn map over the copied antd calculators, then the alias formulas with the shadcn variables.</summary>
-    public override void DeriveGlobal(in DerivationContext<ShadcnToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<ShadcnToken> context, DesignToken token)
     {
-        ShadcnGlobalDerivation.Derive(context.Variant, context.Language, token);
+        GlobalTokenRules.Apply(context.Variant, context.Language, token);
     }
 
     private static IReadOnlyList<TokenDescriptor> AdjustableSeeds() =>

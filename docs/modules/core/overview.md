@@ -13,12 +13,12 @@
   `DwmVsyncRenderTimer`，使动画节拍锁定刷新率；无法替换时退回把进程计时精度提高到 1 ms。
 - 管理唯一运行时 `ThemeManager`、五阶段主题事务、稳定 ThemeContext、局部作用域图以及独立 TopLevel 的
   context lease/resource bridge。
-- 定义设计语言契约（`DesignLanguage<T>`、四个轴、`DerivationContext`、`ControlView`、`IControlDerivation`）与语言、控件推导的
+- 定义设计语言契约（`DesignLanguage<T>`、四个轴、`TokenEvaluationContext`、`ControlTokenTarget`、`IControlTokenRule`）与语言、控件取值规则的
   注册与覆盖校验；承接编译主题包注册；保留动态 XML v2 Reader/Binder。Ant Design 等语言的公式在各自的语言包与取值包里，Core 不内置任何语言或具名主题。
 - 定义生成式全局/Control Own Token schema、所有 Control 可覆盖完整 Global Token 的规则、不可变
   `ThemeSnapshot`、稳定资源键，以及 `SharedTokenResource`/`XxxTokenResource`/`OwnerTokenResource` 三种强类型
   资源扩展；公开 Control 经可继承的 `ThemeScope.TokenOwner` 把 identity 传给模板内的共享基元。
-- 求值是单遍管线：种子 → 语言 Token → 全局推导 → 控件推导；显式值在推导之前按名字冻结，推导对冻结值的写入被忽略。
+- 求值是单遍管线：种子 → 语言 Token → 全局推导 → 控件取值规则；显式值在推导之前按名字冻结，推导对冻结值的写入被忽略。
 - 定义 Semantic Part 声明、不可变 descriptor、冻结 registry 与 `IThemeManager.SemanticParts` 运行时查询入口；
   Avalonia Selector 继续负责实际样式匹配。
 - 组合根 `IAtomUIBuilder` 的主题与本地化子 Builder，并把 `ILanguageManager`、`ILocalizer` 暴露给应用。
@@ -36,7 +36,7 @@
 | `Theme/Derivation/` | 与语言无关的色彩数学：调色板生成、预设色板、`CalculatorUtils` 等中性工具 |
 | `Theme/Configuration/` | ThemeConfig、ControlThemeConfig、配置规范化、继承与覆盖合并 |
 | `Theme/Definitions/` | 编译主题包 ABI 4/注册、主题来源、Catalog 与每个已启用语言的隐式条目 `$<LanguageId>`、动态 XML v2 读取、语法模型、Schema 绑定和 diagnostics |
-| `Theme/Schema/` | 生成式 Token schema、Control、设计语言与控件推导 descriptor、Token Schema 摘要、ControlTheme asset descriptor 与 manifest 契约 |
+| `Theme/Schema/` | 生成式 Token schema、Control、设计语言与控件取值规则 descriptor、Token Schema 摘要、ControlTheme asset descriptor 与 manifest 契约 |
 | `Theme/SemanticParts/` | Semantic Part Attribute、数量/定制枚举、Control descriptor 与冻结 registry |
 | `Theme/Compilation/` | 纯 ThemeCompiler（显式值冻结后单遍推导）、不可变 ThemeSnapshot 和 Snapshot 缓存 |
 | `Theme/Resources/` | Snapshot-backed ResourceProvider、全局 SharedTokenResource、owner 继承的 OwnerTokenResource、生成式 XxxTokenResource、ControlTheme asset manifest、resolver 和样式加载辅助 |
@@ -120,6 +120,7 @@ ThemeManager 管理自己的主题资源字典与根 Context Style；Localizatio
 - [状态动效初始化架构设计](../../architecture/systems/control-infrastructure/transition-initialization.md)：初始化会话、可撤销抑制、目标生命周期、新控件接入与性能契约。
 - [状态动效初始化验证](../../architecture/systems/control-infrastructure/transition-initialization-verification.md)：当前源码、专项原型与目标架构的差异，以及行为、性能和发布验收证据。
 - [设计语言架构](../../architecture/systems/theming/design-languages.md)：Core 拥有的语言契约、单遍管线与启动校验。
+- [控件 Token 取值规则设计](../../architecture/systems/theming/control-token-rules.md)定义取值规则的接口、写入边界与注册契约。
 - [主题系统架构](../../architecture/systems/theming/runtime.md)
 - [应用资源宿主设计](../../architecture/systems/theming/application-resource-host.md)
 - [应用资源宿主验证](../../architecture/systems/theming/application-resource-host-verification.md)

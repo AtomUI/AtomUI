@@ -15,10 +15,10 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<ControlTokenIdentity, ControlTokenDescriptor> _controlsByIdentity;
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
     private readonly FrozenDictionary<string, DesignLanguageDescriptor> _languagesById;
-    private readonly FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlDerivationDescriptor>
-        _derivationsByKey;
+    private readonly FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>
+        _tokenRulesByKey;
     // One table per language, indexed by control slot, built on the language's first use.
-    private readonly ConditionalWeakTable<DesignLanguageDescriptor, ControlDerivationDescriptor?[]> _derivationTables = new();
+    private readonly ConditionalWeakTable<DesignLanguageDescriptor, ControlTokenRuleDescriptor?[]> _tokenRuleTables = new();
     // Constructor-only: written by the constructors.
     private ThemeSchemaRevision _revision;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
@@ -27,21 +27,21 @@ internal sealed class ThemeSchemaRegistry
 
     internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
         IEnumerable<DesignLanguageDescriptor> languages,
-        IEnumerable<ControlDerivationDescriptor>? derivations)
+        IEnumerable<ControlTokenRuleDescriptor>? rules)
         // Chains straight to the private constructor: a forwarding overload in between would be one more jitted
         // method on every startup.
-        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), languages, null, null, derivations)
+        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), languages, null, null, rules)
     {
         _startupIndex = index;
         Controls = new StartupControlList(index);
-        // Neither the compiled stamp nor Core's global fingerprint sees the languages and derivations of packages.
+        // Neither the compiled stamp nor Core's global fingerprint sees the languages and rules of packages.
         _revision = FoldLanguages(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
             ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
             index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
                 package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
                     ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray()),
-            Languages, ControlDerivations);
-        ValidateDerivationCoverage();
+            Languages, ControlTokenRules);
+        ValidateTokenRuleCoverage();
     }
 
     internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
@@ -100,10 +100,10 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlTokenDescriptor> controls,
         IEnumerable<DesignLanguageDescriptor> languages,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets = null,
-        IEnumerable<ControlDerivationDescriptor>? derivations = null)
-        : this(globalTokens, controls, languages, themeAssets, null, derivations)
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null)
+        : this(globalTokens, controls, languages, themeAssets, null, rules)
     {
-        ValidateDerivationCoverage();
+        ValidateTokenRuleCoverage();
     }
 
     /// <summary>
@@ -117,11 +117,11 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
         ulong globalSchemaFingerprint,
         IReadOnlyList<PackageSchemaFingerprint> packageFingerprints,
-        IEnumerable<ControlDerivationDescriptor>? derivations = null)
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null)
         : this(globalTokens, controls, languages, themeAssets, (globalSchemaFingerprint, packageFingerprints),
-            derivations)
+            rules)
     {
-        ValidateDerivationCoverage();
+        ValidateTokenRuleCoverage();
     }
 
     private ThemeSchemaRegistry(
@@ -130,7 +130,7 @@ internal sealed class ThemeSchemaRegistry
         IEnumerable<DesignLanguageDescriptor> languages,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
         (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence,
-        IEnumerable<ControlDerivationDescriptor>? derivations)
+        IEnumerable<ControlTokenRuleDescriptor>? rules)
     {
         ArgumentNullException.ThrowIfNull(globalTokens);
         ArgumentNullException.ThrowIfNull(controls);
@@ -156,7 +156,7 @@ internal sealed class ThemeSchemaRegistry
             static descriptor => descriptor.Id,
             StringComparer.Ordinal,
             static source => source.OrderBy(static descriptor => descriptor.Id, StringComparer.Ordinal).ToArray());
-        var derivationArray = OrderDerivations(derivations);
+        var ruleArray = OrderTokenRules(rules);
         var assetArray = ToOrderedArray(
             themeAssets,
             static descriptor => descriptor.AssetUri.ToString(),
@@ -227,19 +227,19 @@ internal sealed class ThemeSchemaRegistry
         GlobalTokens          = globalTokensView;
         Controls              = Array.AsReadOnly(controlArray);
         Languages             = Array.AsReadOnly(languageArray);
-        ControlDerivations    = Array.AsReadOnly(derivationArray);
+        ControlTokenRules    = Array.AsReadOnly(ruleArray);
         ThemeAssets           = Array.AsReadOnly(assetArray);
         if (combinedRevisionEvidence is { } evidence)
         {
             ArgumentNullException.ThrowIfNull(evidence.Packages);
             _revision = FoldLanguages(
                 ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages), languageArray,
-                derivationArray);
+                ruleArray);
         }
         else
         {
             _revision = FoldLanguages(ComputeRevision(globalArray, controlArray, assetArray), languageArray,
-                derivationArray);
+                ruleArray);
         }
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
         _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
@@ -250,7 +250,7 @@ internal sealed class ThemeSchemaRegistry
                                     "Control CLR type")
                                 .ToFrozenDictionary();
         _languagesById        = languageMap.ToFrozenDictionary(StringComparer.Ordinal);
-        _derivationsByKey     = BuildDerivationMap(derivationArray);
+        _tokenRulesByKey     = BuildTokenRuleMap(ruleArray);
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
         _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
     }
@@ -261,10 +261,10 @@ internal sealed class ThemeSchemaRegistry
     public IReadOnlyList<DesignLanguageDescriptor> Languages { get; }
 
     /// <summary>
-    /// The registered control derivations, ordered by language token type and then control identity. A derivation
+    /// The registered control rules, ordered by language token type and then control identity. A rule
     /// whose language or control is not registered is kept here but never called.
     /// </summary>
-    internal IReadOnlyList<ControlDerivationDescriptor> ControlDerivations { get; }
+    internal IReadOnlyList<ControlTokenRuleDescriptor> ControlTokenRules { get; }
     public ThemeSchemaRevision Revision => _revision;
     // A structural revision does not identify descriptor callbacks or binding ownership.
     // The key carries this small identity instead of retaining the entire registry.
@@ -499,41 +499,41 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// The derivation of the control in <paramref name="controlSlot"/> under <paramref name="language"/>: the first one
+    /// The rule of the control in <paramref name="controlSlot"/> under <paramref name="language"/>: the first one
     /// registered along the language token type's base types, from the most specific to <see cref="LanguageDesignToken"/>
     /// (spec 6.1). <see langword="null"/> for a control without control tokens.
     /// </summary>
-    internal ControlDerivationDescriptor? FindDerivation(DesignLanguageDescriptor language, int controlSlot)
+    internal ControlTokenRuleDescriptor? FindControlTokenRule(DesignLanguageDescriptor language, int controlSlot)
     {
         ArgumentNullException.ThrowIfNull(language);
-        var table = _derivationTables.GetValue(language, CreateDerivationTable);
+        var table = _tokenRuleTables.GetValue(language, CreateTokenRuleTable);
         return table[controlSlot];
     }
 
-    /// <summary>Finds the derivation registered for (<paramref name="languageTokenType"/>, <paramref name="control"/>) along the type chain.</summary>
-    internal ControlDerivationDescriptor? FindDerivation(Type languageTokenType, ControlTokenIdentity control)
+    /// <summary>Finds the rule registered for (<paramref name="languageTokenType"/>, <paramref name="control"/>) along the type chain.</summary>
+    internal ControlTokenRuleDescriptor? FindControlTokenRule(Type languageTokenType, ControlTokenIdentity control)
     {
         for (var type = languageTokenType;
              type is not null && typeof(LanguageDesignToken).IsAssignableFrom(type);
              type = type.BaseType)
         {
-            if (_derivationsByKey.TryGetValue((type, control), out var derivation))
+            if (_tokenRulesByKey.TryGetValue((type, control), out var rule))
             {
-                return derivation;
+                return rule;
             }
         }
 
         return null;
     }
 
-    private ControlDerivationDescriptor?[] CreateDerivationTable(DesignLanguageDescriptor language)
+    private ControlTokenRuleDescriptor?[] CreateTokenRuleTable(DesignLanguageDescriptor language)
     {
-        var table = new ControlDerivationDescriptor?[Controls.Count];
+        var table = new ControlTokenRuleDescriptor?[Controls.Count];
         for (var slot = 0; slot < table.Length; slot++)
         {
             if (ControlHasOwnTokens(slot))
             {
-                table[slot] = FindDerivation(language.LanguageTokenType, GetControlIdentity(slot));
+                table[slot] = FindControlTokenRule(language.LanguageTokenType, GetControlIdentity(slot));
             }
         }
 
@@ -541,10 +541,10 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// Spec 8, check 1: every enabled language finds a derivation for every control token class of every enabled
+    /// Spec 8, check 1: every enabled language finds a rule for every control token class of every enabled
     /// control package. The message names the value package that is missing.
     /// </summary>
-    private void ValidateDerivationCoverage()
+    private void ValidateTokenRuleCoverage()
     {
         if (Languages.Count == 0)
         {
@@ -562,7 +562,7 @@ internal sealed class ThemeSchemaRegistry
                 }
 
                 var identity = GetControlIdentity(slot);
-                if (FindDerivation(language.LanguageTokenType, identity) is { } found)
+                if (FindControlTokenRule(language.LanguageTokenType, identity) is { } found)
                 {
                     // Spec 8, check 4: the value package was built against the loaded control package's token schema.
                     TokenSchemaDigests.Validate(found.ValuePackage, found.TokenType.Assembly);
@@ -578,22 +578,22 @@ internal sealed class ThemeSchemaRegistry
         if (missing is not null)
         {
             throw new ThemeSchemaException(
-                "Controls without a derivation in an enabled design language: " + string.Join(", ", missing.Take(16)) +
+                "Controls without a token rule in an enabled design language: " + string.Join(", ", missing.Take(16)) +
                 (missing.Count > 16 ? $", and {missing.Count - 16} more." : "."));
         }
     }
 
     /// <summary>
-    /// Validates the derivations a package append brings, where this registry is the appended one and
-    /// <paramref name="previous"/> the committed one. A new derivation is rejected when a committed language would
+    /// Validates the rules a package append brings, where this registry is the appended one and
+    /// <paramref name="previous"/> the committed one. A new rule is rejected when a committed language would
     /// find it for a committed control: it would change committed values.
     /// </summary>
-    internal void ValidateAppendedDerivations(ThemeSchemaRegistry previous)
+    internal void ValidateAppendedTokenRules(ThemeSchemaRegistry previous)
     {
         ArgumentNullException.ThrowIfNull(previous);
-        foreach (var descriptor in ControlDerivations)
+        foreach (var descriptor in ControlTokenRules)
         {
-            if (previous._derivationsByKey.TryGetValue((descriptor.LanguageTokenType, descriptor.Control), out var committed) &&
+            if (previous._tokenRulesByKey.TryGetValue((descriptor.LanguageTokenType, descriptor.Control), out var committed) &&
                 ReferenceEquals(committed, descriptor))
             {
                 continue;
@@ -602,7 +602,7 @@ internal sealed class ThemeSchemaRegistry
                 previous.Languages.Any(language => descriptor.LanguageTokenType.IsAssignableFrom(language.LanguageTokenType)))
             {
                 throw new ThemeLoadException(
-                    $"Package append cannot add a derivation for the already registered control '{descriptor.Control}' " +
+                    $"Package append cannot add a token rule for the already registered control '{descriptor.Control}' " +
                     $"under a registered language ('{descriptor.LanguageTokenType.Name}').");
             }
         }
@@ -807,14 +807,14 @@ internal sealed class ThemeSchemaRegistry
     }
 
     // Compile-time revisions (startup image stamp, Core's global fingerprint) cover only the token schema. The languages
-    // and derivations of packages are folded in on every path; their revisions are the module version ids of their
+    // and rules of packages are folded in on every path; their revisions are the module version ids of their
     // assemblies, so a code change invalidates every cache that depends on them.
     private static ThemeSchemaRevision FoldLanguages(
         ThemeSchemaRevision revision,
         IReadOnlyList<DesignLanguageDescriptor> languages,
-        IReadOnlyList<ControlDerivationDescriptor> derivations)
+        IReadOnlyList<ControlTokenRuleDescriptor> rules)
     {
-        if (languages.Count == 0 && derivations.Count == 0)
+        if (languages.Count == 0 && rules.Count == 0)
         {
             return revision;
         }
@@ -834,29 +834,29 @@ internal sealed class ThemeSchemaRegistry
                 fingerprint.Add((byte)token.Stage);
             }
         }
-        fingerprint.Add(derivations.Count);
-        foreach (var derivation in derivations)
+        fingerprint.Add(rules.Count);
+        foreach (var rule in rules)
         {
-            fingerprint.Add(derivation.LanguageTokenType.FullName ?? derivation.LanguageTokenType.Name);
-            fingerprint.Add(derivation.Control.Catalog);
-            fingerprint.Add(derivation.Control.Id);
-            fingerprint.Add(derivation.Revision.ToString("N", CultureInfo.InvariantCulture));
+            fingerprint.Add(rule.LanguageTokenType.FullName ?? rule.LanguageTokenType.Name);
+            fingerprint.Add(rule.Control.Catalog);
+            fingerprint.Add(rule.Control.Id);
+            fingerprint.Add(rule.Revision.ToString("N", CultureInfo.InvariantCulture));
         }
         return new ThemeSchemaRevision(fingerprint.Value);
     }
 
-    private static ControlDerivationDescriptor[] OrderDerivations(IEnumerable<ControlDerivationDescriptor>? derivations)
+    private static ControlTokenRuleDescriptor[] OrderTokenRules(IEnumerable<ControlTokenRuleDescriptor>? rules)
     {
-        if (derivations is null)
+        if (rules is null)
         {
-            return Array.Empty<ControlDerivationDescriptor>();
+            return Array.Empty<ControlTokenRuleDescriptor>();
         }
-        var array = derivations.ToArray();
+        var array = rules.ToArray();
         foreach (var descriptor in array)
         {
             if (descriptor is null)
             {
-                throw new ArgumentException("Control derivation descriptors cannot contain null.", nameof(derivations));
+                throw new ArgumentException("Control rule descriptors cannot contain null.", nameof(rules));
             }
         }
         Array.Sort(array, static (left, right) =>
@@ -867,17 +867,17 @@ internal sealed class ThemeSchemaRegistry
         return array;
     }
 
-    private static FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlDerivationDescriptor>
-        BuildDerivationMap(IReadOnlyList<ControlDerivationDescriptor> derivations)
+    private static FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>
+        BuildTokenRuleMap(IReadOnlyList<ControlTokenRuleDescriptor> rules)
     {
-        var map = new Dictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlDerivationDescriptor>(
-            derivations.Count);
-        foreach (var descriptor in derivations)
+        var map = new Dictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>(
+            rules.Count);
+        foreach (var descriptor in rules)
         {
             if (!map.TryAdd((descriptor.LanguageTokenType, descriptor.Control), descriptor))
             {
                 throw new ThemeSchemaException(
-                    $"Duplicate control derivation for '{descriptor.LanguageTokenType.Name}' and control '{descriptor.Control}'.");
+                    $"Duplicate control token rule for '{descriptor.LanguageTokenType.Name}' and control '{descriptor.Control}'.");
             }
         }
         return map.ToFrozenDictionary();

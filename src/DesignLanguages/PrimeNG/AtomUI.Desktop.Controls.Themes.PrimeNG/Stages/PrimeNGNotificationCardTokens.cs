@@ -19,7 +19,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGNotificationCardTokens
 {
-    internal static PrimeNGStatusColors EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
@@ -31,7 +31,7 @@ internal static class PrimeNGNotificationCardTokens
         controlGlobal.BorderRadiusSM = new CornerRadius(context.Variant.Style == PrimeNGLanguage.Lara ? 14 : 12);
         return statuses;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NotificationCardToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NotificationCardToken token)
     {
         var neutral = context.Language.GetPopoverOverlayRecipe(effectiveGlobal, context.Variant).Shadows;
         var kind    = context.Variant.Style;

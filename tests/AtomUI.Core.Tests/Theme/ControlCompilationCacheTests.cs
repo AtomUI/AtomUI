@@ -17,7 +17,7 @@ public class ControlCompilationCacheTests
     {
         var button = CreateControl<DenseThemeCompilerTests.ButtonId>();
         var input = CreateControl<DenseThemeCompilerTests.InputId>();
-        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], derivations: Derivations);
+        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], rules: TokenRules);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var compileInput = TypedThemeSnapshotCacheTests.CreateInput(registry);
@@ -27,12 +27,12 @@ public class ControlCompilationCacheTests
             globalKey,
             button,
             null,
-            registry.FindDerivation(TestDesignLanguages.AntDesign, button.Slot));
+            registry.FindControlTokenRule(TestDesignLanguages.AntDesign, button.Slot));
         var inputKey = ControlCompilationCacheKey.Create(
             globalKey,
             input,
             null,
-            registry.FindDerivation(TestDesignLanguages.AntDesign, input.Slot));
+            registry.FindControlTokenRule(TestDesignLanguages.AntDesign, input.Slot));
 
         var field = typeof(ControlCompilationCacheKey).GetField(
             "_global",
@@ -46,7 +46,7 @@ public class ControlCompilationCacheTests
     {
         var button = CreateControl<DenseThemeCompilerTests.ButtonId>();
         var input = CreateControl<DenseThemeCompilerTests.InputId>();
-        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], derivations: Derivations);
+        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], rules: TokenRules);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var buttonConfig = new NormalizedControlThemeConfig(
@@ -84,12 +84,12 @@ public class ControlCompilationCacheTests
         return new NormalizedTokenValue(descriptor, parsed, descriptor.Format(parsed));
     }
 
-    private static readonly ControlDerivationDescriptor[] Derivations =
+    private static readonly ControlTokenRuleDescriptor[] TokenRules =
     [
-        ControlDerivationDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.ButtonId>,
-            CacheDerivation<DenseThemeCompilerTests.ButtonId>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.InputId>,
-            CacheDerivation<DenseThemeCompilerTests.InputId>>()
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.ButtonId>,
+            CacheTokenRule<DenseThemeCompilerTests.ButtonId>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.InputId>,
+            CacheTokenRule<DenseThemeCompilerTests.InputId>>()
     ];
 
     private static ControlTokenDescriptor CreateControl<TId>() where TId : DenseThemeCompilerTests.IDenseId
@@ -120,10 +120,10 @@ public class ControlCompilationCacheTests
         public double Height { get; set; }
     }
 
-    public sealed class CacheDerivation<TId> : IControlDerivation<AntDesignToken, CacheControlToken<TId>>
+    public sealed class CacheTokenRule<TId> : IControlTokenRule<AntDesignToken, CacheControlToken<TId>>
         where TId : DenseThemeCompilerTests.IDenseId
     {
-        public void Derive(in DerivationContext<AntDesignToken> context, ControlView<CacheControlToken<TId>> view) =>
-            view.Token.Height = 40;
+        public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<CacheControlToken<TId>> target) =>
+            target.Own.Height = 40;
     }
 }

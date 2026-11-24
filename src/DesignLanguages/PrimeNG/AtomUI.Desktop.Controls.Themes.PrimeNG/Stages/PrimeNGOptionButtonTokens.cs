@@ -12,10 +12,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGOptionButtonTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, OptionButtonToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, OptionButtonToken token)
     {
         if (context.Variant.Style != PrimeNGLanguage.Nora)
         {

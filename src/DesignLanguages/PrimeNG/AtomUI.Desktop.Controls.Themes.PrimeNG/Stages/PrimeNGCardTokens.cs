@@ -14,7 +14,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGCardTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var card = context.Language.GetVisualRecipes(controlGlobal, context.Variant);
         controlGlobal.ColorBgContainer = controlGlobal.ColorBgElevated;
@@ -25,7 +25,7 @@ internal static class PrimeNGCardTokens
             controlGlobal.ColorBorderSecondary = border;
         }
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CardToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CardToken token)
     {
         var card = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         token.BodyPadding    = new Thickness(card.CardBodyPadding);

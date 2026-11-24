@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIControlsThemesPrimeNG;
 using AtomUI.DesignLanguages.PrimeNG;
 using AtomUI.Theme.Languages;
 
@@ -12,7 +13,7 @@ public static class PrimeNGCommonControlsExtensions
     public static DesignLanguageBuilder<PrimeNGLanguage> AddCommonControls(this DesignLanguageBuilder<PrimeNGLanguage> language)
     {
         ArgumentNullException.ThrowIfNull(language);
-        Generated.AtomUIControlsThemesPrimeNG.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

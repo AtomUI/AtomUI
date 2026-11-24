@@ -16,7 +16,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGTabStage
 {
-    internal static void ApplyGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void ApplyGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         // The ink bar slides over 250ms in every preset (tabs: width / inset 250ms); the tab colours stay instant.
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.TabsInkBar);
@@ -25,7 +25,7 @@ internal static class PrimeNGTabStage
             : context.Language.GetContentBorder(context.Variant);
     }
 
-    internal static void ApplyLine(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractLineTabToken token)
+    internal static void ApplyLine(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractLineTabToken token)
     {
         var kind = context.Variant.Style;
         token.ItemColor             = effectiveGlobal.ColorTextSecondary;
@@ -45,18 +45,18 @@ internal static class PrimeNGTabStage
 /// <summary>PrimeUIX <c>tabs</c> for <see cref="TabControlToken"/>; see <see cref="PrimeNGTabStage"/>.</summary>
 internal static class PrimeNGTabControlTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
         PrimeNGTabStage.ApplyGlobal(context, controlGlobal);
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TabControlToken token) =>
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TabControlToken token) =>
         PrimeNGTabStage.ApplyLine(context, effectiveGlobal, token);
 }
 
 /// <summary>PrimeUIX <c>tabs</c> for <see cref="TabStripToken"/>; see <see cref="PrimeNGTabStage"/>.</summary>
 internal static class PrimeNGTabStripTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
         PrimeNGTabStage.ApplyGlobal(context, controlGlobal);
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TabStripToken token) =>
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TabStripToken token) =>
         PrimeNGTabStage.ApplyLine(context, effectiveGlobal, token);
 }
 
@@ -70,12 +70,12 @@ internal static class PrimeNGTabStripTokens
 /// </summary>
 internal static class PrimeNGCollapseTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
         controlGlobal.ColorBorder = context.Language.GetContentBorder(context.Variant);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CollapseToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CollapseToken token)
     {
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
@@ -105,12 +105,12 @@ internal static class PrimeNGCollapseTokens
 /// </summary>
 internal static class PrimeNGExpanderTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
         controlGlobal.ColorBorder = context.Language.GetContentBorder(context.Variant);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ExpanderToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ExpanderToken token)
     {
         var kind = context.Variant.Style;
         var lara = kind == PrimeNGLanguage.Lara;
@@ -133,12 +133,12 @@ internal static class PrimeNGExpanderTokens
 /// </summary>
 internal static class PrimeNGGroupBoxTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.ColorBorder      = context.Language.GetContentBorder(context.Variant);
         controlGlobal.ColorBgContainer = controlGlobal.ColorBgElevated;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, GroupBoxToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, GroupBoxToken token)
     {
         var kind = context.Variant.Style;
         token.HeaderContentPadding = kind == PrimeNGLanguage.Lara ? new Thickness(12, 8) : new Thickness(10, 6);
@@ -157,10 +157,10 @@ internal static class PrimeNGGroupBoxTokens
 /// </summary>
 internal static class PrimeNGBreadcrumbTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, BreadcrumbToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, BreadcrumbToken token)
     {
         var nora = context.Variant.Style == PrimeNGLanguage.Nora;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
@@ -184,10 +184,10 @@ internal static class PrimeNGBreadcrumbTokens
 /// </summary>
 internal static class PrimeNGSplitterTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SplitterToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SplitterToken token)
     {
         var line = context.Language.GetContentBorder(context.Variant);
         token.HandleLineColor      = line;

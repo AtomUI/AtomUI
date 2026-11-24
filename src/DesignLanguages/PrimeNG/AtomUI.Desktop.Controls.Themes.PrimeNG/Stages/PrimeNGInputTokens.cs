@@ -26,7 +26,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGInputStage
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var field = context.Language.GetFieldRecipe(controlGlobal, context.Variant);
         if (context.Variant.Style == PrimeNGLanguage.Nora)
@@ -53,18 +53,18 @@ internal static class PrimeNGInputStage
     /// PrimeUIX <c>form.field.hover.border.color</c>, also the unchecked checkbox / radio hover border: Aura surface
     /// 400 (dark 500), Lara the primary colour, Nora the resting border colour.
     /// </summary>
-    internal static Color HoverBorder(in DerivationContext<PrimeNGToken> context, DesignToken global) =>
+    internal static Color HoverBorder(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global) =>
         context.Language.GetFieldRecipe(global, context.Variant).HoverBorderColor;
 }
 
 /// <summary>The PrimeUIX form field for <see cref="LineEditToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGLineEditTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, LineEditToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, LineEditToken token)
     {
         // PrimeUIX form.field.sm.font.size 0.75rem.
         token.InputFontSizeSM = effectiveGlobal.FontSizeSM;
@@ -77,11 +77,11 @@ internal static class PrimeNGLineEditTokens
 /// </summary>
 internal static class PrimeNGSearchEditTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SearchEditToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SearchEditToken token)
     {
         // PrimeUIX form.field.sm.font.size 0.75rem.
         token.InputFontSizeSM = effectiveGlobal.FontSizeSM;
@@ -91,11 +91,11 @@ internal static class PrimeNGSearchEditTokens
 /// <summary>The PrimeUIX form field for <see cref="TextAreaToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGTextAreaTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TextAreaToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TextAreaToken token)
     {
     }
 }
@@ -103,11 +103,11 @@ internal static class PrimeNGTextAreaTokens
 /// <summary>The PrimeUIX form field for <see cref="AutoCompleteToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGAutoCompleteTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteToken token)
     {
         // PrimeUIX list option: option.color is the text colour, the selected option highlight.color on the highlight.
         token.OptionColor         = effectiveGlobal.ColorText;
@@ -119,11 +119,11 @@ internal static class PrimeNGAutoCompleteTokens
 /// <summary>The PrimeUIX form field and list options for <see cref="AutoCompleteSearchEditToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGAutoCompleteSearchEditTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteSearchEditToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteSearchEditToken token)
     {
         token.OptionColor         = effectiveGlobal.ColorText;
         token.OptionSelectedColor = effectiveGlobal.ControlItemColorActive;
@@ -134,11 +134,11 @@ internal static class PrimeNGAutoCompleteSearchEditTokens
 /// <summary>The PrimeUIX form field and list options for <see cref="AutoCompleteTextAreaToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGAutoCompleteTextAreaTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteTextAreaToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AutoCompleteTextAreaToken token)
     {
         token.OptionColor         = effectiveGlobal.ColorText;
         token.OptionSelectedColor = effectiveGlobal.ControlItemColorActive;
@@ -149,11 +149,11 @@ internal static class PrimeNGAutoCompleteTextAreaTokens
 /// <summary>The PrimeUIX form field for <see cref="MentionsToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGMentionsTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MentionsToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MentionsToken token)
     {
         // PrimeUIX list option: option.color is the text colour, the selected option highlight.color on the highlight.
         token.OptionColor         = effectiveGlobal.ColorText;
@@ -164,11 +164,11 @@ internal static class PrimeNGMentionsTokens
 /// <summary>The PrimeUIX form field for <see cref="CascaderToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGCascaderTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CascaderToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CascaderToken token)
     {
         // PrimeUIX cascadeselect: option.padding as the select options, normal selected weight, list.padding for the
         // columns, list.option.focus.background on hover and the chip.background for multiple values.
@@ -194,11 +194,11 @@ internal static class PrimeNGCascaderTokens
 /// <summary>The PrimeUIX form field for <see cref="TreeSelectToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGTreeSelectTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TreeSelectToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TreeSelectToken token)
     {
         // PrimeUIX treeselect: tree.padding = list.padding, tree.node.hover.background = list.option.focus.background,
         // chip.background for multiple values.
@@ -218,11 +218,11 @@ internal static class PrimeNGTreeSelectTokens
 /// <summary>The PrimeUIX form field for <see cref="DatePickerToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGDatePickerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DatePickerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DatePickerToken token)
     {
         // PrimeUIX overlays draw no pointer arrow.
         token.PopupArrowVisible = false;
@@ -236,11 +236,11 @@ internal static class PrimeNGDatePickerTokens
 /// <summary>The PrimeUIX form field for <see cref="RangeDatePickerToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGRangeDatePickerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeDatePickerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeDatePickerToken token)
     {
         // PrimeUIX overlays draw no pointer arrow.
         token.PopupArrowVisible = false;
@@ -256,11 +256,11 @@ internal static class PrimeNGRangeDatePickerTokens
 /// <summary>The PrimeUIX form field for <see cref="TimePickerToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGTimePickerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TimePickerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TimePickerToken token)
     {
         // PrimeUIX overlays draw no pointer arrow.
         token.PopupArrowVisible = false;
@@ -270,11 +270,11 @@ internal static class PrimeNGTimePickerTokens
 /// <summary>The PrimeUIX form field for <see cref="RangeTimePickerToken"/>; see <see cref="PrimeNGInputStage"/>.</summary>
 internal static class PrimeNGRangeTimePickerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeTimePickerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeTimePickerToken token)
     {
         // PrimeUIX overlays draw no pointer arrow.
         token.PopupArrowVisible = false;
@@ -291,7 +291,7 @@ internal static class PrimeNGListOptions
     internal const double AuraOptionRadius = 4;
     internal static readonly Thickness AuraOptionMargin = new(0, 1);
 
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractAutoCompleteToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractAutoCompleteToken token)
     {
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         token.PopupContentPadding = context.Language.GetSelectOverlayRecipe(effectiveGlobal, context.Variant).Padding;

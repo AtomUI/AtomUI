@@ -23,7 +23,7 @@ internal sealed class LazyControlSnapshotSource
     private readonly IReadOnlyDictionary<object, object?> _globalResources;
     private readonly WeakReference<ControlCompilationCache>? _cache;
     private readonly GlobalCompilationCacheKey? _globalKey;
-    private ControlViewPool? _viewPool;
+    private ControlGlobalTokenPool? _globalPool;
 
     internal LazyControlSnapshotSource(
         ThemeCompileInput input,
@@ -76,9 +76,9 @@ internal sealed class LazyControlSnapshotSource
         ControlThemeSnapshot Factory()
         {
             var (global, language) = GetBuilders();
-            var pool = Volatile.Read(ref _viewPool) ??
-                       Interlocked.CompareExchange(ref _viewPool, new ControlViewPool(global, _registry.GlobalTokens), null) ??
-                       _viewPool!;
+            var pool = Volatile.Read(ref _globalPool) ??
+                       Interlocked.CompareExchange(ref _globalPool, new ControlGlobalTokenPool(global, _registry.GlobalTokens), null) ??
+                       _globalPool!;
             return ThemeCompiler.CompileControl(
                 descriptor,
                 config,
@@ -94,7 +94,7 @@ internal sealed class LazyControlSnapshotSource
 
         return _cache?.TryGetTarget(out var cache) == true
             ? cache.GetOrCompile(_globalKey!, descriptor, config,
-                descriptor.HasOwnTokens ? _registry.FindDerivation(_unit.Language, descriptor.Slot) : null,
+                descriptor.HasOwnTokens ? _registry.FindControlTokenRule(_unit.Language, descriptor.Slot) : null,
                 Factory, EstimatedRetainedBytes)
             : Factory();
     }
@@ -153,7 +153,7 @@ internal sealed class ControlSnapshotCell
     }
 
     /// <summary>
-    /// Whether the control sees the scope's global values unchanged. A control derivation may override a global token
+    /// Whether the control sees the scope's global values unchanged. A control rule may override a global token
     /// in its view, which is known only once the control compiles; until then this is <see langword="false"/> and a
     /// lookup materializes the cell.
     /// </summary>

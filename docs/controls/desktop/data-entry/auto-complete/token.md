@@ -44,7 +44,7 @@ Token 作用域（2026-11-08 输入家族迁移后）：
 - `OptionHeight` 当前只参与弹层最大高度（`OptionHeight × DisplayCandidateCount + 内边距`），候选项自身高度来自
   CandidateList 的主题。
 - 各终端成组读取 `OptionHeight` 与 `PopupContentPadding`。任一项更新时重新计算弹层高度，`MinPopupWidth` 直接由弹层边框读取。
-- AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 均有独立 Own：OptionHeight、PopupContentPadding、MinPopupWidth、MaxPopupWidth；共享 AbstractAutoCompleteToken 的属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`AntDesignAbstractAutoCompleteDerivation`），彼此的覆盖不传播。
+- AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 均有独立 Own：OptionHeight、PopupContentPadding、MinPopupWidth、MaxPopupWidth；共享 AbstractAutoCompleteToken 的属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`AutoCompleteTokenCalculator`），彼此的覆盖不传播。
 
 ## 4. 控件家族影响
 

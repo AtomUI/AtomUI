@@ -120,4 +120,4 @@ Token 变更要求：
 
 ## 独立 Token 身份与共享计算
 
-SubmitButton 与 ResetButton 使用各自的有效 Global/Own Token，取值复用标准按钮的共享推导（Ant Design：`AntDesignAbstractStandardButtonDerivation`，由 `AntDesignSubmitButtonDerivation`、`AntDesignResetButtonDerivation` 调用）；原 `Controls[Button]` 的 Own 覆盖不再传入这两个终端。字段语义见 [Button Token](../../general/button/token.md)。
+SubmitButton 与 ResetButton 使用各自的有效 Global/Own Token，取值复用标准按钮的共享推导（Ant Design：`StandardButtonTokenCalculator`，由 `SubmitButtonTokenRule`、`ResetButtonTokenRule` 调用）；原 `Controls[Button]` 的 Own 覆盖不再传入这两个终端。字段语义见 [Button Token](../../general/button/token.md)。

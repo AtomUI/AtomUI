@@ -18,7 +18,7 @@ public class SeparatorTokenTests
             UniformlyMarginLG = 24
         };
         var separatorToken = new SeparatorToken();
-        AntDesignDerivationRunner.Derive(separatorToken, sharedToken);
+        AntDesignTokenRuleRunner.Apply(separatorToken, sharedToken);
 
         separatorToken.HorizontalMarginBlockSM.ShouldBe(new Thickness(0, sharedToken.UniformlyMarginXS));
         separatorToken.HorizontalMarginBlock.ShouldBe(new Thickness(0, sharedToken.UniformlyMargin));

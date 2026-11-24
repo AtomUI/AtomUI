@@ -123,26 +123,26 @@ public class ThemeGeneratedDescriptorContractTests
     }
 
     [Fact]
-    public void Control_Derivation_Descriptor_Binds_The_Token_Identity_And_The_Module_Revision()
+    public void Control_Token_Rule_Descriptor_Binds_The_Token_Identity_And_The_Module_Revision()
     {
-        var descriptor = ControlDerivationDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonDerivation>();
+        var descriptor = ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>();
 
         descriptor.LanguageTokenType.ShouldBe(typeof(AntDesignToken));
         descriptor.TokenType.ShouldBe(typeof(CompilerButtonToken));
         descriptor.Control.ShouldBe(CompilerButtonToken.ControlIdentity);
-        descriptor.Revision.ShouldBe(typeof(CompilerButtonDerivation).Assembly.ManifestModule.ModuleVersionId);
+        descriptor.Revision.ShouldBe(typeof(CompilerButtonTokenRule).Assembly.ManifestModule.ModuleVersionId);
     }
 
     [Fact]
-    public void Control_Derivation_Rejects_A_Token_Of_Another_Control_Or_Language()
+    public void Control_Token_Rule_Rejects_A_Token_Of_Another_Control_Or_Language()
     {
-        var descriptor = ControlDerivationDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonDerivation>();
+        var descriptor = ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>();
         var variant = TestDesignLanguages.AntDesign.DefaultVariant(DesignIdiom.Desktop);
 
         Should.Throw<ArgumentException>(() =>
-            descriptor.Derive(variant, new ProbeLanguageToken(), new CompilerButtonToken(), new DesignToken()));
+            descriptor.Apply(variant, new ProbeLanguageToken(), new CompilerButtonToken(), new DesignToken()));
         Should.Throw<ArgumentException>(() =>
-            descriptor.Derive(variant, new AntDesignToken(), new SchemaControlToken(), new DesignToken()));
+            descriptor.Apply(variant, new AntDesignToken(), new SchemaControlToken(), new DesignToken()));
     }
 
     [Fact]

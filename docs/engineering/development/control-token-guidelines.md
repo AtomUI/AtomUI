@@ -18,7 +18,7 @@ Global Token
     -> Control-specific Global Override
 Effective Global Token
     -> freeze explicit Control Own Token values
-    -> control derivation of the active design language (value package)
+    -> control token rule of the active design language (value package)
 Effective Control Token
     -> ControlTheme
     -> Semantic Part Theme
@@ -77,17 +77,17 @@ public sealed partial class RatingToken : AbstractControlDesignToken
 }
 ```
 
-Token 类只声明词汇。取值写在每种设计语言的取值包（`<控件包名>.Themes.<Lang>`）里，每个终端 Token 类一个控件推导：
+Token 类只声明词汇。取值写在每种设计语言的取值包（`<控件包名>.Themes.<Lang>`）里，每个终端 Token 类一个控件取值规则：
 
 ```csharp
-// Acme.Controls.Themes.AntDesign/Rating/AntDesignRatingDerivation.cs
-[ControlDerivation]
-internal sealed class AntDesignRatingDerivation : IControlDerivation<AntDesignToken, RatingToken>
+// Acme.Controls.Themes.AntDesign/Rating/RatingTokenRule.cs
+[ControlTokenRule]
+internal sealed class RatingTokenRule : IControlTokenRule<AntDesignToken, RatingToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<RatingToken> view)
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<RatingToken> target)
     {
-        var token  = view.Token;
-        var global = view.Global;
+        var token  = target.Own;
+        var global = target.Global;
         token.StarSize = global.ControlHeight;
         token.StarGap  = token.StarSize / 4; // StarSize 被显式设置时，这里读到的就是显式值
     }
@@ -99,14 +99,15 @@ internal sealed class AntDesignRatingDerivation : IControlDerivation<AntDesignTo
 
 - 推导就是普通的顺序赋值，不判断"用户是否设置过"。用户改了 `StarSize`，随后由它算出的 `StarGap` 自动跟随；用户改了
   `StarGap`，推导对它的写入被忽略。推导不需要也不能判断显式性，也不以 `double.NaN`、`default`、`null` 等哨兵值代替。
-- 推导必须写全终端的全部属性，包括从抽象层继承的属性与行为开关；`view.Token.X` 只能读本方法已经写过的属性。生成器以
+- 推导必须写全终端的全部属性，包括从抽象层继承的属性与行为开关；`target.Own.X` 只能读本方法已经写过的属性。生成器以
   `ATOMUIGEN050`（漏写）与 `ATOMUIGEN051`（先读后写）在构建期报告，其余由设计语言契约测试的 `ControlComplete` 检查。
-- `view.Global` 是该控件看到的全局 Token：读时得到该控件的值，写时只对这个控件生效，并且只能写 Map 与 Alias。
+- `target.Global` 是该控件看到的全局 Token：读时得到该控件的值，写时只对这个控件生效，并且只能写 Map 与 Alias。
 - 内部派生字段（例如 DataGrid 由公开 `BorderColor` 派生的 `TableBorderColor`）在推导里从公开字段派生，主题消费派生字段
   时用户覆盖公开字段仍然生效。
 
-推导的完整契约（查找规则、共享逻辑、通用推导、`Add<控件包>()` 入口）见
+推导的完整契约（查找规则、共享逻辑、通用取值规则、`Add<控件包>()` 入口）见
 [编写设计语言](../../guides/theming/writing-design-languages.md#4-取值包)。
+规则与计算器的类型、文件命名及迁移要求见[设计语言取值包命名实施标准](value-package-naming.md)。
 
 Token 类与 Token 属性的写法：
 
@@ -115,8 +116,8 @@ Token 类与 Token 属性的写法：
   `if (IsFrozen(nameof(StarSize))) return; field = value;`：显式值在推导之前冻结，推导对它的写入被忽略（没有冻结项时只是一次
   空判断）。Token 类只有声明，不写初始化器或计算方法，取值属于设计语言的取值包。类或属性不是 partial 时报 `ATOMUIGEN049`，该属性不产出实现。不要手写实现部分。
 - AtomUI 四个控件包（`AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid）的控件 Token 类都是
-  `public`，各语言取值包里的控件推导可以直接写它们的属性（见[编写设计语言](../../guides/theming/writing-design-languages.md#4-取值包)）。
-  GalleryBase 的 Token 类保持 `internal`。第三方 Token 类可以是 `internal`，但那样只有本程序集能为它写控件推导。
+  `public`，各语言取值包里的控件取值规则可以直接写它们的属性（见[编写设计语言](../../guides/theming/writing-design-languages.md#4-取值包)）。
+  GalleryBase 的 Token 类保持 `internal`。第三方 Token 类可以是 `internal`，但那样只有本程序集能为它写控件取值规则。
 
 约束：
 
@@ -148,7 +149,7 @@ AtomUI 控件包里的抽象中间层（例如 `AbstractButtonGeometryToken`）�
 ### 继承属性的取值
 
 抽象层没有推导，也不会被单独登记；每个终端的推导写全它继承来的属性。多个终端共享同一套取值规则时，规则写在取值包内的
-普通静态辅助方法里，由各终端的推导调用（Ant Design 的按钮族：`AntDesignAbstractStandardButtonDerivation.DeriveShared`）。
+普通静态辅助方法里，由各终端的推导调用（Ant Design 的按钮族：`StandardButtonTokenCalculator.Calculate`）。
 抽象层位于跨端共用的 `AtomUI.Controls` 时，由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导方法，各端取值包调用。
 继承结构的完整规则见 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
 
@@ -183,10 +184,10 @@ Global Token 禁止同名，因此扁平配置和统一 `XxxTokenResource` 不�
 
 ## Global Token 消费不进入 Schema
 
-控件推导可以直接读取该控件视图里的任意全局 Token：
+控件取值规则可以直接读取该控件视图里的任意全局 Token：
 
 ```csharp
-token.StarSize = view.Global.ControlHeight;
+token.StarSize = target.Global.ControlHeight;
 ```
 
 ControlTheme 也可以直接使用任意 Global Token：
@@ -451,7 +452,7 @@ Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手
 - Semantic Part Theme 的 TargetType 与属性契约不兼容。
 - Semantic Part 的 ContractType 与模板 marker 类型不兼容，或 Part 名称、class、cardinality 与 descriptor 不一致。
 - internal 实现类型被错误声明为独立 Token owner。
-- 控件推导没有写全其控件的全部 Token（`ATOMUIGEN050`），或在写入之前读取了自己的 Token（`ATOMUIGEN051`）。
+- 控件取值规则没有写全其控件的全部 Token（`ATOMUIGEN050`），或在写入之前读取了自己的 Token（`ATOMUIGEN051`）。
 - 取值包为某个控件包的部分 Token 类写了推导，却漏掉同一控件包的其他 Token 类（`ATOMUIGEN052`）。
 - 依赖方向错误：控件包引用了语言包或取值包、语言包引用了控件包，或取值包里声明了控件（`ATOMUIGEN053`）。
 - Token 类不是 partial 类，或 Token 属性不是 partial 属性（`ATOMUIGEN049`）。

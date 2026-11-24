@@ -1,7 +1,7 @@
 # AtomUI.Controls.Themes.Shadcn
 
 各形态共用的控件（`AtomUI.Controls`）在 shadcn 设计语言下的取值：Avatar、Icon，以及各端取值包调用的共享抽象 Token 层
-推导（`ShadcnAbstract<Xxx>Derivation.DeriveShared`）。对标 shadcn/ui 现行版本（registry 2026-11-15 实测）、Tailwind
+推导（`ShadcnAbstract<Xxx>Derivation.Apply`）。对标 shadcn/ui 现行版本（registry 2026-11-15 实测）、Tailwind
 CSS v4.3.5；语言见 `../AtomUI.DesignLanguages.Shadcn/README.md`。由各端取值包的 `AddDesktopControls()` 登记，应用不直接
 调用。
 

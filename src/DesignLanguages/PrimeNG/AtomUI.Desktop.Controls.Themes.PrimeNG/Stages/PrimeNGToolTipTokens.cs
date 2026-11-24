@@ -17,10 +17,10 @@ internal static class PrimeNGToolTipTokens
 {
     /// <summary>PrimeUIX <c>tooltip.gutter</c> 0.25rem.</summary>
     private const double PrimeNGTooltipGutter = 4;
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ToolTipToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ToolTipToken token)
     {
         // PrimeUIX tooltip.font.size 0.75rem (Lara 0.625rem) and no minimum height: the box is the padded text.
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);

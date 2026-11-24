@@ -31,8 +31,8 @@ ButtonToken 当前按 Button 语义分为八类。
 - `ContentLineHeightSM`
 
 用于控制 Button 内容文本的字体大小、行高和字重。Ant Design 下字体大小默认来自 SharedToken，行高根据字体大小计算；这些取值
-写在取值包 `AtomUI.Desktop.Controls.Themes.AntDesign` 的按钮推导里（几何与字体部分在共享辅助类 `AntDesignAbstractButtonGeometryDerivation`，由
-`AntDesignButtonDerivation` 等终端推导调用），`ButtonToken` 本身只声明属性。
+写在取值包 `AtomUI.Desktop.Controls.Themes.AntDesign` 的按钮推导里（几何与字体部分在共享辅助类 `ButtonGeometryTokenCalculator`，由
+`ButtonTokenRule` 等终端推导调用），`ButtonToken` 本身只声明属性。
 
 `FontWeight` 的类型是 `FontWeight`（默认 `Normal`，配置可写 `500` 或 `Medium`），由 `ButtonTheme` 写入 Button 自身的
 `FontWeight`，内容经文本属性继承得到它；Button 实例上的本地 `FontWeight` 仍然优先。
@@ -244,8 +244,8 @@ ButtonToken 变更要求：
 ## 独立 Token 身份与共享计算
 
 Button、DropdownButton、SubmitButton、ResetButton 各有独立 Own 身份；共享抽象层只复用变体与尺寸的属性声明，取值规则由取值包里的
-共享辅助类（Ant Design：`AntDesignAbstractButtonVariantDerivation`、`AntDesignAbstractButtonGeometryDerivation`、
-`AntDesignAbstractStandardButtonDerivation`）复用，各终端推导分别调用。
+共享辅助类（Ant Design：`ButtonVariantTokenCalculator`、`ButtonGeometryTokenCalculator`、
+`StandardButtonTokenCalculator`）复用，各终端推导分别调用。
 Submit/Reset 使用标准按钮层，Dropdown 保留自己的额外内容间距与弹层间距；`GroupBorderColor` Reserved 只保留在原 Button 终端。
 变体的颜色/阴影与全局值使用同一终端身份；显式给出的字体、行高、padding 在该终端的推导运行之前冻结，由它们派生的值随之跟随。
 

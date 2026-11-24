@@ -180,7 +180,7 @@ public class ThemeDefinitionBinderTests
 
     private static ThemeSchemaRegistry CreateRegistry() =>
         new(GeneratedThemeSchema.GetGlobalTokens(), [ThemeCompilerTests.CreateCompilerButtonDescriptor()],
-            [BinderLanguage.Descriptor], null, TestControlDerivations.All);
+            [BinderLanguage.Descriptor], null, TestControlTokenRules.All);
 
     private static ThemeDocument Read(string xml)
     {
@@ -219,7 +219,7 @@ public class ThemeDefinitionBinderTests
         {
         }
 
-        public override void DeriveGlobal(in DerivationContext<AntDesignToken> context, DesignToken token)
+        public override void DeriveGlobal(in TokenEvaluationContext<AntDesignToken> context, DesignToken token)
         {
         }
     }

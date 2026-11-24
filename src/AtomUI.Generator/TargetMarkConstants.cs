@@ -13,8 +13,8 @@ internal static class TargetMarkConstants
     public const string LanguageDesignToken = "AtomUI.Theme.DesignTokens.LanguageDesignToken";
     public const string DesignLanguageAttribute = "AtomUI.Theme.Languages.DesignLanguageAttribute";
     public const string DesignLanguageBase = "AtomUI.Theme.Languages.DesignLanguage`1";
-    public const string ControlDerivationAttribute = "AtomUI.Theme.Languages.ControlDerivationAttribute";
-    public const string ControlDerivationInterface = "AtomUI.Theme.Languages.IControlDerivation`2";
+    public const string ControlTokenRuleAttribute = "AtomUI.Theme.Languages.ControlTokenRuleAttribute";
+    public const string ControlTokenRuleInterface = "AtomUI.Theme.Languages.IControlTokenRule`2";
     public const string ControlTokenInterface = "AtomUI.Theme.DesignTokens.IControlToken";
     public const string TokenValueConverterAttribute = "AtomUI.Theme.DesignTokens.TokenValueConverterAttribute";
     public const string GenerateDataMemberAccessorsAttribute = "AtomUI.Controls.Data.GenerateDataMemberAccessorsAttribute";

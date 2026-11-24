@@ -22,7 +22,7 @@ namespace AtomUI.Theme.ContractTests;
 public sealed record DesignLanguageContractViolation(string Check, string Variant, string? TokenName, string Message);
 
 /// <summary>
-/// What the contract verifier sees: the languages, control packages and control derivations an application registration
+/// What the contract verifier sees: the languages, control packages and control token rules an application registration
 /// enables, folded into the schema registry the theme compiler runs against.
 /// </summary>
 public sealed class DesignLanguageContractInput
@@ -36,7 +36,7 @@ public sealed class DesignLanguageContractInput
 
     /// <summary>
     /// Runs the caller's registration (e.g. <c>builder =&gt; builder.UseAntDesign(l =&gt; l.AddDesktopControls())</c>)
-    /// against a fresh application builder and captures the languages, the control packages and the control derivations
+    /// against a fresh application builder and captures the languages, the control packages and the control token rules
     /// it enables. No Avalonia application is required: the builder is registered against, never committed.
     /// </summary>
     /// <exception cref="InvalidOperationException">The registration does not cover every control under every language.</exception>
@@ -53,16 +53,16 @@ public sealed class DesignLanguageContractInput
             : new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), manualControls,
                 Array.Empty<DesignLanguageDescriptor>());
         var index = StartupPackageIndex.Create(builder.PackageDeclarations, null, manualRegistry);
-        // The registry checks that every control has a derivation under every language (spec 8, check 1).
+        // The registry checks that every control has a rule under every language (spec 8, check 1).
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, theme.Languages,
-            theme.Derivations);
+            theme.TokenRules);
         return new DesignLanguageContractInput(registry);
     }
 }
 
 /// <summary>
 /// Reusable contract verifier for design languages and their control values (spec 14: purity, completeness of the three
-/// token kinds, readability of paired roles, determinism under every variant). It runs the language's derivations
+/// token kinds, readability of paired roles, determinism under every variant). It runs the language's rules
 /// directly for the completeness checks and through the real theme compiler for the others, under every declared
 /// style × appearance × density × idiom.
 /// </summary>
@@ -77,11 +77,11 @@ public static class DesignLanguageContract
     /// <summary><c>DeriveGlobal</c> writes every Map and Alias token.</summary>
     public const string GlobalComplete = nameof(GlobalComplete);
 
-    /// <summary>Every control derivation of the language writes every own token of its control.</summary>
+    /// <summary>Every control token rule of the language writes every own token of its control.</summary>
     public const string ControlComplete = nameof(ControlComplete);
 
     /// <summary>
-    /// The derivations are pure: <c>DeriveGlobal</c> leaves the language token unchanged, a control derivation leaves the
+    /// The rules are pure: <c>DeriveGlobal</c> leaves the language token unchanged, a control token rule leaves the
     /// language token unchanged, and compiling other variants in between does not change a variant's result.
     /// </summary>
     public const string Pure = nameof(Pure);
@@ -104,7 +104,7 @@ public static class DesignLanguageContract
     }
 
     /// <summary>
-    /// Verifies the language <paramref name="languageId"/> and every control derivation registered for it against each
+    /// Verifies the language <paramref name="languageId"/> and every control token rule registered for it against each
     /// check of the contract, and returns the violations; an empty list means the language satisfies the contract.
     /// </summary>
     /// <exception cref="InvalidOperationException">
@@ -135,10 +135,10 @@ public static class DesignLanguageContract
             }
 
             var variants = Variants(_language.Axes);
-            var derivations = registry.ControlDerivations
-                                      .Where(derivation => derivation.LanguageTokenType.IsAssignableFrom(_language.LanguageTokenType))
-                                      .Select(derivation => registry.FindDerivation(_language, Slot(derivation)))
-                                      .OfType<ControlDerivationDescriptor>()
+            var rules = registry.ControlTokenRules
+                                      .Where(rule => rule.LanguageTokenType.IsAssignableFrom(_language.LanguageTokenType))
+                                      .Select(rule => registry.FindControlTokenRule(_language, Slot(rule)))
+                                      .OfType<ControlTokenRuleDescriptor>()
                                       .Distinct()
                                       .ToArray();
             var first = new Dictionary<DesignVariant, Compiled>();
@@ -146,9 +146,9 @@ public static class DesignLanguageContract
             {
                 CheckLanguageComplete(variant);
                 var (_, language) = CheckGlobalComplete(variant);
-                foreach (var derivation in derivations)
+                foreach (var rule in rules)
                 {
-                    CheckControlComplete(variant, derivation, language);
+                    CheckControlComplete(variant, rule, language);
                 }
 
                 var compiled = Compile(variant);
@@ -164,10 +164,10 @@ public static class DesignLanguageContract
             }
         }
 
-        private int Slot(ControlDerivationDescriptor derivation) =>
-            registry.TryGetControl(derivation.Control, out var control)
+        private int Slot(ControlTokenRuleDescriptor rule) =>
+            registry.TryGetControl(rule.Control, out var control)
                 ? control!.Slot
-                : throw new InvalidOperationException($"Control '{derivation.Control}' is not registered.");
+                : throw new InvalidOperationException($"Control '{rule.Control}' is not registered.");
 
         private bool CheckIdentity()
         {
@@ -241,7 +241,7 @@ public static class DesignLanguageContract
             }
         }
 
-        // Returns the global and language tokens of the variant as the compiler hands them to the control derivations.
+        // Returns the global and language tokens of the variant as the compiler hands them to the control token rules.
         private (DesignToken Global, LanguageDesignToken Language) CheckGlobalComplete(DesignVariant variant)
         {
             var derived = Globals.Where(static token => token.Stage is TokenStage.Map or TokenStage.Alias).ToArray();
@@ -278,10 +278,10 @@ public static class DesignLanguageContract
             return (plain.Global, plain.Language);
         }
 
-        private void CheckControlComplete(DesignVariant variant, ControlDerivationDescriptor derivation,
+        private void CheckControlComplete(DesignVariant variant, ControlTokenRuleDescriptor rule,
             LanguageDesignToken language)
         {
-            if (!registry.TryGetControl(derivation.Control, out var control) || control!.OwnTokens.Count == 0)
+            if (!registry.TryGetControl(rule.Control, out var control) || control!.OwnTokens.Count == 0)
             {
                 return;
             }
@@ -293,7 +293,7 @@ public static class DesignLanguageContract
                 Prefill(token, control.OwnTokens, first);
                 var languageCopy = CopyLanguage(language);
                 var before = Capture(languageCopy, _language.LanguageTokens);
-                derivation.Derive(variant, languageCopy, token, Copy(global));
+                rule.Apply(variant, languageCopy, token, Copy(global));
                 return (token, before, languageCopy);
             }
 
@@ -305,12 +305,12 @@ public static class DesignLanguageContract
                 {
                     Report(ControlComplete, variant, $"{control.Identity}.{descriptor.Name}",
                         $"Control token '{control.Identity}.{descriptor.Name}' follows the value it held before the " +
-                        "derivation ran: it was not written.");
+                        "rule ran: it was not written.");
                 }
             }
 
             CompareCapture(Pure, variant, withA.Language, _language.LanguageTokens, withA.LanguageBefore,
-                $"The derivation for '{control.Identity}' changed language token");
+                $"The rule for '{control.Identity}' changed language token");
         }
 
         private readonly Dictionary<DesignVariant, DesignToken> _globals = new();

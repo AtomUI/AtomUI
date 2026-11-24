@@ -19,14 +19,14 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 internal static class PrimeNGMenuFrame
 {
     /// <summary>The menu popup frame with the PrimeUIX content border and navigation shadow.</summary>
-    internal static BoxShadows Shadows(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal) =>
+    internal static BoxShadows Shadows(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal) =>
         context.Language.GetMenuOverlayRecipe(effectiveGlobal, context.Variant).ShadowsWithOutline;
 
     /// <summary>
     /// The focused (hovered) item of a menu: PrimeUIX <c>item.focus.background</c> / <c>focus.color</c> (Aura and Lara
     /// navigation.item.active, Nora the solid primary with its contrast colour).
     /// </summary>
-    internal static (Color Background, Color Foreground) Focus(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal)
+    internal static (Color Background, Color Foreground) Focus(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal)
     {
         if (context.Variant.Style == PrimeNGLanguage.Nora)
         {
@@ -41,7 +41,7 @@ internal static class PrimeNGMenuFrame
     /// <c>item.border.radius</c> 4 (Lara and Nora 0), <c>list.padding</c> 4px 4px (Lara 8px 0, Nora 2px 0), a
     /// <c>min-width</c> of 12.5rem and the focus colours.
     /// </summary>
-    internal static void ApplyItems(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractMenuPopupToken token)
+    internal static void ApplyItems(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractMenuPopupToken token)
     {
         var kind    = context.Variant.Style;
         var padding = kind == PrimeNGLanguage.Lara ? new Thickness(14, 8) : new Thickness(10, 4);
@@ -61,10 +61,10 @@ internal static class PrimeNGMenuFrame
 /// </summary>
 internal static class PrimeNGMenuTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuToken token)
     {
         token.MenuPopupShadows = PrimeNGMenuFrame.Shadows(context, effectiveGlobal);
         PrimeNGMenuFrame.ApplyItems(context, effectiveGlobal, token);
@@ -87,11 +87,11 @@ internal static class PrimeNGMenuTokens
 /// </summary>
 internal static class PrimeNGContextMenuTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ContextMenuToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ContextMenuToken token)
     {
         token.MenuPopupShadows = PrimeNGMenuFrame.Shadows(context, effectiveGlobal);
         PrimeNGMenuFrame.ApplyItems(context, effectiveGlobal, token);
@@ -104,10 +104,10 @@ internal static class PrimeNGContextMenuTokens
 /// </summary>
 internal static class PrimeNGMenuFlyoutPresenterTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuFlyoutPresenterToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuFlyoutPresenterToken token)
     {
         token.MenuPopupBorderColor   = context.Language.GetMenuOverlayRecipe(effectiveGlobal, context.Variant).BorderColor;
         token.MenuPopupBorderThickness = new Avalonia.Thickness(effectiveGlobal.LineWidth);
@@ -121,10 +121,10 @@ internal static class PrimeNGMenuFlyoutPresenterTokens
 /// </summary>
 internal static class PrimeNGMenuItemGroupTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuItemGroupToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MenuItemGroupToken token)
     {
         token.TitleFontWeight = context.Variant.Style == PrimeNGLanguage.Nora ? FontWeight.Bold : FontWeight.SemiBold;
     }

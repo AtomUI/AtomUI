@@ -200,7 +200,7 @@ public class DenseThemeCompilerTests
         var globalToken = ProjectionCountingGlobalToken(() => resourceProjections++);
         var control = Control<ButtonId>();
         var registry = new ThemeSchemaRegistry([globalToken], [control], [TestDesignLanguages.Probe()], null,
-            [ControlDerivationDescriptor.Create<ProbeLanguageToken, DenseHeightToken<ButtonId>, ProbeDenseDerivation<DenseHeightToken<ButtonId>>>()]);
+            [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, DenseHeightToken<ButtonId>, ProbeDenseTokenRule<DenseHeightToken<ButtonId>>>()]);
 
         var result = new ThemeCompiler().Compile(CreateInput(registry));
 
@@ -555,22 +555,22 @@ public class DenseThemeCompilerTests
             controls,
             [TestDesignLanguages.AntDesign],
             null,
-            DenseDerivations);
+            DenseTokenRules);
     }
 
-    // Every test control's derivation; the ones whose control a registry does not hold stay dormant.
-    private static readonly ControlDerivationDescriptor[] DenseDerivations =
+    // Every test control's rule; the ones whose control a registry does not hold stay dormant.
+    private static readonly ControlTokenRuleDescriptor[] DenseTokenRules =
     [
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseHeightToken<ButtonId>, DenseDerivation<DenseHeightToken<ButtonId>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseHeightToken<InputId>, DenseDerivation<DenseHeightToken<InputId>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseReadToken<ListId>, DenseDerivation<DenseReadToken<ListId>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseReadToken<TagId>, DenseDerivation<DenseReadToken<TagId>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseValueToken<BadgeId, ImmutableTransform>,
-            DenseDerivation<DenseValueToken<BadgeId, ImmutableTransform>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseValueToken<SplitViewId, Easing>,
-            DenseDerivation<DenseValueToken<SplitViewId, Easing>>>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, DenseValueToken<WindowId, SolidColorBrush>,
-            DenseDerivation<DenseValueToken<WindowId, SolidColorBrush>>>()
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseHeightToken<ButtonId>, DenseTokenRule<DenseHeightToken<ButtonId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseHeightToken<InputId>, DenseTokenRule<DenseHeightToken<InputId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseReadToken<ListId>, DenseTokenRule<DenseReadToken<ListId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseReadToken<TagId>, DenseTokenRule<DenseReadToken<TagId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<BadgeId, ImmutableTransform>,
+            DenseTokenRule<DenseValueToken<BadgeId, ImmutableTransform>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<SplitViewId, Easing>,
+            DenseTokenRule<DenseValueToken<SplitViewId, Easing>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<WindowId, SolidColorBrush>,
+            DenseTokenRule<DenseValueToken<WindowId, SolidColorBrush>>>()
     ];
 
     private static ThemeCompileInput CreateInput(
@@ -799,15 +799,15 @@ public class DenseThemeCompilerTests
         internal override void Evaluate(DesignToken global, in DesignVariant variant) => Value = value;
     }
 
-    public sealed class DenseDerivation<TToken> : IControlDerivation<AntDesignToken, TToken> where TToken : DenseToken
+    public sealed class DenseTokenRule<TToken> : IControlTokenRule<AntDesignToken, TToken> where TToken : DenseToken
     {
-        public void Derive(in DerivationContext<AntDesignToken> context, ControlView<TToken> view) =>
-            view.Token.Evaluate(view.Global, context.Variant);
+        public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<TToken> target) =>
+            target.Own.Evaluate(target.Global, context.Variant);
     }
 
-    public sealed class ProbeDenseDerivation<TToken> : IControlDerivation<ProbeLanguageToken, TToken> where TToken : DenseToken
+    public sealed class ProbeDenseTokenRule<TToken> : IControlTokenRule<ProbeLanguageToken, TToken> where TToken : DenseToken
     {
-        public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<TToken> view) =>
-            view.Token.Evaluate(view.Global, context.Variant);
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<TToken> target) =>
+            target.Own.Evaluate(target.Global, context.Variant);
     }
 }

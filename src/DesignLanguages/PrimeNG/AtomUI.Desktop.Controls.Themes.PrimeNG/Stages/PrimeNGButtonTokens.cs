@@ -32,7 +32,7 @@ internal readonly record struct PrimeNGButtonColors(Color Link, Color Danger);
 internal static class PrimeNGButtonFamilyTokens<TToken>
     where TToken : AbstractButtonGeometryToken
 {
-    internal static PrimeNGButtonColors EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGButtonColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
@@ -55,7 +55,7 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         return new PrimeNGButtonColors(link, danger);
     }
 
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TToken token,
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TToken token,
         PrimeNGButtonColors colors)
     {
         token.LinkColor         = colors.Link;
@@ -116,7 +116,7 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
     /// The danger button fills (rest, hover, active), PrimeUIX <c>button.danger</c>: the error 500 / 600 / 700 stops
     /// (dark 400 / 300 / 200; Nora 600 / 700 / 800, dark 500 / 400 / 300).
     /// </summary>
-    internal static (Color Base, Color Hover, Color Active) DangerFills(in DerivationContext<PrimeNGToken> context, DesignToken global)
+    internal static (Color Base, Color Hover, Color Active) DangerFills(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global)
     {
         var kind  = context.Variant.Style;
         var dark  = context.Variant.Appearance == ThemeAppearance.Dark;

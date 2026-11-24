@@ -53,7 +53,7 @@ AtomUI 把 Token 分成 Global Token、Effective Global Token、Control Own Toke
 
 ```text
 Design Language (seeds -> language tokens -> Global Token)
-    -> control derivation of the language: Control-specific Global Override + Control Own Token
+    -> control token rule of the language: Control-specific Global Override + Control Own Token
     -> theme / scope Control configuration (frozen before the derivation runs)
 Effective Control Token (the control view)
     -> ControlTheme
@@ -84,7 +84,7 @@ DatePicker Effective ColorPrimary = Blue
 ```
 
 Control 级 Global Token 覆盖不会修改全局 snapshot，也不会形成一棵新的资源子树。它只是当前 ThemeContext 的
-snapshot 中，属于特定 Control identity 的稀疏差量。语言的控件推导也可以写这份差量（例如某种语言让 Select 看到不同的边框色），
+snapshot 中，属于特定 Control identity 的稀疏差量。语言的控件取值规则也可以写这份差量（例如某种语言让 Select 看到不同的边框色），
 它与主题、作用域的 Control 配置写的是同一份控件视图，优先级最低。
 
 ### 2.3 Control Own Token
@@ -101,7 +101,7 @@ Own Token。它直接从 Rating 的 Effective Global Token 读取 `ControlHeight
 Own Token 类型使用无参数 `[ControlDesignToken]` 标记，使生成器可以直接发现 Token 定义。该标记不接收 Control
 类型、identity、ID 或主题路径；`[ControlDesignToken<Rating>]` 这类泛型关联不属于设计。
 
-Own Token 类只有声明，不含计算：它们在每种设计语言下等于多少，由该语言的取值包里的控件推导给出
+Own Token 类只有声明，不含计算：它们在每种设计语言下等于多少，由该语言的取值包里的控件取值规则给出
 （见[编写设计语言](writing-design-languages.md#4-取值包)）。
 
 ### 2.4 Effective Control Token
@@ -220,7 +220,7 @@ Global Token schema；两处都不存在才报错。Own Token 与任意 Global T
 一个合法 Global Token 如果没有被当前 Control 直接或间接使用，覆盖后可以没有视觉效果。这是允许的确定行为，
 不能因此影响其他 Control identity 或真正的 Global Token snapshot。Own Token 则不同：每个没有标为 Reserved 的 Own
 Token 都承诺有效果，并由生效测试证明；设置了没有效果是缺陷，不是"允许的确定行为"。Control 级覆盖 Seed Token 时会为该
-Control 重新派生一份全局 Token，覆盖 Map / Alias 时显式值也会被该 Control 的控件推导读到，因此一个看似未直接使用的 Token 仍可能
+Control 重新派生一份全局 Token，覆盖 Map / Alias 时显式值也会被该 Control 的控件取值规则读到，因此一个看似未直接使用的 Token 仍可能
 产生局部间接效果。
 
 ### 5.1 AXAML 和 C# 使用同一语义
@@ -258,7 +258,7 @@ Token，并提供统一、可搜索的 Global Token 目录。
 | 边界 | 负责什么 | 不负责什么 |
 | --- | --- | --- |
 | Resolver / Definition | 发现和读取主题来源 | 不计算 Token，不加载 Control 实例 |
-| Schema | 描述 Token、Control、设计语言、控件推导和主题资产 | 不保存当前主题值 |
+| Schema | 描述 Token、Control、设计语言、控件取值规则和主题资产 | 不保存当前主题值 |
 | Configuration | 绑定、验证和合并用户输入 | 不访问 Visual Tree |
 | Compiler / Snapshot | 计算并冻结完整主题结果 | 不发布 Avalonia 通知 |
 | ThemeContext / Resources | 发布 snapshot 并投影为资源 | 不维护第二份 Token 状态 |
@@ -266,7 +266,7 @@ Token，并提供统一、可搜索的 Global Token 目录。
 ### 6.1 ThemeSchemaRegistry
 
 Registry 在应用初始化时由生成 descriptor 构建，包含 Global Token schema、带 exact CLR type 的 Control
-descriptor、已启用的设计语言（含语言 Token schema 与轴）、控件推导 descriptor 和 ControlTheme asset manifest。构建时校验每个
+descriptor、已启用的设计语言（含语言 Token schema 与轴）、控件取值规则 descriptor 和 ControlTheme asset manifest。构建时校验每个
 已启用语言都为每个已启用 Control 找得到推导。首个 snapshot 编译前冻结，之后不能动态追加类型。
 
 ### 6.2 ThemeConfig 与 ThemeDefinition
@@ -384,7 +384,7 @@ Global Token 都可以配置；只有名称在这两个 schema 中都不存在�
 </ItemGroup>
 ```
 
-应用显式调用 `AtomUI.Generated.AcmeThemes.GeneratedThemePackageRegistration.Register(builder.Theme)`。
+应用显式调用 `AtomUI.Generated.AcmeThemes.ThemePackageRegistration.Register(builder.Theme)`。
 构建时只解析静态声明并生成注册与默认值赋值；运行时合并应用配置并执行语言推导，支持主色、明暗与密度变化。
 注册不自动启用语言或控件包；XML 引用的语言与显式覆盖的 Control 必须已登记在启动时的 registry。静态主题与动态 XML 的 Id
 不能重复。完整支持域、生成协议与验收状态见[编译主题包架构](../../architecture/systems/theming/compiled-theme-packages/overview.md)。
@@ -639,7 +639,7 @@ Semantic Part Theme 是 Selector 的可选扩展，不是 Popup、Overlay 或普
 Acme.Controls                          control package: no values, references no design language
 +-- 正常 Control、可选 Own Token 声明、Semantic Part 和 Themes/
 \-- UseAcmeControls() 调用生成的包注册 helper
-Acme.Controls.Themes.AntDesign         value package: one [ControlDerivation] per Own Token class
+Acme.Controls.Themes.AntDesign         value package: one [ControlTokenRule] per Own Token class
 \-- AddAcmeControls() 登记 Ant Design 下的取值
 ```
 
@@ -721,8 +721,8 @@ Control 使用同一条确定性路径。
 | 把合法但未消费的 Global Token 当成配置错误 | 重新引入不完整消费白名单 | 接受全部 Global Token，未知名称才失败 |
 | 用 `SharedTokenResource` 期待 Rating 局部覆盖 | Shared 始终读取全局值 | 改用 `RatingTokenResource` |
 | 共享基元（InputControlFrame 等）的主题用 `SharedTokenResource` | 用户对 LineEdit 的覆盖传不进基元 | 改用 `OwnerTokenResource` |
-| 在控件推导里判断用户是否设置了某字段 | 显式值在推导之前已冻结，推导对它的写入被忽略、读取得到显式值 | 直接顺序赋值，不做判断 |
-| 在 Token 类里写计算方法或默认值初始化器 | Token 类只有声明；取值属于设计语言 | 写进该语言取值包的控件推导 |
+| 在控件取值规则里判断用户是否设置了某字段 | 显式值在推导之前已冻结，推导对它的写入被忽略、读取得到显式值 | 直接顺序赋值，不做判断 |
+| 在 Token 类里写计算方法或默认值初始化器 | Token 类只有声明；取值属于设计语言 | 写进该语言取值包的控件取值规则 |
 | 控件代码用 `Application.Current.TryGetResource` 读 Token，失败回落写死值 | 局部 ThemeConfigProvider 的覆盖对它无效 | `ControlTokenAccessor` 或 `TokenResourceBinder` |
 | 预设色用 RGB 常量写在代码里 | 不跟随主题色板，暗色下也不变 | 从快照 `PresetPalettes` 读取并按快照缓存 |
 | 同节点同属性同时在模板节点属性与非触发 Style Setter 写默认值 | 模板节点属性为 Template 优先级，非触发 Style Setter 不生效 | 只在一处写默认值 |

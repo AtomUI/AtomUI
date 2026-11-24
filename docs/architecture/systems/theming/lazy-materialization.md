@@ -116,7 +116,7 @@ ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有�
 - 语言或其修订、有效变体、全局 schema、主题有效全局值或相关配置变化必须使全局结果失效。
 - 完整 ThemeDefinition 的修订若仅改变控件配置，是否允许细化比较要由结构化输入证明，不能只比较主题 ID。
 - 配置能证明无控件级全局差量时，Shared Token 查询可直接使用根资源；Own Token 仍在第一次 Own 查询时编译。
-  控件推导可能写 `view.Global`，若可能影响该结果，应走完整控件路径。
+  控件取值规则可能写 `target.Global`，若可能影响该结果，应走完整控件路径。
 
 规范化配置已按 schema slot 排序；构建结构键直接沿该顺序复制。不可变配置和绑定后 definition 的结构键
 按对象身份弱缓存；不同实例仍执行完整内容比较，registry revision 仍参与完整快照/控件键。新的输入修订

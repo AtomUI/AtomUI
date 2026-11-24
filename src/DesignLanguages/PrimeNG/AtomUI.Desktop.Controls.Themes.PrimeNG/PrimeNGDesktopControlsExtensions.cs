@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsThemesPrimeNG;
 using AtomUI.Controls.Themes.PrimeNG;
 using AtomUI.DesignLanguages.PrimeNG;
 using AtomUI.Theme.Languages;
@@ -14,7 +15,7 @@ public static class PrimeNGDesktopControlsExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddCommonControls();
-        Generated.AtomUIDesktopControlsThemesPrimeNG.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

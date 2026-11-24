@@ -47,7 +47,7 @@ Acme.Controls/
 
 Acme.Controls.Themes.AntDesign/        one value package per supported language
 ├── Acme.Controls.Themes.AntDesign.csproj
-├── Rating/AntDesignRatingDerivation.cs
+├── Rating/RatingTokenRule.cs
 └── AntDesignAcmeControlsExtensions.cs  AddAcmeControls()
 ```
 
@@ -133,16 +133,18 @@ public sealed partial class SampleBadgeToken : AbstractControlDesignToken
 ## 3. 取值包
 
 控件包与语言包互不引用，它们只在**取值包**里相遇。取值包命名为 `<控件包名>.Themes.<Lang>`，引用控件包与语言包，为控件包里的每个
-控件 Token 类写一个控件推导（[`AntDesignSampleDerivations.cs`](../../../tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.AntDesign/AntDesignSampleDerivations.cs)）：
+控件 Token 类写一个控件取值规则（[`AntDesignSampleTokenRules.cs`](../../../tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.AntDesign/AntDesignSampleTokenRules.cs)）：
 
 ```csharp
-[ControlDerivation]
-internal sealed class AntDesignSampleBadgeDerivation : IControlDerivation<AntDesignToken, SampleBadgeToken>
+using AtomUI.Generated.SampleControlsThemesAntDesign;
+
+[ControlTokenRule]
+internal sealed class AntDesignSampleBadgeTokenRule : IControlTokenRule<AntDesignToken, SampleBadgeToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<SampleBadgeToken> view)
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<SampleBadgeToken> target)
     {
-        view.Token.BadgeBackground = view.Global.ColorPrimary;
-        view.Token.BadgeSize       = view.Global.ControlHeightSM;
+        target.Own.BadgeBackground = target.Global.ColorPrimary;
+        target.Own.BadgeSize       = target.Global.ControlHeightSM;
     }
 }
 
@@ -151,16 +153,16 @@ public static class AntDesignSampleControlsExtensions
     public static DesignLanguageBuilder<AntDesignLanguage> AddSampleControls(this DesignLanguageBuilder<AntDesignLanguage> language)
     {
         ArgumentNullException.ThrowIfNull(language);
-        AtomUI.Generated.SampleControlsThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }
 ```
 
-- `view.Token` 必须写全（`ATOMUIGEN050`），不得先读后写（`ATOMUIGEN051`）；`view.Global` 是该控件看到的全局 Token，写入只对该控件生效，
+- `target.Own` 必须写全（`ATOMUIGEN050`），不得先读后写（`ATOMUIGEN051`）；`target.Global` 是该控件看到的全局 Token，写入只对该控件生效，
   且只能写 Map 与 Alias：写种子在运行时抛出。主题与作用域给该控件的显式值在推导之前冻结，推导只做顺序赋值，不判断「用户是否设置过」。
 - 取值包漏掉控件包里某个控件 Token 类的推导时，构建报 `ATOMUIGEN052`。取值包不得声明控件或 ControlTheme（`ATOMUIGEN053`）。
-- 生成器产出 `GeneratedControlDerivationRegistration`（命名空间 `AtomUI.Generated.<程序集名去掉非字母数字字符>`）与
+- 生成器产出 `GeneratedControlTokenRuleRegistration`（命名空间 `AtomUI.Generated.<程序集名去掉非字母数字字符>`）与
   `[assembly: CoversTokenSchema]`，记录构建时控件包的 Token Schema 摘要。
 - `Add<控件包>()` 是 `DesignLanguageBuilder<TLanguage>` 上的扩展方法，**只登记取值**，不启用控件包；控件包依赖别的控件包时，在这里先调用
   依赖包的 `Add…()`。
@@ -174,19 +176,21 @@ public static class AntDesignSampleControlsExtensions
 | --- | --- | --- |
 | 完整 | 控件包 + 每种支持的语言一个取值包（样例的做法） | 与第一方同等；别人可以引用你的控件包为它追加语言 |
 | 单程序集 | 控件、Token 与所支持语言的推导放在同一个程序集，引用这些语言包 | 最省事；控件程序集绑定了它支持的语言 |
-| 通用 | 只提供绑定到根类型的推导 `IControlDerivation<LanguageDesignToken, TToken>`，不引用任何语言包 | 在任何语言下都能给出取值（只能读全局 Token），外观协调但不对标 |
+| 通用 | 只提供绑定到根类型的推导 `IControlTokenRule<LanguageDesignToken, TToken>`，不引用任何语言包 | 在任何语言下都能给出取值（只能读全局 Token），外观协调但不对标 |
 
 **为派生语言追加取值。** 派生语言的取值包只为改动的控件写推导，其余沿语言 Token 的继承链落到基语言的推导上
-（[`SampleSampleDerivations.cs`](../../../tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.Sample/SampleSampleDerivations.cs)）：
+（[`SampleSampleTokenRules.cs`](../../../tests/fixtures/DesignLanguageParity/Sample.Controls.Themes.Sample/SampleSampleTokenRules.cs)）：
 
 ```csharp
-[ControlDerivation]
-internal sealed class SampleSampleBadgeDerivation : IControlDerivation<SampleToken, SampleBadgeToken>
+using AtomUI.Generated.SampleControlsThemesSample;
+
+[ControlTokenRule]
+internal sealed class SampleSampleBadgeTokenRule : IControlTokenRule<SampleToken, SampleBadgeToken>
 {
-    public void Derive(in DerivationContext<SampleToken> context, ControlView<SampleBadgeToken> view)
+    public void Apply(in TokenEvaluationContext<SampleToken> context, ControlTokenTarget<SampleBadgeToken> target)
     {
-        view.Token.BadgeBackground = context.Language.Accent;   // a language token of the derived language
-        view.Token.BadgeSize       = view.Global.ControlHeight;
+        target.Own.BadgeBackground = context.Language.Accent;   // a language token of the derived language
+        target.Own.BadgeSize       = target.Global.ControlHeight;
     }
 }
 
@@ -197,7 +201,7 @@ public static class SampleSampleControlsExtensions
         ArgumentNullException.ThrowIfNull(language);
         // Registers the base language's values the sample language inherits (here: SampleTag).
         language.WithAntDesignValues(static ant => ant.AddSampleControls());
-        AtomUI.Generated.SampleControlsThemesSample.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

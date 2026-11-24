@@ -41,33 +41,33 @@ public sealed partial class ExtensionOnlyToken : AbstractControlDesignToken
 public class SemanticOnly : Control;
 
 // The fixture values, the same under every design language (a control package may carry such generic derivations).
-[ControlDerivation]
-internal sealed class TokenOnlyDerivation : IControlDerivation<LanguageDesignToken, TokenOnlyToken>
+[ControlTokenRule]
+internal sealed class TokenOnlyTokenRule : IControlTokenRule<LanguageDesignToken, TokenOnlyToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<TokenOnlyToken> view) =>
-        view.Token.FixtureValue = 17;
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<TokenOnlyToken> target) =>
+        target.Own.FixtureValue = 17;
 }
-[ControlDerivation]
-internal sealed class IdentityOnlyDerivation : IControlDerivation<LanguageDesignToken, IdentityOnlyToken>
+[ControlTokenRule]
+internal sealed class IdentityOnlyTokenRule : IControlTokenRule<LanguageDesignToken, IdentityOnlyToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<IdentityOnlyToken> view) =>
-        view.Token.FixtureValue = 23;
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<IdentityOnlyToken> target) =>
+        target.Own.FixtureValue = 23;
 }
-[ControlDerivation]
-internal sealed class EnumOnlyDerivation : IControlDerivation<LanguageDesignToken, EnumOnlyToken>
+[ControlTokenRule]
+internal sealed class EnumOnlyTokenRule : IControlTokenRule<LanguageDesignToken, EnumOnlyToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<EnumOnlyToken> view) =>
-        view.Token.FixtureValue = 31;
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<EnumOnlyToken> target) =>
+        target.Own.FixtureValue = 31;
 }
-[ControlDerivation]
-internal sealed class TokenKeyOnlyDerivation : IControlDerivation<LanguageDesignToken, TokenKeyOnlyToken>
+[ControlTokenRule]
+internal sealed class TokenKeyOnlyTokenRule : IControlTokenRule<LanguageDesignToken, TokenKeyOnlyToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<TokenKeyOnlyToken> view) =>
-        view.Token.FixtureValue = 37;
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<TokenKeyOnlyToken> target) =>
+        target.Own.FixtureValue = 37;
 }
-[ControlDerivation]
-internal sealed class ExtensionOnlyDerivation : IControlDerivation<LanguageDesignToken, ExtensionOnlyToken>
+[ControlTokenRule]
+internal sealed class ExtensionOnlyTokenRule : IControlTokenRule<LanguageDesignToken, ExtensionOnlyToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<ExtensionOnlyToken> view) =>
-        view.Token.FixtureValue = 41;
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<ExtensionOnlyToken> target) =>
+        target.Own.FixtureValue = 41;
 }

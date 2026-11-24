@@ -2,6 +2,7 @@ using AtomUI;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Generated.SampleDesignLanguage;
 using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
 using Avalonia.Media;
@@ -10,7 +11,7 @@ namespace Sample.DesignLanguage;
 
 /// <summary>
 /// The language tokens of <see cref="SampleLanguage"/>. Deriving from <see cref="AntDesignToken"/> makes the sample a
-/// derived language: every control derivation written for Ant Design applies to it unless a sample one overrides it.
+/// derived language: every control token rule written for Ant Design applies to it unless a sample one overrides it.
 /// </summary>
 [LanguageDesignToken]
 public partial class SampleToken : AntDesignToken
@@ -54,9 +55,9 @@ public sealed class SampleLanguage : DesignLanguage<SampleToken>
         language.Accent = Darken(seed.ColorPrimary, variant.Appearance == ThemeAppearance.Dark ? 0.0 : 0.2);
     }
 
-    public override void DeriveGlobal(in DerivationContext<SampleToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<SampleToken> context, DesignToken token)
     {
-        s_base.DeriveGlobal(new DerivationContext<AntDesignToken>(context.Variant, context.Language), token);
+        s_base.DeriveGlobal(new TokenEvaluationContext<AntDesignToken>(context.Variant, context.Language), token);
     }
 
     private static Color Darken(Color color, double amount) =>
@@ -76,7 +77,7 @@ public static class SampleLanguageBuilderExtensions
         Action<DesignLanguageBuilder<SampleLanguage>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        AtomUI.Generated.SampleDesignLanguage.GeneratedDesignLanguageRegistration.Register(builder.Theme);
+        DesignLanguageRegistration.Register(builder.Theme);
         configure?.Invoke(new DesignLanguageBuilder<SampleLanguage>(builder));
         return builder;
     }

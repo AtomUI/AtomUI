@@ -38,7 +38,7 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("static value =>");
         source.ShouldNotContain("static token =>");
         source.ShouldNotContain("static (token, value) =>");
-        // The descriptor only creates the token: values come from the language's control derivations.
+        // The descriptor only creates the token: values come from the language's control token rules.
         source.ShouldContain("static () => new global::Demo.ButtonToken()" + Environment.NewLine);
         source.ShouldNotContain("RunDefaultCalculation");
         source.ShouldNotContain("static (token, appearance)");

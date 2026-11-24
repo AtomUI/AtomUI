@@ -48,9 +48,10 @@ public abstract class CompiledThemeProgram
 | `accentColor` | 基础段全局 `ColorPrimary` 的值（供 `ThemeInfo.AccentColor`）；未写时为 `null` |
 
 `IThemeManagerBuilder.AddCompiledThemePackage(CompiledThemePackage package)` 是显式注册入口。生成的
-`AtomUI.Generated.<Assembly>.GeneratedThemePackageRegistration` 提供 `CreatePackage()` 与
+`AtomUI.Generated.<Assembly>.ThemePackageRegistration` 提供 `CreatePackage()` 与
 `Register(IThemeManagerBuilder builder)`；前者只创建轻量描述，后者把同一个包提交给 Builder。语言包的 `Use<Lang>()` 入口在内部
 调用自己的 `Register`（例如 `UseAntDesign()` 注册 Daybreak Blue），每个 Builder 只注册一次。
+旧版生成类型 `GeneratedThemePackageRegistration` 的两个方法转发到同一份实现，供既有调用使用。
 
 `CompiledThemePackage` 要求包内每个程序的 `Id` 与 `sourceIdentity` 各自唯一，程序数不超过 65536。
 
@@ -180,7 +181,7 @@ CompiledThemeManifestAttribute(int version, string packageId, string data)
 - 生成器对照构建契约绑定每个主题：未声明的语言、未知或重复的 Control、未知 Token、控件 Token 与全局 Token 同名、`Locked` 用在
   非种子或条件段 / Control 上、条件段里的 Control 固定轴、没有静态字面量能力的 Token 类型、字面量转换失败，都在 XML 的行列上
   报 `ATOMUITOKEN002`，该主题不生成程序；包内重复的主题 `Id` 同样报错。
-- 生成程序只声明并写入静态值；运行时由 ThemeCompiler 在有效配置下执行语言推导、控件推导和快照生命周期。
+- 生成程序只声明并写入静态值；运行时由 ThemeCompiler 在有效配置下执行语言推导、控件取值规则和快照生命周期。
 
 Core 的内置 codec 拥有字面量解析和规范格式，构建任务源链接相同实现。FontFamily 字面量生成标准公开构造，构造出的 URI、名称与
 fallback 顺序必须与动态 XML 一致。

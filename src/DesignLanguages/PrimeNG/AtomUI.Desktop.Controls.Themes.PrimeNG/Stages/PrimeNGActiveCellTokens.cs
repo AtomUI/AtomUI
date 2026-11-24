@@ -19,10 +19,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGCalendarTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CalendarToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CalendarToken token)
     {
         if (context.Language.GetListItemRecipe(effectiveGlobal).UsesSolidHighlight)
         {
@@ -43,10 +43,10 @@ internal static class PrimeNGCalendarTokens
 /// </summary>
 internal static class PrimeNGLunarCalendarTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, LunarCalendarToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, LunarCalendarToken token)
     {
         token.ItemActiveBg    = effectiveGlobal.ColorPrimary;
         token.ItemActiveColor = effectiveGlobal.ColorTextLightSolid;
@@ -58,10 +58,10 @@ internal static class PrimeNGLunarCalendarTokens
 /// </summary>
 internal static class PrimeNGDateViewerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DateViewerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DateViewerToken token)
     {
         PrimeNGDatePanel.Apply(context, effectiveGlobal, token);
         if (context.Language.GetListItemRecipe(effectiveGlobal).UsesSolidHighlight)
@@ -76,10 +76,10 @@ internal static class PrimeNGDateViewerTokens
 /// </summary>
 internal static class PrimeNGRangeDateViewerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeDateViewerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RangeDateViewerToken token)
     {
         PrimeNGDatePanel.Apply(context, effectiveGlobal, token);
         if (context.Language.GetListItemRecipe(effectiveGlobal).UsesSolidHighlight)
@@ -98,7 +98,7 @@ internal static class PrimeNGRangeDateViewerTokens
 /// </summary>
 internal static class PrimeNGDatePanel
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractDateViewerToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractDateViewerToken token)
     {
         var lara    = context.Variant.Style == PrimeNGLanguage.Lara;
         var cell    = lara ? 36 : 28;

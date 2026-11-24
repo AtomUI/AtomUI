@@ -14,10 +14,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 internal static class PrimeNGProgressTokens<TToken>
     where TToken : AbstractProgressToken
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TToken token)
     {
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         token.DefaultColor   = effectiveGlobal.ColorPrimary;
@@ -36,11 +36,11 @@ internal static class PrimeNGProgressTokens<TToken>
 /// </summary>
 internal static class PrimeNGProgressBarTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
 
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal,
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal,
                                      ProgressBarToken token)
     {
         PrimeNGProgressTokens<ProgressBarToken>.EvaluateOwn(in context, effectiveGlobal, token);

@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesignLanguagesAntDesign;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using AtomUI.Theme;
@@ -25,7 +26,7 @@ public class SplashDefaultThemeTests
     {
         var builder = new ThemeManagerBuilder(typeof(Avalonia.Application));
         AtomUI.Generated.AtomUIDesignLanguagesAntDesign.GeneratedDesignLanguageRegistration.Register(builder);
-        AtomUI.Generated.AtomUIDesignLanguagesAntDesign.GeneratedThemePackageRegistration.Register(builder);
+        ThemePackageRegistration.Register(builder);
         return ThemeStartupPreparation.Prepare(builder.CaptureStartupInputs());
     }
 

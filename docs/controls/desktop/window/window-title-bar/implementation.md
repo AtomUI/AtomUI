@@ -151,7 +151,7 @@ Window.TitleAlignment + add-on content/templates + platform/native metrics
 
 ```text
 SharedToken
-  -> WindowTitleBarToken 的控件推导（Ant Design：AntDesignWindowTitleBarDerivation）
+  -> WindowTitleBarToken 的控件取值规则（Ant Design：WindowTitleBarTokenRule）
   -> generated WindowTitleBarTokenResource keys
   -> WindowTitleBar / CaptionButton ControlTheme
   -> template properties and selectors

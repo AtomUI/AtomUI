@@ -108,21 +108,21 @@ public class TypedThemeSnapshotCacheTests
     }
 
     /// <summary>
-    /// A registry with the generated global tokens, the controls and (by default) Ant Design with the test derivations
-    /// of <see cref="TestControlDerivations"/>.
+    /// A registry with the generated global tokens, the controls and (by default) Ant Design with the test rules
+    /// of <see cref="TestControlTokenRules"/>.
     /// </summary>
     internal static ThemeSchemaRegistry CreateRegistry(
         IReadOnlyList<ControlTokenDescriptor>? controls = null,
         IReadOnlyList<DesignLanguageDescriptor>? languages = null,
         IReadOnlyList<ControlThemeAssetDescriptor>? themeAssets = null,
-        IReadOnlyList<ControlDerivationDescriptor>? derivations = null)
+        IReadOnlyList<ControlTokenRuleDescriptor>? rules = null)
     {
         return new ThemeSchemaRegistry(
             GeneratedThemeSchema.GetGlobalTokens(),
             controls ?? Array.Empty<ControlTokenDescriptor>(),
             languages ?? [TestDesignLanguages.AntDesign],
             themeAssets ?? Array.Empty<ControlThemeAssetDescriptor>(),
-            derivations ?? TestControlDerivations.All);
+            rules ?? TestControlTokenRules.All);
     }
 
     /// <summary>

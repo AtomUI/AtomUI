@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIGalleryTests;
 using Avalonia;
 using Avalonia.Headless;
 using AtomUI.Desktop.Controls;
@@ -44,7 +45,7 @@ public static class TestAppBuilder
                              builder.UsePrimeNG();
                              builder.UseShadcn();
                              builder.WithInitialDesignLanguage<AntDesignLanguage>();
-                             AtomUI.Generated.AtomUIGalleryTests.GeneratedThemePackageRegistration.Register(builder.Theme);
+                             ThemePackageRegistration.Register(builder.Theme);
                              builder.UseLanguages(
                                  LanguageTags.EnUS,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);

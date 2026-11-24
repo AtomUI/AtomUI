@@ -36,7 +36,7 @@ Token 按控件语义分类维护：
   `ControlOutlineWidth`，结果最低为零。水平方向内边距和翻页按钮的尺寸沿用各主题的对应 Token。
 - `PaginationItemPaddingInline` 是页码项的行内（水平）内间距，作用于页码文字，宽页码（如四位数）不再贴边；默认 `UniformlyMarginXXS * 1.5, 0`。
 - 页码项 `PaginationNavItem` 被 Pagination 与 SimplePagination 共用，以 `OwnerTokenResource` 读取所在分页控件的有效全局 Token；页码项内的
-  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 有自己的 Own，公共尺寸/禁用色/布局与输入宽度经抽象层共享定义、由取值包的共享辅助类共享取值规则（Ant Design：`AntDesignAbstractPaginationDerivation`），按终端独立覆盖。
+  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 有自己的 Own，公共尺寸/禁用色/布局与输入宽度经抽象层共享定义、由取值包的共享辅助类共享取值规则（Ant Design：`PaginationTokenCalculator`），按终端独立覆盖。
 
 
 Pagination 的控件专项模型通过 Theme 消费 Token：

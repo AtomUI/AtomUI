@@ -33,8 +33,9 @@ builder.WithInitialTheme(ThemeSelection.Of("Shadcn", ShadcnStyles.Nova));
 | Theme（品牌色） | 可调种子 `ColorPrimary` | Neutral（跟随 Base Color，默认 neutral-900 `#171717`）+ 17 种彩色（Tailwind 700 级，Lime/Yellow 为 400 级） |
 | Base Color（中性色） | 可调的语言种子 `BaseColor`（`ShadcnToken.BaseColor`） | Neutral（默认 `#737373`）、Stone、Zinc、Mauve、Olive、Mist、Taupe |
 
-- 颜色全部来自 **Tailwind v4.3.5 色板**（`Derivation/ShadcnTailwindPalette.cs`，脚本生成，勿手改）：shadcn 的颜色变量
-  都是某个色阶的某一档，取档规则见 `ShadcnBaseColors`。
+- 颜色全部来自 **Tailwind v4.3.5 色板**（`TokenEvaluation/ShadcnTailwindPalette.cs`，脚本生成，勿手改）：shadcn 的颜色变量
+  都是某个色阶的某一档，取档规则见 `ShadcnBaseColors`。从仓库根目录运行
+  `python3 scripts/generate-shadcn-tailwind-palette.py /path/to/tailwindcss/theme.css` 可重新生成该文件。
 - 中性色种子 = 该 Base Color 浅色 `--muted-foreground`（色阶 500 档）；未命中官方 7 档的自定义种子按 OKLCH 生成 11 档
   色阶（明度取 Neutral 阶梯、色相取种子、色度按 Zinc 比例缩放）。
 - Theme 种子 = 官方浅色主色（700/400 档），暗色取 800/500 档，前景取 50/900 档；自定义主色暗色按官方 17 主题的平均

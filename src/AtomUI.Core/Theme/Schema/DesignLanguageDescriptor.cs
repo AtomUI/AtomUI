@@ -6,7 +6,7 @@ namespace AtomUI.Theme.Schema;
 
 /// <summary>
 /// Registers one design language with the schema of its language token class. The generated
-/// <c>GeneratedDesignLanguageRegistration</c> of a language package creates one per <c>[DesignLanguage]</c> class.
+/// <c>DesignLanguageRegistration</c> of a language package creates one per <c>[DesignLanguage]</c> class.
 /// </summary>
 public sealed class DesignLanguageDescriptor
 {

@@ -14,7 +14,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGMessageCardTokens
 {
-    internal static PrimeNGStatusColors EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
@@ -22,7 +22,7 @@ internal static class PrimeNGMessageCardTokens
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
         return statuses;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MessageCardToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MessageCardToken token)
     {
         var resting = context.Language.GetPopoverOverlayRecipe(effectiveGlobal, context.Variant).Shadows;
         var kind    = context.Variant.Style;
@@ -56,7 +56,7 @@ internal static class PrimeNGMessageCardTokens
     /// Measured on primeng.dev: the severity toasts carry a 1px <c>{color}.200</c> border, which is what outlines
     /// them on a white page; their 4% shadow alone leaves the edge invisible.
     /// </summary>
-    internal static BoxShadows AuraSeverityFrame(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
+    internal static BoxShadows AuraSeverityFrame(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
     {
         var dark   = context.Variant.Appearance == AtomUI.Theme.ThemeAppearance.Dark;
         var border = dark ? palette.AtOpacity(700, 0.36) : palette[200];
@@ -69,7 +69,7 @@ internal static class PrimeNGMessageCardTokens
     /// a severity, and AtomUI's legibility addition for Lara and Nora, whose plain toast has no outline and blends into
     /// a white page (their 6px start bar only marks the leading edge).
     /// </summary>
-    internal static BoxShadows NeutralFrame(in DerivationContext<PrimeNGToken> context, DesignToken global, BoxShadows shadows) =>
+    internal static BoxShadows NeutralFrame(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, BoxShadows shadows) =>
         PrimeNGOverlayRecipe.WithOutlineRing(shadows, context.Language.GetContentBorder(context.Variant), global.LineWidth);
 
     /// <summary>

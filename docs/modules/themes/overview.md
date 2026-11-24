@@ -23,7 +23,7 @@
 src/DesignLanguages/<Lang>/
 +-- AtomUI.DesignLanguages.<Lang>/          语言：<Lang>Language（四个轴、种子、语言 Token、全局推导）、<Lang>Token、
 |                                           Use<Lang>() 入口、README（来源与版本、规则表、不支持清单）
-+-- AtomUI.Controls.Themes.<Lang>/          AtomUI.Controls 的控件推导与 AddCommonControls()
++-- AtomUI.Controls.Themes.<Lang>/          AtomUI.Controls 的控件取值规则与 AddCommonControls()
 +-- AtomUI.Desktop.Controls.Themes.<Lang>/  桌面控件的推导与 AddDesktopControls()；README 列出逐控件等级
 +-- AtomUI.Desktop.Controls.ColorPicker.Themes.<Lang>/   AddDesktopColorPicker()
 \-- AtomUI.Desktop.Controls.DataGrid.Themes.<Lang>/      AddDesktopDataGrid()

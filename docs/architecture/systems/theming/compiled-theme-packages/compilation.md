@@ -24,7 +24,7 @@
 
 ## 2. 工具分工
 
-Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存。语言推导与控件推导使用既有 Avalonia/Core 类型与
+Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存。语言推导与控件取值规则使用既有 Avalonia/Core 类型与
 中性工具，只在运行时求值。动态 XML 继续由原 Reader/Binder 处理。
 
 - Toolchain Tasks 源链接 Core 的 Reader/XSD、`BuiltInThemeLiteralCodec`、运行时 converter 与必要值类型。
@@ -101,12 +101,12 @@ FontFamily 是经明确授权的构造边界例外：当前依赖只公开字符
 
 ### 3.3 生成工厂
 
-生成程序描述必要契约并写入类型化静态默认覆盖。现有运行时按阶段合并有效配置、执行语言推导与控件推导、冻结结果和资源投影。
+生成程序描述必要契约并写入类型化静态默认覆盖。现有运行时按阶段合并有效配置、执行语言推导与控件取值规则、冻结结果和资源投影。
 静态路径不创建 ThemeDocument/BoundThemeDefinition 往返模型；Catalog 的统一内部定义视图需支持两种来源，
 默认配置与根/局部合并接口不能要求所有静态包重新构造旧 Binder 对象。
 
 保留当前惰性 Control 边界。生成程序只描述显式控件覆盖；运行时按实际注册的 descriptor 提供 Own 构造入口，
-不在主题选择时调用所有控件推导。
+不在主题选择时调用所有控件取值规则。
 可共享的全局数据保持一份；不为每个控件生成一整份全局资源表。菜单 manifest 与大 payload 分离，
 静态构造函数不能遍历并物化所有主题、控件资源或 palette。
 

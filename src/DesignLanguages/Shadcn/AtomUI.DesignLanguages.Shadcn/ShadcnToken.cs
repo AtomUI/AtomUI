@@ -7,7 +7,7 @@ namespace AtomUI.DesignLanguages.Shadcn;
 /// <summary>
 /// The shadcn vocabulary the global tokens have no place for (spec 5.4): the base-colour variables of the current
 /// appearance, the resolved theme primary, the chart palette, and the geometry and overlay tables of the current
-/// style. The control derivations read a value here only when the global tokens have no place for it.
+/// style. The control token rules read a value here only when the global tokens have no place for it.
 /// </summary>
 /// <remarks>
 /// The neutral base colour is the language seed <see cref="BaseColor"/> (the light <c>--muted-foreground</c>, i.e. the

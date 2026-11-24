@@ -257,7 +257,7 @@ Control 的 `Tokens` 同时承载：
 Binder 先按该控件的控件 Token 匹配，未命中再按全局 Token 分类；两处都没有报 `ATMTHM2003`。控件 Token 与全局 Token 禁止同名
 （Token 声明时保证；编译主题包的生成器遇到同名会报歧义错误）。合法但未被该控件消费的全局 Token 允许配置，可能没有视觉效果。
 
-控件级的全局覆盖只影响该控件，不改变其他控件，也不改变作用域的全局快照。语言的控件推导对该控件视图写入的覆盖与这里是
+控件级的全局覆盖只影响该控件，不改变其他控件，也不改变作用域的全局快照。语言的控件取值规则对该控件视图写入的覆盖与这里是
 同一份控件视图，优先级最低：主题定义的 Control 配置高于语言推导，作用域与运行时配置又高于主题定义。
 
 ### 6.2 v1 的 Control 算法四态由两条规则取代
@@ -480,7 +480,7 @@ Reader 保留源码位置和声明顺序；Binder 输出类型化的不可变定
 
 | 来源 | 注册 | 可刷新 | 失败处理 |
 | --- | --- | --- | --- |
-| 编译进包的主题（`AtomUIThemeDefinition` 构建项） | 生成的 `GeneratedThemePackageRegistration` | 否 | 属于损坏的发布产物，构建或启动失败 |
+| 编译进包的主题（`AtomUIThemeDefinition` 构建项） | 生成的 `ThemePackageRegistration` | 否 | 属于损坏的发布产物，构建或启动失败 |
 | 应用或包内的 `avares://` XML | 显式列出的 Resolver | 否 | 同上 |
 | 用户主题目录（`*.theme.xml`） | `UseUserThemeDirectory()` | `ReloadThemesAsync()` 手动刷新 | 首次加载失败不阻止启动；整个目录是一个刷新单元 |
 | 程序化来源 | 自定义 `IThemeDefinitionResolver` | 由来源声明 | 按来源类型 |

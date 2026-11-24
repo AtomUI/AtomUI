@@ -29,14 +29,14 @@ internal static class PrimeNGMotion
     /// <summary>
     /// Whether the preset makes state transitions instant, so component animations need their own durations.
     /// </summary>
-    internal static bool HasInstantTransitions(in DerivationContext<PrimeNGToken> context) =>
+    internal static bool HasInstantTransitions(in TokenEvaluationContext<PrimeNGToken> context) =>
         context.Language.HasInstantTransitions(context.Variant);
 
     /// <summary>
     /// Restores the scope's <c>MotionDurationMid</c> and / or <c>MotionDurationSlow</c> (whichever the owner's
     /// animation reads) under a preset with instant state transitions, unless motion is turned off.
     /// </summary>
-    internal static void Restore(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal,
+    internal static void Restore(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal,
                                  TimeSpan? mid = null, TimeSpan? slow = null)
     {
         if (!controlGlobal.EnableMotion || !HasInstantTransitions(context))

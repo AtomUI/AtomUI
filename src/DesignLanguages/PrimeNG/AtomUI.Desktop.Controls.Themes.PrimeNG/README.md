@@ -2,7 +2,7 @@
 
 Status: implemented and validated locally; not published to NuGet.
 
-The PrimeNG values of the desktop controls (`AtomUI.Desktop.Controls`): one control derivation per control token class, under the Aura, Lara and Nora styles, light and dark, default and compact. Install it with the desktop control package; the language package and the shared values come with it.
+The PrimeNG values of the desktop controls (`AtomUI.Desktop.Controls`): one control token rule per control token class, under the Aura, Lara and Nora styles, light and dark, default and compact. Install it with the desktop control package; the language package and the shared values come with it.
 
 ```csharp
 builder.UseDesktopControls();

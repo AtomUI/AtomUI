@@ -25,11 +25,11 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGNavMenuTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Collapsible);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NavMenuToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NavMenuToken token)
     {
         // The dark menu keeps AtomUI's fixed navy surface; its text is white-based in both appearances (under noir
         // dark the contrast colour ColorTextLightSolid is near-black and would vanish on it). The selected item keeps

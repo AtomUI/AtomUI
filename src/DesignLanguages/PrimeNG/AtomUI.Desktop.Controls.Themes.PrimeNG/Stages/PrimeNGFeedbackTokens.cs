@@ -23,7 +23,7 @@ internal static class PrimeNGMessageSeverity
     /// Writes the severity surfaces (the Map tokens <c>Color*Bg</c>, <c>Color*Border</c>) and returns the severity
     /// colours the control reads in place of the status seeds; <c>Primary</c> is the info colour.
     /// </summary>
-    internal static PrimeNGStatusColors Apply(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var success = context.Language.GetStatusScale(context.Variant, controlGlobal.ColorSuccess);
         var error   = context.Language.GetStatusScale(context.Variant, controlGlobal.ColorError, error: true);
@@ -45,7 +45,7 @@ internal static class PrimeNGMessageSeverity
     /// filled card, so <c>ColorPrimary</c> and the plain severity colours take the fill instead: they still paint the
     /// card's neutral parts (the remaining-time bar of a notification without a severity) on the white surface.
     /// </summary>
-    internal static PrimeNGStatusColors ApplyForCard(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors ApplyForCard(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var success = context.Language.GetStatusScale(context.Variant, controlGlobal.ColorSuccess);
         var error   = context.Language.GetStatusScale(context.Variant, controlGlobal.ColorError, error: true);
@@ -73,13 +73,13 @@ internal static class PrimeNGMessageSeverity
     }
 
     // Lara toast.{severity}.borderColor: the 500 stop, dark the 700 stop at 36%.
-    private static Color StartBar(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette) =>
+    private static Color StartBar(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette) =>
         context.Variant.Appearance == ThemeAppearance.Dark
             ? palette.AtOpacity(700, 0.36)
             : palette[500];
 
     // Nora fills the surface with the 800 stop in light (warn the 600 stop, PrimeUIX's yellow.600) and the 200 in dark.
-    private static (Color Background, Color Border, Color Text) Severity(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette,
+    private static (Color Background, Color Border, Color Text) Severity(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette,
                                                                         int noraLightFill = 800)
     {
         var kind = context.Variant.Style;
@@ -104,13 +104,13 @@ internal static class PrimeNGMessageSeverity
 /// </summary>
 internal static class PrimeNGAlertTokens
 {
-    internal static PrimeNGStatusColors EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var statuses = PrimeNGMessageSeverity.Apply(context, controlGlobal);
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
         return statuses;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AlertToken token,
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AlertToken token,
         PrimeNGStatusColors statuses)
     {
         var lara = context.Variant.Style == PrimeNGLanguage.Lara;
@@ -140,12 +140,12 @@ internal static class PrimeNGAlertTokens
 /// </summary>
 internal static class PrimeNGPopupConfirmTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
         controlGlobal.IconSizeLG = 20;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PopupConfirmToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PopupConfirmToken token)
     {
         var lara = context.Variant.Style == PrimeNGLanguage.Lara;
         token.IconMargin            = new Thickness(0, 0, lara ? 14 : 8, 0);
@@ -157,10 +157,10 @@ internal static class PrimeNGPopupConfirmTokens
 /// <summary>Tour under the PrimeNG presets (no PrimeUIX counterpart): the popover's border.radius.md corners.</summary>
 internal static class PrimeNGTourTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TourToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TourToken token)
     {
         token.TourBorderRadius = effectiveGlobal.BorderRadius;
     }
@@ -172,13 +172,13 @@ internal static class PrimeNGTourTokens
 /// </summary>
 internal static class PrimeNGUploadTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
         controlGlobal.ColorFillAlter = controlGlobal.ColorBgElevated;
         controlGlobal.ColorBorder    = context.Language.GetContentBorder(context.Variant);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, UploadToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, UploadToken token)
     {
     }
 }

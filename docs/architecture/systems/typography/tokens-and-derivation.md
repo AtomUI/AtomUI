@@ -5,8 +5,8 @@ Token 怎么分级、阶梯算法长什么样、以及 Ant Design 语言在默�
 与 Ant Design 不一致。
 
 Token 的分级与声明在核心（`AtomUI.Core`），取值规则属于设计语言：下文的派生是 Ant Design 语言包
-`AtomUI.DesignLanguages.AntDesign` 的全局推导（`AntDesignLanguage.DeriveGlobal` 先调用 `AntDesignMapDerivation`、再调用
-`AntDesignAliasDerivation`），阶梯函数是核心的中性工具 `AtomUI.Theme.Derivation.CalculatorUtils`。其他语言可以给出不同的字号
+`AtomUI.DesignLanguages.AntDesign` 的全局推导（`AntDesignLanguage.DeriveGlobal` 先调用 `MapTokenRules`、再调用
+`AliasTokenRules`），阶梯函数是核心的中性工具 `AtomUI.Theme.Derivation.CalculatorUtils`。其他语言可以给出不同的字号
 规则，见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
 
 字体族的解析是另一条线，见 [font-family-resolution.md](font-family-resolution.md)；Token 怎么被消费见
@@ -42,7 +42,7 @@ Map 级 19 项全部由 `CalculatorUtils.CalculateFontMapTokenValues` 从 `FontS
 `TextBlock.LineHeight` 是绝对像素，沿用 `LineHeight` 会和框架属性撞语义，让人以为可以直接赋值。`Relative` 前缀
 把"这是个比值、必须乘字号"写进了名字里。那次乘法归谁做，见 [consumption.md](consumption.md)。
 
-Alias 级两项在 Ant Design 的 `AntDesignAliasDerivation.Derive` 里赋值，是固定关系而不是独立参数：
+Alias 级两项在 Ant Design 的 `AliasTokenRules.Apply` 里赋值，是固定关系而不是独立参数：
 
 | Token | 类型 | 派生 | 语义 |
 |---|---|---|---|
@@ -107,7 +107,7 @@ relativeLineHeight(fontSize) = (fontSize + 8) / fontSize
 
 ## Ant Design 的三个计算器
 
-`AntDesignMapDerivation.Derive` 按 antd 的组合方式先跑默认计算器，变体的密度为 `DesignDensity.Compact` 时再叠加紧凑计算器，
+`MapTokenRules.Apply` 按 antd 的组合方式先跑默认计算器，变体的密度为 `DesignDensity.Compact` 时再叠加紧凑计算器，
 明暗为 `ThemeAppearance.Dark` 时再叠加暗色计算器。这些计算器是语言包的内部实现：
 
 | 计算器 | 何时运行 | 是否重算字体 Map Token | 派生基数 |

@@ -8,7 +8,7 @@ namespace AtomUI.Desktop.Controls.Tests.Theme;
 
 /// <summary>
 /// Ant Design with the values of every desktop control satisfies the design language contract (spec 14, 15): each
-/// control derivation writes every token of its control, is pure and deterministic, under all 8 variants.
+/// control token rule writes every token of its control, is pure and deterministic, under all 8 variants.
 /// </summary>
 public class AntDesignControlContractTests
 {

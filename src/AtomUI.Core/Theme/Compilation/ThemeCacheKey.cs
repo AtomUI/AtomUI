@@ -534,19 +534,19 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
     private readonly GlobalCompilationCacheKey _global;
     private readonly NormalizedControlConfigCacheKey? _controlConfig;
     private readonly object _compilationIdentity;
-    private readonly object? _derivationIdentity;
+    private readonly object? _ruleIdentity;
 
     private ControlCompilationCacheKey(
         GlobalCompilationCacheKey global,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? controlConfig,
-        ControlDerivationDescriptor? derivation)
+        ControlTokenRuleDescriptor? rule)
     {
         ArgumentNullException.ThrowIfNull(global);
 
         _global              = global;
         _compilationIdentity = descriptor.CompilationIdentity;
-        _derivationIdentity  = derivation?.CompilationIdentity;
+        _ruleIdentity  = rule?.CompilationIdentity;
         Identity             = descriptor.Identity;
         ControlSlot          = descriptor.Slot;
         _controlConfig = controlConfig is null
@@ -564,14 +564,14 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
     /// <param name="global">The key of the global compilation the control derives from.</param>
     /// <param name="descriptor">The control.</param>
     /// <param name="controlConfig">The control's effective configuration, if any.</param>
-    /// <param name="derivation">The control derivation the language uses for the control.</param>
+    /// <param name="rule">The control rule the language uses for the control.</param>
     internal static ControlCompilationCacheKey Create(
         GlobalCompilationCacheKey global,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? controlConfig,
-        ControlDerivationDescriptor? derivation)
+        ControlTokenRuleDescriptor? rule)
     {
-        return new ControlCompilationCacheKey(global, descriptor, controlConfig, derivation);
+        return new ControlCompilationCacheKey(global, descriptor, controlConfig, rule);
     }
 
     public bool Equals(ControlCompilationCacheKey other)
@@ -579,7 +579,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
         return ControlSlot == other.ControlSlot &&
                Identity == other.Identity &&
                ReferenceEquals(_compilationIdentity, other._compilationIdentity) &&
-               ReferenceEquals(_derivationIdentity, other._derivationIdentity) &&
+               ReferenceEquals(_ruleIdentity, other._ruleIdentity) &&
                _global.Equals(other._global) &&
                Equals(_controlConfig, other._controlConfig);
     }
@@ -591,7 +591,7 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(_global, Identity, ControlSlot, _compilationIdentity, _derivationIdentity, _controlConfig);
+        return HashCode.Combine(_global, Identity, ControlSlot, _compilationIdentity, _ruleIdentity, _controlConfig);
     }
 }
 

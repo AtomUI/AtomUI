@@ -4,8 +4,8 @@
 
 ## 1. Scope 与边界
 
-`NumericUpDownToken` 与 `ButtonSpinnerToken` 继承 `AbstractButtonSpinnerToken`。它们的 Own 值由各自的控件推导按该终端的有效
-Global Token 给出（Ant Design 以共享辅助类 `AntDesignAbstractButtonSpinnerDerivation` 复用抽象层的取值规则）；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，NumericUpDown 的配置也不改变独立 ButtonSpinner。
+`NumericUpDownToken` 与 `ButtonSpinnerToken` 继承 `AbstractButtonSpinnerToken`。它们的 Own 值由各自的控件取值规则按该终端的有效
+Global Token 给出（Ant Design 以共享辅助类 `ButtonSpinnerTokenCalculator` 复用抽象层的取值规则）；`Controls[ButtonSpinner]` 不改变 NumericUpDown 的步进柄，NumericUpDown 的配置也不改变独立 ButtonSpinner。
 
 ## 2. Own Token
 

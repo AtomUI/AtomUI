@@ -126,9 +126,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     // 语义部件描述符登记表（提交时由 BuildCore 一次写入）：SemanticParts 由其按需重建。
     private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
-    // The design languages and control derivations handed over by the builder.
+    // The design languages and control rules handed over by the builder.
     private IReadOnlyList<DesignLanguageDescriptor> _registryLanguages = Array.Empty<DesignLanguageDescriptor>();
-    private IReadOnlyList<ControlDerivationDescriptor> _registryDerivations = Array.Empty<ControlDerivationDescriptor>();
+    private IReadOnlyList<ControlTokenRuleDescriptor> _registryTokenRules = Array.Empty<ControlTokenRuleDescriptor>();
     private ThemeSelection? _currentSelection;
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
@@ -2040,16 +2040,16 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     internal ThemeSchemaRevision? StartupRegistryRevision => PackageReadUpdate?.Snapshot.RegistryRevision ?? _startupRegistry?.Revision;
 
     /// <summary>
-    /// The design languages and control derivations registered through the builder. Must be called before
+    /// The design languages and control rules registered through the builder. Must be called before
     /// PrepareRegistrationSchema.
     /// </summary>
     internal void SetLanguages(IReadOnlyList<DesignLanguageDescriptor> languages,
-        IReadOnlyList<ControlDerivationDescriptor> derivations)
+        IReadOnlyList<ControlTokenRuleDescriptor> rules)
     {
         ArgumentNullException.ThrowIfNull(languages);
-        ArgumentNullException.ThrowIfNull(derivations);
+        ArgumentNullException.ThrowIfNull(rules);
         _registryLanguages = languages;
-        _registryDerivations = derivations;
+        _registryTokenRules = rules;
     }
 
     internal void ConfigureStartupPackages(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image)
@@ -2144,7 +2144,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         if (_startupPackageIndex is { } index)
         {
             return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryLanguages,
-                _registryDerivations);
+                _registryTokenRules);
         }
         return _packageSchemaFingerprints is { } packageFingerprints
             ? new ThemeSchemaRegistry(
@@ -2154,13 +2154,13 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 _controlThemeAssetDescriptors,
                 GeneratedThemeSchema.GlobalSchemaFingerprint,
                 packageFingerprints,
-                _registryDerivations)
+                _registryTokenRules)
             : new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
                 _registryLanguages,
                 _controlThemeAssetDescriptors,
-                _registryDerivations);
+                _registryTokenRules);
     }
 
     private SemanticPartRegistry CreateSemanticRegistry(ThemeSchemaRegistry registry)

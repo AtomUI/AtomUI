@@ -1,10 +1,10 @@
-using AtomUI.DesignLanguages.Shadcn.Derivation;
+using AtomUI.DesignLanguages.Shadcn.TokenEvaluation;
 using Avalonia.Media;
 
 namespace AtomUI.DesignLanguages.Shadcn;
 
 /// <summary>
-/// The shadcn colour and shadow arithmetic the control derivations share: Tailwind opacity modifiers as opaque
+/// The shadcn colour and shadow arithmetic the control token rules share: Tailwind opacity modifiers as opaque
 /// composites, alpha strengths, the ring-then-shadow assembly of the floating surfaces and the Tailwind palette.
 /// </summary>
 public static class ShadcnRecipes

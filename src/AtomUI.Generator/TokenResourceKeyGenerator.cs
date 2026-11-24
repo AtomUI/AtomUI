@@ -105,7 +105,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
                 walker.Visit(reference.GetSyntax(cancellationToken));
                 ownTokens.Add(walker.ControlTokenInfo);
             }
-            var localLanguages = Derivation.LocalLanguageModel.Collect(compilation, declarations.Left.Right,
+            var localLanguages = DesignLanguages.LocalLanguageModel.Collect(compilation, declarations.Left.Right,
                 languageDeclarations, context.ReportDiagnostic, cancellationToken);
             var semanticDeclarations = declarations.Right.Distinct(StringComparer.Ordinal).Select(compilation.GetTypeByMetadataName)
                 .Where(static symbol => symbol is not null).Select(symbol => SemanticControlDeclaration.Create(symbol!, cancellationToken)).ToArray();

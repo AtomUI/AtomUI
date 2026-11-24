@@ -264,7 +264,7 @@ internal sealed record PrimeNGAliasRule(
 /// The fixed control values of a preset: the standard presets of <c>@primeuix/themes</c> 3.1.1 at a 16px root
 /// (PrimeNG Styled Mode, "Base Font Size"), which is what PrimeNG 22 (primeng.dev) renders. The <c>*-compat</c>
 /// presets are calibrated for a legacy 14px root; AtomUI maps 1rem to 16px, so their values would be 16/14 too large. Fixed sizes do not follow the compact density; values that follow from other
-/// tokens are delegates evaluated in the control derivations.
+/// tokens are delegates evaluated in the control token rules.
 /// </summary>
 /// <param name="ButtonPaddingHorizontal">
 /// The button's horizontal label padding (PrimeUIX <c>button.padding.x</c>) where it differs from the field padding,

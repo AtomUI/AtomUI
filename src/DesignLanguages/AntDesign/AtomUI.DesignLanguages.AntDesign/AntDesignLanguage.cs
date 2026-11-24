@@ -1,4 +1,4 @@
-using AtomUI.DesignLanguages.AntDesign.Derivation;
+using AtomUI.DesignLanguages.AntDesign.TokenEvaluation;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
@@ -49,10 +49,10 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
     /// antd's derivation: the default map algorithm, then the compact one for the compact density and the dark one for
     /// the dark appearance (each applied to the previous result, as antd composes them), then the alias tokens.
     /// </summary>
-    public override void DeriveGlobal(in DerivationContext<AntDesignToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<AntDesignToken> context, DesignToken token)
     {
-        AntDesignMapDerivation.Derive(context.Variant, token);
-        AntDesignAliasDerivation.Derive(token);
+        MapTokenRules.Apply(context.Variant, token);
+        AliasTokenRules.Apply(token);
         // The role tokens controls read instead of the seeds: the medium radius and the focused input border.
         token.BorderRadiusMD         = token.BorderRadius;
         token.InputActiveBorderColor = token.ColorPrimary;

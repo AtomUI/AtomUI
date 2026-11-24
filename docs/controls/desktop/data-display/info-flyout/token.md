@@ -86,4 +86,4 @@ PrimeNG 的取值包从 Popover 配方读取框体内边距和边框颜色，框
 
 ## 独立 Token 身份与共享计算
 
-公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 的定义与取值公式（Ant Design：共享辅助类 `AntDesignAbstractPopupCornerDerivation`）；Controls[Popup] 的圆角不再改变这个公开 presenter。
+公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 的定义与取值公式（Ant Design：共享辅助类 `PopupCornerTokenCalculator`）；Controls[Popup] 的圆角不再改变这个公开 presenter。

@@ -12,10 +12,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 internal static class PrimeNGSpinTokens
 {
     internal static readonly TimeSpan IndicatorCycle = TimeSpan.FromMilliseconds(1200);
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SpinToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SpinToken token)
     {
         if (effectiveGlobal.EnableMotion && PrimeNGMotion.HasInstantTransitions(context))
         {

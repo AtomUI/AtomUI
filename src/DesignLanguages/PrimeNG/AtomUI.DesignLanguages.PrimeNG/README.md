@@ -67,7 +67,7 @@ internal implementation; it follows the official presets and may be rewritten wh
 
 ## Component recipes
 
-Value packages can read these roles from `context.Language` during a control derivation. Pass the control's effective
+Value packages can read these roles from `context.Language` during a control token rule. Pass the control's effective
 `view.Global`, and pass `context.Variant` when the recipe resolves preset or appearance rules.
 
 | API | Roles |
@@ -100,7 +100,7 @@ through `GetStatusScale` and `GetFeedbackScale`. The desktop value package uses 
    padding, shadows). This equals the previous staged evaluation (formulas, preset step, formulas again with the
    preset's values kept, preset step again).
 
-The control derivations live in the value packages (one per control token class): the preset's control-global
+The control token rules live in the value packages (one per control token class): the preset's control-global
 overrides first (written on the control's view, seeds included), then the control's formulas, then the preset's
 control values; where a formula read a value the preset replaces, it runs again after it, as the previous second
 evaluation round did.
@@ -146,7 +146,7 @@ primeng.dev starts every preset on the primary "noir" (primeng 22.1.5: the confi
 | `highlight.background` / `focusBackground` | `primary.950` / `700` | `primary.50` / `300` |
 | `highlight.color` / `focusColor` | `#ffffff` | `primary.950` |
 
-**Trigger.** A `ColorPrimary` seed whose RGB is the 950 stop of a Tailwind neutral family (slate `#020617`, gray `#030712`, zinc `#09090B`, neutral `#0A0A0A`, stone `#0C0A09`) is noir. The primary palette is then the surface scale of the appearance being computed (slate in light, zinc in dark), so one seed gives noir in both appearances (the Gallery remembers one brand seed per design language). `ColorLink` follows its own seed (the primary by default): a noir link seed takes the noir link row, any other keeps the preset's link row. Any other primary seed keeps the preset's rules. The twelve profiles pin `ColorPrimary #020617`. The rows are one definition per appearance (`PrimeNGNoir`), shared by the three presets; the Alias and control derivations recognise noir from the computed primary (light N950, dark N50).
+**Trigger.** A `ColorPrimary` seed whose RGB is the 950 stop of a Tailwind neutral family (slate `#020617`, gray `#030712`, zinc `#09090B`, neutral `#0A0A0A`, stone `#0C0A09`) is noir. The primary palette is then the surface scale of the appearance being computed (slate in light, zinc in dark), so one seed gives noir in both appearances (the Gallery remembers one brand seed per design language). `ColorLink` follows its own seed (the primary by default): a noir link seed takes the noir link row, any other keeps the preset's link row. Any other primary seed keeps the preset's rules. The twelve profiles pin `ColorPrimary #020617`. The rows are one definition per appearance (`PrimeNGNoir`), shared by the three presets; the Alias and control token rules recognise noir from the computed primary (light N950, dark N50).
 
 | Token | Light (slate) | Dark (zinc) | Source / reason |
 |---|---|---|---|
@@ -178,7 +178,7 @@ PrimeUIX `highlight` is the selected item's background, focus background (select
 | Nora | `ColorPrimary` / `ColorPrimaryHover`: P600 / P700, dark P500 / P400 | `ColorTextLightSolid`: white, dark N950 |
 | Noir (any preset) | `ColorPrimary` / `ColorPrimaryActive`: N950 / N700, dark N50 / N300 | `ColorTextLightSolid`: white, dark N950 |
 
-The alias derivation writes `highlight.color` once, to the global `ControlItemColorActive`; the selected-text tokens default to it: Select / Cascader `OptionSelectedColor`, ComboBox / ListBox / ListView / TransferListView `ItemSelectedColor`, TreeView / TransferTreeView / TreeSelect `NodeSelectedColor` and DataGrid `RowSelectedColor` (the selected row). The selected time cell of the pickers and the range-middle date cells read it directly, so the pickers follow PrimeUIX `datepicker` exactly: the selected date is `primary.color` with `primary.contrast.color` (the Ant compact cell already is), the range middle `highlight.background` with `highlight.color`. PrimeUIX `highlight.focusColor` equals `highlight.color` except in Aura / Lara light (P800); AtomUI has no selected-hover text slot. The content presentation of Calendar (fullscreen) and DateViewer draws today's and the selected cell in the primary on `ControlItemBgActive`; under a solid highlight `PrimeNGActiveCellTokens` sets their `ItemActiveColor` / `CellActiveColor` to `ControlItemColorActive` The LunarCalendar draws its selected cells' text in the contrast colour (`ColorTextLightSolid`), on the primary for a date and on `ItemActiveBg` for a month of the fullscreen year view, so `PrimeNGLunarCalendarTokens` (all six algorithms) sets its `ItemActiveBg` to `ColorPrimary` and `ItemActiveColor` to `ColorTextLightSolid`: PrimeUIX `datepicker` `date.selected` / `month.selected` (`primary.color` with `primary.contrast.color`) in every preset. Under a solid highlight that is the value it had; under the pale highlight of Aura / Lara with a coloured seed a selected month was white on P50 (Ant Design has the same white-on-pale month and is unchanged). Steps compensates as listed under the Nora control derivations. NavMenu does not use the highlight at all: it follows PrimeUIX `navigation` (see [Navigation](#navigation-navmenu)). `PrimeNGThemePackageTests.Highlight_Follows_PrimeUIX` asserts the table; `PrimeNGDataGridHighlightTests` (Rendering tests) the DataGrid row.
+The alias derivation writes `highlight.color` once, to the global `ControlItemColorActive`; the selected-text tokens default to it: Select / Cascader `OptionSelectedColor`, ComboBox / ListBox / ListView / TransferListView `ItemSelectedColor`, TreeView / TransferTreeView / TreeSelect `NodeSelectedColor` and DataGrid `RowSelectedColor` (the selected row). The selected time cell of the pickers and the range-middle date cells read it directly, so the pickers follow PrimeUIX `datepicker` exactly: the selected date is `primary.color` with `primary.contrast.color` (the Ant compact cell already is), the range middle `highlight.background` with `highlight.color`. PrimeUIX `highlight.focusColor` equals `highlight.color` except in Aura / Lara light (P800); AtomUI has no selected-hover text slot. The content presentation of Calendar (fullscreen) and DateViewer draws today's and the selected cell in the primary on `ControlItemBgActive`; under a solid highlight `PrimeNGActiveCellTokens` sets their `ItemActiveColor` / `CellActiveColor` to `ControlItemColorActive` The LunarCalendar draws its selected cells' text in the contrast colour (`ColorTextLightSolid`), on the primary for a date and on `ItemActiveBg` for a month of the fullscreen year view, so `PrimeNGLunarCalendarTokens` (all six algorithms) sets its `ItemActiveBg` to `ColorPrimary` and `ItemActiveColor` to `ColorTextLightSolid`: PrimeUIX `datepicker` `date.selected` / `month.selected` (`primary.color` with `primary.contrast.color`) in every preset. Under a solid highlight that is the value it had; under the pale highlight of Aura / Lara with a coloured seed a selected month was white on P50 (Ant Design has the same white-on-pale month and is unchanged). Steps compensates as listed under the Nora control token rules. NavMenu does not use the highlight at all: it follows PrimeUIX `navigation` (see [Navigation](#navigation-navmenu)). `PrimeNGThemePackageTests.Highlight_Follows_PrimeUIX` asserts the table; `PrimeNGDataGridHighlightTests` (Rendering tests) the DataGrid row.
 
 ### Navigation (NavMenu)
 
@@ -239,7 +239,7 @@ The rule tables below give stops; at the emerald seed (`ColorPrimary #10B981`, t
 | Focus / motion | `FocusVisualBorderThickness 1`, `ColorFocusBorder #10B981`, `ControlOutlineWidth 0`, `MotionDurationMid 200ms` |
 | Select/popover / modal / mask | `BoxShadowsSecondary`, `BoxShadows`, `ColorBgMask #66000000` |
 
-| Control | Values (control derivations) |
+| Control | Values (control token rules) |
 |---|---|
 | Button | `FontWeight 500`; radius is the global `BorderRadius 6` |
 | CheckBox | `CheckIndicatorSize 20`, `CheckedMarkSize 14`; radius is the global `BorderRadiusSM 4` |
@@ -322,7 +322,7 @@ One class per control under `Algorithms/Controls`, each declared for both `Prime
 
 ### Control values of all presets
 
-Every rule below is part of the PrimeNG control derivations and reads the style (`PrimeNGPresets.KindOf`). Values are PrimeUIX 3.1.1 at a 16px root, the noir default primary.
+Every rule below is part of the PrimeNG control token rules and reads the style (`PrimeNGPresets.KindOf`). Values are PrimeUIX 3.1.1 at a 16px root, the noir default primary.
 
 | Family | Stages | PrimeUIX source |
 |---|---|---|
@@ -439,7 +439,7 @@ Everything derived from them follows (selection background, the primary fills of
 - Small fields use PrimeUIX `form.field.sm.font.size` (0.75rem = `FontSizeSM`) through each field's `InputFontSizeSM` Own token: LineEdit, SearchEdit, NumericUpDown, Select, Cascader and TreeSelect (ComboBox and the date and time pickers already read `FontSizeSM`). SearchEdit now has its own token class and takes the same form field stage as LineEdit.
 - Select option item radius and the 2px item gap are not mapped: the existing option theme has no Token consumer for those values. Closed-field geometry and option padding remain separate contracts.
 - Card keeps AtomUI's header divider, host typography and border. The static PrimeNG shadow maps to `RestingShadows`; `CardShadows` remains the hover shadow.
-- Explicit values keep their precedence (language derivation < theme value < value of an inner scope); a control derivation's overrides of the control view still apply over a scope's explicit global value (spec 6.4).
+- Explicit values keep their precedence (language derivation < theme value < value of an inner scope); a control token rule's overrides of the control view still apply over a scope's explicit global value (spec 6.4).
 
 ## Motion
 
@@ -458,7 +458,7 @@ PrimeNG has two kinds of motion, and only one of them belongs to the preset:
   PrimeNG skips them only for the operating system's reduced-motion preference.
 
 So Nora keeps `EnableMotion` on (it used to be `false` in the profiles, which also froze every popup, drawer, collapse
-and spinner), and its control derivations restore the duration each animation reads in its own scope
+and spinner), and its control token rules restore the duration each animation reads in its own scope
 (`PrimeNGMotion`): Popup, FlyoutHost, PopupConfirm, ContextMenu `MotionDurationMid` 300ms; Dialog and MessageBox Mid /
 Slow 300ms; Drawer Slow 500ms; Collapse, Expander, TreeView Slow 200ms and NavMenu Mid 200ms; TabControl / TabStrip
 Slow 250ms; Carousel Slow 500ms; NotificationCard and MessageCard Mid 300ms; ToggleSwitch Mid 100ms; ToolTip

@@ -47,7 +47,7 @@ public class PrimeNGControlGlobalTests
                         var expected = RootGlobal(snapshot);
                         var language = new PrimeNGToken();
                         new PrimeNGLanguage().DeriveLanguage(in variant, new DesignToken(), language);
-                        EvaluateGlobal(control, new DerivationContext<PrimeNGToken>(variant, language), expected);
+                        EvaluateGlobal(control, new TokenEvaluationContext<PrimeNGToken>(variant, language), expected);
                         foreach (var descriptor in GlobalTokenSchema.Tokens)
                         {
                             descriptor.Format(Effective(snapshot, control, descriptor))
@@ -91,7 +91,7 @@ public class PrimeNGControlGlobalTests
         return (T)snapshot.Controls[control.Slot].ControlTokenValues.GetValue(descriptor.Slot)!;
     }
 
-    private static void EvaluateGlobal(string control, in DerivationContext<PrimeNGToken> context, DesignToken global)
+    private static void EvaluateGlobal(string control, in TokenEvaluationContext<PrimeNGToken> context, DesignToken global)
     {
         switch (control)
         {

@@ -53,14 +53,14 @@ internal partial class ThemeManager
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        // Committed derivations stay; the appended ones are accepted only where they cannot change committed values.
-        var derivations = builder.Derivations.Count == 0
-            ? _startupRegistry.ControlDerivations
-            : _startupRegistry.ControlDerivations.Concat(builder.Derivations.Where(derivation => !_startupRegistry.ControlDerivations.Contains(derivation))).ToArray();
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, languages, derivations);
-        if (builder.Derivations.Count != 0)
+        // Committed rules stay; the appended ones are accepted only where they cannot change committed values.
+        var rules = builder.TokenRules.Count == 0
+            ? _startupRegistry.ControlTokenRules
+            : _startupRegistry.ControlTokenRules.Concat(builder.TokenRules.Where(rule => !_startupRegistry.ControlTokenRules.Contains(rule))).ToArray();
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, languages, rules);
+        if (builder.TokenRules.Count != 0)
         {
-            registry.ValidateAppendedDerivations(_startupRegistry);
+            registry.ValidateAppendedTokenRules(_startupRegistry);
         }
         var semantics = new SemanticPartRegistry(index);
         _ = new ControlThemeAssetManifest(registry, newAssets);

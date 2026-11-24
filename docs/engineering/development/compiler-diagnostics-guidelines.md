@@ -81,7 +81,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | ID | Category | Severity | Trigger | Fix | Owner |
 |---|---|---|---|---|---|
 | `ATOMUITOKEN001` | Token | Error | 编译主题输入无效、超限，或构建中间产物不能可靠生成 | 修正 XML/输入路径及容量，清理失效输出后重建 | Compiled theme input task |
-| `ATOMUITOKEN002` | Token | Error | 编译主题绑定失败，或设计语言 / 控件推导的声明不合法，包括：主题 XML 的 `Language` 不由任何被引用的语言包声明（`Design language '…' is not declared by any referenced language package.`）、未知或重复的 Control、未知 Token、`<LanguageTokens>` 里的名称不是该语言的语言 Token、`Locked` 用在非种子或条件段 / Control 上、条件段里的 Control 固定轴、Token 类型没有静态字面量能力或字面量转换失败、包内重复的主题 `Id`（在 XML 行列，该主题不生成程序）；`[DesignLanguage]` 类不是派生自 `DesignLanguage<TLanguageToken>`、带公开无参构造函数的非抽象非泛型类，`Id` 不返回常量字符串，语言 Token 类型未在同一程序集用 `[LanguageDesignToken]` 声明，`[LanguageDesignToken]` 类不是派生自 `LanguageDesignToken` 的顶层非泛型类；`[ControlDerivation]` 类不是带公开无参构造函数的非抽象非泛型类、未恰好实现一次 `IControlDerivation<TLanguageToken, TToken>`、`TToken` 不是绑定了控件的控件 Token，或两个推导类绑定同一对类型（在出错的类型上） | 按带源位置的诊断修正主题定义或声明；主题引用的语言需由本程序集或被引用的语言包声明 | Compiled theme generator / Derivation generators |
+| `ATOMUITOKEN002` | Token | Error | 编译主题绑定失败，或设计语言 / 控件取值规则的声明不合法，包括：主题 XML 的 `Language` 不由任何被引用的语言包声明（`Design language '…' is not declared by any referenced language package.`）、未知或重复的 Control、未知 Token、`<LanguageTokens>` 里的名称不是该语言的语言 Token、`Locked` 用在非种子或条件段 / Control 上、条件段里的 Control 固定轴、Token 类型没有静态字面量能力或字面量转换失败、包内重复的主题 `Id`（在 XML 行列，该主题不生成程序）；`[DesignLanguage]` 类不是派生自 `DesignLanguage<TLanguageToken>`、带公开无参构造函数的非抽象非泛型类，`Id` 不返回常量字符串，语言 Token 类型未在同一程序集用 `[LanguageDesignToken]` 声明，`[LanguageDesignToken]` 类不是派生自 `LanguageDesignToken` 的顶层非泛型类；`[ControlTokenRule]` 类不是带公开无参构造函数的非抽象非泛型类、未恰好实现一次 `IControlTokenRule<TLanguageToken, TToken>`、`TToken` 不是绑定了控件的控件 Token，或两个推导类绑定同一对类型（在出错的类型上） | 按带源位置的诊断修正主题定义或声明；主题引用的语言需由本程序集或被引用的语言包声明 | Compiled theme generator / Derivation generators |
 | `ATOMUIREG001` | Registration | Error | 顶层主题导出目标、key 不明确或重复 | 声明可解析的 target 和唯一 Type/string key | Registration generator |
 | `ATOMUIREG002` | Registration | Error | TokenResource 没有唯一且可访问的实际 owner | 修正 namespace 或 Token 契约 | Registration generator |
 | `ATOMUIREG003` | Registration | Error | 主题目标不可访问、开放泛型或不是 StyledElement；资源 x:Class 不能绑定到本程序集的可访问具体资源类 | 使用可访问的具体主题目标 | Registration generator |
@@ -131,9 +131,9 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN045` | Generator | Warning | 主题 AXAML 中出现颜色字面量，或数值视觉字面量（CornerRadius、BorderThickness、FontSize、StrokeThickness、Width/Height 等）未以 `<!-- layout -->` 注释标注 | 视觉值改读 Token（线宽用 `LineWidth`）；确属布局常量时加 `<!-- layout -->` | ThemeAssets |
 | `ATOMUIGEN047` | Generator | Warning | 控件代码以 `SetValue(prop, value)` 或属性赋值把 LocalValue 写入视觉 StyledProperty，覆盖用户绑定与主题 Setter | 改用 `SetCurrentValue`，或带 `BindingPriority.Template` 的可撤销写入 | ThemeConsumption |
 | `ATOMUIGEN049` | Generator | Error | `[ControlDesignToken]` 或 `[GlobalDesignToken]` 类型的 Token 属性（非 static、未标 `[NotTokenDefinition]`）不是 partial 属性，或所在类不是 partial 类；生成器不为它产出跳过冻结属性的实现 | 把类改为 `partial class`，把属性改为 `partial` 属性（如 `public partial Color X { get; set; }`），实现由 `TokenPropertyImplementationGenerator` 生成；初始化器可留在声明处 | DesignToken |
-| `ATOMUIGEN050` | Generator | Error | `[ControlDerivation]` 推导没有写其控件 Token 类在该控件包内声明的某个属性（`'…' never writes token '…' of '…'`，在推导类上）；基类在其他包里声明的属性由设计语言契约测试检查 | 在 `Derive` 里为该属性赋值；控件 Token 必须写全，包括行为开关与继承属性 | Derivation |
+| `ATOMUIGEN050` | Generator | Error | `[ControlTokenRule]` 推导没有写其控件 Token 类在该控件包内声明的某个属性（`'…' never writes token '…' of '…'`，在推导类上）；基类在其他包里声明的属性由设计语言契约测试检查 | 在 `Apply` 里为该属性赋值；控件 Token 必须写全，包括行为开关与继承属性 | Derivation |
 | `ATOMUIGEN051` | Generator | Error | 推导在第一次写入自己的某个控件 Token 之前读取了它（`'…' reads token '…' before writing it`，在读取表达式上）；推导里第一次带参数的方法调用之后的读取不检查 | 先写再读；显式值在推导之前冻结，写入后读取得到的就是有效值 | Derivation |
-| `ATOMUIGEN052` | Generator | Error | 取值包在某种语言下为某个控件包的部分 Token 类写了推导，却漏掉该控件包的其他公开终端 Token 类（无位置） | 为诊断指出的 Token 类补上 `[ControlDerivation]` 推导 | Derivation |
+| `ATOMUIGEN052` | Generator | Error | 取值包在某种语言下为某个控件包的部分 Token 类写了推导，却漏掉该控件包的其他公开终端 Token 类（无位置） | 为诊断指出的 Token 类补上 `[ControlTokenRule]` 推导 | Derivation |
 | `ATOMUIGEN053` | Generator | Error | 包依赖方向错误：控件包引用了语言包或取值包；语言包引用了控件包；自身不声明控件 Token 的取值包里有派生自 `Control` 的类型 | 去掉错误方向的引用；控件放回控件包，取值包只放推导与共享推导辅助方法 | Derivation |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
@@ -159,8 +159,8 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 不一致即启动失败——这是运行时校验，不是编译诊断。
 `ATOMUIGEN049` 由 IDE 设计期可见的 `TokenPropertyImplementationGenerator` 报告，位置按文件路径与行列构造、不持有语法树，
 所以源码中的 `#pragma warning disable` 与按文件生效的 `.editorconfig` 节对它不起作用，只能在项目级设置中调整；它是
-Error，正常情况下应修正代码而不是抑制。`[DesignLanguage]`、`[LanguageDesignToken]` 与 `[ControlDerivation]` 声明不合法（抽象、
-泛型、缺少公开无参构造函数、`Id` 不是常量、没有恰好实现一次 `IControlDerivation<,>`、同一对类型有两个推导）时生成器在该类型上
+Error，正常情况下应修正代码而不是抑制。`[DesignLanguage]`、`[LanguageDesignToken]` 与 `[ControlTokenRule]` 声明不合法（抽象、
+泛型、缺少公开无参构造函数、`Id` 不是常量、没有恰好实现一次 `IControlTokenRule<,>`、同一对类型有两个推导）时生成器在该类型上
 报 `ATOMUITOKEN002`；语言是否完整由设计语言契约测试确认，见
 [编写设计语言](../../guides/theming/writing-design-languages.md#5-覆盖规则与启动校验)。
 `042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`047` 只报告可静态证明的
@@ -203,7 +203,7 @@ ID 常量并标 `[Obsolete]`；`024`、`048` 的常量与 descriptor 已随分�
 
 | ID | 原语义，仅用于识别旧日志 | 退役原因 |
 | --- | --- | --- |
-| `ATOMUIGEN024` | 后续层 `CalculateTokenValues` 没有把唯一的直接 base 调用放在 block body 第一条并原样转发参数 | 控件 Token 类不再有计算方法，取值移入设计语言取值包的控件推导 |
+| `ATOMUIGEN024` | 后续层 `CalculateTokenValues` 没有把唯一的直接 base 调用放在 block body 第一条并原样转发参数 | 控件 Token 类不再有计算方法，取值移入设计语言取值包的控件取值规则 |
 | `ATOMUIGEN040` | `CalculateTokenValues` / `CalculateAliasTokenValues` 以 `double.IsNaN` / `float.IsNaN` 判断 Token 是否被显式设置 | 显式值在推导之前冻结，推导不判断显式性；Token 类不再有计算方法 |
 | `ATOMUIGEN048` | `CalculateTokenValues` / `CalculateAliasTokenValues` 内对基字段无条件赋值后又读取它派生其他字段，缺少 `IsExplicit` 守卫 | 冻结语义下推导对显式属性的写入被忽略、读取得到显式值，`IsExplicit` 守卫已删除 |
 | `ATOMUIGEN046` | ControlTemplate 节点属性（字面量或 TokenResource）上的默认值遮蔽同节点同属性的状态 Setter | TokenResource 在模板内取 Template 优先级后，模板内字面量与 TokenResource 读取均为 Template 优先级，低于触发样式（`StyleTrigger`），遮蔽不再可能发生 |

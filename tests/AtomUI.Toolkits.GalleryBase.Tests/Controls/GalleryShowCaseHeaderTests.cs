@@ -224,7 +224,7 @@ public class GalleryShowCaseHeaderTests
     {
         // The token class only declares the slot; the value comes from the gallery's generic derivation.
         var tokenSource = File.ReadAllText(GetRepoFile(
-            "src/AtomUI.Toolkits.GalleryBase/Derivations/Controls/GenericGalleryShowCaseHeaderDerivation.cs"));
+            "src/AtomUI.Toolkits.GalleryBase/TokenRules/Controls/GenericGalleryShowCaseHeaderTokenRule.cs"));
         Regex.IsMatch(tokenSource, @"\bMetadataValueFontFamily\s*=\s*global\.FontFamily\b")
             .ShouldBeTrue();
 

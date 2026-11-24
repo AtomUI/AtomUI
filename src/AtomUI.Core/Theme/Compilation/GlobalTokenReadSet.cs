@@ -4,7 +4,7 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Compilation;
 
-/// <summary>A set of global token slots: what a control derivation read, or what a child unit changed (spec 12.3).</summary>
+/// <summary>A set of global token slots: what a control token rule read, or what a child unit changed (spec 12.3).</summary>
 internal sealed class GlobalTokenReadSet
 {
     private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, FrozenDictionary<string, int>> s_slots = new();

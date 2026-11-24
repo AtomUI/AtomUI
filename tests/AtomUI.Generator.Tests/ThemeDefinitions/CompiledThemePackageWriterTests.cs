@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Xunit;
-using static AtomUI.Generator.Tests.Derivation.DesignLanguageTestHost;
+using static AtomUI.Generator.Tests.DesignLanguages.DesignLanguageTestHost;
 
 namespace AtomUI.Generator.Tests.ThemeDefinitions;
 
@@ -62,6 +62,11 @@ public class CompiledThemePackageWriterTests
         var source = GetGeneratedSource(package, PackageFile);
         source.ShouldContain("[assembly: global::AtomUI.Theme.Definitions.Compiled.CompiledThemeManifestAttribute(1, \"Acme.Themes\", ");
         source.ShouldContain("namespace AtomUI.Generated.AcmeThemes;");
+        source.ShouldContain("public static class ThemePackageRegistration");
+        source.ShouldContain("public static class GeneratedThemePackageRegistration");
+        source.ShouldContain("global::System.ComponentModel.EditorBrowsableState.Never");
+        source.ShouldContain("CreatePackage() => ThemePackageRegistration.CreatePackage();");
+        source.ShouldContain("builder) => ThemePackageRegistration.Register(builder);");
         source.ShouldContain(
             "public static global::AtomUI.Theme.Definitions.Compiled.CompiledThemePackage CreatePackage() => new global::AtomUI.Theme.Definitions.Compiled.CompiledThemePackage(\"Acme.Themes\", new global::AtomUI.Theme.Definitions.Compiled.CompiledThemeProgram[] { new CompiledThemeProgram_0() });");
         source.ShouldContain(

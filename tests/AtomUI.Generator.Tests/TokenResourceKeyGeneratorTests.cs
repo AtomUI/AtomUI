@@ -1099,7 +1099,7 @@ public class TokenResourceKeyGeneratorTests
               .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
               .ShouldBeEmpty();
         var schema = GetGeneratedSource(output, "GeneratedThemeSchema.g.cs");
-        // Values come from the control derivations of a language; the descriptor only creates the token.
+        // Values come from the control token rules of a language; the descriptor only creates the token.
         schema.ShouldNotContain("RunDefaultCalculation");
         schema.ShouldNotContain("appearance");
 

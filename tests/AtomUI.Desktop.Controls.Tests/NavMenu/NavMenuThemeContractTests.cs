@@ -189,7 +189,7 @@ public class NavMenuThemeContractTests
     public void NavMenu_Tokens_Keep_Root_And_Header_Background_Semantics_Separate()
     {
         var tokenSource = ReadRepoFile(
-            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/NavMenu/AntDesignNavMenuDerivation.cs");
+            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/NavMenu/NavMenuTokenRule.cs");
         var headerSource = ReadRepoFile("src/AtomUI.Desktop.Controls/NavMenu/Themes/BaseNavMenuItemHeaderTheme.axaml");
 
         tokenSource.ShouldContain("token.ItemBg                      = global.ColorBgContainer;");

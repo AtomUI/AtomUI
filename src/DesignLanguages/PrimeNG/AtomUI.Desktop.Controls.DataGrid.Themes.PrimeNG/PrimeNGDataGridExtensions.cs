@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsDataGridThemesPrimeNG;
 using AtomUI.DesignLanguages.PrimeNG;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class PrimeNGDataGridExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsDataGridThemesPrimeNG.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

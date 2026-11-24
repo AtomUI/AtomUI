@@ -33,7 +33,7 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 | 分隔线 | HeaderBorderThickness / FooterBorderThickness | 底边 / 顶边 LineWidth：默认 Header 底部与独立 Footer 顶部分隔线（AtomUI 扩展，替换 `0,0,0,1` / `0,1,0,0` 字面量）。 |
 | 周模式 | WeekNumberOpacity | 0.5：周模式下周序号的不透明度（AtomUI 扩展，替换字面量；antd 以半透明 colorTextLightSolid 表达）。 |
 
-面板、Header 与日期格跟随实际 DateViewer/RangeDateViewer owner；两个终端通过 AbstractDateViewerToken 共享属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`AntDesignAbstractDateViewerDerivation`），各自独立设置具体样式输入。PanelSpacing 只属于 RangeDateViewer，FooterBorderThickness 只属于 DateViewer。嵌入 Calendar/Picker 的公开 viewer 仍保留其实际 viewer Own 身份（range 使用 RangeDateViewer），有效全局值按原宿主转发契约读取；来源 DateViewer 的 Own 不进入 RangeDateViewer。
+面板、Header 与日期格跟随实际 DateViewer/RangeDateViewer owner；两个终端通过 AbstractDateViewerToken 共享属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`DateViewerTokenCalculator`），各自独立设置具体样式输入。PanelSpacing 只属于 RangeDateViewer，FooterBorderThickness 只属于 DateViewer。嵌入 Calendar/Picker 的公开 viewer 仍保留其实际 viewer Own 身份（range 使用 RangeDateViewer），有效全局值按原宿主转发契约读取；来源 DateViewer 的 Own 不进入 RangeDateViewer。
 
 主色、文字、禁用透明度、圆角与边框直接消费 SharedToken。日期值、PanelKind、活动端点、Hover 值与业务禁用
 结果不进入 Token；本组没有独立 Motion Token。

@@ -15,7 +15,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly List<Action<IThemeManager>> _initializers = new();
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
     private readonly List<DesignLanguageDescriptor> _languages = [];
-    private readonly List<ControlDerivationDescriptor> _derivations = [];
+    private readonly List<ControlTokenRuleDescriptor> _tokenRules = [];
     private readonly Dictionary<Type, string> _defaultThemes = [];
     private readonly Dictionary<(string ControlAssembly, Type LanguageTokenType), (Type Language, ControlValuePackage Package)>
         _valueSelections = [];
@@ -52,7 +52,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal IReadOnlyList<ControlPackageRegistration> ControlPackages => _controlPackages;
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
     internal IReadOnlyList<DesignLanguageDescriptor> Languages => _languages;
-    internal IReadOnlyList<ControlDerivationDescriptor> Derivations => _derivations;
+    internal IReadOnlyList<ControlTokenRuleDescriptor> TokenRules => _tokenRules;
     internal StartupImage? StartupImage => _startupImage;
     internal void AddPackageDeclaration(EnabledControlPackage declaration)
     {
@@ -112,21 +112,21 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         return this;
     }
 
-    public IThemeManagerBuilder AddControlDerivations(IEnumerable<ControlDerivationDescriptor> derivations)
+    public IThemeManagerBuilder AddControlTokenRules(IEnumerable<ControlTokenRuleDescriptor> rules)
     {
-        ArgumentNullException.ThrowIfNull(derivations);
+        ArgumentNullException.ThrowIfNull(rules);
         ControlRegistrationState.ThrowIfUnavailable();
-        foreach (var derivation in derivations)
+        foreach (var rule in rules)
         {
-            if (derivation is null)
+            if (rule is null)
             {
-                throw new ArgumentException("Control derivation descriptors cannot contain null.", nameof(derivations));
+                throw new ArgumentException("Control rule descriptors cannot contain null.", nameof(rules));
             }
-            // Kept by reference: compilation caches identify a derivation by its descriptor instance; a value
+            // Kept by reference: compilation caches identify a rule by its descriptor instance; a value
             // package's entry point may be reached more than once (a dependent value package registers it too).
-            if (!_derivations.Contains(derivation))
+            if (!_tokenRules.Contains(rule))
             {
-                _derivations.Add(derivation);
+                _tokenRules.Add(rule);
             }
         }
         return this;
@@ -408,7 +408,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             }
         }
 
-        var manual = _derivations.Select(static descriptor =>
+        var manual = _tokenRules.Select(static descriptor =>
             (descriptor.TokenType.Assembly.GetName().Name, descriptor.LanguageTokenType)).ToHashSet();
         foreach (var (pair, selection) in _valueSelections)
         {
@@ -421,7 +421,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             if (manual.Contains(pair))
             {
                 throw new ThemeSchemaException(
-                    $"Value package '{selection.Package.Id}' also has an explicit derivation registration for the same pair.");
+                    $"Value package '{selection.Package.Id}' also has an explicit token rule registration for the same pair.");
             }
             selection.Package.Register(this);
         }
@@ -565,7 +565,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     {
         var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
-        themeManager.SetLanguages(_languages.ToArray(), _derivations.ToArray());
+        themeManager.SetLanguages(_languages.ToArray(), _tokenRules.ToArray());
         themeManager.ConfigureStartup(InitialRequest, ResolveInitialSelection(), FollowSystemLightRequest,
             FollowSystemDarkRequest, ResolveDefaultThemes());
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,

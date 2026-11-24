@@ -283,28 +283,28 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    // Spec 14: a derivation writes every token of its control; it does not read a token of its own before writing it.
-    public static readonly DiagnosticDescriptor DerivationLeavesTokenUnwritten = new(
-        AtomUIDiagnosticIds.DerivationLeavesTokenUnwritten,
-        "A control derivation must write every token of its control",
+    // Spec 14: a control token rule writes each own token before reading it.
+    public static readonly DiagnosticDescriptor TokenRuleLeavesTokenUnwritten = new(
+        AtomUIDiagnosticIds.TokenRuleLeavesTokenUnwritten,
+        "A control token rule must write every token of its control",
         "'{0}' never writes token '{1}' of '{2}'",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static readonly DiagnosticDescriptor DerivationReadsUnwrittenToken = new(
-        AtomUIDiagnosticIds.DerivationReadsUnwrittenToken,
-        "A control derivation must not read a token of its own before writing it",
+    public static readonly DiagnosticDescriptor TokenRuleReadsUnwrittenToken = new(
+        AtomUIDiagnosticIds.TokenRuleReadsUnwrittenToken,
+        "A control token rule must not read a token of its own before writing it",
         "'{0}' reads token '{1}' before writing it",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // Spec 14 (coverage): a value package derives every token class of the control packages it covers.
-    public static readonly DiagnosticDescriptor ValuePackageMissesDerivation = new(
-        AtomUIDiagnosticIds.ValuePackageMissesDerivation,
-        "A value package must derive every token class of the control packages it covers",
-        "This value package derives tokens of '{0}' for '{1}' but has no derivation for '{2}'",
+    // Spec 14 (coverage): a value package supplies a rule for each control token class it covers.
+    public static readonly DiagnosticDescriptor ValuePackageMissesTokenRule = new(
+        AtomUIDiagnosticIds.ValuePackageMissesTokenRule,
+        "A value package must cover every control token class of the packages it covers",
+        "This value package registers token rules for '{0}' under '{1}' but has no rule for '{2}'",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);

@@ -12,10 +12,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGRadioButtonTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RadioButtonToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RadioButtonToken token)
     {
         // PrimeUIX radiobutton.width 1.125rem with icon.size 0.625rem (Lara 1.25rem / 0.875rem). Nora keeps the field
         // background when checked and draws the dot in the primary colour (checked.background form.field.background,

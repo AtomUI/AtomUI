@@ -12,7 +12,7 @@ namespace AtomUI.Core.Tests.Theme;
 public class TokenFreezeTests
 {
     [Fact]
-    public void A_Frozen_Token_Keeps_Its_Value_When_The_Derivation_Writes_It()
+    public void A_Frozen_Token_Keeps_Its_Value_When_The_Token_Rule_Writes_It()
     {
         var token = new DesignToken { ColorPrimaryHover = Colors.Red };
         token.Freeze(nameof(DesignToken.ColorPrimaryHover));

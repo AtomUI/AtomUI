@@ -167,7 +167,7 @@ internal sealed class ThemeBuildContracts
         return result;
     }
     /// <summary>A language declared in this compilation: its identity and the schema of its language token class.</summary>
-    internal sealed record LocalLanguage(string Id, Derivation.LanguageTokenSchema Schema);
+    internal sealed record LocalLanguage(string Id, DesignLanguages.LanguageTokenSchema Schema);
 
     private static ThemeBuildToken CreateToken(Compilation compilation, SchemaTokenInfo info, string catalog, string owner, string key)
     {

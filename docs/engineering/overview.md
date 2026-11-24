@@ -23,6 +23,7 @@
 - [代码风格规范](development/code-style-guidelines.md)
 - [Control 研发规范](development/control-development-guidelines.md)
 - [Control Token 规范](development/control-token-guidelines.md)
+- [设计语言取值包命名实施标准](development/value-package-naming.md)
 - [主题生效测试规范](development/theme-effect-tests.md)：承诺面中每个 Token 的扰动对比测试、骨架生成与家族门禁。
 - [Scoped Resource Host](development/scoped-resource-host.md)
 - [Popup Anchor 作用域](development/popup-anchor-scope.md)

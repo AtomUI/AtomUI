@@ -23,7 +23,7 @@ public class SelectTokenTests
             ControlPaddingHorizontal   = 12
         };
         var selectToken = new SelectToken();
-        AntDesignDerivationRunner.Derive(selectToken, sharedToken);
+        AntDesignTokenRuleRunner.Apply(selectToken, sharedToken);
 
         // 多选 frame 左内缩 + prefix 额外缩进 == 单选水平内缩（与 SharedToken InputPadding.Left 一致）
         (selectToken.MultiModePadding.Left + selectToken.MultiModePrefixIndent.Left)

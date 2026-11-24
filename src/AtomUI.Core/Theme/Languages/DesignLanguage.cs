@@ -5,8 +5,8 @@ namespace AtomUI.Theme.Languages;
 
 /// <summary>
 /// A design language: the one place that decides every value. It gives the seed defaults for a variant, derives its
-/// own vocabulary (language tokens) and every Map and Alias token; per-control values come from its control
-/// derivations (<see cref="IControlDerivation{TLanguageToken,TToken}"/>) in the value packages. Implement
+/// own vocabulary (language tokens) and every Map and Alias token; per-control values come from its
+/// control token rules (<see cref="IControlTokenRule{TLanguageToken,TToken}"/>) in the value packages. Implement
 /// <see cref="DesignLanguage{TLanguageToken}"/>.
 /// </summary>
 public abstract class DesignLanguage
@@ -24,7 +24,7 @@ public abstract class DesignLanguage
     /// <summary>Declared adjustable seed text for the default theme's catalog entry, available before evaluation.</summary>
     public virtual IReadOnlyDictionary<string, string> DefaultThemeSeeds => FrozenDictionary<string, string>.Empty;
 
-    /// <summary>The language token type; control derivations are found along its base types.</summary>
+    /// <summary>The language token type; control token rules are found along its base types.</summary>
     public abstract Type LanguageTokenType { get; }
 
     internal abstract LanguageDesignToken CreateLanguageToken();
@@ -52,7 +52,7 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
     public abstract void DeriveLanguage(in DesignVariant variant, DesignToken seed, TLanguageToken language);
 
     /// <summary>Writes every Map and Alias token. Explicit values are frozen before it runs.</summary>
-    public abstract void DeriveGlobal(in DerivationContext<TLanguageToken> context, DesignToken token);
+    public abstract void DeriveGlobal(in TokenEvaluationContext<TLanguageToken> context, DesignToken token);
 
     internal sealed override LanguageDesignToken CreateLanguageToken() => new TLanguageToken();
 
@@ -63,5 +63,5 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
         DeriveLanguage(in variant, seed, (TLanguageToken)language);
 
     internal sealed override void DeriveGlobalCore(in DesignVariant variant, LanguageDesignToken language, DesignToken token) =>
-        DeriveGlobal(new DerivationContext<TLanguageToken>(variant, (TLanguageToken)language), token);
+        DeriveGlobal(new TokenEvaluationContext<TLanguageToken>(variant, (TLanguageToken)language), token);
 }

@@ -1,4 +1,4 @@
-using AtomUI.DesignLanguages.PrimeNG.Derivation;
+using AtomUI.DesignLanguages.PrimeNG.TokenEvaluation;
 using AtomUI.DesignLanguages.PrimeNG.Presets;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Languages;
@@ -99,11 +99,11 @@ public sealed class PrimeNGLanguage : DesignLanguage<PrimeNGToken>
     /// The map tokens (the Ant Design base refined by the preset's colours, transition and size ladder, then the
     /// compact ladders for the compact density), then the alias tokens.
     /// </summary>
-    public override void DeriveGlobal(in DerivationContext<PrimeNGToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken token)
     {
         var preset = PrimeNGPresets.Of(context.Variant.Style);
-        PrimeNGMapDerivation.Derive(context.Variant, preset, context.Language, token);
-        PrimeNGAliasDerivation.Derive(context.Variant, preset, context.Language, token);
+        MapTokenRules.Apply(context.Variant, preset, context.Language, token);
+        AliasTokenRules.Apply(context.Variant, preset, context.Language, token);
         // The role tokens controls read instead of the seeds: the medium radius and the focused input border.
         token.BorderRadiusMD         = token.BorderRadius;
         token.InputActiveBorderColor = token.ColorPrimary;

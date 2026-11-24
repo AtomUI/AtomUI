@@ -15,7 +15,7 @@ internal enum PrimeNGPresetKind
 }
 
 /// <summary>
-/// Finds the rule table of the current style for the global and control derivations, with the surface scale taken
+/// Finds the rule table of the current style for the global token evaluation and control token rules, with the surface scale taken
 /// from the language tokens (<see cref="PrimeNGToken"/>), so a theme that overrides a surface stop changes every rule
 /// that resolves against the scale.
 /// </summary>
@@ -48,10 +48,10 @@ internal static class PrimeNGPresets
     }
 
     /// <summary>The rule table of the derivation's style.</summary>
-    internal static PrimeNGPreset Resolve(in DerivationContext<PrimeNGToken> context) => Of(context.Variant.Style);
+    internal static PrimeNGPreset Resolve(in TokenEvaluationContext<PrimeNGToken> context) => Of(context.Variant.Style);
 
     /// <summary>The preset family of the derivation's style.</summary>
-    internal static PrimeNGPresetKind KindOf(in DerivationContext<PrimeNGToken> context) => KindOf(context.Variant.Style);
+    internal static PrimeNGPresetKind KindOf(in TokenEvaluationContext<PrimeNGToken> context) => KindOf(context.Variant.Style);
 
     /// <summary>
     /// The rules of <paramref name="appearance"/> with the language's surface scale. Allocates only when a theme
@@ -65,27 +65,27 @@ internal static class PrimeNGPresets
     }
 
     /// <summary>The rules of the derivation's appearance, with the language's surface scale.</summary>
-    internal static PrimeNGAppearanceRules For(in DerivationContext<PrimeNGToken> context) =>
+    internal static PrimeNGAppearanceRules For(in TokenEvaluationContext<PrimeNGToken> context) =>
         For(Resolve(context), context.Variant.Appearance, context.Language);
 
     /// <summary>
-    /// The rules a global or control derivation applies: the table of the style for the appearance, with the noir rows
+    /// The rules a global token evaluation or a control token rule applies: the table of the style for the appearance, with the noir rows
     /// when <paramref name="token"/>'s primary colour is noir (see <see cref="PrimeNGNoir"/>).
     /// </summary>
     internal static PrimeNGAppearanceRules Rules(PrimeNGPreset preset, ThemeAppearance appearance, PrimeNGToken language,
                                                  DesignToken token) =>
         PrimeNGNoir.Resolve(For(preset, appearance, language), appearance, token);
 
-    /// <summary>The rules a control derivation applies, with the noir rows when the control's primary colour is noir.</summary>
-    internal static PrimeNGAppearanceRules Rules(in DerivationContext<PrimeNGToken> context, DesignToken token) =>
+    /// <summary>The rules a control token rule applies, with the noir rows when the control's primary colour is noir.</summary>
+    internal static PrimeNGAppearanceRules Rules(in TokenEvaluationContext<PrimeNGToken> context, DesignToken token) =>
         Rules(Resolve(context), context.Variant.Appearance, context.Language, token);
 
     /// <summary>A surface stop (slate in light, zinc in dark) of the active appearance; 0 is white.</summary>
-    internal static Color Surface(in DerivationContext<PrimeNGToken> context, int stop) =>
+    internal static Color Surface(in TokenEvaluationContext<PrimeNGToken> context, int stop) =>
         new PrimeNGShade(stop).Resolve(context.Language.SurfaceScale.AsSpan());
 
     /// <summary>PrimeUIX <c>content.border.color</c>: Aura and Lara surface 200 / 700, Nora surface 400 / 500.</summary>
-    internal static Color ContentBorder(in DerivationContext<PrimeNGToken> context)
+    internal static Color ContentBorder(in TokenEvaluationContext<PrimeNGToken> context)
     {
         var rules = For(context);
         return rules.MenuBorder.Resolve(rules.Surface.AsSpan());
@@ -98,7 +98,7 @@ internal static class PrimeNGPresets
     internal static bool HasSolidHighlight(DesignToken token) => token.ControlItemBgActive == token.ColorPrimary;
 
     /// <summary>Whether the control's primary colour is noir.</summary>
-    internal static bool IsNoirActive(in DerivationContext<PrimeNGToken> context, DesignToken token)
+    internal static bool IsNoirActive(in TokenEvaluationContext<PrimeNGToken> context, DesignToken token)
     {
         var appearance = context.Variant.Appearance;
         return PrimeNGNoir.IsNoirPrimary(For(context), appearance, token.ColorPrimary);

@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsColorPickerThemesAntDesign;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class AntDesignColorPickerExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsColorPickerThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

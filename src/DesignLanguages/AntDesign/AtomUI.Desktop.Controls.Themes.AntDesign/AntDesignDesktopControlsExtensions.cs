@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsThemesAntDesign;
 using AtomUI.Controls.Themes.AntDesign;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme.Languages;
@@ -14,7 +15,7 @@ public static class AntDesignDesktopControlsExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddCommonControls();
-        Generated.AtomUIDesktopControlsThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

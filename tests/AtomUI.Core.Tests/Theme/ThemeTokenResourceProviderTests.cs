@@ -364,7 +364,7 @@ public class ThemeTokenResourceProviderTests
     }
 }
 
-// Controls without own tokens: they only carry their effective global tokens, so they need no derivation.
+// Controls without own tokens: they only carry their effective global tokens, so they need no rule.
 internal abstract class CrossControlCompilerToken : AbstractControlDesignToken
 {
     public double Height { get; set; }
@@ -420,8 +420,8 @@ internal sealed class BrushControlToken : AbstractControlDesignToken, IControlTo
 }
 
 /// <summary>The test brush control gets a mutable brush, which the compiler must copy into the snapshot.</summary>
-internal sealed class BrushControlDerivation : IControlDerivation<AntDesignToken, BrushControlToken>
+internal sealed class BrushControlTokenRule : IControlTokenRule<AntDesignToken, BrushControlToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<BrushControlToken> view) =>
-        view.Token.Brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<BrushControlToken> target) =>
+        target.Own.Brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
 }

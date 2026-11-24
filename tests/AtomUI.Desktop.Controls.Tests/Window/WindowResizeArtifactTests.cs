@@ -115,7 +115,7 @@ public class WindowResizeArtifactTests
     [Fact]
     public void Linux_Window_Preserves_Shadow_And_Scales_Only_The_Managed_Resize_Grip()
     {
-        var tokenSource  = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/Window/AntDesignWindowDerivation.cs"));
+        var tokenSource  = File.ReadAllText(GetRepoFile("src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/Window/WindowTokenRule.cs"));
         var chromeSource = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Chrome/AbstractLinuxWindowChromeManager.cs"));
         var reflectionSource = File.ReadAllText(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Window/Utils/WindowDrawnDecorationsReflectionExtensions.cs"));

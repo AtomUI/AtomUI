@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIControlsThemesShadcn;
 using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme.Languages;
 
@@ -12,7 +13,7 @@ public static class ShadcnCommonControlsExtensions
     public static DesignLanguageBuilder<ShadcnLanguage> AddCommonControls(this DesignLanguageBuilder<ShadcnLanguage> language)
     {
         ArgumentNullException.ThrowIfNull(language);
-        Generated.AtomUIControlsThemesShadcn.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

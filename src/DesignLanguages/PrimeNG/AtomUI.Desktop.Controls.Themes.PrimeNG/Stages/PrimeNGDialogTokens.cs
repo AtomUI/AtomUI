@@ -12,12 +12,12 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGDialogTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Dialog, slow: PrimeNGMotion.Dialog);
         PrimeNGModalStage.ApplyGlobal(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DialogToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DialogToken token)
     {
         var p = context.Language.GetDialogOverlayRecipe(effectiveGlobal, context.Variant).Padding.Left;
         token.HeaderPadding        = new Thickness(p);
@@ -41,7 +41,7 @@ internal static class PrimeNGDialogTokens
 /// </summary>
 internal static class PrimeNGModalStage
 {
-    internal static void ApplyGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void ApplyGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var dialog = context.Language.GetDialogOverlayRecipe(controlGlobal, context.Variant);
         controlGlobal.BorderRadiusLG = dialog.CornerRadius;
@@ -53,10 +53,10 @@ internal static class PrimeNGModalStage
         }
     }
 
-    internal static double FooterGap(in DerivationContext<PrimeNGToken> context) =>
+    internal static double FooterGap(in TokenEvaluationContext<PrimeNGToken> context) =>
         context.Variant.Style == PrimeNGLanguage.Lara ? 8 : 6;
 
-    internal static double CloseButtonSize(in DerivationContext<PrimeNGToken> context) =>
+    internal static double CloseButtonSize(in TokenEvaluationContext<PrimeNGToken> context) =>
         context.Variant.Style == PrimeNGLanguage.Lara ? 38 : 36;
 }
 
@@ -66,12 +66,12 @@ internal static class PrimeNGModalStage
 /// </summary>
 internal static class PrimeNGMessageBoxTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Dialog, slow: PrimeNGMotion.Dialog);
         PrimeNGModalStage.ApplyGlobal(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MessageBoxToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MessageBoxToken token)
     {
         var p = context.Language.GetDialogOverlayRecipe(effectiveGlobal, context.Variant).Padding.Left;
         token.HeaderPadding        = new Thickness(p);
@@ -94,7 +94,7 @@ internal static class PrimeNGMessageBoxTokens
 /// </summary>
 internal static class PrimeNGDrawerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Drawer);
         controlGlobal.FontSizeLG = context.Variant.Style == PrimeNGLanguage.Lara ? 20 : 18;
@@ -103,7 +103,7 @@ internal static class PrimeNGDrawerTokens
             controlGlobal.FontWeightStrong = Avalonia.Media.FontWeight.Bold;
         }
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DrawerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DrawerToken token)
     {
         var dialog = context.Language.GetDialogOverlayRecipe(effectiveGlobal, context.Variant);
         var p      = dialog.Padding.Left;

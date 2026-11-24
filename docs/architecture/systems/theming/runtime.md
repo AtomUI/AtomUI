@@ -305,7 +305,7 @@ Global Token snapshot。
 > 本节注册与资产模型对应本地已实现的 TypeMap 契约，验证与发布状态见 [AOT 与裁剪架构](../../foundations/aot-and-trimming.md#1-状态与事实边界)。
 
 `ThemeSchemaRegistry` 在应用主题初始化前一次性构建。Control、Token 和主题资产只来自源生成结果；
-设计语言与控件推导通过显式描述符注册：
+设计语言与控件取值规则通过显式描述符注册：
 
 ```text
 ThemeSchemaRegistry
@@ -317,30 +317,31 @@ ThemeSchemaRegistry
 |   \-- asset identity, exported themes, required Token owners, semantic bindings, resource order
 +-- DesignLanguageDescriptor[Id]
 |   \-- language instance, axes, language token schema
-\-- ControlDerivationDescriptor[(language token type, ControlTokenIdentity)]
-    \-- revision, static non-capturing derive delegate
+\-- ControlTokenRuleDescriptor[(language token type, ControlTokenIdentity)]
+    \-- revision, statically linked rule evaluator
 ```
 
 语言由语言包注册：语言类派生自 `DesignLanguage<TLanguageToken>` 并标 `[DesignLanguage]`，语言 Token 类派生自
-`LanguageDesignToken` 并标 `[LanguageDesignToken]`；生成器为语言包产出 `GeneratedDesignLanguageRegistration.Register(builder)`，
-经 `IThemeManagerBuilder.AddDesignLanguage` 进入注册表，由语言包的 `Use<Lang>()` 入口调用。控件推导类实现
-`IControlDerivation<TLanguageToken, TToken>` 并标 `[ControlDerivation]`；生成器为取值包产出
-`GeneratedControlDerivationRegistration.Register(builder)`，经 `IThemeManagerBuilder.AddControlDerivations` 进入注册表，由
+`LanguageDesignToken` 并标 `[LanguageDesignToken]`；生成器为语言包产出 `DesignLanguageRegistration.Register(builder)`，
+经 `IThemeManagerBuilder.AddDesignLanguage` 进入注册表，由语言包的 `Use<Lang>()` 入口调用。控件取值规则类实现
+`IControlTokenRule<TLanguageToken, TToken>` 并标 `[ControlTokenRule]`；生成器为取值包产出
+`GeneratedControlTokenRuleRegistration.Register(builder)`，经 `IThemeManagerBuilder.AddControlTokenRules` 进入注册表，由
 取值包的 `Add<控件包>()` 扩展方法调用。Core 不内置任何语言，Ant Design 自己也只用这套公开 API 写成。运行时不反射扫描，
 也不建立字符串注册路径；描述符由生成代码以静态无捕获委托构造，不使用 `Activator`。
 
-注册表构建时校验：同一语言 Token 类型与同一控件只能有一个推导（`Duplicate control derivation for '…' and control '…'.`）；
+注册表构建时校验：同一语言 Token 类型与同一控件只能有一个推导（`Duplicate control token rule for '…' and control '…'.`）；
 语言 Token 只能是 Seed 或 Language 阶段，且不得与全局 Token 同名；可调种子必须是种子；每个已启用的语言 × 每个已启用且
 声明了控件 Token 的 Control 都能沿语言 Token 类型的继承链（由具体到 `LanguageDesignToken`）找到推导，否则报
-`Controls without a derivation in an enabled design language: '<control>' under '<language>' (install and enable
+`Controls without a token rule in an enabled design language: '<control>' under '<language>' (install and enable
 '<assembly>.Themes.<language>'), …`；取值包记录的控件包 Token Schema 摘要与实际加载的控件包不一致时失败。
 
 推导没有手工 revision：语言程序集与取值包程序集的修订取自确定性构建的程序集标识，推导代码一变它就变，缓存据此失效。
 语言契约、推导阶段与作者须遵守的约束见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
+规则描述符与注册入口见[控件 Token 取值规则设计](control-token-rules.md#生成注册与查找)。
 
 `ThemeSchemaRegistry.Revision` 根据排序后的完整 descriptor schema 确定性计算，输入至少包含 Global Token
 schema、Control identity、Control CLR type、Own Token name/kind/stage/value type/resource key schema、主题资产
-结构、已启用语言的身份、轴与语言 Token schema，以及每个控件推导的（语言 Token 类型，控件身份，程序集修订）。字符串一律
+结构、已启用语言的身份、轴与语言 Token schema，以及每个控件取值规则的（语言 Token 类型，控件身份，程序集修订）。字符串一律
 经确定性指纹构建器逐字符计入。ControlTheme 或 C# 实现消费了哪些 Global Token 不属于 schema，也不进入
 revision。Control Own Token 属性声明在终端类型还是显式标记的抽象定义层、定义层所在程序集和继承深度也不进入
 revision。Own Token 的 Active / Reserved 分类与全局 Token 消费图是生成器的分析产物，不进入 schema 和 revision。
@@ -660,9 +661,9 @@ Token）。优先级只有一条：**语言推导 < 主题显式值（XML 或 `T
 2. 写入并冻结该 Control 配置中的全局覆盖（与作用域的覆盖一样先做规范化），再写入并冻结显式 Own Token。种子也写入：它已是第 1 步
    求值单元的输入（派生的 Map / Alias 随它而变），但语言的全局推导可以细化或替换种子（如 Shadcn 风格的控件高度），控件级取值对该
    控件是终值——与 antd 组件级 Token 覆盖一致。
-3. 沿当前语言的语言 Token 类型的继承链找到该控件 Token 类的推导（`IControlDerivation<TLanguageToken, TToken>`），运行
-   `Derive(context, view)`：`view.Token` 是控件 Token，推导必须写全；`view.Global` 是该控件看到的全局 Token，读时得到该控件的
-   值，写时只对该控件生效，且只能写 Map 与 Alias：写种子直接抛出（`a control derivation may override Map and Alias tokens only,
+3. 沿当前语言的语言 Token 类型的继承链找到该控件 Token 类的推导（`IControlTokenRule<TLanguageToken, TToken>`），运行
+   `Apply(context, target)`：`target.Own` 是控件 Token，推导必须写全；`target.Global` 是该控件看到的全局 Token，读时得到该控件的
+   值，写时只对该控件生效，且只能写 Map 与 Alias：写种子直接抛出（`a control token rule may override Map and Alias tokens only,
    not seeds.`），按下文的控件维度失败处理。推导对冻结槽位的写入被忽略。
 4. 生成该 Control 的全局 Token 差量、Own Token 值和统一的 Effective Control Token 资源投影。推导或配置改写过全局 Token 的
    Control 只存相对作用域全局值的差量，其余 Control 与作用域共用同一份全局资源。
@@ -675,18 +676,18 @@ appearance 是它所在求值单元的有效明暗，只提供给该 Control 的
 相等；编译结果由现有 Token 值、推导、资源投影与缓存契约测试验证，不保留未被执行的急切参考实现。
 首帧内首次查询的控件一次性支付内联编译成本，具体耗时依赖控件与运行环境。
 跨快照复用独立 cell，物化结果不保留历史 snapshot，见[惰性槽生命周期设计](lazy-materialization.md#2-独立惰性槽与历史快照释放)。
-失败语义同步后移：控件级编译错误（控件推导抛出等）不再使
+失败语义同步后移：控件级编译错误（控件取值规则抛出等）不再使
 `ApplyTheme` 整体失败，而是在首次查询该槽位时抛出、后续每次查询重复抛出。
 
 任何 validation、conversion 或推导错误都返回失败结果，不返回部分 snapshot——该原子性指全局维度
-（语言/变体/种子/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。语言或控件推导抛出的异常包装为
-`ThemeDerivationException`（`Design language '…' failed in its … derivation.` / `… failed to derive the … view of control '…'.`），
+（语言/变体/种子/全局 token/资源）；控件维度的失败面按槽位延后到首查（见上方契约段）。语言或控件取值规则抛出的异常包装为
+`ThemeDerivationException`（`Design language '…' failed in its … derivation.` / `… failed to apply the token rule for control '…'.`），
 带语言身份与控件身份；编译期诊断代码为 `ATMTHM5001`（语言缺失）、`5002`（变体不受语言支持）、`5003`（未知语言 Token）。
 语言契约与作者须遵守的约束见[编写设计语言](../../../guides/theming/writing-design-languages.md)。
 
 ### 7.1 推导的纯函数性与契约校验
 
-语言的三个方法与控件推导都是输入的纯函数：相同输入给出相同输出，不读时钟、环境或可变静态状态，不修改不归自己写的对象，
+语言的三个方法与控件取值规则都是输入的纯函数：相同输入给出相同输出，不读时钟、环境或可变静态状态，不修改不归自己写的对象，
 可以在后台线程求值并被并发调用。推导是否写全应写的 Token、是否纯、是否确定、成对角色是否可读，不由编译器在运行时判定，
 而由契约测试库 `tests/AtomUI.Theme.ContractTests`（`DesignLanguageContract`）在语言声明的每个变体下校验
 （`Identity`、`LanguageComplete`、`GlobalComplete`、`ControlComplete`、`Pure`、`Deterministic`、`Readable`）。
@@ -1267,7 +1268,7 @@ ControlTheme 不声明 `ControlTokenScope.Identity`。强类型 Token key 在 AX
 资产生成器分析 owner、引用的 Control identity、URI、资源结构和 Semantic Part Theme 资产关系。它另外产出一份
 全局 Token 消费图（哪个 Control 的主题与代码消费了哪个全局 Token）；消费图只用于生效测试骨架、文档和将来的
 主题工具，不进入 schema、不限制配置、不参与 registry revision。Semantic Part Generator 独立分析 Control 声明和 `.semantic-*` marker；
-控件推导读写的 `view.Global.X`、`XxxTokenResource X` 和 C# Binding 都不会扩展 schema。
+控件取值规则读写的 `target.Global.X`、`XxxTokenResource X` 和 C# Binding 都不会扩展 schema。
 
 - 引用 Own Token 时必须属于显式 Xxx Control。
 - 引用任意已注册 Global Token 都合法，不产生 dependency manifest。
@@ -1414,7 +1415,7 @@ Token，也不由某个控件实例创建私有子作用域。当前 `ThemeConte
 
 内核提交（见[启动生命周期](../startup/lifecycle.md#4-提交一次)）时的主题启动顺序固定为：
 
-1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、编译主题包、设计语言 descriptor、控件推导
+1. Builder 解析并冻结 Application Id，收集 Theme Definition Resolver、编译主题包、设计语言 descriptor、控件取值规则
    descriptor、Control theme asset manifest、初始选择（`WithInitialTheme(ThemeSelection)`）或不可变初始 root request 模板和
    本地化语言配置。
 2. 构建并冻结 `ThemeSchemaRegistry`；在此时拒绝重复 Control identity、无效 descriptor、资产 identity/URI
@@ -1534,7 +1535,7 @@ Child snapshot C (Button override only)
 
 - 完整 snapshot cache：复用完全等价的有效主题。
 - Control compilation cache：以 global token 结构化 key（含语言身份与修订、变体）、Control identity、Control config
-  结构化 key、找到的控件推导描述符（实例身份与程序集修订）和 registry revision 为 key，复用跨作用域的 Control 计算结果。
+  结构化 key、找到的控件取值规则描述符（实例身份与程序集修订）和 registry revision 为 key，复用跨作用域的 Control 计算结果。
   fingerprint 只用于候选定位，命中后仍执行结构相等比较。
 
 两级缓存共用容量策略，失败和取消结果不缓存。
@@ -1651,8 +1652,8 @@ snapshot 视为内存泄漏。
   `*.theme.xml`，不反射发现 Resolver、Theme 或 Token。
 - 手动刷新不使用 `FileSystemWatcher`、动态代码生成或运行时类型构造。
 - 第三方 Control 的 identity、Token descriptor 和资源投影必须由 AtomUI generator 生成并通过真实包级入口注册；默认
-  Package 粒度必须完整保留内部 Control 和主题资源。设计语言 descriptor 由生成的 `GeneratedDesignLanguageRegistration`
-  以 `new TLanguage()` 与生成的语言 Token schema 构造，控件推导 descriptor 由生成的 `GeneratedControlDerivationRegistration`
+  Package 粒度必须完整保留内部 Control 和主题资源。设计语言 descriptor 由生成的 `DesignLanguageRegistration`
+  以 `new TLanguage()` 与生成的语言 Token schema 构造，控件取值规则 descriptor 由生成的 `GeneratedControlTokenRuleRegistration`
   以静态无捕获委托构造，都不使用反射或 `Activator`；修订取自确定性构建的程序集标识。未启用的语言不触碰其注册表，
   也不加载其取值包程序集。
 - 生成器测试必须验证 exact CLR type/identity、Own Token、统一强类型 key、常量时间 key 映射、资源投影、资产
@@ -1699,7 +1700,7 @@ Theme/
 +-- Languages/
 |   +-- DesignLanguage、DesignLanguage<TLanguageToken>、[DesignLanguage]
 |   +-- DesignLanguageAxes、DesignVariant、DesignStyle、DesignDensity、DesignIdiom
-|   +-- IControlDerivation<TLanguageToken, TToken>、[ControlDerivation]、ControlView、DerivationContext
+|   +-- IControlTokenRule<TLanguageToken, TToken>、[ControlTokenRule]、ControlTokenTarget、TokenEvaluationContext
 |   \-- DesignLanguageBuilder（Use<Lang>() 交给取值包扩展方法的构建器）
 |
 +-- Derivation/
@@ -1720,7 +1721,7 @@ Theme/
 +-- Schema/
 |   +-- ThemeSchemaRegistry
 |   +-- TokenDescriptor、ControlTokenDescriptor
-|   +-- DesignLanguageDescriptor、ControlDerivationDescriptor、TokenSchemaDigestAttribute
+|   +-- DesignLanguageDescriptor、ControlTokenRuleDescriptor、TokenSchemaDigestAttribute
 |   +-- ControlThemeAssetDescriptor 和 asset manifest contracts
 |   \-- identity、stage、parser 和 resource projector contracts
 |
@@ -1770,7 +1771,7 @@ ControlTheme、Semantic Part marker 和可选 Part Theme。运行时 `Theme/Sche
 职责目录下用于拆分 partial class 或文件数量的组织子目录不继续创建 CLR namespace，例如
 `Theme/DesignTokens/Definitions/**` 仍使用 `AtomUI.Theme.DesignTokens`。根目录不保留 `.Scope`、
 `.Transitions` 等已经被物理结构删除的 namespace。
-`Theme/Languages` 与 `AtomUI.Theme.Languages` 一一对应：语言契约、轴、变体与控件推导契约归该命名空间所有。
+`Theme/Languages` 与 `AtomUI.Theme.Languages` 一一对应：语言契约、轴、变体与控件取值规则契约归该命名空间所有。
 `Theme/Derivation` 只保留与语言无关的中性工具（调色板生成、预设色、`ColorMap` 和计算辅助）；核心不含任何语言的取值
 规则，Ant Design 的 Default / Dark / Compact 计算器属于 `AtomUI.DesignLanguages.AntDesign`。调色板不是独立运行时子系统，
 因此不保留 `AtomUI.Theme.Palette`；推导工具也不属于资源样式层，因此不保留 `AtomUI.Theme.Styling` 兼容命名空间。
@@ -1820,7 +1821,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - `ControlThemeAssets` glob Attribute、逐 Theme Module、手工 asset manifest 和只为聚合主题创建的额外 AXAML。
 - cache pin、父 snapshot Version cache key 和字符串拼接 cache key。
 - 旧主题 XML 的 `ControlTokens/ControlToken` 结构。
-- 在控件推导中以 `double.NaN` 或其他哨兵值判断 Token 是否被显式设置；显式值在推导之前冻结，推导只做顺序赋值。
+- 在控件取值规则中以 `double.NaN` 或其他哨兵值判断 Token 是否被显式设置；显式值在推导之前冻结，推导只做顺序赋值。
 - Control 代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token，以及读取失败时
   回落到写死的视觉值；Token 只经 `ControlTokenAccessor`、`TokenResourceBinder` 和三种 TokenResource 读取。
 - 有 Token 身份的 Control 的 ControlTheme 用 `SharedTokenResource` 读全局 Token，使 Control 级覆盖对该消费点失效。
@@ -1843,7 +1844,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
 - Control 只写 Map、Alias 或 Own Token 时只替换该值；覆盖种子或固定轴时自成求值单元，其余 Control 的结果引用不变。
 - `ThemeConfig`、`ControlThemeConfig`、`ThemeRequest` 及其全部集合深度不可变；替换 Provider.Config 是唯一局部
   动态配置入口，修改旧输入对象不可能触发事务。
-- 语言与控件推导是输入的纯函数，单遍执行；每个已启用语言 × 每个已启用 Control 在启动时都找得到推导，否则启动失败。
+- 语言与控件取值规则是输入的纯函数，单遍执行；每个已启用语言 × 每个已启用 Control 在启动时都找得到推导，否则启动失败。
 - 根和每个 `ThemeConfigProvider` 的 snapshot appearance 始终等于其 Avalonia
   `ActualThemeVariant`；Control 固定的明暗不泄漏到作用域 variant。
 - 无 owner 的静态 Dialog、Notification 等 API 始终使用 Root ThemeContext，并产生可诊断的根主题语义，不能
@@ -1891,7 +1892,7 @@ ThemeManager 提交 snapshot，Resources 只读取已提交 snapshot。Compilati
   Effective Global Token 和 Own Token；`{atom:OwnerTokenResource ...}` 读取继承到的 owner Control 的 Effective
   Global Token，无 owner 时读取全局值。三者都没有 ambient snapshot 行为。
 - `Controls[X].Tokens[全局名]` 只改变 X 及其模板内的共享基元，不改变其他 Control；根 `Tokens[全局名]` 改变全部。
-- 显式 Own Token override 在控件推导之前冻结并最终胜出；覆盖 `DataGrid.BorderColor` 后表格边框变色，覆盖 Button
+- 显式 Own Token override 在控件取值规则之前冻结并最终胜出；覆盖 `DataGrid.BorderColor` 后表格边框变色，覆盖 Button
   `ContentFontSize` 后 `ContentLineHeight` 跟随。
 - 每个 Active Own Token 和消费图中该 Control 消费的全局 Token 都有生效测试：改变 Token 后控件边界内像素发生变化。
   未引用且未标 `[ReservedToken]` 的 Own Token 字段构建失败。

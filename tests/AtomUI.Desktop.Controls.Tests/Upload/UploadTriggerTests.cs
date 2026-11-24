@@ -110,7 +110,7 @@ public class UploadTriggerTests
             UniformlyPaddingXXS = 4
         };
         var token = new UploadToken();
-        AntDesignDerivationRunner.Derive(token, global);
+        AntDesignTokenRuleRunner.Apply(token, global);
 
         token.TextListItemPadding.Left.ShouldBe(8);
         token.TextListProgressPadding.Left.ShouldBe(

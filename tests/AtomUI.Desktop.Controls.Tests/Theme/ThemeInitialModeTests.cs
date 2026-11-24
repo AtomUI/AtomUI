@@ -88,7 +88,7 @@ public class ThemeInitialModeTests
 
         public IThemeManagerBuilder AddDesignLanguage(DesignLanguageDescriptor language) => this;
 
-        public IThemeManagerBuilder AddControlDerivations(IEnumerable<ControlDerivationDescriptor> derivations) => this;
+        public IThemeManagerBuilder AddControlTokenRules(IEnumerable<ControlTokenRuleDescriptor> derivations) => this;
 
         public void AddControlPackage(ControlPackageRegistration package)
         {

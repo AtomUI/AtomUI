@@ -133,4 +133,4 @@ TreeViewToken 变更验证：
 
 ## 独立 Token 身份与共享计算
 
-TreeView 与 TransferTreeView 独立拥有实际树 Own；TreeSelect 只声明其实际树展示字段，取值经取值包内的纯值函数复用树的取值规则（Ant Design：`TreePresentationTokenValues`，由 `AntDesignTreeSelectDerivation` 调用）。原目录树模式字段仅在 TreeView 保留 Reserved，不扩大新终端承诺。
+TreeView 与 TransferTreeView 独立拥有实际树 Own；TreeSelect 只声明其实际树展示字段，取值经取值包内的纯值函数复用树的取值规则（Ant Design：`TreePresentationTokenCalculator`，由 `TreeSelectTokenRule` 调用）。原目录树模式字段仅在 TreeView 保留 Reserved，不扩大新终端承诺。

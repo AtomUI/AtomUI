@@ -12,7 +12,7 @@ Ant Design 的主题，而是启用另一种语言并选中它。
 | 包 | 命名 | 内容 | 谁引用 |
 | --- | --- | --- | --- |
 | 语言包 | `AtomUI.DesignLanguages.<Lang>` | 语言本身：四个轴、种子默认值、全局推导、语言 Token、官方具名主题、`Use<Lang>()` 入口 | 取值包的作者、派生语言的作者。应用不直接引用，它随取值包传递进来 |
-| 取值包 | `<控件包名>.Themes.<Lang>` | 控件推导、生成的静态注册入口，以及显式登记用的 `Add<控件包>()` | **应用** |
+| 取值包 | `<控件包名>.Themes.<Lang>` | 控件取值规则、生成的静态注册入口，以及显式登记用的 `Add<控件包>()` | **应用** |
 | 控件包 | `AtomUI.Desktop.Controls`、`AtomUI.Desktop.Controls.DataGrid`… | 控件、模板与控件 Token 的声明，不含任何取值 | 随取值包传递进来；应用照常调用 `Use<控件包>()` |
 
 控件包与语言包只在取值包里相遇。应用为每个启用的「控件包 × 设计语言」选择一份取值包：
@@ -154,17 +154,19 @@ Shadcn 与 PrimeNG 与 Ant Design 结构相同：`src/DesignLanguages/Shadcn/`�
 Acme.Themes.Brand/
 +-- Acme.Themes.Brand.csproj     references the language package; <AtomUIThemeDefinition Include="Themes/*.theme.xml" />
 +-- Themes/AcmeBrand.theme.xml   theme definition (XML v2)
-+-- AcmeThemes.cs                UseAcmeThemes() calls the generated GeneratedThemePackageRegistration.Register(builder.Theme)
++-- AcmeThemes.cs                UseAcmeThemes() calls the generated ThemePackageRegistration.Register(builder.Theme)
 \-- README.md
 ```
 
 ```csharp
+using AtomUI.Generated.AcmeThemesBrand;
+
 public static class AcmeThemesBuilderExtensions
 {
     public static IAtomUIBuilder UseAcmeThemes(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        AtomUI.Generated.AcmeThemesBrand.GeneratedThemePackageRegistration.Register(builder.Theme);
+        ThemePackageRegistration.Register(builder.Theme);
         return builder;
     }
 }

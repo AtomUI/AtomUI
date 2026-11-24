@@ -12,10 +12,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGComboBoxTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ComboBoxToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ComboBoxToken token)
     {
         // list.option: padding 4px 10px (Lara 8px 14px) over the 0.875rem line at the 16px root the preset renders
         // at, so the row is 14 * 1.5 + 2 * 4 = 29 (Lara 37); PrimeUIX does not scale the list row with the control

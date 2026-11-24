@@ -61,9 +61,9 @@ internal static class AtomUIDiagnosticIds
     public const string ThemeAssetTemplateAttributeMasksSetter = "ATOMUIGEN046";
     public const string ControlCodeLocalValueVisualWrite = "ATOMUIGEN047";
     public const string TokenPropertyNotPartial = "ATOMUIGEN049";
-    public const string DerivationLeavesTokenUnwritten = "ATOMUIGEN050";
-    public const string DerivationReadsUnwrittenToken = "ATOMUIGEN051";
-    public const string ValuePackageMissesDerivation = "ATOMUIGEN052";
+    public const string TokenRuleLeavesTokenUnwritten = "ATOMUIGEN050";
+    public const string TokenRuleReadsUnwrittenToken = "ATOMUIGEN051";
+    public const string ValuePackageMissesTokenRule = "ATOMUIGEN052";
     public const string PackageDependencyDirection = "ATOMUIGEN053";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";

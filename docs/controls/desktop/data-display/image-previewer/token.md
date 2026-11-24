@@ -74,4 +74,4 @@ ImagePreviewer 的控件专项模型通过 Theme 消费 Token：
 
 ## 独立 Token 身份与共享计算
 
-AbstractImagePreviewerToken 复用实际预览字段的定义（Ant Design 的取值规则在共享辅助类 `AntDesignAbstractImagePreviewerDerivation`）；ImagePreviewSwitchSize 只在原 ImagePreviewer 终端保留 Reserved，不添加给 Group。CoverImageWidth 是无显式封面尺寸时占位的最小尺寸兜底，不接管图片自然尺寸。
+AbstractImagePreviewerToken 复用实际预览字段的定义（Ant Design 的取值规则在共享辅助类 `ImagePreviewerTokenCalculator`）；ImagePreviewSwitchSize 只在原 ImagePreviewer 终端保留 Reserved，不添加给 Group。CoverImageWidth 是无显式封面尺寸时占位的最小尺寸兜底，不接管图片自然尺寸。

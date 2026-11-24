@@ -27,7 +27,7 @@ internal sealed class ThemeCompiler
     private const string UnknownLanguageTokenCode = "ATMTHM5003";
 
     private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, IReadOnlySet<string>> SeedNames = new();
-    private const string SeedRejectReason = "a control derivation may override Map and Alias tokens only, not seeds.";
+    private const string SeedRejectReason = "a control token rule may override Map and Alias tokens only, not seeds.";
     private static readonly ConditionalWeakTable<PreparedThemeDefinition, NormalizedThemeConfig> s_definitionDefaults = new();
     private static readonly ConditionalWeakTable<ThemeSchemaRegistry, NormalizedThemeConfig> s_libraryDefaults = new();
 
@@ -682,7 +682,7 @@ internal sealed class ThemeCompiler
 
     /// <summary>
     /// Step 6 for one control: its view. The view's global tokens start as the scope's; the control's explicit global
-    /// overrides are written and frozen, its explicit control tokens likewise, then the language's derivation writes the
+    /// overrides are written and frozen, its explicit control tokens likewise, then the control token rule writes the
     /// control token and any global token that differs for this control. A control that fixes an axis or overrides a
     /// seed first gets its own global evaluation (spec 6.4).
     /// </summary>
@@ -696,24 +696,24 @@ internal sealed class ThemeCompiler
         IReadOnlyDictionary<object, object?> globalResources,
         ThemeSchemaRegistry registry,
         ControlThemeSnapshot? previous = null,
-        ControlViewPool? viewPool = null)
+        ControlGlobalTokenPool? globalPool = null)
     {
         var globalDescriptors = registry.GlobalTokens;
         var appearance = unit.Variant.Appearance;
         var variant = unit.Variant;
-        DesignToken viewGlobal;
+        DesignToken controlGlobal;
         var effectiveGlobalMatchesRoot = true;
         if (config is { IsOwnEvaluationUnit: true })
         {
             var controlUnit = unit.ForControlUnit(config);
-            (viewGlobal, languageToken) = CompileUnitGlobal(controlUnit);
+            (controlGlobal, languageToken) = CompileUnitGlobal(controlUnit);
             appearance = controlUnit.Variant.Appearance;
             variant = controlUnit.Variant;
             effectiveGlobalMatchesRoot = false;
         }
         else
         {
-            viewGlobal = viewPool?.Rent() ?? CopyBuilder(globalBuilder, globalDescriptors);
+            controlGlobal = globalPool?.Rent() ?? CopyBuilder(globalBuilder, globalDescriptors);
         }
 
         // The control's explicit global overrides are what the control sees; normalized before they are frozen, as a
@@ -725,13 +725,13 @@ internal sealed class ThemeCompiler
         {
             foreach (var value in overrides)
             {
-                value.Descriptor.SetValue(viewGlobal, value.Descriptor.CopyValue(value.Value));
+                value.Descriptor.SetValue(controlGlobal, value.Descriptor.CopyValue(value.Value));
             }
-            viewGlobal.NormalizeFinalBehavior();
+            controlGlobal.NormalizeFinalBehavior();
             effectiveGlobalMatchesRoot = false;
 
-            // Every explicit value of the control is frozen against its derivation, seeds included (spec 6.3, 6.4).
-            FreezeOverrides(viewGlobal, overrides);
+            // Every explicit value of the control is frozen against its token rule, seeds included (spec 6.3, 6.4).
+            FreezeOverrides(controlGlobal, overrides);
         }
 
         var controlBuilder = descriptor.CreateBuilder();
@@ -750,21 +750,21 @@ internal sealed class ThemeCompiler
                 }
             }
 
-            var derivation = registry.FindDerivation(unit.Language, descriptor.Slot) ??
+            var rule = registry.FindControlTokenRule(unit.Language, descriptor.Slot) ??
                              throw new ThemeDerivationException(unit.Language.Id, descriptor.Identity, "control",
                                  new InvalidOperationException(
-                                     $"No control derivation is registered for '{descriptor.Identity}' under '{unit.Language.Id}'."));
-            viewGlobal.RejectWrites(GetSeedNames(globalDescriptors), SeedRejectReason);
-            viewGlobal.TrackWrites();
+                                     $"No control token rule is registered for '{descriptor.Identity}' under '{unit.Language.Id}'."));
+            controlGlobal.RejectWrites(GetSeedNames(globalDescriptors), SeedRejectReason);
+            controlGlobal.TrackWrites();
             var recordReads = config is not { IsOwnEvaluationUnit: true } && overrides is not { Count: > 0 };
             if (recordReads)
             {
                 reads = new HashSet<string>(StringComparer.Ordinal);
-                viewGlobal.RecordReads(reads);
+                controlGlobal.RecordReads(reads);
             }
             try
             {
-                derivation.Derive(in variant, languageToken, controlBuilder, viewGlobal);
+                rule.Apply(in variant, languageToken, controlBuilder, controlGlobal);
             }
             catch (Exception exception)
             {
@@ -772,18 +772,18 @@ internal sealed class ThemeCompiler
             }
             finally
             {
-                viewGlobal.StopRecordingReads();
+                controlGlobal.StopRecordingReads();
             }
 
-            if (viewGlobal.HasAcceptedWrites)
+            if (controlGlobal.HasAcceptedWrites)
             {
                 effectiveGlobalMatchesRoot = false;
             }
-            viewGlobal.ClearFreeze();
+            controlGlobal.ClearFreeze();
             controlBuilder.ClearFreeze();
             if (!effectiveGlobalMatchesRoot)
             {
-                viewGlobal.NormalizeFinalBehavior();
+                controlGlobal.NormalizeFinalBehavior();
             }
 
             controlTokenValues = TokenValueTable.Freeze(controlBuilder, descriptor.OwnTokens);
@@ -794,7 +794,7 @@ internal sealed class ThemeCompiler
         }
         else
         {
-            viewGlobal.ClearFreeze();
+            controlGlobal.ClearFreeze();
         }
 
         IReadOnlyDictionary<int, object?> globalDelta;
@@ -804,16 +804,16 @@ internal sealed class ThemeCompiler
             // Nothing was written to the view: it still equals the scope's global tokens and serves the next control.
             if (config is not { IsOwnEvaluationUnit: true })
             {
-                viewPool?.Return(viewGlobal);
+                globalPool?.Return(controlGlobal);
             }
             globalDelta = FrozenDictionary<int, object?>.Empty;
             globalResourceDelta = FrozenDictionary<object, object?>.Empty;
         }
         else
         {
-            var effectiveGlobalValues = TokenValueTable.Freeze(viewGlobal, globalDescriptors);
+            var effectiveGlobalValues = TokenValueTable.Freeze(controlGlobal, globalDescriptors);
             var effectiveGlobalResources = BuildResourceMap(
-                viewGlobal,
+                controlGlobal,
                 globalDescriptors,
                 effectiveGlobalValues,
                 previous?.EffectiveGlobalResourceDelta);
@@ -835,11 +835,11 @@ internal sealed class ThemeCompiler
             globalReads);
     }
 
-    private static void FreezeOverrides(DesignToken viewGlobal, IReadOnlyList<NormalizedTokenValue> overrides)
+    private static void FreezeOverrides(DesignToken controlGlobal, IReadOnlyList<NormalizedTokenValue> overrides)
     {
         foreach (var value in overrides)
         {
-            viewGlobal.Freeze(value.Descriptor.Name);
+            controlGlobal.Freeze(value.Descriptor.Name);
         }
     }
 
@@ -1244,12 +1244,12 @@ internal sealed class ThemeCompiler
     }
 }
 
-/// <summary>A language or control derivation failed; names the language, the control (if any) and the step.</summary>
+/// <summary>Theme token evaluation failed. Identifies the language, the control (if any) and the step.</summary>
 public sealed class ThemeDerivationException : Exception
 {
     internal ThemeDerivationException(string language, ControlTokenIdentity? control, string step, Exception innerException)
         : base(control is { } identity
-            ? $"Design language '{language}' failed to derive the {step} view of control '{identity}'."
+            ? $"Design language '{language}' failed to apply the token rule for control '{identity}'."
             : $"Design language '{language}' failed in its {step} derivation.", innerException)
     {
         Language = language;

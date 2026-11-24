@@ -80,8 +80,8 @@ Snapshot 与主题 schema、ControlTheme asset manifest、首个 ThemeSnapshot�
 1. 本地化 Builder 冻结 Catalog/Bundle Registry，为全部支持语言生成完整 Snapshot，并以默认语言初始化稳定
    `LanguageResourceProvider`、`ILanguageManager` 与 `ILocalizer`。
 2. 主题 Builder 解析 Application Id，收集生成式 Control descriptor、ControlTheme asset manifest、
-   `IThemeDefinitionResolver`、编译主题包、设计语言 descriptor（`DesignLanguageDescriptor`）、控件推导 descriptor
-   （`ControlDerivationDescriptor`），以及初始选择（`ThemeSelection`）或不可变初始 `ThemeRequest` 模板。
+   `IThemeDefinitionResolver`、编译主题包、设计语言 descriptor（`DesignLanguageDescriptor`）、控件取值规则 descriptor
+   （`ControlTokenRuleDescriptor`），以及初始选择（`ThemeSelection`）或不可变初始 `ThemeRequest` 模板。
 3. `ThemeSchemaRegistry` 构建并冻结 exact CLR type/identity、完整 Global Token schema、Control Own Token schema、语言 Token
    schema、资产导出主题、RequiredTokenOwners 和 Semantic Part 契约。跨包校验在全部包收集后执行；无效 descriptor、
    重复 type/identity、错误 Token owner、资源 URI 或 Semantic Part Theme 冲突在此失败。同时执行设计语言的提交校验：至少
@@ -162,9 +162,9 @@ Popup/Flyout 通过逻辑树自然继承，独立 Window/Dialog/Notification Top
   关联、资源优先级与构建期校验结果。internal 主题目标不被迫拥有 Token descriptor。
 - `ControlThemesProviders`：AXAML 主题 Provider。
 - `ThemeDefinitionResolvers`：内置资源、应用 `avares://` 资源和可选用户配置目录的统一主题来源解析器。
-- 编译主题包：语言包与应用的 `AtomUIThemeDefinition` 生成的 `GeneratedThemePackageRegistration`（例如 Ant Design 的 Daybreak Blue）。
-- `Languages`：语言包生成的 `GeneratedDesignLanguageRegistration` 登记的 `DesignLanguageDescriptor`（语言、轴与语言 Token schema）。
-- `Derivations`：取值包生成的 `GeneratedControlDerivationRegistration` 登记的 `ControlDerivationDescriptor`（静态、无捕获的委托）。
+- 编译主题包：语言包与应用的 `AtomUIThemeDefinition` 生成的 `ThemePackageRegistration`（例如 Ant Design 的 Daybreak Blue）。
+- `Languages`：语言包生成的 `DesignLanguageRegistration` 登记的 `DesignLanguageDescriptor`（语言、轴与语言 Token schema）。
+- `TokenRules`：取值包生成的 `GeneratedControlTokenRuleRegistration` 登记的 `ControlTokenRuleDescriptor`（静态、无捕获的委托）。
 - 初始主题：`WithInitialTheme(ThemeSelection)` 的初始选择，或固定主题 / FollowSystem 的 Light/Dark 不可变 root request 模板。
 - `ModuleInitializers`：与 ThemeLoaded 等主题生命周期无关的模块初始化回调。
 

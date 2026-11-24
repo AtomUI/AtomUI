@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIControlsThemesAntDesign;
 using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme.Languages;
 
@@ -12,7 +13,7 @@ public static class AntDesignCommonControlsExtensions
     public static DesignLanguageBuilder<AntDesignLanguage> AddCommonControls(this DesignLanguageBuilder<AntDesignLanguage> language)
     {
         ArgumentNullException.ThrowIfNull(language);
-        Generated.AtomUIControlsThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

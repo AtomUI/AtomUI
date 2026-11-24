@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsDataGridThemesShadcn;
 using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class ShadcnDataGridExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsDataGridThemesShadcn.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

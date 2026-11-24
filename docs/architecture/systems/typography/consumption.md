@@ -32,19 +32,19 @@ Token 编译出来之后，控件和主题资产怎么读它们。本文还讲�
 
 ## C#
 
-Control Token 类只声明属性，不读全局 Token。由字体 Token 算出的控件 Token 写在设计语言取值包的控件推导里，经
-`view.Global` 读取该控件看到的全局字体 Token：
+Control Token 类只声明属性，不读全局 Token。由字体 Token 算出的控件 Token 写在设计语言取值包的控件取值规则里，经
+`target.Global` 读取该控件看到的全局字体 Token：
 
 ```csharp
-// AtomUI.Desktop.Controls.Themes.AntDesign/Input/AntDesignTextBoxDerivation.cs
-var global     = view.Global;
+// AtomUI.Desktop.Controls.Themes.AntDesign/Input/TextBoxTokenRule.cs
+var global     = target.Global;
 var fontSize   = global.FontSize;
 var lineHeight = global.RelativeLineHeight;
 token.ContentPadding = new Thickness(global.UniformlyPaddingSM - global.LineWidth,
     Math.Round((global.ControlHeight - fontSize * lineHeight) / 2 * 10) / 10 - global.LineWidth);
 ```
 
-`view.Global` 已经应用了当前作用域和 Control 级覆盖，不需要再解析。控件代码在运行时读取字体 Token 经
+`target.Global` 已经应用了当前作用域和 Control 级覆盖，不需要再解析。控件代码在运行时读取字体 Token 经
 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML 的 TokenResource（见
 [Control Token 规范](../../../engineering/development/control-token-guidelines.md#c-访问契约)）；控件实现不该直接访问
 `DesignToken` 实例，也不该自己重跑字号派生——那会绕过覆盖，得到与主题不一致的值。

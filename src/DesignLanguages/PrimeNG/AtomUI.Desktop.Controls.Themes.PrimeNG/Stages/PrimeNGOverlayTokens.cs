@@ -16,10 +16,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGArrowDecoratedBoxTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ArrowDecoratedBoxToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ArrowDecoratedBoxToken token)
     {
         var popover  = context.Language.GetPopoverOverlayRecipe(effectiveGlobal, context.Variant);
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
@@ -44,11 +44,11 @@ internal static class PrimeNGArrowDecoratedBoxTokens
 /// </summary>
 internal static class PrimeNGFlyoutHostTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, FlyoutHostToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, FlyoutHostToken token)
     {
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         var popover  = context.Language.GetPopoverOverlayRecipe(effectiveGlobal, context.Variant);
@@ -69,11 +69,11 @@ internal static class PrimeNGFlyoutHostTokens
 /// </summary>
 internal static class PrimeNGPopupTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PopupToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PopupToken token)
     {
         var panel   = context.Language.GetSelectOverlayRecipe(effectiveGlobal, context.Variant);
         var shadows = panel.ShadowsWithOutline;

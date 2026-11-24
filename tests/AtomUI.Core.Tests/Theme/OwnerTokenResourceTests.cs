@@ -516,10 +516,10 @@ public class OwnerTokenResourceTests
         public double Height { get; set; }
     }
 
-    /// <summary>The LineEdit's derivation fails; the compiler reports it when the control is first queried.</summary>
-    internal sealed class ThrowingLineEditDerivation : IControlDerivation<AntDesignToken, ThrowingLineEditToken>
+    /// <summary>The LineEdit's rule fails; the compiler reports it when the control is first queried.</summary>
+    internal sealed class ThrowingLineEditTokenRule : IControlTokenRule<AntDesignToken, ThrowingLineEditToken>
     {
-        public void Derive(in DerivationContext<AntDesignToken> context, ControlView<ThrowingLineEditToken> view) =>
+        public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<ThrowingLineEditToken> target) =>
             throw new InvalidOperationException(ThrowingEvaluatorMessage);
     }
 

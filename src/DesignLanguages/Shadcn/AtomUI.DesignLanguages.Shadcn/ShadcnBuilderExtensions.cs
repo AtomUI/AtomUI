@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesignLanguagesShadcn;
 using AtomUI.Theme.Languages;
 
 namespace AtomUI.DesignLanguages.Shadcn;
@@ -12,7 +13,7 @@ public static class ShadcnBuilderExtensions
         Action<DesignLanguageBuilder<ShadcnLanguage>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        Generated.AtomUIDesignLanguagesShadcn.GeneratedDesignLanguageRegistration.Register(builder.Theme);
+        DesignLanguageRegistration.Register(builder.Theme);
         configure?.Invoke(new DesignLanguageBuilder<ShadcnLanguage>(builder));
         return builder;
     }

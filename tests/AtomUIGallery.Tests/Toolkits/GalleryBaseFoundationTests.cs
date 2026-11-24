@@ -504,9 +504,8 @@ public class GalleryBaseFoundationTests
 
             await viewModel.SwitchDesignLanguageCommand.Execute("AntDesign").ToTask();
 
-            // Switching the language selects its implicit default entry (the successor of the v1 IsDefault theme
-            // DaybreakBlue), never the previous language's theme.
-            manager.CurrentTheme!.ThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("AntDesign"));
+            // Switching languages selects the theme configured by WithDefaultTheme for Ant Design.
+            manager.CurrentTheme!.ThemeId.ShouldBe(AntDesignThemes.DaybreakBlue);
             manager.CurrentTheme.Language.ShouldBe("AntDesign");
             manager.CurrentTheme.Variant.Style.ShouldBe(manager.Languages.Single(language => language.Id == "AntDesign").DefaultStyle);
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);

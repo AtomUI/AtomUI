@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsColorPickerThemesPrimeNG;
 using AtomUI.DesignLanguages.PrimeNG;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class PrimeNGColorPickerExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsColorPickerThemesPrimeNG.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

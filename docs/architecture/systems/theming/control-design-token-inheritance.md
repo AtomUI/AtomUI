@@ -58,7 +58,7 @@ public abstract partial class CommonButtonToken : AbstractControlDesignToken
 
 - 可以形成多层单继承链，也可以在自身程序集没有终端派生类时独立编译；
 - 不按类型名称匹配 Control，名称只需以 `Token` 结尾；
-- 不拥有 Catalog、Control ID、factory、descriptor、slot、资源键、注册片段或控件推导；
+- 不拥有 Catalog、Control ID、factory、descriptor、slot、资源键、注册片段或控件取值规则；
 - 必须是非泛型顶级类；
 - 对第三方开放时使用 `public abstract`，仅供已知第一方下游包复用时可以使用 `internal abstract` 与正常的
   `InternalsVisibleTo`；公开的终端类不能继承内部抽象层，所以 AtomUI 四个控件包的抽象层随终端类一起是 `public`；
@@ -87,8 +87,8 @@ namespace AtomUI.Desktop.Controls
 - 继续按照现有名称和命名空间约定匹配 public Control；
 - 可以直接继承 `AbstractControlDesignToken`，也可以继承一层或多层显式标记的抽象 Token；
 - 不能继承另一个具体 `[ControlDesignToken]`；
-- 是继承链中唯一生成 Control identity、descriptor、factory、资源键和注册产物的类型，也是控件推导绑定的类型
-  （`IControlDerivation<TLanguageToken, ButtonToken>`）。
+- 是继承链中唯一生成 Control identity、descriptor、factory、资源键和注册产物的类型，也是控件取值规则绑定的类型
+  （`IControlTokenRule<TLanguageToken, ButtonToken>`）。
 
 合法结构为：
 
@@ -134,12 +134,12 @@ static (token, value) =>
 
 ## 取值
 
-Token 类只声明词汇，取值属于设计语言。每种语言的取值包为每个**终端** Token 类写一个控件推导
-（`IControlDerivation<TLanguageToken, TToken>`），推导必须写全终端的全部属性，包括从抽象层继承的属性；抽象层本身没有推导，
+Token 类只声明词汇，取值属于设计语言。每种语言的取值包为每个**终端** Token 类写一个控件取值规则
+（`IControlTokenRule<TLanguageToken, TToken>`），推导必须写全终端的全部属性，包括从抽象层继承的属性；抽象层本身没有推导，
 也不会被单独登记。
 
 抽象层的属性在多个终端之间共享取值规则时，规则写在取值包里的普通静态辅助方法中，由各终端的推导调用，例如 Ant Design 的
-`AntDesignAbstractStandardButtonDerivation.DeriveShared(in context, global, token)`。抽象层位于跨端共用的 `AtomUI.Controls` 时，
+`StandardButtonTokenCalculator.Calculate(in context, global, token)`。抽象层位于跨端共用的 `AtomUI.Controls` 时，
 由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导方法，各端的取值包在自己的推导里调用。推导只使用 Token 类及其属性的类型，
 不调用控件的行为代码。规则见[编写设计语言](../../../guides/theming/writing-design-languages.md#4-取值包)。
 
@@ -152,7 +152,7 @@ Token 类只声明词汇，取值属于设计语言。每种语言的取值包�
 
 1. 终端 descriptor factory 直接构造终端 Token；
 2. `ThemeCompiler` 写入该 identity 的显式 Own Token 值并冻结这些槽位；
-3. 按当前语言的语言 Token 类型的继承链找到该终端的控件推导，在该控件的视图（终端 Token + 它所见的全局 Token）上运行一次；
+3. 按当前语言的语言 Token 类型的继承链找到该终端的控件取值规则，在该控件的视图（终端 Token + 它所见的全局 Token）上运行一次；
 4. descriptor 把扁平值投影到当前终端的资源键。
 
 `ControlTokenDescriptor`、`ThemeCompiler`、`ThemeSchemaRegistry`、`ThemeSnapshot`、`ThemeTokenResourceProvider`、

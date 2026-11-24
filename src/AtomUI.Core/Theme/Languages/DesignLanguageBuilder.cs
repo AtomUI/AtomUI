@@ -2,7 +2,7 @@ namespace AtomUI.Theme.Languages;
 
 /// <summary>
 /// What <c>Use&lt;Language&gt;(language =&gt; …)</c> hands to its configuration (spec 8): the value packages of the language
-/// can register their derivations explicitly through extensions such as <c>language.AddDesktopControls()</c>.
+/// can register their token rules explicitly through extensions such as <c>language.AddDesktopControls()</c>.
 /// </summary>
 /// <typeparam name="TLanguage">The design language being configured.</typeparam>
 public sealed class DesignLanguageBuilder<TLanguage>
@@ -17,7 +17,7 @@ public sealed class DesignLanguageBuilder<TLanguage>
     /// <summary>The application builder.</summary>
     public IAtomUIBuilder Root { get; }
 
-    /// <summary>The theme manager builder: value packages register their derivations through it.</summary>
+    /// <summary>The theme manager builder: value packages register their token rules through it.</summary>
     public IThemeManagerBuilder Theme => Root.Theme;
 
     /// <summary>Sets this language's default named theme for startup and selection.</summary>

@@ -108,7 +108,7 @@ public class DesignLanguageContractTests
         public override void DeriveLanguage(in DesignVariant variant, DesignToken seed, AntDesignToken language) =>
             s_ant.DeriveLanguage(variant, seed, language);
 
-        public override void DeriveGlobal(in DerivationContext<AntDesignToken> context, DesignToken token)
+        public override void DeriveGlobal(in TokenEvaluationContext<AntDesignToken> context, DesignToken token)
         {
             var hover = token.ColorPrimaryHover;
             s_ant.DeriveGlobal(context, token);

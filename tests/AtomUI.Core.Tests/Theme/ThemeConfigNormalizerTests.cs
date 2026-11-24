@@ -260,7 +260,7 @@ public class ThemeConfigNormalizerTests
 
 /// <summary>
 /// A two-token schema (seed <c>Alpha</c>, alias <c>Beta</c>), the probe language and a button with one own token
-/// (<c>Height</c>) and its probe derivation.
+/// (<c>Height</c>) and its probe rule.
 /// </summary>
 internal static class ThemeConfigTestSchema
 {
@@ -283,7 +283,7 @@ internal static class ThemeConfigTestSchema
             ownTokens,
             static () => new TestControlToken());
         return new ThemeSchemaRegistry(globalTokens, [control], [TestDesignLanguages.Probe()], null,
-            [ControlDerivationDescriptor.Create<ProbeLanguageToken, TestControlToken, TestControlDerivation>()]);
+            [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, TestControlToken, TestControlTokenRule>()]);
     }
 
     private static TokenDescriptor Token(string name, int slot, TokenStage stage)
@@ -311,9 +311,9 @@ internal static class ThemeConfigTestSchema
         public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", "Button");
     }
 
-    internal sealed class TestControlDerivation : IControlDerivation<ProbeLanguageToken, TestControlToken>
+    internal sealed class TestControlTokenRule : IControlTokenRule<ProbeLanguageToken, TestControlToken>
     {
-        public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<TestControlToken> view)
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<TestControlToken> target)
         {
         }
     }

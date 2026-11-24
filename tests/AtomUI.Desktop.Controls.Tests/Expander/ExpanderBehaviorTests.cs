@@ -297,7 +297,7 @@ public class ExpanderBehaviorTests
             var frame = FindVisualByName<PixelAlignedBorder>(expander, "PART_Frame");
             frame.ShouldNotBeNull();
 
-            // ExpanderBorderRadius = BorderRadiusLG (see AntDesignExpanderDerivation).
+            // ExpanderBorderRadius = BorderRadiusLG (see ExpanderTokenRule).
             var expectedRadius = GetThemeResource<CornerRadius>(SharedTokenKind.BorderRadiusLG);
             frame!.CornerRadius.ShouldBe(expectedRadius);
             expectedRadius.TopLeft.ShouldBeGreaterThan(0);

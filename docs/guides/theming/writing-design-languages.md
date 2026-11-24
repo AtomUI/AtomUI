@@ -9,7 +9,7 @@ AtomUI 里每一个取值——种子的默认值、全局 Token、每个控件�
 | 包 | 命名 | 内容 | 引用 |
 | --- | --- | --- | --- |
 | 语言包 | `<前缀>.DesignLanguages.<Lang>` | 语言定义、语言 Token、种子默认值与全局推导、具名主题、`Use<Lang>()` 入口 | `AtomUI.Core` |
-| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包的每个控件 Token 类在该语言下的控件推导、`Add<控件包>()` 入口 | 对应控件包、对应语言包、所依赖控件包在同一语言下的取值包 |
+| 取值包 | `<控件包名>.Themes.<Lang>` | 该控件包的每个控件 Token 类在该语言下的控件取值规则、`Add<控件包>()` 入口 | 对应控件包、对应语言包、所依赖控件包在同一语言下的取值包 |
 
 控件包与语言包之间没有任何引用，它们只在取值包里相遇。本文以 Ant Design 为实例：语言包
 `src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign`，取值包 `AtomUI.Controls.Themes.AntDesign`、
@@ -27,7 +27,7 @@ AtomUI 里每一个取值——种子的默认值、全局 Token、每个控件�
 | 在某种语言上做品牌化，且需要不同的推导规则 | 派生语言（第 7 节），只重写不同的部分 |
 | 对标另一套设计体系（自己的色阶、几何表、明暗与密度规则） | 新的语言包，加上为要支持的控件包各写一个取值包 |
 | 为别人的控件包追加一种已有语言 | 只写取值包：引用它的控件包与那个语言包 |
-| 新的控件包，不打算逐语言适配 | 通用推导（第 4.4 节），在任何语言下都能给出取值 |
+| 新的控件包，不打算逐语言适配 | 通用取值规则（第 4.4 节），在任何语言下都能给出取值 |
 
 主题 XML 的显式值只能写常量，常量不跟着种子走；凡是「从 A 推出 B」的规则，都属于语言。
 
@@ -42,14 +42,14 @@ public abstract class DesignLanguage<TLanguageToken> : DesignLanguage
 
     public abstract void DefineSeeds(in DesignVariant variant, DesignToken seed, TLanguageToken languageSeed);
     public abstract void DeriveLanguage(in DesignVariant variant, DesignToken seed, TLanguageToken language);
-    public abstract void DeriveGlobal(in DerivationContext<TLanguageToken> context, DesignToken token);
+    public abstract void DeriveGlobal(in TokenEvaluationContext<TLanguageToken> context, DesignToken token);
 }
 
-public interface IControlDerivation<TLanguageToken, TToken>
+public interface IControlTokenRule<TLanguageToken, TToken>
     where TLanguageToken : LanguageDesignToken
     where TToken : AbstractControlDesignToken
 {
-    void Derive(in DerivationContext<TLanguageToken> context, ControlView<TToken> view);
+    void Apply(in TokenEvaluationContext<TLanguageToken> context, ControlTokenTarget<TToken> target);
 }
 ```
 
@@ -61,7 +61,7 @@ public interface IControlDerivation<TLanguageToken, TToken>
 3  语言 Token        DeriveLanguage
 4  全局 Token        DeriveGlobal（Map 与 Alias）
 5  最终规范化        核心执行的、与语言无关的规则（例如关闭动效时标准时长归零）
-6  控件视图          每个控件的 IControlDerivation.Derive；按需惰性求值
+6  控件视图          每个控件的 IControlTokenRule.Apply；按需惰性求值
 7  发布快照
 ```
 
@@ -107,7 +107,7 @@ public partial class AcmeToken : LanguageDesignToken
   Token 的覆盖对所有语言的控件一致生效。控件模板不能引用语言 Token——控件包看不见语言包。
 - 语言 Token 是语言的公开 API：新增属性不算破坏性变更，删除或改变语义才算。
 
-Ant Design 的全局词汇本来就是 Ant Design 的形状，所以 `AntDesignToken` 没有属性；类仍然存在，让控件推导绑定到 Ant Design，
+Ant Design 的全局词汇本来就是 Ant Design 的形状，所以 `AntDesignToken` 没有属性；类仍然存在，让控件取值规则绑定到 Ant Design，
 也让品牌语言可以派生自它：
 
 ```csharp
@@ -144,10 +144,10 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
     {
     }
 
-    public override void DeriveGlobal(in DerivationContext<AntDesignToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<AntDesignToken> context, DesignToken token)
     {
-        AntDesignMapDerivation.Derive(context.Variant, token);
-        AntDesignAliasDerivation.Derive(token);
+        MapTokenRules.Apply(context.Variant, token);
+        AliasTokenRules.Apply(token);
     }
 }
 ```
@@ -174,6 +174,8 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
 
 ### 3.3 三个方法各写什么
 
+三套内置语言包的求值组织与命名见[语言包 Token 求值设计](../../architecture/systems/theming/language-token-evaluation.md)。
+
 | 方法 | 输入 | 必须写全 |
 | --- | --- | --- |
 | `DefineSeeds` | 变体 | 该变体下的全局种子默认值与语言种子默认值。全局种子的声明默认值就是 antd 的种子，所以 Ant Design 什么也不写 |
@@ -182,9 +184,10 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
 
 - `DefaultThemeSeeds` 可声明隐式主题的色样与可调种子文本，供目录和菜单在首次应用语言前展示。
   未声明时目录省略这些展示值。实际取值始终由 `DefineSeeds` 按变体给出。
-- 全局推导不拆成 Map 与 Alias 两个方法：显式值已经冻结，在同一个方法里先写 Map、再写 Alias，Alias 读到的就是用户显式给出的
-  Map 值。Seed / Map / Alias 作为词汇的分层保留，用来说明 Token 的角色。
-- 明暗怎么算、每个密度档怎么算，是语言自己的规则。Ant Design 的 `AntDesignMapDerivation` 按 antd 的组合方式先跑默认算法，紧凑密度
+- 全局求值通过一次 `DeriveGlobal` 调用完成。显式 Map / Alias 值在调用前冻结，入口先应用 Map 规则再应用 Alias 规则，
+  Alias 读取已生效的 Map 值。
+  Seed / Map / Alias 作为词汇分层说明 Token 的角色。
+- 明暗怎么算、每个密度档怎么算，是语言自己的规则。Ant Design 的 `MapTokenRules` 按 antd 的组合方式先跑默认算法，紧凑密度
   再叠加紧凑算法，暗色再叠加暗色算法；这些计算器是语言包的内部实现，不对外公开。官方没有定义的档位作为 AtomUI 扩展实现，并在
   README 标明。
 - 语言在三个方法里都可以按 `variant.Idiom` 给不同的值：同一份种子在两种形态下得到两套语言 Token 与全局 Token。
@@ -193,24 +196,29 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
 
 ### 3.4 入口与注册
 
-生成器为语言包产出 `AtomUI.Generated.<程序集标识>.GeneratedDesignLanguageRegistration.Register(IThemeManagerBuilder)`（程序集名去掉
+生成器为语言包产出 `AtomUI.Generated.<程序集标识>.DesignLanguageRegistration.Register(IThemeManagerBuilder)`（程序集名去掉
 非字母数字字符，例如 `AtomUI.Generated.AtomUIDesignLanguagesAntDesign`），把每个 `[DesignLanguage]` 类连同其语言 Token 的 Schema
-登记为一个 `DesignLanguageDescriptor`。注册表由生成器产出，不依赖反射，满足裁剪与 AOT。
+登记为一个 `DesignLanguageDescriptor`。生成入口通过静态调用注册，支持裁剪与 AOT。
+旧版生成类型 `GeneratedDesignLanguageRegistration` 转发到同一入口，兼容既有源码和二进制调用。
 
 语言包提供一个 `Use<Lang>()` 入口，定义在语言包里，签名固定为接收一个配置回调：
 
 ```csharp
+using System.Runtime.CompilerServices;
+using AtomUI.Generated.AtomUIDesignLanguagesAntDesign;
+using AtomUI.Theme.Languages;
+
 public static class AntDesignBuilderExtensions
 {
     public static IAtomUIBuilder UseAntDesign(this IAtomUIBuilder builder,
         Action<DesignLanguageBuilder<AntDesignLanguage>>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        Generated.AtomUIDesignLanguagesAntDesign.GeneratedDesignLanguageRegistration.Register(builder.Theme);
+        DesignLanguageRegistration.Register(builder.Theme);
         // The compiled theme package (Daybreak Blue) registers once per theme manager builder.
         if (s_registeredThemes.TryAdd(builder.Theme, s_marker))
         {
-            Generated.AtomUIDesignLanguagesAntDesign.GeneratedThemePackageRegistration.Register(builder.Theme);
+            ThemePackageRegistration.Register(builder.Theme);
         }
         configure?.Invoke(new DesignLanguageBuilder<AntDesignLanguage>(builder));
         return builder;
@@ -252,17 +260,17 @@ public static class AntDesignBuilderExtensions
 
 ## 4. 取值包
 
-### 4.1 控件推导
+### 4.1 控件取值规则
 
 ```csharp
-// AtomUI.Desktop.Controls.Themes.AntDesign/Tooltip/AntDesignToolTipDerivation.cs
-[ControlDerivation]
-internal sealed class AntDesignToolTipDerivation : IControlDerivation<AntDesignToken, ToolTipToken>
+// AtomUI.Desktop.Controls.Themes.AntDesign/Tooltip/ToolTipTokenRule.cs
+[ControlTokenRule]
+internal sealed class ToolTipTokenRule : IControlTokenRule<AntDesignToken, ToolTipToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<ToolTipToken> view)
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<ToolTipToken> target)
     {
-        var token  = view.Token;
-        var global = view.Global;
+        var token  = target.Own;
+        var global = target.Global;
 
         token.ToolTipMaxWidth     = 250;
         token.ToolTipColor        = global.ColorTextLightSolid;
@@ -282,13 +290,13 @@ internal sealed class AntDesignToolTipDerivation : IControlDerivation<AntDesignT
 
 - **身份是类型。** 推导类通过泛型参数绑定到语言 Token 类型与控件 Token 类型，写错在编译期报错。风格、明暗、密度、形态都是
   `context.Variant` 里的参数：一个控件 Token 类、一种语言，只有一个推导类。
-- 推导类必须是非抽象、非泛型、带公开无参构造的类，标 `[ControlDerivation]`，恰好实现一次
-  `IControlDerivation<TLanguageToken, TToken>`，`TToken` 必须是绑定到某个控件的终端控件 Token 类。
-- **输出是该控件的视图。** `view.Token` 是控件 Token，**必须写全**，包括行为开关与从抽象层继承的属性。`view.Global` 是该控件看到的
-  全局 Token：读时得到该控件的值，写时只对这个控件生效；只写与全局不同的项，而且**只能写 Map 与 Alias**——种子不能在控件推导里
+- 规则类必须是非抽象、非泛型、带公开无参构造的类，标 `[ControlTokenRule]`，恰好实现一次
+  `IControlTokenRule<TLanguageToken, TToken>`，`TToken` 必须是绑定到某个控件的终端控件 Token 类。
+- **写入目标。** `target.Own` 是控件 Token，**必须写全**，包括行为开关与从抽象层继承的属性。`target.Global` 是该控件看到的
+  全局 Token：读时得到该控件的值，写时只对这个控件生效；只写与全局不同的项，而且**只能写 Map 与 Alias**——种子不能在控件取值规则里
   覆盖（写种子会抛出），改种子要重新派生，违反单遍。控件要读一个语言可以按控件改变的值时，模板读的是表达这个角色的 Map / Alias
   Token（例如 Shadcn 在输入框视图里把 `InputActiveBorderColor` 设为 `--ring`、把 `BorderRadiusMD` 设为输入框圆角）或控件 Token。
-- **读取顺序：** `view.Global.X` 若本方法已经写过就返回写入的值，否则返回共享的全局值；`view.Token.X` 只能读本方法已经写过的。
+- **读取顺序：** `target.Global.X` 若本方法已经写过就返回写入的值，否则返回共享的全局值；`target.Own.X` 只能读本方法已经写过的。
   另可读 `context.Language`（语言 Token）与 `context.Variant`。
 - **显式值优先：** 主题与作用域对该控件写过的值在推导之前冻结，推导对它们的写入被忽略。
 - 推导只使用 Token 类及其属性的类型，不得调用控件的行为代码，也不得在取值包里放控件或 ControlTheme。
@@ -297,17 +305,17 @@ internal sealed class AntDesignToolTipDerivation : IControlDerivation<AntDesignT
 
 ### 4.2 共享逻辑
 
-同一语言内多个控件共用的推导放在取值包内的普通静态辅助类里，例如 Ant Design 的按钮族：
+同一语言内多个控件共用的取值通过 `TokenCalculator` 计算。Ant Design 的普通按钮规则在 `Apply` 中调用共享计算。
 
 ```csharp
-[ControlDerivation]
-internal sealed class AntDesignButtonDerivation : IControlDerivation<AntDesignToken, ButtonToken>
+[ControlTokenRule]
+internal sealed class ButtonTokenRule : IControlTokenRule<AntDesignToken, ButtonToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<ButtonToken> view)
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<ButtonToken> target)
     {
-        var token  = view.Token;
-        var global = view.Global;
-        AntDesignAbstractStandardButtonDerivation.DeriveShared(in context, global, token);
+        var token  = target.Own;
+        var global = target.Global;
+        StandardButtonTokenCalculator.Calculate(in context, global, token);
         token.GroupBorderColor = global.ColorPrimaryHover;
         token.ContentFontSize  = global.FontSize;
         // ...
@@ -315,8 +323,7 @@ internal sealed class AntDesignButtonDerivation : IControlDerivation<AntDesignTo
 }
 ```
 
-跨端共用的抽象 Token 层（位于 `AtomUI.Controls`）的取值，由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导方法，各端的取值包
-在自己的推导里调用。
+跨端共用的抽象 Token 层位于 `AtomUI.Controls`。`AtomUI.Controls.Themes.<Lang>` 提供公开的 `TokenCalculator.Calculate` 方法，供各端取值包调用。
 
 ### 4.3 查找规则
 
@@ -325,23 +332,25 @@ internal sealed class AntDesignButtonDerivation : IControlDerivation<AntDesignTo
 ```text
 BrandToken : AntDesignToken : LanguageDesignToken
 
-IControlDerivation<BrandToken, TagToken>             派生语言自己的推导
-IControlDerivation<AntDesignToken, TagToken>         基语言的推导
-IControlDerivation<LanguageDesignToken, TagToken>    不绑定语言的通用推导
+IControlTokenRule<BrandToken, TagToken>             派生语言自己的推导
+IControlTokenRule<AntDesignToken, TagToken>         基语言的推导
+IControlTokenRule<LanguageDesignToken, TagToken>    不绑定语言的通用取值规则
 ```
 
-### 4.4 通用推导
+### 4.4 通用取值规则
 
-绑定到根类型 `LanguageDesignToken` 的推导是通用推导：它只能读全局 Token，在任何语言下都能给出取值，外观协调但不对标。它供不打算
+绑定到根类型 `LanguageDesignToken` 的推导是通用取值规则：它只能读全局 Token，在任何语言下都能给出取值，外观协调但不对标。它供不打算
 逐语言适配的第三方控件使用；第一方控件包不得用它代替语言专属推导。
 
 ### 4.5 入口：只登记取值
 
-生成器为取值包产出 `AtomUI.Generated.<程序集标识>.GeneratedControlDerivationRegistration.Register(IThemeManagerBuilder)`，把每个
-`[ControlDerivation]` 类登记为一个 `ControlDerivationDescriptor`（静态、无捕获的委托，不使用反射）。取值包提供
+生成器为取值包产出 `AtomUI.Generated.<程序集标识>.GeneratedControlTokenRuleRegistration.Register(IThemeManagerBuilder)`，把每个
+`[ControlTokenRule]` 类登记为一个 `ControlTokenRuleDescriptor`（静态、无捕获的委托，不使用反射）。取值包提供
 `Add<控件包>()`，它是语言构建器上的扩展方法，**只登记取值**，并带上所依赖控件包的取值：
 
 ```csharp
+using AtomUI.Generated.AtomUIDesktopControlsThemesAntDesign;
+
 public static class AntDesignDesktopControlsExtensions
 {
     public static DesignLanguageBuilder<AntDesignLanguage> AddDesktopControls(
@@ -349,7 +358,7 @@ public static class AntDesignDesktopControlsExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddCommonControls();   // AtomUI.Controls.Themes.AntDesign
-        Generated.AtomUIDesktopControlsThemesAntDesign.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }
@@ -357,6 +366,7 @@ public static class AntDesignDesktopControlsExtensions
 
 `AddDesktopDataGrid()` 同样先调用 `AddDesktopControls()` 再登记 DataGrid 的推导。控件包本身由应用启用（`UseDesktopControls()`、
 `UseDesktopDataGrid()`），`Add…()` 不调用 `Use…()`：安装包不等于启用，应用必须显式调用入口。
+
 
 ### 4.6 应用如何启用
 
@@ -379,10 +389,10 @@ public static class AntDesignDesktopControlsExtensions
 
 配置提交时（启动，或运行时追加包的提交处）执行以下校验，任一不满足即失败并指出缺少什么：
 
-1. **覆盖：** 每个已启用的语言 × 每个已启用控件包里的每个控件 Token 类，都能按 4.3 的规则找到推导。缺失时报
-   `Controls without a derivation in an enabled design language: 'AtomUI:Tag' under 'Acme' (install and enable 'AtomUI.Desktop.Controls.Themes.Acme'), …`。
-2. **唯一：** 同一语言 Token 类型与同一控件只能有一个推导（`Duplicate control derivation for '…' and control '…'.`）；同一程序集里
-   两个推导类绑定同一对类型时，生成器在构建期就报错。
+1. **覆盖**。每个已启用的语言 × 每个已启用控件包里的每个控件 Token 类，都能按 4.3 节找到取值规则。缺失时报
+   `Controls without a token rule in an enabled design language: 'AtomUI:Tag' under 'Acme' (install and enable 'AtomUI.Desktop.Controls.Themes.Acme'), …`。
+2. **唯一**。同一语言 Token 类型与同一控件只接受一条规则，重复时报 `Duplicate control token rule for '…' and control '…'.`。
+   同一程序集里两个规则类绑定同一对类型时，生成器在构建期就报错。
 3. **Token Schema 摘要：** 取值包在构建期记录它所覆盖的控件包 Token Schema 摘要；启动时与实际加载的控件包不一致（例如应用升级了
    控件包，而第三方取值包还是旧的）即失败，消息指出取值包与控件包，不会带着缺值运行。
 4. **初始主题：** 初始选择的语言已启用，其风格、明暗、密度在该语言声明的范围内。
@@ -398,9 +408,9 @@ public static class AntDesignDesktopControlsExtensions
 | 语言 Token 类未在同一程序集用 `[LanguageDesignToken]` 声明 | `The language token type '…' of '…' must be declared with [LanguageDesignToken] in the same assembly.` |
 | 语言 Token 类不是顶层、非泛型、派生自 `LanguageDesignToken` | `must be a top-level, non-generic class derived from LanguageDesignToken.` |
 | `Id` 不返回常量字符串 | `must return a constant string from its Id property.` |
-| 推导类形状不对，或实现了零个 / 多个 `IControlDerivation<,>` | `must be a non-abstract, non-generic class with a public parameterless constructor…`、`must implement IControlDerivation<TLanguageToken, TToken> exactly once.` |
+| 推导类形状不对，或实现了零个 / 多个 `IControlTokenRule<,>` | `must be a non-abstract, non-generic class with a public parameterless constructor…`、`must implement IControlTokenRule<TLanguageToken, TToken> exactly once.` |
 | `TToken` 不是绑定到控件的控件 Token | `derives '…', which is not a control token bound to a control.` |
-| 两个推导类绑定同一对类型 | `'…' and '…' both derive '…' for '…'.` |
+| 两个规则类绑定同一对类型 | `'…' and '…' both register a token rule for '…' under '…'.` |
 
 控件包新增或修改了控件 Token 后，它的每个取值包都要补上取值：契约测试的完整性检查（第 8 节）会指出漏写的 Token，启动时的摘要
 校验会拒绝没有重新构建的旧取值包。
@@ -414,7 +424,7 @@ public static class AntDesignDesktopControlsExtensions
 
 ## 7. 派生语言
 
-一个语言可以派生自另一个语言，继承它的种子默认值、语言 Token、全局推导与全部控件推导，只重写不同的部分，用于在某种语言之上做
+一个语言可以派生自另一个语言，继承它的种子默认值、语言 Token、全局推导与全部控件取值规则，只重写不同的部分，用于在某种语言之上做
 品牌化：
 
 ```csharp
@@ -427,7 +437,7 @@ public partial class BrandToken : AntDesignToken
 ```
 
 语言类本身是 `DesignLanguage<BrandToken>`，种子、语言 Token 与全局推导委托给基语言的一个实例，再改写不同的部分。
-`DerivationContext` 的构造函数是公开的，把同一个语言 Token 对象当作基语言的 Token 传入即可：
+`TokenEvaluationContext` 的构造函数是公开的，把同一个语言 Token 对象当作基语言的 Token 传入即可：
 
 ```csharp
 [DesignLanguage]
@@ -454,13 +464,13 @@ public sealed class BrandLanguage : DesignLanguage<BrandToken>
         language.Accent = seed.ColorPrimary;
     }
 
-    public override void DeriveGlobal(in DerivationContext<BrandToken> context, DesignToken token) =>
-        s_base.DeriveGlobal(new DerivationContext<AntDesignToken>(context.Variant, context.Language), token);
+    public override void DeriveGlobal(in TokenEvaluationContext<BrandToken> context, DesignToken token) =>
+        s_base.DeriveGlobal(new TokenEvaluationContext<AntDesignToken>(context.Variant, context.Language), token);
 }
 ```
 
 - 派生语言的语言 Token 类必须派生自基语言的语言 Token 类；只有单继承。
-- 控件推导按 4.3 的规则查找：只为不同的控件写 `IControlDerivation<BrandToken, …>`，其余自动落到 `IControlDerivation<AntDesignToken, …>`。
+- 控件取值规则按 4.3 的规则查找：只为不同的控件写 `IControlTokenRule<BrandToken, …>`，其余自动落到 `IControlTokenRule<AntDesignToken, …>`。
   基语言的取值包仍要登记，但不必启用基语言本身：派生语言的入口用基语言的 `DesignLanguageBuilder` 调用其 `Add*()`，例如
   `configure(new DesignLanguageBuilder<AntDesignLanguage>(language.Root))`。派生语言的取值包只写它改动的控件，构建期覆盖检查
   （`ATOMUIGEN052`）对派生语言不要求写全，缺的推导由启动时的覆盖校验沿继承链查找。
@@ -481,8 +491,8 @@ public sealed class BrandLanguage : DesignLanguage<BrandToken>
 | `Identity` | 语言恰好注册一次，`Id` 合法，每个轴至少声明一个取值，默认风格在声明的风格里 |
 | `LanguageComplete` | `DeriveLanguage` 写了每一个非种子的语言 Token |
 | `GlobalComplete` | `DeriveGlobal` 写了每一个 Map 与 Alias Token |
-| `ControlComplete` | 每个控件推导写了其控件的每一个控件 Token |
-| `Pure` | `DeriveGlobal` 与控件推导不修改语言 Token；在中间编译其他变体不改变某个变体的结果 |
+| `ControlComplete` | 每个控件取值规则写了其控件的每一个控件 Token |
+| `Pure` | `DeriveGlobal` 与控件取值规则不修改语言 Token；在中间编译其他变体不改变某个变体的结果 |
 | `Deterministic` | 同一变体编译两次，全局、语言、控件 Token 的值相同 |
 | `Readable` | 正文（`ColorText` 在 `ColorBgContainer` 上）与主色上的文字（`ColorTextLightSolid` 在 `ColorPrimary` 上）达到对比度门槛 |
 

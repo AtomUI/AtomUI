@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsColorPickerThemesShadcn;
 using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme.Languages;
 
@@ -13,7 +14,7 @@ public static class ShadcnColorPickerExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddDesktopControls();
-        Generated.AtomUIDesktopControlsColorPickerThemesShadcn.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

@@ -10,18 +10,18 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// Registration of design languages and control derivations (spec 6.1, 8): the lookup walks the language token's base
+/// Registration of design languages and control token rules (spec 6.1, 8): the lookup walks the language token's base
 /// types, the nearest registration wins, and duplicates are rejected.
 /// </summary>
 public class DesignLanguageRegistryTests
 {
     [Fact]
-    public void A_Derived_Language_Finds_The_Derivation_Of_Its_Base_Language_Token()
+    public void A_Derived_Language_Finds_The_Token_Rule_Of_Its_Base_Language_Token()
     {
         var grandchild = Language<GrandchildProbeToken>("Grandchild");
-        var registry = Registry([grandchild], [Derivation<ProbeLanguageToken, BaseDerivation>()]);
+        var registry = Registry([grandchild], [CreateRule<ProbeLanguageToken, BaseTokenRule>()]);
 
-        Find(registry, grandchild).ShouldBeSameAs(registry.ControlDerivations.Single());
+        Find(registry, grandchild).ShouldBeSameAs(registry.ControlTokenRules.Single());
     }
 
     [Fact]
@@ -30,33 +30,33 @@ public class DesignLanguageRegistryTests
         var child = Language<ChildProbeToken>("Child");
         var grandchild = Language<GrandchildProbeToken>("Grandchild");
         var probe = TestDesignLanguages.Probe();
-        var baseDerivation = Derivation<ProbeLanguageToken, BaseDerivation>();
-        var childDerivation = Derivation<ChildProbeToken, ChildDerivation>();
-        var registry = Registry([probe, child, grandchild], [baseDerivation, childDerivation]);
+        var baseRule = CreateRule<ProbeLanguageToken, BaseTokenRule>();
+        var childRule = CreateRule<ChildProbeToken, ChildTokenRule>();
+        var registry = Registry([probe, child, grandchild], [baseRule, childRule]);
 
-        Find(registry, probe).ShouldBeSameAs(baseDerivation);
-        Find(registry, child).ShouldBeSameAs(childDerivation);
-        Find(registry, grandchild).ShouldBeSameAs(childDerivation);
+        Find(registry, probe).ShouldBeSameAs(baseRule);
+        Find(registry, child).ShouldBeSameAs(childRule);
+        Find(registry, grandchild).ShouldBeSameAs(childRule);
     }
 
     [Fact]
     public void An_Exact_Registration_Wins_Over_Every_Base_Registration()
     {
         var grandchild = Language<GrandchildProbeToken>("Grandchild");
-        var exact = Derivation<GrandchildProbeToken, GrandchildDerivation>();
+        var exact = CreateRule<GrandchildProbeToken, GrandchildTokenRule>();
         var registry = Registry([grandchild],
-            [Derivation<ProbeLanguageToken, BaseDerivation>(), Derivation<ChildProbeToken, ChildDerivation>(), exact]);
+            [CreateRule<ProbeLanguageToken, BaseTokenRule>(), CreateRule<ChildProbeToken, ChildTokenRule>(), exact]);
 
         Find(registry, grandchild).ShouldBeSameAs(exact);
     }
 
     [Fact]
-    public void Two_Derivations_For_The_Same_Language_Token_And_Control_Are_Rejected()
+    public void Two_Token_Rules_For_The_Same_Language_Token_And_Control_Are_Rejected()
     {
         var exception = Should.Throw<ThemeSchemaException>(() => Registry([TestDesignLanguages.Probe()],
-            [Derivation<ProbeLanguageToken, BaseDerivation>(), Derivation<ProbeLanguageToken, OtherBaseDerivation>()]));
+            [CreateRule<ProbeLanguageToken, BaseTokenRule>(), CreateRule<ProbeLanguageToken, OtherBaseTokenRule>()]));
 
-        exception.Message.ShouldContain("Duplicate control derivation");
+        exception.Message.ShouldContain("Duplicate control token rule");
         exception.Message.ShouldContain(ViewProbeToken.ControlIdentity.ToString());
     }
 
@@ -64,18 +64,18 @@ public class DesignLanguageRegistryTests
     public void Two_Languages_With_The_Same_Id_Are_Rejected()
     {
         var exception = Should.Throw<ThemeSchemaException>(() => Registry(
-            [TestDesignLanguages.Probe(), TestDesignLanguages.Probe()], [Derivation<ProbeLanguageToken, BaseDerivation>()]));
+            [TestDesignLanguages.Probe(), TestDesignLanguages.Probe()], [CreateRule<ProbeLanguageToken, BaseTokenRule>()]));
 
         exception.Message.ShouldContain("'Probe'");
     }
 
     [Fact]
-    public void A_Derivation_For_A_Control_That_Is_Not_Enabled_Stays_Dormant()
+    public void A_Token_Rule_For_A_Control_That_Is_Not_Enabled_Stays_Dormant()
     {
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), [], [TestDesignLanguages.Probe()],
-            null, [Derivation<ProbeLanguageToken, BaseDerivation>()]);
+            null, [CreateRule<ProbeLanguageToken, BaseTokenRule>()]);
 
-        registry.ControlDerivations.Count.ShouldBe(1);
+        registry.ControlTokenRules.Count.ShouldBe(1);
         registry.Controls.Count.ShouldBe(0);
     }
 
@@ -84,124 +84,124 @@ public class DesignLanguageRegistryTests
     {
         var builder = new ThemeManagerBuilder();
         var language = TestDesignLanguages.Probe();
-        var derivation = Derivation<ProbeLanguageToken, BaseDerivation>();
+        var rule = CreateRule<ProbeLanguageToken, BaseTokenRule>();
 
         builder.AddDesignLanguage(language).AddDesignLanguage(language);
-        builder.AddControlDerivations([derivation]).AddControlDerivations([derivation]);
+        builder.AddControlTokenRules([rule]).AddControlTokenRules([rule]);
 
         builder.Languages.ShouldBe([language]);
-        builder.Derivations.ShouldBe([derivation]);
+        builder.TokenRules.ShouldBe([rule]);
     }
 
     [Fact]
     public void The_Language_Revision_Is_The_Module_Version_Of_Its_Assembly()
     {
         var language = TestDesignLanguages.Probe();
-        var derivation = Derivation<ProbeLanguageToken, BaseDerivation>();
+        var rule = CreateRule<ProbeLanguageToken, BaseTokenRule>();
 
         language.Revision.ShouldBe(typeof(ProbeLanguage).Assembly.ManifestModule.ModuleVersionId);
-        derivation.Revision.ShouldBe(typeof(BaseDerivation).Assembly.ManifestModule.ModuleVersionId);
+        rule.Revision.ShouldBe(typeof(BaseTokenRule).Assembly.ManifestModule.ModuleVersionId);
     }
 
     [Fact]
-    public void An_Append_Keeps_The_Committed_Derivations()
+    public void An_Append_Keeps_The_Committed_Token_Rules()
     {
         var probe = TestDesignLanguages.Probe();
-        var derivation = Derivation<ProbeLanguageToken, BaseDerivation>();
-        var committed = Registry([probe], [derivation]);
+        var rule = CreateRule<ProbeLanguageToken, BaseTokenRule>();
+        var committed = Registry([probe], [rule]);
 
-        Registry([probe], [derivation]).ValidateAppendedDerivations(committed);
+        Registry([probe], [rule]).ValidateAppendedTokenRules(committed);
     }
 
     [Fact]
-    public void An_Append_Cannot_Change_The_Derivation_Of_A_Committed_Control_Under_A_Committed_Language()
+    public void An_Append_Cannot_Change_The_Token_Rule_Of_A_Committed_Control_Under_A_Committed_Language()
     {
-        // The committed probe language finds the child derivation's base; a new derivation that a committed language
+        // The committed probe language finds the child rule's base; a new rule that a committed language
         // would find for a committed control would change committed values.
         var child = Language<ChildProbeToken>("Child");
-        var committed = Registry([child], [Derivation<ProbeLanguageToken, BaseDerivation>()]);
+        var committed = Registry([child], [CreateRule<ProbeLanguageToken, BaseTokenRule>()]);
         var appended = Registry([child],
-            [Derivation<ProbeLanguageToken, BaseDerivation>(), Derivation<ChildProbeToken, ChildDerivation>()]);
+            [CreateRule<ProbeLanguageToken, BaseTokenRule>(), CreateRule<ChildProbeToken, ChildTokenRule>()]);
 
-        var exception = Should.Throw<ThemeLoadException>(() => appended.ValidateAppendedDerivations(committed));
+        var exception = Should.Throw<ThemeLoadException>(() => appended.ValidateAppendedTokenRules(committed));
         exception.Message.ShouldContain(ViewProbeToken.ControlIdentity.ToString());
     }
 
     [Fact]
-    public void An_Append_May_Bring_A_Derivation_For_A_New_Language()
+    public void An_Append_May_Bring_A_Token_Rule_For_A_New_Language()
     {
         var probe = TestDesignLanguages.Probe();
-        var committed = Registry([probe], [Derivation<ProbeLanguageToken, BaseDerivation>()]);
+        var committed = Registry([probe], [CreateRule<ProbeLanguageToken, BaseTokenRule>()]);
         var grandchild = Language<GrandchildProbeToken>("Grandchild");
         var appended = Registry([probe, grandchild],
-            [committed.ControlDerivations.Single(), Derivation<GrandchildProbeToken, GrandchildDerivation>()]);
+            [committed.ControlTokenRules.Single(), CreateRule<GrandchildProbeToken, GrandchildTokenRule>()]);
 
-        appended.ValidateAppendedDerivations(committed);
+        appended.ValidateAppendedTokenRules(committed);
     }
 
     [Fact]
-    public void An_Append_May_Bring_A_Derivation_For_A_New_Control()
+    public void An_Append_May_Bring_A_Token_Rule_For_A_New_Control()
     {
         var probe = TestDesignLanguages.Probe();
         var committed = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), [], [probe], null, []);
-        var appended = Registry([probe], [Derivation<ProbeLanguageToken, BaseDerivation>()]);
+        var appended = Registry([probe], [CreateRule<ProbeLanguageToken, BaseTokenRule>()]);
 
-        appended.ValidateAppendedDerivations(committed);
+        appended.ValidateAppendedTokenRules(committed);
     }
 
     // ---------------------------------------------------------------- Helpers
 
     private static ThemeSchemaRegistry Registry(
         IReadOnlyList<DesignLanguageDescriptor> languages,
-        IReadOnlyList<ControlDerivationDescriptor> derivations) =>
-        new(GeneratedThemeSchema.GetGlobalTokens(), [ViewProbeToken.CreateDescriptor()], languages, null, derivations);
+        IReadOnlyList<ControlTokenRuleDescriptor> rules) =>
+        new(GeneratedThemeSchema.GetGlobalTokens(), [ViewProbeToken.CreateDescriptor()], languages, null, rules);
 
-    private static ControlDerivationDescriptor? Find(ThemeSchemaRegistry registry, DesignLanguageDescriptor language)
+    private static ControlTokenRuleDescriptor? Find(ThemeSchemaRegistry registry, DesignLanguageDescriptor language)
     {
         registry.TryGetControl(ViewProbeToken.ControlIdentity, out var control).ShouldBeTrue();
-        return registry.FindDerivation(language, control!.Slot);
+        return registry.FindControlTokenRule(language, control!.Slot);
     }
 
-    private static ControlDerivationDescriptor Derivation<TLanguageToken, TDerivation>()
+    private static ControlTokenRuleDescriptor CreateRule<TLanguageToken, TRule>()
         where TLanguageToken : LanguageDesignToken
-        where TDerivation : class, IControlDerivation<TLanguageToken, ViewProbeToken>, new() =>
-        ControlDerivationDescriptor.Create<TLanguageToken, ViewProbeToken, TDerivation>();
+        where TRule : class, IControlTokenRule<TLanguageToken, ViewProbeToken>, new() =>
+        ControlTokenRuleDescriptor.Create<TLanguageToken, ViewProbeToken, TRule>();
 
     private static DesignLanguageDescriptor Language<TToken>(string id) where TToken : LanguageDesignToken, new() =>
         new(new ChainLanguage<TToken>(id), Array.Empty<TokenDescriptor>());
 
-    private sealed class BaseDerivation : IControlDerivation<ProbeLanguageToken, ViewProbeToken>
+    private sealed class BaseTokenRule : IControlTokenRule<ProbeLanguageToken, ViewProbeToken>
     {
-        public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<ViewProbeToken> view) =>
-            view.Token.Accent = Colors.Red;
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<ViewProbeToken> target) =>
+            target.Own.Accent = Colors.Red;
     }
 
-    private sealed class OtherBaseDerivation : IControlDerivation<ProbeLanguageToken, ViewProbeToken>
+    private sealed class OtherBaseTokenRule : IControlTokenRule<ProbeLanguageToken, ViewProbeToken>
     {
-        public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<ViewProbeToken> view) =>
-            view.Token.Accent = Colors.Yellow;
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<ViewProbeToken> target) =>
+            target.Own.Accent = Colors.Yellow;
     }
 
-    private sealed class ChildDerivation : IControlDerivation<ChildProbeToken, ViewProbeToken>
+    private sealed class ChildTokenRule : IControlTokenRule<ChildProbeToken, ViewProbeToken>
     {
-        public void Derive(in DerivationContext<ChildProbeToken> context, ControlView<ViewProbeToken> view) =>
-            view.Token.Accent = Colors.Green;
+        public void Apply(in TokenEvaluationContext<ChildProbeToken> context, ControlTokenTarget<ViewProbeToken> target) =>
+            target.Own.Accent = Colors.Green;
     }
 
-    private sealed class GrandchildDerivation : IControlDerivation<GrandchildProbeToken, ViewProbeToken>
+    private sealed class GrandchildTokenRule : IControlTokenRule<GrandchildProbeToken, ViewProbeToken>
     {
-        public void Derive(in DerivationContext<GrandchildProbeToken> context, ControlView<ViewProbeToken> view) =>
-            view.Token.Accent = Colors.Blue;
+        public void Apply(in TokenEvaluationContext<GrandchildProbeToken> context, ControlTokenTarget<ViewProbeToken> target) =>
+            target.Own.Accent = Colors.Blue;
     }
 }
 
 /// <summary>A language token derived from <see cref="ProbeLanguageToken"/>: a language built on the probe language.</summary>
 public class ChildProbeToken : ProbeLanguageToken;
 
-/// <summary>A second level of derivation.</summary>
+/// <summary>A second level of rule.</summary>
 public sealed class GrandchildProbeToken : ChildProbeToken;
 
-/// <summary>A language with no derivation of its own, used to test the lookup along its token's base types.</summary>
+/// <summary>A language with no rule of its own, used to test the lookup along its token's base types.</summary>
 public sealed class ChainLanguage<TToken>(string id) : DesignLanguage<TToken> where TToken : LanguageDesignToken, new()
 {
     private static readonly DesignStyle s_style = new("Default");
@@ -219,7 +219,7 @@ public sealed class ChainLanguage<TToken>(string id) : DesignLanguage<TToken> wh
     {
     }
 
-    public override void DeriveGlobal(in DerivationContext<TToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<TToken> context, DesignToken token)
     {
     }
 }

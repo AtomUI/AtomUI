@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesktopControlsThemesShadcn;
 using AtomUI.Controls.Themes.Shadcn;
 using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme.Languages;
@@ -14,7 +15,7 @@ public static class ShadcnDesktopControlsExtensions
     {
         ArgumentNullException.ThrowIfNull(language);
         language.AddCommonControls();
-        Generated.AtomUIDesktopControlsThemesShadcn.GeneratedControlDerivationRegistration.Register(language.Theme);
+        GeneratedControlTokenRuleRegistration.Register(language.Theme);
         return language;
     }
 }

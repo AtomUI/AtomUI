@@ -42,6 +42,8 @@ AtomUI 的重要变更记录在此文件中。
 
 
 - Breaking Changes
+  - 控件取值包采用 `[ControlTokenRule]` 与 `IControlTokenRule.Apply`，求值参数为 `TokenEvaluationContext` 和 `ControlTokenTarget`。更新自定义取值规则、共享取值类调用、`DeriveGlobal` 签名和显式注册调用，再重新编译受影响的包和应用。[API 迁移](docs/architecture/systems/theming/control-token-rules.md#兼容性与验证)
+  - Ant Design、PrimeNG 和 Shadcn 取值包的公开 Token 计算器在各自命名空间下使用短名。例如将 `AntDesignSkeletonTokenCalculator` 的引用改为 `SkeletonTokenCalculator`，随后重新编译消费程序集。TreeView 中原带语言前缀的展示层计算器改名为 `TreePresentationLayerTokenCalculator`。[命名迁移](docs/engineering/development/value-package-naming.md#统一命名与重名处理)
   - 主题算法：`ThemeAlgorithm` 由枚举改为 `(Catalog, Id)` 结构体。`ThemeAlgorithm.Default` / `Dark` / `Compact` 照常可用；`switch` 分支、整数转换、`const` 与 `Enum.*` 改用 `==` 和静态成员，针对枚举构建的程序集（含编译主题程序）需重新构建。`default(ThemeAlgorithm)` 被拒绝，`ToString()` 返回 `AtomUI:Dark`。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#themealgorithm-改为身份结构体)
   - 主题算法：`ThemeAlgorithmAttribute` 参数改为 `(catalog, id, revision, appearanceEffect)`；`ThemeAlgorithmDescriptor` 的参数与属性改为结构体；`DefaultThemeVariantCalculator`、`DarkThemeVariantCalculator`、`CompactThemeVariantCalculator` 的 `Algorithm` 常量删除（改用 `ThemeAlgorithm.Default` 等）；AXAML 的 `DefaultAlgorithm` / `DarkAlgorithm` / `CompactAlgorithm` 改为 `Default` / `Dark` / `Compact`。[迁移指南](docs/releases/unreleased-theme-algorithms-api-changes.zh-CN.md#声明算法)
   - 主题算法：不合规的 `[ThemeAlgorithm]` 声明（不是实现 `IThemeAlgorithm` 的非抽象非泛型类、没有公开无参构造函数，或 catalog、id、revision、appearanceEffect 无效）现在在特性上报构建错误 `ATOMUITOKEN002`，不再被静默跳过。

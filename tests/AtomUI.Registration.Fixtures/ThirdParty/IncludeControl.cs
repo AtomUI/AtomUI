@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIRegistrationFixturesThirdParty;
 using AtomUI;
 using Avalonia.Controls;
 
@@ -8,7 +9,7 @@ public static class Registration
 {
     public static IAtomUIBuilder UseFixtureControls(this IAtomUIBuilder builder)
     {
-        AtomUI.Generated.AtomUIRegistrationFixturesThirdParty.GeneratedControlDerivationRegistration.Register(builder.Theme);
+        GeneratedControlTokenRuleRegistration.Register(builder.Theme);
         return AtomUI.Generated.AtomUIRegistrationFixturesThirdParty.PackageMetadata.Definition.Register(builder);
     }
 }

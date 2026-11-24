@@ -1,3 +1,4 @@
+using AtomUI.Generated.AtomUIDesignLanguagesAntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Languages;
@@ -12,7 +13,7 @@ internal static class TestDesignLanguages
     /// <summary>The Ant Design language as its package registers it (one shared descriptor, as in an application).</summary>
     internal static DesignLanguageDescriptor AntDesign { get; } = CaptureAntDesign();
 
-    /// <summary>A minimal language whose derivations count their calls; see <see cref="ProbeLanguage"/>.</summary>
+    /// <summary>A minimal language whose rules count their calls; see <see cref="ProbeLanguage"/>.</summary>
     internal static DesignLanguageDescriptor Probe(ProbeLanguage? language = null) =>
         new(language ?? new ProbeLanguage(), Array.Empty<TokenDescriptor>());
 
@@ -23,9 +24,9 @@ internal static class TestDesignLanguages
     internal static ThemeManagerBuilder AddAntDesign(this ThemeManagerBuilder builder)
     {
         builder.AddDesignLanguage(AntDesign);
-        AtomUI.Generated.AtomUIDesignLanguagesAntDesign.GeneratedThemePackageRegistration.Register(builder);
+        ThemePackageRegistration.Register(builder);
         // The Ant Design values of this project's hand-written test controls (dormant when a test does not use them).
-        builder.AddControlDerivations(TestControlDerivations.All);
+        builder.AddControlTokenRules(TestControlTokenRules.All);
         return builder;
     }
 
@@ -50,7 +51,7 @@ internal static class TestDesignLanguages
 public partial class ProbeLanguageToken : LanguageDesignToken;
 
 /// <summary>
-/// A minimal design language for compiler tests: the seeds stay at their defaults, the global derivation writes
+/// A minimal design language for compiler tests: the seeds stay at their defaults, the global rule writes
 /// <c>ColorPrimaryHover</c> from <c>ColorPrimary</c> and <c>ControlHeight</c> by density, and every call is counted.
 /// </summary>
 public sealed class ProbeLanguage : DesignLanguage<ProbeLanguageToken>
@@ -78,12 +79,12 @@ public sealed class ProbeLanguage : DesignLanguage<ProbeLanguageToken>
     public override void DeriveLanguage(in DesignVariant variant, DesignToken seed, ProbeLanguageToken language) =>
         DeriveLanguageCalls++;
 
-    public override void DeriveGlobal(in DerivationContext<ProbeLanguageToken> context, DesignToken token)
+    public override void DeriveGlobal(in TokenEvaluationContext<ProbeLanguageToken> context, DesignToken token)
     {
         DeriveGlobalCalls++;
         if (FailGlobal)
         {
-            throw new InvalidOperationException("Probe global derivation failed.");
+            throw new InvalidOperationException("Probe global rule failed.");
         }
 
         token.ColorPrimaryHover = Color.FromArgb(0x80, token.ColorPrimary.R, token.ColorPrimary.G, token.ColorPrimary.B);

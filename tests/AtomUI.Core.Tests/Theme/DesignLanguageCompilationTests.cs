@@ -15,25 +15,25 @@ namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
 /// The single-pass pipeline of the compiler (spec 5): seeds, language tokens, global tokens, then each control's view,
-/// with explicit values frozen against the derivations, every derivation run once, and failures reported where they
+/// with explicit values frozen against the rules, every rule run once, and failures reported where they
 /// belong (spec 5.5).
 /// </summary>
 public class DesignLanguageCompilationTests
 {
     [Fact]
-    public void Each_Language_Step_Runs_Once_And_A_Control_View_Is_Derived_Once()
+    public void Each_Language_Step_Runs_Once_And_A_Control_Token_Rule_Runs_Once()
     {
         var language = new ProbeLanguage();
-        ViewProbeDerivation.Calls = 0;
+        ViewProbeTokenRule.Calls = 0;
         var snapshot = Compile(language);
 
         language.DefineSeedsCalls.ShouldBe(1);
         language.DeriveLanguageCalls.ShouldBe(1);
         language.DeriveGlobalCalls.ShouldBe(1);
-        ViewProbeDerivation.Calls.ShouldBe(0);
+        ViewProbeTokenRule.Calls.ShouldBe(0);
         _ = snapshot.ViewProbe();
         _ = snapshot.ViewProbe();
-        ViewProbeDerivation.Calls.ShouldBe(1);
+        ViewProbeTokenRule.Calls.ShouldBe(1);
         language.DeriveGlobalCalls.ShouldBe(1);
     }
 
@@ -58,7 +58,7 @@ public class DesignLanguageCompilationTests
     [InlineData(true, false, 24d)]
     [InlineData(false, true, 32d)]
     [InlineData(true, true, 24d)]
-    public void The_Variant_Axes_Reach_The_Derivation(bool compact, bool dark, double height)
+    public void The_Variant_Axes_Reach_The_Token_Rule(bool compact, bool dark, double height)
     {
         var snapshot = Compile(root: builder => builder
                                                 .WithDensity(compact ? DesignDensity.Compact : DesignDensity.Default)
@@ -72,7 +72,7 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void A_Control_Derivation_Writes_The_Control_View()
+    public void A_Control_Token_Rule_Writes_The_Target_Tokens()
     {
         var snapshot = Compile();
 
@@ -100,7 +100,7 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void A_Global_Write_Of_A_Control_Derivation_Applies_To_That_Control_Only()
+    public void A_Global_Write_Of_A_Control_Token_Rule_Applies_To_That_Control_Only()
     {
         var snapshot = Compile();
 
@@ -110,7 +110,7 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void Control_Scoped_Global_Override_Is_Frozen_Against_The_Control_Derivation()
+    public void Control_Scoped_Global_Override_Is_Frozen_Against_The_Control_Token_Rule()
     {
         var snapshot = Compile(control: local => local.WithToken(nameof(DesignToken.LineWidthBold), "5"));
 
@@ -118,9 +118,9 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void A_Control_Derivation_That_Writes_A_Seed_Fails_When_The_Control_Is_First_Queried()
+    public void A_Control_Token_Rule_That_Writes_A_Seed_Fails_When_The_Control_Is_First_Queried()
     {
-        ViewProbeDerivation.WriteSeed = true;
+        ViewProbeTokenRule.WriteSeed = true;
         try
         {
             var snapshot = Compile();
@@ -132,7 +132,7 @@ public class DesignLanguageCompilationTests
         }
         finally
         {
-            ViewProbeDerivation.WriteSeed = false;
+            ViewProbeTokenRule.WriteSeed = false;
         }
     }
 
@@ -149,7 +149,7 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void A_Failing_Global_Derivation_Fails_The_Whole_Compilation_And_Names_The_Language()
+    public void A_Failing_Global_Evaluation_Fails_The_Whole_Compilation_And_Names_The_Language()
     {
         var language = new ProbeLanguage { FailGlobal = true };
         var result = CompileResult(language, null, null);
@@ -161,7 +161,7 @@ public class DesignLanguageCompilationTests
     }
 
     [Fact]
-    public void A_Control_Without_A_Derivation_In_An_Enabled_Language_Names_The_Missing_Value_Package()
+    public void A_Control_Without_A_Token_Rule_In_An_Enabled_Language_Names_The_Missing_Value_Package()
     {
         var exception = Should.Throw<ThemeSchemaException>(() => new ThemeSchemaRegistry(
             GeneratedThemeSchema.GetGlobalTokens(), [ViewProbeToken.CreateDescriptor()],
@@ -192,7 +192,7 @@ public class DesignLanguageCompilationTests
     {
         var descriptor = TestDesignLanguages.Probe(language);
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), [ViewProbeToken.CreateDescriptor()],
-            [descriptor], null, [ControlDerivationDescriptor.Create<ProbeLanguageToken, ViewProbeToken, ViewProbeDerivation>()]);
+            [descriptor], null, [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, ViewProbeToken, ViewProbeTokenRule>()]);
         var builder = new ThemeConfigBuilder();
         root?.Invoke(builder);
         if (control is not null)
@@ -305,23 +305,23 @@ public sealed class ViewProbeToken : AbstractControlDesignToken, IControlToken
 /// The probe control's view: the base size follows the control height, the derived height follows the base size, the
 /// accent follows the background base, and the control draws with a thicker line.
 /// </summary>
-internal sealed class ViewProbeDerivation : IControlDerivation<ProbeLanguageToken, ViewProbeToken>
+internal sealed class ViewProbeTokenRule : IControlTokenRule<ProbeLanguageToken, ViewProbeToken>
 {
     // Set by single tests of DesignLanguageCompilationTests; the tests of one class do not run in parallel.
     internal static int Calls;
     internal static bool WriteSeed;
 
-    public void Derive(in DerivationContext<ProbeLanguageToken> context, ControlView<ViewProbeToken> view)
+    public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<ViewProbeToken> target)
     {
         Calls++;
         if (WriteSeed)
         {
-            view.Global.ColorPrimary = Colors.Red;
+            target.Global.ColorPrimary = Colors.Red;
         }
 
-        view.Global.LineWidthBold = 3;
-        view.Token.BaseSize = view.Global.ControlHeight;
-        view.Token.DerivedHeight = view.Token.BaseSize + 10;
-        view.Token.Accent = view.Global.ColorBgBase ?? Colors.Transparent;
+        target.Global.LineWidthBold = 3;
+        target.Own.BaseSize = target.Global.ControlHeight;
+        target.Own.DerivedHeight = target.Own.BaseSize + 10;
+        target.Own.Accent = target.Global.ColorBgBase ?? Colors.Transparent;
     }
 }

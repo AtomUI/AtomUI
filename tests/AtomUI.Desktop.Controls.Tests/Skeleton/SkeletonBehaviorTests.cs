@@ -25,7 +25,7 @@ public class SkeletonBehaviorTests
     public void Loading_Background_Uses_AntDesign_Shimmer_Geometry()
     {
         var token = new SkeletonToken();
-        AntDesignDerivationRunner.Derive(token, new DesignToken
+        AntDesignTokenRuleRunner.Apply(token, new DesignToken
         {
             ColorFillContent   = Colors.LightGray,
             ColorFill          = Colors.WhiteSmoke,

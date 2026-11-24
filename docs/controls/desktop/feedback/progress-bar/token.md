@@ -6,8 +6,8 @@
 
 进度条家族的四个控件各自拥有终端 Token（对应 antd Progress 的同一组组件 Token），通过无 identity 的抽象层共享属性定义；
 默认取值由设计语言取值包给出，Ant Design 在 `AtomUI.Desktop.Controls.Themes.AntDesign/ProgressBar/` 下以共享辅助类
-`AntDesignAbstractProgressDerivation`、`AntDesignAbstractLineProgressDerivation`、`AntDesignAbstractCircleProgressDerivation`
-复用抽象层的取值规则，四个终端推导（`AntDesignProgressBarDerivation` 等）分别调用：
+`ProgressTokenCalculator`、`LineProgressTokenCalculator`、`CircleProgressTokenCalculator`
+复用抽象层的取值规则，四个终端推导（`ProgressBarTokenRule` 等）分别调用：
 
 ```text
 AbstractProgressToken            DefaultColor, RemainingColor
@@ -81,7 +81,7 @@ Token 使用路径：
 ```text
 Effective Global Token（每个进度控件自己的 identity）
     ↓
-XxxToken 的控件推导（Ant Design：AntDesignXxxDerivation，调用抽象层的共享辅助类）
+XxxToken 的控件取值规则（Ant Design：XxxTokenRule，调用抽象层的共享辅助类）
     ↓
 ProgressBarTheme / StepsProgressBarTheme / CircleProgressTheme / DashboardProgressTheme（Own Token）
 AbstractProgressBarTheme / AbstractLineProgressTheme / AbstractCircleProgressTheme（OwnerTokenResource 读全局 Token）

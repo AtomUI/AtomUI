@@ -30,8 +30,8 @@ public class ThemeSchemaRegistryTests
             [button],
             [probe],
             null,
-            [ControlDerivationDescriptor.Create<ProbeLanguageToken, ThemeConfigTestSchema.TestControlToken,
-                ThemeConfigTestSchema.TestControlDerivation>()]);
+            [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, ThemeConfigTestSchema.TestControlToken,
+                ThemeConfigTestSchema.TestControlTokenRule>()]);
 
         registry.GlobalTokens.ShouldBe([colorPrimary, borderRadius]);
         registry.Controls.ShouldHaveSingleItem().Identity.ShouldBe(buttonIdentity);
@@ -169,13 +169,13 @@ public class ThemeSchemaRegistryTests
     }
 
     [Fact]
-    public void Registry_Revision_Changes_With_The_Derivations()
+    public void Registry_Revision_Changes_With_The_Token_Rules()
     {
         var probe = TestDesignLanguages.Probe();
         var globals = GeneratedThemeSchema.GetGlobalTokens();
         var without = new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), [probe], null, []);
         var with = new ThemeSchemaRegistry(globals, Array.Empty<ControlTokenDescriptor>(), [probe], null,
-            [ControlDerivationDescriptor.Create<ProbeLanguageToken, ViewProbeToken, ViewProbeDerivation>()]);
+            [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, ViewProbeToken, ViewProbeTokenRule>()]);
 
         with.Revision.ShouldNotBe(without.Revision);
     }

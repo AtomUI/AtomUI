@@ -15,10 +15,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGButtonSpinnerTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ButtonSpinnerToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ButtonSpinnerToken token)
     {
         PrimeNGSpinnerHandle.Apply(context, effectiveGlobal, token);
     }
@@ -30,11 +30,11 @@ internal static class PrimeNGButtonSpinnerTokens
 /// </summary>
 internal static class PrimeNGNumericUpDownTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGInputStage.Apply(context, controlGlobal);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NumericUpDownToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NumericUpDownToken token)
     {
         PrimeNGSpinnerHandle.Apply(context, effectiveGlobal, token);
         // PrimeUIX form.field.sm.font.size 0.75rem.
@@ -45,7 +45,7 @@ internal static class PrimeNGNumericUpDownTokens
 /// <summary>The shared <c>inputnumber.button</c> mapping, written for both spinner token identities.</summary>
 internal static class PrimeNGSpinnerHandle
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractButtonSpinnerToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractButtonSpinnerToken token)
     {
         var language = context.Language;
         var dark    = context.Variant.Appearance == ThemeAppearance.Dark;

@@ -1,7 +1,11 @@
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using AtomUI.Media;
 using AtomUI.Desktop.Controls;
 using AtomUI.Desktop.Controls.Primitives.Themes;
+using AtomUI.Theme;
+using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -60,7 +64,8 @@ internal static partial class Program
             IsMotionEnabled   = false
         };
 
-        using var realized = RealizeControl(box);
+        var provider = new ThemeConfigProvider { Child = box };
+        using var realized = RealizeControl(provider);
         var leftPresenter = FindVisualByName<ContentPresenter>(box, AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart);
         Expect(leftPresenter != null, "Content left addon presenter should exist.", failures);
         ExpectBrush(rightIcon.Foreground, box.AddOnStatusIconBrush, "Error status should apply icon brush.", failures);
@@ -71,10 +76,16 @@ internal static partial class Program
         ExpectBrush(rightIcon.Foreground, box.AddOnStatusIconBrush, "Warning status should refresh icon brush.", failures);
         ExpectBrush(leftPresenter?.Foreground, box.AddOnStatusForeground, "Warning status should refresh addon foreground.", failures);
 
-        var sourceForeground = Brush(Color.FromRgb(34, 120, 222));
-        var sourceIconBrush  = Brush(Color.FromRgb(222, 80, 34));
-        box.SetCurrentValue(AddOnDecoratedBox.AddOnStatusForegroundProperty, sourceForeground);
-        box.SetCurrentValue(AddOnDecoratedBox.AddOnStatusIconBrushProperty, sourceIconBrush);
+        var warningForeground = box.AddOnStatusForeground;
+        var warningIconBrush  = box.AddOnStatusIconBrush;
+        const string foregroundColor = "#2278DE";
+        const string iconColor = "#DE5022";
+        var sourceForeground = Brush(Color.Parse(foregroundColor));
+        var sourceIconBrush  = Brush(Color.Parse(iconColor));
+        provider.Config = new ThemeConfigBuilder()
+                          .WithToken(nameof(SharedTokenKind.ColorWarningText), foregroundColor)
+                          .WithToken(nameof(SharedTokenKind.ColorWarning), iconColor)
+                          .Build();
         RefreshLayout(realized.Window);
         ExpectBrush(rightIcon.Foreground, sourceIconBrush, "Source icon brush update should refresh existing addon icon.", failures);
         ExpectBrush(leftPresenter?.Foreground, sourceForeground, "Source foreground update should refresh existing addon presenter.", failures);
@@ -90,8 +101,11 @@ internal static partial class Program
         leftPresenter = FindVisualByName<ContentPresenter>(box, AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart);
         ExpectBrush(leftPresenter?.Foreground, sourceForeground, "Runtime content-left presenter should receive current foreground.", failures);
 
-        box.ClearValue(AddOnDecoratedBox.AddOnStatusForegroundProperty);
-        box.ClearValue(AddOnDecoratedBox.AddOnStatusIconBrushProperty);
+        provider.Config = null;
+        RefreshLayout(realized.Window);
+        ExpectBrush(runtimeIcon.Foreground, warningIconBrush, "Clearing the scoped token overrides should restore the warning icon brush.", failures);
+        ExpectBrush(leftPresenter?.Foreground, warningForeground, "Clearing the scoped token overrides should restore the warning foreground.", failures);
+
         box.SetCurrentValue(InputElement.IsEnabledProperty, false);
         RefreshLayout(realized.Window);
         ExpectBrush(runtimeIcon.Foreground, box.AddOnStatusIconBrush, "Disabled state should refresh runtime addon icon.", failures);
@@ -111,11 +125,11 @@ internal static partial class Program
         box.SetCurrentValue(AddOnDecoratedBox.StatusProperty, InputControlStatus.Error);
         RefreshLayout(realized.Window);
 
-        Expect(FindVisualByName<ContentPresenter>(box, AddOnDecoratedBoxThemeConstants.LeftAddOnPart)?.IsVisible == false,
-            "Empty left addon presenter should stay hidden after status changes.",
+        Expect(FindVisualByName<PixelAlignedBorder>(box, AddOnDecoratedBoxThemeConstants.LeftAddOnPart)?.IsVisible == false,
+            "Empty outer left addon should stay hidden after status changes.",
             failures);
-        Expect(FindVisualByName<ContentPresenter>(box, AddOnDecoratedBoxThemeConstants.RightAddOnPart)?.IsVisible == false,
-            "Empty right addon presenter should stay hidden after status changes.",
+        Expect(FindVisualByName<PixelAlignedBorder>(box, AddOnDecoratedBoxThemeConstants.RightAddOnPart)?.IsVisible == false,
+            "Empty outer right addon should stay hidden after status changes.",
             failures);
         Expect(FindVisualByName<ContentPresenter>(box, AddOnDecoratedBoxThemeConstants.ContentLeftAddOnPart)?.IsVisible == false,
             "Empty content-left addon presenter should stay hidden after status changes.",

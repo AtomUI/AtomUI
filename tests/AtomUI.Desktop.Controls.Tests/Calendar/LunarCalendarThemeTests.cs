@@ -53,7 +53,7 @@ public class LunarCalendarThemeTests
             ColorError = Colors.Red
         };
         var token = new LunarCalendarToken();
-        AntDesignDerivationRunner.Derive(token, shared);
+        AntDesignTokenRuleRunner.Apply(token, shared);
 
         token.MiniDateCellSize.ShouldBe(40);
         token.MiniDateCellHeight.ShouldBe(48);

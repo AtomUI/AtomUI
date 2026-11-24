@@ -46,7 +46,7 @@ public static class ThemeManagerBuilderExtensions
 入口职责：
 
 - 注册 GalleryBase 生成的 exact CLR type/identity Control descriptor、ControlTheme asset manifest 和主题 Provider。
-- 登记 GalleryBase 控件的通用推导（生成的 `GeneratedControlDerivationRegistration`，见下文「Control Token」），并以
+- 登记 GalleryBase 控件的通用取值规则（生成的 `GeneratedControlTokenRuleRegistration`，见下文「Control Token」），并以
   `DependsOn` 启用 `UseDesktopControls()`。
 - 通过 `GeneratedLanguageModuleRegistration` 把 GalleryBase Catalog 与内置 Translation Bundle 注册到
   `builder.Localization`。
@@ -75,7 +75,7 @@ GalleryBase 本身不启用设计语言，也不注册产品主题定义。AtomU
 `UseGalleryBase(...)` 与 `UseAntDesign(language => language.AddDesktopColorPicker().AddDesktopDataGrid())`；单独使用
 `UseGalleryBase()` 的应用自行选择语言。`DaybreakBlue` 是 Ant Design 语言包 `AtomUI.DesignLanguages.AntDesign` 中的编译主题，由
 `UseAntDesign(...)` 注册；目录里另有每个已启用语言的隐式条目 `$<LanguageId>`。Gallery 自身不包含任何主题 XML，也不生成
-`GeneratedThemePackageRegistration`。
+`ThemePackageRegistration`。
 原先的 Polar Green、Sunset Orange、Golden Purple、Magenta 四个预设已删除，改为 Theme 菜单 Brand color 中 `AntDesign` 语言专属的命名色块
 （`#52C41A`、`#FA8C16`、`#722ED1`、`#EB2F96`，另有 Daybreak Blue `#1677FF`），由 `GalleryBrandSwatches` 统一维护。
 `PrimeNG.*` 语言使用自己的列表 `GalleryBrandSwatches.PrimeNG`：primeng.dev（primeng 22.1.5）配置器的主色，依站点顺序为
@@ -189,17 +189,17 @@ internal sealed partial class ShowCaseItemToken : AbstractControlDesignToken
 
 GalleryBase 的 Token 类保持 `internal`，但与 AtomUI 控件包一样必须是 `partial` 类、Token 属性必须是 partial 属性
 （实现部分由生成器产出，否则报 `ATOMUIGEN049`），只有声明，不含计算方法。因为是 `internal`，其他程序集的取值包不能为
-GalleryBase 控件写推导；GalleryBase 在自己的 `Derivations/Controls/` 里为每个 Token 类提供一个绑定根类型 `LanguageDesignToken`
-的**通用推导**，只读全局 Token，在任何已启用语言下都给出取值，由 `UseGalleryBase()` 登记：
+GalleryBase 控件写推导；GalleryBase 在自己的 `TokenRules/Controls/` 里为每个 Token 类提供一个绑定根类型 `LanguageDesignToken`
+的**通用取值规则**，只读全局 Token，在任何已启用语言下都给出取值，由 `UseGalleryBase()` 登记：
 
 ```csharp
-[ControlDerivation]
-internal sealed class GenericShowCaseItemDerivation : IControlDerivation<LanguageDesignToken, ShowCaseItemToken>
+[ControlTokenRule]
+internal sealed class GenericShowCaseItemTokenRule : IControlTokenRule<LanguageDesignToken, ShowCaseItemToken>
 {
-    public void Derive(in DerivationContext<LanguageDesignToken> context, ControlView<ShowCaseItemToken> view)
+    public void Apply(in TokenEvaluationContext<LanguageDesignToken> context, ControlTokenTarget<ShowCaseItemToken> target)
     {
-        var token  = view.Token;
-        var global = view.Global;
+        var token  = target.Own;
+        var global = target.Global;
         token.CardPadding = new Thickness(global.SizeUnit * 5);
         // ... every other ShowCaseItemToken property
     }
@@ -207,7 +207,7 @@ internal sealed class GenericShowCaseItemDerivation : IControlDerivation<Languag
 ```
 
 GalleryBase 自己声明控件 Token，同时带推导，因此不受「取值包不含控件」（`ATOMUIGEN053`）的约束。推导契约见
-[编写设计语言](../../guides/theming/writing-design-languages.md#44-通用推导)。
+[编写设计语言](../../guides/theming/writing-design-languages.md#44-通用取值规则)。
 
 `[ControlDesignToken]` 只标记 Own Token 类型，不携带 Control 类型、identity 或 ID。禁止泛型
 `[ControlDesignToken<TControl>]` 和手写 ID。即使某个 GalleryBase Control 没有 Own Token，生成器仍为它生成独立

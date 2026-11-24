@@ -13,13 +13,13 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGSeverity
 {
-    internal static PrimeNGSeverityScale Error(in DerivationContext<PrimeNGToken> context, DesignToken global) =>
+    internal static PrimeNGSeverityScale Error(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global) =>
         context.Language.GetStatusScale(context.Variant, global.ColorError, error: true);
 
     /// <summary>
     /// The solid severity fill of badges (and Lara / Nora tags): 500 (Nora 600) in light, 400 (Nora 500) in dark.
     /// </summary>
-    internal static Color Solid(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
+    internal static Color Solid(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
     {
         var nora = context.Variant.Style == PrimeNGLanguage.Nora;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
@@ -27,7 +27,7 @@ internal static class PrimeNGSeverity
     }
 
     /// <summary>The text on a solid severity fill: white in light, the palette's 950 in dark.</summary>
-    internal static Color OnSolid(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette) =>
+    internal static Color OnSolid(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette) =>
         context.Variant.Appearance == ThemeAppearance.Dark ? palette[950] : Colors.White;
 }
 
@@ -40,7 +40,7 @@ internal static class PrimeNGSeverity
 internal static class PrimeNGTagTokens
 {
     /// <summary>Writes the status surfaces and returns the status main colours (the tag's own status colour tokens).</summary>
-    internal static PrimeNGStatusColors EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.BorderRadiusSM = controlGlobal.BorderRadius;
         var success = context.Language.GetStatusScale(context.Variant, controlGlobal.ColorSuccess);
@@ -61,7 +61,7 @@ internal static class PrimeNGTagTokens
 
     // Aura: tinted (the status text on the light fill). Lara and Nora: the status colour is the solid fill, which the
     // Filled tags paint with the contrast text (FilledStatusSolid); the tint stays for the Outlined variant.
-    private static (Color Text, Color Background) Pair(in DerivationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
+    private static (Color Text, Color Background) Pair(in TokenEvaluationContext<PrimeNGToken> context, PrimeNGSeverityScale palette)
     {
         if (context.Variant.Style != PrimeNGLanguage.Aura)
         {
@@ -74,7 +74,7 @@ internal static class PrimeNGTagTokens
             ? (palette[300], palette.AtOpacity(500, 0.16))
             : (palette[700], palette[100]);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TagToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TagToken token)
     {
         var kind = context.Variant.Style;
         var padY = kind == PrimeNGLanguage.Lara ? 4 : 2;
@@ -106,10 +106,10 @@ internal static class PrimeNGTagTokens
 /// </summary>
 internal static class PrimeNGCountBadgeTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CountBadgeToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CountBadgeToken token)
     {
         var error = PrimeNGSeverity.Error(context, effectiveGlobal);
         token.IndicatorColor    = PrimeNGSeverity.Solid(context, error);
@@ -134,10 +134,10 @@ internal static class PrimeNGCountBadgeTokens
 /// </summary>
 internal static class PrimeNGDotBadgeTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DotBadgeToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DotBadgeToken token)
     {
         token.DotColor    = PrimeNGSeverity.Solid(context, PrimeNGSeverity.Error(context, effectiveGlobal));
         token.DotSize     = 8;
@@ -149,10 +149,10 @@ internal static class PrimeNGDotBadgeTokens
 /// <summary>AvatarGroup under the PrimeNG presets: PrimeUIX <c>avatar.group.offset</c> -10.</summary>
 internal static class PrimeNGAvatarGroupTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AvatarGroupToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AvatarGroupToken token)
     {
         token.GroupOverlapping = 10;
     }
@@ -165,11 +165,11 @@ internal static class PrimeNGAvatarGroupTokens
 /// </summary>
 internal static class PrimeNGSkeletonTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.BorderRadiusSM = controlGlobal.BorderRadius;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SkeletonToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SkeletonToken token)
     {
         var colors = context.Language.GetSkeletonColors(context.Variant);
         token.GradientFromColor     = colors.Background;
@@ -185,11 +185,11 @@ internal static class PrimeNGSkeletonTokens
 /// </summary>
 internal static class PrimeNGSeparatorTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.ColorSplit = context.Language.GetContentBorder(context.Variant);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SeparatorToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SeparatorToken token)
     {
         var margin = context.Variant.Style == PrimeNGLanguage.Lara ? 18 : 14;
         token.HorizontalMarginBlock = new Thickness(0, margin);
@@ -204,10 +204,10 @@ internal static class PrimeNGSeparatorTokens
 /// </summary>
 internal static class PrimeNGTimelineTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TimelineToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TimelineToken token)
     {
         token.IndicatorTailColor = context.Language.GetContentBorder(context.Variant);
         token.IndicatorTailWidth = 2;
@@ -222,7 +222,7 @@ internal static class PrimeNGTimelineTokens
 /// </summary>
 internal static class PrimeNGListViewStage
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractListViewToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractListViewToken token)
     {
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         var padding  = recipes.ListOptionPadding;
@@ -237,10 +237,10 @@ internal static class PrimeNGListViewStage
 /// <summary>PrimeUIX <c>listbox</c> for <see cref="ListViewToken"/>; see <see cref="PrimeNGListViewStage"/>.</summary>
 internal static class PrimeNGListViewTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ListViewToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ListViewToken token)
     {
         PrimeNGListViewStage.Apply(context, effectiveGlobal, token);
         token.GroupHeaderPadding = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant).ListOptionPadding;
@@ -256,10 +256,10 @@ internal static class PrimeNGListViewTokens
 /// <summary>PrimeUIX <c>listbox</c> for <see cref="TransferListViewToken"/>; see <see cref="PrimeNGListViewStage"/>.</summary>
 internal static class PrimeNGTransferListViewTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TransferListViewToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TransferListViewToken token)
     {
         PrimeNGListViewStage.Apply(context, effectiveGlobal, token);
         // A 2px gap between rows (Aura's list.gap; AtomUI uses it in every preset), so adjacent selected rows read as
@@ -275,7 +275,7 @@ internal static class PrimeNGTransferListViewTokens
 /// </summary>
 internal static class PrimeNGTreeStage
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractTreeViewToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractTreeViewToken token)
     {
         token.NodeHoverBg  = effectiveGlobal.ControlItemBgHover;
         token.HeaderHeight = context.Variant.Style == PrimeNGLanguage.Lara ? 36 : 32;
@@ -285,21 +285,21 @@ internal static class PrimeNGTreeStage
 /// <summary>PrimeUIX <c>tree</c> for <see cref="TreeViewToken"/>; see <see cref="PrimeNGTreeStage"/>.</summary>
 internal static class PrimeNGTreeViewTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TreeViewToken token) =>
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TreeViewToken token) =>
         PrimeNGTreeStage.Apply(context, effectiveGlobal, token);
 }
 
 /// <summary>PrimeUIX <c>tree</c> for <see cref="TransferTreeViewToken"/>; see <see cref="PrimeNGTreeStage"/>.</summary>
 internal static class PrimeNGTransferTreeViewTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TransferTreeViewToken token) =>
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TransferTreeViewToken token) =>
         PrimeNGTreeStage.Apply(context, effectiveGlobal, token);
 }
 
@@ -309,11 +309,11 @@ internal static class PrimeNGTransferTreeViewTokens
 /// </summary>
 internal static class PrimeNGCarouselTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Carousel);
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CarouselToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CarouselToken token)
     {
         var lara = context.Variant.Style == PrimeNGLanguage.Lara;
         token.IndicatorWidth       = lara ? 14 : 28;
@@ -330,13 +330,13 @@ internal static class PrimeNGCarouselTokens
 /// </summary>
 internal static class PrimeNGDescriptionsTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         var border = context.Language.GetContentBorder(context.Variant);
         controlGlobal.ColorSplit           = border;
         controlGlobal.ColorBorderSecondary = border;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DescriptionsToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DescriptionsToken token)
     {
         token.LabelColor  = effectiveGlobal.ColorTextSecondary;
         token.ItemPadding = new Thickness(14, context.Variant.Style == PrimeNGLanguage.Lara ? 10 : 8);
@@ -349,12 +349,12 @@ internal static class PrimeNGDescriptionsTokens
 /// </summary>
 internal static class PrimeNGQRCodeTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.ColorSplit     = context.Language.GetContentBorder(context.Variant);
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, QRCodeToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, QRCodeToken token)
     {
     }
 }
@@ -368,12 +368,12 @@ internal static class PrimeNGQRCodeTokens
 /// </summary>
 internal static class PrimeNGPaginationTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         // PrimeUIX paginator.root.gap 0.25rem: between the page buttons and between the paginator parts.
         controlGlobal.UniformlyMarginXS = 4;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PaginationToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PaginationToken token)
     {
         PrimeNGPaginationItems.Apply(context, effectiveGlobal, token);
         token.ItemActiveBg               = effectiveGlobal.ControlItemBgActive;
@@ -392,7 +392,7 @@ internal static class PrimeNGPaginationTokens
 /// </summary>
 internal static class PrimeNGPaginationItems
 {
-    internal static void Apply(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractPaginationToken token)
+    internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractPaginationToken token)
     {
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
@@ -407,11 +407,11 @@ internal static class PrimeNGPaginationItems
 /// <summary>SimplePagination under the PrimeNG presets: the shared <see cref="PrimeNGPaginationItems"/>.</summary>
 internal static class PrimeNGSimplePaginationTokens
 {
-    internal static void EvaluateGlobal(in DerivationContext<PrimeNGToken> context, DesignToken controlGlobal)
+    internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         controlGlobal.UniformlyMarginXS = 4;
     }
-    internal static void EvaluateOwn(in DerivationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SimplePaginationToken token)
+    internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SimplePaginationToken token)
     {
         PrimeNGPaginationItems.Apply(context, effectiveGlobal, token);
     }

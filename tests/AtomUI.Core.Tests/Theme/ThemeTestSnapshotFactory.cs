@@ -14,7 +14,7 @@ internal static class ThemeTestSnapshotFactory
 {
     /// <summary>
     /// Compiles <paramref name="config"/> over the Ant Design language default with the given controls; the test
-    /// controls of this project bring their own derivations (<see cref="TestControlDerivations"/>).
+    /// controls of this project bring their own rules (<see cref="TestControlTokenRules"/>).
     /// </summary>
     internal static ThemeSnapshot Compile(
         ThemeConfig? config = null,
@@ -37,13 +37,13 @@ internal static class ThemeTestSnapshotFactory
         return result.Snapshot!;
     }
 
-    /// <summary>A registry with the generated global tokens, Ant Design, the controls and the test derivations.</summary>
+    /// <summary>A registry with the generated global tokens, Ant Design, the controls and the test rules.</summary>
     internal static ThemeSchemaRegistry CreateRegistry(
         IReadOnlyList<ControlTokenDescriptor> controls,
-        IEnumerable<ControlDerivationDescriptor>? derivations = null,
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null,
         DesignLanguageDescriptor? language = null) =>
         new(GeneratedThemeSchema.GetGlobalTokens(), controls, [language ?? TestDesignLanguages.AntDesign], null,
-            derivations ?? TestControlDerivations.All);
+            rules ?? TestControlTokenRules.All);
 
     /// <summary>
     /// The implicit default entry of a language: no values, no fixed axes. One instance per language and id, as the
@@ -85,15 +85,15 @@ internal static class ThemeTestSnapshotFactory
     }
 }
 
-/// <summary>The Ant Design derivations of the hand-written test controls of this project.</summary>
-internal static class TestControlDerivations
+/// <summary>The Ant Design rules of the hand-written test controls of this project.</summary>
+internal static class TestControlTokenRules
 {
-    internal static IReadOnlyList<ControlDerivationDescriptor> All { get; } =
+    internal static IReadOnlyList<ControlTokenRuleDescriptor> All { get; } =
     [
-        ControlDerivationDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonDerivation>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, BrushControlToken, BrushControlDerivation>(),
-        ControlDerivationDescriptor.Create<AntDesignToken, OwnerTokenResourceTests.ThrowingLineEditToken,
-            OwnerTokenResourceTests.ThrowingLineEditDerivation>()
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, BrushControlToken, BrushControlTokenRule>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, OwnerTokenResourceTests.ThrowingLineEditToken,
+            OwnerTokenResourceTests.ThrowingLineEditTokenRule>()
     ];
 }
 
@@ -147,8 +147,8 @@ internal sealed class CompilerButtonToken : AbstractControlDesignToken, IControl
 }
 
 /// <summary>The test button's height follows the global control height.</summary>
-internal sealed class CompilerButtonDerivation : IControlDerivation<AntDesignToken, CompilerButtonToken>
+internal sealed class CompilerButtonTokenRule : IControlTokenRule<AntDesignToken, CompilerButtonToken>
 {
-    public void Derive(in DerivationContext<AntDesignToken> context, ControlView<CompilerButtonToken> view) =>
-        view.Token.Height = view.Global.ControlHeight;
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<CompilerButtonToken> target) =>
+        target.Own.Height = target.Global.ControlHeight;
 }

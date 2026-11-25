@@ -76,13 +76,13 @@ Windows、macOS 的渲染循环按显示刷新出帧（见第 6 节），本身�
 合成动画（Spin、Skeleton 闪光带、Splash 不确定进度）和合成通道上的 Motion 由渲染循环逐帧出帧，节拍等于渲染循环计时器的节拍。
 第 5 节的时间源决定“按哪个时刻采样”，本节的节拍源决定“多久出一帧”，两者独立。
 
-下表依据 Avalonia 12.1.5 源码。只有 Windows 做过上屏实测，其余平台没有实测数据。
+下表列出 Avalonia 的默认节拍及 AtomUI 的平台增强。Windows 和 macOS 已在原生 Gallery 采集实际呈现数据。
 
 | 平台 | 节拍源 | 跟随显示刷新 | AtomUI 处理 |
 | --- | --- | --- | --- |
 | Windows，`RedirectionSurface`（AtomUI 默认首选） | `SleepLoopRenderTimer`（线程睡眠） | 否 | 换成 `DwmVsyncRenderTimer`，见 [Windows live resize 的渲染节拍](../windowing/windows-live-resize.md#渲染节拍) |
 | Windows，其余合成模式 | 系统合成器或 DXGI 垂直同步 | 是 | 无 |
-| macOS | CVDisplayLink（`PlatformRenderTimer.mm`）；Metal 在渲染线程经 `CAMetalLayer` 呈现 | 是 | 无 |
+| macOS | Avalonia 默认使用 CVDisplayLink，Metal 经 `CAMetalLayer` 呈现 | 是 | macOS 14+ 单屏 Metal 桌面用 AppKit `CADisplayLink` 驱动原渲染线程代理。显示拓扑变化后恢复 Avalonia 原时钟。 |
 | Linux Wayland | `WaylandWorker` 自带的渲染循环，按合成器事件唤醒；合成器不要帧时以 20 fps 保底 | 是 | 第 4 节的呈现时间采样 |
 | Linux X11 / XWayland | `SleepLoopRenderTimer`，目标帧率取 RandR 报告的最高刷新率，不低于 60 | 否 | 无 |
 
@@ -101,8 +101,9 @@ X11 与 Windows `RedirectionSurface` 使用同一个睡眠计时器，根因相�
 `RenderLoopReflection.TryReplaceTimer` 可以直接复用。X11 没有等价于 `DwmFlush()` 的统一接口，候选节拍源
 （`GLX_OML_sync_control`、`GLX_SGI_video_sync`、Present 扩展的 `PresentNotifyMSC`）都依赖驱动或 X 服务器实现，需要逐个验证。
 
-### macOS 的差距（未处理）
+### macOS 的呈现时间边界
 
-- CVDisplayLink 由 `CVDisplayLinkCreateWithActiveCGDisplays` 创建，之后没有调用 `CVDisplayLinkSetCurrentCGDisplay`。
+- 多屏环境沿用 Avalonia 的 `CVDisplayLinkCreateWithActiveCGDisplays` 时间源。该实现没有调用 `CVDisplayLinkSetCurrentCGDisplay`。
   窗口位于刷新率与主屏不同的副屏时，预计仍按主屏节拍出帧。问题在 Avalonia 原生库内，属于上游；没有在混合刷新率环境验证。
-- 回调不向托管侧传递 `inOutputTime`。第 5 节的 macOS 呈现时间采样要实现，需要 AtomUI 自建显示链路。
+- 单屏时 `CADisplayLink` 只产生渲染脉冲，`ThreadProxyRenderTimer` 继续合并脉冲及拥有渲染线程。drawable 的获取、提交和缩放的同步呈现仍由 Avalonia 原生库执行。
+- `CADisplayLink` 的脉冲与 Metal drawable 的实际呈现是两个阶段。macOS 的 Motion 仍以第 5 节的回退时钟采样。

@@ -80,6 +80,10 @@ public static class AppBuilderExtensions
                     AvaloniaNativeRenderingMode.Software
                 ]
             });
+            if (OperatingSystem.IsMacOSVersionAtLeast(14))
+            {
+                appBuilder = appBuilder.AfterPlatformServicesSetup(MacOSRenderPacing.Apply);
+            }
         }
         if (OperatingSystem.IsWindows())
         {

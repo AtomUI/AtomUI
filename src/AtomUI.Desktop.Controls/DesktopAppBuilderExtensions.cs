@@ -1,8 +1,11 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using AtomUI.Animations;
 using AtomUI.Native;
 using Avalonia;
 using Avalonia.Logging;
+using Avalonia.Skia;
 
 namespace AtomUI;
 
@@ -45,6 +48,8 @@ public static class DesktopAppBuilderExtensions
     /// An explicit <paramref name="platform"/> takes precedence over
     /// <c>ATOMUI_WINDOWING_PLATFORM</c>. Automatic detection uses <c>WAYLAND_DISPLAY</c> and falls back to
     /// X11/XWayland. Headless and framebuffer applications should configure their backend directly.
+    /// On macOS, the default Skia GPU cache budget is 64 MiB when Metal is preferred and the primary
+    /// display has at least 3840 × 2160 backing pixels. Explicit <see cref="SkiaOptions" /> take precedence.
     /// </remarks>
     public static AppBuilder UseAtomUIPlatformDetect(
         this AppBuilder builder,
@@ -60,7 +65,10 @@ public static class DesktopAppBuilderExtensions
                     $"The {platform} windowing backend can only be selected on Linux.");
             }
 
-            return builder.UsePlatformDetect();
+            builder.UsePlatformDetect();
+            return OperatingSystem.IsMacOS() && builder.RenderingSubsystemName == "Skia"
+                ? builder.UseRenderingSubsystem(InitializeMacOSSkia, "Skia")
+                : builder;
         }
 
         var selectedPlatform = ResolveLinuxWindowingPlatform(
@@ -76,6 +84,61 @@ public static class DesktopAppBuilderExtensions
             _ => throw new InvalidOperationException($"Unsupported Linux windowing backend: {selectedPlatform}.")
         };
     }
+
+    [SupportedOSPlatform("macos")]
+    private static void InitializeMacOSSkia()
+    {
+        var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
+        if (options is null)
+        {
+            options = new SkiaOptions();
+            var renderingMode = AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>()?.RenderingMode;
+            if (renderingMode is (null or [AvaloniaNativeRenderingMode.Metal, ..]) && HasHighResolutionPrimaryDisplay())
+            {
+                // Keep room for retained render targets and glyph atlases at 4K. Releasing
+                // Metal textures while Skia submits a frame can block the render thread.
+                options.MaxGpuResourceSizeBytes = 64 * 1024 * 1024;
+            }
+        }
+        SkiaPlatform.Initialize(options);
+    }
+
+    [SupportedOSPlatform("macos")]
+    private static bool HasHighResolutionPrimaryDisplay()
+    {
+        var mode = CGDisplayCopyDisplayMode(CGMainDisplayID());
+        if (mode == 0)
+        {
+            return false;
+        }
+        try
+        {
+            // A Retina display mode reports logical dimensions separately from backing pixels.
+            return (ulong)CGDisplayModeGetPixelWidth(mode) * (ulong)CGDisplayModeGetPixelHeight(mode) >= 3840UL * 2160;
+        }
+        finally
+        {
+            CFRelease(mode);
+        }
+    }
+
+    private const string CoreGraphics = "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics";
+    private const string CoreFoundation = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation";
+
+    [DllImport(CoreGraphics)]
+    private static extern uint CGMainDisplayID();
+
+    [DllImport(CoreGraphics)]
+    private static extern nint CGDisplayCopyDisplayMode(uint display);
+
+    [DllImport(CoreGraphics)]
+    private static extern nuint CGDisplayModeGetPixelWidth(nint mode);
+
+    [DllImport(CoreGraphics)]
+    private static extern nuint CGDisplayModeGetPixelHeight(nint mode);
+
+    [DllImport(CoreFoundation)]
+    private static extern void CFRelease(nint value);
 
     internal static AtomUIWindowingPlatform ResolveLinuxWindowingPlatform(
         AtomUIWindowingPlatform platform,

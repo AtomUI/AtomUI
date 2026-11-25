@@ -36,6 +36,20 @@ internal static class RenderLoopReflection
 
     private sealed record Fields(Type LoopType, FieldInfo Timer, FieldInfo TimerLock);
 
+    [DynamicDependency("_inner", typeof(ThreadProxyRenderTimer))]
+    [DynamicDependency("_lock", typeof(ThreadProxyRenderTimer))]
+    private static readonly Lazy<ProxyFields?> ThreadProxyFields = new(static () =>
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        var type = typeof(ThreadProxyRenderTimer);
+        var inner = type.GetField("_inner", flags);
+        var gate = type.GetField("_lock", flags);
+        return inner?.FieldType == typeof(IRenderTimer) && gate?.FieldType == typeof(object)
+            ? new ProxyFields(inner, gate) : null;
+    });
+
+    private sealed record ProxyFields(FieldInfo Inner, FieldInfo Gate);
+
     #endregion
 
     /// <summary>当前驱动渲染循环的计时器；渲染循环不是 <c>DefaultRenderLoop</c> 或其内部布局已变化时返回 false。</summary>
@@ -80,6 +94,38 @@ internal static class RenderLoopReflection
             current.Tick = null;
             replacement.Tick = running;
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Installs a clock behind the render-thread proxy without replacing the rendering thread.
+    /// The handover runs under the proxy's subscription lock and must not wait for the old clock to stop.
+    /// </summary>
+    internal static IRenderTimer? TryInstallProxyClock(IRenderLoop loop, Func<IRenderTimer, IRenderTimer?> create,
+                                                     Action<IRenderTimer> handover)
+    {
+        if (ThreadProxyFields.Value is not { } fields || !TryGetTimer(loop, out var timer) ||
+            timer is not ThreadProxyRenderTimer proxy || fields.Gate.GetValue(proxy) is not { } gate)
+        {
+            return null;
+        }
+        lock (gate)
+        {
+            if (fields.Inner.GetValue(proxy) is not IRenderTimer original || create(original) is not { } replacement)
+            {
+                return null;
+            }
+            try
+            {
+                fields.Inner.SetValue(proxy, replacement);
+            }
+            catch (Exception)
+            {
+                (replacement as IDisposable)?.Dispose();
+                return null;
+            }
+            handover(replacement);
+            return replacement;
         }
     }
 }

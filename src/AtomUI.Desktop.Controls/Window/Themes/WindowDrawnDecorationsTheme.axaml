@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:atom="https://atomui.net"
+                    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
                                         xmlns:converters="using:Avalonia.Controls.Converters"
                     x:Class="AtomUI.Desktop.Controls.Themes.WindowDrawnDecorationsTheme"
                     x:ClassModifier="internal">
@@ -12,6 +13,8 @@
                 <WindowDrawnDecorationsContent>
                     <WindowDrawnDecorationsContent.Underlay>
                         <Panel Name="PART_UnderlayWrapper">
+                            <Border Name="WindowFrameShadow" IsHitTestVisible="False"
+                                    CornerRadius="{Binding $parent[atom:Window].CornerRadius}" />
                             <Border x:Name="PART_WindowFrame" IsHitTestVisible="False"
                                     CornerRadius="{Binding $parent[atom:Window].CornerRadius}">
                                 <ContentPresenter Name="WindowFrameLayer"
@@ -116,7 +119,21 @@
         </Style>
 
         <Style Selector="^:has-shadow /template/ Border#PART_WindowFrame">
-            <Setter Property="BoxShadow" Value="{atom:WindowTokenResource FrameShadows}" />
+            <Setter Property="BoxShadow"
+                    Value="{CompiledBinding $parent[atom:Window].FrameShadow, Converter={x:Static themes:WindowDrawnDecorationsTheme.UncachedFrameShadow}}" />
+        </Style>
+
+        <Style Selector="^:not(:has-shadow) /template/ Border#WindowFrameShadow">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+
+        <Style Selector="^:has-shadow /template/ Border#WindowFrameShadow">
+            <!-- Cache the outer blur as a decoration independent of the frame fill and its live content. -->
+            <Setter Property="BoxShadow"
+                    Value="{CompiledBinding $parent[atom:Window].FrameShadow, Converter={x:Static themes:WindowDrawnDecorationsTheme.CachedFrameShadow}}" />
+            <Setter Property="CacheMode">
+                <BitmapCache />
+            </Setter>
         </Style>
 
         <Style Selector="^:has-shadow /template/ Panel#PART_UnderlayWrapper">

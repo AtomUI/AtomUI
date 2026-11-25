@@ -44,6 +44,8 @@ internal sealed class WaylandPresentationTiming
     private long _predictedFrames;
     private long _predictionHits;
 
+    internal event Action? FrameStarted;
+
     internal WaylandPresentationTiming(Func<WpPresentation.Listener, WpPresentation> bind)
     {
         _presentation = bind(new PresentationListener(this));
@@ -67,10 +69,13 @@ internal sealed class WaylandPresentationTiming
     /// <summary>The current refresh interval in Stopwatch ticks, or zero when unknown or variable.</summary>
     internal long RefreshInterval => Interlocked.Read(ref _refresh);
 
-    internal void OnFrameStarted()
+    internal long? OnFrameStarted(long now)
     {
         Interlocked.Increment(ref _framesInFlight);
+        var expected = SchedulePresentation(now);
         Interlocked.Increment(ref _framesStarted);
+        FrameStarted?.Invoke();
+        return expected;
     }
 
     internal void OnFrameReleased()
@@ -97,8 +102,10 @@ internal sealed class WaylandPresentationTiming
         return scheduled > 0 ? Math.Max(presentation, scheduled + refresh) : presentation;
     }
 
-    /// <summary>Records a prepared frame on the worker and returns its expected presentation.</summary>
-    internal long? OnFramePrepared(long now)
+    /// <summary>
+    /// Records the expected presentation of the frame about to be drawn.
+    /// </summary>
+    private long? SchedulePresentation(long now)
     {
         if (NextPresentation(now, out var refresh) is not { } presentation)
         {

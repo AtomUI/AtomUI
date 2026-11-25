@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AtomUI.Reflection;
 using Avalonia.Controls;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace AtomUI.Animations;
 
@@ -21,6 +22,10 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
     private readonly Action<TimeSpan> _sample;
     private readonly TaskCompletionSource _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private IDisposable? _subscription;
+    private IMotionPresentationClock? _presentationClock;
+    private Action? _requestFramePulse;
+    private DispatcherTimer? _framePulseTimer;
+    private int _framePulseQueued;
     private TimeSpan? _start;
     private TimeSpan? _lastSample;
     private long _lastTarget;
@@ -45,6 +50,7 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
 
     internal void Stop()
     {
+        SetPresentationClock(null);
         var subscription = _subscription;
         _subscription = null;
         subscription?.Dispose();
@@ -57,39 +63,123 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
         {
             return;
         }
-        var sampleTime = ToPresentationTime(time, out var target);
-        if (_lastSample is { } last && sampleTime < last)
+        var clock = MotionFrameTiming.Clock;
+        if (!ReferenceEquals(_presentationClock, clock))
+        {
+            SetPresentationClock(clock);
+        }
+        var framesStarted = clock?.FramesStarted ?? 0;
+        var sampleTime = ToPresentationTime(time, clock, framesStarted, out var target);
+        // The Avalonia pulse and Stopwatch are read at different times. Reusing a prediction must reuse
+        // its sampled value even when the difference between those reads changes slightly.
+        if (_lastSample is { } last && (sampleTime < last || (target > 0 && target == _lastTarget)))
         {
             sampleTime = last;
         }
         _start ??= sampleTime;
         var local = sampleTime - _start.Value - _startSlip;
         var finished = local >= _total;
-        if (finished || _lastSample != sampleTime)
+        // A prepared frame can hold the worker across several refreshes. Keep the pending sample
+        // until a draw can use it, but let completion settle even if drawing stops.
+        var waitingForDraw = target > 0 && _lastSample is not null &&
+                             framesStarted == _startedAtCommit && clock is { FramesInFlight: > 0 };
+        if (finished || (!waitingForDraw && _lastSample != sampleTime))
         {
-            if (target > _lastTarget && MotionFrameTiming.Clock is { } clock)
+            if (target > _lastTarget && clock is not null)
             {
                 _lastTarget = target;
-                _startedAtCommit = clock.FramesStarted;
+                _startedAtCommit = framesStarted;
             }
-            _sample(finished ? _total : local);
+            try
+            {
+                _sample(finished ? _total : local);
+                _lastSample = sampleTime;
+            }
+            catch (Exception error)
+            {
+                _completion.TrySetException(error);
+                Stop();
+                return;
+            }
         }
-        _lastSample = sampleTime;
         if (finished)
         {
             Stop();
+        }
+        if (_completion.Task.IsCompleted)
+        {
             return;
         }
-        // A pulse that changes nothing (delay, unchanged values) requests no commit, and MediaContext then
-        // reschedules through a 16ms DispatcherTimer that is not aligned with the display refresh.
-        // An empty commit keeps the next pulse on the compositor's own pacing.
-        ElementComposition.GetElementVisual(_target)?.Compositor.RequestCompositionBatchCommitAsync();
+        // A presentation clock wakes the next pulse when the renderer takes a frame. Requesting an empty
+        // batch here would wake the UI again as soon as that batch is processed, even while the display waits.
+        if (clock is null)
+        {
+            RequestCompositorPulse();
+        }
+        else if (clock.RefreshInterval is > 0 and var refresh && _framePulseTimer is not { IsEnabled: true })
+        {
+            // A motion may start or wait through its delay without changing pixels. In that case no draw
+            // will wake it, so arm one fallback pulse at the measured refresh rate.
+            if (_framePulseTimer is null)
+            {
+                _framePulseTimer = new DispatcherTimer(DispatcherPriority.Render);
+                _framePulseTimer.Tick += FramePulseTimedOut;
+            }
+            _framePulseTimer.Interval = Stopwatch.GetElapsedTime(0, refresh);
+            _framePulseTimer.Start();
+        }
     }
 
-    private TimeSpan ToPresentationTime(TimeSpan time, out long target)
+    private void SetPresentationClock(IMotionPresentationClock? clock)
+    {
+        _framePulseTimer?.Stop();
+        if (_presentationClock is not null)
+        {
+            _presentationClock.FrameStarted -= FrameStarted;
+        }
+        _presentationClock = clock;
+        if (clock is not null)
+        {
+            _requestFramePulse ??= RequestFramePulse;
+            clock.FrameStarted += FrameStarted;
+        }
+    }
+
+    private void FrameStarted()
+    {
+        if (Interlocked.Exchange(ref _framePulseQueued, 1) == 0)
+        {
+            Dispatcher.UIThread.Post(_requestFramePulse!, DispatcherPriority.Render);
+        }
+    }
+
+    private void RequestFramePulse()
+    {
+        Interlocked.Exchange(ref _framePulseQueued, 0);
+        if (_presentationClock is not null)
+        {
+            _framePulseTimer?.Stop();
+            RequestAnimationPulse();
+        }
+    }
+
+    private void FramePulseTimedOut(object? sender, EventArgs args)
+    {
+        var timer = (DispatcherTimer)sender!;
+        timer.Stop();
+        RequestAnimationPulse();
+    }
+
+    private void RequestAnimationPulse() =>
+        TopLevel.GetTopLevel(_target)?.RequestAnimationFrame(static _ => { });
+
+    private void RequestCompositorPulse() =>
+        ElementComposition.GetElementVisual(_target)?.Compositor.RequestCompositionBatchCommitAsync();
+
+    private TimeSpan ToPresentationTime(TimeSpan time, IMotionPresentationClock? clock, long framesStarted, out long target)
     {
         target = 0;
-        if (MotionFrameTiming.Clock is not { } clock)
+        if (clock is null)
         {
             return time;
         }
@@ -103,7 +193,7 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
         {
             // Only a frame started after the last commit is known to carry it. Pulses can outnumber frames, so an
             // idle renderer is not evidence that the previous target was consumed.
-            var taken = clock.FramesStarted != _startedAtCommit;
+            var taken = framesStarted != _startedAtCommit;
             target = Math.Max(target, taken ? _lastTarget + clock.RefreshInterval : _lastTarget);
             if (taken && !_advanced)
             {
@@ -111,7 +201,7 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
                 // so frames beyond the first repeat the start state. Slip the start by those frames instead of
                 // jumping ahead on the next sample; later stale frames are not absorbed, so completion cannot drift.
                 _advanced = true;
-                var stale = clock.FramesStarted - _startedAtCommit - 1;
+                var stale = framesStarted - _startedAtCommit - 1;
                 if (stale > 0)
                 {
                     _startSlip = Stopwatch.GetElapsedTime(0, Math.Min(stale, 2) * clock.RefreshInterval);

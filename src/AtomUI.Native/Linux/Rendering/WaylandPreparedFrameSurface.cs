@@ -129,10 +129,9 @@ internal sealed class WaylandPreparedFrameSurface : IGlPlatformSurface
 
                 // The scene content is fixed once drawing starts. Schedule this frame's presentation now so the UI
                 // spends the whole draw producing the next frame instead of waiting for this draw to finish.
-                var presentation = _surface._bridge.Presentation;
-                presentation?.OnFrameStarted();
-                return new Session(this, eglSurface, sceneInfo, size, restore, _surface._bridge.CaptureSnapshot(),
-                    presentation?.OnFramePrepared(Stopwatch.GetTimestamp()));
+                var snapshot = _surface._bridge.CaptureSnapshot();
+                var predicted = _surface._bridge.Presentation?.OnFrameStarted(Stopwatch.GetTimestamp());
+                return new Session(this, eglSurface, sceneInfo, size, restore, snapshot, predicted);
             }
             catch
             {

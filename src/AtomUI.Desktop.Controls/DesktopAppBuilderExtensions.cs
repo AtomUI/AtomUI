@@ -169,6 +169,12 @@ public static class DesktopAppBuilderExtensions
 
     private sealed class WaylandMotionPresentationClock(WaylandPresentationTiming timing) : IMotionPresentationClock
     {
+        public event Action? FrameStarted
+        {
+            add => timing.FrameStarted += value;
+            remove => timing.FrameStarted -= value;
+        }
+
         public long? PredictPresentation(long now) => timing.PredictPresentation(now);
         public long RefreshInterval => timing.RefreshInterval;
         public long FramesStarted => timing.FramesStarted;

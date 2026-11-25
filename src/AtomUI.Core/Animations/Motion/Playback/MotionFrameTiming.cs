@@ -3,6 +3,11 @@ namespace AtomUI.Animations;
 /// <summary>Presentation timing reported by the platform renderer, in Stopwatch ticks.</summary>
 internal interface IMotionPresentationClock
 {
+    /// <summary>
+    /// Raised on the render thread after the frame and its expected presentation are recorded.
+    /// </summary>
+    event Action? FrameStarted;
+
     /// <summary>The earliest presentation that content sampled at <paramref name="now"/> can reach, or null.</summary>
     long? PredictPresentation(long now);
 
@@ -19,6 +24,12 @@ internal interface IMotionPresentationClock
 /// <summary>Optional platform presentation timing installed by the desktop host.</summary>
 internal static class MotionFrameTiming
 {
+    private static IMotionPresentationClock? s_clock;
+
     /// <summary>Read on the UI thread; null when the platform offers no reliable presentation timing.</summary>
-    internal static IMotionPresentationClock? Clock { get; set; }
+    internal static IMotionPresentationClock? Clock
+    {
+        get => Volatile.Read(ref s_clock);
+        set => Volatile.Write(ref s_clock, value);
+    }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Theme.Resources;
@@ -940,6 +941,12 @@ public partial class NavMenu : ItemsControl,
         {
             // The endpoints depend on current rendered bounds and metadata coercion, so a
             // ControlTheme transition cannot express this request-owned layout override.
+            if (MotionFrameTiming.Clock is { RefreshInterval: > 0 })
+            {
+                await RunInlineCollapsedWidthOnPresentationClockAsync(startWidth, targetWidth, duration, cancellationToken);
+                return;
+            }
+
             var animation = new Animation
             {
                 Duration = duration,
@@ -979,6 +986,18 @@ public partial class NavMenu : ItemsControl,
                 Dispatcher.UIThread.Post(() => CompleteInlineCollapsedWidthMotion(targetWidth, cancellationTokenSource));
             }
         }
+    }
+
+    private async Task RunInlineCollapsedWidthOnPresentationClockAsync(double startWidth, double targetWidth,
+        TimeSpan duration, CancellationToken cancellationToken)
+    {
+        var easing = new CubicEaseOut();
+        var driver = new MotionFrameDriver(this, duration, elapsed =>
+            InlineCollapsedLayoutWidth = startWidth + (targetWidth - startWidth) * easing.Ease(elapsed / duration));
+        cancellationToken.ThrowIfCancellationRequested();
+        driver.Start();
+        using var cancellation = cancellationToken.Register(static state => ((MotionFrameDriver)state!).Stop(), driver);
+        await driver.Completion;
     }
 
     private void CompleteInlineCollapsedWidthMotion(double targetWidth,

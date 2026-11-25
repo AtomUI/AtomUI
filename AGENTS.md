@@ -96,6 +96,7 @@ Read the relevant document before touching the corresponding area:
 - AOT programming, dynamic data, source generators: [docs/engineering/development/aot-programming-guidelines.md](docs/engineering/development/aot-programming-guidelines.md)
 - Compiler diagnostics: [docs/engineering/development/compiler-diagnostics-guidelines.md](docs/engineering/development/compiler-diagnostics-guidelines.md)
 - Code style: [docs/engineering/development/code-style-guidelines.md](docs/engineering/development/code-style-guidelines.md)
+- Source comments: [docs/engineering/development/code-comment-guidelines.md](docs/engineering/development/code-comment-guidelines.md)
 - New controls and new or changed control properties must follow [Control property forms and naming](docs/engineering/development/control-development-guidelines.md#控件属性形态与命名).
 - Documentation structure and file naming: [docs/engineering/contributing/documentation-structure-guidelines.md](docs/engineering/contributing/documentation-structure-guidelines.md)
 - Changelog and release notes: [docs/engineering/contributing/changelog-guidelines.md](docs/engineering/contributing/changelog-guidelines.md)
@@ -145,6 +146,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 1. **未经明确指令不得提交**：没有用户的明确要求，完成一个任务或模块的开发之后，必须先交用户审查；未通过审查前，禁止自行创建 git commit，同样禁止 amend、rebase 等改写已有提交的动作。
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
+4. **提交前必须审查注释。** 含代码变动的提交，必须按[注释规范的提交前检查要求](docs/engineering/development/code-comment-guidelines.md#8-提交前检查)核对最终暂存内容，检查通过后方可提交。
 
 ## 分支与 Worktree 强约束（本项目生效）
 

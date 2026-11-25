@@ -21,6 +21,7 @@
 - [AOT 编程规范](development/aot-programming-guidelines.md)
 - [编译期诊断规范](development/compiler-diagnostics-guidelines.md)
 - [代码风格规范](development/code-style-guidelines.md)
+- [代码注释书写规范](development/code-comment-guidelines.md)
 - [Control 研发规范](development/control-development-guidelines.md)
 - [Control Token 规范](development/control-token-guidelines.md)
 - [设计语言取值包命名实施标准](development/value-package-naming.md)

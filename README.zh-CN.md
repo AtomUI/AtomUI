@@ -51,7 +51,7 @@ AtomUI 是面向 Avalonia/.NET 桌面应用的 Ant Design 6 组件体系，目�
 项目提供面向生产场景的桌面控件、图标包、字体包、原生窗口集成、DataGrid、ColorPicker，以及用于自定义控件、
 Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改进建议。
 
-<img src="./resources/images/readme/Gallery.png"/>
+<img src="./resources/images/readme/Gallery.zh-CN.svg" width="1200" alt="AtomUI 桌面端和移动端控件演示"/>
 
 #### 特性
 

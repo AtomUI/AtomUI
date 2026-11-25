@@ -55,7 +55,7 @@ The project includes production-oriented desktop controls, icon packages, font p
 DataGrid, ColorPicker and source generators for custom controls, tokens and localization. Feedback, issues and pull
 requests are welcome.
 
-<img src="./resources/images/readme/Gallery.png"/>
+<img src="./resources/images/readme/Gallery.en-US.svg" width="1200" alt="AtomUI Gallery on desktop and mobile"/>
 
 #### Features
 

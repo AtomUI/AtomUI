@@ -1,0 +1,48 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    x:ClassModifier="internal">
+
+    <ControlTheme x:Key="{x:Type atom:FullScreenTitleBarHost}" TargetType="atom:FullScreenTitleBarHost">
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="MotionDuration" Value="{atom:WindowTokenResource MotionDurationMid}" />
+        <Setter Property="Template">
+            <ControlTemplate TargetType="atom:FullScreenTitleBarHost">
+                <Border Name="PART_Surface"
+                        VerticalAlignment="Top"
+                        Margin="{TemplateBinding SurfaceMargin}"
+                        IsVisible="{TemplateBinding IsSurfaceVisible}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Padding="{TemplateBinding Padding}"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+
+        <!-- A closed surface is transparent and ignores input; IsSurfaceVisible removes it once the closing motion ends. -->
+        <Style Selector="^ /template/ Border#PART_Surface">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform" Value="translate(0px, -8px)" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="BoxShadow" Value="{atom:WindowTokenResource FullscreenPopoverShadows}" />
+        </Style>
+
+        <Style Selector="^:open /template/ Border#PART_Surface">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+        </Style>
+
+        <Style Selector="^:docked /template/ Border#PART_Surface">
+            <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+        </Style>
+
+        <Style Selector="^[IsMotionEnabled=True]:not(:docked) /template/ Border#PART_Surface">
+            <Setter Property="Transitions" Value="{TemplateBinding SurfaceTransitions}" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

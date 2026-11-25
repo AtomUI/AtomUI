@@ -8,6 +8,51 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-21
+
+- Token：新增 Own Token `InputFontSizeSM`（小号字体，默认 `FontSize`，与 antd 一致），Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），与 Small LineEdit 一致。
+- PrimeNG：手柄图标 10.5（PrimeUIX `form.field.font.size` 14 小一档），手柄列宽改为图标加两侧各一个 `InputPadding.Left`，图标离右边框的距离与文字离左边框相同；此前 36px 列宽配 7.875 图标，右侧留白过大、图标过小。
+
+## 2026-11-17
+
+- Theme
+  - 手柄图标静息色、悬停背景、按下图标色改读自有槽位 `HandleIconColor` / `HandleHoverBg` / `HandlePressedColor`
+    （定义在共享的 `AbstractButtonSpinnerToken`，Ant 取值不变）。
+  - 手柄内两个半高按钮按边框宽度外侧内缩，按下/悬停底色不再覆盖输入框边框。
+  - `AtomUI.Themes.PrimeNG` 的 `PrimeNGNumericUpDownTokens` 按官方 `inputnumber.button` 写入同一套值。
+  - 禁用态保持手柄可见（原先淡出隐藏），禁用外观由手柄 `:disabled` 样式呈现。
+  - 图标尺寸在 PrimeNG 下为 7.875（官方 `form.field.font.size` 14 连续两次缩小四分之一，产品口径），Ant 仍为 `fontSize / 2`。
+
+## 2026-11-11
+
+- Theme
+  - ButtonSpinner / NumericUpDown 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - NumericUpDown 无法用 Tab 进入：`NumericUpDownSpinnerTheme` 基于 ButtonSpinner 主题，继承了 `KeyboardNavigation.TabNavigation=None`，整个旋钮内部（包括数值输入框）都不在 Tab 顺序中。现在该主题恢复为 `Continue`，输入框是唯一停靠点（Ant Design InputNumber）；外框和步进按钮设为 `IsTabStop=False`，步进仍由输入框内的 Up / Down 完成；清除按钮出现时可 Tab 到达。
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - `ButtonSpinnerDecoratedBoxTheme` 的 content frame 补上 `BoxShadow` 模板绑定；`ButtonSpinner` / `NumericUpDown` 宿主设置空 `FocusAdorner` 与 `ClipToBounds=False`，`Outlined` focus 外发光可见。
+  - 允许清除且有值时，Tab 顺序改为“输入 → 清除按钮 → 离开”，与 ComboBox 一致。此前清除按钮在模板中排在输入框之前，Tab 跳过它，从输入框 Shift+Tab 反而停在它上面；按 Enter 清除后按钮隐藏，键盘焦点丢失。
+    - 宿主是 Avalonia NumericUpDown 默认的 `TabNavigation=Local` 分组，模板中输入框 `TabIndex=0`、清除按钮 `TabIndex=1`。
+    - Avalonia 用本地绑定把宿主 `TabIndex` 转给输入框，会盖掉模板值；`OnApplyTemplate` 以一个立即完成的空本地绑定替换并释放它，宿主自身的 `TabIndex` 仍决定整个分组在外部的顺序。
+    - Enter / Space 或点击清除后焦点回到输入框（键盘触发时保持键盘焦点可见），描边在按钮聚焦时挂在按钮上。
+    - 从控件后方 Shift+Tab 进入时，Avalonia NumericUpDown 把首次进入的焦点交给输入框，因此落在输入框，再按 Tab 才到清除按钮。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - NumericUpDown 的内部 NumericUpDownSpinner 与 EmbeddedTextBox 改为继承 NumericUpDown 的 Token owner：此前 NumericUpDownSpinner
+    主题 `BasedOn` 已解析的 ButtonSpinner 默认主题，也继承了其中注入的 ButtonSpinner identity，整个 NumericUpDown 的输入表面跟随
+    `Controls[ButtonSpinner]`。现在 `Controls[NumericUpDown]` 的全局覆盖作用于输入表面、内嵌编辑器、圆角、Handle 边框宽度与禁用色，
+    `Controls[ButtonSpinner]` / `Controls[TextBox]` 不再改变它们；Handle 的 Own Token 仍读取 ButtonSpinner（见 token.md）。
+  - 根 `BorderBrush` 经模板绑定交给内部 spinner，再进入输入表面的 `HostBorderBrush`，不再以本地值写入内部表面。
+  - Spinner mode 的 -/+ 分隔线宽度跟随输入表面边框宽度；-/+ 图标尺寸读取 NumericUpDown 的 `IconSize`。
+- Fixed
+  - 焦点阴影此前未绑定到 spinner 的内容表面、且控件裁剪到自身边界，现在可见。
+
 ## 2026-10-18
 
 - Implementation

@@ -2,6 +2,22 @@
 
 本文档记录 CheckBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `CheckBoxToken.IndicatorHoverBorderColor`（默认 `ColorPrimaryHover`）：未选中与半选指示器悬停边框；PrimeNG 采用 `form.field.hover.border.color`。
+
+## 2026-11-17
+
+- Theme
+  - Shadcn 各 Style 的勾选框圆角改为按附录 C 的专用值（Vega/Nova/Mira 4、Maia 6、Luma/Rhea 5、Lyra/Sera 0），不再复用按钮圆角阶梯：Luma/Maia 的 26 在 16px 指示器上会被 CSS 语义钳到 8，视觉上整个勾选框变成圆形。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - `CheckBoxIndicator#Indicator` 标记 `TemplatedControl.IsTemplateFocusTarget`，描边只包围勾选框，不包含文字。
+
 ## 2026-08-16
 
 - Semantic Part

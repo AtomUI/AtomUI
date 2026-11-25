@@ -42,7 +42,7 @@ ListBoxToken 当前按 ListBox 语义分为五类。
 - selected 使用 `SharedToken.ColorText`。
 - disabled 使用 `SharedToken.ColorTextDisabled`。
 
-disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presenter；维护时必须保持 disabled 文本可读性稳定。
+disabled 条目的内容 presenter 前景读取 `ItemDisabledColor`（默认 `ColorTextDisabled`，与 antd 的禁用文字色一致）；维护时必须保持 disabled 文本可读性稳定。
 
 ### 2.3 条目背景 Token
 
@@ -57,6 +57,7 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 - 普通背景使用透明色。
 - hover 背景使用 `SharedToken.ColorBgTextHover`。
 - selected 背景使用 `SharedToken.ControlItemBgActive`。
+- selected 文字 `ItemSelectedColor` 使用 `SharedToken.ControlItemColorActive`（默认等于 `ColorText`）。
 
 `ItemHoverBg` 和 `ItemSelectedBg` 是 ListBox public styled property，theme 默认值来自这些 Token，允许实例级覆盖。
 
@@ -74,7 +75,7 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 - `ItemMargin` 控制条目之间的垂直间距，当前默认值为 `Thickness(0)`：条目纵向密度由分割线表达，条目之间以及条目与外框之间不留间距。
 - `SelectedIndicatorMargin` 控制 selected indicator 与内容区域的距离。
 
-条目最小高度来自 SharedToken，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用 SharedToken `ColorSplit` 与 1 DIP 线宽（条目 `BorderThickness` 默认 `0,0,0,1`），不在 ListBoxToken 中重复定义。
+条目最小高度来自全局 Token，由 SizeType selector 选择。条目表面保持直角，主题不设置条目圆角。条目底部分割线使用全局 `ColorSplit` 与 `LineWidth`（主题写入 internal `SplitLineWidth`，只画底边）；应用或 Semantic Part 样式设置条目 `BorderThickness` 时整体替换默认分割线。分割线不在 ListBoxToken 中重复定义。
 
 ### 2.5 过滤 Token
 
@@ -87,22 +88,32 @@ disabled 颜色在 theme 中也可由 SharedToken 直接作用到内容 presente
 ListBoxToken 主要参与以下专项模型：
 
 - SizeType：条目 padding 来自 `ItemPaddingSM`、`ItemPadding`、`ItemPaddingLG`，root 圆角和条目最小高度来自 SharedToken；条目不设圆角。
-- selected indicator：`SelectedIndicatorMargin` 控制右侧选中图标与内容之间的间距，图标尺寸和颜色来自 SharedToken。
+- selected indicator：`SelectedIndicatorMargin` 控制右侧选中图标与内容之间的间距，图标尺寸（`IconSize`）和颜色（`ColorPrimary`）来自宿主的有效全局 Token。
 - hover / selected：`ItemHoverBgColor` 和 `ItemSelectedBgColor` 通过 public property 默认值传递给 ListBoxItem。
 - filter：`FilterHighlightColor` 通过 `FilterHighlightForeground` 传递到 `HighlightableTextBlock`。
-- CandidateList：CandidateList 基于 ListBoxTheme 和 ListBoxItemTheme，继承 ListBoxToken 的条目色彩、间距和过滤高亮语义。
+- CandidateList：CandidateList 基于共享列表结构，条目色彩、间距和过滤高亮通过宿主有效全局值的内部样式输入提供，不借用 ListBox Own。
 
 Token 不参与 selection 更新、CandidateList commit、filter 计算、container recycling 或 empty indicator 判定。
 
+### 3.1 主题读法与 Token owner
+
+- `ListBoxTheme` 与 `ListBoxItemTheme` 也供透明 CandidateList 和 Cascader 过滤列表复用，因此全局 Token 以
+  `OwnerTokenResource` 读取（主题前有 `<!-- owner: -->` 标记）。独立 ListBox 使用 ListBox owner 和 Own；透明候选部件
+  跟随 Mentions / AutoComplete / Cascader 等实际宿主，宿主内部样式输入覆盖基础列表默认值。
+- `ListBoxItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），条目继承宿主列表的 owner：`Controls[ListBox]` 作用于条目的
+  颜色、高度、选中标记与过渡时长，`Controls[ListBoxItem]` 不作用于条目。
+- 选中标记的样式选择器此前指向 `IconPresenter`，与模板中的 `IconTemplatePresenter` 不匹配，`ColorPrimary` / `IconSize` /
+  `SelectedIndicatorMargin` 从未生效；现已修正，选中标记显示为主色、`IconSize` 尺寸。
+
 ## 4. 控件家族影响
 
-ListBoxToken 影响 ListBox 与 CandidateList 体系：
+ListBoxToken 影响独立 ListBox；共享结构的部件边界如下：
 
 - `ListBox` root theme 使用 `ContentPadding` 和 `FilterHighlightColor`。
 - `ListBoxItem` theme 使用条目文字、背景、padding、margin 和 selected indicator margin。
-- `CandidateList` 通过 BasedOn `ListBoxTheme` 继承 root 结构和条目 Token。
-- `CandidateListItem` 通过 BasedOn `ListBoxItemTheme` 继承条目 Token，并补充 candidate selected 背景规则。
-- `CascaderViewFilterList` 基于 ListBox，用于过滤结果展示时继承 ListBoxToken 语义。
+- `CandidateList` 通过 BasedOn `ListBoxTheme` 复用 root 结构，颜色和条目输入由实际宿主提供。
+- `CandidateListItem` 通过 BasedOn `ListBoxItemTheme` 复用条目结构，并以实际宿主输入提供 candidate selected 背景。
+- `CascaderViewFilterList` 基于 ListBox，用于过滤结果展示时采用 Cascader 宿主的样式输入。
 
 ListBoxToken 不影响 ListViewToken。ListView 和 ListBox 有相似的列表条目语义，但它们各自拥有独立 Token ID 和 resource scope。
 
@@ -130,3 +141,7 @@ ListBoxToken 变更验证：
 - `SelectedIndicatorMargin` 不造成内容和 selected indicator 重叠。
 - `FilterHighlightColor` 能传递到过滤高亮文本。
 - CandidateList 和 Cascader filter list 继承后的视觉语义稳定。
+
+## 独立 Token 身份与共享计算
+
+独立 ListBox 的 Own 契约保持不变。CandidateList/CandidateListItem 是 Mentions/AutoComplete 的透明部件，其实际颜色与水平 padding 读取宿主 globals，不再借 ListBox Own。

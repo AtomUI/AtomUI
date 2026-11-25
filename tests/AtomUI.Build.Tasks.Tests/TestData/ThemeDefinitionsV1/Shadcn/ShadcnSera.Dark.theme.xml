@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnSera.Dark" Name="Shadcn Sera Dark" Appearance="Dark" DesignLanguage="Shadcn.Sera" BrandColor="Seed" NeutralColor="Seed" IsDefault="false">
+  <Algorithms>
+    <Algorithm Catalog="Shadcn" Id="Sera.Dark" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#171717" />
+    <Token Name="ColorNeutral" Value="#737373" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+  </Tokens>
+</Theme>

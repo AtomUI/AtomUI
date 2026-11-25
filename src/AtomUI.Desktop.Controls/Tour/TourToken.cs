@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -6,68 +5,47 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class TourToken : AbstractControlDesignToken
+public sealed partial class TourToken : AbstractControlDesignToken
 {
     
     /// <summary>
     /// 关闭按钮尺寸
     /// Close button size
     /// </summary>
-    public double CloseBtnSize { get; set; }
+    public partial double CloseBtnSize { get; set; }
     
     /// <summary>
     /// Primary 模式上一步按钮背景色
     /// Background color of previous button in primary type
     /// </summary>
-    public Color PrimaryPrevBtnBg { get; set; }
+    public partial Color PrimaryPrevBtnBg { get; set; }
     
     /// <summary>
     /// Primary 模式下一步按钮悬浮背景色
     /// Hover background color of next button in primary type
     /// </summary>
-    public Color PrimaryNextBtnHoverBg { get; set; }
+    public partial Color PrimaryNextBtnHoverBg { get; set; }
     
-    /// <summary>
-    /// Tour 内容视图的最小宽度
-    /// </summary>
-    public double TourViewMinWidth { get; set; }
+    /// <summary>Minimum width of the tour content view.</summary>
+    public partial double TourViewMinWidth { get; set; }
     
-    /// <summary>
-    /// Tour 内容视图的最小高度
-    /// </summary>
-    public double TourViewMinHeight { get; set; }
+    /// <summary>Minimum height of the tour content view.</summary>
+    public partial double TourViewMinHeight { get; set; }
     
     /// <summary>
     /// 标题字体颜色
     /// Font color of title
     /// </summary>
-    public Color HeaderColor { get; set; }
+    public partial Color HeaderColor { get; set; }
 
     #region 内部使用
     
-    public double IndicatorSize { get; set; }
-    public double PopupMarginToAnchor { get; set; }
-    public CornerRadius TourBorderRadius { get; set; }
+    /// <summary>Width and height of a step dot in the default tour indicator.</summary>
+    public partial double IndicatorSize { get; set; }
+    /// <summary>Default gap between the tour popup and the highlighted target.</summary>
+    public partial double PopupMarginToAnchor { get; set; }
+    /// <summary>Corner radius of the tour popup.</summary>
+    public partial CornerRadius TourBorderRadius { get; set; }
     
     #endregion
-    
-    public TourToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        CloseBtnSize          = EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight;
-        PrimaryPrevBtnBg      = EffectiveGlobalToken.ColorTextLightSolid.SetAlphaF(0.15);
-        PrimaryNextBtnHoverBg = ColorUtils.OnBackground(EffectiveGlobalToken.ColorBgTextHover, EffectiveGlobalToken.ColorWhite);
-        IndicatorSize         = 6;
-        TourBorderRadius      = EffectiveGlobalToken.BorderRadiusLG;
-        TourViewMinWidth      = 200;
-        TourViewMinHeight     = 120;
-        HeaderColor           = EffectiveGlobalToken.ColorTextHeading;
-        PopupMarginToAnchor   = EffectiveGlobalToken.SpacingXXS;
-    }
-    
 }

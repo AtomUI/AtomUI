@@ -57,6 +57,8 @@ BorderBeamToken
 
 默认渐变使用 `ColorPrimary 0% -> ColorPrimaryHover MaxVisibleStopPercent% -> Transparent`。用户设置 `Color` 或 `ColorStops` 后，颜色来源切换为实例配置，但 `MaxVisibleStopPercent` 仍控制停靠点映射。
 
+宿主成组读取两项默认色、不透明度与可见段终点，并通过一次模板投射交给 Presenter。
+
 BorderBeamToken 不定义业务色组，不定义 preset color 组合，不定义 `Ocean`、`Aurora`、`Sunset` 等示例色板。示例色板属于 Gallery 示例数据，不属于控件 Token。
 
 `Count` 控制单个 BorderBeam 实例沿同一边界绘制的光束数量，默认值为 `1`，非正值按 `1` 处理。它不描述
@@ -73,7 +75,7 @@ BorderBeamToken 只影响 BorderBeam 自身，不应被 Card、Button、GroupBox
 
 ## 5. 兼容性要求
 
-BorderBeamToken 属于 BorderBeam 主题契约。即使 `BorderBeamToken` 是 internal 类型，生成的 `BorderBeamTokenKind` 和 AXAML resource 使用点也形成稳定依赖。
+BorderBeamToken 属于 BorderBeam 主题契约。`BorderBeamToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `BorderBeamTokenKind` 和 AXAML resource 使用点也形成稳定依赖。
 
 BorderBeamToken 变更要求：
 
@@ -95,3 +97,9 @@ BorderBeamToken 变更要求：
 | 修改 `MaxVisibleStopPercent` | 验证单色、多 stop 渐变和透明尾迹连续性。 |
 | 修改 `Count` 或 hover 组合 | 验证实例属性与 Style 行为，并确认 BorderBeamToken 和默认资源键没有变化。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
+
+## 7. 有效 Token 与作用域边界
+
+颜色、线宽与圆角通过 `BorderBeamTokenResource` 读取 BorderBeam 的有效全局 Token；局部覆盖只影响该装饰，
+不改变内部已注册内容的身份。四项 Own Token 均保持 Active；周期验证采用绑定读回，像素验收固定动画相位，
+透明度验证使用可见范围内的值以避免 0–1 限制掩盖效果。实例 `IsMotionEnabled` 仍独立控制光束开关。

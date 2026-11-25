@@ -1,10 +1,14 @@
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent part: a CardGridItem lives in the grid content of a Card and has no Own Tokens, so its theme
+// reads the Card TokenResource and its Token-declared transitions resolve to the Card; Controls[Card] reaches the items.
+[TokenOwnerTransparent]
 public class CardGridItem : ContentControl
 {
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 
@@ -68,6 +72,13 @@ public class CardGridItem : ContentControl
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridItem>();
+
+    internal static readonly DirectProperty<CardGridItem, RectangleGeometry?> GridHoverClipProperty =
+        AvaloniaProperty.RegisterDirect<CardGridItem, RectangleGeometry?>(nameof(GridHoverClip), item => item.GridHoverClip);
+
+    private RectangleGeometry? _gridHoverClip;
+
+    internal RectangleGeometry? GridHoverClip => _gridHoverClip;
     
     public SizeType SizeType
     {
@@ -82,6 +93,22 @@ public class CardGridItem : ContentControl
     }
 
     #endregion
+
+    internal void SetGridHoverClip(Rect? bounds)
+    {
+        if (bounds is null)
+        {
+            SetAndRaise(GridHoverClipProperty, ref _gridHoverClip, null);
+        }
+        else if (_gridHoverClip is { } clip)
+        {
+            clip.Rect = bounds.Value;
+        }
+        else
+        {
+            SetAndRaise(GridHoverClipProperty, ref _gridHoverClip, new RectangleGeometry(bounds.Value));
+        }
+    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

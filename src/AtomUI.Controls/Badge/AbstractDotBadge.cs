@@ -1,4 +1,5 @@
-﻿using AtomUI.Utils;
+﻿using AtomUI.Theme.Resources;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -40,6 +41,10 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
     public static readonly StyledProperty<Point> OffsetProperty =
         AvaloniaProperty.Register<AbstractDotBadge, Point>(nameof(Offset));
 
+    // Defaults to false: the Desktop dot has no ring. Subclasses that draw one style on the adorner's IsBordered.
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractDotBadge, bool>(nameof(IsBordered));
+
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<AbstractDotBadge, bool>(nameof(BadgeIsVisible), true);
     
@@ -77,6 +82,12 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         set => SetValue(OffsetProperty, value);
     }
 
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
+    }
+
     public bool BadgeIsVisible
     {
         get => GetValue(BadgeIsVisibleProperty);
@@ -98,7 +109,9 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
     private int _adornerLayerRetryCount;
     private IDisposable? _motionBinding;
     private AncestorVisibilityTracker? _ancestorVisibilityTracker;
+    private IDisposable? _themeSubscription;
     private Panel? _standaloneContentHost;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     static AbstractDotBadge()
     {
@@ -107,6 +120,9 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         HorizontalAlignmentProperty.OverrideDefaultValue<AbstractDotBadge>(HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractDotBadge>(VerticalAlignment.Top);
     }
+
+    // Live ancestor-visibility subscriptions; 0 when the tracker is not active.
+    internal int TrackedAncestorCount => _ancestorVisibilityTracker?.SubscriptionCount ?? 0;
 
     private protected abstract AbstractDotBadgeAdorner CreateDotBadgeAdorner();
 
@@ -129,6 +145,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
             _adornerLayerRetryCount     = 0;
             _adornerLayerRetryScheduled = false;
             dotBadgeAdorner.ApplyToTarget(_adornerLayer, this);
+            UpdateAncestorVisibilityTracking();
             SyncLayerAdornerVisibility();
         }
         else
@@ -236,13 +253,67 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
         _adornerLayerRetryCount = 0;
+        // 目标挂载与指示器可见性无关：BadgeIsVisible 初始为 false 时也必须挂上目标
+        SyncDecoratedTargetChild(null);
         if (BadgeIsVisible)
         {
             PrepareAdorner();
         }
+        // The subscription does not fire for the first context, and a re-attached badge reuses its adorner: resolve
+        // against the context of this attach (the theme may have changed, or the badge moved to another provider).
+        ConfigureDotColor(DotColor);
 
-        _ancestorVisibilityTracker?.Dispose();
-        _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility);
+        UpdateAncestorVisibilityTracking();
+        UpdateThemeSubscription();
+    }
+
+    // Only a layer adorner can drift when an ancestor is hidden; an inline adorner is a plain child
+    // of this control and hides with it, so inline mode needs no subscriptions at all.
+    private void UpdateAncestorVisibilityTracking()
+    {
+        if (DecoratedTarget is not null && this.IsAttachedToVisualTree())
+        {
+            // The adorner layer's host hides the layer with its adorners, so tracking stops below it.
+            var boundary = _adornerLayer?.GetVisualParent();
+            if (_ancestorVisibilityTracker is null || !ReferenceEquals(_ancestorVisibilityTracker.Boundary, boundary))
+            {
+                _ancestorVisibilityTracker?.Dispose();
+                _ancestorVisibilityTracker = new AncestorVisibilityTracker(this, SyncLayerAdornerVisibility, boundary);
+            }
+        }
+        else
+        {
+            _ancestorVisibilityTracker?.Dispose();
+            _ancestorVisibilityTracker = null;
+        }
+    }
+
+    // Named colors (presets and statuses) depend on the theme snapshot; a hex value or no color needs no subscription.
+    private void UpdateThemeSubscription()
+    {
+        if (this.IsAttachedToVisualTree() && BadgeColorUtils.IsThemeDependent(DotColor))
+        {
+            if (_themeSubscription is null)
+            {
+                _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => RefreshThemeColor());
+                // Subscribing does not report the current snapshot, and a theme switch while detached was
+                // missed. A reused adorner still carries the old color, so resolve once on (re)subscription.
+                RefreshThemeColor();
+            }
+        }
+        else
+        {
+            _themeSubscription?.Dispose();
+            _themeSubscription = null;
+        }
+    }
+
+    private void RefreshThemeColor()
+    {
+        if (_dotBadgeAdorner is not null && DotColor is { } dotColor)
+        {
+            ConfigureDotColor(dotColor);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -250,6 +321,8 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         base.OnDetachedFromVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = null;
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
         _ancestorVisibilityTracker?.Dispose();
         _ancestorVisibilityTracker = null;
         Loaded -= HandleAdornerLayerRetryLoaded;
@@ -324,6 +397,7 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
             _dotBadgeAdorner[!AbstractDotBadgeAdorner.StatusProperty] = this[!StatusProperty];
             _dotBadgeAdorner[!AbstractDotBadgeAdorner.TextProperty]   = this[!TextProperty];
             _dotBadgeAdorner[!AbstractDotBadgeAdorner.OffsetProperty] = this[!OffsetProperty];
+            _dotBadgeAdorner[!AbstractDotBadgeAdorner.IsBorderedProperty] = this[!IsBorderedProperty];
             _dotBadgeAdorner[!IsMotionEnabledProperty]                = this[!IsMotionEnabledProperty];
         }
     }
@@ -443,6 +517,22 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
         _dotBadgeAdorner = null;
     }
 
+    // 目标的挂载与替换独立于指示器：指示器未创建或处于隐藏时，旧目标仍要移除、新目标仍要挂上。
+    private void SyncDecoratedTargetChild(Control? oldDecoratedTarget)
+    {
+        if (oldDecoratedTarget is not null &&
+            !ReferenceEquals(oldDecoratedTarget, DecoratedTarget) &&
+            oldDecoratedTarget.GetVisualParent() == this)
+        {
+            DetachChild(oldDecoratedTarget);
+        }
+
+        if (DecoratedTarget is not null && this.IsAttachedToVisualTree())
+        {
+            AttachChild(DecoratedTarget);
+        }
+    }
+
     private protected virtual void NotifyDecoratedTargetChanged(Control? oldDecoratedTarget = null)
     {
         if (_dotBadgeAdorner is not null)
@@ -483,6 +573,11 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
             }
         }
 
+        if (change.Property == DecoratedTargetProperty)
+        {
+            SyncDecoratedTargetChild(change.GetOldValue<Control?>());
+        }
+
         if (this.IsAttachedToVisualTree())
         {
             if (change.Property == DecoratedTargetProperty)
@@ -498,18 +593,36 @@ public abstract class AbstractDotBadge : Control, IMotionAwareControl
                 {
                     PrepareAdorner();
                 }
+
+                UpdateAncestorVisibilityTracking();
             }
 
             if (change.Property == DotColorProperty)
             {
                 ConfigureDotColor(change.GetNewValue<string>());
+                UpdateThemeSubscription();
             }
         }
     }
 
-    private protected virtual void ConfigureDotColor(string colorStr)
+    /// <summary>
+    /// Writes the resolved colour into the internal indicator, or clears it so the indicator falls back to the
+    /// theme's indicator colour when the colour is unset or invalid.
+    /// </summary>
+    private protected virtual void ConfigureDotColor(string? colorStr)
     {
-        _dotBadgeAdorner!.BadgeDotColor = BadgeColorUtils.CalculateColor(colorStr);
+        if (_dotBadgeAdorner is null)
+        {
+            return;
+        }
+
+        if (BadgeColorUtils.CalculateColor(this, colorStr) is { } brush)
+        {
+            _dotBadgeAdorner.BadgeDotColor = brush;
+        }
+        else
+        {
+            _dotBadgeAdorner.ClearValue(AbstractDotBadgeAdorner.BadgeDotColorProperty);
+        }
     }
-    
 }

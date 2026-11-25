@@ -490,7 +490,7 @@ Static templates, resource keys, and generated registrations remain stable durin
 | Requirement | AtomUI entry point |
 | --- | --- |
 | Change branding, base typography, radii, and global states | `ThemeConfigBuilder.WithToken`, preferring Seed overrides |
-| Dark, compact, and combined modes | `WithAlgorithms`; current algorithm identities are `Default`, `Dark`, and `Compact` |
+| Dark, compact, and combined modes | `WithAlgorithms`; the built-in algorithm identities are `Default`, `Dark`, and `Compact`; theme packages can register algorithms for other design languages |
 | Change only one Control family | `WithControl` + `ControlThemeConfigBuilder`, using generated `XxxTokens.Identity` |
 | Create a local page or region theme | `ThemeConfigProvider.Config`, binding or replacing a complete immutable configuration |
 | Adjust a stable visual part | Generated dedicated Semantic Part Styles, such as `ButtonContentStyle` and `CardBodyStyle` |
@@ -538,7 +538,7 @@ var buttonConfig = new ThemeConfigBuilder()
 This configuration changes only the effective tokens of the Button identity; it does not create a theme scope for the Button content subtree. Controls can override their Own Tokens
 and any registered Global Token. Confirm Own Token names through generated `XxxTokenKey`, control token documentation, and schema.
 `Unspecified` inherits the parent policy and ultimately defaults to `Disabled`. `Disabled` does not re-derive Map/Alias values when Control seeds are overridden.
-`Global` re-derives using the scope's algorithms; `Custom` uses an explicit ordered algorithm chain, currently composed from the same built-in algorithm identities listed above.
+`Global` re-derives using the scope's algorithms; `Custom` uses an explicit ordered algorithm chain, which can combine the built-in algorithms with registered package algorithms.
 
 ### Local scopes and resource consumption
 

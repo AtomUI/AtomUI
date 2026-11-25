@@ -4,6 +4,35 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TreeSelect}" TargetType="atom:TreeSelect">
+        <Setter Property="atom:SelectTag.TagBackground" Value="{atom:TreeSelectTokenResource MultipleItemBg}" />
+        <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeight}" />
+        <Setter Property="atom:SelectTag.DisabledSelectorBackground" Value="{atom:TreeSelectTokenResource MultipleSelectorBgDisabled}" />
+        <Setter Property="atom:SelectTag.DisabledTagForeground" Value="{atom:TreeSelectTokenResource MultipleItemColorDisabled}" />
+        <Setter Property="atom:SelectTag.OptionFontSize" Value="{atom:TreeSelectTokenResource OptionFontSize}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePadding}" />
+        <Setter Property="atom:SelectTag.CompactMultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePaddingSM}" />
+        <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndent}" />
+        <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePadding}" />
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightSM}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentSM}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePaddingSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="atom:SelectTag.TagHeight" Value="{atom:TreeSelectTokenResource MultipleItemHeightLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPadding" Value="{atom:TreeSelectTokenResource MultiModePaddingLG}" />
+            <Setter Property="atom:SelectTag.MultipleSelectionPrefixIndent" Value="{atom:TreeSelectTokenResource MultiModePrefixIndentLG}" />
+            <Setter Property="atom:SelectTag.SingleSelectionPadding" Value="{atom:TreeSelectTokenResource SingleModePaddingLG}" />
+        </Style>
+
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
+        <!-- Focus is shown by the input frame (primary border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <!-- The outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -30,7 +59,9 @@
                         IsDropDownOpen="{TemplateBinding IsDropDownOpen}"
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                         CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                        IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}"
+                        HostBackground="{TemplateBinding Background}">
                         <atom:AddOnDecoratedBox.ContentLeftAddOn>
                             <atom:AddOnContentPresenter
                                 Classes.semantic-prefix="True"
@@ -44,7 +75,7 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                             <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:TreeSelectTokenResource SpacingXS}">
                                 <atom:SelectMaxCountIndicator
                                     Name="PART_SelectMaxCountIndicator"
                                     MaxCount="{CompiledBinding $parent[atom:TreeSelect].MaxCount}"
@@ -116,6 +147,9 @@
                         </Panel>
                     </atom:TreeSelectAddOnDecoratedBox>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
@@ -131,25 +165,25 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="FilterHighlightForeground"
-                Value="{atom:SharedTokenResource ColorPrimary}" />
+                Value="{atom:TreeSelectTokenResource FilterHighlightColor}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="PopupContentPadding"
-                Value="{atom:SelectTokenResource PopupContentPadding}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:TreeSelectTokenResource EnableMotion}" />
+        <Setter Property="PopupLayoutTokenResourceKeys" Value="{x:Static atom:SelectPopupLayoutResources.TreeSelect}" />
+        <!-- The popup frame's MinWidth is template-bound to EffectivePopupWidth, which TreeSelect bounds below by this. -->
+        <Setter Property="MinPopupWidth" Value="{atom:TreeSelectTokenResource MinPopupWidth}" />
         <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                Value="{atom:TreeSelectTokenResource ColorTextPlaceholder}" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
+            <Setter Property="FontSize" Value="{atom:TreeSelectTokenResource FontSizeLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:TreeSelectTokenResource FontSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:TreeSelectTokenResource InputFontSizeSM}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
@@ -157,7 +191,7 @@
                     Value="{atom:PopupTokenResource MarginToAnchor}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:TreeSelectTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -192,13 +226,9 @@
             </TreeDataTemplate>
         </Setter>
 
-        <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="MinWidth"
-                    Value="{atom:TreeSelectTokenResource MinPopupWidth}" />
-        </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:TreeSelectTokenResource ColorTextDisabled}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

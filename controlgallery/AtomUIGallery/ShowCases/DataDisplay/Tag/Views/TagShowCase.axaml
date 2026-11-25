@@ -31,7 +31,7 @@
                             <gallery:SemanticPartPreview.PreviewContent>
                                 <StackPanel Orientation="Vertical"
                                             HorizontalAlignment="Left">
-                                    <atom:Tag Name="TagSemanticOwner"
+                                    <atom:Tag x:Name="TagSemanticOwner"
                                               IsClosable="True"
                                               Icon="{antdicons:AntDesignIconProvider Kind=SmileOutlined}"
                                               Text="{gallery:TagShowCaseLangResource P2ContentTagN1}" />
@@ -58,7 +58,7 @@
                             SemanticOwner="{Binding #CheckableTagGroupSemanticOwner}"
                             SemanticOwnerType="{x:Type atom:CheckableTagGroup}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:CheckableTagGroup Name="CheckableTagGroupSemanticOwner"
+                                <atom:CheckableTagGroup x:Name="CheckableTagGroupSemanticOwner"
                                                         HorizontalAlignment="Left"
                                                         Options="{Binding CheckableTagOptions}" />
                             </gallery:SemanticPartPreview.PreviewContent>
@@ -402,15 +402,16 @@
                                         Spacing="12">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Tag.semantic-object">
-                                        <Setter Property="Background" Value="#e6f4ff" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
+                                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         <atom:TagIconStyle x:SetterTargetType="atom:IconPresenter">
-                                            <Setter Property="IconBrush" Value="#1677ff" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorInfoText}" />
                                         </atom:TagIconStyle>
                                         <atom:TagContentStyle x:SetterTargetType="atom:TextBlock">
                                             <Setter Property="FontWeight" Value="SemiBold" />
                                         </atom:TagContentStyle>
                                         <atom:TagCloseStyle x:SetterTargetType="atom:IconButton">
-                                            <Setter Property="IconBrush" Value="#ff4d4f" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorErrorText}" />
                                         </atom:TagCloseStyle>
                                     </Style>
                                     <Style Selector="atom|CheckableTagGroup.semantic-object">

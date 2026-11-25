@@ -1,9 +1,12 @@
-using AtomUI.Animations;
-﻿using System.Collections.Specialized;
+﻿using AtomUI.Animations;
+using System.Collections.Specialized;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Desktop.Controls.Primitives.Themes;
 using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -13,6 +16,8 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -20,14 +25,20 @@ using AvaloniaComboBox = Avalonia.Controls.ComboBox;
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
 public partial class ComboBox : AvaloniaComboBox,
-                        IMotionAwareControl,
-                        ICustomizableSizeTypeAware,
-                        IInputControlStatusAware,
-                        IInputControlStyleVariantAware,
-                        IFormItemAware,
-                        IFormItemFeedbackAware
+                                IMotionAwareControl,
+                                ICustomizableSizeTypeAware,
+                                IInputControlStatusAware,
+                                IInputControlStyleVariantAware,
+                                IFormItemAware,
+                                IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<ComboBox>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<ComboBox>();
 
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<ComboBox>();
@@ -105,6 +116,30 @@ public partial class ComboBox : AvaloniaComboBox,
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<ComboBox, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
+
+    public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
+        AvaloniaProperty.Register<ComboBox, bool>(nameof(IsShowEmptyIndicator), true);
+
+    public static readonly StyledProperty<object?> EmptyIndicatorProperty =
+        AvaloniaProperty.Register<ComboBox, object?>(nameof(EmptyIndicator));
+
+    public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
+        AvaloniaProperty.Register<ComboBox, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
+
+    public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
+        AvaloniaProperty.Register<ComboBox, Thickness>(nameof(EmptyIndicatorPadding));
+
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
 
     public object? LeftAddOn
     {
@@ -254,9 +289,49 @@ public partial class ComboBox : AvaloniaComboBox,
         set => SetValue(FilterValueSelectorProperty, value);
     }
 
+    /// <summary>
+    /// Whether to show the empty indicator when the source is empty or filtering has no visible matches.
+    /// Defaults to true and does not change filtering or selection.
+    /// </summary>
+    public bool IsShowEmptyIndicator
+    {
+        get => GetValue(IsShowEmptyIndicatorProperty);
+        set => SetValue(IsShowEmptyIndicatorProperty, value);
+    }
+
+    /// <summary>
+    /// Custom empty content. The default Empty is shown when both content and template are null.
+    /// </summary>
+    [DependsOn(nameof(EmptyIndicatorTemplate))]
+    public object? EmptyIndicator
+    {
+        get => GetValue(EmptyIndicatorProperty);
+        set => SetValue(EmptyIndicatorProperty, value);
+    }
+
+    /// <summary>
+    /// Template for empty content, including null content when only a template is specified.
+    /// The template must match the supplied content through IDataTemplate.Match.
+    /// </summary>
+    public IDataTemplate? EmptyIndicatorTemplate
+    {
+        get => GetValue(EmptyIndicatorTemplateProperty);
+        set => SetValue(EmptyIndicatorTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Padding around empty content. Defaults to zero; the default theme supplies SharedToken.Padding.
+    /// </summary>
+    public Thickness EmptyIndicatorPadding
+    {
+        get => GetValue(EmptyIndicatorPaddingProperty);
+        set => SetValue(EmptyIndicatorPaddingProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
+
     
     internal static readonly DirectProperty<ComboBox, double> EffectivePopupWidthProperty =
         AvaloniaProperty.RegisterDirect<ComboBox, double>(
@@ -269,6 +344,9 @@ public partial class ComboBox : AvaloniaComboBox,
     
     internal static readonly StyledProperty<Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(PopupContentPadding));
+
+    internal static readonly StyledProperty<bool> UsePopupLayoutTokenResourcesProperty =
+        AvaloniaProperty.Register<ComboBox, bool>(nameof(UsePopupLayoutTokenResources));
     
     internal static readonly StyledProperty<FormValidateFeedback?> FormFeedbackProperty =
         AvaloniaProperty.Register<ComboBox, FormValidateFeedback?>(nameof(FormFeedback));
@@ -290,7 +368,20 @@ public partial class ComboBox : AvaloniaComboBox,
         AvaloniaProperty.RegisterDirect<ComboBox, bool>(
             nameof(IsEffectiveEmptyVisible),
             o => o.IsEffectiveEmptyVisible);
-    
+
+    internal static readonly DirectProperty<ComboBox, bool> IsDefaultEmptyIndicatorVisibleProperty =
+        AvaloniaProperty.RegisterDirect<ComboBox, bool>(
+            nameof(IsDefaultEmptyIndicatorVisible),
+            o => o.IsDefaultEmptyIndicatorVisible);
+
+    internal static readonly DirectProperty<ComboBox, bool> CanClearValueProperty =
+        AvaloniaProperty.RegisterDirect<ComboBox, bool>(
+            nameof(CanClearValue),
+            o => o.CanClearValue);
+
+    internal static readonly StyledProperty<bool> IsEffectiveShowClearButtonProperty =
+        AvaloniaProperty.Register<ComboBox, bool>(nameof(IsEffectiveShowClearButton));
+
     private double _effectivePopupWidth;
 
     internal double EffectivePopupWidth
@@ -310,7 +401,13 @@ public partial class ComboBox : AvaloniaComboBox,
         get => GetValue(PopupContentPaddingProperty);
         set => SetValue(PopupContentPaddingProperty, value);
     }
-    
+
+    internal bool UsePopupLayoutTokenResources
+    {
+        get => GetValue(UsePopupLayoutTokenResourcesProperty);
+        set => SetValue(UsePopupLayoutTokenResourcesProperty, value);
+    }
+
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
@@ -347,12 +444,53 @@ public partial class ComboBox : AvaloniaComboBox,
         private set => SetAndRaise(IsEffectiveEmptyVisibleProperty, ref _isEffectiveEmptyVisible, value);
     }
 
+    private bool _isDefaultEmptyIndicatorVisible;
+
+    internal bool IsDefaultEmptyIndicatorVisible
+    {
+        get => _isDefaultEmptyIndicatorVisible;
+        private set => SetAndRaise(IsDefaultEmptyIndicatorVisibleProperty, ref _isDefaultEmptyIndicatorVisible, value);
+    }
+
+    private bool _canClearValue;
+
+    internal bool CanClearValue
+    {
+        get => _canClearValue;
+        private set => SetAndRaise(CanClearValueProperty, ref _canClearValue, value);
+    }
+
+    internal bool IsEffectiveShowClearButton
+    {
+        get => GetValue(IsEffectiveShowClearButtonProperty);
+        set => SetValue(IsEffectiveShowClearButtonProperty, value);
+    }
+
+    internal bool ShouldDeferFilterProjection =>
+        !IsPopupPinnedOpen &&
+        (_selectionCommitDepth > 0 ||
+         (!IsDropDownOpen && _popup?.IsPlayingCloseMotion == true));
+
     #endregion
+
+    private const string ContentLeftAddOnPresenterPart = "PART_ContentLeftAddOnPresenter";
+    private const string ContentRightAddOnPresenterPart = "PART_ContentRightAddOnPresenter";
+
+    private static readonly CandidatePopupLayoutTokenResourceKeys s_popupLayoutTokenResourceKeys =
+        new(ComboBoxTokenKind.ItemHeight,
+            ComboBoxTokenKind.PopupContentPadding);
+    private OwnerTokenSet? _popupLayoutTokens;
+    private IDisposable? _rowHeightStyleValue;
+    private IDisposable? _popupPaddingStyleValue;
+    private double? _themedRowHeight;
+    private Thickness? _themedPopupPadding;
+    private bool _updatingPopupLayout;
 
     private Popup? _popup;
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
     private ComboBoxHandle? _comboBoxHandle;
+    private IconButton? _clearButton;
     private AddOnDecoratedBox? _addOnDecoratedBox;
     private AvaloniaTextBox? _editableTextBox;
     private IDisposable? _editableTextBoxTextSubscription;
@@ -365,13 +503,18 @@ public partial class ComboBox : AvaloniaComboBox,
     private int _candidateSelectedIndex = -1;
     private ComboBoxItem? _candidateSelectedItem;
     private readonly Dictionary<ComboBoxItem, FilterVisibilityState> _filterItemVisibilityContext = new();
-    private bool _isFrameBorderBrushRelayed;
-    private bool _isFrameBackgroundRelayed;
-    // Keep popup closing after SelectionChanged callbacks finish updating bound state.
-    private bool _selectionFromEventInProgress;
+    private FilterProjection _presentedFilterProjection;
+    // A refresh requested while the leaving view was frozen; Popup.Closed publishes it.
+    private bool _hasDeferredFilterRefresh;
+    private EventHandler? _formValueChanged;
+    // Selection commits include nested display-text updates; their view projection
+    // is published after callbacks and the popup's physical closing boundary.
+    private int _selectionCommitDepth;
 
     static ComboBox()
     {
+        ItemsPanelProperty.OverrideDefaultValue<ComboBox>(
+            new FuncTemplate<Panel?>(() => new ComboBoxVirtualizingStackPanel()));
         TextInputEvent.AddClassHandler<ComboBox>(
             (box, args) => box.HandleEditableTextBoxTextInput(args),
             RoutingStrategies.Tunnel);
@@ -388,7 +531,7 @@ public partial class ComboBox : AvaloniaComboBox,
     {
         SelectionBoxItemProperty.Changed.AddClassHandler<ComboBox>((box, args) => box.NotifyFormValueChanged(args.NewValue));
         Items.CollectionChanged += HandleItemsCollectionChanged;
-        ContainerPrepared += HandleContainerPrepared;
+        ContainerPrepared       += HandleContainerPrepared;
 
         // 阻止下拉框打开时的 BringIntoView 行为，防止触发页面滚动
         AddHandler(RequestBringIntoViewEvent, (sender, e) =>
@@ -412,6 +555,12 @@ public partial class ComboBox : AvaloniaComboBox,
         ConfigureEffectiveFilterEnabled();
         RefreshFilteredItemVisibility();
     }
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        DetachClearButton();
+        base.OnTemplateChanged(change);
+    }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -421,10 +570,10 @@ public partial class ComboBox : AvaloniaComboBox,
         if (_popup != null)
         {
             _popupPinnedOpenBinding?.Dispose();
-            _popupPinnedOpenBinding = null;
-            _popup.Opened -= HandlePopupOpened;
-            _popup.Closed -= HandlePopupClosed;
-            _popup.OverlayInputPassThroughElement = null;
+            _popupPinnedOpenBinding               =  null;
+            _popup.Opened                         -= HandlePopupOpened;
+            _popup.Closed                         -= HandlePopupClosed;
+            _popup.OverlayInputPassThroughElement =  null;
         }
 
         if (_editableTextBox != null)
@@ -436,12 +585,14 @@ public partial class ComboBox : AvaloniaComboBox,
         ClearEditableTextBoxPlaceholderParts();
 
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
-        _editableTextBox = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
-        _popup = e.NameScope.Find<Popup>("PART_Popup");
-        RelayRootSurfaceBrush(BorderBrushProperty);
-        RelayRootSurfaceBrush(BackgroundProperty);
+        _editableTextBox   = e.NameScope.Find<AvaloniaTextBox>("PART_EditableTextBox");
+        _popup             = e.NameScope.Find<Popup>("PART_Popup");
+        // Root BorderBrush / Background reach the input frame through the template's HostBorderBrush / HostBackground
+        // bindings, which the frame theme projects over its state brushes (antd styles.root).
         if (_popup != null)
         {
+            // Popup.IsPopupPinnedOpen is internal and cannot be targeted by compiled AXAML.
+            // This relay is disposed and recreated with the template Popup.
             _popupPinnedOpenBinding = BindUtils.RelayBind(
                 this,
                 IsPopupPinnedOpenProperty,
@@ -471,6 +622,15 @@ public partial class ComboBox : AvaloniaComboBox,
         {
             _comboBoxHandle.HandleClick += HandleOpenPopupClicked;
         }
+
+        DetachClearButton();
+        _clearButton = e.NameScope.Find<IconButton>("PART_ClearButton");
+        if (_clearButton is not null)
+        {
+            _clearButton.Click += HandleClearButtonClicked;
+        }
+
+        UpdateCanClearValue();
 
         UpdatePseudoClasses();
         ConfigureMaxDropdownHeight();
@@ -577,11 +737,6 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
-    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
-    {
-        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
-    }
-
     protected override void ClearContainerForItemOverride(Control element)
     {
         if (element is ITransitionInitializationOwner owner)
@@ -605,98 +760,147 @@ public partial class ComboBox : AvaloniaComboBox,
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
-
-        if (change.Property == IsDropDownOpenProperty &&
-            !IsDropDownOpen &&
-            IsPopupPinnedOpen &&
-            _popupLifecycleCloseDepth == 0)
+        // Avalonia fills Text from SelectedItem inside its base property handler.
+        // That nested Text update must not re-filter the view before close is requested.
+        var selectionPropertyCommit = change.Property == SelectedItemProperty &&
+                                      change.NewValue is not null &&
+                                      IsDropDownOpen && !IsPopupPinnedOpen;
+        if (selectionPropertyCommit)
         {
-            SetCurrentValue(IsDropDownOpenProperty, true);
-            return;
+            _selectionCommitDepth++;
         }
 
-        if (change.Property == StatusProperty ||
-            change.Property == FormStatusProperty ||
-            change.Property == DataValidationErrors.HasErrorsProperty ||
-            change.Property == DataValidationErrors.ErrorsProperty)
+        try
         {
-            UpdatePseudoClasses();
-        }
-        else if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
-        {
-            RelayRootSurfaceBrush(change.Property);
-        }
-        else if (change.Property == DropDownDisplayPageSizeProperty ||
-                 change.Property == ItemHeightProperty ||
-                 change.Property == PopupContentPaddingProperty)
-        {
-            ConfigureMaxDropdownHeight();
-        }
-        else if (change.Property == SelectedItemProperty &&
-                 change.NewValue != null &&
-                 !_selectionFromEventInProgress)
-        {
-            // Close dropdown when an item is selected
-            if (IsDropDownOpen)
+            base.OnPropertyChanged(change);
+
+            if (change.Property == SelectedIndexProperty ||
+                change.Property == TextProperty ||
+                change.Property == IsEditableProperty)
             {
-                SetCurrentValue(IsDropDownOpenProperty, false);
+                UpdateCanClearValue();
             }
-        }
-        else if (change.Property == IsDropDownOpenProperty)
-        {
-            ClearCandidateItemSelection();
-            if (IsDropDownOpen)
-            {
-                RefreshFilteredItemVisibility();
-                OpenPopup();
-            }
-            else
-            {
-                ClosePopup();
-            }
-        }
-        else if (change.Property == IsPopupPinnedOpenProperty)
-        {
-            if (change.GetNewValue<bool>() && !IsDropDownOpen)
+
+            if (change.Property == IsDropDownOpenProperty &&
+                !IsDropDownOpen &&
+                IsPopupPinnedOpen &&
+                _popupLifecycleCloseDepth == 0)
             {
                 SetCurrentValue(IsDropDownOpenProperty, true);
+                return;
+            }
+
+            if (change.Property == StatusProperty ||
+                change.Property == FormStatusProperty ||
+                change.Property == DataValidationErrors.HasErrorsProperty ||
+                change.Property == DataValidationErrors.ErrorsProperty)
+            {
+                UpdatePseudoClasses();
+            }
+            else if (change.Property == UsePopupLayoutTokenResourcesProperty)
+            {
+                UpdatePopupLayoutTokenSubscription();
+            }
+            else if (change.Property == DropDownDisplayPageSizeProperty ||
+                     change.Property == ItemHeightProperty ||
+                     change.Property == PopupContentPaddingProperty)
+            {
+                if (!_updatingPopupLayout)
+                {
+                    ConfigureMaxDropdownHeight();
+                }
+            }
+            else if (change.Property == SelectedItemProperty &&
+                     change.NewValue != null &&
+                     _selectionCommitDepth == (selectionPropertyCommit ? 1 : 0))
+            {
+                // Close dropdown when an item is selected
+                if (IsDropDownOpen)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
+            }
+            else if (change.Property == IsDropDownOpenProperty)
+            {
+                ClearCandidateItemSelection();
+                if (IsDropDownOpen)
+                {
+                    RefreshStaleFilteredItemVisibility();
+                    OpenPopup();
+                    MoveFocusToInputForDropDown();
+                }
+                else
+                {
+                    ClosePopup();
+                }
+            }
+            else if (change.Property == IsPopupPinnedOpenProperty)
+            {
+                if (change.GetNewValue<bool>() && !IsDropDownOpen)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, true);
+                }
+            }
+            else if (change.Property == FormFeedbackProperty)
+            {
+                ConfigureFormFeedbackSubscription();
+            }
+            else if (change.Property == IsEditableProperty ||
+                     change.Property == IsFilterEnabledProperty)
+            {
+                ConfigureEffectiveFilterEnabled();
+                ConfigureBaseEditableTextBoxFocusBehavior();
+                SyncFilterValueFromText();
+                ClearCandidateItemSelection();
+                RefreshFilteredItemVisibility();
+                ConfigureOverlayInputPassThroughElement();
+            }
+            else if (change.Property == TextProperty)
+            {
+                SyncFilterValueFromText();
+                ConfigureEditableTextBoxPlaceholderVisibility();
+                ClearCandidateItemSelection();
+                RefreshStaleFilteredItemVisibility();
+            }
+            else if (change.Property == FilterValueProperty ||
+                     change.Property == FilterProperty ||
+                     change.Property == FilterValueSelectorProperty ||
+                     change.Property == DisplayMemberBindingProperty ||
+                     change.Property == TextSearch.TextBindingProperty)
+            {
+                ClearCandidateItemSelection();
+                RefreshFilteredItemVisibility();
+            }
+            else if (change.Property == IsShowEmptyIndicatorProperty)
+            {
+                RefreshFilteredItemVisibility();
+            }
+            else if (change.Property == EmptyIndicatorProperty ||
+                     change.Property == EmptyIndicatorTemplateProperty)
+            {
+                ConfigureEmptyIndicator();
             }
         }
-        else if (change.Property == FormFeedbackProperty)
+        finally
         {
-            ConfigureFormFeedbackSubscription();
-        }
-        else if (change.Property == IsEditableProperty ||
-                 change.Property == IsFilterEnabledProperty)
-        {
-            ConfigureEffectiveFilterEnabled();
-            ConfigureBaseEditableTextBoxFocusBehavior();
-            SyncFilterValueFromText();
-            ClearCandidateItemSelection();
-            RefreshFilteredItemVisibility();
-            ConfigureOverlayInputPassThroughElement();
-        }
-        else if (change.Property == TextProperty)
-        {
-            SyncFilterValueFromText();
-            ConfigureEditableTextBoxPlaceholderVisibility();
-            ClearCandidateItemSelection();
-            RefreshFilteredItemVisibility();
-        }
-        else if (change.Property == FilterValueProperty ||
-                 change.Property == FilterProperty ||
-                 change.Property == FilterValueSelectorProperty ||
-                 change.Property == DisplayMemberBindingProperty ||
-                 change.Property == TextSearch.TextBindingProperty)
-        {
-            ClearCandidateItemSelection();
-            RefreshFilteredItemVisibility();
+            if (selectionPropertyCommit)
+            {
+                _selectionCommitDepth--;
+                RefreshStaleFilteredItemVisibility();
+            }
         }
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
+        // The clear button (Ant Design renders it as a button) and focusable add-on content are keyboard stops of
+        // their own. The base editable ComboBox hands any focus inside the control to its input text box, so it must
+        // not see these; the control itself is not focused here, so nothing else in the base handler applies.
+        if (IsOwnKeyboardStop(e.NewFocusedElement))
+        {
+            return;
+        }
+
         base.OnGotFocus(e);
         if (e.NewFocusedElement is Visual focusedVisual &&
             _popup?.IsInsidePopup(focusedVisual) == true)
@@ -763,8 +967,7 @@ public partial class ComboBox : AvaloniaComboBox,
 
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
     {
-        var previous = _selectionFromEventInProgress;
-        _selectionFromEventInProgress = true;
+        _selectionCommitDepth++;
         try
         {
             var handled = base.UpdateSelectionFromEvent(container, eventArgs);
@@ -777,7 +980,8 @@ public partial class ComboBox : AvaloniaComboBox,
         }
         finally
         {
-            _selectionFromEventInProgress = previous;
+            _selectionCommitDepth--;
+            RefreshStaleFilteredItemVisibility();
         }
     }
 
@@ -789,7 +993,6 @@ public partial class ComboBox : AvaloniaComboBox,
 
     #region 实现 FormItem 接口
     
-    private EventHandler? _formValueChanged;
     event EventHandler? IFormItemAware.ValueChanged
     {
         add => _formValueChanged += value;
@@ -837,6 +1040,11 @@ public partial class ComboBox : AvaloniaComboBox,
     }
     #endregion
 
+    private static void ApplySemanticItemMarker(ComboBoxItem comboBoxItem)
+    {
+        comboBoxItem.Classes.Add(ComboBoxSemanticParts.PopupListItemClass);
+    }
+
     private void HandleOpenPopupClicked(object? sender, EventArgs e)
     {
         var shouldOpen = !IsDropDownOpen;
@@ -844,6 +1052,103 @@ public partial class ComboBox : AvaloniaComboBox,
         if (shouldOpen)
         {
             FocusEditableTextBox(NavigationMethod.Pointer);
+        }
+    }
+
+    private void UpdateCanClearValue()
+    {
+        CanClearValue = SelectedIndex >= 0 || (IsEditable && !string.IsNullOrEmpty(Text));
+    }
+
+    // Keyboard stops inside the control that are not its input: the clear button and add-on content.
+    private bool IsOwnKeyboardStop(IInputElement? element)
+    {
+        if (element is not Visual visual)
+        {
+            return false;
+        }
+
+        if (_clearButton is not null && ReferenceEquals(visual, _clearButton))
+        {
+            return true;
+        }
+
+        for (var current = visual.GetVisualParent(); current is not null && !ReferenceEquals(current, this);
+             current = current.GetVisualParent())
+        {
+            if (current is ContentPresenter
+                {
+                    Name: AddOnDecoratedBoxThemeConstants.LeftAddOnPresenterPart or
+                          AddOnDecoratedBoxThemeConstants.RightAddOnPresenterPart or
+                          ContentLeftAddOnPresenterPart or
+                          ContentRightAddOnPresenterPart
+                })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // The open dropdown's keys (Up / Down / Enter / Escape) are handled by the input. When it opens with focus on the
+    // clear button or add-on content (Alt+Down / F4 bubble up from there), that button would take Enter and Space
+    // first, so focus moves to the input; a keyboard opening keeps the focus visual.
+    private void MoveFocusToInputForDropDown()
+    {
+        if (TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is not InputElement focused ||
+            !IsOwnKeyboardStop(focused))
+        {
+            return;
+        }
+
+        var navigationMethod = focused.Classes.Contains(":focus-visible")
+            ? NavigationMethod.Tab
+            : NavigationMethod.Unspecified;
+        if (IsEditable)
+        {
+            FocusEditableTextBox(navigationMethod);
+        }
+        else
+        {
+            Focus(navigationMethod);
+        }
+    }
+
+    private void DetachClearButton()
+    {
+        if (_clearButton is not null)
+        {
+            _clearButton.Click -= HandleClearButtonClicked;
+            _clearButton = null;
+        }
+    }
+
+    private void HandleClearButtonClicked(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (!IsAllowClear || !IsEffectivelyEnabled || !CanClearValue)
+        {
+            return;
+        }
+
+        // Keyboard activation keeps focus visible on the restored target; the button hides once cleared.
+        var navigationMethod = _clearButton?.Classes.Contains(":focus-visible") == true
+            ? NavigationMethod.Tab
+            : NavigationMethod.Pointer;
+
+        // Null does not match an empty-string option in Avalonia's editable text matching.
+        // Clear text first, then selection, while preserving application bindings.
+        SetCurrentValue(TextProperty, null);
+        SetCurrentValue(SelectedIndexProperty, -1);
+
+        if (IsEditable)
+        {
+            FocusEditableTextBox(navigationMethod);
+        }
+        else
+        {
+            Focus(navigationMethod);
         }
     }
 
@@ -886,6 +1191,52 @@ public partial class ComboBox : AvaloniaComboBox,
             DropDownDisplayPageSize * ItemHeight + PopupContentPadding.Top + PopupContentPadding.Bottom);
     }
 
+    private void UpdatePopupLayoutTokenSubscription()
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = UsePopupLayoutTokenResources ? s_popupLayoutTokenResourceKeys.Observe(this, RefreshPopupLayout) : null;
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var height = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _themedRowHeight);
+        var rawPadding = _popupLayoutTokens?.GetValue(1);
+        Thickness? padding = rawPadding is null || ReferenceEquals(rawPadding, AvaloniaProperty.UnsetValue)
+            ? null
+            : CandidatePopupLayoutTokenResourceKeys.ReadPadding(rawPadding, _themedPopupPadding ?? default);
+        var previous = (ItemHeight, PopupContentPadding);
+        _updatingPopupLayout = true;
+        try
+        {
+            // ItemHeight still feeds the realized item bindings. Both template values keep their theme priority.
+            SetPopupLayoutValue(ItemHeightProperty, height, ref _themedRowHeight, ref _rowHeightStyleValue);
+            SetPopupLayoutValue(PopupContentPaddingProperty, padding, ref _themedPopupPadding, ref _popupPaddingStyleValue);
+        }
+        finally
+        {
+            _updatingPopupLayout = false;
+        }
+        if (!previous.Equals((ItemHeight, PopupContentPadding)))
+        {
+            ConfigureMaxDropdownHeight();
+        }
+    }
+
+    private void SetPopupLayoutValue<T>(
+        StyledProperty<T> property, T? value, ref T? previous, ref IDisposable? styleValue)
+        where T : struct
+    {
+        if (Nullable.Equals(previous, value))
+        {
+            return;
+        }
+        var oldStyleValue = styleValue;
+        styleValue = value is { } resolved ? SetValue(property, resolved, BindingPriority.Style) : null;
+        previous = value;
+        oldStyleValue?.Dispose();
+    }
+
     private void ConfigureOverlayInputPassThroughElement()
     {
         if (_popup != null)
@@ -893,57 +1244,6 @@ public partial class ComboBox : AvaloniaComboBox,
             _popup.OverlayInputPassThroughElement = _addOnDecoratedBox;
         }
     }
-
-    /// <summary>
-    /// 把 owner 的根表面画刷以 LocalValue 中继到输入帧，使应用级根 <c>BorderBrush</c> / <c>Background</c>
-    /// 定制压过帧状态机；未设置时把属性交还状态机。ComboBox 派生自 Avalonia 的 ComboBox，不在
-    /// <c>AbstractTextInput</c> / <c>AbstractSelect</c> 的继承链上，因此需要与
-    /// <c>AbstractSelect.RelayRootSurfaceBrush</c> 保持一致的同名中继，让输入族的根边框定制契约对
-    /// ComboBox 同样成立。
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        if (_addOnDecoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // 仅当本控件确实接管过该槽位时才交还，避免清除嵌套 owner 的中继结果。
-            if (IsRootSurfaceBrushRelayed(property))
-            {
-                _addOnDecoratedBox.ClearValue(property);
-                SetRootSurfaceBrushRelayed(property, false);
-            }
-
-            return;
-        }
-
-        _addOnDecoratedBox.SetValue(property, value, BindingPriority.LocalValue);
-        SetRootSurfaceBrushRelayed(property, true);
-    }
-
-    private bool IsRootSurfaceBrushRelayed(AvaloniaProperty property)
-    {
-        return ReferenceEquals(property, BorderBrushProperty)
-            ? _isFrameBorderBrushRelayed
-            : _isFrameBackgroundRelayed;
-    }
-
-    private void SetRootSurfaceBrushRelayed(AvaloniaProperty property, bool value)
-    {
-        if (ReferenceEquals(property, BorderBrushProperty))
-        {
-            _isFrameBorderBrushRelayed = value;
-        }
-        else
-        {
-            _isFrameBackgroundRelayed = value;
-        }
-    }
-
 
     /// <summary>
     /// 按业务状态打开弹层。开合不再由模板 <c>IsOpen</c> 绑定承担，因为模板充气阶段的绑定求值
@@ -972,6 +1272,9 @@ public partial class ComboBox : AvaloniaComboBox,
     /// </summary>
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
+        // Business open is already false during exit motion. Publish the latest query after the physical
+        // host has finished closing, but only when one is pending.
+        RefreshStaleFilteredItemVisibility();
         if (!IsDropDownOpen)
         {
             return;
@@ -1402,27 +1705,35 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private void CommitCandidateSelection()
     {
-        if (_candidateSelectedIndex == -1 ||
-            !IsCandidateItemSelectable(_candidateSelectedIndex))
+        var index = _candidateSelectedIndex;
+        if (index == -1 || !IsCandidateItemSelectable(index))
         {
             return;
         }
 
-        var handled = false;
-        if (GetCandidateItemContainer(_candidateSelectedIndex) is { } comboBoxItem)
+        _selectionCommitDepth++;
+        try
         {
-            handled = UpdateSelectionFromEvent(comboBoxItem, new RoutedEventArgs());
-        }
-
-        if (!handled)
-        {
-            SetCurrentValue(SelectedIndexProperty, _candidateSelectedIndex);
-            if (IsDropDownOpen)
+            var handled = false;
+            if (GetCandidateItemContainer(index) is { } comboBoxItem)
             {
-                SetCurrentValue(IsDropDownOpenProperty, false);
+                handled = UpdateSelectionFromEvent(comboBoxItem, new RoutedEventArgs());
+            }
+
+            if (!handled)
+            {
+                SetCurrentValue(SelectedIndexProperty, index);
+                if (IsDropDownOpen)
+                {
+                    SetCurrentValue(IsDropDownOpenProperty, false);
+                }
             }
         }
-
+        finally
+        {
+            _selectionCommitDepth--;
+            RefreshStaleFilteredItemVisibility();
+        }
     }
 
     private void EnsureCandidateItemSelectionIsValid()
@@ -1445,7 +1756,10 @@ public partial class ComboBox : AvaloniaComboBox,
         var comboBoxItem = GetCandidateItemContainer(index);
         if (comboBoxItem != null)
         {
-            return comboBoxItem.IsVisible &&
+            // A virtualizing panel hides the ComboBoxItem items it recycles and shows them again when it realizes
+            // them (ContainerFromIndex still returns such an item), so visibility only describes a realized
+            // container; filtering is checked from the item.
+            return (comboBoxItem.IsVisible || !IsRealizedContainer(comboBoxItem)) &&
                    comboBoxItem.IsEnabled &&
                    IsCurrentFilterMatched(item);
         }
@@ -1454,6 +1768,9 @@ public partial class ComboBox : AvaloniaComboBox,
             ? IsCurrentFilterMatched(item)
             : control.IsVisible && control.IsEnabled && IsCurrentFilterMatched(item);
     }
+
+    // Only a container the panel has realized has an index; a recycled ComboBoxItem item has none.
+    private bool IsRealizedContainer(Control container) => IndexFromContainer(container) >= 0;
 
     private bool IsCurrentFilterMatched(object? item)
     {
@@ -1465,9 +1782,9 @@ public partial class ComboBox : AvaloniaComboBox,
             return true;
         }
 
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
-        return Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
+        var       textBinding = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
+        using var evaluator   = BindingEvaluator<string?>.TryCreate(textBinding);
+        return Filter.Filter(SelectFilterValue(item, evaluator, FilterValueSelector), filterValue);
     }
 
     private ComboBoxItem? GetCandidateItemContainer(int index)
@@ -1507,51 +1824,87 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private void RefreshFilteredItemVisibility()
     {
-        var filterValue    = FilterValue;
-        var hasFilterValue = !string.IsNullOrEmpty(filterValue?.ToString());
-
-        if (!IsEffectiveFilterEnabled || !hasFilterValue || Filter == null)
+        if (ShouldDeferFilterProjection)
         {
-            ClearFilteredItemVisibility();
-            EnsureCandidateItemSelectionIsValid();
+            _hasDeferredFilterRefresh = true;
             return;
         }
 
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
-        var hasVisibleMatch = false;
+        _hasDeferredFilterRefresh = false;
+        var projection = GetCurrentFilterProjection();
+        _presentedFilterProjection = projection;
+        var hasVisibleMatch = Items.Count > 0;
 
-        for (var index = 0; index < Items.Count; index++)
+        if (!projection.IsActive)
         {
-            var item    = Items[index];
-            var matched = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
-            var comboBoxItem = GetFilterItemContainer(index);
-            if (comboBoxItem != null)
-            {
-                ApplyFilterState(comboBoxItem, matched);
-            }
+            ClearFilteredItemVisibility();
+            // Clearing forgets the projection; keep the inactive one as presented so an unchanged query is not stale.
+            _presentedFilterProjection = projection;
+        }
+        else
+        {
+            using var evaluator = BindingEvaluator<string?>.TryCreate(projection.TextBinding);
+            hasVisibleMatch = false;
 
-            hasVisibleMatch |= IsVisibleFilterMatch(item, comboBoxItem, matched);
+            for (var index = 0; index < Items.Count; index++)
+            {
+                var item         = Items[index];
+                var matched      = projection.Filter!.Filter(SelectFilterValue(item, evaluator, projection.ValueSelector), projection.Value);
+                var comboBoxItem = GetFilterItemContainer(index);
+                if (comboBoxItem != null)
+                {
+                    ApplyFilterState(comboBoxItem, matched);
+                }
+
+                hasVisibleMatch |= IsVisibleFilterMatch(item, comboBoxItem, matched);
+            }
         }
 
-        IsEffectiveEmptyVisible = !hasVisibleMatch;
+        IsEffectiveEmptyVisible = IsShowEmptyIndicator && !hasVisibleMatch;
+        ConfigureEmptyIndicator();
         EnsureCandidateItemSelectionIsValid();
     }
 
+    // Selection commits, text echoes and popup open / close re-check the view after the query may have changed.
+    // Re-running an unchanged query would call the filter for every item again (a pinned popup does not defer and
+    // reopens after each selection, so every selection would pay for it several times); only a deferred or changed
+    // query is published.
+    private void RefreshStaleFilteredItemVisibility()
+    {
+        if (_hasDeferredFilterRefresh || GetCurrentFilterProjection() != _presentedFilterProjection)
+        {
+            RefreshFilteredItemVisibility();
+        }
+    }
+
+    private void ConfigureEmptyIndicator()
+    {
+        IsDefaultEmptyIndicatorVisible = IsEffectiveEmptyVisible && EmptyIndicator is null && EmptyIndicatorTemplate is null;
+    }
+
+    private FilterProjection GetCurrentFilterProjection() => new(
+        IsEffectiveFilterEnabled,
+        FilterValue,
+        Filter,
+        FilterValueSelector,
+        TextSearch.GetTextBinding(this) ?? DisplayMemberBinding);
+
     private void ApplyCurrentFilterState(ComboBoxItem comboBoxItem, object? item)
     {
-        var filterValue    = FilterValue;
-        var hasFilterValue = !string.IsNullOrEmpty(filterValue?.ToString());
-
-        if (!IsEffectiveFilterEnabled || !hasFilterValue || Filter == null)
+        // Virtualization can prepare containers during a selection commit. They
+        // still belong to the presented query, not to its pending replacement.
+        var projection = ShouldDeferFilterProjection
+            ? _presentedFilterProjection
+            : GetCurrentFilterProjection();
+        if (!projection.IsActive)
         {
             ClearFilterState(comboBoxItem);
             return;
         }
 
-        var textBinding     = TextSearch.GetTextBinding(this) ?? DisplayMemberBinding;
-        using var evaluator = BindingEvaluator<string?>.TryCreate(textBinding);
-        var matched         = Filter.Filter(SelectFilterValue(item, evaluator), filterValue);
+        using var evaluator = BindingEvaluator<string?>.TryCreate(projection.TextBinding);
+        var matched = projection.Filter!.Filter(
+            SelectFilterValue(item, evaluator, projection.ValueSelector), projection.Value);
         ApplyFilterState(comboBoxItem, matched);
     }
 
@@ -1570,12 +1923,12 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private void ClearFilteredItemVisibility()
     {
+        _presentedFilterProjection = default;
         var items = new List<ComboBoxItem>(_filterItemVisibilityContext.Keys);
         foreach (var item in items)
         {
             ClearFilterState(item);
         }
-        IsEffectiveEmptyVisible = false;
     }
 
     private void ClearFilterState(ComboBoxItem comboBoxItem)
@@ -1604,9 +1957,11 @@ public partial class ComboBox : AvaloniaComboBox,
         return Items[index] as ComboBoxItem;
     }
 
-    private object? SelectFilterValue(object? item, BindingEvaluator<string?>? textBindingEvaluator)
+    private static object? SelectFilterValue(
+        object? item,
+        BindingEvaluator<string?>? textBindingEvaluator,
+        DefaultFilterValueSelector? selector)
     {
-        var selector = FilterValueSelector;
         if (selector != null)
         {
             return selector(item);
@@ -1656,6 +2011,16 @@ public partial class ComboBox : AvaloniaComboBox,
         }
 
         return item is not Control control || control.IsVisible;
+    }
+
+    private readonly record struct FilterProjection(
+        bool IsEnabled,
+        object? Value,
+        IValueFilter? Filter,
+        DefaultFilterValueSelector? ValueSelector,
+        BindingBase? TextBinding)
+    {
+        public bool IsActive => IsEnabled && Filter is not null && !string.IsNullOrEmpty(Value?.ToString());
     }
 
     private readonly record struct FilterVisibilityState(bool IsSet, bool Value);

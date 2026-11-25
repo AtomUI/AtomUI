@@ -314,7 +314,11 @@ public class FloatButtonSemanticPartTests
         try
         {
             var overlayLayer = ScopeAwareOverlayLayer.FindLayer(overlayPanel).ShouldNotBeNull();
-            var overlayButton = overlayLayer.Children.OfType<AtomUIFloatButton>().Single();
+            // 浮动按钮带自己的表面宿主进入层：层的直接子项是宿主，按钮是宿主的 Child。
+            var overlayButton = overlayLayer.Children.OfType<VisualLayerManager>()
+                                            .Select(host => host.Child)
+                                            .OfType<AtomUIFloatButton>()
+                                            .Single();
             FindSemanticControl<IconPresenter>(overlayButton, "semantic-icon").ShouldNotBeNull();
             FindSemanticControl<ContentPresenter>(overlayButton, "semantic-content").ShouldNotBeNull();
         }

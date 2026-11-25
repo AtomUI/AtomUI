@@ -20,8 +20,6 @@
             </ItemsPanelTemplate>
         </Setter>
 
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
         <Setter Property="ClipToBounds" Value="False" />
         
     </ControlTheme>

@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -166,6 +167,12 @@ public partial class DatePicker : InfoPickerInput
 
     private DatePickerPresenter? _pickerPresenter;
     private ILanguageManager? _languageManager;
+    private TextBox? _attachedInputBox;
+
+    // Text typed in this open session, or null while the input shows a formatted value.
+    private string? _typedText;
+    private bool _isTypedTextAccepted;
+    private bool _isApplyingTypedText;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -201,8 +208,15 @@ public partial class DatePicker : InfoPickerInput
     /// </summary>
     public override void Clear()
     {
+        // The value and the picker text are cleared before the input box, so clearing the box is not taken for
+        // typing; the draft is dropped and the popup closes, as in Ant Design.
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+        SelectedDateTime     = null;
+        _pickerPresenter?.CancelEdit();
+        Text = FormatDateTime(SelectedDateTime);
         base.Clear();
-        SelectedDateTime = null;
+        ClosePickerFlyout();
     }
 
     /// <summary>
@@ -261,6 +275,7 @@ public partial class DatePicker : InfoPickerInput
             _pickerPresenter.ChoosingStatusChanged += HandleChoosingStatusChanged;
             _pickerPresenter.HoverDateTimeChanged  += HandleHoverDateTimeChanged;
             _pickerPresenter.Confirmed             += HandleConfirmed;
+            _pickerPresenter.PropertyChanged       += HandlePresenterPropertyChanged;
             _pickerPresenter.ResetOpenPanelState();
         }
     }
@@ -273,7 +288,147 @@ public partial class DatePicker : InfoPickerInput
             _pickerPresenter.ChoosingStatusChanged -= HandleChoosingStatusChanged;
             _pickerPresenter.HoverDateTimeChanged  -= HandleHoverDateTimeChanged;
             _pickerPresenter.Confirmed             -= HandleConfirmed;
+            _pickerPresenter.PropertyChanged       -= HandlePresenterPropertyChanged;
+            if (_typedText is not null && !IsCancelingEdit)
+            {
+                // Focus left, the window was deactivated or the popup was dismissed: a valid typed value is kept
+                // when no confirmation is required, otherwise the edit is discarded, as in Ant Design. A lifecycle
+                // close (detach, template change) always discards it.
+                if (_isTypedTextAccepted && !IsLifecycleClosing && !_pickerPresenter.RequiresConfirmation)
+                {
+                    SelectedDateTime = _pickerPresenter.SelectedDateTime;
+                }
+                else
+                {
+                    _pickerPresenter.CancelEdit();
+                }
+            }
         }
+
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+        Text                 = FormatDateTime(SelectedDateTime);
+        CalculatePreferredWidth();
+    }
+
+    private void HandlePresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        // A candidate chosen in the panel replaces the typed text.
+        if (args.Property == DatePickerPresenter.SelectedDateTimeProperty && !_isApplyingTypedText)
+        {
+            _typedText = null;
+            // A hover preview keeps the input until it ends; otherwise the input shows the new candidate at once.
+            if (!IsPreviewing)
+            {
+                ClearHoverSelectedInfo();
+            }
+        }
+    }
+
+    private void AttachInputHandlers()
+    {
+        if (_attachedInputBox is not null)
+        {
+            _attachedInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+        _attachedInputBox = InfoInputBox;
+        if (_attachedInputBox is not null)
+        {
+            _attachedInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+    }
+
+    private void HandleInputTextChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property != TextBox.TextProperty || sender is not TextBox input || IsReadOnly)
+        {
+            return;
+        }
+
+        var text = input.Text ?? string.Empty;
+        if (string.Equals(text, Text ?? string.Empty, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        // Typing opens the popup and previews a valid value in the panel, as in Ant Design.
+        SetPickerOpenIfChanged(true);
+        _typedText = text;
+        SetCurrentValue(TextProperty, text);
+        _isTypedTextAccepted = TryParseText(text, out var value) && ApplyTypedValue(value);
+    }
+
+    private bool ApplyTypedValue(DateTime value)
+    {
+        if (_pickerPresenter is null)
+        {
+            return false;
+        }
+
+        _isApplyingTypedText = true;
+        try
+        {
+            return _pickerPresenter.InputDate(value);
+        }
+        finally
+        {
+            _isApplyingTypedText = false;
+        }
+    }
+
+    private bool TryParseText(string text, out DateTime value)
+    {
+        var formatInfo = DatePickerFormattingHelper.CreateFormatInfo(ClockIdentifier, AmText, PmText);
+        return DatePickerFormattingHelper.TryParseDateTime(text, Format, PickerMode, IsShowTime, ClockIdentifier,
+            formatInfo, out value);
+    }
+
+    private protected override bool HasPendingInputText => _typedText is not null;
+
+    private protected override void NotifyInputSubmit()
+    {
+        if (_pickerPresenter is null)
+        {
+            ClosePickerFlyout();
+            return;
+        }
+
+        if (_typedText is not null)
+        {
+            if (string.IsNullOrWhiteSpace(_typedText))
+            {
+                Clear();
+                ClosePickerFlyout();
+                return;
+            }
+
+            if (!_isTypedTextAccepted)
+            {
+                return;
+            }
+        }
+
+        if (_typedText is null && _pickerPresenter.ActivateKeyboardFocus())
+        {
+            return;
+        }
+
+        if (_pickerPresenter.SubmitCandidate() == DatePickerCommitKind.None)
+        {
+            ClosePickerFlyout();
+        }
+    }
+
+    private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
+        modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
+
+    private protected override void NotifyEditCanceled()
+    {
+        _pickerPresenter?.CancelEdit();
+        // A pinned popup stays open, so the input returns to the committed value here rather than on close.
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+        Text                 = FormatDateTime(SelectedDateTime);
     }
 
     private void HandleChoosingStatusChanged(object? sender, ChoosingStatusEventArgs args)
@@ -291,29 +446,35 @@ public partial class DatePicker : InfoPickerInput
         if (args.Date.HasValue)
         {
             Text = FormatDateTime(args.Date);
+            // Hovering the confirm button shows the candidate itself, which is not dimmed as a preview.
+            SetPreviewing(args.Date != _pickerPresenter?.SelectedDateTime);
+            CalculatePreferredWidth();
         }
         else
         {
-            Text = null;
+            // The preview ended, for example when the pointer left the cells after keyboard navigation.
+            ClearHoverSelectedInfo();
         }
-        CalculatePreferredWidth();
     }
 
     private void HandleConfirmed(object? sender, EventArgs args)
     {
+        _typedText = null;
         SelectedDateTime = _pickerPresenter?.SelectedDateTime;
         ClosePickerFlyout();
     }
 
     private void ClearHoverSelectedInfo()
     {
-        Text = FormatDateTime(_pickerPresenter?.SelectedDateTime ?? SelectedDateTime);
+        SetPreviewing(false);
+        Text = _typedText ?? FormatDateTime(_pickerPresenter?.SelectedDateTime ?? SelectedDateTime);
         CalculatePreferredWidth();
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        AttachInputHandlers();
         if (DefaultDateTime is not null && SelectedDateTime is null)
         {
             SelectedDateTime = DefaultDateTime;

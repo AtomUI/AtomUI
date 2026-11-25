@@ -17,9 +17,10 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ToolTipMaxWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `Padding` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`BorderRadiusOuter` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `BorderRadiusOuter` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ContentPadding` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ToolTipColor`、`ToolTipBackground` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `ToolTipCornerRadius`、`ToolTipShadows`、`ArrowSize`、`ArrowTipRadius`、`ArrowBaseRadius`、`ArrowStrokeThickness`、`MarginToAnchor` |
+| 动效 | 弹出与收起的缩放时长。 | `MotionDuration` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -32,6 +33,29 @@ Tooltip 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 - `ToolTipMaxWidth` 约束弹层内容最大宽度；文本内容默认在该约束内换行（`TextWrapping.Wrap`），超出部分换行展示而不是被裁剪或截断。
+- `ToolTipShadows` 是 Tooltip 弹层自己的阴影，独立于菜单弹层（`Controls[Popup]`）；默认等于全局 `BoxShadowsSecondary`
+  （改动前的实际绘制值，Ant Design 渲染不变）。主题可置空实现 shadcn 的无阴影 Tooltip。弹层是运行期跨根创建的
+  Popup，ControlTheme 只能把 Token 写到 `ToolTip.ToolTipShadows`，由控件代码转发到弹层（`PopupRootShadow` /
+  `OverlayHostShadow`）。
+
+### 共享动效 Token
+
+Tooltip 的入场和离场时长读取 Own Token `MotionDuration`（Active），默认派生自 `MotionDurationFast`（100ms，对应 antd
+`zoom-big-fast`）；`EnableMotion` 决定是否播放，二者都经 `ToolTipTokenResource` 读取，`Controls[ToolTip]` 可单独调整。
+`MouseEnterDelay`、`MouseLeaveDelay` 属于触发调度，不从动画时长推导。边对齐弹层的缩放原点按弹层框体实际绘制的圆角
+（`ShadowsAwareContainer` 内容形状的 CornerRadius，即 `ToolTipCornerRadius` 或其覆盖值）内缩，不再读取作用域根的
+`BorderRadius` / `BorderRadiusLG`。
+
+### 预设色与自定义色
+
+宿主的 `ToolTip.PresetColor` 取主题快照预设色板的第 6 级（antd `genPresetColor` 的 `darkColor`，暗色主题下为暗色色板），
+`ToolTip.Color` 原样使用；颜色写入 internal `ColorBackground`，由 ControlTheme 以非触发 Setter 投射到 `Background`，
+应用样式与本地值优先级更高；未设置颜色时回落 `ToolTipBackground`。ToolTip 挂载时和主题发布时重新解析预设色。
+解析复用 `src/AtomUI.Controls/Primitives/PresetColorPalette.cs`（与 Tag、Badge 相同）。
+
+轨迹由[组件规格](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)拥有，
+原点算法由[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md#43-tooltip-与-popover-家族)拥有；
+源码接入差异集中记录在[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)，Token 文档不宣称主题实现已完成校准。
 
 ## 4. 控件家族影响
 
@@ -58,3 +82,6 @@ Tooltip 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+- `ArrowSize` / `ArrowTipRadius` / `ArrowBaseRadius` / `ArrowStrokeThickness` 是 Tooltip 自己的箭头宽度、尖角圆角半径、与主体衔接的圆弧半径和描边宽度，默认等于箭头框 `ArrowDecoratedBoxToken` 的默认值（`SizePopupArrow`、`BorderRadiusXS`、`BorderRadiusOuter`、1）。由 ToolTipTheme 写到箭头框的同名属性；箭头高为宽度的一半，尖角为直角，描边只画两条斜边。主题可让 Tooltip 箭头与 Popover 箭头不同（PrimeNG：8、0、0、0；Shadcn：`2 × (5√2 − 2)`、2、0）。
+- `MarginToAnchor` 是弹层与锚点的距离（有箭头时到箭头尖），只在宿主和 Tooltip 实例都没有设置附加属性 `ToolTip.MarginToAnchor` 时生效；默认 4，与附加属性默认值相同（PrimeNG：0.5，让主体离锚点正好 `tooltip.gutter`）。

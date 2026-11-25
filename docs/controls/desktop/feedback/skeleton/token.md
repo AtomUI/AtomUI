@@ -18,10 +18,16 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `TitleHeight`、`ParagraphLineHeight`、`ImageSize`、`ImageContainerSize`、`ImageContainerMaxSize` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ParagraphMarginTop`、`AvatarMarginRight` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `GradientFromColor`、`GradientToColor` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `GradientFromColor`、`GradientToColor`、`ImageColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `BlockRadius`、`ParagraphLineHeight`、`ParagraphLineRoundCornerRadius` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+`GradientFromColor` 是占位块与微光亮带的底色，`GradientToColor` 是亮带峰值色。活动桌面宿主成组读取两色。`LoadingMotionDuration` 是亮带周期。`LoadingBackgroundStart`、`LoadingBackgroundMiddle`、`LoadingBackgroundEnd`
+描述 Ant Design 的 400% 背景平移关键帧，默认由两种渐变色派生（两种渐变色被显式覆盖时，派生画刷使用覆盖值）；Desktop 主题不再引用它们，
+它们决定已生成的 Token 资源键，因此保留。`TitleHeight` 是标题行高度（antd `titleHeight`），`ParagraphLineHeight` 是段落行高度
+（antd `paragraphLiHeight`）。`ImageColor` 是图片占位图标的填充色（AtomUI 扩展；antd 固定为 `#bfbfbf`，默认值相同），取代主题中的
+颜色字面量。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -31,6 +37,16 @@ Skeleton 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+### 3.1 主题读法与 Token owner
+
+- `Skeleton` 是 Token owner 透明控件（`[TokenOwnerTransparent]`）：它包裹的已加载内容（Card / Dialog 正文、Statistic 数值）保持宿主的
+  owner，宿主 `Controls[X]` 作用于内容中的无 identity 部件及其过渡时长。Skeleton 自身视觉全部以 `SkeletonTokenResource` 显式读取，
+  占位部件是注册控件。
+- `SkeletonAvatar`、`SkeletonButton`、`SkeletonInput`、`SkeletonImage`、`SkeletonNode`、`SkeletonLine`、`SkeletonParagraph` 以各自 identity
+  读取全局 Token（尺寸、圆角、行间距），以 `SkeletonTokenResource` 读取 Skeleton Own Token。`SkeletonElementTheme`（SkeletonButton /
+  SkeletonInput 的基础主题）与 `SkeletonImageTheme`（SkeletonNode 的基础主题）带 `<!-- owner: -->` 标记，以 `OwnerTokenResource` 读取。
+- `SkeletonTitle` 与 SkeletonLine 共用主题（StyleKey 为 SkeletonLine），主题经 internal `IsTitle` 标记为标题行应用 `TitleHeight`。
 
 ## 4. 控件家族影响
 

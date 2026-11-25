@@ -3,29 +3,19 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class BorderBeamToken : AbstractControlDesignToken
+public sealed partial class BorderBeamToken : AbstractControlDesignToken
 {
 
-    public double BeamSize { get; set; }
+    /// <summary>Length of the painted beam along the border path.</summary>
+    public partial double BeamSize { get; set; }
 
-    public double BeamOpacity { get; set; }
+    /// <summary>Opacity multiplier applied to the beam along the border.</summary>
+    public partial double BeamOpacity { get; set; }
 
-    public TimeSpan MotionDuration { get; set; }
+    /// <summary>Time the beam takes to complete one trip around the border.</summary>
+    public partial TimeSpan MotionDuration { get; set; }
 
-    public double MaxVisibleStopPercent { get; set; }
-
-    public BorderBeamToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        BeamSize              = 100d;
-        BeamOpacity           = 0.95d;
-        MotionDuration        = TimeSpan.FromSeconds(6);
-        MaxVisibleStopPercent = 70d;
-    }
+    /// <summary>Upper limit on the gradient stop position used to keep the beam visible along its path.</summary>
+    public partial double MaxVisibleStopPercent { get; set; }
 
 }

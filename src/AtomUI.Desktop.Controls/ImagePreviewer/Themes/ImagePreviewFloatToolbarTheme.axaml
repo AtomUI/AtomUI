@@ -52,61 +52,62 @@
             </ControlTemplate>
         </Setter>
 
+        <!-- layout: a radius beyond half the height draws the capsule ends of the toolbar (antd uses 100 as well) -->
         <Setter Property="CornerRadius" Value="100" />
         <Setter Property="Foreground"
-                Value="{atom:ImagePreviewerTokenResource PreviewOperationColor}" />
+                Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationForeground)}" />
         <Setter Property="Background"
-                Value="{atom:ImagePreviewerTokenResource NavButtonBgColor}" />
-        <Setter Property="Padding" Value="{atom:ImagePreviewerTokenResource FloatToolbarPadding}" />
-        <Setter Property="Margin" Value="{atom:SharedTokenResource MarginXL}" />
+                Value="{CompiledBinding $self.(atom:ImageViewer.NavButtonBackground)}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ImageViewer.FloatToolbarPadding)}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ImageViewer.MarginXL)}" />
         <Style Selector="^ /template/ atom|IconButton">
             <Setter Property="IconWidth"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationSize)}" />
             <Setter Property="IconHeight"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationSize)}" />
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationColor}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationForeground)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ImageViewer.PaddingSM)}" />
         </Style>
         
         <Style Selector="^ /template/ atom|ToggleIconButton">
             <Setter Property="IconWidth"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationSize)}" />
             <Setter Property="IconHeight"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationSize}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationSize)}" />
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationColor}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingSM}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.PreviewOperationForeground)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:ImageViewer.PaddingSM)}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconButton:pointerover">
+        <Style Selector="^ /template/ atom|IconButton:pointerover, ^ /template/ atom|IconButton:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationHoverColor}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.HoverPreviewOperationForeground)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationColorDisabled}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.DisabledPreviewOperationForeground)}" />
         </Style>
         
-        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover">
+        <Style Selector="^ /template/ atom|ToggleIconButton:pointerover, ^ /template/ atom|ToggleIconButton:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationHoverColor}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.HoverPreviewOperationForeground)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ToggleIconButton:disabled">
             <Setter Property="IconBrush"
-                    Value="{atom:ImagePreviewerTokenResource PreviewOperationColorDisabled}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.DisabledPreviewOperationForeground)}" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource Spacing}" />
+            <Setter Property="Spacing" Value="{CompiledBinding $self.(atom:ImageViewer.Spacing)}" />
         </Style>
 
         <Style Selector="^ /template/ Border#IndicatorFrame">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding"
-                    Value="{atom:ImagePreviewerTokenResource FloatToolbarIndicatorPadding}" />
+                    Value="{CompiledBinding $self.(atom:ImageViewer.FloatToolbarIndicatorPadding)}" />
         </Style>
 
     </ControlTheme>

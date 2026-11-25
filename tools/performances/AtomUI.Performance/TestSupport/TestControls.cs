@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Desktop.Controls;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Media;
@@ -31,22 +30,6 @@ internal sealed class MarkerDataTemplate : IDataTemplate
             Name = _marker,
             Text = _marker
         };
-    }
-}
-
-internal sealed class CountingInputTextPresenter : InputTextPresenter
-{
-    public int TextLayoutInvalidations { get; private set; }
-
-    public void ResetTextLayoutInvalidations()
-    {
-        TextLayoutInvalidations = 0;
-    }
-
-    protected override void InvalidateTextLayout()
-    {
-        TextLayoutInvalidations++;
-        base.InvalidateTextLayout();
     }
 }
 

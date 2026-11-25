@@ -1,39 +1,86 @@
+using System.Globalization;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class NavMenuPopupFrame : Border
 {
-    public static readonly StyledProperty<double> PopupMaxWidthProperty =
-        AvaloniaProperty.Register<NavMenuPopupFrame, double>(
-            nameof(PopupMaxWidth),
-            double.PositiveInfinity);
+    public static readonly StyledProperty<bool> UsePopupMaxSizeTokenResourcesProperty =
+        AvaloniaProperty.Register<NavMenuPopupFrame, bool>(nameof(UsePopupMaxSizeTokenResources));
 
-    public static readonly StyledProperty<double> PopupMaxHeightProperty =
-        AvaloniaProperty.Register<NavMenuPopupFrame, double>(
-            nameof(PopupMaxHeight),
-            double.PositiveInfinity);
-
-    public double PopupMaxWidth
+    public bool UsePopupMaxSizeTokenResources
     {
-        get => GetValue(PopupMaxWidthProperty);
-        set => SetValue(PopupMaxWidthProperty, value);
+        get => GetValue(UsePopupMaxSizeTokenResourcesProperty);
+        set => SetValue(UsePopupMaxSizeTokenResourcesProperty, value);
     }
 
-    public double PopupMaxHeight
-    {
-        get => GetValue(PopupMaxHeightProperty);
-        set => SetValue(PopupMaxHeightProperty, value);
-    }
+    private OwnerTokenSet? _sizeTokens;
+    private double _popupMaxWidth = double.PositiveInfinity;
+    private double _popupMaxHeight = double.PositiveInfinity;
 
     static NavMenuPopupFrame()
     {
         AffectsMeasure<NavMenuPopupFrame>(
-            PopupMaxWidthProperty,
-            PopupMaxHeightProperty,
             PaddingProperty,
             BorderThicknessProperty);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property != UsePopupMaxSizeTokenResourcesProperty)
+        {
+            return;
+        }
+
+        if (UsePopupMaxSizeTokenResources)
+        {
+            _sizeTokens = new OwnerTokenSet(this, 2, RefreshPopupSizeLimits);
+            _sizeTokens.SetResourceKey(0, NavMenuTokenKind.MenuPopupMaxWidth);
+            _sizeTokens.SetResourceKey(1, NavMenuTokenKind.MenuPopupMaxHeight);
+        }
+        else
+        {
+            _sizeTokens?.Dispose();
+            _sizeTokens = null;
+        }
+        RefreshPopupSizeLimits();
+    }
+
+    private void RefreshPopupSizeLimits()
+    {
+        var width = ReadLengthResource(_sizeTokens?.GetValue(0), _popupMaxWidth, double.PositiveInfinity);
+        var height = ReadLengthResource(_sizeTokens?.GetValue(1), _popupMaxHeight, double.PositiveInfinity);
+        if (!_popupMaxWidth.Equals(width) || !_popupMaxHeight.Equals(height))
+        {
+            _popupMaxWidth = width;
+            _popupMaxHeight = height;
+            InvalidateMeasure();
+        }
+    }
+
+    internal static double ReadLengthResource(object? value, double previous, double fallback)
+    {
+        if (value is double length)
+        {
+            return length;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : fallback;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return fallback;
+        }
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -64,12 +111,12 @@ internal class NavMenuPopupFrame : Border
         var width = ResolveLength(
             desiredSize.Width,
             MinWidth,
-            PopupMaxWidth,
+            _popupMaxWidth,
             availableSize.Width);
         var height = ResolveLength(
             desiredSize.Height,
             MinHeight,
-            PopupMaxHeight,
+            _popupMaxHeight,
             availableSize.Height);
 
         return new Size(width, height);

@@ -135,6 +135,10 @@ public partial class DataGridShowCase : GalleryReactiveUserControl<DataGridViewM
                 DataGridShowCaseDataSources.EnsureEditableCellsDataSource(viewModel);
                 dataGrid.ItemsSource = viewModel.EditableCellsDataSource?.Source;
                 break;
+            case "EditableRowsDataGrid":
+                DataGridShowCaseDataSources.EnsureEditableRowsDataSource(viewModel);
+                dataGrid.ItemsSource = viewModel.EditableRowsDataSource?.Source;
+                break;
             case "BasicPagingCaseGrid":
                 DataGridShowCaseDataSources.EnsurePagingGridDataSource(viewModel);
                 dataGrid.ItemsSource = viewModel.PagingGridDataSource?.Source;
@@ -196,6 +200,25 @@ public partial class DataGridShowCase : GalleryReactiveUserControl<DataGridViewM
         selectionDataGrid.SelectionMode = radioButton.Name == "ExtendedSelection"
             ? DataGridSelectionMode.Extended
             : DataGridSelectionMode.Single;
+    }
+
+    private void HandleSelectTriggerCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not AtomUIRadioButton radioButton ||
+            radioButton.IsChecked != true)
+        {
+            return;
+        }
+
+        var selectionDataGrid = FindNamedControlNearSender<AtomDataGrid>(sender, "SelectionDataGrid");
+        if (selectionDataGrid is null)
+        {
+            return;
+        }
+
+        selectionDataGrid.SelectTriggerType = radioButton.Name == "RowTrigger"
+            ? DataGridSelectTriggerType.Row
+            : DataGridSelectTriggerType.SelectIndicator;
     }
 
     private void HandleSortAgeBtnClick(object? sender, RoutedEventArgs? eventArgs)
@@ -822,7 +845,7 @@ internal static class DataGridShowCaseDataSources
         ];
         viewModel.EditableCellsDataSource = new(
             items,
-            DataGridShowCaseSourceDescriptors.Base);
+            DataGridShowCaseSourceDescriptors.Editable);
     }
 
     public static void EnsureEditableRowsDataSource(DataGridViewModel viewModel)
@@ -845,7 +868,7 @@ internal static class DataGridShowCaseDataSources
         }
         viewModel.EditableRowsDataSource = new(
             items,
-            DataGridShowCaseSourceDescriptors.Base);
+            DataGridShowCaseSourceDescriptors.Editable);
     }
 
     public static void EnsurePagingGridDataSource(DataGridViewModel viewModel)

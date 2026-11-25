@@ -12,7 +12,8 @@ Steps 的实现目标是在 `ItemsControl` 容器体系内，把根输入和 ite
 
 主要源码：
 
-- `src/AtomUI.Desktop.Controls/Steps/Steps.cs`：public API、事件、容器生成、根输入分发和 item 状态协调。
+- `src/AtomUI.Controls/Steps/AbstractSteps.cs` 与 `AbstractStepsItem.cs`：共用步骤序号、当前项与有效状态，跟踪容器生命周期。
+- `src/AtomUI.Desktop.Controls/Steps/Steps.cs`：Desktop API、容器和激活请求，以及按下一项状态着色的连接线。
 - `src/AtomUI.Desktop.Controls/Steps/Steps.SemanticParts.cs`：`Steps` 的 Semantic Part descriptor（`root` + `item` + 七个 item 子 Part）。
 - `src/AtomUI.Desktop.Controls/Steps/StepsItem.cs`：public item 契约、internal 派生状态、owner 生命周期和激活入口。
 - `src/AtomUI.Desktop.Controls/Steps/StepsItemIndicator.cs`：Indicator 状态、Wave part、Progress 绘制和渲染失效。
@@ -38,7 +39,7 @@ Gallery 目录：
 
 ### 3.1 Steps
 
-`Steps : ItemsControl` 是状态协调 owner：
+`Steps` 继承 `AbstractSteps : ItemsControl`，由共享基类计算序号与自动状态：
 
 - 保存根 public 输入。
 - 保存 ItemHeaderForeground、ItemSubHeaderForeground 和 ItemRailBackground，并投影到全部已实现 item 容器。
@@ -50,11 +51,11 @@ Gallery 目录：
 
 ### 3.2 StepsItem
 
-`StepsItem : HeaderedContentControl` 是单项 public 容器：
+`StepsItem` 继承 `AbstractStepsItem : HeaderedContentControl`，保留 Desktop 项目模板和交互：
 
 - 承载 Header、SubHeader、Content、Icon 和 nullable Status。
 - 通过 internal StyledProperty 保存 owner 投影的 Header、SubHeader 和 Connector 语义画刷覆盖。
-- 保存 StepNumber、IsCurrent、AutomaticStatus、EffectiveStatus、ConnectorStatus、IsFirst、IsLast 和 CanInvoke 的 internal 投影。
+- 读取共享的 `StepNumber`、`IsCurrent`、`EffectiveStatus`、`IsFirst` 和 `IsLast`，并维护 Desktop 的 `ConnectorStatus` 和 `CanInvoke`。
 - 处理 pointer、keyboard、focus 和 hover。
 - 把激活请求交给 owner，不写入根 Current。
 

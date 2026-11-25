@@ -32,12 +32,15 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 
 - `NodeHoverBg`
 - `NodeSelectedBg`
+- `NodeSelectedColor`
 - `DirectoryNodeSelectedColor`
 - `DirectoryNodeSelectedBg`
 
-`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 当前由 Token 类型定义为目录树选中语义，默认 TreeView 主题不直接消费这两个 Token；维护时仍应保持其名称和语义稳定。
+`NodeHoverBg` 用于节点 hover 背景。`NodeSelectedBg` 用于普通 selected / pressed 背景。 Shadcn 暗色加深选中与悬停之间的背景差异。`NodeSelectedColor` 是选中节点
+（未禁用）的文字色，画在 `NodeSelectedBg` 上，默认取全局 `ControlItemColorActive`（默认 `ColorText`，antd Tree
+`nodeSelectedColor`），所以 Ant Design 渲染不变；选中底色为实色的主题（PrimeNG）在全局设置对比色。TreeSelect 与 TransferTreeView 共用同一 Token。`DirectoryNodeSelectedColor` 和 `DirectoryNodeSelectedBg` 是保留 Token（`[ReservedToken]`，对应 antd Tree `directoryNodeSelectedColor` / `directoryNodeSelectedBg`）：AtomUI TreeView 没有目录树模式，设置后暂无视觉效果。
 
-节点 disabled 文本色、图标弱化和 switcher 图标色优先使用 SharedToken，不在 TreeViewToken 中重复定义。
+未选中节点的文字与图标色使用宿主的 `ColorText`，disabled 节点的文字、节点图标与 switcher 图标统一使用 `ColorTextDisabled`（与 antd 一致，此前图标与 switcher 以 0.3 不透明度弱化），不在 TreeViewToken 中重复定义。
 
 ### 2.3 节点结构间距 Token
 
@@ -61,7 +64,7 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 
 - `DragIndicatorLineWidth`
 
-`DragIndicatorLineWidth` 控制 drop indicator 线宽。拖拽指示线颜色当前来自 `SharedToken.ColorPrimary`，由 TreeView Theme 绑定到 internal drag indicator brush。
+`DragIndicatorLineWidth` 控制拖拽插入线的宽度。拖动开始时，树通过 `OwnerTokenSet` 读取当前终端的线宽与宿主的 `SharedToken.ColorPrimary`，拖动结束时释放观察。预览背景在被拖动行所属的树内解析 `NodeHoverBg`。
 
 拖拽位置、目标节点和 indicator 坐标属于运行时状态，不进入 Token。
 
@@ -76,12 +79,23 @@ TreeViewToken 当前按 TreeView 语义分为五类。
 TreeView Token 主要参与以下专项模型：
 
 - hover mode：`NodeHoverBg` 和 `NodeSelectedBg` 同时服务 `Default`、`Block`、`WholeLine` 三种 hover 背景范围。
+- 键盘活动项：`:keyboard-active` 复用 `NodeHoverBg`，背景范围随 `NodeHoverMode`，与 `NodeSelectedBg` 叠加时 selected 优先；不新增专属 Token。设计见 [TreeView 键盘导航设计](keyboard-navigation-design.md)。
 - switcher：`HeaderHeight` 控制 switcher hit size，`TreeNodeSwitcherMargin` 控制 toggle 模式下 switcher 间距。
 - icon：`TreeNodeIconMargin` 控制节点 icon 与 header 内容间距，icon 尺寸来自 SharedToken。
 - drag/drop：`DragIndicatorLineWidth` 控制 drop indicator 线宽，颜色来自 SharedToken 主色。
 - filter：`FilterHighlightColor` 通过 `FilterHighlightForeground` 传递到 header highlighter。
 
 Token 不参与 default selected / checked / expanded path 回放，不参与 `CheckedItems` 同步，不参与异步加载逻辑。
+
+### 3.1 主题读法与 Token owner
+
+- `TreeViewItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），无 identity 的 `TreeViewItemHeader` 与 `NodeSwitcherButton`
+  继承宿主树的 owner，以 `OwnerTokenResource` 读取全局 Token：`Controls[TreeView]` 作用于节点高度、圆角、图标尺寸与颜色、拖拽指示线、
+  树线与过渡时长，`Controls[TreeViewItem]` 不作用于节点。TransferTreeView 与 TreeSelect 的树复用这些主题，跟随各自的 owner。
+- `TreeViewTheme` / `TreeViewItemTheme` 也是 TransferTreeView / TransferTreeViewItem 的基础主题，全局 Token 以 `OwnerTokenResource` 读取
+  （主题前有 `<!-- owner: -->` 标记）。TreeView Own Token 仍以 `TreeViewTokenResource` 读取。
+- 节点图标与 switcher 图标位于注册控件 `IconPresenter` 中，owner 读取在 header / switcher 上完成，再经 internal `IconSize` / `IconBrush`
+  绑定到 IconPresenter（在 IconPresenter 上读取会解析到它自己的 identity）。
 
 ## 4. 控件家族影响
 
@@ -116,3 +130,7 @@ TreeViewToken 变更验证：
 - `DragIndicatorLineWidth` 与实际 drop indicator render line width 一致。
 - `FilterHighlightColor` 能传递到 filter highlight runs。
 - Light / dark 主题下 hover、selected、disabled、filter 和 drag indicator 可读性稳定。
+
+## 独立 Token 身份与共享计算
+
+TreeView 与 TransferTreeView 独立拥有实际树 Own；TreeSelect 只声明其实际树展示字段，取值经取值包内的纯值函数复用树的取值规则（Ant Design：`TreePresentationTokenCalculator`，由 `TreeSelectTokenRule` 调用）。原目录树模式字段仅在 TreeView 保留 Reserved，不扩大新终端承诺。

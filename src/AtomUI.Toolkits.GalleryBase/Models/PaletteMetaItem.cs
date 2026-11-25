@@ -1,4 +1,4 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 
 namespace AtomUI.Toolkits.GalleryBase.Models;
 

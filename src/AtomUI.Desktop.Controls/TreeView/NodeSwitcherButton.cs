@@ -97,6 +97,26 @@ internal class NodeSwitcherButton : ToggleButton
 
     internal static readonly StyledProperty<bool> IsLeafIconVisibleProperty =
         AvaloniaProperty.Register<NodeSwitcherButton, bool>(nameof(IsLeafIconVisible), true);
+
+    // The icon size and brush are resolved on the switcher (its theme reads the tree's Tokens through the inherited owner)
+    // and bound down to the registered IconPresenter, whose own identity would otherwise answer the owner reads.
+    internal static readonly StyledProperty<double> IconSizeProperty =
+        AvaloniaProperty.Register<NodeSwitcherButton, double>(nameof(IconSize), double.NaN);
+
+    internal static readonly StyledProperty<IBrush?> IconBrushProperty =
+        AvaloniaProperty.Register<NodeSwitcherButton, IBrush?>(nameof(IconBrush));
+
+    internal double IconSize
+    {
+        get => GetValue(IconSizeProperty);
+        set => SetValue(IconSizeProperty, value);
+    }
+
+    internal IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
     
     internal static readonly StyledProperty<ITransform?> RotationIconRenderTransformProperty =
         AvaloniaProperty.Register<NodeSwitcherButton, ITransform?>(nameof(RotationIconRenderTransform));
@@ -282,15 +302,7 @@ internal class NodeSwitcherButton : ToggleButton
     {
         _owningTreeItem ??= this.FindAncestorOfType<TreeViewItem>();
         Debug.Assert(_owningTreeItem != null);
-        if (_owningTreeItem.HasTreeItemDataLoader && !_owningTreeItem.AsyncLoaded)
-        {
-            RaiseEvent(new TreeViewItemLoadRequestEventArgs(_owningTreeItem)
-            {
-                RoutedEvent = NodeLoadRequestEvent
-            });
-            return;
-        }
-        base.Toggle();
+        _owningTreeItem.RequestToggleExpand();
     }
 
 }

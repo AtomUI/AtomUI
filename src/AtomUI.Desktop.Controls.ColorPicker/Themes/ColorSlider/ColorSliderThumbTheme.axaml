@@ -7,14 +7,15 @@
     <ControlTheme x:Key="{x:Type atom:ColorSliderThumb}" TargetType="atom:ColorSliderThumb">
         <Setter Property="Template">
             <ControlTemplate>
+                <!-- layout: fixed raster inset, hit target or compact editor packing. -->
                 <atom:PixelAlignedBorder Name="PART_Frame"
-                                         Background="{atom:SharedTokenResource ColorBgElevated}"
+                                         Background="{atom:OwnerTokenResource ColorBgElevated}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          Padding="2"
                                          CornerRadius="{TemplateBinding CornerRadius}">
                     <atom:PixelAlignedBorder Name="PART_InnerEllipse"
-                                             BorderBrush="{atom:SharedTokenResource ColorFillSecondary}"
+                                             BorderBrush="{atom:OwnerTokenResource ColorFillSecondary}"
                                              CornerRadius="{TemplateBinding InnerCornerRadius}"
                                              BorderThickness="{TemplateBinding BorderThickness}"
                                              Background="{TemplateBinding ColorValueBrush}">
@@ -27,16 +28,16 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillSecondary}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
         <Setter Property="Width"
-                Value="{atom:ColorPickerTokenResource ColorPickerSliderThumbSize}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SliderThumbSize)}" />
         <Setter Property="Height"
-                Value="{atom:ColorPickerTokenResource ColorPickerSliderThumbSize}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SliderThumbSize)}" />
         
         <Style Selector="^:focus,^:pressed">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryActive}" />
         </Style>
     </ControlTheme>
 

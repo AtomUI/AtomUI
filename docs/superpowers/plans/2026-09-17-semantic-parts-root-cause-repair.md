@@ -1,6 +1,6 @@
 # Semantic Part Root-Cause Repair Implementation Plan
 
-> **Execution:** Use superpowers:executing-plans in this session, task by task. The user explicitly prohibits subagents and commits. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Execute the plan task by task in this session. The user explicitly prohibits subagents and commits. Track steps with Markdown checkboxes (`- [ ]`).
 
 **Goal:** 修复已复现的 Semantic Part 运行时、布局、资源问题，保留正常 UX 与公开主题契约。
 

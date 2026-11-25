@@ -2,6 +2,7 @@ using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -19,7 +20,7 @@ internal enum PaginationItemType
     JumpNext
 }
 
-internal class PaginationNavItem : ContentControl, ISelectable
+internal partial class PaginationNavItem : ContentControl, ISelectable
 {
     #region 公共属性定义
 
@@ -104,6 +105,99 @@ internal class PaginationNavItem : ContentControl, ISelectable
     #endregion
 
     #region 内部属性定义
+
+    // The icon size and the jump / ellipsis icon brushes: read from the host's effective Tokens by this item's theme (the
+    // icon presenters are registered parts that would resolve owner reads to themselves) and bound by the presenters.
+    internal static readonly StyledProperty<double> ItemIconSizeProperty =
+        AvaloniaProperty.Register<PaginationNavItem, double>(nameof(ItemIconSize));
+
+    internal static readonly StyledProperty<IBrush?> JumpIconBrushProperty =
+        AvaloniaProperty.Register<PaginationNavItem, IBrush?>(nameof(JumpIconBrush));
+
+    internal static readonly StyledProperty<IBrush?> EllipsisIconBrushProperty =
+        AvaloniaProperty.Register<PaginationNavItem, IBrush?>(nameof(EllipsisIconBrush));
+
+    internal double ItemIconSize
+    {
+        get => GetValue(ItemIconSizeProperty);
+        set => SetValue(ItemIconSizeProperty, value);
+    }
+
+    internal IBrush? JumpIconBrush
+    {
+        get => GetValue(JumpIconBrushProperty);
+        set => SetValue(JumpIconBrushProperty, value);
+    }
+
+    internal IBrush? EllipsisIconBrush
+    {
+        get => GetValue(EllipsisIconBrushProperty);
+        set => SetValue(EllipsisIconBrushProperty, value);
+    }
+
+    // The pager's item inputs: forwarded by the nav, or template-bound by the simple pager.
+    internal static readonly StyledProperty<double> ItemSizeProperty =
+        AbstractPagination.ItemSizeProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemActiveColorDisabledProperty =
+        AbstractPagination.ItemActiveColorDisabledProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
+        AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AbstractPagination.ItemColorProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AbstractPagination.ItemHoverColorProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        AbstractPagination.ItemHoverBgProperty.AddOwner<PaginationNavItem>();
+
+    internal static readonly StyledProperty<CornerRadius> ItemBorderRadiusProperty =
+        AbstractPagination.ItemBorderRadiusProperty.AddOwner<PaginationNavItem>();
+
+    internal double ItemSize
+    {
+        get => GetValue(ItemSizeProperty);
+        set => SetValue(ItemSizeProperty, value);
+    }
+
+    internal IBrush? ItemActiveColorDisabled
+    {
+        get => GetValue(ItemActiveColorDisabledProperty);
+        set => SetValue(ItemActiveColorDisabledProperty, value);
+    }
+
+    internal Thickness ItemPaddingInline
+    {
+        get => GetValue(ItemPaddingInlineProperty);
+        set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+
+    internal CornerRadius ItemBorderRadius
+    {
+        get => GetValue(ItemBorderRadiusProperty);
+        set => SetValue(ItemBorderRadiusProperty, value);
+    }
 
     internal int PageNumber { get; set; } = -1;
 

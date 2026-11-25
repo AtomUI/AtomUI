@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner. TreeViewItem is Token-owner transparent, so its owner is the hosting
+     TreeView; the theme is also the base of TransferTreeViewItem and the identity-less TreeSelect tree items. -->
 <ControlTheme TargetType="atom:TreeViewItem"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -31,6 +33,8 @@
                                          IsEnabled="{TemplateBinding IsEnabled}"
                                          IsSelected="{TemplateBinding IsSelected}"
                                          IsDragging="{TemplateBinding IsDragging}"
+                                         IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                         IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                          IsDragOver="{TemplateBinding IsDragOver}"
                                          ToggleType="{TemplateBinding ToggleType}"
                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -41,7 +45,7 @@
                                          FilterStrategy="{TemplateBinding FilterStrategy}"
                                          FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
                                          IsSelectable="{TemplateBinding IsSelectable}"
-                                         Focusable="{TemplateBinding Focusable}"/>
+                                         Focusable="False"/>
                 <atom:ContentViewport
                     Name="PART_ChildrenViewport"
                     ClipToBounds="True"
@@ -56,7 +60,7 @@
 
     <Style Selector="^:is(atom|TreeViewItem)">
         <Setter Property="Focusable" Value="False" /> 
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
     </Style>
 </ControlTheme>

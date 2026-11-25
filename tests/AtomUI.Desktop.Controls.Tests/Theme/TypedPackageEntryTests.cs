@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Registration;
 using Avalonia;
 using Avalonia.Headless.XUnit;
@@ -114,7 +116,8 @@ public class TypedPackageEntryTests
         ApplicationStartup.AttachWith(app, builder =>
         {
             saved = builder;
-            builder.UseDesktopControls().UseDesktopDataGrid().UseDesktopColorPicker().UseDesktopExtras();
+            builder.UseDesktopControls().UseDesktopDataGrid().UseDesktopColorPicker().UseDesktopExtras()
+                   .UseAntDesign(static language => language.AddDesktopColorPicker().AddDesktopDataGrid());
         });
         using var scope = ApplicationScopeRegistry.Get(app);
         var tooltipAfterCommit = AvaloniaLocator.Current.GetService<ToolTipService>();

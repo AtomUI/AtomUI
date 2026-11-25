@@ -187,6 +187,7 @@ public sealed class GalleryBrandingOptions
 public sealed class GalleryShellOptions
 {
     public double SidebarWidth { get; set; }
+    public double? CollapsedSidebarHeaderSpacing { get; set; }
     public Size InitialDesktopWindowSize { get; set; }
     public Size MinDesktopWindowSize { get; set; }
     public bool IsThemeMenuEnabled { get; set; }

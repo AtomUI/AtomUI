@@ -2,6 +2,19 @@
 
 本文档记录 Separator 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-18
+
+- 桌面主题合并标题间距、边缘比例与竖向间距的 Own Token 读取。带标题横线和竖线按实际使用的度量刷新布局。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 `SeparatorTokenResource`，`Controls[Separator]` 覆盖生效。
+  - 新增 Own Token `TitleFontWeight`（默认 `Medium` 500，取代主题中的字面量 `500`）；接通 `HorizontalWithTextGutterMargin`（大号带标题分割线，对应 antd 未设尺寸带文字；antd `md` / `sm` 尺寸外边距优先）。
+  - 可见变化：大号带标题的水平分割线上下外边距由 24px（`HorizontalMarginBlockLG`）变为 16px（`HorizontalWithTextGutterMargin`）。
+  - `AbstractSeparator` 的 `TextPaddingInline`、`OrientationMarginPercent` 标记 `AffectsArrange`，`VerticalMarginInline` 标记 `AffectsMeasure`，
+    Token 变化后立即重新排布（此前要等下一次布局）。
+
 ## 2026-08-16
 
 - Semantic Parts

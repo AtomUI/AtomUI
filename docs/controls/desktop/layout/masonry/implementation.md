@@ -15,8 +15,7 @@ Masonry 的实现由公开 `ItemsControl` 外壳和 internal `Panel` 布局引�
 - `src/AtomUI.Desktop.Controls/Masonry/Masonry.cs`：公开控件类型、布局属性、attached property、`LayoutChanged` 事件入口和 item container prepare marker。
 - `src/AtomUI.Desktop.Controls/Masonry/MasonryLayoutStrategy.cs`：公开布局策略枚举，定义稳定列与经典重排语义。
 - `src/AtomUI.Desktop.Controls/Masonry/Masonry.SemanticParts.cs`：`item` Semantic Part descriptor；`root` 由生成器隐式补齐。
-- `src/AtomUI.Desktop.Controls/Masonry/MasonryPanel.cs`：internal 布局引擎，执行测量、排列、item 动效（入场/滑动）、响应式断点监听和布局结果比较。
-- `src/AtomUI.Desktop.Controls/Masonry/MasonryItemTransformAnimator.cs`：`ITransform?` 关键帧插值器，支撑 RenderTransform 滑动动画。
+- `src/AtomUI.Desktop.Controls/Masonry/MasonryPanel.cs`：internal 布局引擎，执行测量、排列、item 入场淡入、响应式断点监听和布局结果比较。
 - `src/AtomUI.Desktop.Controls/Masonry/MasonryItemSpan.cs`：子项 span 枚举。
 - `src/AtomUI.Desktop.Controls/Masonry/MasonryLayoutChangedEventArgs.cs`：布局结果事件参数。
 - `src/AtomUI.Desktop.Controls/Masonry/Themes/MasonryTheme.axaml`：默认 ControlTheme，装配 root chrome `PixelAlignedBorder`、`ItemsPresenter`、离场 ghost 层和 `MasonryPanel`，并提供动效时长 token Setter。
@@ -105,6 +104,8 @@ Masonry 不拦截 pointer、keyboard、focus、drag/drop、context menu 或子�
 MeasureOverride(availableSize)
   resolve width
   resolve effective columns and gaps
+  if the input width is unchanged and an arranged width is recorded:
+    measure children with the recorded arranged width
   for each visible child in order:
     resolve span and explicit column
     measure child with column width or full width
@@ -114,6 +115,7 @@ MeasureOverride(availableSize)
   return Size(resolvedWidth, maxColumnHeight)
 
 ArrangeOverride(finalSize)
+  record the final effective width
   reuse the Measure layout when the effective width is unchanged
   otherwise remeasure and recompute for the final width
   arrange each child using cached rect
@@ -123,6 +125,8 @@ ArrangeOverride(finalSize)
 ```
 
 `MeasureOverride` 保存本次测量生成的完整 `MasonryLayout`（矩形、列分配、整行标记、有效宽度和有效列数）。`ArrangeOverride` 先解析最终尺寸对应的有效宽度；如果与 Measure 结果一致，直接复用该结果，不再重复遍历 item 和列高集合。若宿主以无限宽度 Measure、再以有限视口宽度 Arrange，子项必须按最终列宽重新 Measure 后计算布局，不能复用基于另一宽度产生的 DesiredSize。候选缓存只跨越当前 Measure→Arrange 周期，Arrange 消费后立即释放。
+
+Measure 约束宽度与 Arrange 最终宽度不一致很常见：Avalonia 布局取整只对 Arrange 尺寸向上取整，小数测量约束（奇数宽度的星号列、小数宽度宿主、分数缩放）会得到更宽的排列宽度；可横向滚动的 `ScrollViewer` 则以无限宽度 Measure、再以视口宽度 Arrange。Arrange 按最终列宽重测后，宽度相关子项（Uniform 图片、Skeleton、换行文本等）的 DesiredSize 变化会使面板 Measure 失效；若下一轮仍按原约束测量，子项尺寸来回翻转，形成永久布局循环——触发 Avalonia layout cycle 告警，且窗口内每次无关布局请求都会重测全部子项多轮。因此 Arrange 记录本次有效宽度；之后 Measure 输入宽度不变时按该宽度测量子项，使 Measure 与 Arrange 收敛到同一列宽。返回的 DesiredSize 宽度仍按 Measure 约束解析，不使用记录的排列宽度，避免无限宽度宿主把旧排列宽度当作内容 extent 保留（视口缩小后出现多余横向滚动）。Measure 输入宽度变化、断点变化或 detached 时清除该记录。
 
 有效列数：
 
@@ -191,14 +195,21 @@ StableColumns
 
 Measure 与 Arrange 的布局结果必须对同一输入保持一致。缓存不能跨越影响布局的属性变更、子元素变更或可用宽度变更。
 
-## 8. Item 动效（对齐 Ant Design 6.6.3）
+## 8. Item 动效
 
-Masonry 为 item 提供三类动效，语义与 antd 6.6.3 Masonry 对齐：入场淡入（appear fade-in）、位置滑动（position glide）与
-离场淡出（leave fade-out）。RTL 场景下排列矩形按 `x' = width - rect.Right` 镜像，ghost 托管位置同样镜像。
+Masonry 为 item 提供两类动效：入场淡入（appear fade-in）与离场淡出（leave fade-out），对应 antd 6.6.3 Masonry 的
+motionAppear / leave。**重新布局不做任何 item 动画**：内容高度变化（例如图片加载完成）、宽度变化（拖拽缩放）、列数或断点
+变化、增删 item 引起的位置变化，既有 item 都直接就位，不做位置滑动，也不淡入。RTL 场景下排列矩形按
+`x' = width - rect.Right` 镜像，ghost 托管位置同样镜像。
+
+不做重新布局动画的原因：拖拽缩放每帧都会重新布局，图片陆续加载也会连续移动同列后续 item。逐项位置动画（每项一个
+`Animation`）会让 item 持续落后于布局位置（视觉滞后、缩放时列间距错乱），并随移动 item 数量线性占用 UI 线程。
+脚本化渲染验证（真实 MasonryShowCase 图片示例，60 帧拖拽缩放）中，去掉位置动画后 UI 线程忙碌时间约下降 30%，渲染帧与
+完全禁用动效逐像素一致。
 
 时长与缓动来源：
 
-- `MotionDuration`（入场/滑动）：ControlTheme Setter 取 `MotionDurationSlow` token，默认 300ms。
+- `MotionDuration`（入场）：ControlTheme Setter 取 `MotionDurationSlow` token，默认 300ms。
 - `LeaveMotionDuration`（离场）：ControlTheme Setter 取 `MotionDurationFast` token，默认 100ms。
 - 缓动为 `CubicEaseOut`，等价 antd `motionEaseOut = cubic-bezier(0.215, 0.61, 0.355, 1)`。
 - 全局 `EnableMotion=false` 时 token 值归零，全部动效退化为瞬时（无预置、无动画、立即移除）。
@@ -208,21 +219,22 @@ Masonry 为 item 提供三类动效，语义与 antd 6.6.3 Masonry 对齐：入�
 ```text
 ArrangeOverride
   → ApplyItemMotion(child, visualRect)
-      首次排列 → StartAppearMotion：Opacity 0→1（新项只淡入，不滑动）
-      位置变化 → StartGlideMotion：RenderTransform translate(old-new)→0（既有项只滑动，不淡入）
-      入场淡入激活中的项不做位置过渡（antd `-fade` 项语义）
+      首次排列且位于动效范围 → StartAppearMotion：Opacity 0→1
+      其他（重新布局）       → 只记录视觉矩形（供离场 ghost 定位），不做动画
+EffectiveViewportChanged
+  → 记录可见区域；结束已远离动效范围的入场淡入（直接显示）
 ```
 
-动效偏移来自旧/新 Arrange 矩形的运行时布局状态，ControlTheme 无法表达，因此在面板代码驱动；时长值由 ControlTheme 从
-token Setter 提供（`MasonryTheme.axaml`）。起始值以 Animation 优先级预置避免首帧跳变；结束后通过 `SetValue` 返回的
-`IDisposable` 句柄释放——`AvaloniaObject.SetValue` 对非 LocalValue 优先级的 `UnsetValue` 是静默忽略的，必须 Dispose
-句柄才能回落用户样式基值（样式值/本地值在动效结束后自动接管）。滑动中的子项再次变位时，先冻结读取当前视觉平移，取消
-旧动画后从当前视觉位置续滑。
+动效范围是面板最近一次 `EffectiveViewportChanged` 报告的有效视口向四周各扩展一个视口尺寸，用于避免一次挂载大量 item
+时为不可见 item 创建入场动画。可见区域尚未得知（首次 Arrange 早于首次视口通知）或非有限时按可见处理；首次视口通知到达
+后，远离可见区域的入场淡入立即结束。视口为空（面板整体不可见）时不创建动效。面板只持有一个视口订阅，进入 Masonry
+视觉树时订阅，detached 时解除。
 
-`RenderTransform`（`ITransform?`）在 Avalonia 动画注册表中没有关键帧插值器，直接对其做关键帧动画会抛
-"No animator registered"；`MasonryPanel` 静态构造通过 `Animation.RegisterCustomAnimator<ITransform?, MasonryItemTransformAnimator>`
-注册插值器（对齐既有 `MotionTransformOptionsAnimator` 对 `TransformOperations` 的处理，非 `TransformOperations` 值按
-Identity 插值）。注册只影响"关键帧动画 ITransform 属性"这一此前必然抛异常的场景。
+入场时机来自 Arrange 运行时状态（是否首次排列、是否接近可见区域），ControlTheme 无法表达，因此在面板代码驱动；时长值由
+ControlTheme 从 token Setter 提供（`MasonryTheme.axaml`）。起始值以 Animation 优先级预置避免首帧闪烁；结束后通过
+`SetValue` 返回的 `IDisposable` 句柄释放——`AvaloniaObject.SetValue` 对非 LocalValue 优先级的 `UnsetValue` 是静默忽略的，
+必须 Dispose 句柄才能回落用户样式基值（样式值/本地值在动效结束后自动接管）。每次入场运行持有独立状态（取消源、预置句柄），
+正常结束、取消、视口裁剪和 detached 都通过同一释放路径归还句柄。
 
 离场淡出（ghost 层托管，`Masonry`）：
 
@@ -271,7 +283,9 @@ Masonry 不使用反射读取 item template 内部元素，不创建不可见测
 - `Reflow` 每次布局计算都从当前高度状态执行 shortest-column 分配，不读取稳定列快照。
 - 替换 `ItemsPanel` 等价于替换布局引擎，Masonry-specific 布局语义不再由默认面板保证。
 - item 动效时长只来自 ControlTheme token Setter（`MotionDurationSlow` / `MotionDurationFast`）；动画优先级持有必须能释放回用户样式基值，释放 `SetValue` 预置必须 Dispose 返回句柄。
-- 新项只入场淡入不滑动；既有项位置变化只滑动不淡入；入场淡入激活中的项不做位置过渡；移除项由 ghost 层在原位置淡出且保留 marker。
+- 新项只入场淡入；重新布局（内容高度、宽度、列数、断点、增删 item 引起的位置变化）不做任何 item 动画，既有 item 直接就位；移除项由 ghost 层在原位置淡出且保留 marker。
+- 入场淡入只在动效范围（有效视口四周各扩展一个视口尺寸）内创建；动效数量不得随 item 总数线性增长。面板只持有一个 `EffectiveViewportChanged` 订阅。
+- Measure 输入宽度不变时必须按上次 Arrange 有效宽度测量子项，避免 Measure/Arrange 宽度来回翻转形成布局循环；DesiredSize 宽度仍按 Measure 约束解析。
 - ghost host 由控件创建，不参与命中测试；容器重加入必须在 `base.ChildrenChanged` 之前释放 ghost；`Masonry` detached 时清空全部 ghost。
 - RTL 镜像只作用于排列的视觉矩形与 ghost 托管位置，不改变逻辑顺序与布局算法。
 
@@ -281,10 +295,10 @@ Masonry 不使用反射读取 item template 内部元素，不创建不可见测
 
 - 默认值和无效值归一：列数、列宽、最大列数、水平/垂直间距。
 - 响应式：`ColumnInfo`、`Gutter`、partial breakpoint map、水平/垂直维度独立 fallback。
-- 布局：shortest-column、显式列、整行项、不可见子项、无限宽度、tie-break。
+- 布局：shortest-column、显式列、整行项、不可见子项、无限宽度、tie-break、Measure/Arrange 宽度不一致时不形成布局循环且不保留过期 extent。
 - 策略：默认 `StableColumns`、同列数 resize 和 DesiredSize 变化保持列、增删 container 保持现存列、`Reflow` 重新计算、列数及 attached property 变化重建分配、策略切换清空快照。
 - 容器：直接子元素、`ItemsSource`、`ItemContainerTheme`、替换 `ItemsPanel`、`.semantic-item` marker 和 `MasonryItemStyle` route。
 - 事件：有效布局分配变化、空集合通知、重复通知合并、layout pass 外派发。
-- 动效：时长 token 管道、入场起点预置与结束后样式基值回落、滑动偏移与释放、续滑、零时长退化、离场 ghost 原位淡出/释放/重加入归还/Clear 全托管、RTL 镜像。
+- 动效：时长 token 管道、入场起点预置与结束后样式基值回落、重新布局不做 item 动画、零时长退化、离场 ghost 原位淡出/释放/重加入归还/Clear 全托管、RTL 镜像。
 - Gallery：图片加载、异步高度变化、响应式示例、整行项示例、Semantic Part Preview 和 Semantic Style 示例。
 - 文档改动：运行 `git diff --check`。

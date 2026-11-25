@@ -10,7 +10,8 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 主要源码：
 
-- `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.cs`：公共 API、Avalonia 属性注册、事件、Form 接口、状态入口和模板生命周期。
+- `src/AtomUI.Controls/Input/AbstractOtpInput.cs` 承担输入过滤、活动格、完成事件和 Form 值。
+- `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.cs` 保留公开属性和事件，负责模板、格子投射及桌面 Form feedback。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEdit.SemanticParts.cs`：Semantic Part descriptor 声明（`root`、`cellList`、`cell`、`separator`），cell 与 separator 为 `Multiple` + RuntimeCreated。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditCell.cs`：内部 cell 控件，承载单字符显示、placeholder、active、mask 和事件回调。
 - `src/AtomUI.Desktop.Controls/OtpLineEdit/OtpLineEditSeparatorContext.cs`：separator 模板上下文，提供前后 cell index 和 display index。
@@ -27,13 +28,15 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 ## 3. 核心类职责
 
-`OtpLineEdit` 是 public 控件，也是唯一状态 owner。它负责维护 `Text`、`Length`、active cell index、完成状态、effective status、Form feedback 和模板 part 生命周期。
+`AbstractOtpInput` 维护 `Text`、`Length`、活动格、完成状态和有效验证状态。桌面 `OtpLineEdit` 将这些状态投射到格子，管理 Form feedback 和模板生命周期。逻辑索引始终按文本顺序排列。RTL 布局将索引 0 放到右侧，方向键按可见方向移动。
 
 `OtpLineEditCell` 是 internal visual/input cell。它接收 owner 投射的 display character、placeholder、active、masked、read-only、disabled 和 effective status。它可以把用户输入事件回调给 owner，但不能独立更新验证码值。
 
 `OtpLineEditSeparatorContext` 是 separator 模板上下文。它只描述 separator 所处位置，不引用 owner 控件的可变状态，也不参与输入和验证。
 
 `OtpLineEditToken` 定义 OtpLineEdit 专属布局 Token。输入表面颜色、边框、focus shadow、disabled、error 和 warning 由 `InputControlFrameTheme` 与 SharedToken 表达，cell 文本字号直接复用 SharedToken 的输入字号。
+
+`JoinCells` 开启且 `Separator` 为空时，根控件将有效格间距设为零，并标记每格与前后格的连接关系。格子的模板根据连接关系保留外侧圆角和单道接缝，宽度及画刷继续使用格子的有效属性。悬停、按下和焦点反馈可在已有接缝的位置更新颜色，格子的布局和命中区域保持不变。活动格的容器绘制在邻格上方，焦点边框和外发光优先显示。添加 `Separator` 会恢复格间距和每格的独立边框。
 
 ## 4. 状态与数据流
 
@@ -126,7 +129,7 @@ OtpLineEdit
 - `Length` 默认值为 `6`，小于 `1` 的输入按契约归一到最小有效长度。
 - `Text` 的默认值为空字符串或 `null` 时，cell display 统一按空文本处理。
 - `Focusable=true`，根控件负责键盘输入和焦点状态。
-- cell 内部允许使用轻量 `Avalonia.Controls.TextBox` 承载 `TextPresenter` 和 caret，但真实键盘焦点始终由根 `OtpLineEdit` 持有，cell `TextBox` 不参与 tab/focus owner 竞争。
+- cell 内部的轻量 `OtpTextBox` 继承 `Avalonia.Controls.TextBox`，模板直接使用 Avalonia `TextPresenter` 承载文本，但真实键盘焦点始终由根 `OtpLineEdit` 持有，cell `TextBox` 不参与 tab/focus owner 竞争。
 - cell 的 `StyleVariant` 和有效状态视觉由 `OtpLineEditCellTheme.axaml` 基于 `InputControlFrameTheme` 投射根控件的有效状态；cell 不维护独立的 native validation、Form 或显式 status owner。根控件遵守 disabled/read-only 交互门禁及 shared `EffectiveStatus` 优先级，cell 的 active/hover 只在有效状态允许时叠加。
 
 `OnApplyTemplate` 规则：

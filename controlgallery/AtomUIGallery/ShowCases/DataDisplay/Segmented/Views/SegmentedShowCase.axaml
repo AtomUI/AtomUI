@@ -30,7 +30,7 @@
                             <StackPanel Orientation="Vertical"
                                         HorizontalAlignment="Left"
                                         Spacing="16">
-                                <atom:Segmented Name="SegmentedSemanticOwner">
+                                <atom:Segmented x:Name="SegmentedSemanticOwner">
                                     <atom:SegmentedItem Icon="{antdicons:AntDesignIconProvider Kind=BarsOutlined}"
                                                         Content="{gallery:SegmentedShowCaseLangResource P2ContentList}" />
                                     <atom:SegmentedItem Content="{gallery:SegmentedShowCaseLangResource P2ContentKanban}"
@@ -323,16 +323,21 @@
                                         Spacing="12">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Segmented.semantic-object">
-                                        <Setter Property="Background" Value="#e6f4ff" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         <atom:SegmentedItemStyle x:SetterTargetType="atom:SegmentedItem">
                                             <Setter Property="FontStyle" Value="Italic" />
                                             <Setter Property="CornerRadius" Value="6" />
                                         </atom:SegmentedItemStyle>
                                         <atom:SegmentedIconStyle x:SetterTargetType="atom:IconPresenter">
-                                            <Setter Property="IconBrush" Value="#1677ff" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:SegmentedIconStyle>
                                         <atom:SegmentedLabelStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Margin" Value="8,0,0,0" />
+                                        </atom:SegmentedLabelStyle>
+                                    </Style>
+                                    <Style Selector="atom|Segmented.semantic-object[Orientation=Vertical]">
+                                        <atom:SegmentedLabelStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="HorizontalContentAlignment" Value="Left" />
                                         </atom:SegmentedLabelStyle>
                                     </Style>
                                 </StackPanel.Styles>

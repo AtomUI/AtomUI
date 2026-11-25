@@ -1,11 +1,14 @@
+using System.Globalization;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using ProgressPath = Avalonia.Controls.Shapes.Path;
@@ -55,6 +58,18 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractCircleProgress, double>(
             nameof(CircleMinimumIconSize));
 
+    internal static readonly StyledProperty<bool> UseExtraInfoSizeTokenResourcesProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, bool>(nameof(UseExtraInfoSizeTokenResources));
+
+    // Percentage font size and status icon size computed from the circle size (bounded below by the Tokens). The control
+    // theme projects them to FontSize and to the icon presenters, so a local FontSize or an application Style still wins.
+    internal static readonly StyledProperty<double> ExtraInfoFontSizeProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoFontSize),
+            FontSizeProperty.GetDefaultValue(typeof(AbstractCircleProgress)));
+
+    internal static readonly StyledProperty<double> ExtraInfoIconSizeProperty =
+        AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoIconSize));
+
     internal static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
         AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
             nameof(ShapeStrokeLineCap),
@@ -79,6 +94,24 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(CircleMinimumIconSizeProperty, value);
     }
 
+    internal bool UseExtraInfoSizeTokenResources
+    {
+        get => GetValue(UseExtraInfoSizeTokenResourcesProperty);
+        set => SetValue(UseExtraInfoSizeTokenResourcesProperty, value);
+    }
+
+    internal double ExtraInfoFontSize
+    {
+        get => GetValue(ExtraInfoFontSizeProperty);
+        set => SetValue(ExtraInfoFontSizeProperty, value);
+    }
+
+    internal double ExtraInfoIconSize
+    {
+        get => GetValue(ExtraInfoIconSizeProperty);
+        set => SetValue(ExtraInfoIconSizeProperty, value);
+    }
+
     private PenLineCap _shapeStrokeLineCap;
 
     internal PenLineCap ShapeStrokeLineCap
@@ -89,9 +122,52 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     #endregion
 
+    private OwnerTokenSet? _circleMinimumTokens;
+    private (double Text, double Icon) _circleMinimums;
+
+    private protected virtual (object Text, object Icon)? ExtraInfoSizeTokenResourceKeys => null;
+
     private ProgressPath? _progressRail;
     private ProgressPath? _progressTrack;
     private ProgressPath? _progressSuccess;
+    private RailGeometryKey? _railGeometryKey;
+    private Geometry? _railGeometry;
+    private SuccessGeometryKey? _successGeometryKey;
+    private Geometry? _successGeometry;
+    private StepTrackGeometryKey? _stepTrackGeometryKey;
+    private Geometry? _stepTrackGeometry;
+    private FullTextSizeKey? _fullTextSizeKey;
+    private Size _fullTextSize;
+
+    // 轨道几何只取决于槽矩形、分段与描边；进度变化不重建它
+    private readonly record struct RailGeometryKey(
+        Rect GrooveRect,
+        int StepCount,
+        double StepGap,
+        double StrokeThickness,
+        PenLineCap LineCap);
+
+    // 成功弧只取决于轨道参数、阈值与范围；分段模式下还取决于已填充段数
+    private readonly record struct SuccessGeometryKey(
+        RailGeometryKey Rail,
+        double Threshold,
+        double Minimum,
+        double Maximum,
+        int FilledSteps);
+
+    private readonly record struct StepTrackGeometryKey(RailGeometryKey Rail, int FilledSteps);
+
+    private readonly record struct FullTextSizeKey(string Format, double FontSize, FontFamily FontFamily);
+
+    /// <summary>
+    /// 轨道几何的累计重建次数（模板路径与自绘路径共用同一缓存），供测试与基准观测缓存是否命中。
+    /// </summary>
+    internal int RailGeometryBuildCount { get; private set; }
+
+    /// <summary>
+    /// “100%” 文本尺寸的累计测量次数，供测试与基准观测缓存是否命中。
+    /// </summary>
+    internal int FullTextMeasureCount { get; private set; }
 
     private protected override bool HasTemplateProgressVisuals =>
         _progressRail is not null && _progressTrack is not null && _progressSuccess is not null;
@@ -100,6 +176,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     {
         AffectsMeasure<AbstractCircleProgress>(StepCountProperty,
             StepGapProperty);
+        AffectsRender<AbstractCircleProgress>(IndicatorAngleProperty);
     }
 
     protected override SizeType CalculateEffectiveSizeType(double size)
@@ -191,12 +268,18 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return targetSize;
     }
 
+    protected override void NotifyProgressInfoContentChanged()
+    {
+        base.NotifyProgressInfoContentChanged();
+        InvalidateArrange();
+    }
+
     protected override void NotifyHandleExtraInfoVisibility()
     {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        var extraInfoSize = circleSize - StrokeThickness - 1; // 写死一个像素的 padding 吧
-        var extraInfo     = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, 100), FontSize, FontFamily);
+        var extraInfoSize = circleSize - EffectiveStrokeThickness - 1; // 写死一个像素的 padding 吧
+        var extraInfo     = GetFullTextSize();
 
         // 这三个是不可能同时满足的
         if (LayoutTransformLabel is not null)
@@ -211,58 +294,57 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             }
         }
 
-        if (ExceptionCompletedIconPresenter is not null)
+        if (ExceptionCompletedIconPresenter is not null || SuccessCompletedIconPresenter is not null)
         {
-            var exceptionIconWidth  = ExceptionCompletedIconPresenter.Width;
-            var exceptionIconHeight = ExceptionCompletedIconPresenter.Height;
-            if (exceptionIconWidth > extraInfoSize || exceptionIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
+            IsStatusIconVisible = ExtraInfoIconSize <= extraInfoSize;
+        }
+    }
+
+    // 每次进度更新都要判断满值文本能否放进圆内，按格式与字体缓存它的尺寸
+    private Size GetFullTextSize()
+    {
+        var key = new FullTextSizeKey(ProgressTextFormat, FontSize, FontFamily);
+        if (_fullTextSizeKey != key)
+        {
+            _fullTextSize    = TextUtils.CalculateTextSize(string.Format(ProgressTextFormat, 100), FontSize, FontFamily);
+            _fullTextSizeKey = key;
+            FullTextMeasureCount++;
         }
 
-        if (SuccessCompletedIconPresenter is not null)
-        {
-            var successIconWidth  = SuccessCompletedIconPresenter.Width;
-            var successIconHeight = SuccessCompletedIconPresenter.Height;
-            if (successIconWidth > extraInfoSize || successIconHeight > extraInfoSize)
-            {
-                IsStatusIconVisible = false;
-            }
-            else
-            {
-                IsStatusIconVisible = true;
-            }
-        }
+        return _fullTextSize;
     }
 
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
-        
+
+        if (change.Property == UseExtraInfoSizeTokenResourcesProperty && ((ILogical)this).IsAttachedToLogicalTree)
+        {
+            UpdateExtraInfoSizeTokenSubscription();
+        }
+
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == WidthProperty || change.Property == HeightProperty)
+            if (change.Property == WidthProperty || change.Property == HeightProperty ||
+                change.Property == CircleMinimumTextFontSizeProperty ||
+                change.Property == CircleMinimumIconSizeProperty)
             {
-                var circleSize = CalculateCircleSize();
-                CalculateStrokeThickness(circleSize);
-                SetupExtraInfoFontSize(circleSize);
-                SetupExtraInfoIconSize(circleSize);
+                UpdateCircleMetrics();
             }
         }
 
-        if (change.Property == ValueProperty ||
+        if (change.Property == IndicatorAngleProperty)
+        {
+            // 角度单独变化（主题过渡）只重建填充弧
+            RefreshTemplateTrackVisual();
+        }
+        else if (change.Property == ValueProperty ||
             change.Property == MinimumProperty ||
             change.Property == MaximumProperty ||
-            change.Property == IndicatorAngleProperty ||
             change.Property == SuccessThresholdProperty ||
             change.Property == StepCountProperty ||
             change.Property == StepGapProperty ||
-            change.Property == StrokeThicknessProperty ||
+            change.Property == EffectiveStrokeThicknessProperty ||
             change.Property == StrokeLineCapProperty)
         {
             ShapeStrokeLineCap = StepCount > 0 && StepGap > 0
@@ -272,37 +354,118 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
     }
 
-    private void SetupExtraInfoFontSize(double circleSize)
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        var fontSize = circleSize * 0.15 + 6;
-        if (fontSize < CircleMinimumTextFontSize)
-        {
-            fontSize = CircleMinimumTextFontSize;
-        }
-
-        FontSize = fontSize;
+        base.OnAttachedToLogicalTree(e);
+        UpdateExtraInfoSizeTokenSubscription();
     }
 
-    private void SetupExtraInfoIconSize(double circleSize)
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
-        var calculatedSize = Math.Max(circleSize / 4.5, CircleMinimumIconSize);
-        if (ExceptionCompletedIconPresenter is not null)
+        _circleMinimumTokens?.Dispose();
+        _circleMinimumTokens = null;
+        _circleMinimums = default;
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_circleMinimumTokens is not null)
         {
-            ExceptionCompletedIconPresenter.Width  = calculatedSize;
-            ExceptionCompletedIconPresenter.Height = calculatedSize;
+            // A reused template may have picked up a new resource scope before visual attachment.
+            SetupExtraInfoSize(CalculateCircleSize());
+        }
+    }
+
+    private void UpdateExtraInfoSizeTokenSubscription()
+    {
+        if (UseExtraInfoSizeTokenResources && ExtraInfoSizeTokenResourceKeys is { } keys)
+        {
+            if (_circleMinimumTokens is not null)
+            {
+                return;
+            }
+
+            _circleMinimumTokens = new OwnerTokenSet(this, 2, RefreshCircleMinimums);
+            try
+            {
+                _circleMinimumTokens.SetResourceKey(0, keys.Text);
+                _circleMinimumTokens.SetResourceKey(1, keys.Icon);
+                RefreshCircleMinimums();
+            }
+            catch
+            {
+                _circleMinimumTokens.Dispose();
+                _circleMinimumTokens = null;
+                _circleMinimums = default;
+                throw;
+            }
+        }
+        else if (_circleMinimumTokens is not null)
+        {
+            _circleMinimumTokens.Dispose();
+            _circleMinimumTokens = null;
+            RefreshCircleMinimums();
+        }
+    }
+
+    private void RefreshCircleMinimums()
+    {
+        var next = (ReadMinimum(_circleMinimumTokens?.GetValue(0), _circleMinimums.Text),
+                    ReadMinimum(_circleMinimumTokens?.GetValue(1), _circleMinimums.Icon));
+        if (_circleMinimums.Equals(next))
+        {
+            return;
         }
 
-        if (SuccessCompletedIconPresenter is not null)
+        _circleMinimums = next;
+        if (this.IsAttachedToVisualTree())
         {
-            SuccessCompletedIconPresenter.Width  = calculatedSize;
-            SuccessCompletedIconPresenter.Height = calculatedSize;
+            SetupExtraInfoSize(CalculateCircleSize());
         }
+    }
+
+    private static double ReadMinimum(object? value, double previous)
+    {
+        if (value is double size)
+        {
+            return size;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+
+        // Match the original typed theme setters for numeric resources and invalid values.
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
+        }
+    }
+
+    private void SetupExtraInfoSize(double circleSize)
+    {
+        var textMinimum = IsSet(CircleMinimumTextFontSizeProperty) ? CircleMinimumTextFontSize : _circleMinimums.Text;
+        var iconMinimum = IsSet(CircleMinimumIconSizeProperty) ? CircleMinimumIconSize : _circleMinimums.Icon;
+        var fontSize = circleSize * 0.15 + 6;
+        if (fontSize < textMinimum)
+        {
+            fontSize = textMinimum;
+        }
+
+        ExtraInfoFontSize = fontSize;
+        ExtraInfoIconSize = Math.Max(circleSize / 4.5, iconMinimum);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
         Rect progressIndicatorRect = default;
-        if (IsProgressInfoVisible)
+        if (IsProgressInfoPresented)
         {
             var contentSize = GetVisibleProgressIndicatorContentSize();
             progressIndicatorRect = new Rect(
@@ -337,6 +500,15 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
                 Canvas.SetLeft(ExceptionCompletedIconPresenter, offsetX);
                 Canvas.SetTop(ExceptionCompletedIconPresenter, offsetY);
             }
+
+            if (ProgressInfoContentPresenter is not null && ProgressInfoContent is not null)
+            {
+                var size    = ProgressInfoContentPresenter.DesiredSize;
+                var offsetX = (progressIndicatorRect.Width - size.Width) / 2;
+                var offsetY = (progressIndicatorRect.Height - size.Height) / 2;
+                Canvas.SetLeft(ProgressInfoContentPresenter, offsetX);
+                Canvas.SetTop(ProgressInfoContentPresenter, offsetY);
+            }
         }
 
         var arrangedSize = base.ArrangeOverride(finalSize);
@@ -347,6 +519,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     private Size GetVisibleProgressIndicatorContentSize()
     {
+        if (MeasureProgressInfoContent() is { } contentSize &&
+            contentSize.Width > 0 && contentSize.Height > 0)
+        {
+            return contentSize;
+        }
+
         if (LayoutTransformLabel?.IsVisible == true)
         {
             LayoutTransformLabel.Measure(Size.Infinity);
@@ -381,12 +559,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     protected override Rect GetProgressBarRect(Rect controlRect)
     {
-        return new Rect(new Point(0, 0), controlRect.Size);
+        var size = controlRect.Size;
+        var diameter = Math.Min(size.Width, size.Height);
+        return new Rect(size).CenterRect(new Rect(new Size(diameter, diameter)));
     }
 
     protected override Rect GetExtraInfoRect(Rect controlRect)
     {
-        return GetProgressBarRect(controlRect).Deflate(StrokeThickness);
+        return GetProgressBarRect(controlRect).Deflate(EffectiveStrokeThickness);
     }
 
     protected override void CalculateStrokeThickness()
@@ -403,15 +583,19 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             calculatedValue = Math.Max(IndicatorThickness, CIRCLE_MIN_STROKE_THICKNESS);
         }
 
-        StrokeThickness = calculatedValue;
+        EffectiveStrokeThickness = calculatedValue;
     }
 
     protected override void NotifyEffectSizeTypeChanged()
     {
+        UpdateCircleMetrics();
+    }
+
+    private void UpdateCircleMetrics()
+    {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        SetupExtraInfoFontSize(circleSize);
-        SetupExtraInfoIconSize(circleSize);
+        SetupExtraInfoSize(circleSize);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -419,6 +603,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         _progressRail = null;
         _progressTrack = null;
         _progressSuccess = null;
+        InvalidateGeometryCache();
         base.OnApplyTemplate(e);
         _progressRail = e.NameScope.Find<ProgressPath>(ProgressRailPart);
         _progressTrack = e.NameScope.Find<ProgressPath>(ProgressTrackPart);
@@ -427,15 +612,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
             ? PenLineCap.Flat
             : StrokeLineCap;
         RefreshTemplateProgressVisuals();
-        if (ExceptionCompletedIcon == null)
-        {
-            SetValue(ExceptionCompletedIconProperty, new CloseOutlined(), BindingPriority.Template);
-        }
-        
-        if (SuccessCompletedIcon == null)
-        {
-            SetValue(SuccessCompletedIconProperty, new CheckOutlined(), BindingPriority.Template);
-        }
+        SetupDefaultCompletedIcons(static () => new CloseOutlined(), static () => new CheckOutlined());
     }
 
     private protected abstract Geometry BuildRailGeometry(Rect grooveRect);
@@ -447,18 +624,102 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         UpdateTemplateProgressVisuals(Bounds.Size);
     }
 
+    /// <summary>
+    /// 几何依赖的子类参数（如仪表盘缺口）变化时调用，下一次取用时重建轨道、成功弧与分段填充。
+    /// </summary>
+    private protected void InvalidateGeometryCache()
+    {
+        _railGeometryKey      = null;
+        _railGeometry         = null;
+        _successGeometryKey   = null;
+        _successGeometry      = null;
+        _stepTrackGeometryKey = null;
+        _stepTrackGeometry    = null;
+    }
+
+    private protected bool IsStepMode => StepCount > 0 && StepGap > 0;
+
+    private protected int FilledStepCount => (int)Math.Round(StepCount * Percentage / 100);
+
+    private RailGeometryKey CreateRailGeometryKey(Rect grooveRect)
+    {
+        return new RailGeometryKey(grooveRect, StepCount, StepGap, EffectiveStrokeThickness, ShapeStrokeLineCap);
+    }
+
+    /// <summary>
+    /// 取轨道几何，键不变时复用上次构建的对象。
+    /// </summary>
+    private protected Geometry GetRailGeometry(Rect grooveRect)
+    {
+        var key = CreateRailGeometryKey(grooveRect);
+        if (_railGeometry is null || _railGeometryKey != key)
+        {
+            _railGeometry    = BuildRailGeometry(grooveRect);
+            _railGeometryKey = key;
+            RailGeometryBuildCount++;
+        }
+
+        return _railGeometry;
+    }
+
+    /// <summary>
+    /// 取成功弧几何（调用方保证 <see cref="AbstractProgressBar.SuccessThreshold"/> 不是 NaN），键不变时复用。
+    /// </summary>
+    private protected Geometry GetSuccessGeometry(Rect grooveRect)
+    {
+        var key = new SuccessGeometryKey(CreateRailGeometryKey(grooveRect),
+            SuccessThreshold,
+            Minimum,
+            Maximum,
+            IsStepMode ? FilledStepCount : -1);
+        if (_successGeometry is null || _successGeometryKey != key)
+        {
+            _successGeometry    = BuildSuccessGeometry(grooveRect);
+            _successGeometryKey = key;
+        }
+
+        return _successGeometry;
+    }
+
+    /// <summary>
+    /// 取填充几何：连续模式随角度逐帧构建；分段模式按已填充段数缓存，角度过渡期间不重建。
+    /// </summary>
+    private protected Geometry GetTrackGeometry(Rect grooveRect)
+    {
+        if (!IsStepMode)
+        {
+            return BuildTrackGeometry(grooveRect);
+        }
+
+        var key = new StepTrackGeometryKey(CreateRailGeometryKey(grooveRect), FilledStepCount);
+        if (_stepTrackGeometry is null || _stepTrackGeometryKey != key)
+        {
+            _stepTrackGeometry    = BuildTrackGeometry(grooveRect);
+            _stepTrackGeometryKey = key;
+        }
+
+        return _stepTrackGeometry;
+    }
+
+    private void RefreshTemplateTrackVisual()
+    {
+        var size = Bounds.Size;
+        if (!HasTemplateProgressVisuals || size.Width <= 0 || size.Height <= 0)
+        {
+            return;
+        }
+
+        _progressTrack!.Data = GetTrackGeometry(new Rect(default, GetCircleProgressPathRect(size).Size));
+    }
+
     internal Rect GetCircleProgressPathRect(Size size)
     {
-        var strokeThickness = double.IsFinite(StrokeThickness)
-            ? Math.Max(0, StrokeThickness)
+        var strokeThickness = double.IsFinite(EffectiveStrokeThickness)
+            ? Math.Max(0, EffectiveStrokeThickness)
             : 0;
-        var width = Math.Floor(Math.Max(0, size.Width - strokeThickness));
-        var height = Math.Floor(Math.Max(0, size.Height - strokeThickness));
-        return new Rect(
-            (size.Width - width) / 2,
-            (size.Height - height) / 2,
-            width,
-            height);
+        // Keep both radii equal when the parent arranges the control into a rectangular slot.
+        var diameter = Math.Floor(Math.Max(0, Math.Min(size.Width, size.Height) - strokeThickness));
+        return new Rect(size).CenterRect(new Rect(new Size(diameter, diameter)));
     }
 
     private void UpdateTemplateProgressVisuals(Size size)
@@ -469,12 +730,11 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
 
         var grooveRect = new Rect(default, GetCircleProgressPathRect(size).Size);
-
-        _progressRail!.Data = BuildRailGeometry(grooveRect);
-        _progressTrack!.Data = BuildTrackGeometry(grooveRect);
+        _progressRail!.Data = GetRailGeometry(grooveRect);
+        _progressTrack!.Data = GetTrackGeometry(grooveRect);
         _progressSuccess!.IsVisible = !double.IsNaN(SuccessThreshold);
         _progressSuccess.Data = _progressSuccess.IsVisible
-            ? BuildSuccessGeometry(grooveRect)
+            ? GetSuccessGeometry(grooveRect)
             : null;
     }
 

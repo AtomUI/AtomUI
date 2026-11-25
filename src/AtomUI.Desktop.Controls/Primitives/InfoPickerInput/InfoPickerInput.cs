@@ -1,16 +1,17 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Data;
+using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -25,6 +26,12 @@ public abstract class InfoPickerInput : TemplatedControl,
                                         IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<InfoPickerInput>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<InfoPickerInput>();
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<InfoPickerInput>();
     
@@ -87,6 +94,18 @@ public abstract class InfoPickerInput : TemplatedControl,
     public static readonly StyledProperty<Control?> PickerPresenterProperty =
         AvaloniaProperty.Register<InfoPickerInput, Control?>(nameof(PickerPresenter));
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public object? LeftAddOn
     {
         get => GetValue(LeftAddOnProperty);
@@ -209,6 +228,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     #endregion
 
     #region 内部属性定义
+
 
     internal static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<InfoPickerInput, string?>(nameof(Text));
@@ -383,18 +403,19 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private protected AddOnDecoratedBox? DecoratedBox;
     private protected PickerClearUpButton? PickerClearUpButton;
-    private CompositeDisposable? _contentRightAddOnBindings;
     private protected Popup? PickerPopup;
     protected bool CurrentValidSelected;
     protected TextBox? InfoInputBox;
     protected Control? PickerInnerBox;
 
     private protected bool IsChoosing;
+    private bool _isPreviewing;
     private AddOnDecoratedBox? _addOnDecoratedBox;
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
     private int _popupLifecycleCloseDepth;
     private Control? _ownedPickerPresenter;
+    private IDisposable? _presenterOwnerBinding;
     
 
     static InfoPickerInput()
@@ -405,6 +426,8 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     public InfoPickerInput()
     {
+        // Tunnel, so the picker sees navigation keys before the input's caret handling consumes them.
+        AddHandler(KeyDownEvent, HandleInputKeyDown, RoutingStrategies.Tunnel);
     }
 
     public virtual void Clear()
@@ -471,7 +494,22 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     protected virtual void NotifyPickerClosed()
     {
+        SetPreviewing(false);
         NotifyFlyoutClosed();
+    }
+
+    private protected bool IsPreviewing => _isPreviewing;
+
+    /// <summary>Marks whether the input text is a hover preview rather than the candidate, which dims it.</summary>
+    private protected void SetPreviewing(bool isPreviewing)
+    {
+        if (_isPreviewing == isPreviewing)
+        {
+            return;
+        }
+
+        _isPreviewing = isPreviewing;
+        UpdatePseudoClasses();
     }
 
     protected virtual void NotifyFlyoutClosed()
@@ -523,7 +561,6 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
         if (DecoratedBox != null)
         {
-            KeyboardNavigation.SetTabOnceActiveElement(this, DecoratedBox);
             DecoratedBox.TemplateApplied += HandleDecoratedBoxTemplateApplied;
             DecoratedBox.PropertyChanged += HandleDecoratedBoxPropertyChanged;
         }
@@ -535,9 +572,7 @@ public abstract class InfoPickerInput : TemplatedControl,
 
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
 
-        RelayFrameBorderBrush();
         SetupPopupProperties();
-        SetupContentRightAddOnBindings(e);
         ConfigureArrowPosition();
         ConfigureShowArrowEffective();
         if (IsPickerOpen)
@@ -546,7 +581,38 @@ public abstract class InfoPickerInput : TemplatedControl,
             ApplyPopupOpenState(true);
         }
     }
-    
+
+
+    protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is IControlTemplate)
+        {
+            // Retired template theme activators can subscribe to this owner.
+            // Logical detach only releases ordinary styles in the framework.
+            var ownerParts = this.GetVisualDescendants().OfType<Control>()
+                .Where(part => ReferenceEquals(part.TemplatedParent, this)).ToArray();
+            // This owner intentionally preserves the presenter across templates.
+            // It may already be absent from the retired Popup.Child subtree.
+            var borders = PickerPresenter?.GetSelfAndVisualDescendants().OfType<Border>().ToArray();
+            ClosePickerForLifecycle();
+            if (borders is not null)
+            {
+                foreach (var border in borders)
+                {
+                    border.ReleaseDetachedCompositionCache();
+                }
+            }
+            if (ReferenceEquals(Template, e.NewValue))
+            {
+                foreach (var part in ownerParts)
+                {
+                    part.ReleaseTemplatedParentTheme();
+                }
+            }
+        }
+        base.OnTemplateChanged(e);
+    }
+
     private void HandleDecoratedBoxTemplateApplied(object? sender, TemplateAppliedEventArgs args)
     {
         PickerInnerBox = DecoratedBox!.ContentFrame;
@@ -575,6 +641,125 @@ public abstract class InfoPickerInput : TemplatedControl,
         }
     }
     
+    /// <summary>The element belongs to the picker or to its popup.</summary>
+    private protected bool IsPickerElement(IInputElement? element)
+    {
+        return element is Visual visual &&
+               (ReferenceEquals(visual, this) || this.IsVisualAncestorOf(visual) ||
+                PickerPopup?.IsInsidePopup(visual) == true);
+    }
+
+    #region Keyboard
+
+    // Keyboard semantics follow Ant Design pickers: focus never opens the popup and typing does (each picker parses
+    // its own text), Enter submits, Escape reverts (and closes unless the popup is pinned), and focus leaving the
+    // picker closes it, committing or discarding the edit by the picker's confirmation rule. While the popup is open
+    // and the input holds no typed text, navigation keys drive the popup panel instead of the caret; Ant Design has
+    // no such forwarding.
+
+    private bool _isCancelingEdit;
+
+    /// <summary>The picker closes because the user reverted the edit (Escape), so nothing is committed.</summary>
+    private protected bool IsCancelingEdit => _isCancelingEdit;
+
+    /// <summary>
+    /// The picker closes because it leaves the visual tree or replaces its template; the draft is discarded so
+    /// nothing is written back during teardown.
+    /// </summary>
+    private protected bool IsLifecycleClosing => _popupLifecycleCloseDepth > 0;
+
+    /// <summary>The input holds text typed in this open session rather than a formatted value.</summary>
+    private protected virtual bool HasPendingInputText => false;
+
+    private protected virtual bool IsPickerInputElement(object? source) =>
+        source is Visual visual && InfoInputBox is not null &&
+        (ReferenceEquals(visual, InfoInputBox) || InfoInputBox.IsVisualAncestorOf(visual));
+
+    private void HandleInputKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Handled || IsReadOnly || !IsPickerInputElement(e.Source))
+        {
+            return;
+        }
+
+        var noModifiers = e.KeyModifiers == KeyModifiers.None;
+        switch (e.Key)
+        {
+            case Key.Enter when noModifiers:
+                if (IsPickerOpen)
+                {
+                    NotifyInputSubmit();
+                }
+                else
+                {
+                    SetPickerOpenIfChanged(true);
+                }
+                e.Handled = true;
+                break;
+            case Key.Escape when noModifiers && IsPickerOpen:
+                CancelPickerEdit();
+                e.Handled = true;
+                break;
+            case Key.Tab:
+                e.Handled = NotifyInputTab(e.KeyModifiers.HasFlag(KeyModifiers.Shift));
+                break;
+            default:
+                if (IsPickerOpen && !HasPendingInputText && NotifyNavigationKey(e.Key, e.KeyModifiers))
+                {
+                    e.Handled = true;
+                }
+                break;
+        }
+    }
+
+    /// <summary>Enter in an open picker. The default closes the popup.</summary>
+    private protected virtual void NotifyInputSubmit() => ClosePickerFlyout();
+
+    /// <summary>
+    /// Reverts the edit of this open session, including the input text; the picker closes afterwards unless the
+    /// popup is pinned open.
+    /// </summary>
+    private protected virtual void NotifyEditCanceled()
+    {
+    }
+
+    /// <summary>Tab in an input; returns true when the picker moved focus itself.</summary>
+    private protected virtual bool NotifyInputTab(bool isBackward) => false;
+
+    /// <summary>A navigation key in an open picker; returns true when the popup panel used it.</summary>
+    private protected virtual bool NotifyNavigationKey(Key key, KeyModifiers modifiers) => false;
+
+    private protected void CancelPickerEdit()
+    {
+        _isCancelingEdit = true;
+        try
+        {
+            NotifyEditCanceled();
+            ClosePickerFlyout();
+        }
+        finally
+        {
+            _isCancelingEdit = false;
+        }
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        CloseIfFocusLeftPicker(e.NewFocusedElement);
+    }
+
+    /// <summary>Closes the popup once focus is outside both the picker and its popup.</summary>
+    private protected void CloseIfFocusLeftPicker(IInputElement? newFocusedElement)
+    {
+        if (IsPickerOpen && !IsPopupPinnedOpen && !IsPickerElement(newFocusedElement))
+        {
+            ClosePickerFlyout();
+        }
+    }
+
+    #endregion
+
     protected bool ClickInClearUpButtonWithClearMode(PointerReleasedEventArgs args)
     {
         if (PickerClearUpButton != null)
@@ -617,38 +802,15 @@ public abstract class InfoPickerInput : TemplatedControl,
         return false;
     }
 
-    private void SetupContentRightAddOnBindings(TemplateAppliedEventArgs e)
-    {
-        _contentRightAddOnBindings?.Dispose();
-        _contentRightAddOnBindings = new CompositeDisposable();
-
-        if (PickerClearUpButton is { } clearUpButton)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, IsClearButtonVisibleProperty, clearUpButton,
-                PickerClearUpButton.IsInClearModeProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                PickerClearUpButton.IconProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, FormFeedbackProperty, clearUpButton,
-                PickerClearUpButton.FormFeedbackProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, InfoIconProperty, clearUpButton,
-                Visual.IsVisibleProperty, value => value is not null));
-        }
-
-        if (e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOnPresenter") is { } contentPresenter)
-        {
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnProperty, contentPresenter,
-                ContentPresenter.ContentProperty));
-            _contentRightAddOnBindings.Add(BindUtils.RelayBind(this, ContentRightAddOnTemplateProperty,
-                contentPresenter, ContentPresenter.ContentTemplateProperty));
-        }
-    }
+    // Ant Design shows the clear button on hover and while focus is inside the picker, so keyboard users can reach it.
+    private protected bool IsClearButtonRevealed => DecoratedBox is { IsInnerBoxHover: true } || IsKeyboardFocusWithin;
 
     protected virtual void ConfigureIsClearButtonVisible()
     {
         if (DecoratedBox is not null)
         {
             SetClearButtonVisibleIfChanged(
-                DecoratedBox.IsInnerBoxHover &&
+                IsClearButtonRevealed &&
                 InfoInputBox?.IsReadOnly == false &&
                 InfoInputBox.Text?.Length > 0);
         }
@@ -748,6 +910,7 @@ public abstract class InfoPickerInput : TemplatedControl,
     {
         PseudoClasses.Set(InfoPickerPseudoClass.FlyoutOpen, IsPickerOpen);
         PseudoClasses.Set(InfoPickerPseudoClass.Choosing, IsChoosing);
+        PseudoClasses.Set(InfoPickerPseudoClass.Previewing, _isPreviewing);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -776,7 +939,23 @@ public abstract class InfoPickerInput : TemplatedControl,
 
     private void HandleClearRequest(object? sender, EventArgs args)
     {
+        // The clear button hides once the value is gone; keep keyboard focus in the picker, as Ant Design returns it
+        // to the input.
+        var hadFocus = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is Visual focused &&
+                       PickerClearUpButton?.IsVisualAncestorOf(focused) == true;
         NotifyClearButtonClicked();
+        if (hadFocus)
+        {
+            InfoInputBox?.Focus(NavigationMethod.Tab);
+        }
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        // The template popup closes itself when it leaves the logical tree, before the visual detach; close it here
+        // first so that close counts as a lifecycle close.
+        ClosePickerForLifecycle();
+        base.OnDetachedFromLogicalTree(e);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -887,9 +1066,9 @@ public abstract class InfoPickerInput : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty)
+        if (change.Property == PickerPresenterProperty)
         {
-            RelayFrameBorderBrush();
+            ForwardTokenOwner(change.GetNewValue<Control?>());
         }
 
         if (change.Property == IsArrowVisibleProperty ||
@@ -911,6 +1090,11 @@ public abstract class InfoPickerInput : TemplatedControl,
             change.Property == IsPopupVerticalFlippedProperty)
         {
             ConfigureArrowPosition();
+        }
+
+        if (change.Property == IsKeyboardFocusWithinProperty)
+        {
+            ConfigureIsClearButtonVisible();
         }
 
         if (change.Property == IsPopupPinnedOpenProperty)
@@ -958,28 +1142,17 @@ public abstract class InfoPickerInput : TemplatedControl,
     }
 
     /// <summary>
-    /// 将 owner 根的 BorderBrush 以 LocalValue 中继到 AddOnDecoratedBox,使 root 级
-    /// Semantic 定制(对齐 antd styles.root.border)能覆盖输入框状态机的默认描边;
-    /// owner 未设置时清除中继并恢复状态机。中继必须使用 LocalValue 优先级才能胜过
-    /// 框体主题的状态触发器,ControlTheme 的 TemplateBinding 无法达到该优先级,
-    /// 因此放在控件代码中。
+    /// The picker presenter is shown inside the popup's registered ArrowDecoratedBox, whose identity would otherwise
+    /// become the presenter's Token owner. The presenter belongs to this picker, so its owner follows the picker's own:
+    /// the identity-less presenter parts (time view, buttons frame) read the picker's effective globals, and
+    /// <c>Controls[picker]</c> reaches them. The date presenter forwards the same owner to its DateViewer (the picker takes
+    /// over that viewer's globals); other registered controls inside the presenter (Button, IconButton) keep their own
+    /// identity.
     /// </summary>
-    private void RelayFrameBorderBrush()
+    private void ForwardTokenOwner(Control? newPresenter)
     {
-        if (_addOnDecoratedBox is not { } decoratedBox)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            decoratedBox.ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
+        _presenterOwnerBinding?.Dispose();
+        _presenterOwnerBinding = newPresenter is null ? null : TokenOwnerForwarding.Forward(this, newPresenter);
     }
 
     private void UpdateEffectiveStatus()

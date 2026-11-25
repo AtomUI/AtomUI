@@ -8,9 +8,11 @@ using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
 namespace AtomUI.Desktop.Controls;
 
-[TemplatePart("PART_TextPresenter", typeof(InputTextPresenter))]
+[TemplatePart("PART_TextPresenter", typeof(TextPresenter))]
 internal class OtpTextBox : AvaloniaTextBox
 {
+    #region 内部属性定义
+
     internal static readonly StyledProperty<string?> SourcePlaceholderTextProperty =
         AvaloniaProperty.Register<OtpTextBox, string?>(nameof(SourcePlaceholderText));
 
@@ -29,14 +31,16 @@ internal class OtpTextBox : AvaloniaTextBox
         set => SetValue(IsCellActiveProperty, value);
     }
 
-    private InputTextPresenter? _textPresenter;
+    #endregion
+
+    private TextPresenter? _textPresenter;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
 
         _textPresenter?.HideCaret();
-        _textPresenter = e.NameScope.Find<InputTextPresenter>("PART_TextPresenter");
+        _textPresenter = e.NameScope.Find<TextPresenter>("PART_TextPresenter");
         ConfigureCaretHost();
     }
 

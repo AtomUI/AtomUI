@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <!-- Package-wide compiler severity also covers source-generator diagnostics on external AXAML. -->
+        <WarningsAsErrors>$(WarningsAsErrors);ATOMUIGEN041;ATOMUIGEN042;ATOMUIGEN043;ATOMUIGEN044;ATOMUIGEN045;ATOMUIGEN047</WarningsAsErrors>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <Nullable>enable</Nullable>
         <RootNamespace>AtomUI.Toolkits.GalleryBase</RootNamespace>
@@ -9,13 +11,6 @@
         <AtomUIGenerateControlThemeAssetResources>true</AtomUIGenerateControlThemeAssetResources>
         <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
     </PropertyGroup>
-
-    <ItemGroup>
-        <AtomUILanguage Include="$(MSBuildProjectDirectory)/Localization/SemanticPartPreviewLang/*.xlf">
-            <AtomUILanguageContractVersion>3</AtomUILanguageContractVersion>
-            <AtomUILanguagePackagePath>Localization/SemanticPartPreviewLang/%(Filename)%(Extension)</AtomUILanguagePackagePath>
-        </AtomUILanguage>
-    </ItemGroup>
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests" />

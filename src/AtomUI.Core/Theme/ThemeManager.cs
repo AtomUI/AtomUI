@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using AtomUI.Animations;
 using AtomUI.Registration;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme.Compilation;
@@ -20,8 +22,13 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     public FontFamily? FontFamily { get; internal set; }
     internal ThemeSnapshot? CurrentSnapshot => PackageReadUpdate?.Snapshot ?? Volatile.Read(ref _currentSnapshot);
     public ThemeState? CurrentTheme => PackageReadUpdate?.Theme ?? Volatile.Read(ref _currentTheme);
-    public IReadOnlyList<ThemeInfo> AvailableThemes =>
-        (PackageReadUpdate?.Catalog ?? Volatile.Read(ref _compiledThemeCatalog))?.AvailableThemes ?? Array.Empty<ThemeInfo>();
+    public IReadOnlyList<ThemeInfo> Themes =>
+        (PackageReadUpdate?.Catalog ?? Volatile.Read(ref _compiledThemeCatalog))?.Themes ?? Array.Empty<ThemeInfo>();
+
+    public IReadOnlyList<DesignLanguageInfo> Languages =>
+        (PackageReadUpdate?.Catalog ?? Volatile.Read(ref _compiledThemeCatalog))?.Languages ?? Array.Empty<DesignLanguageInfo>();
+
+    public ThemeSelection? CurrentSelection => Volatile.Read(ref _currentSelection);
     public IReadOnlyList<ThemeDiagnostic> ThemeCatalogDiagnostics =>
         Volatile.Read(ref _themeCatalogDiagnostics);
     private SemanticPartRegistry _semanticParts = SemanticPartRegistry.Empty;
@@ -39,7 +46,46 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     public event EventHandler<ThemeCatalogChangedEventArgs>? ThemeCatalogChanged;
     internal event Action<object, ControlTheme>? ControlThemeResolved;
 
-    internal void NotifyControlThemeResolved(object key, ControlTheme theme) => ControlThemeResolved?.Invoke(key, theme);
+    internal void NotifyControlThemeResolved(object key, ControlTheme theme)
+    {
+        EnsureTokenOwnerSetter(key, theme);
+        ControlThemeResolved?.Invoke(key, theme);
+    }
+
+    // 注册控件的默认 ControlTheme 首次按 Type 键解析时，注入 ThemeScope.TokenOwner：
+    // 有效值参与继承，模板内的共享基元沿继承链读到宿主控件身份。
+    // 注入为仅匹配该 StyleKey 的嵌套 Style，而不是主题的普通 Setter：未注册的派生部件主题可能
+    // BasedOn 这个已解析的默认主题（NumericUpDownSpinner 基于 ButtonSpinner 默认主题，以承接应用对它的替换），
+    // 普通 Setter 会随 BasedOn 把注册控件的身份带给部件，使部件不再继承宿主身份。
+    private void EnsureTokenOwnerSetter(object key, ControlTheme theme)
+    {
+        // Owner-transparent containers (Popup) keep the host's owner flowing into the content they host.
+        if (key is not Type controlType ||
+            controlType.IsDefined(typeof(TokenOwnerTransparentAttribute), inherit: false))
+        {
+            return;
+        }
+
+        var registry = CurrentSnapshot?.Registry ?? _startupRegistry;
+        if (registry is null || !registry.TryGetControl(controlType, out var descriptor))
+        {
+            return;
+        }
+
+        lock (_tokenOwnerInjected)
+        {
+            if (!_tokenOwnerInjected.TryAdd(theme, s_tokenOwnerInjectedMarker))
+            {
+                return;
+            }
+            var ownerStyle = new Style(selector => selector.Nesting().OfType(controlType));
+            ownerStyle.Setters.Add(new Setter(ThemeScope.TokenOwnerProperty, descriptor.Identity));
+            theme.Children.Add(ownerStyle);
+        }
+    }
+
+    private static readonly object s_tokenOwnerInjectedMarker = new();
+    private readonly ConditionalWeakTable<ControlTheme, object> _tokenOwnerInjected = new();
 
     private readonly List<ControlTokenDescriptor> _controlTokenDescriptors;
     private readonly List<ControlThemeAssetDescriptor> _controlThemeAssetDescriptors;
@@ -71,6 +117,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private Application? _application;
     private IResourceDictionary? _applicationResources;
     private Style? _rootContextStyle;
+    private readonly MotionSettle _motionSettle = new();
     private readonly Dictionary<IControlThemesProvider, List<ControlThemeResourceRegistration>> _stagedThemeResources = new();
     private readonly List<IControlThemesProvider> _registeredControlThemesProviders = [];
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
@@ -79,18 +126,22 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     // 语义部件描述符登记表（提交时由 BuildCore 一次写入）：SemanticParts 由其按需重建。
     private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
+    // The design languages and control rules handed over by the builder.
+    private IReadOnlyList<DesignLanguageDescriptor> _registryLanguages = Array.Empty<DesignLanguageDescriptor>();
+    private IReadOnlyList<ControlTokenRuleDescriptor> _registryTokenRules = Array.Empty<ControlTokenRuleDescriptor>();
+    private ThemeSelection? _currentSelection;
     private IReadOnlyList<PackageSchemaFingerprint>? _packageSchemaFingerprints;
     private CompiledThemeCatalog? _compiledThemeCatalog;
     private readonly ThemeDefinitionLoadCache _themeDefinitionLoadCache;
     private IReadOnlyList<ThemeDefinitionRegistration> _themeDefinitionResolvers =
-        Array.AsReadOnly(new[] { new ThemeDefinitionRegistration(Generated.AtomUICore.GeneratedThemePackageRegistration.CreatePackage()) });
+        Array.Empty<ThemeDefinitionRegistration>();
     private string _applicationId = typeof(ThemeManager).Assembly.GetName().Name!;
     private string _applicationDataRoot = string.Empty;
     private IReadOnlyList<ThemeDiagnostic> _themeCatalogDiagnostics = Array.Empty<ThemeDiagnostic>();
-    private ThemeRequest _initialRequest = new(
-        IThemeManager.DEFAULT_THEME_ID,
-        null,
-        ThemeTransitionReason.Startup);
+    // The explicit initial request, or null when the initial theme comes from _initialSelection or the only language.
+    private ThemeRequest? _initialRequest;
+    private ThemeSelection? _initialSelection;
+    private IReadOnlyDictionary<string, string>? _languageDefaultThemes;
     private ThemeRequest? _followSystemLightRequest;
     private ThemeRequest? _followSystemDarkRequest;
     private ThemeSnapshot? _startupGlobalParent;
@@ -123,11 +174,12 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal ThemeScopeGraph ScopeGraph => _scopeGraph;
     internal void ConfigureStartup(
-        ThemeRequest initialRequest,
+        ThemeRequest? initialRequest,
+        ThemeSelection? initialSelection,
         ThemeRequest? followSystemLightRequest,
-        ThemeRequest? followSystemDarkRequest)
+        ThemeRequest? followSystemDarkRequest,
+        IReadOnlyDictionary<string, string>? defaultThemes = null)
     {
-        ArgumentNullException.ThrowIfNull(initialRequest);
         if ((followSystemLightRequest is null) != (followSystemDarkRequest is null))
         {
             throw new ArgumentException(
@@ -135,8 +187,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
 
         _initialRequest            = initialRequest;
+        _initialSelection          = initialSelection;
         _followSystemLightRequest  = followSystemLightRequest;
         _followSystemDarkRequest   = followSystemDarkRequest;
+        _languageDefaultThemes     = defaultThemes;
     }
 
     internal void ConfigureThemeDefinitions(
@@ -177,8 +231,16 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             _themeCatalogDiagnostics = catalogResult.Diagnostics;
             MountStaticResources();
 
+            var (resolvedInitial, resolvedLight, resolvedDark) = ThemeStartupCompilation.ResolveStartupRequests(
+                _initialRequest, _initialSelection, _followSystemLightRequest, _followSystemDarkRequest, _compiledThemeCatalog!);
+            _followSystemLightRequest = resolvedLight;
+            _followSystemDarkRequest  = resolvedDark;
+            if (_initialSelection is not null)
+            {
+                _currentSelection = _initialSelection;
+            }
             var request = _followSystemLightRequest is null
-                ? _initialRequest
+                ? resolvedInitial
                 : (initialSystemAppearance ?? ResolveSystemAppearance(application)) == ThemeAppearance.Dark
                     ? _followSystemDarkRequest!
                     : _followSystemLightRequest;
@@ -259,6 +321,95 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             throw new InvalidOperationException("FollowSystem is not configured.");
         }
         return ApplyThemeAsync(request, cancellationToken);
+    }
+
+    public async Task<ThemeTransitionResult> ApplyAsync(
+        ThemeSelection selection,
+        CancellationToken cancellationToken = default)
+    {
+        VerifyTransitionAccess();
+        ArgumentNullException.ThrowIfNull(selection);
+        var captured = CaptureSeedWriters(selection);
+        if (captured.FollowSystem)
+        {
+            _followSystemLightRequest = CompiledThemeCatalog.Resolve(captured, ThemeAppearance.Light)
+                .Request with { Reason = ThemeTransitionReason.FollowSystem };
+            _followSystemDarkRequest = CompiledThemeCatalog.Resolve(captured, ThemeAppearance.Dark)
+                .Request with { Reason = ThemeTransitionReason.FollowSystem };
+            var appearance = _application is { } application ? ResolveSystemAppearance(application) : ThemeAppearance.Light;
+            var followResult = await ApplyThemeAsync(appearance == ThemeAppearance.Dark ? _followSystemDarkRequest : _followSystemLightRequest,
+                cancellationToken);
+            if (followResult.Status is ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp)
+            {
+                Volatile.Write(ref _currentSelection, selection);
+            }
+            return followResult;
+        }
+
+        var resolved = CompiledThemeCatalog.Resolve(captured);
+        _followSystemLightRequest = null;
+        _followSystemDarkRequest = null;
+        var result = await ApplyThemeAsync(resolved.Request, cancellationToken);
+        if (result.Status is ThemeTransitionStatus.Committed or ThemeTransitionStatus.NoOp)
+        {
+            Volatile.Write(ref _currentSelection, selection);
+        }
+        return result;
+    }
+
+    // Seeds written by delegates are captured as name/value pairs: the writer runs on a fresh token object and only the
+    // seeds it changed are taken.
+    private ThemeSelection CaptureSeedWriters(ThemeSelection selection)
+    {
+        if (selection.SeedWriters.Count == 0 && selection.LanguageSeedWriters.Count == 0)
+        {
+            return selection;
+        }
+
+        var registry = _startupRegistry ?? throw new InvalidOperationException("The theme schema is not prepared.");
+        var seeds = new Dictionary<string, string>(selection.Seeds, StringComparer.Ordinal);
+        if (selection.SeedWriters.Count != 0)
+        {
+            var reference = new DesignTokens.DesignToken();
+            var token = new DesignTokens.DesignToken();
+            foreach (var writer in selection.SeedWriters)
+            {
+                writer(token);
+            }
+            foreach (var descriptor in registry.GlobalTokens.Where(static token => token.Stage == TokenStage.Seed))
+            {
+                var value = descriptor.Format(descriptor.GetValue(token));
+                if (!string.Equals(value, descriptor.Format(descriptor.GetValue(reference)), StringComparison.Ordinal))
+                {
+                    seeds[descriptor.Name] = value;
+                }
+            }
+        }
+
+        var languageSeeds = new Dictionary<string, string>(selection.LanguageSeeds, StringComparer.Ordinal);
+        if (selection.LanguageSeedWriters.Count != 0)
+        {
+            if (!registry.TryGetLanguage(selection.Language, out var language))
+            {
+                throw new ThemeSelectionException($"Design language '{selection.Language}' is not enabled.");
+            }
+            var reference = language.CreateLanguageToken();
+            var token = language.CreateLanguageToken();
+            foreach (var writer in selection.LanguageSeedWriters)
+            {
+                writer(token);
+            }
+            foreach (var descriptor in language.LanguageTokens.Where(static token => token.Stage == TokenStage.Seed))
+            {
+                var value = descriptor.Format(descriptor.GetValue(token));
+                if (!string.Equals(value, descriptor.Format(descriptor.GetValue(reference)), StringComparison.Ordinal))
+                {
+                    languageSeeds[descriptor.Name] = value;
+                }
+            }
+        }
+
+        return selection with { Seeds = seeds, LanguageSeeds = languageSeeds };
     }
 
     public Task<ThemeTransitionResult> ApplyThemeAsync(
@@ -377,6 +528,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         long transitionId)
     {
         await EnterTransactionExecutionGateAsync().ConfigureAwait(true);
+        IDisposable? motionSettle = null;
         try
         {
             ThemeScopeCapture scopeCapture;
@@ -390,7 +542,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 if (mutationGeneration != _generation)
                 {
                     return new ThemeCatalogReloadResult(reloadGeneration, ThemeCatalogReloadStatus.Superseded,
-                        AvailableThemes, _currentTheme, [], [], null);
+                        Themes, _currentTheme, [], [], null);
                 }
                 // 排队期间可能有新的主题变更提交，使本次请求的代际过期。进入执行门后一起捕获完整基线，
                 // 避免旧目录静态切片与新 resolver 集合混代；请求代际仍保留调用顺序。
@@ -456,7 +608,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     return new ThemeCatalogReloadResult(
                         reloadGeneration,
                         ThemeCatalogReloadStatus.Superseded,
-                        AvailableThemes,
+                        Themes,
                         _currentTheme,
                         prepared.Diagnostics,
                         Array.Empty<ThemeDiagnostic>(),
@@ -469,7 +621,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     return new ThemeCatalogReloadResult(
                         reloadGeneration,
                         ThemeCatalogReloadStatus.Failed,
-                        AvailableThemes,
+                        Themes,
                         _currentTheme,
                         prepared.Diagnostics,
                         Array.Empty<ThemeDiagnostic>(),
@@ -482,7 +634,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     return new ThemeCatalogReloadResult(
                         reloadGeneration,
                         ThemeCatalogReloadStatus.NoOp,
-                        AvailableThemes,
+                        Themes,
                         _currentTheme,
                         prepared.Diagnostics,
                         Array.Empty<ThemeDiagnostic>(),
@@ -493,6 +645,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 _themeCatalogDiagnostics = prepared.Diagnostics;
                 if (prepared.SnapshotChanged)
                 {
+                    motionSettle = BeginCommitMotionSettle();
                     CommitCore(prepared.ThemeTransaction!);
                 }
             }
@@ -507,7 +660,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             return new ThemeCatalogReloadResult(
                 reloadGeneration,
                 ThemeCatalogReloadStatus.Committed,
-                AvailableThemes,
+                Themes,
                 CurrentTheme,
                 prepared.Diagnostics,
                 publishDiagnostics,
@@ -515,6 +668,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
         finally
         {
+            EndCommitMotionSettleAfterFrame(motionSettle);
             lock (_transactionGate)
             {
                 _catalogReloadOperationCount--;
@@ -529,7 +683,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeEventDispatcher.Dispatch(
             ThemeCatalogChanged,
             this,
-            new ThemeCatalogChangedEventArgs(generation, AvailableThemes, CurrentTheme),
+            new ThemeCatalogChangedEventArgs(generation, Themes, CurrentTheme),
             publishDiagnostics,
             nameof(ThemeCatalogChanged));
     }
@@ -563,9 +717,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
 
         var catalog = catalogResult.Catalog!;
+        // A selected theme that disappeared falls back to its language's default with the same variant (spec 7.9).
         var targetThemeId = catalog.Contains(currentRequest.ThemeId)
             ? currentRequest.ThemeId
-            : catalog.DefaultDefinition.Info.Id;
+            : ThemeInfo.LanguageDefaultId(_currentSnapshot?.Language.Id ?? catalog.Languages[0].Id);
         var request = currentRequest with
         {
             ThemeId = targetThemeId,
@@ -658,6 +813,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeTransaction transaction)
     {
         var committed = false;
+        IDisposable? motionSettle = null;
         try
         {
             transaction.Phase = ThemeTransactionPhase.Prepare;
@@ -731,6 +887,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
 
                 transaction.Phase = ThemeTransactionPhase.CommitCore;
+                motionSettle = BeginCommitMotionSettle();
                 CommitCore(transaction);
                 committed = true;
             }
@@ -777,6 +934,26 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     $"Theme transition failed before commit: {exception.GetBaseException().Message}")],
                 exception);
         }
+        finally
+        {
+            EndCommitMotionSettleAfterFrame(motionSettle);
+        }
+    }
+
+    // A theme commit lands every animation it starts on its final value, through the first frame laid out and
+    // rendered with the committed theme: the theme changes at once instead of fading control by control. The
+    // startup commit has no UI to settle, and a window it opened would last until the first frame, swallowing
+    // the opening motions of the first windows.
+    private IDisposable? BeginCommitMotionSettle() =>
+        _applicationInitialized && Dispatcher.UIThread.CheckAccess() ? _motionSettle.Begin() : null;
+
+    private void EndCommitMotionSettleAfterFrame(IDisposable? motionSettle)
+    {
+        if (motionSettle is not null)
+        {
+            _motionSettle.SettleStarted();
+            _motionSettle.EndAfterNextFrame(motionSettle);
+        }
     }
 
     private void PrepareCommitPayload(ThemeTransaction transaction)
@@ -784,8 +961,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         var snapshot = transaction.Preparation!.Snapshot!;
         transaction.PreparedState = new ThemeState(
             transaction.Request.ThemeId,
-            snapshot.EffectiveConfig.Algorithms.Select(static algorithm => algorithm.Algorithm).ToArray(),
-            snapshot.Appearance,
+            snapshot.Language.Id,
+            snapshot.Variant,
             snapshot.ContentFingerprint.Value,
             transaction.TransitionId);
         transaction.AddsResourceProvider = _rootContext is null;
@@ -1471,35 +1648,52 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
         var noOp = preparation.Snapshots.All(static staged =>
             SnapshotsEquivalent(staged.Context.Snapshot, staged.Snapshot));
-        lock (_transactionGate)
+        IDisposable? motionSettle = null;
+        try
         {
-            if (generation != _generation || !_scopeGraph.IsCurrent(capture))
+            lock (_transactionGate)
             {
-                return ThemeScopeUpdateResult.Superseded(
-                    transitionId,
-                    request,
-                    CreateScopeState(node.Context.Snapshot, transitionId));
-            }
+                if (generation != _generation || !_scopeGraph.IsCurrent(capture))
+                {
+                    return ThemeScopeUpdateResult.Superseded(
+                        transitionId,
+                        request,
+                        CreateScopeState(node.Context.Snapshot, transitionId));
+                }
 
-            if (noOp)
-            {
+                if (noOp)
+                {
+                    foreach (var staged in preparation.Snapshots)
+                    {
+                        _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
+                    }
+                    return ThemeScopeUpdateResult.NoOp(
+                        transitionId,
+                        request,
+                        CreateScopeState(node.Context.Snapshot, transitionId));
+                }
+
+                motionSettle = BeginCommitMotionSettle();
                 foreach (var staged in preparation.Snapshots)
                 {
+                    staged.Context.Commit(staged.Snapshot);
                     _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
                 }
-                return ThemeScopeUpdateResult.NoOp(
-                    transitionId,
-                    request,
-                    CreateScopeState(node.Context.Snapshot, transitionId));
             }
 
-            foreach (var staged in preparation.Snapshots)
-            {
-                staged.Context.Commit(staged.Snapshot);
-                _scopeGraph.AcceptConfig(staged.Stamp.RegistrationId);
-            }
+            return PublishScopeConfig(preparation, request, transitionId);
         }
+        finally
+        {
+            EndCommitMotionSettleAfterFrame(motionSettle);
+        }
+    }
 
+    private ThemeScopeUpdateResult PublishScopeConfig(
+        ScopePreparation preparation,
+        ThemeRequest request,
+        long transitionId)
+    {
         var publishDiagnostics = new List<ThemeDiagnostic>();
         foreach (var staged in preparation.Snapshots)
         {
@@ -1550,8 +1744,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         return new ThemeState(
             snapshot.ThemeId,
-            snapshot.EffectiveConfig.Algorithms.Select(static algorithm => algorithm.Algorithm).ToArray(),
-            snapshot.Appearance,
+            snapshot.Language.Id,
+            snapshot.Variant,
             snapshot.ContentFingerprint.Value,
             transitionId);
     }
@@ -1602,8 +1796,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ThemeConfig config)
     {
         if (config.Inherit &&
-            config.Algorithms is null &&
+            config.Language is null && config.Style is null && config.Appearance is null &&
+            config.Density is null && config.Idiom is null &&
             config.Tokens.Count == 0 &&
+            config.LanguageTokens.Count == 0 &&
             config.Controls.Count == 0)
         {
             return new ThemeCompileResult(
@@ -1662,8 +1858,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     private ThemeRequest CreateScopeRequest(ThemeConfig config)
     {
+        // Before the first theme is committed a scope compiles against the first enabled language's own entry.
         return new ThemeRequest(
-            CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID,
+            CurrentTheme?.ThemeId ?? Themes.First(static theme => theme.IsLanguageDefault).Id,
             config,
             ThemeTransitionReason.LocalConfigChanged);
     }
@@ -1768,11 +1965,12 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         PrepareRegistrationThemeInputs(ThemeSchemaRegistry registry, IReadOnlyList<ThemeDefinitionRegistration> resolvers)
     {
         var runtimeConfig = ThemeConfigNormalizer.Normalize(AddDefaultFont(null) ?? ThemeConfig.Empty, registry);
-        var initialConfig = _initialRequest.Config is null
+        var initialConfig = _initialRequest?.Config is null
             ? runtimeConfig
-            : ThemeConfigNormalizer.Normalize(AddDefaultFont(_initialRequest.Config)!, registry);
+            : ThemeConfigNormalizer.Normalize(AddDefaultFont(_initialRequest!.Config)!, registry);
         var catalog = CompiledThemeCatalog.LoadInitial(registry, resolvers,
-            new ThemeDefinitionResolveContext(_applicationId, _applicationDataRoot, false, 0), _themeDefinitionLoadCache);
+            new ThemeDefinitionResolveContext(_applicationId, _applicationDataRoot, false, 0), _themeDefinitionLoadCache,
+            _languageDefaultThemes);
         if (!catalog.Success)
         {
             throw new ThemeLoadException(CompiledThemeCatalog.Describe(catalog.Diagnostics), catalog.Exception);
@@ -1841,10 +2039,23 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
     internal ThemeSchemaRevision? StartupRegistryRevision => PackageReadUpdate?.Snapshot.RegistryRevision ?? _startupRegistry?.Revision;
 
+    /// <summary>
+    /// The design languages and control rules registered through the builder. Must be called before
+    /// PrepareRegistrationSchema.
+    /// </summary>
+    internal void SetLanguages(IReadOnlyList<DesignLanguageDescriptor> languages,
+        IReadOnlyList<ControlTokenRuleDescriptor> rules)
+    {
+        ArgumentNullException.ThrowIfNull(languages);
+        ArgumentNullException.ThrowIfNull(rules);
+        _registryLanguages = languages;
+        _registryTokenRules = rules;
+    }
+
     internal void ConfigureStartupPackages(IReadOnlyList<EnabledControlPackage> packages, StartupImage? image)
     {
         var manualRegistry = _controlTokenDescriptors.Count == 0 ? null : new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(), _controlTokenDescriptors, GeneratedThemeSchema.GetAlgorithms());
+            GeneratedThemeSchema.GetGlobalTokens(), _controlTokenDescriptors, Array.Empty<DesignLanguageDescriptor>());
         _startupPackageIndex = StartupPackageIndex.Create(packages, image, manualRegistry, _stagedSemanticControls, _controlThemeAssetDescriptors);
         _startupResourceProvider = new StartupResourceProvider(_startupPackageIndex, this);
     }
@@ -1932,22 +2143,24 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         if (_startupPackageIndex is { } index)
         {
-            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
+            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryLanguages,
+                _registryTokenRules);
         }
-        var registry = _packageSchemaFingerprints is { } packageFingerprints
+        return _packageSchemaFingerprints is { } packageFingerprints
             ? new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
-                GeneratedThemeSchema.GetAlgorithms(),
+                _registryLanguages,
                 _controlThemeAssetDescriptors,
                 GeneratedThemeSchema.GlobalSchemaFingerprint,
-                packageFingerprints)
+                packageFingerprints,
+                _registryTokenRules)
             : new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
-                GeneratedThemeSchema.GetAlgorithms(),
-                _controlThemeAssetDescriptors);
-        return registry;
+                _registryLanguages,
+                _controlThemeAssetDescriptors,
+                _registryTokenRules);
     }
 
     private SemanticPartRegistry CreateSemanticRegistry(ThemeSchemaRegistry registry)

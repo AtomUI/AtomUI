@@ -27,7 +27,7 @@
                                                  SemanticOwner="{Binding #AutoCompleteSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:AutoComplete}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:AutoComplete Name="AutoCompleteSemanticOwner"
+                            <atom:AutoComplete x:Name="AutoCompleteSemanticOwner"
                                                Width="320"
                                                IsAllowClear="True"
                                                IsMotionEnabled="False"
@@ -327,22 +327,22 @@
                                             <Setter Property="BorderThickness" Value="1" />
                                         </atom:AutoCompletePopupRootStyle>
                                         <atom:AutoCompletePopupListStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Background" Value="#D9F0F0F0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                                         </atom:AutoCompletePopupListStyle>
                                         <atom:AutoCompletePopupListItemStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="TextElement.Foreground" Value="#272727" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:AutoCompletePopupListItemStyle>
                                     </Style>
                                     <Style Selector="atom|AutoComplete.semantic-styles-filled-demo">
                                         <atom:AutoCompletePopupRootStyle x:SetterTargetType="Border">
-                                            <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                             <Setter Property="BorderThickness" Value="1" />
                                         </atom:AutoCompletePopupRootStyle>
                                         <atom:AutoCompletePopupListStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Background" Value="#D9F0F0F0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                                         </atom:AutoCompletePopupListStyle>
                                         <atom:AutoCompletePopupListItemStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="TextElement.Foreground" Value="#272727" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:AutoCompletePopupListItemStyle>
                                     </Style>
                                 </StackPanel.Styles>

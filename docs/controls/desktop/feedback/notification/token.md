@@ -8,7 +8,7 @@ Notification Token 只表达组件级视觉变量，例如尺寸、间距、颜�
 
 当前 Token scope：
 
-- internal `NotificationCardToken`，scope id 为 `NotificationCard`，源码位于 `src/AtomUI.Desktop.Controls/Notifications/NotificationCardToken.cs`。
+- `NotificationCardToken`（公开类，供主题算法的控件阶段写入），scope id 为 `NotificationCard`，源码位于 `src/AtomUI.Desktop.Controls/Notifications/NotificationCardToken.cs`。
 
 ## 2. Token 分类
 
@@ -17,11 +17,37 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `NotificationIconSize`、`NotificationCloseButtonSize`、`NotificationProgressHeight`、`NotificationWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonPadding`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationProgressBg`、`NotificationProgressTrackBg` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `NotificationPadding`、`NotificationIconMargin`、`NotificationSectionSpacing`、`NotificationTitlePadding`、`NotificationActionsMargin`、`NotificationCloseButtonMargin`、`NotificationProgressMargin`、`NotificationTopMargin`、`NotificationBottomMargin` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `NotificationBg`、`NotificationBorderColor`、`NotificationProgressBg`、`NotificationProgressTrackBg`，以及每个类型的 `*Bg`、`*BorderColor`、`*IconColor`、`*TitleColor`、`*DescriptionColor`、`*CloseIconColor`、`*CloseIconHoverColor` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `NotificationBorderThickness`、`RestingShadows`、`InformationShadows`、`SuccessShadows`、`WarningShadows`、`ErrorShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
+
+### 阴影按 severity 分槽
+
+卡片阴影由与当前 `NotificationType` 对应的自有槽位提供；`NotificationType.Default`（无 severity）用 `RestingShadows`
+兜底，四个 severity 各有槽位。Ant Design 基线下五个槽位同为全局 `BoxShadows`，渲染与引入槽位前一致；设计语言算法
+（如 `PrimeNGNotificationCardTokens`）可按 severity 覆盖（PrimeNG：`RestingShadows` 取 `overlay.popover.shadow`，
+severity 为 `0 4 8 0` 彩色 4%，官方 `secondary` / `contrast` 无对应 `NotificationType`，不映射）。
+
+### 类型表面
+
+每个类型（`Information` / `Success` / `Warning` / `Error`）有自己的背景、边框色、图标、标题、描述与关闭图标颜色槽位
+（`*Bg`、`*BorderColor`、`*IconColor`、`*TitleColor`、`*DescriptionColor`、`*CloseIconColor`、`*CloseIconHoverColor`），
+卡片边框粗细为 `NotificationBorderThickness`，无类型卡片的边框色为 `NotificationBorderColor`。默认值等于普通卡片：
+`*Bg` 取 `NotificationBg`，边框透明且粗细为 0，标题 / 描述 / 关闭图标取 `ColorTextHeading` / `ColorText` /
+`ColorIcon`（悬停与按下 `ColorIconHover`），图标取 `ColorPrimary` / `ColorSuccess` / `ColorWarning` / `ColorError`。
+设计语言算法据此绘制着色或实底的类型卡片与左侧色条（PrimeNG Lara / Nora 的 `border.width: 0 0 0 6px`）。
+
+### 主题读取与裁决
+
+- NotificationCard 主题的全局 Token 一律经 `NotificationCardTokenResource` 读取，包括关闭按钮（注册控件 IconButton，保留
+  自身 identity）的圆角、图标尺寸与默认 / 悬停 / 按下颜色；WindowNotificationManager 的 `EnableMotion` 读
+  `WindowNotificationManagerTokenResource`，宿主安全区外边距以 `SetCurrentValue` 写入。
+- 描述文本的行高 `FontHeight` 现在生效：字符串内容转换出的 SelectableTextBlock 不再写入本地 `LineHeight = NaN`，继承描述
+  presenter 的行高。
+- `NotificationCloseButtonPadding`（删除）：关闭按钮宽高固定为 `NotificationCloseButtonSize`、图标固定为 `IconSizeSM` 且居中，
+  对称内边距没有任何可见效果（生效测试证实），antd Notification 也没有对应 Token。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -29,6 +55,7 @@ Notification 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
+- 进度条实际创建时，绘制部件成组读取高度、底槽和剩余时间填色。高度变化重新测量，画刷变化只触发重绘。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 

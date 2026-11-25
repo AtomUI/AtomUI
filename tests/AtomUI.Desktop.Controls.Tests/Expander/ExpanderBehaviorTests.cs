@@ -9,7 +9,6 @@ using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -298,7 +297,7 @@ public class ExpanderBehaviorTests
             var frame = FindVisualByName<PixelAlignedBorder>(expander, "PART_Frame");
             frame.ShouldNotBeNull();
 
-            // ExpanderBorderRadius = BorderRadiusLG（见 ExpanderToken.CalculateTokenValues）。
+            // ExpanderBorderRadius = BorderRadiusLG (see ExpanderTokenRule).
             var expectedRadius = GetThemeResource<CornerRadius>(SharedTokenKind.BorderRadiusLG);
             frame!.CornerRadius.ShouldBe(expectedRadius);
             expectedRadius.TopLeft.ShouldBeGreaterThan(0);

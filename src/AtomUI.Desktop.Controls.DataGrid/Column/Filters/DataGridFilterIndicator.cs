@@ -86,6 +86,8 @@ internal class DataGridFilterIndicator : IconButton
     private INotifyCollectionChanged? _subscribedFilters;
     private bool _isFlyoutContentMaterialized;
     private IDisposable? _popupPinnedOpenRelay;
+    // 弹层对表格动效开关的绑定会订阅表格的属性变更；与弹层同生命周期，在 ClearFlyout 中释放
+    private IDisposable? _flyoutMotionBinding;
     private int _pinnedOpenGeneration;
 
     internal DataGridColumn? OwningColumn
@@ -103,7 +105,12 @@ internal class DataGridFilterIndicator : IconButton
             _owningColumn = value;
             if (_owningColumn != null)
             {
-                RegisterOwningColumnSubscriptions(_owningColumn);
+                // 对列与表格的订阅只在挂接期间持有，与 OnAttached/OnDetachedFromVisualTree 成对；
+                // 未挂接时注册会因永远不触发 Detach 而泄漏
+                if (this.IsAttachedToVisualTree())
+                {
+                    RegisterOwningColumnSubscriptions(_owningColumn);
+                }
                 FilterPresenterMode      = _owningColumn.FilterPresenterMode;
                 IsMultipleSelectionEnabled = _owningColumn.FilterSelectionMode == DataGridFilterSelectionMode.Multiple;
             }
@@ -215,8 +222,9 @@ internal class DataGridFilterIndicator : IconButton
                 Placement                 = PlacementMode.BottomEdgeAlignedRight,
                 ShouldUseOverlayPopup     = true
             };
-            menuFlyout[!MotionAwareControlProperty.IsMotionEnabledProperty] =
-                owningGrid[!MotionAwareControlProperty.IsMotionEnabledProperty];
+            _flyoutMotionBinding = menuFlyout.Bind(
+                MotionAwareControlProperty.IsMotionEnabledProperty,
+                owningGrid[!MotionAwareControlProperty.IsMotionEnabledProperty]);
 
             Flyout                          =  menuFlyout;
             _flyoutStateHelper.Flyout       =  menuFlyout;
@@ -236,8 +244,9 @@ internal class DataGridFilterIndicator : IconButton
                 Placement                 = PlacementMode.BottomEdgeAlignedRight,
                 ShouldUseOverlayPopup     = true
             };
-            treeFlyout[!MotionAwareControlProperty.IsMotionEnabledProperty] =
-                owningGrid[!MotionAwareControlProperty.IsMotionEnabledProperty];
+            _flyoutMotionBinding = treeFlyout.Bind(
+                MotionAwareControlProperty.IsMotionEnabledProperty,
+                owningGrid[!MotionAwareControlProperty.IsMotionEnabledProperty]);
             ConfigureTreeFlyoutToggleType(treeFlyout);
 
             Flyout                    = treeFlyout;
@@ -522,6 +531,8 @@ internal class DataGridFilterIndicator : IconButton
 
         _popupPinnedOpenRelay?.Dispose();
         _popupPinnedOpenRelay = null;
+        _flyoutMotionBinding?.Dispose();
+        _flyoutMotionBinding = null;
         if (Flyout is FlyoutControl releasedFlyout)
         {
             releasedFlyout.SetCurrentValue(FlyoutControl.IsPopupPinnedOpenProperty, false);

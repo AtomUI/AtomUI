@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -9,8 +8,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -18,21 +15,17 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
-using AvaloniaNumericUpDown = Avalonia.Controls.NumericUpDown;
-
 public enum NumericUpDownMode
 {
     Input,
     Spinner
 }
 
-public partial class NumericUpDown : AvaloniaNumericUpDown,
-                             IMotionAwareControl,
-                             ICompactSpaceAware,
-                             IFormItemAware,
-                             IInputControlStatusAware,
-                             IInputControlStyleVariantAware,
-                             ICustomizableSizeTypeAware
+public partial class NumericUpDown : AbstractNumericUpDown,
+                                     IMotionAwareControl,
+                                     ICompactSpaceAware,
+                                     IInputControlStyleVariantAware,
+                                     ICustomizableSizeTypeAware
 {
     #region 公共属性定义
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
@@ -62,8 +55,8 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<NumericUpDown>();
 
-    public static readonly StyledProperty<InputControlStatus> StatusProperty =
-        InputControlStatusProperty.StatusProperty.AddOwner<NumericUpDown>();
+    public new static readonly StyledProperty<InputControlStatus> StatusProperty =
+        AbstractNumericUpDown.StatusProperty.AddOwner<NumericUpDown>();
 
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         TextBox.IsAllowClearProperty.AddOwner<NumericUpDown>();
@@ -71,8 +64,8 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NumericUpDown>();
 
-    public static readonly StyledProperty<bool> IsStringModeProperty =
-        AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsStringMode));
+    public new static readonly StyledProperty<bool> IsStringModeProperty =
+        AbstractNumericUpDown.IsStringModeProperty.AddOwner<NumericUpDown>();
     
     public static readonly StyledProperty<bool> IsKeyboardEnabledProperty =
         AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsKeyboardEnabled), true);
@@ -80,8 +73,8 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     public static readonly StyledProperty<NumericUpDownMode> ModeProperty =
         AvaloniaProperty.Register<NumericUpDown, NumericUpDownMode>(nameof(Mode), NumericUpDownMode.Input);
 
-    public static readonly StyledProperty<string?> StringValueProperty =
-        AvaloniaProperty.Register<NumericUpDown, string?>(nameof(StringValue));
+    public new static readonly StyledProperty<string?> StringValueProperty =
+        AbstractNumericUpDown.StringValueProperty.AddOwner<NumericUpDown>();
 
     public PathIcon? ClearIcon
     {
@@ -139,7 +132,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(StyleVariantProperty, value);
     }
 
-    public InputControlStatus Status
+    public new InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
@@ -157,7 +150,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
-    public bool IsStringMode
+    public new bool IsStringMode
     {
         get => GetValue(IsStringModeProperty);
         set => SetValue(IsStringModeProperty, value);
@@ -175,7 +168,7 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(ModeProperty, value);
     }
 
-    public string? StringValue
+    public new string? StringValue
     {
         get => GetValue(StringValueProperty);
         set => SetValue(StringValueProperty, value);
@@ -211,9 +204,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<NumericUpDown>();
 
-    internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
-        InputControlState.FormStatusProperty.AddOwner<NumericUpDown>();
-    
     internal double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
@@ -246,25 +236,11 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         set => SetValue(IsUsedInCompactSpaceProperty, value);
     }
 
-    internal FormValidateStatus FormStatus
-    {
-        get => GetValue(FormStatusProperty);
-        private set => SetCurrentValue(FormStatusProperty, value);
-    }
-    
     #endregion
     
-    private EventHandler? _formValueChanged;
     private IconButton? _clearButton;
     private TextBox? _textBoxPart;
     private CompositeDisposable? _templatePartBindings;
-    private readonly NumericUpDownTextConverter _textConverter;
-    private IValueConverter? _userTextConverter;
-    private bool _suppressTextConverterTracking;
-    private bool _isUpdatingFromText;
-    private bool _isUpdatingFromValue;
-    private bool _isUpdatingText;
-    private bool _isParsingText;
     private ButtonSpinner? _buttonSpinner;
 
     private IconButton? ClearButtonPart
@@ -315,15 +291,11 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         }
     }
 
-    static NumericUpDown()
-    {
-        ValueChangedEvent.AddClassHandler<NumericUpDown>((textBox, args) => textBox.HandleValueChanged());
-    }
-    
     public NumericUpDown()
     {
-        _textConverter = new NumericUpDownTextConverter(this);
     }
+
+    protected override bool ReportsTextConversionErrors => false;
 
     protected override void OnInitialized()
     {
@@ -339,15 +311,20 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         base.OnApplyTemplate(e);
         ClearButtonPart = e.NameScope.Find<IconButton>("PART_ClearButton");
         TextBoxPart     = e.NameScope.Find<TextBox>("PART_TextBox");
+        // Avalonia relays the host TabIndex to the text box with a local binding. The host is a local tab group that
+        // carries that index itself; inside it the template order (input 0, then the clear button 1, which precedes
+        // the input in the visual tree) must hold. A new local binding replaces the relay, and an empty one completes
+        // at once, so the text box falls back to its template TabIndex.
+        TextBoxPart?.Bind(KeyboardNavigation.TabIndexProperty, Observable.Empty<int>());
         ConfigureEffectiveShowClearButton();
         if (e.NameScope.Find<ButtonSpinner>("PART_Spinner") is { } buttonSpinner)
         {
             _buttonSpinner = buttonSpinner;
             // The frame node lives inside the spinner's own template; apply it now so the
-            // border relay below can reach the decorated box instead of silently no-oping.
+            // template part bindings below can reach the decorated box.
             buttonSpinner.ApplyTemplate();
         }
-        RelayFrameBorderBrush();
+        // The root BorderBrush is template-bound onto the spinner, which binds it into the frame's HostBorderBrush.
         SetupTemplatePartBindings(e);
     }
 
@@ -359,10 +336,6 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty)
-        {
-            RelayFrameBorderBrush();
-        }
 
         if (change.Property == IsReadOnlyProperty ||
             change.Property == TextProperty ||
@@ -371,60 +344,11 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
             ConfigureEffectiveShowClearButton();
         }
 
-        if (change.Property == TextConverterProperty && !_suppressTextConverterTracking)
-        {
-            if (change.NewValue is IValueConverter converter && converter != _textConverter)
-            {
-                _userTextConverter = converter;
-            }
-            else if (change.NewValue is null)
-            {
-                _userTextConverter = null;
-            }
-        }
-
-        if (change.Property == IsStringModeProperty)
-        {
-            if (IsStringMode)
-            {
-                UpdateStringValueFromValue(Value, CultureInfo.CurrentCulture);
-            }
-            UpdateTextConverter();
-            RefreshDisplayedText();
-        }
-
-        if (change.Property == StringValueProperty && IsStringMode && !_isUpdatingFromText && !_isUpdatingFromValue)
-        {
-            ApplyStringValue(change.NewValue as string);
-        }
     }
 
-    protected override void OnTextChanged(string? oldValue, string? newValue)
-    {
-        _isParsingText = true;
-        try
-        {
-            base.OnTextChanged(oldValue, newValue);
-        }
-        finally
-        {
-            _isParsingText = false;
-        }
+    protected override void OnTextChanged(string? oldValue, string? newValue) => base.OnTextChanged(oldValue, newValue);
 
-        if (IsStringMode)
-        {
-            UpdateStringValueFromText(newValue);
-        }
-    }
-
-    protected override void OnValueChanged(decimal? oldValue, decimal? newValue)
-    {
-        if (IsStringMode && !_isUpdatingFromText && !_isParsingText)
-        {
-            UpdateStringValueFromValue(newValue, CultureInfo.CurrentCulture);
-        }
-        base.OnValueChanged(oldValue, newValue);
-    }
+    protected override void OnValueChanged(decimal? oldValue, decimal? newValue) => base.OnValueChanged(oldValue, newValue);
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
@@ -497,78 +421,23 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
 
     #endregion
 
-    #region 实现 FormItem 接口
+    protected override void NotifySetFormValue(decimal? value) => base.NotifySetFormValue(value);
 
-    event EventHandler? IFormItemAware.ValueChanged
-    {
-        add => _formValueChanged += value;
-        remove => _formValueChanged -= value;
-    }
+    protected override decimal? NotifyGetFormValue() => base.NotifyGetFormValue();
 
-    void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue(value as decimal?);
+    protected override void NotifyClearFormValue() => base.NotifyClearFormValue();
 
-    object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
-    void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
-    void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
-
-    private void HandleValueChanged()
-    {
-        _formValueChanged?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void NotifySetFormValue(decimal? value)
-    {
-        SetCurrentValue(ValueProperty, value);
-    }
-
-    protected virtual decimal? NotifyGetFormValue()
-    {
-        return Value;
-    }
-
-    protected virtual void NotifyClearFormValue()
-    {
-        SetCurrentValue(ValueProperty, null);
-    }
-
-    protected virtual void NotifyValidateStatus(FormValidateStatus status)
-    {
-        if (FormStatus != status)
-        {
-            SetCurrentValue(FormStatusProperty, status);
-        }
-    }
-
-    #endregion
-
-    /// <summary>
-    /// Relays the owner's root border brush onto the input frame as a local value so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
-    /// owner value restores the state machine.
-    /// </summary>
-    private void RelayFrameBorderBrush()
-    {
-        var decoratedBox = _buttonSpinner?.DecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            decoratedBox.ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
-    }
+    protected override void NotifyValidateStatus(FormValidateStatus status) => base.NotifyValidateStatus(status);
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)
     {
+        // Focus returns to the input, as in Ant Design; the button hides once the value is gone.
+        var focusReturnMethod = (sender as InputClearIconButton)?.GetFocusReturnMethod();
         NotifyClearButtonClicked();
+        if (focusReturnMethod is { } navigationMethod)
+        {
+            _textBoxPart?.Focus(navigationMethod);
+        }
     }
 
     private void SetupTemplatePartBindings(TemplateAppliedEventArgs e)
@@ -606,6 +475,8 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
             // template, outside this Content subtree's TemplateBinding scope. Keep this
             // binding scoped to the current template and consume the existing animation;
             // the panel must not start a second transition or translate the suffix again.
+            _templatePartBindings.Add(inputPanel.Bind(NumericUpDownInputPanel.LeftInsetProperty,
+                decoratedBox.GetObservable(ButtonSpinnerDecoratedBox.ContentLeftShiftProperty)));
             _templatePartBindings.Add(inputPanel.Bind(NumericUpDownInputPanel.RightInsetProperty,
                 decoratedBox.GetObservable(ButtonSpinnerDecoratedBox.ContentRightShiftProperty)
                             .Select(static shift => Math.Max(0d, -shift))));
@@ -638,252 +509,4 @@ public partial class NumericUpDown : AvaloniaNumericUpDown,
         
         SetCurrentValue(IsEffectiveShowClearButtonProperty, !IsReadOnly && !string.IsNullOrEmpty(Text));
     }
-
-    private void UpdateTextConverter()
-    {
-        var needsConverter = IsStringMode;
-        if (needsConverter)
-        {
-            if (TextConverter != _textConverter)
-            {
-                SetTextConverterWithoutTracking(_textConverter);
-            }
-        }
-        else if (TextConverter == _textConverter)
-        {
-            SetTextConverterWithoutTracking(_userTextConverter);
-        }
-    }
-
-    private void SetTextConverterWithoutTracking(IValueConverter? converter)
-    {
-        _suppressTextConverterTracking = true;
-        try
-        {
-            SetCurrentValue(TextConverterProperty, converter);
-        }
-        finally
-        {
-            _suppressTextConverterTracking = false;
-        }
-    }
-
-    private void RefreshDisplayedText()
-    {
-        if (TextConverter != _textConverter)
-        {
-            return;
-        }
-
-        var displayText = _textConverter.ConvertBack(Value, typeof(string), null, CultureInfo.CurrentCulture)?.ToString();
-        if (displayText is null || displayText == Text)
-        {
-            return;
-        }
-
-        SetTextWhileUpdating(displayText);
-    }
-
-    private void ApplyStringValue(string? raw)
-    {
-        if (!IsStringMode)
-        {
-            return;
-        }
-
-        var displayText = FormatDisplayText(raw, CultureInfo.CurrentCulture);
-        if (!_isUpdatingText && displayText != Text)
-        {
-            SetTextWhileUpdating(displayText);
-        }
-
-        if (TryParseDecimal(raw, CultureInfo.CurrentCulture, out var value))
-        {
-            SetValueWhileUpdatingFromString(value);
-        }
-        else
-        {
-            SetValueWhileUpdatingFromString(null);
-        }
-    }
-
-    private void SetTextWhileUpdating(string text)
-    {
-        _isUpdatingText = true;
-        try
-        {
-            SetCurrentValue(TextProperty, text);
-        }
-        finally
-        {
-            _isUpdatingText = false;
-        }
-    }
-
-    private void SetValueWhileUpdatingFromString(decimal? value)
-    {
-        _isUpdatingFromValue = true;
-        try
-        {
-            SetCurrentValue(ValueProperty, value);
-        }
-        finally
-        {
-            _isUpdatingFromValue = false;
-        }
-    }
-
-    private string FormatDisplayText(string? raw, CultureInfo culture)
-    {
-        if (string.IsNullOrEmpty(raw))
-        {
-            return string.Empty;
-        }
-
-        if (IsStringMode)
-        {
-            return raw;
-        }
-
-        if (TryParseDecimal(raw, culture, out var value))
-        {
-            return FormatDisplayValue(value, culture);
-        }
-
-        return raw;
-    }
-
-    private string FormatDisplayValue(decimal value, CultureInfo culture)
-    {
-        var format = FormatString;
-        var numberFormat = NumberFormat ?? culture.NumberFormat;
-        if (!string.IsNullOrEmpty(format))
-        {
-            if (format.Contains("{0", StringComparison.Ordinal))
-            {
-                return string.Format(culture, format, value);
-            }
-            return value.ToString(format, numberFormat);
-        }
-
-        return value.ToString(numberFormat);
-    }
-
-    private string FormatRawValue(decimal value, CultureInfo culture)
-    {
-        var numberFormat = NumberFormat ?? culture.NumberFormat;
-        return value.ToString("G", numberFormat);
-    }
-
-    private bool TryParseDecimal(string? text, CultureInfo culture, out decimal value)
-    {
-        value = 0m;
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return false;
-        }
-        var numberFormat = NumberFormat ?? culture.NumberFormat;
-        return decimal.TryParse(text, ParsingNumberStyle, numberFormat, out value);
-    }
-
-
-    private void UpdateStringValueFromText(string? raw)
-    {
-        if (!IsStringMode)
-        {
-            return;
-        }
-
-        SetStringValueWhileUpdatingFromText(string.IsNullOrEmpty(raw) ? null : raw);
-    }
-
-    private void UpdateStringValueFromValue(decimal? value, CultureInfo culture)
-    {
-        if (!IsStringMode)
-        {
-            return;
-        }
-
-        SetStringValueWhileUpdatingFromValue(value.HasValue ? FormatRawValue(value.Value, culture) : null);
-    }
-
-    private void SetStringValueWhileUpdatingFromText(string? value)
-    {
-        _isUpdatingFromText = true;
-        try
-        {
-            SetCurrentValue(StringValueProperty, value);
-        }
-        finally
-        {
-            _isUpdatingFromText = false;
-        }
-    }
-
-    private void SetStringValueWhileUpdatingFromValue(string? value)
-    {
-        _isUpdatingFromValue = true;
-        try
-        {
-            SetCurrentValue(StringValueProperty, value);
-        }
-        finally
-        {
-            _isUpdatingFromValue = false;
-        }
-    }
-
-    private bool IsTextInputFocused()
-    {
-        return _textBoxPart?.IsFocused == true;
-    }
-
-    private sealed class NumericUpDownTextConverter : IValueConverter
-    {
-        private readonly NumericUpDown _owner;
-
-        public NumericUpDownTextConverter(NumericUpDown owner)
-        {
-            _owner = owner;
-        }
-
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            var text = value as string ?? value?.ToString();
-            if (_owner.TryParseDecimal(text, culture, out var result))
-            {
-                return result;
-            }
-            return null;
-        }
-
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        {
-            string? raw = null;
-
-            if (_owner.IsStringMode)
-            {
-                raw = _owner.StringValue;
-            }
-
-            if (raw is null)
-            {
-                if (value is decimal decimalValue)
-                {
-                    raw = _owner.FormatRawValue(decimalValue, culture);
-                }
-                else
-                {
-                    raw = value?.ToString();
-                }
-            }
-            if (_owner.IsTextInputFocused())
-            {
-                return raw ?? string.Empty;
-            }
-
-            return _owner.FormatDisplayText(raw, culture);
-        }
-    }
-    
 }

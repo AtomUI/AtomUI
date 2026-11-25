@@ -27,6 +27,8 @@ Token 按控件语义分类维护：
 
 Icon 的控件专项模型通过 Theme 消费 Token：
 
+`IconSize`、`ColorIconHover`、`ColorPrimary` 和 `ColorInfoBg` 从 `Controls[Icon]` 的有效全局值读取；`IconPresenter` 使用自身身份，Avalonia `PathIcon` 则继承所属控件的有效全局值。`FallbackColor` 通过默认主题绑定到 `FallbackBrush`，只影响绘制指令选择 `IconBrushType.Fallback` 的区域；普通单色图标仍使用其 Stroke / Fill 画刷。显式设置的 `FallbackBrush` 保持更高优先级。
+
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。

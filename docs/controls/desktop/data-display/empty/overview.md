@@ -43,7 +43,7 @@ Empty 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `Description`、`Footer`、`FooterTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage` | 定义空状态图片、描述和后续操作内容。 |
+| 内容与数据 | `Description`、`Footer`、`FooterTemplate`、`Image`、`ImageTemplate`、`ImagePath`、`ImageSource`、`IsDescriptionVisible`、`PresetImage`、`Title`、`TitleTemplate` | 定义空状态图片、描述和后续操作内容。`Description` 为 `object?`：字符串与其他对象都由同一个 description 节点呈现；`Image`、`Title` 及其模板在 Desktop 上被接受但不渲染。 |
 | 视觉与布局 | `SizeType`、`StrokeDashArray` | `SizeType` 选择预设尺寸基线；`StrokeDashArray` 配置 root 边框的虚线节奏。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
@@ -85,6 +85,9 @@ Public API / inherited command / item source / user input
 - `Footer=null` 时 footer Presenter 隐藏；非空时由 `FooterTemplate` 或 Avalonia DataTemplate 机制生成内容。
 - Large、Middle、Small 只改变 image 高度和描述间距，不改变 Semantic marker 数量。
 - 模板重套用时必须把 public API 对应状态回放到新的 part 和主题变量。
+- 同一实例摘出再挂回可视树时，图片必须按当前来源和主题资源恢复，描述、Footer 与尺寸基线保持一致。
+- 预设图形所需资源暂缺与调用方取消图片是两种状态；前者保留已有绘制结果，后者清空图片。具体规则见
+  [图片来源模型](#81-图片来源模型)。
 
 ## 5. 视觉与主题模型
 
@@ -94,8 +97,7 @@ Empty 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 | --- | --- |
 | `EmptyTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 
-Empty 使用 `EmptyToken` 作为控件 Token scope。Token 只表达图片高度、描述间距、Footer 间距和图形颜色等视觉语义，不承载
-实例内容或可见性状态。
+Empty 使用 `EmptyToken` 表达图片高度、描述间距和 Footer 间距。桌面默认 ControlTheme 启用成组读取实际预设图形的颜色，交给共享基类计算 SVG 配色。颜色资源归属见 [Empty Token 设计](token.md)。Token 不承载实例内容或可见性状态。
 
 主题维护规则：
 
@@ -119,6 +121,8 @@ Empty 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 - 与 ThemeManager、SharedToken、ControlTheme、控件文档和 Gallery ShowCase 示例保持一致。
 - 涉及 ItemsSource、Popup、Flyout、Window、Form 或 CompactSpace 的路径必须保持生命周期释放和数据状态同步。
 - 源码目录中的共享基类和内部协作类型形成维护边界，不能只修改桌面包装类而忽略共享状态 owner。
+- ListBox、ListView、TreeView、CascaderView 与 ComboBox 模板，以及 DataGrid 创建的默认空态使用同一 `Empty`。
+  图片恢复由 `AbstractEmpty` 负责，宿主复用同一实例时不应通过重建控件或切换 `PresetImage` 维持显示。
 
 ## 7. 兼容性不变量
 
@@ -137,11 +141,20 @@ Empty 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证�
 ### 8.1 图片来源模型
 
 `PresetImage`、`ImagePath` 和 `ImageSource` 是同一 image 职责的三个互斥输入。它们只更新 `PART_SvgImage` 的绘制来源，不替换
-Semantic target。内置 Default/Simple 图形的颜色由 EmptyToken 与 SharedToken 计算，调用方不能同时设置多个图片来源。
+Semantic target。内置 Default/Simple 图形的颜色由 SharedToken 输入和运行时颜色计算得到，调用方不能同时设置多个图片来源。
+
+图片是当前来源与主题资源的派生结果，必须遵守以下契约：
+
+- 预设图形所需颜色资源齐备时生成完整结果；资源暂缺时保留已有结果，首次尚无结果时保持无图状态。
+- `ImageSource` 与 `ImagePath` 使用各自指定的 SVG 内容或路径，不依赖预设图形的颜色资源。
+- 三种来源均为 `null` 时清空图片，不能因保留已有结果而阻止调用方主动取消图片。
+- 重新挂树必须同步离树期间的来源和主题变化；相同来源与主题下，图案和布局应与摘树前一致。
+
+同步入口、结果提交顺序及重复更新约束见 [内部算法与关键流程](implementation.md#8-内部算法与关键流程)。
 
 ### 8.2 描述与 Footer 模型
 
-`Description` 负责本地化默认描述或调用方文本；`IsDescriptionVisible` 负责显示状态。`Footer` 与 `FooterTemplate` 负责 Empty
+`Description` 负责本地化默认描述或调用方内容（字符串或任意对象）；`IsDescriptionVisible` 负责显示状态。两者都由同一个 description 节点呈现，`EmptyDescriptionStyle` 设置的文本样式继承到字符串文本和自定义内容，与 Ant Design `styles.description` 一致。`Footer` 与 `FooterTemplate` 负责 Empty
 内部的后续操作区域，避免 Gallery 或业务页面通过外部 StackPanel 模拟一个不属于 Empty owner 的 footer。
 
 ## 9. 文档导航与验证策略
@@ -159,7 +172,8 @@ Semantic target。内置 Default/Simple 图形的颜色由 EmptyToken 与 Shared
 | --- | --- |
 | 文档改动 | 运行 `git diff --check`，检查相对链接存在。 |
 | Public API | 覆盖属性默认值、事件触发、命令和继承语义。 |
-| 状态模型 | 覆盖三种图片来源、描述可见性、Footer 内容替换和三档 SizeType。 |
+| 状态模型 | 覆盖三种图片来源、资源暂缺与明确清空的区别、描述可见性、Footer 内容替换和三档 SizeType。 |
+| 图片生命周期 | 覆盖同一实例摘挂、模板重套用，以及离树期间的来源和主题变化；检查图案、文字、尺寸和模板节点身份。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

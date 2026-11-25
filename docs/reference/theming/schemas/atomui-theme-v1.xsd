@@ -46,6 +46,27 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="DensityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Normal" />
+      <xs:enumeration value="Compact" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="BrandColorSupportType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Fixed" />
+      <xs:enumeration value="Seed" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NeutralColorSupportType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Fixed" />
+      <xs:enumeration value="Seed" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ThemeAlgorithmType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="Default" />
@@ -69,8 +90,25 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="AlgorithmIdType">
+    <xs:annotation>
+      <xs:documentation>
+        A built-in AtomUI algorithm id, or any identifier for an algorithm in another catalog.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:union memberTypes="theme:ThemeAlgorithmType theme:IdentifierType" />
+  </xs:simpleType>
+
   <xs:complexType name="AlgorithmType">
-    <xs:attribute name="Id" type="theme:ThemeAlgorithmType" use="required" />
+    <xs:attribute name="Catalog" type="theme:IdentifierType" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          The catalog that owns the algorithm. Omit it for the AtomUI catalog. Duplicate algorithm
+          identities are rejected by the reader, because an identity constraint cannot see an omitted attribute.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="Id" type="theme:AlgorithmIdType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="AlgorithmsType">
@@ -128,10 +166,6 @@
           <xs:selector xpath="theme:Tokens/theme:Token" />
           <xs:field xpath="@Name" />
         </xs:unique>
-        <xs:unique name="UniqueControlAlgorithmId">
-          <xs:selector xpath="theme:Algorithms/theme:Algorithm" />
-          <xs:field xpath="@Id" />
-        </xs:unique>
       </xs:element>
     </xs:sequence>
   </xs:complexType>
@@ -158,16 +192,16 @@
                   type="theme:StrictBooleanType"
                   use="optional"
                   default="false" />
+    <xs:attribute name="DesignLanguage" type="theme:IdentifierType" use="optional" />
+    <xs:attribute name="Density" type="theme:DensityType" use="optional" />
+    <xs:attribute name="BrandColor" type="theme:BrandColorSupportType" use="optional" />
+    <xs:attribute name="NeutralColor" type="theme:NeutralColorSupportType" use="optional" />
   </xs:complexType>
 
   <xs:element name="Theme" type="theme:ThemeType">
     <xs:unique name="UniqueGlobalTokenName">
       <xs:selector xpath="theme:Tokens/theme:Token" />
       <xs:field xpath="@Name" />
-    </xs:unique>
-    <xs:unique name="UniqueGlobalAlgorithmId">
-      <xs:selector xpath="theme:Algorithms/theme:Algorithm" />
-      <xs:field xpath="@Id" />
     </xs:unique>
     <xs:unique name="UniqueControlIdentity">
       <xs:selector xpath="theme:Controls/theme:Control" />

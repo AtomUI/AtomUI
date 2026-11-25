@@ -20,7 +20,7 @@ public sealed class OfficialPtBrLanguagePackTests
             "AtomUI.Controls",
             "src/LanguagePacks/pt-BR/AtomUI.Controls.I18n.PtBR/AtomUI.Controls.I18n.PtBR.csproj",
             "src/AtomUI.Controls/AtomUI.Controls.csproj",
-            ["Common/pt-BR.xlf"]),
+            ["Common/pt-BR.xlf", "Form/pt-BR.xlf"]),
         new(
             "AtomUI.Desktop.Controls.I18n.PtBR",
             "AtomUI.Desktop.Controls",

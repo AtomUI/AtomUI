@@ -1,5 +1,79 @@
 # LineEdit Changelog
 
+## 2026-11-22
+
+- Token：输入框外框形态不再经 `AppearanceSettings` 传入，改为公开 Own Token `LineEditToken.TransparentOutlineBorder` / `BottomOutlineBorder`、`TextAreaToken.TransparentOutlineBorder` / `BottomOutlineBorder`（默认 `false`，见
+  [Token 设计](token.md)）。各设计语言渲染不变。
+
+## 2026-11-21
+
+- Theme
+  - Small 输入框（`AddOnDecoratedBoxTheme` 小号：LineEdit、SearchEdit、AutoComplete、Cascader、单值 DatePicker / TimePicker）的文本行高由 `FontHeightSM` 改为 `FontHeight`，与 NumericUpDown、ComboBox、Select、TreeSelect、范围选择器一致。`InputPaddingSM` 正是按这一行高推导的，所以所有 Small 输入框现在都等于 `ControlHeightSM`。
+  - 修复前：Ant 下这组控件为 22px，比 antd 的 24px 小号输入框和同尺寸 NumericUpDown / ComboBox 矮 2px；Shadcn Vega 同样矮 2px。Middle / Large 不变。
+
+## 2026-11-18
+
+- 桌面 TextArea 手柄合并斜线画刷与线宽资源读取，尺寸和拖动继续由原入口管理。
+
+## 2026-11-14
+
+- Performance
+  - 输入 frame（LineEdit、TextBox、TextArea、SearchEdit、Select、TreeSelect、Cascader、日期/时间选择器、NumericUpDown、OtpLineEdit、AutoComplete、Mentions 共用）的 variant × 有效状态画刷改由 frame 的内部主题变量提供。`InputControlFrameTheme` 只把它们投射到 hover / focus-within / pressed 状态，不再逐个组合写样式。
+  - 同时删除 `InputControlFrameTheme` 中 6 条附加区内边距样式：`AddOnDecoratedBoxTheme` 在其后声明了相同选择器、相同值的样式，这 6 条从不生效。
+  - 每个实例创建时的分配减少 5.6%–10.9%（17 个输入家族控件）；常驻对象数 LineEdit 减少 14.8%（5530 → 4709），Select 减少 14.6%（10540 → 9003）。
+  - 13 个输入宿主 × 4 variant × 3 status × 8 种交互状态，加上 Large / Small 尺寸，frame 与附加区的表面值、内边距和圆角均与改动前逐项一致。Token、`ThemeConfig.Controls`、`ThemeConfigProvider` 与 `TokenTransitions` 的定制路径不变。
+
+## 2026-11-12
+
+- Fixed
+  - TextArea：未设置 `Height` 且由父容器拉伸（Grid `*` 行、`FlexPanel` + `Flex.Grow`）时，文本视口不再塌缩为 `Lines` 高的一条并垂直居中，现在填满输入框，正文从首行开始，滚动条和 PageDown 作用于整个视口。`Lines` 只决定自然高度，未拉伸时（如 StackPanel 中）仍显示 `Lines` 行。此前期望高度会随内容增长，在 FlexPanel 中可能撑出窗口，现已修复。（Gitee IKV2LQ）
+
+## 2026-11-11
+
+- Theme
+  - focus 外发光只作用于 `Outlined`：`InputControlFrameTheme`、`LineEditTheme`、`TextBoxTheme`、`TextAreaTheme` 移除 `Filled` / `Underlined` 的 focus/pressed `BoxShadow`，`TextBoxTheme` 的 focus shadow 增加 `Outlined` 条件，嵌入式（Borderless）文本框不再获得阴影。
+  - LineEdit、TextBox、TextArea 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - TextArea：`TextAreaDecoratedBox` 的裁剪下移到 `Border#TextAreaContentFrame`，`TextArea` 宿主设置 `ClipToBounds=False`；内容仍被裁剪，frame 外侧的 focus 外发光可见。
+- Accessibility
+  - 共用清除按钮 `InputClearIconButton` 的自动化名称取自通用语言包 `CommonLangResourceKind.Clear`（Ant Design `locale.global.clear`），随语言切换更新。输入家族的清除按钮因此都有本地化名称。
+  - 该名称由 `InputClearIconButtonTheme` 的 setter 绑定语言资源（`{atom:CommonLangResource Clear}`），处于 ControlTheme 层：应用 Style、本地值或绑定都能覆盖。此前代码以 Template 优先级设值，高于 Style，应用样式无法覆盖。
+- Fixed
+  - 清除按钮按下 Enter / Space 或被点击清除后，焦点回到输入（键盘触发时保持键盘焦点可见）。此前按钮随文本清空隐藏，焦点丢失；TextArea 与 Mentions 的清除按钮是 Tab 停靠点，可直接复现。
+- Theme
+  - `InputControlFrameTheme` 统一设置空 `FocusAdorner`：模板为接收内边距点击而把外框设为可聚焦时，键盘到达外框也不会叠加焦点描边，焦点仍由 `:focus-within` 外框表达。
+  - TextArea：内部 `TextAreaDecoratedBox` 设 `IsTabStop=False`，只保留指针聚焦，不再是额外的 Tab 停靠点。
+
+## 2026-11-08
+
+- Changed
+  - 共享输入表面 `InputControlFrame`、`AddOnDecoratedBox` 及 `SearchEditDecoratedBox` / `TextAreaDecoratedBox` 的主题改以
+    `OwnerTokenResource` 读取所属公开控件的有效 Global Token，`Controls[TextBox]`、`Controls[LineEdit]`、`Controls[SearchEdit]`、
+    `Controls[TextArea]` 的覆盖作用于各自的边框、背景、圆角、状态色、焦点阴影与内边距，且不影响同窗口的其他输入控件；
+    LineEdit / SearchEdit / TextArea / TextBox 主题中为 hover / focus 重复设置表面颜色的样式随之删除。默认视觉不变。
+  - LineEdit、SearchEdit、TextArea 的主题改读各自的 `XxxTokenResource`；`TextBoxTheme` 的全局值以 `OwnerTokenResource`
+    读取，因为它也是 EmbeddedTextBox 等无 identity 内嵌编辑器的基础主题，这些编辑器跟随宿主（NumericUpDown、选择器、筛选框）。
+  - 宿主根上的 `BorderBrush` / `Background` 改经模板绑定写入输入表面的内部属性 `HostBorderBrush` / `HostBackground`，由
+    `InputControlFrameTheme` 在全部状态色之后投射；`AbstractTextInput` 不再以本地值写入内部表面。
+- Fixed
+  - LineEdit 按 `SizeType` 使用 `InputFontSize` / `InputFontSizeLG` / `InputFontSizeSM`（`IsCustomFontSize=False` 时；`Custom`
+    取中档），SearchEdit 按 `SizeType` 使用自己的 `FontSize` / `FontSizeLG`（小号取 `FontSize`）。此前二者没有字号预设，
+    大号与小号沿用继承字号（默认主题下 14px）；现在大号为 16px，小号与中号同为 14px，对齐 antd Input
+    （`InputFontSizeSM` 默认等于 `InputFontSize`，原默认 `FontSizeSM` 未曾生效）。
+  - 输入框获得焦点和 Error / Warning 焦点时的 `InputActiveShadow` / `InputErrorActiveShadow` / `InputWarningActiveShadow`
+    阴影此前不绘制（共享边框绘制在非均匀背景路径中丢弃了阴影），现在可见；TextArea 不再裁剪到自身边界，阴影绘制在控件外。
+  - TextArea 的 resize 指示线此前绘制在输入表面之下、被表面背景覆盖；现由叠放在表面之上的 `ResizeHandle` 绘制，指示与命中
+    区尺寸使用 `TextArea.ResizeHandleSize`，线宽使用 `LineWidth`。
+  - `AddOnDecoratedBox` 的状态色改为可撤销的 Template 优先级值：附加区图标与呈现器上的用户本地 FillBrush / StrokeBrush /
+    Foreground 与部件样式不再被 `SetCurrentValue` 覆盖或在退出状态时被 `ClearValue` 擦除，退出状态只释放自身施加的值。
+  - TextArea 的内容呈现器位于注册控件 ScrollViewer 之内，行高、最小高度与小号内容边距改为显式读取 TextArea 的有效值。
+
+## 2026-11-05
+
+- 实现结构
+  - TextBox、LineEdit、SearchEdit、TextArea 的输入模板统一直接使用 Avalonia `TextPresenter`，移除内部选区缓存兼容子类；PART 名称、绑定、Semantic Part 契约和选择/密码行为保持一致。
+
 ## 2026-10-19
 
 - Compatibility

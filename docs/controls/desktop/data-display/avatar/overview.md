@@ -49,6 +49,7 @@ Avatar 使用有限面积内的强识别内容表达主体身份。图片是首�
 | `Gap: double` | `4` | 文本与头像边缘的最小逻辑间距，用于文本缩放 |
 | `SizeType: CustomizableSizeType` | `Middle` | Small、Middle、Large 或 Custom 尺寸语义 |
 | `Size: double` | `NaN` | 显式尺寸；非 `NaN` 时进入 Custom，恢复 `NaN` 时恢复原 SizeType |
+| `Stretch: Stretch` | `Uniform` | 已加载图片在头像内的拉伸方式，由模板 `ImagePresenter` 直接消费 |
 | `Shape: AvatarShape` | `Circle` | Circle 或 Square |
 | `IsMotionEnabled: bool` | SharedToken | 控制主题动效，不改变加载状态机 |
 

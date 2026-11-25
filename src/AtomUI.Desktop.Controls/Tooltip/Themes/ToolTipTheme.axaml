@@ -3,7 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:ToolTip}" TargetType="atom:ToolTip">
+    <ControlTheme x:Key="{x:Type atom:ToolTip}" TargetType="atom:ToolTip" x:DataType="atom:ToolTip">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipClose}" />
+        <Setter Property="ToolTipShadows" Value="{atom:ToolTipTokenResource ToolTipShadows}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ArrowDecoratedBox Name="{x:Static atom:ArrowDecoratedBox.ArrowDecoratorPart}"
@@ -19,18 +22,29 @@
                 </atom:ArrowDecoratedBox>
             </ControlTemplate>
         </Setter>
-        
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="Background" Value="{atom:ToolTipTokenResource ToolTipBackground}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
-        
+
+        <Setter Property="IsMotionEnabled" Value="{atom:ToolTipTokenResource EnableMotion}" />
+        <!-- Preset / custom colours are written to ColorBackground by the control; the Token is its theme value. The
+             untriggered Background setter keeps app styles and local values above it. -->
+        <Setter Property="ColorBackground" Value="{atom:ToolTipTokenResource ToolTipBackground}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.ColorBackground}" />
+        <Setter Property="MotionDuration" Value="{atom:ToolTipTokenResource MotionDuration}" />
+        <Setter Property="ThemeMarginToAnchor" Value="{atom:ToolTipTokenResource MarginToAnchor}" />
+
         <Style Selector="^ /template/ atom|ArrowDecoratedBox#PART_ArrowDecorator">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:ToolTipTokenResource ToolTipFontSize}" />
             <Setter Property="MaxWidth" Value="{atom:ToolTipTokenResource ToolTipMaxWidth}" />
             <Setter Property="Foreground" Value="{atom:ToolTipTokenResource ToolTipColor}" />
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:ToolTipTokenResource ToolTipMinHeight}" />
             <Setter Property="Padding" Value="{atom:ToolTipTokenResource ContentPadding}" />
             <Setter Property="CornerRadius" Value="{atom:ToolTipTokenResource ToolTipCornerRadius}" />
+            <!-- A tooltip has no border, whatever the arrow box's border width (PrimeUIX tooltip has none either). -->
+            <Setter Property="BorderThickness" Value="0" />
+            <!-- The tooltip arrow is its own size and outline, apart from the popover arrows that share the box. -->
+            <Setter Property="ArrowSize" Value="{atom:ToolTipTokenResource ArrowSize}" />
+            <Setter Property="ArrowStrokeThickness" Value="{atom:ToolTipTokenResource ArrowStrokeThickness}" />
+            <Setter Property="ArrowTipRadius" Value="{atom:ToolTipTokenResource ArrowTipRadius}" />
+            <Setter Property="ArrowBaseRadius" Value="{atom:ToolTipTokenResource ArrowBaseRadius}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

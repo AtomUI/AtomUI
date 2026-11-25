@@ -6,6 +6,305 @@ AtomUI 的重要变更记录在此文件中。
 
 英文版本见 [CHANGELOG.md](CHANGELOG.md)。
 
+## Unreleased
+
+## 6.3.0
+
+`2026-11-24`
+
+- Breaking Changes
+  - 在启动时显式选择并注册设计语言。为启用的控件包安装对应取值包，包括按需使用的 DataGrid 和 ColorPicker。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#启用设计语言)
+  - 用 `ThemeSelection` 取代主题算法链和旧主题选择入口。更新更名的主题 API，并改用语言、风格、明暗和密度。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#选择主题)
+  - 将主题定义转换为 XML v2，并以 ABI 4 重新构建编译主题包。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#主题定义-xml-v2)
+  - 将自定义控件 Token 迁移为公开 partial 声明，使用 `IControlTokenRule.Apply` 将取值规则移到对应语言包。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#控件-token-类与第三方控件包)
+  - 将对公开 Token 计算器的直接引用改到各语言命名空间下的新名称。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#取值包计算器命名)
+  - 将自定义控件 Token 覆盖迁到当前所有者，更新变化的值类型，并迁移已删除的 `SharedTokenResourceValue`。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#控件-token-覆盖迁移)
+  - 同步升级相关包和 Generator，重新生成启动数据，再发布裁剪与 NativeAOT 应用。 [迁移指南](docs/releases/6.3.0-api-changes.zh-CN.md#生成注册与启动镜像)
+
+- 设计语言
+  - 发布 Ant Design、Shadcn、PrimeNG 三个设计语言包，各提供 Controls、Desktop Controls、DataGrid 和 ColorPicker 取值包。Gallery 与应用通过同一套框架 API 切换语言、风格、明暗和密度。
+- 启动与控件
+  - 压缩生成的启动清单，应用主题变更时复用 Token 资源和不受影响的控件快照。
+  - 修复绑定动画结束后的 ToggleSwitch 把手位置、子项尺寸变化后的 FlexPanel 重排，以及局部作用域弹层定位和窗口边框行为。
+  - 公开 `Button.ContentPadding` 和 ColorPicker 视图的 `SliderTrackHeight`，便于定制。
+
+- 启动注册表的热查询不再逐次进入条目锁或格式化控件身份字符串；生成启动的身份、校验与类型三条路径上，已注册（命中）的查询预热后零分配（未命中仍会格式化诊断键）。
+- 主题消费图登记实际 `TokenTransitions.Duration` 读取；已迁移控件包与 GalleryBase 将有效消费诊断作为编译错误。
+- Watermark 文本默认值在挂载、主题发布与重挂时跟随作用域 `ColorTextBase` / `FontSizeLG`；显式字形值优先，默认透明度仍为 0.3。
+- 主题发布开销：未变化的 Token 在发布间保持同一资源实例（全局表、控件有效全局差量与 Own 表），`OwnerTokenResource`、`TokenTransitions` 与 `TokenResourceBinder` 绑定在发布的变更键不含自己的键时跳过解析，不再对每次 `ResourcesChanged` 重新解析；`OwnerTokenResource` / `TokenTransitions` 经一个静态观察者只观察 `ThemeScope.TokenOwner`，不再订阅目标的全部属性变化。变体切换、局部 `ThemeConfigProvider` 变化、运行时 owner 变化、时长变化与局部资源变化照常刷新。
+- 新增公开 API：`AtomUI.Theme.Resources.OwnerTokenResourceExtension`（`{atom:OwnerTokenResource Kind}`，共享基元按 owner 有效全局值读取 Token）、`AtomUI.Theme.Resources.TokenTransitions`（`<atom:TokenTransitions>` 及过渡上的附加属性 `atom:TokenTransitions.Duration`）、`AtomUI.Theme.DesignTokens.ReservedTokenAttribute`（标记已声明但尚未消费的 Own Token）。
+
+- ColorPicker
+  - 渐变 stop 文本在实时 Token 发布及禁用/启用往返后持续更新；关闭后恢复面板 ColorText 继承，不再保留拷贝的 trigger 画刷，并保留本地前景。Popup View 默认采用自身 EnableMotion，trigger false 作为关闭门控，显式 View 本地值优先。
+  - ColorPicker、GradientColorPicker及两个公开View使用独立有效Token；Popup View与嵌套公开编辑器保持各自作用域，预设色项跨Collapse跟随View。
+  - Alpha输入宽度和数值按钮宽度接通真实编辑器；保留原48px Alpha、16px按钮、11px紧凑字号和262px输入行。预设勾选图标通过FillBrush/StrokeBrush绘制明暗对比色（原Foreground未参与图标绘制）。空色斜线改用ColorError/LineWidthBold，浅色预设项勾选改用ColorTextSecondary（原固定rgba(0,0,0,.45)）。
+
+- DataGrid
+  - 表格部件与筛选弹层读取 DataGrid 有效全局值；Spin 内容恢复表格 owner，嵌套公开控件保持各自身份。局部命名资源在发布及 owner 替换后持续更新实际列文本与编辑器。
+  - 接通展开按钮/菜单筛选背景、筛选悬停别名和排序图标 margin；默认排序图标增加已有 8px margin，拖动表头背景由固定 #808080 改为 ColumnReorderActiveBg。展开按钮默认背景改为不透明，包含悬停/选中行背景之上的状态。
+  - 表头悬停图标使用 ColorIconHover 的 RGB；分组头尺寸/单侧 margin 与分隔线读取既有全局 Token，保留默认尺寸、滚动和布局行为。
+  - CSS 展开几何、独立 sticky 表头、筛选搜索/高度及自动列宽共 11 字段保留为 Reserved；选择列和详情列保持自动测量与显式 Column.Width 行为。
+
+- 主题一致性
+  - 主题一致性：NumericUpDown Large 字号使用 FontSizeLG（默认16），Small/Middle 保持 FontSize（默认14）；Small 空多选 Cascader 使用小号 padding；公开标题栏 AddOn 按钮在非激活窗口中使用非激活悬停色。
+
+- 窗口、滚动与共享基元
+  - 保留受保护 flyout pointer offset API 中 Shared / 自定义 / 已类型化 resource key 的原义；已打开的 flyout 可直接 ShowAt(newTarget) 并持续读取新作用域，同目标关闭动效取消行为保持不变。
+  - Window / WindowTitleBar、ScrollViewer、FlyoutHost、TreeViewFlyoutPresenter 与 ArrowDecoratedBox 读取控件有效全局值；共享部件、PathIcon、Embedding 与启动 Splash 读取有效 owner。保留滚动条尺寸、可见性与输入几何。
+  - Icon.FallbackColor 现作用于 fallback 绘制区域（默认白色不变）；ArrowSize 随主题变化重建箭头几何。窗口首次显示背景遵循局部 Own 覆盖；内部背景、resize 与反馈可见性更新保留用户绑定。
+  - TreeViewFlyoutPresenter 现绘制 PopupBgColor（原来被空 TemplateBinding 遮蔽）；菜单/树形 pointer offsets 遵循局部 Own 覆盖。TextSelectionHandle 补齐 Avalonia12 必需的透明 indicator 与 caret/start/end 选择器，保留32px可见形状并读取 owner 选区色。Splash 关闭图标描边改随 LineWidth（默认1px，原为1.5px）；间距、关闭图标尺寸和内缩遵循现有全局 Token。
+
+- 录入类剩余控件
+  - Form、Descriptions、Upload、Mentions、OtpLineEdit、Segmented 的主题与透明部件读取控件有效全局值；候选弹层全局值跟随 Mentions / AutoComplete，候选部件使用宿主全局值，内部 Mentions 编辑器跟随 Mentions，独立公开 TextArea 保持自身身份。
+  - 可见变化：垂直 Form 标签按文本自然高度加 `VerticalLabelPadding`（默认下方 8px）布局，不再保留水平布局的控件高度下限；Descriptions 纵向带边框分隔线跟随 `LineWidth`，不再固定为 1px 边框；OTP separator 跟随 `CellGap`（默认仍为 4px），OTP 状态样式及根边框画刷投射生效且不写 cell 本地画刷；Upload 进度线厚度随 Token 变化刷新；Segmented 轨道背景与圆角随 Token 变化重绘。
+- Button 家族
+  - 控件级覆盖（`Controls[Button]`、`Controls[DropdownButton]` 等）作用于全部主题读取与代码侧变体颜色；局部与 Application 资源作用于变体颜色。
+  - 修复 HyperLinkButton 的仅图标、加载与危险视觉，BackTop 徽标，以及由分组或 Host 提供的 FloatButtonGroup 阴影。
+- 输入家族
+  - 控件级覆盖（`Controls[LineEdit]`、`Controls[TextBox]`、`Controls[NumericUpDown]` 等）作用于该控件自己的共享输入表面（边框、背景、圆角、状态色、焦点阴影、内边距），不影响其他输入控件；NumericUpDown 的输入表面与内嵌编辑器不再跟随 `Controls[ButtonSpinner]` 或 `Controls[TextBox]`。
+  - LineEdit 与 SearchEdit 按尺寸预设设置字号（`LineEdit.InputFontSize*`、SearchEdit 的 `FontSize*`）：大号输入框为 16px，小号保持中号字号（`LineEdit.InputFontSizeSM` 默认等于 `InputFontSize`，与 antd 一致）；设置 `IsCustomFontSize` 可保留继承或本地字号。
+  - 输入框焦点阴影现在绘制；TextArea 的 resize 指示绘制在输入表面之上（`TextArea.ResizeHandleSize`）；AutoComplete 把 `PlaceholderForeground` 交给内部输入框；附加区状态色不再擦除附加区图标上的用户画刷。
+- Select 家族
+  - 控件级覆盖（`Controls[Select]`、`Controls[ComboBox]`、`Controls[Cascader]`、`Controls[TreeSelect]`）现在作用于该控件自身的输入表面、下拉弹层、候选项和手柄；ComboBoxItem、CascaderView、CascaderViewItem 以各自 identity 读取 Global Token。
+  - 这些控件的根 `BorderBrush` / `Background` 改为投射到输入表面，不再写入本地值；Select 候选行应用 `OptionHeight` 与新接入的 `Select.OptionPadding`，候选文本使用 `ColorText`，TreeSelect 的 `MinPopupWidth` 生效。
+  - 这些控件的聚焦阴影不再被裁剪；`Select.SelectAffixPadding`、`Select.FixedItemMargin` 标为保留，暂无视觉效果。
+  - 可见变化：Select 下拉弹层高度跟随 `OptionHeight`（选项高度 × 每页数量）；TreeSelect 下拉弹层最小宽度为 300px（`TreeSelect.MinPopupWidth`）；ComboBox 占位文字改用 `ColorTextPlaceholder`，不再是 30% 不透明度；Cascader 禁用选项的图标改用 `ColorTextDisabled` 着色，不再是 0.3 不透明度。
+- 选择类家族
+  - 控件级覆盖（`Controls[CheckBox]`、`Controls[RadioButton]`、`Controls[ToggleSwitch]`、`Controls[Slider]`、`Controls[Rate]`，以及 CheckBoxGroup / RadioButtonGroup 的间距）现在作用于该控件的全部主题读取，包括指示器、开关把手、滑动条轨道与滑块、评分星；SliderTrack 与 SliderThumb 是 Token owner 透明部件，`Controls[Slider]` 同样设置它们的过渡时长；分组内的选项保留 CheckBox / RadioButton 自身的 identity。
+  - `Controls[CheckBox]` 可设置指示器尺寸（`CheckIndicatorSize`、`CheckedMarkSize`、`BorderRadiusSM`），勾选标记跟随 `ColorWhite`；RadioButton 选中填充使用 `RadioButton.RadioBgColor`；ToggleSwitch 加载指示线宽跟随 `LineWidth`。
+  - Token 变化现在会重新布局或重绘 RadioButton 圆点、ToggleSwitch 内容边距、Slider 轨道（尺寸、滑轨与内边距）和 Slider 滑块背景；`Slider.MarginPartWithMark` 与 `Slider.SliderTrackSize` 标为保留，暂无视觉效果（轨道横向尺寸与内边距跟随默认值相同的 `ThumbCircleSizeHover`）。
+  - 可见变化：Rate 应用 `SizeType`（小号与大号星使用 `StarSizeSM` / `StarSizeLG`）；Rate 键盘焦点虚线框改为 `BorderThickness`（1px），不再是 0.75px；禁用或加载中的 ToggleSwitch 按 antd 以 `SwitchDisabledOpacity` 整体变暗一次，把手（原为 0.9）与开/关内容（原先不变暗）现在与轨道同一透明度。
+- 进度条家族
+  - 控件级覆盖（`Controls[ProgressBar]`、`Controls[StepsProgressBar]`、`Controls[CircleProgress]`、`Controls[DashboardProgress]`）现在作用于该控件的全部主题读取，包括状态色、状态图标与过渡时长；每个控件以自己的有效 Global Token 计算 `DefaultColor` / `RemainingColor`。
+  - `ProgressBar.LineBorderRadius` 设置圆头进度条圆角，`StepsProgressBar.ProgressStepMarginInlineEnd` / `ProgressStepMinWidth` 设置步骤间距与最小步骤宽度，`CircleTextColor` 设置圆形百分比文字颜色；`ProgressBar.ProgressActiveMotionDuration` 标为保留（Active 闪光动画尚未实现）。
+  - 线形与步骤进度条上的本地或样式 `MinWidth` / `MinHeight`、圆形与仪表盘进度条上的本地 `FontSize` 不再被计算出的文字几何覆盖；Token 变化会重新布局圆形文字与状态图标。
+  - 可见变化：圆形与仪表盘进度条的百分比文字改用 `ColorText`（`CircleTextColor`），不再是 `ColorTextLabel`；小于 2px 的显式 `ChunkWidth` 提升到 `ProgressStepMinWidth`。
+- Steps
+  - `Controls[Steps]` 现在作用于 item、图标、Connector、箭头与 Panel 的全部主题读取；StepsItem 是 Token owner 透明部件，Steps 同样设置它们的过渡时长；自定义图标保留 IconPresenter 自身的 identity。
+  - 会被状态样式覆盖的模板默认值改为样式 Setter，尺寸、类型与 Panel 状态因此生效：Small Panel 箭头使用 `LineWidth` 与 `PanelArrowWidthSM`；Dot 与 OutlineDot 的 Connector 使用 `DotLineThickness`；Indicator 间距跟随 Panel、标题竖排、Dot、Navigation（`NavItemGutter`）与 Inline 状态；纵向最后一项去掉底部内边距；Inline 项不再有 Connector 间隙。
+  - 可见变化：Dot 与 OutlineDot 的 Connector 为 `LineWidthBold`（2px，`DotLineThickness` 默认改为与 antd 一致的 `LineWidthBold`），不再是 1px；OutlineDot 边框读取新增的 `Steps.OutlineDotBorderThickness`（2px，不变），Indicator 边框读取 `BorderThickness`；以及上述间距与内边距变化。
+- Tag / Badge 家族
+  - 控件级覆盖（`Controls[Tag]`、`Controls[CheckableTag]`、`Controls[CheckableTagGroup]`、`Controls[CountBadge]`、`Controls[DotBadge]`、`Controls[RibbonBadge]`）现在作用于该控件的全部主题读取，包括 Tag 的状态色与实心文字色、绘制在装饰层中的徽标指示器及其动效时长；`Tag.TagCloseIconSize` 设置关闭图标尺寸；分组内的标签保留 CheckableTag 自身的 identity。
+  - Tag 的预设色、状态色与自定义色改由主题投射，不再以 Template 优先级写入，应用样式、语义 Part 样式与本地值可按原生优先级覆盖 `Background`、`Foreground`、`BorderBrush`（含默认颜色的实心与描边标签）；Token 变化会重新应用 Tag 边框宽度。
+  - 徽标预设色（`BadgeColor`、`DotColor`、`RibbonColor`）取自主题的预设色板，并在主题变化时重算；清除或设为无效颜色时恢复主题颜色（`IndicatorColor`、状态色或 `DotColor`、`ColorPrimary`），不再让计数与圆点指示器没有填充、缎带停留在先前颜色；`ShadowColor` 变化时 DotBadge 外环会重绘；带装饰目标的 DotBadge、CountBadge 脱离时先清除被装饰元素，再从装饰层移除指示器。
+  - 可见变化：暗色主题下预设色徽标使用暗色色板（暗色算法下 antd 的 `color-6`），不再是亮色；自定义颜色 Tag 的浅色背景改为由该颜色生成的色板第 1 级，不再是固定 HSL 亮度 0.95 的颜色，暗色主题下为暗色色板第 1 级，不再是接近白色的浅色。这与 antd 6.7.0 有意不同：antd 在所有主题下都把 HSL 亮度固定为 0.95，AtomUI 改用色板以便暗色主题下仍然可读。
+  - FloatButton 徽标预设色（`BadgeColor`）与徽标一样取自色板：按钮挂载时解析（挂载前在 XAML 中设置的值现在生效，不再回落到 `ColorError`），主题变化时重算（暗色主题使用暗色色板），清除颜色时恢复 `ColorError`。
+- Feedback 家族
+  - 控件级覆盖（`Controls[Alert]`、`Controls[ToolTip]`）现在作用于该控件全部主题读取；`Alert.CloseIconSize` 设置 Alert 关闭图标尺寸（默认 `FontSizeIcon`，与此前同为 12px），`ToolTip.MotionDuration` 设置 Tooltip 缩放动效时长（默认 `MotionDurationFast`，不变）。
+  - ToolTip 预设色（`ToolTip.PresetColor`）取主题预设色板，挂载时与主题变化时重新计算；预设色与自定义色由主题投射，应用样式与本地 `Background` 可以覆盖，未设置颜色重新打开的 Tooltip 回到 `ToolTipBackground`，不再沿用上一次的颜色。
+  - 可见变化：暗色主题下带预设色的 Tooltip 使用暗色色板（暗色算法的 antd `color-6`），不再沿用亮色。
+  - 控件级覆盖（`Controls[Dialog]`、`Controls[MessageBox]`、`Controls[DialogButtonBox]`、`Controls[MessageCard]`、`Controls[WindowMessageManager]`、`Controls[NotificationCard]`、`Controls[WindowNotificationManager]`、`Controls[PopupConfirm]`）现在作用于该控件全部主题读取；对话框 surface（标题栏、标题栏按钮、遮罩、presenter 动效）跟随承载它的 Dialog 或 MessageBox，消息折叠背板跟随 `Controls[MessageCard]`，嵌套按钮保留 Button / IconButton 身份。
+  - 最大化的 Overlay 对话框经主题去掉圆角（恢复后回到 `BorderRadiusLG`），消息与通知管理器的窗口安全区外边距不再以本地值写入。
+  - 可见变化：通知描述文本应用 `FontHeight` 行高（默认 22px），不再使用字体自然行高，多行描述略高。
+- Navigation 家族
+  - 控件级覆盖（`Controls[NavMenu]`、`Controls[Menu]`、`Controls[MenuItem]`、`Controls[MenuItemGroup]`、`Controls[MenuSeparator]`、`Controls[ContextMenu]`、`Controls[MenuFlyoutPresenter]`）作用于该控件的全部主题读取。NavMenu 的菜单项、分组标题、分隔线、horizontal 底线与子菜单弹层随 `Controls[NavMenu]`；horizontal 与 inline 菜单项 header 为 Token owner 透明，其过渡时长也随 NavMenu。Menu 的 Own Token 继续作用于所有菜单弹层（菜单栏子菜单、上下文菜单、下拉菜单）。
+  - NavMenu inline 折叠宽度动画改读 NavMenu 有效的 `MotionDurationMid`（局部 `ThemeConfigProvider` 生效），不再读应用资源并回落 200 ms；Menu 从自身资源作用域查找 `TopLevelMenuItemTheme`，局部提供的主题优先于应用主题。
+  - 危险项：`NavMenuNode.IsDanger` / `INavMenuNode.IsDanger`（默认 `false`；投影到公开的 `BaseNavMenuItemHeader.IsDanger` / `IsDangerProperty`）与 `MenuItem.IsDanger` / `MenuItemData.IsDanger`（`IMenuItemData.IsDanger`，默认 `false`）以 `Danger*` / `DarkDanger*` Token 绘制；`NavMenu.DangerItemActiveBg`、`DangerItemSelectedBg` 与 antd 一致默认 `ColorErrorBg`。
+  - 新接通的 Token（默认值保持原渲染）：light horizontal NavMenu 顶层项使用 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、`HorizontalItemBorderRadius`（默认 0，与 antd 一致；light 顶层项背景在各状态下都透明，只有主题或应用样式给出背景时可见），`HorizontalLineHeight` 作用于菜单项文字，`TopLevelItemPopupMarginToAnchor`（改为 `UniformlyMarginXXS`）为顶层弹层间距；Menu 顶层项使用 `TopLevelItemColor`、`TopLevelItemBg`（改为透明），展开时使用 `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`；菜单图标间距使用 `Menu.ItemIconMarginInlineEnd`（改为 `UniformlyMarginXXS`）；新增 `Menu.GroupTitlePadding` 取代写死的分组标题内间距 16,8。
+  - 控件级覆盖（`Controls[TabControl]`、`Controls[CardTabControl]`、`Controls[TabStrip]`、`Controls[CardTabStrip]`、`Controls[TabItem]`、`Controls[TabStripItem]`）作用于该控件的全部主题读取；共享的页签基础主题、页签滚动视图（溢出按钮、边缘阴影）与溢出菜单随宿主。TabControl 的 Own Token 作用于全部四种页签宿主。页签项从自身资源作用域查找命名主题（`TabItemTheme`、`CardTabItemTheme`、`TabStripItemTheme`、`CardTabStripItemTheme`），局部提供的主题优先于应用主题。
+  - `TabControl.InkBarThickness` 变化后墨条立即重新布局，卡片圆角 Token 变化后 CardTabControl / CardTabStrip 页签立即重算（此前都要等下一次选择或尺寸变化）。
+  - 控件级覆盖（`Controls[Breadcrumb]`、`Controls[BreadcrumbItem]`、`Controls[Pagination]`、`Controls[SimplePagination]`、`Controls[Tour]`、`Controls[TourStep]`、`Controls[DefaultTourIndicator]`）作用于该控件的全部主题读取；Pagination 与 SimplePagination 共用的页码项随宿主。
+  - `Pagination.PaginationMiniQuickJumperInputWidth` 设置小尺寸快速跳转与简洁模式输入框宽度，`Pagination.ItemInputBg` 填充简洁模式输入框，`Pagination.PaginationItemPaddingInline` 改为作用于页码文字（此前写在空的背景边框上，从未生效；默认值改为仅水平方向）。
+  - Tour：弹层间距（`Tour.PopupMarginToAnchor` 加步骤 Gap 偏移）在打开期间随 Token 与 Gap 变化重算，关闭期间不再重算；遮罩颜色不再在初始化时复制进步骤，`ColorBgMask` 变化即时作用于打开的 Tour。
+  - 可见变化：小尺寸快速跳转输入框宽 44px（antd `controlHeightLG * 1.1`，此前 50px）；四位及以上页码两侧各有 6px 行内内间距。
+  - 可见变化：NavMenu Vertical / Horizontal 子菜单弹层内的菜单项改用 `NavMenu.SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，与 antd 一致），此前为 `ItemBorderRadius`（8px）。
+- Layout / Container 家族
+  - 控件级覆盖（`Controls[Card]`、`Controls[CardActionButton]`、`Controls[CardMetaContent]`、`Controls[Collapse]`、`Controls[Expander]`、`Controls[GroupBox]`、`Controls[Splitter]`、`Controls[SplitView]`、`Controls[Separator]`、`Controls[CompactSpaceAddOn]`、`Controls[Masonry]`）作用于该控件的全部主题读取。Card 网格项、Card 页签内容与 Collapse 面板项是 Token owner 透明部件，读取宿主 Token，`Controls[Card]` / `Controls[Collapse]` 作用于它们；卡片操作区、分隔条手柄与拖拽条随宿主。Card 圆角经 `Controls[Card].BorderRadiusLG` 设置。
+  - `Card.ExtraColor` 设置头部 extra 文字色，`Card.ActionsBg` 改为真正填充操作区（此前被模板背景遮蔽）；新增 `Separator.TitleFontWeight`（默认 500，与 antd 一致），并接通 `Separator.HorizontalWithTextGutterMargin`（大号带标题分割线，即 antd 未设尺寸的分割线；antd `md` / `sm` 尺寸外边距优先，对应 AtomUI Middle / Small），取代固定字重与普通外边距。
+  - 新增 `Card.RestingShadows`（AtomUI 扩展，antd 无对应 Token）：有边框卡片的静止阴影，供主题预设给卡片设置常驻阴影；默认是与 `CardShadows` 同层数的透明阴影，Borderless 卡片仍为 `BoxShadowsTertiary`，悬停的 hoverable 卡片仍为 `CardShadows`。
+  - Token 变化后立即重新布局：Splitter 面板间距（`Splitter.SplitBarSize`，此前每次测量只读取一次）、Separator 标题内间距、边距比例与纵向外间距（`TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`）。
+  - 可见变化：Collapse 与 Expander 内容区按 antd 绘制 `ContentBg`（`ColorBgContainer`），此前透明；ghost 样式的 Collapse / Expander 头部改为透明，此前为 `ContentBg`；页面背景不是容器色时可见（如暗色主题下的 `ColorBgLayout`）。SplitView 窗格默认带打开/关闭动效（`IsMotionEnabled` 跟随 `EnableMotion`，此前除非显式设置否则关闭）；窗格分隔线改为 `ColorBorder` 填充的 `LineWidth` 线条（渲染仍为 1px）。大号带标题的水平 Separator 上下外边距改用 `HorizontalWithTextGutterMargin`（16px），此前为 `HorizontalMarginBlockLG`（24px）。
+- Data 家族（列表、树、骨架屏）
+  - 控件级覆盖（`Controls[ListBox]`、`Controls[ListView]`、`Controls[TreeView]`、`Controls[Skeleton]` 以及骨架屏占位控件 `Controls[SkeletonAvatar]`、`Controls[SkeletonButton]`、`Controls[SkeletonInput]`、`Controls[SkeletonImage]`、`Controls[SkeletonNode]`、`Controls[SkeletonParagraph]`）现在作用于该控件的全部主题读取。ListBoxItem、ListViewItem、TreeViewItem 标为 Token owner 透明，列表或树的覆盖同样作用于条目、树节点头部与展开按钮及其过渡时长；列表与树的基础主题从 owner 读取全局 Token，Cascader 过滤列表与 Select 候选列表跟随 Cascader / Select。
+  - Skeleton 标为 Token owner 透明：被它包裹的内容（Card 与 Dialog 正文、Statistic 数值）保持宿主的 Token owner，`Controls[Card]` / `Controls[Dialog]` 的覆盖（含动效时长）作用于其中的无 identity 部件；`CardGridContent` 出于同样原因标为 Token owner 透明。
+  - `ListBox.ItemDisabledColor` / `ListView.ItemDisabledColor` 接通禁用条目文字色，`Skeleton.TitleHeight` 接通标题行高度（默认值不变）；流光画刷跟随显式覆盖的 `Skeleton.GradientFromColor` / `GradientToColor`。新增 `Skeleton.ImageColor`（AtomUI 扩展，默认 `#bfbfbf` 与 antd 相同），用于图片占位图标。`TreeView.DirectoryNodeSelectedBg` / `DirectoryNodeSelectedColor`（antd DirectoryTree）标为保留，暂无视觉效果。
+  - 列表条目分割线改由 `LineWidth` 绘制（应用或 Semantic Part 样式设置的 `BorderThickness` 仍整体替换），树节点与展开按钮图标的尺寸与颜色取自树（`IconSize`、`ColorText`）。
+  - 可见变化：ListBox 选中项的对勾现为 `ColorPrimary`、`IconSize` 尺寸并应用 `SelectedIndicatorMargin`（其样式此前指向错误元素，从未生效）；禁用树节点的图标与展开按钮改用 `ColorTextDisabled`，此前以 0.3 不透明度弱化。
+- Data 家族（头像、时间轴、统计数值、走马灯、图片预览）
+  - 控件级覆盖（`Controls[Avatar]`、`Controls[AvatarGroup]`、`Controls[Timeline]`、`Controls[Statistic]`、`Controls[TimerStatistic]`、`Controls[StatisticCountUp]`、`Controls[Carousel]`、`Controls[CarouselNavButton]`、`Controls[ImagePreviewer]`、`Controls[ImageGroupPreviewer]`）现在作用于该控件的全部主题读取。TimelineItem 与 CarouselPage 标为 Token owner 透明，Timeline / Carousel 的覆盖同样作用于条目、时间轴节点与页面内容；组内头像与走马灯箭头保持 Avatar / CarouselNavButton identity。图片预览界面（封面、浮层、查看器、工具栏、标题栏、预览窗口）跟随 `Controls[ImagePreviewer]`。
+  - 新增 `Carousel.ArrowOpacity`（静止箭头不透明度，默认 0.2；antd 固定 0.4）与 `ImagePreviewer.ErrorIconSize`（加载失败图标尺寸，默认 48px），均为 AtomUI 扩展，取代主题字面量；`ImagePreviewer.FloatToolbarIndicatorPadding` 默认值改为 0（原仅水平的默认值从未产生视觉效果）。
+  - 未设置 `IndicatorColor` 的时间轴节点在主题或 `Controls[Timeline]` 变化时跟随 `ColorPrimary`（默认色此前在模板应用时一次性复制），`Timeline.ItemPaddingBottom*` 变化后条目立即重新测量。
+  - 可见变化：走马灯前后切换箭头与边缘的距离改为 `Carousel.ArrowOffset`（8px，antd `arrowOffset`），此前为 `PaginationOffset`（12px）；分页位置变化时箭头边距也会刷新（此前变更通知发给了错误的属性）。
+- Data 家族（日历、日期面板、日期与时间选择器）
+  - 控件级覆盖（`Controls[Calendar]`、`Controls[LunarCalendar]`、`Controls[DateViewer]`、`Controls[RangeDateViewer]`、`Controls[DatePicker]`、`Controls[RangeDatePicker]`、`Controls[TimePicker]`、`Controls[RangeTimePicker]`）现在作用于该控件的全部主题读取。Calendar 把 Token owner 转发给模板中的 DateViewer，日期格、面板和业务条跟随 `Controls[Calendar]` / `Controls[LunarCalendar]`；Picker 把 owner 转发给弹层 Presenter（位于注册控件 ArrowDecoratedBox 内），日期 Presenter 再转发给其 DateViewer / RangeDateViewer，TimeView 再转发给各列（位于注册控件 ScrollViewer 内），弹层日期面板（日期格、头部、面板文字）、按钮区、TimeView 与改为 Token owner 透明的 TimeViewCell 跟随 Picker：`Controls[DatePicker].ColorPrimary` 与 antd `components.DatePicker.colorPrimary` 一样改变选中日期格的颜色，`Controls[DateViewer]` 的全局 Token 不再作用于 Picker 弹层。弹层外框与 Calendar Header 的选择框保持各自身份。共享的 InfoPickerInput 主题读取具体 Picker 的全局 Token；范围箭头与激活条的 Own Token 经实际 `RangeDatePicker` / `RangeTimePicker` 终端设置。
+  - `TimePicker.ButtonsMargin` 现在设置时间选择器按钮区的间距（此前借读 `DatePicker.ButtonsPanelMargin`，默认值相同），`TimePicker.PeriodHostWidth` 设置上午/下午列宽；时间单元读取所属 Picker 的全局 Token，不再借读 ListView 的 Own Token（默认值相同）。新增以下 AtomUI 扩展取代主题与代码中的字面量，默认值均不变：`Calendar.FullCellMargin`、`FullCellPadding`、`FullCellBorderThickness`、`RangeBarGap`、`RangeBarLabelPadding`；`LunarCalendar.MarkerSize`、`MarkerMargin`、`MarkerCornerRadius`；`DateViewer.HeaderBorderThickness`、`FooterBorderThickness`、`WeekNumberOpacity`；`DatePicker.HeaderBorderThickness`；`TimePicker.ItemMargin`。Calendar 业务条标签使用 `FontSizeSM` 与 `ColorTextLightSolid`，不再写死 12px 白色文字。
+  - Picker 的根 `BorderBrush` 经 `HostBorderBrush` 投射到输入框，不再写入本地值；范围箭头的尺寸与颜色取自 Picker；激活条厚度变化后重新定位到输入框底边；禁用时间单元的样式改为指向单元的内容呈现器；Calendar 业务条移除后不再被保留（此前每个业务条与标签都绑定在业务条面板上）。
+  - 可见变化：Picker 不再裁剪输入框的焦点阴影，聚焦时的焦点环（`InputActiveShadow`、`InputErrorActiveShadow`、`InputWarningActiveShadow`）完整显示在 Picker 四周，范围 Picker 也一样（此前 DatePicker / TimePicker 只露出一小段，范围 Picker 完全不可见）。指针在弹层中预览日期或时间时，预览写入的输入框文字为 `ColorTextPlaceholder`（对应 antd `-input-placeholder`）；其余情况下弹层打开期间输入框保持 `ColorText`，禁用文字与此前一样为 `ColorTextDisabled`。
+- Popup
+  - Popup 动效（`MotionDurationMid`、`EnableMotion`）跟随 `Controls[Popup]`，弹层宿主（`OverlayPopupHost`、`PopupRoot`）的文本默认值跟随承载 Popup 的控件；Tooltip 与 Popover 缩放原点按框体实际绘制的圆角内缩，不再读取根 `BorderRadius` / `BorderRadiusLG`，控件级圆角覆盖会移动原点（默认圆角下原点不变）。
+  - Popup 承载的内容（下拉候选项、弹层框体）现在继承宿主控件的 Token owner，`Controls[X]` 的覆盖（包括动效时长）作用于 X 的下拉弹层；`Controls[Popup]` 仍作用于 Popup 自身的阴影、圆角和锚点间距。
+- Theme
+  - 写在 ControlTemplate 元素上的 Token 读取（`{atom:XxxTokenResource}`、`{atom:SharedTokenResource}`）现在与 `DynamicResource` 一样取 Template 优先级，触发样式（`:pointerover`、`:disabled`、类与属性选择器，包括应用样式）可以覆盖它们；非触发的样式 Setter 仍不能覆盖，模板外的读取优先级不变。
+  - 变换类 Token 值（`ImmutableTransform`，例如 `RibbonBadge.CornerTransform`）按矩阵格式化（`1,0,0,0.75,0,0`），不同变换不再共用同一规范文本，覆盖值可往返解析。
+  - 可见变化：原先被这些读取遮蔽的状态样式生效。暗色 NavMenu 的分组标题使用 `NavMenu.DarkGroupTitleColor`，不再是 `GroupTitleColor`；LunarCalendar 的调休上班标记使用 `LunarCalendar.WorkdayMarkerColor`，不再是 `HolidayMarkerColor`。
+
+- 展示类剩余控件
+  - 仅当显式设置 QRCode.Color=null 时，点阵回退到该二维码的有效 ColorText（含透明度）并随局部主题更新，不再固定为纯黑；显式非空 Color 仍优先，正常主题设置的非空默认画刷保持原有路径。
+  - Transfer 装饰框、筛选图标和间距，Drawer 覆盖层，Spin 指示器/提示/遮罩，Result 文本与内容，Empty 预设图形和描述，QRCode 边框，链接/选区文字，BorderBeam 及默认焦点装饰读取各自有效全局 Token。Drawer 局部主题发布会即时刷新覆盖层，关闭时释放资源桥接；嵌套已注册控件保留自身身份。
+  - Result 状态图标在改变图标 Token 的主题发布（例如切换暗色）后保持状态颜色与尺寸：状态画刷与尺寸以可撤销的模板值投递，不再覆盖图标自身主题值；自定义 `Icon` 显式设置的 `FillBrush`、`StrokeBrush`、`Width`、`Height` 保持不变。
+  - 可见变化：HyperLinkTextBlock 保持透明默认背景，使着色、悬停和选中表格行的底色可见；仅显式应用 Background 绘制到已有文本节点，默认主题不消费 ColorBgContainer。Transfer 搜索图标颜色及筛选框外间距跟随穿梭宿主；既有几何与动画端点保持不变。
+
+## 6.2.15
+
+`2026-11-15`
+
+- Breaking Changes
+  - 自定义 `IForm` 实现须补齐 `ValidateAsync(FormValidateOptions, CancellationToken)` 重载，并检查本地化默认提示与校验反馈。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#form-校验契约)
+  - 星级提示改用桌面 `Rate.ToolTips`。`AbstractRate` 及其共享派生控件不再提供该属性。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#rate-提示)
+  - 同时导入两个命名空间时，请限定桌面文本输入基类的名称。虚方法声明移至共享基类后重新编译派生类，并检查自定义模板、属性所有者及模型程序集查找。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#共享控件基类与类型转发)
+  - Carousel 在控件隐藏、脱离、禁用、应用停用或窗口最小化时暂停自动播放。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#carousel-自动播放)
+  - ListBox、ListView 和 Transfer 的 Tab 与方向键将焦点落在条目。依赖容器、组标题或复选框接收焦点的自定义主题和测试需要调整。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#列表键盘焦点)
+  - 同步升级相关包与 Generator，重新编译生成注册的消费方，并重新发布裁剪与 NativeAOT 应用。[迁移指南](docs/releases/6.2.15-api-changes.zh-CN.md#生成注册)
+- Form
+  - 支持按字段或静默校验、读取逐字段报告和处理 `SubmitFailed`。新增 `RequiredText` 标记，并提供英语、简体中文、繁体中文和巴西葡萄牙语语言包的校验文案。
+- Button、Slider 和 Rate
+  - Button 新增 `Success`、`Warning` 配色和 `Rectangular` 形状。
+  - Slider 可用 `IsDotsVisible` 显示刻度点，并通过 `IsSnapToMarksOnly` 吸附到标记。
+  - Rate 支持只读，也可单独关闭悬停预览。
+- TreeView、Transfer、ComboBox 和 Mentions
+  - TreeView 在容器回收后保留展开、选中和勾选状态，支持跨视口键盘导航与跨未实现行的 Shift 范围选择。#541
+  - 勾选级联覆盖整棵数据树，TreeView 和 Transfer 开启虚拟化后仍保留 `CheckedItems`。
+  - 候选行回收后保持高亮对齐，ComboBox 按可见候选项导航，Mentions 的预选、键盘和指针导航跳过禁用候选项。#541
+  - 恢复 ListBox、ListView 和 Transfer 的键盘焦点入口，方向键每次移动一项，焦点描边绘制在条目内侧。
+- DataGrid、TabControl 和 Segmented
+  - 修复分数缩放下滚动偏移落入相邻槽位之间时的崩溃。#540
+  - TabControl 和 TabStrip 的选中指示线对齐从右向左布局中的镜像标题。
+  - Segmented 的选中滑块和过渡维持在轨道内边距区域内。
+- 共享控件
+  - 新增支持起始、末尾和中间截断的共享 `AbstractEllipsis` 基类。
+  - 使用 `DragTranslation` 预览 FloatButton 拖动位移，并通过 `CommitDragTranslation()` 将位移提交到锚点偏移。
+  - 装饰容器新增 `ArrowAnchorOffset`，内部虚拟化堆叠面板支持将滚动项对齐到起始边。
+  - 组合徽标可以将装饰目标交由内部徽标挂载，避免重复更改同一目标的父级。
+- 控件性能
+  - 降低 Icon、Button、Pagination、进度指示器和输入控件的创建与运行开销。隐藏图标暂停动效，文本度量复用结果，ToggleSwitch 通过渲染变换实现动画。
+  - 逐项插入 NavMenu 内置条目的总开销随条目数线性增长。
+
+## 6.2.14
+
+`2026-11-13`
+
+- Breaking Changes
+  - Dependencies：要求 Avalonia 12.1.6。固定在 12.1.5 的应用须先升级 Avalonia 再安装 AtomUI 6.2.14，详见[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#avalonia-依赖升级到-1216)。
+  - Skeleton 将 `AbstractSkeleton` 移到共享程序集，旧活动动画层改用微光块标记。请检查自定义缓动、启停入口和单独段落的默认宽度。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#skeleton-基类移到共享层)
+  - Space 将 `SpaceItemsAlignment` 移到 `AtomUI.Controls`。请重新编译使用 `Space.ItemsAlignment` 的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#spaceitemsalignment-换了命名空间)
+  - Card 将 `Extra`、`Cover`、`IsLoading` 等属性字段改为声明在共享基类 `AbstractCard`。请重新编译按 6.2.13 编译的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#card-属性字段移到-abstractcard)
+  - Empty 和 Result 分别将 `Description`、`Icon` 放宽为 `object?`。请调整按原类型读取的代码，并重新编译依赖旧签名的程序集。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#emptydescription-与-resulticon-改为-object)
+  - Empty 的 `EmptyDescriptionStyle` 改为作用于 `ContentPresenter`，请调整 Setter 的目标类型。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#empty-description-semantic-part-改为内容呈现器)
+  - 键盘与主题调整了焦点 Token、Tab 顺序及日期时间选择器的确认规则，请检查自定义主题和键盘自动化。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#键盘焦点和选择器交互)
+  - Watermark 的文字默认跟随宿主主题，主题提交触发的动效在首帧内收束。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#watermark-和主题动效)
+  - 注册组身份随版本变更。请同步升级相关包与 Generator、重新编译生成代码消费方，并重新发布裁剪/NativeAOT 应用。[迁移指南](docs/releases/6.2.14-api-changes.zh-CN.md#生成的注册身份)
+- TreeView 和 TreeSelect
+  - 新增键盘导航，区分活动节点与已选节点。TreeView 扩展选区时保留已选成员，TreeSelect 可先浏览下拉树，再用 Enter 或 Space 提交。#535
+- 键盘焦点
+  - 采用 Ant Design 风格焦点描边，调整输入控件的 Tab 顺序。ComboBox 清除按钮和 NumericUpDown 可通过键盘到达，树和菜单的已选活动项保留描边。
+- DatePicker 和 TimePicker
+  - 按显示格式解析键入日期，支持从输入框导航弹层面板，以及通过 Enter、Escape 和键盘确认范围。
+  - 确认时提交面板显示的时间，仅对悬停预览使用灰色文字。
+- ComboBox、Select 和 Dialog
+  - 统一 ComboBox 占位符颜色，新增键盘清除和清除 Semantic Part，保持下拉离场期间的筛选内容稳定。#534
+  - 清空响应式多选后移除残留的“+ 0 …”标签。#537
+  - 点击 Dialog 内容弹层时保留焦点，提升 Dialog 层级时保持挂载。#532
+- DataGrid 和 Card
+  - 滚动时保留行拖动，拖出视口边缘时继续自动滚动。#536
+  - 在分界线外绘制冻结列阴影，并让阴影偏移随高 DPI 正确缩放。
+  - Card 仅在加载期间创建骨架。
+- 内容、布局和动效
+  - Empty 支持自定义图片和描述，Result 支持自定义图标和等待状态，ProgressBar 支持自定义信息区内容。
+  - Space 支持配置换行和主轴分布，Badge 新增内容和描边选项，Tag 新增描边样式。
+  - 每组 Skeleton 共用一条微光动画。SpinIndicator 增加自定义动画入口，MarqueeLabel 增加启动延迟和悬停控制。
+  - Watermark 支持跟随主题的文字颜色与字体选项。
+- 图片加载
+  - AsyncImage 支持按视口懒加载，栅格图片解码尺寸可按覆盖模式计算。
+- 启动与主题
+  - 减少 JIT 启动等待，缩小语言定义与启动注册的生成代码。从应用作用域解析根主题，减少 Token 和资源查询分配。
+- TextArea
+  - 未设置 `Height` 且被父容器拉伸时填满可用高度，`Lines` 只决定自然高度。（Gitee IKV2LQ）
+- Windows 渲染与 Splash
+  - Windows 渲染循环改按 DWM 合成节拍出帧，Spin、Skeleton 等合成动画不再跳帧。Splash 不确定进度按渲染帧推进。
+- 构建与 NativeAOT
+  - Release 包在 net8.0、net10.0 之外新增 `net11.0` 资产，支持使用 SDK 11 构建。net8 裁剪、NativeAOT 和兼容桥接后端改为跟随 SDK 选定的官方引擎，不再绑定固定 SDK 版本。#538
+  - 修复生成的包定义在 Native8 发布时被阻断，并保持 6.2.14 之前构建的包与 ILLink8 后端及桥接兼容。
+
+## 6.2.13
+
+`2026-11-06`
+
+- Breaking Changes
+  - Dependencies：要求 Avalonia 12.1.5。固定在 12.1.4 的应用须先升级 Avalonia 再安装 AtomUI 6.2.13，详见[迁移指南](docs/releases/6.2.13-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.13-api-changes.zh-CN.md)。
+- Avalonia 与 Wayland
+  - 升级到 Avalonia 12.1.5，移除上游已修复的 Wayland 共享时钟兼容路径；Wayland 帧节拍与初始缩放校验成员契约并记录应用状态。
+  - 上游已修复选区前景色刷新，输入控件直接使用 Avalonia `TextPresenter`；`PART_TextPresenter`、`input` Semantic Part 及选择/密码行为不变。
+- DataGrid
+  - 新增 `SelectTriggerType="Row"`：点击行内任意位置改变选择，`Extended` 下普通点击切换单行、Shift 范围选择；`SelectIndicator` 默认值与 `Cell` 语义不变。#418
+  - 编辑器 OneWay 绑定副本保留 ElementName 来源，并移除公共编辑路径中的反射绑定构造。
+- Select
+  - 多选模式下保留被当前筛选隐藏的已选值。#531
+- Masonry
+  - 修复 Measure 约束宽度与 Arrange 最终宽度不一致且子项尺寸依赖宽度时的永久布局循环。
+  - 重新布局不再对既有项做位置滑动；新项仍淡入（仅限扩展视口范围内），移除项仍原位淡出。
+- NavMenu 与 Popup
+  - 菜单与 Inline 子菜单整体合成透明度，修复菜单背景淡出后项目背景仍显眼的问题。
+- Gallery
+  - 侧边栏折叠后在 Header Action 与第一个导航项之间保留间距，默认跟随 `UniformlyMarginXXS`，也可通过 `GalleryShellOptions.CollapsedSidebarHeaderSpacing` 配置；请移除产品侧的边距绕过以免间距叠加。
+  - 修复 Avalonia 12.1.5 下 Gallery NativeAOT 发布与性能工具构建。
+
+## 6.2.12
+
+`2026-11-04`
+
+- Breaking Changes
+  - Motion：弹层组件统一默认入场/离场动效，关闭请求可能异步完成；依赖宿主已拆除的逻辑须等待 `Closed`，或禁用相应动效。详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - ComboBox：空数据源现在默认显示空态，设置 `IsShowEmptyIndicator="False"` 可保留原显示方式，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - DataGrid：默认 `SelectIndicator` 模式下普通单元格点击保留选择；需要点击单元格选择时设置 `SelectTriggerType="Cell"`，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.12-api-changes.zh-CN.md)。
+- Motion
+  - 为选择器、Picker、自动完成、按钮及子菜单的配置 owner 提供 `OpenMotion`/`CloseMotion`，按组件确定方向与原点；显式 null 禁用对应方向，直接使用的 Popup 默认仍无动效。
+  - 保留应用 Style/绑定覆盖，默认定义按实例隔离，更换弹层、重建模板或脱离时释放旧宿主、转发订阅与合成资源。
+  - 禁用动效时收敛正在播放的请求，并保持 overlay 与原生弹层呈现一致。
+- ComboBox 与 Empty
+  - 为空源及筛选无匹配提供自定义空态内容、内容模板与内边距；Gallery 通过专用 Semantic Part Style 展示定制。
+  - Empty 重新挂树时恢复插画，主题资源暂缺时保留已有图片，避免空态图片被清空。
+- DataGrid
+  - 通过指示器控制选择时保留 current 单元格、焦点与编辑能力；`Cell` 模式继续支持 Ctrl/Shift 选择。
+- DatePicker 与 TimePicker
+  - 修复绑定迁入共享输入主题后，右侧附加内容模板、图标与 Form 反馈未正确显示的问题。
+- Window
+  - 修复 Windows 无装饰置顶窗口进入全屏后无法渲染的问题，覆盖恢复及窗口样式生命周期处理。#528
+- Gallery
+  - 修复 AXAML 元素名称绑定，在构建期收集示例源码，并补充日期范围分隔符示例。
+
+## 6.2.11
+
+`2026-11-01`
+
+- Breaking Changes
+  - FloatButtonGroup：即使 `IsOpen` 设置了本地值或绑定，trigger 交互现在也会更新状态，并开始触发 `Clicked`/`Opened`/`Closed`。请检查受控状态处理，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。#518
+  - DataGrid：字段 schema、本地字段及 descriptor 的签名增加可编辑与写回参数。请重新编译消费方，并显式为源端编辑启用可写字段，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+  - Registration：生成的 `ControlPackageGroup_*` 身份随程序集版本变化。请同步升级相关包与 Generator、重新编译消费方，并重新发布裁剪/NativeAOT 应用，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+  - Gallery 打包：移除 `EnsureAppImageLauncher.ps1`，请用仓库内 AppImage、DMG 和 zip 打包脚本替代原辅助脚本及外部 AtomUITools 调用，详见[迁移指南](docs/releases/6.2.11-api-changes.zh-CN.md)。
+- DataGrid
+  - 单元格与整行行内编辑经 `IDataGridEditableSource` 提交；本地字段支持 setter 和标量转换，校验字段是否可写，并在值无效时保持编辑状态。
+  - 支持可写本地源的行拖拽排序，显示目标行及插入位置反馈，并修复拖拽影子行布局。#519
+  - 行重排后保持视口位置，拖至首行的目标行立即可见。#522
+  - 数据换代时清除旧滚动意图，视口变大后收敛偏移，并修复滚动回退、删行及收起详情后的偏移错误。#520 #521
+  - 修复 Shift 选区、当前行投影、`ScrollIntoView`，以及挂起键盘导航覆盖后续鼠标选择的问题。
+  - 同步嵌套列分组、对齐冻结分组表头、避免重复计算冻结列宽度，并让右冻结列左缘手柄调整该列自身。
+  - 丢弃容器时释放行、列头与筛选弹层绑定，并在快照过期重启后恢复展开分组。
+- FloatButton
+  - Hover 模式下，指针从 trigger 移向菜单时保持菜单打开。#516
+  - 禁用的 group 忽略 trigger 交互，同步打开状态绑定及生命周期事件。#518
+- Resource Lifecycle
+  - ColorPicker、ButtonSpinner 和 NavMenu 脱离可视树时释放全局输入及共享 Flyout 订阅。#517
+- Localization
+  - 缓存语言目录未命中并跳过非 enum 键，避免资源查找中的重复反射分配。
+- Registration and Build
+  - 为受支持且实际执行链接的 iOS/Android Mono 应用物化 TypeMap 注册，包括 iOS partial linking。
+  - NuGet 打包脚本新增可选 `VersionOverride`，默认版本来源仍为 `AtomUIVersion`。
+- Gallery
+  - 使用仓库内脚本生成 Windows zip、Linux AppImage 和 macOS DMG，并统一一次发布中的构建后缀。
+  - 固定并校验外部打包工具，保留签名身份，校验下载、安装包配置及上传产物。
+
 ## 6.2.10
 
 `2026-10-30`

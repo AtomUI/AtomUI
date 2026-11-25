@@ -184,7 +184,9 @@ HTTP 或控件状态提交，职责不能重新揉进 `ImageLoader` 巨型类。
 
 SourceKey 还包含 `Variant`、`CachePartition`、所有请求 header 的摘要和 source-reader contract；header 原值不进入日志、文件名或
 metadata。来源验证产生 `ImageSourceVersion`，读取并验证正文后产生 SHA-256 `ImageContentId`。encoded store 只按
-`(partition, ContentId)` 保存内容，decoded key 则是 `(partition, ContentId, ImageDecodeSpec)`。raster spec 包含物理像素尺寸桶；
+`(partition, ContentId)` 保存内容，decoded key 则是 `(partition, ContentId, ImageDecodeSpec)`。raster spec 包含物理像素尺寸桶
+和适配语义：默认 contain 让结果落在宽高边界内，控件以 `Fill`/`UniformToFill` 呈现时请求携带内部 cover 标记，结果覆盖边界
+（两边都大于零时才生效，单边边界与 contain 等价并共享同一 entry），二者不共享 decoded entry；
 `SvgImageCodec` 是尺寸无关 codec，不把目标尺寸加入 key。因此不同来源的相同字节可共享内容与解码结果，64 px Avatar 和原图
 Previewer 不会共享错误尺寸的 Bitmap，同一静态 SVG 则可共享一个矢量 decoded entry。
 
@@ -202,6 +204,7 @@ Previewer 不会共享错误尺寸的 Bitmap，同一静态 SVG 则可共享一�
 每个 waiter 有独立 cancellation registration 和 completion source。取消一个 waiter 只移除该 waiter；共享 operation 仍有其他
 waiter 时继续。最后一个 waiter 离开后，coordinator 在 lock 内标记 operation 结束并取出底层 CTS，在 lock 外调用
 `Cancel()`/`Dispose()`。完成、取消和新 waiter 加入的竞态必须保证一个 waiter 至多完成一次、operation 至多从 map 移除一次。
+已请求取消但尚未完成的 operation 不再接纳新 waiter，新请求改起新的 operation，控件在首次布局时按新解码尺寸重启不会继承上一请求的取消。
 
 timeout 也是 waiter-local cancellation，计时从请求接纳而非取得 scheduler slot 开始。底层 operation 不使用最短 waiter timeout
 作为共享 deadline；只有 root Application cancellation、transport 自身不可恢复失败或最后 waiter 离开才结束共享工作。
@@ -248,6 +251,10 @@ Current、Cover、距离当前项从近到远的顺序提交。不得用控件�
 5. 结果返回后切到 UI dispatcher，再次检查 attach、generation、source identity；不匹配时释放结果并退出。
 6. 提交成功时先保存新租约和状态，再释放旧租约，避免 cache entry 在 visual 切换中提前销毁。
 7. detach、Source 清空或控件释放时取消 waiter 并释放租约；重新 attach 后按当前 Source 重新请求。
+
+`AsyncImage.IsLazy` 通过 controller host 的 `IsImageLoadAttached` 实现请求门：门关闭时 controller 不启动、不刷新尺寸，晚到的提交
+被丢弃；开门时调用 `SourceConfigurationChanged()` 起请求。`ReleaseLoad()` 经 `ImageLoadController.Release()` 复用 detach 的重置路径
+（取消 waiter、释放租约、清空状态），但保持控件挂树并重新设门。
 
 同来源替换最终失败时释放暂存旧租约并提交 Failed；暂存只优化 Loading 过渡，不改变终态语义。主 Source 与
 FallbackSource 的规范化身份相同则不发起第二次相同请求。

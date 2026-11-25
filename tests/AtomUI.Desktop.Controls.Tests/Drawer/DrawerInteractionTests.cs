@@ -7,7 +7,6 @@ using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Media.Transformation;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AtomUI.Animations;
@@ -139,7 +138,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var infoContainer = layer.GetVisualDescendants()
@@ -175,7 +174,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var mask = layer.GetVisualDescendants()
@@ -210,7 +209,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
             var container = layer.GetVisualDescendants().OfType<DrawerContainer>().Single();
             var motionActor = container.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "PART_Surface");
@@ -300,7 +299,7 @@ public class DrawerInteractionTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
             var container = layer.GetVisualDescendants().OfType<DrawerContainer>().Single();
 
@@ -455,14 +454,18 @@ public class DrawerInteractionTests
             parentDrawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(parentDrawer).ShouldNotBeNull();
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(parentDrawer)!).ShouldNotBeNull();
             AtomUI.Desktop.Controls.Drawer.GetDrawer(childDrawer).ShouldBeSameAs(parentDrawer);
             childDrawer.OpenOn.ShouldBeSameAs(window);
-            ScopeAwareAdornerLayer.GetLayer(childDrawer).ShouldBeSameAs(layer);
 
             childDrawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
             layer.Children.OfType<DrawerContainer>().Count().ShouldBe(2);
+            // 子 Drawer 复用父 Drawer 所在的层：两个 container 的视觉父级是同一个实例，而不是子 Drawer 自己解析出的层。
+            var parentContainer = parentDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            var childContainer  = childDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            childContainer.GetVisualParent().ShouldNotBeNull().ShouldBeSameAs(parentContainer.GetVisualParent());
+            parentContainer.GetVisualParent().ShouldBeSameAs(layer);
 
             childDrawer.IsOpen = false;
             Dispatcher.UIThread.RunJobs();
@@ -554,8 +557,8 @@ public class DrawerInteractionTests
 
             firstWindow.IsDrawnChromeOverlayVisible.ShouldBeFalse();
             secondWindow.IsDrawnChromeOverlayVisible.ShouldBeTrue();
-            var firstLayer = ScopeAwareAdornerLayer.GetLayer(firstWindow).ShouldNotBeNull();
-            var secondLayer = ScopeAwareAdornerLayer.GetLayer(secondTarget).ShouldNotBeNull();
+            var firstLayer = TopLevelPresentationLayer.GetLayer(firstWindow).ShouldNotBeNull();
+            var secondLayer = TopLevelPresentationLayer.GetLayer(secondWindow).ShouldNotBeNull();
             var container = firstLayer.Children.OfType<DrawerContainer>().Single();
             container.Margin.ShouldBe(firstShadow);
 
@@ -629,7 +632,11 @@ public class DrawerInteractionTests
 
             childDrawer.OpenOn.ShouldBeSameAs(localTarget);
             window.IsDrawnChromeOverlayVisible.ShouldBeTrue();
-            var layer = ScopeAwareAdornerLayer.GetLayer(localTarget).ShouldNotBeNull();
+            // localTarget 位于父 Drawer 自己的 container 内：container 不能进入自己表面宿主中的层，
+            // 而是落在 container 外侧的作用域宿主（这里是窗口宿主）的 T5。
+            var parentContainer = parentDrawer.GetCrossRoots().OfType<DrawerContainer>().ShouldHaveSingleItem();
+            var layer = parentContainer.GetVisualParent().ShouldBeOfType<ContentPresentationLayer>();
+            parentContainer.IsVisualAncestorOf(layer).ShouldBeFalse();
             layer.Children.OfType<DrawerContainer>().Count().ShouldBe(2);
             layer.Children.OfType<DrawerContainer>()
                  .ShouldAllBe(container => ReferenceEquals(
@@ -648,6 +655,133 @@ public class DrawerInteractionTests
                 parentDrawer.IsOpen = false;
                 Dispatcher.UIThread.RunJobs();
             }
+            window.Close();
+        }
+    }
+
+    /// <summary>
+    /// Opens a Drawer scoped to a local target that covers only part of the window, so the Drawer surface host is
+    /// smaller than the window host.
+    /// </summary>
+    private static (AtomUIWindow Window, AtomUI.Desktop.Controls.Drawer Drawer, VisualLayerManager WindowHost,
+        VisualLayerManager SurfaceHost) OpenScopedDrawer(Control drawerContent)
+    {
+        var target = new Border
+        {
+            Width               = 600,
+            Height              = 400,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+            VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Top
+        };
+        var drawer = new AtomUI.Desktop.Controls.Drawer
+        {
+            Content         = drawerContent,
+            OpenOn          = target,
+            IsMotionEnabled = false,
+            Width           = 1,
+            Height          = 1
+        };
+        var window = new AtomUIWindow
+        {
+            Width   = 900,
+            Height  = 600,
+            Content = new Panel { Children = { target, drawer } }
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        drawer.IsOpen = true;
+        Dispatcher.UIThread.RunJobs();
+
+        var windowHost = window.GetVisualDescendants().OfType<VisualLayerManager>()
+                               .Single(manager => manager.Name == "PART_VisualLayerManager");
+        var container   = window.GetVisualDescendants().OfType<DrawerContainer>().Single();
+        var surfaceHost = container.GetVisualDescendants().OfType<VisualLayerManager>()
+                                   .First(LayerLadder.GetIsSurfaceHost);
+        return (window, drawer, windowHost, surfaceHost);
+    }
+
+    [Fact]
+    public void Drawer_Content_Resolves_Content_Roles_To_Its_Surface_And_TopLevel_Roles_Past_It()
+    {
+        var inner = new Border { Width = 40, Height = 40 };
+        var (window, drawer, windowHost, surfaceHost) = OpenScopedDrawer(inner);
+        try
+        {
+            surfaceHost.IsVisualAncestorOf(inner).ShouldBeTrue();
+
+            // Content roles stay inside the Drawer surface, so the Drawer never covers its own decorations,
+            // Watermark, FloatButton or scoped Dialog.
+            AdornerLayer.GetAdornerLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ScopeAwareAdornerLayer.GetLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ScopeAwareOverlayLayer.GetLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(surfaceHost);
+            ContentPresentationLayer.GetViewportLayer(inner).ShouldNotBeNull().GetVisualParent()
+                                    .ShouldBeSameAs(surfaceHost);
+
+            // TopLevel roles skip the surface: a Tour mask or a Window Drawer opened from inside the Drawer must
+            // not be confined to it.
+            LayerLadder.FindTopLevelLayerManager(inner).ShouldBeSameAs(windowHost);
+            TourLayer.GetTourLayer(inner).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+            TopLevelPresentationLayer.GetLayer(window).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+            WindowFeedbackLayer.GetLayer(window).ShouldNotBeNull().GetVisualParent().ShouldBeSameAs(windowHost);
+        }
+        finally
+        {
+            drawer.IsOpen = false;
+            Dispatcher.UIThread.RunJobs();
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Scoped_Drawer_Content_Popup_Light_Dismisses_On_A_Press_Outside_The_Drawer()
+    {
+        var comboBox = new AtomUI.Desktop.Controls.ComboBox
+        {
+            Width           = 120,
+            IsMotionEnabled = false
+        };
+        comboBox.Items.Add(new AtomUI.Desktop.Controls.ComboBoxItem { Content = "Alpha" });
+        var (window, drawer, windowHost, surfaceHost) = OpenScopedDrawer(comboBox);
+        try
+        {
+            comboBox.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+            Dispatcher.UIThread.RunJobs();
+            comboBox.IsDropDownOpen.ShouldBeTrue();
+
+            // Avalonia registers light-dismiss on the nearest VisualLayerManager of the placement target, which is
+            // the Drawer surface host and covers only the Drawer. PopupLightDismissRegistration moves the lease to
+            // the window host through Avalonia internals; if that stops working, presses outside the Drawer no
+            // longer close the popup and nothing else reports it.
+            var dismissLayer = window.GetVisualDescendants()
+                                     .Single(visual => visual.GetType().Name == "LightDismissOverlayLayer" &&
+                                                       visual.IsVisible)
+                                     .ShouldBeAssignableTo<InputElement>()
+                                     .ShouldNotBeNull();
+            dismissLayer.GetVisualParent().ShouldBeSameAs(windowHost);
+            surfaceHost.GetVisualChildren()
+                       .Any(visual => visual.GetType().Name == "LightDismissOverlayLayer" && visual.IsVisible)
+                       .ShouldBeFalse();
+
+            var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+            dismissLayer.RaiseEvent(new PointerPressedEventArgs(
+                dismissLayer,
+                pointer,
+                window,
+                new Point(800, 550),
+                0,
+                new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.LeftButtonPressed),
+                KeyModifiers.None));
+            Dispatcher.UIThread.RunJobs();
+
+            comboBox.IsDropDownOpen.ShouldBeFalse();
+        }
+        finally
+        {
+            comboBox.IsDropDownOpen = false;
+            drawer.IsOpen           = false;
+            Dispatcher.UIThread.RunJobs();
             window.Close();
         }
     }

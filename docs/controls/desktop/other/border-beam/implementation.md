@@ -114,9 +114,9 @@ BorderBeam (public)
 `IBorderBeamAwareControl` 时订阅新事件。attach 时重新确认当前内容订阅和 effective geometry；detach 时解除
 aware-content 订阅。几何变化事件只刷新 BorderBeam 自身 effective state，不要求内容控件重新模板化。
 
-`ColorStops` 由 BorderBeam 实例持有。替换集合时解除旧集合的 `CollectionChanged` 并订阅新集合；集合结构变化
-通过 `ColorStopsProperty` 通知模板绑定和 presenter。Presenter 在 attach 或集合引用变化时建立自己的集合订阅，
-并在 detach 或引用替换时释放。
+`BorderBeam` 弱订阅 `ColorStops` 的集合变更并通过 `ColorStopsProperty` 发布通知，替换集合时释放旧订阅。
+Presenter 挂树时观察当前集合，以及各停靠点的 `Color` 和 `Percent`。集合结构或任一停靠点属性变化会使渐变缓存失效。
+Presenter 在替换集合或卸载时解除此前的集合和停靠点订阅，重新挂树时按当前输入重建画刷。
 
 `AttachedToVisualTree`、`DetachedFromVisualTree`、有效可见性、实例级 `IsMotionEnabled` 和 bounds 变化共同决定
 动画启动与停止。有效可见性包含 BorderBeam 自身和 Visual 祖先链；持续 Avalonia animation 使用
@@ -153,6 +153,8 @@ count 和主题资源变化只使当前 presenter 重绘。
 `ColorStops.Percent` 输入区间固定为 `0~100`。内部将停靠点映射到可见高光段，并为尾部透明渐隐保留空间。停靠点需要 clamp 并排序，避免非法输入破坏 brush。
 
 单色 `Color` 映射为可见段单色加透明尾迹。无显式颜色时使用主题默认渐变。
+
+BorderBeam 在宿主作用域读取两项默认色、不透明度与可见段终点，成组发布给 Presenter。Presenter 在颜色或可见段终点变化时刷新渐变缓存。不透明度单独变化时使用现有画刷重绘。
 
 ### 8.3 动画生命周期
 

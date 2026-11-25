@@ -70,7 +70,7 @@ internal sealed class SplashPresenter : ISplashPresenter
         // 交接隐藏失败时，错误态必须重新可见、可操作。
         if (_window is { } window)
         {
-            window.Opacity = 1;
+            window.SetCurrentValue(Avalonia.Visual.OpacityProperty, 1d);
             window.IsHitTestVisible = true;
             window.Topmost = true;
             if (ElementComposition.GetElementVisual(window) is { } visual)

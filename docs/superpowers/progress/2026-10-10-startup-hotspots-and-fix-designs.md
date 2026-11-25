@@ -8,7 +8,7 @@
 
 完整测量口径和跨平台基线区分见[启动性能分析与优化进展](2026-10-10-startup-performance-analysis.md)；
 本轮数据来自[Windows 结果报告](2026-10-11-windows-startup-algorithm-results.md)和
-[60 条原始样本及证据](2026-10-11-windows-startup-algorithm-evidence.json)。
+[60 条原始样本及证据](../../engineering/evidence/2026-10-11-windows-startup-algorithm-evidence.json)。
 本次没有重新运行性能测试。后文微测量来自该轮各专项，样本策略不同，不是单项独立的整机启动收益。
 
 ## 总体实测与方案状态

@@ -33,7 +33,7 @@ internal static class Program
                   .UseAtomUI(builder =>
                   {
                       builder.UseLanguages(LanguageTags.EnUS, [LanguageTags.EnUS, LanguageTags.ZhCN]);
-                      builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                      builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
                       builder.UseDesktopControls();
                   });
 }

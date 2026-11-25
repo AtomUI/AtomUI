@@ -1,244 +1,242 @@
-<ResourceDictionary
+<!-- owner: public TextArea keeps its identity; internal Mentions/AutoComplete textarea parts inherit their host. -->
+<ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
-    x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:TextArea}" TargetType="atom:TextArea">
-        <ControlTheme.Resources>
-            <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
-        </ControlTheme.Resources>
+    x:ClassModifier="internal"
+    x:Class="AtomUI.Desktop.Controls.Themes.TextAreaTheme" TargetType="atom:TextArea">
+    <ControlTheme.Resources>
+        <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
+    </ControlTheme.Resources>
 
-        <Setter Property="Template">
-            <ControlTemplate TargetType="atom:TextArea">
-                <DockPanel LastChildFill="True"
-                           Height="{TemplateBinding Height}">
-                    <atom:TextBlock Name="TextCountIndicator"
-                                    Classes.semantic-count="True"
-                                    DockPanel.Dock="Bottom"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Text="{TemplateBinding CountText}"
-                                    IsVisible="{TemplateBinding IsShowCount}" />
-                    <Panel>
-                        <atom:TextAreaDecoratedBox
-                            Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
-                            Classes.semantic-scope-input-frame="True"
-                            StyleVariant="{TemplateBinding StyleVariant}"
-                            SizeType="{TemplateBinding SizeType}"
-                            Status="{TemplateBinding Status}"
-                            FormStatus="{TemplateBinding FormStatus}"
-                            IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
-                            DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                            Focusable="True"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            IsResizable="{TemplateBinding IsResizable}"
-                            IsAllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
-                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                            IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
-                            <atom:TextAreaDecoratedBox.ContentLeftAddOn>
-                                <atom:AddOnContentPresenter
-                                    Classes.semantic-prefix="True"
-                                    Content="{Binding InnerLeftContent, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
-                                    ContentTemplate="{Binding InnerLeftContentTemplate, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+    <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+        <ControlTemplate TargetType="atom:TextArea">
+            <atom:InputAccessoryDockPanel LastChildFill="True"
+                       Height="{TemplateBinding Height}">
+                <atom:InputAccessoryDockPanel.CountTemplate>
+                    <DataTemplate>
+                        <atom:TextBlock Name="TextCountIndicator"
+                                        Classes.semantic-count="True"
+                                        DockPanel.Dock="Bottom"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        Text="{Binding $parent[atom:TextArea].CountText}"
+                                        IsVisible="{Binding $parent[atom:TextArea].IsShowCount}" />
+                    </DataTemplate>
+                </atom:InputAccessoryDockPanel.CountTemplate>
+                <Panel>
+                    <atom:TextAreaDecoratedBox
+                        Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        Classes.semantic-scope-input-frame="True"
+                        StyleVariant="{TemplateBinding StyleVariant}"
+                        SizeType="{TemplateBinding SizeType}"
+                        Status="{TemplateBinding Status}"
+                        FormStatus="{TemplateBinding FormStatus}"
+                        IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}"
+                        HostBackground="{TemplateBinding Background}"
+                        DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                        Focusable="True"
+                        IsTabStop="False"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsResizable="{TemplateBinding IsResizable}"
+                        IsAllowAutoHide="{TemplateBinding ScrollViewer.AllowAutoHide}"
+                        HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                        IsScrollChainingEnabled="{TemplateBinding ScrollViewer.IsScrollChainingEnabled}">
+                        <atom:TextAreaDecoratedBox.ContentLeftAddOn>
+                            <atom:AddOnContentPresenter
+                                Classes.semantic-prefix="True"
+                                Content="{Binding InnerLeftContent, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+                                ContentTemplate="{Binding InnerLeftContentTemplate, RelativeSource={RelativeSource AncestorType=atom:TextArea}}"
+                                VerticalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Focusable="False" />
+                        </atom:TextAreaDecoratedBox.ContentLeftAddOn>
+                        <atom:TextAreaDecoratedBox.ContentRightAddOn>
+                            <atom:InputAccessoryPanel Orientation="Vertical"
+                                        Classes.semantic-suffix="True"
+                                        Spacing="{atom:OwnerTokenResource UniformlyPaddingXXS}">
+                                <atom:InputAccessoryPanel.ClearButtonTemplate>
+                                    <DataTemplate>
+                                        <atom:InputClearIconButton
+                                            Name="PART_ClearButton"
+                                            Classes.semantic-clear="True"
+                                            VerticalAlignment="Center"
+                                            Icon="{Binding $parent[atom:TextArea].ClearIcon}"
+                                            IsVisible="{Binding $parent[atom:TextArea].IsEffectiveShowClearButton}"
+                                            IsMotionEnabled="{Binding $parent[atom:TextArea].IsMotionEnabled}" />
+                                    </DataTemplate>
+                                </atom:InputAccessoryPanel.ClearButtonTemplate>
+                                <ContentPresenter
+                                    Name="PART_FormFeedBack"
                                     VerticalAlignment="Stretch"
                                     VerticalContentAlignment="Center"
-                                    HorizontalAlignment="Left"
-                                    Focusable="False" />
-                            </atom:TextAreaDecoratedBox.ContentLeftAddOn>
-                            <atom:TextAreaDecoratedBox.ContentRightAddOn>
-                                <StackPanel Orientation="Vertical"
-                                            Classes.semantic-suffix="True"
-                                            Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
-                                    <atom:InputClearIconButton
-                                        Name="PART_ClearButton"
-                                        Classes.semantic-clear="True"
-                                        VerticalAlignment="Center"
-                                        Icon="{Binding $parent[atom:TextArea].ClearIcon}"
-                                        IsVisible="{Binding $parent[atom:TextArea].IsEffectiveShowClearButton}"
-                                        IsMotionEnabled="{Binding $parent[atom:TextArea].IsMotionEnabled}" />
-                                    <ContentPresenter
-                                        Name="PART_FormFeedBack"
-                                        VerticalAlignment="Stretch"
-                                        VerticalContentAlignment="Center"
-                                        HorizontalAlignment="Right"
-                                        Content="{Binding $parent[atom:TextArea].FormFeedback}"
-                                        IsVisible="{Binding $parent[atom:TextArea].IsFormFeedbackVisible}" />
-                                    <atom:AddOnContentPresenter
-                                        Name="PART_InnerRightContentPresenter"
-                                        VerticalAlignment="Center"
-                                        VerticalContentAlignment="Center"
-                                        HorizontalAlignment="Right"
-                                        Focusable="False"
-                                        Content="{Binding $parent[atom:TextArea].InnerRightContent}"
-                                        ContentTemplate="{Binding $parent[atom:TextArea].InnerRightContentTemplate}" />
-                                </StackPanel>
-                            </atom:TextAreaDecoratedBox.ContentRightAddOn>
+                                    HorizontalAlignment="Right"
+                                    Content="{Binding $parent[atom:TextArea].FormFeedback}"
+                                    IsVisible="{Binding $parent[atom:TextArea].IsFormFeedbackVisible}" />
+                                <atom:AddOnContentPresenter
+                                    Name="PART_InnerRightContentPresenter"
+                                    VerticalAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Focusable="False"
+                                    Content="{Binding $parent[atom:TextArea].InnerRightContent}"
+                                    ContentTemplate="{Binding $parent[atom:TextArea].InnerRightContentTemplate}" />
+                            </atom:InputAccessoryPanel>
+                        </atom:TextAreaDecoratedBox.ContentRightAddOn>
 
-                            <Panel Name="ContentLayout" Classes.semantic-content="True">
-                                <atom:TextBlock
-                                    Name="Placeholder"
-                                    Classes.semantic-placeholder="True"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment, Converter={StaticResource PlaceholderHorizontalAlignmentConverter}}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    Text="{TemplateBinding PlaceholderText}"
-                                    Foreground="{TemplateBinding PlaceholderForeground}"
-                                    LineHeight="{TemplateBinding LineHeight}"
-                                    TextAlignment="{TemplateBinding TextAlignment}"
-                                    TextWrapping="{TemplateBinding TextWrapping}"
-                                    IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
-                                <atom:InputTextPresenter
-                                    Name="PART_TextPresenter"
-                                    Classes.semantic-textarea="True"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
-                                    CaretBrush="{TemplateBinding CaretBrush}"
-                                    CaretIndex="{TemplateBinding CaretIndex}"
-                                    LineHeight="{TemplateBinding LineHeight}"
-                                    PasswordChar="{TemplateBinding PasswordChar}"
-                                    RevealPassword="{TemplateBinding RevealPassword}"
-                                    SelectionBrush="{TemplateBinding SelectionBrush}"
-                                    SelectionStart="{TemplateBinding SelectionStart}"
-                                    SelectionEnd="{TemplateBinding SelectionEnd}"
-                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                    Text="{TemplateBinding Text, Mode=TwoWay}"
-                                    TextAlignment="{TemplateBinding TextAlignment}"
-                                    TextWrapping="{TemplateBinding TextWrapping}"
-                                    Focusable="False" />
-                            </Panel>
-                        </atom:TextAreaDecoratedBox>
-                        <atom:ResizeHandle Name="PART_ResizeHandle"
-                                           HorizontalAlignment="Right"
-                                           VerticalAlignment="Bottom"
-                                           Cursor="SizeNorthSouth"
-                                           IsVisible="{TemplateBinding IsResizable}" />
-                    </Panel>
-                </DockPanel>
-            </ControlTemplate>
-        </Setter>
+                        <Panel Name="ContentLayout" Classes.semantic-content="True">
+                            <atom:TextBlock
+                                Name="Placeholder"
+                                Classes.semantic-placeholder="True"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment, Converter={StaticResource PlaceholderHorizontalAlignmentConverter}}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Text="{TemplateBinding PlaceholderText}"
+                                Foreground="{TemplateBinding PlaceholderForeground}"
+                                LineHeight="{TemplateBinding LineHeight}"
+                                TextAlignment="{TemplateBinding TextAlignment}"
+                                TextWrapping="{TemplateBinding TextWrapping}"
+                                IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
+                            <TextPresenter
+                                Name="PART_TextPresenter"
+                                Classes.semantic-textarea="True"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                CaretBrush="{TemplateBinding CaretBrush}"
+                                CaretIndex="{TemplateBinding CaretIndex}"
+                                LineHeight="{TemplateBinding LineHeight}"
+                                PasswordChar="{TemplateBinding PasswordChar}"
+                                RevealPassword="{TemplateBinding RevealPassword}"
+                                SelectionBrush="{TemplateBinding SelectionBrush}"
+                                SelectionStart="{TemplateBinding SelectionStart}"
+                                SelectionEnd="{TemplateBinding SelectionEnd}"
+                                SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                Text="{TemplateBinding Text, Mode=TwoWay}"
+                                TextAlignment="{TemplateBinding TextAlignment}"
+                                TextWrapping="{TemplateBinding TextWrapping}"
+                                Focusable="False" />
+                        </Panel>
+                    </atom:TextAreaDecoratedBox>
+                    <atom:ResizeHandle Name="PART_ResizeHandle"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Bottom"
+                                       Cursor="SizeNorthSouth"
+                                       IsVisible="{TemplateBinding IsResizable}" />
+                </Panel>
+            </atom:InputAccessoryDockPanel>
+        </ControlTemplate>
+    </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SharedTokenResource SelectionForeground}" />
-        <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
-        <Setter Property="PlaceholderForeground"
-                Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
-        <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="AcceptsReturn" Value="True" />
-        <Setter Property="MinLines" Value="1" />
+    <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+    <Setter Property="SelectionBrush" Value="{atom:OwnerTokenResource SelectionBackground}" />
+    <Setter Property="CaretBrush" Value="{atom:OwnerTokenResource ColorText}" />
+    <Setter Property="SelectionForegroundBrush"
+            Value="{atom:OwnerTokenResource SelectionForeground}" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+    <Setter Property="PlaceholderForeground"
+            Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="AcceptsReturn" Value="True" />
+    <Setter Property="MinLines" Value="1" />
 
-        <Style Selector="^ /template/ Panel#ContentLayout">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Cursor" Value="Ibeam" />
-        </Style>
+    <Style Selector="^ /template/ Panel#ContentLayout">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Cursor" Value="Ibeam" />
+    </Style>
 
-        <Style Selector="^[StyleVariant=Borderless]">
-            <Style Selector="^[Status=Error]">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
-                </Style>
-            </Style>
-            <Style Selector="^:error">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
-                </Style>
-            </Style>
-            <Style Selector="^:warning">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
-                </Style>
+    <Style Selector="^[StyleVariant=Borderless]">
+        <Style Selector="^[Status=Error]">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorErrorText}" />
             </Style>
         </Style>
-        <Style Selector="^[StyleVariant=Filled]">
-            <Style Selector="^[Status=Error]">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
-                </Style>
-            </Style>
-            <Style Selector="^:error">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
-                </Style>
-            </Style>
-            <Style Selector="^:warning">
-                <Style Selector="^ /template/ Panel#ContentLayout">
-                    <Setter Property="TemplatedControl.Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
-                </Style>
+        <Style Selector="^:error">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorErrorText}" />
             </Style>
         </Style>
+        <Style Selector="^:warning">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorWarningText}" />
+            </Style>
+        </Style>
+    </Style>
+    <Style Selector="^[StyleVariant=Filled]">
+        <Style Selector="^[Status=Error]">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorErrorText}" />
+            </Style>
+        </Style>
+        <Style Selector="^:error">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorErrorText}" />
+            </Style>
+        </Style>
+        <Style Selector="^:warning">
+            <Style Selector="^ /template/ Panel#ContentLayout">
+                <Setter Property="TemplatedControl.Foreground"
+                        Value="{atom:OwnerTokenResource ColorWarningText}" />
+            </Style>
+        </Style>
+    </Style>
 
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightSM}" />
-            <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
-            </Style>
-        </Style>
-
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSize}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:TextAreaTokenResource FontSizeSM}" />
-        </Style>
-
+    <Style Selector="^[SizeType=Large]">
+        <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightLG}" />
+    </Style>
+    <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeight}" />
+    </Style>
+    <Style Selector="^[SizeType=Small]">
+        <Setter Property="LineHeight" Value="{atom:OwnerTokenResource FontHeightSM}" />
         <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
-            <Setter Property="Margin"
-                    Value="2 0 2 0" />
+            <!-- layout: centres the small line box in the small frame padding -->
+            <Setter Property="Margin" Value="0, 1, 0, 1" />
         </Style>
+    </Style>
 
-        <Style
-            Selector="^ /template/ StackPanel#PART_LeftAddOnLayout, ^ /template/ StackPanel#PART_RightAddOnLayout">
-            <Setter Property="Spacing"
-                    Value="{atom:SharedTokenResource UniformlyPaddingXXS}" />
-        </Style>
+    <Style Selector="^[SizeType=Large]">
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeLG}" />
+    </Style>
+    <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
+    </Style>
+    <Style Selector="^[SizeType=Small]">
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
+    </Style>
 
-        <Style Selector="^ /template/ atom|TextBlock#TextCountIndicator">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
-        </Style>
+    <Style Selector="^ /template/ TextPresenter#PART_TextPresenter">
+        <!-- layout: gutter that keeps the caret off the frame padding at both text ends -->
+        <Setter Property="Margin"
+                Value="2 0 2 0" />
+    </Style>
 
-        <Style Selector="^[StyleVariant=Outlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
-                         ^[StyleVariant=Underlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimaryHover}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default],
-                         ^:focus-within[StyleVariant=Underlined] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:TextAreaTokenResource InputActiveShadow}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Filled] /template/ atom|TextAreaDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:TextAreaTokenResource ColorPrimary}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:TextAreaTokenResource InputActiveShadow}" />
-        </Style>
+    <Style
+        Selector="^ /template/ StackPanel#PART_LeftAddOnLayout, ^ /template/ StackPanel#PART_RightAddOnLayout">
+        <Setter Property="Spacing"
+                Value="{atom:OwnerTokenResource UniformlyPaddingXXS}" />
+    </Style>
 
-        <Style Selector="^:disabled">
-            <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
-        </Style>
-    </ControlTheme>
-</ResourceDictionary>
+    <Style Selector="^ /template/ atom|TextBlock#TextCountIndicator">
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
+    </Style>
+
+<Style Selector="^:disabled">
+        <Setter Property="Foreground"
+                Value="{atom:OwnerTokenResource ColorTextDisabled}" />
+    </Style>
+
+</ControlTheme>

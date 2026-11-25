@@ -1,18 +1,15 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class TourLayer : Control, IMotionAwareControl
 {
-    private const int TourLayerZIndex = int.MaxValue - 98;
     private readonly RectangleGeometry _layerGeometry = new();
     private readonly RectangleGeometry _targetRegionGeometry = new();
     private CombinedGeometry? _combinedGeometry;
@@ -77,7 +74,7 @@ internal class TourLayer : Control, IMotionAwareControl
         if (_combinedGeometry is not null &&
             _combinedLayerRect == layerRect &&
             _combinedTargetRegion == targetRegion &&
-            _combinedTargetRegionCornerRadius == targetRegionCornerRadius)
+            MathUtils.AreClose(_combinedTargetRegionCornerRadius, targetRegionCornerRadius))
         {
             return _combinedGeometry;
         }
@@ -103,16 +100,7 @@ internal class TourLayer : Control, IMotionAwareControl
     
     public static TourLayer? GetTourLayer(Visual visual)
     {
-        VisualLayerManager? manager;
-        if (visual is TopLevel topLevel)
-        {
-            manager = FindFirstTemplateLayerManager(topLevel);
-        }
-        else
-        {
-            manager = visual.FindAncestorOfType<VisualLayerManager>();
-        }
-
+        var manager = LayerLadder.FindTopLevelLayerManager(visual);
         if (manager == null)
         {
             return null;
@@ -126,21 +114,8 @@ internal class TourLayer : Control, IMotionAwareControl
                 IsVisible = false
             };
 
-            manager.AddLayer(tourLayer, TourLayerZIndex);
+            LayerLadder.AddLayer(manager, tourLayer, LayerLadder.Tour);
         }
         return tourLayer;
-    }
-
-    private static VisualLayerManager? FindFirstTemplateLayerManager(TopLevel topLevel)
-    {
-        foreach (var descendant in topLevel.GetTemplateDescendants())
-        {
-            if (descendant is VisualLayerManager manager)
-            {
-                return manager;
-            }
-        }
-
-        return null;
     }
 }

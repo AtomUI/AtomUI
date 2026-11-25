@@ -1,5 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -104,7 +104,7 @@ public class ToolTipInstanceOverrideTests
             Dispatcher.UIThread.RunJobs();
 
             var expected = PresetPrimaryColor.GetColor(PresetColorType.Blue).Color();
-            tip.Background.ShouldBeOfType<SolidColorBrush>().Color.ShouldBe(expected);
+            tip.Background.ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(expected);
         }
         finally
         {

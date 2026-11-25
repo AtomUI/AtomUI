@@ -137,8 +137,8 @@ Add-on 可以包含可交互控件，也可以是 `null`、隐藏节点或当前
 | `true`（默认） | 非 `null`（含空字符串） | 显示；空字符串渲染空内容，与历史行为逐位一致。 |
 | `false` | 任意 | 隐藏；系统级窗口标题（任务栏、窗口切换）不受影响。 |
 
-- 有效值计算为 `IsEffectiveTitleVisible = IsTitleVisible && Title is not null`；三平台模板的 `PART_ContentPresenter` 与全屏层 `FullscreenTitleText` 只绑定该 internal direct property（全屏层绑定 Window 侧 `IsEffectiveFullscreenTitleVisible`）。
-- `IsTitleVisible=False` 时 `LogoVisibility=Auto` 按“无标题”分支联动：macOS 上 Logo 随标题一起隐藏，全屏层同步；非 macOS 非全屏时 Logo 仍显示。`Always`/`Never` 不受影响。
+- 有效值计算为 `IsEffectiveTitleVisible = IsTitleVisible && Title is not null`；三平台模板的 `PART_ContentPresenter` 只绑定该 internal direct property；全屏状态下呈现的是同一标题栏实例，不存在独立的全屏标题绑定。
+- `IsTitleVisible=False` 时 `LogoVisibility=Auto` 按“无标题”分支联动：macOS 上 Logo 随标题一起隐藏；非 macOS 非全屏时 Logo 仍显示。`Always`/`Never` 不受影响。
 - `Window` 通过 `NotifyConfigureTitleBar` 投影 `IsTitleVisible`，与 `LogoVisibility` 同优先级。
 
 ### 4.3 窗口状态
@@ -208,9 +208,11 @@ Windows/Linux 的 Leading 容器使用 `HorizontalSpacing` 消费 `LogoAndLeftAd
 
 `ImagePreviewerTitleBar` 是 internal 派生标题栏。它使用显式预览图标替代 Logo，并把图片工具栏放入 Leading。预览图标与标题仍组成一个连续 Title 组，caption buttons 和右侧 add-on 仍属于 Trailing。
 
-### 6.3 全屏标题宿主
+### 6.3 全屏标题栏
 
-`WindowDrawnDecorations` 和 `FullscreenPopoverLayer` 中的全屏标题宿主复用标题栏 Token、窗口操作语义和标题对齐模型。全屏宿主只计算当前实际可见的 native/managed 区域，不继承普通窗口状态下已经消失的原生按钮占位。
+`WindowState.FullScreen` 下，Window 的默认 `WindowTitleBar` 以同一实例从普通状态的 title-bar slot 迁入 Window 的全屏标题栏宿主。标题栏不感知自己位于哪个 slot：它保持 `:fullscreen` 伪类、caption 的 FullScreen 列规则、Logo 与标题的自身呈现规则，以及 `LeftAddOn` 和 `RightAddOn`。全屏状态下 native chrome inset 取 Window 投影的 native control inset：平台原生窗口按钮叠放在标题栏上时为其占位，否则为零，标题栏只为当前实际呈现的原生控件让出安全区；空白区域不发起窗口拖动，双击不触发最大化或还原。
+
+全屏标题栏的呈现模式、显隐状态机和内容区占位属于 Window，见 [Window 全屏标题栏设计](../window/full-screen-title-bar-design.md)。WindowTitleBar 不提供全屏专用模板、全屏专用 caption button 尺寸或第二套标题与 Logo 绑定。
 
 ## 7. 兼容性不变量
 

@@ -10,6 +10,61 @@ namespace AtomUI.Generator.Tests.SemanticParts;
 
 public class SemanticPartGeneratorTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Cross_Nested_Parts_Use_The_Effective_Inherited_Template(bool replacesTemplate)
+    {
+        const string source = """
+            using AtomUI.Theme;
+            using Avalonia.Controls;
+            using Avalonia.Controls.Presenters;
+            using Avalonia.Styling;
+            namespace Demo;
+            public class Editor : Control { }
+            public class InternalEditor : Editor { }
+            public class EditorTheme : ControlTheme { }
+            [SemanticPart("input", SelectorClass = "semantic-input", CrossNestedOwners = true,
+                SelectorRoute = "/template/ .semantic-scope-editor /template/ .semantic-input",
+                ContractType = typeof(ContentPresenter), Since = "6.2.0")]
+            public partial class Host : Control { }
+            """;
+        var host = new InMemoryAdditionalText("Host/Themes/HostTheme.axaml", """
+            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo" TargetType="atom:Host">
+                <Setter Property="Template"><ControlTemplate>
+                    <atom:InternalEditor Classes="semantic-scope-editor" />
+                </ControlTemplate></Setter>
+            </ControlTheme>
+            """);
+        var editor = new InMemoryAdditionalText("Editor/Themes/EditorTheme.axaml", """
+            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          x:Class="Demo.EditorTheme" TargetType="atom:Editor">
+                <Setter Property="Template"><ControlTemplate>
+                    <ContentPresenter Classes="semantic-input" />
+                </ControlTemplate></Setter>
+            </ControlTheme>
+            """);
+        var replacement = replacesTemplate
+            ? "<Setter Property=\"Template\"><ControlTemplate><Border /></ControlTemplate></Setter>"
+            : string.Empty;
+        var derived = new InMemoryAdditionalText("Editor/Themes/InternalEditorTheme.axaml", $$"""
+            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo" TargetType="atom:InternalEditor">
+                <ControlTheme.BasedOn><atom:EditorTheme TargetType="atom:InternalEditor" /></ControlTheme.BasedOn>
+                {{replacement}}
+            </ControlTheme>
+            """);
+        RunGenerator(source, out var diagnostics, host, editor, derived);
+        if (replacesTemplate)
+        {
+            diagnostics.ShouldContain(static diagnostic => diagnostic.Id == "ATOMUIGEN032");
+        }
+        else
+        {
+            diagnostics.ShouldBeEmpty();
+        }
+    }
+
     [Fact]
     public void Generates_Implicit_Root_Declared_Parts_Constants_And_Package_Registration()
     {
@@ -2360,10 +2415,6 @@ public class SemanticPartGeneratorTests
                     Identity = identity;
                 }
             }
-
-            public sealed class ThemeAlgorithmDescriptor
-            {
-            }
         }
 
         namespace AtomUI.Theme.DesignTokens
@@ -2379,9 +2430,6 @@ public class SemanticPartGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
-                public virtual void CalculateTokenValues(bool isDark)
-                {
-                }
             }
         }
 

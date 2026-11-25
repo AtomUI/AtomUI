@@ -220,7 +220,7 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         };
         _codeViewer.CodeText = code;
         _infoView ??= new SemanticPartPreviewInfoControl();
-        _infoView.Show(item);
+        _infoView.DataContext = item;
         _codeView ??= new SemanticPartPreviewCodeExampleControl();
         _codeView.Show(_codeViewer);
         InfoContent = _infoView;
@@ -259,7 +259,7 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         }
 
         DeactivatePreview();
-        _infoView?.Clear();
+        _infoView?.DataContext = null;
         _infoView = null;
         _codeView?.Clear();
         _codeView = null;
@@ -422,7 +422,7 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
     private void ResetPresentation()
     {
         ReleaseHighlightSession();
-        _infoView?.Clear();
+        _infoView?.DataContext = null;
         _codeView?.Clear();
         InfoContent = null;
         CodeContent = null;

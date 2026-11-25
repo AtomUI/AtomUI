@@ -3,8 +3,10 @@
                     xmlns:atom="https://atomui.net"
                     x:ClassModifier="internal">
 <ControlTheme x:Key="{x:Type atom:SplitButton}" TargetType="atom:SplitButton">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
         <Setter Property="Template">
-            <ControlTemplate>
+            <ControlTemplate TargetType="atom:SplitButton">
                 <DockPanel Name="PART_MainLayout"
                            LastChildFill="True">
                     <atom:Button Name="PART_SecondaryButton"
@@ -15,12 +17,22 @@
                                  Padding="{TemplateBinding Padding}"
                                  SizeType="{TemplateBinding SizeType}"
                                  Icon="{TemplateBinding OpenIndicator}"
+                                 IsExternalPopupTrigger="True"
                                  IsEnabled="{TemplateBinding IsEnabled}"
                                  IsDanger="{TemplateBinding IsDanger}"
                                  ButtonType="{TemplateBinding EffectiveButtonType}"
                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
-                    <atom:Button Name="PART_PrimaryButton"
+                    <Border Name="PART_SeparatorSpace"
+                            DockPanel.Dock="Right"
+                            IsVisible="False"
+                            IsHitTestVisible="False"
+                            Background="{CompiledBinding #PART_PrimaryButton.Background}">
+                        <!-- layout: shadcn ButtonGroupSeparator is inset by 1 DIP above and below. -->
+                        <Border Margin="0,1,0,1"
+                                Background="{TemplateBinding SplitSeparatorBrush}" />
+                    </Border>
+                    <atom:Button x:Name="PART_PrimaryButton"
                                  Classes.semantic-primary="True"
                                  Content="{TemplateBinding Content}"
                                  ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -43,45 +55,65 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         <Setter Property="GutterToFlyout" Value="{atom:SplitButtonTokenResource GutterToFlyout}"/>
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="IsWaveSpiritEnabled" Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SplitButtonTokenResource EnableMotion}" />
+        <Setter Property="IsWaveSpiritEnabled" Value="{atom:SplitButtonTokenResource EnableWaveSpirit}" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
-        <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
+        <Setter Property="BorderThickness" Value="{atom:SplitButtonTokenResource BorderThickness}"/>
 
-        <!-- 对齐上游 solid 组合规则：primary 形态接缝分隔线取次按钮 hover 背景
-             （colorPrimaryHover / colorErrorHover），default（outline）形态无接缝线保持 ColorBorder。 -->
+        <!-- 接缝分隔色经自有槽位下发：Ant 基线沿用上游 solid 组合规则的 primary / danger hover 档；
+             设计语言可改为与填充同色（PrimeNG：filled 的 borderColor 等于填充色，接缝不可见）。 -->
         <Style Selector="^[IsPrimaryButtonType=True][IsDanger=False]">
-            <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource SolidSeparatorColor}"/>
         </Style>
         <Style Selector="^[IsPrimaryButtonType=True][IsDanger=True]">
-            <Setter Property="SplitSeparatorBrush" Value="{atom:SharedTokenResource ColorErrorHover}"/>
+            <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource DangerSeparatorColor}"/>
+        </Style>
+
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True] /template/ Border#PART_SeparatorSpace">
+            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Width" Value="{CompiledBinding $parent[atom:SplitButton].BorderThickness.Left}" />
+        </Style>
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True]:disabled /template/ Border#PART_SeparatorSpace">
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonStyleValues.DisabledOpacity}" />
+        </Style>
+
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True][IsDanger=True] /template/ atom|Button">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        </Style>
+
+        <Style Selector="^[UseInsetSeparator=True][IsPrimaryButtonType=True]:flyout-open /template/ atom|Button#PART_SecondaryButton">
+            <Setter Property="Background" Value="{Binding VariantAppearance.BackgroundHover, RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}"/>
+            <Setter Property="CornerRadius" Value="{atom:SplitButtonTokenResource BorderRadiusLG}"/>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+            <Setter Property="CornerRadius" Value="{atom:SplitButtonTokenResource BorderRadius}"/>
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+            <Setter Property="CornerRadius" Value="{atom:SplitButtonTokenResource BorderRadius}"/>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
+            <Setter Property="CornerRadius" Value="{atom:SplitButtonTokenResource BorderRadiusSM}"/>
         </Style>
 
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="1000"/>
         </Style>
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button#PART_SecondaryButton">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="1001"/>
         </Style>
+        <Style Selector="^:flyout-open /template/ atom|Button#PART_SecondaryButton">
+            <Setter Property="IsExternalPopupOpen" Value="True" />
+        </Style>
         <Style Selector="^ /template/ #PART_MainLayout > atom|Button:pointerover">
+            <!-- layout: stacking order of the two Buttons -->
             <Setter Property="ZIndex" Value="2000"/>
         </Style>
 </ControlTheme>

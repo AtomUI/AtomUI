@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -169,6 +170,38 @@ public class ProgressBarBehaviorTests
         });
     }
 
+    [Fact]
+    public void User_And_App_Style_MinHeight_Override_The_Text_Geometry_Fallback()
+    {
+        // The text-geometry minimum is a theme-level fallback: a local MinHeight and an application Style must win.
+        var line       = new AtomUIProgressBar { Value = 40, MinHeight = 64 };
+        var steps      = new AtomUIStepsProgressBar { Value = 40, Steps = 5, MinHeight = 64 };
+        var styledLine = new AtomUIProgressBar { Value = 40, Classes = { "styled" } };
+        var host       = new StackPanel { Children = { line, steps, styledLine } };
+
+        ShowInWindow(host, () =>
+        {
+            styledLine.MinHeight.ShouldBeGreaterThan(0);
+            line.MinHeight.ShouldBe(64);
+            steps.MinHeight.ShouldBe(64);
+
+            // Completing the progress swaps the text for the status icon and recomputes the fallback.
+            line.Value  = 100;
+            steps.Value = 100;
+            Dispatcher.UIThread.RunJobs();
+            line.MinHeight.ShouldBe(64);
+            steps.MinHeight.ShouldBe(64);
+
+            host.Styles.Add(new Avalonia.Styling.Style(x => x.OfType<AtomUIProgressBar>().Class("styled"))
+            {
+                Setters = { new Avalonia.Styling.Setter(Layoutable.MinHeightProperty, 48d) }
+            });
+            Dispatcher.UIThread.RunJobs();
+            styledLine.MinHeight.ShouldBe(48);
+            line.MinHeight.ShouldBe(64);
+        });
+    }
+
     private static void ShowInWindow(Control content, Action assertion)
     {
         var window = new AvaloniaWindow
@@ -203,7 +236,7 @@ public class ProgressBarBehaviorTests
     {
         public void SetStrokeThickness(double value)
         {
-            StrokeThickness = value;
+            EffectiveStrokeThickness = value;
         }
 
         public void SetExtraInfoSize(Size value)

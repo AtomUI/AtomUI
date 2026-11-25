@@ -29,7 +29,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:MessageCardTokenResource EnableMotion}" />
         
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="Width" Value="{atom:MessageCardTokenResource MessageIconSize}" />
@@ -37,53 +37,60 @@
         </Style>
 
         <Style Selector="^[MessageType=Information]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource InformationShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:MessageCardTokenResource InformationIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Loading]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource LoadingShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:MessageCardTokenResource LoadingIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Error]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource ErrorShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:MessageCardTokenResource ErrorIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Success]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource SuccessShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorSuccess}" />
+                        Value="{atom:MessageCardTokenResource SuccessIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[MessageType=Warning]">
+            <Setter Property="BoxShadow" Value="{atom:MessageCardTokenResource WarningShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:MessageCardTokenResource WarningIconColor}" />
             </Style>
         </Style>
 
         <Setter Property="OpenCloseMotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationMid}" />
+                Value="{atom:MessageCardTokenResource MotionDurationMid}" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="Transitions">
-            <Transitions>
-                <TransformOperationsTransition Property="RenderTransform"
-                                               Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                               Easing="0.645,0.045,0.355,1" />
-                <DoubleTransition Property="Opacity"
-                                  Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                  Easing="0.645,0.045,0.355,1" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   atom:TokenTransitions.Duration="MotionDurationMid"
+                                                   Easing="0.645,0.045,0.355,1" />
+                    <DoubleTransition Property="Opacity"
+                                      atom:TokenTransitions.Duration="MotionDurationMid"
+                                      Easing="0.645,0.045,0.355,1" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
 
         <Style Selector="^[IsMotionEnabled=False]">
@@ -97,8 +104,9 @@
         -->
         <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource ContentPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadows}" />
+        <Setter Property="CornerRadius" Value="{atom:MessageCardTokenResource BorderRadiusLG}" />
+        <!-- The card shadow comes from the slot of the current MessageType (every value has one); there is no
+             severity-less base shadow. -->
 
         <Style Selector="^ /template/ Border#PART_Frame">
             <Setter Property="Margin" Value="0" />
@@ -109,16 +117,42 @@
         </Style>
 
         <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeight}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-            <Setter Property="SelectionForegroundBrush" Value="{atom:SharedTokenResource SelectionForeground}" />
+            <Setter Property="LineHeight" Value="{atom:MessageCardTokenResource FontHeight}" />
+            <Setter Property="FontSize" Value="{atom:MessageCardTokenResource FontSize}" />
+            <Setter Property="Foreground" Value="{atom:MessageCardTokenResource ColorText}" />
+            <Setter Property="SelectionBrush" Value="{atom:MessageCardTokenResource SelectionBackground}" />
+            <Setter Property="SelectionForegroundBrush" Value="{atom:MessageCardTokenResource SelectionForeground}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconContent">
             <Setter Property="Margin" Value="{atom:MessageCardTokenResource MessageIconMargin}" />
         </Style>
 
+        <!-- ========================= severity surfaces ========================= -->
+        <!-- After the generic message rule so a severity keeps its colours. -->
+        <Style Selector="^[MessageType=Information]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource InformationBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource InformationColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Success]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource SuccessBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource SuccessColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Warning]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource WarningBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource WarningColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[MessageType=Error]">
+            <Setter Property="Background" Value="{atom:MessageCardTokenResource ErrorBg}" />
+            <Style Selector="^ /template/ SelectableTextBlock#PART_Message">
+                <Setter Property="Foreground" Value="{atom:MessageCardTokenResource ErrorColor}" />
+            </Style>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

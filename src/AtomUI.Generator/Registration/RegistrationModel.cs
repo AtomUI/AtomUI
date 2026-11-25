@@ -56,7 +56,6 @@ internal sealed record RegistrationPackage(string Id, string AssemblyIdentity, s
     RegistrationType? RegistrationBuilderType = null, RegistrationType? VoidType = null, ulong PackageSchemaFingerprint = 0)
 {
     internal bool SupportsResourceKeys { get; init; }
-    internal bool SupportsStartupManifest { get; init; }
     internal bool HasLanguageModule { get; init; }
 }
 
@@ -84,6 +83,8 @@ internal readonly struct ValueArray<T> : IEquatable<ValueArray<T>>, IEnumerable<
 
 internal static class RegistrationNames
 {
+    internal const string PackageMetadata = "PackageMetadata";
+
     internal static string Literal(string value) => SymbolDisplay.FormatLiteral(value, true);
     internal static string Hash(string value)
     {

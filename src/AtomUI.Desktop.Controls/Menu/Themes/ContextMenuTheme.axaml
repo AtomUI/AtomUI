@@ -3,7 +3,29 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <ControlTheme x:Key="{x:Type atom:ContextMenu}" TargetType="atom:ContextMenu">
+    <ControlTheme x:Key="{x:Type atom:ContextMenu}" TargetType="atom:ContextMenu" x:DataType="atom:ContextMenu">
+        <Setter Property="atom:MenuPopupScrollHost.PopupContentPadding" Value="{atom:ContextMenuTokenResource MenuPopupContentPadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMinWidth" Value="{atom:ContextMenuTokenResource MenuPopupMinWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMaxWidth" Value="{atom:ContextMenuTokenResource MenuPopupMaxWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupBackground" Value="{atom:ContextMenuTokenResource MenuPopupBgColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemForeground" Value="{atom:ContextMenuTokenResource ItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.KeyGestureForeground" Value="{atom:ContextMenuTokenResource KeyGestureColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemMargin" Value="{atom:ContextMenuTokenResource ItemMargin}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverForeground" Value="{atom:ContextMenuTokenResource ItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemDisabledForeground" Value="{atom:ContextMenuTokenResource ItemDisabledColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemForeground" Value="{atom:ContextMenuTokenResource DangerItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemHoverForeground" Value="{atom:ContextMenuTokenResource DangerItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemBackground" Value="{atom:ContextMenuTokenResource ItemBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverBackground" Value="{atom:ContextMenuTokenResource ItemHoverBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHeight" Value="{atom:ContextMenuTokenResource ItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconSize" Value="{atom:ContextMenuTokenResource ItemIconSize}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconEndMargin" Value="{atom:ContextMenuTokenResource ItemIconMarginInlineEnd}" />
+        <Setter Property="atom:MenuPopupScrollHost.GroupTitlePadding" Value="{atom:ContextMenuTokenResource GroupTitlePadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemCornerRadius" Value="{atom:ContextMenuTokenResource ItemBorderRadius}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemInlinePadding" Value="{atom:ContextMenuTokenResource ItemPaddingInline}" />
+        <Setter Property="atom:MenuPopupScrollHost.SeparatorItemHeight" Value="{atom:ContextMenuTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupShadows" Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
@@ -26,22 +48,25 @@
 
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="HorizontalOffset" Value="{atom:MenuTokenResource ContextMenuOffsetX}" />
-        <Setter Property="VerticalOffset" Value="{atom:MenuTokenResource ContextMenuOffsetY}" />
+        <Setter Property="HorizontalOffset" Value="{atom:ContextMenuTokenResource ContextMenuOffsetX}" />
+        <Setter Property="VerticalOffset" Value="{atom:ContextMenuTokenResource ContextMenuOffsetY}" />
         <Setter Property="CornerRadius" Value="{atom:PopupTokenResource PopupCornerRadius}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="Padding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
-        <Setter Property="Background" Value="{atom:MenuTokenResource MenuPopupBgColor}" />
-        <Setter Property="MinWidth" Value="{atom:MenuTokenResource MenuPopupMinWidth}" />
-        <Setter Property="MaxWidth" Value="{atom:MenuTokenResource MenuPopupMaxWidth}" />
-        <Setter Property="ItemHeight" Value="{atom:MenuTokenResource ItemHeight}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ContextMenuTokenResource EnableMotion}" />
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupContentPadding)}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
+        <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMinWidth)}" />
+        <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMaxWidth)}" />
+        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
         <Setter Property="DisplayPageSize" Value="8" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}"/>
+        <Setter Property="MotionDuration" Value="{atom:ContextMenuTokenResource MotionDurationMid}"/>
+        <!-- Menus take their own popup frame (MenuPopupShadows; by default the Popup Token's BoxShadowsSecondary). -->
         <Setter Property="PopupRootShadow"
-                Value="{atom:PopupTokenResource PopupRootShadow}" />
+                Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
         <Setter Property="OverlayHostShadow"
-                Value="{atom:PopupTokenResource OverlayHostShadow}" />
+                Value="{atom:ContextMenuTokenResource MenuPopupShadows}" />
 
     </ControlTheme>
 </ResourceDictionary>

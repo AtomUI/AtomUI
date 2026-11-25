@@ -1,4 +1,5 @@
 using AtomUI.Controls.Data;
+using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -81,8 +82,26 @@ public class DialogPopupControlFamilyTests
 
             host.Click(input);
 
-            host.FindPopupHost().ShouldNotBeNull();
+            var popupHost = host.FindPopupHost();
+            var surface = host.Presenter.FocusScope;
+            var surfaceFocusCount = 0;
+            surface.GotFocus += (_, args) =>
+            {
+                if (ReferenceEquals(args.Source, surface))
+                {
+                    surfaceFocusCount++;
+                }
+            };
+            Control cell = family is "TimePicker" or "RangeTimePicker"
+                ? popupHost.GetVisualDescendants().OfType<TimeViewCell>().First(candidate => candidate.Tag is 1)
+                : popupHost.GetVisualDescendants().OfType<DateViewerCell>().First(candidate =>
+                    candidate.Model is { IsFocusable: true, IsInView: true });
 
+            host.Click(cell);
+
+            surfaceFocusCount.ShouldBe(0, "Dialog activation must not interrupt content popup focus.");
+            picker.IsPickerOpen.ShouldBeTrue();
+            popupHost.IsAttachedToVisualTree().ShouldBeTrue();
             host.LightDismiss();
             host.AssertNoPopupHosts();
             host.Presenter.Parent.ShouldBeSameAs(host.DialogLayer);
@@ -125,7 +144,7 @@ public class DialogPopupControlFamilyTests
                 ShouldUseOverlayPopup = true,
                 Items = { child }
             };
-            var menu = new AtomUI.Desktop.Controls.Menu { Items = { parent } };
+            var menu = new AtomUI.Desktop.Controls.Menu { IsMotionEnabled = false, Items = { parent } };
             using var host = DialogPopupTestHost.Open(menu);
 
             parent.IsSubMenuOpen = true;
@@ -538,9 +557,9 @@ public class DialogPopupControlFamilyTests
     {
         InfoPickerInput picker = family switch
         {
-            "DatePicker" => new AtomUI.Desktop.Controls.DatePicker(),
+            "DatePicker" => new AtomUI.Desktop.Controls.DatePicker { IsNeedConfirm = true },
             "TimePicker" => new AtomUI.Desktop.Controls.TimePicker(),
-            "RangeDatePicker" => new AtomUI.Desktop.Controls.RangeDatePicker(),
+            "RangeDatePicker" => new AtomUI.Desktop.Controls.RangeDatePicker { IsNeedConfirm = true },
             "RangeTimePicker" => new AtomUI.Desktop.Controls.RangeTimePicker(),
             _ => throw new ArgumentOutOfRangeException(nameof(family), family, null)
         };

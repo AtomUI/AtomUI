@@ -10,10 +10,14 @@
             <themes:AbstractLineProgressTheme TargetType="atom:ProgressBar" />
         </ControlTheme.BasedOn>
 
-        <Setter Property="ColorTextLabel"
-                Value="{atom:SharedTokenResource ColorTextLabel}" />
-        <Setter Property="ColorTextLightSolid"
-                Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="LineSizeTokenResourceMode" Value="FontAndStrokePresets" />
+        <Setter Property="GrooveBrush" Value="{atom:ProgressBarTokenResource RemainingColor}" />
+        <Setter Property="StrokeBrush" Value="{atom:ProgressBarTokenResource DefaultColor}" />
+        <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSize}" />
+
+        <Style Selector="^[EffectiveSizeType=Middle], ^[EffectiveSizeType=Small]">
+            <Setter Property="LineInfoIconSize" Value="{atom:ProgressBarTokenResource LineInfoIconSizeSM}" />
+        </Style>
 
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:ProgressBar">
@@ -26,7 +30,7 @@
                     <Border Name="PART_ProgressSuccess" />
                     <Canvas Name="PART_ProgressIndicator"
                             Classes.semantic-indicator="True"
-                            IsVisible="{TemplateBinding IsProgressInfoVisible}">
+                            IsVisible="{TemplateBinding IsProgressInfoPresented}">
                         <LayoutTransformControl Name="PART_LayoutTransformControl">
                             <Label Name="PART_PercentageLabel"
                                    Padding="0"
@@ -45,6 +49,8 @@
                             Name="PART_SuccessCompletedIconPresenter"
                             Icon="{TemplateBinding SuccessCompletedIcon}"
                             HorizontalAlignment="Left" />
+                        <atomc:ProgressInfoPresenter Name="PART_ProgressInfoContentPresenter"
+                                          IsVisible="False" />
                     </Canvas>
                 </atomc:LineProgressPanel>
             </ControlTemplate>
@@ -52,20 +58,20 @@
 
         <Style Selector="^ /template/ Border#PART_ProgressRail">
             <Setter Property="Background"
-                    Value="{Binding GrooveBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding GrooveBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#PART_ProgressTrack">
             <Setter Property="Background"
-                    Value="{Binding StrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding StrokeBrush}" />
         </Style>
         <Style Selector="^ /template/ Border#PART_ProgressSuccess">
             <Setter Property="Background"
-                    Value="{Binding SuccessStrokeBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{TemplateBinding SuccessStrokeBrush}" />
         </Style>
 
         <Style Selector="^[StrokeLineCap=Round]">
             <Style Selector="^ /template/ Border#PART_ProgressRail, ^ /template/ Border#PART_ProgressTrack, ^ /template/ Border#PART_ProgressSuccess">
-                <Setter Property="CornerRadius" Value="1000" />
+                <Setter Property="CornerRadius" Value="{atom:ProgressBarTokenResource LineBorderRadius}" />
             </Style>
         </Style>
         
@@ -109,6 +115,11 @@
                     </Style>
                 </Style>
             </Style>
+        </Style>
+
+        <!-- At 0 the inner label sits on the empty track; InnerLabelEmptyOpacity (1 by default) can hide it. -->
+        <Style Selector="^:labelinner:value-zero /template/ Label#PART_PercentageLabel">
+            <Setter Property="Opacity" Value="{atom:ProgressBarTokenResource InnerLabelEmptyOpacity}" />
         </Style>
 
         <Style Selector="^:labelinner">

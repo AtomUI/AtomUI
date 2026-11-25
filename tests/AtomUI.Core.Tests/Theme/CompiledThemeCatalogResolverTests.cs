@@ -1,3 +1,5 @@
+using AtomUI.Theme.Languages;
+using AtomUI.DesignLanguages.AntDesign;
 using System.Text;
 using AtomUI.Theme;
 using AtomUI.Theme.Definitions;
@@ -25,18 +27,19 @@ public class CompiledThemeCatalogResolverTests
                 "memory://orange",
                 "3",
                 ThemeXml("SunsetOrange", "Sunset Orange", "#FA8C16"));
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new MemoryResolver("Gallery", green, orange));
             var manager = builder.Build();
 
             manager.InitializeApplication(Application.Current!);
 
-            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
-                IThemeManager.DEFAULT_THEME_ID,
+            manager.Themes.Select(static theme => theme.Id).ShouldBe([
+                "$AntDesign",
+                AntDesignThemes.DaybreakBlue,
                 "PolarGreen",
                 "SunsetOrange"
             ]);
-            manager.AvailableThemes
+            manager.Themes
                    .Single(static theme => theme.Id == "PolarGreen")
                    .AccentColor.ShouldBe(Color.Parse("#52C41A"));
             green.OpenCount.ShouldBe(1);
@@ -63,7 +66,7 @@ public class CompiledThemeCatalogResolverTests
                 "memory://reload-cache",
                 "1",
                 ThemeXml("ReloadCache", "Reload Cache", "#52C41A"));
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new ReloadableMemoryResolver(source));
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -82,7 +85,7 @@ public class CompiledThemeCatalogResolverTests
         var source = new MemorySource(
             "memory://registry-cache",
             "1",
-            ThemeXml("RegistryCache", "Registry Cache", "#52C41A", isDefault: true));
+            ThemeXml("RegistryCache", "Registry Cache", "#52C41A"));
         var resolver = new MemoryResolver("RegistryCache", source);
         var context = new ThemeDefinitionResolveContext("Tests", string.Empty, false, 0);
         var firstRegistry = TypedThemeSnapshotCacheTests.CreateRegistry();
@@ -122,7 +125,7 @@ public class CompiledThemeCatalogResolverTests
         var source = new MutableMemorySource(
             "memory://mutable-cache",
             "1",
-            ThemeXml("MutableCache", "Mutable Cache", "#52C41A", isDefault: true));
+            ThemeXml("MutableCache", "Mutable Cache", "#52C41A"));
         var resolver = new MutableMemoryResolver(source);
         var context = new ThemeDefinitionResolveContext("Tests", string.Empty, false, 0);
         var registry = TypedThemeSnapshotCacheTests.CreateRegistry();
@@ -133,7 +136,7 @@ public class CompiledThemeCatalogResolverTests
             [resolver],
             context,
             cache);
-        source.Replace(ThemeXml("MutableCache", "Mutable Cache", "#FA8C16", isDefault: true));
+        source.Replace(ThemeXml("MutableCache", "Mutable Cache", "#FA8C16"));
         var second = CompiledThemeCatalog.LoadInitial(
             registry,
             [resolver],
@@ -147,7 +150,7 @@ public class CompiledThemeCatalogResolverTests
               .ShouldNotBe(first.Catalog!.Get("MutableCache").Revision.ContentDigest);
         second.Catalog.Get("MutableCache").Definition
               .ShouldNotBeSameAs(first.Catalog.Get("MutableCache").Definition);
-        second.Catalog.Get("MutableCache").Definition.Tokens
+        second.Catalog.Get("MutableCache").Definition.Base.Tokens
               .Single(static token => token.Descriptor.Name == nameof(DesignToken.ColorPrimary))
               .Value
               .ShouldBe(Color.Parse("#FA8C16"));
@@ -159,7 +162,7 @@ public class CompiledThemeCatalogResolverTests
         var source = new MutableMemorySource(
             "memory://revision-only-cache",
             "1",
-            ThemeXml("RevisionOnlyCache", "Revision Only Cache", "#52C41A", isDefault: true));
+            ThemeXml("RevisionOnlyCache", "Revision Only Cache", "#52C41A"));
         var resolver = new MutableMemoryResolver(source);
         var context = new ThemeDefinitionResolveContext("Tests", string.Empty, false, 0);
         var registry = TypedThemeSnapshotCacheTests.CreateRegistry();
@@ -190,13 +193,13 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new MemoryResolver(
                 "Gallery",
                 new MemorySource(
                     "memory://duplicate",
                     "1",
-                    ThemeXml(IThemeManager.DEFAULT_THEME_ID, "Duplicate", "#52C41A"))));
+                    ThemeXml(AntDesignThemes.DaybreakBlue, "Duplicate", "#52C41A"))));
             var manager = builder.Build();
 
             var exception = Should.Throw<ThemeLoadException>(() =>
@@ -204,27 +207,6 @@ public class CompiledThemeCatalogResolverTests
 
             exception.Message.ShouldContain("DaybreakBlue");
             exception.Message.ToLowerInvariant().ShouldContain("duplicate");
-        });
-    }
-
-    [Fact]
-    public void Second_Default_Theme_In_A_Static_Resolver_Fails_Startup()
-    {
-        HeadlessTestApp.Run(() =>
-        {
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
-            builder.AddThemeDefinitionResolver(new MemoryResolver(
-                "Gallery",
-                new MemorySource(
-                    "memory://second-default",
-                    "1",
-                    ThemeXml("OtherDefault", "Other Default", "#52C41A", isDefault: true))));
-            var manager = builder.Build();
-
-            var exception = Should.Throw<ThemeLoadException>(() =>
-                manager.InitializeApplication(Application.Current!));
-
-            exception.Message.ToLowerInvariant().ShouldContain("default");
         });
     }
 
@@ -238,7 +220,7 @@ public class CompiledThemeCatalogResolverTests
                 "1",
                 ThemeXml("Valid", "Valid", "#52C41A"));
             var invalid = new MemorySource("memory://invalid", "1", "<Theme>");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new MemoryResolver("Gallery", valid, invalid));
             var manager = builder.Build();
 
@@ -255,7 +237,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new WarningResolver(
                 new MemorySource(
                     "memory://warning-theme",
@@ -276,7 +258,7 @@ public class CompiledThemeCatalogResolverTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(new MemoryResolver(
                 "NoAccent",
                 new MemorySource(
@@ -287,25 +269,97 @@ public class CompiledThemeCatalogResolverTests
 
             manager.InitializeApplication(Application.Current!);
 
-            manager.AvailableThemes
+            manager.Themes
                    .Single(static theme => theme.Id == "NoAccent")
                    .AccentColor.ShouldBeNull();
         });
     }
 
+    [Fact]
+    public void Catalog_Publishes_The_Language_Fixed_Axes_Locked_Seeds_And_Accent_In_ThemeInfo()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildManager("""
+                <Theme xmlns="https://atomui.net/schemas/theme/v2" Id="Meta" Name="Meta" Language="AntDesign"
+                       Style="Default" Appearance="Dark" Density="Compact">
+                  <Tokens><Token Name="ColorPrimary" Value="#722ED1" Locked="true" /></Tokens>
+                </Theme>
+                """);
+
+            var info = manager.Themes.Single(static theme => theme.Id == "Meta");
+            info.Name.ShouldBe("Meta");
+            info.Language.ShouldBe("AntDesign");
+            info.Style.ShouldBe(AntDesignLanguage.DefaultStyle);
+            info.Appearance.ShouldBe(ThemeAppearance.Dark);
+            info.Density.ShouldBe(DesignDensity.Compact);
+            info.LockedSeeds.ShouldBe(["ColorPrimary"]);
+            info.AccentColor.ShouldBe(Color.Parse("#722ED1"));
+            info.IsLanguageDefault.ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public void Catalog_Lists_The_Implicit_Default_Entry_Of_Every_Enabled_Language()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var manager = BuildManager();
+
+            var entry = manager.Themes.Single(static theme => theme.IsLanguageDefault);
+            entry.Id.ShouldBe(ThemeInfo.LanguageDefaultId("AntDesign"));
+            entry.Language.ShouldBe("AntDesign");
+            entry.Style.ShouldBeNull();
+            entry.Appearance.ShouldBeNull();
+            entry.Density.ShouldBeNull();
+            manager.Languages.ShouldHaveSingleItem().Id.ShouldBe("AntDesign");
+            manager.Languages[0].AdjustableSeeds.ShouldBe(["ColorPrimary"]);
+            manager.Themes.ShouldContain(static theme => theme.Id == AntDesignThemes.DaybreakBlue);
+        });
+    }
+
+    [Fact]
+    public void A_Static_Theme_Of_A_Language_That_Is_Not_Enabled_Fails_Startup()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
+            builder.AddThemeDefinitionResolver(new MemoryResolver("Other", new MemorySource("memory://other", "1",
+                """<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="Nova" Name="Nova" Language="Shadcn" />""")));
+            var manager = builder.Build();
+
+            Should.Throw<ThemeLoadException>(() => manager.InitializeApplication(Application.Current!))
+                  .Message.ShouldContain("Shadcn");
+        });
+    }
+
+    private static ThemeManager BuildManager(params string[] xmls)
+    {
+        var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
+        var index = 0;
+        foreach (var xml in xmls)
+        {
+            index++;
+            builder.AddThemeDefinitionResolver(new MemoryResolver(
+                $"Lang{index}",
+                new MemorySource($"memory://lang-{index}", "1", xml)));
+        }
+        var manager = builder.Build();
+        manager.InitializeApplication(Application.Current!);
+        return manager;
+    }
+
     private static string ThemeXml(
         string id,
         string name,
-        string colorPrimary,
-        bool isDefault = false)
+        string colorPrimary)
     {
-        var defaultAttribute = isDefault ? " IsDefault=\"true\"" : string.Empty;
         return $$"""
-                 <Theme xmlns="https://atomui.net/schemas/theme/v1"
+                 <Theme xmlns="https://atomui.net/schemas/theme/v2"
                         Id="{{id}}"
                         Name="{{name}}"
-                        Appearance="Light"{{defaultAttribute}}>
-                   <Algorithms><Algorithm Id="Default" /></Algorithms>
+                        Language="AntDesign"
+                        Appearance="Light">
                    <Tokens><Token Name="ColorPrimary" Value="{{colorPrimary}}" /></Tokens>
                  </Theme>
                  """;
@@ -314,12 +368,11 @@ public class CompiledThemeCatalogResolverTests
     private static string ThemeXmlWithoutTokens(string id, string name)
     {
         return $$"""
-                 <Theme xmlns="https://atomui.net/schemas/theme/v1"
+                 <Theme xmlns="https://atomui.net/schemas/theme/v2"
                         Id="{{id}}"
                         Name="{{name}}"
-                        Appearance="Light">
-                   <Algorithms><Algorithm Id="Default" /></Algorithms>
-                 </Theme>
+                        Language="AntDesign"
+                        Appearance="Light" />
                  """;
     }
 

@@ -95,42 +95,46 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="ItemHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+        <Setter Property="SpacerLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgElevated}" />
   
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
         
         <Style Selector="^ /template/ atom|TextBlock#PART_HeaderText">
-            <Setter Property="Height" Value="{atom:TimePickerTokenResource ItemHeight}" />
+            <Setter Property="Height" Value="{TemplateBinding ItemHeight}" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="{atom:TimePickerTokenResource HeaderMargin}" />
+            <Setter Property="Margin" Value="{TemplateBinding HeaderMargin}" />
         </Style>
         
         <Style Selector="^ /template/ atom|DateTimePickerPanel">
-            <Setter Property="ItemHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
+            <Setter Property="ItemHeight" Value="{TemplateBinding ItemHeight}" />
+            <Setter Property="ItemMargin" Value="{TemplateBinding ItemMargin}" />
+            <Setter Property="ItemPadding" Value="{TemplateBinding ItemPadding}" />
+            <Setter Property="ItemBackgroundInset" Value="{TemplateBinding ItemBackgroundInset}" />
+            <Setter Property="CenterItemContent" Value="{TemplateBinding CenterItemContent}" />
         </Style>
         
         <Style Selector="^ /template/ Rectangle">
-            <Setter Property="Fill" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_HourHost">
-            <Setter Property="Width" Value="{atom:TimePickerTokenResource ItemWidth}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_MinuteHost">
-            <Setter Property="Width" Value="{atom:TimePickerTokenResource ItemWidth}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_SecondHost">
-            <Setter Property="Width" Value="{atom:TimePickerTokenResource ItemWidth}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemWidth}" />
         </Style>
         
         <Style Selector="^ /template/ Panel#PART_PeriodHost">
-            <Setter Property="Width" Value="{atom:TimePickerTokenResource ItemWidth}" />
+            <Setter Property="Width" Value="{TemplateBinding PeriodHostWidth}" />
         </Style>
         
     </ControlTheme>

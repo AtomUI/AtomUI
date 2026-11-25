@@ -2,6 +2,7 @@ using AtomUI;
 using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
@@ -14,6 +15,20 @@ namespace AtomUIGallery.ShowCases.Modal;
 public partial class ModalShowCase : GalleryReactiveUserControl<ModalViewModel>
 {
     public const string LanguageId = nameof(ModalShowCase);
+
+    public static readonly AttachedProperty<Thickness> FooterPaddingProperty =
+        AvaloniaProperty.RegisterAttached<ModalShowCase, Border, Thickness>("FooterPadding");
+
+    public static Thickness GetFooterPadding(Border border) => border.GetValue(FooterPaddingProperty);
+
+    public static void SetFooterPadding(Border border, Thickness value) => border.SetValue(FooterPaddingProperty, value);
+
+    public static readonly IValueConverter CenterVerticalPadding =
+        new FuncValueConverter<Thickness, Thickness>(static padding =>
+        {
+            var vertical = (padding.Top + padding.Bottom) / 2;
+            return new Thickness(padding.Left, vertical, padding.Right, vertical);
+        });
 
     private IDisposable? _delayedCloseDialogDisposal;
 

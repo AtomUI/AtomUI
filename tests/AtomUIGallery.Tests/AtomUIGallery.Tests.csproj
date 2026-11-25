@@ -7,6 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPreviewFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/GalleryFixedBrandFixture.theme.xml" />
+        <!-- Named PrimeNG themes for testing the workspace's theme menu and selection contract. -->
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPrimeNGLaraDarkFixture.theme.xml" />
+        <AtomUIThemeDefinition Include="Fixtures/GalleryPrimeNGLaraCompactFixture.theme.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia.Headless" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Shouldly" />

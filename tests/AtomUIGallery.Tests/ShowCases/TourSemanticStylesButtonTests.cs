@@ -1,3 +1,6 @@
+using AtomUI.Controls;
+using AtomUI.Theme.Resources;
+using Avalonia;
 using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using Avalonia.Controls;
@@ -16,12 +19,12 @@ using TourShowCaseViewModel = AtomUIGallery.ShowCases.Tour.TourViewModel;
 namespace AtomUIGallery.Tests.ShowCases;
 
 // 锁定「自定义语义结构的样式」示例的函数样式按钮定制形态：
-// 对齐上游 style-class demo 的 btnProps（prev 紫底白字 / next 白底紫描边紫字），
+// 保留上一步的实色样式与下一步的描边样式，配色跟随当前主题，
 // 同时锁定用户全局约束的“专用 Style 声明式形态”——禁止退化为代码回退。
 public class TourSemanticStylesButtonTests
 {
     [Fact]
-    public void Function_Tour_Button_Styles_Apply_The_Upstream_BtnProps_Look()
+    public void Function_Tour_Button_Styles_Apply_Active_Theme_Colors()
     {
         AvaloniaTestApp.EnsureInitialized();
 
@@ -83,20 +86,25 @@ public class TourSemanticStylesButtonTests
             prev.ShouldNotBeNull($"previous-btn not visible; buttons: {describe()}");
             next.ShouldNotBeNull($"next-btn not visible; buttons: {describe()}");
 
-            (prev.Background as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
-            (prev.Foreground as ISolidColorBrush)?.Color.ShouldBe(Colors.White);
-            (next.Background as ISolidColorBrush)?.Color.ShouldBe(Colors.White);
-            (next.Foreground as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
-            (next.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
+            (prev.Background as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorPrimary));
+            (prev.Foreground as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorTextLightSolid));
+            (next.Background as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorBgContainer));
+            (next.Foreground as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
+            (next.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorInfoBorder));
 
-            // hover 态对齐上游：demo 内联色不变 + tour primary 的 :hover css 叠加 ——
-            // prev 仅边框变化（白@15% → transparent），next 仅背景变化（PrimaryNextBtnHoverBg）。
-            // owner 作用域的无激活 Setter 会盖过 ControlTheme 的激活式 Setter，
-            // 伪类态必须在示例 Styles 中显式声明，这里锁定该声明形态。
+            // The close part style sets the close button's IconBrush without entering its template.
+            var close = popupRoot.GetVisualDescendants().OfType<Control>()
+                                 .First(c => c.Classes.Contains("semantic-popup-close"));
+            (close.GetValue(IconPresenter.IconBrushProperty) as ISolidColorBrush)?.Color
+                .ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
+            var closeIcon = close.GetVisualDescendants().OfType<IconPresenter>().First();
+            (closeIcon.IconBrush as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
+
+            // 悬停时，上一步仅清除边框，下一步仅使用主题的提示悬停背景。
             ((IPseudoClasses)prev.Classes).Set(":pointerover", true);
             Dispatcher.UIThread.RunJobs();
-            (prev.Background as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
-            (prev.Foreground as ISolidColorBrush)?.Color.ShouldBe(Colors.White);
+            (prev.Background as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorPrimary));
+            (prev.Foreground as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorTextLightSolid));
             (prev.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(Colors.Transparent);
 
             ((IPseudoClasses)next.Classes).Set(":pointerover", true);
@@ -104,9 +112,10 @@ public class TourSemanticStylesButtonTests
             var nextHoverBg = (next.Background as ISolidColorBrush)?.Color;
             nextHoverBg.ShouldNotBeNull();
             nextHoverBg!.Value.A.ShouldBe((byte)255);
-            nextHoverBg!.Value.ShouldNotBe(Color.Parse("#FFFFFF")); // 必须真的变深：ColorBgTextHover 叠白
-            (next.Foreground as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
-            (next.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#CDC1FF"));
+            nextHoverBg!.Value.ShouldBe(GetThemeColor(SharedTokenKind.ColorInfoBgHover));
+            nextHoverBg.Value.ShouldNotBe(GetThemeColor(SharedTokenKind.ColorBgContainer));
+            (next.Foreground as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorText));
+            (next.BorderBrush as ISolidColorBrush)?.Color.ShouldBe(GetThemeColor(SharedTokenKind.ColorInfoBorder));
 
             // 遮罩：#73000000（0.45 对齐上游 colorBgMask），且不得再叠加 Opacity 覆盖
             // （Opacity 0.5 × alpha 0.30 = 实际 0.15，页面几乎不暗，曾偏离上游视觉）。
@@ -129,6 +138,13 @@ public class TourSemanticStylesButtonTests
             window.Close();
             Dispatcher.UIThread.RunJobs();
         }
+    }
+
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
     }
 
     private static void EnablePopupOverlayLayer(VisualLayerManager visualLayerManager)

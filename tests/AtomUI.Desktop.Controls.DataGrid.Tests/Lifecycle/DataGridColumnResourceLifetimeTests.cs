@@ -1,4 +1,12 @@
 using System.Reflection;
+using AtomUI.Desktop.Controls.Tests.DataGrid.Theme;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme;
+using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Resources;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Data;
@@ -25,10 +33,13 @@ public class DataGridColumnResourceLifetimeTests
         AvaloniaTestApp.EnsureInitialized();
     }
 
-    [Fact]
-    public void Dynamic_Resource_Header_Does_Not_Root_Unreferenced_DataGrid_Column()
+    [Theory]
+    [InlineData(typeof(DataGridTextColumn))]
+    [InlineData(typeof(DataGridSelectionColumn))]
+    [InlineData(typeof(DataGridDetailExpanderColumn))]
+    public void Dynamic_Resource_Header_Does_Not_Root_Unreferenced_DataGrid_Column(Type columnType)
     {
-        var columnReference = CreateUnrootedColumnReference(CreateResourceKey());
+        var columnReference = CreateUnrootedColumnReference(CreateResourceKey(), columnType);
 
         CollectGarbage();
 
@@ -89,18 +100,82 @@ public class DataGridColumnResourceLifetimeTests
             "DataGridColumnGroupItem dynamic resources must not be rooted by Application.ResourcesChanged after the page releases the group item");
     }
 
+    [Fact]
+    public void Column_And_Group_Use_Local_Provider_Resources_Through_Edit_Publish_And_Owner_Replacement()
+    {
+        var key = CreateResourceKey();
+        Application.Current!.Resources[key] = Brushes.Purple;
+        var first = DataGridThemeTestFixture.CreateGrid();
+        var second = DataGridThemeTestFixture.CreateGrid();
+        var column = first.Columns.OfType<DataGridTextColumn>().First();
+        column.IsReadOnly = false;
+        BindDynamicResource(column, DataGridAbstractTextColumn.ForegroundProperty, key, Application.Current);
+        var group = new DataGridColumnGroupItem { OwningGrid = first };
+        var firstScope = new ThemeConfigProvider { Child = first };
+        var secondScope = new ThemeConfigProvider { Child = second };
+        firstScope.Resources[key] = Brushes.Blue;
+        secondScope.Resources[key] = Brushes.Green;
+        var window = new Avalonia.Controls.Window { Width = 1200, Height = 600,
+            Content = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Children = { firstScope, secondScope } } };
+        try
+        {
+            // Source/columns can attach logically before any live TopLevel theme context, without eager snapshot capture.
+            window.Show();
+            DataGridThemeTestFixture.PumpUntil(() => first.LoadState == DataGridLoadState.Ready && second.LoadState == DataGridLoadState.Ready);
+            column.Foreground.ShouldBe(Brushes.Blue);
+            group.TryGetResource(key, null, out var groupValue).ShouldBeTrue();
+            groupValue.ShouldBe(Brushes.Blue);
+            var row = DataGridThemeTestFixture.Rows(first)[0];
+            column.GetCellContent(row).ShouldBeOfType<global::AtomUI.Desktop.Controls.TextBlock>()
+                .Foreground.ShouldBe(Brushes.Blue);
+            first.UpdateSelectionAndCurrency(column.Index, row.Slot, DataGridSelectionAction.SelectCurrent, false).ShouldBeTrue();
+            first.BeginEdit(new RoutedEventArgs()).ShouldBeTrue();
+            Dispatcher.UIThread.RunJobs();
+            var editor = column.GetCellContent(row).ShouldBeOfType<LineEdit>();
+            editor.Foreground.ShouldBe(Brushes.Blue);
+            ThemeScope.GetTokenOwner(editor).ShouldBe(LineEditTokens.Identity);
+            firstScope.Resources[key] = Brushes.Orange;
+            Dispatcher.UIThread.RunJobs();
+            column.GetCellContent(row).ShouldBeOfType<LineEdit>().Foreground.ShouldBe(Brushes.Orange);
+            first.CancelEdit(DataGridEditingUnit.Row, true).ShouldBeTrue();
+            firstScope.Config = new ThemeConfigBuilder().WithControl(DataGridTokens.Identity,
+                new ControlThemeConfigBuilder().WithToken("CellFontSize", "22").Build()).Build();
+            DataGridThemeTestFixture.PumpUntil(() =>
+                ControlTokenAccessor.Capture<global::AtomUI.Desktop.Controls.DataGrid>(first)
+                    .GetOwn<double>(DataGridTokenKind.CellFontSize) == 22);
+            column.GetCellContent(DataGridThemeTestFixture.Rows(first)[0]).ShouldBeOfType<global::AtomUI.Desktop.Controls.TextBlock>()
+                .FontSize.ShouldBe(22);
+            first.Columns.Remove(column);
+            second.Columns.Insert(0, column);
+            group.OwningGrid = second;
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            column.Foreground.ShouldBe(Brushes.Green);
+            second.ItemsSource = first.ItemsSource;
+            DataGridThemeTestFixture.PumpUntil(() => second.LoadState == DataGridLoadState.Ready);
+            column.GetCellContent(DataGridThemeTestFixture.Rows(second)[0]).ShouldBeOfType<global::AtomUI.Desktop.Controls.TextBlock>()
+                .Foreground.ShouldBe(Brushes.Green);
+            group.TryGetResource(key, null, out groupValue).ShouldBeTrue();
+            groupValue.ShouldBe(Brushes.Green);
+            firstScope.Resources[key] = Brushes.Red;
+            Dispatcher.UIThread.RunJobs();
+            column.Foreground.ShouldBe(Brushes.Green, "The old owner's resource events must be released.");
+            second.Columns.Remove(column);
+            group.OwningGrid = null;
+            Dispatcher.UIThread.RunJobs();
+            column.Foreground.ShouldBe(Brushes.Purple, "A detached resource host keeps the documented application fallback.");
+        }
+        finally { window.Close(); Dispatcher.UIThread.RunJobs(); }
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference CreateUnrootedColumnReference(string resourceKey)
+    private static WeakReference CreateUnrootedColumnReference(string resourceKey, Type columnType)
     {
         Application.Current!.Resources[resourceKey] = "Localized header";
 
-        var column = new DataGridTextColumn
-        {
-            Binding = new Binding("Name")
-            {
-                Mode = BindingMode.OneWay
-            }
-        };
+        var column = (DataGridColumn)Activator.CreateInstance(columnType)!;
+        var grid = new global::AtomUI.Desktop.Controls.DataGrid { AutoGenerateColumns = false };
+        grid.Columns.Add(column);
         BindDynamicResource(column, DataGridColumn.HeaderProperty, resourceKey, Application.Current);
 
         column.Header.ShouldBe("Localized header");

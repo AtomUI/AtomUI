@@ -1,18 +1,19 @@
+using System.Globalization;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AtomUI.Controls;
-using AtomUI.Controls.Primitives;
 using AtomUI.Animations;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -44,11 +45,23 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         Dialog.IsMotionEnabledProperty.AddOwner<OverlayDialogPresenter>();
 
+    private static readonly TimeSpan s_defaultMotionDuration = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan s_defaultOpeningDuration = TimeSpan.FromMilliseconds(300);
+
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), TimeSpan.FromMilliseconds(200));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(MotionDuration), s_defaultMotionDuration);
 
     internal static readonly StyledProperty<TimeSpan> OpeningMotionDurationProperty =
-        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), TimeSpan.FromMilliseconds(300));
+        AvaloniaProperty.Register<OverlayDialogPresenter, TimeSpan>(nameof(OpeningMotionDuration), s_defaultOpeningDuration);
+
+    internal static readonly StyledProperty<bool> UseOwnerMotionDurationTokenResourcesProperty =
+        AvaloniaProperty.Register<OverlayDialogPresenter, bool>(nameof(UseOwnerMotionDurationTokenResources));
+
+    internal bool UseOwnerMotionDurationTokenResources
+    {
+        get => GetValue(UseOwnerMotionDurationTokenResourcesProperty);
+        set => SetValue(UseOwnerMotionDurationTokenResourcesProperty, value);
+    }
 
     internal bool IsModal
     {
@@ -70,15 +83,21 @@ internal sealed class OverlayDialogPresenter : ContentControl,
 
     internal TimeSpan MotionDuration
     {
-        get => GetValue(MotionDurationProperty);
+        get => _motionTimingTokens is not null && !IsSet(MotionDurationProperty)
+            ? _themeMotionDuration : GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
 
     internal TimeSpan OpeningMotionDuration
     {
-        get => GetValue(OpeningMotionDurationProperty);
+        get => _motionTimingTokens is not null && !IsSet(OpeningMotionDurationProperty)
+            ? _themeOpeningDuration : GetValue(OpeningMotionDurationProperty);
         set => SetValue(OpeningMotionDurationProperty, value);
     }
+
+    private OwnerTokenSet? _motionTimingTokens;
+    private TimeSpan _themeMotionDuration = s_defaultMotionDuration;
+    private TimeSpan _themeOpeningDuration = s_defaultOpeningDuration;
 
     #endregion
 
@@ -128,6 +147,8 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private bool _closeRequested;
     private bool _presentationStarted;
     private OverlayDialogMask? _dialogMask;
+    // A touch or pen press that activated this Dialog; its target is focused on release.
+    private IPointer? _activationPointer;
     private CancellationTokenSource? _openingMotionCancellationSource;
     private Task? _showTask;
     private Task? _closeTask;
@@ -178,6 +199,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.HeaderPointerReleased += HandleHeaderPointerReleased;
         _surface.SizeChanged += HandleSurfaceSizeChanged;
         AddHandler(PointerPressedEvent, HandlePresenterPointerPressed, RoutingStrategies.Tunnel, true);
+        AddHandler(PointerReleasedEvent, HandlePresenterPointerReleased, RoutingStrategies.Tunnel, true);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -441,12 +463,59 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
+        if (change.Property == UseOwnerMotionDurationTokenResourcesProperty)
+        {
+            UpdateMotionDurationTokenSubscription();
+        }
+        else if (change.Property == IsMotionEnabledProperty && !IsMotionEnabled)
         {
             ReleaseEntryPreparation();
             ResetMotionTargets();
         }
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (_motionTimingTokens is null && UseOwnerMotionDurationTokenResources)
+        {
+            UpdateMotionDurationTokenSubscription();
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _motionTimingTokens?.Dispose();
+        _motionTimingTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateMotionDurationTokenSubscription()
+    {
+        _motionTimingTokens?.Dispose();
+        _motionTimingTokens = null;
+        if (UseOwnerMotionDurationTokenResources && this.IsAttachedToVisualTree())
+        {
+            _motionTimingTokens = new OwnerTokenSet(this, 2, RefreshMotionDurations);
+            _motionTimingTokens.SetKind(0, SharedTokenKind.MotionDurationMid);
+            _motionTimingTokens.SetKind(1, SharedTokenKind.MotionDurationSlow);
+            RefreshMotionDurations();
+        }
+    }
+
+    private void RefreshMotionDurations()
+    {
+        _themeMotionDuration = ReadDuration(_motionTimingTokens?.GetValue(0), _themeMotionDuration, s_defaultMotionDuration);
+        _themeOpeningDuration = ReadDuration(_motionTimingTokens?.GetValue(1), _themeOpeningDuration, s_defaultOpeningDuration);
+    }
+
+    private static TimeSpan ReadDuration(object? value, TimeSpan previous, TimeSpan fallback) => value switch
+    {
+        TimeSpan duration => duration,
+        string text when TimeSpan.TryParse(text, CultureInfo.CurrentCulture, out var parsed) => parsed,
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => fallback
+    };
 
     public ValueTask DisposeAsync()
     {
@@ -484,6 +553,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.HeaderPointerReleased -= HandleHeaderPointerReleased;
         _surface.SizeChanged -= HandleSurfaceSizeChanged;
         RemoveHandler(PointerPressedEvent, HandlePresenterPointerPressed);
+        RemoveHandler(PointerReleasedEvent, HandlePresenterPointerReleased);
         try
         {
             _bindings.Dispose();
@@ -671,7 +741,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _surface.Width = ownerBounds.Width;
         _surface.Height = ownerBounds.Height;
         SetSurfacePosition(ownerBounds.Position);
-        _surface.CornerRadius = default;
+        // The surface theme drops the corner radius while IsDialogMaximized is set.
     }
 
     private void UpdateCurrentLayerBounds()
@@ -744,7 +814,7 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         _dialogMask.VerticalAlignment = VerticalAlignment.Top;
         _dialogMask.Width = maskSize.Width;
         _dialogMask.Height = maskSize.Height;
-        _dialogMask.Margin = default;
+        _dialogMask.SetCurrentValue(MarginProperty, default(Thickness));
     }
 
     private static Point ConstrainSurfacePosition(Rect ownerBounds, Size surfaceSize, Point position)
@@ -976,7 +1046,6 @@ internal sealed class OverlayDialogPresenter : ContentControl,
     private void HandleRestoreRequested(object? sender, EventArgs e)
     {
         _surface.IsDialogMaximized = false;
-        _surface.ClearValue(TemplatedControl.CornerRadiusProperty);
         var ownerBounds = ResolveCurrentDialogBodyOwnerBounds();
         ResolveNormalSurfaceSizeConstraints(ownerBounds);
         var restoreSize = _restoreSize ?? new Size(_surface.Width, _surface.Height);
@@ -1167,7 +1236,54 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         }
 
         _dialogLayer?.Activate(this);
-        _surface.Focus(NavigationMethod.Pointer);
+        // Content popups route through their logical Dialog ancestors. Let the
+        // framework focus the actual pointer target instead of interrupting it here.
+        // Raising this Dialog makes it the one Escape and Enter act on, so keyboard focus has to follow. Avalonia only
+        // focuses a focusable target pressed with the left button; once the press is done, focus still outside this
+        // Dialog (a non-focusable spot, another button) moves to its surface.
+        // Touch and pen focus their target on release instead, so the check waits for that release; checking after
+        // the press would focus the surface first and the target right after.
+        if (e.Pointer.Type == PointerType.Mouse)
+        {
+            _activationPointer = null;
+            Dispatcher.UIThread.Post(EnsureFocusAfterActivation, DispatcherPriority.Input);
+        }
+        else
+        {
+            _activationPointer = e.Pointer;
+        }
+    }
+
+    private void HandlePresenterPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_activationPointer is null || !ReferenceEquals(e.Pointer, _activationPointer))
+        {
+            return;
+        }
+
+        _activationPointer = null;
+        Dispatcher.UIThread.Post(EnsureFocusAfterActivation, DispatcherPriority.Input);
+    }
+
+    private void EnsureFocusAfterActivation()
+    {
+        if (_dialogLayer?.IsTopmost(this) != true ||
+            TopLevel.GetTopLevel(this)?.FocusManager is not { } focusManager ||
+            IsFocusWithin(focusManager.GetFocusedElement()))
+        {
+            return;
+        }
+
+        FocusScope.Focus(NavigationMethod.Pointer);
+    }
+
+    // Content popups live under another visual root and belong to this Dialog through the logical tree.
+    private bool IsFocusWithin(IInputElement? focused)
+    {
+        return focused is Visual visual &&
+               (ReferenceEquals(visual, this) ||
+                this.IsVisualAncestorOf(visual) ||
+                (visual is ILogical logical && this.IsLogicalAncestorOf(logical)));
     }
 
 }

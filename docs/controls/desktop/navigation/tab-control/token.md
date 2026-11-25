@@ -17,9 +17,9 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CardSize`、`TitleFontSize`、`TitleFontSizeLG`、`TitleFontSizeSM`、`InkBarThickness` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CardPadding`、`CardPaddingSM`、`CardPaddingLG`、`HorizontalMargin`、`HorizontalItemMargin`、`HorizontalItemPadding` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CardPadding`、`CardPaddingSM`、`CardPaddingLG`、`HorizontalItemMargin`、`HorizontalItemPadding`、`HorizontalMargin`（保留） |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `CardBg`、`InkBarColor`、`ItemColor`、`ItemHoverColor`、`ItemSelectedColor` |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuIndicatorPaddingHorizontal`、`MenuIndicatorPaddingVertical`、`MenuEdgeThickness`、`BoxShadowTabsOverflowLeft`、`BoxShadowTabsOverflowRight`、`BoxShadowTabsOverflowTop`、`BoxShadowTabsOverflowBottom` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `MenuIndicatorPaddingHorizontal`、`MenuIndicatorPaddingVertical`、`MenuEdgeThickness`（保留）、`BoxShadowTabsOverflowLeft`、`BoxShadowTabsOverflowRight`、`BoxShadowTabsOverflowTop`、`BoxShadowTabsOverflowBottom` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
@@ -34,10 +34,28 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 - `VerticalItemGutter` 表达默认 Line Tab 在 `Left` / `Right` placement 下的紧凑相邻间距；Card Tab 不消费该 Token，而继续使用 `CardGutter` 维持独立卡片节奏。
 - `VerticalItemPadding` 保留给 Card Tab 的垂直 placement padding 语义；默认 Line Tab 的 `Left` / `Right` padding 由默认 Line theme 内部保持紧凑，不新增公开 Token。
 - overflow Popup shell、默认菜单与 Gallery 搜索模板继续复用 Popup、Menu、SharedToken 和输入控件主题；`OverflowPopupTemplate` 只改变内容模板，不创建实例级 Token 状态。
-- `MenuEdgeThickness` 表达 start/end overflow shadow 载体在主轴上的厚度，默认派生自 `EffectiveGlobalToken.ControlHeight`。载体位于 viewport 外侧，此值不占用页签宽度，也不决定阴影向内容区渐淡的深度。
+- `HorizontalMargin` 是保留 Token（`[ReservedToken]`，对应 antd Tabs `horizontalMargin`，antd 用它的底边作为页签栏与内容的间距）：这里该间距由
+  `TabAndContentGutter` 表达，没有元素读取它。
+- `MenuEdgeThickness` 是保留 Token（`[ReservedToken]`，antd 没有对应 Token，antd 以 `controlHeight` 作为阴影伪元素宽度）：start/end overflow
+  shadow 载体位于 viewport 外侧，只有其外阴影进入页签区，载体厚度没有可见语义；主题以布局常量（32，需大于阴影负扩展）给出载体厚度。
 - 四个 `BoxShadowTabsOverflow*` Token 使用普通外阴影并对齐 Ant Design Tabs 的方向参数：left 为 `(offsetX: 10, blur: 8, spread: -8)`，right 为 `(-10, 0, 8, -8)`，top 为 `(0, 10, 8, -8)`，bottom 为 `(0, -10, 8, -8)`，颜色统一为 8% 黑色。`Top` / `Bottom` placement 消费 left/right，`Left` / `Right` placement 消费 top/bottom；Theme 将透明载体放在 viewport 外侧，内侧面贴合溢出边界，并裁剪交叉轴及更多按钮方向的输出；这些参数保持逻辑 DIP；专用 edge renderer 仅在 Skia 绘制时补偿 offset 的变换顺序。必须连同载体几何、1×/2× 实际暗化强度验证，不能只断言属性值。
 - edge indicator 的当前可见性、滚动 offset 和 placement 是控件实例状态，不得写入 Token；Token 只保存方向性装饰值。
 - `InkBarThickness` 表达选中指示墨条的厚度，默认从 SharedToken 的 `LineWidthBold` 派生；按实例定制时通过控件 `Resources` 覆盖 `TabControlTokenKind.InkBarThickness`，与 `InkBarColor` 的定制方式一致。
+  主题或 `Controls[TabControl]` 改变厚度时墨条立即重新布局（此前要等下一次选择或尺寸变化）；卡片圆角（按尺寸取 `BorderRadius*`）变化时卡片页签同样立即重算。
+
+## 3.1 Token 读取与作用域
+
+- TabControl、CardTabControl、TabStrip、CardTabStrip 各有自己的 Own。公共、线形、卡片三层只共享实际可渲染字段，终端主题给共享部件提供具体输入。
+- 各控件自己读取的全局 Token 以自己的 TokenResource 读取：`TabControl`、`CardTabControl`、`TabStrip`、`CardTabStrip`（页头间距、卡片圆角、
+  卡片边框与添加按钮）、`TabItem` / `TabStripItem` 的既有显式全局读法；两个项容器的继承 owner 与过渡时长跟随实际页签宿主。
+- 无身份的共享部件 `BaseTabControl` / `BaseTabStrip` 基础主题、`TabScrollViewer` 与溢出菜单以 `OwnerTokenResource` 读取宿主的有效全局
+  Token；溢出菜单所在 Popup 为 Token owner 透明，`Controls[TabStrip]` 等作用于其溢出菜单。溢出按钮与菜单项关闭按钮是注册的 IconButton，
+  由无身份部件读取宿主值后向下绑定。
+- 基础分隔线的画刷和厚度由 `BaseTabControl` 通过同一 `OwnerTokenSet` 解析。卡片终端在同一观察组中按当前尺寸读取自身的圆角键，
+  卡片条使用自己的观察组。计算后的分隔线与卡片圆角继续供现有模板和容器使用。
+- Shadcn 将 `CardTabControl` 和 `CardTabStrip` 的默认外角限制在 8 DIP 以内。各样式较小的圆角及显式 Token 覆盖仍按原优先级生效，贴合内容的边保持直边。
+- 页签项使用命名主题（`TabItemTheme` / `CardTabItemTheme` / `TabStripItemTheme` / `CardTabStripItemTheme`），从页签项自身所在资源作用域查找，
+  局部资源中的同名主题优先于应用资源；命名主题不注入 owner，页签项继承宿主为 owner（过渡时长随宿主）。
 
 ## 4. 控件家族影响
 
@@ -48,7 +66,9 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 - `TabStrip`
 - `CardTabStrip`
 - `TabItem`
+- `TabStripItem`
 - `BaseTabControl`
+- `BaseTabStrip`
 - 对应 Gallery ShowCase 的示例和源码片段。
 - Light/Dark 主题、Browser/Desktop 主题和 Compact/Form/Popup 集成场景。
 
@@ -69,4 +89,17 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+| 任意 Token | `NavigationFamilyEffectTests`（TabControl / CardTabControl / TabStrip / CardTabStrip / TabItem / TabStripItem 行与隔离测试）全绿。 |
 | Overflow shadow | 覆盖四个 owner × 四个 placement，断言普通外阴影的方向、offset、blur、spread、颜色、尺寸及 start/end 可见性；同时验证透明绘制载体与viewport 阴影层裁剪边界与真实合成像素。 |
+
+## 独立 Token 身份与共享计算
+
+CardBg/CardSize/CardPadding*/CardGutter、AddTabButtonMargin*、VerticalItemPadding 从原 TabControl 配置移到 CardTabControl/CardTabStrip。线形 padding 与墨条只承诺于 TabControl/TabStrip；TabAndContentGutter 只属于带正文的两个 Control。原 HorizontalMargin、MenuEdgeThickness Reserved 只保留于 TabControl，不复制给新终端。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TitleFontWeight` | `Normal` | 四种标签控件的标题字重（`AbstractTabToken`，经 `TabTokenResourceBinding` 读取） |

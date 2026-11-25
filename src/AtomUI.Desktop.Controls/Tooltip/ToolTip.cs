@@ -1,7 +1,11 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Controls.Primitives;
+using AtomUI.Theme;
+using AtomUI.Theme.Derivation;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
@@ -10,6 +14,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -20,29 +25,43 @@ public partial class ToolTip : ContentControl,
                                IMotionAwareControl,
                                IArrowAwareShadowMaskInfoProvider
 {
-    #region 附加属性定义
+    #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<ToolTip>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<ToolTip>();
+
+    /// <summary>
+    /// The shadow of the tooltip popup. The popup is a runtime-created cross-root node outside this control's
+    /// ControlTheme, so the theme writes the token here and the code relays it to the popup (a ControlTheme
+    /// setter cannot reach the popup's tree).
+    /// </summary>
+    public static readonly StyledProperty<BoxShadows> ToolTipShadowsProperty =
+        AvaloniaProperty.Register<ToolTip, BoxShadows>(nameof(ToolTipShadows));
 
     public static readonly AttachedProperty<object?> TipProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, object?>("Tip");
-    
+
     public static readonly AttachedProperty<double> TipHostWidthProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("TipHostWidth", double.NaN);
 
     public static readonly AttachedProperty<PresetColorType?> PresetColorProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, PresetColorType?>("PresetColor");
-    
+
     public static readonly AttachedProperty<Color?> ColorProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, Color?>("Color");
-    
+
     public static readonly AttachedProperty<bool> IsUseOverlayHostProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsUseOverlayHost");
-    
+
     public static readonly AttachedProperty<bool> IsArrowVisibleProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsArrowVisible", true);
-    
+
     public static readonly AttachedProperty<bool> IsPointAtCenterProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsPointAtCenter");
-    
+
     public static readonly AttachedProperty<bool> IsOpenProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsOpen", coerce: CoerceIsOpen);
 
@@ -55,7 +74,7 @@ public partial class ToolTip : ContentControl,
 
     public static readonly AttachedProperty<double> VerticalOffsetProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("VerticalOffset");
-    
+
     public static readonly AttachedProperty<int> ShowDelayProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
@@ -68,30 +87,50 @@ public partial class ToolTip : ContentControl,
 
     public static readonly AttachedProperty<bool> ServiceEnabledProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("ServiceEnabled", defaultValue: true, inherits: true);
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ToolTip>();
-    
+
     public static readonly AttachedProperty<double> MarginToAnchorProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("MarginToAnchor", 4);
-    
+
     public static readonly AttachedProperty<bool> IsCustomShowAndHideProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsCustomShowAndHide");
-    
+
     public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, TextWrapping>("TextWrapping", TextWrapping.Wrap);
 
     public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, TextTrimming>("TextTrimming", TextTrimming.None);
 
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
+    /// <inheritdoc cref="ToolTipShadowsProperty"/>
+    public BoxShadows ToolTipShadows
+    {
+        get => GetValue(ToolTipShadowsProperty);
+        set => SetValue(ToolTipShadowsProperty, value);
+    }
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
+
     #endregion
 
-    #region 路由事件定义
+    #region 公共事件定义
 
     public static readonly RoutedEvent<CancelRoutedEventArgs> ToolTipOpeningEvent =
         RoutedEvent.Register<ToolTip, CancelRoutedEventArgs>("ToolTipOpening", RoutingStrategies.Direct);
@@ -103,41 +142,93 @@ public partial class ToolTip : ContentControl,
 
     #region 内部属性定义
 
+
     internal static readonly AttachedProperty<ToolTip?> ToolTipProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip?>("ToolTip");
 
     internal static readonly AttachedProperty<bool> IsPopupPinnedOpenProperty =
         AvaloniaProperty.RegisterAttached<ToolTip, Control, bool>("IsPopupPinnedOpen");
 
-    private static readonly AttachedProperty<EventHandler<VisualTreeAttachmentEventArgs>?> PendingAttachHandlerProperty =
-        AvaloniaProperty.RegisterAttached<ToolTip, Control, EventHandler<VisualTreeAttachmentEventArgs>?>("PendingAttachHandler");
-    
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<ToolTip>();
-    
+
     internal static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<ToolTip>();
-    
+
+    /// <summary>
+    /// The effective tooltip background: the ControlTheme gives it the ToolTipBackground Token and projects it onto
+    /// Background through an untriggered setter, so app styles and local values keep precedence; a preset or custom
+    /// colour of the host is written here (rule 7 of the control-code Token rules).
+    /// </summary>
+    internal static readonly StyledProperty<IBrush?> ColorBackgroundProperty =
+        AvaloniaProperty.Register<ToolTip, IBrush?>(nameof(ColorBackground));
+
+    /// <summary>
+    /// The theme's gap to the anchor (the <c>MarginToAnchor</c> token), used while neither the host nor this tooltip
+    /// sets <see cref="MarginToAnchorProperty"/>.
+    /// </summary>
+    internal static readonly StyledProperty<double> ThemeMarginToAnchorProperty =
+        AvaloniaProperty.Register<ToolTip, double>(nameof(ThemeMarginToAnchor), 4);
+
+    private static readonly AttachedProperty<EventHandler<VisualTreeAttachmentEventArgs>?> PendingAttachHandlerProperty =
+        AvaloniaProperty.RegisterAttached<ToolTip, Control, EventHandler<VisualTreeAttachmentEventArgs>?>("PendingAttachHandler");
+
     internal TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
-    
+
+    internal IBrush? ColorBackground
+    {
+        get => GetValue(ColorBackgroundProperty);
+        set => SetValue(ColorBackgroundProperty, value);
+    }
+
+    internal double ThemeMarginToAnchor
+    {
+        get => GetValue(ThemeMarginToAnchorProperty);
+        set => SetValue(ThemeMarginToAnchorProperty, value);
+    }
+
     internal bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
-    
+
+    internal Control? AdornedControl { get; private set; }
+
     #endregion
 
-    private Popup? _popup;
-    private CompositeDisposable? _subscriptions;
-    private ArrowDecoratedBox? _arrowDecoratedBox;
-    private ContentPresenter? _contentPresenter;
-    internal Control? AdornedControl { get; private set; }
+    #region 内部事件定义
+
     internal event EventHandler? Closed;
+
+    #endregion
+
+    #region 运行时字段
+
+    private Popup? _popup;
+
+    private CompositeDisposable? _subscriptions;
+
+    private ArrowDecoratedBox? _arrowDecoratedBox;
+
+    private ContentPresenter? _contentPresenter;
+
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
+
+    private IDisposable? _themeSubscription;
+
+    // The preset / custom colour requested by the host (or the tip instance) of the current opening.
+    private PresetColorType? _requestedPresetColor;
+
+    private Color? _requestedColor;
+
+    #endregion
+
+    #region 构造函数
 
     static ToolTip()
     {
@@ -146,7 +237,9 @@ public partial class ToolTip : ContentControl,
         IsPopupPinnedOpenProperty.Changed.Subscribe(IsPopupPinnedOpenChanged);
     }
 
-    #region 附加属性访问器
+    #endregion
+
+    #region 控件 API
 
     public static object? GetTip(Control element)
     {
@@ -187,7 +280,7 @@ public partial class ToolTip : ContentControl,
     {
         element.SetValue(ColorProperty, color);
     }
-        
+
     public static bool GetIsUseOverlayHost(Control element)
     {
         return element.GetValue(IsUseOverlayHostProperty);
@@ -197,7 +290,7 @@ public partial class ToolTip : ContentControl,
     {
         element.SetValue(IsUseOverlayHostProperty, value);
     }
-    
+
     public static bool GetIsArrowVisible(Control element)
     {
         return element.GetValue(IsArrowVisibleProperty);
@@ -217,7 +310,7 @@ public partial class ToolTip : ContentControl,
     {
         element.SetValue(IsPointAtCenterProperty, flag);
     }
-    
+
     public static bool GetIsOpen(Control element)
     {
         return element.GetValue(IsOpenProperty);
@@ -307,7 +400,7 @@ public partial class ToolTip : ContentControl,
     {
         element.SetValue(MarginToAnchorProperty, margin);
     }
-    
+
     public static bool GetIsCustomShowAndHide(Control element)
     {
         return element.GetValue(IsCustomShowAndHideProperty);
@@ -338,10 +431,6 @@ public partial class ToolTip : ContentControl,
         element.SetValue(TextTrimmingProperty, value);
     }
 
-    #endregion
-
-    #region 路由事件访问器
-
     public static void AddToolTipOpeningHandler(Control element, EventHandler<CancelRoutedEventArgs> handler) =>
         element.AddHandler(ToolTipOpeningEvent, handler);
 
@@ -354,6 +443,34 @@ public partial class ToolTip : ContentControl,
     public static void RemoveToolTipClosingHandler(Control element, EventHandler<RoutedEventArgs> handler) =>
         element.RemoveHandler(ToolTipClosingEvent, handler);
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Preset colours come from the snapshot's palettes: re-resolve them whenever the theme publishes. The
+        // subscription does not fire for the first context, so resolve against the context of this attach too.
+        _themeSubscription?.Dispose();
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => UpdateColorBackground());
+        UpdateColorBackground();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _arrowDecoratedBox = e.NameScope.Find<ArrowDecoratedBox>(ArrowDecoratedBox.ArrowDecoratorPart);
+        _contentPresenter  = e.NameScope.Find<ContentPresenter>("PART_ContentPresenter");
+    }
+
+    #endregion
+
+    #region 内部协作 API
+
     internal static bool GetIsPopupPinnedOpen(Control element)
     {
         return element.GetValue(IsPopupPinnedOpenProperty);
@@ -365,6 +482,65 @@ public partial class ToolTip : ContentControl,
     }
 
     #endregion
+
+    #region 实现 IShadowMaskInfoProvider 接口
+
+    CornerRadius IShadowMaskInfoProvider.GetMaskCornerRadius()
+    {
+        return ResolveArrowDecoratedBox()?.GetMaskCornerRadius() ?? new CornerRadius(0);
+    }
+
+    Rect IShadowMaskInfoProvider.GetMaskBounds()
+    {
+        return ResolveArrowDecoratedBox()?.GetMaskBounds() ?? new Rect(Bounds.Size);
+    }
+
+    IBrush? IShadowMaskInfoProvider.GetMaskBackground()
+    {
+        return Background;
+    }
+
+    #endregion
+
+    #region 实现 IArrowAwareShadowMaskInfoProvider 接口
+
+    ArrowPosition IArrowAwareShadowMaskInfoProvider.GetArrowPosition()
+    {
+        return ResolveArrowDecoratedBox()?.ArrowPosition ?? default;
+    }
+
+    bool IArrowAwareShadowMaskInfoProvider.IsArrowVisible()
+    {
+        // 箭头部件不可用时按无箭头报告，弹层据此降级阴影与定位
+        return ResolveArrowDecoratedBox()?.IsArrowVisible ?? false;
+    }
+
+    void IArrowAwareShadowMaskInfoProvider.SetArrowOpacity(double opacity)
+    {
+        if (ResolveArrowDecoratedBox() is { } arrowDecoratedBox)
+        {
+            arrowDecoratedBox.ArrowOpacity = opacity;
+        }
+    }
+
+    Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorBounds()
+    {
+        return ResolveArrowDecoratedBox()?.ArrowIndicatorBounds ?? default;
+    }
+
+    Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorLayoutBounds()
+    {
+        return ResolveArrowDecoratedBox()?.ArrowIndicatorLayoutBounds ?? default;
+    }
+
+    AbstractArrowDecoratedBox? IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
+    {
+        return ResolveArrowDecoratedBox();
+    }
+
+    #endregion
+
+    #region 内部实现
 
     private static void IsOpenChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -502,9 +678,11 @@ public partial class ToolTip : ContentControl,
     {
         Close();
         ApplyTemplate();
-        
+
         if (_popup is null)
         {
+            // This cross-root Popup is created at runtime, outside ToolTip's
+            // ControlTheme; its pure default projection shares the popup lifetime.
             _popup = new Popup();
             _popup.Child = this;
             _popup.TakesFocusFromNativeControl = false;
@@ -518,12 +696,17 @@ public partial class ToolTip : ContentControl,
         _subscriptions = new CompositeDisposable([
             Bind(ShouldUseOverlayPopupProperty, control.GetBindingObservable(IsUseOverlayHostProperty)),
             _popup.Bind(Popup.ShouldUseOverlayLayerProperty, this.GetObservable(ShouldUseOverlayPopupProperty)),
+            _popup.Bind(Popup.OpenMotionProperty, this.GetObservable(OpenMotionProperty)),
+            _popup.Bind(Popup.CloseMotionProperty, this.GetObservable(CloseMotionProperty)),
             _popup.Bind(Popup.MotionDurationProperty, this.GetObservable(MotionDurationProperty)),
             _popup.Bind(Popup.IsMotionEnabledProperty, this.GetObservable(IsMotionEnabledProperty)),
+            // Cross-root relay of the tooltip's own shadow tokens (see ToolTipShadowsProperty).
+            _popup.Bind(Popup.PopupRootShadowProperty, this.GetObservable(ToolTipShadowsProperty)),
+            _popup.Bind(Popup.OverlayHostShadowProperty, this.GetObservable(ToolTipShadowsProperty)),
             _popup.Bind(Popup.HorizontalOffsetProperty, ResolveValueSource(control, HorizontalOffsetProperty).GetBindingObservable(HorizontalOffsetProperty)),
             _popup.Bind(Popup.VerticalOffsetProperty, ResolveValueSource(control, VerticalOffsetProperty).GetBindingObservable(VerticalOffsetProperty)),
             _popup.Bind(Popup.RequestedPlacementProperty, ResolveValueSource(control, PlacementProperty).GetBindingObservable(PlacementProperty, v => (PlacementMode?)v)),
-            _popup.Bind(Popup.MarginToAnchorProperty, ResolveValueSource(control, MarginToAnchorProperty).GetBindingObservable(MarginToAnchorProperty)),
+            _popup.Bind(Popup.MarginToAnchorProperty, ResolveMarginToAnchor(control)),
             _popup.Bind(Popup.IsPointAtCenterProperty, ResolveValueSource(control, IsPointAtCenterProperty).GetBindingObservable(IsPointAtCenterProperty)),
             _popup.Bind(Popup.IsPopupPinnedOpenProperty, control.GetBindingObservable(IsPopupPinnedOpenProperty)),
         ]);
@@ -540,7 +723,6 @@ public partial class ToolTip : ContentControl,
             TemplateApplied += DeferSetupArrowDecoratedBox;
         }
 
-        ConfigureMotion(_popup, GetToolTipValue(control, PlacementProperty));
         _popup.IsOpen = true;
     }
 
@@ -554,14 +736,24 @@ public partial class ToolTip : ContentControl,
         return IsSet(property) ? this : host;
     }
 
+    /// <summary>
+    /// The gap to the anchor: an explicit value on this tooltip, then one on the host, then the theme's token.
+    /// </summary>
+    private IObservable<double> ResolveMarginToAnchor(Control host)
+    {
+        if (IsSet(MarginToAnchorProperty))
+        {
+            return this.GetObservable(MarginToAnchorProperty);
+        }
+
+        return host.IsSet(MarginToAnchorProperty)
+            ? host.GetObservable(MarginToAnchorProperty)
+            : this.GetObservable(ThemeMarginToAnchorProperty);
+    }
+
     private T GetToolTipValue<T>(Control host, AttachedProperty<T> property)
     {
         return IsSet(property) ? GetValue(property) : host.GetValue(property);
-    }
-
-    private void ConfigureMotion(Popup popup, PlacementMode placement)
-    {
-        (popup.OpenMotion, popup.CloseMotion) = PopupUtils.CreateMotionForPlacement(placement);
     }
 
     private void Close()
@@ -572,7 +764,7 @@ public partial class ToolTip : ContentControl,
             var args = new RoutedEventArgs(ToolTipClosingEvent);
             adornedControl.RaiseEvent(args);
         }
-        
+
         if (_popup != null)
         {
             _popup.IsOpen = false;
@@ -654,62 +846,6 @@ public partial class ToolTip : ContentControl,
         PseudoClasses.Set(ToolTipPseudoClass.Open, newValue);
     }
 
-    CornerRadius IShadowMaskInfoProvider.GetMaskCornerRadius()
-    {
-        return ResolveArrowDecoratedBox()?.GetMaskCornerRadius() ?? new CornerRadius(0);
-    }
-
-    Rect IShadowMaskInfoProvider.GetMaskBounds()
-    {
-        return ResolveArrowDecoratedBox()?.GetMaskBounds() ?? new Rect(Bounds.Size);
-    }
-
-    IBrush? IShadowMaskInfoProvider.GetMaskBackground()
-    {
-        return Background;
-    }
-
-    ArrowPosition IArrowAwareShadowMaskInfoProvider.GetArrowPosition()
-    {
-        return ResolveArrowDecoratedBox()?.ArrowPosition ?? default;
-    }
-
-    bool IArrowAwareShadowMaskInfoProvider.IsArrowVisible()
-    {
-        // 箭头部件不可用时按无箭头报告，弹层据此降级阴影与定位
-        return ResolveArrowDecoratedBox()?.IsArrowVisible ?? false;
-    }
-
-    void IArrowAwareShadowMaskInfoProvider.SetArrowOpacity(double opacity)
-    {
-        if (ResolveArrowDecoratedBox() is { } arrowDecoratedBox)
-        {
-            arrowDecoratedBox.ArrowOpacity = opacity;
-        }
-    }
-
-    Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorBounds()
-    {
-        return ResolveArrowDecoratedBox()?.ArrowIndicatorBounds ?? default;
-    }
-
-    Rect IArrowAwareShadowMaskInfoProvider.GetArrowIndicatorLayoutBounds()
-    {
-        return ResolveArrowDecoratedBox()?.ArrowIndicatorLayoutBounds ?? default;
-    }
-
-    AbstractArrowDecoratedBox? IArrowAwareShadowMaskInfoProvider.GetArrowDecoratedBox()
-    {
-        return ResolveArrowDecoratedBox();
-    }
-    
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _arrowDecoratedBox = e.NameScope.Find<ArrowDecoratedBox>(ArrowDecoratedBox.ArrowDecoratorPart);
-        _contentPresenter  = e.NameScope.Find<ContentPresenter>("PART_ContentPresenter");
-    }
-    
     private void DeferSetupArrowDecoratedBox(object? sender, TemplateAppliedEventArgs args)
     {
         if (_arrowDecoratedBox is null)
@@ -721,7 +857,7 @@ public partial class ToolTip : ContentControl,
         Debug.Assert(_popup != null && _popup.PlacementTarget != null);
         SetupArrowDecoratedBox(_popup.PlacementTarget);
     }
-    
+
     private void SetupArrowDecoratedBox(Control control)
     {
         if (_arrowDecoratedBox is not null)
@@ -765,7 +901,7 @@ public partial class ToolTip : ContentControl,
 
         return _arrowDecoratedBox;
     }
-    
+
     private void SetupArrowPosition(PlacementMode placement, bool isHorizontalFlipped, bool isVerticalFlipped, PopupAnchor? anchor = null, PopupGravity? gravity = null)
     {
         var arrowPosition = PopupUtils.CalculateArrowPosition(placement, anchor, gravity);
@@ -774,35 +910,45 @@ public partial class ToolTip : ContentControl,
             _arrowDecoratedBox.ArrowPosition = ArrowPositionUtils.FlipArrowPosition(arrowPosition.Value, isHorizontalFlipped, isVerticalFlipped);
         }
     }
-    
+
     private void SetToolTipColor(Control control)
     {
         // Preset 优先级高
-        if (_arrowDecoratedBox is not null)
-        {
-            var presetColorType = GetToolTipValue(control, PresetColorProperty);
-            var color           = GetToolTipValue(control, ColorProperty);
-            if (presetColorType is not null)
-            {
-                var presetColor = PresetPrimaryColor.GetColor(presetColorType.Value);
-                SetBackgroundColorIfChanged(presetColor.Color());
-            }
-            else if (color is not null)
-            {
-                SetBackgroundColorIfChanged(color.Value);
-            }
-        }
+        _requestedPresetColor = GetToolTipValue(control, PresetColorProperty);
+        _requestedColor       = GetToolTipValue(control, ColorProperty);
+        UpdateColorBackground();
     }
 
-    private void SetBackgroundColorIfChanged(Color color)
+    private void UpdateColorBackground()
     {
-        if (Background is ISolidColorBrush { Opacity: 1.0 } solidColorBrush &&
-            solidColorBrush.Color == color)
+        Color? background = null;
+        if (_requestedPresetColor is { } presetColorType)
         {
-            return;
+            // antd genPresetColor darkColor: palette step 6 of the snapshot (dark palettes under a dark theme).
+            if (ThemeScope.ResolveContext(this) is { } context &&
+                PresetColorPalette.TryResolve(context.Snapshot, PresetPrimaryColor.GetColor(presetColorType), out var colors))
+            {
+                background = colors.DarkColor;
+            }
+        }
+        else if (_requestedColor is { } color)
+        {
+            background = color;
         }
 
-        Background = new SolidColorBrush(color);
-        InvalidateVisual();
+        if (background is { } effective)
+        {
+            if (ColorBackground is not ISolidColorBrush { Opacity: 1.0 } current || current.Color != effective)
+            {
+                ColorBackground = new ImmutableSolidColorBrush(effective);
+            }
+        }
+        else
+        {
+            // Falls back to the ToolTipBackground Token the ControlTheme gives ColorBackground.
+            ClearValue(ColorBackgroundProperty);
+        }
     }
+
+    #endregion
 }

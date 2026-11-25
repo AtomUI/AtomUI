@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -27,6 +29,7 @@ internal static class Program
                   {
                       builder.UseDesktopControls();
                       builder.UseDesktopDataGrid();
+                      builder.UseAntDesign(static language => language.AddDesktopDataGrid());
                   })
                   .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime());
 

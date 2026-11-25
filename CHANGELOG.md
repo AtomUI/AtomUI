@@ -4,6 +4,305 @@ All notable changes to AtomUI are documented in this file.
 
 `AtomUI` follows Semantic Versioning 2.0.0.
 
+## Unreleased
+
+## 6.3.0
+
+`2026-11-24`
+
+- Breaking Changes
+  - Select and register a design language at startup. Install the matching value package for each enabled control package, including optional DataGrid and ColorPicker. [Migration guide](docs/releases/6.3.0-api-changes.md#enabling-a-design-language)
+  - Replace theme algorithm chains and legacy theme selection with `ThemeSelection`. Update renamed theme APIs and switch to the language, style, appearance and density axes. [Migration guide](docs/releases/6.3.0-api-changes.md#selecting-a-theme)
+  - Convert theme definitions to XML v2 and rebuild compiled theme packages for ABI 4. [Migration guide](docs/releases/6.3.0-api-changes.md#theme-definition-xml-v2)
+  - Migrate custom control tokens to public partial declarations and move their value rules to language-specific packages using `IControlTokenRule.Apply`. [Migration guide](docs/releases/6.3.0-api-changes.md#control-token-classes-and-third-party-control-packages)
+  - Update direct references to the public value package calculators to their language-scoped names. [Migration guide](docs/releases/6.3.0-api-changes.md#calculator-names-in-value-packages)
+  - Move custom control token overrides to their current owners, adapt changed value types and migrate the removed `SharedTokenResourceValue` extension. [Migration guide](docs/releases/6.3.0-api-changes.md#control-token-overrides)
+  - Upgrade related packages and the generator together, then rebuild generated startup data and republish trimmed and NativeAOT applications. [Migration guide](docs/releases/6.3.0-api-changes.md#generated-registration-and-startup-images)
+
+- Design languages
+  - Ship Ant Design, Shadcn and PrimeNG as three design language packages, each with value packages for Controls, Desktop Controls, DataGrid and ColorPicker. The Gallery switches language, style, appearance and density through the same framework APIs used by applications.
+- Startup and controls
+  - Compact generated startup manifests and reuse token resources and unaffected control snapshots when applying theme changes.
+  - Fix ToggleSwitch knob position after a bound transition, FlexPanel relayout after a child size change, and scoped popup placement and window chrome behavior.
+  - Expose `Button.ContentPadding` and the ColorPicker views' `SliderTrackHeight` for customization.
+
+- Warm startup registry queries no longer take the entry gate or format the Control identity per hit; registered (hit) queries on the generated startup identity, validation and type routes are allocation-free after warm-up (a miss still formats its diagnostic key).
+- Theme consumption metadata includes actual `TokenTransitions.Duration` reads. Migrated control packages and GalleryBase enforce active consumption diagnostics as compiler errors.
+- Watermark text defaults follow scoped `ColorTextBase` and `FontSizeLG` on attach, theme publish and reattach. Explicit glyph values remain authoritative; default opacity stays 0.3.
+- Theme publish cost: an unchanged Token keeps its resource instance across publishes (global, control effective-global and Own resource maps), and `OwnerTokenResource`, `TokenTransitions` and `TokenResourceBinder` bindings skip a publish whose changed keys do not include theirs instead of re-resolving on every `ResourcesChanged`; `OwnerTokenResource` / `TokenTransitions` observe only `ThemeScope.TokenOwner` through one static observer instead of every property change of their target. Variant switches, scoped `ThemeConfigProvider` changes, live owner changes, duration changes and local resource changes refresh as before.
+- New public API: `AtomUI.Theme.Resources.OwnerTokenResourceExtension` (`{atom:OwnerTokenResource Kind}`, the owner-effective global Token read for shared primitives), `AtomUI.Theme.Resources.TokenTransitions` (`<atom:TokenTransitions>` with the attached `atom:TokenTransitions.Duration` Token on a transition), `AtomUI.Theme.DesignTokens.ReservedTokenAttribute` (marks an Own Token that is declared but not consumed yet).
+
+- ColorPicker
+  - Gradient stop labels now update during live token publication and disabled/enabled transitions; closing restores the panel ColorText inheritance instead of retaining a copied trigger brush, while preserving local foregrounds. Popup Views honor their own EnableMotion default, with a trigger-false disable gate and explicit View local values taking priority.
+  - ColorPicker, GradientColorPicker and both public Views use independent effective tokens. Public popup Views and nested editors retain their own scopes; palette swatches follow their View across Collapse.
+  - Alpha input width and numeric handle width now affect their real editors; preserve the existing 48px alpha, 16px handle, 11px compact font and 262px row. Preset check marks now paint their intended light/dark contrast brush through FillBrush/StrokeBrush (Foreground alone did not paint the icon). The empty-colour slash now uses ColorError/LineWidthBold; the light-swatch check uses ColorTextSecondary instead of fixed rgba(0,0,0,.45).
+
+- DataGrid
+  - Grid parts and filter flyouts now honor DataGrid-effective globals; the Spin content forwards the grid owner while nested public controls retain their identities. Scoped named resources continue updating real column text/editors after publish and owner replacement.
+  - Activate expand-button and menu-filter backgrounds, filter-hover aliases and sort-indicator margin; the default sort icon gains its existing 8px margin, and dragged-header background uses ColumnReorderActiveBg instead of fixed #808080. Expand-button background is now opaque by default, including over hovered/selected rows.
+  - Header hover icons use ColorIconHover RGB; group-header dimensions/inline margins and separators follow existing globals with original default sizes and scrolling/layout behavior preserved.
+  - Keep 11 unsupported CSS-expander/sticky-header/filter-search/height and automatic column-width fields Reserved; selection/detail columns retain automatic measurement and explicit Column.Width behavior.
+
+- Theme consistency
+  - Theme consistency: NumericUpDown Large text now uses FontSizeLG (default16); Small/Middle remain FontSize (default14). Small empty-multiple Cascader uses its small padding. Public title-bar addon buttons use the inactive hover colour in inactive windows.
+
+- Windows, scrolling and primitives
+  - Preserve Shared/custom/already-typed resource keys in the protected flyout pointer-offset API; an open flyout can retarget directly with ShowAt(newTarget), keeping the new scope live while preserving same-target close-motion cancellation.
+  - Window / WindowTitleBar, ScrollViewer, FlyoutHost, TreeViewFlyoutPresenter and ArrowDecoratedBox use control-effective globals; shared parts, PathIcon, embedding and startup Splash follow their effective owner. Scrollbar dimensions, visibility and input geometry are preserved.
+  - Icon.FallbackColor now controls fallback drawing regions (default white unchanged); ArrowSize rebuilds arrow geometry on theme changes. Window startup backgrounds honor scoped Own overrides; internal surface, resize and feedback visibility updates preserve user bindings.
+  - TreeViewFlyoutPresenter now paints PopupBgColor (previously masked by a null template binding); pointer menu/tree offsets honor scoped Own overrides. TextSelectionHandle restores the Avalonia12-required transparent indicator and caret/start/end selectors, and follows owner selection colour while preserving its32px visible shape. Splash close strokes now follow LineWidth (default1px, previously1.5px); spacing, close icon size and inset follow their existing global tokens.
+
+- Data-entry remainder
+  - Form, Descriptions, Upload, Mentions, OtpLineEdit and Segmented now read their control-effective globals throughout their themes and transparent parts; candidate popup globals follow Mentions / AutoComplete, candidate parts use their host globals, and the internal Mentions editor follows Mentions while standalone TextArea remains independent.
+  - Visible changes: vertical Form labels use their natural text height plus `VerticalLabelPadding` (8 px below by default), instead of the horizontal control-height minimum; the vertical bordered Descriptions divider follows `LineWidth` instead of a fixed 1 px border; OTP separators follow `CellGap` (default 4 px unchanged), OTP status styles and root border brush projection apply without a local cell brush, Upload progress line thickness refreshes on Token changes, and Segmented track backgrounds / radii redraw on Token changes.
+- Button family
+  - Control-level overrides (`Controls[Button]`, `Controls[DropdownButton]`, ...) now reach every theme read and the code-side variant colours; scoped and Application resources apply to variant colours.
+  - Fix HyperLinkButton icon-only, loading and danger visuals, the BackTop badge, and FloatButtonGroup shadows supplied by the group or its host.
+- Input family
+  - Control-level overrides (`Controls[LineEdit]`, `Controls[TextBox]`, `Controls[NumericUpDown]`, ...) now reach the shared input surface (border, background, radius, status colours, focus shadow, padding) of that control only; NumericUpDown no longer follows `Controls[ButtonSpinner]` or `Controls[TextBox]` for its surface and editor.
+  - LineEdit and SearchEdit apply size presets to their font size (`LineEdit.InputFontSize*`, SearchEdit `FontSize*`): large inputs now use 16px and small inputs keep the middle size (`LineEdit.InputFontSizeSM` defaults to `InputFontSize`, as in antd); set `IsCustomFontSize` to keep an inherited or local size.
+  - Input focus shadows now render, the TextArea resize indicator is drawn above the input surface (`TextArea.ResizeHandleSize`), AutoComplete passes `PlaceholderForeground` to its input, and add-on status colours no longer erase user brushes on add-on icons.
+- Select family
+  - Control-level overrides (`Controls[Select]`, `Controls[ComboBox]`, `Controls[Cascader]`, `Controls[TreeSelect]`) now reach the input surface, drop-down frame, options and handle of that control only; ComboBoxItem, CascaderView and CascaderViewItem keep their own identities for global Tokens.
+  - Root `BorderBrush` / `Background` of these controls are projected onto the input surface instead of being written as local values; Select option rows apply `OptionHeight` and the newly wired `Select.OptionPadding`, option text uses `ColorText`, and TreeSelect applies `MinPopupWidth`.
+  - Focus shadows of these controls are no longer clipped; `Select.SelectAffixPadding` and `Select.FixedItemMargin` are reserved and have no visual effect yet.
+  - Visible changes: the Select drop-down height now follows `OptionHeight` (option height x page size); TreeSelect drop-downs are at least 300 px wide (`TreeSelect.MinPopupWidth`); the ComboBox placeholder uses `ColorTextPlaceholder` instead of 30% opacity; disabled Cascader option icons are tinted `ColorTextDisabled` instead of drawn at 0.3 opacity.
+- Choice family
+  - Control-level overrides (`Controls[CheckBox]`, `Controls[RadioButton]`, `Controls[ToggleSwitch]`, `Controls[Slider]`, `Controls[Rate]`, and the CheckBoxGroup / RadioButtonGroup spacing) now reach every theme read of that control, including its indicator, switch knob, slider track and thumb, and rate stars; SliderTrack and SliderThumb are Token-owner transparent, so `Controls[Slider]` also sets their transition durations; group items keep the CheckBox / RadioButton identity.
+  - `Controls[CheckBox]` sizes the indicator (`CheckIndicatorSize`, `CheckedMarkSize`, `BorderRadiusSM`), the check mark follows `ColorWhite`, the checked RadioButton fill uses `RadioButton.RadioBgColor`, and the ToggleSwitch loading arc width follows `LineWidth`.
+  - Token changes now re-lay out or redraw the RadioButton dot, the ToggleSwitch content margins, the Slider track (size, rail and padding) and the Slider thumb background; `Slider.MarginPartWithMark` and `Slider.SliderTrackSize` are reserved and have no visual effect yet (the track cross size and its padding follow `ThumbCircleSizeHover`, which has the same default).
+  - Visible changes: Rate applies `SizeType` (small and large stars use `StarSizeSM` / `StarSizeLG`); the Rate keyboard focus outline is `BorderThickness` (1 px) instead of 0.75 px; a disabled or loading ToggleSwitch is dimmed once as a whole with `SwitchDisabledOpacity`, as in antd, so its knob (0.9 before) and its on / off content (not dimmed before) now share the groove opacity.
+- Progress family
+  - Control-level overrides (`Controls[ProgressBar]`, `Controls[StepsProgressBar]`, `Controls[CircleProgress]`, `Controls[DashboardProgress]`) now reach every theme read of that control, including its status colours, status icons and transition durations; each control computes `DefaultColor` / `RemainingColor` from its own effective globals.
+  - `ProgressBar.LineBorderRadius` sets the rounded bar radius, `StepsProgressBar.ProgressStepMarginInlineEnd` / `ProgressStepMinWidth` set the step gap and minimum step width, and `CircleTextColor` colours the circle percentage; `ProgressBar.ProgressActiveMotionDuration` is reserved (the Active shimmer is not implemented yet).
+  - A local or Style `MinWidth` / `MinHeight` on a line or steps progress bar, and a local `FontSize` on a circle or dashboard progress, are no longer overwritten by the computed text geometry; Token changes re-lay out the circle label and status icon.
+  - Visible changes: the circle and dashboard percentage text uses `ColorText` (`CircleTextColor`) instead of `ColorTextLabel`; an explicit `ChunkWidth` below 2 px is raised to `ProgressStepMinWidth`.
+- Steps
+  - `Controls[Steps]` now reaches every theme read of the items, icons, tails, arrows and panels; StepsItem is Token-owner transparent, so the Steps also sets their transition durations, and the custom icon keeps the IconPresenter identity.
+  - Template defaults that state styles override are now style setters, so the size, type and panel states apply: the Small panel arrow uses `LineWidth` and `PanelArrowWidthSM`; Dot and OutlineDot connectors use `DotLineThickness`; the indicator spacing follows the Panel, vertical title, Dot, Navigation (`NavItemGutter`) and Inline states; the last vertical item drops its bottom padding; Inline items have no rail gap.
+  - Visible changes: Dot and OutlineDot connectors are `LineWidthBold` (2 px, `DotLineThickness` now defaults to `LineWidthBold` as antd) instead of 1 px; the OutlineDot border reads the new `Steps.OutlineDotBorderThickness` (2 px, unchanged) and the indicator border reads `BorderThickness`; the spacing and padding changes listed above.
+- Tag / Badge family
+  - Control-level overrides (`Controls[Tag]`, `Controls[CheckableTag]`, `Controls[CheckableTagGroup]`, `Controls[CountBadge]`, `Controls[DotBadge]`, `Controls[RibbonBadge]`) now reach every theme read of that control, including the Tag status colours and solid text, the badge indicators drawn in the adorner layer and their motion durations; `Tag.TagCloseIconSize` sets the close icon size; group tags keep the CheckableTag identity.
+  - Tag preset, status and custom colours are projected by the theme instead of written at Template priority, so application styles, Semantic Part styles and local values override `Background`, `Foreground` and `BorderBrush`, including on default solid and outlined tags; Token changes now reapply the Tag border thickness.
+  - Badge preset colours (`BadgeColor`, `DotColor`, `RibbonColor`) come from the theme's preset palettes and are recomputed when the theme changes; clearing or invalidating the colour restores the theme colour (`IndicatorColor`, the status or `DotColor`, `ColorPrimary`) instead of leaving the count or dot indicator unfilled or the ribbon at its previous colour; the DotBadge ring redraws when `ShadowColor` changes; detaching a decorated DotBadge or CountBadge clears the adorned element before removing the indicator from the adorner layer.
+  - Visible changes: under a dark theme preset-coloured badges use the dark palette (antd `color-6` of the dark algorithm) instead of the light colours; the light background of a custom-coloured Tag is step 1 of the palette generated from that colour instead of the colour at a fixed HSL lightness of 0.95, and under a dark theme it is the dark palette's step 1 instead of a near-white tint. This deliberately differs from antd 6.7.0, which sets the HSL lightness to 0.95 in every theme; the palette keeps custom tags readable under dark themes.
+  - FloatButton badge presets (`BadgeColor`) are palette-derived like the badges: resolved when the button attaches (a XAML value set before attach now applies instead of falling back to `ColorError`), recomputed when the theme changes (dark palette under a dark theme), and clearing the colour restores `ColorError`.
+- Feedback family
+  - Control-level overrides (`Controls[Alert]`, `Controls[ToolTip]`) now reach every theme read of that control; `Alert.CloseIconSize` sizes the Alert close icon (default `FontSizeIcon`, the same 12px as before) and `ToolTip.MotionDuration` sets the tooltip zoom duration (default `MotionDurationFast`, unchanged).
+  - ToolTip preset colours (`ToolTip.PresetColor`) come from the theme's preset palettes and are recomputed on attach and when the theme changes; preset and custom colours are projected by the theme, so application styles and a local `Background` override them, and a tooltip reopened without a colour returns to `ToolTipBackground` instead of keeping the previous colour.
+  - Visible changes: under a dark theme preset-coloured tooltips use the dark palette (antd `color-6` of the dark algorithm) instead of the light colours.
+  - Control-level overrides (`Controls[Dialog]`, `Controls[MessageBox]`, `Controls[DialogButtonBox]`, `Controls[MessageCard]`, `Controls[WindowMessageManager]`, `Controls[NotificationCard]`, `Controls[WindowNotificationManager]`, `Controls[PopupConfirm]`) now reach every theme read of that control; the dialog surface (header, caption buttons, mask, presenter motion) follows the Dialog or MessageBox that hosts it, the message backplates follow `Controls[MessageCard]`, and nested buttons keep the Button / IconButton identity.
+  - A maximized overlay dialog drops its corner radius through the theme (restoring returns to `BorderRadiusLG`), and the window safe-area margins of the message and notification managers are no longer written as local values.
+  - Visible changes: the notification description applies the `FontHeight` line height (22px by default) instead of the font's natural line height, so multi-line descriptions are slightly taller.
+- Navigation family
+  - Control-level overrides (`Controls[NavMenu]`, `Controls[Menu]`, `Controls[MenuItem]`, `Controls[MenuItemGroup]`, `Controls[MenuSeparator]`, `Controls[ContextMenu]`, `Controls[MenuFlyoutPresenter]`) now reach every theme read of that control. NavMenu items, group titles, dividers, the horizontal bottom line and submenu popups follow `Controls[NavMenu]`; the horizontal and inline item headers are Token-owner transparent, so their transition durations follow the NavMenu too. Menu Own Tokens keep styling every menu popup (menu bar submenus, context menus, drop-down flyouts).
+  - The NavMenu inline-collapse width animation reads the NavMenu's effective `MotionDurationMid` (a local `ThemeConfigProvider` applies) instead of an application resource with a 200 ms fallback; the Menu resolves its `TopLevelMenuItemTheme` from its own resource scope, so a locally supplied theme wins over the application one.
+  - Danger items: `NavMenuNode.IsDanger` / `INavMenuNode.IsDanger` (default `false`; projected to the public `BaseNavMenuItemHeader.IsDanger` / `IsDangerProperty`) and `MenuItem.IsDanger` / `MenuItemData.IsDanger` (`IMenuItemData.IsDanger`, default `false`) draw items with the `Danger*` / `DarkDanger*` Tokens; `NavMenu.DangerItemActiveBg` and `DangerItemSelectedBg` default to `ColorErrorBg` as in antd.
+  - Newly wired Tokens (defaults keep the previous rendering): light horizontal NavMenu top-level items use `HorizontalItemSelectedColor` (selected text and active bar), `HorizontalItemSelectedBg`, `HorizontalItemHoverBg` and `HorizontalItemBorderRadius` (default 0 as antd; light top-level backgrounds are transparent in every state, so it shows only on a background a theme or application style gives them), `HorizontalLineHeight` applies to the item text, `TopLevelItemPopupMarginToAnchor` (now `UniformlyMarginXXS`) is the top-level popup gap; Menu top-level items use `TopLevelItemColor`, `TopLevelItemBg` (now transparent) and, when open, `TopLevelItemSelectedColor` / `TopLevelItemSelectedBg`; menu icons use `Menu.ItemIconMarginInlineEnd` (now `UniformlyMarginXXS`); the new `Menu.GroupTitlePadding` replaces the fixed 16,8 group title padding.
+  - Control-level overrides (`Controls[TabControl]`, `Controls[CardTabControl]`, `Controls[TabStrip]`, `Controls[CardTabStrip]`, `Controls[TabItem]`, `Controls[TabStripItem]`) now reach every theme read of that control; the shared tab bases, the tab scroll viewer (overflow button, edge shadows) and the overflow menu follow their host. TabControl Own Tokens style all four tab hosts. Tab items resolve their named themes (`TabItemTheme`, `CardTabItemTheme`, `TabStripItemTheme`, `CardTabStripItemTheme`) from their own resource scope, so a locally supplied theme wins over the application one.
+  - A change of `TabControl.InkBarThickness` re-lays the ink bar out at once, and a change of the card radius Tokens re-shapes CardTabControl / CardTabStrip tabs at once (before, both waited for the next selection or size change).
+  - Control-level overrides (`Controls[Breadcrumb]`, `Controls[BreadcrumbItem]`, `Controls[Pagination]`, `Controls[SimplePagination]`, `Controls[Tour]`, `Controls[TourStep]`, `Controls[DefaultTourIndicator]`) now reach every theme read of that control; the page items shared by Pagination and SimplePagination follow their host.
+  - `Pagination.PaginationMiniQuickJumperInputWidth` sizes the small quick jumper and simple pager inputs, `Pagination.ItemInputBg` fills the simple pager input, and `Pagination.PaginationItemPaddingInline` now pads the page number (it sat on an empty background border before and never applied; its default is now horizontal only).
+  - Tour: the popup gap (`Tour.PopupMarginToAnchor` plus the step gap offset) follows Token and gap changes while the tour is open and is no longer reconfigured while it is closed; the mask colour is no longer copied into the steps at initialization, so `ColorBgMask` changes reach an open tour.
+  - Visible changes: the small quick jumper input is 44 px wide (antd `controlHeightLG * 1.1`, 50 px before); page numbers of four or more digits get 6 px of inline padding.
+  - Visible changes: items inside NavMenu Vertical / Horizontal submenu popups use `NavMenu.SubMenuItemBorderRadius` (`BorderRadiusSM`, 4 px, as antd) instead of `ItemBorderRadius` (8 px).
+- Layout / container family
+  - Control-level overrides (`Controls[Card]`, `Controls[CardActionButton]`, `Controls[CardMetaContent]`, `Controls[Collapse]`, `Controls[Expander]`, `Controls[GroupBox]`, `Controls[Splitter]`, `Controls[SplitView]`, `Controls[Separator]`, `Controls[CompactSpaceAddOn]`, `Controls[Masonry]`) now reach every theme read of that control. Card grid items, the Card tabs content and Collapse items are Token-owner transparent and read their host's Tokens, so `Controls[Card]` / `Controls[Collapse]` reach them; the card action row and the splitter handle and drag bar follow their host. The Card corner radius is `Controls[Card].BorderRadiusLG`.
+  - `Card.ExtraColor` colours the header extra, `Card.ActionsBg` now fills the action row (the template background had masked it), and the new `Separator.TitleFontWeight` (default 500, as antd) and the newly wired `Separator.HorizontalWithTextGutterMargin` (a large divider with a title: antd's unsized divider; antd's `md` / `sm` size margins win over it, as AtomUI Middle / Small do) replace the fixed title weight and the plain margin.
+  - Added `Card.RestingShadows` (an AtomUI extension, no antd counterpart): the resting shadow of an outlined card, so theme presets can give cards a permanent shadow; it defaults to transparent layers matching `CardShadows`, borderless cards keep `BoxShadowsTertiary` and hovered hoverable cards still use `CardShadows`.
+  - Token changes now re-lay out at once: the Splitter panel spacing (`Splitter.SplitBarSize`, read once per measure before) and the Separator title padding, edge ratio and vertical inline margin (`TextPaddingInline`, `OrientationMarginPercent`, `VerticalMarginInline`).
+  - Visible changes: Collapse and Expander contents paint `ContentBg` (`ColorBgContainer`) as antd, instead of staying transparent, and ghost Collapse / Expander headers are transparent instead of `ContentBg`; this shows on pages whose background is not the container colour (for example dark themes on `ColorBgLayout`). The SplitView pane animates open and close by default (`IsMotionEnabled` follows `EnableMotion`; it was off unless set), and its pane divider is a `LineWidth` strip in `ColorBorder` (same 1 px rendering). A large horizontal Separator with a title uses `HorizontalWithTextGutterMargin` (16 px) instead of `HorizontalMarginBlockLG` (24 px) as its block margin.
+- Data family (lists, tree, skeleton)
+  - Control-level overrides (`Controls[ListBox]`, `Controls[ListView]`, `Controls[TreeView]`, `Controls[Skeleton]` and the Skeleton placeholders `Controls[SkeletonAvatar]`, `Controls[SkeletonButton]`, `Controls[SkeletonInput]`, `Controls[SkeletonImage]`, `Controls[SkeletonNode]`, `Controls[SkeletonParagraph]`) now reach every theme read of that control. ListBoxItem, ListViewItem and TreeViewItem are Token-owner transparent, so the list or tree override also reaches the items, the tree node headers and switchers and their transition durations; the list and tree base themes read their globals from the owner, so the Cascader filter list and the Select candidate list follow the Cascader / Select.
+  - Skeleton is Token-owner transparent: the content it wraps (Card and Dialog bodies, Statistic values) keeps the host's Token owner, so `Controls[Card]` / `Controls[Dialog]` overrides, including motion durations, reach identity-less parts inside it; `CardGridContent` is Token-owner transparent for the same reason.
+  - `ListBox.ItemDisabledColor` / `ListView.ItemDisabledColor` colour disabled items and `Skeleton.TitleHeight` sizes the title line (both keep their defaults); the shimmer brushes follow explicit `Skeleton.GradientFromColor` / `GradientToColor` overrides. Added `Skeleton.ImageColor` (an AtomUI extension, default `#bfbfbf` as antd) for the image placeholder icon. `TreeView.DirectoryNodeSelectedBg` / `DirectoryNodeSelectedColor` (antd DirectoryTree) are reserved and have no visual effect.
+  - List item split lines are drawn from `LineWidth` (an application or Semantic Part `BorderThickness` still replaces them), and tree node / switcher icons take their size and colour from the tree (`IconSize`, `ColorText`).
+  - Visible changes: the ListBox selected-item check mark is now `ColorPrimary` and `IconSize` with `SelectedIndicatorMargin` (its style targeted the wrong element and never applied); disabled tree nodes draw their icon and switcher in `ColorTextDisabled` instead of 0.3 opacity.
+- Data family (avatar, timeline, statistic, carousel, image previewers)
+  - Control-level overrides (`Controls[Avatar]`, `Controls[AvatarGroup]`, `Controls[Timeline]`, `Controls[Statistic]`, `Controls[TimerStatistic]`, `Controls[StatisticCountUp]`, `Controls[Carousel]`, `Controls[CarouselNavButton]`, `Controls[ImagePreviewer]`, `Controls[ImageGroupPreviewer]`) now reach every theme read of that control. TimelineItem and CarouselPage are Token-owner transparent, so the Timeline / Carousel override reaches the items, the timeline indicator and the page content; grouped avatars and the carousel arrows keep the Avatar / CarouselNavButton identity. The image preview UI (cover, overlay, viewer, toolbars, title bar, preview dialog) follows `Controls[ImagePreviewer]`.
+  - Added `Carousel.ArrowOpacity` (the resting arrow opacity, default 0.2; antd fixes 0.4) and `ImagePreviewer.ErrorIconSize` (the load-failure icon size, default 48 px), both AtomUI extensions replacing theme literals; `ImagePreviewer.FloatToolbarIndicatorPadding` now defaults to 0 (its former inline-only value never rendered).
+  - Timeline nodes without an `IndicatorColor` follow `ColorPrimary` when the theme or `Controls[Timeline]` changes (the default colour was copied once when the template applied), and `Timeline.ItemPaddingBottom*` changes re-measure the items at once.
+  - Visible changes: the Carousel previous / next arrows are inset by `Carousel.ArrowOffset` (8 px, antd `arrowOffset`) instead of `PaginationOffset` (12 px); the arrow margin now also updates when the pagination position changes (a property-change notification for the wrong property kept it stale).
+- Data family (calendar, date viewer, date and time pickers)
+  - Control-level overrides (`Controls[Calendar]`, `Controls[LunarCalendar]`, `Controls[DateViewer]`, `Controls[RangeDateViewer]`, `Controls[DatePicker]`, `Controls[RangeDatePicker]`, `Controls[TimePicker]`, `Controls[RangeTimePicker]`) now reach every theme read of that control. The Calendar forwards its Token owner to the DateViewer of its template, so its date cells, panel and range bars follow `Controls[Calendar]` / `Controls[LunarCalendar]`; a picker forwards its owner to its popup presenter (which sits in the registered ArrowDecoratedBox), the date presenter forwards it to its DateViewer / RangeDateViewer and the time view to its columns (in registered ScrollViewers), so the popup date panel (cells, header, panel text), buttons frame, time view and the now Token-owner transparent TimeViewCell follow the picker: `Controls[DatePicker].ColorPrimary` recolours the selected date cell as antd `components.DatePicker.colorPrimary` does, and `Controls[DateViewer]` globals no longer reach a picker popup. The popup frame and the Calendar header selects keep their own identity. The shared InfoPickerInput themes read the concrete picker's globals; the range arrow / active bar Own Tokens are set through the actual `RangeDatePicker` / `RangeTimePicker` terminal.
+  - `TimePicker.ButtonsMargin` now spaces the time picker buttons (it read `DatePicker.ButtonsPanelMargin` before, same default) and `TimePicker.PeriodHostWidth` sizes the AM/PM column; time cells read the picker's globals instead of the ListView Own Tokens (same defaults). Added AtomUI extensions replacing theme and code literals, all keeping the current defaults: `Calendar.FullCellMargin`, `FullCellPadding`, `FullCellBorderThickness`, `RangeBarGap`, `RangeBarLabelPadding`; `LunarCalendar.MarkerSize`, `MarkerMargin`, `MarkerCornerRadius`; `DateViewer.HeaderBorderThickness`, `FooterBorderThickness`, `WeekNumberOpacity`; `DatePicker.HeaderBorderThickness`; `TimePicker.ItemMargin`. Calendar range bar labels use `FontSizeSM` and `ColorTextLightSolid` instead of fixed 12 px white text.
+  - The root `BorderBrush` of the pickers is projected onto the input surface (`HostBorderBrush`) instead of being written as a local value; the range arrow takes its size and colour from the picker; a new active bar thickness re-positions the bar on the bottom edge of the input; the disabled time cell style now targets the cell's content presenter; Calendar range bars no longer stay alive after they are removed (each bar and label was bound to the range bar panel).
+  - Visible changes: the pickers no longer clip the focus shadow of their input frame, so the focus ring (`InputActiveShadow`, `InputErrorActiveShadow`, `InputWarningActiveShadow`) now shows around a focused picker, range pickers included (it was cut to a sliver on DatePicker / TimePicker and hidden on the range pickers). While the pointer previews a date or time in the popup, the previewed input text is `ColorTextPlaceholder` (antd `-input-placeholder`); otherwise the input keeps `ColorText` while the popup is open, and disabled text stays `ColorTextDisabled` as before.
+- Popup
+  - Popup motion (`MotionDurationMid`, `EnableMotion`) follows `Controls[Popup]`, and the text defaults of the popup hosts (`OverlayPopupHost`, `PopupRoot`) follow the control hosting the Popup; tooltip and popover zoom origins inset by the corner radius the frame actually draws instead of the root `BorderRadius` / `BorderRadiusLG`, so Control-level radius overrides move the origin (default radii keep it).
+  - Popup content (drop-down options, popup frames) now inherits the Token owner of the control that hosts the Popup, so `Controls[X]` overrides, including motion durations, reach the drop-downs of X; `Controls[Popup]` keeps applying to the Popup's own shadow, corner radius and anchor margin.
+- Theme
+  - Token reads written on ControlTemplate elements (`{atom:XxxTokenResource}`, `{atom:SharedTokenResource}`) now use Template priority like `DynamicResource`, so triggered styles (`:pointerover`, `:disabled`, classes, property selectors), including application styles, override them; plain style setters still do not, and reads outside templates keep their priority.
+  - Transform Token values (`ImmutableTransform`, for example `RibbonBadge.CornerTransform`) are formatted as their matrix (`1,0,0,0.75,0,0`), so distinct transforms no longer share one canonical text and override values round-trip.
+  - Visible changes: state styles that these reads masked now apply. Dark-style NavMenu group titles use `NavMenu.DarkGroupTitleColor` instead of `GroupTitleColor`, and LunarCalendar workday markers use `LunarCalendar.WorkdayMarkerColor` instead of `HolidayMarkerColor`.
+
+- Display remainder
+  - When QRCode.Color is explicitly null, rasterization falls back to that QRCode's effective ColorText (including its alpha) and refreshes on local theme changes, rather than using fixed black; an explicit non-null Color keeps precedence.
+  - Transfer frames, filter decorations and spacing, Drawer overlays, Spin indicators / tips / masks, Result text / content, Empty preset images / descriptions, QRCode borders, link / selection text, BorderBeam and default focus adorners now use their effective control globals. Drawer overlays refresh after local theme publishes and release their resource bridge on close; registered nested controls keep their own identities.
+  - Result status icons keep their status colour and size after a theme publish that changes the icon Tokens (for example switching to dark): the status brush and size are applied as removable template values instead of being written over the icon's own theme values, and a custom `Icon` keeps its own explicit `FillBrush`, `StrokeBrush`, `Width` and `Height`.
+  - Visible changes: HyperLinkTextBlock keeps its transparent default so tinted, hovered and selected table-row surfaces remain visible; an explicit application Background paints on its existing text visual. Its default theme does not consume ColorBgContainer. Transfer search icon colour and filter margins follow the transfer host; existing geometry and animation endpoints remain unchanged.
+
+## 6.2.15
+
+`2026-11-15`
+
+- Breaking Changes
+  - Implement the new `ValidateAsync(FormValidateOptions, CancellationToken)` overload on custom `IForm` implementations. Review localized default messages and validation feedback. [Migration guide](docs/releases/6.2.15-api-changes.md#form-validation-contract)
+  - Use Desktop `Rate.ToolTips` for star tooltips. `AbstractRate` and its shared subclasses no longer provide this property. [Migration guide](docs/releases/6.2.15-api-changes.md#rate-tooltips)
+  - Qualify the Desktop text input base if both namespaces are imported. Rebuild subclasses after virtual hooks move to shared bases, and review custom templates and property or model assembly lookups. [Migration guide](docs/releases/6.2.15-api-changes.md#shared-control-bases-and-forwarded-types)
+  - Carousel autoplay pauses while the control is hidden, detached or disabled, the application is inactive, or the window is minimized. [Migration guide](docs/releases/6.2.15-api-changes.md#carousel-autoplay)
+  - Tab and arrow keys focus ListBox, ListView and Transfer rows. Update custom themes and tests that expect container, group header, or checkbox focus. [Migration guide](docs/releases/6.2.15-api-changes.md#list-keyboard-focus)
+  - Upgrade related packages and Generator together, rebuild generated consumers and republish trimmed and NativeAOT applications. [Migration guide](docs/releases/6.2.15-api-changes.md#generated-registration)
+- Form
+  - Validate selected fields or run silently, inspect the field-level report, and handle `SubmitFailed`. Add the `RequiredText` mark and localized validation messages in English, Simplified Chinese, Traditional Chinese and the Brazilian Portuguese language pack.
+- Button, Slider and Rate
+  - Add `Success` and `Warning` button colors and the `Rectangular` shape.
+  - Use `IsDotsVisible` and `IsSnapToMarksOnly` to display a discrete scale and snap to its marks.
+  - Make Rate read-only or disable its hover preview independently.
+- TreeView, Transfer, ComboBox and Mentions
+  - Keep expanded, selected and checked states across TreeView container recycling. Navigate across viewport boundaries and extend Shift selection across unrealized rows. #541
+  - Apply check cascades to the entire tree data set and preserve `CheckedItems` when TreeView or Transfer virtualizes its rows.
+  - Keep candidate highlighting aligned after recycling, navigate visible options in ComboBox, and skip disabled Mentions candidates in preselection, keyboard and pointer navigation. #541
+  - Restore keyboard entry to ListBox, ListView and Transfer. Move one item per arrow press and keep the focus outline inside each row.
+- DataGrid, TabControl and Segmented
+  - Prevent a scroll crash at fractional scaling when an offset falls between adjacent slots. #540
+  - Align the active TabControl and TabStrip indicator with mirrored headers in right-to-left layouts.
+  - Keep the Segmented selection thumb and its transition inside the padded track.
+- Shared controls
+  - Add the shared `AbstractEllipsis` base with start, end and middle truncation.
+  - Preview FloatButton drag movement with `DragTranslation` and commit it to the anchor offsets with `CommitDragTranslation()`.
+  - Add `ArrowAnchorOffset` to decorated boxes and add start-aligned scrolling to the internal virtualizing stack panel.
+  - Allow composite badges to delegate target ownership to their inner badge without reparenting the same target twice.
+- Control performance
+  - Reduce construction and recurring work in Icon, Button, Pagination, progress indicators and input controls. Pause hidden icon motion, reuse text measurements, and animate ToggleSwitch with render transforms.
+  - Make repeated NavMenu entry insertion scale linearly with the number of built-in entries.
+
+## 6.2.14
+
+`2026-11-13`
+
+- Breaking Changes
+  - Dependencies: require Avalonia 12.1.6. Applications pinned to 12.1.5 must upgrade Avalonia before installing AtomUI 6.2.14; see the [migration guide](docs/releases/6.2.14-api-changes.md#avalonia-dependency-advances-to-1216).
+  - Skeleton: Move `AbstractSkeleton` to the shared assembly and replace the old active animation layer with shimmer block markers. Review the changes to custom easing, start and stop hooks, and standalone paragraph width. [Migration guide](docs/releases/6.2.14-api-changes.md#skeleton-base-class-moves-to-the-shared-layer)
+  - Space: Move `SpaceItemsAlignment` to `AtomUI.Controls` and rebuild consumers of `Space.ItemsAlignment`. [Migration guide](docs/releases/6.2.14-api-changes.md#spaceitemsalignment-changes-namespace)
+  - Card: Declare `Extra`, `Cover`, `IsLoading` and related property fields on the shared `AbstractCard` base. Rebuild assemblies compiled against 6.2.13. [Migration guide](docs/releases/6.2.14-api-changes.md#card-property-fields-move-to-abstractcard)
+  - Empty and Result: Widen `Description` and `Icon` respectively to `object?`. Update typed reads and rebuild consumers of the previous signatures. [Migration guide](docs/releases/6.2.14-api-changes.md#emptydescription-and-resulticon-become-object)
+  - Empty: Update `EmptyDescriptionStyle` setters for its new `ContentPresenter` target. [Migration guide](docs/releases/6.2.14-api-changes.md#empty-description-semantic-part-becomes-a-content-presenter)
+  - Keyboard and theme: Update focus token overrides, automated Tab order and date/time picker confirmation steps. [Migration guide](docs/releases/6.2.14-api-changes.md#keyboard-focus-and-picker-interaction)
+  - Watermark and Motion: Text watermarks follow the owner theme by default. Theme-commit transitions settle within the first frame. [Migration guide](docs/releases/6.2.14-api-changes.md#watermark-and-theme-motion)
+  - Registration: Upgrade related packages and Generator together, rebuild generated consumers and republish trimmed/NativeAOT applications. [Migration guide](docs/releases/6.2.14-api-changes.md#generated-registration-identities)
+- TreeView and TreeSelect
+  - Navigate with the keyboard, distinguish the active node from the selection, and extend TreeView selection ranges without clearing and re-adding existing items. TreeSelect can browse the dropdown without committing until Enter or Space. #535
+- Keyboard focus
+  - Use an Ant Design-style focus outline and improve Tab order across input controls. Reach ComboBox clear and NumericUpDown from the keyboard, and preserve focus outlines on selected active tree and menu items.
+- DatePicker and TimePicker
+  - Parse dates typed in the displayed format, navigate popup panels from the input, and handle Enter, Escape and range confirmation from the keyboard.
+  - Commit the time shown in the panel and use muted text only for hover previews.
+- ComboBox, Select and Dialog
+  - Use the placeholder color consistently in ComboBox. Add keyboard-accessible clear, a clear Semantic Part and more stable filtered content while the dropdown closes. #534
+  - Remove the leftover “+ 0 …” tag when clearing a responsive multi-select. #537
+  - Preserve focus when clicking content popups and keep a Dialog mounted when raising it above other overlays. #532
+- DataGrid and Card
+  - Keep row reordering active while scrolling and continue autoscrolling when the drag crosses a viewport edge. #536
+  - Draw frozen-column shadows outside the divider and scale shadow offsets correctly on high-DPI displays.
+  - Create the Card loading skeleton only while loading.
+- Content, layout and motion
+  - Add custom image and description content to Empty, custom icons and a waiting state to Result, and custom information content to ProgressBar.
+  - Add wrapping and main-axis distribution options to Space, content and border options to badges, and an outline variant to Tag.
+  - Share one shimmer per Skeleton group. Add custom SpinIndicator animation hooks and MarqueeLabel start delay and hover controls.
+  - Add theme-aware text color and font options to Watermark.
+- Image loading
+  - Add viewport-based lazy loading to AsyncImage and use a cover-aware decode size for raster images.
+- Startup and theme
+  - Reduce JIT startup waiting and generated code size for language definitions and startup registration. Resolve root theme context from the application scope and reduce allocations during token and resource lookups.
+- TextArea
+  - Fill the available height when stretched by a parent without an explicit `Height`; `Lines` now only sets the natural height. (Gitee IKV2LQ)
+- Windows rendering and Splash
+  - Drive the Windows render loop from DWM composition so Spin, Skeleton and other composition animations no longer skip frames. Advance the indeterminate Splash progress per rendered frame.
+- Build and NativeAOT
+  - Ship `net11.0` assets in Release packages next to net8.0 and net10.0, and support building with SDK 11. The net8 trimming, NativeAOT and compatibility-bridge backends follow the SDK-selected official engines instead of fixed SDK versions. #538
+  - Fix Native8 publishing for generated package definitions, and keep packages built before 6.2.14 compatible with the ILLink8 backend and the bridge.
+
+## 6.2.13
+
+`2026-11-06`
+
+- Breaking Changes
+  - Dependencies: require Avalonia 12.1.5. Applications pinned to 12.1.4 must upgrade Avalonia before installing AtomUI 6.2.13; see the [migration guide](docs/releases/6.2.13-api-changes.md).
+  - Registration: Generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.13-api-changes.md).
+- Avalonia and Wayland
+  - Upgrade to Avalonia 12.1.5 and retire the Wayland shared-clock compatibility path now fixed upstream; Wayland frame pacing and initial scaling validate their member contracts and log the applied status.
+  - Input controls use Avalonia's `TextPresenter` directly now that selection foreground refreshes correctly upstream; `PART_TextPresenter`, the `input` Semantic Part and selection/password behavior are unchanged.
+- DataGrid
+  - Add `SelectTriggerType="Row"`: clicking anywhere in a row changes selection; in `Extended` mode an ordinary click toggles the row and Shift selects a range. The `SelectIndicator` default and `Cell` semantics are unchanged. #418
+  - Keep ElementName sources in editor OneWay binding copies and remove the reflection-based binding construction from the public editing path.
+- Select
+  - Keep selected values that are hidden by the current filter in multiple mode. #531
+- Masonry
+  - Fix a permanent layout cycle when the Measure constraint width differs from the final Arrange width and items have width-dependent sizes.
+  - Relayout no longer glides existing items; new items still fade in (only within the extended viewport) and removed items still fade out.
+- NavMenu and Popup
+  - Composite menu and inline submenu opacity as a group so item backgrounds no longer remain visible after the menu background fades out.
+- Gallery
+  - Keep a spacing between the collapsed sidebar header action and the first navigation item; follow `UniformlyMarginXXS` by default, or set `GalleryShellOptions.CollapsedSidebarHeaderSpacing`. Remove product-side margin workarounds to avoid doubled spacing.
+  - Repair Gallery NativeAOT publishing and the performance tool build for Avalonia 12.1.5.
+
+## 6.2.12
+
+`2026-11-04`
+
+- Breaking Changes
+  - Motion: Popup-based components use consistent default enter/leave animations. A close request can finish asynchronously; wait for `Closed` before assuming the host is removed, or disable the relevant motion. See the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - ComboBox: Empty sources now display an empty indicator by default. Set `IsShowEmptyIndicator="False"` to retain the previous display; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - DataGrid: In the default `SelectIndicator` mode, ordinary cell clicks preserve selection. Use `SelectTriggerType="Cell"` for cell-driven selection; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+  - Registration: Generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.12-api-changes.md).
+- Motion
+  - Add `OpenMotion`/`CloseMotion` configuration to selector, picker, autocomplete, button and submenu owners, with component-specific direction and origin. Explicit null disables the corresponding direction; direct Popup instances remain unanimated by default.
+  - Preserve application Style/binding overrides, isolate default definitions per instance, and release retired popup hosts, forwarding subscriptions and composition resources on replacement, retemplating or detachment.
+  - Complete active playback when motion is disabled, and keep overlay and native popup presentation consistent.
+- ComboBox and Empty
+  - Add customizable empty content, content templates and padding for empty sources and filters without matches, with Gallery examples using the dedicated semantic-part Style.
+  - Restore Empty illustrations when reattaching to the visual tree and avoid clearing an existing image while theme resources are temporarily unavailable.
+- DataGrid
+  - Keep current-cell, focus and editing behavior available while selection is controlled by indicators; retain Ctrl/Shift selection in `Cell` mode.
+- DatePicker and TimePicker
+  - Restore right-side add-on content templates, icons and Form feedback after moving their bindings into the shared input theme.
+- Window
+  - Fix rendering failure for Windows borderless topmost windows entering fullscreen, including restoration and window-style lifecycle handling. #528
+- Gallery
+  - Fix AXAML element-name bindings, include showcase source files at build time, and add the missing range-date separator example.
+
+## 6.2.11
+
+`2026-11-01`
+
+- Breaking Changes
+  - FloatButtonGroup: trigger interactions now update `IsOpen` even when it has a local value or binding, and `Clicked`/`Opened`/`Closed` now fire. Review controlled-state handlers; see the [migration guide](docs/releases/6.2.11-api-changes.md). #518
+  - DataGrid: field-schema and local-field/descriptor signatures add editability and write-back parameters. Rebuild compiled consumers and explicitly opt writable fields into source-backed editing; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+  - Registration: generated `ControlPackageGroup_*` identities change with the assembly version. Upgrade related packages and Generator together, rebuild consumers and republish trimmed/NativeAOT applications; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+  - Gallery packaging: replace the removed `EnsureAppImageLauncher.ps1` and external AtomUITools calls with the repository's AppImage, DMG and zip packaging scripts; see the [migration guide](docs/releases/6.2.11-api-changes.md).
+- DataGrid
+  - Commit cell and whole-row inline edits through `IDataGridEditableSource`; add local-field setters and scalar conversion, validate editable fields, and keep invalid values in edit mode.
+  - Support row reordering on writable local sources, show target-row and insertion-position feedback, and fix drag-ghost layout. #519
+  - Keep the viewport in place after row reordering so a row dropped at the top is immediately visible. #522
+  - Clear obsolete scroll intent when data generations change, clamp offsets after viewport growth, and fix scroll rollback, row-deletion and details-collapse offset errors. #520 #521
+  - Fix Shift selection, current-row projection, `ScrollIntoView` and pending keyboard navigation overriding a later pointer selection.
+  - Synchronize nested column groups, align frozen group headers, avoid double-counting frozen widths, and resize a right-frozen column from its own left edge.
+  - Release row, header and filter-popup bindings when containers are discarded, and recover expanded groups after snapshot-expiry restarts.
+- FloatButton
+  - Keep hover-triggered menus open while the pointer moves from the trigger to the menu. #516
+  - Ignore trigger interactions on disabled groups and synchronize open-state bindings and lifecycle events. #518
+- Resource Lifecycle
+  - Release global-input and shared-flyout subscriptions when ColorPicker, ButtonSpinner and NavMenu detach from the visual tree. #517
+- Localization
+  - Cache catalog misses and skip non-enum keys to avoid repeated reflection allocations during resource lookup.
+- Registration and Build
+  - Materialize TypeMap registrations for supported linked iOS/Android Mono applications, including iOS partial linking.
+  - Add an optional `VersionOverride` to the NuGet packaging script while keeping `AtomUIVersion` as the default version source.
+- Gallery
+  - Build Windows zip, Linux AppImage and macOS DMG artifacts with repository-owned scripts and one shared build stamp.
+  - Pin and verify external packaging tools, preserve signing identities, and validate downloads, installer configuration and uploaded artifacts.
+
 ## 6.2.10
 
 `2026-10-30`

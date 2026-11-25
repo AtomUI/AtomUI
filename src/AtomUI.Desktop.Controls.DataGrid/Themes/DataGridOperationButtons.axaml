@@ -5,6 +5,8 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:DataGridOperationButtons}"
                   TargetType="atom:DataGridOperationButtons">
+        <!-- Cells stretch their content; keep the actions centered when editors make the row taller. -->
+        <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -43,7 +45,7 @@
         </Setter>
 
         <Style Selector="^ /template/ StackPanel">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
 
     </ControlTheme>

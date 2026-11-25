@@ -50,7 +50,7 @@
 - 带自身 Attribute 的 `ControlRegistrationFragmentAttribute` 派生代理，使用逻辑 `FragmentId`。
 - 每个保留条件独立的 TypeMap key，以及只包含字符串的候选 key 表。
 - 包 marker、可跨程序集引用的隐藏公共 Group、具体闭合 Group 的 accessor。
-- `GeneratedControlPackageRegistration.Register` helper 与普通非裁剪的完整片段入口。
+- `PackageMetadata.Definition` 包定义与普通非裁剪的完整片段入口。
 
 Control、TokenResourceExtension、TokenKey、OwnTokenKind 和生成的专用 Semantic Style 均按真实契约成为条件。
 生成的 Own TokenResourceExtension 保持 boxed OwnTokenKind 查找键，与现有局部 Resources 字典相等；typed Identity

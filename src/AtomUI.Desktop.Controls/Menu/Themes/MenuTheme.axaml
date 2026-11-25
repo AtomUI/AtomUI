@@ -4,6 +4,28 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Menu}" TargetType="atom:Menu">
+        <Setter Property="atom:MenuPopupScrollHost.PopupContentPadding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMinWidth" Value="{atom:MenuTokenResource MenuPopupMinWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupMaxWidth" Value="{atom:MenuTokenResource MenuPopupMaxWidth}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupBackground" Value="{atom:MenuTokenResource MenuPopupBgColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemForeground" Value="{atom:MenuTokenResource ItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.KeyGestureForeground" Value="{atom:MenuTokenResource KeyGestureColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemMargin" Value="{atom:MenuTokenResource ItemMargin}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverForeground" Value="{atom:MenuTokenResource ItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemDisabledForeground" Value="{atom:MenuTokenResource ItemDisabledColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemForeground" Value="{atom:MenuTokenResource DangerItemColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.DangerItemHoverForeground" Value="{atom:MenuTokenResource DangerItemHoverColor}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemBackground" Value="{atom:MenuTokenResource ItemBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHoverBackground" Value="{atom:MenuTokenResource ItemHoverBg}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemHeight" Value="{atom:MenuTokenResource ItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconSize" Value="{atom:MenuTokenResource ItemIconSize}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemIconEndMargin" Value="{atom:MenuTokenResource ItemIconMarginInlineEnd}" />
+        <Setter Property="atom:MenuPopupScrollHost.GroupTitlePadding" Value="{atom:MenuTokenResource GroupTitlePadding}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemCornerRadius" Value="{atom:MenuTokenResource ItemBorderRadius}" />
+        <Setter Property="atom:MenuPopupScrollHost.ItemInlinePadding" Value="{atom:MenuTokenResource ItemPaddingInline}" />
+        <Setter Property="atom:MenuPopupScrollHost.SeparatorItemHeight" Value="{atom:MenuTokenResource SeparatorItemHeight}" />
+        <Setter Property="atom:MenuPopupScrollHost.PopupShadows" Value="{atom:MenuTokenResource MenuPopupShadows}" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:PixelAlignedBorder HorizontalAlignment="Stretch"
@@ -29,24 +51,24 @@
 
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:MenuTokenResource EnableMotion}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+        <Setter Property="BorderBrush" Value="{atom:MenuTokenResource ColorBorder}" />
         <Setter Property="ShouldUseOverlayPopup" Value="True" />
         
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="MinHeight" Value="{atom:MenuTokenResource ControlHeightLG}" />
+            <Setter Property="CornerRadius" Value="{atom:MenuTokenResource BorderRadius}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="MinHeight" Value="{atom:MenuTokenResource ControlHeight}" />
+            <Setter Property="CornerRadius" Value="{atom:MenuTokenResource BorderRadius}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="MinHeight" Value="{atom:MenuTokenResource ControlHeightSM}" />
+            <Setter Property="CornerRadius" Value="{atom:MenuTokenResource BorderRadiusSM}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -11,6 +11,9 @@ internal sealed class StartupPackageIndex
 {
     private static readonly ConditionalWeakTable<Type, TypeResourceKeys> s_typeKeys = new();
     private readonly Dictionary<string, StartupControlEntry> _byIdentity = new(StringComparer.Ordinal);
+    // The same entries keyed by identity parts: token resource lookups resolve a ControlTokenIdentity
+    // on every query and must not format "Catalog:Id" to do so.
+    private readonly Dictionary<(string Catalog, string Id), StartupControlEntry> _byIdentityParts = new();
     private readonly Dictionary<string, StartupControlEntry> _byType = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StartupControlEntry> _ownKeyTypes = new(StringComparer.Ordinal);
     private readonly StartupControlEntry[] _controls;
@@ -73,6 +76,7 @@ internal sealed class StartupPackageIndex
                 if (control.HasTokenDescriptor || control.HasSemantic)
                 {
                     _byIdentity.Add(control.Identity, entry);
+                    _byIdentityParts.Add((control.Catalog, control.Id), entry);
                     _byType.Add(entry.AssemblyName + "|" + control.TypeName, entry);
                 }
                 all.Add(entry);
@@ -81,6 +85,7 @@ internal sealed class StartupPackageIndex
         foreach (var entry in manual)
         {
             _byIdentity.Add(entry.Data.Identity, entry);
+            _byIdentityParts.Add((entry.Data.Catalog, entry.Data.Id), entry);
             _byType.Add(entry.AssemblyName + "|" + entry.Data.TypeName, entry);
             all.Add(entry);
         }
@@ -207,7 +212,20 @@ internal sealed class StartupPackageIndex
 
     internal void ThrowIfPackageDisabled(object key)
     {
-        if (ResourceKey(key) is { } resourceKey)
+        if (_image is null)
+        {
+            return;
+        }
+        // Every resource lookup miss reaches this check; string keys are matched by name so a miss
+        // does not build the "s:" resource key.
+        if (key is string name)
+        {
+            if (_image.TryGetStringResourceOwner(name, out var packageId))
+            {
+                ThrowIfOwnerDisabled(packageId);
+            }
+        }
+        else if (ResourceKey(key) is { } resourceKey)
         {
             ThrowIfPackageDisabledKey(resourceKey);
         }
@@ -215,8 +233,15 @@ internal sealed class StartupPackageIndex
 
     private void ThrowIfPackageDisabledKey(string resourceKey)
     {
-        if (_image is not null &&
-            _image.TryGetResourceOwner(resourceKey, out var packageId) && !_enabledIds.Contains(packageId!))
+        if (_image is not null && _image.TryGetResourceOwner(resourceKey, out var packageId))
+        {
+            ThrowIfOwnerDisabled(packageId!);
+        }
+    }
+
+    private void ThrowIfOwnerDisabled(string packageId)
+    {
+        if (!_enabledIds.Contains(packageId))
         {
             throw new InvalidOperationException("Control package '" + packageId +
                 "' is referenced but not enabled. Call its UseXxx() package registration entry before using this resource.");
@@ -260,7 +285,7 @@ internal sealed class StartupPackageIndex
 
     internal bool TryGetControl(ControlTokenIdentity identity, [NotNullWhen(true)] out ControlTokenDescriptor? descriptor)
     {
-        if (_byIdentity.TryGetValue(identity.ToString(), out var entry) && entry.Slot >= 0)
+        if (_byIdentityParts.TryGetValue((identity.Catalog, identity.Id), out var entry) && entry.Slot >= 0)
         {
             var candidate = entry.GetDescriptor();
             if (ControlTokenIdentityCanonicalizer.Matches(identity, candidate.ControlType))
@@ -277,7 +302,7 @@ internal sealed class StartupPackageIndex
     internal bool MatchesControlRequirement(ControlTokenIdentity identity, Type ownerType,
         string ownerAssemblyName, string ownerMetadataName)
     {
-        if (!_byIdentity.TryGetValue(identity.ToString(), out var entry) || entry.Slot < 0 ||
+        if (!_byIdentityParts.TryGetValue((identity.Catalog, identity.Id), out var entry) || entry.Slot < 0 ||
             !entry.Data.HasTokenDescriptor || !ControlTokenIdentityCanonicalizer.Matches(identity, ownerType))
         {
             return false;
@@ -315,7 +340,7 @@ internal sealed class StartupPackageIndex
 
     internal bool TryGetSemantic(ControlTokenIdentity identity, [NotNullWhen(true)] out ControlSemanticDescriptor? descriptor, bool notifyFirstUse = true)
     {
-        if (_byIdentity.TryGetValue(identity.ToString(), out var entry) && entry.Data.HasSemantic)
+        if (_byIdentityParts.TryGetValue((identity.Catalog, identity.Id), out var entry) && entry.Data.HasSemantic)
         {
             var candidate = entry.GetSemantic();
             if (ControlTokenIdentityCanonicalizer.Matches(identity, candidate.ControlType))
@@ -438,8 +463,14 @@ internal sealed class StartupControlEntry
     internal int Slot { get; set; } = -1;
     internal ControlTokenIdentity Identity => new(Data.Catalog, Data.Id);
 
+    // Descriptors are immutable and published once with release semantics; a warm query reads them
+    // without the gate. The first materialization, its failure and recursion detection stay locked.
     internal ControlTokenDescriptor GetDescriptor()
     {
+        if (Volatile.Read(ref _descriptor) is { } published)
+        {
+            return published;
+        }
         lock (_gate)
         {
             if (_descriptor is not null)
@@ -453,18 +484,30 @@ internal sealed class StartupControlEntry
             {
                 throw new InvalidOperationException("Registration proxy does not satisfy its Control manifest: " + Data.Identity);
             }
-            return _descriptor = descriptor.Slot == Slot ? descriptor : descriptor.Bind(Slot);
+            var bound = descriptor.Slot == Slot ? descriptor : descriptor.Bind(Slot);
+            Volatile.Write(ref _descriptor, bound);
+            return bound;
         }
     }
 
     internal ControlSemanticDescriptor GetSemantic()
     {
+        if (Volatile.Read(ref _semantic) is { } published)
+        {
+            return published;
+        }
         lock (_gate)
         {
-            return _semantic ??= Materialize().Semantics.SingleOrDefault(semantic =>
+            if (_semantic is not null)
+            {
+                return _semantic;
+            }
+            var semantic = Materialize().Semantics.SingleOrDefault(semantic =>
                 semantic.Identity == Identity && semantic.ControlType.FullName == Data.TypeName &&
                 semantic.ControlType.Assembly.GetName().Name == AssemblyName) ??
                 throw new InvalidOperationException("Registration proxy does not satisfy its semantic manifest: " + Data.Identity);
+            Volatile.Write(ref _semantic, semantic);
+            return semantic;
         }
     }
 

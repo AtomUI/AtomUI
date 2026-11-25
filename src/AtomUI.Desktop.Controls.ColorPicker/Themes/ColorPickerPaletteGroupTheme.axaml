@@ -4,10 +4,11 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ColorPickerPaletteGroup}" TargetType="atom:ColorPickerPaletteGroup">
+        <Setter Property="PaletteSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ColorPickerCollapse ItemsSource="{TemplateBinding PaletteGroup}"
-                                          ItemContentPadding="{atom:ColorPickerTokenResource ColorPickerPresetColorGroupPadding}"
+                                          ItemContentPadding="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.PresetColorGroupPadding)}"
                                           ItemHeaderPadding="0"
                                           SizeType="Small"
                                           IsGhostStyle="True"
@@ -18,8 +19,8 @@
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel
-                                            ItemSpacing="{atom:SharedTokenResource SpacingXXS}"
-                                            LineSpacing="{atom:SharedTokenResource SpacingXXS}" />
+                                            ItemSpacing="{Binding PaletteSpacing, RelativeSource={RelativeSource AncestorType=atom:ColorPickerPaletteGroup}}"
+                                            LineSpacing="{Binding PaletteSpacing, RelativeSource={RelativeSource AncestorType=atom:ColorPickerPaletteGroup}}" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
@@ -38,7 +39,7 @@
         </Setter>
 
         <Setter Property="Width"
-                Value="{atom:ColorPickerTokenResource ColorPickerPresetPanelWidth}" />
+                Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.PresetPanelWidth)}" />
 
     </ControlTheme>
 </ResourceDictionary>

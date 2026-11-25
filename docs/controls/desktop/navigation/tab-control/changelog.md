@@ -2,6 +2,33 @@
 
 本文档记录 TabControl 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractTabToken.TitleFontWeight`（默认 `Normal`）：TabControl、TabStrip、CardTabControl、CardTabStrip 的标签标题字重，经 `TabTokenResourceBinding` 读取；PrimeNG Aura 600，Lara / Nora 700。
+
+## 2026-11-14
+
+- 共享标签指示线使用转换后的完整标题边界。RTL 镜像标题及运行时切换文字方向后，定宽和随标题宽度的指示线都与选中标题对齐。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点描边对齐 Ant Design：线型 `TabItem` 只描边图标与文字所在的按钮行（模板中的行容器标记 `TemplatedControl.IsTemplateFocusTarget`），不再框住带内边距的整个标签；卡片 `TabItem` 的 `Frame` 标记焦点目标与 `FocusOutlineAdorner.IsInset`，描边内收在卡片内侧（`genFocusOutline(token, -3)`）。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：TabControl、CardTabControl、TabItem 的全局 Token 以各自 TokenResource 读取，`BaseTabControl` 基础主题、
+    页签滚动视图与溢出菜单以 `OwnerTokenResource` 读取宿主值（溢出按钮、溢出菜单项关闭按钮经内部属性向下绑定）。页签项命名主题改为从
+    页签项自身的资源作用域查找（此前只查 `Application.Current`，忽略局部作用域）。
+  - `InkBarThickness` 变化后墨条立即重新布局；CardTabControl 的卡片圆角 Token 变化后立即重算。
+  - `HorizontalMargin`、`MenuEdgeThickness`（溢出阴影载体厚度没有可见语义，载体改用布局常量 32，默认渲染不变）标为保留 Token；纵向 Line 页签的紧凑内边距保持主题内部布局常量。
+
 ## 2026-10-20
 
 - Fixed

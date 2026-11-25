@@ -10,7 +10,7 @@
                 <ControlTemplate>
                     <StackPanel Name="RootLayout"
                                 Orientation="Vertical"
-                                Spacing="{atom:SharedTokenResource SpacingXS}">
+                                Spacing="{atom:UploadTokenResource SpacingXS}">
                         <ContentPresenter Name="PART_TriggerContent"
                                           Content="{TemplateBinding TriggerContent}"
                                           ContentTemplate="{TemplateBinding TriggerContentTemplate}"
@@ -34,7 +34,7 @@
                 <ControlTemplate>
                     <StackPanel Name="RootLayout"
                                 Orientation="Vertical"
-                                Spacing="{atom:SharedTokenResource SpacingXS}">
+                                Spacing="{atom:UploadTokenResource SpacingXS}">
                         <atom:UploadPictureShapeList Name="PART_UploadList"
                                                      Classes.semantic-list="True"
                                                      ListType="{TemplateBinding ListType}"
@@ -48,7 +48,7 @@
             </Setter>
         </Style>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:UploadTokenResource EnableMotion}" />
         <Setter Property="ClipToBounds" Value="False" />
 
         <Style Selector="^[ListType=PictureCard]">
@@ -62,7 +62,7 @@
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorTextDisabled}" />
         </Style>
 
     </ControlTheme>

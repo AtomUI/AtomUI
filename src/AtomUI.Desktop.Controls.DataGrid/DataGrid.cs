@@ -6,6 +6,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -1029,6 +1030,11 @@ public partial class DataGrid : TemplatedControl,
     public event EventHandler<DataGridRowEditEndingEventArgs>? RowEditEnding;
 
     /// <summary>
+    /// Occurs when an inline edit has left edit mode but the data source rejected or could not receive it.
+    /// </summary>
+    public event EventHandler<DataGridEditCommitFailedEventArgs>? EditCommitFailed;
+
+    /// <summary>
     /// Occurs when the immutable declarative selection expression changes.
     /// </summary>
     public event EventHandler<DataGridSelectionChangedEventArgs>? SelectionChanged;
@@ -1170,9 +1176,7 @@ public partial class DataGrid : TemplatedControl,
         _rowHeaderDesiredWidth                 =  0;
 
         RangeDataAccess       = new DataGridRangeDataAccess(this);
-        _showDetailsTable    = new IndexToValueTable<bool>();
         _rowDetailsHeightEstimateTable = new IndexToValueTable<double>();
-        _collapsedSlotsTable = new IndexToValueTable<bool>();
 
         AnchorSlot          = -1;
         _lastEstimatedRow   = -1;
@@ -1192,12 +1196,8 @@ public partial class DataGrid : TemplatedControl,
     /// <returns>True if operation was successful. False otherwise.</returns>
     public bool BeginEdit(RoutedEventArgs editingEventArgs)
     {
-        // Inline edits require a committed row entry and an editable Source capability.
-        if (IsRangePresentationActive)
-        {
-            return false;
-        }
-        if (CurrentColumnIndex == -1 || !GetRowSelection(CurrentSlot))
+        // Editing follows the current cell; row selection is an independent feature in this grid.
+        if (CurrentColumnIndex == -1 || CurrentSlot == -1)
         {
             return false;
         }
@@ -1306,6 +1306,7 @@ public partial class DataGrid : TemplatedControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        ConfigureContentTokenOwner();
         AttachRangeSource();
 
         if (_topPagination != null)
@@ -1324,6 +1325,8 @@ public partial class DataGrid : TemplatedControl,
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _contentTokenOwnerBinding?.Dispose();
+        _contentTokenOwnerBinding = null;
         DetachRangeSource();
         CancelRowReorder();
         SuspendPopupPinnedOpenFilterTarget();
@@ -1548,6 +1551,14 @@ public partial class DataGrid : TemplatedControl,
     }
 
     /// <summary>
+    /// Raises the EditCommitFailed event.
+    /// </summary>
+    protected virtual void NotifyEditCommitFailed(DataGridEditCommitFailedEventArgs e)
+    {
+        EditCommitFailed?.Invoke(this, e);
+    }
+
+    /// <summary>
     /// Raises the RowEditEnded event.
     /// </summary>
     protected virtual void NotifyRowEditEnded(DataGridRowEditEndedEventArgs e)
@@ -1604,6 +1615,20 @@ public partial class DataGrid : TemplatedControl,
         }
     }
 
+    private Control? _contentTokenOwnerHost;
+    private IDisposable? _contentTokenOwnerBinding;
+
+    private void ConfigureContentTokenOwner()
+    {
+        _contentTokenOwnerBinding?.Dispose();
+        // Spin owns its mask and indicator; the content remains the DataGrid's implementation subtree.
+        // ControlTheme cannot bind ThemeScope.TokenOwner because the attached property is internal to Core
+        // (AXAML reports AVLN2000). Reuse the scoped forwarding helper and release on detach/re-template.
+        _contentTokenOwnerBinding = _contentTokenOwnerHost is null
+            ? null
+            : TokenOwnerForwarding.Forward(this, _contentTokenOwnerHost);
+    }
+
     /// <summary>
     /// Builds the visual tree for the column header when a new template is applied.
     /// </summary>
@@ -1612,6 +1637,9 @@ public partial class DataGrid : TemplatedControl,
     {
         CancelRowReorder();
         SuspendPopupPinnedOpenFilterTarget();
+
+        _contentTokenOwnerHost = e.NameScope.Find<Control>("GridContent");
+        ConfigureContentTokenOwner();
 
         // The template has changed, so we need to refresh the visuals
         _measured = false;

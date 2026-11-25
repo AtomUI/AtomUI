@@ -84,6 +84,24 @@ Public API / ItemsSource / Command / Event
 - popup 候选必须由单一 active candidate owner 驱动：鼠标命中可用 `ComboBoxItem` 时只迁移候选，不滚动、不提交；`Up` / `Down` 复用同一状态并允许滚动，`Enter` 从 active candidate 写入真实 `SelectedItem`。容器 recycle、ItemsSource / filter 变化和 popup close 必须清理旧投影。
 - overview.md 的 API 契约说明应与源码实际状态流一致。
 
+### 4.1 候选刷新与空态归属
+
+公共语义与完整判定公式由[架构设计 §4.1](overview.md#41-候选与空态)维护。内部职责按以下方向收敛：
+
+```text
+Items / 过滤条件变化
+  -> 应用过滤或恢复容器原始可见性
+  -> 汇总候选是否为空
+  -> 根据空态开关计算 IsEffectiveEmptyVisible
+  -> ControlTheme 切换列表、默认空态与自定义空态内容
+```
+
+候选刷新流程拥有候选是否为空的判定；过滤清理只恢复容器的原始可见性，不直接写空态为 `false`。无过滤值、过滤器为空或退出有效过滤时，也必须经过最终空态计算，不能在恢复容器后提前跳过。
+
+`IsEffectiveEmptyVisible` 是控件内部的只读派生状态，模板只消费它。默认视觉显隐再由有效空态状态、内容和模板是否为空推导。空态内容 presenter 使用 `EmptyIndicator` 与 `EmptyIndicatorTemplate`，不读取选择值，也不接管过滤或弹层开合。
+
+集合监听复用 `Items.CollectionChanged` 的现有入口，覆盖增删、Clear、Reset 和数据源替换。过滤过程中复用同一轮的匹配与可见性汇总，不为判空再扫描一次集合。空态内容、模板或内边距变化仅更新呈现与布局，不重复执行过滤。
+
 ## 5. 生命周期与模板接入
 
 生命周期规则：
@@ -97,12 +115,23 @@ Public API / ItemsSource / Command / Event
 - DynamicResource、TokenResourceBinder 或 C# binding 必须有明确 owner 和释放点。
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 
+空态刷新与生命周期的关系：
+
+| 入口 | 空态职责 |
+| --- | --- |
+| 初始化、模板应用 | 从当前数据和过滤条件计算有效状态；新模板不能依赖旧部件实例。 |
+| 集合或过滤条件变化 | 刷新候选可见性后统一判空，并清理失效 active candidate。 |
+| 弹层打开、`Popup.Opened` | 使用当前候选状态呈现，首次打开与重新打开保持一致。 |
+| 空态开关变化 | 重算有效空态显隐，不修改候选过滤结果或提交选择。 |
+| 内容、模板、内边距变化 | 更新默认或自定义内容与测量，保持候选及选择状态。 |
+| 卸载与容器回收 | 恢复容器原始可见性并清理旧引用；重新挂载及打开时根据当前数据恢复呈现。 |
+
 稳定 template part 接入点：
 
 - `PART_ComboBoxHandle`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ContentRightAddOnPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_EditableTextBox`：承载文本输入、过滤、显示或编辑入口。
-- `PART_EmptyIndicator`：展示指示器、进度、分页或状态反馈。
+- `PART_EmptyIndicator`：承载默认与自定义空态，保持外层 `Border` 和 `semantic-popup-empty` marker。
 - `PART_FormFeedBack`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_ItemsPresenter`：展示用户内容、文本、图标或模板化数据。
 - `PART_OpenIndicatorButton`：承载用户触发入口、导航或关闭动作。
@@ -173,37 +202,31 @@ marker 归属表：
 状态与数量不变量：
 
 - `placeholder` / `input` / `popup.list` / `popup.empty` 的可见性由状态切换，节点与 marker 常驻，因此都是 `Single`；
-  `IsEditable` 在 `placeholder` 与 `input` 之间切换可见性，过滤结果在 `popup.list` 与 `popup.empty` 之间切换。
+  `IsEditable` 在 `placeholder` 与 `input` 之间切换可见性，统一候选空态模型在 `popup.list` 与 `popup.empty` 之间切换。
+  默认或自定义空态内容的替换不改变 `popup.empty` 外层节点的身份、route 或数量语义。
 - `popup.listItem` 为 `Multiple`，数量随 `ItemsSource` 与过滤结果变化，但单个容器的 marker 身份不随
   hover / active candidate / selected / disabled / 过滤隐藏 变化。
 - 弹层四部件只在弹层打开后存在于真实视觉树；未打开时不命中属预期，不是契约缺失。
 - 模板重应用（`OnApplyTemplate`）后所有静态 marker 由新模板重建，运行时 marker 由容器路径重新注入，两者都不得依赖
   旧实例。
 
-### 5.2 根表面定制（root surface brush relay）
+### 5.2 根表面定制（root surface brush projection）
 
 输入族约定：应用对输入控件根表面（`BorderBrush` / `Background`）的定制必须压过共享帧的状态机。可见外框由共享
 `AddOnDecoratedBox` 帧绘制、其状态机（rest / hover / focus / status）拥有 `BorderBrush`，因此 owner 上的
-`BorderBrush` 默认落不到帧上。ComboBox 直接派生 Avalonia `ComboBox`，不在 `AbstractTextInput` /
-`AbstractSelect` 继承链上，`AbstractSelect.RelayRootSurfaceBrush` 覆盖不到它，故 `ComboBox.cs` 自持一份同名中继。
+`BorderBrush` 默认落不到帧上。
 
-中继规则：
+投射规则（与 TextBox / LineEdit / Select 家族相同）：
 
-- `OnApplyTemplate` 取得 `AddOnDecoratedBox` 后，立即对 `BorderBrush` / `Background` 各调用一次
-  `RelayRootSurfaceBrush`，保证模板应用**之前**设置的定制值也能生效。
-- `OnPropertyChanged` 监听这两个属性，运行时改动即时重放；写入方式为
-  `_addOnDecoratedBox.SetValue(property, value, BindingPriority.LocalValue)`，`LocalValue` 是压过帧状态机的关键。
-- 每个属性各自带一个接管标记（`_isFrameBorderBrushRelayed` / `_isFrameBackgroundRelayed`）。owner 值被清空时，只在
-  自身确有接管时才 `ClearValue` 并把属性交还状态机，避免误清内层 owner 的中继（与 `ButtonSpinner` 的接管标记同形）。
-- 模板必须把 `IsMotionEnabled="{TemplateBinding IsMotionEnabled}"` 接到 `AddOnDecoratedBox`。帧动效未接线时过渡常开，
-  **进行中的 `SolidColorBrush` 过渡优先级高于中继写入的 `LocalValue`**，会让运行中的根边框定制静默失效；模板应用前
-  赋值不存在过渡基线，因此只在运行时改值才暴露该缺陷。回归护栏见 `ComboBoxRootSurfaceRelayTests`。
+- ComboBox 模板把 `HostBorderBrush="{TemplateBinding BorderBrush}"`、`HostBackground="{TemplateBinding Background}"`
+  绑定到 `AddOnDecoratedBox`。`InputControlFrame` 在值非空时置 `:host-border-brush` / `:host-background` 伪类，
+  `InputControlFrameTheme` 在全部状态画刷之后用这两个伪类把根画刷投射到帧的 `BorderBrush` / `Background`。
+- 未设置或置空时伪类撤销，帧回到状态机；不再有代码侧 LocalValue 中继和接管标记，模板应用前设置的值同样经模板绑定生效。
+- 投射是主题样式值，应用样式（含 `frame` 专用 Style）优先于它；回归护栏见 `ComboBoxRootSurfaceRelayTests`。
 
-与 `frame` 部件的分工：根表面中继是**输入族的标准根定制入口**（改输入框边框色，作用于 owner 根）；`frame` 部件是
+与 `frame` 部件的分工：根表面投射是**输入族的标准根定制入口**（改输入框边框色，作用于 owner 根）；`frame` 部件是
 **语义选择器入口**（可用 `.semantic-frame` 的专用 Style 精确命中帧节点，并覆盖状态无关的边框宽度、圆角、背景等）。
-两者都作用于同一个 `PART_ContentFrame` 节点，但入口形态与优先级不同：中继写入 `LocalValue`，语义 Style 走
-`Style` 优先级，因此根中继会压过 `frame` 专用 Style。契约边界见
-[ComboBox Semantic Part 契约](semantic-part.md) §5。
+两者都作用于同一个帧节点。契约边界见 [ComboBox Semantic Part 契约](semantic-part.md) §5。
 
 ## 6. 交互与事件处理
 
@@ -217,6 +240,26 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 - Form 值变化通知可以由展示值变化触发，但真实表单值 owner 始终是 `SelectedItem`，不能使用 `SelectionBoxItem` 或 `ToString()` 作为替代状态。
 
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
+
+### 清除状态与模板接线
+
+`SelectedIndex`、`Text`、`IsEditable` 是可清除状态的输入；内部只投影 `CanClearValue`，不保存第二份选择。ControlTheme 根据 `IsAllowClear`、可清除值、有效禁用态及 hover / focus 设置内部样式属性 `IsEffectiveShowClearButton`，按钮通过编译绑定消费该值。后缀内容不带 ComboBox 的 TemplatedParent，普通 `/template/` 子选择器不能到达该节点；显隐仍由根主题负责，不在代码中建立绑定。此编译绑定显式使用 Template 优先级，使专用语义 Style 可以声明式覆盖预览可见性。后缀 StackPanel 对用户内容、Form 反馈和操作组保留 SpacingXS；清除按钮与箭头在独立操作组内使用 SpacingXXS，避免不同语义层级共用间距。按钮可聚焦并是键盘停靠点：外框 `PART_AddOnDecoratedBox` 是 `TabNavigation=Local` 的分组且本身不作停靠点，组内按视觉顺序排列 `TabIndex`：左附加（`AddOnDecoratedBoxTheme` 在外框为 `Local` 分组时把该 presenter 设为最小 `TabIndex` 的分组）、内左附加 presenter 分组 0、文本框 1、内右附加 presenter 分组 2、清除按钮 3、右附加（最大 `TabIndex` 的分组），使 Tab 顺序为输入、清除、离开，附加内容中的可聚焦控件按所在位置参与；可编辑模式下宿主不作停靠点，`OnGotFocus` 对清除按钮和四个附加 presenter 内的焦点不调用基类，避免 Avalonia 把焦点转回文本框；清除后按触发方式（键盘为 Tab，指针为 Pointer）把焦点还给宿主或文本框。下拉打开时若焦点仍在清除按钮或附加内容上，`MoveFocusToInputForDropDown` 把焦点移到输入，使 Up / Down / Enter / Escape 由下拉处理，而不是被按钮先处理。按钮位于操作组的清除入口槽，复用 `InputClearIconButton`；启用 `IsAllowClear` 时槽位预留 SharedToken.IconSize 的最小宽度，避免 Auto Width 在 hover / focus 时伸缩并移动箭头。关闭该属性时槽位退出布局，下拉 handle 保持原结构和交互。
+
+Small 规格的选中内容与占位符使用相同的纵向 margin，清除切换内容时保持输入框高度，不以固定高度裁剪自定义内容。
+
+按钮点击通过 `SetCurrentValue` 清空文本和选择，保留应用绑定。可编辑文本先设为 null，避免 Avalonia 将空字符串匹配为候选项；随后清空索引，保证 null 项与空字符串项均不留下选择。过滤和候选清理由已有属性变化路径完成，不另设清除标记、过滤缓存或延时刷新。点击处理不写入弹层开关。
+
+模板属性变化时立即解除旧清除按钮的 Click 处理（包括模板设为 null 的路径），每次模板应用再接入新节点；不使用全局监听或运行时创建的视觉。`clear` 专用 Style 的 route 通过输入模板的后缀 scope 命中按钮。
+
+### 选中提交与过滤投影
+
+选中提交中的显示文本回填仍同步更新 `Text`、`FilterValue` 和绑定；候选行的过滤投影则在提交与离场期间保持当前视图，避免列表先收缩或切到空态再执行关闭动画。鼠标和键盘提交使用相同的可嵌套提交边界，外部选中值引起的回填也在该边界内协调。既有 SelectionChanged 回调顺序保持。
+
+提交结束后，若物理关闭仍在播放则继续保持投影；收到实际 Popup.Closed 后应用最新查询，即使业务 IsDropDownOpen 已为 false 也要收尾。无动效和零时长关闭由提交调用栈同步收敛。重新打开会在打开前按最新查询准备视图，取消的旧离场不再阻挡刷新。钉住弹层和独立输入/外部查询仍实时过滤。
+
+已呈现的过滤条件以轻量值快照保留；离场期间虚拟化新建/回收的容器仍按旧条件判断，不会闪现不匹配行。默认虚拟化面板复用 Avalonia VirtualizingStackPanel，只在提交/离场期间阻止基类为选中项发起的自动 ScrollIntoView；平时导航与滚动继续由基类处理，并保留原 StyleKey。用户指定 ItemsPanel 的优先级不变；这一保护挂在内置面板上，调用方显式换成标准 VirtualizingStackPanel 等其他面板时，离场期间不再阻止自动定位，选中未实现的远端项可能出现闪行。这是已知边界：Avalonia 的自动定位不提供与面板无关的挂接点，临时覆盖 `AutoScrollToSelectedItem` 又会经双向绑定写回调用方数据源。
+
+这一边界不锁定固定高度、不复制视觉树，也不改变通用 Popup 的动画定义。限高、滚动条、viewport/extent/offset 与当前行可见性在正常选中离场过程中保持。
 
 ## 7. 内部算法与关键流程
 
@@ -246,6 +289,8 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 - 避免为每次状态变化创建不必要的视觉对象、订阅或动画对象。
 - 大集合控件必须保证 container recycle 后不会泄漏旧 item 状态。
 
+空态使用静态属性注册和 ControlTheme 绑定；内容 presenter 复用 Avalonia 的模板呈现能力。该模型不增加计时器、远程任务、全局订阅、反射扫描或 C# 动态创建的模板视觉。内边距的 SharedToken 绑定归主题资源系统所有，模板替换时随旧模板释放。
+
 ## 9. 维护不变量
 
 维护 ComboBox 时不得破坏：
@@ -259,18 +304,26 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 Select Slide 默认；模板以单向 TemplateBinding/编译绑定传给实际 PART_Popup。打开意图与选择状态仍由 ComboBox 管理，Popup 不反向写入配置。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 空态行为验证以空 `ItemsSource`、已打开的实际 Popup 和有效可见的 `PART_EmptyIndicator` 为基线，同时检查布局尺寸、列表互斥、默认与自定义内容互斥。数据变化、过滤清空、开关与内容变更以及模板重应用覆盖范围见[架构设计 §4.1](overview.md#41-候选与空态)。
 - Semantic Part 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxSemanticPartTests.cs`：断言 descriptor
   的 Part 数量/顺序/字段（含 `frame` 的自定义边框色压过主题状态色）、静态 marker 集合、运行时容器 marker 的 prepare/clear/recycle 稳定性、生成专用 Style 恰好命中
   一个节点，并断言不存在 code-behind 属性回退。
 - 弹层部件变更需覆盖打开 / 关闭 / 重新打开与模板重应用后 marker 保持（用 public `IsPopupPinnedOpen` 钉住取证）。
 - Gallery Semantic 预览变更运行 `tests/AtomUIGallery.Tests/ShowCases/ComboBoxSemanticPartHighlightTests.cs`。预览按 AtomUI 标准方式钉住
-  模板内 Popup，12 个部件的 marker 全部在场并被断言；钉住状态下还断言**不存在可见的 light-dismiss 遮罩层**，并覆盖
+  模板内 Popup，13 个部件的 marker 全部在场并被断言；钉住状态下还断言**不存在可见的 light-dismiss 遮罩层**，并覆盖
   卡片真实悬停高亮（触发侧 `root` / `frame` / `indicator` 与弹层侧 `popup.root` / `popup.list` / `popup.listItem`）。
   遮罩层若残留会吞掉卡片悬停，使预览高亮整体失效——抑制时机契约见 [语义契约 §6.1](semantic-part.md)。
 - 钉住遮罩或弹层开合变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxPinnedPopupOverlayTests.cs`。
@@ -282,3 +335,6 @@ ComboBox 的交互事件应从输入源收敛到控件级语义事件：
 
 `ComboBoxItem` 在构造阶段建立共享初始化会话，初始候选及选中背景直接建立；加载后恢复过渡，回收清理前复位。弹层打开、焦点和后续候选变化仍遵循各自的正常动效语义。
 共享目标与生命周期契约见 [状态动效初始化架构](../../../../architecture/systems/control-infrastructure/transition-initialization.md)。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

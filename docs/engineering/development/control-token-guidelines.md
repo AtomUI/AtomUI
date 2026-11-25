@@ -17,8 +17,8 @@ Global Token 使用示例；全部 Global Token 都可覆盖，不在单 Control
 Global Token
     -> Control-specific Global Override
 Effective Global Token
-    -> calculate Control Own Token defaults
-    -> Control Own Token Override
+    -> freeze explicit Control Own Token values
+    -> control token rule of the active design language (value package)
 Effective Control Token
     -> ControlTheme
     -> Semantic Part Theme
@@ -27,7 +27,7 @@ Effective Control Token
 
 | 层 | 职责 |
 | --- | --- |
-| Global Token | 定义全局颜色、尺寸、排版、动效、交互值和算法输入。 |
+| Global Token | 定义全局颜色、尺寸、排版、动效和交互值；种子是设计语言推导的输入。 |
 | Effective Global Token | 保存 Global Token 在某个 Control identity 下的有效值。 |
 | Control Own Token | 定义只属于一个 Control 的稳定设计语义。 |
 | Effective Control Token | 合并该 Control 的 Effective Global Token 与 Own Token。 |
@@ -67,18 +67,57 @@ public sealed class Rating : TemplatedControl
 }
 
 [ControlDesignToken]
-internal sealed class RatingToken : AbstractControlDesignToken
+public sealed partial class RatingToken : AbstractControlDesignToken
 {
-    public double StarSize { get; set; }
-    public double StarGap { get; set; }
+    /// <summary>Edge length of one star.</summary>
+    public partial double StarSize { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    /// <summary>Horizontal gap between two adjacent stars.</summary>
+    public partial double StarGap { get; set; }
+}
+```
+
+Token 类只声明词汇。取值写在每种设计语言的取值包（`<控件包名>.Themes.<Lang>`）里，每个终端 Token 类一个控件取值规则：
+
+```csharp
+// Acme.Controls.Themes.AntDesign/Rating/RatingTokenRule.cs
+[ControlTokenRule]
+internal sealed class RatingTokenRule : IControlTokenRule<AntDesignToken, RatingToken>
+{
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<RatingToken> target)
     {
-        StarSize = EffectiveGlobalToken.ControlHeight;
-        StarGap  = EffectiveGlobalToken.UniformlyMarginXS;
+        var token  = target.Own;
+        var global = target.Global;
+        token.StarSize = global.ControlHeight;
+        token.StarGap  = token.StarSize / 4; // StarSize 被显式设置时，这里读到的就是显式值
     }
 }
 ```
+
+编译器在运行推导之前把主题、`ThemeConfig` 与作用域对该控件显式给出的值写入 Token 对象并冻结这些属性：推导对冻结属性的
+写入被忽略，读取得到显式值。因此：
+
+- 推导就是普通的顺序赋值，不判断"用户是否设置过"。用户改了 `StarSize`，随后由它算出的 `StarGap` 自动跟随；用户改了
+  `StarGap`，推导对它的写入被忽略。推导不需要也不能判断显式性，也不以 `double.NaN`、`default`、`null` 等哨兵值代替。
+- 推导必须写全终端的全部属性，包括从抽象层继承的属性与行为开关；`target.Own.X` 只能读本方法已经写过的属性。生成器以
+  `ATOMUIGEN050`（漏写）与 `ATOMUIGEN051`（先读后写）在构建期报告，其余由设计语言契约测试的 `ControlComplete` 检查。
+- `target.Global` 是该控件看到的全局 Token：读时得到该控件的值，写时只对这个控件生效，并且只能写 Map 与 Alias。
+- 内部派生字段（例如 DataGrid 由公开 `BorderColor` 派生的 `TableBorderColor`）在推导里从公开字段派生，主题消费派生字段
+  时用户覆盖公开字段仍然生效。
+
+推导的完整契约（查找规则、共享逻辑、通用取值规则、`Add<控件包>()` 入口）见
+[编写设计语言](../../guides/theming/writing-design-languages.md#4-取值包)。
+规则与计算器的类型、文件命名及迁移要求见[设计语言取值包命名实施标准](value-package-naming.md)。
+
+Token 类与 Token 属性的写法：
+
+- Token 类必须是 `partial` 类，每个 Token 属性必须是 partial 属性（`public partial double StarSize { get; set; }`）。
+  实现部分由 `TokenPropertyImplementationGenerator` 生成：getter 是 `get => field`，setter 为
+  `if (IsFrozen(nameof(StarSize))) return; field = value;`：显式值在推导之前冻结，推导对它的写入被忽略（没有冻结项时只是一次
+  空判断）。Token 类只有声明，不写初始化器或计算方法，取值属于设计语言的取值包。类或属性不是 partial 时报 `ATOMUIGEN049`，该属性不产出实现。不要手写实现部分。
+- AtomUI 四个控件包（`AtomUI.Controls`、`AtomUI.Desktop.Controls`、ColorPicker、DataGrid）的控件 Token 类都是
+  `public`，各语言取值包里的控件取值规则可以直接写它们的属性（见[编写设计语言](../../guides/theming/writing-design-languages.md#4-取值包)）。
+  GalleryBase 的 Token 类保持 `internal`。第三方 Token 类可以是 `internal`，但那样只有本程序集能为它写控件取值规则。
 
 约束：
 
@@ -97,22 +136,39 @@ internal sealed class RatingToken : AbstractControlDesignToken
   仅有资源的内部 presenter 不因此获得虚构的 Token identity。
 
 多个 Control 需要相同值时，先判断它是否属于全局设计语言。属于时提升为 Global Token；不属于时分别定义语义
-清晰的 Own Token。只有至少两个真实终端共享同一 Control 视觉语义、默认计算依赖一致且平台差异仍可由终端表达时，
+清晰的 Own Token。只有至少两个真实终端共享同一 Control 视觉语义、各语言下的取值规则一致且平台差异仍可由终端表达时，
 才提取无 identity 的抽象 `[ControlDesignToken]` 层；不能为了可能的复用提前建立空继承层。
 
 抽象层可以位于另一个程序集。对第三方开放时使用 `public abstract`，仅供已知第一方包复用时可以使用
-`internal abstract` 与正常的 `InternalsVisibleTo`。跨 Desktop/Mobile 的产品视觉语义放在最低且正确的共同上游
-`AtomUI.Controls`，不因复用下沉到 `AtomUI.Core` 或 `AtomUI.Controls.Shared`。
+`internal abstract` 与正常的 `InternalsVisibleTo`；公开的终端类不能继承内部抽象层。跨 Desktop/Mobile 的产品视觉语义放在
+最低且正确的共同上游 `AtomUI.Controls`，不因复用下沉到 `AtomUI.Core` 或 `AtomUI.Controls.Shared`。
 
-### 默认值计算继承
+AtomUI 控件包里的抽象中间层（例如 `AbstractButtonGeometryToken`）随终端类一起公开，外部程序集可以继承它们。因此它们的
+属性名称、值类型与语义说明属于公开 API，修改按破坏性变更处理。抽象层只有属性声明，没有计算方法或受保护的辅助成员。
 
-Generator 只为终端生成 evaluator，默认计算使用 C# virtual dispatch。继承链后续层 override
-`CalculateTokenValues(bool isDarkMode)` 时，第一条可执行语句必须且只能调用一次
-`base.CalculateTokenValues(isDarkMode)`，随后再计算本层属性。base 调用不能是条件性的，也不能转发其他参数。
+### 继承属性的取值
 
-直接继承 `AbstractControlDesignToken` 的终端和直接重写根方法的第一层抽象 Token 不要求调用根类型空实现；某层没有
-override 时正常继承基类实现。定义 public 抽象 Token 的包必须启用兼容版本 Generator，使方法体契约在产生 metadata
-前得到验证。
+抽象层没有推导，也不会被单独登记；每个终端的推导写全它继承来的属性。多个终端共享同一套取值规则时，规则写在取值包内的
+普通静态辅助方法里，由各终端的推导调用（Ant Design 的按钮族：`StandardButtonTokenCalculator.Calculate`）。
+抽象层位于跨端共用的 `AtomUI.Controls` 时，由 `AtomUI.Controls.Themes.<Lang>` 提供公开的共享推导方法，各端取值包调用。
+继承结构的完整规则见 [Control Design Token 继承架构](../../architecture/systems/theming/control-design-token-inheritance.md)。
+
+## Own Token 承诺面
+
+承诺面是主题系统对用户的声明："这些 Token 设置后一定有效果"。承诺面 = 全部 Global Token + 每个 Control 的
+Active Own Token。每个 Own Token 字段必须属于以下之一：
+
+| 分类 | 含义 | 要求 |
+| --- | --- | --- |
+| Active | 有真实消费者 | 所属包的主题 AXAML 或代码至少引用一次；该字段的生效测试必须通过 |
+| Reserved | 暂无消费者，有保留理由 | 字段加 `[ReservedToken("原因")]`；文档与工具标为保留，不出现在"可调"列表 |
+| 删除 | 既无消费者也无理由 | 删除字段，写入发布说明 |
+
+生成器对每个 Own 字段做包内引用分析：未引用且未标 `[ReservedToken]` 的字段报构建诊断（迁移期为警告，家族迁移完成后
+转错误）。Reserved 不是长期状态；字段接通消费后去掉 Attribute，长期没有消费计划的字段删除。
+
+Global Token 不要求每个 Control 都消费。生成器另外产出消费图：哪个 Control 的主题与代码消费了哪个 Global Token。
+消费图供生效测试骨架、文档生成和将来的主题工具读取，不进入 schema、不限制配置，也不是支持边界。
 
 ## 可配置 Token 契约
 
@@ -128,10 +184,10 @@ Global Token 禁止同名，因此扁平配置和统一 `XxxTokenResource` 不�
 
 ## Global Token 消费不进入 Schema
 
-Own Token 计算可以直接读取任意 Effective Global Token：
+控件取值规则可以直接读取该控件视图里的任意全局 Token：
 
 ```csharp
-StarSize = EffectiveGlobalToken.ControlHeight;
+token.StarSize = target.Global.ControlHeight;
 ```
 
 ControlTheme 也可以直接使用任意 Global Token：
@@ -141,8 +197,9 @@ ControlTheme 也可以直接使用任意 Global Token：
 ```
 
 生成器不扫描这两处访问，也不扫描 C# Binding 来形成依赖清单。合法 Global Token 即使没有被当前 Control 消费也
-允许配置；它可能没有视觉效果，但不能泄漏到其他 Control 或 Global snapshot。`Global`/`Custom` Control 算法
-可以从一个局部 Seed/Map 覆盖派生其他 Token，这是当前 Control 内的正常间接效果。
+允许配置；它可能没有视觉效果，但不能泄漏到其他 Control 或 Global snapshot。控件级配置覆盖种子（或在 Control 上固定
+`Appearance` / `Density`）时，管线为该 Control 单独求一份全局 Token 再运行它的推导，由种子派生的其他 Token 随之变化，这是当前
+Control 内的正常间接效果；只覆盖 Map、Alias 或 Own Token 时只替换那一项，不触发派生。
 
 ## 用户配置
 
@@ -170,6 +227,9 @@ Global Token snapshot 不受影响。名称未出现在完整 Global Token schem
 
 <!-- 读取 Rating Own Token。 -->
 <Setter Property="Margin" Value="{atom:RatingTokenResource StarGap}" />
+
+<!-- 共享基元（无 Token 身份）的主题：读取当前所属公开 Control 的 Effective Global Token。 -->
+<Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
 ```
 
 `RatingTokenResource` 同时读取两类 Token，消费语法不写 `Global=` 或 `Own=`。生成器产生强类型
@@ -180,11 +240,56 @@ Global Token snapshot 不受影响。名称未出现在完整 Global Token schem
 TokenResourceExtension、TokenKey 和 OwnTokenKind 的使用都应保留对应注册片段。把 enum 转为裸整数或仅做常量计算
 不代表使用控件资源。Token-only、生成 identity-only 的代码不能依赖 owner 控件稍后才被构造来补注册。
 
-选择规则：
+选择规则由 ControlTheme 的 `TargetType` 是否拥有 Token 身份决定：
 
-- 希望某值永远跟随当前 ThemeContext 的全局结果时使用 `SharedTokenResource`。
-- 希望用户能够在 Rating 配置下局部覆盖时使用 `RatingTokenResource`。
-- ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient fallback。
+| TargetType | 全局 Token 的读法 | 说明 |
+| --- | --- | --- |
+| 有 Token 身份的公开 Control（Button、LineEdit、Rating…） | `{atom:XxxTokenResource Name}` | 读自己的 Effective Global Token，用户在 `Controls[Xxx]` 下的覆盖生效 |
+| 无 Token 身份的共享基元与部件（InputControlFrame、AddOnDecoratedBox、各类 Item / Cell / Presenter） | `{atom:OwnerTokenResource Name}` | 读继承到的 `ThemeScope.TokenOwner` 所指公开 Control 的 Effective Global Token；无 owner 时读全局值 |
+| 应用级样式，或明确要求所有 Control 永远共享同一值 | `{atom:SharedTokenResource Name}` | 后者在 AXAML 中加注释说明共享理由 |
+
+- Control 主题里不得用 `SharedTokenResource` 读全局 Token，否则 `Controls[Xxx]` 的覆盖对该消费点无效。生成器按
+  TargetType 校验读法，迁移期警告，家族迁移完成后转错误。
+- 每个有 Token 身份的公开 Control 的默认 ControlTheme 在首次解析时由 ThemeManager 注入只匹配该类型 StyleKey 的
+  `Setter(ThemeScope.TokenOwner, identity)`；Control 作者不写任何代码。`BasedOn` 这个默认主题的未注册部件主题
+  （NumericUpDownSpinner）不带走该 identity，继续继承宿主。模板里嵌套的公开 Control 用自己的 TokenResource 读自己的
+  有效值（SearchEdit 里的 Button 读 `ButtonTokenResource`）。用户不经 `BasedOn` 完全替换默认 ControlTheme 时，基元回落为全局值。
+- 注册控件作为部件（IconPresenter、IconButton、ScrollViewer、Popup）携带自己的 identity：Setter 目标或模板节点在它们之上
+  或之内时，`OwnerTokenResource` 解析到该部件。需要跟随宿主的值在无身份层读取后向下绑定，或显式读宿主的 `XxxTokenResource`。
+- owner 透明容器：纯容器类注册控件（`atom:Popup`）以 internal `[TokenOwnerTransparent]` 标记，ThemeManager 不为它注入
+  owner，弹层内容（下拉候选项、弹层框体）经 Popup 的逻辑父级继承宿主的 owner；容器自身的视觉以自己的 `XxxTokenResource`
+  显式读取（Popup 读 `PopupTokenResource`）。只属于一个宿主的弹层内容仍以宿主的 `XxxTokenResource` 显式读取（Select 的候选项读
+  `SelectTokenResource`），不依赖继承链；弹层中的注册控件（ComboBoxItem、CascaderView）用自己的 identity 读取 Global Token，
+  宿主的 Own Token 仍以宿主 TokenResource 读取。只作为某个宿主模板部件使用、没有 Own Token 的注册控件（SliderTrack、
+  SliderThumb，以及只属于一个宿主的项容器 StepsItem）同样标记 `[TokenOwnerTransparent]`，继承宿主 owner，主题以宿主
+  `XxxTokenResource` 读取。
+- owner 转发（第三种 owner 来源，见 [主题运行时 §13](../../architecture/systems/theming/runtime.md)）：宿主在
+  `OnApplyTemplate` / 部件更换时调用 internal `Primitives/TokenOwnerForwarding.Forward(host, part)`，把部件的
+  `ThemeScope.TokenOwner` 绑定到宿主的 owner，并在模板重新应用或部件更换时释放返回的 `IDisposable`。按以下规则选择：
+  - 纯容器、只属于一个宿主、自身没有 Token：`[TokenOwnerTransparent]`。
+  - 宿主拥有的部件位于共享的、有自己视觉与 Token 的注册控件之后（ArrowDecoratedBox、ScrollViewer）：转发到部件，被越过的
+    注册控件保持自己的身份。
+  - 转发到注册的公开控件（Calendar → DateViewer、Picker → DateViewer）：只在宿主接管该控件全局 Token 时使用；该控件的 Own
+    Token 继续按它自己的身份显式读取，属于借用的 Own Token，须登记在宿主 token.md。
+  - 每一处转发都配 owner 断言（`ThemeScope.GetTokenOwner`）与像素隔离测试。
+- 多个有身份的控件共用一个无身份基础主题（AbstractProgressBarTheme 之于 ProgressBar、CircleProgress 等）且共享 Own Token
+  语义时，Own Token 定义放进抽象 `[ControlDesignToken]` 层，由各控件终端继承；基础主题只以 `OwnerTokenResource` 读 Global
+  Token，Own Token 由各控件自己的主题以自己的 `XxxTokenResource` 读取，基础主题需要时经内部属性绑定使用。
+- 只属于一个宿主的无身份部件可以直接读宿主的 `XxxTokenResource`；被多个宿主共用的部件（SelectHandle、InputControlFrame）
+  用 `OwnerTokenResource`。
+- 共享主题被无身份的派生部件复用时（TextBoxTheme 之于 EmbeddedTextBox，ButtonSpinnerTheme 之于 NumericUpDownSpinner），
+  即使 TargetType 有身份，全局值也以 `OwnerTokenResource` 读取，部件随宿主；在注册控件自身上 owner 就是它自己。这种主题必须在
+  `<ControlTheme>` 前紧邻一条 `<!-- owner: 原因 -->` 注释；没有该标记时，有身份 TargetType 上的 `OwnerTokenResource` 报 ATOMUIGEN041。
+- `OwnerTokenResource` 只接受全局 Token；基元没有 Own Token。
+- ControlTheme 不声明 `ControlTokenScope.Identity`，也不存在 ambient snapshot fallback。
+- 过渡时长不分 TargetType，一律把 `<Transitions>` 包在 `<atom:TokenTransitions>` 中，并在过渡上用附加属性
+  `atom:TokenTransitions.Duration="MotionDurationMid"`（`SharedTokenKind` 枚举键）声明时长 Token：
+  `<Setter Property="Transitions"><atom:TokenTransitions><Transitions><atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" /></Transitions></atom:TokenTransitions></Setter>`。
+  它按接收 `Transitions` 的 Control 解析（有身份的 Control 读自己的 Effective Global 值，基元读继承 owner 的值，与
+  `OwnerTokenResource` 相同），随主题发布、`EnableMotion=false`（时长归零）、`Controls[Xxx]` 覆盖和局部
+  ThemeConfigProvider 作用域实时变化；未声明 Token 的过渡保留写死的时长。直接写在 `<Transitions>` 上的值是该样式
+  全部目标共享的单个实例，无法按 Control 区分；旧的 `SharedTokenResourceValue`（加载时一次性取应用级值）已删除，
+  ControlTheme 中出现即报 ATOMUIGEN041，且没有 `shared:` 豁免。
 
 ## C# 访问契约
 
@@ -202,6 +307,34 @@ TokenResourceBinder.CreateControlTokenBinding(
 `ControlTokenAccessor.Capture(owner)`，同一次计算只读取一次 snapshot。生成 descriptor 提供 exact CLR type 到
 identity/slot 的 AOT-safe 映射；基类 Effective Global 读取使用注册派生类型的 identity，Own Token 不随继承替换。
 未注册 exact type 必须失败，不能回退到基类 identity，也不能使用隐藏 StyledProperty 转运 Token。
+
+### 控件代码的七条消费规则
+
+控件代码里凡是影响视觉的值都来自主题，并在主题变化时重算。以下规则由分析器检查，不能静态证明的部分由评审检查：
+
+1. 视觉值（颜色、画刷、阴影、线宽、圆角、字号、尺寸）不得以字面量出现在控件代码里；`Colors.Transparent`、`0`
+   和行为常量（阈值、计数、索引）允许。
+2. 读 Token 只经 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML 的三种 TokenResource；禁止
+   `Application.Current.TryGetResource`、`TryFindResource`、`FindResource` 读 Token，禁止读取失败时回落写死的值。
+   局部 `ThemeConfigProvider` 的覆盖必须对所有读取生效。
+3. 由 Token 算出的视觉值必须在主题变化时重算：挂载期绑定到属性并让变化驱动重算或重测（`AffectsMeasure`），
+   或 `ThemeTokenResolver.Subscribe`；不得在测量或构造时一次性读 Token 后缓存。
+4. 预设色（Badge、Tag、ToolTip、Button 的 preset color）从快照的 `PresetPalettes` 取并按快照缓存，不在控件实例里
+   重算，也不以 RGB 常量写死；暗色下预设色必须跟随色板。
+5. 主题里需要被状态 Setter（`:pointerover`、`:disabled`、暗色 variant）覆盖的默认值，写在模板节点的属性上或写在
+   Style Setter 里都不会遮蔽状态值：模板内的字面量与 TokenResource 读取均为 Template 优先级，低于触发样式
+   （伪类、类选择器）；但 Template 优先级高于非触发的 Style Setter，同节点同属性若还有普通 Style Setter 默认值，
+   会被模板节点属性盖过。因此同一节点同一属性的默认值只写一处，推荐写成 Style Setter 与状态 Setter 同级，便于对照
+   （原 ATOMUIGEN046 已退役，不再有 analyzer 检查）。模板外写在元素属性上仍是 LocalValue，写在 Setter 里取该样式的优先级。
+6. 代码更新当前状态可用 `SetCurrentValue` 保留既有绑定；不得以 LocalValue 覆盖用户与主题的绑定。向嵌套控件写入
+   计算后的视觉默认值时，优先采用下一条的 internal 属性投射。Avalonia 的子控件 ControlTheme Setter 可以胜过外部
+   Template 优先级写入，不能把 Template 优先级当作跨控件默认值传递的通用方案。
+7. 代码算出的视觉值写入 internal 属性，由目标 ControlTheme 的 Setter 投射到公开视觉属性；应用 Style、触发样式与
+   本地值按 Avalonia 的优先级覆盖主题默认值。可由 ControlTheme 等价表达的绑定直接在 AXAML 声明，代码绑定仅限
+   动态目标、非 Visual 资源宿主等无法声明式表达的边界，并注明原因与释放位置。
+
+Button 是参考实现：`ControlTokenAccessor.Capture<Button>` 读控件有效值，`ThemeTokenResolver.Subscribe` 在主题
+变化时重算变体画刷，变体画刷经资源键写入以支持作用域覆盖。
 
 ## ControlTheme Asset
 
@@ -232,6 +365,9 @@ AXAML。只有一个 ControlTheme 时就只有一个主题文件。
 
 主题和资源作者必须遵循：
 
+- 主题 AXAML 里的数值字面量只允许表达布局常量，并以 `<!-- layout -->` 注释标注，分析器据此放行；线宽、分隔线、
+  圆角、字号、阴影等视觉值必须读 Token，边框与分隔线线宽统一用 `LineWidth`。颜色字面量不允许出现。
+- 需要被状态 Setter 覆盖的默认值写成 Style Setter，不写在模板节点属性上（消费规则 5）。
 - 只有真正导出的顶层主题建立 Control → asset 关联；嵌套模板 TargetType 和局部定制主题不产生反向默认主题归属。
 - 自定义 `SearchButtonTheme` 不能使普通 Button 使用反向保留 SearchEdit；顶层命名主题则按其真实导出保留。
 - 同一字典导出多个主题时保留完整资产，由实际 factory 引用进入链接闭包；多个片段引用同一 AssetId 只挂载一次。
@@ -278,8 +414,11 @@ Control。组合关系不能通过借用 Token identity 表达。
 Own Token 表达稳定 Control 语义，例如 `DefaultHoverColor`、`PrimaryShadow`、`ContentFontSizeLG`。不要使用
 `Panel1Padding`、`FrameBorderPointerOverBrush` 等模板节点名称，也不要展开颜色、variant 和状态的笛卡尔积。
 
-`IsPressed`、`IsPointerOver`、`IsLoading`、模板节点可见性和实例 API 解析结果属于运行时状态。需要通过 Selector
-参与状态映射的最终变量使用 internal StyledProperty Theme Variables，不进入 Control Token。
+`IsPressed`、`IsPointerOver`、`IsLoading`、模板节点可见性和实例 API 解析结果属于运行时状态。仅供内部 Selector
+消费的最终值使用内部 `StyledProperty` 承载。Control Token 定义稳定的设计值，由 ControlTheme 读取并提供默认值。
+
+调用方需要直接设置的实例值由控件的标准属性承载。属性形态和名称按其所有者和作用确定，见
+[控件属性形态与命名](control-development-guidelines.md#控件属性形态与命名)。
 
 ## 第三方 Control 包
 
@@ -307,13 +446,27 @@ Semantic 和资产 factory，不运行时扫描程序集或 AXAML。作者不手
 - 具体 `[ControlDesignToken]` 未 `sealed`，或作为另一 Token 的基类。
 - Token 继承链包含泛型、未标记中间层、具体中间层或没有到达 `AbstractControlDesignToken`。
 - 继承属性同名、隐藏、形态无效，或形成重复 schema key。
-- `CalculateTokenValues` 的直接 base 调用缺失、重复、不是第一条可执行语句或未原样转发参数。
 - TokenResource 引用了不存在或归属错误的 Token。
 - Control、Token、主题资产和 identity 约定存在歧义。
 - 冲突 identity、资产/主题导出定义，或必需包内资源无法按声明作用域解析。
 - Semantic Part Theme 的 TargetType 与属性契约不兼容。
 - Semantic Part 的 ContractType 与模板 marker 类型不兼容，或 Part 名称、class、cardinality 与 descriptor 不一致。
 - internal 实现类型被错误声明为独立 Token owner。
+- 控件取值规则没有写全其控件的全部 Token（`ATOMUIGEN050`），或在写入之前读取了自己的 Token（`ATOMUIGEN051`）。
+- 取值包为某个控件包的部分 Token 类写了推导，却漏掉同一控件包的其他 Token 类（`ATOMUIGEN052`）。
+- 依赖方向错误：控件包引用了语言包或取值包、语言包引用了控件包，或取值包里声明了控件（`ATOMUIGEN053`）。
+- Token 类不是 partial 类，或 Token 属性不是 partial 属性（`ATOMUIGEN049`）。
+
+以下问题由分析器报告，迁移期为警告，所属控件家族迁移完成后由项目 `.editorconfig` 升级为错误：
+
+- 有 Token 身份的 TargetType 的 ControlTheme 用 `SharedTokenResource` 读全局 Token；无 Token 身份的 TargetType 用
+  `SharedTokenResource` 而非 `OwnerTokenResource`，且没有共享语义注释。
+- Own Token 字段在所属包内无引用且未标 `[ReservedToken]`。
+- 控件代码经 `Application.Current` 或 `FindResource` 系列读 Token，或读取失败回落字面量。
+- 控件代码里的视觉字面量。
+- 主题 AXAML 里未标 `<!-- layout -->` 的数值字面量，或任何颜色字面量。
+- 模板节点属性上写了被同一主题状态 Setter 覆盖的默认值。
+- 控件代码以 `SetValue` 或属性赋值把 LocalValue 写入视觉属性。
 
 配置规范化必须在身份去重前检查 owner 冲突。跨包依赖在全部入口返回后统一校验；缺少 RequiredTokenOwners、未注册
 exact CLR type、无效配置名称、资源与语义契约不完整时启动失败，不能回退到基类 identity 或追加全包注册。
@@ -324,13 +477,18 @@ exact CLR type、无效配置名称、资源与语义契约不完整时启动失
 | 改动类型 | 验证要求 |
 | --- | --- |
 | 新增 Control | 验证 identity、可选 Own Token、语义/主题片段、包入口和无运行时发现路径；内部资源控件不伪造 Token owner。 |
-| 修改 Own Token | 验证强类型 key、默认计算、override 和 AXAML 消费。 |
-| 修改 Own Token 继承层 | 验证继承链诊断、属性扁平化、base 计算顺序、跨程序集增量失效、sibling 隔离和 schema revision 等价。 |
-| 修改 Control 对 Global Token 的使用 | 验证 Effective Global 覆盖、Global fallback、算法间接派生和跨 Control 隔离。 |
+| 修改 Own Token | 验证强类型 key、每个已启用语言的取值包都为它写了取值（构建期 `ATOMUIGEN050`、契约测试 `ControlComplete`）、显式值在推导前冻结且最终胜出、AXAML 消费，以及该字段的生效测试。 |
+| 新增或裁决 Own Token 字段 | Active 字段补消费并通过生效测试；Reserved 字段写明理由；删除字段写入发布说明。 |
+| 修改 Own Token 继承层 | 验证继承链诊断、属性扁平化、各取值包对继承属性写全、跨程序集增量失效、sibling 隔离和 schema revision 等价。 |
+| 修改 Control 对 Global Token 的使用 | 验证 Effective Global 覆盖、Global fallback、控件级种子覆盖的重新派生和跨 Control 隔离；共享基元经 `OwnerTokenResource` 读到所属 Control 的覆盖，无 owner 时回落全局值。 |
+| 迁移一个控件家族的主题读法 | 该家族全部 Active Own Token 与消费的 Global Token 生效测试全绿；`Controls[X]` 覆盖只改变 X；分析器对该家族转错误。 |
 | 修改 Semantic Part | 验证 selector marker、ContractType、cardinality、模板变体、Style-only 保留与 descriptor 一致性。 |
 | 修改 Semantic Part Theme | 额外验证 owner/Part Token 分工、TargetType 和默认/实例替换。 |
 | 修改生成器 | 验证确定性、增量构建、Token/identity-only 保留，以及 NativeAOT、trimmed CoreCLR、Browser 裁剪运行和 Browser AOT。 |
-| 修改主题视觉 | 验证 Light/Dark、Control 算法和相关 Control 家族。 |
+| 修改主题视觉 | 验证每个已启用设计语言的 Light/Dark 与各密度、控件级固定轴和相关 Control 家族。 |
+| 修改控件代码里的视觉计算 | 验证主题变化后重算、局部 ThemeConfigProvider 覆盖生效、用户本地值与应用样式不被覆盖。 |
+
+生效测试的定义、骨架生成和阈值见[主题生效测试规范](theme-effect-tests.md)。
 
 涉及 identity 合并时覆盖 raw→typed、typed→raw、正确 typed→错误 typed 及反序，确认 owner 校验不被 Dictionary 去重吞掉。
 涉及资源时同时验证共同资产优先级与未用资产删除；独立原型通过不能替代真实产品宿主验收。

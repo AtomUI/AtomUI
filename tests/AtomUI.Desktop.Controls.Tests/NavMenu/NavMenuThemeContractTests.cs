@@ -188,10 +188,11 @@ public class NavMenuThemeContractTests
     [Fact]
     public void NavMenu_Tokens_Keep_Root_And_Header_Background_Semantics_Separate()
     {
-        var tokenSource = ReadRepoFile("src/AtomUI.Desktop.Controls/NavMenu/NavMenuToken.cs");
+        var tokenSource = ReadRepoFile(
+            "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/NavMenu/NavMenuTokenRule.cs");
         var headerSource = ReadRepoFile("src/AtomUI.Desktop.Controls/NavMenu/Themes/BaseNavMenuItemHeaderTheme.axaml");
 
-        tokenSource.ShouldContain("ItemBg                      = EffectiveGlobalToken.ColorBgContainer;");
+        tokenSource.ShouldContain("token.ItemBg                      = global.ColorBgContainer;");
         headerSource.ShouldContain("<Setter Property=\"Background\" Value=\"Transparent\" />");
     }
 

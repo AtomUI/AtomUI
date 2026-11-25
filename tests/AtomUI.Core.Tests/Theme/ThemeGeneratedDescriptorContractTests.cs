@@ -1,7 +1,8 @@
 using System.Globalization;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Controls;
@@ -109,7 +110,7 @@ public class ThemeGeneratedDescriptorContractTests
         var registry = new ThemeSchemaRegistry(
             [global],
             [input, button],
-            Array.Empty<ThemeAlgorithmDescriptor>());
+            Array.Empty<DesignLanguageDescriptor>());
 
         registry.Controls.Select(static descriptor => descriptor.Identity.Id).ShouldBe(["Button", "Input"]);
         registry.Controls.Select(static descriptor => descriptor.Slot).ShouldBe([0, 1]);
@@ -118,51 +119,42 @@ public class ThemeGeneratedDescriptorContractTests
         registry.TryGetControl(new ControlTokenIdentity("AtomUI", "Button"), out var boundButton).ShouldBeTrue();
         boundButton.ShouldNotBeSameAs(button);
 
-        var builder = boundButton!.CreateBuilder().ShouldBeOfType<SchemaControlToken>();
-        boundButton.Evaluate(builder, ThemeAppearance.Dark);
-        builder.EvaluatedAppearance.ShouldBe(ThemeAppearance.Dark);
+        boundButton!.CreateBuilder().ShouldBeOfType<SchemaControlToken>();
     }
 
     [Fact]
-    public void Algorithm_Descriptor_Uses_Revisioned_Independent_Factory_And_Exact_Evaluate_Contract()
+    public void Control_Token_Rule_Descriptor_Binds_The_Token_Identity_And_The_Module_Revision()
     {
-        var descriptor = new ThemeAlgorithmDescriptor(
-            ThemeAlgorithm.Default,
-            revision: 3,
-            ThemeAppearanceEffect.Light,
-            static () => new SchemaAlgorithm());
-        var effectiveSeed = new DesignToken();
-        var previousMap = new DesignToken();
-        var nextMap = new DesignToken();
+        var descriptor = ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>();
 
-        var algorithm = descriptor.Create().ShouldBeOfType<SchemaAlgorithm>();
-        algorithm.Evaluate(effectiveSeed, previousMap, nextMap);
-
-        descriptor.Revision.ShouldBe(3);
-        descriptor.Algorithm.ShouldBe(ThemeAlgorithm.Default);
-        algorithm.EffectiveSeed.ShouldBeSameAs(effectiveSeed);
-        algorithm.PreviousMap.ShouldBeSameAs(previousMap);
-        algorithm.NextMap.ShouldBeSameAs(nextMap);
-        Should.Throw<ArgumentOutOfRangeException>(() => new ThemeAlgorithmDescriptor(
-            ThemeAlgorithm.Default,
-            revision: 0,
-            ThemeAppearanceEffect.Preserve,
-            static () => new SchemaAlgorithm()));
+        descriptor.LanguageTokenType.ShouldBe(typeof(AntDesignToken));
+        descriptor.TokenType.ShouldBe(typeof(CompilerButtonToken));
+        descriptor.Control.ShouldBe(CompilerButtonToken.ControlIdentity);
+        descriptor.Revision.ShouldBe(typeof(CompilerButtonTokenRule).Assembly.ManifestModule.ModuleVersionId);
     }
 
     [Fact]
-    public void Algorithm_Attribute_Uses_A_Defined_Enum_Identity()
+    public void Control_Token_Rule_Rejects_A_Token_Of_Another_Control_Or_Language()
     {
-        var attribute = new ThemeAlgorithmAttribute(
-            ThemeAlgorithm.Dark,
-            revision: 2,
-            ThemeAppearanceEffect.Dark);
+        var descriptor = ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>();
+        var variant = TestDesignLanguages.AntDesign.DefaultVariant(DesignIdiom.Desktop);
 
-        attribute.Algorithm.ShouldBe(ThemeAlgorithm.Dark);
-        Should.Throw<ArgumentOutOfRangeException>(() => new ThemeAlgorithmAttribute(
-            (ThemeAlgorithm)999,
-            revision: 1,
-            ThemeAppearanceEffect.Preserve));
+        Should.Throw<ArgumentException>(() =>
+            descriptor.Apply(variant, new ProbeLanguageToken(), new CompilerButtonToken(), new DesignToken()));
+        Should.Throw<ArgumentException>(() =>
+            descriptor.Apply(variant, new AntDesignToken(), new SchemaControlToken(), new DesignToken()));
+    }
+
+    [Fact]
+    public void Language_Descriptor_Reports_The_Language_And_Its_Default_Variant()
+    {
+        var descriptor = TestDesignLanguages.AntDesign;
+
+        descriptor.Id.ShouldBe("AntDesign");
+        descriptor.LanguageTokenType.ShouldBe(typeof(AntDesignToken));
+        descriptor.Revision.ShouldBe(typeof(AntDesignLanguage).Assembly.ManifestModule.ModuleVersionId);
+        descriptor.DefaultVariant(DesignIdiom.Desktop).ShouldBe(new DesignVariant(AntDesignLanguage.DefaultStyle,
+            ThemeAppearance.Light, DesignDensity.Default, DesignIdiom.Desktop));
     }
 
     [Fact]
@@ -234,8 +226,7 @@ public class ThemeGeneratedDescriptorContractTests
             ThemeTestControlTypes.For("AtomUI", id),
             new ControlTokenIdentity("AtomUI", id),
             [ownToken],
-            static () => new SchemaControlToken(),
-            static (token, appearance) => ((SchemaControlToken)token).EvaluatedAppearance = appearance);
+            static () => new SchemaControlToken());
     }
 
     private enum SchemaResourceKey
@@ -286,24 +277,9 @@ public class ThemeGeneratedDescriptorContractTests
     private sealed class SchemaControlToken : AbstractControlDesignToken
     {
         public double Value { get; set; }
-        public ThemeAppearance EvaluatedAppearance { get; set; }
     }
 
     private sealed class SchemaControl : Control
     {
-    }
-
-    private sealed class SchemaAlgorithm : IThemeAlgorithm
-    {
-        public DesignToken? EffectiveSeed { get; private set; }
-        public DesignToken? PreviousMap { get; private set; }
-        public DesignToken? NextMap { get; private set; }
-
-        public void Evaluate(DesignToken effectiveSeed, DesignToken? previousMap, DesignToken nextMap)
-        {
-            EffectiveSeed = effectiveSeed;
-            PreviousMap   = previousMap;
-            NextMap       = nextMap;
-        }
     }
 }

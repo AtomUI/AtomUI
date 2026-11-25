@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
@@ -30,7 +32,8 @@ internal static class Program
         var options = Options.Parse(args);
         AppBuilder.Configure<PerformanceApplication>()
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-                  .UseAtomUI(builder => builder.UseDesktopControls())
+                  .UseAtomUI(builder => builder.UseDesktopControls()
+                                               .UseAntDesign(static language => language.AddDesktopControls()))
                   .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime());
 
         if (options.CreationOnly)

@@ -5,6 +5,7 @@
                     x:CompileBindings="True">
 
     <ControlTheme x:Key="{x:Type gallery:ColorItemControl}" TargetType="gallery:ColorItemControl">
+        <!-- layout: Fixed palette swatch row height keeps adjacent reference colours aligned. -->
         <Setter Property="gallery:ColorItemControl.Height" Value="35" />
         <Setter Property="gallery:ColorItemControl.Template">
             <ControlTemplate TargetType="gallery:ColorItemControl">
@@ -12,21 +13,21 @@
                         Height="{TemplateBinding Height}"
                         Background="{TemplateBinding Background}">
                     <Panel>
-                        <atom:TextBlock Padding="8"
-                                   FontSize="12"
-                                   FontWeight="600"
-                                   Foreground="{TemplateBinding Foreground}"
-                                   Text="{TemplateBinding ColorName}" />
+                        <atom:TextBlock Padding="{gallery:ColorItemControlTokenResource PaddingXS}"
+                                       FontSize="{gallery:ColorItemControlTokenResource FontSizeSM}"
+                                       FontWeight="{gallery:ColorItemControlTokenResource FontWeightStrong}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       Text="{TemplateBinding ColorName}" />
                         <atom:TextBlock Name="PART_HexTextBlock"
-                                   Padding="8"
-                                   HorizontalAlignment="Right"
-                                   VerticalAlignment="Center"
-                                   FontSize="10"
-                                   FontWeight="600"
-                                   Foreground="{TemplateBinding Foreground}"
-                                   IsVisible="False"
-                                   Opacity="0.8"
-                                   Text="{TemplateBinding Hex}" />
+                                       Padding="{gallery:ColorItemControlTokenResource PaddingXS}"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontSize="{gallery:ColorItemControlTokenResource HexFontSize}"
+                                       FontWeight="{gallery:ColorItemControlTokenResource FontWeightStrong}"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       IsVisible="False"
+                                       Opacity="{gallery:ColorItemControlTokenResource HexOpacity}"
+                                       Text="{TemplateBinding Hex}" />
                     </Panel>
                 </Border>
             </ControlTemplate>

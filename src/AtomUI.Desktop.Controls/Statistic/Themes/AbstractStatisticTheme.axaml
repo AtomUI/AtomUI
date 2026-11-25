@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is the base of Statistic and TimerStatistic, each
+     with its own identity (AbstractStatistic itself is never instantiated). Own Tokens are declared by each terminal theme. -->
 <ControlTheme TargetType="atom:AbstractStatistic"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,12 +8,10 @@
               x:ClassModifier="internal">
     <Style Selector="^:is(atom|AbstractStatistic)">
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDescription}" />
-            <Setter Property="FontSize" Value="{atom:StatisticTokenResource TitleFontSize}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDescription}" />
         </Style>
 
-        <Setter Property="ContentForeground" Value="{atom:SharedTokenResource ColorTextHeading}" />
-        <Setter Property="ContentFontSize" Value="{atom:StatisticTokenResource ContentFontSize}" />
+        <Setter Property="ContentForeground" Value="{atom:OwnerTokenResource ColorTextHeading}" />
 
         <Style Selector="^ /template/ StackPanel#ContentLayout">
             <Setter Property="TextElement.Foreground" Value="{TemplateBinding ContentForeground}" />

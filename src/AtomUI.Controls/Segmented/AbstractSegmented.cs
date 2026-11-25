@@ -1,4 +1,5 @@
 using AtomUI.Animations;
+using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
@@ -105,6 +106,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         set => SetValue(SelectedThumbBoxShadowsProperty, value);
     }
 
+    private protected virtual (IBrush? Brush, BoxShadows Shadows) ThumbPaint =>
+        (SelectedThumbBg, SelectedThumbBoxShadows);
+
     // 内部动画属性
     internal Size SelectedThumbSize
     {
@@ -143,8 +147,12 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     {
         OrientationProperty.OverrideDefaultValue<AbstractSegmented>(Orientation.Horizontal);
         AffectsMeasure<AbstractSegmented>(OrientationProperty, IsExpandingProperty, SizeTypeProperty);
+        // The track (Background, CornerRadius) is drawn in Render, so a Token change of TrackBg or the radius must redraw it.
         AffectsRender<AbstractSegmented>(
-            SelectedThumbCornerRadiusProperty, 
+            BackgroundProperty,
+            CornerRadiusProperty,
+            PaddingProperty,
+            SelectedThumbCornerRadiusProperty,
             SelectedThumbBgProperty,
             SelectedThumbBoxShadowsProperty,
             SelectedThumbSizeProperty, 
@@ -221,6 +229,25 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         StopThumbMotion();
         base.OnDetachedFromVisualTree(e);
     }
+
+    // Called by the items panel after it relaid out its children: a theme switch rebuilds the containers and a
+    // visibility change re-divides the expanding panel, and neither re-runs this control's own ArrangeOverride —
+    // without this hook a thumb that captured a mid-relayout geometry would stay frozen on it.
+    internal void NotifyItemsRelaidOut()
+    {
+        if (!_isThumbVisible)
+        {
+            return;
+        }
+
+        // The notification arrives from the items panel inside an in-flight layout pass: the panel has arranged
+        // its children, but the surrounding measure/arrange of this control may still be running with mixed old
+        // and new geometry, and ConstrainThumb would clip the thumb against a stale track. Recalibrate one
+        // dispatcher turn later, when the pass has fully settled; the same-target guard keeps settled frames free.
+        Avalonia.Threading.Dispatcher.UIThread.Post(
+            () => SetupSelectedThumbRect(),
+            Avalonia.Threading.DispatcherPriority.Loaded);
+    }
     
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
@@ -295,12 +322,27 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     
     public sealed override void Render(DrawingContext context)
     {
-        context.DrawRectangle(Background, null, new RoundedRect(new Rect(Bounds.Size), CornerRadius));
+        var trackBounds = new Rect(Bounds.Size);
+        // CSS border-radius semantics: a theme radius larger than half the shorter side would draw
+        // asymmetrically in Avalonia, so both the track and the thumb clamp first (CornerRadiusUtils).
+        var trackRadius = CornerRadiusUtils.ClampToSize(CornerRadius, trackBounds.Width, trackBounds.Height);
+        context.DrawRectangle(Background, null, new RoundedRect(trackBounds, trackRadius));
         if (_isThumbVisible)
         {
-            context.DrawRectangle(SelectedThumbBg, null,
-                new RoundedRect(new Rect(SelectedThumbPos, SelectedThumbSize), SelectedThumbCornerRadius),
-                SelectedThumbBoxShadows);
+            var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
+            if (thumb.Width > 0 && thumb.Height > 0)
+            {
+                var radius = SizeType == CustomizableSizeType.Custom &&
+                             SelectedIndex >= 0 &&
+                             ContainerFromIndex(SelectedIndex) is AbstractSegmentedItem item &&
+                             item.IsSet(CornerRadiusProperty)
+                    ? item.CornerRadius
+                    : SelectedThumbCornerRadius;
+                var thumbRadius = CornerRadiusUtils.ClampToSize(radius, thumb.Width, thumb.Height);
+                var paint = ThumbPaint;
+                context.DrawRectangle(paint.Brush, null,
+                    new RoundedRect(thumb, thumbRadius), paint.Shadows);
+            }
         }
     }
 
@@ -383,8 +425,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             return;
         }
 
-        var targetPos  = new Point(offset.X, offset.Y);
-        var targetSize = segmentedItem.Bounds.Size;
+        var target = ConstrainThumb(new Rect(offset, segmentedItem.Bounds.Size), Bounds.Size);
+        var targetPos = target.Position;
+        var targetSize = target.Size;
 
         // 当前插值值不是目标值；重复排列同一目标不能撤销正在运行的过渡。
         var basePos = GetBaseValue(SelectedThumbPosProperty);
@@ -416,6 +459,14 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         {
             BeginThumbMotion();
         }
+    }
+
+    private Rect ConstrainThumb(Rect thumb, Size trackSize)
+    {
+        var padding = Padding;
+        var inset = new Thickness(Math.Max(0, padding.Left), Math.Max(0, padding.Top),
+            Math.Max(0, padding.Right), Math.Max(0, padding.Bottom));
+        return thumb.Intersect(new Rect(trackSize).Deflate(inset));
     }
 
     private void SetThumbVisible(bool visible)

@@ -1,9 +1,35 @@
+<!-- owner: this shared theme also serves SubmitButton and ResetButton; each terminal supplies its Own inputs. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               xmlns:antdicons="https://atomui.net/icons/antdesign"
+              xmlns:documents="using:Avalonia.Controls.Documents"
               x:Class="AtomUI.Desktop.Controls.Themes.ButtonTheme"
               TargetType="atom:Button">
+        <Setter Property="DisabledBorderBrush" Value="{atom:ButtonTokenResource BorderColorDisabled}" />
+        <Setter Property="CirclePadding" Value="{atom:ButtonTokenResource CirclePadding}" />
+        <Setter Property="ContentFontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
+        <Setter Property="ContentPadding" Value="{atom:ButtonTokenResource ContentPadding}" />
+        <Setter Property="DefaultDisabledBorderBrush" Value="{atom:ButtonTokenResource DefaultBorderColorDisabled}" />
+        <Setter Property="DefaultFontWeight" Value="{atom:ButtonTokenResource FontWeight}" />
+        <Setter Property="IconEndMargin" Value="{atom:ButtonTokenResource IconEndMargin}" />
+        <Setter Property="IconMargin" Value="{atom:ButtonTokenResource IconMargin}" />
+        <Setter Property="IconOnlyPadding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+        <Setter Property="IconOnlySize" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="ContentFontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
+            <Setter Property="ContentPadding" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
+            <Setter Property="IconOnlyPadding" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
+            <Setter Property="IconOnlySize" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="ContentFontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
+            <Setter Property="ContentPadding" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
+            <Setter Property="IconOnlyPadding" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
+            <Setter Property="IconOnlySize" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
+        </Style>
+
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
             <Setter Property="Template">
@@ -45,17 +71,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -64,13 +81,6 @@
                                     IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             </DockPanel>
                         </Border>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -117,17 +127,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -135,13 +136,6 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -188,17 +182,8 @@
                                     Width="{TemplateBinding IconWidth}"
                                     Height="{TemplateBinding IconHeight}"
                                     Icon="{TemplateBinding Icon}"
-                                    IconBrush="{TemplateBinding Foreground}">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
+                                    IconBrush="{TemplateBinding Foreground}"
+                                    IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                 <ContentPresenter
                                     Name="PART_ContentPresenter"
                                     Classes.semantic-content="True"
@@ -206,13 +191,6 @@
                                     ContentTemplate="{TemplateBinding ContentTemplate}" />
                             </DockPanel>
                         </atom:DashedBorder>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -222,81 +200,101 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush"
-                                                    Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Foreground"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush"
+                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
+
+            <Style Selector="^[PressMoves=True][IsExternalPopupTrigger=False]:not(:popup-trigger)">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Background"
+                                                            atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Foreground"
+                                                            atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush"
+                                                            atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <TransformOperationsTransition Property="RenderTransform"
+                                                           Duration="0:0:0.15"
+                                                           Easing="0.4,0,0.2,1" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
         </Style>
 
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:OwnerTokenResource EnableWaveSpirit}" />
+        <Setter Property="FontWeight" Value="{CompiledBinding $self.DefaultFontWeight}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="FocusAdorner" Value="{x:Null}" />
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeLG}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.ContentFontSize}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeLG}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingLG}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPaddingLG}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.IconOnlyPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.ContentFontSize}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.IconOnlyPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSizeSM}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.ContentFontSize}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSizeSM}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPaddingSM}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPaddingSM}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.IconOnlyPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:ButtonTokenResource ContentFontSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.ContentFontSize}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
+            <Setter Property="IconWidth" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="IconHeight" Value="{atom:OwnerTokenResource IconSize}" />
             <Style Selector="^:not(^[Shape=Circle])">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource ContentPadding}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
             </Style>
             <Style Selector="^:icononly">
-                <Setter Property="Padding" Value="{atom:ButtonTokenResource IconOnyPadding}" />
+                <Setter Property="Padding" Value="{CompiledBinding $self.IconOnlyPadding}" />
             </Style>
         </Style>
 
@@ -307,20 +305,20 @@
         </Style>
 
         <Style Selector="^:icononly:loading[SizeType=Large]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSizeLG}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.IconOnlySize}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.IconOnlySize}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Middle]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.IconOnlySize}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.IconOnlySize}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Custom]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSize}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSize}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.IconOnlySize}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.IconOnlySize}" />
         </Style>
         <Style Selector="^:icononly:loading[SizeType=Small]">
-            <Setter Property="IconWidth" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:ButtonTokenResource OnlyIconSizeSM}" />
+            <Setter Property="IconWidth" Value="{CompiledBinding $self.IconOnlySize}" />
+            <Setter Property="IconHeight" Value="{CompiledBinding $self.IconOnlySize}" />
         </Style>
 
         <Style Selector="^[IconPlacement=Start]">
@@ -336,11 +334,14 @@
         </Style>
 
         <Style Selector="^:not(:icononly)">
-            <Style Selector="^[IconPlacement=Start] /template/ atom|IconPresenter#PART_ButtonIcon, ^ /template/ atom|Icon#PART_LoadingIcon">
-                <Setter Property="Margin" Value="{atom:ButtonTokenResource IconMargin}" />
+            <Style Selector="^[IconPlacement=Start] /template/ atom|IconPresenter#PART_ButtonIcon">
+                <Setter Property="Margin" Value="{TemplateBinding IconMargin}" />
+            </Style>
+            <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
+                <Setter Property="Margin" Value="{TemplateBinding IconMargin}" />
             </Style>
             <Style Selector="^[IconPlacement=End] /template/ atom|IconPresenter#PART_ButtonIcon">
-                <Setter Property="Margin" Value="{atom:ButtonTokenResource IconEndMargin}" />
+                <Setter Property="Margin" Value="{TemplateBinding IconEndMargin}" />
             </Style>
         </Style>
 
@@ -358,71 +359,101 @@
             <Style Selector="^ /template/ atom|Icon#PART_LoadingIcon">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            <Setter Property="Opacity" Value="{atom:OwnerTokenResource OpacityLoading}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
-            <Setter Property="Padding" Value="{atom:ButtonTokenResource CirclePadding}" />
-        </Style>
-
-        <Style Selector="^ /template/ Border#FocusVisual">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-        <Style Selector="^:focus-visible /template/ Border#FocusVisual">
-            <Setter Property="IsVisible" Value="True" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.CirclePadding}" />
         </Style>
 
 
-
-
-
-        <Style Selector="^:disabled">
+        <Style Selector="^:disabled[DisablesWithOpacity=False]">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:ButtonTokenResource BorderColorDisabled}" />
+                    Value="{CompiledBinding $self.DisabledBorderBrush}" />
 
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
+        </Style>
+        <Style Selector="^[EffectiveColor=Default]:disabled[DisablesWithOpacity=False]">
+            <Setter Property="BorderBrush"
+                    Value="{CompiledBinding $self.DefaultDisabledBorderBrush}" />
+        </Style>
+        <Style Selector="^:disabled[DisablesWithOpacity=True]">
+            <Setter Property="Opacity" Value="{CompiledBinding $self.ThemeDisabledOpacity}" />
         </Style>
         <!-- 公用样式结束 -->
 
         <!-- Color / Variant 视觉变量开始 -->
-        <Style Selector="^:not(:disabled)">
+        <Style Selector="^:not(:disabled), ^[DisablesWithOpacity=True]">
             <Setter Property="Foreground"
-                    Value="{Binding VariantTextBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
             <Setter Property="Background"
-                    Value="{Binding VariantBackgroundBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
             <Setter Property="BorderBrush"
-                    Value="{Binding VariantBorderBrush, RelativeSource={RelativeSource Self}}" />
+                    Value="{Binding VariantAppearance.Border, RelativeSource={RelativeSource Self}}" />
 
-            <Style Selector="^:pointerover">
+            <Style Selector="^:is(atom|Button):pointerover:not(:disabled)">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundHover, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderHoverBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderHover, RelativeSource={RelativeSource Self}}" />
             </Style>
 
-            <Style Selector="^:pressed">
+            <Style Selector="^:is(atom|Button):pressed[PressMoves=False]">
                 <Setter Property="Foreground"
-                        Value="{Binding VariantTextPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="Background"
-                        Value="{Binding VariantBackgroundPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BackgroundPressed, RelativeSource={RelativeSource Self}}" />
                 <Setter Property="BorderBrush"
-                        Value="{Binding VariantBorderPressedBrush, RelativeSource={RelativeSource Self}}" />
+                        Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
+            </Style>
+            <Style Selector="^:is(atom|Button)[PressMoves=True]:pressed:not(:disabled)">
+                <Style Selector="^:pressed-text">
+                    <Setter Property="Foreground" Value="{Binding VariantAppearance.TextPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
+                <Style Selector="^:pressed-background">
+                    <Setter Property="Background" Value="{Binding VariantAppearance.BackgroundPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
+                <Style Selector="^:pressed-border">
+                    <Setter Property="BorderBrush" Value="{Binding VariantAppearance.BorderPressed, RelativeSource={RelativeSource Self}}" />
+                </Style>
             </Style>
         </Style>
 
-        <Style Selector="^[EffectiveVariant=Text]:disabled, ^[EffectiveVariant=Link]:disabled">
+        <Style Selector="^[EffectiveVariant=Text]:disabled[DisablesWithOpacity=False], ^[EffectiveVariant=Link]:disabled[DisablesWithOpacity=False]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
 
+        <!-- Shadcn applies the press offset to the button itself and excludes popup triggers. -->
+        <Style Selector="^[PressMoves=True][IsExternalPopupTrigger=False]:pressed:not(:disabled):not(:popup-trigger)">
+            <Setter Property="RenderTransform" Value="translate(0px, 1px)" />
+        </Style>
+
+        <Style Selector="^[UnderlinesLinkOnHover=True][EffectiveVariant=Link]:pointerover:not(:disabled) /template/ ContentPresenter#PART_ContentPresenter, ^[EffectiveVariant=Link]:link-underlined /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="documents:Inline.TextDecorations" Value="{x:Static atom:ButtonStyleValues.LinkUnderline}" />
+        </Style>
+
+        <Style Selector="^[UsesThemeRecipe=True][EffectiveColor=Default]:not(:disabled)">
+            <Style Selector="^:flyout-open, ^[IsExternalPopupOpen=True]">
+                <Style Selector="^[EffectiveVariant=Outlined], ^[EffectiveVariant=Text]">
+                    <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+                    <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillContent}" />
+                </Style>
+                <Style Selector="^:is(atom|Button)[EffectiveVariant=Filled]">
+                    <Setter Property="Foreground" Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
+                    <Setter Property="Background" Value="{Binding VariantAppearance.Background, RelativeSource={RelativeSource Self}}" />
+                </Style>
+            </Style>
+        </Style>
+
         <Style Selector="^ /template/ Border#ShadowsFrame">
             <Setter Property="BoxShadow"
-                    Value="{Binding VariantShadow, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{Binding VariantAppearance.Shadow, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
         <!-- Color / Variant 视觉变量结束 -->
     </Style>

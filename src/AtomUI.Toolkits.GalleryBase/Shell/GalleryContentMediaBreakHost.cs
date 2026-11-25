@@ -10,6 +10,7 @@ internal sealed class GalleryContentMediaBreakHost : Border, IMediaBreakAwareCon
         MediaBreakAwareControlProperty.MediaBreakPointProperty.AddOwner<GalleryContentMediaBreakHost>();
 
     private bool _isDisposed;
+    private GalleryMediaBreakPointResolver? _breakpoints;
 
     public GalleryContentMediaBreakHost()
     {
@@ -29,14 +30,23 @@ internal sealed class GalleryContentMediaBreakHost : Border, IMediaBreakAwareCon
 
         _isDisposed = true;
         SizeChanged -= HandleSizeChanged;
+        _breakpoints?.Dispose();
+        _breakpoints = null;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (_isDisposed)
+        {
+            _isDisposed = false;
+            SizeChanged += HandleSizeChanged;
+        }
+        _breakpoints ??= new GalleryMediaBreakPointResolver(this, () =>
+            NotifyMediaBreakPointChanged(_breakpoints!.Resolve(Bounds.Width)));
         if (Bounds.Width > 0)
         {
-            NotifyMediaBreakPointChanged(GalleryMediaBreakPointResolver.Resolve(Bounds.Width, this));
+            NotifyMediaBreakPointChanged(_breakpoints.Resolve(Bounds.Width));
         }
     }
 
@@ -48,7 +58,7 @@ internal sealed class GalleryContentMediaBreakHost : Border, IMediaBreakAwareCon
 
     private void HandleSizeChanged(object? sender, SizeChangedEventArgs e)
     {
-        NotifyMediaBreakPointChanged(GalleryMediaBreakPointResolver.Resolve(e.NewSize.Width, this));
+        NotifyMediaBreakPointChanged(_breakpoints?.Resolve(e.NewSize.Width) ?? MediaBreakPoint);
     }
 
     private void NotifyMediaBreakPointChanged(MediaBreakPoint breakPoint)

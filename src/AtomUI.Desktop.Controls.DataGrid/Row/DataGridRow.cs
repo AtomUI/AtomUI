@@ -16,8 +16,12 @@ using AtomUI.Generated.AtomUIDesktopControlsDataGrid;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 
+using AtomUI.Theme;
+
 namespace AtomUI.Desktop.Controls;
 
+// Visual container follows the DataGrid owner, including TokenTransitions in its template.
+[TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Selected, StdPseudoClass.Editing, StdPseudoClass.Invalid, DataGridPseudoClass.RowHover)]
 public partial class DataGridRow : TemplatedControl
 {

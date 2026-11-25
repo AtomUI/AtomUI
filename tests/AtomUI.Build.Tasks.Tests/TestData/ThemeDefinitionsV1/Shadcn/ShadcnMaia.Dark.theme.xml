@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="ShadcnMaia.Dark" Name="Shadcn Maia Dark" Appearance="Dark" DesignLanguage="Shadcn.Maia" BrandColor="Seed" NeutralColor="Seed" IsDefault="false">
+  <Algorithms>
+    <Algorithm Catalog="Shadcn" Id="Maia.Dark" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#171717" />
+    <Token Name="ColorNeutral" Value="#737373" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+  </Tokens>
+</Theme>

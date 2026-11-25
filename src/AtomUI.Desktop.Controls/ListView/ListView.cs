@@ -12,6 +12,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -404,6 +405,8 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     static ListView()
     {
         ItemsPanelProperty.OverrideDefaultValue<ListView>(DefaultPanel);
+        // One Tab stop: Tab enters on the last focused (or selected) item, arrow keys move between items.
+        KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<ListView>(KeyboardNavigationMode.Once);
         IsSelectedChangedEvent.AddClassHandler<ListView>((list, e) => list.ContainerSelectionChanged(e));
         IsSelectableProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleIsSelectableChanged(args));
         TotalItemCountProperty.Changed.AddClassHandler<ListView>((list, args) => list.HandleItemCountChanged());
@@ -735,6 +738,7 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
             listItem[!ListViewItem.ItemSelectedBgProperty]          = this[!ItemSelectedBgProperty];
             listItem[!ListViewItem.IsShowSelectedIndicatorProperty] = this[!IsShowSelectedIndicatorProperty];
             listItem[!ListViewItem.ItemClickModeProperty]           = this[!ItemClickModeProperty];
+            ForwardItemTheme(this, listItem);
             
             PrepareListViewItem(listItem, item, index);
 
@@ -865,40 +869,113 @@ public partial class ListView : ItemsControl, ICustomizableSizeTypeAware, IMotio
     {
     }
     
+    // Keyboard model: the item containers are the focus targets and the list is one Tab stop, the same model as
+    // ListBox. Directional keys move focus to the next navigable item (enabled, visible, focusable; group headers
+    // are not focusable); the selection follows only in single selection mode. Select's popup candidate list keeps
+    // focus in the Select and uses its own forwarded keys.
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (IsSelectable)
+        if (e.Key.ToNavigationDirection() is { } direction && direction.IsDirectional())
         {
-            var hotkeys = Application.Current!.PlatformSettings?.HotkeyConfiguration;
-            var ctrl    = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+            // ItemsControl.OnKeyDown would only repeat the focus move, so it is not called for directional keys.
+            e.Handled = HandleNavigationKey(e, direction);
+            return;
+        }
 
-            if (!ctrl &&
-                e.Key.ToNavigationDirection() is { } direction && 
-                direction.IsDirectional())
-            {
-                e.Handled |= MoveSelection(
-                    direction,
-                    WrapSelection,
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
-            }
-            else if (SelectionMode.HasAllFlags(SelectionMode.Multiple) &&
-                     hotkeys is not null && MatchesSelectAllHotkey(hotkeys.SelectAll, e))
+        var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
+        if (hotkeys is not null && SelectionMode.HasAllFlags(SelectionMode.Multiple) && MatchesSelectAllHotkey(hotkeys.SelectAll, e))
+        {
+            if (IsSelectable)
             {
                 Selection.SelectAll();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Space || e.Key == Key.Enter)
-            {
-                UpdateSelectionFromEventSource(
-                    e.Source,
-                    true,
-                    (e.KeyModifiers & KeyModifiers.Shift) == KeyModifiers.Shift,
-                    ctrl);
-            }
+            return;
+        }
 
+        if (HandleCommitKey(e, hotkeys))
+        {
+            e.Handled = true;
+            return;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private bool HandleNavigationKey(KeyEventArgs e, NavigationDirection direction)
+    {
+        if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) || ItemsPanelRoot is not INavigableContainer panel)
+        {
+            return false;
+        }
+
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+        var from    = GetContainerFromEventSource(focused);
+        if (from is null)
+        {
+            direction = direction switch
+            {
+                NavigationDirection.Down or NavigationDirection.Right => NavigationDirection.First,
+                NavigationDirection.Up or NavigationDirection.Left => NavigationDirection.Last,
+                _ => direction
+            };
+        }
+
+        // The virtualizing panel realizes (scrolls into view) the target; non-navigable items are skipped.
+        // PageUp / PageDown find no target (Avalonia's VirtualizingStackPanel has no page navigation): they bubble
+        // to the ScrollViewer, which scrolls the viewport and leaves the focus where it is.
+        if (GetNextControl(panel, direction, from, WrapSelection) is not Control next)
+        {
+            return false;
+        }
+
+        var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
+        var command = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+        if (IsSelectable && !command && TryGetSourceIndexFromContainer(next, out var index))
+        {
+            if (!SelectionMode.HasAllFlags(SelectionMode.Multiple))
+            {
+                // Single selection follows the focused item.
+                UpdateSelection(index);
+            }
+            else if (e.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
+            {
+                // Multiple selection: plain arrows only browse; Shift selects the range from the anchor.
+                UpdateSelection(index, rangeModifier: true);
+            }
+        }
+
+        next.Focus(NavigationMethod.Directional, e.KeyModifiers);
+        return true;
+    }
+
+    private bool HandleCommitKey(KeyEventArgs e, PlatformHotkeyConfiguration? hotkeys)
+    {
+        if (!IsSelectable ||
+            e.Key is not (Key.Space or Key.Enter) ||
+            e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) ||
+            // Only on the item itself: focusable content inside an item keeps its own Space / Enter.
+            e.Source is not ListViewItem { IsGroupItem: false } source ||
+            !ReferenceEquals(source.Parent, this) ||
+            !TryGetSourceIndexFromContainer(source, out var index))
+        {
+            return false;
+        }
+
+        var multiple = SelectionMode.HasAllFlags(SelectionMode.Multiple);
+        var command  = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+        if (!multiple && !command && Selection.IsSelected(index))
+        {
+            // Nothing to commit: the key keeps bubbling for application handlers.
+            return false;
+        }
+
+        // Multiple: toggle the focused item (Shift: select the range from the anchor). Single: select it,
+        // Ctrl / Cmd toggles it off.
+        UpdateSelection(index,
+            rangeModifier: e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+            toggleModifier: multiple || command);
+        return true;
     }
 
     private static bool MatchesSelectAllHotkey(IEnumerable<KeyGesture> hotkeys, KeyEventArgs args)

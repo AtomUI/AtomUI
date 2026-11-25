@@ -116,7 +116,7 @@ public class WindowTitleBarLayoutPanelTests
     }
 
     [Fact]
-    public void FullScreen_Drops_Reported_Native_Insets_From_The_Panel_Safe_Region()
+    public void FullScreen_Keeps_Reported_Native_Insets_In_The_Panel_Safe_Region()
     {
         var panel = new Desktop.Controls.WindowTitleBarLayoutPanel
         {
@@ -130,7 +130,8 @@ public class WindowTitleBarLayoutPanelTests
 
         Layout(panel, 400, 40);
 
-        title.Bounds.ShouldBe(new Rect(0, 0, 100, 40));
+        // In full screen the window reports only the platform controls laid over the full-screen title bar.
+        title.Bounds.ShouldBe(new Rect(80, 0, 100, 40));
     }
 
     [Theory]
@@ -655,8 +656,7 @@ public class WindowTitleBarLayoutPanelTests
                                      .ResolveNativeChromeInsets(
                                          width,
                                          panel.NativeChromeInsets,
-                                         panel.IsCsdEnabled,
-                                         panel.WindowState);
+                                         panel.IsCsdEnabled);
         var leftBoundary = Math.Clamp(
             Normalize(nativeChromeInsets.Left) + Normalize(panel.Padding.Left),
             0,

@@ -8,7 +8,7 @@
 
 Linux 上 `controlgallery/AtomUIGallery.Desktop` 的 Native AOT 发布需要三类条件同时满足：
 
-- .NET SDK 版本要满足仓库 `global.json`，当前为 `10.0.301`。
+- .NET SDK 版本要满足仓库 `global.json`：10.0.300 或更高版本（含 SDK 11）。
 - 机器必须安装本地原生工具链：`clang`（或 `gcc`）、对应的 linker，以及 `zlib`。Native AOT 在 Linux 上用 `clang` 调用平台 linker，缺少时会直接报错。
 - 如果把 restore 和 publish 分开，restore 必须显式带上 `Configuration=Release` 和 `PublishAot=true`，否则 `project.assets.json` 不会恢复 `Microsoft.DotNet.ILCompiler`，后续 `publish --no-restore` 可能退化为普通 self-contained 发布。
 
@@ -142,11 +142,14 @@ Native AOT 链接阶段（`Generating native code` 之后）耗时较长，本�
 ```json
 {
   "sdk": {
-    "version": "10.0.301",
-    "rollForward": "latestFeature"
+    "version": "10.0.300",
+    "rollForward": "latestMajor",
+    "allowPrerelease": false
   }
 }
 ```
+
+`latestMajor` 选用本机已安装的最高正式版 SDK（含 SDK 11），最低为 10.0.300；预览版 SDK 不参与选择。
 
 检查当前 SDK：
 
@@ -160,7 +163,7 @@ dotnet --info
 installDir="$HOME/.dotnet"
 curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
 chmod +x /tmp/dotnet-install.sh
-/tmp/dotnet-install.sh --version 10.0.301 --install-dir "$installDir" --architecture x64
+/tmp/dotnet-install.sh --version 10.0.300 --install-dir "$installDir" --architecture x64
 "$installDir/dotnet" --info
 ```
 

@@ -183,8 +183,9 @@ public partial class ColorPicker : AbstractColorPicker
     {
         // The runtime-created presenter is outside the owner's template selector chain.
         // Its independent Content subtree cannot receive these bindings from ControlTheme.
+        // Forward motion only as a host input; the View theme owns its default and the host-false gate.
         var presenter = new ColorPickerView();
-        presenter[!ColorPickerView.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        presenter[!AbstractColorPickerView.HostIsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         presenter[!ColorPickerView.IsClearEnabledProperty] = this[!IsClearEnabledProperty];
         presenter[!ColorPickerView.FormatProperty] = this[!FormatProperty];
         presenter[!ColorPickerView.IsAlphaEnabledProperty] = this[!IsAlphaEnabledProperty];
@@ -221,7 +222,9 @@ public partial class ColorPicker : AbstractColorPicker
             {
                 _presenter.ResetDraft(Value);
             }
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
             var effectiveColor = Value ?? DefaultValue ?? Colors.White;
+#pragma warning restore ATOMUIGEN044
             if (!IsNeedConfirm)
             {
                 _presenter.SetCurrentValue(ColorPickerView.ValueProperty, effectiveColor);

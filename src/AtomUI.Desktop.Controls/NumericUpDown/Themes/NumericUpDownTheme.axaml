@@ -5,10 +5,14 @@
     x:ClassModifier="internal">
 
     <ControlTheme x:Key="{x:Type atom:NumericUpDown}" TargetType="atom:NumericUpDown">
+        <!-- Focus is shown by the spinner input frame; its outline shadow must not be clipped by the host. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:NumericUpDownSpinner
                     Name="PART_Spinner"
+                    BorderBrush="{TemplateBinding BorderBrush}"
                     Classes.semantic-scope-spinner="True"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     IsSpinEnabled="{TemplateBinding AllowSpin}"
@@ -39,51 +43,56 @@
                             HorizontalAlignment="Left"
                             Focusable="False" />
                     </atom:ButtonSpinner.InnerLeftContent>
-                    <atom:NumericUpDownInputPanel Name="PART_InputPanel" LastChildFill="True">
-                        <StackPanel Orientation="Horizontal"
-                                    Name="PART_SuffixGroup"
-                                    Classes.semantic-suffix="True"
-                                    DockPanel.Dock="Right"
-                                    Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
-                            <atom:InputClearIconButton
-                                Name="PART_ClearButton"
-                                Classes.semantic-clear="True"
-                                VerticalAlignment="Center"
-                                Icon="{TemplateBinding ClearIcon}"
-                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                IsPassthroughMouseEvent="False" />
-                            <atom:AddOnContentPresenter
-                                Name="PART_InnerRightContentPresenter"
-                                VerticalAlignment="Stretch"
+                    <atom:NumericUpDownInputPanel Name="PART_InputPanel">
+                        <DockPanel LastChildFill="True">
+                            <StackPanel Orientation="Horizontal"
+                                        Name="PART_SuffixGroup"
+                                        Classes.semantic-suffix="True"
+                                        DockPanel.Dock="Right"
+                                        Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
+                                <!-- The suffix group precedes the text box (DockPanel order). The host is a local tab group
+                                     (Avalonia NumericUpDown), so TabIndex keeps the input first and the clear button next. -->
+                                <atom:InputClearIconButton
+                                    Name="PART_ClearButton"
+                                    Classes.semantic-clear="True"
+                                    KeyboardNavigation.TabIndex="1"
+                                    VerticalAlignment="Center"
+                                    Icon="{TemplateBinding ClearIcon}"
+                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                    IsPassthroughMouseEvent="False" />
+                                <atom:AddOnContentPresenter
+                                    Name="PART_InnerRightContentPresenter"
+                                    VerticalAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    HorizontalAlignment="Right"
+                                    Focusable="False"
+                                    Content="{TemplateBinding InnerRightContent}"
+                                    ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
+                            </StackPanel>
+                            <atom:EmbeddedTextBox
+                                Name="PART_TextBox"
+                                Classes.semantic-input="True"
+                                KeyboardNavigation.TabIndex="0"
                                 VerticalContentAlignment="Center"
-                                HorizontalAlignment="Right"
-                                Focusable="False"
-                                Content="{TemplateBinding InnerRightContent}"
-                                ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
-                        </StackPanel>
-                        <atom:EmbeddedTextBox
-                            Name="PART_TextBox"
-                            Classes.semantic-input="True"
-                            VerticalContentAlignment="Center"
-                            VerticalAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            BorderThickness="0"
-                            Padding="0"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            FontStyle="{TemplateBinding FontStyle}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            TextWrapping="NoWrap"
-                            AcceptsReturn="False"
-                            DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                            SizeType="Custom"
-                            IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
-                            IsReadOnly="{TemplateBinding IsReadOnly}"
-                            Text="{TemplateBinding Text, Mode=TwoWay}"
-                            PlaceholderText="{TemplateBinding PlaceholderText}"
-                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                        />
-                        </atom:NumericUpDownInputPanel>
+                                VerticalAlignment="Stretch"
+                                HorizontalAlignment="Stretch"
+                                BorderThickness="0"
+                                Padding="0"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontStyle="{TemplateBinding FontStyle}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                TextWrapping="NoWrap"
+                                AcceptsReturn="False"
+                                DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                SizeType="Custom"
+                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                Text="{TemplateBinding Text, Mode=TwoWay}"
+                                PlaceholderText="{TemplateBinding PlaceholderText}"
+                                PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                            />
+                        </DockPanel>
+                    </atom:NumericUpDownInputPanel>
                 </atom:NumericUpDownSpinner>
             </ControlTemplate>
         </Setter>
@@ -93,6 +102,7 @@
                 <ControlTemplate>
                     <atom:NumericUpDownSpinner
                         Name="PART_Spinner"
+                        BorderBrush="{TemplateBinding BorderBrush}"
                         Classes.semantic-scope-spinner="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         IsSpinEnabled="{TemplateBinding AllowSpin}"
@@ -127,52 +137,57 @@
                                 HorizontalAlignment="Left"
                                 Focusable="False" />
                         </atom:ButtonSpinner.InnerLeftContent>
-                        <atom:NumericUpDownInputPanel Name="PART_InputPanel" LastChildFill="True">
-                            <StackPanel Orientation="Horizontal"
-                                        Name="PART_SuffixGroup"
-                                        Classes.semantic-suffix="True"
-                                        DockPanel.Dock="Right"
-                                        Margin="0,0,8,0"
-                                        Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
-                                <atom:InputClearIconButton
-                                    Name="PART_ClearButton"
-                                    Classes.semantic-clear="True"
-                                    VerticalAlignment="Center"
-                                    Icon="{TemplateBinding ClearIcon}"
-                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                    IsPassthroughMouseEvent="False" />
-                                <atom:AddOnContentPresenter
-                                    Name="PART_InnerRightContentPresenter"
-                                    VerticalAlignment="Stretch"
+                        <atom:NumericUpDownInputPanel Name="PART_InputPanel">
+                            <DockPanel LastChildFill="True">
+                                <!-- layout: keeps the suffix group off the increase handle of the spinner mode -->
+                                <StackPanel Orientation="Horizontal"
+                                            Name="PART_SuffixGroup"
+                                            Classes.semantic-suffix="True"
+                                            DockPanel.Dock="Right"
+                                            Margin="0,0,8,0"
+                                            Spacing="{atom:NumericUpDownTokenResource UniformlyPaddingXXS}">
+                                    <!-- Input first, then the clear button: see the default template. -->
+                                    <atom:InputClearIconButton
+                                        Name="PART_ClearButton"
+                                        Classes.semantic-clear="True"
+                                        KeyboardNavigation.TabIndex="1"
+                                        VerticalAlignment="Center"
+                                        Icon="{TemplateBinding ClearIcon}"
+                                        IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                        IsPassthroughMouseEvent="False" />
+                                    <atom:AddOnContentPresenter
+                                        Name="PART_InnerRightContentPresenter"
+                                        VerticalAlignment="Stretch"
+                                        VerticalContentAlignment="Center"
+                                        HorizontalAlignment="Right"
+                                        Focusable="False"
+                                        Content="{TemplateBinding InnerRightContent}"
+                                        ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
+                                </StackPanel>
+                                <atom:EmbeddedTextBox
+                                    Name="PART_TextBox"
+                                    Classes.semantic-input="True"
+                                    KeyboardNavigation.TabIndex="0"
                                     VerticalContentAlignment="Center"
-                                    HorizontalAlignment="Right"
-                                    Focusable="False"
-                                    Content="{TemplateBinding InnerRightContent}"
-                                    ContentTemplate="{TemplateBinding InnerRightContentTemplate}" />
-                            </StackPanel>
-                            <atom:EmbeddedTextBox
-                                Name="PART_TextBox"
-                                Classes.semantic-input="True"
-                                VerticalContentAlignment="Center"
-                                VerticalAlignment="Stretch"
-                                HorizontalAlignment="Stretch"
-                                BorderThickness="0"
-                                Padding="0"
-                                FontSize="{TemplateBinding FontSize}"
-                                FontFamily="{TemplateBinding FontFamily}"
-                                FontStyle="{TemplateBinding FontStyle}"
-                                FontWeight="{TemplateBinding FontWeight}"
-                                TextWrapping="NoWrap"
-                                AcceptsReturn="False"
-                                DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                                SizeType="Custom"
-                                IsCustomFontSize="{TemplateBinding IsCustomFontSize}"
-                                IsReadOnly="{TemplateBinding IsReadOnly}"
-                                Text="{TemplateBinding Text, Mode=TwoWay}"
-                                TextAlignment="Center"
-                                PlaceholderText="{TemplateBinding PlaceholderText}"
-                            PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
-                            />
+                                    VerticalAlignment="Stretch"
+                                    HorizontalAlignment="Stretch"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    FontFamily="{TemplateBinding FontFamily}"
+                                    FontStyle="{TemplateBinding FontStyle}"
+                                    FontWeight="{TemplateBinding FontWeight}"
+                                    TextWrapping="NoWrap"
+                                    AcceptsReturn="False"
+                                    DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                    SizeType="Custom"
+                                    IsReadOnly="{TemplateBinding IsReadOnly}"
+                                    Text="{TemplateBinding Text, Mode=TwoWay}"
+                                    TextAlignment="Center"
+                                    PlaceholderText="{TemplateBinding PlaceholderText}"
+                                    PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
+                                />
+                            </DockPanel>
                         </atom:NumericUpDownInputPanel>
                     </atom:NumericUpDownSpinner>
                 </ControlTemplate>
@@ -181,12 +196,20 @@
         </Style>
 
         <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
+                Value="{atom:NumericUpDownTokenResource EnableMotion}" />
         <Setter Property="SpinnerHandleWidth"
-                Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
+                Value="{atom:NumericUpDownTokenResource HandleWidth}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+        <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSize}" />
+        <!-- The embedded editor remains Custom and receives the host typography; it must not run its own Custom=Middle font selector. -->
+        <Style Selector="^[SizeType=Small][IsCustomFontSize=False]">
+            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource InputFontSizeSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large][IsCustomFontSize=False]">
+            <Setter Property="FontSize" Value="{atom:NumericUpDownTokenResource FontSizeLG}" />
+        </Style>
+        <Setter Property="PlaceholderForeground" Value="{atom:NumericUpDownTokenResource ColorTextPlaceholder}" />
 
     </ControlTheme>
 </ResourceDictionary>

@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -113,6 +114,12 @@ internal class SegmentedStackPanel : StackPanel
         {
             ArrangeHorizontalNatural(finalSize);
         }
+
+        // The host's selected thumb follows the item geometry; its own ArrangeOverride does not run for an
+        // items-only relayout (container rebuilds on theme switches, visibility changes re-dividing the
+        // expanding panel), so the host recalibrates from here — no event subscription, notified only when
+        // this panel actually relaid out its children.
+        this.FindAncestorOfType<AbstractSegmented>()?.NotifyItemsRelaidOut();
 
         return finalSize;
     }

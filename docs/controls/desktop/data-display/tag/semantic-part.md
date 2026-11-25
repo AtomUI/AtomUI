@@ -180,12 +180,12 @@ Group 模板命中 scope-items 跳点，再经 `>` 一步到达容器——与 `
 - 承载 `TagColor`、`Variant`、`Text`、`Icon`、`CloseIcon`、`IsClosable` 与 `Closed` 事件等公共状态和 API。
 - 承载颜色类别状态机：`Default` / `Preset` / `Status` / `Custom` 四种颜色类别经伪类
   `:preset-color` / `:status-color` / `:custom-color` 表达，最终计算为 `Background` / `Foreground` /
-  `BorderBrush`（`BindingPriority.Template`）。
+  `BorderBrush`（计算色写入内部 `Calculated*` 输入，由主题非触发 Setter 投射）。
 - 提供根视觉属性：背景、边框、圆角（`BorderRadiusSM`）、字体（`FontSizeSM`）与内边距（`TagPadding`），表面
   投影到模板中的 `Frame`。
 
-适合通过 root 定制 Tag 整体背景、前景、边框、圆角与 padding。颜色状态机以 `Template` 优先级写回
-`Background` / `Foreground` / `BorderBrush`，低于用户 selector Style 的 `StyleTrigger` 与本地值优先级，因此
+适合通过 root 定制 Tag 整体背景、前景、边框、圆角与 padding。颜色状态机把计算色写入内部 `Calculated*` 输入，
+主题以非触发 Setter 投射到 `Background` / `Foreground` / `BorderBrush`，用户 Style（含非触发样式）与本地值保持原生优先级，因此
 root 样式 setter 会统一覆盖 Default/Preset/Status/Custom 全部颜色分支；移除样式或本地值后，状态机恢复计算
 （见 6 节）。
 

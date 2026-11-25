@@ -22,7 +22,7 @@
                         CornerRadius="{TemplateBinding LeftAddOnCornerRadius}"
                         IsVisible="{Binding Child, ElementName=PART_LeftAddOnPresenter, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <atom:AddOnContentPresenter
-                            Name="PART_LeftAddOnPresenter"
+                            x:Name="PART_LeftAddOnPresenter"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             Focusable="False"
@@ -39,7 +39,7 @@
                         CornerRadius="{TemplateBinding RightAddOnCornerRadius}"
                         IsVisible="{Binding Child, ElementName=PART_RightAddOnPresenter, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <atom:AddOnContentPresenter
-                            Name="PART_RightAddOnPresenter"
+                            x:Name="PART_RightAddOnPresenter"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Center"
                             Focusable="False"
@@ -51,8 +51,8 @@
                         <atom:AddOnDecoratedBoxContentFrame Name="{x:Static atom:AddOnDecoratedBoxThemeConstants.ContentFramePart}"
                                                             BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
                                                             CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
-                                                            BorderBrush="{TemplateBinding BorderBrush}"
                                                             Background="{TemplateBinding Background}"
+                                                            BoxShadow="{TemplateBinding BoxShadow}"
                                                             BackgroundSizing="InnerBorderEdge">
                             <atom:ButtonSpinnerContentPanel Name="ContentLayout"
                                                             LastChildFill="True"
@@ -104,38 +104,54 @@
                             </atom:ButtonSpinnerContentPanel>
                         </atom:AddOnDecoratedBoxContentFrame>
 
-                        <ContentPresenter
-                            Name="PART_SpinnerHandle"
-                            ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}"
-                            Content="{TemplateBinding SpinnerContent}"
-                            Opacity="{TemplateBinding HandleOpacity}">
-                            <ContentPresenter.RenderTransform>
-                                <TranslateTransform X="{Binding HandleOffset, RelativeSource={RelativeSource TemplatedParent}}"/>
-                            </ContentPresenter.RenderTransform>
-                        </ContentPresenter>
+                        <!-- The floating handle slides in from its edge (HandleOffset). This background-less clip
+                             keeps the sliding and the hidden handle inside the frame's rounded box, for drawing and
+                             hit testing, while the frame's focus outline and shadow stay outside the clip. -->
+                        <Border Name="SpinnerHandleClip"
+                                ClipToBounds="True"
+                                CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
+                                ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}">
+                            <ContentPresenter
+                                Name="PART_SpinnerHandle"
+                                Content="{TemplateBinding SpinnerContent}"
+                                Opacity="{TemplateBinding HandleOpacity}">
+                                <ContentPresenter.RenderTransform>
+                                    <TranslateTransform X="{Binding HandleOffset, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </ContentPresenter.RenderTransform>
+                            </ContentPresenter>
+                        </Border>
+
+                        <!-- The handle is clipped to the outer edge. Paint the frame stroke above it so the
+                             button fill cannot cover the stroke along the rounded corners. -->
+                        <atom:PixelAlignedBorder IsHitTestVisible="False"
+                                                 BorderThickness="{TemplateBinding InnerBoxBorderThickness}"
+                                                 CornerRadius="{TemplateBinding InnerBoxCornerRadius}"
+                                                 BorderBrush="{TemplateBinding BorderBrush}"
+                                                 BackgroundSizing="InnerBorderEdge"
+                                                 ZIndex="{x:Static atom:AddOnDecoratedBoxThemeConstants.ActivatedZIndex}" />
                     </Panel>
                 </DockPanel>
             </ControlTemplate>
         </Setter>
 
         <Style Selector="^:is(atom|ButtonSpinnerDecoratedBox)">
-
-            <Setter Property="SpinnerBorderThickness"
-                    Value="{atom:SharedTokenResource BorderThickness}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="SpinnerHandleWidth"
-                    Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].SpinnerHandleWidth}" />
 
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="HandleOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="HandleOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="ContentLeftShift" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <DoubleTransition Property="ContentRightShift" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="HandleOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="HandleOffset" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="ContentLeftShift" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="ContentRightShift" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
 
@@ -151,23 +167,23 @@
             </Style>
 
             <Style Selector="^ /template/ atom|ButtonSpinnerContentPanel#ContentLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
             </Style>
 
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPaddingLG}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
+                        Value="{atom:OwnerTokenResource InputPaddingLG}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPadding}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
+                        Value="{atom:OwnerTokenResource InputPadding}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="ContentPadding"
-                        Value="{atom:ButtonSpinnerTokenResource InputPaddingSM}" />
-                <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
+                        Value="{atom:OwnerTokenResource InputPaddingSM}" />
+                <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
             </Style>
             <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Custom], ^[SizeType=Small]">
                 <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">

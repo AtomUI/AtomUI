@@ -16,7 +16,7 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 连接线宽度、节点尺寸、圆点尺寸、边框宽度和内容最小尺寸。 | `IndicatorTailWidth`、`LastItemContentMinHeight`、`IndicatorSize`、`IndicatorDotSize`、`IndicatorDotBorderWidth` |
+| 尺寸与密度 | 连接线宽度、节点尺寸、圆点尺寸与边框宽度。 | `IndicatorTailWidth`、`IndicatorSize`、`IndicatorDotSize`、`IndicatorDotBorderWidth` |
 | 垂直 Item 间距 | 垂直 Timeline 中普通 Item 和 Pending 邻接 Item 的 block-end 间距。 | `ItemPaddingBottom`、`ItemPaddingBottomLG` |
 | 逻辑位置间距 | Vertical Start、End 和双侧模式中 Indicator 与相邻内容的间距。 | `IndicatorStartModeMargin`、`IndicatorEndModeMargin`、`IndicatorMiddleModeMargin` |
 | 颜色与装饰 | 节点连接线的颜色和节点的结构视觉。 | `IndicatorTailColor`、`IndicatorTailWidth`、`IndicatorDotSize`、`IndicatorDotBorderWidth` |
@@ -37,7 +37,12 @@ Timeline 的控件专项模型通过 Theme 消费 Token：
 - `ItemPaddingBottom` 和 `ItemPaddingBottomLG` 只应用于 Vertical（作为 item 的下内边距，对齐上游 `li` 的 `paddingBottom`），不能增加 Horizontal Item 的 block-end 空间。
 - `IndicatorStartModeMargin`、`IndicatorEndModeMargin` 只表达 Vertical 逻辑位置；RTL 下由布局和 FlowDirection 映射物理方向。
 - `IndicatorMiddleModeMargin` 用于 Vertical 双侧布局，不承载 Alternate 奇偶状态。
-- Horizontal 内容与轴线之间的 gap 直接使用 `SharedToken.UniformlyPaddingXS`，不为同一全局间距复制 Timeline 专属 Token。
+- Horizontal 内容与轴线之间的 gap 直接使用 Timeline 的有效 `UniformlyPaddingXS`，不为同一全局间距复制 Timeline 专属 Token。
+- `TimelineItem` 是 Token owner 透明的条目容器（`[TokenOwnerTransparent]`），条目与无 identity 的 `TimelineIndicator` 以
+  Timeline 的资源键读取节点、连接线、间距与默认节点色。
+- 桌面节点通过同一 `OwnerTokenSet` 读取 `RelativeLineHeight` 与 `ColorPrimary`，并按当前字号更新节点最小高度。
+  条目设置的 `IndicatorColor` 优先。条目 `Padding`（`ItemPaddingBottom*`）变化会重新测量。
+- antd 6.7 Timeline 不再为最后一项设置内容最小高度，原 `LastItemContentMinHeight`（从未被消费）已删除。
 - `IndicatorSize`、`IndicatorDotSize`、`IndicatorDotBorderWidth`、`IndicatorTailWidth` 和 `IndicatorTailColor` 同时服务 Vertical 与 Horizontal renderer。
 
 ## 4. 控件家族影响

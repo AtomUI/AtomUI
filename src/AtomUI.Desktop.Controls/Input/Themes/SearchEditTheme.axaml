@@ -8,6 +8,8 @@
         <ControlTheme.Resources>
             <atom:PlaceholderHorizontalAlignmentConverter x:Key="PlaceholderHorizontalAlignmentConverter" />
         </ControlTheme.Resources>
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:SearchEditDecoratedBox
@@ -21,6 +23,8 @@
                     Status="{TemplateBinding Status}"
                     FormStatus="{TemplateBinding FormStatus}"
                     IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
+                    HostBorderBrush="{TemplateBinding BorderBrush}"
+                    HostBackground="{TemplateBinding Background}"
                     DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     SearchButtonStyle="{TemplateBinding SearchButtonStyle}"
@@ -45,16 +49,20 @@
                             Focusable="False" />
                     </atom:SearchEditDecoratedBox.ContentLeftAddOn>
                     <atom:SearchEditDecoratedBox.ContentRightAddOn>
-                        <StackPanel Orientation="Horizontal"
+                        <atom:InputAccessoryPanel Orientation="Horizontal"
                                     Classes.semantic-suffix="True"
-                                    Spacing="{atom:SharedTokenResource UniformlyPaddingXXS}">
-                            <atom:InputClearIconButton
-                                Name="PART_ClearButton"
-                                Classes.semantic-clear="True"
-                                VerticalAlignment="Center"
-                                Icon="{Binding $parent[atom:SearchEdit].ClearIcon}"
-                                IsVisible="{Binding $parent[atom:SearchEdit].IsEffectiveShowClearButton}"
-                                IsMotionEnabled="{Binding $parent[atom:SearchEdit].IsMotionEnabled}" />
+                                    Spacing="{atom:SearchEditTokenResource UniformlyPaddingXXS}">
+                            <atom:InputAccessoryPanel.ClearButtonTemplate>
+                                <DataTemplate>
+                                    <atom:InputClearIconButton
+                                        Name="PART_ClearButton"
+                                        Classes.semantic-clear="True"
+                                        VerticalAlignment="Center"
+                                        Icon="{Binding $parent[atom:SearchEdit].ClearIcon}"
+                                        IsVisible="{Binding $parent[atom:SearchEdit].IsEffectiveShowClearButton}"
+                                        IsMotionEnabled="{Binding $parent[atom:SearchEdit].IsMotionEnabled}" />
+                                </DataTemplate>
+                            </atom:InputAccessoryPanel.ClearButtonTemplate>
                             <atom:RevealButton
                                 Name="PART_RevealButton"
                                 VerticalAlignment="Center"
@@ -69,7 +77,7 @@
                                 Focusable="False"
                                 Content="{Binding $parent[atom:SearchEdit].InnerRightContent}"
                                 ContentTemplate="{Binding $parent[atom:SearchEdit].InnerRightContentTemplate}" />
-                        </StackPanel>
+                        </atom:InputAccessoryPanel>
                     </atom:SearchEditDecoratedBox.ContentRightAddOn>
 
                     <atom:ScrollViewer
@@ -91,7 +99,7 @@
                                 TextAlignment="{TemplateBinding TextAlignment}"
                                 TextWrapping="{TemplateBinding TextWrapping}"
                                 IsVisible="{TemplateBinding IsPlaceholderTextVisible}" />
-                            <atom:InputTextPresenter
+                            <TextPresenter
                                 Name="PART_TextPresenter"
                                 Classes.semantic-input="True"
                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -118,17 +126,30 @@
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
-        <Setter Property="SelectionBrush" Value="{atom:SharedTokenResource SelectionBackground}" />
-        <Setter Property="CaretBrush" Value="{atom:SharedTokenResource ColorText}" />
+        <Setter Property="SelectionBrush" Value="{atom:SearchEditTokenResource SelectionBackground}" />
+        <Setter Property="CaretBrush" Value="{atom:SearchEditTokenResource ColorText}" />
         <Setter Property="SelectionForegroundBrush"
-                Value="{atom:SharedTokenResource SelectionForeground}" />
-        <Setter Property="PlaceholderForeground" Value="{atom:SharedTokenResource ColorTextPlaceholder}" />
+                Value="{atom:SearchEditTokenResource SelectionForeground}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:SearchEditTokenResource ColorTextPlaceholder}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SearchEditTokenResource EnableMotion}" />
+
+        <!-- Size presets set the input typography; IsCustomFontSize=True keeps an inherited or local FontSize. -->
+        <Style Selector="^[IsCustomFontSize=False]">
+            <Style Selector="^[SizeType=Large]">
+                <Setter Property="FontSize" Value="{atom:SearchEditTokenResource FontSizeLG}" />
+            </Style>
+            <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+                <Setter Property="FontSize" Value="{atom:SearchEditTokenResource FontSize}" />
+            </Style>
+            <Style Selector="^[SizeType=Small]">
+                <Setter Property="FontSize" Value="{atom:SearchEditTokenResource InputFontSizeSM}" />
+            </Style>
+        </Style>
         <Setter Property="SearchButtonTheme">
             <themes:SearchButtonTheme TargetType="{x:Type atom:Button}" />
         </Setter>
@@ -137,19 +158,19 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:SearchEditTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
@@ -157,41 +178,21 @@
             <Style Selector="^[Status=Error]">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:SearchEditTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ScrollViewer#PART_ScrollViewer">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:SearchEditTokenResource ColorWarningText}" />
                 </Style>
             </Style>
-        </Style>
-
-        <Style Selector="^[StyleVariant=Outlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True],
-                         ^[StyleVariant=Underlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimaryHover}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Outlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default],
-                         ^:focus-within[StyleVariant=Underlined] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SearchEditTokenResource InputActiveShadow}" />
-        </Style>
-        <Style Selector="^:focus-within[StyleVariant=Filled] /template/ atom|SearchEditDecoratedBox#PART_AddOnDecoratedBox[EffectiveStatus=Default]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SearchEditTokenResource ColorPrimary}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SearchEditTokenResource InputActiveShadow}" />
         </Style>
 
     </ControlTheme>

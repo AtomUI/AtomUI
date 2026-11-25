@@ -12,10 +12,13 @@
 | --- | --- | --- | --- |
 | 尺寸 | `ControlWidth` | Cascader 输入控件默认宽度。 | `CascaderTheme.axaml` root style。 |
 | 尺寸 | `ControlItemWidth` | 单列选项默认宽度，也是普通 popup 最小宽度基线。 | `CascaderTheme.axaml`、level list 主题。 |
-| 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `CascaderTheme.axaml` `MaxPopupHeight`。 |
+| 尺寸 | `DropdownHeight` | 弹层默认最大高度。 | `AbstractSelect` 读取并提供给弹层模板。 |
 | 尺寸 | `HeaderHeight` | 选项 header 最小高度。 | `CascaderViewItemTheme.axaml`。 |
+| 字体 | `InputFontSizeSM` | Small 输入控件的字号，默认 `FontSize`（与 antd 一致），定义在 `AbstractSelectInputToken`。 | `CascaderTheme.axaml` Small 尺寸样式。 |
 | 间距 | `OptionPadding` | 选项内部 padding。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `MenuPadding` | 单列菜单 padding。 | `CascaderViewLevelListTheme.axaml`。 |
+| 间距 | `OptionMargin` | 选项外边距（非 0 时选项之间留出间隙）。 | `CascaderViewItemTheme.axaml`。 |
+| 结构 | `OptionBorderRadius` | 选项背景圆角，默认 `BorderRadius`。 | `CascaderViewItemTheme.axaml`。 |
 | 间距 | `ItemHeaderSpacing` | checkbox、icon、header、expand icon 之间的列间距。 | `CascaderViewItemTheme.axaml`。 |
 | 状态色 | `OptionHoverBg` | pointerover 选项背景。 | `CascaderViewItemTheme.axaml`。 |
 | 状态色 | `OptionSelectedBg` | expanded / selected 选项背景。 | `CascaderViewItemTheme.axaml`。 |
@@ -26,6 +29,8 @@
 ## 3. 控件专项模型中的 Token 使用
 
 `CascaderTheme.axaml` 使用 `ControlWidth`、`ControlItemWidth`、`DropdownHeight` 和 `FilterHighlightColor` 定义外层输入宽度、普通 popup 最小宽度、最大高度和过滤高亮。
+
+Cascader 默认使用 `DropdownHeight` 限制弹层高度。调用方显式设置 `DisplayPageSize` 时，则用页大小和候选项高度计算上限。
 
 `CascaderViewLevelListTheme.axaml` 使用 `ControlItemWidth` 和 `MenuPadding` 定义每列的结构尺寸。级联列宽属于 Cascader 的核心视觉契约，不应被单个 item 模板硬编码覆盖。
 
@@ -63,3 +68,27 @@ git diff --check
 - Large / Middle / Small / Custom 下输入高度、tag 高度和选项行高度。
 - 单选、多选、过滤、空状态和异步 loading popup。
 - disabled、pointerover、expanded、checked 和 max count reached 状态。
+
+## 7. 主题读法与归属（Select 家族迁移）
+
+- `CascaderTheme` 与 `CascaderAddOnDecoratedBoxTheme` 以 `CascaderTokenResource` 读取 Global Token，`Controls[Cascader]` 的覆盖作用于
+  输入表面、弹层框体、选中文本和占位文字；共用部件 `SelectHandle`、`SelectMaxCountIndicator`、`SelectTagAwareTextBox` 读取宿主
+  （Cascader）的有效值。
+- `CascaderView` 与 `CascaderViewItem` 是注册控件，各自以 `CascaderViewTokenResource` / `CascaderViewItemTokenResource` 读取 Global
+  Token（如分隔线、圆角、图标色），跟随 `Controls[CascaderView]` / `Controls[CascaderViewItem]`；它们读取的 CascaderToken（选项
+  状态色、列宽、padding）跟随 `Controls[Cascader]`，独立使用的 CascaderView 同样读取 CascaderToken。
+- 多选内容 padding 与标签视觉仍复用 SelectToken（跟随 `Controls[Select]`），见 [Select Token](../select/token.md) §4。
+- 根 `BorderBrush` / `Background` 经输入帧的 `HostBorderBrush` / `HostBackground` 投射，不再以 LocalValue 中继。
+- 禁用选项的前缀图标改用 `ColorTextDisabled` 着色（原为 `Opacity="0.3"` 字面量）；`CascaderViewItem` 未绑定到模板的
+  `BorderBrush` Setter 已移除，前缀图标尺寸沿用 `FontSizeIcon`（原 `IconSize` Setter 被同主题后续 Setter 覆盖，从未生效）。
+
+生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.Cascader.cs`、
+`SelectFamilyEffectTests.Isolation.cs`。
+
+## 独立 Token 身份与共享计算
+
+Select、Cascader、TreeSelect 的标签高度/背景、禁用标签、字体和单/多选 padding 共享 AbstractSelectInputToken，
+各终端从自己的有效 Global/Own 计算并经具体内部样式输入应用；`Controls[Select]` 不再改变 Cascader/TreeSelect 的输入表面。
+Cascader Small 空多选使用 Small padding。TreeSelect 弹层内的内部树跟随 TreeSelect，实际树展示字段由其 Own 配置，
+通过纯值函数复用树公式，不把树字段添加给 Select/Cascader；过滤高亮默认仍为 TreeSelect 的 ColorPrimary。
+TreeSelectTreeView 是无身份部件，不再借 TreeView 的 StyleKey 截断宿主 owner；公开 TreeView 和 CascaderView 仍各自独立。

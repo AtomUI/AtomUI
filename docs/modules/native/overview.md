@@ -45,6 +45,6 @@ src/AtomUI.Native/
 - [linux.md](linux.md)
 - [Windowing 系统](../../architecture/systems/windowing/overview.md)
 - [Mobile 系统](../../architecture/systems/mobile/overview.md)
-- [Mobile 平台 Adapter](../mobile-controls/platform-adapters.md)
+- [Mobile Controls 模块](../mobile-controls/overview.md)
 - [跨平台 Window 定制指南](../../guides/windowing/cross-platform-window.md)
 - [WindowDrawnDecorations 指南](../../guides/windowing/window-drawn-decorations.md)

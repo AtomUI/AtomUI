@@ -2,14 +2,17 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Globalization;
 using AtomUI.Desktop.Controls.Internal.Calendar;
+using AtomUI.Data;
 using AtomUI.Localization;
+using AtomUI.Desktop.Controls.Primitives;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 using CalendarRangeBarPanelControl = AtomUI.Desktop.Controls.Internal.Calendar.CalendarRangeBarPanel;
 
@@ -177,6 +180,31 @@ public partial class Calendar : TemplatedControl
     internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DateCellThemeProperty =
         AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DateCellTheme));
     internal Avalonia.Styling.ControlTheme? DateCellTheme { get => GetValue(DateCellThemeProperty); set => SetValue(DateCellThemeProperty, value); }
+    // Like DateCellTheme, each terminal supplies the panel theme that reads its own week-header Tokens.
+    internal static readonly StyledProperty<Avalonia.Styling.ControlTheme?> DatePanelThemeProperty =
+        AvaloniaProperty.Register<Calendar, Avalonia.Styling.ControlTheme?>(nameof(DatePanelTheme));
+    internal Avalonia.Styling.ControlTheme? DatePanelTheme { get => GetValue(DatePanelThemeProperty); set => SetValue(DatePanelThemeProperty, value); }
+
+    // Template-part metrics from the terminal's Own Tokens. Each terminal theme assigns them on the root and the
+    // template passes them to its parts, so the values do not inherit through the calendar tree.
+    internal static readonly StyledProperty<IBrush?> FullPanelBgProperty =
+        AvaloniaProperty.Register<Calendar, IBrush?>(nameof(FullPanelBg));
+    internal IBrush? FullPanelBg { get => GetValue(FullPanelBgProperty); set => SetValue(FullPanelBgProperty, value); }
+    internal static readonly StyledProperty<double> YearControlWidthProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(YearControlWidth));
+    internal double YearControlWidth { get => GetValue(YearControlWidthProperty); set => SetValue(YearControlWidthProperty, value); }
+    internal static readonly StyledProperty<double> MonthControlWidthProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(MonthControlWidth));
+    internal double MonthControlWidth { get => GetValue(MonthControlWidthProperty); set => SetValue(MonthControlWidthProperty, value); }
+    internal static readonly StyledProperty<double> RangeBarHeightProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(RangeBarHeight));
+    internal double RangeBarHeight { get => GetValue(RangeBarHeightProperty); set => SetValue(RangeBarHeightProperty, value); }
+    internal static readonly StyledProperty<double> RangeBarGapProperty =
+        AvaloniaProperty.Register<Calendar, double>(nameof(RangeBarGap));
+    internal double RangeBarGap { get => GetValue(RangeBarGapProperty); set => SetValue(RangeBarGapProperty, value); }
+    internal static readonly StyledProperty<Thickness> RangeBarLabelPaddingProperty =
+        AvaloniaProperty.Register<Calendar, Thickness>(nameof(RangeBarLabelPadding));
+    internal Thickness RangeBarLabelPadding { get => GetValue(RangeBarLabelPaddingProperty); set => SetValue(RangeBarLabelPaddingProperty, value); }
     internal static readonly StyledProperty<IDataTemplate?> DefaultDateCellTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(DefaultDateCellTemplate));
     internal IDataTemplate? DefaultDateCellTemplate { get => GetValue(DefaultDateCellTemplateProperty); set => SetValue(DefaultDateCellTemplateProperty, value); }
@@ -221,7 +249,7 @@ public partial class Calendar : TemplatedControl
     {
         SetCurrentValue(ValueProperty, DateTime.Today);
         _rangeBars.CollectionChanged += OnRangeBarsCollectionChanged;
-        BindPresentationMetrics();
+        UpdatePresentationMetricTokenBindings();
     }
 
     internal const string DateViewerPart = "PART_DateViewer";
@@ -230,13 +258,12 @@ public partial class Calendar : TemplatedControl
     internal const string CustomHeaderPart = "PART_CustomHeader";
 
     private DateViewer? _dateViewer;
+    private IDisposable? _dateViewerOwnerBinding;
     private CalendarRangeBarPanelControl? _rangeBarPanel;
     private CalendarHeader? _defaultHeader;
     private ContentControl? _customHeader;
     private ICalendarPresentationAdapter _presentationAdapter = DefaultCalendarPresentationAdapter.Instance;
-    private IDisposable? _miniContentHeightBinding;
-    private IDisposable? _fullCellMinHeightBinding;
-    private IDisposable? _rangeBarTopOffsetBinding;
+    private OwnerTokenPropertyBindings? _metricBindings;
     private readonly Dictionary<CalendarRangeBar, CalendarRangeBarAttachment> _rangeBarAttachments =
         new(ReferenceEqualityComparer.Instance);
 
@@ -249,10 +276,15 @@ public partial class Calendar : TemplatedControl
         _dateViewer?.SetContentFactory(null);
         _dateViewer?.SetAutomationNameFactory(null);
         _dateViewer?.SetHost(null);
+        _dateViewerOwnerBinding?.Dispose();
         SetAndRaise(EffectiveDateViewerProperty, ref _dateViewer, e.NameScope.Find<DateViewer>(DateViewerPart));
         _dateViewer?.SetHost(this);
         _dateViewer?.SetContentFactory(CreateDateCellContext);
         _dateViewer?.SetAutomationNameFactory(CreateDateAutomationName);
+        // The Calendar supplies the panel and cell themes of its date grid, so the grid takes the Calendar's Token owner
+        // (instead of the DateViewer identity): Controls[Calendar] / Controls[LunarCalendar] reach the cells. The
+        // DateViewer's Own Tokens are still read from the DateViewer identity.
+        _dateViewerOwnerBinding = _dateViewer is null ? null : TokenOwnerForwarding.Forward(this, _dateViewer);
 
         _rangeBarPanel = e.NameScope.Find<CalendarRangeBarPanelControl>(RangeBarPanelPart);
         UpdateRangeBarPanelVisibility();
@@ -515,7 +547,7 @@ public partial class Calendar : TemplatedControl
         }
 
         _presentationAdapter = presentationAdapter;
-        BindPresentationMetrics();
+        UpdatePresentationMetricTokenBindings();
         _dateViewer?.RefreshHost();
         _dateViewer?.RefreshContent();
 
@@ -527,24 +559,32 @@ public partial class Calendar : TemplatedControl
         RefreshCustomHeaderContent();
     }
 
-    private void BindPresentationMetrics()
+    private void UpdatePresentationMetricTokenBindings()
     {
-        // Adapter resource keys are computed at runtime (Gregorian/lunar); a fixed AXAML resource cannot express this switch.
-        _miniContentHeightBinding?.Dispose();
-        _fullCellMinHeightBinding?.Dispose();
-        _rangeBarTopOffsetBinding?.Dispose();
-
+        // The active adapter chooses the owner and keys at runtime. A fixed ControlTheme cannot follow this switch.
         var metrics = _presentationAdapter.Metrics;
-        _miniContentHeightBinding = Bind(
-            EffectiveMiniContentHeightProperty,
-            new DynamicResourceExtension(metrics.MiniContentHeightResourceKey));
-        _fullCellMinHeightBinding = Bind(
-            EffectiveFullCellMinHeightProperty,
-            new DynamicResourceExtension(metrics.FullCellMinHeightResourceKey));
-        _rangeBarTopOffsetBinding = Bind(
-            EffectiveRangeBarTopOffsetProperty,
-            new DynamicResourceExtension(metrics.RangeBarTopOffsetResourceKey));
+        var bindings = new OwnerTokenPropertyBindings(this, 3, BindingPriority.Template);
+        try
+        {
+            bindings.Bind(0, EffectiveMiniContentHeightProperty, MetricKey(metrics.OwnerType, metrics.MiniContentHeightResourceKey));
+            bindings.Bind(1, EffectiveFullCellMinHeightProperty, MetricKey(metrics.OwnerType, metrics.FullCellMinHeightResourceKey));
+            bindings.Bind(2, EffectiveRangeBarTopOffsetProperty, MetricKey(metrics.OwnerType, metrics.RangeBarTopOffsetResourceKey));
+        }
+        catch
+        {
+            bindings.Dispose();
+            throw;
+        }
+
+        var previous = _metricBindings;
+        _metricBindings = bindings;
+        previous?.Dispose();
     }
+
+    private static object MetricKey(Type ownerType, Enum tokenKind) =>
+        tokenKind is SharedTokenKind globalKind
+            ? ControlTokenResourceKey.Global(ownerType, globalKind)
+            : ControlTokenResourceKey.Own(ownerType, tokenKind);
 
     internal void RefreshPresentation()
     {

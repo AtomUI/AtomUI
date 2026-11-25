@@ -20,7 +20,6 @@ public class ThemeResourceLookupPerformanceTests
                      .WithControl(
                          button.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.ColorPrimary), "#ff0000")
                              .WithToken(nameof(CompilerButtonToken.Height), "48")
                              .Build())

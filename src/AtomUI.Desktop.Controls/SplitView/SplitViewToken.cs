@@ -4,28 +4,18 @@ using Avalonia.Animation.Easings;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SplitViewToken : AbstractControlDesignToken
+public sealed partial class SplitViewToken : AbstractControlDesignToken
 {
-
-    public SplitViewToken()
-
-    {
-    }
     
-    public double OpenPaneThemeLength { get; set; }
-    public double CompactPaneThemeLength { get; set; }
-    public TimeSpan PaneOpenMotionDuration { get; set; }
-    public TimeSpan PaneCloseMotionDuration { get; set; }
-    public Easing? PaneMotionEasing { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        OpenPaneThemeLength     = 320;
-        CompactPaneThemeLength  = 48;
-        PaneOpenMotionDuration  = TimeSpan.FromMilliseconds(200);
-        PaneCloseMotionDuration = TimeSpan.FromMilliseconds(100);
-        PaneMotionEasing        = Easing.Parse("0.1,0.9,0.2,1.0");
-    }
+    /// <summary>Default length of the split pane when open.</summary>
+    public partial double OpenPaneThemeLength { get; set; }
+    /// <summary>Default length of the closed pane in a compact display mode.</summary>
+    public partial double CompactPaneThemeLength { get; set; }
+    /// <summary>Duration of the pane opening animation.</summary>
+    public partial TimeSpan PaneOpenMotionDuration { get; set; }
+    /// <summary>Duration of the pane closing animation.</summary>
+    public partial TimeSpan PaneCloseMotionDuration { get; set; }
+    /// <summary>Easing applied to the pane opening and closing animations.</summary>
+    public partial Easing? PaneMotionEasing { get; set; }
     
 }

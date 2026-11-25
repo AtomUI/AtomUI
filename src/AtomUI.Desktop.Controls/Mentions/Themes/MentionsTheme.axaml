@@ -43,7 +43,7 @@
                         <Border Name="PopupFrame"
                                 Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
-                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                MinWidth="{atom:MentionsTokenResource MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <Panel>
                                 <atom:Spin Name="LoadingIndicator" SizeType="Middle" 
@@ -67,23 +67,25 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="ItemHeight" Value="{atom:MentionsTokenResource OptionHeight}" />
-        <Setter Property="PopupContentPadding" Value="{atom:MentionsTokenResource PopupContentPadding}" />
-        <Setter Property="MinPopupWidth" Value="{atom:MentionsTokenResource MinPopupWidth}" />
+        <!-- The nested input frame draws its focus outline outside the Mentions bounds. -->
+        <Setter Property="ClipToBounds" Value="False" />
+        <!-- Focus is shown by the nested input frame, as for the other inputs; the host draws no square adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:MentionsTokenResource EnableMotion}" />
+        <Setter Property="UsePopupLayoutTokenResources" Value="True" />
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
             <Setter Property="MarginToAnchor" Value="{atom:PopupTokenResource MarginToAnchor}" />
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
             <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:MentionsTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
         
         <Style Selector="^ /template/ atom|Spin#LoadingIndicator">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginLG}" />
+            <Setter Property="Margin" Value="{atom:MentionsTokenResource MarginLG}" />
         </Style>
         
         <Setter Property="OptionTemplate">
@@ -92,5 +94,10 @@
                            TextTrimming="CharacterEllipsis"/>
             </DataTemplate>
         </Setter>
+        <Style Selector="^ /template/ atom|CandidateList">
+            <Setter Property="ItemColor" Value="{atom:MentionsTokenResource OptionColor}" />
+            <Setter Property="ItemSelectedColor" Value="{atom:MentionsTokenResource OptionSelectedColor}" />
+            <Setter Property="ItemMinHeight" Value="{atom:MentionsTokenResource ControlHeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

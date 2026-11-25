@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -28,6 +29,9 @@ public class BaseNavMenuItemHeader : TemplatedControl
     
     public static readonly StyledProperty<bool> IsSubMenuOpenProperty =
         AvaloniaProperty.Register<BaseNavMenuItemHeader, bool>(nameof(IsSubMenuOpen));
+
+    public static readonly StyledProperty<bool> IsDangerProperty =
+        NavMenuItem.IsDangerProperty.AddOwner<BaseNavMenuItemHeader>();
     
     public static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsDarkStyleProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(nameof(IsDarkStyle),
@@ -83,6 +87,12 @@ public class BaseNavMenuItemHeader : TemplatedControl
         get => GetValue(IsSubMenuOpenProperty);
         set => SetValue(IsSubMenuOpenProperty, value);
     }
+
+    public bool IsDanger
+    {
+        get => GetValue(IsDangerProperty);
+        set => SetValue(IsDangerProperty, value);
+    }
     
     private bool _isDarkStyle;
 
@@ -120,6 +130,12 @@ public class BaseNavMenuItemHeader : TemplatedControl
             o => o.IsKeyboardActive,
             (o, v) => o.IsKeyboardActive = v);
 
+    internal static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(
+            nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
+
     internal static readonly DirectProperty<BaseNavMenuItemHeader, bool> IsPointerHoldProperty =
         AvaloniaProperty.RegisterDirect<BaseNavMenuItemHeader, bool>(
             nameof(IsPointerHold),
@@ -146,6 +162,14 @@ public class BaseNavMenuItemHeader : TemplatedControl
         set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
     }
 
+    private bool _isKeyboardFocusOutlineVisible;
+
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
+    }
+
     private bool _isPointerHold;
 
     internal bool IsPointerHold
@@ -164,6 +188,8 @@ public class BaseNavMenuItemHeader : TemplatedControl
 
     #endregion
 
+    private readonly ManagedFocusOutline _keyboardFocusOutline = new();
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -176,6 +202,34 @@ public class BaseNavMenuItemHeader : TemplatedControl
         if (change.Property == IconProperty)
         {
             UpdatePseudoClasses();
+        }
+        else if (change.Property == IsKeyboardFocusOutlineVisibleProperty)
+        {
+            UpdateKeyboardFocusOutline();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateKeyboardFocusOutline();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _keyboardFocusOutline.Hide();
+    }
+
+    private void UpdateKeyboardFocusOutline()
+    {
+        if (IsKeyboardFocusOutlineVisible && this.IsAttachedToVisualTree())
+        {
+            _keyboardFocusOutline.Show(this);
+        }
+        else
+        {
+            _keyboardFocusOutline.Hide();
         }
     }
 

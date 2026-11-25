@@ -5,6 +5,29 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:GradientColorPickerView}" TargetType="atom:GradientColorPickerView">
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumMinWidth" Value="{atom:GradientColorPickerViewTokenResource ColorPickerWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHeight" Value="{atom:GradientColorPickerViewTokenResource ColorSpectrumHeight}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.InsetShadows" Value="{atom:GradientColorPickerViewTokenResource ColorPickerInsetShadow}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.OuterSpectrumHandleSize" Value="{atom:GradientColorPickerViewTokenResource ColorPickerHandlerSizeLG}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleSize" Value="{atom:GradientColorPickerViewTokenResource ColorPickerHandlerSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleLightBrush" Value="{atom:GradientColorPickerViewTokenResource ColorPickerHandlerLightColor}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SpectrumHandleDarkBrush" Value="{atom:GradientColorPickerViewTokenResource ColorPickerHandlerDarkColor}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderHeight" Value="{atom:GradientColorPickerViewTokenResource ColorPickerSliderSize}" />
+        <Setter Property="SliderTrackHeight" Value="{atom:GradientColorPickerViewTokenResource ColorPickerSliderTrackSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderThumbSize" Value="{atom:GradientColorPickerViewTokenResource ColorPickerSliderThumbSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PreviewSize" Value="{atom:GradientColorPickerViewTokenResource ColorPickerPreviewSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.AlphaInputWidth" Value="{atom:GradientColorPickerViewTokenResource ColorPickerAlphaInputWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.NumberInputSpinnerHandleWidth" Value="{atom:GradientColorPickerViewTokenResource ColorPickerInputNumberHandleWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetColorSize" Value="{atom:GradientColorPickerViewTokenResource ColorPickerPresetColorSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetPanelWidth" Value="{atom:GradientColorPickerViewTokenResource ColorPickerPresetPanelWidth}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckedMarkSize" Value="{atom:GradientColorPickerViewTokenResource CheckedMarkSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.PresetColorGroupPadding" Value="{atom:GradientColorPickerViewTokenResource ColorPickerPresetColorGroupPadding}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SliderContainerMargin" Value="{atom:GradientColorPickerViewTokenResource SliderContainerMargin}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.ColorBlockInnerShadows" Value="{atom:GradientColorPickerViewTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckerboardTileSize" Value="{atom:GradientColorPickerViewTokenResource TransparentBgSize}" />
+
+        <Setter Property="atom:ColorPickerAttachedProperties.EditorFontSize" Value="{atom:GradientColorPickerViewTokenResource EditorFontSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.SeparatorThickness" Value="{atom:GradientColorPickerViewTokenResource BorderThickness}" />
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerViewTheme TargetType="atom:GradientColorPickerView" />
         </ControlTheme.BasedOn>
@@ -28,11 +51,11 @@
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                         <atom:PixelAlignedBorder Name="Separator"
                                                  VerticalAlignment="Stretch"
-                                                 Width="1"
+                                                 Width="{atom:GradientColorPickerViewTokenResource LineWidth}"
                                                  IsVisible="{TemplateBinding IsPaletteGroupEnabled}" />
                         <StackPanel Orientation="Vertical"
                                     ClipToBounds="False"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:GradientColorPickerViewTokenResource SpacingXS}">
                             <atom:ColorBlock Name="PART_ClearColor"
                                              HorizontalAlignment="Right"
                                              IsEmptyColorMode="True"
@@ -54,6 +77,7 @@
                                     MinSaturation="{TemplateBinding MinSaturation}"
                                     MinValue="{TemplateBinding MinValue}" />
                                 <DockPanel LastChildFill="True" ClipToBounds="False">
+                                    <!-- layout: fixed raster inset, hit target or compact editor packing. -->
                                     <atom:ColorBlock Name="ColorPreview"
                                                      IsEmptyColorMode="{TemplateBinding IsEmptyDraft}"
                                                      Background="{TemplateBinding HsvColorBrush}"
@@ -88,7 +112,7 @@
                             <StackPanel Name="PART_ConfirmationFooter"
                                         Orientation="Horizontal"
                                         HorizontalAlignment="Right"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}"
+                                        Spacing="{atom:GradientColorPickerViewTokenResource SpacingXS}"
                                         IsVisible="{TemplateBinding IsNeedConfirm}">
                                 <atom:Button Name="PART_CancelButton"
                                              SizeType="Small"

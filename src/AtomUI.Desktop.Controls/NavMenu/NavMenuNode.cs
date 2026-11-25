@@ -12,6 +12,7 @@ public interface INavMenuNode : ITreeNode<INavMenuNode>, INavMenuEntry
     IDataTemplate? HeaderTemplate { get; }
     object? Tooltip => null;
     bool IsTooltipEnabled => true;
+    bool IsDanger => false;
     ICommand? Command => null;
     object? CommandParameter => null;
     IEnumerable<INavMenuEntry> Entries => Children;
@@ -75,6 +76,12 @@ public partial class NavMenuNode : AvaloniaObject, INavMenuNode
             nameof(IsEnabled),
             o => o.IsEnabled,
             (o, v) => o.IsEnabled = v);
+
+    public static readonly DirectProperty<NavMenuNode, bool> IsDangerProperty =
+        AvaloniaProperty.RegisterDirect<NavMenuNode, bool>(
+            nameof(IsDanger),
+            o => o.IsDanger,
+            (o, v) => o.IsDanger = v);
         
     private object? _header;
 
@@ -146,6 +153,17 @@ public partial class NavMenuNode : AvaloniaObject, INavMenuNode
     {
         get => _isEnabled;
         set => SetAndRaise(IsEnabledProperty, ref _isEnabled, value);
+    }
+
+    private bool _isDanger;
+
+    /// <summary>
+    /// Whether the node is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// </summary>
+    public bool IsDanger
+    {
+        get => _isDanger;
+        set => SetAndRaise(IsDangerProperty, ref _isDanger, value);
     }
     
     public ITreeNode<INavMenuNode>? ParentNode { get; private set; }

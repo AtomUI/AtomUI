@@ -42,17 +42,8 @@ internal class BorderBeamPresenter : Control
     internal static readonly StyledProperty<int> CountProperty =
         AvaloniaProperty.Register<BorderBeamPresenter, int>(nameof(Count), 1);
 
-    internal static readonly StyledProperty<double> BeamOpacityProperty =
-        AvaloniaProperty.Register<BorderBeamPresenter, double>(nameof(BeamOpacity), 0.95d);
-
-    internal static readonly StyledProperty<double> MaxVisibleStopPercentProperty =
-        AvaloniaProperty.Register<BorderBeamPresenter, double>(nameof(MaxVisibleStopPercent), 70d);
-
-    internal static readonly StyledProperty<IBrush?> DefaultStartColorProperty =
-        AvaloniaProperty.Register<BorderBeamPresenter, IBrush?>(nameof(DefaultStartColor));
-
-    internal static readonly StyledProperty<IBrush?> DefaultEndColorProperty =
-        AvaloniaProperty.Register<BorderBeamPresenter, IBrush?>(nameof(DefaultEndColor));
+    internal static readonly StyledProperty<BorderBeamPaint> PaintProperty =
+        AvaloniaProperty.Register<BorderBeamPresenter, BorderBeamPaint>(nameof(Paint), BorderBeamPaint.Default);
 
     internal static readonly DirectProperty<BorderBeamPresenter, double> ProgressProperty =
         AvaloniaProperty.RegisterDirect<BorderBeamPresenter, double>(
@@ -108,28 +99,10 @@ internal class BorderBeamPresenter : Control
         set => SetValue(CountProperty, value);
     }
 
-    internal double BeamOpacity
+    internal BorderBeamPaint Paint
     {
-        get => GetValue(BeamOpacityProperty);
-        set => SetValue(BeamOpacityProperty, value);
-    }
-
-    internal double MaxVisibleStopPercent
-    {
-        get => GetValue(MaxVisibleStopPercentProperty);
-        set => SetValue(MaxVisibleStopPercentProperty, value);
-    }
-
-    internal IBrush? DefaultStartColor
-    {
-        get => GetValue(DefaultStartColorProperty);
-        set => SetValue(DefaultStartColorProperty, value);
-    }
-
-    internal IBrush? DefaultEndColor
-    {
-        get => GetValue(DefaultEndColorProperty);
-        set => SetValue(DefaultEndColorProperty, value);
+        get => GetValue(PaintProperty);
+        set => SetValue(PaintProperty, value);
     }
 
     private double _progress;
@@ -144,8 +117,15 @@ internal class BorderBeamPresenter : Control
 
     private Animation? _animation;
     private IDisposable? _animationSubscription;
+    private Geometry? _borderGeometryCache;
+    private (Size Size, Thickness Outset, Thickness BorderThickness, CornerRadius Radius)? _geometryCacheKey;
+    private BorderBeamPathMetrics _pathMetricsCache;
+    private (Size Size, Thickness Outset, double BeamSize)? _metricsCacheKey;
+    private IBrush? _beamBrushCache;
+    private bool _beamBrushDirty = true;
     private Rect? _effectiveViewport;
     private AvaloniaList<BorderBeamColorStop>? _subscribedColorStops;
+    private HashSet<BorderBeamColorStop>? _subscribedColorStopItems;
 
     static BorderBeamPresenter()
     {
@@ -157,10 +137,7 @@ internal class BorderBeamPresenter : Control
             IsMotionEnabledProperty,
             BeamSizeProperty,
             CountProperty,
-            BeamOpacityProperty,
-            MaxVisibleStopPercentProperty,
-            DefaultStartColorProperty,
-            DefaultEndColorProperty,
+            PaintProperty,
             ProgressProperty,
             UseLayoutRoundingProperty);
     }
@@ -171,6 +148,7 @@ internal class BorderBeamPresenter : Control
         _effectiveViewport = null;
         EffectiveViewportChanged += HandleEffectiveViewportChanged;
         ConfigureColorStopsSubscription(ColorStops);
+        _beamBrushDirty = true;
         UpdateAnimationState();
     }
 
@@ -193,9 +171,24 @@ internal class BorderBeamPresenter : Control
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ColorStopsProperty)
+        if (change.Property == ColorStopsProperty && this.IsAttachedToVisualTree())
         {
             ConfigureColorStopsSubscription(change.GetNewValue<AvaloniaList<BorderBeamColorStop>?>());
+        }
+
+        if (change.Property == ColorProperty ||
+            change.Property == ColorStopsProperty ||
+            change.Property == BeamSizeProperty)
+        {
+            _beamBrushDirty = true;
+        }
+        else if (change.Property == PaintProperty)
+        {
+            var previous = change.GetOldValue<BorderBeamPaint>();
+            var current = change.GetNewValue<BorderBeamPaint>();
+            _beamBrushDirty |= !Equals(previous.StartColor, current.StartColor) ||
+                               !Equals(previous.EndColor, current.EndColor) ||
+                               !previous.MaxVisibleStopPercent.Equals(current.MaxVisibleStopPercent);
         }
 
         if (change.Property == IsMotionEnabledProperty ||
@@ -217,19 +210,48 @@ internal class BorderBeamPresenter : Control
 
         var borderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, BorderBeamGeometry.BorderThickness);
         var renderBounds    = GetRenderBounds();
-        var borderGeometry  = CreateBorderGeometry(renderBounds, borderThickness, BorderBeamGeometry.CornerRadius);
-        if (borderGeometry is null)
+        var outset          = Outset.HasValue
+            ? BorderUtils.BuildRenderScaleAwareThickness(this, Outset.Value)
+            : default;
+        var radius = BorderBeamGeometry.CornerRadius;
+
+        // Steady-state caches: the progress animation re-enters Render at the refresh rate, and rebuilding the
+        // clip geometry (two stream geometries + combine), the path metrics (four arc integrals) and the gradient
+        // brush on every frame is pure allocation churn - the GC pauses read as a periodic hitch. Everything is
+        // keyed on its inputs, so a size, outset, thickness, radius or colour change simply misses and rebuilds.
+        var geometryKey = (renderBounds.Size, outset, borderThickness, radius);
+        if (_geometryCacheKey != geometryKey || _borderGeometryCache is null)
+        {
+            _borderGeometryCache = CreateBorderGeometry(renderBounds, borderThickness, radius);
+            _geometryCacheKey    = geometryKey;
+        }
+        if (_borderGeometryCache is null)
         {
             return;
         }
 
         var effectiveCount = Math.Max(1, Count);
-        var pathMetrics    = BorderBeamPathSampler.CreateMetrics(renderBounds, BeamSize);
-        var beamBrush      = CreateBeamBrush();
-        var beamBounds     = CreateBeamBounds();
+        var metricsKey = (renderBounds.Size, outset, BeamSize);
+        if (_metricsCacheKey != metricsKey)
+        {
+            _pathMetricsCache = BorderBeamPathSampler.CreateMetrics(renderBounds, BeamSize);
+            _metricsCacheKey  = metricsKey;
+        }
 
-        using var opacityState = context.PushOpacity(Math.Clamp(BeamOpacity, 0d, 1d));
-        using var clipState    = context.PushGeometryClip(borderGeometry);
+        if (_beamBrushDirty || _beamBrushCache is null)
+        {
+            // Immutable snapshot: the drawing context converts a mutable gradient brush on EVERY draw, which is
+            // exactly the per-frame allocation the cache exists to remove.
+            _beamBrushCache = CreateBeamBrush().ToImmutable();
+            _beamBrushDirty = false;
+        }
+
+        var pathMetrics = _pathMetricsCache;
+        var beamBrush   = _beamBrushCache;
+        var beamBounds  = CreateBeamBounds();
+
+        using var opacityState = context.PushOpacity(Math.Clamp(Paint.Opacity, 0d, 1d));
+        using var clipState    = context.PushGeometryClip(_borderGeometryCache);
         for (var index = 0; index < effectiveCount; index++)
         {
             var beamProgress = BorderBeamPathSampler.GetBeamProgress(Progress, index, effectiveCount);
@@ -322,7 +344,7 @@ internal class BorderBeamPresenter : Control
                Bounds.Width > 0 &&
                Bounds.Height > 0 &&
                BeamSize > 0 &&
-               BeamOpacity > 0 &&
+               Paint.Opacity > 0 &&
                HasVisibleBorder(BorderBeamGeometry.BorderThickness);
     }
 
@@ -406,14 +428,15 @@ internal class BorderBeamPresenter : Control
             SpreadMethod = GradientSpreadMethod.Pad
         };
 
-        var defaultStartColor = ResolveDefaultColor(DefaultStartColor, Colors.Transparent);
-        var defaultEndColor   = ResolveDefaultColor(DefaultEndColor, defaultStartColor);
+        var paint = Paint;
+        var defaultStartColor = ResolveDefaultColor(paint.StartColor, Colors.Transparent);
+        var defaultEndColor   = ResolveDefaultColor(paint.EndColor, defaultStartColor);
         foreach (var stop in BorderBeamColorStops.Normalize(
                      ColorStops,
                      Color,
                      defaultStartColor,
                      defaultEndColor,
-                     MaxVisibleStopPercent))
+                     paint.MaxVisibleStopPercent))
         {
             brush.GradientStops.Add(new GradientStop(stop.Color, stop.Offset));
         }
@@ -458,11 +481,49 @@ internal class BorderBeamPresenter : Control
         {
             _subscribedColorStops.CollectionChanged += HandleColorStopsChanged;
         }
+        SynchronizeColorStopSubscriptions();
+    }
+
+    private void SynchronizeColorStopSubscriptions()
+    {
+        if (_subscribedColorStopItems is not null)
+        {
+            foreach (var stop in _subscribedColorStopItems)
+            {
+                stop.PropertyChanged -= HandleColorStopPropertyChanged;
+            }
+            _subscribedColorStopItems.Clear();
+        }
+
+        if (_subscribedColorStops is not { Count: > 0 })
+        {
+            return;
+        }
+
+        _subscribedColorStopItems ??= new HashSet<BorderBeamColorStop>(ReferenceEqualityComparer.Instance);
+        foreach (var stop in _subscribedColorStops)
+        {
+            if (_subscribedColorStopItems.Add(stop))
+            {
+                stop.PropertyChanged += HandleColorStopPropertyChanged;
+            }
+        }
     }
 
     private void HandleColorStopsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        SynchronizeColorStopSubscriptions();
+        _beamBrushDirty = true;
         InvalidateVisual();
+    }
+
+    private void HandleColorStopPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == BorderBeamColorStop.ColorProperty || e.Property == BorderBeamColorStop.PercentProperty)
+        {
+            _beamBrushDirty = true;
+            InvalidateVisual();
+        }
     }
 }
 

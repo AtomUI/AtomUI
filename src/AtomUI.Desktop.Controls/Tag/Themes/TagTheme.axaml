@@ -40,22 +40,36 @@
     <Style Selector="^:is(atom|Tag)">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Background" Value="{atom:TagTokenResource DefaultBg}" />
-        <Setter Property="Foreground" Value="{atom:TagTokenResource DefaultColor}" />
+        <!-- Palette colours computed at runtime are local values on the Calculated* inputs; the Token defaults (and the
+             default-colour variants below) are their theme values. Background / Foreground / BorderBrush follow them
+             through untriggered setters, so plain app Styles, Semantic Part Styles and local values keep native
+             precedence over every computed colour. -->
+        <Setter Property="CalculatedBackground" Value="{atom:TagTokenResource DefaultBg}" />
+        <Setter Property="CalculatedForeground" Value="{atom:TagTokenResource DefaultColor}" />
+        <Setter Property="CalculatedBorderBrush" Value="Transparent" />
+        <Setter Property="Background" Value="{CompiledBinding $self.CalculatedBackground}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $self.CalculatedForeground}" />
+        <Setter Property="BorderBrush" Value="{CompiledBinding $self.CalculatedBorderBrush}" />
         <Setter Property="FontSize" Value="{atom:TagTokenResource TagFontSize}" />
+        <Setter Property="FontWeight" Value="{atom:TagTokenResource TagFontWeight}" />
+        <Setter Property="IsFilledStatusSolid" Value="{atom:TagTokenResource FilledStatusSolid}" />
         <Setter Property="Padding" Value="{atom:TagTokenResource TagPadding}" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="RenderScaleAwareBorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Setter Property="RenderScaleAwareBorderThickness" Value="{atom:TagTokenResource BorderThickness}" />
+        <Setter Property="CornerRadius" Value="{atom:TagTokenResource BorderRadiusSM}" />
         <Setter Property="TagTextPaddingInline"
                 Value="{atom:TagTokenResource TagTextPaddingInline}" />
 
         <Style Selector="^[Variant=Solid]:not(:preset-color):not(:status-color):not(:custom-color)">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgSolid}" />
-            <Setter Property="Foreground" Value="{atom:TagTokenResource SolidTextColor}" />
+            <Setter Property="CalculatedBackground" Value="{atom:TagTokenResource ColorBgSolid}" />
+            <Setter Property="CalculatedForeground" Value="{atom:TagTokenResource SolidTextColor}" />
         </Style>
         <Style Selector="^[Variant=Outlined]:not(:preset-color):not(:status-color):not(:custom-color)">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="CalculatedBorderBrush" Value="{atom:TagTokenResource ColorBorder}" />
+        </Style>
+        <Style Selector="^[Variant=Outline]:not(:preset-color):not(:status-color):not(:custom-color)">
+            <Setter Property="CalculatedBackground" Value="Transparent" />
+            <Setter Property="CalculatedBorderBrush" Value="{atom:TagTokenResource ColorPrimary}" />
+            <Setter Property="CalculatedForeground" Value="{atom:TagTokenResource ColorPrimary}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
@@ -69,9 +83,9 @@
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSizeXS}" />
+                    Value="{atom:TagTokenResource TagCloseIconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSizeXS}" />
+                    Value="{atom:TagTokenResource TagCloseIconSize}" />
             <Setter Property="IconBrush"
                     Value="{TemplateBinding Foreground}" />
         </Style>

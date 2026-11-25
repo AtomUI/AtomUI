@@ -5,10 +5,30 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <Thickness x:Key="NumericUpDownSpinnerContentPadding">0</Thickness>
+    <!-- The -/+ separators are drawn with the frame's border width on the inner side of each handle.
+         The -/+ buttons are registered IconButtons, so their icon size reads the NumericUpDown value explicitly. -->
+    <atom:BorderThicknessFilterConverter x:Key="NumericUpDownSpinnerRightSeparatorConverter"
+                                         Left="False" Top="False" Bottom="False" />
+    <atom:BorderThicknessFilterConverter x:Key="NumericUpDownSpinnerLeftSeparatorConverter"
+                                         Top="False" Right="False" Bottom="False" />
 
     <ControlTheme x:Key="{x:Type atom:NumericUpDownSpinner}"
                   TargetType="atom:NumericUpDownSpinner"
                   BasedOn="{StaticResource {x:Type atom:ButtonSpinner}}">
+        <!-- The base ButtonSpinner theme keeps Tab out of its parts (TabNavigation=None). Here the content is the
+             number input, which must be the keyboard stop (Ant Design InputNumber); the frame and the step buttons
+             are not stops, Up / Down step the value from the input. -->
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
+        <Setter Property="HandleBg" Value="{atom:NumericUpDownTokenResource HandleBg}" />
+        <Setter Property="FilledHandleBg" Value="{atom:NumericUpDownTokenResource FilledHandleBg}" />
+        <Setter Property="HandleBorderColor" Value="{atom:NumericUpDownTokenResource HandleBorderColor}" />
+        <Setter Property="HandleHoverColor" Value="{atom:NumericUpDownTokenResource HandleHoverColor}" />
+        <Setter Property="HandleHoverBg" Value="{atom:NumericUpDownTokenResource HandleHoverBg}" />
+        <Setter Property="HandleIconColor" Value="{atom:NumericUpDownTokenResource HandleIconColor}" />
+        <Setter Property="HandleActiveBg" Value="{atom:NumericUpDownTokenResource HandleActiveBg}" />
+        <Setter Property="HandleIconSize" Value="{atom:NumericUpDownTokenResource HandleIconSize}" />
+        <Setter Property="HandlePressedColor" Value="{atom:NumericUpDownTokenResource HandlePressedColor}" />
+        <Setter Property="SpinnerHandleWidth" Value="{atom:NumericUpDownTokenResource HandleWidth}" />
         <Style Selector="^[IsButtonSpinnerFloatable=False]">
             <Setter Property="Template">
                 <ControlTemplate TargetType="atom:NumericUpDownSpinner">
@@ -27,11 +47,13 @@
                         Status="{TemplateBinding Status}"
                         FormStatus="{TemplateBinding FormStatus}"
                         IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}"
                         DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                         IsShowHandle="False"
                         IsHandleFloatable="False"
                         ContentPadding="{Binding Source={StaticResource NumericUpDownSpinnerContentPadding}, Priority=LocalValue}"
                         Focusable="True"
+                        IsTabStop="False"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
@@ -40,37 +62,39 @@
                         <DockPanel LastChildFill="True">
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Left"
-                                BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="0,0,1,0"
+                                BorderBrush="{atom:NumericUpDownTokenResource HandleBorderColor}"
+                                BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerRightSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_DecreaseButton"
+                                    IsTabStop="False"
                                     Icon="{antdicons:AntDesignIconProvider MinusOutlined}"
                                     CornerRadius="0"
                                     BorderThickness="0"
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>
                             <atom:PixelAlignedBorder
                                 DockPanel.Dock="Right"
-                                BorderBrush="{atom:ButtonSpinnerTokenResource HandleBorderColor}"
-                                BorderThickness="1,0,0,0"
+                                BorderBrush="{atom:NumericUpDownTokenResource HandleBorderColor}"
+                                BorderThickness="{Binding $parent[atom:ButtonSpinnerDecoratedBox].BorderThickness, Converter={StaticResource NumericUpDownSpinnerLeftSeparatorConverter}}"
                                 IsVisible="{TemplateBinding IsButtonSpinnerVisible}">
                                 <atom:IconButton
                                     Name="PART_IncreaseButton"
+                                    IsTabStop="False"
                                     Icon="{antdicons:AntDesignIconProvider PlusOutlined}"
                                     CornerRadius="0"
                                     BorderThickness="0"
                                     Padding="0"
                                     Width="{CompiledBinding $self.Bounds.Height}"
                                     BackgroundSizing="InnerBorderEdge"
-                                    IconWidth="{atom:SharedTokenResource IconSize}"
-                                    IconHeight="{atom:SharedTokenResource IconSize}"
+                                    IconWidth="{atom:NumericUpDownTokenResource IconSize}"
+                                    IconHeight="{atom:NumericUpDownTokenResource IconSize}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch" />
                             </atom:PixelAlignedBorder>
@@ -101,11 +125,11 @@
         </Style>
         <Style Selector="^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_DecreaseButton:pointerover:not(:disabled),
                          ^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_IncreaseButton:pointerover:not(:disabled)">
-            <Setter Property="IconBrush" Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+            <Setter Property="IconBrush" Value="{atom:NumericUpDownTokenResource HandleHoverColor}" />
         </Style>
         <Style Selector="^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_DecreaseButton:pressed:not(:disabled),
                          ^[IsButtonSpinnerFloatable=False] /template/ atom|IconButton#PART_IncreaseButton:pressed:not(:disabled)">
-            <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+            <Setter Property="Background" Value="{atom:NumericUpDownTokenResource HandleActiveBg}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

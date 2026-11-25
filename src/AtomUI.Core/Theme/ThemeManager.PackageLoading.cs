@@ -43,14 +43,25 @@ internal partial class ThemeManager
         builder.ControlRegistrationState.Freeze();
         var manual = builder.ControlPackages;
         var manualControls = manual.SelectMany(package => package.Controls).ToArray();
+        // Committed languages stay by reference (global reuse depends on it); the appended packages add theirs.
+        var languages = builder.Languages.Count == 0 ? _startupRegistry!.Languages
+            : _startupRegistry!.Languages.Concat(builder.Languages.Where(language => !_startupRegistry.Languages.Contains(language))).ToArray();
         var manualRegistry = manualControls.Length == 0 ? null : new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(), manualControls, GeneratedThemeSchema.GetAlgorithms());
+            GeneratedThemeSchema.GetGlobalTokens(), manualControls, Array.Empty<DesignLanguageDescriptor>());
         var newSemantics = manual.SelectMany(package => package.SemanticControls).ToArray();
         var newAssets = manual.SelectMany(package => package.ThemeAssets).ToArray();
         var oldIndex = _startupPackageIndex ?? StartupPackageIndex.Create([], null, _startupRegistry,
             SemanticParts.Controls, _controlThemeAssetDescriptors);
         var index = oldIndex.Append(builder.PackageDeclarations, manualRegistry, newSemantics, newAssets);
-        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, GeneratedThemeSchema.GetAlgorithms());
+        // Committed rules stay; the appended ones are accepted only where they cannot change committed values.
+        var rules = builder.TokenRules.Count == 0
+            ? _startupRegistry.ControlTokenRules
+            : _startupRegistry.ControlTokenRules.Concat(builder.TokenRules.Where(rule => !_startupRegistry.ControlTokenRules.Contains(rule))).ToArray();
+        var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, languages, rules);
+        if (builder.TokenRules.Count != 0)
+        {
+            registry.ValidateAppendedTokenRules(_startupRegistry);
+        }
         var semantics = new SemanticPartRegistry(index);
         _ = new ControlThemeAssetManifest(registry, newAssets);
         foreach (var asset in newAssets)

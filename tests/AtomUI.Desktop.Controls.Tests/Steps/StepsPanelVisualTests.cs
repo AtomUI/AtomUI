@@ -236,6 +236,32 @@ public class StepsPanelVisualTests
         });
     }
 
+    [Fact]
+    public void Panel_Arrow_Stroke_Uses_LineWidthBold_And_Small_Uses_LineWidth()
+    {
+        // The default arrow stroke must sit below the Small state Setter: a template-node value would mask it.
+        var steps = CreateSteps(Desktop.Controls.StepsPanelVariant.Outlined, Orientation.Horizontal);
+
+        ShowInWindow(steps, () =>
+        {
+            var arrow = (Desktop.Controls.StepsPanelArrow)FindControl(
+                steps.Items.Cast<Desktop.Controls.StepsItem>().First(), "PanelArrow");
+            var lineWidth     = GetThemeResource<double>(SharedTokenKind.LineWidth);
+            var lineWidthBold = GetThemeResource<double>(SharedTokenKind.LineWidthBold);
+            lineWidth.ShouldNotBe(lineWidthBold);
+
+            arrow.StrokeThickness.ShouldBe(lineWidthBold);
+
+            steps.SizeType = AtomUISizeType.Small;
+            Dispatcher.UIThread.RunJobs();
+            arrow.StrokeThickness.ShouldBe(lineWidth);
+
+            steps.SizeType = AtomUISizeType.Middle;
+            Dispatcher.UIThread.RunJobs();
+            arrow.StrokeThickness.ShouldBe(lineWidthBold);
+        });
+    }
+
     private static Desktop.Controls.Steps CreateSteps(
         Desktop.Controls.StepsPanelVariant panelVariant,
         Orientation orientation)

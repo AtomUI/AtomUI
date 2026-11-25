@@ -19,11 +19,13 @@ internal class ColorSlider : AbstractColorSlider
 {
     #region 公共属性定义
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     public static readonly StyledProperty<Color> ColorProperty =
         AvaloniaProperty.Register<ColorSlider, Color>(
             nameof(Color),
             Colors.White,
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     public static readonly StyledProperty<ColorComponent> ColorComponentProperty =
         AvaloniaProperty.Register<ColorSlider, ColorComponent>(
@@ -35,11 +37,13 @@ internal class ColorSlider : AbstractColorSlider
             nameof(ColorModel),
             ColorModel.Rgba);
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     public static readonly StyledProperty<HsvColor> HsvColorProperty =
         AvaloniaProperty.Register<ColorSlider, HsvColor>(
             nameof(HsvColor),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     public static readonly StyledProperty<bool> IsAlphaVisibleProperty =
         AvaloniaProperty.Register<ColorSlider, bool>(
@@ -256,7 +260,8 @@ internal class ColorSlider : AbstractColorSlider
                 _backgroundBitmap?.Dispose();
                 _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
 
-                Background = new ImageBrush(_backgroundBitmap);
+                // Generated colour-model bitmap is runtime data, not a theme brush.
+                SetCurrentValue(BackgroundProperty, new ImageBrush(_backgroundBitmap));
             }
         }
         catch (Exception ex)

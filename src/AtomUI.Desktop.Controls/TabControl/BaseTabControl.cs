@@ -1,8 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Specialized;
-using System.Reactive.Disposables;
 using AtomUI.Animations;
 using AtomUI.Controls;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -20,15 +20,17 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOverflowOwner
+public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverflowOwner
 {
+    private protected override bool UsesCustomIndicatorTransition => true;
+
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel());
 
     #region 公共属性定义
     
-    public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-        AvaloniaProperty.Register<BaseTabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
+    public new static readonly StyledProperty<Dock> TabStripPlacementProperty =
+        AbstractTabControl.TabStripPlacementProperty.AddOwner<BaseTabControl>();
     
     public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
         AvaloniaProperty.Register<BaseTabControl, IReadOnlyList<double>?>(nameof(BorderDashArray));
@@ -42,17 +44,17 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
         ContentControl.VerticalContentAlignmentProperty.AddOwner<BaseTabControl>();
     
-    public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
-        ContentControl.ContentTemplateProperty.AddOwner<BaseTabControl>();
+    public new static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+        AbstractTabControl.ContentTemplateProperty.AddOwner<BaseTabControl>();
 
     public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
         AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(OverflowPopupTemplate));
     
-    public static readonly DirectProperty<BaseTabControl, object?> SelectedContentProperty =
-        AvaloniaProperty.RegisterDirect<BaseTabControl, object?>(nameof(SelectedContent), o => o.SelectedContent);
+    public new static readonly DirectProperty<BaseTabControl, object?> SelectedContentProperty =
+        AbstractTabControl.SelectedContentProperty.AddOwner<BaseTabControl>(owner => owner.SelectedContent);
 
-    public static readonly DirectProperty<BaseTabControl, IDataTemplate?> SelectedContentTemplateProperty =
-        AvaloniaProperty.RegisterDirect<BaseTabControl, IDataTemplate?>(nameof(SelectedContentTemplate), o => o.SelectedContentTemplate);
+    public new static readonly DirectProperty<BaseTabControl, IDataTemplate?> SelectedContentTemplateProperty =
+        AbstractTabControl.SelectedContentTemplateProperty.AddOwner<BaseTabControl>(owner => owner.SelectedContentTemplate);
     
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<BaseTabControl>();
@@ -68,8 +70,8 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
             nameof(TabActivationTrigger),
             TabActivationTrigger.PointerReleased);
 
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BaseTabControl>();
+    public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        AbstractTabControl.IsMotionEnabledProperty.AddOwner<BaseTabControl>();
     
     public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabControl, double>(nameof (HeaderStartEdgePadding));
@@ -83,17 +85,17 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     public static readonly StyledProperty<double> TabAndContentGutterProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof(TabAndContentGutter));
     
-    public static readonly StyledProperty<object?> HeaderStartExtraContentProperty = 
-        AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderStartExtraContent));
+    public new static readonly StyledProperty<object?> HeaderStartExtraContentProperty =
+        AbstractTabControl.HeaderStartExtraContentProperty.AddOwner<BaseTabControl>();
     
-    public static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
-        AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderStartExtraContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
+        AbstractTabControl.HeaderStartExtraContentTemplateProperty.AddOwner<BaseTabControl>();
     
-    public static readonly StyledProperty<object?> HeaderEndExtraContentProperty = 
-        AvaloniaProperty.Register<BaseTabControl, object?>(nameof (HeaderEndExtraContent));
+    public new static readonly StyledProperty<object?> HeaderEndExtraContentProperty =
+        AbstractTabControl.HeaderEndExtraContentProperty.AddOwner<BaseTabControl>();
     
-    public static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
-        AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
+        AbstractTabControl.HeaderEndExtraContentTemplateProperty.AddOwner<BaseTabControl>();
     
     public static readonly StyledProperty<bool> IsTabClosableProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabClosable));
@@ -141,7 +143,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     
     #endregion
 
-    public Dock TabStripPlacement
+    public new Dock TabStripPlacement
     {
         get => GetValue(TabStripPlacementProperty);
         set => SetValue(TabStripPlacementProperty, value);
@@ -171,7 +173,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         set => SetValue(VerticalContentAlignmentProperty, value);
     }
     
-    public IDataTemplate? ContentTemplate
+    public new IDataTemplate? ContentTemplate
     {
         get => GetValue(ContentTemplateProperty);
         set => SetValue(ContentTemplateProperty, value);
@@ -187,16 +189,16 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         set => SetValue(OverflowPopupTemplateProperty, value);
     }
     
-    public object? SelectedContent
+    public new object? SelectedContent
     {
-        get => _selectedContent;
-        internal set => SetAndRaise(SelectedContentProperty, ref _selectedContent, value);
+        get => base.SelectedContent;
+        internal set => base.SelectedContent = value;
     }
     
-    public IDataTemplate? SelectedContentTemplate
+    public new IDataTemplate? SelectedContentTemplate
     {
-        get => _selectedContentTemplate;
-        internal set => SetAndRaise(SelectedContentTemplateProperty, ref _selectedContentTemplate, value);
+        get => base.SelectedContentTemplate;
+        internal set => base.SelectedContentTemplate = value;
     }
     
     public SizeType SizeType
@@ -223,7 +225,7 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         set => SetValue(TabActivationTriggerProperty, value);
     }
 
-    public bool IsMotionEnabled
+    public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
@@ -254,26 +256,26 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     }
     
     [DependsOn(nameof(HeaderStartExtraContentTemplate))]
-    public object? HeaderStartExtraContent
+    public new object? HeaderStartExtraContent
     {
         get => GetValue(HeaderStartExtraContentProperty);
         set => SetValue(HeaderStartExtraContentProperty, value);
     }
     
-    public IDataTemplate? HeaderStartExtraContentTemplate
+    public new IDataTemplate? HeaderStartExtraContentTemplate
     {
         get => GetValue(HeaderStartExtraContentTemplateProperty);
         set => SetValue(HeaderStartExtraContentTemplateProperty, value);
     }
     
     [DependsOn(nameof(HeaderEndExtraContentTemplate))]
-    public object? HeaderEndExtraContent
+    public new object? HeaderEndExtraContent
     {
         get => GetValue(HeaderEndExtraContentProperty);
         set => SetValue(HeaderEndExtraContentProperty, value);
     }
     
-    public IDataTemplate? HeaderEndExtraContentTemplate
+    public new IDataTemplate? HeaderEndExtraContentTemplate
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
         set => SetValue(HeaderEndExtraContentTemplateProperty, value);
@@ -294,23 +296,31 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
     #region 内部属性实现
     
-    internal static readonly StyledProperty<IBrush?> SeparatorBorderBrushProperty =
-        AvaloniaProperty.Register<BaseTabControl, IBrush?>(nameof(SeparatorBorderBrush));
+    internal static readonly StyledProperty<bool> UseSeparatorTokenResourcesProperty =
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(UseSeparatorTokenResources));
 
-    internal static readonly StyledProperty<Thickness> SeparatorBorderThicknessProperty =
-        AvaloniaProperty.Register<BaseTabControl, Thickness>(nameof(SeparatorBorderThickness));
+    internal static readonly StyledProperty<bool> UseCardRadiusTokenResourcesProperty =
+        AvaloniaProperty.Register<BaseTabControl, bool>(nameof(UseCardRadiusTokenResources));
 
-    internal IBrush? SeparatorBorderBrush
+    internal bool UseSeparatorTokenResources
     {
-        get => GetValue(SeparatorBorderBrushProperty);
-        set => SetValue(SeparatorBorderBrushProperty, value);
+        get => GetValue(UseSeparatorTokenResourcesProperty);
+        set => SetValue(UseSeparatorTokenResourcesProperty, value);
     }
 
-    internal Thickness SeparatorBorderThickness
+    internal bool UseCardRadiusTokenResources
     {
-        get => GetValue(SeparatorBorderThicknessProperty);
-        set => SetValue(SeparatorBorderThicknessProperty, value);
+        get => GetValue(UseCardRadiusTokenResourcesProperty);
+        set => SetValue(UseCardRadiusTokenResourcesProperty, value);
     }
+
+    internal IBrush? SeparatorBorderBrush { get; private set; }
+    internal Thickness SeparatorBorderThickness { get; private set; }
+
+    private const int SeparatorResourceCount = 2;
+    private OwnerTokenSet? _chromeTokens;
+    private protected CornerRadius CardRadius { get; private set; }
+    private protected virtual object[]? CardRadiusKeys => null;
 
     internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
         AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
@@ -349,12 +359,9 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
 
     internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
-    internal ContentPresenter? ContentPart { get; private set; }
+    internal new ContentPresenter? ContentPart => base.ContentPart;
     #endregion
     
-    private object? _selectedContent;
-    private IDataTemplate? _selectedContentTemplate;
-    private CompositeDisposable? _selectedItemSubscriptions;
     private Panel? _alignWrapper;
     private Point _tabStripBorderStartPoint;
     private Point _tabStripBorderEndPoint;
@@ -395,9 +402,8 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         SelectionModeProperty.OverrideDefaultValue<BaseTabControl>(SelectionMode.AlwaysSelected);
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<BaseTabControl>(false);
         ItemsPanelProperty.OverrideDefaultValue<BaseTabControl>(DefaultPanel);
-        AffectsRender<BaseTabControl>(SeparatorBorderBrushProperty, SeparatorBorderThicknessProperty, UseLayoutRoundingProperty);
+        AffectsRender<BaseTabControl>(UseLayoutRoundingProperty);
         AffectsMeasure<BaseTabControl>(TabStripMarginProperty, TabAndContentGutterProperty, TabStripPlacementProperty);
-        SelectedItemProperty.Changed.AddClassHandler<BaseTabControl>((x, e) => x.UpdateSelectedContent());
     }
 
     public BaseTabControl()
@@ -516,11 +522,14 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        UpdateChromeTokenSubscription();
         _tabReorderScrollViewer?.AttachOverflowOwner(this);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _chromeTokens?.Dispose();
+        _chromeTokens = null;
         _tabReorderScrollViewer?.DetachOverflowOwner(this);
         ClearPendingTabActivation();
         CancelTabReorder();
@@ -781,13 +790,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
-
-        var selectedIndex = SelectedIndex;
-
-        if (selectedIndex == oldIndex || selectedIndex == newIndex)
-        {
-            UpdateSelectedContent();
-        }
     }
     
     protected override void ClearContainerForItemOverride(Control element)
@@ -814,53 +816,20 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         BindingOperations.GetBindingExpressionBase(tabItem, TabItem.ContentTemplateProperty)?.Dispose();
     }
     
-    private void UpdateSelectedContent(Control? container = null)
-    {
-        _selectedItemSubscriptions?.Dispose();
-        _selectedItemSubscriptions = null;
-
-        if (SelectedIndex == -1)
-        {
-            SelectedContent = SelectedContentTemplate = null;
-        }
-        else
-        {
-            container ??= ContainerFromIndex(SelectedIndex);
-            if (container != null)
-            {
-                if (SelectedContentTemplate != SelectContentTemplate(container.GetValue(ContentTemplateProperty)))
-                {
-                    // If the value of SelectedContentTemplate is about to change, clear it first. This ensures
-                    // that the template is not reused as soon as SelectedContent changes in the statement below
-                    // this block, and also that controls generated from it are unloaded before SelectedContent
-                    // (which is typically their DataContext) changes.
-                    SelectedContentTemplate = null;
-                }
-
-                _selectedItemSubscriptions = new CompositeDisposable(
-                    container.GetObservable(ContentControl.ContentProperty).Subscribe(v => SelectedContent = v),
-                    container.GetObservable(ContentControl.ContentTemplateProperty).Subscribe(v => SelectedContentTemplate = SelectContentTemplate(v)));
-
-                // Note how we fall back to our own ContentTemplate if the container doesn't specify one
-                IDataTemplate? SelectContentTemplate(IDataTemplate? containerTemplate) => containerTemplate ?? ContentTemplate;
-            }
-        }
-    }
-    
-    protected virtual bool RegisterContentPresenter(ContentPresenter presenter)
-    {
-        if (presenter.Name == "PART_SelectedContentHost")
-        {
-            ContentPart = presenter;
-            return true;
-        }
-
-        return false;
-    }
+    protected override bool RegisterContentPresenter(ContentPresenter presenter) => base.RegisterContentPresenter(presenter);
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if ((change.Property == UseSeparatorTokenResourcesProperty || change.Property == UseCardRadiusTokenResourcesProperty) &&
+            this.IsAttachedToVisualTree())
+        {
+            UpdateChromeTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _chromeTokens is not null)
+        {
+            RefreshChromeStyle();
+        }
         if (change.Property == SelectedIndexProperty)
         {
             _overflowSelectionChanged?.Invoke(this, EventArgs.Empty);
@@ -868,16 +837,6 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         if (change.Property == TabStripPlacementProperty)
         {
             UpdateTabStripPlacement();
-        }
-        else if (change.Property == ContentTemplateProperty)
-        {
-            var newTemplate = change.GetNewValue<IDataTemplate?>();
-            if (SelectedContentTemplate != newTemplate &&
-                ContainerFromIndex(SelectedIndex) is { } container && 
-                container.GetValue(ContentControl.ContentTemplateProperty) == null)
-            {
-                SelectedContentTemplate = newTemplate; // See also UpdateSelectedContent
-            }
         }
         else if (change.Property == KeyboardNavigation.TabOnceActiveElementProperty &&
                  ItemsPresenterPart?.Panel is { } panel)
@@ -918,6 +877,59 @@ public class BaseTabControl : SelectingItemsControl, IMotionAwareControl, ITabOv
         PseudoClasses.Set(TabPseudoClass.Right, TabStripPlacement == Dock.Right);
         PseudoClasses.Set(TabPseudoClass.Bottom, TabStripPlacement == Dock.Bottom);
         PseudoClasses.Set(TabPseudoClass.Left, TabStripPlacement == Dock.Left);
+    }
+
+    private void UpdateChromeTokenSubscription()
+    {
+        _chromeTokens?.Dispose();
+        _chromeTokens = null;
+        var radiusKeys = UseCardRadiusTokenResources ? CardRadiusKeys : null;
+        if (UseSeparatorTokenResources || radiusKeys is not null)
+        {
+            _chromeTokens = new OwnerTokenSet(this, SeparatorResourceCount + (radiusKeys?.Length ?? 0), RefreshChromeStyle);
+            if (UseSeparatorTokenResources)
+            {
+                _chromeTokens.SetKind(0, SharedTokenKind.ColorBorderSecondary);
+                _chromeTokens.SetKind(1, SharedTokenKind.BorderThickness);
+            }
+            if (radiusKeys is not null)
+            {
+                for (var index = 0; index < radiusKeys.Length; ++index)
+                {
+                    _chromeTokens.SetResourceKey(SeparatorResourceCount + index, radiusKeys[index]);
+                }
+            }
+        }
+        RefreshChromeStyle();
+    }
+
+    private void RefreshChromeStyle()
+    {
+        var rawBrush = _chromeTokens?.GetValue(0);
+        var rawThickness = _chromeTokens?.GetValue(1);
+        var brush = ReferenceEquals(rawBrush, BindingOperations.DoNothing) ? SeparatorBorderBrush : rawBrush as IBrush;
+        var thickness = ReferenceEquals(rawThickness, BindingOperations.DoNothing)
+            ? SeparatorBorderThickness
+            : rawThickness is Thickness value ? value : default;
+        if (!Equals(SeparatorBorderBrush, brush) || SeparatorBorderThickness != thickness)
+        {
+            SeparatorBorderBrush = brush;
+            SeparatorBorderThickness = thickness;
+            InvalidateVisual();
+        }
+
+        var radius = UseCardRadiusTokenResources && CardRadiusKeys is not null
+            ? TabCardRadiusResources.Read(_chromeTokens, SeparatorResourceCount, SizeType, CardRadius)
+            : default;
+        if (CardRadius != radius)
+        {
+            CardRadius = radius;
+            OnCardRadiusChanged();
+        }
+    }
+
+    private protected virtual void OnCardRadiusChanged()
+    {
     }
 
     private void HandlePlacementChanged()

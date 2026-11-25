@@ -81,11 +81,13 @@ Public API / ItemsSource / Command / Event
 
 稳定 template part 接入点：
 
-- `PART_ContentFrame`：承载根视觉、边框、背景或尺寸基线。
+- `PART_ContentFrame`：绘制输入框的背景和焦点阴影，并提供内容尺寸基线。
 - `PART_DecoratedBox`：稳定模板协作入口，重命名前必须同步主题和实现。
 - `PART_DecreaseButton`：承载用户触发入口、导航或关闭动作。
 - `PART_IncreaseButton`：承载用户触发入口、导航或关闭动作。
 - `PART_SpinnerHandle`：稳定模板协作入口，重命名前必须同步主题和实现。
+
+手柄层沿输入框外缘裁剪浮动动画。输入框圆角描边与手柄靠内容一侧的竖向分隔线都绘制在按钮底色之上，且不参与命中测试。圆角描边沿用内容框的厚度与圆角，竖向分隔线沿用手柄的边框颜色与厚度，并随手柄位置切换边缘。
 
 ## 6. 交互与事件处理
 

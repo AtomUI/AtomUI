@@ -3,6 +3,55 @@
 本文档记录 ListView 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`ListViewToken` 新增 `ItemSelectedIndicatorColor`（选中项勾选图标颜色，默认 `ColorPrimary`），经 `ListView` 传给条目，
+  不再直接读宿主的 `ColorPrimary`。Ant Design、Shadcn 外观不变。PrimeNG 取选中文字色（`highlight.color`）：默认 noir 主色下
+  选中背景是实心主色，与主色勾选图标同色，勾选此前完全看不见。
+
+## 2026-11-20
+
+- Performance
+  - 去掉 `GroupHeaderItem` 的 13 个可继承主题输入。ListView（及 TransferListView 覆盖）在根部把 Own Token 赋给列表的普通属性，
+    列表在准备容器时把项目值直接绑定到容器，项目主题用编译绑定读取自身属性。渲染不变，单个列表分配约少 4%–7%。
+
+## 2026-11-14
+
+- Design
+  - 确立独立 ListView 的键盘焦点模型（overview §8.5），与 ListBox 共用焦点模型和提交策略：条目是焦点目标，列表是一个 Tab
+    停靠点；单选时选择跟随焦点，多选时方向键只移动焦点、Space / Enter 切换、`Shift` 范围选择。
+- Fixed
+  - 默认主题下 ListView 无法获得键盘焦点：`ListViewItemTheme` 设置了 `Focusable=False`。条目恢复可聚焦，组标题和 Select
+    候选列表条目改为显式 `Focusable=False`；ListView 设为 `TabNavigation=Once`。
+  - 多选（含 Transfer 的 `Multiple | Toggle`）时方向键会逐项切换选择；改为只移动焦点。
+  - 没有选择时组标题被设为 Tab-once 目标，Tab 无法进入分组列表。
+- Theme
+  - `ListViewItemTheme` 的 `Frame` 成为模板焦点目标并内侧绘制焦点描边。
+- Docs
+  - `overview.md` 新增 §8.5 键盘焦点模型并更新 §4、§5；`implementation.md` 重写 keyboard navigation 流程。
+
+## 2026-11-10
+
+- API
+  - 新增共享抽象 `AtomUI.Controls.Commons.AbstractListItem : ContentControl`，承载 List.Item.Meta 与 extra 语义：`Prefix`、`Title`、`Description`、`Extra`（均为 `StyledProperty<object?>`，默认 `null`）。
+  - 四个区域的值非 `null` 时分别置位伪类 `:has-prefix`、`:has-title`、`:has-description`、`:has-extra`（常量 `HasPrefixPseudoClass` 等），各项独立；值为 `ILogical` 时加入逻辑子元素，替换或清除时移出。
+- Desktop 影响
+  - 共享层新增，Desktop `ListView`、`ListViewItem` 暂不采用，没有 Desktop 影响。
+- Tests
+  - 新增 `AbstractListItemTests`（`AtomUI.Controls.Tests`）：默认值为 `null`、伪类常量、伪类随值独立变化、控件值成为逻辑子元素、非控件值不进入逻辑树。
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：`ListViewTheme` / `ListViewItemTheme` / `GroupHeaderItemTheme` 以 `OwnerTokenResource` 读取全局 Token（TransferListView
+    与 Select 候选列表复用这些主题，各自跟随自己的 owner）；`ListViewItem` 标为 Token owner 透明条目容器，`Controls[ListView]` 作用于条目及其
+    过渡时长。
+  - `ItemDisabledColor` 接通 disabled 条目文字色（默认 `ColorTextDisabled`，渲染不变）。
+  - 条目分割线改为 internal `SplitLineWidth`（读取 `LineWidth`）只画底边，取代 `BorderThickness="0,0,0,1"` 字面量；应用或 Semantic Part 样式
+    设置的 `BorderThickness` 仍整体替换分割线。
+
 ## 2026-10-20
 
 - Fixed

@@ -12,6 +12,7 @@
 - [Mobile 文档规范](contributing/mobile-documentation-guidelines.md)
 - [文档结构与命名规范](contributing/documentation-structure-guidelines.md)
 - [参考项目源码查找规范](contributing/reference-project-source-guidelines.md)
+- [分支与 Worktree 管理规范](contributing/branch-and-worktree-guidelines.md)
 - [Changelog 规范](contributing/changelog-guidelines.md)
 
 ## Development
@@ -22,6 +23,8 @@
 - [代码风格规范](development/code-style-guidelines.md)
 - [Control 研发规范](development/control-development-guidelines.md)
 - [Control Token 规范](development/control-token-guidelines.md)
+- [设计语言取值包命名实施标准](development/value-package-naming.md)
+- [主题生效测试规范](development/theme-effect-tests.md)：承诺面中每个 Token 的扰动对比测试、骨架生成与家族门禁。
 - [Scoped Resource Host](development/scoped-resource-host.md)
 - [Popup Anchor 作用域](development/popup-anchor-scope.md)
 

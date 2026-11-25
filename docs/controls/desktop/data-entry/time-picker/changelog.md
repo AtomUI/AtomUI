@@ -2,6 +2,83 @@
 
 本文档记录 TimePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractTimeViewToken.PopupArrowVisible`（默认 `true`）：TimePicker、RangeTimePicker 弹层是否绘制箭头；PrimeNG 设为 `false`。
+- Performance
+  - 去掉 `TimeView` 的 8 个可继承主题输入。TimeView 经共享的部件 Token 绑定 从自身 Token owner（四个时间/日期
+    picker 终端）读取 Own Token 到普通属性，再经 `TemplateBinding` 与 `DateTimePickerPanel` 的直接绑定传给各行；终端主题不再
+    设置这些输入，值也不再沿 picker 与弹层的整棵树继承。渲染不变。
+
+- Fixed
+  - Shadcn 的 TimePicker 和 RangeTimePicker 在相邻高亮之间留出空白，行距和点击范围保持原有尺寸。
+  - 时间弹层的 Now 采用当前主题主色，保留链接按钮的悬停、按压和禁用反馈。
+
+## 2026-11-14
+
+- Performance
+  - Input width measurement reuses earlier text shaping for identical text and font (`TextUtils.CalculateTextSizeCached`). The key includes the resolved typeface, the font collection generation and the current cultures, so results equal a fresh measurement. Each picker used to shape about a dozen strings several times during creation.
+
+## 2026-11-11
+
+- Changed
+  - 外框是按 `TabIndex` 排序的局部分组，`LeftAddOn` / `RightAddOn` 中的可聚焦内容因此按视觉位置排在输入与清除按钮的前后（共享 `AddOnDecoratedBoxTheme` 规则），不再排在清除按钮之后。内附加（`ContentLeftAddOn` / `ContentRightAddOn`）尚未分配顺序，仍在清除按钮与右附加之后。
+  - 键盘停靠点对齐 Ant Design（输入框，然后清除按钮）；Enter / Escape / 失焦处理迁入共享 `InfoPickerInput`，关闭状态按 Enter 打开弹层。
+  - Escape 在 `IsNeedConfirm=false` 时也丢弃候选，不再提交。
+  - RangeTimePicker 端点交接按本次打开确认：完整范围从开始端确认后转到结束端，两端都确认后关闭。
+  - 新增导航键转发：Up/Down、PageUp/PageDown、Home/End 步进当前列，Left/Right 切换列，当前列选中项显示 `:keyboard-active`。
+- Fixed
+  - `IsPopupPinnedOpen` 时 Escape 回退候选与输入文本（此前不回退，候选在之后关闭时仍可能被提交）；弹层面板内的 Escape 与输入框一致，`IsNeedConfirm=false` 时不再提交候选。
+- Theme
+  - RangeTimePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - `RangeTimePickerTheme` 设置 `ClipToBounds=False`（TimePicker 继承 `InfoPickerInputTheme` 的同一设置），`Outlined` focus 外发光不再被宿主裁剪。
+- Fixed
+  - TimePicker / RangeTimePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`）。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-09
+
+- Theme
+  - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览时间（`:choosing`）时，预览写入的输入框文字为
+    `ColorTextPlaceholder`。禁用文字仍为 `ColorTextDisabled`。
+  - Picker 不再裁剪输入框的焦点阴影：焦点环完整显示，RangeTimePicker 也一样（此前完全不可见）。
+  - RangeTimePicker 的时间单元使用自身 `ItemMargin` 等 Own Token，共享公式不传播 TimePicker 的显式覆盖。
+
+## 2026-11-08
+
+- Token
+  - Breaking：删除从未消费的 `TimePicker.RangePickerArrowMargin`、`RangePickerIndicatorThickness`，配置实际 RangeDatePicker / RangeTimePicker 的同名 Own Token。
+  - `ButtonsMargin`、`PeriodHostWidth` 接通消费；新增 `ItemMargin` 替换时间单元 `4,0` 字面量。
+- Theme
+  - TimeViewCell 标为 Token owner 透明，TimeView 把所属 Picker 的 owner 转发给各列；单元颜色改读所属 Picker 的全局 Token（不再借读
+    ListView Own Token，默认值不变），禁用单元的 `ColorTextDisabled` 选择器改正为模板中的 `ContentPresenter`。
+  - TimeView 分隔线宽度读所属 Picker 的 `LineWidth`。
+
+## 2026-11-04
+
+- Fixed
+  - 共享 InfoPickerInput 右侧内容、内容模板、图标及 Form 反馈显式绑定输入 owner，恢复 template-only 附加内容和动态更新。
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - 从 InfoPickerInput 继承 OpenMotion/CloseMotion；RangeTimePicker 经 RangeInfoPickerInput 继承，范围类型不重复定义。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-07
 
 - API / Behavior

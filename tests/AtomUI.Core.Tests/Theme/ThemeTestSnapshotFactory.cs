@@ -1,55 +1,62 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Generated.AtomUICore;
-using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
-using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
+using AtomUI.Theme.Schema;
 using Shouldly;
 
 namespace AtomUI.Core.Tests.Theme;
 
 internal static class ThemeTestSnapshotFactory
 {
+    /// <summary>
+    /// Compiles <paramref name="config"/> over the Ant Design language default with the given controls; the test
+    /// controls of this project bring their own rules (<see cref="TestControlTokenRules"/>).
+    /// </summary>
     internal static ThemeSnapshot Compile(
         ThemeConfig? config = null,
         params ControlTokenDescriptor[] controls)
     {
-        var registry = new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(),
-            controls,
-            GeneratedThemeSchema.GetAlgorithms());
-        registry.TryGetAlgorithm(ThemeAlgorithm.Default, out var defaultAlgorithm).ShouldBeTrue();
-        var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new PreparedThemeDefinition(
-            "TestTheme",
-            "Test Theme",
-            ThemeAppearance.Light,
-            ThemeAppearance.Light,
-            true,
-            [defaultAlgorithm!],
-            Array.Empty<BoundTokenValue>(),
-            Array.Empty<ControlThemeDefinition>(),
-            location);
-        var normalized = ThemeConfigNormalizer.Normalize(
-            config ?? new ThemeConfigBuilder().Build(),
-            registry);
+        var registry = CreateRegistry(controls);
+        var definition = CreateLanguageDefinition(registry.Languages[0]);
+        var normalized = ThemeConfigNormalizer.Normalize(config ?? new ThemeConfigBuilder().Build(), registry);
         normalized.Success.ShouldBeTrue();
         var defaults = ThemeCompiler.CreateDefinitionDefaults(definition, registry);
-        var effective = ThemeConfigMerger.Merge(
-            defaults,
-            null,
-            normalized.Config!).EffectiveConfig;
+        var effective = ThemeConfigMerger.Merge(defaults, null, normalized.Config!).EffectiveConfig;
         var result = new ThemeCompiler().Compile(new ThemeCompileInput(
             definition,
             new ThemeDefinitionRevision("test", "1", effective.Fingerprint.ToString()),
             effective,
             registry));
 
+        result.Exception.ShouldBeNull();
         result.Success.ShouldBeTrue();
         return result.Snapshot!;
     }
+
+    /// <summary>A registry with the generated global tokens, Ant Design, the controls and the test rules.</summary>
+    internal static ThemeSchemaRegistry CreateRegistry(
+        IReadOnlyList<ControlTokenDescriptor> controls,
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null,
+        DesignLanguageDescriptor? language = null) =>
+        new(GeneratedThemeSchema.GetGlobalTokens(), controls, [language ?? TestDesignLanguages.AntDesign], null,
+            rules ?? TestControlTokenRules.All);
+
+    /// <summary>
+    /// The implicit default entry of a language: no values, no fixed axes. One instance per language and id, as the
+    /// catalog keeps one, so that compilations can reuse a previous snapshot's layers.
+    /// </summary>
+    internal static PreparedThemeDefinition CreateLanguageDefinition(DesignLanguageDescriptor language, string id = "TestTheme") =>
+        s_definitions.GetValue(language, static _ => new System.Collections.Concurrent.ConcurrentDictionary<string, PreparedThemeDefinition>())
+                     .GetOrAdd(id, static (key, value) => new PreparedThemeDefinition(key, "Test Theme", value, null, null,
+                         null, new HashSet<string>(StringComparer.Ordinal), ThemeSectionDefinition.Empty,
+                         Array.Empty<ThemeConditionDefinition>(), new ThemeSourceLocation("test", 1, 1, "/Theme")), language);
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DesignLanguageDescriptor,
+        System.Collections.Concurrent.ConcurrentDictionary<string, PreparedThemeDefinition>> s_definitions = new();
 
     internal static T Global<T>(this ThemeSnapshot snapshot, string name)
     {
@@ -78,6 +85,18 @@ internal static class ThemeTestSnapshotFactory
     }
 }
 
+/// <summary>The Ant Design rules of the hand-written test controls of this project.</summary>
+internal static class TestControlTokenRules
+{
+    internal static IReadOnlyList<ControlTokenRuleDescriptor> All { get; } =
+    [
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CompilerButtonToken, CompilerButtonTokenRule>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, BrushControlToken, BrushControlTokenRule>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, OwnerTokenResourceTests.ThrowingLineEditToken,
+            OwnerTokenResourceTests.ThrowingLineEditTokenRule>()
+    ];
+}
+
 internal static class ThemeCompilerTests
 {
     internal static ControlTokenDescriptor CreateCompilerButtonDescriptor()
@@ -95,11 +114,9 @@ internal static class ThemeCompilerTests
             static token => ((CompilerButtonToken)token).Height);
         return new ControlTokenDescriptor(
             ThemeTestControlTypes.For("AtomUI", CompilerButtonToken.ID),
-            new ControlTokenIdentity("AtomUI", CompilerButtonToken.ID),
+            CompilerButtonToken.ControlIdentity,
             [height],
-            static () => new CompilerButtonToken(),
-            static (token, appearance) =>
-                ((CompilerButtonToken)token).CalculateTokenValues(appearance == ThemeAppearance.Dark));
+            static () => new CompilerButtonToken());
     }
 }
 
@@ -108,14 +125,30 @@ internal enum CompilerButtonTokenKind
     Height
 }
 
-internal sealed class CompilerButtonToken : AbstractControlDesignToken
+/// <summary>A control token written by hand the way the generator writes one, with the freeze check.</summary>
+internal sealed class CompilerButtonToken : AbstractControlDesignToken, IControlToken
 {
     internal const string ID = "Button";
 
-    public double Height { get; set; }
+    public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", ID);
 
-    public override void CalculateTokenValues(bool isDarkMode)
+    public double Height
     {
-        Height = EffectiveGlobalToken.ControlHeight;
+        get => field;
+        set
+        {
+            if (IsFrozen(nameof(Height)))
+            {
+                return;
+            }
+            field = value;
+        }
     }
+}
+
+/// <summary>The test button's height follows the global control height.</summary>
+internal sealed class CompilerButtonTokenRule : IControlTokenRule<AntDesignToken, CompilerButtonToken>
+{
+    public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<CompilerButtonToken> target) =>
+        target.Own.Height = target.Global.ControlHeight;
 }

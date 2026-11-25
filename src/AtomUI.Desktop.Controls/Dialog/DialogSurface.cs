@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Primitives;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -27,7 +28,7 @@ internal sealed class DialogSurfaceCloseRequestedEventArgs : EventArgs
     }
 }
 
-internal sealed class DialogSurface : ContentControl, IDisposable
+internal sealed partial class DialogSurface : ContentControl, IDisposable
 {
     internal static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<DialogSurface, string?>(nameof(Title));
@@ -49,9 +50,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         Dialog.IsMotionEnabledProperty.AddOwner<DialogSurface>();
-
-    internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
-        AvaloniaProperty.Register<DialogSurface, TimeSpan>(nameof(MotionDuration));
 
     internal static readonly StyledProperty<bool> IsLoadingProperty =
         Dialog.IsLoadingProperty.AddOwner<DialogSurface>();
@@ -127,12 +125,6 @@ internal sealed class DialogSurface : ContentControl, IDisposable
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    internal TimeSpan MotionDuration
-    {
-        get => GetValue(MotionDurationProperty);
-        set => SetValue(MotionDurationProperty, value);
     }
 
     internal bool IsLoading
@@ -231,9 +223,39 @@ internal sealed class DialogSurface : ContentControl, IDisposable
         AffectsMeasure<DialogSurface>(ContentViewportMinWidthProperty, ContentViewportMinHeightProperty);
     }
 
+    // The dialog terminals (Dialog, MessageBox) declare these AbstractDialogToken fields; the surface maps them itself
+    // because a dialog opened through a placement target is never styled in a tree and cannot pass them down.
+    private static PartTokenMapping[]? s_ownerInputs;
+
+    // Built on first use: the input properties live in another partial file, so a static initializer cannot see them as assigned.
+    private static PartTokenMapping[] OwnerInputs => s_ownerInputs ??=
+    [
+        new(HeaderBackgroundProperty, "HeaderBg"),
+        new(HeaderBottomMarginProperty, "HeaderMarginBottom"),
+        new(LogoSizeProperty, "LogoSize"),
+        new(HeaderFontSizeProperty, "HeaderFontSize"),
+        new(HeaderForegroundProperty, "HeaderColor"),
+        new(ContentBackgroundProperty, "ContentBg"),
+        new(HeaderPaddingProperty, "HeaderPadding"),
+        new(ContentPaddingProperty, "ContentPadding"),
+        new(WindowContentPaddingProperty, "WindowContentPadding"),
+        new(FooterBackgroundProperty, "FooterBg"),
+        new(FooterPaddingProperty, "FooterPadding"),
+        new(FooterTopMarginProperty, "FooterMarginTop"),
+        new(CloseButtonSizeProperty, "CloseBtnSize"),
+        new(DefaultViewportMinHeightProperty, "MinHeight"),
+        new(DefaultViewportMinWidthProperty, "MinWidth"),
+        new(ButtonGroupSpacingProperty, "ButtonGroupSpacing"),
+        new(LoadingIndicatorMarginProperty, "LoadingIndicatorMargin")
+    ];
+
     internal DialogSurface(Dialog dialog)
     {
         _dialog = dialog;
+        // Presenters create this surface across visual roots at runtime; AXAML cannot reference that Dialog instance.
+        // The existing lifetime owner releases this forwarding together with the other presenter bindings.
+        _bindings.Add(TokenOwnerForwarding.Forward(dialog, this));
+        _bindings.Add(PartTokenBinder.Bind(this, dialog, null, OwnerInputs));
         Focusable = true;
         _bindings.Add(Bind(
             ContentProperty,
@@ -480,14 +502,19 @@ internal sealed class DialogSurface : ContentControl, IDisposable
             }
         }
 
+        // Each terminal decides what its MinWidth / MinHeight Tokens size (Dialog.UsesWholeFrameMinimum): the Dialog
+        // Tokens are the content viewport baseline (frame = Token + padding + border, 248 by default); MessageBox sizes the
+        // whole frame (frame = max(Token, padding + border), 410 by default, like antd's confirm `width` 416).
         var contentPadding = _contentFrame?.Padding ?? default;
         var contentBorder = _contentFrame?.BorderThickness ?? default;
-        var contentWidth = NormalizeViewportMinimum(ContentViewportMinWidth) +
-                           contentPadding.Left + contentPadding.Right +
-                           contentBorder.Left + contentBorder.Right;
-        var contentHeight = NormalizeViewportMinimum(ContentViewportMinHeight) +
-                            contentPadding.Top + contentPadding.Bottom +
-                            contentBorder.Top + contentBorder.Bottom;
+        var horizontalChrome = contentPadding.Left + contentPadding.Right + contentBorder.Left + contentBorder.Right;
+        var verticalChrome = contentPadding.Top + contentPadding.Bottom + contentBorder.Top + contentBorder.Bottom;
+        var contentWidth = _dialog.UsesWholeFrameMinimum
+            ? Math.Max(NormalizeViewportMinimum(ContentViewportMinWidth), horizontalChrome)
+            : NormalizeViewportMinimum(ContentViewportMinWidth) + horizontalChrome;
+        var contentHeight = _dialog.UsesWholeFrameMinimum
+            ? Math.Max(NormalizeViewportMinimum(ContentViewportMinHeight), verticalChrome)
+            : NormalizeViewportMinimum(ContentViewportMinHeight) + verticalChrome;
 
         return new Size(
             Math.Max(contentWidth, Math.Max(headerSize.Width, footerSize.Width)),

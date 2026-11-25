@@ -1,6 +1,5 @@
 using System.Reflection;
 using AtomUI.Controls.Primitives;
-using AtomUI.Animations;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -60,7 +59,7 @@ public class DrawerAotBindingTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var container = layer.Children.Single();

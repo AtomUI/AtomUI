@@ -289,7 +289,7 @@ internal sealed class SemanticPartTemplateValidator
 
         var selectorClass = part.SelectorClass!;
         var targetMarkers = targetThemeSet
-                            .SelectMany(static theme => theme.Templates)
+                            .SelectMany(EffectiveTemplates)
                             .SelectMany(static template => template.Markers)
                             .Where(marker => string.Equals(marker.SelectorClass, selectorClass, StringComparison.Ordinal))
                             .ToList();
@@ -310,7 +310,7 @@ internal sealed class SemanticPartTemplateValidator
         {
             var hopClass = routeClasses[hopIndex];
             var hopMarkerTypes = targetThemeSet
-                                 .SelectMany(static theme => theme.Templates)
+                                 .SelectMany(EffectiveTemplates)
                                  .SelectMany(static template => template.Markers)
                                  .Where(marker => string.Equals(
                                      marker.SelectorClass,
@@ -355,13 +355,24 @@ internal sealed class SemanticPartTemplateValidator
         if (targetMarkers.Count == 0)
         {
             targetMarkers = targetThemeSet
-                            .SelectMany(static theme => theme.Templates)
+                            .SelectMany(EffectiveTemplates)
                             .SelectMany(static template => template.Markers)
                             .Where(marker => string.Equals(marker.SelectorClass, selectorClass, StringComparison.Ordinal))
                             .ToList();
         }
 
         return targetMarkers;
+
+        IEnumerable<ThemeAssetSemanticTemplateInfo> EffectiveTemplates(ThemeAssetSemanticThemeInfo theme)
+        {
+            // A concrete internal part may have a pure BasedOn leaf theme. Its effective template is the base template,
+            // just as for an ordinary control; an explicit replacement must never borrow markers from the base.
+            if (theme.Templates.Count > 0 || theme.OverridesBaseTemplate || resolvedTargets[theme] is not { } targetType)
+            {
+                return theme.Templates;
+            }
+            return ResolveTemplates(targetType).Select(static entry => entry.Template);
+        }
     }
 
     private HashSet<ThemeAssetSemanticThemeInfo> DedupeMostDerivedThemes(

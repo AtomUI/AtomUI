@@ -103,7 +103,16 @@ public class LunarCalendarRenderTests
         try
         {
             var cells = calendar.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>().ToList();
-            var selectedInner = GetCellInner(cells.Single(cell => cell.Model?.Value == new DateTime(2021, 4, 2)));
+            var selected = cells.Single(cell => cell.Model?.Value == new DateTime(2021, 4, 2));
+            var selectedInner = GetCellInner(selected);
+            var selection = GetCellBorder(selected, "PART_CellSelection");
+            selection.IsVisible.ShouldBeTrue();
+            selection.CornerRadius.ShouldBe(new CornerRadius(6));
+            selection.Bounds.Size.ShouldBe(selectedInner.Bounds.Size);
+            selection.TranslatePoint(default, window).ShouldBe(selectedInner.TranslatePoint(default, window));
+            selected.GetVisualDescendants().OfType<ContentControl>()
+                .Single(c => c.Name == "PART_CellContent").Margin.Bottom.ShouldBe(3);
+            GetCellBorder(selected, "PART_CellOutline").CornerRadius.ShouldBe(selection.CornerRadius);
             var nextWeekInner = GetCellInner(cells.Single(cell => cell.Model?.Value == new DateTime(2021, 4, 9)));
             var selectedTop = selectedInner.TranslatePoint(default, calendar).ShouldNotBeNull().Y;
             var nextWeekTop = nextWeekInner.TranslatePoint(default, calendar).ShouldNotBeNull().Y;
@@ -149,9 +158,11 @@ public class LunarCalendarRenderTests
             secondary.TextAlignment.ShouldBe(Avalonia.Media.TextAlignment.Right);
             var primary = BrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorPrimary));
             var lightText = BrushColor(GetThemeResource<IBrush>(SharedTokenKind.ColorTextLightSolid));
-            var selectedInner = GetCellInner(cell);
-            BrushColor(selectedInner.Background).ShouldBe(primary);
-            selectedInner.CornerRadius.TopLeft.ShouldBeGreaterThan(0);
+            var selectedSurface = GetCellBorder(cell, "PART_CellSelection");
+            BrushColor(selectedSurface.Background).ShouldBe(primary);
+            selectedSurface.CornerRadius.TopLeft.ShouldBeGreaterThan(0);
+            GetCellInner(cell).CornerRadius.ShouldBe(default);
+            selectedSurface.Margin.ShouldBe(GetCellInner(cell).BorderThickness);
             BrushColor(value.Foreground).ShouldBe(lightText);
             BrushColor(secondary.Foreground).ShouldBe(lightText);
 
@@ -167,6 +178,7 @@ public class LunarCalendarRenderTests
             window.MouseDown(center, MouseButton.Left);
             Dispatcher.UIThread.RunJobs();
             calendar.Value.ShouldBe(new DateTime(2024, 2, 10));
+            GetCellBorder(pressedCell, "PART_CellHover").CornerRadius.ShouldBe(selectedSurface.CornerRadius);
             BrushColor(GetCellInner(pressedCell).GetBaseValue(Border.BorderBrushProperty).Value)
                 .ShouldBe(BrushColor(GetCellInner(normalCell).GetBaseValue(Border.BorderBrushProperty).Value));
             window.MouseUp(center, MouseButton.Left);
@@ -175,8 +187,8 @@ public class LunarCalendarRenderTests
             var newSelected = calendar.GetVisualDescendants()
                 .OfType<AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell>()
                 .Single(item => item.Model?.Value == calendar.Value);
-            BrushColor(GetCellInner(newSelected).GetBaseValue(Border.BackgroundProperty).Value)
-                .ShouldBe(primary);
+            BrushColor(GetCellBorder(newSelected, "PART_CellSelection").Background).ShouldBe(primary);
+            BrushColor(selectedSurface.Background).ShouldBe(Colors.Transparent);
             var selectedContent = newSelected.GetVisualDescendants().OfType<LunarCalendarCellContent>().Single();
             BrushColor(selectedContent.GetVisualDescendants().OfType<AtomUI.Desktop.Controls.TextBlock>()
                     .Single(text => text.Name == "PART_SecondaryText").Foreground)
@@ -319,9 +331,12 @@ public class LunarCalendarRenderTests
         });
 
     private static Border GetCellInner(AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell cell) =>
+        GetCellBorder(cell, "PART_CellInner");
+
+    private static Border GetCellBorder(AtomUI.Desktop.Controls.Internal.DateViewer.DateViewerCell cell, string name) =>
         cell.GetVisualDescendants()
             .OfType<Border>()
-            .Single(border => border.Name == "PART_CellInner");
+            .Single(border => border.Name == name);
 
     private static T GetThemeResource<T>(object key)
     {

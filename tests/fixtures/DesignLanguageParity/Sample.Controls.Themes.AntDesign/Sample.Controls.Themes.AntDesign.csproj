@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Parity sample (spec 15): the Ant Design values of the sample control package, using only the public API. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Sample.Controls.Themes.AntDesign</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../Sample.Controls/Sample.Controls.csproj" />
+        <ProjectReference Include="../../../../src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign/AtomUI.DesignLanguages.AntDesign.csproj" />
+        <ProjectReference Include="../../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

@@ -1,6 +1,6 @@
 # Gallery 打包去除 AtomUITools Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 用仓库内 PowerShell 脚本取代私有 AtomUITools，生成与现状一致的 Gallery zip / AppImage / DMG。
 

@@ -33,11 +33,17 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 ### 2.2 把手 Token
 
 - `HandleBg`
+- `HandleCheckedBg`
 - `HandleShadow`
 - `HandleSize`
 - `HandleSizeSM`
+- `EnableHandlePressStretch`
 
-这些 Token 控制把手背景、阴影和普通/小号尺寸。按下时把手宽度由运行时 `STRETCH_FACTOR` 拉伸，不作为 Token。
+这些 Token 控制把手背景、阴影和普通/小号尺寸。`HandleCheckedBg` 是选中（`SwitchKnob.IsCheckedState`）时的把手背景，
+默认等于 `HandleBg`，包括显式设置的 `HandleBg`。PrimeNG noir 暗色可通过此 Token 为近白轨道配置深色把手。
+
+`EnableHandlePressStretch` 默认开启。按下时，把手朝轨道内侧横向伸展，可见内容同步让位。Shadcn 各套主题关闭该反馈，
+按住时把手维持原始尺寸，可见内容保持原位。此 Token 对所有尺寸档生效，选中状态变化时仍按主题动效滑动。
 
 ### 2.3 内容边距 Token
 
@@ -60,10 +66,15 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 ### 2.5 状态颜色和透明度 Token
 
 - `SwitchColor`
+- `TrackBg`
+- `TrackHoverBg`
+- `TrackCheckedHoverBg`
 - `SwitchDisabledOpacity`
 - `OffStateLoadIndicatorColor`
 
-`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。unchecked 轨道和 hover 色来自 SharedToken。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
+`SwitchColor` 用于 checked 轨道和 checked 状态 loading 指示。`TrackBg` 与 `TrackHoverBg` 分别用于关闭及关闭时悬停的轨道，`TrackCheckedHoverBg` 用于开启时悬停的轨道。`SwitchDisabledOpacity` 用于 disabled 和 loading 状态整体透明度。`OffStateLoadIndicatorColor` 用于 unchecked loading 指示。
+
+Shadcn 的关闭轨道从次级文字色派生。浅色使用较深的关闭轨道衬托白色把手，悬停时再加深。深色将次级文字色与容器底色混合，悬停时略提亮。中性深色的开启轨道使用较柔和的亮度，轨道内容使用亮色前景。
 
 ### 2.6 加载动画 Token
 
@@ -71,7 +82,11 @@ Switch `ComponentToken` 的 `trackHeight` / `trackMinWidth` / `trackPadding` / `
 
 该 Token 控制 `SwitchKnob` loading arc 的旋转周期。它不表达当前旋转角度或动画是否运行。
 
+加载中的 `SwitchKnob` 成组读取 `LineWidth` 和亮弧透明度，停止加载时释放观察。根控件用 `SwitchDisabledOpacity` 统一降低轨道、把手和开关内容的不透明度，亮弧按自身不透明度绘制。动画周期使用原有 `LoadingAnimationDuration`。
+
 ## 3. 控件专项模型中的 Token 使用
+
+开关按当前尺寸档成组读内容的两项内边距，测量时使用该档数值。
 
 ToggleSwitchToken 使用路径：
 
@@ -113,7 +128,7 @@ ToggleSwitchToken 不影响 Checkbox、Radio、Segmented、Button 或 Select。�
 
 ## 5. 兼容性要求
 
-ToggleSwitchToken 属于 ToggleSwitch 主题契约。即使 `ToggleSwitchToken` 是 internal 类型，生成的 `ToggleSwitchTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+ToggleSwitchToken 属于 ToggleSwitch 主题契约。`ToggleSwitchToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `ToggleSwitchTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

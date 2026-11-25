@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
 using Avalonia;
@@ -41,6 +43,7 @@ public static class TestAppBuilder
                          .UseAtomUI(builder =>
                          {
                              builder.UseDesktopControls();
+                             builder.UseAntDesign(static language => language.AddDesktopControls());
                              builder.UseGalleryBase();
                              builder.UseLanguages(
                                  LanguageTags.EnUS,

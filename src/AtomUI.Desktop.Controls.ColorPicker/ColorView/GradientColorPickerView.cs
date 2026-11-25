@@ -57,13 +57,17 @@ public class GradientColorPickerView : AbstractColorPickerView
         // is a projection only: the nullable draft remains empty until user input.
         var editorValue = CopyGradient(value) ?? new LinearGradientBrush
         {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
             StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
             EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
             GradientStops = new GradientStops { new(Colors.White, 0) }
         };
+#pragma warning restore ATOMUIGEN044
         SetCurrentValue(ValueProperty, editorValue);
         SetCurrentValue(ActivatedStopIndexProperty, editorValue.GradientStops.Count > 0 ? 0 : null);
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
         var activeColor = editorValue.GradientStops.Count > 0 ? editorValue.GradientStops[0].Color : Colors.White;
+#pragma warning restore ATOMUIGEN044
         SetCurrentValue(HsvValueProperty, activeColor.ToHsv());
         if (Value != null)
         {
@@ -186,9 +190,11 @@ public class GradientColorPickerView : AbstractColorPickerView
             EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
             GradientStops = new GradientStops()
             {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                 new GradientStop(Color.FromArgb(0,0, 0, 0), 0.0)
             }
         });
+#pragma warning restore ATOMUIGEN044
         HsvValue = new HsvColor(0.0, 0, 0, 0);
         InvokeColorValueClearedEvent();
         DraftValue = null;

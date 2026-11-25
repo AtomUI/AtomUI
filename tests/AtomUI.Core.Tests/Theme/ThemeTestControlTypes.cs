@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Core.Tests.Theme;
 
@@ -40,7 +41,7 @@ internal sealed class DefaultThemeTestControl : Control
 {
 }
 
-internal class ButtonThemeTestControl : Control
+internal class ButtonThemeTestControl : TemplatedControl
 {
 }
 
@@ -72,7 +73,7 @@ internal sealed class IconThemeTestControl : Control
 {
 }
 
-internal sealed class LineEditThemeTestControl : Control
+internal sealed class LineEditThemeTestControl : TemplatedControl
 {
 }
 

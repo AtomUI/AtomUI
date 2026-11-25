@@ -520,7 +520,7 @@ public class OtpLineEditBehaviorTests
     }
 
     [Fact]
-    public void Active_Cell_Uses_Lightweight_TextBox_Caret_Host()
+    public void Active_Cell_Uses_Lightweight_TextBox_And_Cell_Caret()
     {
         var otpLineEdit = new AtomUI.Desktop.Controls.OtpLineEdit();
 
@@ -536,11 +536,11 @@ public class OtpLineEditBehaviorTests
                                     .OfType<AvaloniaTextBox>()
                                     .SingleOrDefault(item => item.Name == "PART_TextBox");
 
-            textBox.ShouldNotBeNull("the active OTP cell needs a real TextBox/TextPresenter so Avalonia can render a caret.");
+            textBox.ShouldNotBeNull("the active OTP cell needs a real TextBox/TextPresenter for text layout.");
             textBox.ShouldNotBeAssignableTo<AtomUI.Desktop.Controls.TextBox>(
                 "the OTP cell already owns its frame; nesting a full AtomUI TextBox would duplicate input chrome.");
             textBox.IsReadOnly.ShouldBeTrue();
-            textBox.Focusable.ShouldBeFalse("the root OtpLineEdit owns keyboard focus; cell TextBox is only a caret host.");
+            textBox.Focusable.ShouldBeFalse("the root OtpLineEdit owns keyboard focus; cell TextBox only hosts text layout.");
             textBox.IsFocused.ShouldBeFalse();
             TopLevel.GetTopLevel(otpLineEdit)?.FocusManager?.GetFocusedElement()
                     .ShouldBe(otpLineEdit);
@@ -549,8 +549,13 @@ public class OtpLineEditBehaviorTests
                                        .OfType<TextPresenter>()
                                        .SingleOrDefault(item => item.Name == "PART_TextPresenter");
 
-            textPresenter.ShouldNotBeNull("a TextBox without a TextPresenter can hold text but cannot render a caret.");
-            textPresenter.CaretBrush.ShouldNotBeNull();
+            textPresenter.ShouldNotBeNull("a TextBox needs a TextPresenter to render its cell text.");
+            // OtpTextBox hides its native caret; the cell draws the only visible caret with the cell foreground.
+            var caret = activeCell.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Rectangle>()
+                                  .Single(item => item.Name == "PART_Caret");
+            caret.IsVisible.ShouldBeTrue();
+            caret.Fill.ShouldBe(activeCell.Foreground);
+            caret.Height.ShouldBe(activeCell.FontSize);
             activeCell.GetVisualDescendants()
                       .OfType<TextBlock>()
                       .Any(item => item.Name == "PART_Text")
@@ -904,6 +909,33 @@ public class OtpLineEditBehaviorTests
             Dispatcher.UIThread.RunJobs();
             CaretOf(cell).IsVisible.ShouldBeTrue();
         });
+    }
+
+    [Fact]
+    public void Active_Cell_Outline_Shadow_Is_Not_Clipped_By_Its_Ancestors()
+    {
+        var otp = new AtomUI.Desktop.Controls.OtpLineEdit { Length = 4 };
+        var window = new AvaloniaWindow { Width = 320, Height = 120, Content = otp };
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var cell = otp.GetVisualDescendants().OfType<OtpLineEditCell>().First();
+            // The Outlined active shadow is drawn outside the cell, around all four sides; any clipping
+            // ancestor up to the OTP host would cut it where the cell touches the host edge.
+            var clipping = cell.GetVisualAncestors().OfType<Visual>()
+                               .TakeWhile(visual => !ReferenceEquals(visual, otp.GetVisualParent()))
+                               .Prepend(cell)
+                               .Where(visual => visual.ClipToBounds)
+                               .Select(visual => $"{visual.GetType().Name}#{(visual as Control)?.Name}")
+                               .ToList();
+            clipping.ShouldBeEmpty();
+        }
+        finally
+        {
+            window.Close();
+        }
     }
 
     private static Rectangle CaretOf(OtpLineEditCell cell)

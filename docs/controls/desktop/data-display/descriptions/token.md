@@ -23,7 +23,7 @@ DescriptionsToken 不承载以下状态：
 - `ContentColor`
 - `ExtraColor`
 
-这些 Token 控制普通模式 label、标题、内容和 Extra 的文本颜色。边框模式 label cell 的 foreground 当前使用 SharedToken `ColorTextSecondary`，label 背景使用 `LabelBg`。
+这些 Token 控制普通模式 label、标题、内容和 Extra 的文本颜色。边框模式 label cell 的 foreground 使用 Descriptions 有效 Global Token `ColorTextSecondary`，label 背景使用 `LabelBg`。
 
 ### 2.2 Label 背景 Token
 
@@ -53,6 +53,8 @@ DescriptionsToken 不承载以下状态：
 
 ## 3. 控件专项模型中的 Token 使用
 
+`Controls[Descriptions].Tokens` 覆盖标题、条目、边框、字号、行高与行距的有效 Global Token。默认和带边框的 label/content 部件没有独立 Token identity，统一读取 Descriptions Token。纵向带边框模式的 label/content 分隔线以 `ColorSplit` 填充，高度为有效 `LineWidth`。
+
 DescriptionsToken 使用路径：
 
 ```text
@@ -70,7 +72,7 @@ Header + Extra + default items + bordered label/content cells
 | Token | 主要使用点 |
 | --- | --- |
 | `LabelBg` | 边框 label cell 背景、纵向边框 label 背景。 |
-| `LabelColor` | 普通模式 label 和冒号颜色。 |
+| `LabelColor` | 普通模式 label 和冒号颜色。Shadcn 暗色使用描述文字色。 |
 | `TitleColor` | HeaderPresenter foreground。 |
 | `HeaderMargin` | HeaderLayout margin。 |
 | `ItemPaddingLG` / `ItemPadding` / `ItemPaddingSM` | 边框 item padding。 |
@@ -107,7 +109,7 @@ DescriptionsToken 只直接影响 Descriptions 及其内部生成视觉：
 
 ## 5. 兼容性要求
 
-DescriptionsToken 属于 Descriptions 主题契约。即使 `DescriptionsToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+DescriptionsToken 属于 Descriptions 主题契约。`DescriptionsToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

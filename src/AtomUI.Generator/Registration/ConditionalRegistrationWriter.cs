@@ -54,7 +54,7 @@ internal static class ConditionalRegistrationWriter
         var groupNameWithNamespace = package.Namespace + "." + groupName;
         var groupIdentity = groupNameWithNamespace + ", " + package.AssemblyIdentity;
         var group = NamedType(package.AssemblyIdentity, groupNameWithNamespace);
-        var collector = NamedType(package.AssemblyIdentity, package.Namespace + ".GeneratedControlPackageRegistration");
+        var collector = NamedType(package.AssemblyIdentity, package.Namespace + "." + RegistrationNames.PackageMetadata);
         var records = new List<Record>();
         var identities = new HashSet<string>(StringComparer.Ordinal);
         var packagePayload = Fields(

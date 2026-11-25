@@ -260,7 +260,7 @@ GeneratedSemanticPartManifest.g.cs
 <Control>SemanticParts.g.cs
 <Control><PartPath>Style.g.cs
 Semantic Part XML namespace mapping output
-GeneratedControlPackageRegistration.g.cs
+GeneratedTypeMapRegistration.g.cs
 ```
 
 注册遵循已采纳的 [TypeMap 控件注册模型](control-registration.md)，源码迁移状态见

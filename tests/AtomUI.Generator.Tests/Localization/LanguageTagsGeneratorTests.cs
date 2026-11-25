@@ -52,11 +52,12 @@ public class LanguageTagsGeneratorTests
             execution.Result,
             "GeneratedStandardLanguageDefinitions.g.cs");
         definitions.ShouldContain("internal static class GeneratedStandardLanguageDefinitions");
-        definitions.ShouldContain("case \"ar-SA\":");
-        definitions.ShouldContain("global::AtomUI.Localization.LanguageTags.ArSA");
-        definitions.ShouldContain("global::System.Globalization.CultureInfo.GetCultureInfo(\"ar-SA\")");
-        definitions.ShouldContain("global::AtomUI.Localization.LanguageTextDirection.RightToLeft");
-        definitions.ShouldContain("العربية (المملكة العربية السعودية)");
+        // Rows are data in one sorted constant, not a per-language switch that JIT-compiled startup pays for.
+        definitions.ShouldContain(
+            "private const string Records = \"\\nar-SA\\t\\tar-SA\\tالعربية (المملكة العربية السعودية)\\tR" +
+            "\\nen-US\\t\\ten-US\\tEnglish (United States)\\tL\";");
+        definitions.ShouldContain("global::AtomUI.Localization.StandardLanguageDefinitions.TryCreateFromRecords(");
+        definitions.ShouldNotContain("switch");
         definitions.ShouldNotContain("CultureInfo.GetCultures");
         definitions.ShouldNotContain("Assembly.GetTypes");
         definitions.ShouldNotContain("Enum.GetNames");
@@ -224,6 +225,18 @@ public class LanguageTagsGeneratorTests
                 {
                     LeftToRight,
                     RightToLeft
+                }
+
+                internal static class StandardLanguageDefinitions
+                {
+                    internal static bool TryCreateFromRecords(
+                        string records,
+                        string tag,
+                        out LanguageDefinition? definition)
+                    {
+                        definition = null;
+                        return false;
+                    }
                 }
 
                 public sealed class LanguageDefinition

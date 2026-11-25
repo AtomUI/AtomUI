@@ -4,7 +4,10 @@
               xmlns:antdicons="https://atomui.net/icons/antdesign"
               x:Class="AtomUI.Desktop.Controls.Themes.MenuItemTheme"
               TargetType="atom:MenuItem"
+              x:DataType="atom:MenuItem"
               x:ClassModifier="internal">
+    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.MenuOpen}" />
+    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.MenuClose}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuItem">
             <Panel>
@@ -54,6 +57,7 @@
                                             Classes.semantic-sub-menu-item-icon="True"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
+                                            Margin="{TemplateBinding IconMarginInlineEnd, Converter={x:Static atom:MenuItemTheme.InlineEndMarginConverter}}"
                                             Icon="{TemplateBinding Icon}"
                                             IconBrush="{TemplateBinding Foreground}"
                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
@@ -85,6 +89,8 @@
                     </Grid>
                 </Border>
                 <atom:Popup Name="PART_Popup"
+                            OpenMotion="{TemplateBinding OpenMotion}"
+                            CloseMotion="{TemplateBinding CloseMotion}"
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="False"
                             RequestedPlacement="RightEdgeAlignedTop"
@@ -109,7 +115,7 @@
     </Setter>
 
     <Style Selector="^:is(atom|MenuItem)">
-        <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemColor}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemForeground)}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
@@ -118,9 +124,9 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
-        <Setter Property="PopupPadding" Value="{atom:MenuTokenResource MenuPopupContentPadding}" />
-        <Setter Property="ItemHeight" Value="{atom:MenuTokenResource ItemHeight}" />
-        <Setter Property="Height" Value="{atom:MenuTokenResource ItemHeight}" />
+        <Setter Property="PopupPadding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupContentPadding)}" />
+        <Setter Property="ItemHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
+        <Setter Property="Height" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHeight)}" />
 
         <Style Selector="^ /template/ atom|CheckBox#PART_ToggleCheckbox">
             <Setter Property="IsVisible" Value="False" />
@@ -154,37 +160,45 @@
         </Style>
 
         <Style Selector="^ /template/ Panel#ToggleItemsLayout">
-            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|TextBlock#InputGestureText">
-            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
-            <Setter Property="Foreground" Value="{atom:MenuTokenResource KeyGestureColor}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemMargin)}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.KeyGestureForeground)}" />
         </Style>
 
+        <Setter Property="IconMarginInlineEnd" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconEndMargin)}" />
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
-            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
-            <Setter Property="Width" Value="{atom:MenuTokenResource ItemIconSize}" />
-            <Setter Property="Height" Value="{atom:MenuTokenResource ItemIconSize}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconSize)}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#ItemTextPresenter">
-            <Setter Property="Margin" Value="{atom:MenuTokenResource ItemMargin}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemMargin)}" />
         </Style>
 
-        <Setter Property="Padding" Value="{atom:MenuTokenResource ItemPaddingInline}" />
-        <Setter Property="Background" Value="{atom:MenuTokenResource ItemBg}" />
-        <Setter Property="CornerRadius" Value="{atom:MenuTokenResource ItemBorderRadius}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemInlinePadding)}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemBackground)}" />
+        <Setter Property="CornerRadius" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemCornerRadius)}" />
 
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemHoverColor}" />
-            <Setter Property="Background" Value="{atom:MenuTokenResource ItemHoverBg}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHoverForeground)}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemHoverBackground)}" />
+        </Style>
+
+        <!-- Danger items (antd dropdown / menu item-danger). -->
+        <Style Selector="^[IsDanger=True]">
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.DangerItemForeground)}" />
+            <Style Selector="^:pointerover">
+                <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.DangerItemHoverForeground)}" />
+            </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
             <Setter Property="IsVisible" Value="True" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeXS}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeXS}" />
+            <Setter Property="Width" Value="{atom:MenuItemTokenResource IconSizeXS}" />
+            <Setter Property="Height" Value="{atom:MenuItemTokenResource IconSizeXS}" />
         </Style>
 
         <Style Selector="^:empty">
@@ -194,28 +208,30 @@
         </Style>
 
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:MenuTokenResource MenuPopupBgColor}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupBackground)}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
 
         <Style Selector="^ /template/ atom|Popup#PART_Popup">
-            <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
-            <Setter Property="OverlayHostShadow" Value="{atom:PopupTokenResource OverlayHostShadow}" />
-            <Setter Property="MinWidth" Value="{atom:MenuTokenResource MenuPopupMinWidth}" />
-            <Setter Property="MaxWidth" Value="{atom:MenuTokenResource MenuPopupMaxWidth}" />
+            <Setter Property="PopupRootShadow" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupShadows)}" />
+            <Setter Property="OverlayHostShadow" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupShadows)}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMinWidth)}" />
+            <Setter Property="MaxWidth" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.PopupMaxWidth)}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:MenuTokenResource ItemDisabledColor}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemDisabledForeground)}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

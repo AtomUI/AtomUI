@@ -40,8 +40,8 @@ ButtonSpinner 是 AtomUI 的带步进按钮输入基座，其公开语义区域�
 
 `root` 是控件自身，不声明 `.semantic-root` marker。它适合定制 ButtonSpinner 整体 `Opacity`、对齐和尺寸约束。
 
-**根边框定制：** 可见外框由共享输入帧绘制，其状态机拥有 `BorderBrush`。owner 的 `BorderBrush` 会以
-LocalValue 中继到帧节点生效（对齐上游 `styles.root.borderColor` 语义与共享 `AbstractTextInput` 行为），
+**根边框定制：** 可见外框由共享输入帧绘制，其状态机拥有 `BorderBrush`。owner 的 `BorderBrush` 经模板绑定进入
+帧的内部属性 `HostBorderBrush`，由帧主题在全部状态色之后投射（对齐上游 `styles.root.borderColor` 语义与输入家族行为），
 因此在 owner-scoped Style 里直接写根 `Setter Property="BorderBrush"` 即可定制外框颜色：
 
 ```xml
@@ -53,9 +53,8 @@ LocalValue 中继到帧节点生效（对齐上游 `styles.root.borderColor` 语
 </Style>
 ```
 
-定制期间该属性槽的 hover / focus 变色冻结（LocalValue 优先于帧状态机），focus 的 `BoxShadow` 光晕不受影响；
-置空（或不设置）后恢复帧状态机。中继带接管标记：仅当本控件实际写入过该槽位时才在置空时清除，因此
-`NumericUpDown` 这种「自身持有中继、内部 spinner 是其派生实现」的嵌套场景不会被外层清除。
+定制期间该属性槽的 hover / focus 变色冻结（投射样式排在帧状态样式之后），focus 的 `BoxShadow` 光晕不受影响；
+置空（或不设置）后恢复帧状态机。`NumericUpDown` 把自己的 `BorderBrush` 模板绑定给内部 spinner，经同一条投射到达帧。
 
 ### 1.2 `content`
 

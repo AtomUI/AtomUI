@@ -80,8 +80,11 @@ public class InputSuffixVerticalCenteringTests
 
     private static double AbsCenter(Visual visual)
     {
-        var transformed = visual.GetTransformedBounds();
-        return transformed.HasValue ? transformed.Value.Bounds.Center.Y : -1;
+        // Layout-time position in the window: this headless app does not render, so render-time transformed
+        // bounds are not window coordinates (they only agreed while every suffix part had the same height).
+        var topLevel = TopLevel.GetTopLevel(visual);
+        var center   = topLevel is null ? null : visual.TranslatePoint(new Point(0, visual.Bounds.Height / 2), topLevel);
+        return center?.Y ?? -1;
     }
 
     private static string DescribeKids(Visual owner)

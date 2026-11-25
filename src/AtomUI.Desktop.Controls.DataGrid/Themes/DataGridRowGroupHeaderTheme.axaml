@@ -2,33 +2,40 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:ClassModifier="internal"
-    xmlns:atom="https://atomui.net">
+    xmlns:atom="https://atomui.net"
+    xmlns:converters="using:AtomUI.Controls.Converters">
     <ControlTheme x:Key="{x:Type atom:DataGridRowGroupHeader}" TargetType="atom:DataGridRowGroupHeader">
+        <ControlTheme.Resources>
+            <converters:BorderThicknessFilterConverter x:Key="InlineStartMarginConverter"
+                Top="False" Right="False" Bottom="False" />
+        </ControlTheme.Resources>
+        <Setter Property="ExpanderMargin" Value="{atom:DataGridTokenResource MarginSM}" />
+        <Setter Property="PropertyMargin" Value="{atom:DataGridTokenResource MarginXXS}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DataGridFrozenGrid Name="RootLayout"
                                          RowDefinitions="*, Auto"
                                          ColumnDefinitions="Auto, Auto, Auto, Auto, *">
                     <Rectangle Name="{x:Static atom:DataGridRowGroupHeaderThemeConstants.IndentSpacerPart}"
-                               Grid.Row="0" 
+                               Grid.Row="0"
                                Grid.Column="1"/>
                     <ToggleButton Name="{x:Static atom:DataGridRowGroupHeaderThemeConstants.ExpanderButtonPart}"
-                                  Grid.Row="0" 
+                                  Grid.Row="0"
                                   Grid.Column="2"
-                                  Width="12"
-                                  Height="12"
-                                  Margin="12, 0, 0, 0"
+                                  Width="{atom:DataGridTokenResource IconSizeSM}"
+                                  Height="{atom:DataGridTokenResource IconSizeSM}"
+                                  Margin="{TemplateBinding ExpanderMargin, Converter={StaticResource InlineStartMarginConverter}}"
                                   IsTabStop="False"/>
                     <!-- PropertyInfo -->
-                    <StackPanel Grid.Row="0" 
+                    <StackPanel Grid.Row="0"
                                 Grid.Column="3"
                                 Orientation="Horizontal"
                                 VerticalAlignment="Center"
-                                Margin="12, 0, 0, 0">
+                                Margin="{TemplateBinding ExpanderMargin, Converter={StaticResource InlineStartMarginConverter}}">
                         <atom:TextBlock Name="{x:Static atom:DataGridRowGroupHeaderThemeConstants.PropertyNameElementPart}"
-                                        Margin="4, 0, 0, 0"/>
-                        <atom:TextBlock Margin="4, 0, 0, 0"/>
-                        <atom:TextBlock Margin="4, 0, 0, 0"/>
+                                        Margin="{TemplateBinding PropertyMargin, Converter={StaticResource InlineStartMarginConverter}}"/>
+                        <atom:TextBlock Margin="{TemplateBinding PropertyMargin, Converter={StaticResource InlineStartMarginConverter}}"/>
+                        <atom:TextBlock Margin="{TemplateBinding PropertyMargin, Converter={StaticResource InlineStartMarginConverter}}"/>
                     </StackPanel>
 
                     <Rectangle Name="CurrencyVisual"
@@ -39,8 +46,8 @@
                                VerticalAlignment="Stretch"
                                Fill="Transparent"
                                IsHitTestVisible="False"
-                               StrokeThickness="1" />
-                    
+                               StrokeThickness="{atom:DataGridTokenResource LineWidth}" />
+
                     <Grid Name="FocusVisual"
                           Grid.Row="0"
                           Grid.Column="0"
@@ -52,15 +59,15 @@
                                    VerticalAlignment="Stretch"
                                    Fill="Transparent"
                                    IsHitTestVisible="False"
-                                   StrokeThickness="2"/>
+                                   StrokeThickness="{atom:DataGridTokenResource LineWidthBold}"/>
                         <Rectangle Name="FocusVisualSecondary"
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Stretch"
                                    Fill="Transparent"
                                    IsHitTestVisible="False"
-                                   StrokeThickness="1"/>
+                                   StrokeThickness="{atom:DataGridTokenResource LineWidth}"/>
                     </Grid>
-                    
+
                     <atom:DataGridRowHeader
                         Name="RowHeader"
                         Grid.Row="0"
@@ -73,9 +80,9 @@
                         Grid.Row="1"
                         Grid.Column="0"
                         Grid.ColumnSpan="5"
-                        Height="1" 
+                        Height="{atom:DataGridTokenResource LineWidth}"
                         />
-                    
+
                 </atom:DataGridFrozenGrid>
             </ControlTemplate>
         </Setter>

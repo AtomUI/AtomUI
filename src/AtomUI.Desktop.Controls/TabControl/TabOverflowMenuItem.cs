@@ -41,6 +41,16 @@ internal sealed class TabOverflowMenuItem : ContentControl, IMotionAwareControl
             nameof(IsSelected),
             control => control.IsSelected);
 
+    // The close button's icon size, read from the host's effective Tokens and bound by the (registered) close button.
+    internal static readonly StyledProperty<double> CloseIconSizeProperty =
+        AvaloniaProperty.Register<TabOverflowMenuItem, double>(nameof(CloseIconSize));
+
+    internal double CloseIconSize
+    {
+        get => GetValue(CloseIconSizeProperty);
+        set => SetValue(CloseIconSizeProperty, value);
+    }
+
     private TabOverflowItem? _overflowItem;
     private object? _header;
     private IDataTemplate? _headerTemplate;

@@ -6,11 +6,16 @@
 
 ## 状态与范围
 
-产品库 Debug 为 net10.0，Release 为 net8.0 与 net10.0。普通非裁剪程序使用完整注册；裁剪程序必须由实际
+产品库 Debug 为 net10.0，Release 为 net8.0、net10.0 与 net11.0（net11.0 需 SDK 11 构建）。普通非裁剪程序使用完整注册；裁剪程序必须由实际
 ILLink/ILC 依赖图选择注册片段。禁止全包保留、源代码使用清单、独立近似调用图和 ILLink 预分析替代 ILC。
 
-实现仍处于完整平台交付验收前。net8 发布按目标框架自动选择兼容后端，未知工具组合立即失败。目前的原生 SDK 接线限定
-SDK 10.0.300、目标 runtime / ILC 8.0.27、macOS arm64 工具宿主，以及 osx-arm64 / osx-x64 完整应用目标。
+实现仍处于完整平台交付验收前。net8 发布按目标框架自动选择兼容后端，非官方或主版本不符的引擎立即失败。
+不设置 SDK 或补丁版本白名单：托管裁剪接受 SDK 选择的官方 ILLink 8.x（Tasks 与引擎须同一补丁），原生发布接受 SDK
+恢复的官方 ILC 8.x native helper；8.0.27→8.0.34 的 ILC/ILLink 源码与 JIT-EE 接口未变。工具宿主按 Major 前滚，
+只装 .NET 11 运行时也可执行。原生接线仍限定 macOS arm64 工具宿主，以及 osx-arm64 / osx-x64 完整应用目标。
+已验证：SDK 11.0.100 / 10.0.403 下 osx-arm64 的 net8 托管裁剪（ILLink 8.0.34 / 8.0.33）与 Native8（8.0.27 托管编译器配
+ILC 8.0.34 / 8.0.33 native helper）均发布并运行。生成的 `PackageMetadata` 不带静态构造器，包定义等静态
+状态位于嵌套 `PackageState`（见[条件注册契约](../../reference/aot/conditional-registration-contract.md)）。
 Windows/Linux 原生消费和这些平台上的维护者编译器构建尚无验收证据，不能据本机成功宣布支持。
 Browser 仍采用 .NET 10；不新增 net8 Browser 宿主。
 
@@ -61,8 +66,9 @@ linked 阶段固定首次验证 hash，published 阶段核对调用身份、原�
 
 ## .NET 10 消费 net8-only 包
 
-现代发布根据实际输入自动探测旧 ABI；仅在需要时桥接，不再需要显式开关。已接线路径限定 SDK 10.0.300 的
-net10.0/osx-arm64 普通 trimmed 发布与 NativeAOT，以及 net10.0-browser/browser-wasm。
+现代发布根据实际输入自动探测旧 ABI；仅在需要时桥接，不再需要显式开关。已接线路径面向 .NET 10 及以后，
+不限定 SDK 或 runtime 补丁版本：osx-arm64 普通 trimmed 发布与 NativeAOT，以及 browser-wasm。SDK 11.0.100 下 net10.0 与
+net11.0 的 osx-arm64 trimmed / NativeAOT、SDK 10.0.403 下 net10.0 的两种发布已运行验证；browser-wasm 在 SDK 11 下尚无运行证据。
 Browser 当前要求 `WasmEnableWebcil=false`；桥接后的托管 ReadyToRun/单文件发布尚未开放，不能将 net8 后端的
 变换验收结果移用于此路径。原生桥接目前只接单模块可执行程序。
 

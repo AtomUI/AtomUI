@@ -2,6 +2,46 @@
 
 本文档记录 Notification 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Changed
+  - Notification 所在的 `WindowFeedbackLayer` 仍是 T8（`int.MaxValue - 50`），位于全局层级阶梯最顶层，高于 TopLevel Drawer、Tour、Dialog 和全屏标题栏；相对顺序不变。
+  - 每个 manager 的卡片宿主自带表面宿主：卡片内控件的键盘焦点描边与 Badge 画在卡片之上，不再落到共享 `AdornerLayer` 而被卡片盖住。
+  - `WindowFeedbackLayer` 解析 `VisualLayerManager` 时跳过表面宿主，直达 TopLevel 宿主。
+- API
+  - Notification 的 public / protected API 不变。
+- Docs
+  - 层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Known limits
+  - Windows 未实测（本次 Windows 10 实机验证只覆盖全屏标题栏、Window Drawer 与 FloatButton）；macOS 与 Linux 未实测。当前 Notification 卡片表面宿主与层级证据为 Headless 测试。
+
+## 2026-11-21
+
+- Added
+  - `NotificationCardToken` 新增卡片表面 Token：`NotificationBorderThickness`、`NotificationBorderColor`，以及每个类型（`Information` / `Success` / `Warning` / `Error`）的 `Bg`、`BorderColor`、`IconColor`、`TitleColor`、`DescriptionColor`、`CloseIconColor`、`CloseIconHoverColor`。`NotificationCardTheme` 按 `NotificationType` 改绑；类型图标改读 `*IconColor`。默认值等于原有外观（卡片背景、透明边框、`ColorTextHeading` / `ColorText` / `ColorIcon` / `ColorIconHover`、`ColorPrimary` 等状态色），Ant Design 与 Shadcn 渲染不变。
+- PrimeNG（PrimeUIX 3.1.1 `toast`）
+  - Aura / Lara：类型卡片浅色着底（`{color}.50` 95%，暗色 `{color}.500` 16%），标题、图标、关闭图标取 600（暗色 500），描述取 surface 700（暗色 surface 0）。
+  - Lara / Nora：左侧 6px 色条（`border.width: 0 0 0 6px`），Lara 取 `{color}.500`（暗色 `{color}.700` 36%），无类型卡片取 `content.border.color`。色条以前沿 6px 的内阴影绘制（内容内边距相应加 6px），不用 `6,0,0,0` 的框体边框：Avalonia 的 Border 在边框粗细不一致时不绘制 BoxShadow，卡片会丢掉描边和阴影，与白色背景融为一体。
+  - 无类型卡片在三个预设中都加 1px `content.border.color` 描边（Aura 官方即有；Lara、Nora 为 AtomUI 的辨识度补充），Message 的 Loading 卡片同样处理。
+  - Nora：类型卡片实底（800，警告 600；暗色 200），文字、图标、关闭图标取 50（暗色 950）。
+  - Aura：卡片 1px 边框（无类型取 `content.border.color`，各类型取 `{color}.200`，暗色 `{color}.700` 36%），以阴影前的描边环绘制。Lara / Nora 的类型卡片只保留 `overlay.popover.shadow`。
+
+## 2026-11-17
+
+- Changed
+  - 卡片阴影按 severity 拆分为 `NotificationCardToken` 自有槽位（`RestingShadows` + `Information` / `Success` / `Warning` /
+    `Error`Shadows），`NotificationCardTheme` 改绑；`NotificationType.Default` 用 `RestingShadows` 兜底。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGNotificationCardTokens`（六个算法）：`RestingShadows` 取官方 `overlay.popover.shadow`，
+    severity 取 `0 4 8 0` 彩色 4%（官方 `secondary` / `contrast` 无对应 `NotificationType`，不映射）。
+    Ant Design 基线下五个槽位同为全局 `BoxShadows`，渲染不变。
+
+## 2026-11-08
+
+- Theme / Token
+  - NotificationCard reads its globals (including the close button colours, radius and icon size) through `NotificationCardTokenResource`; `WindowNotificationManager` reads its own `EnableMotion`; the safe-area margin is applied with `SetCurrentValue`.
+  - The description now applies the `FontHeight` line height (the string-to-text converter no longer writes a local NaN `LineHeight`).
+  - `NotificationCloseButtonPadding` is removed: the fixed-size close button with a fixed, centred icon cannot show it.
+
 ## 2026-10-27
 
 - Motion

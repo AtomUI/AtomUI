@@ -29,6 +29,8 @@ dotnet publish tools/performances/AtomUI.StartupPerformance/AtomUI.StartupPerfor
 
 - `--scenario plain|atom-plain|atom-window|atom-splash`，默认 `atom-plain`。
 - `--multicorejit <dir>`：启用 MultiCoreJit，配置文件写在 `<dir>`。首次运行生成配置、第二次起生效。
+- `--all-languages`：除 Ant Design 外再启用 Shadcn 与 PrimeNG（各带桌面取值包），界面仍用 Ant Design；与不带此参数
+  的同一场景对比，得到「启用三种语言只用一种」相对「只启用 Ant Design」的启动差值（设计语言方案 12.5）。
 - `--platform-defaults-off`：不套 AtomUI 的平台/渲染默认（见上）。
 - `--verify-configuration-boundary`：独立运行启动安全验收，不与其他参数混用。验证 `UseAtomUI` 只登记、配置在平台
   就绪后且 Application 构造前执行、间接创建 AvaloniaObject 安全、Initialize 前已提交；主循环启动后采样 2 秒
@@ -62,6 +64,11 @@ stdout 为机器可读的 `PERF|key=value` 行（毫秒，invariant）。除 `Ep
 | `Mark.FirstUiPump` | UI 线程首次开始服务消息（"界面开始有反应"） |
 | `Mark.MaxUiGap` | UI 线程开始响应之后的最长阻塞 |
 | `Mark.DispatcherIdle` | 到达 `ApplicationIdle` |
+| `Jit.Phase.<name>` / `JitMethods.Phase.<name>` | 该分段在其所在线程上的 JIT 编译耗时（ms）与编译方法数，取自 `JitInfo` 按线程计数 |
+| `Jit.Thread.<mark>` | UI 线程截至 `InitializeEntered`、`FrameworkCompleted`、`WindowOpened`、`FirstRender` 的累计 JIT 耗时（ms） |
+
+`Jit.*` 用于区分 JIT 编译与实际工作：R2R 与 NativeAOT 下接近 0，普通 JIT 下是启动成本的主体。JIT 耗时包含编译期间
+触发的类型与程序集加载，因此小方法也可能因首次引用新程序集而偏大。
 
 `Epoch.MainUnixMicroseconds` 是 `Main` 的墙钟时刻，采样脚本据此换算自"进程启动"起算的 `Launch.*` 指标。
 
@@ -120,6 +127,22 @@ python3 tools/performances/AtomUI.StartupPerformance/run_samples.py \
 
 `hash_paths` 中记录被测二进制与其 `AtomUI.Core.dll` 的 SHA-256；若两个变体有同名文件哈希相同，
 `warnings` 会提示"可能用错了二进制"。
+
+### 设计语言启动对比
+
+构建 M0 与候选的同配置 Release `net10.0` 产物。使用 `atom-window` 场景，保持同一窗口系统与 JIT 配置。
+把下列三个变体放入同一 `variants` 数组交错采样，使候选 Ant-only 同时作为两个比较的公共对照。
+
+| 变体 | 二进制 | 参数 | `required_metrics` |
+| --- | --- | --- | --- |
+| `m0` | M0 | `--scenario atom-window` | `Launch.ToFirstRenderedBatch` |
+| `candidate-ant` | 候选 | `--scenario atom-window` | `Launch.ToFirstRenderedBatch`, `Config.DesignLanguageCount` |
+| `candidate-all` | 候选 | `--scenario atom-window --all-languages` | `Launch.ToFirstRenderedBatch`, `Config.DesignLanguageCount` |
+
+`Config.DesignLanguageCount` 在完整首帧与 idle 记时之后输出。程序检查已启用的语言集合以及仍在使用的 Ant Design
+DaybreakBlue 主题，配置不符时进程失败。`candidate-ant` 与 `candidate-all` 使用同一个候选程序，所以哈希相同。
+把 `compare` 设为 `["candidate-ant", "candidate-all"]` 得到多语言启用的配对差值，再按 `samples.json` 的 `round`
+配对计算 `candidate-ant − m0`。只比较两侧共有的计时指标。
 
 ## 指标口径边界
 

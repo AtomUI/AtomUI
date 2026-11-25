@@ -17,6 +17,11 @@
 该版本下选择 4.0.2 时，使用第二条路径，不引用 `Avalonia.Headless.XUnit`；上游进展见
 [Avalonia #22072](https://github.com/AvaloniaUI/Avalonia/issues/22072)。更新适配器后应重新验证版本组合。
 
+本文的代码按设计语言架构编写：控件包只声明 Token，取值来自设计语言的取值包，所以测试项目在控件包之外还要引用
+Ant Design 的取值包 `AtomUI.Desktop.Controls.Themes.AntDesign`（它传递带入语言包 `AtomUI.DesignLanguages.AntDesign`），
+并在 `UseAtomUI` 里用 `UseAntDesign(...)` 启用语言。取值包与控件包同版本发布；6.2.8 仍是主题算法架构，没有这个包，
+上表的版本组合需要在包含设计语言架构的版本发布后重新验证。
+
 示例按独立测试项目组织：新建 `HeadlessTests` 目录，先复制第 2 节的两个公共文件，再选择第 3 或第 4 节的项目和
 测试文件。不要把两套 assembly attribute 混入同一项目。命令均在该测试项目目录执行；示例不依赖仓库的
 `Directory.Build.props`、项目引用或内部测试 helper。
@@ -30,10 +35,10 @@
 
 ```csharp
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
-using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Headless;
 
@@ -47,9 +52,9 @@ public static class TestAppBuilder
             .UseAtomUI(builder =>
             {
                 builder.UseDesktopControls();
+                builder.UseAntDesign(language => language.AddDesktopControls());
                 builder.WithInitialTheme(
-                    IThemeManager.DEFAULT_THEME_ID,
-                    new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default).Build());
+                    ThemeSelection.Of<AntDesignLanguage>().WithAppearance(ThemeAppearance.Light));
             });
 }
 
@@ -58,6 +63,8 @@ public sealed partial class TestApplication : Application
 }
 ```
 
+`UseAntDesign(...)` 启用 Ant Design 语言，`AddDesktopControls()` 只登记 Desktop 控件在该语言下的取值，控件包本身仍由
+`UseDesktopControls()` 启用；没有启用任何语言，或某个已启用控件包在已启用语言下缺少取值包时，启动失败并指出缺少的包。
 Application 使用顶层、非泛型 `partial` 类，生成器负责在 `RegisterServices()` 中挂接 AtomUI。
 测试中不要再手动调用一次 `SetupWithoutStarting()`：后续的适配器或 session 负责初始化。
 
@@ -68,9 +75,8 @@ Application 使用顶层、非泛型 `partial` 类，生成器负责在 `Registe
 
 ```csharp
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
-using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -105,11 +111,8 @@ internal static class ButtonAssertions
 
             await Task.Yield();
             Assert.True(Dispatcher.UIThread.CheckAccess());
-            var result = await manager.ApplyThemeAsync(
-                new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
-                    new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Dark).Build(),
-                    ThemeTransitionReason.UserRequest),
+            var result = await manager.ApplyAsync(
+                ThemeSelection.Of<AntDesignLanguage>().WithAppearance(ThemeAppearance.Dark),
                 TestContext.Current.CancellationToken);
 
             Assert.Equal(ThemeTransitionStatus.Committed, result.Status);
@@ -144,6 +147,7 @@ internal static class ButtonAssertions
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.8" />
+    <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.2.8" />
     <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
     <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
@@ -220,6 +224,7 @@ dotnet test HeadlessTests.csproj --filter FullyQualifiedName~HeadlessTests.Butto
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AtomUI.Desktop.Controls" Version="6.2.8" />
+    <PackageReference Include="AtomUI.Desktop.Controls.Themes.AntDesign" Version="6.2.8" />
     <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
     <PackageReference Include="xunit.v3" Version="4.0.2" />
   </ItemGroup>

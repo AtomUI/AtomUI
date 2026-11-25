@@ -8,6 +8,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Shouldly;
@@ -199,6 +201,82 @@ public class FloatButtonHostOverlayTests
         }
     }
 
+    [Theory]
+    [InlineData(FloatButtonPlacement.BottomRight, -1, -1)]
+    [InlineData(FloatButtonPlacement.TopLeft, 1, 1)]
+    [InlineData(FloatButtonPlacement.Right, -1, 1)]
+    public void DragTranslation_Only_Changes_Composition_Until_The_Anchor_Is_Committed(
+        FloatButtonPlacement placement, int xSign, int ySign)
+    {
+        var host = new AtomUI.Desktop.Controls.FloatButtonHost
+        {
+            Placement = placement, FloatOffsetX = 32, FloatOffsetY = 32
+        };
+        var window = CreateWindow(host, out var overlayPanel);
+        try
+        {
+            window.UpdateLayout();
+            var button = GetOverlayFloatButton<AtomUI.Desktop.Controls.FloatButton>(overlayPanel);
+            var originalBounds = button.Bounds;
+            var originalX = Canvas.GetLeft(button);
+            var originalY = Canvas.GetTop(button);
+            var visual = ElementComposition.GetElementVisual(button)!;
+            var delta = new Vector(12, -9);
+            var layouts = 0;
+            window.LayoutUpdated += (_, _) => layouts++;
+
+            button.DragTranslation = delta;
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Dispatcher.UIThread.RunJobs();
+            button.Bounds.ShouldBe(originalBounds);
+            Canvas.GetLeft(button).ShouldBe(originalX);
+            Canvas.GetTop(button).ShouldBe(originalY);
+            button.FloatOffsetX.ShouldBe(32);
+            button.FloatOffsetY.ShouldBe(32);
+            visual.Translation.ShouldBe(new Vector3D(delta.X, delta.Y, 0));
+            layouts.ShouldBe(0);
+
+            button.CommitDragTranslation();
+            window.UpdateLayout();
+            button.DragTranslation.ShouldBe(default(Vector));
+            visual.Translation.ShouldBe(default(Vector3D));
+            button.FloatOffsetX.ShouldBe(32 + xSign * delta.X);
+            button.FloatOffsetY.ShouldBe(32 + ySign * delta.Y);
+            Canvas.GetLeft(button).ShouldBe(originalX + delta.X);
+            Canvas.GetTop(button).ShouldBe(originalY + delta.Y);
+            layouts.ShouldBe(1);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    [Fact]
+    public void Desktop_FloatButton_Host_Still_Forwards_Tooltip_And_Color()
+    {
+        var host = new AtomUI.Desktop.Controls.FloatButtonHost
+        {
+            Tooltip = "Initial",
+            TooltipColor = Colors.Coral
+        };
+        var window = CreateWindow(host, out var overlayPanel);
+        try
+        {
+            var button = GetOverlayFloatButton<AtomUI.Desktop.Controls.FloatButton>(overlayPanel);
+            AtomUI.Desktop.Controls.ToolTip.GetTip(button).ShouldBe("Initial");
+            AtomUI.Desktop.Controls.ToolTip.GetColor(button).ShouldBe(Colors.Coral);
+            host.Tooltip = "Updated";
+            host.TooltipColor = null;
+            AtomUI.Desktop.Controls.ToolTip.GetTip(button).ShouldBe("Updated");
+            AtomUI.Desktop.Controls.ToolTip.GetColor(button).ShouldBeNull();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
     [Fact]
     public void FloatButtonHost_Forwards_Command_To_Overlay_Button()
     {
@@ -315,7 +393,7 @@ public class FloatButtonHostOverlayTests
 
             var overlayLayer = scrollViewer.GetVisualDescendants()
                                            .OfType<ScopeAwareOverlayLayer>()
-                                           .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
+                                           .Single(layer => LayerFloatButtons(layer).Any());
             var verticalScrollBar = scrollViewer.GetVisualDescendants()
                                                 .OfType<AtomUI.Desktop.Controls.ScrollBar>()
                                                 .Single(scrollBar => scrollBar.Name == "PART_VerticalScrollBar");
@@ -412,7 +490,7 @@ public class FloatButtonHostOverlayTests
     }
 
     [Fact]
-    public void Controlled_Direct_Group_Keeps_Menu_Open_On_Trigger_Click()
+    public void Direct_Group_With_Local_IsOpen_Writes_Trigger_Close_Back()
     {
         var group = new FloatButtonGroup
         {
@@ -444,7 +522,7 @@ public class FloatButtonHostOverlayTests
             Click(trigger, window);
             Dispatcher.UIThread.RunJobs();
 
-            group.IsOpen.ShouldBeTrue();
+            group.IsOpen.ShouldBeFalse();
         }
         finally
         {
@@ -489,8 +567,8 @@ public class FloatButtonHostOverlayTests
 
             var overlayLayer = scrollViewer.GetVisualDescendants()
                                            .OfType<ScopeAwareOverlayLayer>()
-                                           .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
-            var button = overlayLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+                                           .Single(layer => LayerFloatButtons(layer).Any());
+            var button = LayerFloatButtons(overlayLayer).Single();
             var beforeX = Canvas.GetLeft(button);
             var beforeY = Canvas.GetTop(button);
 
@@ -502,8 +580,8 @@ public class FloatButtonHostOverlayTests
 
             var reattachedLayer = scrollViewer.GetVisualDescendants()
                                               .OfType<ScopeAwareOverlayLayer>()
-                                              .Single(layer => layer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Any());
-            var reattachedButton = reattachedLayer.Children.OfType<AtomUI.Desktop.Controls.FloatButton>().Single();
+                                              .Single(layer => LayerFloatButtons(layer).Any());
+            var reattachedButton = LayerFloatButtons(reattachedLayer).Single();
 
             Canvas.GetLeft(reattachedButton).ShouldBe(beforeX);
             Canvas.GetTop(reattachedButton).ShouldBe(beforeY);
@@ -561,6 +639,64 @@ public class FloatButtonHostOverlayTests
         }
     }
 
+    [Fact]
+    public void Hover_Group_Keeps_Menu_Open_While_Pointer_Moves_Onto_Menu()
+    {
+        var menuItem = new AtomUI.Desktop.Controls.FloatButton();
+        var group = new FloatButtonGroup
+        {
+            Trigger             = FloatButtonGroupTrigger.Hover,
+            IsMotionEnabled     = false,
+            VerticalAlignment   = Avalonia.Layout.VerticalAlignment.Bottom,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Children =
+            {
+                new AtomUI.Desktop.Controls.FloatButton(),
+                menuItem
+            }
+        };
+
+        var window = new Avalonia.Controls.Window
+        {
+            Width   = 320,
+            Height  = 240,
+            Content = group
+        };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+
+        try
+        {
+            var trigger = group.GetVisualDescendants()
+                               .OfType<AtomUI.Desktop.Controls.FloatButton>()
+                               .Single(button => button.Classes.Contains("semantic-trigger"));
+
+            MoveTo(trigger, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeTrue();
+
+            MoveTo(menuItem, window);
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeTrue();
+
+            window.MouseMove(new Point(2, 2));
+            Dispatcher.UIThread.RunJobs();
+            group.IsOpen.ShouldBeFalse();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    private static void MoveTo(Control control, Avalonia.Controls.Window window)
+    {
+        var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window);
+        point.ShouldNotBeNull();
+        window.MouseMove(point.Value);
+    }
+
     private static Avalonia.Controls.Window CreateWindow(Control host, out ScopeAwareOverlayLayerPanel overlayPanel)
     {
         overlayPanel = new ScopeAwareOverlayLayerPanel
@@ -580,6 +716,14 @@ public class FloatButtonHostOverlayTests
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return window;
+    }
+
+    /// <summary>层中的浮动按钮：每个浮动按钮带自己的表面宿主进入层，层的直接子项是宿主。</summary>
+    private static IEnumerable<AtomUI.Desktop.Controls.FloatButton> LayerFloatButtons(ScopeAwareOverlayLayer layer)
+    {
+        return layer.Children.OfType<VisualLayerManager>()
+                    .Select(host => host.Child)
+                    .OfType<AtomUI.Desktop.Controls.FloatButton>();
     }
 
     private static TFloatButton GetOverlayFloatButton<TFloatButton>(ScopeAwareOverlayLayerPanel overlayPanel)

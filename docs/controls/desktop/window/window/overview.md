@@ -1,6 +1,6 @@
 # Window 桌面版架构设计
 
-本文档定义 `Window` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Window 桌面版实现原理](implementation.md)，Window 与标题栏的对齐协作见 [WindowTitleBar 实现原理](../window-title-bar/implementation.md)，caption button 的能力与呈现模型见 [WindowTitleBar Caption Button 配置设计](../window-title-bar/caption-button-configuration-design.md)，Window Token 的专项设计见 [Window Token 设计](token.md)，设计和契约变化记录见 [Window Changelog](changelog.md)。
+本文档定义 `Window` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Window 桌面版实现原理](implementation.md)，Window 与标题栏的对齐协作见 [WindowTitleBar 实现原理](../window-title-bar/implementation.md)，caption button 的能力与呈现模型见 [WindowTitleBar Caption Button 配置设计](../window-title-bar/caption-button-configuration-design.md)，全屏状态下的标题栏呈现见 [Window 全屏标题栏设计](full-screen-title-bar-design.md)，Window Token 的专项设计见 [Window Token 设计](token.md)，设计和契约变化记录见 [Window Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -43,6 +43,7 @@ Window 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 | 选择与集合 | `ViewModel` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 交互与状态 | `IsMinimizeCaptionButtonVisible`、`IsMaximizeCaptionButtonVisible`、`IsCloseCaptionButtonVisible`、`IsFullScreenCaptionButtonVisible`、`IsPinCaptionButtonVisible`、`IsMoveEnabled` | 表达 managed caption button 呈现、窗口移动和用户可观察状态；visibility 不替代窗口 capability。 |
 | 弹层与窗口 | `WindowFrameLayer`、`WindowFrameLayerOpacity` | 控制 popup、flyout、dialog、window 或 overlay 宿主协作。 |
+| 全屏标题栏 | `FullScreenTitleBarMode`、`IsFullScreenTitleBarOpen`、`FullScreenTitleBar`、`FullScreenTitleBarTemplate`、`FullScreenTitleBarMouseEnterDelay`、`FullScreenTitleBarMouseLeaveDelay`、`ToggleFullScreen()` | 定义全屏状态下标题栏的呈现模式、打开状态、自定义内容和显隐延迟；`ToggleFullScreen()` 与 FullScreen caption button 共用同一窗口操作入口。完整模型见 [Window 全屏标题栏设计](full-screen-title-bar-design.md)。 |
 | 其他稳定入口 | `Logo`、`LogoVisibility`、`IsTitleVisible`、`MediaBreakPoint`、`OsType`、`OsVersion`、`TitleAlignment` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。`IsTitleVisible` 只控制默认标题栏内的标题文字呈现（`WindowTitleBar` AddOwner facade），不影响系统级窗口标题；与 `IsTitleBarVisible`（隐藏整条标题栏）作用域不同。`Logo`/`LogoTemplate` 只承载显式值：未设置时标题栏渲染层回退到 `Icon`（再回退主窗口 Logo/Icon），运行时设为 `null` 回到默认，彻底隐藏用 `LogoVisibility=Never`。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
@@ -50,24 +51,20 @@ Window 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 主要 public 类型与枚举：
 
 - 类型：`Window`、`ReactiveWindow<TViewModel>`、`MacStandardWindowButtons`。
-- 枚举：无。
+- 枚举：`FullScreenTitleBarMode`。
 
-Window 模板还使用 `FullscreenPopoverLayer`、`WindowResizer`、`WindowVisualLayerClip` 等 internal
+Window 模板还使用 `FullScreenTitleBarHost`、`WindowResizer`、`WindowVisualLayerClip` 等 internal
 协作类型。它们会影响主题和可观察窗口行为，但不是用户可直接依赖的 public API。
 
 稳定 template part：
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_CloseButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
 | `PART_ContentPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
-| `PART_FullScreenButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
-| `PART_FullscreenPopoverLayer` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
+| `PART_FullScreenTitleBarHost` | `FullScreenTitleBarHost` | 全屏标题栏表面；三个 Window 模板均在 `PART_VisualLayerManager` 内容根内声明，Window 在运行时把它迁入 `WindowChromeLayer`（T6）内的表面宿主。替换 ControlTheme 时仍必须保留该 part。 |
 | `PART_OverlayWrapper` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
-| `PART_PopoverBorder` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
-| `PART_PopoverCloseButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
-| `PART_PopoverFullScreenButton` | `?` | 承载用户触发入口、导航或关闭动作。 |
 | `PART_RootLayout` | `?` | 承载根视觉、边框、背景或尺寸基线。 |
+| `PART_Surface` | `Border` | 全屏标题栏宿主内的表面节点，承载覆盖模式下的阴影与进出动效。 |
 | `PART_TitleBar` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
 | `PART_TitleBarPresenter` | `?` | 展示用户内容、文本、图标或模板化数据。 |
 | `PART_TransparencyFallback` | `?` | 稳定模板协作入口，重命名前必须同步主题和实现。 |
@@ -108,10 +105,10 @@ Window 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的�
 
 | 主题文件 | 职责 |
 | --- | --- |
-| `FullscreenPopoverLayerTheme.axaml` | 定义 macOS 全屏标题栏 popover 的固定模板、caption buttons 和标题展示。 |
-| `WindowDrawnDecorationsTheme.axaml` | 定义 Avalonia drawn decorations overlay 下的标题栏、caption buttons、shadow、visible frame 裁剪结构，以及 Windows 10 的 1px 顶边 frame 补偿；该 overlay 不承载 Dialog、Drawer 或其他业务 presentation。 |
+| `FullScreenTitleBarHostTheme.axaml` | 定义全屏标题栏宿主的表面、内容 presenter、覆盖模式阴影和进出动效；不包含标题、Logo 或 caption button 的第二份模板。 |
+| `WindowDrawnDecorationsTheme.axaml` | 定义 Avalonia drawn decorations overlay 下的标题栏、caption buttons、shadow、visible frame 裁剪结构，以及 Windows 10 的 1px 顶边 frame 补偿；该 overlay 不承载 Dialog、Drawer 或其他业务 presentation，也不提供 drawn decorations 的全屏 popover 内容。 |
 | `WindowResizerTheme.axaml` | 定义 managed resize grip 的八向命中区域。 |
-| `WindowTheme.axaml` | 定义普通 Window 模板、标题栏、内容 frame、visual layer、overlay host、fullscreen popover 和 managed resizer。 |
+| `WindowTheme.axaml` | 定义普通 Window 模板、标题栏、内容 frame、visual layer、overlay host、全屏标题栏宿主和 managed resizer。 |
 
 Window 使用 `WindowToken` 作为控件 Token scope。Token 只表达组件视觉语义，不承载 open/close 运行时状态。
 
@@ -180,7 +177,9 @@ Window 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证
 - `ReactiveWindow<TViewModel>`：public ReactiveUI 窗口基类，维护 ViewModel 同步和 activation。
 - `MacStandardWindowButtons`：public macOS 标准窗口按钮布局附加能力。
 - `Window/Chrome/*WindowChromeManager`：internal 平台 manager，负责 CSD/SSD、frame geometry、X11/Wayland/Windows 原生能力投影。
-- `Window/Utils/FullscreenPopoverLayer`：internal macOS 全屏标题栏 popover 协作层。
+- `FullScreenTitleBarMode`：public 全屏标题栏呈现模式枚举。
+- `Window/Utils/FullScreenTitleBarHost`：internal 全屏标题栏表面，承载 FullScreen slot 与自定义全屏内容。
+- `Window/Utils/FullScreenTitleBarRevealController`：internal 全屏标题栏显隐状态机，不依赖 Visual 与平台 API。
 - `Window/Utils/WindowResizer`：internal managed resize grip 协作控件。
 - `Window/Utils/WindowVisualLayerClip`：internal visible frame 裁剪计算和模板裁剪 helper。
 - `Window/Utils/WindowDrawnDecorationsReflectionExtensions`：internal Avalonia drawn decorations 反射边界。
@@ -206,6 +205,11 @@ Window 与同分类控件共享尺寸、状态、Token、Gallery 展示和验证
 - 所有已连接标题栏共享拖动、双击最大化和 caption 操作语义；只有 Window 模板正式接入的默认标题栏提供标题栏高度提示和 CSD chrome 几何协作。
 - CSD 隐藏 AtomUI 默认标题栏时保持 `WindowDecorations.Full`，只隐藏 managed title-bar visual，并从内容区顶部边距移除实际 drawn title-bar 高度；不能以 `BorderOnly`、清零平台 title-bar hint 或硬编码 Token 高度破坏平台装饰几何与原生窗口状态转换能力。
 - Windows、macOS 和 Linux 共用同一套首次显示主题表面流程；平台可见前必须同步准备 ThemeContext、variant 和 Window Token 背景，正式显示后由 `WindowTheme` 单独持有长期主题状态。
+- 全屏标题栏的模式、内容来源、打开状态和内容区占位只由 Window 拥有；默认内容下全屏标题栏与普通标题栏是同一个 `WindowTitleBar` 实例，任意时刻只位于一个 title-bar slot；AtomUI 不向 Avalonia drawn decorations 的全屏 popover 提供内容。
+- `AutoHide` 与 `Pinned` 不改变内容区尺寸，只有 `Docked` 产生内容区顶部占位；平台差异只出现在平台 chrome manager 发布的 native chrome extent、native control inset 与 persistent native inset 三个几何输入中，effective mode 的解析与呈现者不随平台变化。
+- 平台自行呈现顶部 chrome 时，全屏标题栏与之融合而不与之竞争：不抑制、不替换平台 chrome；对系统视图的处理限于识别成立后的隐藏与恢复，识别不成立时不做任何修改并退化为堆叠呈现。
+- 全屏标题栏以平台确认后的 `WindowState` 为唯一全屏事实，不假设全屏转换同步完成或一定成功。
+- 全屏标题栏宿主的子树只允许出现 caption button 的窗口操作 role，不允许出现 `TitleBar` role 与 resize role；chrome role 命中测试覆盖整个窗口视觉树且不区分窗口状态。
 - Template part 重新应用、集合替换、弹层关闭、窗口失活和控件 detach 时必须释放旧订阅和资源宿主。
 - 不通过隐藏延迟、强制刷新或吞异常掩盖状态同步问题。
 - 不引入运行时反射扫描作为 API、Token 或数据路径发现机制。
@@ -234,12 +238,27 @@ Window 对上层 overlay 发布三种不可混用的几何语义：
 chrome。这样 Dialog/Drawer 内容中的 Popup、Flyout、ToolTip 与 ContextMenu 仍由 owning Window 的 Avalonia popup 服务管理，
 完整不变量与家族矩阵见 [Modal 内容弹层叠放设计](../../feedback/modal/popup-layering-design.md)。
 
+### 8.3 全屏标题栏模型
+
+Window 在 `WindowState.FullScreen` 下通过 `FullScreenTitleBarMode` 表达标题栏呈现意图：`Hidden` 不提供 managed 表面，`AutoHide` 按需覆盖并自动收起，`Pinned` 常驻覆盖，`Docked` 常驻并占用内容区顶部。默认值为 `AutoHide`。
+
+默认内容来源下，全屏标题栏展示的是 Window 的默认 `WindowTitleBar` 实例本身：该实例在普通状态的 Normal slot 与全屏宿主的 FullScreen slot 之间迁移，标题、Logo、`LeftAddOn`、`RightAddOn` 和 caption buttons 不存在第二份实现。应用通过 `FullScreenTitleBar` 或 `FullScreenTitleBarTemplate` 提供自定义内容时，自定义内容替代默认标题栏进入全屏表面。`IsTitleBarVisible=false` 且没有自定义内容时不出现 managed 表面。
+
+`IsFullScreenTitleBarOpen` 反映表面的实际呈现状态，并在 `AutoHide` 下接受应用的显式打开与关闭请求；其值受 effective mode 强制约束。`AutoHide` 的显隐由 internal 状态机根据顶部触发带、pointer、焦点、弹层 hold lease、显式请求和抑制条件推导。
+
+四种模式与自定义全屏内容在 Windows、Linux X11、Linux Wayland（CSD 与非 CSD）和 macOS 上都由 AtomUI 全屏标题栏宿主呈现，effective mode 的解析与平台无关。平台差异只以几何输入进入模型：平台 chrome manager 发布 native chrome extent（平台 chrome 中不能与表面重叠的部分当前占据的顶部高度）、native control inset（平台原生控件叠放在表面上的占位）与 persistent native inset（常驻部分），Windows 与 Linux 恒为零。
+
+macOS 全屏下系统会在 pointer 到达屏幕顶边时滑入菜单栏与原生标题条。全屏标题栏与原生标题条融合为一条：表面的顶边贴合系统菜单栏下沿并随其同步移动，原生标题条被处理为透明并叠放在表面顶部，原生窗口按钮呈现在表面的前导区域，标题栏前导内容按 native control inset 为其让出安全区，形态与普通窗口状态一致。系统 chrome 的呈现本身作为 `AutoHide` 的 reveal source 与 hold。融合依赖的系统视图结构无法识别时，退化为位于原生标题条正下方的堆叠呈现，模式语义不变。
+
+全屏标题栏只响应平台确认后的 `WindowState`：X11 窗口管理器、Wayland 合成器和 macOS 都可能异步确认、拒绝或主动发起全屏转换。全屏表面内不出现标题栏拖拽 role 与 resize role。完整的模式语义、解析矩阵、slot 迁移、状态机和验证要求见 [Window 全屏标题栏设计](full-screen-title-bar-design.md)。
+
 ## 9. 文档导航与验证策略
 
 关联文档：
 
 - [Window 桌面版实现原理](implementation.md)
 - [WindowTitleBar Caption Button 配置设计](../window-title-bar/caption-button-configuration-design.md)
+- [Window 全屏标题栏设计](full-screen-title-bar-design.md)
 - [Window Token 设计](token.md)
 - [Window Changelog](changelog.md)
 
@@ -252,6 +271,7 @@ chrome。这样 Dialog/Drawer 内容中的 Popup、Flyout、ToolTip 与 ContextM
 | 状态模型 | 覆盖 open/close、disabled、hover、pressed、focus 以及控件特有状态。 |
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | 首次显示主题表面 | 覆盖根窗口和 owner 局部主题、Light/Dark、用户显式背景优先级、显示失败回滚，并在 Windows、macOS 和 Linux 实机检查首帧。 |
+| 全屏标题栏 | 按 [Window 全屏标题栏设计](full-screen-title-bar-design.md) 第 10 节分层验证模式解析、slot 迁移、显隐状态机、弹层 hold、主题契约和各平台实机行为。 |
 | Dialog/Drawer 与 Popup 分层 | 运行 Desktop Controls Dialog/Drawer/Window 回归、Popup 原语与控件家族矩阵、DataGrid Popup 专项测试，并按平台独立记录真实桌面交互证据。 |
 | Token | 检查 TokenKind、AXAML token resource、Token 类型、生成数据和 token.md和文档同步。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |

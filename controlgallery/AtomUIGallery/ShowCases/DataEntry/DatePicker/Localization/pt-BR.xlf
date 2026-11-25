@@ -517,5 +517,17 @@
         <target state="translated">Variantes</target>
       </segment>
     </unit>
+    <unit id="PopupMotionTitle">
+      <segment>
+        <source>Popup motion</source>
+        <target state="translated">Animação do popup</target>
+      </segment>
+    </unit>
+    <unit id="PopupMotionDescription">
+      <segment>
+        <source>The first picker uses FadeInMotion and FadeOutMotion. The second disables both directions with explicit null values.</source>
+        <target state="translated">O primeiro seletor usa FadeInMotion e FadeOutMotion. O segundo desativa as duas direções com valores null explícitos.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

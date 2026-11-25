@@ -36,6 +36,11 @@ internal sealed class WindowsWindowChromeManager : IWindowChromeManager
 
     public bool SupportsPinCaptionButton => true;
 
+    public bool SupportsFullScreen => true;
+
+    // A full-screen Win32 window is a borderless window covering its monitor; the system adds no chrome over it.
+    public IFullScreenNativeChrome? AttachFullScreenNativeChrome(Action metricsChanged) => null;
+
     public Action? PrepareInitialShowState()
     {
         if (_initialShowStatePrepared || _window.IsVisible)

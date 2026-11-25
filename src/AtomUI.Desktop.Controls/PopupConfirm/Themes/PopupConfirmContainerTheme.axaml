@@ -54,8 +54,8 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^ /template/ atom|TextBlock#PART_Title">
             <Setter Property="Margin" Value="{atom:PopupConfirmTokenResource TitleMargin}" />
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{atom:PopupConfirmTokenResource ColorTextHeading}" />
+            <Setter Property="FontWeight" Value="{atom:PopupConfirmTokenResource FontWeightStrong}" />
         </Style>
 
         <Style Selector="^ /template/ ContentPresenter#PART_Content">
@@ -77,27 +77,27 @@
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
             <Setter Property="Margin" Value="{atom:PopupConfirmTokenResource IconMargin}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="Width" Value="{atom:PopupConfirmTokenResource IconSizeLG}" />
+            <Setter Property="Height" Value="{atom:PopupConfirmTokenResource IconSizeLG}" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
 
         <Style Selector="^[ConfirmStatus=Info]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:PopupConfirmTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^[ConfirmStatus=Warning]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:PopupConfirmTokenResource ColorWarning}" />
             </Style>
         </Style>
         <Style Selector="^[ConfirmStatus=Error]">
             <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:PopupConfirmTokenResource ColorError}" />
             </Style>
         </Style>
     </ControlTheme>

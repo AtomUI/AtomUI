@@ -14,7 +14,7 @@ namespace AtomUI.Desktop.Controls.Internal.Calendar;
 [TemplatePart(YearSelectPart, typeof(ComboBox))]
 [TemplatePart(MonthSelectPart, typeof(ComboBox))]
 [TemplatePart(ModeSwitchPart, typeof(OptionButtonGroup))]
-internal sealed class CalendarHeader : TemplatedControl
+internal sealed partial class CalendarHeader : TemplatedControl
 {
     internal const string YearSelectPart = "PART_YearSelect";
     internal const string MonthSelectPart = "PART_MonthSelect";
@@ -63,6 +63,26 @@ internal sealed class CalendarHeader : TemplatedControl
     {
         get => GetValue(FullscreenProperty);
         set => SetValue(FullscreenProperty, value);
+    }
+
+    // Minimum widths of the year and month Selects. The hosting Calendar or LunarCalendar theme assigns its own
+    // Token to these plain properties, so the values reach only the header instead of inheriting through the tree.
+    internal static readonly StyledProperty<double> YearControlWidthProperty =
+        AvaloniaProperty.Register<CalendarHeader, double>(nameof(YearControlWidth));
+
+    internal static readonly StyledProperty<double> MonthControlWidthProperty =
+        AvaloniaProperty.Register<CalendarHeader, double>(nameof(MonthControlWidth));
+
+    internal double YearControlWidth
+    {
+        get => GetValue(YearControlWidthProperty);
+        set => SetValue(YearControlWidthProperty, value);
+    }
+
+    internal double MonthControlWidth
+    {
+        get => GetValue(MonthControlWidthProperty);
+        set => SetValue(MonthControlWidthProperty, value);
     }
 
     /// <summary>用户在 Header 选择了年份。参数是完整目标日期（保留月/日，收敛到合法月）。</summary>

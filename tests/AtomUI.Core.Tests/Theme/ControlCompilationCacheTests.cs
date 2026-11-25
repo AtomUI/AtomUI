@@ -1,5 +1,6 @@
+using AtomUI.Theme.Languages;
+using AtomUI.DesignLanguages.AntDesign;
 using System.Reflection;
-using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
@@ -14,9 +15,9 @@ public class ControlCompilationCacheTests
     [Fact]
     public void Control_Keys_Share_The_Precomputed_Global_Key()
     {
-        var button = CreateControl("Button");
-        var input = CreateControl("Input");
-        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input]);
+        var button = CreateControl<DenseThemeCompilerTests.ButtonId>();
+        var input = CreateControl<DenseThemeCompilerTests.InputId>();
+        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], rules: TokenRules);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var compileInput = TypedThemeSnapshotCacheTests.CreateInput(registry);
@@ -26,12 +27,12 @@ public class ControlCompilationCacheTests
             globalKey,
             button,
             null,
-            ThemeAppearance.Light);
+            registry.FindControlTokenRule(TestDesignLanguages.AntDesign, button.Slot));
         var inputKey = ControlCompilationCacheKey.Create(
             globalKey,
             input,
             null,
-            ThemeAppearance.Light);
+            registry.FindControlTokenRule(TestDesignLanguages.AntDesign, input.Slot));
 
         var field = typeof(ControlCompilationCacheKey).GetField(
             "_global",
@@ -43,15 +44,15 @@ public class ControlCompilationCacheTests
     [Fact]
     public async Task Different_Snapshots_Reuse_Only_Equivalent_Control_Compilations()
     {
-        var button = CreateControl("Button");
-        var input = CreateControl("Input");
-        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input]);
+        var button = CreateControl<DenseThemeCompilerTests.ButtonId>();
+        var input = CreateControl<DenseThemeCompilerTests.InputId>();
+        var registry = TypedThemeSnapshotCacheTests.CreateRegistry([button, input], rules: TokenRules);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var buttonConfig = new NormalizedControlThemeConfig(
             button.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
+            null,
+            null,
             Array.Empty<NormalizedTokenValue>(),
             [CreateControlToken(button, "48")]);
         var cache = new ThemeSnapshotCache();
@@ -83,29 +84,46 @@ public class ControlCompilationCacheTests
         return new NormalizedTokenValue(descriptor, parsed, descriptor.Format(parsed));
     }
 
-    private static ControlTokenDescriptor CreateControl(string id)
+    private static readonly ControlTokenRuleDescriptor[] TokenRules =
+    [
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.ButtonId>,
+            CacheTokenRule<DenseThemeCompilerTests.ButtonId>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, CacheControlToken<DenseThemeCompilerTests.InputId>,
+            CacheTokenRule<DenseThemeCompilerTests.InputId>>()
+    ];
+
+    private static ControlTokenDescriptor CreateControl<TId>() where TId : DenseThemeCompilerTests.IDenseId
     {
         var token = new TokenDescriptor(
             "Height",
             0,
             TokenStage.Control,
             typeof(double),
-            $"{id}.Height",
+            $"{TId.Id}.Height",
             static value => ThemeTokenValueParser.Parse<double>(value),
             static value => ThemeTokenValueFormatter.Format((double)value!),
-            static builder => ((CacheControlToken)builder).Height,
-            static (builder, value) => ((CacheControlToken)builder).Height = (double)value!,
-            static builder => ((CacheControlToken)builder).Height);
+            static builder => ((CacheControlToken<TId>)builder).Height,
+            static (builder, value) => ((CacheControlToken<TId>)builder).Height = (double)value!,
+            static builder => ((CacheControlToken<TId>)builder).Height);
         return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
+            ThemeTestControlTypes.For("AtomUI", TId.Id),
+            CacheControlToken<TId>.ControlIdentity,
             [token],
-            static () => new CacheControlToken(),
-            static (builder, _) => ((CacheControlToken)builder).Height = 40);
+            static () => new CacheControlToken<TId>());
     }
 
-    private sealed class CacheControlToken : AbstractControlDesignToken
+    public sealed class CacheControlToken<TId> : AbstractControlDesignToken, IControlToken
+        where TId : DenseThemeCompilerTests.IDenseId
     {
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", TId.Id);
+
         public double Height { get; set; }
+    }
+
+    public sealed class CacheTokenRule<TId> : IControlTokenRule<AntDesignToken, CacheControlToken<TId>>
+        where TId : DenseThemeCompilerTests.IDenseId
+    {
+        public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<CacheControlToken<TId>> target) =>
+            target.Own.Height = 40;
     }
 }

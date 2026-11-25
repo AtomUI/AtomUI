@@ -1,4 +1,5 @@
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -8,7 +9,7 @@ using Fixture.NuGetAuthor;
 
 AppBuilder.Configure<ResourceApp>()
           .UseHeadless(new AvaloniaHeadlessPlatformOptions())
-          .UseAtomUI(builder => builder.UseAuthorControls())
+          .UseAtomUI(builder => builder.UseAuthorControls().UseAntDesign())
           .SetupWithoutStarting();
 var control = new AuthorControl();
 var typed = new TypedKeyHostControl();

@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <!-- Package-wide compiler severity also covers source-generator diagnostics on external AXAML. -->
+        <WarningsAsErrors>$(WarningsAsErrors);ATOMUIGEN041;ATOMUIGEN042;ATOMUIGEN043;ATOMUIGEN044;ATOMUIGEN045;ATOMUIGEN047</WarningsAsErrors>
+        <AtomUIThemeConsumptionAnalysis>true</AtomUIThemeConsumptionAnalysis>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>GeneratedFiles</CompilerGeneratedFilesOutputPath>
@@ -22,7 +25,10 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.Performance" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests" />
     </ItemGroup>
 
     <ItemGroup>

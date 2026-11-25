@@ -74,10 +74,25 @@ internal class DataGridColumnGroupHeader : TemplatedControl
     
     internal DataGridColumnGroupItem? OwningGroupItem { get; set; }
 
+    private IDisposable? _owningGridBinding;
+
     static DataGridColumnGroupHeader()
     {
         PointerPressedEvent.AddClassHandler<DataGridColumnGroupHeader>((x, e) => x.NotifyHeaderPointerPressed(e));
         PointerReleasedEvent.AddClassHandler<DataGridColumnGroupHeader>((x, e) => x.NotifyHeaderPointerReleased(e));
+    }
+
+    // 绑定订阅表格的属性变更；分组项离开表格时由其 OwningGrid 变化成对释放
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = Bind(SizeTypeProperty, owningGrid[!DataGrid.SizeTypeProperty]);
+    }
+
+    internal void ReleaseOwningGridBinding()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
     }
 
     private void NotifyHeaderPointerPressed(PointerPressedEventArgs e)

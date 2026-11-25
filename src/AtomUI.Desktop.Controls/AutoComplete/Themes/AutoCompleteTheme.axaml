@@ -7,6 +7,11 @@
         <ControlTheme.BasedOn>
             <atom:AbstractAutoCompleteTheme TargetType="atom:AutoComplete" />
         </ControlTheme.BasedOn>
+        <Setter Property="PopupLayoutTokenResourceKeys" Value="{x:Static atom:AutoCompletePopupLayoutResources.AutoComplete}" />
+        <Style Selector="^[IsPopupMatchSelectWidth=False] /template/ Border#PopupFrame">
+            <Setter Property="MaxWidth" Value="{atom:AutoCompleteTokenResource MaxPopupWidth}" />
+        </Style>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -25,6 +30,7 @@
                                                   InnerRightContent="{TemplateBinding ContentRightAddOn}"
                                                   InnerRightContentTemplate="{TemplateBinding ContentRightAddOnTemplate}"
                                                   PlaceholderText="{TemplateBinding PlaceholderText}"
+                                                  PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
                                                   IsReadOnly="{TemplateBinding IsReadOnly}"
                                                   Focusable="{TemplateBinding IsReadOnly, Converter={x:Static BoolConverters.Not}}"
                                                   ClearIcon="{TemplateBinding ClearIcon}"
@@ -33,6 +39,8 @@
                                                   IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
                                                   FormFeedback="{TemplateBinding FormFeedback}" />
                     <atom:Popup Name="{x:Static atom:AutoCompleteThemeConstants.PopupPart}"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
@@ -42,7 +50,7 @@
                         <Border Name="PopupFrame"
                                 Classes.semantic-popup-root="True"
                                 MaxHeight="{TemplateBinding MaxPopupHeight}"
-                                MinWidth="{TemplateBinding MinPopupWidth}"
+                                MinWidth="{atom:AutoCompleteTokenResource MinPopupWidth}"
                                 Padding="{TemplateBinding PopupContentPadding}">
                             <atom:CandidateList Name="{x:Static atom:AutoCompleteThemeConstants.CandidateListPart}"
                                                 Classes.semantic-popup-list="True"
@@ -54,5 +62,12 @@
                 </Panel>
             </ControlTemplate>
         </Setter>
+        <Style Selector="^ /template/ atom|CandidateList">
+            <Setter Property="ItemColor" Value="{atom:AutoCompleteTokenResource OptionColor}" />
+            <Setter Property="ItemSelectedColor" Value="{atom:AutoCompleteTokenResource OptionSelectedColor}" />
+            <Setter Property="ItemMargin" Value="{atom:AutoCompleteTokenResource OptionMargin}" />
+            <Setter Property="ItemCornerRadius" Value="{atom:AutoCompleteTokenResource OptionBorderRadius}" />
+            <Setter Property="ItemMinHeight" Value="{atom:AutoCompleteTokenResource OptionHeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

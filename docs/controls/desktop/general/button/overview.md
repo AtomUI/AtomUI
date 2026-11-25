@@ -50,7 +50,7 @@ Button 的公共 API 是控件最重要的稳定契约。公共属性、事件�
 基础与兼容 API：
 
 - `ButtonType`: `Default`、`Dashed`、`Primary`、`Link`、`Text`。
-- `ButtonShape`: `Default`、`Circle`、`Round`。
+- `ButtonShape`: `Default`、`Circle`、`Round`、`Rectangular`。`Rectangular` 对按钮、焦点轮廓和点击波纹使用直角。
 - `IsDanger`、`IsGhost`、`IsLoading`。
 - `SizeType`、`Icon`、`IconPlacement`、`IconWidth`、`IconHeight`。
 - `IsMotionEnabled`、`IsWaveSpiritEnabled`。
@@ -88,6 +88,7 @@ public ButtonVariant? Variant { get; set; }
 | `ButtonType=Link` | internal link color, `Variant=Link` |
 
 `ButtonColor` 不暴露 `Link`。`ButtonType.Link` 是兼容入口，内部映射到链接视觉。
+`ButtonColor.Success` 和 `ButtonColor.Warning` 使用各自的全局状态色阶，与 `Variant` 组合使用。
 
 `SizeType` 使用可自定义尺寸模型，支持 `Large`、`Middle`、`Small` 和 `Custom`。`Large`、`Middle`、`Small` 是 Button
 预设尺寸档，主题通过对应 ControlHeight Token 设置 `MinHeight` 基线，并由内容、Padding 和其他布局属性决定是否向上
@@ -131,6 +132,14 @@ Button 支持以下 Semantic Part：
 完整的 Selector、`ContractType`、存在条件、逐 Part 定制说明、状态矩阵和排除边界见
 [Button Semantic Part 契约](semantic-part.md)。`PART_WaveSpirit`、`ShadowsFrame`、`Frame` 和
 `PART_RootLayout` 属于 Button Composition Model，不是公开 Semantic Part。
+
+**普通内容内边距。** `ContentPadding` 可通过实例值、绑定或样式设置，由普通内容状态的默认样式应用到 `Padding`。
+`SubmitButton` 和 `ResetButton` 继承该属性，并各自提供 Token 默认值。圆形、仅图标和显式 `Padding` 分别遵循现有优先级。
+清除 `ContentPadding` 的覆盖值后，恢复当前尺寸和主题的默认值。
+
+```xml
+<atom:Button Content="Action" ContentPadding="18,4" />
+```
 
 ## 4. 行为与状态模型
 

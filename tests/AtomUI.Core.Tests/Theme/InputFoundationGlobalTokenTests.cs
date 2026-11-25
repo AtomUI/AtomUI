@@ -28,7 +28,7 @@ public class InputFoundationGlobalTokenTests
             ColorWarningOutline       = Colors.Orange
         };
 
-        token.CalculateAliasTokenValues();
+        AtomUI.DesignLanguages.AntDesign.TokenEvaluation.AliasTokenRules.Apply(token);
 
         token.InputPadding.ShouldBe(new(11, 4.5));
         token.InputPaddingSM.ShouldBe(new(7, -0.5));

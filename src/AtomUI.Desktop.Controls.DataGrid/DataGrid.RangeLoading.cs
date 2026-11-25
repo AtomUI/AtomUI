@@ -37,7 +37,6 @@ public partial class DataGrid
         SetSelectionState(DataGridSelectionState.Empty);
         SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, null);
         _rangeSelectionAnchorDataIndex = -1;
-        _currentRowDataIndexHint = -1;
         ResetAppliedRangeState();
 
         if (!_isRangeAttached || value is null)
@@ -122,32 +121,36 @@ public partial class DataGrid
         {
             return;
         }
+        var moveRequest = _rangeMoveContext.Value;
         if (Dispatcher.UIThread.CheckAccess())
         {
-            ApplyRangeSourceInvalidation(source);
+            ApplyRangeSourceInvalidation(source, moveRequest);
             return;
         }
         var ownerReference = new WeakReference<DataGrid>(this);
-        Dispatcher.UIThread.Post(() => ApplyRangeSourceInvalidation(ownerReference, source));
+        Dispatcher.UIThread.Post(() => ApplyRangeSourceInvalidation(ownerReference, source, moveRequest));
     }
 
     private static void ApplyRangeSourceInvalidation(
         WeakReference<DataGrid> ownerReference,
-        IDataGridSource source)
+        IDataGridSource source,
+        DataGridMoveRequest? moveRequest)
     {
         if (ownerReference.TryGetTarget(out var owner))
         {
-            owner.ApplyRangeSourceInvalidation(source);
+            owner.ApplyRangeSourceInvalidation(source, moveRequest);
         }
     }
 
-    private void ApplyRangeSourceInvalidation(IDataGridSource source)
+    private void ApplyRangeSourceInvalidation(IDataGridSource source, DataGridMoveRequest? moveRequest)
     {
         if (!_isRangeAttached || !ReferenceEquals(ItemsSource, source))
         {
             return;
         }
         CancelRowReorder();
+        // 失效后槽位编号会变化，按旧槽位记录的导航意图不再指向原目标
+        _pendingRangeNavigation = null;
         if (EditingRow is not null)
         {
             CancelEdit(DataGridEditingUnit.Row, raiseEvents: false);
@@ -156,7 +159,7 @@ public partial class DataGrid
         SetAndRaise(IsDataStaleProperty, ref _isDataStale, _rangeCoordinator?.AppliedSnapshot is not null);
         BeginRangeLoad(
             isInvalidation: true,
-            CaptureFirstCompleteRangeAnchor());
+            CaptureRangeMutationAnchor(moveRequest));
     }
 
     private void BeginRangeLoad(
@@ -167,6 +170,8 @@ public partial class DataGrid
         {
             return;
         }
+        // 挂起的视口请求属于上一代数据，按新代际的槽位解释会把新结果定位到旧位置
+        _pendingRangeViewport = null;
         var fallback = _rangeCoordinator.AppliedSnapshot;
         var generation = _rangeCoordinator.BeginGeneration(
             ItemsSource,
@@ -253,6 +258,7 @@ public partial class DataGrid
         switch (transition.Kind)
         {
             case DataGridPresentationTransitionKind.Committed:
+                AdoptRestartedRangeGeneration(generation);
                 try
                 {
                     ApplyRangeSnapshot(transition.Snapshot!, isInvalidation);
@@ -263,6 +269,8 @@ public partial class DataGrid
                 }
                 break;
             case DataGridPresentationTransitionKind.RolledBack:
+                // 回滚后继续显示旧快照，滚动请求退回到当前显示位置
+                AbandonPendingRangeScroll();
                 if (transition.Snapshot is { } fallback)
                 {
                     RollBackRangeIntent(fallback);
@@ -286,6 +294,19 @@ public partial class DataGrid
         }
     }
 
+    // 同一查询在快照过期后由协调器重启为新代际并完成提交时，表格改为持有新代际
+    private void AdoptRestartedRangeGeneration(DataGridGeneration committedGeneration)
+    {
+        if (_rangeCoordinator?.ActiveGeneration is { } active &&
+            !ReferenceEquals(active, committedGeneration) &&
+            ReferenceEquals(active.Source, committedGeneration.Source) &&
+            active.QueryRevision == committedGeneration.QueryRevision &&
+            active.SnapshotExpiryRestarts > committedGeneration.SnapshotExpiryRestarts)
+        {
+            _rangeGeneration = active;
+        }
+    }
+
     private void ApplyRangeSnapshot(
         DataGridPresentationSnapshot snapshot,
         bool isInvalidation)
@@ -300,6 +321,10 @@ public partial class DataGrid
             committingGeneration.ViewportAnchor = null;
         }
         TransitionSelectionForCommittedSnapshot(
+            previousSnapshot,
+            snapshot,
+            isInvalidation);
+        ReprojectCurrentCellForCommittedSnapshot(
             previousSnapshot,
             snapshot,
             isInvalidation);
@@ -364,8 +389,7 @@ public partial class DataGrid
 
     private void SetRangeError(Exception exception)
     {
-        _rangeDesiredOffset = _verticalOffset;
-        _pendingRangeViewport = null;
+        AbandonPendingRangeScroll();
         SetAndRaise(LoadErrorProperty, ref _loadError, exception);
         SetDataLoadState(DataGridLoadState.Error);
     }

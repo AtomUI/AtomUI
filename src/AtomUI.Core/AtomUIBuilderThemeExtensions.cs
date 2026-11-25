@@ -1,6 +1,7 @@
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.Languages;
 using Avalonia.Media;
 
 namespace AtomUI;
@@ -37,6 +38,21 @@ public static class AtomUIBuilderThemeExtensions
         ThemeConfig? config = null)
     {
         GetTheme(builder).WithInitialTheme(themeId, config);
+        return builder;
+    }
+
+    /// <summary>The application's initial selection (spec 7.9); resolved against the catalog when the theme manager starts.</summary>
+    public static IAtomUIBuilder WithInitialTheme(this IAtomUIBuilder builder, ThemeSelection selection)
+    {
+        GetTheme(builder).WithInitialTheme(selection);
+        return builder;
+    }
+
+    /// <summary>Starts with the given enabled design language and its configured default theme.</summary>
+    public static IAtomUIBuilder WithInitialDesignLanguage<TLanguage>(this IAtomUIBuilder builder)
+        where TLanguage : DesignLanguage
+    {
+        GetTheme(builder).WithInitialDesignLanguage<TLanguage>();
         return builder;
     }
 

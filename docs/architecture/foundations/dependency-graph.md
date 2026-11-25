@@ -58,10 +58,10 @@
 
 多个包通过 `InternalsVisibleTo` 共享内部实现，维护时需要注意这些不是公开 API：
 
-- `AtomUI.Core` 对 `AtomUI.Controls`、`AtomUI.Controls.Shared`、`AtomUI.Desktop.Controls`、DataGrid、ColorPicker、Extras 开放内部成员。
-- `AtomUI.Controls` 对 `AtomUI.Desktop.Controls`、DataGrid、ColorPicker、Extras 开放内部成员。
+- `AtomUI.Core` 对 `AtomUI.Controls`、`AtomUI.Controls.Shared`、`AtomUI.Desktop.Controls`、DataGrid、ColorPicker、Extras、`AtomUI.Mobile.Controls` 开放内部成员。
+- `AtomUI.Controls.Shared` 与 `AtomUI.Controls` 对 `AtomUI.Desktop.Controls`、DataGrid、ColorPicker、Extras、`AtomUI.Mobile.Controls` 开放内部成员。
 - `AtomUI.Desktop.Controls` 对 DataGrid、ColorPicker、Extras、性能工具开放内部成员。
-- `AtomUI.Native` 对 `AtomUI.Desktop.Controls`、未来 `AtomUI.Mobile.Controls` 开放内部成员。
+- `AtomUI.Native` 对 `AtomUI.Desktop.Controls`、`AtomUI.Mobile.Controls` 开放内部成员。
 
 这些关系说明 DataGrid、ColorPicker 和 Extras 虽然是独立包，但它们不是完全隔离的第三方扩展，而是桌面控件体系的同源扩展。
 
@@ -87,23 +87,17 @@ Shared 通过 Core 已有的 internal visibility 实现 owned-service 契约；C
 [统一图片加载系统](../systems/image-loading/overview.md)与
 [管线、并发与生命周期](../systems/image-loading/pipeline-and-lifecycle.md)。
 
-## 已批准 Mobile 目标依赖
+## AtomUI Mobile 依赖
 
-以下关系属于 Mobile Foundation 的目标架构，不是当前 `AtomUI.slnx` 项目或当前直接引用：
+`AtomUI.Mobile.Controls` 位于独立仓库 [AtomUI/AtomUI.Mobile](https://github.com/AtomUI/AtomUI.Mobile)，不在 `AtomUI.slnx` 中，
+以 NuGet 方式消费本仓库发布的包：
 
 ```mermaid
 flowchart LR
-    Controls["AtomUI.Controls"] --> Mobile["AtomUI.Mobile.Controls\n目标项目，当前未实现"]
-    Native["AtomUI.Native"] -. capability .-> Mobile
+    Controls["AtomUI.Controls"] --> Mobile["AtomUI.Mobile.Controls\nAtomUI.Mobile 仓库"]
     Generator["AtomUI.Generator"] -. analyzer .-> Mobile
-    Mobile -. target .-> IOS["iOS Host"]
-    Mobile -. target .-> Android["Android Host"]
 ```
 
-- `AtomUI.Mobile.Controls` 直接建立在 `AtomUI.Controls` 上，与 `AtomUI.Desktop.Controls` 平行且不依赖 Desktop。
-- `AtomUI.Native` 作为正交能力层，仅在 Avalonia 公共 API 无法表达能力时供 Mobile adapter 使用。
-- `AtomUI.Generator` 提供构建期静态 descriptor、Theme 和 Localization 注册，不成为运行时发现机制。
-- iOS/Android Host 提供生命周期和 adapter；平台宿主不拥有 Control API、Theme 或跨平台状态机。
-
-目标项目加入解决方案后，必须把真实项目引用补入“解决方案项目”和“主要项目引用”；在此之前不得把本节视为当前构建图。
-详细包边界见 [Mobile Controls 模块](../../modules/mobile-controls/overview.md)。
+- `AtomUI.Mobile.Controls` 建立在 `AtomUI.Controls` 上，与 `AtomUI.Desktop.Controls` 平行且不依赖 Desktop。
+- 上述内部成员开放是两个仓库之间的契约；改动 Mobile 使用的内部扩展点时需同步评估 AtomUI.Mobile。
+- Mobile 包、宿主与文档见 [Mobile Controls 模块](../../modules/mobile-controls/overview.md) 的指引。

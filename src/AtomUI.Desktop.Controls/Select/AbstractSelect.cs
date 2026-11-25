@@ -1,14 +1,15 @@
+using AtomUI.Animations;
 using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using AtomUI.Controls;
 using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -25,6 +26,12 @@ public abstract class AbstractSelect : TemplatedControl,
                                        IFormItemFeedbackAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<AbstractSelect>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<AbstractSelect>();
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<AbstractSelect, bool>(nameof(IsAllowClear));
 
@@ -147,6 +154,18 @@ public abstract class AbstractSelect : TemplatedControl,
             nameof(IsLoading),
             o => o.IsLoading);
 
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
@@ -222,7 +241,15 @@ public abstract class AbstractSelect : TemplatedControl,
     public int DisplayPageSize
     {
         get => GetValue(DisplayPageSizeProperty);
-        set => SetValue(DisplayPageSizeProperty, value);
+        set
+        {
+            var becomesExplicit = _defaultPopupHeight.HasValue && !IsSet(DisplayPageSizeProperty) && value == DisplayPageSize;
+            SetValue(DisplayPageSizeProperty, value);
+            if (becomesExplicit)
+            {
+                ConfigureMaxDropdownHeight();
+            }
+        }
     }
 
     public int MaxCount
@@ -408,11 +435,9 @@ public abstract class AbstractSelect : TemplatedControl,
 
     #region 内部属性定义
 
-    internal static readonly DirectProperty<AbstractSelect, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+
+    internal static readonly StyledProperty<CandidatePopupLayoutTokenResourceKeys?> PopupLayoutTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractSelect, CandidatePopupLayoutTokenResourceKeys?>(nameof(PopupLayoutTokenResourceKeys));
 
     internal static readonly DirectProperty<AbstractSelect, double> MaxPopupHeightProperty =
         AvaloniaProperty.RegisterDirect<AbstractSelect, double>(
@@ -487,14 +512,15 @@ public abstract class AbstractSelect : TemplatedControl,
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<AbstractSelect>();
 
-    private double _itemHeight;
-
-    internal double ItemHeight
+    internal CandidatePopupLayoutTokenResourceKeys? PopupLayoutTokenResourceKeys
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(PopupLayoutTokenResourceKeysProperty);
+        set => SetValue(PopupLayoutTokenResourceKeysProperty, value);
     }
 
+    private OwnerTokenSet? _popupLayoutTokens;
+    private double _itemHeight;
+    private double? _defaultPopupHeight;
     private double _maxPopupHeight;
 
     internal double MaxPopupHeight
@@ -613,8 +639,6 @@ public abstract class AbstractSelect : TemplatedControl,
     private protected bool PopupHasOpened;
     private protected bool IgnorePropertyChange;
     private AddOnDecoratedBox? _addOnDecoratedBox;
-    private bool _isFrameBorderBrushRelayed;
-    private bool _isFrameBackgroundRelayed;
 
     private IDisposable? _deactivationSubscription;
     private IDisposable? _popupPinnedOpenBinding;
@@ -678,10 +702,8 @@ public abstract class AbstractSelect : TemplatedControl,
 
         Popup = e.NameScope.Find<Popup>("PART_Popup");
         _addOnDecoratedBox = e.NameScope.Find<AddOnDecoratedBox>(AddOnDecoratedBox.AddOnDecoratedBoxPart);
-        _isFrameBorderBrushRelayed = false;
-        _isFrameBackgroundRelayed  = false;
-        RelayRootSurfaceBrush(BorderBrushProperty);
-        RelayRootSurfaceBrush(BackgroundProperty);
+        // Root BorderBrush / Background reach the input frame through the template's HostBorderBrush / HostBackground
+        // bindings, which the frame theme projects over its state brushes (antd styles.root).
 
         if (Popup != null)
         {
@@ -699,57 +721,6 @@ public abstract class AbstractSelect : TemplatedControl,
         if (IsDropDownOpen && Popup != null && !Popup.IsOpen)
         {
             OpeningDropDown(false);
-        }
-    }
-
-    /// <summary>
-    /// Relays the owner's root surface brushes onto the input frame as local values so
-    /// application-level customization wins over the frame state machine, mirroring the input
-    /// family (<c>AbstractTextInput.RelayRootSurfaceBrush</c>) and the upstream root
-    /// border/background semantics. An unset owner value restores the state machine.
-    /// </summary>
-    private void RelayRootSurfaceBrush(AvaloniaProperty property)
-    {
-        var decoratedBox = _addOnDecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(property);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // Only hand the property back when this control is the one that took it over: a
-            // nested owner may hold its own relay on the same frame node.
-            if (IsRelayed(property))
-            {
-                decoratedBox.ClearValue(property);
-                SetRelayed(property, false);
-            }
-
-            return;
-        }
-
-        decoratedBox.SetValue(property, value, BindingPriority.LocalValue);
-        SetRelayed(property, true);
-    }
-
-    private bool IsRelayed(AvaloniaProperty property)
-    {
-        return ReferenceEquals(property, BorderBrushProperty)
-            ? _isFrameBorderBrushRelayed
-            : _isFrameBackgroundRelayed;
-    }
-
-    private void SetRelayed(AvaloniaProperty property, bool value)
-    {
-        if (ReferenceEquals(property, BorderBrushProperty))
-        {
-            _isFrameBorderBrushRelayed = value;
-        }
-        else
-        {
-            _isFrameBackgroundRelayed = value;
         }
     }
 
@@ -773,17 +744,17 @@ public abstract class AbstractSelect : TemplatedControl,
         this.SubscribeAncestorIsVisible(IsVisibleChanged, SubscriptionsOnOpen);
 
         ConfigurePopupMinWith(Bounds.Width);
+        if (_defaultPopupHeight.HasValue)
+        {
+            ConfigureMaxDropdownHeight();
+        }
         NotifyPopupOpened();
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BorderBrushProperty || change.Property == BackgroundProperty)
-        {
-            RelayRootSurfaceBrush(change.Property);
-        }
-        else if (change.Property == StatusProperty ||
+        if (change.Property == StatusProperty ||
             change.Property == FormStatusProperty ||
             change.Property == DataValidationErrors.HasErrorsProperty ||
             change.Property == DataValidationErrors.ErrorsProperty)
@@ -794,8 +765,12 @@ public abstract class AbstractSelect : TemplatedControl,
         {
             ConfigurePopupPlacement();
         }
+        else if (change.Property == PopupLayoutTokenResourceKeysProperty)
+        {
+            UpdatePopupLayoutTokenSubscription(change.GetOldValue<CandidatePopupLayoutTokenResourceKeys?>()?.ContentPadding is not null);
+        }
         else if (change.Property == DisplayPageSizeProperty ||
-                 change.Property == ItemHeightProperty)
+                 change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxDropdownHeight();
         }
@@ -822,7 +797,48 @@ public abstract class AbstractSelect : TemplatedControl,
 
     protected virtual void ConfigureMaxDropdownHeight()
     {
-        MaxPopupHeight = ItemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
+        MaxPopupHeight = _defaultPopupHeight is { } maxHeight && !IsSet(DisplayPageSizeProperty)
+            ? maxHeight
+            : _itemHeight * DisplayPageSize + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
+    private void UpdatePopupLayoutTokenSubscription(bool previouslyThemedPadding)
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = null;
+        if (PopupLayoutTokenResourceKeys is { } keys)
+        {
+            _popupLayoutTokens = keys.Observe(this, RefreshPopupLayout);
+        }
+        if (previouslyThemedPadding && PopupLayoutTokenResourceKeys?.ContentPadding is null)
+        {
+            PopupContentPadding = default;
+        }
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var previousRowHeight = _itemHeight;
+        var previousMaxHeight = _defaultPopupHeight;
+        _itemHeight = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _itemHeight) ?? 0;
+        _defaultPopupHeight = PopupLayoutTokenResourceKeys?.DefaultMaxHeight is null
+            ? null
+            : CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(2), _defaultPopupHeight);
+        if (PopupLayoutTokenResourceKeys?.ContentPadding is not null)
+        {
+            var padding = CandidatePopupLayoutTokenResourceKeys.ReadPadding(_popupLayoutTokens?.GetValue(1), PopupContentPadding);
+            if (padding != PopupContentPadding)
+            {
+                // The final padding is a template output and recalculates height with the complete new metrics.
+                PopupContentPadding = padding;
+                return;
+            }
+        }
+        if (!previousRowHeight.Equals(_itemHeight) || previousMaxHeight != _defaultPopupHeight)
+        {
+            ConfigureMaxDropdownHeight();
+        }
     }
 
     protected void UpdatePseudoClasses()

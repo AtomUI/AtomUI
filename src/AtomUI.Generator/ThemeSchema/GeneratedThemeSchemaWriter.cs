@@ -13,15 +13,13 @@ internal sealed class GeneratedThemeSchemaWriter
     private readonly string _controlCatalog;
     private readonly IReadOnlyList<SchemaTokenInfo> _globalTokens;
     private readonly IReadOnlyList<ControlThemeInfo> _controls;
-    private readonly IReadOnlyList<ThemeAlgorithmInfo> _algorithms;
 
     internal GeneratedThemeSchemaWriter(
         GenerationOutput context,
         string? assemblyName,
         string controlCatalog,
         IEnumerable<SchemaTokenInfo> globalTokens,
-        IEnumerable<ControlThemeInfo> controls,
-        IEnumerable<ThemeAlgorithmInfo> algorithms, bool compiledAbi = false)
+        IEnumerable<ControlThemeInfo> controls, bool compiledAbi = false)
     {
         _context = context;
         _compiledAbi = compiledAbi;
@@ -30,9 +28,6 @@ internal sealed class GeneratedThemeSchemaWriter
         _globalTokens = globalTokens.OrderBy(static token => token.Name, StringComparer.Ordinal).ToArray();
         _controls = controls.OrderBy(static control => control.ControlName, StringComparer.Ordinal)
                             .ToArray();
-        _algorithms = algorithms.OrderBy(static algorithm => algorithm.AlgorithmValue)
-                                .ThenBy(static algorithm => algorithm.TypeName, StringComparer.Ordinal)
-                                .ToArray();
     }
 
     internal void Write()
@@ -52,24 +47,20 @@ internal sealed class GeneratedThemeSchemaWriter
         source.AppendLine();
         source.AppendLine("internal static class GeneratedThemeSchema");
         source.AppendLine("{");
-        if (_globalTokens.Count != 0 || _algorithms.Count != 0)
+        if (_globalTokens.Count != 0)
         {
-            // Compile-time identity of this assembly's global token and algorithm sections. Core's
-            // startup registry combines it with the per-package schema fingerprints; assemblies
-            // without globals or algorithms emit nothing and never participate in that section.
+            // Compile-time identity of this assembly's global token section. Core's startup registry combines it with
+            // the per-package schema fingerprints; assemblies without globals emit nothing.
             source.Append("    internal const ulong GlobalSchemaFingerprint = 0x")
-                  .Append(RegistrationFingerprint.ComputeGlobalSchema(_globalTokens, _algorithms).ToString("X16"))
+                  .Append(RegistrationFingerprint.ComputeGlobalSchema(_globalTokens).ToString("X16"))
                   .AppendLine("UL;");
             source.AppendLine();
         }
         WriteGlobalTokens(source);
         source.AppendLine();
-        WriteAlgorithms(source);
-        source.AppendLine();
         source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<TokenDescriptor> GetGlobalTokens() => s_globalTokens;");
         WriteGlobalCopy(source);
 
-        source.AppendLine("    internal static global::System.Collections.Generic.IReadOnlyList<ThemeAlgorithmDescriptor> GetAlgorithms() => s_algorithms;");
         source.AppendLine("}");
         source.AppendLine();
         WriteDescriptorFactory(source);
@@ -238,25 +229,8 @@ internal sealed class GeneratedThemeSchemaWriter
             WriteToken(source, tokens[slot], slot, resourceKey, accessor, indentation + "        ");
         }
         source.Append(indentation).AppendLine("    },");
-        source.Append(indentation).Append("    static () => new ").Append(typeName).AppendLine("(),");
-        source.Append(indentation).Append("    static (token, appearance) => ((").Append(typeName)
-              .AppendLine(")token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
+        source.Append(indentation).Append("    static () => new ").Append(typeName).AppendLine("()");
         source.Append(indentation).Append(')').AppendLine(suffix);
-    }
-
-    private void WriteAlgorithms(StringBuilder source)
-    {
-        source.AppendLine("    private static readonly ThemeAlgorithmDescriptor[] s_algorithms = new ThemeAlgorithmDescriptor[]");
-        source.AppendLine("    {");
-        foreach (var algorithm in _algorithms)
-        {
-            source.Append("        new ThemeAlgorithmDescriptor(global::AtomUI.Theme.Algorithms.ThemeAlgorithm.")
-                  .Append(algorithm.Algorithm)
-                  .Append(", ").Append(algorithm.Revision)
-                  .Append(", ThemeAppearanceEffect.").Append(algorithm.AppearanceEffect).AppendLine(",");
-            source.Append("            static () => new ").Append(algorithm.TypeName).AppendLine("()),");
-        }
-        source.AppendLine("    };");
     }
 
     private void WriteToken(

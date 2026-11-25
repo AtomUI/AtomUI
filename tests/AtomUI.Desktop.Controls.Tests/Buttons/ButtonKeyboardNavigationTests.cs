@@ -1,9 +1,8 @@
-using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -142,34 +141,34 @@ public class ButtonKeyboardNavigationTests
     }
 
     [Fact]
-    public void Tab_Focused_Button_Should_Show_FocusVisual()
+    public void Tab_Focused_Button_Should_Show_Focus_Outline()
     {
-        AssertFocusVisualVisible(new AtomButton { Content = "Go", Width = 80 },
+        AssertFocusOutlineVisible(new AtomButton { Content = "Go", Width = 80 },
             "ButtonTheme.axaml");
     }
 
     [Fact]
-    public void Tab_Focused_Dashed_Button_Should_Show_FocusVisual()
+    public void Tab_Focused_Dashed_Button_Should_Show_Focus_Outline()
     {
-        AssertFocusVisualVisible(new AtomButton { Content = "Go", Width = 80, ButtonType = ButtonType.Dashed },
+        AssertFocusOutlineVisible(new AtomButton { Content = "Go", Width = 80, ButtonType = ButtonType.Dashed },
             "ButtonTheme.axaml");
     }
 
     [Fact]
-    public void Tab_Focused_Dashed_Variant_Button_Should_Show_FocusVisual()
+    public void Tab_Focused_Dashed_Variant_Button_Should_Show_Focus_Outline()
     {
-        AssertFocusVisualVisible(new AtomButton { Content = "Go", Width = 80, Variant = ButtonVariant.Dashed },
+        AssertFocusOutlineVisible(new AtomButton { Content = "Go", Width = 80, Variant = ButtonVariant.Dashed },
             "ButtonTheme.axaml");
     }
 
     [Fact]
-    public void Tab_Focused_DropdownButton_Should_Show_FocusVisual()
+    public void Tab_Focused_DropdownButton_Should_Show_Focus_Outline()
     {
-        AssertFocusVisualVisible(new DropdownButton { Content = "Go", Width = 120 },
+        AssertFocusOutlineVisible(new DropdownButton { Content = "Go", Width = 120 },
             "DropdownButtonTheme.axaml / DropdownButtonBaseTheme.axaml");
     }
 
-    private static void AssertFocusVisualVisible(Control button, string themeFile)
+    private static void AssertFocusOutlineVisible(Control button, string themeFile)
     {
         var window = new AtomWindow
         {
@@ -189,15 +188,16 @@ public class ButtonKeyboardNavigationTests
             // :focus-visible 伪类应在键盘导航后置位
             button.Classes.Contains(":focus-visible").ShouldBeTrue();
 
-            // 主题声明了 ^:focus-visible /template/ Border#FocusVisual 样式，
-            // 模板必须存在该元素且在键盘焦点下可见，锁定 #487 的回归形态
-            var focusVisual = button.GetVisualDescendants()
-                .OfType<Border>()
-                .FirstOrDefault(c => c.Name == "FocusVisual");
-            focusVisual.ShouldNotBeNull($"{themeFile} :focus-visible 样式指向 Border#FocusVisual，模板必须包含该元素");
-            focusVisual.IsVisible.ShouldBeTrue();
-            focusVisual.BorderThickness.ShouldNotBe(new Thickness(0));
-            focusVisual.BorderBrush.ShouldNotBeNull("ColorFocusBorder 令牌应解析出焦点环画刷");
+            // 按钮的键盘焦点由共享的 FocusOutlineAdorner 表达（Ant Design genFocusOutline），
+            // 锁定 #487 的回归形态：TAB 选中后必须有可见的焦点描边
+            var layer = AdornerLayer.GetAdornerLayer(button);
+            layer.ShouldNotBeNull($"{themeFile} 宿主必须提供 AdornerLayer");
+            var outline = layer.Children.OfType<FocusOutlineAdorner>().SingleOrDefault();
+            outline.ShouldNotBeNull("键盘聚焦的按钮应挂上 FocusOutlineAdorner");
+            AdornerLayer.GetAdornedElement(outline).ShouldBeSameAs(button);
+            outline.IsVisible.ShouldBeTrue();
+            outline.OutlineThickness.ShouldBeGreaterThan(0);
+            outline.OutlineBrush.ShouldNotBeNull("ColorFocusBorder 令牌应解析出焦点描边画刷");
         }
         finally
         {

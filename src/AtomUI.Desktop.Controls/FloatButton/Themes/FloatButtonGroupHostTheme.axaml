@@ -4,7 +4,7 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:FloatButtonGroupHost}" TargetType="atom:FloatButtonGroupHost">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:FloatButtonGroupHostTokenResource EnableMotion}" />
         <Setter Property="Placement" Value="BottomRight" />
         
         <Style Selector="^:not(^[Placement=Center])">
@@ -13,7 +13,7 @@
         </Style>
         
         <Style Selector="^[Shape=Square]">
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -48,13 +48,13 @@ FloatButton 的公共契约由 public/protected 类型成员、Avalonia 属性�
 | 动效与异步 | `MenuMotionDuration`、`MotionDuration`、`ToTopDuration` | 约束动效开关、异步加载、播放速度、超时和任务边界。 |
 | 其他稳定入口 | `ButtonType`、`Target`、`Tooltip`、`Trigger` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
-稳定事件包括 `Clicked`、`Closed`、`Opened`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
+稳定事件包括 `Clicked`、`Closed`、`Opened`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。`FloatButtonGroup.Opened`/`Closed` 在 `IsOpen` 实际变化后触发；`Clicked` 在点击 trigger 按钮时触发（`Click` 与 `Hover` 模式均触发），对应 Ant Design 的 `onClick`。
 
 `FloatButton` 本体继承 Avalonia `Button` 命令契约，`Command`、`CommandParameter`、`CanExecute` 和禁用状态必须遵循 Avalonia 原生按钮语义。`FloatButtonHost` 与 `BackTopFloatButtonHost` 是 overlay host/adaptor，公开的 `Command` 和 `CommandParameter` 必须投影到运行时创建的真实按钮；host 不直接调用 `ICommand.Execute`，也不复制一套命令状态机。
 
 `FloatButtonGroupHost` 的 `Trigger` 是展开/收起语义，不默认承载业务 `Command`。业务动作应绑定在 group 内部的 `FloatButton` 子项上；这些子项必须能继承 host 的 `DataContext`，同时不得覆盖子项显式设置的本地 `DataContext`。
 
-`IsOpen` 是用户可拥有的受控打开状态，Avalonia Binding 默认使用 `TwoWay`；hover、click 和 host 转接触发的打开/关闭都必须回写同一 public 属性。该状态不是 Form value，不写入 `DataValidationErrors`。
+`IsOpen` 是用户可拥有的受控打开状态，Avalonia Binding 默认使用 `TwoWay`，语义等同 Ant Design 的 `open` + `onOpenChange={setOpen}`；hover、click 和 host 转接触发的打开/关闭都必须回写同一 public 属性，无论 `IsOpen` 来自本地值、绑定还是 host。AtomUI 不提供 Ant Design "只传 `open`、不处理 `onOpenChange`" 的固定受控形态。禁用的 group 不响应打开/收起；`Hover` 模式点击 trigger 不切换状态。该状态不是 Form value，不写入 `DataValidationErrors`。
 
 `IsShowProgress` 是回到顶部进度环的显示开关，类型 `bool`，默认 `false`，语义对齐上游参考实现 `FloatButton.BackTop` 的 `showProgress`（版本注记见专项模型与变更记录）。该属性注册在 `AbstractBackTopFloatButton` 上并由 `BackTopFloatButton` 直接继承；`AbstractBackTopFloatButtonHost` 通过 `AddOwner` 暴露同一属性，`BackTopFloatButtonHost` 将其投影到 overlay 中创建的真实按钮。开关只控制进度环显隐，不改变 `Target`、`VisibilityHeight` 与回到顶部动作语义。
 

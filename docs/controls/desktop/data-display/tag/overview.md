@@ -41,7 +41,7 @@ Tag 的公共契约由 public/protected 类型成员、Avalonia 属性、事件�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `CloseIcon`、`Icon`、`Text` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
-| 交互与状态 | `IsClosable`、`Variant` | 表达关闭能力和 Filled/Solid/Outlined 视觉形态。 |
+| 交互与状态 | `IsClosable`、`Variant` | 表达关闭能力和 Filled/Solid/Outlined/Outline 视觉形态；`Outline` 为透明背景、主色边框与文字。 |
 | 视觉与布局 | `TagColor` | 选择 Default、Preset、Status 或 Custom 颜色类别。 |
 
 稳定事件包括 `Closed`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
@@ -50,6 +50,8 @@ Tag 的公共契约由 public/protected 类型成员、Avalonia 属性、事件�
 
 - 类型：`AbstractTag`、`Tag`。
 - 枚举：`TagStatus`、`TagVariant`。
+
+`TagColor` 除预设色名、状态名和自定义色外还接受 `primary` 与 `danger`（等同 `error`）。
 
 `Variant` 的默认值为 `TagVariant.Filled`。Tag 不提供全局 Variant 配置，也不把 Variant 写入 `ThemeConfig`；应用需要统一样式时使用 Avalonia Style，控件实例的本地值优先于样式值。
 
@@ -126,7 +128,7 @@ Tag 的视觉组合由以下矩阵表达：
 | Default | 浅背景、透明边框、默认文字 | `ColorBgSolid` 背景、对比文字 | 默认背景、默认边框、默认文字 |
 | Preset | palette 1 背景、palette 7 文字 | palette 6 背景、浅色文字、palette 6 边框 | palette 1 背景、palette 3 边框、palette 7 文字 |
 | Status | 状态浅背景、状态主色文字 | 状态主色背景、浅色文字、状态主色边框 | 状态浅背景、状态边框、状态主色文字 |
-| Custom | HSL 亮度 0.95 背景、原色文字 | 原色背景、浅色文字 | HSL 亮度 0.95 背景、原色边框和文字 |
+| Custom | 自定义色色板 1 背景、原色文字 | 原色背景、浅色文字 | 自定义色色板 1 背景、原色边框和文字 |
 
 主题维护规则：
 

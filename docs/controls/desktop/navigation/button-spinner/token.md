@@ -18,7 +18,7 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ControlWidth`、`HandleWidth`、`HandleIconSize` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | 按源码 Token 语义维护 |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HandleBg`、`HandleActiveBg`、`HandleHoverColor`、`HandleBorderColor`、`FilledHandleBg` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HandleBg`、`HandleHoverBg`、`HandleActiveBg`、`HandleIconColor`、`HandleHoverColor`、`HandlePressedColor`、`HandleBorderColor`、`FilledHandleBg` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -31,6 +31,7 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+- `BorderThickness` 由输入框边框和实际绘制步进柄的部件消费。NumericUpDown 固定步进模式从输入框的有效厚度计算左右分隔线。
 
 ## 4. 控件家族影响
 
@@ -50,7 +51,20 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 - Token 默认值变更必须同步评估 Gallery 示例和截图可观察外观。
 - 如需引入新 Token，必须同步 Token 类型、生成资源、主题引用和本文档。
 
-## 6. 验证策略
+## 6. 承诺面裁决
+
+2026-11-08 输入家族迁移按[承诺面](../../../../engineering/development/control-token-guidelines.md#own-token-承诺面)裁决：
+
+| Token | 裁决 |
+| --- | --- |
+| `ControlWidth` | Reserved：对应 antd InputNumber `controlWidth`；ButtonSpinner 与 NumericUpDown 按内容或宿主布局取宽，主题默认宽度会覆盖全部布局，暂不应用 |
+
+主题读法：`ButtonSpinnerTheme` 的全局值以 `OwnerTokenResource` 读取（它也是 NumericUpDownSpinner 的基础主题，owner 为
+NumericUpDown）；`ButtonSpinnerDecoratedBoxTheme`、`ButtonSpinnerHandleTheme`、`SizeTypeAwareIconPresenter` 的全局值读取
+所属控件的有效值，Handle 的 Own Token 与按下图标色读取 ButtonSpinner 的值（增减按钮是注册控件 IconButton）。
+全部 Active Own Token 与消费的 Global Token 由 `InputFamilyEffectTests` 逐项验证生效。
+
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |
@@ -58,3 +72,7 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+ButtonSpinner 与 NumericUpDown 共享 AbstractButtonSpinnerToken 的7个有效步进柄字段，由各自终端主题向柄传递具体样式值。原 `ControlWidth` 保留为 ButtonSpinner 的 Reserved 字段；NumericUpDown 不新增该无效果承诺。

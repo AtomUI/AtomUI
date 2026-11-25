@@ -126,7 +126,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:ImagePreviewerViewModel">
                             <StackPanel Spacing="12">
-                                <atom:CheckBox Name="WheelZoomCheckBox"
+                                <atom:CheckBox x:Name="WheelZoomCheckBox"
                                                IsChecked="True"
                                                Content="{gallery:ImagePreviewerShowCaseLangResource WheelZoomEnabled}" />
                                 <atom:ImagePreviewer Width="200"
@@ -283,15 +283,15 @@
                                          #A594F9 边框；image: borderRadius 4 + filter grayscale(50%)）。上游 image 的
                                          borderRadius 经 image 部件的 Semantic Style 落到 ImagePreviewRenderer.CornerRadius
                                          （Border.CornerRadiusProperty 的 AddOwner，须写限定名 Border.CornerRadius——
-                                         renderer 类型为 internal，非限定名会解析到 internal 类型字段并在运行时抛
-                                         FieldAccessException）；filter 无等价属性，grayscale 仍通过 ViewModel 提供去饱和后的图像源复现。 -->
+                                         Setter 上下文使用公开 ContractType Control，不引用 internal renderer）；
+                                         filter 无等价属性，grayscale 仍通过 ViewModel 提供去饱和后的图像源复现。 -->
                                     <Style Selector="atom|ImagePreviewer.semantic-styles-demo">
-                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="atom:ImagePreviewRenderer">
+                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="Control">
                                             <Setter Property="Border.CornerRadius" Value="4" />
                                         </atom:ImagePreviewerImageStyle>
                                     </Style>
                                     <Style Selector="atom|ImagePreviewer.semantic-styles-filled-demo">
-                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="atom:ImagePreviewRenderer">
+                                        <atom:ImagePreviewerImageStyle x:SetterTargetType="Control">
                                             <Setter Property="Border.CornerRadius" Value="4" />
                                         </atom:ImagePreviewerImageStyle>
                                     </Style>

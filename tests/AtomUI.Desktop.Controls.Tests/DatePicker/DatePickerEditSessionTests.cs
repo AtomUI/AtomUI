@@ -116,13 +116,30 @@ public class DatePickerEditSessionTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void Single_Time_Cursor_Uses_The_Recorded_Order_Of_Selection(bool timeFirst)
+    public void Single_Time_Click_Joins_The_Candidate_In_Either_Order(bool timeFirst)
     {
         var session = Open(new DatePickerEditInput { RequestedConfirmation = true, ShowTime = true });
         if (timeFirst) Apply(session, new DatePickerEditAction.ChooseTime(TimeSpan.FromSeconds(2)));
         Apply(session, new DatePickerEditAction.ChooseDate(new DateTime(2026, 7, 20)));
         if (!timeFirst) Apply(session, new DatePickerEditAction.ChooseTime(TimeSpan.FromSeconds(2)));
-        Apply(session, new DatePickerEditAction.Confirm()).CommitValue!.Start.ShouldBe(new DateTime(2026, 7, 20).AddSeconds(timeFirst ? 2 : 0));
+        Apply(session, new DatePickerEditAction.Confirm()).CommitValue!.Start.ShouldBe(new DateTime(2026, 7, 20).AddSeconds(2));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Leaving_The_Time_Cells_Ends_The_Preview(bool isRange)
+    {
+        var session = Open(new DatePickerEditInput
+        {
+            IsRange = isRange, RequestedConfirmation = true, ShowTime = true,
+            Committed = new DateViewerRange(new DateTime(2026, 11, 11, 2, 0, 0), null)
+        });
+        Apply(session, new DatePickerEditAction.PreviewTime(new TimeSpan(3, 0, 0))).PreviewValue
+            .ShouldBe(new DateTime(2026, 11, 11, 3, 0, 0));
+        var ended = Apply(session, new DatePickerEditAction.PreviewTime(null));
+        ended.HasPreview.ShouldBeTrue();
+        ended.PreviewValue.ShouldBeNull();
     }
 
     [Fact]

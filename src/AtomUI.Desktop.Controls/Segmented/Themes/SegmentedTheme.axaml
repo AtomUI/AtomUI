@@ -24,44 +24,47 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SegmentedTokenResource EnableMotion}" />
         <Setter Property="Padding" Value="{atom:SegmentedTokenResource TrackPadding}" />
         <Setter Property="Background" Value="{atom:SegmentedTokenResource TrackBg}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
-        <Setter Property="SelectedThumbBg" Value="{atom:SegmentedTokenResource ItemSelectedBg}" />
-        <Setter Property="SelectedThumbBoxShadows" Value="{atom:SharedTokenResource BoxShadowsTertiary}" />
+        <Setter Property="UseSelectedThumbTokenResources" Value="True" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Style Selector="^[IsExpanding=True]">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
         
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:SegmentedTokenResource BorderRadiusLG}" />
+            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SegmentedTokenResource BorderRadius}" />
         </Style>
                 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="CornerRadius" Value="{atom:SegmentedTokenResource BorderRadius}" />
+            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SegmentedTokenResource BorderRadiusSM}" />
         </Style>
                 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SharedTokenResource BorderRadiusXS}" />
+            <Setter Property="CornerRadius" Value="{atom:SegmentedTokenResource BorderRadiusSM}" />
+            <Setter Property="SelectedThumbCornerRadius" Value="{atom:SegmentedTokenResource BorderRadiusXS}" />
         </Style>
 
         <Style Selector="^[Shape=Round]">
+            <!-- layout: capsule shape, a radius larger than any half height (antd shape="round" uses the control height) -->
             <Setter Property="CornerRadius" Value="9999" />
+            <!-- layout: capsule thumb, a radius larger than any half height -->
             <Setter Property="SelectedThumbCornerRadius" Value="9999" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <!-- 对齐 antd 滑块动效：位移与尺寸同时插值，motionDurationSlow(300ms)，motionEaseInOut cubic-bezier(0.645, 0.045, 0.355, 1) -->
-                    <PointTransition Property="SelectedThumbPos" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" Easing="0.645,0.045,0.355,1" />
-                    <SizeTransition Property="SelectedThumbSize" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" Easing="0.645,0.045,0.355,1" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <!-- 对齐 antd 滑块动效：位移与尺寸同时插值，motionDurationSlow(300ms)，motionEaseInOut cubic-bezier(0.645, 0.045, 0.355, 1) -->
+                        <PointTransition Property="SelectedThumbPos" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="0.645,0.045,0.355,1" />
+                        <SizeTransition Property="SelectedThumbSize" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="0.645,0.045,0.355,1" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

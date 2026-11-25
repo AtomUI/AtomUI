@@ -1,14 +1,13 @@
 using System.Diagnostics;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
-using AtomUI.Data;
-using AtomUI.Theme.Resources;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.VisualTree;
@@ -32,7 +31,7 @@ internal class TimeSelectedEventArgs : EventArgs
 [TemplatePart("PART_PeriodSelector", typeof(DateTimePickerPanel), IsRequired = true)]
 [TemplatePart("PART_PickerContainer", typeof(Grid), IsRequired = true)]
 [TemplatePart("PART_ThirdSpacer", typeof(Rectangle), IsRequired = true)]
-internal class TimeView : TemplatedControl
+internal partial class TimeView : TemplatedControl
 {
     #region 公共属性定义
 
@@ -113,10 +112,44 @@ internal class TimeView : TemplatedControl
             o => o.SpacerWidth,
             (o, v) => o.SpacerWidth = v);
 
-    internal static readonly DirectProperty<TimeView, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<TimeView, double>(nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    /// <summary>
+    /// Line width of the column separators, read from the owner by the theme; <see cref="SpacerWidth"/> is this width
+    /// in device pixels.
+    /// </summary>
+    internal static readonly StyledProperty<double> SpacerLineWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(SpacerLineWidth));
+
+    internal double SpacerLineWidth
+    {
+        get => GetValue(SpacerLineWidthProperty);
+        set => SetValue(SpacerLineWidthProperty, value);
+    }
+
+    // Metrics of the hosting picker's Own Tokens. The time view resolves them from its Token owner itself, so they
+    // reach only this view and its template parts instead of inheriting through the whole picker and popup tree.
+    internal static readonly StyledProperty<double> ItemHeightProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(ItemHeight));
+
+    internal static readonly StyledProperty<double> ItemWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(ItemWidth));
+
+    internal static readonly StyledProperty<double> PeriodHostWidthProperty =
+        AvaloniaProperty.Register<TimeView, double>(nameof(PeriodHostWidth));
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemPadding));
+
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemMargin));
+
+    internal static readonly StyledProperty<Thickness> ItemBackgroundInsetProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(ItemBackgroundInset));
+
+    internal static readonly StyledProperty<bool> CenterItemContentProperty =
+        AvaloniaProperty.Register<TimeView, bool>(nameof(CenterItemContent));
+
+    internal static readonly StyledProperty<Thickness> HeaderMarginProperty =
+        AvaloniaProperty.Register<TimeView, Thickness>(nameof(HeaderMargin));
 
     internal static readonly StyledProperty<bool> IsPointerInSelectorProperty =
         AvaloniaProperty.Register<TimeView, bool>(nameof(IsPointerInSelector), false);
@@ -138,6 +171,7 @@ internal class TimeView : TemplatedControl
             (o, v) => o.PmText = v);
     
     private double _spacerWidth;
+    private readonly List<IDisposable> _selectorOwnerForwardings = new();
 
     internal double SpacerWidth
     {
@@ -145,13 +179,97 @@ internal class TimeView : TemplatedControl
         set => SetAndRaise(SpacerWidthProperty, ref _spacerWidth, value);
     }
 
-    private double _itemHeight;
-
     internal double ItemHeight
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(ItemHeightProperty);
+        set => SetValue(ItemHeightProperty, value);
     }
+
+    internal double ItemWidth
+    {
+        get => GetValue(ItemWidthProperty);
+        set => SetValue(ItemWidthProperty, value);
+    }
+
+    internal double PeriodHostWidth
+    {
+        get => GetValue(PeriodHostWidthProperty);
+        set => SetValue(PeriodHostWidthProperty, value);
+    }
+
+    internal Thickness ItemPadding
+    {
+        get => GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
+    }
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal Thickness ItemBackgroundInset
+    {
+        get => GetValue(ItemBackgroundInsetProperty);
+        set => SetValue(ItemBackgroundInsetProperty, value);
+    }
+
+    internal bool CenterItemContent
+    {
+        get => GetValue(CenterItemContentProperty);
+        set => SetValue(CenterItemContentProperty, value);
+    }
+
+    internal Thickness HeaderMargin
+    {
+        get => GetValue(HeaderMarginProperty);
+        set => SetValue(HeaderMarginProperty, value);
+    }
+
+    // The picker terminals' Own Tokens, keyed by their generated TokenKind values so the reads stay visible to the
+    // Token consumption analysis. Date pickers have no background inset or centred content; time pickers no header.
+    private static readonly IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)>
+        s_ownerInputs =
+        [
+            (typeof(RangeTimePicker), [
+                (ItemHeightProperty, RangeTimePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, RangeTimePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, RangeTimePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, RangeTimePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, RangeTimePickerTokenKind.ItemMargin),
+                (ItemBackgroundInsetProperty, RangeTimePickerTokenKind.ItemBackgroundInset),
+                (CenterItemContentProperty, RangeTimePickerTokenKind.CenterItemContent)
+            ]),
+            (typeof(TimePicker), [
+                (ItemHeightProperty, TimePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, TimePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, TimePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, TimePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, TimePickerTokenKind.ItemMargin),
+                (ItemBackgroundInsetProperty, TimePickerTokenKind.ItemBackgroundInset),
+                (CenterItemContentProperty, TimePickerTokenKind.CenterItemContent)
+            ]),
+            (typeof(RangeDatePicker), [
+                (ItemHeightProperty, RangeDatePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, RangeDatePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, RangeDatePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, RangeDatePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, RangeDatePickerTokenKind.ItemMargin),
+                (HeaderMarginProperty, RangeDatePickerTokenKind.HeaderMargin)
+            ]),
+            (typeof(DatePicker), [
+                (ItemHeightProperty, DatePickerTokenKind.ItemHeight),
+                (ItemWidthProperty, DatePickerTokenKind.ItemWidth),
+                (PeriodHostWidthProperty, DatePickerTokenKind.PeriodHostWidth),
+                (ItemPaddingProperty, DatePickerTokenKind.ItemPadding),
+                (ItemMarginProperty, DatePickerTokenKind.ItemMargin),
+                (HeaderMarginProperty, DatePickerTokenKind.HeaderMargin)
+            ])
+        ];
+
+    // Lives as long as the view; it subscribes only to the view itself and, while attached, to its resources.
+    private readonly IDisposable _ownerInputs;
 
     internal bool IsPointerInSelector
     {
@@ -199,7 +317,6 @@ internal class TimeView : TemplatedControl
     private DateTimePickerPanel? _minuteSelector;
     private DateTimePickerPanel? _secondSelector;
     private DateTimePickerPanel? _periodSelector;
-    private IDisposable? _spacerWidthDisposable;
     private IDisposable? _pointerPositionDisposable;
     private TimeSpan? _pendingDisplayTime;
     private bool _isSyncingPanelValue;
@@ -212,6 +329,7 @@ internal class TimeView : TemplatedControl
 
     public TimeView()
     {
+        _ownerInputs = PartTokenBinder.BindFromOwner(this, s_ownerInputs);
         // Each column handles its own scrolling first. Unconsumed focus requests
         // must not continue through the popup's logical owner into the page.
         AddHandler(RequestBringIntoViewEvent, (_, e) =>
@@ -273,14 +391,7 @@ internal class TimeView : TemplatedControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        _spacerWidthDisposable = TokenResourceBinder.CreateControlTokenBinding(
-            typeof(TimePicker),
-            this,
-            this,
-            SpacerWidthProperty,
-            SharedTokenKind.LineWidth,
-            BindingPriority.Template,
-            new RenderScaleAwareDoubleConfigure(this));
+        UpdateSpacerWidth();
         var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;
         Debug.Assert(inputManager != null);
         _pointerPositionDisposable = inputManager.Process.Subscribe(DetectPointerPosition);
@@ -288,13 +399,18 @@ internal class TimeView : TemplatedControl
         ApplyPendingDisplayTime();
     }
 
+    private void UpdateSpacerWidth()
+    {
+        // The separators are one device pixel wide at LineWidth 1, whatever the render scaling.
+        var renderScaling = this.GetPresentationSource()?.RenderScaling ?? 1d;
+        SpacerWidth = SpacerLineWidth / renderScaling;
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         _pointerPositionDisposable?.Dispose();
-        _spacerWidthDisposable?.Dispose();
         _pointerPositionDisposable = null;
-        _spacerWidthDisposable     = null;
         IsPointerInSelector = false;
     }
 
@@ -311,6 +427,18 @@ internal class TimeView : TemplatedControl
         _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
         _secondSelector = e.NameScope.Get<DateTimePickerPanel>("PART_SecondSelector");
         _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
+        // The selector panels sit in registered ScrollViewers, whose identity would become the owner of the time cells:
+        // the cells follow this time view's owner (the hosting picker) instead.
+        foreach (var forwarding in _selectorOwnerForwardings)
+        {
+            forwarding.Dispose();
+        }
+
+        _selectorOwnerForwardings.Clear();
+        foreach (var selector in new Control[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector })
+        {
+            _selectorOwnerForwardings.Add(TokenOwnerForwarding.Forward(this, selector));
+        }
         SetupPickerSelectorContainerHeight();
 
         _spacer3 = e.NameScope.Get<Rectangle>("PART_ThirdSpacer");
@@ -455,6 +583,11 @@ internal class TimeView : TemplatedControl
     {
         base.OnPropertyChanged(change);
 
+        if (change.Property == SpacerLineWidthProperty)
+        {
+            UpdateSpacerWidth();
+        }
+
         if (change.Property == MinuteIncrementProperty ||
             change.Property == SecondIncrementProperty ||
             change.Property == ClockIdentifierProperty)
@@ -493,6 +626,62 @@ internal class TimeView : TemplatedControl
 
         _headerText.Text = DateTimeUtils.FormatTimeSpan(CollectValue(),
             ClockIdentifier == ClockIdentifierType.HourClock12, AmText, PmText);
+    }
+
+    private int _keyboardColumn = -1;
+
+    /// <summary>
+    /// Handles a navigation key forwarded from a picker input: Up, Down, PageUp, PageDown, Home and End step the
+    /// active column, Left and Right switch it. The first key activates the hour column.
+    /// </summary>
+    internal bool HandleForwardedKey(Key key)
+    {
+        var columns = new[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector }
+                      .Where(selector => selector is { IsEffectivelyVisible: true })
+                      .Select(selector => selector!)
+                      .ToArray();
+        if (columns.Length == 0)
+        {
+            return false;
+        }
+
+        var column = Math.Clamp(_keyboardColumn, 0, columns.Length - 1);
+        if (key is Key.Left or Key.Right)
+        {
+            column = _keyboardColumn < 0 ? 0 : Math.Clamp(column + (key == Key.Left ? -1 : 1), 0, columns.Length - 1);
+            SetKeyboardColumn(columns, column);
+            return true;
+        }
+
+        if (key is not (Key.Up or Key.Down or Key.PageUp or Key.PageDown or Key.Home or Key.End))
+        {
+            return false;
+        }
+
+        SetKeyboardColumn(columns, column);
+        return columns[column].StepByKey(key);
+    }
+
+    /// <summary>Clears the keyboard-active column, so the next forwarded key starts from the hour column.</summary>
+    internal void ResetKeyboardNavigation()
+    {
+        _keyboardColumn = -1;
+        foreach (var selector in new[] { _hourSelector, _minuteSelector, _secondSelector, _periodSelector })
+        {
+            if (selector is not null)
+            {
+                selector.IsKeyboardActive = false;
+            }
+        }
+    }
+
+    private void SetKeyboardColumn(DateTimePickerPanel[] columns, int column)
+    {
+        _keyboardColumn = column;
+        for (var index = 0; index < columns.Length; index++)
+        {
+            columns[index].IsKeyboardActive = index == column;
+        }
     }
 
     internal void SyncDisplayTimeToPanel(TimeSpan time)

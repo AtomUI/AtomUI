@@ -16,5 +16,5 @@ internal partial class DesktopOverlayTheme : Avalonia.Controls.ResourceDictionar
 public static class Registration
 {
     public static IAtomUIBuilder UseAuthorControls(this IAtomUIBuilder builder) =>
-        AtomUI.Generated.FixtureNuGetAuthor.GeneratedControlPackageRegistration.Definition.Register(builder);
+        AtomUI.Generated.FixtureNuGetAuthor.PackageMetadata.Definition.Register(builder);
 }

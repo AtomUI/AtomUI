@@ -46,7 +46,7 @@ Before a negative absence check, run Inspector's `pretrim` mode on the ordinary 
 
 ## Reproduce ordinary package consumption from fresh outputs
 
-Prerequisites: Python 3, the repository-pinned .NET SDK 10.0.300, network access to restore public NuGet dependencies, and the supported Browser/WASM workload (10.0.10). The default desktop RID is `osx-arm64`; pass the actual supported host RID explicitly when appropriate. No pre-existing repository `.artifacts`, local feed, package cache, or plan-workspace script is required.
+Prerequisites: Python 3, .NET SDK 10.0.300 or later (SDK 11 included), network access to restore public NuGet dependencies, and the supported Browser/WASM workload (10.0.10). The default desktop RID is `osx-arm64`; pass the actual supported host RID explicitly when appropriate. No pre-existing repository `.artifacts`, local feed, package cache, or plan-workspace script is required.
 
 From the repository root, choose an output directory that does **not** exist:
 

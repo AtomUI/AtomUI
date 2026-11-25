@@ -19,8 +19,8 @@ public abstract class AbstractResult : ContentControl
     public static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty =
         AvaloniaProperty.Register<AbstractResult, IDataTemplate?>(nameof(ExtraTemplate));
 
-    public static readonly StyledProperty<PathIcon?> IconProperty =
-        AvaloniaProperty.Register<AbstractResult, PathIcon?>(nameof(Icon));
+    public static readonly StyledProperty<object?> IconProperty =
+        AvaloniaProperty.Register<AbstractResult, object?>(nameof(Icon));
 
     public static readonly StyledProperty<ResultStatus> StatusProperty =
         AvaloniaProperty.Register<AbstractResult, ResultStatus>(nameof(Status));
@@ -59,7 +59,7 @@ public abstract class AbstractResult : ContentControl
         set => SetValue(ExtraTemplateProperty, value);
     }
 
-    public PathIcon? Icon
+    public object? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
@@ -137,8 +137,8 @@ public abstract class AbstractResult : ContentControl
             o => o.SubHeaderLineHeight,
             (o, v) => o.SubHeaderLineHeight = v);
 
-    internal static readonly DirectProperty<AbstractResult, PathIcon?> StatusIconProperty =
-        AvaloniaProperty.RegisterDirect<AbstractResult, PathIcon?>(
+    internal static readonly DirectProperty<AbstractResult, object?> StatusIconProperty =
+        AvaloniaProperty.RegisterDirect<AbstractResult, object?>(
             nameof(StatusIcon),
             o => o.StatusIcon,
             (o, v) => o.StatusIcon = v);
@@ -171,9 +171,9 @@ public abstract class AbstractResult : ContentControl
         set => SetAndRaise(SubHeaderLineHeightProperty, ref _subHeaderLineHeight, value);
     }
 
-    private PathIcon? _statusIcon;
+    private object? _statusIcon;
 
-    internal PathIcon? StatusIcon
+    internal object? StatusIcon
     {
         get => _statusIcon;
         set => SetAndRaise(StatusIconProperty, ref _statusIcon, value);
@@ -221,36 +221,28 @@ public abstract class AbstractResult : ContentControl
         ConfigureSubHeaderLineHeight();
     }
 
+    /// <summary>
+    /// Creates the icon shown for <paramref name="status"/> when <see cref="Icon"/> is not set.
+    /// Returns a fresh instance per call, since icons are controls and can have only one parent.
+    /// </summary>
+    private protected virtual object? CreateDefaultStatusIcon(ResultStatus status)
+    {
+        return status switch
+        {
+            ResultStatus.Info    => new ExclamationCircleFilled(),
+            ResultStatus.Success => new CheckCircleFilled(),
+            ResultStatus.Warning => new WarningFilled(),
+            ResultStatus.Error   => new CloseCircleFilled(),
+            ResultStatus.Waiting => new ClockCircleFilled(),
+            _                    => null
+        };
+    }
+
     private void ConfigureStatusImage()
     {
-        if (Status == ResultStatus.Info ||
-            Status == ResultStatus.Success ||
-            Status == ResultStatus.Warning ||
-            Status == ResultStatus.Error)
+        if (Status is ResultStatus.Info or ResultStatus.Success or ResultStatus.Warning or ResultStatus.Error or ResultStatus.Waiting)
         {
-            if (Icon != null)
-            {
-                SetCurrentValue(StatusIconProperty, Icon);
-            }
-            else
-            {
-                if (Status == ResultStatus.Info)
-                {
-                    SetCurrentValue(StatusIconProperty, new ExclamationCircleFilled());
-                }
-                else if (Status == ResultStatus.Success)
-                {
-                    SetCurrentValue(StatusIconProperty, new CheckCircleFilled());
-                }
-                else if (Status == ResultStatus.Warning)
-                {
-                    SetCurrentValue(StatusIconProperty, new WarningFilled());
-                }
-                else if (Status == ResultStatus.Error)
-                {
-                    SetCurrentValue(StatusIconProperty, new CloseCircleFilled());
-                }
-            }
+            SetCurrentValue(StatusIconProperty, Icon ?? CreateDefaultStatusIcon(Status));
         }
 
         if (_statusImage != null)
@@ -270,13 +262,17 @@ public abstract class AbstractResult : ContentControl
         }
     }
 
-    private void ConfigureHeaderLineHeight()
+    private protected virtual double HeaderLineHeightRatio => RelativeHeaderLineHeight;
+
+    private protected virtual double SubHeaderLineHeightRatio => RelativeSubHeaderLineHeight;
+
+    private protected void ConfigureHeaderLineHeight()
     {
-        SetCurrentValue(HeaderLineHeightProperty, RelativeHeaderLineHeight * HeaderFontSize);
+        SetCurrentValue(HeaderLineHeightProperty, HeaderLineHeightRatio * HeaderFontSize);
     }
 
-    private void ConfigureSubHeaderLineHeight()
+    private protected void ConfigureSubHeaderLineHeight()
     {
-        SetCurrentValue(SubHeaderLineHeightProperty, RelativeSubHeaderLineHeight * SubHeaderFontSize);
+        SetCurrentValue(SubHeaderLineHeightProperty, SubHeaderLineHeightRatio * SubHeaderFontSize);
     }
 }

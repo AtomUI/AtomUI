@@ -42,7 +42,7 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
 | 内容与数据 | `ItemsSource`、`Query`、`AppliedQuery`、`GroupExpansion`、`TotalItemCount`、`TotalEntryCount`、`AutoGenerateColumns`、`CellTemplate`、`CellEditingTemplate` | 定义数据输入、查询、范围 presentation、模板和业务对象入口；`ItemsSource` 的类型是 `IDataGridSource?`。 |
-| 选择与当前项 | `Selection`、`CurrentRowKey`、`SelectionChanged`、`ClipboardCopyMode` | 以稳定 row key、query scope 和 index interval 维护可跨 range/page 的声明式状态。 |
+| 选择与当前项 | `SelectionMode`、`SelectTriggerType`、`Selection`、`CurrentRowKey`、`SelectionChanged`、`ClipboardCopyMode` | 以稳定 row key、query scope 和 index interval 维护可跨 range/page 的声明式状态。 |
 | 交互与加载 | `CanUserFilterColumns`、`CanUserReorderRows`、`CanUserResizeColumns`、`CanUserSortColumns`、`QueryChanged`、`LoadState`、`LoadError`、`IsDataStale`、`Reload()` | 表达用户查询意图、异步生命周期、错误与可提交能力。 |
 | 视觉与布局 | `BottomPaginationAlign`、`ColumnWidth`、`HorizontalAlignment`、`HorizontalScrollBarVisibility`、`IsShowPageSizeSelector`、`MaxColumnWidth`、`MinColumnWidth`、`RowHeight`、`SeparatorBrush`、`SizeType`、`SublevelIndent` 等 15 项 | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 | 分页面板扩展 | `TopPaginationExtraContent`、`TopPaginationExtraContentTemplate`、`BottomPaginationExtraContent`、`BottomPaginationExtraContentTemplate` | 在顶部/底部分页区域提供与 Pagination 相反一侧的独立 Extra Content；默认均为 `null`，不拥有分页状态。 |
@@ -58,6 +58,17 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 `IDataGridMovableSource` 共同表达。DataGrid 使用 source row key 与目标 before/after key 提交移动，不把 view、window 或 display
 索引解释为 Source 集合索引。Source 不支持移动、当前 Query 语义禁止移动、编辑未能提交或 snapshot 失效时，handle 不进入
 可提交状态，也不发布 `RowReordered`。
+
+主动行移动（含拖动和 `MoveRowAsync`）重载数据时保持当前可见 slot 与行内偏移，目标行在当前视口中的新顺序立即可见。
+重排后占据该 slot 的行较矮、原行内偏移无法保留时，视口回到该 slot 顶部。
+普通外部数据失效仍按内容行 key 保持屏幕位置；共享同一 Source 的其他 DataGrid 沿用该内容锚定规则。
+
+行内编辑统一经 `IDataGridEditableSource.CommitAsync` 写回：列需 `IsReadOnly=False`、为 `DataGridBoundColumn` 并以 `FieldId`
+指向 `IsEditable` 字段。编辑器只读取绑定值，不直接写数据项；单元格编辑在单元格结束时提交，`DataGridOperationColumn` 的“编辑”
+使整行可编辑单元格同时进入编辑，“保存”一次提交、“取消”直接丢弃。值无法转换时保持编辑并显示校验错误；编辑器关闭后的
+Source 失败通过 `EditCommitFailed` 报告。`DataGridLocalSource` 中提供 `setter` 的字段可编辑，未影响当前 Query 的编辑保留
+snapshot，影响 sort/filter/group 的编辑触发失效重载。完整决策见
+[行内编辑设计](../../../../superpowers/specs/2026-10-31-datagrid-inline-editing-design.md)。
 
 分页公共契约由 `PageSize`、`IsShowPageSizeSelector`、`PaginationVisibility`、`TopPaginationAlign`、
 `BottomPaginationAlign` 和 `IsHideOnSinglePage` 共同表达。`IsShowPageSizeSelector` 默认为 `true`，转发到顶部和底部
@@ -121,6 +132,14 @@ Query 投影，用户确认后一次性生成新的不可变 Query。过滤 DTO 
 
 控件专属或内部伪类包括 `DataGridPseudoClass.EmptyColumns`、`DataGridPseudoClass.EmptyRows`、`DataGridPseudoClass.FirstColumnHeader`、`DataGridPseudoClass.GroupItemLeaf`、`DataGridPseudoClass.LastColumnHeader`、`DataGridPseudoClass.MiddleColumnHeader`、`DataGridPseudoClass.RowHover`、`EmptyColumns=:empty-columns`、`EmptyRows=:empty-rows`、`FirstColumnHeader=:first-column-header`、`GroupItemLeaf=:is-leaf-item`、`LastColumnHeader=:last-column-header` 等 14 项。这些伪类属于主题 selector 可观察契约，不能在未同步主题和 Gallery 的情况下重命名或删除。
 
+### 打开与关闭动效配置
+
+筛选弹层通过其实际 Flyout 继承的 OpenMotion/CloseMotion 配置。DataGrid 本体不增加控制行、列、编辑及全部弹层的同名入口。
+
+这些入口的显式 null、主题默认与清除覆盖按[共享配置契约](../../../../architecture/systems/motion/popup-motion.md#3-public-api-与主题覆盖)处理，各层默认保持独立。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 DataGrid 的状态流按以下路径收敛：
@@ -149,6 +168,10 @@ Public API / inherited command / Source invalidation / user input
   时仍可在任意 LoadState 显示 Spin。
 - 行拖动状态以当前 `DataGrid` 的单一拖拽会话为 owner；handle 和 RowsPresenter 只投影输入与 ghost row，不能保存
   跨 DataGrid 共享的静态拖拽状态。Pointer capture、源 row key、Source snapshot 和目标邻接 key 必须属于同一个会话。
+- 拖动中滚轮滚动或拖到边界外自动滚动使源行离开视口并被回收时，会话继续有效：会话以源 RowKey 在其已提交 slot 上
+  的数据身份判定，不依赖源行容器仍在显示；滚动生效后插入目标按指针当前位置重新解析，不移动指针直接松开也落在指针下的行。
+- 指针越过行区域顶部或底部时，ghost row 停靠在视口对应边缘，始终可见；指针停在边界外不动也会持续自动滚动，速度随越界
+  距离增大（有上限），指针回到行区域内或拖动结束即停止。
 - `RowReordering` 在超过拖动阈值后且创建 ghost row 前触发一次；事件取消或事件回调改变 DataGrid、源行、
   Source、Query、snapshot 或移动能力时，本次 Pointer 会话保持取消状态，不得在后续移动帧重复开始。
 - `RowReordered` 只在 movable Source 成功提交顺序变化，并且 ghost、capture、动画与会话状态全部清理后触发。
@@ -243,6 +266,22 @@ DataGrid 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 DataIndex hint 只用于定位。Source replacement 清空 selection/current；Query 与 invalidation 按
 [Query 与 Range Source 设计](query-range-source-design.md#91-声明式选择)定义确定的保留和失效规则。
 
+`SelectionMode` 默认为 `None`；`Single` 使用单选指示器，`Extended` 使用复选指示器。`SelectTriggerType` 默认为
+`SelectIndicator`：左键点击指示器改变选择，点击普通单元格或选择列空白保留已有选择，包括带 Ctrl/Shift 的点击。
+非指示器点击仍可更新当前单元格、焦点并进入编辑。显式设置 `Cell` 时，普通点击选择当前行，`Extended` 下
+Ctrl（macOS 为 Command）切换单行选择、Shift 从锚点扩展范围；选择指示器仍支持增删选中行。
+
+`Row` 是按需开启的整行触发方式：点击行内任意位置（包括选择列空白）即改变选择，不需要修饰键。各模式的普通左键语义如下：
+
+| SelectTriggerType | `Single` | `Extended` 普通点击 | `Extended` + Ctrl | `Extended` + Shift |
+| --- | --- | --- | --- | --- |
+| `SelectIndicator`（默认） | 仅指示器选中该行 | 仅指示器增删该行 | 同普通点击 | 同普通点击 |
+| `Cell` | 选中该行 | 只保留该行 | 切换该行 | 锚点到当前行的范围替换选区 |
+| `Row` | 选中该行，再次点击保持选中 | 切换该行 | 同普通点击 | 锚点到当前行的范围替换选区 |
+
+`Row` 下再次点击当前单元格进入编辑，或行仍在编辑时，保留该行选中状态。三种方式中选择指示器的增删语义一致，
+`None` 均不产生选择。
+
 ### 8.2 集合与数据同步模型
 
 DataGrid 的数据状态遵循单一路径：
@@ -280,8 +319,10 @@ PointerPressed
 ```
 
 每个 `DataGrid` 同时最多拥有一个行拖动会话。会话跟踪 Pointer、源 handle、源 row、Source identity、snapshot、
-源 RowKey、目标邻接 key 和拖动几何。Pointer 不匹配、capture 丢失、控件禁用、`CanUserReorderRows=false`、
-Source、Query 或 snapshot 替换、行回收、重排列移除、模板重建或 DataGrid detach
+源 RowKey、目标邻接 key 和拖动几何。Pointer capture 由 RowsPresenter 持有，而不是源行内的 handle：源行可能在拖动中被
+滚出视口并回收。超过拖动阈值前源行必须仍在显示；进入 Dragging 后，会话以源 RowKey 在其已提交 slot 上的数据身份判定，
+源行回收不取消会话。Pointer 不匹配、capture 丢失、控件禁用、`CanUserReorderRows=false`、
+Source、Query 或 snapshot 替换、源 slot 不再对应源 RowKey、重排列移除、模板重建或 DataGrid detach
 都会取消会话。取消和完成共用同一个清理边界，必须移除 ghost row、恢复动效、释放 capture 并清除会话引用。
 
 移动提交由 Source 维护自己的数据、snapshot 和 invalidation。DataGrid 不推断 Source 集合结构，也不把 display/window
@@ -342,7 +383,9 @@ range source、分页和纵向虚拟化只让已实现 cells 参与 `Auto` / `Si
 
 ### 8.6 动效模型
 
-DataGrid 的动效只表达状态变化反馈，不应改变 public API 语义。初始加载、禁用态和卸载路径应能抑制或取消动效，避免保留旧控件实例。
+DataGrid 菜单筛选与树筛选的根浮层均遵循 Dropdown：四方向 Slide、MotionDurationMid。筛选内容是 Menu 或 Tree 不改变根弹层语义；嵌套菜单仍采用 Dropdown 子菜单固定左上原点的 ZoomBig。此规则不接管网格行、列和编辑反馈动效。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ### 8.7 视觉选项模型
 

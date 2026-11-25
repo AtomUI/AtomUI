@@ -5,7 +5,6 @@ namespace AtomUI.Desktop.Controls;
 public partial class DataGrid
 {
     private long _rangeSelectionAnchorDataIndex = -1;
-    private long _currentRowDataIndexHint = -1;
     private RangeNavigationIntent? _pendingRangeNavigation;
     private long _rangeBringIntoViewIntent;
 
@@ -30,11 +29,8 @@ public partial class DataGrid
         }
 
         var intent = checked(++_rangeBringIntoViewIntent);
-        if (TryFindCommittedRangeSlot(rowKey, out var slot, out var dataIndex))
+        if (TryFindCommittedRangeSlot(rowKey, out var slot, out _))
         {
-            _currentRowDataIndexHint = CurrentRowKey == rowKey
-                ? dataIndex
-                : _currentRowDataIndexHint;
             return ValueTask.FromResult(ApplyRangeBringIntoView(
                 intent,
                 source,
@@ -163,12 +159,25 @@ public partial class DataGrid
             return;
         }
 
+        // 与其他当前格变更路径一致，在批次结束时统一比较并触发 CurrentCellChanged
+        NoCurrentCellChangeCount++;
+        try
+        {
+            SetCurrentRowKeyCore(value);
+        }
+        finally
+        {
+            NoCurrentCellChangeCount--;
+        }
+    }
+
+    private void SetCurrentRowKeyCore(DataGridRowKey? value)
+    {
         if (IsRangePresentationActive)
         {
             if (value is { } key &&
-                TryFindCommittedRangeSlot(key, out var slot, out var dataIndex))
+                TryFindCommittedRangeSlot(key, out var slot, out _))
             {
-                _currentRowDataIndexHint = dataIndex;
                 SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);
                 var columnIndex = CurrentColumnIndex != -1
                     ? CurrentColumnIndex
@@ -194,7 +203,6 @@ public partial class DataGrid
                         endRowEdit: true,
                         updateRangeCurrentKey: false);
                 }
-                _currentRowDataIndexHint = -1;
                 SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);
             }
         }
@@ -205,11 +213,8 @@ public partial class DataGrid
         ApplyRangeCurrentStateToRealizedRows();
     }
 
-    private void SetCurrentRowKeyFromCoordinates(
-        DataGridRowKey? value,
-        long dataIndexHint)
+    private void SetCurrentRowKeyFromCoordinates(DataGridRowKey? value)
     {
-        _currentRowDataIndexHint = dataIndexHint;
         if (_currentRowKey != value)
         {
             SetAndRaise(CurrentRowKeyProperty, ref _currentRowKey, value);
@@ -326,6 +331,56 @@ public partial class DataGrid
         Selection = Selection.TransitionTo(nextScope, transition);
     }
 
+    // 当前行由 CurrentRowKey 拥有，CurrentSlot 只是它在已提交快照中的投影。
+    // 排序、过滤、失效刷新后同一槽位可能对应另一行或已越界，因此提交新快照后按 key 重新投影；
+    // 纯视口滚动时槽位编号不变，key 不在已提交块内也保留原槽位。
+    private void ReprojectCurrentCellForCommittedSnapshot(
+        DataGridPresentationSnapshot? previousSnapshot,
+        DataGridPresentationSnapshot nextSnapshot,
+        bool isInvalidation)
+    {
+        var isSameRowSpace = previousSnapshot is not null &&
+                             !isInvalidation &&
+                             previousSnapshot.DataGeneration == nextSnapshot.DataGeneration &&
+                             previousSnapshot.Query == nextSnapshot.Query;
+        int? slot = _currentRowKey is { } key ? _rangePresentationIndex?.FindSlot(key) : null;
+        if (isSameRowSpace && slot is null)
+        {
+            return;
+        }
+
+        var columnIndex = CurrentColumnIndex != -1
+            ? CurrentColumnIndex
+            : ColumnsInternal.FirstVisibleNonFillerColumn?.Index ?? -1;
+        NoCurrentCellChangeCount++;
+        try
+        {
+            if (!isSameRowSpace)
+            {
+                // 旧行空间的坐标已无意义（元素已在提交时卸载），直接作废后再按 key 投影；
+                // CurrentCellChanged 由批次结束时的状态比较统一触发。
+                CurrentColumnIndex = -1;
+                CurrentSlot = -1;
+            }
+            if (slot is { } currentSlot)
+            {
+                if (columnIndex != -1)
+                {
+                    SetCurrentCellCore(
+                        columnIndex,
+                        currentSlot,
+                        commitEdit: false,
+                        endRowEdit: false,
+                        updateRangeCurrentKey: false);
+                }
+            }
+        }
+        finally
+        {
+            NoCurrentCellChangeCount--;
+        }
+    }
+
     private bool IsRangeGroupSlot(int slot) =>
         IsRangePresentationActive &&
         TryGetCommittedRangeEntry(slot, out var entry) &&
@@ -367,6 +422,9 @@ public partial class DataGrid
         {
             return;
         }
+        // 直接作用于已加载行的选择/当前格变更是更新的用户意图，挂起的导航随之作废，
+        // 否则其目标块加载完成后会覆盖这次操作
+        _pendingRangeNavigation = null;
 
         switch (action)
         {
@@ -380,7 +438,8 @@ public partial class DataGrid
                 if (SelectionMode == DataGridSelectionMode.Extended &&
                     _rangeSelectionAnchorDataIndex >= 0)
                 {
-                    Selection = Selection.WithInterval(
+                    // Shift 选择以锚点到当前行的区间替换整个选区，回退时区间随之收缩。
+                    Selection = DataGridSelectionState.Empty.WithInterval(
                         Math.Min(_rangeSelectionAnchorDataIndex, entry.DataIndex),
                         checked(Math.Max(_rangeSelectionAnchorDataIndex, entry.DataIndex) + 1),
                         scope);

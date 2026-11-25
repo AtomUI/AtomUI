@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using System.Globalization;
 using AtomUI.Desktop.Controls.Internal.DateViewer;
 using AtomUI.Localization;
@@ -202,14 +203,6 @@ public partial class RangeDateViewer : TemplatedControl, IDatePanelHost
         _session.UpdateInput();
         RaisePropertyChanged(PanelKindProperty, oldKind, PanelKind);
     }
-
-    internal void SetContentFactory(Func<DatePanelSession, DateViewerCellModel, DateViewerCellContext?>? factory) =>
-        _session.SetContentFactory(factory);
-
-    internal void SetAutomationNameFactory(Func<DatePanelSession, DateViewerCellModel, string?>? factory) =>
-        _session.SetAutomationNameFactory(factory);
-
-    internal void RefreshContent() => _session.RefreshContent();
 
     DatePanelInput IDatePanelHost.ReadInput() => _host?.ReadInput() ?? new()
     {

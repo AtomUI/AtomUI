@@ -1,26 +1,29 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 
 namespace AtomUI.Theme.Configuration;
 
 public sealed class ControlThemeConfigBuilder
 {
-    private ControlAlgorithmMode _algorithm;
-    private List<ThemeAlgorithm>? _algorithms;
+    private ThemeAppearance? _appearance;
+    private DesignDensity? _density;
     private readonly Dictionary<string, string> _tokens = new(StringComparer.Ordinal);
 
-    public ControlThemeConfigBuilder WithAlgorithm(ControlAlgorithmMode algorithm)
+    /// <summary>Fixes the appearance of this control; the control becomes its own evaluation unit.</summary>
+    public ControlThemeConfigBuilder WithAppearance(ThemeAppearance appearance)
     {
-        _algorithm = algorithm;
+        _appearance = appearance;
         return this;
     }
 
-    public ControlThemeConfigBuilder WithAlgorithms(params ThemeAlgorithm[] algorithms)
+    /// <summary>Fixes the density of this control; the control becomes its own evaluation unit.</summary>
+    public ControlThemeConfigBuilder WithDensity(DesignDensity density)
     {
-        ArgumentNullException.ThrowIfNull(algorithms);
-        _algorithms = new List<ThemeAlgorithm>(algorithms);
+        ArgumentException.ThrowIfNullOrWhiteSpace(density.Id);
+        _density = density;
         return this;
     }
 
+    /// <summary>Writes a control token or a global token this control sees.</summary>
     public ControlThemeConfigBuilder WithToken(string name, string value)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -31,6 +34,6 @@ public sealed class ControlThemeConfigBuilder
 
     public ControlThemeConfig Build()
     {
-        return new ControlThemeConfig(_algorithm, _algorithms, _tokens);
+        return new ControlThemeConfig(_appearance, _density, _tokens);
     }
 }

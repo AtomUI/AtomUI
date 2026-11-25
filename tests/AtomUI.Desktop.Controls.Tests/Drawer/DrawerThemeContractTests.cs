@@ -97,7 +97,7 @@ public class DrawerThemeContractTests
             drawer.IsOpen = true;
             Dispatcher.UIThread.RunJobs();
 
-            var layer = ScopeAwareAdornerLayer.GetLayer(drawer);
+            var layer = TopLevelPresentationLayer.GetLayer(TopLevel.GetTopLevel(drawer)!);
             layer.ShouldNotBeNull();
 
             var bodyPresenter = layer.GetVisualDescendants()

@@ -5,6 +5,7 @@
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter" VerticalAlignment="Center"/>
     <ControlTheme x:Key="{x:Type atom:QuickJumperBar}" TargetType="atom:QuickJumperBar">
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Name="PART_RootLayout"
@@ -23,11 +24,15 @@
         <Setter Property="PageText" Value="{atom:PaginationLangResource PageText}"/>
         
         <Style Selector="^ /template/ StackPanel#PART_RootLayout">
-            <Setter Property="Spacing" Value="{atom:PaginationTokenResource PaginationLayoutSpacing}"/>
+            <Setter Property="Spacing" Value="{TemplateBinding QuickJumperSpacing}"/>
         </Style>
         
         <Style Selector="^ /template/ atom|LineEdit#PART_PageLineEdit">
-            <Setter Property="Width" Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}"/>
+            <Setter Property="Width" Value="{TemplateBinding QuickJumperInputWidth}"/>
+        </Style>
+
+        <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_PageLineEdit">
+            <Setter Property="Width" Value="{TemplateBinding QuickJumperInputWidth}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

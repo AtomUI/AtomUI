@@ -6,7 +6,7 @@
 
 ## 1. Popup 专属 Token
 
-`PopupToken` 是 internal control token，服务 Popup frame 和多个 Popup-bearing 控件：
+`PopupToken` 是公开的 control token 类（主题算法的控件阶段可以写它；应用仍经生成资源与主题配置定制），服务 Popup frame 和多个 Popup-bearing 控件：
 
 | Token | 派生来源 | 语义与消费者 |
 | --- | --- | --- |
@@ -17,6 +17,16 @@
 
 `FlyoutHostToken.PopupRootShadow` 同样派生自 `BoxShadowsSecondary`，Flyout、InfoFlyout、PopupConfirm 与其他 Popup 家族
 保持一致。native 阴影此前刻意收小（`0 1 6 0` 两层）以减少被阴影拦截的输入面积；阴影输入穿透落地后不再需要该限制。
+
+Popup 是 Token owner 透明容器（`[TokenOwnerTransparent]`）：弹层内容与 `OverlayPopupHost` / `PopupRoot` 的文本默认值
+（`ColorText`、`FontSize`、`FontFamily`，以 `OwnerTokenResource` 读取）继承宿主控件的 owner；Popup 自身的阴影、动效时长
+（`MotionDurationMid`）与动效开关（`EnableMotion`）以 `PopupTokenResource` 读取，由 `Controls[Popup]` 调整。
+`PopupRootShadow` 只由原生弹层窗口绘制，headless 测试以弹层 `FrameShadow` 断言其语义。边对齐弹层的缩放原点按框体实际
+绘制的圆角内缩，不读取作用域根的 `BorderRadius` / `BorderRadiusLG`。
+
+`PopupRootShadow` / `OverlayHostShadow` 可以用一条 `0 0 0 N <color>` 描边环表示无边框面板的边框（Shadcn、PrimeNG 预设）。
+Child 是自带边框的箭头框体（`ArrowDecoratedBox` 且 `BorderThickness` 非零）时，`ShadowsAwareContainer` 不绘制描边环，
+只绘制其余阴影，避免双重描边与横穿箭头底边的线。
 
 `PopupCornerRadius` 不由 transparent host 绘制；它由 Child、Presenter 或 `PopupFrame` 提供给
 `ShadowsAwareContainer`，使 frame shadow 与显式可选 surface 和内容圆角一致。

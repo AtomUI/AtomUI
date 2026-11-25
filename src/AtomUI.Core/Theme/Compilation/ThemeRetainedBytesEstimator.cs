@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using Avalonia.Media;
@@ -82,24 +82,19 @@ internal static class ThemeRetainedBytesEstimator
     internal static long EstimateConfig(NormalizedThemeConfig config) =>
         EstimateConfig(config, new HashSet<NormalizedThemeConfig>(ReferenceEqualityComparer.Instance));
 
-    internal static long EstimateKnownDeferredBindingInputs(object? bindingIdentity) =>
-        EstimateKnownDeferredBindingInputs(bindingIdentity,
-            new HashSet<NormalizedThemeConfig>(ReferenceEqualityComparer.Instance));
-
     private static long EstimateConfig(NormalizedThemeConfig config, HashSet<NormalizedThemeConfig> visited)
     {
         if (!visited.Add(config))
         {
             return 0;
         }
-        var bytes = 128L + config.Algorithms.Count * ReferenceBytes + config.ControlIdentities.Count * ReferenceBytes;
+        var bytes = 160L + config.ControlIdentities.Count * ReferenceBytes;
         bytes = Add(bytes, EstimateNormalizedTokens(config.GlobalTokens));
-        if (config.HasDeferredControls)
+        foreach (var token in config.LanguageTokens)
         {
-            bytes = Add(bytes, EstimateDeferredControls(config.ControlIdentities, config.ControlRevision!));
-            // ThemeConfigMerger owns this exact tuple and its deferred resolver closes over
-            // both normalized inputs. Count those known values without invoking the resolver.
-            return Add(bytes, EstimateKnownDeferredBindingInputs(config.ControlBindingIdentity, visited));
+            bytes = Add(bytes, ObjectOverhead + 2 * ReferenceBytes);
+            bytes = Add(bytes, EstimateValue(token.Name));
+            bytes = Add(bytes, EstimateValue(token.Value));
         }
         foreach (var control in config.Controls)
         {
@@ -108,19 +103,9 @@ internal static class ThemeRetainedBytesEstimator
         return bytes;
     }
 
-    private static long EstimateKnownDeferredBindingInputs(object? bindingIdentity,
-        HashSet<NormalizedThemeConfig> visited)
-    {
-        if (bindingIdentity is not ValueTuple<NormalizedThemeConfig, NormalizedThemeConfig> inputs)
-        {
-            return 0;
-        }
-        return Add(EstimateConfig(inputs.Item1, visited), EstimateConfig(inputs.Item2, visited));
-    }
-
     internal static long EstimateConfig(NormalizedControlThemeConfig config)
     {
-        var bytes = 128L + config.Algorithms.Count * ReferenceBytes;
+        var bytes = 128L;
         bytes = Add(bytes, EstimateValue(config.Identity.Catalog));
         bytes = Add(bytes, EstimateValue(config.Identity.Id));
         bytes = Add(bytes, EstimateNormalizedTokens(config.GlobalTokens));
@@ -140,18 +125,26 @@ internal static class ThemeRetainedBytesEstimator
 
     internal static long EstimateDefinition(PreparedThemeDefinition definition)
     {
-        var bytes = 192L + definition.Algorithms.Count * ReferenceBytes + definition.ControlIdentities.Count * ReferenceBytes;
+        var bytes = 192L + definition.ControlIdentities.Count * ReferenceBytes;
         bytes = Add(bytes, EstimateValue(definition.Id));
         bytes = Add(bytes, EstimateValue(definition.Name));
         bytes = Add(bytes, EstimateLocation(definition.Location));
-        bytes = Add(bytes, EstimateBoundTokens(definition.Tokens));
-        if (definition.ControlRevision is { } revision)
+        bytes = Add(bytes, EstimateSection(definition.Base));
+        foreach (var condition in definition.Conditions)
         {
-            return Add(bytes, EstimateDeferredControls(definition.ControlIdentities, revision));
+            bytes = Add(bytes, 96L);
+            bytes = Add(bytes, EstimateSection(condition.Values));
         }
-        foreach (var control in definition.Controls)
+        return bytes;
+    }
+
+    private static long EstimateSection(ThemeSectionDefinition section)
+    {
+        var bytes = Add(64L, EstimateBoundTokens(section.Tokens));
+        bytes = Add(bytes, EstimateBoundTokens(section.LanguageTokens));
+        foreach (var control in section.Controls)
         {
-            bytes = Add(bytes, 160L + control.Algorithms.Count * ReferenceBytes);
+            bytes = Add(bytes, 160L);
             bytes = Add(bytes, EstimateLocation(control.Location));
             bytes = Add(bytes, EstimateBoundTokens(control.GlobalTokens));
             bytes = Add(bytes, EstimateBoundTokens(control.OwnTokens));

@@ -17,21 +17,21 @@
                 </atom:RowReorderButton>
             </ControlTemplate>
         </Setter>
-        
+
         <Style Selector="^ /template/ atom|IconButton#PART_IndicatorIconButton">
             <Setter Property="Width" Value="{atom:DataGridTokenResource RowReorderIndicatorSize}"/>
             <Setter Property="Height" Value="{atom:DataGridTokenResource RowReorderIndicatorSize}"/>
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSize}"/>
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSize}"/>
+            <Setter Property="IconWidth" Value="{atom:DataGridTokenResource IconSize}"/>
+            <Setter Property="IconHeight" Value="{atom:DataGridTokenResource IconSize}"/>
             <Setter Property="Cursor" Value="SizeAll"/>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconButton#PART_IndicatorIconButton:pointerover">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}"/>
+            <Setter Property="Background" Value="{atom:DataGridTokenResource ColorBgTextHover}"/>
         </Style>
-        
+
         <Style Selector="^ /template/ atom|IconButton#PART_IndicatorIconButton:pressed">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextActive}"/>
+            <Setter Property="Background" Value="{atom:DataGridTokenResource ColorBgTextActive}"/>
         </Style>
     </ControlTheme>
 </ResourceDictionary>

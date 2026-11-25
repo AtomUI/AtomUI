@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using AtomUI.Media;
+using AtomUI.Native;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Layout;
@@ -40,6 +41,13 @@ internal abstract class AbstractLinuxWindowChromeManager : IWindowChromeManager
         AvaloniaLocator.Current.GetService<AtomUIWindowingPlatformOptions>()?.Platform,
         Window.PlatformImpl?.Handle?.HandleDescriptor,
         Window.PlatformImpl?.GetType().Assembly.GetName().Name));
+
+    // Window managers and compositors accept full-screen requests for owned windows; a rejection is reported back
+    // through the window state.
+    public bool SupportsFullScreen => true;
+
+    // X11 window managers and Wayland compositors present no chrome of their own over a full-screen window.
+    public IFullScreenNativeChrome? AttachFullScreenNativeChrome(Action metricsChanged) => null;
 
     public static AbstractLinuxWindowChromeManager Attach(Window window)
     {

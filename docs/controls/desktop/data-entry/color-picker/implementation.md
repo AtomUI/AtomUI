@@ -12,6 +12,10 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 
 ## 2. 源码文件结构
 
+Token 声明由 `AbstractColorPickerToken`（trigger 公共字段）、`AbstractColorPickerViewToken`（面板字段）和四个终端 Token 组成。
+终端只拥有真实可渲染字段，显式基值的默认守卫使用终端自己的 TokenKind。`ColorPickerAttachedProperties` 注册可继承的内部附加属性，
+供共享模板取值。属性形态和命名见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md#控件属性形态与命名)。
+
 主要源码文件：
 
 - `src/AtomUI.Desktop.Controls.ColorPicker`：代表文件包括 `AbstractColorPicker.cs`、`AtomUIColorPickerThemesProvider.cs`、`ThemeManagerBuilderExtensions.cs`、`ColorBlock.cs`、`ColorChangedEventArgs.cs` 等。
@@ -19,7 +23,7 @@ Popup 接入边界：`AbstractColorPicker` 负责业务状态和内容准备，c
 - `src/AtomUI.Desktop.Controls.ColorPicker/ColorView`：6 个文件，代表文件 `AbstractColorPickerView.cs`、`ColorPickerInput.cs`、`ColorPickerView.cs`、`ColorSpectrum.cs`、`ColorSpectrumPseudoClass.cs` 等。
 - `src/AtomUI.Desktop.Controls.ColorPicker/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.Localization`：生成 Catalog descriptor、语言模块注册入口和 `ColorPickerLangResource` 扩展。
 - `src/AtomUI.Desktop.Controls.ColorPicker/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ResourceHost.ScopedResourceHostGenerator`：1 个文件，代表文件 `GenerateScopedResourceHostAttribute.g.cs`。
-- `src/AtomUI.Desktop.Controls.ColorPicker/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator`：生成 `GeneratedControlPackageRegistration.g.cs`、`GeneratedThemeSchema.g.cs` 和 `TokenResourceConst.g.cs`。
+- `src/AtomUI.Desktop.Controls.ColorPicker/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.TokenResourceKeyGenerator`：生成 `GeneratedTypeMapRegistration.g.cs`、`GeneratedThemeSchema.g.cs` 和 `TokenResourceConst.g.cs`。
 - `src/AtomUI.Desktop.Controls.ColorPicker/GeneratedFiles/AtomUI.Generator/AtomUI.Generator.ThemeAssetManifestGenerator`：生成独立主题叶子的 `GeneratedControlThemeAssetManifest.g.cs`。
 - `src/AtomUI.Desktop.Controls.ColorPicker/Localization`：`ColorPickerLangResourceKind.cs` 定义稳定 Catalog，`en-US.xlf`、`zh-CN.xlf`、`zh-TW.xlf` 提供内置翻译。
 - `src/AtomUI.Desktop.Controls.ColorPicker/Properties`：1 个文件，代表文件 `AssemblyInfo.cs`。
@@ -107,7 +111,7 @@ Public API / ItemsSource / Command / Event
 - 构造阶段只注册必要状态，不依赖 template part。
 - 模板应用时获取 part、建立事件订阅和绑定，并先释放旧 part 订阅。
 - `OnApplyTemplate` 在连接 `PART_Popup` 的 pinned 模板绑定、事件和 dismiss 行为后，才把已有的业务打开状态投射到物理 Popup；Popup 外部关闭再回写业务状态。pinned 锚点暂时隐藏时，业务状态保持不变，物理宿主关闭并由共享 Popup 在锚点恢复后重开。
-- 开启动画由共享 Popup 管理；`PopupMotionActor` 无论在 `Opened` 前还是后挂载，都必须进入同一开启动画路径。`Closed` 负责取消动画并释放当前 actor，ColorPicker 不保存或补偿 motion actor 状态。
+- 开启动画由共享 Popup 管理；`PopupSurface` 无论在 `Opened` 前还是后就绪，都必须进入同一开启动画路径。`Closed` 负责取消动画并清理当前表面登记，ColorPicker 不保存或补偿 Popup 的播放状态。
 - 首次打开竞态、Popup 直接 Child 转发契约、pinned light-dismiss 全局审计与回归测试范式统一记录在
   [Semantic Part Popup 首次打开生命周期竞态案例](../../../../engineering/case-studies/semantic-part-popup-first-open-lifecycle-case-study.md)，本控件文档只维护 ColorPicker 自身不变量。
 - 控件卸载、弹层关闭、窗口关闭、集合替换或 container recycle 时释放事件订阅和资源宿主。
@@ -174,6 +178,21 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 8. 资源、性能与 AOT 边界
 
+渐变 trigger 代码只按当前 stop index 维护文本子节点的 active-stop 样式类。ControlTheme 对该类编译绑定宿主当前 InactiveStopTextColor；取消激活后由面板 TextElement.Foreground 继承，局部主题发布及禁用往返不会保留一次性拷贝的画刷，用户本地前景仍优先。
+
+四个公开终端通过各自的 TokenResource 读取 Own Token，并用 Setter 将共享部件需要的值传给内部附加属性。普通和渐变视图
+分别用自己的 Token 设置公开 `SliderTrackHeight`。视图通过 `AddOwner` 复用原有附加属性注册，滑轨模板通过编译绑定读取同一个
+继承值。Popup 中公开 View 的动效默认来自自身 EnableMotion；运行时宿主只绑定内部 HostIsMotionEnabled 输入，false 状态由 AXAML Setter 关闭 View 动效，用户显式 View.IsMotionEnabled 本地值仍优先。该 Content 节点不在 trigger 模板 selector 链内，宿主输入沿既有一致生命周期绑定传递。
+
+Popup 中公开 View 与 NumericUpDown / LineEdit 等公开输入框保持独立身份，View 明确指定数值编辑器的紧凑字号及布局。
+
+预设项位于公开 Collapse 之后：Collapse 保留自身身份，`PaletteColorItem` 在 attach 时复用 `TokenOwnerForwarding` 跟随 PaletteGroup，detach 时释放并清除转发值。ThemeScope 的 internal attached setter 无法从 AXAML 访问。WrapPanel 间距通过 PaletteGroup 的普通 PaletteSpacing 属性声明式传入。勾选 Icon 保持自身身份，前景由 PaletteColorItem.CheckedMarkForeground 明确投射；分隔线保留 BorderBrush，厚度经既有过滤转换器只取左边。
+
+色谱按完整栅格坐标读取指针与 HSV。绘制选色环时，根据当前环半径内缩色谱边缘和圆角弧，令整圈留在色谱内。此投影只决定绘制位置，释放指针或改变选色环尺寸时仍保留已选的 HSV 值。
+
+ColorBlock 的 Size 由 ControlTheme 状态 Setter 投射至 Width/Height。色谱 bitmap、选中颜色和测量半径属于运行时数据，代码写入使用 SetCurrentValue。RGB/HSV 数据端点的诊断说明只围绕相应语句，不豁免主题 chrome。空色斜线使用每实例缓存 Pen，资源值变化更新画笔，无非 Visual 资源订阅。
+
+
 资源和 AOT 约束：
 
 - 不通过运行时反射扫描 public API、Token 或 Gallery 示例数据。
@@ -198,6 +217,13 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - Light/Dark、Browser/Desktop 和不同 SizeType 下的主题一致性。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
+### 弹层动效接入约束
+
+AbstractColorPicker 实例拥有公开配置，主题提供 Popover ZoomBig 默认，实际 PART_Popup 单向消费。共享几何计算不通过 SetupPopupProperties 本地赋值改写用户 Motion；纯色/渐变、确认与颜色事件保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -209,3 +235,6 @@ ColorPicker 的交互事件应从输入源收敛到控件级语义事件：
 - 确认与取消能力按 [专项验证矩阵](confirmation-design.md#10-验证要求) 验证默认兼容、候选隔离、清空确认、取消与所有关闭路径；临时验证代码的去留遵循项目测试生命周期规范。
 - Semantic Part 契约与 marker 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ColorPicker/ColorPickerSemanticPartTests.cs`（descriptor 五部件、模板静态 marker 清单、默认主题不消费 semantic selector、`IsPopupPinnedOpen` 公共 API、overlay 弹层下生成 Style 命中触发区与 popup.root 目标）。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

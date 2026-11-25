@@ -32,7 +32,7 @@ Selector、类型约束、数量语义和定制边界。ProgressBar 的整体设
 | AtomUI 节点 | 普通线形进度 owner |
 | 职责 | 承载进度范围、状态、尺寸、方向、文本位置和 Semantic Style 作用域。 |
 | 相关 API | 全部 `ProgressBar` public API |
-| 相关 Token | ProgressBarToken、SharedToken |
+| 相关 Token | 该控件的进度 Token（见 token.md）、Global Token |
 | 稳定性 | stable since 6.2.0 |
 
 #### `body`
@@ -134,7 +134,7 @@ Selector、类型约束、数量语义和定制边界。ProgressBar 的整体设
 | AtomUI 节点 | 步骤线形进度 owner |
 | 职责 | 承载进度范围、步骤数量、逐步画刷、尺寸、方向和 Semantic Style 作用域。 |
 | 相关 API | 全部 `StepsProgressBar` public API |
-| 相关 Token | ProgressBarToken、SharedToken |
+| 相关 Token | 该控件的进度 Token（见 token.md）、Global Token |
 | 稳定性 | stable since 6.2.0 |
 
 #### `body`
@@ -216,7 +216,7 @@ Selector、类型约束、数量语义和定制边界。ProgressBar 的整体设
 | AtomUI 节点 | 圆形进度 owner |
 | 职责 | 承载进度范围、圆形尺寸、分段状态和 Semantic Style 作用域。 |
 | 相关 API | 全部 `CircleProgress` public API |
-| 相关 Token | ProgressBarToken、SharedToken |
+| 相关 Token | 该控件的进度 Token（见 token.md）、Global Token |
 | 稳定性 | stable since 6.2.0 |
 
 #### `body`
@@ -318,7 +318,7 @@ Selector、类型约束、数量语义和定制边界。ProgressBar 的整体设
 | AtomUI 节点 | 仪表盘进度 owner |
 | 职责 | 承载进度范围、缺口、尺寸、分段状态和 Semantic Style 作用域。 |
 | 相关 API | 全部 `DashboardProgress` public API |
-| 相关 Token | ProgressBarToken、SharedToken |
+| 相关 Token | 该控件的进度 Token（见 token.md）、Global Token |
 | 稳定性 | stable since 6.2.0 |
 
 #### `body`
@@ -430,7 +430,7 @@ rail 表示未完成轨道。普通线形有一个静态 `Border`，圆形和仪
 
 普通线形 target 是直接绘制剩余轨道的可见 `Border`，使用 `Background` 和 `CornerRadius` 定制；圆形与仪表盘 target 是直接绘制完整轨道 Geometry 的可见 Shape，使用 `Stroke` 定制。
 Semantic Style 直接作用于最终可见节点，不经过 owner 绘制代理。
-Circle 与 Dashboard 的 rail Shape Bounds 按 `body size - StrokeThickness` 内缩，并与 body 共享中心；该边界对应 Ant Design SVG 中
+Circle 与 Dashboard 的 rail Shape Bounds 按 `body size - EffectiveStrokeThickness` 内缩，并与 body 共享中心；该边界对应 Ant Design SVG 中
 `radius = 50 - strokeWidth / 2` 的圆几何范围。不得让 Shape 铺满 body，也不得按 Geometry 的原始坐标从左上角偏移。
 几何尺寸、方向、圆弧角度和步骤数量仍由 owner API 计算；Semantic Style 不替代 `IndicatorThickness`、`ChunkWidth`、
 `ChunkHeight`、`StepCount`、`StepGap`、`GapDegree` 或 `DashboardGapPosition`。
@@ -524,7 +524,7 @@ indicator 是每个 owner 唯一的信息 `Panel`，统一包裹百分比 label�
 | --- | --- | --- | --- | --- |
 | `ProgressBar` | `SizeType=Large` | Large/Middle/Small track thickness 为 `8/6/4` | `IndicatorThickness`；横向 Height 或纵向 Width 可影响 effective size | body、rail、track Setter 不得破坏外部/内嵌 indicator 的预留空间 |
 | `StepsProgressBar` | `SizeType=Large` | 自动 `ChunkWidth` 为 `14/6/2`；默认 `ChunkHeight=8` | `ChunkWidth`、`ChunkHeight`、`IndicatorThickness` | 自动宽度不得写回 public `ChunkWidth`，尺寸档切换必须重新计算；runtime Rectangle 间距保持 2 |
-| `CircleProgress` | `SizeType=Large` | Large/Middle/Small 直径为 `120/90/60`；thickness 按实际直径计算且最小 3 | `Width`、`Height`、`IndicatorThickness` | rail/track Bounds 等于 `floor(body size - StrokeThickness)` 并与 body 同心；Geometry 在该局部视口内表达圆弧 |
+| `CircleProgress` | `SizeType=Large` | Large/Middle/Small 直径为 `120/90/60`；thickness 按实际直径计算且最小 3 | `Width`、`Height`、`IndicatorThickness` | rail/track 的正方形视口以 `floor(max(0, min(body.Width, body.Height) - EffectiveStrokeThickness))` 为边长，与 body 同心；Geometry 在该局部视口内绘制圆弧 |
 | `DashboardProgress` | `SizeType=Large` | 与 Circle 相同，弧跨度再扣除 `GapDegree` | `Width`、`Height`、`IndicatorThickness`、`GapDegree` | rail/track 使用相同内缩视口和中心点，Geometry 共享缺口方向与起始角 |
 
 最小尺寸失败回归是 `StepsProgressBar` 在 `ChunkWidth=NaN` 时从 Large 切换到 Middle/Small：当前实现把首次计算结果写回
@@ -564,8 +564,8 @@ AtomUI 使用 owner-scoped AXAML Style 和生成的 Semantic Style Type 表达�
 
 - `PART_LayoutTransformControl`、`PART_PercentageLabel`、两个完成状态 `IconPresenter` 及其内部 Icon。
 - 成功阈值的附加视觉、Geometry、Pen、PathFigure、ArcSegment 和步骤索引。
-- `EffectiveSizeType`、`StrokeThickness`、`GrooveBrush`、`IndicatorAngle` 和文本尺寸缓存。
-- `ProgressBarToken`、SharedToken 资源查找、transition 与 pseudo-class 同步。
+- `EffectiveSizeType`、`EffectiveStrokeThickness`、`GrooveBrush`、`IndicatorAngle` 和文本尺寸缓存。
+- 进度 Token、Global Token 读取、transition 与 pseudo-class 同步。
 - runtime 步骤 Rectangle 的容器类型、回收策略、索引和内部 Brush precedence。
 
 默认 ControlTheme 不消费 `.semantic-*` 作为自身样式机制。Semantic marker 不改变 hit testing、automation owner、焦点、值计算、
@@ -581,7 +581,7 @@ AtomUI 使用 owner-scoped AXAML Style 和生成的 Semantic Style Type 表达�
 - `ProgressBar`、`CircleProgress`、`DashboardProgress` 各有五个 Part，`StepsProgressBar` 有四个 Part，descriptor 字段与本文一致。
 - 十五个非 root 生成 Style Type 可编译并命中真实 target。
 - 普通线形、圆形和仪表盘每个模板各有四个静态 marker target；普通线形 rail/track 为 `Border`，圆形/仪表盘 rail/track 为 `Shape`；Steps body/indicator 静态，track 数量始终等于 `Steps`。
-- Large/Middle/Small、显式厚度、显式圆形宽高、水平/垂直、内嵌/外部 indicator 的 Measure/Arrange 基线；Circle/Dashboard rail 与 track 的 Bounds 必须比 body 小一个 `StrokeThickness` 并共享中心。
+- Large/Middle/Small、显式厚度、显式圆形宽高、水平/垂直、内嵌/外部 indicator 的 Measure/Arrange 基线；Circle/Dashboard rail 与 track 的 Bounds 必须比 body 小一个 `EffectiveStrokeThickness` 并共享中心。
 - `StepsProgressBar` 自动 `ChunkWidth` 在运行期切换尺寸档时保持 `NaN` public 状态并使用 `14/6/2` effective width。
 - `Minimum != 0`、成功阈值、分段圆/仪表盘、逐步骤 Brush、status/completed 和 disabled 状态不改变既有结果。
 - 步骤 runtime Rectangle 在 Value/Steps 变化、模板重套用和 detach 后数量、track marker、logical parent 与资源状态正确。

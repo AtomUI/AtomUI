@@ -36,10 +36,10 @@
 
         <Style Selector="^[IsBordered=True]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#ContentFrame">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+                <Setter Property="BorderBrush" Value="{atom:DescriptionsTokenResource ColorSplit}" />
                 <Setter Property="BorderThickness"
-                        Value="{atom:SharedTokenResource BorderThickness}" />
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                        Value="{atom:DescriptionsTokenResource BorderThickness}" />
+                <Setter Property="CornerRadius" Value="{atom:DescriptionsTokenResource BorderRadiusLG}" />
                 <Setter Property="ClipToBounds" Value="True" />
             </Style>
         </Style>
@@ -53,25 +53,25 @@
         </Style>
         <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
             <Setter Property="Foreground" Value="{atom:DescriptionsTokenResource TitleColor}" />
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
-            <Setter Property="LineHeight" Value="{atom:SharedTokenResource FontHeightLG}" />
+            <Setter Property="FontSize" Value="{atom:DescriptionsTokenResource FontSizeLG}" />
+            <Setter Property="FontWeight" Value="{atom:DescriptionsTokenResource FontWeightStrong}" />
+            <Setter Property="LineHeight" Value="{atom:DescriptionsTokenResource FontHeightLG}" />
         </Style>
 
         <Style Selector="^[IsBordered=False]">
             <Style Selector="^[SizeType=Large]">
                 <Style Selector="^ /template/ Grid#PART_GridLayout">
-                    <Setter Property="RowSpacing" Value="{atom:SharedTokenResource Spacing}" />
+                    <Setter Property="RowSpacing" Value="{atom:DescriptionsTokenResource Spacing}" />
                 </Style>
             </Style>
             <Style Selector="^[SizeType=Middle]">
                 <Style Selector="^ /template/ Grid#PART_GridLayout">
-                    <Setter Property="RowSpacing" Value="{atom:SharedTokenResource SpacingSM}" />
+                    <Setter Property="RowSpacing" Value="{atom:DescriptionsTokenResource SpacingSM}" />
                 </Style>
             </Style>
             <Style Selector="^[SizeType=Small]">
                 <Style Selector="^ /template/ Grid#PART_GridLayout">
-                    <Setter Property="RowSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+                    <Setter Property="RowSpacing" Value="{atom:DescriptionsTokenResource SpacingXS}" />
                 </Style>
             </Style>
         </Style>

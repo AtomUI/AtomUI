@@ -30,8 +30,10 @@
 
                     <atom:CheckBox Name="ToggleCheckbox"
                                    Classes.semantic-item-indicator="True"
+                                   Focusable="False"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
+                                   IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                    Grid.Column="1"
                                    IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
                                    IsVisible="False">
@@ -46,8 +48,10 @@
                     </atom:CheckBox>
                     <atom:RadioButton Name="ToggleRadio"
                                       Classes.semantic-item-indicator="True"
+                                      Focusable="False"
                                       HorizontalAlignment="Left"
                                       VerticalAlignment="Center"
+                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                       Grid.Column="1"
                                       IsChecked="{TemplateBinding IsChecked}"
                                       GroupName="{TemplateBinding GroupName}"
@@ -66,6 +70,9 @@
                                         Classes.semantic-item-icon="True"
                                         Grid.Column="2"
                                         Icon="{TemplateBinding Icon}"
+                                        Width="{TemplateBinding IconSize}"
+                                        Height="{TemplateBinding IconSize}"
+                                        IconBrush="{TemplateBinding IconBrush}"
                                         IsEnabled="{TemplateBinding IsEnabled}"
                                         IsVisible="{TemplateBinding IconEffectiveVisible}" />
                     <Border Name="PART_HeaderContentFrame"
@@ -91,22 +98,25 @@
 
     <Style Selector="^:is(atom|TreeViewItemHeader)">
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="MinHeight" Value="{atom:TreeViewTokenResource HeaderHeight}" />
-        <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeItemMargin}" />
+        <Setter Property="MinHeight" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemMargin)}" />
         <Setter Property="CornerRadius"
-                Value="{atom:SharedTokenResource BorderRadius}" />
+                Value="{atom:OwnerTokenResource BorderRadius}" />
+
+        <!-- The node icon size and brush are read on the header (the tree is its owner) and bound down to the registered
+             IconPresenter. The icon takes the node text colour, as in antd. -->
+        <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorText}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeNodeIconMargin}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeIconMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ Border#PART_HeaderContentFrame">
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="Margin" Value="{atom:TreeViewTokenResource TreeItemHeaderMargin}" />
-            <Setter Property="Padding" Value="{atom:TreeViewTokenResource TreeItemHeaderPadding}" />
+                    Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemHeaderMargin)}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.ItemHeaderPadding)}" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
@@ -125,20 +135,20 @@
         </Style>
 
         <Style Selector="^[NodeHoverMode=Default], ^[NodeHoverMode=Block]">
-            <Style Selector="^[IsHover=True]">
+            <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="ContentFrameBackground"
-                        Value="{atom:TreeViewTokenResource NodeHoverBg}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}" />
             </Style>
 
             <Style Selector="^[IsSelectable=True]">
                 <Style Selector="^[IsSelected=True]">
                     <Setter Property="ContentFrameBackground"
-                            Value="{atom:TreeViewTokenResource NodeSelectedBg}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
 
                 <Style Selector="^[IsPressed=True]">
                     <Setter Property="ContentFrameBackground"
-                            Value="{atom:TreeViewTokenResource NodeSelectedBg}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
             </Style>
         </Style>
@@ -148,20 +158,32 @@
             <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
-            <Style Selector="^[IsHover=True]">
+            <Style Selector="^[IsHover=True], ^:keyboard-active">
                 <Setter Property="Background"
-                        Value="{atom:TreeViewTokenResource NodeHoverBg}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}" />
             </Style>
 
             <Style Selector="^[IsSelectable=True]">
                 <Style Selector="^[IsSelected=True]">
                     <Setter Property="Background"
-                            Value="{atom:TreeViewTokenResource NodeSelectedBg}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
                 <Style Selector="^[IsPressed=True]">
                     <Setter Property="Background"
-                            Value="{atom:TreeViewTokenResource NodeSelectedBg}" />
+                            Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedBackground)}" />
                 </Style>
+            </Style>
+        </Style>
+
+        <!-- The selected node's text (NodeSelectedColor, the body text colour by default) on the selected background. -->
+        <Style Selector="^[IsSelectable=True][IsSelected=True]:not(:disabled)">
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Foreground"
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedForeground)}" />
+            </Style>
+            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
+                <Setter Property="Foreground"
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSelectedForeground)}" />
             </Style>
         </Style>
 
@@ -178,8 +200,8 @@
         </Style>
 
         <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-            <Setter Property="Width" Value="{atom:TreeViewTokenResource HeaderHeight}" />
-            <Setter Property="Height" Value="{atom:TreeViewTokenResource HeaderHeight}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.HeaderHeight)}" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
@@ -198,33 +220,30 @@
         <Style Selector="^[ToggleType=CheckBox], ^[ToggleType=Radio]">
             <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
                 <Setter Property="Margin"
-                        Value="{atom:TreeViewTokenResource TreeNodeSwitcherMargin}" />
+                        Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeSwitcherMargin)}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsDragging=True]">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#Frame">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#PART_IconPresenter">
-                <Setter Property="Opacity" Value="0.3" />
-            </Style>
-            <Style Selector="^ /template/ atom|NodeSwitcherButton#PART_NodeSwitcherButton">
-                <Setter Property="Opacity" Value="0.3" />
-            </Style>
+            <!-- Disabled nodes draw their icon in the disabled text colour (antd colours the whole node); the switcher dims
+                 its own icon in NodeSwitcherButtonTheme. -->
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
 
             <Style Selector="^[NodeHoverMode=Default], ^[NodeHoverMode=Block]">
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="ContentFrameBackground"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>
@@ -233,7 +252,7 @@
                 <Style Selector="^[IsSelectable=True]">
                     <Style Selector="^[IsSelected=True]">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                                Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
                     </Style>
                 </Style>
             </Style>
@@ -252,11 +271,33 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="ContentFrameBackground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="ContentFrameBackground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
+            <!-- The selected node's text (NodeSelectedColor) is set on these parts; it moves with the selected
+                 background. -->
+            <Style Selector="^ /template/ ContentPresenter#HeaderPresenter">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
+            <Style Selector="^ /template/ TextBlock#FilterHighlighter">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
+            </Style>
         </Style>
     </Style>
 </ControlTheme>

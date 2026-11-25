@@ -17,7 +17,7 @@
 
 | 记录 | 场景与指标 | 本文用途 |
 | --- | --- | --- |
-| [Windows 优化结果](2026-10-11-windows-startup-algorithm-results.md)及[原始证据](2026-10-11-windows-startup-algorithm-evidence.json) | Release 空窗口；启动、初始化、Opened、根 Render、分配；每版本每场景 10 个独立进程 | 当前这轮优化的主要收益依据 |
+| [Windows 优化结果](2026-10-11-windows-startup-algorithm-results.md)及[原始证据](../../engineering/evidence/2026-10-11-windows-startup-algorithm-evidence.json) | Release 空窗口；启动、初始化、Opened、根 Render、分配；每版本每场景 10 个独立进程 | 当前这轮优化的主要收益依据 |
 | [前一轮 Core 优化结果](2026-10-10-core-startup-performance-results.md) | macOS Gallery 等价配置；CoreCLR / NativeAOT 的 UseAtomUI 调用；每产物 16 个独立进程 | 资源键、descriptor 绑定和 Manifest 优化的历史依据 |
 | 本文“历史空窗口基线” | macOS 空窗口；Debug / Release 各 3 次 | 保留初次观察，不作为 Windows 优化的对照组 |
 

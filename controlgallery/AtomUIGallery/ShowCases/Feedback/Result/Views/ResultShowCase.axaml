@@ -6,6 +6,24 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:vm="using:AtomUIGallery.ShowCases.Result"
              x:DataType="vm:ResultViewModel">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="ResultExtraBrush" Color="#262626" />
+                    <SolidColorBrush x:Key="ResultBodyBrush" Color="#1B1B1B" />
+                    <SolidColorBrush x:Key="ResultSuccessBrush" Color="#172819" />
+                    <SolidColorBrush x:Key="ResultErrorBrush" Color="#311C1E" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="ResultExtraBrush" Color="#f0f0f0" />
+                    <SolidColorBrush x:Key="ResultBodyBrush" Color="#fafafa" />
+                    <SolidColorBrush x:Key="ResultSuccessBrush" Color="#f6ffed" />
+                    <SolidColorBrush x:Key="ResultErrorBrush" Color="#fff2f0" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
         <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
             <gallery:GalleryShowCaseHost.Header>
@@ -258,23 +276,23 @@
                                             <Setter Property="Opacity" Value="0.8" />
                                         </atom:ResultIconStyle>
                                         <atom:ResultExtraStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Background" Value="{DynamicResource ResultExtraBrush}" />
                                             <Setter Property="Padding" Value="8" />
                                         </atom:ResultExtraStyle>
                                         <atom:ResultBodyStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Background" Value="#fafafa" />
+                                            <Setter Property="Background" Value="{DynamicResource ResultBodyBrush}" />
                                             <Setter Property="Padding" Value="12" />
                                         </atom:ResultBodyStyle>
                                     </Style>
                                     <Style Selector="atom|Result.semantic-function-demo">
-                                        <Setter Property="Background" Value="#f6ffed" />
+                                        <Setter Property="Background" Value="{DynamicResource ResultSuccessBrush}" />
                                         <Setter Property="BorderBrush" Value="#52c41a" />
                                         <atom:ResultTitleStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Foreground" Value="#52c41a" />
                                         </atom:ResultTitleStyle>
                                     </Style>
                                     <Style Selector="atom|Result.semantic-function-demo[Status=Error]">
-                                        <Setter Property="Background" Value="#fff2f0" />
+                                        <Setter Property="Background" Value="{DynamicResource ResultErrorBrush}" />
                                         <Setter Property="BorderBrush" Value="#ff4d4f" />
                                         <atom:ResultTitleStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Foreground" Value="#ff4d4f" />

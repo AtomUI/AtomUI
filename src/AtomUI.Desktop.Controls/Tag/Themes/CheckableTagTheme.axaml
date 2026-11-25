@@ -28,8 +28,8 @@
                     </DockPanel>
                 </atom:PixelAlignedBorder>
                 <Border Name="FocusVisual"
-                        BorderBrush="{atom:SharedTokenResource ColorPrimary}"
-                        BorderThickness="{atom:SharedTokenResource BorderThickness}"
+                        BorderBrush="{atom:CheckableTagTokenResource ColorPrimary}"
+                        BorderThickness="{atom:CheckableTagTokenResource BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         IsHitTestVisible="False"
                         IsVisible="False" />
@@ -43,51 +43,54 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-    <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+    <Setter Property="BorderThickness" Value="{atom:CheckableTagTokenResource BorderThickness}" />
+    <Setter Property="CornerRadius" Value="{atom:CheckableTagTokenResource BorderRadiusSM}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
-    <Setter Property="FontSize" Value="{atom:TagTokenResource TagFontSize}" />
-    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-    <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-    <Setter Property="MinHeight" Value="{atom:TagTokenResource TagLineHeight}" />
-    <Setter Property="Padding" Value="{atom:TagTokenResource TagPadding}" />
+    <Setter Property="FontSize" Value="{atom:CheckableTagTokenResource TagFontSize}" />
+    <Setter Property="FontWeight" Value="{atom:CheckableTagTokenResource TagFontWeight}" />
+    <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorText}" />
+    <Setter Property="IsMotionEnabled" Value="{atom:CheckableTagTokenResource EnableMotion}" />
+    <Setter Property="MinHeight" Value="{atom:CheckableTagTokenResource TagLineHeight}" />
+    <Setter Property="Padding" Value="{atom:CheckableTagTokenResource TagPadding}" />
 
     <Style Selector="^[IsMotionEnabled=True]">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Background"
-                                                Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                <atom:SolidColorBrushTransition Property="Foreground"
-                                                Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background"
+                                                    atom:TokenTransitions.Duration="MotionDurationMid" />
+                    <atom:SolidColorBrushTransition Property="Foreground"
+                                                    atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
 
     <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-        <Setter Property="Width" Value="{atom:TagTokenResource TagIconSize}" />
-        <Setter Property="Height" Value="{atom:TagTokenResource TagIconSize}" />
+        <Setter Property="Width" Value="{atom:CheckableTagTokenResource TagIconSize}" />
+        <Setter Property="Height" Value="{atom:CheckableTagTokenResource TagIconSize}" />
         <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
-        <Setter Property="Margin" Value="{atom:TagTokenResource TagTextPaddingInline}" />
+        <Setter Property="Margin" Value="{atom:CheckableTagTokenResource TagTextPaddingInline}" />
     </Style>
 
     <Style Selector="^:not(:checked):pointerover:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="Background" Value="{atom:CheckableTagTokenResource ColorFillSecondary}" />
+        <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorPrimary}" />
     </Style>
 
     <Style Selector="^:checked:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Background" Value="{atom:CheckableTagTokenResource ColorPrimary}" />
+        <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorTextLightSolid}" />
     </Style>
 
     <Style Selector="^:checked:pointerover:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+        <Setter Property="Background" Value="{atom:CheckableTagTokenResource ColorPrimaryHover}" />
     </Style>
 
     <Style Selector="^:pressed:not(:disabled)">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryActive}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+        <Setter Property="Background" Value="{atom:CheckableTagTokenResource ColorPrimaryActive}" />
+        <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorTextLightSolid}" />
     </Style>
 
     <Style Selector="^:focus-visible /template/ Border#FocusVisual">
@@ -96,10 +99,10 @@
 
     <Style Selector="^:disabled">
         <Setter Property="Cursor" Value="Arrow" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+        <Setter Property="Foreground" Value="{atom:CheckableTagTokenResource ColorTextDisabled}" />
     </Style>
 
     <Style Selector="^:checked:disabled">
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+        <Setter Property="Background" Value="{atom:CheckableTagTokenResource ColorBgContainerDisabled}" />
     </Style>
 </ControlTheme>

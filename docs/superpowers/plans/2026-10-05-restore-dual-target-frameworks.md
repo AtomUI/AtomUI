@@ -1,6 +1,6 @@
 # Restore Debug/Release Target Frameworks Plan
 
-> **For agentic workers:** Use superpowers:executing-plans for this focused correction.
+> Follow the implementation steps for this correction.
 
 **Goal:** Debug products target net10.0; Release products target net8.0 and net10.0.
 

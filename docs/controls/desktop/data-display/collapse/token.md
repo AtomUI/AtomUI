@@ -25,12 +25,20 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+折叠项在自身作用域按尺寸档成组读标题和内容内边距。`Custom` 使用 `Middle` 的默认值。实例值优先于 owner 值，owner 值优先于 Token 默认值。
+
 Collapse 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+- 全局 Token（`ColorBorder`、`BorderThickness`、`ColorTextHeading`、`IconSizeSM`、`FontSize*`、`FontHeight*`、`MotionDurationSlow`、
+  `EnableMotion`、`ColorTextDisabled`）经 `CollapseTokenResource` 读取，`Controls[Collapse]` 覆盖生效。`CollapseItem` 是 Token owner
+  透明部件（`[TokenOwnerTransparent]`），主题同样读 Collapse 的 Token，`Controls[CollapseItem]` 不产生效果；面板项内的展开按钮是注册的
+  `IconButton`，保留自己的 identity（图标尺寸仍由 Collapse 的 `IconSizeSM` 设置）。
+- `HeaderBg` 是面板头部背景，`ContentBg` 是面板内容区背景（antd `headerBg` / `contentBg`）；Borderless 内容区改用 `HeaderBg`，Ghost 头部与
+  内容区都透明（`ColorTransparent`）。
 
 ## 4. 控件家族影响
 
@@ -57,3 +65,13 @@ Collapse 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `HeaderColor` | `ColorTextHeading` | 头部文字颜色 |
+| `HeaderActiveColor` | `ColorTextHeading` | 展开项头部文字颜色 |
+| `HeaderFontWeight` | `Normal` | 头部字重，设在语义 header 上 |

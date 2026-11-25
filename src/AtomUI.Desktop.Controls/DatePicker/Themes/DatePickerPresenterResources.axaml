@@ -2,13 +2,15 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:atom="https://atomui.net"
                     xmlns:antdicons="https://atomui.net/icons/antdesign"
+                    xmlns:viewer="clr-namespace:AtomUI.Desktop.Controls.Internal.DateViewer"
                     x:ClassModifier="internal">
+    <!-- The headers are shown by the popup's DateViewer, which takes the picker's Token owner (forwarded by the presenter):
+         the globals are owner reads; DatePicker.HeaderBorderThickness is an Own Token and stays explicit. -->
     <DataTemplate x:Key="DatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
-        <atom:PixelAlignedBorder Height="33"
-                                 BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
-                                 BorderThickness="0,0,0,1">
-            <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
-                <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
+        <atom:PixelAlignedBorder BorderBrush="{atom:OwnerTokenResource ColorBorderSecondary}"
+                                 BorderThickness="{CompiledBinding $self.(atom:DatePickerPresenter.HeaderBorderThickness)}">
+            <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
+                <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="{CompiledBinding $parent[viewer:DateViewerHeader].TitleFontWeight}"
                              Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                              CommandParameter="{Binding ParentPanelKind}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -31,8 +33,8 @@
         </atom:PixelAlignedBorder>
     </DataTemplate>
     <DataTemplate x:Key="RangeDatePickerViewerHeader" x:DataType="atom:DateViewerHeaderContext">
-        <Grid MinHeight="{atom:SharedTokenResource ControlHeight}">
-            <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="Bold"
+        <Grid MinHeight="{atom:OwnerTokenResource ControlHeight}">
+            <atom:Button ButtonType="Text" HorizontalAlignment="Center" FontWeight="{CompiledBinding $parent[viewer:DateViewerHeader].TitleFontWeight}"
                          Content="{Binding DisplayText}" Command="{Binding ChangePanelCommand}"
                          CommandParameter="{Binding ParentPanelKind}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center"

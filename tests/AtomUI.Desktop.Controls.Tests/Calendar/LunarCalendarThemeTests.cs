@@ -1,3 +1,4 @@
+using AtomUI.Desktop.Controls.Tests.Theme;
 using System.Xml.Linq;
 using AtomUI.Desktop.Controls.Internal.Calendar;
 using AtomUI.Theme.DesignTokens;
@@ -41,6 +42,7 @@ public class LunarCalendarThemeTests
             ControlHeightLG = 40,
             ControlHeightSM = 32,
             FontSizeSM = 12,
+            FontHeight = 22,
             FontHeightSM = 20,
             UniformlyMarginXS = 8,
             UniformlyMarginXXS = 4,
@@ -51,12 +53,13 @@ public class LunarCalendarThemeTests
             ColorError = Colors.Red
         };
         var token = new LunarCalendarToken();
-        token.AssignEffectiveGlobalToken(shared);
-
-        token.CalculateTokenValues(isDarkMode: false);
+        AntDesignTokenRuleRunner.Apply(token, shared);
 
         token.MiniDateCellSize.ShouldBe(40);
-        token.MiniContentHeight.ShouldBe(308);
+        token.MiniDateCellHeight.ShouldBe(48);
+        token.MiniDateCellPadding.ShouldBe(new Thickness(0, 3));
+        token.MiniDateCellCornerRadius.ShouldBe(new CornerRadius(6));
+        token.MiniContentHeight.ShouldBe(356);
         token.MiniMonthCellWidth.ShouldBe(80);
         token.SecondaryTextFontSize.ShouldBe(12);
         token.SecondaryTextLineHeight.ShouldBe(20);

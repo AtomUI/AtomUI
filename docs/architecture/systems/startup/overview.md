@@ -21,6 +21,8 @@
 平台后端安装顺序、计时基准或动画 Clock 挂接。禁止用替换调度实现、重设时钟、换算到期时间或增加周期性唤醒来保住
 启动收益。无法保持这些边界的优化应调整或撤回，将相应工作移到平台服务就绪后的安全阶段，并接受失去这部分并行收益。
 
+启动镜像和控件包清单的去重设计、格式迁移及验收见[启动清单去冗余方案](package-manifest-optimization.md)。
+
 ## 不负责的内容
 
 | 内容 | 所有者 |
@@ -42,7 +44,8 @@ StartWithClassicDesktopLifetime → SetupUnsafe
     2. 捕获不可变输入 → 启动符合后台资格的 Prepare（TypeMap 预热 → 全局 Token）
   后台 Prepare ‖ new App()
   new App() → RegisterServices() → 生成的重写：base.RegisterServices(); ApplicationStartup.Attach(this);
-    Attach：取得本实例的 builder 与 Prepare 结果 → 判定并显示 Splash → 一次性提交
+    Attach：取得本实例的 builder → 判定并显示 Splash（需要时等待 Prepare）→ 一次性提交
+      （不显示 Splash 时，提交在初始化主题前才等待 Prepare，之前的本地化与 ThemeManager 构建与之并行）
   Initialize()                         App.axaml；Prism 在此创建并显示 Shell
   AfterApplicationSetup                守卫：本实例未执行 Attach 则抛出带修复说明的异常
   OnFrameworkInitializationCompleted   传统写法在此创建主窗体

@@ -24,9 +24,9 @@ ComboBox 自身就是职责完整、可独立定制的 public owner：
 
 ## 1. Semantic Parts
 
-ComboBox 是唯一 Semantic owner，公开 12 个 Semantic Part：隐式 `root` 加 11 个非 root 部件（`prefix`、`frame`、
+ComboBox 是唯一 Semantic owner，公开 13 个 Semantic Part：隐式 `root` 加 12 个非 root 部件（`clear`、`prefix`、`frame`、
 `content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。
-11 个非 root 部件各生成一个 `ComboBox*Style` 类型，`root` 不生成。声明位于 `ComboBox.SemanticParts.cs` partial 文件。
+12 个非 root 部件各生成一个 `ComboBox*Style` 类型，`root` 不生成。声明位于 `ComboBox.SemanticParts.cs` partial 文件。
 
 触发区部件的 marker 位于 `ComboBoxTheme.axaml` 宿主模板内：`prefix` / `suffix` 借用共享
 `AddOnDecoratedBoxTheme` 的 `.semantic-scope-prefix` / `.semantic-scope-suffix` scope 锚点路由到宿主模板
@@ -56,6 +56,27 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | 相关 API | 全部 ComboBox public API |
 | 相关 Token | ComboBoxToken、SharedToken |
 | 稳定性 | stable since 6.2.0 |
+
+#### `clear`
+
+| 字段 | 值 |
+| --- | --- |
+| Owner | `ComboBox` |
+| Part | `clear` |
+| Selector | `.semantic-clear` |
+| SelectorRoute | `/template/ .semantic-scope-input /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-scope-actions > .semantic-scope-clear > .semantic-clear` |
+| Style Type | `ComboBoxClearStyle` |
+| ContractType | `IconButton` |
+| Cardinality | `Single` |
+| Customization | `Selector` |
+| CrossVisualRoot / RuntimeCreated / CrossNestedOwners | `false` / `false` / `false` |
+| AtomUI 节点 | 宿主模板后缀 StackPanel 内的 InputClearIconButton |
+| 职责 | 清空选中值和编辑文本，保留输入焦点与弹层状态。 |
+| 相关 API | `IsAllowClear`、`SelectedIndex`、`SelectedItem`、`Text` |
+| 相关 Token | SharedToken |
+| 稳定性 | since 6.2.14 |
+
+按钮始终存在于模板树，显隐由可清除值、hover / focus、禁用及 `IsAllowClear` 决定。定制使用 `ComboBoxClearStyle`，不通过 code-behind 获取节点改属性。
 
 #### `prefix`
 
@@ -138,7 +159,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PlaceholderText`（`atom:TextBlock`，基类为 `Avalonia.Controls.TextBlock`） |
 | 职责 | 未选择任何项且非编辑态时显示的占位符文本。 |
 | 相关 API | `PlaceholderText` |
-| 相关 Token | SharedToken（节点以 `Opacity=0.3` 弱化，见定制边界） |
+| 相关 Token | SharedToken `ColorTextPlaceholder`（经 `PlaceholderForeground` 投影，见定制边界） |
 | 稳定性 | stable since 6.2.0 |
 
 #### `input`
@@ -282,9 +303,9 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 | CrossVisualRoot | `true` |
 | RuntimeCreated | `false` |
 | CrossNestedOwners | `false` |
-| AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PART_EmptyIndicator`（内含 `atom:Empty`） |
-| 职责 | 生效过滤模式下无匹配项时显示的弹层空态区；`IsVisible` 由 `IsEffectiveEmptyVisible` 驱动，与 `popup.list` 互斥。**仅在 `IsEditable=true` + `IsFilterEnabled=true` + 存在过滤值 + 无匹配项时可见**：未开启过滤时 `IsEffectiveEmptyVisible` 被强制为 `false`，此时弹层显示的是空的列表区而非空态区，空态节点仍存在但隐藏。 |
-| 相关 API | `IsEditable`、`IsFilterEnabled`、`Text` / `FilterValue`；`IsEffectiveEmptyVisible`（internal，由上述状态推导） |
+| AtomUI 节点 | `ComboBoxTheme.axaml` 中 `PART_EmptyIndicator` 外层 `Border`，承载默认 `Empty` 或自定义内容 presenter |
+| 职责 | 数据源为空或有效过滤无可见匹配项时的弹层空态区；`IsVisible` 由 `IsEffectiveEmptyVisible` 驱动，与 `popup.list` 互斥，受 `IsShowEmptyIndicator` 控制。完整显示规则见[架构设计 §4.1](overview.md#41-候选与空态)。 |
+| 相关 API | `IsShowEmptyIndicator`、`EmptyIndicator`、`EmptyIndicatorTemplate`、`EmptyIndicatorPadding`；`ItemsSource`、`IsEditable`、`IsFilterEnabled`、`Text` / `FilterValue`；`IsEffectiveEmptyVisible`（internal） |
 | 相关 Token | SharedToken（`Padding`） |
 | 稳定性 | stable since 6.2.0 |
 
@@ -312,8 +333,8 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
   幂等注入，`ClearContainerForItemOverride` 不摘除 marker（与 `TabStrip`、`Breadcrumb`、`TreeView` 同型）。
 - `placeholder` / `input` / `popup.list` / `popup.empty` 的存在条件是**状态性隐藏而非节点缺失**：`IsVisible` 在
   `IsEditable` / `IsEffectiveEmptyVisible` 变化时切换，节点与 marker 本身常驻，因此数量语义为 `Single`。
-  `IsEffectiveEmptyVisible` 只在生效过滤模式（`IsEditable` + `IsFilterEnabled` + 过滤值 + 无匹配项）下为真；
-  未开启过滤时它被强制为 `false`，因此「候选为空」并不等于「空态可见」。
+  `IsEffectiveEmptyVisible` 按[候选与空态模型](overview.md#41-候选与空态)推导；集合为空时不依赖过滤模式，
+  空态开关关闭时节点仍存在但隐藏。默认内容与自定义内容切换不替换外层语义节点。
 - `popup.root` 是 `PART_Popup` 的静态直接子节点；Avalonia 12 的模板内 Popup 为内容传播 `TemplatedParent`，
   故 `popup.*` 在弹层打开后仍可由 owner-scoped Style 命中（系统设计 §9.1）。
 - 弹层四部件只有在弹层打开时才进入真实视觉树；未打开时生成 Style 不命中任何节点，属预期。
@@ -322,7 +343,7 @@ internal `ComboBoxHandle` 模板内，经宿主模板的 `.semantic-scope-handle
 
 `root`、`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、
 `popup.empty` 均为每模板唯一节点，`Single`。状态变化（`IsEditable`、`IsFilterEnabled`、`SelectedItem` 非空、
-disabled、`Status`/`FormStatus`、`IsDropDownOpen`、过滤结果不同）只切换可见性或有效视觉值，**不增删 marker**。
+disabled、`Status`/`FormStatus`、`IsDropDownOpen`、集合空与非空、过滤结果、空态开关与内容切换）只切换可见性、内部内容或有效视觉值，**不增删 marker**。
 
 `popup.listItem` 为 `Multiple`：条目数量随 `ItemsSource` 与过滤结果变化；虚拟化或容器回收复用容器时 marker
 保持稳定，容器从一个 owner 转移到另一个 owner 时不遗留旧状态。
@@ -366,8 +387,10 @@ disabled、`Status`/`FormStatus`、`IsDropDownOpen`、过滤结果不同）只�
 嵌套 `<Style Selector="^ atom|Icon">` 设置 `StrokeBrush` 着色（与 `Select` 一致，上游 `prefix.color` 依赖
 `currentColor`，AtomUI 图标尚未桥接 `TextElement.Foreground` 到 `StrokeBrush`）。
 
-`placeholder` 的 `Opacity=0.3` 与 `suffix` 容器的 `TextElement.Foreground` 默认值来自内置主题：用户
-Semantic Style 在目标节点上以更高优先级覆写，不需要也不应修改内置主题来定制。
+`placeholder` 与编辑态内嵌输入框的占位文本都以 `TemplateBinding` 消费宿主 `PlaceholderForeground`，其默认值
+`ColorTextPlaceholder` 与 `suffix` 容器的 `TextElement.Foreground` 默认值一样来自内置主题：整体换色优先设置
+`ComboBox.PlaceholderForeground`（两种模式同时生效），只定制非编辑态节点时用 `ComboBoxPlaceholderStyle` 以更高
+优先级覆写，不需要也不应修改内置主题来定制。
 
 不得使用以下写法：
 
@@ -380,10 +403,6 @@ Semantic Style 在目标节点上以更高优先级覆写，不需要也不应�
 
 以下区域**不属于** ComboBox Semantic Part：
 
-- **清除按钮**：`IsAllowClear` 虽由 `TextBox.IsAllowClearProperty` 转挂为 ComboBox public API，但 ComboBox
-  全控件**未实现**该能力——模板中没有清除按钮节点，代码中没有清除逻辑（`Select` / `LineEdit` 的清除按钮在各自
-  handle 模板或后缀区内，ComboBox 没有对应节点）。发布该 Part 会产生永不命中的幽灵契约，因此**不发布**。
-  若后续实现清除能力，再作为新增 Part 提交（新增是非破坏性变更）。
 - **非编辑态选中内容节点**（`SelectedContentPresenter`）：不单独发布。它由 `content` 覆盖，需要精确着色时在
   `ComboBoxContentStyle` 内用嵌套 `<Style Selector="^ ContentPresenter">` 定位。当前 `placeholder` 与
   `SelectedContentPresenter` 的可见性互斥由模板的 `IsEditable` 分支管理，未发布独立 Part 以保持 `Select`
@@ -399,15 +418,14 @@ Semantic Style 在目标节点上以更高优先级覆写，不需要也不应�
   应用定制静态边框色时注意：聚焦或校验态的状态色优先级高于静态语义 Setter 的场景由 Avalonia 原生样式优先级决定
   （系统设计 §7），需要连状态色一起覆盖时应在语义 Style 中同时覆盖对应状态选择器。
 - **根表面定制走 owner 属性，不新增 Part**：改「输入框边框颜色」这类最常见的需求，标准入口是直接设置
-  `ComboBox.BorderBrush` / `Background`——控件已把这两个根表面画刷以 `LocalValue` 中继到共享输入帧，压过帧的
-  rest / hover / focus / status 状态机。这是输入族的统一约定（`Select`、`ButtonSpinner`、`OtpLineEdit` 等同样如此），
-  与 `frame` 部件的关系如下：
-  - **根中继**（`ComboBox.BorderBrush` / `Background`）作用于 owner 根，写入 `LocalValue`，用于「整个输入框换一个颜色」；
-  - **`frame` 专用 Style**（`ComboBoxFrameStyle`）精确命中帧节点，写入 `Style` 优先级，用于状态无关的边框宽度、圆角、
-    背景等需要区分于 owner 根的场景。
-  两者都落在同一个 `PART_ContentFrame` 节点上，但 `LocalValue` 高 `Style` 一级，因此**同时使用时根中继胜出**。
-  需要连状态色一并覆盖时用 `frame` 语义 Style 里的状态选择器，而不是根中继。中继的接管标记、清空回退与
-  `IsMotionEnabled` 接线要求见 [ComboBox 实现](implementation.md) §5.2。
+  `ComboBox.BorderBrush` / `Background`——模板把这两个根表面画刷绑定到共享输入帧的 `HostBorderBrush` /
+  `HostBackground`，帧主题在 rest / hover / focus / status 状态画刷之后投射它们。这是输入族的统一约定（`Select`、
+  `ButtonSpinner`、`TextBox` 等同样如此），与 `frame` 部件的关系如下：
+  - **根投射**（`ComboBox.BorderBrush` / `Background`）作用于 owner 根，用于「整个输入框换一个颜色」；
+  - **`frame` 专用 Style**（`ComboBoxFrameStyle`）精确命中帧节点，用于状态无关的边框宽度、圆角、背景等需要区分于
+    owner 根的场景。
+  两者都落在同一个帧节点上；根投射是主题值，应用样式（含 `frame` 专用 Style）优先于它。投射规则见
+  [ComboBox 实现](implementation.md) §5.2。
 
 - **内置 AddOn 区**（`LeftAddOn` / `RightAddOn` 的 `PixelAlignedBorder`）：由共享 `AddOnDecoratedBox` 契约与
   其 `ContentLeftAddOn` / `ContentRightAddOn` 投影承担，ComboBox 不重复声明嵌套 owner 的区域。
@@ -415,7 +433,10 @@ Semantic Style 在目标节点上以更高优先级覆写，不需要也不应�
   容器级样式（背景、前景、内边距、圆角、hover/selected 视觉）已由 `popup.listItem` 完整覆盖；注册它会增加一份
   无独立职责的契约（对照：`TabStripItem` 有自己的 close/icon/label 才独立注册，`ListBoxItem` 不注册）。
 - **空态内部视觉**（`atom:Empty` 的插图与描述）：`Empty` 有自身语义 owner，`popup.empty` 只承诺承载它的
-  `Border` 节点的外框与内边距。
+  `Border` 节点的外框与内边距。应用通过 `EmptyIndicator` / `EmptyIndicatorTemplate` 定制空态内容，通过
+  `IsShowEmptyIndicator` 控制开关；外层样式使用 `ComboBoxPopupEmptyStyle` 在 AXAML 中声明，不通过修改内部
+  `IsVisible`、获取节点后赋值或替换语义外框来驱动业务状态。`EmptyIndicatorPadding` 提供 owner 级内边距入口，
+  与语义 Style 同时使用时遵循 Avalonia 属性优先级，不在代码中增加额外优先级中继。
 - **弹层 Popup 宿主与定位**（`PART_Popup`、阴影、`MarginToAnchor`、钉住打开、light-dismiss）：由共享 Popup
   契约承担，`popup.root` 只覆盖弹层内容框体的视觉。
 - `PART_*` 名称、internal 类型、`.semantic-scope-*` 路由标记与模板层级。
@@ -444,6 +465,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。
   `ComboBoxPinnedPopupOverlayTests`）。
 - `IsEditable` 切换后 `input` 与 `placeholder` 节点的命中稳定。
 - 状态变化（`IsEditable`、`IsFilterEnabled`、过滤结果、选择变化、disabled、`Status`）不改变 marker 身份与数量语义。
+- 集合为空、过滤无可见匹配项、关闭空态以及切换默认或自定义内容时，`popup.empty` 保持同一个外层 `Border`、marker、route 和 `Single` 数量语义；生成的 `ComboBoxPopupEmptyStyle` 仍命中该节点。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - 根表面 `BorderBrush` / `Background` 定制压过帧的 hover / rest 状态机，清空后交还状态机，模板应用前设置的值同样生效，
   未定制时保持主题 rest 状态；帧已接收 owner 的 `IsMotionEnabled`（见 `ComboBoxRootSurfaceRelayTests`）。

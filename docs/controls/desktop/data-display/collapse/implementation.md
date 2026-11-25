@@ -14,7 +14,8 @@
 - `src/AtomUI.Desktop.Controls/Collapse/Collapse.SemanticParts.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseItem.cs`
 - `src/AtomUI.Desktop.Controls/Collapse/CollapseToken.cs`
-- `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`
+- `src/AtomUI.Controls/Collapse/AbstractCollapse.cs`、`AbstractCollapseItem.cs`、`ICollapseItemData.cs`：共用容器数据映射、选择模式及手风琴选择规整。
+- `src/AtomUI.Desktop.Controls/Collapse/ICollapseItemData.cs`：Desktop 的 `CollapseItemData` 默认数据对象。
 - `src/AtomUI.Core/Animations/Motion`：动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
 - `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与方向锚定。
 - `src/AtomUI.Desktop.Controls/Collapse/Themes/CollapseItemTheme.axaml`
@@ -29,7 +30,8 @@
 
 ## 3. 核心类职责
 
-- `Collapse`：维护 items、Avalonia selection model、selection mode、输入路由、容器生成、模式切换归一和 item 位置投影。
+- `AbstractCollapse`：配置 Avalonia 选择模式，启用手风琴时保留集合顺序中的第一项选择。
+- `Collapse`：处理 Desktop 输入和 item 的边框、圆角与模板投影。
 - `CollapseItem`：承载单项 public 内容与 `IsSelected` 投影，处理 header 命中、展开按钮和 content motion 生命周期。
 - `CollapseToken`：控件 Token scope，负责从全局 token 派生控件语义变量。
 
@@ -82,7 +84,9 @@ Collapse
                                 └── ContentPresenter#PART_ContentPresenter
 ```
 
-边框职责固定为：`PART_Frame` 绘制外框；item shell 绘制非末项底线；`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。Header 不承担 item 分隔线，动效状态不参与边框计算。root 表面投影把 owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding` 绑定到 `PART_Frame`；默认主题不设置根背景，root 背景由 Semantic Setter 或应用级样式提供。圆角按 antd collapse 样式规则分发：首项 header 承接容器上圆角、末项 header 与 content 承接下圆角（`HeaderCornerRadius`/`ContentCornerRadius` 由 owner 的 `CornerRadius` 与 item 位置计算），使 header/body 的背景沿容器圆角绘制而非盖住圆角边框。
+`PART_Frame` 绘制外框，item shell 绘制非末项底线，`PART_ContentFrame` 在默认 bordered 模式绘制内容顶线。模板把 owner 的 `Background`、`BorderBrush`、`BorderThickness`、`CornerRadius` 与 `Padding` 绑定到 `PART_Frame`。默认主题的根背景由 Semantic Setter 或应用级样式提供。
+
+owner 根据条目位置计算 `HeaderCornerRadius` 和 `ContentCornerRadius`。首项标题承接外框上圆角，末项内容承接外框下圆角。内容视口可见时，`CollapseItemTheme` 只保留标题的上圆角，让标题下沿与内容顶线贴合。收起完成并隐藏末项内容视口后，末项标题承接外框下圆角。分隔线厚度仍由条目位置和视觉模式决定。
 
 ### 4.2 Semantic Part marker 放置
 
@@ -132,6 +136,8 @@ owner）；建议自定义面板根节点声明 `Classes.semantic-scope-panel="T
 ## 6. 交互与事件处理
 
 Header 模式下，header 区域和展开图标触发 selection；Icon 模式下只有展开图标触发 selection。Enter/Space 和方向键导航复用 `SelectingItemsControl` 的 selection 入口。Disabled item 不进入 selection 操作。
+
+键盘停靠点与触发区域一致，每项只有一个（对应 Ant Design `collapsible`）：Header 模式下 `CollapseItem` 是停靠点，焦点描边落在 `PART_HeaderDecorator`，`PART_ExpandButton` 设 `IsTabStop=False`；Icon 模式下 `CollapseItem` 设 `IsTabStop=False`，只有展开按钮可 Tab 到达，按钮的 Enter / Space 走点击路径。两者都由 `CollapseItemTheme` 的 `TriggerType` 分支设置。
 
 输入处理器只识别目标容器和合法触发区域，不能直接修改其他 item 的 `IsSelected`。普通/手风琴差异由 selection mode 表达，不在 pointer、keyboard 或 button handler 中复制两套算法。
 

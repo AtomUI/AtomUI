@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Splitter;
 using Avalonia;
@@ -84,10 +85,10 @@ public class SplitterShowCasePageTests
         CountOccurrences(semanticSource, "Orientation=\"Vertical\"").ShouldBe(3);
         semanticSource.ShouldNotContain("Orientation=\"Horizontal\"");
         semanticSource.ShouldContain("Property=\"Background\"");
-        semanticSource.ShouldContain("Value=\"#FFFBE6\"");
-        semanticSource.ShouldContain("Value=\"#66C2DFFC\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorWarningBg}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBorder}\"");
         semanticSource.ShouldContain("Property=\"BorderBrush\"");
-        semanticSource.ShouldContain("Value=\"#E0000000\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorTextSecondary}\"");
         semanticSource.ShouldContain("Property=\"BorderThickness\"");
         semanticSource.ShouldContain("Property=\"BorderDashArray\"");
         semanticSource.ShouldContain("Value=\"4,2\"");
@@ -136,10 +137,11 @@ public class SplitterShowCasePageTests
             demos.Length.ShouldBe(2);
 
             var defaultDemo = demos.Single(static splitter => splitter.Classes.Contains("semantic-style-demo-default"));
+            var tokens = ControlTokenAccessor.Capture(defaultDemo);
             defaultDemo.Height.ShouldBe(200);
             defaultDemo.Orientation.ShouldBe(Avalonia.Layout.Orientation.Vertical);
-            AssertSolidColor(defaultDemo.Background, "#FFFBE6");
-            AssertDraggerBackground(defaultDemo, "#66C2DFFC");
+            AssertSolidColor(defaultDemo.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorWarningBg));
+            AssertDraggerBackground(defaultDemo, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBorder));
             var defaultLabels = defaultDemo.GetVisualDescendants()
                                            .OfType<TextBlock>()
                                            .Where(static label => label.Classes.Contains("splitter-demo-label"))
@@ -147,20 +149,20 @@ public class SplitterShowCasePageTests
             defaultLabels.Length.ShouldBe(2);
             foreach (var label in defaultLabels)
             {
-                AssertSolidColor(label.Foreground, "#000000");
+                AssertSolidColor(label.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorText));
             }
 
             var dashedDemo = demos.Single(static splitter => splitter.Classes.Contains("semantic-style-demo-dashed"));
             dashedDemo.Height.ShouldBe(200);
             dashedDemo.Orientation.ShouldBe(Avalonia.Layout.Orientation.Vertical);
-            AssertSolidColor(dashedDemo.BorderBrush, "#E0000000");
+            AssertSolidColor(dashedDemo.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorTextSecondary));
             dashedDemo.BorderThickness.ShouldBe(new Thickness(2));
             dashedDemo.BorderDashArray.ShouldNotBeNull();
             dashedDemo.BorderDashArray.ShouldBe(new double[] { 4, 2 }, ignoreOrder: false);
         });
     }
 
-    private static void AssertDraggerBackground(AtomUISplitter demo, string draggerColor)
+    private static void AssertDraggerBackground(AtomUISplitter demo, Color draggerColor)
     {
         var dragger = demo.GetVisualDescendants()
                           .OfType<AtomUI.Controls.Primitives.Thumb>()
@@ -168,11 +170,11 @@ public class SplitterShowCasePageTests
         AssertSolidColor(dragger.Background, draggerColor);
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static void AssertSolidColor(IBrush? actual, Color expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(expected);
     }
 
     private static string ExtractSplitterExampleItems(string source)

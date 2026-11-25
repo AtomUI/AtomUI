@@ -1,6 +1,6 @@
 # ImagePreviewer Preview Transform Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> Execute the plan task by task.
 
 **Goal:** 重构 ImagePreviewer，使基础适配、缩放、拖拽、旋转、翻转、reset、切图和解码尺寸升级遵守最新预览变换设计，并让 Dialog/OverlayHost 行为一致。
 

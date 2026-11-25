@@ -63,6 +63,7 @@ Status / Icon / Header / SubHeader / Extra / Content
 
 - 外部设置的 Avalonia 属性必须在模板应用前后保持一致。
 - `StatusIcon` 与异常 SVG source 都由 `Status` 单向推导，template part 不反向修改 public 状态。
+- `Icon` 与内部 `StatusIcon` 是 `object?`：`Control` 子类直接作为 presenter 的 Child，其他对象经 ContentPresenter 内容机制展示。
 - Header、SubHeader、Extra 和 Content 通过 TemplateBinding 投影到固定 presenter，不创建集合或异步状态。
 - 根表面属性通过 TemplateBinding 投影到静态 `DashedBorder#Frame`，不使用 C# 同步或内部 Name selector。
 - overview.md 的 API 契约说明应与源码实际状态流一致。
@@ -103,9 +104,10 @@ Result 没有控件专属 pointer、keyboard、command 或 public 事件。它�
 
 维护者需要重点关注以下流程：
 
-1. `Status` 或 `Icon` 变化时，普通状态更新 `StatusIcon`；异常状态更新静态 SVG 的 Source。
-2. `PART_StatusIconPresenter.Child` 变化时，`UpdateStatusIcon` 把 `StatusIconSize` 和 `StatusIconBrush` 应用到新 Child；`Icon` 子类同时同步 FillBrush 与 StrokeBrush。
-3. `HeaderFontSize`、`SubHeaderFontSize` 或相对行高变化时重新计算绝对 `LineHeight`。
+1. `Status` 或 `Icon` 变化时，普通状态把 `StatusIcon` 设为 `Icon ?? CreateDefaultStatusIcon(Status)`；异常状态更新静态 SVG 的 Source。
+   `CreateDefaultStatusIcon` 是 `private protected virtual` 扩展点，基类每次返回新的图标实例，403/404/500 返回 `null`。
+2. 桌面主题用一组资源读取两项相对行高、图标尺寸和当前状态画刷。图标 Presenter 的 Child 位于内容树，尺寸和画刷通过可释放的 Template 优先级应用到该 Child。`Icon` 子类同时接收 FillBrush 与 StrokeBrush，调用方的本地值和样式触发器优先。
+3. `HeaderFontSize`、`SubHeaderFontSize` 或对应的相对行高变化时重新计算绝对 `LineHeight`。整组主题变更时，图标最多应用一轮新值。
 4. 模板重套用先释放旧 presenter 订阅，再获取两个新图标 part，并回放图标与文本行高状态。
 
 Result 没有 `SizeType`。默认尺寸基线由 `FramePadding`、`StatusIconSize`、`ImageWidth`、`ImageHeight`、`HeaderFontSize`、
@@ -139,6 +141,7 @@ Result 没有 `SizeType`。默认尺寸基线由 `FramePadding`、`StatusIconSiz
 - `root`、`icon`、`title`、`subTitle`、`extra`、`body` 的名称、selector、ContractType、cardinality 和 marker 身份。
 - Template part 名称、ControlTheme key、伪类和资源 key。
 - 旧 `PART_StatusIconPresenter` 的 PropertyChanged 订阅释放路径与新 presenter 的重新订阅顺序。
+- `ResultStatus` 数值（`Waiting` 为 7）与 `Icon`/`StatusIcon` 的 `object?` 类型是稳定契约；`CreateDefaultStatusIcon` 是 AtomUI.Mobile 依赖的扩展点。
 - Light/Dark、Browser/Desktop 下的主题一致性，以及无 `SizeType` 的 Token 尺寸基线。
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 
@@ -152,6 +155,6 @@ Result 没有 `SizeType`。默认尺寸基线由 `FramePadding`、`StatusIconSiz
 - Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
-Result 专项测试必须覆盖 descriptor、六个静态 marker target、五个生成 Style 的实际命中、七种 `Status`、自定义 Icon、可选内容显隐、
+Result 专项测试必须覆盖 descriptor、六个静态 marker target、五个生成 Style 的实际命中、八种 `Status`（含 `Waiting` 的默认图标与颜色）、非 `Control` 的 `Icon`、自定义 Icon、可选内容显隐、
 `extra` 区域拉伸与内容居中、普通图标 presenter re-template 订阅和默认主题不消费 `.semantic-*`。Gallery 测试必须覆盖六项
 Part 描述、与 Ant Design 对齐的 owner-scoped 样式示例、AtomUI `v6.1.3` Tag 和 Semantic Preview 的延迟实例化。

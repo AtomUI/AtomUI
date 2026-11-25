@@ -8,8 +8,29 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class TimePickerPresenter : PickerPresenterBase
+internal partial class TimePickerPresenter : PickerPresenterBase
 {
+    // The time picker terminals (TimePicker, RangeTimePicker, the date-time pickers) declare these fields; the presenter
+    // maps them itself because it is shown in a popup root, or alone, and the picker may not be styled in a tree. The
+    // TimeView resolves its own metrics from the same owner.
+    private static Primitives.PartTokenMapping[]? s_ownerInputs;
+
+    // Built on first use: the input properties live in another partial file, so a static initializer cannot see them as assigned.
+    private static Primitives.PartTokenMapping[] OwnerInputs => s_ownerInputs ??=
+    [
+        new(ButtonsMarginProperty, "ButtonsMargin"),
+    ];
+
+    // Lives as long as the presenter; it only subscribes to the presenter itself and to its theme context while attached.
+    private readonly IDisposable _ownerInputs;
+
+    public TimePickerPresenter()
+    {
+        // Hosted by a picker the owner is forwarded; shown alone the presenter follows the TimePicker identity.
+        _ownerInputs = Primitives.PartTokenBinder.Bind(this, null, typeof(TimePicker), OwnerInputs,
+            typeof(RangeTimePicker));
+    }
+
     #region 公共属性定义
 
     public static readonly StyledProperty<bool> IsNeedConfirmProperty = TimePicker.IsNeedConfirmProperty.AddOwner<TimePickerPresenter>();
@@ -73,6 +94,7 @@ internal class TimePickerPresenter : PickerPresenterBase
 
     internal void ResetOpenPanelState()
     {
+        _timeView?.ResetKeyboardNavigation();
         IsEditing = true;
         InputText = null;
         PreviewTime = null;
@@ -84,8 +106,12 @@ internal class TimePickerPresenter : PickerPresenterBase
         CandidateChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Steps the time columns for a navigation key pressed in the picker input; false for other keys.</summary>
+    internal bool NavigateByKey(Key key) => IsEditing && _timeView?.HandleForwardedKey(key) == true;
+
     internal TimeSpan? EndEditing()
     {
+        _timeView?.ResetKeyboardNavigation();
         var candidate = IsInputValid ? TempSelectedTime : SelectedTime;
         IsEditing = false;
         InputText = null;

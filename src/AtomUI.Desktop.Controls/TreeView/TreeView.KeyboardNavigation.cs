@@ -1,0 +1,801 @@
+using System.Collections;
+using AtomUI.Controls;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.VisualTree;
+
+namespace AtomUI.Desktop.Controls;
+
+// TreeView is the only keyboard focus target of the tree. The keyboard position is an internal
+// active item instead of item focus, so item containers stay non-focusable and popup hosts can
+// forward keys while focus stays in their own input.
+public partial class TreeView : ICustomKeyboardNavigation
+{
+    private TreeViewItem? _keyboardActiveItem;
+    // The active node as data (index and item per level, root level first). A virtualizing panel can
+    // recycle the active container in any layout pass, so the container is only a binding: a recycled
+    // one is released, and the node's next container, or a re-realized one, takes the state back.
+    private List<KeyboardPathSegment>? _keyboardActivePath;
+    // The range anchor is the item, not its container: a virtualizing panel recycles containers, and a range
+    // extends over nodes that are not realized.
+    private object? _keyboardSelectionAnchor;
+    private bool _isKeyboardActiveVisible;
+    private bool _isSyncingKeyboardRangeSelection;
+
+    internal TreeViewItem? KeyboardActiveItem => _keyboardActiveItem;
+
+    /// <summary>
+    /// Whether moving the active item also changes selection (single-select follow and Shift range).
+    /// Popup hosts turn it off so browsing never commits; Enter / Space still commit.
+    /// </summary>
+    internal bool IsKeyboardMoveSelectionEnabled { get; set; } = true;
+
+    // Re-implemented so Tab lands on the TreeView itself and leaves it through the default tab
+    // order; the base implementation targets item containers, which are not focusable here.
+    (bool handled, IInputElement? next) ICustomKeyboardNavigation.GetNext(IInputElement element,
+                                                                          NavigationDirection direction)
+    {
+        return (false, null);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        // Keys raised by focusable user content inside a header keep their own semantics.
+        if (ReferenceEquals(e.Source, this))
+        {
+            HandleKeyDown(e);
+        }
+    }
+
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.Source, this))
+        {
+            return;
+        }
+
+        EnsureKeyboardActiveItem();
+        if (e.NavigationMethod is NavigationMethod.Tab or NavigationMethod.Directional)
+        {
+            SetKeyboardActiveVisible(true);
+        }
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (ReferenceEquals(e.Source, this))
+        {
+            SetKeyboardActiveVisible(false);
+        }
+    }
+
+    /// <summary>
+    /// Keyboard navigation entry used by the TreeView itself and by popup hosts that keep focus
+    /// in their own input and forward keys to the tree.
+    /// </summary>
+    internal void HandleKeyDown(KeyEventArgs e)
+    {
+        if (e.Handled || !IsEffectivelyEnabled || e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+        {
+            return;
+        }
+
+        var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
+        if (IsSelectable &&
+            SelectionMode.HasFlag(SelectionMode.Multiple) &&
+            hotkeys is not null &&
+            hotkeys.SelectAll.Any(gesture => gesture.Matches(e)))
+        {
+            SelectAll();
+            e.Handled = true;
+            return;
+        }
+
+        RestoreRecycledKeyboardActiveItem();
+        var hadActiveItem = _keyboardActiveItem is not null && IsNavigable(_keyboardActiveItem);
+        var activeItem    = EnsureKeyboardActiveItem();
+        if (activeItem is null)
+        {
+            return;
+        }
+
+        var handled = false;
+        if (!hadActiveItem && IsNavigationKey(e.Key))
+        {
+            // The first key of a session only establishes the active item.
+            handled = true;
+        }
+        else
+        {
+            var commandModifiers = hotkeys?.CommandModifiers ?? KeyModifiers.Control;
+            var moveOnly         = e.KeyModifiers.HasFlag(commandModifiers);
+            var extend           = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+            var isForwardKey     = (e.Key == Key.Right) == (FlowDirection != FlowDirection.RightToLeft);
+
+            handled = e.Key switch
+            {
+                Key.Down => MoveKeyboardActiveItem(GetNextNavigableItem(activeItem), moveOnly, extend),
+                Key.Up => MoveKeyboardActiveItem(GetPreviousNavigableItem(activeItem), moveOnly, extend),
+                Key.Home => MoveKeyboardActiveItem(GetFirstNavigableItem(), moveOnly, extend),
+                Key.End => MoveKeyboardActiveItem(GetLastNavigableItem(), moveOnly, extend),
+                Key.Left or Key.Right => isForwardKey
+                    ? ExpandOrEnterKeyboardActiveItem(activeItem, moveOnly)
+                    : CollapseOrLeaveKeyboardActiveItem(activeItem, moveOnly),
+                Key.Enter or Key.Space => CommitKeyboardActiveItem(activeItem),
+                _ => false
+            };
+        }
+
+        if (handled)
+        {
+            SetKeyboardActiveVisible(true);
+            e.Handled = true;
+        }
+    }
+
+    internal void ClearKeyboardActiveItem()
+    {
+        SetKeyboardActiveItem(null);
+        _keyboardSelectionAnchor = null;
+        _isKeyboardActiveVisible = false;
+    }
+
+    internal void NotifyTreeViewItemCollapsed(TreeViewItem treeViewItem)
+    {
+        if (_keyboardActiveItem is not null &&
+            !ReferenceEquals(_keyboardActiveItem, treeViewItem) &&
+            treeViewItem.IsVisualAncestorOf(_keyboardActiveItem))
+        {
+            SetKeyboardActiveItem(treeViewItem);
+        }
+    }
+
+    internal void NotifyTreeViewItemDetached(TreeViewItem treeViewItem)
+    {
+        if (ReferenceEquals(_keyboardActiveItem, treeViewItem))
+        {
+            // Removed or recycled: the path stays, so the node's next container can take the state back.
+            ReleaseKeyboardActiveContainer();
+        }
+
+    }
+
+    // A virtualizing panel realized a container for the active node again (scrolled back, or re-realized
+    // in the same layout pass that recycled it).
+    internal void NotifyTreeViewItemPrepared(TreeViewItem treeViewItem, object? item)
+    {
+        if (_keyboardActiveItem is null &&
+            _keyboardActivePath is { Count: > 0 } path &&
+            ReferenceEquals(item ?? treeViewItem, path[^1].Item))
+        {
+            _keyboardActiveItem = treeViewItem;
+            UpdateKeyboardActiveIndicator();
+        }
+    }
+
+    private void NotifyTreeViewItemPointerPressed(TreeViewItem treeViewItem)
+    {
+        _isKeyboardActiveVisible = false;
+        SetKeyboardActiveItem(treeViewItem);
+        _keyboardSelectionAnchor = GetTreeItem(treeViewItem);
+    }
+
+    private static bool IsNavigationKey(Key key)
+    {
+        return key is Key.Up or Key.Down or Key.Left or Key.Right or Key.Home or Key.End;
+    }
+
+    private TreeViewItem? EnsureKeyboardActiveItem()
+    {
+        RestoreRecycledKeyboardActiveItem();
+        if (_keyboardActiveItem is { } activeItem)
+        {
+            if (IsNavigable(activeItem))
+            {
+                return activeItem;
+            }
+
+            // Filtered, disabled or collapsed away: fall back to the nearest navigable ancestor.
+            var ancestor = activeItem.Parent as TreeViewItem;
+            while (ancestor is not null && !IsNavigable(ancestor))
+            {
+                ancestor = ancestor.Parent as TreeViewItem;
+            }
+
+            if (ancestor is not null)
+            {
+                SetKeyboardActiveItem(ancestor);
+                return ancestor;
+            }
+        }
+
+        var initialItem = GetInitialKeyboardActiveItem();
+        SetKeyboardActiveItem(initialItem);
+        return initialItem;
+    }
+
+    private TreeViewItem? GetInitialKeyboardActiveItem()
+    {
+        TreeViewItem? firstChecked = null;
+        TreeViewItem? first        = null;
+        foreach (var item in EnumerateNavigableItems())
+        {
+            if (item.IsSelected)
+            {
+                return item;
+            }
+
+            first ??= item;
+            if (firstChecked is null && item.IsChecked == true)
+            {
+                firstChecked = item;
+            }
+        }
+
+        return firstChecked ?? first;
+    }
+
+    private void SetKeyboardActiveItem(TreeViewItem? treeViewItem)
+    {
+        if (!ReferenceEquals(_keyboardActiveItem, treeViewItem))
+        {
+            if (_keyboardActiveItem is not null)
+            {
+                _keyboardActiveItem.IsKeyboardActive              = false;
+                _keyboardActiveItem.IsKeyboardFocusOutlineVisible = false;
+            }
+
+            _keyboardActiveItem = treeViewItem;
+        }
+
+        _keyboardActivePath = treeViewItem is null ? null : BuildKeyboardPath(treeViewItem);
+        UpdateKeyboardActiveIndicator();
+    }
+
+    private void ReleaseKeyboardActiveContainer()
+    {
+        if (_keyboardActiveItem is { } activeItem)
+        {
+            activeItem.IsKeyboardActive              = false;
+            activeItem.IsKeyboardFocusOutlineVisible = false;
+            _keyboardActiveItem                      = null;
+        }
+    }
+
+    // Re-binds the active node when its container was recycled: detached, or hidden as its own
+    // container and no longer indexed. The node is re-realized along the path; on any mismatch
+    // (items changed meanwhile) the regular fallback of EnsureKeyboardActiveItem applies.
+    private void RestoreRecycledKeyboardActiveItem()
+    {
+        if (_keyboardActivePath is not { Count: > 0 } path ||
+            (_keyboardActiveItem is { } activeItem &&
+             activeItem.IsAttachedToVisualTree() &&
+             activeItem.Parent is ItemsControl activeOwner &&
+             activeOwner.IndexFromContainer(activeItem) >= 0))
+        {
+            return;
+        }
+
+        ItemsControl  owner     = this;
+        TreeViewItem? container = null;
+        foreach (var segment in path)
+        {
+            container = segment.Index < owner.ItemCount ? RealizeContainer(owner, segment.Index) : null;
+            if (container is null || !ReferenceEquals(GetTreeItem(container), segment.Item))
+            {
+                return;
+            }
+
+            owner = container;
+        }
+
+        ReleaseKeyboardActiveContainer();
+        SetKeyboardActiveItem(container);
+    }
+
+    private List<KeyboardPathSegment>? BuildKeyboardPath(TreeViewItem treeViewItem)
+    {
+        var path = new List<KeyboardPathSegment>();
+        for (var current = treeViewItem; current.Parent is ItemsControl owner;)
+        {
+            var index = owner.IndexFromContainer(current);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            path.Add(new KeyboardPathSegment(index, owner.ItemFromContainer(current) ?? current));
+            if (ReferenceEquals(owner, this))
+            {
+                path.Reverse();
+                return path;
+            }
+
+            if (owner is not TreeViewItem parentItem)
+            {
+                return null;
+            }
+
+            current = parentItem;
+        }
+
+        return null;
+    }
+
+    private readonly record struct KeyboardPathSegment(int Index, object Item);
+
+    private void SetKeyboardActiveVisible(bool isVisible)
+    {
+        _isKeyboardActiveVisible = isVisible;
+        UpdateKeyboardActiveIndicator();
+    }
+
+    private void UpdateKeyboardActiveIndicator()
+    {
+        if (_keyboardActiveItem is not null)
+        {
+            _keyboardActiveItem.IsKeyboardActive = _isKeyboardActiveVisible;
+            // Only the tree's own keyboard focus outlines the item; popup hosts that forward keys keep
+            // focus in their input and show the active background alone.
+            _keyboardActiveItem.IsKeyboardFocusOutlineVisible = _isKeyboardActiveVisible && IsFocused;
+        }
+    }
+
+    private bool MoveKeyboardActiveItem(TreeViewItem? target, bool moveOnly, bool extend)
+    {
+        if (target is null)
+        {
+            return false;
+        }
+
+        var previous = _keyboardActiveItem;
+        SetKeyboardActiveItem(target);
+        if (!moveOnly)
+        {
+            ApplyKeyboardSelection(target, previous, extend);
+        }
+
+        target.BringHeaderIntoView();
+        return true;
+    }
+
+    private void ApplyKeyboardSelection(TreeViewItem target, TreeViewItem? previous, bool extend)
+    {
+        if (!IsKeyboardMoveSelectionEnabled || !IsSelectable || ToggleType != ItemToggleType.None)
+        {
+            return;
+        }
+
+        if (SelectionMode.HasFlag(SelectionMode.Multiple))
+        {
+            if (extend)
+            {
+                SelectKeyboardRange(_keyboardSelectionAnchor ?? GetTreeItem(previous ?? target), GetTreeItem(target));
+            }
+
+            return;
+        }
+
+        var targetItem = GetTreeItem(target);
+        SelectedItem             = targetItem;
+        _keyboardSelectionAnchor = targetItem;
+    }
+
+    private void SelectKeyboardRange(object anchor, object target)
+    {
+        var items       = EnumerateNavigableTreeItems().ToList();
+        var anchorIndex = IndexOfReference(items, anchor);
+        var targetIndex = IndexOfReference(items, target);
+        if (anchorIndex < 0 || targetIndex < 0)
+        {
+            return;
+        }
+
+        _keyboardSelectionAnchor = anchor;
+        var start = Math.Min(anchorIndex, targetIndex);
+        var end   = Math.Max(anchorIndex, targetIndex);
+        var range = items.GetRange(start, end - start + 1);
+
+        // Only the delta is synchronized, so SelectedItems never passes through an empty selection. Avalonia
+        // TreeView raises SelectionChanged for every SelectedItems notification (AvaloniaList removes one
+        // contiguous run per notification, then adds the rest in one), and offers no batch update: those
+        // intermediate events are suppressed and the whole change is reported once. Collection observers
+        // still see the removal before the addition.
+        var rangeSet    = new HashSet<object>(range, ReferenceEqualityComparer.Instance);
+        var selectedSet = new HashSet<object>(SelectedItems.Cast<object>(), ReferenceEqualityComparer.Instance);
+        var removed     = SelectedItems.Cast<object>().Where(item => !rangeSet.Contains(item)).ToList();
+        var added       = range.Where(item => !selectedSet.Contains(item)).ToList();
+        if (removed.Count == 0 && added.Count == 0)
+        {
+            return;
+        }
+
+        _isSyncingKeyboardRangeSelection = true;
+        try
+        {
+            if (SelectedItems is AvaloniaList<object> selectedItems)
+            {
+                selectedItems.RemoveAll(removed);
+                selectedItems.AddRange(added);
+            }
+            else
+            {
+                foreach (var item in removed)
+                {
+                    SelectedItems.Remove(item);
+                }
+
+                foreach (var item in added)
+                {
+                    SelectedItems.Add(item);
+                }
+            }
+        }
+        finally
+        {
+            _isSyncingKeyboardRangeSelection = false;
+        }
+
+        RaiseEvent(new SelectionChangedEventArgs(
+            Avalonia.Controls.Primitives.SelectingItemsControl.SelectionChangedEvent, removed, added));
+    }
+
+    private void HandleSelectionChangedDuringKeyboardRangeSync(SelectionChangedEventArgs args)
+    {
+        if (_isSyncingKeyboardRangeSelection && ReferenceEquals(args.Source, this))
+        {
+            args.Handled = true;
+        }
+    }
+
+    private bool ExpandOrEnterKeyboardActiveItem(TreeViewItem activeItem, bool moveOnly)
+    {
+        if (!activeItem.IsExpandable())
+        {
+            return false;
+        }
+
+        if (!activeItem.IsExpanded || (activeItem.HasTreeItemDataLoader && !activeItem.AsyncLoaded))
+        {
+            return activeItem.RequestToggleExpand();
+        }
+
+        return MoveKeyboardActiveItem(GetNavigableChild(activeItem, first: true), moveOnly, false);
+    }
+
+    private bool CollapseOrLeaveKeyboardActiveItem(TreeViewItem activeItem, bool moveOnly)
+    {
+        if (activeItem.IsExpanded && activeItem.ItemCount > 0)
+        {
+            activeItem.SetCurrentValue(Avalonia.Controls.TreeViewItem.IsExpandedProperty, false);
+            return true;
+        }
+
+        return MoveKeyboardActiveItem(activeItem.Parent as TreeViewItem, moveOnly, false);
+    }
+
+    private bool CommitKeyboardActiveItem(TreeViewItem activeItem)
+    {
+        // A disabled header (for example a host's selection limit) blocks pointer commits too.
+        if (!activeItem.IsHeaderEffectivelyEnabled)
+        {
+            return false;
+        }
+
+        if (IsKeyboardCheckable(activeItem))
+        {
+            if (ToggleType == ItemToggleType.CheckBox)
+            {
+                activeItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, activeItem.IsChecked != true);
+            }
+            else if (activeItem.IsChecked != true)
+            {
+                activeItem.SetCurrentValue(TreeViewItem.IsCheckedProperty, true);
+            }
+
+            return true;
+        }
+
+        if (!IsSelectable)
+        {
+            return false;
+        }
+
+        var treeItem = GetTreeItem(activeItem);
+        if (SelectionMode.HasFlag(SelectionMode.Multiple))
+        {
+            if (SelectedItems.Contains(treeItem))
+            {
+                SelectedItems.Remove(treeItem);
+            }
+            else
+            {
+                SelectedItems.Add(treeItem);
+            }
+        }
+        else
+        {
+            SelectedItem = treeItem;
+        }
+
+        _keyboardSelectionAnchor = treeItem;
+        return true;
+    }
+
+    private bool IsKeyboardCheckable(TreeViewItem treeViewItem)
+    {
+        if (!treeViewItem.IsEffectiveCheckable())
+        {
+            return false;
+        }
+
+        return ToggleType == ItemToggleType.CheckBox ||
+               (ToggleType == ItemToggleType.Radio && treeViewItem.IsLeaf);
+    }
+
+    private static object GetTreeItem(TreeViewItem treeViewItem)
+    {
+        return (treeViewItem.Parent as ItemsControl)?.ItemFromContainer(treeViewItem) ?? treeViewItem;
+    }
+
+    private bool IsNavigable(TreeViewItem treeViewItem)
+    {
+        if (!IsSelfNavigable(treeViewItem))
+        {
+            return false;
+        }
+
+        var parent = treeViewItem.Parent;
+        while (parent is TreeViewItem parentItem)
+        {
+            if (!parentItem.IsExpanded || !IsSelfNavigable(parentItem))
+            {
+                return false;
+            }
+
+            parent = parentItem.Parent;
+        }
+
+        return ReferenceEquals(parent, this);
+    }
+
+    private static bool IsSelfNavigable(TreeViewItem? treeViewItem)
+    {
+        return treeViewItem is { IsVisible: true, IsEffectivelyEnabled: true } &&
+               treeViewItem.IsAttachedToVisualTree();
+    }
+
+    // Preorder over realized, navigable containers; the visual order of the tree.
+    private IEnumerable<TreeViewItem> EnumerateNavigableItems()
+    {
+        return EnumerateNavigableChildren(this);
+
+        static IEnumerable<TreeViewItem> EnumerateNavigableChildren(ItemsControl owner)
+        {
+            for (var i = 0; i < owner.ItemCount; i++)
+            {
+                if (owner.ContainerFromIndex(i) is not TreeViewItem item || !IsSelfNavigable(item))
+                {
+                    continue;
+                }
+
+                yield return item;
+                if (item.IsExpanded)
+                {
+                    foreach (var descendant in EnumerateNavigableChildren(item))
+                    {
+                        yield return descendant;
+                    }
+                }
+            }
+        }
+    }
+
+    // Preorder over navigable nodes as items, for ranges that span nodes a virtualizing panel has not realized.
+    // A realized container decides with its live state (filter visibility, enabled, expansion); a node without
+    // a container decides from its own state: an own-container TreeViewItem, or ITreeItemNode data that the
+    // containers write back. Other data without a container counts as navigable and collapsed, which is the
+    // state its next container is prepared with. Filtering only applies to realized containers.
+    private IEnumerable<object> EnumerateNavigableTreeItems()
+    {
+        return Walk(this, Items);
+
+        static IEnumerable<object> Walk(ItemsControl? owner, IEnumerable items)
+        {
+            var index = 0;
+            foreach (var item in items)
+            {
+                var container = owner is null ? null : GetRealizedContainer(owner, index);
+                ++index;
+                if (item is null)
+                {
+                    continue;
+                }
+
+                bool          isNavigable;
+                bool          isExpanded;
+                IEnumerable?  children;
+                ItemsControl? childOwner = null;
+                if (container is not null)
+                {
+                    isNavigable = IsSelfNavigable(container);
+                    isExpanded  = container.IsExpanded;
+                    children    = container.Items;
+                    childOwner  = container;
+                }
+                else if (item is TreeViewItem ownContainer)
+                {
+                    isNavigable = ownContainer.IsEnabled;
+                    isExpanded  = ownContainer.IsExpanded;
+                    children    = ownContainer.Items;
+                }
+                else if (item is ITreeItemNode node)
+                {
+                    isNavigable = node.IsEnabled;
+                    isExpanded  = node.IsExpanded;
+                    children    = node.Children;
+                }
+                else
+                {
+                    isNavigable = true;
+                    isExpanded  = false;
+                    children    = null;
+                }
+
+                if (!isNavigable)
+                {
+                    continue;
+                }
+
+                yield return item;
+                if (isExpanded && children is not null)
+                {
+                    foreach (var descendant in Walk(childOwner, children))
+                    {
+                        yield return descendant;
+                    }
+                }
+            }
+        }
+    }
+
+    private static int IndexOfReference(List<object> items, object item)
+    {
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (ReferenceEquals(items[i], item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private TreeViewItem? GetNextNavigableItem(TreeViewItem treeViewItem)
+    {
+        if (treeViewItem.IsExpanded && GetNavigableChild(treeViewItem, first: true) is { } child)
+        {
+            return child;
+        }
+
+        var current = treeViewItem;
+        while (current is not null)
+        {
+            if (GetNavigableSibling(current, 1) is { } sibling)
+            {
+                return sibling;
+            }
+
+            current = current.Parent as TreeViewItem;
+        }
+
+        return null;
+    }
+
+    private TreeViewItem? GetPreviousNavigableItem(TreeViewItem treeViewItem)
+    {
+        if (GetNavigableSibling(treeViewItem, -1) is { } sibling)
+        {
+            return GetLastNavigableDescendantOrSelf(sibling);
+        }
+
+        return treeViewItem.Parent as TreeViewItem;
+    }
+
+    private TreeViewItem? GetFirstNavigableItem()
+    {
+        return GetNavigableChild(this, first: true);
+    }
+
+    private TreeViewItem? GetLastNavigableItem()
+    {
+        return GetNavigableChild(this, first: false) is { } last ? GetLastNavigableDescendantOrSelf(last) : null;
+    }
+
+    private TreeViewItem GetLastNavigableDescendantOrSelf(TreeViewItem treeViewItem)
+    {
+        var current = treeViewItem;
+        while (current.IsExpanded && GetNavigableChild(current, first: false) is { } last)
+        {
+            current = last;
+        }
+
+        return current;
+    }
+
+    private static TreeViewItem? GetNavigableSibling(TreeViewItem treeViewItem, int step)
+    {
+        if (treeViewItem.Parent is not ItemsControl owner)
+        {
+            return null;
+        }
+
+        var index = owner.IndexFromContainer(treeViewItem);
+        if (index < 0)
+        {
+            return null;
+        }
+
+        for (var i = index + step; i >= 0 && i < owner.ItemCount; i += step)
+        {
+            if (RealizeContainer(owner, i) is { } sibling && IsSelfNavigable(sibling))
+            {
+                return sibling;
+            }
+        }
+
+        return null;
+    }
+
+    private static TreeViewItem? GetNavigableChild(ItemsControl owner, bool first)
+    {
+        if (owner.ItemCount == 0)
+        {
+            return null;
+        }
+
+        var step = first ? 1 : -1;
+        for (var i = first ? 0 : owner.ItemCount - 1; i >= 0 && i < owner.ItemCount; i += step)
+        {
+            if (RealizeContainer(owner, i) is { } child && IsSelfNavigable(child))
+            {
+                return child;
+            }
+        }
+
+        return null;
+    }
+
+    // Keyboard targets are containers, but a virtualizing panel only realizes the viewport.
+    // A missing container is first given one layout pass (a just expanded node), then scrolled into view,
+    // which makes the virtualizing panel realize it. Non-virtualizing panels always hit the first lookup.
+    private static TreeViewItem? RealizeContainer(ItemsControl owner, int index)
+    {
+        if (GetRealizedContainer(owner, index) is { } container)
+        {
+            return container;
+        }
+
+        owner.UpdateLayout();
+        if (GetRealizedContainer(owner, index) is { } laidOut)
+        {
+            return laidOut;
+        }
+
+        owner.ScrollIntoView(index);
+        return GetRealizedContainer(owner, index);
+    }
+
+    // ContainerFromIndex also returns a TreeViewItem item that a virtualizing panel has recycled (hidden, not
+    // indexed); only a container the panel has realized has an index. Every child of a non-virtualizing panel has one.
+    private static TreeViewItem? GetRealizedContainer(ItemsControl owner, int index)
+    {
+        return owner.ContainerFromIndex(index) is TreeViewItem container && owner.IndexFromContainer(container) >= 0
+            ? container
+            : null;
+    }
+}

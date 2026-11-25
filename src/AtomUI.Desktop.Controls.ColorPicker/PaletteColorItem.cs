@@ -1,4 +1,6 @@
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.Primitives;
+using Avalonia.VisualTree;
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Media;
@@ -24,6 +26,10 @@ internal class PaletteColorItem : AvaloniaRadioButton
 
     #region 内部属性定义
 
+    internal static readonly StyledProperty<IBrush?> CheckedMarkForegroundProperty =
+        AvaloniaProperty.Register<PaletteColorItem, IBrush?>(nameof(CheckedMarkForeground));
+
+
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<PaletteColorItem>();
 
@@ -35,6 +41,12 @@ internal class PaletteColorItem : AvaloniaRadioButton
             nameof(IsLightColor),
             o => o.IsLightColor,
             (o, v) => o.IsLightColor = v);
+
+    internal IBrush? CheckedMarkForeground
+    {
+        get => GetValue(CheckedMarkForegroundProperty);
+        set => SetValue(CheckedMarkForegroundProperty, value);
+    }
 
     internal bool IsMotionEnabled
     {
@@ -57,10 +69,36 @@ internal class PaletteColorItem : AvaloniaRadioButton
     }
     #endregion
 
+    #region 运行时字段
+
+    private IDisposable? _tokenOwnerForwarding;
+
+    #endregion
+
     static PaletteColorItem()
     {
         AffectsRender<PaletteColorItem>(ColorProperty, IsLightColorProperty);
     }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _tokenOwnerForwarding?.Dispose();
+        // ControlTheme cannot set ThemeScope.TokenOwner (internal attached setter); the registered Collapse
+        // between this swatch and its palette must keep its own identity. Forward only the host-owned swatch.
+        if (this.FindAncestorOfType<ColorPickerPaletteGroup>() is { } palette)
+        {
+            _tokenOwnerForwarding = TokenOwnerForwarding.Forward(palette, this);
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _tokenOwnerForwarding?.Dispose();
+        _tokenOwnerForwarding = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

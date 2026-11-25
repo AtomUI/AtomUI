@@ -17,38 +17,38 @@
                     </Style>
                     <Style Selector="^[SizeType=Large]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingLG}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPadding)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndentLG}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPrefixIndent)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePadding}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPadding)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeight}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndent}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPrefixIndent)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Small]">
                         <Setter Property="ContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPadding)}" />
                         <Setter Property="CompactContentFramePadding"
-                                Value="{atom:SelectTokenResource MultiModePaddingSM}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.CompactMultipleSelectionPadding)}" />
                         <Setter Property="ContentMinHeight"
-                                Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
+                                Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
                         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                             <Setter Property="Margin"
-                                    Value="{atom:SelectTokenResource MultiModePrefixIndentSM}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.MultipleSelectionPrefixIndent)}" />
                         </Style>
                     </Style>
                 </Style>
@@ -57,180 +57,41 @@
                     <Style Selector="^[SizeType=Large]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePaddingLG}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.SingleSelectionPadding)}" />
                         </Style>
                     </Style>
                     <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.SingleSelectionPadding)}" />
                         </Style>
 
                     </Style>
                     <Style Selector="^[SizeType=Small]">
                         <Style Selector="^ /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
                             <Setter Property="Padding"
-                                    Value="{atom:SelectTokenResource SingleModePadding}" />
+                                    Value="{CompiledBinding $self.(atom:SelectTag.SingleSelectionPadding)}" />
                         </Style>
                     </Style>
                 </Style>
             </Style>
 
-            <Style Selector="^[StyleVariant=Outlined]">
-                <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-
-                <Style Selector="^[IsInnerBoxHover=True]">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimaryHover}" />
-                </Style>
-
-                <Style Selector="^:focus-within">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                </Style>
-
-                <Style Selector="^:pressed">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                </Style>
-                
-                <Style Selector="^[IsDropDownOpen=True]">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                </Style>
-
+            <!-- The frame theme (InputControlFrameTheme) owns the variant and status state machine and reads it from
+                 the owner; an open drop-down keeps the active border while the input itself may not hold focus. -->
+            <Style Selector="^:outline[IsDropDownOpen=True], ^:filled[IsDropDownOpen=True]">
+                <Setter Property="BorderBrush" Value="{atom:CascaderTokenResource ColorPrimary}" />
                 <Style Selector="^[EffectiveStatus=Error]">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorError}" />
-
-                    <Style Selector="^[IsInnerBoxHover=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorErrorBorderHover}" />
-                    </Style>
-
-                    <Style Selector="^:focus-within">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                    </Style>
-
-                    <Style Selector="^:pressed">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                    </Style>
-                    
-                    <Style Selector="^[IsDropDownOpen=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                    </Style>
+                    <Setter Property="BorderBrush" Value="{atom:CascaderTokenResource ColorError}" />
                 </Style>
-
                 <Style Selector="^[EffectiveStatus=Warning]">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorWarning}" />
-
-                    <Style Selector="^[IsInnerBoxHover=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarningBorderHover}" />
-                    </Style>
-
-                    <Style Selector="^:focus-within">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                    </Style>
-
-                    <Style Selector="^:pressed">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                    </Style>
-                    <Style Selector="^[IsDropDownOpen=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                    </Style>
+                    <Setter Property="BorderBrush" Value="{atom:CascaderTokenResource ColorWarning}" />
                 </Style>
             </Style>
 
-            <Style Selector="^[StyleVariant=Filled]">
-                <Setter Property="BorderBrush" Value="Transparent" />
-                <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorFillTertiary}" />
-
-                <Style Selector="^[IsInnerBoxHover=True]">
-                    <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorFillSecondary}" />
-                </Style>
-
-                <Style Selector="^:focus-within">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                    <Setter Property="Background" Value="Transparent" />
-                </Style>
-
-                <Style Selector="^:pressed">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                </Style>
-                
-                <Style Selector="^[IsDropDownOpen=True]">
-                    <Setter Property="BorderBrush"
-                            Value="{atom:CascaderTokenResource ColorPrimary}" />
-                </Style>
-
-                <Style Selector="^[EffectiveStatus=Error]">
-                    <Setter Property="BorderBrush"
-                            Value="Transparent" />
-                    <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorErrorBg}" />
-
-                    <Style Selector="^[IsInnerBoxHover=True]">
-                        <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorErrorBgHover}" />
-                    </Style>
-
-                    <Style Selector="^:focus-within">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                        <Setter Property="Background"
-                                Value="{atom:CascaderTokenResource ColorTransparent}" />
-                    </Style>
-
-                    <Style Selector="^:pressed">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                    </Style>
-                    
-                    <Style Selector="^[IsDropDownOpen=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorError}" />
-                    </Style>
-                </Style>
-
-                <Style Selector="^[EffectiveStatus=Warning]">
-                    <Setter Property="BorderBrush" Value="Transparent" />
-                    <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorWarningBg}" />
-
-                    <Style Selector="^[IsInnerBoxHover=True]">
-                        <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorWarningBgHover}" />
-                    </Style>
-
-                    <Style Selector="^:focus-within">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                        <Setter Property="Background"
-                                Value="{atom:CascaderTokenResource ColorTransparent}" />
-                    </Style>
-
-                    <Style Selector="^:pressed">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                    </Style>
-                    
-                    <Style Selector="^[IsDropDownOpen=True]">
-                        <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorWarning}" />
-                    </Style>
-                </Style>
+            <!-- Re-project the root border of the Cascader after the open state above (see InputControlFrameTheme). -->
+            <Style Selector="^:host-border-brush">
+                <Setter Property="BorderBrush"
+                        Value="{Binding (atom:InputControlFrame).HostBorderBrush, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
     </ControlTheme>

@@ -36,7 +36,7 @@
                 <atom:RadioButton x:Name="DirectionVertical" Content="{gallery:FlexPanelShowCaseLangResource P2ContentVertical}" />
             </StackPanel>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12"
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12"
                                      HorizontalAlignment="Stretch">
                 <atom:FlexPanel x:Name="BasicFlexPanel"
                                 Direction="Row"
@@ -75,7 +75,7 @@
                 <atom:SegmentedItem Content="{gallery:FlexPanelShowCaseLangResource P2ContentStretch}" />
             </atom:Segmented>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6"  Height="120">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6"  Height="120">
                 <atom:FlexPanel x:Name="AlignFlexPanel"
                                 Direction="Row"
                                 JustifyContent="FlexStart"
@@ -131,7 +131,7 @@
                 <atom:RadioButton x:Name="WrapEnabled" IsChecked="True" GroupName="WrapMode" Content="{gallery:FlexPanelShowCaseLangResource P2ContentWrap}" />
                 <atom:RadioButton x:Name="WrapDisabled" GroupName="WrapMode" Content="{gallery:FlexPanelShowCaseLangResource P2ContentNowrap}" />
             </StackPanel>
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:ScrollViewer x:Name="WrapScrollViewer"
                                    HorizontalScrollBarVisibility="Disabled"
                                    VerticalScrollBarVisibility="Disabled">
@@ -175,7 +175,7 @@
                 <atom:SegmentedItem Content="{gallery:FlexPanelShowCaseLangResource P2ContentStretch}" />
             </atom:Segmented>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12" Height="140">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12" Height="140">
                 <atom:FlexPanel x:Name="AlignSelfFlexPanel" Direction="Row" ColumnSpacing="8" AlignItems="FlexStart">
                     <Border Background="#4F7CF5" Height="50" Width="80" CornerRadius="4" />
                     <Border x:Name="AlignSelfTarget" Background="#1F5BFF" Height="70" Width="80" CornerRadius="4">
@@ -199,16 +199,16 @@
                 <atom:SegmentedItem Content="{gallery:FlexPanelShowCaseLangResource P2ContentCustom}" />
             </atom:Segmented>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:FlexPanel Direction="Row" ColumnSpacing="8">
                     <Border x:Name="OrderItemA" Background="#4F7CF5" Width="80" Height="50" CornerRadius="4">
-                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextA}" />
+                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextA}" />
                     </Border>
                     <Border x:Name="OrderItemB" Background="#1F5BFF" Width="80" Height="50" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextB}" />
                     </Border>
                     <Border x:Name="OrderItemC" Background="#4F7CF5" Width="80" Height="50" CornerRadius="4">
-                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextC}" />
+                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextC}" />
                     </Border>
                     <Border x:Name="OrderItemD" Background="#1F5BFF" Width="80" Height="50" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextD}" />
@@ -256,16 +256,16 @@
                 </StackPanel>
             </StackPanel>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:FlexPanel x:Name="BasisFlexPanel" Direction="Row" ColumnSpacing="8">
                     <Border x:Name="BasisItem"  Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4">
-                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemA}" />
+                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemA}" />
                     </Border>
                     <Border x:Name="BasisGrowItem1" Background="#1F5BFF" Height="50" atom:Flex.Grow="1" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextGrow}" />
                     </Border>
                     <Border x:Name="BasisGrowItem2" Background="#4F7CF5" Height="50" atom:Flex.Grow="1" CornerRadius="4">
-                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextGrow}" />
+                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextGrow}" />
                     </Border>
                 </atom:FlexPanel>
             </atom:PixelAlignedBorder>
@@ -297,10 +297,10 @@
                                     Value="2" />
             </StackPanel>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:FlexPanel x:Name="GrowFlexPanel" Direction="Row" ColumnSpacing="8">
                     <Border x:Name="GrowItemA" Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4" >
-                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemA}" />
+                        <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemA}" />
                     </Border>
                     <Border x:Name="GrowItemB" Background="#1F5BFF" Height="50" MinWidth="60" CornerRadius="4" >
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemB}" />
@@ -328,11 +328,11 @@
                 <atom:TextBlock x:Name="ShrinkWidthText" VerticalAlignment="Center" Text="260px" />
             </StackPanel>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:PixelAlignedBorder x:Name="ShrinkContainer"
                                          Width="260"
                                          HorizontalAlignment="Left"
-                                         BorderBrush="#DADADA"
+                                         BorderBrush="{atom:SharedTokenResource ColorBorder}"
                                          BorderThickness="1"
                                          CornerRadius="4"
                                          Padding="8">
@@ -344,7 +344,7 @@
                                 atom:Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Foreground="White"
+                                            Foreground="#0A0A0A"
                                             Text="{gallery:FlexPanelShowCaseLangResource P2TextBasisN200}" />
                         </Border>
                         <Border Background="#1F5BFF"
@@ -369,7 +369,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FlexPanelViewModel">
         <StackPanel Margin="20" Spacing="16">
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="8" Padding="16">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="8" Padding="16">
                 <atom:FlexPanel Direction="Row" ColumnSpacing="16" AlignItems="Center">
                     <Border Width="260" Height="160" CornerRadius="6" ClipToBounds="True" atom:Flex.Shrink="0">
                         <Image Source="/Assets/CardShowCase/Cover1.png" Stretch="UniformToFill" />
@@ -579,12 +579,12 @@
                 </StackPanel>
             </StackPanel>
 
-            <atom:PixelAlignedBorder BorderBrush="#E5E5E5" BorderThickness="1" CornerRadius="6" Padding="12">
+            <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="6" Padding="12">
                 <atom:PixelAlignedBorder x:Name="PlaygroundContainer"
                                          Width="320"
                                          Height="200"
                                          HorizontalAlignment="Left"
-                                         BorderBrush="#DADADA"
+                                         BorderBrush="{atom:SharedTokenResource ColorBorder}"
                                          BorderThickness="1"
                                          CornerRadius="4"
                                          Padding="8">
@@ -606,7 +606,7 @@
                                 atom:Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Foreground="White"
+                                            Foreground="#0A0A0A"
                                             Text="{gallery:FlexPanelShowCaseLangResource P2TextA}" />
                         </Border>
                         <Border x:Name="PlaygroundItemB"
@@ -632,7 +632,7 @@
                                 atom:Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            Foreground="White"
+                                            Foreground="#0A0A0A"
                                             Text="{gallery:FlexPanelShowCaseLangResource P2TextC}" />
                         </Border>
                     </atom:FlexPanel>

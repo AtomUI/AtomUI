@@ -39,17 +39,18 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BorderThickness" Value="{atom:CheckBoxTokenResource BorderThickness}" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="TristateMarkBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="CheckedMarkRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" Easing="BackEaseOut" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="TristateMarkBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <TransformOperationsTransition Property="CheckedMarkRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" Easing="BackEaseOut" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">

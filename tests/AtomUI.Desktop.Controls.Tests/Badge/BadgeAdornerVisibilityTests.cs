@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
@@ -140,6 +141,58 @@ public class BadgeAdornerVisibilityTests
         Dispatcher.UIThread.RunJobs();
 
         adorner.IsVisible.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DotBadge_Detach_Clears_The_Adorned_Element_Before_Removing_The_Layer_Visual()
+    {
+        var badge = new AtomUI.Desktop.Controls.DotBadge
+        {
+            Status          = AtomUI.Controls.Commons.DotBadgeStatus.Success,
+            IsMotionEnabled = false,
+            DecoratedTarget = new Border { Width = 48, Height = 48 }
+        };
+        AssertAdornedElementClearedBeforeRemoval(badge);
+    }
+
+    [Fact]
+    public void CountBadge_Detach_Clears_The_Adorned_Element_Before_Removing_The_Layer_Visual()
+    {
+        var badge = new AtomUI.Desktop.Controls.CountBadge
+        {
+            Count           = 5,
+            IsMotionEnabled = false,
+            DecoratedTarget = new Border { Width = 48, Height = 48 }
+        };
+        AssertAdornedElementClearedBeforeRemoval(badge);
+    }
+
+    /// <summary>
+    /// Removing a layer adorner while it still names its adorned element lets the layer keep the old adorned visual
+    /// reference in the removed composition visual; the association must be cleared while the layer can still update it.
+    /// </summary>
+    private static void AssertAdornedElementClearedBeforeRemoval(Control badge)
+    {
+        var host = new StackPanel { Children = { badge } };
+        using var context = ShowInAdornerHost(host, width: 240, height: 160);
+
+        var adorner      = FindNativeAdorner(badge).ShouldNotBeNull();
+        var adornerLayer = AdornerLayer.GetAdornerLayer(badge).ShouldNotBeNull();
+        Visual? adornedAtRemoval = badge;
+        adornerLayer.Children.CollectionChanged += (_, args) =>
+        {
+            if (args.OldItems?.Contains(adorner) == true)
+            {
+                adornedAtRemoval = AdornerLayer.GetAdornedElement(adorner);
+            }
+        };
+
+        host.Children.Remove(badge);
+        Dispatcher.UIThread.RunJobs();
+
+        adornerLayer.Children.ShouldNotContain(adorner);
+        adornedAtRemoval.ShouldBeNull(
+            "the adorned element must be cleared while the layer can still update the composition visual.");
     }
 
     private static Control? FindNativeAdorner(Control badge)

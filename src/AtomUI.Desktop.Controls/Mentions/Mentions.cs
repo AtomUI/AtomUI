@@ -10,9 +10,11 @@ using AtomUI.Controls.AsyncLoad;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DataLoad;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Desktop.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using AtomUI.Input;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -417,23 +419,14 @@ public partial class Mentions : TemplatedControl,
             o => o.FilterValue,
             (o, v) => o.FilterValue = v);
     
-    internal static readonly DirectProperty<Mentions, double> ItemHeightProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, double>(
-            nameof(ItemHeight),
-            o => o.ItemHeight,
-            (o, v) => o.ItemHeight = v);
+    internal static readonly StyledProperty<bool> UsePopupLayoutTokenResourcesProperty =
+        AvaloniaProperty.Register<Mentions, bool>(nameof(UsePopupLayoutTokenResources));
     
     internal static readonly DirectProperty<Mentions, double> MaxPopupHeightProperty =
         AvaloniaProperty.RegisterDirect<Mentions, double>(
             nameof(MaxPopupHeight),
             o => o.MaxPopupHeight,
             (o, v) => o.MaxPopupHeight = v);
-    
-    internal static readonly DirectProperty<Mentions, double> MinPopupWidthProperty =
-        AvaloniaProperty.RegisterDirect<Mentions, double>(
-            nameof(MinPopupWidth),
-            o => o.MinPopupWidth,
-            (o, v) => o.MinPopupWidth = v);
     
     internal static readonly DirectProperty<Mentions, Thickness> PopupContentPaddingProperty =
         AvaloniaProperty.RegisterDirect<Mentions, Thickness>(nameof(PopupContentPadding),
@@ -459,13 +452,15 @@ public partial class Mentions : TemplatedControl,
         set => SetAndRaise(FilterValueProperty, ref _filterValue, value);
     }
     
-    private double _itemHeight;
-
-    internal double ItemHeight
+    internal bool UsePopupLayoutTokenResources
     {
-        get => _itemHeight;
-        set => SetAndRaise(ItemHeightProperty, ref _itemHeight, value);
+        get => GetValue(UsePopupLayoutTokenResourcesProperty);
+        set => SetValue(UsePopupLayoutTokenResourcesProperty, value);
     }
+    private static readonly CandidatePopupLayoutTokenResourceKeys s_popupLayoutTokenResourceKeys =
+        new(MentionsTokenKind.OptionHeight, MentionsTokenKind.PopupContentPadding);
+    private OwnerTokenSet? _popupLayoutTokens;
+    private double _itemHeight;
     
     private double _maxPopupHeight;
 
@@ -473,14 +468,6 @@ public partial class Mentions : TemplatedControl,
     {
         get => _maxPopupHeight;
         set => SetAndRaise(MaxPopupHeightProperty, ref _maxPopupHeight, value);
-    }
-    
-    private double _minPopupWidth;
-
-    internal double MinPopupWidth
-    {
-        get => _minPopupWidth;
-        set => SetAndRaise(MinPopupWidthProperty, ref _minPopupWidth, value);
     }
     
     private Thickness _popupContentPadding;
@@ -509,6 +496,10 @@ public partial class Mentions : TemplatedControl,
                 _candidateList.Commit      -= HandleCandidateListComplete;
                 _candidateList.Cancel      -= HandleCandidateListCanceled;
                 _candidateList.ItemsSource =  null;
+                if (_candidateList is Primitives.CandidateList oldCandidateList)
+                {
+                    oldCandidateList.ItemEnabledResolver = null;
+                }
             }
 
             _candidateList = value;
@@ -517,6 +508,10 @@ public partial class Mentions : TemplatedControl,
             {
                 _candidateList.Commit      += HandleCandidateListComplete;
                 _candidateList.Cancel      += HandleCandidateListCanceled;
+                if (_candidateList is Primitives.CandidateList newCandidateList)
+                {
+                    newCandidateList.ItemEnabledResolver = IsOptionEnabled;
+                }
                 _candidateList.ItemsSource =  _view;
             }
         }
@@ -536,6 +531,9 @@ public partial class Mentions : TemplatedControl,
     #endregion
     
     private static bool IsValidAsyncLoadDebounce(TimeSpan value) => value.TotalMilliseconds >= 0.0;
+
+    // Shared by the candidate list (availability and container IsEnabled) and the open-time pre-selection.
+    private static readonly Func<object?, bool> IsOptionEnabled = item => item is not IMentionOption { IsEnabled: false };
 
     private MentionTextArea? _textArea;
     private Popup? _popup;
@@ -560,6 +558,8 @@ public partial class Mentions : TemplatedControl,
     static Mentions()
     {
         FocusableProperty.OverrideDefaultValue<Mentions>(true);
+        // The inner text area is the keyboard stop; the host would only add a stop with no visual.
+        IsTabStopProperty.OverrideDefaultValue<Mentions>(false);
         LinesProperty.OverrideDefaultValue<Mentions>(1);
         
         IsDropDownOpenProperty.Changed.AddClassHandler<Mentions>((mentions,e) => mentions.HandleIsDropDownOpenChanged(e));
@@ -737,6 +737,17 @@ public partial class Mentions : TemplatedControl,
         }
     }
 
+    // The host takes focus only programmatically (it is not a tab stop); the text area is the input, so focus moves
+    // there and its frame shows it.
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && _textArea is { } textArea)
+        {
+            textArea.Focus(e.NavigationMethod, e.KeyModifiers);
+        }
+    }
+
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -751,8 +762,12 @@ public partial class Mentions : TemplatedControl,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == DisplayCandidateCountProperty ||
-            change.Property == ItemHeightProperty)
+        if (change.Property == UsePopupLayoutTokenResourcesProperty)
+        {
+            UpdatePopupLayoutTokenSubscription();
+        }
+        else if (change.Property == DisplayCandidateCountProperty ||
+                 change.Property == PopupContentPaddingProperty)
         {
             ConfigureMaxPopupHeight();
         }
@@ -872,7 +887,29 @@ public partial class Mentions : TemplatedControl,
 
     protected virtual void ConfigureMaxPopupHeight()
     {
-        MaxPopupHeight = ItemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+        MaxPopupHeight = _itemHeight * DisplayCandidateCount + PopupContentPadding.Top + PopupContentPadding.Bottom;
+    }
+
+    private void UpdatePopupLayoutTokenSubscription()
+    {
+        _popupLayoutTokens?.Dispose();
+        _popupLayoutTokens = UsePopupLayoutTokenResources ? s_popupLayoutTokenResourceKeys.Observe(this, RefreshPopupLayout) : null;
+        RefreshPopupLayout();
+    }
+
+    private void RefreshPopupLayout()
+    {
+        var previousRowHeight = _itemHeight;
+        _itemHeight = CandidatePopupLayoutTokenResourceKeys.ReadLength(_popupLayoutTokens?.GetValue(0), _itemHeight) ?? 0;
+        var padding = CandidatePopupLayoutTokenResourceKeys.ReadPadding(_popupLayoutTokens?.GetValue(1), PopupContentPadding);
+        if (padding != PopupContentPadding)
+        {
+            PopupContentPadding = padding;
+        }
+        else if (!previousRowHeight.Equals(_itemHeight))
+        {
+            ConfigureMaxPopupHeight();
+        }
     }
 
     private void UpdatePseudoClasses()
@@ -1395,8 +1432,21 @@ public partial class Mentions : TemplatedControl,
             {
                 _candidateList.ItemsSource = _view;
             }
-            _candidateList.SelectedItem = _view.Count > 0 ? _view[0] : null;
+            _candidateList.SelectedItem = FindFirstEnabledOption(_view);
         }
+    }
+
+    private static IMentionOption? FindFirstEnabledOption(IList<IMentionOption> options)
+    {
+        foreach (var option in options)
+        {
+            if (IsOptionEnabled(option))
+            {
+                return option;
+            }
+        }
+
+        return null;
     }
 
     private string? GetValueByOption(IMentionOption option)

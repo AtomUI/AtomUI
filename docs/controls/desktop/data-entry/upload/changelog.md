@@ -2,6 +2,11 @@
 
 本文档记录 Upload 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme
+  - Upload 列表、触发器与拖拽区域消费 Upload 的有效全局 Token；进度线厚度变更立即刷新。
+
 ## Unreleased
 
 - Design
@@ -10,6 +15,7 @@
   - Lock the existing DropZone/DropArea ControlTheme, layout, Token mapping and rendered result as compatibility invariants.
   - Define typed StorageItem/source ownership, validated transfers and full cleanup aggregation for every input batch.
 - API
+  - `UploadFileItem` 的 CLR 命名空间保留，由 Desktop 程序集转发到 `AtomUI.Controls`。
   - Publish the `root`, `list` and runtime-created `item` Semantic Part contract for `Upload`, including generated `UploadListStyle` and `UploadItemStyle` selectors.
   - Remove `Upload.IsOpenFileDialogOnClick`; click-to-select ownership moves to `UploadDropZone.IsOpenFileDialogOnClick` and `UploadDropZone.SourceKind`.
   - Remove `Upload.Accepts`; replace it with `Upload.AllowedFileTypes` based on `FilePickerFileType`.
@@ -41,6 +47,12 @@
   - Continue cancellation and source lease release when collection, Form, batch-completion or task callbacks throw, then propagate the cleanup error.
   - Add configurable success auto-remove and pending text.
   - Unify file picker, directory picker and Drop top-level item counts under `Upload.IsMultipleEnabled`; keep directory expansion and explicit programmatic batches independent.
+- Fix
+  - 共享 `UploadFileItem`，Desktop 与 Mobile 使用同一任务状态模型和文件上传调度器。
+- Desktop 影响
+  - Desktop 继续使用既有上传模板、调度和输入批次流程。
+- Tests
+  - Upload 定向回归覆盖原队列、租约和异常处理场景。
 - Gallery
   - Add the Upload Semantic Part preview, generated Semantic Style example and root/list/item highlight coverage.
 - Docs

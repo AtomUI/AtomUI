@@ -56,13 +56,13 @@ public class UploadDropVisualContractTests
 
         var source = File.ReadAllText(GetRepoFile(
             "src/AtomUI.Desktop.Controls/Upload/Themes/UploadDefaultDropAreaTheme.axaml"));
-        source.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorFillAlter}\"/>");
-        source.ShouldContain("<Setter Property=\"CornerRadius\" Value=\"{atom:SharedTokenResource BorderRadiusLG}\"/>");
-        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorBorder}\"/>");
-        source.ShouldContain("<Setter Property=\"BorderThickness\" Value=\"{atom:SharedTokenResource BorderThickness}\"/>");
-        source.ShouldContain("<Setter Property=\"Padding\" Value=\"{atom:SharedTokenResource Padding}\"/>");
+        source.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:UploadTokenResource ColorFillAlter}\"/>");
+        source.ShouldContain("<Setter Property=\"CornerRadius\" Value=\"{atom:UploadTokenResource BorderRadiusLG}\"/>");
+        source.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:UploadTokenResource ColorBorder}\"/>");
+        source.ShouldContain("<Setter Property=\"BorderThickness\" Value=\"{atom:UploadTokenResource BorderThickness}\"/>");
+        source.ShouldContain("<Setter Property=\"Padding\" Value=\"{atom:UploadTokenResource Padding}\"/>");
         source.ShouldContain("<Setter Property=\"Header\" Value=\"{atom:UploadLangResource DragUploadHead}\"/>");
-        source.ShouldContain("<Setter Property=\"IsMotionEnabled\" Value=\"{atom:SharedTokenResource EnableMotion}\"/>");
+        source.ShouldContain("<Setter Property=\"IsMotionEnabled\" Value=\"{atom:UploadTokenResource EnableMotion}\"/>");
         source.ShouldContain("<Style Selector=\"^:pointerover\">");
         source.ShouldContain("<Style Selector=\"^:disabled\">");
         source.ShouldContain("<Style Selector=\"^[IsMotionEnabled=True]\">");

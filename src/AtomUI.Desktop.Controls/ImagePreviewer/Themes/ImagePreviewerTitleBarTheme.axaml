@@ -15,7 +15,7 @@
                                              Bottom="False" />
     </ControlTheme.Resources>
 
-    <Setter Property="Background" Value="{atom:ImagePreviewerTokenResource TitleBarBackgroundColor}" />
+    <Setter Property="Background" Value="{CompiledBinding $self.(atom:ImageViewer.TitleBarBackground)}" />
 
     <Style Selector="^[OsType=Linux]">
         <Setter Property="Template">
@@ -46,8 +46,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -84,6 +84,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
@@ -121,8 +122,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -159,6 +160,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>
@@ -196,8 +198,8 @@
                                    HorizontalSpacing="{atom:WindowTitleBarTokenResource LogoAndTitleSpacing}">
                             <atom:IconPresenter Name="PART_IconPresenter"
                                                 DockPanel.Dock="Left"
-                                                Width="{atom:SharedTokenResource IconSize}"
-                                                Height="{atom:SharedTokenResource IconSize}"
+                                                Width="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
+                                                Height="{CompiledBinding $self.(atom:ImageViewer.IconSize)}"
                                                 Icon="{TemplateBinding Icon}"
                                                 IconBrush="{TemplateBinding Foreground}"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -234,6 +236,7 @@
                                                      CanMinimize="{TemplateBinding CanMinimize}"
                                                      CanMaximize="{TemplateBinding CanMaximize}"
                                                      IsPinCaptionButtonSupported="{TemplateBinding IsPinCaptionButtonSupported}"
+                                                     IsFullScreenSupported="{TemplateBinding IsFullScreenSupported}"
                                                      CaptionButtonCommand="{TemplateBinding CaptionButtonCommand}" />
                         </StackPanel>
                     </atom:WindowTitleBarLayoutPanel>

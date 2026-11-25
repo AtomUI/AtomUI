@@ -1,4 +1,6 @@
-﻿using AtomUI.Generated.AtomUIDesktopControls;
+﻿using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Generated.AtomUIDesktopControls;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -6,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -37,8 +40,8 @@ public partial class CardTabStrip : BaseTabStrip
 
     #region 内部属性实现
 
-    internal static readonly StyledProperty<CornerRadius> CardBorderRadiusProperty =
-        AvaloniaProperty.Register<CardTabStrip, CornerRadius>(nameof(CardBorderRadius));
+    internal static readonly StyledProperty<bool> UseCardRadiusTokenResourcesProperty =
+        AvaloniaProperty.Register<CardTabStrip, bool>(nameof(UseCardRadiusTokenResources));
 
     internal static readonly StyledProperty<Thickness> CardBorderThicknessProperty =
         AvaloniaProperty.Register<CardTabStrip, Thickness>(nameof(CardBorderThickness));
@@ -49,12 +52,22 @@ public partial class CardTabStrip : BaseTabStrip
     internal static readonly StyledProperty<double> CardSizeProperty =
         AvaloniaProperty.Register<CardTabStrip, double>(nameof(CardSize));
 
-    internal CornerRadius CardBorderRadius
+    internal bool UseCardRadiusTokenResources
     {
-        get => GetValue(CardBorderRadiusProperty);
-        set => SetValue(CardBorderRadiusProperty, value);
+        get => GetValue(UseCardRadiusTokenResourcesProperty);
+        set => SetValue(UseCardRadiusTokenResourcesProperty, value);
     }
     
+    private static readonly object[] s_cardRadiusKeys =
+    [
+        ControlTokenResourceKey.Global(CardTabStripTokens.Identity, SharedTokenKind.BorderRadiusSM),
+        ControlTokenResourceKey.Global(CardTabStripTokens.Identity, SharedTokenKind.BorderRadiusMD),
+        ControlTokenResourceKey.Global(CardTabStripTokens.Identity, SharedTokenKind.BorderRadiusLG)
+    ];
+
+    private OwnerTokenSet? _radiusTokens;
+    private CornerRadius CardBorderRadius { get; set; }
+
     internal CornerRadius EffectiveCardBorderRadius
     {
         get => GetValue(EffectiveCardBorderRadiusProperty);
@@ -127,10 +140,57 @@ public partial class CardTabStrip : BaseTabStrip
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        
-        if (change.Property == TabStripPlacementProperty ||
-            change.Property == CardSizeProperty)
+        if (change.Property == UseCardRadiusTokenResourcesProperty && this.IsAttachedToVisualTree())
         {
+            UpdateCardRadiusTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _radiusTokens is not null)
+        {
+            RefreshRadius();
+        }
+        else if (change.Property == TabStripPlacementProperty || change.Property == CardSizeProperty)
+        {
+            HandleTabStripPlacementChanged();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateCardRadiusTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _radiusTokens?.Dispose();
+        _radiusTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateCardRadiusTokenSubscription()
+    {
+        if (UseCardRadiusTokenResources && _radiusTokens is null)
+        {
+            _radiusTokens = new OwnerTokenSet(this, s_cardRadiusKeys.Length, RefreshRadius);
+            for (var index = 0; index < s_cardRadiusKeys.Length; ++index)
+            {
+                _radiusTokens.SetResourceKey(index, s_cardRadiusKeys[index]);
+            }
+        }
+        else if (!UseCardRadiusTokenResources && _radiusTokens is not null)
+        {
+            _radiusTokens.Dispose();
+            _radiusTokens = null;
+        }
+        RefreshRadius();
+    }
+
+    private void RefreshRadius()
+    {
+        var radius = TabCardRadiusResources.Read(_radiusTokens, 0, SizeType, CardBorderRadius);
+        if (CardBorderRadius != radius)
+        {
+            CardBorderRadius = radius;
             HandleTabStripPlacementChanged();
         }
     }

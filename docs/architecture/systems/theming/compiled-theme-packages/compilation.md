@@ -12,29 +12,29 @@
 | 原 XML | 原始字节摘要、逻辑资源身份、Link/路径、namespace/schema 版本、位置映射 |
 | 包声明 | 稳定包身份、定义程序集、声明版本、支持平台、主题 Id 与注册顺序 |
 | Global/Control Token 契约 | 定义程序集 + 完整 owner metadata name + Catalog/Id，Token 名称/值类型/stage/key、默认值契约 |
-| 算法声明 | 有序算法身份、Control 算法模式与声明 appearance；实际求值保留在运行时 |
+| 语言与轴 | 所属语言、固定的风格 / 明暗 / 密度、锁定的种子、条件段的条件、Control 固定的轴；实际求值保留在运行时 |
 | 值能力 | literal 解析、合法构造、typed copy/freeze/thaw、资源投影与不可变性契约 |
 | 构建目标 | XML 协议、生成 ABI、字面量能力、目标框架及相关编译选项 |
 
 源身份使用稳定包/资源路径，产物不写开发机绝对路径、构建时间或进程随机 hash。错误定位可以引用源文件，
 发布元数据采用规范化逻辑路径。摘要针对一次有界读取的同一字节快照，不能以时间戳或文件长度替代。
 
-构建沿用 XML v1 的 DTD/外部实体/网络禁止、文档/元素/Token 容量和唯一性检查。没有 include/import、
+构建沿用 XML v2 的 DTD/外部实体/网络禁止、文档/元素/Token 容量和唯一性检查。没有 include/import、
 脚本或环境变量求值扩展；复杂度和产物膨胀也受显式预算约束，不穷举任意颜色、字号和字体的笛卡尔积。
 
 ## 2. 工具分工
 
-Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存。算法使用既有 Avalonia/Core 类型与
-数学实现，只在运行时求值。动态 XML 继续由原 Reader/Binder 处理。
+Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存。语言推导与控件取值规则使用既有 Avalonia/Core 类型与
+中性工具，只在运行时求值。动态 XML 继续由原 Reader/Binder 处理。
 
 - Toolchain Tasks 源链接 Core 的 Reader/XSD、`BuiltInThemeLiteralCodec`、运行时 converter 与必要值类型。
-  字面量调用与动态 XML 相同的 converter，再传输规范字符串与类型化 primitive payload；不执行算法或用户 codec。
+  字面量调用与动态 XML 相同的 converter，再传输规范字符串与类型化 primitive payload；不执行推导或用户 codec。
 - 本工程 Token 类型到 Roslyn 编译时才可见，因此 worker 为每个不同字面量计算有界的内置类型候选集，
   同一任务内缓存重复文本；传输最多 32 个候选、8 MiB 总字节，并限制复合值深度和元素数。
   Generator 按已校验的值类型选候选，仅构造 C# 表达式，不再维护字面量解析器。
 - worker 私有依赖 Avalonia 的托管程序集以复用真实值语义；这些依赖随 `tools/net10.0` 分发，
   不加载产品程序集，不需要桌面宿主，不成为应用运行时依赖，也不建立 Core/Generator 自举循环。
-- 主题算法、调色板派生与颜色明暗调整均留在 Core；工具链不维护第二份算法实现。
+- 推导属于语言包与取值包，调色板与颜色数学等中性工具留在 Core；工具链不维护第二份推导实现。
 - Tasks/Generator 是构建依赖，不进入应用运行时输出；Core 不引用构建工具程序集。
 
 现有 Token/schema/registration 生成在共同 Compilation transform 中建立事实。主题生成必须共享这一值模型，
@@ -44,7 +44,7 @@ Core 保留现有 ThemeCompiler、ThemeConfig、ThemeSnapshot、事务及缓存�
 ### 2.1 同工程与依赖包
 
 同工程 Token/主题声明使用当前编译的符号模型校验，发射引用最终可访问声明的代码，最终 C# 编译负责链接。
-它不要求先编译当前程序集再运行该程序集里的 evaluator，因此没有自举循环。
+它不要求先编译当前程序集再运行该程序集里的推导，因此没有自举循环。
 
 依赖包必须随包导出版本化的中立构建契约。现有 schema fingerprint 本身不足以表示完整的字面量、类型与
 可访问工厂信息。契约由拥有 Token 的项目生成并与其运行期 descriptor 使用同一事实源；不能反射读取
@@ -58,7 +58,7 @@ internal 生成类、继承层次或运行期 registry 来补事实。
 ```text
 有界 XML 快照 + 导出 Token 契约
   → Reader/XSD 与位置诊断
-  → 语义绑定：owner / token / type / stage / algorithm / appearance
+  → 语义绑定：language / owner / token / type / stage / locked seed / section and Control axes
   → 类型化静态声明与合法 runtime 参数边界
   → 类型化默认赋值 + manifest + 控件契约
   → 生成 C# 及正常编译、打包、链接验证
@@ -66,10 +66,10 @@ internal 生成类、继承层次或运行期 registry 来补事实。
 
 ### 3.1 语义绑定
 
-构建期解析静态 Token 名称和值，检查精确 owner、Own/Global 名称冲突、算法模式和声明 appearance。
+构建期解析静态 Token 名称和值，检查所属语言由被引用的语言包声明、精确 owner、Own/Global 名称冲突、`Locked` 的位置和条件段内 Control 不得固定轴。风格、密度与可调种子在启动时对照已启用的语言检查。
 匹配按稳定身份完成，不分配可持久化的应用控件 slot；registry-dependent 装配留到实际注册阶段。
 
-静态覆盖保留 Seed/Map/Alias/Own 的阶段标签及声明来源，不提前合并应用初始配置、运行时请求或父 scope。不能根据“当前没有使用某字段”删除合法覆盖，因为后续控件与配置仍可能消费它。
+静态覆盖保留 Seed/Map/Alias/Language/Own 的阶段标签、所在段（基础段或条件段）及声明来源，不提前合并应用初始配置、运行时请求或父 scope。不能根据“当前没有使用某字段”删除合法覆盖，因为后续控件与配置仍可能消费它。
 
 ### 3.2 支持的值生成
 
@@ -91,22 +91,22 @@ FontFamily 是经明确授权的构造边界例外：当前依赖只公开字符
 
 只生成 `Color.Parse("...")` 等运行期静态解析调用不算完成类型化编译。也不能在恢复全局 builder
 或首次 Own 计算时经 `Format → Parse` 把成本带回来。运行时用户传入的字符串覆盖仍可正常解析，计费单独记录。
-任意第三方 evaluator 内部行为不属于“框架生成路径无静态字符串解析”的保证；必须明确标为 opaque runtime 调用。
+任意第三方推导的内部行为不属于“框架生成路径无静态字符串解析”的保证；必须明确标为 opaque runtime 调用。
 
 跨程序集入口、编译时名称与枚举键的双重核对、实际 owner 程序集以及失败 writer 的关闭规则见
-[生成 ABI v1](../../../../reference/theming/compiled-theme-abi-v1.md)。
+[生成 ABI v4](../../../../reference/theming/compiled-theme-abi-v4.md)。
 
 没有合法构造/冻结表达的自定义静态字面量在构建时失败，不把字符串存入产物等运行时偷偷补解析。作者可以明确
 选择动态 XML 来源；这种选择不是编译成功的等价结果。
 
 ### 3.3 生成工厂
 
-生成程序描述必要契约并写入类型化静态默认覆盖。现有运行时按阶段合并有效配置、执行算法、冻结结果和资源投影。
+生成程序描述必要契约并写入类型化静态默认覆盖。现有运行时按阶段合并有效配置、执行语言推导与控件取值规则、冻结结果和资源投影。
 静态路径不创建 ThemeDocument/BoundThemeDefinition 往返模型；Catalog 的统一内部定义视图需支持两种来源，
 默认配置与根/局部合并接口不能要求所有静态包重新构造旧 Binder 对象。
 
 保留当前惰性 Control 边界。生成程序只描述显式控件覆盖；运行时按实际注册的 descriptor 提供 Own 构造入口，
-不在主题选择时调用所有 evaluator。
+不在主题选择时调用所有控件取值规则。
 可共享的全局数据保持一份；不为每个控件生成一整份全局资源表。菜单 manifest 与大 payload 分离，
 静态构造函数不能遍历并物化所有主题、控件资源或 palette。
 
@@ -147,8 +147,8 @@ FontFamily 是经明确授权的构造边界例外：当前依赖只公开字符
 
 - 控件包构建导出契约；主题包引用已解析的版本化契约。
 - 本工程符号生成类型化注册与默认赋值；不依赖本工程先产出可执行 DLL。
-- Tasks 与 Generator 之间的私有传输版本为 4，包含声明、位置、摘要、诊断及真实 Core codec 产生的有界类型化候选值；保留记录/字节限额和 payload 摘要校验。
-  旧版本输入明确拒绝，重新生成后再编译；此版本不改变运行时生成 ABI v1。
+- Tasks 与 Generator 之间的私有传输版本为 8（标记 `atomui-theme-reader-xsd-v2`），包含声明（含语言 Token 与条件段）、位置、摘要、诊断及真实 Core codec 产生的有界类型化候选值；保留记录/字节限额和 payload 摘要校验。
+  旧版本输入明确拒绝，重新生成后再编译；它是构建工具私有协议，与运行时生成 ABI（v4）分开版本化。
 - Generator 在共同 transform 中校验完整 Token 契约，不读取另一 Generator 的本轮输出。
 - NuGet 同时验证运行入口、契约元数据、必要构建工具和产物摘要；工具程序集不进入运行时输出。
 

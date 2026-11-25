@@ -10,24 +10,27 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^:is(atom|SelectTag)">
-            <Setter Property="Background" Value="{atom:SelectTokenResource MultipleItemBg}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:SelectTag.TagBackground)}" />
+            <!-- The chip text is the field text on the selector's item background, not the standalone tag's default
+                 colour (which a theme may pair with a solid tag fill). -->
+            <Setter Property="CalculatedForeground" Value="{atom:OwnerTokenResource ColorText}" />
             <Setter Property="IsClosable" Value="True" />
-            <Setter Property="FontSize" Value="{atom:SelectTokenResource OptionFontSize}" />
+            <Setter Property="FontSize" Value="{CompiledBinding $self.(atom:SelectTag.OptionFontSize)}" />
 
             <Style Selector="^:disabled">
                 <Setter Property="Background"
-                        Value="{atom:SelectTokenResource MultipleSelectorBgDisabled}" />
+                        Value="{CompiledBinding $self.(atom:SelectTag.DisabledSelectorBackground)}" />
                 <Setter Property="Foreground"
-                        Value="{atom:SelectTokenResource MultipleItemColorDisabled}" />
+                        Value="{CompiledBinding $self.(atom:SelectTag.DisabledTagForeground)}" />
                 <Setter Property="IsClosable" Value="False" />
             </Style>
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Height" Value="{atom:SelectTokenResource MultipleItemHeightLG}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="Height" Value="{atom:SelectTokenResource MultipleItemHeight}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
             </Style>
 
             <Style Selector="^[SizeType=Custom][HasCustomTagHeight=True]">
@@ -36,7 +39,7 @@
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Height" Value="{atom:SelectTokenResource MultipleItemHeightSM}" />
+                <Setter Property="Height" Value="{CompiledBinding $self.(atom:SelectTag.TagHeight)}" />
             </Style>
 
         </Style>

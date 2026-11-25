@@ -36,7 +36,7 @@ Gallery 和测试：
 
 ## 3. 核心类职责
 
-`AbstractSegmented` 是状态协调器。它持有方向、形状、选择属性、内部选中滑块属性和 Form value 适配逻辑，负责方向键选择，并在选择变化和最终排列后同步选中滑块矩形。
+`AbstractSegmented` 是状态协调器。它持有方向、形状、选择属性、内部选中滑块属性和 Form value 适配逻辑，负责方向键选择，并在选择变化和最终排列后同步选中滑块矩形。目标矩形和过渡中绘制的矩形均与轨道内边距区域求交。
 
 `Segmented` 是桌面公开控件。它不重复共享选择逻辑，只注册 `SegmentedToken.ScopeProvider` 并为数据 item 创建 `SegmentedItem` 容器。
 
@@ -233,8 +233,7 @@ item 的 hover/pressed 背景遮罩，对齐上游 `thumb ~ item::after` 透明�
 `AbstractSegmented.Render()` 绘制两层矩形：
 
 1. 使用 `Background` 和根 `CornerRadius` 绘制轨道背景。
-2. 仅当 `_isThumbVisible` 为 true 时，使用 `SelectedThumbBg`、`SelectedThumbCornerRadius` 和
-   `SelectedThumbBoxShadows` 绘制选中滑块。
+2. 仅当 `_isThumbVisible` 为 true 时绘制选中滑块。桌面主题成组读取背景及阴影。使用 `SizeType=Custom` 时，滑块采用选中项已设置的 `CornerRadius`，其余情况使用 `SelectedThumbCornerRadius`。修改自定义选中项圆角会触发滑块重绘。
 
 `SetThumbVisible` 变化时调用 `InvalidateVisual()` 触发重绘。item 本身的 hover/pressed 背景遮罩和文本状态仍由
 `SegmentedItemTheme.axaml` 负责；选中背景只由滑块绘制，item 的 `:selected` 不绘制背景。

@@ -1,5 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using Avalonia;
 using Avalonia.Controls;
@@ -38,8 +38,8 @@ public class TabOverflowShadowRenderingTests
     public async Task Outer_Shadow_Touches_Only_The_Overflowing_Viewport_Edges(int kind, Dock placement, bool dark, double scaling)
     {
         var manager = Application.Current!.GetThemeManager().ShouldNotBeNull();
-        await manager.ApplyThemeAsync(new ThemeRequest(IThemeManager.DEFAULT_THEME_ID,
-            new ThemeConfigBuilder().WithAlgorithms(dark ? ThemeAlgorithm.Dark : ThemeAlgorithm.Default).Build(),
+        await manager.ApplyThemeAsync(new ThemeRequest(AntDesignThemes.DaybreakBlue,
+            new ThemeConfigBuilder().WithAppearance(dark ? ThemeAppearance.Dark : ThemeAppearance.Light).Build(),
             ThemeTransitionReason.UserRequest), TestContext.Current.CancellationToken);
         manager.CurrentTheme!.Appearance.ShouldBe(dark ? ThemeAppearance.Dark : ThemeAppearance.Light);
         var owner = CreateOwner(kind, placement);

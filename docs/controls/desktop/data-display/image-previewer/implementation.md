@@ -178,6 +178,9 @@ TopLevel 尺寸或 render scaling 变化后重新计算物理像素 bucket；相
 logical parent 和 modal subscription，并构造显示 tracker；关闭时先处理可取消 `DialogClosing`，再释放 host state（含清空显示 tracker 与 WaitForLoaded 保留帧）
 和全部 Full leases，最后恢复关闭态 Thumbnail 策略。Template 只绑定 entry 状态和图片，不持有结果 lease。
 
+模板中的封面继承 `ImagePreviewer` 或 `ImageGroupPreviewer` 的主题输入。独立封面在挂载时使用 `ImagePreviewer` 身份读取当前作用域，
+因此移到 `Window` 等容器下时仍能取得封面尺寸与遮罩。默认输入共用一个资源监听，以 Style 优先级输出，离树时释放。
+
 Semantic marker 与承载节点同生命周期：native dialog 创建时把 `popup.root` marker 注入内容根包裹 Panel，宿主关闭销毁整棵
 visual subtree 后不残留任何 marker 或订阅；`viewer`、float toolbar 与 overlay 根节点由宿主代码或宿主模板创建，marker 静态
 声明在各自主题中；overlay 的 `popup.mask` marker 静态声明在新增遮罩子元素上，随 overlay 模板创建/销毁。打开与重开不维护
@@ -408,9 +411,9 @@ Loading/error 自定义模板只替换内容。模板不能通过视觉存在与
   不得改为 `Render` override 中 `PushGeometryClip` 包着 `image.Render` 手绘——子 Image 是 VisualChild，渲染器在
   父 `Render` 之后还会独立遍历 VisualChildren 再绘制一次无裁剪的 Image，覆盖手绘结果；该值不由内置主题默认设置
   （对齐上游默认 image 无圆角），经生成 `ImagePreviewerImageStyle` 由用户 Semantic Style 定制，Setter 属性名必须写
-  限定名 `Property="Border.CornerRadius"`（直接写 `CornerRadius` 会经 internal 渲染器类型自身的字段解析，
-  XAML 编译期不做可见性检查，运行时抛 `FieldAccessException`），`x:SetterTargetType="atom:ImagePreviewRenderer"`
-  提供类型上下文；回归测试断言生成 Style 的 `CornerRadius` Setter 经 owner 作用域命中模板内 renderer
+  限定名 `Property="Border.CornerRadius"`，从公开 `Border` 类型解析共享属性；`x:SetterTargetType="Control"`
+  使用 `image` 部件的公开 ContractType，不向应用暴露 internal renderer 类型或字段。
+  回归测试断言生成 Style 的 `CornerRadius` Setter 经 owner 作用域命中模板内 renderer
   （`renderer.CornerRadius == 4`），并断言圆角落到子 `Image.Clip` 的圆角几何（外角点在几何外、直边内点在几何内、
   零圆角清除 Clip、Clip 边界跟随子 Image 布局变化重建）。
 - renderer、loading presenter 和 error presenter 只消费状态，不发起 I/O 或拥有结果。

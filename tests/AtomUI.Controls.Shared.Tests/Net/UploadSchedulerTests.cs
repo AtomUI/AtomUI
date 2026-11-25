@@ -162,7 +162,10 @@ public class UploadSchedulerTests
 
         try
         {
-            enqueueTask.IsCompleted.ShouldBeTrue();
+            // The transport is still blocked, so EnqueueTask must return on its own; give the Task.Run continuation
+            // time to observe that return instead of sampling it at the instant the transport signalled Started.
+            (await Task.WhenAny(enqueueTask, Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken)))
+                .ShouldBeSameAs(enqueueTask, "EnqueueTask must not block on a transport that blocks before returning its task");
         }
         finally
         {

@@ -32,6 +32,7 @@
                                IsVisible="False"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
+                               Stretch="{TemplateBinding Stretch}"
                                Source="{TemplateBinding LoadedImage}" />
                     </Border>
                     <Border Padding="{TemplateBinding TextPadding}">
@@ -48,7 +49,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:AvatarTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Foreground" Value="{atom:AvatarTokenResource AvatarColor}" />
@@ -94,16 +95,16 @@
 
         <Style Selector="^[Shape=Square]">
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                <Setter Property="CornerRadius" Value="{atom:AvatarTokenResource BorderRadiusLG}" />
             </Style>
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:AvatarTokenResource BorderRadius}" />
             </Style>
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:AvatarTokenResource BorderRadiusSM}" />
             </Style>
             <Style Selector="^[SizeType=Custom]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:AvatarTokenResource BorderRadius}" />
             </Style>
         </Style>
     </ControlTheme>

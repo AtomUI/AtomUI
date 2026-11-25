@@ -70,6 +70,26 @@
                     Value="{atom:NavMenuTokenResource ItemSelectedBg}" />
         </Style>
 
+        <!-- Danger items (antd menu item-danger): text, hover text, pressed and selected backgrounds. -->
+        <Style Selector="^[IsDanger=True]">
+            <Setter Property="Foreground"
+                    Value="{atom:NavMenuTokenResource DangerItemColor}" />
+            <Style Selector="^:pointerover:not(^[IsSelected=True])">
+                <Setter Property="Foreground"
+                        Value="{atom:NavMenuTokenResource DangerItemHoverColor}" />
+            </Style>
+            <Style Selector="^[IsPointerHold=True]:not(^[IsSelected=True])">
+                <Setter Property="Background"
+                        Value="{atom:NavMenuTokenResource DangerItemActiveBg}" />
+            </Style>
+            <Style Selector="^[IsSelected=True]">
+                <Setter Property="Foreground"
+                        Value="{atom:NavMenuTokenResource DangerItemSelectedColor}" />
+                <Setter Property="Background"
+                        Value="{atom:NavMenuTokenResource DangerItemSelectedBg}" />
+            </Style>
+        </Style>
+
         <Style Selector="^[IsDarkStyle=True]">
             <Setter Property="Foreground"
                     Value="{atom:NavMenuTokenResource DarkItemColor}" />
@@ -124,6 +144,25 @@
                 <Setter Property="Background"
                         Value="{atom:NavMenuTokenResource DarkItemSelectedBg}" />
             </Style>
+
+            <Style Selector="^[IsDanger=True]">
+                <Setter Property="Foreground"
+                        Value="{atom:NavMenuTokenResource DarkDangerItemColor}" />
+                <Style Selector="^:pointerover:not(^[IsSelected=True])">
+                    <Setter Property="Foreground"
+                            Value="{atom:NavMenuTokenResource DarkDangerItemHoverColor}" />
+                </Style>
+                <Style Selector="^[IsPointerHold=True]:not(^[IsSelected=True])">
+                    <Setter Property="Background"
+                            Value="{atom:NavMenuTokenResource DarkDangerItemActiveBg}" />
+                </Style>
+                <Style Selector="^[IsSelected=True]">
+                    <Setter Property="Foreground"
+                            Value="{atom:NavMenuTokenResource DarkDangerItemSelectedColor}" />
+                    <Setter Property="Background"
+                            Value="{atom:NavMenuTokenResource DarkDangerItemSelectedBg}" />
+                </Style>
+            </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|Icon#MenuIndicatorIcon">
@@ -172,10 +211,12 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

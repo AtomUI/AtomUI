@@ -21,6 +21,7 @@
                     <gallery:GalleryStickyTabsPanel Name="PART_StickyPanel">
                         <ContentPresenter Name="PART_HeaderHost"
                                           Content="{TemplateBinding Header}" />
+                        <!-- layout: sticky content must paint above the scrolling body; ZIndex is structural ordering. -->
                         <atom:PixelAlignedBorder Name="PART_StickyContentHost"
                                                  Background="{TemplateBinding StickyBackground}"
                                                  BorderBrush="{TemplateBinding StickyBorderBrush}"
@@ -28,7 +29,10 @@
                                                  IsVisible="{TemplateBinding HasStickyContent}"
                                                  Padding="{TemplateBinding StickyContentPadding}"
                                                  ZIndex="1">
-                            <ContentPresenter Content="{TemplateBinding StickyContent}" />
+                            <!-- layer: 表面宿主（规则 3）。吸顶 Tab 提升到 T3 层后，Tab 的焦点描边、Badge 仍紧贴吸顶表面。 -->
+                            <VisualLayerManager atom:LayerLadder.IsSurfaceHost="True">
+                                <ContentPresenter Content="{TemplateBinding StickyContent}" />
+                            </VisualLayerManager>
                         </atom:PixelAlignedBorder>
                         <ContentPresenter Name="PART_ContentHost"
                                           Content="{TemplateBinding Content}" />

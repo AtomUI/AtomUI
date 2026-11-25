@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <atom:StringToTextBlockConverter x:Key="StringToTextBlockConverter"/>
+    <!-- owner: global Tokens are read from the owner. TimeViewCell is Token-owner transparent, so its owner is the
+         hosting picker (the picker presenter takes the picker's owner). -->
     <ControlTheme x:Key="{x:Type atom:TimeViewCell}" TargetType="atom:TimeViewCell">
         <Setter Property="Template">
             <ControlTemplate>
@@ -18,40 +20,68 @@
                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </ControlTemplate>
         </Setter>
+
+        <!-- An inset background keeps the full cell hit-testable; only themes that inset it pay for the extra layers. -->
+        <Style Selector="^:not(^[ItemBackgroundInset=0])">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel Background="Transparent">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Margin="{TemplateBinding ItemBackgroundInset}"
+                                IsHitTestVisible="False" />
+                        <ContentPresenter Name="ContentPresenter"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          Content="{TemplateBinding Content, Converter={StaticResource StringToTextBlockConverter}}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Padding="{TemplateBinding Padding}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
         
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="Margin" Value="4,0" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+        <Style Selector="^[CenterItemContent=True]">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
-        <Setter Property="MinHeight" Value="{atom:TimePickerTokenResource ItemHeight}" />
-        <Setter Property="Padding" Value="{atom:TimePickerTokenResource ItemPadding}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorTransparent}" />
         
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextSecondary}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgTextHover}" />
         </Style>
         
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ControlItemColorActive}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActive}" />
+        </Style>
+
+        <!-- The column stepped by navigation keys from the picker input: the selected-and-hovered shade. -->
+        <Style Selector="^:selected:keyboard-active">
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgActiveHover}" />
         </Style>
         
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
+                <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

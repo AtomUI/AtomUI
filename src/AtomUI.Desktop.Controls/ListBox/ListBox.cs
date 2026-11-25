@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -229,6 +230,11 @@ public partial class ListBox : AvaloniaListBox,
             nameof(IsDefaultEmptyIndicatorVisible),
             o => o.IsDefaultEmptyIndicatorVisible,
             (o, v) => o.IsDefaultEmptyIndicatorVisible = v);
+
+    // The check mark colour of a selected item, from the theme (ListBox: its Own Token; candidate lists: the host's
+    // primary colour).
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        AvaloniaProperty.Register<ListBox, IBrush?>(nameof(ItemSelectedIndicatorColor));
     
     private Thickness _effectiveBorderThickness;
 
@@ -250,6 +256,12 @@ public partial class ListBox : AvaloniaListBox,
     {
         get => _isDefaultEmptyIndicatorVisible;
         set => SetAndRaise(IsDefaultEmptyIndicatorVisibleProperty, ref _isDefaultEmptyIndicatorVisible, value);
+    }
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
     }
 
     #endregion
@@ -393,6 +405,7 @@ public partial class ListBox : AvaloniaListBox,
             listBoxItem[!ListBoxItem.SelectedIndicatorProperty]         = this[!SelectedIndicatorProperty];
             listBoxItem[!ListBoxItem.ItemHoverBgProperty]               = this[!ItemHoverBgProperty];
             listBoxItem[!ListBoxItem.ItemSelectedBgProperty]            = this[!ItemSelectedBgProperty];
+            listBoxItem[!ListBoxItem.ItemSelectedIndicatorColorProperty] = this[!ItemSelectedIndicatorColorProperty];
             listBoxItem[!ListBoxItem.IsShowSelectedIndicatorProperty]   = this[!IsShowSelectedIndicatorProperty];
             listBoxItem[!ListBoxItem.FilterHighlightStrategyProperty]   = this[!FilterHighlightStrategyProperty];
             listBoxItem[!ListBoxItem.FilterHighlightForegroundProperty] = this[!FilterHighlightForegroundProperty];
@@ -489,7 +502,9 @@ public partial class ListBox : AvaloniaListBox,
     
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
     {
-        if (!IsSelectable)
+        // Avalonia's ListBoxItem commits Space / Enter itself (always replacing a multiple selection); keyboard
+        // commits go through OnKeyDown instead, which applies the list's commit policy.
+        if (!IsSelectable || eventArgs is KeyEventArgs)
         {
             return false;
         }
@@ -659,31 +674,121 @@ public partial class ListBox : AvaloniaListBox,
     {
     }
     
+    // Keyboard model: the item containers are the focus targets and the list is one Tab stop (Avalonia's own
+    // model). Directional keys move focus to the next navigable item (enabled, visible, focusable); whether the
+    // selection follows depends on the selection mode, the same commit policy as TreeView. Candidate lists in
+    // popups (CandidateList, Select, Cascader) keep focus in their host input and use their own forwarded keys.
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (IsSelectable)
+        if (e.Key.ToNavigationDirection() is { } direction && direction.IsDirectional())
         {
-            var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
-            var ctrl    = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+            // Avalonia's ListBox.OnKeyDown moves the selection for directional keys without checking Handled, and
+            // ItemsControl.OnKeyDown moves focus again; both are replaced here, so the base must not run for them.
+            e.Handled = HandleNavigationKey(e, direction);
+            return;
+        }
 
-            if (!ctrl &&
-                e.Key.ToNavigationDirection() is { } direction &&
-                direction.IsDirectional())
-            {
-                e.Handled |= MoveSelection(
-                    direction,
-                    WrapSelection,
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Shift));
-            }
-            else if (SelectionMode.HasAllFlags(SelectionMode.Multiple) &&
-                     hotkeys is not null && MatchesAnyGesture(hotkeys.SelectAll, e))
+        var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
+        if (hotkeys is not null && SelectionMode.HasAllFlags(SelectionMode.Multiple) && MatchesAnyGesture(hotkeys.SelectAll, e))
+        {
+            // Avalonia would select all even when the list is not selectable.
+            if (IsSelectable)
             {
                 Selection.SelectAll();
                 e.Handled = true;
             }
+            return;
+        }
+
+        if (HandleCommitKey(e, hotkeys))
+        {
+            e.Handled = true;
+            return;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private bool HandleNavigationKey(KeyEventArgs e, NavigationDirection direction)
+    {
+        if (e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) || ItemsPanelRoot is not INavigableContainer panel)
+        {
+            return false;
+        }
+
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+        var from    = GetContainerFromEventSource(focused) ?? ContainerFromIndex(Selection.AnchorIndex);
+        // ContainerFromIndex also returns items that are their own container while they are not realized.
+        if (from is not null && IndexFromContainer(from) < 0)
+        {
+            from = null;
+        }
+
+        if (from is null)
+        {
+            direction = direction switch
+            {
+                NavigationDirection.Down or NavigationDirection.Right => NavigationDirection.First,
+                NavigationDirection.Up or NavigationDirection.Left => NavigationDirection.Last,
+                _ => direction
+            };
+        }
+
+        // The virtualizing panel realizes (scrolls into view) the target; non-navigable items are skipped.
+        // PageUp / PageDown find no target: Avalonia's VirtualizingStackPanel has no page navigation, they bubble
+        // to the ScrollViewer, which scrolls the viewport and leaves the focus where it is.
+        if (GetNextControl(panel, direction, from, WrapSelection) is not Control next ||
+            IndexFromContainer(next) is not (>= 0 and var index))
+        {
+            return false;
+        }
+
+        var hotkeys = this.GetPlatformSettings()?.HotkeyConfiguration;
+        var command = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+        if (IsSelectable && !command)
+        {
+            if (!SelectionMode.HasAllFlags(SelectionMode.Multiple))
+            {
+                // Single selection follows the focused item.
+                UpdateSelection(index);
+            }
+            else if (e.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
+            {
+                // Multiple selection: plain arrows only browse; Shift selects the range from the anchor.
+                UpdateSelection(index, rangeModifier: true);
+            }
+        }
+
+        next.Focus(NavigationMethod.Directional, e.KeyModifiers);
+        return true;
+    }
+
+    private bool HandleCommitKey(KeyEventArgs e, PlatformHotkeyConfiguration? hotkeys)
+    {
+        if (!IsSelectable ||
+            e.Key is not (Key.Space or Key.Enter) ||
+            e.KeyModifiers.HasAllFlags(KeyModifiers.Alt) ||
+            // Only on the item itself: focusable content inside an item keeps its own Space / Enter.
+            e.Source is not Control source ||
+            IndexFromContainer(source) is not (>= 0 and var index))
+        {
+            return false;
+        }
+
+        var multiple = SelectionMode.HasAllFlags(SelectionMode.Multiple);
+        var command  = hotkeys is not null && e.KeyModifiers.HasAllFlags(hotkeys.CommandModifiers);
+        if (!multiple && !command && Selection.IsSelected(index))
+        {
+            // Nothing to commit: the key keeps bubbling for application handlers.
+            return false;
+        }
+
+        // Multiple: toggle the focused item (Shift: select the range from the anchor). Single: select it,
+        // Ctrl / Cmd toggles it off.
+        UpdateSelection(index,
+            rangeModifier: e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
+            toggleModifier: multiple || command);
+        return true;
     }
 
     private static bool MatchesAnyGesture(IEnumerable<KeyGesture> gestures, KeyEventArgs e)

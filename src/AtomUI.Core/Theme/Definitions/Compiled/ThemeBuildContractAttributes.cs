@@ -37,6 +37,21 @@ public sealed class ThemeBuildTokenAttribute(
     public int ValueContractVersion { get; } = valueContractVersion;
 }
 
+/// <summary>
+/// Publishes one design language declared by the assembly and its language token class, so that compiled theme
+/// packages naming the language can verify it and bind its language tokens at build time.
+/// </summary>
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed class ThemeBuildLanguageAttribute(int version, string id, string languageTokenType,
+    string languageTokenAssemblyIdentity) : Attribute
+{
+    public int Version { get; } = version;
+    public string Id { get; } = id;
+    public string LanguageTokenType { get; } = languageTokenType;
+    public string LanguageTokenAssemblyIdentity { get; } = languageTokenAssemblyIdentity;
+}
+
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class CompiledThemeManifestAttribute(int version, string packageId, string data) : Attribute

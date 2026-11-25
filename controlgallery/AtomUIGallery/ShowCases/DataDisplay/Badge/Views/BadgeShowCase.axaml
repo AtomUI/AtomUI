@@ -132,13 +132,13 @@
             <atom:CountBadge Count="5">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
             <atom:CountBadge Count="0" IsZeroVisible="True" BadgeColor="#52c41a">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
         </StackPanel>
@@ -155,25 +155,25 @@
             <atom:CountBadge Count="99">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
             <atom:CountBadge Count="100">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
             <atom:CountBadge Count="99" OverflowCount="10">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
             <atom:CountBadge Count="1000" OverflowCount="999">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
         </StackPanel>
@@ -190,7 +190,7 @@
             <atom:CountBadge Count="5" Offset="10, 10">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
         </StackPanel>
@@ -206,13 +206,13 @@
             <atom:CountBadge Count="5">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
             <atom:CountBadge Count="5" Size="Small">
                 <Border Width="40"
                         Height="40"
-                        Background="rgb(191,191,191)"
+                        Background="{atom:SharedTokenResource ColorFillSecondary}"
                         CornerRadius="8" />
             </atom:CountBadge>
         </StackPanel>
@@ -245,7 +245,7 @@
                 <atom:CountBadge Count="{Binding DynamicBadgeCount}" OverflowCount="99">
                     <Border Width="40"
                             Height="40"
-                            Background="rgb(191,191,191)"
+                            Background="{atom:SharedTokenResource ColorFillSecondary}"
                             CornerRadius="8" />
                 </atom:CountBadge>
                 <StackPanel VerticalAlignment="Center"
@@ -260,13 +260,13 @@
                 <atom:CountBadge BadgeIsVisible="{Binding DynamicDotBadgeVisible}" Count="9">
                     <Border Width="40"
                             Height="40"
-                            Background="rgb(191,191,191)"
+                            Background="{atom:SharedTokenResource ColorFillSecondary}"
                             CornerRadius="8" />
                 </atom:CountBadge>
                 <atom:DotBadge BadgeIsVisible="{Binding DynamicDotBadgeVisible}">
                     <Border Width="40"
                             Height="40"
-                            Background="rgb(191,191,191)"
+                            Background="{atom:SharedTokenResource ColorFillSecondary}"
                             CornerRadius="8" />
                 </atom:DotBadge>
                 <atom:ToggleSwitch VerticalAlignment="Center"
@@ -535,7 +535,7 @@
                                          IsMotionEnabled="False">
                             <Border Width="40"
                                     Height="40"
-                                    Background="rgb(191,191,191)"
+                                    Background="{atom:SharedTokenResource ColorFillSecondary}"
                                     CornerRadius="8" />
                         </atom:CountBadge>
                         <atom:CountBadge Name="SemanticStyleCountBadge"
@@ -544,7 +544,7 @@
                                          IsMotionEnabled="False">
                             <Border Width="40"
                                     Height="40"
-                                    Background="rgb(191,191,191)"
+                                    Background="{atom:SharedTokenResource ColorFillSecondary}"
                                     CornerRadius="8" />
                         </atom:CountBadge>
                     </StackPanel>

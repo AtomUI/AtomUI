@@ -17,13 +17,13 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-using AvaloniaTabStrip = Avalonia.Controls.Primitives.TabStrip;
-
-public abstract class BaseTabStrip : AvaloniaTabStrip, 
+public abstract class BaseTabStrip : AbstractTabStrip,
                                      ISizeTypeAware,
                                      IMotionAwareControl,
                                      ITabOverflowOwner
 {
+    private protected override bool UsesCustomIndicatorTransition => true;
+
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel());
 
@@ -32,8 +32,8 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<BaseTabStrip>();
 
-    public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-        AvaloniaProperty.Register<BaseTabStrip, Dock>(nameof(TabStripPlacement), Dock.Top);
+    public new static readonly StyledProperty<Dock> TabStripPlacementProperty =
+        AbstractTabStrip.TabStripPlacementProperty.AddOwner<BaseTabStrip>();
 
     public static readonly StyledProperty<bool> TabAlignmentCenterProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(TabAlignmentCenter));
@@ -46,8 +46,8 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
             nameof(TabActivationTrigger),
             TabActivationTrigger.PointerReleased);
 
-    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<BaseTabStrip>();
+    public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        AbstractTabStrip.IsMotionEnabledProperty.AddOwner<BaseTabStrip>();
     
     public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabStrip, double>(nameof (HeaderStartEdgePadding));
@@ -55,17 +55,17 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     public static readonly StyledProperty<double> HeaderEndEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabStrip, double>(nameof (HeaderEndEdgePadding));
     
-    public static readonly StyledProperty<object?> HeaderStartExtraContentProperty = 
-        AvaloniaProperty.Register<BaseTabStrip, object?>(nameof (HeaderStartExtraContent));
+    public new static readonly StyledProperty<object?> HeaderStartExtraContentProperty =
+        AbstractTabStrip.HeaderStartExtraContentProperty.AddOwner<BaseTabStrip>();
     
-    public static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
-        AvaloniaProperty.Register<BaseTabStrip, IDataTemplate?>(nameof(HeaderStartExtraContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
+        AbstractTabStrip.HeaderStartExtraContentTemplateProperty.AddOwner<BaseTabStrip>();
     
-    public static readonly StyledProperty<object?> HeaderEndExtraContentProperty = 
-        AvaloniaProperty.Register<BaseTabStrip, object?>(nameof (HeaderEndExtraContent));
+    public new static readonly StyledProperty<object?> HeaderEndExtraContentProperty =
+        AbstractTabStrip.HeaderEndExtraContentProperty.AddOwner<BaseTabStrip>();
     
-    public static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
-        AvaloniaProperty.Register<BaseTabStrip, IDataTemplate?>(nameof(HeaderEndExtraContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
+        AbstractTabStrip.HeaderEndExtraContentTemplateProperty.AddOwner<BaseTabStrip>();
 
     public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
         BaseTabControl.OverflowPopupTemplateProperty.AddOwner<BaseTabStrip>();
@@ -82,7 +82,7 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
         set => SetValue(SizeTypeProperty, value);
     }
 
-    public Dock TabStripPlacement
+    public new Dock TabStripPlacement
     {
         get => GetValue(TabStripPlacementProperty);
         set => SetValue(TabStripPlacementProperty, value);
@@ -106,7 +106,7 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
         set => SetValue(TabActivationTriggerProperty, value);
     }
     
-    public bool IsMotionEnabled
+    public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
@@ -125,26 +125,26 @@ public abstract class BaseTabStrip : AvaloniaTabStrip,
     }
     
     [DependsOn(nameof(HeaderStartExtraContentTemplate))]
-    public object? HeaderStartExtraContent
+    public new object? HeaderStartExtraContent
     {
         get => GetValue(HeaderStartExtraContentProperty);
         set => SetValue(HeaderStartExtraContentProperty, value);
     }
     
-    public IDataTemplate? HeaderStartExtraContentTemplate
+    public new IDataTemplate? HeaderStartExtraContentTemplate
     {
         get => GetValue(HeaderStartExtraContentTemplateProperty);
         set => SetValue(HeaderStartExtraContentTemplateProperty, value);
     }
     
     [DependsOn(nameof(HeaderEndExtraContentTemplate))]
-    public object? HeaderEndExtraContent
+    public new object? HeaderEndExtraContent
     {
         get => GetValue(HeaderEndExtraContentProperty);
         set => SetValue(HeaderEndExtraContentProperty, value);
     }
     
-    public IDataTemplate? HeaderEndExtraContentTemplate
+    public new IDataTemplate? HeaderEndExtraContentTemplate
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
         set => SetValue(HeaderEndExtraContentTemplateProperty, value);

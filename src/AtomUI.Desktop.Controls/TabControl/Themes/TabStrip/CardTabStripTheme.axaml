@@ -6,6 +6,8 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:CardTabStrip}" TargetType="atom:CardTabStrip">
+        <Setter Property="atom:TabTokenResourceBindingExtension.Owner" Value="{Binding $self}" />
+
         <ControlTheme.BasedOn>
             <themes:BaseTabStripTheme TargetType="atom:CardTabStrip" />
         </ControlTheme.BasedOn>
@@ -53,29 +55,29 @@
         </Setter>
 
         <Setter Property="CardSize"
-                Value="{atom:TabControlTokenResource CardSize}" />
+                Value="{atom:CardTabStripTokenResource CardSize}" />
         <Setter Property="CardBorderThickness"
-                Value="{atom:SharedTokenResource BorderThickness}" />
+                Value="{atom:CardTabStripTokenResource BorderThickness}" />
         
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
             <Setter Property="IconBrush"
-                    Value="{atom:TabControlTokenResource ItemColor}" />
+                    Value="{atom:TabTokenResourceBinding ItemColor}" />
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSize}" />
+                    Value="{atom:CardTabStripTokenResource IconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSize}" />
+                    Value="{atom:CardTabStripTokenResource IconSize}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+                    Value="{atom:CardTabStripTokenResource ColorBorderSecondary}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:TabControlTokenResource ItemHoverColor}" />
+                    Value="{atom:TabTokenResourceBinding ItemHoverColor}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:CardTabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -97,20 +99,20 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource CardGutter}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{atom:TabControlTokenResource AddTabButtonMarginHorizontal}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginHorizontal}" />
             </Style>
 
         </Style>
 
         <Style Selector="^[TabStripPlacement=Right]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:CardTabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -132,20 +134,20 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource CardGutter}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{atom:TabControlTokenResource AddTabButtonMarginVertical}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginVertical}" />
             </Style>
 
         </Style>
 
         <Style Selector="^[TabStripPlacement=Bottom]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:CardTabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -167,20 +169,20 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource CardGutter}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{atom:TabControlTokenResource AddTabButtonMarginHorizontal}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginHorizontal}" />
             </Style>
 
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:CardTabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -202,28 +204,17 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource CardGutter}" />
+                        Value="{atom:TabTokenResourceBinding CardGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
             <Style Selector="^ /template/ atom|IconButton#PART_AddTabButton">
                 <Setter Property="Margin"
-                        Value="{atom:TabControlTokenResource AddTabButtonMarginVertical}" />
+                        Value="{atom:TabTokenResourceBinding AddTabButtonMarginVertical}" />
             </Style>
 
         </Style>
         
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadius}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="CardBorderRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
-        </Style>
+        <Setter Property="UseCardRadiusTokenResources" Value="True" />
     </ControlTheme>
 </ResourceDictionary>

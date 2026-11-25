@@ -105,8 +105,8 @@
     </unit>
     <unit id="RapidSwitchDescription">
       <segment>
-        <source>Append a new image every 200 ms and track the latest one. Toggle the mode to compare Immediate loading-placeholder switching with WaitForLoaded hold-until-loaded switching.</source>
-        <target state="translated">Adiciona uma nova imagem a cada 200 ms e acompanha a mais recente. Alterne o modo para comparar Immediate (indicador de carregamento imediato) com WaitForLoaded (mantém a imagem anterior até carregar).</target>
+        <source>The preview cycles through images automatically. Immediate shows a loading placeholder while the next image loads. Wait For Loaded keeps the current image visible until the next one is ready.</source>
+        <target state="translated">A prévia alterna entre as imagens automaticamente. O modo Imediato mostra um espaço reservado enquanto a próxima imagem carrega. O modo Aguardar carregamento mantém a imagem atual visível até a próxima estar pronta.</target>
       </segment>
     </unit>
     <unit id="RapidSwitchModeImmediate">

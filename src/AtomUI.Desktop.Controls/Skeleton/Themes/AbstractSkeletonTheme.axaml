@@ -10,19 +10,13 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:AbstractSkeleton">
             <Panel Name="PART_RootLayout">
-                <Border Name="PART_ActiveAnimationLayer"
-                        Classes.semantic-content="True"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        IsVisible="{TemplateBinding IsActive}"/>
                 <Border Name="PART_ContentLayer"
                         Classes.semantic-content="True"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="{TemplateBinding CornerRadius}"
-                        IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}"/>
+                        atom:AbstractSkeleton.IsShimmerBlock="True"/>
             </Panel>
         </ControlTemplate>
     </Setter>
@@ -32,9 +26,8 @@
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Background" Value="{atom:SkeletonTokenResource GradientFromColor}"/>
         <Setter Property="MotionDuration" Value="{atom:SkeletonTokenResource LoadingMotionDuration}"/>
-        <Setter Property="LoadingBackgroundStart" Value="{atom:SkeletonTokenResource LoadingBackgroundStart}"/>
-        <Setter Property="LoadingBackgroundMiddle" Value="{atom:SkeletonTokenResource LoadingBackgroundMiddle}"/>
-        <Setter Property="LoadingBackgroundEnd" Value="{atom:SkeletonTokenResource LoadingBackgroundEnd}"/>
+        <Setter Property="IsMotionEnabled" Value="{atom:SkeletonTokenResource EnableMotion}"/>
+        <Setter Property="ShimmerColorTokenResourceKeys" Value="{x:Static atom:SkeletonShimmerResources.ShimmerColorTokenResourceKeys}"/>
 
         <Style Selector="^:is(atom|AbstractSkeleton).semantic-preview-owner">
             <Setter Property="HorizontalAlignment" Value="Stretch" />

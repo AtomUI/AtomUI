@@ -7,26 +7,26 @@
     <Style Selector="^:is(atom|AbstractUploadPictureContent)">
         <Setter Property="Background" Value="Transparent" />
 
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXS}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}" />
+        <Setter Property="CornerRadius" Value="{atom:UploadTokenResource BorderRadiusLG}" />
+        <Setter Property="BorderBrush" Value="{atom:UploadTokenResource ColorBorder}" />
+        <Setter Property="BorderThickness" Value="{atom:UploadTokenResource BorderThickness}" />
+        <Setter Property="Padding" Value="{atom:UploadTokenResource PaddingXS}" />
+        <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorTextSecondary}" />
         
         <Style Selector="^[Status=Failed]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorError}" />
+            <Setter Property="BorderBrush" Value="{atom:UploadTokenResource ColorError}" />
         </Style>
         
         <Style Selector="^[Status=Cancelled]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorError}" />
+            <Setter Property="Foreground" Value="{atom:UploadTokenResource ColorError}" />
+            <Setter Property="BorderBrush" Value="{atom:UploadTokenResource ColorError}" />
         </Style>
         
         <Style Selector="^ /template/ Border#Mask">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgMask}" />
+            <Setter Property="Background" Value="{atom:UploadTokenResource ColorBgMask}" />
             <Setter Property="TemplatedControl.Foreground"
-                    Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+                    Value="{atom:UploadTokenResource ColorTextLightSolid}" />
         </Style>
 
         <Style Selector="^[Status=Success]:pointerover">
@@ -42,20 +42,22 @@
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource FontSizeLG}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource FontSizeLG}" />
+            <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorTextLightSolid}" />
+            <Setter Property="IconWidth" Value="{atom:UploadTokenResource FontSizeLG}" />
+            <Setter Property="IconHeight" Value="{atom:UploadTokenResource FontSizeLG}" />
         </Style>
         
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorTextLightSolid}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="MaskOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="MaskOpacity" atom:TokenTransitions.Duration="MotionDurationSlow" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </Style>

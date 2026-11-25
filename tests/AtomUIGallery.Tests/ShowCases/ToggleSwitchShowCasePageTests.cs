@@ -177,7 +177,8 @@ public class ToggleSwitchShowCasePageTests
                                       .OfType<TemplatedControl>()
                                       .Single(static knob => knob.Classes.Contains("semantic-indicator"));
             AssertSolidColor(muiIndicator.Background, "#1976d2");
-            muiIndicator.Bounds.ShouldBe(new Rect(15, -3, 20, 20));
+            var indicatorTransform = muiIndicator.TransformToVisual(muiDemo)!.Value;
+            new Rect(muiIndicator.Bounds.Size).TransformToAABB(indicatorTransform).ShouldBe(new Rect(15, -3, 20, 20));
             muiIndicator.Effect.ShouldNotBeNull()
                           .ShouldBeAssignableTo<DropShadowEffect>()
                           .Color.ShouldBe(Color.Parse("#4D000000"));

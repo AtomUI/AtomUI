@@ -5,8 +5,10 @@ using AtomUI.Controls.Primitives;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -75,6 +77,19 @@ public partial class Drawer : Control,
 
     public static readonly StyledProperty<double> PushOffsetPercentProperty =
         AvaloniaProperty.Register<Drawer, double>(nameof(PushOffsetPercent));
+
+    /// <summary>
+    /// The border colour drawn on the drawer's anchored side (see <see cref="DrawerToken.EdgeBorderColor"/>);
+    /// transparent by default, so the Ant Design rendering draws nothing.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> EdgeBorderColorProperty =
+        AvaloniaProperty.Register<Drawer, IBrush?>(nameof(EdgeBorderColor));
+
+    /// <summary>
+    /// The thickness of the anchored-side border (see <see cref="DrawerToken.EdgeBorderThickness"/>); 0 by default.
+    /// </summary>
+    public static readonly StyledProperty<double> EdgeBorderThicknessProperty =
+        AvaloniaProperty.Register<Drawer, double>(nameof(EdgeBorderThickness));
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Drawer>();
@@ -195,6 +210,18 @@ public partial class Drawer : Control,
         set => SetValue(PushOffsetPercentProperty, value);
     }
 
+    public IBrush? EdgeBorderColor
+    {
+        get => GetValue(EdgeBorderColorProperty);
+        set => SetValue(EdgeBorderColorProperty, value);
+    }
+
+    public double EdgeBorderThickness
+    {
+        get => GetValue(EdgeBorderThicknessProperty);
+        set => SetValue(EdgeBorderThicknessProperty, value);
+    }
+
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -251,8 +278,7 @@ public partial class Drawer : Control,
     private DrawerContainer? _container;
     private CompositeDisposable? _relayBindingDisposables;
     private IDisposable? _motionBinding;
-    private IDisposable? _pushOffsetBinding;
-    private IDisposable? _dialogSizeBinding;
+    private OwnerTokenPropertyBindings? _drawerTokens;
     private Control? _openOnSizeChangedTarget;
     private int _visualTreeVersion;
     
@@ -277,12 +303,7 @@ public partial class Drawer : Control,
         base.OnAttachedToVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
-        _pushOffsetBinding?.Dispose();
-        _pushOffsetBinding = TokenResourceBinder.CreateControlTokenBinding(
-            this,
-            PushOffsetPercentProperty,
-            DrawerTokenKind.PushOffsetPercent);
-        ApplyDialogSizeTokenBinding();
+        UpdateDrawerTokenBindings();
         _visualTreeVersion++;
         var parentDrawer = FindParentDrawer();
         _relayBindingDisposables?.Dispose();
@@ -315,10 +336,8 @@ public partial class Drawer : Control,
         base.OnDetachedFromVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = null;
-        _pushOffsetBinding?.Dispose();
-        _pushOffsetBinding = null;
-        _dialogSizeBinding?.Dispose();
-        _dialogSizeBinding = null;
+        _drawerTokens?.Dispose();
+        _drawerTokens = null;
         var visualTreeVersion = ++_visualTreeVersion;
         _relayBindingDisposables?.Dispose();
         _relayBindingDisposables = null;
@@ -336,7 +355,7 @@ public partial class Drawer : Control,
     {
         Drawer? target  = null;
         var     current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        while (current != null && current is not ScopeAwareAdornerLayer)
         {
             if (current is DrawerContainer container)
             {
@@ -355,6 +374,38 @@ public partial class Drawer : Control,
         }
 
         return target;
+    }
+
+    /// <summary>
+    /// 呈现层路由：位于父 Drawer 内时复用父 Drawer 所在层（嵌套 Drawer 与父 Drawer 同层）；
+    /// <c>OpenOn is TopLevel</c> 时进入该 TopLevel 宿主的 T7 <see cref="TopLevelPresentationLayer"/>；
+    /// 其余情况（局部元素或 null）进入作用域宿主的 T5 <see cref="ContentPresentationLayer"/>。
+    /// </summary>
+    private ScopeAwareAdornerLayer? ResolvePresentationLayer(Control? openOn)
+    {
+        // 按父 Drawer 当前 OpenOn 重新解析，而不是读取父 container 的视觉父级：父子 Drawer 同时迁移时，
+        // 子 Drawer 的通知可能先于父 container 的移动，解析结果必须是父 Drawer 的目标层。
+        if (FindParentDrawer() is { } parentDrawer &&
+            parentDrawer.ResolvePresentationLayer(parentDrawer.OpenOn) is { } parentLayer)
+        {
+            return parentLayer;
+        }
+
+        if (openOn is TopLevel topLevel &&
+            TopLevelPresentationLayer.GetLayer(topLevel) is { } topLevelLayer)
+        {
+            return topLevelLayer;
+        }
+
+        // OpenOn 位于本 Drawer 自己的 container 内时，就近解析会落进 container 自己的表面宿主，container 将被
+        // 移入自身内部的层（视觉树成环）。此时从 container 外侧解析：落在 container 当前所在的作用域宿主。
+        var anchor = openOn ?? (Control)this;
+        if (_container is { } container && container.IsVisualAncestorOf(anchor))
+        {
+            anchor = container;
+        }
+
+        return ContentPresentationLayer.GetLayer(anchor);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -383,7 +434,7 @@ public partial class Drawer : Control,
 
         if (change.Property == SizeTypeProperty)
         {
-            ApplyDialogSizeTokenBinding();
+            UpdateDialogSizeTokenBinding();
         }
         
         if (change.Property == OpenOnProperty)
@@ -394,7 +445,7 @@ public partial class Drawer : Control,
             {
                 _container.UpdateOpenOn(
                     newOpenOn,
-                    ScopeAwareAdornerLayer.GetLayer(newOpenOn ?? this));
+                    ResolvePresentationLayer(newOpenOn));
             }
         }
     }
@@ -418,7 +469,7 @@ public partial class Drawer : Control,
 
     private void Open()
     {
-        var layer = ScopeAwareAdornerLayer.GetLayer(OpenOn ?? this);
+        var layer = ResolvePresentationLayer(OpenOn);
         Debug.Assert(layer != null);
         ConfigureEffectiveDialogSize();
         ConfigureOpenOnSizeChangedSubscription();
@@ -433,7 +484,7 @@ public partial class Drawer : Control,
     {
         DetachOpenOnSizeChanged();
         var layer = _container?.GetVisualParent<ScopeAwareAdornerLayer>() ??
-                    ScopeAwareAdornerLayer.GetLayer(OpenOn ?? this);
+                    ResolvePresentationLayer(OpenOn);
         Debug.Assert(layer != null);
         _container?.CloseActiveChildDrawer();
         NotifyBeforeClose(layer);
@@ -512,7 +563,7 @@ public partial class Drawer : Control,
     {
         Drawer? firstParentDrawer = null;
         var current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        while (current != null && current is not ScopeAwareAdornerLayer)
         {
             if (current is DrawerContainer container)
             {
@@ -549,7 +600,7 @@ public partial class Drawer : Control,
     protected virtual void NotifyBeforeClose(ScopeAwareAdornerLayer layer)
     {
         var current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        while (current != null && current is not ScopeAwareAdornerLayer)
         {
             if (current is DrawerContainer container)
             {
@@ -566,7 +617,7 @@ public partial class Drawer : Control,
     private void NotifyParentDrawersChildPlacementChanged()
     {
         var current = Parent;
-        while (current != null && current.GetType() != typeof(ScopeAwareAdornerLayer))
+        while (current != null && current is not ScopeAwareAdornerLayer)
         {
             if (current is DrawerContainer container)
             {
@@ -591,15 +642,31 @@ public partial class Drawer : Control,
         RaiseCrossRootsChanged();
     }
     
-    private void ApplyDialogSizeTokenBinding()
+    private void UpdateDrawerTokenBindings()
     {
-        _dialogSizeBinding?.Dispose();
-        _dialogSizeBinding = null;
-        if (!this.IsAttachedToVisualTree())
+        _drawerTokens?.Dispose();
+        // The runtime overlay consumes these public values from the Drawer. Keep a single theme read group
+        // on the Drawer so the placement scope and Template priority do not depend on where the overlay is attached.
+        var tokens = new OwnerTokenPropertyBindings(this, 4, BindingPriority.Template);
+        _drawerTokens = tokens;
+        var ownerType = GetType();
+        try
         {
-            return;
+            tokens.Bind(0, PushOffsetPercentProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.PushOffsetPercent));
+            tokens.Bind(1, EdgeBorderColorProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.EdgeBorderColor));
+            tokens.Bind(2, EdgeBorderThicknessProperty, ControlTokenResourceKey.Own(ownerType, DrawerTokenKind.EdgeBorderThickness));
+            UpdateDialogSizeTokenBinding();
         }
+        catch
+        {
+            _drawerTokens = null;
+            tokens.Dispose();
+            throw;
+        }
+    }
 
+    private void UpdateDialogSizeTokenBinding()
+    {
         var tokenKind = SizeType switch
         {
             CustomizableSizeType.Small  => DrawerTokenKind.SmallSize,
@@ -607,7 +674,7 @@ public partial class Drawer : Control,
             CustomizableSizeType.Large  => DrawerTokenKind.LargeSize,
             _                           => DrawerTokenKind.SmallSize
         };
-        _dialogSizeBinding = TokenResourceBinder.CreateControlTokenBinding(this, DialogSizeProperty, tokenKind);
+        _drawerTokens?.Bind(3, DialogSizeProperty, ControlTokenResourceKey.Own(GetType(), tokenKind));
     }
 
     private void ConfigureEffectiveDialogSize()

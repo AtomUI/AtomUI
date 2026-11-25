@@ -4,21 +4,25 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:FloatButtonHost}" TargetType="atom:FloatButtonHost">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:FloatButtonHostTokenResource EnableMotion}" />
         <Setter Property="Placement" Value="BottomRight" />
         <Setter Property="FloatOffsetX" Value="{atom:FloatButtonTokenResource FloatOffsetX}" />
         <Setter Property="FloatOffsetY" Value="{atom:FloatButtonTokenResource FloatOffsetY}" />
         
         <Style Selector="^[Shape=Circle][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, 4" />
         </Style>
         <Style Selector="^[Shape=Circle][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -2" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-5, -1" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -5" />
         </Style>
     </ControlTheme>

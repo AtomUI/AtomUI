@@ -21,6 +21,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Logging;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -340,12 +341,17 @@ public partial class NavMenu : ItemsControl,
         }
     }
     
+    private readonly ManagedFocusOutline _rootFocusOutline = new();
+    private bool _isRootFocusOutlineRequested;
+
     internal INavMenuInteractionHandler? InteractionHandler { get; private set; }
     
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel { Orientation = Orientation.Vertical });
 
     private bool _defaultOpenPathsApplied;
+    // IsAttachedToVisualTree() still reports true inside OnDetachedFromVisualTree, so track attachment explicitly.
+    private bool _isAttachedToVisualTree;
     private int _motionContextLevel;
     private bool _originIsMotionEnabled;
     private List<IReadOnlyList<INavMenuNode>>? _inlineCollapsedOpenNodePathCache;
@@ -400,7 +406,7 @@ public partial class NavMenu : ItemsControl,
     
     private protected virtual void HandleItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        _entryOwnershipCoordinator.Synchronize();
+        _entryOwnershipCoordinator.Synchronize(e);
         if (IsPopupPinnedOpen)
         {
             // 条目图变化会改变可钉住目标（例如声明式钉住先于条目填充写入）或使当前钉住节点失效。
@@ -524,6 +530,7 @@ public partial class NavMenu : ItemsControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _isAttachedToVisualTree = true;
         CoerceInlineCollapsedLayoutConstraints();
         ConfigureInteractionHandler(true);
         _pinnedOpenCoordinator.Reconcile(this);
@@ -538,10 +545,73 @@ public partial class NavMenu : ItemsControl,
         }
 
         base.OnDetachedFromVisualTree(e);
+        _isAttachedToVisualTree = false;
+        _rootFocusOutline.Hide();
         CancelInlineCollapsedWidthMotion();
         ClearInlineCollapsedLayoutWidth();
         InteractionHandler?.Detach(this);
         InteractionHandler = null;
+    }
+
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (e.NavigationMethod is NavigationMethod.Tab or NavigationMethod.Directional)
+        {
+            // Selection and pointer presses focus items, which makes the item the Tab-once active element,
+            // so Tab re-entry lands on it. The menu is the single keyboard stop: take focus back so the
+            // outline is drawn once, on the keyboard active item or on the root.
+            if (!ReferenceEquals(e.Source, this) && e.Source is NavMenuItem item && this.IsVisualAncestorOf(item))
+            {
+                e.Handled = true;
+                Focus(e.NavigationMethod, e.KeyModifiers);
+                return;
+            }
+
+            InteractionHandler?.SetKeyboardFocusVisible(true);
+        }
+
+        UpdateRootFocusOutline();
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        // Focus events of items inside submenu popups bubble here through the logical tree, so the
+        // check is logical as well.
+        if (!IsMenuElement(e.NewFocusedElement))
+        {
+            InteractionHandler?.SetKeyboardFocusVisible(false);
+        }
+
+        UpdateRootFocusOutline();
+    }
+
+    /// <summary>
+    /// Requested by the interaction handler while the menu shows keyboard focus and no item is active;
+    /// drawn only while the menu itself owns focus.
+    /// </summary>
+    internal void SetRootFocusOutlineVisible(bool isVisible)
+    {
+        _isRootFocusOutlineRequested = isVisible;
+        UpdateRootFocusOutline();
+    }
+
+    private void UpdateRootFocusOutline()
+    {
+        if (_isRootFocusOutlineRequested && IsFocused && _isAttachedToVisualTree)
+        {
+            _rootFocusOutline.Show(this);
+        }
+        else
+        {
+            _rootFocusOutline.Hide();
+        }
+    }
+
+    private bool IsMenuElement(IInputElement? element)
+    {
+        return element is ILogical logical && (ReferenceEquals(logical, this) || this.IsLogicalAncestorOf(logical));
     }
 
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
@@ -621,6 +691,14 @@ public partial class NavMenu : ItemsControl,
         if (needMount)
         {
             InteractionHandler?.Detach(this);
+        }
+
+        // DefaultNavMenuInteractionHandler subscribes to the app-wide IInputManager.Process on attach;
+        // mounting one while detached would root this menu, so defer until OnAttachedToVisualTree.
+        if (!_isAttachedToVisualTree)
+        {
+            InteractionHandler = null;
+            return;
         }
         
         if (EffectiveMode == NavMenuMode.Inline)
@@ -925,18 +1003,9 @@ public partial class NavMenu : ItemsControl,
         ClearInlineCollapsedLayoutWidth();
     }
 
-    private TimeSpan ResolveInlineCollapsedWidthMotionDuration()
-    {
-        var application = Application.Current;
-        var themeVariant = application?.ActualThemeVariant;
-        if (application?.TryGetResource(SharedTokenKind.MotionDurationMid, themeVariant, out var value) == true &&
-            value is TimeSpan duration)
-        {
-            return duration;
-        }
-
-        return TimeSpan.FromMilliseconds(200);
-    }
+    // The effective value of this NavMenu (local ThemeConfigProvider scopes and Controls[NavMenu] included).
+    internal TimeSpan ResolveInlineCollapsedWidthMotionDuration() =>
+        ControlTokenAccessor.Capture<NavMenu>(this).GetEffectiveGlobal<TimeSpan>(SharedTokenKind.MotionDurationMid);
 
     private void CancelInlineCollapsedWidthMotion()
     {

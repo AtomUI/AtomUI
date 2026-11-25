@@ -6,6 +6,22 @@
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Button"
              x:DataType="viewModels:ButtonViewModel">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <ControlTheme x:Key="GhostDemoBackdropTheme" TargetType="Border">
+                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
+                    </ControlTheme>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Default">
+                    <ControlTheme x:Key="GhostDemoBackdropTheme" TargetType="Border">
+                        <Setter Property="Background" Value="#767676" />
+                    </ControlTheme>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
         <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
             <gallery:GalleryShowCaseHost.Header>
@@ -115,7 +131,7 @@
                     <gallery:ShowCaseItem.Styles>
                         <Style Selector="atom|Button.size-demo-button[SizeType=Custom]">
                             <Setter Property="Height" Value="44" />
-                            <Setter Property="Padding" Value="18,0" />
+                            <Setter Property="ContentPadding" Value="18,0" />
                             <Setter Property="FontSize" Value="15" />
                             <Setter Property="IconWidth" Value="18" />
                             <Setter Property="IconHeight" Value="18" />
@@ -372,32 +388,34 @@
                     IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="viewModels:ButtonViewModel">
-                    <Border Background="rgb(190, 200, 200)"
-                            Margin="10"
-                            Padding="10">
-                        <StackPanel Orientation="Vertical">
-                            <WrapPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
-                                <atom:Button ButtonType="Primary" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentPrimary}" />
-                                <atom:Button ButtonType="Default" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDefault}" />
-                                <atom:Button ButtonType="Dashed" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDashed}" />
-                                <atom:Button ButtonType="Text" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentText}" />
-                                <atom:Button ButtonType="Link" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentLink}" />
-                                <atom:Button ButtonType="Primary" IsDanger="True" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDanger}" />
-                            </WrapPanel>
-                            <WrapPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
-                                <atom:Button ButtonType="Primary" IsGhost="True"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentPrimary}" />
-                                <atom:Button ButtonType="Default" IsGhost="True"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentDefault}" />
-                                <atom:Button ButtonType="Text" IsGhost="True"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentText}" />
-                                <atom:Button ButtonType="Link" IsGhost="True"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentLink}" />
-                                <atom:Button ButtonType="Primary" IsDanger="True" IsGhost="True"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentDanger}" />
-                            </WrapPanel>
-                        </StackPanel>
-                    </Border>
+                    <atom:ThemeConfigProvider Config="{x:Static viewModels:ButtonViewModel.GhostDemoThemeConfig}">
+                        <Border Theme="{DynamicResource GhostDemoBackdropTheme}"
+                                Margin="10"
+                                Padding="10">
+                            <StackPanel Orientation="Vertical">
+                                <WrapPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
+                                    <atom:Button ButtonType="Primary" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentPrimary}" />
+                                    <atom:Button ButtonType="Default" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDefault}" />
+                                    <atom:Button ButtonType="Dashed" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDashed}" />
+                                    <atom:Button ButtonType="Text" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentText}" />
+                                    <atom:Button ButtonType="Link" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentLink}" />
+                                    <atom:Button ButtonType="Primary" IsDanger="True" IsGhost="True" Content="{gallery:ButtonShowCaseLangResource P2ContentDanger}" />
+                                </WrapPanel>
+                                <WrapPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
+                                    <atom:Button ButtonType="Primary" IsGhost="True"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentPrimary}" />
+                                    <atom:Button ButtonType="Default" IsGhost="True"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentDefault}" />
+                                    <atom:Button ButtonType="Text" IsGhost="True"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentText}" />
+                                    <atom:Button ButtonType="Link" IsGhost="True"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentLink}" />
+                                    <atom:Button ButtonType="Primary" IsDanger="True" IsGhost="True"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentDanger}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                    </atom:ThemeConfigProvider>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
@@ -460,13 +478,15 @@
                                          Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentDangerLinkDisabled}" />
                         </StackPanel>
 
-                        <Border Background="rgb(190, 200, 200)">
-                            <StackPanel Orientation="Horizontal">
-                                <atom:Button IsGhost="True" Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentGhost}" />
-                                <atom:Button IsGhost="True" IsEnabled="False"
-                                             Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentGhostDisabled}" />
-                            </StackPanel>
-                        </Border>
+                        <atom:ThemeConfigProvider Config="{x:Static viewModels:ButtonViewModel.GhostDemoThemeConfig}">
+                            <Border Theme="{DynamicResource GhostDemoBackdropTheme}">
+                                <StackPanel Orientation="Horizontal">
+                                    <atom:Button IsGhost="True" Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentGhost}" />
+                                    <atom:Button IsGhost="True" IsEnabled="False"
+                                                 Icon="{antdicons:AntDesignIconProvider Kind=SearchOutlined}" Content="{gallery:ButtonShowCaseLangResource P2ContentGhostDisabled}" />
+                                </StackPanel>
+                            </Border>
+                        </atom:ThemeConfigProvider>
 
                     </WrapPanel>
                         </DataTemplate>

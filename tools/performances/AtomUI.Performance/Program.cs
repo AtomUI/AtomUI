@@ -1,4 +1,7 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using System.Text;
+using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
@@ -453,10 +456,11 @@ internal static partial class Program
                   .UseHeadless(new AvaloniaHeadlessPlatformOptions())
                   .UseAtomUI(builder =>
                   {
-                      builder.Theme.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+                      builder.Theme.WithInitialTheme(AntDesignThemes.DaybreakBlue);
                       builder.UseDesktopControls();
                       builder.UseDesktopColorPicker();
                       builder.UseDesktopDataGrid();
+                      builder.UseAntDesign(static language => language.AddDesktopColorPicker().AddDesktopDataGrid());
                   })
                   .SetupWithLifetime(new ClassicDesktopStyleApplicationLifetime
                   {

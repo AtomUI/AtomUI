@@ -1,3 +1,6 @@
+<!-- owner: global Tokens are read from the owner. ListViewItem is Token-owner transparent, so its owner is the hosting
+     ListView; the theme is also the base of TransferListItem and the identity-less group header and Select option items.
+     Own Tokens are the ListView's. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
@@ -7,7 +10,11 @@
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListViewItem">
             <Panel>
+                <!-- Keyboard focus outline: drawn just inside the item frame, so it is neither clipped by the list
+                     viewport nor overlaps the neighbouring items. -->
                 <atom:PixelAlignedBorder Name="Frame"
+                                         TemplatedControl.IsTemplateFocusTarget="True"
+                                         atom:FocusOutlineAdorner.IsInset="True"
                                          Background="{TemplateBinding Background}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          Padding="{TemplateBinding Padding}">
@@ -34,69 +41,70 @@
     </Setter>
 
     <Style Selector="^:is(atom|ListViewItem)">
-        <Setter Property="Focusable" Value="False" />
-        <Setter Property="Margin" Value="{atom:ListViewTokenResource ItemMargin}" />
-        <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemColor}" />
-        <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
-        <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.ItemMargin}" />
+        <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
+        <Setter Property="Background" Value="{CompiledBinding $self.ItemBgColor}" />
+        <!-- The split line under the item is LineWidth thick; an application BorderThickness replaces it. -->
+        <Setter Property="SplitLineWidth" Value="{atom:OwnerTokenResource LineWidth}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         
         <Style Selector="^[IsGroupItem=False]">
             <Style Selector="^:pointerover">
-                <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemHoverColor}" />
+                <Setter Property="Foreground" Value="{CompiledBinding $self.ItemHoverColor}" />
                 <Setter Property="Background" Value="{Binding ItemHoverBg, RelativeSource={RelativeSource Self}}" />
             </Style>
             <Style Selector="^:selected:not(:disabled)">
-                <Setter Property="Foreground" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
+                <Setter Property="Foreground" Value="{CompiledBinding $self.ItemSelectedColor}" />
                 <Setter Property="Background" Value="{Binding ItemSelectedBg, RelativeSource={RelativeSource Self}}" />
             </Style>
         </Style>
         
         <Style Selector="^ /template/ atom|IconTemplatePresenter#SelectedIndicator">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="IconBrush" Value="{Binding ItemSelectedIndicatorColor, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="Width" Value="{atom:OwnerTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource IconSize}" />
             <Setter Property="Margin"
-                    Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
+                    Value="{TemplateBinding SelectedIndicatorMargin}" />
+        </Style>
+
+        <Style Selector="^[SizeType=Large], ^[SizeType=Middle], ^[SizeType=Small], ^[SizeType=Custom]">
+            <Setter Property="Padding" Value="{CompiledBinding $self.ItemPadding}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPadding}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Style Selector="^ /template/ ContentPresenter#ContentPresenter">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                        Value="{TemplateBinding ItemDisabledColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Foreground" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
-            <Setter Property="Background" Value="{atom:ListViewTokenResource ItemBgColor}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.GroupHeaderColor}" />
+            <Setter Property="Background" Value="{CompiledBinding $self.ItemBgColor}" />
 
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
+                <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
             </Style>
 
         </Style>
@@ -104,10 +112,12 @@
 
     <Style Selector="^[IsMotionEnabled=True]">
         <Setter Property="Transitions">
-            <Transitions>
-                <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
     </Style>
 </ControlTheme>

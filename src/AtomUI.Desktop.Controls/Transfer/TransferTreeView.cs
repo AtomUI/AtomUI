@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,6 +13,8 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class TransferTreeView : TreeView, ITransferTreeView, ITransferDecoratorProvider
 {
+    internal override object DragIndicatorLineWidthKey => TransferTreeViewTokenKind.DragIndicatorLineWidth;
+
     #region 公共属性定义
     public static readonly DirectProperty<TransferTreeView, IList<EntityKey>?> SelectedKeysProperty =
         AvaloniaProperty.RegisterDirect<TransferTreeView, IList<EntityKey>?>(nameof(SelectedKeys), 
@@ -167,24 +170,29 @@ public partial class TransferTreeView : TreeView, ITransferTreeView, ITransferDe
         return true;
     }
 
+    private protected override bool RecursiveCheckNodeDataPredicate(object item) => !IsMaskedItem(item);
+
+    private protected override bool RecursiveUnCheckNodeDataPredicate(object item) => !IsMaskedItem(item);
+
+    // Goes by the root data rather than the realized root containers, which a virtualizing panel limits.
     public new void SelectAll()
     {
-        for (var i = 0; i < ItemCount; i++)
+        foreach (var item in Items)
         {
-            if (ContainerFromIndex(i) is TreeViewItem treeItem)
+            if (item != null)
             {
-                CheckedSubTree(treeItem);
+                SetSubTreeChecked(item, true);
             }
         }
     }
 
     public void DeselectAll()
     {
-        for (var i = 0; i < ItemCount; i++)
+        foreach (var item in Items)
         {
-            if (ContainerFromIndex(i) is TreeViewItem treeItem)
+            if (item != null)
             {
-                UnCheckedSubTree(treeItem);
+                SetSubTreeChecked(item, false);
             }
         }
     }

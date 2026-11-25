@@ -1,8 +1,5 @@
 using System.Windows.Input;
-using AtomUI.Animations;
-using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
@@ -663,39 +660,6 @@ public class NavMenuItemActivationTests
         finally
         {
             fixture.Window.Close();
-        }
-    }
-
-    [Fact]
-    public void Item_Background_Transition_Uses_Overridden_NavMenu_Easing_Token()
-    {
-        var node = new NavMenuNode { Header = "Item", ItemKey = "item" };
-        var menu = new AtomUI.Desktop.Controls.NavMenu
-        {
-            Mode            = NavMenuMode.Inline,
-            IsMotionEnabled = true
-        };
-        menu.Items.Add(node);
-
-        var expectedEasing = new LinearEasing();
-        var window = new AvaloniaWindow { Width = 320, Height = 240, Content = menu };
-        window.Resources[NavMenuTokenKind.ItemBackgroundMotionEasing] = expectedEasing;
-
-        try
-        {
-            window.Show();
-            Dispatcher.UIThread.RunJobs();
-
-            var container = menu.ContainerFromItem(node).ShouldBeOfType<NavMenuItem>();
-            var transition = GetHeader(container).Transitions.ShouldNotBeNull()
-                                      .OfType<SolidColorBrushTransition>()
-                                      .Single(item => item.Property == BaseNavMenuItemHeader.BackgroundProperty);
-
-            transition.Easing.ShouldBeOfType<LinearEasing>();
-        }
-        finally
-        {
-            window.Close();
         }
     }
 

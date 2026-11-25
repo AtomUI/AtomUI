@@ -17,7 +17,6 @@ using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUIEmpty = AtomUI.Desktop.Controls.Empty;
-using AtomUITextBlock = AtomUI.Desktop.Controls.TextBlock;
 using AvaloniaButton = Avalonia.Controls.Button;
 using AvaloniaSvg = Avalonia.Svg.Svg;
 using AvaloniaWindow = Avalonia.Controls.Window;
@@ -55,7 +54,7 @@ public class EmptySemanticPartTests
         AssertPart(
             descriptor.Parts.Single(static part => part.Name == "description"),
             DescriptionClass,
-            typeof(AtomUITextBlock),
+            typeof(ContentPresenter),
             typeof(AtomUIEmpty).Assembly.GetType("AtomUI.Theme.Styling.EmptyDescriptionStyle"));
         AssertPart(
             descriptor.Parts.Single(static part => part.Name == "footer"),
@@ -81,7 +80,7 @@ public class EmptySemanticPartTests
         markers.Select(static marker => $"{marker.Attribute.Name.LocalName}:{marker.Element.Name.LocalName}")
                .ShouldBe([
                    "Classes.semantic-image:Svg",
-                   "Classes.semantic-description:TextBlock",
+                   "Classes.semantic-description:ContentPresenter",
                    "Classes.semantic-footer:ContentPresenter"
                ]);
         markers.ShouldAllBe(static marker =>
@@ -90,7 +89,8 @@ public class EmptySemanticPartTests
 
         var description = template.Descendants()
                                   .Single(static element => HasMarker(element, DescriptionClass));
-        description.Attribute("Text")?.Value.ShouldBe("{TemplateBinding Description}");
+        // One presenter shows text and custom content alike (Ant Design .ant-empty-description).
+        description.Attribute("Content")?.Value.ShouldBe("{TemplateBinding EffectiveDescription}");
         description.Attribute("IsVisible")?.Value.ShouldBe("{TemplateBinding IsDescriptionVisible}");
 
         var footer = template.Descendants()
@@ -207,7 +207,7 @@ public class EmptySemanticPartTests
 
         try
         {
-            var firstDescription = FindSemanticControl<AtomUITextBlock>(empty, DescriptionClass);
+            var firstDescription = FindSemanticControl<ContentPresenter>(empty, DescriptionClass);
             firstDescription.IsVisible.ShouldBeFalse();
 
             empty.IsDescriptionVisible = true;
@@ -220,7 +220,7 @@ public class EmptySemanticPartTests
 
             ReapplyDefaultTemplate(empty);
 
-            var secondDescription = FindSemanticControl<AtomUITextBlock>(empty, DescriptionClass);
+            var secondDescription = FindSemanticControl<ContentPresenter>(empty, DescriptionClass);
             secondDescription.ShouldNotBeSameAs(firstDescription);
             secondDescription.IsVisible.ShouldBeFalse();
         }
@@ -329,7 +329,7 @@ public class EmptySemanticPartTests
         try
         {
             FindSemanticControl<Control>(empty, ImageClass).Tag.ShouldBe("styled-image");
-            FindSemanticControl<AtomUITextBlock>(empty, DescriptionClass).Tag.ShouldBe("styled-description");
+            FindSemanticControl<ContentPresenter>(empty, DescriptionClass).Tag.ShouldBe("styled-description");
             FindSemanticControl<ContentPresenter>(empty, FooterClass).Tag.ShouldBe("styled-footer");
         }
         finally

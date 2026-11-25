@@ -132,7 +132,7 @@ internal sealed class SparseHeightDeltaIndex
         {
             throw new ArgumentOutOfRangeException(nameof(slot));
         }
-        return Math.Max(0, SafeAdd(SafeMultiply(slot, DefaultHeight), PrefixDelta(slot)));
+        return StartOf(slot, PrefixDelta(slot));
     }
 
     public double GetExtent(int totalEntryCount)
@@ -141,11 +141,7 @@ internal sealed class SparseHeightDeltaIndex
         {
             throw new ArgumentOutOfRangeException(nameof(totalEntryCount));
         }
-        return Math.Max(
-            0,
-            SafeAdd(
-                SafeMultiply(totalEntryCount, DefaultHeight),
-                PrefixDelta(totalEntryCount)));
+        return StartOf(totalEntryCount, PrefixDelta(totalEntryCount));
     }
 
     public int FindSlotAtOffset(double offset, int totalEntryCount)
@@ -176,26 +172,26 @@ internal sealed class SparseHeightDeltaIndex
         {
             probes++;
             var leftDelta = Node.DeltaOf(node.Left);
-            var nodeStart = Math.Max(
-                0,
-                SafeAdd(
-                    SafeMultiply(node.Slot, DefaultHeight),
-                    SafeAdd(prefixDelta, leftDelta)));
-            if (offset < nodeStart)
+            if (offset < StartOf(node.Slot, SafeAdd(prefixDelta, leftDelta)))
             {
                 upperSlot = Math.Min(upperSlot, node.Slot - 1);
                 node = node.Left;
                 continue;
             }
 
-            var nodeEnd = SafeAdd(nodeStart, node.ActualHeight);
-            if (offset < nodeEnd)
+            // 槽位区间必须首尾相接：一行的结束边界就是下一槽位的起点，只能按下一槽位的起点算式求值。
+            // 用“本行起点 + 实测高度”求值会与该起点相差若干 ULP（行高不能被二进制精确表示时，
+            // 例如 125%、150% 缩放下的布局取整结果），偏移落进这条缝时两行都判定它不属于自己，上下界随之交叉。
+            // 到达上界槽位时无需再比较：偏移小于其后一个槽位的起点（或总高度）已由之前的比较确定。
+            var nextPrefixDelta = SafeAdd(prefixDelta, SafeAdd(leftDelta, node.Delta));
+            if (node.Slot >= upperSlot ||
+                offset < StartOf(node.Slot + 1, nextPrefixDelta))
             {
                 _lastProbeCount = probes;
                 return Math.Min(node.Slot, totalEntryCount - 1);
             }
 
-            prefixDelta = SafeAdd(prefixDelta, SafeAdd(leftDelta, node.Delta));
+            prefixDelta = nextPrefixDelta;
             lowerSlot = Math.Max(lowerSlot, node.Slot + 1);
             node = node.Right;
         }
@@ -275,6 +271,11 @@ internal sealed class SparseHeightDeltaIndex
         }
         return null;
     }
+
+    // 槽位起点的唯一算式：槽位边界（含总高度，即末槽位之后的起点）都必须经由这里求值，
+    // 同一边界才不会因运算结合顺序不同而得到两个相差若干 ULP 的值。
+    private double StartOf(int slot, double prefixDelta) =>
+        Math.Max(0, SafeAdd(SafeMultiply(slot, DefaultHeight), prefixDelta));
 
     private double PrefixDelta(int slot)
     {

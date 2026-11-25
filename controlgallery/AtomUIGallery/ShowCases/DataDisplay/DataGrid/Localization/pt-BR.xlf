@@ -103,6 +103,18 @@
         <target state="translated">Editable Cells</target>
       </segment>
     </unit>
+    <unit id="EditableRowsDescription">
+      <segment>
+        <source>Table with editable rows. Edit puts the whole row in edit and Save commits it at once.</source>
+        <target state="translated">Tabela com linhas editáveis: Editar coloca a linha inteira em edição e Salvar confirma tudo de uma vez.</target>
+      </segment>
+    </unit>
+    <unit id="EditableRowsTitle">
+      <segment>
+        <source>Editable Rows</source>
+        <target state="translated">Linhas editáveis</target>
+      </segment>
+    </unit>
     <unit id="ExpandableRowDescription">
       <segment>
         <source>When there's too much information to show and the table can't display all at once.</source>
@@ -305,6 +317,18 @@
       <segment>
         <source>Single</source>
         <target state="translated">Single</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentIndicatorTrigger">
+      <segment>
+        <source>Select indicator</source>
+        <target state="translated">Indicador de seleção</target>
+      </segment>
+    </unit>
+    <unit id="P2ContentRowTrigger">
+      <segment>
+        <source>Click row</source>
+        <target state="translated">Clique na linha</target>
       </segment>
     </unit>
     <unit id="P2ContentSortAge">
@@ -867,8 +891,8 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</source>
-        <target state="translated">Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</target>
+        <source>Use SelectionMode to switch between multiple selection and single selection, and SelectTriggerType to choose what a click selects. With SelectIndicator, click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged. With Row, clicking anywhere in a row selects it, and clicking a selected row again in multiple selection deselects it.</source>
+        <target state="translated">Use SelectionMode para alternar entre seleção múltipla e seleção única, e SelectTriggerType para escolher o que um clique seleciona. Com SelectIndicator, clique em uma caixa de seleção ou botão de opção para selecionar uma linha; clicar em outra área da linha mantém a seleção atual. Com Row, clicar em qualquer ponto da linha a seleciona e, na seleção múltipla, clicar novamente em uma linha selecionada remove a seleção.</target>
       </segment>
     </unit>
     <unit id="SelectionTitle">

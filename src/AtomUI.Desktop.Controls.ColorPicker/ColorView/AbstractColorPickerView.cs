@@ -1,5 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -46,6 +46,9 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         AvaloniaProperty.Register<AbstractColorPickerView, bool>(
             nameof(IsColorSpectrumSliderVisible),
             true);
+
+    public static readonly StyledProperty<double> SliderTrackHeightProperty =
+        ColorPickerAttachedProperties.SliderTrackHeightProperty.AddOwner<AbstractColorPickerView>();
 
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractColorPickerView>();
@@ -137,6 +140,15 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
         set => SetValue(IsColorSpectrumSliderVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the height of the slider tracks in the color picker view.
+    /// </summary>
+    public double SliderTrackHeight
+    {
+        get => GetValue(SliderTrackHeightProperty);
+        set => SetValue(SliderTrackHeightProperty, value);
+    }
+
     public int MaxHue
     {
         get => GetValue(MaxHueProperty);
@@ -184,12 +196,17 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
 
     #region 内部属性定义
 
+    internal static readonly StyledProperty<bool> HostIsMotionEnabledProperty =
+        AvaloniaProperty.Register<AbstractColorPickerView, bool>(nameof(HostIsMotionEnabled), true);
+
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     internal static readonly StyledProperty<HsvColor> HsvValueProperty =
         AvaloniaProperty.Register<AbstractColorPickerView, HsvColor>(
             nameof(HsvValue),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay,
             coerce: CoerceHsvColor);
+#pragma warning restore ATOMUIGEN044
 
     internal static readonly DirectProperty<AbstractColorPickerView, bool> IsAlphaEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<AbstractColorPickerView, bool>(
@@ -207,6 +224,12 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
             nameof(HsvColorWithoutAlphaBrush),
             o => o.HsvColorWithoutAlphaBrush);
 
+    internal bool HostIsMotionEnabled
+    {
+        get => GetValue(HostIsMotionEnabledProperty);
+        set => SetValue(HostIsMotionEnabledProperty, value);
+    }
+
     internal HsvColor HsvValue
     {
         get => GetValue(HsvValueProperty);
@@ -214,8 +237,10 @@ public abstract class AbstractColorPickerView : TemplatedControl, IMotionAwareCo
     }
 
     private bool _isAlphaEffectiveVisible;
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     private readonly SolidColorBrush _hsvColorBrush = new(Colors.White);
     private readonly SolidColorBrush _hsvColorWithoutAlphaBrush = new(Colors.White);
+#pragma warning restore ATOMUIGEN044
 
     internal bool IsAlphaEffectiveVisible
     {

@@ -38,7 +38,8 @@ internal class ColorSliderThumb : Thumb
     {
         base.OnSizeChanged(e);
         Debug.Assert(MathUtils.AreClose(e.NewSize.Width, e.NewSize.Height));
-        CornerRadius = new CornerRadius(e.NewSize.Width / 2);
+        // Runtime measured radius cannot be expressed by a static ControlTheme setter.
+        SetCurrentValue(CornerRadiusProperty, new CornerRadius(e.NewSize.Width / 2));
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

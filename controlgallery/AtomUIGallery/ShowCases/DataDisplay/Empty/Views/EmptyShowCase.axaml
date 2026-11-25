@@ -138,15 +138,15 @@
                                     <Style Selector="atom|Empty.semantic-style-demo">
                                         <Setter Property="HorizontalAlignment" Value="Stretch" />
                                         <Setter Property="Padding" Value="16" />
-                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="StrokeDashArray" Value="4,2" />
                                     </Style>
                                     <Style Selector="atom|Empty.semantic-object-styles">
-                                        <Setter Property="Background" Value="#F5F5F5" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
                                         <Setter Property="CornerRadius" Value="8" />
-                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
-                                            <Setter Property="Foreground" Value="#1890FF" />
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                             <Setter Property="FontWeight" Value="Bold" />
                                         </atom:EmptyDescriptionStyle>
                                         <atom:EmptyFooterStyle x:SetterTargetType="ContentPresenter">
@@ -154,11 +154,11 @@
                                         </atom:EmptyFooterStyle>
                                     </Style>
                                     <Style Selector="atom|Empty.semantic-function-styles">
-                                        <Setter Property="Background" Value="#E6F7FF" />
-                                        <Setter Property="BorderBrush" Value="#91D5FF" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="StrokeDashArray" Value="{x:Null}" />
-                                        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
-                                            <Setter Property="Foreground" Value="#1890FF" />
+                                        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                             <Setter Property="FontWeight" Value="Bold" />
                                         </atom:EmptyDescriptionStyle>
                                     </Style>

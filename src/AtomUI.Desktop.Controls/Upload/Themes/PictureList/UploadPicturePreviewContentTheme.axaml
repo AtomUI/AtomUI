@@ -42,28 +42,28 @@
         </Style>
 
         <Style Selector="^ /template/ DockPanel#ContentLayout">
-            <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="HorizontalSpacing" Value="{atom:UploadTokenResource SpacingXS}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+            <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorTextSecondary}" />
+            <Setter Property="Padding" Value="{atom:UploadTokenResource PaddingXXS}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton:pointerover">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextSecondary}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+            <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorTextSecondary}" />
+            <Setter Property="Background" Value="{atom:UploadTokenResource ColorBgTextHover}" />
         </Style>
 
         <Style Selector="^[Status=Failed]">
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[Status=Cancelled]">
             <Style Selector="^ /template/ atom|IconButton">
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="IconBrush" Value="{atom:UploadTokenResource ColorError}" />
             </Style>
         </Style>
         

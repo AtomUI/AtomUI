@@ -12,15 +12,6 @@
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:SkeletonAvatar">
                 <Panel Name="PART_RootLayout">
-                    <Border Name="PART_ActiveAnimationLayer"
-                            Classes.semantic-content="True"
-                            Width="{TemplateBinding Height}"
-                            Height="{TemplateBinding Height}"
-                            HorizontalAlignment="Left"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive}" />
                     <Border Name="PART_ContentLayer"
                             Classes.semantic-content="True"
                             Width="{TemplateBinding Height}"
@@ -30,7 +21,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="{TemplateBinding CornerRadius}"
-                            IsVisible="{TemplateBinding IsActive, Converter={x:Static BoolConverters.Not}}" />
+                            atom:AbstractSkeleton.IsShimmerBlock="True" />
                 </Panel>
             </ControlTemplate>
         </Setter>
@@ -40,35 +31,35 @@
         <Setter Property="Background" Value="{atom:SkeletonTokenResource GradientFromColor}" />
 
          <Style Selector="^[SizeType=Large]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="Width" Value="{atom:SkeletonAvatarTokenResource ControlHeightLG}" />
+            <Setter Property="Height" Value="{atom:SkeletonAvatarTokenResource ControlHeightLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="Width" Value="{atom:SkeletonAvatarTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:SkeletonAvatarTokenResource ControlHeight}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Width" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="Width" Value="{atom:SkeletonAvatarTokenResource ControlHeightSM}" />
+            <Setter Property="Height" Value="{atom:SkeletonAvatarTokenResource ControlHeightSM}" />
         </Style>
         
         <Style Selector="^[Shape=Square]">
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+                <Setter Property="CornerRadius" Value="{atom:SkeletonAvatarTokenResource BorderRadiusLG}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:SkeletonAvatarTokenResource BorderRadius}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:SkeletonAvatarTokenResource BorderRadiusSM}" />
             </Style>
             
             <Style Selector="^[IsCustomSize=True]">
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+                <Setter Property="CornerRadius" Value="{atom:SkeletonAvatarTokenResource BorderRadius}" />
             </Style>
         </Style>
     </ControlTheme>

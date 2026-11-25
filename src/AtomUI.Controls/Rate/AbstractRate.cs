@@ -52,8 +52,11 @@ public abstract class AbstractRate : TemplatedControl,
     public static readonly StyledProperty<bool> IsKeyboardEnabledProperty =
         AvaloniaProperty.Register<AbstractRate, bool>(nameof(IsKeyboardEnabled), true);
     
-    public static readonly StyledProperty<IList<string>?> ToolTipsProperty =
-        AvaloniaProperty.Register<AbstractRate, IList<string>?>(nameof(ToolTips));
+    public static readonly StyledProperty<bool> IsReadOnlyProperty =
+        AvaloniaProperty.Register<AbstractRate, bool>(nameof(IsReadOnly));
+
+    public static readonly StyledProperty<bool> IsHoverPreviewEnabledProperty =
+        AvaloniaProperty.Register<AbstractRate, bool>(nameof(IsHoverPreviewEnabled), true);
 
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractRate>();
@@ -115,10 +118,16 @@ public abstract class AbstractRate : TemplatedControl,
         set => SetValue(IsKeyboardEnabledProperty, value);
     }
     
-    public IList<string>? ToolTips
+    public bool IsReadOnly
     {
-        get => GetValue(ToolTipsProperty);
-        set => SetValue(ToolTipsProperty, value);
+        get => GetValue(IsReadOnlyProperty);
+        set => SetValue(IsReadOnlyProperty, value);
+    }
+
+    public bool IsHoverPreviewEnabled
+    {
+        get => GetValue(IsHoverPreviewEnabledProperty);
+        set => SetValue(IsHoverPreviewEnabledProperty, value);
     }
     
     public SizeType SizeType
@@ -209,11 +218,8 @@ public abstract class AbstractRate : TemplatedControl,
             var newEffectiveValue = (int)(Math.Round(change.GetNewValue<double>(), MidpointRounding.AwayFromZero) - 1);
             HoverValueChanged?.Invoke(this, new RateValueChangedEventArgs(oldEffectiveValue, newEffectiveValue));
         }
-        else if (change.Property == ToolTipsProperty)
-        {
-            ConfigureToolTips();
-        }
-        else if (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled)
+        else if (change.Property == IsReadOnlyProperty || change.Property == IsHoverPreviewEnabledProperty ||
+                 change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled)
         {
             ResetPointerState();
         }
@@ -222,6 +228,10 @@ public abstract class AbstractRate : TemplatedControl,
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (!HandlesPointerRating)
+        {
+            return;
+        }
         var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;
         Debug.Assert(inputManager != null);
         _pointerEventHandleDisposable = inputManager.Process.Subscribe(HandleGlobalPointerEvent);
@@ -237,7 +247,7 @@ public abstract class AbstractRate : TemplatedControl,
     
     private void HandleGlobalPointerEvent(RawInputEventArgs args)
     {
-        if (!IsEffectivelyEnabled)
+        if (!IsEffectivelyEnabled || IsReadOnly)
         {
             return;
         }
@@ -270,7 +280,7 @@ public abstract class AbstractRate : TemplatedControl,
             }
             else if (pointerEventArgs.Type == RawPointerEventType.LeftButtonDown)
             {
-                _pressedEffectiveValue = isPointerInRate ? EffectiveValue : null;
+                _pressedEffectiveValue = isPointerInRate ? GetPointerValue(position) : null;
             }
             else if (pointerEventArgs.Type == RawPointerEventType.LeftButtonUp)
             {
@@ -278,37 +288,31 @@ public abstract class AbstractRate : TemplatedControl,
                 // 在 Value 回调前取出并清空，避免回调重入沿用已结束的手势。
                 var pressedValue = _pressedEffectiveValue;
                 _pressedEffectiveValue = null;
-                if (isPointerInRate)
+                if (isPointerInRate && pressedValue is { } pressed && GetPointerValue(position) is { } released &&
+                    MathUtils.AreClose(Math.Round(pressed, MidpointRounding.AwayFromZero),
+                        Math.Round(released, MidpointRounding.AwayFromZero)))
                 {
-                    if (pressedValue != null && MathUtils.AreClose(Math.Round(pressedValue.Value, MidpointRounding.AwayFromZero), Math.Round(EffectiveValue, MidpointRounding.AwayFromZero)))
-                    {
-                        if (IsAllowClear)
-                        {
-                            var localPoint = _itemsControl is not null ? this.TranslatePoint(position, _itemsControl) : null;
-                            var value = localPoint is { } itemPosition ? CalculateEffectiveValue(itemPosition) : null;
-                            if (value != null)
-                            {
-                                if ((IsAllowHalf && MathUtils.AreClose(Value, value.Value)) ||
-                                    (!IsAllowHalf && MathUtils.AreClose(Math.Round(Value, MidpointRounding.AwayFromZero), 
-                                        Math.Round(value.Value, MidpointRounding.AwayFromZero))))
-                                {
-                                    SetCurrentValue(ValueProperty, 0d);
-                                }
-                                else
-                                {
-                                    SetCurrentValue(ValueProperty, value);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            SetCurrentValue(ValueProperty, EffectiveValue);
-                        }
-                        
-                    }
+                    CommitPointerValue(released);
                 }
             }
         }
+    }
+
+    protected double? GetPointerValue(Point position) => _itemsControl is not null &&
+        this.TranslatePoint(position, _itemsControl) is { } itemPosition
+        ? CalculateEffectiveValue(itemPosition)
+        : null;
+
+    protected void CommitPointerValue(double value)
+    {
+        if (IsReadOnly || !IsEffectivelyEnabled)
+        {
+            return;
+        }
+
+        var wasSelected = IsAllowHalf ? MathUtils.AreClose(Value, value) :
+            MathUtils.AreClose(Math.Round(Value, MidpointRounding.AwayFromZero), Math.Round(value, MidpointRounding.AwayFromZero));
+        SetCurrentValue(ValueProperty, IsAllowClear && wasSelected ? 0d : value);
     }
 
     private void ResetPointerState()
@@ -340,7 +344,7 @@ public abstract class AbstractRate : TemplatedControl,
         }
 
         HandleEffectiveValueChanged();
-        ConfigureToolTips();
+        OnRateItemsChanged();
     }
 
     private void HandleEffectiveValueChanged()
@@ -382,6 +386,11 @@ public abstract class AbstractRate : TemplatedControl,
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
+        if (!HandlesPointerRating || IsReadOnly || !IsHoverPreviewEnabled || !IsEffectivelyEnabled)
+        {
+            return;
+        }
+
         var point = e.GetPosition(_itemsControl);
         var value = CalculateEffectiveValue(point);
         if (value != null)
@@ -393,13 +402,13 @@ public abstract class AbstractRate : TemplatedControl,
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (_itemsControl != null)
+        if (HandlesPointerRating && !IsReadOnly && _itemsControl != null)
         {
             for (var i = 0; i < Count; i++)
             {
                 if (_itemsControl.ContainerFromIndex(i) is RateItem rateItem)
                 {
-                    if (rateItem.Bounds.Contains(e.GetPosition(_itemsControl)))
+                    if (GetItemBounds(_itemsControl, i) is { } bounds && bounds.Contains(e.GetPosition(_itemsControl)))
                     {
                         _focusStartItem = rateItem;
                     }
@@ -420,81 +429,60 @@ public abstract class AbstractRate : TemplatedControl,
 
     private double? CalculateEffectiveValue(Point point)
     {
-        double? value = null;
-        if (_itemsControl != null)
+        if (_itemsControl is not { } items || Count <= 0)
         {
-            var offsetX = point.X;
-            if (Count > 0)
-            {
-                var firstItem = _itemsControl.ContainerFromIndex(0) as RateItem;
-                var lastItem  = _itemsControl.ContainerFromItem(Count - 1) as RateItem;
-                if (firstItem != null)
-                {
-                    if (offsetX < firstItem.Bounds.Left)
-                    {
-                        value = 0;
-                    }
-                }
+            return null;
+        }
 
-                if (lastItem != null)
-                {
-                    if (offsetX > lastItem.Bounds.Right)
-                    {
-                        value = Count;
-                    }
-                }
-            }
-            for (var i = 0; i < Count; i++)
+        var first = GetItemBounds(items, 0);
+        var last = GetItemBounds(items, Count - 1);
+        var isMirrored = first is { } firstRect && last is { } lastRect && firstRect.Left > lastRect.Left;
+        var position = isMirrored ? -point.X : point.X;
+        if (first is { } start && position < (isMirrored ? -start.Right : start.Left))
+        {
+            return 0;
+        }
+        if (last is { } end && position >= (isMirrored ? -end.Left : end.Right))
+        {
+            return Count;
+        }
+
+        for (var index = 0; index < Count; index++)
+        {
+            if (GetItemBounds(items, index) is { } bounds)
             {
-                if (_itemsControl.ContainerFromIndex(i) is RateItem rateItem)
+                var left = isMirrored ? -bounds.Right : bounds.Left;
+                var right = isMirrored ? -bounds.Left : bounds.Right;
+                if (MathUtils.GreaterThanOrClose(position, left) && MathUtils.LessThan(position, right))
                 {
-                    var bounds = rateItem.Bounds;
-                    var left   = bounds.Left;
-                    var right  = bounds.Right;
-                    var middle = bounds.Center.X;
-                    if (IsAllowHalf)
-                    {
-                        if (MathUtils.GreaterThanOrClose(offsetX, left) && MathUtils.LessThanOrClose(offsetX, middle))
-                        {
-                            value = i + 0.5;
-                        }
-                        else if (MathUtils.GreaterThan(offsetX, middle) && MathUtils.LessThan(offsetX, right))
-                        {
-                  
-                            value = i + 1;
-                        }
-                    }
-                    else
-                    {
-                        if (MathUtils.GreaterThanOrClose(offsetX, left) && MathUtils.LessThan(offsetX, right))
-                        {
-                            value = i + 1;
-                        }
-                    }
+                    var center = isMirrored ? -bounds.Center.X : bounds.Center.X;
+                    return index + (IsAllowHalf && MathUtils.LessThanOrClose(position, center) ? .5 : 1);
                 }
             }
         }
-        return value;
+
+        return null;
     }
 
-    private void ConfigureToolTips()
+    private static Rect? GetItemBounds(ItemsControl items, int index)
     {
-        if (_itemsControl != null && ToolTips?.Count > 0)
-        {
-            for (var i = 0; i < Count; i++)
-            {
-                if (_itemsControl.Items[i] is RateItem rateItem && i < ToolTips.Count)
-                {
-                    ToolTip.SetTip(rateItem, ToolTips[i]);
-                }
-            }
-        }
+        return items.ContainerFromIndex(index) is RateItem item && item.TransformToVisual(items) is { } transform
+            ? new Rect(item.Bounds.Size).TransformToAABB(transform)
+            : null;
+    }
+
+    protected virtual bool HandlesPointerRating => true;
+
+    private protected ItemsControl? RateItems => _itemsControl;
+
+    private protected virtual void OnRateItemsChanged()
+    {
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (IsKeyboardEnabled && !_isPointerInRate)
+        if (!IsReadOnly && IsKeyboardEnabled && (!_isPointerInRate || !IsHoverPreviewEnabled))
         {
             var currentValue = Value;
             if (e.Key == Key.Left)

@@ -131,6 +131,27 @@ internal static class ControlThemeModelBuilder
         return $"{diagnostic.Id}\u001f{locationKey}\u001f{diagnostic.GetMessage()}";
     }
 
+    /// <summary>
+    /// Whether a terminal control token class of this compilation matches exactly one control by the same rule as
+    /// <see cref="Build"/> (<c>XToken</c> belongs to control <c>X</c>), so the generator gives it its
+    /// <c>IControlToken</c> half.
+    /// </summary>
+    internal static bool MatchesOneControl(Compilation compilation, INamedTypeSymbol token)
+    {
+        const string suffix = "Token";
+        if (token.IsAbstract || token.IsGenericType || token.ContainingType is not null ||
+            token.Name.Length <= suffix.Length || !token.Name.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var controlName = token.Name.Substring(0, token.Name.Length - suffix.Length);
+        var tokenNamespace = token.ContainingNamespace.IsGlobalNamespace ? string.Empty : token.ContainingNamespace.ToDisplayString();
+        var info = new ControlTokenInfo { TokenNamespace = tokenNamespace, ControlName = controlName };
+        var controls = GetPublicControls(compilation.Assembly.GlobalNamespace).ToArray();
+        return FindMatchingControls(compilation, controls, info).Take(2).Count() == 1;
+    }
+
     private static IEnumerable<INamedTypeSymbol> FindMatchingControls(
         Compilation compilation,
         IReadOnlyList<INamedTypeSymbol> sourceControls,

@@ -276,11 +276,12 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             return;
         }
 
-        horizontalScrollBar.Margin = new Thickness(
+        // The measured editor gutter is runtime geometry, unavailable to a theme Setter.
+        horizontalScrollBar.SetCurrentValue(MarginProperty, new Thickness(
             gutterWidth,
             currentMargin.Top,
             currentMargin.Right,
-            currentMargin.Bottom);
+            currentMargin.Bottom));
     }
 
     private void UpdateTextViewVerticalScrollBarInset()
@@ -296,11 +297,12 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
             return;
         }
 
-        textView.Margin = new Thickness(
+        // The visible scrollbar width is runtime geometry, unavailable to a theme Setter.
+        textView.SetCurrentValue(MarginProperty, new Thickness(
             currentMargin.Left,
             currentMargin.Top,
             rightInset,
-            currentMargin.Bottom);
+            currentMargin.Bottom));
     }
 
     private ScrollBar? GetHorizontalScrollBar()

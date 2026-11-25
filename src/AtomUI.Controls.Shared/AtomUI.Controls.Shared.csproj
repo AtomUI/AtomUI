@@ -25,9 +25,13 @@
         <InternalsVisibleTo Include="AtomUI.Controls.Shared.Tests" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />
+        <InternalsVisibleTo Include="AtomUI.Mobile.Controls" />
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls" />
+        <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests" />
     </ItemGroup>
 </Project>

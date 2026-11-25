@@ -4,61 +4,54 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class SplitterToken : AbstractControlDesignToken
+public sealed partial class SplitterToken : AbstractControlDesignToken
 {
-    
-    public SplitterToken()
-    {
-    }
 
     /// <summary>
     /// Draggable indicator size.
     /// </summary>
-    public double SplitBarDraggableSize { get; set; }
+    public partial double SplitBarDraggableSize { get; set; }
 
     /// <summary>
     /// Visible bar size.
     /// </summary>
-    public double SplitBarSize { get; set; }
+    public partial double SplitBarSize { get; set; }
 
     /// <summary>
     /// Drag trigger area size.
     /// </summary>
-    public double SplitTriggerSize { get; set; }
+    public partial double SplitTriggerSize { get; set; }
 
-    public double SplitBarCollapseOffset { get; set; }
-    public double SplitBarCollapseOffsetNegative { get; set; }
-    public double SplitBarCollapseCrossOffset { get; set; }
-    public double SplitBarHandleSize { get; set; }
+    /// <summary>Offset along the split axis for the collapse affordance on the positive side of the bar.</summary>
+    public partial double SplitBarCollapseOffset { get; set; }
+    /// <summary>Offset along the split axis for the collapse affordance on the negative side of the bar.</summary>
+    public partial double SplitBarCollapseOffsetNegative { get; set; }
+    /// <summary>Cross-axis offset of the collapse affordance relative to the split bar.</summary>
+    public partial double SplitBarCollapseCrossOffset { get; set; }
+    /// <summary>Size reserved for interaction with the splitter handle.</summary>
+    public partial double SplitBarHandleSize { get; set; }
 
-    public Color HandleLineColor { get; set; }
-    public Color HandleLineHoverColor { get; set; }
-    public Color HandleLineDragColor { get; set; }
-    public Color HandleIconColor { get; set; }
-    public Color HandleIconHoverColor { get; set; }
-    public Color HandleIconPressedColor { get; set; }
-    public double HandleLineThickness { get; set; }
-    public double HandleIconSize { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        SplitBarDraggableSize = 20;
-        SplitBarSize          = 2;
-        SplitTriggerSize      = 6;
-        SplitBarHandleSize    = SplitTriggerSize + EffectiveGlobalToken.FontSizeSM * 2;
-        var collapseOffset = SplitBarSize / 2d + 1d;
-        SplitBarCollapseOffset         = collapseOffset;
-        SplitBarCollapseOffsetNegative = -(EffectiveGlobalToken.FontSizeSM + collapseOffset);
-        SplitBarCollapseCrossOffset    = -SplitBarDraggableSize / 2d;
-        HandleLineColor                = EffectiveGlobalToken.ControlItemBgHover;
-        HandleLineHoverColor           = EffectiveGlobalToken.ControlItemBgActive;
-        HandleLineDragColor            = EffectiveGlobalToken.ControlItemBgActiveHover;
-        HandleIconColor                = EffectiveGlobalToken.ColorText;
-        HandleIconHoverColor           = HandleIconColor;
-        HandleIconPressedColor         = HandleIconColor;
-        HandleLineThickness            = SplitBarSize;
-        HandleIconSize                 = EffectiveGlobalToken.FontSizeSM;
-    }
+    /// <summary>Resting color of the splitter divider line.</summary>
+    public partial Color HandleLineColor { get; set; }
+    /// <summary>Divider line color while the pointer is over the handle.</summary>
+    public partial Color HandleLineHoverColor { get; set; }
+    /// <summary>Divider line color while the splitter is being dragged.</summary>
+    public partial Color HandleLineDragColor { get; set; }
+    /// <summary>Resting color of the grip that marks the drag area.</summary>
+    public partial Color HandleGripColor { get; set; }
+    /// <summary>Grip color while the pointer is over the drag area.</summary>
+    public partial Color HandleGripHoverColor { get; set; }
+    /// <summary>Grip color while the splitter is being dragged.</summary>
+    public partial Color HandleGripDragColor { get; set; }
+    /// <summary>Resting foreground of the collapse or expand glyph.</summary>
+    public partial Color HandleIconColor { get; set; }
+    /// <summary>Foreground of the collapse or expand glyph under the pointer.</summary>
+    public partial Color HandleIconHoverColor { get; set; }
+    /// <summary>Foreground of the collapse or expand glyph while pressed.</summary>
+    public partial Color HandleIconPressedColor { get; set; }
+    /// <summary>Thickness of the painted divider line.</summary>
+    public partial double HandleLineThickness { get; set; }
+    /// <summary>Width and height of the collapse or expand glyph.</summary>
+    public partial double HandleIconSize { get; set; }
     
 }

@@ -309,18 +309,18 @@
                                         <Setter Property="HorizontalAlignment" Value="Stretch" />
                                     </Style>
                                     <Style Selector="atom|Descriptions.semantic-demo-default">
-                                        <Setter Property="BorderBrush" Value="#CDC1FF" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="1" />
                                         <Setter Property="CornerRadius" Value="8" />
                                     </Style>
                                     <Style Selector="atom|Descriptions.semantic-demo-small">
                                         <atom:DescriptionsLabelStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="Black" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DescriptionsLabelStyle>
                                     </Style>
                                     <Style Selector="atom|Descriptions.semantic-demo-default">
                                         <atom:DescriptionsLabelStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#A294F9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextSecondary}" />
                                         </atom:DescriptionsLabelStyle>
                                     </Style>
                                 </StackPanel.Styles>

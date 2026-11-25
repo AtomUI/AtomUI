@@ -2,6 +2,31 @@
 
 本文档记录 ToggleSwitch 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `ToggleSwitchToken.UncheckedContentColor`（默认 `ColorTextLightSolid`）：未选中轨道内文字与图标颜色；选中时仍为 `ColorTextLightSolid`。PrimeNG 设为 `ColorText`（未选中轨道为浅色 / 深色表面）。
+- Fixed
+  - Ant Design 按住时把手沿轨道内侧增宽，保持两端半圆与中间直边。松开后把手滑至另一侧并恢复常态宽度。
+  - Shadcn 中性暗色主题降低开启轨道的亮度，并提高轨道与滑块的对比度。
+  - Shadcn 关闭轨道提供独立的悬停颜色，并加强浅色下普通与禁用关闭态的滑块对比度。
+
+## 2026-11-19
+
+- Token 与主题
+  - 新增 `EnableHandlePressStretch`，默认保留 Ant Design 的按下拉伸及内容位移。Shadcn 关闭该反馈，按住时把手保持原始尺寸，松开切换时仍会滑动。
+
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `HandleCheckedBg`：选中状态的把手背景，默认等于 `HandleBg`（Ant Design 渲染不变）。主色接近白色的
+    主题据此让选中把手保持可见（PrimeUIX `toggleswitch.handle.checked.background`，shadcn/ui switch thumb）。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）。`AbstractToggleSwitch` 实现 `IFocusOutlineShapeProvider`，按胶囊轨道给出半高圆角，描边是包围开关的胶囊形，不再是方角框。
+
 ## 2026-10-20
 
 - Fixed

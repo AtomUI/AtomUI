@@ -35,6 +35,8 @@ MentionsToken 不承载以下状态：
 
 ## 3. 控件专项模型中的 Token 使用
 
+`Controls[Mentions].Tokens` 覆盖候选弹层背景、内边距、加载区域间距，以及候选列表基础主题的 owner Global Token。`CandidateList` / `CandidateListItem` 为 Token owner 透明部件，跨 Popup 继承 Mentions identity。候选项为无 Own 的透明部件，按原默认公式读取 Mentions 有效全局颜色与水平 padding，ListBox Own 不再影响它们；候选列表默认无边框、无选中指示器，条目 BorderThickness 为零，因此基础主题的 LineWidth 不绘制分隔线。内部 MentionTextArea 使用自己的内部继承主题并跟随 Mentions owner；独立公开 TextArea 仍使用 TextArea identity，不把未支持的 resize/addon Own 复制给 Mentions。
+
 MentionsToken 使用路径：
 
 ```text
@@ -49,11 +51,10 @@ PopupFrame + MaxPopupHeight + CandidateList viewport
 
 主题使用点：
 
-- `ItemHeight="{atom:MentionsTokenResource OptionHeight}"`
-- `PopupContentPadding="{atom:MentionsTokenResource PopupContentPadding}"`
-- `MinPopupWidth="{atom:MentionsTokenResource MinPopupWidth}"`
+- `OptionHeight` 和 `PopupContentPadding` 由同一资源观察组读取。任一项更新时刷新弹层高度。
+- `MinPopupWidth` 由实际弹层边框读取。
 
-`MaxPopupHeight` 不是 Token。它由 `ItemHeight`、`DisplayCandidateCount` 和 `PopupContentPadding` 在控件实例上计算，属于运行时布局结果。
+`MaxPopupHeight` 由候选项基准高度、`DisplayCandidateCount` 和 `PopupContentPadding` 算出，是弹层模板使用的运行时布局结果。
 
 ## 4. 控件家族影响
 
@@ -68,7 +69,7 @@ MentionsToken 只影响 Mentions 候选弹层，不直接影响 AutoComplete、S
 
 ## 5. 兼容性要求
 
-MentionsToken 属于 Mentions 主题契约。即使 `MentionsToken` 是 internal 类型，生成的 `MentionsTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+MentionsToken 属于 Mentions 主题契约。`MentionsToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `MentionsTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

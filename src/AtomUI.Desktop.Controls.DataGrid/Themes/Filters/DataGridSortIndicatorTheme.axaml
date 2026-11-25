@@ -33,11 +33,11 @@
             <Setter Property="StrokeBrush"
                     Value="{atom:DataGridTokenResource HeaderIconColor}" />
         </Style>
-        
+
         <Style Selector="^[CurrentSortDirection=Ascending]">
             <Style Selector="^ /template/ atom|Icon#PART_Ascending">
                 <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:DataGridTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[CurrentSortDirection=Ascending])">
@@ -56,7 +56,7 @@
         <Style Selector="^[CurrentSortDirection=Descending]">
             <Style Selector="^ /template/ atom|Icon#PART_Descending">
                 <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:DataGridTokenResource ColorPrimary}" />
             </Style>
         </Style>
         <Style Selector="^:not(^[CurrentSortDirection=Descending])">

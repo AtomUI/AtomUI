@@ -5,15 +5,15 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using AtomUI.Build.Tasks.Isolation;
+using AtomUI.Build.Tasks.Registration;
 using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Freezes the pinned official ILLink8 tools with an explicit, isolated .NET 10 host configuration.</summary>
+/// <summary>Freezes the SDK-selected official ILLink8 tools with an explicit, isolated .NET 10+ host configuration.</summary>
 public sealed class PrepareNet8LinkHostTask : RegistrationBuildTask
 {
-    private const string LinkerVersion = "8.0.27+a6bde67c455f2ac219988c7a66171631090b6f65";
-    private const string HostConfig = "{\"runtimeOptions\":{\"tfm\":\"net10.0\",\"rollForward\":\"LatestPatch\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\":\"10.0.0\"},\"configProperties\":{\"System.GC.Server\":true}}}";
+    internal const string HostConfig = "{\"runtimeOptions\":{\"tfm\":\"net10.0\",\"rollForward\":\"Major\",\"framework\":{\"name\":\"Microsoft.NETCore.App\",\"version\":\"10.0.0\"},\"configProperties\":{\"System.GC.Server\":true}}}";
     [Required] public string LinkerTaskAssembly { get; set; } = string.Empty;
     [Required] public string BackendAssembly { get; set; } = string.Empty;
     [Required] public string OverrideSourceTemplate { get; set; } = string.Empty;
@@ -32,12 +32,13 @@ public sealed class PrepareNet8LinkHostTask : RegistrationBuildTask
             var taskPath = Path.GetFullPath(LinkerTaskAssembly);
             var directory = Path.GetDirectoryName(taskPath)!;
             var linker = Path.Combine(directory, "illink.dll");
+            var linkerVersion = TypeMapBuildContract.InformationalVersion(linker);
+            var tasksVersion = TypeMapBuildContract.InformationalVersion(taskPath);
             if (Path.GetFileName(taskPath) != "ILLink.Tasks.dll" ||
-                AssemblyName.GetAssemblyName(linker).FullName != "illink, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" ||
-                TypeMapBuildContract.InformationalVersion(linker) != LinkerVersion ||
-                TypeMapBuildContract.InformationalVersion(taskPath) != LinkerVersion)
+                !Net8EngineToolchain.IsSupportedLinker(AssemblyName.GetAssemblyName(linker).FullName, linkerVersion) ||
+                !Net8EngineToolchain.IsSameEngine(tasksVersion, linkerVersion))
             {
-                throw new InvalidDataException("Controlled registration requires the official ILLink Tasks and engine 8.0.27 from the same tool directory.");
+                throw new InvalidDataException($"Controlled registration requires official ILLink Tasks and engine 8.x from one servicing release; found {tasksVersion} / {linkerVersion}.");
             }
             ValidateBackend(BackendAssembly);
             var files = Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
@@ -56,7 +57,7 @@ public sealed class PrepareNet8LinkHostTask : RegistrationBuildTask
             files.Add("atomui.net8-linkhost.runtimeconfig.json", Encoding.UTF8.GetBytes(HostConfig));
             var records = files.OrderBy(file => file.Key, StringComparer.Ordinal).Select(file =>
                 new { path = file.Key, sha256 = Hash(file.Value) }).ToArray();
-            var state = JsonSerializer.Serialize(new { format = 1, linkerVersion = LinkerVersion, files = records });
+            var state = JsonSerializer.Serialize(new { format = 1, linkerVersion, files = records });
             var fingerprint = Hash(Encoding.UTF8.GetBytes(state));
             var root = Path.GetFullPath(OutputRoot);
             using var ownership = ToolBundleCache.Acquire(Path.Combine(root, fingerprint + ".lock"), TimeSpan.FromSeconds(30), 25);
@@ -92,10 +93,10 @@ public sealed class PrepareNet8LinkHostTask : RegistrationBuildTask
         var constants = reader.TypeDefinitions.Select(reader.GetTypeDefinition)
             .Where(type => reader.GetString(type.Namespace) == "AtomUI.Registration.ILLink8" && reader.GetString(type.Name) == "ConditionalRegistrationBackend")
             .SelectMany(type => type.GetFields()).Select(reader.GetFieldDefinition)
-            .Where(field => reader.GetString(field.Name) == "LinkerProductVersion" && !field.GetDefaultValue().IsNil)
+            .Where(field => reader.GetString(field.Name) == "LinkerCapability" && !field.GetDefaultValue().IsNil)
             .Select(field => reader.GetConstant(field.GetDefaultValue())).ToArray();
         if (constants.Length != 1 || constants[0].TypeCode != ConstantTypeCode.String ||
-            Encoding.Unicode.GetString(reader.GetBlobBytes(constants[0].Value)) != LinkerVersion)
+            Encoding.Unicode.GetString(reader.GetBlobBytes(constants[0].Value)) != Net8EngineToolchain.BackendCapability)
         {
             throw new InvalidDataException("Conditional backend does not declare the required ILLink8 capability.");
         }

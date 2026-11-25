@@ -6,15 +6,24 @@
     <ControlTheme x:Key="{x:Type atom:CardGridItem}" TargetType="atom:CardGridItem">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame" Padding="{TemplateBinding Padding}"
-                        BoxShadow="{TemplateBinding BoxShadow}"
-                        Background="Transparent">
-                    <ContentPresenter Name="ContentPresenter"
-                                      Content="{TemplateBinding Content}"
-                                      ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                </Border>
+                <Panel>
+                    <atom:DashedBorder Name="HoverFrame"
+                                       IsHitTestVisible="False"
+                                       IsVisible="False"
+                                       Opacity="0"
+                                       Clip="{TemplateBinding GridHoverClip}"
+                                       BoxShadow="{atom:CardTokenResource CardGridHoverShadows}"
+                                       Background="{atom:CardTokenResource ColorFillQuaternary}" />
+                    <atom:DashedBorder Name="Frame" Padding="{TemplateBinding Padding}"
+                                       BoxShadow="{TemplateBinding BoxShadow}"
+                                       Background="Transparent">
+                        <ContentPresenter Name="ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </atom:DashedBorder>
+                </Panel>
             </ControlTemplate>
         </Setter>
 
@@ -23,34 +32,49 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="BoxShadow" Value="{atom:CardTokenResource CardGridItemShadows}" />
         <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ Border#Frame">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
                 <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingLG}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Style Selector="^ /template/ Border#Frame">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
                 <Setter Property="Padding" Value="{atom:CardTokenResource BodyPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ Border#Frame">
+            <Style Selector="^ /template/ atom|DashedBorder#Frame">
                 <Setter Property="Padding" Value="{atom:CardTokenResource BodyPaddingSM}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsHoverable=True]">
-            <Style Selector="^:pointerover">
-                <Setter Property="BoxShadow" Value="{atom:CardTokenResource CardShadows}" />
+            <!-- Only hoverable items realize the hover layer; it still rests at opacity 0 for the fade. -->
+            <Style Selector="^ /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+            <Style Selector="^:pointerover /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+            <Style Selector="^[IsMotionEnabled=True] /template/ atom|DashedBorder#HoverFrame">
+                <Setter Property="Transitions">
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        </Transitions>
+                    </atom:TokenTransitions>
+                </Setter>
             </Style>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:BoxShadowsTransition Property="BoxShadow" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationFast" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

@@ -746,15 +746,19 @@ public class WindowTitleBarButtonTests
                  .ShouldNotContain(element => element.Name.LocalName == "PixelAlignedBorder");
         }
 
-        // Linux 通过共享外壳的属性表达背景内缩，而不是自己搭背景层。
-        foreach (var theme in new[] { buttonTheme, toggleTheme })
+        // Linux 通过共享外壳的属性表达背景内缩，而不是自己搭背景层；两个公开附加按钮是独立终端，各读自己的 Own Token。
+        foreach (var (theme, tokenResource) in new[]
+                 {
+                     (buttonTheme, "WindowTitleBarButtonTokenResource"),
+                     (toggleTheme, "WindowTitleBarToggleButtonTokenResource")
+                 })
         {
             theme.Descendants()
                  .ShouldContain(element =>
                      element.Name.LocalName == "Setter" &&
                      (string?)element.Attribute("Property") == "BackgroundInset" &&
                      (string?)element.Attribute("Value") ==
-                     "{atom:WindowTitleBarTokenResource CaptionButtonBackgroundInset}");
+                     "{atom:" + tokenResource + " CaptionButtonBackgroundInset}");
         }
     }
 

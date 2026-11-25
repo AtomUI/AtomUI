@@ -168,7 +168,8 @@ public abstract class AbstractTimelineItem : ContentControl
         // ContentControl 默认 ClipToBounds=true 会把这溢出的 rail 段切断。
         ClipToBoundsProperty.OverrideDefaultValue<AbstractTimelineItem>(false);
         AffectsArrange<AbstractTimelineItem>(ModeProperty, OrientationProperty);
-        AffectsMeasure<AbstractTimelineItem>(IsReverseProperty);
+        // The item padding is the gap to the next item (antd itemPaddingBottom); a Token change must re-measure.
+        AffectsMeasure<AbstractTimelineItem>(IsReverseProperty, PaddingProperty);
     }
 
     protected override Size MeasureOverride(Size availableSize)

@@ -21,7 +21,7 @@
                             FontSize="{TemplateBinding FontSize}"
                             TextAlignment="{TemplateBinding TextAlignment}"
                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}" />
-                        <atom:InputTextPresenter
+                        <TextPresenter
                             Name="PART_TextPresenter"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"

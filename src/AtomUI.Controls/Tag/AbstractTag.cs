@@ -1,14 +1,14 @@
-using System.Reactive.Disposables;
+using AtomUI.Controls.Primitives;
+using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Reflection;
 using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -17,24 +17,19 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
-internal struct TagCalcColor
-{
-    public Color LightColor { get; set; } // 1 号色
-    public Color LightBorderColor { get; set; } // 3 号色
-    public Color DarkColor { get; set; } // 6 号色
-    public Color TextColor { get; set; } // 7 号色
-}
-
-internal struct TagStatusCalcColor
-{
-    public Color Color { get; set; }
-    public Color Background { get; set; }
-    public Color BorderColor { get; set; }
-}
-
-[TemplatePart("PART_CloseButton", typeof(AbstractIconButton))]
+[TemplatePart(CloseButtonPartName, typeof(AbstractIconButton), IsRequired = false)]
+[TemplatePart(CloseButtonHostPartName, typeof(Decorator), IsRequired = false)]
 public abstract class AbstractTag : TemplatedControl
 {
+    /// <summary>Name of the close button. Declared by the template, or created on demand into the host.</summary>
+    protected const string CloseButtonPartName = "PART_CloseButton";
+
+    /// <summary>
+    /// Optional name of a <see cref="Decorator" /> in the template that hosts the close button. When the template
+    /// has no <c>PART_CloseButton</c> but has this host, the button is created while <see cref="IsClosable" /> is true.
+    /// </summary>
+    protected const string CloseButtonHostPartName = "PART_CloseButtonHost";
+
     #region 公共属性定义
 
     public static readonly StyledProperty<string?> TagColorProperty =
@@ -120,6 +115,49 @@ public abstract class AbstractTag : TemplatedControl
             o => o.RenderScaleAwareBorderThickness,
             (o, v) => o.RenderScaleAwareBorderThickness = v);
 
+    // Runtime palette colours are projected by untriggered ControlTheme setters (unset = the Token defaults the theme
+    // gives these inputs). Keeping them in internal inputs instead of writing Background/Foreground/BorderBrush lets
+    // app Styles, Semantic Part Styles and local values override the visuals natively (consumption rule 7).
+    internal static readonly StyledProperty<IBrush?> CalculatedBackgroundProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBackground));
+
+    internal static readonly StyledProperty<IBrush?> CalculatedForegroundProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedForeground));
+
+    internal static readonly StyledProperty<IBrush?> CalculatedBorderBrushProperty =
+        AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBorderBrush));
+
+    /// <summary>
+    /// Whether a Filled status tag paints like the Solid variant (status fill, contrast text). Set by the theme;
+    /// false (the default) keeps the light status background with the status text.
+    /// </summary>
+    internal static readonly StyledProperty<bool> IsFilledStatusSolidProperty =
+        AvaloniaProperty.Register<AbstractTag, bool>(nameof(IsFilledStatusSolid));
+
+    internal IBrush? CalculatedBackground
+    {
+        get => GetValue(CalculatedBackgroundProperty);
+        set => SetValue(CalculatedBackgroundProperty, value);
+    }
+
+    internal IBrush? CalculatedForeground
+    {
+        get => GetValue(CalculatedForegroundProperty);
+        set => SetValue(CalculatedForegroundProperty, value);
+    }
+
+    internal IBrush? CalculatedBorderBrush
+    {
+        get => GetValue(CalculatedBorderBrushProperty);
+        set => SetValue(CalculatedBorderBrushProperty, value);
+    }
+
+    internal bool IsFilledStatusSolid
+    {
+        get => GetValue(IsFilledStatusSolidProperty);
+        set => SetValue(IsFilledStatusSolidProperty, value);
+    }
+
     internal Thickness TagTextPaddingInline
     {
         get => GetValue(TagTextPaddingInlineProperty);
@@ -137,40 +175,19 @@ public abstract class AbstractTag : TemplatedControl
     #endregion
     
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
-    private static readonly (string Name, PresetPrimaryColor Color)[] PresetColorEntries =
-    [
-        (nameof(PresetColorType.Red), PresetPrimaryColor.Red),
-        (nameof(PresetColorType.Volcano), PresetPrimaryColor.Volcano),
-        (nameof(PresetColorType.Orange), PresetPrimaryColor.Orange),
-        (nameof(PresetColorType.Gold), PresetPrimaryColor.Gold),
-        (nameof(PresetColorType.Yellow), PresetPrimaryColor.Yellow),
-        (nameof(PresetColorType.Lime), PresetPrimaryColor.Lime),
-        (nameof(PresetColorType.Green), PresetPrimaryColor.Green),
-        (nameof(PresetColorType.Cyan), PresetPrimaryColor.Cyan),
-        (nameof(PresetColorType.Blue), PresetPrimaryColor.Blue),
-        (nameof(PresetColorType.GeekBlue), PresetPrimaryColor.GeekBlue),
-        (nameof(PresetColorType.Purple), PresetPrimaryColor.Purple),
-        (nameof(PresetColorType.Pink), PresetPrimaryColor.Pink),
-        (nameof(PresetColorType.Magenta), PresetPrimaryColor.Magenta),
-        (nameof(PresetColorType.Grey), PresetPrimaryColor.Grey)
-    ];
-    private static readonly (string Name, TagStatus Status)[] StatusColorEntries =
-    [
-        (nameof(TagStatus.Success), TagStatus.Success),
-        (nameof(TagStatus.Info), TagStatus.Info),
-        ("processing", TagStatus.Info),
-        (nameof(TagStatus.Warning), TagStatus.Warning),
-        (nameof(TagStatus.Error), TagStatus.Error)
-    ];
     protected AbstractIconButton? CloseButton;
-    private IReadOnlyDictionary<PresetColorType, TagCalcColor> _presetColorMap =
-        new Dictionary<PresetColorType, TagCalcColor>();
-    private IReadOnlyDictionary<TagStatus, TagStatusCalcColor> _statusColorMap =
-        new Dictionary<TagStatus, TagStatusCalcColor>();
+    private Decorator? _closeButtonHost;
+    private bool _closeButtonCreatedOnDemand;
+    private IDisposable? _closeIconBinding;
     private IDisposable? _themeSubscription;
-    private CompositeDisposable? _calculatedVisualValues;
-    private Color _solidTextColor;
-    
+    private (Color Background, Color Foreground, Color Border)? _calculatedColors;
+    private IDisposable? _borderThicknessValue;
+    private TagColorTable? _colorTable;
+
+    // Null while the tag has no color to resolve: tags without a color never touch the theme snapshot.
+    internal TagColorTable? ColorTable => _colorTable;
+    internal bool IsThemeTracked => _themeSubscription is not null;
+
     static AbstractTag()
     {
         AffectsMeasure<AbstractTag>(IconProperty,
@@ -183,63 +200,83 @@ public abstract class AbstractTag : TemplatedControl
             BorderBrushProperty);
     }
 
+    /// <summary>
+    /// Creates the close button for a template that hosts it in <c>PART_CloseButtonHost</c>. The base class
+    /// names it <c>PART_CloseButton</c>, binds its icon to <see cref="CloseIcon" /> and handles its click;
+    /// the subclass adds classes and other configuration. Not called for templates that declare the button.
+    /// </summary>
+    protected virtual AbstractIconButton? CreateCloseButton()
+    {
+        return null;
+    }
+
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        _themeSubscription?.Dispose();
-        _themeSubscription = s_themeTokenResolver.Subscribe(this, ApplyThemeSnapshot);
-        if (GetValue(ThemeScope.ContextProperty) is { } context)
-        {
-            ApplyThemeSnapshot(context.Snapshot);
-        }
-        else
-        {
-            UpdateTagColorVisualState();
-        }
+        // Subscriptions do not survive a detach and do not fire on subscribe, so the table is re-resolved here.
+        RefreshThemeTracking();
+        UpdateTagColorVisualState();
     }
-    
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        ReleaseThemeTracking();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private static bool IsColorEmpty(string? color)
+    {
+        var span = color.AsSpan().Trim();
+        return span.IsEmpty || span.Equals("default".AsSpan(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Keeps the theme subscription and color table in line with the current color: a tag without a color
+    /// holds neither, and a colored tag resolves the table of the snapshot that applies to it right now.
+    /// </summary>
+    private void RefreshThemeTracking()
+    {
+        if (!this.IsAttachedToVisualTree() || IsColorEmpty(TagColor))
+        {
+            ReleaseThemeTracking();
+            return;
+        }
+
+        _themeSubscription ??= s_themeTokenResolver.Subscribe(this, HandleThemeSnapshotChanged);
+        _colorTable = ThemeScope.ResolveContext(this) is { } context ? TagColorTable.For(context.Snapshot) : null;
+    }
+
+    private void ReleaseThemeTracking()
     {
         _themeSubscription?.Dispose();
         _themeSubscription = null;
-        _calculatedVisualValues?.Dispose();
-        _calculatedVisualValues = null;
-        base.OnDetachedFromVisualTree(e);
+        _colorTable = null;
     }
-    
-    private void ApplyThemeSnapshot(ThemeSnapshot snapshot)
+
+    private void HandleThemeSnapshotChanged(ThemeSnapshot snapshot)
     {
-        SetupStatusColorMap(snapshot);
-        SetupPresetColorMap(snapshot);
-        _solidTextColor = s_themeTokenResolver.GetGlobal<Color>(
-            snapshot,
-            (int)SharedTokenKind.ColorTextLightSolid);
+        _colorTable = TagColorTable.For(snapshot);
         UpdateTagColorVisualState();
     }
-    
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
 
-        if (CloseButton != null)
-        {
-            CloseButton.Click -= HandleCloseRequest;
-        }
-        
-        CloseButton = e.NameScope.Find<AbstractIconButton>("PART_CloseButton");
+        ReleaseCloseButton();
+        CloseButton = e.NameScope.Find<AbstractIconButton>(CloseButtonPartName);
         if (CloseButton != null)
         {
             CloseButton.Click += HandleCloseRequest;
         }
-        SetupDefaultCloseIcon();
-        if (GetValue(ThemeScope.ContextProperty) is { } context)
-        {
-            ApplyThemeSnapshot(context.Snapshot);
-        }
         else
         {
-            UpdateTagColorVisualState();
+            _closeButtonHost = e.NameScope.Find<Decorator>(CloseButtonHostPartName);
         }
+        SetupDefaultCloseIcon();
+        SyncCloseButton();
+        RefreshThemeTracking();
+        UpdateTagColorVisualState();
         ConfigureBorderThickness();
     }
 
@@ -251,189 +288,194 @@ public abstract class AbstractTag : TemplatedControl
         {
             SetupDefaultCloseIcon();
         }
-
-        if (this.IsAttachedToVisualTree())
+        else if (change.Property == IsClosableProperty)
         {
-            if (change.Property == TagColorProperty || change.Property == VariantProperty)
-            {
-                UpdateTagColorVisualState();
-            }
-            else if (change.Property == IsClosableProperty)
+            if (this.IsAttachedToVisualTree())
             {
                 SetupDefaultCloseIcon();
             }
+            SyncCloseButton();
         }
-    }
-
-    private void ConfigureBorderThickness()
-    {
-        SetValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, BindingPriority.Template);
-    }
-
-    private void SetupPresetColorMap(ThemeSnapshot snapshot)
-    {
-        var dict = new Dictionary<PresetColorType, TagCalcColor>(PresetColorEntries.Length);
-        foreach (var entry in PresetColorEntries)
+        else if (change.Property == TagColorProperty)
         {
-            if (!snapshot.PresetColorPalettes.TryGetValue(entry.Color, out var palette))
+            RefreshThemeTracking();
+            if (this.IsAttachedToVisualTree())
             {
-                continue;
+                UpdateTagColorVisualState();
             }
-
-            dict[entry.Color.Type] = new TagCalcColor
-            {
-                LightColor       = palette.ColorSequence[0],
-                LightBorderColor = palette.ColorSequence[2],
-                DarkColor        = palette.ColorSequence[5],
-                TextColor        = palette.ColorSequence[6]
-            };
         }
-        _presetColorMap = dict;
+        else if ((change.Property == VariantProperty || change.Property == IsFilledStatusSolidProperty) &&
+                 this.IsAttachedToVisualTree())
+        {
+            UpdateTagColorVisualState();
+        }
+        else if (change.Property == RenderScaleAwareBorderThicknessProperty)
+        {
+            // The theme's BorderThickness Token reaches the border through this input; follow Token changes.
+            ConfigureBorderThickness();
+        }
     }
 
-    private void SetupStatusColorMap(ThemeSnapshot snapshot)
-    {
-        Color Global(SharedTokenKind kind)
-        {
-            return s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)kind);
-        }
-
-        _statusColorMap = new Dictionary<TagStatus, TagStatusCalcColor>(4)
-        {
-            [TagStatus.Success] = new TagStatusCalcColor
-            {
-                Color       = Global(SharedTokenKind.ColorSuccess),
-                Background  = Global(SharedTokenKind.ColorSuccessBg),
-                BorderColor = Global(SharedTokenKind.ColorSuccessBorder)
-            },
-            [TagStatus.Info] = new TagStatusCalcColor
-            {
-                Color       = Global(SharedTokenKind.ColorInfo),
-                Background  = Global(SharedTokenKind.ColorInfoBg),
-                BorderColor = Global(SharedTokenKind.ColorInfoBorder)
-            },
-            [TagStatus.Warning] = new TagStatusCalcColor
-            {
-                Color       = Global(SharedTokenKind.ColorWarning),
-                Background  = Global(SharedTokenKind.ColorWarningBg),
-                BorderColor = Global(SharedTokenKind.ColorWarningBorder)
-            },
-            [TagStatus.Error] = new TagStatusCalcColor
-            {
-                Color       = Global(SharedTokenKind.ColorError),
-                Background  = Global(SharedTokenKind.ColorErrorBg),
-                BorderColor = Global(SharedTokenKind.ColorErrorBorder)
-            }
-        };
-    }
+    // 每次套模板都会写入，持有句柄替换，避免累积属性帧
+    private void ConfigureBorderThickness() =>
+        this.SetHeldValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, ref _borderThicknessValue);
 
     private void UpdateTagColorVisualState()
     {
-        _calculatedVisualValues?.Dispose();
-        _calculatedVisualValues = null;
+        if (!TryApplyTagColor() && _calculatedColors is not null)
+        {
+            // Fall back to the ControlTheme Token defaults of the Calculated* inputs.
+            _calculatedColors = null;
+            ClearValue(CalculatedBackgroundProperty);
+            ClearValue(CalculatedForegroundProperty);
+            ClearValue(CalculatedBorderBrushProperty);
+            InvalidateVisual();
+        }
+    }
+
+    private bool TryApplyTagColor()
+    {
         PseudoClasses.Set(TagPseudoClass.PresetColor, false);
         PseudoClasses.Set(TagPseudoClass.StatusColor, false);
         PseudoClasses.Set(TagPseudoClass.CustomColor, false);
 
         var colorSpan = TagColor.AsSpan().Trim();
-        if (colorSpan.IsEmpty || colorSpan.Equals("default".AsSpan(), StringComparison.OrdinalIgnoreCase))
+        if (IsColorEmpty(TagColor) || _colorTable is not { } table)
         {
-            InvalidateVisual();
-            return;
+            // Off-tree tags get their colours once the theme subscription attaches a context.
+            return false;
         }
 
-        foreach (var entry in PresetColorEntries)
+        // Status and solid text colours are the Tag's effective global Tokens, so Controls[Tag] and scoped overrides
+        // reach them; preset palettes belong to the snapshot. A subclass without a registered Token identity reads the
+        // snapshot's globals.
+        var snapshot    = s_themeTokenResolver.Capture(this);
+        int? controlSlot = snapshot.Registry.TryGetControl(GetType(), out var descriptor) ? descriptor.Slot : null;
+        Color Global(SharedTokenKind kind) => controlSlot is { } slot
+            ? s_themeTokenResolver.GetEffectiveGlobal<Color>(snapshot, slot, (int)kind)
+            : s_themeTokenResolver.GetGlobal<Color>(snapshot, (int)kind);
+
+        var solidTextColor = Global(SharedTokenKind.ColorTextLightSolid);
+        if (table.TryGetPreset(colorSpan, out var presetColor))
         {
-            if (entry.Name.AsSpan().Equals(colorSpan, StringComparison.OrdinalIgnoreCase) &&
-                _presetColorMap.TryGetValue(entry.Color.Type, out var colorInfo))
-            {
-                ApplyPresetColor(colorInfo);
-                PseudoClasses.Set(TagPseudoClass.PresetColor, true);
-                return;
-            }
+            ApplyPresetColor(presetColor, solidTextColor);
+            PseudoClasses.Set(TagPseudoClass.PresetColor, true);
+            return true;
         }
 
-        foreach (var entry in StatusColorEntries)
+        if (table.TryGetStatus(colorSpan, out var statusColor))
         {
-            if (entry.Name.AsSpan().Equals(colorSpan, StringComparison.OrdinalIgnoreCase) &&
-                _statusColorMap.TryGetValue(entry.Status, out var colorInfo))
-            {
-                ApplyStatusColor(colorInfo);
-                PseudoClasses.Set(TagPseudoClass.StatusColor, true);
-                return;
-            }
+            ApplyStatusColor(ResolveEffectiveStatusColor(colorSpan, Global, controlSlot is { } own
+                    ? status => s_themeTokenResolver.GetOwn<Color>(snapshot, own, StatusColorTokenKey(status)!)
+                    : null) ?? statusColor,
+                solidTextColor);
+            PseudoClasses.Set(TagPseudoClass.StatusColor, true);
+            return true;
         }
 
         if (Color.TryParse(colorSpan, out var color))
         {
-            ApplyCustomColor(color);
+            // antd lightens a custom colour to a fixed HSL lightness, which stays near-white under a dark theme; the
+            // palette algorithm of the snapshot's appearance gives the same step 1 colour preset tags use.
+            ApplyCustomColor(color, PresetColorPalette.ResolveCustom(snapshot, color).LightColor, solidTextColor);
             PseudoClasses.Set(TagPseudoClass.CustomColor, true);
-            return;
+            return true;
         }
 
-        InvalidateVisual();
+        return false;
     }
 
-    private void ApplyPresetColor(TagCalcColor colorInfo)
+    /// <summary>
+    /// The control token that holds the main colour of a status tag (spec 6.1: a language gives a control its own
+    /// status colours through control tokens); <see langword="null"/> reads the global status colour.
+    /// </summary>
+    private protected virtual object? StatusColorTokenKey(TagStatus status) => null;
+
+    private TagStatusCalcColor? ResolveEffectiveStatusColor(ReadOnlySpan<char> name, Func<SharedTokenKind, Color> global,
+        Func<TagStatus, Color>? own)
     {
-        var background = Variant == TagVariant.Solid ? colorInfo.DarkColor : colorInfo.LightColor;
-        var foreground = Variant == TagVariant.Solid ? _solidTextColor : colorInfo.TextColor;
-        var border = Variant switch
+        (SharedTokenKind Color, SharedTokenKind Background, SharedTokenKind Border)? kinds =
+            name.Equals(nameof(TagStatus.Success), StringComparison.OrdinalIgnoreCase)
+                ? (SharedTokenKind.ColorSuccess, SharedTokenKind.ColorSuccessBg, SharedTokenKind.ColorSuccessBorder)
+                : name.Equals(nameof(TagStatus.Info), StringComparison.OrdinalIgnoreCase) ||
+                  name.Equals("processing", StringComparison.OrdinalIgnoreCase)
+                    ? (SharedTokenKind.ColorInfo, SharedTokenKind.ColorInfoBg, SharedTokenKind.ColorInfoBorder)
+                    : name.Equals(nameof(TagStatus.Warning), StringComparison.OrdinalIgnoreCase)
+                        ? (SharedTokenKind.ColorWarning, SharedTokenKind.ColorWarningBg, SharedTokenKind.ColorWarningBorder)
+                        : name.Equals(nameof(TagStatus.Error), StringComparison.OrdinalIgnoreCase)
+                            ? (SharedTokenKind.ColorError, SharedTokenKind.ColorErrorBg, SharedTokenKind.ColorErrorBorder)
+                            : null;
+        if (kinds is not { } k)
         {
-            TagVariant.Solid    => colorInfo.DarkColor,
-            TagVariant.Outlined => colorInfo.LightBorderColor,
-            _                   => Colors.Transparent
+            return null;
+        }
+
+        var status = k.Color switch
+        {
+            SharedTokenKind.ColorSuccess => TagStatus.Success,
+            SharedTokenKind.ColorInfo    => TagStatus.Info,
+            SharedTokenKind.ColorWarning => TagStatus.Warning,
+            _                            => TagStatus.Error
+        };
+        return new TagStatusCalcColor
+        {
+            Color       = own is not null && StatusColorTokenKey(status) is not null ? own(status) : global(k.Color),
+            Background  = global(k.Background),
+            BorderColor = global(k.Border)
+        };
+    }
+
+    // Outline: transparent background, the main color for border and text.
+    private void ApplyPresetColor(TagCalcColor colorInfo, Color solidText)
+    {
+        var (background, foreground, border) = Variant switch
+        {
+            TagVariant.Solid    => (colorInfo.DarkColor, solidText, colorInfo.DarkColor),
+            TagVariant.Outlined => (colorInfo.LightColor, colorInfo.TextColor, colorInfo.LightBorderColor),
+            TagVariant.Outline  => (Colors.Transparent, colorInfo.DarkColor, colorInfo.DarkColor),
+            _                   => (colorInfo.LightColor, colorInfo.TextColor, Colors.Transparent)
         };
         ApplyCalculatedColors(background, foreground, border);
     }
 
-    private void ApplyStatusColor(TagStatusCalcColor colorInfo)
+    private void ApplyStatusColor(TagStatusCalcColor colorInfo, Color solidText)
     {
-        var background = Variant == TagVariant.Solid ? colorInfo.Color : colorInfo.Background;
-        var foreground = Variant == TagVariant.Solid ? _solidTextColor : colorInfo.Color;
-        var border = Variant switch
+        var (background, foreground, border) = Variant switch
         {
-            TagVariant.Solid    => colorInfo.Color,
-            TagVariant.Outlined => colorInfo.BorderColor,
-            _                   => Colors.Transparent
+            TagVariant.Solid    => (colorInfo.Color, solidText, colorInfo.Color),
+            TagVariant.Outlined => (colorInfo.Background, colorInfo.Color, colorInfo.BorderColor),
+            TagVariant.Outline  => (Colors.Transparent, colorInfo.Color, colorInfo.Color),
+            _ when IsFilledStatusSolid => (colorInfo.Color, solidText, Colors.Transparent),
+            _                   => (colorInfo.Background, colorInfo.Color, Colors.Transparent)
         };
         ApplyCalculatedColors(background, foreground, border);
     }
 
-    private void ApplyCustomColor(Color color)
+    private void ApplyCustomColor(Color color, Color lightBackground, Color solidText)
     {
-        var hsl            = new HslColor(color);
-        var lightBackground = new HslColor(hsl.A, hsl.H, hsl.S, 0.95).ToRgb();
-        var background     = Variant == TagVariant.Solid ? color : lightBackground;
-        var foreground     = Variant == TagVariant.Solid ? _solidTextColor : color;
-        var border         = Variant == TagVariant.Outlined ? color : Colors.Transparent;
+        var (background, foreground, border) = Variant switch
+        {
+            TagVariant.Solid    => (color, solidText, Colors.Transparent),
+            TagVariant.Outlined => (lightBackground, color, color),
+            TagVariant.Outline  => (Colors.Transparent, color, color),
+            _                   => (lightBackground, color, Colors.Transparent)
+        };
         ApplyCalculatedColors(background, foreground, border);
     }
 
     private void ApplyCalculatedColors(Color background, Color foreground, Color border)
     {
-        var values = new CompositeDisposable(3);
-        try
+        // Theme publications and variant refreshes re-run this projection; unchanged colours keep their brushes and
+        // raise no property change.
+        if (_calculatedColors == (background, foreground, border))
         {
-            AddTemplateValue(values, BackgroundProperty, new ImmutableSolidColorBrush(background));
-            AddTemplateValue(values, ForegroundProperty, new ImmutableSolidColorBrush(foreground));
-            AddTemplateValue(values, BorderBrushProperty, new ImmutableSolidColorBrush(border));
-            _calculatedVisualValues = values;
+            return;
         }
-        catch
-        {
-            values.Dispose();
-            throw;
-        }
+        _calculatedColors     = (background, foreground, border);
+        CalculatedBackground  = new ImmutableSolidColorBrush(background);
+        CalculatedForeground  = new ImmutableSolidColorBrush(foreground);
+        CalculatedBorderBrush = new ImmutableSolidColorBrush(border);
         InvalidateVisual();
-    }
-
-    private void AddTemplateValue<T>(CompositeDisposable values, StyledProperty<T> property, T value)
-    {
-        if (SetValue(property, value, BindingPriority.Template) is { } disposable)
-        {
-            values.Add(disposable);
-        }
     }
 
     private void SetupDefaultCloseIcon()
@@ -446,6 +488,58 @@ public abstract class AbstractTag : TemplatedControl
         {
             ClearValue(CloseIconProperty);
             SetValue(CloseIconProperty, new CloseOutlined());
+        }
+    }
+
+    // Creates the close button into the template host while closable, removes it otherwise.
+    private void SyncCloseButton()
+    {
+        if (_closeButtonHost is null)
+        {
+            return;
+        }
+
+        if (!IsClosable)
+        {
+            ReleaseCloseButton(keepHost: true);
+            return;
+        }
+
+        if (CloseButton is not null || CreateCloseButton() is not { } button)
+        {
+            return;
+        }
+
+        button.Name = CloseButtonPartName;
+        button.SetTemplatedParent(this);
+        _closeIconBinding = button.Bind(AbstractIconButton.IconProperty, this.GetObservable(CloseIconProperty));
+        button.Click += HandleCloseRequest;
+        CloseButton = button;
+        _closeButtonCreatedOnDemand = true;
+        _closeButtonHost.Child = button;
+    }
+
+    private void ReleaseCloseButton(bool keepHost = false)
+    {
+        if (CloseButton is { } button)
+        {
+            button.Click -= HandleCloseRequest;
+            if (_closeButtonCreatedOnDemand)
+            {
+                _closeIconBinding?.Dispose();
+                if (ReferenceEquals(_closeButtonHost?.Child, button))
+                {
+                    _closeButtonHost.Child = null;
+                }
+                button.SetTemplatedParent(null);
+            }
+        }
+        CloseButton = null;
+        _closeIconBinding = null;
+        _closeButtonCreatedOnDemand = false;
+        if (!keepHost)
+        {
+            _closeButtonHost = null;
         }
     }
 

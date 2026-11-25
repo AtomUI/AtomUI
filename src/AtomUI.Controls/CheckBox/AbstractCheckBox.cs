@@ -113,7 +113,7 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     /// </summary>
     protected virtual void NotifyClearFormValue()
     {
-        SetCurrentValue(IsCheckedProperty, null);
+        SetCurrentValue(IsCheckedProperty, false);
     }
     
     /// <summary>

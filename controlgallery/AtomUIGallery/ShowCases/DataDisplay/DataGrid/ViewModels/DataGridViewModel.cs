@@ -501,6 +501,17 @@ internal static class DataGridShowCaseSourceDescriptors
             .Field(DataGridShowCaseFields.Address, static row => row.Address, StringComparer.Ordinal, filters: ContainsAny)
             .Field(DataGridShowCaseFields.Money, static row => row.Money, StringComparer.Ordinal);
 
+    // Fields with a setter are editable; committed cell and row edits are written through these setters.
+    public static DataGridLocalSourceDescriptor<DataGridBaseInfo> Editable { get; } =
+        DataGridLocalSourceDescriptor.For<DataGridBaseInfo>(static row => DataGridRowKey.FromString(row.Key))
+            .Field(DataGridShowCaseFields.Key, static row => row.Key, StringComparer.Ordinal)
+            .Field(DataGridShowCaseFields.Name, static row => row.Name, StringComparer.Ordinal,
+                setter: static (row, value) => row.Name = value)
+            .Field(DataGridShowCaseFields.Age, static row => row.Age,
+                setter: static (row, value) => row.Age = value)
+            .Field(DataGridShowCaseFields.Address, static row => row.Address, StringComparer.Ordinal,
+                setter: static (row, value) => row.Address = value);
+
     public static DataGridLocalSourceDescriptor<ExpandableRowDataType> Expandable { get; } =
         DataGridLocalSourceDescriptor.For<ExpandableRowDataType>(static row => DataGridRowKey.FromString(row.Key))
             .Field(DataGridShowCaseFields.Key, static row => row.Key, StringComparer.Ordinal)

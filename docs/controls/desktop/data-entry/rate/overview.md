@@ -64,6 +64,8 @@ Rate 的公共契约由 public/protected 类型成员、Avalonia 属性、事件
 
 ## 4. 行为与状态模型
 
+`IsReadOnly` 保留当前评分与启用外观，并阻止指针或键盘改值。`IsHoverPreviewEnabled` 默认开启；关闭后仍可点击评分。Desktop `Rate` 提供 `ToolTips`。
+
 Rate 的状态流按以下路径收敛：
 
 ```text

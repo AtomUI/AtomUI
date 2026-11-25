@@ -47,12 +47,13 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-        <Setter Property="HeaderTitleColor" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="HeaderFontSize" Value="{atom:SharedTokenResource FontSize}" />
+        <Setter Property="Background" Value="{atom:GroupBoxTokenResource ColorBgContainer}" />
+        <Setter Property="BorderBrush" Value="{atom:GroupBoxTokenResource ColorBorder}" />
+        <Setter Property="BorderThickness" Value="{atom:GroupBoxTokenResource BorderThickness}" />
+        <Setter Property="CornerRadius" Value="{atom:GroupBoxTokenResource BorderRadius}" />
+        <Setter Property="HeaderTitleColor" Value="{atom:GroupBoxTokenResource ColorText}" />
+        <Setter Property="HeaderFontSize" Value="{atom:GroupBoxTokenResource FontSize}" />
+        <Setter Property="HeaderFontWeight" Value="{atom:GroupBoxTokenResource HeaderFontWeight}" />
 
         <Style Selector="^ /template/ Panel#PART_HeaderContainer">
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderContainerMargin}" />
@@ -64,9 +65,9 @@
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_HeaderIconPresenter">
             <Setter Property="Margin" Value="{atom:GroupBoxTokenResource HeaderIconMargin}" />
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
+            <Setter Property="IconBrush" Value="{atom:GroupBoxTokenResource ColorText}" />
+            <Setter Property="Width" Value="{atom:GroupBoxTokenResource IconSizeLG}" />
+            <Setter Property="Height" Value="{atom:GroupBoxTokenResource IconSizeLG}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 

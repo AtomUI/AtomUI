@@ -171,6 +171,8 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     private const string AntDesignDefaultRangeEndInputWidthReferenceText   = "End time";
 
     private TimePickerPresenter? _pickerPresenter;
+    private bool _isStartConfirmed;
+    private bool _isEndConfirmed;
     
     static RangeTimePicker()
     {
@@ -241,6 +243,9 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         {
             RangeActivatedPart = RangeActivatedPart.Start;
         }
+        var isComplete = RangeStartSelectedTime is not null && RangeEndSelectedTime is not null;
+        _isStartConfirmed = !isComplete && RangeStartSelectedTime is not null;
+        _isEndConfirmed   = !isComplete && RangeEndSelectedTime is not null;
         base.NotifyPickerOpened();
         if (_pickerPresenter is not null)
         {
@@ -262,7 +267,7 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         if (_pickerPresenter is { IsEditing: true })
         {
             var candidate = _pickerPresenter.EndEditing();
-            if (!IsNeedConfirm)
+            if (!IsNeedConfirm && !IsCancelingEdit)
             {
                 CommitEndpoint(RangeActivatedPart, candidate);
             }
@@ -310,6 +315,7 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(_pickerPresenter?.PreviewTime != null);
         var display = _pickerPresenter?.DisplayTime;
         var text = _pickerPresenter?.PreviewTime == null && _pickerPresenter?.InputText != null
             ? _pickerPresenter.InputText
@@ -326,14 +332,18 @@ public partial class RangeTimePicker : RangeInfoPickerInput
 
     private void HandleCandidateChanged(object? sender, EventArgs args) => ClearHoverSelectedInfo();
     private void HandleHoverTimeChanged(object? sender, TimeSelectedEventArgs args) => ClearHoverSelectedInfo();
-    private void HandleDismissed(object? sender, EventArgs args) => ClosePickerFlyout();
+    // Escape inside the popup panel reverts like Escape in the input.
+    private void HandleDismissed(object? sender, EventArgs args) => CancelPickerEdit();
 
     private void HandleConfirmed(object? sender, EventArgs args)
     {
+        // As in Ant Design, a confirmed endpoint hands over to the other one until both are confirmed in this open
+        // session; an endpoint that was the only filled one at open counts as confirmed.
         if (RangeActivatedPart == RangeActivatedPart.Start)
         {
             SetCurrentValue(RangeStartSelectedTimeProperty, _pickerPresenter?.SelectedTime);
-            if (RangeEndSelectedTime is null)
+            _isStartConfirmed = RangeStartSelectedTime is not null;
+            if (RangeEndSelectedTime is null || !_isEndConfirmed)
             {
                 RangeActivatedPart = RangeActivatedPart.End;
                 _pickerPresenter?.ResetOpenPanelState();
@@ -343,7 +353,8 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         else if (RangeActivatedPart == RangeActivatedPart.End)
         {
             SetCurrentValue(RangeEndSelectedTimeProperty, _pickerPresenter?.SelectedTime);
-            if (RangeStartSelectedTime is null)
+            _isEndConfirmed = RangeEndSelectedTime is not null;
+            if (RangeStartSelectedTime is null || !_isStartConfirmed)
             {
                 RangeActivatedPart = RangeActivatedPart.Start;
                 _pickerPresenter?.ResetOpenPanelState();
@@ -605,26 +616,10 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
     
-    protected override void OnLostFocus(FocusChangedEventArgs e)
-    {
-        base.OnLostFocus(e);
-        HandleFocusLeft(this, EventArgs.Empty);
-    }
-
-    private void HandleFocusLeft(object? sender, EventArgs args)
-    {
-        if (!IsPickerOpen || IsPopupPinnedOpen)
-        {
-            return;
-        }
-        var target = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() as Visual;
-        if (target != null && (target == this || target.GetVisualAncestors().Contains(this) ||
-            (PickerPresenter is Visual presenter && (target == presenter || target.GetVisualAncestors().Contains(presenter)))))
-        {
-            return;
-        }
-        ClosePickerFlyout();
-    }
+    // The presenter reports focus leaving it, which may happen inside the popup window, where the picker's own
+    // LostFocus does not see the new focus target.
+    private void HandleFocusLeft(object? sender, EventArgs args) =>
+        CloseIfFocusLeftPicker(TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement());
 
     private void ReleaseInputHandlers()
     {
@@ -673,27 +668,26 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
+    private protected override bool HasPendingInputText => _pickerPresenter?.InputText is not null;
+
+    private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
+        modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
+
+    private protected override void NotifyInputSubmit()
     {
-        if (!e.Handled && e.Key == Key.Enter)
+        if (_pickerPresenter?.InputText is { Length: 0 })
         {
-            if (_pickerPresenter?.InputText is { Length: 0 })
-            {
-                Clear();
-            }
-            else
-            {
-                _pickerPresenter?.ConfirmCandidate();
-            }
-            e.Handled = true;
+            Clear();
         }
-        else if (!e.Handled && e.Key == Key.Escape && IsPickerOpen)
+        else
         {
-            ClosePickerFlyout();
-            e.Handled = true;
+            _pickerPresenter?.ConfirmCandidate();
         }
-        base.OnKeyDown(e);
     }
+
+    // The active endpoint's candidate and input text return to its committed value now, so a pinned popup that stays
+    // open shows the reverted value too.
+    private protected override void NotifyEditCanceled() => _pickerPresenter?.ResetOpenPanelState();
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {

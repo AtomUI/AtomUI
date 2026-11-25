@@ -317,7 +317,7 @@ public class ThemeManagerTransactionTests
         {
             var prepared = CreatePrepared("First", "#1677ff");
             var manager = CreateManager((_, _, _) => ValueTask.FromResult(prepared));
-            manager.ConfigureStartup(Request("First"), null, null);
+            manager.ConfigureStartup(Request("First"), null, null, null);
             var application = Application.Current!;
             var observed = false;
             manager.ThemeChanged += (_, _) =>
@@ -344,7 +344,7 @@ public class ThemeManagerTransactionTests
         {
             var prepared = CreatePrepared("First", "#1677ff");
             var manager = CreateManager((_, _, _) => ValueTask.FromResult(prepared));
-            manager.ConfigureStartup(Request("First"), null, null);
+            manager.ConfigureStartup(Request("First"), null, null, null);
             var application = Application.Current!;
             application.RequestedThemeVariant = ThemeVariant.Dark;
             ThemeChangedEventArgs? observed = null;

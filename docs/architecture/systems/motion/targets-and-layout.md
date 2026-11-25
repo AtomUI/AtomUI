@@ -86,6 +86,13 @@ viewport、extent、offset 与边界滚动传递仍由原滚动 owner 管理，M
 
 ## Popup 与展示准备
 
+组件默认配置、实际方向与原点、配置 owner 和宿主接线由[弹层组件动效](popup-motion.md)拥有；
+各组件消费的轨迹与时长由[组件规格](built-in-motion.md#弹层组件选择)拥有。
+
+适用族基类声明 OpenMotion/CloseMotion，实际实例拥有配置，模板 Popup 单向消费；不同继承树复用现有属性注册。
+Popup 不根据组件预设枚举选择行为，Menu/NavMenu 整体不新增整树配置。定义与真实目标分离，
+模板替换、共享定义和页面移除的可回收性服从[弹层内存门禁](popup-motion.md#81-内存验收阻断条件)。
+
 Popup 在物理宿主显示前建立完整初始状态，避免目标出现一帧全不透明后再隐藏。
 就绪准备使用真实布局/目标事件，不使用固定 Delay。底层未就绪立即 NotReady，owner 可在一次布局后重试或稳定收敛。
 

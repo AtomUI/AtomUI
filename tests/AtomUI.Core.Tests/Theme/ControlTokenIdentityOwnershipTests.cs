@@ -58,10 +58,10 @@ public class ControlTokenIdentityOwnershipTests
     {
         var parent = Normalized(typedFirst ? Typed(typeof(Button)) : Raw);
         var current = Normalized(typedFirst ? Raw : Typed(typeof(Button)));
-        var result = ThemeConfigMerger.Merge(NormalizedThemeConfig.CreateCanonical(false, true, [], [], []), parent, current);
+        var result = ThemeConfigMerger.Merge(NormalizedThemeConfig.CreateCanonical(false, ThemeAxes.None, [], [], []), parent, current);
         result.EffectiveConfig.Controls.Single().Identity.OwnerType.ShouldBe(typeof(Button));
         Should.Throw<ThemeSchemaException>(() => ThemeConfigMerger.Merge(
-            NormalizedThemeConfig.CreateCanonical(false, true, [], [], []), result.EffectiveConfig, Normalized(Typed(typeof(TextBox)))));
+            NormalizedThemeConfig.CreateCanonical(false, ThemeAxes.None, [], [], []), result.EffectiveConfig, Normalized(Typed(typeof(TextBox)))));
     }
 
     [Theory]
@@ -74,7 +74,7 @@ public class ControlTokenIdentityOwnershipTests
         var builder = new ThemeConfigBuilder().WithControl(first, new ControlThemeConfigBuilder().Build());
         Should.Throw<ThemeSchemaException>(() => builder.WithControl(second, new ControlThemeConfigBuilder().Build()));
         Should.Throw<ThemeSchemaException>(() => ThemeConfigMerger.Merge(
-            NormalizedThemeConfig.CreateCanonical(false, true, [], [], []), Normalized(first), Normalized(second)));
+            NormalizedThemeConfig.CreateCanonical(false, ThemeAxes.None, [], [], []), Normalized(first), Normalized(second)));
         Should.Throw<ThemeSchemaException>(() => new ThemeSchemaRegistry([], [new ControlTokenDescriptor(typeof(Button), Typed(typeof(TextBox)))], []));
     }
 
@@ -97,5 +97,5 @@ public class ControlTokenIdentityOwnershipTests
     }
 
     private static NormalizedThemeConfig Normalized(ControlTokenIdentity identity) =>
-        new(true, false, [], [], [new NormalizedControlThemeConfig(identity, ControlAlgorithmMode.Disabled, [], [], [])]);
+        new(true, ThemeAxes.None, [], [], [new NormalizedControlThemeConfig(identity, null, null, [], [])]);
 }

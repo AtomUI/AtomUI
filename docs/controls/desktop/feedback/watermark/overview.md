@@ -1,6 +1,6 @@
 # Watermark 桌面版架构设计
 
-本文档定义 `Watermark` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Watermark 桌面版实现原理](implementation.md)。Watermark 没有独立 Token 文档；主题主要复用 SharedToken 或关联控件 Token。设计和契约变化记录见 [Watermark Changelog](changelog.md)。
+本文档定义 `Watermark` 桌面版的最新设计定位、公共契约、状态模型、视觉主题关系和兼容边界。通用控件研发约束见 [控件研发标准](../../../../engineering/development/control-development-guidelines.md)，内部实现原理见 [Watermark 桌面版实现原理](implementation.md)。Watermark 没有独立 Token 文档；文本字形默认读取挂载目标作用域的 ColorTextBase 和 FontSizeLG。设计和契约变化记录见 [Watermark Changelog](changelog.md)。
 
 ## 1. 控件定位
 
@@ -44,7 +44,7 @@ Watermark 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | --- | --- | --- |
 | 内容与数据 | `Source`、`Text` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 交互与状态 | `IsCrossUsed`、`IsMirrorUsed` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
-| 视觉与布局 | `FontSize`、`Foreground`、`Height`、`HorizontalOffset`、`HorizontalSpace`、`VerticalOffset`、`VerticalSpace` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
+| 视觉与布局 | `FontFamily`、`FontSize`、`FontStyle`、`FontWeight`、`Foreground`、`Height`、`HorizontalOffset`、`HorizontalSpace`、`VerticalOffset`、`VerticalSpace` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。`TextGlyph.Foreground` 未显式设置时取资源 owner 的主题 `ColorText`，文本方向固定为从左到右。 |
 | 其他稳定入口 | `Opacity`、`Rotate` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
@@ -156,3 +156,10 @@ Token 说明：
 | AXAML/Theme | 检查 template part、伪类、资源 key、Light/Dark 主题和 Browser 主题。 |
 | Token | 确认没有新增专属 Token，主题仍复用 SharedToken 或关联控件 Token。 |
 | Gallery | 走查对应 ShowCase 示例和源码片段入口。 |
+
+### 文本字形主题默认值
+
+未显式设置的 `TextGlyph.Foreground` / `FontSize` 在水印挂载期间分别绑定目标作用域的 `ColorTextBase` / `FontSizeLG`，
+随主题发布、共享字形的活动 owner 更换及重挂更新。显式属性值（包括显式 Black/16）优先；MarkupExtension 未指定的属性不写本地值。
+未挂载字形仍保留原始 Black/16 元数据默认值。`Opacity` 仍为 0.3，颜色不再额外叠加 ColorFill 的 alpha；
+这是保留 AtomUI 既有淡度的选择，与 antd 直接使用 colorFill 的透明度模型不同。

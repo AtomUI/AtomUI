@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace AtomUIGallery.ShowCases.TreeView;
@@ -22,9 +23,12 @@ public partial class TreeViewShowCase : GalleryReactiveUserControl<TreeViewViewM
         {
             if (DataContext is TreeViewViewModel viewModel)
             {
-                InitBasicTreeViewData(viewModel);
+                if (viewModel.BasicTreeNodes is null)
+                {
+                    InitBasicTreeViewData(viewModel);
+                }
                 viewModel.TreeViewNodeHoverMode = TreeItemHoverMode.Default;
-                RefreshLocalizedTreeNodes(viewModel);
+                InitAsyncLoadTreeNodes(viewModel);
                 InitCustomizeCollapseExpandTreeDefaultExpandedPaths(viewModel);
                 InitFilterTreeNodes(viewModel);
                 viewModel.AsyncLoadTreeNodeLoader = new TreeItemDataLoader();
@@ -53,6 +57,15 @@ public partial class TreeViewShowCase : GalleryReactiveUserControl<TreeViewViewM
             }
         });
         InitializeComponent();
+    }
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        if (DataContext is TreeViewViewModel viewModel)
+        {
+            InitBasicTreeViewData(viewModel);
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -277,6 +290,9 @@ public partial class TreeViewShowCase : GalleryReactiveUserControl<TreeViewViewM
         [
             new TreeNodePath("0-0/0-0-0")
         ];
+
+        InitBasicTreeNodes(viewModel);
+        InitSelectionBindingData(viewModel);
     }
 
     private void InitBasicTreeNodes(TreeViewViewModel viewModel)

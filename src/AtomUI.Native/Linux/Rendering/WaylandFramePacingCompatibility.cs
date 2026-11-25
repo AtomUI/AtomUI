@@ -13,7 +13,7 @@ using NWayland.Protocols.Wayland;
 
 namespace AtomUI.Native;
 
-// Deliberately version-bound. These members are framework integration details, never control API.
+// Bind the required private member contract; package versions are diagnostic context only.
 internal sealed class WaylandFramePacingCompatibility
 {
     private const string SurfaceTypeName = "Avalonia.Wayland.Server.Persistent.WSurface";
@@ -84,6 +84,7 @@ internal sealed class WaylandFramePacingCompatibility
         var targetType = Type.GetType("Avalonia.Wayland.Server.Transient.Rendering.WaylandEglWsiSurface+RenderTarget, Avalonia.Wayland", true)!;
         var workerType = Type.GetType("Avalonia.Wayland.Server.WaylandWorker, Avalonia.Wayland", true)!;
         var globalsType = Type.GetType("Avalonia.Wayland.Server.Transient.WaylandGlobals, Avalonia.Wayland", true)!;
+        var connectionType = Type.GetType("Avalonia.Wayland.Server.Interop.WaylandConnection, Avalonia.Wayland", true)!;
 
         _surface = eglSurfaceType.GetField("_surface", Instance) ?? throw new MissingFieldException(EglSurfaceTypeName, "_surface");
         _frameCallback = surfaceType.GetField("_frameCallback", Instance) ?? throw new MissingFieldException(SurfaceTypeName, "_frameCallback");
@@ -105,16 +106,38 @@ internal sealed class WaylandFramePacingCompatibility
         _registry = globalsType.GetProperty("Registry", Instance) ?? throw new MissingMemberException(GlobalsTypeName, "Registry");
         _knownGlobals = globalsType.GetField("_knownGlobals", Instance) ?? throw new MissingFieldException(GlobalsTypeName, "_knownGlobals");
 
-        if (_frameCallback.FieldType != typeof(WlCallback) || _frameCallback.IsInitOnly ||
-            _listener.FieldType != typeof(IWlEventsListener) || _listener.IsInitOnly ||
-            _configured.FieldType != typeof(bool) || _configureSerial.FieldType != typeof(uint?) ||
-            _scale.FieldType != typeof(double) || _shadowExtents.FieldType != typeof(Thickness?) ||
-            _eglSurface.FieldType != typeof(EglSurface) || _surface.FieldType != surfaceType ||
-            _beforeAttach.ReturnType != typeof(void) || _ensureWindow.ReturnType != typeof(void) ||
-            _registry.PropertyType != typeof(WlRegistry) ||
-            _knownGlobals.FieldType != typeof(Dictionary<string, (uint name, uint version)>))
+        if (!typeof(IGlPlatformSurface).IsAssignableFrom(eglSurfaceType) ||
+            !typeof(IGlPlatformSurfaceRenderTarget).IsAssignableFrom(targetType) ||
+            !surfaceType.IsAssignableFrom(shellType) || !shellType.IsAssignableFrom(_topLevelType) ||
+            !shellType.IsAssignableFrom(_popupType))
         {
-            throw new NotSupportedException("The Wayland frame-pacing member signatures do not match the validated ABI.");
+            throw new NotSupportedException("The Wayland EGL surface/render-target or persistent shell inheritance contract changed.");
+        }
+        WaylandMemberContract.ReadField(_surface, eglSurfaceType, "_surface", surfaceType);
+        WaylandMemberContract.WriteField(_frameCallback, surfaceType, "_frameCallback", typeof(WlCallback));
+        WaylandMemberContract.WriteField(_listener, typeof(WlProxy), "_listener", typeof(IWlEventsListener));
+        WaylandMemberContract.ReadField(_configured, shellType, "_initialConfigureAcknowledged", typeof(bool));
+        WaylandMemberContract.ReadField(_configureSerial, shellType, "_pendingAckSerial", typeof(uint?));
+        WaylandMemberContract.ReadField(_scale, surfaceType, "_currentScale", typeof(double));
+        WaylandMemberContract.ReadField(_shadowExtents, shellType, "_shadowExtents", typeof(Thickness?));
+        WaylandMemberContract.ReadField(_eglSurface, targetType, "_eglSurface", typeof(EglSurface));
+        WaylandMemberContract.ReadProperty(_connection, surfaceType, "Connection", connectionType);
+        WaylandMemberContract.ReadProperty(_wlSurface, surfaceType, "WlSurface", typeof(WlSurface));
+        WaylandMemberContract.ReadProperty(_globals, surfaceType, "Globals", globalsType);
+        WaylandMemberContract.ReadProperty(_worker, surfaceType, "Worker", workerType);
+        WaylandMemberContract.InstanceMethod(_beforeAttach, shellType, "OnBeforeNewBufferAttached", typeof(void), typeof(IRenderTarget.RenderTargetSceneInfo));
+        WaylandMemberContract.InstanceMethod(_register, surfaceType, "RegisterRenderTarget", typeof(void), typeof(IDisposable));
+        WaylandMemberContract.InstanceMethod(_unregister, surfaceType, "UnregisterRenderTarget", typeof(void), typeof(IDisposable));
+        WaylandMemberContract.InstanceMethod(_wakeup, workerType, "WakeupRenderLoop", typeof(void));
+        WaylandMemberContract.InstanceMethod(_ensureWindow, targetType, "EnsureWindow", typeof(void), typeof(PixelSize));
+        WaylandMemberContract.ReadProperty(_registry, globalsType, "Registry", typeof(WlRegistry));
+        WaylandMemberContract.ReadField(_knownGlobals, globalsType, "_knownGlobals", typeof(Dictionary<string, (uint name, uint version)>));
+        WaylandMemberContract.InstanceMethod(typeof(IWlEventsListener).GetMethod(nameof(IWlEventsListener.DispatchEvent), [typeof(WlEventArgs)]),
+            typeof(IWlEventsListener), nameof(IWlEventsListener.DispatchEvent), typeof(void), typeof(WlEventArgs));
+        if (!typeof(IWlEventsListener).IsAssignableFrom(typeof(WaylandFrameCallbackRelay)) ||
+            !typeof(WlProxy).IsAssignableFrom(typeof(WlCallback)))
+        {
+            throw new NotSupportedException("The NWayland callback/listener type contract changed.");
         }
     }
 
@@ -122,27 +145,21 @@ internal sealed class WaylandFramePacingCompatibility
         [NotNullWhen(true)] out WaylandFramePacingCompatibility? compatibility, out string reason)
     {
         compatibility = null;
-        var version = Type.GetType("Avalonia.WaylandPlatformOptions, Avalonia.Wayland")?.Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        var nwayland = typeof(WlProxy).Assembly.GetName().Version;
-        if (!OperatingSystem.IsLinux() || version != "12.1.4+2d79ba55fae1b1e71c69f93a668080c9029e6a31" || nwayland != new Version(0, 11, 0, 0))
-        {
-            reason = $"Unvalidated Wayland/NWayland assembly versions: {version}, {nwayland}.";
-            return false;
-        }
-
         try
         {
             compatibility = new WaylandFramePacingCompatibility(reportFailure, presentationTimingBound);
-            reason = "Validated Avalonia Wayland EGL frame-pacing adapter.";
+            reason = "Required Wayland EGL/NWayland member contracts bound. " + DescribeVersions();
             return true;
         }
-        catch (Exception error) when (error is TypeLoadException or MissingMemberException or NotSupportedException or MemberAccessException)
+        catch (Exception error) when (error is TypeLoadException or MissingMemberException or NotSupportedException or MemberAccessException or AmbiguousMatchException)
         {
-            reason = error.Message;
+            reason = error.Message + " " + DescribeVersions();
             return false;
         }
     }
+
+    private static string DescribeVersions() =>
+        $"Backend={Type.GetType("Avalonia.WaylandPlatformOptions, Avalonia.Wayland")?.Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}; NWayland={typeof(WlProxy).Assembly.GetName().Version}.";
 
     internal IPlatformRenderSurface Wrap(IPlatformRenderSurface surface)
     {

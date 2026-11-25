@@ -1,6 +1,6 @@
 # Motion 帧流水线
 
-本文拥有[Motion 系统](overview.md)每帧执行的合同：时钟订阅、空帧保活、变换写入通道、按呈现时间采样及平台时间源。
+本文拥有[Motion 系统](overview.md)每帧执行的合同：时钟订阅、空帧保活、变换写入通道、按呈现时间采样、平台时间源及渲染循环节拍源。
 请求、替代与终态由[播放与生命周期](playback-and-lifecycle.md)拥有；内容视口的布局失效范围由
 [内容展开](../control-infrastructure/content-expansion.md)拥有；验证数据见[验证状态](verification.md)。
 
@@ -12,6 +12,8 @@
 - 本地时间从该订阅收到的首个脉冲开始，与 Avalonia 动画的首帧语义一致；完成在本地时间达到 `Delay + Duration` 的脉冲判定。
 - 完成延续以 `RunContinuationsAsynchronously` 投递，不在时钟脉冲内重入业务代码。
 - 外部取消、替代与 detach 统一调用 `Stop`，退订时钟并结束完成任务。
+- 在[主题提交窗口](theme-commit-settle.md)内开始订阅的驱动会收到一次远端时间并在该脉冲完成，按终值采样；
+  驱动不感知窗口，按普通的迟到帧处理。
 
 ## 2. 空帧保活
 
@@ -67,4 +69,40 @@
 | X11 | 无 | 退回脉冲时间 |
 
 帧驱动、空帧保活、合成通道和内容视口失效收窄与平台无关，Windows、macOS 同样适用；呈现时间采样目前只在 Wayland 生效。
-Windows、macOS 渲染循环由系统合成器或 CVDisplayLink 驱动，本身不存在 Wayland 的过密脉冲问题。
+Windows、macOS 的渲染循环按显示刷新出帧（见第 6 节），本身不存在 Wayland 的过密脉冲问题。
+
+## 6. 渲染循环节拍源
+
+合成动画（Spin、Skeleton 闪光带、Splash 不确定进度）和合成通道上的 Motion 由渲染循环逐帧出帧，节拍等于渲染循环计时器的节拍。
+第 5 节的时间源决定“按哪个时刻采样”，本节的节拍源决定“多久出一帧”，两者独立。
+
+下表依据 Avalonia 12.1.5 源码。只有 Windows 做过上屏实测，其余平台没有实测数据。
+
+| 平台 | 节拍源 | 跟随显示刷新 | AtomUI 处理 |
+| --- | --- | --- | --- |
+| Windows，`RedirectionSurface`（AtomUI 默认首选） | `SleepLoopRenderTimer`（线程睡眠） | 否 | 换成 `DwmVsyncRenderTimer`，见 [Windows live resize 的渲染节拍](../windowing/windows-live-resize.md#渲染节拍) |
+| Windows，其余合成模式 | 系统合成器或 DXGI 垂直同步 | 是 | 无 |
+| macOS | CVDisplayLink（`PlatformRenderTimer.mm`）；Metal 在渲染线程经 `CAMetalLayer` 呈现 | 是 | 无 |
+| Linux Wayland | `WaylandWorker` 自带的渲染循环，按合成器事件唤醒；合成器不要帧时以 20 fps 保底 | 是 | 第 4 节的呈现时间采样 |
+| Linux X11 / XWayland | `SleepLoopRenderTimer`，目标帧率取 RandR 报告的最高刷新率，不低于 60 | 否 | 无 |
+
+### X11 的差距（未处理）
+
+X11 与 Windows `RedirectionSurface` 使用同一个睡眠计时器，根因相同。`UseAtomUIPlatformDetect()` 在存在 `WAYLAND_DISPLAY`
+时选择原生 Wayland，X11 路径只出现在 X11 会话或显式选择 X11 后端时。
+
+- 目标帧率跟随 RandR，不固定 60；多显示器时取所有显示器中的最高值。
+- 节拍不锁垂直同步相位。GLX 路径只调用 `glXSwapBuffers`，Avalonia 不设置交换间隔，是否等待垂直同步取决于驱动默认值和用户配置。
+- 软件渲染回退用 `XPutImage` 加 `XSync` 上屏，没有垂直同步节流。同一计时器在 Windows 计时精度 1 ms 下实测 61.5～61.8 fps、
+  3.4%～4.2% 的帧跳过一帧内容（见上面链接的实测表）。X11 软件渲染预计接近这一行，未测。
+- Linux 线程等待不受 Windows 约 15.6 ms 默认计时精度的限制，预计不会出现 Windows 上 19%～27% 的跳帧，未测。
+
+处理前必须先实测，分 X11 GLX、X11 软件渲染、XWayland 三种情况，沿用 Windows 的变帧率录屏方法；默认 GLX 路径确实跳帧再做。
+`RenderLoopReflection.TryReplaceTimer` 可以直接复用。X11 没有等价于 `DwmFlush()` 的统一接口，候选节拍源
+（`GLX_OML_sync_control`、`GLX_SGI_video_sync`、Present 扩展的 `PresentNotifyMSC`）都依赖驱动或 X 服务器实现，需要逐个验证。
+
+### macOS 的差距（未处理）
+
+- CVDisplayLink 由 `CVDisplayLinkCreateWithActiveCGDisplays` 创建，之后没有调用 `CVDisplayLinkSetCurrentCGDisplay`。
+  窗口位于刷新率与主屏不同的副屏时，预计仍按主屏节拍出帧。问题在 Avalonia 原生库内，属于上游；没有在混合刷新率环境验证。
+- 回调不向托管侧传递 `inOutputTime`。第 5 节的 macOS 呈现时间采样要实现，需要 AtomUI 自建显示链路。

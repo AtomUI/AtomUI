@@ -18,6 +18,7 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | 按源码 Token 语义维护 |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding`、`ItemPadding`、`ItemMargin` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `ItemHeight` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ItemColor`、`ItemHoverColor`、`ItemSelectedColor`、`ItemDisabledColor`、`ItemBgColor`、`ItemHoverBgColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `PopupContentPadding` |
 
@@ -31,6 +32,14 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+空态内容区域的内边距由 `EmptyIndicatorPadding` 表达，默认 ControlTheme 使用 SharedToken `Padding` 提供有效值，
+不新增 ComboBox 专属空态 Token。`PopupContentPadding` 继续表示弹层框体内边距，`ItemPadding` 继续表示候选行
+内边距。空态开关和内容属于控件实例状态，不进入 Token。属性契约见[空态 API](overview.md#31-空态-api)。
+
+ComboBox 成组读取候选行高和 `PopupContentPadding`。实际行高继续随资源变化传给已实现的候选行，弹层高度按更新后的行高和内边距计算。
+
+Shadcn 暗色通过 `ItemSelectedBgColor` 区分已选项和当前悬停候选项。选中行沿用 `ItemSelectedColor` 和既有字重，`ItemHoverBgColor` 与 `ItemSelectedBgColor` 可独立覆盖。
 
 ## 4. 控件家族影响
 
@@ -56,3 +65,13 @@ ComboBox 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 主题读法与归属（Select 家族迁移）
+
+- `ComboBoxTheme` 与仅属于 ComboBox 的部件（`ComboBoxHandle`、弹层框体）以 `ComboBoxTokenResource` 读取 Global Token，
+  `Controls[ComboBox]` 的覆盖作用于输入表面、手柄、弹层框体和占位文字（`PlaceholderForeground` 默认 `ColorTextPlaceholder`）。
+- `ComboBoxItem` 拥有自己的 Token identity：其 Global Token（如圆角 `BorderRadiusSM`）跟随 `Controls[ComboBoxItem]`；
+  候选行颜色与尺寸读 ComboBox 的 Own Token（`Item*`），跟随 `Controls[ComboBox]`。
+- `ItemDisabledColor` 为 Active：禁用候选行的前景色。
+- 生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.ComboBox.cs`、
+  `SelectFamilyEffectTests.Isolation.cs`。

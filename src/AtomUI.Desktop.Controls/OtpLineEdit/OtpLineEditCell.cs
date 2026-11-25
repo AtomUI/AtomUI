@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -68,29 +67,14 @@ internal class OtpLineEditCell : InputControlFrame
 
     internal AvaloniaTextBox? TextBoxPart => _textBox;
 
-    private void RelayOwnerOverride(AvaloniaProperty sourceProperty, AvaloniaProperty targetProperty)
-    {
-        if (_owner is null)
-        {
-            return;
-        }
-
-        var value = _owner.GetValue(sourceProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            ClearValue(targetProperty);
-        }
-        else
-        {
-            SetValue(targetProperty, value, BindingPriority.LocalValue);
-        }
-    }
-
     /// <summary>
-    /// Relays the owner's border brush onto this cell frame. <c>CellBorderBrush</c> is the
-    /// cell-specific override and wins over the generic root <c>BorderBrush</c>; when neither is
-    /// set the cell theme state machine owns the rest state.
+    /// Projects the owner's border brush onto this cell frame through the input-family
+    /// <c>HostBorderBrush</c> (the cell theme's <c>:host-border-brush</c> style applies it over every
+    /// state brush). <c>CellBorderBrush</c> is the cell-specific override and wins over the generic
+    /// root <c>BorderBrush</c>; when neither is set the cell theme state machine owns the border.
     /// </summary>
+    // The source is the effective choice between two owner brushes. ControlTheme cannot express that runtime precedence
+    // while preserving the cell state brushes; the owner subscription is released on visual detach.
     private void RelayOwnerBorderBrush()
     {
         if (_owner is null)
@@ -104,14 +88,7 @@ internal class OtpLineEditCell : InputControlFrame
             value = _owner.GetValue(BorderBrushProperty);
         }
 
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            ClearValue(BorderBrushProperty);
-        }
-        else
-        {
-            SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        }
+        SetCurrentValue(HostBorderBrushProperty, value as IBrush);
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -195,18 +172,13 @@ internal class OtpLineEditCell : InputControlFrame
         if (_owner is not null)
         {
             _owner.PropertyChanged += OwnerPropertyChanged;
-            RelayOwnerOverride(OtpLineEdit.CellWidthProperty, WidthProperty);
             RelayOwnerBorderBrush();
         }
     }
 
     private void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property == OtpLineEdit.CellWidthProperty)
-        {
-            RelayOwnerOverride(change.Property, WidthProperty);
-        }
-        else if (change.Property == OtpLineEdit.CellBorderBrushProperty ||
+        if (change.Property == OtpLineEdit.CellBorderBrushProperty ||
                  change.Property == BorderBrushProperty)
         {
             RelayOwnerBorderBrush();
@@ -220,8 +192,7 @@ internal class OtpLineEditCell : InputControlFrame
         if (_owner is not null)
         {
             _owner.PropertyChanged -= OwnerPropertyChanged;
-            ClearValue(WidthProperty);
-            ClearValue(BorderBrushProperty);
+            ClearValue(HostBorderBrushProperty);
         }
         _owner = null;
         _textBox = null;

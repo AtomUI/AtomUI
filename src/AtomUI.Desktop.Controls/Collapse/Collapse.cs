@@ -4,7 +4,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -25,7 +24,7 @@ public enum CollapseExpandIconPosition
 }
 
 [TemplatePart("PART_ItemsPresenter", typeof(ItemsPresenter))]
-public partial class Collapse : SelectingItemsControl, IMotionAwareControl
+public partial class Collapse : AbstractCollapse, IMotionAwareControl
 {
     #region 公共属性定义
 
@@ -38,8 +37,8 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
     public static readonly StyledProperty<bool> IsBorderlessProperty =
         AvaloniaProperty.Register<Collapse, bool>(nameof(IsBorderless));
 
-    public static readonly StyledProperty<bool> IsAccordionProperty =
-        AvaloniaProperty.Register<Collapse, bool>(nameof(IsAccordion));
+    public new static readonly StyledProperty<bool> IsAccordionProperty =
+        AbstractCollapse.IsAccordionProperty.AddOwner<Collapse>();
 
     public static readonly StyledProperty<CollapseTriggerType> TriggerTypeProperty =
         AvaloniaProperty.Register<Collapse, CollapseTriggerType>(nameof(TriggerType));
@@ -74,7 +73,7 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         set => SetValue(IsBorderlessProperty, value);
     }
 
-    public bool IsAccordion
+    public new bool IsAccordion
     {
         get => GetValue(IsAccordionProperty);
         set => SetValue(IsAccordionProperty, value);
@@ -145,15 +144,12 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
 
     static Collapse()
     {
-        SelectionModeProperty.OverrideDefaultValue<Collapse>(SelectionMode.Multiple | SelectionMode.Toggle);
         ItemsPanelProperty.OverrideDefaultValue<Collapse>(DefaultPanel);
-        AutoScrollToSelectedItemProperty.OverrideDefaultValue<Collapse>(false);
         AffectsRender<Collapse>(SelectionModeProperty);
     }
 
     public Collapse()
     {
-        SetupSelectionMode();
         Items.CollectionChanged += HandleItemsCollectionChanged;
     }
     
@@ -173,31 +169,8 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
     {
         if (container is CollapseItem collapseItem)
         {
+            base.PrepareContainerForItemOverride(container, item, index);
             collapseItem.Classes.Add(ScopeItemClass);
-            if (item != null && item is not Visual)
-            {
-                if (!collapseItem.IsSet(CollapseItem.ContentProperty))
-                {
-                    collapseItem.SetCurrentValue(CollapseItem.ContentProperty, item);
-                }
-
-                if (item is ICollapseItemData itemData)
-                {
-                    if (!collapseItem.IsSet(CollapseItem.HeaderProperty))
-                    {
-                        collapseItem.SetCurrentValue(CollapseItem.HeaderProperty, itemData.Header);
-                    }
-                    if (!collapseItem.IsSet(CollapseItem.IsSelectedProperty))
-                    {
-                        collapseItem.SetCurrentValue(CollapseItem.IsSelectedProperty, itemData.IsSelected);
-                    }
-                    if (!collapseItem.IsSet(CollapseItem.IsShowExpandIconProperty))
-                    {
-                        collapseItem.SetCurrentValue(CollapseItem.IsShowExpandIconProperty, itemData.IsShowExpandIcon);
-                    }
-                }
-            }
-
             if (ItemTemplate != null)
             {
                 collapseItem[!CollapseItem.ContentTemplateProperty] = this[!ItemTemplateProperty];
@@ -221,24 +194,8 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         }
     }
 
-    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
-    {
-        var containerWasSelected = container.GetValue(CollapseItem.IsSelectedProperty);
-        var previousSelectedIndex = IsAccordion ? Selection.SelectedIndex : -1;
-
+    protected override void ContainerForItemPreparedOverride(Control container, object? item, int index) =>
         base.ContainerForItemPreparedOverride(container, item, index);
-
-        if (IsAccordion &&
-            containerWasSelected &&
-            previousSelectedIndex >= 0 &&
-            previousSelectedIndex < index &&
-            Selection.SelectedIndex == index)
-        {
-            Selection.SelectedIndex = previousSelectedIndex;
-        }
-
-        NormalizeAccordionSelection();
-    }
 
     protected virtual void PrepareCollapseItem(CollapseItem collapseItem, object? item, int index)
     {
@@ -307,11 +264,6 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == IsAccordionProperty)
-        {
-            SetupSelectionMode();
-        }
-
         if (change.Property == BorderThicknessProperty ||
             change.Property == IsBorderlessProperty ||
             change.Property == IsGhostStyleProperty)
@@ -336,7 +288,6 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
     {
         base.OnAttachedToVisualTree(e);
         SetupEffectiveBorderThickness();
-        NormalizeAccordionSelection();
     }
 
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
@@ -408,9 +359,8 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
             : default;
     }
 
-    // Mirrors antd's collapse style rules: the first item's header carries the top
-    // corners, the last item's header and content carry the bottom corners, so their
-    // backgrounds follow the container's rounded border instead of covering it.
+    // The first header carries the top corners. The last item supplies the bottom
+    // corners to its content and to the header when the content is hidden.
     private void ConfigureItemCorners(CollapseItem collapseItem, int index)
     {
         var radius  = CornerRadius;
@@ -420,26 +370,16 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         collapseItem.HeaderCornerRadius = new CornerRadius(
             isFirst ? radius.TopLeft : 0,
             isFirst ? radius.TopRight : 0,
-            isLast ? radius.BottomLeft : 0,
-            isLast ? radius.BottomRight : 0);
+            isLast ? radius.BottomRight : 0,
+            isLast ? radius.BottomLeft : 0);
         collapseItem.ContentCornerRadius = isLast
-            ? new CornerRadius(0, 0, radius.BottomLeft, radius.BottomRight)
+            ? new CornerRadius(0, 0, radius.BottomRight, radius.BottomLeft)
             : default;
     }
 
     private CollapseItem? GetCollapseItemAt(int index)
     {
         return ContainerFromIndex(index) as CollapseItem;
-    }
-
-    private void NormalizeAccordionSelection()
-    {
-        if (!IsAccordion || Selection.SelectedIndexes.Count <= 1)
-        {
-            return;
-        }
-
-        Selection.SelectedIndex = Selection.SelectedIndexes.Min();
     }
 
     private void ConfigureItemsPaddings()
@@ -476,13 +416,5 @@ public partial class Collapse : SelectingItemsControl, IMotionAwareControl
         {
             EffectiveBorderThickness = BorderThickness;
         }
-    }
-
-    private void SetupSelectionMode()
-    {
-        SelectionMode = IsAccordion
-            ? SelectionMode.Single | SelectionMode.Toggle
-            : SelectionMode.Multiple | SelectionMode.Toggle;
-        NormalizeAccordionSelection();
     }
 }

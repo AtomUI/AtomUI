@@ -2,6 +2,31 @@
 
 本文档记录 Collapse 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- PrimeNG：面板标题内边距改为与 Expander 相同（6px 16px，Lara 4px 16px），两者标题等高。官方 `accordion.header.padding` 为 16
+  （Nora 14px 16px），标题约 50px，与 Expander 差距很大，属 AtomUI 的有意偏离。
+
+## 2026-11-20
+
+- Token
+  - `CollapseToken.HeaderColor` / `HeaderActiveColor`（默认 `ColorTextHeading`）：头部文字颜色（展开项用后者）；PrimeNG 采用 accordion 头部颜色。
+  - `CollapseToken.HeaderFontWeight`（默认 `Normal`）：面板头部字重，作用于头部内容呈现器；PrimeNG Aura 600，Lara / Nora 700。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - `PART_HeaderDecorator` 标记 `TemplatedControl.IsTemplateFocusTarget`，描边只包围标题，不包含展开后的正文。
+  - 键盘停靠点跟随 `TriggerType`：Header 模式下展开按钮不再是额外的 Tab 停靠点；Icon 模式下 `CollapseItem` 不是停靠点，只保留展开按钮，因为此模式下只有它能切换。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 `CollapseTokenResource`；`CollapseItem` 标为 Token owner 透明部件，`Controls[Collapse]` 作用于面板头部、内容、分隔线与动效。
+  - `ContentBg` 改为面板内容区背景（与 antd `contentBg` 一致，此前只在 Ghost 模式下用作头部背景）；Ghost 模式头部与内容区透明。
+  - 可见变化：内容区绘制 `ColorBgContainer`（此前透明），Ghost 头部改为透明（此前 `ContentBg`）；页面背景不是容器色时可见。
+
 ## 2026-10-27
 
 - Implementation

@@ -2,6 +2,48 @@
 
 本文档记录 SplitButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Token：新增公开 Own Token `SplitButtonToken.InsetSeparator`（默认 `false`）。为真时实心 SplitButton 为内缩细线预留布局位置；
+  取代此前设计语言经 `AppearanceSettings` 传入的布尔值。Shadcn 设为 `true`，各设计语言渲染不变。
+
+## 2026-11-20
+
+- Shadcn 的实心 SplitButton 使用独立的内缩细线，两段共用按实际高度约束的外侧圆角。危险色填充铺到接缝边缘，主段按压时由内容移动提供反馈。下拉触发器在展开时使用悬停配色。
+
+## 2026-11-17
+
+- Changed
+  - 实心（Primary / Danger）形态的接缝分隔色改由 `SplitButtonToken` 自有槽位 `SolidSeparatorColor` / `DangerSeparatorColor`
+    表达，`SplitButtonTheme` 两个 Setter 改绑；Ant 默认值仍为全局 `ColorPrimaryHover` / `ColorErrorHover`，渲染不变。
+  - `AtomUI.Themes.PrimeNG` 新增 `PrimeNGSplitButtonTokens`（六个算法）：两个槽位取 `ColorPrimary` / `ColorError`（filled 的
+    填充色），接缝与两侧同色而不可见，对齐官方 `@primeuix/styles` 3.1.1（`.p-splitbutton-button` 的
+    `border-inline-end: 0 none`，接缝由 `button.<severity>.borderColor` 承担，filled 下等于填充色）。
+    Outline（Default）形态本就没有接缝线，未改动。
+
+## 2026-11-08
+
+- Changed
+  - `SplitButtonTheme` 的全局 Token 改读 `SplitButtonTokenResource`；删除从未绘制的 `BorderBrush` 与默认（outline）形态的
+    `SplitSeparatorBrush` Setter，默认形态的 `SplitSeparatorBrush` 为 null。
+  - 拼接圆角写入内部 Button 的内部 `HostCornerRadius`，不再以本地值覆盖其公开 `CornerRadius`；分隔线画刷为空时不绘制。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - SplitButton 自身通过 AddOwner 提供 OpenMotion/CloseMotion，仅作用于次按钮关联浮层，不改变主按钮反馈。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Dropdown 根层 Slide、嵌套菜单 ZoomBig 与实际 Flyout 的配置/释放责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-09-15
 
 - Docs
@@ -16,7 +58,7 @@
   - Promote `IsPopupPinnedOpen` from internal to public (mirrors `DropdownButton.IsPopupPinnedOpen`) so Gallery semantic previews and diagnostics can pin the cross-visual-root flyout popup.
 - Gallery
   - Migrate the SplitButton showcase to `GalleryShowCaseHost` with a Semantic Parts tab (pinned primary-shape preview with 7 part cards) and add a semantic styles example driven by the generated `SplitButton*Style` classes.
-  - Fix the semantic preview popup-root registration to follow the resilient MenuShowCase pattern (`bf00b29b9`): re-register on `LayoutUpdated` instead of a one-shot `Loaded` pass (the pinned flyout opens asynchronously after `Loaded`, so the one-shot pass silently missed the code-created popup and left all popup-side parts unresolvable), subscribe to popup `Closed` with a deferred rescan, and keep tracking not-yet-opened nested submenu popups so late-opening submenus stay resolvable.
+  - Fix the semantic preview popup-root registration to follow the resilient MenuShowCase pattern: re-register on `LayoutUpdated` instead of a one-shot `Loaded` pass (the pinned flyout opens asynchronously after `Loaded`, so the one-shot pass silently missed the code-created popup and left all popup-side parts unresolvable), subscribe to popup `Closed` with a deferred rescan, and keep tracking not-yet-opened nested submenu popups so late-opening submenus stay resolvable.
 - Pinned popup lifecycle
   - Reopen the pinned flyout after lifecycle closes: the upstream `HideCore` tears down `Flyout.Target` / `Popup.PlacementTarget` and with them the popup-side pinned reconcile subscriptions, so a tab switch (placement target becomes invisible) closed the flyout permanently. SplitButton now arms a `LayoutUpdated`-driven retry (silent while the tree is hidden) and re-`ShowAt`s the anchor once the tree becomes visible again.
   - Propagate `IsPopupPinnedOpen` from MenuFlyout down through MenuFlyoutPresenter and MenuItem containers (the NavMenu `item.IsPopupPinnedOpen` pattern): pinned MenuItems now keep their declarative `IsSubMenuOpen` across the host popup's lifecycle close (rebound by the existing pinned guard) and restore the submenu popup presentation on re-attach.

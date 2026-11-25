@@ -127,8 +127,9 @@ public class BorderBeamTests
         ShowInWindow(borderBeam, () =>
         {
             borderBeam.ApplyTemplate();
-            borderBeam.DefaultStartColor.ShouldBeAssignableTo<ISolidColorBrush>();
-            borderBeam.DefaultEndColor.ShouldBeAssignableTo<ISolidColorBrush>();
+            var presenter = borderBeam.GetVisualDescendants().OfType<BorderBeamPresenter>().Single();
+            presenter.Paint.StartColor.ShouldBeAssignableTo<ISolidColorBrush>();
+            presenter.Paint.EndColor.ShouldBeAssignableTo<ISolidColorBrush>();
         });
     }
 
@@ -345,6 +346,34 @@ public class BorderBeamTests
             .ToArray();
 
         (distances.Max() / distances.Min()).ShouldBeLessThan(1.5d);
+    }
+
+    [Theory]
+    [InlineData(8d)]
+    [InlineData(26d)]
+    [InlineData(0d)]
+    public void Path_Sampler_Advances_Continuously_Through_Corners(double cornerRadius)
+    {
+        // Uniform progress steps must map to a uniformly advancing position on every ring, including through the
+        // corner arcs: a positional jump there reads as the beam teleporting around the corner.
+        var metrics = BorderBeamPathSampler.CreateMetrics(new Rect(0, 0, 300, 140), cornerRadius);
+        var previous = BorderBeamPathSampler.GetPointAtProgress(metrics, 0d).Point;
+        var steps = new List<double>();
+        const int count = 720;
+        for (var i = 1; i <= count; i++)
+        {
+            var current = BorderBeamPathSampler.GetPointAtProgress(metrics, i / (double)count).Point;
+            steps.Add(GetDistance(previous, current));
+            previous = current;
+        }
+
+        steps.ShouldNotContain(double.NaN);
+        steps.Min().ShouldBeGreaterThan(0d);
+        // Arc-length parameterization: no step may cover MORE path than the uniform share - an oversized step is a
+        // positional jump (the beam teleporting around a corner). A square corner (radius 0) legitimately shortens
+        // the Euclidean chord of the one straddling step, so only the upper bound is asserted.
+        var uniformStep = metrics.Perimeter / count;
+        steps.Max().ShouldBeLessThanOrEqualTo(uniformStep * 1.01d, $"corner radius {cornerRadius}");
     }
 
     private static double GetDistance(Point start, Point end)

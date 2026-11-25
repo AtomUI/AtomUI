@@ -2,6 +2,37 @@
 
 本文档记录 RadioButton 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token
+  - `OptionButtonToken` 新增 `ButtonOutlineCheckedBackground`（默认透明）、`ButtonOutlineCheckedColor` / `HoverColor` /
+    `ActiveColor`（默认 `ColorPrimary` / `ColorPrimaryHover` / `ColorPrimaryActive`）：描边样式选中项的填充与文字色。填充由
+    OptionButtonGroup 与选中边框一起绘制在选中格内，不遮挡分隔线和边框。Ant Design、Shadcn 默认值等于原外观。
+  - PrimeNG Nora：描边样式选中项按官方 `togglebutton` 用 `highlight.background` 填充、`highlight.color` 文字（noir 下黑底白字）；
+    此前只有边框和文字变色，在 Nora 深色字段边框下几乎看不出选中。Aura、Lara 不变。
+
+## 2026-11-20
+
+- Token
+  - `RadioButtonToken.IndicatorHoverBorderColor`（默认 `ColorPrimary`）：未选中指示器悬停边框；PrimeNG 采用 `form.field.hover.border.color`。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - `RadioIndicator#Indicator` 标记 `TemplatedControl.IsTemplateFocusTarget`，并实现 `IFocusOutlineShapeProvider`（未显式设置 CornerRadius 时按自身尺寸给出正圆），描边为包围圆点的圆形。
+
+## 2026-11-08
+
+- Changed
+  - `OptionButtonTheme`、`OptionButtonGroupTheme` 的全局 Token 改读 `OptionButtonTokenResource` / `OptionButtonGroupTokenResource`，
+    控件级覆盖生效。
+  - `ButtonPadding`（antd `buttonPaddingInline`）接入默认与大号 `ContentPadding*` 的左右分量；`ButtonBackground`、
+    `ButtonCheckedBackground`（antd `buttonBg` / `buttonCheckedBg`）标为 Reserved，原因是分组在选项之下绘制分隔线与选中边框。
+- Fixed
+  - `OptionButtonToken` 的 `ContentPaddingLG` 改用大号高度、字号与行高计算，`ContentPaddingSM` 改用小号的同组值（此前分别借用
+    小号值与无意义的运算）；字号、行高去掉无效的 `-1` 哨兵，基础字号变化后重新派生。
+
 ## 2026-10-20
 
 - Fixed

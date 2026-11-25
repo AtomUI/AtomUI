@@ -54,6 +54,14 @@ internal class DataGridHeaderViewItem : ContentControl
     }
     private bool _isFrozen;
     
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<DataGridHeaderViewItem, Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<DataGridHeaderViewItem, Thickness>(
+            nameof(EffectiveBorderThickness), o => o.EffectiveBorderThickness);
+
     bool _isShowLeftFrozenShadow = false;
 
     internal bool IsShowLeftFrozenShadow
@@ -61,7 +69,7 @@ internal class DataGridHeaderViewItem : ContentControl
         get => _isShowLeftFrozenShadow;
         set => SetAndRaise(IsShowLeftFrozenShadowProperty, ref _isShowLeftFrozenShadow, value);
     }
-    
+
     bool _isShowRightFrozenShadow = false;
 
     internal bool IsShowRightFrozenShadow
@@ -69,14 +77,6 @@ internal class DataGridHeaderViewItem : ContentControl
         get => _isShowRightFrozenShadow;
         set => SetAndRaise(IsShowRightFrozenShadowProperty, ref _isShowRightFrozenShadow, value);
     }
-
-    #endregion
-
-    #region 内部属性定义
-    
-    internal static readonly DirectProperty<DataGridHeaderViewItem, Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<DataGridHeaderViewItem, Thickness>(
-            nameof(EffectiveBorderThickness), o => o.EffectiveBorderThickness);
     
     internal Thickness EffectiveBorderThickness
     {
@@ -88,13 +88,24 @@ internal class DataGridHeaderViewItem : ContentControl
     internal DataGridColumn? OwningColumn { get; set; }
     internal DataGrid OwningGrid { get; set; }
     private RectangleGeometry? _clipGeometry;
+    private IDisposable? _owningGridBinding;
     
     #endregion
     
     public DataGridHeaderViewItem(DataGrid owningGrid)
     {
-        OwningGrid                     = owningGrid;
-        this[!BorderThicknessProperty] = OwningGrid[!BorderThicknessProperty];
+        OwningGrid         = owningGrid;
+        _owningGridBinding = Bind(BorderThicknessProperty, OwningGrid[!BorderThicknessProperty]);
+    }
+
+    // 视图项在分组表头重建时被丢弃：释放对表格的绑定并交还承载的列头，
+    // 否则表格会经由绑定持有旧视图项及其中已移除的列。
+    internal void Release()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
+        Content            = null;
+        OwningColumn       = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

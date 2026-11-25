@@ -1,8 +1,8 @@
-﻿using System.Globalization;
+using AtomUI.Controls;
+using System.Globalization;
 using AtomUI.Controls.Utils;
 using AtomUI.Desktop.Controls.Localization;
 using AtomUI.Media;
-using AtomUI.Desktop.Controls.Internal.DateViewer;
 using Avalonia;
 using Avalonia.Media;
 
@@ -109,6 +109,113 @@ internal static class DatePickerFormattingHelper
             DatePickerMode.Year    => dateTime.ToString("yyyy", CultureInfo.InvariantCulture),
             _                      => FormatDateTime(dateTime, "yyyy-MM-dd", formatInfo)
         };
+    }
+
+    /// <summary>
+    /// Parses text typed into a picker input. As in Ant Design, the text must match the display format in full;
+    /// a week may omit its localized suffix. The result is normalized to the picker unit, keeping the clock only
+    /// when the format shows it.
+    /// </summary>
+    internal static bool TryParseDateTime(
+        string? text,
+        string? format,
+        DatePickerMode pickerMode,
+        bool isShowTime,
+        ClockIdentifierType clockIdentifier,
+        DateTimeFormatInfo? formatInfo,
+        out DateTime value)
+    {
+        value = default;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return false;
+        }
+
+        var trimmed = text.Trim();
+        if (format is null && pickerMode != DatePickerMode.Date)
+        {
+            var parsed = pickerMode switch
+            {
+                DatePickerMode.Week    => TryParseWeek(trimmed, out value),
+                DatePickerMode.Quarter => TryParseQuarter(trimmed, out value),
+                DatePickerMode.Month => DateTime.TryParseExact(trimmed, "yyyy-MM", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out value),
+                _ => DateTime.TryParseExact(trimmed, "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None,
+                    out value)
+            };
+            if (parsed)
+            {
+                value = NormalizeDateTime(value, pickerMode);
+            }
+            return parsed;
+        }
+
+        var effectiveFormat = GetEffectiveFormat(format, pickerMode, isShowTime, clockIdentifier);
+        IFormatProvider provider = formatInfo ?? (IFormatProvider)CultureInfo.CurrentCulture;
+        if (!DateTime.TryParseExact(trimmed, effectiveFormat, provider, DateTimeStyles.None, out value))
+        {
+            return false;
+        }
+
+        if (pickerMode != DatePickerMode.Date)
+        {
+            value = NormalizeDateTime(value, pickerMode);
+        }
+        return true;
+    }
+
+    private static bool TryParseQuarter(string text, out DateTime value)
+    {
+        value = default;
+        if (text.Length != 7 || text[4] != '-' || char.ToUpperInvariant(text[5]) != 'Q' ||
+            !int.TryParse(text.AsSpan(0, 4), NumberStyles.None, CultureInfo.InvariantCulture, out var year) ||
+            year < 1 || text[6] is < '1' or > '4')
+        {
+            return false;
+        }
+
+        value = new DateTime(year, (text[6] - '1') * 3 + 1, 1);
+        return true;
+    }
+
+    private static bool TryParseWeek(string text, out DateTime value)
+    {
+        value = default;
+        var digitsEnd = 5;
+        while (digitsEnd < text.Length && char.IsAsciiDigit(text[digitsEnd]))
+        {
+            digitsEnd++;
+        }
+
+        if (text.Length < 6 || text[4] != '-' || digitsEnd == 5 || digitsEnd - 5 > 2 ||
+            !int.TryParse(text.AsSpan(0, 4), NumberStyles.None, CultureInfo.InvariantCulture, out var year) ||
+            !int.TryParse(text.AsSpan(5, digitsEnd - 5), NumberStyles.None, CultureInfo.InvariantCulture, out var week) ||
+            year is < 2 or > 9998)
+        {
+            return false;
+        }
+
+        var culture  = GetFormattingCulture();
+        var firstDay = DateUnitMath.GetWeekFirstDay(culture);
+        var start    = DateUnitMath.GetWeekStart(new DateTime(year, 1, 1).AddDays(-7), firstDay);
+        for (var index = 0; index < 55; index++)
+        {
+            var candidate = start.AddDays(index * 7);
+            if (DateUnitMath.GetWeekIdentity(candidate, culture, firstDay) != (year, week))
+            {
+                continue;
+            }
+
+            if (digitsEnd < text.Length && !string.Equals(FormatWeek(candidate), text, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            value = candidate;
+            return true;
+        }
+
+        return false;
     }
 
     internal static bool IsFormattedTextAffectingProperty(
@@ -219,7 +326,7 @@ internal static class DatePickerFormattingHelper
         foreach (var referenceText in referenceTexts)
         {
             preferredWidth = Math.Max(preferredWidth,
-                TextUtils.CalculateTextSize(
+                TextUtils.CalculateTextSizeCached(
                     referenceText,
                     fontSize,
                     fontFamily,
@@ -286,33 +393,29 @@ internal static class DatePickerFormattingHelper
 
     internal static DateTime NormalizeDateTime(DateTime dateTime, DatePickerMode pickerMode, DayOfWeek? firstDayOfWeek = null)
     {
-        var date = dateTime.Date;
-        return pickerMode switch
-        {
-            DatePickerMode.Week    => GetWeekStart(date, firstDayOfWeek ?? DatePanelAlgorithms.GetWeekFirstDay(GetFormattingCulture())),
-            DatePickerMode.Month   => new DateTime(date.Year, date.Month, 1),
-            DatePickerMode.Quarter => new DateTime(date.Year, ((date.Month - 1) / 3 * 3) + 1, 1),
-            DatePickerMode.Year    => new DateTime(date.Year, 1, 1),
-            _                      => date
-        };
+        var unit = GetFormattingUnit(pickerMode);
+        var firstDay = ResolveWeekStart(unit, firstDayOfWeek);
+        return DateUnitMath.Normalize(dateTime, unit, firstDay);
     }
 
     internal static bool IsSamePickerUnit(DateTime first, DateTime second, DatePickerMode pickerMode)
     {
-        return pickerMode switch
-        {
-            DatePickerMode.Week    => NormalizeDateTime(first, pickerMode) == NormalizeDateTime(second, pickerMode),
-            DatePickerMode.Month   => first.Year == second.Year && first.Month == second.Month,
-            DatePickerMode.Quarter => first.Year == second.Year && ((first.Month - 1) / 3) == ((second.Month - 1) / 3),
-            DatePickerMode.Year    => first.Year == second.Year,
-            _                      => first.Date == second.Date
-        };
+        var unit = GetFormattingUnit(pickerMode);
+        return DateUnitMath.IsSameUnit(first, second, unit, ResolveWeekStart(unit, null));
     }
+
+    private static DayOfWeek ResolveWeekStart(DateViewerSelectionUnit unit, DayOfWeek? firstDayOfWeek) =>
+        unit == DateViewerSelectionUnit.Week ? firstDayOfWeek ?? DateUnitMath.GetWeekFirstDay(GetFormattingCulture()) : default;
+
+    private static DateViewerSelectionUnit GetFormattingUnit(DatePickerMode pickerMode) =>
+        pickerMode is >= DatePickerMode.Date and <= DatePickerMode.Year
+            ? DatePickerPresenter.ToSelectionUnit(pickerMode)
+            : DateViewerSelectionUnit.Date;
 
     private static string FormatWeek(DateTime dateTime)
     {
         var culture = GetFormattingCulture();
-        var (year, week) = DatePanelAlgorithms.GetWeekIdentity(dateTime, culture, DatePanelAlgorithms.GetWeekFirstDay(culture));
+        var (year, week) = DateUnitMath.GetWeekIdentity(dateTime, culture, DateUnitMath.GetWeekFirstDay(culture));
         var suffix = culture.TwoLetterISOLanguageName switch
         {
             "zh" when culture.Name.EndsWith("-TW", StringComparison.OrdinalIgnoreCase) || culture.Name.Equals("zh-Hant", StringComparison.OrdinalIgnoreCase) => "週",
@@ -327,14 +430,8 @@ internal static class DatePickerFormattingHelper
 
     private static string FormatQuarter(DateTime dateTime)
     {
-        var quarter = ((dateTime.Month - 1) / 3) + 1;
+        var quarter = DateUnitMath.GetQuarter(dateTime);
         return string.Create(CultureInfo.InvariantCulture, $"{dateTime.Year:D4}-Q{quarter}");
-    }
-
-    private static DateTime GetWeekStart(DateTime date, DayOfWeek firstDayOfWeek)
-    {
-        var offset = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
-        return new DateTime(Math.Max(DateTime.MinValue.Ticks, date.Ticks - offset * TimeSpan.TicksPerDay));
     }
 
     private static double ApplyWidthBounds(double preferredWidth, double minWidth, double maxWidth)

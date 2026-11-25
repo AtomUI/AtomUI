@@ -16,10 +16,7 @@ public partial class CountBadge : AbstractCountBadge
             _badgeAdorner.Classes.Add("semantic-scope-indicator");
             SetupTokenBindings();
             NotifyDecoratedTargetChanged();
-            if (BadgeColor is not null)
-            {
-                ConfigureDotColor(BadgeColor);
-            }
+            ConfigureDotColor(BadgeColor);
         }
 
         return _badgeAdorner;

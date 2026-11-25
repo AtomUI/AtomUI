@@ -477,8 +477,8 @@
             <StackPanel.Styles>
                 <Style Selector="atom|FlyoutHost.semantic-styles-object-demo">
                     <atom:FlyoutHostPopupRootStyle x:SetterTargetType="atom:FlyoutPresenter">
-                        <Setter Property="Background" Value="#EEEEEE" />
-                        <Setter Property="Foreground" Value="#262626" />
+                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
+                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                         <Setter Property="Padding" Value="10" />
                     </atom:FlyoutHostPopupRootStyle>
                 </Style>

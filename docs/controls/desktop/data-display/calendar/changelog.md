@@ -2,6 +2,57 @@
 
 本文档记录 Calendar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Performance
+  - 去掉 `CalendarHeader` 的 16 个可继承主题输入。终端 Own Token 在根部（Calendar 或 LunarCalendar 的 Setter）赋给普通属性，
+    再经 `TemplateBinding` 传给头部、范围条和面板；日期格主题直接读取终端 Token，LunarCalendar 的派生格主题与面板主题读取自己的
+    Token。暗色全屏选中由格子的 `:dark-variant` 伪类表达。渲染不变，单个 Calendar 分配约少 10%。
+
+- Theme
+  - LunarCalendar 全屏月视图在暗色外观下为选中日期使用 `ItemActiveBg`，公历、农历两行文字使用 `ItemActiveColor`。
+    Shadcn 暗色分别呈现悬停与选中底色。紧凑日期格和浅色日期格继续用主色表达选中。
+
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `ItemActiveColor`：Fullscreen 选中单元文字色，默认 `ColorPrimary`（Ant Design 渲染不变），选中底色为实色的主题据此设置对比色。
+
+## 2026-11-11
+
+- Theme
+  - 日期格键盘焦点按呈现方式区分：
+    - Compact（卡片）模式改用共享焦点描边，`PART_CellInner` 标记为焦点目标，描边包围日期块，与日期选择器面板一致；移除原来的 2px 主色内边框样式，因为它画在选中的主色块上看不出来。
+    - Content（全屏）模式保留格子顶部主色线，`FocusAdorner` 为空，不叠加描边。
+- Fixed
+  - Compact 模式且没有自定义格子内容（`:cell-template`）时，日期数字跨内部网格两行，在 24 DIP 日期块内垂直居中；此前数字位于 `Auto` 行，墨迹上方留白约 3.5 DIP、下方约 10.5 DIP，选中块里明显偏上。
+- Tests
+  - `CalendarRenderTests` 新增 Compact 月 / 年模式数字垂直居中测试；`FocusOutlineTargetTests` 覆盖两种呈现方式的焦点表现。
+
+## 2026-11-10
+
+- Theme：LunarCalendar.ItemActiveBg 独立控制 Fullscreen Year 的选中月份背景，Calendar 同名 Own 不再泄漏；保留选中月份默认浅蓝色和 Month 选中日期主色。
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-09
+
+- Fixed
+  - `CalendarRangeBarPanel` 不再为每个业务条和标签建立指向面板的绑定（移除后仍被面板持有）；内边距、标签颜色与字号改为在布局时以
+    `SetCurrentValue` 写入，相应面板属性变化时重新应用。
+  - 呈现度量的 Global Token 键改用度量声明的 `OwnerType`（与 Own Token 键一致），不再取运行时类型。
+
+## 2026-11-08
+
+- Theme
+  - Calendar / LunarCalendar 主题改读有效 Token：Calendar 把 Token owner 转发给模板中的 DateViewer，日期格、面板、Header 读取宿主
+    Calendar / LunarCalendar 的有效全局 Token；`Controls[Calendar]` / `Controls[LunarCalendar]` 到达日期格与业务条。
+  - 新增 `Calendar.FullCellMargin` / `FullCellPadding` / `FullCellBorderThickness` / `RangeBarGap` / `RangeBarLabelPadding` 与
+    `LunarCalendar.MarkerSize` / `MarkerMargin` / `MarkerCornerRadius`，替换主题与 `CalendarRangeBarPanel` 中的字面量（默认值不变）；
+    范围条标签读 `FontSizeSM` / `ColorTextLightSolid`，不再写死 12 px 与白色。
+  - 呈现度量（Mini 高度、完整单元最小高度、业务条顶部偏移）改用 TokenResourceBinder 读取 Calendar 有效值。
+  - Header 模式切换不再设置被按钮遮盖的 `ColorBgContainer` 背景。
+
 ## 2026-10-04
 
 - Theme

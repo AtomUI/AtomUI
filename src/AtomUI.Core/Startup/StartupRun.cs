@@ -43,7 +43,12 @@ internal sealed class StartupRun
         }
 
         var appearance = ResolveAppearance(builder);
-        var prepared = ResolvePrepared(early, builder);
+        // Without a Splash nothing reads the prepared global layer before the theme is initialized, so the
+        // commit steps that do not depend on it overlap the background Prepare instead of waiting here.
+        var deferredPrepare = IsSplashEligible(builder) ? null : early?.Prepare;
+        deferredPrepare?.ContinueWith(static task => _ = task.Exception, CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+        var prepared = deferredPrepare is null ? ResolvePrepared(early, builder) : null;
         _splash = TryShowSplash(builder, prepared, appearance);
         if (_cancellation.IsCancellationRequested)
         {
@@ -58,7 +63,8 @@ internal sealed class StartupRun
 
         try
         {
-            StartupCommit.Commit(_application, builder, _process, appearance, prepared?.Select(appearance));
+            StartupCommit.Commit(_application, builder, _process, appearance,
+                () => (deferredPrepare is null ? prepared : WaitForPrepare(deferredPrepare))?.Select(appearance));
         }
         catch (Exception exception)
         {
@@ -81,35 +87,16 @@ internal sealed class StartupRun
     }
 
     private ThemeAppearance ResolveAppearance(AtomUIBuilder builder) =>
-        builder.ThemeManagerBuilder.FollowSystemLightRequest is null
-            ? ThemeAppearance.Light
-            : ThemeManager.ResolveSystemAppearance(_application);
+        builder.ThemeManagerBuilder.FollowSystemLightRequest is not null ||
+        builder.ThemeManagerBuilder.InitialSelection?.FollowSystem == true
+            ? ThemeManager.ResolveSystemAppearance(_application)
+            : ThemeAppearance.Light;
 
     private PreparedThemeStartup? ResolvePrepared(EarlyStartup? early, AtomUIBuilder builder)
     {
         if (early?.Prepare is { } prepare)
         {
-            StartupEventSource.Log.PhaseStart(StartupPhase.PrepareWait);
-            try
-            {
-                if (!prepare.Wait(PrepareTimeout))
-                {
-                    StartupProcess.LogWarning(
-                        "AtomUI startup Prepare did not finish within 30 s (background work may be waiting on the UI thread); " +
-                        "the Splash is skipped and startup continues.");
-                    return null;
-                }
-                return prepare.Result;
-            }
-            catch (AggregateException exception)
-            {
-                StartupProcess.LogWarning(exception.GetBaseException());
-                return null;
-            }
-            finally
-            {
-                StartupEventSource.Log.PhaseStop(StartupPhase.PrepareWait);
-            }
+            return WaitForPrepare(prepare);
         }
         if (!IsSplashEligible(builder) || !builder.ThemeManagerBuilder.CanPrepareBeforeApplication)
         {
@@ -123,6 +110,31 @@ internal sealed class StartupRun
         {
             StartupProcess.LogWarning(exception);
             return null;
+        }
+    }
+
+    private static PreparedThemeStartup? WaitForPrepare(Task<PreparedThemeStartup> prepare)
+    {
+        StartupEventSource.Log.PhaseStart(StartupPhase.PrepareWait);
+        try
+        {
+            if (!prepare.Wait(PrepareTimeout))
+            {
+                StartupProcess.LogWarning(
+                    "AtomUI startup Prepare did not finish within 30 s (background work may be waiting on the UI thread); " +
+                    "a configured Splash is skipped and startup continues.");
+                return null;
+            }
+            return prepare.Result;
+        }
+        catch (AggregateException exception)
+        {
+            StartupProcess.LogWarning(exception.GetBaseException());
+            return null;
+        }
+        finally
+        {
+            StartupEventSource.Log.PhaseStop(StartupPhase.PrepareWait);
         }
     }
 

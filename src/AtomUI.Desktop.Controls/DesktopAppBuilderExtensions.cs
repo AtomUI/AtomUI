@@ -1,10 +1,8 @@
 using System.Runtime.CompilerServices;
 using AtomUI.Animations;
 using AtomUI.Native;
-using AtomUI.Reflection;
 using Avalonia;
 using Avalonia.Logging;
-using Avalonia.Threading;
 
 namespace AtomUI;
 
@@ -136,7 +134,7 @@ public static class DesktopAppBuilderExtensions
                 if (WaylandFramePacing.TryInstall(ReportWaylandFrameFailure, BindMotionPresentationClock, out var reason))
                 {
                     Logger.TryGet(LogEventLevel.Information, AtomUILogArea.System)?.Log(
-                        typeof(DesktopAppBuilderExtensions), "Wayland frame pacing enabled: {Reason}", reason);
+                        typeof(DesktopAppBuilderExtensions), "Wayland frame pacing installed: {Reason}", reason);
                 }
                 else
                 {
@@ -146,16 +144,6 @@ public static class DesktopAppBuilderExtensions
             }
 
             initializeWayland();
-
-            // Wayland creates Dispatcher before its worker finishes, then installs a new backend.
-            // Share the original clock before platform-ready callbacks or application startup run.
-            if (!Dispatcher.UIThread.TryShareManagedClock())
-            {
-                Logger.TryGet(LogEventLevel.Warning, AtomUILogArea.System)?.Log(
-                    typeof(DesktopAppBuilderExtensions),
-                    "Wayland shared clock compatibility fix was not applied: " +
-                    "the dispatcher backend or clock structure is not supported.");
-            }
         }, builder.WindowingSubsystemName ?? "Wayland");
     }
 

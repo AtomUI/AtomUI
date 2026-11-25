@@ -28,6 +28,7 @@ internal sealed class RenderSentinel : Control
         }
         _reported = true;
         StartupTimeline.Mark("Mark.FirstRender");
+        StartupTimeline.ThreadJit("FirstRender");
         Dispatcher.UIThread.Post(RequestRenderedBatch, DispatcherPriority.Send);
     }
 
@@ -55,9 +56,11 @@ internal sealed class RenderSentinel : Control
     {
         StartupTimeline.Mark("Mark.DispatcherIdle");
         UiGapTracker.Stop();
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        var application = Application.Current;
+        if (application?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.Shutdown();
+            var exitCode = application is AtomUIHarnessApplication atomui ? atomui.VerifyDesignLanguages() : 0;
+            desktop.Shutdown(exitCode);
         }
     }
 }

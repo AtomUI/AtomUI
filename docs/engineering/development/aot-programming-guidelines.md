@@ -300,7 +300,7 @@ Attribute，不修改 BCL，也不实现第二套应用依赖图。NativeAOT 使
 ### 注册 ABI 与生成命名
 
 跨程序集隐藏 ABI 使用中性的注册命名，如 `ControlRegistrationFragmentAttribute`、`ControlPackageRegistrationBuilder`
-和 `GeneratedControlPackageRegistration`。公开性仅用于跨程序集生成代码访问，不成为用户手写注册扩展点。
+和 `PackageMetadata`。公开性仅用于跨程序集生成代码访问，不成为用户手写注册扩展点。
 Package Group 是无全包静态引用的隐藏公共类型；生成器内部和输出命名规则由
 [控件注册生成器](../../modules/generator/control-registration.md)与 [TypeMap 契约](../../reference/aot/typemap-contract.md)统一维护。
 

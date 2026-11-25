@@ -12,8 +12,8 @@
                                       Classes.semantic-sub-menu-item-title="True"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Center"
-                                      Foreground="{atom:SharedTokenResource ColorTextDescription}"
-                                      Padding="16,8"
+                                      Foreground="{atom:MenuItemGroupTokenResource ColorTextDescription}"
+                                      Padding="{CompiledBinding $self.(atom:MenuPopupScrollHost.GroupTitlePadding)}"
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate}" />
                     <ItemsPresenter Name="PART_ItemsPresenter"
@@ -22,5 +22,9 @@
                 </StackPanel>
             </ControlTemplate>
         </Setter>
+        <!-- A theme style, so semantic title styles keep their precedence over the group title weight. -->
+        <Style Selector="^ /template/ ContentPresenter#GroupTitlePresenter">
+            <Setter Property="FontWeight" Value="{atom:MenuItemGroupTokenResource TitleFontWeight}" />
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -15,14 +15,16 @@ Skeleton 主控件公开 `root`、`header`、`section`、`avatar`、`title`、`p
 | Part | Selector | ContractType | Cardinality | Customization | CrossVisualRoot | RuntimeCreated |
 | --- | --- | --- | --- | --- | --- | --- |
 | `root` | owner | `Skeleton` | `Single` | `Root` | `false` | `false` |
-| `header` | `.semantic-header` | `DockPanel` | `Single` | `Selector` | `false` | `false` |
-| `section` | `.semantic-section` | `StackPanel` | `Single` | `Selector` | `false` | `false` |
-| `avatar` | `.semantic-avatar` | `SkeletonAvatar` | `Single` | `Selector` | `false` | `false` |
-| `title` | `.semantic-title` | `SkeletonTitle` | `Single` | `Selector` | `false` | `false` |
-| `paragraph` | `.semantic-paragraph` | `SkeletonParagraph` | `Single` | `Selector` | `false` | `false` |
+| `header` | `.semantic-header` | `DockPanel` | `Single` | `Selector` | `false` | `true` |
+| `section` | `.semantic-section` | `StackPanel` | `Single` | `Selector` | `false` | `true` |
+| `avatar` | `.semantic-avatar` | `SkeletonAvatar` | `Single` | `Selector` | `false` | `true` |
+| `title` | `.semantic-title` | `SkeletonTitle` | `Single` | `Selector` | `false` | `true` |
+| `paragraph` | `.semantic-paragraph` | `SkeletonParagraph` | `Single` | `Selector` | `false` | `true` |
 
 `header` 只承载头像占位区域，作为根布局的左侧 cell；`section` 承载标题和段落，作为右侧、填充剩余宽度的 cell。
-`avatar`、`title` 和 `paragraph` 是主控件模板直接拥有的公开 Skeleton 子控件。`root` 不声明 `.semantic-root` marker。
+`avatar`、`title` 和 `paragraph` 是主控件占位中的公开 Skeleton 子控件。这五个 Part 都位于 `PlaceholderTemplate` 构建的占位中，
+只在 `IsLoading` 为真时存在，因此声明为 `RuntimeCreated`，选择器路径为 `/template/ .semantic-*`（占位的模板父级是 `Skeleton`）。
+`root` 不声明 `.semantic-root` marker。
 
 ### 1.2 Skeleton 元素 owner
 
@@ -39,9 +41,8 @@ Skeleton 主控件公开 `root`、`header`、`section`、`avatar`、`title`、`p
 | `SkeletonNode` | `root` | owner | `SkeletonNode` | `Single` | `Root` | `false` | `false` |
 | `SkeletonNode` | `content` | `.semantic-content` | `Border` | `Multiple` | `Selector` | `false` | `false` |
 
-`content` 使用 `Multiple` 是 AtomUI 模板实现的状态替代语义：普通状态的 `PART_ContentLayer` 与 active 状态的
-`PART_ActiveAnimationLayer` 是两个静态 marker target，同一时刻只有一个可见。Preview 只高亮当前可见 target；Semantic Style
-同时作用于两个替代层，保证状态切换后定制仍然存在。
+当前模板中每个元素 owner 只有一个 `content` target：`PART_ContentLayer`，普通与激活状态共用，始终可见；激活时微光在它之上
+绘制。`content` 的 Cardinality 保持 `Multiple`，descriptor 契约不变。
 
 ## 2. Selector 用法
 
@@ -66,15 +67,14 @@ Skeleton 主控件公开 `root`、`header`、`section`、`avatar`、`title`、`p
 
 ## 3. Template 与状态边界
 
-- 主控件的 `header`、`section`、`avatar`、`title` 和 `paragraph` marker 都由 Skeleton 自己模板提供；`header` 和 `section`
-  是同一两列布局的 sibling，分别对应左侧头像 cell 和右侧内容 cell。
-- 元素 owner 的 `content` marker 位于静态内容层和静态 active 动画层；不扫描 `SkeletonLine` 运行时集合，也不公开
-  `PART_*` 名称。
+- 主控件的 `header`、`section`、`avatar`、`title` 和 `paragraph` marker 静态写在 Skeleton 的 `PlaceholderTemplate` 中，
+  只在加载时存在；`header` 和 `section` 是同一两列布局的 sibling，分别对应左侧头像 cell 和右侧内容 cell。
+- 元素 owner 的 `content` marker 位于唯一的静态内容层；不扫描 `SkeletonLine` 运行时集合，也不公开 `PART_*` 名称。
 - `SkeletonParagraph` 是运行时 `SkeletonLine` 背景的唯一状态 owner：创建行时写入当前 Background，
   Paragraph Background 变化时直接同步已创建的行。该路径不使用字符串绑定，不把行节点提升为独立的 Semantic Part owner。
-- `SkeletonImage` 的内部图标、`SkeletonNode` 的用户 ContentPresenter、标题/段落的内部 line 和所有动画对象均不属于
+- `SkeletonImage` 的内部图标、`SkeletonNode` 的用户 ContentPresenter、标题/段落的内部 line 和微光的合成层视觉均不属于
   `content` Part。
-- 隐藏替代层不改变 descriptor、marker 身份或数量；模板重套用后由新模板重新提供同一 marker 契约。
+- 激活与否不改变 descriptor、marker 身份或数量；模板重套用后由新模板重新提供同一 marker 契约。
 
 ## 4. 尺寸与布局基线
 
@@ -93,7 +93,8 @@ Gallery 的五个元素预览会把带有 `semantic-preview-owner` 标记的 own
 ## 5. 验证不变量
 
 - `Skeleton` descriptor 只包含 `root/header/section/avatar/title/paragraph`。
-- 五个元素 owner descriptor 只包含 `root/content`，`content` 为两个静态替代 target。
+- 五个元素 owner descriptor 只包含 `root/content`，`content` 为唯一的静态内容层。
+- 主控件的 Part 只在 `IsLoading` 为真时存在；Gallery Semantic Preview 的 owner 设置 `IsLoading="True"`。
 - Desktop 所有叶子 Skeleton 主题均声明静态 `Classes.semantic-*="True"`，不使用 Binding 或 `False` marker。
 - 默认主题不消费 `.semantic-*` selector；Semantic Part 只增加静态 class、descriptor 和生成 Style。
 - Gallery Semantic Parts Tab 延迟创建主控件和元素 owner Preview；Examples Tab 的既有示例树保持不变。

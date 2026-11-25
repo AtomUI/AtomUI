@@ -1,9 +1,24 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of TransferTreeView (its own
+     identity). On a TreeView the owner is the TreeView. -->
 <ControlTheme TargetType="atom:TreeView"
               xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.TreeViewTheme">
+        <Setter Property="atom:TreeViewItemHeader.HeaderHeight" Value="{atom:TreeViewTokenResource HeaderHeight}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeHoverBackground" Value="{atom:TreeViewTokenResource NodeHoverBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedBackground" Value="{atom:TreeViewTokenResource NodeSelectedBg}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSelectedForeground" Value="{atom:TreeViewTokenResource NodeSelectedColor}" />
+
+
+        <Setter Property="atom:TreeViewItemHeader.ItemMargin" Value="{atom:TreeViewTokenResource TreeItemMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderPadding" Value="{atom:TreeViewTokenResource TreeItemHeaderPadding}" />
+        <Setter Property="atom:TreeViewItemHeader.ItemHeaderMargin" Value="{atom:TreeViewTokenResource TreeItemHeaderMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeSwitcherMargin" Value="{atom:TreeViewTokenResource TreeNodeSwitcherMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.NodeIconMargin" Value="{atom:TreeViewTokenResource TreeNodeIconMargin}" />
+        <Setter Property="atom:TreeViewItemHeader.FilterHighlightBrush" Value="{atom:TreeViewTokenResource FilterHighlightColor}" />
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TreeView">
             <Border Name="Frame">
@@ -41,17 +56,17 @@
     </Setter>
 
     <Style Selector="^:is(atom|TreeView)">
-        <Setter Property="FilterHighlightForeground" Value="{atom:TreeViewTokenResource FilterHighlightColor}" />
-        <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource PaddingXL}" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="FilterHighlightForeground" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.FilterHighlightBrush)}" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource PaddingXL}" />
         <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="atom:ScrollViewer.IsScrollChainingEnabled" Value="False" />
         <Setter Property="IsShowEmptyIndicator" Value="True" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationSlow}" />
-        <Setter Property="DragIndicatorLineWidth"
-                Value="{atom:TreeViewTokenResource DragIndicatorLineWidth}" />
-        <Setter Property="DragIndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="MotionDuration" Value="{atom:OwnerTokenResource MotionDurationSlow}" />
+        <Setter Property="UseDragIndicatorTokenResources" Value="True" />
         
         <Setter Property="ItemTemplate">
             <TreeDataTemplate ItemsSource="{Binding Children}" DataType="atom:ITreeItemNode">

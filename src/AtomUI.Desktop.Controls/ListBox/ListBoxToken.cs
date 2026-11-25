@@ -5,112 +5,54 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ListBoxToken : AbstractControlDesignToken
+public sealed partial class ListBoxToken : AbstractControlDesignToken
 {
     
-    public ListBoxToken()
+    /// <summary>Padding around the list content.</summary>
+    public partial Thickness ContentPadding { get; set; }
 
-    {
-    }
+    /// <summary>Default foreground color of a list item, paired with <see cref="ItemBgColor"/>.</summary>
+    public partial Color ItemColor { get; set; }
+
+    /// <summary>Foreground color of a hovered list item, paired with <see cref="ItemHoverBgColor"/>.</summary>
+    public partial Color ItemHoverColor { get; set; }
+
+    /// <summary>Foreground color of a selected list item, paired with <see cref="ItemSelectedBgColor"/>.</summary>
+    public partial Color ItemSelectedColor { get; set; }
+
+    /// <summary>
+    /// Colour of the check mark on a selected item.
+    /// </summary>
+    public partial Color ItemSelectedIndicatorColor { get; set; }
+
+    /// <summary>Foreground color of a disabled list item.</summary>
+    public partial Color ItemDisabledColor { get; set; }
+
+    /// <summary>Default background color of a list item, paired with <see cref="ItemColor"/>.</summary>
+    public partial Color ItemBgColor { get; set; }
+
+    /// <summary>Background color of a hovered list item, paired with <see cref="ItemHoverColor"/>.</summary>
+    public partial Color ItemHoverBgColor { get; set; }
+
+    /// <summary>Background color of a selected list item, paired with <see cref="ItemSelectedColor"/>.</summary>
+    public partial Color ItemSelectedBgColor { get; set; }
     
-    /// <summary>
-    /// List 内边距
-    /// </summary>
-    public Thickness ContentPadding { get; set; }
-
-    /// <summary>
-    /// 列表项文字颜色
-    /// </summary>
-    public Color ItemColor { get; set; }
-
-    /// <summary>
-    /// 列表项文字悬浮颜色
-    /// </summary>
-    public Color ItemHoverColor { get; set; }
-
-    /// <summary>
-    /// 列表项文字选中颜色
-    /// </summary>
-    public Color ItemSelectedColor { get; set; }
-
-    /// <summary>
-    /// 列表项文字禁用颜色
-    /// </summary>
-    public Color ItemDisabledColor { get; set; }
-
-    /// <summary>
-    /// 列表项背景色
-    /// </summary>
-    public Color ItemBgColor { get; set; }
-
-    /// <summary>
-    /// 列表项悬浮态背景色
-    /// </summary>
-    public Color ItemHoverBgColor { get; set; }
-
-    /// <summary>
-    /// 列表项选中背景色
-    /// </summary>
-    public Color ItemSelectedBgColor { get; set; }
+    /// <summary>Margin around the list item's selection indicator.</summary>
+    public partial Thickness SelectedIndicatorMargin { get; set; }
     
-    /// <summary>
-    /// 列表项选中标记的外间距
-    /// </summary>
-    public Thickness SelectedIndicatorMargin { get; set; }
-    
-    /// <summary>
-    /// 过滤高亮颜色
-    /// </summary>
-    public Color FilterHighlightColor { get; set; }
+    /// <summary>Foreground color of text that matches the filter.</summary>
+    public partial Color FilterHighlightColor { get; set; }
 
-    /// <summary>
-    /// 列表项小号内间距
-    /// </summary>
-    public Thickness ItemPaddingSM { get; set; }
+    /// <summary>Padding inside a small list item.</summary>
+    public partial Thickness ItemPaddingSM { get; set; }
 
-    /// <summary>
-    /// 列表项内间距
-    /// </summary>
-    public Thickness ItemPadding { get; set; }
+    /// <summary>Padding inside a list item at the default size.</summary>
+    public partial Thickness ItemPadding { get; set; }
 
-    /// <summary>
-    /// 列表项大号内间距
-    /// </summary>
-    public Thickness ItemPaddingLG { get; set; }
+    /// <summary>Padding inside a large list item.</summary>
+    public partial Thickness ItemPaddingLG { get; set; }
 
-    /// <summary>
-    /// 列表项外边距
-    /// </summary>
-    public Thickness ItemMargin { get; set; }
-    
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var colorTextDisabled  = EffectiveGlobalToken.ColorTextDisabled;
-        var colorTextSecondary = EffectiveGlobalToken.ColorTextSecondary;
-        var colorBgTextHover   = EffectiveGlobalToken.ColorBgTextHover;
-
-        ItemColor         = colorTextSecondary;
-        ItemHoverColor    = colorTextSecondary;
-        ItemSelectedColor = EffectiveGlobalToken.ColorText;
-
-        ItemBgColor         = EffectiveGlobalToken.ColorTransparent;
-        ItemHoverBgColor    = colorBgTextHover;
-        ItemSelectedBgColor = EffectiveGlobalToken.ControlItemBgActive;
-
-        ItemDisabledColor = colorTextDisabled;
-
-        ItemPaddingLG = new Thickness(EffectiveGlobalToken.UniformlyPadding, 0);
-        ItemPaddingSM = new Thickness(EffectiveGlobalToken.UniformlyPaddingXS, 0);
-        ItemPadding   = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, 0);
-
-        ContentPadding   = new Thickness(0);
-        ItemMargin       = new Thickness(0);
-
-        FilterHighlightColor = EffectiveGlobalToken.ColorError;
-
-        SelectedIndicatorMargin = new Thickness(EffectiveGlobalToken.UniformlyMarginXXS, 0, 0, 0);
-    }
+    /// <summary>Margin around a list item.</summary>
+    public partial Thickness ItemMargin { get; set; }
     
 }

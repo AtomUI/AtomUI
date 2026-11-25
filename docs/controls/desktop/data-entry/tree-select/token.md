@@ -21,6 +21,13 @@ TreeSelectToken 不承载以下状态：
 
 该 Token 控制 TreeSelect 候选弹层的最小宽度下限，默认值为 `300`。当 `IsPopupMatchSelectWidth=true` 时，实际有效宽度还会受到输入控件当前宽度影响；当输入控件较窄时，`MinPopupWidth` 保证树形层级和节点文本有基本展示空间。
 
+### 2.2 输入字号 Token
+
+- `InputFontSizeSM`
+
+Small TreeSelect 的选中值与占位文字字号，默认等于 `FontSize`（与 antd 一致），定义在 `AbstractSelectInputToken`；PrimeNG 取
+`FontSizeSM`。
+
 ## 3. 控件专项模型中的 Token 使用
 
 TreeSelectToken 使用路径：
@@ -44,6 +51,10 @@ PopupFrame.MinWidth = max(EffectivePopupWidth, TreeSelectToken.MinPopupWidth)
 
 `EffectivePopupWidth`、`MaxPopupHeight`、`SelectedCount`、`IsSelectionEmpty` 和 `EffectiveSelectedItems` 都是实例运行状态，不是 Token。
 
+实现上主题把 `MinPopupWidth` 写入 TreeSelect 的 internal `MinPopupWidth` 属性，TreeSelect 计算
+`EffectivePopupWidth = max(匹配宽度, MinPopupWidth)`，`PopupFrame.MinWidth` 模板绑定该值；主题变化或 `Controls[TreeSelect]`
+覆盖时重新计算。旧实现在 `PopupFrame` 上用普通主题 Setter 写 `MinWidth`，被模板绑定的 `MinWidth` 遮蔽，从未生效。
+
 ## 4. 控件家族影响
 
 TreeSelectToken 直接影响 TreeSelect。TreeSelect 还复用以下 Token 系统：
@@ -62,7 +73,7 @@ TreeSelectToken 直接影响 TreeSelect。TreeSelect 还复用以下 Token 系�
 
 ## 5. 兼容性要求
 
-TreeSelectToken 属于 TreeSelect 主题契约。即使 `TreeSelectToken` 是 internal 类型，生成的 `TreeSelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+TreeSelectToken 属于 TreeSelect 主题契约。`TreeSelectToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `TreeSelectTokenKind`、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 
@@ -81,3 +92,11 @@ Token 变更要求：
 | 调整 PopupHostToken 协作 | 验证 popup 圆角、阴影、anchor margin 和 overlay popup。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 独立 Token 身份与共享计算
+
+Select、Cascader、TreeSelect 的标签高度/背景、禁用标签、字体和单/多选 padding 共享 AbstractSelectInputToken，
+各终端从自己的有效 Global/Own 计算并经具体内部样式输入应用；`Controls[Select]` 不再改变 Cascader/TreeSelect 的输入表面。
+Cascader Small 空多选使用 Small padding。TreeSelect 弹层内的内部树跟随 TreeSelect，实际树展示字段由其 Own 配置，
+通过纯值函数复用树公式，不把树字段添加给 Select/Cascader；过滤高亮默认仍为 TreeSelect 的 ColorPrimary。
+TreeSelectTreeView 是无身份部件，不再借 TreeView 的 StyleKey 截断宿主 owner；公开 TreeView 和 CascaderView 仍各自独立。

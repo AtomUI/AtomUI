@@ -30,6 +30,59 @@ public class OverflowTipTests
     }
 
     [Fact]
+    public void Non_Positive_FontSize_Is_Not_Measured_And_Tip_Returns_With_The_Real_FontSize()
+    {
+        // Shared parts bind FontSize to inherited theme inputs; while a part leaves or joins its owner the
+        // inherited value is transiently the 0 default and the part is still attached with its old bounds.
+        const string value = "AtomUI overflow tooltip should show this complete text";
+        var textBlock = new TextBlock
+        {
+            Width        = 80,
+            Text         = value,
+            TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis
+        };
+
+        OverflowTip.SetIsEnabled(textBlock, true);
+
+        ShowInWindow(textBlock, () =>
+        {
+            ToolTip.GetTip(textBlock).ShouldBe(value);
+
+            // A style-priority path binding is how the theme input reaches FontSize; the 0 default is published
+            // while the inherited input is reset, which must neither measure text nor throw.
+            // The owner's layout never runs with the transient 0 (the part is leaving the tree); only the
+            // synchronous FontSize change observers, OverflowTip among them, see it.
+            var source = new FontSizeSource { Value = 0 };
+            IDisposable? binding = null;
+            Should.NotThrow(() => binding = textBlock.Bind(TextBlock.FontSizeProperty,
+                new Avalonia.Data.Binding(nameof(FontSizeSource.Value)) { Source = source, Priority = Avalonia.Data.BindingPriority.Style }));
+            textBlock.FontSize.ShouldBe(0, "the transient theme-input default reaches FontSize through the binding");
+            ToolTip.GetTip(textBlock).ShouldBeNull("an unmeasurable font size must not keep or create an owned tip");
+
+            source.Value = 14;
+            ToolTip.GetTip(textBlock).ShouldBe(value);
+            binding!.Dispose();
+        });
+    }
+
+    private sealed class FontSizeSource : System.ComponentModel.INotifyPropertyChanged
+    {
+        private double _value;
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
+        public double Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Value)));
+            }
+        }
+    }
+
+    [Fact]
     public void TextBlock_Uses_ToolTip_Only_When_Text_Overflows()
     {
         const string value = "AtomUI overflow tooltip should show this complete text";

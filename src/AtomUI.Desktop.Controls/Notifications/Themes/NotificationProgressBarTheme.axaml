@@ -4,8 +4,6 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:NotificationProgressBar}" TargetType="atom:NotificationProgressBar">
-        <Setter Property="ProgressIndicatorThickness" Value="{atom:NotificationCardTokenResource NotificationProgressHeight}"/>
-        <Setter Property="ProgressIndicatorBrush" Value="{atom:NotificationCardTokenResource NotificationProgressBg}"/>
-        <Setter Property="ProgressTrackBrush" Value="{atom:NotificationCardTokenResource NotificationProgressTrackBg}"/>
+        <Setter Property="UseProgressBarTokenResources" Value="True"/>
     </ControlTheme>
 </ResourceDictionary>

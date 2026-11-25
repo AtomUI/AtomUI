@@ -1,11 +1,20 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Native;
 
 internal static class WaylandWindowReflectionExtensions
 {
+    private const string PopupImplTypeName = "Avalonia.Wayland.PopupImpl";
+
+    [DynamicDependency("_configuredGeometry", PopupImplTypeName, "Avalonia.Wayland")]
+    private static readonly Lazy<FieldInfo?> ConfiguredPopupGeometryFieldInfo = new(() =>
+        Type.GetType(PopupImplTypeName + ", Avalonia.Wayland")?
+            .GetField("_configuredGeometry", BindingFlags.Instance | BindingFlags.NonPublic));
+
     [DynamicDependency(
         DynamicallyAccessedMemberTypes.NonPublicFields,
         "Avalonia.Wayland.WindowImpl",
@@ -47,6 +56,18 @@ internal static class WaylandWindowReflectionExtensions
     private static readonly Lazy<PropertyInfo?> WlCompositorPropertyInfo = new(() =>
         Type.GetType("Avalonia.Wayland.Server.Transient.WaylandGlobals, Avalonia.Wayland")
             ?.GetProperty("WlCompositor", BindingFlags.Instance | BindingFlags.Public));
+
+    internal static bool IsWaylandPopupPositionPending(this PopupRoot root)
+    {
+        // The first xdg_popup configure establishes the position. PositionChanged
+        // only fires if the configured position differs from the initial (0, 0).
+        return OperatingSystem.IsLinux() &&
+               root.PlatformImpl is { } impl &&
+               impl.GetType().FullName == PopupImplTypeName &&
+               ConfiguredPopupGeometryFieldInfo.Value is { } field &&
+               field.FieldType == typeof(PixelRect?) &&
+               field.GetValue(impl) is null;
+    }
 
     public static bool TrySetWaylandInputRectangle(
         this Window window,

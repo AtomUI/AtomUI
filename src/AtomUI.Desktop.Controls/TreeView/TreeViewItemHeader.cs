@@ -7,11 +7,12 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio)]
-internal class TreeViewItemHeader : ContentControl
+[PseudoClasses(TreeViewPseudoClass.NodeToggleTypeCheckBox, TreeViewPseudoClass.NodeToggleTypeRadio, TreeViewPseudoClass.KeyboardActive)]
+internal partial class TreeViewItemHeader : ContentControl
 {
     public static readonly StyledProperty<bool> IsExpandedProperty =
         TreeViewItem.IsExpandedProperty.AddOwner<TreeViewItemHeader>();
@@ -145,6 +146,26 @@ internal class TreeViewItemHeader : ContentControl
     
     #region 内部属性定义
 
+    // The node icon size and brush are resolved on the header (owner reads of the hosting tree) and bound down to the
+    // registered IconPresenter, whose own identity would otherwise answer the owner reads.
+    internal static readonly StyledProperty<double> IconSizeProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, double>(nameof(IconSize), double.NaN);
+
+    internal static readonly StyledProperty<IBrush?> IconBrushProperty =
+        AvaloniaProperty.Register<TreeViewItemHeader, IBrush?>(nameof(IconBrush));
+
+    internal double IconSize
+    {
+        get => GetValue(IconSizeProperty);
+        set => SetValue(IconSizeProperty, value);
+    }
+
+    internal IBrush? IconBrush
+    {
+        get => GetValue(IconBrushProperty);
+        set => SetValue(IconBrushProperty, value);
+    }
+
     internal static readonly StyledProperty<bool> IsHoverProperty =
         AvaloniaProperty.Register<TreeViewItemHeader, bool>(nameof(IsHover), false);
     
@@ -178,6 +199,16 @@ internal class TreeViewItemHeader : ContentControl
         AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsDragging),
             o => o.IsDragging,
             (o, v) => o.IsDragging = v);
+
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsKeyboardActiveProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsKeyboardActive),
+            o => o.IsKeyboardActive,
+            (o, v) => o.IsKeyboardActive = v);
+
+    internal static readonly DirectProperty<TreeViewItemHeader, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
 
     internal static readonly DirectProperty<TreeViewItemHeader, bool> IsDragOverProperty =
         AvaloniaProperty.RegisterDirect<TreeViewItemHeader, bool>(nameof(IsDragOver),
@@ -299,6 +330,22 @@ internal class TreeViewItemHeader : ContentControl
         set => SetAndRaise(IsDraggingProperty, ref _isDragging, value);
     }
 
+    private bool _isKeyboardActive;
+
+    internal bool IsKeyboardActive
+    {
+        get => _isKeyboardActive;
+        set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
+    }
+
+    private bool _isKeyboardFocusOutlineVisible;
+
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
+    }
+
     private bool _isDragOver;
 
     internal bool IsDragOver
@@ -396,6 +443,7 @@ internal class TreeViewItemHeader : ContentControl
     #endregion
     
     private Control? _headerContentFrame;
+    private readonly ManagedFocusOutline _keyboardFocusOutline = new();
     private NodeSwitcherButton? _nodeSwitcherButton;
     private IconPresenter? _iconPresenter;
 
@@ -415,6 +463,14 @@ internal class TreeViewItemHeader : ContentControl
         else if (change.Property == ToggleTypeProperty)
         {
             HandleToggleTypeChanged(change);
+        }
+        else if (change.Property == IsKeyboardActiveProperty)
+        {
+            PseudoClasses.Set(TreeViewPseudoClass.KeyboardActive, IsKeyboardActive);
+        }
+        else if (change.Property == IsKeyboardFocusOutlineVisibleProperty)
+        {
+            UpdateKeyboardFocusOutline();
         }
         else if (change.Property == FilterHighlightWordsProperty ||
                  change.Property == IsFilterMatchProperty ||
@@ -465,6 +521,32 @@ internal class TreeViewItemHeader : ContentControl
         _iconPresenter = e.NameScope.Find<IconPresenter>("PART_IconPresenter");
         _nodeSwitcherButton = e.NameScope.Find<NodeSwitcherButton>("PART_NodeSwitcherButton");
         SetupSwitcherButtonIconMode();
+        UpdateKeyboardFocusOutline();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateKeyboardFocusOutline();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _keyboardFocusOutline.Hide();
+    }
+
+    // The outline wraps the content frame, matching Ant Design's node-content-wrapper.
+    private void UpdateKeyboardFocusOutline()
+    {
+        if (IsKeyboardFocusOutlineVisible && _headerContentFrame is not null && this.IsAttachedToVisualTree())
+        {
+            _keyboardFocusOutline.Show(_headerContentFrame);
+        }
+        else
+        {
+            _keyboardFocusOutline.Hide();
+        }
     }
 
     private void SetHeaderContentFrame(Control? headerContentFrame)

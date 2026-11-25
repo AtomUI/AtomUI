@@ -11,6 +11,7 @@
 
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ColorSliderTrackButton">
+            <!-- layout: fixed raster inset, hit target or compact editor packing. -->
             <Border Name="FocusTarget"
                     Background="Transparent"
                     Margin="0,-10" />

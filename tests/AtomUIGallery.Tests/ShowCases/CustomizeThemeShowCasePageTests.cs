@@ -18,7 +18,7 @@ namespace AtomUIGallery.Tests.ShowCases;
 public class CustomizeThemeShowCasePageTests
 {
     [Fact]
-    public void CustomizeTheme_Token_Only_Configs_Inherit_Current_Algorithm()
+    public void CustomizeTheme_Token_Only_Configs_Inherit_Current_Variant()
     {
         var viewModel = new AtomUIGallery.ShowCases.CustomizeTheme.CustomizeThemeViewModel(null!);
         var configs = new[]
@@ -33,7 +33,8 @@ public class CustomizeThemeShowCasePageTests
 
         foreach (var config in configs)
         {
-            config.Algorithms.ShouldBeNull();
+            config.Appearance.ShouldBeNull();
+            config.Density.ShouldBeNull();
         }
     }
 
@@ -48,15 +49,18 @@ public class CustomizeThemeShowCasePageTests
     }
 
     [Fact]
-    public void CustomizeTheme_Control_Algorithm_Configs_Render_Component_Primary_Colors()
+    public void CustomizeTheme_Control_Seed_And_Map_Configs_Render_Component_Primary_Colors()
     {
         AvaloniaTestApp.EnsureInitialized();
 
         var viewModel = new AtomUIGallery.ShowCases.CustomizeTheme.CustomizeThemeViewModel(null!);
-        foreach (var config in new[]
+        // A control-level ColorPrimary seed re-derives the control's global view, so the resting primary colors follow
+        // it; a ColorPrimaryHover (Map) override replaces only the hover value and leaves the resting colors at the
+        // Ant Design default (spec 7.5).
+        foreach (var (config, buttonColor, frameColor) in new[]
                  {
-                     viewModel.ControlAlgorithmEnabledConfig,
-                     viewModel.ControlAlgorithmDisabledConfig
+                     (viewModel.ControlAlgorithmEnabledConfig, "#00b96b", "#eb2f96"),
+                     (viewModel.ControlAlgorithmDisabledConfig, "#1677ff", "#1677ff")
                  })
         {
             var lineEdit = new AtomUILineEdit
@@ -90,8 +94,8 @@ public class CustomizeThemeShowCasePageTests
                 var contentFrame = lineEdit.GetVisualDescendants()
                                            .OfType<PixelAlignedBorder>()
                                            .Single(control => control.Name == "PART_ContentFrame");
-                BrushColor(button.Background).ShouldBe(Color.Parse("#00b96b"));
-                BrushColor(contentFrame.BorderBrush).ShouldBe(Color.Parse("#eb2f96"));
+                BrushColor(button.Background).ShouldBe(Color.Parse(buttonColor));
+                BrushColor(contentFrame.BorderBrush).ShouldBe(Color.Parse(frameColor));
             });
         }
     }

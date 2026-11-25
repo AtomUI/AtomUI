@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Data;
@@ -11,47 +11,39 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
-public enum FormItemLayout
+// Token-owner transparent part: a FormItem belongs to one Form and has no Own Tokens; its theme reads the Form
+// TokenResource, so Controls[Form] reaches the items, their transitions and the identity-less parts inside them.
+[TokenOwnerTransparent]
+public partial class FormItem : AbstractFormItem, IFormItem
 {
-    Horizontal,
-    Vertical
-}
-
-public partial class FormItem : TemplatedControl, IFormItem
-{
-    public static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent =
-        RoutedEvent.Register<FormItem, FormItemValidateChangedEventArgs>(
-            nameof(ValidateChanged),
-            RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-
-    internal static readonly RoutedEvent<RoutedEventArgs> ValueChangedEvent =
-        RoutedEvent.Register<FormItem, RoutedEventArgs>(nameof(ValueChanged), RoutingStrategies.Bubble);
+    public new static readonly RoutedEvent<FormItemValidateChangedEventArgs> ValidateChangedEvent = AbstractFormItem.ValidateChangedEvent;
 
     internal static readonly RoutedEvent<RoutedEventArgs> DeleteRequestEvent =
         RoutedEvent.Register<FormItem, RoutedEventArgs>(nameof(DeleteRequest), RoutingStrategies.Bubble);
 
     #region 公共属性定义
     
-    public static readonly StyledProperty<object?> ExtraProperty =
-        AvaloniaProperty.Register<FormItem, object?>(nameof(Extra));
+    public new static readonly StyledProperty<object?> ExtraProperty =
+        AbstractFormItem.ExtraProperty.AddOwner<FormItem>();
 
-    public static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty =
-        AvaloniaProperty.Register<FormItem, IDataTemplate?>(nameof(ExtraTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty =
+        AbstractFormItem.ExtraTemplateProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<string?> HelpProperty =
-        AvaloniaProperty.Register<FormItem, string?>(nameof(Help));
+    public new static readonly StyledProperty<string?> HelpProperty =
+        AbstractFormItem.HelpProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
-        Form.IsValidateFeedbackEnabledProperty.AddOwner<FormItem>();
+    public new static readonly StyledProperty<bool> IsValidateFeedbackEnabledProperty =
+        AbstractFormItem.IsValidateFeedbackEnabledProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<object?> InitialValueProperty =
-        AvaloniaProperty.Register<FormItem, object?>(nameof(InitialValue));
+    public new static readonly StyledProperty<object?> InitialValueProperty =
+        AbstractFormItem.InitialValueProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<string?> LabelTextProperty =
-        AvaloniaProperty.Register<FormItem, string?>(nameof(LabelText));
+    public new static readonly StyledProperty<string?> LabelTextProperty =
+        AbstractFormItem.LabelTextProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<FormLabelAlign> LabelAlignProperty =
         Form.LabelAlignProperty.AddOwner<FormItem>();
@@ -65,14 +57,14 @@ public partial class FormItem : TemplatedControl, IFormItem
     public static readonly StyledProperty<MediaBreakGridLength?> WrapperColInfoProperty =
         Form.WrapperColInfoProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<string?> FieldNameProperty =
-        AvaloniaProperty.Register<FormItem, string?>(nameof(FieldName));
+    public new static readonly StyledProperty<string?> FieldNameProperty =
+        AbstractFormItem.FieldNameProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<bool> IsRequiredProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(IsRequired));
+    public new static readonly StyledProperty<bool> IsRequiredProperty =
+        AbstractFormItem.IsRequiredProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<IList<IFormValidator>?> ValidatorsProperty =
-        AvaloniaProperty.Register<FormItem, IList<IFormValidator>?>(nameof(Validators));
+    public new static readonly StyledProperty<IList<IFormValidator>?> ValidatorsProperty =
+        AbstractFormItem.ValidatorsProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<string?> TooltipProperty =
         AvaloniaProperty.Register<FormItem, string?>(nameof(Tooltip));
@@ -80,69 +72,65 @@ public partial class FormItem : TemplatedControl, IFormItem
     public static readonly StyledProperty<PathIcon?> TooltipIconProperty =
         AvaloniaProperty.Register<FormItem, PathIcon?>(nameof(TooltipIcon));
     
-    public static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
-        Form.ValidateTriggerProperty.AddOwner<FormItem>();
+    public new static readonly StyledProperty<FormValidateTrigger> ValidateTriggerProperty =
+        AbstractFormItem.ValidateTriggerProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<TimeSpan> ValidateDebounceProperty =
-        AvaloniaProperty.Register<FormItem, TimeSpan>(nameof(ValidateDebounce), TimeSpan.Zero);
+    public new static readonly StyledProperty<TimeSpan> ValidateDebounceProperty =
+        AbstractFormItem.ValidateDebounceProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<FormValidateStrategy> ValidateStrategyProperty =
-        AvaloniaProperty.Register<FormItem, FormValidateStrategy>(nameof(ValidateStrategy), FormValidateStrategy.StopWhenFirstFailed);
+    public new static readonly StyledProperty<FormValidateStrategy> ValidateStrategyProperty =
+        AbstractFormItem.ValidateStrategyProperty.AddOwner<FormItem>();
     
-    public static readonly DirectProperty<FormItem, FormValidateStatus> ValidateStatusProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, FormValidateStatus>(
-            nameof(ValidateStatus),
-            o => o.ValidateStatus);
+    public new static readonly DirectProperty<FormItem, FormValidateStatus> ValidateStatusProperty =
+        AbstractFormItem.ValidateStatusProperty.AddOwner<FormItem>(owner => owner.ValidateStatus);
     
-    public static readonly DirectProperty<FormItem, FormValidateResult> ValidateResultProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, FormValidateResult>(
-            nameof(ValidateResult),
-            o => o.ValidateResult);
+    public new static readonly DirectProperty<FormItem, FormValidateResult> ValidateResultProperty =
+        AbstractFormItem.ValidateResultProperty.AddOwner<FormItem>(owner => owner.ValidateResult);
     
-    public static readonly StyledProperty<FormItemLayout> LayoutProperty =
-        AvaloniaProperty.Register<FormItem, FormItemLayout>(nameof(Layout), FormItemLayout.Horizontal);
+    public new static readonly StyledProperty<FormItemLayout> LayoutProperty =
+        AbstractFormItem.LayoutProperty.AddOwner<FormItem>();
     
     public static readonly StyledProperty<double> ChildrenSpacingProperty =
         AvaloniaProperty.Register<FormItem, double>(nameof(ChildrenSpacing));
     
-    public static readonly StyledProperty<Control?> ContentProperty =
-        AvaloniaProperty.Register<FormItem, Control?>(nameof(Content));
+    public new static readonly StyledProperty<Control?> ContentProperty =
+        AbstractFormItem.ContentProperty.AddOwner<FormItem>();
     
-    public static readonly StyledProperty<bool> IsValidateContentTypeProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValidateContentType), true);
+    public new static readonly StyledProperty<bool> IsValidateContentTypeProperty =
+        AbstractFormItem.IsValidateContentTypeProperty.AddOwner<FormItem>();
     
     [DependsOn(nameof(ExtraTemplate))]
-    public object? Extra
+    public new object? Extra
     {
         get => GetValue(ExtraProperty);
         set => SetValue(ExtraProperty, value);
     }
     
-    public IDataTemplate? ExtraTemplate
+    public new IDataTemplate? ExtraTemplate
     {
         get => GetValue(ExtraTemplateProperty);
         set => SetValue(ExtraTemplateProperty, value);
     }
     
-    public string? Help
+    public new string? Help
     {
         get => GetValue(HelpProperty);
         set => SetValue(HelpProperty, value);
     }
     
-    public bool IsValidateFeedbackEnabled
+    public new bool IsValidateFeedbackEnabled
     {
         get => GetValue(IsValidateFeedbackEnabledProperty);
         set => SetValue(IsValidateFeedbackEnabledProperty, value);
     }
     
-    public object? InitialValue
+    public new object? InitialValue
     {
         get => GetValue(InitialValueProperty);
         set => SetValue(InitialValueProperty, value);
     }
     
-    public string? LabelText
+    public new string? LabelText
     {
         get => GetValue(LabelTextProperty);
         set => SetValue(LabelTextProperty, value);
@@ -172,19 +160,19 @@ public partial class FormItem : TemplatedControl, IFormItem
         set => SetValue(WrapperColInfoProperty, value);
     }
 
-    public string? FieldName
+    public new string? FieldName
     {
         get => GetValue(FieldNameProperty);
         set => SetValue(FieldNameProperty, value);
     }
     
-    public bool IsRequired
+    public new bool IsRequired
     {
         get => GetValue(IsRequiredProperty);
         set => SetValue(IsRequiredProperty, value);
     }
     
-    public IList<IFormValidator>? Validators
+    public new IList<IFormValidator>? Validators
     {
         get => GetValue(ValidatorsProperty);
         set => SetValue(ValidatorsProperty, value);
@@ -202,41 +190,33 @@ public partial class FormItem : TemplatedControl, IFormItem
         set => SetValue(TooltipIconProperty, value);
     }
     
-    public FormValidateTrigger ValidateTrigger
+    public new FormValidateTrigger ValidateTrigger
     {
         get => GetValue(ValidateTriggerProperty);
         set => SetValue(ValidateTriggerProperty, value);
     }
     
-    public TimeSpan ValidateDebounce
+    public new TimeSpan ValidateDebounce
     {
         get => GetValue(ValidateDebounceProperty);
         set => SetValue(ValidateDebounceProperty, value);
     }
     
-    public FormValidateStrategy ValidateStrategy
+    public new FormValidateStrategy ValidateStrategy
     {
         get => GetValue(ValidateStrategyProperty);
         set => SetValue(ValidateStrategyProperty, value);
     }
     
-    private FormValidateStatus _validateStatus = FormValidateStatus.Default;
-
-    public FormValidateStatus ValidateStatus
+    public new FormValidateStatus ValidateStatus
     {
-        get => _validateStatus;
-        set => SetAndRaise(ValidateStatusProperty, ref _validateStatus, value);
+        get => base.ValidateStatus;
+        set => base.ValidateStatus = value;
     }
-    
-    private FormValidateResult _validateResult = FormValidateResult.Success;
 
-    public FormValidateResult ValidateResult
-    {
-        get => _validateResult;
-        private set => SetAndRaise(ValidateResultProperty, ref _validateResult, value);
-    }
-    
-    public FormItemLayout Layout
+    public new FormValidateResult ValidateResult => base.ValidateResult;
+
+    public new FormItemLayout Layout
     {
         get => GetValue(LayoutProperty);
         set => SetValue(LayoutProperty, value);
@@ -249,13 +229,13 @@ public partial class FormItem : TemplatedControl, IFormItem
     }
     
     [Content]
-    public Control? Content
+    public new Control? Content
     {
         get => GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
     
-    public bool IsValidateContentType
+    public new bool IsValidateContentType
     {
         get => GetValue(IsValidateContentTypeProperty);
         set => SetValue(IsValidateContentTypeProperty, value);
@@ -264,7 +244,7 @@ public partial class FormItem : TemplatedControl, IFormItem
 
     #region 公共事件定义
 
-    public event EventHandler<FormItemValidateChangedEventArgs>? ValidateChanged
+    public new event EventHandler<FormItemValidateChangedEventArgs>? ValidateChanged
     {
         add => AddHandler(ValidateChangedEvent, value);
         remove => RemoveHandler(ValidateChangedEvent, value);
@@ -288,26 +268,18 @@ public partial class FormItem : TemplatedControl, IFormItem
             o => o.IsColonVisible,
             (o, v) => o.IsColonVisible = v);
     
-    internal static readonly StyledProperty<bool> IsValueItemProperty =
-        AvaloniaProperty.Register<FormItem, bool>(nameof(IsValueItem), true);
+    internal new static readonly StyledProperty<bool> IsValueItemProperty =
+        AbstractFormItem.IsValueItemProperty.AddOwner<FormItem>();
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FormItem>();
     
-    internal static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
-        Form.RequiredMarkProperty.AddOwner<FormItem>();
+    internal new static readonly StyledProperty<FormRequiredMark> RequiredMarkProperty =
+        AbstractFormItem.RequiredMarkProperty.AddOwner<FormItem>();
     
-    internal static readonly DirectProperty<FormItem, IList<string>?> ValidateErrorMessagesProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, IList<string>?>(
-            nameof(ValidateErrorMessages),
-            o => o.ValidateErrorMessages,
-            (o, v) => o.ValidateErrorMessages = v);
+
     
-    internal static readonly DirectProperty<FormItem, IList<string>?> ValidateWarningMessagesProperty =
-        AvaloniaProperty.RegisterDirect<FormItem, IList<string>?>(
-            nameof(ValidateWarningMessages),
-            o => o.ValidateWarningMessages,
-            (o, v) => o.ValidateWarningMessages = v);
+
     
     internal static readonly StyledProperty<object?> CustomRequireMarkProperty =
         Form.CustomRequireMarkProperty.AddOwner<FormItem>();
@@ -384,8 +356,8 @@ public partial class FormItem : TemplatedControl, IFormItem
             o => o.ItemDeleteButtonIconTemplate,
             (o, v) => o.ItemDeleteButtonIconTemplate = v);
     
-    internal static readonly StyledProperty<FormLayout> FormLayoutProperty =
-        AvaloniaProperty.Register<FormItem, FormLayout>(nameof(FormLayout));
+    internal new static readonly StyledProperty<FormLayout> FormLayoutProperty =
+        AbstractFormItem.FormLayoutProperty.AddOwner<FormItem>();
     
     public static readonly DirectProperty<FormItem, bool> IsHideItemLabelProperty =
         AvaloniaProperty.RegisterDirect<FormItem, bool>(
@@ -426,35 +398,18 @@ public partial class FormItem : TemplatedControl, IFormItem
     }
     
     // 如果这个 FormItem 设置了 Label 和 FieldName 那么就是一个 ValueItem
-    internal bool IsValueItem
+    internal new bool IsValueItem
     {
         get => GetValue(IsValueItemProperty);
         set => SetValue(IsValueItemProperty, value);
     }
     
-    internal FormRequiredMark RequiredMark
+    internal new FormRequiredMark RequiredMark
     {
         get => GetValue(RequiredMarkProperty);
         set => SetValue(RequiredMarkProperty, value);
     }
     
-    private IList<string>? _validateErrorMessages;
-
-    internal IList<string>? ValidateErrorMessages
-    {
-        get => _validateErrorMessages;
-        set => SetAndRaise(ValidateErrorMessagesProperty, ref _validateErrorMessages, value);
-    }
-    
-    private IList<string>? _validateWarningMessages;
-
-    internal IList<string>? ValidateWarningMessages
-    {
-        get => _validateWarningMessages;
-        set => SetAndRaise(ValidateWarningMessagesProperty, ref _validateWarningMessages, value);
-    }
-    
-    [DependsOn(nameof(CustomRequireMarkTemplate))]
     internal object? CustomRequireMark
     {
         get => GetValue(CustomRequireMarkProperty);
@@ -570,7 +525,7 @@ public partial class FormItem : TemplatedControl, IFormItem
         set => SetAndRaise(ItemDeleteButtonIconTemplateProperty, ref _itemDeleteButtonIconTemplate, value);
     }
     
-    public FormLayout FormLayout
+    public new FormLayout FormLayout
     {
         get => GetValue(FormLayoutProperty);
         set => SetValue(FormLayoutProperty, value);
@@ -614,7 +569,11 @@ public partial class FormItem : TemplatedControl, IFormItem
     private CompositeDisposable? _disposables;
     private FormValidateFeedback? _feedback;
     private IDisposable? _feedbackDisposable;
-    internal Form? OwnerForm;
+    internal new Form? OwnerForm
+    {
+        get => base.OwnerForm as Form;
+        set => base.OwnerForm = value;
+    }
     private IMediaBreakAwareControl? _mediaOwner;
     
     static FormItem()
@@ -646,32 +605,12 @@ public partial class FormItem : TemplatedControl, IFormItem
         }
     }
 
-    protected virtual void NotifyContentAdded(AvaloniaPropertyChangedEventArgs change)
+    protected override void NotifyContentAdded(AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.OldValue is Control oldControl)
-        {
-            FormDataValidationErrors.ClearFormErrors(oldControl);
-        }
-        if (change.OldValue is IFormItemAware oldFormItemAware)
-        {
-            oldFormItemAware.ValueChanged -= HandleContentValueChanged;
-        }
-        if (change.OldValue is IFormItemFeedbackAware oldFeedbackAware)
-        {
-            oldFeedbackAware.SetFeedbackControl(null);
-        }
+        base.NotifyContentAdded(change);
         _disposables?.Dispose();
-        _disposables = null;
-        
-        if (change.NewValue is IFormItemAware newFormItemAware)
-        {
-            newFormItemAware.ValueChanged += HandleContentValueChanged;
-        }
-        else if (IsValidateContentType)
-        {
-            throw new Exception($"Form item content: {change.NewValue?.GetType().FullName} not implement IFormItemAware interface");
-        }
-        
+        // Content is supplied at runtime and can be any form-aware control, outside this ControlTemplate. ControlTheme
+        // cannot bind these interface-selected targets; replacing Content disposes the previous bindings.
         _disposables = new CompositeDisposable();
         if (Content is not null)
         {
@@ -693,58 +632,13 @@ public partial class FormItem : TemplatedControl, IFormItem
         }
     }
 
-    protected override void OnLostFocus(FocusChangedEventArgs e)
-    {
-        base.OnLostFocus(e);
-        Debug.Assert(OwnerForm != null);
-        if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnBlur)
-        {
-            ValidateValueDefer();
-        }
-    }
+    protected override void OnLostFocus(FocusChangedEventArgs e) => base.OnLostFocus(e);
 
-    private void HandleContentValueChanged(object? sender, EventArgs e)
-    {
-        if (OwnerForm != null)
-        {
-            if (!OwnerForm.IsResetting && ValidateTrigger == FormValidateTrigger.OnChanged)
-            {
-                ValidateValueDefer();
-            }
-            RaiseEvent(new RoutedEventArgs(ValueChangedEvent, this));
-        }
-    }
+    public new object? GetItemValue() => base.GetItemValue();
 
-    public object? GetItemValue()
-    {
-        if (Content is IFormItemAware formItemAware)
-        {
-            return formItemAware.GetFormValue();
-        }
-        return null;
-    }
+    public new void SetItemValue(object? value) => base.SetItemValue(value);
 
-    public void SetItemValue(object? value)
-    {
-        if (Content is IFormItemAware formItemAware)
-        {
-            formItemAware.SetFormValue(value);
-        }
-    }
-
-    public void ResetItemValue()
-    {
-        CancelPendingValidation();
-        if (Content is IFormItemAware formItemAware)
-        { 
-            formItemAware.ClearFormValue();
-            ResetValidationState(formItemAware);
-        }
-        else
-        {
-            ResetValidationState(null);
-        }
-    }
+    public new void ResetItemValue() => base.ResetItemValue();
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -762,16 +656,6 @@ public partial class FormItem : TemplatedControl, IFormItem
             change.Property == IsHideItemLabelProperty)
         {
             ConfigureLayout();
-        }
-
-        if (change.Property == ContentProperty)
-        {
-            NotifyContentAdded(change);
-        }
-        else if (change.Property == FieldNameProperty ||
-                 change.Property == LabelTextProperty)
-        {
-            IsValueItem = !string.IsNullOrWhiteSpace(FieldName) && !string.IsNullOrWhiteSpace(LabelText);
         }
 
         if (change.Property == CustomRequireMarkProperty)
@@ -900,7 +784,6 @@ public partial class FormItem : TemplatedControl, IFormItem
             _mediaOwner.MediaBreakPointChanged -= HandleMediaBreakChanged;
         }
 
-        CancelPendingValidation();
         _mediaOwner = null;
     }
     
@@ -1000,13 +883,21 @@ public partial class FormItem : TemplatedControl, IFormItem
         return gridLength;
     }
     
-    internal virtual bool IsSkipValidate()
+    internal override bool IsSkipValidate()
     {
         return !IsVisible;
     }
 
-    protected internal virtual void NotifyFormItemChanged(IFormItem formItem)
+    protected internal override void NotifyFormItemChanged(IFormItem formItem)
     {
+    }
+
+    protected override bool IsField => base.IsField && !string.IsNullOrWhiteSpace(LabelText);
+
+    protected override void OnValidationMessagesChanged()
+    {
+        HasErrorOrWarningMsg = ValidateErrorMessages?.Count > 0 || ValidateWarningMessages?.Count > 0 || !string.IsNullOrWhiteSpace(Help);
+        BuildMessageItems();
     }
 
     private void HandleFeedbackTemplateChanged()

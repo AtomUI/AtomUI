@@ -6,6 +6,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
@@ -30,6 +32,29 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         AvaloniaProperty.RegisterDirect<RangeInfoPickerInput, RangeActivatedPart>(nameof(RangeActivatedPart),
             o => o.RangeActivatedPart);
     
+    /// <summary>
+    /// Size of the range arrow between the two inputs. The arrow is a registered Icon, so an owner read on it would resolve
+    /// to the Icon identity: the theme reads the picker's values on the picker and template-binds them to the arrow.
+    /// </summary>
+    internal static readonly StyledProperty<double> RangeArrowSizeProperty =
+        AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangeArrowSize), double.NaN);
+
+    /// <summary>Brush of the range arrow (read on the picker for the same reason as <see cref="RangeArrowSize"/>).</summary>
+    internal static readonly StyledProperty<IBrush?> RangeArrowBrushProperty =
+        AvaloniaProperty.Register<RangeInfoPickerInput, IBrush?>(nameof(RangeArrowBrush));
+
+    internal double RangeArrowSize
+    {
+        get => GetValue(RangeArrowSizeProperty);
+        set => SetValue(RangeArrowSizeProperty, value);
+    }
+
+    internal IBrush? RangeArrowBrush
+    {
+        get => GetValue(RangeArrowBrushProperty);
+        set => SetValue(RangeArrowBrushProperty, value);
+    }
+
     internal static readonly StyledProperty<double> RangePickerIndicatorOpacityProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangePickerIndicatorOpacity), 0d);
     
@@ -121,14 +146,30 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (RangePickerIndicator is not null)
+        {
+            RangePickerIndicator.PropertyChanged -= HandleIndicatorPropertyChanged;
+        }
+
         SecondaryInfoInputBox = e.NameScope.Get<TextBox>("PART_SecondaryInfoInputBox");
         RangePickerIndicator  = e.NameScope.Get<Rectangle>("PART_RangePickerIndicator");
+        RangePickerIndicator.PropertyChanged += HandleIndicatorPropertyChanged;
         RangePickerArrow = e.NameScope.Get<PathIcon>("PART_RangePickerArrow");
         if (PickerPopup != null)
         {
             PickerPopup.OverlayInputPassThroughElement = DecoratedBox;
         }
         _transitionInitialization.CompleteInitialization();
+    }
+
+    // The active bar sits on the bottom edge (offset = frame height - bar height, computed in MeasureOverride): a new
+    // thickness from the theme must re-measure, or the bar grows below the frame.
+    private void HandleIndicatorPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property == HeightProperty)
+        {
+            InvalidateMeasure();
+        }
     }
 
     private bool IsPointerInTextBox(TextBox? textBox, Point position, double? contentStartOffsetX)
@@ -176,9 +217,58 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         if (change.Property == RangeActivatedPartProperty)
         {
             NotifyRangeActivatedPartChanged();
+            SyncKeyboardFocusToActivatedPart();
         }
     }
     
+    // The activated part and the focused input stay in step, as in Ant Design: tabbing into an input activates its
+    // part, and a part switch made by the editor (for example after the start date is chosen) moves focus with it.
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, InfoInputBox))
+        {
+            SetRangeActivatedPart(RangeActivatedPart.Start);
+        }
+        else if (ReferenceEquals(e.Source, SecondaryInfoInputBox))
+        {
+            SetRangeActivatedPart(RangeActivatedPart.End);
+        }
+    }
+
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        base.OnLostFocus(e);
+        if (!IsPickerOpen && !IsPickerElement(e.NewFocusedElement))
+        {
+            SetRangeActivatedPart(RangeActivatedPart.None);
+        }
+    }
+
+    private protected override bool IsPickerInputElement(object? source) =>
+        base.IsPickerInputElement(source) ||
+        source is Visual visual && SecondaryInfoInputBox is not null &&
+        (ReferenceEquals(visual, SecondaryInfoInputBox) || SecondaryInfoInputBox.IsVisualAncestorOf(visual));
+
+    /// <summary>The input of the activated part, or null when no part is active.</summary>
+    private protected TextBox? ActivatedInputBox => RangeActivatedPart switch
+    {
+        RangeActivatedPart.Start => InfoInputBox,
+        RangeActivatedPart.End => SecondaryInfoInputBox,
+        _ => null
+    };
+
+    private void SyncKeyboardFocusToActivatedPart()
+    {
+        var target = ActivatedInputBox;
+        var focused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement();
+        if (target is not null && !ReferenceEquals(focused, target) &&
+            (ReferenceEquals(focused, InfoInputBox) || ReferenceEquals(focused, SecondaryInfoInputBox)))
+        {
+            target.Focus(NavigationMethod.Tab);
+        }
+    }
+
     protected override void OnPointerReleased(PointerReleasedEventArgs args)
     {
         if (args.Source == this
@@ -364,7 +454,7 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         if (DecoratedBox is not null)
         {
             SetClearButtonVisibleIfChanged(
-                DecoratedBox.IsInnerBoxHover &&
+                IsClearButtonRevealed &&
                 InfoInputBox?.IsReadOnly == false &&
                 InfoInputBox.Text?.Length > 0 &&
                 SecondaryInfoInputBox?.IsReadOnly == false &&

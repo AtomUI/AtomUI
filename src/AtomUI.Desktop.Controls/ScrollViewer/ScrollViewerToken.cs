@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -6,83 +5,36 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ScrollViewerToken : AbstractControlDesignToken
+public sealed partial class ScrollViewerToken : AbstractControlDesignToken
 {
     
-    /// <summary>
-    /// 极简模式下，滚动条滑块的粗细
-    /// </summary>
-    public double LiteModeThumbThickness { get; set; }
+    /// <summary>Thickness of the scroll bar thumb in lite mode.</summary>
+    public partial double LiteModeThumbThickness { get; set; }
     
-    /// <summary>
-    /// 正常模式下，滚动条滑块的粗细
-    /// </summary>
-    public double NormalModeThumbThickness { get; set; }
+    /// <summary>Thickness of the scroll bar thumb in normal mode.</summary>
+    public partial double NormalModeThumbThickness { get; set; }
     
-    /// <summary>
-    /// 滚动条滑块的圆角大小
-    /// </summary>
-    public CornerRadius ThumbCornerRadius { get; set; }
+    /// <summary>Corner radius of a scroll bar thumb.</summary>
+    public partial CornerRadius ThumbCornerRadius { get; set; }
 
-    /// <summary>
-    /// 指示器滚动条滑块的圆角大小。
-    /// </summary>
-    public CornerRadius IndicatorThumbCornerRadius { get; set; }
+    /// <summary>Corner radius of an indicator scroll bar thumb.</summary>
+    public partial CornerRadius IndicatorThumbCornerRadius { get; set; }
 
-    /// <summary>
-    /// 滚动条滑块背景颜色
-    /// </summary>
-    public Color ThumbBg { get; set; }
+    /// <summary>Resting background color of a scroll bar thumb.</summary>
+    public partial Color ThumbBg { get; set; }
 
-    /// <summary>
-    /// 滚动条滑块鼠标 hover 背景颜色
-    /// </summary>
-    public Color ThumbHoverBg { get; set; }
+    /// <summary>Background color of a scroll bar thumb under the pointer.</summary>
+    public partial Color ThumbHoverBg { get; set; }
     
-    /// <summary>
-    /// 滚动条滑块鼠标按下的背景颜色
-    /// </summary>
-    public Color ThumbActiveBg { get; set; }
+    /// <summary>Background color of a pressed scroll bar thumb.</summary>
+    public partial Color ThumbActiveBg { get; set; }
     
     #region 内部 Token 定义
-    /// <summary>
-    /// 水平滚动条内间距
-    /// </summary>
-    public Thickness ScrollBarContentHPadding { get; set; }
+    /// <summary>Insets of the content frame in a horizontal scroll bar.</summary>
+    public partial Thickness ScrollBarContentHPadding { get; set; }
     
-    /// <summary>
-    /// 垂直滚动条内间距
-    /// </summary>
-    public Thickness ScrollBarContentVPadding { get; set; }
+    /// <summary>Insets of the content frame in a vertical scroll bar.</summary>
+    public partial Thickness ScrollBarContentVPadding { get; set; }
+    
     #endregion
-    
-    public ScrollViewerToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        LiteModeThumbThickness   = EffectiveGlobalToken.LineWidthBold;
-        NormalModeThumbThickness = EffectiveGlobalToken.SizeXS;
-
-        if (isDarkMode)
-        {
-            ThumbBg       = EffectiveGlobalToken.ColorBorder;
-            ThumbHoverBg  = ThumbBg.Lighten();
-            ThumbActiveBg = ThumbHoverBg.Lighten();
-        }
-        else
-        {
-            ThumbBg       = EffectiveGlobalToken.ColorBorder;
-            ThumbHoverBg  = ThumbBg.Darken();
-            ThumbActiveBg = ThumbHoverBg.Darken();
-        }
-        ThumbCornerRadius        = new CornerRadius(NormalModeThumbThickness / 2);
-        IndicatorThumbCornerRadius = new CornerRadius(LiteModeThumbThickness / 2);
-        ScrollBarContentHPadding = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0d);
-        ScrollBarContentVPadding = new Thickness(0d, EffectiveGlobalToken.UniformlyPaddingXXS);
-    }
-    
 }

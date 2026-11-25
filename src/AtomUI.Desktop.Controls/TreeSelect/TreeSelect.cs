@@ -260,6 +260,19 @@ public partial class TreeSelect : AbstractSelect
 
     #region 内部属性定义
 
+    /// <summary>
+    /// Lower bound of the drop-down width, resolved from <c>TreeSelectToken.MinPopupWidth</c> by the theme; the
+    /// effective popup width is the larger of it and the matched select width.
+    /// </summary>
+    internal static readonly StyledProperty<double> MinPopupWidthProperty =
+        AvaloniaProperty.Register<TreeSelect, double>(nameof(MinPopupWidth));
+
+    internal double MinPopupWidth
+    {
+        get => GetValue(MinPopupWidthProperty);
+        set => SetValue(MinPopupWidthProperty, value);
+    }
+
     internal static readonly StyledProperty<SelectionMode> TreeViewSelectionModeProperty =
         AvaloniaProperty.Register<TreeSelect, SelectionMode>(nameof (TreeViewSelectionMode));
 
@@ -348,6 +361,7 @@ public partial class TreeSelect : AbstractSelect
         });
         SelectFilterTextBox.TextChangedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleSearchInputTextChanged(e));
         SelectTag.ClosedEvent.AddClassHandler<TreeSelect>((view, e) => view.HandleTagCloseRequest(e));
+        ConfigureKeyboardNavigation();
         ItemsSourceProperty.Changed.AddClassHandler<TreeSelect>((view, args) => view.HandleItemsSourceChanged(args));
         SelectedItemProperty.Changed.AddClassHandler<TreeSelect>((view, args) =>
             view.HandleSelectedItemChanged(args));
@@ -396,6 +410,12 @@ public partial class TreeSelect : AbstractSelect
         base.OnDetachedFromVisualTree(e);
     }
 
+    protected override void ConfigurePopupMinWith(double selectWidth)
+    {
+        var matchedWidth = IsPopupMatchSelectWidth ? selectWidth : 0.0;
+        SetCurrentValue(EffectivePopupWidthProperty, Math.Max(matchedWidth, MinPopupWidth));
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -409,7 +429,8 @@ public partial class TreeSelect : AbstractSelect
         {
             UpdatePseudoClasses();
         }
-        else if (change.Property == IsPopupMatchSelectWidthProperty)
+        else if (change.Property == IsPopupMatchSelectWidthProperty ||
+                 change.Property == MinPopupWidthProperty)
         {
             ConfigurePopupMinWith(DesiredSize.Width);
         }
@@ -522,7 +543,10 @@ public partial class TreeSelect : AbstractSelect
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment   = VerticalAlignment.Stretch,
                 NodeHoverMode       = TreeItemHoverMode.Block,
-                ItemsSource         = BuildItemsSourceList(Items)
+                ItemsSource         = BuildItemsSourceList(Items),
+                // Focus stays in TreeSelect; keys are forwarded and only Enter / Space commit.
+                Focusable                      = false,
+                IsKeyboardMoveSelectionEnabled = false
             };
             treeView.Classes.Add(TreeSelectSemanticParts.PopupListClass);
             treeView.SetTemplatedParent(this);
@@ -562,6 +586,7 @@ public partial class TreeSelect : AbstractSelect
     protected override void PopupClosed(object? sender, EventArgs e)
     {
         base.PopupClosed(sender, e);
+        _treeView?.ClearKeyboardActiveItem();
         if (!IsMultiple)
         {
             FilterValue = null;

@@ -43,8 +43,8 @@ Select 是唯一 Semantic owner，公开 13 个 Semantic Part（语义对齐：`
 | 稳定性 | stable since 6.2.0 |
 
 **根边框与背景定制：** 可见外框由共享 `AddOnDecoratedBox` 帧绘制，其状态机拥有 `BorderBrush` 与
-`Background`。owner 的 `BorderBrush` / `Background` 会以 LocalValue 中继到帧节点生效（对齐上游 root
-border/background 语义与输入族 `AbstractTextInput.RelayRootSurfaceBrush` 行为），因此在 owner-scoped Style
+`Background`。owner 的 `BorderBrush` / `Background` 由模板绑定到帧的 `HostBorderBrush` / `HostBackground`，帧主题在全部
+状态画刷之后把它们投射到帧上（对齐上游 root border/background 语义与输入族的根表面投射），因此在 owner-scoped Style
 里直接写根 `Setter Property="BorderBrush"` / `Property="Background"` 即可定制外框：
 
 ```xml
@@ -54,9 +54,8 @@ border/background 语义与输入族 `AbstractTextInput.RelayRootSurfaceBrush` �
 </Style>
 ```
 
-定制期间该属性槽的 hover / focus / open 变色冻结（LocalValue 优先于帧状态机），focus 的 `BoxShadow` 光晕不受
-影响；置空（或不设置）后恢复帧状态机。中继带接管标记：仅当本控件实际写入过该槽位时才在置空时清除，因此嵌套
-owner 不会被外层清除。
+定制期间外框的 hover / focus / open 变色让位于根画刷，focus 的 `BoxShadow` 光晕不受影响；置空（或不设置）后恢复帧
+状态机。投射发生在控件自身的模板内，嵌套 owner 各自投射到自己的帧。
 
 
 #### `prefix`
@@ -156,11 +155,12 @@ owner 不会被外层清除。
 | AtomUI 节点 | `SelectTheme.axaml` 中 `ContentRightAddOn` StackPanel |
 | 职责 | 内容后缀区域，承载最大数量指示、用户 `ContentRightAddOn` 与选择 handle。 |
 | 相关 API | `ContentRightAddOn`、`ContentRightAddOnTemplate`、`MaxCount` |
-| 相关 Token | SharedToken `ColorTextQuaternary`（默认前景） |
+| 相关 Token | SharedToken `ColorTextQuaternary`（默认前景）、`ColorTextDescription`（Shadcn Luma 默认前景） |
 | 稳定性 | stable since 6.2.0 |
 
-suffix 区默认前景色为 `ColorTextQuaternary`，下拉指示箭头（SelectHandle 内图标）与后缀内容跟随该颜色：
-在 `SelectSuffixStyle` 上设置 `TextElement.Foreground` 即可同时定制箭头与后缀内容颜色（例如
+下拉指示箭头与后缀内容继承 suffix 区的默认前景色 `ColorTextQuaternary`。Shadcn Luma 默认使用
+`ColorTextDescription` 对应上游的 `muted-foreground`，应用显式提供的 `ColorTextQuaternary` 优先。
+在 `SelectSuffixStyle` 上设置 `TextElement.Foreground` 可以同时定制箭头与后缀内容颜色（例如
 `#1890FF` 蓝色箭头，与上游语义样式示例一致）。清除按钮、表单校验反馈与最大数量指示各自维护颜色，
 不随该前景色变化。
 

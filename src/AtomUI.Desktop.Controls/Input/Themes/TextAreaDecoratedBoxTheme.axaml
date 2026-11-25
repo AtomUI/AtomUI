@@ -18,7 +18,9 @@
                                                     Background="{TemplateBinding Background}"
                                                     BoxShadow="{TemplateBinding BoxShadow}"
                                                     BackgroundSizing="InnerBorderEdge">
+                    <!-- Content is clipped inside the frame so the frame's outer focus shadow stays visible. -->
                     <Border Name="TextAreaContentFrame"
+                            ClipToBounds="True"
                             Padding="{TemplateBinding TextAreaFramePadding, Converter={StaticResource TextAreaFramePaddingConverter}}">
                         <DockPanel Name="ContentLayout" LastChildFill="True">
                             <atom:AddOnContentPresenter
@@ -31,7 +33,7 @@
                                 Focusable="False"
                                 Content="{TemplateBinding ContentLeftAddOn}"
                                 ContentTemplate="{TemplateBinding ContentLeftAddOnTemplate}" />
-                            <Panel>
+                            <Panel Name="ScrollViewerLayout">
                                 <atom:ScrollViewer Name="PART_ScrollViewer"
                                                    IsLiteMode="{TemplateBinding atom:ScrollViewer.IsLiteMode}"
                                                    AllowAutoHide="{TemplateBinding atom:ScrollViewer.AllowAutoHide}"
@@ -64,9 +66,9 @@
             <Setter Property="atom:ScrollViewer.IsLiteMode" Value="True" />
             <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
             <Setter Property="VerticalAlignment" Value="Stretch" />
-            <Setter Property="ClipToBounds" Value="True" />
-            <Setter Property="ResizeIndicatorLineBrush"
-                    Value="{atom:TextAreaTokenResource ResizeIndicatorLineColor}" />
+            <Setter Property="ClipToBounds" Value="False" />
+            <!-- The content presenter sits inside the registered ScrollViewer, whose identity owner reads would resolve
+                 to; its line box reads the TextArea values explicitly (the base frame theme sets the same values). -->
             <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentLeftAddOn">
                 <Setter Property="Margin" Value="{atom:TextAreaTokenResource LeftInnerAddOnMargin}" />
             </Style>
@@ -75,7 +77,11 @@
                     <Setter Property="Padding" Value="0" />
                 </Style>
                 <Setter Property="TextAreaFramePadding"
-                        Value="{atom:SharedTokenResource InputPaddingLG}" />
+                        Value="{atom:OwnerTokenResource InputPaddingLG}" />
+                <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightLG}" />
+                    <Setter Property="MinHeight" Value="{atom:TextAreaTokenResource FontHeightLG}" />
+                </Style>
                 <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPaddingLG}" />
                 </Style>
@@ -85,7 +91,11 @@
                     <Setter Property="Padding" Value="0" />
                 </Style>
                 <Setter Property="TextAreaFramePadding"
-                        Value="{atom:SharedTokenResource InputPadding}" />
+                        Value="{atom:OwnerTokenResource InputPadding}" />
+                <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeight}" />
+                    <Setter Property="MinHeight" Value="{atom:TextAreaTokenResource FontHeight}" />
+                </Style>
                 <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPadding}" />
                 </Style>
@@ -98,7 +108,12 @@
                     <Setter Property="Padding" Value="{atom:TextAreaTokenResource RightAddOnPaddingSM}" />
                 </Style>
                 <Setter Property="TextAreaFramePadding"
-                        Value="{atom:SharedTokenResource InputPaddingSM}" />
+                        Value="{atom:OwnerTokenResource InputPaddingSM}" />
+                <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="LineHeight" Value="{atom:TextAreaTokenResource FontHeightSM}" />
+                    <Setter Property="MinHeight" Value="{atom:TextAreaTokenResource FontHeightSM}" />
+                    <Setter Property="Margin" Value="{atom:TextAreaTokenResource InputContentMargin}" />
+                </Style>
             </Style>
 
         </Style>

@@ -228,7 +228,7 @@ WindowNotificationManager (root，对应上游 list)
 | AtomUI 节点 | NotificationCard 模板中的 `IconButton#PART_CloseButton` |
 | 职责 | 关闭按钮覆盖元素：位置（右上角）、尺寸、圆角、默认/悬停/按下颜色与聚焦样式。对应上游 notice close（absolute top-right）。 |
 | 相关 API | `Close()`、`NotificationClosed` |
-| 相关 Token | `NotificationCloseButtonSize`、`NotificationCloseButtonPadding`、`NotificationCloseButtonMargin`、SharedToken（`BorderRadiusSM`、`IconSizeSM`、`ColorIcon`、`ColorIconHover`、`ColorBgTextHover`、`ColorBgTextActive`） |
+| 相关 Token | `NotificationCloseButtonSize`、`NotificationCloseButtonMargin`、NotificationCard 有效全局 Token（`BorderRadiusSM`、`IconSizeSM`、`ColorIcon`、`ColorIconHover`、`ColorBgTextHover`、`ColorBgTextActive`） |
 | 稳定性 | stable since 6.2.0 |
 
 #### `progress`
@@ -452,7 +452,7 @@ Notification 没有 `SizeType` 分档，视觉基线由 `NotificationCardToken` 
   `.notice-closable` 的 `padding-inline-end: paddingLG`；描述在标题下方、不与关闭按钮同排，按上游
   `.notice-title + .notice-description { padding-inline-end: 0 }` 不预留右侧空间。
 - `close` 尺寸 `NotificationCloseButtonSize`（`ControlHeightLG * 0.55`，对齐上游 `notificationCloseButtonSize`）、
-  内间距 `NotificationCloseButtonPadding`（`PaddingXXS`）、覆盖层偏移 `NotificationCloseButtonMargin`
+  覆盖层偏移 `NotificationCloseButtonMargin`
   （上 `UniformlyPaddingMD`、右 `UniformlyPaddingLG`），对齐上游 `top: notificationPaddingVertical` 与
   `inset-inline-end: notificationPaddingHorizontal`。
 - `actions` 上边距 `NotificationActionsMargin`（`UniformlyMarginSM`），对齐上游 `margin-top: marginSM`。

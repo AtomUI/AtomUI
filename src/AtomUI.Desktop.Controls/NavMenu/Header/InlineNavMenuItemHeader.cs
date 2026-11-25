@@ -1,8 +1,11 @@
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+// A NavMenu template part without Own Tokens: its theme reads NavMenu Tokens and its TokenTransitions follow the NavMenu.
+[TokenOwnerTransparent]
 public class InlineNavMenuItemHeader : BaseNavMenuItemHeader
 {
     #region 公共属性定义

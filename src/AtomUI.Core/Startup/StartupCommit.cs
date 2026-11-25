@@ -10,10 +10,12 @@ internal static class StartupCommit
 {
     /// <summary>
     /// 单次提交：本地化、主题、自有服务、初始化器。<paramref name="initialSystemAppearance"/> 与选取
-    /// <paramref name="startupGlobalParent"/> 用的是同一次系统外观读取，避免两次读取之间外观切换导致不一致。
+    /// 启动全局层用的是同一次系统外观读取，避免两次读取之间外观切换导致不一致。
+    /// <paramref name="resolveStartupGlobalParent"/> 在初始化主题前才调用：此前不依赖全局层的提交步骤可与后台
+    /// Prepare 并行，调用本身可以阻塞等待 Prepare。
     /// </summary>
     internal static ApplicationScope Commit(Application application, AtomUIBuilder builder,
-        StartupProcess process, ThemeAppearance? initialSystemAppearance, ThemeSnapshot? startupGlobalParent)
+        StartupProcess process, ThemeAppearance? initialSystemAppearance, Func<ThemeSnapshot?>? resolveStartupGlobalParent)
     {
         if (ApplicationScopeRegistry.Get(application) is not null)
         {
@@ -56,8 +58,7 @@ internal static class StartupCommit
             applicationScope = new ApplicationScope(application, themeManager, localizationHost, ownedServices, process,
                 builder.OwnedServiceRegistrations.Select(registration => registration.Id));
             ownedServices = null;
-            AvaloniaLocator.CurrentMutable.BindToSelf(themeManager);
-            applicationScope.InitializeApplication(initialSystemAppearance, startupGlobalParent);
+            applicationScope.InitializeApplication(initialSystemAppearance, resolveStartupGlobalParent?.Invoke());
             StartupEventSource.Log.PhaseStop(StartupPhase.CommitTheme);
             StartupEventSource.Log.PhaseStart(StartupPhase.CommitInitializers);
             foreach (var initializer in builder.ThemeManagerBuilder.Initializers)

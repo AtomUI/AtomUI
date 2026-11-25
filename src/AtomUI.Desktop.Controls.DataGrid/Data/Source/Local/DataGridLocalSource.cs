@@ -1,13 +1,19 @@
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Text;
 
 namespace AtomUI.Desktop.Controls;
 
-public sealed class DataGridLocalSource<T> : IDataGridSource, IDisposable
+public sealed class DataGridLocalSource<T> :
+    IDataGridEditableSource,
+    IDataGridMovableSource,
+    IDataGridMoveAvailability,
+    IDisposable
 {
     private readonly object _gate = new();
     private readonly IReadOnlyList<T> _items;
+    private readonly IList<T>? _mutableItems;
     private readonly Func<T, DataGridRowKey> _rowKey;
     private readonly Dictionary<DataGridFieldId, IDataGridLocalField<T>> _fields;
     private readonly int _maximumProjectionCount;
@@ -32,6 +38,7 @@ public sealed class DataGridLocalSource<T> : IDataGridSource, IDisposable
         options.Validate();
 
         _items = items;
+        _mutableItems = items is IList<T> { IsReadOnly: false } list ? list : null;
         _rowKey = descriptor.RowKey;
         _fields = new Dictionary<DataGridFieldId, IDataGridLocalField<T>>(descriptor.Fields.Count);
         var schemas = ImmutableArray.CreateBuilder<DataGridFieldSchema>(descriptor.Fields.Count);
@@ -63,6 +70,11 @@ public sealed class DataGridLocalSource<T> : IDataGridSource, IDisposable
     public DataGridSourceSchema Schema { get; }
 
     public event EventHandler? Invalidated;
+
+    /// <summary>
+    /// Whether rows can be reordered, which requires the backing items to be a writable <see cref="IList{T}"/>.
+    /// </summary>
+    public bool CanMove => _mutableItems is not null;
 
     internal int CachedProjectionCount
     {
@@ -206,6 +218,205 @@ public sealed class DataGridLocalSource<T> : IDataGridSource, IDisposable
         result = CreateGroupedResult(
             request, groupedProjection!, baseProjection, cancellationToken);
         return true;
+    }
+
+    public ValueTask<DataGridMutationResult> MoveAsync(
+        DataGridMoveRequest request,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (_mutableItems is not { } items)
+        {
+            throw new NotSupportedException("The local items are read-only and cannot be reordered.");
+        }
+        if (!request.Query.Sorts.IsEmpty ||
+            !request.Query.Filters.IsEmpty ||
+            !request.Query.Groups.IsEmpty)
+        {
+            throw new NotSupportedException("Local rows can only be moved while they are shown in source order.");
+        }
+
+        int sourceIndex;
+        int insertIndex;
+        lock (_gate)
+        {
+            ThrowIfDisposed();
+            ThrowIfSnapshotExpired(request.Snapshot);
+            sourceIndex = IndexOfRowKey(request.RowKey);
+            var targetIndex = IndexOfRowKey(request.BeforeKey ?? request.AfterKey!.Value);
+            // The insert position is expressed in the list after the moved row has been removed.
+            insertIndex = targetIndex > sourceIndex ? targetIndex - 1 : targetIndex;
+            if (request.AfterKey.HasValue)
+            {
+                insertIndex++;
+            }
+            if (insertIndex == sourceIndex)
+            {
+                return ValueTask.FromResult(new DataGridMutationResult(_snapshot));
+            }
+        }
+
+        if (items is ObservableCollection<T> observable)
+        {
+            observable.Move(sourceIndex, insertIndex);
+        }
+        else
+        {
+            var item = items[sourceIndex];
+            items.RemoveAt(sourceIndex);
+            items.Insert(insertIndex, item);
+        }
+
+        // Observable items already advanced the snapshot through their change notification.
+        if (_collectionSubscription is null)
+        {
+            HandleCollectionChanged();
+        }
+        lock (_gate)
+        {
+            return ValueTask.FromResult(new DataGridMutationResult(_snapshot));
+        }
+    }
+
+    /// <summary>
+    /// Writes the edited fields through their setters, all or nothing. An edit that cannot change the
+    /// order or membership of the request query keeps the snapshot; otherwise the source is invalidated.
+    /// </summary>
+    public ValueTask<DataGridMutationResult> CommitAsync(
+        DataGridEditRequest request,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        T item;
+        var writes = new List<Action<T>>(request.Values.Count);
+        lock (_gate)
+        {
+            ThrowIfDisposed();
+            ThrowIfSnapshotExpired(request.Snapshot);
+            item = _items[IndexOfRowKey(request.RowKey)];
+            foreach (var (fieldId, value) in request.Values)
+            {
+                if (!_fields.TryGetValue(fieldId, out var field))
+                {
+                    throw new ArgumentException($"Field '{fieldId}' does not exist in the local source.");
+                }
+                writes.Add(field.PrepareWrite(value));
+            }
+        }
+        if (writes.Count == 0)
+        {
+            return ValueTask.FromResult(new DataGridMutationResult(request.Snapshot));
+        }
+
+        foreach (var write in writes)
+        {
+            write(item);
+        }
+
+        if (_rowKey(item) != request.RowKey || IsQueryAffected(request.Query, request.Values.Keys))
+        {
+            HandleCollectionChanged();
+            lock (_gate)
+            {
+                return ValueTask.FromResult(new DataGridMutationResult(_snapshot));
+            }
+        }
+        lock (_gate)
+        {
+            // Projections of other queries may order or filter by the edited fields.
+            _projectionCache.Clear();
+        }
+        return ValueTask.FromResult(new DataGridMutationResult(request.Snapshot));
+    }
+
+    /// <summary>
+    /// Local edits are applied only on commit, so there is no pending edit state to discard.
+    /// </summary>
+    public ValueTask<DataGridMutationResult> CancelAsync(
+        DataGridRowMutationRequest request,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            ThrowIfDisposed();
+            ThrowIfSnapshotExpired(request.Snapshot);
+            return ValueTask.FromResult(new DataGridMutationResult(_snapshot));
+        }
+    }
+
+    /// <summary>
+    /// The local source cannot construct items; add them to the backing collection instead.
+    /// </summary>
+    public ValueTask<DataGridMutationResult> AddAsync(
+        DataGridAddRequest request,
+        CancellationToken cancellationToken) =>
+        throw new NotSupportedException(
+            "The local source cannot construct items. Add them to the backing collection instead.");
+
+    public ValueTask<DataGridMutationResult> DeleteAsync(
+        DataGridRowMutationRequest request,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (_mutableItems is not { } items)
+        {
+            throw new NotSupportedException("The local items are read-only and cannot be deleted.");
+        }
+
+        int index;
+        lock (_gate)
+        {
+            ThrowIfDisposed();
+            ThrowIfSnapshotExpired(request.Snapshot);
+            index = IndexOfRowKey(request.RowKey);
+        }
+        items.RemoveAt(index);
+
+        // Observable items already advanced the snapshot through their change notification.
+        if (_collectionSubscription is null)
+        {
+            HandleCollectionChanged();
+        }
+        lock (_gate)
+        {
+            return ValueTask.FromResult(new DataGridMutationResult(_snapshot));
+        }
+    }
+
+    private static bool IsQueryAffected(DataGridQuery query, IEnumerable<DataGridFieldId> fields)
+    {
+        foreach (var field in fields)
+        {
+            if (query.Sorts.Any(sort => sort.Field == field) ||
+                query.Filters.Any(filter => filter.Field == field) ||
+                query.Groups.Any(group => group.Field == field))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void ThrowIfSnapshotExpired(DataGridSnapshotId snapshot)
+    {
+        if (snapshot != _snapshot)
+        {
+            throw new DataGridSnapshotExpiredException(
+                $"Snapshot '{snapshot}' has expired; current snapshot is '{_snapshot}'.");
+        }
+    }
+
+    private int IndexOfRowKey(DataGridRowKey rowKey)
+    {
+        for (var index = 0; index < _items.Count; index++)
+        {
+            if (_rowKey(_items[index]) == rowKey)
+            {
+                return index;
+            }
+        }
+        throw new ArgumentException($"Row key '{rowKey}' does not exist in the local source.");
     }
 
     public void Dispose()

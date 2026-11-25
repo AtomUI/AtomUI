@@ -1,4 +1,4 @@
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Derivation;
 using AtomUI.Toolkits.GalleryBase.Models;
 using Avalonia;
 using Avalonia.Collections;

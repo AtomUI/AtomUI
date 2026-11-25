@@ -108,7 +108,7 @@ public partial class DataGrid
         }
     }
 
-    internal int EditingColumnIndex { get; private set; }
+    internal int EditingColumnIndex => _editingColumnIndex;
 
     internal bool HasFiniteColumnViewport => _columnViewportWidth.HasValue &&
                                              !double.IsPositiveInfinity(_columnViewportWidth.Value);
@@ -120,6 +120,8 @@ public partial class DataGrid
     private DataGridColumnDraggingOverIndicator? _dataGridDraggingOverIndicator;
     private DataGridColumn? _popupPinnedOpenFilterColumn;
     private double? _columnViewportWidth;
+    // 已接入本表格的列分组根项：Reset 事件不携带旧项，退订与解除挂接必须依据这份记录
+    private readonly List<IDataGridColumnGroupItem> _attachedColumnGroupRoots = [];
 
     protected virtual void NotifyColumnDisplayIndexChanged(DataGridColumnEventArgs e)
     {
@@ -403,15 +405,6 @@ public partial class DataGrid
                 HandleColumnWidthChanged(column);
             }
         }
-    }
-
-    internal bool ColumnRequiresRightGridLine(DataGridColumn dataGridColumn, bool includeLastRightGridLineWhenPresent)
-    {
-        return AreVerticalGridLinesVisible &&
-               (dataGridColumn != ColumnsInternal.LastVisibleColumn ||
-                (includeLastRightGridLineWhenPresent &&
-                 ColumnsInternal.FillerColumn != null &&
-                 ColumnsInternal.FillerColumn.IsActive));
     }
 
     internal DataGridColumnCollection CreateColumnsInstance()
@@ -1480,11 +1473,13 @@ public partial class DataGrid
             }
 
             cx -= _negHorizontalOffset;
+            // 右冻结列已在上面的冻结列累加中计入，这里只走滚动列，否则右冻结列会被重复计宽，
+            // 导致区域变宽时 cx 虚高、无法回收多余的 HorizontalOffset。
             while (cx < displayWidth && dataGridColumn != null)
             {
                 cx += GetEdgedColumnWidth(dataGridColumn);
                 visibleScrollingColumnsTmp++;
-                dataGridColumn = ColumnsInternal.GetNextVisibleColumn(dataGridColumn);
+                dataGridColumn = ColumnsInternal.GetNextVisibleScrollingColumn(dataGridColumn);
             }
 
             numVisibleScrollingCols = visibleScrollingColumnsTmp;
@@ -1584,7 +1579,7 @@ public partial class DataGrid
                 dataGridColumn = ColumnsItemsInternal[firstDisplayedScrollingCol];
                 for (int jump = 0; jump < jumpFromFirstVisibleScrollingCol; jump++)
                 {
-                    dataGridColumn = ColumnsInternal.GetNextVisibleColumn(dataGridColumn);
+                    dataGridColumn = ColumnsInternal.GetNextVisibleScrollingColumn(dataGridColumn);
                     Debug.Assert(dataGridColumn != null);
                 }
 
@@ -1884,7 +1879,10 @@ public partial class DataGrid
     {
         Debug.Assert(dataGridColumn != null);
 
-        return IsReadOnly || dataGridColumn.IsReadOnly || dataGridColumn is DataGridFillerColumn;
+        return IsReadOnly ||
+               dataGridColumn.IsReadOnly ||
+               dataGridColumn is DataGridFillerColumn ||
+               !IsColumnSourceEditable(dataGridColumn);
     }
 
     /// <devdoc>
@@ -2022,7 +2020,11 @@ public partial class DataGrid
             dataGridColumn.HeaderCell.SupportedSortDirections = dataGridColumn.EffectiveSupportedSortDirections;
             dataGridColumn.HeaderCell.CanUserFilter     = dataGridColumn.CanUserFilter;
             dataGridColumn.HeaderCell.IsSorterTooltipVisible = dataGridColumn.IsSorterTooltipVisible;
-            _columnHeadersPresenter.Children.Insert(dataGridColumn.DisplayIndexWithFiller, dataGridColumn.HeaderCell);
+            // 分组表头模式下列头由分组视图项承载（重建分组视图时放置），普通表头区保持为空
+            if (!IsGroupHeaderMode)
+            {
+                _columnHeadersPresenter.Children.Insert(dataGridColumn.DisplayIndexWithFiller, dataGridColumn.HeaderCell);
+            }
         }
     }
 
@@ -2177,21 +2179,24 @@ public partial class DataGrid
                      (DisplayData.LastTotallyDisplayedScrollingCol != columnIndex &&
                       ColumnsInternal.DisplayInOrder(DisplayData.LastTotallyDisplayedScrollingCol, columnIndex)))
             {
+                // 滚动区的右边界要扣除右冻结列，否则目标列会停在右冻结列下方
+                double leftFrozenWidth  = ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
+                double scrollingRight   = CellsWidth - ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
                 double xColumnLeftEdge  = GetColumnXFromIndex(columnIndex);
                 double xColumnRightEdge = xColumnLeftEdge + GetEdgedColumnWidth(ColumnsItemsInternal[columnIndex]);
-                double change           = xColumnRightEdge - HorizontalOffset - CellsWidth;
+                double change           = xColumnRightEdge - HorizontalOffset - scrollingRight;
                 double widthRemaining   = change;
 
                 DataGridColumn newFirstDisplayedScrollingCol =
                     ColumnsItemsInternal[DisplayData.FirstDisplayedScrollingCol];
-                DataGridColumn? nextColumn = ColumnsInternal.GetNextVisibleColumn(newFirstDisplayedScrollingCol);
+                DataGridColumn? nextColumn = ColumnsInternal.GetNextVisibleScrollingColumn(newFirstDisplayedScrollingCol);
                 double newColumnWidth = GetEdgedColumnWidth(newFirstDisplayedScrollingCol) - _negHorizontalOffset;
                 while (nextColumn != null && widthRemaining >= newColumnWidth)
                 {
                     widthRemaining                -= newColumnWidth;
                     newFirstDisplayedScrollingCol = nextColumn;
                     newColumnWidth                = GetEdgedColumnWidth(newFirstDisplayedScrollingCol);
-                    nextColumn                    = ColumnsInternal.GetNextVisibleColumn(newFirstDisplayedScrollingCol);
+                    nextColumn                    = ColumnsInternal.GetNextVisibleScrollingColumn(newFirstDisplayedScrollingCol);
                     _negHorizontalOffset          = 0;
                 }
 
@@ -2200,12 +2205,11 @@ public partial class DataGrid
                 if (newFirstDisplayedScrollingCol.Index == columnIndex)
                 {
                     _negHorizontalOffset = 0;
-                    double frozenColumnWidth = ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
                     // If the entire column cannot be displayed, we want to start showing it from its LeftEdge
-                    if (newColumnWidth > (CellsWidth - frozenColumnWidth))
+                    if (newColumnWidth > (scrollingRight - leftFrozenWidth))
                     {
                         DisplayData.LastTotallyDisplayedScrollingCol = -1;
-                        change = xColumnLeftEdge - HorizontalOffset - frozenColumnWidth;
+                        change = xColumnLeftEdge - HorizontalOffset - leftFrozenWidth;
                     }
                 }
 
@@ -2528,75 +2532,107 @@ public partial class DataGrid
     {
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
+            foreach (var root in _attachedColumnGroupRoots.ToArray())
+            {
+                DetachColumnGroupRoot(root);
+            }
             ColumnsInternal.Clear();
-            return;
+            foreach (var root in ColumnGroupsInternal)
+            {
+                AttachColumnGroupRoot(root);
+            }
         }
-
-        if (e.Action == NotifyCollectionChangedAction.Remove)
+        else
         {
+            // Remove / Replace / Add：先解除旧项，再接入新项
             if (e.OldItems != null)
             {
-                var oldItems = e.OldItems;
-                for (var i = 0; i < oldItems.Count; i++)
+                foreach (var item in e.OldItems)
                 {
-                    var item = oldItems[i];
-                    if (item is DataGridColumn column)
+                    if (item is IDataGridColumnGroupItem root)
                     {
-                        ColumnsInternal.Remove(column);
-                    }
-                    else if (item is DataGridColumnGroupItem gridColumn)
-                    {
-                        RemoveColumnsFromGroupTree(gridColumn);
-                    }
-
-                    if (item is IDataGridColumnGroupItem gridItem)
-                    {
-                        gridItem.GroupChanged -= HandleColumnGroupItemChanged;
+                        DetachColumnGroupRoot(root);
                     }
                 }
             }
-        }
-        else if (e.Action == NotifyCollectionChangedAction.Add)
-        {
             if (e.NewItems != null)
             {
-                var newItems = e.NewItems;
-                for (var i = 0; i < newItems.Count; i++)
+                foreach (var item in e.NewItems)
                 {
-                    var item = newItems[i];
-                    if (item is DataGridColumn column)
+                    if (item is IDataGridColumnGroupItem root)
                     {
-                        ColumnsInternal.Add(column);
-                    }
-                    else if (item is DataGridColumnGroupItem gridColumn)
-                    {
-                        AddColumnsFromGroupTree(gridColumn);
-                    }
-
-                    if (item is IDataGridColumnGroupItem gridItem)
-                    {
-                        gridItem.GroupChanged += HandleColumnGroupItemChanged;
+                        AttachColumnGroupRoot(root);
                     }
                 }
             }
         }
 
         IsGroupHeaderMode = ColumnGroupsInternal.Count > 0;
+        RebuildColumnGroupView();
     }
 
+    // 分组表头视图在模板应用时构建；分组在运行时变化后需要重建，旧视图项释放对表格的绑定并交还列头
+    private void RebuildColumnGroupView()
+    {
+        if (!_templatedApplied || _groupColumnHeadersPresenter is null)
+        {
+            return;
+        }
+        foreach (var viewItem in _groupColumnHeadersPresenter.Children.OfType<DataGridHeaderViewItem>().ToArray())
+        {
+            _groupColumnHeadersPresenter.Children.Remove(viewItem);
+            viewItem.Release();
+        }
+        BuildColumnGroupView();
+        if (IsGroupHeaderMode)
+        {
+            SetupColumnGroupFrozenState();
+        }
+    }
+
+    private void AttachColumnGroupRoot(IDataGridColumnGroupItem root)
+    {
+        if (root is DataGridColumn column)
+        {
+            ColumnsInternal.Add(column);
+        }
+        else if (root is DataGridColumnGroupItem groupItem)
+        {
+            AddColumnsFromGroupTree(groupItem);
+        }
+        root.GroupChanged += HandleColumnGroupItemChanged;
+        _attachedColumnGroupRoots.Add(root);
+    }
+
+    private void DetachColumnGroupRoot(IDataGridColumnGroupItem root)
+    {
+        if (!_attachedColumnGroupRoots.Remove(root))
+        {
+            return;
+        }
+        root.GroupChanged -= HandleColumnGroupItemChanged;
+        if (root is DataGridColumn column)
+        {
+            ColumnsInternal.Remove(column);
+        }
+        else if (root is DataGridColumnGroupItem groupItem)
+        {
+            RemoveColumnsFromGroupTree(groupItem);
+        }
+    }
+
+    // 分组树任意层级的增删（列或整个子分组）都经根项上报，按子树同步列并重建分组表头视图
     private void HandleColumnGroupItemChanged(object? sender, DataGridColumnGroupChangedArgs args)
     {
-        if (args.GroupItem is DataGridColumn gridColumn)
+        if (args.ChangedType == NotifyColumnGroupChangedType.Add)
         {
-            if (args.ChangedType == NotifyColumnGroupChangedType.Add)
-            {
-                ColumnsInternal.Add(gridColumn);
-            }
-            else if (args.ChangedType == NotifyColumnGroupChangedType.Remove)
-            {
-                ColumnsInternal.Remove(gridColumn);
-            }
+            AddColumnsFromGroupTree(args.GroupItem);
         }
+        else if (args.ChangedType == NotifyColumnGroupChangedType.Remove)
+        {
+            RemoveColumnsFromGroupTree(args.GroupItem);
+        }
+        RebuildColumnGroupView();
     }
 
     private void AddColumnsFromGroupTree(IDataGridColumnGroupItem groupItem)

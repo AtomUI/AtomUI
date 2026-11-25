@@ -1,7 +1,9 @@
+using AtomUI.Theme.Resources;
 using System.Runtime.Versioning;
 using System.Reactive.Disposables;
 using System.Windows.Input;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Media;
 using AtomUI.Native;
@@ -16,6 +18,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -62,6 +65,29 @@ public partial class Window : AvaloniaWindow,
     
     public static readonly StyledProperty<bool> IsTitleBarVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsTitleBarVisible), defaultValue: true);
+
+    public static readonly StyledProperty<FullScreenTitleBarMode> FullScreenTitleBarModeProperty =
+        AvaloniaProperty.Register<Window, FullScreenTitleBarMode>(
+            nameof(FullScreenTitleBarMode),
+            FullScreenTitleBarMode.AutoHide);
+
+    public static readonly StyledProperty<bool> IsFullScreenTitleBarOpenProperty =
+        AvaloniaProperty.Register<Window, bool>(
+            nameof(IsFullScreenTitleBarOpen),
+            defaultBindingMode: BindingMode.TwoWay,
+            coerce: CoerceIsFullScreenTitleBarOpen);
+
+    public static readonly StyledProperty<object?> FullScreenTitleBarProperty =
+        AvaloniaProperty.Register<Window, object?>(nameof(FullScreenTitleBar));
+
+    public static readonly StyledProperty<IDataTemplate?> FullScreenTitleBarTemplateProperty =
+        AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(FullScreenTitleBarTemplate));
+
+    public static readonly StyledProperty<int> FullScreenTitleBarMouseEnterDelayProperty =
+        AvaloniaProperty.Register<Window, int>(nameof(FullScreenTitleBarMouseEnterDelay), 150);
+
+    public static readonly StyledProperty<int> FullScreenTitleBarMouseLeaveDelayProperty =
+        AvaloniaProperty.Register<Window, int>(nameof(FullScreenTitleBarMouseLeaveDelay), 300);
     
     public static readonly StyledProperty<object?> WindowFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(WindowFrameLayer));
@@ -127,6 +153,62 @@ public partial class Window : AvaloniaWindow,
     {
         get => GetValue(IsTitleBarVisibleProperty);
         set => SetValue(IsTitleBarVisibleProperty, value);
+    }
+
+    /// <summary>
+    /// How the title bar is presented while the window is full screen. Defaults to
+    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide"/> on every platform.
+    /// </summary>
+    public FullScreenTitleBarMode FullScreenTitleBarMode
+    {
+        get => GetValue(FullScreenTitleBarModeProperty);
+        set => SetValue(FullScreenTitleBarModeProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the full-screen title bar is currently presented. Writing <c>true</c> or <c>false</c> opens or closes an
+    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide"/> title bar; in every other state the value is coerced
+    /// (always open for Pinned and Docked, always closed when not full screen or Hidden).
+    /// </summary>
+    public bool IsFullScreenTitleBarOpen
+    {
+        get => GetValue(IsFullScreenTitleBarOpenProperty);
+        set => SetValue(IsFullScreenTitleBarOpenProperty, value);
+    }
+
+    /// <summary>
+    /// Custom content of the full-screen title bar. When this or <see cref="FullScreenTitleBarTemplate"/> is set it
+    /// replaces the default title bar in full screen.
+    /// </summary>
+    [DependsOn(nameof(FullScreenTitleBarTemplate))]
+    public object? FullScreenTitleBar
+    {
+        get => GetValue(FullScreenTitleBarProperty);
+        set => SetValue(FullScreenTitleBarProperty, value);
+    }
+
+    public IDataTemplate? FullScreenTitleBarTemplate
+    {
+        get => GetValue(FullScreenTitleBarTemplateProperty);
+        set => SetValue(FullScreenTitleBarTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Milliseconds the pointer rests in the top trigger band before an AutoHide title bar opens. Negative values act as 0.
+    /// </summary>
+    public int FullScreenTitleBarMouseEnterDelay
+    {
+        get => GetValue(FullScreenTitleBarMouseEnterDelayProperty);
+        set => SetValue(FullScreenTitleBarMouseEnterDelayProperty, value);
+    }
+
+    /// <summary>
+    /// Milliseconds between the last hold ending and an AutoHide title bar closing. Negative values act as 0.
+    /// </summary>
+    public int FullScreenTitleBarMouseLeaveDelay
+    {
+        get => GetValue(FullScreenTitleBarMouseLeaveDelayProperty);
+        set => SetValue(FullScreenTitleBarMouseLeaveDelayProperty, value);
     }
     
     [DependsOn(nameof(LogoTemplate))]
@@ -353,11 +435,6 @@ public partial class Window : AvaloniaWindow,
             nameof(LegacyWindowsFrameBorderThickness),
             o => o.LegacyWindowsFrameBorderThickness);
 
-    internal static readonly DirectProperty<Window, bool> IsEffectiveFullscreenLogoVisibleProperty =
-        AvaloniaProperty.RegisterDirect<Window, bool>(
-            nameof(IsEffectiveFullscreenLogoVisible),
-            o => o.IsEffectiveFullscreenLogoVisible);
-
     internal static readonly DirectProperty<Window, object?> EffectiveLogoProperty =
         AvaloniaProperty.RegisterDirect<Window, object?>(
             nameof(EffectiveLogo),
@@ -368,25 +445,50 @@ public partial class Window : AvaloniaWindow,
             nameof(EffectiveLogoTemplate),
             o => o.EffectiveLogoTemplate);
 
-    internal static readonly DirectProperty<Window, object?> EffectiveFullscreenLogoProperty =
+    internal static readonly DirectProperty<Window, WindowTitleBar?> NormalSlotTitleBarProperty =
+        AvaloniaProperty.RegisterDirect<Window, WindowTitleBar?>(
+            nameof(NormalSlotTitleBar),
+            o => o.NormalSlotTitleBar);
+
+    internal static readonly DirectProperty<Window, object?> FullScreenSlotContentProperty =
         AvaloniaProperty.RegisterDirect<Window, object?>(
-            nameof(EffectiveFullscreenLogo),
-            o => o.EffectiveFullscreenLogo);
+            nameof(FullScreenSlotContent),
+            o => o.FullScreenSlotContent);
 
-    internal static readonly DirectProperty<Window, IDataTemplate?> EffectiveFullscreenLogoTemplateProperty =
+    internal static readonly DirectProperty<Window, IDataTemplate?> FullScreenSlotContentTemplateProperty =
         AvaloniaProperty.RegisterDirect<Window, IDataTemplate?>(
-            nameof(EffectiveFullscreenLogoTemplate),
-            o => o.EffectiveFullscreenLogoTemplate);
+            nameof(FullScreenSlotContentTemplate),
+            o => o.FullScreenSlotContentTemplate);
 
-    internal static readonly DirectProperty<Window, bool> IsEffectiveFullscreenTitleVisibleProperty =
-        AvaloniaProperty.RegisterDirect<Window, bool>(
-            nameof(IsEffectiveFullscreenTitleVisible),
-            o => o.IsEffectiveFullscreenTitleVisible);
+    internal static readonly DirectProperty<Window, FullScreenTitleBarMode> EffectiveFullScreenTitleBarModeProperty =
+        AvaloniaProperty.RegisterDirect<Window, FullScreenTitleBarMode>(
+            nameof(EffectiveFullScreenTitleBarMode),
+            o => o.EffectiveFullScreenTitleBarMode);
+
+    internal static readonly DirectProperty<Window, Thickness> FullScreenTitleBarSurfaceMarginProperty =
+        AvaloniaProperty.RegisterDirect<Window, Thickness>(
+            nameof(FullScreenTitleBarSurfaceMargin),
+            o => o.FullScreenTitleBarSurfaceMargin);
+
+    internal static readonly DirectProperty<Window, Thickness> FullScreenTitleBarContentPaddingProperty =
+        AvaloniaProperty.RegisterDirect<Window, Thickness>(
+            nameof(FullScreenTitleBarContentPadding),
+            o => o.FullScreenTitleBarContentPadding);
+
+    internal static readonly DirectProperty<Window, Thickness> FullScreenContentInsetProperty =
+        AvaloniaProperty.RegisterDirect<Window, Thickness>(
+            nameof(FullScreenContentInset),
+            o => o.FullScreenContentInset);
 
     internal static readonly DirectProperty<Window, bool> IsPinCaptionButtonSupportedProperty =
         AvaloniaProperty.RegisterDirect<Window, bool>(
             nameof(IsPinCaptionButtonSupported),
             o => o.IsPinCaptionButtonSupported);
+
+    internal static readonly DirectProperty<Window, bool> IsFullScreenSupportedProperty =
+        AvaloniaProperty.RegisterDirect<Window, bool>(
+            nameof(IsFullScreenSupported),
+            o => o.IsFullScreenSupported);
 
     internal static readonly DirectProperty<Window, ICommand> CaptionButtonCommandProperty =
         AvaloniaProperty.RegisterDirect<Window, ICommand>(
@@ -506,14 +608,6 @@ public partial class Window : AvaloniaWindow,
             value);
     }
 
-    private bool _isEffectiveFullscreenLogoVisible;
-
-    internal bool IsEffectiveFullscreenLogoVisible
-    {
-        get => _isEffectiveFullscreenLogoVisible;
-        private set => SetAndRaise(IsEffectiveFullscreenLogoVisibleProperty, ref _isEffectiveFullscreenLogoVisible, value);
-    }
-
     private object? _effectiveLogo;
 
     internal object? EffectiveLogo
@@ -530,34 +624,80 @@ public partial class Window : AvaloniaWindow,
         private set => SetAndRaise(EffectiveLogoTemplateProperty, ref _effectiveLogoTemplate, value);
     }
 
-    private object? _effectiveFullscreenLogo;
+    private WindowTitleBar? _normalSlotTitleBar;
 
-    internal object? EffectiveFullscreenLogo
+    /// <summary>
+    /// The default title bar while it is presented by the normal title-bar slot of the template; <c>null</c> while the
+    /// full-screen title bar hosts it.
+    /// </summary>
+    internal WindowTitleBar? NormalSlotTitleBar
     {
-        get => _effectiveFullscreenLogo;
+        get => _normalSlotTitleBar;
+        private set => SetAndRaise(NormalSlotTitleBarProperty, ref _normalSlotTitleBar, value);
+    }
+
+    private object? _fullScreenSlotContent;
+
+    internal object? FullScreenSlotContent
+    {
+        get => _fullScreenSlotContent;
+        private set => SetAndRaise(FullScreenSlotContentProperty, ref _fullScreenSlotContent, value);
+    }
+
+    private IDataTemplate? _fullScreenSlotContentTemplate;
+
+    internal IDataTemplate? FullScreenSlotContentTemplate
+    {
+        get => _fullScreenSlotContentTemplate;
+        private set => SetAndRaise(FullScreenSlotContentTemplateProperty, ref _fullScreenSlotContentTemplate, value);
+    }
+
+    private FullScreenTitleBarMode _effectiveFullScreenTitleBarMode = FullScreenTitleBarMode.Hidden;
+
+    /// <summary>
+    /// The presented full-screen title bar mode; <see cref="Controls.FullScreenTitleBarMode.Hidden"/> whenever no
+    /// managed full-screen title bar is presented.
+    /// </summary>
+    internal FullScreenTitleBarMode EffectiveFullScreenTitleBarMode
+    {
+        get => _effectiveFullScreenTitleBarMode;
         private set => SetAndRaise(
-            EffectiveFullscreenLogoProperty,
-            ref _effectiveFullscreenLogo,
+            EffectiveFullScreenTitleBarModeProperty,
+            ref _effectiveFullScreenTitleBarMode,
             value);
     }
 
-    private IDataTemplate? _effectiveFullscreenLogoTemplate;
+    private Thickness _fullScreenTitleBarSurfaceMargin;
 
-    internal IDataTemplate? EffectiveFullscreenLogoTemplate
+    internal Thickness FullScreenTitleBarSurfaceMargin
     {
-        get => _effectiveFullscreenLogoTemplate;
+        get => _fullScreenTitleBarSurfaceMargin;
         private set => SetAndRaise(
-            EffectiveFullscreenLogoTemplateProperty,
-            ref _effectiveFullscreenLogoTemplate,
+            FullScreenTitleBarSurfaceMarginProperty,
+            ref _fullScreenTitleBarSurfaceMargin,
             value);
     }
 
-    private bool _isEffectiveFullscreenTitleVisible;
+    private Thickness _fullScreenTitleBarContentPadding;
 
-    internal bool IsEffectiveFullscreenTitleVisible
+    internal Thickness FullScreenTitleBarContentPadding
     {
-        get => _isEffectiveFullscreenTitleVisible;
-        private set => SetAndRaise(IsEffectiveFullscreenTitleVisibleProperty, ref _isEffectiveFullscreenTitleVisible, value);
+        get => _fullScreenTitleBarContentPadding;
+        private set => SetAndRaise(
+            FullScreenTitleBarContentPaddingProperty,
+            ref _fullScreenTitleBarContentPadding,
+            value);
+    }
+
+    private Thickness _fullScreenContentInset;
+
+    /// <summary>
+    /// The top space a Docked full-screen title bar reserves above the window content.
+    /// </summary>
+    internal Thickness FullScreenContentInset
+    {
+        get => _fullScreenContentInset;
+        private set => SetAndRaise(FullScreenContentInsetProperty, ref _fullScreenContentInset, value);
     }
 
     private bool _isPinCaptionButtonSupported;
@@ -569,6 +709,18 @@ public partial class Window : AvaloniaWindow,
             IsPinCaptionButtonSupportedProperty,
             ref _isPinCaptionButtonSupported,
             value);
+    }
+
+    private bool _isFullScreenSupported = true;
+
+    /// <summary>
+    /// Whether the platform can take this window into full screen. A full-screen request the platform cannot honour
+    /// is rejected and the window state stays unchanged.
+    /// </summary>
+    internal bool IsFullScreenSupported
+    {
+        get => _isFullScreenSupported;
+        private set => SetAndRaise(IsFullScreenSupportedProperty, ref _isFullScreenSupported, value);
     }
 
     internal ICommand CaptionButtonCommand => _captionButtonCommand;
@@ -615,7 +767,6 @@ public partial class Window : AvaloniaWindow,
     private PointerPressedEventArgs? _lastMousePressedEventArgs;
     private readonly IWindowChromeManager? _platformChromeManager;
     private readonly WindowCaptionButtonCommand _captionButtonCommand;
-    private FullscreenPopoverLayer? _fullscreenPopoverLayer;
     private WindowResizer? _windowResizer;
     private Border? _transparencyFallbackBorder;
     private MediaBreakPointIndicator? _mediaBreakPointIndicator;
@@ -649,6 +800,8 @@ public partial class Window : AvaloniaWindow,
         ConfigureOsType();
         FrameShadowProperty.Changed.AddClassHandler<Window>((window, args) =>
             window.HandleFrameShadowPropertyChanged(args.GetNewValue<BoxShadows>()));
+        Avalonia.Controls.Primitives.Popup.IsOpenProperty.Changed
+                .AddClassHandler<Avalonia.Controls.Primitives.Popup>(HandleAnyPopupIsOpenChanged);
     }
 
     public Window()
@@ -661,13 +814,31 @@ public partial class Window : AvaloniaWindow,
         UpdateCaptionButtonCapabilities();
         // Before the first layout: Wayland would otherwise lay out and render at scale 1 until the compositor
         // reports the preferred scale after mapping, then re-lay out the whole window.
-        WaylandInitialScaling.Apply(PlatformImpl);
+        var scalingStatus = WaylandInitialScaling.Apply(PlatformImpl, out var scalingReason);
+        if (scalingStatus != WaylandInitialScalingStatus.NotApplicable)
+        {
+            var level = scalingStatus is WaylandInitialScalingStatus.Incompatible or WaylandInitialScalingStatus.Failed
+                ? LogEventLevel.Warning
+                : LogEventLevel.Debug;
+            Logger.TryGet(level, AtomUILogArea.System)?.Log(
+                typeof(Window), "Wayland initial scaling: {Status}. {Reason}", scalingStatus, scalingReason);
+        }
+    }
+
+    /// <summary>
+    /// Enters full screen, or leaves it and restores the window state from before full screen. Shares the window
+    /// operation and its capability check with the full-screen caption button, so it does nothing while maximized.
+    /// </summary>
+    public void ToggleFullScreen()
+    {
+        ExecuteCaptionButtonAction(CaptionButtonAction.ToggleFullScreen);
     }
 
     internal IDisposable SuppressDrawnChromeOverlay()
     {
         _drawnChromeOverlaySuppressionCount++;
         IsDrawnChromeOverlayVisible = false;
+        UpdateFullScreenTitleBarSuppression();
         return Disposable.Create(this, static window => window.ReleaseDrawnChromeOverlaySuppression());
     }
 
@@ -682,6 +853,7 @@ public partial class Window : AvaloniaWindow,
         if (_drawnChromeOverlaySuppressionCount == 0)
         {
             IsDrawnChromeOverlayVisible = true;
+            UpdateFullScreenTitleBarSuppression();
         }
     }
 
@@ -776,21 +948,8 @@ public partial class Window : AvaloniaWindow,
     private CompositeDisposable CreateInitialSurfaceThemeValues()
     {
         var values = new CompositeDisposable();
-        if (!this.TryFindResource(WindowTokenKind.DefaultBackground, out var resource))
-        {
-            return values;
-        }
-
-        IBrush? background = resource switch
-        {
-            IBrush brush => brush,
-            Color color  => new SolidColorBrush(color),
-            _            => null
-        };
-        if (background is null)
-        {
-            return values;
-        }
+        var background = new SolidColorBrush(ControlTokenAccessor.Capture<Window>(this)
+            .GetOwn<Color, WindowTokenKind>(WindowTokenKind.DefaultBackground));
 
         // WindowOpenedEvent precedes ApplyStyling. Prime only the synchronous show interval;
         // local values still win, and WindowTheme owns the surface after these frames are removed.
@@ -872,11 +1031,11 @@ public partial class Window : AvaloniaWindow,
 
         var shadow = FrameShadowThickness;
         _windowResizer.GripThickness = gripThickness;
-        _windowResizer.Margin = new Thickness(
+        _windowResizer.SetCurrentValue(MarginProperty, new Thickness(
             Math.Max(0, shadow.Left - gripThickness.Left),
             Math.Max(0, shadow.Top - gripThickness.Top),
             Math.Max(0, shadow.Right - gripThickness.Right),
-            Math.Max(0, shadow.Bottom - gripThickness.Bottom));
+            Math.Max(0, shadow.Bottom - gripThickness.Bottom)));
     }
 
     private void HandleFrameShadowPropertyChanged(BoxShadows frameShadow)
@@ -960,6 +1119,15 @@ public partial class Window : AvaloniaWindow,
         base.OnApplyTemplate(e);
         _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
         AttachContentCacheParts(e.NameScope);
+        var fullScreenTitleBarHost = e.NameScope.Find<FullScreenTitleBarHost>("PART_FullScreenTitleBarHost");
+        var visualLayerManager     = e.NameScope.Find<VisualLayerManager>("PART_VisualLayerManager");
+        if (visualLayerManager is not null)
+        {
+            LayerLadder.EnsureContentDecorationOrder(visualLayerManager);
+        }
+
+        AttachWindowChromeLayer(visualLayerManager, fullScreenTitleBarHost);
+        AttachFullScreenTitleBarHost(fullScreenTitleBarHost);
 
         HandleCreateTitleBar();
         EnsureWindowsCsdMinimumHeight();
@@ -984,13 +1152,6 @@ public partial class Window : AvaloniaWindow,
         }
 
         ConfigureCustomResizerVisible();
-
-        if (!IsCsdEnabled)
-        {
-            _fullscreenPopoverLayer?.Detach();
-            _fullscreenPopoverLayer = e.NameScope.Find<FullscreenPopoverLayer>("PART_FullscreenPopoverLayer");
-            _fullscreenPopoverLayer?.Attach(this);
-        }
     }
 
     private void HandleCreateTitleBar()
@@ -1009,6 +1170,7 @@ public partial class Window : AvaloniaWindow,
         }
         
         TitleBar = titleBar;
+        UpdateFullScreenTitleBar();
     }
 
     private void DetachTitleBar(WindowTitleBar titleBar)
@@ -1082,6 +1244,13 @@ public partial class Window : AvaloniaWindow,
 
     private void HandleTitleBarSizeChanged(object? sender, SizeChangedEventArgs e)
     {
+        // While the full-screen title bar hosts the default title bar, its size describes the full-screen surface,
+        // not the platform title bar, and must not drive the title-bar height hint.
+        if (ReferenceEquals(FullScreenSlotContent, sender))
+        {
+            return;
+        }
+
         EnsureWindowsCsdMinimumHeight(e.NewSize.Height);
         if (_platformChromeManager is not null)
         {
@@ -1255,11 +1424,17 @@ public partial class Window : AvaloniaWindow,
 
     private void UpdateEffectiveContentFrameMargin()
     {
-        EffectiveContentFrameMargin = CalculateEffectiveContentFrameMargin(
+        var margin = CalculateEffectiveContentFrameMargin(
             WindowDecorationMargin,
             IsCsdEnabled,
             IsTitleBarVisible,
             IsCsdEnabled && !IsTitleBarVisible ? this.GetDrawnDecorationsTitleBarHeight() : 0);
+        // A Docked full-screen title bar reserves its space above the content in the CSD content root.
+        EffectiveContentFrameMargin = new Thickness(
+            margin.Left,
+            margin.Top + FullScreenContentInset.Top,
+            margin.Right,
+            margin.Bottom);
     }
 
     internal static bool ShouldDrawLegacyWindowsFrameBorder(
@@ -1382,6 +1557,9 @@ public partial class Window : AvaloniaWindow,
                 WindowTitleBar.IsPinCaptionButtonSupportedProperty,
                 this.GetObservable(IsPinCaptionButtonSupportedProperty)));
             lease.Add(titleBar.Bind(
+                WindowTitleBar.IsFullScreenSupportedProperty,
+                this.GetObservable(IsFullScreenSupportedProperty)));
+            lease.Add(titleBar.Bind(
                 WindowTitleBar.CaptionButtonCommandProperty,
                 this.GetObservable(CaptionButtonCommandProperty)));
             lease.Add(this.GetObservable(EffectiveLogoProperty).Subscribe(
@@ -1433,6 +1611,9 @@ public partial class Window : AvaloniaWindow,
             this.GetObservable(TitleBarFrameBackgroundProperty).Subscribe(
                 brush => ProjectTitleBarFrameBackground(titleBar, brush)),
             this.GetObservable(IsCsdEnabledProperty).Subscribe(
+                _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground)),
+            // 默认标题栏在普通槽与全屏槽之间迁移时，背景的绘制方随之切换。
+            this.GetObservable(NormalSlotTitleBarProperty).Subscribe(
                 _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground))
         };
     }
@@ -1443,8 +1624,10 @@ public partial class Window : AvaloniaWindow,
 
         // Linux CSD 的标题栏背景由 drawn decorations overlay 的
         // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
-        // 否则不透明背景会盖住该绘制层。其他平台由默认标题栏直接绘制。
-        if (OsType == OsType.Linux && IsCsdEnabled)
+        // 否则不透明背景会盖住该绘制层。该绘制层只服务普通槽：全屏时标题栏迁入
+        // 全屏标题栏宿主，drawn decorations 不再为它绘制背景，标题栏必须自行绘制，
+        // 否则全屏标题栏透出下方内容。其他平台由默认标题栏直接绘制。
+        if (OsType == OsType.Linux && IsCsdEnabled && ReferenceEquals(NormalSlotTitleBar, titleBar))
         {
             _titleBarFrameBackgroundProjection = titleBar.SetValue(
                 WindowTitleBar.BackgroundProperty,
@@ -1467,7 +1650,8 @@ public partial class Window : AvaloniaWindow,
         {
             CaptionButtonAction.Minimize => CanMinimize && WindowState != WindowState.FullScreen,
             CaptionButtonAction.ToggleMaximize => CanMaximize && WindowState != WindowState.FullScreen,
-            CaptionButtonAction.ToggleFullScreen => WindowState != WindowState.Maximized,
+            CaptionButtonAction.ToggleFullScreen => WindowState == WindowState.FullScreen ||
+                                                    (WindowState != WindowState.Maximized && IsFullScreenSupported),
             CaptionButtonAction.TogglePin => IsPinCaptionButtonSupported,
             CaptionButtonAction.Close => true,
             _ => false
@@ -1509,6 +1693,7 @@ public partial class Window : AvaloniaWindow,
     private void UpdateCaptionButtonCapabilities()
     {
         IsPinCaptionButtonSupported = _platformChromeManager?.SupportsPinCaptionButton == true;
+        IsFullScreenSupported       = _platformChromeManager?.SupportsFullScreen != false;
     }
 
     protected virtual WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
@@ -1532,6 +1717,15 @@ public partial class Window : AvaloniaWindow,
     [SupportedOSPlatform("macos")]
     private void ConfigureMacOsWindow()
     {
+        // In full screen AppKit hosts the standard buttons in its own title strip; the full-screen title bar owns
+        // NativeChromeInsets and the button layout for the whole full-screen session.
+        if (WindowState == WindowState.FullScreen)
+        {
+            StopMacOsWindowButtonObserver();
+            _macOsCacheValid = false;
+            return;
+        }
+
         if (!ExtendClientAreaToDecorationsHint)
         {
             StopMacOsWindowButtonObserver();
@@ -1647,7 +1841,7 @@ public partial class Window : AvaloniaWindow,
         {
             DetachTitleBar(_titleBar);
         }
-        _fullscreenPopoverLayer?.Detach();
+        DetachFullScreenTitleBar();
         _themeContextLease?.Dispose();
         _themeContextLease = null;
         ResetThemeContextState();
@@ -1778,6 +1972,24 @@ public partial class Window : AvaloniaWindow,
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == WindowStateProperty &&
+            change.GetNewValue<WindowState>() == WindowState.FullScreen &&
+            !IsFullScreenSupported)
+        {
+            // The platform cannot take this window full screen, so the request is rejected and the state reports what
+            // the window actually is. Nothing else reacts to the rejected value.
+            SetCurrentValue(WindowStateProperty, change.GetOldValue<WindowState>());
+            return;
+        }
+        if (change.Property == OwnerProperty)
+        {
+            UpdateCaptionButtonCapabilities();
+            if (WindowState == WindowState.FullScreen && !IsFullScreenSupported)
+            {
+                // A full-screen state requested before the window became owned cannot be honoured either.
+                SetCurrentValue(WindowStateProperty, WindowState.Normal);
+            }
+        }
         if (change.Property == TransparencyBackgroundFallbackProperty &&
             ActualTransparencyLevel == WindowTransparencyLevel.None &&
             _transparencyFallbackBorder is not null)
@@ -1785,7 +1997,7 @@ public partial class Window : AvaloniaWindow,
             // TopLevel writes this part's Background as a local value when applying the template
             // or changing transparency, overriding ControlTheme setters and TemplateBinding.
             // Mirror later fallback changes here; TopLevel still owns transparency transitions.
-            _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
+            _transparencyFallbackBorder.SetCurrentValue(BackgroundProperty, TransparencyBackgroundFallback);
         }
         if (change.Property == WindowStateProperty)
         {
@@ -1800,7 +2012,8 @@ public partial class Window : AvaloniaWindow,
         if (change.Property == CanMinimizeProperty ||
             change.Property == CanMaximizeProperty ||
             change.Property == WindowStateProperty ||
-            change.Property == IsPinCaptionButtonSupportedProperty)
+            change.Property == IsPinCaptionButtonSupportedProperty ||
+            change.Property == IsFullScreenSupportedProperty)
         {
             _captionButtonCommand?.RaiseCanExecuteChanged();
         }
@@ -1863,68 +2076,13 @@ public partial class Window : AvaloniaWindow,
         {
             ResetTitleBarMoveDragState();
         }
-        if (change.Property == TitleProperty ||
-            change.Property == IsTitleVisibleProperty)
-        {
-            UpdateEffectiveFullscreenTitleVisible();
-        }
         if (change.Property == LogoProperty ||
             change.Property == LogoTemplateProperty ||
             change.Property == IconProperty)
         {
             UpdateEffectiveLogo();
         }
-        if (change.Property == EffectiveLogoProperty ||
-            change.Property == EffectiveLogoTemplateProperty ||
-            change.Property == LogoVisibilityProperty ||
-            change.Property == TitleProperty ||
-            change.Property == IsTitleVisibleProperty ||
-            change.Property == WindowStateProperty)
-        {
-            UpdateEffectiveFullscreenLogoVisible();
-        }
-    }
-
-    private void UpdateEffectiveFullscreenTitleVisible()
-    {
-        IsEffectiveFullscreenTitleVisible = IsTitleVisible && Title is not null;
-    }
-
-    private void UpdateEffectiveFullscreenLogoVisible()
-    {
-        var hasLogo = EffectiveLogo is not null || EffectiveLogoTemplate is not null;
-        var isLogoVisibleByMode = LogoVisibility switch
-        {
-            WindowTitleBarLogoVisibility.Always => hasLogo,
-            WindowTitleBarLogoVisibility.Never => false,
-            _ => hasLogo && HasTitleContent(Title) && IsEffectiveFullscreenTitleVisible
-        };
-        IsEffectiveFullscreenLogoVisible = WindowState == WindowState.FullScreen && isLogoVisibleByMode;
-        UpdateEffectiveFullscreenLogo();
-    }
-
-    private void UpdateEffectiveFullscreenLogo()
-    {
-        if (IsEffectiveFullscreenLogoVisible)
-        {
-            EffectiveFullscreenLogo         = EffectiveLogo;
-            EffectiveFullscreenLogoTemplate = EffectiveLogoTemplate;
-        }
-        else
-        {
-            EffectiveFullscreenLogo         = null;
-            EffectiveFullscreenLogoTemplate = null;
-        }
-    }
-
-    private static bool HasTitleContent(object? title)
-    {
-        return title switch
-        {
-            null => false,
-            string text => !string.IsNullOrWhiteSpace(text),
-            _ => true
-        };
+        HandleFullScreenTitleBarPropertyChanged(change);
     }
 
     private void ConfigureCsdStatus()

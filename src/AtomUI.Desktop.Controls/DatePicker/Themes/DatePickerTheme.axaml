@@ -4,9 +4,14 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:DatePicker}" TargetType="atom:DatePicker">
+        <Setter Property="atom:DatePickerPresenter.PanelContentPadding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+        <Setter Property="atom:DatePickerPresenter.ButtonsPanelMargin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+        <Setter Property="atom:DatePickerPresenter.HeaderBorderThickness" Value="{atom:DatePickerTokenResource HeaderBorderThickness}" />
+        
         <ControlTheme.BasedOn>
             <atom:InfoPickerInputTheme TargetType="atom:DatePicker" />
         </ControlTheme.BasedOn>
+        <Setter Property="IsArrowVisible" Value="{atom:DatePickerTokenResource PopupArrowVisible}" />
         <Setter Property="AmText" Value="{atom:TimePickerLangResource AMText}" />
         <Setter Property="PmText" Value="{atom:TimePickerLangResource PMText}" />
     </ControlTheme>

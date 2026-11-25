@@ -84,18 +84,22 @@ internal class DragPreview : Decorator
             throw new InvalidOperationException(
                 "A TreeView drag preview must remain attached to a registered TreeView.");
         }
+        Enum backgroundKey = owner is TransferTreeView
+            ? TransferTreeViewTokenKind.NodeHoverBg
+            : TreeViewTokenKind.NodeHoverBg;
         _backgroundBindingDisposable =
             TokenResourceBinder.CreateControlTokenBinding(
                 owner,
                 this,
                 BackgroundProperty,
-                TreeViewTokenKind.NodeHoverBg);
+                backgroundKey);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         _backgroundBindingDisposable?.Dispose();
+        _backgroundBindingDisposable = null;
     }
 
     public override void Render(DrawingContext context)

@@ -106,6 +106,18 @@ internal sealed class DataGridRangeCoordinator : IDisposable
 
     public int StaleCommitCount => 0;
 
+    // 快照过期重启会在协调器内部换上新的代际；表格据此接管，否则后续视口请求都会因代际不是当前而被丢弃
+    internal DataGridGeneration? ActiveGeneration
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _activeGeneration;
+            }
+        }
+    }
+
     public DataGridGeneration BeginGeneration(
         IDataGridSource source,
         DataGridQuery query,

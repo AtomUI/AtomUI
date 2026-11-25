@@ -69,7 +69,7 @@
                     Status="{gallery:PaletteShowCaseLangResource ComponentStatusStable}"
                     Subtitle="{gallery:PaletteShowCaseLangResource PageSubtitle}"
                     Description="{gallery:PaletteShowCaseLangResource PageDescription}"
-                    Namespace="AtomUI.Theme.Algorithms"
+                    Namespace="AtomUI.Theme.Derivation"
                     Package="AtomUI.Controls"
                     BaseClass="PresetPalettes"
                     MetadataValueWidth="220" />

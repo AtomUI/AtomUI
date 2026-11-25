@@ -1,9 +1,7 @@
-using System.Reflection;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using MotionApi = AtomUI.Animations.Motion;
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Threading;

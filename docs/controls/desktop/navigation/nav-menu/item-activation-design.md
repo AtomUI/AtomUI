@@ -150,7 +150,7 @@ NavMenuItem（ICommandSource）
 
 - 只使用 selected 背景 Token（light：`ItemSelectedBg`；dark：`DarkItemSelectedBg`）；文字继续由按下前的普通/hover 规则决定，不切换到 selected 前景 Token，也不写入任何选择状态。
 - 优先级低于真实 `Selected`，高于 hover/default；已选中项继续由真实 selected 状态表达。
-- 背景变化使用 `MotionDurationSlow`（默认 300ms）和 `ItemBackgroundMotionEasing`（默认映射 CSS `ease` 等价曲线 `Spline(0.25,0.1,0.25,1)`）；hover 灰在 mouse down 后平滑进入 selected 背景，mouse up 才提交 selection。Base、Inline、Horizontal header 主题必须消费同一个 NavMenu Token，不直接构造 easing。
+- 背景变化使用 NavMenu 有效的 `MotionDurationSlow`（默认 300ms）；hover 灰在 mouse down 后平滑进入 selected 背景，mouse up 才提交 selection。Base、Inline、Horizontal header 主题以 `atom:TokenTransitions` 声明同一时长 Token。
 - pointer hold 与 keyboard active 使用独立 owner 和独立主题输入：`IsPointerHold` 只表达指针按住，`IsKeyboardActive` 只表达键盘漫游。清除其中一个 owner 不得覆盖另一个。
 - 生命周期与事务状态机一致：按下置位、拖出清除、移回恢复、提交或取消时终结。
 

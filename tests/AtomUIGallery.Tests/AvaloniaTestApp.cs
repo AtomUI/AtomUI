@@ -1,8 +1,11 @@
+using AtomUI.Generated.AtomUIGalleryTests;
 using Avalonia;
 using Avalonia.Headless;
 using AtomUI.Desktop.Controls;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.DesignLanguages.PrimeNG;
+using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Localization;
-using AtomUI.Toolkits.GalleryBase;
 using Xunit;
 
 [assembly: AvaloniaTestApplication(typeof(AtomUIGallery.Tests.TestAppBuilder))]
@@ -37,8 +40,12 @@ public static class TestAppBuilder
                              builder.UseDesktopExtras();
                              builder.UseDesktopColorPicker();
                              builder.UseDesktopDataGrid();
-                             builder.UseGalleryBase(global::AtomUIGallery.AtomUIGalleryModule.Configure);
                              builder.UseGalleryControls();
+                             builder.UseAntDesign(static ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
+                             builder.UsePrimeNG();
+                             builder.UseShadcn();
+                             builder.WithInitialDesignLanguage<AntDesignLanguage>();
+                             ThemePackageRegistration.Register(builder.Theme);
                              builder.UseLanguages(
                                  LanguageTags.EnUS,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);

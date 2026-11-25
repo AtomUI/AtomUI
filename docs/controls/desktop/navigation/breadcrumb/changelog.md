@@ -2,6 +2,12 @@
 
 本文档记录 Breadcrumb 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Breadcrumb 以 `BreadcrumbTokenResource`、BreadcrumbItem 以 `BreadcrumbItemTokenResource` 读取全局 Token
+    （图标尺寸、图标与文字间距、悬浮圆角随 `Controls[BreadcrumbItem]`）。
+
 ## 2026-10-20
 
 - Fixed

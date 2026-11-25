@@ -28,6 +28,15 @@ SliderToken 不承载：
 
 `SliderTrackSize` 表示轨道区域推荐尺寸，`RailSize` 表示 rail 厚度。水平和垂直 padding 为 thumb、rail 和 mark 提供布局空间。
 
+轨道部件成组读取实际使用的轨道尺寸与静态刻度绘制参数。轨道向刻度绘制部件传递一组尺寸、线宽和背景。动画颜色与禁用选择器继续控制实时绘制状态。
+
+`MarginPartWithMark` 对应 antd `marginPartWithMark`（`controlHeightLG - controlSize`），当前为 Reserved：SliderTrack 测量
+mark 文本并把文本尺寸计入轨道高度，不再使用固定的 mark 外边距。
+
+`SliderTrackSize` 对应 antd `controlSize`，当前为 Reserved：Slider 的横向尺寸由派生 padding 固定为 `ControlHeight`，rail 的
+两端内缩跟随滑块尺寸，因此它没有设计上有意义的效果。轨道横向预留尺寸与 padding 改由 `ThumbCircleSizeHover` 派生（两者默认值相同）。
+AtomUI 的默认值是 12（`ControlHeightSM / 2`，即 antd `handleSizeHover`），antd `controlSize` 的默认值是 10（`ControlHeightLG / 4`）。
+
 ### 2.2 Mark
 
 - `MarkSize`
@@ -73,7 +82,7 @@ Mark Token 服务 mark 点的尺寸和边框状态色。Mark 文本使用 Slider
 ```text
 SharedToken
     ↓
-SliderToken.CalculateTokenValues()
+SliderToken 的控件取值规则（Ant Design：SliderTokenRule）
     ↓
 SliderTheme / SliderTrackTheme / SliderThumbTheme
     ↓
@@ -98,11 +107,17 @@ SliderTrack.Render + SliderThumb.Render
 
 SliderToken 只服务 Slider、SliderTrack 和 SliderThumb，不被 NumericUpDown、Progress、ScrollBar 或其他轨道控件直接消费。
 
+SliderTrack、SliderThumb 是注册控件，但只作为 Slider 的模板部件使用：它们标记 internal `[TokenOwnerTransparent]`，不注入
+自己的 owner，继承 Slider 为 owner；主题以 `SliderTokenResource` 读取全部 Token（含全局 `ColorBgContainer`、`ColorBgElevated`、
+`ColorText`）。`Controls[Slider]` 覆盖作用于轨道、刻度与滑块，包括它们的过渡时长；`Controls[SliderThumb]` /
+`Controls[SliderTrack]` 不影响它们的视觉。
+
 需要同时影响多个轨道类控件的视觉语义时，应确认其是否属于 SharedToken，而不是直接复用 SliderToken。
 
 ## 5. 兼容性要求
 
-`SliderToken.CalculateTokenValues()` 使用 SharedToken 推导：
+`SliderToken` 只声明属性；取值由各设计语言取值包里的控件取值规则给出，Ant Design 为
+`AtomUI.Desktop.Controls.Themes.AntDesign/Slider/SliderTokenRule.cs`，它使用 SharedToken 推导：
 
 - rail 厚度。
 - thumb 圆点尺寸。
@@ -123,3 +138,11 @@ Token 不参与 handle 值排序、disabled 边界、整体轨道 offset 或 Too
 | Padding | 验证有无 mark 的 horizontal / vertical 布局和文本不重叠。 |
 | 动态 handle | 验证所有动态 thumb 使用相同 Token 和主题状态。 |
 | Token 生成 | 检查 SliderTokenKind、AXAML 引用、默认值计算和 token.md 语义一致。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `ThumbBg` | `ColorBgContainer` | 滑块圆形填充色 |

@@ -16,7 +16,7 @@ Token 按控件语义分类维护：
 
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
-| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `HeaderFontSize`、`SubHeaderFontSize`、`IconSize`、`ImageWidth`、`ImageHeight` |
+| 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `HeaderFontSize`、`SubHeaderFontSize`、`StatusIconSize`、`ImageWidth`、`ImageHeight` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `ExtraMargin`、`FramePadding`、`ContentPadding`、`ContentMargin`、`HeaderMargin`、`StatusImageMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `ResultInfoIconColor`、`ResultSuccessIconColor`、`ResultWarningIconColor`、`ResultErrorIconColor` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
@@ -29,6 +29,7 @@ Result 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
+- 桌面控件把两个相对行高、状态图标尺寸和实际状态颜色成组读取，模板使用现有计算结果与 Child 优先级。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 
@@ -56,3 +57,9 @@ Result 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 7. 有效 Token 与作用域边界
+
+标题/副标题文字颜色、内容底色与相对行高均读取 Result 的有效全局 Token。四种状态色在对应 Info、Success、
+Warning、Error 状态消费；图片宽高在错误码插画状态消费；标题、内容、额外操作区域与插画间距在真实区域中消费。
+所有既有 Own Token 均保持 Active，无字段删除。内嵌的已注册内容控件保留自己的 Token 身份。

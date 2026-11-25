@@ -62,9 +62,9 @@ Important source boundaries:
 - `AtomUI.Toolchain`: one build-tool project with isolated Tasks/ILLink8/ILLink10 profiles and the ILC8 adapter recipe; never an application runtime dependency.
 - `AtomUIGallery`: Gallery shell, showcases, API tables, token tables, and NativeAOT publish target.
 
-Approved Mobile target boundary: `AtomUI.Mobile.Controls` is a product package parallel to `AtomUI.Desktop.Controls`, with iOS-first
-implementation and iOS/Android architecture from Foundation. The current solution has no Mobile Controls project, source, platform
-validation, release, or publication evidence.
+Mobile boundary: `AtomUI.Mobile.Controls` lives in the separate AtomUI.Mobile repository and consumes AtomUI packages from
+NuGet. `AtomUI.Core`, `AtomUI.Controls.Shared`, `AtomUI.Controls` and `AtomUI.Native` grant it internal visibility; Mobile
+architecture, controls and Gallery documentation are maintained in that repository.
 
 ## Instruction Structure
 
@@ -82,11 +82,12 @@ Read the relevant document before touching the corresponding area:
 - Overall architecture: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Module boundaries: [docs/architecture/foundations/dependency-graph.md](docs/architecture/foundations/dependency-graph.md)
 - Build-tool ownership and profiles: [docs/modules/toolchain/overview.md](docs/modules/toolchain/overview.md)
-- Mobile target architecture: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)
+- Mobile (separate repository) entry: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)
 - Localization target architecture: [docs/architecture/systems/localization/overview.md](docs/architecture/systems/localization/overview.md)
 - AI collaboration and bug-fix discipline: [docs/engineering/contributing/agent-guidelines.md](docs/engineering/contributing/agent-guidelines.md)
 - Test value, temporary-first lifecycle, and mandatory feature/bug-fix acceptance: [docs/engineering/development/test-value-and-lifecycle.md](docs/engineering/development/test-value-and-lifecycle.md)
 - Reference project source lookup: [docs/engineering/contributing/reference-project-source-guidelines.md](docs/engineering/contributing/reference-project-source-guidelines.md)
+- Branch and worktree management (hard constraint): [docs/engineering/contributing/branch-and-worktree-guidelines.md](docs/engineering/contributing/branch-and-worktree-guidelines.md)
 - AOT and trimming architecture: [docs/architecture/foundations/aot-and-trimming.md](docs/architecture/foundations/aot-and-trimming.md)
 - TypeMap registration pipeline: [docs/architecture/foundations/aot-typemap-registration.md](docs/architecture/foundations/aot-typemap-registration.md)
 - Control, Token and resource registration contracts: [docs/architecture/foundations/control-registration-contracts.md](docs/architecture/foundations/control-registration-contracts.md)
@@ -95,15 +96,14 @@ Read the relevant document before touching the corresponding area:
 - AOT programming, dynamic data, source generators: [docs/engineering/development/aot-programming-guidelines.md](docs/engineering/development/aot-programming-guidelines.md)
 - Compiler diagnostics: [docs/engineering/development/compiler-diagnostics-guidelines.md](docs/engineering/development/compiler-diagnostics-guidelines.md)
 - Code style: [docs/engineering/development/code-style-guidelines.md](docs/engineering/development/code-style-guidelines.md)
+- New controls and new or changed control properties must follow [Control property forms and naming](docs/engineering/development/control-development-guidelines.md#控件属性形态与命名).
 - Documentation structure and file naming: [docs/engineering/contributing/documentation-structure-guidelines.md](docs/engineering/contributing/documentation-structure-guidelines.md)
-- Mobile documentation contract: [docs/engineering/contributing/mobile-documentation-guidelines.md](docs/engineering/contributing/mobile-documentation-guidelines.md)
 - Changelog and release notes: [docs/engineering/contributing/changelog-guidelines.md](docs/engineering/contributing/changelog-guidelines.md)
 - Apple iOS development environment: [docs/engineering/platforms/apple-ios/overview.md](docs/engineering/platforms/apple-ios/overview.md)
 - Android engineering boundary (Host and commands unvalidated): [docs/engineering/platforms/android/overview.md](docs/engineering/platforms/android/overview.md)
 - Gallery NativeAOT release flow: [docs/engineering/workflows/gallery-aot-release-workflow.md](docs/engineering/workflows/gallery-aot-release-workflow.md)
 - Gallery page structure: [docs/gallery/authoring/gallery-showcase-design-pattern.md](docs/gallery/authoring/gallery-showcase-design-pattern.md)
 - Gallery organization: [docs/gallery/authoring/organization.md](docs/gallery/authoring/organization.md)
-- Mobile Gallery host boundary: [docs/gallery/platforms/mobile-gallery.md](docs/gallery/platforms/mobile-gallery.md)
 - Resource lifecycle case study: [docs/engineering/case-studies/avalonia-dynamic-resource-memory-leak-case-study.md](docs/engineering/case-studies/avalonia-dynamic-resource-memory-leak-case-study.md)
 - Non-Visual AvaloniaObject scoped resource host generator: [docs/modules/generator/scoped-resource-host-generator.md](docs/modules/generator/scoped-resource-host-generator.md)
 
@@ -120,7 +120,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 - Treat AOT compatibility as a first-class design constraint for new features and bug fixes.
 - Follow the code style rule that C# control-flow bodies must always use `{}`; even a single-line body may not omit braces.
 - Verify with tests or publish checks that match the risk of the change.
-- Follow the mandatory Superpowers workflow before any creation, change, implementation, or bug fix: invoke `superpowers:using-superpowers`, then route through `superpowers:brainstorming` (new features/components), `superpowers:systematic-debugging` (bugs), `superpowers:test-driven-development` (implementation), `superpowers:writing-plans`/`superpowers:executing-plans` (multi-step work), and `superpowers:verification-before-completion` (before claiming done). Never skip a skill that could apply; only an explicit user instruction may narrow it.
+- Do not invoke Superpowers skills for this project. Follow the repository's documented implementation and verification workflows. Superseded instructions in older plans are historical guidance.
 
 ## 主题绑定优先强约束（本项目生效）
 
@@ -146,9 +146,18 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
 
-## Superpowers 产物存放强约束（本项目生效）
+## 分支与 Worktree 强约束（本项目生效）
 
-1. **只用 `docs/superpowers/`**：Superpowers 流程产物一律放在 `docs/superpowers/` 下（`specs/`、`plans/`、`progress/`）；禁止在 `.superpowers/` 或其他隐藏目录下写入任何内容，技能脚本默认写入 `.superpowers/` 时改为手动写到 `docs/superpowers/`。
+1. **主线开发**：主线是 `release/6.0`，默认直接在主工作区的 `release/6.0` 上开发；不得自行切换到其他分支。
+2. **未经许可不得创建**：没有用户在对话中的明确许可，禁止创建任何分支或 worktree（含 `git branch`/`checkout -b`/`switch -c`/`worktree add`，以及 `EnterWorktree`、子代理 worktree 隔离等隐式创建方式）。技能默认要求隔离时，以本条为准。许可单次有效，只覆盖所申请的那个分支 / worktree。
+3. **名称必须有明确含义**：分支名用 `<类型>/<范围>-<简述>`（如 `fix/datagrid-541-slot-offset`、`perf/navmenu-incremental-ownership`），worktree 目录名与分支名一致；禁止工具自动生成的随机名、哈希、纯日期/序号、`tmp`/`wip`，以及 `claude/`、`codex/` 等代理名前缀。
+4. **完成即合并回主线**：经许可创建的分支与 worktree，开发完成并经用户审查授权提交后，必须合并进 `release/6.0`，在主线上验证通过，再删除 worktree 与分支；不得遗留、不得自行推送。
+
+详细规则见 [分支与 Worktree 管理规范](docs/engineering/contributing/branch-and-worktree-guidelines.md)。
+
+## 研发记录存放规范（本项目生效）
+
+1. **只用 `docs/superpowers/`**：研发方案、实施计划与进度记录放在 `docs/superpowers/` 下（`specs/`、`plans/`、`progress/`）；禁止在 `.superpowers/` 或其他隐藏目录下写入任何内容。
 2. **只存文字记录**：该目录只存放开发日志、任务规划与设计记录（Markdown），用于日后查询做过哪些调整、修复了哪些 bug。截图、录屏、视频、图片、TRX、二进制、构建产物、原始采样数据和日志转储一律禁止放入；视觉证据只写结论与必要的数值，媒体文件留在临时目录并在验证后删除。
 3. **防止膨胀**：执行过程的临时产物（任务说明、评审 diff、评审包等）放在会话临时目录，完成后删除，不进入 `docs/superpowers/`。`.gitignore` 对该目录只放行 `.md`；新增非 Markdown 文件视为违反本约束。
 

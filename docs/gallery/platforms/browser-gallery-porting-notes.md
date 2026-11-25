@@ -14,7 +14,7 @@ public static void Configure(IAtomUIBuilder builder)
     builder.UseLanguages(
         GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
         [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
-    builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+    builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
     builder.UseAlibabaSansFont();
     builder.UseAlibabaPuHuiTiFont();
     builder.WithDefaultFontFamily(FontFamily.Parse(
@@ -61,7 +61,7 @@ Browser 不缓存、预热或手工创建 ShowCase 页面，也不维护独立�
 ```mermaid
 flowchart LR
     App["BrowserGalleryApplication"] --> Entry["UseDesktopControls / optional packages"]
-    Entry --> Generated["GeneratedControlPackageRegistration"]
+    Entry --> Generated["PackageMetadata"]
     Generated --> Controls["exact Control descriptors"]
     Generated --> Assets["ControlTheme asset manifest"]
     Assets --> Filter["platform identity / asset selector"]
@@ -124,7 +124,7 @@ Control 包不维护 Browser 专用主题替代资产。Button 家族必须通�
 
 ### 3.3 Optional Packages
 
-Extras、ColorPicker 和 DataGrid 也通过各自的 `GeneratedControlPackageRegistration` 一次性注册 descriptor、主题
+Extras、ColorPicker 和 DataGrid 也通过各自的 `PackageMetadata` 一次性注册 descriptor、主题
 叶子和 Provider。Browser Gallery 使用正常的 `UseDesktopExtras()`、`UseDesktopColorPicker()` 和
 `UseDesktopDataGrid()`，不维护额外 Token 类型列表。
 

@@ -1,3 +1,4 @@
+using AtomUI.Theme;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -22,6 +23,7 @@ public enum TabSharp
     Card
 }
 
+[TokenOwnerTransparent]
 public partial class TabStripItem : AvaloniaTabStripItem
 {
     #region 公共属性定义
@@ -294,15 +296,10 @@ public partial class TabStripItem : AvaloniaTabStripItem
                 resourceKey = "CardTabStripItemTheme";
             }
 
-            if (Application.Current != null)
+            // Resolve from the item itself so a theme supplied in a local resource scope wins over the application one.
+            if (this.TryFindResource(resourceKey, out var resource) && resource is ControlTheme theme)
             {
-                if (Application.Current.TryFindResource(resourceKey, out var resource))
-                {
-                    if (resource is ControlTheme theme)
-                    {
-                        Theme = theme;
-                    }
-                }
+                Theme = theme;
             }
         }
     }

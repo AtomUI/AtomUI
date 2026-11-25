@@ -19,8 +19,8 @@ Calendar 组合 DateViewer 承载日历正文，拥有业务 Header、Fullscreen
 LunarCalendar 在同一公历模型上增加农历呈现。DatePicker 与 RangeDatePicker 组合日期面板、TimeView 和 Footer，拥有输入、格式化、
 原生数据校验、Form、弹层和编辑提交，不再各自生成日期网格。
 
-组件归属 `AtomUI.Desktop.Controls`，公共命名空间为 `AtomUI.Desktop.Controls`，AXAML 命名空间为 `https://atomui.net`。
-不新增 NuGet 包，不下沉桌面交互到 Core，不增加多日期、多区间选择或任意历法插件框架。
+桌面交互、会话和视觉属于 `AtomUI.Desktop.Controls`，AXAML 命名空间为 `https://atomui.net`。
+`AtomUI.Controls.Shared` 承载日期单位计算、面板模型和跨端值类型查询。DateViewer 的公共 .NET 命名空间仍为 `AtomUI.Desktop.Controls`。
 
 ## 2. 设计原则
 

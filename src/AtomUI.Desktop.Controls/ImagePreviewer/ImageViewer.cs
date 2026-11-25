@@ -13,7 +13,7 @@ using Avalonia.Media.Transformation;
 namespace AtomUI.Desktop.Controls;
 
 [PseudoClasses(":loading", ":has-image")]
-internal class ImageViewer : TemplatedControl, IMotionAwareControl
+internal partial class ImageViewer : TemplatedControl, IMotionAwareControl
 {
     #region 公共属性定义
 

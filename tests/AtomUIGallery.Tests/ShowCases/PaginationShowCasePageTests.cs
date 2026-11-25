@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Pagination;
 using Avalonia;
@@ -154,7 +155,7 @@ public class PaginationShowCasePageTests
         semanticSource.ShouldContain("Selector=\"atom|Pagination.semantic-style-demo-object\"");
         semanticSource.ShouldContain("Selector=\"atom|Pagination[SizeType=Small]\"");
         semanticSource.ShouldContain("Property=\"BorderBrush\"");
-        semanticSource.ShouldContain("Value=\"#CCCCCC\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorBorder}\"");
         semanticSource.ShouldContain("Property=\"BorderThickness\"");
         semanticSource.ShouldContain("Property=\"BorderDashArray\"");
         semanticSource.ShouldContain("Value=\"4,2\"");
@@ -162,7 +163,7 @@ public class PaginationShowCasePageTests
         semanticSource.ShouldContain("Property=\"CornerRadius\"");
         semanticSource.ShouldContain("Value=\"999\"");
         semanticSource.ShouldContain("Property=\"Background\"");
-        semanticSource.ShouldContain("Value=\"#4DC8C8C8\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillAlter}\"");
         semanticSource.ShouldContain("Property=\"Margin\"");
         semanticSource.ShouldContain("Value=\"0,0,4,0\"");
         semanticSource.ShouldContain("Selector=\"^:selected\"");
@@ -207,13 +208,14 @@ public class PaginationShowCasePageTests
                                .Where(static pagination => pagination.Classes.Contains("semantic-style-demo-root"))
                                .ToArray();
             demoRows.Length.ShouldBe(2);
+            var tokens = ControlTokenAccessor.Capture(demoRows[0]);
 
             var demoContainer = demoRows[0].GetVisualParent().ShouldBeOfType<StackPanel>();
             demoRows[1].GetVisualParent().ShouldBeSameAs(demoContainer);
             foreach (var row in demoRows)
             {
                 row.Bounds.Width.ShouldBe(demoContainer.Bounds.Width, 0.5);
-                AssertSolidColor(row.BorderBrush, "#CCCCCC");
+                AssertSolidColor(row.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
                 row.BorderThickness.ShouldBe(new Thickness(2));
                 row.BorderDashArray.ShouldBe(new[] { 4d, 2d });
                 row.Padding.ShouldBe(new Thickness(8));
@@ -251,17 +253,17 @@ public class PaginationShowCasePageTests
             foreach (var functionItem in functionItems.Where(
                          static item => item is not ISelectable { IsSelected: true }))
             {
-                AssertSolidColor(functionItem.Background, "#4DC8C8C8");
+                AssertSolidColor(functionItem.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorFillAlter));
                 functionItem.Margin.ShouldBe(new Thickness(0, 0, 4, 0));
             }
         });
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static void AssertSolidColor(IBrush? actual, Color expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(expected);
     }
 
     private static void AssertCustomComponentLocalization(

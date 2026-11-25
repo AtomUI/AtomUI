@@ -37,22 +37,23 @@ ExpanderToken 不承载以下状态：
 - `HeaderBg`
 - `ContentBg`
 
-`HeaderBg` 用于 Header 默认背景。`ContentBg` 用于内容背景语义，并在 Ghost 模式下作为 Header 背景来源。
+`HeaderBg` 用于 Header 默认背景。`ContentBg` 是内容区（`PART_ContentPresenter`）背景，与 antd `contentBg` 一致；Borderless 模式内容区改用
+`HeaderBg`，Ghost 模式 Header 与内容区都透明（`ColorTransparent`）。
 
 ### 2.4 边框与圆角 Token
 
 - `ExpanderBorderRadius`
 
-`ExpanderBorderRadius` 控制 `PART_Frame` 圆角。边框颜色和边框厚度使用 SharedToken，不在 ExpanderToken 中重复定义。
+`ExpanderBorderRadius` 控制 `PART_Frame` 圆角。边框颜色和边框厚度是全局 Token（`ColorBorder`、`BorderThickness`），经
+`ExpanderTokenResource` 读取，`Controls[Expander]` 覆盖生效，不在 ExpanderToken 中重复定义。
 
 ### 2.5 展开图标外边距 Token
 
 - `LeftExpandButtonHMargin`
 - `RightExpandButtonHMargin`
-- `LeftExpandButtonVMargin`
-- `RightExpandButtonVMargin`
 
-水平外边距 Token 控制默认 Header 布局下展开图标与 Header 文本之间的距离。垂直外边距 Token 属于 Expander 图标布局契约中的保留语义，维护时不得删除或复用为无关 spacing。
+水平外边距 Token 控制默认 Header 布局下展开图标与 Header 文本之间的距离。左右展开方向下 Header 随 `LayoutTransform` 旋转 90°，水平外边距
+同样适用，因此原 `LeftExpandButtonVMargin` / `RightExpandButtonVMargin` 从未被消费，已删除（见 [Changelog](changelog.md)）。
 
 实例显式设置 `HeaderPadding` 时，展开图标外边距由 `EffectiveExpandButtonMargin` 从 `HeaderPadding.Left` 或 `HeaderPadding.Right` 推导，而不是直接使用这些默认 Token。
 
@@ -106,7 +107,7 @@ Collapse 拥有独立的 CollapseToken 和多面板布局模型。Expander 不�
 
 ## 5. 兼容性要求
 
-ExpanderToken 属于 Expander 主题契约。即使 `ExpanderToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+ExpanderToken 属于 Expander 主题契约。`ExpanderToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 
@@ -129,3 +130,12 @@ Token 变更要求：
 | 修改展开图标 margin Token | 验证 Start/End 图标位置、AddOnContent、Header 文本间距和自定义 HeaderPadding 分支。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步 AXAML 引用、生成文件、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档改动 | 运行 `git diff --check`，检查文档链接存在。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `HeaderColor` | `ColorTextHeading` | 头部文字颜色 |
+| `HeaderFontWeight` | `Normal` | 头部字重，设在语义 header 上 |

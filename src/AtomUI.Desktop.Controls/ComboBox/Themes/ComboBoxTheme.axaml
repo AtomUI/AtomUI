@@ -4,14 +4,28 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ComboBox}" TargetType="atom:ComboBox">
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+        <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
+                    <!-- Keyboard stops follow Ant Design Select: the input (the host, or the editable text box), then
+                         the clear button. The clear button precedes the text box in the frame's visual tree (DockPanel
+                         order), so the frame is a local tab group ordered by TabIndex. It is not a tab stop itself, so
+                         Tab enters the group instead of passing over it. Add-on content keeps its visual place: each
+                         content add-on presenter is a group of its own around the text box, and the frame orders the
+                         outer add-ons first and last (AddOnDecoratedBox theme). -->
                     <atom:AddOnDecoratedBox
                         Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
+                        KeyboardNavigation.TabNavigation="Local"
                         Classes.semantic-scope-input="True"
                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                         Focusable="True"
+                        IsTabStop="False"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         StyleVariant="{TemplateBinding StyleVariant}"
@@ -24,10 +38,15 @@
                         LeftAddOnTemplate="{TemplateBinding LeftAddOnTemplate}"
                         RightAddOn="{TemplateBinding RightAddOn}"
                         RightAddOnTemplate="{TemplateBinding RightAddOnTemplate}"
-                        IsEnabled="{TemplateBinding IsEnabled}">
+                        IsEnabled="{TemplateBinding IsEnabled}"
+                        HostBorderBrush="{TemplateBinding BorderBrush}"
+                        HostBackground="{TemplateBinding Background}">
                         <atom:AddOnDecoratedBox.ContentLeftAddOn>
                             <atom:AddOnContentPresenter
+                                Name="PART_ContentLeftAddOnPresenter"
                                 Classes.semantic-prefix="True"
+                                KeyboardNavigation.TabNavigation="Local"
+                                KeyboardNavigation.TabIndex="0"
                                 Content="{CompiledBinding $parent[atom:ComboBox].ContentLeftAddOn}"
                                 ContentTemplate="{CompiledBinding $parent[atom:ComboBox].ContentLeftAddOnTemplate}"
                                 VerticalAlignment="Stretch"
@@ -38,9 +57,11 @@
                         <atom:AddOnDecoratedBox.ContentRightAddOn>
                              <StackPanel Orientation="Horizontal"
                                         Classes.semantic-suffix="True"
-                                        Spacing="{atom:SharedTokenResource SpacingXS}">
+                                        Spacing="{atom:ComboBoxTokenResource SpacingXS}">
                                  <atom:AddOnContentPresenter
                                      Name="PART_ContentRightAddOnPresenter"
+                                     KeyboardNavigation.TabNavigation="Local"
+                                     KeyboardNavigation.TabIndex="2"
                                      Content="{CompiledBinding $parent[atom:ComboBox].ContentRightAddOn}"
                                      ContentTemplate="{CompiledBinding $parent[atom:ComboBox].ContentRightAddOnTemplate}" />
                                  <ContentPresenter
@@ -50,11 +71,26 @@
                                      HorizontalAlignment="Right"
                                      IsVisible="{CompiledBinding $parent[atom:ComboBox].IsFormFeedbackVisible}"
                                      Content="{CompiledBinding $parent[atom:ComboBox].FormFeedback}" />
-                                 <atom:ComboBoxHandle
-                                     Name="PART_ComboBoxHandle"
-                                     Classes.semantic-scope-handle="True"
-                                     IsEnabled="{CompiledBinding $parent[atom:ComboBox].IsEnabled}"
-                                     IsMotionEnabled="{CompiledBinding $parent[atom:ComboBox].IsMotionEnabled}" />
+                                 <StackPanel Orientation="Horizontal"
+                                             Classes.semantic-scope-actions="True"
+                                             Spacing="{atom:ComboBoxTokenResource SpacingXXS}">
+                                     <Panel Classes.semantic-scope-clear="True"
+                                            MinWidth="{atom:ComboBoxTokenResource IconSize}"
+                                            IsVisible="{CompiledBinding $parent[atom:ComboBox].IsAllowClear, Priority=Template}">
+                                         <atom:InputClearIconButton
+                                             Name="PART_ClearButton"
+                                             Classes.semantic-clear="True"
+                                             KeyboardNavigation.TabIndex="3"
+                                             IsVisible="{CompiledBinding $parent[atom:ComboBox].IsEffectiveShowClearButton, Priority=Template}"
+                                             VerticalAlignment="Center"
+                                             IsMotionEnabled="{CompiledBinding $parent[atom:ComboBox].IsMotionEnabled}" />
+                                     </Panel>
+                                     <atom:ComboBoxHandle
+                                         Name="PART_ComboBoxHandle"
+                                         Classes.semantic-scope-handle="True"
+                                         IsEnabled="{CompiledBinding $parent[atom:ComboBox].IsEnabled}"
+                                         IsMotionEnabled="{CompiledBinding $parent[atom:ComboBox].IsMotionEnabled}" />
+                                 </StackPanel>
                              </StackPanel>
                         </atom:AddOnDecoratedBox.ContentRightAddOn>
                         <Panel Classes.semantic-content="True">
@@ -64,9 +100,9 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
-                                Opacity="0.3"
                                 IsVisible="{TemplateBinding SelectingItemsControl.SelectedItem, Converter={x:Static ObjectConverters.IsNull}}"
-                                Text="{TemplateBinding PlaceholderText}" />
+                                Text="{TemplateBinding PlaceholderText}"
+                                Foreground="{TemplateBinding PlaceholderForeground}" />
                             <ContentPresenter
                                 Name="SelectedContentPresenter"
                                 HorizontalAlignment="Left"
@@ -81,14 +117,15 @@
                             <atom:ComboBoxTextBox
                                 Name="PART_EditableTextBox"
                                 Classes.semantic-input="True"
+                                KeyboardNavigation.TabIndex="1"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Padding="0"
-                                CaretBrush="{atom:SharedTokenResource ColorText}"
-                                SelectionBrush="{atom:SharedTokenResource SelectionBackground}"
-                                SelectionForegroundBrush="{atom:SharedTokenResource SelectionForeground}"
+                                CaretBrush="{atom:ComboBoxTokenResource ColorText}"
+                                SelectionBrush="{atom:ComboBoxTokenResource SelectionBackground}"
+                                SelectionForegroundBrush="{atom:ComboBoxTokenResource SelectionForeground}"
                                 Text="{TemplateBinding Text, Mode=TwoWay}"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"
                                 PlaceholderForeground="{TemplateBinding PlaceholderForeground}"
@@ -104,6 +141,9 @@
                         与共享 AbstractSelect 的既有约定一致。
                     -->
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
+                                IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="True"
                                 OverlayDismissEventPassThrough="True"
@@ -130,13 +170,22 @@
                                 <Border
                                     Name="PART_EmptyIndicator"
                                     Classes.semantic-popup-empty="True"
-                                    Padding="{atom:SharedTokenResource Padding}"
+                                    Padding="{TemplateBinding EmptyIndicatorPadding}"
                                     IsVisible="{TemplateBinding IsEffectiveEmptyVisible}">
-                                    <atom:Empty
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        SizeType="Small"
-                                        PresetImage="Simple" />
+                                    <Panel>
+                                        <ContentPresenter
+                                            HorizontalContentAlignment="Center"
+                                            VerticalContentAlignment="Center"
+                                            Content="{TemplateBinding EmptyIndicator}"
+                                            ContentTemplate="{TemplateBinding EmptyIndicatorTemplate}"
+                                            IsVisible="{TemplateBinding IsDefaultEmptyIndicatorVisible, Converter={x:Static BoolConverters.Not}}" />
+                                        <atom:Empty
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{TemplateBinding IsDefaultEmptyIndicatorVisible}"
+                                            SizeType="Small"
+                                            PresetImage="Simple" />
+                                    </Panel>
                                 </Border>
                             </Panel>
                         </Border>
@@ -149,25 +198,31 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="PopupContentPadding" Value="{atom:ComboBoxTokenResource PopupContentPadding}" />
-        <Setter Property="OptionFontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="ItemHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-        
-        <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
-            <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
-                <Setter Property="Margin" Value="0, 1, 0, 1" />
+        <Setter Property="IsMotionEnabled" Value="{atom:ComboBoxTokenResource EnableMotion}" />
+        <Setter Property="UsePopupLayoutTokenResources" Value="True" />
+        <Setter Property="EmptyIndicatorPadding" Value="{atom:ComboBoxTokenResource Padding}" />
+        <Setter Property="OptionFontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
+        <Setter Property="PlaceholderForeground" Value="{atom:ComboBoxTokenResource ColorTextPlaceholder}" />
+
+        <Style Selector="^[IsAllowClear=True][CanClearValue=True]:not(:disabled)">
+            <Style Selector="^:pointerover, ^:focus-within">
+                <Setter Property="IsEffectiveShowClearButton" Value="True" />
             </Style>
         </Style>
 
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="FontSize" Value="{atom:ComboBoxTokenResource FontSizeLG}" />
+        </Style>
+        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
+            <Setter Property="FontSize" Value="{atom:ComboBoxTokenResource FontSize}" />
+        </Style>
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="FontSize" Value="{atom:ComboBoxTokenResource FontSizeSM}" />
+        </Style>
+
         <Style Selector="^[IsEditable=True]">
+            <!-- The text box is the stop; a host stop would hand focus straight back to it, trapping Shift+Tab. -->
+            <Setter Property="IsTabStop" Value="False" />
             <Style Selector="^ /template/ atom|TextBlock#PlaceholderText">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
@@ -182,7 +237,7 @@
             <Setter Property="PopupRootShadow" Value="{atom:PopupTokenResource PopupRootShadow}" />
         </Style>
         <Style Selector="^ /template/ Border#PopupFrame">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+            <Setter Property="Background" Value="{atom:ComboBoxTokenResource ColorBgElevated}" />
             <Setter Property="CornerRadius"
                     Value="{atom:PopupTokenResource PopupCornerRadius}" />
         </Style>
@@ -191,13 +246,13 @@
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:ComboBoxTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>
@@ -206,13 +261,13 @@
             <Style Selector="^:error">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorErrorText}" />
+                            Value="{atom:ComboBoxTokenResource ColorErrorText}" />
                 </Style>
             </Style>
             <Style Selector="^:warning">
                 <Style Selector="^ /template/ ContentPresenter#SelectedContentPresenter">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorWarningText}" />
+                            Value="{atom:ComboBoxTokenResource ColorWarningText}" />
                 </Style>
             </Style>
         </Style>

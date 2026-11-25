@@ -2,6 +2,36 @@
 
 本文档记录 SearchEdit 控件级设计、API、主题契约、Token 和实现结构的变化。它用于维护控件设计历史，不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- 新增 Own Token 类 `SearchEditToken`，含 `InputFontSizeSM`（小号字体，默认 `FontSize`，与 antd 一致），Small 字号改读它。Ant Design / Shadcn 渲染不变。
+- PrimeNG：`InputFontSizeSM` 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size` 0.75rem），与 Small LineEdit、Button 同为 12px；并补上与 LineEdit 相同的 PrimeUIX form field 规则（悬停边框、禁用文字、图标色、各尺寸同一圆角等），此前 SearchEdit 没有 Own Token 类，主题无法为它单独计算这些值。
+- 修复搜索按钮高度只增不减：按钮 `Height` 原绑定到装饰框自身的 `Bounds.Height`，而装饰框又按子元素测量，两者互相撑高。从高的主题（如 PrimeNG Lara 32px）切到矮的主题后，SearchEdit 一直停在 32px。改为 `VerticalAlignment="Stretch"`，由 `SearchEditPanel` 按行高排布按钮。
+- Small 文本行高随输入框统一改为 `FontHeight`（见 LineEdit changelog），Small SearchEdit 与其他 Small 输入框同为 `ControlHeightSM`。
+
+## 2026-11-11
+
+- Theme
+  - focus 外发光只作用于 `Outlined`，`Filled` / `Underlined` 不再设置 focus `BoxShadow`。
+  - 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 `SearchEditTokenResource`，输入表面经共享 `InputControlFrame` / `AddOnDecoratedBox` 以 `OwnerTokenResource` 读取
+    SearchEdit 的有效值；`Controls[SearchEdit]` 不改变搜索按钮的颜色（按钮读取 Button 有效值），拼接圆角与 Text 型按钮的搜索语义
+    色跟随 SearchEdit。
+- Fixed
+  - 按 `SizeType` 使用 SearchEdit 的 `FontSize` / `FontSizeLG`（小号与中号同取 `FontSize`，对齐 antd；`IsCustomFontSize=False` 时），此前没有字号预设。
+  - 焦点阴影现在绘制；根 `BorderBrush` / `Background` 经 `HostBorderBrush` / `HostBackground` 投射到输入表面。
+
+## 2026-11-05
+
+- 实现结构
+  - 输入模板直接使用 Avalonia `TextPresenter`，选区前景色刷新由框架负责；保留 `PART_TextPresenter`、`input` Semantic Part 及搜索行为。
+
 ## 2026-09-15
 
 - Documentation

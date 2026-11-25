@@ -72,13 +72,14 @@ internal sealed class ImageLoaderPipeline : IDisposable
 
     internal async Task<ImageLoadResult> LoadAsync(
         NormalizedImageRequest request,
+        IProgress<ImageLoadProgress> progress,
         CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(_disposed || Volatile.Read(ref _disposeRequested) != 0, this);
-        ImageProgressDispatcher.Report(request.Progress, ImageLoadProgress.Create(ImageLoadStage.Resolving));
+        ImageProgressDispatcher.Report(progress, ImageLoadProgress.Create(ImageLoadStage.Resolving));
         if (request.Source.Kind == ImageSourceKind.Borrowed)
         {
-            return await LoadBorrowedImageAsync(request, cancellationToken).ConfigureAwait(false);
+            return await LoadBorrowedImageAsync(request, progress, cancellationToken).ConfigureAwait(false);
         }
 
         var epoch = GetEpoch(request.PartitionHash);
@@ -90,7 +91,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
                 epoch,
                 context,
                 operationCancellation),
-            request.Progress,
+            progress,
             cancellationToken).ConfigureAwait(false);
         var content = validated.Content;
         var contentId = content.ContentId ?? throw new InvalidOperationException("Validated content has no content identity.");
@@ -105,7 +106,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
                 request.Timing.Snapshot(),
                 out var cachedResult))
         {
-            ImageProgressDispatcher.Report(request.Progress, ImageLoadProgress.Create(ImageLoadStage.CacheLookup));
+            ImageProgressDispatcher.Report(progress, ImageLoadProgress.Create(ImageLoadStage.CacheLookup));
             return cachedResult!;
         }
 
@@ -131,7 +132,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
                 validated.SourceValidation,
                 contentId.Value,
                 request.Timing.Snapshot()),
-            request.Progress,
+            progress,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -235,6 +236,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
 
     private Task<ImageLoadResult> LoadBorrowedImageAsync(
         NormalizedImageRequest request,
+        IProgress<ImageLoadProgress> progress,
         CancellationToken cancellationToken)
     {
         return _coordinator.GetDecodedAsync(
@@ -249,7 +251,7 @@ internal sealed class ImageLoaderPipeline : IDisposable
                 ImageSourceValidation.NotRequired,
                 null,
                 request.Timing.Snapshot()),
-            request.Progress,
+            progress,
             cancellationToken);
     }
 

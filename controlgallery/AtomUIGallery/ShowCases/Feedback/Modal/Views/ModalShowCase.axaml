@@ -3,8 +3,23 @@
              x:Class="AtomUIGallery.ShowCases.Modal.ModalShowCase"
              xmlns:atom="https://atomui.net"
              xmlns:gallery="https://atomui.net/oss-controls/gallery"
+             xmlns:primitives="using:Avalonia.Controls.Primitives"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Modal"
              x:DataType="viewModels:ModalViewModel">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="WindowDialogBackgroundBrush" Color="#351627" />
+                    <SolidColorBrush x:Key="WindowDialogTextBrush" Color="#FF83BD" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="WindowDialogBackgroundBrush" Color="#fff0f6" />
+                    <SolidColorBrush x:Key="WindowDialogTextBrush" Color="#eb2f96" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
         <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
             <gallery:GalleryShowCaseHost.Header>
@@ -39,7 +54,7 @@
                                         BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
                                         BorderThickness="1"
                                         CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">
-                                    <atom:ScopeAwareOverlayLayerPanel Name="ModalSemanticStageLayer">
+                                    <atom:ScopeAwareOverlayLayerPanel x:Name="ModalSemanticStageLayer">
                                         <Panel>
                                             <atom:TextBlock Margin="24,16,24,0"
                                                             VerticalAlignment="Top"
@@ -48,7 +63,7 @@
                                                             Text="{gallery:ModalShowCaseLangResource SemanticStageHint}" />
                                             <!-- owner 显式铺满舞台（420x320）：Dialog 主题默认零尺寸，而 resolver
                                              对零尺寸目标不建 Adorner，不铺满则 root 部件无法高亮（先例：Drawer 舞台 Grid 拉伸）。 -->
-                                            <atom:Dialog Name="ModalSemanticOwner"
+                                            <atom:Dialog x:Name="ModalSemanticOwner"
                                                          Width="420"
                                                          Height="320"
                                                          Title="{gallery:ModalShowCaseLangResource P2TitleBasicModal}"
@@ -112,14 +127,14 @@
                                         BorderBrush="{atom:SharedTokenResource ColorBorderSecondary}"
                                         BorderThickness="1"
                                         CornerRadius="{atom:SharedTokenResource BorderRadiusLG}">
-                                    <atom:ScopeAwareOverlayLayerPanel Name="MessageBoxSemanticStageLayer">
+                                    <atom:ScopeAwareOverlayLayerPanel x:Name="MessageBoxSemanticStageLayer">
                                         <Panel>
                                             <atom:TextBlock Margin="24,16,24,0"
                                                             VerticalAlignment="Top"
                                                             TextWrapping="Wrap"
                                                             Foreground="{atom:SharedTokenResource ColorTextSecondary}"
                                                             Text="{gallery:ModalShowCaseLangResource SemanticStageHint}" />
-                                            <atom:MessageBox Name="MessageBoxSemanticOwner"
+                                            <atom:MessageBox x:Name="MessageBoxSemanticOwner"
                                                              Width="420"
                                                              Height="320"
                                                              Title="{gallery:ModalShowCaseLangResource P2TitleNormal}"
@@ -201,7 +216,7 @@
                                                          Content="{gallery:ModalShowCaseLangResource P2ContentOpenWindowDialog}" />
                                         </StackPanel>
                                         <!-- owner 显式铺满舞台：Dialog 主题默认零尺寸，resolver 对零尺寸目标不建 Adorner。 -->
-                                        <atom:Dialog Name="WindowDialogSemanticOwner"
+                                        <atom:Dialog x:Name="WindowDialogSemanticOwner"
                                                      Width="420"
                                                      Height="200"
                                                      Title="{gallery:ModalShowCaseLangResource P2TitleBasicModal}"
@@ -719,6 +734,8 @@
                                             <atom:DialogHeaderStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background"
                                                         Value="{atom:SharedTokenResource ColorFillAlter}" />
+                                                <Setter Property="Padding"
+                                                        Value="{CompiledBinding $self.TemplatedParent.(primitives:TemplatedControl.Padding), Converter={x:Static viewModels:ModalShowCase.CenterVerticalPadding}}" />
                                             </atom:DialogHeaderStyle>
                                             <atom:DialogTitleStyle x:SetterTargetType="TextBlock">
                                                 <Setter Property="Foreground" Value="#1677ff" />
@@ -729,6 +746,10 @@
                                             <atom:DialogFooterStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background"
                                                         Value="{atom:SharedTokenResource ColorFillAlter}" />
+                                                <Setter Property="viewModels:ModalShowCase.FooterPadding"
+                                                        Value="{atom:DialogTokenResource FooterPadding}" />
+                                                <Setter Property="Padding"
+                                                        Value="{CompiledBinding $self.(viewModels:ModalShowCase.FooterPadding), Converter={x:Static viewModels:ModalShowCase.CenterVerticalPadding}}" />
                                             </atom:DialogFooterStyle>
                                             <atom:DialogCloseStyle x:SetterTargetType="Button">
                                                 <Setter Property="Foreground" Value="#1677ff" />
@@ -758,6 +779,8 @@
                                             <atom:MessageBoxHeaderStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background"
                                                         Value="{atom:SharedTokenResource ColorFillAlter}" />
+                                                <Setter Property="Padding"
+                                                        Value="{CompiledBinding $self.TemplatedParent.(primitives:TemplatedControl.Padding), Converter={x:Static viewModels:ModalShowCase.CenterVerticalPadding}}" />
                                             </atom:MessageBoxHeaderStyle>
                                             <atom:MessageBoxTitleStyle x:SetterTargetType="TextBlock">
                                                 <Setter Property="Foreground" Value="#1677ff" />
@@ -768,6 +791,10 @@
                                             <atom:MessageBoxFooterStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background"
                                                         Value="{atom:SharedTokenResource ColorFillAlter}" />
+                                                <Setter Property="viewModels:ModalShowCase.FooterPadding"
+                                                        Value="{atom:MessageBoxTokenResource FooterPadding}" />
+                                                <Setter Property="Padding"
+                                                        Value="{CompiledBinding $self.(viewModels:ModalShowCase.FooterPadding), Converter={x:Static viewModels:ModalShowCase.CenterVerticalPadding}}" />
                                             </atom:MessageBoxFooterStyle>
                                             <atom:MessageBoxCloseStyle x:SetterTargetType="Button">
                                                 <Setter Property="Foreground" Value="#1677ff" />
@@ -793,23 +820,27 @@
                                                                  嵌套样式必须直接挂外层 owner Style（生成 Part Style 内的二级嵌套不激活）。 -->
                                         <Style Selector="atom|Dialog.window-semantic-styles-demo">
                                             <atom:DialogContainerStyle x:SetterTargetType="Border">
-                                                <Setter Property="Background" Value="#fff0f6" />
+                                                <Setter Property="Background" Value="{DynamicResource WindowDialogBackgroundBrush}" />
                                                 <Setter Property="CornerRadius" Value="12" />
                                             </atom:DialogContainerStyle>
                                             <atom:DialogBodyStyle x:SetterTargetType="Border">
                                                 <Setter Property="Padding" Value="24" />
                                             </atom:DialogBodyStyle>
                                             <atom:DialogFooterStyle x:SetterTargetType="Border">
-                                                <Setter Property="Background" Value="#fff0f6" />
+                                                <Setter Property="Background" Value="{DynamicResource WindowDialogBackgroundBrush}" />
+                                                <Setter Property="viewModels:ModalShowCase.FooterPadding"
+                                                        Value="{atom:DialogTokenResource FooterPadding}" />
+                                                <Setter Property="Padding"
+                                                        Value="{CompiledBinding $self.(viewModels:ModalShowCase.FooterPadding), Converter={x:Static viewModels:ModalShowCase.CenterVerticalPadding}}" />
                                             </atom:DialogFooterStyle>
                                             <Style Selector="^ atom|TextBlock">
-                                                <Setter Property="Foreground" Value="#eb2f96" />
+                                                <Setter Property="Foreground" Value="{DynamicResource WindowDialogTextBrush}" />
                                                 <Setter Property="FontSize" Value="16" />
                                                 <Setter Property="FontWeight" Value="Bold" />
                                             </Style>
                                             <Style Selector="^ atom|Button">
-                                                <Setter Property="Background" Value="#52c41a" />
-                                                <Setter Property="Foreground" Value="White" />
+                                                <Setter Property="Background" Value="{atom:SharedTokenResource ColorSuccessBg}" />
+                                                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorSuccessText}" />
                                                 <Setter Property="CornerRadius" Value="16" />
                                             </Style>
                                         </Style>

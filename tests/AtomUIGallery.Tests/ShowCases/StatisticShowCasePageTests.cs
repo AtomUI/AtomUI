@@ -38,7 +38,7 @@ public class StatisticShowCasePageTests
         semanticSource.ShouldContain("StatisticShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Orientation=\"Vertical\"");
         semanticSource.ShouldContain("Spacing=\"16\"");
-        semanticSource.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"#CCCCCC\" />");
+        semanticSource.ShouldContain("<Setter Property=\"BorderBrush\" Value=\"{atom:SharedTokenResource ColorBorder}\" />");
         semanticSource.ShouldContain("<Setter Property=\"BorderThickness\" Value=\"2\" />");
         semanticSource.ShouldContain("<Setter Property=\"Padding\" Value=\"16\" />");
         semanticSource.ShouldContain("<Setter Property=\"CornerRadius\" Value=\"8\" />");
@@ -53,12 +53,10 @@ public class StatisticShowCasePageTests
         semanticSource.ShouldContain("Value=\"-18.7\"");
         semanticSource.ShouldContain("Precision=\"1\"");
         semanticSource.ShouldContain("ValueSuffixAddOn=\"%\"");
-        semanticSource.ShouldContain("Value=\"#1890FF\"");
-        semanticSource.ShouldContain("Value=\"#0958D9\"");
-        semanticSource.ShouldContain("Value=\"#E6F4FF\"");
-        semanticSource.ShouldContain("Value=\"#FF4D4F\"");
-        semanticSource.ShouldContain("Value=\"#FF7875\"");
-        semanticSource.ShouldContain("Value=\"#FFF1F0\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorErrorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorErrorBg}\"");
         semanticSource.ShouldNotContain("semantic dom", Case.Insensitive);
         semanticSource.ShouldNotContain("classNames");
         semanticSource.ShouldNotContain("objects/functions");

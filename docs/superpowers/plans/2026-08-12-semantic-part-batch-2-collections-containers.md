@@ -1,6 +1,6 @@
 # Semantic Part 第二批集合与容器实施计划
 
-> **供智能体执行者使用：** 使用 `superpowers:executing-plans` 在当前会话中执行，不得使用 subagent。每个控件在 Gate A 后停止等待用户批准，Gate B 改动保持未提交。
+> 在当前会话中执行计划，不得使用子代理。每个控件在 Gate A 后停止等待用户批准，Gate B 改动保持未提交。
 
 **目标：** 为 19 个集合、容器、布局和导航控件家族建立 Semantic Part 契约，同时保持容器、虚拟化和运行时节点性能。其中 16 个家族具有 Ant Design 6.6.0 公开 Semantic DOM 对应 API，`Expander`（映射上游 `Collapse`）、`TabStrip`（映射上游 `Tabs`）为 2026-09-15 用户指令新增，`GroupBox` 为 2026-09-16 用户指令新增且**没有**上游对应 owner（Part 从 AtomUI 自身模板职责设计）。
 

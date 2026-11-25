@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUIDevelopTargetFramework)</TargetFrameworks>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>AtomUI.ControlBaseline</RootNamespace>
+        <AssemblyName>AtomUI.ControlBaseline</AssemblyName>
+        <Nullable>enable</Nullable>
+        <!-- The stock Fluent reference application intentionally has no AtomUI generated startup hooks. -->
+        <NoWarn>$(NoWarn);ATOMUIREG015</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Headless" />
+        <!-- Skia rendering for the state-snapshots pixel capture mode. -->
+        <PackageReference Include="Avalonia.Desktop" />
+        <!-- Stock Avalonia reference point only; never referenced by product assemblies. -->
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
+        <!-- The design languages and their control values, for the design-language variants of the state snapshots. -->
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn.csproj" />
+        <ProjectReference Include="../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"
+                          PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Shared with AtomUI.GalleryPerformance: the variant list and the request the Gallery menu sends. -->
+        <Compile Include="../AtomUI.GalleryPerformance/DesignLanguageVariants.cs" Link="DesignLanguageVariants.cs" />
+        <Compile Include="../AtomUI.GalleryPerformance/SnapshotFreeze.cs" Link="SnapshotFreeze.cs" />
+    </ItemGroup>
+
+</Project>

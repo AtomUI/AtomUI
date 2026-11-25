@@ -5,6 +5,7 @@ using Avalonia.VisualTree;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Styling;
 using System.Collections.Specialized;
 namespace AtomUI.Desktop.Controls;
@@ -120,6 +121,9 @@ internal class MasonryPanel : Panel
     private MasonryLayout? _measuredLayout;
     private double _measuredEffectiveWidth;
     private bool _hasMeasuredLayout;
+    // 上次 Arrange 的有效宽度，仅在 Measure 输入宽度不变时复用（见 MeasureOverride 注释）。
+    private double _previousAvailableWidth = double.NaN;
+    private double? _arrangedEffectiveWidth;
     private int[]? _lastColumns;
     private bool[]? _lastFullSpans;
     private bool _hasPublishedLayout;
@@ -130,17 +134,20 @@ internal class MasonryPanel : Panel
     private IMediaBreakAwareControl? _mediaOwner;
 
     // antd motionEaseOut == cubic-bezier(0.215, 0.61, 0.355, 1) == easeOutCubic == Avalonia
-    // CubicEaseOut（与 DrawerContainer 默认动效缓动一致）。
+    // CubicEaseOut（与 DrawerContainer 默认动效缓动一致）。用于新 item 入场淡入。
     private static readonly CubicEaseOut MotionEasing = new();
 
     private readonly Dictionary<Control, Rect> _lastVisualRects = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Control, ItemMotionState> _itemMotions = new(ReferenceEqualityComparer.Instance);
     private Masonry? _motionOwner;
+    // 最近一次 EffectiveViewportChanged 报告的可见区域（面板坐标）；null 表示尚未得知，按全部可见处理。
+    private Rect? _motionViewport;
 
+    // 每次入场淡入运行一个独立状态；正常结束、取消、视口裁剪和 detached 都经同一路径释放预置句柄。
     private sealed class ItemMotionState
     {
-        public CancellationTokenSource Cancellation = new();
-        public bool IsGlide;
+        public readonly CancellationTokenSource Cancellation = new();
+        public IDisposable? Preset;
     }
 
     /// <summary>被移除子项及其最后视觉矩形（面板坐标空间）。</summary>
@@ -215,8 +222,6 @@ internal class MasonryPanel : Panel
 
     static MasonryPanel()
     {
-        // RenderTransform（ITransform?）默认无关键帧插值器（见 MasonryItemTransformAnimator 说明）
-        Animation.RegisterCustomAnimator<Avalonia.Media.ITransform?, MasonryInternal.MasonryItemTransformAnimator>();
         AffectsMeasure<MasonryPanel>(
             ColumnCountProperty,
             ColumnInfoProperty,
@@ -232,6 +237,11 @@ internal class MasonryPanel : Panel
     {
         base.OnAttachedToVisualTree(e);
         _motionOwner = this.FindAncestorOfType<Masonry>();
+        if (_motionOwner is not null)
+        {
+            // 单个面板级订阅（非逐项）：用于把 item 动效限制在可见区域附近。
+            EffectiveViewportChanged += HandleEffectiveViewportChanged;
+        }
         if (MediaQueryHost.FindOwner(this) is { } mediaOwner)
         {
             _mediaOwner = mediaOwner;
@@ -257,15 +267,19 @@ internal class MasonryPanel : Panel
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        foreach (var state in _itemMotions.Values)
+        foreach (var state in _itemMotions.Values.ToArray())
         {
             state.Cancellation.Cancel();
         }
         _itemMotions.Clear();
         _lastVisualRects.Clear();
+        EffectiveViewportChanged -= HandleEffectiveViewportChanged;
+        _motionViewport = null;
         _motionOwner = null;
         _hasMeasuredLayout = false;
         _measuredLayout = null;
+        _previousAvailableWidth = double.NaN;
+        _arrangedEffectiveWidth = null;
         ClearStableAssignments();
         if (_mediaOwner != null)
         {
@@ -279,6 +293,7 @@ internal class MasonryPanel : Panel
         _breakPoint = args.MediaBreakPoint;
         _hasMeasuredLayout = false;
         _measuredLayout = null;
+        _arrangedEffectiveWidth = null;
         InvalidateMeasure();
     }
 
@@ -290,17 +305,28 @@ internal class MasonryPanel : Panel
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var layout = CalculateLayout(availableSize.Width, measureChildren: true);
+        // Arrange 宽度可能与 Measure 约束不同（布局取整向上取整、或无限宽度 Measure 后按视口 Arrange）。
+        // Arrange 按最终列宽重测子项会改变宽度相关子项的 DesiredSize 并使本面板 Measure 失效；若下一轮仍按
+        // 原约束测量，子项尺寸来回翻转，形成永久布局循环。因此输入宽度不变时，按上次排列宽度测量子项；
+        // 回报的 DesiredSize 宽度仍按约束解析，避免无限宽度宿主把旧排列宽度当作内容 extent 保留。
+        if (!_previousAvailableWidth.Equals(availableSize.Width))
+        {
+            _arrangedEffectiveWidth = null;
+        }
+        _previousAvailableWidth = availableSize.Width;
+
+        var layout = CalculateLayout(_arrangedEffectiveWidth ?? availableSize.Width, measureChildren: true);
         _measuredLayout = layout;
         _measuredEffectiveWidth = layout.Width;
         _hasMeasuredLayout = true;
         PublishLayout(layout);
-        return new Size(layout.Width, layout.Height);
+        return new Size(ResolveEffectiveWidth(availableSize.Width), layout.Height);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
         var effectiveWidth = ResolveEffectiveWidth(finalSize.Width);
+        _arrangedEffectiveWidth = effectiveWidth;
         var canReuseMeasuredLayout = _hasMeasuredLayout &&
                                       AreClose(_measuredEffectiveWidth, effectiveWidth);
         // A ScrollViewer (and similar hosts) can measure us with an unbounded width and then
@@ -334,8 +360,10 @@ internal class MasonryPanel : Panel
         return isRtl ? rect.WithX(width - rect.Right) : rect;
     }
 
-    // 动效偏移来自旧/新 Arrange 矩形（运行时布局状态），ControlTheme 无法表达，故在面板代码驱动；
-    // 时长值由 ControlTheme 从 token Setter 提供（见 MasonryTheme.axaml）。
+    // 入场时机来自 Arrange 运行时状态（item 是否首次排列、是否接近可见区域），ControlTheme 无法表达，故在面板代码
+    // 驱动；时长值由 ControlTheme 从 token Setter 提供（见 MasonryTheme.axaml）。
+    // 重新布局（内容高度、宽度、列数、增删 item 引起的位置变化）不做任何 item 动画，既有 item 直接就位：
+    // 拖拽缩放与图片陆续加载会连续重新布局，逐项位置动画会让 item 持续落后于布局位置并占用 UI 线程。
     private void ApplyItemMotion(Control child, Rect visualRect)
     {
         if (_motionOwner is null)
@@ -343,21 +371,50 @@ internal class MasonryPanel : Panel
             return;
         }
 
-        if (!_lastVisualRects.TryGetValue(child, out var previousRect))
+        var isFirstArrange = !_lastVisualRects.ContainsKey(child);
+        _lastVisualRects[child] = visualRect;
+        if (isFirstArrange && IsInMotionRange(visualRect))
         {
-            // First arrange: appear fade-in only, no glide (antd motionAppear without position transition).
-            _lastVisualRects[child] = visualRect;
+            // First arrange: appear fade-in only (antd motionAppear).
             StartAppearMotion(child);
+        }
+    }
+
+    private void HandleEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
+    {
+        _motionViewport = e.EffectiveViewport;
+        if (_itemMotions.Count == 0)
+        {
             return;
         }
 
-        _lastVisualRects[child] = visualRect;
-        var offset = previousRect.TopLeft - visualRect.TopLeft;
-        if (offset != default && !_itemMotions.ContainsKey(child))
+        // 首次 Arrange 时可见区域尚未得知；得知后立即结束远离可见区域的入场淡入（直接显示）。
+        foreach (var (child, state) in _itemMotions.ToArray())
         {
-            // Existing item repositioned: glide only, no fade (antd `&:not(item-fade)` transition).
-            StartGlideMotion(child, offset);
+            if (_lastVisualRects.TryGetValue(child, out var rect) && !IsInMotionRange(rect))
+            {
+                state.Cancellation.Cancel();
+            }
         }
+    }
+
+    /// <summary>
+    /// 判断视觉矩形是否位于动效范围：最近的有效视口向四周各扩展一个视口尺寸。
+    /// 视口未知或非有限时按可见处理；视口为空表示面板不可见，不做动效。
+    /// </summary>
+    private bool IsInMotionRange(Rect visualRect)
+    {
+        if (_motionViewport is not { } viewport ||
+            !double.IsFinite(viewport.X) || !double.IsFinite(viewport.Y) ||
+            !double.IsFinite(viewport.Width) || !double.IsFinite(viewport.Height))
+        {
+            return true;
+        }
+        if (viewport.Width <= 0 || viewport.Height <= 0)
+        {
+            return false;
+        }
+        return viewport.Inflate(new Thickness(viewport.Width, viewport.Height)).Intersects(visualRect);
     }
 
     private void StartAppearMotion(Control child)
@@ -375,12 +432,11 @@ internal class MasonryPanel : Panel
 
     private async Task RunAppearMotionAsync(Control child, TimeSpan duration, ItemMotionState state)
     {
-        IDisposable? preset = null;
         try
         {
             // 预置起始值（动画优先级），避免首帧闪烁。注意释放方式：AvaloniaObject.SetValue 对
             // 非 LocalValue 优先级的 UnsetValue 是静默忽略的，必须 Dispose 返回的句柄才能回落基值。
-            preset = child.SetValue(Visual.OpacityProperty, 0d, BindingPriority.Animation);
+            state.Preset = child.SetValue(Visual.OpacityProperty, 0d, BindingPriority.Animation);
             var animation = new Animation
             {
                 Duration = duration,
@@ -396,104 +452,18 @@ internal class MasonryPanel : Panel
         catch (OperationCanceledException) { }
         finally
         {
-            if (_itemMotions.TryGetValue(child, out var current) && ReferenceEquals(current, state))
-            {
-                _itemMotions.Remove(child);
-            }
-            preset?.Dispose();
+            ReleaseItemMotion(child, state);
         }
     }
 
-    private void StartGlideMotion(Control child, Vector offset)
+    private void ReleaseItemMotion(Control child, ItemMotionState state)
     {
-        var duration = MotionDuration;
-        if (!child.IsVisible || duration <= TimeSpan.Zero)
+        if (_itemMotions.TryGetValue(child, out var current) && ReferenceEquals(current, state))
         {
-            return;
+            _itemMotions.Remove(child);
         }
-
-        if (_itemMotions.TryGetValue(child, out var existing))
-        {
-            if (!existing.IsGlide)
-            {
-                // 入场淡入激活中的项不做位置过渡（antd `-fade` 项语义）
-                return;
-            }
-            // 滑动中再次变位：先冻结当前视觉平移（在取消前读取），再取消旧动画续滑
-            var resumeOffset = ReadCurrentTranslate(child);
-            existing.Cancellation.Cancel();
-            existing.Cancellation = new CancellationTokenSource();
-            _ = RunGlideMotionAsync(child, duration, existing, resumeOffset);
-            return;
-        }
-
-        var state = new ItemMotionState { IsGlide = true };
-        _itemMotions[child] = state;
-        _ = RunGlideMotionAsync(child, duration, state, offset);
-    }
-
-    private async Task RunGlideMotionAsync(Control child, TimeSpan duration, ItemMotionState state,
-        Vector startOffset)
-    {
-        IDisposable? preset = null;
-        try
-        {
-            // 预置旧位置偏移（动画优先级），布局矩形已是最终位置；结束 Dispose 释放回落用户基值
-            if (startOffset != default)
-            {
-                preset = child.SetValue(Visual.RenderTransformProperty, BuildTranslate(startOffset),
-                    BindingPriority.Animation);
-            }
-            var animation = new Animation
-            {
-                Duration = duration,
-                Easing   = MotionEasing,
-                Children =
-                {
-                    new KeyFrame
-                    {
-                        Cue = new Cue(0d),
-                        Setters = { new Setter(Visual.RenderTransformProperty, BuildTranslate(startOffset)) }
-                    },
-                    new KeyFrame
-                    {
-                        Cue = new Cue(1d),
-                        Setters = { new Setter(Visual.RenderTransformProperty, BuildTranslate(default)) }
-                    },
-                }
-            };
-            await animation.RunAsync(child, state.Cancellation.Token);
-        }
-        catch (OperationCanceledException) { }
-        finally
-        {
-            if (_itemMotions.TryGetValue(child, out var current) && ReferenceEquals(current, state))
-            {
-                _itemMotions.Remove(child);
-            }
-            // 取消续滑（有新动画接管属性）时不释放，避免把新动画刚预置的偏移清掉
-            if (!state.Cancellation.IsCancellationRequested)
-            {
-                preset?.Dispose();
-            }
-        }
-    }
-
-    private static Avalonia.Media.Transformation.TransformOperations BuildTranslate(Vector offset)
-    {
-        var builder = new Avalonia.Media.Transformation.TransformOperations.Builder(1);
-        builder.AppendTranslate(offset.X, offset.Y);
-        return builder.Build();
-    }
-
-    private static Vector ReadCurrentTranslate(Control child)
-    {
-        if (child.RenderTransform is Avalonia.Media.ITransform transform)
-        {
-            var matrix = transform.Value;
-            return new Vector(matrix.M31, matrix.M32);
-        }
-        return default;
+        state.Preset?.Dispose();
+        state.Preset = null;
     }
 
     private void PublishLayout(MasonryLayout layout)

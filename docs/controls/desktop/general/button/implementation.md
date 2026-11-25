@@ -20,6 +20,7 @@ Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可�
 - `src/AtomUI.Desktop.Controls/GeneratedFiles/.../ButtonSemanticParts.g.cs`：生成的 Part 名称与 selector class 常量，仅用于构建检查、测试和 runtime-created 节点场景。
 - `src/AtomUI.Desktop.Controls/GeneratedFiles/.../GeneratedSemanticPartManifest.g.cs`：Button `root/icon/content` 静态 descriptor。
 - `src/AtomUI.Desktop.Controls/Buttons/ButtonToken.cs`：Button 控件 Token 定义与派生。
+- `Button.Properties.cs` 声明按钮自身的内部样式属性。`ButtonStyleValues.cs` 提供 AXAML 引用的固定样式值。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml`：Button 跨平台模板、状态 selector 和主题变量映射。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/DropdownButtonBaseTheme.axaml`、`DropdownButtonTheme.axaml`：DropdownButton 对 Button 图标尺寸和状态语义的跨平台投影。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/IconButtonTheme.axaml`：IconButton 默认主题叶子。
@@ -35,6 +36,10 @@ Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可�
 `ButtonToken` 只提供组件级语义值，不保存实例状态。主题变量由 Button internal `StyledProperty` 承载，使 AXAML
 selector 和动态资源可以消费状态结果。`Button.cs` 是颜色状态矩阵的唯一计算所有者；Button 家族 ControlTheme
 不得按平台、`ButtonType`、Danger 或 Ghost 复制一套颜色计算。
+
+Button、SubmitButton 和 ResetButton 的主题各自读取 Own Token，为公开的 `ContentPadding` 和内部的圆形、仅图标内边距
+属性提供默认值。共享样式按内容、图标和形状选择相应值并设置 `Padding`，最终布局读取 `Padding` 的有效值。属性形态和命名见
+[控件研发标准](../../../../engineering/development/control-development-guidelines.md#控件属性形态与命名)。
 
 Button 家族控件复用 Button 的动作语义。派生控件可以替换模板或增加行为入口，但不得重新解释 `ButtonType`、`Color`、`Variant`、`IsDanger`、`IsGhost`、loading 和 disabled 语义。
 
@@ -112,11 +117,15 @@ Button owner Style 中的 `ButtonIconStyle` 和 `ButtonContentStyle` 消费 Part
 
 Button 交互沿 Avalonia Button 基类处理点击、命令、键盘和 enabled 状态。AtomUI 只在状态同步层补充 loading、wave、icon-only、shape 和 compact。
 
+当前变体使用的颜色和阴影资源由同一个 `OwnerTokenSet` 观察。资源变化只更新发生变化的槽位。固定值与预设色继续由变体计算提供。
+
 Wave 播放条件必须同时考虑 `IsWaveSpiritEnabled`、`IsMotionEnabled`、disabled、loading 和 Button 语义状态。释放触发
 Wave 时，Button 读取当时已经合并 Theme、状态 selector、Semantic root Style 和用户 Style 的最终视觉属性，按
 `BorderBrush -> Background` 顺序选择有效实色 Brush。透明、纯白和非实色 Brush 不参与取色；没有有效 Brush 时清除
 本地 `WaveBrush`，由 `WaveSpiritDecorator` 使用主题默认值。用户定制的 root `Background` / `BorderBrush` 属于最终
 视觉属性，同样参与该取色顺序。
+
+桌面波纹在同一资源观察组读取扩散范围、起始透明度和默认时长。尺寸与淡出共享时长来源，并保留分别设置时长的入口。
 
 Loading 状态影响 loading icon、原 icon 可见性和交互反馈，但不应通过直接禁用控件来模拟。
 
@@ -179,6 +188,13 @@ listener；同一 Part 的 Setter 应合并在一个 Style 中，并在批量 Bu
 Root 表面定制复用 `Frame` 的既有 `TemplateBinding`，不增加模板节点、控件实例、订阅或命中测试区域；未定制路径与默认渲染完全一致。
 
 Button 实现不得引入运行时反射、动态代码生成或非 AOT 友好的资源查找路径。
+
+### Shadcn 按压位移
+
+八款 Shadcn 共用相同的按压规则。普通操作按钮整体下移 1 DIP，覆盖图标按钮、链接外观和各配色变体。
+SplitButton 的主操作段与普通按钮一致，菜单触发段、DropdownButton 和带 Flyout 的 Button 保持原位。
+开启动效时使用 150 ms 缓动进入及退出按压位置，关闭动效时直接更新位置。位移由 ControlTheme 应用，
+按钮的布局尺寸和已打开弹层的锚点沿用各控件的现有规则。
 
 ## 9. 维护不变量
 

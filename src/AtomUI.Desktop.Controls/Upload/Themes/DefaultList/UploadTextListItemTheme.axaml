@@ -32,12 +32,12 @@
         </Style>
         
         <Style Selector="^ /template/ StackPanel#RootLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="Spacing" Value="{atom:UploadTokenResource SpacingXXS}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ProgressBar#ProgressBar">
-            <Setter Property="GrooveBrush" Value="{atom:SharedTokenResource ColorFillSecondary}" />
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="GrooveBrush" Value="{atom:UploadTokenResource ColorFillSecondary}" />
+            <Setter Property="StrokeBrush" Value="{atom:UploadTokenResource ColorPrimary}" />
         </Style>
 
     </ControlTheme>

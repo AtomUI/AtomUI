@@ -7,11 +7,13 @@
         <ControlTheme.BasedOn>
             <atom:ListViewItemTheme TargetType="atom:GroupHeaderItem" />
         </ControlTheme.BasedOn>
+        <!-- Group headers are not navigable: arrow keys and Tab skip them. -->
+        <Setter Property="Focusable" Value="False" />
 
         <Style Selector="^[IsGroupItem=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
-            <Setter Property="FontWeight" Value="{atom:SharedTokenResource FontWeightStrong}" />
-            <Setter Property="Padding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorFillAlter}" />
+            <Setter Property="FontWeight" Value="{atom:OwnerTokenResource FontWeightStrong}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.GroupHeaderPadding}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

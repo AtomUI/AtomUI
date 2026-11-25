@@ -5,6 +5,23 @@
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SimplePagination}" TargetType="atom:SimplePagination">
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="ItemSize" Value="{atom:SimplePaginationTokenResource ItemSize}" />
+        <Setter Property="ItemColor" Value="{atom:SimplePaginationTokenResource ItemColor}" />
+        <Setter Property="ItemHoverColor" Value="{atom:SimplePaginationTokenResource ItemHoverColor}" />
+        <Setter Property="ItemHoverBg" Value="{atom:SimplePaginationTokenResource ItemHoverBg}" />
+        <Setter Property="ItemBorderRadius" Value="{atom:SimplePaginationTokenResource ItemBorderRadius}" />
+        <Setter Property="ItemActiveColorDisabled" Value="{atom:SimplePaginationTokenResource ItemActiveColorDisabled}" />
+        <Setter Property="LayoutSpacing" Value="{atom:SimplePaginationTokenResource PaginationLayoutSpacing}" />
+        <Setter Property="QuickJumperInputWidth" Value="{atom:SimplePaginationTokenResource PaginationQuickJumperInputWidth}" />
+
+
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="ItemSize" Value="{atom:SimplePaginationTokenResource ItemSizeSM}" />
+            <Setter Property="LayoutSpacing" Value="{atom:SimplePaginationTokenResource PaginationLayoutMiniSpacing}" />
+            <Setter Property="QuickJumperInputWidth" Value="{atom:SimplePaginationTokenResource PaginationMiniQuickJumperInputWidth}" />
+        </Style>
+
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:DashedBorder Background="{TemplateBinding Background}"
@@ -24,6 +41,12 @@
                                                 PaginationItemType="Previous"
                                                 Icon="{antdicons:AntDesignIconProvider LeftOutlined}"
                                                 SizeType="{TemplateBinding SizeType}"
+                                                ItemSize="{TemplateBinding ItemSize}"
+                                                ItemActiveColorDisabled="{TemplateBinding ItemActiveColorDisabled}"
+                                                ItemColor="{TemplateBinding ItemColor}"
+                                                ItemHoverColor="{TemplateBinding ItemHoverColor}"
+                                                ItemHoverBg="{TemplateBinding ItemHoverBg}"
+                                                ItemBorderRadius="{TemplateBinding ItemBorderRadius}"
                                                 IsEnabled="{TemplateBinding IsEnabled}"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                         <atom:QuickJumpEdit Name="PART_QuickJumper"
@@ -31,7 +54,14 @@
                                             SizeType="{TemplateBinding SizeType}"
                                             IsEnabled="{TemplateBinding IsEnabled}"
                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                            Minimum="1" />
+                                            Minimum="1">
+                            <atom:QuickJumpEdit.Styles>
+                                <!-- Scoped to this editor's subtree: its decorated box follows the editor's SizeType. -->
+                                <Style Selector="atom|AddOnDecoratedBox#PART_AddOnDecoratedBox[SizeType=Small] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
+                                    <Setter Property="Padding" Value="{atom:SimplePaginationTokenResource InputPaddingSM}" />
+                                </Style>
+                            </atom:QuickJumpEdit.Styles>
+                        </atom:QuickJumpEdit>
                         <atom:TextBlock Name="PART_InfoIndicator"
                                         Classes.semantic-info="True"
                                         VerticalAlignment="Center"
@@ -42,6 +72,12 @@
                                                 PaginationItemType="Next"
                                                 Icon="{antdicons:AntDesignIconProvider RightOutlined}"
                                                 SizeType="{TemplateBinding SizeType}"
+                                                ItemSize="{TemplateBinding ItemSize}"
+                                                ItemActiveColorDisabled="{TemplateBinding ItemActiveColorDisabled}"
+                                                ItemColor="{TemplateBinding ItemColor}"
+                                                ItemHoverColor="{TemplateBinding ItemHoverColor}"
+                                                ItemHoverBg="{TemplateBinding ItemHoverBg}"
+                                                ItemBorderRadius="{TemplateBinding ItemBorderRadius}"
                                                 IsEnabled="{TemplateBinding IsEnabled}"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                     </StackPanel>
@@ -49,7 +85,7 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SimplePaginationTokenResource EnableMotion}" />
 
         <Style Selector="^[Align=Start]">
             <Setter Property="HorizontalAlignment" Value="Left" />
@@ -61,28 +97,22 @@
             <Setter Property="HorizontalAlignment" Value="Right" />
         </Style>
 
-        <Style Selector="^[SizeType=Large]">
-            <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
-                <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
-            </Style>
-        </Style>
-        <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
-                <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutSpacing}" />
-            </Style>
-        </Style>
-        <Style Selector="^[SizeType=Small]">
-            <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
-                <Setter Property="Spacing"
-                        Value="{atom:PaginationTokenResource PaginationLayoutMiniSpacing}" />
-            </Style>
+        <!-- Every size type reads the spacing its root setters chose. -->
+        <Style Selector="^ /template/ StackPanel#PART_RootLayoutPart">
+            <Setter Property="Spacing" Value="{TemplateBinding LayoutSpacing}" />
         </Style>
 
+        <!-- The simple pager input (antd itemInputBg / quickJumperInputWidth, paginationMiniQuickJumperInputWidth when small). -->
         <Style Selector="^ /template/ atom|LineEdit#PART_QuickJumper">
+            <Setter Property="Background"
+                    Value="{atom:SimplePaginationTokenResource ItemInputBg}" />
             <Setter Property="MinWidth"
-                    Value="{atom:PaginationTokenResource PaginationQuickJumperInputWidth}" />
+                    Value="{TemplateBinding QuickJumperInputWidth}" />
+        </Style>
+        <Style Selector="^[SizeType=Small] /template/ atom|LineEdit#PART_QuickJumper">
+            <Setter Property="MinWidth"
+                    Value="{TemplateBinding QuickJumperInputWidth}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
     </ControlTheme>

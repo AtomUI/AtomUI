@@ -8,14 +8,4 @@ internal sealed partial class SemanticPartPreviewInfoControl : UserControl
     {
         InitializeComponent();
     }
-
-    internal void Show(SemanticPartPreviewItem item)
-    {
-        DataContext = item;
-    }
-
-    internal void Clear()
-    {
-        DataContext = null;
-    }
 }

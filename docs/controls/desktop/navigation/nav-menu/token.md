@@ -29,7 +29,9 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `DarkMenuBg`
 - `MenuSubMenuBg`
 
-用于 root 菜单背景和子菜单容器背景。`ItemBg` 对应 light root 背景，`DarkMenuBg` 对应 dark root 背景。背景 token 不等同于 header 背景；header 默认背景应保持透明，再由 hover / selected state 决定。
+用于 root 菜单背景和子菜单容器背景。`ItemBg` 对应 light root 背景，`DarkMenuBg` 对应 dark root 背景。`MenuSubMenuBg`
+是保留 Token（`[ReservedToken]`，对应 antd `menuSubMenuBg`）：antd 中子菜单弹层的同一元素随后被 `popupBg` 覆盖，这里该表面由
+`MenuPopupBg` 绘制，没有第二层可绘制。背景 token 不等同于 header 背景；header 默认背景应保持透明，再由 hover / selected state 决定。
 
 ### 2.2 菜单项文字与状态 Token
 
@@ -39,12 +41,13 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `ItemDisabledColor`
 - `HorizontalItemHoverColor`
 - `HorizontalItemSelectedColor`
-- `KeyGestureColor`
 - `GroupTitleColor`
 - `GroupTitleLineHeight`
 - `GroupTitleFontSize`
 
-用于菜单项前景、快捷键、分组标题和 horizontal 顶层文字状态。`GroupTitleColor`、`GroupTitleLineHeight`、`GroupTitleFontSize` 只服务 `NavMenuGroupItem` 的非交互标题，不应复用菜单项 selected、hover 或 disabled 状态。`ItemSelectedColor` 同时服务 selected leaf 和 selected path ancestor 的前景语义。
+用于菜单项前景、分组标题和 horizontal 顶层文字状态。`HorizontalItemSelectedColor` 是 light horizontal 顶层选中项文字色与
+active bar 颜色（悬浮、展开、选中三态）；`HorizontalItemHoverColor` 是保留 Token（对应 antd `horizontalItemHoverColor`：antd 6.7
+声明但其菜单样式不读取，horizontal 悬浮文字使用 `ItemHoverColor`）。NavMenu 不显示快捷键，`KeyGestureColor` 已删除。`GroupTitleColor`、`GroupTitleLineHeight`、`GroupTitleFontSize` 只服务 `NavMenuGroupItem` 的非交互标题，不应复用菜单项 selected、hover 或 disabled 状态。`ItemSelectedColor` 同时服务 selected leaf 和 selected path ancestor 的前景语义。
 
 ### 2.3 菜单项背景与动效 Token
 
@@ -54,9 +57,15 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `SubMenuItemBg`
 - `HorizontalItemHoverBg`
 - `HorizontalItemSelectedBg`
-- `ItemBackgroundMotionEasing`
 
-用于 header hover、active、selected、背景状态过渡以及 inline submenu 背景块。`SubMenuItemBg` 只应用于 inline child frame，不应被用作 root menu 背景。`ItemBackgroundMotionEasing` 是所有 NavMenu item header 背景 transition 的统一缓动入口，默认值为 CSS `ease` 等价曲线 `0.25,0.1,0.25,1`；Base、Inline、Horizontal 主题必须通过 `NavMenuTokenResource` 消费它，不在 AXAML 中复制曲线常量。
+用于 header hover、active、selected 以及 inline submenu 背景块。`SubMenuItemBg` 只应用于 inline child frame，不应被用作 root menu 背景。
+Shadcn 将 `SubMenuItemBg` 和 `DarkSubMenuItemBg` 默认设为透明，让展开的内联子菜单沿用根菜单表面。
+Shadcn 在 `ItemSelectedBg` 的默认选中填充上混入 14% 的中性前景色，使选中项与悬浮项可辨。
+`HorizontalItemBorderRadius`（默认 0，与 antd 一致）是 light 与 dark horizontal 顶层项的圆角；light 顶层项背景在悬浮、展开、选中、键盘激活和
+按住时都透明，圆角只在 `HorizontalItemHoverBg` / `HorizontalItemSelectedBg` 或应用样式给出背景时可见。
+`HorizontalItemHoverBg` 是 light horizontal 顶层项悬浮与展开背景，`HorizontalItemSelectedBg` 是其选中背景（默认均透明，对应 antd）。
+header 背景与前景过渡以 `atom:TokenTransitions` 声明 `MotionDurationSlow` / `MotionDurationMid`，随 NavMenu 的有效值（含
+`Controls[NavMenu]`）变化；`ItemBackgroundMotionEasing` 从未被消费且 antd 没有对应组件 Token（背景过渡用全局 `motionEaseInOut`），已删除。
 
 ### 2.4 尺寸、圆角与间距 Token
 
@@ -71,13 +80,17 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `ItemBorderRadius`
 - `SubMenuItemBorderRadius`
 - `InlineCollapsedWidth`
-- `CollapsedWidth`
+- `CollapsedWidth`（保留）
 
 用于菜单项高度、参考 block margin 映射、header 内边距、inline child frame 外距、菜单内容 padding 和 inline collapsed 根宽度。`ItemContentMargin` 表达 item header 的外部 margin；`VerticalChildItemsMargin` 表达 inline submenu 背景块在背景模式下的外部 margin，不是所有 inline 子菜单的无条件间距。
 
 `InlineCollapsedWidth` 是 `Mode=Inline && IsInlineCollapsed=true` 的折叠宽度默认值，初始设计值为 `48`。控件实例上的 `NavMenu.InlineCollapsedWidth` 本地值优先级高于 token setter。该 token 只提供主题默认布局值，不表达实例是否折叠，也不参与 `Vertical` / `Horizontal` 模式测量。
 
-`CollapsedWidth` 是既有折叠宽度 token，保留兼容，不删除、不重命名。新的 inline collapsed 设计、文档和实现应优先使用 `InlineCollapsedWidth` 表达内联折叠菜单宽度，避免把旧 token 继续扩展为多语义 token。
+`CollapsedWidth` 是既有折叠宽度 token（对应 antd `collapsedWidth`），保留兼容，不删除、不重命名，标为 `[ReservedToken]`：没有元素读取它。
+新的 inline collapsed 设计、文档和实现应优先使用 `InlineCollapsedWidth` 表达内联折叠菜单宽度，避免把旧 token 继续扩展为多语义 token。
+
+`ItemBorderRadius` 是根层与 inline 菜单项圆角；`SubMenuItemBorderRadius`（默认 `BorderRadiusSM`，对应 antd `subMenuItemBorderRadius`）
+是 Vertical / Horizontal 子菜单弹层内菜单项的圆角。
 
 `NavMenu.ItemSpacing` 是实例级布局输入。默认主题按 mode 将 `VerticalItemsPanelSpacing` 投影到 Inline/Vertical 根层，并通过内部 `EntryItemSpacing` 投影到 popup、submenu 和分组的默认 ItemsPanel；Horizontal 根层公开值默认使用 `0`，但其后代默认值仍来自 `VerticalItemsPanelSpacing`。调用方显式设置 `ItemSpacing` 时，包括显式设置为 `0`，该值同时覆盖根与后代默认 ItemsPanel，并作为相邻 entry 容器之间的额外间距叠加在 item 自身 margin 之外；它不改写任何 Token，也不要求自定义 ItemsPanel 消费该属性。
 
@@ -106,7 +119,12 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 
 用于 `Vertical` / `Horizontal` 弹出式子菜单。Popup 视觉不能直接使用 shared elevated background 绕过组件 token，因为 NavMenu popup 背景和 root/background/dark style 是稳定主题契约。
 
+`TopLevelItemPopupMarginToAnchor`（默认 `UniformlyMarginXXS`）是 horizontal 顶层弹层到顶层项的间距，作为 Popup 的 `MarginToAnchor`
+应用；次级弹层的偏移读 NavMenu 有效的 `SpacingXS` / `SpacingXXS`。
+
 `MenuPopupMaxHeight` 的默认值为 `ItemHeight * 8`。短菜单按内容自然高度测量；长菜单由 popup 内部滚动容器承载，避免弹出层随条目数量无限增长。主题可以覆盖该 token 调整可见范围，但不应通过改变 `ItemHeight` 间接控制 popup 容量。
+
+弹层框从自身的资源作用域成组读取宽高上限，测量时同时使用可用空间与语义样式的尺寸。顶层触发项从自己的作用域读取最小宽度 token，保留横向模板使用的有效最小宽度。
 
 ### 2.7 Horizontal 导航 Token
 
@@ -143,7 +161,10 @@ NavMenuToken 当前按 NavMenu 语义分为八类。
 - `DangerItemActiveBg`
 - `DangerItemSelectedBg`
 
-Dark token 服务 NavMenu dark style，不应由 light token 自动反推。Danger token 保留菜单危险语义的主题能力；即使当前节点模型没有公开危险节点 API，也不应随意删除或重命名。
+Dark token 服务 NavMenu dark style，不应由 light token 自动反推。Danger token 由危险菜单项消费：
+`NavMenuNode.IsDanger` / `INavMenuNode.IsDanger`（默认 `false`）标记危险项，经内部容器投影到公开的 `BaseNavMenuItemHeader.IsDanger`，文字使用 `DangerItemColor`，悬浮文字
+`DangerItemHoverColor`，按下背景 `DangerItemActiveBg`，选中文字与背景 `DangerItemSelectedColor` / `DangerItemSelectedBg`；dark style 使用对应的
+`DarkDanger*` Token。与 antd 一致，`DangerItemActiveBg`、`DangerItemSelectedBg` 默认 `ColorErrorBg`。
 
 ## 3. NavMenu 专项模型中的 Token 使用
 
@@ -189,7 +210,7 @@ inline 子菜单第一项与父 header 之间不增加额外顶部 margin。inli
 
 Horizontal light style 的顶层选中主要由 `PART_ActiveIndicator` 表达，背景保持透明。Dark style 顶层选中可以使用 `DarkItemSelectedBg`。
 
-所有 item header 的背景状态切换共用 `ItemBackgroundMotionEasing`。该 Token 只定义缓动曲线；过渡时长继续使用有效的全局 `MotionDurationSlow`，全局关闭 motion 时由主题编译器把标准 duration 归零。
+item header 的背景状态切换时长使用 NavMenu 有效的 `MotionDurationSlow`，全局或 `Controls[NavMenu]` 关闭 motion 时 duration 归零。
 
 ### 3.4 Group 与 Divider
 
@@ -201,9 +222,17 @@ Horizontal light style 的顶层选中主要由 `PART_ActiveIndicator` 表达，
 | Dark group title | `DarkGroupTitleColor`、`GroupTitleFontSize`、`GroupTitleLineHeight` |
 | Group entry spacing | 内部 `EntryItemSpacing` 的当前 effective value；默认由 `VerticalItemsPanelSpacing` 映射，显式 `NavMenu.ItemSpacing` 可以覆盖 |
 
-根层 inline collapsed 和 Horizontal 根层隐藏分组标题，但不改变 title token 的含义；popup 或非根语义层级恢复正常标题视觉。Divider 的线宽和颜色使用 shared `LineWidth` / `ColorSplit` 语义，不新增 NavMenu 专属 divider token。Divider orientation 由 mode 和 semantic top-level 状态决定，不进入 Token。
+根层 inline collapsed 和 Horizontal 根层隐藏分组标题，但不改变 title token 的含义；popup 或非根语义层级恢复正常标题视觉。Divider 的线宽和颜色使用 NavMenu 有效的全局 `LineWidth` / `ColorSplit`，不新增 NavMenu 专属 divider token。Divider orientation 由 mode 和 semantic top-level 状态决定，不进入 Token。
 
-## 4. 控件家族影响
+## 4. Token 读取与作用域
+
+NavMenu 家族的主题全部以 `NavMenuTokenResource` 读取：NavMenu 自身（有 Token 身份）、无身份的 `NavMenuItem`、`NavMenuGroupItem`、
+`NavMenuDividerItem`、`VerticalNavMenuItemHeader`、`NavMenuPopupFrame`，以及已注册但标记为 Token owner 透明的
+`HorizontalNavMenuItemHeader`、`InlineNavMenuItemHeader`。因此 `Controls[NavMenu]` 的全局与 Own 覆盖到达菜单项、分组标题、
+分隔线和弹层内的子菜单项（Popup 同样 owner 透明），header 的 TokenTransitions 也随 NavMenu。inline 折叠宽度动画的时长以
+`ControlTokenAccessor` 读取 NavMenu 的有效 `MotionDurationMid`，局部 `ThemeConfigProvider` 生效。
+
+## 5. 控件家族影响
 
 NavMenuToken 当前服务 NavMenu 及其 internal container/header 体系：
 
@@ -220,9 +249,9 @@ Token 修改必须同时评估三种 mode、light/dark 两套主题、root/popup
 
 NavMenuToken 不服务 Breadcrumb、Pagination、Steps 或 TabControl。导航分类内的其他控件不能直接复用 NavMenuToken 来表达自身状态。
 
-## 5. 兼容性要求
+## 6. 兼容性要求
 
-NavMenuToken 属于 NavMenu 主题契约。即使 `NavMenuToken` 是 internal 类型，生成的 `NavMenuTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
+NavMenuToken 属于 NavMenu 主题契约。`NavMenuToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `NavMenuTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
 
 Token 变更要求：
 
@@ -230,7 +259,6 @@ Token 变更要求：
 - 不改变既有 Token 的语义含义。
 - 不把实例状态迁移到 Token。
 - 不把 root、popup、header、inline submenu block 背景合并为同一职责。
-- 不在 Base、Inline 或 Horizontal header 主题中直接构造背景 easing；统一使用 `ItemBackgroundMotionEasing`。
 - 不让 `VerticalChildItemsMargin` 在 `IsItemBackgroundEnabled=false` 时影响布局。
 - 不把 参考 block margin 映射改为 StackPanel spacing 叠加。
 - `VerticalItemsPanelSpacing` 的主题默认值保持 `0`；显式 `NavMenu.ItemSpacing` 可以增加实例级 panel spacing，但不能反向改写 `ItemContentMargin` 或 Token。
@@ -239,13 +267,13 @@ Token 变更要求：
 - 不删除或重命名 `CollapsedWidth`；它是既有兼容 token，新的 inline collapsed 宽度语义使用 `InlineCollapsedWidth`。
 - 需要破坏性变更时，必须先说明影响范围并获得授权。
 
-## 6. 验证策略
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |
 | 新增 NavMenuToken | 检查生成的 `NavMenuTokenKind`、AXAML 引用和默认值计算。 |
 | 修改颜色 Token | 覆盖 light / dark root、popup、inline child、header hover、selected path。 |
-| 修改背景动效 Token | 覆盖默认曲线、Control Token override、Base/Inline/Horizontal header 消费和 motion disabled。 |
+| 修改背景动效 Token | 覆盖 Control Token override、Base/Inline/Horizontal header 消费和 motion disabled。 |
 | 修改间距 Token | 运行 `NavMenuLayoutTests`，覆盖 root inset、inline child gap、popup inset 和 `IsItemBackgroundEnabled` true/false。 |
 | 修改分组标题 Token | 覆盖 light/dark、root、nested、popup、Horizontal root 和 inline collapsed 标题可见性及排版。 |
 | 修改 `VerticalItemsPanelSpacing` 映射 | 覆盖 root、submenu、group 的默认 spacing，并验证显式 `NavMenu.ItemSpacing` 覆盖和纯默认视觉不变。 |
@@ -253,3 +281,4 @@ Token 变更要求：
 | 修改 popup Token | 覆盖 vertical/horizontal popup 背景、尺寸、padding 和 overlay popup 行为。 |
 | 修改 horizontal Token | 覆盖 active indicator、top-level margin、line height 和 dark selected background。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
+| 任意 Token | `NavigationFamilyEffectTests`（`NavMenu_Token_Has_Effect` 与隔离测试）全绿。 |

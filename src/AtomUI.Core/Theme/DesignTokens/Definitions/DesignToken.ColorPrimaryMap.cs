@@ -18,7 +18,7 @@ public partial class DesignToken
     /// 1 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryBg { get; set; }
+    public partial Color ColorPrimaryBg { get; set; }
 
     /// <summary>
     /// 主色浅色背景悬浮态
@@ -26,7 +26,7 @@ public partial class DesignToken
     /// 2 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryBgHover { get; set; }
+    public partial Color ColorPrimaryBgHover { get; set; }
 
     /// <summary>
     /// 主色描边色
@@ -34,7 +34,7 @@ public partial class DesignToken
     /// 3 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryBorder { get; set; }
+    public partial Color ColorPrimaryBorder { get; set; }
 
     /// <summary>
     /// 主色描边色悬浮态
@@ -42,7 +42,7 @@ public partial class DesignToken
     /// 4 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryBorderHover { get; set; }
+    public partial Color ColorPrimaryBorderHover { get; set; }
 
     /// <summary>
     /// 主色悬浮态
@@ -50,7 +50,7 @@ public partial class DesignToken
     /// 5 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryHover { get; set; }
+    public partial Color ColorPrimaryHover { get; set; }
 
     /// <summary>
     /// 主色激活态
@@ -58,7 +58,7 @@ public partial class DesignToken
     /// 7 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryActive { get; set; }
+    public partial Color ColorPrimaryActive { get; set; }
 
     /// <summary>
     /// 主色文本悬浮态
@@ -66,7 +66,7 @@ public partial class DesignToken
     /// 8 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryTextHover { get; set; }
+    public partial Color ColorPrimaryTextHover { get; set; }
 
     /// <summary>
     /// 主色文本
@@ -74,7 +74,7 @@ public partial class DesignToken
     /// 9 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryText { get; set; }
+    public partial Color ColorPrimaryText { get; set; }
 
     /// <summary>
     /// 主色文本激活态
@@ -82,5 +82,5 @@ public partial class DesignToken
     /// 10 号色
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
-    public Color ColorPrimaryTextActive { get; set; }
+    public partial Color ColorPrimaryTextActive { get; set; }
 }

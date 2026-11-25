@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
 /// <summary>One interaction cursor shared by all panels; selection remains with the host.</summary>
@@ -217,6 +218,134 @@ internal sealed class DatePanelSession
         }
     }
 
+    /// <summary>
+    /// Moves focus for a navigation key forwarded from a picker input, which keeps keyboard focus. Unlike
+    /// <see cref="DatePanelAction.MoveFocus"/>, the shown pages follow focus, and the focused cell is hovered too so
+    /// it shows the hover look and previews the range. Returns false when focus cannot move.
+    /// </summary>
+    internal bool MoveKeyboardFocus(DateKeyboardMove move)
+    {
+        UpdateInput();
+        if (FocusedValue is not { } current)
+        {
+            return false;
+        }
+
+        var kind = _input.PanelKind;
+        if (move is DateKeyboardMove.PageStart or DateKeyboardMove.PageEnd)
+        {
+            var page = Models.FirstOrDefault(model => model.Cells.Any(cell =>
+                cell.IsInView && cell.Kind != DateViewerCellType.Week && cell.Period?.Contains(current) == true));
+            var edges = page?.Cells.Where(cell => cell.IsInView && cell.IsFocusable).ToArray();
+            var edge = edges is { Length: > 0 }
+                ? move == DateKeyboardMove.PageStart ? edges[0] : edges[^1]
+                : null;
+            return edge?.Value is { } edgeValue && TryKeyboardFocus(edgeValue, out _);
+        }
+
+        if (move is DateKeyboardMove.PreviousPage or DateKeyboardMove.NextPage)
+        {
+            var periods = move == DateKeyboardMove.NextPage ? 1 : -1;
+            try
+            {
+                var target = kind switch
+                {
+                    DateViewerPanelKind.Date => current.AddMonths(periods),
+                    DateViewerPanelKind.Year => current.AddYears(periods * 10),
+                    _ => current.AddYears(periods)
+                };
+                return !IsOutsideBounds(target) && TryKeyboardFocus(target, out _);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return false;
+            }
+        }
+
+        var columns = kind == DateViewerPanelKind.Date ? 7 : kind == DateViewerPanelKind.Quarter ? 4 : 3;
+        var step = move switch
+        {
+            DateKeyboardMove.Left => -1,
+            DateKeyboardMove.Right => 1,
+            DateKeyboardMove.Up => -columns,
+            _ => columns
+        };
+        // Disabled cells are skipped; the bounds and the attempt cap stop the walk over a disabled stretch.
+        var candidate = current;
+        for (var attempt = 0; attempt < MaxKeyboardFocusAttempts && TryAdvance(candidate, step, out candidate); attempt++)
+        {
+            if (IsOutsideBounds(candidate))
+            {
+                return false;
+            }
+
+            if (TryKeyboardFocus(candidate, out var hasCell))
+            {
+                return true;
+            }
+
+            if (!hasCell)
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private const int MaxKeyboardFocusAttempts = 400;
+
+    private bool TryKeyboardFocus(DateTime target, out bool hasCell)
+    {
+        var cell = FindInViewCell(target);
+        DateTime? targetDisplayDate = null;
+        if (cell is null)
+        {
+            // The pages that would show the target are probed first, so a disabled target leaves the shown pages
+            // and the focus unchanged.
+            var kind = _input.PanelKind;
+            var anchor = DatePanelAlgorithms.GetPanelAnchor(target, kind);
+            var shown = DatePanelAlgorithms.GetPanelAnchor(_input.DisplayDate, kind);
+            targetDisplayDate = anchor < shown ? anchor : DatePanelAlgorithms.Navigate(anchor, kind, 1 - _input.PanelCount);
+            var probe = _input with { DisplayDate = targetDisplayDate.Value };
+            cell = Enumerable.Range(0, _input.PanelCount)
+                             .SelectMany(index => DatePanelAlgorithms.Build(probe, index).Cells)
+                             .FirstOrDefault(candidate => IsInViewCellOf(candidate, target));
+        }
+
+        hasCell = cell is not null;
+        if (cell is not { IsFocusable: true, Value: { } value })
+        {
+            return false;
+        }
+
+        if (targetDisplayDate is { } displayDate)
+        {
+            _host.NavigateTo(displayDate, _input.PanelKind);
+            UpdateInput();
+        }
+
+        FocusedValue = value;
+        Apply(new DatePanelAction.Hover(value));
+        Rebuild();
+        Changed?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    private bool IsOutsideBounds(DateTime value)
+    {
+        var kind = _input.PanelKind;
+        var anchor = DatePanelAlgorithms.GetPanelAnchor(value, kind);
+        return _input.MinDate is { } min && anchor < DatePanelAlgorithms.GetPanelAnchor(min, kind) ||
+               _input.MaxDate is { } max && anchor > DatePanelAlgorithms.GetPanelAnchor(max, kind);
+    }
+
+    private DateViewerCellModel? FindInViewCell(DateTime value) =>
+        Models.SelectMany(model => model.Cells).FirstOrDefault(cell => IsInViewCellOf(cell, value));
+
+    private static bool IsInViewCellOf(DateViewerCellModel cell, DateTime value) =>
+        cell.IsInView && cell.Kind != DateViewerCellType.Week && cell.Period?.Contains(value) == true;
+
     private bool TryAdvance(DateTime value, int step, out DateTime result)
     {
         try
@@ -259,4 +388,17 @@ internal sealed class DatePanelSession
         }
         Models = Models.Select(model => DatePanelAlgorithms.ProjectState(effective, model)).ToArray();
     }
+}
+
+/// <summary>Navigation keys a picker input forwards to its date panel.</summary>
+internal enum DateKeyboardMove
+{
+    Left,
+    Right,
+    Up,
+    Down,
+    PreviousPage,
+    NextPage,
+    PageStart,
+    PageEnd
 }

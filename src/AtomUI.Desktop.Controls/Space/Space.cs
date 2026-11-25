@@ -1,70 +1,28 @@
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Controls.Commons;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
-using AtomUI.Utils;
+using AtomUI.Theme.Resources;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Layout;
-using Avalonia.LogicalTree;
+using Avalonia.Data;
 using Avalonia.Media;
-using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-public enum SpaceItemsAlignment
-{
-    /// <summary>
-    /// Items are laid out so the first one in each column/row touches the top/left of the panel.
-    /// </summary>
-    Start,
-
-    /// <summary>
-    /// Items are laid out so that each column/row is centred vertically/horizontally within the panel.
-    /// </summary>
-    Center,
-
-    /// <summary>
-    /// Items are laid out so the last one in each column/row touches the bottom/right of the panel.
-    /// </summary>
-    End,
-}
-
-public partial class Space : Control,
-                             IChildIndexProvider,
-                             ICustomizableSizeTypeAware,
-                             INavigableContainer
+public partial class Space : AbstractSpace,
+                             ICustomizableSizeTypeAware
 {
     #region 公共属性定义
-    public static readonly StyledProperty<double> ItemSpacingProperty =
-        AvaloniaProperty.Register<Space, double>(nameof(ItemSpacing));
-    
-    public static readonly StyledProperty<double> LineSpacingProperty =
-        AvaloniaProperty.Register<Space, double>(nameof(LineSpacing));
-    
-    public static readonly StyledProperty<Orientation> OrientationProperty =
-        AvaloniaProperty.Register<Space, Orientation>(nameof(Orientation), defaultValue: Orientation.Horizontal);
-    
-    public static readonly StyledProperty<SpaceItemsAlignment> ItemsAlignmentProperty =
-        AvaloniaProperty.Register<Space, SpaceItemsAlignment>(nameof(ItemsAlignment), defaultValue: SpaceItemsAlignment.Start);
-    
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Space>();
-    
-    public static readonly StyledProperty<double> ItemWidthProperty =
-        AvaloniaProperty.Register<Space, double>(nameof(ItemWidth), double.NaN);
-    
-    public static readonly StyledProperty<double> ItemHeightProperty =
-        AvaloniaProperty.Register<Space, double>(nameof(ItemHeight), double.NaN);
-    
+
     public static readonly StyledProperty<ITemplate<Control>?> SplitTemplateProperty =
         AvaloniaProperty.Register<Space, ITemplate<Control>?>(
             nameof(SplitTemplate));
@@ -89,49 +47,13 @@ public partial class Space : Control,
 
     public static readonly StyledProperty<double> BorderDashOffsetProperty =
         AvaloniaProperty.Register<Space, double>(nameof(BorderDashOffset));
-    
+
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
-    
-    public double ItemSpacing
-    {
-        get => GetValue(ItemSpacingProperty);
-        set => SetValue(ItemSpacingProperty, value);
-    }
-    
-    public double LineSpacing
-    {
-        get => GetValue(LineSpacingProperty);
-        set => SetValue(LineSpacingProperty, value);
-    }
-    
-    public Orientation Orientation
-    {
-        get => GetValue(OrientationProperty);
-        set => SetValue(OrientationProperty, value);
-    }
-    
-    public SpaceItemsAlignment ItemsAlignment
-    {
-        get => GetValue(ItemsAlignmentProperty);
-        set => SetValue(ItemsAlignmentProperty, value);
-    }
-    
-    public double ItemWidth
-    {
-        get => GetValue(ItemWidthProperty);
-        set => SetValue(ItemWidthProperty, value);
-    }
-    
-    public double ItemHeight
-    {
-        get => GetValue(ItemHeightProperty);
-        set => SetValue(ItemHeightProperty, value);
-    }
-    
+
     public ITemplate<Control>? SplitTemplate
     {
         get => GetValue(SplitTemplateProperty);
@@ -179,30 +101,19 @@ public partial class Space : Control,
         get => GetValue(BorderDashOffsetProperty);
         set => SetValue(BorderDashOffsetProperty, value);
     }
-    
-    [Content]
-    public AvaloniaList<Control> Children { get; } = new();
-    
-    public bool IsItemsHost { get; internal set; }
 
     #endregion
 
-    private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
     private CompositeDisposable? _spacingBindings;
+    private OwnerTokenPropertyBindings? _spacingTokens;
     private readonly HashSet<Control> _semanticItemMarkerOwners = new();
     private BorderRenderHelper? _borderRenderHelper;
 
     static Space()
     {
-        AffectsMeasure<Space>(ItemSpacingProperty, 
-            LineSpacingProperty,
-            OrientationProperty, 
-            ItemWidthProperty,
-            ItemHeightProperty,
-            SizeTypeProperty,
+        AffectsMeasure<Space>(SizeTypeProperty,
             BorderThicknessProperty,
             PaddingProperty);
-        AffectsArrange<Space>(ItemsAlignmentProperty);
         AffectsRender<Space>(BackgroundProperty,
             BorderBrushProperty,
             BorderThicknessProperty,
@@ -211,16 +122,11 @@ public partial class Space : Control,
             BorderDashOffsetProperty);
         CustomizableSizeTypeControlProperty.SizeTypeProperty.OverrideDefaultValue<Space>(CustomizableSizeType.Small);
     }
-    
-    public Space()
-    {
-        Children.CollectionChanged += HandleChildrenChanged;
-    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        ApplySpacingTokenBinding();
+        UpdateSpacingTokenBindings();
 
         if (SplitTemplate != null)
         {
@@ -233,6 +139,8 @@ public partial class Space : Control,
         base.OnDetachedFromVisualTree(e);
         _spacingBindings?.Dispose();
         _spacingBindings = null;
+        _spacingTokens?.Dispose();
+        _spacingTokens = null;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -240,7 +148,7 @@ public partial class Space : Control,
         base.OnPropertyChanged(change);
         if (change.Property == SizeTypeProperty)
         {
-            ApplySpacingTokenBinding();
+            UpdateSpacingTokenBindings();
         }
         else if (this.IsAttachedToVisualTree())
         {
@@ -251,57 +159,14 @@ public partial class Space : Control,
         }
     }
 
-    protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+
+    protected override void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         ConfigureSemanticItemMarkers(e);
 
         if (SplitTemplate == null)
         {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    if (!IsItemsHost)
-                    {
-                        ControlCollectionChangedUtils.InsertLogicalControls(LogicalChildren, e.NewStartingIndex, e.NewItems!);
-                    }
-                    ControlCollectionChangedUtils.InsertVisuals(VisualChildren, e.NewStartingIndex, e.NewItems!);
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                    if (!IsItemsHost)
-                    {
-                        LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
-                    }
-                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems!.Count, e.NewStartingIndex);
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    if (!IsItemsHost)
-                    {
-                        LogicalChildren.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
-                    }
-                    VisualChildren.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    for (var i = 0; i < e.OldItems!.Count; ++i)
-                    {
-                        var index = i + e.OldStartingIndex;
-                        var child = (Control)e.NewItems![i]!;
-                        EnsureSemanticItemMarker(child);
-                        if (!IsItemsHost)
-                        {
-                            LogicalChildren[index] = child;
-                        }
-                        VisualChildren[index] = child;
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException();
-            }
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.ChildIndexesReset);
-            InvalidateMeasureOnChildrenChanged();
+            base.HandleChildrenChanged(sender, e);
         }
         else
         {
@@ -309,11 +174,12 @@ public partial class Space : Control,
         }
     }
 
-    private protected virtual void InvalidateMeasureOnChildrenChanged()
+    private protected override Thickness GetLayoutInset()
     {
-        InvalidateMeasure();
+        return Padding + BorderThickness;
     }
-    
+
+
     public sealed override void Render(DrawingContext context)
     {
         var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
@@ -329,280 +195,8 @@ public partial class Space : Control,
             BorderDashOffset);
     }
 
-    protected override Size MeasureOverride(Size constraint)
-    {
-        double itemWidth     = ItemWidth;
-        double itemHeight    = ItemHeight;
-        double itemSpacing   = ItemSpacing;
-        double lineSpacing   = LineSpacing;
-        var    orientation   = Orientation;
-        var    children      = VisualChildren;
-        var    frameInset    = Padding + BorderThickness;
-        var    layoutConstraint = new Size(
-            Math.Max(0, constraint.Width - frameInset.Left - frameInset.Right),
-            Math.Max(0, constraint.Height - frameInset.Top - frameInset.Bottom));
-        var    curLineSize   = new UVSize(orientation);
-        var    panelSize     = new UVSize(orientation);
-        var    uvConstraint  = new UVSize(orientation, layoutConstraint.Width, layoutConstraint.Height);
-        bool   itemWidthSet  = !double.IsNaN(itemWidth);
-        bool   itemHeightSet = !double.IsNaN(itemHeight);
-        bool   itemExists    = false;
-        bool   lineExists    = false;
 
-        var childConstraint = new Size(
-            itemWidthSet ? itemWidth : layoutConstraint.Width,
-            itemHeightSet ? itemHeight : layoutConstraint.Height);
-
-        for (int i = 0, count = children.Count; i < count; ++i)
-        {
-            var child = children[i] as Control;
-            Debug.Assert(child != null);
-            // Flow passes its own constraint to children
-            child.Measure(childConstraint);
-
-            if (!child.IsVisible)
-            {
-                continue;
-            }
-
-            // This is the size of the child in UV space
-            UVSize childSize = new UVSize(orientation,
-                itemWidthSet ? itemWidth : child.DesiredSize.Width,
-                itemHeightSet ? itemHeight : child.DesiredSize.Height);
-
-            var nextSpacing = itemExists ? itemSpacing : 0;
-            if (MathUtils.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvConstraint.U)) // Need to switch to another line
-            {
-                panelSize.U =  Math.Max(curLineSize.U, panelSize.U);
-                panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
-                curLineSize =  childSize;
-
-                itemExists = true;
-                lineExists = true;
-            }
-            else // Continue to accumulate a line
-            {
-                curLineSize.U += childSize.U + nextSpacing;
-                curLineSize.V =  Math.Max(childSize.V, curLineSize.V);
-
-                itemExists = true;
-            }
-        }
-
-        // The last line size, if any should be added
-        panelSize.U =  Math.Max(curLineSize.U, panelSize.U);
-        panelSize.V += curLineSize.V + (lineExists ? lineSpacing : 0);
-
-        // Go from UV space to W/H space
-        return new Size(panelSize.Width, panelSize.Height).Inflate(frameInset);
-    }
-    
-    protected override Size ArrangeOverride(Size finalSize)
-    {
-        double itemWidth     = ItemWidth;
-        double itemHeight    = ItemHeight;
-        double itemSpacing   = ItemSpacing;
-        double lineSpacing   = LineSpacing;
-        var    orientation   = Orientation;
-        bool   isHorizontal  = orientation == Orientation.Horizontal;
-        var    children      = VisualChildren;
-        var    frameInset    = Padding + BorderThickness;
-        var    layoutSize    = finalSize.Deflate(frameInset);
-        int    firstInLine   = 0;
-        double accumulatedV  = 0;
-        double itemU         = isHorizontal ? itemWidth : itemHeight;
-        double itemV         = isHorizontal ? itemHeight : itemWidth;
-        var    curLineSize   = new UVSize(orientation);
-        var    uvFinalSize   = new UVSize(orientation, layoutSize.Width, layoutSize.Height);
-        bool   itemWidthSet  = !double.IsNaN(itemWidth);
-        bool   itemHeightSet = !double.IsNaN(itemHeight);
-        bool   itemExists    = false;
-        bool   lineExists    = false;
-
-        for (int i = 0; i < children.Count; ++i)
-        {
-            var child = children[i] as Control;
-            Debug.Assert(child != null);
-            if (!child.IsVisible)
-            {
-                continue;
-            }
-            var childSize = new UVSize(orientation,
-                itemWidthSet ? itemWidth : child.DesiredSize.Width,
-                itemHeightSet ? itemHeight : child.DesiredSize.Height);
-
-            var nextSpacing = itemExists ? itemSpacing : 0;
-            if (MathUtils.GreaterThan(curLineSize.U + childSize.U + nextSpacing, uvFinalSize.U)) // Need to switch to another line
-            {
-                accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-                ArrangeLine(curLineSize.V, firstInLine, i);
-                accumulatedV += curLineSize.V; // add the height of the line just arranged
-                curLineSize  =  childSize;
-
-                firstInLine = i;
-
-                itemExists = true;
-                lineExists = true;
-            }
-            else // Continue to accumulate a line
-            {
-                curLineSize.U += childSize.U + nextSpacing;
-                curLineSize.V =  Math.Max(childSize.V, curLineSize.V);
-
-                itemExists = true;
-            }
-        }
-
-        // Arrange the last line, if any
-        if (firstInLine < children.Count)
-        {
-            accumulatedV += lineExists ? lineSpacing : 0; // add spacing to arrange line first
-            ArrangeLine(curLineSize.V, firstInLine, children.Count);
-        }
-
-        return finalSize;
-
-        void ArrangeLine(double lineV, int start, int end)
-        {
-            bool   useItemU = isHorizontal ? itemWidthSet : itemHeightSet;
-            bool   useItemV = isHorizontal ? itemHeightSet : itemWidthSet;
-            double v        = accumulatedV;
-            double u        = 0;
-            bool   first    = true;
-            for (int i = start; i < end; ++i)
-            {
-                var    newChild    = children[i] as Control;
-                Debug.Assert(newChild != null);
-                if (!newChild.IsVisible)
-                {
-                    continue;
-                }
-                double layoutSlotV = GetChildV(i);
-                double layoutSlotU = GetChildU(i);
-                if (!first)
-                {
-                    u += itemSpacing;
-                }
-                if (ItemsAlignment != SpaceItemsAlignment.Start)
-                {
-                    v = ItemsAlignment switch
-                    {
-                        SpaceItemsAlignment.Center => (lineV - layoutSlotV) / 2,
-                        SpaceItemsAlignment.End => lineV - layoutSlotV,
-                        SpaceItemsAlignment.Start => accumulatedV,
-                        _ => throw new ArgumentOutOfRangeException(nameof(ItemsAlignment), ItemsAlignment, null),
-                    };
-                }
-                newChild.Arrange(isHorizontal ? new(u + frameInset.Left, v + frameInset.Top, layoutSlotU, layoutSlotV)
-                                              : new(v + frameInset.Left, u + frameInset.Top, layoutSlotV, layoutSlotU));
-                u += layoutSlotU;
-                first = false;
-            }
-
-            return;
-
-            double GetChildU(int i)
-            {
-                var c = children[i] as Control;
-                Debug.Assert(c != null);
-                return useItemU ? itemU :
-                    isHorizontal ? c.DesiredSize.Width : c.DesiredSize.Height;
-            }
-
-            double GetChildV(int i)
-            {
-                var c = children[i] as Control;
-                Debug.Assert(c != null);
-                return useItemV ? itemV :
-                    isHorizontal ? c.DesiredSize.Height : c.DesiredSize.Width;
-            }
-        }
-    }
-
-    #region 实现 IChildIndexProvider 接口
-
-    event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
-    {
-        add
-        {
-            if (_childIndexChanged is null)
-            {
-                Children.PropertyChanged -= HandleChildrenPropertyChanged;
-                Children.PropertyChanged += HandleChildrenPropertyChanged;
-            }
-            _childIndexChanged += value;
-        }
-
-        remove
-        {
-            _childIndexChanged -= value;
-            if (_childIndexChanged is null)
-            {
-                Children.PropertyChanged -= HandleChildrenPropertyChanged;
-            }
-        }
-    }
-
-    int IChildIndexProvider.GetChildIndex(ILogical child)
-    {
-        return child is Control control ? Children.IndexOf(control) : -1;
-    }
-
-    bool IChildIndexProvider.TryGetTotalCount(out int count)
-    {
-        count = Children.Count;
-        return true;
-    }
-
-    #endregion
-
-    #region 实现 INavigableContainer 接口
-
-    IInputElement? INavigableContainer.GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
-    {
-        var  orientation = Orientation;
-        var  children    = Children;
-        bool horiz       = orientation == Orientation.Horizontal;
-        int  index       = from is not null ? Children.IndexOf((Control)from) : -1;
-
-        switch (direction)
-        {
-            case NavigationDirection.First:
-                index = 0;
-                break;
-            case NavigationDirection.Last:
-                index = children.Count - 1;
-                break;
-            case NavigationDirection.Next:
-                ++index;
-                break;
-            case NavigationDirection.Previous:
-                --index;
-                break;
-            case NavigationDirection.Left:
-                index = horiz ? index - 1 : -1;
-                break;
-            case NavigationDirection.Right:
-                index = horiz ? index + 1 : -1;
-                break;
-            case NavigationDirection.Up:
-                index = horiz ? -1 : index - 1;
-                break;
-            case NavigationDirection.Down:
-                index = horiz ? -1 : index + 1;
-                break;
-        }
-
-        if (index >= 0 && index < children.Count)
-        {
-            return children[index];
-        }
-        return null;
-    }
-
-    #endregion
-
-    private void ApplySpacingTokenBinding()
+    private void UpdateSpacingTokenBindings()
     {
         _spacingBindings?.Dispose();
         _spacingBindings = null;
@@ -618,11 +212,23 @@ public partial class Space : Control,
             CustomizableSizeType.Large  => SpaceTokenKind.GapLargeSize,
             _                           => SpaceTokenKind.GapSmallSize
         };
-        _spacingBindings = new CompositeDisposable
+        // The active key follows SizeType while both public spacing properties keep their own Template binding.
+        var tokens = _spacingTokens ??= new OwnerTokenPropertyBindings(this, 1, BindingPriority.Template);
+        var bindings = new CompositeDisposable(2);
+        try
         {
-            TokenResourceBinder.CreateControlTokenBinding(this, ItemSpacingProperty, tokenKind),
-            TokenResourceBinder.CreateControlTokenBinding(this, LineSpacingProperty, tokenKind)
-        };
+            var spacing = tokens.Observe(0, ControlTokenResourceKey.Own(GetType(), tokenKind));
+            bindings.Add(Bind(ItemSpacingProperty, spacing, BindingPriority.Template));
+            bindings.Add(Bind(LineSpacingProperty, spacing, BindingPriority.Template));
+            _spacingBindings = bindings;
+        }
+        catch
+        {
+            bindings.Dispose();
+            tokens.Dispose();
+            _spacingTokens = null;
+            throw;
+        }
     }
 
     private void HandleSplitTemplateChanged()
@@ -732,61 +338,5 @@ public partial class Space : Control,
         }
 
         return separator;
-    }
-
-    private void HandleChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
-        {
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.TotalCountChanged);
-        }
-    }
-    
-    private struct UVSize
-    {
-        internal UVSize(Orientation orientation, double width, double height)
-        {
-            U            = V = 0d;
-            _orientation = orientation;
-            Width        = width;
-            Height       = height;
-        }
-
-        internal UVSize(Orientation orientation)
-        {
-            U            = V = 0d;
-            _orientation = orientation;
-        }
-
-        internal double U;
-        internal double V;
-        private Orientation _orientation;
-
-        internal double Width
-        {
-            get => _orientation == Orientation.Horizontal ? U : V;
-            set { if (_orientation == Orientation.Horizontal)
-                {
-                    U = value;
-                }
-                else
-                {
-                    V = value;
-                }
-            }
-        }
-        internal double Height
-        {
-            get => _orientation == Orientation.Horizontal ? V : U;
-            set { if (_orientation == Orientation.Horizontal)
-                {
-                    V = value;
-                }
-                else
-                {
-                    U = value;
-                }
-            }
-        }
     }
 }

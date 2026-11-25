@@ -43,9 +43,9 @@ namespace AtomUI.ControlledNet8
 
         protected override string GenerateCommandLineCommands()
         {
-            // Command-line roll-forward has priority over environment settings. It permits only
-            // .NET 10.0 servicing patches, even when a matching .NET 8 runtime is also installed.
-            return "exec --roll-forward LatestPatch --runtimeconfig " + Quote(_runtimeConfig) + " " + base.GenerateCommandLineCommands();
+            // Command-line roll-forward has priority over environment settings. Major rolls forward only
+            // to .NET 10 or later, never down to an installed .NET 8 runtime.
+            return "exec --roll-forward Major --runtimeconfig " + Quote(_runtimeConfig) + " " + base.GenerateCommandLineCommands();
         }
 
         private static string Quote(string value)

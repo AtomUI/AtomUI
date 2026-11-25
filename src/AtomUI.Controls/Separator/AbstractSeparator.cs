@@ -1,11 +1,15 @@
-﻿using AtomUI.Media;
+﻿using System.Globalization;
+using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Avalonia.Metadata;
 
 namespace AtomUI.Controls.Commons;
@@ -159,6 +163,9 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         AvaloniaProperty.Register<AbstractSeparator, double>(
             nameof(VerticalMarginInline));
 
+    internal static readonly StyledProperty<bool> UseSeparatorLayoutTokenResourcesProperty =
+        AvaloniaProperty.Register<AbstractSeparator, bool>(nameof(UseSeparatorLayoutTokenResources));
+
     internal double TextPaddingInline
     {
         get => GetValue(TextPaddingInlineProperty);
@@ -177,20 +184,43 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         set => SetValue(VerticalMarginInlineProperty, value);
     }
 
+    internal bool UseSeparatorLayoutTokenResources
+    {
+        get => GetValue(UseSeparatorLayoutTokenResourcesProperty);
+        set => SetValue(UseSeparatorLayoutTokenResourcesProperty, value);
+    }
+
     #endregion
     
     private TextBlock? _titleLabel;
     private SeparatorRail? _railStart;
     private SeparatorRail? _railEnd;
     private double _currentEdgeDistance;
+    private OwnerTokenSet? _layoutTokens;
+    private (double TextPadding, double EdgeRatio, double VerticalMargin) _layoutTokensValues;
+
+    private protected virtual OwnerTokenSet? CreateSeparatorLayoutTokenSet(Action changed) => null;
+
+    private double EffectiveTextPadding =>
+        IsSet(TextPaddingInlineProperty) ? TextPaddingInline : _layoutTokensValues.TextPadding;
+
+    private double EffectiveEdgeRatio =>
+        IsSet(OrientationMarginPercentProperty) ? OrientationMarginPercent : _layoutTokensValues.EdgeRatio;
+
+    private double EffectiveVerticalMargin =>
+        IsSet(VerticalMarginInlineProperty) ? VerticalMarginInline : _layoutTokensValues.VerticalMargin;
 
     static AbstractSeparator()
     {
+        // Shared themes may set the layout properties directly.
         AffectsMeasure<AbstractSeparator>(OrientationProperty,
             LineWidthProperty,
-            TitleProperty);
+            TitleProperty,
+            VerticalMarginInlineProperty);
         AffectsArrange<AbstractSeparator>(TitlePositionProperty,
-            OrientationMarginProperty);
+            OrientationMarginProperty,
+            TextPaddingInlineProperty,
+            OrientationMarginPercentProperty);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -199,6 +229,76 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         if (change.Property == TitleProperty)
         {
             UpdatePseudoClasses();
+        }
+        if (change.Property == UseSeparatorLayoutTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateLayoutTokenSubscription();
+        }
+        else if (_layoutTokens is not null && (change.Property == OrientationProperty || change.Property == TitleProperty))
+        {
+            RefreshLayoutMetrics();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateLayoutTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _layoutTokens?.Dispose();
+        _layoutTokens = null;
+        _layoutTokensValues = default;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateLayoutTokenSubscription()
+    {
+        _layoutTokens?.Dispose();
+        _layoutTokens = UseSeparatorLayoutTokenResources ? CreateSeparatorLayoutTokenSet(RefreshLayoutMetrics) : null;
+        RefreshLayoutMetrics();
+    }
+
+    private void RefreshLayoutMetrics()
+    {
+        var previous = (TextPadding: EffectiveTextPadding, EdgeRatio: EffectiveEdgeRatio, VerticalMargin: EffectiveVerticalMargin);
+        var vertical = Orientation == Orientation.Vertical;
+        var titled = !vertical && !string.IsNullOrEmpty(Title);
+        _layoutTokensValues = (
+            titled ? ReadLayoutToken(0, _layoutTokensValues.TextPadding) : 0,
+            titled ? ReadLayoutToken(1, _layoutTokensValues.EdgeRatio) : 0,
+            vertical ? ReadLayoutToken(2, _layoutTokensValues.VerticalMargin) : 0);
+
+        if (vertical && !previous.VerticalMargin.Equals(EffectiveVerticalMargin))
+        {
+            InvalidateMeasure();
+        }
+        else if (titled && (!previous.TextPadding.Equals(EffectiveTextPadding) || !previous.EdgeRatio.Equals(EffectiveEdgeRatio)))
+        {
+            InvalidateArrange();
+        }
+    }
+
+    private double ReadLayoutToken(int index, double previous)
+    {
+        var value = _layoutTokens?.GetValue(index);
+        if (value is double metric)
+        {
+            return metric;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 
@@ -232,7 +332,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         }
         else
         {
-            targetWidth  = Math.Max(1, LineWidth) + VerticalMarginInline;
+            targetWidth  = Math.Max(1, LineWidth) + EffectiveVerticalMargin;
             targetHeight = FontUtils.ConvertEmToPixel(1, FontSize, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0);
             if (!double.IsInfinity(availableSize.Height))
             {
@@ -301,7 +401,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
     private double GetTextPaddingInline()
     {
-        return FontSize * TextPaddingInline;
+        return FontSize * EffectiveTextPadding;
     }
 
     private Rect GetTitleRect(Size finalSize)
@@ -329,7 +429,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
                 }
                 else
                 {
-                    _currentEdgeDistance = finalSize.Width * OrientationMarginPercent;
+                    _currentEdgeDistance = finalSize.Width * EffectiveEdgeRatio;
                 }
 
                 titleRect = new Rect(new Point(_currentEdgeDistance + GetTextPaddingInline(), 0),
@@ -348,7 +448,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
                 }
                 else
                 {
-                    _currentEdgeDistance = finalSize.Width * OrientationMarginPercent;
+                    _currentEdgeDistance = finalSize.Width * EffectiveEdgeRatio;
                 }
 
                 titleRect = new Rect(

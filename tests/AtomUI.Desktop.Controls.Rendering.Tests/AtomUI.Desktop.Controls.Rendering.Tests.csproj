@@ -5,6 +5,11 @@
         <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
+        <!-- Share the one real DataGrid scenario factory; keep the original unit-test host unchanged. -->
+        <Compile Include="../AtomUI.Desktop.Controls.DataGrid.Tests/Theme/Support/DataGridThemeTestFixture.cs"
+                 Link="Effect/Support/DataGridThemeTestFixture.cs" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Avalonia.Headless" />
         <PackageReference Include="Avalonia.Headless.XUnit" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -13,5 +18,7 @@
         <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../controlgallery/AtomUIGallery/AtomUIGallery.csproj" />
+        <ProjectReference Include="../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
     </ItemGroup>
 </Project>

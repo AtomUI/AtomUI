@@ -25,23 +25,49 @@ on:
             type: boolean
             required: false
             default: false
+permissions:
+   contents: read
 env:
-   SOURCE_DIR: ${{ github.workspace }}
    BASE_OUTPUT_DIR: ${{ github.workspace }}/nuget-artifacts
-   LOCAL_NUGET_DIR: ${{ github.workspace }}/nuget
+   NUGET_SOURCE: https://api.nuget.org/v3/index.json
+   NUGET_PACKAGE_CONTENT: https://api.nuget.org/v3-flatcontainer
 jobs:
    BuildAtomUINuget:
       name: Build AtomUI NuGet packages
       runs-on: windows-latest
+      env:
+         LOCAL_NUGET_DIR: ${{ github.workspace }}/nuget
+      outputs:
+         artifact_id: ${{ steps.upload.outputs.artifact-id }}
+         manifest_sha256: ${{ steps.manifest.outputs.sha256 }}
       steps:
+         -  name: Validate source and build configuration for publication
+            if: ${{ inputs.PublishToNuget }}
+            shell: pwsh
+            env:
+               TARGET_REF: ${{ inputs.TargetRef }}
+               BUILD_TYPE: ${{ inputs.BuildType }}
+            run: |
+               if ($env:GITHUB_REPOSITORY -ine "AtomUI/AtomUI" -or $env:GITHUB_REF -cne "refs/heads/release/6.0") {
+                  throw "NuGet publication must be dispatched on AtomUI/AtomUI from release/6.0."
+               }
+               if ($env:BUILD_TYPE -cne "Release") {
+                  throw "NuGet publication requires the Release build configuration."
+               }
+               if ($env:TARGET_REF -cne "release/6.0" -and $env:TARGET_REF -ine $env:GITHUB_SHA) {
+                  throw "TargetRef must be release/6.0 or the workflow commit SHA for NuGet publication."
+               }
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetRef }}
-         - name: Setup .NET 10
+               ref: ${{ inputs.PublishToNuget && github.sha || inputs.TargetRef }}
+               persist-credentials: false
+         - name: Setup .NET 10 and 11
            uses: actions/setup-dotnet@v5
            with:
-              dotnet-version: '10.0.x'
+              dotnet-version: |
+                 10.0.x
+                 11.0.x
          -  name: Create local NuGet feed
             run: |
                $localFeedPath = $env:LOCAL_NUGET_DIR
@@ -55,13 +81,24 @@ jobs:
                   Write-Error "Failed to add local feed"
                   exit 1
                }
-         -  name: Build and pack AtomUI NuGet packages
+         -  name: Verify .NET SDK
             shell: pwsh
             run: |
+               $sdkVersion = (dotnet --version).Trim()
+               Write-Output "Resolved .NET SDK: $sdkVersion"
+               if ([int]($sdkVersion.Split('.')[0]) -lt 11) {
+                  throw "NuGet release packaging requires .NET SDK 11 or later."
+               }
+         -  name: Build and pack AtomUI NuGet packages
+            shell: pwsh
+            env:
+               BUILD_TYPE: ${{ inputs.BuildType }}
+               BASELINE_VERSION: ${{ inputs.PackageValidationBaselineVersion }}
+            run: |
                ./scripts/BuildNuGetPackages.ps1 `
-                  -BuildType "${{ inputs.BuildType }}" `
+                  -BuildType $env:BUILD_TYPE `
                   -PackageOutputDir $env:BASE_OUTPUT_DIR `
-                  -PackageValidationBaselineVersion "${{ inputs.PackageValidationBaselineVersion }}"
+                  -PackageValidationBaselineVersion $env:BASELINE_VERSION
          -  name: Validate packages with local NuGet feed
             shell: pwsh
             run: |
@@ -77,22 +114,218 @@ jobs:
                      throw "Failed to push $($pkg.Name) to the local NuGet feed"
                   }
                }
-         -  name: Upload NuGet artifacts
-            uses: actions/upload-artifact@v7
-            with:
-               name: NuGetPackages
-               path: ${{ env.BASE_OUTPUT_DIR }}/*.nupkg
-               if-no-files-found: error
-         -  name: Publish to nuget.org
-            if: ${{ inputs.PublishToNuget == true }}
+         -  name: Create release artifact manifest
+            id: manifest
             shell: pwsh
             run: |
-               $ErrorActionPreference = "Stop"
-               $packages = Get-ChildItem -LiteralPath $env:BASE_OUTPUT_DIR -Filter "*.nupkg" -File |
-                  Sort-Object Name
-               foreach ($pkg in $packages) {
-                  dotnet nuget push $pkg.FullName --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
-                  if ($LASTEXITCODE -ne 0) {
-                     throw "Failed to publish $($pkg.Name) to nuget.org"
+               . ./scripts/NuGetPackageProjects.ps1
+               [xml]$versions = Get-Content -LiteralPath "./build/Versions.props"
+               $version = [string]$versions.Project.PropertyGroup.AtomUIVersion
+               $commit = git rev-parse HEAD
+               if ($LASTEXITCODE -ne 0 -or -not $version -or -not $AtomUIExpectedPackageIds) {
+                  throw "Could not resolve the commit, version, or package list for the release artifact."
+               }
+               $packages = @(
+                  foreach ($id in ($AtomUIExpectedPackageIds | Sort-Object)) {
+                     $name = "$id.$version.nupkg"
+                     $path = Join-Path $env:BASE_OUTPUT_DIR $name
+                     [ordered]@{
+                        id = $id
+                        fileName = $name
+                        sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
+                     }
+                  }
+               )
+               $manifestPath = Join-Path $env:BASE_OUTPUT_DIR "release-manifest.json"
+               [ordered]@{
+                  commit = $commit
+                  version = $version
+                  buildAttempt = [int]$env:GITHUB_RUN_ATTEMPT
+                  packages = $packages
+               } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+               $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash
+               "sha256=$manifestHash" >> $env:GITHUB_OUTPUT
+               Write-Host "Recorded $($packages.Count) packages for $version from commit $commit."
+         -  name: Upload NuGet artifacts
+            id: upload
+            uses: actions/upload-artifact@v7
+            with:
+               name: NuGetPackages-${{ github.run_attempt }}
+               path: |
+                  ${{ env.BASE_OUTPUT_DIR }}/*.nupkg
+                  ${{ env.BASE_OUTPUT_DIR }}/release-manifest.json
+               if-no-files-found: error
+
+   PublishAtomUINuget:
+      name: Publish AtomUI NuGet packages
+      needs: BuildAtomUINuget
+      if: ${{ inputs.PublishToNuget }}
+      runs-on: windows-latest
+      environment: production
+      permissions:
+         id-token: write
+      concurrency:
+         group: atomui-nuget-production
+         cancel-in-progress: false
+      steps:
+         -  name: Require the verified build artifact
+            if: ${{ needs.BuildAtomUINuget.outputs.artifact_id == '' }}
+            shell: pwsh
+            run: throw "The build did not provide a release artifact ID."
+         -  name: Download verified NuGet artifacts
+            uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+            with:
+               artifact-ids: ${{ needs.BuildAtomUINuget.outputs.artifact_id }}
+               path: ${{ env.BASE_OUTPUT_DIR }}
+         -  name: Verify package completeness and check existing versions
+            id: verify
+            shell: pwsh
+            env:
+               EXPECTED_MANIFEST_SHA256: ${{ needs.BuildAtomUINuget.outputs.manifest_sha256 }}
+            run: |
+               function Get-PackageEntryHashes($path) {
+                  $archive = [System.IO.Compression.ZipFile]::OpenRead($path)
+                  try {
+                     $hashes = [System.Collections.Generic.Dictionary[string, string]]::new([StringComparer]::Ordinal)
+                     foreach ($entry in $archive.Entries) {
+                        # NuGet.org adds a repository signature to the published ZIP.
+                        if ($entry.FullName -ceq ".signature.p7s") {
+                           continue
+                        }
+                        $stream = $entry.Open()
+                        try {
+                           $hashes.Add($entry.FullName, (Get-FileHash -InputStream $stream -Algorithm SHA256).Hash)
+                        }
+                        finally {
+                           $stream.Dispose()
+                        }
+                     }
+                     return ,$hashes
+                  }
+                  finally {
+                     $archive.Dispose()
                   }
                }
+
+               $manifestPath = Join-Path $env:BASE_OUTPUT_DIR "release-manifest.json"
+               if ((Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash -cne $env:EXPECTED_MANIFEST_SHA256) {
+                  throw "The release artifact manifest does not match the build output."
+               }
+               $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+               if ($manifest.commit -cne $env:GITHUB_SHA -or -not $manifest.version -or -not $manifest.packages) {
+                  throw "The release artifact must contain the complete package manifest for the workflow commit."
+               }
+               $expectedNames = @($manifest.packages.fileName)
+               $actualNames = @(Get-ChildItem -LiteralPath $env:BASE_OUTPUT_DIR -File -Filter "*.nupkg" | Select-Object -ExpandProperty Name)
+               $missing = @($expectedNames | Where-Object { $_ -cnotin $actualNames })
+               $unexpected = @($actualNames | Where-Object { $_ -cnotin $expectedNames })
+               if ($missing.Count -or $unexpected.Count -or $expectedNames.Count -ne $actualNames.Count) {
+                  throw "Release package set differs from the build. Missing: [$($missing -join ', ')]. Unexpected: [$($unexpected -join ', ')]."
+               }
+               foreach ($package in $manifest.packages) {
+                  $path = Join-Path $env:BASE_OUTPUT_DIR $package.fileName
+                  if ((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash -cne $package.sha256) {
+                     throw "Package hash mismatch: $($package.fileName)"
+                  }
+               }
+
+               $retry = [int]$env:GITHUB_RUN_ATTEMPT -gt $manifest.buildAttempt
+               $version = $manifest.version.ToLowerInvariant()
+               $pending = @(
+                  foreach ($package in $manifest.packages) {
+                     $id = $package.id.ToLowerInvariant()
+                     $url = "$env:NUGET_PACKAGE_CONTENT/$id/$version/$id.$version.nupkg"
+                     $status = (Invoke-WebRequest -Uri $url -Method Head -SkipHttpErrorCheck -TimeoutSec 20).StatusCode
+                     if ($status -eq 404) {
+                        $package.fileName
+                        continue
+                     }
+                     if ($status -ne 200) {
+                        throw "NuGet version check for $($package.fileName) returned HTTP $status."
+                     }
+                     if (-not $retry) {
+                        throw "$($package.fileName) already exists on NuGet.org. Use a new version for a new build, or retry the original publish job."
+                     }
+
+                     $published = New-TemporaryFile
+                     try {
+                        Invoke-WebRequest -Uri $url -OutFile $published.FullName -TimeoutSec 120
+                        $localHashes = Get-PackageEntryHashes (Join-Path $env:BASE_OUTPUT_DIR $package.fileName)
+                        $publishedHashes = Get-PackageEntryHashes $published.FullName
+                        if ($localHashes.Count -ne $publishedHashes.Count -or
+                            @($localHashes.Keys | Where-Object { $localHashes[$_] -cne $publishedHashes[$_] }).Count -gt 0) {
+                           throw "Published contents of $($package.fileName) differ from the original artifact."
+                        }
+                     }
+                     finally {
+                        Remove-Item -LiteralPath $published.FullName
+                     }
+                     Write-Host "Already published and verified: $($package.fileName)"
+                  }
+               )
+               if ($pending.Count -gt 0) {
+                  $pending | Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP "pending-nuget-packages.txt") -Encoding utf8
+                  "has_packages_to_push=true" >> $env:GITHUB_OUTPUT
+               }
+               Write-Host "Verified $($expectedNames.Count) release packages, $($pending.Count) pending push."
+         -  name: Setup .NET for NuGet push
+            if: ${{ steps.verify.outputs.has_packages_to_push == 'true' }}
+            uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+            with:
+               dotnet-version: 10.0.x
+         -  name: Get a short-lived NuGet API key
+            if: ${{ steps.verify.outputs.has_packages_to_push == 'true' }}
+            id: login
+            uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+            with:
+               user: chinware
+         -  name: Publish to nuget.org
+            if: ${{ steps.verify.outputs.has_packages_to_push == 'true' }}
+            shell: pwsh
+            env:
+               NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+            run: |
+               if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+                  throw "NuGet trusted publishing did not provide a temporary API key."
+               }
+               $pending = Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP "pending-nuget-packages.txt")
+               foreach ($name in $pending) {
+                  $path = Join-Path $env:BASE_OUTPUT_DIR $name
+                  dotnet nuget push $path --api-key $env:NUGET_API_KEY --source $env:NUGET_SOURCE
+                  if ($LASTEXITCODE -ne 0) {
+                     throw "Failed to publish $name to nuget.org."
+                  }
+               }
+         -  name: Confirm availability of every release package
+            shell: pwsh
+            timeout-minutes: 20
+            run: |
+               $manifest = Get-Content -LiteralPath (Join-Path $env:BASE_OUTPUT_DIR "release-manifest.json") -Raw | ConvertFrom-Json
+               $version = $manifest.version.ToLowerInvariant()
+               $pending = @($manifest.packages)
+               $deadline = [DateTime]::UtcNow.AddMinutes(15)
+               do {
+                  $pending = @(
+                     foreach ($package in $pending) {
+                        $id = $package.id.ToLowerInvariant()
+                        $url = "$env:NUGET_PACKAGE_CONTENT/$id/$version/$id.$version.nupkg"
+                        $status = (Invoke-WebRequest -Uri $url -Method Head -SkipHttpErrorCheck -TimeoutSec 15).StatusCode
+                        if ($status -eq 200) {
+                           Write-Host "Available on NuGet.org: $($package.fileName)"
+                        }
+                        elseif ($status -eq 404 -or $status -eq 429 -or $status -ge 500) {
+                           $package
+                        }
+                        else {
+                           throw "NuGet availability check for $($package.fileName) returned HTTP $status."
+                        }
+                     }
+                  )
+                  if ($pending.Count -gt 0 -and [DateTime]::UtcNow -lt $deadline) {
+                     Start-Sleep -Seconds 15
+                  }
+               } while ($pending.Count -gt 0 -and [DateTime]::UtcNow -lt $deadline)
+               if ($pending.Count -gt 0) {
+                  throw "NuGet packages not yet available: $($pending.fileName -join ', ')."
+               }
+               Write-Host "All $($manifest.packages.Count) release packages are available on NuGet.org."

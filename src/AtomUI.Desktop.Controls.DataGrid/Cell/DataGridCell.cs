@@ -17,8 +17,12 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 
+using AtomUI.Theme;
+
 namespace AtomUI.Desktop.Controls;
 
+// Visual container follows the DataGrid owner, including TokenTransitions in its template.
+[TokenOwnerTransparent]
 [TemplatePart(DataGridCellThemeConstants.RightGridLinePart, typeof(Rectangle))]
 [PseudoClasses(StdPseudoClass.Selected, StdPseudoClass.Current, StdPseudoClass.Edited, StdPseudoClass.Invalid,
     StdPseudoClass.Focus)]
@@ -155,8 +159,6 @@ public class DataGridCell : ContentControl
 
     internal DataGrid? OwningGrid => OwningRow?.OwningGrid ?? OwningColumn?.OwningGrid;
 
-    internal double ActualRightGridLineWidth => _rightGridLine?.Bounds.Width ?? 0;
-
     internal int ColumnIndex => OwningColumn?.Index ?? -1;
     internal int RowIndex => OwningRow?.Index ?? -1;
 
@@ -195,6 +197,7 @@ public class DataGridCell : ContentControl
     private Rectangle? _rightGridLine;
     private RectangleGeometry? _clipGeometry;
     private IDisposable? _headerDragModeSubscription;
+    private IDisposable? _owningRowBinding;
     private bool _templateApplied;
     private static readonly Func<DataGridColumnHeader.DragMode, bool> IsReorderDragModeConverter = IsReorderDragMode;
 
@@ -262,6 +265,20 @@ public class DataGridCell : ContentControl
     private static bool IsReorderDragMode(DataGridColumnHeader.DragMode dragMode)
     {
         return dragMode == DataGridColumnHeader.DragMode.Reorder;
+    }
+
+    // 单元格的尺寸跟随所属行；绑定会订阅行的属性变更，由单元格集合在插入与移除时成对建立与释放，
+    // 否则列被移除后，行仍会经由该绑定持有已移除列的单元格及列本身。
+    internal void BindOwningRowProperties(DataGridRow owningRow)
+    {
+        _owningRowBinding?.Dispose();
+        _owningRowBinding = Bind(SizeTypeProperty, owningRow[!DataGridRow.SizeTypeProperty]);
+    }
+
+    internal void ReleaseOwningRowBinding()
+    {
+        _owningRowBinding?.Dispose();
+        _owningRowBinding = null;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -3,6 +3,76 @@
 本文档记录 Select 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-22
+
+- Token：输入框外框形态不再经 `AppearanceSettings` 传入，改为公开 Own Token `SelectToken.TransparentOutlineBorder`、`BottomOutlineBorder`、`MutedSelectIndicator`（默认 `false`，见
+  [Token 设计](token.md)）。各设计语言渲染不变。
+
+## 2026-11-21（勾选图标）
+
+- Token：`SelectToken` 新增 `OptionSelectedIndicatorColor`（多选下选中项的勾选图标颜色，默认 `ColorPrimary`）。PrimeNG 取
+  `OptionSelectedColor`（`highlight.color`），修复 noir 实心选中背景上勾选不可见。Shadcn 的勾选为 muted 前景色，与官方
+  SelectItem 的 `text-muted-foreground` 一致，不变。
+
+## 2026-11-21（下拉间隙）
+
+- PrimeNG：下拉面板与输入框的间隙在三个预设中都与 DropdownButton 的菜单一致（可见边缘相距 `MarginXXS`），`Popup.MarginToAnchor`
+  为 `MarginXXS` 加面板外侧 1px 描边环的宽度。官方 `anchor.gutter` 为 2（Nora 0，面板边框叠在输入框边框上）。Select、ComboBox、
+  Cascader、TreeSelect、AutoComplete、Mentions 与日期 / 时间选择器共用该值。
+
+## 2026-11-21
+
+- Token：新增 Own Token `OptionBorderRadius`（选项背景圆角，默认 0，保持原直角，Ant Design / Shadcn 不变）。
+- PrimeNG Aura：选项圆角 4（`list.option.border.radius` = `border.radius.sm`），选项间距 2（`list.gap`，以选项背景上下各内缩 1 实现，面板内边距相应为 4,3），primeng.dev 实测。Lara / Nora 官方为直角、无间距，不变。
+- Token：`AbstractSelectInputToken` 新增 Own Token `InputFontSizeSM`（小号选择框字体，默认 `FontSize`，与 antd 一致），Select 的 Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），Small 占位文字和选中值与 Small LineEdit 同字号。
+
+## 2026-11-20
+
+- Fixed
+  - 多选标签（SelectTag）文字改读所属选择器的 `ColorText`，不再沿用独立 Tag 的默认文字色；主题把 Tag 默认色配为实心填充时，选择器浅色标签底上的文字仍可读。Ant Design 与 Shadcn 外观不变。
+- Performance
+  - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。涉及 `SelectTag` 的标签输入。
+
+## 2026-11-11
+
+- Theme
+  - 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 多选标签前留出的 11 DIP 空白：空前缀 add-on 的外层 `AddOnContentPresenter` 现在跟随内层可见性，不再保留前缀缩进与面板间距，标签距边框与 Ant Design 一致。
+  - 嵌入式 `SelectFilterTextBox` 设置空 `FocusAdorner`，搜索框聚焦时不在外框内部绘制方框。
+  - 宿主主题设置 `ClipToBounds=False`：`Outlined` focus 外发光绘制在 frame 外侧，此前被 `TemplatedControl` 默认裁剪丢弃。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 Select 的有效 Global Token：`Controls[Select]` 的覆盖作用于输入表面、下拉候选项、弹层框体、多选标签区和手柄；共用部件读取宿主有效值。见 [Select Token](token.md) §7。
+  - 根 `BorderBrush` / `Background` 经输入帧 `HostBorderBrush` / `HostBackground` 投射，移除 `AbstractSelect.RelayRootSurfaceBrush` 的 LocalValue 中继；`SelectAddOnDecoratedBoxTheme` 删除与输入帧重复的状态样式，只保留展开激活边框。
+  - `OptionPadding` 接入候选行内边距；`SelectAffixPadding`、`FixedItemMargin` 标为 Reserved。
+- Fix
+  - 候选行 `OptionHeight` 与内边距此前被 ListViewItem 尺寸触发样式遮蔽，现在生效；弹层最大高度按 `OptionHeight` 计算。
+  - 候选行默认文本色改为 `ColorText`（原为 ListView 的 `ColorTextSecondary`），对齐 antd。
+  - 聚焦阴影不再被 Select 根裁剪；过滤输入跟随宿主字号。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - AbstractSelect 声明 OpenMotion/CloseMotion，Select、Cascader、TreeSelect 继承同一配置契约。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-04
 
 - Fix

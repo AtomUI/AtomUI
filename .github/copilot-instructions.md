@@ -167,7 +167,7 @@ Each platform-specific control follows this folder structure:
 ```
 ControlName/
 ├── ControlName.cs            # Concrete control class (public, inherits from Abstract base in AtomUI.Controls)
-├── ControlNameToken.cs       # Platform-specific Design Token definition (internal, [ControlDesignToken])
+├── ControlNameToken.cs       # Platform-specific Design Token definition (public sealed partial, [ControlDesignToken])
 ├── ControlNamePseudoClass.cs # Platform-specific pseudo-class constants (if needed)
 ├── Themes/
 │   ├── ControlNameTheme.axaml    # XAML ControlTheme definition
@@ -254,15 +254,15 @@ Seed Token  ──(Algorithm)──►  Map Token  ──(Alias calculation)─�
 
 ### Theme Algorithms
 
-Algorithms expand Seed Tokens into Map Tokens (color palette generation, size ladder calculation, etc.):
+Algorithms expand Seed Tokens into Map Tokens (color palette generation, size ladder calculation, etc.). `ThemeAlgorithm` is a `(Catalog, Id)` identity struct; Core ships three built-in algorithms:
 
 | Algorithm | Class | Purpose |
 |---|---|---|
-| `ThemeAlgorithm.Default` | `DefaultThemeVariantCalculator` | Light theme (default) |
-| `ThemeAlgorithm.Dark` | `DarkThemeVariantCalculator` | Dark theme |
-| `ThemeAlgorithm.Compact` | `CompactThemeVariantCalculator` | Compact layout (smaller sizes/spacing) |
+| `ThemeAlgorithm.Default` (`AtomUI:Default`) | `DefaultThemeVariantCalculator` | Light theme (default) |
+| `ThemeAlgorithm.Dark` (`AtomUI:Dark`) | `DarkThemeVariantCalculator` | Dark theme |
+| `ThemeAlgorithm.Compact` (`AtomUI:Compact`) | `CompactThemeVariantCalculator` | Compact layout (smaller sizes/spacing) |
 
-Algorithms can be **composed** — e.g., Dark + Compact produces a dark compact theme. The `ThemeDefinition` stores a set of `ThemeAlgorithm` values.
+Algorithms are an ordered **chain** — e.g., `[Default, Dark, Compact]` produces a dark compact theme. The set is open: theme packages declare their own algorithms with `[ThemeAlgorithm(catalog, id, revision, appearanceEffect)]` (for example `PrimeNG:Aura` in `AtomUI.Themes.PrimeNG`), optionally with an Alias stage (`IThemeAliasAlgorithm`) and per-control stages (`IControlTokenAlgorithm<TToken>` + `[ControlTokenAlgorithm]`). See `docs/guides/theming/writing-theme-algorithms.md`.
 
 ### Color Palette Generation
 
@@ -272,43 +272,35 @@ Each Seed color (e.g., `ColorPrimary = #1677ff`) is expanded into a 10-color gra
 
 ```csharp
 [ControlDesignToken]
-internal class ButtonToken : AbstractControlDesignToken
+public sealed partial class ToolTipToken : AbstractControlDesignToken
 {
-    public const string ID = "Button";
-    public static readonly ControlTokenResourceScopeProvider ScopeProvider = new(ID);
+    /// <summary>
+    /// ToolTip 默认的背景色
+    /// </summary>
+    public partial Color ToolTipBackground { get; set; }
 
     /// <summary>
-    /// 主要按钮文本颜色
+    /// ToolTip 默认的内间距
     /// </summary>
-    public Color PrimaryColor { get; set; }
+    public partial Thickness ContentPadding { get; set; }
 
-    /// <summary>
-    /// 按钮内间距
-    /// </summary>
-    public Thickness Padding { get; set; }
-
-    public ButtonToken() : base(ID) { }
-
-    public override void CalculateTokenValues(bool isDarkMode)
+    protected override void CalculateTokenValues(bool isDarkMode)
     {
         base.CalculateTokenValues(isDarkMode);
-        // Derive values from SharedToken — NEVER hardcode
-        PrimaryColor = SharedToken.ColorTextLightSolid;
-        Padding = new Thickness(SharedToken.PaddingContentHorizontal - SharedToken.LineWidth, ...);
+        // Derive values from EffectiveGlobalToken — NEVER hardcode
+        ToolTipBackground = EffectiveGlobalToken.ColorBgSpotlight;
+        ContentPadding    = new Thickness(EffectiveGlobalToken.UniformlyPaddingSM, EffectiveGlobalToken.UniformlyPaddingSM / 2 + 2);
     }
-
-    protected override Type GetTokenKindType() => typeof(ButtonTokenKind);
 }
 ```
 
 **Rules:**
-- Token class MUST be `internal` and decorated with `[ControlDesignToken]`.
-- Token class MUST have a `const string ID` and a `static readonly ControlTokenResourceScopeProvider ScopeProvider`.
-- Constructor calls `base(ID)`.
-- Override `CalculateTokenValues(bool isDarkMode)` to compute token values from `SharedToken`.
-- All color, spacing, size, and font values MUST be derived from `SharedToken` properties — do NOT hardcode magic numbers.
+- Token class MUST be decorated with `[ControlDesignToken]`, be `sealed partial` (abstract definition layers are `abstract partial`), and is `public` in the AtomUI control packages (GalleryBase keeps `internal`).
+- Every token property MUST be a `partial` property (`public partial Color X { get; set; }`); the generator emits the implementation (`get => field`, a setter that records writes for theme algorithms). A non-partial class or property is error `ATOMUIGEN049`.
+- Override `CalculateTokenValues(bool isDarkMode)` as `protected override` (the base method is `protected virtual`) to compute token values from `EffectiveGlobalToken`.
+- All color, spacing, size, and font values MUST be derived from `EffectiveGlobalToken` properties — do NOT hardcode magic numbers.
 - Token properties SHOULD have XML doc comments describing their purpose.
-- Override `GetTokenKindType()` to return the generated `TokenKind` enum type.
+- Public abstract token layers can be inherited by other assemblies; their `protected` members are public API.
 
 ### Token Resource Access in AXAML
 
@@ -441,7 +433,7 @@ public static readonly StyledProperty<SizeType> SizeTypeProperty =
 - **Naming**: PascalCase for properties, methods, types; `I` prefix for interfaces; `Abstract` prefix for abstract base classes.
 - **Constants**: Use `public const string` for pseudo-class names, template part names, token IDs.
 - **Avoid `any`/`object`**: Use strongly-typed APIs.
-- **Access modifiers**: Token classes are `internal`; control classes are `public`; theme code-behind classes match their visibility needs.
+- **Access modifiers**: control token classes in the AtomUI control packages are `public partial` (theme algorithms write them; applications still customize through generated token resources and theme configuration), GalleryBase token classes stay `internal`; control classes are `public`; theme code-behind classes match their visibility needs.
 - **Virtual members**: Consider `protected virtual` for extensibility-critical members.
 
 ---
@@ -477,7 +469,7 @@ public static readonly StyledProperty<SizeType> SizeTypeProperty =
 ## Summary Checklist for New Controls
 
 1. Create folder under `AtomUI.Desktop.Controls/ControlName/`.
-2. Define `ControlNameToken.cs` — inherit `AbstractControlDesignToken`, derive all values from `SharedToken`.
+2. Define `ControlNameToken.cs` — a `public sealed partial` class with `[ControlDesignToken]` that inherits `AbstractControlDesignToken`, declares every token as a `partial` property (otherwise `ATOMUIGEN049`) and derives all values from `EffectiveGlobalToken` in `protected override CalculateTokenValues`.
 3. Define `ControlName.cs` — implement relevant shared interfaces, register token scope.
 4. Create `Themes/ControlNameTheme.axaml` — use token resources, never hardcode values.
 5. Create `Themes/ControlNameTheme.cs` — code-behind extending `ControlTheme`.

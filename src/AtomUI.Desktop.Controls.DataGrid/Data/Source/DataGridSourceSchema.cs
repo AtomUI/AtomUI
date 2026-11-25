@@ -75,7 +75,8 @@ public sealed class DataGridFieldSchema
         DataGridSortDirections sortDirections,
         ImmutableArray<DataGridFilterOperatorSchema> filterOperators,
         bool canGroup,
-        DataGridFieldDisplayAccessor? displayAccessor = null)
+        DataGridFieldDisplayAccessor? displayAccessor = null,
+        bool isEditable = false)
     {
         if (!id.IsValid)
         {
@@ -106,6 +107,7 @@ public sealed class DataGridFieldSchema
             : filterOperators;
         CanGroup = canGroup;
         DisplayAccessor = displayAccessor;
+        IsEditable = isEditable;
 
         _filterOperatorsById = new Dictionary<DataGridOperatorId, DataGridFilterOperatorSchema>(
             FilterOperators.Length);
@@ -135,6 +137,11 @@ public sealed class DataGridFieldSchema
     public bool CanGroup { get; }
 
     public DataGridFieldDisplayAccessor? DisplayAccessor { get; }
+
+    /// <summary>
+    /// Gets whether edit requests may write this field through <see cref="IDataGridEditableSource"/>.
+    /// </summary>
+    public bool IsEditable { get; }
 
     internal bool TryGetFilterOperator(
         DataGridOperatorId id,

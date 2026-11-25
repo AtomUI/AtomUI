@@ -17,7 +17,8 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | 按源码 Token 语义维护 |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`、`HorizontalMarginBlockSM`、`HorizontalMarginBlock`、`HorizontalMarginBlockLG` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`、`HorizontalMarginBlockSM`、`HorizontalMarginBlock`、`HorizontalMarginBlockLG`、`HorizontalWithTextGutterMargin` |
+| 文字 | 带标题分割线的标题字重。 | `TitleFontWeight` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | 按源码 Token 语义维护 |
 
@@ -30,7 +31,16 @@ Separator 的控件专项模型通过 Theme 消费 Token：
 - C# 控件负责状态归一和伪类同步。
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
-- 水平分隔线的 `HorizontalMarginBlockSM`、`HorizontalMarginBlock`、`HorizontalMarginBlockLG` 分别从 SharedToken 的 `UniformlyMarginXS`、`UniformlyMargin`、`UniformlyMarginLG` 派生；默认对应 `8px`、`16px`、`24px`，并同时适用于带标题和无标题布局。
+- 水平分隔线的 `HorizontalMarginBlockSM`、`HorizontalMarginBlock`、`HorizontalMarginBlockLG` 分别从 SharedToken 的 `UniformlyMarginXS`、`UniformlyMargin`、`UniformlyMarginLG` 派生；默认对应 `8px`、`16px`、`24px`。
+- 大号带标题的水平分隔线改用 `HorizontalWithTextGutterMargin`（antd `dividerHorizontalWithTextGutterMargin`，默认 `UniformlyMargin`）。
+  antd Divider 只有 `md` / `sm` 两个尺寸类，未设尺寸时外边距为 `marginLG`（对应 AtomUI Large 的 `HorizontalMarginBlockLG`），带文字时
+  改用 with-text 外边距；尺寸样式注册在共享样式之后、选择器优先级相同，所以 `md` / `sm`（对应 AtomUI Middle / Small）带文字时仍用各自
+  尺寸的外边距。因此中号、小号带标题时分别是 `HorizontalMarginBlock` / `HorizontalMarginBlockSM`。
+- `TitleFontWeight` 是非 Plain 标题的字重，默认 `Medium`（500）。它是 AtomUI 扩展：antd Divider 带文字时字重固定为 500，没有对应 Token；
+  Plain 标题为常规字重、`FontSize`。
+- 桌面主题成组读取三个布局 Own Token。带标题的水平分隔线按 `TextPaddingInline` 和 `OrientationMarginPercent` 重排，竖向分隔线按 `VerticalMarginInline` 重新测量。公开 `OrientationMargin` 仍可覆盖标题的边缘距离。
+- 线色 `ColorSplit`、线宽 `LineWidth`、标题色 `ColorTextHeading`、标题字号 `FontSizeLG` / `FontSize` 经 `SeparatorTokenResource` 读取，
+  `Controls[Separator]` 覆盖生效。
 - `CustomizableSizeType.Custom` 不引入第四组间距 Token。Theme 使用 `HorizontalMarginBlock` 作为基础回退值，并把最终 `Margin` 的接管权留给实例或 owner-scoped Style。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
 

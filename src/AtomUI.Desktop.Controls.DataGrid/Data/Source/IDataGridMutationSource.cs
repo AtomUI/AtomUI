@@ -250,6 +250,14 @@ public interface IDataGridMovableSource : IDataGridSource
         CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Lets a movable source report that moves are currently unavailable, so the grid does not start a row drag.
+/// </summary>
+internal interface IDataGridMoveAvailability
+{
+    bool CanMove { get; }
+}
+
 public interface IDataGridKeyLookupSource : IDataGridSource
 {
     ValueTask<DataGridKeyLookupResult?> LookupAsync(

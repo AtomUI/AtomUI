@@ -47,7 +47,8 @@ Semantic Part 表达跨版本稳定的产品职责，不等同于内部 Adorner�
 | --- | --- | --- |
 | 内容 | `DecoratedTarget` | 可选的被装饰 `Control`，同时是 XAML content property；默认 `null`。 |
 | 数值 | `Count`、`OverflowCount`、`IsZeroVisible` | `Count` 默认 `0` 且被约束为非负值；`OverflowCount` 默认 `99` 且被约束为非负值；零值默认不显示。 |
-| 外观 | `BadgeColor`、`Size` | `BadgeColor` 接受预设色名或可解析颜色字符串；`Size` 默认为 `Default`，另支持 `Small`。 |
+| 外观 | `BadgeColor`、`Size`、`IsBordered` | `BadgeColor` 接受预设色名、状态名（`primary`、`success`、`warning`、`error`、`danger`）或可解析颜色字符串，名称随主题解析；`Size` 默认为 `Default`，另支持 `Small`；`IsBordered` 默认 `true`，为 `false` 时去除白色描边。 |
+| 自定义内容 | `Content` | 默认 `null`；非空时替代计数文本且始终显示，空字符串隐藏徽标。 |
 | 定位 | `Offset` | 调整指示器相对目标或独立布局位置；默认 `(0,0)`。 |
 | 状态 | `BadgeIsVisible`、`IsMotionEnabled` | 控制徽标可见性与动效；`BadgeIsVisible` 默认 `true`。 |
 
@@ -57,7 +58,7 @@ Semantic Part 表达跨版本稳定的产品职责，不等同于内部 Adorner�
 | --- | --- | --- |
 | 内容 | `DecoratedTarget`、`Text` | `DecoratedTarget` 是可选 XAML content property；`Text` 只在独立模式显示；二者默认 `null`。 |
 | 状态 | `Status`、`BadgeIsVisible`、`IsMotionEnabled` | `Status` 可选，支持 `Default`、`Success`、`Processing`、`Error`、`Warning`；`BadgeIsVisible` 默认 `true`。 |
-| 外观 | `DotColor` | 接受预设色名或可解析颜色字符串；显式颜色作为状态色之外的实例颜色入口。 |
+| 外观 | `DotColor`、`IsBordered` | `DotColor` 接受预设色名、状态名或可解析颜色字符串，名称随主题解析；显式颜色作为状态色之外的实例颜色入口；`IsBordered` 默认 `false`，是主题 selector 钩子，Desktop 默认模板不绘制描边。 |
 | 定位 | `Offset` | 调整状态点相对目标的位置；默认 `(0,0)`。 |
 
 #### RibbonBadge

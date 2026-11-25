@@ -1,0 +1,359 @@
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Schema;
+using Avalonia;
+using Avalonia.Media;
+using Shouldly;
+using Xunit;
+using AtomButton = AtomUI.Desktop.Controls.Button;
+
+namespace AtomUI.Desktop.Controls.Rendering.Tests.Effect;
+
+public class TokenEffectHarnessTests
+{
+    [Fact]
+    public void Visible_Global_Token_Override_Passes()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ColorPrimary",
+            control => ((AtomButton)control).ButtonType = ButtonType.Primary);
+    }
+
+    [Fact]
+    public void Visible_Own_Token_Override_Passes()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "DefaultBg");
+    }
+
+    [Fact]
+    public void Visible_Thin_Line_Token_Override_Passes()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "LineWidth");
+    }
+
+    [Theory]
+    [InlineData("ContentPadding", ButtonType.Default)] // Thickness
+    [InlineData("DefaultShadow", ButtonType.Default)]  // BoxShadows, painted outside the bounds
+    [InlineData("PrimaryShadow", ButtonType.Primary)]  // BoxShadows, painted outside the bounds
+    public void Geometry_Tokens_Change_Pixels(string token, ButtonType buttonType)
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go", ButtonType = buttonType },
+            ButtonTokens.Identity,
+            token);
+    }
+
+    [Fact]
+    public void Corner_Radius_Token_Changes_Pixels()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new Collapse { Items = { new CollapseItem { Header = "Panel", Content = "Body" } } },
+            CollapseTokens.Identity,
+            "CollapsePanelBorderRadius");
+        // ButtonTheme reads BorderRadius through ButtonTokenResource, so a Controls[Button] override reaches it.
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "BorderRadius");
+    }
+
+    [Fact]
+    public void Shadow_Extent_Is_The_Largest_Offset_Plus_Blur_Plus_Spread_Per_Axis()
+    {
+        var shadows = new BoxShadows(
+            new BoxShadow { OffsetX = -2, OffsetY = 6, Blur = 16, Spread = 0 },
+            [new BoxShadow { OffsetX = 0, OffsetY = 3, Blur = 6, Spread = -4 },
+             new BoxShadow { OffsetX = 0, OffsetY = 9, Blur = 28, Spread = 8 }]);
+
+        TokenEffectHarness.ShadowExtent(shadows).ShouldBe((36d, 45d));
+        TokenEffectHarness.ShadowExtent(new BoxShadows()).ShouldBe((0d, 0d));
+        TokenEffectHarness.ShadowExtent(Colors.Red).ShouldBe((0d, 0d));
+    }
+
+    [Fact]
+    public void Token_Without_Visible_Effect_Fails()
+    {
+        // GroupBorderColor is a Reserved Button Own Token (no consumer yet): changing it must not repaint.
+        var exception = Should.Throw<ShouldAssertException>(() => TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "GroupBorderColor"));
+        exception.Message.ShouldContain("pixels changed inside the Control bounds");
+    }
+
+    [Fact]
+    public void Explicit_Perturbation_Replaces_The_Table_Value()
+    {
+        // ContentLineHeight only lowers the clamped vertical padding when it grows; a smaller value raises it.
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go", MinHeight = 0 },
+            ButtonTokens.Identity,
+            "ContentLineHeight",
+            options: new EffectOptions { Perturb = static value => (double)value / 2 });
+    }
+
+    [Fact]
+    public void Region_Inflation_Covers_Visuals_Painted_Outside_The_Bounds()
+    {
+        // ControlOutlineWidth moves the default shadow, which is painted below the Button's bounds.
+        Should.Throw<ShouldAssertException>(() => TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ControlOutlineWidth"));
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ControlOutlineWidth",
+            options: new EffectOptions { RegionInflation = 8 });
+    }
+
+    [Fact]
+    public void Target_Selects_A_Hosted_Member()
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new Avalonia.Controls.Border { Child = new AtomButton { Content = "Go", ButtonType = ButtonType.Primary } },
+            ButtonTokens.Identity,
+            "ColorPrimary",
+            options: new EffectOptions { Target = static root => (Avalonia.Controls.Control)((Avalonia.Controls.Border)root).Child! });
+    }
+
+    [Theory]
+    [InlineData("MotionDurationMid")]
+    [InlineData("EnableWaveSpirit")]
+    public void TimeSpan_And_Bool_Tokens_Assert_The_Read_Back_Value(string token)
+    {
+        TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            token);
+    }
+
+    [Fact]
+    public void Token_Of_A_Type_Without_Perturbation_Is_Not_Skipped()
+    {
+        var exception = Should.Throw<NotSupportedException>(() => TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "ScreenXS"));
+        exception.Message.ShouldContain("ScreenXS");
+    }
+
+    [Fact]
+    public void Unknown_Token_Name_Is_Rejected()
+    {
+        Should.Throw<ArgumentException>(() => TokenEffectHarness.AssertHasEffect(
+            () => new AtomButton { Content = "Go" },
+            ButtonTokens.Identity,
+            "NoSuchToken"));
+    }
+
+    [Theory]
+    [InlineData("LineWidth", 0.001)]
+    [InlineData("LineWidthBold", 0.001)]
+    [InlineData("ControlOutlineWidth", 0.001)]
+    [InlineData("FocusVisualBorderThickness", 0.001)]
+    [InlineData("HandleBorderThickness", 0.001)]
+    [InlineData("ColorPrimary", 0.005)]
+    [InlineData("ContentPadding", 0.005)]
+    public void Thin_Line_Tokens_Use_The_Lower_Threshold(string token, double expected)
+    {
+        TokenEffectHarness.ResolveThreshold(token, TokenEffectHarness.DefaultThresholdRatio).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Explicit_Lower_Threshold_Is_Kept_For_Thin_Line_Tokens()
+    {
+        TokenEffectHarness.ResolveThreshold("LineWidth", 0.0005).ShouldBe(0.0005);
+    }
+}
+
+public class ThemeOwnerReadsTests
+{
+    [Fact]
+    public void Owner_Reads_Are_Parsed_In_Every_Markup_Form_And_Other_Kinds_Are_Ignored()
+    {
+        ThemeOwnerReads.Parse("""
+            <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource Kind=ColorBgElevated}" />
+            <Setter Property="BorderBrush"><atom:OwnerTokenResource Kind="ColorBorder" /></Setter>
+            <Setter Property="Margin" Value="{atom:ButtonTokenResource IconMargin}" />
+            <Setter Property="Opacity" Value="{atom:SharedTokenResource OpacityLoading}" />
+            """).Order(StringComparer.Ordinal).ShouldBe(["ColorBgElevated", "ColorBorder", "ColorText"]);
+    }
+}
+
+public class TokenPerturbationTests
+{
+    [Fact]
+    public void Color_Is_Inverted_Keeping_Alpha()
+    {
+        TokenPerturbation.Perturb(Color.FromArgb(0xFF, 0x16, 0x77, 0xFF))
+                         .ShouldBe(Color.FromArgb(0xFF, 0xE9, 0x88, 0x00));
+    }
+
+    [Fact]
+    public void Near_Mid_Grey_Color_Becomes_A_Pure_Color()
+    {
+        var perturbed = (Color)TokenPerturbation.Perturb(Color.FromArgb(0xFF, 0x80, 0x7A, 0x88));
+        perturbed.ShouldBe(Color.FromArgb(0xFF, 0xFF, 0x00, 0x00));
+    }
+
+    [Fact]
+    public void Mostly_Transparent_Color_Becomes_Opaque()
+    {
+        // rgba(0,0,0,0.04) inverted would stay invisible; the perturbation must be clearly visible.
+        var perturbed = (Color)TokenPerturbation.Perturb(Color.FromArgb(0x0A, 0x00, 0x00, 0x00));
+        perturbed.A.ShouldBe((byte)0xFF);
+    }
+
+    [Fact]
+    public void Solid_Brush_Color_Is_Perturbed()
+    {
+        var perturbed = TokenPerturbation.Perturb(new SolidColorBrush(Color.FromArgb(0xFF, 0x16, 0x77, 0xFF)))
+                                         .ShouldBeAssignableTo<ISolidColorBrush>();
+        perturbed!.Color.ShouldBe(Color.FromArgb(0xFF, 0xE9, 0x88, 0x00));
+        // The harness writes the perturbed value through the config string form; it must round-trip.
+        ThemeTokenValueParser.Parse<IBrush>(ThemeTokenValueFormatter.Format<object>(perturbed))
+                             .ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(perturbed.Color);
+    }
+
+    [Theory]
+    [InlineData(14.0, 28.0)]
+    [InlineData(0.0, 8.0)]
+    public void Double_Is_Doubled_Or_Set_To_Eight_From_Zero(double value, double expected)
+    {
+        TokenPerturbation.Perturb(value).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Thickness_Grows_By_Four_Per_Side()
+    {
+        TokenPerturbation.Perturb(new Thickness(1, 2, 3, 4)).ShouldBe(new Thickness(5, 6, 7, 8));
+    }
+
+    [Fact]
+    public void CornerRadius_Grows_By_Four_Per_Corner()
+    {
+        TokenPerturbation.Perturb(new CornerRadius(1, 2, 3, 4)).ShouldBe(new CornerRadius(5, 6, 7, 8));
+    }
+
+    [Fact]
+    public void BoxShadows_Offset_And_Blur_Grow_By_Eight()
+    {
+        var shadows = new BoxShadows(new BoxShadow
+        {
+            OffsetX = 0,
+            OffsetY = 2,
+            Blur    = 4,
+            Spread  = 1,
+            Color   = Color.FromArgb(0x10, 0, 0, 0)
+        });
+
+        var perturbed = (BoxShadows)TokenPerturbation.Perturb(shadows);
+
+        perturbed.Count.ShouldBe(1);
+        perturbed[0].OffsetX.ShouldBe(8);
+        perturbed[0].OffsetY.ShouldBe(10);
+        perturbed[0].Blur.ShouldBe(12);
+        perturbed[0].Spread.ShouldBe(1);
+        perturbed[0].Color.ShouldBe(shadows[0].Color);
+        ThemeTokenValueParser.Parse<BoxShadows>(ThemeTokenValueFormatter.Format<object>(perturbed)).ShouldBe(perturbed);
+    }
+
+    [Fact]
+    public void TimeSpan_Is_Doubled()
+    {
+        TokenPerturbation.Perturb(TimeSpan.FromMilliseconds(200)).ShouldBe(TimeSpan.FromMilliseconds(400));
+        TokenPerturbation.Perturb(TimeSpan.Zero).ShouldNotBe(TimeSpan.Zero);
+    }
+
+    [Theory]
+    [InlineData(400, 700)]
+    [InlineData(500, 700)]
+    [InlineData(600, 400)]
+    [InlineData(700, 400)]
+    public void FontWeight_Toggles_Between_Normal_And_Bold(int value, int expected)
+    {
+        TokenPerturbation.Perturb((FontWeight)value).ShouldBe((FontWeight)expected);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Bool_Is_Negated(bool value, bool expected)
+    {
+        TokenPerturbation.Perturb(value).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Unsupported_Type_Throws()
+    {
+        Should.Throw<NotSupportedException>(() => TokenPerturbation.Perturb(PenLineCap.Round));
+        Should.Throw<NotSupportedException>(() => TokenPerturbation.Perturb(3));
+    }
+}
+
+public class EffectTestDataTests
+{
+    [Fact]
+    public void Button_Rows_Contain_Active_Own_And_Consumed_Global_Tokens()
+    {
+        var rows = EffectTestData.For("AtomUI", "Button").ToList();
+
+        rows.ShouldAllBe(row => row.Length == 2);
+        rows.ShouldContain(row => (string)row[0] == "PrimaryColor" && (bool)row[1]);
+        rows.ShouldContain(row => (string)row[0] == "ColorPrimary" && !(bool)row[1]);
+        rows.Select(row => (string)row[0]).ShouldBeUnique();
+    }
+
+    [Fact]
+    public void Button_Rows_Exclude_Unreferenced_Own_Tokens()
+    {
+        var tokens = EffectTestData.For("AtomUI", "Button").Select(row => (string)row[0]).ToList();
+
+        // GroupBorderColor is Reserved; FontWeight is Active since it drives the Button's font weight.
+        tokens.ShouldNotContain("GroupBorderColor");
+        tokens.ShouldContain("FontWeight");
+    }
+
+    [Fact]
+    public void Selection_Excludes_Reserved_And_Unreferenced_And_Primitive_Entries()
+    {
+        var own = new[]
+        {
+            new EffectTestData.OwnTokenRow("AtomUI", "Demo", "Active", EffectTestData.OwnTokenStatus.Active),
+            new EffectTestData.OwnTokenRow("AtomUI", "Demo", "Reserved", EffectTestData.OwnTokenStatus.Reserved),
+            new EffectTestData.OwnTokenRow("AtomUI", "Demo", "Unused", EffectTestData.OwnTokenStatus.Unreferenced),
+            new EffectTestData.OwnTokenRow("AtomUI", "Other", "Foreign", EffectTestData.OwnTokenStatus.Active)
+        };
+        var globals = new[]
+        {
+            new EffectTestData.GlobalConsumerRow("AtomUI", "Demo", "ColorText"),
+            new EffectTestData.GlobalConsumerRow("AtomUI", "Demo", "ColorText"),
+            new EffectTestData.GlobalConsumerRow("AtomUI", "Demo", "ColorBorder"),
+            new EffectTestData.GlobalConsumerRow("AtomUI", EffectTestData.SharedPrimitiveId, "LineWidth"),
+            new EffectTestData.GlobalConsumerRow("Other", "Demo", "FontSize")
+        };
+
+        var rows = EffectTestData.Select(own, globals, "AtomUI", "Demo");
+
+        rows.ShouldBe([
+            new EffectTestData.EffectToken("Active", true),
+            new EffectTestData.EffectToken("ColorBorder", false),
+            new EffectTestData.EffectToken("ColorText", false)
+        ]);
+    }
+
+    [Fact]
+    public void Unknown_Control_Is_Rejected()
+    {
+        Should.Throw<ArgumentException>(() => EffectTestData.For("AtomUI", "NoSuchControl").ToList());
+    }
+}

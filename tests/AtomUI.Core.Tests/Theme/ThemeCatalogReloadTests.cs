@@ -1,5 +1,6 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.DesignTokens;
@@ -21,7 +22,7 @@ public class ThemeCatalogReloadTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             using var directory = new TemporaryDirectory();
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -30,7 +31,7 @@ public class ThemeCatalogReloadTests
             manager.ThemeCatalogChanged += (_, args) =>
             {
                 observed = args;
-                observedAtomicState = manager.AvailableThemes.SequenceEqual(args.AvailableThemes) &&
+                observedAtomicState = manager.Themes.SequenceEqual(args.Themes) &&
                                       ReferenceEquals(manager.CurrentTheme, args.CurrentTheme) &&
                                       ReferenceEquals(manager.RootContext.Snapshot, manager.CurrentSnapshot);
             };
@@ -38,9 +39,10 @@ public class ThemeCatalogReloadTests
 
             var result = await manager.ReloadThemesAsync();
             result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
-            result.AvailableThemes.ShouldBe(manager.AvailableThemes);
-            manager.AvailableThemes.Select(static theme => theme.Id).ShouldBe([
-                IThemeManager.DEFAULT_THEME_ID,
+            result.Themes.ShouldBe(manager.Themes);
+            manager.Themes.Select(static theme => theme.Id).ShouldBe([
+                "$AntDesign",
+                AntDesignThemes.DaybreakBlue,
                 "PolarGreen"
             ]);
             observed.ShouldNotBeNull();
@@ -57,7 +59,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -78,7 +80,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "green.theme.xml", "PolarGreen", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -86,7 +88,7 @@ public class ThemeCatalogReloadTests
                 "PolarGreen",
                 null,
                 ThemeTransitionReason.UserRequest));
-            var themes = manager.AvailableThemes;
+            var themes = manager.Themes;
             var state = manager.CurrentTheme;
             var root = manager.CurrentSnapshot;
             File.WriteAllText(System.IO.Path.Combine(directory.Path, "green.theme.xml"), "<Theme>");
@@ -94,7 +96,7 @@ public class ThemeCatalogReloadTests
             var result = await manager.ReloadThemesAsync();
 
             result.Status.ShouldBe(ThemeCatalogReloadStatus.Failed);
-            manager.AvailableThemes.ShouldBeSameAs(themes);
+            manager.Themes.ShouldBeSameAs(themes);
             manager.CurrentTheme.ShouldBeSameAs(state);
             manager.CurrentSnapshot.ShouldBeSameAs(root);
             manager.RootContext.Snapshot.ShouldBeSameAs(root);
@@ -110,7 +112,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -136,12 +138,13 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             var path = WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
             var config = new ThemeConfigBuilder()
-                         .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact, ThemeAlgorithm.Dark)
+                         .WithAppearance(ThemeAppearance.Dark)
+                         .WithDensity(DesignDensity.Compact)
                          .WithToken(nameof(DesignToken.EnableMotion), "false")
                          .WithToken(nameof(DesignToken.EnableWaveSpirit), "false")
                          .Build();
@@ -154,12 +157,9 @@ public class ThemeCatalogReloadTests
             var result = await manager.ReloadThemesAsync();
 
             result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
-            manager.CurrentTheme!.ThemeId.ShouldBe(IThemeManager.DEFAULT_THEME_ID);
-            manager.CurrentTheme.Algorithms.ShouldBe([
-                ThemeAlgorithm.Default,
-                ThemeAlgorithm.Compact,
-                ThemeAlgorithm.Dark
-            ]);
+            // A selected theme that disappeared falls back to its language's default with the same variant (spec 7.9).
+            manager.CurrentTheme!.ThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("AntDesign"));
+            manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             var snapshot = manager.CurrentSnapshot.ShouldNotBeNull();
             snapshot.Global<bool>(nameof(DesignToken.EnableMotion)).ShouldBeFalse();
             snapshot.Global<bool>(nameof(DesignToken.EnableWaveSpirit)).ShouldBeFalse();
@@ -173,7 +173,7 @@ public class ThemeCatalogReloadTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             var resolver = new BlockingReloadResolver();
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.AddThemeDefinitionResolver(resolver);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -181,11 +181,11 @@ public class ThemeCatalogReloadTests
             var reloadTask = manager.ReloadThemesAsync(TestContext.Current.CancellationToken);
             await resolver.Started.Task.WaitAsync(TestContext.Current.CancellationToken);
             var config = new ThemeConfigBuilder()
-                         .WithAlgorithms(ThemeAlgorithm.Default, ThemeAlgorithm.Compact)
+                         .WithDensity(DesignDensity.Compact)
                          .Build();
             var themeTask = manager.ApplyThemeAsync(
                 new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
+                    AntDesignThemes.DaybreakBlue,
                     config,
                     ThemeTransitionReason.UserRequest),
                 TestContext.Current.CancellationToken);
@@ -193,7 +193,7 @@ public class ThemeCatalogReloadTests
 
             (await reloadTask).Status.ShouldBe(ThemeCatalogReloadStatus.Superseded);
             (await themeTask).Status.ShouldBe(ThemeTransitionStatus.Committed);
-            manager.CurrentTheme!.Algorithms.ShouldBe([ThemeAlgorithm.Default, ThemeAlgorithm.Compact]);
+            manager.CurrentTheme!.Variant.Density.ShouldBe(DesignDensity.Compact);
         });
     }
 
@@ -203,7 +203,7 @@ public class ThemeCatalogReloadTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             using var directory = new TemporaryDirectory();
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -219,7 +219,7 @@ public class ThemeCatalogReloadTests
             result.PublishDiagnostics.ShouldContain(static diagnostic =>
                 diagnostic.Severity == ThemeDiagnosticSeverity.Warning &&
                 diagnostic.Message.Contains("observer failure", StringComparison.Ordinal));
-            manager.AvailableThemes.ShouldContain(static theme => theme.Id == "PolarGreen");
+            manager.Themes.ShouldContain(static theme => theme.Id == "PolarGreen");
         });
     }
 
@@ -230,7 +230,7 @@ public class ThemeCatalogReloadTests
         {
             using var directory = new TemporaryDirectory();
             WriteTheme(directory.Path, "custom.theme.xml", "Custom", "#52C41A");
-            var builder = new ThemeManagerBuilder(Application.Current!.GetType());
+            var builder = new ThemeManagerBuilder(Application.Current!.GetType()).AddAntDesign();
             builder.UseUserThemeDirectory(directory.Path);
             var manager = builder.Build();
             manager.InitializeApplication(Application.Current!);
@@ -277,11 +277,11 @@ public class ThemeCatalogReloadTests
     {
         var path = System.IO.Path.Combine(directory, fileName);
         File.WriteAllText(path, $$"""
-                                <Theme xmlns="https://atomui.net/schemas/theme/v1"
+                                <Theme xmlns="https://atomui.net/schemas/theme/v2"
                                        Id="{{id}}"
                                        Name="{{id}}"
+                                       Language="AntDesign"
                                        Appearance="Light">
-                                  <Algorithms><Algorithm Id="Default" /></Algorithms>
                                   <Tokens><Token Name="ColorPrimary" Value="{{colorPrimary}}" /></Tokens>
                                 </Theme>
                                 """);

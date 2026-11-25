@@ -13,21 +13,25 @@
                         Classes.semantic-content="True"
                         Width="{TemplateBinding IndicatorSize}"
                         Height="{TemplateBinding IndicatorSize}">
+                        <!-- layout: fixed opacity endpoint of the four-dot animation choreography. -->
                         <Ellipse Classes="SpinIndicatorDot"
                                  Width="{TemplateBinding DotSize}"
                                  Height="{TemplateBinding DotSize}"
                                  Fill="{TemplateBinding DotBgBrush}"
                                  Opacity="0.3" />
+                        <!-- layout: fixed opacity endpoint of the four-dot animation choreography. -->
                         <Ellipse Classes="SpinIndicatorDot"
                                  Width="{TemplateBinding DotSize}"
                                  Height="{TemplateBinding DotSize}"
                                  Fill="{TemplateBinding DotBgBrush}"
                                  Opacity="0.3" />
+                        <!-- layout: fixed opacity endpoint of the four-dot animation choreography. -->
                         <Ellipse Classes="SpinIndicatorDot"
                                  Width="{TemplateBinding DotSize}"
                                  Height="{TemplateBinding DotSize}"
                                  Fill="{TemplateBinding DotBgBrush}"
                                  Opacity="0.3" />
+                        <!-- layout: fixed opacity endpoint of the four-dot animation choreography. -->
                         <Ellipse Classes="SpinIndicatorDot"
                                  Width="{TemplateBinding DotSize}"
                                  Height="{TemplateBinding DotSize}"
@@ -53,7 +57,7 @@
         <Setter Property="MotionEasingCurve" Value="LinearEasing" />
         <Setter Property="MotionDuration"
                 Value="{atom:SpinTokenResource IndicatorDuration}" />
-        <Setter Property="DotBgBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+        <Setter Property="DotBgBrush" Value="{atom:SpinTokenResource ColorPrimary}" />
 
         <Style Selector="^[IsCustomIndicator=True] /template/ atomc|SpinIndicatorDotPanel#BuiltInIndicatorLayout">
             <Setter Property="IsVisible" Value="False" />

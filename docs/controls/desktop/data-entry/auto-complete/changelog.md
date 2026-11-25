@@ -2,6 +2,64 @@
 
 本文档记录 AutoComplete 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`AbstractAutoCompleteToken` 新增 `OptionMargin` 与 `OptionBorderRadius`（默认 0，候选行无间隙、直角，与此前一致），经
+  `CandidateList` 传给每个候选行。PrimeNG Aura 与 Select 一致：候选行圆角 4、行间 2px，`PopupContentPadding` 为 (4,3)；
+  Lara、Nora 取 Select 的列表内边距，候选行直角无间隙。
+- 候选行（中号）高度改读宿主的 `OptionHeight`（经 `CandidateList.ItemMinHeight` 传给候选行；Mentions 传自身 `ControlHeight`，
+  外观不变）。Ant Design 下 `OptionHeight` 等于 `ControlHeight`，渲染不变；PrimeNG 取 Select 选项的实际行高（Aura 再扣除
+  选项背景的上下 1px 内缩，即行外的间隙），与 Select 逐行对齐。
+
+## 2026-11-20
+
+- Token
+  - `AbstractAutoCompleteToken.OptionColor` / `OptionSelectedColor`（默认 `ColorTextSecondary` / `ColorText`）：候选项与选中候选项文字颜色（AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea），经主题传给候选列表；默认值与原外观一致。
+
+## 2026-11-14
+
+- Fixed
+  - 候选列表超过视口、虚拟化回收容器后，键盘活动候选的高亮会落到错误的行上，滚回后活动候选不高亮。修复位于共享的 CandidateList，详见 [ListBox Changelog](../../data-display/list-box/changelog.md)。
+
+## 2026-11-11
+
+- Theme
+  - 继承输入家族焦点样式对齐：`Filled` 聚焦只改变边框与背景，不绘制 focus 外发光；`Outlined` 外发光现在可见。
+- Tests
+  - `AutoCompleteFocusTests` 的 Filled 用例改为断言聚焦边框存在且无 `BoxShadow`。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
+- Theme
+  - CandidateList / CandidateListItem 透传 AutoComplete owner；候选列表 Own Token 仍复用 ListBox。
+
+## 2026-11-08
+
+- Changed
+  - 共享主题的全局值以 `OwnerTokenResource` 读取，AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 各自的覆盖生效；
+    候选弹层背景经控件内部属性 `PopupBackground` 绑定进弹层（弹层内容位于注册控件 Popup 之内）。
+- Fixed
+  - `PlaceholderForeground` 此前未传给内部输入框，现经模板绑定生效。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - AbstractAutoComplete 声明 OpenMotion/CloseMotion，AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 继承；不在 CompactSpace 子类重复声明。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-04
 
 - Fix

@@ -44,7 +44,7 @@
                             <StackPanel Name="DefaultErrorLayout"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Spacing="{atom:SharedTokenResource SpacingXXS}"
+                                        Spacing="{CompiledBinding $self.(atom:ImageViewer.SpacingXXS)}"
                                         IsVisible="{TemplateBinding ErrorContent, Converter={x:Static ObjectConverters.IsNull}}">
                                 <antdicons:PictureOutlined Name="DefaultErrorIcon"
                                                           HorizontalAlignment="Center" />
@@ -88,30 +88,32 @@
         </Setter>
 
         <Style Selector="^ /template/ atom|ImagePreviewNavButton">
-            <Setter Property="Margin" Value="{atom:SharedTokenResource MarginSM}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ImageViewer.MarginSM)}" />
         </Style>
         <Style Selector="^ /template/ atom|ImagePreviewRenderer#PART_ImageRenderer">
             <Setter Property="Cursor" Value="DragMove" />
         </Style>
         <Style Selector="^ /template/ TextBlock#DefaultErrorText">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="Foreground" Value="{CompiledBinding $self.(atom:ImageViewer.TertiaryTextForeground)}" />
         </Style>
         <Style Selector="^:loading:not(:has-image) /template/ Border#PART_LoadingPresenter">
             <Setter Property="IsVisible" Value="True" />
         </Style>
         <Style Selector="^ /template/ atom|Icon#DefaultErrorIcon">
-            <Setter Property="Width" Value="48" />
-            <Setter Property="Height" Value="48" />
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextTertiary}" />
+            <Setter Property="Width" Value="{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}" />
+            <Setter Property="Height" Value="{CompiledBinding $self.(atom:ImageViewer.ErrorIconSize)}" />
+            <Setter Property="StrokeBrush" Value="{CompiledBinding $self.(atom:ImageViewer.TertiaryTextForeground)}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True][SuppressTransformAnimation=False]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="ImageRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="ImageTranslateX" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                    <DoubleTransition Property="ImageTranslateY" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="ImageRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="ImageTranslateX" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <DoubleTransition Property="ImageTranslateY" atom:TokenTransitions.Duration="MotionDurationFast" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

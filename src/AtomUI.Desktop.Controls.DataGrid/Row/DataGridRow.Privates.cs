@@ -16,6 +16,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -35,6 +36,9 @@ public partial class DataGridRow
     
     internal static readonly StyledProperty<bool> IsDraggingProperty =
         AvaloniaProperty.Register<DataGridRow, bool>(nameof(IsDragging));
+
+    internal static readonly StyledProperty<DataGridRowDropPosition> DropPositionProperty =
+        AvaloniaProperty.Register<DataGridRow, DataGridRowDropPosition>(nameof(DropPosition));
     
     internal static readonly DirectProperty<DataGridRow, bool> IsEditingModeProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
@@ -57,6 +61,12 @@ public partial class DataGridRow
     {
         get => GetValue(IsDraggingProperty);
         set => SetValue(IsDraggingProperty, value);
+    }
+    
+    internal DataGridRowDropPosition DropPosition
+    {
+        get => GetValue(DropPositionProperty);
+        set => SetValue(DropPositionProperty, value);
     }
     
     internal bool IsEditingMode
@@ -100,20 +110,6 @@ public partial class DataGridRow
         }
     }
     
-    internal double ActualBottomGridLineHeight
-    {
-        get
-        {
-            if (_bottomGridLine != null && OwningGrid != null && OwningGrid.AreRowBottomGridLinesRequired)
-            {
-                // Unfortunately, _bottomGridLine has no size yet so we can't get its actualheight
-                // TODO 需要审查这里不是常量可以吗？是不是会导致高度计算错误
-                return BorderUtils.BuildRenderScaleAwareThickness(OwningGrid, OwningGrid.BorderThickness.Left);
-            }
-            return 0;
-        }
-    }
-    
     internal DataGridCell FillerCell
     {
         get
@@ -126,7 +122,7 @@ public partial class DataGridRow
                     IsVisible = false,
                     OwningRow = this
                 };
-                _fillerCell[!SizeTypeProperty] = OwningGrid[!DataGrid.SizeTypeProperty];
+                _fillerCell.BindOwningRowProperties(this);
                 if (_cellsElement != null)
                 {
                     _cellsElement.Children.Add(_fillerCell);
@@ -136,18 +132,11 @@ public partial class DataGridRow
         }
     }
     
-    internal bool HasBottomGridLine => _bottomGridLine != null;
-    
     internal bool HasHeaderCell => _headerElement != null;
 
     internal DataGridRowHeader? HeaderCell => _headerElement;
     
     internal bool IsEditing => OwningGrid != null && OwningGrid.EditingRow == this;
-    
-    /// <summary>
-    /// Layout when template is applied
-    /// </summary>
-    internal bool IsLayoutDelayed { get; private set; }
     
     internal bool IsMouseOver
     {
@@ -230,6 +219,28 @@ public partial class DataGridRow
                 Debug.Assert(!double.IsNaN(_detailsElement.ContentHeight));
                 Debug.Assert(!double.IsNaN(_detailsDesiredHeight));
                 return DesiredSize.Height + _detailsDesiredHeight - _detailsElement.ContentHeight;
+            }
+            return DesiredSize.Height;
+        }
+    }
+
+    // 不含详情区的行自身高度：详情可见时据此估计普通行高度，否则折叠详情后的锚点恢复会使用过时的默认估值
+    internal double HeightWithoutDetails
+    {
+        get
+        {
+            // 详情区在根容器中独占一行（模板可能用带内边距的外框包住呈现器），
+            // 减去该行元素的期望高度即得不含详情的行高
+            if (_detailsElement != null && _appliedDetailsVisibility == true && _appliedDetailsTemplate != null)
+            {
+                Visual detailsArea = _detailsElement;
+                while (detailsArea.GetVisualParent() is { } parent && !ReferenceEquals(parent, RootElement))
+                {
+                    detailsArea = parent;
+                }
+                return detailsArea is Layoutable layoutable
+                    ? DesiredSize.Height - layoutable.DesiredSize.Height
+                    : double.NaN;
             }
             return DesiredSize.Height;
         }
@@ -339,6 +350,7 @@ public partial class DataGridRow
     private Control? _detailsContent;
     private Control? _headerContent;
     private IDisposable? _detailsContentSizeSubscription;
+    private IDisposable? _owningGridBindings;
     private DataGridDetailsPresenter? _detailsElement;
     
     // Locally cache whether or not details are visible so we don't run redundant storyboards
@@ -617,14 +629,45 @@ public partial class DataGridRow
             PseudoClasses.Set(StdPseudoClass.Editing, IsEditing);
             PseudoClasses.Set(StdPseudoClass.Invalid, !IsValid);
             PseudoClasses.Set(DataGridPseudoClass.RowHover, IsMouseOver);
-            IsEditingMode = IsEditing;
+            IsEditingMode = IsEditing && OwningGrid.IsEditingWholeRow;
             ApplyHeaderStatus();
         }
     }
 
     //TODO Animation
+    // 行对表格属性的绑定会订阅表格的属性变更；行被永久丢弃（不再回收复用）时必须释放，
+    // 否则表格会一直持有已卸载的行、单元格及其内容。ClearValue 不会释放 LocalValue 绑定，
+    // 因此由行持有绑定句柄；复用路径重新取用行时重新绑定。
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = new CompositeDisposable(2)
+        {
+            Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]),
+            Bind(SizeTypeProperty, owningGrid[!DataGrid.SizeTypeProperty])
+        };
+    }
+
+    internal void ReleaseOwningGridBindings()
+    {
+        _owningGridBindings?.Dispose();
+        _owningGridBindings = null;
+        foreach (DataGridCell cell in Cells)
+        {
+            if (cell.Content is Control element)
+            {
+                cell.OwningColumn?.ReleaseElement(element);
+            }
+        }
+    }
+
     internal void DetachFromDataGrid(bool recycle)
     {
+        if (!recycle)
+        {
+            ReleaseOwningGridBindings();
+        }
+
         var isRangeBacked = IsRangeBacked;
         var wasAttached = OwningGrid is not null;
         if (wasAttached)
@@ -680,6 +723,7 @@ public partial class DataGridRow
             ClearHiddenClipGeometry();
             IsRangeBacked = false;
         }
+        DropPosition = DataGridRowDropPosition.None;
         Slot = -1;
     }
 
@@ -750,12 +794,6 @@ public partial class DataGridRow
     internal void InvalidateDesiredHeight()
     {
         _cellsElement?.InvalidateDesiredHeight();
-    }
-
-    internal void ResetGridLine()
-    {
-        _bottomGridLine             = null;
-        _bottomGridLineClipGeometry = null;
     }
 
     private void UnloadDetailsTemplate(bool recycle)

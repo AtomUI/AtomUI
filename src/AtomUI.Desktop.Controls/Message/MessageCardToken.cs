@@ -1,55 +1,106 @@
-﻿using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class MessageCardToken : AbstractControlDesignToken
+public sealed partial class MessageCardToken : AbstractControlDesignToken
 {
 
-    /// <summary>
-    /// 提示框背景色
-    /// </summary>
-    public Color ContentBg { get; set; }
+    /// <summary>Default card fill behind the message text and status icon.</summary>
+    public partial Color ContentBg { get; set; }
+
+    /// <summary>Inset of the icon and text from the card edge.</summary>
+    public partial Thickness ContentPadding { get; set; }
+
+    /// <summary>Width and height of the leading message icon.</summary>
+    public partial double MessageIconSize { get; set; }
+
+    /// <summary>Space between the leading message icon and the message content.</summary>
+    public partial Thickness MessageIconMargin { get; set; }
+    /// <summary>Space above the card in the message stack.</summary>
+    public partial Thickness MessageTopMargin { get; set; }
+
+    /// <summary>Shadow below a card with the information type.</summary>
+    public partial BoxShadows InformationShadows { get; set; }
+
+    /// <summary>Shadow below a card with the success type.</summary>
+    public partial BoxShadows SuccessShadows { get; set; }
+
+    /// <summary>Shadow below a card with the warning type.</summary>
+    public partial BoxShadows WarningShadows { get; set; }
+
+    /// <summary>Shadow below a card with the error type.</summary>
+    public partial BoxShadows ErrorShadows { get; set; }
+
+    /// <summary>Shadow below a card with the loading type.</summary>
+    public partial BoxShadows LoadingShadows { get; set; }
 
     /// <summary>
-    /// 提示框内边距
+    /// Background of an information message.
     /// </summary>
-    public Thickness ContentPadding { get; set; }
+    public partial Color InformationBg { get; set; }
 
     /// <summary>
-    /// 提示框高度
+    /// Icon colour of an information message.
     /// </summary>
-    public double CardHeight { get; set; }
+    public partial Color InformationIconColor { get; set; }
 
     /// <summary>
-    /// 提醒框图标尺寸
+    /// 加载中消息的图标颜色
+    /// Icon colour of a loading message.
     /// </summary>
-    public double MessageIconSize { get; set; }
+    public partial Color LoadingIconColor { get; set; }
 
     /// <summary>
-    /// 提醒框图标外边距
+    /// Text colour of an information message.
     /// </summary>
-    public Thickness MessageIconMargin { get; set; }
-    public Thickness MessageTopMargin { get; set; }
+    public partial Color InformationColor { get; set; }
 
-    public MessageCardToken()
+    /// <summary>
+    /// Background of an success message.
+    /// </summary>
+    public partial Color SuccessBg { get; set; }
 
-    {
-    }
+    /// <summary>
+    /// Icon colour of an success message.
+    /// </summary>
+    public partial Color SuccessIconColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ContentBg = EffectiveGlobalToken.ColorBgElevated;
-        ContentPadding = new Thickness(
-            (EffectiveGlobalToken.ControlHeightLG -
-             EffectiveGlobalToken.FontSize * EffectiveGlobalToken.RelativeLineHeight) / 2,
-            EffectiveGlobalToken.UniformlyPaddingXS);
-        MessageIconMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        MessageTopMargin  = new Thickness(EffectiveGlobalToken.UniformlyMarginXS);
-        MessageIconSize   = EffectiveGlobalToken.FontSizeSM * EffectiveGlobalToken.RelativeLineHeightSM;
-    }
+    /// <summary>
+    /// Text colour of an success message.
+    /// </summary>
+    public partial Color SuccessColor { get; set; }
+
+    /// <summary>
+    /// Background of an warning message.
+    /// </summary>
+    public partial Color WarningBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an warning message.
+    /// </summary>
+    public partial Color WarningIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an warning message.
+    /// </summary>
+    public partial Color WarningColor { get; set; }
+
+    /// <summary>
+    /// Background of an error message.
+    /// </summary>
+    public partial Color ErrorBg { get; set; }
+
+    /// <summary>
+    /// Icon colour of an error message.
+    /// </summary>
+    public partial Color ErrorIconColor { get; set; }
+
+    /// <summary>
+    /// Text colour of an error message.
+    /// </summary>
+    public partial Color ErrorColor { get; set; }
     
 }

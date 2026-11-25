@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.DesignLanguages.AntDesign</RootNamespace>
+        <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
+        <Description>The Ant Design design language for AtomUI: its seeds, global derivation and official themes.</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <AtomUIThemeDefinition Include="Themes/*.theme.xml" />
+        <ProjectReference Include="../../../AtomUI.Core/AtomUI.Core.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- The Core tests check the moved Ant Design formulas directly. -->
+        <InternalsVisibleTo Include="AtomUI.Core.Tests" />
+    </ItemGroup>
+</Project>

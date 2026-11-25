@@ -5,6 +5,7 @@
         <Compile Include="../Shared/ProductApp.cs" Link="ProductApp.cs" />
         <Compile Include="../Shared/DesktopProgram.cs" Link="Program.cs" />
         <ProjectReference Include="../../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
+        <ProjectReference Include="../../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign.csproj" />
         <ProjectReference Include="../ThirdParty/ThirdParty.csproj" />
         <PackageReference Include="Avalonia.Headless" Condition="'$(FixtureRealDesktop)' != 'true'" />
     </ItemGroup>

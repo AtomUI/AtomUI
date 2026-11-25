@@ -7,43 +7,51 @@
     <Style Selector="^:is(atomc|AbstractFloatButton)">
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="BadgeEffectiveColor" Value="{atom:FloatButtonTokenResource ColorError}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="BadgeEffectiveColor" Value="{atom:OwnerTokenResource ColorError}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <!-- Foreground is set per ButtonType below (Default / Primary); a base ColorText read here would be shadowed
+             by both branches and would only leave a dead global read the effect contract must guard. -->
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 
         <Style Selector="^[IsEmbedMode=False], ^[IsEmbedMode=True][Shape=Circle]">
             <Style Selector="^ /template/ Border#BackgroundFrame">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultBg}" />
             </Style>
         </Style>
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeSM}" />
-        <Setter Property="ZIndex" Value="{atom:SharedTokenResource ZIndexPopupBase}" />
-        <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSizeSM}" />
+        <Setter Property="ZIndex" Value="{atom:OwnerTokenResource ZIndexPopupBase}" />
+        <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingXXS}" />
         <Setter Property="Width" Value="{atom:FloatButtonTokenResource FloatButtonSize}" />
 
         <Style Selector="^[Shape=Circle][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, 4" />
         </Style>
         <Style Selector="^[Shape=Circle][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -2" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=True]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-5, -1" />
         </Style>
         <Style Selector="^[Shape=Square][IsDotBadge=False]">
+            <!-- layout: badge inset tuned per shape; antd has no badge offset token -->
             <Setter Property="BadgeOffset" Value="-10, -5" />
         </Style>
 
         <Style Selector="^[IsEmbedMode=False]">
-            <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+            <Setter Property="BoxShadow" Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
         </Style>
 
         <Style Selector="^[Shape=Circle]">
@@ -52,12 +60,12 @@
 
         <Style Selector="^[Shape=Square]">
             <Setter Property="MinHeight" Value="{atom:FloatButtonTokenResource FloatButtonSize}" />
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Style Selector="^ /template/ StackPanel#RootLayout">
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
+            <Style Selector="^ /template/ DockPanel#RootLayout">
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
-            <Style Selector="^ /template/ StackPanel > ContentPresenter">
+            <Style Selector="^ /template/ ContentPresenter#Description">
                 <Setter Property="LineHeight"
                         Value="{atom:FloatButtonTokenResource DescriptionLineHeight}" />
             </Style>
@@ -66,43 +74,132 @@
         <Style Selector="^[IsEmbedMode=True]">
             <Style Selector="^[Shape=Square]">
                 <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="Margin" Value="{atom:SharedTokenResource MarginXXS}" />
+                    <Setter Property="Margin" Value="{atom:OwnerTokenResource MarginXXS}" />
                 </Style>
-                <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
             </Style>
             <Style Selector="^[Shape=Circle]">
                 <Setter Property="BoxShadow"
-                        Value="{atom:SharedTokenResource BoxShadowsSecondary}" />
+                        Value="{atom:FloatButtonTokenResource FloatButtonShadows}" />
             </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
+            <!-- IconPresenter is a registered control with its own Token owner; the icon follows the button's Foreground,
+                 which reads the button owner's Tokens. -->
+            <Setter Property="IconBrush" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
             <Setter Property="Width" Value="{atom:FloatButtonTokenResource FloatButtonIconSize}" />
             <Setter Property="Height" Value="{atom:FloatButtonTokenResource FloatButtonIconSize}" />
         </Style>
 
         <Style Selector="^[ButtonType=Default]">
+            <Setter Property="Foreground" Value="{atom:FloatButtonTokenResource DefaultIconColor}" />
             <Style Selector="^:pointerover">
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultHoverBg}" />
+            </Style>
+            <Style Selector="^:pressed">
+                <Setter Property="Background" Value="{atom:FloatButtonTokenResource DefaultActiveBg}" />
             </Style>
         </Style>
 
         <Style Selector="^[ButtonType=Primary]">
             <Setter Property="Foreground" Value="{atom:FloatButtonTokenResource PrimaryColor}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
             <Style Selector="^:pointerover">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                        Value="{atom:OwnerTokenResource ColorPrimaryHover}" />
             </Style>
             <Style Selector="^:pressed">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+                        Value="{atom:OwnerTokenResource ColorPrimaryActive}" />
             </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="IconBrush"
-                        Value="{atom:FloatButtonTokenResource PrimaryColor}" />
+        </Style>
+
+        <Style Selector="^[ButtonType=Default][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True],
+                         ^[ButtonType=Default][Shape=Circle][(atom|FloatButtonAppearanceBinding.HasOutline)=True]">
+            <Setter Property="BorderBrush" Value="{atom:FloatButtonTokenResource ColorBorder}" />
+            <Setter Property="BorderThickness" Value="{atom:FloatButtonTokenResource BorderThickness}" />
+            <!-- Paint the outline over the face so its thickness does not shrink wrapping content. -->
+            <Style Selector="^ /template/ Border#Frame">
+                <Setter Property="BorderThickness" Value="0" />
             </Style>
+            <Style Selector="^ /template/ Border#OutlineFrame">
+                <Setter Property="IsVisible" Value="True" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[ButtonType=Primary][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.UseExplicitPrimaryShadow)=True],
+                         ^[ButtonType=Primary][Shape=Circle][(atom|FloatButtonAppearanceBinding.UseExplicitPrimaryShadow)=True]">
+            <Setter Property="BoxShadow" Value="{CompiledBinding $self.(atom:FloatButtonAppearanceBinding.ExplicitPrimaryShadow)}" />
+        </Style>
+
+        <Style Selector="^:is(atomc|AbstractFloatButton)[(atom|FloatButtonAppearanceBinding.HasOutline)=True]:disabled">
+            <Setter Property="Opacity" Value="{x:Static atom:ButtonStyleValues.DisabledOpacity}" />
+            <Style Selector="^[ButtonType=Default]">
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
+            <Style Selector="^[ButtonType=Primary]">
+                <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True]:not(:description)">
+            <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadiusMD}" />
+        </Style>
+
+        <Style Selector="^[Shape=Square][IsEmbedMode=False][(atom|FloatButtonAppearanceBinding.HasOutline)=True]:description">
+            <Setter Property="UseContentMeasure" Value="True" />
+            <Setter Property="Width" Value="NaN" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="MinWidth" Value="{atom:FloatButtonTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:FloatButtonTokenResource ControlHeight}" />
+            <Setter Property="FontSize" Value="{atom:FloatButtonTokenResource FontSize}" />
+            <Setter Property="FontWeight" Value="{CompiledBinding $self.(atom:FloatButtonAppearanceBinding.DescriptionWeight)}" />
+            <Setter Property="Padding" Value="{atom:FloatButtonTokenResource PaddingLG}" />
+            <Setter Property="CornerRadius" Value="{atom:FloatButtonTokenResource BorderRadiusLG}" />
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonAppearanceBinding.CapsuleDescription)=True]">
+            <Setter Property="CornerRadius" Value="{CompiledBinding $self.Bounds.Height, Converter={x:Static atom:FloatButtonAppearanceBinding.CapsuleRadius}}" />
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True] /template/ DockPanel#RootLayout">
+            <Setter Property="HorizontalSpacing" Value="{atom:FloatButtonTokenResource SpacingXS}" />
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True] /template/ atom|IconPresenter#IconPresenter">
+            <Setter Property="DockPanel.Dock" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Width" Value="{atom:FloatButtonTokenResource IconSize}" />
+            <Setter Property="Height" Value="{atom:FloatButtonTokenResource IconSize}" />
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True] /template/ ContentPresenter#Description">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="LineHeight"
+                    Value="{CompiledBinding $parent[atomc:AbstractFloatButton].(atom:FloatButtonAppearanceBinding.DescriptionLineHeight)}" />
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True]:plain-description">
+            <Setter Property="AutomationProperties.Name" Value="{CompiledBinding $self.Content}" />
+            <Style Selector="^ /template/ ContentPresenter#Description">
+                <Setter Property="ContentTemplate">
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{CompiledBinding}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                   TextAlignment="Center" MaxLines="2" />
+                    </DataTemplate>
+                </Setter>
+            </Style>
+        </Style>
+
+        <Style Selector="^[UseContentMeasure=True][(atom|FloatButtonAppearanceBinding.UppercaseDescription)=True]:plain-description /template/ ContentPresenter#Description">
+            <Setter Property="ContentTemplate">
+                <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{CompiledBinding Converter={x:Static atom:FloatButtonAppearanceBinding.UppercaseLabel}}"
+                               TextWrapping="Wrap" TextTrimming="CharacterEllipsis" TextAlignment="Center"
+                               MaxLines="2" LetterSpacing="{x:Static atom:FloatButtonAppearanceBinding.UppercaseLetterSpacing}" />
+                </DataTemplate>
+            </Setter>
         </Style>
     </Style>
 </ControlTheme>

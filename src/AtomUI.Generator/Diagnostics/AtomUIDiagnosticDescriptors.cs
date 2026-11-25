@@ -149,15 +149,6 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    public static readonly DiagnosticDescriptor ControlTokenInvalidCalculationChain = new(
-        AtomUIDiagnosticIds.ControlTokenInvalidCalculationChain,
-        "Control design token calculation chain is invalid",
-        "CalculateTokenValues on Control design token type '{0}' has an invalid calculation chain: {1}",
-        AtomUIDiagnosticCategories.Generator,
-        DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        customTags: [WellKnownDiagnosticTags.Telemetry]);
-
     public static readonly DiagnosticDescriptor AbstractControlTokenInvalidName = new(
         AtomUIDiagnosticIds.AbstractControlTokenInvalidName,
         "Abstract Control design token name does not follow convention",
@@ -289,6 +280,130 @@ internal static partial class AtomUIDiagnosticDescriptors
         "Application '{0}' overrides RegisterServices without calling ApplicationStartup.Attach(this); call it after base.RegisterServices()",
         AtomUIDiagnosticCategories.Generator,
         DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    // Spec 14: a control token rule writes each own token before reading it.
+    public static readonly DiagnosticDescriptor TokenRuleLeavesTokenUnwritten = new(
+        AtomUIDiagnosticIds.TokenRuleLeavesTokenUnwritten,
+        "A control token rule must write every token of its control",
+        "'{0}' never writes token '{1}' of '{2}'",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor TokenRuleReadsUnwrittenToken = new(
+        AtomUIDiagnosticIds.TokenRuleReadsUnwrittenToken,
+        "A control token rule must not read a token of its own before writing it",
+        "'{0}' reads token '{1}' before writing it",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Spec 14 (coverage): a value package supplies a rule for each control token class it covers.
+    public static readonly DiagnosticDescriptor ValuePackageMissesTokenRule = new(
+        AtomUIDiagnosticIds.ValuePackageMissesTokenRule,
+        "A value package must cover every control token class of the packages it covers",
+        "This value package registers token rules for '{0}' under '{1}' but has no rule for '{2}'",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Spec 3.3: language packages do not reference control packages; control packages do not reference the language
+    // side; value packages hold no controls.
+    public static readonly DiagnosticDescriptor PackageDependencyDirection = new(
+        AtomUIDiagnosticIds.PackageDependencyDirection,
+        "Package dependency direction",
+        "{0}",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    // Enabled by default: the generator implements every token property (a read-reporting getter and a freeze-checking
+    // setter), so a property that is not partial, or a token class that is not partial, cannot be supported.
+    public static readonly DiagnosticDescriptor TokenPropertyNotPartial = new(
+        AtomUIDiagnosticIds.TokenPropertyNotPartial,
+        "Token property must be a partial property of a partial class",
+        "Token property '{0}' on '{1}' must be declared partial, and '{1}' must be a partial class",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ControlCodeScopedTokenRead = new(
+        AtomUIDiagnosticIds.ControlCodeScopedTokenRead,
+        "Control code must not read Tokens outside the scoped Token pipeline",
+        "'{0}': {1}",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ControlCodeVisualLiteral = new(
+        AtomUIDiagnosticIds.ControlCodeVisualLiteral,
+        "Control code must not hard-code visual values",
+        "Visual literal '{0}' in control code; read the value from a Token with ControlTokenAccessor or TokenResourceBinder instead",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ControlCodeLocalValueVisualWrite = new(
+        AtomUIDiagnosticIds.ControlCodeLocalValueVisualWrite,
+        "Control code must not write LocalValue into visual properties",
+        "{0} writes the LocalValue of visual property '{1}'; use SetCurrentValue or a Template-priority write so user and theme values keep precedence",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ThemeAssetSharedReadMismatch = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with SharedTokenResource; use {2}, or add a '<!-- shared: reason -->' comment above the element when the read is intentionally shared across controls",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    // Same rule (ATOMUIGEN041), distinct message: an OwnerTokenResource read in a ControlTheme whose TargetType has a Token
+    // identity. Only a theme marked `<!-- owner: reason -->` (reused by identity-less parts that follow their host) may do so.
+    public static readonly DiagnosticDescriptor ThemeAssetOwnerReadOnIdentity = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with OwnerTokenResource although '{0}' has a Token identity; use {2}, or add a '<!-- owner: reason -->' comment right before the ControlTheme when identity-less parts reuse this theme and must follow their host",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    // Same rule (ATOMUIGEN041), distinct message: a load-time frozen read (SharedTokenResourceValue) or any TokenResource
+    // read on a transition's Duration/Delay. Neither has a shared exemption, and the generic remedies do not apply: a
+    // transition is shared by every target of its style and has no resource host.
+    public static readonly DiagnosticDescriptor ThemeAssetFrozenTokenRead = new(
+        AtomUIDiagnosticIds.ThemeAssetSharedReadMismatch,
+        "ControlTheme must read global Tokens through the TokenResource that matches its TargetType",
+        "ControlTheme for '{0}' reads global Token '{1}' with {2}, which cannot follow theme switches, EnableMotion, Controls overrides and local scopes for the control that runs the transition; declare transition durations with atom:TokenTransitions.Duration inside atom:TokenTransitions",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor OwnTokenUnreferenced = new(
+        AtomUIDiagnosticIds.OwnTokenUnreferenced,
+        "Own Token field must be consumed, reserved or deleted",
+        "Own Token '{0}.{1}' is not referenced by the theme AXAML or the code of this package; consume it, mark it with [ReservedToken(\"reason\")], or delete the field",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.Telemetry]);
+
+    public static readonly DiagnosticDescriptor ThemeAssetVisualLiteral = new(
+        AtomUIDiagnosticIds.ThemeAssetVisualLiteral,
+        "Theme AXAML must not hard-code visual literals",
+        "Property '{0}' is set to the literal '{1}'; read a Token instead (use LineWidth for line widths), or add a '<!-- layout -->' comment above the element when the value is a layout constant",
+        AtomUIDiagnosticCategories.Generator,
+        DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 

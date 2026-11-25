@@ -88,6 +88,13 @@ internal sealed class RegistrationAbi
                 throw BackendDiagnostic.Conflict($"Package '{id}' has multiple reachable map accessors.");
             }
 
+            // Official TypeMap resolution starts only from an EntryPoint root that ILLink links or copy-uses. Without it no
+            // entry is ever marked, so a reachable accessor would silently lower to an empty map.
+            if (_context.Annotations.GetEntryPointAssembly() is null)
+            {
+                throw BackendDiagnostic.Unsupported($"Package '{id}' has a reachable map accessor, but ILLink has no TypeMap entry assembly. Root the application assembly as EntryPoint with action Link or CopyUsed.");
+            }
+
             var accessor = markedAccessors[0];
             var markers = accessor.CustomAttributes.Where(a => a.AttributeType.FullName == AccessorName).ToArray();
             if (markers.Length != 1 || Resolve(markers[0].AttributeType).Module.Assembly != core ||

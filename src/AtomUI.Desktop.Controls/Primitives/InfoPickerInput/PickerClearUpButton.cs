@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -24,6 +25,29 @@ internal class PickerClearUpButton : TemplatedControl
         AvaloniaProperty.RegisterDirect<PickerClearUpButton, bool>(
             nameof(IsFormFeedbackVisible),
             o => o.IsFormFeedbackVisible);
+
+    /// <summary>
+    /// Size of the info icon. The icon is a registered IconPresenter, so the theme reads the picker's value on this button
+    /// and template-binds it down.
+    /// </summary>
+    internal static readonly StyledProperty<double> InfoIconSizeProperty =
+        AvaloniaProperty.Register<PickerClearUpButton, double>(nameof(InfoIconSize), double.NaN);
+
+    /// <summary>Brush of the info icon (read on this button for the same reason as <see cref="InfoIconSize"/>).</summary>
+    internal static readonly StyledProperty<IBrush?> InfoIconBrushProperty =
+        AvaloniaProperty.Register<PickerClearUpButton, IBrush?>(nameof(InfoIconBrush));
+
+    internal double InfoIconSize
+    {
+        get => GetValue(InfoIconSizeProperty);
+        set => SetValue(InfoIconSizeProperty, value);
+    }
+
+    internal IBrush? InfoIconBrush
+    {
+        get => GetValue(InfoIconBrushProperty);
+        set => SetValue(InfoIconBrushProperty, value);
+    }
 
     public bool IsInClearMode
     {

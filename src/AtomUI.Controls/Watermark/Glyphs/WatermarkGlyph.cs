@@ -117,7 +117,10 @@ public abstract partial class WatermarkGlyph : AvaloniaObject
             // 避免外层 Attach 返回后覆盖内层已经接管的 attachment。
             var attachment = new SingleAssignmentDisposable();
             _resourceOwnerAttachment = attachment;
-            attachment.Disposable = AttachResourceHost(owner.Value);
+            var scopedHost = AttachResourceHost(owner.Value);
+            attachment.Disposable = this is TextGlyph textGlyph
+                ? new CompositeDisposable(textGlyph.CreateThemeDefaultBindings(), scopedHost)
+                : scopedHost;
         }
         else
         {
@@ -125,5 +128,14 @@ public abstract partial class WatermarkGlyph : AvaloniaObject
         }
         // 新宿主接管时生成器先解绑旧宿主；再释放旧 token，避免资源暂时回退到 Application。
         previousAttachment?.Dispose();
+        OnResourceOwnerChanged(_resourceOwners.Last?.Value);
+    }
+
+    /// <summary>
+    /// Called after the active resource owner changed; <paramref name="owner" /> is null once the last owner
+    /// has detached. Subclasses that follow the owner's theme resolve their values here.
+    /// </summary>
+    private protected virtual void OnResourceOwnerChanged(IResourceHost? owner)
+    {
     }
 }

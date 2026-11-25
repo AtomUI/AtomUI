@@ -1,8 +1,10 @@
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
+[TokenOwnerTransparent]
 public class TransferTreeViewItem : TreeViewItem
 {
     #region 公共属性定义

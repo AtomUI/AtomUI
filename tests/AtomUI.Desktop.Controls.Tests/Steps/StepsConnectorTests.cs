@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.RegularExpressions;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using Avalonia;
@@ -108,11 +109,16 @@ public class StepsConnectorTests
             ReadRepoFile("src/AtomUI.Desktop.Controls/Steps/Themes/StepsTheme.axaml"),
             ReadRepoFile("src/AtomUI.Desktop.Controls/Steps/Themes/StepsItemTheme.axaml"),
             ReadRepoFile("src/AtomUI.Desktop.Controls/Steps/Themes/StepsItemIndicatorTheme.axaml"));
+        var resourceConsumers = string.Join(
+            Environment.NewLine,
+            ReadRepoFile("src/AtomUI.Desktop.Controls/Steps/StepsItemLayoutPanel.cs"),
+            ReadRepoFile("src/AtomUI.Desktop.Controls/Steps/StepsItemIndicator.cs"));
 
         var unconsumed = typeof(Desktop.Controls.StepsToken)
                          .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                          .Select(property => property.Name)
-                         .Where(name => !themeSource.Contains($"StepsTokenResource {name}", StringComparison.Ordinal))
+                         .Where(name => !themeSource.Contains($"StepsTokenResource {name}", StringComparison.Ordinal) &&
+                                        !Regex.IsMatch(resourceConsumers, $@"\bStepsTokenKind\.{Regex.Escape(name)}\b"))
                          .ToArray();
 
         unconsumed.ShouldBeEmpty();

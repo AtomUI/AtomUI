@@ -33,6 +33,7 @@ internal class DataGridCellCollection
         Debug.Assert(cellIndex >= 0 && cellIndex <= _cells.Count);
 
         cell.OwningRow = _owningRow;
+        cell.BindOwningRowProperties(_owningRow);
         _cells.Insert(cellIndex, cell);
 
         CellAdded?.Invoke(this, new DataGridCellEventArgs(cell));
@@ -42,6 +43,7 @@ internal class DataGridCellCollection
     {
         DataGridCell dataGridCell = _cells[cellIndex];
         _cells.RemoveAt(cellIndex);
+        dataGridCell.ReleaseOwningRowBinding();
         dataGridCell.OwningRow = null;
         CellRemoved?.Invoke(this, new DataGridCellEventArgs(dataGridCell));
     }

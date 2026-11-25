@@ -23,4 +23,10 @@ internal interface INavMenuInteractionHandler
     void ClearSelection();
 
     void Forget(NavMenuItem menuItem);
+
+    /// <summary>
+    /// Sets whether the menu shows keyboard focus (CSS <c>:focus-visible</c>): the keyboard active item, or
+    /// the menu root when no item is active, draws the focus outline.
+    /// </summary>
+    void SetKeyboardFocusVisible(bool isVisible);
 }

@@ -71,15 +71,6 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             o => o.IsButtonSpinnerVisible,
             (o, v) => o.IsButtonSpinnerVisible = v);
     
-    internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, Thickness> SpinnerBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, Thickness>(nameof(SpinnerBorderThickness),
-            o => o.SpinnerBorderThickness,
-            (o, v) => o.SpinnerBorderThickness = v);
-    
-
-
-
-
     internal static readonly DirectProperty<ButtonSpinnerDecoratedBox, double> SpinnerHandleWidthProperty =
         AvaloniaProperty.RegisterDirect<ButtonSpinnerDecoratedBox, double>(nameof(SpinnerHandleWidth),
             o => o.SpinnerHandleWidth,
@@ -104,14 +95,6 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
         set => SetAndRaise(IsButtonSpinnerVisibleProperty, ref _showButtonSpinner, value);
     }
     
-    private Thickness _spinnerBorderThickness;
-
-    internal Thickness SpinnerBorderThickness
-    {
-        get => _spinnerBorderThickness;
-        set => SetAndRaise(SpinnerBorderThicknessProperty, ref _spinnerBorderThickness, value);
-    }
-
     internal double HandleOpacity
     {
         get => GetValue(HandleOpacityProperty);
@@ -207,20 +190,34 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
-        _mouseMoveDisposable?.Dispose();
-        _mouseMoveDisposable = null;
+        // IsAttachedToVisualTree() still reports true while detaching, so release explicitly.
+        DisposeMoveProcessor();
         IsSpinnerContentHover = false;
         UpdateHandleVisualState();
     }
 
+    // IInputManager.Process is app-wide; any subscription left behind roots this control and its page,
+    // so subscribe only while attached and keep every enable/handle change routed through here.
     private void ConfigureMoveProcessor()
     {
-        if (IsEffectivelyEnabled && IsShowHandle && IsHandleFloatable)
+        if (this.IsAttachedToVisualTree() && IsEffectivelyEnabled && IsShowHandle && IsHandleFloatable)
         {
-            _mouseMoveDisposable?.Dispose();
-            var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;;
-            _mouseMoveDisposable = inputManager?.Process.Subscribe(HandleMouseMove);
+            if (_mouseMoveDisposable == null)
+            {
+                var inputManager = AvaloniaLocator.Current.GetService(typeof(IInputManager)) as IInputManager;
+                _mouseMoveDisposable = inputManager?.Process.Subscribe(HandleMouseMove);
+            }
         }
+        else
+        {
+            DisposeMoveProcessor();
+        }
+    }
+
+    private void DisposeMoveProcessor()
+    {
+        _mouseMoveDisposable?.Dispose();
+        _mouseMoveDisposable = null;
     }
 
     private void HandleMouseMove(RawInputEventArgs args)
@@ -273,35 +270,15 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
             UpdateHandleVisualState();
         }
 
-        if (this.IsAttachedToVisualTree())
+        if (change.Property == IsEffectivelyEnabledProperty ||
+            change.Property == IsShowHandleProperty ||
+            change.Property == IsHandleFloatableProperty)
         {
-            if (change.Property == IsHandleFloatableProperty)
-            {
-                if (change.OldValue is bool oldValue)
-                {
-                    if (oldValue)
-                    {
-                        _mouseMoveDisposable?.Dispose();
-                    }
-                }
-
-                if (IsHandleFloatable)
-                {
-                    ConfigureMoveProcessor();
-                }
-            }
+            ConfigureMoveProcessor();
         }
 
         if (change.Property == IsEffectivelyEnabledProperty)
         {
-            if (!IsEffectivelyEnabled)
-            {
-                _mouseMoveDisposable?.Dispose();
-            }
-            else
-            {
-                ConfigureMoveProcessor();
-            }
             UpdateHandleVisualState();
         }
 
@@ -342,10 +319,12 @@ internal class ButtonSpinnerDecoratedBox : AddOnDecoratedBox
     {
         if (!IsEffectivelyEnabled)
         {
+            // A disabled spinner keeps its handle in view (Ant Design leaves the handlers visible and greys them out);
+            // the handle's own :disabled style supplies the disabled surface and icon colour.
             IsSpinnerContentHover = false;
-            HandleOpacity = 0.0;
-            HandleOffset = IsHandleFloatable ? GetHiddenOffset() : 0.0;
-            ContentLeftShift = 0.0;
+            HandleOpacity = IsShowHandle ? 1.0 : 0.0;
+            HandleOffset  = IsShowHandle ? 0.0 : (IsHandleFloatable ? GetHiddenOffset() : 0.0);
+            ContentLeftShift  = 0.0;
             ContentRightShift = 0.0;
             return;
         }

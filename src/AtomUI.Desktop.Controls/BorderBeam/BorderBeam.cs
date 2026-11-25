@@ -1,10 +1,15 @@
 using System.Collections.Specialized;
+using System.Globalization;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -51,6 +56,7 @@ public class BorderBeam : ContentControl,
     }
 
     private AvaloniaList<BorderBeamColorStop> _colorStops = new();
+    private IDisposable _colorStopsSubscription;
 
     public AvaloniaList<BorderBeamColorStop> ColorStops
     {
@@ -63,9 +69,9 @@ public class BorderBeam : ContentControl,
                 return;
             }
 
-            _colorStops.CollectionChanged -= HandleColorStopsChanged;
+            _colorStopsSubscription.Dispose();
+            _colorStopsSubscription = value.WeakSubscribe(HandleColorStopsChanged);
             SetAndRaise(ColorStopsProperty, ref _colorStops, value);
-            _colorStops.CollectionChanged += HandleColorStopsChanged;
         }
     }
 
@@ -121,17 +127,11 @@ public class BorderBeam : ContentControl,
             o => o.EffectiveBorderBeamGeometry,
             (o, v) => o.EffectiveBorderBeamGeometry = v);
 
-    internal static readonly StyledProperty<IBrush?> DefaultStartColorProperty =
-        AvaloniaProperty.Register<BorderBeam, IBrush?>(nameof(DefaultStartColor));
+    internal static readonly StyledProperty<bool> UseBeamPaintTokenResourcesProperty =
+        AvaloniaProperty.Register<BorderBeam, bool>(nameof(UseBeamPaintTokenResources));
 
-    internal static readonly StyledProperty<IBrush?> DefaultEndColorProperty =
-        AvaloniaProperty.Register<BorderBeam, IBrush?>(nameof(DefaultEndColor));
-
-    internal static readonly StyledProperty<double> BeamOpacityProperty =
-        AvaloniaProperty.Register<BorderBeam, double>(nameof(BeamOpacity), 0.95d);
-
-    internal static readonly StyledProperty<double> MaxVisibleStopPercentProperty =
-        AvaloniaProperty.Register<BorderBeam, double>(nameof(MaxVisibleStopPercent), 70d);
+    internal static readonly DirectProperty<BorderBeam, BorderBeamPaint> EffectivePaintProperty =
+        AvaloniaProperty.RegisterDirect<BorderBeam, BorderBeamPaint>(nameof(EffectivePaint), o => o.EffectivePaint);
 
     private BorderBeamGeometry _effectiveBorderBeamGeometry;
 
@@ -141,33 +141,27 @@ public class BorderBeam : ContentControl,
         set => SetAndRaise(EffectiveBorderBeamGeometryProperty, ref _effectiveBorderBeamGeometry, value);
     }
 
-    internal IBrush? DefaultStartColor
+    internal bool UseBeamPaintTokenResources
     {
-        get => GetValue(DefaultStartColorProperty);
-        set => SetValue(DefaultStartColorProperty, value);
+        get => GetValue(UseBeamPaintTokenResourcesProperty);
+        set => SetValue(UseBeamPaintTokenResourcesProperty, value);
     }
 
-    internal IBrush? DefaultEndColor
-    {
-        get => GetValue(DefaultEndColorProperty);
-        set => SetValue(DefaultEndColorProperty, value);
-    }
-
-    internal double BeamOpacity
-    {
-        get => GetValue(BeamOpacityProperty);
-        set => SetValue(BeamOpacityProperty, value);
-    }
-
-    internal double MaxVisibleStopPercent
-    {
-        get => GetValue(MaxVisibleStopPercentProperty);
-        set => SetValue(MaxVisibleStopPercentProperty, value);
-    }
+    internal BorderBeamPaint EffectivePaint => _effectivePaint;
 
     #endregion
 
     private IBorderBeamAwareControl? _awareContent;
+    private BorderBeamPaint _effectivePaint = BorderBeamPaint.Default;
+    private OwnerTokenSet? _paintTokens;
+
+    private static readonly object[] s_paintKeys =
+    [
+        ControlTokenResourceKey.Global(BorderBeamTokens.Identity, SharedTokenKind.ColorPrimary),
+        ControlTokenResourceKey.Global(BorderBeamTokens.Identity, SharedTokenKind.ColorPrimaryHover),
+        BorderBeamTokenKind.BeamOpacity,
+        BorderBeamTokenKind.MaxVisibleStopPercent
+    ];
 
     static BorderBeam()
     {
@@ -184,7 +178,7 @@ public class BorderBeam : ContentControl,
 
     public BorderBeam()
     {
-        _colorStops.CollectionChanged += HandleColorStopsChanged;
+        _colorStopsSubscription = _colorStops.WeakSubscribe(HandleColorStopsChanged);
         ConfigureEffectiveBorderBeamGeometry();
     }
 
@@ -193,11 +187,14 @@ public class BorderBeam : ContentControl,
         base.OnAttachedToVisualTree(e);
         ConfigureAwareContent(Content);
         ConfigureEffectiveBorderBeamGeometry();
+        UpdatePaintTokenSubscription();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ConfigureAwareContent(null);
+        _paintTokens?.Dispose();
+        _paintTokens = null;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -213,6 +210,67 @@ public class BorderBeam : ContentControl,
                  change.Property == CornerRadiusProperty)
         {
             ConfigureEffectiveBorderBeamGeometry();
+        }
+        else if (change.Property == UseBeamPaintTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdatePaintTokenSubscription();
+        }
+    }
+
+    private void UpdatePaintTokenSubscription()
+    {
+        if (UseBeamPaintTokenResources && _paintTokens is null)
+        {
+            _paintTokens = new OwnerTokenSet(this, s_paintKeys.Length, RefreshPaint);
+            for (var index = 0; index < s_paintKeys.Length; ++index)
+            {
+                _paintTokens.SetResourceKey(index, s_paintKeys[index]);
+            }
+        }
+        else if (!UseBeamPaintTokenResources && _paintTokens is not null)
+        {
+            _paintTokens.Dispose();
+            _paintTokens = null;
+        }
+        RefreshPaint();
+    }
+
+    private void RefreshPaint()
+    {
+        var paint = new BorderBeamPaint(
+            ReadBrush(_paintTokens?.GetValue(0), EffectivePaint.StartColor),
+            ReadBrush(_paintTokens?.GetValue(1), EffectivePaint.EndColor),
+            ReadNumber(_paintTokens?.GetValue(2), EffectivePaint.Opacity, BorderBeamPaint.Default.Opacity),
+            ReadNumber(_paintTokens?.GetValue(3), EffectivePaint.MaxVisibleStopPercent, BorderBeamPaint.Default.MaxVisibleStopPercent));
+        SetAndRaise(EffectivePaintProperty, ref _effectivePaint, paint);
+    }
+
+    private static IBrush? ReadBrush(object? value, IBrush? previous) => value switch
+    {
+        IBrush brush => brush,
+        Color color => new ImmutableSolidColorBrush(color),
+        string text when Avalonia.Media.Color.TryParse(text, out var color) => new ImmutableSolidColorBrush(color),
+        _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
+        _ => null
+    };
+
+    private static double ReadNumber(object? value, double previous, double fallback)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : fallback;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return fallback;
         }
     }
 

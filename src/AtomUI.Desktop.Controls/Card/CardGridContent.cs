@@ -1,12 +1,17 @@
 using System.Reactive.Disposables;
 using AtomUI.Controls;
+using AtomUI.Theme;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent container: the grid content has no Own Tokens and no Token reads of its own, so its grid items
+// (themselves transparent) keep the Card as owner and Controls[Card] reaches their reads and transitions.
+[TokenOwnerTransparent]
 public class CardGridContent : ItemsControl
 {
     #region 公共属性定义
@@ -47,6 +52,17 @@ public class CardGridContent : ItemsControl
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CardGridContent>();
+
+    internal static readonly DirectProperty<CardGridContent, Geometry?> SeparatorGeometryProperty =
+        AvaloniaProperty.RegisterDirect<CardGridContent, Geometry?>(nameof(SeparatorGeometry), content => content.SeparatorGeometry);
+
+    private Geometry? _separatorGeometry;
+
+    internal Geometry? SeparatorGeometry
+    {
+        get => _separatorGeometry;
+        set => SetAndRaise(SeparatorGeometryProperty, ref _separatorGeometry, value);
+    }
     
     public SizeType SizeType
     {
@@ -70,7 +86,7 @@ public class CardGridContent : ItemsControl
         SetCurrentValue(ColumnDefinitionsProperty, new ColumnDefinitions());
         SetCurrentValue(RowDefinitionsProperty, new RowDefinitions());
     }
-    
+
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new CardGridItem();
@@ -117,6 +133,7 @@ public class CardGridContent : ItemsControl
         if (container is CardGridItem gridItem)
         {
             DisposeCardGridItemState(gridItem);
+            gridItem.SetGridHoverClip(null);
         }
 
         base.ClearContainerForItemOverride(container);
@@ -139,6 +156,7 @@ public class CardGridContent : ItemsControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        SeparatorGeometry = null;
         _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         if (_itemsPresenter != null)
         {

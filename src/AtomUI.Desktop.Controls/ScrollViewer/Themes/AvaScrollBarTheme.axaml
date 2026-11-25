@@ -24,6 +24,7 @@
                                                          Orientation="Vertical" />
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
+                                    <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                                     <atomc:ScrollBarRepeatButton
                                         Name="PART_PageUpButton"
                                         MinHeight="0"
@@ -33,6 +34,7 @@
                                         Focusable="False" />
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
+                                    <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                                     <atomc:ScrollBarRepeatButton
                                         Name="PART_PageDownButton"
                                         MinHeight="0"
@@ -67,6 +69,7 @@
                                                          Orientation="Horizontal" />
                                 </Track.Thumb>
                                 <Track.DecreaseButton>
+                                    <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                                     <atomc:ScrollBarRepeatButton
                                         Name="PART_PageUpButton"
                                         MinHeight="0"
@@ -76,6 +79,7 @@
                                         Focusable="False" />
                                 </Track.DecreaseButton>
                                 <Track.IncreaseButton>
+                                    <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
                                     <atomc:ScrollBarRepeatButton
                                         Name="PART_PageDownButton"
                                         MinHeight="0"

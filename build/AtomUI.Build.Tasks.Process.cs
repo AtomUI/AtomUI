@@ -464,6 +464,12 @@ namespace AtomUI.Build.Tasks
         public string OutputPath { get; set; } = string.Empty;
         public ITaskItem[] ThemeInputs { get; set; } = Array.Empty<ITaskItem>();
     }
+    public sealed class ConvertThemeDefinitionsTask : IsolatedBuildTask
+    {
+        [Required] public string InputDirectory { get; set; } = string.Empty;
+        public string OutputDirectory { get; set; } = string.Empty;
+        [Output] public ITaskItem[] ConvertedFiles { get; set; } = Array.Empty<ITaskItem>();
+    }
     public sealed class GenerateThemeAssetWrappersTask : IsolatedBuildTask
     {
         [Required] public ITaskItem[] ThemeAssets { get; set; } = new ITaskItem[0];

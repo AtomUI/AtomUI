@@ -10,14 +10,16 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}"/>
-        <Setter Property="FontSize" Value="{atom:StatisticTokenResource ContentFontSize}"/>
+        <Setter Property="Foreground" Value="{atom:StatisticCountUpTokenResource ColorTextHeading}"/>
+        <Setter Property="FontSize" Value="{atom:StatisticCountUpTokenResource ContentFontSize}"/>
 
         <Style Selector="^">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="AnimatingValue" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationVerySlow}" Easing="ExponentialEaseOut" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="AnimatingValue" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

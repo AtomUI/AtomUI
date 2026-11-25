@@ -36,22 +36,19 @@
             </ControlTemplate>
         </Setter>
 
-        <Style Selector="^ /template/ atom|Icon">
-            <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-        </Style>
+        <!-- SelectHandle is shared by Select, Cascader and TreeSelect: it reads its owner's globals. The indicator is a
+             registered IconPresenter (it would resolve owner reads to itself), so its size is resolved here and bound down. -->
+        <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSize}" />
 
         <!--
-            箭头颜色跟随 suffix 语义容器的 TextElement.Foreground 继承值（用户可用 suffix Part Style 覆写）；
-            Foreground 未设置时绑定产生 Unset，回退到上方 atom|Icon 的默认 quaternary。
+            箭头颜色跟随 suffix 语义容器的 TextElement.Foreground 继承值（用户可用 suffix Part Style 覆写），
+            默认值由 AddOnDecoratedBox 后缀区设置为 owner 的 ColorTextQuaternary。
         -->
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="IconBrush"
                     Value="{CompiledBinding (TextElement.Foreground), RelativeSource={RelativeSource Self}}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
+            <Setter Property="Width" Value="{Binding (atom:SelectHandle).IconSize, RelativeSource={RelativeSource TemplatedParent}}" />
+            <Setter Property="Height" Value="{Binding (atom:SelectHandle).IconSize, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
 
         <Style Selector="^[IsAllowClear=True][IsSelectionEmpty=False]">
@@ -66,7 +63,7 @@
         </Style>
 
         <Style Selector="^ /template/ StackPanel#IconLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

@@ -2,6 +2,116 @@
 
 本文档记录 DataGrid 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `RowSelectedColor`：选中行文字色，默认全局 `ControlItemColorActive`（默认 `ColorText`），设在选中行的
+    `Foreground` 上，单元格继承。选中底色为实色的主题据此保持选中行文字可读。
+- Motion
+  - 选中行的 `Foreground`（`RowSelectedColor`）与背景同时过渡（`MotionDurationMid`，仅 `IsMotionEnabled` 时），实色选中底色下文字不会先于背景变成对比色。
+
+## 2026-11-14
+
+- Implementation
+  - 修复分数缩放（125%、150% 等）下范围呈现的 DataGrid 滚动时进程崩溃（#540）。`SparseHeightDeltaIndex.FindSlotAtOffset` 用
+    “本行起点 + 实测高度”求行底，与下一槽位的起点相差若干 ULP；偏移落进这条缝时遍历的上下界交叉，`Math.Clamp` 抛
+    `ArgumentException`。槽位边界现在只由 `StartOf` 一个算式求值，一行的结束边界即下一槽位的起点，区间首尾相接。
+- Tests
+  - `DataGridViewportPlannerTests` 新增分数缩放行高下每个行边界偏移都映射到所属槽位的用例。
+
+## 2026-11-12
+
+- Theme
+  - 修复冻结列阴影显示不正确：`LeftFrozenShadows` / `RightFrozenShadows` 采用 AntD `inset ±10px 0 8px -8px`，但此前直接设在冻结单元格
+    与表头自身的 Frame 上，阴影落在冻结列内部且方向反向。单元格、表头与分组表头模板新增 30px 的 `FrozenShadow` 条带，
+    像 AntD `::after` 一样伸出到分界线外侧并覆盖滚动到其下方的内容；左冻结列末列使用 `LeftFrozenShadows`，右冻结列首列使用
+    `RightFrozenShadows`，与 Token 文档语义一致。带阴影的单元格提升 `ZIndex`，以绘制在相邻滚动列之上。
+- Implementation
+  - 新增内部控件 `DataGridFrozenColumnShadow` 绘制条带阴影。Avalonia Skia 后端把阴影偏移按物理像素施加，而扩展与模糊随渲染缩放，
+    150% / 200% 缩放下 AntD 阴影的实心带被吞掉几乎不可见；该控件经共享的 `BoxShadowRenderHelper` 把 inset 阴影折算为等价的零偏移
+    inset 阴影，各缩放下阴影一致。
+- Tests
+  - 新增 `DataGridFrozenShadowRenderingTests`，在 1x / 1.5x / 2x 下对真实 Skia 帧断言单元格与表头的阴影位于分界线外侧且清晰可见。
+
+## 2026-11-11
+
+- Interaction
+  - 修复拖动行时滚轮滚动或拖到顶部/底部边界外自动滚动使源行离开视口后拖动丢失的问题（#536）。Pointer capture 改由
+    `DataGridRowsPresenter` 持有，会话按源 RowKey 判定有效性；滚动生效后插入目标按指针当前位置重新解析。
+  - 指针拖到边界外时 ghost row 停靠在视口边缘保持可见；指针停在边界外不动时持续自动滚动，速度随越界距离增大，回到行区域或
+    拖动结束即停止。
+- Theme
+  - `DataGridRowExpanderTheme` 设置空 `FocusAdorner`：展开按钮 `:focus` 已改变边框与指示线颜色（Ant Design 表格展开图标），不再叠加共享焦点描边。
+- Tests
+  - 新增 `DataGridRowExpanderFocusTests`。
+  - `DataGridRangeMutationTests` 新增滚轮滚出源行后松开仍落在指针下行的用例；两处 capture 断言改为 RowsPresenter。
+
+## 2026-11-10
+
+- 表格家族读取实际 DataGrid 的有效全局 Token；Spin 内容恢复表格 owner，嵌套公开控件保持独立身份。
+- 接通排序/分割线/筛选悬停别名、详情展开器背景、菜单筛选背景与排序图标 margin，修正 hover 图标颜色使用普通图标 RGB 的派生错误。
+- 分组头和分隔线的尺寸、间距、线宽改读 Token；保持分组头单侧 margin 和原有滚动、分页、编辑及虚拟化结构。
+- 将 CSS 展开图标几何、独立 sticky 表头背景和尚未提供的筛选搜索/高度槽及维持自动测量的专用列宽共 11 字段标记为 Reserved。
+- 生效契约在既有 Rendering 测试宿主复用渲染 harness，DataGrid 原 Headless 宿主保留输入与生命周期验证；两者复用单一 typed-source 场景工厂，覆盖真实 typed source、局部主题发布、owner 替换、资源释放和嵌套隔离。
+
+## 2026-11-06
+
+- API
+  - `DataGridSelectTriggerType` 新增 `Row`：点击行内任意位置改变选择，`Extended` 下普通点击切换单行、Shift 范围选择；`SelectIndicator` 默认值与 `Cell` 语义不变。
+- Interaction
+  - `Row` 下点击进入编辑或行处于编辑时保留选择；选择指示器增删和 `None` 禁选与其他触发方式一致。
+- Gallery
+  - 选择示例新增“点击选择框 / 点击行”触发方式切换，同步四种语言的选择说明。
+
+## 2026-11-05
+
+- Implementation
+  - 编辑器的 OneWay 绑定副本保留完整 XAML 作用域与锚点，修复 ElementName 来源丢失；移除公共编辑路径中的反射绑定构造依赖，原定义与 Source 提交语义保持不变。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - 筛选弹层通过其实际 Flyout 继承的 OpenMotion/CloseMotion 配置。DataGrid 本体不增加控制行、列、编辑及全部弹层的同名入口。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Dropdown 根层 Slide、嵌套菜单 ZoomBig 与实际 Flyout 的配置/释放责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+- Interaction
+  - `SelectIndicator` 左键点击普通单元格或选择列空白时保留已有选择；选择指示器继续增删选中行，单元格 current、焦点和编辑路径保持可用。
+  - `Cell` 保留普通点击及 Ctrl/Shift 扩展选择语义。
+- Gallery
+  - 选择示例采用 `SelectIndicator`，同步四种语言中的选择操作说明。
+
+## 2026-11-01
+
+- Implementation
+  - 主动行移动及其自失效重载按当前可见 slot 与行内偏移保持视口，修复拖至首行后目标行被卷出视口、拖动原首行后视口跳动的问题。
+  - 同步、异步移动共用请求执行上下文；普通外部失效及共享数据源的其他表格继续按内容行 key 锚定。
+  - Public API、主题、Token、尺寸、滚动条和拖动事件合同保持不变。
+- Interaction
+  - 右冻结列表头左缘（及相邻右冻结列之间）的拖拽手柄改为调整该右冻结列自身，向左拖变宽；原先调整的是可能已滚出视口或被冻结区遮住的前一列。
+
+## 2026-10-31
+
+- API
+  - `DataGridFieldSchema` 新增 `IsEditable`；`DataGridLocalSourceDescriptor<T>.Field` 与 `DataGridLocalField<T,TValue>` 新增 `setter`、`fromScalar`。
+  - `DataGridLocalSource<T>` 实现 `IDataGridEditableSource`（Commit 全有或全无、Delete、Cancel；Add 不支持）。
+  - 新增 `EditCommitFailed` 事件与 `DataGridEditCommitFailedEventArgs`；`DataGridOperationColumn` 改为 public sealed。
+- Implementation
+  - 范围数据源下补齐单元格编辑与操作列整行编辑：编辑器使用列绑定的 OneWay 副本，提交时经列转换器转为字段值与 `DataGridScalar`，统一走 `CommitAsync`。
+  - 返回请求 snapshot 的 mutation 不再触发重载，只重建被编辑行的相关单元格，Tab 连续编辑不再被重载取消。
+  - `BeginEdit`、F2 以当前单元格为前提，不再要求行处于选中状态；修复 `EditingColumnIndex` 从未赋值导致恒为 0 的问题。
+- Gallery
+  - 可编辑单元格示例的列改为可编辑，新增“可编辑行”示例，并同步四种语言资源。
+
 ## 2026-10-26
 
 - Implementation

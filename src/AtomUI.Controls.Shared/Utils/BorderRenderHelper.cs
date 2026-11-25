@@ -16,6 +16,7 @@ internal class BorderRenderHelper
     private Geometry? _borderGeometryCache;
     private Size _size;
     private Thickness _borderThickness;
+    private CornerRadius _sourceCornerRadius;
     private CornerRadius _cornerRadius;
     private BackgroundSizing _backgroundSizing;
     private bool _dashedEnabled;
@@ -26,6 +27,14 @@ internal class BorderRenderHelper
                         BackgroundSizing backgroundSizing,
                         bool dashedEnabled)
     {
+        // CSS border-radius semantics: Skia's rounded rect (the box shadow and the simple drawing
+        // path below) scales overlapping corner radii down by one uniform factor, while the WinUI
+        // keypoint geometry used for the complex path partitions the overshoot into elliptical
+        // arcs instead. Scale once here so the background, the border ring and the box shadow all
+        // render the same shape and stay concentric under oversized theme radii (e.g. Luma/Maia
+        // InputRadius 22/26 on a 32px-high input capsule).
+        _sourceCornerRadius = cornerRadius;
+        cornerRadius      = CornerRadiusUtils.ScaleToSize(cornerRadius, finalSize.Width, finalSize.Height);
         _size             = finalSize;
         _borderThickness  = borderThickness;
         _cornerRadius     = cornerRadius;
@@ -119,7 +128,7 @@ internal class BorderRenderHelper
     {
         if (_size != finalSize
             || _borderThickness != borderThickness
-            || _cornerRadius != cornerRadius
+            || _sourceCornerRadius != cornerRadius
             || _backgroundSizing != backgroundSizing
             || _dashedEnabled != (strokeDashArray is { Count: > 0 })
             || !_initialized)
@@ -129,6 +138,13 @@ internal class BorderRenderHelper
 
         if (_useComplexRendering)
         {
+            if (boxShadows.Count > 0)
+            {
+                // Geometry drawing has no shadow overload; draw the outer shadows on the outer border edge first.
+                BoxShadowRenderHelper.DrawRectangle(context, Brushes.Transparent, null,
+                    new RoundedRect(new Rect(_size), _cornerRadius), boxShadows);
+            }
+
             if (_backgroundGeometryCache != null)
             {
                 context.DrawGeometry(background, null, _backgroundGeometryCache);
@@ -154,7 +170,7 @@ internal class BorderRenderHelper
             var rrect = new RoundedRect(rect, _cornerRadius.TopLeft, _cornerRadius.TopRight,
                 _cornerRadius.BottomRight, _cornerRadius.BottomLeft);
 
-            context.DrawRectangle(background, _cachedPen, rrect, boxShadows);
+            BoxShadowRenderHelper.DrawRectangle(context, background, _cachedPen, rrect, boxShadows);
         }
     }
 }

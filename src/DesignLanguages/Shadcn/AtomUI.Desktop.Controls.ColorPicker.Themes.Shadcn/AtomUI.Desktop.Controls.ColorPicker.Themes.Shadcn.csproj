@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.Desktop.Controls.Themes.Shadcn</RootNamespace>
+        <Description>The shadcn values of the desktop colour picker (AtomUI.Desktop.Controls.ColorPicker).</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../../../AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
+        <ProjectReference Include="../AtomUI.Desktop.Controls.Themes.Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn.csproj" />
+        <ProjectReference Include="../AtomUI.DesignLanguages.Shadcn/AtomUI.DesignLanguages.Shadcn.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

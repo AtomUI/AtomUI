@@ -1,9 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="2.1" srcLang="en-US" xmlns="urn:oasis:names:tc:xliff:document:2.0">
   <file id="AtomUIGallery.Localization.WorkspaceWindowLangResourceKind">
+    <unit id="DesignLanguageAntDesign">
+      <segment>
+        <source>Ant Design</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGAura">
+      <segment>
+        <source>Aura</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGLara">
+      <segment>
+        <source>Lara</source>
+      </segment>
+    </unit>
+    <unit id="DesignLanguagePrimeNGNora">
+      <segment>
+        <source>Nora</source>
+      </segment>
+    </unit>
     <unit id="MenuItemAppearance">
       <segment>
         <source>Appearance</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColor">
+      <segment>
+        <source>Brand Color</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColorFixedHint">
+      <segment>
+        <source>This design language uses a fixed brand color</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColorNoLanguageHint">
+      <segment>
+        <source>This theme declares no design language, so its brand color cannot be changed</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColor">
+      <segment>
+        <source>Neutral Color</source>
+        <target state="translated">Neutral Color</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorReset">
+      <segment>
+        <source>Reset Neutral Color</source>
+        <target state="translated">Reset Neutral Color</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorFixedHint">
+      <segment>
+        <source>The current design language does not accept a neutral color</source>
+        <target state="translated">The current design language does not accept a neutral color</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemNeutralColorNoLanguageHint">
+      <segment>
+        <source>The current theme belongs to no design language</source>
+        <target state="translated">The current theme belongs to no design language</target>
+      </segment>
+    </unit>
+    <unit id="MenuItemBrandColorReset">
+      <segment>
+        <source>Reset Brand Color</source>
       </segment>
     </unit>
     <unit id="MenuItemCompactMode">
@@ -14,6 +78,11 @@
     <unit id="MenuItemDarkMode">
       <segment>
         <source>Dark Mode</source>
+      </segment>
+    </unit>
+    <unit id="MenuItemDesignLanguage">
+      <segment>
+        <source>Design Language</source>
       </segment>
     </unit>
     <unit id="MenuItemEnableFullScreen">
@@ -71,6 +140,11 @@
         <source>Light Mode</source>
       </segment>
     </unit>
+    <unit id="MenuItemOtherThemes">
+      <segment>
+        <source>Other Themes</source>
+      </segment>
+    </unit>
     <unit id="MenuItemSettings">
       <segment>
         <source>Settings</source>
@@ -94,6 +168,55 @@
     <unit id="WindowTitle">
       <segment>
         <source>AtomUI Desktop Gallery</source>
+      </segment>
+    </unit>
+
+    <unit id="DesignLanguageShadcnVega">
+      <segment>
+        <source>Vega</source>
+        <target state="translated">Vega</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnNova">
+      <segment>
+        <source>Nova</source>
+        <target state="translated">Nova</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnMaia">
+      <segment>
+        <source>Maia</source>
+        <target state="translated">Maia</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnLyra">
+      <segment>
+        <source>Lyra</source>
+        <target state="translated">Lyra</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnMira">
+      <segment>
+        <source>Mira</source>
+        <target state="translated">Mira</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnLuma">
+      <segment>
+        <source>Luma</source>
+        <target state="translated">Luma</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnSera">
+      <segment>
+        <source>Sera</source>
+        <target state="translated">Sera</target>
+      </segment>
+    </unit>
+    <unit id="DesignLanguageShadcnRhea">
+      <segment>
+        <source>Rhea</source>
+        <target state="translated">Rhea</target>
       </segment>
     </unit>
   </file>

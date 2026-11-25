@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
@@ -11,6 +12,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -247,6 +249,84 @@ public class SelectBehaviorTests
             infoTag.Bounds.Right.ShouldBeLessThanOrEqualTo(maxCountPanel.Bounds.Right + 0.001);
             searchTextBox.Bounds.X.ShouldBeGreaterThanOrEqualTo(infoTag.Bounds.Right - 0.001);
             searchTextBox.Bounds.Right.ShouldBeLessThanOrEqualTo(maxCountPanel.Bounds.Right + 0.001);
+        });
+    }
+
+    [Fact]
+    public void Responsive_Multiple_Clear_Without_MaxTagCount_Leaves_No_Collapsed_Info_Tag()
+    {
+        var options = Enumerable.Range(1, 8)
+                                .Select(i => (ISelectOption)new SelectOption
+                                {
+                                    Header  = $"Option number {i}",
+                                    Content = $"option{i}"
+                                })
+                                .ToList();
+        var select = new Desktop.Controls.Select
+        {
+            Width               = 240,
+            Mode                = SelectMode.Multiple,
+            IsAllowClear        = true,
+            IsFilterEnabled     = true,
+            IsResponsiveTagMode = true,
+            OptionsSource       = options,
+            SelectedOptions     = options.ToList()
+        };
+
+        ShowInWindow(select, () =>
+        {
+            var maxCountPanel = GetVisualDescendant<SelectMaxTagAwarePanel>(select, "PART_MaxCountAwarePanel");
+            var infoTag = maxCountPanel.Children
+                                       .OfType<SelectRemainInfoTag>()
+                                       .Single();
+
+            // Overflowing selection collapses the remaining tags into the info tag.
+            infoTag.IsVisible.ShouldBeTrue();
+            infoTag.Bounds.Right.ShouldBeLessThanOrEqualTo(maxCountPanel.Bounds.Width + 0.001);
+
+            select.ClearValue();
+            Dispatcher.UIThread.RunJobs();
+
+            infoTag = maxCountPanel.Children
+                                   .OfType<SelectRemainInfoTag>()
+                                   .Single();
+            maxCountPanel.Children.Count(child => child is SelectTag and not SelectRemainInfoTag).ShouldBe(0);
+            infoTag.IsVisible.ShouldBeFalse();
+            var rendersInsidePanel = infoTag.IsEffectivelyVisible && infoTag.Bounds.X < maxCountPanel.Bounds.Width;
+            rendersInsidePanel.ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public void MaxTagAwarePanel_Moves_Info_Tag_Off_Screen_When_Only_Search_Box_Remains()
+    {
+        var panel = new SelectMaxTagAwarePanel
+        {
+            Width       = 200,
+            Orientation = Avalonia.Layout.Orientation.Horizontal
+        };
+        var tags = Enumerable.Range(1, 6)
+                             .Select(i => new SelectTag { Text = $"Option number {i}" })
+                             .ToList();
+        var infoTag   = new SelectRemainInfoTag { IsClosable = false };
+        var searchBox = new SelectFilterTextBox();
+        foreach (var tag in tags)
+        {
+            panel.Children.Add(tag);
+        }
+        panel.Children.Add(infoTag);
+        panel.Children.Add(searchBox);
+
+        ShowInWindow(panel, () =>
+        {
+            infoTag.Bounds.X.ShouldBeLessThan(panel.Bounds.Width);
+
+            // Keep the info tag visible so the panel's own arrange is what has to hide it.
+            panel.Children.RemoveAll(tags);
+            Dispatcher.UIThread.RunJobs();
+
+            infoTag.IsVisible.ShouldBeTrue();
+            infoTag.Bounds.X.ShouldBeGreaterThanOrEqualTo(panel.Bounds.Width);
         });
     }
 
@@ -601,6 +681,51 @@ public class SelectBehaviorTests
             var searchTextBox = GetTagsSearchTextBox(select);
 
             AssertEmbeddedSelectFilterTextBox(searchTextBox);
+        });
+    }
+
+    [Theory]
+    [InlineData(SelectMode.Multiple)]
+    [InlineData(SelectMode.Tags)]
+    public void Multiple_And_Tags_Filtering_Keeps_Selected_Options_Hidden_By_Filter(SelectMode mode)
+    {
+        var apple  = new SelectOption { Header = "Apple", Content  = "apple" };
+        var banana = new SelectOption { Header = "Banana", Content = "banana" };
+        var cherry = new SelectOption { Header = "Cherry", Content = "cherry" };
+        var select = new Desktop.Controls.Select
+        {
+            Width           = 240,
+            Mode            = mode,
+            IsFilterEnabled = true,
+            IsMotionEnabled = false,
+            Filter          = new StringContainsFilter(),
+            OptionsSource   = [apple, banana, cherry],
+            SelectedOptions = [apple, cherry]
+        };
+
+        ShowInWindow(select, () =>
+        {
+            select.IsDropDownOpen = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var searchTextBox = GetTagsSearchTextBox(select);
+            searchTextBox.Focus();
+            searchTextBox.Text = "ban";
+            Dispatcher.UIThread.RunJobs();
+
+            select.FilterValue.ShouldBe("ban");
+            select.SelectedOptions.ShouldNotBeNull();
+            select.SelectedOptions.ShouldBe([apple, cherry], ignoreOrder: true);
+
+            var candidateList = GetCandidateList(select);
+            RaiseCandidateKeyDown(candidateList, Key.Down);
+            Dispatcher.UIThread.RunJobs();
+            candidateList.CandidateSelectedItem.ShouldBeSameAs(banana);
+
+            RaiseCandidateKeyDown(candidateList, Key.Enter);
+            Dispatcher.UIThread.RunJobs();
+
+            select.SelectedOptions.ShouldBe([apple, banana, cherry], ignoreOrder: true);
         });
     }
 
@@ -1002,11 +1127,34 @@ public class SelectBehaviorTests
             Dispatcher.UIThread.RunJobs();
             candidateList.CandidateSelectedItem.ShouldBeSameAs(jack);
 
-            select.IsDropDownOpen = false;
-            Dispatcher.UIThread.RunJobs();
+            var popup = GetVisualDescendant<Popup>(select, "PART_Popup");
+            var popupClosed = false;
+            void OnPopupClosed(object? sender, EventArgs args)
+            {
+                popupClosed = true;
+            }
 
-            candidateList.CandidateSelectedIndex.ShouldBe(-1);
-            candidateList.CandidateSelectedItem.ShouldBeNull();
+            popup.Closed += OnPopupClosed;
+            try
+            {
+                select.IsDropDownOpen = false;
+                // Candidate cleanup follows the physical close, after default leave motion.
+                var timeout = Stopwatch.StartNew();
+                while (!popupClosed && timeout.Elapsed < TimeSpan.FromSeconds(2))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                    Dispatcher.UIThread.RunJobs();
+                    Thread.Sleep(5);
+                }
+
+                popupClosed.ShouldBeTrue();
+                candidateList.CandidateSelectedIndex.ShouldBe(-1);
+                candidateList.CandidateSelectedItem.ShouldBeNull();
+            }
+            finally
+            {
+                popup.Closed -= OnPopupClosed;
+            }
         });
     }
 

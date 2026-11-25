@@ -8,7 +8,7 @@
 
 Windows 11 上 `controlgallery/AtomUIGallery.Desktop` 的 Native AOT 发布需要三类条件同时满足：
 
-- .NET SDK 版本要满足仓库 `global.json`，当前为 `10.0.300`。
+- .NET SDK 版本要满足仓库 `global.json`：10.0.300 或更高版本（含 SDK 11）。
 - Windows 机器必须安装 Visual Studio 2022 或更新版本的 Desktop development with C++ workload。命令行安装时 workload ID 是 `Microsoft.VisualStudio.Workload.VCTools`。
 - 如果把 restore 和 publish 分开，restore 必须显式带上 `Configuration=Release` 和 `PublishAot=true`，否则 `project.assets.json` 不会恢复 `Microsoft.DotNet.ILCompiler`，后续 `publish --no-restore` 可能退化为普通 self-contained 发布。
 
@@ -129,10 +129,13 @@ dotnet publish .\controlgallery\AtomUIGallery.Desktop\AtomUIGallery.Desktop.cspr
 {
   "sdk": {
     "version": "10.0.300",
-    "rollForward": "latestFeature"
+    "rollForward": "latestMajor",
+    "allowPrerelease": false
   }
 }
 ```
+
+`latestMajor` 选用本机已安装的最高正式版 SDK（含 SDK 11），最低为 10.0.300；预览版 SDK 不参与选择。
 
 检查当前 SDK：
 
@@ -146,7 +149,7 @@ dotnet --info
 C:\Users\CHINBOY\.dotnet-sdk\10.0.300-x64\dotnet.exe
 ```
 
-如果开发机默认 `dotnet` 不是 `10.0.300`，可以临时使用完整路径发布，或者安装到用户目录：
+如果开发机默认 `dotnet` 低于 10.0.300，可以临时使用完整路径发布，或者安装到用户目录：
 
 ```powershell
 $installDir = Join-Path $env:USERPROFILE ".dotnet-sdk\10.0.300-x64"

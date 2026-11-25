@@ -27,19 +27,19 @@ ProgressBar 的实现基于 Avalonia `RangeBase`。AtomUI 负责把 `Minimum`、
 
 桌面具体控件位于 `src/AtomUI.Desktop.Controls/ProgressBar/`：
 
-- `ProgressBar.cs`：注册 `ProgressBarToken` scope 的普通线形控件入口。
+- `ProgressBar.cs`：普通线形控件入口，Own Token 为 `ProgressBarToken`。
 - `StepsProgressBar.cs`：注册 token scope 的步骤线形控件入口。
 - `CircleProgress.cs`：注册 token scope 的圆形控件入口。
 - `DashboardProgress.cs`：注册 token scope 的仪表盘控件入口。
 - `*.SemanticParts.cs`：四个 public owner 的静态 Semantic Part 声明。
-- `ProgressBarToken.cs`：控件级 Token 默认值计算。
+- `AbstractProgressToken.cs`、`AbstractLineProgressToken.cs`、`AbstractCircleProgressToken.cs`：进度 Token 抽象层；`ProgressBarToken.cs`、`StepsProgressBarToken.cs`、`CircleProgressToken.cs`、`DashboardProgressToken.cs`：各控件终端 Token（见 token.md）。
 - `Themes/*.axaml`：共享主题、线形主题、圆形共享 style、具体 leaf Template 和静态 Semantic marker。
 
 Gallery 示例位于 `controlgallery/AtomUIGallery/ShowCases/Feedback/ProgressBar/`。
 
 ## 3. 核心类职责
 
-`AbstractProgressBar` 是状态 owner。它持有共享 public API、`Percentage` direct property、`EffectiveSizeType`、`StrokeThickness`、body/indicator 与状态图标 template part，并调度几何或步骤视觉刷新。所有值到比例的计算都应经过 `CalculateProgressRatio`。
+`AbstractProgressBar` 是状态 owner。它持有共享 public API、`Percentage` direct property、`EffectiveSizeType`、`EffectiveStrokeThickness`、body/indicator 与状态图标 template part，并调度几何或步骤视觉刷新。所有值到比例的计算都应经过 `CalculateProgressRatio`。
 
 `AbstractLineProgress` 负责线形进度的方向和文本测量基础。它同步 `:horizontal` / `:vertical`，并根据宽高变化重新计算 effective size type。
 
@@ -52,7 +52,7 @@ owner 不直接对子节点调用 `Measure` 或 `Arrange`。
 `ArrangeOverride` 中再次排列 indicator。Steps 百分比始终位于轨道外部，标签直接继承 owner 的 `Foreground`；
 只有支持内嵌百分比的普通 line 使用 `PercentageLabelColor` 做背景可读性计算。
 
-`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并设置圆形内部文本 / 图标大小。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - StrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
+`AbstractCircleProgress` 负责圆形尺寸与中心信息布局。它根据 `SizeType`、`Width`、`Height` 和 `IndicatorThickness` 计算圆形实际尺寸和 stroke thickness，并设置圆形内部文本 / 图标大小。Circle 与 Dashboard 模板中的 `CircleProgressPanel` 是 rail、track、success `Path` 的唯一布局所有者；三个 Path 使用 `body size - EffectiveStrokeThickness` 的居中视口，Geometry 只描述该局部视口内部的连续或分段圆弧。owner 不直接对子 Path 调用 `Measure` 或 `Arrange`。
 
 `AbstractGeneralCircleProgress` 和 `AbstractGeneralDashboardProgress` 负责圆弧 Geometry。它们把进度比例转换为角度，并根据 `StepCount` / `StepGap` 决定连续 PathGeometry 或组合分段 Geometry，再投影到静态 Shape。
 
@@ -125,7 +125,7 @@ IsCompleted + pseudo classes
 Shape/Icon selector；`CircleProgressTheme` 与 `DashboardProgressTheme` 各自声明完整 `ControlTemplate` 和静态 Semantic marker。
 生成器据此直接验证每个 public owner 的模板契约，不依赖抽象 Theme 中可继承但无法归属到 concrete owner 的模板。修改圆形主体结构时
 必须同步两个 leaf Template，并保持同名 body/rail/track/indicator route 一致。`CircleProgressPanel` 根据最终 body size 与
-`StrokeThickness` 计算居中的 Path viewport；Geometry 使用从 `(0, 0)` 开始的局部坐标。不得改回由 `Canvas` 按 Geometry DesiredSize
+`EffectiveStrokeThickness` 计算居中的 Path viewport；Geometry 使用从 `(0, 0)` 开始的局部坐标。不得改回由 `Canvas` 按 Geometry DesiredSize
 从左上角排列，也不得由 owner 重复排列 Path，否则 rail/track 的内缩量或中心会与 body 分离。
 
 构造阶段的 `TransitionInitializationSession` 通过公开属性覆盖抑制自动过渡，`OnLoaded` 在当前基线提交后完成初始化；
@@ -201,7 +201,7 @@ line 和 steps 的 indicator Panel 分别由 `LineProgressPanel` 和 `StepsProgr
 `StepsStrokeBrush` 可以为已完成 chunk 提供逐项画刷。索引超出提供数量时回退到 `StrokeBrush`。
 
 `ChunkWidth=NaN` 表示自动宽度，必须始终从 `EffectiveSizeType` 读取 `14/6/2`，不能把计算值写回 public property。
-`ChunkHeight` 缺省时使用 `StrokeThickness`。`ChunkHeight` 和 `IndicatorThickness` 双向同步是当前兼容行为，维护时不得用
+`ChunkHeight` 缺省时使用 `EffectiveStrokeThickness`。`ChunkHeight` 和 `IndicatorThickness` 双向同步是当前兼容行为，维护时不得用
 suppression flag 打断该状态流。
 
 ### 7.5 圆形进度 Geometry
@@ -234,9 +234,10 @@ ProgressBar 不依赖运行时反射、字符串 binding、动态类型扫描或
 
 资源边界：
 
-- 默认颜色来自 `ProgressBarToken` 和 SharedToken。
+- 默认颜色来自各进度控件自己的终端 Token 与其有效 Global Token。
 - `TrailColor` 会写入 `GrooveBrush` local value；清空后恢复主题资源。
 - 状态图标由 `IconPresenter` 承载，默认图标在模板应用后以 template priority 设置。
+- 线形控件的主题按有效档位选择状态图标尺寸，信息区测量与 `IconPresenter` 的宽高共用 `LineInfoIconSize`。
 
 性能边界：
 
@@ -249,7 +250,7 @@ ProgressBar 不依赖运行时反射、字符串 binding、动态类型扫描或
 AOT 边界：
 
 - 不新增反射读取 public API、token 或 template part。
-- 新增 Token 必须走 `ProgressBarToken` 和 generator 支持的 token kind。
+- 新增 Token 必须放在正确的进度 Token 层（抽象层或终端），并走 generator 支持的 token kind。
 - API 与 Token 契约应在控件文档、源码 public surface、Token 类型或生成数据中维护，不依赖运行时扫描。
 
 ## 9. 维护不变量

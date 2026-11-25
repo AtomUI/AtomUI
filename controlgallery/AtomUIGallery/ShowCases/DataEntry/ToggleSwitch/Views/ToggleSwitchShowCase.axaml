@@ -27,7 +27,7 @@
                                                  SemanticOwner="{Binding #ToggleSwitchSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:ToggleSwitch}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:ToggleSwitch Name="ToggleSwitchSemanticOwner"
+                            <atom:ToggleSwitch x:Name="ToggleSwitchSemanticOwner"
                                                OnContent="ON"
                                                OffContent="OFF"
                                                IsChecked="True" />

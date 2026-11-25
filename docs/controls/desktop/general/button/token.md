@@ -18,7 +18,7 @@ ButtonToken 不承载 `IsPressed`、`IsPointerOver`、`IsLoading`、`EffectiveCo
 
 ## 2. Token 分类
 
-ButtonToken 当前按 Button 语义分为七类。
+ButtonToken 当前按 Button 语义分为八类。
 
 ### 2.1 排版 Token
 
@@ -30,7 +30,12 @@ ButtonToken 当前按 Button 语义分为七类。
 - `ContentLineHeightLG`
 - `ContentLineHeightSM`
 
-用于控制 Button 内容文本的字体大小、行高和字重。字体大小默认来自 SharedToken；行高在 `CalculateTokenValues` 中根据字体大小计算。
+用于控制 Button 内容文本的字体大小、行高和字重。Ant Design 下字体大小默认来自 SharedToken，行高根据字体大小计算；这些取值
+写在取值包 `AtomUI.Desktop.Controls.Themes.AntDesign` 的按钮推导里（几何与字体部分在共享辅助类 `ButtonGeometryTokenCalculator`，由
+`ButtonTokenRule` 等终端推导调用），`ButtonToken` 本身只声明属性。
+
+`FontWeight` 的类型是 `FontWeight`（默认 `Normal`，配置可写 `500` 或 `Medium`），由 `ButtonTheme` 写入 Button 自身的
+`FontWeight`，内容经文本属性继承得到它；Button 实例上的本地 `FontWeight` 仍然优先。
 
 ### 2.2 尺寸与间距 Token
 
@@ -42,13 +47,10 @@ ButtonToken 当前按 Button 语义分为七类。
 - `IconOnyPaddingLG`
 - `IconOnyPaddingSM`
 - `IconMargin`
-- `ExtraContentItemSpacing`
-- `ExtraContentMargin`
-- `ExtraContentMarginLG`
-- `ExtraContentMarginSM`
-- `GutterToFlyout`
+- `IconEndMargin`
 
-用于 Button 的尺寸密度、icon-only 内边距、圆形按钮内边距、DropdownButton 额外内容和下拉菜单间距。
+用于 Button 的尺寸密度、icon-only 内边距和圆形按钮内边距。下拉指示器外边距与弹层间距由拥有它们的控件表达：
+DropdownButton 的 `ExtraContentMargin*` 与 `MarginToAnchor`，SplitButton 的 `GutterToFlyout`。
 
 `SizeType=Custom` 不新增 ButtonToken。Custom 复用 `Middle` 档的字体、Padding、圆角和 icon Token，不继承 Button
 预设档的 `MinHeight` 基线；实例级定制通过 Button 现有布局、排版以及 `IconWidth`、`IconHeight` 属性完成，Token 仍只
@@ -87,6 +89,9 @@ Theme 把上述 ButtonToken 或 SharedToken 资源设置到 Button 自身的 `Ic
 - `BorderColorDisabled`
 
 用于普通动作的文本、背景、边框及 hover / active / disabled 状态。该组 Token 服务 `ButtonType=Default`、`ButtonType=Dashed` 和 `Color=Default` 的基础视觉。
+
+禁用边框按颜色区分：`Color=Default`（含 Default / Dashed 类型）使用 `DefaultBorderColorDisabled`，Primary、Danger 与预设色
+使用 `BorderColorDisabled`；两者默认都来自 `ColorBorder`。
 
 ### 2.5 主色与危险 Token
 
@@ -127,6 +132,29 @@ Text Token 必须保持以下语义：
 
 用于默认按钮阴影和按钮组边框协调。该组 Token 影响 Button 与 Button 家族或周边控件的视觉关系。
 
+Shadcn 的常态按钮默认平贴。Vega 的中性描边按钮使用 `shadow-xs`，`DefaultShadow` 仍然是中性描边、实心和虚线变体共用的配置入口。局部或应用资源及 `ThemeConfigProvider` 提供的显式值按资源优先级生效，空阴影也可用于覆盖 Vega 的默认阴影。键盘焦点环独立使用当前样式的描边与环宽。
+
+`GroupBorderColor` 为 Reserved（`[ReservedToken]`）：紧凑空间中相邻主按钮之间的组分隔线尚未绘制，设置它当前没有视觉效果，
+不属于可调 Token 列表；接通分隔线后转为 Active。
+
+### 2.8 行为 Token
+
+- `RecipeVariants`
+- `OutlineOnlyDefaultShadow`
+- `DisabledByOpacity`
+- `DisabledOpacity`
+- `PressMoves`
+- `UnderlineLinkOnHover`
+- `UnderlineLinkAtRest`
+
+由设计语言选择的交互行为，声明在 `AbstractButtonGeometryToken`，Button、DropdownButton、SubmitButton、ResetButton 各自一份。
+`RecipeVariants` 为真时使用配方配色（柔和的危险填充、填充变体文字取 `ControlItemColorActive`、无状态阴影、弹层打开时保持
+默认配色）；`OutlineOnlyDefaultShadow` 让默认阴影只出现在描边变体；`DisabledByOpacity` 为真时禁用按钮保留自身配色并以
+`DisabledOpacity` 显示，否则使用灰色禁用配色；`PressMoves` 为真时按下下移 1 像素而不切换按下配色；两个下划线 Token 控制
+链接按钮在悬停与常态时的下划线。Ant Design 全部为默认值（`false`，`DisabledOpacity` 为 `1.0`）；Shadcn 打开配方配色、
+半透明禁用（0.5）、按压位移与悬停下划线，Vega 只在描边变体保留阴影，Sera 常态即有下划线；PrimeNG 以 0.6 透明度禁用并
+在悬停时加下划线。按钮在主题快照变化时读取一次，不经资源查找。
+
 ## 3. Button 多彩模型中的 Token 使用
 
 Button 多彩模型不在 ButtonToken 中展开所有颜色与 variant 组合。
@@ -154,6 +182,8 @@ ControlTheme
 
 ButtonToken 不定义 `BlueSolidHoverBg`、`PurpleFilledActiveBg` 这类组合 Token。
 
+Shadcn 暗色的 Button 在控件级分别派生链接的普通、悬停与按下文字色。危险描边和虚线变体的文字与边框共用可读的悬停色，按下色与对应的实底文字保持对比。显式设置的状态 Token 继续按现有优先级覆盖。
+
 ## 4. Button 家族影响
 
 ButtonToken 当前被 Button 家族主题共同引用。Token 变更必须评估：
@@ -173,7 +203,7 @@ Button 家族控件支持 Custom 尺寸时，应复用 Middle 档中适用于该
 
 ## 5. 兼容性要求
 
-ButtonToken 属于 Button 主题契约。即使 `ButtonToken` 是 internal 类型，生成的 `ButtonTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
+ButtonToken 属于 Button 主题契约。`ButtonToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 `ButtonTokenKind` 和 AXAML resource 使用点已经形成稳定依赖。
 
 ButtonToken 变更要求：
 
@@ -184,7 +214,24 @@ ButtonToken 变更要求：
 - 不在 ButtonToken 中硬编码 Button 私有 preset 色表。
 - 需要破坏性变更时，必须先说明影响范围并获得授权。
 
-## 6. 验证策略
+## 6. 承诺面裁决
+
+2026-11-08 Button 家族迁移按[承诺面](../../../../engineering/development/control-token-guidelines.md#own-token-承诺面)裁决了
+没有消费者的 Own Token：
+
+| Token | 裁决 |
+| --- | --- |
+| `FontWeight` | Active：类型改为 `FontWeight`，驱动 Button 字重 |
+| `DefaultBorderColorDisabled` | Active：Default 颜色的禁用边框 |
+| `GroupBorderColor` | Reserved：组分隔线尚未绘制 |
+| `ExtraContentItemSpacing`、`ExtraContentMargin`、`ExtraContentMarginLG`、`ExtraContentMarginSM` | 删除：Button 模板没有额外内容区，DropdownButton 保留自己的同名 Token |
+| `GutterToFlyout` | 删除：Button 不拥有弹层，DropdownButton / SplitButton 各有自己的间距 Token |
+| `HyperLinkButtonToken.BorderColorDisabled` | 删除：HyperLinkButton 模板不绘制边框 |
+
+删除项记录在仓库 `CHANGELOG.md` 的 Breaking Changes 中。全部 Active Own Token 与消费的 Global Token 由
+`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/ButtonFamilyEffectTests` 逐项验证生效。
+
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |
@@ -193,3 +240,15 @@ ButtonToken 变更要求：
 | 删除或重命名 ButtonToken | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
 | 多彩按钮 Token 调整 | 验证 default、primary、danger、preset color 与各 variant 的状态映射。 |
 | Icon Token 投影调整 | 覆盖 Large / Middle / Small / Custom、普通 icon-only、icon-only loading、本地 `IconWidth` / `IconHeight` 覆盖，以及桌面 / Browser / DropdownButton 模板。 |
+
+## 独立 Token 身份与共享计算
+
+Button、DropdownButton、SubmitButton、ResetButton 各有独立 Own 身份；共享抽象层只复用变体与尺寸的属性声明，取值规则由取值包里的
+共享辅助类（Ant Design：`ButtonVariantTokenCalculator`、`ButtonGeometryTokenCalculator`、
+`StandardButtonTokenCalculator`）复用，各终端推导分别调用。
+Submit/Reset 使用标准按钮层，Dropdown 保留自己的额外内容间距与弹层间距；`GroupBorderColor` Reserved 只保留在原 Button 终端。
+变体的颜色/阴影与全局值使用同一终端身份；显式给出的字体、行高、padding 在该终端的推导运行之前冻结，由它们派生的值随之跟随。
+
+SplitButton 的两个实际子控件仍是公开 Button：两半的颜色与动效经 `Controls[Button]` 设置，SplitButton 自己控制接缝、尺寸与弹层。
+SearchEdit 的内嵌公开 Button 同样保留 Button 颜色与动效身份。对这些真实子控件的实例属性投射仍按原公共组合契约生效。
+原 Button 覆盖不会再影响独立 DropdownButton、SubmitButton 或 ResetButton。

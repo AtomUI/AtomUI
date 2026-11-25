@@ -3,10 +3,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- The thumb is a template part of the Slider only: every Token, global or Own, is read from the Slider, so
+         Controls[Slider] reaches the thumb. -->
     <ControlTheme x:Key="{x:Type atom:SliderThumb}" TargetType="atom:SliderThumb">
 
         <Setter Property="Focusable" Value="True" />
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <!-- :focus enlarges the handle and draws its outline ring (Ant Design handle focus style). -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="Background" Value="{atom:SliderTokenResource ThumbBg}" />
         <Setter Property="BorderThickness"
                 Value="{atom:SliderTokenResource ThumbCircleBorderThickness}" />
         <Setter Property="BorderBrush" Value="{atom:SliderTokenResource ThumbCircleBorderColor}" />
@@ -16,6 +20,7 @@
         <Setter Property="Width" Value="{atom:SliderTokenResource ThumbSize}" />
         <Setter Property="Height" Value="{atom:SliderTokenResource ThumbSize}" />
         <Setter Property="UseLayoutRounding" Value="False" />
+        <!-- layout -->
         <Setter Property="ZIndex" Value="100" />
 
         <Style Selector="^:pointerover">
@@ -26,7 +31,7 @@
             <Setter Property="ThumbCircleSize"
                     Value="{atom:SliderTokenResource ThumbCircleSizeHover}" />
             <Setter Property="OutlineThickness"
-                    Value="{atom:SliderTokenResource ThumbOutlineThickness}" />
+                    Value="{atom:SliderTokenResource ThumbHoverOutlineThickness}" />
         </Style>
 
         <Style Selector="^:focus">
@@ -38,6 +43,7 @@
                     Value="{atom:SliderTokenResource ThumbCircleSizeHover}" />
             <Setter Property="OutlineThickness"
                     Value="{atom:SliderTokenResource ThumbOutlineThickness}" />
+            <!-- layout -->
             <Setter Property="ZIndex" Value="1000" />
         </Style>
 
@@ -49,11 +55,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="OutlineBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <ThicknessTransition Property="OutlineThickness" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationFast}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="OutlineBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <ThicknessTransition Property="OutlineThickness" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

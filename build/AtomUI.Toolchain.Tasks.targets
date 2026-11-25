@@ -4,6 +4,9 @@
     <UsingTask TaskName="AtomUI.Build.Tasks.GenerateCompiledThemeInputTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
         <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
     </UsingTask>
+    <UsingTask TaskName="AtomUI.Build.Tasks.ConvertThemeDefinitionsTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+        <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
+    </UsingTask>
     <UsingTask TaskName="AtomUI.Build.Tasks.ConditionalPublishTransformTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
         <Task><Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)AtomUI.Build.Tasks.Process.cs" /></Task>
     </UsingTask>

@@ -939,9 +939,8 @@ public class ProgressBarSemanticPartTests
         rail.Bounds.Height.ShouldBeGreaterThan(0);
         track.Bounds.Width.ShouldBeGreaterThan(0);
         track.Bounds.Height.ShouldBeGreaterThan(0);
-        var expectedPathSize = new Size(
-            Math.Floor(Math.Max(0, body.Bounds.Width - rail.StrokeThickness)),
-            Math.Floor(Math.Max(0, body.Bounds.Height - rail.StrokeThickness)));
+        var diameter = Math.Floor(Math.Max(0, Math.Min(body.Bounds.Width, body.Bounds.Height) - rail.StrokeThickness));
+        var expectedPathSize = new Size(diameter, diameter);
         rail.Bounds.Size.ShouldBe(expectedPathSize);
         track.Bounds.Size.ShouldBe(expectedPathSize);
         rail.Bounds.Width.ShouldBeLessThan(body.Bounds.Width);

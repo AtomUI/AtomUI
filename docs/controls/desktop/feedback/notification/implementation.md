@@ -27,7 +27,7 @@
 - `src/AtomUI.Desktop.Controls/Notifications/WindowNotificationManager.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackStackPresenter.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackStackPanel.cs`
-- `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackLifetimeScheduler.cs`
+- `src/AtomUI.Controls/Feedback/FeedbackLifetimeScheduler.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackCardMotion.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/FeedbackCardMotionCoordinator.cs`
 - `src/AtomUI.Desktop.Controls/Primitives/FeedbackStack/IFeedbackStackItem.cs`
@@ -47,10 +47,11 @@
 - `NotificationCard`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `NotificationProgressBar`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `NotificationProgressBarVisibleConverter`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `NotificationCardToken`：internal 控件 Token scope，负责从全局 token 派生控件语义变量。
+- `NotificationCardToken`：控件 Token scope（公开类，供主题算法的控件阶段写入），负责从全局 token 派生控件语义变量。
 - `WindowNotificationManager`：拥有稳定卡片集合、public Stack 配置、TopLevel host、生命周期调度与用户回调清理。
 - `WindowFeedbackLayer`：作为窗口反馈 manager 的宿主，按最近成功提交的 `Show` 原子移动直接 manager 子项；不拥有卡片、
   scheduler 或用户回调。
+  它是全局层级阶梯的 T8（`int.MaxValue - 50`），高于其他全部层；每个 manager 的卡片宿主自带表面宿主（`LayerLadder.IsSurfaceHost`，只启用 `AdornerLayer`），卡片内控件的焦点描边与 Badge 画在卡片之上。解析 `WindowFeedbackLayer` 时跳过表面宿主，层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - `FeedbackStackPresenter`：消费稳定 ItemsSource，独立保存列表 hover，并在数量、开关或阈值变化时派生展开与暂停状态。
 - `FeedbackStackPanel`：按共享几何契约测量每张卡片，生成 Notification 的变高折叠、关闭投影与 Top/Bottom 镜像投影，并标识展开到折叠的单次过渡边界。
 - `FeedbackStackTransitionSnapshotHost`：模板内部正文宿主，只在平铺到折叠期间持有最多一个显式内容位图；外层卡片仍负责背景、阴影和全部 Stack 投影。

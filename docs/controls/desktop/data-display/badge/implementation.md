@@ -59,6 +59,9 @@ Count / Status / Text / Color / Offset / Placement / Visibility / Motion
 - Ribbon owner 把 `Text`、`Offset`、`Placement` 绑定到 Adorner；`RibbonColor` 解析后写入 Adorner。
 - `BadgeIsVisible`、Count 零值规则和 `DecoratedTarget` nullability 决定运行时宿主是否存在以及采用 standalone 还是 target mode。
 - Semantic descriptor 不参与状态计算；marker 不随状态反复增删。
+- Count owner 另把 `Content`、`IsBordered` 绑定到 Adorner；Adorner 的 `PresentedContent`（`Content ?? CountText`）是模板文本入口。非空 `Content` 使徽标始终显示，空字符串隐藏，`null` 沿用 Count 零值规则。Dot owner 把 `IsBordered` 转发给 Adorner。
+- 颜色名称（预设色与状态名）通过 `BadgeColorUtils.CalculateColor(owner, name)` 在 owner 所属主题快照上解析：预设色取调色板第 6 色，状态名取对应语义 Token；无快照时预设色回退固定浅色表，状态名不解析。
+  owner 只在挂树且颜色是名称时订阅主题快照变化，并在每次新建订阅时立即按当前快照刷新一次，因为订阅不回放当前值、离树会释放订阅。
 
 ## 5. 组合结构模型
 
@@ -71,7 +74,7 @@ CountBadge
     Border PART_IndicatorSurface
       Panel RootLayout
         Border BadgeIndicator
-        TextBlock BadgeText
+        ContentPresenter PART_ContentPresenter   (Content = PresentedContent)
 ```
 
 无 `DecoratedTarget` 时，Adorner 是 CountBadge 的普通视觉和逻辑子节点。有目标时，目标保持为 CountBadge 子节点，Adorner 的 visual parent 切换为 Avalonia `AdornerLayer`。
@@ -204,6 +207,12 @@ Badge 没有控件专属 pointer、keyboard 或 command 状态机。输入、foc
 
 Count Adorner 使用 `Count > OverflowCount ? $"{OverflowCount}+" : $"{Count}"` 计算展示文本。由非零切换到隐藏零值时暂存旧文本，避免退出动效显示错误的 `0`；再次显示零值时主动刷新。
 
+### 8.1.1 祖先可见性跟踪
+
+`AncestorVisibilityTracker` 只在 Adorner 模式下创建，跟踪 owner 及其祖先，边界为 Adorner 层的宿主（不含宿主）。宿主及以上的隐藏由整层隐藏覆盖，
+因此可见行为与跟踪整条祖先链一致，只减少订阅数。Adorner 层稍后才找到时重建 tracker 以收窄范围；层宿主不是 owner 祖先时跟踪整条链。
+内联模式（`DecoratedTarget == null`）不创建 tracker。
+
 ### 8.2 Dot 模式切换
 
 Dot standalone 模板包含 Label，target 模板不包含 Label。nullability 变化必须重建 Adorner，而不是在旧模板节点之间手工搬运状态。两套模板都实现相同 `.semantic-indicator` marker。
@@ -246,11 +255,7 @@ Ribbon Token offset 的两个坐标不得在实现中混用：
 既有 public API、TokenResource key、Theme setter 或 Gallery 可见默认外观。只有确认当前 Token 语义不足以表达默认视觉时，
 才允许引入新 Token，并同步 `token.md`、Theme 引用、生成资源和可视回归。
 
-折角暗面使用 `RibbonColor` 派生色和 `BadgeRibbonCornerDarkenAmount` 计算，不单独读取 public `RibbonColor` 字符串。
-`BadgeRibbonCornerTransform` 若参与折角形状，必须在折角点位或完整 geometry cache key 中体现；不能只把 transform 附在
-cached geometry 上，同时继续用 transform 前的 bounds 做布局。影响 Ribbon 布局或折角形状的属性必须触发对应的
-measure、arrange 或 render 失效，至少包括 `Text`、`Placement`、`Offset`、`BadgeRibbonOffset`、
-`BadgeRibbonCornerTransform`、`BadgeRibbonCornerDarkenAmount` 和 `RibbonColor`。
+折角暗面使用解析后的 `RibbonColor` 画刷和 `CornerDarkenAmount` 计算。桌面主题由 Adorner 整组读取偏移、变换和暗化参数。变换直接参与折角点位计算。资源中的偏移或变换改变时重排几何，只有暗化参数变化时只重绘。
 
 渲染回归不能只验证 TextBlock 的位置或 owner 的 inline tree。Ribbon 折角必须通过 Skia/headless 捕获后的像素断言验证：
 三角暗面区域为加深色，主体背景区域为 Ribbon 主色，三角外背景区保持目标或窗口背景色。验证矩阵至少覆盖 `Start`/`End`、
@@ -309,6 +314,9 @@ Badge Semantic Part 的默认运行时成本仅包括 descriptor 静态数据和
 - Ribbon Token offset 的 X/Y 语义必须保持水平外伸与垂直避让；如实现内部拆分折角尺寸，不能改变现有 TokenResource key 或默认外观。
 - 任何影响 Ribbon 折角几何或主体位置的属性变化都必须触发布局或渲染失效；不能依赖旧 cached geometry 偶然复用。
 - marker 在节点生命周期内静态存在，不表达 visible、status、placement 或 motion phase。
+- 计数文本由 `PART_ContentPresenter` 承载；模板不得依赖名称 `BadgeText`。`Content` 为 `null` 时展示内容必须与 `CountText` 一致。
+- 名称颜色的订阅只存在于挂树且颜色为名称期间；订阅新建时必须刷新一次，保证离树期间的主题切换在重新挂树后生效。
+- `CreateBadgeAdorner` 与 `NotifyDecoratedTargetChanged` 的签名是 AtomUI.Mobile 依赖的扩展点，变更须同步 Mobile 的上游集成文档。
 - `DecoratedTarget`、内部 Label、Count 文本拆分、折角和 motion actor identity 保持非公开。
 - 默认 Theme 不消费 semantic class；实现不引入反射、扫描、额外常驻监听或新的默认视觉对象。
 
@@ -316,6 +324,7 @@ Badge Semantic Part 的默认运行时成本仅包括 descriptor 静态数据和
 
 | 范围 | 必须验证的事实 |
 | --- | --- |
+| 内容与颜色 | `Content` 替代计数且始终显示、空字符串隐藏；`IsBordered` 去除描边；状态名与预设名随主题解析（含离树期间切换）；`danger` 等同 `error`；真实 Desktop 模板中字号、前景和描边行为。 |
 | Descriptor | 三个 owner 的 Part 名称、顺序、ContractType、cardinality、customization、cross-root、runtime 和 since 值。 |
 | Count standalone | 可见、零值显示、溢出、Small、隐藏与退出动效下 indicator 数量和 marker 稳定。 |
 | Count target mode | AdornerLayer 中只有一个 indicator；logical owner 为 CountBadge；owner-scoped Style 可命中；detach 后无残留。 |

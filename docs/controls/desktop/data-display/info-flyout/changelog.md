@@ -1,6 +1,35 @@
 # InfoFlyout Changelog
 
+## 2026-11-15
+
+- Theme / Token：`ArrowDecoratedBoxToken` 新增 `ContentBorderColor`、`ContentBorderThickness`、`ContentMinHeight`（默认即原 `BorderBrush` / `BorderThickness` / `MinHeight` 取值）。带边框的箭头框体不再隐藏箭头，改为框体自绘一条环绕框体与箭头的整体描边；Ant Design 默认无边框，渲染不变。见 [Token 设计](token.md)。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
+- 保留受保护 pointer offset API 对 Shared / 自定义 / 已类型化 resource key 的兼容；同一打开菜单直接切换 ShowAt 目标时，按旧会话释放、新会话建立的顺序切换局部资源，保留同目标关闭动效取消行为。
+- FlyoutHost 与树形 flyout presenter 读取有效全局 Token；pointer offsets 改用 placement target 的作用域资源并保留 open/close 释放生命周期。树形 presenter 默认背景接通 PopupBgColor，显式根背景保持优先。
+
+
 本文档记录 InfoFlyout 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - FlyoutHost 提供 OpenMotion/CloseMotion；托管组合在 Host 配置，独立 Flyout/MenuFlyout/TreeViewFlyout 使用 Flyout 继承的入口。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Popover 对应的 ZoomBig、Mid 时长、alignment 原点及公开配置 owner。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
 
 ## 2026-09-07
 

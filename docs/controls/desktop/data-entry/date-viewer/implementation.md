@@ -16,11 +16,11 @@ DateViewerCell 与纯日期算法实现浏览和激活。托管时宿主提供�
 | 文件 / 子域 | 职责 |
 | --- | --- |
 | DateViewer.cs、RangeDateViewer.cs | 公共属性、事件、独立提交、internal 宿主接入与语言生命周期。 |
-| DateViewerRange.cs、DateViewerEnums.cs、DateViewerEventArgs.cs | 原子值、公开枚举与强类型通知。 |
+| DateViewerEnums.cs、DateViewerEventArgs.cs | Desktop 呈现枚举及强类型通知。 |
 | DateViewerCellContext.cs、DateViewerHeaderContext.cs | 强类型内容上下文与 Header 命令。 |
 | DateViewer.SemanticParts.cs、RangeDateViewer.SemanticParts.cs | 显式公开 descriptor 与 owner-relative route。 |
-| Internal/IDatePanelHost.cs、DatePanelModels.cs | 宿主投影、动作、纯快照和模型。 |
-| Internal/DatePanelAlgorithms.cs | 单位周期、网格、边界和状态投影。 |
+| Internal/IDatePanelHost.cs | 宿主投影与动作。 |
+| AtomUI.Controls.Shared/Dates | 日期单位、网格、边界及状态投影。公开的值与枚举由 Desktop 程序集转发。 |
 | Internal/DatePanelSession.cs | 交互 cursor、拓扑缓存、状态刷新与激活防线。 |
 | Internal/DatePanel.cs | 模板 Grid、容器池、Pointer/键盘和 arrange 几何。 |
 | Internal/DateViewerCell.cs、DateViewerHeader.cs | Cell 激活/内容与 Header 上下文投影。 |
@@ -32,6 +32,8 @@ DateViewerCell 与纯日期算法实现浏览和激活。托管时宿主提供�
 
 公共 owner 把外部属性转成 DatePanelInput；DatePanelSession 合并焦点、Hover 与宿主投影。
 DatePanelAlgorithms 生成 DatePanelModel/DateViewerCellModel，DatePanel 将模型映射到有界容器池。
+
+`DatePanelAlgorithms.GetMonthLayout` 给出自然月的前导格数、天数和行数。`GetCellState` 接收只读值类型输入，返回选择、禁用、范围和行端点标记。DateViewer 保留六行网格及既有周号、焦点与预览语义，Mobile 月份列表按实际行数布局。
 DateViewerCell 只保留对应模型与内容上下文，激活统一交给 session。
 
 RangeDateViewer 的两个 DatePanel 共用一份 session；单端点、活动端点与完整原子范围由公共 owner 管理。

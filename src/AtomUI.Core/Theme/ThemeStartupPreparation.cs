@@ -6,25 +6,39 @@ using Avalonia.Media;
 namespace AtomUI.Theme;
 
 internal sealed record ThemeStartupInputs(
-    ThemeRequest InitialRequest,
+    ThemeRequest? InitialRequest,
+    ThemeSelection? InitialSelection,
     ThemeRequest? FollowSystemLightRequest,
     ThemeRequest? FollowSystemDarkRequest,
     IReadOnlyList<ThemeDefinitionRegistration> Resolvers,
     string ApplicationId,
     string ApplicationDataRoot,
-    FontFamily? FontFamily);
+    FontFamily? FontFamily,
+    IReadOnlyList<DesignLanguageDescriptor> Languages,
+    IReadOnlyDictionary<string, string>? DefaultThemes);
 
 internal sealed class PreparedThemeStartup
 {
+    private readonly ThemeSnapshot? _light;
+    private readonly ThemeSnapshot? _dark;
+    private readonly Lazy<ThemeSnapshot>? _deferredLight;
+    private readonly Lazy<ThemeSnapshot>? _deferredDark;
+
     internal PreparedThemeStartup(ThemeSnapshot light, ThemeSnapshot? dark)
     {
-        Light = light;
-        Dark = dark;
+        _light = light;
+        _dark = dark;
     }
 
-    internal ThemeSnapshot Light { get; }
+    internal PreparedThemeStartup(Func<ThemeAppearance, ThemeSnapshot> compile)
+    {
+        _deferredLight = new Lazy<ThemeSnapshot>(() => compile(ThemeAppearance.Light));
+        _deferredDark = new Lazy<ThemeSnapshot>(() => compile(ThemeAppearance.Dark));
+    }
 
-    internal ThemeSnapshot? Dark { get; }
+    internal ThemeSnapshot Light => _light ?? _deferredLight!.Value;
+
+    internal ThemeSnapshot? Dark => _dark ?? _deferredDark?.Value;
 
     internal ThemeSnapshot Select(ThemeAppearance appearance) =>
         appearance == ThemeAppearance.Dark && Dark is { } dark ? dark : Light;
@@ -42,29 +56,40 @@ internal static class ThemeStartupPreparation
     internal static PreparedThemeStartup Prepare(ThemeStartupInputs inputs)
     {
         ArgumentNullException.ThrowIfNull(inputs);
-        var registry = ThemeSchemaRegistry.CreateGlobalOnly();
+        var registry = ThemeSchemaRegistry.CreateGlobalOnly(inputs.Languages);
         var catalogResult = CompiledThemeCatalog.LoadInitial(
             registry,
             inputs.Resolvers,
-            new ThemeDefinitionResolveContext(inputs.ApplicationId, inputs.ApplicationDataRoot, false, 0));
+            new ThemeDefinitionResolveContext(inputs.ApplicationId, inputs.ApplicationDataRoot, false, 0),
+            defaultThemes: inputs.DefaultThemes);
         if (!catalogResult.Success)
         {
             throw new ThemeLoadException(CompiledThemeCatalog.Describe(catalogResult.Diagnostics), catalogResult.Exception);
         }
 
+        var catalog = catalogResult.Catalog!;
         var compiler = new ThemeCompiler();
-        var light = Compile(inputs.FollowSystemLightRequest ?? inputs.InitialRequest, catalogResult.Catalog!, registry, inputs, compiler);
-        var dark = inputs.FollowSystemDarkRequest is { } darkRequest
-            ? Compile(darkRequest, catalogResult.Catalog!, registry, inputs, compiler)
+        var (initial, lightRequest, darkRequest) = ThemeStartupCompilation.ResolveStartupRequests(inputs.InitialRequest,
+            inputs.InitialSelection, inputs.FollowSystemLightRequest, inputs.FollowSystemDarkRequest, catalog);
+        var lightTarget = lightRequest ?? initial;
+        if (darkRequest is not null && catalog.Get(lightTarget.ThemeId).Info.Language != catalog.Get(darkRequest.ThemeId).Info.Language)
+        {
+            // The system appearance is known at commit. Preparing both here would evaluate an unused language.
+            return new PreparedThemeStartup(appearance => Compile(
+                appearance == ThemeAppearance.Dark ? darkRequest : lightTarget, initial, catalog, registry, inputs, compiler));
+        }
+        var light = Compile(lightTarget, initial, catalog, registry, inputs, compiler);
+        var dark = darkRequest is not null
+            ? Compile(darkRequest, initial, catalog, registry, inputs, compiler)
             : null;
         return new PreparedThemeStartup(light, dark);
     }
 
-    private static ThemeSnapshot Compile(ThemeRequest request, CompiledThemeCatalog catalog,
+    private static ThemeSnapshot Compile(ThemeRequest request, ThemeRequest initial, CompiledThemeCatalog catalog,
         ThemeSchemaRegistry registry, ThemeStartupInputs inputs, ThemeCompiler compiler)
     {
         var result = ThemeStartupCompilation.CompileInitial(
-            request, inputs.InitialRequest, catalog, registry, inputs.FontFamily, compiler);
+            request, inputs.InitialRequest is null ? null : initial, catalog, registry, inputs.FontFamily, compiler);
         if (!result.Success)
         {
             throw new ThemeLoadException(

@@ -1,3 +1,5 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -45,6 +47,7 @@ public static class TestAppBuilder
                                                           options.MaxConcurrentDecodes = 1;
                                                       })
                                                       .UseDesktopColorPicker()
+                                                      .UseAntDesign(static language => language.AddDesktopColorPicker())
                                                       .UseDesktopExtras()
                                                       .UseLanguages(
                                                           LanguageTags.EnUS,

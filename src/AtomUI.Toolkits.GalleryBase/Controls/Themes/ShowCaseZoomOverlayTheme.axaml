@@ -12,10 +12,10 @@
             <ControlTemplate TargetType="{x:Type gallery:ShowCaseZoomOverlay}"
                              x:DataType="gallery:ShowCaseZoomOverlay">
                 <Border Name="PART_RootBorder"
-                        Background="{atom:SharedTokenResource ColorBgLayout}"
+                        Background="{gallery:ShowCaseZoomOverlayTokenResource ColorBgLayout}"
                         ClipToBounds="True">
                     <Border Name="PART_CardBorder"
-                            Background="{atom:SharedTokenResource ColorBgContainer}"
+                            Background="{gallery:ShowCaseZoomOverlayTokenResource ColorBgContainer}"
                             ClipToBounds="True">
                         <DockPanel Margin="{gallery:ShowCaseZoomOverlayTokenResource CardPadding}">
                             <Grid DockPanel.Dock="Top"
@@ -25,6 +25,7 @@
                                                 TitlePosition="Center"
                                                 FontWeight="{gallery:ShowCaseZoomOverlayTokenResource TitleFontWeight}"
                                                 Title="{TemplateBinding Title}" />
+                                <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                 <atom:IconButton Name="PART_CloseButton"
                                                  Grid.Column="1"
                                                  Width="28"
@@ -33,6 +34,7 @@
                                                  IconHeight="16"
                                                  VerticalAlignment="Center"
                                                  atom:ToolTip.Tip="Exit zoom">
+                                    <!-- layout: Fixed 28px showcase toolbar hit target, separate from the demonstrated control density. -->
                                     <atom:IconButton.Icon>
                                         <antdicons:ShrinkOutlined />
                                     </atom:IconButton.Icon>

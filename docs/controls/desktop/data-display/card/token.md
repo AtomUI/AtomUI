@@ -28,40 +28,57 @@ CardToken 不承载以下状态：
 - `HeaderPaddingLG`
 - `HeaderPadding`
 - `HeaderPaddingSM`
-- `CardHeadPadding`
+- `CardHeadPadding`（保留）
 
-这些 Token 控制 Card Header 区域的背景、字体、最小高度、水平 padding 和含 tabs 场景的 header 内容 padding。`SizeType` 负责选择 Large、Middle 或 Small 分支。
+这些 Token 控制 Card Header 区域的背景、字体、最小高度和水平 padding。`CardHeadPadding` 是保留 Token（`[ReservedToken]`），对应
+antd `cardHeadPadding`（页签放在 head 内时标题的上内边距）；AtomUI 的 `CardTabsContent` 把页签栏放在 Header 下方的 body 中，Header
+保持常规高度与 padding。`SizeType` 负责选择 Large、Middle 或 Small 分支。
 
 ### 2.2 Body padding Token
 
 - `BodyPaddingLG`
 - `BodyPadding`
 - `BodyPaddingSM`
-- `CardPaddingBase`
+- `CardPaddingBase`（保留）
 
-这些 Token 控制普通内容、Meta 内容、Tabs 内容和 Grid item 的内容 padding。Grid 内容本身不使用 Card body padding，padding 由 `CardGridItem` 消费。
+这些 Token 控制普通内容、Meta 内容、Tabs 内容和 Grid item 的内容 padding。Grid 内容本身不使用 Card body padding，padding 由 `CardGridItem` 按尺寸
+消费 `BodyPaddingLG` / `BodyPadding` / `BodyPaddingSM`。`CardPaddingBase` 是保留 Token，对应 antd `cardPaddingBase`（grid item padding）。
 
 ### 2.3 Actions Token
 
 - `ActionsBg`
-- `ActionsSpacing`
+- `ActionsSpacing`（保留）
 - `CardActionsIconSize`
 
-这些 Token 控制底部操作区背景、操作项间距语义和 action icon 尺寸。当前操作区分隔线颜色和粗细来自 SharedToken 的边框资源。
+这些 Token 控制底部操作区背景和 action icon 尺寸。操作区由 `CardActionPanel` 在 Render 中绘制背景（`ActionsBg`，只取 Card 的下圆角）、
+顶部分隔线与操作项之间的竖线，竖线不会被背景遮住；分隔线颜色与粗细读 Card 的 `ColorBorderSecondary` / `BorderThickness`，操作项之间留
+`LineWidth` 宽的间隙。`ActionsSpacing` 是保留 Token，对应 antd `actionsLiMargin`（每个操作项的上下外边距）；AtomUI 的操作区是
+`ControlHeightLG` 高的一行，操作项拉伸占满整格，没有项外边距可设。
 
 ### 2.4 Tabs Token
 
-- `TabsMarginBottom`
+- `TabsMarginBottom`（保留）
 
-`TabsMarginBottom` 用于 Card 内置 tabs 场景，协调 TabControl header 与 Card header/body 边界的垂直间距。
+`TabsMarginBottom` 是保留 Token，对应 antd `tabsMarginBottom`（把 head 内的页签拉到 head 底边线上）；`CardTabsContent` 的页签栏位于 Header
+下方的 body，没有可重叠的 head。`CardTabsContent` 的页签栏边距与内容 padding 读取 Card 的 Token（它是 Token owner 透明部件），内部的
+`TabControl` 保留自己的 identity。
 
 ### 2.5 文本和阴影 Token
 
 - `ExtraColor`
 - `CardShadows`
+- `RestingShadows`
 - `CardGridItemShadows`
+- `CardGridHoverShadows`
 
-`ExtraColor` 控制 Header Extra 区域文字色。`CardShadows` 是 hoverable Card 和 hoverable grid item 的强化阴影。`CardGridItemShadows` 使用多层阴影表达 grid item 之间的边线。
+`ExtraColor` 控制 Header Extra 区域文字色（`HeaderExtra` 的 `Foreground`）。`CardShadows` 是可悬停 Card 的阴影（antd `cardShadow`）。
+`RestingShadows` 是有边框（Outlined）Card 不悬停时的静止阴影，是 AtomUI 扩展（antd 无对应 Token），供
+主题预设（例如 PrimeNG 的常驻卡片阴影）表达常驻阴影；默认值是与 `CardShadows` 同层数的透明阴影（由
+`CardShadows` 派生），悬停过渡因此不增减阴影层。静止的 Borderless Card 阴影仍是 `BoxShadowsTertiary`（经
+`Controls[Card].BoxShadowsTertiary` 设置）。可悬停 Card 在指针进入后切换到 `CardShadows`，外边框画笔过渡至卡面背景，厚度继续用于布局。
+
+网格依据 `LineWidth` 和 `ColorBorderSecondary` 绘制固定分隔线。`CardGridItemShadows` 用于格子的常驻装饰，默认无装饰。
+`CardGridHoverShadows` 控制格子的悬停阴影，默认采用 `CardShadows`。Shadcn 使用当前风格的阴影档位，格子悬停层同时使用 `ColorFillQuaternary`。
 
 ## 3. 控件专项模型中的 Token 使用
 
@@ -86,12 +103,14 @@ Header + Body + Cover + Actions + Grid + Tabs + Meta
 | `HeaderHeightLG` / `HeaderHeight` / `HeaderHeightSM` | HeaderFrame 最小高度。 |
 | `HeaderPaddingLG` / `HeaderPadding` / `HeaderPaddingSM` | HeaderFrame 水平 padding。 |
 | `BodyPaddingLG` / `BodyPadding` / `BodyPaddingSM` | Card body、CardGridItem 和 CardTabsContent content padding。 |
-| `ActionsBg` | CardActionPanel Frame 背景。 |
-| `TabsMarginBottom` | Card 内置 tabs 的下边距语义。 |
+| `ActionsBg` | CardActionPanel 背景（Render 中绘制，只取下圆角）。 |
+| `TabsMarginBottom` | 保留，无视觉效果。 |
 | `ExtraColor` | Extra 区域文字颜色。 |
-| `CardShadows` | Card hover 和 grid item hover 阴影。 |
+| `CardShadows` | Card 悬停阴影。 |
+| `RestingShadows` | 有边框 Card 的静止阴影（默认透明）。 |
 | `CardActionsIconSize` | CardActionButton icon 宽高。 |
-| `CardGridItemShadows` | CardGridItem 默认边线阴影。 |
+| `CardGridItemShadows` | CardGridItem 常驻装饰阴影。 |
+| `CardGridHoverShadows` | CardGridItem 悬停阴影。 |
 
 实例状态派生：
 
@@ -111,6 +130,13 @@ IsHoverable
 
 这些实例状态本身不是 Token。
 
+全局 Token 经 `CardTokenResource` 读取，`Controls[Card]` 覆盖全部生效：卡片圆角是 `BorderRadiusLG`（设置 Card 圆角用
+`Controls[Card].BorderRadiusLG`），外框与分隔线是 `ColorBorderSecondary` / `BorderThickness`，背景是 `ColorBgContainer`，Inner 模式头部是
+`ColorFillAlter`。`CardGridItem`、`CardTabsContent` 是 Token owner 透明部件（`[TokenOwnerTransparent]`），主题以 `CardTokenResource` 读取；
+`CardActionPanel` 无 identity，同样读 Card。`CardActionButton`、`CardMetaContent` 保留自己的 identity，以各自 TokenResource 读取全局 Token
+（`CardActionsIconSize` 仍是 Card 的 Own Token）。Card body 位于 `Skeleton` 中，Skeleton 与 `CardGridContent` 都是 Token owner 透明控件，
+透明部件继承 Card 为 owner，`Controls[Card]` 的覆盖（含动效时长）作用于网格项与页签内容的过渡。
+
 ## 4. 控件家族影响
 
 CardToken 直接影响 Card 家族控件：
@@ -128,7 +154,7 @@ CardToken 不应被其他 Data Display 控件直接复用。若多个控件需�
 
 ## 5. 兼容性要求
 
-CardToken 属于 Card 主题契约。即使 `CardToken` 是 internal 类型，生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+CardToken 属于 Card 主题契约。`CardToken` 是公开类，主题算法的控件阶段会直接写它的属性，因此类型本身、生成的 token kind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 

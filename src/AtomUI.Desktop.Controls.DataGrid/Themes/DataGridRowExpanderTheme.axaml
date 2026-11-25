@@ -10,17 +10,17 @@
                 <atom:PixelAlignedBorder Name="Frame"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
-                                         Background="Transparent"
+                                         Background="{TemplateBinding Background}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
                     <Canvas VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Rectangle Name="{x:Static atom:DataGridRowExpanderThemeConstants.HorizontalIndicatorPart}"
-                                   Height="1"
+                                   Height="{atom:OwnerTokenResource LineWidth}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Fill="{TemplateBinding IndicatorFill}"
                                    RenderTransform="{TemplateBinding HorizontalIndicatorRenderTransform}"/>
                         <Rectangle Name="{x:Static atom:DataGridRowExpanderThemeConstants.VerticalIndicatorPart}"
-                                   Width="1"
+                                   Width="{atom:OwnerTokenResource LineWidth}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Fill="{TemplateBinding IndicatorFill}"
@@ -29,58 +29,68 @@
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>
-        
+
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Cursor" Value="Hand"/>
-        
-        <Setter Property="Width" Value="{atom:SharedTokenResource SizeMS}"/>
-        <Setter Property="Height" Value="{atom:SharedTokenResource SizeMS}"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
-        
-        <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
-        
+
+        <Setter Property="Background" Value="{atom:DataGridTokenResource TableExpandIconBg}"/>
+        <Setter Property="Width" Value="{atom:OwnerTokenResource SizeMS}"/>
+        <Setter Property="Height" Value="{atom:OwnerTokenResource SizeMS}"/>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}"/>
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}"/>
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}"/>
+
+        <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource ColorTextSecondary}"/>
+        <!-- :focus recolors the border and indicator (Ant Design table expand icon), no extra outline. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}"/>
+
         <Style Selector="^:focus">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource ColorPrimaryHover}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryHover}"/>
         </Style>
-        
+
         <Style Selector="^:pointerover">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryHover}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource ColorPrimaryHover}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryHover}"/>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="IndicatorFill" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="IndicatorFill" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
-        
+
         <Style Selector="^:pressed">
-            <Setter Property="IndicatorFill" Value="{atom:SharedTokenResource ColorPrimaryActive}"/>
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorPrimaryActive}"/>
+            <Setter Property="IndicatorFill" Value="{atom:OwnerTokenResource ColorPrimaryActive}"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimaryActive}"/>
         </Style>
-        
+
+        <!-- layout: fixed plus/minus glyph length; stroke width follows LineWidth. -->
         <Style Selector="^ /template/ Rectangle#PART_VerticalIndicator">
+            <!-- layout: fixed glyph extent within the centered expander. -->
             <Setter Property="Height" Value="9"/>
         </Style>
-        
+
+        <!-- layout: fixed plus/minus glyph length; stroke width follows LineWidth. -->
         <Style Selector="^ /template/ Rectangle#PART_HorizontalIndicator">
+            <!-- layout: fixed glyph extent within the centered expander. -->
             <Setter Property="Width" Value="9"/>
         </Style>
-        
+
         <Style Selector="^[IsChecked=True]">
-            <Style Selector="^ /template/ Rectangle#PART_VerticalIndicator">
+            <!-- layout: fixed plus/minus glyph length; stroke width follows LineWidth. -->
+        <Style Selector="^ /template/ Rectangle#PART_VerticalIndicator">
                 <Setter Property="Opacity" Value="0"/>
             </Style>
             <Setter Property="VerticalIndicatorRenderTransform" Value="rotate(90deg)"/>
             <Setter Property="HorizontalIndicatorRenderTransform" Value="rotate(180deg)"/>
         </Style>
-        
+
     </ControlTheme>
 </ResourceDictionary>

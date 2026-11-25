@@ -62,6 +62,8 @@ internal sealed partial class ApplicationScope
             configure(builder);
             builder.ControlRegistrationState.ThrowIfUnavailable();
             if (builder.PackageDeclarations.Count == 0 && builder.ThemeManagerBuilder.ControlPackages.Count == 0 &&
+                builder.ThemeManagerBuilder.Languages.Count == 0 &&
+                builder.ThemeManagerBuilder.TokenRules.Count == 0 &&
                 builder.OwnedServiceRegistrations.Count == 0 && builder.LocalizationBuilder.ModuleData.Count == 0 &&
                 builder.LocalizationBuilder.Catalogs.Count == 0 && builder.LocalizationBuilder.TranslationBundles.Count == 0)
             {

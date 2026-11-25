@@ -1,9 +1,11 @@
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.DesignLanguages.PrimeNG;
+using AtomUI.DesignLanguages.Shadcn;
 using System.Globalization;
 using AtomUI;
 using AtomUI.Desktop.Controls;
 using AtomUI.Fonts.AlibabaPuHuiTi;
 using AtomUI.Localization;
-using AtomUI.Theme;
 using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery.Localization;
 using Avalonia;
@@ -21,7 +23,6 @@ public partial class BrowserGalleryApplication : Application
         builder.UseLanguages(
             GalleryLanguageDefaults.Resolve(CultureInfo.CurrentUICulture),
             [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);
-        builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
         builder.UseAlibabaSansFont();
         builder.UseAlibabaPuHuiTiFont();
         builder.WithDefaultFontFamily(FontFamily.Parse(
@@ -30,8 +31,11 @@ public partial class BrowserGalleryApplication : Application
         builder.UseDesktopExtras();
         builder.UseDesktopColorPicker();
         builder.UseDesktopDataGrid();
-        builder.UseGalleryBase(AtomUIGalleryModule.Configure);
         builder.UseGalleryControls();
+        builder.UseAntDesign(static ant => ant.WithDefaultTheme(AntDesignThemes.DaybreakBlue));
+        builder.UsePrimeNG();
+        builder.UseShadcn();
+        builder.WithInitialDesignLanguage<AntDesignLanguage>();
     }
 
     public override void OnFrameworkInitializationCompleted()

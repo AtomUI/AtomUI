@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.Controls.Themes.PrimeNG</RootNamespace>
+        <Description>The Ant Design values of the controls shared by every idiom (AtomUI.Controls).</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../../../AtomUI.Controls/AtomUI.Controls.csproj" />
+        <ProjectReference Include="../AtomUI.DesignLanguages.PrimeNG/AtomUI.DesignLanguages.PrimeNG.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

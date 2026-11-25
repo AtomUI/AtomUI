@@ -4,17 +4,9 @@ using Avalonia;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DatePickerToken : AbstractControlDesignToken
+public sealed partial class DatePickerToken : AbstractDatePickerToken
 {
-    public Thickness PanelContentPadding { get; set; }
-    public Thickness ButtonsPanelMargin { get; set; }
-    public double RangePanelSpacing { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        PanelContentPadding = EffectiveGlobalToken.PaddingSM;
-        ButtonsPanelMargin = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
-        RangePanelSpacing = 20;
-    }
+    /// <summary>Thickness of the border around the calendar header in the date picker's popup.</summary>
+    public partial Thickness HeaderBorderThickness { get; set; }
 }

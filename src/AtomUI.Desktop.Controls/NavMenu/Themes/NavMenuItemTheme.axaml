@@ -6,6 +6,10 @@
     x:ClassModifier="internal">
     <converters:NavMenuIsSubMenuOpenConverter x:Key="IsSubMenuOpenConverter" />
     <ControlTheme x:Key="{x:Type atom:NavMenuItem}" TargetType="atom:NavMenuItem">
+        <!-- NavMenu draws keyboard focus on the keyboard active header itself, also while an item owns focus. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuOpen}" />
+        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuClose}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel Orientation="Vertical"
@@ -24,17 +28,20 @@
                                                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                            HasSubMenu="{TemplateBinding HasSubMenu}"
                                                            IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                                                           IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                                                           IsDanger="{TemplateBinding IsDanger}"                                                           IsDarkStyle="{TemplateBinding IsDarkStyle}"
                                                            IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                                                            IsEnabled="{TemplateBinding IsEnabled}"
                                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                            IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"
                                                            IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                                                            IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                                           IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                                            IsPointerHold="{TemplateBinding IsPointerHold}"
                                                            IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}"
                                                            IsTopLevel="{TemplateBinding IsTopLevel}" />
                         <atom:Popup Name="PART_Popup"
+                                    OpenMotion="{TemplateBinding OpenMotion}"
+                                    CloseMotion="{TemplateBinding CloseMotion}"
                                     WindowManagerAddShadowHint="False"
                                     IsLightDismissEnabled="False"
                                     ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
@@ -77,13 +84,14 @@
                                                          HeaderTemplate="{TemplateBinding HeaderTemplate}"
                                                          HasSubMenu="{TemplateBinding HasSubMenu}"
                                                          IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                                                         IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                                                         IsDanger="{TemplateBinding IsDanger}"                                                         IsDarkStyle="{TemplateBinding IsDarkStyle}"
                                                          IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                                                          IsEnabled="{TemplateBinding IsEnabled}"
                                                          IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                                          IsSelected="{TemplateBinding SelectingItemsControl.IsSelected}"
                                                          IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                                                          IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                                         IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                                                          IsPointerHold="{TemplateBinding IsPointerHold}"
                                                          IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}"
                                                          atom:ToolTip.Tip="{TemplateBinding EffectiveCollapsedTooltip}"
@@ -91,6 +99,8 @@
                                                          atom:ToolTip.ShowDelay="{TemplateBinding CollapsedTooltipShowDelay}"
                                                          atom:ToolTip.BetweenShowDelay="{TemplateBinding CollapsedTooltipBetweenShowDelay}" />
                         <atom:Popup Name="PART_Popup"
+                                    OpenMotion="{TemplateBinding OpenMotion}"
+                                    CloseMotion="{TemplateBinding CloseMotion}"
                                     WindowManagerAddShadowHint="False"
                                     IsLightDismissEnabled="False"
                                     ShouldUseOverlayLayer="{TemplateBinding ShouldUseOverlayPopup}"
@@ -122,7 +132,9 @@
         <Style Selector="^[Mode=Inline]">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <StackPanel Orientation="Vertical">
+                    <!-- Group the collapsing viewport before its opacity is applied. -->
+                    <StackPanel Orientation="Vertical"
+                                RenderOptions.RequiresFullOpacityHandling="True">
                         <atom:InlineNavMenuItemHeader
                             Name="PART_Header"
                             Classes.semantic-scope-header="True"
@@ -132,7 +144,7 @@
                             Level="{TemplateBinding Level}"
                             HasSubMenu="{TemplateBinding HasSubMenu}"
                             IsSubMenuOpen="{TemplateBinding IsSubMenuOpen}"
-                            IsDarkStyle="{TemplateBinding IsDarkStyle}"
+                            IsDanger="{TemplateBinding IsDanger}"                            IsDarkStyle="{TemplateBinding IsDarkStyle}"
                             IsItemBackgroundEnabled="{TemplateBinding IsItemBackgroundEnabled}"
                             IsEnabled="{TemplateBinding IsEnabled}"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -140,6 +152,7 @@
                             Focusable="{TemplateBinding Focusable}"
                             IsInSelectedPath="{TemplateBinding IsInSelectedPath}"
                             IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                            IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
                             IsPointerHold="{TemplateBinding IsPointerHold}"
                             IsInlineCollapsed="{TemplateBinding IsInlineCollapsed}" />
 
@@ -169,9 +182,6 @@
         <Setter Property="atom:ScrollViewer.AllowAutoHide" Value="True" />
 
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
-            <Setter Property="PopupMinWidth"
-                    Value="{atom:NavMenuTokenResource MenuPopupMinWidth}" />
-
             <Style Selector="^ /template/ atom|NavMenuPopupFrame#PART_PopupFrame">
                 <Setter Property="Background"
                         Value="{atom:NavMenuTokenResource MenuPopupBg}" />
@@ -179,10 +189,7 @@
                         Value="{atom:PopupTokenResource PopupCornerRadius}" />
                 <Setter Property="MinWidth"
                         Value="{atom:NavMenuTokenResource MenuPopupMinWidth}" />
-                <Setter Property="PopupMaxWidth"
-                        Value="{atom:NavMenuTokenResource MenuPopupMaxWidth}" />
-                <Setter Property="PopupMaxHeight"
-                        Value="{atom:NavMenuTokenResource MenuPopupMaxHeight}" />
+                <Setter Property="UsePopupMaxSizeTokenResources" Value="True" />
                 <Setter Property="Padding"
                         Value="{atom:NavMenuTokenResource MenuPopupContentPadding}" />
             </Style>
@@ -197,24 +204,31 @@
 
         <Style Selector="^[Mode=Horizontal],^[Mode=Vertical]">
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
+                <Setter Property="PopupRootShadow" Value="{atom:NavMenuTokenResource MenuPopupShadows}" />
+                <Setter Property="OverlayHostShadow" Value="{atom:NavMenuTokenResource MenuPopupShadows}" />
                 <Setter Property="RequestedPlacement" Value="RightEdgeAlignedTop" />
-                <Setter Property="HorizontalOffset" Value="{atom:SharedTokenResource SpacingXS}" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="HorizontalOffset" Value="{atom:NavMenuTokenResource SpacingXS}" />
+                <Setter Property="VerticalOffset" Value="{atom:NavMenuTokenResource SpacingXXS}" />
+            </Style>
+            <!-- Items inside a submenu popup use the smaller sub-menu item radius. -->
+            <Style Selector="^:not(:toplevel) /template/ :is(atom|BaseNavMenuItemHeader)#PART_Header">
+                <Setter Property="CornerRadius" Value="{atom:NavMenuTokenResource SubMenuItemBorderRadius}" />
             </Style>
         </Style>
 
         <Style Selector="^[Mode=Horizontal]:toplevel">
-            <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+            <Setter Property="FontSize" Value="{atom:NavMenuTokenResource FontSize}" />
             <Style Selector="^ /template/ atom|Popup#PART_Popup">
                 <Setter Property="RequestedPlacement" Value="Bottom" />
-                <Setter Property="VerticalOffset" Value="{atom:SharedTokenResource SpacingXXS}" />
+                <Setter Property="MarginToAnchor" Value="{atom:NavMenuTokenResource TopLevelItemPopupMarginToAnchor}" />
+                <Setter Property="VerticalOffset" Value="0" />
                 <Setter Property="HorizontalOffset" Value="0" />
             </Style>
         </Style>
 
         <Style Selector="^[Mode=Inline]">
             <Setter Property="OpenCloseMotionDuration"
-                    Value="{atom:SharedTokenResource MotionDurationMid}" />
+                    Value="{atom:NavMenuTokenResource MotionDurationMid}" />
 
             <Setter Property="Focusable" Value="False" />
             <Style Selector="^[IsItemBackgroundEnabled=True]">
@@ -239,6 +253,5 @@
                 </Style>
             </Style>
         </Style>
-
-    </ControlTheme>
+</ControlTheme>
 </ResourceDictionary>

@@ -2,6 +2,31 @@
 
 本文档记录 Transfer 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- PrimeNG：列表项上下各 1px 外边距（行间 2px 间隙，Aura `list.gap`，AtomUI 在三个预设中统一使用），相邻的选中项不再连成一整块。
+
+## 2026-11-14
+
+- Fixed
+  - ListTransfer 列表面板无法用键盘浏览：点击条目后焦点落在条目的勾选框上，第一次 `↓` 把焦点移到面板头部的全选勾选框。
+    条目改为焦点目标、勾选框不可聚焦；方向键只移动焦点，`Space` / `Enter` 切换勾选（此前方向键会逐项切换勾选）。
+- Theme
+  - `TransferListItemTheme` 的 `Frame` 成为模板焦点目标并内侧绘制焦点描边；`CheckBox#SelectedIndicator` 设为 `Focusable=False`。
+- Docs
+  - `overview.md` 新增 §8.1.1 列表面板键盘模型。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+
+- Compatibility
+  - `TreeTransfer.ListWidthLG` 保留为 Reserved；树穿梭视图无分页加宽状态，普通宽度使用 `ListWidth`。
+  - Transfer 条目对 Token owner 透明，跟随实际列表或树视图。
+- Theme
+  - 控件主题读取自身有效全局 Token，局部覆盖与嵌套已注册控件保持隔离；消费范围见 [Token 设计](token.md#7-有效-token-与作用域边界)。
+
 ## 2026-09-01
 
 - Semantic Part（方向限定对齐）

@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Reflection;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -46,13 +47,13 @@ public class CollapseShowCasePageTests
         semanticSource.ShouldContain("CollapseShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Collapse.semantic-object\"");
         semanticSource.ShouldContain("Selector=\"atom|Collapse.semantic-function\"");
-        semanticSource.ShouldContain("Value=\"#fafafa\"");
-        semanticSource.ShouldContain("Value=\"#e0e0e0\"");
-        semanticSource.ShouldContain("Value=\"#f0f0f0\"");
-        semanticSource.ShouldContain("Value=\"#141414\"");
-        semanticSource.ShouldContain("Value=\"#ffffff\"");
-        semanticSource.ShouldContain("Value=\"#696fc7\"");
-        semanticSource.ShouldContain("Value=\"#f5efff\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorBgElevated}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorBorder}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillTertiary}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorBgContainer}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBorder}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("SizeType=\"Large\"");
         semanticSource.ShouldContain("Property=\"Background\"");
         semanticSource.ShouldContain("Property=\"Padding\"");
@@ -155,13 +156,13 @@ public class CollapseShowCasePageTests
             var defaultDemo = demos.Single(static collapse => collapse.Classes.Contains("semantic-object"));
             defaultDemo.SizeType.ShouldBe(CustomizableSizeType.Middle);
             var defaultFrame = FindFrame(defaultDemo);
-            AssertSolidColor(defaultFrame.Background, "#fafafa");
-            AssertSolidColor(defaultFrame.BorderBrush, "#e0e0e0");
+            AssertSolidColor(defaultFrame.Background, SharedTokenKind.ColorBgElevated);
+            AssertSolidColor(defaultFrame.BorderBrush, SharedTokenKind.ColorBorder);
             defaultFrame.CornerRadius.ShouldBe(new CornerRadius(8));
             var defaultHeader = FindHeader(defaultDemo);
-            AssertSolidColor(defaultHeader.Background, "#f0f0f0");
+            AssertSolidColor(defaultHeader.Background, SharedTokenKind.ColorFillTertiary);
             defaultHeader.Padding.ShouldBe(new Thickness(16, 12));
-            AssertSolidColor(FindTitle(defaultDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitle(defaultDemo).Foreground, SharedTokenKind.ColorText);
             GetContainerAt(defaultDemo, 0).IsSelected.ShouldBeTrue();
             GetContainerAt(defaultDemo, 1).IsSelected.ShouldBeFalse();
             GetContainerAt(defaultDemo, 2).IsSelected.ShouldBeFalse();
@@ -178,13 +179,13 @@ public class CollapseShowCasePageTests
             var largeDemo = demos.Single(static collapse => collapse.Classes.Contains("semantic-function"));
             largeDemo.SizeType.ShouldBe(CustomizableSizeType.Large);
             var largeFrame = FindFrame(largeDemo);
-            AssertSolidColor(largeFrame.Background, "#ffffff");
-            AssertSolidColor(largeFrame.BorderBrush, "#696fc7");
+            AssertSolidColor(largeFrame.Background, SharedTokenKind.ColorBgContainer);
+            AssertSolidColor(largeFrame.BorderBrush, SharedTokenKind.ColorInfoBorder);
             largeFrame.CornerRadius.ShouldBe(new CornerRadius(8));
             var largeHeader = FindHeader(largeDemo);
-            AssertSolidColor(largeHeader.Background, "#f5efff");
+            AssertSolidColor(largeHeader.Background, SharedTokenKind.ColorInfoBg);
             largeHeader.Padding.ShouldBe(new Thickness(16, 12));
-            AssertSolidColor(FindTitle(largeDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitle(largeDemo).Foreground, SharedTokenKind.ColorText);
             GetContainerAt(largeDemo, 0).IsSelected.ShouldBeFalse();
             GetContainerAt(largeDemo, 1).IsSelected.ShouldBeTrue();
             GetContainerAt(largeDemo, 2).IsSelected.ShouldBeFalse();
@@ -290,11 +291,18 @@ public class CollapseShowCasePageTests
         }
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
+    }
+
+    private static void AssertSolidColor(IBrush? actual, SharedTokenKind expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(GetThemeColor(expected));
     }
 
     private static string ReadRepoFile(string relativePath)

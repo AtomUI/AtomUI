@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# AtomUI commit-msg hook — reject model/AI collaboration attribution.
+#
+# Blocks commit messages that credit an AI model or coding agent, e.g.:
+#   Co-Authored-By: Claude <noreply@anthropic.com>
+#   Co-Authored-By: Gemini <gemini@google.com>
+#   🤖 Generated with [Claude Code]
+#   Assisted by GLM-5.3
+#
+# Matching rules (case-insensitive, per line):
+#   1. A `Co-Authored-By:` trailer whose name/email contains a model keyword.
+#   2. An attribution phrase ("generated with/by", "assisted with/by") on a
+#      line that also contains a model keyword.
+# Human co-authors and prose that merely mentions a model name are allowed.
+#
+# Setup (per clone; worktrees inherit it):
+#   git config core.hooksPath scripts/hooks
+# Note: `git commit --no-verify` bypasses this guard — it is a guardrail,
+# not a security boundary.
+set -u
+
+commit_msg_file="${1:-}"
+if [[ -z "$commit_msg_file" || ! -f "$commit_msg_file" ]]; then
+    echo "commit-msg hook: no commit message file to check" >&2
+    exit 1
+fi
+
+# Model / agent identifiers matched as whole words.
+AI_KEYWORDS='claude|anthropic|openai|codex|chatgpt|gpt|gemini|deepmind|copilot|cursor|aider|cline|windsurf|zcode|glm|bigmodel|chatglm|deepseek|qwen|kimi|moonshot|doubao|ernie|minimax|grok|xai|llm|agent'
+
+violations=""
+
+# Rule 1: AI co-author trailers.
+while IFS= read -r line; do
+    violations="${violations}${line}\n"
+done < <(grep -inE '^[[:space:]]*co-?authored-?by[[:space:]:].*\b('"$AI_KEYWORDS"')\b' "$commit_msg_file" || true)
+
+# Rule 2: attribution phrases naming a model.
+while IFS= read -r line; do
+    violations="${violations}${line}\n"
+done < <(grep -inE '(generated|assisted)[[:space:]]+(with|by)[[:space:]:]-*\[?.*\b('"$AI_KEYWORDS"')\b' "$commit_msg_file" || true)
+
+if [[ -n "$violations" ]]; then
+    echo "commit rejected: model/AI collaboration attribution found:" >&2
+    printf '%b' "$violations" >&2
+    echo >&2
+    echo "Remove the Co-Authored-By / generated-by / assisted-by lines that credit" >&2
+    echo "an AI model or coding agent, then commit again." >&2
+    exit 1
+fi
+
+exit 0

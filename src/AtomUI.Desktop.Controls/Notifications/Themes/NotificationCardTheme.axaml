@@ -84,22 +84,24 @@
         </Setter>
 
         <Setter Property="IsMotionEnabled"
-                Value="{atom:SharedTokenResource EnableMotion}" />
+                Value="{atom:NotificationCardTokenResource EnableMotion}" />
         <Setter Property="OpenCloseMotionDuration"
-                Value="{atom:SharedTokenResource MotionDurationMid}" />
+                Value="{atom:NotificationCardTokenResource MotionDurationMid}" />
         <Setter Property="ClipToBounds" Value="False" />
 <Setter Property="Transitions">
-            <Transitions>
-                <TransformOperationsTransition Property="RenderTransform"
-                                               Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                               Easing="0.645,0.045,0.355,1" />
-                <DoubleTransition Property="Opacity"
-                                  Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                  Easing="0.645,0.045,0.355,1" />
-                <DoubleTransition Property="{x:Static atom:FeedbackStackPanel.StackClipProgressProperty}"
-                                  Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"
-                                  Easing="0.645,0.045,0.355,1" />
-            </Transitions>
+            <atom:TokenTransitions>
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   atom:TokenTransitions.Duration="MotionDurationMid"
+                                                   Easing="0.645,0.045,0.355,1" />
+                    <DoubleTransition Property="Opacity"
+                                      atom:TokenTransitions.Duration="MotionDurationMid"
+                                      Easing="0.645,0.045,0.355,1" />
+                    <DoubleTransition Property="{x:Static atom:FeedbackStackPanel.StackClipProgressProperty}"
+                                      atom:TokenTransitions.Duration="MotionDurationMid"
+                                      Easing="0.645,0.045,0.355,1" />
+                </Transitions>
+            </atom:TokenTransitions>
         </Setter>
 
         <Style Selector="^[IsMotionEnabled=False]">
@@ -113,9 +115,11 @@
             只提供默认视觉，用户经 owner-scoped Semantic Style 覆盖时能真正投影到卡片外框。
         -->
         <Setter Property="Background" Value="{atom:NotificationCardTokenResource NotificationBg}" />
+        <Setter Property="BorderThickness" Value="{atom:NotificationCardTokenResource NotificationBorderThickness}" />
+        <Setter Property="BorderBrush" Value="{atom:NotificationCardTokenResource NotificationBorderColor}" />
         <Setter Property="Padding" Value="{atom:NotificationCardTokenResource NotificationPadding}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-        <Setter Property="BoxShadow" Value="{atom:SharedTokenResource BoxShadows}" />
+        <Setter Property="CornerRadius" Value="{atom:NotificationCardTokenResource BorderRadiusLG}" />
+        <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource RestingShadows}" />
 
         <Style Selector="^ /template/ Border#Frame">
             <Setter Property="Margin" Value="0" />
@@ -139,30 +143,34 @@
         </Style>
 
         <Style Selector="^[NotificationType=Information]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource InformationShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorPrimary}" />
+                        Value="{atom:NotificationCardTokenResource InformationIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Error]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource ErrorShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorError}" />
+                        Value="{atom:NotificationCardTokenResource ErrorIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Success]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource SuccessShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorSuccess}" />
+                        Value="{atom:NotificationCardTokenResource SuccessIconColor}" />
             </Style>
         </Style>
 
         <Style Selector="^[NotificationType=Warning]">
+            <Setter Property="BoxShadow" Value="{atom:NotificationCardTokenResource WarningShadows}" />
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IconBrush"
-                        Value="{atom:SharedTokenResource ColorWarning}" />
+                        Value="{atom:NotificationCardTokenResource WarningIconColor}" />
             </Style>
         </Style>
 
@@ -174,11 +182,11 @@
 
         <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
             <Setter Property="LineHeight"
-                    Value="{atom:SharedTokenResource FontHeightLG}" />
+                    Value="{atom:NotificationCardTokenResource FontHeightLG}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSizeLG}" />
+                    Value="{atom:NotificationCardTokenResource FontSizeLG}" />
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextHeading}" />
+                    Value="{atom:NotificationCardTokenResource ColorTextHeading}" />
             <!-- 只有标题行与关闭按钮同排，因此仅标题为关闭按钮预留右侧空间。 -->
             <Setter Property="Padding"
                     Value="{atom:NotificationCardTokenResource NotificationTitlePadding}" />
@@ -186,11 +194,11 @@
 
         <Style Selector="^ /template/ ContentPresenter#Content">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{atom:NotificationCardTokenResource ColorText}" />
             <Setter Property="FontSize"
-                    Value="{atom:SharedTokenResource FontSize}" />
+                    Value="{atom:NotificationCardTokenResource FontSize}" />
             <Setter Property="LineHeight"
-                    Value="{atom:SharedTokenResource FontHeight}" />
+                    Value="{atom:NotificationCardTokenResource FontHeight}" />
             <!-- 描述在标题下方，不与关闭按钮同排，因此不预留右侧空间。 -->
         </Style>
 
@@ -208,30 +216,28 @@
                     Value="{atom:NotificationCardTokenResource NotificationCloseButtonSize}" />
             <Setter Property="Height"
                     Value="{atom:NotificationCardTokenResource NotificationCloseButtonSize}" />
-            <Setter Property="Padding"
-                    Value="{atom:NotificationCardTokenResource NotificationCloseButtonPadding}" />
             <Setter Property="CornerRadius"
-                    Value="{atom:SharedTokenResource BorderRadiusSM}" />
+                    Value="{atom:NotificationCardTokenResource BorderRadiusSM}" />
             <Setter Property="IconHeight"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:NotificationCardTokenResource IconSizeSM}" />
             <Setter Property="IconWidth"
-                    Value="{atom:SharedTokenResource IconSizeSM}" />
+                    Value="{atom:NotificationCardTokenResource IconSizeSM}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
+                    Value="{atom:NotificationCardTokenResource ColorIcon}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                    Value="{atom:NotificationCardTokenResource ColorBgTextHover}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:NotificationCardTokenResource ColorIconHover}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                    Value="{atom:NotificationCardTokenResource ColorBgTextActive}" />
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorIconHover}" />
+                    Value="{atom:NotificationCardTokenResource ColorIconHover}" />
         </Style>
 
         <!-- ============================= progress ============================== -->
@@ -242,5 +248,84 @@
                     Value="{atom:NotificationCardTokenResource NotificationProgressMargin}" />
         </Style>
 
+
+        <!-- ========================= severity surfaces ========================= -->
+        <!-- After the generic title, description and close rules so a severity keeps its colours, hover included. -->
+        <Style Selector="^[NotificationType=Information]">
+            <Setter Property="Background" Value="{atom:NotificationCardTokenResource InformationBg}" />
+            <Setter Property="BorderBrush" Value="{atom:NotificationCardTokenResource InformationBorderColor}" />
+            <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource InformationTitleColor}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource InformationDescriptionColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource InformationCloseIconColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource InformationCloseIconHoverColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource InformationCloseIconHoverColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[NotificationType=Success]">
+            <Setter Property="Background" Value="{atom:NotificationCardTokenResource SuccessBg}" />
+            <Setter Property="BorderBrush" Value="{atom:NotificationCardTokenResource SuccessBorderColor}" />
+            <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource SuccessTitleColor}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource SuccessDescriptionColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource SuccessCloseIconColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource SuccessCloseIconHoverColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource SuccessCloseIconHoverColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[NotificationType=Warning]">
+            <Setter Property="Background" Value="{atom:NotificationCardTokenResource WarningBg}" />
+            <Setter Property="BorderBrush" Value="{atom:NotificationCardTokenResource WarningBorderColor}" />
+            <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource WarningTitleColor}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource WarningDescriptionColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource WarningCloseIconColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource WarningCloseIconHoverColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource WarningCloseIconHoverColor}" />
+            </Style>
+        </Style>
+        <Style Selector="^[NotificationType=Error]">
+            <Setter Property="Background" Value="{atom:NotificationCardTokenResource ErrorBg}" />
+            <Setter Property="BorderBrush" Value="{atom:NotificationCardTokenResource ErrorBorderColor}" />
+            <Style Selector="^ /template/ atom|SelectableTextBlock#HeaderTitle">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource ErrorTitleColor}" />
+            </Style>
+            <Style Selector="^ /template/ ContentPresenter#Content">
+                <Setter Property="Foreground" Value="{atom:NotificationCardTokenResource ErrorDescriptionColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource ErrorCloseIconColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pointerover">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource ErrorCloseIconHoverColor}" />
+            </Style>
+            <Style Selector="^ /template/ atom|IconButton#PART_CloseButton:pressed">
+                <Setter Property="IconBrush" Value="{atom:NotificationCardTokenResource ErrorCloseIconHoverColor}" />
+            </Style>
+        </Style>
     </ControlTheme>
 </ResourceDictionary>

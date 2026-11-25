@@ -62,6 +62,21 @@ internal class DateTimePickerPanel : Panel
     public DateTimePickerPanelType PanelType { get => GetValue(PanelTypeProperty); set => SetValue(PanelTypeProperty, value); }
     public string ItemFormat { get => GetValue(ItemFormatProperty); set => SetValue(ItemFormatProperty, value); }
     public bool ShouldLoop { get => GetValue(ShouldLoopProperty); set => SetValue(ShouldLoopProperty, value); }
+
+    // Row metrics of the owning TimeView, forwarded to every generated row below.
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemMargin));
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemPadding));
+    internal static readonly StyledProperty<Thickness> ItemBackgroundInsetProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, Thickness>(nameof(ItemBackgroundInset));
+    internal static readonly StyledProperty<bool> CenterItemContentProperty =
+        AvaloniaProperty.Register<DateTimePickerPanel, bool>(nameof(CenterItemContent));
+
+    internal Thickness ItemMargin { get => GetValue(ItemMarginProperty); set => SetValue(ItemMarginProperty, value); }
+    internal Thickness ItemPadding { get => GetValue(ItemPaddingProperty); set => SetValue(ItemPaddingProperty, value); }
+    internal Thickness ItemBackgroundInset { get => GetValue(ItemBackgroundInsetProperty); set => SetValue(ItemBackgroundInsetProperty, value); }
+    internal bool CenterItemContent { get => GetValue(CenterItemContentProperty); set => SetValue(CenterItemContentProperty, value); }
     public DateTime FormatDate { get; set; } = DateTime.Today;
     public int MinimumValue
     {
@@ -216,6 +231,12 @@ internal class DateTimePickerPanel : Panel
             // Runtime-generated rows are not template parts. A ControlTheme cannot
             // TemplateBind through this panel to their owner's motion property.
             cell[!TimeViewCell.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            // Row metrics follow this panel directly; the rows read no inherited theme inputs.
+            cell[!MarginProperty] = this[!ItemMarginProperty];
+            cell[!MinHeightProperty] = this[!ItemHeightProperty];
+            cell[!TimeViewCell.PaddingProperty] = this[!ItemPaddingProperty];
+            cell[!TimeViewCell.ItemBackgroundInsetProperty] = this[!ItemBackgroundInsetProperty];
+            cell[!TimeViewCell.CenterItemContentProperty] = this[!CenterItemContentProperty];
             cell.PointerEntered += HandleCellPointerEntered;
             cell.PointerExited += HandleCellPointerExited;
             Children.Add(cell);
@@ -226,6 +247,11 @@ internal class DateTimePickerPanel : Panel
             cell.PointerEntered -= HandleCellPointerEntered;
             cell.PointerExited -= HandleCellPointerExited;
             cell.ClearValue(TimeViewCell.IsMotionEnabledProperty);
+            cell.ClearValue(MarginProperty);
+            cell.ClearValue(MinHeightProperty);
+            cell.ClearValue(TimeViewCell.PaddingProperty);
+            cell.ClearValue(TimeViewCell.ItemBackgroundInsetProperty);
+            cell.ClearValue(TimeViewCell.CenterItemContentProperty);
             Children.RemoveAt(Children.Count - 1);
         }
         _selectedValue = Normalize(_selectedValue);
@@ -260,7 +286,8 @@ internal class DateTimePickerPanel : Panel
             .MinBy(cell => Math.Abs(cell.Bounds.Center.Y - center));
         foreach (var cell in Children.OfType<TimeViewCell>())
         {
-            cell.IsSelected = cell == selected;
+            cell.IsSelected       = cell == selected;
+            cell.IsKeyboardActive = _isKeyboardActive && cell == selected;
         }
     }
 
@@ -369,9 +396,35 @@ internal class DateTimePickerPanel : Panel
     public void ScrollUp(int numItems = 1) => Offset = new Vector(0, Math.Max(0, Offset.Y - numItems * ItemHeight));
     public void ScrollDown(int numItems = 1) => Offset = new Vector(0, Offset.Y + numItems * ItemHeight);
 
+    private bool _isKeyboardActive;
+
+    /// <summary>The picker input steps this column with forwarded navigation keys; its selected cell is marked.</summary>
+    internal bool IsKeyboardActive
+    {
+        get => _isKeyboardActive;
+        set
+        {
+            if (_isKeyboardActive != value)
+            {
+                _isKeyboardActive = value;
+                RefreshSelection();
+            }
+        }
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        var next = e.Key switch
+        if (StepByKey(e.Key))
+        {
+            e.Handled = true;
+        }
+        base.OnKeyDown(e);
+    }
+
+    /// <summary>Steps the selected value for Up, Down, PageUp, PageDown, Home and End.</summary>
+    internal bool StepByKey(Key key)
+    {
+        var next = key switch
         {
             Key.Up => SelectedValue - Increment,
             Key.Down => SelectedValue + Increment,
@@ -381,17 +434,18 @@ internal class DateTimePickerPanel : Panel
             Key.PageDown => SelectedValue + Increment * 4,
             _ => (int?)null
         };
-        if (next is { } value)
+        if (next is not { } value)
         {
-            if (ShouldLoop && e.Key is Key.Up or Key.Down or Key.PageUp or Key.PageDown)
-            {
-                var index = (value - MinimumValue) / Increment;
-                value = MinimumValue + (index % ValueCount + ValueCount) % ValueCount * Increment;
-            }
-            SelectedValue = value;
-            e.Handled = true;
+            return false;
         }
-        base.OnKeyDown(e);
+
+        if (ShouldLoop && key is Key.Up or Key.Down or Key.PageUp or Key.PageDown)
+        {
+            var index = (value - MinimumValue) / Increment;
+            value = MinimumValue + (index % ValueCount + ValueCount) % ValueCount * Increment;
+        }
+        SelectedValue = value;
+        return true;
     }
 
     private TimeViewCell? CellFromSource(object? source)

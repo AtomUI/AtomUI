@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #ExpanderSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:Expander}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:Expander Name="ExpanderSemanticOwner"
+                            <atom:Expander x:Name="ExpanderSemanticOwner"
                                            IsExpanded="True"
                                            Header="This is panel header">
                                 <atom:TextBlock TextWrapping="Wrap" Text="This is panel body" />
@@ -268,11 +268,11 @@
                                     <Style Selector="atom|Expander.semantic-object">
                                         <Setter Property="BorderThickness" Value="1" />
                                         <atom:ExpanderHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
                                             <Setter Property="Padding" Value="16,12" />
                                         </atom:ExpanderHeaderStyle>
                                         <atom:ExpanderTitleStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:ExpanderTitleStyle>
                                         <atom:ExpanderBodyStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Padding" Value="16,12" />
@@ -281,11 +281,11 @@
                                     <Style Selector="atom|Expander.semantic-function">
                                         <Setter Property="BorderThickness" Value="1" />
                                         <atom:ExpanderHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                             <Setter Property="Padding" Value="16,12" />
                                         </atom:ExpanderHeaderStyle>
                                         <atom:ExpanderTitleStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:ExpanderTitleStyle>
                                         <atom:ExpanderIconStyle x:SetterTargetType="atom:IconButton">
                                             <Setter Property="IconWidth" Value="20" />

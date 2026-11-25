@@ -2,6 +2,36 @@
 
 本文档记录 Avatar 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-11
+
+- Fix
+  - 自定义 `Size` 派生的宽高、图标尺寸、`TextPadding` 与圆形圆角各自持有一个可替换的 Template 优先级值：反复改尺寸不再为同一属性累积值帧，`Size` 清除或形状不再是圆形时释放对应值；首次设置 `Size` 不再因 `SizeType` 同步回调重复配置。
+
+## 2026-11-08
+
+- Token
+  - Breaking：`GroupSpace`、`GroupOverlapping` 从 `AvatarToken` 移到新的 `AvatarGroupToken`（`Controls[AvatarGroup].GroupSpace` /
+    `GroupOverlapping`，默认值不变）；它们只被 AvatarGroup 消费，按 AvatarGroup 的有效全局 Token 派生。
+  - 主题改读控件有效 Token：Avatar 以 `AvatarTokenResource`、AvatarGroup 以 `AvatarGroupTokenResource` 读取全局 Token。
+
+## 2026-11-07
+
+- API
+  - `AbstractAvatar` 新增 `Stretch`（`StyledProperty<Stretch>`，默认 `Uniform`），模板中的 `ImagePresenter` 通过 `TemplateBinding` 消费。
+- Fix
+  - Circle 形状的圆角在 `Width`、`Size`、`SizeType` 变化时重新计算为 `Width / 2`；`Width` 非有限时跳过。此前圆角只在模板应用和 `Shape` 变化时写入，运行时改尺寸会留下过期圆角。
+  - `Size` 在首次赋值之后再次变化时同步更新 `Width`、`Height` 和图标尺寸。此前 SizeType 已切到 Custom，后续 `Size` 变化不再触发尺寸配置，停留在首次取值。
+  - `Size` 为 `NaN` 时尺寸配置直接返回，取代原先的 `Debug.Assert`。
+  - `Stretch` 为 `Fill`/`UniformToFill` 时图片解码覆盖头像框，非正方形图片铺满时不再欠采样；运行时切换 `Stretch` 按新目标重新解码。
+- Desktop 影响
+  - `Stretch` 默认 `Uniform` 与此前 `Image` 的隐式默认值一致，渲染不变。
+  - 仅在初始化时配置尺寸的用法不受影响；运行时改 `Size`、`SizeType` 的用法得到正确的宽高与圆角。
+  - 默认 `Uniform` 的解码尺寸不变；设为 `Fill`/`UniformToFill` 的头像遇到非正方形图片时解码像素增大到覆盖头像框。
+  - 已知边界：圆角和宽高由模板优先级写入，`Shape` 从 Circle 改回 Square、`Size` 恢复 `NaN` 时，模板优先级的值仍可能压过样式优先级的值，本次未改变。
+- Tests
+  - 新增 `AvatarStretchTests`：`Stretch` 默认值与模板绑定、Circle 圆角随 `Width` 与 `Size` 变化、随 `SizeType` 变化。
+  - `AsyncImageDecodeSizeTests.Avatar_uniform_to_fill_decodes_to_cover_box`：4:1 图片在 48 px `UniformToFill` 头像中按 192 x 48 覆盖解码，切回 `Uniform` 后按 48 px 宽解码。
+
 ## 2026-09-10
 
 - Behavior

@@ -60,13 +60,13 @@ ControlTemplate 和 Avalonia 样式优先级作为实现事实。
 | Selector | `.semantic-description` |
 | SelectorRoute | `/template/ .semantic-description` |
 | Style Type | `EmptyDescriptionStyle` |
-| ContractType | `TextBlock` |
+| ContractType | `ContentPresenter` |
 | Cardinality | `Single` |
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | 描述 `TextBlock` |
-| 职责 | 展示本地化默认描述或调用方提供的 `Description`。 |
+| AtomUI 节点 | 描述 `ContentPresenter#Description` |
+| 职责 | 展示本地化默认描述或调用方提供的 `Description`，文字与自定义内容都在该节点内（对应 Ant Design `.ant-empty-description`）。 |
 | 相关 API | `Description`、`IsDescriptionVisible`、`SizeType` |
 | 相关 Token | `DescriptionMargin`、`DescriptionMarginSM`、SharedToken 文本颜色 |
 | 稳定性 | stable since 6.2.0 |
@@ -106,11 +106,24 @@ ControlTemplate 和 Avalonia 样式优先级作为实现事实。
 Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，避免把公共定制契约锁死在 `Avalonia.Svg.Svg`；调用方可以
 安全定制通用布局、尺寸、透明度和变换属性，但不得通过 Semantic Style 接管 `Source`、`Path` 或内置图形配色状态。
 
+同一模板实例摘出再挂回时，图片恢复仍由 Empty 维护，不更换 image target；生成 Style 的定制应持续作用于同一节点。
+图片同步与资源暂缺规则见 [生命周期与模板接入](implementation.md#6-生命周期与模板接入)。
+
 ### 2.3 `description`
 
-`description` marker 静态放置在 `TextBlock`。`Description` 为 `null` 或空字符串时节点仍属于模板结构；
-`IsDescriptionVisible=false` 通过 `TemplateBinding` 隐藏节点，不动态创建或删除 Visual。因此 descriptor 按真实模板节点定义为
-`Single`，可见性不改变 marker 数量。
+`description` marker 静态放置在描述 `ContentPresenter` 上，与 Ant Design 一样，一个节点同时承载文字和自定义内容：
+
+- **字符串**：由呈现器内部的字符串数据模板生成 AtomUI `TextBlock`；该文本不设本地文本属性，字体、前景、对齐、换行、行高等从
+  description 节点继承。
+- **其他对象**：显示控件本身，或使用应用的数据模板。`TextElement` 与 `TextBlock` 的可继承文本属性同样继承到自定义内容中的文字。
+- **`null`**：按空字符串呈现，保留一行空文本的布局。
+
+因此 `EmptyDescriptionStyle` 对文字和自定义内容都生效。呈现器复用 `TextBlock` / `TextElement` 的同一组属性对象（`Foreground`、
+字体、`TextAlignment`、`TextWrapping`、`TextTrimming`、`LineHeight`、`LetterSpacing`、`MaxLines`），按原 `TextBlock` 契约
+写的这些设置继续有效；`TextBlock` 专有且不继承的属性（如 `TextDecorations`）不再生效，但也不会报错。
+
+`IsDescriptionVisible=false` 通过 `TemplateBinding` 隐藏节点，不动态创建或删除 Visual。descriptor 按真实模板节点定义为
+`Single`，可见性和内容类型都不改变 marker 数量。
 
 ### 2.4 `footer`
 
@@ -133,7 +146,7 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
             <Setter Property="Opacity" Value="0.72" />
         </atom:EmptyImageStyle>
 
-        <atom:EmptyDescriptionStyle x:SetterTargetType="atom:TextBlock">
+        <atom:EmptyDescriptionStyle x:SetterTargetType="ContentPresenter">
             <Setter Property="Foreground" Value="DarkSlateBlue" />
         </atom:EmptyDescriptionStyle>
 
@@ -157,7 +170,7 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
 不得使用以下写法：
 
 - `.semantic-root` 或模板外层 `StackPanel` selector。
-- `Svg#PART_SvgImage`、`TextBlock#Description` 或 Footer Presenter Name。
+- `Svg#PART_SvgImage`、`ContentPresenter#Description` 或 Footer Presenter Name。
 - `Control.semantic-image`、`:is(Control).semantic-image` 等类型前缀。
 - 复制 `/template/ .semantic-*` 完整 route 作为主要用户写法。
 - 进入 Footer 用户内容、SVG 内部绘制树或其他嵌套控件模板继续匹配 Empty Part。
@@ -173,7 +186,8 @@ Semantic target，也不改变 cardinality。`ContractType` 使用 `Control`，�
 | `Footer` 为字符串、Control 或模板化数据 | 1 | 1 | 1 | 1，可见 |
 | Default/Simple/ImagePath/ImageSource | 1 | 1，同一 target | 1 | 1 |
 | Large/Middle/Small | 1 | 1 | 1 | 1 |
-| 模板重套用 | 1 个新 root owner | 1 个新 target | 1 个新 target | 1 个新 target |
+| 同一模板实例摘出再挂回 | 1，同一 owner | 1，同一 target | 1，同一 target | 1，同一 target |
+| 模板重套用 | 1，同一 owner | 1 个新 target | 1 个新 target | 1 个新 target |
 
 Static marker 表达模板职责，内容存在性通过 `IsVisible` 和 Presenter 内容表达。不得为了模拟条件节点而在属性变化时动态创建、删除或
 重新标记 Visual。
@@ -218,6 +232,7 @@ Empty 不提供 Semantic Part Theme 替换，也不跨 VisualRoot。所有非 ro
 - `IsDescriptionVisible` 直接控制 description 节点可见性，模板应用前设置、运行时切换和 re-template 后都正确。
 - Footer 支持 `null`、字符串、Control、`FooterTemplate` 和运行时替换，且旧内容不被 owner 保留。
 - Default、Simple、ImagePath、ImageSource 切换不改变 image marker 身份。
+- 同一模板实例摘挂后图片恢复，生成的专用 Style 仍命中同一 target，不通过代码设置图片节点的样式属性补偿。
 - Large、Middle、Small 的 image 高度、description margin 和 footer margin 使用完整一致的尺寸基线。
 - root 的背景、边框、圆角、Padding 和 `StrokeDashArray` 投影生效，三个生成 Style 在 Application、局部 Styles 与
   owner class scope 中遵循 Avalonia 样式优先级。

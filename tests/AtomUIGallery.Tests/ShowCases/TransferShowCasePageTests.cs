@@ -71,10 +71,14 @@ public class TransferShowCasePageTests
         source.ShouldContain("x:SetterTargetType=\"TemplatedControl\"");
         source.ShouldContain("x:SetterTargetType=\"atom:PixelAlignedBorder\"");
         source.ShouldContain("x:SetterTargetType=\"StackPanel\"");
-        source.ShouldContain("Value=\"#80FAFAFA\"");
-        source.ShouldContain("Value=\"#99FFF2E8\"");
-        source.ShouldContain("Value=\"#99F6FFED\"");
-        source.ShouldContain("Value=\"#B7EB8F\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferSectionBrush}\"");
+        source.ShouldContain("x:Key=\"TransferSectionBrush\" Color=\"#80FAFAFA\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferActionsBrush}\"");
+        source.ShouldContain("x:Key=\"TransferActionsBrush\" Color=\"#99FFF2E8\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferHighlightedSectionBrush}\"");
+        source.ShouldContain("x:Key=\"TransferHighlightedSectionBrush\" Color=\"#99F6FFED\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferHighlightedSectionBorderBrush}\"");
+        source.ShouldContain("x:Key=\"TransferHighlightedSectionBorderBrush\" Color=\"#B7EB8F\"");
         source.ShouldContain("Value=\"#8DBCC7\"");
         CountOccurrences(source, "TargetKeys=\"{Binding SemanticDemoTargetKeys}\"").ShouldBe(2);
         source.ShouldNotContain("IsMotionEnabled=\"False\"");
@@ -87,8 +91,10 @@ public class TransferShowCasePageTests
         CountOccurrences(source, "SemanticPartFooterText").ShouldBe(4);
         CountOccurrences(source, "TargetKeys=\"{Binding SemanticPreviewTargetKeys}\"").ShouldBe(1);
         CountOccurrences(source, "TargetKeys=\"{Binding SemanticTreePreviewTargetKeys}\"").ShouldBe(1);
-        source.ShouldContain("Value=\"#FFF7E6\"");
-        source.ShouldContain("Value=\"#E6F7FF\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferSourceSectionBrush}\"");
+        source.ShouldContain("x:Key=\"TransferSourceSectionBrush\" Color=\"#FFF7E6\"");
+        source.ShouldContain("Value=\"{DynamicResource TransferTargetSectionBrush}\"");
+        source.ShouldContain("x:Key=\"TransferTargetSectionBrush\" Color=\"#E6F7FF\"");
         english.ShouldContain("<unit id=\"SemanticPartFooterText\">");
         english.ShouldContain("<source>Custom Footer</source>");
 

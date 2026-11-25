@@ -29,7 +29,7 @@
                                                      SemanticOwner="{Binding #FloatButtonSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:FloatButton}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:FloatButton Name="FloatButtonSemanticOwner"
+                                <atom:FloatButton x:Name="FloatButtonSemanticOwner"
                                                   Shape="Square"
                                                   Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
                                                   Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
@@ -52,7 +52,7 @@
                                                      SemanticOwner="{Binding #FloatButtonGroupSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:FloatButtonGroup}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:FloatButtonGroup Name="FloatButtonGroupSemanticOwner"
+                                <atom:FloatButtonGroup x:Name="FloatButtonGroupSemanticOwner"
                                                        Trigger="Click"
                                                        IsOpen="True"
                                                        IsMotionEnabled="False"
@@ -78,7 +78,7 @@
                                                      SemanticOwner="{Binding #BackTopFloatButtonSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:BackTopFloatButton}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:BackTopFloatButton Name="BackTopFloatButtonSemanticOwner"
+                                <atom:BackTopFloatButton x:Name="BackTopFloatButtonSemanticOwner"
                                                          Shape="Square"
                                                          Content="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}"
                                                          HorizontalAlignment="Center" />
@@ -112,7 +112,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonHost />
                                     </Panel>
@@ -129,7 +129,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonHost ButtonType="Default"
                                                               Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}"
@@ -150,7 +150,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonHost ButtonType="Primary"
                                                               Shape="Circle"
@@ -173,18 +173,85 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
-                                        <atom:FloatButtonHost Shape="Square"
-                                                              Icon="{antdicons:AntDesignIconProvider FileTextOutlined}" Margin="0"
-                                                              FloatOffsetX="145"
-                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
-                                        <atom:FloatButtonHost Shape="Square"
-                                                              FloatOffsetX="80"
-                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
-                                        <atom:FloatButtonHost Shape="Square"
+                                        <atom:FloatButtonHost Shape="Square" Placement="Center"
                                                               Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
-                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}" />
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}">
+                                            <atom:FloatButtonHost.FloatOffsetX>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="0X" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetX>
+                                            <atom:FloatButtonHost.FloatOffsetY>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="0Y" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetY>
+                                        </atom:FloatButtonHost>
+                                        <atom:FloatButtonHost Shape="Square" Placement="Center"
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}">
+                                            <atom:FloatButtonHost.FloatOffsetX>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="1X" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetX>
+                                            <atom:FloatButtonHost.FloatOffsetY>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="1Y" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetY>
+                                        </atom:FloatButtonHost>
+                                        <atom:FloatButtonHost Shape="Square" Placement="Center"
+                                                              Icon="{antdicons:AntDesignIconProvider FileTextOutlined}"
+                                                              Description="{gallery:FloatButtonShowCaseLangResource P2DescriptionHelpInfo}">
+                                            <atom:FloatButtonHost.FloatOffsetX>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="2X" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetX>
+                                            <atom:FloatButtonHost.FloatOffsetY>
+                                                <MultiBinding Converter="{x:Static vm:FloatButtonShowCase.DescriptionOffset}" ConverterParameter="2Y" x:CompileBindings="True">
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Width" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Viewport.Height" />
+                                                    <Binding Path="$parent[atom:ScrollViewer].Bounds.Width" />
+                                                    <atom:FloatButtonTokenResource Kind="ControlHeight" />
+                                                    <atom:FloatButtonTokenResource Kind="FloatOffsetY" />
+                                                    <atom:FloatButtonTokenResource Kind="FontSize" />
+                                                    <atom:FloatButtonTokenResource Kind="PaddingLG" />
+                                                </MultiBinding>
+                                            </atom:FloatButtonHost.FloatOffsetY>
+                                        </atom:FloatButtonHost>
                                     </Panel>
                                 </Border>
                             </atom:ScrollViewer>
@@ -199,7 +266,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonHost FloatOffsetX="80"
                                                               Tooltip="{gallery:FloatButtonShowCaseLangResource P2TooltipSinceN5N25N0}" TooltipColor="blue" />
@@ -218,7 +285,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonGroupHost Shape="Square" FloatOffsetX="80">
                                             <atom:FloatButton Icon="{antdicons:AntDesignIconProvider QuestionCircleOutlined}" />
@@ -246,7 +313,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonGroupHost Shape="Circle"
                                                                    Trigger="Hover"
@@ -282,11 +349,11 @@
                                                    VerticalAlignment="Top"
                                                    IsChecked="{Binding IsOpened, Mode=TwoWay}" />
                                 <atom:ScrollViewer Height="300">
-                                    <Border Background="White">
+                                    <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                         <Panel Height="500">
                                             <atom:FloatButtonGroupHost Shape="Square"
                                                                        FloatOffsetX="80"
-                                                                       Trigger="Hover"
+                                                                       Trigger="Click"
                                                                        Icon="{antdicons:AntDesignIconProvider CustomerServiceOutlined}"
                                                                        IsOpen="{Binding IsOpened}">
                                                 <atom:FloatButton Icon="{antdicons:AntDesignIconProvider WechatOutlined}" />
@@ -318,7 +385,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="400">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="600">
                                         <atom:FloatButtonGroupHost Shape="Circle"
                                                                    Trigger="Click"
@@ -370,7 +437,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="1000">
                                         <StackPanel>
                                             <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
@@ -397,7 +464,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="1000">
                                         <StackPanel>
                                             <TextBlock Text="{gallery:FloatButtonShowCaseLangResource P2TextScrollToBottom}" />
@@ -431,7 +498,7 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <atom:ScrollViewer Height="300">
-                                <Border Background="White">
+                                <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                     <Panel Height="500">
                                         <atom:FloatButtonHost FloatOffsetX="145" IsBadgeEnabled="True" IsDotBadge="True" />
                                         <atom:FloatButtonGroupHost Shape="Circle"
@@ -470,7 +537,7 @@
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
                             <Grid Height="300">
                                 <atom:ScrollViewer>
-                                    <Border Background="White">
+                                    <Border Background="{atom:SharedTokenResource ColorBgContainer}">
                                         <Panel Height="500">
                                             <atom:FloatButtonHost ButtonType="Primary"
                                                                   Icon="{antdicons:AntDesignIconProvider ThunderboltOutlined}"
@@ -531,7 +598,7 @@
                     IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:FloatButtonViewModel">
-                            <Border Background="White"
+                            <Border Background="{atom:SharedTokenResource ColorBgContainer}"
                                     Padding="24"
                                     HorizontalAlignment="Left">
                                 <Border.Styles>

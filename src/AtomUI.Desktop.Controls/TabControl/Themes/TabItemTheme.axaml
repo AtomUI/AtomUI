@@ -10,33 +10,36 @@
         </ControlTheme.BasedOn>
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
+            <Setter Property="Margin" Value="{atom:TabTokenResourceBinding HorizontalItemMargin}" />
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource HorizontalItemPaddingLG}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource HorizontalItemPadding}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource HorizontalItemPaddingSM}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
             <Style Selector="^[SizeType=Large]">
+                <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
                 <Setter Property="Padding" Value="8,4" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
+                <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
                 <Setter Property="Padding" Value="8,4" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
+                <!-- layout: compact line-tab padding for left / right placement (theme-internal, see token.md) -->
                 <Setter Property="Padding" Value="8,4" />
             </Style>
         </Style>

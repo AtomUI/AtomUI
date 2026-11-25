@@ -1,10 +1,19 @@
 using AtomUI.Controls;
 using AtomUI.Controls.Commons;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme.Resources;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
+
+internal static class TimelineIndicatorResources
+{
+    public static TimelineIndicatorTokenResourceKeys IndicatorTokenResourceKeys { get; } = new(
+        ControlTokenResourceKey.Global(TimelineTokens.Identity, SharedTokenKind.RelativeLineHeight),
+        ControlTokenResourceKey.Global(TimelineTokens.Identity, SharedTokenKind.ColorPrimary));
+}
 
 public partial class Timeline : AbstractTimeline
 {

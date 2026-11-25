@@ -25,7 +25,7 @@
                                                  SemanticOwner="{Binding #CheckBoxSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:CheckBox}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:CheckBox Name="CheckBoxSemanticOwner"
+                            <atom:CheckBox x:Name="CheckBoxSemanticOwner"
                                            Content="{gallery:CheckBoxShowCaseLangResource P2ContentCheckbox}" />
                         </gallery:SemanticPartPreview.PreviewContent>
                         <gallery:SemanticPartPreview.PartDescriptions>

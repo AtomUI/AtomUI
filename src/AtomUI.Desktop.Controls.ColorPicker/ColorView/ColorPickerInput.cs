@@ -17,9 +17,11 @@ internal class ColorPickerInput : TemplatedControl
     public static readonly StyledProperty<bool> IsFormatEnabledProperty =
         AbstractColorPickerView.IsFormatEnabledProperty.AddOwner<ColorPickerInput>();
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     public static readonly StyledProperty<HsvColor> ColorValueProperty =
         AvaloniaProperty.Register<ColorPickerInput, HsvColor>(nameof(ColorValue),
             Colors.White.ToHsv());
+#pragma warning restore ATOMUIGEN044
 
     public static readonly StyledProperty<bool> IsClearEnabledProperty =
         AbstractColorPickerView.IsClearEnabledProperty.AddOwner<ColorPickerInput>();

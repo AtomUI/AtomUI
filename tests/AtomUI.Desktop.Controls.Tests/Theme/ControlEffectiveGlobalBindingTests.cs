@@ -4,6 +4,7 @@ using AtomUI.Theme.Configuration;
 using AtomUI.Theme.DesignTokens;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Shouldly;
 using Xunit;
 using AtomUIDrawer = AtomUI.Desktop.Controls.Drawer;
@@ -31,7 +32,6 @@ public class ControlEffectiveGlobalBindingTests
                      .WithControl(
                          DrawerTokens.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.EnableMotion), "true")
                              .Build())
                      .Build()
@@ -47,16 +47,23 @@ public class ControlEffectiveGlobalBindingTests
     [Fact]
     public void Internal_Part_Binding_Uses_The_Public_Control_Effective_Global_Token()
     {
-        var timeView = new TimeView();
+        // The time view is an identity-less part of the picker popup: its separator width reads the hosting picker's
+        // effective LineWidth (the picker forwards its Token owner to the popup presenter).
+        var picker = new TimePicker { IsPopupPinnedOpen = true };
+        // The popup opens in the overlay layer of the layer manager (the plain test window has none).
+        var layers = new Avalonia.Controls.Primitives.VisualLayerManager { Child = picker };
+        typeof(Avalonia.Controls.Primitives.VisualLayerManager)
+            .GetProperty("EnablePopupOverlayLayer",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .SetValue(layers, true);
         var provider = new ThemeConfigProvider
         {
-            Child = timeView,
+            Child = layers,
             Config = new ThemeConfigBuilder()
                      .WithToken(nameof(DesignToken.LineWidth), "1")
                      .WithControl(
                          TimePickerTokens.Identity,
                          new ControlThemeConfigBuilder()
-                             .WithAlgorithm(ControlAlgorithmMode.Disabled)
                              .WithToken(nameof(DesignToken.LineWidth), "4")
                              .Build())
                      .Build()
@@ -66,7 +73,11 @@ public class ControlEffectiveGlobalBindingTests
             throw new InvalidOperationException(args.Exception?.Message ?? "Theme compilation failed.");
         };
 
-        ShowInWindow(provider, () => timeView.SpacerWidth.ShouldBe(4d));
+        ShowInWindow(provider, () =>
+        {
+            var timeView = TopLevel.GetTopLevel(picker)!.GetVisualDescendants().OfType<TimeView>().Single();
+            timeView.SpacerWidth.ShouldBe(4d);
+        });
     }
 
     private static void ShowInWindow(Control content, Action assertion)

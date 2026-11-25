@@ -38,7 +38,7 @@ internal static class StartupThemeLinker
                 {
                     throw new InvalidDataException(context + " has no supported build contracts.");
                 }
-                if (requirement.Scope != "global")
+                if (requirement.Scope is not ("global" or "language"))
                 {
                     var key = requirement.Catalog + "\u001f" + requirement.ControlId;
                     var control = packages.SelectMany(package => package.Controls.Select(value => (Package: package, Control: value)))
@@ -56,7 +56,9 @@ internal static class StartupThemeLinker
                 {
                     continue;
                 }
-                var tokenKey = requirement.Scope == "own" ? requirement.Catalog + "\u001f" + requirement.ControlId + "\u001f" + requirement.TokenName : "\u001f\u001f" + requirement.TokenName;
+                var tokenKey = requirement.Scope is "own" or "language"
+                    ? requirement.Catalog + "\u001f" + requirement.ControlId + "\u001f" + requirement.TokenName
+                    : "\u001f\u001f" + requirement.TokenName;
                 if (!contracts.Tokens.TryGetValue(tokenKey, out var token) || token.Contract != 1 ||
                     token.Contract != requirement.ValueContractVersion || token.Stage != requirement.Stage ||
                     ThemeLiteralCodec.NormalizeType(token.ValueType) != ThemeLiteralCodec.NormalizeType(requirement.ValueType) ||

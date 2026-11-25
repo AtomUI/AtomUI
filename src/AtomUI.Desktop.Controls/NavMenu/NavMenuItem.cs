@@ -6,6 +6,8 @@ using AtomUI.Exceptions;
 using AtomUI.Input;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Converters;
@@ -50,6 +52,12 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
                              IMenuChildSelectable
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<NavMenuItem>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<NavMenuItem>();
     
     public static readonly StyledProperty<ICommand?> CommandProperty =
         Button.CommandProperty.AddOwner<NavMenuItem>(new(enableDataValidation: true));
@@ -90,7 +98,22 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     
     public static readonly StyledProperty<EntityKey?> ItemKeyProperty =
         AvaloniaProperty.Register<NavMenuItem, EntityKey?>(nameof(ItemKey));
+
+    public static readonly StyledProperty<bool> IsDangerProperty =
+        AvaloniaProperty.Register<NavMenuItem, bool>(nameof(IsDanger));
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public ICommand? Command
     {
         get => GetValue(CommandProperty);
@@ -119,6 +142,15 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     {
         get => GetValue(InputGestureProperty);
         set => SetValue(InputGestureProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// </summary>
+    public bool IsDanger
+    {
+        get => GetValue(IsDangerProperty);
+        set => SetValue(IsDangerProperty, value);
     }
     
     public bool IsSelected
@@ -251,14 +283,12 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     #endregion
     
     #region 内部属性定义
+
     
     internal static readonly DirectProperty<NavMenuItem, double> EffectivePopupMinWidthProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, double>(nameof(EffectivePopupMinWidth),
             o => o.EffectivePopupMinWidth,
             (o, v) => o.EffectivePopupMinWidth = v);
-
-    internal static readonly StyledProperty<double> PopupMinWidthProperty =
-        AvaloniaProperty.Register<NavMenuItem, double>(nameof(PopupMinWidth));
 
     internal static readonly DirectProperty<NavMenuItem, NavMenuMode> ModeProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, NavMenuMode>(nameof(Mode),
@@ -296,6 +326,12 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             nameof(IsKeyboardActive),
             o => o.IsKeyboardActive,
             (o, v) => o.IsKeyboardActive = v);
+
+    internal static readonly DirectProperty<NavMenuItem, bool> IsKeyboardFocusOutlineVisibleProperty =
+        AvaloniaProperty.RegisterDirect<NavMenuItem, bool>(
+            nameof(IsKeyboardFocusOutlineVisible),
+            o => o.IsKeyboardFocusOutlineVisible,
+            (o, v) => o.IsKeyboardFocusOutlineVisible = v);
 
     internal static readonly DirectProperty<NavMenuItem, bool> IsPointerHoldProperty =
         AvaloniaProperty.RegisterDirect<NavMenuItem, bool>(
@@ -346,17 +382,13 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
             o => o.EffectiveCollapsedTooltip);
 
     private double _effectivePopupMinWidth;
+    private double _popupMinWidth;
+    private OwnerTokenSet? _popupMinWidthTokens;
 
     internal double EffectivePopupMinWidth
     {
         get => _effectivePopupMinWidth;
         set => SetAndRaise(EffectivePopupMinWidthProperty, ref _effectivePopupMinWidth, value);
-    }
-
-    internal double PopupMinWidth
-    {
-        get => GetValue(PopupMinWidthProperty);
-        set => SetValue(PopupMinWidthProperty, value);
     }
 
     internal TimeSpan OpenCloseMotionDuration
@@ -424,6 +456,18 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     {
         get => _isKeyboardActive;
         set => SetAndRaise(IsKeyboardActiveProperty, ref _isKeyboardActive, value);
+    }
+
+    private bool _isKeyboardFocusOutlineVisible;
+
+    /// <summary>
+    /// The item is the keyboard active item while the menu shows keyboard focus, so its header shows the
+    /// focus outline (Ant Design: <c>.ant-menu-item:focus-visible</c>).
+    /// </summary>
+    internal bool IsKeyboardFocusOutlineVisible
+    {
+        get => _isKeyboardFocusOutlineVisible;
+        set => SetAndRaise(IsKeyboardFocusOutlineVisibleProperty, ref _isKeyboardFocusOutlineVisible, value);
     }
 
     private bool _isPointerHold;
@@ -575,6 +619,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         Level              = 0;
         IsTopLevel         = false;
         UpdatePseudoClasses();
+        ConfigureEffectivePopupMinWidth();
     }
     
     static NavMenuItem()
@@ -766,8 +811,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         {
             HasSubMenu = ItemCount > 0;
         }
-        else if (change.Property == BoundsProperty ||
-                 change.Property == PopupMinWidthProperty)
+        else if (change.Property == BoundsProperty || change.Property == ModeProperty)
         {
             ConfigureEffectivePopupMinWidth();
         }
@@ -880,20 +924,23 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     
     private void ConfigureEffectivePopupMinWidth()
     {
-        if (IsTopLevel)
+        if (!IsTopLevel || OwnerMenu is not { } menu || Mode == NavMenuMode.Inline)
         {
-            if (OwnerMenu is { } navMenu)
-            {
-                if (navMenu.EffectiveMode == NavMenuMode.Horizontal)
-                {
-                    EffectivePopupMinWidth = Math.Max(_itemHeader?.Bounds.Width ?? Bounds.Width, PopupMinWidth);
-                }
-                else
-                {
-                    EffectivePopupMinWidth = PopupMinWidth;
-                }
-            }
+            _popupMinWidthTokens?.Dispose();
+            _popupMinWidthTokens = null;
+            _popupMinWidth = 0;
+            return;
         }
+
+        if (_popupMinWidthTokens is null)
+        {
+            _popupMinWidthTokens = new OwnerTokenSet(this, 1, ConfigureEffectivePopupMinWidth);
+            _popupMinWidthTokens.SetResourceKey(0, NavMenuTokenKind.MenuPopupMinWidth);
+        }
+        _popupMinWidth = NavMenuPopupFrame.ReadLengthResource(_popupMinWidthTokens.GetValue(0), _popupMinWidth, 0);
+        EffectivePopupMinWidth = menu.EffectiveMode == NavMenuMode.Horizontal
+            ? Math.Max(_itemHeader?.Bounds.Width ?? Bounds.Width, _popupMinWidth)
+            : _popupMinWidth;
     }
 
     private void UpdatePseudoClasses()

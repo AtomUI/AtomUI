@@ -1,10 +1,13 @@
+using System.Globalization;
 using AtomUI.Animations;
 using AtomUI.Controls.Primitives;
 using AtomUI.Media;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -12,15 +15,12 @@ using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
-internal class RadioIndicator : TemplatedControl
+internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
     public static readonly StyledProperty<bool?> IsCheckedProperty =
         ToggleButton.IsCheckedProperty.AddOwner<RadioIndicator>();
-
-    public static readonly StyledProperty<double> RadioSizeProperty =
-        AvaloniaProperty.Register<RadioIndicator, double>(nameof(RadioSize));
 
     public static readonly StyledProperty<double> PaddingInlineProperty =
         AvaloniaProperty.Register<RadioIndicator, double>(nameof(PaddingInline));
@@ -31,24 +31,10 @@ internal class RadioIndicator : TemplatedControl
     public static readonly StyledProperty<double> RadioDotEffectSizeProperty =
         AvaloniaProperty.Register<RadioIndicator, double>(nameof(RadioDotEffectSize));
 
-    public static readonly StyledProperty<double> DotSizeValueProperty =
-        AvaloniaProperty.Register<RadioIndicator, double>(
-            nameof(DotSizeValue));
-
-    public static readonly StyledProperty<double> DotPaddingProperty =
-        AvaloniaProperty.Register<RadioIndicator, double>(
-            nameof(DotPadding));
-
     public bool? IsChecked
     {
         get => GetValue(IsCheckedProperty);
         set => SetValue(IsCheckedProperty, value);
-    }
-
-    public double RadioSize
-    {
-        get => GetValue(RadioSizeProperty);
-        set => SetValue(RadioSizeProperty, value);
     }
 
     public double PaddingInline
@@ -69,27 +55,24 @@ internal class RadioIndicator : TemplatedControl
         set => SetValue(RadioDotEffectSizeProperty, value);
     }
 
-    public double DotSizeValue
-    {
-        get => GetValue(DotSizeValueProperty);
-        set => SetValue(DotSizeValueProperty, value);
-    }
-
-    public double DotPadding
-    {
-        get => GetValue(DotPaddingProperty);
-        set => SetValue(DotPaddingProperty, value);
-    }
-
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<RadioDotGeometryTokenResourceKeys?> DotGeometryTokenResourceKeysProperty =
+        AvaloniaProperty.Register<RadioIndicator, RadioDotGeometryTokenResourceKeys?>(nameof(DotGeometryTokenResourceKeys));
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<RadioIndicator>();
 
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<RadioIndicator>();
+
+    internal RadioDotGeometryTokenResourceKeys? DotGeometryTokenResourceKeys
+    {
+        get => GetValue(DotGeometryTokenResourceKeysProperty);
+        set => SetValue(DotGeometryTokenResourceKeysProperty, value);
+    }
 
     internal bool IsMotionEnabled
     {
@@ -108,6 +91,8 @@ internal class RadioIndicator : TemplatedControl
     private IPen? _cachedPen;
     private WaveSpiritDecorator? _waveSpiritDecorator;
     private DispatcherOperation? _pendingWave;
+    private OwnerTokenSet? _geometryTokens;
+    private (double RadioSize, double DotSize, double DotPadding) _geometry;
     
     private readonly TransitionInitializationSession _transitionInitialization;
 
@@ -139,6 +124,8 @@ internal class RadioIndicator : TemplatedControl
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _geometryTokens?.Dispose();
+        _geometryTokens = null;
         _pendingWave?.Abort();
         _pendingWave = null;
         _transitionInitialization.Reset();
@@ -154,7 +141,7 @@ internal class RadioIndicator : TemplatedControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked.HasValue && IsChecked.Value);
+        UpdateGeometryTokenSubscription();
         UpdatePseudoClasses();
     }
 
@@ -186,12 +173,58 @@ internal class RadioIndicator : TemplatedControl
 
         if (this.IsAttachedToVisualTree())
         {
-            if (change.Property == IsPointerOverProperty ||
-                change.Property == IsCheckedProperty ||
-                change.Property == IsEnabledProperty)
+            if (change.Property == DotGeometryTokenResourceKeysProperty)
             {
-                RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked.HasValue && IsChecked.Value);
+                UpdateGeometryTokenSubscription();
             }
+            else if (change.Property == IsPointerOverProperty || change.Property == IsCheckedProperty ||
+                     change.Property == IsEnabledProperty)
+            {
+                RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked == true);
+            }
+        }
+    }
+
+    private void UpdateGeometryTokenSubscription()
+    {
+        _geometryTokens?.Dispose();
+        _geometryTokens = null;
+        if (DotGeometryTokenResourceKeys is { } keys)
+        {
+            _geometryTokens = new OwnerTokenSet(this, 3, RefreshGeometry);
+            _geometryTokens.SetResourceKey(0, keys.RadioSize);
+            _geometryTokens.SetResourceKey(1, keys.DotSize);
+            _geometryTokens.SetResourceKey(2, keys.DotPadding);
+        }
+        RefreshGeometry();
+    }
+
+    private void RefreshGeometry()
+    {
+        _geometry = (
+            ReadNumber(_geometryTokens?.GetValue(0), _geometry.RadioSize),
+            ReadNumber(_geometryTokens?.GetValue(1), _geometry.DotSize),
+            ReadNumber(_geometryTokens?.GetValue(2), _geometry.DotPadding));
+        RadioDotEffectSize = CalculateDotSize(IsEnabled, IsChecked == true);
+    }
+
+    private static double ReadNumber(object? value, double previous)
+    {
+        if (value is double number)
+        {
+            return number;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        try
+        {
+            return value is IConvertible convertible ? convertible.ToDouble(CultureInfo.CurrentCulture) : 0;
+        }
+        catch (Exception error) when (error is FormatException or InvalidCastException or OverflowException)
+        {
+            return 0;
         }
     }
 
@@ -230,20 +263,24 @@ internal class RadioIndicator : TemplatedControl
         {
             if (isEnabled)
             {
-                targetValue = DotSizeValue;
+                targetValue = _geometry.DotSize;
             }
             else
             {
-                targetValue = RadioSize - DotPadding * 2;
+                targetValue = _geometry.RadioSize - _geometry.DotPadding * 2;
             }
         }
         else
         {
-            targetValue = DotSizeValue * 0.6;
+            targetValue = _geometry.DotSize * 0.6;
         }
 
         return targetValue;
     }
+
+    // Without an explicit CornerRadius the indicator renders as a circle.
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
+        IsSet(CornerRadiusProperty) ? CornerRadius : new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
     public sealed override void Render(DrawingContext context)
     {
@@ -271,3 +308,5 @@ internal class RadioIndicator : TemplatedControl
     }
 
 }
+
+internal sealed record RadioDotGeometryTokenResourceKeys(object RadioSize, object DotSize, object DotPadding);

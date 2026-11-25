@@ -247,12 +247,12 @@ public partial class NotificationCard : ContentControl,
 
     bool IFeedbackStackItem.IsProgressVisible => IsShowProgress;
 
-    void IFeedbackStackItem.RequestClose()
+    void IFeedbackLifetimeItem.RequestClose()
     {
         Close();
     }
 
-    void IFeedbackStackItem.UpdateRemaining(TimeSpan remaining)
+    void IFeedbackLifetimeItem.UpdateRemaining(TimeSpan remaining)
     {
         Expiration = remaining;
     }

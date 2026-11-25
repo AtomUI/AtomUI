@@ -27,11 +27,18 @@ public sealed class DataGridRowReorderColumn : DataGridColumn
         var handle = new DataGridRowReorderHandle();
         handle.OwningGrid                                         = OwningGrid;
         handle.Focusable                                          = false;
-        handle[!DataGridRowReorderHandle.IsMotionEnabledProperty] = OwningGrid[!DataGrid.IsMotionEnabledProperty];
-        handle[!DataGridRowReorderHandle.IsEnabledProperty]       = OwningGrid[!DataGrid.IsEnabledProperty];
+        handle.BindOwningGridProperties(OwningGrid);
         return handle;
     }
-    
+
+    internal override void ReleaseElement(Control element)
+    {
+        if (element is DataGridRowReorderHandle handle)
+        {
+            handle.ReleaseOwningGridBindings();
+        }
+    }
+
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
     {
         return null;

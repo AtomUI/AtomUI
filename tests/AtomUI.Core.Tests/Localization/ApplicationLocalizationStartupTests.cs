@@ -1,3 +1,4 @@
+using AtomUI.Core.Tests.Theme;
 using AtomUI.Localization;
 using Avalonia;
 using Avalonia.Controls;
@@ -25,7 +26,7 @@ public class ApplicationLocalizationStartupTests
 
             application.GetLanguageManager().ShouldBeNull();
             application.GetLocalizer().ShouldBeNull();
-            ApplicationStartup.AttachWith(application, static _ => { });
+            TestDesignLanguages.AttachWithAntDesign(application, static _ => { });
 
             var scope = ApplicationScopeRegistry.Get(application).ShouldNotBeNull();
             application.GetLanguageManager().ShouldBeSameAs(scope.LanguageManager);
@@ -43,7 +44,7 @@ public class ApplicationLocalizationStartupTests
         {
             var application = Application.Current!;
 
-            ApplicationStartup.AttachWith(application, builder =>
+            TestDesignLanguages.AttachWithAntDesign(application, builder =>
             {
                 builder.Localization.AddTranslationBundle(new TranslationBundleDescriptor(
                     "AtomUI.Core.Tests:AtomUI.Core.Tests.Localization.GeneratedStartupLangResourceKind",
@@ -72,7 +73,7 @@ public class ApplicationLocalizationStartupTests
             var application = (TestApplication)Application.Current!;
             var configured = false;
             application.ShouldBeAssignableTo<IGeneratedApplicationLanguageBootstrap>();
-            ApplicationStartup.AttachWith(application, builder =>
+            TestDesignLanguages.AttachWithAntDesign(application, builder =>
             {
                 configured = true;
                 builder.UseLanguages(
@@ -96,7 +97,7 @@ public class ApplicationLocalizationStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = (TestApplication)Application.Current!;
-            ApplicationStartup.AttachWith(application, builder => builder.UseLanguages(
+            TestDesignLanguages.AttachWithAntDesign(application, builder => builder.UseLanguages(
                 LanguageTags.EnUS,
                 [LanguageTags.EnUS, LanguageTags.ZhCN]));
 
@@ -130,10 +131,10 @@ public class ApplicationLocalizationStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            ApplicationStartup.AttachWith(application, static _ => { });
+            TestDesignLanguages.AttachWithAntDesign(application, static _ => { });
 
             var exception = Should.Throw<InvalidOperationException>(
-                () => ApplicationStartup.AttachWith(application, static _ => { }));
+                () => TestDesignLanguages.AttachWithAntDesign(application, static _ => { }));
 
             exception.Message.ShouldContain("already initialized");
         });

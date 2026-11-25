@@ -99,7 +99,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     
     internal double LayoutRoundedWidth { get; private set; }
 
-    internal BindingExpressionBase? CellEditBinding => _editBinding;
+    internal Control? EditingElement => _editingElement;
 
     IDataGridColumnGroupItem? IDataGridColumnGroupItem.GroupParent { get; set; }
     ObservableCollection<IDataGridColumnGroupItem> IDataGridColumnGroupItem.GroupChildren { get; } = new();
@@ -117,13 +117,11 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     private bool? _isReadOnly;
     private double? _maxWidth;
     private double? _minWidth;
-    private bool _settingWidthInternally;
     private int _displayIndexWithFiller;
     private object? _header;
     private IDataTemplate? _headerTemplate;
     private DataGridColumnHeader? _headerCell;
     private Control? _editingElement;
-    private BindingExpressionBase? _editBinding;
     private ControlTheme? _cellTheme;
     private Classes? _cellStyleClasses;
     private bool _setWidthInternalNoCallback;
@@ -355,6 +353,13 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
         }
     }
 
+    /// <summary>
+    /// Pairs with GenerateElement: called when the cell's row is discarded for good, releasing the element's bindings to the grid.
+    /// </summary>
+    internal virtual void ReleaseElement(Control element)
+    {
+    }
+
     internal virtual DataGridColumnHeader CreateHeader()
     {
         var result = new DataGridColumnHeader
@@ -365,8 +370,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
 
         result[!DataGridColumnHeader.ContentProperty]                 = this[!HeaderProperty];
         result[!DataGridColumnHeader.ContentTemplateProperty]         = this[!HeaderTemplateProperty];
-        result[!DataGridColumnHeader.SizeTypeProperty]                = OwningGrid[!DataGrid.SizeTypeProperty];
-        result[!DataGridColumnHeader.IsMotionEnabledProperty]         = OwningGrid[!DataGrid.IsMotionEnabledProperty];
+        result.BindOwningGridProperties(OwningGrid);
         result[!DataGridColumnHeader.SupportedSortDirectionsProperty] = this[!SupportedSortDirectionsProperty];
         result[!DataGridColumnHeader.HorizontalContentAlignmentProperty] = this[!HeaderContentHorizontalAlignmentProperty];
         result[!DataGridColumnHeader.VerticalContentAlignmentProperty] = this[!HeaderContentVerticalAlignmentProperty];
@@ -521,24 +525,6 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     }
 
     /// <summary>
-    /// Set the column's Width without breaking inheritance.
-    /// </summary>
-    /// <param name="width">The new Width.</param>
-    internal void SetWidthInternal(DataGridLength width)
-    {
-        bool originalValue = _settingWidthInternally;
-        _settingWidthInternally = true;
-        try
-        {
-            SetCurrentValue(WidthProperty, width);
-        }
-        finally
-        {
-            _settingWidthInternally = originalValue;
-        }
-    }
-
-    /// <summary>
     /// Sets the column's Width directly, without any callback effects.
     /// </summary>
     /// <param name="width">The new Width.</param>
@@ -571,7 +557,7 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     {
         if (_editingElement == null)
         {
-            _editingElement = GenerateEditingElement(cell, dataItem, out _editBinding);
+            _editingElement = GenerateEditingElement(cell, dataItem, out _);
         }
 
         return _editingElement;

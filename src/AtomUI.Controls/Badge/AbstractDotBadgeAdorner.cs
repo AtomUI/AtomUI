@@ -39,6 +39,9 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractDotBadgeAdorner, Point>(
             nameof(Offset));
 
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractDotBadgeAdorner, bool>(nameof(IsBordered));
+
     public IBrush? BadgeDotColor
     {
         get => GetValue(BadgeDotColorProperty);
@@ -73,6 +76,13 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     {
         get => GetValue(OffsetProperty);
         set => SetValue(OffsetProperty, value);
+    }
+
+    // Selector hook for themes that draw a ring around the dot; the shared dot draws none.
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
     }
 
     #endregion
@@ -190,11 +200,13 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
 
     private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
     {
+        // Clear the association while the layer can still update the existing composition visual. Removing the
+        // visual first leaves its old adorned visual reference alive after the public property has been cleared.
+        AdornerLayer.SetAdornedElement(this, null);
         adornerLayer?.Children.Remove(this);
         if (((ILogical)this).LogicalParent is not null)
         {
             ((ISetLogicalParent)this).SetParent(null);
         }
-        AdornerLayer.SetAdornedElement(this, null);
     }
 }

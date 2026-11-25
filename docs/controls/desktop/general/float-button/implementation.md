@@ -100,7 +100,9 @@ Public API / ItemsSource / Command / Event
 
 - 外部设置的 Avalonia 属性必须在模板应用前后保持一致。
 - 集合、选择、展开、过滤、分页、上传任务或异步 loader 必须能处理 reset、replace 和 clear。
-- `IsOpen` 由 group 与 host 共享为受控打开状态；hover/click、open request 和 close request 应使用 current value 语义回写，不得以 style priority 覆盖绑定或本地值。
+- `IsOpen` 由 group 与 host 共享为受控打开状态；group 是唯一写入方，hover/click 一律以 current value 语义写入 group `IsOpen`，经 host 的 TwoWay relay 回到 host 与用户绑定，不得以 style priority 覆盖绑定或本地值，也不得按值来源（本地值、绑定、host relay）分叉。
+- 打开请求在 group 不可用（`IsEffectivelyEnabled == false`）或目标值与当前值相同时直接忽略，对齐 Ant Design `triggerOpen` 的 disabled 与去重判断；click 模式经原始输入订阅，不依赖 Avalonia 的禁用路由，因此必须在请求入口判断。
+- `Hover` 模式下点击 trigger 不切换打开状态，只经 hover 进出开合，与 Ant Design `trigger="hover"` 一致。
 - `Command`、`CommandParameter` 和 `CanExecute` 不建立 host 私有状态机；`FloatButtonHost`、`BackTopFloatButtonHost` 创建的真实按钮通过属性投影接收命令契约。
 - `IsShowProgress` 只控制进度环显隐；`ScrollProgress` 是从 `Target` 派生的 internal 状态，`BackTopFloatButtonHost` 通过 `AddOwner` 把开关投影给 overlay 中的真实按钮，不建立第二份滚动状态。
 - `BackTopFloatButton` 点击时先检查有效可用状态；当命令不可执行导致按钮不可用时，不应触发滚动动作。
@@ -148,6 +150,7 @@ Target ScrollViewer (ScrollChanged / OnLoaded)
 - Browser 和 Desktop 宿主下的主题加载顺序不得影响 public API 语义。
 - Host 到 overlay 真实按钮或 group 的属性投影属于运行时动态目标绑定，AXAML 无法通过 `TemplateBinding` 表达；允许使用 C# binding 或 `BindUtils.RelayBind`，但必须挂到当前 overlay 生命周期的 `CompositeDisposable`。
 - `PrepareScopedOverlayLayer` 创建 overlay 目标时建立属性投影；`CleanupScopedOverlayLayer` 移除 overlay 目标并释放同一批投影绑定。
+- FloatButton 属于 T4 内容浮动角色，经 `ScopeAwareOverlayLayer.GetLayer` 解析（接口不变），号码为 `int.MaxValue - 800`，高于共享 `AdornerLayer`（Badge、焦点描边不再画在 FloatButton 之上）与 Watermark / 吸顶 Tab，低于同宿主的作用域 Drawer 与作用域 Dialog。`ScopeAwareOverlayLayer` 不再承载 Dialog。浮动状态下的 FloatButton / FloatButtonGroup 自带表面宿主（`LayerLadder.IsSurfaceHost`，只启用 `AdornerLayer`），其焦点描边与 Badge 画在 FloatButton 表面之上。层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
 - Group host 搬移 `Children` 到 overlay group 时必须保持逻辑继承路径；释放 overlay group 前应先解除子项挂载，避免同一 child 被旧 group 保留。
 
 稳定 template part 接入点：
@@ -181,7 +184,7 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - `FloatButtonGroupHost` trigger 点击只处理展开/收起，不默认触发业务 `Command`；业务命令应挂在 group 内部子 `FloatButton`。
 - `FloatButtonHost` 与 `BackTopFloatButtonHost` 对外表现为可绑定命令的 host，但命令执行仍发生在 overlay 内真实按钮的 Avalonia Button 点击路径中。
 
-稳定事件路径包括 `Clicked`、`Closed`、`Opened`。事件参数和触发时机属于兼容边界。
+稳定事件路径包括 `Clicked`、`Closed`、`Opened`。事件参数和触发时机属于兼容边界：`Opened`/`Closed` 在 group `IsOpen` 实际变化后触发（含外部绑定写入）；`Clicked` 在 trigger 按钮 `Click` 后触发，`Click` 与 `Hover` 模式都触发，对应 Ant Design `FloatButton.Group` 的 `onClick`。
 
 ## 7. 内部算法与关键流程
 
@@ -202,7 +205,8 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 - 进度计算：`maxScroll = max(Extent.Height - Viewport.Height, 0)`，`ScrollProgress = maxScroll > 0 ? Clamp(Offset.Y / maxScroll, 0, 1) : 0`。进度只在 `Target` 的 `ScrollChanged` 与控件 `OnLoaded` 两个入口更新；Avalonia `ScrollChanged` 在 extent/viewport 变化时同样触发，内容尺寸变化（等效 resize 场景）已被覆盖，不引入额外的 SizeChanged 监听。
 - 绘制实现：`BackTopProgressRing` 自定义 `Render` 绘制轨道与进度指示。轨道是圆角矩形描边，`CornerRadius` 为高度一半（Circle 形状由基类尺寸同步设置）时即为整圆；进度指示是以环中心为顶点、半径取环矩形半对角线的扇形填充，从 12 点方向（-90°）顺时针扫 `360 × progress` 度（进度满 100% 时扇形退化，直接用进度色填充整个环带），再裁剪到环带。
 - 环几何不变量：`CalculateRingMetrics` 统一推导三个边界——外边界半径等于按钮自身圆角半径（与按钮轮廓完全重合，圆角处不留缝隙），中心线半径 = 外边界半径 − 半线宽，内边界半径 = 外边界半径 − 线宽；对应矩形依次为 `bounds`、`bounds.Deflate(半线宽)`、`bounds.Deflate(线宽)`。`CornerRadius` 是**外边界**的半径语义，不是中心线半径：把它当中心线使用会让外缘比按钮轮廓大出半线宽，在四个圆角处露出背景与环之间的缝隙（圆形因半径被 clamp 到尺寸一半而恰好不暴露）。
-- ControlTheme 兜底理由：扇形角度是随滚动连续变化的运行时值，ControlTheme selector/Setter 无法表达，故按主题绑定优先约束的兜底条款采用自定义 Render；线宽、颜色与显隐等静态契约仍由 `BackTopFloatButtonTheme.axaml` 注入——`StrokeThickness` 取 `LineWidthBold`、`TrackBrush` 取 `ColorBorderSecondary`、`IndicatorBrush` 取 `ColorPrimary`，显隐由 `^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing` selector 控制，默认 `IsVisible=False`。
+- 扇形的连续角度在 Render 中计算。模板给进度环指定线宽和两项颜色的资源键，进度环成组读取并重绘。显隐由 `IsShowProgress` 的模板选择器控制。
+- 回顶动画正常完成后将目标的纵向 Offset 精确提交为零。重复点击、换目标或卸载时取消之前的动画。
 - Square 环带裁剪：进度扇形通过 `PushGeometryClip` 裁剪到「外圆角矩形 − 内圆角矩形」的 `CombinedGeometry`（`Exclude`）环带，Circle 与 Square 复用同一渲染路径。扇形半径取半对角线以保证覆盖环带最外点。Circle 形状下环带为同心圆环，扇形与环带的交集即原圆弧进度带。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。

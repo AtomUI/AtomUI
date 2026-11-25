@@ -1,4 +1,3 @@
-using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Media;
@@ -6,164 +5,147 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ToggleSwitchToken : AbstractControlDesignToken
+public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
 {
+
+    /// <summary>Height of the track at the standard switch size.</summary>
+    public partial double TrackHeight { get; set; }
+
+    /// <summary>Height of the track at the small switch size.</summary>
+    public partial double TrackHeightSM { get; set; }
+
+    /// <summary>Minimum width of the track at the standard switch size.</summary>
+    public partial double TrackMinWidth { get; set; }
+
+    /// <summary>Minimum width of the track at the small switch size.</summary>
+    public partial double TrackMinWidthSM { get; set; }
+
+    /// <summary>Inset between the edge of the track and the handle's end positions.</summary>
+    public partial double TrackPadding { get; set; }
+
+    /// <summary>
+    /// Fill of the handle in an unchecked switch at rest. Pairs with <see cref="TrackBg"/>.
+    /// </summary>
+    public partial Color HandleBg { get; set; }
+
+    /// <summary>
+    /// Fill of the handle in a checked switch at rest. Pairs with the <see cref="SwitchColor"/> track.
+    /// </summary>
+    public partial Color HandleCheckedBg { get; set; }
+
+    /// <summary>
+    /// Fill of the handle in an unchecked switch under the pointer. Pairs with <see cref="TrackHoverBg"/>.
+    /// </summary>
+    public partial Color HandleHoverBg { get; set; }
+
+    /// <summary>
+    /// Fill of the handle in a checked switch under the pointer. Pairs with <see cref="TrackCheckedHoverBg"/>.
+    /// </summary>
+    public partial Color HandleCheckedHoverBg { get; set; }
+
+    /// <summary>
+    /// Fill of the unchecked track at rest. Pairs with <see cref="HandleBg"/> and <see cref="UncheckedContentColor"/>.
+    /// </summary>
+    public partial Color TrackBg { get; set; }
+
+    /// <summary>
+    /// Fill of the unchecked track under the pointer. Pairs with <see cref="HandleHoverBg"/> and
+    /// <see cref="UncheckedContentColor"/>.
+    /// </summary>
+    public partial Color TrackHoverBg { get; set; }
+
+    /// <summary>
+    /// Fill of the checked track under the pointer. Pairs with <see cref="HandleCheckedHoverBg"/> and the shared
+    /// <c>ColorTextLightSolid</c> content foreground.
+    /// </summary>
+    public partial Color TrackCheckedHoverBg { get; set; }
+
+    /// <summary>
+    /// The outline of an unchecked switch's track, drawn inside the track when <see cref="TrackBorderThickness"/> is
+    /// not 0. Defaults to transparent.
+    /// </summary>
+    public partial Color TrackBorderColor { get; set; }
+
+    /// <summary>
+    /// The outline of a checked switch's track, drawn inside the track when <see cref="TrackBorderThickness"/> is not
+    /// 0. Defaults to transparent.
+    /// </summary>
+    public partial Color TrackCheckedBorderColor { get; set; }
+
+    /// <summary>Thickness of the outline drawn inside the track.</summary>
+    public partial double TrackBorderThickness { get; set; }
+
+    /// <summary>Shadow drawn under the moving switch handle.</summary>
+    public partial BoxShadow HandleShadow { get; set; }
+
+    /// <summary>Width and height of the handle at the standard switch size.</summary>
+    public partial Size HandleSize { get; set; }
+
+    /// <summary>Width and height of the handle at the small switch size.</summary>
+    public partial Size HandleSizeSM { get; set; }
+
+    /// <summary>
+    /// Whether pressing the switch stretches the handle inward and shifts the visible content. Defaults to true.
+    /// </summary>
+    public partial bool EnableHandlePressStretch { get; set; }
+
+    /// <summary>
+    /// Left inset of the visible on content at the standard switch size before any press offset.
+    /// </summary>
+    public partial double InnerMinMargin { get; set; }
+
+    /// <summary>
+    /// Left inset of the visible off content at the standard switch size before any press offset.
+    /// </summary>
+    public partial double InnerMaxMargin { get; set; }
+
+    /// <summary>
+    /// Left inset of the visible on content at the small switch size before any press offset.
+    /// </summary>
+    public partial double InnerMinMarginSM { get; set; }
+
+    /// <summary>
+    /// Left inset of the visible off content at the small switch size before any press offset.
+    /// </summary>
+    public partial double InnerMaxMarginSM { get; set; }
+
+    /// <summary>Size of the icon shown in the track at the standard switch size.</summary>
+    public partial double ContentIconSize { get; set; }
+
+    /// <summary>Size of the icon shown in the track at the small switch size.</summary>
+    public partial double ContentIconSizeSM { get; set; }
+
+    /// <summary>
+    /// Fill of the checked track at rest and foreground of the checked handle's loading indicator. The track pairs with
+    /// <see cref="HandleCheckedBg"/> and the shared <c>ColorTextLightSolid</c> content foreground.
+    /// </summary>
+    public partial Color SwitchColor { get; set; }
+
+    /// <summary>
+    /// Foreground of the text and icon inside the unchecked track. Pairs with <see cref="TrackBg"/> or
+    /// <see cref="TrackHoverBg"/>.
+    /// </summary>
+    public partial Color UncheckedContentColor { get; set; }
     
-    public ToggleSwitchToken()
-
-    {
-    }
-
-    /// <summary>
-    /// 开关高度
-    /// </summary>
-    public double TrackHeight { get; set; }
-
-    /// <summary>
-    /// 小号开关高度
-    /// </summary>
-    public double TrackHeightSM { get; set; }
-
-    /// <summary>
-    /// 开关最小宽度
-    /// </summary>
-    public double TrackMinWidth { get; set; }
-
-    /// <summary>
-    /// 小号开关最小宽度
-    /// </summary>
-    public double TrackMinWidthSM { get; set; }
-
-    /// <summary>
-    /// 开关内边距
-    /// </summary>
-    public double TrackPadding { get; set; }
-
-    /// <summary>
-    /// 开关把手背景色
-    /// </summary>
-    public Color HandleBg { get; set; }
-
-    /// <summary>
-    /// 开关把手阴影
-    /// </summary>
-    public BoxShadow HandleShadow { get; set; }
-
-    /// <summary>
-    /// 开关把手大小
-    /// </summary>
-    public Size HandleSize { get; set; }
-
-    /// <summary>
-    /// 小号开关把手大小
-    /// </summary>
-    public Size HandleSizeSM { get; set; }
-
-    /// <summary>
-    /// 内容区域最小边距
-    /// </summary>
-    public double InnerMinMargin { get; set; }
-
-    /// <summary>
-    /// 内容区域最大边距
-    /// </summary>
-    public double InnerMaxMargin { get; set; }
-
-    /// <summary>
-    /// 小号开关内容区域最小边距
-    /// </summary>
-    public double InnerMinMarginSM { get; set; }
-
-    /// <summary>
-    /// 小号开关内容区域最大边距
-    /// </summary>
-    public double InnerMaxMarginSM { get; set; }
-
-    /// <summary>
-    /// 正常状态的图标大小
-    /// </summary>
-    public double ContentIconSize { get; set; }
-
-    /// <summary>
-    /// 小号状态的图标大小
-    /// </summary>
-    public double ContentIconSizeSM { get; set; }
-
-    /// <summary>
-    /// 开关的颜色
-    /// </summary>
-    public Color SwitchColor { get; set; }
+    /// <summary>Opacity of the entire switch while disabled or loading.</summary>
+    public partial double SwitchDisabledOpacity { get; set; }
     
     /// <summary>
-    /// 开源禁用状态的透明度
+    /// Font size of the text in the visible portion of the track at the standard switch size.
     /// </summary>
-    public double SwitchDisabledOpacity { get; set; }
+    public partial double ExtraInfoFontSize { get; set; }
     
     /// <summary>
-    /// 开关空白区域的字体大小，正常尺寸
+    /// Font size of the text in the visible portion of the track at the small switch size.
     /// </summary>
-    public double ExtraInfoFontSize { get; set; }
+    public partial double ExtraInfoFontSizeSM { get; set; }
+    
+    /// <summary>Duration of one cycle of the handle's loading animation.</summary>
+    public partial TimeSpan LoadingAnimationDuration { get; set; }
     
     /// <summary>
-    /// 开关空白区域的字体大小，小尺寸
+    /// Foreground of the loading indicator inside the unchecked handle. Pairs with <see cref="HandleBg"/>.
     /// </summary>
-    public double ExtraInfoFontSizeSM { get; set; }
-    
-    /// <summary>
-    /// 加载动画的周期时长
-    /// </summary>
-    public TimeSpan LoadingAnimationDuration { get; set; }
-    
-    /// <summary>
-    /// 在关状态下的加载指示器的颜色
-    /// </summary>
-    public Color OffStateLoadIndicatorColor { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        var fontSize      = EffectiveGlobalToken.FontSize;
-        var lineHeight    = EffectiveGlobalToken.RelativeLineHeight;
-        var controlHeight = EffectiveGlobalToken.ControlHeight;
-
-        var    height       = fontSize * lineHeight;
-        var    heightSM     = controlHeight / 2;
-        double padding      = 2; // Fixed value
-        var    handleSize   = height - padding * 2;
-        var    handleSizeSM = heightSM - padding * 2;
-
-        TrackHeight     = height;
-        TrackHeightSM   = heightSM;
-        TrackMinWidth   = handleSize * 2 + padding * 4;
-        TrackMinWidthSM = handleSizeSM * 2 + padding * 2;
-        TrackPadding    = padding; // Fixed value
-        HandleBg        = EffectiveGlobalToken.ColorWhite;
-        HandleSize      = new Size(handleSize, handleSize);
-        HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
-
-        InnerMinMargin   = handleSize / 2;
-        InnerMaxMargin   = handleSize + padding * 3;
-        InnerMinMarginSM = handleSizeSM / 2 - padding;
-        InnerMaxMarginSM = handleSizeSM + padding * 3;
-        
-        SwitchColor            = EffectiveGlobalToken.ColorPrimary;
-        SwitchDisabledOpacity  = EffectiveGlobalToken.OpacityLoading;
-
-        ExtraInfoFontSize   = EffectiveGlobalToken.FontSizeSM;
-        ExtraInfoFontSizeSM = ExtraInfoFontSize - 1;
-
-        HandleShadow = new BoxShadow
-        {
-            OffsetX = 0,
-            OffsetY = 2,
-            Blur    = 4,
-            Color   = Color.FromArgb((int)(255 * 0.2), 0, 35, 11)
-        };
-
-        ContentIconSize            = TrackHeightSM;
-        ContentIconSizeSM          = TrackHeightSM - EffectiveGlobalToken.UniformlyPaddingXXS;
-        LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // 毫秒
-        OffStateLoadIndicatorColor = ColorUtils.FromRgbF(0.4,0.0, 0.0, 0.0);
-    }
+    public partial Color OffStateLoadIndicatorColor { get; set; }
     
 }

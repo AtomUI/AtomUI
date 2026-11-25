@@ -2,6 +2,58 @@
 
 本文档记录 ColorPicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-24
+
+- API
+  - `ColorPickerView` 和 `GradientColorPickerView` 增加标准属性 `SliderTrackHeight`。两个视图各自读取已有的滑轨高度 Token 作为默认值。
+
+## 2026-11-21
+
+- Theme
+  - 输入行三个 Small 控件此前顶对齐、高度不一（LineEdit 比 NumericUpDown 矮 2px，PrimeNG 下 NumericUpDown 又高出 2px）。根因在 Small 输入框行高（见 LineEdit / ComboBox changelog）已统一修复；格式下拉框与 HEX 输入框另外纵向拉伸到行高，保证三者对齐。Ant 下该行为 antd 的 24px。
+- Token
+  - `ColorPickerAlphaInputWidth` 默认值改为 30px 文本视口加两侧边框、`InputPaddingSM.Left` 和 1px 内容内缩：Ant / Shadcn 仍为 48px，PrimeNG（小号内边距多 1px）为 50px，修复 "100%" 末尾被裁切。`InputPaddingSM` 因此成为 ColorPickerView / GradientColorPickerView 的有效全局输入。
+
+## 2026-11-20
+
+- Performance
+  - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。ColorPickerView 构建耗时约少 8%。
+
+## 2026-11-18
+
+- 带文字的固定宽度 ColorPicker 使用触发器的起始内边距，避免色块和文字整体居中后在起始边留出多余空白。
+
+## 2026-11-11
+
+- Theme
+  - 渐变 stop 文本通过动态状态样式读取当前前景，修复选择后主题发布、关闭后文字颜色与禁用往返更新；保留用户本地画刷。
+  - Popup View 动效默认读取自身 EnableMotion，trigger false 作为内部宿主门控，用户 View 本地值优先。
+
+## 2026-11-10
+
+- Theme
+  - 四个公开终端读取各自有效全局值，共享基元跟随实际 owner；预设项跨 Collapse 只转发自身 owner，公开嵌套编辑器与 Popup View 保持独立。
+  - 空色斜线改用 ColorError / LineWidthBold，预设勾选图标的 FillBrush / StrokeBrush 接通真实明暗对比色，浅色勾选改用 ColorTextSecondary；默认 Alpha 48px、数值按钮16px及紧凑字号11px保留。
+- Token
+  - 面板 Own 从 ColorPicker 移至两个 View，trigger 五项由两个 trigger 分别拥有；逐字段迁移见 token.md。
+  - Alpha 输入宽度及数字按钮宽度接通真实消费者，新增 View.EditorFontSize；显式基础尺寸参与默认派生。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - AbstractColorPicker 声明 OpenMotion/CloseMotion，两类颜色选择器继承；普通 Button 不因此新增同名 API。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Popover 对应的 ZoomBig、Mid 时长、alignment 原点及公开配置 owner。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-06
 
 - Design

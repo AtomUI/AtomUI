@@ -3,11 +3,27 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
+    <!-- owner: global Tokens are read from the owner because NumericUpDownSpinner's theme is BasedOn this one and its
+         owner is the hosting NumericUpDown (no identity of its own). On a ButtonSpinner itself the owner is the ButtonSpinner. -->
     <ControlTheme x:Key="{x:Type atom:ButtonSpinner}" TargetType="atom:ButtonSpinner">
+        <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+        <Setter Property="FocusAdorner" Value="{x:Null}" />
+        <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+        <Setter Property="ClipToBounds" Value="False" />
+        <Setter Property="HandleBg" Value="{atom:ButtonSpinnerTokenResource HandleBg}" />
+        <Setter Property="FilledHandleBg" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
+        <Setter Property="HandleBorderColor" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}" />
+        <Setter Property="HandleHoverColor" Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+        <Setter Property="HandleHoverBg" Value="{atom:ButtonSpinnerTokenResource HandleHoverBg}" />
+        <Setter Property="HandleIconColor" Value="{atom:ButtonSpinnerTokenResource HandleIconColor}" />
+        <Setter Property="HandleActiveBg" Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+        <Setter Property="HandleIconSize" Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+        <Setter Property="HandlePressedColor" Value="{atom:ButtonSpinnerTokenResource HandlePressedColor}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <atom:ButtonSpinnerDecoratedBox
                     Name="PART_DecoratedBox"
+                    SpinnerHandleWidth="{TemplateBinding SpinnerHandleWidth}"
                     Classes.semantic-scope-frame="True"
                     IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                     LeftAddOn="{TemplateBinding LeftAddOn}"
@@ -23,11 +39,13 @@
                     Status="{TemplateBinding Status}"
                     FormStatus="{TemplateBinding FormStatus}"
                     IsInputFocusWithin="{TemplateBinding IsKeyboardFocusWithin}"
+                    HostBorderBrush="{TemplateBinding BorderBrush}"
                     DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
                     IsShowHandle="{TemplateBinding IsButtonSpinnerVisible}"
                     IsHandleFloatable="{TemplateBinding IsButtonSpinnerFloatable}"
                     ButtonSpinnerLocation="{TemplateBinding ButtonSpinnerLocation}"
                     Focusable="True"
+                    IsTabStop="False"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     Content="{TemplateBinding Content}"
@@ -53,15 +71,15 @@
         <Setter Property="KeyboardNavigation.TabNavigation" Value="None" />
         <Setter Property="SpinnerHandleWidth"
                 Value="{atom:ButtonSpinnerTokenResource HandleWidth}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         </Style>
 
     </ControlTheme>

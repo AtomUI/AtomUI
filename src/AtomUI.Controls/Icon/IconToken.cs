@@ -4,48 +4,23 @@ using Avalonia.Media;
 namespace AtomUI.Controls;
 
 [ControlDesignToken]
-internal sealed class IconToken : AbstractControlDesignToken
+public sealed partial class IconToken : AbstractControlDesignToken
 {
-    
-    /// <summary>
-    /// 次要的描边颜色
-    /// </summary>
-    public Color SecondaryStrokeColor { get; set; }
-    
-    /// <summary>
-    /// 次要的填充颜色
-    /// </summary>
-    public Color SecondaryFillColor { get; set; }
-    
-    /// <summary>
-    /// 备用颜色
-    /// </summary>
-    public Color FallbackColor { get; set; }
-    
-    /// <summary>
-    /// 默认的描边笔宽度
-    /// </summary>
-    public double StrokeWidth { get; set; }
-    
-    /// <summary>
-    /// 默认的描边的 LineCap
-    /// </summary>
-    public PenLineCap StrokeLineCap { get; set; }
-    
-    /// <summary>
-    /// 默认的描边的 LineJoin
-    /// </summary>
-    public PenLineJoin StrokeLineJoin { get; set; }
-    
-    public IconToken()
+    /// <summary>Fallback outline color of the secondary layer in a two-tone glyph.</summary>
+    public partial Color SecondaryStrokeColor { get; set; }
 
-    {
-        SecondaryStrokeColor = Colors.White;
-        SecondaryFillColor   = Color.Parse("#43CCF8");
-        FallbackColor        = Colors.White;
-        StrokeWidth          = 4;
-        StrokeLineCap        = PenLineCap.Round;
-        StrokeLineJoin       = PenLineJoin.Round;
-    }
-    
+    /// <summary>Fallback interior color of the secondary layer in a two-tone glyph.</summary>
+    public partial Color SecondaryFillColor { get; set; }
+
+    /// <summary>Paint used for icon geometry without a resolved foreground color.</summary>
+    public partial Color FallbackColor { get; set; }
+
+    /// <summary>Default pen width in the icon geometry’s coordinate space.</summary>
+    public partial double StrokeWidth { get; set; }
+
+    /// <summary>Shape of the ends of open paths in a stroked glyph.</summary>
+    public partial PenLineCap StrokeLineCap { get; set; }
+
+    /// <summary>Shape of the corners joining path segments in a stroked glyph.</summary>
+    public partial PenLineJoin StrokeLineJoin { get; set; }
 }

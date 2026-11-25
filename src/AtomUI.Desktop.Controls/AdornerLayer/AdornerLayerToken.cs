@@ -1,23 +1,14 @@
 using AtomUI.Theme.DesignTokens;
-using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class AdornerLayerToken : AbstractControlDesignToken
+public sealed partial class AdornerLayerToken : AbstractControlDesignToken
 {
-
-    public AdornerLayerToken()
-
-    {
-    }
     
-    public Thickness FocusVisualMargin { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        FocusVisualMargin = new Thickness(0);
-    }
+    /// <summary>
+    /// Gap between a focused element and its keyboard focus outline (Ant Design outline-offset).
+    /// </summary>
+    public partial double FocusOutlineOffset { get; set; }
     
 }

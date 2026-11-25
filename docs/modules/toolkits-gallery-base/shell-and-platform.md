@@ -28,6 +28,11 @@ GalleryShell
 
 `GalleryShellView` 负责 Sidebar、BrandArea、FooterLinks、VersionTag、`RoutedViewHost` 和导航/内容分隔线。Shell 不负责 Demo 页面内部布局。ShowCase 页面继续使用 `GalleryStickyTabsHost`、`ShowCasePanel` 和 `ShowCaseItem`。
 
+导航分隔线占用侧栏与内容之间的独立列。桌面窗口标题栏下沿的分隔线占用 Shell 上方的独立行。两条线位于内容的吸顶范围之外，均不参与指针命中。
+
+Sidebar 页脚在自己的资源作用域内，共用一组监听读取 `LineWidth` 和 `ColorBorderSecondary`。线宽转换成仅上边有效的 `Thickness`，
+两个输出使用 Template 优先级，随 `GalleryShellView.Dispose()` 释放。
+
 ### 可折叠 Sidebar
 
 GalleryBase 通过显式 NavMenu host 契约为产品导航视图提供可选的 Sidebar 折叠能力：
@@ -49,12 +54,14 @@ public interface IGallerySidebarNavMenuHost
 - `NavMenu.IsInlineCollapsed` 是唯一折叠状态源，Shell 和产品 ViewModel 不保存第二份镜像状态。
 - 展开宽度由 `GalleryShellConfiguration.SidebarWidth` 写入 host 暴露的根 `NavMenu.Width`。
 - 折叠宽度由 `NavMenu.InlineCollapsedWidth` 及其主题 Token 决定，GalleryBase 不重复配置默认值。
-- 可折叠 Sidebar 使用 `Auto,*` 列布局，Sidebar 宽度单向跟随 `NavMenu.Width` 的有效值，使 NavMenu
+- 可折叠 Sidebar 使用 `Auto,Auto,*` 列布局，Sidebar 宽度单向跟随 `NavMenu.Width` 的有效值，使 NavMenu
   的折叠/展开 motion 同时驱动品牌区、导航/内容分隔线和内容区边界。
 - `SidebarHeaderAction` 是产品导航视图提供的、尚未挂入其他视觉树的可选操作控件。Shell 只把它放入品牌区
   右侧，不拥有其命令、图标、文案或折叠状态。
 - 品牌区使用左侧品牌内容与右侧 Header Action 两个独立视觉单元。展开状态下 Action 位于 Sidebar 右上角；
   折叠状态下只隐藏品牌内容，Action 在折叠宽度内保持居中和可交互。
+- 折叠状态下品牌区保留 `GalleryShellConfiguration.CollapsedSidebarHeaderSpacing` 作为下边距，避免 Action
+  与第一个导航项贴在一起；未配置时跟随全局 Token `UniformlyMarginXXS`，与导航项间距保持一致。
 - Sidebar 在宽度 motion 期间裁剪品牌和 footer 内容；完整品牌内容和 footer 在折叠状态下隐藏。
 - NavMenu Header 不承载 Sidebar 折叠入口，避免把全局布局操作夹在品牌区与第一个导航项之间。
 - `GalleryShellView.Dispose()` 必须释放从 NavMenu 到 Sidebar 的属性绑定，不能让 Shell 或导航 ViewModel
@@ -74,12 +81,21 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
 
     public IReadOnlyList<ThemeInfo> AvailableThemes { get; }
     public string CurrentThemeId { get; }
+    public IReadOnlyList<string> DesignLanguages { get; }
+    public string? CurrentDesignLanguage { get; }
+    public bool CanChooseBrandColor { get; }
+    public Color? BrandColor { get; }
+    public bool CanChooseNeutralColor { get; }
+    public Color? NeutralColor { get; }
     public ThemePreference AppearanceMode { get; }
     public bool IsLightAppearanceMode { get; }
     public bool IsDarkAppearanceMode { get; }
     public bool IsSystemAppearanceMode { get; }
 
     public ReactiveCommand<string, Unit> SwitchThemeCommand { get; }
+    public ReactiveCommand<string, Unit> SwitchDesignLanguageCommand { get; }
+    public ReactiveCommand<Color?, Unit> SetBrandColorCommand { get; }
+    public ReactiveCommand<Color?, Unit> SetNeutralColorCommand { get; }
     public ReactiveCommand<ThemePreference, Unit> SetAppearanceModeCommand { get; }
     public ReactiveCommand<bool, Unit> ToggleDarkModeCommand { get; }
     public ReactiveCommand<bool, Unit> ToggleCompactModeCommand { get; }
@@ -196,11 +212,11 @@ Footer
 | 菜单 | 配置开关 | 职责 |
 |---|---|---|
 | Window Options | `IsWindowOptionsMenuEnabled` | 控制 caption button、移动、缩放 |
-| Theme | `IsThemeMenuEnabled` | 主题目录、Light/Dark/Follow System、紧凑、动效、WaveSpirit |
+| Theme | `IsThemeMenuEnabled` | 设计语言、品牌色与中性色、具名主题、Light/Dark/Follow System、紧凑、动效、WaveSpirit |
 | Language | `IsLanguageMenuEnabled` | 切换应用支持的 `LanguageTag` |
 
-AtomUIGallery Desktop 窗口根据 `AvailableThemes` 动态建立同组 Radio 项，并以 `CurrentThemeId` 设置选中态；菜单不
-写死主题 Id、名称或颜色。主题选择、Appearance 三态和运行时算法组合的完整规则见
+AtomUIGallery Desktop 窗口根据 `DesignLanguages` 与 `AvailableThemes` 动态建立同组 Radio 项，并以 `CurrentDesignLanguage`、
+`CurrentThemeId` 设置选中态；菜单不写死主题 Id、名称或颜色。设计语言与主题选择、品牌色、Appearance 三态和密度的完整规则见
 [GalleryBase 主题与本地化设计](theming-localization.md)。
 
 语言菜单第一阶段提供 AtomUI 已支持的语言：

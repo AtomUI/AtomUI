@@ -9,41 +9,77 @@
         <!-- 默认样式示例：浅绿卡片 + 2px 绿边 + 圆角 16 + 硬阴影，icon / title / description 绿字；
              error 分支整卡转红。 -->
         <Styles x:Key="NotificationSemanticStyleStyles">
+            <Styles.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="NotificationSuccessBackground" Color="#172819" />
+                            <SolidColorBrush x:Key="NotificationSuccessBorder" Color="#52744A" />
+                            <SolidColorBrush x:Key="NotificationSuccessForeground" Color="#A4E493" />
+                            <SolidColorBrush x:Key="NotificationErrorBackground" Color="#311C1E" />
+                            <SolidColorBrush x:Key="NotificationErrorBorder" Color="#995356" />
+                            <SolidColorBrush x:Key="NotificationErrorForeground" Color="#FF9497" />
+                            <SolidColorBrush x:Key="NotificationSuccessDescription" Color="#C5E6AE" />
+                            <SolidColorBrush x:Key="NotificationErrorDescription" Color="#FFD0D2" />
+                            <BoxShadows x:Key="NotificationSuccessShadow">4 4 0 #203B26</BoxShadows>
+                            <BoxShadows x:Key="NotificationErrorShadow">4 4 0 #4D2325</BoxShadows>
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Default">
+                            <SolidColorBrush x:Key="NotificationSuccessBackground" Color="#F6FFED" />
+                            <SolidColorBrush x:Key="NotificationSuccessBorder" Color="#95DE64" />
+                            <SolidColorBrush x:Key="NotificationSuccessForeground" Color="#237804" />
+                            <SolidColorBrush x:Key="NotificationErrorBackground" Color="#FFF2F0" />
+                            <SolidColorBrush x:Key="NotificationErrorBorder" Color="#FFCCC7" />
+                            <SolidColorBrush x:Key="NotificationErrorForeground" Color="#CF1322" />
+                            <SolidColorBrush x:Key="NotificationSuccessDescription" Color="#3F6600" />
+                            <SolidColorBrush x:Key="NotificationErrorDescription" Color="#5C0011" />
+                            <BoxShadows x:Key="NotificationSuccessShadow">4 4 0 #D9F7BE</BoxShadows>
+                            <BoxShadows x:Key="NotificationErrorShadow">4 4 0 #FFCCC7</BoxShadows>
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </Styles.Resources>
             <Style Selector="atom|NotificationCard.semantic-default-style-demo">
-                <Setter Property="Background" Value="#F6FFED" />
-                <Setter Property="BorderBrush" Value="#95DE64" />
+                <Setter Property="Background" Value="{DynamicResource NotificationSuccessBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource NotificationSuccessBorder}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="CornerRadius" Value="16" />
-                <Setter Property="BoxShadow" Value="4 4 0 #D9F7BE" />
+                <Setter Property="BoxShadow" Value="{DynamicResource NotificationSuccessShadow}" />
                 <atom:NotificationCardIconStyle x:SetterTargetType="atom:IconPresenter">
-                    <Setter Property="IconBrush" Value="#237804" />
+                    <Setter Property="IconBrush" Value="{DynamicResource NotificationSuccessForeground}" />
                 </atom:NotificationCardIconStyle>
                 <atom:NotificationCardTitleStyle x:SetterTargetType="atom:SelectableTextBlock">
-                    <Setter Property="Foreground" Value="#237804" />
+                    <Setter Property="Foreground" Value="{DynamicResource NotificationSuccessForeground}" />
                     <Setter Property="FontWeight" Value="SemiBold" />
                 </atom:NotificationCardTitleStyle>
                 <atom:NotificationCardDescriptionStyle x:SetterTargetType="ContentPresenter">
-                    <Setter Property="Foreground" Value="#3F6600" />
+                    <Setter Property="Foreground" Value="{DynamicResource NotificationSuccessDescription}" />
                 </atom:NotificationCardDescriptionStyle>
+                <atom:NotificationCardCloseStyle x:SetterTargetType="atom:IconButton">
+                    <Setter Property="IconBrush" Value="{DynamicResource NotificationSuccessForeground}" />
+                </atom:NotificationCardCloseStyle>
             </Style>
             <!-- error 分支只覆盖背景色 / 边框色 / 阴影色，边框粗细与圆角沿用默认样式的那两个 Setter，
                  所以这里必须重复声明 BorderThickness 与 CornerRadius；否则会回落到主题默认值
                  （零边框 / 半径 8），卡片边框更细、圆角更小。 -->
             <Style Selector="atom|NotificationCard.semantic-error-style-demo:error">
-                <Setter Property="Background" Value="#FFF2F0" />
-                <Setter Property="BorderBrush" Value="#FFCCC7" />
+                <Setter Property="Background" Value="{DynamicResource NotificationErrorBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource NotificationErrorBorder}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="CornerRadius" Value="16" />
-                <Setter Property="BoxShadow" Value="4 4 0 #FFCCC7" />
+                <Setter Property="BoxShadow" Value="{DynamicResource NotificationErrorShadow}" />
                 <atom:NotificationCardIconStyle x:SetterTargetType="atom:IconPresenter">
-                    <Setter Property="IconBrush" Value="#CF1322" />
+                    <Setter Property="IconBrush" Value="{DynamicResource NotificationErrorForeground}" />
                 </atom:NotificationCardIconStyle>
                 <atom:NotificationCardTitleStyle x:SetterTargetType="atom:SelectableTextBlock">
-                    <Setter Property="Foreground" Value="#CF1322" />
+                    <Setter Property="Foreground" Value="{DynamicResource NotificationErrorForeground}" />
                 </atom:NotificationCardTitleStyle>
                 <atom:NotificationCardDescriptionStyle x:SetterTargetType="ContentPresenter">
-                    <Setter Property="Foreground" Value="#5C0011" />
+                    <Setter Property="Foreground" Value="{DynamicResource NotificationErrorDescription}" />
                 </atom:NotificationCardDescriptionStyle>
+                <atom:NotificationCardCloseStyle x:SetterTargetType="atom:IconButton">
+                    <Setter Property="IconBrush" Value="{DynamicResource NotificationErrorForeground}" />
+                </atom:NotificationCardCloseStyle>
             </Style>
         </Styles>
     </UserControl.Resources>
@@ -80,16 +116,16 @@
                             <Panel MinHeight="320"
                                    Background="{atom:SharedTokenResource ColorFillAlter}">
                                 <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
-                                <atom:WindowNotificationManager Name="NotificationManagerSemanticOwner"
+                                <atom:WindowNotificationManager x:Name="NotificationManagerSemanticOwner"
                                                                MaxItems="3"
                                                                IsMotionEnabled="False" />
                                 <!-- 卡片锚点：NotificationCard 有公开无参构造，可声明式实例化两张常驻卡片。 -->
-                                <StackPanel Name="NotificationSemanticAnchor"
+                                <StackPanel x:Name="NotificationSemanticAnchor"
                                             Orientation="Vertical"
                                             Spacing="16"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center">
-                                    <atom:NotificationCard Name="NotificationCardSemanticOwner"
+                                    <atom:NotificationCard x:Name="NotificationCardSemanticOwner"
                                                            NotificationType="Success"
                                                            Title="Notification Title"
                                                            Content="This is a notification description."
@@ -222,7 +258,7 @@
                                                 Spacing="12">
                                         <TextBlock VerticalAlignment="Center"
                                                    Text="{gallery:NotificationShowCaseLangResource StackEnabledLabel}" />
-                                        <atom:ToggleSwitch Name="NotificationStackEnabledSwitch"
+                                        <atom:ToggleSwitch x:Name="NotificationStackEnabledSwitch"
                                                            VerticalAlignment="Center"
                                                            IsChecked="True"
                                                            IsCheckedChanged="HandleStackEnabledChanged" />

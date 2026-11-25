@@ -372,9 +372,18 @@ public sealed class OverflowTip : AvaloniaObject
                 return false;
             }
 
+            // Shared parts bind FontSize to inherited theme inputs; while a part joins or leaves its owner the
+            // inherited value is transiently the 0 default. Text cannot be measured then; the FontSize
+            // subscription re-evaluates once the real size arrives.
+            var fontSize = TextElement.GetFontSize(_owner);
+            if (!IsUsableWidth(fontSize))
+            {
+                return false;
+            }
+
             var textSize = TextUtils.CalculateTextSize(
                 text,
-                TextElement.GetFontSize(_owner),
+                fontSize,
                 TextElement.GetFontFamily(_owner),
                 TextElement.GetFontStyle(_owner),
                 TextElement.GetFontWeight(_owner));

@@ -7,9 +7,9 @@
     <ControlTheme x:Key="{x:Type atomc:RateItem}" TargetType="atomc:RateItem">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}">
-                    <Panel>
-                        <atom:DashedBorder BorderThickness="0.75" BorderBrush="{TemplateBinding StarColor}" StrokeDashArray="4, 2"
+                <!-- The Panel paints and hit-tests the background itself; a wrapping Border used to do it. -->
+                <Panel Background="{TemplateBinding Background}">
+                        <atom:DashedBorder BorderThickness="{atom:RateTokenResource BorderThickness}" BorderBrush="{TemplateBinding StarColor}" StrokeDashArray="4, 2"
                                            IsVisible="{TemplateBinding IsFocusStartItem}"/>
                         <Rectangle Fill="{TemplateBinding CharacterBgBrush}"
                                    HorizontalAlignment="Stretch"
@@ -18,8 +18,7 @@
                                    HorizontalAlignment="Stretch"
                                    VerticalAlignment="Stretch"
                                    Clip="{TemplateBinding StarClip}"/>
-                    </Panel>
-                </Border>
+                </Panel>
             </ControlTemplate>
         </Setter>
         
@@ -29,9 +28,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
         

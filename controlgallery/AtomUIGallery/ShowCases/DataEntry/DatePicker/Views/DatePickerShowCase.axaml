@@ -32,7 +32,7 @@
                             <!-- 双月日历弹层约 470px 高:舞台最小高度 560 且锚点置顶,
                                  让弹层向下展开,避免翻转向上遮挡页面 Tabs;
                                  舞台随宿主钳制高度收缩,不产生可视区之外的布局。 -->
-                            <atom:RangeDatePicker Name="DatePickerSemanticOwner"
+                            <atom:RangeDatePicker x:Name="DatePickerSemanticOwner"
                                                       VerticalAlignment="Top"
                                                       Width="420"
                                                       IsMotionEnabled="False"
@@ -114,6 +114,26 @@
             <atom:DatePicker PickerMode="Year"
                              PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextSelectYear}" />
         </StackPanel>
+            </DataTemplate>
+        </gallery:ShowCaseItem.DeferredContentTemplate>
+    </gallery:ShowCaseItem>
+
+    <gallery:ShowCaseItem
+        Title="{gallery:DatePickerShowCaseLangResource PopupMotionTitle}"
+        Description="{gallery:DatePickerShowCaseLangResource PopupMotionDescription}"
+        IsDeferredContentEnabled="True">
+        <gallery:ShowCaseItem.DeferredContentTemplate>
+            <DataTemplate x:DataType="vm:DatePickerViewModel">
+                <StackPanel Spacing="10" HorizontalAlignment="Left">
+                    <atom:DatePicker Name="CustomMotionDatePicker" Width="260"
+                                     PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextSelectDate}">
+                        <atom:DatePicker.OpenMotion><atom:FadeInMotion /></atom:DatePicker.OpenMotion>
+                        <atom:DatePicker.CloseMotion><atom:FadeOutMotion /></atom:DatePicker.CloseMotion>
+                    </atom:DatePicker>
+                    <atom:DatePicker Name="NoMotionDatePicker" Width="260"
+                                     PlaceholderText="{gallery:DatePickerShowCaseLangResource P2PlaceholderTextSelectDate}"
+                                     OpenMotion="{x:Null}" CloseMotion="{x:Null}" />
+                </StackPanel>
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>

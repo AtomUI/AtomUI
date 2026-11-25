@@ -5,18 +5,8 @@
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:SwitchKnob}" TargetType="atom:SwitchKnob">
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="LoadingBgOpacity"
-                Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
+        <Setter Property="LoadingIndicatorTokenResourceKeys" Value="{x:Static atom:ToggleSwitchResources.LoadingIndicatorTokenResourceKeys}" />
         <Setter Property="LoadingAnimationDuration"
                 Value="{atom:ToggleSwitchTokenResource LoadingAnimationDuration}" />
-
-        <Style Selector="^[IsMotionEnabled=True]">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="KnobRenderWidth" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
-            </Setter>
-        </Style>
     </ControlTheme>
 </ResourceDictionary>

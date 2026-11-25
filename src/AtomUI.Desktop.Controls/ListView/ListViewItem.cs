@@ -9,9 +9,13 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+// Token-owner transparent item container: the item theme reads the hosting list's Tokens (ListView, or the host of a derived
+// list such as the Select candidate list), so Controls[ListView] also reaches the items and their transitions.
+[TokenOwnerTransparent]
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
                             ISelectable, ITransitionInitializationOwner
@@ -49,6 +53,106 @@ public class ListViewItem : ContentControl,
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ListViewItem>();
     
+    // Forwarded by the owning ListView from its terminal theme; see ListView.ItemTheme.cs.
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemColor));
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemHoverColor));
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemSelectedColor));
+
+    internal IBrush? ItemSelectedColor
+    {
+        get => GetValue(ItemSelectedColorProperty);
+        set => SetValue(ItemSelectedColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemSelectedIndicatorColor));
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemDisabledColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemDisabledColor));
+
+    internal IBrush? ItemDisabledColor
+    {
+        get => GetValue(ItemDisabledColorProperty);
+        set => SetValue(ItemDisabledColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> ItemBgColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(ItemBgColor));
+
+    internal IBrush? ItemBgColor
+    {
+        get => GetValue(ItemBgColorProperty);
+        set => SetValue(ItemBgColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(ItemPadding));
+
+    internal Thickness ItemPadding
+    {
+        get => GetValue(ItemPaddingProperty);
+        set => SetValue(ItemPaddingProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> ItemMarginProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(ItemMargin));
+
+    internal Thickness ItemMargin
+    {
+        get => GetValue(ItemMarginProperty);
+        set => SetValue(ItemMarginProperty, value);
+    }
+
+    internal static readonly StyledProperty<IBrush?> GroupHeaderColorProperty =
+        AvaloniaProperty.Register<ListViewItem, IBrush?>(nameof(GroupHeaderColor));
+
+    internal IBrush? GroupHeaderColor
+    {
+        get => GetValue(GroupHeaderColorProperty);
+        set => SetValue(GroupHeaderColorProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> GroupHeaderPaddingProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(GroupHeaderPadding));
+
+    internal Thickness GroupHeaderPadding
+    {
+        get => GetValue(GroupHeaderPaddingProperty);
+        set => SetValue(GroupHeaderPaddingProperty, value);
+    }
+
+    internal static readonly StyledProperty<Thickness> SelectedIndicatorMarginProperty =
+        AvaloniaProperty.Register<ListViewItem, Thickness>(nameof(SelectedIndicatorMargin));
+
+    internal Thickness SelectedIndicatorMargin
+    {
+        get => GetValue(SelectedIndicatorMarginProperty);
+        set => SetValue(SelectedIndicatorMarginProperty, value);
+    }
+
     internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
         ListBox.ItemHoverBgProperty.AddOwner<ListViewItem>();
     
@@ -85,6 +189,17 @@ public class ListViewItem : ContentControl,
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineVisible),
             o => o.IsSplitLineVisible,
             (o, v) => o.IsSplitLineVisible = v);
+
+    // The default split line under the item is SplitLineWidth thick (the theme reads the host's LineWidth); a BorderThickness
+    // set by the application or a semantic style replaces it as a whole.
+    internal static readonly StyledProperty<double> SplitLineWidthProperty =
+        AvaloniaProperty.Register<ListViewItem, double>(nameof(SplitLineWidth));
+
+    internal double SplitLineWidth
+    {
+        get => GetValue(SplitLineWidthProperty);
+        set => SetValue(SplitLineWidthProperty, value);
+    }
 
     internal static readonly DirectProperty<ListViewItem, bool> IsSplitLineEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<ListViewItem, bool>(nameof(IsSplitLineEffectiveVisible),
@@ -241,6 +356,7 @@ public class ListViewItem : ContentControl,
         }
 
         if (change.Property == BorderThicknessProperty ||
+            change.Property == SplitLineWidthProperty ||
             change.Property == IsGroupItemProperty ||
             change.Property == IsSplitLineVisibleProperty)
         {
@@ -372,9 +488,10 @@ public class ListViewItem : ContentControl,
 
     private void ConfigureEffectiveBorderThickness()
     {
-        var showSplitLine = IsSplitLineVisible && !IsGroupItem && BorderThickness.Bottom > 0;
+        var thickness     = IsSet(BorderThicknessProperty) ? BorderThickness : new Thickness(0, 0, 0, SplitLineWidth);
+        var showSplitLine = IsSplitLineVisible && !IsGroupItem && thickness.Bottom > 0;
         IsSplitLineEffectiveVisible = showSplitLine;
-        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
+        EffectiveBorderThickness = showSplitLine ? thickness : new Thickness(0);
     }
 
 

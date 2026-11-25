@@ -1,3 +1,4 @@
+using AtomUI.Theme.Resources;
 using System.Collections;
 using System.Reflection;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -46,9 +47,9 @@ public class ExpanderShowCasePageTests
         semanticSource.ShouldContain("ExpanderShowCaseLangResource SemanticPartStyleDescription");
         semanticSource.ShouldContain("Selector=\"atom|Expander.semantic-object\"");
         semanticSource.ShouldContain("Selector=\"atom|Expander.semantic-function\"");
-        semanticSource.ShouldContain("Value=\"#f0f0f0\"");
-        semanticSource.ShouldContain("Value=\"#141414\"");
-        semanticSource.ShouldContain("Value=\"#f5efff\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillTertiary}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("SizeType=\"Large\"");
         semanticSource.ShouldContain("Property=\"Background\"");
         semanticSource.ShouldContain("Property=\"Padding\"");
@@ -158,18 +159,18 @@ public class ExpanderShowCasePageTests
             defaultDemo.SizeType.ShouldBe(CustomizableSizeType.Middle);
             defaultDemo.IsExpanded.ShouldBeTrue();
             var defaultHeader = FindHeaderDecorator(defaultDemo);
-            AssertSolidColor(defaultHeader.Background, "#f0f0f0");
+            AssertSolidColor(defaultHeader.Background, SharedTokenKind.ColorFillTertiary);
             defaultHeader.Padding.ShouldBe(new Thickness(16, 12));
-            AssertSolidColor(FindTitlePresenter(defaultDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitlePresenter(defaultDemo).Foreground, SharedTokenKind.ColorText);
             FindBodyPresenter(defaultDemo).Padding.ShouldBe(new Thickness(16, 12));
 
             var largeDemo = demos.Single(static expander => expander.Classes.Contains("semantic-function"));
             largeDemo.SizeType.ShouldBe(CustomizableSizeType.Large);
             largeDemo.IsExpanded.ShouldBeTrue();
             var largeHeader = FindHeaderDecorator(largeDemo);
-            AssertSolidColor(largeHeader.Background, "#f5efff");
+            AssertSolidColor(largeHeader.Background, SharedTokenKind.ColorInfoBg);
             largeHeader.Padding.ShouldBe(new Thickness(16, 12));
-            AssertSolidColor(FindTitlePresenter(largeDemo).Foreground, "#141414");
+            AssertSolidColor(FindTitlePresenter(largeDemo).Foreground, SharedTokenKind.ColorText);
             // 主题为 PART_ExpandButton 设置了 IconSizeSM，此处必须由示例的 ExpanderIconStyle 覆盖。
             var largeIcon = FindExpandIcon(largeDemo);
             largeIcon.IconWidth.ShouldBe(20);
@@ -238,11 +239,18 @@ public class ExpanderShowCasePageTests
                     .Single(static icon => icon.Classes.Contains("semantic-icon"));
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static Color GetThemeColor(SharedTokenKind kind)
+    {
+        var application = Application.Current.ShouldNotBeNull();
+        application.TryGetResource(kind, application.ActualThemeVariant, out var resource).ShouldBeTrue();
+        return resource.ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull().Color;
+    }
+
+    private static void AssertSolidColor(IBrush? actual, SharedTokenKind expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(GetThemeColor(expected));
     }
 
     private static string NormalizeMarkup(string source)

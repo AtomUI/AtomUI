@@ -80,12 +80,12 @@ public class LineEditSemanticPartTests
                .ShouldBe([
                    "Classes.semantic-scope-input-frame:AddOnDecoratedBox",
                    "Classes.semantic-prefix:AddOnContentPresenter",
-                   "Classes.semantic-suffix:StackPanel",
+                   "Classes.semantic-suffix:InputAccessoryPanel",
                    "Classes.semantic-clear:InputClearIconButton",
                    "Classes.semantic-count:TextBlock",
                    "Classes.semantic-content:Panel",
                    "Classes.semantic-placeholder:TextBlock",
-                   "Classes.semantic-input:InputTextPresenter"
+                   "Classes.semantic-input:TextPresenter"
                ]);
         markers.ShouldAllBe(static marker =>
             string.Equals(marker.Attribute.Value, "true", StringComparison.OrdinalIgnoreCase));
@@ -175,7 +175,7 @@ public class LineEditSemanticPartTests
     [Theory]
     [InlineData(CustomizableSizeType.Large, 40d, 40d, 38d, 39d)]
     [InlineData(CustomizableSizeType.Middle, 32d, 32d, 30d, 31d)]
-    [InlineData(CustomizableSizeType.Small, 22d, 22d, 20d, 21d)]
+    [InlineData(CustomizableSizeType.Small, 24d, 24d, 22d, 23d)]
     public void Semantic_Markers_Preserve_The_Preset_Size_And_Variant_Baseline(
         CustomizableSizeType sizeType,
         double outlinedHeight,

@@ -10,8 +10,9 @@
 
 | 能力 | 所有权 | AtomUI 增补 |
 | --- | --- | --- |
-| 时钟、关键帧、循环、属性过渡、样条求值 | Avalonia Animation、Style.Animations、Transitions、SplineEasing；Motion 播放直接订阅同一全局时钟 | 时钟经 `Reflection/GlobalClockReflection` 按类型名从 AvaloniaLocator 解析内部 IGlobalClock，其余使用公开入口；不实现第二套帧时钟或贝塞尔求解器 |
+| 时钟、关键帧、循环、属性过渡、样条求值 | Avalonia Animation、Style.Animations、Transitions、SplineEasing；Motion 播放直接订阅同一全局时钟 | 时钟经 `Reflection/GlobalClockReflection` 按类型名从 AvaloniaLocator 解析内部 IGlobalClock；主题提交收束另读取其观察者列表与当前帧时间，成员缺失时退化为不收束；其余使用公开入口；不实现第二套帧时钟或贝塞尔求解器 |
 | 有限显式动效 | AbstractMotion 定义与 Motion 接入 | 定义与组合、每目标请求身份、连续替代、绑定恢复、终态和布局能力 |
+| 主题提交收束 | `MotionSettle`，由 ThemeManager 提交点开启 | 读取全局时钟观察者列表，令提交启动的动画在启动帧内到达终值；合同见 [主题提交动效收束](../../architecture/systems/motion/theme-commit-settle.md) |
 | 初始状态提交 | Transition 初始化协议 | 暂时抑制自动过渡，等待 owner 提交完整基线，再恢复最新过渡来源 |
 | 持续过程反馈 | 对应控件与原生循环动画 | 控件决定运行条件；原生动画推进循环；停止时释放本次样式/运行作用域 |
 | 缺失的插值及兼容契约 | 最小适配器 | 仅保留框架缺少或语义不等价的能力，明确其使用者与差异 |
@@ -29,7 +30,8 @@ Animations/
 │   ├── TransitionInterpolation.cs   # 保留的颜色/阴影等语义适配
 │   └── Initialization/             # TransitionInitialization、会话、可撤销抑制
 ├── AnimationExtensions.cs          # 必要的原生动画生命周期适配
-└── BaseTransitionUtils.cs          # 既有过渡创建契约
+├── BaseTransitionUtils.cs          # 既有过渡创建契约
+└── MotionSettle.cs                 # 主题提交窗口内的动画收束
 ```
 
 `TransitionInitialization` 是模板目标登记入口，`TransitionInitializationSession` 拥有初始化阶段与作用域，

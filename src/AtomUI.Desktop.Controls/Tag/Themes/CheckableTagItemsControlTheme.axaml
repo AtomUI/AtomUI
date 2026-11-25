@@ -20,8 +20,7 @@
             </ItemsPanelTemplate>
         </Setter>
 
+        <!-- ItemSpacing / LineSpacing come from the hosting CheckableTagGroup (TemplateBinding in its template). -->
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="ItemSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
-        <Setter Property="LineSpacing" Value="{atom:SharedTokenResource SpacingXS}" />
     </ControlTheme>
 </ResourceDictionary>

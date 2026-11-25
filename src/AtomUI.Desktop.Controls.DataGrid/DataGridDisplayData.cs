@@ -20,8 +20,6 @@ internal class DataGridDisplayData
 
     internal int RecycledRowCount => _recyclableRows.Count + _fullyRecycledRows.Count;
 
-    internal int RecycledGroupHeaderCount =>
-        _recyclableGroupHeaders.Count + _fullyRecycledGroupHeaders.Count;
     
     private Stack<DataGridRow> _fullyRecycledRows; // list of Rows that have been fully recycled (Collapsed)
     private int _headScrollingElements; // index of the row in _scrollingRows that is the first displayed row
@@ -117,6 +115,11 @@ internal class DataGridDisplayData
         }
         else
         {
+            // 回收池中的行不再被复用，丢弃前解除其对表格的绑定
+            foreach (var row in _recyclableRows.Concat(_fullyRecycledRows))
+            {
+                row.ReleaseOwningGridBindings();
+            }
             _recyclableRows.Clear();
             _fullyRecycledRows.Clear();
             _recyclableGroupHeaders.Clear();
@@ -346,21 +349,4 @@ internal class DataGridDisplayData
             }
         }
     }
-
-#if DEBUG
-    internal void PrintDisplay()
-    {
-        foreach (Control element in GetScrollingElements())
-        {
-            if (element is DataGridRow row)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} Row: {1} ", row.Slot, row.Index));
-            }
-            else if (element is DataGridRowGroupHeader groupHeader)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} GroupHeader: {1}", groupHeader.SourceSlot, groupHeader.SourceGroup?.Key));
-            }
-        }
-    }
-#endif
 }

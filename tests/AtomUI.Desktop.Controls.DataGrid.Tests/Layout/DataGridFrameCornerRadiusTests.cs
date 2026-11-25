@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
@@ -278,7 +279,16 @@ public class DataGridFrameCornerRadiusTests
                 menu.IsOpen.ShouldBeTrue();
                 menu.Bounds.Width.ShouldBeGreaterThan(0);
                 menu.Close();
-                Dispatcher.UIThread.RunJobs();
+                // ContextMenu keeps its host until the default leave finishes.
+                // Preserve all three input checks, after the physical close.
+                var timeout = Stopwatch.StartNew();
+                while (menu.IsOpen && timeout.Elapsed < TimeSpan.FromSeconds(2))
+                {
+                    AvaloniaHeadlessPlatform.ForceRenderTimerTick(1);
+                    Dispatcher.UIThread.RunJobs();
+                    Thread.Sleep(5);
+                }
+                menu.IsOpen.ShouldBeFalse();
             }
         }
         finally

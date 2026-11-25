@@ -1,5 +1,4 @@
 using AtomUI.Controls;
-using AtomUI.Animations;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,69 +12,31 @@ namespace AtomUI.Desktop.Controls;
 
 internal static class PopupUtils
 {
-    internal static ArrowPosition? CalculateArrowPosition(
-        PlacementMode placement,
-        PopupAnchor? anchor,
-        PopupGravity? gravity)
+    internal static Thickness CalculateZoomMotionMargin(Size size, Point origin, double renderScaling)
     {
-        if (!CanEnabledArrow(placement, anchor, gravity))
-        {
-            return null;
-        }
-
-        if (placement != PlacementMode.AnchorAndGravity)
-        {
-            var ret = GetAnchorAndGravity(placement);
-            anchor = ret.Item1;
-            gravity = ret.Item2;
-        }
-
-        ArrowPosition? arrowPosition;
-        switch (anchor, gravity)
-        {
-            case (PopupAnchor.Bottom, PopupGravity.Bottom):
-                arrowPosition = ArrowPosition.Top;
-                break;
-            case (PopupAnchor.Right, PopupGravity.Right):
-                arrowPosition = ArrowPosition.Left;
-                break;
-            case (PopupAnchor.Left, PopupGravity.Left):
-                arrowPosition = ArrowPosition.Right;
-                break;
-            case (PopupAnchor.Top, PopupGravity.Top):
-                arrowPosition = ArrowPosition.Bottom;
-                break;
-            case (PopupAnchor.TopRight, PopupGravity.TopLeft):
-                arrowPosition = ArrowPosition.BottomEdgeAlignedRight;
-                break;
-            case (PopupAnchor.TopLeft, PopupGravity.TopRight):
-                arrowPosition = ArrowPosition.BottomEdgeAlignedLeft;
-                break;
-            case (PopupAnchor.BottomLeft, PopupGravity.BottomRight):
-                arrowPosition = ArrowPosition.TopEdgeAlignedLeft;
-                break;
-            case (PopupAnchor.BottomRight, PopupGravity.BottomLeft):
-                arrowPosition = ArrowPosition.TopEdgeAlignedRight;
-                break;
-            case (PopupAnchor.TopLeft, PopupGravity.BottomLeft):
-                arrowPosition = ArrowPosition.RightEdgeAlignedTop;
-                break;
-            case (PopupAnchor.BottomLeft, PopupGravity.TopLeft):
-                arrowPosition = ArrowPosition.RightEdgeAlignedBottom;
-                break;
-            case (PopupAnchor.TopRight, PopupGravity.BottomRight):
-                arrowPosition = ArrowPosition.LeftEdgeAlignedTop;
-                break;
-            case (PopupAnchor.BottomRight, PopupGravity.TopRight):
-                arrowPosition = ArrowPosition.LeftEdgeAlignedBottom;
-                break;
-            default:
-                arrowPosition = null;
-                break;
-        }
-
-        return arrowPosition;
+        // ZoomBig stays between .8 and 1. Its endpoint union bounds the entire
+        // non-overshooting default curve. Round outwards to physical pixels.
+        var left = Math.Max(0, -origin.X * .2);
+        var top = Math.Max(0, -origin.Y * .2);
+        var right = Math.Max(0, (origin.X - size.Width) * .2);
+        var bottom = Math.Max(0, (origin.Y - size.Height) * .2);
+        return new Thickness(Math.Ceiling(left * renderScaling) / renderScaling,
+            Math.Ceiling(top * renderScaling) / renderScaling,
+            Math.Ceiling(right * renderScaling) / renderScaling,
+            Math.Ceiling(bottom * renderScaling) / renderScaling);
     }
+
+    internal static ArrowPosition? CalculateArrowPosition(PlacementMode placement, PopupAnchor? anchor, PopupGravity? gravity) =>
+        PlacementGeometry.CalculateArrowPosition(placement, anchor, gravity);
+
+    internal static bool IsCanonicalAnchorPlacementMode(PlacementMode placement) =>
+        PlacementGeometry.IsCanonicalAnchorPlacementMode(placement);
+
+    internal static (PopupAnchor, PopupGravity) GetAnchorAndGravity(PlacementMode placement) =>
+        PlacementGeometry.GetAnchorAndGravity(placement);
+
+    internal static Direction FlipDirection(Direction direction, bool isHorizontalFlip, bool isVerticalFlip) =>
+        PlacementGeometry.FlipDirection(direction, isHorizontalFlip, isVerticalFlip);
 
     /// <summary>
     /// 判断是否可以启用箭头，有些组合是不能启用箭头绘制的，因为没有意义
@@ -92,73 +53,9 @@ internal static class PopupUtils
             return false;
         }
 
-        return IsCanonicalAnchorType(placement, anchor, gravity);
+        return PlacementGeometry.IsCanonicalAnchorType(placement, anchor, gravity);
     }
 
-    /// <summary>
-    /// 是否为标准的 anchor 类型
-    /// </summary>
-    /// <param name="placement"></param>
-    /// <param name="anchor"></param>
-    /// <param name="gravity"></param>
-    /// <returns></returns>
-    internal static bool IsCanonicalAnchorType(PlacementMode placement, PopupAnchor? anchor, PopupGravity? gravity)
-    {
-        if (placement == PlacementMode.AnchorAndGravity)
-        {
-            switch (anchor, gravity)
-            {
-                case (PopupAnchor.Bottom, PopupGravity.Bottom):
-                case (PopupAnchor.Right, PopupGravity.Right):
-                case (PopupAnchor.Left, PopupGravity.Left):
-                case (PopupAnchor.Top, PopupGravity.Top):
-                case (PopupAnchor.TopRight, PopupGravity.TopLeft):
-                case (PopupAnchor.TopLeft, PopupGravity.TopRight):
-                case (PopupAnchor.BottomLeft, PopupGravity.BottomRight):
-                case (PopupAnchor.BottomRight, PopupGravity.BottomLeft):
-                case (PopupAnchor.TopLeft, PopupGravity.BottomLeft):
-                case (PopupAnchor.BottomLeft, PopupGravity.TopLeft):
-                case (PopupAnchor.TopRight, PopupGravity.BottomRight):
-                case (PopupAnchor.BottomRight, PopupGravity.TopRight):
-                    break;
-                default:
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    internal static bool IsCanonicalAnchorPlacementMode(PlacementMode placement)
-    {
-        return placement switch
-        {
-            PlacementMode.Bottom => true,
-            PlacementMode.Right => true,
-            PlacementMode.Left => true,
-            PlacementMode.Top => true,
-            PlacementMode.TopEdgeAlignedRight => true,
-            PlacementMode.TopEdgeAlignedLeft => true,
-            PlacementMode.BottomEdgeAlignedLeft => true,
-            PlacementMode.BottomEdgeAlignedRight => true,
-            PlacementMode.LeftEdgeAlignedTop => true,
-            PlacementMode.LeftEdgeAlignedBottom => true,
-            PlacementMode.RightEdgeAlignedTop => true,
-            PlacementMode.RightEdgeAlignedBottom => true,
-            _ => false
-        };
-    }
-
-    internal static (AbstractMotion? open, AbstractMotion? close) CreateMotionForPlacement(PlacementMode placement)
-    {
-        if (!IsCanonicalAnchorPlacementMode(placement))
-        {
-            return (null, null);
-        }
-
-        return (new ZoomBigInMotion(), new ZoomBigOutMotion());
-    }
-    
     public static void ValidateEdge(this PopupAnchor edge)
     {
         if (edge.HasAllFlags(PopupAnchor.Left | PopupAnchor.Right) ||
@@ -188,100 +85,6 @@ internal static class PopupUtils
         return edge;
     }
 
-    public static PopupAnchor FlipX(this PopupAnchor edge)
-    {
-        if (edge.HasAnyFlag(PopupAnchor.HorizontalMask))
-        {
-            edge ^= PopupAnchor.HorizontalMask;
-        }
-
-        return edge;
-    }
-
-    public static PopupAnchor FlipY(this PopupAnchor edge)
-    {
-        if (edge.HasAnyFlag(PopupAnchor.VerticalMask))
-        {
-            edge ^= PopupAnchor.VerticalMask;
-        }
-
-        return edge;
-    }
-
-    public static PopupGravity FlipX(this PopupGravity gravity)
-    {
-        return (PopupGravity)FlipX((PopupAnchor)gravity);
-    }
-
-    public static PopupGravity FlipY(this PopupGravity gravity)
-    {
-        return (PopupGravity)FlipY((PopupAnchor)gravity);
-    }
-
-    internal static Point GetAnchorPoint(Rect anchorRect, PopupAnchor edge)
-    {
-        double x, y;
-        if (edge.HasAllFlags(PopupAnchor.Left))
-        {
-            x = anchorRect.X;
-        }
-        else if (edge.HasAllFlags(PopupAnchor.Right))
-        {
-            x = anchorRect.Right;
-        }
-        else
-        {
-            x = anchorRect.X + anchorRect.Width / 2;
-        }
-
-        if (edge.HasAllFlags(PopupAnchor.Top))
-        {
-            y = anchorRect.Y;
-        }
-        else if (edge.HasAllFlags(PopupAnchor.Bottom))
-        {
-            y = anchorRect.Bottom;
-        }
-        else
-        {
-            y = anchorRect.Y + anchorRect.Height / 2;
-        }
-
-        return new Point(x, y);
-    }
-
-    internal static Point Gravitate(Point anchorPoint, Size size, PopupGravity gravity)
-    {
-        double x, y;
-        if (gravity.HasAllFlags(PopupGravity.Left))
-        {
-            x = -size.Width;
-        }
-        else if (gravity.HasAllFlags(PopupGravity.Right))
-        {
-            x = 0;
-        }
-        else
-        {
-            x = -size.Width / 2;
-        }
-
-        if (gravity.HasAllFlags(PopupGravity.Top))
-        {
-            y = -size.Height;
-        }
-        else if (gravity.HasAllFlags(PopupGravity.Bottom))
-        {
-            y = 0;
-        }
-        else
-        {
-            y = -size.Height / 2;
-        }
-
-        return anchorPoint + new Point(x, y);
-    }
-
     internal static Direction GetDirection(PlacementMode placement)
     {
         return placement switch
@@ -303,34 +106,6 @@ internal static class PopupUtils
             PlacementMode.BottomEdgeAlignedRight => Direction.Bottom,
             _ => throw new ArgumentOutOfRangeException(nameof(placement), placement, "Invalid value for PlacementMode")
         };
-    }
-
-    internal static Direction FlipDirection(Direction direction, bool isHorizontalFlip, bool isVerticalFlip)
-    {
-        if (isHorizontalFlip)
-        {
-            if (direction == Direction.Left)
-            {
-                direction = Direction.Right;
-            }
-            else if (direction == Direction.Right)
-            {
-                direction = Direction.Left;
-            }
-        }
-
-        if (isVerticalFlip)
-        {
-            if (direction == Direction.Top)
-            {
-                direction = Direction.Bottom;
-            }
-            else if (direction == Direction.Bottom)
-            {
-                direction = Direction.Top;
-            }
-        }
-        return direction;
     }
 
     /// <summary>
@@ -455,8 +230,11 @@ internal static class PopupUtils
         Point offset,
         Rect bounds)
     {
-        Rect GetUnconstrained(PopupAnchor a, PopupGravity g) =>
-            new Rect(Gravitate(GetAnchorPoint(anchorRect, a), popupSize, g) + offset, popupSize);
+        Rect GetUnconstrained(PopupAnchor a, PopupGravity g)
+        {
+            var anchorPoint = PlacementGeometry.GetAnchorPoint(anchorRect, a);
+            return new Rect(PlacementGeometry.Gravitate(anchorPoint, popupSize, g) + offset, popupSize);
+        }
 
         bool FitsInBounds(Rect rc, PopupAnchor edge)
         {
@@ -480,7 +258,7 @@ internal static class PopupUtils
         if (!FitsInBounds(geo, PopupAnchor.HorizontalMask)
             && constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.FlipX))
         {
-            var flipped = GetUnconstrained(anchor.FlipX(), gravity.FlipX());
+            var flipped = GetUnconstrained(PlacementGeometry.FlipX(anchor), PlacementGeometry.FlipX(gravity));
             if (FitsInBounds(flipped, PopupAnchor.HorizontalMask))
             {
                 flipX = true;
@@ -519,7 +297,7 @@ internal static class PopupUtils
         if (!FitsInBounds(geo, PopupAnchor.VerticalMask)
             && constraintAdjustment.HasAllFlags(PopupPositionerConstraintAdjustment.FlipY))
         {
-            var flipped = GetUnconstrained(anchor.FlipY(), gravity.FlipY());
+            var flipped = GetUnconstrained(PlacementGeometry.FlipY(anchor), PlacementGeometry.FlipY(gravity));
             if (FitsInBounds(flipped, PopupAnchor.VerticalMask))
             {
                 flipY = true;
@@ -634,26 +412,6 @@ internal static class PopupUtils
                thickness.Bottom > 0;
     }
 
-    internal static (PopupAnchor, PopupGravity) GetAnchorAndGravity(PlacementMode placement)
-    {
-        return placement switch
-        {
-            PlacementMode.Bottom => (PopupAnchor.Bottom, PopupGravity.Bottom),
-            PlacementMode.Right => (PopupAnchor.Right, PopupGravity.Right),
-            PlacementMode.Left => (PopupAnchor.Left, PopupGravity.Left),
-            PlacementMode.Top => (PopupAnchor.Top, PopupGravity.Top),
-            PlacementMode.TopEdgeAlignedRight => (PopupAnchor.TopRight, PopupGravity.TopLeft),
-            PlacementMode.TopEdgeAlignedLeft => (PopupAnchor.TopLeft, PopupGravity.TopRight),
-            PlacementMode.BottomEdgeAlignedLeft => (PopupAnchor.BottomLeft, PopupGravity.BottomRight),
-            PlacementMode.BottomEdgeAlignedRight => (PopupAnchor.BottomRight, PopupGravity.BottomLeft),
-            PlacementMode.LeftEdgeAlignedTop => (PopupAnchor.TopLeft, PopupGravity.BottomLeft),
-            PlacementMode.LeftEdgeAlignedBottom => (PopupAnchor.BottomLeft, PopupGravity.TopLeft),
-            PlacementMode.RightEdgeAlignedTop => (PopupAnchor.TopRight, PopupGravity.BottomRight),
-            PlacementMode.RightEdgeAlignedBottom => (PopupAnchor.BottomRight, PopupGravity.TopRight),
-            _ => (PopupAnchor.None, PopupGravity.None)
-        };
-    }
-
     internal static Point CalculatePointAtCenterDelta(Control anchorTarget,
                                                       AbstractArrowDecoratedBox arrowDecoratedBox,
                                                       PlacementMode placement,
@@ -695,7 +453,7 @@ internal static class PopupUtils
 
         return new Point(offsetX, offsetY);
     }
-    
+
     internal static (double offsetX, double offsetY) CalculateShadowOffset(ArrowPosition arrowPosition, Thickness shadowThickness, Rect arrowBounds)
     {
         var shadowOffsetX = 0.0d;
@@ -802,14 +560,14 @@ internal static class PopupUtils
                 direction = GetDirection(requestedPlacement);
                 direction = FlipDirection(direction.Value, flipX, flipY);
             }
-            
+
             if (!isUseOverlayHost)
             {
                 var arrowPosition = CalculateArrowPosition(requestedPlacement, anchor, gravity);
                 if (arrowPosition != null)
                 {
                     arrowPosition = ArrowPositionUtils.FlipArrowPosition(arrowPosition.Value, flipX, flipY);
-                    
+
                     var (shadowOffsetX, shadowOffsetY) = CalculateShadowOffset(arrowPosition.Value,
                         shadowThickness, arrowIndicatorLayoutBounds);
 
@@ -839,7 +597,7 @@ internal static class PopupUtils
                 ApplyMarginToAnchor(direction, marginToAnchor, ref hOffset, ref vOffset);
             }
         }
-        
+
         placement.Offset = new Point(hOffset, vOffset);
         if (isUseOverlayHost && TryConstrainOverlayPopupToVisibleFrame(
                 placement,

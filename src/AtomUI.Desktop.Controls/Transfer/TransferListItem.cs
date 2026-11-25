@@ -1,7 +1,9 @@
+using AtomUI.Theme;
 using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+[TokenOwnerTransparent]
 public partial class TransferListItem : ListViewItem
 {
     #region 内部属性定义

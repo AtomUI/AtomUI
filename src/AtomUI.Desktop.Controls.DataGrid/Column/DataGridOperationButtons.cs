@@ -2,7 +2,6 @@ using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
@@ -57,6 +56,7 @@ internal class DataGridOperationButtons : TemplatedControl
     private PopupConfirm? _deleteAction;
     private HyperLinkTextBlock? _saveAction;
     private PopupConfirm? _cancelAction;
+    private IDisposable? _owningGridBinding;
     
     internal DataGrid? OwningGrid { get; set; }
     internal DataGridRow? OwningRow { get; set; }
@@ -67,6 +67,19 @@ internal class DataGridOperationButtons : TemplatedControl
             (buttons, args) => buttons.HandleActionClick(args));
         PopupConfirm.ConfirmedEvent.AddClassHandler<DataGridOperationButtons>(
             (buttons, args) => buttons.HandlePopupConfirmed(args));
+    }
+
+    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBinding 释放
+    internal void BindOwningGridProperties(DataGrid owningGrid)
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = Bind(IsMotionEnabledProperty, owningGrid[!DataGrid.IsMotionEnabledProperty]);
+    }
+
+    internal void ReleaseOwningGridBinding()
+    {
+        _owningGridBinding?.Dispose();
+        _owningGridBinding = null;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -86,7 +99,7 @@ internal class DataGridOperationButtons : TemplatedControl
         }
         else if (ReferenceEquals(e.Source, _saveAction))
         {
-            EndEditingRow();
+            EndEditingRow(DataGridEditAction.Commit);
         }
     }
 
@@ -98,7 +111,7 @@ internal class DataGridOperationButtons : TemplatedControl
         }
         else if (ReferenceEquals(e.Source, _cancelAction))
         {
-            EndEditingRow();
+            EndEditingRow(DataGridEditAction.Cancel);
         }
     }
 
@@ -117,19 +130,20 @@ internal class DataGridOperationButtons : TemplatedControl
         }
     }
 
+    // IsEditing follows the row's whole-row editing state, so the buttons only ask the grid to change it.
     private void BeginEditingRow()
     {
         if (OwningRow != null && OwningGrid != null)
         {
-            SetValue(IsEditingProperty, true, BindingPriority.Template);
+            OwningGrid.BeginWholeRowEdit(OwningRow);
         }
     }
     
-    private void EndEditingRow()
+    private void EndEditingRow(DataGridEditAction editAction)
     {
         if (OwningRow != null && OwningGrid != null)
         {
-            SetValue(IsEditingProperty, false, BindingPriority.Template);
+            OwningGrid.EndWholeRowEdit(OwningRow, editAction);
         }
     }
 

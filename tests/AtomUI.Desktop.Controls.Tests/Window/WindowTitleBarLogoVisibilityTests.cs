@@ -115,7 +115,7 @@ public class WindowTitleBarLogoVisibilityTests
     }
 
     [Fact]
-    public void Title_Bar_Logo_Auto_Mode_Uses_Title_Content_Platform_And_Fullscreen_State()
+    public void Title_Bar_Logo_Auto_Mode_Uses_Title_Content_And_Platform_Without_Fullscreen_Suppression()
     {
         var source = File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/WindowTitleBar/WindowTitleBar.cs"));
         var titleBar = new AtomUI.Desktop.Controls.WindowTitleBar
@@ -128,14 +128,14 @@ public class WindowTitleBarLogoVisibilityTests
         source.ShouldContain("WindowTitleBarLogoVisibility.Always => hasLogo");
         source.ShouldContain("WindowTitleBarLogoVisibility.Never => false");
         source.ShouldContain("_ => hasLogo && ShouldShowLogoInAutoMode()");
-        source.ShouldContain("HostWindowState != WindowState.FullScreen && isLogoVisibleByMode");
-        source.ShouldContain("HostWindowState != WindowState.FullScreen");
-        source.ShouldContain("OsType == OsType.macOS");
+        source.ShouldContain("IsEffectiveLogoVisible = isLogoVisibleByMode;");
+        source.ShouldNotContain("HostWindowState != WindowState.FullScreen");
+        source.ShouldContain("return OsType != OsType.macOS;");
         source.ShouldContain("string text => !string.IsNullOrWhiteSpace(text)");
 
         GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
         titleBar.HostWindowState = WindowState.FullScreen;
-        GetIsEffectiveLogoVisible(titleBar).ShouldBeFalse();
+        GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
         titleBar.HostWindowState = WindowState.Normal;
         GetIsEffectiveLogoVisible(titleBar).ShouldBeTrue();
     }
@@ -198,11 +198,6 @@ public class WindowTitleBarLogoVisibilityTests
         source.ShouldContain("public WindowTitleBarLogoVisibility LogoVisibility");
         source.ShouldContain(
             "titleBar.Bind(WindowTitleBar.LogoVisibilityProperty, this.GetObservable(LogoVisibilityProperty))");
-        source.ShouldContain("IsEffectiveFullscreenLogoVisibleProperty");
-        source.ShouldContain("EffectiveFullscreenLogoProperty");
-        source.ShouldContain("EffectiveFullscreenLogoTemplateProperty");
-        source.ShouldContain("UpdateEffectiveFullscreenLogoVisible()");
-        source.ShouldContain("WindowState == WindowState.FullScreen && isLogoVisibleByMode");
         // Effective Logo 模式：回退解析只进 EffectiveLogo/EffectiveLogoTemplate 渲染层，
         // 框架不再向 Logo/LogoTemplate/Icon 写入任何默认值
         source.ShouldContain("UpdateEffectiveLogo()");
@@ -228,30 +223,6 @@ public class WindowTitleBarLogoVisibilityTests
         Regex.Matches(source, "ContentTemplate=\"\\{TemplateBinding EffectiveLogoPresenterContentTemplate\\}\"")
              .Count
              .ShouldBe(3);
-    }
-
-    [Fact]
-    public void Fullscreen_Title_Bar_Templates_Hide_Logo_With_Effective_Fullscreen_State()
-    {
-        var fullscreenPopoverSource =
-            File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Themes/FullscreenPopoverLayerTheme.axaml"));
-        var drawnDecorationsSource =
-            File.ReadAllText(GetRepoFile("src/AtomUI.Desktop.Controls/Window/Themes/WindowDrawnDecorationsTheme.axaml"));
-
-        fullscreenPopoverSource.ShouldContain(
-            "IsVisible=\"{Binding $parent[atom:Window].IsEffectiveFullscreenLogoVisible}\"");
-        drawnDecorationsSource.ShouldContain(
-            "IsVisible=\"{Binding $parent[atom:Window].IsEffectiveFullscreenLogoVisible}\"");
-
-        foreach (var source in new[] { fullscreenPopoverSource, drawnDecorationsSource })
-        {
-            source.ShouldContain("Content=\"{Binding $parent[atom:Window].EffectiveFullscreenLogo}\"");
-            source.ShouldContain(
-                "ContentTemplate=\"{Binding $parent[atom:Window].EffectiveFullscreenLogoTemplate}\"");
-            source.ShouldNotContain("Content=\"{Binding $parent[atom:Window].EffectiveLogo}\"");
-            source.ShouldNotContain(
-                "ContentTemplate=\"{Binding $parent[atom:Window].EffectiveLogoTemplate}\"");
-        }
     }
 
     private static string GetRepoFile(string relativePath)

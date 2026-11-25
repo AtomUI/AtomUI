@@ -1,7 +1,8 @@
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using AtomUI.Theme.Algorithms;
+using System.Runtime.CompilerServices;
+using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Resources;
 using AtomUI.Registration;
 
@@ -13,22 +14,34 @@ internal sealed class ThemeSchemaRegistry
     private readonly FrozenDictionary<string, TokenDescriptor> _globalTokensByName;
     private readonly FrozenDictionary<ControlTokenIdentity, ControlTokenDescriptor> _controlsByIdentity;
     private readonly FrozenDictionary<Type, ControlTokenDescriptor> _controlsByType;
-    private readonly FrozenDictionary<ThemeAlgorithm, ThemeAlgorithmDescriptor> _algorithmsByAlgorithm;
+    private readonly FrozenDictionary<string, DesignLanguageDescriptor> _languagesById;
+    private readonly FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>
+        _tokenRulesByKey;
+    // One table per language, indexed by control slot, built on the language's first use.
+    private readonly ConditionalWeakTable<DesignLanguageDescriptor, ControlTokenRuleDescriptor?[]> _tokenRuleTables = new();
+    // Constructor-only: written by the constructors.
+    private ThemeSchemaRevision _revision;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
     private readonly object?[] _sharedResourceKeys;
     private readonly SchemaPrefixState _resourceKeySchemaPrefix;
 
     internal ThemeSchemaRegistry(IEnumerable<TokenDescriptor> globalTokens, StartupPackageIndex index,
-        IEnumerable<ThemeAlgorithmDescriptor> algorithms)
-        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), algorithms)
+        IEnumerable<DesignLanguageDescriptor> languages,
+        IEnumerable<ControlTokenRuleDescriptor>? rules)
+        // Chains straight to the private constructor: a forwarding overload in between would be one more jitted
+        // method on every startup.
+        : this(globalTokens, Array.Empty<ControlTokenDescriptor>(), languages, null, null, rules)
     {
         _startupIndex = index;
         Controls = new StartupControlList(index);
-        Revision = index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
+        // Neither the compiled stamp nor Core's global fingerprint sees the languages and rules of packages.
+        _revision = FoldLanguages(index.CompiledStamp is { } stamp ? new ThemeSchemaRevision(stamp) :
             ComputeCombinedRevision(Generated.AtomUICore.GeneratedThemeSchema.GlobalSchemaFingerprint,
             index.Packages.Select(package => new PackageSchemaFingerprint(package.Definition.Id,
                 package.Definition.Data.SchemaFingerprint)).Concat(index.ManualSchemaStamp is { } manualStamp
-                    ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray());
+                    ? [new PackageSchemaFingerprint("$manual", manualStamp)] : Array.Empty<PackageSchemaFingerprint>()).ToArray()),
+            Languages, ControlTokenRules);
+        ValidateTokenRuleCoverage();
     }
 
     internal bool HasSameControlSlot(ThemeSchemaRegistry previous, int slot)
@@ -85,10 +98,12 @@ internal sealed class ThemeSchemaRegistry
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
         IEnumerable<ControlTokenDescriptor> controls,
-        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
-        IEnumerable<ControlThemeAssetDescriptor>? themeAssets = null)
-        : this(globalTokens, controls, algorithms, themeAssets, null)
+        IEnumerable<DesignLanguageDescriptor> languages,
+        IEnumerable<ControlThemeAssetDescriptor>? themeAssets = null,
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null)
+        : this(globalTokens, controls, languages, themeAssets, null, rules)
     {
+        ValidateTokenRuleCoverage();
     }
 
     /// <summary>
@@ -98,24 +113,28 @@ internal sealed class ThemeSchemaRegistry
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
         IEnumerable<ControlTokenDescriptor> controls,
-        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<DesignLanguageDescriptor> languages,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
         ulong globalSchemaFingerprint,
-        IReadOnlyList<PackageSchemaFingerprint> packageFingerprints)
-        : this(globalTokens, controls, algorithms, themeAssets, (globalSchemaFingerprint, packageFingerprints))
+        IReadOnlyList<PackageSchemaFingerprint> packageFingerprints,
+        IEnumerable<ControlTokenRuleDescriptor>? rules = null)
+        : this(globalTokens, controls, languages, themeAssets, (globalSchemaFingerprint, packageFingerprints),
+            rules)
     {
+        ValidateTokenRuleCoverage();
     }
 
     private ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
         IEnumerable<ControlTokenDescriptor> controls,
-        IEnumerable<ThemeAlgorithmDescriptor> algorithms,
+        IEnumerable<DesignLanguageDescriptor> languages,
         IEnumerable<ControlThemeAssetDescriptor>? themeAssets,
-        (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence)
+        (ulong GlobalSchemaFingerprint, IReadOnlyList<PackageSchemaFingerprint> Packages)? combinedRevisionEvidence,
+        IEnumerable<ControlTokenRuleDescriptor>? rules)
     {
         ArgumentNullException.ThrowIfNull(globalTokens);
         ArgumentNullException.ThrowIfNull(controls);
-        ArgumentNullException.ThrowIfNull(algorithms);
+        ArgumentNullException.ThrowIfNull(languages);
         themeAssets ??= Array.Empty<ControlThemeAssetDescriptor>();
 
         // Generated registrations already arrive canonically ordered; the O(n) check lets that input
@@ -132,11 +151,12 @@ internal sealed class ThemeSchemaRegistry
             static source => source.OrderBy(static descriptor => descriptor.Identity.Catalog, StringComparer.Ordinal)
                                    .ThenBy(static descriptor => descriptor.Identity.Id, StringComparer.Ordinal)
                                    .ToArray());
-        var algorithmArray = ToOrderedArray(
-            algorithms,
-            static descriptor => (int)descriptor.Algorithm,
-            Comparer<int>.Default,
-            static source => source.OrderBy(static descriptor => descriptor.Algorithm).ToArray());
+        var languageArray = ToOrderedArray(
+            languages,
+            static descriptor => descriptor.Id,
+            StringComparer.Ordinal,
+            static source => source.OrderBy(static descriptor => descriptor.Id, StringComparer.Ordinal).ToArray());
+        var ruleArray = OrderTokenRules(rules);
         var assetArray = ToOrderedArray(
             themeAssets,
             static descriptor => descriptor.AssetUri.ToString(),
@@ -168,10 +188,10 @@ internal sealed class ThemeSchemaRegistry
             "global Token");
         foreach (var descriptor in globalArray)
         {
-            if (descriptor.Stage == TokenStage.Control)
+            if (descriptor.Stage is TokenStage.Control or TokenStage.Language)
             {
                 throw new ThemeSchemaException(
-                    $"Global Token '{descriptor.Name}' cannot use the Control stage.");
+                    $"Global Token '{descriptor.Name}' cannot use the {descriptor.Stage} stage.");
             }
         }
 
@@ -194,24 +214,32 @@ internal sealed class ThemeSchemaRegistry
             controlInputMap[controlArray[slot].Identity] = controlArray[slot];
         }
 
-        var algorithmMap = BuildUniqueMap(
-            algorithmArray,
-            static descriptor => descriptor.Algorithm,
-            EqualityComparer<ThemeAlgorithm>.Default,
-            "algorithm");
+        var languageMap = BuildUniqueMap(
+            languageArray,
+            static descriptor => descriptor.Id,
+            StringComparer.Ordinal,
+            "design language");
+        foreach (var language in languageArray)
+        {
+            ValidateLanguage(language, globalMap);
+        }
 
         GlobalTokens          = globalTokensView;
         Controls              = Array.AsReadOnly(controlArray);
-        Algorithms            = Array.AsReadOnly(algorithmArray);
+        Languages             = Array.AsReadOnly(languageArray);
+        ControlTokenRules    = Array.AsReadOnly(ruleArray);
         ThemeAssets           = Array.AsReadOnly(assetArray);
         if (combinedRevisionEvidence is { } evidence)
         {
             ArgumentNullException.ThrowIfNull(evidence.Packages);
-            Revision = ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages);
+            _revision = FoldLanguages(
+                ComputeCombinedRevision(evidence.GlobalSchemaFingerprint, evidence.Packages), languageArray,
+                ruleArray);
         }
         else
         {
-            Revision = ComputeRevision(globalArray, controlArray, algorithmArray, assetArray);
+            _revision = FoldLanguages(ComputeRevision(globalArray, controlArray, assetArray), languageArray,
+                ruleArray);
         }
         _globalTokensByName   = globalMap.ToFrozenDictionary(StringComparer.Ordinal);
         _controlsByIdentity   = controlInputMap.ToFrozenDictionary();
@@ -221,56 +249,66 @@ internal sealed class ThemeSchemaRegistry
                                     EqualityComparer<Type>.Default,
                                     "Control CLR type")
                                 .ToFrozenDictionary();
-        _algorithmsByAlgorithm = algorithmMap.ToFrozenDictionary();
+        _languagesById        = languageMap.ToFrozenDictionary(StringComparer.Ordinal);
+        _tokenRulesByKey     = BuildTokenRuleMap(ruleArray);
         _controlResourceSlotsByKey = CreateControlResourceSlotMap(controlArray);
         _sharedResourceKeys = CreateSharedResourceKeys(globalArray);
     }
 
     public IReadOnlyList<TokenDescriptor> GlobalTokens { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
-    public IReadOnlyList<ThemeAlgorithmDescriptor> Algorithms { get; }
-    public ThemeSchemaRevision Revision { get; }
+    /// <summary>The enabled design languages, ordered by identity.</summary>
+    public IReadOnlyList<DesignLanguageDescriptor> Languages { get; }
+
+    /// <summary>
+    /// The registered control rules, ordered by language token type and then control identity. A rule
+    /// whose language or control is not registered is kept here but never called.
+    /// </summary>
+    internal IReadOnlyList<ControlTokenRuleDescriptor> ControlTokenRules { get; }
+    public ThemeSchemaRevision Revision => _revision;
     // A structural revision does not identify descriptor callbacks or binding ownership.
     // The key carries this small identity instead of retaining the entire registry.
     internal object BindingIdentity { get; } = new();
     internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
 
     /// <summary>
-    /// 启动 Prepare 专用：只含全局 Token 与算法，不含控件描述。主题定义绑定在此模式下跳过控件段，
+    /// 启动 Prepare 专用：只含全局 Token 与语言，不含控件描述。主题定义绑定在此模式下跳过控件段，
     /// 因为控件段只影响控件层 Token，全局层结果与完整 registry 相同。
     /// </summary>
     internal bool IsGlobalOnly { get; private init; }
 
-    internal static ThemeSchemaRegistry CreateGlobalOnly() =>
+    internal static ThemeSchemaRegistry CreateGlobalOnly(IReadOnlyList<DesignLanguageDescriptor> languages) =>
         new(Generated.AtomUICore.GeneratedThemeSchema.GetGlobalTokens(),
             Array.Empty<ControlTokenDescriptor>(),
-            Generated.AtomUICore.GeneratedThemeSchema.GetAlgorithms())
+            languages)
         {
             IsGlobalOnly = true
         };
 
     // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。
     // 使用精确对象身份也覆盖自定义 setter/factory 的行为，不能仅比较名字或版本号。
-    internal bool HasSameGlobalSchema(ThemeSchemaRegistry other)
+    // 新增的语言不影响已编译的全局结果（语言由配置按身份携带），因此只要求 previous 的每个语言描述符在这里按引用存在。
+    internal bool ExtendsGlobalSchemaOf(ThemeSchemaRegistry previous)
     {
-        if (ReferenceEquals(this, other))
+        ArgumentNullException.ThrowIfNull(previous);
+        if (ReferenceEquals(this, previous))
         {
             return true;
         }
-        if (GlobalTokens.Count != other.GlobalTokens.Count || Algorithms.Count != other.Algorithms.Count)
+        if (GlobalTokens.Count != previous.GlobalTokens.Count || Languages.Count < previous.Languages.Count)
         {
             return false;
         }
         for (var index = 0; index < GlobalTokens.Count; index++)
         {
-            if (!ReferenceEquals(GlobalTokens[index], other.GlobalTokens[index]))
+            if (!ReferenceEquals(GlobalTokens[index], previous.GlobalTokens[index]))
             {
                 return false;
             }
         }
-        for (var index = 0; index < Algorithms.Count; index++)
+        foreach (var language in previous.Languages)
         {
-            if (!ReferenceEquals(Algorithms[index], other.Algorithms[index]))
+            if (!_languagesById.TryGetValue(language.Id, out var current) || !ReferenceEquals(current, language))
             {
                 return false;
             }
@@ -454,11 +492,120 @@ internal sealed class ThemeSchemaRegistry
         return _controlsByType.TryGetValue(controlType, out descriptor);
     }
 
-    internal bool TryGetAlgorithm(
-        ThemeAlgorithm algorithm,
-        [NotNullWhen(true)] out ThemeAlgorithmDescriptor? descriptor)
+    internal bool TryGetLanguage(string id, [NotNullWhen(true)] out DesignLanguageDescriptor? descriptor)
     {
-        return _algorithmsByAlgorithm.TryGetValue(algorithm, out descriptor);
+        ArgumentNullException.ThrowIfNull(id);
+        return _languagesById.TryGetValue(id, out descriptor);
+    }
+
+    /// <summary>
+    /// The rule of the control in <paramref name="controlSlot"/> under <paramref name="language"/>: the first one
+    /// registered along the language token type's base types, from the most specific to <see cref="LanguageDesignToken"/>
+    /// (spec 6.1). <see langword="null"/> for a control without control tokens.
+    /// </summary>
+    internal ControlTokenRuleDescriptor? FindControlTokenRule(DesignLanguageDescriptor language, int controlSlot)
+    {
+        ArgumentNullException.ThrowIfNull(language);
+        var table = _tokenRuleTables.GetValue(language, CreateTokenRuleTable);
+        return table[controlSlot];
+    }
+
+    /// <summary>Finds the rule registered for (<paramref name="languageTokenType"/>, <paramref name="control"/>) along the type chain.</summary>
+    internal ControlTokenRuleDescriptor? FindControlTokenRule(Type languageTokenType, ControlTokenIdentity control)
+    {
+        for (var type = languageTokenType;
+             type is not null && typeof(LanguageDesignToken).IsAssignableFrom(type);
+             type = type.BaseType)
+        {
+            if (_tokenRulesByKey.TryGetValue((type, control), out var rule))
+            {
+                return rule;
+            }
+        }
+
+        return null;
+    }
+
+    private ControlTokenRuleDescriptor?[] CreateTokenRuleTable(DesignLanguageDescriptor language)
+    {
+        var table = new ControlTokenRuleDescriptor?[Controls.Count];
+        for (var slot = 0; slot < table.Length; slot++)
+        {
+            if (ControlHasOwnTokens(slot))
+            {
+                table[slot] = FindControlTokenRule(language.LanguageTokenType, GetControlIdentity(slot));
+            }
+        }
+
+        return table;
+    }
+
+    /// <summary>
+    /// Spec 8, check 1: every enabled language finds a rule for every control token class of every enabled
+    /// control package. The message names the value package that is missing.
+    /// </summary>
+    private void ValidateTokenRuleCoverage()
+    {
+        if (Languages.Count == 0)
+        {
+            return;
+        }
+
+        List<string>? missing = null;
+        foreach (var language in Languages)
+        {
+            for (var slot = 0; slot < Controls.Count; slot++)
+            {
+                if (!ControlHasOwnTokens(slot))
+                {
+                    continue;
+                }
+
+                var identity = GetControlIdentity(slot);
+                if (FindControlTokenRule(language.LanguageTokenType, identity) is { } found)
+                {
+                    // Spec 8, check 4: the value package was built against the loaded control package's token schema.
+                    TokenSchemaDigests.Validate(found.ValuePackage, found.TokenType.Assembly);
+                }
+                else
+                {
+                    var assembly = identity.OwnerType?.Assembly.GetName().Name ?? identity.Catalog;
+                    (missing ??= []).Add($"'{identity}' under '{language.Id}' (install and enable '{assembly}.Themes.{language.Id}')");
+                }
+            }
+        }
+
+        if (missing is not null)
+        {
+            throw new ThemeSchemaException(
+                "Controls without a token rule in an enabled design language: " + string.Join(", ", missing.Take(16)) +
+                (missing.Count > 16 ? $", and {missing.Count - 16} more." : "."));
+        }
+    }
+
+    /// <summary>
+    /// Validates the rules a package append brings, where this registry is the appended one and
+    /// <paramref name="previous"/> the committed one. A new rule is rejected when a committed language would
+    /// find it for a committed control: it would change committed values.
+    /// </summary>
+    internal void ValidateAppendedTokenRules(ThemeSchemaRegistry previous)
+    {
+        ArgumentNullException.ThrowIfNull(previous);
+        foreach (var descriptor in ControlTokenRules)
+        {
+            if (previous._tokenRulesByKey.TryGetValue((descriptor.LanguageTokenType, descriptor.Control), out var committed) &&
+                ReferenceEquals(committed, descriptor))
+            {
+                continue;
+            }
+            if (previous.TryGetControl(descriptor.Control, out _) &&
+                previous.Languages.Any(language => descriptor.LanguageTokenType.IsAssignableFrom(language.LanguageTokenType)))
+            {
+                throw new ThemeLoadException(
+                    $"Package append cannot add a token rule for the already registered control '{descriptor.Control}' " +
+                    $"under a registered language ('{descriptor.LanguageTokenType.Name}').");
+            }
+        }
     }
 
     internal bool TryGetControlResourceSlot(object resourceKey, out int controlSlot)
@@ -659,10 +806,113 @@ internal sealed class ThemeSchemaRegistry
         return new ThemeSchemaRevision(fingerprint.Value);
     }
 
+    // Compile-time revisions (startup image stamp, Core's global fingerprint) cover only the token schema. The languages
+    // and rules of packages are folded in on every path; their revisions are the module version ids of their
+    // assemblies, so a code change invalidates every cache that depends on them.
+    private static ThemeSchemaRevision FoldLanguages(
+        ThemeSchemaRevision revision,
+        IReadOnlyList<DesignLanguageDescriptor> languages,
+        IReadOnlyList<ControlTokenRuleDescriptor> rules)
+    {
+        if (languages.Count == 0 && rules.Count == 0)
+        {
+            return revision;
+        }
+        var fingerprint = new SchemaFingerprintBuilder();
+        fingerprint.Add("AtomUI.DesignLanguageRevision");
+        fingerprint.Add(1);
+        fingerprint.Add(revision.Value);
+        fingerprint.Add(languages.Count);
+        foreach (var language in languages)
+        {
+            fingerprint.Add(language.Id);
+            fingerprint.Add(language.Revision.ToString("N", CultureInfo.InvariantCulture));
+            fingerprint.Add(language.LanguageTokens.Count);
+            foreach (var token in language.LanguageTokens)
+            {
+                fingerprint.Add(token.Name);
+                fingerprint.Add((byte)token.Stage);
+            }
+        }
+        fingerprint.Add(rules.Count);
+        foreach (var rule in rules)
+        {
+            fingerprint.Add(rule.LanguageTokenType.FullName ?? rule.LanguageTokenType.Name);
+            fingerprint.Add(rule.Control.Catalog);
+            fingerprint.Add(rule.Control.Id);
+            fingerprint.Add(rule.Revision.ToString("N", CultureInfo.InvariantCulture));
+        }
+        return new ThemeSchemaRevision(fingerprint.Value);
+    }
+
+    private static ControlTokenRuleDescriptor[] OrderTokenRules(IEnumerable<ControlTokenRuleDescriptor>? rules)
+    {
+        if (rules is null)
+        {
+            return Array.Empty<ControlTokenRuleDescriptor>();
+        }
+        var array = rules.ToArray();
+        foreach (var descriptor in array)
+        {
+            if (descriptor is null)
+            {
+                throw new ArgumentException("Control rule descriptors cannot contain null.", nameof(rules));
+            }
+        }
+        Array.Sort(array, static (left, right) =>
+        {
+            var result = string.CompareOrdinal(left.LanguageTokenType.FullName, right.LanguageTokenType.FullName);
+            return result != 0 ? result : ControlIdentityKeyComparer.Instance.Compare(left.Control, right.Control);
+        });
+        return array;
+    }
+
+    private static FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>
+        BuildTokenRuleMap(IReadOnlyList<ControlTokenRuleDescriptor> rules)
+    {
+        var map = new Dictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>(
+            rules.Count);
+        foreach (var descriptor in rules)
+        {
+            if (!map.TryAdd((descriptor.LanguageTokenType, descriptor.Control), descriptor))
+            {
+                throw new ThemeSchemaException(
+                    $"Duplicate control token rule for '{descriptor.LanguageTokenType.Name}' and control '{descriptor.Control}'.");
+            }
+        }
+        return map.ToFrozenDictionary();
+    }
+
+    private static void ValidateLanguage(DesignLanguageDescriptor language,
+        IReadOnlyDictionary<string, TokenDescriptor> globalTokens)
+    {
+        ValidateDenseSlots(language.LanguageTokens, static token => token.Slot, $"{language.Id} language Token");
+        foreach (var token in language.LanguageTokens)
+        {
+            if (token.Stage is not (TokenStage.Seed or TokenStage.Language))
+            {
+                throw new ThemeSchemaException(
+                    $"Language Token '{language.Id}:{token.Name}' must use the Seed or Language stage.");
+            }
+            if (globalTokens.ContainsKey(token.Name))
+            {
+                throw new ThemeSchemaException(
+                    $"Language Token '{language.Id}:{token.Name}' conflicts with a Global Token.");
+            }
+        }
+        foreach (var seed in language.Axes.AdjustableSeeds)
+        {
+            if (seed.Stage != TokenStage.Seed)
+            {
+                throw new ThemeSchemaException(
+                    $"Design language '{language.Id}' declares '{seed.Name}' as an adjustable seed, but it is not a seed.");
+            }
+        }
+    }
+
     private static ThemeSchemaRevision ComputeRevision(
         IReadOnlyList<TokenDescriptor> globalTokens,
         IReadOnlyList<ControlTokenDescriptor> controls,
-        IReadOnlyList<ThemeAlgorithmDescriptor> algorithms,
         IReadOnlyList<ControlThemeAssetDescriptor> themeAssets)
     {
         var fingerprint = new SchemaFingerprintBuilder();
@@ -686,14 +936,6 @@ internal sealed class ThemeSchemaRegistry
             {
                 AddToken(ref fingerprint, token, typeNames);
             }
-        }
-
-        fingerprint.Add(algorithms.Count);
-        foreach (var algorithm in algorithms)
-        {
-            fingerprint.Add((int)algorithm.Algorithm);
-            fingerprint.Add(algorithm.Revision);
-            fingerprint.Add((byte)algorithm.AppearanceEffect);
         }
 
         fingerprint.Add(themeAssets.Count);

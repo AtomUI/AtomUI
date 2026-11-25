@@ -18,7 +18,10 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `CellFontSize`、`CellFontSizeMD`、`CellFontSizeSM`、`SelectionColumnWidth` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `CellPadding`、`CellPaddingMD`、`CellPaddingSM`、`PaginationMargin`、`PaginationMarginSM`、`PaginationPanelMargin`、`PaginationPanelMarginSM` |
-| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HeaderBg`、`HeaderColor`、`HeaderSortActiveBg`、`HeaderSortHoverBg`、`BodySortBg`、`RowHoverBg` |
+| 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `HeaderBg`、`HeaderColor`、`HeaderSortActiveBg`、`HeaderSortHoverBg`、`BodySortBg`、`RowHoverBg`、`RowSelectedBg`、`RowSelectedColor` |
+
+`RowSelectedColor` 是选中行文字色，默认取全局 `ControlItemColorActive`（默认等于 `ColorText`），设在 `DataGridRow` 的
+`Foreground` 上由单元格继承；与 `RowSelectedBg` / `RowSelectedHoverBg`（`ControlItemBgActive` / `Hover`）成对。
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `HeaderBorderRadius`、`LeftFrozenShadows`、`RightFrozenShadows` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
@@ -31,6 +34,33 @@ DataGrid 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+### 3.1 有效全局值与派生字段
+
+`Controls[DataGrid].Tokens` 的全局覆盖作用于表格自身及其行、单元格、表头、分组头、排序/筛选指示器和筛选弹层。
+内置 Spin 的遮罩/指示器，以及嵌套的公开 Button、CheckBox、LineEdit、Pagination 等，保留各自的控件身份。
+`BorderColor` 在派生 `TableBorderColor` 前应用；表头排序色、排序列底色、分割线色和筛选悬停色同样通过对应
+`Table*` 别名消费，显式设置公开字段或内部别名均能更新实际视觉。
+
+`ExpandIconBg` / `TableExpandIconBg` 控制详情展开器背景；`FilterDropdownMenuBg` 控制菜单筛选内容的背景；
+`HeaderFilterHoverBg` / `TableHeaderFilterActiveBg` 控制筛选按钮悬停背景；`SortIndicatorLayoutMargin` 控制排序图标边距。
+分组头图标尺寸、单侧间距、线宽及普通单元格/筛选弹层的分隔线读取有效全局值，单侧 margin 的方向保持不变。
+
+### 3.2 Reserved 字段
+
+以下字段保留 schema 和默认计算，不计入 Active 承诺面，设置后没有视觉效果：
+
+| 字段 | 保留原因 |
+| --- | --- |
+| `ExpandIconMargin` | antd 行内缩进后的展开图标布局；AtomUI 使用独立详情列。 |
+| `ExpandIconHalfInner` | antd CSS 图标的绝对定位；AtomUI 使用 Canvas 居中的固定加减号。 |
+| `ExpandIconSize` | antd 未缩放的 CSS 图标盒；AtomUI 的最终盒尺寸由 `SizeMS` 决定。 |
+| `ExpandIconScale` | antd CSS 缩放；AtomUI 直接控制最终尺寸。 |
+| `FixedHeaderSortActiveBg`、`TableFixedHeaderSortActiveBg` | AtomUI 没有额外的 sticky 表头副本，排序背景使用普通表头字段。 |
+| `TableFilterDropdownHeight` | 当前筛选弹层按实际候选内容测量。 |
+| `TableFilterDropdownSearchWidth` | 当前筛选弹层没有搜索编辑器。 |
+| `SelectionColumnWidth`、`TableSelectionColumnWidth` | 选择列按真实 selector 和 CellPadding 自动测量；旧固定默认宽度会缩窄或裁剪现有布局。 |
+| `TableExpandColumnWidth` | 详情列按展开器和 CellPadding 自动测量，显式列宽仍经 Column.Width 设置。 |
 
 ## 4. 控件家族影响
 

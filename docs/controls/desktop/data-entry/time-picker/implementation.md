@@ -91,12 +91,15 @@ Public API / ItemsSource / Command / Event
 - 宿主保存提交值，`TimePickerPresenter.TempSelectedTime` 保存当前候选；`PreviewTime` 表示悬停，`InputText` 表示正在编辑的原始输入缓冲，三者不能写回竞争宿主 `SelectedTime`。
 - 面板选择先形成完整候选，再通知宿主更新文本；悬停结束恢复候选或输入缓冲。宿主文本投影到原生输入部件时不被解释成用户编辑；输入部件自身的文本变化才解析为候选。无效文本阻止确认，关闭时恢复原提交值。
 - 统一确认入口读取最新候选，结束本次编辑，再以 `SetCurrentValue` 写回并发出确认通知；已有值、显示锚点、Enter、双击确认和 Now 不分别实现提交副本。
+- 弹层页脚的 Now 使用主色链接样式，OK 使用主色实心样式。两者按当前按钮主题提供交互状态反馈。
 - 无需确认的范围选择在端点切换前提交旧端点；关闭在共享基类清除活动端之前完成候选收口。相同端点值也必须开始新的候选会话，外部写入更新活动端的候选。
 - 焦点在输入、列和按钮之间转移不结束编辑；焦点离开整个组合控件才收口。钉住弹层提交后从最新提交值重新开始编辑，生命周期失效释放旧订阅和候选。
 
 ### 循环列的滚动模型
 
 `TimeViewCell` 自身承载最小行高；内部 ContentPresenter 按文字的自然高度测量，再通过 `VerticalContentAlignment=Center` 排列。内部 presenter 不重复绑定格子的 MinHeight，避免将文字拉伸至整行高度而从顶部绘制。
+
+行的透明容器负责整行命中，独立背景层绘制状态高亮。TimePicker 与 RangeTimePicker 的 `ItemBackgroundInset` 只调整该背景层，滚动定位、文字和命中继续使用原来的行尺寸。
 
 时、分、秒列的 ScrollViewer 在主题中使用 `VerticalScrollBarVisibility=Hidden`，只隐藏滚动条，保留滚轮、触控板与键盘滚动。循环序列没有固定首尾，滚动条位置不作为值位置指示；不能将该配置替换为会禁用纵向滚动的 `Disabled`。
 
@@ -116,11 +119,16 @@ Pointer 判断使用剪裁后的 ScrollContentPresenter 视口，不能使用完
 
 - presenter 应在 TimeView part 可用后按 `constraints -> effective selection -> display anchor -> button state` 的顺序回放状态。模板重套用、运行时切换 `ClockIdentifier`、增量变化和受控值变化都必须进入同一同步入口。
 
+`TimePickerPresenter` 在独立挂载时使用 `TimePicker` 的默认身份，避免沿用 `Window` 等容器的身份而丢失时间行高。
+由选择器显示时，弹层继续使用 `TimePicker` 或 `RangeTimePicker` 转发的身份。面板需要补齐的主题输入共用一个资源监听，
+以 Style 优先级提供给 `TimeView`，离树时释放。
+
 弹层 Semantic Part 组装与生命周期：
 
 - 弹层内容由 owner `CreatePickerPresenter()` 在首次打开时运行时创建并经 `PickerPresenter` 属性装入 `PART_Popup` 的内容根盒子；presenter / TimeView 主题模板上的 Semantic marker 随模板应用静态存在，`popup.item` marker 由 `DateTimePickerPanel.RefreshItems` 创建 `TimeViewCell` 时注入。弹层关闭不销毁 marker，列表滚动、容器复用、增量变化与弹层重开后 marker 保持；`OnDetachedFromVisualTree` 释放 owned presenter 后，下次打开重建并重新获得同一组 marker。
 - 单值 `TimePicker` 的触发区与 `popup.root` marker 位于共享 `InfoPickerInputTheme.axaml`；`RangeTimePicker` 的对应 marker 位于自有 `RangeTimePickerTheme.axaml` 模板覆写。共享主题中的 marker（含 `PickerClearUpButtonTheme.axaml` 的 `semantic-clear`）同时服务于 DatePicker 与 TimePicker 两个家族的同类 Part；`TimeViewTheme.axaml` 的 `semantic-time-*` marker 对 DatePicker 是 inert class。
 - `prefix` 投影节点（`AddOnContentPresenter`）以 `CompiledBinding $parent[atom:InfoPickerInput]` 接收 `ContentLeftAddOn` / `ContentLeftAddOnTemplate`；该投影是宿主模板对 `ContentLeftAddOn` 承载方式的等价重构，`ContentLeftAddOn` 为空的既有用法不受影响。
+- 共享输入主题及范围覆写模板的右侧附加区位于 AddOnDecoratedBox 内容子树；内容、内容模板、图标、反馈及图标可见性通过 `CompiledBinding $parent[atom:InfoPickerInput]` 读取输入 owner，不依赖内容节点的 TemplatedParent。
 
 稳定 template part 接入点：
 
@@ -157,6 +165,8 @@ TimePicker 的交互事件应从输入源收敛到控件级语义事件：
 - 没有弹层职责的路径不应引入额外 popup 或全局输入捕获。
 - 非集合控件不应通过隐藏集合状态模拟业务数据。
 - 值提交或命令触发必须保持继承控件的事件顺序。
+
+键盘语义由共享基类 `InfoPickerInput` 统一处理（Tunnel 接收输入框按键，见 DatePicker 实现文档）；TimePicker / RangeTimePicker 只实现钩子：Enter 调用 `TimePickerPresenter.ConfirmCandidate`（空文本清空），导航键经 `TimePickerPresenter.NavigateByKey` 交给 `TimeView.HandleForwardedKey`，后者用 `DateTimePickerPanel.StepByKey` 步进当前列，并以 `IsKeyboardActive` 标记该列选中项。Presenter 的 `FocusLeft` 只调用基类的 `CloseIfFocusLeftPicker`，Escape 关闭时 `IsCancelingEdit` 阻止 `IsNeedConfirm=false` 的提交；`NotifyEditCanceled` 调用 `TimePickerPresenter.ResetOpenPanelState` 把候选与输入文本恢复为提交值，弹层固定打开时同样生效，面板内 Escape（`Dismissed`）也经 `CancelPickerEdit` 处理。RangeTimePicker 在打开时按两端是否都有值初始化端点确认标记，`HandleConfirmed` 据此决定转到另一端还是关闭。
 
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
 
@@ -221,6 +231,15 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 - 控件文档、源码 public surface、Token 类型或生成数据与源码契约的一致性。
 - Semantic Part marker 的维护边界：共享 `InfoPickerInputTheme.axaml` 承载单选触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-input`、`semantic-suffix`、`semantic-scope-handle`、`semantic-popup-root`）；`RangeTimePickerTheme.axaml` 承载范围触发区同名 marker 与 `semantic-secondary-input`；共享 `PickerClearUpButtonTheme.axaml` 承载 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 PickerClearUpButton 主题链校验）；`TimePickerPresenterTheme.axaml` 承载 `semantic-popup-container` / `semantic-popup-footer`；`TimeViewTheme.axaml` 承载 `semantic-time-content` / `semantic-time-column`（×4 列宿主）。运行时注入点：`DateTimePickerPanel.RefreshItems` 创建 `TimeViewCell` 时追加 `popup.item` 的生成 selector class 常量。marker 随实例创建一次，列表滚动、容器复用、`ClockIdentifier` 切换、弹层重开和容器回收路径不得增删；`TimeViewTheme` 的 `semantic-time-*` marker 对未声明该契约的 DatePicker 家族保持 inert，共享主题 marker 中的同名 Part 类（`semantic-popup-*`）在两个 picker 家族各自的弹层内互不嵌套。
 
+### 弹层动效接入约束
+
+TimePicker/RangeTimePicker 继承 InfoPickerInput 配置入口，共享主题提供 Slide 默认并单向传给 PART_Popup。时间候选、确认和滚轮选择仍由 Picker 管理，保持列 viewport、offset、可见滚动条及 IsChangeOnScroll 语义。
+
+RangeTimePicker 的弹层横向对准当前端点，纵向从完整输入框的上下边缘计算 `RangeMarginToAnchor`。向上翻转时使用同一间距。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 推荐验证：
@@ -234,3 +253,6 @@ Semantic Part 尺寸与状态基线矩阵（布局型 Part 进入实现前的事
 Semantic Part 行为验证：
 
 - `tests/AtomUI.Desktop.Controls.Tests/TimePicker/TimePickerSemanticPartTests.cs`：descriptor 契约（TimePicker 11 个、RangeTimePicker 12 个 Part）、宿主/共享/内部主题静态 marker 清单、`popup.item` 运行时注入与滚动复用/rebuild 保持、生成 Style 命中触发区与弹层目标（含 `secondaryInput`、`popup.content`、`popup.column`）、弹层首次打开/关闭/重开 marker 保持、`ClockIdentifier` 12↔24 切换、清除模式与 footer 可见性不增删 marker、默认主题不消费 `.semantic-*`、尺寸基线失败回归。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

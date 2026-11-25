@@ -244,7 +244,6 @@ public class ButtonThemeScopeTests
             builder.WithControl(
                 control.Identity,
                 new ControlThemeConfigBuilder()
-                    .WithAlgorithm(ControlAlgorithmMode.Disabled)
                     .WithToken(control.Key, control.Value)
                     .Build());
         }

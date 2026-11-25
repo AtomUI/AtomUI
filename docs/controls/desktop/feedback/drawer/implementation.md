@@ -100,8 +100,8 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 
 - Pointer、keyboard、focus 和 command 事件不应绕过 Avalonia 基础控件语义。
 - 弹层、窗口或 overlay 类路径必须稳定处理打开、关闭、取消、重复打开和宿主失活。
-- TopLevel Drawer 保留在 owning Window 的 `ScopeAwareAdornerLayer`，不读取 OS 类型或用 CSD 标志复制平台路由。
-- 嵌套 Drawer 的 layer owner 是父 Drawer container 已进入的 scope layer；resolver 在排除不匹配的滚动宿主后复用当前包含层，打开和关闭必须在同一 layer 上成对完成。
+- TopLevel Drawer（`OpenOn is TopLevel`，含 Window Drawer）使用该 TopLevel 宿主的 `TopLevelPresentationLayer`（T7），不读取 OS 类型或用 CSD 标志复制平台路由；`OpenOn` 为 null 或指向局部元素的 Drawer 使用解析出的作用域宿主内的 `ContentPresentationLayer`（T5）。两个呈现层都继承 `ScopeAwareAdornerLayer`，Drawer 的 public / protected API 不变，层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- 嵌套 Drawer 的 layer owner 是父 Drawer container 已进入的呈现层（T5 或 T7）；resolver 在排除不匹配的滚动宿主后复用当前包含层，打开和关闭必须在同一 layer 上成对完成。`OpenOn` 指向父 Drawer 之外时也始终复用父 Drawer 所在的层。
 - 非集合控件不应通过隐藏集合状态模拟业务数据。
 - 值提交或命令触发必须保持继承控件的事件顺序。
 
@@ -116,10 +116,10 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 - 主题资源、Token 和 SharedToken 计算后的视觉更新。
 - 内容、命令和视觉状态在模板节点之间的同步。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
-- Window host 与 visible frame：Drawer container 使用 owning TopLevel 的 `ScopeAwareAdornerLayer`；root 与百分比尺寸统一使用排除 `FrameShadowThickness`、保留标题栏的 visible frame。
+- Window host 与 visible frame：Drawer container 使用 owning TopLevel 宿主的 `TopLevelPresentationLayer`（位于全屏标题栏之上）；root 与百分比尺寸统一使用排除 `FrameShadowThickness`、保留标题栏的 visible frame。
 - Window Drawer 打开时获取 chrome suppression lease，关闭、释放或 host 变更时对称释放；多个 Dialog/Drawer 由 Window 引用计数防止提前恢复 drawn chrome。
-- Drawer 内容 popup 沿 visual placement target 使用同一 TopLevel 的 Avalonia `LightDismissOverlayLayer` 与 `PopupOverlayLayer`。关闭时直接从 scope layer 移除 container，不创建内部 `VisualLayerManager` 或第二套 popup owner。
-- 打开期间 `OpenOn` 变化时，`Drawer` 从新 target 重新解析 `ScopeAwareAdornerLayer`，`DrawerContainer` 在一次状态迁移中更新 adorned element、visible-frame 订阅和 chrome suppression lease，并把自身从旧 layer 移到新 layer。关闭必须优先从 container 的实际 visual parent 移除，不能再根据已变化的 `OpenOn` 猜测旧 host。
+- Drawer 内容 popup 沿 visual placement target 使用同一 TopLevel 的 Avalonia `LightDismissOverlayLayer` 与 `PopupOverlayLayer`。light-dismiss 是 TopLevel 角色：Avalonia 按最近的 `VisualLayerManager` 会解析到 Drawer 的表面宿主（dismiss 层只铺满 Drawer 表面，作用域 Drawer 外的按下不会关闭弹层），因此 AtomUI `Popup` 的 `PopupLightDismissRegistration` 在打开时把租约改挂到 `LayerLadder.FindTopLevelLayerManager` 解析出的宿主的 dismiss 层，表面宿主上的 dismiss 层保持无注册、不可见。关闭时直接从 container 实际所在的呈现层（视觉父）移除 container，不创建第二套 popup owner。`DrawerContainer` 自带一个表面宿主（`LayerLadder.IsSurfaceHost` 的嵌套 `VisualLayerManager`，只启用 `AdornerLayer`），容器内控件的焦点描边和 Badge 画在 Drawer 表面之上；overlay popup 仍解析到外层窗口。
+- 打开期间 `OpenOn` 变化时，`Drawer` 从新 target 重新解析目标呈现层（T5 与 T7 之间按 `OpenOn` 是否为 TopLevel 切换），`DrawerContainer` 在一次状态迁移中更新 adorned element、visible-frame 订阅和 chrome suppression lease，并把自身从旧 layer 移到新 layer。关闭必须优先从 container 的实际 visual parent 移除，不能再根据已变化的 `OpenOn` 猜测旧 host。
 - 嵌套 Drawer 继承父 container 的 effective target；父 Drawer 的 `OpenOn` 迁移时，所有已打开子 Drawer 必须迁移到同一 scope，并释放旧 Window 的全部 suppression lease。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
@@ -176,7 +176,7 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
 - 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- Popup-bearing 内容集成变更复用 [Modal 内容弹层叠放设计](../modal/popup-layering-design.md) 的入口库存、原语和控件家族矩阵；Drawer 只额外验证自身 scope layer 与 chrome lease 生命周期。
+- Popup-bearing 内容集成变更复用 [Modal 内容弹层叠放设计](../modal/popup-layering-design.md) 的入口库存、原语和控件家族矩阵；Drawer 只额外验证自身呈现层与 chrome lease 生命周期。
 - Drawer lifecycle 回归必须覆盖：Window target 到局部 target、Window 到另一 Window，以及父子 Drawer 同时打开时的 `OpenOn` 动态迁移；每条路径都断言旧 layer/lease 已释放且新 layer/lease 已建立。
 - 共享 owning TopLevel popup 路径由 Modal Popup 原语、控件家族、DataGrid 与入口库存测试覆盖；Drawer 的容器生命周期由自动化回归直接覆盖，真实窗口证据按平台独立记录。
 - DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。

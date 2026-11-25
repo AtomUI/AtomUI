@@ -14,7 +14,7 @@
                         <Border Name="FooterFrame"
                                 Classes.semantic-popup-footer="True"
                                 DockPanel.Dock="Bottom">
-                            <DockPanel LastChildFill="True" HorizontalSpacing="{atom:SharedTokenResource SpacingXS}">
+                            <DockPanel LastChildFill="True" HorizontalSpacing="{atom:TourTokenResource SpacingXS}">
                                 <ContentPresenter Name="IndicatorPresenter"
                                                   Classes.semantic-popup-indicators="True"
                                                   DockPanel.Dock="Left"
@@ -56,13 +56,13 @@
 
         <Setter Property="MinWidth" Value="{atom:TourTokenResource TourViewMinWidth}" />
         <Setter Property="MinHeight" Value="{atom:TourTokenResource TourViewMinHeight}" />
-        <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+        <Setter Property="Padding" Value="{atom:TourTokenResource PaddingXXS}" />
         <Style Selector="^ /template/ DockPanel#RootLayout">
-            <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXXS}" />
+            <Setter Property="VerticalSpacing" Value="{atom:TourTokenResource SpacingXXS}" />
         </Style>
         
         <Style Selector="^ /template/ StackPanel#ActionsLayout">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}" />
+            <Setter Property="Spacing" Value="{atom:TourTokenResource SpacingXS}" />
         </Style>
         
         <Style Selector="^[IndexPosition=OnePage]">
@@ -100,10 +100,10 @@
         </Style>
 
         <Style Selector="^[StyleType=Primary]">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="Foreground" Value="{atom:TourTokenResource ColorTextLightSolid}" />
             <Style Selector="^ /template/ atom|Button.previous-btn">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Foreground" Value="{atom:TourTokenResource ColorTextLightSolid}" />
+                <Setter Property="Background" Value="{atom:TourTokenResource ColorPrimary}" />
                 <Setter Property="BorderBrush" Value="{atom:TourTokenResource PrimaryPrevBtnBg}" />
             </Style>
             <Style Selector="^ /template/ atom|Button.previous-btn:pointerover">
@@ -112,8 +112,8 @@
             </Style>
             
             <Style Selector="^ /template/ atom|Button.next-btn">
-                <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
-                <Setter Property="Background" Value="{atom:SharedTokenResource ColorWhite}" />
+                <Setter Property="Foreground" Value="{atom:TourTokenResource ColorPrimary}" />
+                <Setter Property="Background" Value="{atom:TourTokenResource ColorWhite}" />
             </Style>
             <Style Selector="^ /template/ atom|Button.next-btn:pointerover">
                 <Setter Property="Background" Value="{atom:TourTokenResource PrimaryNextBtnHoverBg}" />

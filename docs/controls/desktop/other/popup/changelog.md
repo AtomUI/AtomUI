@@ -2,6 +2,41 @@
 
 本文档记录 Popup 控件级 API、Theme、Token、实现结构和设计契约变化，不替代仓库根目录 `CHANGELOG.md`。
 
+## 2026-11-15
+
+- Rendering
+  - `ShadowsAwareContainer` 跟踪箭头框体的 `BorderThickness`：框体自带边框时，frame 阴影中的描边环（无偏移、无模糊、正 spread 的外阴影，如 `0 0 0 1 <color>`）不再绘制，保证只有一条描边；阴影厚度与定位仍按完整 `BoxShadow` 计算，不改变 Child 位置。
+
+## 2026-11-08
+
+- Theme / Token
+  - Popup motion (`MotionDurationMid`, `EnableMotion`) is read through `PopupTokenResource`; popup host text defaults (`OverlayPopupHost`, `PopupRoot`) use `OwnerTokenResource`, so they follow the control hosting the Popup.
+- Fixed
+  - Tooltip / popover zoom origins inset by the corner radius the frame actually draws (the ShadowsAwareContainer content shape) instead of the scope-root `BorderRadius` / `BorderRadiusLG`, so Control-level radius overrides move the origin; default radii keep the previous origin.
+
+## 2026-11-05
+
+- Fixed
+  - native 与 overlay 宿主在动效表面父级启用整体透明度合成，修正菜单背景已淡出而项目背景仍显眼的问题，保留既有动效参数与阴影范围。
+
+## 2026-11-04
+
+- Changed
+  - Flyout 配置 owner 退役时释放框架的上次定位目标及已脱离 presenter 的旧合成缓存，保留普通关闭/重开语义。
+  - 主题静态默认值声明为真实 AbstractMotion 原型，由定义自身的 ITemplate 能力复制配置；修正 IDE 的静态成员类型错误，保留每实例隔离。
+  - 移除 DefaultMotions、Motion 对容器和几何发布属性；主题独立创建默认定义，Popup 在请求准备边界消费实际几何。普通自定义 Motion 不进入默认准备路径。
+
+## 2026-11-03
+
+- Changed
+  - Popup 提供 OpenMotionProperty/CloseMotionProperty 的共享注册；同包控件族基类通过 AddOwner 复用，保持已有属性身份。直接 Popup 的两项元数据默认均为 null。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 定义语义中立默认、唯一配置 owner、布局后取值、Surface 几何和完整阴影的共享动效契约。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-29
 
 - Token

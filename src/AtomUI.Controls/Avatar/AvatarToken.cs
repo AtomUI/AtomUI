@@ -4,43 +4,32 @@ using Avalonia.Media;
 namespace AtomUI.Controls;
 
 [ControlDesignToken]
-internal sealed class AvatarToken : AbstractControlDesignToken
+public sealed partial class AvatarToken : AbstractControlDesignToken
 {
-    public double ContainerSize { get; set; }
+    /// <summary>Width and height of a regular avatar frame.</summary>
+    public partial double ContainerSize { get; set; }
 
-    public double ContainerSizeLG { get; set; }
+    /// <summary>Width and height of a large avatar frame.</summary>
+    public partial double ContainerSizeLG { get; set; }
 
-    public double ContainerSizeSM { get; set; }
+    /// <summary>Width and height of a small avatar frame.</summary>
+    public partial double ContainerSizeSM { get; set; }
 
-    public double TextFontSize { get; set; }
+    /// <summary>Font size for initials in a regular avatar.</summary>
+    public partial double TextFontSize { get; set; }
 
-    public double TextFontSizeLG { get; set; }
+    /// <summary>Font size for initials in a large avatar.</summary>
+    public partial double TextFontSizeLG { get; set; }
 
-    public double TextFontSizeSM { get; set; }
+    /// <summary>Font size for initials in a small avatar.</summary>
+    public partial double TextFontSizeSM { get; set; }
 
-    public double GroupSpace { get; set; }
+    /// <summary>Outline separating overlapping avatars in a group.</summary>
+    public partial Color GroupBorderColor { get; set; }
 
-    public double GroupOverlapping { get; set; }
+    /// <summary>Fill behind avatar initials or an icon. Pair with <see cref="AvatarColor"/>.</summary>
+    public partial Color AvatarBg { get; set; }
 
-    public Color GroupBorderColor { get; set; }
-
-    public Color AvatarBg { get; set; }
-
-    public Color AvatarColor { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ContainerSize = EffectiveGlobalToken.ControlHeight;
-        ContainerSizeLG = EffectiveGlobalToken.ControlHeightLG;
-        ContainerSizeSM = EffectiveGlobalToken.ControlHeightSM;
-        TextFontSize = Math.Round((EffectiveGlobalToken.FontSizeLG + EffectiveGlobalToken.FontSizeXL) / 2);
-        TextFontSizeLG = EffectiveGlobalToken.FontSizeHeading3;
-        TextFontSizeSM = EffectiveGlobalToken.FontSize;
-        GroupSpace = EffectiveGlobalToken.UniformlyMarginXXS;
-        GroupOverlapping = EffectiveGlobalToken.UniformlyMarginXS;
-        GroupBorderColor = EffectiveGlobalToken.ColorBorderBg;
-        AvatarBg = EffectiveGlobalToken.ColorTextPlaceholder;
-        AvatarColor = EffectiveGlobalToken.ColorTextLightSolid;
-    }
+    /// <summary>Foreground of avatar initials or an icon on <see cref="AvatarBg"/>.</summary>
+    public partial Color AvatarColor { get; set; }
 }

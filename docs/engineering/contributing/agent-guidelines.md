@@ -13,6 +13,12 @@
 
 当用户说“参考某个项目源码”或表达同等意图时，必须先执行 [参考项目源码查找规范](reference-project-source-guidelines.md) 中规定的本地优先查找流程。不得跳过项目目录下的 `.referenceprojects`、逐级向上的 `ReferenceProjects`，直接去 GitHub；只有所有本地位置都未命中时，GitHub 才是允许的兜底来源。
 
+## 分支与 Worktree
+
+主线是 `release/6.0`，默认直接在主工作区开发。未经用户在对话中明确许可，禁止创建任何分支或 worktree，也不得切换
+当前工作区分支；经许可创建的分支与 worktree 在完成并获准提交后，必须合并回 `release/6.0`、在主线验证通过并清理。
+完整规则见[分支与 Worktree 管理规范](branch-and-worktree-guidelines.md)。
+
 ## 新增功能与 Bug 修复的测试生命周期
 
 所有新增功能和 Bug 修复必须遵守[测试价值与生命周期规范](../development/test-value-and-lifecycle.md)。新增测试默认
@@ -75,6 +81,10 @@
   启动路径；不要用不同依赖组合制造新的变量。
 - Demo 必须保留原始触发条件，例如尺寸约束、滚动、冻结列、标题、Header 可见性、GridLine 设置、数据量和溢出
   条件。不得通过移除触发条件让症状消失后宣称修复。
+- Demo 的宿主窗口必须是 `AtomUI.Desktop.Controls.Window`（`atom:Window`），不得把 AtomUI 控件放进普通
+  `Avalonia.Controls.Window`：后者没有 AtomUI 主题模板和覆盖层，弹层一打开就会抛 `Unable to create IPopupImpl`，
+  这是不受支持的宿主配置而非产品缺陷，在其中观察到的任何现象都不能作为证据。脚本化视觉验收的完整流程见
+  `atomui-visual-acceptance` skill。
 - 如果 Demo 只用于复现或人工确认，完成原始场景验证及必要的人工复核后，必须停止相关进程、关闭可控会话，并在
   宣称修复完成前删除临时 Demo 目录。删除前如需保留证据，只保留必要日志、截图路径或简短结果说明，不保留可运行 Demo 工程。
 - 临时 Demo 不能替代可自动化验证。优先通过已有或临时测试完成修复前后验证，验证代码的去留按测试价值规范判定；
@@ -163,6 +173,8 @@ Gallery 改动时注意：
 - Bug 修复与普通代码改动的执行门禁都是“所修改模块的测试全绿”，不再自行追加全量回归或本地 change 范围。
   Bug 修复还必须完成测试价值规范中的测试处置、清理、适用专项和交付记录；只通过模块测试不算完成修复。
 - `scripts/run-full-regression.sh` 只在用户明确要求或发版（执行 `version-release` skill）时运行。
+  默认集合（含发版全量）不含端到端 `AtomUI.Localization.IntegrationTests`；只有用户明确要求该项目或
+  `--with-integration` 时才加入，不因发版或变更范围自动补跑。未带时注明"未包含集成测试（默认排除）"，不视为发版缺口。
 - 确需运行的全量回归遇到失败时必须让脚本继续收集所有项目结果；随后逐项做 focused 修复。全部局部转绿后只再运行一次最终全量确认，禁止每修一个失败就重跑全量。
 - 验证结果必须明确记录实际执行的测试范围、命令和结果；未执行的全量回归测试不得表述为已完成。
 

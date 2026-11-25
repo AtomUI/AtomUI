@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls.Primitives;
 using Avalonia;
@@ -5,7 +6,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -180,6 +180,34 @@ public partial class ButtonSpinner : Spinner,
     #endregion
 
     #region 内部属性定义
+    internal static readonly StyledProperty<IBrush?> HandleBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleBg));
+
+    internal static readonly StyledProperty<IBrush?> FilledHandleBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(FilledHandleBg));
+
+    internal static readonly StyledProperty<IBrush?> HandleBorderColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleBorderColor));
+
+    internal static readonly StyledProperty<IBrush?> HandleHoverColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleHoverColor));
+
+    internal static readonly StyledProperty<IBrush?> HandleHoverBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleHoverBg));
+
+    internal static readonly StyledProperty<IBrush?> HandleIconColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleIconColor));
+
+    internal static readonly StyledProperty<IBrush?> HandleActiveBgProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandleActiveBg));
+
+    internal static readonly StyledProperty<double> HandleIconSizeProperty =
+        AvaloniaProperty.Register<ButtonSpinner, double>(nameof(HandleIconSize));
+
+    internal static readonly StyledProperty<IBrush?> HandlePressedColorProperty =
+        AvaloniaProperty.Register<ButtonSpinner, IBrush?>(nameof(HandlePressedColor));
+
+
 
     public static readonly StyledProperty<double> SpinnerHandleWidthProperty =
         AvaloniaProperty.Register<ButtonSpinner, double>(nameof (SpinnerHandleWidth));
@@ -195,6 +223,60 @@ public partial class ButtonSpinner : Spinner,
 
     internal static readonly StyledProperty<FormValidateStatus> FormStatusProperty =
         InputControlState.FormStatusProperty.AddOwner<ButtonSpinner>();
+
+    internal IBrush? HandleBg
+    {
+        get => GetValue(HandleBgProperty);
+        set => SetValue(HandleBgProperty, value);
+    }
+
+    internal IBrush? FilledHandleBg
+    {
+        get => GetValue(FilledHandleBgProperty);
+        set => SetValue(FilledHandleBgProperty, value);
+    }
+
+    internal IBrush? HandleBorderColor
+    {
+        get => GetValue(HandleBorderColorProperty);
+        set => SetValue(HandleBorderColorProperty, value);
+    }
+
+    internal IBrush? HandleHoverColor
+    {
+        get => GetValue(HandleHoverColorProperty);
+        set => SetValue(HandleHoverColorProperty, value);
+    }
+
+    internal IBrush? HandleHoverBg
+    {
+        get => GetValue(HandleHoverBgProperty);
+        set => SetValue(HandleHoverBgProperty, value);
+    }
+
+    internal IBrush? HandleIconColor
+    {
+        get => GetValue(HandleIconColorProperty);
+        set => SetValue(HandleIconColorProperty, value);
+    }
+
+    internal IBrush? HandleActiveBg
+    {
+        get => GetValue(HandleActiveBgProperty);
+        set => SetValue(HandleActiveBgProperty, value);
+    }
+
+    internal double HandleIconSize
+    {
+        get => GetValue(HandleIconSizeProperty);
+        set => SetValue(HandleIconSizeProperty, value);
+    }
+
+    internal IBrush? HandlePressedColor
+    {
+        get => GetValue(HandlePressedColorProperty);
+        set => SetValue(HandlePressedColorProperty, value);
+    }
 
     public double SpinnerHandleWidth
     {
@@ -230,7 +312,6 @@ public partial class ButtonSpinner : Spinner,
     
     internal ButtonSpinnerDecoratedBox? DecoratedBox;
     private ButtonSpinnerHandle? _spinnerHandle;
-    private bool _isFrameBorderBrushRelayed;
 
     static ButtonSpinner()
     {
@@ -301,11 +382,6 @@ public partial class ButtonSpinner : Spinner,
         {
             UpdatePseudoClasses();
         }
-
-        if (change.Property == BorderBrushProperty)
-        {
-            RelayFrameBorderBrush();
-        }
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -316,7 +392,6 @@ public partial class ButtonSpinner : Spinner,
         }
         _spinnerHandle = null;
         DecoratedBox = e.NameScope.Find<ButtonSpinnerDecoratedBox>("PART_DecoratedBox");
-        _isFrameBorderBrushRelayed = false;
         base.OnApplyTemplate(e);
         var increaseButton = e.NameScope.Find<IconButton>("PART_IncreaseButton");
         var decreaseButton = e.NameScope.Find<IconButton>("PART_DecreaseButton");
@@ -339,39 +414,8 @@ public partial class ButtonSpinner : Spinner,
         }
         SetButtonUsage();
         ConfigureAddOns();
-        RelayFrameBorderBrush();
-    }
-
-    /// <summary>
-    /// Relays the owner's root border brush onto the input frame as a local value so
-    /// application-level customization wins over the frame state machine, mirroring antd
-    /// inline styles.root semantics and the shared AbstractTextInput behavior. An unset
-    /// owner value restores the state machine.
-    /// </summary>
-    private void RelayFrameBorderBrush()
-    {
-        var decoratedBox = DecoratedBox;
-        if (decoratedBox is null)
-        {
-            return;
-        }
-
-        var value = GetValue(BorderBrushProperty);
-        if (value is null || ReferenceEquals(value, AvaloniaProperty.UnsetValue))
-        {
-            // Only hand the property back when this control is the one that took it over:
-            // a nested owner (for example NumericUpDown, whose spinner is a ButtonSpinner)
-            // may hold its own relay on the same frame node.
-            if (_isFrameBorderBrushRelayed)
-            {
-                decoratedBox.ClearValue(BorderBrushProperty);
-                _isFrameBorderBrushRelayed = false;
-            }
-            return;
-        }
-
-        decoratedBox.SetValue(BorderBrushProperty, value, BindingPriority.LocalValue);
-        _isFrameBorderBrushRelayed = true;
+        // The root BorderBrush reaches the input frame through the template's HostBorderBrush binding, which the
+        // frame theme projects over its state brushes (antd styles.root).
     }
 
     private void HandleButtonCreated(object? sender, EventArgs e)

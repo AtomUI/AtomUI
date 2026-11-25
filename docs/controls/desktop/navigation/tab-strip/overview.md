@@ -50,6 +50,8 @@ TabStrip 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | 交互与状态 | `IsAutoHideCloseButton`、`IsClosable`、`IsMotionEnabled`、`IsShowAddTabButton`、`IsTabAutoHideCloseButton`、`IsTabClosable` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `SizeType`、`TabAlignmentCenter`、`TabStripPlacement` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 
+线型标签的 `IndicatorMode` 默认 `Full`，按整个标签项对齐。`Content` 跟随标题内容，`Fixed` 使用 `IndicatorFixedLength`（默认 30）并在标题处居中。`IsIndicatorLengthAnimated` 与 `IsSelectedItemCentered` 默认关闭，分别控制合成层长度过渡和选中标签居中滚动。
+
 稳定事件包括 `AddTabRequest`、`Closed`、`Closing`、`TabReordering`、`TabReordered`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。
 
 主要公开类型与枚举：
@@ -99,6 +101,8 @@ Public API / inherited command / item source / user input
 ## 5. 视觉与主题模型
 
 TabStrip 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
+
+键盘焦点描边与 Ant Design 一致：线型标签只描边标签按钮行（图标与文字，`genFocusOutline` 默认偏移 1px），不包含标签的内边距；卡片标签描边整张卡片并内收（`genFocusOutline(token, -3)`），由卡片 `Frame` 上的 `FocusOutlineAdorner.IsInset` 表达，描边完全落在卡片内侧。
 
 TabStrip 的 Line/Card ControlTheme 位于 `TabControl/Themes/TabStrip`，并复用 TabControl 家族统一的
 `TabScrollViewerTheme` 与 `TabOverflowMenuTheme`。统一主题承载 edge indicator、更多按钮、静态 Popup shell 和默认菜单；

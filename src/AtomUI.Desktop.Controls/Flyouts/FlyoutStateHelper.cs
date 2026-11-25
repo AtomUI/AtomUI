@@ -70,28 +70,53 @@ internal class FlyoutStateHelper : AvaloniaObject
     private IDisposable? _popupPointerSubscription;
     private TopLevel? _registeredTopLevel;
     private bool _isFlyoutShowing;
+    private bool _isAttachedToVisualTree;
+    private Flyout? _registeredFlyout;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == FlyoutProperty)
         {
-            if (change.OldValue is Flyout oldFlyout)
+            if (_isAttachedToVisualTree)
             {
-                oldFlyout.Opened -= HandleFlyoutOpened;
-                oldFlyout.Closed -= HandleFlyoutClosed;
-            }
-
-            if (change.NewValue is Flyout newFlyout)
-            {
-                newFlyout.Opened += HandleFlyoutOpened;
-                newFlyout.Closed += HandleFlyoutClosed;
+                RegisterFlyoutEvents(Flyout);
             }
         }
         else if (change.Property == AnchorTargetProperty || change.Property == TriggerTypeProperty)
         {
             SetupTriggerHandler();
         }
+    }
+
+    // A Flyout can be shared or outlive its owner (e.g. an x:Key resource), so its events must only
+    // reference this helper while the owner is attached; otherwise the Flyout roots the owner's page.
+    private void RegisterFlyoutEvents(PopupFlyoutBase? flyout)
+    {
+        if (ReferenceEquals(_registeredFlyout, flyout))
+        {
+            return;
+        }
+
+        UnregisterFlyoutEvents();
+        if (flyout is Flyout newFlyout)
+        {
+            newFlyout.Opened  += HandleFlyoutOpened;
+            newFlyout.Closed  += HandleFlyoutClosed;
+            _registeredFlyout =  newFlyout;
+        }
+    }
+
+    private void UnregisterFlyoutEvents()
+    {
+        if (_registeredFlyout is null)
+        {
+            return;
+        }
+
+        _registeredFlyout.Opened -= HandleFlyoutOpened;
+        _registeredFlyout.Closed -= HandleFlyoutClosed;
+        _registeredFlyout        =  null;
     }
 
     private void HandleFlyoutOpened(object? sender, EventArgs e)
@@ -270,11 +295,15 @@ internal class FlyoutStateHelper : AvaloniaObject
 
     public void NotifyAttachedToVisualTree()
     {
+        _isAttachedToVisualTree = true;
+        RegisterFlyoutEvents(Flyout);
         SetupTriggerHandler();
     }
 
     public void NotifyDetachedFromVisualTree()
     {
+        _isAttachedToVisualTree = false;
+        UnregisterFlyoutEvents();
         StopMouseLeaveTimer();
         StopMouseEnterTimer();
         UnregisterRootPointerHandler();

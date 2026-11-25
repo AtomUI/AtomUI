@@ -23,7 +23,8 @@ public class SeparatorThemeTests
     [InlineData(CustomizableSizeType.Large, 24, false)]
     [InlineData(CustomizableSizeType.Small, 8, true)]
     [InlineData(CustomizableSizeType.Middle, 16, true)]
-    [InlineData(CustomizableSizeType.Large, 24, true)]
+    // antd: an unsized (AtomUI Large) divider with text uses the with-text gutter margin (UniformlyMargin).
+    [InlineData(CustomizableSizeType.Large, 16, true)]
     public void Horizontal_Separator_Applies_Size_Block_Margin(
         CustomizableSizeType sizeType,
         double expectedMargin,

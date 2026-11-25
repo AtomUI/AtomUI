@@ -516,8 +516,10 @@ public class DatePickerSemanticPartTests
             var decorator = popupRoot.GetVisualDescendants()
                                      .OfType<Border>()
                                      .First(border => border.Name == "PART_ContentDecorator");
+            // The container keeps the border width for layout; the bordered box paints the border (BorderBrush) as one
+            // outline around the box and its arrow.
             decorator.BorderThickness.ShouldBe(new Thickness(1));
-            decorator.BorderBrush.ShouldBe(Brushes.Purple);
+            popupRoot.OutlineGeometry.ShouldNotBeNull();
         });
     }
 
@@ -557,7 +559,7 @@ public class DatePickerSemanticPartTests
     }
 
     [Fact]
-    public void Bordered_Popup_Hides_The_Floating_Arrow()
+    public void Bordered_Popup_Outlines_The_Floating_Arrow()
     {
         var descriptor = GetDescriptor(typeof(AtomUIRangeDatePicker));
 
@@ -582,7 +584,11 @@ public class DatePickerSemanticPartTests
             var arrowLayout = popupRoot.GetVisualDescendants()
                                        .OfType<Panel>()
                                        .First(candidate => candidate.Name == "ArrowPositionLayout");
-            arrowLayout.IsVisible.ShouldBeFalse();
+            // The arrow stays; the box draws one outline around box and arrow instead of the container's border.
+            arrowLayout.IsVisible.ShouldBeTrue();
+            popupRoot.OutlineGeometry.ShouldNotBeNull();
+            popupRoot.GetVisualDescendants().OfType<Border>()
+                     .First(candidate => candidate.Name == "PART_ContentDecorator").BorderBrush.ShouldBeNull();
         });
 
         var baselinePicker = CreatePicker<AtomUIRangeDatePicker>();
@@ -599,6 +605,7 @@ public class DatePickerSemanticPartTests
                                        .OfType<Panel>()
                                        .First(candidate => candidate.Name == "ArrowPositionLayout");
             arrowLayout.IsVisible.ShouldBeTrue();
+            popupRoot.OutlineGeometry.ShouldBeNull();
         });
     }
 

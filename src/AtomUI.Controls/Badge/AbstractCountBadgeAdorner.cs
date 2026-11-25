@@ -1,14 +1,18 @@
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
+[TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
 internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 {
     #region 公共属性定义
@@ -28,6 +32,12 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, CountBadgeSize>(
             nameof(Size));
     
+    public static readonly StyledProperty<object?> ContentProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, object?>(nameof(Content));
+
+    public static readonly StyledProperty<bool> IsBorderedProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, bool>(nameof(IsBordered), true);
+
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractCountBadgeAdorner>();
 
@@ -61,6 +71,18 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetValue(CountProperty, value);
     }
     
+    public object? Content
+    {
+        get => GetValue(ContentProperty);
+        set => SetValue(ContentProperty, value);
+    }
+
+    public bool IsBordered
+    {
+        get => GetValue(IsBorderedProperty);
+        set => SetValue(IsBorderedProperty, value);
+    }
+
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
@@ -77,17 +99,26 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             o => o.IsAdornerMode,
             (o, v) => o.IsAdornerMode = v);
 
-    internal static readonly DirectProperty<AbstractCountBadgeAdorner, BoxShadows> BoxShadowProperty =
+    /// <summary>
+    /// The indicator's ring, computed from <see cref="BadgeShadowSize"/> and <see cref="BadgeShadowColor"/>; the template
+    /// projects it onto the indicator border's BoxShadow.
+    /// </summary>
+    internal static readonly DirectProperty<AbstractCountBadgeAdorner, BoxShadows> IndicatorShadowsProperty =
         AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, BoxShadows>(
-            nameof(BoxShadow),
-            o => o.BoxShadow,
-            (o, v) => o.BoxShadow = v);
+            nameof(IndicatorShadows),
+            o => o.IndicatorShadows,
+            (o, v) => o.IndicatorShadows = v);
 
     internal static readonly DirectProperty<AbstractCountBadgeAdorner, string?> CountTextProperty =
         AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, string?>(
             nameof(CountText),
             o => o.CountText,
             (o, v) => o.CountText = v);
+
+    internal static readonly DirectProperty<AbstractCountBadgeAdorner, object?> PresentedContentProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, object?>(
+            nameof(PresentedContent),
+            o => o.PresentedContent);
 
     internal static readonly StyledProperty<int> CountProperty =
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, int>(
@@ -101,6 +132,9 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         AvaloniaProperty.Register<AbstractCountBadgeAdorner, double>(
             nameof(BadgeShadowSize));
 
+    internal static readonly StyledProperty<BadgeShadowTokenResourceKeys?> ShadowTokenResourceKeysProperty =
+        AvaloniaProperty.Register<AbstractCountBadgeAdorner, BadgeShadowTokenResourceKeys?>(nameof(ShadowTokenResourceKeys));
+
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty
         = MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCountBadgeAdorner>();
 
@@ -112,20 +146,31 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetAndRaise(IsAdornerModeProperty, ref _isAdornerMode, value);
     }
 
-    private BoxShadows _boxShadow;
+    private BoxShadows _indicatorShadows;
 
-    internal BoxShadows BoxShadow
+    internal BoxShadows IndicatorShadows
     {
-        get => _boxShadow;
-        set => SetAndRaise(BoxShadowProperty, ref _boxShadow, value);
+        get => _indicatorShadows;
+        set => SetAndRaise(IndicatorShadowsProperty, ref _indicatorShadows, value);
     }
+
+    private object? _presentedContent;
+
+    // The content the template shows: explicit Content when set, otherwise the count text.
+    internal object? PresentedContent => _presentedContent;
 
     private string? _countText;
 
     internal string? CountText
     {
         get => _countText;
-        set => SetAndRaise(CountTextProperty, ref _countText, value);
+        set
+        {
+            if (SetAndRaise(CountTextProperty, ref _countText, value))
+            {
+                UpdatePresentedContent();
+            }
+        }
     }
 
     internal IBrush? BadgeShadowColor
@@ -139,6 +184,14 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         get => GetValue(BadgeShadowSizeProperty);
         set => SetValue(BadgeShadowSizeProperty, value);
     }
+
+    internal BadgeShadowTokenResourceKeys? ShadowTokenResourceKeys
+    {
+        get => GetValue(ShadowTokenResourceKeysProperty);
+        set => SetValue(ShadowTokenResourceKeysProperty, value);
+    }
+
+    private OwnerTokenSet? _shadowTokens;
 
     internal bool IsMotionEnabled
     {
@@ -182,24 +235,42 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         _motion.TryStart();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        UpdateShadowTokenSubscription();
+    }
+
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        _shadowTokens?.Dispose();
+        _shadowTokens = null;
         base.OnDetachedFromVisualTree(e);
         _motion.Detach();
     }
 
+    private void UpdatePresentedContent()
+    {
+        SetAndRaise(PresentedContentProperty, ref _presentedContent, Content ?? _countText);
+    }
+
+    private void UpdateShadowTokenSubscription()
+    {
+        _shadowTokens?.Dispose();
+        _shadowTokens = ShadowTokenResourceKeys?.Observe(this, BuildBoxShadow);
+        BuildBoxShadow();
+    }
+
     private void BuildBoxShadow()
     {
-        if (BadgeShadowColor is not null)
+        // The border ring is rendered as a shadow; without a border there is nothing to draw.
+        if (!IsBordered)
         {
-            BoxShadow = new BoxShadows(new BoxShadow
-            {
-                OffsetX = 0,
-                OffsetY = 0,
-                Blur    = 0,
-                Spread  = BadgeShadowSize,
-                Color   = ((ISolidColorBrush)BadgeShadowColor).Color
-            });
+            IndicatorShadows = default;
+        }
+        else if (BadgeShadowTokenResourceKeys.TryRead(this, _shadowTokens, BadgeShadowColorProperty, BadgeShadowSizeProperty, out var shadow))
+        {
+            IndicatorShadows = shadow;
         }
     }
 
@@ -211,10 +282,20 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             _motion.UpdateConfiguration(IsMotionEnabled, MotionDuration);
         }
 
-        if (change.Property == BadgeShadowSizeProperty ||
-            change.Property == BadgeShadowColorProperty)
+        if (change.Property == ShadowTokenResourceKeysProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateShadowTokenSubscription();
+        }
+        else if (change.Property == BadgeShadowSizeProperty ||
+            change.Property == BadgeShadowColorProperty ||
+            change.Property == IsBorderedProperty)
         {
             BuildBoxShadow();
+        }
+
+        if (change.Property == ContentProperty)
+        {
+            UpdatePresentedContent();
         }
 
         if (change.Property == CountProperty || change.Property == OverflowCountProperty)
@@ -290,11 +371,13 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private void DetachFromAdornerLayer(AdornerLayer? adornerLayer)
     {
+        // Clear the association while the layer can still update the existing composition visual. Removing the
+        // visual first leaves its old adorned visual reference alive after the public property has been cleared.
+        AdornerLayer.SetAdornedElement(this, null);
         adornerLayer?.Children.Remove(this);
         if (((ILogical)this).LogicalParent is not null)
         {
             ((ISetLogicalParent)this).SetParent(null);
         }
-        AdornerLayer.SetAdornedElement(this, null);
     }
 }

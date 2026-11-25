@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls;
 using AtomUI.Toolkits.GalleryBase.Controls;
@@ -165,9 +166,14 @@ public class ComboBoxShowCasePageTests
     }
 
     [Fact]
-    public void ComboBox_ShowCase_Editable_Filter_No_Match_Shows_Empty_Indicator()
+    public void ComboBox_ShowCase_Filter_And_Empty_Content_Examples_Render()
     {
         AvaloniaTestApp.EnsureInitialized();
+        var source = ReadRepoFile("controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox/Views/ComboBoxShowCase.axaml");
+        source.ShouldContain("<atom:ComboBoxPopupEmptyStyle");
+        source.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorSuccessBg}\" />");
+        source.ShouldNotContain("Loaded=");
+        source.ShouldNotContain("Unloaded=");
         var oldDeferredLoadingDisabled = GalleryShowCaseRuntimeOptions.IsDeferredLoadingDisabled;
         try
         {
@@ -187,7 +193,10 @@ public class ComboBoxShowCasePageTests
                 editableComboBox.IsDropDownOpen = true;
                 Dispatcher.UIThread.RunJobs();
 
-                var popupFrame = GetVisualDescendant<Border>(window, "PopupFrame");
+                var filterPopup = editableComboBox.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single();
+                filterPopup.IsOpen.ShouldBeTrue();
+                var popupFrame = filterPopup.Child.ShouldBeOfType<Border>();
+                TopLevel.GetTopLevel(popupFrame).ShouldBeSameAs(window);
                 popupFrame.GetVisualDescendants()
                           .OfType<AtomUI.Desktop.Controls.ComboBoxItem>()
                           .Where(item => item.IsVisible && item.Content is string)
@@ -200,6 +209,39 @@ public class ComboBoxShowCasePageTests
                               .OfType<Empty>()
                               .SingleOrDefault()
                               .ShouldNotBeNull();
+
+                editableComboBox.IsDropDownOpen = false;
+                Dispatcher.UIThread.RunJobs();
+                foreach (var name in new[] { "DefaultEmptyComboBox", "ContentEmptyComboBox", "TemplateEmptyComboBox", "DisabledEmptyComboBox" })
+                {
+                    var box = page.GetVisualDescendants().OfType<AtomUIComboBox>().Single(control => control.Name == name);
+                    box.BringIntoView();
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    box.IsDropDownOpen = true;
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    var popup = box.GetVisualDescendants().OfType<Avalonia.Controls.Primitives.Popup>().Single();
+                    popup.IsOpen.ShouldBeTrue($"{name} must open its physical popup at {box.Bounds}.");
+                    // The previous example's popup can still be playing its close motion in the overlay.
+                    var frame = popup.Child.ShouldBeOfType<Border>();
+                    TopLevel.GetTopLevel(frame).ShouldBeSameAs(window);
+                    var indicator = GetVisualDescendant<Border>(frame, "PART_EmptyIndicator");
+                    indicator.IsEffectivelyVisible.ShouldBe(name != "DisabledEmptyComboBox");
+                    if (name == "TemplateEmptyComboBox")
+                    {
+                        indicator.Padding.ShouldBe(new Thickness(24));
+                        var background = indicator.Background.ShouldBeAssignableTo<Avalonia.Media.ISolidColorBrush>();
+                        background.ShouldNotBeNull();
+                        var tokens = ControlTokenAccessor.Capture(box);
+                        background.Color.ShouldBe(tokens.GetGlobal<Avalonia.Media.Color>(SharedTokenKind.ColorSuccessBg));
+                        indicator.GetVisualDescendants().OfType<Avalonia.Controls.TextBlock>()
+                                 .ShouldContain(text => text.Text == "No available options" && text.IsEffectivelyVisible);
+                        indicator.GetVisualDescendants().OfType<Empty>().Single().IsEffectivelyVisible.ShouldBeFalse();
+                    }
+                    box.IsDropDownOpen = false;
+                    Dispatcher.UIThread.RunJobs();
+                }
             });
         }
         finally

@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
@@ -204,6 +205,13 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     #endregion
 
     private RangeDatePickerPresenter? _pickerPresenter;
+    private TextBox? _attachedInputBox;
+    private TextBox? _attachedSecondaryInputBox;
+
+    // Text typed into the activated part in this open session, or null while both inputs show formatted values.
+    private string? _typedText;
+    private bool _isTypedTextAccepted;
+    private bool _isApplyingTypedText;
     private ILanguageManager? _languageManager;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -266,10 +274,14 @@ public partial class RangeDatePicker : RangeInfoPickerInput
 
     public override void Clear()
     {
-        base.Clear();
-
+        // The values and the picker texts are cleared before the input boxes, so clearing the boxes is not taken for
+        // typing; the draft is dropped and the popup closes, as in Ant Design.
+        ResetTypedText();
         RangeStartSelectedDate = null;
         RangeEndSelectedDate   = null;
+        RefreshRangeTexts();
+        base.Clear();
+        ClosePickerFlyout();
     }
 
     public void Reset()
@@ -307,6 +319,7 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             _pickerPresenter.HoverDateTimeChanged  += HandleHoverDateTimeChanged;
             _pickerPresenter.Confirmed             += HandleConfirmed;
             _pickerPresenter.RangePartConfirmed    += HandleRangePartConfirmed;
+            _pickerPresenter.PropertyChanged       += HandlePresenterPropertyChanged;
 
             if (RangeActivatedPart == RangeActivatedPart.Start)
             {
@@ -333,6 +346,7 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             _pickerPresenter.HoverDateTimeChanged  -= HandleHoverDateTimeChanged;
             _pickerPresenter.Confirmed             -= HandleConfirmed;
             _pickerPresenter.RangePartConfirmed    -= HandleRangePartConfirmed;
+            _pickerPresenter.PropertyChanged       -= HandlePresenterPropertyChanged;
             _pickerPresenter.RestoreCommittedRangeAfterClose(
                 new DateViewerRange(RangeStartSelectedDate, RangeEndSelectedDate));
         }
@@ -340,6 +354,197 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         UpdatePseudoClasses();
         RefreshRangeTexts();
         CalculatePreferredWidth();
+    }
+
+    protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
+    {
+        // The base clears the activated part here, so a typed endpoint is settled while its part is still known:
+        // kept when no confirmation is required, otherwise discarded with the rest of the draft on close. A lifecycle
+        // close (detach, template change) writes nothing back.
+        if (!IsLifecycleClosing)
+        {
+            var rangeStart = RangeStartSelectedDate;
+            var rangeEnd   = RangeEndSelectedDate;
+            if (_typedText is not null && _isTypedTextAccepted && !IsCancelingEdit &&
+                _pickerPresenter is { RequiresConfirmation: false })
+            {
+                if (RangeActivatedPart == RangeActivatedPart.Start)
+                {
+                    rangeStart = _pickerPresenter.SelectedDateTime;
+                }
+                else if (RangeActivatedPart == RangeActivatedPart.End)
+                {
+                    rangeEnd = _pickerPresenter.SecondarySelectedDateTime;
+                }
+            }
+
+            // A partial confirmation writes its endpoint at once and may pass the other one, so the range is ordered
+            // when the session ends, as the final confirmation does.
+            CommitRange(rangeStart, rangeEnd);
+        }
+
+        ResetTypedText();
+        base.NotifyFlyoutAboutToClose(selectedIsValid);
+    }
+
+    private void ResetTypedText()
+    {
+        _typedText           = null;
+        _isTypedTextAccepted = false;
+    }
+
+    private void HandlePresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        // A candidate chosen in the panel replaces the typed text.
+        if ((args.Property == DatePickerPresenter.SelectedDateTimeProperty ||
+             args.Property == RangeDatePickerPresenter.SecondarySelectedDateTimeProperty) && !_isApplyingTypedText)
+        {
+            ResetTypedText();
+            // A hover preview keeps the inputs until it ends; otherwise they show the new candidate at once.
+            if (!IsPreviewing)
+            {
+                ClearHoverSelectedInfo();
+            }
+        }
+    }
+
+    private void AttachInputHandlers()
+    {
+        if (_attachedInputBox is not null)
+        {
+            _attachedInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+        if (_attachedSecondaryInputBox is not null)
+        {
+            _attachedSecondaryInputBox.PropertyChanged -= HandleInputTextChanged;
+        }
+        _attachedInputBox          = InfoInputBox;
+        _attachedSecondaryInputBox = SecondaryInfoInputBox;
+        if (_attachedInputBox is not null)
+        {
+            _attachedInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+        if (_attachedSecondaryInputBox is not null)
+        {
+            _attachedSecondaryInputBox.PropertyChanged += HandleInputTextChanged;
+        }
+    }
+
+    private void HandleInputTextChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property != TextBox.TextProperty || sender is not TextBox input || IsReadOnly)
+        {
+            return;
+        }
+
+        var isEnd = ReferenceEquals(input, SecondaryInfoInputBox);
+        var text  = input.Text ?? string.Empty;
+        if (string.Equals(text, (isEnd ? SecondaryText : Text) ?? string.Empty, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        // Typing opens the popup and previews a valid value in the panel, as in Ant Design.
+        RangeActivatedPart = isEnd ? RangeActivatedPart.End : RangeActivatedPart.Start;
+        SetPickerOpenIfChanged(true);
+        _typedText = text;
+        SetCurrentValue(isEnd ? SecondaryTextProperty : TextProperty, text);
+        _isTypedTextAccepted = TryParseText(text, out var value) && ApplyTypedValue(value);
+    }
+
+    private bool ApplyTypedValue(DateTime value)
+    {
+        if (_pickerPresenter is null)
+        {
+            return false;
+        }
+
+        _isApplyingTypedText = true;
+        try
+        {
+            return _pickerPresenter.InputDate(value);
+        }
+        finally
+        {
+            _isApplyingTypedText = false;
+        }
+    }
+
+    private bool TryParseText(string text, out DateTime value)
+    {
+        var formatInfo = DatePickerFormattingHelper.CreateFormatInfo(ClockIdentifier, AmText, PmText);
+        return DatePickerFormattingHelper.TryParseDateTime(text, Format, PickerMode, IsShowTime, ClockIdentifier,
+            formatInfo, out value);
+    }
+
+    private protected override bool HasPendingInputText => _typedText is not null;
+
+    private protected override void NotifyInputSubmit()
+    {
+        if (_pickerPresenter is null)
+        {
+            ClosePickerFlyout();
+            return;
+        }
+
+        // An empty or invalid typed endpoint keeps the popup open; Enter on the start part hands over to the end
+        // part until both are confirmed, then commits and closes.
+        if (_typedText is not null && !_isTypedTextAccepted)
+        {
+            return;
+        }
+
+        if (_typedText is null && _pickerPresenter.ActivateKeyboardFocus())
+        {
+            return;
+        }
+
+        if (_pickerPresenter.SubmitCandidate() == DatePickerCommitKind.None)
+        {
+            ClosePickerFlyout();
+        }
+    }
+
+    private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
+        modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
+
+    private protected override bool NotifyInputTab(bool isBackward)
+    {
+        if (!IsPickerOpen || _pickerPresenter is null || _typedText is null)
+        {
+            return false;
+        }
+
+        var leavesToOtherPart = isBackward
+            ? RangeActivatedPart == RangeActivatedPart.End
+            : RangeActivatedPart == RangeActivatedPart.Start;
+        if (!_isTypedTextAccepted)
+        {
+            // Invalid text is dropped when focus moves on.
+            ResetTypedText();
+            ClearHoverSelectedInfo();
+            return false;
+        }
+
+        if (!leavesToOtherPart)
+        {
+            // Focus moves on past the range; a valid typed endpoint is settled like any focus loss when it closes.
+            return false;
+        }
+
+        // Tab submits the typed endpoint weakly: the editor hands over to the other part and focus follows it.
+        var target = isBackward ? InfoInputBox : SecondaryInfoInputBox;
+        _pickerPresenter.SubmitCandidate();
+        target?.Focus(NavigationMethod.Tab);
+        return true;
+    }
+
+    private protected override void NotifyEditCanceled()
+    {
+        _pickerPresenter?.CancelEdit();
+        // A pinned popup stays open, so the inputs return to the draft here rather than on close.
+        ResetTypedText();
+        ClearHoverSelectedInfo();
     }
 
     private void HandleChoosingStatusChanged(object? sender, ChoosingStatusEventArgs args)
@@ -354,8 +559,14 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     
     private void ClearHoverSelectedInfo()
     {
+        SetPreviewing(false);
         Text          = FormatDateTime(_pickerPresenter?.SelectedDateTime ?? RangeStartSelectedDate);
         SecondaryText = FormatDateTime(_pickerPresenter?.SecondarySelectedDateTime ?? RangeEndSelectedDate);
+        if (_typedText is not null)
+        {
+            SetCurrentValue(RangeActivatedPart == RangeActivatedPart.End ? SecondaryTextProperty : TextProperty,
+                _typedText);
+        }
         CalculatePreferredWidth();
     }
     
@@ -387,7 +598,17 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             (previewStart, previewEnd) = NormalizePreviewRange(previewStart, previewEnd);
             Text          = FormatDateTime(previewStart);
             SecondaryText = FormatDateTime(previewEnd);
+            // Hovering the confirm button shows the candidate itself, which is not dimmed as a preview.
+            var candidate = RangeActivatedPart == RangeActivatedPart.End
+                ? _pickerPresenter?.SecondarySelectedDateTime
+                : _pickerPresenter?.SelectedDateTime;
+            SetPreviewing(args.Date != candidate);
             CalculatePreferredWidth();
+        }
+        else
+        {
+            // The preview ended, for example when the pointer left the cells after keyboard navigation.
+            ClearHoverSelectedInfo();
         }
     }
 
@@ -400,6 +621,7 @@ public partial class RangeDatePicker : RangeInfoPickerInput
 
     private void HandleRangePartConfirmed(object? sender, EventArgs args)
     {
+        ResetTypedText();
         if (RangeActivatedPart == RangeActivatedPart.Start)
         {
             RangeStartSelectedDate = _pickerPresenter?.SelectedDateTime;
@@ -414,23 +636,35 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     
     private void HandleConfirmed(object? sender, EventArgs args)
     {
+        ResetTypedText();
         var rangeStart = _pickerPresenter?.SelectedDateTime;
         var rangeEnd   = _pickerPresenter?.SecondarySelectedDateTime;
         if (rangeStart is not null && rangeEnd is not null)
         {
-            if (rangeEnd.Value.Date < rangeStart.Value.Date)
-            {
-                RangeStartSelectedDate = rangeEnd;
-                RangeEndSelectedDate   = rangeStart;
-            }
-            else
-            {
-                RangeStartSelectedDate = rangeStart;
-                RangeEndSelectedDate   = rangeEnd;
-            }
+            CommitRange(rangeStart, rangeEnd);
         }
 
         ClosePickerFlyout();
+    }
+
+    /// <summary>Writes both endpoints ordered by date; endpoints on the same day keep their clock order.</summary>
+    private void CommitRange(DateTime? rangeStart, DateTime? rangeEnd)
+    {
+        if (rangeStart is not null && rangeEnd is not null && rangeEnd.Value.Date < rangeStart.Value.Date)
+        {
+            (rangeStart, rangeEnd) = (rangeEnd, rangeStart);
+        }
+
+        // Unchanged endpoints are not written, so a close does not replace their bindings with local values.
+        if (RangeStartSelectedDate != rangeStart)
+        {
+            RangeStartSelectedDate = rangeStart;
+        }
+
+        if (RangeEndSelectedDate != rangeEnd)
+        {
+            RangeEndSelectedDate = rangeEnd;
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -438,6 +672,15 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         base.OnPropertyChanged(change);
         if (change.Property == RangeActivatedPartProperty)
         {
+            // Typed text belongs to the part that was active; the inputs fall back to the draft values.
+            if (_typedText is not null)
+            {
+                ResetTypedText();
+                if (IsPickerOpen)
+                {
+                    ClearHoverSelectedInfo();
+                }
+            }
             NotifyRangeActivatedPartChanged();
         }
 
@@ -597,6 +840,7 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        AttachInputHandlers();
         if (InfoIcon is null)
         {
             SetValue(InfoIconProperty, new CalendarOutlined(), BindingPriority.Template);

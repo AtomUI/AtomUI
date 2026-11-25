@@ -3,6 +3,18 @@
 本文档记录 GroupBox 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `GroupBoxToken.HeaderFontWeight`（默认 `Normal`）：主题为 `HeaderFontWeight` 属性提供默认值，本地设置仍优先；PrimeNG Aura 600，Lara / Nora 700。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 `GroupBoxTokenResource`，`Controls[GroupBox]` 覆盖生效。
+  - 删除从未被消费的 `TextPaddingInline`、`OrientationMarginPercent`、`VerticalMarginInline`（复制自 Separator；标题缺口与边距由
+    `HeaderContentPadding` / `HeaderContainerMargin` 表达）。默认渲染不变。
+
 ## 2026-09-16
 
 - Feature

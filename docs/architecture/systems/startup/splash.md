@@ -24,7 +24,10 @@
   窗口会退回带标题栏的普通窗口。
 - **不确定进度不能做布局元素的属性动画**：`Visual.SynchronizeCompositionProperties` 在每次同步时都会改写布局元素合成
   视觉的 `Offset`、`Opacity` 等属性，而直接赋值会移除该属性上正在运行的合成动画，进度块会停在布局原点。
-  `SplashProgressBar` 因此在挂接的 `CompositionCustomVisual` 上由渲染线程按合成时钟绘制不确定进度，不经过布局。
+  `SplashProgressBar` 因此在挂接的 `CompositionCustomVisual` 上由渲染线程绘制不确定进度，不经过布局。
+- **不确定进度按帧推进，不按绝对时钟定位**：进度块按相邻两帧的合成时钟差前进，单帧前进量上限约为 60 Hz 下的两帧；
+  激活后从轨道左侧外进入。启动期渲染线程会停顿（Splash 首帧冷启动、主窗体首帧共用渲染线程），按绝对时钟定位时，
+  停顿后的下一帧会整段瞬移（Windows 实测 Splash 出现后第一步跳约 200 ms 的距离）；限幅后停顿表现为短暂停住再继续。
 
 ## 2. 显示判定
 
@@ -70,13 +73,13 @@ Splash 呈现器，Core 只通过该接缝显示 Splash、汇报进度、切换�
 
 - **启动专用主题**：文件按控件规范位于 `Themes/`，但 `AtomUI.Controls.csproj` 给它设置逻辑资源路径
   `Splash/SplashDefaultTheme.axaml`，使包主题资产生成器不把它登记为提交后的普通主题资产；`SplashWindow`
-  在提交前直接实例化它。页面内预览 Splash（例如 Gallery 示例页）需要自行合并该字典。
+  在提交前直接实例化它。Token 消费分析仍按物理 `Themes/` 路径包含此文件，不因逻辑资源路径而漏检；这不增加启动主题的运行时注册。页面内预览 Splash（例如 Gallery 示例页）需要自行合并该字典。
 - **只依赖全局 Token**：Splash 在内核提交之前显示，此时只有 Prepare 产出的全局资源表，没有任何控件主题与控件 Token。
-  默认主题只使用 `{atom:SharedTokenResource …}`，不绑定字体（只用系统默认字体）。
+  默认主题用 `{atom:OwnerTokenResource …}` 读取全局字段：启动时没有 owner，直接解析自带的 Prepare 全局资源表；嵌入已注册控件时读取宿主有效全局值，不引入 Splash Own Token 或提交后主题依赖。不绑定字体（只用系统默认字体）。
 - **外观**：卡片宽 420（`ColorBgContainer`、`BorderRadiusLG`、`BoxShadowsSecondary`，内边距 `PaddingLG`），可铺满背景图；
   居中纵列依次为 Logo（64 px）、标题（`FontSizeHeading4`、`ColorText`）、消息（`FontSize`、`ColorTextSecondary`）、
   进度条（指示 `ColorPrimary`、轨道 `ColorFillSecondary`）。错误态消息用 `ColorError`，隐藏进度条，显示右上角关闭图标
-  （`ColorIcon`）。`:opaque` 下退化为方角、无阴影。窗口无边框、随内容定尺寸、居中、交接前置顶、请求透明背景。
+  （`ColorIcon`、`IconSizeSM`、`Margin`、`LineWidth`；默认描边 1 px）。纵列间距读取 `SpacingSM`。`:opaque` 下退化为方角、无阴影。窗口无边框、随内容定尺寸、居中、交接前置顶、请求透明背景。
 - **可局部覆盖**：模板只描述结构，尺寸、颜色、字号等外观值都写在 ControlTheme 的样式（`^ /template/ …`）里。模板内的
   本地值优先级高于样式；写在模板里的值无法被派生主题覆盖。修改默认主题时必须保持这一点。
 - **独立阴影缓存**：`Card` 保留尺寸、背景、圆角、BoxShadow 定制入口和内容裁剪。其同级的 Canvas 承载独立 `Shadow`，

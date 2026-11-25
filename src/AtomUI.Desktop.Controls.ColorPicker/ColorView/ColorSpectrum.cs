@@ -9,16 +9,17 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
 internal class ColorSpectrum : TemplatedControl
 {
+    #region 公共属性定义
+
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     /// <summary>
     /// Defines the <see cref="Color"/> property.
     /// </summary>
@@ -27,6 +28,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(Color),
             Colors.White,
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Defines the <see cref="Components"/> property.
@@ -36,6 +38,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(Components),
             ColorSpectrumComponents.HueSaturation);
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     /// <summary>
     /// Defines the <see cref="HsvColor"/> property.
     /// </summary>
@@ -44,6 +47,7 @@ internal class ColorSpectrum : TemplatedControl
             nameof(HsvColor),
             Colors.White.ToHsv(),
             defaultBindingMode: BindingMode.TwoWay);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Defines the <see cref="MaxHue"/> property.
@@ -223,6 +227,8 @@ internal class ColorSpectrum : TemplatedControl
         set => SetValue(MinValueProperty, value);
     }
 
+    private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
+
     /// <summary>
     /// Gets the third HSV color component that is NOT displayed by the spectrum.
     /// This is automatically calculated from the <see cref="Components"/> property.
@@ -239,20 +245,24 @@ internal class ColorSpectrum : TemplatedControl
         private set => SetAndRaise(ThirdComponentProperty, ref _thirdComponent, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
     /// <summary>
     /// Event for when the selected color changes within the spectrum.
     /// </summary>
     public event EventHandler<ColorChangedEventArgs>? ColorChanged;
+
+    #endregion
 
     private bool _updatingColor;
     private bool _updatingHsvColor;
     private bool _isPointerPressed;
     private bool _shouldShowLargeSelection;
     private IReadOnlyList<Hsv> _hsvValues = Array.Empty<Hsv>();
-    private ColorComponent _thirdComponent = ColorComponent.Component3; // HsvComponent.Value
 
     private IDisposable? _layoutRootDisposable;
-    private IDisposable? _selectionEllipsePanelDisposable;
 
     // XAML template parts
     private Panel? _layoutRoot;
@@ -306,7 +316,9 @@ internal class ColorSpectrum : TemplatedControl
     private int _minValueFromLastBitmapCreation;
     private int _maxValueFromLastBitmapCreation;
 
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
     private Color _oldColor = Color.FromArgb(255, 255, 255, 255);
+#pragma warning restore ATOMUIGEN044
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
@@ -359,10 +371,7 @@ internal class ColorSpectrum : TemplatedControl
 
         if (_selectionEllipsePanel != null)
         {
-            _selectionEllipsePanelDisposable = _selectionEllipsePanel.GetObservable(FlowDirectionProperty).Subscribe(_ =>
-            {
-                UpdateEllipse();
-            });
+            _selectionEllipsePanel.PropertyChanged += HandleSelectionEllipsePanelPropertyChanged;
         }
 
         // If we haven't yet created our bitmaps, do so now.
@@ -403,8 +412,10 @@ internal class ColorSpectrum : TemplatedControl
         _layoutRootDisposable?.Dispose();
         _layoutRootDisposable = null;
 
-        _selectionEllipsePanelDisposable?.Dispose();
-        _selectionEllipsePanelDisposable = null;
+        if (_selectionEllipsePanel != null)
+        {
+            _selectionEllipsePanel.PropertyChanged -= HandleSelectionEllipsePanelPropertyChanged;
+        }
 
         if (_inputTarget != null)
         {
@@ -674,6 +685,10 @@ internal class ColorSpectrum : TemplatedControl
             {
                 _ = CreateBitmapsAndColorMapAsync();
             }
+        }
+        else if (change.Property == CornerRadiusProperty)
+        {
+            UpdateEllipse();
         }
         else if (change.Property == ShapeProperty)
         {
@@ -1071,10 +1086,57 @@ internal class ColorSpectrum : TemplatedControl
         // Warning: LayoutHelper.GetLayoutScale() doesn't work unless the control is visible
         // This will not be true in all cases if the color is updated from another control or code-behind
         var scale = LayoutHelper.GetLayoutScale(this);
-        Canvas.SetLeft(_selectionEllipsePanel, (xPosition / scale) - (_selectionEllipsePanel.Width / 2));
-        Canvas.SetTop(_selectionEllipsePanel, (yPosition / scale) - (_selectionEllipsePanel.Height / 2));
+        var spectrumSize = _layoutRoot?.Bounds.Size ?? new Size(
+            _imageWidthFromLastBitmapCreation / scale, _imageHeightFromLastBitmapCreation / scale);
+        var selectorWidth = _selectionEllipsePanel.Width;
+        var selectorHeight = _selectionEllipsePanel.Height;
+        if (double.IsFinite(selectorWidth) && double.IsFinite(selectorHeight))
+        {
+            var selectorRadius = Math.Max(selectorWidth, selectorHeight) / 2;
+            // Leave one device pixel for the arranged marker's layout rounding and the raster edge.
+            var position = ConstrainSelectorCenter(new Point(xPosition / scale, yPosition / scale),
+                spectrumSize, selectorRadius + 1 / scale);
+            Canvas.SetLeft(_selectionEllipsePanel, position.X - selectorWidth / 2);
+            Canvas.SetTop(_selectionEllipsePanel, position.Y - selectorHeight / 2);
+        }
 
         UpdatePseudoClasses();
+    }
+
+    private Point ConstrainSelectorCenter(Point position, Size spectrumSize, double selectorInset)
+    {
+        var halfShortSide = Math.Min(spectrumSize.Width, spectrumSize.Height) / 2;
+        var inset = Math.Min(selectorInset, halfShortSide);
+        var clamped = new Point(Math.Clamp(position.X, inset, spectrumSize.Width - inset),
+            Math.Clamp(position.Y, inset, spectrumSize.Height - inset));
+
+        // The larger rounded corner is a conservative bound for both the spectrum raster and the frame clip.
+        var corners = CornerRadius;
+        var corner = Math.Min(halfShortSide, Math.Max(Math.Max(corners.TopLeft, corners.TopRight),
+            Math.Max(corners.BottomLeft, corners.BottomRight)));
+        if (corner <= inset)
+        {
+            return clamped;
+        }
+
+        // Inset the sides and arcs by the marker's radius. The inset arcs have the same centers.
+        var arcCenter = new Point(Math.Clamp(position.X, corner, spectrumSize.Width - corner),
+            Math.Clamp(position.Y, corner, spectrumSize.Height - corner));
+        var offset = (Vector)(position - arcCenter);
+        var innerRadius = corner - inset;
+        return offset.SquaredLength > innerRadius * innerRadius
+            ? arcCenter + offset * (innerRadius / offset.Length)
+            : clamped;
+    }
+
+    private void HandleSelectionEllipsePanelPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == WidthProperty ||
+            change.Property == HeightProperty ||
+            change.Property == FlowDirectionProperty)
+        {
+            UpdateEllipse();
+        }
     }
 
     /// <inheritdoc cref="InputElement.PointerEntered"/>
@@ -1603,9 +1665,9 @@ internal class ColorSpectrum : TemplatedControl
             return;
         }
 
-        _spectrumOverlayRectangle.Opacity = overlayOpacity;
-        _spectrumRectangle.Fill = spectrumBrush;
-        _spectrumOverlayRectangle.Fill = spectrumOverlayBrush;
+        _spectrumOverlayRectangle.SetCurrentValue(OpacityProperty, overlayOpacity);
+        _spectrumRectangle.SetCurrentValue(Avalonia.Controls.Shapes.Shape.FillProperty, spectrumBrush);
+        _spectrumOverlayRectangle.SetCurrentValue(Avalonia.Controls.Shapes.Shape.FillProperty, spectrumOverlayBrush);
     }
 
     private bool TryUseFastSaturationValueSpectrum(
@@ -1665,10 +1727,12 @@ internal class ColorSpectrum : TemplatedControl
                 EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                     new(Colors.White, 0),
                     _saturationValueHueStop
                 }
             };
+#pragma warning restore ATOMUIGEN044
         }
         else
         {
@@ -1681,10 +1745,12 @@ internal class ColorSpectrum : TemplatedControl
             EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
             GradientStops = new GradientStops
             {
+#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
                 new(Colors.Transparent, 0),
                 new(Colors.Black, 1)
             }
         };
+#pragma warning restore ATOMUIGEN044
 
         SetSpectrumBrushes(_saturationValueSpectrumBrush, _saturationValueOverlayBrush, 1.0);
         return true;

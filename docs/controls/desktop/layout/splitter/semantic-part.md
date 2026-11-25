@@ -86,7 +86,7 @@ AtomUI 映射：
 | AtomUI 节点 | 每个 internal `SplitterHandle` 模板中的 `SplitterDragBar#PART_DragBar` |
 | 职责 | 统一表示相邻面板之间的拖拽命中区：drag 输入入口、方向 cursor 与 grip 视觉宿主；命中区域尺寸由 handle 布局写入。对应上游 `.ant-splitter-bar`。 |
 | 相关 API | `IsLazy`、`HandleSize`、`LineThickness`、`LineCornerRadius` |
-| 相关 Token | `SplitTriggerSize`、`SplitBarDraggableSize`、`HandleLineThickness`、`HandleLineColor`、`HandleLineHoverColor`、`HandleLineDragColor` |
+| 相关 Token | `SplitTriggerSize`、`SplitBarDraggableSize`、`HandleLineThickness`、`HandleGripColor`、`HandleGripHoverColor`、`HandleGripDragColor` |
 | 稳定性 | stable since 6.2.0 |
 
 ### 2.4 marker 放置与路由

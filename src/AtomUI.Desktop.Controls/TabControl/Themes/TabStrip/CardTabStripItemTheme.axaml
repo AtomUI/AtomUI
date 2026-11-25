@@ -10,13 +10,17 @@
         </ControlTheme.BasedOn>
         <Setter Property="Template">
             <ControlTemplate>
+                <!-- Ant Design card tabs draw the focus outline just inside the card (offset -lineWidthFocus). -->
+                <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
+                     使卡片框缩进 item Bounds 内。 -->
                 <atom:PixelAlignedBorder Name="Frame"
+                                         TemplatedControl.IsTemplateFocusTarget="True"
+                                         atom:FocusOutlineAdorner.IsInset="True"
                                          BorderThickness="{TemplateBinding BorderThickness}"
                                          CornerRadius="{TemplateBinding CornerRadius}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          Background="{TemplateBinding Background}"
-                                         Padding="{TemplateBinding Padding}"
-                                         Margin="{TemplateBinding Margin}">
+                                         Padding="{TemplateBinding Padding}">
                     <StackPanel Name="ContentLayout" Orientation="Horizontal">
                         <atom:IconPresenter Name="ItemIconPresenter"
                                             Classes.semantic-icon="True"
@@ -35,47 +39,47 @@
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
-        <Setter Property="Background" Value="{atom:TabControlTokenResource CardBg}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+        <Setter Property="Margin" Value="{atom:TabTokenResourceBinding HorizontalItemMargin}" />
+        <Setter Property="Background" Value="{atom:TabTokenResourceBinding CardBg}" />
+        <Setter Property="BorderBrush" Value="{atom:TabStripItemTokenResource ColorBorderSecondary}" />
 
         <Style Selector="^:selected">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:TabStripItemTokenResource ColorBgContainer}" />
         </Style>
 
         <Style Selector="^[IsTabReorderDragging=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:TabStripItemTokenResource ColorBgContainer}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top], ^[TabStripPlacement=Bottom]">
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource HorizontalItemMargin}" />
+            <Setter Property="Margin" Value="{atom:TabTokenResourceBinding HorizontalItemMargin}" />
             <Style Selector="^[SizeType=Large]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPaddingLG}" />
+                <Setter Property="Padding" Value="{atom:TabTokenResourceBinding CardPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPadding}" />
+                <Setter Property="Padding" Value="{atom:TabTokenResourceBinding CardPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
-                <Setter Property="Padding" Value="{atom:TabControlTokenResource CardPaddingSM}" />
+                <Setter Property="Padding" Value="{atom:TabTokenResourceBinding CardPadding}" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left], ^[TabStripPlacement=Right]">
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Middle]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemPadding}" />
             </Style>
 
             <Style Selector="^[SizeType=Small]">
                 <Setter Property="Padding"
-                        Value="{atom:TabControlTokenResource VerticalItemPadding}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemPadding}" />
             </Style>
         </Style>
 
@@ -107,7 +111,7 @@
 
         <Style Selector="^:disabled">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:TabStripItemTokenResource ColorBgContainerDisabled}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

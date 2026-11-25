@@ -212,7 +212,7 @@ TabStrip 的交互事件应从输入源收敛到控件级语义事件：
 - overflow 首开与重开：首次打开创建 context 和 template root；重开复用 root，只刷新 context 和打开态 subscription。没有溢出 item 时不打开 Popup。
 - 打开事务在发布 context 通知前订阅 owner 变化；通知和自定义模板构建返回后都复核当前会话身份。应用模板只构建一次，已构建根通过保持 DataContext 继承的 presenter 接入 Popup；同步 dismiss、集合变化、detach 或模板替换会中止本次打开并释放废弃内容。关闭事务包含完整资源清理，期间拒绝回调重开。
 - overflow 关闭与 teardown：普通关闭清空 snapshot/action/subscription；re-template、detach 或模板替换进一步释放 Popup child、cached root、context、template 与 owner。
-- edge shadow 映射：`Top` / `Bottom` 沿 X 轴使用 left/right 普通外阴影；`Left` / `Right` 沿 Y 轴使用 top/bottom 普通外阴影。开始端阴影向右、结束端阴影向左，或在纵向分别向下、向上扩展，始终进入真实 viewport。开始端仅在 offset 大于 0 时显示，结束端仅在 offset 小于 scroll maximum 时显示；阴影载体主轴尺寸等于 `MenuEdgeThickness`，位于真实 `ScrollViewContent` viewport 外侧；它的内侧边与 viewport 边界重合，不能把载体本身放在 viewport 内部。
+- edge shadow 映射：`Top` / `Bottom` 沿 X 轴使用 left/right 普通外阴影；`Left` / `Right` 沿 Y 轴使用 top/bottom 普通外阴影。开始端阴影向右、结束端阴影向左，或在纵向分别向下、向上扩展，始终进入真实 viewport。开始端仅在 offset 大于 0 时显示，结束端仅在 offset 小于 scroll maximum 时显示；阴影载体主轴尺寸为主题布局常量（32，`MenuEdgeThickness` 已保留），位于真实 `ScrollViewContent` viewport 外侧；它的内侧边与 viewport 边界重合，不能把载体本身放在 viewport 内部。
 - 动效启停、初始加载阶段 transition 抑制和卸载取消。
 - 激活触发：`PointerPressed` 模式直接在 press 阶段触发选择；`PointerReleased` 模式在 press 阶段记录候选项，release 阶段校验同一 pointer、同一 Tab、指针仍在 Tab bounds 内且未进入 reorder 后触发选择。
 - 取消激活：press 后移动到其他 Tab、移出当前 Tab、capture lost、控件 detach、模板重套用、进入拖动排序或源 item 被删除时清理候选激活状态，不提交选择。

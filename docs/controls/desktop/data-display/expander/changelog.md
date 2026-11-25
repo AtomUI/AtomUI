@@ -3,6 +3,30 @@
 本文档记录 Expander 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `ExpanderToken.HeaderColor`（默认 `ColorTextHeading`）：头部文字颜色。
+  - `ExpanderToken.HeaderFontWeight`（默认 `Normal`）：头部字重，作用于头部内容呈现器；PrimeNG Aura 600，Lara / Nora 700。
+
+## 2026-11-11
+
+- Behavior
+  - Header 成为键盘停靠点（Ant Design Collapse `collapsible`）：`Header` 模式下 Expander 自身可聚焦，Enter / Space 切换展开，展开按钮不再是额外的 Tab 停靠点；`Icon` 模式下只有展开按钮是停靠点。
+- Theme
+  - `PART_HeaderDecorator` 标记 `TemplatedControl.IsTemplateFocusTarget`，焦点描边只包围 Header。
+- Implementation
+  - Expander 实现内部的 `IFocusOutlineShapeProvider`，按展开方向与展开状态给出 Header 贴住的外框圆角，避免方角描边戳出圆角外框。
+- Tests
+  - `FocusOutlineTargetTests` 覆盖两种触发模式的停靠点、Enter / Space 切换与描边圆角。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 `ExpanderTokenResource`，`Controls[Expander]` 覆盖生效；`ContentBg` 改为内容区背景（antd `contentBg`），Ghost 模式头部与内容区透明。
+  - 删除从未被消费的 `LeftExpandButtonVMargin`、`RightExpandButtonVMargin`（左右展开时头部旋转，水平外边距 Token 已覆盖）。
+  - 可见变化：内容区绘制 `ColorBgContainer`（此前透明），Ghost 头部改为透明（此前 `ContentBg`）。
+
 ## 2026-10-27
 
 - Implementation

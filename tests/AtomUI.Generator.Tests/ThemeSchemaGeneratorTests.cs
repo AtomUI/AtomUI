@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Shouldly;
 using Xunit;
 
@@ -39,13 +38,40 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("static value =>");
         source.ShouldNotContain("static token =>");
         source.ShouldNotContain("static (token, value) =>");
-        source.ShouldContain("static () => new global::Demo.ButtonToken()");
-        source.ShouldContain("((global::Demo.ButtonToken)token).CalculateTokenValues(appearance == global::AtomUI.Theme.ThemeAppearance.Dark)");
-        source.ShouldContain("new ThemeAlgorithmDescriptor(global::AtomUI.Theme.Algorithms.ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark");
-        source.ShouldContain("new ThemeAlgorithmDescriptor(global::AtomUI.Theme.Algorithms.ThemeAlgorithm.Default, 1, ThemeAppearanceEffect.Light");
+        // The descriptor only creates the token: values come from the language's control token rules.
+        source.ShouldContain("static () => new global::Demo.ButtonToken()" + Environment.NewLine);
+        source.ShouldNotContain("RunDefaultCalculation");
+        source.ShouldNotContain("static (token, appearance)");
+        // Theme algorithms are gone from the schema.
+        source.ShouldNotContain("ThemeAlgorithmDescriptor");
+        source.ShouldNotContain("GetAlgorithms");
         source.ShouldNotContain("Activator.CreateInstance");
         source.ShouldNotContain("PropertyInfo");
         source.ShouldNotContain("typeof(global::Demo.ButtonToken)");
+    }
+
+    [Fact]
+    public void Global_Schema_Fingerprint_Is_Emitted_Only_For_An_Assembly_With_Global_Tokens()
+    {
+        var withGlobals = GetGeneratedSource(RunGenerator(CreateCompilation(TokenSource), out _), "GeneratedThemeSchema.g.cs");
+        withGlobals.ShouldContain("internal const ulong GlobalSchemaFingerprint = 0x");
+
+        var controlsOnly = GetGeneratedSource(RunGenerator(CreateCompilation("""
+            using AtomUI.Theme.DesignTokens;
+
+            namespace Demo
+            {
+                [ControlDesignToken]
+                internal sealed class ButtonToken : AbstractControlDesignToken
+                {
+                    public double Height { get; set; }
+                }
+            }
+            """), out var diagnostics), "GeneratedThemeSchema.g.cs");
+
+        diagnostics.ShouldBeEmpty();
+        controlsOnly.ShouldNotContain("GlobalSchemaFingerprint");
+        controlsOnly.ShouldNotContain("CopyGlobalValues");
     }
 
     [Fact]
@@ -59,23 +85,6 @@ public class ThemeSchemaGeneratorTests
             "GeneratedThemeSchema.g.cs");
 
         second.ShouldBe(first);
-    }
-
-    [Fact]
-    public void Ignores_An_Undefined_ThemeAlgorithm_Attribute_Value()
-    {
-        var invalidSource = TokenSource.Replace(
-            "ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark",
-            "(ThemeAlgorithm)999, 1, ThemeAppearanceEffect.Dark",
-            StringComparison.Ordinal);
-
-        var outputCompilation = RunGenerator(CreateCompilation(invalidSource), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-        var source = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        source.ShouldContain("ThemeAlgorithm.Default");
-        source.ShouldNotContain("ThemeAlgorithm.Dark");
-        source.ShouldNotContain("999");
     }
 
     [Theory]
@@ -95,40 +104,14 @@ public class ThemeSchemaGeneratorTests
         source.ShouldNotContain("namespace AtomUI.Generated._");
     }
 
-    [Fact]
-    public void Ignores_Non_Token_Effective_Global_Calculation_Helpers()
-    {
-        var outputCompilation = RunGenerator(CreateCompilation("""
-            using AtomUI.Theme.DesignTokens;
-
-            namespace Demo
-            {
-                [ControlDesignToken]
-                internal sealed class ButtonToken : AbstractControlDesignToken
-                {
-                    public double Height { get; set; }
-
-                    public override void CalculateTokenValues(bool isDark)
-                    {
-                        _ = EffectiveGlobalToken.ColorPalettes.Count;
-                        Height = EffectiveGlobalToken.ControlHeight;
-                    }
-                }
-            }
-            """), out var diagnostics);
-
-        diagnostics.ShouldBeEmpty();
-        var source = GetGeneratedSource(outputCompilation, "GeneratedThemeSchema.g.cs");
-        source.ShouldNotContain("\"ColorPalettes\"");
-    }
-
-    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics,
-        params AdditionalText[] additionalTexts)
+    private static CSharpCompilation RunGenerator(CSharpCompilation compilation, out ImmutableArray<Diagnostic> diagnostics)
     {
         var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()],
-            additionalTexts.ToImmutableArray(), (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
+            ImmutableArray<AdditionalText>.Empty, (CSharpParseOptions)compilation.SyntaxTrees[0].Options,
             new BuiltinCatalogOptionsProvider(null));
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out diagnostics, TestContext.Current.CancellationToken);
+        // These fixtures declare Token shapes without theme assets; ATOMUIGEN042 has dedicated coverage in OwnTokenReferenceAnalysisTests.
+        diagnostics = diagnostics.Where(static diagnostic => diagnostic.Id != "ATOMUIGEN042").ToImmutableArray();
         return (CSharpCompilation)output;
     }
 
@@ -159,7 +142,6 @@ public class ThemeSchemaGeneratorTests
     }
 
     private const string TokenSource = """
-        using AtomUI.Theme.Algorithms;
         using AtomUI.Theme.Schema;
         using AtomUI.Theme.DesignTokens;
 
@@ -180,64 +162,21 @@ public class ThemeSchemaGeneratorTests
             {
                 public string Label { get; set; } = string.Empty;
                 public double Height { get; set; }
-
-                public override void CalculateTokenValues(bool isDark)
-                {
-                    Height = EffectiveGlobalToken.ControlHeight;
-                }
-            }
-
-            [ThemeAlgorithm(ThemeAlgorithm.Default, 1, ThemeAppearanceEffect.Light)]
-            internal sealed class DefaultAlgorithm : IThemeAlgorithm
-            {
-                public DefaultAlgorithm()
-                {
-                }
-            }
-
-            [ThemeAlgorithm(ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark)]
-            internal sealed class DarkAlgorithm : IThemeAlgorithm
-            {
-                public DarkAlgorithm()
-                {
-                }
             }
         }
         """;
 
     private const string ReorderedTokenSource = """
-        using AtomUI.Theme.Algorithms;
         using AtomUI.Theme.Schema;
         using AtomUI.Theme.DesignTokens;
 
         namespace Demo
         {
-            [ThemeAlgorithm(ThemeAlgorithm.Dark, 1, ThemeAppearanceEffect.Dark)]
-            internal sealed class DarkAlgorithm : IThemeAlgorithm
-            {
-                public DarkAlgorithm()
-                {
-                }
-            }
-
-            [ThemeAlgorithm(ThemeAlgorithm.Default, 1, ThemeAppearanceEffect.Light)]
-            internal sealed class DefaultAlgorithm : IThemeAlgorithm
-            {
-                public DefaultAlgorithm()
-                {
-                }
-            }
-
             [ControlDesignToken]
             internal sealed class ButtonToken : AbstractControlDesignToken
             {
                 public double Height { get; set; }
                 public string Label { get; set; } = string.Empty;
-
-                public override void CalculateTokenValues(bool isDark)
-                {
-                    Height = EffectiveGlobalToken.ControlHeight;
-                }
             }
 
             [GlobalDesignToken]
@@ -252,7 +191,7 @@ public class ThemeSchemaGeneratorTests
         }
         """;
 
-    private const string AtomUIStubs = """
+    internal const string AtomUIStubs = """
         namespace Avalonia.Media
         {
             public sealed class FontFamily
@@ -315,14 +254,8 @@ public class ThemeSchemaGeneratorTests
                 Seed,
                 Map,
                 Alias,
-                Control
-            }
-
-            public enum ThemeAppearanceEffect : byte
-            {
-                Preserve,
-                Light,
-                Dark
+                Control,
+                Language
             }
 
             public readonly record struct ControlTokenIdentity(string Catalog, string Id)
@@ -351,41 +284,19 @@ public class ThemeSchemaGeneratorTests
             {
                 public static TokenDescriptor CreateGenerated(
                     string name, int slot, TokenStage stage, TokenValueCodec codec, object resourceKey, TokenValueAccessor accessor) => null!;
-
-                public TokenDescriptor(
-                    string name,
-                    int slot,
-                    TokenStage stage,
-                    System.Type valueType,
-                    object resourceKey,
-                    System.Func<string, object?> parser,
-                    System.Func<object?, string> formatter,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> getter,
-                    System.Action<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> setter,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractDesignToken, object?> resourceProjector)
-                {
-                }
             }
 
             public sealed class ControlTokenDescriptor
             {
+                public ControlTokenDescriptor(System.Type controlType, ControlTokenIdentity identity)
+                {
+                }
+
                 public ControlTokenDescriptor(
                     System.Type controlType,
                     ControlTokenIdentity identity,
                     System.Collections.Generic.IReadOnlyList<TokenDescriptor> ownTokens,
-                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory,
-                    System.Action<AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.ThemeAppearance> evaluator)
-                {
-                }
-            }
-
-            public sealed class ThemeAlgorithmDescriptor
-            {
-                public ThemeAlgorithmDescriptor(
-                    AtomUI.Theme.Algorithms.ThemeAlgorithm algorithm,
-                    int revision,
-                    ThemeAppearanceEffect appearanceEffect,
-                    System.Func<AtomUI.Theme.Algorithms.IThemeAlgorithm> factory)
+                    System.Func<AtomUI.Theme.DesignTokens.AbstractControlDesignToken> factory)
                 {
                 }
             }
@@ -411,31 +322,6 @@ public class ThemeSchemaGeneratorTests
                 public static object? Project<T>(T value)
                 {
                     return value;
-                }
-            }
-        }
-
-        namespace AtomUI.Theme.Algorithms
-        {
-            public enum ThemeAlgorithm
-            {
-                Default = 0,
-                Dark = 1,
-                Compact = 2
-            }
-
-            public interface IThemeAlgorithm
-            {
-            }
-
-            [System.AttributeUsage(System.AttributeTargets.Class, Inherited = false)]
-            public sealed class ThemeAlgorithmAttribute : System.Attribute
-            {
-                public ThemeAlgorithmAttribute(
-                    ThemeAlgorithm algorithm,
-                    int revision,
-                    AtomUI.Theme.Schema.ThemeAppearanceEffect appearanceEffect)
-                {
                 }
             }
         }
@@ -472,8 +358,21 @@ public class ThemeSchemaGeneratorTests
             {
             }
 
+            [System.AttributeUsage(System.AttributeTargets.Property)]
+            public sealed class ReservedTokenAttribute : System.Attribute
+            {
+                public ReservedTokenAttribute(string reason)
+                {
+                    Reason = reason;
+                }
+
+                public string Reason { get; }
+            }
+
             public abstract class AbstractDesignToken
             {
+                protected bool IsFrozen(string tokenName) => false;
+                protected void OnRead(string tokenName) { }
             }
 
             public sealed class DesignToken : AbstractDesignToken
@@ -487,64 +386,14 @@ public class ThemeSchemaGeneratorTests
 
             public abstract class AbstractControlDesignToken : AbstractDesignToken
             {
+                // Core no longer has these members; OwnTokenReferenceAnalysis still recognizes them by name, so the
+                // fixtures of its tests keep compiling against this stub.
                 protected DesignToken EffectiveGlobalToken { get; } = new DesignToken();
 
-                public virtual void CalculateTokenValues(bool isDark)
+                protected virtual void CalculateTokenValues(bool isDark)
                 {
                 }
             }
         }
         """;
-
-    private sealed class InMemoryAdditionalText : AdditionalText
-    {
-        private readonly Microsoft.CodeAnalysis.Text.SourceText _text;
-
-        internal InMemoryAdditionalText(string path, string text)
-        {
-            Path = path;
-            _text = Microsoft.CodeAnalysis.Text.SourceText.From(text);
-        }
-
-        public override string Path { get; }
-
-        public override Microsoft.CodeAnalysis.Text.SourceText GetText(
-            CancellationToken cancellationToken = default)
-        {
-            return _text;
-        }
-    }
-
-    private sealed class TestAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private static readonly AnalyzerConfigOptions s_empty =
-            new TestAnalyzerConfigOptions(new Dictionary<string, string>());
-        private readonly AnalyzerConfigOptions _globalOptions;
-
-        internal TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions)
-        {
-            _globalOptions = new TestAnalyzerConfigOptions(globalOptions);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => s_empty;
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => s_empty;
-    }
-
-    private sealed class TestAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly IReadOnlyDictionary<string, string> _values;
-
-        internal TestAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values)
-        {
-            _values = values;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _values.TryGetValue(key, out value!);
-        }
-    }
 }

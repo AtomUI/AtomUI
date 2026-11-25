@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -10,8 +9,7 @@ internal interface IWindowTitleBarLayoutStrategy
     Thickness ResolveNativeChromeInsets(
         double width,
         Thickness reportedNativeChromeInsets,
-        bool isCsdEnabled,
-        WindowState windowState);
+        bool isCsdEnabled);
 }
 
 internal static class WindowTitleBarLayoutStrategies
@@ -36,8 +34,7 @@ internal static class WindowTitleBarLayoutStrategies
         public Thickness ResolveNativeChromeInsets(
             double width,
             Thickness reportedNativeChromeInsets,
-            bool isCsdEnabled,
-            WindowState windowState)
+            bool isCsdEnabled)
         {
             return default;
         }
@@ -48,14 +45,8 @@ internal static class WindowTitleBarNativeChromeInsets
 {
     public static Thickness Resolve(
         double width,
-        Thickness reportedNativeChromeInsets,
-        WindowState windowState)
+        Thickness reportedNativeChromeInsets)
     {
-        if (windowState == WindowState.FullScreen)
-        {
-            return default;
-        }
-
         var left  = Normalize(reportedNativeChromeInsets.Left);
         var right = Normalize(reportedNativeChromeInsets.Right);
         if (double.IsPositiveInfinity(width))

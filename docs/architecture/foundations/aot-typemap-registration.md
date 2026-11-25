@@ -106,15 +106,14 @@ marker 和 assembly target 不是启用动作。没有调用可选包入口时�
 
 ## 6. 包入口与执行模式
 
-普通无状态第三方入口只需正常注册 Provider：
+普通第三方包在入口注册生成的包定义。
 
 ```csharp
 public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-    => GeneratedControlPackageRegistration.Register(
-        builder, static () => new AcmeControlThemesProvider());
+    => PackageMetadata.Definition.Register(builder);
 ```
 
-有生命周期逻辑的入口向生成 helper 提供明确的 provider factory、prepare 和 complete 回调。
+有依赖或生命周期逻辑的包可向 `Register` 传入配置回调，声明 `DependsOn`、`OnCommit` 和 `OnFirstUse`。
 生成器不读取入口方法体猜调用顺序；作者不写 TypeMap、入口身份 Attribute、AOT 模式分支或依赖名单。
 应用仍通过真实 `UseXxxControls()` 启用包。
 
@@ -193,7 +192,7 @@ IsIOS/IsIOSVersionAtLeast 包含 MacCatalyst，域比较与生成 guard 均保�
 | 对象 | 迁移要求 |
 | --- | --- |
 | Window、WindowTitleBar、SplitView、OtpLineEdit、OtpLineEditCell、TreeViewFlyoutPresenter | 复用已有类型平台声明，普通主题由 TargetType 自动取得限制 |
-| WindowResizer、FullscreenPopoverLayer、CaptionButton、CaptionButtonGroup、WindowsCaptionButton 等原生窗口辅助类型 | 核对实际原生窗口依赖，在类型上补齐真实产品能力；不按同目录批量标注 |
+| WindowResizer、FullScreenTitleBarHost、CaptionButton、CaptionButtonGroup、WindowsCaptionButton 等原生窗口辅助类型 | 核对实际原生窗口依赖，在类型上补齐真实产品能力；不按同目录批量标注 |
 | WindowTitleBarButton、WindowTitleBarToggleButton 的平台专属主题 | 复用现有主题 CLR 类声明资源限制；不据此收窄可复用控件本身 |
 | Avalonia 的 AdornerLayer、WindowDrawnDecorations 对应的 AtomUI 主题 | 由本包正常资源类声明限制，不修改外部类型，也不要求外部库配合 |
 | OtpTextBox、CaptionButtonFrame 及同目录其他资产 | 按实际控件能力与主题依赖逐项判断；纯资源限制归资源类，不继承目录限制 |

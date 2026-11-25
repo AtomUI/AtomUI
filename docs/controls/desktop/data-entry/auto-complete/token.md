@@ -17,13 +17,15 @@ Token 按控件语义分类维护：
 | 分类 | 语义 | 代表 Token |
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `OptionHeight`、`MinPopupWidth`、`MaxPopupWidth` |
-| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding` |
+| 间距与布局 | padding、margin、gap、offset、popup content padding。 | `PopupContentPadding`、`OptionMargin` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | 按源码 Token 语义维护 |
-| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `PopupContentPadding`、`MinPopupWidth`、`MaxPopupWidth` |
+| 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `OptionBorderRadius`、`PopupContentPadding`、`MinPopupWidth`、`MaxPopupWidth` |
 
 未出现在上表中的 Token 仍按源码中的组件语义维护，不按代码顺序机械分类。
 
 ## 3. 控件专项模型中的 Token 使用
+
+候选弹层内的 `CandidateList` / `CandidateListItem` 为 Token owner 透明部件，其基础主题的 Global Token 和过渡时长跟随实际 AutoComplete 宿主。候选项不承诺 Own Token；颜色与水平 padding 按原默认公式读取实际宿主的有效全局值，ListBox Own 不再影响候选列表。
 
 AutoComplete 的控件专项模型通过 Theme 消费 Token：
 
@@ -31,6 +33,18 @@ AutoComplete 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+Token 作用域（2026-11-08 输入家族迁移后）：
+
+- 共享的 `AbstractAutoCompleteTheme` 以 `OwnerTokenResource` 读取全局值（`EnableMotion`、`ColorTextPlaceholder`、
+  `ColorBgElevated`），在 AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 上分别解析为各自的有效值。
+  候选弹层边框背景先解析到控件的内部属性 `PopupBackground` 再绑定进弹层（Popup 是 owner 透明容器，弹层内容同样继承
+  AutoComplete 的 owner；控件上解析保持读取点集中在控件主题）。`PlaceholderForeground` 经模板绑定交给内部输入框。
+- 内部 AutoCompleteTextAreaBox 跟随 AutoCompleteTextArea 宿主；LineEdit/SearchEdit 子控件沿现有独立输入身份使用默认主题，SearchEdit 的公开搜索 Button 保持 Button 身份。
+- `OptionHeight` 当前只参与弹层最大高度（`OptionHeight × DisplayCandidateCount + 内边距`），候选项自身高度来自
+  CandidateList 的主题。
+- 各终端成组读取 `OptionHeight` 与 `PopupContentPadding`。任一项更新时重新计算弹层高度，`MinPopupWidth` 直接由弹层边框读取。
+- AutoComplete、AutoCompleteSearchEdit、AutoCompleteTextArea 均有独立 Own：OptionHeight、PopupContentPadding、MinPopupWidth、MaxPopupWidth；共享 AbstractAutoCompleteToken 的属性定义，取值规则由取值包的共享辅助类复用（Ant Design：`AutoCompleteTokenCalculator`），彼此的覆盖不传播。
 
 ## 4. 控件家族影响
 
@@ -59,3 +73,7 @@ AutoComplete 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+内部 textarea 的全局值与候选列表跟随真实宿主。独立使用的公开 TextArea 以及调用方提供的独立输入控件保持自身身份；Semantic Part 的 class route 保持不变。

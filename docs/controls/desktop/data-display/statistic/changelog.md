@@ -2,6 +2,16 @@
 
 本文档记录 Statistic 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Token
+  - 主题改读控件有效 Token：Statistic、TimerStatistic、StatisticCountUp 以各自 identity 读取全局 Token；共同基础主题带 `owner:` 标记。
+    数值外层的 Skeleton 已是 Token owner 透明控件，数值内容保持 Statistic 为 owner。默认渲染不变。
+
 ## 2026-08-25
 
 - Fixed

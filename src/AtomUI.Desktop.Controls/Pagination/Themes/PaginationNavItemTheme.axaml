@@ -11,7 +11,6 @@
                     <atom:PixelAlignedBorder Background="{TemplateBinding Background}"
                                              BorderBrush="{TemplateBinding BorderBrush}"
                                              CornerRadius="{TemplateBinding CornerRadius}"
-                                             Padding="{TemplateBinding Padding}"
                                              BorderThickness="{TemplateBinding BorderThickness}" />
                     <atom:IconPresenter Name="IconPresenter"
                                          IsVisible="False"
@@ -26,7 +25,9 @@
                                          VerticalAlignment="Center"
                                          Icon="{TemplateBinding JumpIcon}"
                                          IsEnabled="{TemplateBinding IsEnabled}" />
+                    <!-- The inline padding (PaginationItemPaddingInline) keeps wide page numbers off the item border. -->
                     <ContentPresenter Name="ContentPresenter"
+                                      Padding="{TemplateBinding Padding}"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       HorizontalContentAlignment="Center"
@@ -37,18 +38,26 @@
             </ControlTemplate>
         </Setter>
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+        <Setter Property="CornerRadius" Value="{CompiledBinding $self.ItemBorderRadius}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
         <Setter Property="Padding"
-                Value="{atom:PaginationTokenResource PaginationItemPaddingInline}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorTransparent}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                Value="{CompiledBinding $self.ItemPaddingInline}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorTransparent}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <!-- The icon presenters are registered parts (owner reads on them resolve to IconPresenter): the item reads its
+             host's icon size and brushes and the presenters bind them. -->
+        <Setter Property="JumpIconBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
+        <Setter Property="EllipsisIconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
             <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemIconSize}" />
+            <Setter Property="Height" Value="{TemplateBinding ItemIconSize}" />
         </Style>
         <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="IconBrush" Value="{TemplateBinding JumpIconBrush}" />
+            <Setter Property="Width" Value="{TemplateBinding ItemIconSize}" />
+            <Setter Property="Height" Value="{TemplateBinding ItemIconSize}" />
         </Style>
 
         <Style Selector="^[PaginationItemType=PageIndicator]">
@@ -65,7 +74,7 @@
         <Style Selector="^[PaginationItemType=JumpPrevious], ^[PaginationItemType=JumpNext]">
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
                 <Setter Property="IsVisible" Value="True" />
-                <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                <Setter Property="IconBrush" Value="{TemplateBinding EllipsisIconBrush}" />
                 <Setter Property="Opacity" Value="1" />
             </Style>
             <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
@@ -87,91 +96,73 @@
 
             <Style Selector="^[PaginationItemType=PageIndicator]">
                 <Style Selector="^:selected">
-                    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
+                    <Setter Property="Foreground" Value="{atom:PaginationTokenResource ItemActiveColor}" />
                     <Setter Property="Background"
                             Value="{atom:PaginationTokenResource ItemActiveBg}" />
-                    <Setter Property="FontWeight" Value="SemiBold" />
+                    <Setter Property="FontWeight" Value="{atom:PaginationTokenResource ItemActiveFontWeight}" />
                     <Setter Property="BorderBrush"
-                            Value="{atom:SharedTokenResource ColorPrimary}" />
+                            Value="{atom:PaginationTokenResource ItemActiveBorderColor}" />
                     <Style Selector="^:pointerover">
                         <Setter Property="Foreground"
-                                Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                                Value="{atom:PaginationTokenResource ItemActiveHoverColor}" />
                         <Setter Property="BorderBrush"
-                                Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                                Value="{atom:PaginationTokenResource ItemActiveHoverBorderColor}" />
                     </Style>
                 </Style>
                 <Style Selector="^:not(:selected)">
                     <Setter Property="Background" Value="{atom:PaginationTokenResource ItemBg}" />
-                    <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                    <Setter Property="Foreground" Value="{CompiledBinding $self.ItemColor}" />
                     <Style Selector="^:pointerover">
+                        <Setter Property="Foreground"
+                                Value="{CompiledBinding $self.ItemHoverColor}" />
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                                Value="{CompiledBinding $self.ItemHoverBg}" />
                     </Style>
                     <Style Selector="^:pressed">
                         <Setter Property="Background"
-                                Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                                Value="{atom:OwnerTokenResource ColorBgTextActive}" />
                     </Style>
                 </Style>
             </Style>
 
             <Style Selector="^[PaginationItemType=Previous], ^[PaginationItemType=Next]">
                 <Setter Property="Background"
-                        Value="{atom:SharedTokenResource ColorTransparent}" />
+                        Value="{atom:OwnerTokenResource ColorTransparent}" />
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorText}" />
-                <Style Selector="^:pointerover">
+                        Value="{CompiledBinding $self.ItemColor}" />
+                <Style Selector="^:is(atom|PaginationNavItem):pointerover">
+                    <Setter Property="Foreground"
+                            Value="{CompiledBinding $self.ItemHoverColor}" />
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorBgTextHover}" />
+                            Value="{CompiledBinding $self.ItemHoverBg}" />
                 </Style>
                 <Style Selector="^:pressed">
                     <Setter Property="Background"
-                            Value="{atom:SharedTokenResource ColorBgTextActive}" />
+                            Value="{atom:OwnerTokenResource ColorBgTextActive}" />
                 </Style>
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
-
-            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
-            </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeLG}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeLG}" />
-            </Style>
+            <Setter Property="Height" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSizeLG}" />
 
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSize}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSize}" />
-            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            </Style>
+            <Setter Property="Height" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSize}" />
         </Style>
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="Height" Value="{atom:PaginationTokenResource ItemSizeSM}" />
-            <Setter Property="MinWidth" Value="{atom:PaginationTokenResource ItemSizeSM}" />
-            <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
-            </Style>
-            <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
-                <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-                <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
-            </Style>
+            <Setter Property="Height" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.ItemSize}" />
+            <Setter Property="ItemIconSize" Value="{atom:OwnerTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:PaginationTokenResource ItemActiveColorDisabled}" />
+                    Value="{CompiledBinding $self.ItemActiveColorDisabled}" />
             <Style Selector="^:selected">
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="Background"
@@ -184,7 +175,7 @@
                 </Style>
                 <Style Selector="^ /template/ atom|IconPresenter#JumpIconPresenter">
                     <Setter Property="Opacity" Value="0" />
-                    <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    <Setter Property="IconBrush" Value="{TemplateBinding EllipsisIconBrush}" />
                 </Style>
             </Style>
 
@@ -192,17 +183,21 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
             <Style Selector="^ /template/ atom|IconPresenter#IconPresenter, ^ /template/ atom|IconPresenter#JumpIconPresenter">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <DoubleTransition Property="Opacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
         </Style>

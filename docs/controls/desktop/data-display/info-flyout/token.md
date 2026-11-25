@@ -9,7 +9,7 @@ InfoFlyout Token 只表达组件级视觉变量，例如尺寸、间距、颜色
 当前 Token scope：
 
 - `FlyoutHostToken`，scope id 为 `FlyoutHost`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/FlyoutHostToken.cs`。
-- `TreeFlyoutToken`，scope id 为 `TreeFlyout`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeFlyoutToken.cs`。
+- `TreeViewFlyoutPresenterToken`，scope id 为 `TreeViewFlyoutPresenter`，源码位于 `src/AtomUI.Desktop.Controls/Flyouts/TreeViewFlyoutPresenterToken.cs`。
 
 ## 2. Token 分类
 
@@ -60,3 +60,30 @@ InfoFlyout 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+FlyoutHost 的全局动效读取自身有效值；MenuFlyout / TreeViewFlyout 的 pointer placement offset 在打开会话内读取 placement target 作用域中的 FlyoutHost Own Token，关闭、detach 时释放绑定。TreeViewFlyoutPresenter 的 `PopupBgColor` 设置 presenter 默认背景，经现有 TemplateBinding 传到箭头容器；显式根 Background 保持优先。
+
+受保护的 `BindPointerPlacementOffsets(object, object)` 只把 `FlyoutHostTokenKind` 规范化为 FlyoutHost Own key；SharedTokenKind、自定义枚举/字符串和已经类型化的 key 在 placement target 作用域中保持原义。已打开的同一 flyout 可直接 `ShowAt(newTarget)`：旧会话先关闭并释放绑定，再在新目标作用域中建立定位绑定；无需调用方先 Hide。同目标关闭动效中的 ShowAt 仍取消关闭并复用当前会话。
+
+## 箭头框体 Token（`ArrowDecoratedBoxToken`）
+
+Flyout 的弹层表面 `FlyoutPresenter` 是 `ArrowDecoratedBox`，其外观 Token 属于共享的 `ArrowDecoratedBoxToken`
+（scope id `ArrowDecoratedBox`，源码 `src/AtomUI.Desktop.Controls/Primitives/ArrowDecoratedBox/ArrowDecoratedBoxToken.cs`），
+同一组 Token 也作用于 PopupConfirm、Picker 面板、下拉菜单、树形 flyout、Tour、DataGrid 筛选 flyout 与 ColorPicker 面板：
+
+| Token | 派生来源 | 语义 |
+| --- | --- | --- |
+| `ArrowSize` | `SizePopupArrow / 1.3` | 箭头尺寸（底边宽度；箭头长度约为其一半）。 |
+| `ContentPadding` | `PaddingXS` | 框体内边距。 |
+| `ContentBorderColor` | `ColorBorderSecondary` | 框体与箭头的边框色。 |
+| `ContentBorderThickness` | `0` | 边框宽度；非零时框体自绘一条环绕框体与箭头的整体描边（箭头底边无横线），模板容器 `Border` 只保留布局宽度。 |
+| `ContentMinHeight` | `ControlHeight` | 框体最小高度。 |
+| `ArrowStrokeColor` / `ArrowStrokeThickness` | 7% 黑 / 1 | 无边框时箭头自身的描边。 |
+
+Ant Design 的 `ContentBorderThickness` 默认为 0。ToolTip 主题将自身箭头框体的 `BorderThickness` 固定为 0。
+PrimeNG 的取值包从 Popover 配方读取框体内边距和边框颜色，框体描边厚度使用当前 `LineWidth`。
+[PrimeNG 弹层取值](../../../../../src/DesignLanguages/PrimeNG/AtomUI.DesignLanguages.PrimeNG/README.md#overlays-popovers-select-panels-menus)
+
+## 独立 Token 身份与共享计算
+
+公开 TreeViewFlyoutPresenter 的 PopupCornerRadius 独立计算，和 Popup 仅共享 AbstractPopupCornerToken 的定义与取值公式（Ant Design：共享辅助类 `PopupCornerTokenCalculator`）；Controls[Popup] 的圆角不再改变这个公开 presenter。

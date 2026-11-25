@@ -35,7 +35,7 @@ NumericUpDown 的设计语言来自输入框与微调按钮的组合。
 
 ## 3. API 与契约模型
 
-NumericUpDown 的公共 API 由继承的数值编辑 API 与 AtomUI 输入扩展 API 组成。继承 API 的语义必须与 Avalonia `NumericUpDown` 保持一致，AtomUI 扩展只负责外观、辅助内容和集成能力。
+NumericUpDown 通过 `AtomUI.Controls.AbstractNumericUpDown` 继承 Avalonia 数值编辑 API。共享基类处理字符串模式、精度、区域格式和 Form 值，桌面控件负责步进按钮模板、外观及辅助内容。
 
 数值编辑 API：
 
@@ -48,6 +48,7 @@ NumericUpDown 的公共 API 由继承的数值编辑 API 与 AtomUI 输入扩展
 | `ClipValueToMinMax` | `bool` | 文本转换为数值时是否裁剪到范围。 |
 | `NumberFormat` | `NumberFormatInfo?` | 数值格式化和解析使用的区域格式。 |
 | `FormatString` | `string` | 非编辑状态下的显示格式。 |
+| `Digits` | `int?` | 设为 0 到 28 时按指定小数位显示，提交文本时四舍五入。默认未设置。 |
 | `ParsingNumberStyle` | `NumberStyles` | 文本解析规则。 |
 | `TextConverter` | `IValueConverter?` | 自定义 `Text` 与 `Value` 的双向转换器。 |
 | `AllowSpin` | `bool` | 是否允许按钮、键盘和鼠标滚轮触发步进。 |

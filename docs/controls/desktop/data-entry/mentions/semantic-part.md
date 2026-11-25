@@ -111,7 +111,7 @@ Mentions 的输入表面整体委托给内部 `MentionTextArea : TextArea`，因
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `TextAreaTheme.axaml` 中 `InputTextPresenter`（`PART_TextPresenter`，internal，公共契约承诺 Avalonia `TextPresenter`） |
+| AtomUI 节点 | `TextAreaTheme.axaml` 中的 Avalonia `TextPresenter#PART_TextPresenter` |
 | 职责 | 多行文本编辑 presenter，承载 `Value` 文本与 caret/selection 状态。 |
 | 相关 API | `Value`、`IsReadOnly`、`IsAutoFocus` |
 | 相关 Token | SharedToken（ColorText、SelectionBackground、CaretBrush） |

@@ -3,6 +3,25 @@
 本文档记录 BorderBeam 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-18
+
+- Fixed
+  - 外部长期持有 `ColorStops` 集合时，集合通过弱订阅发布通知，废弃的 `BorderBeam` 可以被回收。
+  - 修改已有停靠点的 `Color` 或 `Percent` 会刷新渐变，重新挂树时也会读取当前值。
+  - 大圆角主题下流线与轨道分离（Shadcn Luma 最明显）：光带环此前取 BorderBeam 自身的 `BorderRadiusLG` token（Luma=26），
+    与内容卡片的圆角（如 8）脱钩；`Card` 实现 `IBorderBeamAwareControl`，把自身 `BorderThickness`+`CornerRadius`
+    喂给宿主 BorderBeam，环随内容边框，不再依赖 token 巧合。绘制算法保持原版（旋转渐变条 + 环带裁剪）不变。
+- Performance
+  - 将两项默认渐变色、不透明度与可见段终点合并为一次资源读取组和一次模板投射。
+  - 动画周期性卡顿（每几十秒一次停顿）：两个每帧分配源消除——① 裁剪几何/路径度量/渐变刷每帧重建，改为输入键控缓存；
+    ② 渐变刷以可变形态传入绘制上下文，每帧触发 `ToImmutable()` 拷贝，改为缓存不可变快照。
+    实测：3600 帧（60 秒等效）全代 0 次 GC；真窗口 9 光带全速动画 5 秒帧间隔 p50=8.3ms / p95=13.9ms / max=24.2ms。
+
+## 2026-11-10
+
+- Theme
+  - 控件主题读取自身有效全局 Token，局部覆盖与嵌套已注册控件保持隔离；消费范围见 [Token 设计](token.md#7-有效-token-与作用域边界)。
+
 ## 2026-09-09
 
 - Fixed

@@ -166,6 +166,12 @@ Selection 使用 ExplicitKeys、AllMatchingQuery、IndexIntervals 和 ExcludedKe
 Row/Cell 只投影当前 entry 的判定结果，container recycle 不改变 selection。CurrentRowKey 是 identity；DataIndex hint 只用于定位。
 未加载 key 的解析依赖可选 `IDataGridKeyLookupSource`，不能伪造 SelectedItem 或 index。
 
+左键输入先检查选择列指示器的实际 Bounds。允许选择且命中指示器时，由选择列生成增删动作；未命中时由 `Cell`
+解释 Ctrl/Shift 和普通行选择，由 `Row` 通过 `GetRowTriggerSelectionAction` 把普通点击映射为
+`AddCurrentToSelection`/`RemoveCurrentFromSelection`、Shift 映射为 `SelectFromAnchorToCurrent`，并在本次点击将进入编辑
+或存在编辑行时以 `None` 保留选择。三种触发方式复用既有选择动作，不新增选择状态分支。`SelectIndicator` 的非指示器点击使用 `None` 选择动作，继续沿统一路径更新
+current、焦点和编辑状态，不通过拦截单元格事件或扩大 checkbox 命中区域避免选择丢失。
+
 ### 4.5 分页
 
 ```text
@@ -241,7 +247,24 @@ PointerPressed
 ```
 
 每个 DataGrid 只有一个会话。handle 不修改数据，presenter 不决定移动语义，Source 不持有视觉对象。Source、Query、snapshot、
-row、pointer 或 capability 变化均取消会话。完成和取消共用幂等清理入口，释放 capture、ghost、offset、transition 和引用。
+pointer 或 capability 变化，以及源 slot 不再对应源 RowKey，均取消会话。完成和取消共用幂等清理入口，释放 capture、ghost、
+offset、transition 和引用。
+
+handle 只负责按下：按下后 Pointer capture 交给 `DataGridRowsPresenter`，由它把 move、release 和 capture lost 转给会话。
+源行所在的 handle 和行容器会在滚动时被虚拟化回收，因此不再以 handle 卸载、模板重套用或 detach 结束会话；阈值前仍要求源行
+在显示，以便 `RowReordering` 报告真实的行。范围呈现下的滚轮和边界自动滚动都异步生效，presenter 每次 arrange 后若显示视口
+（首个滚动 slot 与 `NegVerticalOffset`）已不同于上次命中插入目标时的视口，就以 Background 优先级按最后指针位置重新解析目标；
+这次解析只更新插入目标，不改 ghost 偏移、不再触发自动滚动；presenter 的布局仍无效时跳过，留给下一次 arrange 重新投递，避免按
+未重排的行边界命中却记录为新视口。
+
+ghost 偏移跟随指针，但夹在 `[0, CellsEstimatedHeight - 源行高]` 内，指针越界时贴住视口边缘。边界自动滚动由会话级
+`DispatcherTimer`（30ms）驱动：指针移动越过边缘时立即滚动一步并启动计时器，之后每次 tick 按越界距离滚动（单次上限 20），
+直至指针回到视口内、无法继续滚动或会话清理；计时器随会话清理停止，不跨会话保留。
+
+拖动提交和 `MoveRowAsync` 共用源移动执行入口。每个 DataGrid 的 `AsyncLocal<DataGridMoveRequest?>` 只在源 `MoveAsync`
+的执行上下文中保存请求身份，finally 恢复原值；异步等待只传递该上下文容器和弱引用，不持有 DataGrid 或行容器。
+源在返回之前同步或异步发出的 `Invalidated` 可据此选用位置锚点；通知跨线程时先捕获请求，再显式传递到 UI 线程。
+匹配当前 Query 和 snapshot 的主动移动按当前首个可见 slot 与行内偏移恢复，普通外部失效和同源其他 Grid 保持内容锚点。
 
 ## 5. 组合结构模型
 
@@ -457,6 +480,10 @@ SparseHeightDeltaIndex 只保存 pinned/current-LRU block 的实测差值；pass
 kind/group level 分类的 estimator 并删除明细。prefix sum 和 offset-to-slot 是 O(log M)，M 受 cache/pin 与用户显式状态上限
 约束。禁止从 slot 0 扫描到 first slot，也禁止按 total/历史访问量创建全局 Fenwick array。
 
+槽位区间必须首尾相接：一行的结束边界就是下一槽位的起点，offset-to-slot 只能按槽位起点的同一算式比较，不得用
+“起点 + 实测高度”另行求行底。分数缩放下布局取整得到的行高不能被二进制精确表示，两种求值会相差若干 ULP，
+落进缝隙的偏移不属于任何槽位；任何有限偏移都必须映射到一个合法槽位。
+
 自动 `RowHeightEstimate` 的 owner 是 committed data generation。`CommitRangePresentation` 先用 `DefaultRowHeight` 构建新
 generation 的高度索引；只有 range、snapshot、pins 与 staged containers 均准备成功、即将交换 presentation 时，才调用
 `ResetRowHeightEstimateForDataGeneration`。这样失败或迟到的 generation 不污染当前高度状态；Source 换绑、Query/filter、分页和
@@ -465,6 +492,8 @@ Invalidated/collection Reset 成功后都从新 baseline 采样。首个有效 d
 
 测量修正以首个完整可见 entry key 与 intra-row offset 为锚。Query/PageRequest 成功后 vertical offset 归零；GroupExpansion
 保持操作 header 的屏幕 Y；Invalidated 优先按首行 key 恢复，失败时 clamp 到最近合法 slot。
+主动行移动使用无行/组身份的位置锚点，直接保留 slot 和行内偏移；首行只显示一部分时也以该部分可见行作为位置基准。
+若新行比原行内偏移更短，恢复到该 slot 顶部，保证该行可见；不能越过它或只留下不足一个像素的片段。
 
 DataGrid 写入 vertical scrollbar 前仍把 extent travel clamp 到非负；`AbstractScrollBar` 再对所有有限值统一保证
 `Maximum >= Minimum`。小于一个物理像素的 travel range 收敛到 Minimum，因此 Auto scrollbar 不抖动，也不会通过非法负
@@ -538,7 +567,20 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 
 ## 9. 资源、性能与 AOT 边界
 
-### 9.1 热路径
+### 9.1 主题资源与作用域
+
+DataGrid 的 ControlTheme 读取自身有效全局值。行、单元格、行头与分组头为 Token owner 透明的实现容器；
+无独立身份的指示器继承实际 DataGrid owner。内置 Spin 的 `GridContent` 容器通过既有 `TokenOwnerForwarding`
+恢复表格 owner，Spin 本体继续拥有遮罩与加载指示器。该绑定在模板重建、视觉 detach 时释放，在重挂载时重建；
+嵌套公开控件的身份在其自身主题处重新建立。
+
+DataGridColumn / DataGridColumnGroupItem 是非 Visual 资源宿主。资源查询从 OwningGrid 的完整资源链开始，
+因此包含局部 ThemeConfigProvider 的命名资源与 Token；未命中时保留 Application fallback。
+owner 更换前释放旧资源事件订阅，再转发新 owner 的资源与主题变体事件。生成的文本和编辑器从当前列同步属性，
+当前编辑器通过表格已有刷新路径接收列资源更新。该路径不恢复已不存在的命名文本/编辑主题，也不在逻辑 attach 时
+提前捕获主题快照。
+
+### 9.2 热路径
 
 - Scroll input 只更新/合并 DesiredViewport，handler 返回后由 coordinator 调度 request。
 - 每次不同的 DesiredViewport 只替换一个 active scope；旧排队项不会作为无界 task 留在 semaphore 前等待。
@@ -548,7 +590,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - Ready 模板不增加 visual node；prefetch 不触发布局。
 - 同步 Source/cache hit 不发布瞬时 Loading/Refreshing；异步首次加载驱动 Spin，已有 snapshot 的异步刷新不启动自动遮罩。
 
-### 9.2 复杂度与资源上限
+### 9.3 复杂度与资源上限
 
 | 路径 | 上限 |
 | --- | --- |
@@ -566,7 +608,7 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 所有 request、cache、pool、subscription 和 sparse state 必须在长时间往返滚动后达到稳态，不能随滚动次数或曾访问 row 数持续
 增长。
 
-### 9.3 AOT
+### 9.4 AOT
 
 - Query/Source public 类型只位于 DataGrid package，不引入 Core/Shared 反向依赖。
 - LocalSource 使用静态泛型 descriptor，并把 typed getter 显式投影为 schema `DisplayAccessor`；generated
@@ -597,6 +639,23 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - Light/Dark、Browser/Desktop、SizeType、冻结列、RowDetails 和 nested scrolling 的一致语义。
 - 文档、源码 public surface、Gallery 与 tests 的一致性。
 - Extra Content 与 Pagination 共享有效可见性；Pagination Align 为 Start/End 时分别形成左右相反布局，Center 使用右侧 Extra Content 加剩余区域居中 Pagination。
+
+### 弹层动效接入约束
+
+DataGridMenuFilterFlyout 与 DataGridTreeFilterFlyout 继承 Flyout 的配置入口，默认装配明确使用 Dropdown 根层语义；不通过 Popup 预设属性或按内容是 Menu/Tree 猜测。列头容器回收、owner 失效或模板替换强制结束旧展示会话并释放配置转发，筛选提交和网格虚拟化保持原合同。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
+### 编辑绑定定义与 AOT 边界
+
+列保留调用方的原始绑定定义。每个运行时编辑器使用只读方向的定义副本，数据提交仍由 Source 的编辑事务负责，
+不通过编辑器绑定提前回写数据项。副本只改变 Mode，保留转换器、文化、参数、默认值、Source、Path、名称作用域和默认锚点；
+不得临时改写原定义的 Mode，也不得通过重新拼装公共属性丢失 XAML 提供的绑定上下文。
+
+定义采用对象的浅复制 intrinsic，复制已经存在的运行时绑定，不在编译绑定应用的消费闭包中引入新的反射绑定构造。
+调用方选择反射绑定时，其成员保留与动态访问限制仍属于该输入的 AOT 契约；定义复制不将任意反射绑定转换为编译绑定。
+列的 Binding 替换使缓存副本失效；编辑器各自创建独立表达式，表达式退役时释放订阅，定义本身不持有编辑器会话。
 
 ## 11. 测试与验证
 
@@ -632,3 +691,6 @@ Filter Flyout 从 Query.Filters 初始化，提交完整新 Query。候选 Filte
 - DataGrid detail/recycle/offset/extent 测试保持或加强，不删除或放宽既有行为断言。
 - 运行 DataGrid 专用测试、完整 solution tests、DataGrid performance state verifier、AOT/trim verify、Gallery
   NativeAOT publish/startup smoke 和 `git diff --check`。
+
+筛选 Flyout 在其配置作用域以低优先级值提供独立默认定义；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

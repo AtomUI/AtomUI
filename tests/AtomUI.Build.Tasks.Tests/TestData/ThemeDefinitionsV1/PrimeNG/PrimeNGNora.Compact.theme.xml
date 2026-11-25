@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v1" Id="PrimeNGNora.Compact" Name="PrimeNG Nora Compact" Appearance="Light" DesignLanguage="PrimeNG.Nora" BrandColor="Seed" Density="Compact" IsDefault="false">
+  <Algorithms>
+    <Algorithm Catalog="PrimeNG" Id="Nora" />
+    <Algorithm Id="Compact" />
+  </Algorithms>
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#020617" />
+    <Token Name="ColorError" Value="#EF4444" />
+    <Token Name="ColorSuccess" Value="#22C55E" />
+    <Token Name="ColorWarning" Value="#F97316" />
+    <Token Name="ColorInfo" Value="#0EA5E9" />
+    <Token Name="EnableWaveSpirit" Value="false" />
+    <Token Name="BorderRadius" Value="2" />
+    <Token Name="ControlHeight" Value="35" />
+  </Tokens>
+</Theme>

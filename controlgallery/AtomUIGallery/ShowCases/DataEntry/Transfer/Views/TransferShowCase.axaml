@@ -6,6 +6,28 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Transfer"
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Transfer"
              x:DataType="vm:TransferViewModel">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="TransferSourceSectionBrush" Color="#2B2115" />
+                    <SolidColorBrush x:Key="TransferTargetSectionBrush" Color="#152631" />
+                    <SolidColorBrush x:Key="TransferSectionBrush" Color="#14FFFFFF" />
+                    <SolidColorBrush x:Key="TransferActionsBrush" Color="#352417" />
+                    <SolidColorBrush x:Key="TransferHighlightedSectionBrush" Color="#1C2D20" />
+                    <SolidColorBrush x:Key="TransferHighlightedSectionBorderBrush" Color="#52744A" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="TransferSourceSectionBrush" Color="#FFF7E6" />
+                    <SolidColorBrush x:Key="TransferTargetSectionBrush" Color="#E6F7FF" />
+                    <SolidColorBrush x:Key="TransferSectionBrush" Color="#80FAFAFA" />
+                    <SolidColorBrush x:Key="TransferActionsBrush" Color="#99FFF2E8" />
+                    <SolidColorBrush x:Key="TransferHighlightedSectionBrush" Color="#99F6FFED" />
+                    <SolidColorBrush x:Key="TransferHighlightedSectionBorderBrush" Color="#B7EB8F" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid Background="{atom:SharedTokenResource ColorBgLayout}">
         <gallery:GalleryShowCaseHost StickyContentPadding="28,0,28,0">
             <gallery:GalleryShowCaseHost.Header>
@@ -33,14 +55,14 @@
                                     <StackPanel.Styles>
                                         <Style Selector="atom|ListTransfer.semantic-antd-preview">
                                             <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
-                                                <Setter Property="Background" Value="#FFF7E6" />
+                                                <Setter Property="Background" Value="{DynamicResource TransferSourceSectionBrush}" />
                                             </atom:ListTransferSourceSectionStyle>
                                             <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
-                                                <Setter Property="Background" Value="#E6F7FF" />
+                                                <Setter Property="Background" Value="{DynamicResource TransferTargetSectionBrush}" />
                                             </atom:ListTransferTargetSectionStyle>
                                         </Style>
                                     </StackPanel.Styles>
-                                    <atom:ListTransfer Name="ListTransferSemanticOwner"
+                                    <atom:ListTransfer x:Name="ListTransferSemanticOwner"
                                                        Classes="semantic-antd-preview"
                                                        IsFilterEnabled="True"
                                                        FilterPlaceholderText="{gallery:TransferShowCaseLangResource P2FilterPlaceholderTextSearchHere}"
@@ -152,7 +174,7 @@
                                                      SemanticOwner="{Binding #TreeTransferSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:TreeTransfer}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:TreeTransfer Name="TreeTransferSemanticOwner"
+                                <atom:TreeTransfer x:Name="TreeTransferSemanticOwner"
                                                    SourceTitle="{gallery:TransferShowCaseLangResource P2SourceTitle}"
                                                    TargetTitle="{gallery:TransferShowCaseLangResource P2TargetTitle}"
                                                    IsStretchView="True"
@@ -438,10 +460,10 @@
                     <StackPanel.Styles>
                         <Style Selector="atom|ListTransfer.semantic-classnames-demo">
                             <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#80FAFAFA" />
+                                <Setter Property="Background" Value="{DynamicResource TransferSectionBrush}" />
                             </atom:ListTransferSourceSectionStyle>
                             <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#80FAFAFA" />
+                                <Setter Property="Background" Value="{DynamicResource TransferSectionBrush}" />
                             </atom:ListTransferTargetSectionStyle>
                             <atom:ListTransferHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
                                 <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorPrimary}" />
@@ -449,18 +471,18 @@
                             </atom:ListTransferHeaderStyle>
                             <atom:ListTransferActionsStyle x:SetterTargetType="StackPanel">
                                 <Style Selector="^ atom|Button">
-                                    <Setter Property="Background" Value="#99FFF2E8" />
+                                    <Setter Property="Background" Value="{DynamicResource TransferActionsBrush}" />
                                 </Style>
                             </atom:ListTransferActionsStyle>
                         </Style>
                         <Style Selector="atom|ListTransfer.semantic-styles-demo">
                             <atom:ListTransferSourceSectionStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#99F6FFED" />
-                                <Setter Property="BorderBrush" Value="#B7EB8F" />
+                                <Setter Property="Background" Value="{DynamicResource TransferHighlightedSectionBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource TransferHighlightedSectionBorderBrush}" />
                             </atom:ListTransferSourceSectionStyle>
                             <atom:ListTransferTargetSectionStyle x:SetterTargetType="TemplatedControl">
-                                <Setter Property="Background" Value="#99F6FFED" />
-                                <Setter Property="BorderBrush" Value="#B7EB8F" />
+                                <Setter Property="Background" Value="{DynamicResource TransferHighlightedSectionBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource TransferHighlightedSectionBorderBrush}" />
                             </atom:ListTransferTargetSectionStyle>
                             <atom:ListTransferHeaderStyle x:SetterTargetType="atom:PixelAlignedBorder">
                                 <Setter Property="TextElement.Foreground" Value="#8DBCC7" />

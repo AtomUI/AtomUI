@@ -28,7 +28,7 @@
                                                  SemanticOwner="{Binding #TreeSelectSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:TreeSelect}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:TreeSelect Name="TreeSelectSemanticOwner"
+                            <atom:TreeSelect x:Name="TreeSelectSemanticOwner"
                                              Width="420"
                                              IsAllowClear="True"
                                              IsMotionEnabled="False"

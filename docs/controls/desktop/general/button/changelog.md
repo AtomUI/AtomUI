@@ -8,6 +8,78 @@
 - 不记录临时讨论、纯格式化或没有长期价值的实现细节。
 - 架构文档始终描述最新设计状态；历史变化记录在本文档。
 
+## 2026-11-24
+
+- API
+  - `Button.ContentPadding` 成为可设置的标准属性，SubmitButton 和 ResetButton 继承该入口并使用各自的 Token 默认值。
+
+## 2026-11-22
+
+- Token
+  - `ButtonThemeRecipe` 删除，它的开关改为 `AbstractButtonGeometryToken` 上的七个公开 Own Token：`RecipeVariants`、
+    `OutlineOnlyDefaultShadow`、`DisabledByOpacity`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`、
+    `UnderlineLinkAtRest`（见 [Button Token 设计](token.md) 2.8）。各设计语言的取值包在 Button 的控件推导里给它们赋值，不再经
+    `AppearanceSettings` 传递对象；Button 在主题快照变化时读取。各设计语言渲染不变。
+
+## 2026-11-20
+
+- Token
+  - `ButtonThemeRecipe` 拆为相互独立的开关：`UsesRecipeVariants`、`DisabledOpacity`、`PressMoves`、`UnderlineLinkOnHover`；Button 新增对应的内部直接属性 `DisablesWithOpacity`、`ThemeDisabledOpacity`、`PressMoves`、`UnderlinesLinkOnHover`，主题选择器按开关生效。无 recipe 的 Ant Design 与既有 Shadcn recipe 行为不变；PrimeNG recipe 关闭变体配方与按压位移，禁用透明度 0.6，链接悬停下划线。
+- Performance
+  - 去掉按钮的 10 个可继承中转属性。Button、SubmitButton、ResetButton 的主题把 Own Token 赋给按钮自身的
+    普通属性，按钮主题用编译绑定和 `TemplateBinding` 读取，值不再沿按钮内容继承。渲染不变，每个按钮分配约少 13 KB（约 5%）。
+
+- 改善 Shadcn 暗色 Button 的链接文字、危险描边与虚线变体在普通、悬停和按下状态的可读性。
+- 按 Shadcn 各风格调整按钮阴影、键盘焦点环和禁用态。Vega 中性描边按钮使用 `shadow-xs`。实心、虚线及其余风格的中性描边按钮默认平贴。
+
+## 2026-11-14
+
+- Performance
+  - Skip theme-token capture while the Button has no themed ancestor. Properties set from XAML (ButtonType, IsDanger, IsGhost, Color, Variant) arrive before the Button is attached; each used to throw and catch an `InvalidOperationException`. `OnAttachedToLogicalTree` still configures the variant variables, so the values are unchanged.
+  - Bind the icon slot visibility to an internal `EffectiveIconVisible` property (`Icon is Icon && IsIconVisible && !IsLoading`, the old converter rule) instead of a three-way MultiBinding with reflection bindings, and the `ShadowsFrame` shadow setter to `{TemplateBinding VariantShadow}`. Same values and the same binding priorities; rendering is pixel-identical in every state.
+- API
+  - Desktop 和 Mobile 的 Button 共用 `AbstractButton` 的通用属性、伪类和颜色变体解析。四种 Button 枚举仍使用原 CLR 全名，由 Desktop 程序集转发到 `AtomUI.Controls`。
+  - 新增 `ButtonColor.Success`、`ButtonColor.Warning` 和 `ButtonShape.Rectangular`。
+- Theme
+  - 新语义色使用全局状态色阶，矩形使用直角轮廓。
+- Fix
+  - 已挂载的按钮增删 `Icon` 后即时更新 `:icononly`。
+- Desktop 影响
+  - 旧枚举值及旧属性字段、方法和路由事件的签名保留。旧客户端可加载新版程序集。
+- Tests
+  - Button 及相关定向测试通过 136 项。Headless/Skia 对比正式 6.2.14 和候选版，浅色与深色的八种 Desktop 状态尺寸一致，差异位于两次采样也会变动的加载图标抗锯齿范围内。
+
+## 2026-11-11
+
+- Theme
+  - 键盘焦点改用共享的 `FocusOutlineAdorner`（Ant Design `genFocusOutline`）：3px `ColorPrimaryBorder` 描边，向外偏移 1px，跟随圆角，且不被宿主裁剪；原全局方角 `DefaultFocusAdorner` 已移除。
+  - 移除三套按钮模板与 DropdownButton 模板中画在边框内侧的 `Border#FocusVisual` 及其 `:focus-visible` 样式，`FocusAdorner` 不再置空；`Button` 通过 `IFocusOutlineShapeProvider` 提供 `EffectiveCornerRadius`，圆形 / 胶囊按钮的描边保持对应形状。
+- Tests
+  - `ButtonKeyboardNavigationTests` 改为断言键盘聚焦挂上 `FocusOutlineAdorner`；`ButtonFocusVisualRenderingTests` 宿主补充 `VisualLayerManager`（AdornerLayer 由窗口视觉层提供）。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - `ButtonTheme`、`HyperLinkButtonTheme`、`IconButtonTheme`、`ToggleIconButtonTheme` 的全局 Token 改读各自的
+    `XxxTokenResource`，`Controls[Button]` 等控件级覆盖对圆角、高度、图标尺寸、禁用色和动效开关生效；默认视觉不变。
+  - 变体颜色与阴影改为绑定 ControlTheme 使用的同一组资源键（Own Token 的 `ButtonTokenKind`、Global Token 的有效值键），
+    Application 与局部 Resources 覆盖、`ThemeConfigProvider` 覆盖都作用于变体颜色，资源变化后自动刷新；预设色仍来自快照色板。
+  - `FontWeight` Own Token 类型改为 `FontWeight` 并驱动 Button 字重；`DefaultBorderColorDisabled` 用于 Default 颜色的禁用边框。
+  - Circle / Round 形状的圆角改写入内部 `EffectiveCornerRadius`，不再以本地值覆盖公开 `CornerRadius`；SplitButton 的拼接圆角经内部
+    `HostCornerRadius` 写入，内部 Button 的公开 `CornerRadius` 保留主题与用户值。
+- Removed
+  - 删除无消费者的 Own Token：`ExtraContentItemSpacing`、`ExtraContentMargin`、`ExtraContentMarginLG`、`ExtraContentMarginSM`、
+    `GutterToFlyout`，以及 HyperLinkButton 的 `BorderColorDisabled`；`GroupBorderColor` 标为 Reserved。
+- Fixed
+  - HyperLinkButton 维护 `:icononly`、`:loading`、`:danger` 伪类，图标按钮内边距、加载图标与危险色生效。
+- Tests
+  - Button 家族 Token 生效测试（`ButtonFamilyEffectTests`）覆盖全部 Active Own Token 与消费的 Global Token，并验证
+    `Controls[Button]` 与根 Token 的作用域隔离。
+
 ## 2026-08-31
 
 - Fix

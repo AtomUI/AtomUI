@@ -81,7 +81,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | ID | Category | Severity | Trigger | Fix | Owner |
 |---|---|---|---|---|---|
 | `ATOMUITOKEN001` | Token | Error | 编译主题输入无效、超限，或构建中间产物不能可靠生成 | 修正 XML/输入路径及容量，清理失效输出后重建 | Compiled theme input task |
-| `ATOMUITOKEN002` | Token | Error | 编译主题的 Token/owner/算法契约、元数据或静态字面量不受支持或不匹配 | 按带源位置的诊断修正定义与依赖；显式选择支持的编译值域或动态来源 | Compiled theme generator |
+| `ATOMUITOKEN002` | Token | Error | 编译主题绑定失败，或设计语言 / 控件取值规则的声明不合法，包括：主题 XML 的 `Language` 不由任何被引用的语言包声明（`Design language '…' is not declared by any referenced language package.`）、未知或重复的 Control、未知 Token、`<LanguageTokens>` 里的名称不是该语言的语言 Token、`Locked` 用在非种子或条件段 / Control 上、条件段里的 Control 固定轴、Token 类型没有静态字面量能力或字面量转换失败、包内重复的主题 `Id`（在 XML 行列，该主题不生成程序）；`[DesignLanguage]` 类不是派生自 `DesignLanguage<TLanguageToken>`、带公开无参构造函数的非抽象非泛型类，`Id` 不返回常量字符串，语言 Token 类型未在同一程序集用 `[LanguageDesignToken]` 声明，`[LanguageDesignToken]` 类不是派生自 `LanguageDesignToken` 的顶层非泛型类；`[ControlTokenRule]` 类不是带公开无参构造函数的非抽象非泛型类、未恰好实现一次 `IControlTokenRule<TLanguageToken, TToken>`、`TToken` 不是绑定了控件的控件 Token，或两个推导类绑定同一对类型（在出错的类型上） | 按带源位置的诊断修正主题定义或声明；主题引用的语言需由本程序集或被引用的语言包声明 | Compiled theme generator / Derivation generators |
 | `ATOMUIREG001` | Registration | Error | 顶层主题导出目标、key 不明确或重复 | 声明可解析的 target 和唯一 Type/string key | Registration generator |
 | `ATOMUIREG002` | Registration | Error | TokenResource 没有唯一且可访问的实际 owner | 修正 namespace 或 Token 契约 | Registration generator |
 | `ATOMUIREG003` | Registration | Error | 主题目标不可访问、开放泛型或不是 StyledElement；资源 x:Class 不能绑定到本程序集的可访问具体资源类 | 使用可访问的具体主题目标 | Registration generator |
@@ -109,7 +109,6 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN021` | Generator | Error | Control Design Token 定义层或终端使用泛型 | 改为非泛型 Token 类型 | ControlDesignToken |
 | `ATOMUIGEN022` | Generator | Error | 继承链中的属性同名、隐藏或形成重复 schema key | 只保留一个具有稳定语义的属性声明 | ControlDesignToken |
 | `ATOMUIGEN023` | Generator | Error | Own Token 属性为 static、indexer、显式接口实现、访问器不可访问、`init`-only、`required` 或 virtual/abstract/override | 改为生成代码可访问的非 virtual 实例普通 get/set 属性，或使用 `[NotTokenDefinition]` 排除辅助属性 | ControlDesignToken |
-| `ATOMUIGEN024` | Generator | Error | 后续层 `CalculateTokenValues` 没有把唯一的直接 base 调用放在 block body 第一条并原样转发参数 | 以 `base.CalculateTokenValues(isDarkMode);` 开始方法，再计算本层值 | ControlDesignToken |
 | `ATOMUIGEN025` | Generator | Error | 抽象 Control Design Token 定义层名称不以非空 `Token` 后缀结束 | 使用表达家族语义的 `*Token` 名称 | ControlDesignToken |
 | `ATOMUIGEN026` | Generator | Error | Control Design Token 声明为嵌套类型 | 把 Token 移到 namespace 下作为顶级类；泛型容器中的嵌套 Token 仍使用 `ATOMUIGEN021` | ControlDesignToken |
 | `ATOMUIGEN027` | Generator | Error | Semantic Part 的 Control/Part 声明、名称、path、class、cardinality 或 customization 非法 | 按 Semantic Part 声明契约修正 `[SemanticPart]` | SemanticParts |
@@ -125,6 +124,17 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN037` | Generator | Error | Semantic Style 的完整 CLR identity 与另一生成候选、当前程序集已有类型或 canonical XML namespace 下可见的引用程序集 public 类型冲突 | 调整 Control 或 Part path 命名，或移除占用 `AtomUI.Theme.Styling` 生成 identity 的类型 | SemanticParts |
 | `ATOMUIGEN038` | Generator | Error | Semantic Part 的 `Since` 不是 `major.minor.patch` 三段式发布版本（例如写成版本线 `6.0` / `6.2`，或带 `v` 前缀、预发布后缀、段数不符） | 写成具体发布版本，例如 `6.2.0` | SemanticParts |
 | `ATOMUIGEN039` | Generator | Error | 具体 Application 手写了 `RegisterServices` 重写，但方法体内没有调用 `ApplicationStartup.Attach` | 在 `base.RegisterServices()` 之后调用 `ApplicationStartup.Attach(this)`，或删除手写重写让生成器生成 | ApplicationStartupHook |
+| `ATOMUIGEN041` | Generator | Warning | ControlTheme 读全局 Token 的 TokenResource 种类与 TargetType 的 Token 身份不匹配：有身份的 TargetType 用了 `SharedTokenResource`，或无身份的 TargetType 用了 `SharedTokenResource` 且没有共享语义注释；有身份的 TargetType 用了 `OwnerTokenResource` 且该 ControlTheme 前没有紧邻的 `<!-- owner: 原因 -->` 注释；任何 ControlTheme 中出现在加载时冻结应用级值的 `SharedTokenResourceValue`，或在 `*Transition` 元素的 `Duration`/`Delay` 上使用任何 TokenResource（过渡由样式全部目标共享且无资源宿主，均无豁免） | 有身份改用 `XxxTokenResource`，无身份改用 `OwnerTokenResource`；确属跨控件共享时在 Setter 上方加注释说明；有身份的主题被无身份部件复用（需跟随宿主）时在 ControlTheme 前加 `owner:` 注释；过渡时长改用 `atom:TokenTransitions` 与 `atom:TokenTransitions.Duration` | ThemeAssets |
+| `ATOMUIGEN042` | Generator | Warning | Own Token 字段在所属包的主题 AXAML 与代码中无任何引用，且未标 `[ReservedToken]` | 接通消费，或加 `[ReservedToken("原因")]`，或删除字段 | DesignToken |
+| `ATOMUIGEN043` | Generator | Warning | 控件代码经 `Application.Current.TryGetResource`、`TryFindResource` 或 `FindResource` 读 Token key，或在读取失败分支回落视觉字面量 | 改用 `ControlTokenAccessor`、`TokenResourceBinder` 或 AXAML TokenResource；删除回落值 | ThemeConsumption |
+| `ATOMUIGEN044` | Generator | Warning | 控件代码以字面量构造视觉值（`Color.FromRgb`、`Color.Parse`、`Brushes.X`、`new Thickness(n)`、`FontSize = n` 等赋给视觉属性），`Colors.Transparent` 与 `0` 除外 | 改为 Own Token 或 Global Token；预设色从 `PresetPalettes` 读取 | ThemeConsumption |
+| `ATOMUIGEN045` | Generator | Warning | 主题 AXAML 中出现颜色字面量，或数值视觉字面量（CornerRadius、BorderThickness、FontSize、StrokeThickness、Width/Height 等）未以 `<!-- layout -->` 注释标注 | 视觉值改读 Token（线宽用 `LineWidth`）；确属布局常量时加 `<!-- layout -->` | ThemeAssets |
+| `ATOMUIGEN047` | Generator | Warning | 控件代码以 `SetValue(prop, value)` 或属性赋值把 LocalValue 写入视觉 StyledProperty，覆盖用户绑定与主题 Setter | 改用 `SetCurrentValue`，或带 `BindingPriority.Template` 的可撤销写入 | ThemeConsumption |
+| `ATOMUIGEN049` | Generator | Error | `[ControlDesignToken]` 或 `[GlobalDesignToken]` 类型的 Token 属性（非 static、未标 `[NotTokenDefinition]`）不是 partial 属性，或所在类不是 partial 类；生成器不为它产出跳过冻结属性的实现 | 把类改为 `partial class`，把属性改为 `partial` 属性（如 `public partial Color X { get; set; }`），实现由 `TokenPropertyImplementationGenerator` 生成；初始化器可留在声明处 | DesignToken |
+| `ATOMUIGEN050` | Generator | Error | `[ControlTokenRule]` 推导没有写其控件 Token 类在该控件包内声明的某个属性（`'…' never writes token '…' of '…'`，在推导类上）；基类在其他包里声明的属性由设计语言契约测试检查 | 在 `Apply` 里为该属性赋值；控件 Token 必须写全，包括行为开关与继承属性 | Derivation |
+| `ATOMUIGEN051` | Generator | Error | 推导在第一次写入自己的某个控件 Token 之前读取了它（`'…' reads token '…' before writing it`，在读取表达式上）；推导里第一次带参数的方法调用之后的读取不检查 | 先写再读；显式值在推导之前冻结，写入后读取得到的就是有效值 | Derivation |
+| `ATOMUIGEN052` | Generator | Error | 取值包在某种语言下为某个控件包的部分 Token 类写了推导，却漏掉该控件包的其他公开终端 Token 类（无位置） | 为诊断指出的 Token 类补上 `[ControlTokenRule]` 推导 | Derivation |
+| `ATOMUIGEN053` | Generator | Error | 包依赖方向错误：控件包引用了语言包或取值包；语言包引用了控件包；自身不声明控件 Token 的取值包里有派生自 `Control` 的类型 | 去掉错误方向的引用；控件放回控件包，取值包只放推导与共享推导辅助方法 | Derivation |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
 | `ATOMUILOC002` | Localization | Error | AtomUI 固定语言数据包含重复的属性标识符或规范 BCP 47 标签 | 删除重复记录并为每个属性和标签保留唯一映射 | LanguageTags |
@@ -139,6 +149,26 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 独立 ILLink 适配器使用公开 `CreateCustomErrorMessage` API，因此传输编号为 `IL6505`、`IL6506`、`IL6507`，
 分别对应消息中的 `ATOMUIREG005`、`ATOMUIREG006`、`ATOMUIREG007`。REG 保持统一语义编号；不得通过私有 API 改写 ILLink 前缀。
+
+`ATOMUIGEN041`–`ATOMUIGEN047`（`046` 已退役；`040`、`048` 随 Token 类里的计算方法一起退役，见下文）属于主题消费精确性
+检查，保证"声称可定制的 Token 设置后一定有效果"。它们默认 Warning；仓库五个控件包与 GalleryBase 在项目 `WarningsAsErrors`
+中将 041、042、043、044、045、047 统一提升为 Error。生成器在外部 AXAML/生成位置报告的诊断不受目录 `.editorconfig` 可靠控制，
+因此包级编译器门禁与现有消费合同共同验证；已退役的 ID 不进入活跃严重级别清单。
+`ATOMUIGEN050`–`ATOMUIGEN053` 是取值包的构建期检查（完整性、先读后写、覆盖、依赖方向），均为 Error。控件包生成
+`[assembly: TokenSchemaDigest]`，取值包为它覆盖的每个控件包生成 `[assembly: CoversTokenSchema]`；两者在配置提交时比对，
+不一致即启动失败——这是运行时校验，不是编译诊断。
+`ATOMUIGEN049` 由 IDE 设计期可见的 `TokenPropertyImplementationGenerator` 报告，位置按文件路径与行列构造、不持有语法树，
+所以源码中的 `#pragma warning disable` 与按文件生效的 `.editorconfig` 节对它不起作用，只能在项目级设置中调整；它是
+Error，正常情况下应修正代码而不是抑制。`[DesignLanguage]`、`[LanguageDesignToken]` 与 `[ControlTokenRule]` 声明不合法（抽象、
+泛型、缺少公开无参构造函数、`Id` 不是常量、没有恰好实现一次 `IControlTokenRule<,>`、同一对类型有两个推导）时生成器在该类型上
+报 `ATOMUITOKEN002`；语言是否完整由设计语言契约测试确认，见
+[编写设计语言](../../guides/theming/writing-design-languages.md#5-覆盖规则与启动校验)。
+`042` 的引用分析只统计所属包内的主题 AXAML 与 C# 引用，不分析应用代码。`044`、`047` 只报告可静态证明的
+写法：经变量间接传入的字面量、运行时才能确定的 Setter 目标不报告，由评审补充。
+`043`、`044`、`047` 检查控件代码，只在控件包内运行：编译单元引用 `SharedTokenKind` 且不是其定义程序集，并且声明了
+`[ControlDesignToken]` 类型，或项目设置了编译器可见属性 `AtomUIThemeConsumptionAnalysis=true`（仓库内五个第一方控件包已设置，
+未设置视为关闭）；`[ControlDesignToken]` 类型内部不报告。背景与修复规则见
+[Control Token 规范](control-token-guidelines.md)。
 
 `ATOMUIGEN005` 和 `ATOMUIGEN006` 原本约束 `[ControlDesignToken]` 类型上的 `public const ID`，该手工 ID 契约已
 删除，因此这两个诊断不在新主题架构中复用。无参数 `[ControlDesignToken]` 本身继续保留，只负责标记 Own Token
@@ -165,6 +195,18 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 同名的无关私有资源不能单独触发 `InvalidResourceDependency`；开放宿主 DynamicResource 与包内必需资源必须按普通
 资源作用域区分。运行时才可确认的缺包、跨包 owner、资源和语义错误由启动校验报告，不伪装为应用 usage 编译诊断，
 也不为复刻旧诊断重新引入消费 DLL 调用图分析。
+
+## 已退役的 Generator 诊断
+
+下列 ID 标记为 **retired / reserved**：不再有生产者，不分配给新语义，`.editorconfig` 与测试不再引用。`046` 在源码中保留
+ID 常量并标 `[Obsolete]`；`024`、`048` 的常量与 descriptor 已随分析器删除；`040` 的分析器已删除，常量与 descriptor 暂留。
+
+| ID | 原语义，仅用于识别旧日志 | 退役原因 |
+| --- | --- | --- |
+| `ATOMUIGEN024` | 后续层 `CalculateTokenValues` 没有把唯一的直接 base 调用放在 block body 第一条并原样转发参数 | 控件 Token 类不再有计算方法，取值移入设计语言取值包的控件取值规则 |
+| `ATOMUIGEN040` | `CalculateTokenValues` / `CalculateAliasTokenValues` 以 `double.IsNaN` / `float.IsNaN` 判断 Token 是否被显式设置 | 显式值在推导之前冻结，推导不判断显式性；Token 类不再有计算方法 |
+| `ATOMUIGEN048` | `CalculateTokenValues` / `CalculateAliasTokenValues` 内对基字段无条件赋值后又读取它派生其他字段，缺少 `IsExplicit` 守卫 | 冻结语义下推导对显式属性的写入被忽略、读取得到显式值，`IsExplicit` 守卫已删除 |
+| `ATOMUIGEN046` | ControlTemplate 节点属性（字面量或 TokenResource）上的默认值遮蔽同节点同属性的状态 Setter | TokenResource 在模板内取 Template 优先级后，模板内字面量与 TokenResource 读取均为 Template 优先级，低于触发样式（`StyleTrigger`），遮蔽不再可能发生 |
 
 ## 历史 LINK 诊断保留表
 
@@ -210,7 +252,8 @@ src/AtomUI.Generator/Diagnostics/
 - Roslyn diagnostic ID 必须来自 `AtomUIDiagnosticIds`。
 - Roslyn category 必须来自 `AtomUIDiagnosticCategories`。
 - `DiagnosticDescriptor` 优先定义在 `AtomUIDiagnosticDescriptors`。
-- analyzer 可以放在对应领域目录，例如 `DataMemberAccessors/`、`DesignToken/`、`Language/`。
+- analyzer 可以放在对应领域目录，例如 `DataMemberAccessors/`、`DesignToken/`、`Language/`、`ThemeAssets/`；
+  控件代码侧的主题消费 analyzer（`ATOMUIGEN043`、`044`、`047`）放在 `ThemeConsumption/`。
 - analyzer 不要在业务文件中散落硬编码 ID、category 或重复 descriptor。
 
 浏览器链接后端不能为了复用诊断定义而加载 Roslyn Generator。跨工具共享的 ID/消息契约应采用无 Roslyn/ILLink

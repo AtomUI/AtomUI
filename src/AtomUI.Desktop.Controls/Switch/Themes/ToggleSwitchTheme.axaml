@@ -29,6 +29,9 @@
                                      atom:TransitionInitialization.Mode="Owner"
                                      Classes.semantic-indicator="True"
                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                     KnobWidthExtension="{TemplateBinding KnobWidthExtension}"
+                                     RenderTransform="{TemplateBinding KnobRenderTransform}"
+                                     RenderTransformOrigin="0%,0%"
                                      IsCheckedState="{TemplateBinding IsChecked}" />
                 </Panel>
             </ControlTemplate>
@@ -38,35 +41,41 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="Foreground" Value="{atom:ToggleSwitchTokenResource ColorTextLightSolid}" />
+        <Style Selector="^[IsChecked=False]">
+            <Setter Property="Foreground" Value="{atom:ToggleSwitchTokenResource UncheckedContentColor}" />
+        </Style>
+        <Setter Property="IsMotionEnabled" Value="{atom:ToggleSwitchTokenResource EnableMotion}" />
         <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:SharedTokenResource EnableWaveSpirit}" />
+                Value="{atom:ToggleSwitchTokenResource EnableWaveSpirit}" />
         
         <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
             <Setter Property="WaveType" Value="PillWave"/>
         </Style>
 
         <Setter Property="TrackPadding" Value="{atom:ToggleSwitchTokenResource TrackPadding}" />
+        <Setter Property="EnableHandlePressStretch" Value="{atom:ToggleSwitchTokenResource EnableHandlePressStretch}" />
+        <Setter Property="UseContentMarginTokenResources" Value="True" />
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:RectTransition Property="KnobMovingRect" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <PointTransition Property="OnContentOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <PointTransition Property="OffContentOffset" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <atom:SolidColorBrushTransition Property="GrooveBackground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                    <DoubleTransition Property="SwitchOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}"/>
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="KnobRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="KnobWidthExtension" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 
+        <!-- As in antd, a disabled or loading switch is dimmed once as a whole (groove, knob and content). -->
         <Style Selector="^[IsLoading=True], ^:disabled">
-            <Setter Property="SwitchOpacity"
+            <Setter Property="Opacity"
                     Value="{atom:ToggleSwitchTokenResource SwitchDisabledOpacity}" />
-            <Style Selector="^ /template/ atom|SwitchKnob#PART_SwitchKnob">
-                <Setter Property="Opacity" Value="0.9" />
-            </Style>
         </Style>
 
         <Style Selector="^[IsChecked=True]">
@@ -76,27 +85,31 @@
 
         <Style Selector="^[IsChecked=True]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackCheckedHoverBg}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackBg}" />
         </Style>
 
         <Style Selector="^[IsChecked=False]:pointerover">
             <Setter Property="GrooveBackground"
-                    Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                    Value="{atom:ToggleSwitchTokenResource TrackHoverBg}" />
+        </Style>
+
+        <!-- The track outline (none by default: TrackBorderThickness 0) lies inside the track. -->
+        <Setter Property="GrooveBorderThickness" Value="{atom:ToggleSwitchTokenResource TrackBorderThickness}" />
+        <Setter Property="GrooveBorderBrush" Value="{atom:ToggleSwitchTokenResource TrackBorderColor}" />
+        <Style Selector="^[IsChecked=True]">
+            <Setter Property="GrooveBorderBrush"
+                    Value="{atom:ToggleSwitchTokenResource TrackCheckedBorderColor}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize"
                     Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSizeSM}" />
             <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSizeSM}" />
-            <Setter Property="InnerMaxMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMaxMarginSM}" />
-            <Setter Property="InnerMinMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMinMarginSM}" />
             <Setter Property="TrackHeight" Value="{atom:ToggleSwitchTokenResource TrackHeightSM}" />
             <Setter Property="TrackMinWidth"
                     Value="{atom:ToggleSwitchTokenResource TrackMinWidthSM}" />
@@ -106,10 +119,6 @@
             <Setter Property="FontSize"
                     Value="{atom:ToggleSwitchTokenResource ExtraInfoFontSize}" />
             <Setter Property="KnobSize" Value="{atom:ToggleSwitchTokenResource HandleSize}" />
-            <Setter Property="InnerMaxMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMaxMargin}" />
-            <Setter Property="InnerMinMargin"
-                    Value="{atom:ToggleSwitchTokenResource InnerMinMargin}" />
             <Setter Property="TrackHeight" Value="{atom:ToggleSwitchTokenResource TrackHeight}" />
             <Setter Property="TrackMinWidth"
                     Value="{atom:ToggleSwitchTokenResource TrackMinWidth}" />
@@ -124,8 +133,19 @@
             <Setter Property="LoadIndicatorBrush"
                     Value="{atom:ToggleSwitchTokenResource OffStateLoadIndicatorColor}" />
             <Style Selector="^[IsCheckedState=True]">
+                <Setter Property="Background"
+                        Value="{atom:ToggleSwitchTokenResource HandleCheckedBg}" />
                 <Setter Property="LoadIndicatorBrush"
                         Value="{atom:ToggleSwitchTokenResource SwitchColor}" />
+            </Style>
+        </Style>
+
+        <Style Selector="^:pointerover /template/ atom|SwitchKnob#PART_SwitchKnob">
+            <Setter Property="Background"
+                    Value="{atom:ToggleSwitchTokenResource HandleHoverBg}" />
+            <Style Selector="^[IsCheckedState=True]">
+                <Setter Property="Background"
+                        Value="{atom:ToggleSwitchTokenResource HandleCheckedHoverBg}" />
             </Style>
         </Style>
 

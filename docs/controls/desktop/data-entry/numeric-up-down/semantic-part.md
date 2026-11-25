@@ -33,8 +33,8 @@
 | 稳定性 | stable since 6.2.0 |
 
 `root` 是控件自身，不声明 `.semantic-root` marker。它适合定制 NumericUpDown 整体 `BorderBrush`、`Opacity`、对齐和
-尺寸约束；`BorderBrush` 会以 LocalValue 中继到输入 frame 生效（对齐 LineEdit 与上游 `styles.root.borderColor`
-语义）——定制期间该属性槽的 hover / focus 变色冻结，focus 的 `BoxShadow` 光晕不受影响，置空后恢复 frame 状态机。
+尺寸约束；`BorderBrush` 经模板绑定交给内部 spinner，再投射到输入 frame 的 `HostBorderBrush`（对齐 LineEdit 与上游
+`styles.root.borderColor` 语义）——定制期间该属性槽的 hover / focus 变色冻结，focus 的 `BoxShadow` 光晕不受影响，置空后恢复 frame 状态机。
 variant、effective status 与 CompactSpace 的状态归一仍由共享 frame 结构负责。
 
 ### 1.2 `prefix`

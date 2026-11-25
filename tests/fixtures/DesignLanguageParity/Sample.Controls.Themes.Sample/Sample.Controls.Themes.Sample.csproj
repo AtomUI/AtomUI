@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <!--
+    Parity sample (spec 15): the sample language's values of the sample control package. It overrides the badge only;
+    the tag inherits the Ant Design value along the language token chain (spec 5.6).
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Sample.Controls.Themes.Sample</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../Sample.Controls/Sample.Controls.csproj" />
+        <ProjectReference Include="../Sample.DesignLanguage/Sample.DesignLanguage.csproj" />
+        <ProjectReference Include="../Sample.Controls.Themes.AntDesign/Sample.Controls.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../../../src/AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

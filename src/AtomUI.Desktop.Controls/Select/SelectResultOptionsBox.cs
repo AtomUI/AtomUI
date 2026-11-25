@@ -39,18 +39,6 @@ internal class SelectResultOptionsBox : TemplatedControl
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<SelectResultOptionsBox>();
 
-    internal static readonly StyledProperty<double> CustomControlHeightProperty =
-        AddOnDecoratedBox.CustomControlHeightProperty.AddOwner<SelectResultOptionsBox>();
-
-    internal static readonly StyledProperty<Thickness> ContentFramePaddingProperty =
-        AddOnDecoratedBox.ContentFramePaddingProperty.AddOwner<SelectResultOptionsBox>();
-
-    internal static readonly StyledProperty<double> ContentMinHeightProperty =
-        AddOnDecoratedBox.ContentMinHeightProperty.AddOwner<SelectResultOptionsBox>();
-
-    internal static readonly StyledProperty<Thickness> InputBorderThicknessProperty =
-        AvaloniaProperty.Register<SelectResultOptionsBox, Thickness>(nameof(InputBorderThickness));
-
     public static readonly StyledProperty<int?> MaxTagCountProperty =
         Select.MaxTagCountProperty.AddOwner<SelectResultOptionsBox>();
 
@@ -107,6 +95,34 @@ internal class SelectResultOptionsBox : TemplatedControl
         set => SetValue(SizeTypeProperty, value);
     }
 
+    public int? MaxTagCount
+    {
+        get => GetValue(MaxTagCountProperty);
+        set => SetValue(MaxTagCountProperty, value);
+    }
+
+    public bool IsResponsiveTagMode
+    {
+        get => GetValue(IsResponsiveTagModeProperty);
+        set => SetValue(IsResponsiveTagModeProperty, value);
+    }
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<double> CustomControlHeightProperty =
+        AddOnDecoratedBox.CustomControlHeightProperty.AddOwner<SelectResultOptionsBox>();
+
+    internal static readonly StyledProperty<Thickness> ContentFramePaddingProperty =
+        AddOnDecoratedBox.ContentFramePaddingProperty.AddOwner<SelectResultOptionsBox>();
+
+    internal static readonly StyledProperty<double> ContentMinHeightProperty =
+        AddOnDecoratedBox.ContentMinHeightProperty.AddOwner<SelectResultOptionsBox>();
+
+    internal static readonly StyledProperty<Thickness> InputBorderThicknessProperty =
+        AvaloniaProperty.Register<SelectResultOptionsBox, Thickness>(nameof(InputBorderThickness));
+
     internal double CustomControlHeight
     {
         get => GetValue(CustomControlHeightProperty);
@@ -129,18 +145,6 @@ internal class SelectResultOptionsBox : TemplatedControl
     {
         get => GetValue(InputBorderThicknessProperty);
         set => SetValue(InputBorderThicknessProperty, value);
-    }
-
-    public int? MaxTagCount
-    {
-        get => GetValue(MaxTagCountProperty);
-        set => SetValue(MaxTagCountProperty, value);
-    }
-
-    public bool IsResponsiveTagMode
-    {
-        get => GetValue(IsResponsiveTagModeProperty);
-        set => SetValue(IsResponsiveTagModeProperty, value);
     }
 
     #endregion
@@ -430,6 +434,10 @@ internal class SelectResultOptionsBox : TemplatedControl
                 {
                     _collapsedInfoTag.IsVisible = false;
                 }
+            }
+            else
+            {
+                _collapsedInfoTag.IsVisible = SelectedOptions != null && SelectedOptions.Count > 0;
             }
         }
     }

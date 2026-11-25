@@ -318,6 +318,8 @@ controlgallery/AtomUIGallery/ShowCases/**/ViewModels/*.cs
 
 产品项目应在编译前把这些源文件复制到 `$(IntermediateOutputPath)` 下的源码镜像文件，例如 `.gallerysource`，然后只把镜像文件注册为 `AdditionalFiles`，并通过 `GallerySourceOriginalPath` metadata 传递真实源文件路径。Generator 使用该 metadata 做路径分类、同组文件匹配、诊断位置和 `SourceFilePath` 输出；镜像文件路径只作为 Roslyn `AdditionalText` 的物理载体。
 
+真实源文件的临时收集 Item 必须在准备镜像的 MSBuild target 内创建，不能在项目求值阶段另行声明自定义 Item。在已验证的 Rider ShowCase 场景中，求值阶段的自定义 Item 会干扰设计时文件角色，导致 `InitializeComponent` 等 Avalonia 生成成员无法解析。target 内收集后直接复制镜像，保持真实源文件的原有角色。
+
 `GallerySourceOriginalPath` 必须通过 `CompilerVisibleItemMetadata` 暴露给 Roslyn analyzer config，并且准备镜像 `AdditionalFiles` 的 MSBuild target 必须早于 `GenerateMSBuildEditorConfigFileShouldRun` 执行。只在 `BeforeTargets="CoreCompile"` 中追加 metadata 不够，因为此时 `GeneratedMSBuildEditorConfig` 可能已经生成，Generator 会读到空 metadata，进而把 `.gallerysource` 镜像路径当成真实路径并忽略 C# 镜像文件。
 
 Generator 只读取 `AdditionalFiles`，不通过运行时文件系统、MSBuild project model 或 assembly metadata 反向扫描源码。

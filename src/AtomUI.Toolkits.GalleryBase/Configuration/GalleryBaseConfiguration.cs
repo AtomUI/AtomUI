@@ -156,6 +156,13 @@ public sealed class GalleryBaseConfiguration
             throw new GalleryConfigurationException("Gallery shell SidebarWidth must be greater than 0.");
         }
 
+        if (shell.CollapsedSidebarHeaderSpacing is { } collapsedSidebarHeaderSpacing &&
+            (collapsedSidebarHeaderSpacing < 0 || !double.IsFinite(collapsedSidebarHeaderSpacing)))
+        {
+            throw new GalleryConfigurationException(
+                "Gallery shell CollapsedSidebarHeaderSpacing must be a finite value greater than or equal to 0.");
+        }
+
         if (shell.MinDesktopWindowSize.Width > shell.InitialDesktopWindowSize.Width ||
             shell.MinDesktopWindowSize.Height > shell.InitialDesktopWindowSize.Height)
         {
@@ -233,6 +240,8 @@ public sealed class GalleryShellConfiguration
 {
     public double SidebarWidth { get; }
 
+    public double? CollapsedSidebarHeaderSpacing { get; }
+
     public Size InitialDesktopWindowSize { get; }
 
     public Size MinDesktopWindowSize { get; }
@@ -246,6 +255,7 @@ public sealed class GalleryShellConfiguration
     public bool IsFooterVisibleWhenEmpty { get; }
 
     private GalleryShellConfiguration(double sidebarWidth,
+                                      double? collapsedSidebarHeaderSpacing,
                                       Size initialDesktopWindowSize,
                                       Size minDesktopWindowSize,
                                       bool isThemeMenuEnabled,
@@ -253,7 +263,8 @@ public sealed class GalleryShellConfiguration
                                       bool isWindowOptionsMenuEnabled,
                                       bool isFooterVisibleWhenEmpty)
     {
-        SidebarWidth               = sidebarWidth;
+        SidebarWidth                  = sidebarWidth;
+        CollapsedSidebarHeaderSpacing = collapsedSidebarHeaderSpacing;
         InitialDesktopWindowSize   = initialDesktopWindowSize;
         MinDesktopWindowSize       = minDesktopWindowSize;
         IsThemeMenuEnabled         = isThemeMenuEnabled;
@@ -266,6 +277,7 @@ public sealed class GalleryShellConfiguration
     {
         return new GalleryShellConfiguration(
             options.SidebarWidth,
+            options.CollapsedSidebarHeaderSpacing,
             options.InitialDesktopWindowSize,
             options.MinDesktopWindowSize,
             options.IsThemeMenuEnabled,

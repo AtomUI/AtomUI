@@ -23,7 +23,8 @@
                     <Panel Name="ButtonsLayout">
                         <atom:Button Name="PART_NowButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
                                      Content="{atom:DatePickerLangResource Now}" />
-                        <atom:Button Name="PART_TodayButton" ButtonType="Link" HorizontalAlignment="Left" SizeType="Small"
+                        <atom:Button Name="PART_TodayButton" ButtonType="Link" Color="Primary" Variant="Link"
+                                     HorizontalAlignment="Left" SizeType="Small"
                                      Content="{atom:DatePickerLangResource Today}" />
                         <atom:Button Name="PART_ConfirmButton" ButtonType="Primary" HorizontalAlignment="Right" SizeType="Small"
                                      Content="{atom:CommonLangResource Ok}" />
@@ -32,7 +33,7 @@
                 <StackPanel Orientation="Horizontal">
                     <atom:RangeDateViewer Name="PART_RangeDateViewer" Padding="0" Presentation="Compact"
                                           Height="{TemplateBinding PanelHeight}"
-                                          PanelSpacing="{atom:DatePickerTokenResource RangePanelSpacing}"
+                                          PanelSpacing="{atom:RangeDatePickerTokenResource RangePanelSpacing}"
                                           HeaderTemplate="{StaticResource RangeDatePickerViewerHeader}" />
                     <atom:TimeView Name="PART_TimeView" VerticalAlignment="Top"
                                    IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -43,9 +44,9 @@
         </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ Panel#ButtonsLayout">
-        <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+        <Setter Property="Margin" Value="{CompiledBinding $self.(atom:DatePickerPresenter.ButtonsPanelMargin)}" />
     </Style>
     <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
-        <Setter Property="Padding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.(atom:DatePickerPresenter.PanelContentPadding)}" />
     </Style>
 </ControlTheme>

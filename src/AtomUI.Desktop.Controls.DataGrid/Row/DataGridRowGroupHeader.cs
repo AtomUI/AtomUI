@@ -15,8 +15,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Media;
 
+using AtomUI.Theme;
+
 namespace AtomUI.Desktop.Controls;
 
+// Visual container follows the DataGrid owner, including TokenTransitions in its template.
+[TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Current, StdPseudoClass.Expanded)]
 public class DataGridRowGroupHeader : TemplatedControl
 {
@@ -89,6 +93,25 @@ public class DataGridRowGroupHeader : TemplatedControl
     #endregion
 
     #region 内部属性定义
+
+    internal static readonly StyledProperty<Thickness> ExpanderMarginProperty =
+        AvaloniaProperty.Register<DataGridRowGroupHeader, Thickness>(nameof(ExpanderMargin));
+
+    internal static readonly StyledProperty<Thickness> PropertyMarginProperty =
+        AvaloniaProperty.Register<DataGridRowGroupHeader, Thickness>(nameof(PropertyMargin));
+
+    internal Thickness ExpanderMargin
+    {
+        get => GetValue(ExpanderMarginProperty);
+        set => SetValue(ExpanderMarginProperty, value);
+    }
+
+    internal Thickness PropertyMargin
+    {
+        get => GetValue(PropertyMarginProperty);
+        set => SetValue(PropertyMarginProperty, value);
+    }
+
 
     internal DataGridRowHeader? HeaderCell => _headerElement;
 
@@ -176,16 +199,12 @@ public class DataGridRowGroupHeader : TemplatedControl
         _rootElement = e.NameScope.Find<Panel>(DataGridRowThemeConstants.FramePart) ??
                        e.NameScope.Find<Panel>(DataGridRowGroupHeaderThemeConstants.RootLayoutPart);
 
-        _expanderButtonSubscription?.Dispose();
         _expanderButton = e.NameScope.Find<ToggleButton>(DataGridRowGroupHeaderThemeConstants.ExpanderButtonPart);
         if(_expanderButton != null)
         {
             EnsureExpanderButtonIsChecked();
-            _expanderButtonSubscription =
-                _expanderButton.GetObservable(ToggleButton.IsCheckedProperty)
-                               .Skip(1)
-                               .Subscribe(HandleExpanderButtonIsCheckedChanged);
         }
+        SubscribeExpanderButton();
 
         _headerElement = e.NameScope.Find<DataGridRowHeader>(DataGridRowThemeConstants.RowHeaderPart) ??
                          e.NameScope.Find<DataGridRowHeader>(DataGridRowGroupHeaderThemeConstants.RowHeaderPart);
@@ -554,6 +573,21 @@ public class DataGridRowGroupHeader : TemplatedControl
 
     private bool IsExpanded => SourceGroup is not null &&
                                !(OwningGrid?.GroupExpansion.CollapsedGroups.Contains(SourceGroup.Key) ?? false);
+
+    // 回收的组头会从 RowsPresenter 移除再加回而不重新应用模板，订阅须随可视树挂接成对建立与释放
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        SubscribeExpanderButton();
+    }
+
+    private void SubscribeExpanderButton()
+    {
+        _expanderButtonSubscription?.Dispose();
+        _expanderButtonSubscription = _expanderButton?.GetObservable(ToggleButton.IsCheckedProperty)
+                                                     .Skip(1)
+                                                     .Subscribe(HandleExpanderButtonIsCheckedChanged);
+    }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {

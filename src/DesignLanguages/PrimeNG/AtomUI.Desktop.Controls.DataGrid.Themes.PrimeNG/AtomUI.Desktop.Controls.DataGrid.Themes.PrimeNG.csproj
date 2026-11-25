@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AtomUI.Desktop.Controls.Themes.PrimeNG</RootNamespace>
+        <Description>The Ant Design values of the desktop data grid (AtomUI.Desktop.Controls.DataGrid).</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <ProjectReference Include="../../../AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
+        <ProjectReference Include="../AtomUI.Desktop.Controls.Themes.PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG.csproj" />
+        <ProjectReference Include="../AtomUI.DesignLanguages.PrimeNG/AtomUI.DesignLanguages.PrimeNG.csproj" />
+        <ProjectReference Include="../../../AtomUI.Generator/AtomUI.Generator.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

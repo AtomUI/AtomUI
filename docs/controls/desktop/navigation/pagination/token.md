@@ -25,6 +25,20 @@ Token 按控件语义分类维护：
 
 ## 3. 控件专项模型中的 Token 使用
 
+- `ItemLinkBg` 与 `InputOutlineOffset` 是保留 Token（`[ReservedToken]`）：前者对应 antd Pagination `itemLinkBg`，只绘制 bordered 变体的
+  上一页/下一页按钮，AtomUI 没有该变体；后者对应 antd 内部 `inputOutlineOffset`（简洁模式输入框焦点阴影的 x 偏移），这里简洁模式输入框
+  是 LineEdit，焦点阴影由 Input 家族绘制。
+- `ItemInputBg` 是 SimplePagination 输入框背景；`PaginationMiniQuickJumperInputWidth` 是小尺寸时快速跳转与简洁模式输入框的宽度（antd
+  `controlHeightLG * 1.1`）。
+- `PaginationLayoutMiniSpacing` 是完整分页与简洁分页的小尺寸布局间距，默认取 `UniformlyMarginXXS / 2` 和
+  `ControlOutlineWidth` 中的较大值，给紧凑布局里的输入焦点环留出空间。
+- `SimplePagination` 使用自己作用域的 `InputPaddingSM` 设置小尺寸编辑框的内边距。Shadcn 预设从两侧纵向内边距中扣除
+  `ControlOutlineWidth`，结果最低为零。水平方向内边距和翻页按钮的尺寸沿用各主题的对应 Token。
+- `PaginationItemPaddingInline` 是页码项的行内（水平）内间距，作用于页码文字，宽页码（如四位数）不再贴边；默认 `UniformlyMarginXXS * 1.5, 0`。
+- 页码项 `PaginationNavItem` 被 Pagination 与 SimplePagination 共用，以 `OwnerTokenResource` 读取所在分页控件的有效全局 Token；页码项内的
+  图标呈现器是注册部件，图标尺寸与跳转/省略图标颜色由页码项读取后向下绑定。SimplePagination 有自己的 Own，公共尺寸/禁用色/布局与输入宽度经抽象层共享定义、由取值包的共享辅助类共享取值规则（Ant Design：`PaginationTokenCalculator`），按终端独立覆盖。
+
+
 Pagination 的控件专项模型通过 Theme 消费 Token：
 
 - C# 控件负责状态归一和伪类同步。
@@ -58,3 +72,19 @@ Pagination 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
+
+## 独立 Token 身份与共享计算
+
+ItemInputBg 移到 SimplePagination。PaginationItemPaddingInline 只绘制页码文字，保留在 Pagination，不添加给只有箭头的 SimplePagination；ItemLinkBg/InputOutlineOffset 继续保留原 Reserved 状态。
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `ItemColor` / `ItemHoverColor` / `ItemHoverBg` | `ColorText` / `ColorText` / `ColorBgTextHover` | 页码项文字与悬停 |
+| `ItemActiveColor` / `ItemActiveBorderColor` | `ColorPrimary` | 选中页文字与边框 |
+| `ItemActiveHoverColor` / `ItemActiveHoverBorderColor` | `ColorPrimaryHover` | 选中页悬停 |
+| `ItemActiveFontWeight` | `FontWeightStrong` | 选中页字重 |
+| `ItemBorderRadius` | `BorderRadius` | 页码项圆角 |

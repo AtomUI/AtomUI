@@ -28,7 +28,7 @@ Snapshot B: [Cell(Button), Cell(Input-v2), Cell(Menu)]
 - 索引路径收到稀疏变更集时直接共享未变化槽；deferred 变更集保守包含已物化槽时，新 cell 只保存上次的
   值与单控件配置，在该槽下次被查询时比较配置再决定复用或重新计算。未访问的冷控件不会为复用判定提前运行 resolver。
 - cell 不持有整个前代 ThemeSnapshot，不沿历史版本递归寻找值。新快照不承担为旧快照保活的责任。
-- 编译输入包含 exact 控件身份、配置、有效全局输入与算法证据；同一 cell 的首次物化采用安全发布和 single-flight。
+- 编译输入包含 exact 控件身份、配置、有效全局输入与语言 / 变体证据；同一 cell 的首次物化采用安全发布和 single-flight。
 - 不把“引用写入不会撕裂”等同于完整的跨线程发布证明。锁、Volatile 或成熟 lazy primitive 的选择由并发验收锁定。
 - 无未物化消费者后释放只用于编译的 builder/config 工作集；纯输入允许合法共享，但不得持有 Visual、Provider 或事件。
 - 保留现有失败时点：控件计算失败在首查暴露，不进入成功缓存。是否缓存异常对象/允许重复执行属于单独契约决策，
@@ -109,21 +109,21 @@ ThemeManager 只挂载一个稳定的 `StaticThemeResourceProvider`。它持有�
 
 ## 6. 分离全局计算身份
 
-全局复用通过 `HasSameGlobalSchema` 比较不可变 descriptor 引用，并比较有效编译输入；其范围限于全局 Token schema、算法、有效 seed/覆盖、appearance、
+全局复用通过 `HasSameGlobalSchema` 比较不可变 descriptor 引用，并比较有效编译输入；其范围限于全局 Token schema、设计语言及其修订、有效变体（风格、明暗、密度、形态）、有效 seed/覆盖、
 字体及全部影响全局值的配置。完整 registry 身份仍用于完整快照、控件 schema 和资产绑定。
 
 - 如果全局计算输入相等（例如启动前 Prepare 的全局层），可共享已有的全局值、资源和 palette。
-- 全局算法、全局 schema、主题有效全局值或相关配置变化必须使全局结果失效。
+- 语言或其修订、有效变体、全局 schema、主题有效全局值或相关配置变化必须使全局结果失效。
 - 完整 ThemeDefinition 的修订若仅改变控件配置，是否允许细化比较要由结构化输入证明，不能只比较主题 ID。
 - 配置能证明无控件级全局差量时，Shared Token 查询可直接使用根资源；Own Token 仍在第一次 Own 查询时编译。
-  自定义 evaluator 或算法若可能影响该结果，应走完整控件路径。
+  控件取值规则可能写 `target.Global`，若可能影响该结果，应走完整控件路径。
 
 规范化配置已按 schema slot 排序；构建结构键直接沿该顺序复制。不可变配置和绑定后 definition 的结构键
 按对象身份弱缓存；不同实例仍执行完整内容比较，registry revision 仍参与完整快照/控件键。新的输入修订
 创建新实例，不原地修改绑定值。弱缓存不保活输入或 registry。
 
-复用全局值时，编译阶段不恢复可变 DesignToken。新的 lazy source 只保存当前冻结值、资源、palette 和
-算法；首次需要执行控件编译时恢复一次 builder，并发首查安全发布。若控件结果缓存已命中，无需恢复。
+复用全局值时，编译阶段不恢复可变 DesignToken。新的 lazy source 只保存当前冻结值、资源、palette、
+语言 Token 与变体；首次需要执行控件编译时恢复一次 builder，并发首查安全发布。若控件结果缓存已命中，无需恢复。
 source 不捕获 ThemeCompileInput 或父快照；全部消费者物化后，cell 释放 source。没有另设急切参考编译入口。
 
 ## 7. 内存计费与释放
@@ -141,7 +141,7 @@ cell 的配置与独立 source。每个快照内相同 source 计一次；source
 deferred merge 由框架自己保留的规范化父/当前配置也属于已知输入：按对象身份计费其冷控件 Token 值，
 而不调用控件 resolver 或遍历任意用户闭包；嵌套合并对同一配置只计一次。
 
-计费是保守估算，不是整个保留对象图的硬上限：共享值可能重复计费；registry 共享的 descriptor、算法与
+计费是保守估算，不是整个保留对象图的硬上限：共享值可能重复计费；registry 共享的 descriptor、语言与推导描述与
 委托闭包不递归计费。任意自定义对象只计固定壳体，内部数组、原生资源、可变 brush 内容和自定义闭包的实际
 大小不在估算保证内。不得通过反射或调用用户代码遍历这些对象来扩大预算承诺。
 

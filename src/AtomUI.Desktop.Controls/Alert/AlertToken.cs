@@ -1,83 +1,94 @@
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class AlertToken : AbstractControlDesignToken
+public sealed partial class AlertToken : AbstractControlDesignToken
 {
-
-    public AlertToken()
-
-    {
-    }
+    /// <summary>
+    /// 成功提示的图标颜色
+    /// Icon colour of a success alert.
+    /// </summary>
+    public partial Color SuccessIconColor { get; set; }
 
     /// <summary>
-    /// 默认内间距
+    /// 信息提示的图标颜色
+    /// Icon colour of an info alert.
     /// </summary>
-    public Thickness DefaultPadding { get; set; }
+    public partial Color InfoIconColor { get; set; }
 
     /// <summary>
-    /// 带有描述的内间距
+    /// 警告提示的图标颜色
+    /// Icon colour of a warning alert.
     /// </summary>
-    public Thickness WithDescriptionPadding { get; set; }
+    public partial Color WarningIconColor { get; set; }
 
     /// <summary>
-    /// 带有描述的 Message 外间距
+    /// 错误提示的图标颜色
+    /// Icon colour of an error alert.
     /// </summary>
-    public Thickness MessageWithDescriptionMargin { get; set; }
+    public partial Color ErrorIconColor { get; set; }
+
+
+    /// <summary>Inset of the content in an alert with a title only.</summary>
+    public partial Thickness DefaultPadding { get; set; }
+
+    /// <summary>Inset of the content in an alert that includes a description.</summary>
+    public partial Thickness WithDescriptionPadding { get; set; }
+
+    /// <summary>Space around the status icon in a title-only alert.</summary>
+    public partial Thickness IconDefaultMargin { get; set; }
+
+    /// <summary>Space around the status icon when the alert includes a description.</summary>
+    public partial Thickness IconWithDescriptionMargin { get; set; }
+
+    /// <summary>Width and height of the status icon in a title-only alert.</summary>
+    public partial double DefaultIconSize { get; set; }
+
+    /// <summary>Width and height of the status icon when an alert has a description.</summary>
+    public partial double WithDescriptionIconSize { get; set; }
 
     /// <summary>
-    /// 图标默认外间距
+    /// 关闭按钮图标的大小（antd Alert close-icon 的 fontSizeIcon）
     /// </summary>
-    public Thickness IconDefaultMargin { get; set; }
+    public partial double CloseIconSize { get; set; }
 
-    /// <summary>
-    /// 图标带描述信息外间距
-    /// </summary>
-    public Thickness IconWithDescriptionMargin { get; set; }
-
-    /// <summary>
-    /// 没有描述时的图标尺寸
-    /// </summary>
-    public double DefaultIconSize { get; set; }
-
-    /// <summary>
-    /// 带有描述时的图标尺寸
-    /// </summary>
-    public double WithDescriptionIconSize { get; set; }
-
-    /// <summary>
-    /// 关闭按钮的大小
-    /// </summary>
-    public double CloseIconSize { get; set; }
-
-    /// <summary>
-    /// 额外元素的外间距
-    /// </summary>
-    public Thickness ExtraElementMargin { get; set; }
+    /// <summary>Space around the optional extra element in the alert.</summary>
+    public partial Thickness ExtraElementMargin { get; set; }
     
+    /// <summary>Space around the description label under the alert title.</summary>
+    public partial Thickness DescriptionLabelMargin { get; set; }
+
     /// <summary>
-    /// 描述标签外间距
+    /// 成功提示文字颜色
+    /// Text colour of a success alert
     /// </summary>
-    public Thickness DescriptionLabelMargin { get; set; }
+    public partial Color SuccessMessageColor { get; set; }
 
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        const double paddingHorizontal = 12; // Fixed value here.
-        WithDescriptionIconSize = EffectiveGlobalToken.FontSizeHeading3;
-        DefaultPadding          = new Thickness(paddingHorizontal, EffectiveGlobalToken.PaddingContentVerticalSM);
-        WithDescriptionPadding  = new Thickness(EffectiveGlobalToken.PaddingContentHorizontalLG, EffectiveGlobalToken.UniformlyPaddingMD);
+    /// <summary>
+    /// 信息提示文字颜色
+    /// Text colour of an info alert
+    /// </summary>
+    public partial Color InfoMessageColor { get; set; }
 
-        MessageWithDescriptionMargin = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXS);
-        IconDefaultMargin            = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        IconWithDescriptionMargin    = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginSM, 0);
-        ExtraElementMargin           = new Thickness(EffectiveGlobalToken.UniformlyMarginXS, 0, 0, 0);
-        DescriptionLabelMargin       = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXS, 0, 0);
+    /// <summary>
+    /// 警告提示文字颜色
+    /// Text colour of a warning alert
+    /// </summary>
+    public partial Color WarningMessageColor { get; set; }
 
-        CloseIconSize = EffectiveGlobalToken.FontSizeIcon + 2;
-        DefaultIconSize = EffectiveGlobalToken.FontSizeLG;
-    }
+    /// <summary>
+    /// 错误提示文字颜色
+    /// Text colour of an error alert
+    /// </summary>
+    public partial Color ErrorMessageColor { get; set; }
+
+    /// <summary>
+    /// 提示文字字重
+    /// Font weight of the alert text (message and description)
+    /// </summary>
+    public partial FontWeight TextFontWeight { get; set; }
     
 }

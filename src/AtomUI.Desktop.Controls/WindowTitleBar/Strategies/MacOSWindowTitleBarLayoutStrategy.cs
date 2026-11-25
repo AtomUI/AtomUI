@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -16,9 +15,8 @@ internal sealed class MacOSWindowTitleBarLayoutStrategy : IWindowTitleBarLayoutS
     public Thickness ResolveNativeChromeInsets(
         double width,
         Thickness reportedNativeChromeInsets,
-        bool isCsdEnabled,
-        WindowState windowState)
+        bool isCsdEnabled)
     {
-        return WindowTitleBarNativeChromeInsets.Resolve(width, reportedNativeChromeInsets, windowState);
+        return WindowTitleBarNativeChromeInsets.Resolve(width, reportedNativeChromeInsets);
     }
 }

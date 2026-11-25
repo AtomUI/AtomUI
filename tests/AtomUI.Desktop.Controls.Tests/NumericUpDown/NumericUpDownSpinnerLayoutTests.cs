@@ -181,7 +181,7 @@ public class NumericUpDownSpinnerLayoutTests
             decoratedBox.IsSpinnerContentHover = true;
             Dispatcher.UIThread.RunJobs();
             window.UpdateLayout();
-            var inputPanel = suffix.GetVisualParent().ShouldNotBeNull();
+            var inputPanel = numericUpDown.GetVisualDescendants().OfType<NumericUpDownInputPanel>().Single();
             var middleShift = suffix.TranslatePoint(new Point(suffix.Bounds.Width, 0), inputPanel)
                                     .ShouldNotBeNull().X + suffix.Margin.Right - inputPanel.Bounds.Width;
 

@@ -54,6 +54,13 @@ AddOnDecoratedBox 及其专用派生类型
 
 它输出 `EffectiveStatus` 和视觉伪类，不拥有 `Text`、候选集合、搜索任务、Form value 或 AddOn 内容。
 
+表面画刷里随 variant 与有效状态变化的部分，由 frame 算成 internal 主题变量：`FrameBorderBrush`、`FrameBackground`、`FrameHoverBorderBrush`、`FrameHoverBackground`、`FrameActiveBorderBrush`、`FrameActiveShadow`。
+
+- **取值：** 按当前 `StyleVariant` 和 `EffectiveStatus` 读取 owner 的 Effective Global Token，资源键、owner 解析和无 owner 时的回落都与 `OwnerTokenResource` 相同。资源、作用域、主题变体或 owner 变化时随之刷新。
+- **投射：** `InputControlFrameTheme` 只用 variant 伪类加 hover / focus-within / pressed 选择器，把变量投射到 `BorderBrush`、`Background`、`BoxShadow`，不再为每种 variant × status × 交互组合各写一条样式。disabled、附加区和根画刷样式保持不变。
+- **定制：** Token、`ThemeConfig.Controls`、`ThemeConfigProvider` 和 `TokenTransitions` 的定制路径与原状态矩阵一致。
+- **存储：** 变量是 DirectProperty，由一个 `OwnerTokenSet` 供值：每个 frame 只有一组 owner 订阅，条目在第一次读取时才解析，也不经过 Avalonia 绑定，因此 frame 不会多出 value store 条目。
+
 ## 4. 状态模型
 
 状态来源严格分为三类：
@@ -83,11 +90,27 @@ Native Error / Form Error
 | `StyleVariant` | frame 语义 |
 | --- | --- |
 | `Outlined` | 边框、圆角、hover/focus shadow 和 CompactSpace 边框折叠。 |
-| `Filled` | 填充背景、无独立外框的状态变化和相邻布局折叠。 |
+| `Filled` | 填充背景、无独立外框的状态变化和相邻布局折叠；focus 只改变边框与背景，不绘制 focus shadow。 |
 | `Borderless` | 透明背景、透明边框、无 focus shadow；适用于嵌入式文本输入。 |
-| `Underlined` | 只保留下划线状态，状态色和动效仍由 frame 统一处理。 |
+| `Underlined` | 只保留下划线状态，状态色和动效仍由 frame 统一处理；不绘制 focus shadow。 |
 
 `EmbeddedTextBox` 使用 `StyleVariant=Borderless` 表达无 chrome 语义：背景透明、边框透明、`BorderThickness=0`、不绘制 focus shadow，也不重复绘制外部 frame。
+
+焦点表现与 Ant Design 一致，只由 frame 表达：
+
+- focus-within 时 frame 边框切换为状态主色；只有 `Outlined` 叠加 `0 0 0 ControlOutlineWidth` 的 `InputActiveShadow`（Error / Warning 对应 `InputErrorActiveShadow` / `InputWarningActiveShadow`）。focus shadow 的 Setter 必须带 `Outlined` 变体条件，嵌入式输入因此天然拿不到阴影。
+- Frame 使用内部 `:input-focus-within` 合并宿主与实际子树的键盘焦点。Avalonia 独立维护 `:focus-within`，两者的通知顺序不会重复触发输入框的焦点样式。焦点阴影出现或消失时以透明度过渡，保持轮廓尺寸。
+- 输入家族在键盘聚焦时不叠加共享焦点描边（`FocusOutlineAdorner`），以下三层都把 `FocusAdorner` 设为空：
+  - **宿主**：文本输入、选择器、日期 / 时间选择器、步进输入等的主题；
+  - **外框**：`InputControlFrameTheme` 统一设置，所以模板为了接收内边距点击而把外框设为可聚焦时，也不会出现焦点框；
+  - **嵌入式输入**：`SelectFilterTextBox`、可编辑 ComboBox 的 `ComboBoxTextBox`。
+- 键盘停靠点与 Ant Design 一致：输入本身，以及出现时的清除按钮。
+  - 模板为接收内边距点击而设为可聚焦的 frame 不作停靠点（`IsTabStop=False`）；下拉箭头、数值步进按钮也不作停靠点。日期 / 时间选择器的 frame 目前仍是其唯一停靠点，属于尚未完成的选择器键盘方案。
+  - 清除按钮 `InputClearIconButton` 可聚焦，Enter / Space 触发，自动化名称由其 ControlTheme setter 绑定 `CommonLangResourceKind.Clear` 语言资源（应用 Style 与本地值可覆盖）。清除按钮在 frame 模板中排在内容之前（DockPanel 顺序），需要“输入 → 清除”顺序的宿主把 frame 设为 `TabNavigation=Local` 并用 `TabIndex` 排序，例如 ComboBox、日期/时间选择器；NumericUpDown 的宿主本身就是 `Local` 分组。
+  - `AddOnDecoratedBox` 作为 `Local` 分组时，左附加 presenter 成为最小 `TabIndex` 的分组、右附加成为最大值的分组，附加内容的可聚焦控件按视觉位置排在 frame 内停靠点的前后；宿主内附加（ContentLeft / ContentRight）的 presenter 在宿主模板中，由宿主按位置分配 `TabIndex`（ComboBox 已分配；日期/时间选择器尚未分配，其内附加排在清除按钮与右附加之后）。
+  - 清除后焦点回到输入：宿主在按钮点击前取 `InputClearIconButton.GetFocusReturnMethod()`（按钮有焦点时返回键盘或指针方式），清除后据此聚焦输入，避免按钮隐藏导致焦点丢失。
+- focus shadow 绘制在 frame 外侧，宿主不得裁剪它：派生自 `TemplatedControl` 的宿主默认 `ClipToBounds=True`，主题需显式设为 `False`。
+- 模板把内层 `AddOnContentPresenter` 作为外层 add-on 内容时，外层可见性跟随内层控件的 `IsVisible`；空的前缀/后缀不保留 margin 和面板间距。
 
 ## 6. 组合控件边界
 
@@ -140,7 +163,7 @@ Form 不维护与 native validation 并行的 error 真源。Form reset、重新
 - `TextBox`、`LineEdit`、`TextArea` 及其派生控件继续保留各自的文本编辑、单行、多行和业务布局语义；共有输入状态只能通过 `AbstractTextInput` 与 `InputControlFrame` 的分层契约表达。
 - `InputControlFrame`、`AddOnDecoratedBox` 及其专用派生类型属于内部组合实现。它们可以作为稳定 template part 存在，但不作为用户直接依赖的公共 Semantic Part，也不向外暴露内部 `TextPresenter`、`ScrollViewer` 或 NameScope。
 - 主题定制通过 `InputControlFrameTheme`、控件主题和 Token resource 完成。专用 decorated box 可以增加布局和业务内容 selector，但不能替换 frame 的 variant、effective status、error、warning、disabled 或 motion owner。
-- 输入表面的 root 定制通道是 owner 上的标准 `Background` / `BorderBrush`：`AbstractTextInput` 把 owner 有效值以 LocalValue 中继到 frame 同名属性（共享 `TemplatedControl` 属性实例），定制期间该属性槽的交互态变色冻结，置空后 `ClearValue` 恢复状态机；focus 的 `BoxShadow` 反馈作用在独立属性槽。四个输入主题不在 owner 层携带这两个属性的默认值，`TextBox` 模板不以 `TemplateBinding` 绑定它们——owner 值同时是“是否定制”的判定输入，不引入平行定制属性。
+- 输入表面的 root 定制通道是 owner 上的标准 `Background` / `BorderBrush`：宿主模板把它们绑定到 frame 的 internal `HostBorderBrush` / `HostBackground`，`InputControlFrame` 以 `:host-border-brush` / `:host-background` 伪类标记，`InputControlFrameTheme` 在全部状态画刷之后投射到 frame（TextBox / LineEdit / SearchEdit / TextArea / ButtonSpinner / NumericUpDown 与 Select / ComboBox / Cascader / TreeSelect 相同）；定制期间交互态变色让位于根画刷，置空后伪类撤销、恢复状态机；focus 的 `BoxShadow` 反馈作用在独立属性槽。派生装饰盒主题（Select 家族）若在状态样式之后再写 `BorderBrush`，须在其后重新投射。输入主题不在 owner 层携带这两个属性的默认值——owner 值同时是“是否定制”的判定输入，不引入平行定制属性。
 - `StyleVariant` 的四种值、`DataValidationErrors` 的 native error 语义、Form-owned error 的清理边界和 `EffectiveStatus` 优先级属于所有输入表面的共同契约；内部模板重组不得引入第二套状态源。
 - `InputControlFrame` 的公共协作只依赖稳定属性、绑定和 template part。消费方不得通过运行时反射、程序集扫描或 VisualTree 遍历推断内部输入结构。
 

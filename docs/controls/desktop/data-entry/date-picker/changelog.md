@@ -2,6 +2,92 @@
 
 本文档记录 DatePicker 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractTimeViewToken.PopupArrowVisible`（默认 `true`）：DatePicker、RangeDatePicker 弹层是否绘制指向输入框的箭头；PrimeNG 设为 `false`。弹层头部标题字重改读 DateViewer 的 `HeaderTitleFontWeight`（默认 `Bold`，与原外观一致）。
+- Fixed
+  - DatePicker 与 RangeDatePicker 弹层的 Today 使用当前主题主色，并保留链接按钮的交互反馈。
+- Performance
+  - 读取可继承主题输入的 Setter 由反射绑定改为编译绑定（`{CompiledBinding $self.(...)}`），数据流与优先级不变，渲染不变。涉及 `DatePickerPresenter`、`RangeInfoPickerInputTheme` 与弹层 `DateViewerCell`。
+
+## 2026-11-14
+
+- Performance
+  - Input width measurement reuses earlier text shaping for identical text and font (`TextUtils.CalculateTextSizeCached`). The key includes the resolved typeface, the font collection generation and the current cultures, so results equal a fresh measurement. Each picker used to shape about a dozen strings several times during creation.
+
+## 2026-11-11
+
+- Changed
+  - 外框是按 `TabIndex` 排序的局部分组，`LeftAddOn` / `RightAddOn` 中的可聚焦内容因此按视觉位置排在输入与清除按钮的前后（共享 `AddOnDecoratedBoxTheme` 规则），不再排在清除按钮之后。内附加（`ContentLeftAddOn` / `ContentRightAddOn`）尚未分配顺序，仍在清除按钮与右附加之后。
+  - 键盘停靠点对齐 Ant Design：输入框（范围为开始、结束输入）在前，清除按钮在后；外框、图标与范围箭头不再是停靠点，焦点在控件内时显示清除按钮。
+  - 新增键入解析：文本完整匹配显示格式时成为候选并定位面板；Enter 提交（无需确认按钮）、Escape 回退、Tab 在范围端点间弱提交、焦点离开时按确认规则提交或丢弃。单值 Escape 不再把候选留到下次打开。
+  - 新增导航键转发：弹层打开时方向键、PageUp/PageDown、Home/End 移动面板焦点格（翻页跟随、不越界），焦点格复用悬停外观与范围预览，Enter 提交。日期格 `:hovered` 获得与指针悬停相同的背景。
+- Fixed
+  - 悬停预览结束时输入框恢复候选文本，不再短暂变空。
+  - `Clear()` 与清除按钮不再被当作键入：此前会打开弹层（范围还切换到结束端）；现在清空值与键入草稿并关闭弹层。
+  - RangeDatePicker 从结束端 Tab、从开始端 Shift+Tab 离开时，有效键入端点按焦点离开规则提交，不再被丢弃。
+  - RangeDatePicker 焦点离开提交单端、部分确认后关闭时按日期排序两端，不再留下开始晚于结束的提交值。
+  - 导航键目标格被禁用时不再翻页并静默改变焦点格（此前输入框仍显示旧值，Enter 提交的不是可见焦点）。
+  - 脱离逻辑树/视觉树或更换模板时丢弃键入草稿，不再在拆除期间回写 `SelectedDateTime` 或范围端点。
+  - `IsPopupPinnedOpen` 时 Escape 也把候选和输入框恢复为提交值。
+- Theme
+  - InfoPickerInput / RangeInfoPickerInput / RangeDatePicker 焦点样式对齐 Ant Design：主题设置空 `FocusAdorner`，键盘聚焦不再叠加全局方框，焦点只由 frame 的主色边框与 `Outlined` 外发光表达。
+- Fixed
+  - 共享 `BorderRenderHelper` 在背景/边框几何路径中补绘外侧 `BoxShadow`；输入 frame 固定走该路径，`Outlined` 的 focus 外发光此前被丢弃，现在按主题正确绘制。
+  - `InfoPickerInputTheme`、`RangeInfoPickerInputTheme`、`RangeDatePickerTheme` 设置 `ClipToBounds=False`，`Outlined` focus 外发光不再被宿主裁剪。
+- Fixed
+  - DatePicker / RangeDatePicker 的可聚焦外框在键盘聚焦时不再画焦点框（经 `InputControlFrameTheme` 统一设置空 `FocusAdorner`），7e40bc14a 只覆盖了宿主，遗漏了外框。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-09
+
+- Theme
+  - 日期 Presenter 把 Picker 的 Token owner 转发给弹层 DateViewer / RangeDateViewer（与 Calendar 相同）：日期格、面板文字与 Header 的
+    全局 Token 跟随 `Controls[DatePicker]` / `Controls[RangeDatePicker]`（antd `components.DatePicker.colorPrimary` 改变选中日期格），
+    `Controls[DateViewer]` 的全局 Token 不再作用于弹层；弹层日期面板的 Own 值由实际 Picker 终端通过内部样式输入提供，独立 DateViewer 保持自身 Own。Header 模板的
+    `ColorBorderSecondary` / `ControlHeight` 改为 `OwnerTokenResource`。
+  - 输入框不再在弹层打开时变为 `ColorTextTertiary`（antd 保持 `colorText`）；指针预览日期或时间（`:choosing`）时，预览写入的输入框
+    文字为 `ColorTextPlaceholder`（antd `-input-placeholder`）。禁用文字仍为 `ColorTextDisabled`。
+  - Picker 不再裁剪输入框的焦点阴影（`ClipToBounds=False`，与 Select / ComboBox 相同）：`InputActiveShadow`、`InputErrorActiveShadow`、
+    `InputWarningActiveShadow` 的焦点环完整显示，范围 Picker 也一样（此前完全不可见）。
+
+## 2026-11-08
+
+- Theme
+  - Picker 把 Token owner 转发给弹层 Presenter（Presenter 位于注册控件 ArrowDecoratedBox 内），Footer、TimeView 与时间单元跟随
+    `Controls[DatePicker]` / `Controls[RangeDatePicker]`（弹层 DateViewer 的 owner 见 2026-11-09）。
+  - 共享输入基类 InfoPickerInput / RangeInfoPickerInput 主题以 `OwnerTokenResource` 读取具体 Picker 的全局 Token；根 `BorderBrush` 改经
+    `HostBorderBrush` 投射到输入框，不再写 LocalValue。
+  - 范围箭头尺寸与颜色在 Picker 上读取后模板绑定（箭头是注册 Icon）；激活条厚度变化后重新定位到输入框底边。
+  - 输入文字颜色改由编辑器 Foreground 投射到内部输入框（禁用文字颜色不变；弹层打开时的文字颜色见 2026-11-09）。
+  - 新增 `DatePicker.HeaderBorderThickness`，弹层 Header 去掉固定 33 px 高度（由 `ControlHeight` 最小高度与分隔线得出，尺寸不变）。
+
+## 2026-11-04
+
+- Fixed
+  - 共享 InfoPickerInput 右侧内容、内容模板、图标及 Form 反馈显式绑定输入 owner，恢复 template-only 附加内容和动态更新。
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Fixed
+  - 更换模板时释放旧输入部件的父主题订阅、旧 Popup 内容声明和已脱离的合成缓存；保留 DatePicker/presenter 时旧 Popup/Surface 可回收，新模板可重新打开。
+
+- Changed
+  - InfoPickerInput 声明 OpenMotion/CloseMotion；DatePicker 直接继承，RangeDatePicker 经 RangeInfoPickerInput 继承，不重复注册。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-04
 
 - Fixed

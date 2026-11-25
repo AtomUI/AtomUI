@@ -20,6 +20,9 @@
                                         VerticalAlignment="Center"
                                         RenderTransform="{TemplateBinding RotationIconRenderTransform}"
                                         Icon="{TemplateBinding CurrentIcon}"
+                                        Width="{TemplateBinding IconSize}"
+                                        Height="{TemplateBinding IconSize}"
+                                        IconBrush="{TemplateBinding IconBrush}"
                                         IsVisible="{TemplateBinding IsCurrentIconVisible}" />
                 </Panel>
             </ControlTemplate>
@@ -27,41 +30,41 @@
         
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}"/>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}"/>
 
-        <Style Selector="^ /template/ atom|IconPresenter atom|Icon">
-            <Setter Property="FillBrush" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
-            <Setter Property="StrokeBrush" Value="{atom:SharedTokenResource ColorTextSecondary}"/>
+        <!-- The icon size and brush are read on the switcher (the tree is its owner) and bound down to the registered
+             IconPresenter. The switcher icon takes the node text colour, as in antd. -->
+        <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSize}"/>
+        <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorText}"/>
+
+        <Style Selector="^[IconMode=Rotation]">
+            <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSizeXS}"/>
         </Style>
-        
+
+        <Style Selector="^[IconMode=Loading]">
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorPrimary}"/>
+        </Style>
+
+        <Style Selector="^:disabled">
+            <Setter Property="IconBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}"/>
+        </Style>
+
         <Style Selector="^:pointerover">
-            <Setter Property="Background" Value="{atom:TreeViewTokenResource NodeHoverBg}"/>
+            <Setter Property="Background" Value="{CompiledBinding $self.(atom:TreeViewItemHeader.NodeHoverBackground)}"/>
         </Style>
-        
-        <Style Selector="^ /template/ atom|IconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}"/>
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}"/>
-        </Style>
-        
-        <Style Selector="^[IconMode=Rotation] /template/ atom|IconPresenter#CurrentIconPresenter">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeXS}"/>
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeXS}"/>
-        </Style>
-        
-        <Style Selector="^[IconMode=Loading] /template/ atom|IconPresenter#CurrentIconPresenter">
-            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorPrimary}"/>
-        </Style>
-        
+
         <Style Selector="^:checked[IconMode=Rotation]">
             <Setter Property="RotationIconRenderTransform" Value="rotate(90deg)"/>
         </Style>
         
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <TransformOperationsTransition Property="RotationIconRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <TransformOperationsTransition Property="RotationIconRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

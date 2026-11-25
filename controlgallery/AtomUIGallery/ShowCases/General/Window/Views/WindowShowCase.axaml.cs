@@ -21,6 +21,12 @@ public partial class WindowShowCase : GalleryReactiveUserControl<WindowViewModel
     private void ShowDemoWindow<TDemoWindow>(Func<TDemoWindow> factory)
         where TDemoWindow : AtomUIWindow
     {
+        ShowDemoWindow(factory, TopLevel.GetTopLevel(this) as AvaloniaWindow);
+    }
+
+    private void ShowDemoWindow<TDemoWindow>(Func<TDemoWindow> factory, AvaloniaWindow? owner)
+        where TDemoWindow : AtomUIWindow
+    {
         if (_openDemoWindows.TryGetValue(typeof(TDemoWindow), out var opened) && opened.IsVisible)
         {
             opened.Activate();
@@ -30,7 +36,7 @@ public partial class WindowShowCase : GalleryReactiveUserControl<WindowViewModel
         var window = factory();
         window.Closed += (_, _) => _openDemoWindows.Remove(typeof(TDemoWindow));
         _openDemoWindows[typeof(TDemoWindow)] = window;
-        if (TopLevel.GetTopLevel(this) is AvaloniaWindow owner)
+        if (owner is not null)
         {
             window.Show(owner);
         }
@@ -74,6 +80,13 @@ public partial class WindowShowCase : GalleryReactiveUserControl<WindowViewModel
     {
         e.Handled = true;
         ShowDemoWindow(() => new CaptionButtonsDemoWindow());
+    }
+
+    private void HandleFullScreenTitleBarWindowButtonClick(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        // macOS does not take an owned window into native full screen, so this demo has no owner.
+        ShowDemoWindow(() => new FullScreenTitleBarDemoWindow(), owner: null);
     }
 
     private void HandleTitleBarlessWindowButtonClick(object? sender, RoutedEventArgs e)

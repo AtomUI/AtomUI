@@ -1,6 +1,6 @@
 # AtomUI Localization Catalog Runtime Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the reflection-free Catalog, Translation Bundle, fallback, immutable Snapshot, Localizer, LanguageManager, and stable Avalonia resource-provider runtime defined by the approved localization architecture.
 

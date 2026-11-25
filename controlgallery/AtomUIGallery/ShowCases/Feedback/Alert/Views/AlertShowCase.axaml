@@ -281,6 +281,7 @@
                                     <Style Selector="atom|Alert.semantic-function-demo">
                                         <Setter Property="Background" Value="#1A52C41A" />
                                         <Setter Property="BorderBrush" Value="#B7EB8F" />
+                                        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         <atom:AlertIconStyle x:SetterTargetType="atom:Icon">
                                             <Setter Property="FillBrush" Value="#52C41A" />
                                         </atom:AlertIconStyle>

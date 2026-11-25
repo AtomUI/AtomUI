@@ -8,11 +8,15 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
+// Token-owner transparent item container: the item theme reads the hosting list's Tokens (ListBox, or the host of a derived
+// list such as the Cascader filter list), so Controls[ListBox] also reaches the items and their transitions.
+[TokenOwnerTransparent]
 public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAware, ITransitionInitializationOwner
 {
     #region 公共事件定义
@@ -40,6 +44,15 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
     
     internal static readonly StyledProperty<IBrush?> ItemSelectedBgProperty =
         ListBox.ItemSelectedBgProperty.AddOwner<ListBoxItem>();
+
+    internal static readonly StyledProperty<IBrush?> ItemSelectedIndicatorColorProperty =
+        ListBox.ItemSelectedIndicatorColorProperty.AddOwner<ListBoxItem>();
+
+    internal IBrush? ItemSelectedIndicatorColor
+    {
+        get => GetValue(ItemSelectedIndicatorColorProperty);
+        set => SetValue(ItemSelectedIndicatorColorProperty, value);
+    }
     
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ListBoxItem>();
@@ -97,6 +110,17 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         AvaloniaProperty.RegisterDirect<ListBoxItem, bool>(nameof(IsSplitLineVisible),
             o => o.IsSplitLineVisible,
             (o, v) => o.IsSplitLineVisible = v);
+
+    // The default split line under the item is SplitLineWidth thick (the theme reads the host's LineWidth); a BorderThickness
+    // set by the application or a semantic style replaces it as a whole.
+    internal static readonly StyledProperty<double> SplitLineWidthProperty =
+        AvaloniaProperty.Register<ListBoxItem, double>(nameof(SplitLineWidth));
+
+    internal double SplitLineWidth
+    {
+        get => GetValue(SplitLineWidthProperty);
+        set => SetValue(SplitLineWidthProperty, value);
+    }
 
     internal static readonly DirectProperty<ListBoxItem, bool> IsSplitLineEffectiveVisibleProperty =
         AvaloniaProperty.RegisterDirect<ListBoxItem, bool>(nameof(IsSplitLineEffectiveVisible),
@@ -278,6 +302,7 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
             FilterHighlightWords = FilterValue?.ToString();
         }
         else if (change.Property == BorderThicknessProperty ||
+                 change.Property == SplitLineWidthProperty ||
                  change.Property == IsSplitLineVisibleProperty)
         {
             ConfigureEffectiveBorderThickness();
@@ -395,9 +420,10 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
 
     private void ConfigureEffectiveBorderThickness()
     {
-        var showSplitLine = IsSplitLineVisible && BorderThickness.Bottom > 0;
+        var thickness     = IsSet(BorderThicknessProperty) ? BorderThickness : new Thickness(0, 0, 0, SplitLineWidth);
+        var showSplitLine = IsSplitLineVisible && thickness.Bottom > 0;
         IsSplitLineEffectiveVisible = showSplitLine;
-        EffectiveBorderThickness = showSplitLine ? BorderThickness : new Thickness(0);
+        EffectiveBorderThickness = showSplitLine ? thickness : new Thickness(0);
     }
 
 

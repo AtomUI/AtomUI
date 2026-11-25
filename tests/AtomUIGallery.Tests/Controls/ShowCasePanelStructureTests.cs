@@ -49,7 +49,8 @@ public class ShowCasePanelStructureTests
         panelTheme.ShouldContain("VerticalScrollBarVisibility=\"Auto\"");
         panelTheme.ShouldContain("Selector=\"^[IsScrollEnabled=False]\"");
         itemTheme.ShouldContain("ShowCaseItemTokenResource");
-        itemTheme.ShouldContain("{atom:SharedTokenResource ");
+        // Globals are read as the item's effective tokens, never as root shared tokens.
+        itemTheme.ShouldNotContain("{atom:SharedTokenResource ");
         itemTheme.ShouldNotContain("ControlTokenScope.Identity");
         itemTheme.ShouldNotContain("TokenSharedTokenResource");
         itemTheme.ShouldContain("ShowCaseItemTokenResource BadgePreviewMargin");
@@ -97,7 +98,8 @@ public class ShowCasePanelStructureTests
         headerToken.ShouldContain("MetadataValueWidth");
 
         headerTheme.ShouldContain("GalleryShowCaseHeaderTokenResource");
-        headerTheme.ShouldContain("{atom:SharedTokenResource ");
+        // Globals are read as the header's effective tokens, never as root shared tokens.
+        headerTheme.ShouldNotContain("{atom:SharedTokenResource ");
         headerTheme.ShouldNotContain("ControlTokenScope.Identity");
         headerTheme.ShouldNotContain("TokenSharedTokenResource");
         headerTheme.ShouldContain("GalleryShowCaseHeaderLangResource");
@@ -148,7 +150,8 @@ public class ShowCasePanelStructureTests
             source.ShouldNotContain("InfoNamespaceLabel");
             source.ShouldNotContain("InfoPackageLabel");
             source.ShouldNotContain("InfoBaseClassLabel");
-            source.ShouldNotContain("<Border Background=\"{atom:SharedTokenResource ColorBgContainer}\"");
+            var headerStart = source.IndexOf("<gallery:GalleryShowCaseHeader", StringComparison.Ordinal);
+            source[..headerStart].ShouldNotContain("<Border Background=\"{atom:SharedTokenResource ColorBgContainer}\"");
         }
     }
 

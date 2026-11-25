@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Controls;
 using Shouldly;
 using Xunit;
 
@@ -32,26 +31,9 @@ public class WindowTitleBarLayoutStrategyTests
                               .ResolveNativeChromeInsets(
                                   500,
                                   new Thickness(72, 4, 31, 5),
-                                  isCsdEnabled: false,
-                                  WindowState.Normal);
+                                  isCsdEnabled: false);
 
         resolved.ShouldBe(new Thickness(72, 0, 31, 0));
-    }
-
-    [Theory]
-    [InlineData(OsType.macOS)]
-    [InlineData(OsType.Windows)]
-    [InlineData(OsType.Linux)]
-    public void FullScreen_Does_Not_Inherit_Normal_Native_Chrome_Insets(OsType osType)
-    {
-        var resolved = Desktop.Controls.WindowTitleBarLayoutStrategies.Get(osType)
-                              .ResolveNativeChromeInsets(
-                                  500,
-                                  new Thickness(72, 0, 31, 0),
-                                  isCsdEnabled: true,
-                                  WindowState.FullScreen);
-
-        resolved.ShouldBe(default);
     }
 
     [Fact]
@@ -61,8 +43,7 @@ public class WindowTitleBarLayoutStrategyTests
                               .ResolveNativeChromeInsets(
                                   100,
                                   new Thickness(double.NaN, 3, 180, 4),
-                                  isCsdEnabled: true,
-                                  WindowState.Normal);
+                                  isCsdEnabled: true);
 
         resolved.ShouldBe(new Thickness(0, 0, 100, 0));
     }
@@ -74,8 +55,7 @@ public class WindowTitleBarLayoutStrategyTests
                               .ResolveNativeChromeInsets(
                                   500,
                                   new Thickness(72, 0, 31, 0),
-                                  isCsdEnabled: true,
-                                  WindowState.Normal);
+                                  isCsdEnabled: true);
 
         resolved.ShouldBe(default);
     }

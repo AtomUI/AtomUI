@@ -213,6 +213,9 @@ public class DataGridSemanticPartTests
     {
         var grid = LocalGrid(Rows(50), grouped: true, withTitleAndFooter: false);
         using var _ = Show(grid);
+        // Grouped rows are realized by the layout pass that follows the collection view's grouping; settle it first.
+        grid.UpdateLayout();
+        Dispatcher.UIThread.RunJobs();
 
         var groupHeaders = grid.GetVisualDescendants().OfType<DataGridRowGroupHeader>().ToArray();
         groupHeaders.ShouldNotBeEmpty();

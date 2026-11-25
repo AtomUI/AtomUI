@@ -84,7 +84,7 @@
                                                      SemanticOwner="{Binding #CardMetaSemanticOwner}">
                             <gallery:SemanticPartPreview.PreviewContent>
                                 <atom:Card Width="300">
-                                    <atom:CardMetaContent Name="CardMetaSemanticOwner"
+                                    <atom:CardMetaContent x:Name="CardMetaSemanticOwner"
                                                           Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}"
                                                           Content="{gallery:CardShowCaseLangResource P2ContentThisIsTheDescription}">
                                         <atom:CardMetaContent.Avatar>
@@ -172,7 +172,7 @@
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:CardViewModel">
-                    <Border Padding="20" Background="{Binding BorderlessFrameBg}">
+                    <Border Padding="20" Background="{atom:SharedTokenResource ColorFillTertiary}">
                         <atom:Card Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}" Width="300" StyleVariant="Borderless" HorizontalAlignment="Left">
                             <atom:Card.Extra>
                                 <atom:HyperLinkButton Content="{gallery:CardShowCaseLangResource P2ContentMore}" />
@@ -228,7 +228,7 @@
                                       IsDeferredContentEnabled="True">
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:CardViewModel">
-                    <Border Padding="20" Background="{Binding BorderlessFrameBg}">
+                    <Border Padding="20" Background="{atom:SharedTokenResource ColorFillTertiary}">
                         <Grid RowDefinitions="*" ColumnDefinitions="*, *, *" ColumnSpacing="20">
                             <atom:Card Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}" StyleVariant="Borderless" Grid.Row="0" Grid.Column="0"
                                        HorizontalAlignment="Stretch">

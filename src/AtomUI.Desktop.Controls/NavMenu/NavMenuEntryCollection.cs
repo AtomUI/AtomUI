@@ -135,17 +135,21 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
             Validate(additions[index], _entries.Count + index);
         }
 
-        var prospectiveEntries = _entries.Concat(additions).ToArray();
-        _ownershipCoordinator.Validate(prospectiveEntries);
+        var insertionIndex = _entries.Count;
+        var isIncrementalAppend = _ownershipCoordinator.TryValidateAppend(additions, insertionIndex);
+        if (!isIncrementalAppend)
+        {
+            var prospectiveEntries = _entries.Concat(additions).ToArray();
+            _ownershipCoordinator.Validate(prospectiveEntries);
+        }
 
         if (additions.Length == 0)
         {
             return;
         }
 
-        var insertionIndex = _entries.Count;
         _entries.AddRange(additions);
-        _ownershipCoordinator.Synchronize();
+        SynchronizeOwnership(isIncrementalAppend, additions, insertionIndex);
         foreach (var entry in additions)
         {
             _attach(entry);
@@ -219,11 +223,17 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
     {
         EnsureCanMutate();
         Validate(item, index);
-        var prospectiveEntries = _entries.ToList();
-        prospectiveEntries.Insert(index, item);
-        _ownershipCoordinator.Validate(prospectiveEntries);
+        var insertedEntries     = new[] { item };
+        var isIncrementalAppend = _ownershipCoordinator.TryValidateAppend(insertedEntries, index);
+        if (!isIncrementalAppend)
+        {
+            var prospectiveEntries = _entries.ToList();
+            prospectiveEntries.Insert(index, item);
+            _ownershipCoordinator.Validate(prospectiveEntries);
+        }
+
         _entries.Insert(index, item);
-        _ownershipCoordinator.Synchronize();
+        SynchronizeOwnership(isIncrementalAppend, insertedEntries, index);
         _attach(item);
         RaiseCountAndIndexerChanged();
         CollectionChanged?.Invoke(this,
@@ -293,6 +303,16 @@ internal sealed class NavMenuEntryCollection : IList<INavMenuEntry>,
         var validatedEntry = NavMenuEntryValidation.Validate(entry, _owner, index);
         _validate(validatedEntry);
         NavMenuEntryOwnership.EnsureCanAttach(validatedEntry, _owner);
+    }
+
+    private void SynchronizeOwnership(bool isIncrementalAppend, IList insertedEntries, int index)
+    {
+        // An append validated incrementally before the write is applied the same way; anything else
+        // reconciles the whole scope.
+        if (!isIncrementalAppend || !_ownershipCoordinator.TrySynchronizeAppend(insertedEntries, index))
+        {
+            _ownershipCoordinator.Synchronize();
+        }
     }
 
     private void RaiseCountAndIndexerChanged()

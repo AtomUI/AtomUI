@@ -1,8 +1,8 @@
+using AtomUI.DesignLanguages.AntDesign;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.Configuration;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUI.Toolkits.GalleryBase.SourceCode;
@@ -578,7 +578,7 @@ public class GalleryCodeViewerRuntimeTests
     {
         var application = Application.Current!;
         var themeManager = application.GetThemeManager().ShouldNotBeNull();
-        var previousAlgorithms = CaptureCurrentAlgorithms(themeManager);
+        var wasDark = themeManager.CurrentTheme?.Appearance == ThemeAppearance.Dark;
 
         try
         {
@@ -598,7 +598,7 @@ public class GalleryCodeViewerRuntimeTests
         }
         finally
         {
-            ApplyAlgorithms(themeManager, previousAlgorithms);
+            SetDarkAppearance(themeManager, wasDark);
         }
     }
 
@@ -638,7 +638,7 @@ public class GalleryCodeViewerRuntimeTests
     {
         var application = Application.Current!;
         var themeManager = application.GetThemeManager().ShouldNotBeNull();
-        var previousAlgorithms = CaptureCurrentAlgorithms(themeManager);
+        var wasDark = themeManager.CurrentTheme?.Appearance == ThemeAppearance.Dark;
 
         try
         {
@@ -666,7 +666,7 @@ public class GalleryCodeViewerRuntimeTests
         }
         finally
         {
-            ApplyAlgorithms(themeManager, previousAlgorithms);
+            SetDarkAppearance(themeManager, wasDark);
         }
     }
 
@@ -1120,32 +1120,14 @@ public class GalleryCodeViewerRuntimeTests
         return new WeakReference(viewer);
     }
 
-    private static ThemeAlgorithm[] CaptureCurrentAlgorithms(IThemeManager themeManager)
-    {
-        return themeManager.CurrentTheme?.Algorithms.ToArray() ?? [ThemeAlgorithm.Default];
-    }
-
     private static void SetDarkAppearance(IThemeManager themeManager, bool isDark)
     {
-        var algorithms = CaptureCurrentAlgorithms(themeManager)
-                         .Where(static algorithm => algorithm != ThemeAlgorithm.Dark)
-                         .ToList();
-        if (isDark)
-        {
-            algorithms.Add(ThemeAlgorithm.Dark);
-        }
-
-        ApplyAlgorithms(themeManager, algorithms);
-    }
-
-    private static void ApplyAlgorithms(IThemeManager themeManager, IEnumerable<ThemeAlgorithm> algorithms)
-    {
         var config = new ThemeConfigBuilder()
-                     .WithAlgorithms(algorithms.ToArray())
+                     .WithAppearance(isDark ? ThemeAppearance.Dark : ThemeAppearance.Light)
                      .Build();
         var result = themeManager.ApplyThemeAsync(
                                      new ThemeRequest(
-                                         themeManager.CurrentTheme?.ThemeId ?? IThemeManager.DEFAULT_THEME_ID,
+                                         themeManager.CurrentTheme?.ThemeId ?? AntDesignThemes.DaybreakBlue,
                                          config,
                                          ThemeTransitionReason.UserRequest))
                                  .GetAwaiter()

@@ -1,5 +1,57 @@
 # Window Changelog
 
+## 2026-11-22
+
+- Fix
+  - 鼠标停在全屏窗口顶边时，标题栏保持展开。窗口根据平台的离窗输入与指针坐标更新停留状态。
+- Motion
+  - 全屏标题栏的淡入和下滑统一使用 200 ms 的 `CubicEaseOut`。收起时长取自主题，动效中途反向时接续当前画面。
+- Changed
+  - 全屏标题栏位于新的 `WindowChromeLayer`（T6）内的表面宿主中：位于内容、Badge、焦点描边、Watermark、吸顶 Tab、FloatButton、作用域 Drawer / Dialog 之上；位于 Window Drawer、Tour、Dialog、弹层和 Message / Notification 之下。修复全屏标题栏被 Gallery 吸顶 Tab 盖住的问题（此前宿主位于 `PART_VisualLayerManager` 内容根内，低于所有注入层）。
+  - `PART_FullScreenTitleBarHost` 仍在三个 Window 模板中声明，保留 `TemplateBinding` 契约；Window 在 `OnApplyTemplate` 中把它迁入 chrome 层，模板解除与窗口关闭时释放（层被清空后随旧模板的 `VisualLayerManager` 丢弃，Avalonia 没有移除层的 API，不新增反射）。`WindowChromeLayerTheme.axaml` 把 `VisualLayerManager.Padding`（`OffScreenMargin`）投影为层的 `Margin`，表面保持迁移前的窗口位置。完整替换 Window ControlTheme 的应用仍需保留该 part。
+  - 标题栏按钮的键盘焦点描边与标题栏内的 Badge 画在 chrome 层自己的装饰层中。
+  - Window 取得 `PART_VisualLayerManager` 时确保共享 `AdornerLayer` 处于 T2 号码（`int.MaxValue - 1000`）。
+  - Window Drawer（`OpenOn is Window`）位于全屏标题栏之上；drawn chrome 抑制租约不变。
+- Fixed
+  - macOS 带刘海显示器：指针到屏幕顶边、系统菜单栏与原生窗口按钮呈现时，全屏标题栏不出现，红黄绿直接浮在内容上；`Pinned` 下原生按钮盖住标题栏前导内容。原因是原生 chrome 跟踪只按原生标题条窗口的位置判断是否呈现，而刘海屏上该窗口不移动、只渐变透明度。现在平台 chrome manager 直接报告 native chrome presented（原生标题条窗口 `alphaValue` 大于零且进入客户区），并对 `alphaValue` 做键值观察；融合不成立时未呈现的原生标题条不再计入 native chrome extent。
+- API
+  - Window 的 public / protected API 不变。
+- Docs
+  - 更新 [Window 全屏标题栏设计](full-screen-title-bar-design.md) 的 6.1、6.4 与第 10 节，层归属见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md)。
+- Validation
+  - Windows 10 实机（单显示器，150% 缩放，Gallery）：原始场景（全屏 → Space 页滚动 → 鼠标滑到顶边）中 AutoHide 标题栏在全宽呈现并盖住吸顶 Tab；Pinned 下标题栏常驻于吸顶 Tab 之上。
+  - 常驻守护 `Primitives/LayerLadderHostOrderTests` 覆盖 chrome 层号码、标题栏宿主位于 chrome 层的表面宿主中，以及模板重套用后只有一个承载宿主的 chrome 层。
+  - macOS 实机（内建带刘海显示器，Gallery，脚本驱动真实鼠标事件与截屏）：与分支前基线 A/B，基线中吸顶 Tab 盖住全屏标题栏右半，本分支标题栏完整盖住吸顶 Tab；`AutoHide` 与 `Pinned` 下全屏标题栏随系统 chrome 呈现与收起，原生窗口按钮融合在表面内。
+- Known limits
+  - Windows 未实测：Docked 与自定义全屏内容、标题栏内按钮的焦点描边、多显示器、Dark 主题。macOS 未实测：不带刘海的显示器上 native chrome presented 改动后的复测、Docked 与自定义全屏内容、Dark 主题；原生 chrome 跟踪依赖 AppKit，没有 Headless 测试。Linux 未实测，只有 Headless 证据。
+
+## 2026-11-21
+
+- Docs
+  - Add [Window 全屏标题栏设计](full-screen-title-bar-design.md) and link it from the overview, implementation and Token documents.
+- API
+  - Define `FullScreenTitleBarMode` (`Hidden`, `AutoHide`, `Pinned`, `Docked`; default `AutoHide`), `IsFullScreenTitleBarOpen`, `FullScreenTitleBar`, `FullScreenTitleBarTemplate`, `FullScreenTitleBarMouseEnterDelay`, `FullScreenTitleBarMouseLeaveDelay` and `ToggleFullScreen()` as the full-screen title bar contract of `Window`.
+  - `IsTitleBarVisible=false` without custom full-screen content resolves the full-screen title bar to `Hidden`.
+- Theme
+  - Replace the two hand-written full-screen title templates with a single `PART_FullScreenTitleBarHost` present in all three Window templates. `WindowDrawnDecorationsTheme` no longer supplies drawn-decorations full-screen popover content, and `FullscreenPopoverLayerTheme.axaml` is superseded by `FullScreenTitleBarHostTheme.axaml`.
+  - Remove the template parts `PART_FullscreenPopoverLayer`, `PART_PopoverBorder`, `PART_PopoverCloseButton`, `PART_PopoverFullScreenButton` and the decorations-level `PART_FullScreenButton` / `PART_CloseButton`; add `PART_FullScreenTitleBarHost` and `PART_Surface`.
+- Token
+  - `FullscreenPopoverShadows` becomes the surface shadow of the full-screen title bar host in overlay modes. `FullscreenHeaderFramePadding` has no consumer in this model and leaves the Window Token contract.
+- Implementation structure
+  - Window owns the full-screen title bar mode, content source, open state and dock inset. The default `WindowTitleBar` instance migrates between the Normal slot and the FullScreen slot instead of being re-templated; reveal behavior is an internal state machine (`FullScreenTitleBarRevealController`) separate from the surface (`FullScreenTitleBarHost`), which replaces `FullscreenPopoverLayer`.
+  - Close and exit-full-screen in full-screen state go through the Window caption command only, sharing the close-request flow and the pre-full-screen state restore with the normal state on every platform.
+  - The platform chrome managers gain `AttachFullScreenNativeChrome`; Windows and Linux return `null`, macOS returns a tracker in `AtomUI.Native` that follows AppKit's menu bar and title strip through the strip window's move notifications, hides the strip's background, decoration and shadow while fused, and centres the standard buttons by offsetting the strip title bar view's bounds origin (AppKit re-lays the button frames on every frame of the slide).
+  - While full screen, `NativeChromeInsets` is written by the full-screen title bar and the normal-state macOS button layout returns early.
+  - The platform chrome managers report `SupportsFullScreen`; macOS reports `false` for owned windows, which AppKit never takes into native full screen. `Window.IsFullScreenSupported` follows it and the owner, a full-screen request on such a window is rejected by restoring the previous `WindowState`, the full-screen caption command cannot execute, and the caption group hides the enter button (exit stays available).
+- Validation
+  - `AtomUI.Desktop.Controls.Tests` Window namespace and the temporary full-screen title bar tests: 242 passed. Dialog, Drawer, Popup, AOT, ImagePreviewer and overlay suites: 528 passed. Window and title bar token effect rendering tests: 50 passed.
+  - macOS 26.6.2 scripted acceptance on a real full-screen window: AutoHide, Pinned, Docked, custom content and exit, including the fused traffic lights centred at 49.75pt in the 30–70pt bar. Windows and Linux have no real-machine evidence yet.
+
+## 2026-11-10
+
+- 窗口首次显示的背景从当前作用域的 Window Own Token 快照读取；后续发布继续由 WindowTheme 动态绑定更新。标题、字体与装饰部件按有效身份 / 所属控件读取。
+
+
 本文档记录 Window 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
 ## 2026-10-29

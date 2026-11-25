@@ -1,6 +1,8 @@
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Resources;
+using AtomUI.DesignLanguages.AntDesign;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
@@ -33,49 +35,30 @@ public class DenseThemeCompilerTests
     }
 
     [Fact]
-    public void Definition_Defaults_Are_Canonical_Regardless_Of_Declaration_Order()
+    public void Definition_Defaults_Carry_The_Definition_As_The_Value_Layer()
     {
-        var button = Control("Button");
-        var input = Control("Input");
+        var button = Control<ButtonId>();
+        var input = Control<InputId>();
         var registry = CreateRegistry([button, input]);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
-        var algorithm = registry.Algorithms.Single(static item => item.Algorithm == ThemeAlgorithm.Default);
         var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new PreparedThemeDefinition(
-            "TestTheme",
-            "Test Theme",
-            ThemeAppearance.Light,
-            ThemeAppearance.Light,
-            true,
-            [algorithm],
-            Array.Empty<BoundTokenValue>(),
+        var definition = new PreparedThemeDefinition("TestTheme", "Test Theme", TestDesignLanguages.AntDesign,
+            null, ThemeAppearance.Dark, null, new HashSet<string>(StringComparer.Ordinal),
+            new ThemeSectionDefinition(Array.Empty<BoundTokenValue>(), Array.Empty<BoundTokenValue>(),
             [
-                new ControlThemeDefinition(
-                    input,
-                    ControlAlgorithmMode.Unspecified,
-                    Array.Empty<ThemeAlgorithmDescriptor>(),
-                    Array.Empty<BoundTokenValue>(),
-                    Array.Empty<BoundTokenValue>(),
-                    location),
-                new ControlThemeDefinition(
-                    button,
-                    ControlAlgorithmMode.Unspecified,
-                    Array.Empty<ThemeAlgorithmDescriptor>(),
-                    Array.Empty<BoundTokenValue>(),
-                    Array.Empty<BoundTokenValue>(),
-                    location)
-            ],
-            location);
+                new ControlThemeDefinition(input, null, null, Array.Empty<BoundTokenValue>(), Array.Empty<BoundTokenValue>(), location),
+                new ControlThemeDefinition(button, null, null, Array.Empty<BoundTokenValue>(), Array.Empty<BoundTokenValue>(), location)
+            ]),
+            Array.Empty<ThemeConditionDefinition>(), location);
 
         var defaults = ThemeCompiler.CreateDefinitionDefaults(definition, registry);
 
-        defaults.Controls.Select(static control => control.Identity).ShouldBe([
-            button.Identity,
-            input.Identity
-        ]);
-        defaults.Controls.ShouldAllBe(static control =>
-            control.AlgorithmMode == ControlAlgorithmMode.Disabled);
+        defaults.Definition.ShouldBeSameAs(definition);
+        defaults.Controls.ShouldBeEmpty();
+        defaults.Language.ShouldBeSameAs(TestDesignLanguages.AntDesign);
+        defaults.Axes.Appearance.ShouldBe(ThemeAppearance.Dark);
+        definition.ControlIdentities.ShouldBe([button.Identity, input.Identity], ignoreOrder: true);
     }
 
     [Fact]
@@ -135,39 +118,12 @@ public class DenseThemeCompilerTests
     }
 
     [Fact]
-    public void Compile_Passes_The_Same_Effective_Seed_And_The_Previous_Map_Through_The_Algorithm_Chain()
+    public void Compile_Control_Map_Override_Applies_Directly_Without_Rederivation()
     {
-        var calls = new List<AlgorithmCall>();
-        var first = Algorithm(ThemeAlgorithm.Default, calls);
-        var second = Algorithm(ThemeAlgorithm.Compact, calls);
-        var registry = new ThemeSchemaRegistry(
-            GeneratedThemeSchema.GetGlobalTokens(),
-            Array.Empty<ControlTokenDescriptor>(),
-            [first, second]);
-        var input = CreateInput(registry, algorithms: [first, second]);
-
-        var result = new ThemeCompiler().Compile(input);
-
-        result.Success.ShouldBeTrue();
-        calls.Count.ShouldBe(2);
-        calls[0].EffectiveSeed.ShouldBeSameAs(calls[1].EffectiveSeed);
-        calls[0].PreviousMap.ShouldBeNull();
-        calls[1].PreviousMap.ShouldBeSameAs(calls[0].NextMap);
-        calls[1].NextMap.ShouldNotBeSameAs(calls[0].NextMap);
-    }
-
-    [Fact]
-    public void Compile_Control_Disabled_Applies_Direct_Global_Overrides_Without_Rederivation()
-    {
-        var control = Control("Button");
+        var control = Control<ButtonId>();
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
-        var config = new NormalizedControlThemeConfig(
-            control.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
-            Array.Empty<NormalizedTokenValue>());
+        var config = ControlConfig(control.Identity, [Token(registry, nameof(DesignToken.ColorPrimaryHover), "#00b96b")]);
 
         var result = new ThemeCompiler().Compile(CreateInput(registry, controls: [config]));
 
@@ -178,14 +134,14 @@ public class DenseThemeCompilerTests
                 controlSnapshot,
                 snapshot,
                 registry,
-                nameof(DesignToken.ColorPrimary))
+                nameof(DesignToken.ColorPrimaryHover))
             .ShouldBe(Color.Parse("#00b96b"));
         GetControlGlobal<Color>(
                 controlSnapshot,
                 snapshot,
                 registry,
-                nameof(DesignToken.ColorPrimaryHover))
-            .ShouldBe(GetGlobal<Color>(snapshot, registry, nameof(DesignToken.ColorPrimaryHover)));
+                nameof(DesignToken.ColorPrimaryActive))
+            .ShouldBe(GetGlobal<Color>(snapshot, registry, nameof(DesignToken.ColorPrimaryActive)));
     }
 
     [Fact]
@@ -196,12 +152,7 @@ public class DenseThemeCompilerTests
             new ControlTokenIdentity("AtomUI", "Rating"));
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
-        var config = new NormalizedControlThemeConfig(
-            control.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
-            Array.Empty<NormalizedTokenValue>());
+        var config = ControlConfig(control.Identity, [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")]);
 
         var result = new ThemeCompiler().Compile(CreateInput(registry, controls: [config]));
 
@@ -223,13 +174,12 @@ public class DenseThemeCompilerTests
     {
         var resourceProjections = 0;
         var globalToken = ProjectionCountingGlobalToken(() => resourceProjections++);
-        var algorithm = Algorithm(ThemeAlgorithm.Default, []);
         var control = new ControlTokenDescriptor(
             ThemeTestControlTypes.For("AtomUI", "Rating"),
             new ControlTokenIdentity("AtomUI", "Rating"));
-        var registry = new ThemeSchemaRegistry([globalToken], [control], [algorithm]);
+        var registry = new ThemeSchemaRegistry([globalToken], [control], [TestDesignLanguages.Probe()]);
 
-        var result = new ThemeCompiler().Compile(CreateInput(registry, [algorithm]));
+        var result = new ThemeCompiler().Compile(CreateInput(registry));
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
@@ -248,11 +198,11 @@ public class DenseThemeCompilerTests
     {
         var resourceProjections = 0;
         var globalToken = ProjectionCountingGlobalToken(() => resourceProjections++);
-        var algorithm = Algorithm(ThemeAlgorithm.Default, []);
-        var control = Control("Button");
-        var registry = new ThemeSchemaRegistry([globalToken], [control], [algorithm]);
+        var control = Control<ButtonId>();
+        var registry = new ThemeSchemaRegistry([globalToken], [control], [TestDesignLanguages.Probe()], null,
+            [ControlTokenRuleDescriptor.Create<ProbeLanguageToken, DenseHeightToken<ButtonId>, ProbeDenseTokenRule<DenseHeightToken<ButtonId>>>()]);
 
-        var result = new ThemeCompiler().Compile(CreateInput(registry, [algorithm]));
+        var result = new ThemeCompiler().Compile(CreateInput(registry));
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
@@ -266,16 +216,12 @@ public class DenseThemeCompilerTests
     }
 
     [Fact]
-    public void Compile_Control_Global_Rederives_Map_And_Freezes_Own_Tokens_With_Appearance()
+    public void Compile_Control_Seed_Override_Rederives_Map_And_Freezes_Own_Tokens_With_Appearance()
     {
-        var control = Control("Button");
+        var control = Control<ButtonId>();
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
-        var config = new NormalizedControlThemeConfig(
-            control.Identity,
-            ControlAlgorithmMode.Global,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+        var config = ControlConfig(control.Identity, [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
             [ControlToken(control, "48")]);
 
         var result = new ThemeCompiler().Compile(CreateInput(registry, controls: [config]));
@@ -296,18 +242,13 @@ public class DenseThemeCompilerTests
     [Fact]
     public void Compile_Only_Replaces_The_Changed_Control_When_Global_Content_Is_Unchanged()
     {
-        var button = Control("Button");
-        var input = Control("Input");
+        var button = Control<ButtonId>();
+        var input = Control<InputId>();
         var registry = CreateRegistry([button, input]);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var parent = new ThemeCompiler().Compile(CreateInput(registry)).Snapshot!;
-        var buttonConfig = new NormalizedControlThemeConfig(
-            button.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            Array.Empty<NormalizedTokenValue>(),
-            [ControlToken(button, "48")]);
+        var buttonConfig = ControlConfig(button.Identity, [], [ControlToken(button, "48")]);
 
         var child = new ThemeCompiler().Compile(CreateInput(
             registry,
@@ -326,25 +267,21 @@ public class DenseThemeCompilerTests
     {
         var buttonEvaluations = 0;
         var inputEvaluations = 0;
-        var button = CountingControl("Button", () => buttonEvaluations++);
-        var input = CountingControl("Input", () => inputEvaluations++);
+        var button = Control<ButtonId>(onEvaluate: () => buttonEvaluations++);
+        var input = Control<InputId>(onEvaluate: () => inputEvaluations++);
         var registry = CreateRegistry([button, input]);
         registry.TryGetControl(button.Identity, out button).ShouldBeTrue();
         registry.TryGetControl(input.Identity, out input).ShouldBeTrue();
         var compiler = new ThemeCompiler();
         var parent = compiler.Compile(CreateInput(registry)).Snapshot!;
-        var buttonConfig = new NormalizedControlThemeConfig(
-            button.Identity,
-            ControlAlgorithmMode.Disabled,
-            Array.Empty<ThemeAlgorithmDescriptor>(),
-            Array.Empty<NormalizedTokenValue>(),
-            [ControlToken(button, "48")]);
+        var buttonConfig = ControlConfig(button.Identity, [], [ControlToken(button, "48")]);
         var changedConfig = new NormalizedThemeConfig(
             false,
-            true,
-            parent.EffectiveConfig.Algorithms,
+            parent.EffectiveConfig.Axes,
             parent.EffectiveConfig.GlobalTokens,
-            [buttonConfig]);
+            parent.EffectiveConfig.LanguageTokens,
+            [buttonConfig],
+            parent.EffectiveConfig.Definition);
         var changeSet = ThemeConfigMerger.Compare(parent.EffectiveConfig, changedConfig);
 
         var child = compiler.Compile(CreateInput(
@@ -383,7 +320,7 @@ public class DenseThemeCompilerTests
     [Fact]
     public void Compile_Recomputes_An_OwnToken_Control_When_Global_Content_Changes()
     {
-        var control = Control("Button");
+        var control = Control<ButtonId>();
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
         var parent = new ThemeCompiler().Compile(CreateInput(registry)).Snapshot!;
@@ -398,10 +335,152 @@ public class DenseThemeCompilerTests
     }
 
     [Fact]
+    public void A_Child_Unit_Reuses_The_Controls_Whose_Read_Set_Misses_The_Changed_Alias_Token()
+    {
+        var heading = ReadControl<ListId>(static global => global.ColorTextHeading.A);
+        var height = ReadControl<TagId>(static global => global.ControlHeight);
+        var registry = CreateRegistry([heading, height]);
+        registry.TryGetControl(heading.Identity, out heading).ShouldBeTrue();
+        registry.TryGetControl(height.Identity, out height).ShouldBeTrue();
+        var parent = new ThemeCompiler().Compile(CreateInput(registry)).Snapshot!;
+        var parentHeading = parent.Controls[heading.Slot];
+        var parentHeight = parent.Controls[height.Slot];
+
+        // Spec 12.5: a local scope that overrides one Alias token re-derives only the controls that read it.
+        var child = new ThemeCompiler().Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorTextHeading), "#80112233")],
+            reusableParent: parent)).Snapshot!;
+
+        child.Controls[height.Slot].ShouldBeSameAs(parentHeight);
+        child.Controls[heading.Slot].ShouldNotBeSameAs(parentHeading);
+        child.Controls[heading.Slot].ControlTokenValues.Get<double>(0).ShouldBe(0x80);
+    }
+
+    [Fact]
+    public void A_Child_Unit_That_Changes_A_Seed_Re_Derives_Every_Control()
+    {
+        var height = ReadControl<TagId>(static global => global.ControlHeight);
+        var registry = CreateRegistry([height]);
+        registry.TryGetControl(height.Identity, out height).ShouldBeTrue();
+        var parent = new ThemeCompiler().Compile(CreateInput(registry)).Snapshot!;
+        var parentHeight = parent.Controls[height.Slot];
+
+        var child = new ThemeCompiler().Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+            reusableParent: parent)).Snapshot!;
+
+        child.Controls[height.Slot].ShouldNotBeSameAs(parentHeight);
+        child.Controls[height.Slot].ControlTokenValues.Get<double>(0).ShouldBe(32);
+    }
+
+    [Fact]
+    public void A_Control_That_Overrides_A_Global_Token_Is_Not_Reused_By_Read_Set()
+    {
+        var height = ReadControl<TagId>(static global => global.ControlHeight);
+        var registry = CreateRegistry([height]);
+        registry.TryGetControl(height.Identity, out height).ShouldBeTrue();
+        var controls = new[] { ControlConfig(height.Identity, [Token(registry, nameof(DesignToken.ColorLink), "#ff0000")]) };
+        var parent = new ThemeCompiler().Compile(CreateInput(registry, controls: controls)).Snapshot!;
+        var parentHeight = parent.Controls[height.Slot];
+
+        var child = new ThemeCompiler().Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorTextHeading), "#80112233")],
+            controls: controls,
+            reusableParent: parent)).Snapshot!;
+
+        child.Controls[height.Slot].ShouldNotBeSameAs(parentHeight);
+    }
+
+    [Fact]
+    public void Controls_That_Write_No_Global_Token_Give_The_Same_Values_With_A_Shared_View()
+    {
+        var first = ReadControl<ListId>(static global => global.ControlHeight + 1);
+        var second = ReadControl<TagId>(static global => global.ControlHeight + 2);
+        var registry = CreateRegistry([first, second]);
+        registry.TryGetControl(first.Identity, out first).ShouldBeTrue();
+        registry.TryGetControl(second.Identity, out second).ShouldBeTrue();
+
+        var snapshot = new ThemeCompiler().Compile(CreateInput(registry)).Snapshot!;
+
+        snapshot.Controls[first.Slot].ControlTokenValues.Get<double>(0).ShouldBe(33);
+        snapshot.Controls[second.Slot].ControlTokenValues.Get<double>(0).ShouldBe(34);
+        snapshot.Controls[first.Slot].EffectiveGlobalTokenDelta.ShouldBeEmpty();
+        snapshot.Controls[second.Slot].EffectiveGlobalTokenDelta.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Compile_Keeps_The_Instance_Of_An_Unchanged_Resource_Across_Publishes_And_Replaces_A_Changed_One()
+    {
+        // Avalonia compares a republished property value with EqualityComparer<T>.Default; an unchanged Token that
+        // keeps its instance across publishes short-circuits by reference and allocates nothing new.
+        var control = Control<ButtonId>();
+        var registry = CreateRegistry([control]);
+        registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
+        var compiler = new ThemeCompiler();
+        var parent = compiler.Compile(CreateInput(registry)).Snapshot!;
+        var parentButton = parent.Controls[control.Slot];
+        var textKey = registry.GetSharedResourceKey(SharedTokenKind.ColorText);
+        var primaryKey = registry.GetSharedResourceKey(SharedTokenKind.ColorPrimary);
+        var heightKey = control.OwnTokens[0].ResourceKey;
+
+        var changedPrimary = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+            reusableParent: parent)).Snapshot!;
+
+        changedPrimary.GlobalResources.ShouldNotBeSameAs(parent.GlobalResources);
+        changedPrimary.GlobalResources[textKey].ShouldBeSameAs(parent.GlobalResources[textKey],
+            "an unchanged global brush keeps its instance");
+        changedPrimary.GlobalResources[primaryKey].ShouldNotBe(parent.GlobalResources[primaryKey],
+            "a changed global brush gets a new value");
+        changedPrimary.Controls[control.Slot].ShouldNotBeSameAs(parentButton);
+        changedPrimary.Controls[control.Slot].ControlResources[heightKey].ShouldBeSameAs(
+            parentButton.ControlResources[heightKey],
+            "an unchanged Own value keeps its instance although the control was recompiled");
+
+        var changedHeight = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ControlHeight), "48")],
+            reusableParent: changedPrimary)).Snapshot!;
+
+        changedHeight.Controls[control.Slot].ControlResources[heightKey].ShouldBe(48d);
+        changedHeight.Controls[control.Slot].ControlResources[heightKey]
+                     .ShouldNotBeSameAs(parentButton.ControlResources[heightKey]);
+    }
+
+    [Fact]
+    public void Compile_Keeps_The_Instance_Of_An_Unchanged_Effective_Global_Override_Across_Publishes()
+    {
+        var control = Control<ButtonId>();
+        var registry = CreateRegistry([control]);
+        registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
+        var compiler = new ThemeCompiler();
+        var borderKey = registry.GetSharedResourceKey(SharedTokenKind.ColorBorder);
+        var buttonConfig = ControlConfig(control.Identity, [Token(registry, nameof(DesignToken.ColorBorder), "#ff0000")]);
+        var parent = compiler.Compile(CreateInput(registry, controls: [buttonConfig])).Snapshot!;
+        var parentDelta = parent.Controls[control.Slot].EffectiveGlobalResourceDelta;
+        parentDelta.ShouldContainKey(borderKey);
+
+        var changed = compiler.Compile(CreateInput(
+            registry,
+            globalTokens: [Token(registry, nameof(DesignToken.ColorPrimary), "#00b96b")],
+            controls: [buttonConfig],
+            reusableParent: parent)).Snapshot!;
+
+        var changedDelta = changed.Controls[control.Slot].EffectiveGlobalResourceDelta;
+        changedDelta.ShouldNotBeSameAs(parentDelta);
+        changedDelta[borderKey].ShouldBeSameAs(parentDelta[borderKey],
+            "an unchanged effective-global override keeps its instance across publishes");
+    }
+
+    [Fact]
     public void Compile_Preserves_Immutable_Control_Token_Values_Without_String_Round_Trip()
     {
         var transform = new ImmutableTransform(Matrix.CreateTranslation(4, 8));
-        var control = ImmutableTransformControl("Badge", transform);
+        var control = ValueControl<BadgeId, ImmutableTransform>(transform);
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
 
@@ -420,7 +499,7 @@ public class DenseThemeCompilerTests
     public void Compile_Clones_Mutable_Spline_Easing_Control_Token_Values(string path)
     {
         var easing = new SplineEasing { X1 = 0.1, Y1 = 0.3, X2 = 0.6, Y2 = 0.8 };
-        var control = EasingControl("SplitView", easing);
+        var control = ValueControl<SplitViewId, Easing>(easing);
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
 
@@ -447,7 +526,7 @@ public class DenseThemeCompilerTests
     public void Compile_Preserves_Concrete_SolidColorBrush_Resource_Type_With_An_Owned_Copy()
     {
         var brush = new SolidColorBrush(Colors.CornflowerBlue, 0.75);
-        var control = SolidColorBrushControl("Window", brush);
+        var control = ValueControl<WindowId, SolidColorBrush>(brush, ThemeResourceValue.Project);
         var registry = CreateRegistry([control]);
         registry.TryGetControl(control.Identity, out control).ShouldBeTrue();
 
@@ -474,36 +553,42 @@ public class DenseThemeCompilerTests
         return new ThemeSchemaRegistry(
             GeneratedThemeSchema.GetGlobalTokens(),
             controls,
-            GeneratedThemeSchema.GetAlgorithms());
+            [TestDesignLanguages.AntDesign],
+            null,
+            DenseTokenRules);
     }
+
+    // Every test control's rule; the ones whose control a registry does not hold stay dormant.
+    private static readonly ControlTokenRuleDescriptor[] DenseTokenRules =
+    [
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseHeightToken<ButtonId>, DenseTokenRule<DenseHeightToken<ButtonId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseHeightToken<InputId>, DenseTokenRule<DenseHeightToken<InputId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseReadToken<ListId>, DenseTokenRule<DenseReadToken<ListId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseReadToken<TagId>, DenseTokenRule<DenseReadToken<TagId>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<BadgeId, ImmutableTransform>,
+            DenseTokenRule<DenseValueToken<BadgeId, ImmutableTransform>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<SplitViewId, Easing>,
+            DenseTokenRule<DenseValueToken<SplitViewId, Easing>>>(),
+        ControlTokenRuleDescriptor.Create<AntDesignToken, DenseValueToken<WindowId, SolidColorBrush>,
+            DenseTokenRule<DenseValueToken<WindowId, SolidColorBrush>>>()
+    ];
 
     private static ThemeCompileInput CreateInput(
         ThemeSchemaRegistry registry,
-        IReadOnlyList<ThemeAlgorithmDescriptor>? algorithms = null,
         IReadOnlyList<NormalizedTokenValue>? globalTokens = null,
         IReadOnlyList<NormalizedControlThemeConfig>? controls = null,
         ThemeSnapshot? reusableParent = null,
         ThemeConfigChangeSet? changeSet = null)
     {
-        var effectiveAlgorithms = algorithms ??
-            [registry.Algorithms.Single(static algorithm => algorithm.Algorithm == ThemeAlgorithm.Default)];
-        var location = new ThemeSourceLocation("test", 1, 1, "/Theme");
-        var definition = new PreparedThemeDefinition(
-            "TestTheme",
-            "Test Theme",
-            ThemeAppearance.Light,
-            ThemeAppearance.Light,
-            true,
-            effectiveAlgorithms,
-            Array.Empty<BoundTokenValue>(),
-            Array.Empty<ControlThemeDefinition>(),
-            location);
+        var definition = ThemeTestSnapshotFactory.CreateLanguageDefinition(registry.Languages[0]);
+        var defaults = ThemeCompiler.CreateDefinitionDefaults(definition, registry);
         var config = new NormalizedThemeConfig(
             false,
-            true,
-            effectiveAlgorithms,
+            defaults.Axes,
             globalTokens ?? Array.Empty<NormalizedTokenValue>(),
-            controls ?? Array.Empty<NormalizedControlThemeConfig>());
+            Array.Empty<LanguageTokenValue>(),
+            controls ?? Array.Empty<NormalizedControlThemeConfig>(),
+            definition);
         return new ThemeCompileInput(
             definition,
             new ThemeDefinitionRevision("test", "1", "A1"),
@@ -512,6 +597,12 @@ public class DenseThemeCompilerTests
             reusableParent,
             changeSet);
     }
+
+    private static NormalizedControlThemeConfig ControlConfig(
+        ControlTokenIdentity identity,
+        IReadOnlyList<NormalizedTokenValue> globalTokens,
+        IReadOnlyList<NormalizedTokenValue>? ownTokens = null) =>
+        new(identity, null, null, globalTokens, ownTokens ?? Array.Empty<NormalizedTokenValue>());
 
     private static NormalizedTokenValue Token(
         ThemeSchemaRegistry registry,
@@ -546,25 +637,70 @@ public class DenseThemeCompilerTests
         return new NormalizedTokenValue(descriptor, parsed, descriptor.Format(parsed));
     }
 
-    private static ControlTokenDescriptor Control(string id)
+    private static ControlTokenDescriptor Control<TId>(Action? onEvaluate = null)
+        where TId : IDenseId
     {
         var token = new TokenDescriptor(
             "Height",
             0,
             TokenStage.Control,
             typeof(double),
-            $"{id}.Height",
+            $"{TId.Id}.Height",
             static value => ThemeTokenValueParser.Parse<double>(value),
             static value => ThemeTokenValueFormatter.Format((double)value!),
-            static builder => ((DenseControlToken)builder).Height,
-            static (builder, value) => ((DenseControlToken)builder).Height = (double)value!,
-            static builder => ((DenseControlToken)builder).Height);
+            static builder => ((DenseHeightToken<TId>)builder).Height,
+            static (builder, value) => ((DenseHeightToken<TId>)builder).Height = (double)value!,
+            static builder => ((DenseHeightToken<TId>)builder).Height);
         return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
+            ThemeTestControlTypes.For("AtomUI", TId.Id),
+            DenseHeightToken<TId>.ControlIdentity,
             [token],
-            static () => new DenseControlToken(),
-            static (builder, appearance) => ((DenseControlToken)builder).Evaluate(appearance));
+            () => new DenseHeightToken<TId>(onEvaluate));
+    }
+
+    private static ControlTokenDescriptor ReadControl<TId>(Func<DesignToken, double> read)
+        where TId : IDenseId
+    {
+        var token = new TokenDescriptor(
+            "Height",
+            0,
+            TokenStage.Control,
+            typeof(double),
+            $"{TId.Id}.Height",
+            static value => ThemeTokenValueParser.Parse<double>(value),
+            static value => ThemeTokenValueFormatter.Format((double)value!),
+            static builder => ((DenseReadToken<TId>)builder).Height,
+            static (builder, value) => ((DenseReadToken<TId>)builder).Height = (double)value!,
+            static builder => ((DenseReadToken<TId>)builder).Height);
+        return new ControlTokenDescriptor(
+            ThemeTestControlTypes.For("AtomUI", TId.Id),
+            DenseReadToken<TId>.ControlIdentity,
+            [token],
+            () => new DenseReadToken<TId>(read));
+    }
+
+    private static ControlTokenDescriptor ValueControl<TId, TValue>(TValue value, Func<TValue?, object?>? project = null)
+        where TId : IDenseId
+        where TValue : class
+    {
+        var token = new TokenDescriptor(
+            "Value",
+            0,
+            TokenStage.Control,
+            typeof(TValue),
+            $"{TId.Id}.Value",
+            static text => ThemeTokenValueParser.Parse<TValue>(text),
+            static stored => ThemeTokenValueFormatter.Format((TValue)stored!),
+            static builder => ((DenseValueToken<TId, TValue>)builder).Value,
+            static (builder, stored) => ((DenseValueToken<TId, TValue>)builder).Value = (TValue)stored!,
+            project is null
+                ? static builder => ((DenseValueToken<TId, TValue>)builder).Value
+                : builder => project(((DenseValueToken<TId, TValue>)builder).Value));
+        return new ControlTokenDescriptor(
+            ThemeTestControlTypes.For("AtomUI", TId.Id),
+            DenseValueToken<TId, TValue>.ControlIdentity,
+            [token],
+            () => new DenseValueToken<TId, TValue>(value));
     }
 
     private static TokenDescriptor ProjectionCountingGlobalToken(Action onProject)
@@ -586,166 +722,92 @@ public class DenseThemeCompilerTests
             });
     }
 
-    private static ControlTokenDescriptor CountingControl(string id, Action onEvaluate)
+    public interface IDenseId
     {
-        var token = new TokenDescriptor(
-            "Height",
-            0,
-            TokenStage.Control,
-            typeof(double),
-            $"{id}.Height",
-            static value => ThemeTokenValueParser.Parse<double>(value),
-            static value => ThemeTokenValueFormatter.Format((double)value!),
-            static builder => ((DenseControlToken)builder).Height,
-            static (builder, value) => ((DenseControlToken)builder).Height = (double)value!,
-            static builder => ((DenseControlToken)builder).Height);
-        return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
-            [token],
-            static () => new DenseControlToken(),
-            (builder, appearance) =>
-            {
-                onEvaluate();
-                ((DenseControlToken)builder).Evaluate(appearance);
-            });
+        static abstract string Id { get; }
     }
 
-    private static ControlTokenDescriptor ImmutableTransformControl(
-        string id,
-        ImmutableTransform transform)
-    {
-        var token = new TokenDescriptor(
-            "Transform",
-            0,
-            TokenStage.Control,
-            typeof(ImmutableTransform),
-            $"{id}.Transform",
-            static value => ThemeTokenValueParser.Parse<ImmutableTransform>(value),
-            static value => ThemeTokenValueFormatter.Format((ImmutableTransform)value!),
-            static builder => ((DenseTransformControlToken)builder).Transform,
-            static (builder, value) =>
-                ((DenseTransformControlToken)builder).Transform = (ImmutableTransform)value!,
-            static builder => ((DenseTransformControlToken)builder).Transform);
-        return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
-            [token],
-            () => new DenseTransformControlToken(transform),
-            static (builder, appearance) => ((DenseTransformControlToken)builder).Evaluate(appearance));
-    }
+    public sealed class ButtonId : IDenseId { public static string Id => "Button"; }
+    public sealed class InputId : IDenseId { public static string Id => "Input"; }
+    public sealed class BadgeId : IDenseId { public static string Id => "Badge"; }
+    public sealed class SplitViewId : IDenseId { public static string Id => "SplitView"; }
+    public sealed class WindowId : IDenseId { public static string Id => "Window"; }
+    public sealed class ListId : IDenseId { public static string Id => "Select"; }
+    public sealed class TagId : IDenseId { public static string Id => "Dialog"; }
 
-    private static ControlTokenDescriptor EasingControl(string id, Easing easing)
+    /// <summary>A test control token whose single value is read from the global view by a test-supplied function.</summary>
+    public sealed class DenseReadToken<TId>(Func<DesignToken, double> read) : DenseToken, IControlToken where TId : IDenseId
     {
-        var token = new TokenDescriptor(
-            "Easing",
-            0,
-            TokenStage.Control,
-            typeof(Easing),
-            $"{id}.Easing",
-            static value => ThemeTokenValueParser.Parse<Easing>(value),
-            static value => ThemeTokenValueFormatter.Format((Easing)value!),
-            static builder => ((DenseEasingControlToken)builder).Easing,
-            static (builder, value) => ((DenseEasingControlToken)builder).Easing = (Easing)value!,
-            static builder => ((DenseEasingControlToken)builder).Easing);
-        return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
-            [token],
-            () => new DenseEasingControlToken(easing),
-            static (builder, appearance) => ((DenseEasingControlToken)builder).Evaluate(appearance));
-    }
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", TId.Id);
 
-    private static ControlTokenDescriptor SolidColorBrushControl(
-        string id,
-        SolidColorBrush brush)
-    {
-        var token = new TokenDescriptor(
-            "Brush",
-            0,
-            TokenStage.Control,
-            typeof(SolidColorBrush),
-            $"{id}.Brush",
-            static value => ThemeTokenValueParser.Parse<SolidColorBrush>(value),
-            static value => ThemeTokenValueFormatter.Format((SolidColorBrush)value!),
-            static builder => ((DenseSolidColorBrushControlToken)builder).Brush,
-            static (builder, value) =>
-                ((DenseSolidColorBrushControlToken)builder).Brush = (SolidColorBrush)value!,
-            static builder => ThemeResourceValue.Project(
-                ((DenseSolidColorBrushControlToken)builder).Brush));
-        return new ControlTokenDescriptor(
-            ThemeTestControlTypes.For("AtomUI", id),
-            new ControlTokenIdentity("AtomUI", id),
-            [token],
-            () => new DenseSolidColorBrushControlToken(brush),
-            static (builder, appearance) =>
-                ((DenseSolidColorBrushControlToken)builder).Evaluate(appearance));
-    }
-
-    private static ThemeAlgorithmDescriptor Algorithm(ThemeAlgorithm algorithm, List<AlgorithmCall> calls)
-    {
-        return new ThemeAlgorithmDescriptor(
-            algorithm,
-            1,
-            ThemeAppearanceEffect.Preserve,
-            () => new RecordingAlgorithm(calls));
-    }
-
-    private sealed class RecordingAlgorithm(List<AlgorithmCall> calls) : IThemeAlgorithm
-    {
-        public void Evaluate(DesignToken effectiveSeed, DesignToken? previousMap, DesignToken nextMap)
+        public double Height
         {
-            calls.Add(new AlgorithmCall(effectiveSeed, previousMap, nextMap));
+            get => field;
+            set
+            {
+                if (!IsFrozen(nameof(Height)))
+                {
+                    field = value;
+                }
+            }
         }
+
+        internal override void Evaluate(DesignToken global, in DesignVariant variant) => Height = read(global);
     }
 
-    private sealed record AlgorithmCall(
-        DesignToken EffectiveSeed,
-        DesignToken? PreviousMap,
-        DesignToken NextMap);
-
-    private sealed class DenseControlToken : AbstractControlDesignToken
+    /// <summary>A test control token whose view is computed by the token itself (it carries the injected test inputs).</summary>
+    public abstract class DenseToken : AbstractControlDesignToken
     {
-        public double Height { get; set; }
+        internal abstract void Evaluate(DesignToken global, in DesignVariant variant);
+    }
+
+    public sealed class DenseHeightToken<TId>(Action? onEvaluate) : DenseToken, IControlToken where TId : IDenseId
+    {
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", TId.Id);
+
+        // Written by hand the way the generator writes a token property: a frozen (explicit) value is kept.
+        public double Height
+        {
+            get => field;
+            set
+            {
+                if (!IsFrozen(nameof(Height)))
+                {
+                    field = value;
+                }
+            }
+        }
+
         public ThemeAppearance Appearance { get; set; }
 
-        internal void Evaluate(ThemeAppearance appearance)
+        internal override void Evaluate(DesignToken global, in DesignVariant variant)
         {
-            Appearance = appearance;
-            Height     = EffectiveGlobalToken.ControlHeight;
+            onEvaluate?.Invoke();
+            Appearance = variant.Appearance;
+            Height     = global.ControlHeight;
         }
     }
 
-    private sealed class DenseTransformControlToken(
-        ImmutableTransform transform) : AbstractControlDesignToken
+    public sealed class DenseValueToken<TId, TValue>(TValue value) : DenseToken, IControlToken
+        where TId : IDenseId
+        where TValue : class
     {
-        public ImmutableTransform? Transform { get; set; }
+        public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", TId.Id);
 
-        internal void Evaluate(ThemeAppearance appearance)
-        {
-            Transform = transform;
-        }
+        public TValue? Value { get; set; }
+
+        internal override void Evaluate(DesignToken global, in DesignVariant variant) => Value = value;
     }
 
-    private sealed class DenseEasingControlToken(
-        Easing easing) : AbstractControlDesignToken
+    public sealed class DenseTokenRule<TToken> : IControlTokenRule<AntDesignToken, TToken> where TToken : DenseToken
     {
-        public Easing? Easing { get; set; }
-
-        internal void Evaluate(ThemeAppearance appearance)
-        {
-            Easing = easing;
-        }
+        public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<TToken> target) =>
+            target.Own.Evaluate(target.Global, context.Variant);
     }
 
-    private sealed class DenseSolidColorBrushControlToken(
-        SolidColorBrush brush) : AbstractControlDesignToken
+    public sealed class ProbeDenseTokenRule<TToken> : IControlTokenRule<ProbeLanguageToken, TToken> where TToken : DenseToken
     {
-        public SolidColorBrush? Brush { get; set; }
-
-        internal void Evaluate(ThemeAppearance appearance)
-        {
-            Brush = brush;
-        }
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<TToken> target) =>
+            target.Own.Evaluate(target.Global, context.Variant);
     }
 }

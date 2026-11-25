@@ -34,8 +34,8 @@ descriptor，也不能通过继承关系自动获得其他 owner 的 owner-scope
 | 稳定性 | stable since 6.2.0 |
 
 `root` 是控件自身，不声明 `.semantic-root` marker。它适合定制 LineEdit 整体 `Background`、`BorderBrush`、
-`BorderThickness`、`Opacity`、对齐和尺寸约束；其中 `Background` / `BorderBrush` 由 `AbstractTextInput` 以 LocalValue
-中继到 `InputControlFrame` 生效——定制期间该属性槽的 hover / pressed / focus 变色冻结，focus 的 `BoxShadow` 光晕不受
+`BorderThickness`、`Opacity`、对齐和尺寸约束；其中 `Background` / `BorderBrush` 经模板绑定进入 `InputControlFrame` 的
+`HostBackground` / `HostBorderBrush`，由 frame 主题在全部状态色之后投射——定制期间该属性槽的 hover / pressed / focus 变色冻结，focus 的 `BoxShadow` 光晕不受
 影响，置空后恢复 frame 状态机。variant、effective status、CompactSpace 与 native validation 的状态归一仍由
 `AbstractTextInput` 和 `InputControlFrame` 负责。
 
@@ -78,7 +78,7 @@ descriptor，也不能通过继承关系自动获得其他 owner 的 owner-scope
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `InputTextPresenter#PART_TextPresenter` |
+| AtomUI 节点 | `TextPresenter#PART_TextPresenter` |
 | 职责 | 绘制当前文本、光标、选择范围和密码 reveal 结果。 |
 | 相关 API | `Text`、`CaretIndex`、`SelectionStart`、`SelectionEnd`、`PasswordChar`、`RevealPassword` |
 | 相关 Token | `FontSize`、`LineHeight`、选择色与 caret 资源 |
@@ -203,7 +203,7 @@ route、`ContractType` 与 LineEdit 同名 Part 一致（`TextArea*` Style 前�
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `InputTextPresenter#PART_TextPresenter` |
+| AtomUI 节点 | `TextPresenter#PART_TextPresenter` |
 | 职责 | 承载多行文本的输入、光标、选择与换行展示。 |
 | 相关 API | `Text`、`Lines`、`MinLines`、`MaxLines`、`IsAutoSize`、`IsResizable` |
 | 稳定性 | stable since 6.2.0 |

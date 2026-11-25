@@ -13,20 +13,20 @@ public sealed class ThemeCatalogReloadResult
     public ThemeCatalogReloadResult(
         long generation,
         ThemeCatalogReloadStatus status,
-        IReadOnlyList<ThemeInfo> availableThemes,
+        IReadOnlyList<ThemeInfo> themes,
         ThemeState? state,
         IReadOnlyList<ThemeDiagnostic> diagnostics,
         IReadOnlyList<ThemeDiagnostic> publishDiagnostics,
         Exception? exception)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(generation);
-        ArgumentNullException.ThrowIfNull(availableThemes);
+        ArgumentNullException.ThrowIfNull(themes);
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(publishDiagnostics);
 
         Generation         = generation;
         Status             = status;
-        AvailableThemes    = Array.AsReadOnly(availableThemes.ToArray());
+        Themes             = Array.AsReadOnly(themes.ToArray());
         State              = state;
         Diagnostics        = Array.AsReadOnly(diagnostics.ToArray());
         PublishDiagnostics = Array.AsReadOnly(publishDiagnostics.ToArray());
@@ -35,7 +35,7 @@ public sealed class ThemeCatalogReloadResult
 
     public long Generation { get; }
     public ThemeCatalogReloadStatus Status { get; }
-    public IReadOnlyList<ThemeInfo> AvailableThemes { get; }
+    public IReadOnlyList<ThemeInfo> Themes { get; }
     public ThemeState? State { get; }
     public IReadOnlyList<ThemeDiagnostic> Diagnostics { get; }
     public IReadOnlyList<ThemeDiagnostic> PublishDiagnostics { get; }

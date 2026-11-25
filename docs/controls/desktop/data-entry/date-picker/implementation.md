@@ -52,6 +52,8 @@ Footer 报告操作，确认策略不进入 DatePanel。范围已有两端点只
 | Footer | Today/Now/Confirm，会话决定可用性与提交。 |
 
 这是当前职责树；真实 Name/route 来自现有 AXAML。布局、可见性与固定关系留在主题，各子控件维护自己的模板。
+共享输入主题及范围覆写模板的右侧附加区位于 AddOnDecoratedBox 内容子树，内容、内容模板、图标、反馈及图标可见性使用
+`CompiledBinding $parent[atom:InfoPickerInput]` 显式读取输入 owner，避免把内容节点的 TemplatedParent 当作输入 owner。
 单/双面板与时间是配置，不再用 DualMonthCalendar 继承链表达。
 Compact 日期面板使用共享的 36 单位日期行与正文留白，Presenter 为日期、月和年面板分配 301 单位高度，
 季度面板保持 86 单位；托管 DateViewer 隐藏自己的默认 Today 页脚，Picker Footer 仍由 Presenter 负责。
@@ -72,9 +74,11 @@ Popup 隐藏造成的视觉树 detach 不解除仍会复用的模板按钮、日
 | 浏览/下钻 | DatePanel，不提交输入。 |
 | Hover | 面板预览，会话按原时间来源生成活动端候选，输入 owner 使用固定端与 hover 端按日期顺序更新两侧预览文本。 |
 | 选择/时间编辑 | 更新活动候选，决定立即或等待确认。 |
-| 部分确认 | 按原时机写回刚确认端点、会话自动切换活动端并同步活动输入。 |
+| 部分确认 | 按原时机写回刚确认端点、会话自动切换活动端并同步活动输入；该端越过另一端时在会话结束关闭时按日期排序。 |
 | 最终确认 | 校验、按原规则排序、写回并关闭。 |
 | 范围 Cancel/关闭 | 丢弃未确认候选与预览，保留已确认的单端或完整范围；只有显式 Clear 清空范围提交值。 |
+
+键盘由共享基类 `InfoPickerInput` 以 Tunnel 方式接收输入框按键，先于 TextBox 的光标处理：Enter、Escape、Tab 和导航键分别交给子类钩子 `NotifyInputSubmit`、`NotifyEditCanceled`、`NotifyInputTab`、`NotifyNavigationKey`；`OnLostFocus` 在焦点离开控件与弹层时关闭弹层，Escape 关闭期间 `IsCancelingEdit` 为真，子类据此不提交；`ClosePickerForLifecycle`（逻辑树/视觉树脱离、模板更换，逻辑树脱离先于模板 Popup 自行关闭）期间 `IsLifecycleClosing` 为真，子类据此丢弃键入草稿。`NotifyEditCanceled` 同时恢复输入文本，弹层固定打开时 Escape 也能回退。`Clear()` 先清空值与宿主 `Text` 再清空输入框，因此不会被当作键入。DatePicker / RangeDatePicker 监听输入框文本：`DatePickerFormattingHelper.TryParseDateTime` 解析，`DatePickerPresenter.InputDate` 经会话动作 `InputDate` 更新活动候选、定位面板并移动面板焦点；Enter 经 `SubmitCandidate`（会话 `Confirm`）提交，Escape 经 `CancelEdit`（`Close(Escape)`）回退。导航键经 `DatePickerPresenter.NavigateByKey` 调用 `DatePanelSession.MoveKeyboardFocus`：目标在可见页之外时先用 `DatePanelAlgorithms.Build` 探测目标页，目标格可聚焦才让宿主翻页（否则焦点与页面不变），跳过禁用格并受 `MinDate` / `MaxDate` 与尝试次数限制，同时把焦点格设为 Hover，复用悬停外观、范围预览和输入预览；`ActivateKeyboardFocus` 激活焦点格，需要确认时随即提交。
 
 Pointer、键盘、滚轮与 Automation 共用面板算法，事件消费由 Picker 策略决定。
 确认不是 Selected 的直接转发，不能提前关闭或重复提交。
@@ -88,6 +92,8 @@ Pointer、键盘、滚轮与 Automation 共用面板算法，事件消费由 Pic
 需要确认的范围每次 Confirm 只写回当前端点。普通关闭、Escape、light-dismiss 或宿主消失时会话恢复已确认值，输入文本同步恢复；单端已确认值在重开后仍可见，默认编辑缺失端，显式点击某端则以点击端为活动端。
 完整范围双面板打开时以 start 所在周期作为左面板锚点；active end 不能倒推一个周期来改变面板锚点。
 Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规则。
+
+Today 采用主色链接样式，使用当前按钮主题的常态、悬停、按下和禁用反馈。
 视觉顺序与候选端点分离，范围预览不能改写真实值，反向 hover 只改变预览文本和预览高亮的显示顺序。
 选择/确认一个端点时必须结束旧 Hover 预览，避免旧 hover 在活动端翻转后被解释成新活动端的预览并覆盖 viewer 已提交选中态。
 
@@ -95,6 +101,7 @@ Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规�
 
 面板资源由 DateViewer 拥有，Picker 保留真实静态依赖，不依靠全量 Gallery。
 会话不持有 DynamicResource；主题消费资源，非 Visual 资源对象有 scoped lifecycle。
+OpenMotion/CloseMotion 只是定义引用；播放任务、帧驱动和全局策略观察随本次请求释放。共享 Motion 长期存活、快速重开、离场中卸载和换模板后旧 Popup/Surface 的回收，服从[内存验收门禁](../../../../architecture/systems/motion/popup-motion.md#81-内存验收阻断条件)。
 测量首开/重开、Hover、双面板、时间与真实 Gallery，保持相同功能与动效。
 
 ## 10. 维护不变量
@@ -103,8 +110,18 @@ Today/Now/Confirm 共用有效约束，但时间来源和确认行为按原规�
 保持外部越界值、输入宽度、native validation、所有关闭路径及端点确认。
 父主题不跨入子模板修补视觉，共享基础设施不进行无关改造。
 
+### 弹层动效接入约束
+
+InfoPickerInput 声明配置入口，DatePicker/RangeDatePicker 实例拥有有效值；主题提供 Slide 默认并以单向模板绑定传给实际 PART_Popup。编辑会话仍负责候选、活动端点、确认和关闭清理，动画不延迟提交意图，不重排日期网格或改变 Footer/双面板尺寸。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 11. 测试与验证
 
 基线包含逐步值、文本、焦点、面板、活动端点、确认、通知与 Popup 状态；新旧同序列比较。
 最终工作树分别验证模块、真实 Gallery、资源释放和 AOT；未执行项目不得写成已通过。
 [共享验收](../date-viewer/shared-panel-design.md#103-验收矩阵)要求的证据不能由普通单测替代。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

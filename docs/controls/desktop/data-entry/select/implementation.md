@@ -38,6 +38,10 @@ Tags 模式的动态选项必须作为 Select 自身运行时状态维护。用�
 
 `SelectResultOptionsBox` 是多选结果边界。它根据 `SelectedOptions` 创建 `SelectTag`，并在过滤启用时插入 `SelectFilterTextBox`。
 
+预设尺寸下，多选和 Tags 模式用同一个首行高度预算。标签高于该尺寸的文本行高时，
+`SelectAddOnDecoratedBox` 从上下内边距中扣除可容纳的差值。只要标签和过滤输入能放在一行，
+首个标签就不会撑高输入框。`SelectWrapPanel` 根据可用宽度测量每一行，内容换行后仍会撑高输入框。
+
 `OverflowTip` 是跨选择类控件复用的显示增强边界。Select 模板把 `IsShowOverflowTip`、`OverflowTipDelay`、`OverflowTipPlacement` 和当前展示文本传给该 attached behavior；单选显示节点以外层 `SelectAddOnDecoratedBox` 作为 `PlacementTarget`，避免 tooltip 左边按内部文本 padding 对齐；`SelectResultOptionsBox` 动态创建 tag 时把同一组设置绑定到每个 `SelectTag`。它只在视觉溢出时托管自己写入的 `ToolTip.Tip`，用户显式设置的 tooltip 不会被覆盖或清理。
 
 `SelectHandle` 是右侧操作边界。它根据 loading、过滤、展开状态选择当前图标，并把清除按钮点击转换为 `ClearRequestedEvent`。
@@ -326,6 +330,13 @@ AOT 边界：
 - Semantic Part marker 的维护边界：`SelectTheme.axaml` 承载触发区静态 marker（`semantic-scope-input`、`semantic-prefix`、`semantic-suffix`、`semantic-scope-handle`、`semantic-content`、`semantic-placeholder`、`semantic-input`、`semantic-scope-tags`、`semantic-popup-root`）；共享 `SelectHandleTheme.axaml` 承载清除按钮的 `semantic-clear` marker（`clear` Part 声明 `CrossNestedOwners=true`，生成器沿 SelectHandle 主题链校验）；共享 `TagTheme.axaml` 承载 `itemContent` / `itemRemove` marker。运行时注入点：`SelectResultOptionsBox` 创建标签时追加 `SelectSemanticParts.ItemClass`；`Select.EnsurePopupContent` 创建候选列表时追加 `SelectSemanticParts.PopupListClass` 并显式 `SetTemplatedParent(this)`；`SelectCandidateList.CreateContainerForItemOverride()` 向容器追加 `SelectSemanticParts.PopupListItemClass`。marker 随容器实例创建一次，prepare/clear/recycle 路径不得增删。
 - `SelectToken` 不承载选项数据、过滤值、loading、选择集合、popup 打开状态或 Form 状态。
 
+### 弹层动效接入约束
+
+AbstractSelect 上的公开配置由 Select 实例拥有，主题为其提供 Select Slide 默认并单向传入 PART_Popup；Popup 负责实际几何和播放。选择/搜索、候选列表限高、虚拟化与滚动职责不迁入动效配置。
+
+固定模板关系优先用声明式绑定；运行时可替换目标的绑定随会话退役，配置对象与静态默认工厂不捕获控件。
+具体数据流、坐标转换、默认准备与释放边界遵守[共享弹层接入契约](../../../../architecture/systems/motion/popup-motion.md)；模板更换后旧 Popup/Surface 必须可回收，本文不另设方向算法或播放状态机。
+
 ## 10. 测试与验证
 
 验证范围：
@@ -343,3 +354,6 @@ AOT 边界：
 - native validation error、Form 扩展状态、feedback 图标、CompactSpace 边框折叠和 popup open/close 事件取消。
 - `SelectSemanticPartTests`：descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、前缀部件内联呈现、popup 部件 marker 暴露。
 - 文档改动至少运行 `git diff --check` 并检查相对链接存在。
+
+组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，
+不向配置 owner 回传默认定义，不以条件默认值压过应用普通 Style。定义及创建模板不反向持有控件，释放约束见共享弹层契约。

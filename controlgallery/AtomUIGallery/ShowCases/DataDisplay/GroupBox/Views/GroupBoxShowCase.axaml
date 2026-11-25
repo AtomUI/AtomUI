@@ -26,7 +26,7 @@
                                                  SemanticOwner="{Binding #GroupBoxSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:GroupBox}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:GroupBox Name="GroupBoxSemanticOwner"
+                            <atom:GroupBox x:Name="GroupBoxSemanticOwner"
                                            HeaderTitle="Title info"
                                            HeaderIcon="{antdicons:AntDesignIconProvider Kind=GithubOutlined}">
                                 <atom:TextBlock TextWrapping="Wrap"
@@ -183,11 +183,11 @@
                                 <StackPanel.Styles>
                                     <Style Selector="atom|GroupBox.semantic-object">
                                         <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#f0f0f0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
                                             <Setter Property="Padding" Value="16,2" />
                                         </atom:GroupBoxHeaderStyle>
                                         <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:GroupBoxTitleStyle>
                                         <atom:GroupBoxContentStyle x:SetterTargetType="ContentPresenter">
                                             <Setter Property="Padding" Value="16,12" />
@@ -195,36 +195,36 @@
                                     </Style>
                                     <Style Selector="atom|GroupBox.semantic-function">
                                         <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#f5efff" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                             <Setter Property="Padding" Value="16,2" />
                                         </atom:GroupBoxHeaderStyle>
                                         <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#141414" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:GroupBoxTitleStyle>
                                         <atom:GroupBoxIconStyle x:SetterTargetType="atom:IconPresenter">
                                             <Setter Property="Width" Value="20" />
                                             <Setter Property="Height" Value="20" />
-                                            <Setter Property="IconBrush" Value="#722ED1" />
+                                            <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:GroupBoxIconStyle>
                                     </Style>
                                     <!-- root 语义区域的定制入口：分组边框与背景由 GroupBox 自绘，
                                          模板中没有承载节点，因此用 owner 作用域的普通 Setter 而不是 Part Style。 -->
                                     <Style Selector="atom|GroupBox.semantic-border">
-                                        <Setter Property="BorderBrush" Value="#722ED1" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="2" />
                                         <Setter Property="CornerRadius" Value="12" />
-                                        <Setter Property="Background" Value="#f9f0ff" />
+                                        <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         <atom:GroupBoxHeaderStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#ffffff" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgElevated}" />
                                         </atom:GroupBoxHeaderStyle>
                                     </Style>
                                     <Style Selector="atom|GroupBox.semantic-border-plain">
-                                        <Setter Property="BorderBrush" Value="#13c2c2" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSuccessBorder}" />
                                         <Setter Property="BorderThickness" Value="2" />
                                         <Setter Property="CornerRadius" Value="2" />
                                         <Setter Property="Background" Value="Transparent" />
                                         <atom:GroupBoxTitleStyle x:SetterTargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#08979c" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorSuccessText}" />
                                         </atom:GroupBoxTitleStyle>
                                     </Style>
                                 </StackPanel.Styles>

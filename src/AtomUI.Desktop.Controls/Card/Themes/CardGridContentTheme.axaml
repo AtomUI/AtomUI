@@ -8,13 +8,20 @@
             <ControlTemplate>
                 <Border Name="Frame"
                         Padding="{TemplateBinding Padding}">
-                    <ItemsPresenter Name="PART_ItemsPresenter" ClipToBounds="False">
-                        <ItemsPresenter.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Grid />
-                            </ItemsPanelTemplate>
-                        </ItemsPresenter.ItemsPanel>
-                    </ItemsPresenter>
+                    <Panel>
+                        <ItemsPresenter Name="PART_ItemsPresenter" ClipToBounds="False">
+                            <ItemsPresenter.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <atom:CardGridPanel LineWidth="{atom:CardTokenResource LineWidth}" />
+                                </ItemsPanelTemplate>
+                            </ItemsPresenter.ItemsPanel>
+                        </ItemsPresenter>
+                        <Canvas IsHitTestVisible="False">
+                            <Path Data="{TemplateBinding SeparatorGeometry}"
+                                  Stretch="None"
+                                  Fill="{atom:CardTokenResource ColorBorderSecondary}" />
+                        </Canvas>
+                    </Panel>
                 </Border>
             </ControlTemplate>
         </Setter>

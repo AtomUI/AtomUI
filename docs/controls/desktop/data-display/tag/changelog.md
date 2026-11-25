@@ -2,6 +2,46 @@
 
 本文档记录 Tag 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `TagToken.FilledStatusSolid`（默认 `false`）：为 true 时，填充型（Filled）状态标签与 Solid 变体一样使用实心状态色与反差文字；Outlined / Outline 变体不受影响。PrimeNG Lara / Nora 设为 true（官方实心标签）。
+- Token
+  - `AbstractTagToken.TagFontWeight`（默认 `Normal`）：Tag 与 CheckableTag 文本字重，由控件主题 Setter 读取；默认值与原外观一致，PrimeNG 设为 700。
+
+## 2026-11-08
+
+- Token
+  - Tag、CheckableTag 共用的字号、行高、图标尺寸与内间距移入抽象 `AbstractTagToken` 层，`TagToken`、新增的
+    `CheckableTagToken` 各自继承；`Controls[Tag]` 不再改变 CheckableTag。`Tag.TagCloseIconSize` 接通关闭图标尺寸。
+  - Tag、CheckableTag、CheckableTagGroup 主题改读各自的 `XxxTokenResource`；`CheckableTagItemsControl` 上被模板绑定覆盖的
+    间距 Setter 删除。
+- Fixed
+  - 预设/状态/自定义颜色改写入内部 `Calculated*` 输入，经主题非触发 Setter 投射（原为 Template 优先级代码赋值），应用样式、
+    语义 Part 样式与本地值按原生优先级覆盖；状态色与实心文字色读取 Tag 的有效 Global Token；预设色直接查快照色板，
+    不再每实例重建；自定义色浅底改用色板算法（暗色主题跟随暗色色板）；BorderThickness Token 变化重新应用边框宽度。
+
+## 2026-11-07
+
+- API
+  - `TagVariant` 末尾新增 `Outline`（值 3；`Filled`、`Solid`、`Outlined` 仍为 0、1、2）。有 `TagColor` 时背景透明，边框和文字取主色（预设色取调色板第 6 色，状态色取语义色，自定义色取原色）。
+  - `TagColor` 接受 `primary`（`ColorPrimary`、`ColorPrimaryBg`、`ColorPrimaryBorder`）与 `danger`（等同 `error`），行为与其他状态名一致，设置 `:status-color` 伪类。
+  - `AbstractTag` 新增 `protected virtual AbstractIconButton? CreateCloseButton()`，以及受保护常量 `CloseButtonPartName`、`CloseButtonHostPartName`。
+  - 模板契约：模板不含 `PART_CloseButton` 但含名为 `PART_CloseButtonHost` 的 `Decorator` 时，基类在 `IsClosable=true` 期间通过 `CreateCloseButton()` 按需创建关闭按钮并放入该宿主，`IsClosable=false` 时移除。按钮命名为 `PART_CloseButton`，设置 `TemplatedParent`，`Icon` 绑定 `CloseIcon`，`Click` 触发 `Closed`。
+- Theme
+  - Desktop `TagTheme.axaml` 为无 `TagColor` 的 `Variant=Outline` 增加样式：透明背景，主色边框与文字。
+- Performance
+  - 新增 `TagColorTable`，按 `ThemeSnapshot` 构建一次并缓存，持有预设色、五个状态色和 Solid 文字色，取代每个实例各自持有的字典。1000 个空颜色 Tag 的创建加布局分配约 17.9 MB 降至 14.9 MB。
+  - `TagColor` 为空、空白或 `default` 时不订阅主题、不解析快照；设置颜色时才订阅，清除颜色时释放。`OnApplyTemplate` 不再重复构建快照。
+  - 重新挂树时按当前主题重新解析颜色表，离树期间的主题切换在挂回后生效。
+- Desktop 影响
+  - Desktop 模板声明 `PART_CloseButton`，沿用静态关闭按钮，行为不变；按需创建只对声明 `PART_CloseButtonHost` 的模板生效。
+  - 现有三种 Variant、预设色与状态色的取值不变；`primary`、`danger` 与 `Outline` 为新增能力。
+  - 已知边界：在已应用模板且已离树的 Tag 上把 `IsClosable` 设为 `true` 时，按需创建的关闭按钮此刻没有 `CloseIcon`，因为默认关闭图标只在挂树期间设置。
+- Tests
+  - 新增 `TagExtensionTests`：枚举值与既有变体颜色、Outline 颜色、`primary`/`danger`、空颜色不解析快照、颜色表按快照共享、挂树与离树期间的主题切换、按需创建关闭按钮、静态关闭按钮保持可用。
+  - `TagColorVariantTests` 新增无颜色 Outline 使用主色的用例。
+
 ## 2026-08-19
 
 - Design

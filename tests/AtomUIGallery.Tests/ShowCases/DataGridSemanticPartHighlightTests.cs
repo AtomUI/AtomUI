@@ -152,7 +152,7 @@ public class DataGridSemanticPartHighlightTests
         source.ShouldContain("<atom:DataGridFooterStyle x:SetterTargetType=\"ContentPresenter\">");
         source.ShouldContain("<atom:DataGridSectionStyle x:SetterTargetType=\"Border\">");
         source.ShouldContain("<atom:DataGridContentStyle x:SetterTargetType=\"Grid\">");
-        source.ShouldContain("<Setter Property=\"Background\" Value=\"#E6F4FF\" />");
+        source.ShouldContain("<Setter Property=\"Background\" Value=\"{atom:SharedTokenResource ColorInfoBg}\" />");
         source.ShouldContain("<Setter Property=\"FontWeight\" Value=\"SemiBold\" />");
 
         // 禁止以 Loaded/Unloaded 事件处理器回退定制语义部件。

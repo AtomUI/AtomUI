@@ -1,6 +1,8 @@
-﻿using Avalonia;
+﻿using AtomUI.Theme.Resources;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -17,6 +19,9 @@ internal class DotBadgeIndicator : Control
     internal static readonly StyledProperty<double> BadgeShadowSizeProperty =
         AvaloniaProperty.Register<DotBadgeIndicator, double>(
             nameof(BadgeShadowSize));
+
+    internal static readonly StyledProperty<BadgeShadowTokenResourceKeys?> ShadowTokenResourceKeysProperty =
+        AvaloniaProperty.Register<DotBadgeIndicator, BadgeShadowTokenResourceKeys?>(nameof(ShadowTokenResourceKeys));
 
     internal IBrush? BadgeDotColor
     {
@@ -36,26 +41,44 @@ internal class DotBadgeIndicator : Control
         set => SetValue(BadgeShadowSizeProperty, value);
     }
 
+    internal BadgeShadowTokenResourceKeys? ShadowTokenResourceKeys
+    {
+        get => GetValue(ShadowTokenResourceKeysProperty);
+        set => SetValue(ShadowTokenResourceKeysProperty, value);
+    }
+
     private BoxShadows _boxShadows;
+    private OwnerTokenSet? _shadowTokens;
 
     static DotBadgeIndicator()
     {
-        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowSizeProperty);
+        AffectsRender<DotBadgeIndicator>(BadgeDotColorProperty, BadgeShadowSizeProperty, BadgeShadowColorProperty);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        BuildBoxShadow();
+        UpdateShadowTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _shadowTokens?.Dispose();
+        _shadowTokens = null;
+        base.OnDetachedFromVisualTree(e);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BadgeShadowSizeProperty ||
+        if (change.Property == ShadowTokenResourceKeysProperty && this.IsAttachedToVisualTree())
+        {
+            UpdateShadowTokenSubscription();
+        }
+        else if (change.Property == BadgeShadowSizeProperty ||
             change.Property == BadgeShadowColorProperty)
         {
-            BuildBoxShadow(true);
+            BuildBoxShadow();
         }
     }
 
@@ -65,21 +88,20 @@ internal class DotBadgeIndicator : Control
             _boxShadows);
     }
 
-    private void BuildBoxShadow(bool force = false)
+    private void UpdateShadowTokenSubscription()
     {
-        if (_boxShadows == default || force)
+        _shadowTokens?.Dispose();
+        _shadowTokens = ShadowTokenResourceKeys?.Observe(this, BuildBoxShadow);
+        BuildBoxShadow();
+    }
+
+    private void BuildBoxShadow()
+    {
+        if (BadgeShadowTokenResourceKeys.TryRead(this, _shadowTokens, BadgeShadowColorProperty, BadgeShadowSizeProperty, out var shadow) &&
+            _boxShadows != shadow)
         {
-            if (BadgeShadowColor is not null)
-            {
-                _boxShadows = new BoxShadows(new BoxShadow
-                {
-                    OffsetX = 0,
-                    OffsetY = 0,
-                    Blur    = 0,
-                    Spread  = BadgeShadowSize,
-                    Color   = ((ISolidColorBrush)BadgeShadowColor).Color
-                });
-            }
+            _boxShadows = shadow;
+            InvalidateVisual();
         }
     }
 }

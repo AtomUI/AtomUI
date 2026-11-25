@@ -96,7 +96,7 @@ Message 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的
 | `MessageCardTheme.axaml` | 提供控件模板、selector、资源绑定和状态视觉。 |
 | `WindowMessageManagerTheme.axaml` | 定义弹层、窗口或 overlay 宿主视觉。 |
 
-Message 使用 internal `MessageCardToken` 作为控件 Token scope。Token 只表达卡片背景、padding、图标与外部间距等组件视觉语义，不承载 Stack、剩余时长或关闭状态。
+Message 使用 `MessageCardToken` 作为控件 Token scope（公开类，供主题算法的控件阶段写入）。Token 只表达卡片背景、padding、图标与外部间距等组件视觉语义，不承载 Stack、剩余时长或关闭状态。
 
 主题维护规则：
 
@@ -117,7 +117,7 @@ Message 与同分类控件共享尺寸、状态、Token、Gallery 展示和验�
 
 - `Message`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
 - `MessageCard`：控件核心或内部协作类型，维护 public surface 与主题可观察行为。
-- `MessageCardToken`：internal 控件 Token scope，负责从全局 token 派生卡片视觉变量。
+- `MessageCardToken`：控件 Token scope（公开类，供主题算法的控件阶段写入），负责从全局 token 派生卡片视觉变量。
 - `WindowMessageManager`：数据、状态或行为协作类型，维护集合同步和事件路径。
 - 共享 `FeedbackStackPresenter` / `FeedbackStackPanel` / `FeedbackLifetimeScheduler`：维护堆叠布局与生命周期调度，不拥有 Message public 内容语义。
 

@@ -1,8 +1,8 @@
 using System.Buffers;
 using System.Security.Cryptography;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
-using Avalonia.Media;
 
 namespace AtomUI.Theme.Definitions;
 
@@ -10,25 +10,47 @@ internal sealed class CompiledThemeCatalog
 {
     private readonly Dictionary<string, CompiledThemeDefinition> _definitions;
     private readonly IReadOnlyList<ThemeResolverCatalogSlice> _resolverSlices;
+    private readonly IReadOnlyDictionary<string, string>? _defaultThemes;
 
     private CompiledThemeCatalog(
         Dictionary<string, CompiledThemeDefinition> definitions,
         IReadOnlyList<CompiledThemeDefinition> orderedDefinitions,
-        CompiledThemeDefinition defaultDefinition,
-        IReadOnlyList<ThemeResolverCatalogSlice> resolverSlices)
+        IReadOnlyList<DesignLanguageInfo> languages,
+        IReadOnlyList<ThemeResolverCatalogSlice> resolverSlices,
+        IReadOnlyDictionary<string, string>? defaultThemes)
     {
         _definitions   = definitions;
-        DefaultDefinition = defaultDefinition;
         OrderedDefinitions = Array.AsReadOnly(orderedDefinitions.ToArray());
-        AvailableThemes = Array.AsReadOnly(
+        Themes = Array.AsReadOnly(
             orderedDefinitions.Select(static entry => entry.Info).ToArray());
+        Languages = languages;
         _resolverSlices = Array.AsReadOnly(resolverSlices.ToArray());
+        _defaultThemes = defaultThemes;
     }
 
-    internal CompiledThemeDefinition DefaultDefinition { get; }
     internal IReadOnlyList<CompiledThemeDefinition> OrderedDefinitions { get; }
-    internal IReadOnlyList<ThemeInfo> AvailableThemes { get; }
+
+    /// <summary>The implicit entry of every enabled language, then the named themes in resolver order.</summary>
+    internal IReadOnlyList<ThemeInfo> Themes { get; }
+
+    /// <summary>The enabled design languages.</summary>
+    internal IReadOnlyList<DesignLanguageInfo> Languages { get; }
     internal IReadOnlyList<ThemeResolverCatalogSlice> ResolverSlices => _resolverSlices;
+
+    internal string DefaultThemeId(string language) =>
+        _defaultThemes is not null && _defaultThemes.TryGetValue(language, out var id) &&
+        _definitions.TryGetValue(id, out var entry) && entry.Info.Language == language
+            ? id
+            : ThemeInfo.LanguageDefaultId(language);
+
+    internal ThemeSelectionResult Resolve(ThemeSelection selection, ThemeAppearance systemAppearance = ThemeAppearance.Light)
+    {
+        if (selection.ThemeId is null && !selection.UseImplicitTheme)
+        {
+            selection = selection.WithTheme(DefaultThemeId(selection.Language));
+        }
+        return ThemeSelectionResolver.Resolve(Languages, Themes, selection, systemAppearance);
+    }
 
     // Package append does not reload resolvers or rerun committed global-value callbacks.
     // Existing slots and descriptors are retained; only newly available compiled controls rebind.
@@ -36,7 +58,7 @@ internal sealed class CompiledThemeCatalog
         IReadOnlyList<ThemeDefinitionRegistration> registrations)
     {
         var programs = registrations.Where(registration => registration.Package is not null)
-            .SelectMany(registration => registration.Package!.Programs).ToDictionary(program => program.Info.Id);
+            .SelectMany(registration => registration.Package!.Programs).ToDictionary(program => program.Id);
         var entries = new Dictionary<string, CompiledThemeDefinition>(StringComparer.Ordinal);
         foreach (var entry in OrderedDefinitions)
         {
@@ -48,31 +70,22 @@ internal sealed class CompiledThemeCatalog
             var old = entry.Definition;
             var rebound = program.Bind(registry);
             var oldIdentities = Enumerable.Range(0, previous.Controls.Count).Select(previous.GetControlIdentity).ToHashSet();
-            var currentIdentities = Enumerable.Range(0, registry.Controls.Count).Select(registry.GetControlIdentity).ToHashSet();
-            var added = rebound.ControlIdentities.Where(identity => !oldIdentities.Contains(identity) && currentIdentities.Contains(identity)).ToHashSet();
-            if (added.Count == 0)
+            if (rebound.ControlIdentities.All(oldIdentities.Contains) && old.ControlIdentities.Count == rebound.ControlIdentities.Count)
             {
                 entries.Add(entry.Info.Id, entry);
                 continue;
             }
-            foreach (var identity in added)
-            {
-                // Dynamic contracts are validated before publication, not on their first lookup.
-                _ = rebound.GetControl(identity);
-            }
-            var definition = new PreparedThemeDefinition(old.Id, old.Name, old.DeclaredAppearance,
-                old.EffectiveAppearance, old.IsDefault, old.Algorithms, old.Location,
-                () => old.Tokens, rebound.ControlIdentities,
-                identity => added.Contains(identity) ? rebound.GetControl(identity) : old.GetControl(identity),
-                old.ControlRevision!);
-            entries.Add(entry.Info.Id, entry with { Definition = definition });
+            entries.Add(entry.Info.Id, entry with { Definition = rebound });
         }
         var slices = _resolverSlices.Select(slice => slice with
         {
-            Definitions = slice.Definitions.Select(entry => entries[entry.Info.Id]).ToArray()
+            // Slices must keep each definition's original Info: entries carry the demoted (published) Info, and
+            // reloads reuse static slices verbatim before re-applying the design language rules.
+            Definitions = slice.Definitions
+                .Select(entry => entry with { Definition = entries[entry.Info.Id].Definition }).ToArray()
         }).ToArray();
         return new CompiledThemeCatalog(entries, OrderedDefinitions.Select(entry => entries[entry.Info.Id]).ToArray(),
-            entries[DefaultDefinition.Info.Id], slices);
+            Languages, slices, _defaultThemes);
     }
 
     internal CompiledThemeDefinition Get(string id)
@@ -123,7 +136,8 @@ internal sealed class CompiledThemeCatalog
         ThemeSchemaRegistry registry,
         IReadOnlyList<ThemeDefinitionRegistration> resolvers,
         ThemeDefinitionResolveContext context,
-        ThemeDefinitionLoadCache? loadCache = null)
+        ThemeDefinitionLoadCache? loadCache = null,
+        IReadOnlyDictionary<string, string>? defaultThemes = null)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(resolvers);
@@ -133,6 +147,7 @@ internal sealed class CompiledThemeCatalog
         var diagnostics = new List<ThemeDiagnostic>();
         var definitions = new Dictionary<string, CompiledThemeDefinition>(StringComparer.Ordinal);
         var orderedDefinitions = new List<CompiledThemeDefinition>();
+        AddLanguageDefaults(registry, definitions, orderedDefinitions);
 
         foreach (var resolver in resolvers)
         {
@@ -186,25 +201,69 @@ internal sealed class CompiledThemeCatalog
             }
         }
 
-        var defaults = orderedDefinitions.Where(static entry => entry.Info.IsDefault).ToArray();
-        if (defaults.Length != 1)
+        if (defaultThemes is not null)
         {
-            return ThemeCatalogLoadResult.Failed(
-                diagnostics.Append(Error(
-                    "ATMTHM4006",
-                    nameof(CompiledThemeCatalog),
-                    "$",
-                    $"The merged theme catalog must contain exactly one default theme; found {defaults.Length}.")).ToArray());
+            foreach (var (language, themeId) in defaultThemes)
+            {
+                if (!definitions.TryGetValue(themeId, out var entry) || entry.Info.Language != language ||
+                    entry.Info.IsLanguageDefault)
+                {
+                    diagnostics.Add(Error("ATMTHM4010", "language:" + language, "$",
+                        $"Default theme '{themeId}' must be a named theme of design language '{language}'."));
+                }
+            }
+            if (diagnostics.Any(static diagnostic => diagnostic.Code == "ATMTHM4010"))
+            {
+                return ThemeCatalogLoadResult.Failed(diagnostics);
+            }
         }
-
         return ThemeCatalogLoadResult.Succeeded(
             new CompiledThemeCatalog(
                 definitions,
                 orderedDefinitions,
-                defaults[0],
-                slices),
+                DescribeLanguages(registry),
+                slices,
+                defaultThemes),
             diagnostics);
     }
+
+    /// <summary>The implicit entry of every enabled language: its default appearance, without a theme file.</summary>
+    private static void AddLanguageDefaults(ThemeSchemaRegistry registry,
+        Dictionary<string, CompiledThemeDefinition> definitions, List<CompiledThemeDefinition> orderedDefinitions)
+    {
+        foreach (var language in registry.Languages)
+        {
+            var entry = LanguageDefaults.GetValue(language, static value =>
+            {
+                var id = ThemeInfo.LanguageDefaultId(value.Id);
+                var location = new ThemeSourceLocation("language:" + value.Id, 0, 0, "/Theme");
+                var definition = new PreparedThemeDefinition(id, value.Id, value, null, null, null,
+                    new HashSet<string>(StringComparer.Ordinal), ThemeSectionDefinition.Empty,
+                    Array.Empty<ThemeConditionDefinition>(), location);
+                var revision = value.Revision.ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+                var seeds = value.Language.DefaultThemeSeeds;
+                var info = new ThemeInfo(id, value.Id, value.Id)
+                {
+                    IsLanguageDefault = true,
+                    AccentColor       = seeds.TryGetValue(nameof(DesignToken.ColorPrimary), out var primary) &&
+                                        Avalonia.Media.Color.TryParse(primary, out var color) ? color : null,
+                    SeedValues        = seeds
+                };
+                return new CompiledThemeDefinition(info,
+                    definition, new ThemeDefinitionRevision(location.Source, revision, revision));
+            });
+            definitions.Add(entry.Info.Id, entry);
+            orderedDefinitions.Add(entry);
+        }
+    }
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<DesignLanguageDescriptor, CompiledThemeDefinition>
+        LanguageDefaults = new();
+
+    internal static IReadOnlyList<DesignLanguageInfo> DescribeLanguages(ThemeSchemaRegistry registry) =>
+        registry.Languages.Select(static language => new DesignLanguageInfo(language.Id, language.Axes.Styles,
+            language.Axes.DefaultStyle, language.Axes.Densities, language.Axes.Idioms,
+            language.Axes.AdjustableSeeds.Select(static seed => seed.Name).ToArray())).ToArray();
 
     internal static ThemeCatalogLoadResult LoadReload(
         ThemeSchemaRegistry registry,
@@ -250,16 +309,19 @@ internal sealed class CompiledThemeCatalog
             nextSlices.Add(sliceResult.Slice!);
         }
 
-        return BuildFromSlices(nextSlices, diagnostics);
+        return BuildFromSlices(registry, nextSlices, diagnostics, currentCatalog._defaultThemes);
     }
 
     private static ThemeCatalogLoadResult BuildFromSlices(
+        ThemeSchemaRegistry registry,
         IReadOnlyList<ThemeResolverCatalogSlice> slices,
-        IReadOnlyList<ThemeDiagnostic> existingDiagnostics)
+        IReadOnlyList<ThemeDiagnostic> existingDiagnostics,
+        IReadOnlyDictionary<string, string>? defaultThemes)
     {
         var diagnostics = new List<ThemeDiagnostic>(existingDiagnostics);
         var definitions = new Dictionary<string, CompiledThemeDefinition>(StringComparer.Ordinal);
         var orderedDefinitions = new List<CompiledThemeDefinition>();
+        AddLanguageDefaults(registry, definitions, orderedDefinitions);
         foreach (var slice in slices)
         {
             foreach (var entry in slice.Definitions)
@@ -277,23 +339,13 @@ internal sealed class CompiledThemeCatalog
             }
         }
 
-        var defaults = orderedDefinitions.Where(static entry => entry.Info.IsDefault).ToArray();
-        if (defaults.Length != 1)
-        {
-            diagnostics.Add(Error(
-                "ATMTHM4006",
-                nameof(CompiledThemeCatalog),
-                "$",
-                $"The merged theme catalog must contain exactly one default theme; found {defaults.Length}."));
-            return ThemeCatalogLoadResult.Failed(diagnostics);
-        }
-
         return ThemeCatalogLoadResult.Succeeded(
             new CompiledThemeCatalog(
                 definitions,
                 orderedDefinitions,
-                defaults[0],
-                slices),
+                DescribeLanguages(registry),
+                slices,
+                defaultThemes),
             diagnostics);
     }
 
@@ -311,7 +363,7 @@ internal sealed class CompiledThemeCatalog
                 try
                 {
                     var definition = program.Bind(registry);
-                    entries.Add(new CompiledThemeDefinition(program.Info, definition,
+                    entries.Add(new CompiledThemeDefinition(Describe(definition), definition,
                         new ThemeDefinitionRevision(program.SourceIdentity, program.SourceRevision,
                             program.ContentDigest, program.ProgramDigest)));
                 }
@@ -380,15 +432,6 @@ internal sealed class CompiledThemeCatalog
                     entry.Revision.SourceIdentity,
                     "$",
                     $"Theme id '{entry.Info.Id}' is duplicated in resolver '{resolver.Id}'."));
-                return ThemeResolverSliceLoadResult.Failed(diagnostics);
-            }
-            if (resolver.SupportsReload && entry.Info.IsDefault)
-            {
-                diagnostics.Add(Error(
-                    "ATMTHM4007",
-                    entry.Revision.SourceIdentity,
-                    "$",
-                    $"Reloadable resolver '{resolver.Id}' cannot declare default theme '{entry.Info.Id}'."));
                 return ThemeResolverSliceLoadResult.Failed(diagnostics);
             }
             definitions.Add(entry);
@@ -499,28 +542,34 @@ internal sealed class CompiledThemeCatalog
                 new ThemeBindingCacheEntry(definition, bindingDiagnostics));
         }
 
-        var accentColor = definition.Tokens
-                                    .FirstOrDefault(static token =>
-                                         token.Descriptor.Name == nameof(DesignToken.ColorPrimary))
-                                    ?.Value is Color color
-            ? color
-            : (Color?)null;
         var definitionRevision = new ThemeDefinitionRevision(
             identity,
             revision,
             contentDigest);
         return ThemeSourceLoadResult.Succeeded(
-            new CompiledThemeDefinition(
-                new ThemeInfo(
-                    definition.Id,
-                    definition.Name,
-                    definition.EffectiveAppearance,
-                    definition.IsDefault,
-                    accentColor),
-                definition,
-                definitionRevision),
+            new CompiledThemeDefinition(Describe(definition), definition, definitionRevision),
             diagnostics);
     }
+
+    /// <summary>The catalog entry of a bound definition: its language, fixed axes, locked seeds and declared primary colour.</summary>
+    internal static ThemeInfo Describe(PreparedThemeDefinition definition) =>
+        new(definition.Id, definition.Name, definition.Language.Id)
+        {
+            Style       = definition.Style,
+            Appearance  = definition.Appearance,
+            Density     = definition.Density,
+            LockedSeeds = definition.LockedSeeds.ToArray(),
+            AccentColor = BaseColor(definition, nameof(DesignToken.ColorPrimary)),
+            SeedValues  = definition.Base.Tokens.Concat(definition.Base.LanguageTokens)
+                                    .Where(token => definition.Language.Axes.AdjustableSeeds.Any(seed => seed.Name == token.Descriptor.Name))
+                                    .ToDictionary(static token => token.Descriptor.Name, static token => token.CanonicalValue,
+                                        StringComparer.Ordinal)
+        };
+
+    private static Avalonia.Media.Color? BaseColor(PreparedThemeDefinition definition, string seed) =>
+        definition.Base.Tokens.FirstOrDefault(token => token.Descriptor.Name == seed)?.Value is Avalonia.Media.Color color
+            ? color
+            : null;
 
     private static byte[] ReadBounded(Stream stream, long maxBytes)
     {
@@ -569,6 +618,15 @@ internal sealed class CompiledThemeCatalog
             Environment.NewLine,
             diagnostics.Select(static diagnostic =>
                 $"{diagnostic.Code} {diagnostic.Source}{diagnostic.Path}: {diagnostic.Message}"));
+    }
+
+    private static ThemeDiagnostic Warning(
+        string code,
+        string source,
+        string path,
+        string message)
+    {
+        return new ThemeDiagnostic(code, ThemeDiagnosticSeverity.Warning, source, path, message);
     }
 
     private static ThemeDiagnostic Error(

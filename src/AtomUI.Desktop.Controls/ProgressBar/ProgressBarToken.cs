@@ -5,68 +5,55 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class ProgressBarToken : AbstractControlDesignToken
+public sealed partial class ProgressBarToken : AbstractLineProgressToken
 {
-    
     /// <summary>
-    /// 进度条默认颜色
+    /// 大号线状进度条厚度（antd 8）
+    /// Line stroke thickness of the large preset
     /// </summary>
-    public Color DefaultColor { get; set; }
+    public partial double LineStrokeThicknessLG { get; set; }
 
     /// <summary>
-    /// 进度条剩余部分颜色
+    /// 默认（中号）线状进度条厚度（antd 6）
+    /// Line stroke thickness of the middle preset
     /// </summary>
-    public Color RemainingColor { get; set; }
+    public partial double LineStrokeThickness { get; set; }
 
     /// <summary>
-    /// 圆形进度条文字颜色
+    /// 小号线状进度条厚度（antd 4）
+    /// Line stroke thickness of the small preset
     /// </summary>
-    public Color CircleTextColor { get; set; }
+    public partial double LineStrokeThicknessSM { get; set; }
 
     /// <summary>
     /// 条状进度条圆角
+    /// Corner radius of the rounded (capsule) line progress bar
     /// </summary>
-    public CornerRadius LineBorderRadius { get; set; }
+    public partial CornerRadius LineBorderRadius { get; set; }
 
     /// <summary>
-    /// 圆形进度条文本最小大小
+    /// 内部百分比模式下进度条的内间距
+    /// Padding of the bar around an inner percentage label
     /// </summary>
-    public double CircleMinimumTextFontSize { get; set; }
+    public partial double LineProgressPadding { get; set; }
 
     /// <summary>
-    /// 圆形进度条图标最小大小
+    /// Text colour of an inner percentage label where it reads better than <c>ColorTextLightSolid</c> on the bar
+    /// (the label takes the more readable of the two); defaults to <c>ColorTextLabel</c>.
     /// </summary>
-    public double CircleMinimumIconSize { get; set; }
+    public partial Color InnerLabelColor { get; set; }
 
-    // 内部属性
-    public double ProgressStepMinWidth { get; set; }
-    public Thickness ProgressStepMarginInlineEnd { get; set; } // Step 之间的间距
-    public double ProgressActiveMotionDuration { get; set; }
-    public double LineExtraInfoMargin { get; set; } // 额外信息和 Indicator 之间的间距
-    public double LineProgressPadding { get; set; } // 线行进度条的内间距
-    public double LineInfoIconSize { get; set; }
-    public double LineInfoIconSizeSM { get; set; }
+    /// <summary>
+    /// Opacity of an inner percentage label while the value is 0, where the label sits on the empty track instead of
+    /// the bar. Defaults to 1 (shown); 0 hides it, as PrimeNG does.
+    /// </summary>
+    public partial double InnerLabelEmptyOpacity { get; set; }
 
-    public ProgressBarToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        CircleTextColor  = EffectiveGlobalToken.ColorText;
-        DefaultColor     = EffectiveGlobalToken.ColorInfo;
-        RemainingColor   = EffectiveGlobalToken.ColorFillSecondary;
-        LineBorderRadius = new CornerRadius(100); // magic for capsule shape, should be a very large number
-        // 这两个要通过计算
-        CircleMinimumIconSize     = EffectiveGlobalToken.SizeXS;
-        CircleMinimumTextFontSize = EffectiveGlobalToken.FontSizeSM - 2;
-        LineInfoIconSize          = EffectiveGlobalToken.IconSize;
-        LineInfoIconSizeSM        = EffectiveGlobalToken.IconSizeSM;
-        LineExtraInfoMargin       = EffectiveGlobalToken.ControlPaddingHorizontalSM;
-        LineProgressPadding       = EffectiveGlobalToken.UniformlyPaddingXXS / 2;
-    }
-    
+    /// <summary>
+    /// Active 状态轨道闪光动画的时长（antd progressActiveMotionDuration，2.4s）
+    /// Duration of the Active status shimmer over the track (antd progressActiveMotionDuration, 2.4s)
+    /// </summary>
+    [ReservedToken("antd Progress progressActiveMotionDuration. The Active status shimmer animation over the track " +
+                   "is not implemented yet; Active renders like Normal.")]
+    public partial TimeSpan ProgressActiveMotionDuration { get; set; }
 }

@@ -183,6 +183,55 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 
     #endregion
 
+    // The previewer terminals (ImagePreviewer, ImageGroupPreviewer) declare these ImageViewer inputs; a cover maps them
+    // itself so a cover created alone follows the ImagePreviewer identity instead of the attached-property defaults.
+    private static Primitives.PartTokenMapping[]? s_ownerInputs;
+
+    // Built on first use: the input properties live in another partial file, so a static initializer cannot see them as assigned.
+    private static Primitives.PartTokenMapping[] OwnerInputs => s_ownerInputs ??=
+    [
+        new(ImageViewer.LayoutBackgroundProperty, "ColorBgLayout"),
+        new(ImageViewer.OverlayMaskBackgroundProperty, "ColorBgMask"),
+        new(ImageViewer.ActiveTextBackgroundProperty, "ColorBgTextActive"),
+        new(ImageViewer.HoverTextBackgroundProperty, "ColorBgTextHover"),
+        new(ImageViewer.TertiaryFillProperty, "ColorFillTertiary"),
+        new(ImageViewer.InverseTextForegroundProperty, "ColorTextLightSolid"),
+        new(ImageViewer.TertiaryTextForegroundProperty, "ColorTextTertiary"),
+        new(ImageViewer.SmallToolbarButtonSizeProperty, "ControlHeightSM"),
+        new(ImageViewer.CoverImageSizeProperty, "CoverImageWidth"),
+        new(ImageViewer.DialogMinHeightProperty, "DialogMinHeight"),
+        new(ImageViewer.DialogMinWidthProperty, "DialogMinWidth"),
+        new(ImageViewer.DefaultMotionEnabledProperty, "EnableMotion"),
+        new(ImageViewer.ErrorIconSizeProperty, "ErrorIconSize"),
+        new(ImageViewer.FloatToolbarIndicatorPaddingProperty, "FloatToolbarIndicatorPadding"),
+        new(ImageViewer.FloatToolbarPaddingProperty, "FloatToolbarPadding"),
+        new(ImageViewer.IconSizeProperty, "IconSize"),
+        new(ImageViewer.LargeIconSizeProperty, "IconSizeLG"),
+        new(ImageViewer.MarginSMProperty, "MarginSM"),
+        new(ImageViewer.MarginXLProperty, "MarginXL"),
+        new(ImageViewer.MaskBackgroundProperty, "MaskBgColor"),
+        new(ImageViewer.NavButtonBackgroundProperty, "NavButtonBgColor"),
+        new(ImageViewer.NavButtonHoverBackgroundProperty, "NavButtonBgHoverColor"),
+        new(ImageViewer.PaddingSMProperty, "PaddingSM"),
+        new(ImageViewer.PaddingXSProperty, "PaddingXS"),
+        new(ImageViewer.PreviewOperationForegroundProperty, "PreviewOperationColor"),
+        new(ImageViewer.DisabledPreviewOperationForegroundProperty, "PreviewOperationColorDisabled"),
+        new(ImageViewer.HoverPreviewOperationForegroundProperty, "PreviewOperationHoverColor"),
+        new(ImageViewer.PreviewOperationSizeProperty, "PreviewOperationSize"),
+        new(ImageViewer.SpacingProperty, "Spacing"),
+        new(ImageViewer.SpacingXXSProperty, "SpacingXXS"),
+        new(ImageViewer.TitleBarBackgroundProperty, "TitleBarBackgroundColor")
+    ];
+
+    // Lives as long as the cover; it only subscribes to the cover itself and to its theme context while attached.
+    private readonly IDisposable _ownerInputs;
+
+    public ImagePreviewerCover()
+    {
+        _ownerInputs = Primitives.PartTokenBinder.Bind(this, null, typeof(ImagePreviewer), OwnerInputs,
+            typeof(ImageGroupPreviewer));
+    }
+
     static ImagePreviewerCover()
     {
         // Avalonia TemplatedControl 默认 ClipToBounds=true（合成层裁剪），会把负 Margin

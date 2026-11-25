@@ -117,6 +117,7 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
 
         // Clip the RowsPresenter so rows cannot overlap other elements in certain styling scenarios
         UpdateClipGeometry(new Rect(0, 0, finalSize.Width, finalHeight));
+        OwningGrid.NotifyRowsArrangedForRowReorder();
 
         return new Size(finalSize.Width, finalHeight);
     }
@@ -271,7 +272,39 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     {
         e.Handled = e.Handled || (OwningGrid?.UpdateScroll(-e.Delta) ?? false);
     }
-    
+
+    // A row drag captures the pointer on this presenter rather than on the row's handle, so the drag survives
+    // the source row being scrolled out of the viewport and recycled.
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        // Ordinary hover moves bubble through here; only a drag holding this presenter's capture is forwarded.
+        if (!ReferenceEquals(e.Pointer.Captured, this))
+        {
+            return;
+        }
+        OwningGrid?.HandleRowReorderPointerMoved(
+            e.Pointer,
+            e.GetPosition(this),
+            e.GetCurrentPoint(this).Properties.IsLeftButtonPressed);
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+        if (e.InitialPressMouseButton == MouseButton.Left &&
+            ReferenceEquals(e.Pointer.Captured, this))
+        {
+            OwningGrid?.HandleRowReorderPointerReleased(e.Pointer);
+        }
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        OwningGrid?.HandleRowReorderPointerCaptureLost(e.Pointer);
+        base.OnPointerCaptureLost(e);
+    }
+
     internal void NotifyAboutToDragging(object? data, int sourceIndex)
     {
         Debug.Assert(OwningGrid != null);
@@ -289,25 +322,9 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
         {
             LogicalChildren.Remove(_dragIndicator);
             VisualChildren.Remove(_dragIndicator);
+            _dragIndicator.ReleaseOwningGridBindings();
         }
 
         _dragIndicator = null;
     }
-    
-#if DEBUG
-    internal void PrintChildren()
-    {
-        foreach (Control element in Children)
-        {
-            if (element is DataGridRow row)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} Row: {1} Visibility: {2} ", row.Slot, row.Index, row.IsVisible));
-            }
-            else if (element is DataGridRowGroupHeader groupHeader)
-            {
-                Debug.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Slot: {0} GroupHeader: {1} Visibility: {2}", groupHeader.SourceSlot, groupHeader.SourceGroup?.Key, groupHeader.IsVisible));
-            }
-        }
-    }
-#endif
 }

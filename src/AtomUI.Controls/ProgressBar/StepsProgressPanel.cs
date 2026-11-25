@@ -106,12 +106,12 @@ internal sealed class StepsProgressPanel : Panel
             if (_owner.Orientation == Orientation.Horizontal)
             {
                 trackRect = new Rect(offsetX, offsetY, chunkWidth, chunkHeight);
-                offsetX += chunkWidth + AbstractGeneralStepsProgressBar.ChunkSpace;
+                offsetX += chunkWidth + _owner.ChunkSpace;
             }
             else
             {
                 trackRect = new Rect(offsetX, offsetY, chunkHeight, chunkWidth);
-                offsetY += chunkWidth + AbstractGeneralStepsProgressBar.ChunkSpace;
+                offsetY += chunkWidth + _owner.ChunkSpace;
             }
 
             _tracks[index].Arrange(trackRect);
@@ -176,7 +176,8 @@ internal sealed class StepsProgressPanel : Panel
             e.Property == AbstractProgressBar.EffectiveSizeTypeProperty ||
             e.Property == AbstractLineProgress.OrientationProperty ||
             e.Property == AbstractGeneralStepsProgressBar.PercentPositionProperty ||
-            e.Property == AbstractProgressBar.IsProgressInfoVisibleProperty)
+            e.Property == AbstractProgressBar.IsProgressInfoVisibleProperty ||
+            e.Property == AbstractProgressBar.ProgressInfoContentProperty)
         {
             InvalidateMeasure();
             InvalidateArrange();

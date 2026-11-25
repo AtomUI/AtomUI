@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -47,6 +48,70 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
         set => SetValue(ItemSpacingProperty, value);
     }
 
+    // The pager's item inputs, template-bound from the pager and forwarded to each item.
+    internal static readonly StyledProperty<double> ItemSizeProperty =
+        AbstractPagination.ItemSizeProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemActiveColorDisabledProperty =
+        AbstractPagination.ItemActiveColorDisabledProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<Thickness> ItemPaddingInlineProperty =
+        AbstractPagination.ItemPaddingInlineProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemColorProperty =
+        AbstractPagination.ItemColorProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverColorProperty =
+        AbstractPagination.ItemHoverColorProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<IBrush?> ItemHoverBgProperty =
+        AbstractPagination.ItemHoverBgProperty.AddOwner<PaginationNav>();
+
+    internal static readonly StyledProperty<CornerRadius> ItemBorderRadiusProperty =
+        AbstractPagination.ItemBorderRadiusProperty.AddOwner<PaginationNav>();
+
+    internal double ItemSize
+    {
+        get => GetValue(ItemSizeProperty);
+        set => SetValue(ItemSizeProperty, value);
+    }
+
+    internal IBrush? ItemActiveColorDisabled
+    {
+        get => GetValue(ItemActiveColorDisabledProperty);
+        set => SetValue(ItemActiveColorDisabledProperty, value);
+    }
+
+    internal Thickness ItemPaddingInline
+    {
+        get => GetValue(ItemPaddingInlineProperty);
+        set => SetValue(ItemPaddingInlineProperty, value);
+    }
+
+    internal IBrush? ItemColor
+    {
+        get => GetValue(ItemColorProperty);
+        set => SetValue(ItemColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverColor
+    {
+        get => GetValue(ItemHoverColorProperty);
+        set => SetValue(ItemHoverColorProperty, value);
+    }
+
+    internal IBrush? ItemHoverBg
+    {
+        get => GetValue(ItemHoverBgProperty);
+        set => SetValue(ItemHoverBgProperty, value);
+    }
+
+    internal CornerRadius ItemBorderRadius
+    {
+        get => GetValue(ItemBorderRadiusProperty);
+        set => SetValue(ItemBorderRadiusProperty, value);
+    }
+
     #endregion
     
     static PaginationNav()
@@ -57,12 +122,24 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
 
     public PaginationNav()
     {
-        for (var i = 0; i < Pagination.MaxNavItemCount; i++)
+        SelectionMode = SelectionMode.Single;
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        // The fixed navigation slots are logical children, so creating them in the constructor styled and initialized
+        // all of them even when the nav is never measured (hidden, empty or single-page pagination). They are added
+        // when the template applies instead. The items panel is only built when ItemsPresenter is measured, after
+        // this call, so every container is still prepared with the final ItemCount, exactly as before.
+        if (ItemCount == 0)
         {
-            Items.Add(new PaginationNavItem());
+            for (var i = 0; i < Pagination.MaxNavItemCount; i++)
+            {
+                Items.Add(new PaginationNavItem());
+            }
         }
 
-        SelectionMode = SelectionMode.Single;
+        base.OnApplyTemplate(e);
     }
 
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
@@ -82,6 +159,13 @@ internal class PaginationNav : SelectingItemsControl, ICustomizableSizeTypeAware
         {
             navItem[!PaginationNavItem.SizeTypeProperty]        = this[!SizeTypeProperty];
             navItem[!PaginationNavItem.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+            navItem[!PaginationNavItem.ItemSizeProperty]        = this[!ItemSizeProperty];
+            navItem[!PaginationNavItem.ItemActiveColorDisabledProperty] = this[!ItemActiveColorDisabledProperty];
+            navItem[!PaginationNavItem.ItemPaddingInlineProperty]       = this[!ItemPaddingInlineProperty];
+            navItem[!PaginationNavItem.ItemColorProperty]               = this[!ItemColorProperty];
+            navItem[!PaginationNavItem.ItemHoverColorProperty]          = this[!ItemHoverColorProperty];
+            navItem[!PaginationNavItem.ItemHoverBgProperty]             = this[!ItemHoverBgProperty];
+            navItem[!PaginationNavItem.ItemBorderRadiusProperty]        = this[!ItemBorderRadiusProperty];
             navItem.Click -= HandleNavItemClicked;
             navItem.Click += HandleNavItemClicked;
         }

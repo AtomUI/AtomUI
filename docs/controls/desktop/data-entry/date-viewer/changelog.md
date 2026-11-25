@@ -2,6 +2,38 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-11-20
+
+- Token
+  - `AbstractDateViewerToken` 新增 `CellCornerRadius`（默认 `BorderRadiusSM`）、`CellTodayBg`（默认透明）、`CellTodayColor`（默认 `ColorText`）、`CellTodayBorderColor`（默认 `ColorPrimary`）、`HeaderTitleFontWeight`（默认 `Bold`）、`WeekHeaderHeight`（默认 0，即沿用单元格行高）与 `WeekHeaderFontWeight`（默认 `Normal`）。`WeekHeaderHeight` 为正时由星期行自身取该高度并使星期名垂直居中。这些值由 DateViewer / RangeDateViewer 主题赋给模板中 `DatePanel`、`DateViewerHeader` 的普通属性，单元格读所在面板的属性，不新增可继承输入。默认值与原外观一致；PrimeNG 采用圆形日期、填充式今天、500 标题与 32 / 36 星期行。
+
+## 2026-11-15
+
+- Token
+  - 新增 Own Token `CellActiveColor`：Content 呈现中今天与选中日期的文字色，默认 `ColorPrimary`；范围中段文字改读全局 `ControlItemColorActive`（默认 `ColorText`）。Ant Design 渲染不变。
+
+## 2026-11-11
+
+- Theme
+  - 默认 `DateViewerCellTheme` 把 `PART_ValueFrame` 标记为 `TemplatedControl.IsTemplateFocusTarget`：该格子主题没有自身焦点视觉，共享焦点描边改为只包围圆角数值框，不再框住整列宽的格子。日期选择器的面板共用此主题。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-09
+
+- Theme
+  - DatePicker / RangeDatePicker 弹层中的 DateViewer / RangeDateViewer 接收 Picker 转发的 Token owner（与 Calendar 相同）：
+    `Controls[DateViewer]` 的全局 Token 不再作用于 Picker 弹层，Own Token 仍按 DateViewer 身份读取（借用）。
+
+## 2026-11-08
+
+- Theme
+  - 面板、Header、日期格以 `OwnerTokenResource` 读所属 DateViewer / RangeDateViewer 的有效全局 Token；DateViewer 主题读
+    `DateViewerTokenResource`。
+  - 新增 `DateViewer.HeaderBorderThickness` / `FooterBorderThickness` / `WeekNumberOpacity`，替换分隔线与周序号透明度字面量（默认值不变）。
+
 ## 2026-10-04
 
 - API / Token

@@ -18,7 +18,7 @@
 | `IDialogPresenter.cs` | Overlay/Window 共用的最小异步协议。 |
 | `DialogSurface.cs` | 标题、内容、Footer、按钮和 Overlay resize 的共享表面；负责 `PART_SurfaceContentLayer` 的 template part 生命周期。 |
 | `ButtonBox/DialogButtonBox.cs` | 标准按钮生成、唯一有效按钮序列和自定义集合同步。 |
-| `OverlayHost/DialogOverlayLayer.cs` | 解析 owning TopLevel 的 Avalonia `OverlayLayer`、`OverlayScope` 指定的作用域或局部 scope fallback，并管理 owner scope 内的 presenter stack。 |
+| `OverlayHost/DialogOverlayLayer.cs` | 解析 owning TopLevel 的 Avalonia `OverlayLayer`、`OverlayScope` 指定的作用域或局部 scope fallback（作用域与 fallback 落在 `ContentPresentationLayer`，T5），并管理 owner scope 内的 presenter stack。 |
 | `OverlayHost/OverlayDialogPresenter.cs` | 同时拥有 mask、Surface、placement、drag/resize 和 Overlay close motion choreography。 |
 | `WindowHost/WindowDialogPresenter.cs` | 原生 Window 属性映射、modal owner、尺寸、位置和生命周期。 |
 | `WindowHost/DialogWindow.cs` | 原生 caption close 仲裁和显式尺寸应用。 |
@@ -167,7 +167,7 @@ Overlay presenter 在外层 Surface 与内容层的关闭任务全部完成后�
   Window 宿主不使用该开关（由原生窗口关闭流程负责）。
 - Enter/Escape 由栈顶 Overlay presenter 或当前 Window 转发给 Surface 的有效按钮序列。
 - modal mask 只在左键、真实 mask visual subtree、且 presenter 为栈顶时请求关闭；`IsMaskClosable=false` 时该输入被吞掉且不发起任何关闭请求。该门控只存在于 Overlay presenter 的 mask 输入路径，不复制到 mask 控件或 Session veto 层。
-- modeless presenter 在 Surface 外不阻断 pointer hit-test；点击 Surface 会把整个 presenter 激活到栈顶。
+- modeless presenter 在 Surface 外不阻断 pointer hit-test；点击 Surface 或其逻辑关联内容弹层会把整个 presenter 激活到栈顶。激活只移动现有集合位置，不 detach/re-attach 内容。隧道阶段不强制聚焦 Surface，焦点由框架按真实输入目标分配，避免内容弹层在选择前经历额外失焦。
 - Overlay 标题栏拖动通过复用的 render-only translation 更新 Surface，并同步 Dialog offset 作为持久化状态；resize 修改 offset 或 Surface 正文尺寸。resize handle 按下后捕获 pointer，即使指针离开细小 handle，release/capture lost 仍会清理 origin 与 dragging state。Surface 正文受 Window visible frame 与有效 drawn frame thickness 共同约束，BoxShadow 不参与定位。
 - Window caption close 先请求 Session 关闭；Session commit 后 `DialogWindowCloseState.Closing` 放行一次真实 native close。`OwnerWindowClosing` 始终放行，随后由 owner closed 强制 teardown。
 - Window presenter 禁用 Surface 内隐藏 header 的 `TitleIcon`，由原生 Window 标题栏唯一承载该图标，避免两个 presenter 争用同一个 `PathIcon` visual parent。
@@ -211,6 +211,9 @@ Overlay 使用共享 Motion 的原生时钟。私有 Border 承担普通 Zoom �
 实际 Mask 是另一个透明度目标。入场 .2→1，使用 Slow / OutCirc；离场当前值→.2，使用 Mid / InOutCirc，表面透明度最终为零。
 无有效显式锚点时使用实际面板中心，原点在本次入场后冻结；遮罩使用对应时长的 Linear Fade。
 
+`OverlayDialogPresenter` 在挂树期间成组读取 `MotionDurationSlow` 和 `MotionDurationMid`。开场与离场分别在其播放开始时取值，独立设置的时长继续拥有优先级。
+`DialogSurface` 提供表面绘制与交互，表面与遮罩的播放时长统一由 `OverlayDialogPresenter` 读取。
+
 准备覆盖保持首帧透明，布局就绪后同步建立轨迹起点。关闭先替代当前入场再取消旧令牌，避免归一跳变。
 Show / Close / Dispose 的任务先登记后执行，重入取得同一任务；完成边界来自真实播放结果，不使用提交后定时器。
 
@@ -221,7 +224,7 @@ Window 在 native Show 前解析几何，继续使用原生 Opened / Closed 边�
 
 ### 8.5 Overlay 宿主与窗口几何
 
-`DialogOverlayLayer` 优先解析 `Dialog.OverlayScope` 指定的作用域；未指定时解析 placement target 所属 `TopLevel` 的 Avalonia `OverlayLayer`（该层高于普通 Window content，低于 `LightDismissOverlayLayer` 与 `PopupOverlayLayer`）。无可用 TopLevel overlay 时，使用 placement target 所在的 `ScopeAwareOverlayLayer` fallback。TopLevel host 的 `AvailableSize` 以 `TopLevel.ClientSize` 为真源；局部 scope（含 `OverlayScope` 作用域）使用 scope layer 的可用尺寸，且不解析 owning Window，因此不参与 frame 内缩与 drawn chrome 抑制。最后一个 presenter 移除后，Dialog layer 从实际 host 删除，并释放 host size 与 TopLevel size 订阅。
+`DialogOverlayLayer` 优先解析 `Dialog.OverlayScope` 指定的作用域；未指定时解析 placement target 所属 `TopLevel` 的 Avalonia `OverlayLayer`（该层高于普通 Window content，低于 `LightDismissOverlayLayer` 与 `PopupOverlayLayer`）。无可用 TopLevel overlay 时，使用 placement target 所在作用域宿主的 `ContentPresentationLayer`（T5，视口宿主入口）fallback。`OverlayScope` 指定的作用域同样落在 `ContentPresentationLayer`，高于同宿主的 FloatButton 与 Watermark，`DialogOverlayLayer` 仍铺满作用域；`OverlayDialogPresenter` 在模板根自带表面宿主 `PART_SurfaceHost`（`LayerLadder.IsSurfaceHost`），Dialog 内控件的焦点描边和 Badge 画在 Dialog 表面之上；作用域与窗口级 Dialog 共用该模板，窗口级 Dialog 的装饰因此解析到这个表面宿主而不是 Avalonia `OverlayLayer` 自带的装饰层，层级不变（相对设计的偏差，见 [视觉层规范](../../../../architecture/systems/rendering/visual-layers.md) 表面宿主一节）。TopLevel host 的 `AvailableSize` 以 `TopLevel.ClientSize` 为真源；局部 scope（含 `OverlayScope` 作用域）使用 scope layer 的可用尺寸，且不解析 owning Window，因此不参与 frame 内缩与 drawn chrome 抑制。最后一个 presenter 移除后，Dialog layer 从实际 host 删除，并释放 host size 与 TopLevel size 订阅。
 
 `WindowDrawnDecorations` overlay 是 `TopLevelHost` 中与 Window 同级的 chrome 视觉，不参与 Dialog 宿主解析。modal presenter 活跃时获取 Window chrome suppression lease；多个 Dialog 或 Drawer 通过引用计数共享可见性 owner，最后一个 lease 释放后恢复 drawn chrome。
 

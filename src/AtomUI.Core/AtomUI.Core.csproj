@@ -18,9 +18,8 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/**/*.*"/>
-        <AtomUIThemeDefinition Include="Assets/Themes/DaybreakBlue.theme.xml" />
-        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v1.xsd"
-                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
+        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v2.xsd"
+                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v2.xsd" />
     </ItemGroup>
 
     <ItemGroup>
@@ -41,13 +40,23 @@
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras"/>
+        <InternalsVisibleTo Include="AtomUI.Mobile.Controls"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Core.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.Shadcn.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.DesignLanguages.PrimeNG.Tests"/>
+        <InternalsVisibleTo Include="AtomUI.Theme.ContractTests"/>
+        <InternalsVisibleTo Include="AtomUIGallery.Tests"/>
         <InternalsVisibleTo Include="AtomUI.ThemeAssetsValidation"/>
+        <InternalsVisibleTo Include="AtomUI.GalleryPerformance"/>
         <InternalsVisibleTo Include="AtomUI.Registration.Fixtures"/>
+        <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase"/>
         <InternalsVisibleTo Include="AtomUI.Toolkits.GalleryBase.Tests"/>
         <InternalsVisibleTo Include="AtomUI.Localization.IntegrationTests"/>
+        <InternalsVisibleTo Include="AtomUI.AI.Controls"/>
+        <InternalsVisibleTo Include="AtomUI.AI.Controls.Tests"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,90 +1,17 @@
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
-using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class DropdownButtonToken : AbstractControlDesignToken
+public sealed partial class DropdownButtonToken : AbstractButtonGeometryToken
 {
-    public Color BorderColorDisabled { get; set; }
-    public Thickness ContentPadding { get; set; }
-    public Thickness ContentPaddingLG { get; set; }
-    public Thickness ContentPaddingSM { get; set; }
-    public Thickness ExtraContentMargin { get; set; }
-    public Thickness ExtraContentMarginLG { get; set; }
-    public Thickness ExtraContentMarginSM { get; set; }
-    public Thickness CirclePadding { get; set; }
-    public double OnlyIconSize { get; set; }
-    public double OnlyIconSizeLG { get; set; }
-    public double OnlyIconSizeSM { get; set; }
-    public Thickness IconMargin { get; set; }
-    public Thickness IconEndMargin { get; set; }
-    public double ContentFontSize { get; set; } = double.NaN;
-    public double ContentFontSizeLG { get; set; } = double.NaN;
-    public double ContentFontSizeSM { get; set; } = double.NaN;
-    public double ContentLineHeight { get; set; } = double.NaN;
-    public double ContentLineHeightLG { get; set; } = double.NaN;
-    public double ContentLineHeightSM { get; set; } = double.NaN;
-    public double MarginToAnchor { get; set; }
-    public Thickness IconOnyPadding { get; set; }
-    public Thickness IconOnyPaddingLG { get; set; }
-    public Thickness IconOnyPaddingSM { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        var fontSize = EffectiveGlobalToken.FontSize;
-        var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
-        ContentFontSize = !double.IsNaN(ContentFontSize) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !double.IsNaN(ContentFontSizeSM) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !double.IsNaN(ContentFontSizeLG) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = ResolveLineHeight(ContentLineHeight, ContentFontSize);
-        ContentLineHeightSM = ResolveLineHeight(ContentLineHeightSM, ContentFontSizeSM);
-        ContentLineHeightLG = ResolveLineHeight(ContentLineHeightLG, ContentFontSizeLG);
-
-        var lineWidth = EffectiveGlobalToken.LineWidth;
-        var controlHeightSM = EffectiveGlobalToken.ControlHeightSM;
-        var controlHeight = EffectiveGlobalToken.ControlHeight;
-        var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
-
-        ContentPaddingSM = new Thickness(
-            8 - lineWidth,
-            Math.Max((controlHeightSM - ContentLineHeightSM) / 2 - lineWidth, 0));
-        ContentPadding = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeight - ContentLineHeight) / 2 - lineWidth, 0));
-        ContentPaddingLG = new Thickness(
-            EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeightLG - ContentLineHeightLG) / 2 - lineWidth, 0));
-
-        ExtraContentMarginSM = new Thickness(ContentPaddingSM.Left / 2, 0, 0, 0);
-        ExtraContentMargin = new Thickness(ContentPadding.Left / 2, 0, 0, 0);
-        ExtraContentMarginLG = new Thickness(ContentPaddingLG.Left / 2, 0, 0, 0);
-        CirclePadding = new Thickness(ContentPaddingSM.Left / 2);
-        OnlyIconSizeSM = EffectiveGlobalToken.IconSize;
-        OnlyIconSize = EffectiveGlobalToken.IconSizeLG;
-        OnlyIconSizeLG = EffectiveGlobalToken.IconSizeLG;
-        IconMargin = new Thickness(0, 0, EffectiveGlobalToken.UniformlyPaddingXXS, 0);
-        IconEndMargin = new Thickness(EffectiveGlobalToken.UniformlyPaddingXXS, 0, 0, 0);
-        IconOnyPadding = UniformIconPadding(controlHeight, ContentLineHeight, lineWidth);
-        IconOnyPaddingLG = UniformIconPadding(controlHeightLG, ContentLineHeightLG, lineWidth);
-        IconOnyPaddingSM = UniformIconPadding(controlHeightSM, ContentLineHeightSM, lineWidth);
-        BorderColorDisabled = EffectiveGlobalToken.ColorBorder;
-        MarginToAnchor = EffectiveGlobalToken.UniformlyMarginXXS;
-    }
-
-    private static double ResolveLineHeight(double value, double fontSize)
-    {
-        return !double.IsNaN(value)
-            ? value
-            : CalculatorUtils.CalculateLineHeight(fontSize) * fontSize;
-    }
-
-    private static Thickness UniformIconPadding(double height, double lineHeight, double lineWidth)
-    {
-        return new Thickness(Math.Max((height - lineHeight) / 2 - lineWidth, 0));
-    }
+    /// <summary>Margin around the drop-down indicator at the default button size.</summary>
+    public partial Thickness ExtraContentMargin { get; set; }
+    /// <summary>Margin around the drop-down indicator on a large button.</summary>
+    public partial Thickness ExtraContentMarginLG { get; set; }
+    /// <summary>Margin around the drop-down indicator on a small button.</summary>
+    public partial Thickness ExtraContentMarginSM { get; set; }
+    /// <summary>Gap between the drop-down popup and its anchor.</summary>
+    public partial double MarginToAnchor { get; set; }
 }

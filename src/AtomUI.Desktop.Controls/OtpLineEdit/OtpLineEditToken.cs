@@ -3,30 +3,22 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class OtpLineEditToken : AbstractControlDesignToken
+public sealed partial class OtpLineEditToken : AbstractControlDesignToken
 {
 
-    public OtpLineEditToken()
+    /// <summary>Width of a character cell at the standard size.</summary>
+    public partial double CellWidth { get; set; }
 
-    {
-    }
+    /// <summary>Width of a character cell at the large size.</summary>
+    public partial double CellWidthLG { get; set; }
 
-    public double CellWidth { get; set; }
+    /// <summary>Width of a character cell at the small size.</summary>
+    public partial double CellWidthSM { get; set; }
 
-    public double CellWidthLG { get; set; }
+    /// <summary>Gap between adjacent character cells.</summary>
+    public partial double CellGap { get; set; }
 
-    public double CellWidthSM { get; set; }
-
-    public double CellGap { get; set; }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-
-        CellWidth               = EffectiveGlobalToken.ControlHeight;
-        CellWidthLG             = EffectiveGlobalToken.ControlHeightLG;
-        CellWidthSM             = EffectiveGlobalToken.ControlHeightSM;
-        CellGap                 = EffectiveGlobalToken.UniformlyPaddingXXS;
-    }
+    /// <summary>Joins adjacent cells into one frame when no separator is provided.</summary>
+    public partial bool JoinCells { get; set; }
 
 }

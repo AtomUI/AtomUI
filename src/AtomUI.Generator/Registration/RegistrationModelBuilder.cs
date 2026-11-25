@@ -330,7 +330,6 @@ internal sealed class RegistrationModelBuilder
             builderType is null ? null : RegistrationType.From(builderType), RegistrationType.From(_compilation.GetSpecialType(SpecialType.System_Void)),
             RegistrationFingerprint.ComputePackageSchema(_packageId, _catalog, controls, tokens, assets))
         {
-            SupportsStartupManifest = _compilation.GetTypeByMetadataName("AtomUI.Registration.ControlPackageDefinition") is not null,
             HasLanguageModule = Types(_compilation.Assembly.GlobalNamespace).Any(type => type.GetAttributes().Any(attribute =>
                 attribute.AttributeClass?.ToDisplayString() == "AtomUI.Localization.LanguageCatalogAttribute")),
             // 新生成器引用旧 Core 时保留旧构造入口，不要求旧 Core 含新增工厂 ABI。
@@ -632,7 +631,8 @@ internal sealed class RegistrationModelBuilder
                 var prefix = separator < 0 ? "" : name.Substring(0, separator);
                 name = separator < 0 ? name : name.Substring(separator + 1);
                 const string suffix = "TokenResource";
-                if (!name.EndsWith(suffix, StringComparison.Ordinal) || name == "SharedTokenResource")
+                // Shared and Owner reads resolve global Tokens without naming a Token owner.
+                if (!name.EndsWith(suffix, StringComparison.Ordinal) || name is "SharedTokenResource" or "OwnerTokenResource")
                     {
                         continue;
                     }

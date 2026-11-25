@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using AtomUI.Theme.Resources;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.Space;
 using Avalonia;
@@ -98,16 +99,16 @@ public class SpaceShowCasePageTests
         semanticSource.ShouldContain("Selector=\"atom|Space.semantic-style-demo-object\"");
         semanticSource.ShouldContain("Selector=\"atom|Space.semantic-style-demo-function\"");
         semanticSource.ShouldContain("Property=\"Background\"");
-        semanticSource.ShouldContain("Value=\"#F0F0F0\"");
-        semanticSource.ShouldContain("Value=\"#E6F7FF\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillAlter}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("Property=\"BorderBrush\"");
-        semanticSource.ShouldContain("Value=\"#E0000000\"");
-        semanticSource.ShouldContain("Value=\"#1890FF\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorTextSecondary}\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBorderHover}\"");
         semanticSource.ShouldContain("Property=\"BorderThickness\"");
         semanticSource.ShouldContain("Property=\"BorderDashArray\"");
         semanticSource.ShouldContain("Value=\"4,2\"");
         semanticSource.ShouldContain("Property=\"Foreground\"");
-        semanticSource.ShouldContain("Value=\"#FF0000\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorErrorText}\"");
         semanticSource.ShouldContain("Property=\"FontWeight\"");
         CountOccurrences(semanticSource, "<atom:SpaceItemStyle ").ShouldBe(1);
         CountOccurrences(semanticSource, "<atom:SpaceSeparatorStyle ").ShouldBe(1);
@@ -156,7 +157,8 @@ public class SpaceShowCasePageTests
             demos.Length.ShouldBe(2);
 
             var objectDemo = demos.Single(static space => space.Classes.Contains("semantic-style-demo-object"));
-            AssertSolidColor(objectDemo.BorderBrush, "#E0000000");
+            var tokens = ControlTokenAccessor.Capture(objectDemo);
+            AssertSolidColor(objectDemo.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorTextSecondary));
             objectDemo.BorderThickness.ShouldBe(new Thickness(2));
             objectDemo.BorderDashArray.ShouldNotBeNull();
             objectDemo.BorderDashArray.ShouldBe(new double[] { 4, 2 }, ignoreOrder: false);
@@ -169,7 +171,7 @@ public class SpaceShowCasePageTests
             objectItems.Length.ShouldBe(3);
             foreach (var button in objectItems)
             {
-                AssertSolidColor(button.Background, "#F0F0F0");
+                AssertSolidColor(button.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorFillAlter));
                 button.Padding.ShouldBe(new Thickness(4));
             }
 
@@ -180,24 +182,24 @@ public class SpaceShowCasePageTests
             objectSeparators.Length.ShouldBe(2);
             foreach (var separator in objectSeparators)
             {
-                AssertSolidColor(separator.Foreground, "#FF0000");
+                AssertSolidColor(separator.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorErrorText));
                 separator.FontWeight.ShouldBe(FontWeight.Bold);
             }
 
             var functionDemo = demos.Single(static space => space.Classes.Contains("semantic-style-demo-function"));
-            AssertSolidColor(functionDemo.Background, "#E6F7FF");
-            AssertSolidColor(functionDemo.BorderBrush, "#1890FF");
+            AssertSolidColor(functionDemo.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBg));
+            AssertSolidColor(functionDemo.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBorderHover));
             functionDemo.Padding.ShouldBe(new Thickness(8));
             functionDemo.SizeType.ShouldBe(AtomUI.CustomizableSizeType.Large);
             functionDemo.BorderThickness.ShouldBe(new Thickness(0));
         });
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static void AssertSolidColor(IBrush? actual, Color expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(expected);
     }
 
     private static string ExtractSpaceExampleItems(string source)

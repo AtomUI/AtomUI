@@ -9,6 +9,7 @@
 | [AtomUI.Performance](AtomUI.Performance/AtomUI.Performance.csproj) | 控件级基准 | 批量创建单个控件或小组合，观测实例化、布局、visual tree、分配和专项行为验证 | 微基准，不代表 Gallery 页面打开体验 |
 | [AtomUI.Localization.Performance](AtomUI.Localization.Performance/AtomUI.Localization.Performance.csproj) | Localization 基准 | 测量 Registry/Snapshot 构建、`ILocalizer.Get`、语言切换和 Snapshot 内存增长 | 纯 Localization 运行时基线，不加载桌面控件主题 |
 | [AtomUI.GalleryPerformance](AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj) | Gallery 场景复现 | 启动 Gallery Workspace，走真实 route/view/XAML，测量 showcase 从导航触发到视觉树和布局稳定 | 体验路径基准，必须复现 Gallery 真实使用方式 |
+| [AtomUI.ControlBaseline](AtomUI.ControlBaseline/AtomUI.ControlBaseline.csproj) | 单控件成本普查 | 对每个可默认构造的控件类型测单实例的构造、挂载、套模板和布局成本，可切换 AtomUI 主题或 Avalonia 原生 Fluent 主题 | 同一套代码分两个进程跑，用来判断控件本身相对原生控件的轻重；不代表页面体验 |
 | [AtomUI.StartupPerformance](AtomUI.StartupPerformance/README.md) | 启动基准 | 冷启动进程：平台初始化、AtomUI 初始化、窗口首帧与渲染批次、UI 线程最长阻塞 | 独立进程交错采样；单次运行只作 smoke |
 
 ## AtomUI.Performance 结构
@@ -43,12 +44,41 @@
 
 ## 当前命令
 
+### 设计语言编译与切换
+
+先分别在 M0 基线与候选工作目录构建 `tests/AtomUI.Desktop.Controls.Tests` 的 Release `net10.0`，
+再对候选构建 `tests/AtomUIGallery.Tests`。复用已有且与源码匹配的产物。采样期间暂停并行构建和测试。
+从两个工作目录的 Release 产物交错运行显式测量。`baseline` 和 `candidate` 为两个工作目录的绝对路径。
+
+```bash
+out=$(mktemp -d)
+sample_ant() {
+  ATOMUI_MEASURE_OUTPUT="$out/$2-$3.txt" ATOMUI_MEASURE_LABEL="$2" \
+    dotnet "$1/.artifacts/bin/Release/net10.0/AtomUI.Desktop.Controls.Tests.dll" \
+    -explicit only -method '*.ThemeCompileMeasurement.Measure_Default_Theme_Compile_And_Switch'
+}
+sample_ant "$baseline" baseline 1 && sample_ant "$candidate" candidate 1 &&
+  sample_ant "$candidate" candidate 2 && sample_ant "$baseline" baseline 2
+
+ATOMUI_MEASURE_OUTPUT="$out/design-language-scenarios.txt" \
+  dotnet "$candidate/.artifacts/bin/Release/net10.0/AtomUIGallery.Tests.dll" \
+  -explicit only -method '*.DesignLanguageScenarioMeasurement.Measure_Design_Language_Scenarios'
+```
+
+用 Ant Design 的 `compile.{default,dark,compact}` 冷编译中位数、分配和取值哈希，以及同名 `switch.*`
+的缓存与未缓存往返中位数做 M0 对照。默认每项 15 个样本、3 次预热。新场景报告 Ant Design → Shadcn →
+PrimeNG → Ant Design 的冷切换和缓存命中、Ant Design 两种 idiom 冷编译、Button 固定外观与覆盖种子的独立求值，
+以及局部作用域单 Alias 变更的读集命中和重算。切换由公开主题 API 触发，窗口在 Headless 宿主内显示，不采样鼠标输入
+和 GPU 上屏。局部场景在每次计时前清快照缓存，计时包含 scope 挂载和惰性控件求值。
+单 Alias 输出将有读集的重算、缺读集时的保守重算与替换的空控件结果分开。M0 的显式测量只提供 Ant Design 三条链的对照。
+启动另见 [启动采样](AtomUI.StartupPerformance/README.md#设计语言启动对比)。
+
 ### 原生 Gallery 动效采样
 
 `AtomUI.GalleryPerformance --native-motion` 是单独的原生宿主模式，运行真实 `GalleryApplication`、Workspace和页面。
 原有导航/构建模式仍为Headless，两种口径分开使用。场景为 `sidebar`、`submenu`、`progress`、`statistic`、
 `beam`、`popup`、`beam-offscreen`、`all`；所有动作通过公开控件API驱动，不测原生鼠标输入延迟。
-Popup场景使用真实NavMenu Popup；若其未配置OpenMotion/CloseMotion，结果明确标记为静态开合成本，不声称取得动画FPS。
+Popup场景使用真实NavMenu Popup，必须出现真实动画中间值；缺失默认动效会明确失败，不接收静态终值作为动画样本。
 离屏循环允许零更新，且必须通过真实viewport几何断言，不用隐藏控件模拟离屏。
 
 ```bash
@@ -60,6 +90,12 @@ python3 tools/performances/run_native_motion.py \
 # 修改后使用相同参数和新的输出目录，可追加：
 # --compare /tmp/atomui-motion-baseline/summary.json
 ```
+
+原生公开API采样期间，窗口必须保持激活且不能收到未编排的输入。窗口失活后菜单正常关闭属于交互合同；
+探针将整批测量标记为 `Interrupted`、`AcceptedSamples=0`，以 exit 3 结束，runner 不重试、不生成聚合 summary。
+这不关闭产品的hover/失焦策略。开始前让布局稳定，采样期间保持测试窗口前台，避免鼠标、键盘和滚轮操作。
+Schema 3 记录这一测量条件，旧版/中断报告不能混入。前后实际动画回调间隔中位数相差超过10%时拒绝成本比较；
+声明相同屏幕刷新率并不能覆盖自适应刷新差异。自然原生CPU数据还会受每动作实际tick数影响，精确帧成本应结合固定tick实验。
 
 `--refresh-rate` 是调用方核实后的屏幕频率声明，不是工具自动检测值；不传时不计算刷新预算。
 每个进程保留身份、程序集SHA、产品差异摘要、窗口/DPI/主题、场景树形态及原始时间序列，聚合输出中位/P95/P99、
@@ -271,6 +307,90 @@ dotnet run --project tools/performances/AtomUI.GalleryPerformance/AtomUI.Gallery
   --iterations 10 --warmup 2 --timeout-ms 30000 \
   --markdown /tmp/select-showcase-navigation-phase4.md
 ```
+
+### 全量 ShowCase 审计
+
+`AtomUI.GalleryPerformance --audit` 在一个进程里依次导航全部（或 `--audit-showcases a,b,c` 指定的）ShowCase。
+它只计导航触发和布局泵的时间与当前线程分配，就绪判定用的视觉树统计不计入，因此数字低于单页导航模式，两者不能混比。
+`首次访问` 是进程内第一次进入该页，受访问顺序影响，不是冷进程数据。
+
+- `--audit-full`：关闭 Gallery 的分批延迟挂载，物化页面上全部 ShowCaseItem。
+- `--audit-loose-ready`：任意非空且形态稳定的路由即视为就绪，用于专用就绪条件已过期的 ShowCase。
+- `--audit-reverse`：反向访问顺序，用来估计顺序对首次访问的影响。
+- `--json` / `--markdown`：输出每页的 visual 数、类型分布、首次与稳态耗时、分配量。
+
+```bash
+dotnet build tools/performances/AtomUI.GalleryPerformance/AtomUI.GalleryPerformance.csproj -c Release --framework net10.0
+dotnet .artifacts/bin/Release/net10.0/AtomUI.GalleryPerformance.dll --audit --audit-loose-ready \
+  --iterations 12 --warmup 2 --timeout-ms 40000 \
+  --json /tmp/atomui-audit.json --markdown /tmp/atomui-audit.md
+```
+
+### 单控件成本普查
+
+`AtomUI.ControlBaseline` 每个类型建 `--count` 个实例（默认 100）放进 `WrapPanel`，减去空窗口底噪后给出单实例的
+visual 数、耗时和分配量。`ContentControl` 填入字符串内容，`ItemsControl` 为空，所以它测的是默认关闭态的固定成本。
+`--filter A,B` 只测指定类型名。
+输出的 `gc/sample` 是计时区间内发生的 gen0 回收次数。前后对比时两侧次数不同，计时差异可能来自回收时机而非控件本身；
+可用 `DOTNET_GCgen0size=0x40000000` 让计时区间内不发生回收，单独比较 CPU 工作量。前后对比应使用两份独立构建交替运行。
+`cpu=` 列是计时区间内的进程 CPU 时间（含 GC 线程）。机器负载高时，它比墙钟时间更少受到等待 CPU 的影响，但仍会随 GC 并行度波动。负载高时以分配量为主要依据，耗时用多轮交替的配对比较判断方向。
+
+`--frame-matrix <文件>` 对每个输入宿主，按 4 种 variant × 3 种 status × 8 种交互状态（以及 Large / Small 尺寸），输出内部输入 frame 与附加区的边框、背景、阴影、内边距、圆角和可见性。每种组合一行，两份构建的输出可直接 `diff`。
+
+```bash
+dotnet build tools/performances/AtomUI.ControlBaseline/AtomUI.ControlBaseline.csproj -c Release --framework net10.0
+dotnet .artifacts/bin/Release/net10.0/AtomUI.ControlBaseline.dll --mode fluent --json /tmp/baseline-fluent.json
+dotnet .artifacts/bin/Release/net10.0/AtomUI.ControlBaseline.dll --mode atomui --json /tmp/baseline-atomui.json
+```
+
+### 性能改动的视觉与泄漏守卫
+
+性能改动必须视觉零差异、无资源泄漏。`run_perf_guards.sh` 把未优化构建（例如基点提交的 worktree）与当前构建放在一起检查：
+
+```bash
+tools/performances/run_perf_guards.sh <未优化构建的 Release 输出目录> .artifacts/bin/Release/net10.0 /tmp/perf-guard
+```
+
+- 页面视觉：`AtomUI.GalleryPerformance --audit --audit-full --snapshot-dir` 物化全部 ShowCaseItem，按整页高度截图；两侧各截两次。
+- 状态视觉：`AtomUI.ControlBaseline --state-snapshots` 对每个控件类型渲染默认态、各视觉枚举取值（逐个）、常见视觉布尔属性、禁用态，
+  以及强制的 `:pointerover`、`:pressed`、`:focus`、`:focus-within`、`:focus-visible`、`:checked`、`:selected`；能关的动效全部关闭。
+- `compare_snapshots.py` 把同一构建两次截图之间不同的像素当作动画遮罩，其余像素必须完全一致；`away px` 列是离动画像素较远的差异，
+  需要逐个解释。只靠两次截图的遮罩覆盖不全，动画附近偶有漏网像素时，重截几次确认是否稳定。
+- 泄漏：`--leak-check N` 反复进入、离开每个页面后强制 GC，统计仍存活的页面实例；`AtomUI.ControlBaseline --leak` 对每个控件类型
+  显示后关闭窗口再统计存活实例。`--leak-selftest` 故意保留实例，用来确认检测本身有效。候选构建的存活数不得多于基线。
+- 状态截图默认先稳定 6 轮再截。环境变量 `ATOMUI_STATE_SETTLE_PASSES=60` 可以延长稳定轮数，让正在进行的过渡走完，用来区分“截到过渡中途”和“稳定差异”。
+- 守卫不测时间；运行期间不要重新构建被检查的输出目录，也不要编辑正在执行的脚本。
+- 可选的第 5～7 个参数是设计语言变体（`<设计语言> <明暗> <密度>`，取值见
+  `AtomUI.GalleryPerformance --list-variants`）：页面截图、状态截图与泄漏检查都在该变体下进行。Gallery 页面经 Gallery 自己的
+  菜单命令切换，并与解析器路径比对主题指纹（这一比对是设计语言重构期间的临时机制）；状态截图走同一个解析器路径。
+- 环境变量 `SNAPSHOT_TOOL_ARGS` 追加到两种截图命令，`SNAPSHOT_COMPARE_ARGS` 追加到 `compare_snapshots.py`；默认为空，行为不变。
+  - `--freeze-loading-icons`：截图前停止加载图标的持续旋转并复位角度，使同一构建的多次截图逐像素一致。基线构建也必须支持
+    这个参数，否则两边一边旋转一边静止。
+  - `--ignore-near-animation`：离自带动画像素 `--near`（默认 6）像素以内的变化照常列出但不计失败，更远的仍计失败。
+- `REPEAT_UNSTABLE_PAGES=1` 对已观察到同构建帧差且首轮像素检查失败的页面，每侧补拍两次。比较器要求每一张补拍到齐，按真实的
+  同构建帧差更新动画遮罩，尺寸和剩余稳定像素仍须相等。
+- `NORMALIZE_PALETTE_NAMESPACE=1` 只用于设计语言迁移时与 M0 基线比较。候选工具抓拍 Palette 时把已批准改名的
+  `PresetPalettes` 命名空间标签写为基线文字，正常运行时仍显示当前命名空间。
+- 状态图和泄漏记录会核对两侧实际覆盖。设计语言守卫还检查 M0 已知的四项状态图采集失败名单。页面泄漏测量缺行、
+  控件泄漏 JSON 缺项或候选新增测量错误均导致失败。
+
+### 设计语言守卫
+
+设计语言重构期间，用 `run_design_language_guards.sh` 对每个设计语言变体跑一遍上面的守卫，并比对全部编译后的 Token 取值：
+
+```bash
+tools/performances/run_design_language_guards.sh <基线构建的 Release 输出目录> .artifacts/bin/Release/net10.0 /tmp/dl-guard \
+  [页面列表] [变体正则]
+```
+
+- 默认 48 个变体全跑；第 5 个参数是匹配 `--list-variants` 输出行的扩展正则，例如 `"^Shadcn.Nova "` 只跑 Nova 的 4 个变体。
+- 自动带上 `--freeze-loading-icons` 与 `--ignore-near-animation`；状态截图的稳定轮数默认 40（`ATOMUI_STATE_SETTLE_PASSES`
+  可覆盖），机器繁忙时 6 轮可能截到禁用按钮颜色过渡的中途。每次截图约多 11 秒。
+- 取值比对：两边各运行一次 `AtomUI.GalleryPerformance --dump-tokens <dir>`（48 个变体 × 种子组合，共 484 个文件，格式同
+  `tests/AtomUI.Themes.Tests/ThemeSnapshotDump.cs`），再由 `compare_token_dumps.py` 按键比对。同目录下存在
+  `design_language_token_renames.txt`（每行 `旧键 -> 新键`）或 `design_language_token_exceptions.txt`（每行一个键）时自动带上；
+  环境变量 `ALLOW_ADDED_TOKENS=1` 时，只有候选有的新键只列出、不计失败。
+- 结果在输出目录的 `summary.txt`：每个变体一行 PASS/FAIL 与耗时，最后是取值比对与总结果。
 
 ## 扩展建议
 

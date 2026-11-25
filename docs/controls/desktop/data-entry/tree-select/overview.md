@@ -94,6 +94,14 @@ TreeSelect 继承 `AbstractSelect` 的输入壳体、弹层、清除、状态、
 | `PopupFrame` | `Border` | 懒创建的候选弹层外壳。 |
 | `PART_TreeView` | `TreeSelectTreeView` | 懒创建的树候选控件。 |
 
+### 打开与关闭动效配置
+
+从 AbstractSelect 继承 OpenMotion/CloseMotion，控制根弹层，不改变 TreeView 内容展开。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 TreeSelect 的核心状态流：
@@ -127,6 +135,14 @@ Form value + MaxCount state
 
 清除行为通过 `SelectHandle.ClearRequestedEvent` 冒泡到 TreeSelect，并调用 `Clear()` 清空当前选择。
 
+键盘行为：
+
+- 键盘焦点始终留在 TreeSelect 或其搜索输入框，下拉树不可聚焦；导航键转发给下拉树，树内的活动项、遍历和提交策略遵守 [TreeView 键盘导航设计](../../data-display/tree-view/keyboard-navigation-design.md)。
+- 下拉关闭时，↓ / ↑ / Enter 打开下拉；焦点不在可编辑输入框时，Space 也打开下拉。`F4` 和 `Alt+↓` / `Alt+↑` 切换下拉，下拉打开时 `Escape` 关闭。
+- 下拉打开时，↑ / ↓ / Enter 总是转发。Space 在可编辑搜索框中输入空格，不转发。← / → / Home / End 在搜索文本非空时留给输入框移动光标，否则转发。输入法组合期间不转发。
+- 方向键只移动活动项，不改变 TreeSelect 的值；Enter / Space 提交。单选提交后关闭下拉，勾选模式切换勾选后下拉保持打开。达到最大选择数时，被禁用的节点不能通过键盘提交。
+- 下拉关闭时清除活动项；再次打开后的第一次导航键从当前选中节点开始。
+
 ## 5. 视觉与主题模型
 
 TreeSelect 的默认视觉由 TreeSelect 专属主题、`InputControlFrame` / Select 家族 AddOnDecoratedBox、TreeView 和 PopupHost 协作完成。
@@ -144,6 +160,12 @@ TreeSelect 的默认视觉由 TreeSelect 专属主题、`InputControlFrame` / Se
 单选结果文本和多选 tag 的完整内容提示复用共享 `OverflowTip` attached behavior。主题通过 `IsShowOverflowTip`、`OverflowTipDelay` 和 `OverflowTipPlacement` 控制提示开关、延迟和位置，实际 tooltip 仅在文本视觉溢出时托管到 `ToolTip`。
 
 右侧 count、content add-on 和 handle 的稳定 template part 状态由 AXAML compiled ancestor binding 表达。C# 中只保留 frame layout part 到 SelectHandle 的 hover / pressed sibling 状态转发，因为该关系不是 templated parent 绑定，不能用 `TemplateBinding` 表达；该转发不改变 `InputControlFrame` 对输入表面状态的唯一 ownership。
+
+### 弹层动效契约
+
+TreeSelect 根弹层采用 Select 对应的 Slide、MotionDurationMid，按实际上下位置选择 SlideUp/SlideDown。内部树节点的展开属于树布局动效，与根弹层入离场分别管理。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 
@@ -171,6 +193,7 @@ TreeSelect 属于 Data Entry 选择控件家族，与 Select、Cascader、DatePi
 - `ItemsSource` 变化必须尽量按节点路径 identity 保留已有选择。
 - `Clear()` 必须同时清空单选和多选状态。
 - Popup 打开、关闭和 light-dismiss 语义必须继续由 `AbstractSelect` 管理。
+- 键盘焦点必须留在 TreeSelect；下拉树保持不可聚焦，并关闭移动即选择，只有 Enter / Space 能写入 TreeSelect 的值。
 - 重新套用模板或 detach 时必须释放旧 popup 内容、TreeView 事件订阅和模板 part relay binding。
 - 右侧稳定 template part 优先使用 AXAML binding，不能把可静态表达的绑定重新搬回 C#。
 - `SizeType=Custom` 必须继续以 `Middle` 作为未显式覆盖时的默认视觉基线。

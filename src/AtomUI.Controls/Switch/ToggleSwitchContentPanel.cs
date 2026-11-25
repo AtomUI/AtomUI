@@ -1,10 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace AtomUI.Controls;
 
 // 内容画布汇报内容的期望尺寸，使内容尺寸变化沿模板树触发 owner 重新测量。
-// 偏移由主题声明式传入；本面板是内容的唯一排列 owner，包含偏移动画的每一帧。
+// 偏移由模板提供。内容排列在固定槽，过渡只更新渲染平移。
 internal sealed class ToggleSwitchContentPanel : Canvas
 {
     public static readonly StyledProperty<Point> OnContentOffsetProperty =
@@ -25,10 +26,38 @@ internal sealed class ToggleSwitchContentPanel : Canvas
         set => SetValue(OffContentOffsetProperty, value);
     }
 
-    static ToggleSwitchContentPanel()
+    internal static void SetContentOffset(Control? child, Point offset)
     {
-        AffectsArrange<ToggleSwitchContentPanel>(OnContentOffsetProperty, OffContentOffsetProperty);
+        if (child is null)
+        {
+            return;
+        }
+
+        if (child.RenderTransform is TranslateTransform transform)
+        {
+            transform.X = offset.X;
+            transform.Y = offset.Y;
+        }
+        else
+        {
+            child.SetCurrentValue(RenderTransformProperty, new TranslateTransform(offset.X, offset.Y));
+        }
     }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == OnContentOffsetProperty || change.Property == OffContentOffsetProperty)
+        {
+            foreach (var child in Children)
+            {
+                ApplyOffset(child);
+            }
+        }
+    }
+
+    private void ApplyOffset(Control child) =>
+        SetContentOffset(child, child.Name == "PART_OnContentPresenter" ? OnContentOffset : OffContentOffset);
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -54,8 +83,8 @@ internal sealed class ToggleSwitchContentPanel : Canvas
     {
         foreach (var child in Children)
         {
-            var offset = child.Name == "PART_OnContentPresenter" ? OnContentOffset : OffContentOffset;
-            child.Arrange(new Rect(offset, child.DesiredSize));
+            child.Arrange(new Rect(child.DesiredSize));
+            ApplyOffset(child);
         }
 
         return finalSize;

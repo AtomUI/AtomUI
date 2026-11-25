@@ -2,6 +2,47 @@
 
 本文档记录 Tooltip 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token
+  - 新增 Own Token `ArrowSize`、`ArrowTipRadius`、`ArrowBaseRadius`、`ArrowStrokeThickness`：Tooltip 箭头自己的宽度、尖角圆角、与主体衔接处的圆弧半径和描边宽度，不再与 Popover 等箭头浮层共用 `ArrowDecoratedBoxToken`。默认值与箭头框相同（`SizePopupArrow`、`BorderRadiusXS`、`BorderRadiusOuter`、1）。
+  - 新增 Own Token `MarginToAnchor`（默认 4，即附加属性 `ToolTip.MarginToAnchor` 的默认值）：宿主和 Tooltip 实例都没有设置 `ToolTip.MarginToAnchor` 时，弹层与锚点的距离取它；显式设置的值仍然优先。ControlTheme 写入内部属性 `ThemeMarginToAnchor`。
+  - PrimeNG：箭头按 PrimeUIX `tooltip.gutter`（4px）画成 8×4 的直角三角，无圆角、无描边；`MarginToAnchor` 0.5，主体离锚点正好 4px，箭头占满这段间距。此前共用 Popover 的 19px 箭头和 slate 200 描边，箭头偏大，描边在交界处形成一条浅色缝；箭头又额外加在 4px 间距之外。
+  - Shadcn：箭头按官方 `TooltipPrimitive.Arrow`（10px 方块旋转 45°、2px 圆角、上移 50% + 2px）为宽 `2 × (5√2 − 2)`、尖角圆角 2、无衔接圆弧。
+- Theme：箭头几何重做，见 ArrowDecoratedBox 部分（`ArrowIndicator`）。
+
+## 2026-11-16
+
+- Token
+  - 新增 Own Token `ToolTipShadows`：Tooltip 弹层专属阴影，默认等于全局 `BoxShadowsSecondary`（改动前的实际绘制值，Ant Design 渲染不变），主题可置空实现 shadcn 无阴影 Tooltip；ControlTheme 写入 `ToolTip.ToolTipShadows`，由控件代码转发到运行期创建的跨根 Popup。
+
+## 2026-11-15
+
+- Theme：ToolTip 箭头框体的 `BorderThickness` 固定为 0，主题经 `ArrowDecoratedBoxToken.ContentBorderThickness` 给箭头框体加边框时 Tooltip 保持无边框（PrimeUIX tooltip 无边框）。
+
+## 2026-11-08
+
+- Theme / Token
+  - ToolTip theme reads its globals through `ToolTipTokenResource`; the Own Token `MotionDuration` (default `MotionDurationFast`) now sets the zoom duration.
+  - Preset colours come from the snapshot palettes (dark palette under a dark theme) and are re-resolved on attach and theme change; the colour is projected onto `Background` by the theme, so application styles and local `Background` values win over a preset or custom colour, and a tooltip without a colour returns to `ToolTipBackground`.
+  - Edge-aligned zoom origins inset by the frame's drawn corner radius instead of the scope-root `BorderRadius`.
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - ToolTip 实例公开 OpenMotion/CloseMotion；字符串 Tip 创建的实例由主题提供默认。OverflowTip 复用实际 ToolTip，不重复注册，也不新增宿主 Motion 附加属性。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 ZoomBig 使用 Fast 时长、alignment/箭头 Token 原点与实例/宿主来源规则。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-03
 
 - Implementation

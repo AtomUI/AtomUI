@@ -4,8 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MenuSeparator}" TargetType="atom:MenuSeparator">
-        <Setter Property="MinHeight" Value="{atom:MenuTokenResource SeparatorItemHeight}"/>
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}"/>
-        <Setter Property="LineWidth" Value="{atom:SharedTokenResource LineWidth}"/>
+        <Setter Property="MinHeight" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.SeparatorItemHeight)}"/>
+        <Setter Property="BorderBrush" Value="{atom:MenuSeparatorTokenResource ColorBorder}"/>
+        <Setter Property="LineWidth" Value="{atom:MenuSeparatorTokenResource LineWidth}"/>
     </ControlTheme>
 </ResourceDictionary>

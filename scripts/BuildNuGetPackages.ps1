@@ -4,7 +4,8 @@ param(
     [string]$BuildType = "Release",
     [string]$PackageOutputDir = "",
     [string]$PackageValidationBaselineVersion = "",
-    [string]$NativeCompilerSourceRoot = ""
+    [string]$NativeCompilerSourceRoot = "",
+    [string]$VersionOverride = ""
 )
 
 Set-StrictMode -Version Latest
@@ -40,6 +41,9 @@ $buildArguments = @(
 )
 if (-not [string]::IsNullOrWhiteSpace($NativeCompilerSourceRoot)) {
     $buildArguments += "-p:AtomUINative8CompilerSourceRoot=$NativeCompilerSourceRoot"
+}
+if (-not [string]::IsNullOrWhiteSpace($VersionOverride)) {
+    $buildArguments += "-p:AtomUIVersion=$VersionOverride"
 }
 
 # When a baseline version is supplied, the packages are validated against that released version:
@@ -82,6 +86,9 @@ $version = [string]$versionProps.Project.PropertyGroup.AtomUIVersion
 if ([string]::IsNullOrWhiteSpace($version)) {
     throw "Unable to read AtomUIVersion from build/Versions.props"
 }
+if (-not [string]::IsNullOrWhiteSpace($VersionOverride)) {
+    $version = $VersionOverride
+}
 
 $expectedPackageNames = @($AtomUIExpectedPackageIds | ForEach-Object { "$($_).$version.nupkg" })
 $actualPackageNames = @(
@@ -99,7 +106,7 @@ if ($unexpectedPackages.Count -gt 0) {
 }
 
 . "$PSScriptRoot/verification/PackageFrameworks.ps1"
-$expectedProductFrameworks = if ($BuildType -eq "Release") { @("net8.0", "net10.0") } else { @("net10.0") }
+$expectedProductFrameworks = Get-AtomUIExpectedProductFrameworks -BuildType $BuildType
 foreach ($package in $AtomUIReleasePackages) {
     $packagePath = Join-Path $PackageOutputDir "$($package.PackageId).$version.nupkg"
     Assert-AtomUIPackageFrameworks -PackagePath $packagePath -Package $package -BuildType $BuildType -Version $version

@@ -241,6 +241,17 @@ try {
     '{}' | Set-Content -LiteralPath $noAcks -Encoding utf8
     $result = Invoke-Gate -Current $s.Current -Baseline $s.Baseline -AllowListPath $noAcks
     Assert-Equal -Actual $result.ExitCode -Expected 1 -Because 'changes without acknowledgements must fail'
+
+    # Scenario 13: the product target-framework contract is defined once for both build types.
+    . (Join-Path $PSScriptRoot 'PackageFrameworks.ps1')
+    Assert-Equal -Actual ((Get-AtomUIExpectedProductFrameworks -BuildType Release) -join ',') -Expected 'net8.0,net10.0,net11.0' -Because 'Release packages must target net8.0, net10.0 and net11.0'
+    Assert-Equal -Actual ((Get-AtomUIExpectedProductFrameworks -BuildType Debug) -join ',') -Expected 'net10.0' -Because 'Debug packages must target net10.0 only'
+
+    # Scenario 14: a Release package missing net11.0 names the SDK it needs.
+    $message = Get-AtomUIFrameworkMismatchMessage -PackageId 'AtomUI.Core' -BuildType Release `
+        -ExpectedFrameworks (Get-AtomUIExpectedProductFrameworks -BuildType Release) -ActualFrameworks @('net8.0', 'net10.0')
+    Assert-Match -Text $message -Pattern 'net11\.0' -Because 'the mismatch must list the missing net11.0 framework'
+    Assert-Match -Text $message -Pattern 'SDK 11' -Because 'a Release mismatch must point to the required .NET SDK 11'
 }
 finally {
     Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue

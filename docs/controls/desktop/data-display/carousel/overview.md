@@ -88,6 +88,8 @@ Public API / inherited command / item source / user input
 
 Carousel 的视觉模型由控件模板、ControlTheme、SharedToken 和必要的控件 Token 共同构成。
 
+指示点没有焦点描边（Ant Design `outline: none`）。为了让键盘用户仍能找到当前焦点，未选中的指示点在 `:focus-visible` 时使用与悬停相同的透明度。
+
 | 主题文件 | 职责 |
 | --- | --- |
 | `CarouselNavButtonTheme.axaml` | 定义局部操作入口、按钮或 handle 的状态视觉。 |

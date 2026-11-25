@@ -45,11 +45,6 @@ internal class ControlTokenPropertyWalker : CSharpSyntaxWalker
             ControlTokenInfo.Diagnostics.AddRange(inheritance.Diagnostics);
             if (inheritance.IsValid)
             {
-                ControlTokenInfo.Diagnostics.AddRange(
-                    ControlTokenCalculationValidator.Validate(
-                        inheritance.Layers,
-                        _semanticModel.Compilation,
-                        _cancellationToken));
                 AddTokenProperties(classDeclaredSymbol, inheritance.Layers);
             }
         }
@@ -176,7 +171,8 @@ internal class ControlTokenPropertyWalker : CSharpSyntaxWalker
                     layer.Symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                     terminalTypeName,
                     property.Locations.FirstOrDefault(),
-                    !SymbolEqualityComparer.Default.Equals(layer.Symbol, terminalType));
+                    !SymbolEqualityComparer.Default.Equals(layer.Symbol, terminalType),
+                    GetReservedReason(property));
                 if (flattened.TryGetValue(property.Name, out var existing))
                 {
                     AddPropertyConflict(
@@ -214,6 +210,7 @@ internal class ControlTokenPropertyWalker : CSharpSyntaxWalker
                 property.ValueType,
                 property.TerminalType,
                 SchemaTokenStage.Control));
+            ControlTokenInfo.OwnTokenFacts[property.Name] = new OwnTokenFact(property.Location, property.ReservedReason);
         }
     }
 
@@ -300,6 +297,22 @@ internal class ControlTokenPropertyWalker : CSharpSyntaxWalker
 
         reason = string.Empty;
         return true;
+    }
+
+    // `[ReservedToken("reason")]`; a missing or non-string argument still marks the field reserved with an empty reason.
+    private static string? GetReservedReason(IPropertySymbol property)
+    {
+        foreach (var attribute in property.GetAttributes())
+        {
+            if (attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.ReservedTokenAttribute)
+            {
+                return attribute.ConstructorArguments.Length != 0 && attribute.ConstructorArguments[0].Value is string reason
+                    ? reason
+                    : string.Empty;
+            }
+        }
+
+        return null;
     }
 
     private static bool HasNotTokenDefinition(IPropertySymbol property)

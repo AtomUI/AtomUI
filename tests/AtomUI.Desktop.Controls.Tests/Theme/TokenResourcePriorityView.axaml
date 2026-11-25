@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:atom="https://atomui.net"
+             x:Class="AtomUI.Desktop.Controls.Tests.Theme.TokenResourcePriorityView">
+    <UserControl.Resources>
+        <ControlTheme x:Key="TokenTemplateTheme" TargetType="ContentControl">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel>
+                        <!-- shared: priority probe for SharedTokenResource on a template node -->
+                        <Border Name="PART_Frame"
+                                Background="{atom:ButtonTokenResource DefaultBg}"
+                                BorderBrush="{atom:SharedTokenResource ColorBorder}" />
+                        <Border Name="PART_Plain" Background="{atom:ButtonTokenResource DefaultBg}" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:disabled /template/ Border#PART_Frame">
+                <Setter Property="Background" Value="#00FF00" />
+                <Setter Property="BorderBrush" Value="#0000FF" />
+            </Style>
+            <Style Selector="^ /template/ Border#PART_Plain">
+                <Setter Property="Background" Value="#FF00FF" />
+            </Style>
+        </ControlTheme>
+        <ControlTheme x:Key="TokenSetterTheme" TargetType="Border">
+            <Setter Property="Background" Value="{atom:ButtonTokenResource DefaultBg}" />
+        </ControlTheme>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="Border.probe:disabled">
+            <Setter Property="Background" Value="#00FF00" />
+        </Style>
+    </UserControl.Styles>
+    <StackPanel>
+        <ContentControl Name="TemplatedHost" Theme="{StaticResource TokenTemplateTheme}" />
+        <Border Name="DirectBorder" Classes="probe" Background="{atom:ButtonTokenResource DefaultBg}" />
+        <Border Name="ThemedBorder" Theme="{StaticResource TokenSetterTheme}" />
+    </StackPanel>
+</UserControl>

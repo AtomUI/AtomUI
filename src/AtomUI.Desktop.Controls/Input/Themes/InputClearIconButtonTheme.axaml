@@ -8,23 +8,27 @@
             <atom:IconButtonTheme TargetType="{x:Type atom:InputClearIconButton}" />
         </ControlTheme.BasedOn>
         
+        <!-- Ant Design names the clear button from locale.global.clear. A theme setter keeps application styles and
+             local values in control, and the language resource follows language changes. -->
+        <Setter Property="AutomationProperties.Name" Value="{atom:CommonLangResource Clear}" />
+
         <Setter Property="IconWidth"
-                Value="{atom:SharedTokenResource IconSize}" />
+                Value="{atom:OwnerTokenResource IconSize}" />
         
         <Setter Property="IconHeight"
-                Value="{atom:SharedTokenResource IconSize}" />
+                Value="{atom:OwnerTokenResource IconSize}" />
 
         <Setter Property="IconBrush"
-                Value="{atom:SharedTokenResource ColorTextQuaternary}" />
+                Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         
         <Style Selector="^:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                    Value="{atom:OwnerTokenResource ColorTextTertiary}" />
         </Style>
         
         <Style Selector="^:pressed">
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorText}" />
+                    Value="{atom:OwnerTokenResource ColorText}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

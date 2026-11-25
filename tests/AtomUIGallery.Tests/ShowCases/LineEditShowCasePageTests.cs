@@ -114,8 +114,8 @@ public class LineEditShowCasePageTests
         semanticExample.ShouldContain("Classes=\"style-class-base style-class-password\"");
         semanticExample.ShouldContain("SizeType=\"Middle\"");
         semanticExample.ShouldContain("Length=\"6\"");
-        semanticExample.ShouldContain("Separator=\"*\"");
-        semanticExample.ShouldContain("<Setter Property=\"CellWidth\" Value=\"32\" />");
+        semanticExample.ShouldNotContain("Separator=");
+        semanticExample.ShouldNotContain("Property=\"CellWidth\"");
         semanticExample.ShouldContain("<Setter Property=\"CellBorderBrush\" Value=\"#6E8CFB\" />");
         semanticExample.ShouldContain("SizeType=\"Large\"");
 

@@ -155,7 +155,6 @@ public class ResourcePlatformAvailabilityTests
                 [AtomUI.Theme.DesignTokens.ControlDesignToken]
                 internal sealed class NativeToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken {
                     public double Height { get; set; }
-                    public override void CalculateTokenValues(bool dark) { }
                 }
             }
             """;

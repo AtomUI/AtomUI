@@ -7,6 +7,11 @@ namespace AtomUI.Desktop.Controls;
 public interface IMenuItemData : ITreeNode<IMenuItemData>
 {
     KeyGesture? InputGesture { get; }
+
+    /// <summary>
+    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// </summary>
+    bool IsDanger => false;
 }
 
 public class MenuItemData : IMenuItemData
@@ -17,6 +22,7 @@ public class MenuItemData : IMenuItemData
     public PathIcon? Icon { get; init; }
     public bool IsEnabled { get; init; } = true;
     public KeyGesture? InputGesture { get; init; }
+    public bool IsDanger { get; init; }
 
     private IList<IMenuItemData> _children = [];
     public IList<IMenuItemData> Children

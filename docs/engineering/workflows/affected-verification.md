@@ -138,8 +138,10 @@ hover、滚动、裁剪、资源释放等仍保留原始复现条件和交互/�
 ## 全量、CI 和维护
 
 ```bash
-# 仅在用户明确要求或版本发布时使用
+# 仅在用户明确要求或版本发布时使用；默认不含端到端 AtomUI.Localization.IntegrationTests
 scripts/run-full-regression.sh
+# 仅用户明确要求包含端到端集成测试时使用；发版和变更范围不自动触发
+scripts/run-full-regression.sh --with-integration
 
 # 维护影响规则时的快速检查
 python3 scripts/verification/test.py audit
@@ -193,7 +195,7 @@ TypeMap 后端测试。`Common/Localization` 和 `Common/SourceGeneration` 分�
 
 | 影响范围 | 必须执行的专项与现有入口 |
 | --- | --- |
-| ILLink8 hook、Common binder、Core8 发布视图 | 固定 ILLink 8.0.27 的真实 SDK trim；覆盖实例化、反射/type checks、泛型晚到达、static/signature-only 否定、传递闭包/循环/组请求、选中 thunk 的 builder 参数，以及实际执行和输出 PE；输入/模板变坏必须在 Mark 前失败。构建入口及冷消费要求见 [Toolchain 构建与验证](../../modules/toolchain/build-and-verification.md)和注册契约。 |
+| ILLink8 hook、Common binder、Core8 发布视图 | SDK 选择的官方 ILLink 8.x 真实 SDK trim；覆盖实例化、反射/type checks、泛型晚到达、static/signature-only 否定、传递闭包/循环/组请求、选中 thunk 的 builder 参数，以及实际执行和输出 PE；输入/模板变坏必须在 Mark 前失败。构建入口及冷消费要求见 [Toolchain 构建与验证](../../modules/toolchain/build-and-verification.md)和注册契约。 |
 | ILC8 adapter、driver、upstream 或 maintainer bootstrap | 按 `src/AtomUI.Toolchain/Backends/ILC8/README.md` 构建固定源码/工具，并执行 `verification/verify_backend.py --compiler-output <owned-output>`；scanner 与 no-scanner、优化、原生表/GC/预初始化分别验证。该机制脚本只证明其实际执行的组合，正式字符串 ABI、SDK 输入、资源和冷包仍须独立消费。 |
 | net10 混合 ABI bridge、SDK 输入/输出阶段 | 用预编译 net8-only 包验证所改 managed/NativeAOT/Browser 路径，记录原件→转换副本→实际引擎输入→正式输出→部署字节；纯 net10 不依赖桥工具且不改写；伪造 accessor、缺协议、未知模板和工具冲突须拒绝。Browser AOT 的 IL stripping 是新的编译输出阶段，不能与转换前 DLL 哈希混为一谈。 |
 | 工具打包或消费 targets | 正常构建的 nupkg、全新包/HTTP cache、一次 restore、随后 `publish --no-restore`；不手工补 cache/包文件，不在消费者里构建 runtime 或工具。核对应用运行依赖不含工具，验证实际最终输出、平台启动与资源行为。 |

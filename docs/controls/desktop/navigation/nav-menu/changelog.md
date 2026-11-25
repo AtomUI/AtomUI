@@ -2,6 +2,70 @@
 
 本文档记录 NavMenu 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Theme
+  - Shadcn 令展开的 NavMenu 内联子菜单底色透明，并加强普通选中行相对悬浮态的对比。
+
+## 2026-11-14
+
+- Performance
+  - 逐项末尾追加内置 entry 不再每次完整重扫 entry scope：`NavMenuEntryOwnershipCoordinator` 在无 custom node 的 scope 上保留 direct scope 索引，根 `Items.Add` / `ItemsSource` Add 与内置 `Entries` 末尾追加只校验新 entry，逐项装载从 O(N²) 降为线性；重复、owner 冲突、custom source 弱订阅和离开 scope 的 owner 释放语义不变。`implementation.md` 7.2 补充增量条件与回退规则，第 8 节删除逐项 `Items.Add` 的 O(N²) 说明。
+- Tests
+  - `NavMenuEntryPopulationScalingTests` 覆盖逐项装载的线性读取上界与近线性托管分配量，以及增量校验与完整 reconcile 的异常、ownership 和回退等价。
+- Docs
+  - `overview.md` 兼容性不变量写明 ItemsPanel 必须是非虚拟化面板：选择定位、分组容器准备、子菜单状态和键盘导航都以每个 entry 容器已生成为前提，替换为虚拟化面板不受支持。
+  - 评估后确认不支持虚拟化 ItemsPanel：`overview.md` 补充回收导致的子菜单打开状态丢失、视口外 `DefaultOpenPaths` 无法 replay，以及超长导航改用子菜单层级或 `TreeView` 的指引；`implementation.md` 补充按呈现层级延迟生成容器的边界、容器持有打开状态与 keyboard active 的维护不变量，以及逐项 `Items.Add` 的根 reconcile 成本说明。
+
+## 2026-11-11
+
+- Theme
+  - 新增键盘焦点描边（Ant Design `menu-root:focus-visible` / `menu-item:focus-visible`）：菜单处于键盘焦点可见状态时，没有 active 项则描边菜单根，有 active 项则描边该项 header；指针按下菜单或焦点离开菜单（含弹层子项）后隐藏。
+  - `NavMenuTheme` 设置空 `FocusAdorner`，菜单根不再叠加默认焦点框。
+- Implementation
+  - 交互处理器新增键盘焦点可见状态（`INavMenuInteractionHandler.SetKeyboardFocusVisible`），由导航键、指针按下与 NavMenu 的焦点进出驱动；`NavMenuItem` / `BaseNavMenuItemHeader` 新增内部状态 `IsKeyboardFocusOutlineVisible`，header 与菜单根通过共享的 `ManagedFocusOutline` 绘制，离开视觉树时移除。
+- Tests
+  - `FocusOutlineTargetTests` 覆盖根到活动项的描边转移、指针按下隐藏、弹层子项在弹层装饰层中描边。
+
+## 2026-11-08
+
+- Changed
+  - 主题全部改读 `NavMenuTokenResource`：`Controls[NavMenu]` 的覆盖到达菜单项、分组标题、分隔线、horizontal 底线和子菜单弹层；
+    `HorizontalNavMenuItemHeader`、`InlineNavMenuItemHeader` 标记为 Token owner 透明，header 过渡时长随 NavMenu。inline 折叠宽度动画
+    时长改读 NavMenu 有效的 `MotionDurationMid`（删除 `Application.Current` 查询与 200 ms 回落），局部 `ThemeConfigProvider` 生效。
+  - 新增公开的 `NavMenuNode.IsDanger`、`INavMenuNode.IsDanger`（默认 `false`）与 `BaseNavMenuItemHeader.IsDanger` /
+    `IsDangerProperty`（经内部容器投影）：危险项消费 `Danger*` / `DarkDanger*` Token；`DangerItemActiveBg`、`DangerItemSelectedBg` 默认改为 `ColorErrorBg`（与 antd 一致，此前从未渲染）。
+  - light horizontal 顶层项消费 `HorizontalItemSelectedColor`（选中文字与 active bar）、`HorizontalItemSelectedBg`、`HorizontalItemHoverBg`、
+    `HorizontalItemBorderRadius`（light 与 dark 顶层项圆角，默认 0；light 顶层项背景在各状态下都透明，默认渲染不变）；`HorizontalLineHeight` 改作用于实际存在的文字呈现器；
+    `TopLevelItemPopupMarginToAnchor`（默认 `UniformlyMarginXXS`）作为顶层弹层间距。
+  - 可见变化：Vertical / Horizontal 子菜单弹层内的菜单项圆角改用 `SubMenuItemBorderRadius`（`BorderRadiusSM`，4px，antd 一致），此前为
+    `ItemBorderRadius`（8px）。
+  - Breaking：删除 `ItemBackgroundMotionEasing`、`KeyGestureColor`（从未消费，antd 无对应组件 Token）；`CollapsedWidth`、`MenuSubMenuBg`、
+    `HorizontalItemHoverColor` 标为保留 Token。
+
+## 2026-11-05
+
+- Fixed
+  - Inline 子菜单在视口父级启用整体透明度合成，修正收起期间子菜单底色与选中项目背景的叠色偏差；弹出分支随共享 Popup 宿主修复。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - NavMenu 本体不新增语义不明的整树 OpenMotion/CloseMotion。实际 popup 项的内部 NavMenuItem 与主题承担逐层配置，不提升内部容器为公开类型；Inline 内容展开不混用 popup 动效。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 区分水平顶层、次级/折叠弹层与 Inline 内容展开的动效职责。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+- 修复：顶层 popup 菜单项 hover 延迟打开条件错误排除自身；保留嵌套父 popup 有效性检查和原触发延迟。
+
 ## 2026-10-29
 
 - 内联子菜单展开、收起时共享内容视口只失效自身测量，不再逐帧失效全部祖先排列（原实现使窗口外框等绘制型祖先每帧整窗重绘）；侧栏往返后的分配缺口改为仅重新排列 DesiredSize 变化的祖先来修复。

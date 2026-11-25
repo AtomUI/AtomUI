@@ -6,7 +6,7 @@
 
 OtpLineEdit 使用 `OtpLineEditToken` 表达 OTP 分格输入的专属布局语义。它只定义 cell 宽度和 cell 间距，不承载验证码文本、separator 内容、active cell、mask、placeholder、Form 状态、validation error、focus、hover、pressed 或 disabled 等运行时状态。
 
-输入表面的颜色、边框、背景、focus shadow、disabled、error 和 warning 语义统一复用 `InputControlFrameTheme` 和 SharedToken。OtpLineEditToken 不复制这些已有输入体系 Token。
+输入表面的颜色、边框、背景、focus shadow、disabled、error 和 warning 语义统一复用 `InputControlFrameTheme` 和有效 Global Token。OtpLineEditToken 不复制这些已有输入体系 Token。
 
 ## 2. Token 分类
 
@@ -16,14 +16,18 @@ OtpLineEdit 使用 `OtpLineEditToken` 表达 OTP 分格输入的专属布局语�
 - `OtpLineEdit.CellWidthLG`
 - `OtpLineEdit.CellWidthSM`
 
-这些 Token 控制单个验证码 cell 的默认宽度。cell 高度由输入家族 `SizeType` 和 SharedToken 控制，宽度单独定义是为了保证短码输入的位数视觉稳定。
+这些 Token 控制单个验证码 cell 的默认宽度。cell 高度由输入家族 `SizeType` 和有效 Global Token 控制，宽度单独定义是为了保证短码输入的位数视觉稳定。
 
 ### 2.2 Cell 间距 Token
 
 - `OtpLineEdit.CellGap`
-这些 Token 控制相邻 cell 之间的默认水平间距。当前模板使用 `CellGap`；`SizeType` 只改变 cell 宽度和字号，separator 的 `Margin="4,0"` 属于模板固定布局，不进入 Token。
+- `OtpLineEdit.JoinCells`
+
+`CellGap` 控制分开排列时的格间距和分隔符两侧间距。`JoinCells` 默认关闭，Shadcn Luma 在浅色、深色和紧凑档开启。开启后，没有 `Separator` 的验证码格相接，首尾保留外侧圆角，内侧接缝只绘制一道边框。
 
 ## 3. 控件专项模型中的 Token 使用
+
+`Controls[OtpLineEdit].Tokens` 覆盖 cell 输入表面、状态色、字号、清除按钮与布局的有效 Global Token。cell 没有独立 identity；内部 `OtpTextBox` 直接继承 Avalonia TextBox，使用专用模板，不继承 AtomUI TextBoxTheme。只读 cell 不显示内嵌编辑器 caret 或 selection，活动光标由 cell 模板绘制。根 `BorderBrush` / `CellBorderBrush` 经内部 HostBorderBrush 投射到所有 cell，清除后恢复状态主题。可空的 `CellWidth` 通过 cell 的条件主题 Setter 绑定，显式宽度跨 SizeType 和 Token 变化保留，清除后恢复对应尺寸 Token；不写 cell 的 Width 本地值。
 
 OtpLineEditToken 使用路径：
 
@@ -37,7 +41,7 @@ OtpLineEditTheme / OtpLineEditCellTheme
 cell width + cell gap
 ```
 
-`SizeType=Large/Middle/Small` 选择对应 cell 宽度 Token；字号由 SharedToken 的输入字号分支提供。`SizeType=Custom` 默认归入 Middle 分支；用户显式设置 `Width`、`Height`、`FontSize` 或主题资源时，由 Avalonia 属性优先级控制最终视觉。
+`SizeType=Large/Middle/Small` 选择对应 cell 宽度 Token；字号由 OtpLineEdit 有效 Global Token 的输入字号分支提供。`SizeType=Custom` 默认归入 Middle 分支；用户显式设置 `Width`、`Height`、`FontSize` 或主题资源时，由 Avalonia 属性优先级控制最终视觉。
 
 mask 字符使用与 cell 文本相同的字体和字号，不定义独立 mask Token。placeholder 使用输入家族占位文本颜色，不定义独立 placeholder Token。
 
@@ -54,7 +58,7 @@ OtpLineEditToken 不影响 LineEdit、SearchEdit、TextArea 或其他输入控�
 
 ## 5. 兼容性要求
 
-OtpLineEditToken 属于 OtpLineEdit 的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md 都会形成稳定依赖。
+OtpLineEditToken 属于 OtpLineEdit 的主题契约。Token 类是公开类，主题算法的控件阶段会直接写它的属性；生成的 TokenKind、AXAML resource 使用点、Token 类型、生成数据和 token.md 都会形成稳定依赖。
 
 Token 变更要求：
 

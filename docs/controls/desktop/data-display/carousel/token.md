@@ -18,6 +18,7 @@ Token 按控件语义分类维护：
 | --- | --- | --- |
 | 尺寸与密度 | 控件高度、宽度、图标尺寸、内容最小尺寸。 | `IndicatorWidth`、`IndicatorHeight`、`IndicatorActiveWidth`、`ArrowSize` |
 | 间距与布局 | padding、margin、gap、offset、popup content padding。 | `IndicatorGap`、`PaginationOffset`、`ArrowOffset` |
+| 切换箭头 | 箭头图标尺寸、与边缘的距离和静止不透明度。 | `ArrowSize`、`ArrowOffset`、`ArrowOpacity` |
 | 颜色与状态视觉 | 文本、背景、边框、hover、selected、active、disabled 视觉。 | `IndicatorActiveWidth` |
 | 结构与装饰 | 圆角、阴影、指示器、弹层和装饰线相关变量。 | `IndicatorWidth`、`IndicatorHeight`、`IndicatorGap`、`IndicatorActiveWidth` |
 
@@ -31,6 +32,15 @@ Carousel 的控件专项模型通过 Theme 消费 Token：
 - AXAML/ControlTheme 负责把 Token 映射到背景、前景、边框、padding、尺寸和动效。
 - Token 默认值从 SharedToken 派生，不直接读取控件实例状态。
 - Token 类型、生成数据和 token.md 应显式维护，不依赖运行时反射扫描。
+
+`ArrowOffset`（antd `arrowOffset`，默认 `SpacingXS` 8px）是切换箭头与 Carousel 边缘的距离；此前箭头错误地使用分页指示器的
+`PaginationOffset`（12px）。`ArrowOpacity` 是静止箭头的不透明度（AtomUI 扩展，默认 0.2；antd 固定 0.4），悬停时完全不透明。
+
+轮播成组读取 `ArrowOffset` 和 `PaginationOffset`。两项值分别计算箭头与分页边距，模板消费有效边距。分页换边时两处输出按同一方向更新。
+
+主题读法：Carousel 以 `CarouselTokenResource` 读取全局 Token，无 identity 的分页指示器同样读 Carousel；`CarouselNavButton` 保持自己的
+identity（箭头颜色跟随 `Controls[CarouselNavButton].ColorBgContainer`），箭头尺寸与不透明度读 Carousel 的 Own Token；`CarouselPage`
+是 Token owner 透明的页面容器，页面内容保持 Carousel 为 owner。
 
 ## 4. 控件家族影响
 

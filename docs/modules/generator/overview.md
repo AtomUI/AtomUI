@@ -12,6 +12,11 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 - 从 Global Token 和可选 `[ControlDesignToken]` 定义生成强类型 schema、资源键、owner identity 与投影代码。
 - 验证标记抽象 Token 与 `sealed` 终端 Token 的继承契约，将跨程序集属性扁平化到终端 schema。
 - 发现具备真实主题、Token 或语义契约的 public/internal Control，生成逐控件注册片段及单项 descriptor factory。
+  `ThemeScope.TokenOwner` 由 Core 运行时在 ControlTheme 解析时注入，不经生成器。
+- 对每个 Own Token 字段做包内引用分析，产出 Active / Reserved 承诺面清单与全局 Token 消费图，并从承诺面生成
+  生效测试骨架；未引用且未标 `[ReservedToken]` 的字段报诊断。
+- 以 analyzer 检查主题消费精确性：ControlTheme 的 TokenResource 种类与 TargetType 身份匹配、主题与代码里的视觉
+  字面量、绕过作用域的 Token 读取、哨兵式显式性判断、LocalValue 覆盖（`ATOMUIGEN040`–`048`，其中 `046` 已退役）。
 - 从 `AtomUIThemeDefinition` 的声明输入生成强类型主题包注册与默认赋值，解析静态字面量；派生算法留在 Core 运行时。
 - 解析包内编译型 AXAML 的主题导出、资源作用域和显式包含关系，生成资产元数据与静态 factory。
 - 生成包注册 helper、条件 TypeMap、包 marker 和映射 accessor；应用编译根据已解析引用的 marker 自动生成引导。
@@ -26,8 +31,12 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | 能力 | 说明 |
 | --- | --- |
 | Token/schema 生成 | 生成 exact CLR type、owner-bearing identity、强类型资源键与单项 descriptor；抽象 Token 不产生运行时身份 |
-| 主题定义生成 | 从 XML 声明及 Token 契约生成注册与类型化默认值，保留运行时配置及算法语义 |
+| Token 属性实现（`TokenPropertyImplementationGenerator`） | IDE 设计期可见的增量生成器，为 `[ControlDesignToken]`/`[GlobalDesignToken]` 的 partial Token 属性产出 `get => field` 与检查冻结位的 setter（`IsFrozen(nameof(P))`）；非 partial 报 `ATOMUIGEN049` |
+| 设计语言与控件取值规则注册 | 为语言包生成 `DesignLanguageRegistration`（每个 `[DesignLanguage]` 类连同 `[LanguageDesignToken]` 的 schema）与 `GeneratedLanguageTokenSchema`，为取值包生成 `GeneratedControlTokenRuleRegistration`（每个 `[ControlTokenRule]` 类）；为绑定了控件的终端 Token 生成 `IControlToken` 实现（只在完整构建时可见）；构建契约携带 `ThemeBuildLanguageAttribute`。见[编写设计语言](../../guides/theming/writing-design-languages.md) |
+| 主题定义生成 | 从 XML v2 声明及语言 / Token 契约生成注册与类型化默认值（ABI v4），保留运行时配置语义；主题引用构建期看不到的语言、Control 或 Token 时报 `ATOMUITOKEN002` |
 | 主题资产生成 | 生成主题导出、RequiredTokenOwners、资产 factory 与顺序元数据；资源 wrapper 由构建任务提供 |
+| 承诺面与消费图 | Own Token 包内引用分析（Active / Reserved / 未引用）、全局 Token 消费图、生效测试骨架；分析产物不进入 schema 或 revision |
+| 主题消费 analyzer | `ATOMUIGEN040`–`048`（`046` 已退役）：读法与身份匹配、视觉字面量、作用域旁路、哨兵、LocalValue 覆盖、派生基值；见[编译期诊断规范](../../engineering/development/compiler-diagnostics-guidelines.md) |
 | 控件注册生成 | 将 Control/Token/Style 等保留条件映射到同一逻辑片段，full 与选中路径使用相同 factory |
 | 包引导生成 | 仅读已解析程序集的包 marker，生成具体 Group 的 assembly target；不调用可选包入口 |
 | `LocalizationGenerator` / `LanguageTagsGenerator` | 编译语言契约和固定语言数据，生成模块注册、应用 bootstrap 与标准语言元数据 |
@@ -42,9 +51,10 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | 目录 | 职责 |
 | --- | --- |
 | `Registration/` | 普通注册值模型、片段/marker/accessor/包 helper 与引用引导 |
-| `DesignToken/`、`ThemeSchema/` | Token 发现、身份、资源键、schema 与单项 factory |
+| `DesignToken/`、`ThemeSchema/` | Token 发现、身份、资源键、schema 与单项 factory；Own Token 引用分析、承诺面清单、`ATOMUIGEN040`/`042` |
 | `ThemeDefinitions/`、`ThemeDefinitions/Literals/` | 主题声明、构建契约、静态字面量解析与 C# 注册/赋值生成 |
-| `ThemeAssets/` | 主题导出、词法资源依赖、静态资产元数据与 factory |
+| `ThemeAssets/` | 主题导出、词法资源依赖、静态资产元数据与 factory；TokenResource 读法校验与字面量检查（`ATOMUIGEN041`/`045`）、全局 Token 消费图 |
+| `ThemeConsumption/` | 控件代码侧主题消费 analyzer（`ATOMUIGEN043`/`044`/`047`）与生效测试骨架生成 |
 | `SemanticParts/` | 语义声明、路由验证、专用 Style 和逐控件 descriptor |
 | `Localization/` | Catalog/XLIFF/Bundle 编译、语言模块与应用 bootstrap |
 | `DataMemberAccessors/` | 数据成员访问器 Generator、Analyzer 和 Writer |
@@ -56,6 +66,7 @@ Browser 的映射转换属于独立的 [TypeMap Linker 模块](../typemap-linker
 | 文档 | 所有权 |
 | --- | --- |
 | [控件注册生成](control-registration.md) | 本模块的注册输入、输出、增量模型和验证边界 |
+| [控件 Token 取值规则设计](../../architecture/systems/theming/control-token-rules.md) | 取值规则的标记、`Apply` 分析与静态注册输出契约 |
 | [Semantic Part Generator](semantic-part-generator.md) | 语义声明、AXAML 路由验证与专用 Style 生成 |
 | [Scoped Resource Host Generator](scoped-resource-host-generator.md) | scoped resource host 的识别、生成与生命周期 |
 | [编译主题包](../../architecture/systems/theming/compiled-theme-packages/compilation.md) | 类型化注册与默认赋值、字面量解析、构建契约和 AOT 保留边界 |

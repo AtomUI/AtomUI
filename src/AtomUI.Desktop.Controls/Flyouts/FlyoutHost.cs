@@ -23,21 +23,22 @@ public enum FlyoutTriggerType
 public partial class FlyoutHost : ContentControl, IMotionAwareControl
 {
     #region 公共属性定义
+
     public static readonly StyledProperty<BoxShadows> PopupRootShadowProperty =
         Popup.PopupRootShadowProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<BoxShadows> OverlayHostShadowProperty =
         Popup.OverlayHostShadowProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<Flyout?> FlyoutProperty =
         AvaloniaProperty.Register<FlyoutHost, Flyout?>(nameof(Flyout));
 
     public static readonly StyledProperty<FlyoutTriggerType> TriggerProperty =
         FlyoutStateHelper.TriggerTypeProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         ArrowDecoratedBox.IsArrowVisibleProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         FlyoutControl.IsPointAtCenterProperty.AddOwner<FlyoutHost>();
 
@@ -49,19 +50,19 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
 
     public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
         Popup.PlacementGravityProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<FlyoutHost>();
-        
+
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<FlyoutHost>();
-    
+
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<FlyoutHost>();
 
@@ -84,13 +85,13 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
 
     public static readonly StyledProperty<int> MouseLeaveDelayProperty =
         FlyoutStateHelper.MouseLeaveDelayProperty.AddOwner<FlyoutHost>();
-    
+
     public BoxShadows PopupRootShadow
     {
         get => GetValue(PopupRootShadowProperty);
         set => SetValue(PopupRootShadowProperty, value);
     }
-    
+
     public BoxShadows OverlayHostShadow
     {
         get => GetValue(OverlayHostShadowProperty);
@@ -127,48 +128,30 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         set => SetValue(PlacementProperty, value);
     }
 
-    public PopupGravity PlacementGravity
-    {
-        get => GetValue(PlacementGravityProperty);
-        set => SetValue(PlacementGravityProperty, value);
-    }
-
     public PopupAnchor PlacementAnchor
     {
         get => GetValue(PlacementAnchorProperty);
         set => SetValue(PlacementAnchorProperty, value);
     }
 
-    public double MarginToAnchor
+    public PopupGravity PlacementGravity
     {
-        get => GetValue(MarginToAnchorProperty);
-        set => SetValue(MarginToAnchorProperty, value);
+        get => GetValue(PlacementGravityProperty);
+        set => SetValue(PlacementGravityProperty, value);
     }
 
-    public int MouseEnterDelay
-    {
-        get => GetValue(MouseEnterDelayProperty);
-        set => SetValue(MouseEnterDelayProperty, value);
-    }
-
-    public int MouseLeaveDelay
-    {
-        get => GetValue(MouseLeaveDelayProperty);
-        set => SetValue(MouseLeaveDelayProperty, value);
-    }
-    
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
-    
+
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
-    
+
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
@@ -195,19 +178,70 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         get => GetValue(IsPopupPinnedOpenProperty);
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
+
+    public double MarginToAnchor
+    {
+        get => GetValue(MarginToAnchorProperty);
+        set => SetValue(MarginToAnchorProperty, value);
+    }
+
+    public int MouseEnterDelay
+    {
+        get => GetValue(MouseEnterDelayProperty);
+        set => SetValue(MouseEnterDelayProperty, value);
+    }
+
+    public int MouseLeaveDelay
+    {
+        get => GetValue(MouseLeaveDelayProperty);
+        set => SetValue(MouseLeaveDelayProperty, value);
+    }
+
     #endregion
-    
+
+    #region 内部属性定义
+
+    #endregion
+
+    #region 运行时字段
+
+    private static readonly (AvaloniaProperty Source, AvaloniaProperty Target)[] FlyoutPropertyBindings =
+    [
+        (PlacementProperty, FlyoutControl.RequestedPlacementProperty),
+        (PlacementAnchorProperty, FlyoutControl.PlacementAnchorProperty),
+        (PlacementGravityProperty, FlyoutControl.PlacementGravityProperty),
+        (IsArrowVisibleProperty, FlyoutControl.IsArrowVisibleProperty),
+        (IsPointAtCenterProperty, FlyoutControl.IsPointAtCenterProperty),
+        (MarginToAnchorProperty, FlyoutControl.MarginToAnchorProperty),
+        (IsMotionEnabledProperty, FlyoutControl.IsMotionEnabledProperty),
+        (MotionDurationProperty, FlyoutControl.MotionDurationProperty),
+        (OpenMotionProperty, FlyoutControl.OpenMotionProperty),
+        (CloseMotionProperty, FlyoutControl.CloseMotionProperty),
+        (PopupRootShadowProperty, FlyoutControl.PopupRootShadowProperty),
+        (OverlayHostShadowProperty, FlyoutControl.OverlayHostShadowProperty),
+        (ShouldUseOverlayPopupProperty, FlyoutControl.ShouldUseOverlayPopupProperty),
+        (IsPopupPinnedOpenProperty, FlyoutControl.IsPopupPinnedOpenProperty)
+    ];
+
     private readonly FlyoutStateHelper _flyoutStateHelper;
+
     private CompositeDisposable? _flyoutDisposables;
+
     private CompositeDisposable? _pinnedOpenHostSubscriptions;
+
     private int _pinnedOpenGeneration;
+
     private Flyout? _registeredFlyout;
-    
+
+    #endregion
+
+    #region 构造函数
+
     static FlyoutHost()
     {
         PlacementProperty.OverrideDefaultValue<FlyoutHost>(PlacementMode.Top);
     }
-    
+
     public FlyoutHost()
     {
         _flyoutStateHelper                                             = new FlyoutStateHelper();
@@ -217,6 +251,10 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         _flyoutStateHelper[!FlyoutStateHelper.MouseLeaveDelayProperty] = this[!MouseLeaveDelayProperty];
         _flyoutStateHelper[!FlyoutStateHelper.TriggerTypeProperty]     = this[!TriggerProperty];
     }
+
+    #endregion
+
+    #region 控件 API
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -241,29 +279,74 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
 
     protected virtual void RegisterFlyoutProperties(Flyout? flyout)
     {
-        if (flyout is null || ReferenceEquals(_registeredFlyout, flyout))
+        // Disposal marks the lease before raising Closed. Reentrant property
+        // changes are reconciled from the latest Flyout after that lease ends.
+        if (flyout is null || ReferenceEquals(_registeredFlyout, flyout) || _flyoutDisposables?.IsDisposed == true)
         {
             return;
         }
 
         UnregisterFlyoutProperties(_registeredFlyout);
-        _registeredFlyout  = flyout;
-        _flyoutDisposables = new CompositeDisposable(14);
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout, FlyoutControl.RequestedPlacementProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout, FlyoutControl.PlacementAnchorProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout, FlyoutControl.PlacementGravityProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout, FlyoutControl.IsArrowVisibleProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout, FlyoutControl.IsPointAtCenterProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, MarginToAnchorProperty, flyout, FlyoutControl.MarginToAnchorProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout, FlyoutControl.IsMotionEnabledProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, MotionDurationProperty, flyout, FlyoutControl.MotionDurationProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, OpenMotionProperty, flyout, FlyoutControl.OpenMotionProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, CloseMotionProperty, flyout, FlyoutControl.CloseMotionProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, PopupRootShadowProperty, flyout, FlyoutControl.PopupRootShadowProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, OverlayHostShadowProperty, flyout, FlyoutControl.OverlayHostShadowProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout, FlyoutControl.ShouldUseOverlayPopupProperty));
-        _flyoutDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, FlyoutControl.IsPopupPinnedOpenProperty));
-        ConfigureMotion(Placement);
+        if (!ReferenceEquals(flyout, Flyout))
+        {
+            RegisterFlyoutProperties(Flyout);
+            return;
+        }
+
+        var bindings = new CompositeDisposable(15);
+        var registration = new CompositeDisposable(1);
+        registration.Add(Disposable.Create(() =>
+        {
+            // Positioning relays must remain valid while the physical host
+            // closes. The outer lease is already retired during user callbacks.
+            try
+            {
+                flyout.CloseForLifecycle();
+            }
+            finally
+            {
+                try
+                {
+                    bindings.Dispose();
+                }
+                finally
+                {
+                    flyout.ClearMotionConfigurationOwner(this);
+                }
+            }
+        }));
+        _registeredFlyout = flyout;
+        _flyoutDisposables = registration;
+        try
+        {
+            flyout.SetMotionConfigurationOwner(this);
+            if (registration.IsDisposed)
+            {
+                return;
+            }
+            // This replaceable non-visual target is outside the ControlTemplate.
+            // Configuration relays follow this replaceable registration's lifetime.
+            foreach (var (source, target) in FlyoutPropertyBindings)
+            {
+                if (registration.IsDisposed)
+                {
+                    return;
+                }
+                bindings.Add(BindUtils.RelayBind(this, source, flyout, target));
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(_flyoutDisposables, registration))
+            {
+                UnregisterFlyoutProperties(flyout);
+            }
+            else
+            {
+                registration.Dispose();
+            }
+            throw;
+        }
     }
 
     protected virtual void UnregisterFlyoutProperties(Flyout? flyout)
@@ -273,15 +356,19 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
             return;
         }
 
-        flyout.CloseForLifecycle();
+        var registration = _flyoutDisposables!;
         _registeredFlyout = null;
-        _flyoutDisposables?.Dispose();
-        _flyoutDisposables = null;
-    }
-
-    private void ConfigureMotion(PlacementMode placement)
-    {
-        (OpenMotion, CloseMotion) = PopupUtils.CreateMotionForPlacement(placement);
+        try
+        {
+            registration.Dispose();
+        }
+        finally
+        {
+            if (ReferenceEquals(_flyoutDisposables, registration))
+            {
+                _flyoutDisposables = null;
+            }
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -289,20 +376,16 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         base.OnPropertyChanged(change);
         if (change.Property == FlyoutProperty)
         {
-            var (oldFlyout, newFlyout) = change.GetOldAndNewValue<Flyout?>();
+            var (oldFlyout, _) = change.GetOldAndNewValue<Flyout?>();
             UnregisterFlyoutProperties(oldFlyout);
             if (this.IsAttachedToVisualTree())
             {
-                RegisterFlyoutProperties(newFlyout);
+                RegisterFlyoutProperties(Flyout);
                 if (IsPopupPinnedOpen)
                 {
                     QueuePinnedOpen();
                 }
             }
-        }
-        else if (change.Property == PlacementProperty && this.IsAttachedToVisualTree())
-        {
-            ConfigureMotion(Placement);
         }
         else if (change.Property == IsPopupPinnedOpenProperty &&
                  this.IsAttachedToVisualTree())
@@ -319,6 +402,20 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
             }
         }
     }
+
+    public void ShowFlyout(bool immediately)
+    {
+        _flyoutStateHelper.ShowFlyout(immediately);
+    }
+
+    public void HideFlyout(bool immediately)
+    {
+        _flyoutStateHelper.HideFlyout(immediately);
+    }
+
+    #endregion
+
+    #region 内部实现
 
     private void SubscribeToPinnedOpenHostState()
     {
@@ -382,13 +479,5 @@ public partial class FlyoutHost : ContentControl, IMotionAwareControl
         });
     }
 
-    public void ShowFlyout(bool immediately)
-    {
-        _flyoutStateHelper.ShowFlyout(immediately);
-    }
-
-    public void HideFlyout(bool immediately)
-    {
-        _flyoutStateHelper.HideFlyout(immediately);
-    }
+    #endregion
 }

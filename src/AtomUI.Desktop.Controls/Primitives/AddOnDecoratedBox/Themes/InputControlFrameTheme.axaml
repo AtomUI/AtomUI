@@ -4,6 +4,9 @@
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InputControlFrameTheme"
               TargetType="atom:InputControlFrame"
               x:ClassModifier="internal">
+    <!-- The frame expresses effective input focus through :input-focus-within. Templates make frames
+         focusable for pointer hits on padding; they must never add an adorner frame. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:InputControlFrame">
             <atom:PixelAlignedBorder
@@ -26,343 +29,168 @@
     </Setter>
 
     <Style Selector="^:is(atom|InputControlFrame)">
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         
+        <!-- Addon padding per size lives in AddOnDecoratedBoxTheme, the only theme with addon parts. -->
         <Style Selector="^[SizeType=Large]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingLG}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingLG}" />
-            </Style>
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
         </Style>
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding" Value="{atom:SharedTokenResource InputPadding}" />
-            </Style>
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusMD}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_LeftAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingSM}" />
-            </Style>
-            <Style
-                Selector="^ /template/ atom|PixelAlignedBorder#PART_RightAddOn">
-                <Setter Property="Padding"
-                        Value="{atom:SharedTokenResource InputPaddingSM}" />
-            </Style>
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-        </Style>
-
-        <!-- status 不同的时候左右附加区域的主体色设置 -->
-        <Style Selector="^[EffectiveStatus=Error]">
-        </Style>
-
-        <Style Selector="^[EffectiveStatus=Warning]">
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
         </Style>
 
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Background" Value="Transparent" />
 
-        <!-- Outline -->
-        <Style Selector="^:outline">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-        </Style>
-        <Style Selector="^:outline[IsInnerBoxHover=True]">
+        <!-- The surface values of each StyleVariant x EffectiveStatus are theme variables that InputControlFrame reads
+             from the owner's effective Tokens (Frame*); these styles map the interaction states onto them. Within a
+             variant the later style wins: base, hover, then focus-within / pressed. -->
+        <Style Selector="^:outline, ^:filled, ^:underlined">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimaryHover}" />
+                    Value="{CompiledBinding $self.FrameBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
-        <Style Selector="^:outline:focus-within">
+        <Style Selector="^:outline, ^:filled">
+            <Setter Property="Background"
+                    Value="{CompiledBinding $self.FrameBackground, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
+        </Style>
+        <Style Selector="^:outline[IsInnerBoxHover=True], ^:underlined[IsInnerBoxHover=True]">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
+                    Value="{CompiledBinding $self.FrameHoverBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
+        </Style>
+        <Style Selector="^:outline[UsesTransparentBorder=True][EffectiveStatus=Default][IsInnerBoxHover=False],
+                         ^:outline[UsesTransparentHoverBorder=True][EffectiveStatus=Default][IsInnerBoxHover=True]">
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="^:outline[UsesTransparentBorder=True] /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
+            <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+        </Style>
+        <Style Selector="^:outline[UsesBottomOnlyBorder=True] /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
+            <Setter Property="DrawOnlyBottomBorder" Value="True" />
+        </Style>
+        <Style Selector="^:filled[IsInnerBoxHover=True]">
+            <Setter Property="Background"
+                    Value="{CompiledBinding $self.FrameHoverBackground, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
+        </Style>
+        <Style Selector="^:outline:input-focus-within, ^:outline:pressed">
+            <Setter Property="BorderBrush"
+                    Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
             <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
+                    Value="{CompiledBinding $self.FrameActiveShadow, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
-        <Style Selector="^:outline:pressed">
+        <Style Selector="^:filled:input-focus-within">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
+                    Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="^:filled:pressed, ^:underlined:input-focus-within, ^:underlined:pressed">
+            <Setter Property="BorderBrush"
+                    Value="{CompiledBinding $self.FrameActiveBorderBrush, Converter={x:Static atom:InputControlFrame.ThemeVariableConverter}}" />
         </Style>
 
-        <!-- Outline + Error -->
-        <Style Selector="^:outline[EffectiveStatus=Error]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-        </Style>
+        <!-- Add-on parts -->
         <Style Selector="^:outline[EffectiveStatus=Error] /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:outline[EffectiveStatus=Error] /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Error][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorErrorBorderHover}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Error]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Error]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-
-        <!-- Outline + Warning -->
-        <Style Selector="^:outline[EffectiveStatus=Warning]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
+                    Value="{atom:OwnerTokenResource ColorError}" />
         </Style>
         <Style Selector="^:outline[EffectiveStatus=Warning] /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:outline[EffectiveStatus=Warning] /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Warning][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarningBorderHover}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Warning]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
-        <Style Selector="^:outline[EffectiveStatus=Warning]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
-
-        <!-- Filled -->
-        <Style Selector="^:filled">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillTertiary}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillTertiary}" />
+                    Value="{atom:OwnerTokenResource ColorWarning}" />
         </Style>
         <Style Selector="^:filled /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:filled /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorFillTertiary}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorFillTertiary}" />
-        </Style>
-        <Style Selector="^:filled[IsInnerBoxHover=True]">
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorFillSecondary}" />
-        </Style>
-        <Style Selector="^:filled:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
-        </Style>
-        <Style Selector="^:filled:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
-        </Style>
-
-        <!-- Filled + Error -->
-        <Style Selector="^:filled[EffectiveStatus=Error]">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorErrorBg}" />
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorErrorBg}" />
+                    Value="{atom:OwnerTokenResource ColorFillTertiary}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorFillTertiary}" />
         </Style>
         <Style Selector="^:filled[EffectiveStatus=Error] /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:filled[EffectiveStatus=Error] /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorErrorBg}" />
-        </Style>
-        <Style Selector="^:filled[EffectiveStatus=Error][IsInnerBoxHover=True]">
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorErrorBgHover}" />
-        </Style>
-        <Style Selector="^:filled[EffectiveStatus=Error]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorTransparent}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-        <Style Selector="^:filled[EffectiveStatus=Error]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-
-        <!-- Filled + Warning -->
-        <Style Selector="^:filled[EffectiveStatus=Warning]">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorWarningBg}" />
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorWarningBg}" />
+                    Value="{atom:OwnerTokenResource ColorErrorBg}" />
         </Style>
         <Style Selector="^:filled[EffectiveStatus=Warning] /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:filled[EffectiveStatus=Warning] /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorWarningBg}" />
+                    Value="{atom:OwnerTokenResource ColorWarningBg}" />
         </Style>
-        <Style Selector="^:filled[EffectiveStatus=Warning][IsInnerBoxHover=True]">
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorWarningBgHover}" />
-        </Style>
-        <Style Selector="^:filled[EffectiveStatus=Warning]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorTransparent}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
-        <Style Selector="^:filled[EffectiveStatus=Warning]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
-
-        <!-- Borderless -->
         <Style Selector="^:borderless /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:borderless /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background" Value="Transparent" />
-        </Style>
-
-        <!-- Underlined -->
-        <Style Selector="^:underlined">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
         </Style>
         <Style Selector="^:underlined /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:underlined /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background" Value="Transparent" />
         </Style>
-        <Style Selector="^:underlined[IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimaryHover}" />
-        </Style>
-        <Style Selector="^:underlined:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
-        </Style>
-        <Style Selector="^:underlined:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorPrimary}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputActiveShadow}" />
-        </Style>
-
-        <!-- Underlined + Error -->
-        <Style Selector="^:underlined[EffectiveStatus=Error]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Error][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorErrorBorderHover}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Error]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Error]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorError}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputErrorActiveShadow}" />
-        </Style>
-
-        <!-- Underlined + Warning -->
-        <Style Selector="^:underlined[EffectiveStatus=Warning]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Warning][IsInnerBoxHover=True]">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarningBorderHover}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Warning]:focus-within">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
-        <Style Selector="^:underlined[EffectiveStatus=Warning]:pressed">
-            <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorWarning}" />
-            <Setter Property="BoxShadow"
-                    Value="{atom:SharedTokenResource InputWarningActiveShadow}" />
-        </Style>
 
         <!-- Disabled -->
         <Style Selector="^:disabled">
             <Setter Property="Foreground"
-                    Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
         <Style Selector="^:disabled:outline, ^:disabled:filled">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorder}" />
+                    Value="{atom:OwnerTokenResource ColorBorder}" />
+        </Style>
+        <Style Selector="^:disabled:outline[UsesTransparentBorder=True]">
+            <Setter Property="BorderBrush" Value="Transparent" />
         </Style>
         <Style Selector="^:disabled:outline /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:disabled:outline /template/ atom|PixelAlignedBorder#PART_RightAddOn,
                          ^:disabled:filled /template/ atom|PixelAlignedBorder#PART_LeftAddOn,
                          ^:disabled:filled /template/ atom|PixelAlignedBorder#PART_RightAddOn">
             <Setter Property="Background"
-                    Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
+                    Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorder}" />
+                    Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
         <Style Selector="^:disabled:underlined">
             <Setter Property="BorderBrush"
-                    Value="{atom:SharedTokenResource ColorBorder}" />
+                    Value="{atom:OwnerTokenResource ColorBorder}" />
+        </Style>
+
+        <!-- Root brushes of the hosting input control (template-bound into HostBorderBrush / HostBackground) win over
+             every state brush above, mirroring antd styles.root; unset hands the surface back to the state machine. -->
+        <Style Selector="^:host-border-brush">
+            <Setter Property="BorderBrush"
+                    Value="{Binding (atom:InputControlFrame).HostBorderBrush, RelativeSource={RelativeSource Self}}" />
+        </Style>
+        <Style Selector="^:host-background">
+            <Setter Property="Background"
+                    Value="{Binding (atom:InputControlFrame).HostBackground, RelativeSource={RelativeSource Self}}" />
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:BoxShadowsTransition Property="BoxShadow" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
             <Style Selector="^ /template/ atom|PixelAlignedBorder#InnerBoxDecorator">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <atom:SolidColorBrushTransition Property="BorderBrush" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                        <atom:BoxShadowsTransition Property="BoxShadow" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
         </Style>

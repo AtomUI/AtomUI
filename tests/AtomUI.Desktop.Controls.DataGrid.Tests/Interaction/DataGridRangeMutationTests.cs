@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
@@ -61,6 +62,227 @@ public class DataGridRangeMutationTests
     }
 
     [Fact]
+    public void Local_Source_Row_Reorder_Moves_Observable_Collection_Item()
+    {
+        var rows = new ObservableCollection<Row>(Enumerable.Range(1, 30).Select(value => new Row(value, value)));
+        using var source = LocalSource(rows);
+        var (grid, window) = Realize(source);
+        var reorderedCount = 0;
+        grid.RowReordered += (_, _) => reorderedCount++;
+
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid);
+            var drag = BeginPointerDrag(handle, window);
+            drag.Pointer.Captured.ShouldBeSameAs(grid.RowsPresenter);
+            var target = MovePointerDragToRow(grid, handle, window, drag, 2);
+            // A real render loop lays out the drag ghost row, which has no slot of its own.
+            grid.RowsPresenter!.DraggedRowIndex.ShouldNotBeNull();
+            grid.RowsPresenter.InvalidateArrange();
+            window.UpdateLayout();
+
+            EndPointerDrag(handle, window, drag, target);
+            PumpUntil(() => reorderedCount == 1 && grid.LoadState == DataGridLoadState.Ready);
+
+            rows.Select(static row => row.Id).ShouldBe(new[] { 2, 3, 1 }.Concat(Enumerable.Range(4, 27)));
+            // Overflow must remain present so following the old first row would move the viewport.
+            grid.VerticalScrollBar!.IsVisible.ShouldBeTrue();
+            grid.VerticalOffset.ShouldBe(0);
+            grid.DisplayData.FirstScrollingSlot.ShouldBe(0);
+            grid.IsDataStale.ShouldBeFalse();
+            grid.DisplayData.GetScrollingRows()
+                .Cast<DataGridRow>()
+                .OrderBy(static row => row.Index)
+                .Select(static row => ((Row)row.DataContext!).Id)
+                .ShouldBe([2, 3, 1, 4]);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    // Issue #536: scrolling during a drag recycles the source row; the drag must survive and drop under the pointer.
+    [Fact]
+    public void Row_Reorder_Survives_Wheel_Scrolling_Source_Row_Out_And_Drops_Under_Pointer()
+    {
+        var rows = new ObservableCollection<Row>(Enumerable.Range(1, 30).Select(value => new Row(value, value)));
+        using var source = LocalSource(rows);
+        var (grid, window) = Realize(source);
+        var reorderedCount = 0;
+        grid.RowReordered += (_, _) => reorderedCount++;
+
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid);
+            var drag = BeginPointerDrag(handle, window);
+            var position = MovePointerDragToRow(grid, handle, window, drag, 1);
+            var pressed = new PointerPointProperties(RawInputModifiers.LeftMouseButton, PointerUpdateKind.Other);
+            for (var notch = 0; notch < 20 && grid.IsSlotVisible(0); notch++)
+            {
+                // Real wheel input is routed to the element holding the drag's pointer capture.
+                var captured = (Interactive)drag.Pointer.Captured!;
+                captured.RaiseEvent(new PointerWheelEventArgs(
+                    captured, drag.Pointer, window, position, (ulong)(10 + notch), pressed, KeyModifiers.None, new Vector(0, -1)));
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                Dispatcher.UIThread.RunJobs();
+            }
+
+            grid.IsSlotVisible(0).ShouldBeFalse();
+            grid.RowsPresenter!.DraggedRowIndex.ShouldBe(0);
+            var underPointer = grid.DisplayData.GetScrollingRows()
+                                   .Cast<DataGridRow>()
+                                   .Single(row =>
+                                   {
+                                       var top = row.TranslatePoint(new Point(0, 0), window)!.Value.Y;
+                                       return position.Y >= top && position.Y < top + row.Bounds.Height;
+                                   });
+            underPointer.DropPosition.ShouldBe(DataGridRowDropPosition.After);
+            var targetId = ((Row)underPointer.DataContext!).Id;
+
+            var releaseTarget = (Interactive)drag.Pointer.Captured!;
+            releaseTarget.RaiseEvent(new PointerReleasedEventArgs(
+                releaseTarget,
+                drag.Pointer,
+                window,
+                position,
+                40,
+                new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonReleased),
+                KeyModifiers.None,
+                MouseButton.Left));
+            PumpUntil(() => reorderedCount == 1 && grid.LoadState == DataGridLoadState.Ready);
+
+            var expected = Enumerable.Range(2, 29).ToList();
+            expected.Insert(expected.IndexOf(targetId) + 1, 1);
+            rows.Select(static row => row.Id).ShouldBe(expected);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Row_Reorder_Marks_Drop_Target_Row_With_Insert_Position()
+    {
+        var source = new MovableSource(4);
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid, rowIndex: 2);
+            var drag = BeginPointerDrag(handle, window);
+
+            MovePointerDragToRow(grid, handle, window, drag, 0);
+            DropPositions(grid).ShouldBe([
+                DataGridRowDropPosition.Before,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None]);
+
+            MovePointerDragToRow(grid, handle, window, drag, 3);
+            DropPositions(grid).ShouldBe([
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.None,
+                DataGridRowDropPosition.After]);
+
+            var target = MovePointerDragToRow(grid, handle, window, drag, 2);
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+
+            target = MovePointerDragToRow(grid, handle, window, drag, 1);
+            EndPointerDrag(handle, window, drag, target);
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public void Cancelled_Row_Reorder_Clears_Drop_Target_Row()
+    {
+        var source = new MovableSource(4);
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var handle = GetHandle(grid);
+            var drag = BeginPointerDrag(handle, window);
+            MovePointerDragToRow(grid, handle, window, drag, 2);
+            DropPositions(grid)[2].ShouldBe(DataGridRowDropPosition.After);
+
+            drag.Pointer.Capture(null);
+
+            DropPositions(grid).ShouldAllBe(position => position == DataGridRowDropPosition.None);
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
+    public async Task Local_Source_Move_Supports_Before_And_After_Keys_On_Plain_List()
+    {
+        var rows = Enumerable.Range(1, 4).Select(value => new Row(value, value)).ToList();
+        using var source = LocalSource(rows);
+        var snapshot = (await source.FetchAsync(
+            new DataGridFetchRequest(
+                DataGridQuery.Empty,
+                null,
+                DataGridGroupExpansion.AllExpanded,
+                new DataGridRange(0, 4),
+                null,
+                0,
+                0),
+            CancellationToken.None)).Snapshot;
+
+        var result = await source.MoveAsync(
+            new DataGridMoveRequest(DataGridQuery.Empty, snapshot, Key(4), beforeKey: Key(1), afterKey: null),
+            CancellationToken.None);
+
+        rows.Select(static row => row.Id).ShouldBe([4, 1, 2, 3]);
+        result.Snapshot.ShouldNotBeNull();
+        result.Snapshot.ShouldNotBe(snapshot);
+
+        await source.MoveAsync(
+            new DataGridMoveRequest(DataGridQuery.Empty, result.Snapshot!.Value, Key(4), beforeKey: null, afterKey: Key(2)),
+            CancellationToken.None);
+
+        rows.Select(static row => row.Id).ShouldBe([1, 2, 4, 3]);
+    }
+
+    [Fact]
+    public void Local_Source_Over_Read_Only_Items_Does_Not_Start_Row_Reorder()
+    {
+        var rows = Enumerable.Range(1, 4).Select(value => new Row(value, value)).ToArray();
+        using var source = LocalSource(rows);
+        source.CanMove.ShouldBeFalse();
+        var (grid, window) = Realize(source);
+        try
+        {
+            EnsureFourRows(grid);
+            var drag = BeginPointerDrag(GetHandle(grid), window);
+
+            drag.Pointer.Captured.ShouldBeNull();
+        }
+        finally
+        {
+            window.Close();
+            Dispatcher.UIThread.RunJobs();
+        }
+    }
+
+    [Fact]
     public void Range_Row_Reorder_Does_Not_Start_When_Query_Changes_Order()
     {
         var source = new MovableSource(4);
@@ -100,7 +322,7 @@ public class DataGridRangeMutationTests
                              .First();
             var drag = BeginPointerDrag(handle, window);
             MovePointerDragToRow(grid, handle, window, drag, 2);
-            drag.Pointer.Captured.ShouldBeSameAs(handle);
+            drag.Pointer.Captured.ShouldBeSameAs(grid.RowsPresenter);
 
             source.Invalidate();
             Dispatcher.UIThread.RunJobs();
@@ -532,6 +754,23 @@ public class DataGridRangeMutationTests
         PumpUntil(() => grid.LoadState == DataGridLoadState.Ready);
         return (grid, window);
     }
+
+    private static DataGridLocalSource<Row> LocalSource(IReadOnlyList<Row> rows) =>
+        DataGridLocalSource.Create(
+            rows,
+            DataGridLocalSourceDescriptor.For<Row>(static row => Key(row.Id))
+                                         .Field(
+                                             ValueField,
+                                             static row => row.Value,
+                                             Comparer<int>.Default,
+                                             static value => DataGridScalar.FromInt64(value)));
+
+    private static DataGridRowDropPosition[] DropPositions(global::AtomUI.Desktop.Controls.DataGrid grid) =>
+        grid.DisplayData.GetScrollingRows()
+            .Cast<DataGridRow>()
+            .OrderBy(static row => row.Index)
+            .Select(static row => row.DropPosition)
+            .ToArray();
 
     private static void EnsureFourRows(global::AtomUI.Desktop.Controls.DataGrid grid)
     {

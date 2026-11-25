@@ -15,6 +15,9 @@ public enum MessageBoxOkButtonStyle
 
 public partial class MessageBox : Dialog
 {
+    // MessageBox.MinWidth/MinHeight size the whole box (main delivered 410 as HostMinWidth; antd ConfirmDialog width 416).
+    internal override bool UsesWholeFrameMinimum => true;
+
     #region Public Properties
 
     public static readonly StyledProperty<PathIcon?> IconProperty =

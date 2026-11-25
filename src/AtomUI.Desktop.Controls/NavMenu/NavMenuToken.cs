@@ -1,475 +1,304 @@
-﻿using AtomUI.Media;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
-using Avalonia.Animation.Easings;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class NavMenuToken : AbstractControlDesignToken
+public sealed partial class NavMenuToken : AbstractControlDesignToken
 {
 
+    /// <summary>Padding inside the submenu popup frame around its child items.</summary>
+    public partial Thickness MenuPopupContentPadding { get; set; }
+
+    /// <summary>Minimum width of a submenu popup.</summary>
+    public partial double MenuPopupMinWidth { get; set; }
+
+    /// <summary>Maximum width of a submenu popup frame.</summary>
+    public partial double MenuPopupMaxWidth { get; set; }
+
+    /// <summary>Maximum height of a submenu popup frame.</summary>
+    public partial double MenuPopupMaxHeight { get; set; }
+    
+    /// <summary>Gap between a top-level item and its submenu popup.</summary>
+    public partial double TopLevelItemPopupMarginToAnchor { get; set; }
+
+    /// <summary>Foreground of a group title in the light menu style.</summary>
+    public partial Color GroupTitleColor { get; set; }
+    
+    /// <summary>Height of the row containing a group title.</summary>
+    public partial double GroupTitleLineHeight { get; set; }
+    
+    /// <summary>Font size of the group title.</summary>
+    public partial double GroupTitleFontSize { get; set; }
+    
+    /// <summary>Corner radius of an item header outside the horizontal top level.</summary>
+    public partial CornerRadius ItemBorderRadius { get; set; }
+    
+    /// <summary>Corner radius of the border framing a submenu's child items.</summary>
+    public partial CornerRadius SubMenuItemBorderRadius { get; set; }
+    
     /// <summary>
-    /// 菜单内容边距
+    /// Foreground of an enabled item header at rest in the light menu style. The transparent header shows
+    /// <see cref="ItemBg"/>, <see cref="SubMenuItemBg"/> or <see cref="MenuPopupBg"/> behind it.
     /// </summary>
-    public Thickness MenuPopupContentPadding { get; set; }
+    public partial Color ItemColor { get; set; }
+    
+    /// <summary>
+    /// Foreground of an unselected item under the pointer in the light menu style. Pairs with <see cref="ItemHoverBg"/>
+    /// or <see cref="HorizontalItemHoverBg"/>.
+    /// </summary>
+    public partial Color ItemHoverColor { get; set; }
+    
+    /// <summary>
+    /// Reserved foreground role for a hovered horizontal item. The current template uses <see cref="ItemHoverColor"/>
+    /// for that state.
+    /// </summary>
+    [ReservedToken("antd Menu horizontalItemHoverColor. antd 6.7 declares it but its menu style never reads it: " +
+                   "horizontal hover text uses itemHoverColor (ItemHoverColor here), so wiring it would diverge from " +
+                   "antd's rendering.")]
+    public partial Color HorizontalItemHoverColor { get; set; }
+    
+    /// <summary>
+    /// Foreground of a selected item and its ancestors in the light menu style. The selected row pairs with
+    /// <see cref="ItemSelectedBg"/>.
+    /// </summary>
+    public partial Color ItemSelectedColor { get; set; }
+    
+    /// <summary>
+    /// Foreground of a selected horizontal top-level item or its ancestor in the light menu style. Pairs with
+    /// <see cref="HorizontalItemSelectedBg"/> and also paints the active bar.
+    /// </summary>
+    public partial Color HorizontalItemSelectedColor { get; set; }
+    
+    /// <summary>Foreground of a disabled item header in the light menu style.</summary>
+    public partial Color ItemDisabledColor { get; set; }
+    
+    /// <summary>Foreground of a danger item header at rest in the light menu style.</summary>
+    public partial Color DangerItemColor { get; set; }
+    
+    /// <summary>
+    /// Foreground of an unselected danger item under the pointer in the light menu style. Pairs with the hover
+    /// background of that layout.
+    /// </summary>
+    public partial Color DangerItemHoverColor { get; set; }
+    
+    /// <summary>
+    /// Foreground of a selected danger item. Pairs with <see cref="DangerItemSelectedBg"/>.
+    /// </summary>
+    public partial Color DangerItemSelectedColor { get; set; }
+    
+    /// <summary>Fill of an unselected danger item while the pointer is held down.</summary>
+    public partial Color DangerItemActiveBg { get; set; }
+    
+    /// <summary>
+    /// Fill of a selected danger item. Pairs with <see cref="DangerItemSelectedColor"/>.
+    /// </summary>
+    public partial Color DangerItemSelectedBg { get; set; }
+    
+    /// <summary>
+    /// Fill of the navigation menu's main surface in the light menu style, behind transparent headers and group titles.
+    /// </summary>
+    public partial Color ItemBg { get; set; }
+    
+    /// <summary>
+    /// Fill of an item header under the pointer in the light menu style. Pairs with <see cref="ItemHoverColor"/> on
+    /// unselected standard items.
+    /// </summary>
+    public partial Color ItemHoverBg { get; set; }
+    
+    /// <summary>Fill behind the child items of an expanded submenu in the light menu style.</summary>
+    public partial Color SubMenuItemBg { get; set; }
+    
+    /// <summary>
+    /// Fill of an unselected item header while it is the active item in keyboard navigation in the light menu style.
+    /// </summary>
+    public partial Color ItemActiveBg { get; set; }
+    
+    /// <summary>
+    /// Fill of a selected item, also used while the pointer is held on an unselected standard item. The selected state
+    /// pairs with <see cref="ItemSelectedColor"/>.
+    /// </summary>
+    public partial Color ItemSelectedBg { get; set; }
+
+    /// <summary>Size of the icon preceding the item label when its header is expanded.</summary>
+    public partial double ItemIconSize { get; set; }
+    
+    /// <summary>
+    /// Fill of a horizontal top-level header on the selected path in the light menu style. Pairs with
+    /// <see cref="HorizontalItemSelectedColor"/>.
+    /// </summary>
+    public partial Color HorizontalItemSelectedBg { get; set; }
+
+    /// <summary>Horizontal scale of the active indicator bar relative to its available width.</summary>
+    public partial double ActiveBarScaleX { get; set; }
+    
+    /// <summary>Height of the active indicator bar beneath a horizontal item.</summary>
+    public partial double ActiveBarHeight { get; set; }
+    
+    /// <summary>Margin around item headers and group title rows.</summary>
+    public partial Thickness ItemContentMargin { get; set; }
+    
+    /// <summary>
+    /// Padding inside an item header. The horizontal top-level header clears this padding.
+    /// </summary>
+    public partial Thickness ItemContentPadding { get; set; }
+    
+    /// <summary>Gap between adjacent items in a vertically stacked menu panel.</summary>
+    public partial double VerticalItemsPanelSpacing { get; set; }
+    
+    /// <summary>Margin around the panel containing a submenu's expanded child items.</summary>
+    public partial Thickness VerticalChildItemsMargin { get; set; }
+    
+    /// <summary>Padding around items in the main vertical or inline menu panel.</summary>
+    public partial Thickness VerticalMenuContentPadding { get; set; }
+    
+    /// <summary>Margin around the label and keyboard shortcut presenters in an item header.</summary>
+    public partial Thickness ItemMargin { get; set; }
+    
+    /// <summary>Margin around the frame of a top-level horizontal item.</summary>
+    public partial Thickness HorizontalItemMargin { get; set; }
+    
+    /// <summary>
+    /// Fill of a horizontal top-level item under the pointer or with its submenu open in the light menu style. Hovered
+    /// items pair with <see cref="ItemHoverColor"/>.
+    /// </summary>
+    public partial Color HorizontalItemHoverBg { get; set; }
+    
+    /// <summary>Corner radius of the frame of a top-level horizontal item.</summary>
+    public partial CornerRadius HorizontalItemBorderRadius { get; set; }
+    
+    /// <summary>
+    /// Height of an item header in vertical and inline menus or inside a submenu popup.
+    /// </summary>
+    public partial double ItemHeight { get; set; }
+    
+    /// <summary>Horizontal indent added for each nesting level in inline mode.</summary>
+    public partial double InlineItemIndentUnit { get; set; }
+    
+    /// <summary>
+    /// Reserved compatibility width for a collapsed menu. The inline menu uses <see cref="InlineCollapsedWidth"/>.
+    /// </summary>
+    [ReservedToken("antd Menu collapsedWidth (controlHeightLG * 2). The inline collapsed width here is " +
+                   "InlineCollapsedWidth (48); CollapsedWidth is kept as the antd-named compatibility token and no " +
+                   "element reads it.")]
+    public partial double CollapsedWidth { get; set; }
+
+    /// <summary>Width of the menu surface when inline mode is collapsed.</summary>
+    public partial double InlineCollapsedWidth { get; set; }
+    
+    /// <summary>Fill of the submenu popup surface in the light menu style.</summary>
+    public partial Color MenuPopupBg { get; set; }
 
     /// <summary>
-    /// 菜单 Popup 最小宽度
+    /// The shadows of the horizontal and vertical menu's submenu popups. Defaults to <c>BoxShadowsSecondary</c>, the
+    /// value the shared Popup Token gives other overlays, so a theme can give menus their own frame.
     /// </summary>
-    public double MenuPopupMinWidth { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 最大宽度
-    /// </summary>
-    public double MenuPopupMaxWidth { get; set; }
-
-    /// <summary>
-    /// 菜单 Popup 最大高度
-    /// </summary>
-    public double MenuPopupMaxHeight { get; set; }
+    public partial BoxShadows MenuPopupShadows { get; set; }
     
-    /// <summary>
-    /// 顶层弹出菜单，距离顶层菜单项的边距
-    /// </summary>
-    public double TopLevelItemPopupMarginToAnchor { get; set; }
-
-    /// <summary>
-    /// 分组标题文字颜色
-    /// </summary>
-    public Color GroupTitleColor { get; set; }
+    /// <summary>Line height of the label in a top-level horizontal item.</summary>
+    public partial double HorizontalLineHeight { get; set; }
     
-    /// <summary>
-    /// 分组标题文字高度
-    /// </summary>
-    public double GroupTitleLineHeight { get; set; }
+    /// <summary>Margin between the icon and label in a top-level horizontal item.</summary>
+    public partial Thickness IconMargin { get; set; }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    public double GroupTitleFontSize { get; set; }
-    
-    /// <summary>
-    /// 菜单项的圆角
-    /// </summary>
-    public CornerRadius ItemBorderRadius { get; set; }
-    
-    /// <summary>
-    /// 子菜单项的圆角
-    /// </summary>
-    public CornerRadius SubMenuItemBorderRadius { get; set; }
-    
-    /// <summary>
-    /// 快捷键颜色
-    /// </summary>
-    public Color KeyGestureColor { get; set; }
-    
-    /// <summary>
-    /// 菜单项文字颜色
-    /// </summary>
-    public Color ItemColor { get; set; }
-    
-    /// <summary>
-    /// 菜单项文字悬浮颜色
-    /// </summary>
-    public Color ItemHoverColor { get; set; }
-    
-    /// <summary>
-    /// 水平菜单项文字悬浮颜色
-    /// </summary>
-    public Color HorizontalItemHoverColor { get; set; }
-    
-    /// <summary>
-    /// 菜单项文字选中颜色
-    /// </summary>
-    public Color ItemSelectedColor { get; set; }
-    
-    /// <summary>
-    /// 水平菜单项文字选中颜色
-    /// </summary>
-    public Color HorizontalItemSelectedColor { get; set; }
-    
-    /// <summary>
-    /// 菜单项文字禁用颜色
-    /// </summary>
-    public Color ItemDisabledColor { get; set; }
-    
-    /// <summary>
-    /// 危险菜单项文字颜色
-    /// </summary>
-    public Color DangerItemColor { get; set; }
-    
-    /// <summary>
-    /// 危险菜单项文字悬浮颜色
-    /// </summary>
-    public Color DangerItemHoverColor { get; set; }
-    
-    /// <summary>
-    /// 危险菜单项文字选中颜色
-    /// </summary>
-    public Color DangerItemSelectedColor { get; set; }
-    
-    /// <summary>
-    /// 危险菜单项文字激活颜色
-    /// </summary>
-    public Color DangerItemActiveBg { get; set; }
-    
-    /// <summary>
-    /// 危险菜单项文字选中颜色
-    /// </summary>
-    public Color DangerItemSelectedBg { get; set; }
-    
-    /// <summary>
-    /// 菜单项背景色
-    /// </summary>
-    public Color ItemBg { get; set; }
-    
-    /// <summary>
-    /// 菜单项悬浮态背景色
-    /// </summary>
-    public Color ItemHoverBg { get; set; }
-    
-    /// <summary>
-    /// 子菜单项背景色
-    /// </summary>
-    public Color SubMenuItemBg { get; set; }
-    
-    /// <summary>
-    /// 菜单项激活态背景色
-    /// </summary>
-    public Color ItemActiveBg { get; set; }
-    
-    /// <summary>
-    /// 菜单项选中态背景色
-    /// </summary>
-    public Color ItemSelectedBg { get; set; }
-
-    /// <summary>
-    /// 菜单项背景过渡统一缓动曲线
-    /// </summary>
-    public Easing? ItemBackgroundMotionEasing { get; set; }
-
-    /// <summary>
-    /// 图标尺寸
-    /// </summary>
-    public double ItemIconSize { get; set; }
-    
-    /// <summary>
-    /// 水平菜单项选中态背景色
-    /// </summary>
-    public Color HorizontalItemSelectedBg { get; set; }
-
-    /// <summary>
-    /// 菜单项指示条宽度
-    /// </summary>
-    public double ActiveBarScaleX { get; set; } = double.NaN;
-    
-    /// <summary>
-    /// 菜单项指示条高度
-    /// </summary>
-    public double ActiveBarHeight { get; set; } = double.NaN;
-    
-    /// <summary>
-    /// 菜单项外间距
-    /// </summary>
-    public Thickness ItemContentMargin { get; set; }
-    
-    /// <summary>
-    /// 菜单项横向内间距
-    /// </summary>
-    public Thickness ItemContentPadding { get; set; }
-    
-    /// <summary>
-    /// 垂直面板的元素间距
-    /// </summary>
-    public double VerticalItemsPanelSpacing { get; set; }
-    
-    /// <summary>
-    /// 垂直面板的外间距
-    /// </summary>
-    public Thickness VerticalChildItemsMargin { get; set; }
-    
-    /// <summary>
-    /// 垂直面板的内容内间距
-    /// </summary>
-    public Thickness VerticalMenuContentPadding { get; set; }
-    
-    /// <summary>
-    /// 菜单项内部元素边距
-    /// </summary>
-    public Thickness ItemMargin { get; set; }
-    
-    /// <summary>
-    /// 水平菜单项外间距
-    /// </summary>
-    public Thickness HorizontalItemMargin { get; set; }
-    
-    /// <summary>
-    /// 横向菜单项横悬浮态背景色
-    /// </summary>
-    public Color HorizontalItemHoverBg { get; set; }
-    
-    /// <summary>
-    /// 横向菜单项圆角
-    /// </summary>
-    public CornerRadius HorizontalItemBorderRadius { get; set; }
-    
-    /// <summary>
-    /// 菜单项高度
-    /// </summary>
-    public double ItemHeight { get; set; }
-    
-    /// <summary>
-    /// 内联菜单项的缩进单位
-    /// </summary>
-    public double InlineItemIndentUnit { get; set; }
-    
-    /// <summary>
-    /// 收起后的宽度
-    /// </summary>
-    public double CollapsedWidth { get; set; }
-
-    /// <summary>
-    /// 内联折叠后的宽度
-    /// </summary>
-    public double InlineCollapsedWidth { get; set; }
-    
-    /// <summary>
-    /// 弹出框背景色
-    /// </summary>
-    public Color MenuPopupBg { get; set; }
-    
-    /// <summary>
-    /// 横向菜单行高
-    /// </summary>
-    public double HorizontalLineHeight { get; set; }
-    
-    /// <summary>
-    /// 图标与文字间距
-    /// </summary>
-    public Thickness IconMargin { get; set; }
-    
-    /// <summary>
-    /// 收起时图标尺寸
-    /// </summary>
-    public double CollapsedIconSize { get; set; }
+    /// <summary>Width and height of an item icon in the collapsed menu.</summary>
+    public partial double CollapsedIconSize { get; set; }
     
     // Dark
-    /// <summary>
-    /// 暗色模式下的菜单的背景颜色
-    /// </summary>
-    public Color DarkMenuBg { get; set; }
-    /// <summary>
-    /// 暗色模式下的浮层菜单的背景颜色
-    /// </summary>
-    public Color DarkMenuPopupBg { get; set; }
+    /// <summary>Fill of the main navigation menu surface in the dark menu style.</summary>
+    public partial Color DarkMenuBg { get; set; }
+    /// <summary>Fill of the submenu popup surface in the dark menu style.</summary>
+    public partial Color DarkMenuPopupBg { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项文字颜色
+    /// Foreground of an enabled item header at rest in the dark menu style. Pairs with <see cref="DarkItemBg"/>.
     /// </summary>
-    public Color DarkItemColor { get; set; }
+    public partial Color DarkItemColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的危险菜单项文字颜色
+    /// Foreground of a danger item header at rest in the dark menu style. Pairs with <see cref="DarkItemBg"/>.
     /// </summary>
-    public Color DarkDangerItemColor { get; set; }
+    public partial Color DarkDangerItemColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项背景
+    /// Fill of an item header at rest in the dark menu style. Pairs with <see cref="DarkItemColor"/>,
+    /// <see cref="DarkDangerItemColor"/> or <see cref="DarkItemDisabledColor"/>.
     /// </summary>
-    public Color DarkItemBg { get; set; }
+    public partial Color DarkItemBg { get; set; }
+    
+    /// <summary>Fill behind the child items of an expanded submenu in the dark menu style.</summary>
+    public partial Color DarkSubMenuItemBg { get; set; }
     
     /// <summary>
-    /// 暗色模式下的子菜单项背景
+    /// Foreground of a selected item and its ancestors in the dark menu style. The selected row pairs with
+    /// <see cref="DarkItemSelectedBg"/>.
     /// </summary>
-    public Color DarkSubMenuItemBg { get; set; }
+    public partial Color DarkItemSelectedColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项选中颜色
+    /// Fill of a selected item, also used while the pointer is held on an unselected standard item in the dark menu
+    /// style. The selected state pairs with <see cref="DarkItemSelectedColor"/>.
     /// </summary>
-    public Color DarkItemSelectedColor { get; set; }
+    public partial Color DarkItemSelectedBg { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项选中背景
+    /// Fill of an item under the pointer or active in keyboard navigation in the dark menu style. Hovered unselected
+    /// standard items pair with <see cref="DarkItemHoverColor"/>.
     /// </summary>
-    public Color DarkItemSelectedBg { get; set; }
+    public partial Color DarkItemHoverBg { get; set; }
+    
+    /// <summary>Foreground of a group title in the dark menu style.</summary>
+    public partial Color DarkGroupTitleColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项悬浮背景
+    /// Foreground of an unselected item under the pointer in the dark menu style. Pairs with
+    /// <see cref="DarkItemHoverBg"/>.
     /// </summary>
-    public Color DarkItemHoverBg { get; set; }
+    public partial Color DarkItemHoverColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的分组标题文字颜色
+    /// Foreground of a disabled item header in the dark menu style. Pairs with <see cref="DarkItemBg"/>.
     /// </summary>
-    public Color DarkGroupTitleColor { get; set; }
+    public partial Color DarkItemDisabledColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项悬浮颜色
+    /// Fill of a selected danger item in the dark menu style. Pairs with <see cref="DarkDangerItemSelectedColor"/>.
     /// </summary>
-    public Color DarkItemHoverColor { get; set; }
+    public partial Color DarkDangerItemSelectedBg { get; set; }
     
     /// <summary>
-    /// 暗色模式下的菜单项禁用颜色
+    /// Foreground of an unselected danger item under the pointer in the dark menu style. Pairs with the hover
+    /// background of that layout.
     /// </summary>
-    public Color DarkItemDisabledColor { get; set; }
+    public partial Color DarkDangerItemHoverColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的危险菜单项选中背景
+    /// Foreground of a selected danger item in the dark menu style. Pairs with <see cref="DarkDangerItemSelectedBg"/>.
     /// </summary>
-    public Color DarkDangerItemSelectedBg { get; set; }
+    public partial Color DarkDangerItemSelectedColor { get; set; }
     
     /// <summary>
-    /// 暗色模式下的危险菜单项悬浮文字背景
+    /// Fill of an unselected danger item while the pointer is held down in the dark menu style.
     /// </summary>
-    public Color DarkDangerItemHoverColor { get; set; }
-    
-    /// <summary>
-    /// 暗色模式下的危险菜单项选中文字颜色
-    /// </summary>
-    public Color DarkDangerItemSelectedColor { get; set; }
-    
-    /// <summary>
-    /// 暗色模式下的危险菜单项激活态背景
-    /// </summary>
-    public Color DarkDangerItemActiveBg { get; set; }
+    public partial Color DarkDangerItemActiveBg { get; set; }
 
     #region 菜单相关 Token
 
-    /// <summary>
-    /// 水平菜单高度
-    /// </summary>
-    public double MenuHorizontalHeight { get; set; }
+    /// <summary>Height of the navigation menu in horizontal mode.</summary>
+    public partial double MenuHorizontalHeight { get; set; }
     
-    /// <summary>
-    /// 菜单箭头尺寸
-    /// </summary>
-    public double MenuArrowSize { get; set; }
-    
-    /// <summary>
-    /// 子菜单背景色
-    /// </summary>
-    public Color MenuSubMenuBg { get; set; }
+    /// <summary>Width and height of the arrow indicating an item's submenu.</summary>
+    public partial double MenuArrowSize { get; set; }
 
+    /// <summary>
+    /// Reserved background role for a separate submenu layer. The current template paints one popup surface with
+    /// <see cref="MenuPopupBg"/>.
+    /// </summary>
+    [ReservedToken("antd Menu menuSubMenuBg (colorBgElevated). In antd the submenu popup's later popupBg rule paints the " +
+                   "same element, so the popup surface is popupBg; here that surface is MenuPopupBg and there is no " +
+                   "second submenu layer to paint.")]
+    public partial Color MenuSubMenuBg { get; set; }
+    
     #endregion
-    
-    public NavMenuToken()
-
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        
-        var colorTextLightSolid = EffectiveGlobalToken.ColorTextLightSolid;
-        
-        var activeBarWidth = !double.IsNaN(ActiveBarScaleX) ? ActiveBarScaleX : 1.0d;
-        var activeBarHeight = !double.IsNaN(ActiveBarHeight)
-            ? ActiveBarHeight
-            : EffectiveGlobalToken.LineWidthBold;
-        var itemContentMargin = ItemContentMargin != default
-            ? ItemContentMargin
-            : new Thickness(
-                EffectiveGlobalToken.UniformlyMarginXXS,
-                0,
-                EffectiveGlobalToken.UniformlyMarginXXS,
-                EffectiveGlobalToken.UniformlyMarginXXS);
-        var colorTextDark = ColorUtils.FromRgbF(
-            0.65d,
-            colorTextLightSolid.GetRedF(),
-            colorTextLightSolid.GetGreenF(),
-            colorTextLightSolid.GetBlueF());
-        
-        ItemBorderRadius            = EffectiveGlobalToken.BorderRadiusLG;
-        SubMenuItemBorderRadius     = EffectiveGlobalToken.BorderRadiusSM;
-        ItemColor                   = EffectiveGlobalToken.ColorText;
-        ItemHoverColor              = EffectiveGlobalToken.ColorText;
-        HorizontalItemHoverColor    = EffectiveGlobalToken.ColorPrimary;
-        GroupTitleColor             = EffectiveGlobalToken.ColorTextDescription;
-        ItemSelectedColor           = EffectiveGlobalToken.ColorPrimary;
-        HorizontalItemSelectedColor = EffectiveGlobalToken.ColorPrimary;
-        ItemBg                      = EffectiveGlobalToken.ColorBgContainer;
-        ItemHoverBg                 = EffectiveGlobalToken.ColorBgTextHover;
-        ItemActiveBg                = EffectiveGlobalToken.ColorFillContent;
-        SubMenuItemBg               = EffectiveGlobalToken.ColorFillAlter;
-        ItemSelectedBg              = EffectiveGlobalToken.ControlItemBgActive;
-        ItemBackgroundMotionEasing  = Easing.Parse("0.25,0.1,0.25,1");
-        HorizontalItemSelectedBg    = Colors.Transparent;
-        ActiveBarScaleX              = activeBarWidth;
-        ActiveBarHeight             = activeBarHeight;
-        
-        // Disabled
-        ItemDisabledColor = EffectiveGlobalToken.ColorTextDisabled;
-        
-        // Danger
-        DangerItemColor         = EffectiveGlobalToken.ColorError;
-        DangerItemHoverColor    = EffectiveGlobalToken.ColorError;
-        DangerItemSelectedColor = EffectiveGlobalToken.ColorError;
-        DangerItemActiveBg      = EffectiveGlobalToken.ColorError;
-        DangerItemSelectedBg    = EffectiveGlobalToken.ColorError;
-
-        KeyGestureColor = EffectiveGlobalToken.ColorTextSecondary;
-        
-        ItemContentMargin    = itemContentMargin;
-        ItemContentPadding   = new Thickness(EffectiveGlobalToken.UniformlyPadding, EffectiveGlobalToken.UniformlyPaddingXXS);
-        ItemMargin           = new Thickness(0, 0, EffectiveGlobalToken.UniformlyMarginXS, 0);
-        ItemHeight           = EffectiveGlobalToken.ControlHeightLG;
-        GroupTitleLineHeight = EffectiveGlobalToken.ControlHeight;
-        CollapsedWidth       = EffectiveGlobalToken.ControlHeight * 2;
-        InlineCollapsedWidth = 48d;
-        IconMargin           = new Thickness(0, 0, EffectiveGlobalToken.ControlHeightSM - EffectiveGlobalToken.FontSize, 0);
-        CollapsedIconSize    = EffectiveGlobalToken.IconSizeLG;
-        GroupTitleFontSize   = EffectiveGlobalToken.FontSize;
-        
-        // Disabled
-        DarkItemDisabledColor = ColorUtils.FromRgbF(0.25d,
-            colorTextLightSolid.GetRedF(),
-            colorTextLightSolid.GetGreenF(),
-            colorTextLightSolid.GetBlueF());
-        
-        // Dark
-        DarkItemColor       = colorTextDark;
-        DarkDangerItemColor = EffectiveGlobalToken.ColorError;
-        DarkItemBg          = Colors.Transparent;
-        DarkMenuBg          = Color.Parse("#001529");
-        DarkMenuPopupBg     = Color.Parse("#001529");
-        DarkSubMenuItemBg   = Color.Parse("#000c17");
-
-        DarkItemSelectedColor       = colorTextLightSolid;
-        DarkItemSelectedBg          = EffectiveGlobalToken.ColorPrimary;
-        DarkDangerItemSelectedBg    = EffectiveGlobalToken.ColorError;
-        DarkItemHoverBg             = Colors.Transparent;
-        DarkGroupTitleColor         = colorTextDark;
-        DarkItemHoverColor          = colorTextLightSolid;
-        DarkDangerItemHoverColor    = EffectiveGlobalToken.ColorErrorHover;
-        DarkDangerItemSelectedColor = colorTextLightSolid;
-        DarkDangerItemActiveBg      = EffectiveGlobalToken.ColorError;
-
-        MenuHorizontalHeight       = EffectiveGlobalToken.ControlHeightLG * 1.15;
-        HorizontalItemMargin       = new Thickness(EffectiveGlobalToken.UniformlyPadding, 0);
-        HorizontalLineHeight       = EffectiveGlobalToken.ControlHeightLG * 1.15;
-        HorizontalItemBorderRadius = new CornerRadius(0);
-        HorizontalItemHoverBg      = Colors.Transparent;
-        
-        MenuArrowSize        = EffectiveGlobalToken.FontSize / 7 * 5;
-        MenuSubMenuBg        = EffectiveGlobalToken.ColorBgElevated;
-
-        ItemIconSize = EffectiveGlobalToken.IconSize;
-        
-        MenuPopupMinWidth               = 160d;
-        MenuPopupMaxWidth               = 800d;
-        MenuPopupMaxHeight              = ItemHeight * 8;
-        TopLevelItemPopupMarginToAnchor = EffectiveGlobalToken.UniformlyMarginXS;
-        
-        MenuPopupBg               = EffectiveGlobalToken.ColorBgElevated;
-        MenuPopupContentPadding   = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-        VerticalItemsPanelSpacing = 0;
-        VerticalChildItemsMargin  = new Thickness(0, 0, 0, EffectiveGlobalToken.UniformlyMarginXXS);
-
-        InlineItemIndentUnit       = ItemHeight / 2;
-        VerticalMenuContentPadding = new Thickness(0, EffectiveGlobalToken.UniformlyMarginXXS, 0, 0);
-    }
-    
 }

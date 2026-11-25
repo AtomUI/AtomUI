@@ -1,6 +1,6 @@
 # DataGrid Row Reorder Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use `executing-plans` to implement this plan task-by-task. Every behavior change follows a failing-test-first cycle.
+> Execute the plan task by task. Every behavior change follows a failing-test-first cycle.
 
 **Goal:** Replace DataGrid row reordering's shared static drag state and direct `IList` mutation with an instance-owned drag session and an optional CollectionView move capability.
 

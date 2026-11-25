@@ -561,8 +561,13 @@ public abstract partial class DataGridColumn : AvaloniaObject, IResourceHost, IT
             }
 
             UnregisterOwningGridResourceHost();
+            _headerCell?.ReleaseOwningGridBindings();
             _owningGrid = value;
             RegisterOwningGridResourceHost(_owningGrid);
+            if (_owningGrid is not null)
+            {
+                _headerCell?.BindOwningGridProperties(_owningGrid);
+            }
             NotifyOwningGridAttached(_owningGrid);
         }
     }
@@ -689,7 +694,11 @@ public abstract partial class DataGridColumn : AvaloniaObject, IResourceHost, IT
     {
         RefreshSortProjection();
         PruneSelectedFilterValuesToFilterItems();
-        ApplySelectedFilterValuesToQuery();
+        // Query 由表格拥有：只有显式设置了筛选值的列才在接入时写回，未设置（null）时不能清掉已有筛选
+        if (SelectedFilterValues is not null)
+        {
+            ApplySelectedFilterValuesToQuery();
+        }
     }
     
     protected internal virtual void NotifyOwningGridAboutToDetached()
@@ -717,10 +726,7 @@ public abstract partial class DataGridColumn : AvaloniaObject, IResourceHost, IT
         }
         else if (change.Property == WidthProperty)
         {
-            if (!_settingWidthInternally)
-            {
-                InheritsWidth = false;
-            }
+            InheritsWidth = false;
             if (_setWidthInternalNoCallback == false)
             {
                 var grid  = OwningGrid;

@@ -4,13 +4,31 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MessageBox}" TargetType="atom:MessageBox">
+        <Setter Property="atom:DialogSurface.HeaderBackground" Value="{atom:MessageBoxTokenResource HeaderBg}" />
+        <Setter Property="atom:DialogSurface.HeaderBottomMargin" Value="{atom:MessageBoxTokenResource HeaderMarginBottom}" />
+        <Setter Property="atom:DialogSurface.LogoSize" Value="{atom:MessageBoxTokenResource LogoSize}" />
+        <Setter Property="atom:DialogSurface.HeaderFontSize" Value="{atom:MessageBoxTokenResource HeaderFontSize}" />
+        <Setter Property="atom:DialogSurface.HeaderForeground" Value="{atom:MessageBoxTokenResource HeaderColor}" />
+        <Setter Property="atom:DialogSurface.ContentBackground" Value="{atom:MessageBoxTokenResource ContentBg}" />
+        <Setter Property="atom:DialogSurface.HeaderPadding" Value="{atom:MessageBoxTokenResource HeaderPadding}" />
+        <Setter Property="atom:DialogSurface.ContentPadding" Value="{atom:MessageBoxTokenResource ContentPadding}" />
+        <Setter Property="atom:DialogSurface.WindowContentPadding" Value="{atom:MessageBoxTokenResource WindowContentPadding}" />
+        <Setter Property="atom:DialogSurface.FooterBackground" Value="{atom:MessageBoxTokenResource FooterBg}" />
+        <Setter Property="atom:DialogSurface.FooterPadding" Value="{atom:MessageBoxTokenResource FooterPadding}" />
+        <Setter Property="atom:DialogSurface.FooterTopMargin" Value="{atom:MessageBoxTokenResource FooterMarginTop}" />
+        <Setter Property="atom:DialogSurface.CloseButtonSize" Value="{atom:MessageBoxTokenResource CloseBtnSize}" />
+        <Setter Property="atom:DialogSurface.DefaultViewportMinHeight" Value="{atom:MessageBoxTokenResource MinHeight}" />
+        <Setter Property="atom:DialogSurface.DefaultViewportMinWidth" Value="{atom:MessageBoxTokenResource MinWidth}" />
+        <Setter Property="atom:DialogSurface.ButtonGroupSpacing" Value="{atom:MessageBoxTokenResource ButtonGroupSpacing}" />
+        <Setter Property="atom:DialogSurface.LoadingIndicatorMargin" Value="{atom:MessageBoxTokenResource LoadingIndicatorMargin}" />
+
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel />
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}"/>
+        <Setter Property="IsMotionEnabled" Value="{atom:MessageBoxTokenResource EnableMotion}"/>
         <Setter Property="HostMinWidth" Value="{atom:MessageBoxTokenResource MinWidth}"/>
         
     </ControlTheme>

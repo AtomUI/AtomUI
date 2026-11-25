@@ -14,3 +14,7 @@
 - [BorderBeam 桌面版实现原理](border-beam/implementation.md)
 - [BorderBeam Token 设计](border-beam/token.md)
 - [BorderBeam Changelog](border-beam/changelog.md)
+
+- [AdornerLayer 主题边界](adorner-layer/overview.md)
+- [AdornerLayer Token 设计](adorner-layer/token.md)
+- [AdornerLayer Changelog](adorner-layer/changelog.md)

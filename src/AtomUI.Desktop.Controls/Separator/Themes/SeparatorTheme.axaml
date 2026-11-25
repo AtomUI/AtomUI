@@ -33,23 +33,22 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="TitleColor" Value="{atom:SharedTokenResource ColorTextHeading}" />
-        <Setter Property="LineColor" Value="{atom:SharedTokenResource ColorSplit}" />
+        <Setter Property="TitleColor" Value="{atom:SeparatorTokenResource ColorTextHeading}" />
+        <Setter Property="LineColor" Value="{atom:SeparatorTokenResource ColorSplit}" />
         
-        <Setter Property="TextPaddingInline" Value="{atom:SeparatorTokenResource TextPaddingInline}" />
-        <Setter Property="OrientationMarginPercent" Value="{atom:SeparatorTokenResource OrientationMarginPercent}" />
-        <Setter Property="LineWidth" Value="{atom:SharedTokenResource LineWidth}" />
+        <Setter Property="UseSeparatorLayoutTokenResources" Value="True" />
+        <Setter Property="LineWidth" Value="{atom:SeparatorTokenResource LineWidth}" />
         
         <Style Selector="^[IsPlain=True]">
             <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
+                <Setter Property="FontSize" Value="{atom:SeparatorTokenResource FontSize}" />
                 <Setter Property="FontWeight" Value="Normal" />
             </Style>
         </Style>
         <Style Selector="^[IsPlain=False]">
             <Style Selector="^ /template/ atom|TextBlock#PART_Title">
-                <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSizeLG}" />
-                <Setter Property="FontWeight" Value="500" />
+                <Setter Property="FontSize" Value="{atom:SeparatorTokenResource FontSizeLG}" />
+                <Setter Property="FontWeight" Value="{atom:SeparatorTokenResource TitleFontWeight}" />
             </Style>
         </Style>
 
@@ -69,8 +68,13 @@
                 <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlock}"/>
             </Style>
 
+            <!-- antd has only the md / sm size classes; an unsized divider (AtomUI Large: marginLG) with text uses the
+                 with-text gutter margin, while the md / sm size margins (AtomUI Middle / Small) win over it. -->
             <Style Selector="^[SizeType=Large]">
                 <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalMarginBlockLG}"/>
+                <Style Selector="^:has-title">
+                    <Setter Property="Margin" Value="{atom:SeparatorTokenResource HorizontalWithTextGutterMargin}"/>
+                </Style>
             </Style>
         </Style>
         
@@ -81,7 +85,6 @@
                 <Setter Property="IsVisible" Value="False" />
             </Style>
             
-            <Setter Property="VerticalMarginInline" Value="{atom:SeparatorTokenResource VerticalMarginInline}"/>
         </Style>
         
     </ControlTheme>

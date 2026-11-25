@@ -6,13 +6,20 @@
     <ControlTheme x:Key="{x:Type atom:DataGridHeaderViewItem}" TargetType="atom:DataGridHeaderViewItem">
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Name="Frame">
-                    <atom:PixelAlignedBorder Name="{x:Static atom:DataGridHeaderViewItemThemeConstants.ContentPresenterPart}"
-                                             BorderThickness="{TemplateBinding EffectiveBorderThickness}">
-                        <ContentPresenter Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
-                    </atom:PixelAlignedBorder>
-                </Border>
+                <Panel Name="RootFrame">
+                    <Border Name="Frame">
+                        <atom:PixelAlignedBorder Name="{x:Static atom:DataGridHeaderViewItemThemeConstants.ContentPresenterPart}"
+                                                 BorderThickness="{TemplateBinding EffectiveBorderThickness}">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
+                        </atom:PixelAlignedBorder>
+                    </Border>
+                    <!-- layout: 对齐 AntD fixed.ts 的 ::after：冻结列阴影绘制在表头外侧 30px 的条带上，覆盖滚动到分界线下的表头 -->
+                    <atom:DataGridFrozenColumnShadow Name="FrozenShadow"
+                                                     Width="30"
+                                                     IsVisible="False"
+                                                     IsHitTestVisible="False" />
+                </Panel>
             </ControlTemplate>
         </Setter>
 
@@ -24,18 +31,24 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Style Selector="^[IsFrozen=True]">
 
+            <!-- layout: fixed relative ordering for frozen columns and dragging overlays. -->
+
             <Setter Property="ZIndex" Value="1000" />
-            <Style Selector="^[IsShowRightFrozenShadow=True]">
-                <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="BoxShadow"
-                            Value="{atom:DataGridTokenResource RightFrozenShadows}" />
-                </Style>
+            <!-- 左冻结列末列：阴影条带位于表头右外侧 -->
+            <Style Selector="^[IsShowRightFrozenShadow=True] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="RenderTransform" Value="translateX(30px)" />
+                <Setter Property="BoxShadow"
+                        Value="{atom:DataGridTokenResource LeftFrozenShadows}" />
             </Style>
-            <Style Selector="^[IsShowLeftFrozenShadow=True]">
-                <Style Selector="^ /template/ Border#Frame">
-                    <Setter Property="BoxShadow"
-                            Value="{atom:DataGridTokenResource LeftFrozenShadows}" />
-                </Style>
+            <!-- 右冻结列首列：阴影条带位于表头左外侧 -->
+            <Style Selector="^[IsShowLeftFrozenShadow=True] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
+                <Setter Property="IsVisible" Value="True" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="RenderTransform" Value="translateX(-30px)" />
+                <Setter Property="BoxShadow"
+                        Value="{atom:DataGridTokenResource RightFrozenShadows}" />
             </Style>
         </Style>
     </ControlTheme>

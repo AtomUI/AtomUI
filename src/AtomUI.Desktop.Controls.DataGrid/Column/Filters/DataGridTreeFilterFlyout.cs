@@ -1,5 +1,5 @@
-using AtomUI.Controls;
 using AtomUI.Animations;
+using AtomUI.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -8,11 +8,7 @@ namespace AtomUI.Desktop.Controls;
 
 internal class DataGridTreeFilterFlyout : TreeViewFlyout
 {
-    internal static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
-        TreeView.ToggleTypeProperty.AddOwner<DataGridTreeFilterFlyout>();
-
-    internal bool IsActiveShutdown = false;
-    internal Func<bool>? ShouldFilterOnPassiveClose { get; set; }
+    #region 公共属性定义
 
     public ItemToggleType ToggleType
     {
@@ -20,13 +16,39 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
         set => SetValue(ToggleTypeProperty, value);
     }
 
+    #endregion
+
+    #region 公共事件定义
+
     public event EventHandler<DataGridFilterValuesSelectedEventArgs>? FilterValuesSelected;
 
-    public DataGridTreeFilterFlyout()
-    {
-        OpenMotion  = new SlideUpInMotion();
-        CloseMotion = new SlideUpOutMotion();
-    }
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly StyledProperty<ItemToggleType> ToggleTypeProperty =
+        TreeView.ToggleTypeProperty.AddOwner<DataGridTreeFilterFlyout>();
+
+    internal Func<bool>? ShouldFilterOnPassiveClose { get; set; }
+
+    #endregion
+
+    #region 运行时字段
+
+    internal bool IsActiveShutdown = false;
+
+    #endregion
+
+    #region 内部协作 API
+
+    // The filter has Dropdown semantics regardless of its tree content.
+    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownOpen);
+
+    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownClose);
+
+    #endregion
+
+    #region 控件 API
 
     protected override Control CreatePresenter()
     {
@@ -37,7 +59,7 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
         };
         foreach (var item in Items)
         {
-            if (item is Control control) 
+            if (item is Control control)
             {
                 control.SetLogicalParent(null);
                 control.SetVisualParent(null);
@@ -49,10 +71,10 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
         presenter[!DataGridTreeFilterFlyoutPresenter.IsArrowVisibleProperty]     = this[!IsArrowVisibleEffectiveProperty];
         presenter[!DataGridTreeFilterFlyoutPresenter.ArrowPositionProperty]   = this[!ArrowPositionProperty];
         presenter[!DataGridTreeFilterFlyoutPresenter.ToggleTypeProperty]      = this[!ToggleTypeProperty];
-        
+
         ConfigureShowArrowEffective();
         ConfigureArrowPosition();
-        
+
         return presenter;
     }
 
@@ -79,10 +101,16 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
         NotifyFilterValuesSelected(new DataGridFilterValuesSelectedEventArgs(commitKind, selectedItems));
     }
 
+    #endregion
+
+    #region 内部协作 API
+
     internal void NotifyFilterValuesSelected(DataGridFilterValuesSelectedEventArgs e)
     {
         FilterValuesSelected?.Invoke(this, e);
     }
+
+    #endregion
 }
 
 internal class DataGridFilterTreeViewItem : TreeViewItem

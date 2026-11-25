@@ -1,9 +1,14 @@
-﻿using System.Reactive.Disposables;
+﻿using AtomUI.Animations;
+using System.Reactive.Disposables;
 using System.Windows.Input;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
 using AtomUI.Data;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
+using AtomUI.Theme.Compilation;
+using AtomUI.Theme.Resources;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,7 +19,6 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
@@ -26,6 +30,12 @@ public partial class SplitButton : ContentControl,
                            ICompactSpaceAware
 {
     #region 公共属性定义
+
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        Popup.OpenMotionProperty.AddOwner<SplitButton>();
+
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        Popup.CloseMotionProperty.AddOwner<SplitButton>();
 
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
         RoutedEvent.Register<SplitButton, RoutedEventArgs>(
@@ -98,6 +108,18 @@ public partial class SplitButton : ContentControl,
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
     
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
+    }
+
     public event EventHandler<RoutedEventArgs>? Click
     {
         add => AddHandler(ClickEvent, value);
@@ -252,9 +274,13 @@ public partial class SplitButton : ContentControl,
     #endregion
 
     #region 内部属性定义
+
     
     internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty = 
         AvaloniaProperty.Register<SplitButton, IBrush?>(nameof (SplitSeparatorBrush));
+
+    internal static readonly StyledProperty<bool> UseInsetSeparatorProperty =
+        AvaloniaProperty.Register<SplitButton, bool>(nameof(UseInsetSeparator));
 
     internal static readonly DirectProperty<SplitButton, ButtonType> EffectiveButtonTypeProperty =
         AvaloniaProperty.RegisterDirect<SplitButton, ButtonType>(nameof(EffectiveButtonType),
@@ -275,6 +301,8 @@ public partial class SplitButton : ContentControl,
         get => GetValue(SplitSeparatorBrushProperty);
         set => SetValue(SplitSeparatorBrushProperty, value);
     }
+
+    internal bool UseInsetSeparator => GetValue(UseInsetSeparatorProperty);
 
     private ButtonType _effectiveButtonType;
 
@@ -309,7 +337,10 @@ public partial class SplitButton : ContentControl,
     /// 不允许改动次按钮几何（曾用左移覆盖实现，导致 hover 位移与边缘闪烁的体验回归）。
     /// </summary>
     internal bool IsSeparatorVisible =>
-        IsPrimaryButtonType && _secondaryButton is not null && !_isPointerOverSecondaryButton;
+        IsPrimaryButtonType && _secondaryButton is not null &&
+        (UseInsetSeparator
+            ? SplitSeparatorBrush is not (null or ISolidColorBrush { Color.A: 0 })
+            : !_isPointerOverSecondaryButton);
 
     #endregion
     
@@ -327,6 +358,8 @@ public partial class SplitButton : ContentControl,
     private CompositeDisposable? _flyoutBindingDisposables;
     private int _pinnedOpenGeneration;
     private Flyout? _registeredFlyout;
+    private IDisposable? _themeSubscription;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     static SplitButton()
     {
@@ -335,8 +368,8 @@ public partial class SplitButton : ContentControl,
         HorizontalAlignmentProperty.OverrideDefaultValue<SplitButton>(HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<SplitButton>(VerticalAlignment.Top);
         AffectsMeasure<SplitButton>(SizeTypeProperty);
-        AffectsArrange<SplitButton>(IsPrimaryButtonTypeProperty, BorderThicknessProperty, UseLayoutRoundingProperty);
-        AffectsRender<SplitButton>(IsPrimaryButtonTypeProperty, IsDangerProperty, SplitSeparatorBrushProperty);
+        AffectsArrange<SplitButton>(IsPrimaryButtonTypeProperty, BorderThicknessProperty, UseLayoutRoundingProperty, UseInsetSeparatorProperty);
+        AffectsRender<SplitButton>(IsPrimaryButtonTypeProperty, IsDangerProperty, SplitSeparatorBrushProperty, UseInsetSeparatorProperty);
     }
 
     public SplitButton()
@@ -416,60 +449,99 @@ public partial class SplitButton : ContentControl,
     /// <param name="flyout">The flyout to connect events to.</param>
     private void RegisterFlyoutEvents(Flyout? flyout)
     {
-        if (flyout == null || ReferenceEquals(_registeredFlyout, flyout))
+        if (flyout is null || ReferenceEquals(_registeredFlyout, flyout) || _flyoutBindingDisposables?.IsDisposed == true)
         {
             return;
         }
-
         UnregisterFlyoutEvents(_registeredFlyout);
-
-        _registeredFlyout = flyout;
-        flyout.Opened += HandleFlyoutOpened;
-        flyout.Closed += HandleFlyoutClosed;
-
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = new CompositeDisposable(10);
-
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
-        _flyoutBindingDisposables.Add(BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
-
-        _flyoutBindingDisposables.Add(flyout.GetPropertyChangedObservable(Popup
-                                                .RequestedPlacementProperty)
-                                            .Subscribe(HandleFlyoutPlacementPropertyChanged));
-
-        if (IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+        if (!ReferenceEquals(flyout, Flyout))
         {
-            QueuePinnedOpen();
+            RegisterFlyoutEvents(Flyout);
+            return;
+        }
+        var bindings = new CompositeDisposable(14);
+        var registration = new CompositeDisposable(1);
+        registration.Add(Disposable.Create(() =>
+        {
+            try
+            {
+                flyout.CloseForLifecycle();
+            }
+            finally
+            {
+                try { bindings.Dispose(); }
+                finally { flyout.ClearMotionConfigurationOwner(this); }
+            }
+        }));
+        _registeredFlyout = flyout;
+        _flyoutBindingDisposables = registration;
+        try
+        {
+            flyout.SetMotionConfigurationOwner(this);
+            if (registration.IsDisposed)
+            {
+                return;
+            }
+            flyout.Opened += HandleFlyoutOpened;
+            flyout.Closed += HandleFlyoutClosed;
+            Bind(() => BindUtils.RelayBind(this, OpenMotionProperty, flyout, AtomUI.Desktop.Controls.Flyout.OpenMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, CloseMotionProperty, flyout, AtomUI.Desktop.Controls.Flyout.CloseMotionProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementProperty, flyout, Flyout.RequestedPlacementProperty));
+            Bind(() => BindUtils.RelayBind(this, PlacementAnchorProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, PlacementGravityProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsArrowVisibleProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsPointAtCenterProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, GutterToFlyoutProperty, flyout, MenuFlyout.MarginToAnchorProperty));
+            Bind(() => BindUtils.RelayBind(this, IsMotionEnabledProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, ShouldUseOverlayPopupProperty, flyout));
+            Bind(() => BindUtils.RelayBind(this, IsPopupPinnedOpenProperty, flyout, Flyout.IsPopupPinnedOpenProperty));
+            Bind(() => flyout.GetPropertyChangedObservable(Popup.RequestedPlacementProperty).Subscribe(HandleFlyoutPlacementPropertyChanged));
+            if (!registration.IsDisposed && IsPopupPinnedOpen && this.IsAttachedToVisualTree())
+            {
+                QueuePinnedOpen();
+            }
+        }
+        catch
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration)) { UnregisterFlyoutEvents(flyout); }
+            else { registration.Dispose(); }
+            throw;
+        }
+
+        // Only replaceable runtime targets need a scoped code relay. A retired
+        // lease cannot acquire more bindings after a synchronous user callback.
+        void Bind(Func<IDisposable> acquire)
+        {
+            if (!registration.IsDisposed)
+            {
+                bindings.Add(acquire());
+            }
         }
     }
 
-    /// <summary>
-    /// Explicitly unregisters all flyout events.
-    /// </summary>
-    /// <param name="flyout">The flyout to disconnect events from.</param>
     private void UnregisterFlyoutEvents(Flyout? flyout)
     {
-        if (flyout == null || !ReferenceEquals(_registeredFlyout, flyout))
+        if (flyout is null || !ReferenceEquals(_registeredFlyout, flyout))
         {
             return;
         }
-
         flyout.Opened -= HandleFlyoutOpened;
         flyout.Closed -= HandleFlyoutClosed;
-
         ++_pinnedOpenGeneration;
-        flyout.CloseForLifecycle();
+        var registration = _flyoutBindingDisposables!;
         _registeredFlyout = null;
-        _isFlyoutOpen     = false;
-        _flyoutBindingDisposables?.Dispose();
-        _flyoutBindingDisposables = null;
+        _isFlyoutOpen = false;
+        try
+        {
+            registration.Dispose();
+        }
+        finally
+        {
+            if (ReferenceEquals(_flyoutBindingDisposables, registration))
+            {
+                _flyoutBindingDisposables = null;
+            }
+        }
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -488,7 +560,7 @@ public partial class SplitButton : ContentControl,
         _primaryButton                  = e.NameScope.Find<Button>("PART_PrimaryButton");
         _secondaryButton                = e.NameScope.Find<Button>("PART_SecondaryButton");
         _flyoutStateHelper.AnchorTarget = _secondaryButton;
-        ConfigureButtonCornerRadius();
+        ConfigureButtonCornerRadius(Bounds.Height);
         ConfigureButtonCustomSizeOverrides();
         if (_primaryButton != null)
         {
@@ -524,6 +596,8 @@ public partial class SplitButton : ContentControl,
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, ConfigureSeparator);
+        ConfigureSeparator(ThemeScope.ResolveContext(this)?.Snapshot);
         
         // Control attached again, set Hotkey to create a hotkey manager for this control
         SetCurrentValue(HotKeyProperty, _hotkey);
@@ -537,6 +611,9 @@ public partial class SplitButton : ContentControl,
     
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+        ClearValue(UseInsetSeparatorProperty);
         base.OnDetachedFromLogicalTree(e);
 
         // This will cause the hotkey manager to dispose the observer and the reference to this control
@@ -604,10 +681,11 @@ public partial class SplitButton : ContentControl,
         }
 
         if (change.Property == CornerRadiusProperty ||
+            change.Property == UseInsetSeparatorProperty ||
             change.Property == CompactSpaceItemPositionProperty ||
             change.Property == CompactSpaceOrientationProperty)
         {
-            ConfigureButtonCornerRadius();
+            ConfigureButtonCornerRadius(Bounds.Height);
         }
 
         if (ShouldConfigureCustomSizeOverrides(change.Property))
@@ -630,14 +708,31 @@ public partial class SplitButton : ContentControl,
         }
     }
 
-    private void ConfigureButtonCornerRadius()
+    private void ConfigureSeparator(ThemeSnapshot? snapshot)
+    {
+        SetValue(UseInsetSeparatorProperty, snapshot is not null &&
+            snapshot.Registry.TryGetControl(SplitButtonTokens.Identity, out var descriptor) &&
+            s_themeTokenResolver.GetOwn<bool>(snapshot, descriptor.Slot, SplitButtonTokenKind.InsetSeparator));
+    }
+
+    private void ConfigureButtonCornerRadius(double height)
     {
         var effectiveCornerRadius = CompactSpace.CalculateEffectiveCornerRadius(
             CornerRadius, 
             IsUsedInCompactSpace, 
             CompactSpaceItemPosition,
             CompactSpaceOrientation);
-        
+
+        if (UseInsetSeparator && height > 0)
+        {
+            var cap = height / 2;
+            effectiveCornerRadius = new CornerRadius(
+                Math.Min(effectiveCornerRadius.TopLeft, cap),
+                Math.Min(effectiveCornerRadius.TopRight, cap),
+                Math.Min(effectiveCornerRadius.BottomRight, cap),
+                Math.Min(effectiveCornerRadius.BottomLeft, cap));
+        }
+
         var primaryButtonCornerRadius = new CornerRadius(effectiveCornerRadius.TopLeft,
             0,
             0,
@@ -648,15 +743,10 @@ public partial class SplitButton : ContentControl,
             effectiveCornerRadius.BottomRight,
             0);
         
-        if (_primaryButton is not null)
-        {
-            _primaryButton.CornerRadius = primaryButtonCornerRadius;
-        }
-
-        if (_secondaryButton is not null)
-        {
-            _secondaryButton.CornerRadius = secondaryButtonCornerRadius;
-        }
+        // The split radii go to the inner Buttons' internal host radius: their public CornerRadius keeps the Button
+        // theme and user values, and the template frames follow the split shape.
+        _primaryButton?.SetValue(Button.HostCornerRadiusProperty, primaryButtonCornerRadius);
+        _secondaryButton?.SetValue(Button.HostCornerRadiusProperty, secondaryButtonCornerRadius);
     }
 
     private void ConfigureButtonCustomSizeOverrides()
@@ -931,6 +1021,16 @@ public partial class SplitButton : ContentControl,
     {
         var size = base.ArrangeOverride(finalSize);
 
+        if (UseInsetSeparator)
+        {
+            ConfigureButtonCornerRadius(size.Height);
+            if (IsPrimaryButtonType)
+            {
+                // The template already reserves the width for the visible separator.
+                return size;
+            }
+        }
+
         if (_primaryButton is not null && _secondaryButton is not null)
         {
             var originRect = _secondaryButton.Bounds;
@@ -973,11 +1073,13 @@ public partial class SplitButton : ContentControl,
 
     public override void Render(DrawingContext context)
     {
-        if (IsPrimaryButtonType && _secondaryButton is not null)
+        if (!UseInsetSeparator && IsPrimaryButtonType && _secondaryButton is not null)
         {
             var cornerRadius = (float)CornerRadius.TopLeft;
-            context.FillRectangle(SplitSeparatorBrush ?? Brushes.White, new Rect(0, 0, Bounds.Width, Bounds.Height),
-                cornerRadius);
+            if (SplitSeparatorBrush is { } separatorBrush)
+            {
+                context.FillRectangle(separatorBrush, new Rect(0, 0, Bounds.Width, Bounds.Height), cornerRadius);
+            }
         }
     }
     

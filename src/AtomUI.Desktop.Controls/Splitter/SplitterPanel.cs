@@ -82,10 +82,25 @@ internal class SplitterPanel : Panel
         set => SetValue(CollapseNextIconProperty, value);
     }
     #endregion
+
+    #region 内部属性定义
+
+    // The Splitter's SplitBarSize Own Token (the spacing between panels), bound while attached so a theme or
+    // Controls[Splitter] change re-measures the panels. NaN until the binding resolves.
+    internal static readonly StyledProperty<double> SplitBarSizeProperty =
+        AvaloniaProperty.Register<SplitterPanel, double>(nameof(SplitBarSize), double.NaN);
+
+    internal double SplitBarSize
+    {
+        get => GetValue(SplitBarSizeProperty);
+        set => SetValue(SplitBarSizeProperty, value);
+    }
+
+    #endregion
     
     static SplitterPanel()
     {
-        AffectsMeasure<SplitterPanel>(OrientationProperty, HandleSizeProperty);
+        AffectsMeasure<SplitterPanel>(OrientationProperty, HandleSizeProperty, SplitBarSizeProperty);
         LineThicknessProperty.Changed.AddClassHandler<SplitterPanel>((x, _) => x.UpdateHandleLineStyles());
         LineCornerRadiusProperty.Changed.AddClassHandler<SplitterPanel>((x, _) => x.UpdateHandleLineStyles());
     }
@@ -106,6 +121,22 @@ internal class SplitterPanel : Panel
     private bool _suppressPanelChange;
     private Size _lastLayoutSize;
     private DragContext? _dragContext;
+    private IDisposable? _splitBarSizeBinding;
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _splitBarSizeBinding?.Dispose();
+        _splitBarSizeBinding = TokenResourceBinder.CreateControlTokenBinding(
+            typeof(Splitter), this, this, SplitBarSizeProperty, SplitterTokenKind.SplitBarSize);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _splitBarSizeBinding?.Dispose();
+        _splitBarSizeBinding = null;
+    }
     
     private void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -1956,8 +1987,8 @@ internal class SplitterPanel : Panel
 
     private double GetHandleSpacing()
     {
-        var value = TokenResourceUtils.FindTokenResource(this, SplitterTokenKind.SplitBarSize);
-        if (value is double size && !double.IsNaN(size) && !double.IsInfinity(size))
+        var size = SplitBarSize;
+        if (!double.IsNaN(size) && !double.IsInfinity(size))
         {
             return Math.Max(0, size);
         }

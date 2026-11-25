@@ -46,6 +46,11 @@ CornerRadius 类型 Token，由 `IconContainerSize` 派生为默认全圆；它�
 - `DotSize`
 - `DotCurrentSize`
 - `DotLineThickness`
+- `OutlineDotBorderThickness`
+
+`DotLineThickness` 是 Dot / OutlineDot 的 Connector 线宽，默认 `LineWidthBold`（对应 antd progress-dot `rail-size`）；
+`OutlineDotBorderThickness` 是 OutlineDot 的边框宽度，默认 `Thickness(LineWidthBold)`（antd dot icon border width）。
+默认 Indicator 的边框宽度读取 Global Token `BorderThickness`（`Thickness(LineWidth)`）。
 
 Dot Token 在 `Type=Dot` 和 `Type=OutlineDot` 下生效。`Dot` 使用状态色作为填充色，`OutlineDot` 使用同一状态色作为边框色并保持背景透明。Connector 方向和长度由 LayoutPanel 决定，Token 只提供尺寸与颜色。
 
@@ -83,6 +88,8 @@ TailColor 遵循步骤条 rail 的语义：Wait 使用 disabled 色，Process �
 
 Progress 外径由当前 `IconSize` / `IconSizeSM` 加对应 padding 推导，不维护重复的固定 size Token。Progress Token 控制 padding、groove 和 arc 颜色。Percent 是运行时输入，不进入 Token。
 
+指示器显示进度环时成组读取底槽与填色，隐藏或卸载时释放资源观察。
+
 ### 2.7 Inline
 
 - `InlineDotSize`
@@ -104,16 +111,24 @@ Inline Token 只服务 `Type=Inline` 的紧凑视觉。
 - `PanelWaitTextColor`、`PanelProcessTextColor`、`PanelFinishTextColor`、`PanelErrorTextColor`
 - `PanelActiveTextColor`、`PanelErrorActiveTextColor`
 
-Panel 箭头宽度按 Ant Design 的几何关系由 item 基础高度乘以 `0.7071` 推导；Small 使用较小的 padding、字体和圆角。Filled 使用状态色面板背景；Outlined 的非当前项使用 `ColorBgContainer`，以状态色表达文字和边框，只有当前项使用对应的浅色 active 背景。
+Panel 箭头宽度按 Ant Design 的几何关系由 item 基础高度乘以 `0.7071` 推导；Small 使用较小的 padding、字体和圆角。Filled 使用状态色面板背景；Outlined 的非当前项使用 `ColorBgContainer`，以状态色表达文字和边框，只有当前项使用对应的浅色 active 背景。 Shadcn 风格将 Panel 首尾外角限制在 8 DIP 以内，保留主题原有的更小圆角。
+
+Shadcn 暗色的 Filled Panel 将当前项状态色混入面板底色，当前普通项和错误项各使用可读的前景 Token。可分别覆盖 `PanelWaitActiveBackground`、`PanelProcessActiveBackground`、`PanelFinishActiveBackground`、`PanelErrorActiveBackground` 和对应的前景 Token。
 
 ## 3. 控件专项模型中的 Token 使用
 
 ```text
-SharedToken
+Steps 的 Effective Global Token
     -> StepsToken
-    -> StepsTheme / StepsItemTheme / StepsItemIndicatorTheme
+    -> StepsTheme / StepsItemTheme / StepsItemIndicatorTheme（全部读取 StepsTokenResource）
     -> root + item + indicator + connector + progress
 ```
+
+三个主题都以 `StepsTokenResource` 读取 Own Token 与 Global Token，`Controls[Steps]` 的覆盖作用于 item 标题、详情、图标、
+Connector、箭头和 Panel 视觉。`StepsItem` 是注册控件但没有 Own Token，标记为 Token owner 透明：item 与其 Indicator 继承
+Steps 为 owner，`atom:TokenTransitions` 的时长同样跟随 `Controls[Steps]`；`Controls[StepsItem]` 不产生视觉效果。
+模板部件中会被状态 Setter 覆盖的默认值（LayoutPanel 间距与 Connector 线宽、Panel 箭头宽度与描边、item frame 箭头宽度）
+写在 Style Setter 中，不写在模板节点属性上，Small、Dot、Inline、Panel 等状态值因此生效。
 
 主要映射：
 
@@ -141,6 +156,8 @@ Type / Orientation / EffectiveTitlePlacement / SizeType
 ```
 
 Token 不能替代 EffectiveStatus、LayoutPanel 计算或 Percent coercion。
+
+布局面板成组读取连接线与相邻内容的基础间距。主题里的 Dot、Navigation、Panel 等状态选择器仍可覆盖实际布局参数。
 
 ### 3.1 实例语义样式与 Token 边界
 
@@ -198,3 +215,11 @@ StepsToken 只影响：
 | 实例语义样式 | 验证三项属性默认 null、非 null 优先级、运行时修改、清空回退，以及不会改变未覆盖的状态/类型 Token 视觉。 |
 | Token 删除或重命名 | 同步类型、生成资源、AXAML、Token 类型、生成数据和 token.md和控件文档。 |
 | 文档 | 运行 `git diff --check`，检查相对链接。 |
+
+## 2026-11-20 新增 Token
+
+默认值与新增前的外观一致；PrimeNG 主题在各自控件阶段中赋值。
+
+| Token | 默认值 | 用途 |
+| --- | --- | --- |
+| `TitleFontWeight` | `Normal` | 步骤标题字重（Inline 类型保持 Normal） |

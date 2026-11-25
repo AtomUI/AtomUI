@@ -21,8 +21,7 @@ public class DataGridTokenAlignmentTests
             ColorSplit            = Color.FromRgb(0x00, 0x00, 0x00)
         };
         var token = new DataGridToken();
-        token.AssignEffectiveGlobalToken(sharedToken);
-        token.CalculateTokenValues(isDarkMode: false);
+        AntDesignTokenRuleRunner.Apply(token, sharedToken);
 
         // AntD size.ts：middle 单元格 inline=paddingXS(8)、block=paddingSM(12)。
         token.CellPaddingMD.ShouldBe(

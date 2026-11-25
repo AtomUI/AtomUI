@@ -29,9 +29,7 @@
                                            CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                            Background="{TemplateBinding Background}" />
                         <Border Padding="{TemplateBinding Padding}">
-                            <DockPanel Name="PART_RootLayout"
-                                       LastChildFill="True"
-                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            <DockPanel LastChildFill="True"
                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <atom:IconPresenter
                                     Name="PART_DropdownIndicator"
@@ -40,44 +38,32 @@
                                     Icon="{TemplateBinding OpenIndicator}"
                                     IconBrush="{TemplateBinding Foreground}"
                                     IsVisible="{TemplateBinding IsShowOpenIndicator}" />
-                                <antdicons:LoadingOutlined
-                                    Name="PART_LoadingIcon"
-                                    Width="{TemplateBinding IconWidth}"
-                                    Height="{TemplateBinding IconHeight}"
-                                    LoadingAnimation="Spin"
-                                    FillBrush="{TemplateBinding Foreground}"
-                                    StrokeBrush="{TemplateBinding Foreground}"
-                                    DockPanel.Dock="Left" />
-                                <atom:IconPresenter
-                                    Name="PART_ButtonIcon"
-                                    Width="{TemplateBinding IconWidth}"
-                                    Height="{TemplateBinding IconHeight}"
-                                    Icon="{TemplateBinding Icon}"
-                                    DockPanel.Dock="Left">
-                                    <atom:IconPresenter.IsVisible>
-                                        <MultiBinding
-                                            Converter="{x:Static atom:ButtonTheme.IconVisibleConverter}">
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Icon" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}"
-                                                     Path="IsIconVisible" />
-                                            <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="IsLoading" />
-                                        </MultiBinding>
-                                    </atom:IconPresenter.IsVisible>
-                                </atom:IconPresenter>
-                                <ContentPresenter
-                                    Name="PART_ContentPresenter"
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                <DockPanel Name="PART_RootLayout"
+                                           LastChildFill="True"
+                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                                    <antdicons:LoadingOutlined
+                                        Name="PART_LoadingIcon"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        LoadingAnimation="Spin"
+                                        FillBrush="{TemplateBinding Foreground}"
+                                        StrokeBrush="{TemplateBinding Foreground}"
+                                        DockPanel.Dock="Left" />
+                                    <atom:IconPresenter
+                                        Name="PART_ButtonIcon"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        Icon="{TemplateBinding Icon}"
+                                        DockPanel.Dock="Left"
+                                        IsVisible="{TemplateBinding EffectiveIconVisible}" />
+                                    <ContentPresenter
+                                        Name="PART_ContentPresenter"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                </DockPanel>
                             </DockPanel>
                         </Border>
-                        <Border Name="FocusVisual"
-                                IsVisible="False"
-                                IsHitTestVisible="False"
-                                BorderThickness="{atom:SharedTokenResource FocusVisualBorderThickness}"
-                                BorderBrush="{atom:SharedTokenResource ColorFocusBorder}"
-                                CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                ZIndex="1" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -87,8 +73,8 @@
                 Value="{atom:DropdownButtonTokenResource MarginToAnchor}" />
 
         <Style Selector="^ /template/ atom|IconPresenter#PART_DropdownIndicator">
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="Width" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
+            <Setter Property="Height" Value="{atom:DropdownButtonTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">

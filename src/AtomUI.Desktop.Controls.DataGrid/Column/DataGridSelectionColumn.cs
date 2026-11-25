@@ -245,11 +245,10 @@ public class DataGridSelectionColumn : DataGridColumn
                 IndicatorLayoutVisible = false
             };
 
-            header[!DataGridColumnHeader.SizeTypeProperty]                   = OwningGrid[!DataGrid.SizeTypeProperty];
+            header.BindOwningGridProperties(OwningGrid);
             header[!DataGridColumnHeader.SupportedSortDirectionsProperty]    = this[!SupportedSortDirectionsProperty];
             header[!DataGridColumnHeader.HorizontalContentAlignmentProperty] = this[!HeaderContentHorizontalAlignmentProperty];
             header[!DataGridColumnHeader.VerticalContentAlignmentProperty] = this[!HeaderContentVerticalAlignmentProperty];
-            header[!DataGridColumnHeader.IsMotionEnabledProperty] = OwningGrid[!DataGrid.IsMotionEnabledProperty];
             
             _headerCheckBox = new SelectionHeaderCheckBox(this);
             header.Content  = _headerCheckBox;

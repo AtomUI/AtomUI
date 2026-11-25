@@ -6,11 +6,14 @@
               x:ClassModifier="internal">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TabItem">
+            <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
+                 使背景框缩进 item Bounds 内，而墨条按 Bounds 绘制，导致背景右侧窄 Margin 宽度。 -->
             <Border Name="Frame"
                     Background="{TemplateBinding Background}"
-                    Padding="{TemplateBinding Padding}"
-                    Margin="{TemplateBinding Margin}">
-                <StackPanel Orientation="Horizontal">
+                    Padding="{TemplateBinding Padding}">
+                <!-- Ant Design line tabs outline the tab button (icon and label), not the padded tab. -->
+                <StackPanel Orientation="Horizontal"
+                            TemplatedControl.IsTemplateFocusTarget="True">
                     <atom:IconPresenter Name="ItemIconPresenter"
                                         Classes.semantic-icon="True"
                                         Icon="{TemplateBinding Icon}" />
@@ -30,18 +33,19 @@
 
     <Style Selector="^:is(atom|TabItem)">
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemColor}" />
+        <Setter Property="Foreground" Value="{atom:TabTokenResourceBinding ItemColor}" />
+        <Setter Property="FontWeight" Value="{atom:TabTokenResourceBinding TitleFontWeight}" />
         <Setter Property="Background" Value="Transparent" />
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource CloseIconMargin}" />
-            <Setter Property="IconWidth" Value="{atom:SharedTokenResource IconSizeSM}" />
-            <Setter Property="IconHeight" Value="{atom:SharedTokenResource IconSizeSM}" />
+            <Setter Property="Margin" Value="{atom:TabTokenResourceBinding CloseIconMargin}" />
+            <Setter Property="IconWidth" Value="{atom:TabItemTokenResource IconSizeSM}" />
+            <Setter Property="IconHeight" Value="{atom:TabItemTokenResource IconSizeSM}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="Margin" Value="{atom:TabControlTokenResource ItemIconMargin}" />
+            <Setter Property="Margin" Value="{atom:TabTokenResourceBinding ItemIconMargin}" />
             <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
         </Style>
 
@@ -58,48 +62,48 @@
         </Style>
 
         <Style Selector="^:pointerover">
-            <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemHoverColor}" />
+            <Setter Property="Foreground" Value="{atom:TabTokenResourceBinding ItemHoverColor}" />
         </Style>
 
         <Style Selector="^:pressed">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+            <Setter Property="Foreground" Value="{atom:TabItemTokenResource ColorPrimaryActive}" />
         </Style>
 
         <Style Selector="^[IsTabReorderDragging=True]">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
+            <Setter Property="Background" Value="{atom:TabItemTokenResource ColorBgContainer}" />
         </Style>
 
         <Style Selector="^:selected">
-            <Setter Property="Foreground" Value="{atom:TabControlTokenResource ItemSelectedColor}" />
+            <Setter Property="Foreground" Value="{atom:TabTokenResourceBinding ItemSelectedColor}" />
         </Style>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeLG}" />
+            <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:TabItemTokenResource IconSize}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:TabItemTokenResource IconSize}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSize}" />
+            <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:TabItemTokenResource IconSize}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSize}" />
+                        Value="{atom:TabItemTokenResource IconSize}" />
             </Style>
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="FontSize" Value="{atom:TabControlTokenResource TitleFontSizeSM}" />
+            <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="Width"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:TabItemTokenResource IconSizeSM}" />
                 <Setter Property="Height"
-                        Value="{atom:SharedTokenResource IconSizeSM}" />
+                        Value="{atom:TabItemTokenResource IconSizeSM}" />
             </Style>
         </Style>
 
@@ -131,7 +135,7 @@
         </Style>
 
         <Style Selector="^:disabled">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Setter Property="Foreground" Value="{atom:TabItemTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^ /template/ atom|IconButton#PART_ItemCloseButton">
@@ -155,11 +159,13 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <atom:SolidColorBrushTransition Property="Foreground" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="CloseButtonOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="CloseButtonOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

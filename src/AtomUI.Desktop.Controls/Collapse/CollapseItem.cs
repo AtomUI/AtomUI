@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Icons.AntDesign;
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -15,25 +18,28 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+// A Token-owner transparent part: a CollapseItem is an item of Collapse only and has no Own Tokens, so its theme reads the
+// Collapse TokenResource and Controls[Collapse] reaches the item headers, bodies, separators and motion.
+[TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
-public class CollapseItem : HeaderedContentControl, ISelectable
+public class CollapseItem : AbstractCollapseItem, ISelectable
 {
     #region 公共属性定义
 
-    public static readonly StyledProperty<bool> IsSelectedProperty =
-        SelectingItemsControl.IsSelectedProperty.AddOwner<CollapseItem>();
+    public new static readonly StyledProperty<bool> IsSelectedProperty =
+        AbstractCollapseItem.IsSelectedProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<bool> IsShowExpandIconProperty =
-        AvaloniaProperty.Register<CollapseItem, bool>(nameof(IsShowExpandIcon), true);
+    public new static readonly StyledProperty<bool> IsShowExpandIconProperty =
+        AbstractCollapseItem.IsShowExpandIconProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<PathIcon?> ExpandIconProperty =
-        AvaloniaProperty.Register<CollapseItem, PathIcon?>(nameof(ExpandIcon));
+    public new static readonly StyledProperty<PathIcon?> ExpandIconProperty =
+        AbstractCollapseItem.ExpandIconProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<object?> AddOnContentProperty =
-        AvaloniaProperty.Register<CollapseItem, object?>(nameof(AddOnContent));
+    public new static readonly StyledProperty<object?> AddOnContentProperty =
+        AbstractCollapseItem.AddOnContentProperty.AddOwner<CollapseItem>();
 
-    public static readonly StyledProperty<IDataTemplate?> AddOnContentTemplateProperty =
-        AvaloniaProperty.Register<CollapseItem, IDataTemplate?>(nameof(AddOnContentTemplate));
+    public new static readonly StyledProperty<IDataTemplate?> AddOnContentTemplateProperty =
+        AbstractCollapseItem.AddOnContentTemplateProperty.AddOwner<CollapseItem>();
     
     public static readonly StyledProperty<Thickness> HeaderPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(HeaderPadding));
@@ -41,31 +47,31 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(ContentPadding));
 
-    public bool IsSelected
+    public new bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
 
-    public bool IsShowExpandIcon
+    public new bool IsShowExpandIcon
     {
         get => GetValue(IsShowExpandIconProperty);
         set => SetValue(IsShowExpandIconProperty, value);
     }
 
-    public PathIcon? ExpandIcon
+    public new PathIcon? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
 
-    public object? AddOnContent
+    public new object? AddOnContent
     {
         get => GetValue(AddOnContentProperty);
         set => SetValue(AddOnContentProperty, value);
     }
 
-    public IDataTemplate? AddOnContentTemplate
+    public new IDataTemplate? AddOnContentTemplate
     {
         get => GetValue(AddOnContentTemplateProperty);
         set => SetValue(AddOnContentTemplateProperty, value);
@@ -89,11 +95,8 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<CollapseItem>();
 
-    internal static readonly StyledProperty<Thickness> DefaultHeaderPaddingProperty =
-        AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(DefaultHeaderPadding));
-
-    internal static readonly StyledProperty<Thickness> DefaultContentPaddingProperty =
-        AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(DefaultContentPadding));
+    internal static readonly StyledProperty<bool> UseItemPaddingTokenResourcesProperty =
+        AvaloniaProperty.Register<CollapseItem, bool>(nameof(UseItemPaddingTokenResources));
 
     internal static readonly DirectProperty<CollapseItem, Thickness?> OwnerHeaderPaddingProperty =
         AvaloniaProperty.RegisterDirect<CollapseItem, Thickness?>(nameof(OwnerHeaderPadding),
@@ -159,17 +162,24 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         set => SetValue(SizeTypeProperty, value);
     }
 
-    internal Thickness DefaultHeaderPadding
+    internal bool UseItemPaddingTokenResources
     {
-        get => GetValue(DefaultHeaderPaddingProperty);
-        set => SetValue(DefaultHeaderPaddingProperty, value);
+        get => GetValue(UseItemPaddingTokenResourcesProperty);
+        set => SetValue(UseItemPaddingTokenResourcesProperty, value);
     }
 
-    internal Thickness DefaultContentPadding
-    {
-        get => GetValue(DefaultContentPaddingProperty);
-        set => SetValue(DefaultContentPaddingProperty, value);
-    }
+    private static readonly object[] s_paddingKeys =
+    [
+        CollapseTokenKind.CollapseHeaderPaddingSM,
+        CollapseTokenKind.CollapseContentPaddingSM,
+        CollapseTokenKind.HeaderPadding,
+        CollapseTokenKind.ContentPadding,
+        CollapseTokenKind.CollapseHeaderPaddingLG,
+        CollapseTokenKind.CollapseContentPaddingLG
+    ];
+
+    private OwnerTokenSet? _paddingTokens;
+    private (Thickness Header, Thickness Content) _defaultPaddings;
 
     private Thickness? _ownerHeaderPadding;
 
@@ -275,13 +285,20 @@ public class CollapseItem : HeaderedContentControl, ISelectable
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
+    // Avalonia focuses the nearest focusable ancestor of a pressed element, so a press on plain content gives
+    // the item focus; Ant Design only toggles from the header, so toggle keys stay off until focus comes
+    // from the keyboard or a header press.
+    private bool _isToggleKeySuppressed;
 
     static CollapseItem()
     {
-        SelectableMixin.Attach<CollapseItem>(IsSelectedProperty);
         PressedMixin.Attach<CollapseItem>();
-        FocusableProperty.OverrideDefaultValue(typeof(CollapseItem), true);
         DataContextProperty.Changed.AddClassHandler<CollapseItem>((x, e) => x.UpdateHeader(e));
+    }
+
+    public CollapseItem()
+    {
+        AddHandler(PointerPressedEvent, HandlePreviewPointerPressed, RoutingStrategies.Tunnel, true);
     }
 
     protected override AutomationPeer OnCreateAutomationPeer()
@@ -311,12 +328,30 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     {
         base.OnAttachedToVisualTree(e);
         SetupDefaultExpandIcon();
+        UpdatePaddingTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _paddingTokens?.Dispose();
+        _paddingTokens = null;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && e.NavigationMethod != NavigationMethod.Pointer)
+        {
+            _isToggleKeySuppressed = false;
+        }
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
-        if (TriggerType == CollapseTriggerType.Header &&
+        if (!_isToggleKeySuppressed &&
+            TriggerType == CollapseTriggerType.Header &&
             SelectingItemsControl.ItemsControlFromItemContainer(this) is Collapse collapse)
         {
             e.Handled = collapse.UpdateSelectionFromEvent(this, e);
@@ -327,14 +362,30 @@ public class CollapseItem : HeaderedContentControl, ISelectable
     {
         base.OnPropertyChanged(change);
 
-        if (change.Property == HeaderPaddingProperty ||
+        if (change.Property == UseItemPaddingTokenResourcesProperty && this.IsAttachedToVisualTree())
+        {
+            UpdatePaddingTokenSubscription();
+        }
+        else if (change.Property == SizeTypeProperty && _paddingTokens is not null)
+        {
+            RefreshDefaultPaddings();
+        }
+        else if (change.Property == HeaderPaddingProperty ||
             change.Property == ContentPaddingProperty ||
-            change.Property == DefaultHeaderPaddingProperty ||
-            change.Property == DefaultContentPaddingProperty ||
             change.Property == OwnerHeaderPaddingProperty ||
             change.Property == OwnerContentPaddingProperty)
         {
             UpdateEffectivePaddings();
+        }
+    }
+
+    // Runs in the tunnel phase, before the focus manager focuses the item for a content press.
+    private void HandlePreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isToggleKeySuppressed = _headerDecorator is null ||
+                                     !new Rect(_headerDecorator.Bounds.Size).Contains(e.GetPosition(_headerDecorator));
         }
     }
 
@@ -405,14 +456,72 @@ public class CollapseItem : HeaderedContentControl, ISelectable
         Debug.Assert(ExpandIcon != null);
     }
 
+    private void UpdatePaddingTokenSubscription()
+    {
+        if (UseItemPaddingTokenResources && _paddingTokens is null)
+        {
+            _paddingTokens = new OwnerTokenSet(this, s_paddingKeys.Length, RefreshDefaultPaddings);
+            for (var index = 0; index < s_paddingKeys.Length; ++index)
+            {
+                _paddingTokens.SetResourceKey(index, s_paddingKeys[index]);
+            }
+        }
+        else if (!UseItemPaddingTokenResources && _paddingTokens is not null)
+        {
+            _paddingTokens.Dispose();
+            _paddingTokens = null;
+        }
+        RefreshDefaultPaddings();
+    }
+
+    private void RefreshDefaultPaddings()
+    {
+        var index = SizeType switch
+        {
+            CustomizableSizeType.Small => 0,
+            CustomizableSizeType.Middle or CustomizableSizeType.Custom => 2,
+            CustomizableSizeType.Large => 4,
+            _ => -1
+        };
+        _defaultPaddings = index < 0
+            ? default
+            : (ReadPadding(_paddingTokens?.GetValue(index), _defaultPaddings.Header),
+               ReadPadding(_paddingTokens?.GetValue(index + 1), _defaultPaddings.Content));
+        UpdateEffectivePaddings();
+    }
+
+    private static Thickness ReadPadding(object? value, Thickness previous)
+    {
+        if (value is Thickness padding)
+        {
+            return padding;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        if (value is string text)
+        {
+            try
+            {
+                return Thickness.Parse(text);
+            }
+            catch (FormatException)
+            {
+                return default;
+            }
+        }
+        return default;
+    }
+
     private void UpdateEffectivePaddings()
     {
         EffectiveHeaderPadding = IsSet(HeaderPaddingProperty)
             ? HeaderPadding
-            : OwnerHeaderPadding ?? DefaultHeaderPadding;
+            : OwnerHeaderPadding ?? _defaultPaddings.Header;
         EffectiveContentPadding = IsSet(ContentPaddingProperty)
             ? ContentPadding
-            : OwnerContentPadding ?? DefaultContentPadding;
+            : OwnerContentPadding ?? _defaultPaddings.Content;
     }
 
 }

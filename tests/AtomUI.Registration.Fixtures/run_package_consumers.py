@@ -19,7 +19,12 @@ from xml.sax.saxutils import escape
 REPOSITORY = Path(__file__).resolve().parents[2]
 FIXTURES = Path("tests/AtomUI.Registration.Fixtures")
 PRODUCTS = ["AtomUI.Generator", "AtomUI.Localization", "AtomUI.Native", "AtomUI.Core", "AtomUI.Controls.Shared",
-            "AtomUI.Fonts.AlibabaSans", "AtomUI.Icons.AntDesign", "AtomUI.Controls", "AtomUI.Desktop.Controls"]
+            "AtomUI.Fonts.AlibabaSans", "AtomUI.Icons.AntDesign", "AtomUI.Controls", "AtomUI.Desktop.Controls",
+            # Every consumer enables Ant Design: the language package and the value packages of the control packages.
+            "DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign",
+            "DesignLanguages/AntDesign/AtomUI.Controls.Themes.AntDesign",
+            "DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign"]
+ANT_DESKTOP_VALUES = "src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign.csproj"
 
 
 def stage_sources(destination):
@@ -79,10 +84,12 @@ def main():
 
     # Explicit source prerequisites. The staged checkout has no existing build outputs or package cache.
     run("build-adapter", ["dotnet", "build", str(FIXTURES / "BinaryAdapter/BinaryAdapter.csproj"), "-c", "Release"])
+    run("build-antdesign", ["dotnet", "build", ANT_DESKTOP_VALUES, "-c", "Release"])
     run("build-linker", ["dotnet", "build", "src/AtomUI.Toolchain/AtomUI.Toolchain.csproj", "-t:BuildManagedToolchain", "-c", "Release"])
     version = subprocess.check_output(["dotnet", "msbuild", "src/AtomUI.Core/AtomUI.Core.csproj", "-getProperty:AtomUIVersion"], cwd=source, env=env, text=True).strip()
     for project in PRODUCTS:
-        run("pack-" + project, ["dotnet", "pack", f"src/{project}/{project}.csproj", "-c", "Release", "--no-build", "--no-restore", "-o", str(feed)])
+        name = Path(project).name
+        run("pack-" + name, ["dotnet", "pack", f"src/{project}/{name}.csproj", "-c", "Release", "--no-build", "--no-restore", "-o", str(feed)])
     inventory = {}
     for package in sorted(feed.glob("*.nupkg")):
         with zipfile.ZipFile(package) as archive:

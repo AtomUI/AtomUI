@@ -16,10 +16,17 @@
     </ItemGroup>
 
     <ItemGroup>
+        <AvaloniaResource Include="ImagePreviewer/Assets/**" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.DataGrid/AtomUI.Desktop.Controls.DataGrid.csproj" />
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.Extras/AtomUI.Desktop.Controls.Extras.csproj" />
+        <ProjectReference Include="../AtomUI.Theme.ContractTests/AtomUI.Theme.ContractTests.csproj" />
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign.csproj" />
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj" />
         <ProjectReference Include="../../src/AtomUI.Localization/AtomUI.Localization.csproj" />
     </ItemGroup>
 </Project>

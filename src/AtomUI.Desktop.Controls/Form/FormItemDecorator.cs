@@ -6,9 +6,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+// Token-owner transparent part: the decorator has no Own Tokens and its theme reads the Form TokenResource.
+[TokenOwnerTransparent]
 public class FormItemDecorator : TemplatedControl,
                                  IInputControlStatusAware,
                                  IInputControlStyleVariantAware,
@@ -189,6 +192,8 @@ public class FormItemDecorator : TemplatedControl,
         _disposables = new CompositeDisposable();
         formItemAware.ValueChanged += HandleContentValueChanged;
 
+        // Child is runtime user content outside the decorator's template. ControlTheme cannot reach interface-selected
+        // child properties; the child-change lifecycle disposes the previous bindings.
         if (child is Control childControl)
         {
             _disposables.Add(FormSizeTypeBindingHelper.RelaySizeType(this, SizeTypeProperty, childControl));

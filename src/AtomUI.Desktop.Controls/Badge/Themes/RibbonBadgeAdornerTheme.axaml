@@ -17,16 +17,12 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="RibbonColor" Value="{atom:SharedTokenResource ColorPrimary}" />
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-        <Setter Property="BadgeRibbonOffset" Value="{atom:RibbonBadgeTokenResource Offset}" />
-        <Setter Property="BadgeRibbonCornerTransform"
-                Value="{atom:RibbonBadgeTokenResource CornerTransform}" />
-        <Setter Property="BadgeRibbonCornerDarkenAmount"
-                Value="{atom:RibbonBadgeTokenResource CornerDarkenAmount}" />
+        <Setter Property="RibbonColor" Value="{atom:RibbonBadgeTokenResource ColorPrimary}" />
+        <Setter Property="CornerRadius" Value="{atom:RibbonBadgeTokenResource BorderRadiusSM}" />
+        <Setter Property="UseRibbonGeometryTokenResources" Value="True" />
 
         <Style Selector="^ /template/ atom|TextBlock#PART_LabelPart">
-            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
+            <Setter Property="Foreground" Value="{atom:RibbonBadgeTokenResource ColorTextLightSolid}" />
             <Setter Property="LineHeight"
                     Value="{atom:RibbonBadgeTokenResource FontHeight}" />
             <Setter Property="Padding"

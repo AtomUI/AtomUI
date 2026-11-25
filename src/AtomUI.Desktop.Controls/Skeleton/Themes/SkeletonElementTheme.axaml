@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of SkeletonButton and
+     SkeletonInput, each with its own identity. On a SkeletonElement the owner is the SkeletonElement. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -17,21 +19,21 @@
         </Style>
             <Setter Property="VerticalAlignment" Value="Top" />
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightLG}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightLG}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightLG}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightLG}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeight}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeight}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeight}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeight}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="MinHeight" Value="{atom:SharedTokenResource ControlHeightSM}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource ControlHeightSM}" />
+            <Setter Property="MinHeight" Value="{atom:OwnerTokenResource ControlHeightSM}" />
+            <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
         </Style>
         
-        <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}"/>
+        <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}"/>
     </Style>
     
 </ControlTheme>

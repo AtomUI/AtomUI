@@ -5,6 +5,12 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:GradientColorPicker}" TargetType="atom:GradientColorPicker">
+        <Setter Property="atom:ColorPickerAttachedProperties.DisabledColorBlockOpacity" Value="{atom:GradientColorPickerTokenResource ColorBlockDisabledOpacity}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.ColorBlockInnerShadows" Value="{atom:GradientColorPickerTokenResource ColorBlockInnerShadows}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.CheckerboardTileSize" Value="{atom:GradientColorPickerTokenResource TransparentBgSize}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerPadding" Value="{atom:GradientColorPickerTokenResource TriggerPadding}" />
+        <Setter Property="atom:ColorPickerAttachedProperties.TriggerTextMargin" Value="{atom:GradientColorPickerTokenResource TriggerTextMargin}" />
+
         <ControlTheme.BasedOn>
             <themes:AbstractColorPickerTheme TargetType="atom:GradientColorPicker" />
         </ControlTheme.BasedOn>
@@ -29,11 +35,20 @@
                             <Panel VerticalAlignment="Center">
                                 <WrapPanel Name="PART_ColorTextPanel"
                                            Classes.semantic-description="True"
-                                           IsVisible="{TemplateBinding IsTextVisible}" />
+                                           IsVisible="{TemplateBinding IsTextVisible}">
+                                    <WrapPanel.Styles>
+                                        <Style Selector=":is(TextBlock).active-stop">
+                                            <Setter Property="Foreground"
+                                                    Value="{CompiledBinding $parent[atom:GradientColorPicker].InactiveStopTextColor}" />
+                                        </Style>
+                                    </WrapPanel.Styles>
+                                </WrapPanel>
                             </Panel>
                         </DockPanel>
                     </atom:PixelAlignedBorder>
                     <atom:Popup Name="PART_Popup"
+                                OpenMotion="{TemplateBinding OpenMotion}"
+                                CloseMotion="{TemplateBinding CloseMotion}"
                                 IsPopupPinnedOpen="{TemplateBinding IsPopupPinnedOpen}"
                                 WindowManagerAddShadowHint="False"
                                 IsLightDismissEnabled="{TemplateBinding IsLightDismissEnabled}"
@@ -57,17 +72,17 @@
         </Setter>
 
         <Setter Property="InactiveStopTextColor"
-                Value="{atom:SharedTokenResource ColorTextDisabled}" />
+                Value="{atom:GradientColorPickerTokenResource ColorTextDisabled}" />
         <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
             <Setter Property="TextElement.Foreground"
-                    Value="{atom:SharedTokenResource ColorText}" />
-            <Setter Property="Margin" Value="{atom:ColorPickerTokenResource TriggerTextMargin}" />
+                    Value="{atom:GradientColorPickerTokenResource ColorText}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.TriggerTextMargin)}" />
         </Style>
 
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ TextBlock#PART_ColorTextPanel">
-                <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
+            <Style Selector="^ /template/ WrapPanel#PART_ColorTextPanel">
+                <Setter Property="TextElement.Foreground"
+                        Value="{atom:GradientColorPickerTokenResource ColorTextDisabled}" />
             </Style>
         </Style>
     </ControlTheme>

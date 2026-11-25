@@ -14,13 +14,18 @@
         <Setter Property="Padding" Value="{CompiledBinding ThemePadding, RelativeSource={RelativeSource Self}}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <atom:FeedbackStackPresenter Name="PART_Items"
-                                            Margin="{TemplateBinding Padding}"
-                                            Classes.semantic-list-content="True" />
+                <!-- layer: 表面宿主（规则 3），卡片内控件的焦点描边、Badge 落在它的装饰层，紧贴本 manager 的卡片；
+                     它没有背景，不参与命中，列表的命中区不变。 -->
+                <VisualLayerManager Name="PART_SurfaceHost"
+                                    atom:LayerLadder.IsSurfaceHost="True">
+                    <atom:FeedbackStackPresenter Name="PART_Items"
+                                                Margin="{TemplateBinding Padding}"
+                                                Classes.semantic-list-content="True" />
+                </VisualLayerManager>
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:WindowNotificationManagerTokenResource EnableMotion}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
 

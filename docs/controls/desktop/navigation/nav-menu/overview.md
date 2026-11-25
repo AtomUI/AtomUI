@@ -82,6 +82,7 @@ NavMenu 的公共 API 分为控件 API、节点 API 和事件 API。
 | `ItemKey` | `EntityKey?` | 路径和业务标识。 |
 | `Icon` | `PathIcon?` | 菜单项图标。 |
 | `IsEnabled` | `bool` | 节点可用状态，默认 `true`。 |
+| `IsDanger` | `bool` | 节点是否为危险（破坏性）操作，默认 `false`。`NavMenuNode.IsDanger` 为可通知属性；`INavMenuNode.IsDanger` 是默认返回 `false` 的接口成员，既有自定义节点无需实现，需要时自行声明同名属性并通过 `INotifyPropertyChanged` 通知。 |
 | `Command` | `ICommand?` | 节点被有效触发时由当前 `NavMenuItem` 容器执行的业务命令。节点只承载命令配置，不负责订阅或执行。 |
 | `CommandParameter` | `object?` | 传递给 `Command` 的参数。默认 `null`，不隐式回退到 `ItemKey` 或节点自身。 |
 | `INavMenuNode.Entries` | `IEnumerable<INavMenuEntry>` | 容器读取子 entry 的协变契约。接口默认返回既有 `Children`，自定义节点无需新增实现。 |
@@ -178,6 +179,14 @@ NavMenu 家族只有 `NavMenu` 一个 public owner：`NavMenuItem`、`NavMenuGro
 Part 的 Selector、ContractType、cardinality、marker 放置、数量语义、尺寸基线、定制边界与验证矩阵以
 [NavMenu Semantic Part 契约](semantic-part.md) 为准。
 
+### 打开与关闭动效配置
+
+NavMenu 本体不新增语义不明的整树 OpenMotion/CloseMotion。实际 popup 项的内部 NavMenuItem 与主题承担逐层配置，不提升内部容器为公开类型；Inline 内容展开不混用 popup 动效。
+
+这些入口的显式 null、主题默认与清除覆盖按[共享配置契约](../../../../architecture/systems/motion/popup-motion.md#3-public-api-与主题覆盖)处理，各层默认保持独立。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约：指针按下只建立待提交事务并尝试移动真实焦点，合法释放（按下与释放命中同一项）才按固定顺序提交选择并派发命令与事件，其余中断路径一律取消。键盘 Enter/Space 与指针合法释放复用激活入口；程序化 `SelectedItem` 是独立的选择入口，只同步选择状态，不执行节点命令或触发 `NavMenuItemClick`。完整状态机、提交顺序、同步重入和取消路径见 [NavMenu 项激活事务设计](item-activation-design.md)。
@@ -215,6 +224,10 @@ NavMenu 的交互行为由 mode 决定。所有 mode 共用项激活事务契约
 - `PointerOver` 改变 header 前景和背景，但不能改变选中路径。
 - `PressCandidate` 表示激活事务的待提交项，建立后一直保留到提交或取消；只有指针仍命中该项时才贡献与 selected 相同的背景，文字颜色保持按下前状态，不影响选中状态。
 - `KeyboardActive` 表示键盘漫游中的当前项，只影响键盘导航锚点和 active 视觉，不改变选中路径；pointer-hold 与 keyboard-active 由独立 owner 维护，可以同时存在。
+- 键盘焦点描边对应 Ant Design 的 `menu-root:focus-visible` 与 `menu-item:focus-visible`（`genFocusOutline`），同一时刻只画一处：
+  - **显示条件**：菜单处于键盘焦点可见状态。导航键被菜单处理或 Tab / 方向导航把焦点移入菜单时进入该状态；指针按下菜单、或焦点移到菜单（含弹层子项）之外时退出。
+  - **位置**：还没有 keyboard active 项时描边菜单根，且仅在菜单根自身持有焦点时显示；有 active 项后描边移到该项的 header。弹层中的子项在所在弹层自己的装饰层中绘制。
+  - 菜单根的 `FocusAdorner` 为空，两处描边都由 NavMenu 用共享的 `ManagedFocusOutline` 绘制，不叠加默认装饰器。
 - `Selected` 表示当前叶子节点已提交选中。
 - `IsInSelectedPath` 表示某个祖先位于当前选中路径中。
 - `Open` 表示当前项目子菜单打开。
@@ -257,7 +270,7 @@ Theme 映射规则：
 - Root 背景使用 `ItemBg`，Dark root 背景使用 `DarkMenuBg`。
 - Popup 背景使用 `MenuPopupBg`，Dark popup 使用 `DarkMenuPopupBg`。
 - Header 默认背景为 `Transparent`，hover / selected 背景由 header state 直接控制。
-- Keyboard active 通过 `IsKeyboardActive` / `ItemActiveBg` 表达；指针按住通过独立的 `IsPointerHold` 只使用与 selected 相同的 `ItemSelectedBg`（dark 使用 `DarkItemSelectedBg`），不覆盖既有文字颜色。两者优先级都低于真实 `Selected`，清除其中一个 owner 不得覆盖另一个 owner 的状态。keyboard active 可以叠加在 `IsInSelectedPath` 父节点上，使父节点保留 selected-path 文字色的同时显示临时 active 背景。header 背景使用 `MotionDurationSlow`（默认 300ms）与 `ItemBackgroundMotionEasing`（默认 CSS `ease` 等价曲线），使 hover 灰在按下后过渡到 selected 色，而 selection 只在合法释放时提交。
+- Keyboard active 通过 `IsKeyboardActive` / `ItemActiveBg` 表达；指针按住通过独立的 `IsPointerHold` 只使用与 selected 相同的 `ItemSelectedBg`（dark 使用 `DarkItemSelectedBg`），不覆盖既有文字颜色。两者优先级都低于真实 `Selected`，清除其中一个 owner 不得覆盖另一个 owner 的状态。keyboard active 可以叠加在 `IsInSelectedPath` 父节点上，使父节点保留 selected-path 文字色的同时显示临时 active 背景。header 背景使用 NavMenu 有效的 `MotionDurationSlow`（默认 300ms）过渡，使 hover 灰在按下后过渡到 selected 色，而 selection 只在合法释放时提交。
 - Inline collapsed 根宽度使用 `InlineCollapsedWidth`，默认来自 `NavMenuToken.InlineCollapsedWidth=48`。折叠视觉只作用于 `Mode=Inline && IsInlineCollapsed=true`：一级 icon 使用 `CollapsedIconSize` 居中，标题和箭头收起，未配置 icon 的一级项从节点 `Header` 显示首字符；顶层叶子项使用独立 `Tooltip`，未设置时回退到 `Header`。
 - Inline/Vertical 的 Header 和 Footer 位于菜单滚动区之外；无 Header/Footer 时对应 presenter 折叠，不占用布局空间。Horizontal 中 Header 左停靠、Footer 右停靠，菜单项占用中间区域。进入 inline collapsed 后 Header 保持可见以承载展开入口，Footer 自动隐藏；Header 内容需要根据 `IsInlineCollapsed` 自适应折叠宽度。
 - 根层 inline collapsed 分组标题隐藏，分组及其透明嵌套分组内的节点继续继承根折叠状态，按顶层节点使用 `CollapsedIconSize` 居中；popup 或非根语义层级中的分组标题和节点保持普通 vertical 视觉。Horizontal 根层把分组渲染为透明水平集合并隐藏标题，popup 中恢复垂直分组标题。
@@ -265,9 +278,24 @@ Theme 映射规则：
 - 根默认 ItemsPanel 通过 `TemplateBinding` 消费公开 `ItemSpacing`；submenu、popup 和 group 默认 ItemsPanel 消费由根控件投影的内部 effective spacing。该路径不使用进入子控件模板的 selector，也不建立逐容器 binding。自定义 ItemsPanel 是否消费 spacing 由自定义面板负责。
 - `IsItemBackgroundEnabled=true` 时，inline child frame 使用 `SubMenuItemBg` / `DarkSubMenuItemBg`，并应用背景块专用外距。
 - `IsItemBackgroundEnabled=false` 时，inline child frame 背景为 `Transparent`，不应用背景块专用外距；header 的文字色、hover、selected 和 selected path 仍然生效。
-- Horizontal 顶层 light style 通过 `PART_ActiveIndicator` 表达选中；dark style 可以使用 selected background。
+- Horizontal 顶层 light style 通过 `PART_ActiveIndicator`（颜色 `HorizontalItemSelectedColor`）表达悬浮、展开与选中；悬浮/展开背景
+  `HorizontalItemHoverBg`、选中背景 `HorizontalItemSelectedBg`（默认均透明），选中文字 `HorizontalItemSelectedColor`；顶层项圆角在 light
+  与 dark style 下都使用 `HorizontalItemBorderRadius`（默认 `0`，与 antd 一致）；light 顶层项背景在所有状态下默认透明（包括键盘激活与指针按住），
+  圆角只在主题或应用样式给出背景时可见。dark style 可以使用 selected background。
+- Vertical / Horizontal 子菜单弹层中的菜单项使用 `SubMenuItemBorderRadius`（默认 `BorderRadiusSM`）；根层与 inline 菜单项使用
+  `ItemBorderRadius`。
+- 危险项（节点 `IsDanger=true`，经容器投影到公开的 `BaseNavMenuItemHeader.IsDanger`）：文字 `DangerItemColor`，悬浮文字
+  `DangerItemHoverColor`（选中项除外），指针按住背景 `DangerItemActiveBg`（选中项除外），选中文字与背景
+  `DangerItemSelectedColor` / `DangerItemSelectedBg`；dark style 使用对应的 `DarkDanger*` Token。危险映射位于普通状态之后、dark
+  映射之前，dark 危险映射位于 dark 普通状态之后；禁用视觉仍优先。与 antd 一致，危险语义只作用于菜单项，子菜单标题不消费。
 
 Header 背景与 NavMenuItem / inline submenu 背景块是不同职责，不应混为一个 selector 控制。
+
+### 弹层动效契约
+
+NavMenu Horizontal 顶层弹层采用固定 SlideUp、MotionDurationMid；Vertical、Horizontal 次级和 InlineCollapsed 弹层采用 ZoomBig、MotionDurationMid，按独立 Menu 的 placement/RTL 原点规则处理。Inline 内容继续使用自然高度与透明度，不迁为 PopupSurface 缩放。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 控件家族或集成关系
 
@@ -309,6 +337,7 @@ NavMenu 不实现 Form、CompactSpace 或 Button 家族接口。
 - 根分组中的节点仍为顶层节点；嵌套分组不能改变节点的 `ParentNode`、`Level` 或 `IsTopLevel`。
 - `Header` / `Footer` 固定区域不能进入菜单 ItemsPanel 或随菜单项滚动；空 content 不得改变既有无 slot 布局。
 - `ItemSpacing` 只控制根默认 ItemsPanel，并在具有有效设置时覆盖后代默认 ItemsPanel 的额外容器间距；未设置的 Horizontal 根层保持 `0`，其 popup、submenu 和 group 仍使用 `VerticalItemsPanelSpacing`。该属性不重定义 `ItemContentMargin`、`VerticalChildItemsMargin` 或自定义 ItemsPanel 的布局语义。
+- 选择定位、分组容器准备、子菜单打开状态和键盘导航都以当前呈现层级的每个 entry 容器都已生成为前提，因此根、子菜单和分组的 ItemsPanel 必须是非虚拟化面板（默认面板满足）。替换为 `VirtualizingStackPanel` 等虚拟化面板不受支持，也不是扩展点：视口外的 entry 没有容器，键盘导航只会在已生成的容器之间循环，子菜单打开状态随容器回收丢失，视口外目标的 `DefaultOpenPaths` 无法 replay。容器按层级延迟生成，未打开的子菜单不生成子容器；超长导航应组织为子菜单层级，确需数千行可滚动导航树时使用支持虚拟化面板的 `TreeView`。
 - `NavMenuNode` 只承载命令配置，不实现 `ICommandSource`，不直接订阅 `CanExecuteChanged`，也不保存当前 `NavMenuItem` 容器。
 - `CommandParameter` 保持标准显式参数语义，不隐式回退到 `ItemKey`、`Header`、`SelectedItem` 或节点自身。
 - `NavMenuItemClick` 和 `NavMenuNodeSelected` 的事件语义不变。

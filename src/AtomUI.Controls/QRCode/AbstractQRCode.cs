@@ -1,4 +1,7 @@
-﻿using Avalonia;
+using AtomUI.Theme.Resources;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -177,6 +180,8 @@ public abstract class AbstractQRCode : TemplatedControl
 
     #endregion
 
+    private static readonly ThemeTokenResolver TokenResolver = new();
+    private IDisposable? _themeSubscription;
     private Button? _refreshButton;
 
     static AbstractQRCode()
@@ -184,6 +189,37 @@ public abstract class AbstractQRCode : TemplatedControl
         AffectsMeasure<AbstractQRCode>(BitmapProperty);
     }
     
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        _themeSubscription?.Dispose();
+        // The raster fallback is computed at runtime when an application explicitly clears Color; a ControlTheme
+        // cannot replace that local null value. Rebuild only this fallback on a theme/context change.
+        _themeSubscription = TokenResolver.Subscribe(this, _ =>
+        {
+            if (Color is null)
+            {
+                SetupQRCode();
+            }
+        });
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
+        base.OnDetachedFromLogicalTree(e);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        if (Color is null)
+        {
+            SetupQRCode();
+        }
+    }
+
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -208,7 +244,7 @@ public abstract class AbstractQRCode : TemplatedControl
 
     private void SetupQRCode()
     {
-        if (string.IsNullOrEmpty(Value))
+        if (string.IsNullOrEmpty(Value) || (Color is null && !this.IsAttachedToVisualTree()))
         { 
             return;
         }
@@ -224,7 +260,8 @@ public abstract class AbstractQRCode : TemplatedControl
         var       info    = new SKImageInfo(Size, Size);
         using var surface = SKSurface.Create(info);
         var       canvas  = surface.Canvas;
-        var       color   = ((ISolidColorBrush?)Color)?.Color ?? Colors.Black;
+        var       color   = ((ISolidColorBrush?)Color)?.Color ??
+                            ControlTokenAccessor.Capture(this).GetEffectiveGlobal<Color>(SharedTokenKind.ColorText);
 
         canvas.Render(
             qrcode,

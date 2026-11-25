@@ -19,15 +19,6 @@ internal class SliderMarksElement : Control
     internal static readonly StyledProperty<IBrush?> MarkBorderActiveBrushProperty =
         AvaloniaProperty.Register<SliderMarksElement, IBrush?>(nameof(MarkBorderActiveBrush));
 
-    internal static readonly StyledProperty<IBrush?> MarkBackgroundBrushProperty =
-        AvaloniaProperty.Register<SliderMarksElement, IBrush?>(nameof(MarkBackgroundBrush));
-
-    internal static readonly StyledProperty<Thickness> MarkBorderThicknessProperty =
-        AvaloniaProperty.Register<SliderMarksElement, Thickness>(nameof(MarkBorderThickness));
-
-    internal static readonly StyledProperty<double> SliderMarkSizeProperty =
-        AvaloniaProperty.Register<SliderMarksElement, double>(nameof(SliderMarkSize));
-
     internal IBrush? MarkBorderBrush
     {
         get => GetValue(MarkBorderBrushProperty);
@@ -40,24 +31,6 @@ internal class SliderMarksElement : Control
         set => SetValue(MarkBorderActiveBrushProperty, value);
     }
 
-    internal IBrush? MarkBackgroundBrush
-    {
-        get => GetValue(MarkBackgroundBrushProperty);
-        set => SetValue(MarkBackgroundBrushProperty, value);
-    }
-
-    internal Thickness MarkBorderThickness
-    {
-        get => GetValue(MarkBorderThicknessProperty);
-        set => SetValue(MarkBorderThicknessProperty, value);
-    }
-
-    internal double SliderMarkSize
-    {
-        get => GetValue(SliderMarkSizeProperty);
-        set => SetValue(SliderMarkSizeProperty, value);
-    }
-
     #endregion
 
     internal List<(Rect, int, bool)>? MarkRects { get; set; }
@@ -66,14 +39,20 @@ internal class SliderMarksElement : Control
 
     private IPen? _markBorderPen;
     private IPen? _markBorderActivePen;
+    private SliderMarkPaint _staticPaint;
 
     static SliderMarksElement()
     {
-        AffectsRender<SliderMarksElement>(MarkBorderBrushProperty,
-            MarkBorderActiveBrushProperty,
-            MarkBackgroundBrushProperty,
-            MarkBorderThicknessProperty,
-            SliderMarkSizeProperty);
+        AffectsRender<SliderMarksElement>(MarkBorderBrushProperty, MarkBorderActiveBrushProperty);
+    }
+
+    internal void UpdateStaticPaint(SliderMarkPaint paint)
+    {
+        if (_staticPaint != paint)
+        {
+            _staticPaint = paint;
+            InvalidateVisual();
+        }
     }
 
     public override void Render(DrawingContext context)
@@ -83,20 +62,20 @@ internal class SliderMarksElement : Control
             foreach (var markRectEntry in MarkRects)
             {
                 var centerPos = markRectEntry.Item1.Center;
-                var radius   = SliderMarkSize / 2;
+                var radius   = _staticPaint.Size / 2;
                 if (markRectEntry.Item3)
                 {
                     PenUtils.TryModifyOrCreate(ref _markBorderActivePen,
                         MarkBorderActiveBrush,
-                        MarkBorderThickness.Left);
-                    context.DrawEllipse(MarkBackgroundBrush, _markBorderActivePen, centerPos, radius, radius);
+                        _staticPaint.BorderThickness.Left);
+                    context.DrawEllipse(_staticPaint.Background, _markBorderActivePen, centerPos, radius, radius);
                 }
                 else
                 {
                     PenUtils.TryModifyOrCreate(ref _markBorderPen,
                         MarkBorderBrush,
-                        MarkBorderThickness.Left);
-                    context.DrawEllipse(MarkBackgroundBrush, _markBorderPen, centerPos, radius, radius);
+                        _staticPaint.BorderThickness.Left);
+                    context.DrawEllipse(_staticPaint.Background, _markBorderPen, centerPos, radius, radius);
                 }
             }
         }
@@ -110,3 +89,5 @@ internal class SliderMarksElement : Control
         }
     }
 }
+
+internal readonly record struct SliderMarkPaint(IBrush? Background, Thickness BorderThickness, double Size);

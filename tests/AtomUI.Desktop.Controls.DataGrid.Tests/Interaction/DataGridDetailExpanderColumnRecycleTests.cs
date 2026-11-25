@@ -475,8 +475,9 @@ public class DataGridDetailExpanderColumnRecycleTests
             var firstHeight = grid.GetDisplayedElementHeight(grid.DisplayData.GetDisplayedElement(firstSlot));
             firstHeight.ShouldBeGreaterThan(0);
 
+            // 偏移与首行负偏移必须互相一致：VerticalOffset = 首行顶部 + NegVerticalOffset
             SetNegVerticalOffset(grid, firstHeight + 12);
-            InvokeSetVerticalOffset(grid, grid.VerticalOffset + firstHeight + 12);
+            InvokeSetVerticalOffset(grid, grid.GetRangeOffset(firstSlot) + firstHeight + 12);
 
             grid.ScrollSlotsByHeight(-1);
             RunLayoutJobs();

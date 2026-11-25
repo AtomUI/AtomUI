@@ -4,65 +4,101 @@
     xmlns:atom="https://atomui.net"
     xmlns:antdicons="https://atomui.net/icons/antdesign"
     x:ClassModifier="internal">
+    <atom:BorderThicknessFilterConverter x:Key="SpinnerHandleLeftDividerThickness"
+                                         Top="False" Right="False" Bottom="False" />
+    <atom:BorderThicknessFilterConverter x:Key="SpinnerHandleRightDividerThickness"
+                                         Left="False" Top="False" Bottom="False" />
+
     <ControlTheme x:Key="{x:Type atom:ButtonSpinnerHandle}" TargetType="atom:ButtonSpinnerHandle">
         <Setter Property="Template">
             <ControlTemplate>
-                <UniformGrid
-                    Columns="1" 
-                    Rows="2"
-                    RowSpacing="1">
-                    <atom:IconButton
-                        Name="PART_IncreaseButton"
-                        Classes.semantic-increase-button="True"
-                        Icon="{antdicons:AntDesignIconProvider UpOutlined}"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        BackgroundSizing="InnerBorderEdge"/>
-                    <atom:IconButton
-                        Name="PART_DecreaseButton"
-                        Classes.semantic-decrease-button="True"
-                        Icon="{antdicons:AntDesignIconProvider DownOutlined}"
-                        VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        BackgroundSizing="InnerBorderEdge"/>
-                </UniformGrid>
+                <Panel>
+                    <UniformGrid
+                        Name="PART_ButtonsLayout"
+                        Columns="1"
+                        Rows="2"
+                        RowSpacing="1">
+                        <atom:IconButton
+                            Name="PART_IncreaseButton"
+                            IsTabStop="False"
+                            Classes.semantic-increase-button="True"
+                            Icon="{antdicons:AntDesignIconProvider UpOutlined}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BackgroundSizing="InnerBorderEdge"/>
+                        <atom:IconButton
+                            Name="PART_DecreaseButton"
+                            IsTabStop="False"
+                            Classes.semantic-decrease-button="True"
+                            Icon="{antdicons:AntDesignIconProvider DownOutlined}"
+                            VerticalAlignment="Stretch"
+                            HorizontalAlignment="Stretch"
+                            BackgroundSizing="InnerBorderEdge"/>
+                    </UniformGrid>
+
+                    <!-- The buttons reach the content-facing edge. Paint the divider above their state fills. -->
+                    <atom:PixelAlignedBorder Name="ContentDivider"
+                                             IsHitTestVisible="False"
+                                             Margin="{TemplateBinding HandleContentMargin}"
+                                             BorderBrush="{TemplateBinding BorderBrush}" />
+                </Panel>
             </ControlTemplate>
         </Setter>
         
         <Setter Property="ClipToBounds" Value="True"/>
-        <Setter Property="BorderBrush" Value="{atom:ButtonSpinnerTokenResource HandleBorderColor}"/>
-        <Setter Property="SpinnerBorderThickness" Value="{atom:SharedTokenResource BorderThickness}"/>
-        <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource HandleBg}"/>
+        <Setter Property="BorderBrush" Value="{Binding $parent[atom:ButtonSpinner].HandleBorderColor}"/>
+        <Setter Property="SpinnerBorderThickness" Value="{atom:OwnerTokenResource BorderThickness}"/>
+        <Setter Property="Background" Value="{Binding $parent[atom:ButtonSpinner].HandleBg}"/>
         <Style Selector="^[StyleVariant=Filled]">
-            <Setter Property="Background" Value="{atom:ButtonSpinnerTokenResource FilledHandleBg}" />
+            <Setter Property="Background" Value="{Binding $parent[atom:ButtonSpinner].FilledHandleBg}" />
         </Style>
         <Style Selector="^:disabled">
-            <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainerDisabled}" />
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
+            <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainerDisabled}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
         </Style>
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton, ^ /template/ atom|IconButton#PART_DecreaseButton">
-            <Setter Property="IconWidth" Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+            <Setter Property="IconWidth" Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
             <Setter Property="IconHeight"
-                    Value="{atom:ButtonSpinnerTokenResource HandleIconSize}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleIconSize}" />
+            <Setter Property="IconBrush" Value="{Binding $parent[atom:ButtonSpinner].HandleIconColor}" />
+        </Style>
+
+        <!-- The two half-height buttons sit inside the frame's border (official PrimeNG insets the button group by
+             1px), so their hover/pressed fill never paints over the input frame's outline. -->
+        <Style Selector="^ /template/ UniformGrid#PART_ButtonsLayout">
+            <Setter Property="Margin" Value="{Binding $parent[atom:ButtonSpinnerHandle].HandleContentMargin}" />
+        </Style>
+
+        <Style Selector="^[ButtonSpinnerLocation=Right] /template/ atom|PixelAlignedBorder#ContentDivider">
+            <Setter Property="BorderThickness"
+                    Value="{TemplateBinding SpinnerBorderThickness, Converter={StaticResource SpinnerHandleLeftDividerThickness}}" />
+        </Style>
+        <Style Selector="^[ButtonSpinnerLocation=Left] /template/ atom|PixelAlignedBorder#ContentDivider">
+            <Setter Property="BorderThickness"
+                    Value="{TemplateBinding SpinnerBorderThickness, Converter={StaticResource SpinnerHandleRightDividerThickness}}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pointerover, ^ /template/ atom|IconButton#PART_DecreaseButton:pointerover">
             <Setter Property="IconBrush"
-                    Value="{atom:ButtonSpinnerTokenResource HandleHoverColor}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleHoverColor}" />
+            <Setter Property="Background"
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleHoverBg}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pressed, ^ /template/ atom|IconButton#PART_DecreaseButton:pressed">
+            <!-- The increase/decrease buttons are registered IconButtons, so an owner read on them would resolve to
+                 IconButton; the handle reads its host's value explicitly like its other handle Tokens. -->
             <Setter Property="IconBrush"
-                    Value="{atom:SharedTokenResource ColorPrimaryActive}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandlePressedColor}" />
         </Style>
         
         <Style
             Selector="^ /template/ atom|IconButton#PART_IncreaseButton:pressed, ^ /template/ atom|IconButton#PART_DecreaseButton:pressed">
             <Setter Property="Background"
-                    Value="{atom:ButtonSpinnerTokenResource HandleActiveBg}" />
+                    Value="{Binding $parent[atom:ButtonSpinner].HandleActiveBg}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

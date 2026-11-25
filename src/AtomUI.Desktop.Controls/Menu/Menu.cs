@@ -166,6 +166,11 @@ public partial class Menu : AvaloniaMenu,
                     {
                         menuItem.SetCurrentValue(MenuItem.InputGestureProperty, menuItemData.InputGesture);
                     }
+
+                    if (!menuItem.IsSet(MenuItem.IsDangerProperty))
+                    {
+                        menuItem.SetCurrentValue(MenuItem.IsDangerProperty, menuItemData.IsDanger);
+                    }
                 }
             }
 
@@ -367,19 +372,16 @@ public partial class Menu : AvaloniaMenu,
         ConfigureDetachedTitleBarPopupDismissRoot();
     }
 
+    internal const string TopLevelMenuItemThemeKey = "TopLevelMenuItemTheme";
+
     private void ConfigureItemContainerTheme(bool force)
     {
         if (Theme == null || force)
         {
-            if (Application.Current != null)
+            // Resolve from the Menu itself so a theme supplied in a local resource scope wins over the application one.
+            if (this.TryFindResource(TopLevelMenuItemThemeKey, out var resource) && resource is ControlTheme theme)
             {
-                if (Application.Current.TryFindResource("TopLevelMenuItemTheme", out var resource))
-                {
-                    if (resource is ControlTheme theme)
-                    {
-                        ItemContainerTheme = theme;
-                    }
-                }
+                ItemContainerTheme = theme;
             }
         }
     }

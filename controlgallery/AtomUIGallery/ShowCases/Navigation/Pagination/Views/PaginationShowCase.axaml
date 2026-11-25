@@ -26,7 +26,7 @@
                                                      SemanticOwner="{Binding #PaginationSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Pagination}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:Pagination Name="PaginationSemanticOwner"
+                                <atom:Pagination x:Name="PaginationSemanticOwner"
                                                  Total="50"
                                                  CurrentPage="1"
                                                  HorizontalAlignment="Center"
@@ -45,7 +45,7 @@
                                                      SemanticOwner="{Binding #SimplePaginationSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:SimplePagination}">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <atom:SimplePagination Name="SimplePaginationSemanticOwner"
+                                <atom:SimplePagination x:Name="SimplePaginationSemanticOwner"
                                                        Total="50"
                                                        CurrentPage="1"
                                                        HorizontalAlignment="Center"
@@ -284,7 +284,7 @@
                             <StackPanel Spacing="16">
                                 <StackPanel.Styles>
                                     <Style Selector="atom|Pagination.semantic-style-demo-root">
-                                        <Setter Property="BorderBrush" Value="#CCCCCC" />
+                                        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />
                                         <Setter Property="BorderThickness" Value="2" />
                                         <Setter Property="BorderDashArray" Value="4,2" />
                                         <Setter Property="Padding" Value="8" />
@@ -296,7 +296,7 @@
                                     </Style>
                                     <Style Selector="atom|Pagination[SizeType=Small]">
                                         <atom:PaginationItemStyle x:SetterTargetType="ContentControl">
-                                            <Setter Property="Background" Value="#4DC8C8C8" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
                                             <Setter Property="Margin" Value="0,0,4,0" />
                                             <Style Selector="^:selected">
                                                 <Setter Property="Background"

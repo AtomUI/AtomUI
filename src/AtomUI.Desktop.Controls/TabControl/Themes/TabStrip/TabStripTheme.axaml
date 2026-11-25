@@ -5,6 +5,8 @@
     xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:TabStrip}" TargetType="atom:TabStrip">
+        <Setter Property="atom:TabTokenResourceBindingExtension.Owner" Value="{Binding $self}" />
+
         <ControlTheme.BasedOn>
             <themes:BaseTabStripTheme TargetType="atom:TabStrip" />
         </ControlTheme.BasedOn>
@@ -43,15 +45,15 @@
         </Setter>
 
         <Setter Property="SelectedIndicatorThickness"
-                Value="{atom:TabControlTokenResource InkBarThickness}" />
+                Value="{atom:TabStripTokenResource InkBarThickness}" />
 
         <Style Selector="^ /template/ Border#PART_SelectedItemIndicator">
-            <Setter Property="Background" Value="{atom:TabControlTokenResource InkBarColor}" />
+            <Setter Property="Background" Value="{atom:TabTokenResourceBinding InkBarColor}" />
         </Style>
 
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:TabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -73,7 +75,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource HorizontalItemGutter}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
@@ -85,7 +87,7 @@
 
         <Style Selector="^[TabStripPlacement=Right]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:TabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -107,7 +109,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource VerticalItemGutter}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
@@ -119,7 +121,7 @@
 
         <Style Selector="^[TabStripPlacement=Bottom]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="HorizontalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="HorizontalSpacing" Value="{atom:TabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -141,7 +143,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource HorizontalItemGutter}" />
+                        Value="{atom:TabTokenResourceBinding HorizontalItemGutter}" />
                 <Setter Property="Orientation" Value="Horizontal" />
             </Style>
 
@@ -153,7 +155,7 @@
 
         <Style Selector="^[TabStripPlacement=Left]">
             <Style Selector="^ /template/ DockPanel#HeaderLayout">
-                <Setter Property="VerticalSpacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+                <Setter Property="VerticalSpacing" Value="{atom:TabStripTokenResource SpacingXS}"/>
             </Style>
             
             <Style Selector="^ /template/ ContentPresenter#HeaderStartExtraContent">
@@ -175,7 +177,7 @@
 
             <Style Selector="^ /template/ ItemsPresenter#PART_ItemsPresenter StackPanel">
                 <Setter Property="Spacing"
-                        Value="{atom:TabControlTokenResource VerticalItemGutter}" />
+                        Value="{atom:TabTokenResourceBinding VerticalItemGutter}" />
                 <Setter Property="Orientation" Value="Vertical" />
             </Style>
 
@@ -187,9 +189,11 @@
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="SelectedIndicatorRenderTransform" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationSlow}" Easing="CubicEaseOut" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <TransformOperationsTransition Property="SelectedIndicatorRenderTransform" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="CubicEaseOut" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
     </ControlTheme>

@@ -23,11 +23,13 @@
                                   MarkLabelFontFamily="{TemplateBinding FontFamily}"
                                   MarkLabelFontSize="{TemplateBinding FontSize}"
                                   Marks="{TemplateBinding Marks}"
+                                  TickFrequency="{TemplateBinding TickFrequency}"
+                                  IsDotsVisible="{TemplateBinding IsDotsVisible}"
                                   IsIncluded="{TemplateBinding IsIncluded}" />
             </ControlTemplate>
         </Setter>
 
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:SliderTokenResource EnableMotion}" />
         <Setter Property="TrackBarBrush" Value="{atom:SliderTokenResource TrackBg}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Top" />

@@ -1,19 +1,14 @@
 using AtomUI.Controls.Primitives;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
 using Avalonia.Layout;
-using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
 internal sealed class WindowFeedbackLayer : Panel
 {
-    private const int LayerZIndex = int.MaxValue - 50;
-
     internal static Panel? GetLayer(TopLevel topLevel)
     {
-        var manager = FindFirstLayerManager(topLevel);
+        var manager = LayerLadder.FindTopLevelLayerManager(topLevel);
         if (manager is null)
         {
             return null;
@@ -29,9 +24,9 @@ internal sealed class WindowFeedbackLayer : Panel
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment   = VerticalAlignment.Stretch,
-            ZIndex              = LayerZIndex
+            ZIndex              = LayerLadder.WindowFeedback
         };
-        manager.AddLayer(layer, LayerZIndex);
+        LayerLadder.AddLayer(manager, layer, LayerLadder.WindowFeedback);
         return layer;
     }
 
@@ -54,26 +49,5 @@ internal sealed class WindowFeedbackLayer : Panel
         {
             children.Move(managerIndex, lastIndex);
         }
-    }
-
-    private static VisualLayerManager? FindFirstLayerManager(TopLevel topLevel)
-    {
-        foreach (var descendant in topLevel.GetTemplateDescendants())
-        {
-            if (descendant is VisualLayerManager manager)
-            {
-                return manager;
-            }
-        }
-
-        foreach (var descendant in topLevel.GetVisualDescendants())
-        {
-            if (descendant is VisualLayerManager manager)
-            {
-                return manager;
-            }
-        }
-
-        return null;
     }
 }

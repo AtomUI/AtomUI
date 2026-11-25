@@ -1,3 +1,4 @@
+using AtomUI;
 using AtomUI.Registration;
 using Avalonia;
 #if !REAL_DESKTOP

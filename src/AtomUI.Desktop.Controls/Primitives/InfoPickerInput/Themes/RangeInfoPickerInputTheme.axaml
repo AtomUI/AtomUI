@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is the base of RangeDatePicker and RangeTimePicker,
+     each with its own identity. -->
 <ControlTheme
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,12 +10,21 @@
     <ControlTheme.BasedOn>
         <atom:InfoPickerInputTheme TargetType="atom:RangeInfoPickerInput" />
     </ControlTheme.BasedOn>
+    <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:RangeInfoPickerInput">
             <Panel>
+                <!-- Keyboard stops follow Ant Design pickers: the input(s), then the clear button. The frame is focusable only
+                     for pointer hits on its padding; it is a local tab group ordered by TabIndex because the clear button
+                     precedes the inputs in the frame's visual tree. -->
                 <atom:AddOnDecoratedBox
                     Name="{x:Static atom:AddOnDecoratedBox.AddOnDecoratedBoxPart}"
                     Focusable="True"
+                    IsTabStop="False"
+                    KeyboardNavigation.TabNavigation="Local"
                     IsEnabled="{TemplateBinding IsEnabled}"
                     MinWidth="{TemplateBinding MinWidth}"
                     StyleVariant="{TemplateBinding StyleVariant}"
@@ -34,37 +45,50 @@
                     VerticalContentAlignment="Stretch"
                     CompactSpaceItemPosition="{TemplateBinding CompactSpaceItemPosition}"
                     CompactSpaceOrientation="{TemplateBinding CompactSpaceOrientation}"
-                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}">
+                    IsUsedInCompactSpace="{TemplateBinding IsUsedInCompactSpace}"
+                    HostBorderBrush="{TemplateBinding BorderBrush}">
                     <atom:AddOnDecoratedBox.ContentRightAddOn>
                         <StackPanel Orientation="Horizontal"
-                                    Spacing="{atom:SharedTokenResource SpacingXS}">
+                                    Spacing="{atom:OwnerTokenResource SpacingXS}">
                             <atom:PickerClearUpButton
-                                Name="PART_ClearUpButton" />
-                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter" />
+                                Name="PART_ClearUpButton"
+                                Icon="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon}"
+                                FormFeedback="{CompiledBinding $parent[atom:InfoPickerInput].FormFeedback}"
+                                IsInClearMode="{CompiledBinding $parent[atom:InfoPickerInput].IsClearButtonVisible}"
+                                IsVisible="{CompiledBinding $parent[atom:InfoPickerInput].InfoIcon, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            <atom:AddOnContentPresenter Name="PART_ContentRightAddOnPresenter"
+                                                        Content="{CompiledBinding $parent[atom:InfoPickerInput].ContentRightAddOn}"
+                                                        ContentTemplate="{CompiledBinding $parent[atom:InfoPickerInput].ContentRightAddOnTemplate}" />
                         </StackPanel>
                     </atom:AddOnDecoratedBox.ContentRightAddOn>
                     <Grid ColumnDefinitions="*, Auto, *">
                         <atom:InfoPickerTextBox Name="PART_InfoInputBox"
-                                              Grid.Column="0"
-                                              HorizontalContentAlignment="Stretch"
-                                              VerticalContentAlignment="Center"
-                                              VerticalAlignment="Stretch"
-                                              HorizontalAlignment="Stretch"
-                                              TextWrapping="NoWrap"
-                                              AcceptsReturn="False"
-                                              FontSize="{TemplateBinding FontSize}"
-                                              FontFamily="{TemplateBinding FontFamily}"
-                                              FontStyle="{TemplateBinding FontStyle}"
-                                              FontWeight="{TemplateBinding FontWeight}"
-                                              DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
-                                              IsReadOnly="{TemplateBinding IsReadOnly}"
-                                              Text="{TemplateBinding Text}"
-                                              PlaceholderText="{TemplateBinding PlaceholderText}" />
+                                                KeyboardNavigation.TabIndex="0"
+                                                Grid.Column="0"
+                                                HorizontalContentAlignment="Stretch"
+                                                VerticalContentAlignment="Center"
+                                                VerticalAlignment="Stretch"
+                                                HorizontalAlignment="Stretch"
+                                                TextWrapping="NoWrap"
+                                                AcceptsReturn="False"
+                                                FontSize="{TemplateBinding FontSize}"
+                                                FontFamily="{TemplateBinding FontFamily}"
+                                                FontStyle="{TemplateBinding FontStyle}"
+                                                FontWeight="{TemplateBinding FontWeight}"
+                                                DataValidationErrors.Errors="{TemplateBinding DataValidationErrors.Errors}"
+                                                IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                Text="{TemplateBinding Text}"
+                                                PlaceholderText="{TemplateBinding PlaceholderText}" />
                         <antdicons:SwapRightOutlined
                             Name="PART_RangePickerArrow"
-                            Grid.Column="1" />
+                            Grid.Column="1"
+                            Width="{TemplateBinding RangeArrowSize}"
+                            Height="{TemplateBinding RangeArrowSize}"
+                            FillBrush="{TemplateBinding RangeArrowBrush}"
+                            StrokeBrush="{TemplateBinding RangeArrowBrush}" />
                         <atom:InfoPickerTextBox
                             Name="PART_SecondaryInfoInputBox"
+                            KeyboardNavigation.TabIndex="1"
                             Grid.Column="2"
                             HorizontalContentAlignment="Stretch"
                             VerticalContentAlignment="Center"
@@ -87,6 +111,8 @@
                                Opacity="{TemplateBinding RangePickerIndicatorOpacity}" />
                 </Canvas>
                 <atom:Popup Name="PART_Popup"
+                            OpenMotion="{TemplateBinding OpenMotion}"
+                            CloseMotion="{TemplateBinding CloseMotion}"
                             WindowManagerAddShadowHint="False"
                             IsLightDismissEnabled="True"
                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
@@ -100,7 +126,7 @@
                     <atom:ArrowDecoratedBox Content="{TemplateBinding PickerPresenter}"
                                             IsArrowVisible="{TemplateBinding IsArrowVisibleEffective}"
                                             ArrowPosition="{TemplateBinding ArrowPosition}"
-                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}"/>
+                                            IsMotionEnabled="{TemplateBinding IsMotionEnabled}" />
                 </atom:Popup>
             </Panel>
         </ControlTemplate>
@@ -109,75 +135,71 @@
     <Style Selector="^:is(atom|RangeInfoPickerInput)">
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
         <Style Selector="^:flyout-open">
             <Style Selector="^ /template/ atom|InfoPickerTextBox">
                 <Setter Property="Foreground"
-                        Value="{atom:SharedTokenResource ColorText}" />
+                        Value="{atom:OwnerTokenResource ColorText}" />
             </Style>
-            <Style Selector="^[RangeActivatedPart=Start]">
+            <!-- Only the hover preview of the active part is dimmed, as in Ant Design. -->
+            <Style Selector="^:previewing[RangeActivatedPart=Start]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_InfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
                 </Style>
             </Style>
-            <Style Selector="^[RangeActivatedPart=End]">
+            <Style Selector="^:previewing[RangeActivatedPart=End]">
                 <Style Selector="^ /template/ atom|InfoPickerTextBox#PART_SecondaryInfoInputBox">
                     <Setter Property="Foreground"
-                            Value="{atom:SharedTokenResource ColorTextTertiary}" />
+                            Value="{atom:OwnerTokenResource ColorTextPlaceholder}" />
                 </Style>
             </Style>
         </Style>
 
         <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
             <Setter Property="Margin"
-                    Value="{atom:InfoPickerInputTokenResource RangePickerArrowMargin}" />
-            <Setter Property="Height" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="Width" Value="{atom:SharedTokenResource IconSize}" />
-            <Setter Property="FillBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
-            <Setter Property="StrokeBrush"
-                    Value="{atom:SharedTokenResource ColorIcon}" />
+                    Value="{CompiledBinding $self.(atom:RangeInfoPickerInputTheme.RangeArrowMargin)}" />
         </Style>
 
+        <!-- The range arrow is a registered Icon: its size and colour are read on the picker and template-bound. -->
+        <Setter Property="RangeArrowSize" Value="{atom:OwnerTokenResource IconSize}" />
+        <Setter Property="RangeArrowBrush" Value="{atom:OwnerTokenResource ColorIcon}" />
         <Style Selector="^:disabled">
-            <Style Selector="^ /template/ atom|Icon#PART_RangePickerArrow">
-                <Setter Property="FillBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
-                <Setter Property="StrokeBrush"
-                        Value="{atom:SharedTokenResource ColorTextDisabled}" />
-            </Style>
+            <Setter Property="RangeArrowBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
         </Style>
 
         <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
             <Setter Property="Height"
-                    Value="{atom:InfoPickerInputTokenResource RangePickerIndicatorThickness}" />
+                    Value="{CompiledBinding $self.(atom:RangeInfoPickerInputTheme.RangeIndicatorThickness)}" />
         </Style>
 
         <Style Selector="^[EffectiveStatus=Default]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorPrimary}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Error]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorError}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorError}" />
             </Style>
         </Style>
 
         <Style Selector="^[EffectiveStatus=Warning]">
             <Style Selector="^ /template/ Rectangle#PART_RangePickerIndicator">
-                <Setter Property="Fill" Value="{atom:SharedTokenResource ColorWarning}" />
+                <Setter Property="Fill" Value="{atom:OwnerTokenResource ColorWarning}" />
             </Style>
         </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="PickerIndicatorOffsetX" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    <DoubleTransition Property="RangePickerIndicatorOpacity" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                </Transitions>
+                <atom:TokenTransitions>
+                    <Transitions>
+                        <DoubleTransition Property="PickerIndicatorOffsetX"
+                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="RangePickerIndicatorOpacity"
+                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                    </Transitions>
+                </atom:TokenTransitions>
             </Setter>
         </Style>
 

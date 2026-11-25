@@ -24,21 +24,26 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 
 这些 Token 只服务 `TextBoxTheme.axaml` 中 TextBox 自身内容 padding。TextPresenter 的基础 margin 属于模板布局常量；输入表面边框、背景、圆角、hover/focus shadow、error/warning 和 disabled 视觉不属于 `TextBoxToken`。
 
+共享的 `AddOnDecoratedBox` 在警告、错误和禁用时成组读取附加内容的前景和图标色。禁用态共用一次读取，离树时释放观察和临时样式值。应用部件样式与本地画刷继续优先。
+
 ### 2.2 LineEdit 字号 Token
 
 - `LineEdit.InputFontSize`
 - `LineEdit.InputFontSizeLG`
 - `LineEdit.InputFontSizeSM`
 
-这些 Token 保持 LineEdit 单行输入框字号契约。当前默认计算语义与 TextBox 字号一致，供 `LineEdit` 及复用 LineEdit 输入壳体的组合控件独立覆盖。
+这些 Token 保持 LineEdit 单行输入框字号契约，默认值对齐 antd Input：`InputFontSize` 取 `FontSize`，`InputFontSizeLG`
+取 `FontSizeLG`，`InputFontSizeSM` 取 `InputFontSize`（小号输入框不缩小字号；显式覆盖 `InputFontSize` 时小号随之变化，
+除非同时显式设置 `InputFontSizeSM`）。`LineEditTheme` 在 `IsCustomFontSize=False` 时按 `SizeType` 把它们写入 LineEdit 的 `FontSize`
+（`Custom` 取中档），`IsCustomFontSize=True` 保留继承或本地字号；复用 LineEdit 主题的组合控件（AutoComplete 的输入框、
+Pagination 的快速跳转框）随之使用。SearchEdit 是独立 identity，读自己的 `FontSize` / `FontSizeLG` 有效值
+（小号同样取 `FontSize`），不借用 LineEdit 的 Own Token。
 
-### 2.3 TextArea 字号 Token
+### 2.3 TextArea 字号
 
-- `TextArea.FontSize`
-- `TextArea.FontSizeLG`
-- `TextArea.FontSizeSM`
-
-这些 Token 服务 `TextAreaTheme.axaml` 中多行输入不同尺寸下的默认字体大小。TextArea 的行高使用 SharedToken 的 `FontHeight`、`FontHeightLG`、`FontHeightSM`。
+TextArea 没有字号 Own Token：`TextAreaTheme.axaml` 按 `SizeType` 读取 TextArea 的有效 Global Token
+`FontSize`、`FontSizeLG`、`FontSizeSM`，行高读取 `FontHeight`、`FontHeightLG`、`FontHeightSM`（`TextAreaTokenResource`），
+`Controls[TextArea]` 的覆盖生效。
 
 ### 2.4 TextArea 右侧附加 padding Token
 
@@ -53,29 +58,56 @@ TextBox / LineEdit / TextArea Token 不承载文本值、placeholder、清除状
 - `TextArea.ResizeIndicatorLineColor`
 - `TextArea.ResizeHandleSize`
 
+手柄模板读取 `ResizeHandleSize` 决定命中和绘制区域。绘制部件按同一组资源读取斜线颜色与当前 owner 的 `LineWidth`，只重绘斜线。
+
 这些 Token 控制 TextArea 右下角 resize handle 的线条颜色和尺寸。它们只服务 `IsResizable=true` 的拖拽入口，不影响 TextArea 的自动高度算法或固定行数测量。
+`ResizeHandle` 叠放在输入表面之上，自己绘制两条斜线指示：命中区与指示边长都是 `ResizeHandleSize`，线条按边长比例排布，
+线宽读取 TextArea 的有效 `LineWidth`。
+
+### 2.6 外框形态 Token
+
+- `LineEdit.TransparentOutlineBorder`、`LineEdit.BottomOutlineBorder`
+- `TextArea.TransparentOutlineBorder`、`TextArea.BottomOutlineBorder`
+
+由设计语言选择的输入框外框形态：`TransparentOutlineBorder` 为真时外框在常态与悬停时保持透明边框，`BottomOutlineBorder`
+为真时只画底边。应用显式设置了对应全局 Token（`ColorBorder`、`ColorPrimaryHover`、`BorderThickness`）时以显式值为准。
+`InputControlFrame` 在主题快照变化时读取。Ant Design 与 PrimeNG 均为 `false`；Shadcn Luma、Rhea 透明边框，Sera 只画底边。
 
 ## 3. 控件专项模型中的 Token 使用
 
 LineEdit 家族 Token 使用路径：
 
 ```text
-SharedToken
+所属公开控件（TextBox / LineEdit / SearchEdit / TextArea …）的 Effective Global Token
+   ↓ OwnerTokenResource（经继承的 ThemeScope.TokenOwner）
+InputControlFrameTheme / AddOnDecoratedBoxTheme / 各 decorated box 主题
    ↓
-InputControlFrameTheme
-   ↓
-TextBoxTheme / LineEditTheme / SearchEditDecoratedBoxTheme / TextAreaDecoratedBoxTheme
+TextBoxTheme / LineEditTheme / SearchEditTheme / TextAreaTheme
 
 TextBoxToken / LineEditToken / TextAreaToken
    ↓
 各自文本尺寸、padding 和 resize 专属布局
 ```
 
-输入表面的边框、圆角、背景、hover/focus shadow、error/warning 和 disabled 状态由 `InputControlFrameTheme` 读取 `SharedToken`。TextBox 的内容 padding 由 `TextBoxTokenResource` 进入 `TextBoxTheme.axaml`；LineEdit 的单行字号由 `LineEditTokenResource` 消费；TextArea 的字号、右侧 padding 和 resize 视觉由 `TextAreaTokenResource` 及相关布局主题消费。
+输入表面的边框、圆角、背景、hover/focus shadow、error/warning 和 disabled 状态，都读取所属公开控件的有效 Global Token。
+读取方式分两种：随 variant 与有效状态变化的表面值，由 frame 的内部主题变量经同一 owner accessor 读取，再由
+`InputControlFrameTheme` 投射到各交互状态；其余值由主题以 `OwnerTokenResource` 读取。因此 `Controls[LineEdit]` 等覆盖只改变该控件的输入表面；
+各控件主题不再为 hover / focus 重复设置表面颜色。`TextBoxTheme` 同样以 `OwnerTokenResource` 读取全局值：它也是
+NumericUpDown、选择器与筛选框内嵌编辑器（EmbeddedTextBox 及其派生类）的基础主题，这些编辑器没有 identity，
+跟随宿主控件。TextBox 的内容 padding 由 `TextBoxTokenResource` 进入 `TextBoxTheme.axaml`；LineEdit 的单行字号由
+`LineEditTokenResource` 消费；TextArea 的字号、右侧 padding 和 resize 视觉由 `TextAreaTokenResource` 及相关布局主题消费。
 
-TextArea 的多行字号由 `TextAreaTokenResource` 进入 `TextAreaTheme.axaml`。TextArea 右侧 padding 和 resize 视觉由 `TextAreaDecoratedBoxTheme.axaml`、`ResizeHandleTheme.axaml` 消费。
+宿主根上设置的 `BorderBrush` / `Background` 经模板绑定进入输入表面的内部属性 `HostBorderBrush` / `HostBackground`，
+由 `InputControlFrameTheme` 在全部状态色之后投射（antd `styles.root` 语义），未设置时交还状态机；控件代码不再以本地值
+写入内部表面。
 
-SearchEdit 不定义独立 Token。它复用 `AbstractTextInput` 的状态与 LineEdit 的文本尺寸，输入表面由 `InputControlFrame` 统一表达，搜索按钮使用 Button 体系和 SearchButton 主题表达。
+TextArea 的多行字号由 `TextAreaTokenResource` 进入 `TextAreaTheme.axaml`。TextArea 右侧 padding 和 resize 视觉由
+`TextAreaDecoratedBoxTheme.axaml`、`ResizeHandleTheme.axaml` 消费；TextArea 的内容呈现器位于注册控件 ScrollViewer 之内，
+它的行高与小号内容边距显式读取 `TextAreaTokenResource`。
+
+SearchEdit 不定义 Own Token。它复用 `AbstractTextInput` 的状态，字号读取自己的有效 Global Token，输入表面由
+`InputControlFrame` 统一表达，搜索按钮使用 Button 体系和 SearchButton 主题表达：按钮视觉读取 Button 有效值，
+拼接圆角与 Text 型按钮的搜索语义色读取 SearchEdit 有效值。
 
 ## 4. 控件家族影响
 
@@ -103,7 +135,7 @@ TextAreaToken 影响以下控件或主题：
 
 ## 5. 兼容性要求
 
-TextBoxToken、LineEditToken 与 TextAreaToken 属于输入控件家族的主题契约。即使 Token 类型是 internal，生成的 TokenKind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
+TextBoxToken、LineEditToken 与 TextAreaToken 属于输入控件家族的主题契约。这三个 Token 类是公开类，主题算法的控件阶段会直接写它们的属性，因此类型本身、生成的 TokenKind、AXAML resource 使用点和 token.md 语义说明已经形成稳定依赖。
 
 Token 变更要求：
 
@@ -113,7 +145,22 @@ Token 变更要求：
 - `SizeType=Custom` 不新增专属字号 Token；它默认复用 Middle 分支，由用户显式属性完成自定义。
 - 任何 Token scope 调整都必须同步其主题资源、generator 注册、控件文档和相关组合控件文档。
 
-## 6. 验证策略
+## 6. 承诺面裁决
+
+2026-11-08 输入家族迁移按[承诺面](../../../../engineering/development/control-token-guidelines.md#own-token-承诺面)裁决了
+没有消费者的 Own Token，并评估了新增 Own Token：
+
+| Token | 裁决 |
+| --- | --- |
+| `LineEdit.InputFontSize`、`InputFontSizeLG`、`InputFontSizeSM` | Active：LineEditTheme 按 SizeType 设置 LineEdit 字号（此前 LineEdit 没有字号预设，大号与小号沿用继承字号）；`InputFontSizeSM` 默认改为 `InputFontSize`，对齐 antd |
+| `TextArea.ResizeHandleSize` | Active：resize handle 的命中区与指示尺寸 |
+| `ButtonSpinner.ControlWidth` | Reserved，见 ButtonSpinner token.md |
+| 输入家族 `HoverBorderColor`（PrimeNG 的悬停边框色需求） | 不新增：悬停边框由无身份的共享输入表面绘制，基元只能读取全局 Token；要让每个输入控件一致消费，需要在 LineEdit、SearchEdit、TextArea、TextBox、ButtonSpinner、NumericUpDown 以及 Select、Cascader、TreeSelect、DatePicker 等全部输入表面宿主上各加同名 Own Token，并在各自主题里按状态重新投射到表面，这正是本次迁移移除的重复状态样式。迁移后 `Controls[X].Tokens[ColorPrimaryHover]` 只改变 X 的悬停边框，已能表达该需求（例如设为 slate-400） |
+
+全部 Active Own Token 与消费的 Global Token（含共享输入基元经 `OwnerTokenResource` 读取的全局值）由
+`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/InputFamilyEffectTests` 逐项验证生效。
+
+## 7. 验证策略
 
 | 改动类型 | 验证要求 |
 | --- | --- |

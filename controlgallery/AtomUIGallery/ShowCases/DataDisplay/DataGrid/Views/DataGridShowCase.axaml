@@ -162,7 +162,11 @@
                 <atom:RadioButton x:Name="ExtendedSelection" IsChecked="True" IsCheckedChanged="HandleSelectionModeCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentExtended}" />
                 <atom:RadioButton x:Name="SingleSelection" IsCheckedChanged="HandleSelectionModeCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentSingle}" />
             </StackPanel>
-            <atom:DataGrid x:Name="SelectionDataGrid" SelectionMode="Extended" SelectTriggerType="Cell"
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <atom:RadioButton x:Name="IndicatorTrigger" IsChecked="True" IsCheckedChanged="HandleSelectTriggerCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentIndicatorTrigger}" />
+                <atom:RadioButton x:Name="RowTrigger" IsCheckedChanged="HandleSelectTriggerCheckedChanged" Content="{gallery:DataGridShowCaseLangResource P2ContentRowTrigger}" />
+            </StackPanel>
+            <atom:DataGrid x:Name="SelectionDataGrid" SelectionMode="Extended" SelectTriggerType="SelectIndicator"
                                    x:DataType="vm:DataGridBaseInfo"
                            AttachedToVisualTree="HandleExampleDataGridAttached">
                 <atom:DataGrid.Columns>
@@ -960,8 +964,8 @@
                 <atom:DataGrid.Columns>
                     <atom:DataGridRowReorderColumn />
                     <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
 
@@ -976,8 +980,8 @@
                 <atom:DataGrid.Columns>
                     <atom:DataGridRowReorderColumn />
                     <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
         </StackPanel>
@@ -1025,9 +1029,9 @@
                                    x:DataType="vm:DataGridBaseInfo"
                            AttachedToVisualTree="HandleExampleDataGridAttached">
                 <atom:DataGrid.Columns>
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" />
-                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" />
-                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" IsReadOnly="False" />
+                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" IsReadOnly="False" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" IsReadOnly="False" />
                     <atom:DataGridTemplateColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAction}">
                         <atom:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -1045,6 +1049,28 @@
                 </atom:DataGrid.Columns>
             </atom:DataGrid>
         </StackPanel>
+                        </DataTemplate>
+                    </gallery:ShowCaseItem.DeferredContentTemplate>
+                </gallery:ShowCaseItem>
+
+<gallery:ShowCaseItem Title="{gallery:DataGridShowCaseLangResource EditableRowsTitle}"
+                          Description="{gallery:DataGridShowCaseLangResource EditableRowsDescription}"
+                          IsOccupyEntireRow="True"
+                                      IsDeferredContentEnabled="True">
+                    <gallery:ShowCaseItem.DeferredContentTemplate>
+                        <DataTemplate x:DataType="vm:DataGridViewModel">
+
+            <atom:DataGrid x:Name="EditableRowsDataGrid"
+                           x:DataType="vm:DataGridBaseInfo"
+                           Height="400"
+                           AttachedToVisualTree="HandleExampleDataGridAttached">
+                <atom:DataGrid.Columns>
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderName}" FieldId="{x:Static vm:DataGridShowCaseFields.Name}" Binding="{Binding Name}" IsReadOnly="False" />
+                    <atom:DataGridNumericColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAge}" FieldId="{x:Static vm:DataGridShowCaseFields.Age}" Binding="{Binding Age}" FormatString="0" IsReadOnly="False" />
+                    <atom:DataGridTextColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAddress}" FieldId="{x:Static vm:DataGridShowCaseFields.Address}" Binding="{Binding Address}" IsReadOnly="False" />
+                    <atom:DataGridOperationColumn Header="{gallery:DataGridShowCaseLangResource P2HeaderAction}" />
+                </atom:DataGrid.Columns>
+            </atom:DataGrid>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
@@ -1191,51 +1217,53 @@
                                     <Style Selector="atom|DataGrid.semantic-info-table-demo">
                                         <Setter Property="IsFrameBorderVisible" Value="True" />
                                         <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         </atom:DataGridTitleStyle>
                                         <atom:DataGridHeaderWrapperStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#E6F4FF" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorInfoBg}" />
                                         </atom:DataGridHeaderWrapperStyle>
                                         <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridHeaderCellStyle>
                                         <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridBodyRowStyle>
                                         <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridBodyCellStyle>
                                         <atom:DataGridFooterStyle x:SetterTargetType="ContentPresenter">
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridFooterStyle>
                                         <atom:DataGridPaginationRootStyle x:SetterTargetType="atom:Pagination">
-                                            <Setter Property="Foreground" Value="#0958D9" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridPaginationRootStyle>
                                         <atom:DataGridPaginationItemStyle x:SetterTargetType="ContentControl">
-                                            <Setter Property="Foreground" Value="#003EB3" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:DataGridPaginationItemStyle>
                                     </Style>
                                     <Style Selector="atom|DataGrid.semantic-alert-table-demo">
                                         <Setter Property="IsFrameBorderVisible" Value="True" />
                                         <atom:DataGridSectionStyle x:SetterTargetType="Border">
-                                            <Setter Property="Background" Value="#FFFBE6" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorWarningBg}" />
                                         </atom:DataGridSectionStyle>
                                         <atom:DataGridContentStyle x:SetterTargetType="Grid">
-                                            <Setter Property="Background" Value="#FFF1F0" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
                                         </atom:DataGridContentStyle>
                                         <atom:DataGridHeaderCellStyle x:SetterTargetType="ContentControl">
                                             <Setter Property="FontWeight" Value="SemiBold" />
-                                            <Setter Property="Foreground" Value="#D46B08" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridHeaderCellStyle>
                                         <atom:DataGridBodyRowStyle x:SetterTargetType="TemplatedControl">
-                                            <Setter Property="Foreground" Value="#873800" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridBodyRowStyle>
                                         <atom:DataGridBodyCellStyle x:SetterTargetType="atom:DataGridCell">
-                                            <Setter Property="Foreground" Value="#873800" />
+                                            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorWarningText}" />
                                         </atom:DataGridBodyCellStyle>
                                         <atom:DataGridTitleStyle x:SetterTargetType="atom:PixelAlignedBorder">
-                                            <Setter Property="Background" Value="#FFF1F0" />
+                                            <Setter Property="TextElement.Foreground" Value="{atom:SharedTokenResource ColorText}" />
+                                            <Setter Property="Background" Value="{atom:SharedTokenResource ColorErrorBg}" />
                                         </atom:DataGridTitleStyle>
                                     </Style>
                                 </StackPanel.Styles>

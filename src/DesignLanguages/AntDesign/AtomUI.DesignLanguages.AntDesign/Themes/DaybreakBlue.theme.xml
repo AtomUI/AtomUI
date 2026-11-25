@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="https://atomui.net/schemas/theme/v2"
+       Id="DaybreakBlue"
+       Name="Daybreak Blue"
+       Language="AntDesign">
+  <Tokens>
+    <Token Name="ColorPrimary" Value="#1677FF" />
+    <Token Name="ColorLink" Value="#1677FF" />
+  </Tokens>
+</Theme>

@@ -9,7 +9,7 @@
         <gallery:ShowCaseItem Title="{gallery:CardShowCaseLangResource CardInColumnTitle}"
                               Description="{gallery:CardShowCaseLangResource CardInColumnDescription}"
                               IsOccupyEntireRow="True">
-            <Border Padding="20" Background="{Binding BorderlessFrameBg}">
+            <Border Padding="20" Background="{atom:SharedTokenResource ColorFillTertiary}">
                 <Grid RowDefinitions="*" ColumnDefinitions="*, *, *" ColumnSpacing="20">
                     <atom:Card Header="{gallery:CardShowCaseLangResource P2HeaderCardTitle}" StyleVariant="Borderless" Grid.Row="0" Grid.Column="0"
                                HorizontalAlignment="Stretch">

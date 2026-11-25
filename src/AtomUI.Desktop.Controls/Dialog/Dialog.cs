@@ -480,6 +480,17 @@ public partial class Dialog : TemplatedControl,
 
     #endregion
 
+    #region 内部协作 API
+
+    /// <summary>
+    /// How the terminal's <c>MinWidth</c>/<c>MinHeight</c> Tokens size the surface content frame: the Dialog Tokens are
+    /// the content viewport baseline (frame = Token + padding + border); a terminal returning true sizes the whole frame
+    /// (frame = max(Token, padding + border)), like antd's confirm <c>width</c>.
+    /// </summary>
+    internal virtual bool UsesWholeFrameMinimum => false;
+
+    #endregion
+
     #region 运行时字段
 
     private Action<IReadOnlyList<DialogButton>>? _buttonsConfigure;

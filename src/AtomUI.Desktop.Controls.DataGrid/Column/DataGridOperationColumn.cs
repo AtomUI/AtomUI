@@ -6,7 +6,10 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
-internal class DataGridOperationColumn : DataGridColumn
+/// <summary>
+/// Shows edit/delete actions per row; edit puts every editable cell of the row in edit and saves them together.
+/// </summary>
+public sealed class DataGridOperationColumn : DataGridColumn
 {
     private DataGrid? _owningGrid;
 
@@ -26,9 +29,16 @@ internal class DataGridOperationColumn : DataGridColumn
         Debug.Assert(OwningGrid != null);
         var operationButtons = new DataGridOperationButtons();
         operationButtons.OwningGrid = OwningGrid;
-        operationButtons[!DataGridOperationButtons.IsMotionEnabledProperty] =
-            OwningGrid[!DataGrid.IsMotionEnabledProperty];
+        operationButtons.BindOwningGridProperties(OwningGrid);
         return operationButtons;
+    }
+
+    internal override void ReleaseElement(Control element)
+    {
+        if (element is DataGridOperationButtons operationButtons)
+        {
+            operationButtons.ReleaseOwningGridBinding();
+        }
     }
 
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)

@@ -104,6 +104,25 @@ public static class TokenResourceBinder
         return BindResource(target, targetProperty, resourceKeyObject, priority, converter, context);
     }
 
+    /// <summary>
+    /// Binds <paramref name="targetProperty"/> to a Token resource key resolved from <paramref name="owner"/>, exactly as
+    /// an AXAML TokenResource of that key resolves it: Application, scoped and <c>ThemeConfigProvider</c> resources
+    /// along the owner's tree apply, and the value follows resource changes. Used by control code whose theme
+    /// variables pick the Token key at runtime (for example a variant colour).
+    /// </summary>
+    internal static IDisposable CreateTokenResourceBinding(
+        Control owner,
+        AvaloniaObject target,
+        AvaloniaProperty targetProperty,
+        object tokenResourceKey,
+        BindingPriority priority = BindingPriority.Template,
+        Func<object?, object?>? converter = null)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        ArgumentNullException.ThrowIfNull(tokenResourceKey);
+        return BindResource(target, targetProperty, tokenResourceKey, priority, converter, owner);
+    }
+
     public static IDisposable CreateGlobalResourceBinding(AvaloniaObject target,
                                                           AvaloniaProperty targetProperty,
                                                           object resourceKey,
@@ -121,14 +140,16 @@ public static class TokenResourceBinder
         Func<object?, object?>? converter,
         Control? owner = null)
     {
+        // A StyledElement host gets the AtomUI observable, which skips theme publishes that leave the key's value
+        // unchanged; other hosts keep Avalonia's resource observable.
         if (owner is not null)
         {
-            return target.Bind(targetProperty, owner.GetResourceObservable(resourceKey, converter), priority);
+            return target.Bind(targetProperty, new TokenResourceObservable(owner, resourceKey, converter), priority);
         }
 
         if (target is Control control)
         {
-            return target.Bind(targetProperty, control.GetResourceObservable(resourceKey, converter), priority);
+            return target.Bind(targetProperty, new TokenResourceObservable(control, resourceKey, converter), priority);
         }
 
         if (target is IResourceHost resourceHost)

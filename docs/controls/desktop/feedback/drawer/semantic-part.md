@@ -4,7 +4,7 @@
 
 ## 1. Semantic Parts
 
-Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板的零尺寸标记控件）。全部非 root 部件位于运行时创建的 `DrawerContainer`（注入 `ScopeAwareAdornerLayer`，在 owner 可视子树之外、同一 TopLevel 之内），因此统一声明 `CrossVisualRoot=true` + `RuntimeCreated=true`；marker 静态声明在两个内部容器主题上（`DrawerContainerTheme.axaml`、`DrawerInfoContainerTheme.axaml`），运行时无需代码注入。
+Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板的零尺寸标记控件）。全部非 root 部件位于运行时创建的 `DrawerContainer`（挂入 `ContentPresentationLayer` 或 `TopLevelPresentationLayer`，在 owner 可视子树之外、同一 TopLevel 之内），因此统一声明 `CrossVisualRoot=true` + `RuntimeCreated=true`；marker 静态声明在两个内部容器主题上（`DrawerContainerTheme.axaml`、`DrawerInfoContainerTheme.axaml`），运行时无需代码注入。
 
 与上游 Drawer 的语义 DOM（`_semantic.tsx`，10 个槽位）的映射：
 
@@ -155,7 +155,7 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 
 ## 2. 职责与存在条件
 
-- 部件仅在 `IsOpen=true` 且 `DrawerContainer` 挂到 `ScopeAwareAdornerLayer` 时物化；关闭后容器脱离 layer，所有部件目标消失。
+- 部件仅在 `IsOpen=true` 且 `DrawerContainer` 挂到呈现层（`ContentPresentationLayer` 或 `TopLevelPresentationLayer`）时物化；关闭后容器脱离 layer，所有部件目标消失。
 - 容器挂层时通过 `ISetLogicalParent.SetParent(drawer)` 挂到 owner 逻辑树下（先于 `layer.Children.Add`，脱离时置空），owner 嵌套的生成 Semantic Style 因此可达；同时按 ImagePreviewer 先例显式中继 `ThemeVariantScope.ActualThemeVariant`。
 - `Drawer : ISemanticPartCrossRootProvider` 在容器挂层/脱离/释放时触发 `CrossRootsChanged`，`GetCrossRoots()` 返回存活容器；Gallery 语义预览据此自动收集跨根，无需页面 code-behind 注册 `AdditionalRoots`（区别于 DropdownButton 的 Popup 根注册模式）。
 - `IsPinnedOpen=true` 时遮罩点击与关闭按钮不再把 `IsOpen` 置 false（对齐上游语义演示的受控常开）；外部代码直接设置 `IsOpen` 仍正常关闭。

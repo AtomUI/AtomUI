@@ -11,13 +11,13 @@
                         Name="RootLayout"
                         Classes.semantic-indicator="True">
                         <Border Name="BadgeIndicator"
-                                BoxShadow="{TemplateBinding BoxShadow}"
+                                BoxShadow="{TemplateBinding IndicatorShadows}"
                                 Background="{TemplateBinding BadgeColor}" />
-                        <atom:TextBlock
-                            Name="BadgeText"
+                        <ContentPresenter
+                            Name="PART_ContentPresenter"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            Text="{TemplateBinding CountText}" 
+                            Content="{TemplateBinding PresentedContent}"
                             Foreground="{TemplateBinding Foreground}"/>
                     </Panel>
                 </Border>
@@ -26,9 +26,8 @@
 
         <Setter Property="Foreground" Value="{atom:CountBadgeTokenResource TextColor}" />
         <Setter Property="ClipToBounds" Value="False" />
-        <Setter Property="BadgeShadowSize" Value="{atom:CountBadgeTokenResource ShadowSize}" />
-        <Setter Property="BadgeShadowColor" Value="{atom:CountBadgeTokenResource ShadowColor}" />
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="ShadowTokenResourceKeys" Value="{x:Static atom:CountBadgeAdorner.IndicatorShadowTokenResourceKeys}" />
+        <Setter Property="MotionDuration" Value="{atom:CountBadgeTokenResource MotionDurationMid}" />
         <Setter Property="BadgeColor" Value="{atom:CountBadgeTokenResource IndicatorColor}" />
 
         <Style Selector="^[IsAdornerMode=True]">
@@ -43,8 +42,9 @@
             <Setter Property="CornerRadius"
                     Value="{atom:CountBadgeTokenResource CornerRadius}" />
         </Style>
-        <Style Selector="^ /template/ atom|TextBlock#BadgeText">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="FontSize" Value="{atom:CountBadgeTokenResource TextFontSize}" />
+            <Setter Property="FontWeight" Value="{atom:CountBadgeTokenResource TextFontWeight}" />
             <Setter Property="Padding" Value="{atom:CountBadgeTokenResource TextPadding}" />
         </Style>
 
@@ -55,7 +55,7 @@
                 <Setter Property="CornerRadius"
                         Value="{atom:CountBadgeTokenResource CornerRadiusSM}" />
             </Style>
-            <Style Selector="^ /template/ atom|TextBlock#BadgeText">
+            <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
                 <Setter Property="FontSize" Value="{atom:CountBadgeTokenResource TextFontSizeSM}" />
             </Style>
         </Style>

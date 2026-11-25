@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <!-- Package-wide compiler severity also covers source-generator diagnostics on external AXAML. -->
+        <WarningsAsErrors>$(WarningsAsErrors);ATOMUIGEN041;ATOMUIGEN042;ATOMUIGEN043;ATOMUIGEN044;ATOMUIGEN045;ATOMUIGEN047</WarningsAsErrors>
+        <AtomUIThemeConsumptionAnalysis>true</AtomUIThemeConsumptionAnalysis>
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -18,6 +21,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
+        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
     </ItemGroup>
 
     <ItemGroup>

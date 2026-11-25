@@ -2,6 +2,35 @@
 
 本文档记录 Pagination 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-20
+
+- Token
+  - `PaginationToken` 新增页码项颜色、悬停、选中态颜色 / 边框、选中字重与圆角 Token（`ItemColor`、`ItemHoverColor`、`ItemHoverBg`、`ItemActiveColor`、`ItemActiveBorderColor`、`ItemActiveHoverColor`、`ItemActiveHoverBorderColor`、`ItemActiveFontWeight`、`ItemBorderRadius`），默认值为原先直接读取的全局 Token。其中 `ItemColor`、`ItemHoverColor`、`ItemHoverBg`、`ItemBorderRadius` 位于 `AbstractPaginationToken`，Pagination 与 SimplePagination 各自主题赋给控件的普通属性，再经模板绑定传给页码项，SimplePagination 的上一页 / 下一页读自身 Token；PrimeNG 采用 36px 圆形页码与实心选中态。
+- Fixed
+  - Keep page-size and jump-input focus rings visible outside the pagination row. Size the compact layout gap to accommodate the theme's focus ring.
+  - In compact Shadcn simple pagination, inset the page input while keeping the navigation targets at their existing size.
+- Performance
+  - 去掉 `PaginationNavItem` 的 6 个可继承主题输入。Pagination / SimplePagination 在根部把 Own Token 赋给自身的普通属性，模板用 `TemplateBinding` 读取，导航条在准备容器时把项目尺寸、禁用色与内边距直接绑定到各项，快速跳转条随创建一起绑定并在移除时释放。渲染不变，单个分页器分配约少 1%–2%，耗时持平。
+
+## 2026-11-14
+
+- Performance
+  - `PaginationNav` creates its nine fixed navigation slots when its template applies instead of in the constructor. Hidden, empty and single-page paginations no longer build and style them (an empty Pagination: 382 KB → 80 KB). The items panel is built only when the presenter is measured, after this point, so containers are prepared with the same item count and order as before.
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读控件有效 Token：Pagination、SimplePagination 以各自 TokenResource 读取，共用的页码项以 `OwnerTokenResource` 读取宿主值；
+    选中页码字重改读 `FontWeightStrong`（与 antd 一致，默认 600 不变）。
+  - `PaginationMiniQuickJumperInputWidth` 接通小尺寸快速跳转与简洁模式输入框宽度，`ItemInputBg` 接通简洁模式输入框背景；
+    `PaginationItemPaddingInline` 改为作用于页码文字（此前写在无子元素的背景边框上，从未生效），默认值改为仅水平方向；
+    `ItemLinkBg`、`InputOutlineOffset` 标为保留 Token。
+  - 可见变化：小尺寸快速跳转输入框宽 44px（此前 50px）；四位及以上页码两侧各有 6px 内间距。
+
 ## 2026-10-20
 
 - Fixed

@@ -81,17 +81,27 @@ public class ScopeAwareAdornerLayer : Canvas
             }
         }
 
+        // 规则 2：比滚动宿主更近的表面宿主（例如滚动内容中作用域 Drawer 的表面）优先。被装饰元素位于该表面之外时
+        // 仍保留上面按被装饰元素选出的滚动宿主（Drawer 等随滚动跟踪的语义不变）。
+        if (LayerLadder.PreferNearerSurfaceHost(visual, layerHost) is VisualLayerManager surfaceHost &&
+            (adorned is null || surfaceHost.IsVisualAncestorOf(adorned)))
+        {
+            layerHost = surfaceHost;
+        }
+
+        // "包含层"复用只认精确类型的 T3 实例：呈现层子类（T5/T7）里的 Watermark 等内容覆盖
+        // 不得以兄弟身份落进呈现层，否则会画到更高的 Drawer 之上。
         if (layerHost == null &&
-            visual.FindAncestorOfType<ScopeAwareAdornerLayer>(true) is { } containingLayer)
+            visual.FindAncestorOfType<ScopeAwareAdornerLayer>(true) is { } containingLayer &&
+            IsContentOverlayLayer(containingLayer))
         {
             return containingLayer;
         }
 
-        layerHost ??= visual.FindAncestorOfType<VisualLayerManager>();
+        layerHost ??= LayerLadder.FindContentLayerManager(visual);
         if (layerHost == null && TopLevel.GetTopLevel(visual) is { } topLevel)
         {
-            layerHost = FindFirstDescendantLayerManager(topLevel);
-            layerHost ??= topLevel;
+            layerHost = topLevel;
         }
 
         if (layerHost == null)
@@ -99,6 +109,15 @@ public class ScopeAwareAdornerLayer : Canvas
             return null;
         }
 
+        return GetOrInjectLayer(layerHost);
+    }
+
+    /// <summary>
+    /// 在指定宿主上查找（或注入）T3 层。宿主为 TopLevel 时走内容包裹面板注入，供没有
+    /// VisualLayerManager 的 TopLevel 上的呈现层共享同一个包裹面板。
+    /// </summary>
+    internal static ScopeAwareAdornerLayer? GetOrInjectLayer(Layoutable layerHost)
+    {
         var cachedLayer = layerHost.GetValue(CachedLayerProperty);
         if (cachedLayer?.GetVisualParent() != null)
         {
@@ -428,14 +447,16 @@ public class ScopeAwareAdornerLayer : Canvas
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment   = VerticalAlignment.Stretch,
-            ZIndex              = VisualLayerManagerUtils.ScopeAwareAdornerLayerZIndex
+            ZIndex              = LayerLadder.ContentOverlay
         };
 
         layer.LayerHost = layerHost;
-        if (layerHost is VisualLayerManager visualLayerManager)
+        if (layerHost is VisualLayerManager)
         {
-            visualLayerManager.AddLayer(layer, layer.ZIndex);
+            LayerLadder.AddLayer(layerHost, layer, LayerLadder.ContentOverlay);
         }
+        // 下面的包裹面板注入分支不走 LayerLadder.AddLayer：宿主不是层容器，必须先摘下原内容、
+        // 重建一个同时容纳内容与层的包裹 Panel 再装回宿主。层号码仍取自 LayerLadder（见上方 ZIndex 初始化）。
         else if (layerHost is ScrollContentPresenter scrollContentPresenter)
         {
             if (scrollContentPresenter.Content is Control controlContent)
@@ -510,19 +531,6 @@ public class ScopeAwareAdornerLayer : Canvas
         return layer.GetVisualParent() == null ? null : layer;
     }
 
-    private static VisualLayerManager? FindFirstDescendantLayerManager(Visual visual)
-    {
-        foreach (var descendant in visual.GetVisualDescendants())
-        {
-            if (descendant is VisualLayerManager manager)
-            {
-                return manager;
-            }
-        }
-
-        return null;
-    }
-
     private static ScopeAwareAdornerLayer? FindAdornerLayer(Layoutable layerHost)
     {
         ScopeAwareAdornerLayer? layer = null;
@@ -532,23 +540,44 @@ public class ScopeAwareAdornerLayer : Canvas
             var panel = scrollContentPresenter.FindChildOfType<Panel>();
             if (panel is not null)
             {
-                layer = panel.FindChildOfType<ScopeAwareAdornerLayer>();
+                layer = FindContentOverlayChild(panel);
             }
         }
         else if (layerHost is VisualLayerManager visualLayerManager)
         {
             // 直接就在下面
-            layer = visualLayerManager.FindChildOfType<ScopeAwareAdornerLayer>();
+            layer = FindContentOverlayChild(visualLayerManager);
         }
         else if (layerHost is ContentControl contentControl)
         {
             if (contentControl.Content is Control content)
             {
-                layer = content.FindChildOfType<ScopeAwareAdornerLayer>();
+                layer = FindContentOverlayChild(content);
             }
         }
 
         return layer;
+    }
+
+    private static bool IsContentOverlayLayer(ScopeAwareAdornerLayer layer)
+    {
+        return layer.GetType() == typeof(ScopeAwareAdornerLayer);
+    }
+
+    /// <summary>
+    /// 只返回精确类型的 T3 实例：同一宿主中的呈现层子类（T5/T7）不能被当作内容覆盖层复用。
+    /// </summary>
+    private static ScopeAwareAdornerLayer? FindContentOverlayChild(Visual parent)
+    {
+        foreach (var child in parent.GetVisualChildren())
+        {
+            if (child is ScopeAwareAdornerLayer layer && IsContentOverlayLayer(layer))
+            {
+                return layer;
+            }
+        }
+
+        return null;
     }
 
     private class AdornedElementInfo

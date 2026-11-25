@@ -43,10 +43,10 @@
         <Compile Include="../../build/AtomUI.Build.Tasks.Process.cs" Link="Tasks/Isolation/TaskProtocol.cs" />
         <!-- Core owns the XML dialect. Compile its exact BCL-only reader in the worker,
              without a runtime Core reference or a second parser/schema. -->
-        <Compile Include="../AtomUI.Core/Theme/Definitions/ThemeDocumentReader.cs;../AtomUI.Core/Theme/Definitions/ThemeDocumentReaderOptions.cs;../AtomUI.Core/Theme/Definitions/ThemeDocument.cs;../AtomUI.Core/Theme/Definitions/ThemeDefinitionDiagnostic.cs;../AtomUI.Core/Theme/ThemeAppearance.cs;../AtomUI.Core/Theme/Configuration/ControlAlgorithmMode.cs;../AtomUI.Core/Theme/Algorithms/ThemeAlgorithm.cs;../AtomUI.Core/Utils/ThemeAlgorithmTypeConverter.cs"
+        <Compile Include="../AtomUI.Core/Theme/Definitions/ThemeDocumentReader.cs;../AtomUI.Core/Theme/Definitions/ThemeDocumentReaderOptions.cs;../AtomUI.Core/Theme/Definitions/ThemeDocument.cs;../AtomUI.Core/Theme/Definitions/ThemeDefinitionDiagnostic.cs;../AtomUI.Core/Theme/ThemeAppearance.cs;../AtomUI.Core/Theme/Schema/SchemaIdentifier.cs"
                  Link="CoreThemeReader/%(Filename)%(Extension)" />
-        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v1.xsd"
-                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v1.xsd" />
+        <EmbeddedResource Include="../../docs/reference/theming/schemas/atomui-theme-v2.xsd"
+                          LogicalName="AtomUI.Theme.Definitions.Schemas.atomui-theme-v2.xsd" />
         <InternalsVisibleTo Include="AtomUI.Build.Tasks.Tests" />
     </ItemGroup>
 
@@ -59,7 +59,7 @@
         <PackageReference Include="Microsoft.NET.ILLink.Tasks" VersionOverride="8.0.27" GeneratePathProperty="true" PrivateAssets="all" ExcludeAssets="all" />
         <Reference Include="illink" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net8.0/illink.dll" Private="false" />
         <Reference Include="Mono.Cecil" HintPath="$(PkgMicrosoft_NET_ILLink_Tasks)/tools/net8.0/Mono.Cecil.dll" Private="false" />
-        <Compile Include="Backends/ILLink8/**/*.cs" />
+        <Compile Include="Backends/ILLink8/**/*.cs;Common/Registration/OfficialTypeMapToolchain.cs;Common/Registration/Net8EngineToolchain.cs" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(AtomUIToolchainProfile)' == 'ILLink10'">

@@ -26,6 +26,15 @@ internal sealed class MacOSWindowChromeManager : IWindowChromeManager
 
     public bool SupportsPinCaptionButton => true;
 
+    // AppKit marks an owned window as a full-screen auxiliary window and never takes it into native full screen.
+    public bool SupportsFullScreen => _window.Owner is null;
+
+    // AppKit slides the menu bar and the window's title strip in over a full-screen window.
+    public IFullScreenNativeChrome? AttachFullScreenNativeChrome(Action metricsChanged)
+    {
+        return _window.AttachFullScreenNativeChrome(metricsChanged);
+    }
+
     public Action? PrepareInitialShowState()
     {
         if (_initialShowStatePrepared || _window.IsVisible)

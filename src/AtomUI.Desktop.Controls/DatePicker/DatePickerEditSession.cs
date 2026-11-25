@@ -71,15 +71,27 @@ internal sealed class DatePickerEditSession
                 _shortcutDate = null;
                 SetActiveValue(Combine(Constraints.Normalize(choice.Value), TimeCursor ?? TimeDisplayValue));
                 return Input.RequiresConfirmation ? Snapshot() : Confirm();
-            case DatePickerEditAction.ChooseTime time:
-                TimeCursor = time.Value;
-                // Single time clicks alter the cursor/header, not the previously joined candidate.
-                // Range time clicks join the active date immediately (recorded original host behavior).
-                if (Input.IsRange)
+            case DatePickerEditAction.InputDate typed:
+                // Typed text only moves the candidate; it is committed by Enter, by focus leaving the picker when
+                // no confirmation is required, or by the confirm button.
+                if (!Constraints.Contains(typed.Value))
                 {
-                    SetActiveValue(Combine(ActiveValue, time.Value));
+                    return Snapshot();
                 }
 
+                _shortcutDate = null;
+                if (Input.HasTimePanel)
+                {
+                    TimeCursor       = typed.Value.TimeOfDay;
+                    TimeDisplayValue = typed.Value.TimeOfDay;
+                }
+                SetActiveValue(Combine(Constraints.Normalize(typed.Value), typed.Value.TimeOfDay));
+                return Snapshot();
+            case DatePickerEditAction.ChooseTime time:
+                TimeCursor = time.Value;
+                // A time click joins the active date immediately, so the confirm button commits the clock the panel
+                // shows, as in Ant Design.
+                SetActiveValue(Combine(ActiveValue, time.Value));
                 return Snapshot();
             case DatePickerEditAction.SubmitTime time:
                 TimeDisplayValue = time.Value;
@@ -87,7 +99,11 @@ internal sealed class DatePickerEditSession
             case DatePickerEditAction.PreviewDate preview:
                 return Snapshot() with { HasPreview = true, PreviewValue = Combine(preview.Value, TimeCursor) };
             case DatePickerEditAction.PreviewTime preview:
-                return Snapshot() with { HasPreview = true, PreviewValue = Combine(ActiveValue, preview.Value) };
+                // A null clock means the pointer left the time cells: the preview ends instead of showing the bare date.
+                return Snapshot() with
+                {
+                    HasPreview = true, PreviewValue = preview.Value is null ? null : Combine(ActiveValue, preview.Value)
+                };
             case DatePickerEditAction.PreviewCandidate:
                 return Snapshot() with { HasPreview = true, PreviewValue = Combine(ActiveValue, TimeCursor ?? TimeDisplayValue) };
             case DatePickerEditAction.ActivatePart activation:
@@ -155,6 +171,14 @@ internal sealed class DatePickerEditSession
         {
             Draft = new DateViewerRange(null, null);
             _shortcutDate = null;
+        }
+        else if (reason == DatePickerCloseReason.Escape)
+        {
+            // Escape reverts to the committed value instead of keeping the candidate for the next open.
+            Draft = Input.Committed;
+            _shortcutDate = null;
+            TimeCursor = null;
+            TimeDisplayValue = ActiveValue?.TimeOfDay ?? TimeSpan.Zero;
         }
         return Snapshot();
     }

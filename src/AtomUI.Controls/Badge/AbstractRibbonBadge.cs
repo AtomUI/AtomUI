@@ -1,6 +1,6 @@
-﻿using Avalonia;
+﻿using AtomUI.Theme.Resources;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
@@ -87,6 +87,8 @@ public abstract class AbstractRibbonBadge : Control
     }
     
     private protected AbstractRibbonBadgeAdorner? _ribbonBadgeAdorner;
+    private IDisposable? _themeSubscription;
+    private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
     private void AttachChild(Control child)
     {
@@ -138,19 +140,24 @@ public abstract class AbstractRibbonBadge : Control
         }
     }
 
-    private protected void SetupRibbonColor(string colorStr)
+    /// <summary>
+    /// Writes the resolved <see cref="RibbonColor"/> into the internal ribbon, or clears it so the ribbon falls back to the
+    /// theme's ColorPrimary when the colour is unset or invalid.
+    /// </summary>
+    private protected void ConfigureRibbonColor()
     {
-        var colorSpan = colorStr.AsSpan().Trim();
-
-        if (BadgeColorUtils.TryGetPresetColor(colorSpan, out var presetColor))
+        if (_ribbonBadgeAdorner is null)
         {
-            _ribbonBadgeAdorner!.RibbonColor = new SolidColorBrush(presetColor);
             return;
         }
 
-        if (Color.TryParse(colorSpan, out var color))
+        if (BadgeColorUtils.CalculateColor(this, RibbonColor) is { } brush)
         {
-            _ribbonBadgeAdorner!.RibbonColor = new SolidColorBrush(color);
+            _ribbonBadgeAdorner.RibbonColor = brush;
+        }
+        else
+        {
+            _ribbonBadgeAdorner.ClearValue(AbstractRibbonBadgeAdorner.RibbonColorProperty);
         }
     }
 
@@ -190,7 +197,7 @@ public abstract class AbstractRibbonBadge : Control
 
             if (change.Property == RibbonColorProperty)
             {
-                SetupRibbonColor(change.GetNewValue<string>());
+                ConfigureRibbonColor();
             }
         }
     }
@@ -236,6 +243,9 @@ public abstract class AbstractRibbonBadge : Control
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        // Preset ribbon colours come from the snapshot's palettes: re-resolve them whenever the theme publishes.
+        _themeSubscription?.Dispose();
+        _themeSubscription = s_themeTokenResolver.Subscribe(this, _ => ConfigureRibbonColor());
         if (BadgeIsVisible)
         {
             PrepareAdorner();
@@ -244,11 +254,16 @@ public abstract class AbstractRibbonBadge : Control
         {
             HideAdorner();
         }
+        // The subscription does not fire for the first context, and a re-attached badge reuses its adorner: resolve
+        // against the context of this attach (the theme may have changed, or the badge moved to another provider).
+        ConfigureRibbonColor();
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        _themeSubscription?.Dispose();
+        _themeSubscription = null;
         HideAdorner();
     }
 

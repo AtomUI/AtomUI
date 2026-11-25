@@ -1,8 +1,11 @@
+using System.Reactive.Disposables;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.Primitives.Themes;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -14,6 +17,14 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
+
+internal enum AddOnStatusPalette
+{
+    Default,
+    Warning,
+    Error,
+    Disabled
+}
 
 internal class AddOnDecoratedBox : InputControlFrame
 {
@@ -100,23 +111,17 @@ internal class AddOnDecoratedBox : InputControlFrame
     #endregion
     
     #region 内部属性定义
-    internal static readonly StyledProperty<IBrush?> AddOnStatusForegroundProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, IBrush?>(nameof(AddOnStatusForeground));
+    internal static readonly StyledProperty<AddOnStatusPalette> StatusPaletteProperty =
+        AvaloniaProperty.Register<AddOnDecoratedBox, AddOnStatusPalette>(nameof(StatusPalette));
 
-    internal static readonly StyledProperty<IBrush?> AddOnStatusIconBrushProperty =
-        AvaloniaProperty.Register<AddOnDecoratedBox, IBrush?>(nameof(AddOnStatusIconBrush));
-
-    internal IBrush? AddOnStatusForeground
+    internal AddOnStatusPalette StatusPalette
     {
-        get => GetValue(AddOnStatusForegroundProperty);
-        set => SetValue(AddOnStatusForegroundProperty, value);
+        get => GetValue(StatusPaletteProperty);
+        set => SetValue(StatusPaletteProperty, value);
     }
 
-    internal IBrush? AddOnStatusIconBrush
-    {
-        get => GetValue(AddOnStatusIconBrushProperty);
-        set => SetValue(AddOnStatusIconBrushProperty, value);
-    }
+    internal IBrush? AddOnStatusForeground { get; private set; }
+    internal IBrush? AddOnStatusIconBrush { get; private set; }
 
     internal static readonly DirectProperty<AddOnDecoratedBox, Thickness> InnerBoxBorderThicknessProperty =
         AvaloniaProperty.RegisterDirect<AddOnDecoratedBox, Thickness>(nameof(InnerBoxBorderThickness),
@@ -254,6 +259,9 @@ internal class AddOnDecoratedBox : InputControlFrame
     private ContentPresenter? _rightAddOnPresenter;
     private ContentPresenter? _contentLeftAddOn;
     private ContentPresenter? _contentRightAddOn;
+    private OwnerTokenSet? _statusTokens;
+    private bool _observeStatusResources;
+    private CompositeDisposable? _statusColorValues;
     private bool _borderInfoDirty;
     private bool _cornerRadiusDirty;
     private bool _borderThicknessDirty;
@@ -318,18 +326,74 @@ internal class AddOnDecoratedBox : InputControlFrame
             _borderInfoDirty = true;
         }
 
-        if (change.Property == StatusProperty ||
-            change.Property == EffectiveStatusProperty ||
-            change.Property == IsEnabledProperty ||
-            change.Property == ContentLeftAddOnProperty ||
-            change.Property == ContentRightAddOnProperty ||
-            change.Property == AddOnStatusForegroundProperty ||
-            change.Property == AddOnStatusIconBrushProperty)
+        if (change.Property == StatusPaletteProperty && _observeStatusResources)
+        {
+            UpdateStatusPaletteTokenSubscription();
+        }
+        else if (change.Property == ContentLeftAddOnProperty || change.Property == ContentRightAddOnProperty)
         {
             UpdateIconStatusColors();
         }
 
         ScheduleLayoutUpdate();
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _observeStatusResources = true;
+        UpdateStatusPaletteTokenSubscription();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _observeStatusResources = false;
+        _statusTokens?.Dispose();
+        _statusTokens = null;
+        AddOnStatusForeground = null;
+        AddOnStatusIconBrush = null;
+        UpdateIconStatusColors();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void UpdateStatusPaletteTokenSubscription()
+    {
+        _statusTokens?.Dispose();
+        _statusTokens = null;
+        AddOnStatusForeground = null;
+        AddOnStatusIconBrush = null;
+        (SharedTokenKind? Foreground, SharedTokenKind? Icon) keys = StatusPalette switch
+        {
+            AddOnStatusPalette.Error => (SharedTokenKind.ColorErrorText, SharedTokenKind.ColorError),
+            AddOnStatusPalette.Warning => (SharedTokenKind.ColorWarningText, SharedTokenKind.ColorWarning),
+            AddOnStatusPalette.Disabled => (SharedTokenKind.ColorTextDisabled, null),
+            _ => default
+        };
+        if (keys.Foreground is { } foreground)
+        {
+            _statusTokens = new OwnerTokenSet(this, keys.Icon.HasValue ? 2 : 1, RefreshStatusColors);
+            _statusTokens.SetKind(0, foreground);
+            if (keys.Icon is { } icon)
+            {
+                _statusTokens.SetKind(1, icon);
+            }
+        }
+        RefreshStatusColors();
+    }
+
+    private void RefreshStatusColors()
+    {
+        var foreground = _statusTokens?.GetValue(0);
+        var icon = StatusPalette == AddOnStatusPalette.Disabled ? foreground : _statusTokens?.GetValue(1);
+        if (!ReferenceEquals(foreground, BindingOperations.DoNothing))
+        {
+            AddOnStatusForeground = foreground as IBrush;
+        }
+        if (!ReferenceEquals(icon, BindingOperations.DoNothing))
+        {
+            AddOnStatusIconBrush = icon as IBrush;
+        }
+        UpdateIconStatusColors();
     }
 
     private void ConfigureEffectiveContentFramePadding()
@@ -631,93 +695,70 @@ internal class AddOnDecoratedBox : InputControlFrame
 
     private void UpdateIconStatusColors()
     {
+        // Status colours are removable Template-priority values: user local values and part styles on the add-on
+        // presenters and icons keep winning and are never erased, and leaving the status disposes exactly the values
+        // applied here (no ClearValue). Add-on icons are runtime content (not template parts), possibly logically
+        // owned by the outer input control, so a ControlTheme selector cannot reach them.
+        _statusColorValues?.Dispose();
+        _statusColorValues = null;
+
         var foreground = AddOnStatusForeground;
-        var iconBrush = AddOnStatusIconBrush;
-
-        // 应用 Foreground 到 addon 区域的 ContentPresenter
-        ApplyAddOnForeground(_contentLeftAddOn, foreground);
-        ApplyAddOnForeground(_contentRightAddOn, foreground);
-        ApplyAddOnForeground(_leftAddOnPresenter, foreground);
-        ApplyAddOnForeground(_rightAddOnPresenter, foreground);
-
-        // 应用 Icon 染色
-        ApplyIconBrush(_contentLeftAddOn, iconBrush);
-        ApplyIconBrush(_contentRightAddOn, iconBrush);
-        ApplyIconBrush(_leftAddOn, iconBrush);
-        ApplyIconBrush(_rightAddOn, iconBrush);
-    }
-
-    private static void ApplyAddOnForeground(ContentPresenter? presenter, IBrush? brush)
-    {
-        if (presenter == null)
+        var iconBrush  = AddOnStatusIconBrush;
+        if (foreground is null && iconBrush is null)
         {
             return;
         }
 
-        if (brush != null)
+        var values = new CompositeDisposable();
+        if (foreground is not null)
         {
-            if (!ReferenceEquals(presenter.Foreground, brush))
-            {
-                presenter.SetCurrentValue(ForegroundProperty, brush);
-            }
+            ApplyAddOnForeground(values, _contentLeftAddOn, foreground);
+            ApplyAddOnForeground(values, _contentRightAddOn, foreground);
+            ApplyAddOnForeground(values, _leftAddOnPresenter, foreground);
+            ApplyAddOnForeground(values, _rightAddOnPresenter, foreground);
         }
-        else
+
+        if (iconBrush is not null)
         {
-            if (presenter.IsSet(ForegroundProperty))
-            {
-                presenter.ClearValue(ForegroundProperty);
-            }
+            ApplyIconBrush(values, _contentLeftAddOn, iconBrush);
+            ApplyIconBrush(values, _contentRightAddOn, iconBrush);
+            ApplyIconBrush(values, _leftAddOn, iconBrush);
+            ApplyIconBrush(values, _rightAddOn, iconBrush);
         }
+
+        _statusColorValues = values;
     }
 
-    private static void ApplyIconBrush(Control? container, IBrush? brush)
+    private static void ApplyAddOnForeground(CompositeDisposable values, ContentPresenter? presenter, IBrush brush)
+    {
+        AddValue(values, presenter?.SetValue(ForegroundProperty, brush, BindingPriority.Template));
+    }
+
+    private static void ApplyIconBrush(CompositeDisposable values, Control? container, IBrush brush)
     {
         if (container == null)
         {
             return;
         }
+
         foreach (var descendant in container.GetVisualDescendants())
         {
-            if (descendant is not Icon icon)
+            if (descendant is not Icon icon || icon.Classes.Contains("skip-status"))
             {
                 continue;
             }
 
-            if (icon.Classes.Contains("skip-status"))
-            {
-                continue;
-            }
+            AddValue(values, icon.SetValue(Icon.FillBrushProperty, brush, BindingPriority.Template));
+            AddValue(values, icon.SetValue(Icon.StrokeBrushProperty, brush, BindingPriority.Template));
+            AddValue(values, icon.SetValue(Icon.ForegroundProperty, brush, BindingPriority.Template));
+        }
+    }
 
-            if (brush != null)
-            {
-                if (!ReferenceEquals(icon.FillBrush, brush))
-                {
-                    icon.SetCurrentValue(Icon.FillBrushProperty, brush);
-                }
-                if (!ReferenceEquals(icon.StrokeBrush, brush))
-                {
-                    icon.SetCurrentValue(Icon.StrokeBrushProperty, brush);
-                }
-                if (!ReferenceEquals(icon.Foreground, brush))
-                {
-                    icon.SetCurrentValue(Icon.ForegroundProperty, brush);
-                }
-            }
-            else
-            {
-                if (icon.IsSet(Icon.FillBrushProperty))
-                {
-                    icon.ClearValue(Icon.FillBrushProperty);
-                }
-                if (icon.IsSet(Icon.StrokeBrushProperty))
-                {
-                    icon.ClearValue(Icon.StrokeBrushProperty);
-                }
-                if (icon.IsSet(Icon.ForegroundProperty))
-                {
-                    icon.ClearValue(Icon.ForegroundProperty);
-                }
-            }
+    private static void AddValue(CompositeDisposable values, IDisposable? applied)
+    {
+        if (applied is not null)
+        {
+            values.Add(applied);
         }
     }
     
@@ -887,6 +928,10 @@ internal class AddOnDecoratedBoxContentFrame : PixelAlignedBorder
 
 internal class AddOnContentPresenter : ContentPresenter
 {
+    // Templates wrap an inner presenter as the add-on content; an empty inner presenter hides itself,
+    // and the wrapper must follow it so that its margin and the panel spacing are not reserved.
+    private Control? _observedContent;
+
     public AddOnContentPresenter()
     {
         UpdateVisibility();
@@ -895,8 +940,40 @@ internal class AddOnContentPresenter : ContentPresenter
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ContentProperty)
+        {
+            ObserveContentVisibility(Content as Control);
+        }
+
         if (change.Property == ContentProperty ||
             change.Property == ContentTemplateProperty)
+        {
+            UpdateVisibility();
+        }
+    }
+
+    private void ObserveContentVisibility(Control? content)
+    {
+        if (ReferenceEquals(_observedContent, content))
+        {
+            return;
+        }
+
+        if (_observedContent is not null)
+        {
+            _observedContent.PropertyChanged -= HandleContentPropertyChanged;
+        }
+
+        _observedContent = content;
+        if (_observedContent is not null)
+        {
+            _observedContent.PropertyChanged += HandleContentPropertyChanged;
+        }
+    }
+
+    private void HandleContentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == IsVisibleProperty)
         {
             UpdateVisibility();
         }
@@ -913,7 +990,9 @@ internal class AddOnContentPresenter : ContentPresenter
 
     private void UpdateVisibility()
     {
-        var isVisible = Content is not null || ContentTemplate is not null;
+        var isVisible = Content is Control content
+            ? content.IsVisible
+            : Content is not null || ContentTemplate is not null;
         if (IsVisible != isVisible)
         {
             SetCurrentValue(IsVisibleProperty, isVisible);

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Disposables;
 using AtomUI.Data;
 using AtomUI.Desktop.Controls.Localization;
 using AtomUI.Icons.AntDesign;
@@ -766,7 +767,10 @@ public partial class Pagination : AbstractPagination
             QuickJumperBar = new QuickJumperBar();
             QuickJumperBar.JumpRequest += HandleQuickJumpRequested;
             _quickJumperDisposable?.Dispose();
-            _quickJumperDisposable = BindUtils.RelayBind(this, SizeTypeProperty, QuickJumperBar, QuickJumperBar.SizeTypeProperty);
+            _quickJumperDisposable = new CompositeDisposable(
+                BindUtils.RelayBind(this, SizeTypeProperty, QuickJumperBar, QuickJumperBar.SizeTypeProperty),
+                QuickJumperBar.Bind(QuickJumperBar.QuickJumperSpacingProperty, this.GetObservable(QuickJumperSpacingProperty)),
+                QuickJumperBar.Bind(QuickJumperBar.QuickJumperInputWidthProperty, this.GetObservable(QuickJumperInputWidthProperty)));
         }
     }
 

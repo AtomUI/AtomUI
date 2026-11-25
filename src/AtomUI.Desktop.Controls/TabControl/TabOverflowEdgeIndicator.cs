@@ -26,7 +26,22 @@ internal sealed class TabOverflowEdgeIndicator : Control
     {
         if (BoxShadow.Count > 0)
         {
-            context.Custom(new ShadowDrawOperation(new Rect(Bounds.Size), BoxShadow));
+            var caster = new Rect(Bounds.Size);
+            if (TemplatedParent is TabScrollViewer viewer)
+            {
+                // Negative spread shrinks both axes. Extend the caster across the clipped axis so
+                // the visible shadow runs to the viewport corners like the inset shadow in Ant Design.
+                var horizontal = viewer.TabStripPlacement is Dock.Top or Dock.Bottom;
+                var extension = 0d;
+                for (var i = 0; i < BoxShadow.Count; i++)
+                {
+                    var shadow = BoxShadow[i];
+                    var crossOffset = horizontal ? shadow.OffsetY : shadow.OffsetX;
+                    extension = Math.Max(extension, Math.Abs(crossOffset) + shadow.Blur + Math.Max(0, -shadow.Spread));
+                }
+                caster = caster.Inflate(horizontal ? new Thickness(0, extension) : new Thickness(extension, 0));
+            }
+            context.Custom(new ShadowDrawOperation(caster, BoxShadow));
         }
     }
 

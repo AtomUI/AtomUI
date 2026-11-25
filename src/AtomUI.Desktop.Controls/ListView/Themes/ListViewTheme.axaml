@@ -1,3 +1,5 @@
+<!-- owner: global Tokens are read from the owner because this theme is also the base of TransferListView (its own
+     identity) and of the identity-less Select candidate list, which follows the Select. On a ListView the owner is the ListView. -->
 <ControlTheme xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:atom="https://atomui.net"
@@ -5,6 +7,27 @@
               x:ClassModifier="internal"
               x:Class="AtomUI.Desktop.Controls.Themes.ListViewTheme"
               TargetType="atom:ListView">
+        <Setter Property="ContentPadding" Value="{atom:ListViewTokenResource ContentPadding}" />
+        <Setter Property="ItemColor" Value="{atom:ListViewTokenResource ItemColor}" />
+        <Setter Property="ItemHoverColor" Value="{atom:ListViewTokenResource ItemHoverColor}" />
+        <Setter Property="ItemSelectedColor" Value="{atom:ListViewTokenResource ItemSelectedColor}" />
+        <Setter Property="ItemSelectedIndicatorColor" Value="{atom:ListViewTokenResource ItemSelectedIndicatorColor}" />
+        <Setter Property="ItemDisabledColor" Value="{atom:ListViewTokenResource ItemDisabledColor}" />
+        <Setter Property="ItemBgColor" Value="{atom:ListViewTokenResource ItemBgColor}" />
+        <Setter Property="ItemHoverBgColor" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
+        <Setter Property="ItemSelectedBgColor" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
+        <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPadding}" />
+        <Style Selector="^[SizeType=Small]">
+            <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPaddingSM}" />
+        </Style>
+        <Style Selector="^[SizeType=Large]">
+            <Setter Property="ItemPadding" Value="{atom:ListViewTokenResource ItemPaddingLG}" />
+        </Style>
+        <Setter Property="ItemMargin" Value="{atom:ListViewTokenResource ItemMargin}" />
+        <Setter Property="GroupHeaderColor" Value="{atom:ListViewTokenResource GroupHeaderColor}" />
+        <Setter Property="GroupHeaderPadding" Value="{atom:ListViewTokenResource GroupHeaderPadding}" />
+        <Setter Property="SelectedIndicatorMargin" Value="{atom:ListViewTokenResource SelectedIndicatorMargin}" />
+
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:ListView">
             <atom:PixelAlignedBorder Name="Frame"
@@ -71,12 +94,12 @@
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="False" />
-        <Setter Property="ItemHoverBg" Value="{atom:ListViewTokenResource ItemHoverBgColor}" />
-        <Setter Property="ItemSelectedBg" Value="{atom:ListViewTokenResource ItemSelectedBgColor}" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorSplit}" />
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
-        <Setter Property="Padding" Value="{atom:ListViewTokenResource ContentPadding}" />
+        <Setter Property="ItemHoverBg" Value="{CompiledBinding $self.ItemHoverBgColor}" />
+        <Setter Property="ItemSelectedBg" Value="{CompiledBinding $self.ItemSelectedBgColor}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorSplit}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
+        <Setter Property="Padding" Value="{CompiledBinding $self.ContentPadding}" />
 
         <Setter Property="SelectedIndicator">
             <atom:IconTemplate>
@@ -85,18 +108,18 @@
         </Setter>
 
         <Style Selector="^[SizeType=Large]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusLG}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource PaddingXL}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusLG}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource PaddingXL}" />
         </Style>
 
         <Style Selector="^[SizeType=Middle], ^[SizeType=Custom]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadius}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadius}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
 
         <Style Selector="^[SizeType=Small]">
-            <Setter Property="CornerRadius" Value="{atom:SharedTokenResource BorderRadiusSM}" />
-            <Setter Property="EmptyIndicatorPadding" Value="{atom:SharedTokenResource Padding}" />
+            <Setter Property="CornerRadius" Value="{atom:OwnerTokenResource BorderRadiusSM}" />
+            <Setter Property="EmptyIndicatorPadding" Value="{atom:OwnerTokenResource Padding}" />
         </Style>
 
         <Setter Property="ItemTemplate">

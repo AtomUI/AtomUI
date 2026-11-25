@@ -109,6 +109,36 @@
         <target state="translated">窗框层定制</target>
       </segment>
     </unit>
+    <unit id="FullScreenTitleBarDescription">
+      <segment>
+        <source>In full screen the title bar keeps its add-ons and caption buttons. FullScreenTitleBarMode chooses AutoHide, Pinned, Docked or Hidden; FullScreenTitleBar replaces its content.</source>
+        <target state="translated">全屏时标题栏保留附加内容与系统按钮。FullScreenTitleBarMode 选择 AutoHide、Pinned、Docked 或 Hidden；FullScreenTitleBar 可替换其内容。</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarHint">
+      <segment>
+        <source>Enter full screen, then move the pointer to the top edge. The pin in the title bar switches between AutoHide and Pinned while the window stays full screen.</source>
+        <target state="translated">进入全屏后把指针移到顶部边缘。标题栏中的图钉可在全屏状态下切换 AutoHide 与 Pinned。</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarOpenButtonText">
+      <segment>
+        <source>Open full screen title bar window</source>
+        <target state="translated">打开全屏标题栏窗口</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarTitle">
+      <segment>
+        <source>Full screen title bar</source>
+        <target state="translated">全屏标题栏</target>
+      </segment>
+    </unit>
+    <unit id="FullScreenTitleBarToggleText">
+      <segment>
+        <source>Enter or exit full screen</source>
+        <target state="translated">进入或退出全屏</target>
+      </segment>
+    </unit>
     <unit id="IsTitleVisibleDescription">
       <segment>
         <source>IsTitleVisible=False hides only the title text inside the title bar; the taskbar and window switching still show the OS window title. Different from IsTitleBarVisible, which hides the whole title bar.</source>

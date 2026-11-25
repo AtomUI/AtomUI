@@ -1,90 +1,83 @@
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using AtomUI.Controls;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 
 namespace AtomUI.Toolkits.GalleryBase.Shell;
 
-internal static class GalleryMediaBreakPointResolver
+internal sealed class GalleryMediaBreakPointResolver : IDisposable
 {
-    public static MediaBreakPoint Resolve(double width)
+    private static readonly (object Key, MediaBreakPoint BreakPoint)[] s_thresholds =
+    [
+        (SharedTokenKind.ScreenXXXLMin, MediaBreakPoint.ExtraExtraExtraLarge),
+        (SharedTokenKind.ScreenXXLMin, MediaBreakPoint.ExtraExtraLarge),
+        (SharedTokenKind.ScreenXLMin, MediaBreakPoint.ExtraLarge),
+        (SharedTokenKind.ScreenLGMin, MediaBreakPoint.Large),
+        (SharedTokenKind.ScreenMDMin, MediaBreakPoint.Medium),
+        (SharedTokenKind.ScreenSMMin, MediaBreakPoint.Small)
+    ];
+
+    private readonly Action _changed;
+    private readonly OwnerTokenSet _resources;
+    private readonly int[] _widths = new int[s_thresholds.Length];
+
+    internal GalleryMediaBreakPointResolver(Control host, Action changed)
     {
-        return Resolve(width, null);
+        _changed = changed;
+        // A publish can cross more than one breakpoint as the thresholds update. Preserve the original order
+        // of the public events by reporting each changed threshold in the same order as the original bindings.
+        _resources = new OwnerTokenSet(host, s_thresholds.Length, HandleThresholdChanged);
+        try
+        {
+            for (var i = 0; i < s_thresholds.Length; i++)
+            {
+                _resources.SetResourceKey(i, s_thresholds[i].Key);
+                _widths[i] = ReadWidth(_resources.GetValue(i), 0);
+            }
+        }
+        catch
+        {
+            _resources.Dispose();
+            throw;
+        }
     }
 
-    public static MediaBreakPoint Resolve(double width, Control? resourceHost)
+    internal MediaBreakPoint Resolve(double width)
     {
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXXXLMin,
-                                MediaBreakPoint.ExtraExtraExtraLarge))
+        for (var i = 0; i < s_thresholds.Length; i++)
         {
-            return MediaBreakPoint.ExtraExtraExtraLarge;
+            if (width >= _widths[i])
+            {
+                return s_thresholds[i].BreakPoint;
+            }
         }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXXLMin,
-                                MediaBreakPoint.ExtraExtraLarge))
-        {
-            return MediaBreakPoint.ExtraExtraLarge;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenXLMin,
-                                MediaBreakPoint.ExtraLarge))
-        {
-            return MediaBreakPoint.ExtraLarge;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenLGMin,
-                                MediaBreakPoint.Large))
-        {
-            return MediaBreakPoint.Large;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenMDMin,
-                                MediaBreakPoint.Medium))
-        {
-            return MediaBreakPoint.Medium;
-        }
-
-        if (width >= ResolveMin(resourceHost,
-                                SharedTokenKind.ScreenSMMin,
-                                MediaBreakPoint.Small))
-        {
-            return MediaBreakPoint.Small;
-        }
-
         return MediaBreakPoint.ExtraSmall;
     }
 
-    private static double ResolveMin(Control? resourceHost,
-                                     SharedTokenKind token,
-                                     MediaBreakPoint fallback)
-    {
-        if (TryResolveToken(resourceHost, token, out var value))
-        {
-            return value;
-        }
+    public void Dispose() => _resources.Dispose();
 
-        return (double)fallback;
+    private void HandleThresholdChanged(int index, object? previous, object? value)
+    {
+        var width = ReadWidth(value, _widths[index]);
+        if (_widths[index] != width)
+        {
+            _widths[index] = width;
+            _changed();
+        }
     }
 
-    private static bool TryResolveToken(Control? resourceHost,
-                                        SharedTokenKind token,
-                                        out double value)
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Screen tokens are integers. Local resources retain the same implicit conversion used by the previous Avalonia int property bindings.")]
+    private static int ReadWidth(object? value, int current)
     {
-        var themeVariant = resourceHost?.ActualThemeVariant ?? Application.Current?.ActualThemeVariant;
-        if (resourceHost?.TryGetResource(token, themeVariant, out var resourceValue) == true ||
-            Application.Current?.TryGetResource(token, themeVariant, out resourceValue) == true)
+        if (value is int width)
         {
-            value = Convert.ToDouble(resourceValue, CultureInfo.InvariantCulture);
-            return true;
+            return width;
         }
-
-        value = default;
-        return false;
+        return ReferenceEquals(value, BindingOperations.DoNothing)
+            ? current
+            : BindingValue<int>.FromUntyped(value ?? AvaloniaProperty.UnsetValue).GetValueOrDefault();
     }
 }

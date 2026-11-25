@@ -31,7 +31,7 @@
                                                  SemanticOwner="{Binding #SplitButtonSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:SplitButton}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <atom:SplitButton Name="SplitButtonSemanticOwner"
+                            <atom:SplitButton x:Name="SplitButtonSemanticOwner"
                                               IsPrimaryButtonType="True"
                                               HorizontalAlignment="Center"
                                               Content="{gallery:SplitButtonShowCaseLangResource SemanticStylesObjectPrimary}"

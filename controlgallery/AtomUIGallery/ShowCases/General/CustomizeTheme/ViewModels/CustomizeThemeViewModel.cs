@@ -1,5 +1,5 @@
 using AtomUI.Controls;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Schema;
 using AtomUI.Theme.DesignTokens;
@@ -48,9 +48,10 @@ public class CustomizeThemeViewModel : ReactiveObject, IRoutableViewModel, IActi
             "#ff0000",
             (nameof(DesignToken.BorderRadius), "0"));
         PurpleThemeConfig = BuildGlobalConfig("#7D3C98");
-        DarkThemeConfig = new ThemeConfigBuilder().WithAlgorithms(ThemeAlgorithm.Dark).Build();
-        ControlAlgorithmEnabledConfig = BuildControlConfig(ControlAlgorithmMode.Global);
-        ControlAlgorithmDisabledConfig = BuildControlConfig(ControlAlgorithmMode.Disabled);
+        DarkThemeConfig = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
+        // A seed override re-derives the control's global tokens; a Map override replaces only that value (spec 7.5).
+        ControlAlgorithmEnabledConfig = BuildControlConfig(nameof(DesignToken.ColorPrimary));
+        ControlAlgorithmDisabledConfig = BuildControlConfig(nameof(DesignToken.ColorPrimaryHover));
         NestedBlueThemeConfig = BuildGlobalConfig("#1677ff");
         NestedGreenThemeConfig = BuildGlobalConfig("#00b96b");
         NestedOrangeThemeConfig = new ThemeConfigBuilder()
@@ -81,20 +82,18 @@ public class CustomizeThemeViewModel : ReactiveObject, IRoutableViewModel, IActi
         return builder.Build();
     }
 
-    private static ThemeConfig BuildControlConfig(ControlAlgorithmMode algorithm)
+    private static ThemeConfig BuildControlConfig(string token)
     {
         return new ThemeConfigBuilder()
                .WithControl(
                    new ControlTokenIdentity("AtomUI", "Button"),
                    new ControlThemeConfigBuilder()
-                       .WithAlgorithm(algorithm)
-                       .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
+                       .WithToken(token, "#00b96b")
                        .Build())
                .WithControl(
                    new ControlTokenIdentity("AtomUI", "LineEdit"),
                    new ControlThemeConfigBuilder()
-                       .WithAlgorithm(algorithm)
-                       .WithToken(nameof(DesignToken.ColorPrimary), "#eb2f96")
+                       .WithToken(token, "#eb2f96")
                        .Build())
                .Build();
     }

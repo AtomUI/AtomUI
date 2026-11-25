@@ -1,156 +1,107 @@
-using AtomUI.Theme.Algorithms;
 using AtomUI.Theme.DesignTokens;
-using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
 [ControlDesignToken]
-internal sealed class OptionButtonToken : AbstractControlDesignToken
+public sealed partial class OptionButtonToken : AbstractControlDesignToken
 {
-    
-    /// <summary>
-    /// 单选框按钮背景色
-    /// </summary>
-    public Color ButtonBackground { get; set; }
+    private const string GroupDrawnFrame =
+        "OptionButtonGroup draws its separators and the selection border behind the options, so an opaque option " +
+        "background would cover them; options stay transparent until the group draws the frame above its options.";
 
     /// <summary>
-    /// 单选框按钮选中背景色
+    /// 单选框按钮背景色（antd Radio buttonBg）
     /// </summary>
-    public Color ButtonCheckedBackground { get; set; }
+    [ReservedToken("antd Radio buttonBg. " + GroupDrawnFrame)]
+    public partial Color ButtonBackground { get; set; }
 
     /// <summary>
-    /// 单选框按钮文本颜色
+    /// 单选框按钮选中背景色（antd Radio buttonCheckedBg）
     /// </summary>
-    public Color ButtonColor { get; set; }
+    [ReservedToken("antd Radio buttonCheckedBg. " + GroupDrawnFrame)]
+    public partial Color ButtonCheckedBackground { get; set; }
+
+    /// <summary>Label foreground of an option button at rest.</summary>
+    public partial Color ButtonColor { get; set; }
 
     /// <summary>
-    /// 单选框按钮内间距
+    /// 单选框按钮水平内间距（antd Radio buttonPaddingInline），作为默认与大号 <see cref="ContentPadding"/> 的左右分量；
+    /// 只使用 Left / Right。
     /// </summary>
-    public Thickness ButtonPadding { get; set; }
+    [ReservedToken("A derivation input: the design language derives other tokens of this control from it, so overriding it moves them.")]
+    public partial Thickness ButtonPadding { get; set; }
+
+    /// <summary>Fill of a checked disabled option button. Pair with <see cref="ButtonCheckedColorDisabled"/>.</summary>
+    public partial Color ButtonCheckedBgDisabled { get; set; }
+
+    /// <summary>Label foreground on <see cref="ButtonCheckedBgDisabled"/>.</summary>
+    public partial Color ButtonCheckedColorDisabled { get; set; }
 
     /// <summary>
-    /// 单选框按钮选中并禁用时的背景色
+    /// Fill of the checked option in the outline style (transparent: only the border and text show the selection).
     /// </summary>
-    public Color ButtonCheckedBgDisabled { get; set; }
+    public partial Color ButtonOutlineCheckedBackground { get; set; }
 
     /// <summary>
-    /// 单选框按钮选中并禁用时的文本颜色
+    /// Text colour of the checked option in the outline style.
     /// </summary>
-    public Color ButtonCheckedColorDisabled { get; set; }
+    public partial Color ButtonOutlineCheckedColor { get; set; }
 
     /// <summary>
-    /// 单选框实色按钮选中时的文本颜色
+    /// Text colour of the checked option in the outline style while hovered.
     /// </summary>
-    public Color ButtonSolidCheckedColor { get; set; }
+    public partial Color ButtonOutlineCheckedHoverColor { get; set; }
 
     /// <summary>
-    /// 单选框实色按钮选中时的背景色
+    /// Text colour of the checked option in the outline style while pressed.
     /// </summary>
-    public Color ButtonSolidCheckedBackground { get; set; }
+    public partial Color ButtonOutlineCheckedActiveColor { get; set; }
 
     /// <summary>
-    /// 单选框实色按钮选中时的悬浮态背景色
+    /// Label foreground across the checked solid button states, paired with
+    /// <see cref="ButtonSolidCheckedBackground"/> .
     /// </summary>
-    public Color ButtonSolidCheckedHoverBackground { get; set; }
+    public partial Color ButtonSolidCheckedColor { get; set; }
 
-    /// <summary>
-    /// 单选框实色按钮选中时的激活态背景色
-    /// </summary>
-    public Color ButtonSolidCheckedActiveBackground { get; set; }
+    /// <summary>Resting fill of the checked solid variant, paired with <see cref="ButtonSolidCheckedColor"/>.</summary>
+    public partial Color ButtonSolidCheckedBackground { get; set; }
 
-    /// <summary>
-    /// 按钮内容字体大小
-    /// </summary>
-    public double ContentFontSize { get; set; } = -1;
+    /// <summary>Fill of a checked solid button under the pointer.</summary>
+    public partial Color ButtonSolidCheckedHoverBackground { get; set; }
 
-    /// <summary>
-    /// 大号按钮内容字体大小
-    /// </summary>
-    public double ContentFontSizeLG { get; set; } = -1;
+    /// <summary>Fill of a checked solid button while pressed.</summary>
+    public partial Color ButtonSolidCheckedActiveBackground { get; set; }
 
-    /// <summary>
-    /// 小号按钮内容字体大小
-    /// </summary>
-    public double ContentFontSizeSM { get; set; } = -1;
+    /// <summary>Label font size for the regular button size.</summary>
+    public partial double ContentFontSize { get; set; }
 
-    /// <summary>
-    /// 按钮内容字体行高
-    /// </summary>
-    public double ContentLineHeight { get; set; } = -1;
+    /// <summary>Label font size for the large button size.</summary>
+    public partial double ContentFontSizeLG { get; set; }
 
-    /// <summary>
-    /// 大号按钮内容字体行高
-    /// </summary>
-    public double ContentLineHeightLG { get; set; } = -1;
+    /// <summary>Label font size for the small button size.</summary>
+    public partial double ContentFontSizeSM { get; set; }
 
-    /// <summary>
-    /// 小号按钮内容字体行高
-    /// </summary>
-    public double ContentLineHeightSM { get; set; } = -1;
+    /// <summary>Label line height for the regular button size.</summary>
+    [ReservedToken("A derivation input: the design language derives other tokens of this control from it, so overriding it moves them.")]
+    public partial double ContentLineHeight { get; set; }
 
-    /// <summary>
-    /// 按钮内间距
-    /// </summary>
-    public Thickness ContentPadding { get; set; }
+    /// <summary>Label line height for the large button size.</summary>
+    [ReservedToken("A derivation input: the design language derives other tokens of this control from it, so overriding it moves them.")]
+    public partial double ContentLineHeightLG { get; set; }
 
-    /// <summary>
-    /// 大号按钮内间距
-    /// </summary>
-    public Thickness ContentPaddingLG { get; set; }
+    /// <summary>Label line height for the small button size.</summary>
+    [ReservedToken("A derivation input: the design language derives other tokens of this control from it, so overriding it moves them.")]
+    public partial double ContentLineHeightSM { get; set; }
 
-    /// <summary>
-    /// 小号按钮内间距
-    /// </summary>
-    public Thickness ContentPaddingSM { get; set; }
+    /// <summary>Padding around the label in a regular option button.</summary>
+    public partial Thickness ContentPadding { get; set; }
 
-    public OptionButtonToken()
+    /// <summary>Padding around the label in a large option button.</summary>
+    public partial Thickness ContentPaddingLG { get; set; }
 
-    {
-    }
-
-    public override void CalculateTokenValues(bool isDarkMode)
-    {
-        base.CalculateTokenValues(isDarkMode);
-        ButtonSolidCheckedColor            = EffectiveGlobalToken.ColorTextLightSolid;
-        ButtonSolidCheckedBackground       = EffectiveGlobalToken.ColorPrimary;
-        ButtonSolidCheckedHoverBackground  = EffectiveGlobalToken.ColorPrimaryHover;
-        ButtonSolidCheckedActiveBackground = EffectiveGlobalToken.ColorPrimaryActive;
-        ButtonBackground                   = EffectiveGlobalToken.ColorBgContainer;
-        ButtonCheckedBackground            = EffectiveGlobalToken.ColorBgContainer;
-        ButtonColor                        = EffectiveGlobalToken.ColorText;
-        ButtonCheckedBgDisabled            = EffectiveGlobalToken.ControlItemBgActiveDisabled;
-        ButtonCheckedColorDisabled         = EffectiveGlobalToken.ColorTextDisabled;
-        ButtonPadding                      = new Thickness(EffectiveGlobalToken.UniformlyPadding, 0);
-
-        var fontSize   = EffectiveGlobalToken.FontSize;
-        var fontSizeLG = EffectiveGlobalToken.FontSizeLG;
-
-        ContentFontSize   = !MathUtils.AreClose(ContentFontSize, -1) ? ContentFontSize : fontSize;
-        ContentFontSizeSM = !MathUtils.AreClose(ContentFontSizeSM, -1) ? ContentFontSizeSM : fontSize;
-        ContentFontSizeLG = !MathUtils.AreClose(ContentFontSizeLG, -1) ? ContentFontSizeLG : fontSizeLG;
-        ContentLineHeight = !MathUtils.AreClose(ContentLineHeight, -1)
-            ? ContentLineHeight
-            : CalculatorUtils.CalculateLineHeight(ContentFontSize);
-        ContentLineHeightSM = !MathUtils.AreClose(ContentLineHeightSM, -1)
-            ? ContentLineHeightSM
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeSM);
-        ContentLineHeightLG = !MathUtils.AreClose(ContentLineHeightLG, -1)
-            ? ContentLineHeightLG
-            : CalculatorUtils.CalculateLineHeight(ContentFontSizeLG);
-
-        var controlHeight   = EffectiveGlobalToken.ControlHeight;
-        var controlHeightSM = EffectiveGlobalToken.ControlHeightSM;
-        var controlHeightLG = EffectiveGlobalToken.ControlHeightLG;
-        var lineWidth       = EffectiveGlobalToken.LineWidth;
-
-        ContentPadding = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeight - ContentFontSize * ContentLineHeight) / 2 - lineWidth, 0));
-        ContentPaddingLG = new Thickness(EffectiveGlobalToken.PaddingContentHorizontal - lineWidth,
-            Math.Max((controlHeightSM - ContentFontSizeSM * ContentLineHeightSM) / 2 - lineWidth, 0));
-        ContentPaddingSM = new Thickness(8 - EffectiveGlobalToken.LineWidth,
-            Math.Max((controlHeightLG - controlHeightLG * controlHeightLG) / 2 - lineWidth, 0));
-    }
+    /// <summary>Padding around the label in a small option button.</summary>
+    public partial Thickness ContentPaddingSM { get; set; }
     
 }

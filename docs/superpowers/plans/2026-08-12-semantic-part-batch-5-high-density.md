@@ -1,6 +1,6 @@
 # Semantic Part 第五批高密度控件实施计划
 
-> **供智能体执行者使用：** 使用 `superpowers:executing-plans` 在当前会话中执行，不得使用 subagent。Gate A 源码工作前先记录性能基线，文档完成后停止并等待用户批准；实现完成后保持未提交，再次接受用户审核。
+> 在当前会话中执行计划，不得使用子代理。Gate A 源码工作前先记录性能基线，文档完成后停止并等待用户批准。实现完成后保持未提交，再次接受用户审核。
 
 **目标：** 为对应 Ant Design 6.6.0 稳定发布源码公开 `Menu` 与 `Table` Semantic DOM API 的 `NavMenu`、`DataGrid` 建立 Semantic Part 契约（`Menu` 为 2026-09-15 用户指令撤销排除并追认，随本批次执行），不得造成高密度实例化、虚拟化、Popup 或容器生命周期行为退化。
 

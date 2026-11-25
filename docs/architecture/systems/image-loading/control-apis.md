@@ -60,6 +60,7 @@ public class AsyncImage : TemplatedControl, IImageLoadControl
     public int DecodePixelWidth { get; set; }
     public int DecodePixelHeight { get; set; }
     public ImageRequestPriority Priority { get; set; } = ImageRequestPriority.Normal;
+    public bool IsLazy { get; set; }
 
     public object? LoadingContent { get; set; }
     public IDataTemplate? LoadingContentTemplate { get; set; }
@@ -78,9 +79,25 @@ public class AsyncImage : TemplatedControl, IImageLoadControl
 ```
 
 `Auto` 根据有效 arranged width、有限高度约束与 TopLevel render scaling 计算物理像素目标，并使用稳定尺寸桶抑制微小布局变化；无界内容布局只使用宽度桶，避免加载结果的固有高度反馈到父布局；
+`Stretch` 为 `Uniform`/`None` 时目标框是等比缩放上限，解码结果落在框内；为 `Fill`/`UniformToFill` 时图片加载后会撑满有限的
+高度边界，目标高度在首个请求就取这条边界（依次为 `Height`、已含 `MaxHeight` 与父级槽位的测量可用高度、`MaxHeight`），不取加载前
+占位内容的排列高度，因此内容自适应高度的布局只解码一次；没有任何高度边界时高度随图片宽高比变化，只按宽度解码。codec 按覆盖语义
+取宽高缩放比中的较大者，解码结果覆盖整个框且不放大原图，整宽限高的图片不会先按高度缩小再被横向拉伸。覆盖且宽高均有边界时，若 Skia 截断推导出的另一轴会低于框的该边（如 257×127 覆盖 16×16 按宽度解码得 32×15），改按另一轴解码。运行时切换 `Stretch` 按新目标重新请求。尺寸桶上限是 `int` 范围内
+最大的 16 像素整倍数，极大的有限 `Height`/`MaxHeight` 按上限处理，不会在 attach 或 Arrange 时溢出。Desktop 内置控件中
+ImagePreviewer 使用显式解码尺寸，不受覆盖语义影响；直接使用 `AsyncImage` 并设置 `Fill`/`UniformToFill` 的界面，解码像素增大到
+覆盖显示框，内存占用随之按显示尺寸计算；
 `Original` 请求原始尺寸；`Explicit` 使用 `DecodePixelWidth`/`DecodePixelHeight` 形成保持宽高比的最大边界，至少一边
 必须大于零；明确配置 0 x 0 时不启动 loader，并以 typed `InvalidSource` 进入 Failed。`Reload()` 对当前有效来源执行一次
 `CacheRead=ImageCacheReadPolicy.RefreshSource`，不永久修改 `RequestOptions`。
+
+`IsLazy` 默认 `false`，加载路径与此前一致。设为 `true` 后，控件在 attach 时先关闭请求门，只有收到有效视口且与视口相交、
+有效可见时才开门并启动请求；显式零 `Width`/`Height`、折叠父级或视口之外的图片不发起请求。自动尺寸的轴测得 0 时（例如垂直
+`StackPanel` 中只设宽度且没有占位内容）按其位置判断是否落在视口内；尺寸变化时用最近的有效视口重新判断，避免从零尺寸增长时
+视口矩形不变而一直不开门。首次相交后取消视口订阅，已滚出视口的图片保留已有结果。门关闭期间 `LoadState` 为 `Idle`，默认
+主题在 `IsLazy` 且 `Idle` 时显示 `LoadingContent`，使占位内容能撑开自适应布局；消费者仍应把“`Idle` 且 `Source` 非空”视为等待中。
+运行时切换 `IsLazy` 时，空闲图片按新值重新设门，正在加载的请求不受影响，关闭 `IsLazy` 时开门。
+AtomUI 内部提供 `ReleaseLoad()`（`internal`，无 Desktop 调用方）：保持挂树状态取消请求并释放租约，随后重新设门，下一次视口
+相交或 `Source` 变化时再加载；未挂树时为空操作。
 
 `LoadingContent` 只在当前没有可显示租约时替代图片 presenter；同来源替换仍显示旧图并保持 `:loading`。最终失败释放图片并
 显示 `ErrorContent`。template reapply 不重启身份、尺寸和 options 均未变化的请求，也不泄漏旧 part 订阅。
@@ -114,7 +131,8 @@ public abstract class AbstractAvatar : TemplatedControl, IImageLoadControl
 ```
 
 Avatar 内容优先级固定为：成功的 `Source`、成功的 `FallbackSource`、`Text`、`Icon`。加载中仍显示 Text/Icon
-fallback，不展示空白图片 presenter。Avatar 始终按有效头像尺寸乘 render scaling 请求目标尺寸，不公开解码尺寸属性。
+fallback，不展示空白图片 presenter。Avatar 始终按有效头像尺寸乘 render scaling 请求目标尺寸，不公开解码尺寸属性；
+`Stretch` 为 `Fill`/`UniformToFill` 时同样按覆盖语义解码，非正方形图片铺满头像时不欠采样。
 HTTP/HTTPS 与本地 SVG 直接进入同一 `Source`；loader 只接受通过统一静态 SVG 安全子集的内容。首次有效 Arrange 的头像尺寸
 必须直接参与当轮请求，不能依赖旧 `Bounds`、额外 layout pass 或固定延迟才能启动网络加载。
 

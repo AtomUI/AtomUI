@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using AtomUI.Controls;
+using AtomUI.Controls.Primitives;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
@@ -33,7 +34,7 @@ public enum ExpanderIconPosition
     ExpanderPseudoClass.ExpandDown,
     ExpanderPseudoClass.ExpandLeft,
     ExpanderPseudoClass.ExpandRight)]
-public partial class Expander : AvaloniaExpander, IMotionAwareControl
+public partial class Expander : AvaloniaExpander, IMotionAwareControl, IFocusOutlineShapeProvider
 {
     #region 公共属性定义
 
@@ -197,9 +198,21 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
     private Control? _headerDecorator;
     private IconButton? _expandButton;
+    private DashedBorder? _frame;
+    // Avalonia focuses the nearest focusable ancestor of a pressed element, so a press on plain content gives
+    // the Expander focus; Ant Design only toggles from the header, so toggle keys stay off until focus comes
+    // from the keyboard or a header press.
+    private bool _isToggleKeySuppressed;
+
+    static Expander()
+    {
+        // The header is the keyboard stop (the template marks it as the focus target).
+        FocusableProperty.OverrideDefaultValue<Expander>(true);
+    }
 
     public Expander()
     {
+        AddHandler(PointerPressedEvent, HandlePreviewPointerPressed, RoutingStrategies.Tunnel, true);
     }
     
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -213,6 +226,7 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
 
         _headerDecorator = e.NameScope.Find<Control>("PART_HeaderDecorator");
         _expandButton    = e.NameScope.Find<IconButton>("PART_ExpandButton");
+        _frame           = e.NameScope.Find<DashedBorder>("PART_Frame");
 
 
         if (_expandButton is not null)
@@ -273,25 +287,79 @@ public partial class Expander : AvaloniaExpander, IMotionAwareControl
         e.Handled = true;
     }
 
+    protected override void OnGotFocus(FocusChangedEventArgs e)
+    {
+        base.OnGotFocus(e);
+        if (ReferenceEquals(e.Source, this) && e.NavigationMethod != NavigationMethod.Pointer)
+        {
+            _isToggleKeySuppressed = false;
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Handled ||
+            _isToggleKeySuppressed ||
+            !ReferenceEquals(e.Source, this) ||
+            TriggerType != ExpanderTriggerType.Header ||
+            e.KeyModifiers != KeyModifiers.None ||
+            e.Key is not (Key.Enter or Key.Space))
+        {
+            return;
+        }
+
+        ToggleExpanded();
+        e.Handled = true;
+    }
+
+    // The header has no radius of its own; PART_Frame rounds and clips it. Report the frame corners the
+    // header touches, in the header's own space (left / right headers are rotated 90 degrees clockwise).
+    CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius
+    {
+        get
+        {
+            var frame = _frame?.CornerRadius ?? default;
+            return (ExpandDirection, IsExpanded) switch
+            {
+                (ExpandDirection.Down, true) => new CornerRadius(frame.TopLeft, frame.TopRight, 0, 0),
+                (ExpandDirection.Up, true) => new CornerRadius(0, 0, frame.BottomRight, frame.BottomLeft),
+                (ExpandDirection.Left, true) => new CornerRadius(frame.TopRight, frame.BottomRight, 0, 0),
+                (ExpandDirection.Right, true) => new CornerRadius(0, 0, frame.BottomLeft, frame.TopLeft),
+                (ExpandDirection.Left or ExpandDirection.Right, false) =>
+                    new CornerRadius(frame.TopRight, frame.BottomRight, frame.BottomLeft, frame.TopLeft),
+                _ => frame
+            };
+        }
+    }
+
     private void HandleExpandButtonClicked(object? sender, RoutedEventArgs args)
     {
         ToggleExpanded();
         args.Handled = true;
     }
 
+    // Runs in the tunnel phase, before the focus manager focuses the Expander for a content press.
+    private void HandlePreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            _isToggleKeySuppressed = !IsPointerInHeader(e);
+        }
+    }
+
     private bool CanToggleFromHeaderPointer(PointerPressedEventArgs e)
     {
-        if (TriggerType != ExpanderTriggerType.Header ||
-            e.Pointer.Type != PointerType.Mouse ||
-            !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed ||
-            _headerDecorator is null)
-        {
-            return false;
-        }
+        return TriggerType == ExpanderTriggerType.Header &&
+               e.Pointer.Type == PointerType.Mouse &&
+               e.GetCurrentPoint(this).Properties.IsLeftButtonPressed &&
+               IsPointerInHeader(e);
+    }
 
-        var position = e.GetPosition(_headerDecorator);
-        var bounds   = new Rect(_headerDecorator.Bounds.Size);
-        return bounds.Contains(position);
+    private bool IsPointerInHeader(PointerEventArgs e)
+    {
+        return _headerDecorator is not null &&
+               new Rect(_headerDecorator.Bounds.Size).Contains(e.GetPosition(_headerDecorator));
     }
 
     private void ToggleExpanded()

@@ -14,6 +14,10 @@ internal static class ThemeGeneratorOptions
         optionsProvider.GlobalOptions.TryGetValue("build_property.AtomUIRegistrationPackageId", out var value) &&
         !string.IsNullOrWhiteSpace(value) ? value.Trim() : assemblyName;
 
+    internal static string? GetRootNamespace(AnalyzerConfigOptionsProvider optionsProvider) =>
+        optionsProvider.GlobalOptions.TryGetValue("build_property.RootNamespace", out var value) &&
+        !string.IsNullOrWhiteSpace(value) ? value.Trim() : null;
+
     internal static string GetControlCatalog(AnalyzerConfigOptionsProvider optionsProvider, string assemblyName)
     {
         return optionsProvider.GlobalOptions.TryGetValue(ControlCatalogProperty, out var value) &&

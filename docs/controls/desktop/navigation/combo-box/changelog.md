@@ -2,6 +2,124 @@
 
 本文档记录 ComboBox 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Theme
+  - 删除 Small 下选中内容与占位文本的上下 1px 外边距。它是为旧的 `FontHeightSM` 小号行高补足 2px 的补偿；小号输入框统一改用 `FontHeight` 行高后，保留它会让 ComboBox 比其他 Small 输入框高 2px。Ant 下 ComboBox Small 仍为 24px。
+
+## 2026-11-20
+
+- Shadcn 暗色下拉列表用独立的背景层级区分已选项与悬停候选项。
+
+## 2026-11-17
+
+- Theme / Token
+  - 列表项行高由主题直读全局 `ControlHeight` 改为 ComboBox 自有槽位 `ItemHeight`（Ant 默认仍为全局
+    `ControlHeight`，渲染不变）；`AtomUI.Themes.PrimeNG` 新增 `PrimeNGComboBoxTokens`（六个算法）取官方
+    `list.option`：行高 29（0.875rem 行高 × 1.5 + 上下各 0.25rem）、`ItemPadding` 横向 10，使下拉首项与面板顶边、
+    行间距与官方一致。
+
+## 2026-11-15
+
+- Motion
+  - 选中项文字（`Foreground`）与选中背景同时过渡（`MotionDurationMid`，仅 `IsMotionEnabled` 时），实色选中底色下不再先变色。
+
+## 2026-11-14
+
+- Fixed
+  - 直接添加 `ComboBoxItem` 子项且下拉项超过视口时，键盘候选向上走回已滚出的区域会跳到列表末尾，向下循环无法回到开头。默认虚拟化面板会隐藏它回收的 `ComboBoxItem` 自身容器，而 `ContainerFromIndex` 仍返回这些项，候选可用性判断把面板隐藏误当作不可见。现在 `IsVisible` 只对面板已实现（有索引）的容器生效，过滤仍按数据项判断。
+
+## 2026-11-11
+
+- Theme
+  - 可编辑模式的内部 `ComboBoxTextBox` 设置空 `FocusAdorner`：键盘焦点进入编辑框时不在 Select 外框内部叠画焦点框，焦点仍由外框 `:focus-within` 表达。
+- Behavior
+  - 清除按钮成为键盘停靠点（Ant Design Select 的清除元素是带本地化名称的按钮）：
+    - Tab 顺序为“输入（宿主或可编辑文本框）→ 清除按钮 → 离开”；
+    - Enter / Space 清除后，焦点回到宿主或文本框；键盘触发时保持键盘焦点可见状态。
+  - 外框 `PART_AddOnDecoratedBox` 与下拉箭头 `PART_OpenIndicatorButton` 不再是停靠点。此前不可编辑模式按一次 Tab 会落在看不见的外框上。
+  - 清除按钮只在悬停或焦点在控件内时显示，因此从控件后方 Shift+Tab 先回到输入，再按 Tab 到达清除按钮。
+  - 附加内容（`LeftAddOn` / `RightAddOn` / `ContentLeftAddOn` / `ContentRightAddOn`）中的可聚焦控件按视觉顺序参与 Tab，不再被困住：
+    - 此前可编辑模式下焦点落到附加内容的按钮后，`OnGotFocus` 又把它转回文本框，Tab 在“文本框 → 清除按钮 → 附加按钮 → 文本框”之间循环，离不开控件；不可编辑模式的顺序是“宿主 → 清除 → 左附加 → 右附加 → 内左 → 内右”。
+    - 现在可编辑模式为“左附加 → 内左 → 文本框 → 内右 → 清除 → 右附加 → 离开”。不可编辑模式的输入是宿主本身，排在其内部停靠点之前，为“宿主 → 左附加 → 内左 → 内右 → 清除 → 右附加”。
+  - 焦点在清除按钮或附加内容上时用 Alt+Down / F4 打开下拉，焦点移到输入（宿主或文本框）。此前当选中项无法获得焦点（例如禁用，或真实窗口中弹层打开时容器尚未布局）时焦点留在清除按钮上，随后 Enter / Space 先被按钮处理，值被清除而下拉仍开着。
+  - 钉住（`IsPopupPinnedOpen`）时每次选择只在查询变化时过滤一次。此前选择提交、文本回填和钉住重开各自重新过滤，一次选择对全部条目调用过滤器多达五遍。
+- Implementation
+  - `OnGotFocus` 在焦点落到清除按钮时不调用基类：Avalonia 可编辑 ComboBox 会把控件内的任何焦点转给输入文本框。
+  - 清除按钮在外框模板中排在文本框之前（DockPanel 顺序），外框设为 `TabNavigation=Local` 的分组（本身不作停靠点），文本框与清除按钮分别为 `TabIndex` 0 和 1。
+  - 可编辑模式下宿主 `IsTabStop=False`，避免 Shift+Tab 回到宿主后又被转回文本框。
+  - 关闭弹层时只在离场期间有被推迟的刷新、或过滤条件与已呈现的不同时才重新过滤，不再每次关闭都对全部条目调用一次过滤器。
+  - 同一判断（`RefreshStaleFilteredItemVisibility`）也用于选择提交结束、`Text` 回填和打开下拉；条目集合、过滤器及过滤值本身的变化仍直接刷新。
+  - 外框分组内的 `TabIndex`：内左附加 0、文本框 1、内右附加 2、清除按钮 3，两个内附加的 presenter 各自是 `TabNavigation=Local` 分组；外框为 `Local` 分组时，`AddOnDecoratedBoxTheme` 让左附加 presenter 成为最小 `TabIndex` 的分组、右附加为最大值的分组。
+  - `OnGotFocus` 对清除按钮及四个附加 presenter 内的焦点都不调用基类，也不转交文本框。
+- Tests
+  - `ComboBoxKeyboardNavigationTests` 新增：清除按钮的停靠点、名称与 Enter / Space 清除，两种模式的 Tab 顺序，以及无待应用查询时关闭不调用过滤器。
+  - `ComboBoxKeyboardNavigationTests` 新增两种模式下附加内容的 Tab / Shift+Tab 顺序（不困住焦点）。
+
+## 2026-11-10
+
+- Interaction
+  - 选中回填与候选过滤投影分离，离场期间保持当前列表自然高度及滚动；物理关闭后应用最新查询，正常输入、钉住和重开保持实时语义。
+  - 验证范围和临时测试处置见[过滤离场修复记录](../../../../superpowers/plans/2026-11-10-combobox-filter-close.md)。
+
+- Behavior
+  - 实现已有 `IsAllowClear` 的清除交互，覆盖选中值、null 项和未匹配编辑文本；保留双向绑定、过滤复位、输入焦点及弹层状态。
+- Theme
+  - 后缀区复用 InputClearIconButton，显隐由 ControlTheme 声明；保持原下拉 handle 可用。
+  - Small 规格的占位符与选中内容统一纵向 margin，清除后保持输入框高度。
+  - 清除与箭头组成独立操作组，内部使用 SpacingXXS；用户后缀和 Form 反馈保留 SpacingXS。
+  - 清除入口预留布局槽，Auto Width 在 hover / focus 时保持宽度与箭头位置；关闭清除时不占位。
+  - 主题为 `PlaceholderForeground` 提供 `ColorTextPlaceholder` 默认值，修复编辑态占位文字因画刷为空而不绘制的问题。#534
+  - 非编辑态占位符改为同样消费 `PlaceholderForeground`，不再以 `Opacity=0.3` 弱化；两种模式的占位颜色与 Select 家族一致，设置 `PlaceholderForeground` 同时作用于两种模式。
+- Semantic Part
+  - 增加 `clear` 与生成的 `ComboBoxClearStyle`，同步 Gallery 声明式预览与契约文档；既有部件 route 和类型不变。
+- Validation
+  - 根因、修复前后证据、验证范围及清理见[修复记录](../../../../superpowers/plans/2026-11-10-combobox-clear.md)。
+
+## 2026-11-08
+
+- 主题契约
+  - 主题改读 ComboBox 的有效 Global Token；`ComboBoxItem` 以自身 identity 读取 Global Token，候选行颜色与尺寸跟随 ComboBox Own Token；`ItemDisabledColor` 接入禁用候选行前景。见 [ComboBox Token](token.md) §7。
+  - 根 `BorderBrush` / `Background` 经输入帧 `HostBorderBrush` / `HostBackground` 投射，移除代码侧 LocalValue 中继。
+- Fix
+  - 占位文字改用 `PlaceholderForeground`（默认 `ColorTextPlaceholder`），替代 `Opacity="0.3"`；聚焦阴影不再被根裁剪。
+
+## 2026-11-05
+
+- 实现结构
+  - 编辑输入模板直接使用 Avalonia `TextPresenter`；保留文本、选区、密码、caret 和编辑绑定契约。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - ComboBox 自身通过 AddOwner 复用 Popup 的两项注册，不改变 AvaloniaComboBox 继承关系。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
+- Design
+  - 定义[统一候选空态模型](overview.md#41-候选与空态)：集合为空或有效过滤无可见匹配项时，根据空态开关显示反馈；过滤清理只恢复容器可见性，最终空态由候选刷新流程统一推导。
+  - 定义[空态 API](overview.md#31-空态-api)：`IsShowEmptyIndicator`、`EmptyIndicator`、`EmptyIndicatorTemplate`、`EmptyIndicatorPadding`，覆盖开关、默认与自定义内容、内容模板和内边距。
+  - 明确现有 `popup.empty` 外层节点、marker、route 和数量语义，以及候选行、弹层布局与交互契约的兼容边界；空态内边距复用 SharedToken `Padding`。
+- Behavior
+  - 空数据判定进入统一候选刷新流程；清空过滤、退出编辑态、集合清空或替换后均根据当前数据更新空态，空态开关不恢复被过滤的候选行。
+- Theme
+  - 在既有空态语义外框内声明自定义内容 presenter 与默认 Empty；通过模板绑定消费空态内容、内容模板与内边距，保持列表和空态互斥。
+- Gallery
+  - 增加默认空态、自定义内容、仅内容模板与关闭空态的示例；自定义空态外框使用 `ComboBoxPopupEmptyStyle` 声明式定制，更新四种语言的语义说明。
+- Docs
+  - 同步架构、实现、Semantic Part 与 Token 文档，公开 API 由源码和控件文档维护；Gallery 按现行规范只展示示例与 Semantic Parts。
+- Validation
+  - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
+
 ## 2026-10-20
 
 - Fixed

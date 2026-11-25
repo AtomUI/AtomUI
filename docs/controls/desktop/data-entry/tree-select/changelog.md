@@ -3,6 +3,57 @@
 本文档记录 TreeSelect 控件级设计、API、主题契约、Token 和实现结构的变化。
 它不替代仓库根目录 CHANGELOG.md，也不作为正式版本发布说明。
 
+## 2026-11-21
+
+- Token：`AbstractSelectInputToken` 新增 Own Token `InputFontSizeSM`（小号选择框字体，默认 `FontSize`，与 antd 一致），TreeSelect 的 Small 字号改读它。Ant Design / Shadcn 渲染不变；PrimeNG 取 `FontSizeSM`（PrimeUIX `form.field.sm.font.size`，12px），Small 占位文字和选中值与 Small LineEdit 同字号。
+
+## 2026-11-11
+
+- Behavior
+  - 新增键盘操作：焦点留在 TreeSelect，导航键转发给下拉树；`F4` / `Alt+↓↑` 切换下拉，↓ / ↑ / Enter 打开下拉，`Escape` 关闭；方向键只移动活动项，Enter / Space 提交，单选提交后关闭下拉。
+- Implementation
+  - 新增 `TreeSelect.KeyboardNavigation.cs`；下拉树设置 `Focusable=False` 与 `IsKeyboardMoveSelectionEnabled=False`，关闭浮层时清除活动项。
+- Docs
+  - 更新 `overview.md` 键盘行为与兼容性不变量，更新 `implementation.md` 源码结构、键盘路径、维护不变量与验证。
+- Tests
+  - 新增 `TreeSelectKeyboardNavigationTests`。
+- Fixed
+  - 候选树节点模板 `TreeSelectTreeViewItemTheme` 未把 `IsKeyboardActive` 投射到 header，键盘浏览时弹层没有活动项背景；现已投射并固定 header `Focusable=False`。
+  - 多选（含可勾选）标签前多出的 11 DIP 空白：空前缀 add-on 不再保留缩进与面板间距。
+- Theme
+  - 焦点样式对齐 Ant Design：`TreeSelect` 设置空 `FocusAdorner` 与 `ClipToBounds=False`；`Outlined` 聚焦时 frame 叠加 `InputActiveShadow`（Error / Warning 对应状态外发光），`Filled` 不叠加；嵌入式搜索框不再绘制内部方框。
+- Tests
+  - `TreeSelectKeyboardNavigationTests` 断言弹层活动项 header 带 `:keyboard-active`。
+- Fix
+  - 隧道阶段的键盘转发只接收 TreeSelect 自身的过滤输入框；附加区或项模板中的输入框保留自己的按键，按 Enter 不再提交活动节点并关闭下拉。
+
+## 2026-11-10
+
+- Theme：终端 Own 与实际 owner 对齐，共享计算不传播其他控件的覆盖；字段迁移与保留范围见 [Token 设计](token.md)。
+
+## 2026-11-08
+
+- Changed
+  - 主题改读 TreeSelect 的有效 Global Token；根 `BorderBrush` / `Background` 经输入帧投射，移除 LocalValue 中继；装饰盒主题删除与输入帧重复的状态样式。
+- Fix
+  - `MinPopupWidth` 此前被弹层框体的模板绑定遮蔽，现在作为 `EffectivePopupWidth` 的下限生效（见 [TreeSelect Token](token.md)）；聚焦阴影不再被根裁剪。
+
+## 2026-11-04
+
+- Changed
+  - 默认 OpenMotion/CloseMotion 改为按样式实例创建的直接主题值，移除默认值回传与几何绑定链；播放准备保留原方向、原点和覆盖优先级。定义不持有控件或运行资源。
+
+## 2026-11-03
+
+- Changed
+  - 从 AbstractSelect 继承 OpenMotion/CloseMotion，控制根弹层，不改变 TreeView 内容展开。
+  - 明确 Motion 纯定义、单向配置和旧宿主释放边界；实际 AXAML 与共享定义的可回收性作为交付门禁。实现与验证状态见共享 Motion 验证页。
+
+## 2026-11-02
+
+- Changed
+  - 明确 Select/Picker 对应的上下方 Slide、Mid 时长及实际 Popup 的主题接入责任。见[控件架构](overview.md)与共享动效契约；已完成对应默认规格接入。
+
 ## 2026-10-19
 
 - Behavior

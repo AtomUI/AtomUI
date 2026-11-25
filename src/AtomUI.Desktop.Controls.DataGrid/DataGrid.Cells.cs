@@ -3,7 +3,6 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using System.Diagnostics;
 using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
@@ -51,16 +50,4 @@ public partial class DataGrid
     
     #endregion
     
-    internal static DataGridCell? GetOwningCell(Control element)
-    {
-        Debug.Assert(element != null);
-        DataGridCell? cell   = element as DataGridCell;
-        Control?      target = element;
-        while (target != null && cell == null)
-        {
-            target = target.Parent as Control;
-            cell   = target as DataGridCell;
-        }
-        return cell;
-    }
 }

@@ -1,0 +1,16 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sample="https://atomui.net/samples/controls">
+
+    <ControlTheme x:Key="{x:Type sample:SampleBadge}" TargetType="{x:Type sample:SampleBadge}">
+        <Setter Property="Template">
+            <ControlTemplate TargetType="{x:Type sample:SampleBadge}">
+                <Border Name="PART_Surface"
+                        Background="{sample:SampleBadgeTokenResource BadgeBackground}"
+                        Width="{sample:SampleBadgeTokenResource BadgeSize}"
+                        Height="{sample:SampleBadgeTokenResource BadgeSize}" />
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+</ResourceDictionary>

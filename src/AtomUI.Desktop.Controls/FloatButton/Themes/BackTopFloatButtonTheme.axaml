@@ -39,22 +39,26 @@
                                     Background="{TemplateBinding Background}"
                                     CornerRadius="{TemplateBinding CornerRadius}"
                                     Cursor="{TemplateBinding Cursor}">
-                                <StackPanel Name="RootLayout">
+                                <DockPanel Name="RootLayout" LastChildFill="True">
                                     <atom:IconPresenter Name="IconPresenter" Icon="{TemplateBinding Icon}"
-                                                        Classes.semantic-icon="True"
+                                                        Classes.semantic-icon="True" DockPanel.Dock="Top"
                                                         IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                    <ContentPresenter Content="{TemplateBinding Content}"
+                                    <ContentPresenter Name="Description" Content="{TemplateBinding Content}"
                                                       Classes.semantic-content="True"
                                                       TextWrapping="Wrap"
                                                       HorizontalContentAlignment="Center"
                                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                                       IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                                </StackPanel>
+                                </DockPanel>
                             </Border>
+                            <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />
-                            <Canvas Name="BadgeLayout" />
+                            <Canvas Name="PART_BadgeLayout" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
@@ -96,24 +100,26 @@
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center" />
                             </Border>
+                            <Border Name="OutlineFrame" IsHitTestVisible="False" IsVisible="False"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}" />
                             <atomc:BackTopProgressRing Name="ProgressRing"
                                                         Progress="{TemplateBinding ScrollProgress}"
                                                         CornerRadius="{TemplateBinding CornerRadius}" />
-                            <Canvas Name="BadgeLayout" />
+                            <Canvas Name="PART_BadgeLayout" />
                     </Panel>
                 </ControlTemplate>
             </Setter>
         </Style>
         
-        <Setter Property="MotionDuration" Value="{atom:SharedTokenResource MotionDurationMid}" />
+        <Setter Property="MotionDuration" Value="{atom:BackTopFloatButtonTokenResource MotionDurationMid}" />
         <Setter Property="IsActive" Value="True" />
 
         <Style Selector="^ /template/ atomc|BackTopProgressRing#ProgressRing">
             <!-- 默认隐藏：由 IsShowProgress=True 的下述选择器置 True（后序样式覆盖先序） -->
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="StrokeThickness" Value="{atom:SharedTokenResource LineWidthBold}" />
-            <Setter Property="TrackBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
-            <Setter Property="IndicatorBrush" Value="{atom:SharedTokenResource ColorPrimary}" />
+            <Setter Property="ProgressRingTokenResourceKeys" Value="{x:Static atom:BackTopRingResources.ProgressRingTokenResourceKeys}" />
         </Style>
 
         <Style Selector="^[IsShowProgress=True] /template/ atomc|BackTopProgressRing#ProgressRing">

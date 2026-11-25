@@ -365,7 +365,7 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         topLevel.TemplateApplied += TopLevelOnTemplateApplied;
         TryInstallHostLayer(topLevel);
         _safeAreaMarginSubscription?.Dispose();
-        _safeAreaMarginSubscription = TopLevelMarginBinder.BindHostMargin(topLevel, margin => Margin = margin);
+        _safeAreaMarginSubscription = TopLevelMarginBinder.BindHostMargin(topLevel, margin => SetCurrentValue(MarginProperty, margin));
     }
 
     private void TryInstallHostLayer(TopLevel topLevel)

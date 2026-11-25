@@ -2,6 +2,7 @@ using System.Reactive.Disposables;
 using AtomUI.Controls.Primitives;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -194,6 +195,181 @@ public class CardBehaviorTests
         gridContent.ClearForTest(gridItem);
 
         disposeCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Skeleton_exists_only_while_loading()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width   = 320,
+            Header  = "Title",
+            Content = new TextBlock { Text = "Plain content" }
+        };
+
+        ShowInWindow(card, () =>
+        {
+            FindSkeletons(card).ShouldBeEmpty();
+
+            card.IsLoading = true;
+            Dispatcher.UIThread.RunJobs();
+
+            var skeleton = FindSkeletons(card).ShouldHaveSingleItem();
+            skeleton.IsLoading.ShouldBeTrue();
+            skeleton.IsActive.ShouldBeTrue();
+            skeleton.ParagraphRows.ShouldBe(4);
+            skeleton.IsShowTitle.ShouldBeFalse();
+            skeleton.HorizontalAlignment.ShouldBe(Avalonia.Layout.HorizontalAlignment.Stretch);
+            skeleton.VerticalAlignment.ShouldBe(Avalonia.Layout.VerticalAlignment.Stretch);
+            FindCardContentBorder(card).GetVisualDescendants().ShouldContain(skeleton);
+
+            card.IsLoading = false;
+            Dispatcher.UIThread.RunJobs();
+
+            FindSkeletons(card).ShouldBeEmpty();
+        });
+    }
+
+    [Fact]
+    public void Loading_toggle_restores_content()
+    {
+        var content = new TextBlock { Text = "Plain content" };
+        var card = new Desktop.Controls.Card
+        {
+            Width     = 320,
+            Header    = "Title",
+            Content   = content,
+            IsLoading = true
+        };
+
+        ShowInWindow(card, () =>
+        {
+            var presenter = FindContentPresenter(card);
+            presenter.IsVisible.ShouldBeFalse();
+            FindSkeletons(card).ShouldHaveSingleItem();
+
+            card.IsLoading = false;
+            Dispatcher.UIThread.RunJobs();
+            presenter.IsVisible.ShouldBeTrue();
+            content.IsEffectivelyVisible.ShouldBeTrue();
+            content.GetVisualAncestors().ShouldContain(presenter);
+            FindSkeletons(card).ShouldBeEmpty();
+
+            card.IsLoading = true;
+            Dispatcher.UIThread.RunJobs();
+            presenter.IsVisible.ShouldBeFalse();
+            FindSkeletons(card).ShouldHaveSingleItem();
+
+            card.IsLoading = false;
+            Dispatcher.UIThread.RunJobs();
+            presenter.IsVisible.ShouldBeTrue();
+            content.IsEffectivelyVisible.ShouldBeTrue();
+            FindSkeletons(card).ShouldBeEmpty();
+        });
+    }
+
+    [Fact]
+    public void Actions_sync_and_visibility()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width   = 320,
+            Header  = "Title",
+            Content = "Body"
+        };
+        var first  = new Desktop.Controls.CardActionButton();
+        var second = new Desktop.Controls.CardActionButton();
+        card.Actions.Add(first);
+
+        ShowInWindow(card, () =>
+        {
+            var panel = FindActionPanel(card);
+            panel.IsVisible.ShouldBeTrue();
+            first.GetVisualAncestors().ShouldContain(panel);
+
+            card.Actions.Add(second);
+            Dispatcher.UIThread.RunJobs();
+            second.GetVisualAncestors().ShouldContain(panel);
+
+            card.Actions.Remove(first);
+            card.Actions.Remove(second);
+            Dispatcher.UIThread.RunJobs();
+            panel.IsVisible.ShouldBeFalse();
+            first.GetVisualParent().ShouldBeNull();
+
+            card.Actions.Add(first);
+            Dispatcher.UIThread.RunJobs();
+            panel.IsVisible.ShouldBeTrue();
+            first.GetVisualAncestors().ShouldContain(panel);
+        });
+    }
+
+    [Fact]
+    public void Headerless_follows_header_and_extra()
+    {
+        var card = new Desktop.Controls.Card { Width = 320, Content = "Body" };
+
+        ShowInWindow(card, () =>
+        {
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeTrue();
+
+            card.Header = "Title";
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeFalse();
+
+            card.Header = null;
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeTrue();
+
+            card.Extra = "More";
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeFalse();
+
+            card.Extra = null;
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeTrue();
+
+            card.ExtraTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<object>((_, _) => new TextBlock());
+            card.Classes.Contains(Desktop.Controls.CardPseudoClass.Headerless).ShouldBeFalse();
+        });
+    }
+
+    [Fact]
+    public void Not_loading_card_has_no_skeleton_visuals()
+    {
+        var card = new Desktop.Controls.Card
+        {
+            Width   = 320,
+            Header  = "Title",
+            Content = new TextBlock { Text = "Plain content" }
+        };
+
+        ShowInWindow(card, () =>
+        {
+            card.GetVisualDescendants().OfType<AtomUI.Controls.AbstractSkeleton>().ShouldBeEmpty();
+            card.GetVisualDescendants().OfType<Panel>()
+                .Single(panel => panel.Name == "PART_LoadingHost")
+                .Children.ShouldHaveSingleItem().ShouldBeOfType<ContentPresenter>();
+            // Visual elements of a default card with a header and plain content: 16 before the skeleton became
+            // on demand (Skeleton, its root layout and placeholder host), 14 since.
+            card.GetVisualDescendants().Count().ShouldBeLessThanOrEqualTo(14);
+        });
+    }
+
+    private static List<Desktop.Controls.Skeleton> FindSkeletons(Desktop.Controls.Card card)
+    {
+        return card.GetVisualDescendants().OfType<Desktop.Controls.Skeleton>().ToList();
+    }
+
+    private static ContentPresenter FindContentPresenter(Desktop.Controls.Card card)
+    {
+        var host = card.GetVisualDescendants()
+                       .OfType<Panel>()
+                       .Single(panel => panel.Name == "PART_LoadingHost");
+        return host.Children.OfType<ContentPresenter>().Single();
+    }
+
+    private static TemplatedControl FindActionPanel(Desktop.Controls.Card card)
+    {
+        return card.GetVisualDescendants()
+                   .OfType<TemplatedControl>()
+                   .Single(control => control.Name == "PART_ActionPanel");
     }
 
     private static Border FindCardContentBorder(Desktop.Controls.Card card)

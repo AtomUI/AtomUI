@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
@@ -227,7 +228,8 @@ public abstract class Icon : PathIcon, ICustomHitTest
 
         if (IsLoaded)
         {
-            if (change.Property == LoadingAnimationProperty)
+            if (change.Property == LoadingAnimationProperty ||
+                change.Property == IsVisibleProperty)
             {
                 ConfigureLoadingAnimationVisibilityTracking();
             }
@@ -328,17 +330,36 @@ public abstract class Icon : PathIcon, ICustomHitTest
         rotationAnimation.InsertKeyFrame(0, 0, easing);
         rotationAnimation.InsertKeyFrame(1, FULL_ROTATION_RADIANS, easing);
         visual.StartAnimation(ROTATION_PROPERTY, rotationAnimation);
+        IsLoadingAnimationRunning = true;
     }
 
     private void StopLoadingAnimation()
     {
+        // Icons that never started the rotation keep the default composition state, so skip the
+        // composition update that would otherwise run for every static icon on load and detach.
+        if (!IsLoadingAnimationRunning)
+        {
+            return;
+        }
+
         var visual = ElementComposition.GetElementVisual(this);
         visual?.StopAnimation(ROTATION_PROPERTY);
         if (visual is not null)
         {
             visual.RotationAngle = 0;
         }
+        IsLoadingAnimationRunning = false;
     }
+
+    /// <summary>
+    /// Gets whether the composition rotation animation is currently started on this icon.
+    /// </summary>
+    internal bool IsLoadingAnimationRunning { get; private set; }
+
+    /// <summary>
+    /// Gets whether this icon currently subscribes to visibility changes of its visual chain.
+    /// </summary>
+    internal bool IsTrackingEffectiveVisibility => _effectiveVisibilitySubscriptions is not null;
 
     private void RestartLoadingAnimation()
     {
@@ -358,7 +379,13 @@ public abstract class Icon : PathIcon, ICustomHitTest
         _effectiveVisibilitySubscriptions?.Dispose();
         _effectiveVisibilitySubscriptions = null;
 
-        if (!this.IsAttachedToVisualTree() || !IsLoadingAnimationConfigured())
+        // The rotation can only start once loaded. While the icon itself is hidden no ancestor can make it
+        // visible, so the visual chain is watched only for a visible icon; OnPropertyChanged re-runs this
+        // method when the icon's own IsVisible changes, after Visual has refreshed IsEffectivelyVisible.
+        if (!IsLoaded ||
+            !IsVisible ||
+            !IsLoadingAnimationConfigured() ||
+            this.GetVisualParent() is not { } visualParent)
         {
             StopLoadingAnimation();
             return;
@@ -366,7 +393,7 @@ public abstract class Icon : PathIcon, ICustomHitTest
 
         var subscriptions = new CompositeDisposable();
         _effectiveVisibilitySubscriptions = subscriptions;
-        this.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscriptions);
+        visualParent.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscriptions);
     }
 
     private void HandleEffectiveVisibilityChanged(bool isEffectivelyVisible)
@@ -423,12 +450,6 @@ public abstract class Icon : PathIcon, ICustomHitTest
         base.OnUnloaded(e);
     }
 
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnAttachedToVisualTree(e);
-        ConfigureLoadingAnimationVisibilityTracking();
-    }
-
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _effectiveVisibilitySubscriptions?.Dispose();
@@ -441,19 +462,29 @@ public abstract class Icon : PathIcon, ICustomHitTest
     {
         base.Render(context);
         context.FillRectangle(Background ?? Brushes.Transparent, Bounds);
-        if (DrawingInstructions.Count == 0)
+        if (DrawingInstructions.Count > 0)
         {
-            return;
+            var       realSize             = DesiredSize.Deflate(Margin);
+            var       scale                = new Vector(realSize.Width / ViewBox.Width, realSize.Height / ViewBox.Height);
+            var       globalGeometryMatrix = CalculateGlobalGeometryMatrix();
+            using var transformState       = context.PushTransform(Matrix.CreateScale(scale));
+            foreach (var instruction in DrawingInstructions)
+            {
+                instruction.Draw(context, in globalGeometryMatrix, this);
+            }
         }
 
-        var       realSize             = DesiredSize.Deflate(Margin);
-        var       scale                = new Vector(realSize.Width / ViewBox.Width, realSize.Height / ViewBox.Height);
-        var       globalGeometryMatrix = CalculateGlobalGeometryMatrix();
-        using var transformState       = context.PushTransform(Matrix.CreateScale(scale));
-        foreach (var instruction in DrawingInstructions)
+        // Icon used to have a template Border bound to Background, which painted the local bounds above the
+        // glyph. Keep that output now that the template is gone; a fully transparent fill paints nothing.
+        if (Background is { } background && !IsFullyTransparent(background))
         {
-            instruction.Draw(context, in globalGeometryMatrix, this);
+            context.FillRectangle(background, new Rect(Bounds.Size));
         }
+    }
+
+    private static bool IsFullyTransparent(IBrush brush)
+    {
+        return MathUtils.IsZero(brush.Opacity) || brush is ISolidColorBrush { Color.A: 0 };
     }
 
     protected virtual Matrix CalculateGlobalGeometryMatrix()

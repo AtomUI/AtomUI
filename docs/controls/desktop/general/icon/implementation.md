@@ -81,6 +81,11 @@ Public API / ItemsSource / Command / Event
 稳定 template part 接入点：
 
 - 当前没有显式 template part；维护时仍需检查 ControlTheme key、资源 key 和继承模板契约。
+- `Icon` 的 ControlTheme 不设置 `Template`，`Icon` 自身没有视觉子节点。尺寸来自 `Width`/`Height`（默认由 Token 设置），
+  背景由 `Icon.Render` 绘制，并保持去掉模板前的输出：先按 `Bounds` 填充一次，图形之后再按自身局部矩形覆盖一次（原模板 `Border` 的效果，
+  非透明背景会盖住图形）。这一绘制顺序是既有视觉，性能改动不得改变；是否修正应作为独立的视觉变更评审。
+  命中测试由 `ICustomHitTest` 覆盖整个 Icon，指针事件的 Source 是 Icon 本身。
+  不要为 Icon 重新加入只复刻这些职责的模板节点：每个可见 Icon 都会为它支付模板实例化、TemplateBinding 和一次额外布局的成本。
 
 ## 6. 交互与事件处理
 
@@ -108,6 +113,11 @@ Icon 的交互事件应从输入源收敛到控件级语义事件：
 - 状态变化时避免创建不必要的视觉对象、订阅或动画对象。
 
 `LoadingAnimation=Spin/Pulse` 使用 Icon 对应 `CompositionVisual` 的无限旋转动画。Icon 只在已加载、动画已配置且有效可见时启动；自身或 Visual 祖先不可见时停止动画并把 rotation 复位，重新可见时按当前 duration 和 bounds 重建动画。可见性订阅与 Compositor target 必须在 unload 和 detach 时释放。
+
+可见性跟踪只在 Icon 已加载、自身 `IsVisible` 为 true 且配置了加载动画时建立，并且只订阅 Visual 祖先；Icon 自身的 `IsVisible` 变化由 `OnPropertyChanged` 重新配置。
+Avalonia 在 `OnPropertyChanged` 中先刷新子树的 `IsEffectivelyVisible`，再触发实例 `PropertyChanged`，因此这里读取到的有效可见性已经是新值。
+这样，模板中默认隐藏的加载图标（例如 Button 的 `PART_LoadingIcon`）在显示之前不会向祖先链挂订阅。
+从未启动过旋转的 Icon 不执行停止和复位，避免每个静态 Icon 在加载和 detach 时都触发一次 Composition 属性更新。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 

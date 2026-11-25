@@ -10,11 +10,21 @@ public class TreeSelectThemeContractTests
     public void TreeSelect_Multiple_Empty_Small_Uses_Small_Content_Padding()
     {
         var source = ReadRepoFile("src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectAddOnDecoratedBoxTheme.axaml");
+        var owner  = ReadRepoFile("src/AtomUI.Desktop.Controls/TreeSelect/Themes/TreeSelectTheme.axaml");
 
+        // The shared decorated box reads the Small single-mode padding through the SelectTag theme input,
+        // which the TreeSelect terminal maps from its own Token.
+        Regex.IsMatch(
+                owner,
+                """
+                <Style Selector="\^\[SizeType=Small\]">(?:(?!</Style>)[\s\S])*?<Setter Property="atom:SelectTag.SingleSelectionPadding" Value="\{atom:TreeSelectTokenResource SingleModePaddingSM\}" />
+                """,
+                RegexOptions.CultureInvariant)
+            .ShouldBeTrue("TreeSelect must choose its Small padding Token in the Small style.");
         Regex.IsMatch(
                 source,
                 """
-                <Style Selector="\^\[IsSelectionEmpty=True\]">[\s\S]*?<Style Selector="\^\[SizeType=Small\]">[\s\S]*?<Setter Property="Padding"\s+Value="\{atom:SelectTokenResource SingleModePaddingSM\}" />
+                <Style Selector="\^\[IsSelectionEmpty=True\]">[\s\S]*?<Style Selector="\^\[SizeType=Small\]">[\s\S]*?<Setter Property="Padding"\s+Value="\{CompiledBinding \$self\.\(atom:SelectTag\.SingleSelectionPadding\)\}" />
                 """,
                 RegexOptions.CultureInvariant)
             .ShouldBeTrue("empty multiple TreeSelect should use small select padding when SizeType is Small.");

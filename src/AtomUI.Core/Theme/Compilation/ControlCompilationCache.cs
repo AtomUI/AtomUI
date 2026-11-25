@@ -37,7 +37,7 @@ internal sealed class ControlCompilationCache : IDisposable
         GlobalCompilationCacheKey globalKey,
         ControlTokenDescriptor descriptor,
         NormalizedControlThemeConfig? controlConfig,
-        ThemeAppearance appearance,
+        ControlTokenRuleDescriptor? rule,
         Func<ControlThemeSnapshot> factory,
         long sourceRetainedBytes = 0)
     {
@@ -50,7 +50,7 @@ internal sealed class ControlCompilationCache : IDisposable
             globalKey,
             descriptor,
             controlConfig,
-            appearance);
+            rule);
         return _entries.GetOrCreateAsync(
                            key,
                            _ => ValueTask.FromResult(factory()),

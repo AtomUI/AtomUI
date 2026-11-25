@@ -10,13 +10,6 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets/**/*.*"/>
-        <AtomUIThemeDefinition Include="Assets/Themes/PolarGreen.theme.xml" />
-        <AtomUIThemeDefinition Include="Assets/Themes/SunsetOrange.theme.xml" />
-        <AtomUIThemeDefinition Include="Assets/Themes/GoldenPurple.theme.xml" />
-        <AtomUIThemeDefinition Include="Assets/Themes/Magenta.theme.xml" />
-        <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml" />
-        <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml.cs" />
-        <GallerySourceCodeDisplaySource Include="ShowCases/**/ViewModels/**/*.cs" />
         <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GallerySourceOriginalPath" />
     </ItemGroup>
 
@@ -29,6 +22,18 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign/AtomUI.DesignLanguages.AntDesign.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign/AtomUI.Desktop.Controls.Themes.AntDesign.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign/AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign/AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/PrimeNG/AtomUI.DesignLanguages.PrimeNG/AtomUI.DesignLanguages.PrimeNG.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG/AtomUI.Desktop.Controls.Themes.PrimeNG.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG/AtomUI.Desktop.Controls.ColorPicker.Themes.PrimeNG.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG/AtomUI.Desktop.Controls.DataGrid.Themes.PrimeNG.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/Shadcn/AtomUI.DesignLanguages.Shadcn/AtomUI.DesignLanguages.Shadcn.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn/AtomUI.Desktop.Controls.ColorPicker.Themes.Shadcn.csproj"/>
+        <ProjectReference Include="../../src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn/AtomUI.Desktop.Controls.DataGrid.Themes.Shadcn.csproj"/>
         <ProjectReference Include="../../src/AtomUI.Toolkits.GalleryBase/AtomUI.Toolkits.GalleryBase.csproj"/>
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls/AtomUI.Desktop.Controls.csproj"/>
         <ProjectReference Include="../../src/AtomUI.Desktop.Controls.ColorPicker/AtomUI.Desktop.Controls.ColorPicker.csproj"/>
@@ -52,6 +57,9 @@
     <Target Name="PrepareGallerySourceCodeDisplayAdditionalFiles"
             BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun;CoreCompile">
         <ItemGroup>
+            <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml" />
+            <GallerySourceCodeDisplaySource Include="ShowCases/**/*.axaml.cs" />
+            <GallerySourceCodeDisplaySource Include="ShowCases/**/ViewModels/**/*.cs" />
             <_GallerySourceCodeDisplayFile Include="@(GallerySourceCodeDisplaySource)">
                 <GallerySourceOriginalPath>%(FullPath)</GallerySourceOriginalPath>
                 <GallerySourceMirrorPath>$(IntermediateOutputPath)GallerySourceCodeDisplay/%(Identity).gallerysource</GallerySourceMirrorPath>

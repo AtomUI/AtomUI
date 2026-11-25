@@ -132,7 +132,7 @@ public class DescriptionsResponsiveLayoutTests
     }
 
     [Fact]
-    public void Vertical_Bordered_Default_Item_Separator_Applies_Border_Brush()
+    public void Vertical_Bordered_Default_Item_Separator_Is_A_Coloured_Line()
     {
         var descriptions = new AtomUI.Desktop.Controls.Descriptions
         {
@@ -145,8 +145,9 @@ public class DescriptionsResponsiveLayoutTests
         {
             var separator = FindVisualByName<PixelAlignedBorder>(descriptions, "Separator");
             separator.ShouldNotBeNull();
-            separator!.BorderBrush.ShouldNotBeNull();
-            separator.BorderThickness.ShouldBe(new Thickness(0, 1, 0, 0));
+            separator!.Background.ShouldNotBeNull();
+            separator.BorderThickness.ShouldBe(default);
+            separator.Height.ShouldBe(1);
         });
     }
 

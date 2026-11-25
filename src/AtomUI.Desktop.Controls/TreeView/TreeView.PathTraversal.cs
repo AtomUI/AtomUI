@@ -125,6 +125,57 @@ public partial class TreeView
         return treeViewItem.Value?.ToString() == segment;
     }
 
+    internal void ApplyInitialExpansion(TreeViewItem item)
+    {
+        if (IsLoaded || item.IsExpanded)
+        {
+            return;
+        }
+
+        var expand = IsDefaultExpandAll;
+        if (!expand && DefaultExpandedPaths is { Count: > 0 } paths)
+        {
+            foreach (var path in paths)
+            {
+                if (MatchesExpandedPathPrefix(item, path))
+                {
+                    expand = true;
+                    break;
+                }
+            }
+        }
+        if (expand)
+        {
+            item.SetCurrentValue(TreeViewItem.IsExpandedProperty, true);
+        }
+    }
+
+    private bool MatchesExpandedPathPrefix(TreeViewItem item, TreeNodePath path)
+    {
+        var index = item.Level;
+        if (index < 0 || index >= path.Length)
+        {
+            return false;
+        }
+
+        for (TreeViewItem? current = item; current is not null; current = current.Parent as TreeViewItem)
+        {
+            var segment = path.Segments[index];
+            // Keep the same first matching sibling as the loaded path traversal.
+            if (current.Parent is not ItemsControl owner ||
+                !IsPathSegmentMatched(current, segment) ||
+                !ReferenceEquals(FindPathSegmentItem(owner.Items, segment), current))
+            {
+                return false;
+            }
+            if (index-- == 0)
+            {
+                return ReferenceEquals(owner, this);
+            }
+        }
+        return false;
+    }
+
     private void EnsureTreeViewItemContainers(TreeViewItem treeViewItem)
     {
         if (treeViewItem.Presenter?.Panel != null)

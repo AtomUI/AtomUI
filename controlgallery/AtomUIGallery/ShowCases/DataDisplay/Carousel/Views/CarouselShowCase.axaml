@@ -108,7 +108,7 @@
                         <atom:CarouselPage Background="#B3001B">1</atom:CarouselPage>
                         <atom:CarouselPage Background="#255C99">2</atom:CarouselPage>
                         <atom:CarouselPage Background="#262626">3</atom:CarouselPage>
-                        <atom:CarouselPage Background="#CCAD8F">4</atom:CarouselPage>
+                        <atom:CarouselPage Background="#CCAD8F" Foreground="#262626">4</atom:CarouselPage>
                     </atom:Carousel>
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>

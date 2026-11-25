@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using AtomUI.Controls;
 using DateViewerControl = AtomUI.Desktop.Controls.DateViewer;
@@ -11,7 +12,7 @@ using AtomUI.Generated.AtomUIDesktopControls;
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
 /// <summary>Common interaction container; templates replace content, never selection ownership.</summary>
-internal class DateViewerCell : TemplatedControl
+internal partial class DateViewerCell : TemplatedControl
 {
     public static readonly DirectProperty<DateViewerCell, string> DisplayTextProperty =
         AvaloniaProperty.RegisterDirect<DateViewerCell, string>(nameof(DisplayText), cell => cell.DisplayText);
@@ -194,7 +195,16 @@ internal class DateViewerCell : TemplatedControl
             PseudoClasses.Set(":content", Presentation == DateViewerPresentation.Content);
             RaisePropertyChanged(EffectiveFullCellTemplateProperty, null, EffectiveFullCellTemplate);
         }
+
+        // The framework already inherits the actual theme variant to every element, so the cell exposes it as a
+        // pseudo-class without an extra inherited input: selectors cannot read the variant property directly.
+        if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
+        {
+            PseudoClasses.Set(DarkVariantPseudoClass, ThemeVariant.Dark.Equals(change.GetNewValue<ThemeVariant?>()));
+        }
     }
+
+    internal const string DarkVariantPseudoClass = ":dark-variant";
 
     internal bool IsNestedInput(object? source)
     {

@@ -86,6 +86,16 @@
         <source>Editable Cells</source>
       </segment>
     </unit>
+    <unit id="EditableRowsDescription">
+      <segment>
+        <source>Table with editable rows. Edit puts the whole row in edit and Save commits it at once.</source>
+      </segment>
+    </unit>
+    <unit id="EditableRowsTitle">
+      <segment>
+        <source>Editable Rows</source>
+      </segment>
+    </unit>
     <unit id="ExpandableRowDescription">
       <segment>
         <source>When there's too much information to show and the table can't display all at once.</source>
@@ -254,6 +264,16 @@
     <unit id="P2ContentSingle">
       <segment>
         <source>Single</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentIndicatorTrigger">
+      <segment>
+        <source>Select indicator</source>
+      </segment>
+    </unit>
+    <unit id="P2ContentRowTrigger">
+      <segment>
+        <source>Click row</source>
       </segment>
     </unit>
     <unit id="P2ContentSortAge">
@@ -723,7 +743,7 @@
     </unit>
     <unit id="SelectionDescription">
       <segment>
-        <source>Rows can be selectable by making first column as a selectable column. You can use rowSelection.type to set selection type. Default is checkbox.</source>
+        <source>Use SelectionMode to switch between multiple selection and single selection, and SelectTriggerType to choose what a click selects. With SelectIndicator, click a checkbox or radio button to select a row; clicking elsewhere in the row keeps the selection unchanged. With Row, clicking anywhere in a row selects it, and clicking a selected row again in multiple selection deselects it.</source>
       </segment>
     </unit>
     <unit id="SelectionTitle">

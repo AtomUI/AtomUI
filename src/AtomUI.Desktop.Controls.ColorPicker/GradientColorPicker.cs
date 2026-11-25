@@ -212,6 +212,7 @@ public partial class GradientColorPicker : AbstractColorPicker
                 }
             }
         }
+        HandleGradientActiveStopChanged(ActivatedStopIndex);
     }
 
     protected override void GenerateColorBlockBackground()
@@ -238,8 +239,9 @@ public partial class GradientColorPicker : AbstractColorPicker
     {
         // The runtime-created presenter is outside the owner's template selector chain.
         // Its independent Content subtree cannot receive these bindings from ControlTheme.
+        // Forward motion only as a host input; the View theme owns its default and the host-false gate.
         var presenter = new GradientColorPickerView();
-        presenter[!GradientColorPickerView.IsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
+        presenter[!AbstractColorPickerView.HostIsMotionEnabledProperty] = this[!IsMotionEnabledProperty];
         presenter[!GradientColorPickerView.IsClearEnabledProperty] = this[!IsClearEnabledProperty];
         presenter[!GradientColorPickerView.FormatProperty] = this[!FormatProperty];
         presenter[!GradientColorPickerView.IsAlphaEnabledProperty] = this[!IsAlphaEnabledProperty];
@@ -307,17 +309,9 @@ public partial class GradientColorPicker : AbstractColorPicker
         {
             for (var i = 0; i < _textPanel.Children.Count; i++)
             {
-                var textBlock = _textPanel.Children[i] as AvaloniaTextBlock;
-                if (textBlock != null)
+                if (_textPanel.Children[i] is AvaloniaTextBlock textBlock)
                 {
-                    if (i == index)
-                    {
-                        textBlock.Foreground = InactiveStopTextColor;
-                    }
-                    else
-                    {
-                        textBlock.Foreground = Foreground;
-                    }
+                    textBlock.Classes.Set("active-stop", i == index);
                 }
             }
         }

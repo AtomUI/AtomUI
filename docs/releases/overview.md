@@ -3,6 +3,36 @@
 本目录按版本维护公共 API 变化和迁移示例。正式发布摘要继续由仓库根目录的 `CHANGELOG.md` 与
 `CHANGELOG.zh-CN.md` 维护。
 
+## 6.3.0
+
+- [Migration guide](6.3.0-api-changes.md)
+- [迁移指南](6.3.0-api-changes.zh-CN.md)
+
+## 6.2.15
+
+- [API Change Examples](6.2.15-api-changes.md)
+- [API 变更示例](6.2.15-api-changes.zh-CN.md)
+
+## 6.2.14
+
+- [API Change Examples](6.2.14-api-changes.md)
+- [API 变更示例](6.2.14-api-changes.zh-CN.md)
+
+## 6.2.13
+
+- [API Change Examples](6.2.13-api-changes.md)
+- [API 变更示例](6.2.13-api-changes.zh-CN.md)
+
+## 6.2.12
+
+- [API Change Examples](6.2.12-api-changes.md)
+- [API 变更示例](6.2.12-api-changes.zh-CN.md)
+
+## 6.2.11
+
+- [API Change Examples](6.2.11-api-changes.md)
+- [API 变更示例](6.2.11-api-changes.zh-CN.md)
+
 ## 6.2.10
 
 - [API Change Examples](6.2.10-api-changes.md)

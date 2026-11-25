@@ -1,3 +1,4 @@
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Theme;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.DesignTokens;
@@ -22,7 +23,7 @@ public class ThemeStartupTests
     {
         HeadlessTestApp.Run(() =>
         {
-            var builder = new ThemeManagerBuilder();
+            var builder = new ThemeManagerBuilder().AddAntDesign();
             var descriptor = ThemeCompilerTests.CreateCompilerButtonDescriptor();
             var first = new TestControlThemesProvider("Tests.Direct");
             builder.AddControlPackage(new(first.Id, [descriptor], [], [], first, []));
@@ -32,7 +33,7 @@ public class ThemeStartupTests
             Should.Throw<InvalidOperationException>(() => builder.Build());
             var third = new TestControlThemesProvider("Tests.AfterFailure");
             Should.Throw<InvalidOperationException>(() => builder.AddControlPackage(new(third.Id, [], [], [], third, [])));
-            var independent = new ThemeManagerBuilder();
+            var independent = new ThemeManagerBuilder().AddAntDesign();
             independent.AddControlPackage(new(third.Id, [], [], [], third, []));
             using var manager = independent.Build();
         });
@@ -42,7 +43,7 @@ public class ThemeStartupTests
     public void Direct_Theme_Builder_Validates_Stale_Assets_Before_Build_And_Poisons_Failure()
     {
         var provider = new TestControlThemesProvider("Tests.Stale");
-        var builder = new ThemeManagerBuilder();
+        var builder = new ThemeManagerBuilder().AddAntDesign();
         var asset = new ControlThemeAssetDescriptor("Stale", new Uri("avares://Tests/Stale.axaml"), [], [], [], 1);
         builder.AddControlPackage(new ControlPackageRegistration(provider.Id, [], [asset], [], provider, []));
         Should.Throw<ThemeSchemaException>(() => builder.Build());
@@ -52,7 +53,7 @@ public class ThemeStartupTests
     [Fact]
     public void Direct_Theme_Builder_Freezes_Registration_After_Build()
     {
-        var builder = new ThemeManagerBuilder();
+        var builder = new ThemeManagerBuilder().AddAntDesign();
         builder.Build();
         var provider = new TestControlThemesProvider("Tests.Late");
         Should.Throw<InvalidOperationException>(() => builder.AddControlPackage(new(provider.Id, [], [], [], provider, [])));
@@ -91,7 +92,7 @@ public class ThemeStartupTests
                 [asset],
                 [semanticDescriptor],
                 provider, []);
-            var builder = new ThemeManagerBuilder();
+            var builder = new ThemeManagerBuilder().AddAntDesign();
 
             builder.AddControlPackage(package);
             var manager = builder.Build();
@@ -117,7 +118,7 @@ public class ThemeStartupTests
             provider.Id,
             [descriptor],
             [], [], provider, []);
-        var builder = new ThemeManagerBuilder();
+        var builder = new ThemeManagerBuilder().AddAntDesign();
 
         builder.AddControlPackage(package);
         var manager = builder.Build();
@@ -146,8 +147,8 @@ public class ThemeStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            var builder = new ThemeManagerBuilder();
-            builder.WithInitialTheme(IThemeManager.DEFAULT_THEME_ID);
+            var builder = new ThemeManagerBuilder().AddAntDesign();
+            builder.WithInitialTheme(AntDesignThemes.DaybreakBlue);
             var manager = builder.Build();
 
             manager.InitializeApplication(application);
@@ -163,8 +164,8 @@ public class ThemeStartupTests
             manager.Resources.Owner.ShouldBeSameAs(application);
             application.Styles.ShouldNotContain(manager);
             application.RequestedThemeVariant.ShouldBe(ThemeVariant.Light);
-            manager.AvailableThemes.ShouldContain(theme =>
-                theme.Id == IThemeManager.DEFAULT_THEME_ID && theme.IsDefault);
+            manager.Themes.ShouldContain(theme =>
+                theme.Id == AntDesignThemes.DaybreakBlue && theme.Language == "AntDesign");
             application.Styles.OfType<Style>().ShouldContain(style =>
                 style.Setters.OfType<Setter>().Any(setter =>
                     setter.Property == ThemeScope.ContextProperty &&
@@ -190,9 +191,9 @@ public class ThemeStartupTests
         await HeadlessTestApp.RunAsync(async () =>
         {
             var application = Application.Current!;
-            var builder = new ThemeManagerBuilder();
+            var builder = new ThemeManagerBuilder().AddAntDesign();
             builder.WithInitialTheme(
-                IThemeManager.DEFAULT_THEME_ID,
+                AntDesignThemes.DaybreakBlue,
                 new ThemeConfigBuilder()
                     .WithToken(nameof(DesignToken.BorderRadius), "12")
                     .Build());
@@ -201,7 +202,7 @@ public class ThemeStartupTests
 
             var result = await manager.ApplyThemeAsync(
                 new ThemeRequest(
-                    IThemeManager.DEFAULT_THEME_ID,
+                    AntDesignThemes.DaybreakBlue,
                     new ThemeConfigBuilder()
                         .WithToken(nameof(DesignToken.ColorPrimary), "#00b96b")
                         .Build(),
@@ -223,8 +224,8 @@ public class ThemeStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            ApplicationStartup.AttachWith(application, static _ => { });
-            var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
+            TestDesignLanguages.AttachWithAntDesign(application, static _ => { });
+            var manager = Application.Current!.GetThemeManager()
                                          .ShouldBeOfType<ThemeManager>();
             var provider = new ThemeConfigProvider
             {
@@ -252,8 +253,8 @@ public class ThemeStartupTests
         HeadlessTestApp.Run(() =>
         {
             var application = Application.Current!;
-            ApplicationStartup.AttachWith(application, static _ => { });
-            var manager = AvaloniaLocator.Current.GetService(typeof(ThemeManager))
+            TestDesignLanguages.AttachWithAntDesign(application, static _ => { });
+            var manager = Application.Current!.GetThemeManager()
                                          .ShouldBeOfType<ThemeManager>();
             var content = new Border();
             var window = new Window
@@ -265,6 +266,53 @@ public class ThemeStartupTests
                                     .ShouldBeSameAs(manager.RootContext.Snapshot);
             window.GetValue(ThemeScope.ContextProperty)
                   .ShouldBeSameAs(manager.RootContext);
+
+            window.Content = null;
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public void Disposed_Application_Scope_Does_Not_Resolve_A_Root_Context()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var application = Application.Current!;
+            TestDesignLanguages.AttachWithAntDesign(application, static _ => { });
+            ApplicationScopeRegistry.Get(application).ShouldNotBeNull().Dispose();
+            var content = new Border();
+            var window = new Window
+            {
+                Content = content
+            };
+
+            ThemeScope.ResolveContext(content).ShouldBeNull();
+            window.GetValue(ThemeScope.ContextProperty).ShouldBeNull();
+
+            window.Content = null;
+            window.Close();
+        });
+    }
+
+    [Fact]
+    public void Failed_Commit_Does_Not_Leave_Its_ThemeManager_Resolvable()
+    {
+        HeadlessTestApp.Run(() =>
+        {
+            var application = Application.Current!;
+            Should.Throw<InvalidOperationException>(() => TestDesignLanguages.AttachWithAntDesign(
+                    application,
+                    static builder => builder.AddInitializer(
+                        static _ => throw new InvalidOperationException("Initializer failure."))))
+                  .Message.ShouldBe("Initializer failure.");
+            var content = new Border();
+            var window = new Window
+            {
+                Content = content
+            };
+
+            ThemeScope.ResolveContext(content).ShouldBeNull();
+            window.GetValue(ThemeScope.ContextProperty).ShouldBeNull();
 
             window.Content = null;
             window.Close();

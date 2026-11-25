@@ -98,7 +98,7 @@ builder.UseDesktopControls().UseAcmeControls();
 
 ```csharp
 public static IAtomUIBuilder UseAcmeControls(this IAtomUIBuilder builder)
-    => GeneratedControlPackageRegistration.Register(
+    => PackageMetadata.Register(
         builder, static () => new AcmeControlThemesProvider());
 ```
 

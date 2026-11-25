@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
@@ -14,6 +15,16 @@ internal sealed class DateViewerHeader : TemplatedControl
         AvaloniaProperty.RegisterDirect<DateViewerHeader, DateViewerPanelKind>(nameof(ParentPanelKind), control => control.ParentPanelKind);
     public DateViewerHeaderContext? Context { get => GetValue(ContextProperty); set => SetValue(ContextProperty, value); }
     public IDataTemplate? HeaderTemplate { get => GetValue(HeaderTemplateProperty); set => SetValue(HeaderTemplateProperty, value); }
+
+    /// <summary>The weight of the period title, set by the owning viewer's theme from its Token.</summary>
+    internal static readonly StyledProperty<FontWeight> TitleFontWeightProperty =
+        AvaloniaProperty.Register<DateViewerHeader, FontWeight>(nameof(TitleFontWeight), FontWeight.Bold);
+
+    internal FontWeight TitleFontWeight
+    {
+        get => GetValue(TitleFontWeightProperty);
+        set => SetValue(TitleFontWeightProperty, value);
+    }
     public DateViewerPanelKind ParentPanelKind => Context?.PanelKind == DateViewerPanelKind.Date ? DateViewerPanelKind.Month : DateViewerPanelKind.Year;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

@@ -4,6 +4,8 @@ namespace AtomUIGallery.Localization;
 public enum DatePickerShowCaseLangResourceKind
 {
     BasicTitle,
+    PopupMotionTitle,
+    PopupMotionDescription,
     BasicDescription,
     SwitchableTitle,
     SwitchableDescription,

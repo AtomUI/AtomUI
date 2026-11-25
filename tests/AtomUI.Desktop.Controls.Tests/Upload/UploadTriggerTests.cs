@@ -1,3 +1,5 @@
+using AtomUI.Desktop.Controls.Tests.Theme;
+using AtomUI.Theme.DesignTokens;
 using Shouldly;
 using Xunit;
 
@@ -91,7 +93,7 @@ public class UploadTriggerTests
 
         rootTheme.ShouldContain("StackPanel Name=\"RootLayout\"");
         rootTheme.ShouldContain("Orientation=\"Vertical\"");
-        rootTheme.ShouldContain("Spacing=\"{atom:SharedTokenResource SpacingXS}\"");
+        rootTheme.ShouldContain("Spacing=\"{atom:UploadTokenResource SpacingXS}\"");
         rootTheme.ShouldNotContain("ControlTokenScope.Identity");
         rootTheme.ShouldNotContain("<DockPanel Name=\"RootLayout\"");
         rootTheme.ShouldNotContain("DockPanel.Dock=\"Top\"");
@@ -101,10 +103,19 @@ public class UploadTriggerTests
     public void UploadTextListItem_Indents_Uploading_Progress_From_File_Name_Start()
     {
         var theme = ReadRepoFile("src/AtomUI.Desktop.Controls/Upload/Themes/DefaultList/UploadTextListItemTheme.axaml");
-        var token = ReadRepoFile("src/AtomUI.Desktop.Controls/Upload/UploadToken.cs");
+        var global = new DesignToken
+        {
+            FontSize = 14,
+            UniformlyPaddingXS = 8,
+            UniformlyPaddingXXS = 4
+        };
+        var token = new UploadToken();
+        AntDesignTokenRuleRunner.Apply(token, global);
 
-        token.ShouldContain("TextListProgressPadding");
-        token.ShouldContain("EffectiveGlobalToken.FontSize + EffectiveGlobalToken.UniformlyPaddingXS");
+        token.TextListItemPadding.Left.ShouldBe(8);
+        token.TextListProgressPadding.Left.ShouldBe(
+            token.TextListItemPadding.Left + global.FontSize + token.TextListNamePadding.Left);
+        token.TextListProgressPadding.Right.ShouldBe(token.TextListItemPadding.Right);
         theme.ShouldContain("Border Name=\"ProgressBarFrame\"");
         theme.ShouldContain("Padding=\"{atom:UploadTokenResource TextListProgressPadding}\"");
         theme.ShouldContain("<atom:ProgressBar Name=\"ProgressBar\"");

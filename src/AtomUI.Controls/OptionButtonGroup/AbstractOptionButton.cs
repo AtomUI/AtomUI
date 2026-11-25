@@ -11,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
@@ -60,6 +61,13 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractOptionButton>();
 
+    /// <summary>
+    /// The fill of the selected cell in the outline style. The group paints it behind the selected option, together with
+    /// the selected border, so the separators and the border stay intact; <see langword="null"/> leaves the cell clear.
+    /// </summary>
+    internal static readonly StyledProperty<IBrush?> OutlineCheckedFillProperty =
+        AvaloniaProperty.Register<AbstractOptionButton, IBrush?>(nameof(OutlineCheckedFill));
+
     internal CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -82,6 +90,12 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
         set => SetValue(IsWaveSpiritEnabledProperty, value);
+    }
+
+    internal IBrush? OutlineCheckedFill
+    {
+        get => GetValue(OutlineCheckedFillProperty);
+        set => SetValue(OutlineCheckedFillProperty, value);
     }
 
     private OptionButtonPositionTrait _groupPositionTrait = OptionButtonPositionTrait.OnlyOne;
@@ -162,6 +176,11 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == OutlineCheckedFillProperty)
+        {
+            // The group paints the fill.
+            this.FindAncestorOfType<AbstractOptionButtonGroup>()?.InvalidateVisual();
+        }
         if (change.Property == IsPointerOverProperty ||
             change.Property == IsPressedProperty ||
             change.Property == IsCheckedProperty)

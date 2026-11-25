@@ -32,7 +32,7 @@
                                 <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
                                 <atom:Separator />
                                 <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
-                                <atom:Separator Name="SeparatorSemanticOwner"
+                                <atom:Separator x:Name="SeparatorSemanticOwner"
                                                 Title="{gallery:SeparatorShowCaseLangResource P2TitleSolid}" />
                                 <atom:TextBlock TextWrapping="Wrap" Text="{gallery:SeparatorShowCaseLangResource P2TextLoremIpsumDolorSitAmetConsecteturAdipiscingElit}" />
                                 <atom:Separator Title="{gallery:SeparatorShowCaseLangResource P2TitleDotted}"

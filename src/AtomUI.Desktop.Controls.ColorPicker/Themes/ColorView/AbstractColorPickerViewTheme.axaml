@@ -6,33 +6,39 @@
     TargetType="atom:AbstractColorPickerView"
     x:ClassModifier="internal">
 
+    <ControlTheme.Resources>
+        <atom:BorderThicknessFilterConverter x:Key="ColorPickerSeparatorBorderConverter" Top="False" Right="False" Bottom="False" />
+    </ControlTheme.Resources>
     <Style Selector="^:is(atom|AbstractColorPickerView)">
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="IsMotionEnabled" Value="{atom:SharedTokenResource EnableMotion}" />
-        <Setter Property="Padding" Value="{atom:SharedTokenResource PaddingXXS}" />
+        <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />
+        <Setter Property="Padding" Value="{atom:OwnerTokenResource PaddingXXS}" />
+        <Style Selector="^[HostIsMotionEnabled=False]">
+            <Setter Property="IsMotionEnabled" Value="False" />
+        </Style>
         <Style Selector="^ /template/ atom|GradientColorSlider#PART_GradientColorSlider">
             <Setter Property="IsVisible" Value="False"/>
         </Style>
         <Style Selector="^ /template/ atom|ColorSpectrum#ColorSpectrum">
             <Setter Property="MinHeight"
-                    Value="{atom:ColorPickerTokenResource ColorSpectrumHeight}" />
-            <Setter Property="MinWidth" Value="{atom:ColorPickerTokenResource ColorPickerWidth}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumHeight)}" />
+            <Setter Property="MinWidth" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SpectrumMinWidth)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|ColorBlock#ColorPreview">
             <Setter Property="Size"
-                    Value="{atom:ColorPickerTokenResource ColorPickerPreviewSize}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.PreviewSize)}" />
         </Style>
 
         <Style Selector="^ /template/ StackPanel#ColorPickerContainer">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingSM}" />
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingSM}" />
         </Style>
 
         <Style Selector="^ /template/ Panel#SliderContainer">
             <Setter Property="Margin"
-                    Value="{atom:ColorPickerTokenResource SliderContainerMargin}" />
+                    Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SliderContainerMargin)}" />
         </Style>
 
         <Style Selector="^[IsAlphaEffectiveVisible=False]">
@@ -42,12 +48,12 @@
         </Style>
         
         <Style Selector="^ /template/ atom|PixelAlignedBorder#Separator">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}"/>
-            <Setter Property="BorderThickness" Value="1,0,0,0"/>
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}"/>
+            <Setter Property="BorderThickness" Value="{CompiledBinding $self.(atom:ColorPickerAttachedProperties.SeparatorThickness), Converter={StaticResource ColorPickerSeparatorBorderConverter}}" />
         </Style>
         
         <Style Selector="^ /template/ StackPanel#PART_LayoutRoot">
-            <Setter Property="Spacing" Value="{atom:SharedTokenResource SpacingXS}"/>
+            <Setter Property="Spacing" Value="{atom:OwnerTokenResource SpacingXS}"/>
         </Style>
     </Style>
 </ControlTheme>

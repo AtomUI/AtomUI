@@ -28,7 +28,7 @@
                             Grid.Row="0"
                             Grid.Column="0"
                             Grid.RowSpan="3"
-                            atom:DataGridFrozenGrid.IsFrozen="True" 
+                            atom:DataGridFrozenGrid.IsFrozen="True"
                             Background="{TemplateBinding Background}"
                             SizeType="{TemplateBinding SizeType}"
                             />
@@ -50,6 +50,24 @@
                             HorizontalAlignment="Stretch"
                             Grid.Row="2"
                             Grid.Column="1" />
+                        <Rectangle
+                            Name="{x:Static atom:DataGridRowThemeConstants.DropBeforeIndicatorPart}"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Top"
+                            IsHitTestVisible="False"
+                            IsVisible="False" />
+                        <Rectangle
+                            Name="{x:Static atom:DataGridRowThemeConstants.DropAfterIndicatorPart}"
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Bottom"
+                            IsHitTestVisible="False"
+                            IsVisible="False" />
                     </atom:DataGridFrozenGrid>
                 </Border>
             </ControlTemplate>
@@ -59,27 +77,46 @@
         <Style Selector="^ /template/ Rectangle#PART_BottomGridLine">
             <Setter Property="Fill" Value="{atom:DataGridTokenResource TableBorderColor}" />
         </Style>
-        
+
+        <Style Selector="^ /template/ Rectangle#PART_DropBeforeIndicator, ^ /template/ Rectangle#PART_DropAfterIndicator">
+            <Setter Property="Fill" Value="{atom:DataGridTokenResource ColorPrimary}" />
+            <Setter Property="Height" Value="{atom:DataGridTokenResource LineWidthBold}" />
+        </Style>
+        <Style Selector="^[DropPosition=Before] /template/ Rectangle#PART_DropBeforeIndicator">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^[DropPosition=After] /template/ Rectangle#PART_DropAfterIndicator">
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+
         <Style Selector="^[IsDragging=True]">
+            <!-- layout: fixed relative ordering for frozen columns and dragging overlays. -->
             <Setter Property="ZIndex" Value="1000" />
             <Setter Property="Background"
                     Value="{atom:DataGridTokenResource TableRowHoverBg}" />
         </Style>
-        
+
         <Style Selector="^[IsDragging=False]">
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableBg}" />
 
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
-                    <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" Duration="{atom:SharedTokenResourceValue Kind=MotionDurationMid}" />
-                    </Transitions>
+                    <atom:TokenTransitions>
+                        <Transitions>
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <!-- The selected row's text (RowSelectedColor) moves with its background. -->
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        </Transitions>
+                    </atom:TokenTransitions>
                 </Setter>
             </Style>
 
             <Style Selector="^[IsSelected=True]">
                 <Setter Property="Background"
                         Value="{atom:DataGridTokenResource TableSelectedRowBg}" />
+                <!-- The selected row's text (RowSelectedColor, ControlItemColorActive by default); cells inherit it. -->
+                <Setter Property="Foreground"
+                        Value="{atom:DataGridTokenResource RowSelectedColor}" />
                 <Style Selector="^:row-hover">
                     <Setter Property="Background"
                             Value="{atom:DataGridTokenResource TableSelectedRowHoverBg}" />
@@ -92,8 +129,13 @@
                             Value="{atom:DataGridTokenResource TableRowHoverBg}" />
                 </Style>
             </Style>
+
+            <Style Selector="^[DropPosition=Before], ^[DropPosition=After]">
+                <Setter Property="Background"
+                        Value="{atom:DataGridTokenResource TableSelectedRowBg}" />
+            </Style>
         </Style>
-        
+
         <Style Selector="^ /template/ Border#DetailsPresenterFrame">
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableExpandedRowBg}" />
         </Style>

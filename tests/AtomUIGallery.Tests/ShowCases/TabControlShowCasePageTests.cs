@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using AtomUI.Theme.Resources;
 using AtomUI.Controls.Primitives;
 using AtomUI.Toolkits.GalleryBase.Controls;
 using AtomUIGallery.ShowCases.TabControl;
@@ -157,28 +158,31 @@ public class TabControlShowCasePageTests
         semanticSource.ShouldContain("Value=\"16\"");
         semanticSource.ShouldContain("Value=\"6,10\"");
         semanticSource.ShouldContain("Property=\"Background\"");
-        semanticSource.ShouldContain("Value=\"#CCE6F7FF\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorInfoBg}\"");
         semanticSource.ShouldContain("Property=\"FontWeight\"");
         semanticSource.ShouldContain("Value=\"Bold\"");
         semanticSource.ShouldContain("Property=\"Foreground\"");
-        semanticSource.ShouldContain("Value=\"#1890FF\"");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorText}\"");
         semanticSource.ShouldContain("TabStripPlacement=\"Left\"");
-        semanticSource.ShouldContain("Initialized=\"HandleSemanticStyleDemoTabControlInitialized\"");
+        semanticSource.ShouldNotContain("Initialized=");
+        semanticSource.ShouldContain("TabControlTokenKind.InkBarThickness");
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorError}\"");
         semanticSource.ShouldContain("BorderThickness=\"2\"");
         semanticSource.ShouldNotContain("<atom:PixelAlignedBorder ");
         CountOccurrences(semanticSource, "BorderDashArray=\"4,2\"").ShouldBe(2);
-        semanticSource.ShouldContain("BorderBrush=\"#E0000000\"");
-        semanticSource.ShouldContain("Background=\"#CCFAFAFA\"");
-        semanticSource.ShouldContain("BorderBrush=\"#D9D9D9\"");
+        semanticSource.ShouldContain("BorderBrush=\"{atom:SharedTokenResource ColorTextSecondary}\"");
+        semanticSource.ShouldContain("Background=\"{atom:SharedTokenResource ColorBgElevated}\"");
+        semanticSource.ShouldContain("BorderBrush=\"{atom:SharedTokenResource ColorBorder}\"");
         semanticSource.ShouldContain("Padding=\"16\"");
         CountOccurrences(semanticSource, "<atom:TabControlContentStyle ").ShouldBe(1);
         CountOccurrences(semanticSource, "<atom:TabControlItemStyle ").ShouldBe(1);
         CountOccurrences(semanticSource, "<atom:TabItemLabelStyle ").ShouldBe(1);
         CountOccurrences(semanticSource, "<atom:TabControlHeaderStyle ").ShouldBe(1);
-        semanticSource.ShouldContain("Value=\"#80F5F5F5\"");
+        CountOccurrences(semanticSource, "<atom:TabControlIndicatorStyle ").ShouldBe(1);
+        semanticSource.ShouldContain("Value=\"{atom:SharedTokenResource ColorFillAlter}\"");
         CountOccurrences(semanticSource, "x:SetterTargetType=\"atom:TabItem\"").ShouldBe(1);
         CountOccurrences(semanticSource, "x:SetterTargetType=\"ContentPresenter\"").ShouldBe(2);
-        CountOccurrences(semanticSource, "x:SetterTargetType=\"Border\"").ShouldBe(1);
+        CountOccurrences(semanticSource, "x:SetterTargetType=\"Border\"").ShouldBe(2);
         CountOccurrences(semanticSource, "<atom:TabControl ").ShouldBe(1);
         CountOccurrences(semanticSource, "<atom:CardTabControl ").ShouldBe(1);
         semanticSource.ShouldNotContain("Selector=\"atom|CardTabControl.semantic-style-demo\"");
@@ -219,11 +223,12 @@ public class TabControlShowCasePageTests
 
             var lineDemo = demoControls.OfType<AtomUITabControl>().Single();
             var cardDemo = demoControls.OfType<AtomUICardTabControl>().Single();
+            var tokens = ControlTokenAccessor.Capture(lineDemo);
 
             var lineFrame = lineDemo.GetVisualChildren().OfType<PixelAlignedBorder>()
                                     .Single(static candidate => candidate.Name == "Frame");
             lineFrame.BorderThickness.ShouldBe(new Thickness(2));
-            AssertSolidColor(lineFrame.BorderBrush, "#E0000000");
+            AssertSolidColor(lineFrame.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorTextSecondary));
             lineFrame.StrokeDashArray.ShouldNotBeNull().Count.ShouldBe(2);
             lineFrame.StrokeDashArray[0].ShouldBe(4d);
             lineFrame.StrokeDashArray[1].ShouldBe(2d);
@@ -231,12 +236,12 @@ public class TabControlShowCasePageTests
 
             var lineHeader = lineDemo.GetVisualDescendants().OfType<Border>()
                                      .Single(static candidate => candidate.Classes.Contains("semantic-header"));
-            AssertSolidColor(lineHeader.Background, "#80F5F5F5");
+            AssertSolidColor(lineHeader.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorFillAlter));
 
             var cardFrame = cardDemo.GetVisualChildren().OfType<PixelAlignedBorder>()
                                     .Single(static candidate => candidate.Name == "Frame");
-            AssertSolidColor(cardFrame.Background, "#CCFAFAFA");
-            AssertSolidColor(cardFrame.BorderBrush, "#D9D9D9");
+            AssertSolidColor(cardFrame.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorBgElevated));
+            AssertSolidColor(cardFrame.BorderBrush, tokens.GetGlobal<Color>(SharedTokenKind.ColorBorder));
             cardFrame.BorderThickness.ShouldBe(new Thickness(2));
             cardFrame.StrokeDashArray.ShouldNotBeNull().Count.ShouldBe(2);
             cardFrame.StrokeDashArray[0].ShouldBe(4d);
@@ -248,7 +253,7 @@ public class TabControlShowCasePageTests
                                            .OfType<ContentPresenter>()
                                            .Single(static candidate => candidate.Classes.Contains("semantic-content"));
             contentPresenter.Padding.ShouldBe(new Thickness(16));
-            AssertSolidColor(contentPresenter.Background, "#CCE6F7FF");
+            AssertSolidColor(contentPresenter.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorInfoBg));
 
             var lineItems = lineDemo.GetVisualDescendants()
                                     .OfType<AtomUITabItem>()
@@ -265,14 +270,14 @@ public class TabControlShowCasePageTests
                             label =>
                             {
                                 label.FontWeight.ShouldBe(FontWeight.Bold);
-                                AssertSolidColor(label.Foreground, "#1890FF");
+                                AssertSolidColor(label.Foreground, tokens.GetGlobal<Color>(SharedTokenKind.ColorText));
                             });
             }
 
             var indicator = lineDemo.GetVisualDescendants()
                                     .OfType<Border>()
                                     .Single(static candidate => candidate.Name == "PART_SelectedItemIndicator");
-            AssertSolidColor(indicator.Background, "#4DFF4D4F");
+            AssertSolidColor(indicator.Background, tokens.GetGlobal<Color>(SharedTokenKind.ColorError));
             indicator.Height.ShouldBe(4d);
 
             var cardItems = cardDemo.GetVisualDescendants()
@@ -283,11 +288,11 @@ public class TabControlShowCasePageTests
         });
     }
 
-    private static void AssertSolidColor(IBrush? actual, string expected)
+    private static void AssertSolidColor(IBrush? actual, Color expected)
     {
         actual.ShouldNotBeNull()
               .ShouldBeAssignableTo<ISolidColorBrush>()
-              .Color.ShouldBe(Color.Parse(expected));
+              .Color.ShouldBe(expected);
     }
 
     private static string ExtractTabControlExampleItems(string source)

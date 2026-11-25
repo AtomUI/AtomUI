@@ -40,7 +40,7 @@ worker 的 Avalonia 托管依赖随工具资产白名单发布，不进入应用
 | `Common/Localization/` | 与 Generator 共用的 XLIFF、语言包和中立诊断模型 |
 | `Common/SourceGeneration/` | 构建期代码身份与命名等中立辅助逻辑 |
 | `Backends/ILLink8/` | 在真实 ILLink8 Mark 闭包中选择片段，Sweep 前物化选中调用 |
-| `Backends/ILLink10/` | Browser TypeMap 物化及 net8-record 到官方 TypeMap 的分析前桥接 |
+| `Backends/ILLink10/` | Mono（Browser/iOS/Android）TypeMap 物化及 net8-record 到官方 TypeMap 的分析前桥接 |
 | `Backends/ILC8/` | 定版 ILC8 条件依赖适配、原生输出证明、维护者构建配方与专项入口 |
 
 ## 正式文档导航
@@ -51,7 +51,7 @@ worker 的 Avalonia 托管依赖随工具资产白名单发布，不进入应用
 | [按目标框架选择注册后端](framework-routing.md) | net8/现代框架分流、实际能力门禁及独立的旧包 ABI 桥接 |
 | [构建、交付与验证](build-and-verification.md) | Tasks/ILLink/ILC 构建配置、构建命令、输出隔离、工具准备时序、维护入口与验证要求 |
 | [构建与打包架构](../../architecture/foundations/build-and-packaging.md) | 跨项目 Repository/NuGet 接线、唯一资产白名单和运行时隔离 |
-| [ILLink10 后端详解](../typemap-linker/overview.md) | Browser 标记后物化、工具身份和回执 |
+| [ILLink10 后端详解](../typemap-linker/overview.md) | Mono 标记后物化、工具身份和回执 |
 | [.NET 8 条件后端](../../architecture/foundations/aot-net8-conditional-backends.md) | ILLink8/ILC8 机制、SDK 接线与现行支持范围 |
 | [条件注册协议](../../reference/aot/conditional-registration-contract.md) | ConditionalRecord ABI、输入快照和输出协议 |
 | [本地化构建](../../architecture/systems/localization/generation-and-build.md) | XLIFF、静态语言包和 Generator/Tasks 的语义分工 |

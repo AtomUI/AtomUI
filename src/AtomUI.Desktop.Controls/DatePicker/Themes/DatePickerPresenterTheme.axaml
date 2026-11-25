@@ -36,6 +36,8 @@
                         <atom:Button
                             Name="PART_TodayButton"
                             ButtonType="Link"
+                            Color="Primary"
+                            Variant="Link"
                             HorizontalAlignment="Left"
                             SizeType="Small"
                             Content="{atom:DatePickerLangResource Today}" />
@@ -65,17 +67,17 @@
     </Setter>
 
     <Style Selector="^:is(atom|DatePickerPresenter)">
-        <Setter Property="BorderThickness" Value="{atom:SharedTokenResource BorderThickness}" />
+        <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
         <Style Selector="^ /template/ atom|PixelAlignedBorder#ButtonsFrame">
-            <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorderSecondary}" />
+            <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorderSecondary}" />
         </Style>
 
         <Style Selector="^ /template/ Panel#ButtonsLayout">
-            <Setter Property="Margin" Value="{atom:DatePickerTokenResource ButtonsPanelMargin}" />
+            <Setter Property="Margin" Value="{CompiledBinding $self.(atom:DatePickerPresenter.ButtonsPanelMargin)}" />
         </Style>
 
         <Style Selector="^ /template/ atom|TimeView#PART_TimeView">
-            <Setter Property="Padding" Value="{atom:DatePickerTokenResource PanelContentPadding}" />
+            <Setter Property="Padding" Value="{CompiledBinding $self.(atom:DatePickerPresenter.PanelContentPadding)}" />
         </Style>
     </Style>
 

@@ -2,6 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
+    xmlns:themes="using:AtomUI.Desktop.Controls.Themes"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type EmbeddableControlRoot}" TargetType="EmbeddableControlRoot">
         <Setter Property="Template">
@@ -20,14 +21,16 @@
             </ControlTemplate>
         </Setter>
         
-        <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
-        <Setter Property="TransparencyBackgroundFallback" Value="{atom:SharedTokenResource ColorBgContainer}" />
+        <Setter Property="Background" Value="{atom:OwnerTokenResource ColorBgContainer}" />
+        <Setter Property="TransparencyBackgroundFallback" Value="{atom:OwnerTokenResource ColorBgContainer}" />
         <Setter Property="TopLevel.SystemBarColor">
-            <SolidColorBrush Color="{atom:SharedTokenResource ColorBgContainer}" />
+            <MultiBinding Converter="{x:Static themes:EmbeddingThemeConstants.SystemBarBrushConverter}">
+                <atom:OwnerTokenResource Kind="ColorBgContainer" />
+            </MultiBinding>
         </Setter>
-        <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorText}" />
-        <Setter Property="FontSize" Value="{atom:SharedTokenResource FontSize}" />
-        <Setter Property="FontFamily" Value="{atom:SharedTokenResource FontFamily}" />
+        <Setter Property="Foreground" Value="{atom:OwnerTokenResource ColorText}" />
+        <Setter Property="FontSize" Value="{atom:OwnerTokenResource FontSize}" />
+        <Setter Property="FontFamily" Value="{atom:OwnerTokenResource FontFamily}" />
         
     </ControlTheme>
 </ResourceDictionary>

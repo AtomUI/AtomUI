@@ -39,6 +39,29 @@ DatePicker 提供单值日期时间输入，RangeDatePicker 提供范围日期�
 内部 Calendar、CalendarItem、Presenter、HeaderBackground 与指示器不是用户日期 API。
 Picker owner 发布绑定、Form、部分/最终确认，不把 DateViewer.Selected 机械转发成提交。
 
+### 打开与关闭动效配置
+
+InfoPickerInput 声明 OpenMotion/CloseMotion；DatePicker 直接继承，RangeDatePicker 经 RangeInfoPickerInput 继承，不重复注册。
+
+配置类型均为 `AbstractMotion?`，通过 AddOwner 复用 Popup 的现有属性注册，不启用逻辑树自动继承。未配置时采用本组件主题默认；显式 `null` 禁用对应方向，ClearValue 恢复主题默认，Style/绑定/本地值遵循正常优先级。
+
+实例配置仅引用纯定义对象，例如：
+
+```xml
+<atom:DatePicker>
+    <atom:DatePicker.OpenMotion>
+        <atom:FadeInMotion />
+    </atom:DatePicker.OpenMotion>
+    <atom:DatePicker.CloseMotion>
+        <atom:FadeOutMotion />
+    </atom:DatePicker.CloseMotion>
+</atom:DatePicker>
+```
+
+Motion 不持有 DatePicker/Popup 的反向引用；共享定义仍存活时，页面与旧弹层必须可回收。
+
+配置归属、继承边界与内存门禁见[共享弹层契约](../../../../architecture/systems/motion/popup-motion.md)；设计与源码/Gallery 的符合程度由[验证状态](../../../../architecture/systems/motion/verification.md#弹层组件动效接入状态)单独维护。
+
 ## 4. 行为与状态模型
 
 输入 owner 拥有受控提交值，编辑会话拥有打开期间候选日期时间与确认进度。
@@ -53,7 +76,7 @@ Hover 只预览活动输入文本，不污染端点。
 | 时间范围 | 保留有效显式确认、活动端点时间和单日期面板布局。 |
 | 外部越界 | 不改写输入值，面板不高亮无效值，不能确认提交该值。 |
 | 部分范围 | 端点存在、端点确认和范围完成分别建模。 |
-| 关闭 | 范围的普通、Escape、light-dismiss 与生命周期关闭丢弃未确认候选和 Hover 文本，保留已确认端点；显式 Clear 才清空范围提交值。单值沿用原关闭策略。 |
+| 关闭 | 范围的普通、Escape、light-dismiss 与生命周期关闭丢弃未确认候选和 Hover 文本，保留已确认端点；显式 Clear 才清空范围提交值。单值的 Escape 回退到提交值，生命周期关闭（脱离逻辑树/视觉树、更换模板）丢弃键入草稿、不回写提交值，其余关闭沿用原策略。 |
 
 RangeDatePicker 的范围编辑使用端点轮转状态机。每次用户成功设置当前活动端点后，活动端必须自动转移到另一端；
 输入焦点、下划线、Popup 箭头、日期面板 active part 和后续 Hover 预览必须同步到新的活动端。
@@ -61,6 +84,20 @@ RangeDatePicker 的范围编辑使用端点轮转状态机。每次用户成功�
 设置一端后继续要求用户设置另一端。Hover 预览由“固定端 + 当前 hover 端”推导，按日期顺序更新两侧输入文本和范围高亮，
 但不写回提交值；最终确认同样只按日期顺序归一显示与提交，等日不同时间保持各端时间值。
 需要确认的范围中，日期或时间选择只更新活动候选；每次 Confirm 只确认当前端并切换到另一端。关闭弹层时输入文本立即恢复为已确认值，重开时从尚未填写的端点继续，除非用户明确点选另一端。
+
+### 键盘模型
+
+键盘行为对齐 Ant Design（rc-picker），另加面板导航键转发：
+
+- **停靠点**：输入框（范围为开始、结束两个输入），然后是清除按钮；外框、日历图标和范围箭头不是停靠点。焦点在控件内时显示清除按钮，清除后焦点回到输入框。范围的活动端与获得焦点的输入保持一致。
+- **清除**：清除按钮与 `Clear()` 清空值和键入草稿并关闭弹层；清空输入框不视为输入文字，不会打开弹层或切换范围活动端。
+- **打开**：获得焦点不打开弹层；输入文字或在关闭状态按 Enter 打开。
+- **输入文字**：文本须完整匹配显示格式（`Format`，或按 `PickerMode` 的默认格式；周可省略本地化后缀）。有效且可选的值成为候选并在面板中定位，不写提交值；无效文本保持原候选。
+- **Enter**：提交候选并关闭，不需要确认按钮；范围的开始端提交后转到结束端并保持打开，两端都确认后关闭。文本无效时不响应；单值文本为空时清空值。
+- **Escape**：回退本次编辑并关闭；`IsPopupPinnedOpen` 时弹层保持打开，候选与输入框同样恢复为提交值。
+- **Tab**：范围开始端（Shift+Tab 时为结束端）的有效输入弱提交后转到另一端；从结束端 Tab、从开始端 Shift+Tab 离开时，有效输入按下一条的焦点离开规则处理；无效输入被丢弃。
+- **焦点离开控件与弹层**：不需确认时提交有效输入，需要确认时丢弃，然后关闭。窗口失活按同一规则处理（对应浏览器切换窗口时输入框的 blur）；生命周期关闭始终丢弃。范围提交单端后关闭时（含部分确认已写回的端点）按日期排序两端，与最终确认一致。
+- **导航键转发**（AtomUI 增强）：弹层打开且输入框没有待提交文字时，方向键、PageUp/PageDown、Home/End 移动面板焦点格，键盘焦点留在输入框；越过当前页时面板翻页跟随，不越过 `MinDate` / `MaxDate`；目标格不可选时焦点格和页面都不变。焦点格显示悬停外观，范围同时显示预览，输入框预览该值；Enter 提交焦点格。`IsShowTime` 的时间列不参与转发。
 
 非 Date 单位输出周首、月首、季度首或年首；周格式、跨年身份与整行反馈保持 Picker 基线。
 疑似旧缺陷单独记录，不在重建中修正；取消不统一转换为打开值回滚。
@@ -77,6 +114,12 @@ RangeDatePicker 的范围编辑使用端点轮转状态机。每次用户成功�
 
 Picker 主题完整规定面板、Cell、Header/Footer、时间、双面板间距、连续范围形状与动效。
 统一 Cell 不继承 Calendar Mini 尺寸；输入宽度、placeholder 截断、显式宽度与 Stretch 保持原体验。
+
+### 弹层动效契约
+
+DatePicker 与 RangeDatePicker 的完整弹层采用 Slide、MotionDurationMid：实际下方 SlideUp，上方 SlideDown。范围箭头、日期/时间面板和阴影随同一表面动画，活动端点与确认语义不变。
+
+共享方向/原点、覆盖优先级与宿主规则见[弹层组件动效架构](../../../../architecture/systems/motion/popup-motion.md)，轨迹与时长由[组件规格矩阵](../../../../architecture/systems/motion/built-in-motion.md#弹层组件选择)统一定义。
 
 ## 6. 家族与集成
 

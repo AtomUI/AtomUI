@@ -25,11 +25,7 @@ internal static class ThemeStartupCompilation
             ? new Dictionary<string, string>(StringComparer.Ordinal)
             : new Dictionary<string, string>(config.Tokens, StringComparer.Ordinal);
         tokens[FontFamilyToken] = fontFamily.ToString();
-        return new ThemeConfig(
-            config?.Inherit ?? true,
-            config?.Algorithms,
-            tokens,
-            config?.Controls ?? new Dictionary<ControlTokenIdentity, ControlThemeConfig>());
+        return (config ?? ThemeConfig.Empty).WithTokens(tokens);
     }
 
     internal static ThemeConfig? StripControls(ThemeConfig? config)
@@ -38,8 +34,51 @@ internal static class ThemeStartupCompilation
         {
             return config;
         }
-        return new ThemeConfig(config.Inherit, config.Algorithms, config.Tokens,
-            new Dictionary<ControlTokenIdentity, ControlThemeConfig>());
+        return config.WithoutControls();
+    }
+
+    /// <summary>
+    /// The startup requests (spec 7.9): the explicit initial request; else the initial selection resolved against the
+    /// catalog (both appearances when it follows the system); else, with exactly one enabled language, that language's
+    /// default variant.
+    /// </summary>
+    internal static (ThemeRequest Initial, ThemeRequest? Light, ThemeRequest? Dark) ResolveStartupRequests(
+        ThemeRequest? initialRequest,
+        ThemeSelection? initialSelection,
+        ThemeRequest? followSystemLight,
+        ThemeRequest? followSystemDark,
+        CompiledThemeCatalog catalog)
+    {
+        if (initialRequest is not null)
+        {
+            return (initialRequest, followSystemLight, followSystemDark);
+        }
+
+        if (initialSelection is not null)
+        {
+            if (initialSelection.FollowSystem)
+            {
+                var light = catalog.Resolve(initialSelection, ThemeAppearance.Light)
+                    .Request with { Reason = ThemeTransitionReason.FollowSystem };
+                var dark = catalog.Resolve(initialSelection, ThemeAppearance.Dark)
+                    .Request with { Reason = ThemeTransitionReason.FollowSystem };
+                return (light, light, dark);
+            }
+
+            var resolved = catalog.Resolve(initialSelection)
+                .Request with { Reason = ThemeTransitionReason.Startup };
+            return (resolved, null, null);
+        }
+
+        if (catalog.Languages.Count == 1)
+        {
+            return (new ThemeRequest(catalog.DefaultThemeId(catalog.Languages[0].Id), null,
+                ThemeTransitionReason.Startup), null, null);
+        }
+
+        throw new ThemeLoadException(catalog.Languages.Count == 0
+            ? "No design language is enabled; enable one (for example builder.UseAntDesign(...))."
+            : "Several design languages are enabled; call WithInitialDesignLanguage<TLanguage>() or WithInitialTheme(ThemeSelection).");
     }
 
     /// <summary>主题定义默认值之上依次叠加应用层（初始请求）与运行时层（本次请求）。</summary>
@@ -58,7 +97,7 @@ internal static class ThemeStartupCompilation
     /// </summary>
     internal static ThemeCompileResult CompileInitial(
         ThemeRequest request,
-        ThemeRequest initialRequest,
+        ThemeRequest? initialRequest,
         CompiledThemeCatalog catalog,
         ThemeSchemaRegistry registry,
         FontFamily? fontFamily,
@@ -66,7 +105,7 @@ internal static class ThemeStartupCompilation
     {
         var runtimeDefault = ThemeConfigNormalizer.Normalize(AddDefaultFont(null, fontFamily) ?? ThemeConfig.Empty, registry);
         var runtime = Normalize(request.Config, runtimeDefault, registry, fontFamily);
-        var initial = Normalize(initialRequest.Config, runtimeDefault, registry, fontFamily);
+        var initial = Normalize(initialRequest?.Config, runtimeDefault, registry, fontFamily);
         if (!runtime.Success || !initial.Success)
         {
             throw new ThemeLoadException(

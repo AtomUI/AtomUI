@@ -1,5 +1,6 @@
 using AtomUI.Controls.Commons;
 using Avalonia;
+using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
 
@@ -7,6 +8,21 @@ using ToolTipControl = AtomUI.Desktop.Controls.ToolTip;
 
 public partial class FloatButton : AbstractFloatButton
 {
+    private FloatButtonAppearanceBinding? _themeInputs;
+
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToLogicalTree(e);
+        _themeInputs = new FloatButtonAppearanceBinding(this);
+    }
+
+    protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        _themeInputs?.Dispose();
+        _themeInputs = null;
+        base.OnDetachedFromLogicalTree(e);
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

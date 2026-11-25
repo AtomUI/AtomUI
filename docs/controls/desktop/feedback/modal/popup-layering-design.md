@@ -33,7 +33,7 @@ Dialog 内容可以包含 ComboBox、Select、DatePicker、TimePicker、AutoComp
 | 场景 | Dialog presentation host | 内容弹层 host | Drawn chrome |
 | --- | --- | --- | --- |
 | AtomUI Window / 普通 TopLevel | owning `VisualLayerManager.OverlayLayer` | 同一 manager 的 `PopupOverlayLayer` 或平台 `PopupRoot` | modal 活跃时由租约隐藏 |
-| 局部 overlay scope，且仍在 TopLevel 内 | 最近可用的 `ScopeAwareOverlayLayer` fallback | owning TopLevel 的 Popup 服务 | 不改变 |
+| 局部 overlay scope，且仍在 TopLevel 内 | 作用域宿主的 `ContentPresentationLayer`（T5，含 `OverlayScope` 作用域与无 TopLevel fallback） | owning TopLevel 的 Popup 服务 | 不改变 |
 | `DialogHostType.Window` | 独立 Dialog Window | 独立 Window 的 Popup 服务 | 由该 Window 管理 |
 
 Windows CSD、Linux managed decorations 与 macOS 原生 chrome 共享同一 presentation 所有权规则。没有 drawn chrome overlay 时，suppression lease 不改变可见结果。
@@ -81,6 +81,16 @@ Dialog 内容的模板可以正常创建任意 Popup，只要 placement target �
 ### 7.2 叠放与输入
 
 Avalonia 的固定层序为 Overlay、LightDismiss、Popup。Dialog 位于 Overlay，透明 light-dismiss 层覆盖 Dialog 的外部点击区域，popup host 位于最上层。点击 popup item 命中 popup；点击 popup 外部先触发 light-dismiss，再按 Popup 的 pass-through 配置决定是否继续传递。Dialog mask 的 `IsMaskClosable` 不接管 Popup 的关闭逻辑。
+
+内容弹层可通过逻辑祖先把 pointer 事件路由到所属 `OverlayDialogPresenter`，即使其视觉分支位于独立的
+`PopupOverlayLayer`。Presenter 的隧道 pointer handler 只激活 Dialog 的叠放顺序，不提前聚焦 Surface；
+实际焦点由 Avalonia 根据命中目标和视觉祖先分配。否则内容会先经历一次与用户目标无关的失焦，破坏 Picker 的
+候选值、确认与弹层关闭语义。点击 Surface 空白区时仍由框架把焦点分配给可聚焦的 Surface。
+框架分配之后（鼠标在按下处理之后，触控与笔在同一指针抬起之后，因为它们在抬起时才聚焦目标），若焦点仍在
+该 Dialog 及其内容弹层之外（不可聚焦区域、非左键），才把焦点交给 Surface，使 Escape / Enter 与输入作用于同一个 Dialog。
+
+激活只移动已有 presenter 的集合位置，保持逻辑/视觉挂载、内容焦点和 Popup owner 生命周期；不得以移除再添加
+presenter 的方式调整层序。DialogSession 打开时的初始聚焦与关闭时的焦点恢复保持独立。
 
 ### 7.3 关闭与重叠
 

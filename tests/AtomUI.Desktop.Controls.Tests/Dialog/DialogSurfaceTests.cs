@@ -1,4 +1,6 @@
 using Shouldly;
+using AtomUI.Desktop.Controls.DesignTokens;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -320,6 +322,44 @@ public class DialogSurfaceTests
 
             dialog.IsResizable = false;
             resizer.IsVisible.ShouldBeFalse();
+        }
+        finally
+        {
+            surface.Dispose();
+            window.Close();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Each_Terminal_Default_Minimum_Frame_Follows_Its_Own_MinWidth_Semantics(bool messageBox)
+    {
+        // Dialog.MinWidth is the content viewport baseline (frame = Token + padding + border, 248 by default);
+        // MessageBox.MinWidth sizes the whole frame (410 by default, like antd's confirm width).
+        AtomUI.Desktop.Controls.Dialog dialog = messageBox ? new AtomUI.Desktop.Controls.MessageBox() : new AtomUI.Desktop.Controls.Dialog();
+        dialog.IsFooterVisible = false;
+        var surface = new DialogSurface(dialog);
+        var window = new AtomUI.Desktop.Controls.Window { Content = surface };
+
+        try
+        {
+            window.Show();
+            Dispatcher.UIThread.RunJobs();
+            surface.ApplyTemplate();
+            window.UpdateLayout();
+
+            var contentFrame = surface.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "ContentFrame");
+            var horizontalChrome = contentFrame.Padding.Left + contentFrame.Padding.Right +
+                                   contentFrame.BorderThickness.Left + contentFrame.BorderThickness.Right;
+            var minWidth = messageBox
+                ? ControlTokenAccessor.Capture<AtomUI.Desktop.Controls.MessageBox>(surface).GetOwn<double>(MessageBoxTokenKind.MinWidth)
+                : ControlTokenAccessor.Capture<AtomUI.Desktop.Controls.Dialog>(surface).GetOwn<double>(DialogTokenKind.MinWidth);
+            var expectedFrame = messageBox ? Math.Max(minWidth, horizontalChrome) : minWidth + horizontalChrome;
+
+            surface.ContentViewportMinWidth.ShouldBe(minWidth);
+            surface.MeasureStructuralMinimum().Width.ShouldBe(expectedFrame);
+            surface.MeasureStructuralMinimum().Width.ShouldBe(messageBox ? 410d : 248d, "default frame width of the terminal");
         }
         finally
         {

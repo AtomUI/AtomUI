@@ -1,13 +1,5 @@
 namespace AtomUI.Desktop.Controls;
 
-public interface ICollapseItemData
-{
-    bool IsSelected { get; }
-    bool IsEnabled { get; }
-    bool IsShowExpandIcon { get; }
-    object? Header { get; }
-}
-
 public record CollapseItemData : ICollapseItemData
 {
     public bool IsSelected { get; init; } = false;

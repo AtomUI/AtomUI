@@ -1,24 +1,30 @@
 using System.Collections.ObjectModel;
-using AtomUI.Theme.Algorithms;
+using AtomUI.Theme.Languages;
 
 namespace AtomUI.Theme.Configuration;
 
+/// <summary>
+/// The configuration of one kind of control: the axes it is fixed to and its token values, which are its control
+/// tokens and any global token it sees (spec 7.5). Overriding a seed or fixing an axis makes the control its own
+/// evaluation unit; overriding a Map, Alias or control token only replaces that value.
+/// </summary>
 public sealed class ControlThemeConfig
 {
     internal ControlThemeConfig(
-        ControlAlgorithmMode algorithm,
-        IReadOnlyList<ThemeAlgorithm>? algorithms,
+        ThemeAppearance? appearance,
+        DesignDensity? density,
         IReadOnlyDictionary<string, string> tokens)
     {
-        Algorithm  = algorithm;
-        Algorithms = algorithms is null ? null : Array.AsReadOnly(algorithms.ToArray());
-        Tokens     = new ReadOnlyDictionary<string, string>(
-            new Dictionary<string, string>(tokens, StringComparer.Ordinal));
+        Appearance = appearance;
+        Density    = density;
+        Tokens     = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(tokens, StringComparer.Ordinal));
     }
 
-    public ControlAlgorithmMode Algorithm { get; }
+    /// <summary>The appearance this control always uses, or <see langword="null"/> to use its scope's.</summary>
+    public ThemeAppearance? Appearance { get; }
 
-    public IReadOnlyList<ThemeAlgorithm>? Algorithms { get; }
+    /// <summary>The density this control always uses, or <see langword="null"/> to use its scope's.</summary>
+    public DesignDensity? Density { get; }
 
     public IReadOnlyDictionary<string, string> Tokens { get; }
 }

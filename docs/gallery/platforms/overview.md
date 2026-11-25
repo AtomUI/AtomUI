@@ -1,14 +1,14 @@
 # Gallery 平台宿主
 
 Gallery 平台文档区分产品内容、共享展示基础和具体 Host 的运行责任。当前 Desktop/Browser Gallery 已有源码；iOS/Android
-Mobile Gallery 仍是批准的预实现架构，不能用 Desktop 或 Headless 结果替代移动平台证据。
+Mobile Gallery 位于 AtomUI.Mobile 仓库，不能用 Desktop 或 Headless 结果替代移动平台证据。
 
 | 平台 | 当前状态 | Host 职责 | 内容职责 |
 | --- | --- | --- | --- |
 | Desktop | 已有实现 | Desktop lifetime、Window、标题栏、窗口状态、平台日志和启动 | 当前 AtomUI Desktop ShowCase、API、Token 和导航 |
 | Browser | 已有实现 | SingleView lifetime、Browser 字体/资源、媒体断点和浏览器启动 | 与 Desktop 共享当前 AtomUI Gallery 内容 |
-| iOS | 预实现 | iOS 生命周期、启动、签名/部署和 Mobile adapter 注册 | 由目标 Mobile Gallery content 提供 |
-| Android | 预实现 | Android 生命周期、启动/部署和 Mobile adapter 注册 | 由目标 Mobile Gallery content 提供 |
+| iOS | AtomUI.Mobile 仓库 | iOS 生命周期、启动、签名/部署 | 由 AtomUI.Mobile 的 Showcase 提供 |
+| Android | AtomUI.Mobile 仓库 | Android 生命周期、启动/部署 | 由 AtomUI.Mobile 的 Showcase 提供 |
 
 ## 阅读入口
 
@@ -26,8 +26,10 @@ Desktop Gallery 在 `GalleryApplication.Configure` 中声明全部包与 `UseSpl
 标题，NativeAOT 下不显示）。AtomUI 内核在 `Initialize()` 之前提交，`WorkspaceWindow` 在构造函数中直接构建导航与
 `GalleryShellView`，主窗体出现时就是完整内容，没有加载占位。Splash 在主窗体首个渲染批次完成后淡出。
 
-Gallery 的附加内置主题随 `UseGalleryControls` 进入目录。Workspace ViewModel 通过 Core 的 `ThemeCatalogChanged` 更新
-AvailableThemes，窗口菜单沿用现有属性通知生成主题项；主题切换与手动目录刷新共用这条目录订阅链路。
+Gallery 启用的设计语言（`UseAntDesign(...)`）随 `UseGalleryControls` 进入目录，语言包自带的具名主题与每个语言的隐式条目
+`$<LanguageId>` 一并出现。Workspace ViewModel 通过 Core 的 `ThemeCatalogChanged`（事件参数的 `Themes`）更新
+`AvailableThemes` 与 `DesignLanguages`，窗口菜单沿用现有属性通知生成设计语言与主题项；主题切换与手动目录刷新共用这条
+目录订阅链路。
 
 启动生命周期见[启动系统](../../architecture/systems/startup/overview.md)；Shell 所有权见
 [GalleryBase Shell](../../modules/toolkits-gallery-base/shell-and-platform.md)。

@@ -24,6 +24,8 @@ internal sealed class LinkerFixture : IDisposable, ILogger
         Bcl = AssemblyDefinition.ReadAssembly(typeof(object).Assembly.Location, new ReaderParameters { AssemblyResolver = Context.Resolver });
         Context.Resolver.CacheAssembly(Bcl);
         Context.RegisterAssembly(Bcl);
+        // Official TypeMap resolution starts from the EntryPoint root; mirror what RootAssemblyInput records for it.
+        Context.Annotations.SetEntryPointAssembly(AssemblyDefinition.CreateAssembly(new AssemblyNameDefinition("App", new Version(1, 0, 0, 0)), "App", ModuleKind.Console));
         Core = Assembly("AtomUI.Core");
         Marker = Type(Core, "AtomUI.Registration", "ControlPackageMarkerAttribute", typeof(Attribute));
         Constructor(Marker, typeof(string), typeof(Type), typeof(int));

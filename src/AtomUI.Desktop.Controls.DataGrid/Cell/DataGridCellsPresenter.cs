@@ -5,7 +5,6 @@
 
 using System.Collections.Specialized;
 using System.Diagnostics;
-using AtomUI.Desktop.Controls.Utils;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
@@ -87,9 +86,10 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
         realFrozenRightEdge -= rowHeaderWidth;
         
         double scrollingLeftEdge  = -OwningGrid.HorizontalOffset;
-        var    visibleColumnCount = 0;
         var    hasRightFrozen     = false;
         var columns              = OwningGrid.ColumnsInternal;
+        var lastLeftFrozenColumn  = columns.LastVisibleLeftFrozenColumn;
+        var firstRightFrozenColumn = columns.FirstVisibleRightFrozenColumn;
         int displayedColumnCount = columns.GetDisplayedColumnCount();
         // 需要先计算出 frozenRightEdge
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
@@ -105,18 +105,14 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                 realFrozenRightEdge -= column.ActualWidth;
                 hasRightFrozen      =  true;
             }
-
-            visibleColumnCount++;
         }
         
-        var maxOffsetX = finalSize.Width - frozenRightEdge;
         
-        var visibleColumnIndex = 0;
-        // left and normal
+        // left and normal：右冻结列只在下方的右侧循环中排列并计宽一次
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn column = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
-            if (!column.IsVisible)
+            if (!column.IsVisible || column.IsRightFrozen)
             {
                 continue;
             }
@@ -131,7 +127,7 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                 frozenLeftEdge            += column.ActualWidth;
                 cell.IsFrozen             =  true;
                 cell.FrozenShadowPosition =  FrozenColumnShadowPosition.Right;
-                cell.IsShowFrozenShadow   =  (visibleColumnIndex == OwningGrid.LeftFrozenColumnCount - 1) && OwningGrid.HorizontalOffset > 0;
+                cell.IsShowFrozenShadow   =  column == lastLeftFrozenColumn && OwningGrid.IsLeftFrozenShadowVisible;
             }
  
             else
@@ -147,15 +143,10 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
             }
             scrollingLeftEdge                      += column.ActualWidth;
             column.IsInitialDesiredWidthDetermined =  true;
-            if (!column.IsRightFrozen)
-            {
-                visibleColumnIndex++;
-            }
         }
 
         if (hasRightFrozen)
         {
-            visibleColumnIndex = visibleColumnCount - 1;
             // right
             for (int displayIndex = displayedColumnCount - 1; displayIndex >= 0; displayIndex--)
             {
@@ -175,17 +166,16 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                     cellLeftEdge              = frozenRightEdge;
                     cell.IsFrozen             = true;
                     cell.FrozenShadowPosition = FrozenColumnShadowPosition.Left;
-                    var horizontalScrollBarVisible = OwningGrid.HorizontalScrollBar?.IsVisible ?? false;
-                    cell.IsShowFrozenShadow = (visibleColumnIndex == visibleColumnCount - OwningGrid.RightFrozenColumnCount) && 
-                                              horizontalScrollBarVisible &&
-                                              DataGridHelper.AreLessAt3Decimals(OwningGrid.HorizontalOffset, maxOffsetX);
+                    cell.IsShowFrozenShadow = column == firstRightFrozenColumn && OwningGrid.IsRightFrozenShadowVisible;
                     if (cell.IsVisible)
                     {
                         cell.Arrange(new Rect(cellLeftEdge, 0, column.LayoutRoundedWidth, finalSize.Height));
+                        // 冻结列不裁剪；列由滚动列改为右冻结时需清掉之前的裁剪
+                        cell.ClearClipGeometry();
                     }
+                    // 填充格位于全部列之后（未滚动时右冻结列处于自然位置）
                     scrollingLeftEdge                      += column.ActualWidth;
                     column.IsInitialDesiredWidthDetermined =  true;
-                    visibleColumnIndex--;
                 }
             }
         }

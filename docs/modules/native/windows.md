@@ -4,7 +4,8 @@
 
 Windows 平台通过 `user32.dll` 的窗口扩展样式（Extended Window Styles）机制实现窗口级鼠标事件穿透，通过
 `WindowsBackgroundHook` 提供首次显示前的原生背景填充（见第 5 节），并通过 `WindowsPopupShadowHitTestHook` 实现窗口型
-Popup 阴影区域的按形状输入穿透（见第 6 节）。所有 API 均标注 `[SupportedOSPlatform("windows")]`。
+Popup 阴影区域的按形状输入穿透（见第 6 节），通过 `WindowsBorderlessStyleHook` 补全 redirection 顶层窗口样式（见第 8 节）。
+平台实现均标注 `[SupportedOSPlatform("windows")]`。
 
 ---
 
@@ -297,3 +298,48 @@ Avalonia 不会重写边距，因此跳过 `WM_WINDOWPOSCHANGED`，不在每帧�
 
 最大化→还原、全屏→退出、拖动 resize、失焦→重新激活之后，四边结果都保持一致。live resize 同一时段 A/B 对比
 （每组约 660 帧、4 组）：修复前与修复后缺口帧都是 13，黑条帧都是 4，没有回归。
+
+## 8. WindowsBorderlessStyleHook（无装饰顶层窗口样式完整性）
+
+> - 入口：`NativeWindowStyles.TryAttachWindowsBorderlessStyleHook(Window, Action<string>)`；非 Windows 返回 `null`。
+> - 调用方：Desktop 包的 `WindowsWindowStyleCompatibility`；由 `ControlPackageContext.Own` 托管应用作用域。
+
+### 8.1 根因与作用范围
+
+Avalonia 12.1.4 进入全屏时移除 `WS_OVERLAPPEDWINDOW` 装饰位，未补齐 `WS_POPUP`。无装饰、不可调整大小且禁用最小化和
+最大化的普通窗口也会生成同类样式。该 HWND 在 issue #528 的 ANGLE/RedirectionSurface 路径中导致
+`CreateSwapChainForHwnd` 返回 `DXGI_ERROR_INVALID_CALL`，继而 EGL surface 创建失败；全屏置顶窗口仍接收输入。
+
+hook 维护的是 redirection 顶层 HWND 的样式完整性，不是通过更改窗口状态规避触发条件。不能把该兼容约束泛化为
+“所有合法 Win32 无边框窗口都必须使用 WS_POPUP”，也不改变默认合成顺序。
+
+### 8.2 写入入口
+
+`WindowOpenedEvent` 路由事件在 Avalonia 的初始化、样式和首次原生显示之前触发；Desktop 在这里挂接 hook。
+Native 先对已有样式做一次归一化，再监听 `WM_STYLECHANGING`，只变换 `GWL_STYLE` 对应 `STYLESTRUCT.StyleNew`：
+
+| 条件 | 行为 |
+|---|---|
+| 已有 `WS_CHILD`、`WS_POPUP` 或任意 `WS_OVERLAPPEDWINDOW` 装饰位 | 保持原值 |
+| `WS_EX_NOREDIRECTIONBITMAP` 已设置 | 保持原值 |
+| 其余使用 redirection bitmap 的无装饰顶层 HWND | 仅补齐 `WS_POPUP` |
+
+不设置消息 `handled`，不发起第二次定位或 frame refresh，不依赖延时、重试、私有字段反射或运行时 IL patch。
+`STYLESTRUCT` 使用两个 32 位 DWORD；`GetWindowLongW/SetWindowLongW` 对样式值使用 32 位签名，兼容 32/64 位进程。
+所有返回零的原生调用检查 last-error；失败时释放 hook，并通过上层每应用一次的警告报告。
+
+### 8.3 状态恢复与生命周期
+
+Avalonia 继续拥有窗口属性、保存快照、全屏切换、owner、激活和几何。hook 对每次实际样式写入应用同一规则，
+因此恢复到仍缺少装饰位的普通窗口时继续保留 popup 类型；恢复到有装饰位的普通窗口时不添加 popup。
+不能只在全屏阶段补位，否则普通窗口恢复仍可复发。
+
+Desktop 使用 `ConditionalWeakTable` 管理逐窗能力，隐藏后再显示不重复注册。Native 在 `WM_DESTROY/WM_NCDESTROY`
+移除自身 callback，Desktop 在 Closed、应用作用域释放和启动回滚时幂等清理。释放使用最初的
+`IWin32OptionsTopLevelImpl`，因为 TopLevel 在 Closed 前已经清空 `PlatformImpl`；不清除其他消费者的 hook。
+本 hook 不处理消息，必须放在已有 callback 链之前：Avalonia 使用 multicast delegate 最后一个 callback 的返回值，
+若把恒返回零的观察者追加到链尾，会覆盖已有 hook 的非零命中测试等处理结果。不能仅断言其他 callback 还被调用。
+
+Windows 11 的实窗验证包含原始全屏置顶 owned window、状态往返、运行时能力切换、重复显示及 NativeAOT。
+Windows 10、多显示器和跨 DPI 切换需要在对应环境复核；本次验证记录见
+[issue 528 修复记录](../../superpowers/progress/2026-11-04-issue528-fullscreen-repair.md)。

@@ -16,4 +16,9 @@
         <ProjectReference Include="../../../controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The token dump format of the theme equivalence tests, reused by dump-tokens. -->
+        <Compile Include="../../../tests/Shared/ThemeSnapshotDump.cs" Link="Theme/ThemeSnapshotDump.cs" />
+    </ItemGroup>
+
 </Project>

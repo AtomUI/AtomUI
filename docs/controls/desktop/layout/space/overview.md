@@ -21,6 +21,7 @@ Space 的公开语义区域使用 `root`、`item` 和 `separator` 三个 Semanti
 主要源码入口：
 
 - `src/AtomUI.Desktop.Controls/Space`
+- `src/AtomUI.Controls/Space`（共享基类 `AbstractSpace` 与枚举）
 
 ## 2. 设计语言
 
@@ -29,7 +30,7 @@ Space 的设计语言围绕控件职责、可观察状态和主题契约组织�
 | 维度 | 含义 | Space 中的表达 |
 | --- | --- | --- |
 | 产品语义 | 控件在界面中承担的稳定职责。 | Space 是 AtomUI 桌面控件体系中的间距布局控件，用于在一组子元素之间提供一致的水平、垂直或紧凑间距。 |
-| 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment`。 |
+| 内容承载 | 用户数据、展示内容、集合项或操作入口如何进入控件。 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment`、`IsWrap`、`Justify`。 |
 | 状态反馈 | public API、内部状态和伪类如何形成用户可感知反馈。 | collection/filter、visual option。 |
 | 主题语义 | ControlTheme、SharedToken、控件 Token 和模板绑定如何表达视觉。 | Space Token + ControlTheme。 |
 
@@ -41,7 +42,7 @@ Space 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment`、`SplitTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
+| 内容与数据 | `CompactSpaceItemPosition`、`Content`、`ContentTemplate`、`ItemHeight`、`ItemSpacing`、`ItemWidth`、`ItemsAlignment`、`IsWrap`、`Justify`、`SplitTemplate` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 选择与集合 | `PositionIndex` | 维护选择、展开、过滤、分页、分组或集合状态。 |
 | 交互与状态 | `IsUsedInCompactSpace`、`Status` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `Background`、`BorderBrush`、`BorderDashArray`、`BorderDashOffset`、`BorderThickness`、`CompactSpaceOrientation`、`CornerRadius`、`LineSpacing`、`Orientation`、`Padding`、`SizeType`、`StyleVariant` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
@@ -51,7 +52,8 @@ Space 的公共契约由 public/protected 类型成员、Avalonia 属性、事�
 主要公开类型与枚举：
 
 - 类型：`CompactSpace`、`CompactSpaceAddOn`、`CompactSpaceAwareControlProperty`、`CompactSpaceFiller`、`CompactSpaceItem`、`InvalidSpaceFillerUsageException`、`Space`。
-- 枚举：`CompactSpaceUnitType`、`SpaceItemsAlignment`。
+- 枚举：`CompactSpaceUnitType`；`SpaceItemsAlignment`、`SpaceJustify` 位于 `AtomUI.Controls` 命名空间（与 `Space` 同属 XAML 命名空间 `https://atomui.net`）。
+- 共享基类：`AtomUI.Controls.Commons.AbstractSpace`，`Space` 继承它；`IsWrap` 默认 `true`（超出主轴长度即换行），`Justify` 默认 `Start`，描述每行剩余主轴空间的分配方式。
 
 稳定 template part：
 

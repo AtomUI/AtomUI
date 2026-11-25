@@ -1,5 +1,7 @@
 using AtomUI;
+using AtomUI.DesignLanguages.AntDesign;
 using AtomUI.Desktop.Controls;
+using AtomUI.Desktop.Controls.Themes.AntDesign;
 using Avalonia;
 using Avalonia.Browser;
 using Avalonia.Controls;
@@ -9,7 +11,7 @@ using Avalonia.VisualTree;
 using Fixture.NuGetAuthor;
 
 await AppBuilder.Configure<ConsumerApp>()
-                .UseAtomUI(builder => builder.UseDesktopControls().UseAuthorControls())
+                .UseAtomUI(builder => builder.UseDesktopControls().UseAuthorControls().UseAntDesign(language => language.AddDesktopControls()))
                 .StartBrowserAppAsync("out");
 public sealed class ConsumerApp : Application
 {

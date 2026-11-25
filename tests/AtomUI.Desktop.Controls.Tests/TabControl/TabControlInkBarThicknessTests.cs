@@ -70,7 +70,8 @@ public class TabControlInkBarThicknessTests
         tabStrip.Items.Add(new AtomUITabStripItem { Content = "First" });
         tabStrip.Items.Add(new AtomUITabStripItem { Content = "Second" });
         tabStrip.SelectedIndex = 1;
-        tabStrip.Resources[TabControlTokenKind.InkBarThickness] = 4.0;
+        // TabStrip is its own terminal: Controls[TabControl] no longer reaches it, its own Token does.
+        tabStrip.Resources[TabStripTokenKind.InkBarThickness] = 4.0;
         using (Show(tabStrip))
         {
             tabStrip.SelectedIndicatorThickness.ShouldBe(4d);

@@ -771,5 +771,91 @@
       ],
       "reason": "6.2.6: AtomUI.Fonts.AlibabaSans now participates in the startup package registration pipeline and ships the standard buildTransitive and tools payload (it previously had neither), including buildTransitive/AtomUI.CompiledThemes.targets and the Avalonia assemblies the compiled-theme build task loads. Additive only; documented in docs/releases/6.2.6-api-changes.md."
     }
+  },
+  "6.2.13": {
+    "AtomUI.Controls": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Controls.Shared": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Core": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.ColorPicker": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.DataGrid": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Desktop.Controls.Extras": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Fonts.AlibabaPuHuiTi": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Fonts.AlibabaSans": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Icons.AntDesign": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Icons.Shared": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Localization": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Native": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    },
+    "AtomUI.Toolkits.GalleryBase": {
+      "allowed": [
+        "lib/net11.0/*"
+      ],
+      "reason": "6.2.14 adds the net11.0 Release target framework next to net8.0 and net10.0 (#538). Additive only; documented in docs/releases/6.2.14-api-changes.md."
+    }
   }
 }

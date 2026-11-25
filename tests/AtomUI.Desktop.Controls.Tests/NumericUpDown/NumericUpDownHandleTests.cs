@@ -1,3 +1,4 @@
+using System.Reflection;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Theme.Resources;
@@ -27,7 +28,7 @@ public class NumericUpDownHandleTests
     }
 
     [Fact]
-    public void Disabled_NumericUpDown_Hides_Floatable_Spinner_Handle()
+    public void Disabled_NumericUpDown_Keeps_The_Floatable_Spinner_Handle()
     {
         var numericUpDown = new AtomUINumericUpDown
         {
@@ -43,7 +44,8 @@ public class NumericUpDownHandleTests
                                              .OfType<ContentPresenter>()
                                              .Single(item => item.Name == "PART_SpinnerHandle");
 
-            spinnerHandle.Opacity.ShouldBe(0.0);
+            // A disabled input keeps its handle in view (Ant Design greys the handlers instead of hiding them).
+            spinnerHandle.Opacity.ShouldBe(1.0);
         });
     }
 
@@ -630,13 +632,22 @@ public class NumericUpDownHandleTests
             var spinnerHandle = numericUpDown.GetVisualDescendants()
                                              .OfType<TemplatedControl>()
                                              .Single(item => item.GetType().Name == "ButtonSpinnerHandle");
-            var drawingGroup = RenderToDrawingGroup(spinnerHandle);
-            var verticalLine = EnumerateStrokeDrawings(drawingGroup)
-                .Single(drawing => drawing.Geometry?.Bounds is { Width: < 0.0001, Height: > 0 });
+            var divider = spinnerHandle.GetVisualDescendants()
+                                       .OfType<PixelAlignedBorder>()
+                                       .Single(item => item.Name == "ContentDivider");
+            divider.Bounds.Height.ShouldBeGreaterThan(0d);
+            divider.TranslatePoint(default, spinnerHandle).ShouldNotBeNull().X.ShouldBe(0d, 0.0001);
+            divider.IsHitTestVisible.ShouldBeFalse();
 
-            verticalLine.Pen.ShouldNotBeNull();
-            verticalLine.Pen!.Thickness.ShouldBe(2d / 3d, 0.0001);
-            verticalLine.Geometry!.Bounds.X.ShouldBe(1d / 3d, 0.0001);
+            RenderToDrawingGroup(divider);
+            var renderThicknessField = typeof(DashedBorder)
+                .GetField("_renderThickness", BindingFlags.Instance | BindingFlags.NonPublic)
+                .ShouldNotBeNull();
+            var thickness = renderThicknessField.GetValue(divider).ShouldBeOfType<Thickness>();
+            (thickness.Left * window.RenderScaling).ShouldBe(1d, 0.0001);
+            thickness.Top.ShouldBe(0d);
+            thickness.Right.ShouldBe(0d);
+            thickness.Bottom.ShouldBe(0d);
         });
     }
 
@@ -735,11 +746,5 @@ public class NumericUpDownHandleTests
                 yield return child;
             }
         }
-    }
-
-    private static IEnumerable<GeometryDrawing> EnumerateStrokeDrawings(Drawing drawing)
-    {
-        return EnumerateGeometryDrawings(drawing)
-            .Where(drawing => drawing.Pen is not null);
     }
 }

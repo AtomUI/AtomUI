@@ -280,6 +280,11 @@ public class MenuFlyoutPresenter : MenuBase,
                     {
                         menuItem.SetCurrentValue(MenuItem.InputGestureProperty, menuItemData.InputGesture);
                     }
+
+                    if (!menuItem.IsSet(MenuItem.IsDangerProperty))
+                    {
+                        menuItem.SetCurrentValue(MenuItem.IsDangerProperty, menuItemData.IsDanger);
+                    }
                 }
             }
 

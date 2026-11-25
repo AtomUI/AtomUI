@@ -45,7 +45,6 @@ public static class TestAppBuilder
                              builder.UsePrimeNG();
                              builder.UseShadcn();
                              builder.WithInitialDesignLanguage<AntDesignLanguage>();
-                             ThemePackageRegistration.Register(builder.Theme);
                              builder.UseLanguages(
                                  LanguageTags.EnUS,
                                  [LanguageTags.EnUS, LanguageTags.ZhCN, LanguageTags.ZhTW, LanguageTags.PtBR]);

@@ -126,7 +126,7 @@ SharedToken
 - 颜色变化验证 Light/Dark、active/inactive、hover、pressed 和 Windows close danger state。
 - Token 名称或默认值变化核对 generated `WindowTitleBarTokenKind`、`WindowTitleBarTokenResource` 和全部 AXAML 引用。
 
-文档改动执行 `git diff --check`。Token 默认值或 Theme 映射变化运行 `WindowTitleBarTokenTests`、`ImagePreviewerTitleBarThemeTests` 以及相关 Window 主题测试。
+文档改动执行 `git diff --check`。Token 默认值或 Theme 映射变化临时验收 WindowTitleBar、ImagePreviewer 派生标题栏和受影响 Window 状态。
 
 ## 独立 Token 身份与共享计算
 

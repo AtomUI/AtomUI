@@ -214,11 +214,10 @@ Skeleton 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- 共享层（宿主判定、块登记、门控真值表、背景恢复、按需占位、场景重建、单处理器、亮带轨迹、逐帧零分配）运行
-  `tests/AtomUI.Controls.Tests` 的 `Skeleton` 测试；Desktop 主题接入（单一微光源、占位模板作用域、动效参数、元素块标记）运行
-  `tests/AtomUI.Desktop.Controls.Tests` 的 `Skeleton` 测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- Skeleton 临时验收覆盖宿主判定、块登记、门控真值表、背景恢复、按需占位、场景重建、单处理器、亮带轨迹和逐帧零分配。
+  Desktop 主题接入覆盖单一微光源、占位模板作用域、动效参数和元素块标记。
 - 运行状态回归运行 `tools/performances/AtomUI.Performance` 的 `--verify-skeleton-states`。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

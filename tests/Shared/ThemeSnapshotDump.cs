@@ -9,8 +9,7 @@ namespace AtomUI.Theme.Testing;
 
 /// <summary>
 /// Dumps the complete compiled result of a theme snapshot (every global slot and every registered control's Own
-/// slots) as sorted text lines and diffs two such dumps, so a theme test can assert that two ways of reaching a theme
-/// compile to the same values slot by slot.
+/// slots) as sorted, comparable text lines for the design-language verification tool.
 /// </summary>
 /// <remarks>
 /// Line formats: <c>G &lt;TokenName&gt; = &lt;value&gt;</c> for global slots and
@@ -61,49 +60,6 @@ internal static class ThemeSnapshotDump
         return builder.ToString();
     }
 
-    /// <summary>
-    /// The differences between two dumps, ordered by key: <c>changed &lt;key&gt;: &lt;old&gt; -&gt; &lt;new&gt;</c>,
-    /// <c>added &lt;key&gt; = &lt;value&gt;</c> or <c>removed &lt;key&gt; = &lt;value&gt;</c>. A malformed line or a
-    /// duplicate key in either dump throws.
-    /// </summary>
-    internal static IReadOnlyList<string> Diff(string expected, string actual)
-    {
-        var before = Parse(expected);
-        var after = Parse(actual);
-        var differences = new List<string>();
-        foreach (var key in before.Keys.Union(after.Keys).OrderBy(key => key, StringComparer.Ordinal))
-        {
-            var hadBefore = before.TryGetValue(key, out var oldValue);
-            var hasAfter = after.TryGetValue(key, out var newValue);
-            if (hadBefore && hasAfter)
-            {
-                if (!string.Equals(oldValue, newValue, StringComparison.Ordinal))
-                {
-                    differences.Add($"changed {key}: {oldValue} -> {newValue}");
-                }
-            }
-            else if (hadBefore)
-            {
-                differences.Add($"removed {key}{Separator}{oldValue}");
-            }
-            else
-            {
-                differences.Add($"added {key}{Separator}{newValue}");
-            }
-        }
-        return differences;
-    }
-
-    /// <summary>The slot key of one <see cref="Diff"/> line, e.g. <c>C AtomUI:Select PopupContentPadding</c>.</summary>
-    internal static string SlotOf(string difference)
-    {
-        // "changed G X: a -> b", "added C A:B X = v", "removed G X = v"
-        var body = difference[(difference.IndexOf(' ') + 1)..];
-        var end = body.IndexOf(difference.StartsWith("changed", StringComparison.Ordinal) ? ": " : Separator,
-            StringComparison.Ordinal);
-        return body[..end];
-    }
-
     private static string FormatValue(TokenDescriptor token, object? value)
     {
         if (value is not IGradientBrush gradient)
@@ -147,27 +103,5 @@ internal static class ThemeSnapshotDump
     {
         var index = line.IndexOf(Separator, StringComparison.Ordinal);
         return index < 0 ? line : line[..index];
-    }
-
-    private static Dictionary<string, string> Parse(string dump)
-    {
-        var entries = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var line in dump.Split('\n'))
-        {
-            if (line.Length == 0)
-            {
-                continue;
-            }
-            var index = line.IndexOf(Separator, StringComparison.Ordinal);
-            if (index < 0)
-            {
-                throw new FormatException($"Not a snapshot line: '{line}'.");
-            }
-            if (!entries.TryAdd(line[..index], line[(index + Separator.Length)..]))
-            {
-                throw new FormatException($"Duplicate snapshot key: '{line[..index]}'.");
-            }
-        }
-        return entries;
     }
 }

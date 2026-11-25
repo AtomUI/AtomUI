@@ -303,6 +303,8 @@ Gallery 测试必须从 Examples 初始状态开始，第一次选择 Semantic P
 
 ## 本次验证命令
 
+以下为历史验收命令。当前首次打开与释放场景按[单元测试与验收规范](../development/test-value-and-lifecycle.md)临时验证。
+
 ```bash
 dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj --framework net10.0 --no-restore

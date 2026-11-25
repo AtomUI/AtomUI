@@ -461,14 +461,13 @@ Semantic Style 服从 Avalonia 原生属性优先级。
 - 生成的 `ComboBox*Style` 可编译并恰好命中一个目标节点；`root` 不生成 Style。
 - 弹层打开、关闭、重新打开后 `popup.*` 四部件 marker 保持；模板重应用后所有 marker 保持。
 - `IsPopupPinnedOpen` 可钉住弹层且自动抑制 light-dismiss（`IsLightDismissEnabled=false`）；**属性被抑制不等于遮罩未创建**：
-  钉住打开必须不留下可见的 `LightDismissOverlayLayer`，且弹层自行关闭后 `IsDropDownOpen` 同步回写（见
-  `ComboBoxPinnedPopupOverlayTests`）。
+  钉住打开必须不留下可见的 `LightDismissOverlayLayer`，且弹层自行关闭后 `IsDropDownOpen` 同步回写。
 - `IsEditable` 切换后 `input` 与 `placeholder` 节点的命中稳定。
 - 状态变化（`IsEditable`、`IsFilterEnabled`、过滤结果、选择变化、disabled、`Status`）不改变 marker 身份与数量语义。
 - 集合为空、过滤无可见匹配项、关闭空态以及切换默认或自定义内容时，`popup.empty` 保持同一个外层 `Border`、marker、route 和 `Single` 数量语义；生成的 `ComboBoxPopupEmptyStyle` 仍命中该节点。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - 根表面 `BorderBrush` / `Background` 定制压过帧的 hover / rest 状态机，清空后交还状态机，模板应用前设置的值同样生效，
-  未定制时保持主题 rest 状态；帧已接收 owner 的 `IsMotionEnabled`（见 `ComboBoxRootSurfaceRelayTests`）。
+  未定制时保持主题 rest 状态；帧已接收 owner 的 `IsMotionEnabled`。
 - 不存在以 Name / Loaded / Unloaded 事件处理器为特征的 code-behind 属性回退。
 - Gallery Semantic Parts 页签延迟创建 Preview，12 个 Part 均有预览卡片且 marker 均在场（见 §6.1）。
 
@@ -478,7 +477,7 @@ Gallery 语义预览按 AtomUI 标准方式钉住模板内 Popup（`IsPopupPinne
 `IsEditable` / `IsFilterEnabled` 以便 `input` 部件可见）。`IsPopupPinnedOpen` 与 `Select` / `AutoComplete` / `Mentions`
 等控件一致为 **public**。
 
-预览测试断言三个层面（`tests/AtomUIGallery.Tests/ShowCases/ComboBoxSemanticPartHighlightTests.cs`）：
+预览临时验收覆盖三个方面。
 
 1. 12 个部件各有预览卡片，且每个部件的 marker 在树中至少存在一个目标节点；`popup.*` 必须位于弹层宿主层而不是触发侧树内。
 2. 钉住状态下 `Popup.IsOpen=true` 且 `IsLightDismissEnabled=false`，并且**不得存在可见的 light-dismiss 遮罩层**。
@@ -500,7 +499,7 @@ Gallery 语义预览按 AtomUI 标准方式钉住模板内 Popup（`IsPopupPinne
   钉住期间该回传改为重新收敛回打开，以保持「外点/Escape 不改变有效打开状态」的钉住契约。
 
 这与共享 `AbstractSelect` 的既有约定一致（`Select` / `Cascader` / `TreeSelect` 的模板同样不声明 `IsOpen` 绑定）。
-回归护栏见 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxPinnedPopupOverlayTests.cs`。
+遮罩与开合路径按本节条件临时验收。
 
 Gallery 语义预览的授权写法与「产品控件负责抑制」的完整说明见
 [语义部件预览](../../../../gallery/authoring/semantic-part-preview.md)；Popup 首次打开竞态与钉住遮罩的排查记录见
@@ -520,8 +519,7 @@ Gallery 语义预览的授权写法与「产品控件负责抑制」的完整说
 - 设置 `DisplayMemberBinding` / `TextSearch.TextBinding` 指向文本属性。
 
 注意弹层行文本与输入框文本是**两条独立呈现路径**：行文本由 `ItemTemplate` 决定，输入框文本由上述推导链决定。
-只配 `ItemTemplate` 时弹层行显示正常，输入框仍会回落——这正是本次缺陷只出现在输入框的原因。回归护栏见
-`ComboBoxSemanticPartHighlightTests.ComboBox_Semantic_Preview_Editable_Input_Shows_The_Item_Text`。
+只配 `ItemTemplate` 时弹层行显示正常，输入框仍会回落。变更时临时验收可编辑预览的输入框确实显示所选项文本。
 
 #### `IsPopupPinnedOpen` 的可见性
 
@@ -529,14 +527,6 @@ Gallery 语义预览的授权写法与「产品控件负责抑制」的完整说
 `Select` / `AbstractSelect`、`AutoComplete`、`Mentions`、`ColorPicker`、`InfoPickerInput`、`Menu`、`NavMenu`、
 `DropdownButton`、`SplitButton`、`Tour`、`FlyoutHost` 的既有声明一致（标准 XML 注释也逐字对齐）。
 
-`tests/AtomUI.Desktop.Controls.Tests/Popup/PopupPinnedOpenContractTests.cs` 中名为
-`Direct_Popup_Pinned_Open_Contracts_Are_Internal` 的 Theory **在列表中包含 ComboBox 并断言该契约必须为 internal**，
-但该 Theory 与 `Leaf_Controls_Inherit_The_Contract_From_Their_Semantic_Owner` **实际执行 0 个用例**（`MemberData`
-未产出数据），因此从未真正强制。同一列表内的其他成员（`AbstractSelect`、`AbstractAutoComplete`、
-`InfoPickerInput`、`Mentions`、`Menu`、`NavMenu`、`DropdownButton`、`SplitButton`、`Tour`、`FlyoutHost`）
-**均已声明为 public**，与该 Theory 的断言直接矛盾——即「必须 internal」并非现行标准，该 Theory 是失效的陈旧断言。
-本次以「同族控件的一致性」为准提升为 public，未改测试。
-
-实现与测试入口：`tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxSemanticPartTests.cs`；Gallery 示例见
+Gallery 示例见
 `controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox`。视觉验收步骤与结论见
 `docs/superpowers/specs/` 下的 ComboBox 验收记录（真机截图由用户回传）。

@@ -64,7 +64,7 @@ Token 和本地化开发的源代码生成器。欢迎提交 Issue、PR 和改�
 #### 运行环境
 
 .NET 8、.NET 10、.NET 11（NuGet 包提供 net8.0 / net10.0 / net11.0）<br>
-Avalonia 12.1.6<br>
+Avalonia 12.2.0<br>
 支持 Windows、macOS 12 及以上、Linux 跨平台<br>
 
 源码构建需要 .NET SDK 10.0.300 或更高版本（含 SDK 11）；Release 三框架打包需要 SDK 11。浏览器版 Gallery 需要原生链接

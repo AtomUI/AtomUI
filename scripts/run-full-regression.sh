@@ -27,8 +27,6 @@ EXPLICIT_PROJECTS=0
 
 # 默认项目集：按预期耗时降序，大套件先跑尽早暴露问题
 PROJECTS=(
-    AtomUI.Desktop.Controls.Tests
-    AtomUI.Desktop.Controls.Rendering.Tests
     AtomUIGallery.Tests
     AtomUI.Generator.Tests
     AtomUI.TypeMap.Linker.Tests

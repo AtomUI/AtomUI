@@ -70,7 +70,7 @@ requests are welcome.
 #### Requirements
 
 .NET 8, .NET 10 and .NET 11 (NuGet packages ship net8.0 / net10.0 / net11.0)<br>
-Avalonia 12.1.6<br>
+Avalonia 12.2.0<br>
 Windows, macOS 12 or later, and Linux<br>
 
 Building from source requires .NET SDK 10.0.300 or later (SDK 11 included); packing the three Release target

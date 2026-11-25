@@ -258,17 +258,17 @@ TreeSelect 通过 AbstractSelect 继承根弹层配置，主题默认与用户�
 
 对应验证：
 
-- `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectBehaviorTests.cs`：模板右侧 AXAML binding 和剩余 sibling relay binding。
-- `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectSelectionBindingTests.cs`：`SelectedItem` / `SelectedItems` 默认双向绑定、data validation metadata、`SelectedItems` 原地变更和 checkable TreeView 同步。
-- `tests/AtomUI.Desktop.Controls.Tests/SizeType/CustomizableSizeTypeContractTests.cs`：TreeSelect 的 `ICustomizableSizeTypeAware` 契约。
-- `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectKeyboardNavigationTests.cs`：下拉树不可聚焦、方向键不改变值、Enter 提交并关闭单选下拉、勾选模式 Space 切换并保持打开、Escape 关闭、关闭后清除活动项。
-- `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectSemanticPartTests.cs`：descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、多选搜索输入 marker、前缀部件内联呈现、popup 部件 marker 暴露。
-- `tests/AtomUIGallery.Tests/ShowCases/TreeSelectShowCasePageTests.cs`：Gallery TreeSelect 页面结构、示例和源码片段约束。
+- 临时验收覆盖模板右侧 AXAML binding 和剩余 sibling relay binding。
+- 临时验收覆盖`SelectedItem` / `SelectedItems` 默认双向绑定、data validation metadata、`SelectedItems` 原地变更和 checkable TreeView 同步。
+- 临时验收覆盖TreeSelect 的 `ICustomizableSizeTypeAware` 契约。
+- 临时验收覆盖下拉树不可聚焦、方向键不改变值、Enter 提交并关闭单选下拉、勾选模式 Space 切换并保持打开、Escape 关闭、关闭后清除活动项。
+- 临时验收覆盖descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、多选搜索输入 marker、前缀部件内联呈现、popup 部件 marker 暴露。
+- Gallery 临时验收要点：Gallery TreeSelect 页面结构、示例和源码片段约束。
 
 维护 TreeSelect 后至少运行：
 
 ```bash
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls/TreeSelect
 git diff --check
 ```
 

@@ -154,8 +154,6 @@ Semantic Part 改造不增加反射、运行时 descriptor 扫描、订阅、tim
 - Gallery 高亮测试验证 root/list/item 的 adorner 数量，并验证离开 Semantic Parts 页签后释放高亮会话。
 - Gallery 示例与四语种描述必须与本文件的 Part 名称和定制边界一致。
 
-对应回归位于：
+临时验收覆盖 Gallery 示例的部件高亮、定制样式及示例行为。
 
-- `tests/AtomUI.Desktop.Controls.Tests/Upload/UploadSemanticPartTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/UploadSemanticPartHighlightTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/UploadShowCasePageTests.cs`
+- 具体控件按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收。

@@ -156,6 +156,8 @@ Margin / TranslateY，不改变字号、轨道和显式/隐式自定义模板布
 19 项（约 1 秒），合计 2067 项通过、零失败、零跳过。测量工具 Release 构建零警告、零错误；实现阶段不运行
 affected-wide 或全量，随后发版补验见下一节。
 
+以下命令记录当次验收入口。当前控件与 DataGrid 呈现类场景按[单元测试与验收规范](../../../engineering/development/test-value-and-lifecycle.md)临时验证。
+
 ```bash
 state_motion_filter="$(python3 -c 'names="Breadcrumb ButtonSpinner Buttons Card Carousel Cascader CheckBox Collapse ColorPicker ComboBox Dialog Drawer FloatButton ImagePreviewer Input ListBox ListView Menu NavMenu OptionButtonGroup OtpLineEdit Pagination RadioButton Rate ScrollViewer Segmented Slider SplitView Switch TabControl TextBlock TimePicker TreeView Upload WindowTitleBar".split(); print("|".join("FullyQualifiedName~."+name+"." for name in names))')"
 dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore --filter "$state_motion_filter"

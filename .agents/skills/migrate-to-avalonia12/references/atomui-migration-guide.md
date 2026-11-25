@@ -281,7 +281,7 @@ internal static TopLevel? GetVisualRootTopLevel(this Visual visual)
 ```bash
 dotnet test src/AtomUI.Core.Tests
 dotnet test src/AtomUI.Controls.Tests
-dotnet test src/AtomUI.Desktop.Controls.Tests
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls
 ```
 
 ### Integration Tests

@@ -522,7 +522,7 @@ ListView 相关验证入口：
 - `tools/performances/AtomUI.Performance/Suites/ListView/ListViewScenarios.cs`
 - `controlgallery/AtomUIGallery/ShowCases/DataDisplay/List/`
 - `tests/AtomUI.Controls.Shared.Tests/` 中与 collection view、排序、过滤或数据成员访问器相关的测试。
-- `tests/AtomUI.Desktop.Controls.Tests/` 中与 ListView、Selection 或 Pagination 相关的测试。
+- ListView 选择和分页按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)验收。
 
 建议验证命令：
 
@@ -530,7 +530,7 @@ ListView 相关验证入口：
 dotnet run --project tools/performances/AtomUI.Performance/AtomUI.Performance.csproj -c Debug --framework net10.0 --no-restore -- --verify-listview-states
 dotnet run --project tools/performances/AtomUI.Performance/AtomUI.Performance.csproj -c Debug --framework net10.0 --no-build -- --suite listview --count 60
 dotnet test tests/AtomUI.Controls.Shared.Tests/AtomUI.Controls.Shared.Tests.csproj --framework net10.0 --no-restore
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls/ListView
 git diff --check
 ```
 

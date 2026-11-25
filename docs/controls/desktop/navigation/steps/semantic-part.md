@@ -227,7 +227,5 @@ selector 重新声明该状态的值。
 - `item` 的 `SelectorRoute` 为 `> .semantic-item`，七个子 Part 为
   `> .semantic-item /template/ .semantic-item-x`；容器边界路由形状是稳定契约，删除或重命名 marker、
   改变 marker 类型或 cardinality 时必须同步生成 descriptor、主题 marker、运行时代码与回归测试。
-- 运行时 marker 行为回归测试见
-  `tests/AtomUI.Desktop.Controls.Tests/Steps/StepsSemanticPartTests.cs` 与
-  `tests/AtomUI.Desktop.Controls.Tests/Steps/StepsRootFrameTests.cs`；
-  Gallery 预览与样式示例验证见 `tests/AtomUIGallery.Tests/ShowCases/StepsShowCasePageTests.cs`。
+- 临时验收运行时 marker 和 root frame 行为。
+- 临时验收 Gallery 预览与样式示例。

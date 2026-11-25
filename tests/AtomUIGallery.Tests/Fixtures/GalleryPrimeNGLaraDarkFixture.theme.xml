@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="https://atomui.net/schemas/theme/v2" Id="GalleryPrimeNGLaraDarkFixture" Name="PrimeNG Lara dark fixture" Language="PrimeNG" Style="Lara" Appearance="Dark">
-  <Tokens>
-    <Token Name="ColorPrimary" Value="#020617" />
-  </Tokens>
-</Theme>

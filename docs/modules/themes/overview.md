@@ -33,9 +33,9 @@ src/DesignLanguages/<Lang>/
 - `Use<Lang>()` 启用语言；`Add*()` 只登记取值，控件包由应用自己的 `UseDesktopControls()` 等启用。
 - 每个推导类写全它的控件 Token（`ATOMUIGEN050`），取值包覆盖它所对应控件包的每个 Token 类（`ATOMUIGEN052`），在启动时还
   校验控件包的 Token Schema 摘要。
-- 每种语言有自己的测试工程：`tests/AtomUI.DesignLanguages.Shadcn.Tests`、`tests/AtomUI.DesignLanguages.PrimeNG.Tests`；
-  Ant Design 的契约测试在 `tests/AtomUI.Desktop.Controls.Tests/Theme/AntDesignControlContractTests.cs`。三者都运行
-  `AtomUI.Theme.ContractTests` 的设计语言契约。
+- 内核设计语言契约由 `AtomUI.Core.Tests` 验证。Shadcn 和 PrimeNG 的测试工程复用
+  `AtomUI.Theme.ContractTests` 中的契约验证。Ant Design 的控件取值按
+  [主题生效测试规范](../../engineering/development/theme-effect-tests.md)临时验收。
 
 ## 约束
 

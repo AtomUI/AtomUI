@@ -318,8 +318,7 @@ cardinality，或让任一内置模板变体缺少 marker，均属于公共主�
 
 - owner descriptor 只包含 §1 的 5 个 Part，字段值与本文一致（`item` / `itemTitle`=`Multiple`、
   `popup.*`=`CrossVisualRoot` + `RuntimeCreated`，`itemIcon` / `itemContent` / `itemTitle` 另含
-  `CrossNestedOwners`），见
-  `tests/AtomUI.Desktop.Controls.Tests/DropdownButton/DropdownButtonSemanticPartTests.cs`。
+  `CrossNestedOwners`）。
 - `DropdownButtonTheme.axaml` 与 `DropdownButtonBaseTheme.axaml` 的 4 个内置模板不携带任何静态 semantic
   marker（触发器侧不发布 Semantic Part）。
 - `popup.root` marker 在 `MenuFlyoutPresenter.OnApplyTemplate` 注入到弹层根视觉面 `ArrowDecoratedBox`；`item`

@@ -282,8 +282,7 @@ presenter，直接使用 `TextElement.Foreground` 或 `Foreground` 定制文本�
   共享 `TextAreaTheme.axaml` 与 `TextAreaDecoratedBoxTheme.axaml` 携带 `prefix` / `content` / `placeholder` /
   `input` / `clear` 相关 marker 与 scope 锚点。
 - `popup.listItem` 的 marker 在 `CandidateList.CreateContainerForItemOverride()` 容器创建路径注入。
-- 生成的 `Mentions*Style` 可编译并命中目标节点（见
-  `tests/AtomUI.Desktop.Controls.Tests/Mentions/MentionsSemanticPartTests.cs`）。
+- 生成的 `Mentions*Style` 可编译并命中目标节点。
 - 钉住弹层在打开前抑制 light-dismiss 遮罩；重开与模板重应用后弹层部件 marker 保持。
 - 状态变化（`IsAllowClear`、`IsReadOnly`、`IsDropDownOpen`、`IsLoading`、disabled）不改变 marker 身份与数量语义。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。

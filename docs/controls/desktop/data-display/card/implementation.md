@@ -327,15 +327,15 @@ AOT 边界：
 
 验证范围：
 
-- `CardBehaviorTests`：CardGridContent 行列定义 wrapper、ContentType 回退、旧内容 SizeType 绑定释放、GridItem container disposable 释放。
-- `CardBehaviorTests` 还验证 Frame 内缘布局、Borderless 默认无边框，以及 owner-scoped root style 可恢复 Borderless 外框。
-- `CardBehaviorTests` 还验证 Skeleton 仅在加载期间存在、加载切换后内容恢复、Actions 同步与面板可见性、Headerless 随 Header/Extra 变化，以及默认 Card 不含 Skeleton 视觉元素。
-- `AbstractCardTests`（`AtomUI.Controls.Tests`）：验证共享基类的加载指示器按需创建与移除、快速切换无残留、重新应用模板、缺少宿主时不创建、Actions 钩子与可见性、Headerless 判定。
-- `CardSemanticPartTests`：验证 `Card` 与 `CardMetaContent` descriptor、静态 marker、真实模板 cardinality、Headerless、Loading、Meta/Grid/Tabs、动态 Actions 和同名 title owner 隔离。
+- 临时验收覆盖 CardGridContent 行列定义 wrapper、ContentType 回退、旧内容 SizeType 绑定释放、GridItem container disposable 释放。
+- 临时验收覆盖 Frame 内缘布局、Borderless 默认无边框，以及 owner-scoped root style 可恢复 Borderless 外框。
+- 临时验收覆盖 Skeleton 仅在加载期间存在、加载切换后内容恢复、Actions 同步与面板可见性、Headerless 随 Header/Extra 变化，以及默认 Card 不含 Skeleton 视觉元素。
+- 临时验收共享基类的加载指示器按需创建与移除、快速切换无残留、重新应用模板、缺少宿主时不创建、Actions 钩子与可见性、Headerless 判定。
+- 临时验收覆盖  `Card` 与 `CardMetaContent` descriptor、静态 marker、真实模板 cardinality、Headerless、Loading、Meta/Grid/Tabs、动态 Actions 和同名 title owner 隔离。
 - Gallery Card 示例：Basic、NoBorder、Simple、CustomizedContent、CardInColumn、GridCard、InnerCard、LoadingCard、WithTabs、MoreContentConfiguration 和 `v6.1.3` Semantic Part 样例。
-- `CardShowCasePageTests`：Card ShowCase 页面结构、本地化、源码片段、示例 snapshot，以及 Semantic 样例完整尺寸基线。
-- 修改运行时代码时运行 `tests/AtomUI.Desktop.Controls.Tests` 中 Card 相关测试，并按影响范围扩大到完整 Desktop 控件测试。
-- 修改 Gallery 或 Gallery 示例或源码片段时运行 `tests/AtomUIGallery.Tests` 中 Card ShowCase 相关测试。
+- 临时验收 Card ShowCase 页面结构、本地化、源码片段和语义样例尺寸基线。
+- 修改运行时代码时按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)验收相关行为。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - Semantic Part 验证覆盖两个 descriptor、静态 marker、空区域、Loading、Meta/Grid/Tabs、动态 Actions、owner 隔离和未声明
   owner 排除边界。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

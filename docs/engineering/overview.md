@@ -17,7 +17,7 @@
 
 ## Development
 
-- [测试价值与生命周期规范](development/test-value-and-lifecycle.md)：Bug 修复强制验收、临时测试默认删除、常驻测试准入与清理。
+- [单元测试与验收规范](development/test-value-and-lifecycle.md)规定内核单测准入、控件临时验收、存量清理和交付要求。
 - [AOT 编程规范](development/aot-programming-guidelines.md)
 - [编译期诊断规范](development/compiler-diagnostics-guidelines.md)
 - [代码风格规范](development/code-style-guidelines.md)
@@ -25,7 +25,7 @@
 - [Control 研发规范](development/control-development-guidelines.md)
 - [Control Token 规范](development/control-token-guidelines.md)
 - [设计语言取值包命名实施标准](development/value-package-naming.md)
-- [主题生效测试规范](development/theme-effect-tests.md)：承诺面中每个 Token 的扰动对比测试、骨架生成与家族门禁。
+- [主题生效测试规范](development/theme-effect-tests.md)规定 Token 扰动对比、临时场景及家族验收。
 - [Scoped Resource Host](development/scoped-resource-host.md)
 - [Popup Anchor 作用域](development/popup-anchor-scope.md)
 

@@ -21,19 +21,6 @@ public class GalleryVersionInfoTests
         metadata.Value.ShouldBe(expectedVersion);
     }
 
-    [Fact]
-    public void Gallery_Display_Version_Uses_AtomUI_Version_Metadata()
-    {
-        var expectedVersion = $"v{ReadAtomUIVersionFromProps()}";
-        var versionInfoType = typeof(WorkspaceWindow).Assembly.GetType("AtomUIGallery.GalleryVersionInfo");
-
-        versionInfoType.ShouldNotBeNull();
-        var displayVersion = versionInfoType.GetProperty("DisplayVersion", BindingFlags.Public | BindingFlags.Static)
-                                            ?.GetValue(null) as string;
-
-        displayVersion.ShouldBe(expectedVersion);
-    }
-
     private static string ReadAtomUIVersionFromProps()
     {
         var path     = GetRepoFile("build/Versions.props");

@@ -4,13 +4,6 @@ import re
 
 _GALLERY_SHOWCASE_ROOT = "tests/AtomUIGallery.Tests/ShowCases/"
 _TEMPORARY_SEGMENT = "/Temporary/"
-_PRIVATE_SOURCE_ARCHITECTURE_ALLOWLIST = {
-    "tests/AtomUI.Desktop.Controls.Tests/Menu/MenuTitleBarPopupTests.cs",
-    "tests/AtomUI.Desktop.Controls.Tests/Upload/UploadTriggerTests.cs",
-    "tests/AtomUIGallery.Tests/Controls/GalleryStickyTabsHostTests.cs",
-    "tests/AtomUIGallery.Tests/ShowCases/TabOverflowSearchShowCaseTests.cs",
-    "tests/AtomUIGallery.Tests/Workspace/BrowserGalleryConventionsTests.cs",
-}
 
 
 def _violation(category, path, detail):
@@ -106,8 +99,7 @@ def audit_low_value_permanent_tests(repository):
                 path,
                 "exact enum member inventories duplicate compilation and package ApiCompat"))
 
-        if (path not in _PRIVATE_SOURCE_ARCHITECTURE_ALLOWLIST and
-                "File.ReadAllText" in source and
+        if ("File.ReadAllText" in source and
                 re.search(
                     r"Should(?:Not)?Contain\(\s*\"(?:_[A-Za-z]\w*|"
                     r"(?:Notify|Configure|TryTakeOver|Request|ApplyPending)[A-Za-z]\w*)",

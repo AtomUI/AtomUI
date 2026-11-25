@@ -293,13 +293,13 @@ owner-to-context 同步与 context-to-owner 请求使用不同入口，并在值
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - page-size changer 定制覆盖：默认值与默认 ComboBox 回归、自定义模板物化、Context 双向同步、正整数边界、
   `PageSize=0` 有效值、外部 TwoWay binding 保留、`CurrentPage` 收敛、禁用态继承、模板运行时切换和 re-template 释放。
-- Semantic Part 契约变更运行 `tests/AtomUI.Desktop.Controls.Tests/Pagination/PaginationSemanticPartTests.cs`，
-  Gallery 语义预览与样式示例变更运行 `tests/AtomUIGallery.Tests/ShowCases/PaginationShowCasePageTests.cs`。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- Semantic Part 契约变更临时验收控件部件与运行时 marker。
+- Gallery 语义预览与样式示例变更临时验收预览与样式命中。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - Gallery 自定义模板使用 `x:DataType="atom:PaginationSizeChangerContext"`，并由 Gallery 测试锁定公开 API 用法。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证；自定义模板实现后至少验证编译绑定与真实
   Gallery NativeAOT publish。

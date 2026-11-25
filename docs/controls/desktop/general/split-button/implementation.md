@@ -165,11 +165,10 @@ SplitButton 实例拥有组合浮层配置，经关联 Flyout 单向进入 Popup
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试；Semantic Part 契约由
-  `tests/AtomUI.Desktop.Controls.Tests/Buttons/SplitButtonSemanticPartTests.cs` 覆盖（descriptor 形态、触发侧
-  静态 marker、pinned-open 弹层物化、生成 Style 命中）。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收。
+  Semantic Part 验收覆盖 descriptor、触发侧静态 marker、pinned-open 弹层物化和生成 Style 命中。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，

@@ -166,7 +166,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。
 - `ToolTipTheme.axaml` 的 `ArrowDecoratedBox` 节点携带 `.semantic-scope-arrow-decorated-box` 锚点；
   `ArrowDecoratedBoxTheme.axaml` 的内容盒与箭头节点分别携带 `.semantic-container` / `.semantic-arrow` marker。
 - 生成的 `ToolTipContainerStyle` / `ToolTipArrowStyle` 可编译并跨越嵌套 owner 模板边界命中最低 public
-  `ContractType`（见 `tests/AtomUI.Desktop.Controls.Tests/Tooltip/ToolTipSemanticPartTests.cs`）。
+  `ContractType`。
 - `IsArrowVisible` 与 `:bordered` 状态不改变 marker 身份；箭头隐藏时解析结果为零实例，与 `Optional` 一致。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Gallery Semantic Parts Tab 中 3 个 Part 均可解析高亮。

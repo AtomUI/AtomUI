@@ -24,8 +24,6 @@
         <InternalsVisibleTo Include="AtomUI.Controls.Tests" />
         <InternalsVisibleTo Include="AtomUI.Controls.Shared.Tests" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls" />
-        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
-        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.ColorPicker" />
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Extras" />

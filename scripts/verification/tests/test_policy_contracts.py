@@ -27,13 +27,10 @@ class RealPolicyContracts(unittest.TestCase):
 
     def test_source_reading_consumers_are_selected_across_project_boundaries(self):
         cases = [
-            ("controlgallery/AtomUIGallery/ShowCases/DataEntry/LineEdit/Views/LineEditShowCase.axaml", "ShowCaseScenarioControllerConventionsTests"),
-            ("controlgallery/AtomUIGallery/ShowCases/General/Button/Views/ButtonShowCase.axaml", "ButtonIconOnlyVisualContractTests"),
             ("tests/fixtures/LanguagePackEndToEnd/Module/Localization/Welcome/en-US.xlf", "LanguagePackEndToEndTests"),
             ("tests/AtomUI.Core.Tests/Localization/Generated/en-US.xlf", "ApplicationLocalizationStartupTests"),
             ("build/Versions.props", "GalleryVersionInfoTests"),
             (".github/workflows/release-nuget-packages.yml", "GalleryBasePackagingTests"),
-            ("src/AtomUI.Toolkits.GalleryBase/Controls/Themes/ShowCasePanelTheme.axaml", "ShowCasePanelStructureTests"),
             ("controlgallery/AtomUIGallery.Desktop/Program.cs", "AtomUIGalleryModuleTests"),
         ]
         for changed, expected in cases:

@@ -115,24 +115,28 @@
                     <gallery:ShowCaseItem.DeferredContentTemplate>
                         <DataTemplate x:DataType="vm:ListViewModel">
                     <StackPanel Spacing="12">
-                        <atom:ListView Width="240"
+                        <atom:ListView Name="SelectionExample"
+                                       Width="240"
                                        Height="180"
                                        SelectionMode="Multiple"
-                                       ItemsSource="{Binding SelectionListItems}"
-                                       SelectedItems="{Binding BoundSelectedItems}"
+                                       Loaded="HandleSelectionExampleLoaded"
+                                       Unloaded="HandleSelectionExampleUnloaded"
+                                       SelectionChanged="HandleSelectionExampleChanged"
                                        IsShowSelectedIndicator="True" />
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <atom:TextBlock VerticalAlignment="Center"
                                             Text="{gallery:ListShowCaseLangResource P2TextSelectedItems}" />
                             <atom:TextBlock VerticalAlignment="Center"
-                                            Text="{Binding BoundSelectedItemsText}" />
+                                            Text="{Binding SelectionExampleText}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <atom:Button SizeType="Small"
-                                         Command="{Binding SelectBoundSelectedItemsCommand}"
+                                         Command="{Binding SelectExampleItemsCommand}"
+                                         CommandParameter="{Binding #SelectionExample.Selection}"
                                          Content="{gallery:ListShowCaseLangResource P2ContentSelectColors}" />
                             <atom:Button SizeType="Small"
-                                         Command="{Binding ClearBoundSelectedItemsCommand}"
+                                         Command="{Binding ClearExampleSelectionCommand}"
+                                         CommandParameter="{Binding #SelectionExample.Selection}"
                                          Content="{gallery:ListShowCaseLangResource P2ContentClearSelection}" />
                         </StackPanel>
                     </StackPanel>

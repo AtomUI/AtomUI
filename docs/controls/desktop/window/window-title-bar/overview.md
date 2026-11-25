@@ -244,14 +244,14 @@ Windows/Linux 的 Leading 容器使用 `HorizontalSpacing` 消费 `LogoAndLeftAd
 
 稳定行为由以下测试覆盖：
 
-- `WindowTitleBarLogoVisibilityTests`：Logo 默认值、平台规则、全屏规则和 Window 投影。
-- `WindowTitleBarTitleVisibilityTests`：标题有效可见性计算、`IsTitleVisible` 默认值与空字符串语义、Logo Auto 联动、Window 投影和全屏层绑定。
-- `WindowTitleBarLayoutPanelTests`：共享几何、Logo/LeftAddOn 条件间距、margin 单次计入、左右 add-on 动态内容、窄窗口和非法 metrics。
-- `WindowTitleBarLayoutStrategyTests`：平台 `Auto`、CSD、WindowState 与 native inset 归一。
-- `WindowTitleBarTokenTests`：Token 默认值、三平台 caption 视觉和 Windows edge layout。
-- `WindowCaptionButtonConfigurationTests`：caption visibility 默认值、能力隔离、状态矩阵、内容区/多标题栏宿主发现、真实 pointer 双击切换、宿主切换、动态投影和模板生命周期。
-- `WindowTitleBarButtonTests`：AddOn 按钮继承关系，active/motion/platform 状态投影，checked/unchecked 图标切换，detach 回退，Windows 40×40 与自定义高度方形几何，真实 pointer hover/pressed/exit 状态，macOS 与相邻 managed caption button 的正圆一致性，Linux 尺寸/圆角/光标回归，以及独立主题资产注册和指针输入隔离。
-- `ImagePreviewerTitleBarThemeTests`：派生标题栏的标题组、操作区和平台模板契约。
+- 临时验收覆盖 Logo 默认值、平台规则、全屏规则和 Window 投影。
+- 临时验收覆盖 标题有效可见性计算、`IsTitleVisible` 默认值与空字符串语义、Logo Auto 联动、Window 投影和全屏层绑定。
+- 临时验收覆盖 共享几何、Logo/LeftAddOn 条件间距、margin 单次计入、左右 add-on 动态内容、窄窗口和非法 metrics。
+- 临时验收覆盖 平台 `Auto`、CSD、WindowState 与 native inset 归一。
+- 临时验收覆盖 Token 默认值、三平台 caption 视觉和 Windows edge layout。
+- 临时验收覆盖 caption visibility 默认值、能力隔离、状态矩阵、内容区/多标题栏宿主发现、真实 pointer 双击切换、宿主切换、动态投影和模板生命周期。
+- 临时验收覆盖 AddOn 按钮继承关系，active/motion/platform 状态投影，checked/unchecked 图标切换，detach 回退，Windows 40×40 与自定义高度方形几何，真实 pointer hover/pressed/exit 状态，macOS 与相邻 managed caption button 的正圆一致性，Linux 尺寸/圆角/光标回归，以及独立主题资产注册和指针输入隔离。
+- 临时验收覆盖 派生标题栏的标题组、操作区和平台模板契约。
 
 验证策略：
 

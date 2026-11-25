@@ -132,8 +132,7 @@ Semantic Style 服从 Avalonia 原生属性优先级。
 - owner 模板与嵌套输入控件模板携带对应 `semantic-*` marker；`popup.listItem` marker 由 `CandidateListItem`
   模板在运行时实例化路径携带。
 - 生成的 `AutoComplete*Style` / `AutoCompleteSearchEdit*Style` / `AutoCompleteTextArea*Style` 可编译并跨越
-  嵌套 owner 模板边界命中最低 public `ContractType`（见
-  `tests/AtomUI.Desktop.Controls.Tests/AutoComplete/AutoCompleteSemanticPartTests.cs`）。
+  嵌套 owner 模板边界命中最低 public `ContractType`。
 - `IsAllowClear`、Status、候选开关等状态变化不改变 marker 身份与数量语义。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Gallery Semantic Parts Tab 延迟创建 Preview，9 个 Part 均可解析高亮。

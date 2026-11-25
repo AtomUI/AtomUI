@@ -175,7 +175,7 @@ Token 变更要求：
 | `SelectAffixPadding` | Reserved：`antd Select selectAffixPadding`，前缀由 `MultiModePrefixIndent*` 对齐、后缀位于输入帧 padding 内，暂无独立的前后缀内边距。 |
 | `FixedItemMargin` | Reserved：`antd INTERNAL_FIXED_ITEM_MARGIN`，多选标签由标签面板间距与 `MultipleItemHeight*` 布局，暂不施加标签外边距。 |
 
-生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests*.cs`。
+主题改动按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证受影响 Token 的实际效果和作用域隔离。
 
 ## 独立 Token 身份与共享计算
 

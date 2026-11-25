@@ -18,12 +18,12 @@ Expander 的实现重点是在 Avalonia `Expander` 基础上稳定扩展 AtomUI 
 - `src/AtomUI.Desktop.Controls/Expander/Expander.SemanticParts.cs`：五个 Semantic Part 的声明与生成式 descriptor 输入
   （本次改造新增，Gate B 交付）；`body` 在此声明 `Cardinality=Optional`。
 - `src/AtomUI.Desktop.Controls/Expander/Themes/ExpanderTheme.axaml`：控件模板、SizeType 分支、方向分支、图标位置分支、触发分支、Borderless/Ghost 分支和 token 引用；四个静态 `.semantic-*` marker 在此声明。
-- `tests/AtomUI.Desktop.Controls.Tests/Expander/ExpanderBehaviorTests.cs`：Expander 行为和布局回归测试。
-- `tests/AtomUI.Desktop.Controls.Tests/Expander/ExpanderSemanticPartTests.cs`：Semantic Part descriptor、模板 marker 契约、
+- 临时验收覆盖 Expander 行为和布局。
+- 临时验收覆盖 Semantic Part descriptor、模板 marker 契约、
   生成 Style 命中与 `body` 呈现语义的回归测试（本次改造新增，Gate B 交付）。
 - `src/AtomUI.Core/Animations/Motion`：可复用动效定义、请求身份、框架时钟、属性覆盖与可见性生命周期。
 - `src/AtomUI.Controls/Primitives/ContentViewport.cs`：自然内容测量、实际视口、占位与四方向锚定。
-- `tests/AtomUI.Desktop.Controls.Tests/Motion`：共用展开机制的帧级几何和边界回归。
+- 临时验收共用展开机制的帧级几何和边界。
 
 ## 3. 核心类职责
 
@@ -144,7 +144,7 @@ Expander owner，因此路由保持单一 `/template/` 边界，不穿越 `Layou
 控件、没有 item 索引语义，因此选择在根节点统一裁剪，而不是复制 Collapse 的逐 corner 计算。
 
 测试限制：headless 测试平台的几何包含性无法表示圆角图形，`DashedBorder.UpdateClip` 会按设计把裁剪降级为**不应用**
-（见 `DashedBorderClipContentTests.Clip_Is_Not_Applied_When_The_Platform_Cannot_Hit_Test_The_Rounded_Figure`）。因此自动化
+。因此自动化
 测试只能断言模板契约（`ClipContentToCornerRadius` 为 `true`、`CornerRadius` 非零）与几何前置条件（header 位于角落圆角
 区域内），**实际裁剪效果必须在真实 Skia 后端做视觉验证**。
 
@@ -328,15 +328,15 @@ AOT 边界：
 
 验证范围：
 
-- `ExpanderBehaviorTests.Custom_Header_Padding_Uses_Compact_Expand_Icon_Layout`：自定义 HeaderPadding 下展开图标间距和垂直居中。
-- `ExpanderBehaviorTests.Content_Separator_Is_Owned_By_Content_And_Follows_Direction`：Header 分隔线归零、未命名 Content border owner 和四方向 thickness 映射。
-- `ExpanderBehaviorTests.Content_Separator_Remains_Adjacent_To_Header_In_Every_Direction`：四方向下 Header 与 Content 的物理相邻关系。
-- `ExpanderBehaviorTests.Ghost_And_Borderless_Mode_Update_Frame_And_Content_Separator_At_Runtime`：运行时切换默认、Borderless 和 Ghost 模式时根边框与 Content 分隔线同步归零或恢复。
-- `ExpanderBehaviorTests.Icon_Trigger_Does_Not_Toggle_From_Header_Click`：Icon 触发模式下 Header 点击不切换。
-- `ExpanderBehaviorTests.Content_Motion_Reversal_Does_Not_Change_Separator_And_Uses_Latest_Expanded_State`：快速反向 motion 使用最新展开状态，且分隔线保持不变。
-- `ExpanderBehaviorTests.Template_Reapply_Clears_Old_Content_Motion_Actor_Values` / `Detach_Clears_Active_Content_Motion_Actor_Values`：模板重套用和 detach 的 cancellation 与临时值清理。
-- `ExpanderBehaviorTests.Frame_Enables_Content_Clip_To_Corner_Radius`：`PART_Frame` 开启圆角子级裁剪，且 header 位于圆角方形区域内（证明该裁剪承担遮挡职责）；覆盖展开/收起、Ghost、Borderless 组合。
-- `ExpanderBehaviorTests.Frame_Corner_Radius_Comes_From_The_Theme_And_Stays_Non_Degenerate`：`PART_Frame.CornerRadius` 来自 `ExpanderBorderRadius`（= `BorderRadiusLG`）且运行期可更新。
+- 临时验收覆盖 自定义 HeaderPadding 下展开图标间距和垂直居中。
+- 临时验收覆盖 Header 分隔线归零、未命名 Content border owner 和四方向 thickness 映射。
+- 临时验收覆盖 四方向下 Header 与 Content 的物理相邻关系。
+- 临时验收覆盖 运行时切换默认、Borderless 和 Ghost 模式时根边框与 Content 分隔线同步归零或恢复。
+- 临时验收覆盖 Icon 触发模式下 Header 点击不切换。
+- 临时验收覆盖 快速反向 motion 使用最新展开状态，且分隔线保持不变。
+- 临时验收模板重套用和 detach 的 cancellation 与临时值清理。
+- 临时验收覆盖 `PART_Frame` 开启圆角子级裁剪，且 header 位于圆角方形区域内（证明该裁剪承担遮挡职责）；覆盖展开/收起、Ghost、Borderless 组合。
+- 临时验收覆盖 `PART_Frame.CornerRadius` 来自 `ExpanderBorderRadius`（= `BorderRadiusLG`）且运行期可更新。
 - Gallery Expander 示例：Basic、Size、Borderless、Ghost、Custom Padding、Direction、Nested、No Arrow、Icon Position、Trigger。
 - Semantic Part：descriptor 的五个 Part 数量、顺序与字段（`header`/`icon`/`title` 为 `Single`、`body` 为 `Optional`、
   `RuntimeCreated=false`、`CrossVisualRoot=false`、无显式 `SelectorRoute`、`SelectorRoute` 由生成器规范化为

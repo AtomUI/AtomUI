@@ -175,12 +175,12 @@ Drawer 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - Popup-bearing 内容集成变更复用 [Modal 内容弹层叠放设计](../modal/popup-layering-design.md) 的入口库存、原语和控件家族矩阵；Drawer 只额外验证自身呈现层与 chrome lease 生命周期。
 - Drawer lifecycle 回归必须覆盖：Window target 到局部 target、Window 到另一 Window，以及父子 Drawer 同时打开时的 `OpenOn` 动态迁移；每条路径都断言旧 layer/lease 已释放且新 layer/lease 已建立。
 - 共享 owning TopLevel popup 路径由 Modal Popup 原语、控件家族、DataGrid 与入口库存测试覆盖；Drawer 的容器生命周期由自动化回归直接覆盖，真实窗口证据按平台独立记录。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 本专项当前实机证据为 Windows 已测试、macOS 已测试；Linux X11/Wayland 未测试。未执行平台不得根据共享代码路径

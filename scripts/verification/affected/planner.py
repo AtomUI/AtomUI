@@ -244,9 +244,13 @@ class Planner:
             for path in found:
                 selected[path].add(reason)
             if key in direct and (not found or group["area"].get("conservative", False)):
-                choose(group["area"]["tests"], "Conservative owner suite: " + key)
-                if not found:
-                    warnings.append("No precise test ownership/reference for " + key + "; selected complete owner suites")
+                owner_tests = group["area"]["tests"]
+                if owner_tests:
+                    choose(owner_tests, "Conservative owner suite: " + key)
+                    if not found:
+                        warnings.append("No precise test ownership/reference for " + key + "; selected complete owner suites")
+                elif not found:
+                    warnings.append("Build only; no permanent tests for " + key)
             if not found and key not in direct:
                 builds.update(group["projects"])
                 warnings.append("Consumer compiled without a dedicated test suite: " + key)

@@ -21,9 +21,9 @@ OtpLineEdit 的实现以控件根节点作为值、焦点位置、验证状态�
 
 测试与 Gallery：
 
-- `tests/AtomUI.Desktop.Controls.Tests/OtpLineEdit/OtpLineEditBehaviorTests.cs`：值归一化、输入、粘贴、删除、导航和 completed。
-- `tests/AtomUI.Desktop.Controls.Tests/OtpLineEdit/OtpLineEditFormValueTests.cs`：Form value、reset、validation 和 `DataValidationErrors`。
-- `tests/AtomUIGallery.Tests/ShowCases/LineEditShowCasePageTests.cs`：LineEdit 页面内的 OtpLineEdit 示例入口、v6.0.8 标记和 Form validator Provider 写法。
+- 临时验收覆盖值归一化、输入、粘贴、删除、导航和 completed。
+- 临时验收覆盖Form value、reset、validation 和 `DataValidationErrors`。
+- Gallery 临时验收要点：LineEdit 页面内的 OtpLineEdit 示例入口、v6.0.8 标记和 Form validator Provider 写法。
 - `controlgallery/AtomUIGallery/ShowCases/DataEntry/LineEdit/Views/LineEditShowCase.axaml`：Gallery 示例和源码片段来源。
 
 ## 3. 核心类职责

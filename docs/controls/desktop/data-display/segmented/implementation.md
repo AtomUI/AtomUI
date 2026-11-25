@@ -29,10 +29,10 @@ Segmented 的实现重点是把 Avalonia `SelectingItemsControl` 的单选状态
 Gallery 和测试：
 
 - `controlgallery/AtomUIGallery/ShowCases/DataDisplay/Segmented/`：Segmented 示例、源码片段和本地化文案。
-- `tests/AtomUI.Desktop.Controls.Tests/Segmented/SegmentedSelectionInitializationTests.cs`：选择初始化、Form value 和 expanding 布局回归测试。
-- `tests/AtomUI.Desktop.Controls.Tests/Segmented/SegmentedThumbMotionTests.cs`：选中滑块动效契约测试（过渡时长/缓动、选中 item 背景透明、飞行抑制态生命周期、无选中隐藏滑块、detach 清理）。
-- `tests/AtomUI.Desktop.Controls.Tests/SizeType/CustomizableSizeTypeContractTests.cs`：`ICustomizableSizeTypeAware` 契约测试。
-- `tests/AtomUIGallery.Tests/ShowCases/SegmentedShowCasePageTests.cs`：Gallery 页面结构和示例快照测试。
+- 临时验收覆盖选择初始化、Form value 和 expanding 布局回归测试。
+- 临时验收覆盖选中滑块动效契约测试（过渡时长/缓动、选中 item 背景透明、飞行抑制态生命周期、无选中隐藏滑块、detach 清理）。
+- 临时验收覆盖`ICustomizableSizeTypeAware` 契约测试。
+- Gallery 临时验收要点：Gallery 页面结构和示例快照测试。
 
 ## 3. 核心类职责
 
@@ -326,12 +326,12 @@ AOT 边界：
 
 - Segmented 选择测试：绑定选择保留、显式选择保留、默认选择、Form value、四方向键循环和 disabled/hidden 跳过。
 - Segmented 布局测试：横向/纵向自然布局、水平 expanding、无限约束退化、垂直宽度适配、动态方向切换和滑块 Bounds。
-- Segmented 滑块动效测试（`SegmentedThumbMotionTests`）：滑块过渡时长/缓动对齐上游契约、选中 item 背景保持透明、
+- Segmented 滑块动效验收覆盖过渡时长/缓动对齐上游契约、选中 item 背景保持透明、
   飞行抑制态在飞行窗口内置位并随计时器清除、motion 关闭时不置位、清除选中隐藏滑块、detach 清理飞行状态。
 - Segmented 主题测试：Orientation/Shape 属性默认值和传递、Round 对根/item/thumb 的最终圆角覆盖、各 SizeType 与 Custom 组合。
-- Segmented Semantic Part 测试：explicit / generated items 两条容器路径、图文 / 纯图标 / 纯文本选项、集合重置与选择变化下 marker 数量稳定、owner-scoped Semantic Style（`SegmentedItemStyle` / `SegmentedIconStyle` / `SegmentedLabelStyle`）命中对应最低 public 类型（`SegmentedSemanticPartTests`）。
-- `CustomizableSizeTypeContractTests`：`AbstractSegmented`、`Segmented`、`AbstractSegmentedItem`、`SegmentedItem` 支持 `CustomizableSizeType`。
-- `SegmentedShowCasePageTests`：Gallery 页面结构、示例快照、动态选项追加状态和源码片段。
-- 修改布局或选择行为时运行 `tests/AtomUI.Desktop.Controls.Tests` 中 Segmented 相关测试，并按影响范围扩大到完整 Desktop 控件测试。
-- 修改 Gallery 示例时运行 `tests/AtomUIGallery.Tests` 中 Segmented 相关测试。
+- Segmented Semantic Part 验收覆盖 explicit / generated items 两条容器路径、图文 / 纯图标 / 纯文本选项、集合重置与选择变化下 marker 数量稳定，以及 owner-scoped Semantic Style（`SegmentedItemStyle` / `SegmentedIconStyle` / `SegmentedLabelStyle`）命中对应最低 public 类型。
+- 临时验收覆盖 `AbstractSegmented`、`Segmented`、`AbstractSegmentedItem`、`SegmentedItem` 支持 `CustomizableSizeType`。
+- Gallery 临时验收页面结构、动态选项追加状态和源码片段。
+- 修改布局或选择行为时按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)验收相关行为。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

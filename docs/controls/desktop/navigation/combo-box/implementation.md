@@ -10,7 +10,6 @@ Popup 接入边界：`ComboBox` 负责业务状态和内容准备，template Pop
 打开弹层，使钉住场景留下整页拦截输入的遮罩。因此 `PART_Popup` 不声明 `IsOpen`：`OnApplyTemplate` 先 relay 钉住状态并
 抑制遮罩，之后才在 `IsDropDownOpen` 已为 true 时补开弹层；`IsDropDownOpen` 变更经 `OpenPopup` / `ClosePopup` 开合；
 原由 TwoWay 绑定承担的「弹层自行关闭回写」改由 `Popup.Closed` 处理器显式补齐。该形态与共享 `AbstractSelect` 一致，
-回归护栏见 `ComboBoxPinnedPopupOverlayTests`。
 
 ## 1. 实现定位
 
@@ -222,7 +221,7 @@ marker 归属表：
   绑定到 `AddOnDecoratedBox`。`InputControlFrame` 在值非空时置 `:host-border-brush` / `:host-background` 伪类，
   `InputControlFrameTheme` 在全部状态画刷之后用这两个伪类把根画刷投射到帧的 `BorderBrush` / `Background`。
 - 未设置或置空时伪类撤销，帧回到状态机；不再有代码侧 LocalValue 中继和接管标记，模板应用前设置的值同样经模板绑定生效。
-- 投射是主题样式值，应用样式（含 `frame` 专用 Style）优先于它；回归护栏见 `ComboBoxRootSurfaceRelayTests`。
+- 投射是主题样式值，应用样式（含 `frame` 专用 Style）优先于它。
 
 与 `frame` 部件的分工：根表面投射是**输入族的标准根定制入口**（改输入框边框色，作用于 owner 根）；`frame` 部件是
 **语义选择器入口**（可用 `.semantic-frame` 的专用 Style 精确命中帧节点，并覆盖状态无关的边框宽度、圆角、背景等）。
@@ -316,19 +315,19 @@ ComboBox 实例拥有 OpenMotion/CloseMotion 的有效值，组件主题提供 S
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - 空态行为验证以空 `ItemsSource`、已打开的实际 Popup 和有效可见的 `PART_EmptyIndicator` 为基线，同时检查布局尺寸、列表互斥、默认与自定义内容互斥。数据变化、过滤清空、开关与内容变更以及模板重应用覆盖范围见[架构设计 §4.1](overview.md#41-候选与空态)。
-- Semantic Part 变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxSemanticPartTests.cs`：断言 descriptor
+- Semantic Part 变更临时验收 descriptor
   的 Part 数量/顺序/字段（含 `frame` 的自定义边框色压过主题状态色）、静态 marker 集合、运行时容器 marker 的 prepare/clear/recycle 稳定性、生成专用 Style 恰好命中
   一个节点，并断言不存在 code-behind 属性回退。
 - 弹层部件变更需覆盖打开 / 关闭 / 重新打开与模板重应用后 marker 保持（用 public `IsPopupPinnedOpen` 钉住取证）。
-- Gallery Semantic 预览变更运行 `tests/AtomUIGallery.Tests/ShowCases/ComboBoxSemanticPartHighlightTests.cs`。预览按 AtomUI 标准方式钉住
+- Gallery Semantic 预览变更时临时验收。预览按 AtomUI 标准方式钉住
   模板内 Popup，13 个部件的 marker 全部在场并被断言；钉住状态下还断言**不存在可见的 light-dismiss 遮罩层**，并覆盖
   卡片真实悬停高亮（触发侧 `root` / `frame` / `indicator` 与弹层侧 `popup.root` / `popup.list` / `popup.listItem`）。
   遮罩层若残留会吞掉卡片悬停，使预览高亮整体失效——抑制时机契约见 [语义契约 §6.1](semantic-part.md)。
-- 钉住遮罩或弹层开合变更运行 `tests/AtomUI.Desktop.Controls.Tests/ComboBox/ComboBoxPinnedPopupOverlayTests.cs`。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- 钉住遮罩或弹层开合变更临时验收打开、关闭和钉住的 Overlay 路径。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 ## 状态动效初始化

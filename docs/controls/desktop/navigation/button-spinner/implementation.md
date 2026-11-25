@@ -163,7 +163,7 @@ ButtonSpinner 的交互事件应从输入源收敛到控件级语义事件：
   `ButtonSpinnerDecoratedBoxTheme.axaml` 之外，也不能把 `actions` 的 marker 移到 `ButtonSpinnerHandleTheme.axaml`
   之外——`.semantic-actions` 同时是按钮部件的解析锚点。
 - `ButtonSpinnerTheme.axaml` 的 `semantic-scope-frame` 与 `NumericUpDownSpinnerTheme.axaml` 的同名锚点各自保持
-  恰好一个，`NumericUpDownSemanticPartTests` 对此有断言。
+  恰好一个。
 - **禁止复用 `semantic-prefix` / `semantic-suffix`：** `NumericUpDown` 的 `prefix` route 是宽松后代
   （`/template/ .semantic-scope-spinner >> .semantic-prefix`），而 ButtonSpinner 的帧节点位于 `NumericUpDownSpinner`
   子树内；复用会让该 route 命中两个节点，破坏 `NumericUpDown` 已发布的 `Single` 契约（其测试用 `.Single()` 解析）。
@@ -179,10 +179,10 @@ ButtonSpinner 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- Semantic Part 变更额外运行 `NumericUpDownSemanticPartTests`，确认帧节点新增 marker 后 `NumericUpDown` 的
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- Semantic Part 变更时临时验收 `NumericUpDown` 的
   `prefix` / `input` / `suffix` / `clear` 唯一目标解析与 `Single` 计数未被破坏。
 - 布局型 Setter 按 `semantic-part.md` §6 的尺寸基线与手柄占位、`ContentRightShift` 位移、帧裁剪协调结果验证。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

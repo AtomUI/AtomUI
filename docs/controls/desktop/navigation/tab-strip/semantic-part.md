@@ -299,5 +299,4 @@ selector 表达；Semantic Style 的 Setter 以 trigger 优先级覆盖主题值
   为默认 `/template/ .semantic-*`。删除、重命名 Part、修改 selector class 或 route、收窄 `ContractType`、改变
   cardinality 均属于破坏性变更，必须同步生成 descriptor、主题 marker、运行时代码与回归测试。
 - 静态 marker 必须保持 `Classes.semantic-*="True"` 形式，不得使用字面量 `Classes`、`False`、Binding 或动态值。
-- 运行时 marker 行为回归测试见 `tests/AtomUI.Desktop.Controls.Tests/TabControl/TabStripSemanticPartTests.cs`；
-  内容页版本家族见 `tests/AtomUI.Desktop.Controls.Tests/TabControl/TabControlSemanticPartTests.cs`。
+- 临时验收覆盖独立页签条和内容页版本的运行时 marker 行为。

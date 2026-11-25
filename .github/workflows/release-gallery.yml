@@ -3,7 +3,7 @@ on:
    workflow_dispatch:
       inputs:
          TargetBranch:
-            description: 'Target branch to build'
+            description: 'Branch or tag to build. Use a version tag to create a GitHub Release.'
             type: string
             default: 'main'
          BuildConfiguration:
@@ -17,6 +17,12 @@ on:
             description: 'Publish Gallery with NativeAOT'
             type: boolean
             default: true
+         CreateGitHubRelease:
+            description: 'Create a GitHub Release and attach Gallery installers'
+            type: boolean
+            default: false
+permissions:
+   contents: read
 env:
    SourceDir: ${{ github.workspace }}
    BuildDir: ${{ github.workspace }}/binaries
@@ -28,10 +34,49 @@ jobs:
       runs-on: ubuntu-latest
       outputs:
          build_stamp: ${{ steps.stamp.outputs.build_stamp }}
+         release_sha: ${{ steps.release_source.outputs.sha }}
       steps:
          -  name: Compute build stamp
             id: stamp
             run: echo "build_stamp=$(date -u +%m%d)" >> "$GITHUB_OUTPUT"
+         -  name: Validate GitHub Release inputs
+            if: ${{ inputs.CreateGitHubRelease }}
+            shell: bash
+            env:
+               RELEASE_TAG: ${{ inputs.TargetBranch }}
+               BUILD_CONFIGURATION: ${{ inputs.BuildConfiguration }}
+               PUBLISH_AOT: ${{ inputs.PublishAot }}
+            run: |
+               if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+                  echo "Use an existing version tag such as v6.3.0 to create a GitHub Release." >&2
+                  exit 1
+               fi
+               if [[ "$BUILD_CONFIGURATION" != Release || "$PUBLISH_AOT" != true ]]; then
+                  echo "GitHub Releases require the Release configuration and NativeAOT." >&2
+                  exit 1
+               fi
+         -  name: Checkout release tag
+            if: ${{ inputs.CreateGitHubRelease }}
+            uses: actions/checkout@v6
+            with:
+               ref: refs/tags/${{ inputs.TargetBranch }}
+               persist-credentials: false
+         -  name: Pin and validate tagged source
+            if: ${{ inputs.CreateGitHubRelease }}
+            id: release_source
+            shell: pwsh
+            env:
+               RELEASE_TAG: ${{ inputs.TargetBranch }}
+            run: |
+               [xml]$versions = Get-Content -Raw -LiteralPath ./build/Versions.props
+               if ("v$($versions.Project.PropertyGroup.AtomUIVersion)" -cne $env:RELEASE_TAG) {
+                  throw "The Git tag does not match AtomUIVersion in the tagged source."
+               }
+               $commit = git rev-parse HEAD
+               if ($LASTEXITCODE -ne 0) {
+                  throw "Could not determine the tagged commit."
+               }
+               "sha=$commit" >> $env:GITHUB_OUTPUT
    BuildAtomUIGalleryDmgX64Installers:
       name: Build macOS x86_64 DMG Installer
       needs: Prepare
@@ -40,7 +85,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Install Apple Certificate
             shell: pwsh
             env:
@@ -125,7 +170,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Install Apple Certificate
             shell: pwsh
             env:
@@ -211,7 +256,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -280,7 +325,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -349,7 +394,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -395,7 +440,7 @@ jobs:
          -  name: Checkout code
             uses: actions/checkout@v6
             with:
-               ref: ${{ inputs.TargetBranch }}
+               ref: ${{ inputs.CreateGitHubRelease && needs.Prepare.outputs.release_sha || inputs.TargetBranch }}
          -  name: Prepare build environment
             shell: pwsh
             run: |
@@ -434,3 +479,42 @@ jobs:
                name: windows-zip-arm64
                path: ${{ env.GalleryArtifactsOutputDir }}/zip/arm64/*.zip
                if-no-files-found: error
+
+   PublishGalleryGitHubRelease:
+      name: Publish Gallery GitHub Release
+      if: ${{ inputs.CreateGitHubRelease }}
+      needs:
+         - Prepare
+         - BuildAtomUIGalleryDmgX64Installers
+         - BuildAtomUIGalleryDmgArm64Installers
+         - BuildAtomUIGalleryAppImageX64Installers
+         - BuildAtomUIGalleryAppImageArm64Installers
+         - BuildAtomUIGalleryWindowsX64Zip
+         - BuildAtomUIGalleryWindowsArm64Zip
+      runs-on: ubuntu-latest
+      permissions:
+         contents: write
+      concurrency:
+         group: gallery-github-release-${{ inputs.TargetBranch }}
+         cancel-in-progress: false
+      steps:
+         -  name: Checkout release tooling
+            uses: actions/checkout@v6
+            with:
+               ref: ${{ github.sha }}
+               persist-credentials: false
+         -  name: Download Gallery artifacts from this run
+            uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+            with:
+               path: ${{ runner.temp }}/gallery-release-artifacts
+         -  name: Publish Gallery assets and README
+            shell: pwsh
+            env:
+               GH_TOKEN: ${{ github.token }}
+               RELEASE_TAG: ${{ inputs.TargetBranch }}
+               RELEASE_SHA: ${{ needs.Prepare.outputs.release_sha }}
+               BUILD_STAMP: ${{ needs.Prepare.outputs.build_stamp }}
+            run: |
+               ./controlgallery/AtomUIGallery.Desktop/scripts/packaging/Publish-GalleryGitHubRelease.ps1 `
+                  -Repository $env:GITHUB_REPOSITORY -Tag $env:RELEASE_TAG -Commit $env:RELEASE_SHA `
+                  -BuildStamp $env:BUILD_STAMP -ArtifactDirectory (Join-Path $env:RUNNER_TEMP 'gallery-release-artifacts')

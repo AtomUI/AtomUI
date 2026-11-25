@@ -519,13 +519,13 @@ Filter highlight runs 是 header 状态，不应写入 Token 或节点数据模�
 
 验证范围：
 
-- `TreeViewStateReplayTests`：默认 selected / checked / expanded 回放顺序、`IsDefaultExpandAll` 优先级、ItemsSource 变化状态恢复、多选恢复优先级、strict / cascading checked。
-- `TreeViewItemHeaderLifecycleTests`：template 替换时旧 `PART_HeaderContentFrame` pointer 事件释放。
+- 临时验收覆盖 默认 selected / checked / expanded 回放顺序、`IsDefaultExpandAll` 优先级、ItemsSource 变化状态恢复、多选恢复优先级、strict / cascading checked。
+- 临时验收覆盖 template 替换时旧 `PART_HeaderContentFrame` pointer 事件释放。
 - 选择：单选、多选、`IsSelectable=false`、右键选择开关和 Form value 读写。
 - 勾选：checkbox 级联、strict、半选父级、radio group、`CheckedItemsChanged` added / removed。
 - 过滤：匹配、高亮、加粗、隐藏未命中、展开路径、清除过滤和空状态。
 - 异步加载：加载成功、超时、取消、重复请求合并、detach 取消。
-- `TreeViewKeyboardNavigationTests`：键盘导航的遍历与跳过规则、按键语义与 RTL、提交策略矩阵、异步加载、活动项生命周期、Tab 单停靠点、来源过滤和宿主转发；TreeSelect 侧见 `TreeSelectKeyboardNavigationTests`。要求见 [keyboard-navigation-design.md §10](keyboard-navigation-design.md#10-验证要求)。
+- 临时验收覆盖键盘导航的遍历与跳过规则、按键语义与 RTL、提交策略矩阵、异步加载、活动项生命周期、Tab 单停靠点、来源过滤和宿主转发，并覆盖 TreeSelect 的消费路径。要求见 [keyboard-navigation-design.md §10](keyboard-navigation-design.md#10-验证要求)。
 - 拖拽：drag preview、drop indicator、数据源 root 插入、子节点插入、同集合索引修正、跨父级 parent node 同步、不可变集合取消、自身后代保护、状态保留和事件顺序。
 - Theme：template part、hover mode、selected / disabled、line rendering、switcher icons、drag indicator 和 filter highlighter。
 - 绑定型节点：节点属性变化同步当前容器、容器交互回写节点、DynamicResource 不 root 已移除节点、owner resource 优先于 Application resource。

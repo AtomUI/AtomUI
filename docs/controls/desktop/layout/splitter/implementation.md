@@ -38,9 +38,7 @@ Splitter
 Gallery 与文档结构：
 
 - `controlgallery/AtomUIGallery/ShowCases/Layout/Splitter`
-- `tests/AtomUI.Desktop.Controls.Tests/Splitter/SplitterSemanticPartTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/SplitterShowCasePageTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/SplitterShowCaseExamples.snapshot`
+- 具体控件按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收。
 - `docs/controls/desktop/layout/splitter/`
 
 职责边界：
@@ -330,10 +328,9 @@ AOT 边界：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行 `tests/AtomUI.Desktop.Controls.Tests`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收。
 - 双击行为测试覆盖释放时机、handle index、重复 drag start、禁用拖拽、捕获丢失、handle 重建解绑和嵌套隔离。
-- Semantic Part 契约变更运行 `tests/AtomUI.Desktop.Controls.Tests` 中的 `SplitterSemanticPartTests`，
-  并走查 Gallery Semantic Parts 标签页的预览与描述。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests` 中 Splitter 相关测试。
+- Semantic Part 契约变更临时验证部件命中，并走查 Gallery Semantic Parts 标签页的预览与描述。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - 主题变更检查 `SplitterTheme.axaml`、`SplitterHandleTheme.axaml`、`SplitterDragBarTheme.axaml` 中 TemplateBinding、TokenResource、selector 和 semantic marker 是否一致。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

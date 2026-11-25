@@ -325,8 +325,7 @@ cardinality，或让任一内置模板变体缺少 marker，均属于公共主�
 
 - owner descriptor 只包含 §1 的 7 个 Part，字段值与本文一致（`item` / `itemTitle`=`Multiple`、
   `popup.*` + `item*`=`CrossVisualRoot` + `RuntimeCreated`，`itemIcon` / `itemContent` / `itemTitle` 另含
-  `CrossNestedOwners`，`primary` / `secondary` 为静态 marker），见
-  `tests/AtomUI.Desktop.Controls.Tests/Buttons/SplitButtonSemanticPartTests.cs`。
+  `CrossNestedOwners`，`primary` / `secondary` 为静态 marker）。
 - `SplitButtonTheme.axaml` 的内置模板为 `PART_PrimaryButton` / `PART_SecondaryButton` 携带静态
   `semantic-primary` / `semantic-secondary` marker，模板重套用后保持。
 - `popup.root` marker 在 `MenuFlyoutPresenter.OnApplyTemplate` 注入到弹层根视觉面 `ArrowDecoratedBox`；`item`

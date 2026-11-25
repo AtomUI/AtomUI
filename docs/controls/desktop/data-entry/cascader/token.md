@@ -58,7 +58,7 @@ Popup 阴影、popup 圆角和 anchor margin 使用 `PopupHostToken`。CascaderT
 Token 或主题改动至少验证：
 
 ```bash
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore --filter FullyQualifiedName~Cascader
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls/Cascader
 dotnet build controlgallery/AtomUIGallery/AtomUIGallery.csproj --no-restore
 git diff --check
 ```
@@ -82,8 +82,7 @@ git diff --check
 - 禁用选项的前缀图标改用 `ColorTextDisabled` 着色（原为 `Opacity="0.3"` 字面量）；`CascaderViewItem` 未绑定到模板的
   `BorderBrush` Setter 已移除，前缀图标尺寸沿用 `FontSizeIcon`（原 `IconSize` Setter 被同主题后续 Setter 覆盖，从未生效）。
 
-生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.Cascader.cs`、
-`SelectFamilyEffectTests.Isolation.cs`。
+主题改动按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证受影响 Token 的实际效果和作用域隔离。
 
 ## 独立 Token 身份与共享计算
 

@@ -170,11 +170,11 @@ host-owned/content-owned 是 Popup 家族唯一的表面分类维度；native/ov
 
 验证分层：
 
-- `PopupShadowTests`：公开 surface API、`null` 默认值、显式 surface、透明 frame 和 shadow clipping。
-- `PopupPlacementTests` / `PopupLifecycleTests` / `ToolTipPopupModeTests`：定位、普通关闭动效、生命周期强制 teardown、
+- 临时验收覆盖 公开 surface API、`null` 默认值、显式 surface、透明 frame 和 shadow clipping。
+- 临时验收覆盖 定位、普通关闭动效、生命周期强制 teardown、
   native/overlay host 和透明 `PopupRoot` 契约。
-- `DialogPopupPrimitiveLayeringTests`：Direct Popup、Flyout/MenuFlyout、ToolTip/ContextMenu 共享 content-owned 默认值。
-- `PopupEntryInventoryTests`：全部 runtime Popup 入口完成归类、不重复写入 `null` 默认值，且 Popup Theme 不覆盖该默认值。
+- 临时验收覆盖 Direct Popup、Flyout/MenuFlyout、ToolTip/ContextMenu 共享 content-owned 默认值。
+- 临时验收覆盖 全部 runtime Popup 入口完成归类、不重复写入 `null` 默认值，且 Popup Theme 不覆盖该默认值。
 - Dialog 控件家族矩阵与代表性控件测试：验证共享修复不改变其他控件行为和视觉所有权。
 
 | 平台 | 实机状态 |

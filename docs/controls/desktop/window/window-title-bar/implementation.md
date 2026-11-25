@@ -333,13 +333,13 @@ Windows caption 类按钮的测量由 `WindowsCaptionButtonLayout` 统一：水�
 
 ## 11. 测试与验证
 
-- `WindowTitleBarLogoVisibilityTests` 覆盖 Logo 默认值、平台规则、全屏状态下同一标题栏实例的 Logo 呈现和 Window 投影。
-- `WindowTitleBarEffectiveLogoTests` 覆盖 Icon 回退、运行时内容替换、自定义标题栏显式值优先级、主窗口动态回退、显示前零订阅及 close 释放。
-- `WindowTitleBarAddOnTests` 覆盖 Window add-on API 默认值、模板类型及到默认标题栏的单向实时投影。
-- `WindowTitleBarButtonTests` 覆盖 AddOn 普通/Toggle 控件继承关系，checked/unchecked 图标切换，active/motion/platform host projection，detach 后 standalone 回退，Windows 方形几何与真实 pointer hover/pressed/exit，Linux/macOS 尺寸、圆角、光标回归，以及独立主题资产注册。
-- `WindowCaptionButtonConfigurationTests` 覆盖五个 visibility 属性默认值、capability 隔离、effective truth table、默认/内容区/多标题栏宿主发现、真实 pointer 双击切换、宿主切换、动态状态投影、lease 释放和 template reapply。
-- `WindowTitleBarTokenTests` 覆盖 Token 默认值、三平台 caption 视觉和 Windows edge layout。
-- `ImagePreviewerTitleBarThemeTests` 覆盖派生标题栏的标题组、操作区和平台模板契约。
+- 临时验收覆盖 Logo 默认值、平台规则、全屏状态下同一标题栏实例的 Logo 呈现和 Window 投影。
+- 临时验收覆盖 Icon 回退、运行时内容替换、自定义标题栏显式值优先级、主窗口动态回退、显示前零订阅及 close 释放。
+- 临时验收覆盖 Window add-on API 默认值、模板类型及到默认标题栏的单向实时投影。
+- 临时验收覆盖 AddOn 普通/Toggle 控件继承关系，checked/unchecked 图标切换，active/motion/platform host projection，detach 后 standalone 回退，Windows 方形几何与真实 pointer hover/pressed/exit，Linux/macOS 尺寸、圆角、光标回归，以及独立主题资产注册。
+- 临时验收覆盖五个 visibility 属性默认值、capability 隔离、effective truth table、默认/内容区/多标题栏宿主发现、真实 pointer 双击切换、宿主切换、动态状态投影、lease 释放和 template reapply。
+- 临时验收覆盖 Token 默认值、三平台 caption 视觉和 Windows edge layout。
+- 临时验收覆盖派生标题栏的标题组、操作区和平台模板契约。
 - 标题几何测试覆盖所有 alignment、对称与非对称操作区、Windows/Linux Logo/LeftAddOn 同时可见及任一 presenter 隐藏时的条件间距、Padding/native inset、窄窗口和非法 metrics。
 - Windows、macOS、Linux 实机验证覆盖 CSD/非 CSD、缩放、最小化/任务栏恢复、最大化/还原和全屏状态；平台支持且系统动画开启时应保留原生窗口状态动画。
 - 文档改动运行 相对链接检查和 `git diff --check`；行为、Theme 或 Public API 变更运行对应 Desktop Controls 测试。

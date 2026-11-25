@@ -73,5 +73,4 @@ Shadcn 暗色通过 `ItemSelectedBgColor` 区分已选项和当前悬停候选�
 - `ComboBoxItem` 拥有自己的 Token identity：其 Global Token（如圆角 `BorderRadiusSM`）跟随 `Controls[ComboBoxItem]`；
   候选行颜色与尺寸读 ComboBox 的 Own Token（`Item*`），跟随 `Controls[ComboBox]`。
 - `ItemDisabledColor` 为 Active：禁用候选行的前景色。
-- 生效与隔离测试：`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/SelectFamilyEffectTests.ComboBox.cs`、
-  `SelectFamilyEffectTests.Isolation.cs`。
+- 主题改动按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证受影响 Token 的实际效果和作用域隔离。

@@ -206,9 +206,9 @@ SVG 缓存键取同步时使用的颜色。桌面仅在处理预设图片时创�
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 Empty 专项测试必须覆盖 descriptor 字段、静态 marker、三种图片来源及 `Image` 的互斥与优先级、字符串与对象描述、预设缓存、描述可见性、Footer 内容/模板替换、三档 SizeType、
@@ -226,7 +226,7 @@ NativeAOT publish；批次收尾仍执行 Gallery NativeAOT 验证。
 | 挂树期间或离树期间明确清空三种来源 | 挂树同步后不残留旧图，描述与 Footer 不因图片清空而被重建。 |
 | 对相同结果重复同步；模板重套用 | 相同结果不反复清空 renderer；重套用后新 target 接收当前图片，旧 target 不再更新。 |
 
-现有 `EmptySemanticPartTests` 覆盖来源切换、模板重套用和 Semantic Part；`EmptyIndicatorContractTests` 覆盖默认空态组合与
+临时验收覆盖来源切换、模板重套用、Semantic Part、默认空态组合与
 自定义空态入口。上述生命周期场景的验证与测试去留遵循
 [测试价值与生命周期规范](../../../../engineering/development/test-value-and-lifecycle.md)，验证结果不得仅以 `Source` 非空替代图案、
 文字和布局检查。ComboBox 等弹层消费者还须按实际弹层的实例复用路径验证，不能仅从是否使用 Empty 推定运行结果。

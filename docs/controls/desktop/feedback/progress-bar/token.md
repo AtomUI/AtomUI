@@ -143,7 +143,7 @@ Token 变更要求：
 
 | 改动类型 | 验证要求 |
 | --- | --- |
-| 新增进度 Token | 检查生成的 `XxxTokenKind`、AXAML 引用、token.md 语义说明、默认值计算和 `StepsProgressFamilyEffectTests` 生效测试。 |
+| 新增进度 Token | 检查生成的 `XxxTokenKind`、AXAML 引用、token.md 语义说明和默认值计算，按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证对应状态。 |
 | 修改默认颜色 | 验证 normal、active、success、exception、completed、disabled 和 dark theme。 |
 | 修改线形间距 | 验证水平、垂直、内嵌、外部起点、中间、终点百分比布局。 |
 | 修改图标尺寸 | 验证线形、步骤线形、圆形和仪表盘的成功 / 异常图标不裁剪。 |

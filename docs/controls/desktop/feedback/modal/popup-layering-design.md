@@ -194,9 +194,8 @@ surface 时才能显式提供非空 Brush，否则由 content Presenter 拥有�
 
 ### 10.6 自动化回归入口
 
-自动化入口按职责拆分：`DialogPopupPrimitiveLayeringTests` 覆盖五类原语，`DialogPopupControlFamilyTests` 覆盖 Desktop
-Controls 的直接及委托消费家族，`DataGridFilterDialogPopupTests` 在可选 DataGrid 包内覆盖真实过滤菜单，
-`PopupEntryInventoryTests` 守卫六类源码入口。测试必须通过公开 open state 或真实 pointer/keyboard 路径打开控件，
+按影响范围临时验收五类原语、Desktop Controls 的直接及委托消费家族、可选 DataGrid 包的真实过滤菜单和六类源码入口。
+测试必须通过公开 open state 或真实 pointer/keyboard 路径打开控件，
 不得用反射或 internal open property 代替用户交互；关闭后还必须确认 owning Window 不残留 `OverlayPopupHost`。
 
 ## 11. 验证要求

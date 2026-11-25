@@ -227,10 +227,10 @@ ToolTip 实例拥有 OpenMotion/CloseMotion，主题提供 ZoomBig/Fast 默认�
 - 打开状态调和回归：XAML 声明式 `IsOpen=True` 打开、`Tip` 晚于 `IsOpen` 就绪、宿主 detach/reattach 重开、`ToolTipOpening` 否决、attach 订阅无残留。
 - 悬停服务回归使用真实输入分发验证指针事件中同步关闭窗口后仍能处理该条原始输入，并覆盖 Overlay 同窗宿主切换、
   原生 Tooltip 同时间戳跨根移动，以及待显示宿主卸载后定时器和强引用释放。
-- Semantic Part 回归：descriptor 三键、`ToolTipTheme.axaml` scope 锚点、共享 `ArrowDecoratedBoxTheme.axaml` 两个 marker、生成 Style 跨嵌套 owner 命中最低 `ContractType`（见 `tests/AtomUI.Desktop.Controls.Tests/Tooltip/ToolTipSemanticPartTests.cs`）。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- Semantic Part 回归：descriptor 三键、`ToolTipTheme.axaml` scope 锚点、共享 `ArrowDecoratedBoxTheme.axaml` 两个 marker、生成 Style 跨嵌套 owner 命中最低 `ContractType`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 - `OverflowTip` 回归测试覆盖 TextBox 精确 viewport、内部 viewport 独立变化、模板重套用、第三方 TextBox fallback 和禁止外部 `PART_TextPresenter` 查询。
 - 文本布局回归覆盖长文本在 `ToolTipMaxWidth` 内换行且不裁剪、`TextWrapping`/`TextTrimming` 附加属性默认值、打开期间修改即时生效，以及主题 `PART_ContentPresenter` 的换行契约。

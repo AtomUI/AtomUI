@@ -83,4 +83,4 @@ owner，`item` 表示每个直接子项，`separator` 表示位于子项之间�
 - 运行时 marker 数量与实际 children / separators 数量一致。
 - `SplitTemplate` 的设置顺序不会改变最终语义：先加 children 再设 `SplitTemplate`，或先设 `SplitTemplate` 再加 children，结果都应稳定。
 - root frame 属性只参与 root 外观与 frame inset 布局，不改变 `item` / `separator` 的语义契约。
-- 回归测试见 `tests/AtomUI.Desktop.Controls.Tests/Space/SpaceSemanticPartTests.cs` 与 `tests/AtomUI.Desktop.Controls.Tests/Space/SpaceRootFrameTests.cs`。
+- 控件临时验收覆盖语义部件和 root frame 外观与布局。

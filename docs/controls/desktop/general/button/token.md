@@ -228,8 +228,8 @@ ButtonToken 变更要求：
 | `GutterToFlyout` | 删除：Button 不拥有弹层，DropdownButton / SplitButton 各有自己的间距 Token |
 | `HyperLinkButtonToken.BorderColorDisabled` | 删除：HyperLinkButton 模板不绘制边框 |
 
-删除项记录在仓库 `CHANGELOG.md` 的 Breaking Changes 中。全部 Active Own Token 与消费的 Global Token 由
-`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/ButtonFamilyEffectTests` 逐项验证生效。
+删除项记录在仓库 `CHANGELOG.md` 的 Breaking Changes 中。受影响的 Active Own Token 与消费的 Global Token
+按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验收。
 
 ## 7. 验证策略
 

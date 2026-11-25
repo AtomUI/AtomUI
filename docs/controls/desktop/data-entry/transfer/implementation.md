@@ -235,9 +235,9 @@ Transfer 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试；Transfer key 选择语义由 `tests/AtomUI.Desktop.Controls.Tests/Transfer/TransferBehaviorTests.cs` 覆盖。
-- Semantic Part 变更运行 `tests/AtomUI.Desktop.Controls.Tests/Transfer/TransferSemanticPartTests.cs`，覆盖 descriptor 字段、模板 marker、生成 Style 命中、状态数量语义、嵌套视图容器 marker 与尺寸基线失败回归（见 5.1 / 5.2）。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收，包括 Transfer key 选择语义。
+- Semantic Part 变更验收 descriptor 字段、模板 marker、生成 Style 命中、状态数量语义、嵌套视图容器 marker 与尺寸基线（见 5.1 / 5.2）。
 - Generator Semantic 测试、`tests/AtomUI.Toolkits.GalleryBase.Tests` 与 Gallery 定向测试按 [Semantic Part 系统设计](../../../../architecture/systems/theming/semantic-parts.md) 的验证矩阵执行。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

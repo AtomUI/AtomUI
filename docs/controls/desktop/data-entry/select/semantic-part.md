@@ -420,11 +420,8 @@ Style 命中 `SelectHandle` 内的 `IconPresenter`，其 `IconBrush` 已桥接 `
 - `item` / `popup.list` / `popup.listItem` 的 marker 在运行时容器创建路径注入
   （`SelectResultOptionsBox` 标签创建、`Select.EnsurePopupContent` 候选列表创建、`SelectCandidateList`
   容器创建）。
-- 生成的 `Select*Style` 可编译并命中目标节点（见
-  `tests/AtomUI.Desktop.Controls.Tests/Select/SelectSemanticPartTests.cs`）。
-- 钉住弹层在打开前抑制 light-dismiss 遮罩；重开与模板重应用后弹层部件 marker 保持（见
-  `tests/AtomUI.Desktop.Controls.Tests/Select/SelectBehaviorTests.cs` 的 pinned template replacement
-  场景）。
+- 生成的 `Select*Style` 可编译并命中目标节点。
+- 钉住弹层在打开前抑制 light-dismiss 遮罩；重开与模板重应用后弹层部件 marker 保持。
 - 状态变化（单选/多选、过滤、`IsAllowClear`、disabled）不改变 marker 身份与数量语义。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Gallery Semantic Parts Tab 延迟创建 Preview，弹层钉住常开并以多选预选呈现标签，13 个 Part 均可解析

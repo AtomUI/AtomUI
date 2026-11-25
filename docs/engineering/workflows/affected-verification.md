@@ -3,7 +3,7 @@
 本文定义 AtomUI 日常验证入口、影响选择规则和结果有效性。Bug 修复采用“精确复现 → 模块迭代 → 测试去留与清理 → 最终模块验证”；
 不能把 `dotnet test AtomUI.slnx` 当作默认或完整测试清单。测试项目由仓库实际 `.csproj` 发现，不依赖解决方案是否收录。
 
-测试是否长期保留及 Bug 修复完成条件由[测试价值与生命周期规范](../development/test-value-and-lifecycle.md)定义。
+测试是否长期保留及 Bug 修复完成条件由[单元测试与验收规范](../development/test-value-and-lifecycle.md)定义。
 临时复现测试验证完成后默认删除，最终模块验证认证清理后的工作树；缺少有效证据、测试处置或清理不能宣称修复完成。
 全量仅在用户明确要求或发版时运行，不是每次修复的默认收尾步骤。
 
@@ -17,8 +17,7 @@ python3 scripts/verification/test.py plan
 
 # Bug 修复开发过程：必须显式限制到缺陷模块，可重复传入 --path
 python3 scripts/verification/test.py run --scope iterate \
-  --path src/AtomUI.Desktop.Controls/Popup \
-  --path tests/AtomUI.Desktop.Controls.Tests/Popup
+  --path src/AtomUI.Desktop.Controls/Popup
 
 # 全量回归：仅在用户明确要求或发版时运行；Bug 修复与普通改动只验证所修改的模块
 scripts/run-full-regression.sh
@@ -28,8 +27,8 @@ python3 scripts/verification/test.py run --scope change --base origin/main
 
 # 需要额外验证时只追加，不替换自动选择的测试
 python3 scripts/verification/test.py run --scope iterate \
-  --path src/AtomUI.Desktop.Controls/ScrollViewer \
-  --include-test 'tests/AtomUI.Desktop.Controls.Tests/ScrollViewer/**/*.cs'
+  --path src/AtomUI.Desktop.Controls/ListView \
+  --include-test 'tests/AtomUI.Controls.Shared.Tests/ListCollectionViews/**/*.cs'
 ```
 
 `origin/main` 是基线参数示例，使用实际目标分支。`--base` 使用与 HEAD 的 merge-base；默认 HEAD 只比较工作区，
@@ -60,10 +59,11 @@ iterate 只使用模块自身的所有权、符号和测试文件关系，不自
    窗口及窗口内所有控件重新带入全量。
 3. **源码读取测试**：测试代码引用的输入文件名建立独立索引，不受 `ProjectReference` 限制。它只增加选择，
    不用于排除测试；同名文件可能保守地多选。文件读取关系优先于普通文档忽略规则。
-4. **显式共享规则**：主题扫描、Popup 清单、Catalog/XLIFF、Gallery 结构、共享生成源码、图片加载、资源生命周期、
+4. **显式共享规则**：Catalog/XLIFF、Gallery 结构、共享生成源码、图片加载、资源生命周期、
    没有项目引用的本地化集成测试等，使用明确的附加规则。目录扫描和动态依赖不能仅靠符号匹配推断。
-5. **保守退回**：直接改动没有精确测试归属时运行完整所有者测试组并报告原因。没有对应测试的间接消费者纳入编译，
-   在报告中明确标记为只有编译证据。无法找到所有者、规则引用不存在的 suite 时，报告 gap 并拒绝运行成功。
+5. **保守退回**。直接改动没有精确测试归属时，若所有者有测试，运行完整所有者测试组。策略显式声明
+   `tests: []` 且未命中相关测试时，以及间接消费者没有对应测试时，纳入编译并标记只有编译证据。无法找到所有者、
+   规则引用不存在的 suite 时，报告 gap 并拒绝运行成功。
 
 符号分析是保守的静态辅助，不是完整 C#/XAML 语义分析器，也不保证发现任意反射、配置拼接、资源 key 计算或
 外部程序的依赖。新增这类路径必须增加显式策略，评审时解释其消费边界。发布/显式全量基线发现选测遗漏后，应先把
@@ -166,6 +166,9 @@ CI 没有定期全量任务，不改仓库 branch protection；是否要求该 j
 测试价值规范要求的测试处置与清理记录。CLI 成功仅是执行证据，不自动完成价值审查和修复验收。
 若精确选择频繁退回整个 owner，先完善对应功能域与共享规则，再考虑拆分测试项目。按测试价值规范删除低价值或
 临时测试，但不得靠削弱仍有效的契约或原始复现条件降低耗时；清理同步维护映射，不能忽略 gap 或零测试。
+
+存量控件用例迁移前，runner 继续按当前映射选测。迁移某个区域时，更新映射以如实反映仍有的内核测试、编译覆盖及
+适用专项，按本次改动记录控件验收证据。工具无法表达该区域的覆盖时，先处理选测与报告能力，再移除旧测试映射。
 
 <a id="conditional-registration-backends"></a>
 

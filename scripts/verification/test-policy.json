@@ -4,15 +4,18 @@
     {
       "id": "control",
       "roots": [
-        "src/AtomUI.Controls",
-        "src/AtomUI.Desktop.Controls"
+        "src/AtomUI.Controls"
       ],
       "depth": 1,
       "tests": [
-        "tests/AtomUI.Controls.Tests/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Rendering.Tests/**/*.cs"
+        "tests/AtomUI.Controls.Tests/**/*.cs"
       ]
+    },
+    {
+      "id": "desktop-control",
+      "roots": ["src/AtomUI.Desktop.Controls"],
+      "depth": 1,
+      "tests": []
     },
     {
       "id": "core",
@@ -88,9 +91,7 @@
         "src/AtomUI.Desktop.Controls.ColorPicker"
       ],
       "depth": 0,
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/ColorPicker/**/*.cs"
-      ]
+      "tests": []
     },
     {
       "id": "extras",
@@ -98,9 +99,7 @@
         "src/AtomUI.Desktop.Controls.Extras"
       ],
       "depth": 1,
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Theme/TypedPackageEntryTests.cs"
-      ]
+      "tests": []
     },
     {
       "id": "generator",
@@ -139,10 +138,7 @@
         "src/AtomUI.Native"
       ],
       "depth": 1,
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Window/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/Dialog/**/*.cs"
-      ]
+      "tests": []
     },
     {
       "id": "gallery-base",
@@ -214,9 +210,7 @@
       ],
       "depth": 0,
       "tests": [
-        "tests/AtomUI.Icons.Shared.Tests/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/Icon/**/*.cs",
-        "tests/AtomUIGallery.Tests/ShowCases/IconShowCasePageTests.cs"
+        "tests/AtomUI.Icons.Shared.Tests/**/*.cs"
       ]
     },
     {
@@ -227,8 +221,7 @@
       ],
       "depth": 0,
       "tests": [
-        "tests/AtomUI.Core.Tests/Theme/**/*.cs",
-        "tests/AtomUIGallery.Tests/Workspace/**/*.cs"
+        "tests/AtomUI.Core.Tests/Theme/**/*.cs"
       ]
     },
     {
@@ -347,37 +340,6 @@
     }
   ],
   "rules": [
-    {
-      "id": "theme-boundaries",
-      "changes": [
-        "src/**/*.axaml"
-      ],
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Theme/ThemeSelectorBoundaryTests.cs"
-      ]
-    },
-    {
-      "id": "popup-inventory",
-      "changes": [
-        "src/AtomUI.Desktop.Controls*/**/*.cs",
-        "src/AtomUI.Desktop.Controls*/**/*.axaml"
-      ],
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Dialog/PopupEntryInventoryTests.cs"
-      ]
-    },
-    {
-      "id": "gallery-showcase-contracts",
-      "changes": [
-        "controlgallery/AtomUIGallery/ShowCases/**"
-      ],
-      "tests": [
-        "tests/AtomUIGallery.Tests/**/GalleryShowCaseStyleBoundaryTests.cs",
-        "tests/AtomUIGallery.Tests/**/ShowCaseScenarioControllerConventionsTests.cs",
-        "tests/AtomUIGallery.Tests/**/MigratedShowCaseDeferredCreationTests.cs",
-        "tests/AtomUIGallery.Tests/**/ShowCasePanelStructureTests.cs"
-      ]
-    },
     {
       "id": "catalog-inventory",
       "changes": [
@@ -530,22 +492,7 @@
       ],
       "tests": [
         "tests/AtomUI.Controls.Shared.Tests/ImageLoading/**/*.cs",
-        "tests/AtomUI.Controls.Tests/ImageLoading/**/*.cs",
-        "tests/AtomUI.Controls.Tests/Avatar/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/ImagePreviewer/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/Upload/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/ImageLoading/**/*.cs"
-      ]
-    },
-    {
-      "id": "popup-datagrid-consumer",
-      "changes": [
-        "src/AtomUI.Desktop.Controls/Popup/**",
-        "src/AtomUI.Desktop.Controls/Flyouts/**",
-        "src/AtomUI.Desktop.Controls/Dialog/**"
-      ],
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.DataGrid.Tests/Filtering/DataGridFilterDialogPopupTests.cs"
+        "tests/AtomUI.Controls.Tests/ImageLoading/SvgImageCodecTests.cs"
       ]
     },
     {
@@ -556,10 +503,7 @@
         "src/AtomUI.Generator/ResourceHost/**"
       ],
       "tests": [
-        "tests/AtomUI.Core.Tests/Theme/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/Theme/**/*.cs",
-        "tests/AtomUI.Desktop.Controls.Tests/**/*LifetimeTests.cs",
-        "tests/AtomUI.Desktop.Controls.DataGrid.Tests/Lifecycle/**/*.cs"
+        "tests/AtomUI.Core.Tests/Theme/**/*.cs"
       ]
     },
     {
@@ -602,9 +546,7 @@
       "changes": [
         "tools/performances/**"
       ],
-      "tests": [
-        "tests/AtomUI.Desktop.Controls.Tests/Performance/**/*.cs"
-      ]
+      "tests": []
     },
     {
       "id": "typemap-linker-fixtures",

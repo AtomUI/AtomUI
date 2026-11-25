@@ -208,6 +208,6 @@ Drawer 的语义 owner 是 `AtomUI.Desktop.Controls.Drawer` 本身（无模板�
 
 验证要求（均为可失败契约测试）：
 
-- `tests/AtomUI.Desktop.Controls.Tests/Drawer/DrawerSemanticPartTests.cs`：descriptor 契约、两个容器主题的静态 marker 清单、打开后 marker 物化、容器逻辑父不变量、生成 Style 跨根命中全部 8 个目标、`IsPinnedOpen` 钉住语义、`GetCrossRoots` 上报。
-- `tests/AtomUIGallery.Tests/ShowCases/DrawerSemanticPartHighlightTests.cs`：页面级端到端——语义页签内 9 张部件卡 hover 逐一高亮（各 1 个描边）、钉住忽略遮罩点击、页签切换清理高亮会话。
-- `tests/AtomUIGallery.Tests/ShowCases/DrawerShowCasePageTests.cs`：AXAML 契约断言（内联钉住模式、PartDescriptions 顺序、生成 Style 唯一定制入口、无 code-behind 回退）。
+- 临时验收覆盖descriptor 契约、两个容器主题的静态 marker 清单、打开后 marker 物化、容器逻辑父不变量、生成 Style 跨根命中全部 8 个目标、`IsPinnedOpen` 钉住语义、`GetCrossRoots` 上报。
+- Gallery 临时验收要点：页面级端到端——语义页签内 9 张部件卡 hover 逐一高亮（各 1 个描边）、钉住忽略遮罩点击、页签切换清理高亮会话。
+- Gallery 临时验收要点：AXAML 契约断言（内联钉住模式、PartDescriptions 顺序、生成 Style 唯一定制入口、无 code-behind 回退）。

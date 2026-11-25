@@ -792,7 +792,7 @@ dotnet publish controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj
 Focused tests：
 
 ```bash
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --nologo -v:minimal /m:1 /nr:false
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls
 dotnet test tests/AtomUI.Controls.Shared.Tests/AtomUI.Controls.Shared.Tests.csproj --nologo -v:minimal /m:1 /nr:false
 dotnet test tests/AtomUI.Desktop.Controls.DataGrid.Tests/AtomUI.Desktop.Controls.DataGrid.Tests.csproj --nologo -v:minimal /m:1 /nr:false
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj --nologo -v:minimal /m:1 /nr:false

@@ -211,8 +211,7 @@ AXAML 命名空间 `https://atomui.net`）。`root` 不生成 Style 类型，own
 
 验证至少覆盖：
 
-- owner descriptor 只包含 §1 的 5 个 Part，字段值与本文一致
-  （`tests/AtomUI.Desktop.Controls.Tests/ColorPicker/ColorPickerSemanticPartTests.cs`）。
+- owner descriptor 只包含 §1 的 5 个 Part，字段值与本文一致。
 - `ColorPickerTheme.axaml` / `GradientColorPickerTheme.axaml` 携带 `body` / `description` /
   `popup.root` 的静态 marker（含弹层包裹 Border）；`ColorBlockTheme.axaml` 携带 `content` marker。
 - 生成的 `ColorPicker*Style` / `GradientColorPicker*Style` 可编译，并在触发区与 overlay 弹层

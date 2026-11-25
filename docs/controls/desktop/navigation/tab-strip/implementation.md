@@ -262,7 +262,7 @@ TabStrip 的交互事件应从输入源收敛到控件级语义事件：
 - `add` 按钮图标为 SharedToken `IconSize`，按钮 Margin 由 `AddTabButtonMarginHorizontal` /
   `AddTabButtonMarginVertical` 提供。
 - 基线矩阵是稳定契约：改变任一格的 Token、selector 或默认值必须同步 `TabStripItemTheme.axaml`、
-  `CardTabStripItemTheme.axaml`、关联控件 Token 文档与 `TabStripSemanticPartTests` 的尺寸基线测试。
+  `CardTabStripItemTheme.axaml` 和关联控件 Token 文档，再临时验收尺寸基线。
 
 实现文档不逐行解释私有方法。若某个私有算法成为稳定维护入口，应在本节补充算法不变量，而不是把代码复述为说明书。
 
@@ -325,15 +325,15 @@ TabStrip 的交互事件应从输入源收敛到控件级语义事件：
 
 ## 11. 测试与验证
 
-- `tests/AtomUI.Desktop.Controls.Rendering.Tests/TabOverflowShadowRenderingTests.cs` 使用独立 Skia Headless 合成器验证四类 owner、四向 placement、Light/Dark、开始/中间/末尾 offset、缩窄和无溢出状态。像素必须紧贴实际边界，且不能在页签内部形成分离条纹或覆盖更多按钮。
+- 改动 overflow 阴影时，用 Skia Headless 合成器临时验收四类 owner、四向 placement、Light/Dark、开始/中间/末尾 offset、缩窄和无溢出状态。阴影贴合实际边界，页签内部无分离条纹，更多按钮保持可见。
 
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - Tab 激活触发变更需覆盖默认 `PointerReleased`、`PointerPressed`、press/release 同 Tab 激活、press 后移出不激活、press A release B 不激活、键盘选择不受影响，以及拖动排序释放不触发额外激活。
 - Tab 拖动排序变更需覆盖 Top/Bottom 横向排序、Left/Right 纵向排序、选中 item 跟随、可写 `ItemsSource`、未设置 `ItemsSource`、只读 source 不提交、`TabReordering` 取消、overflow 边缘自动滚动、关闭/添加/extra 区域排除、template reapply 与 detach 释放。
-- 共用 `TabOverflowEdgeIndicator` 的 Skia offset 变换补偿；Token 保持逻辑 DIP，绘制操作不持有 owner/window。DPI 根因、升级检查及离屏限制见 [TabControl implementation](../tab-control/implementation.md)。生产 TabStrip Gallery 页另由 `GalleryTabOverflowShadowRenderingTests.cs` 保留双列、外层滚动和延迟内容进行 1×/2× 像素验证。
+- 共用 `TabOverflowEdgeIndicator` 的 Skia offset 变换补偿；Token 保持逻辑 DIP，绘制操作不持有 owner/window。DPI 根因、升级检查及离屏限制见 [TabControl implementation](../tab-control/implementation.md)。在生产 TabStrip Gallery 页保留双列、外层滚动和延迟内容，按 1×/2× 验收像素表现。
 - overflow 需覆盖 public API/default、default/custom template、四控件与四向 placement、partial visibility、content template、disabled/selected/closable、Items/ItemsSource、stale action 和 external collection invalidation；四个 owner × 四个 placement 还需断言 directional outer shadow 参数、透明绘制载体、viewport 阴影层裁剪边界与真实合成像素、真实 viewport 边界、开始/结束可见性与 `ControlHeight` 尺寸。
 - 默认与搜索 overflow 列表需断言 scrollbar 不可见且不保留 gutter、滚动 offset 可变化、item hover/selected surface 左右 inset 相等。
 - 搜索体验需覆盖 case-insensitive filter、clear、empty、keyboard、disabled skip、selection 清 query、light-dismiss 保留 query 和 detach 清理。
@@ -342,7 +342,7 @@ TabStrip 的交互事件应从输入源收敛到控件级语义事件：
 - 垂直图标槽对齐变更需覆盖 `Left` / `Right` 下同组混合图标与无图标 Tab 的文本起点一致、全部无图标时不额外占位、`Top` / `Bottom` 保持紧凑、Line/Card 两类主题一致，以及 icon/placement/items 变化和 container recycle 后状态不串组。
 - 默认 Line 垂直 spacing / padding 变更需覆盖 `TabStrip` 在 `Left` / `Right` 下的相邻 container 主轴间距和 item 高度，并明确 Card theme 不被本规则修改。
 - `TabStripPlacement` 行为变更需覆盖直接 `TabStripItem` 与数据 item 场景，确保切换 `Top` / `Right` / `Bottom` / `Left` 后 `SelectedItem` 不变。
-- Semantic Part 契约、marker 或生成 Style 类型变更运行 `tests/AtomUI.Desktop.Controls.Tests/TabControl/TabStripSemanticPartTests.cs` 与 `tests/AtomUI.Desktop.Controls.Tests/TabControl/TabControlSemanticPartTests.cs`。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- Semantic Part 契约、marker 或生成 Style 类型变更时，临时验收独立页签条和内容页版本。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

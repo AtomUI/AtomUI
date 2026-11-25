@@ -289,17 +289,17 @@ Cascader 通过 AbstractSelect 继承配置，组件主题提供根弹层 Select
 
 关键测试：
 
-- `CascaderBindableOptionTests`：绑定型选项 parent 维护、容器同步、children 变化、checked / expanded 反写、owner resource 和 WeakReference 生命周期。
-- `CascaderLazyLoadTests`：异步加载时弹层保持打开、loading 和 loaded children。
-- `CascaderChangeOnSelectTests`：父级可选时立即选择并保持弹层打开。
-- `CascaderThemeContractTests`：主题 binding 和模板契约。
-- `CascaderSemanticPartTests`：descriptor 十 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标。
-- `CascaderPinnedPopupTests`：钉住弹层打开前抑制 light-dismiss、`popup.list` / `popup.listItem` 部件命中、重开与数据源重置后 marker 保持。
+- 临时验收覆盖 绑定型选项 parent 维护、容器同步、children 变化、checked / expanded 反写、owner resource 和 WeakReference 生命周期。
+- 临时验收覆盖 异步加载时弹层保持打开、loading 和 loaded children。
+- 临时验收覆盖 父级可选时立即选择并保持弹层打开。
+- 临时验收覆盖 主题 binding 和模板契约。
+- 临时验收覆盖 descriptor 十 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标。
+- 临时验收覆盖 钉住弹层打开前抑制 light-dismiss、`popup.list` / `popup.listItem` 部件命中、重开与数据源重置后 marker 保持。
 
 验证命令：
 
 ```bash
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore --filter FullyQualifiedName~Cascader
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls/Cascader
 dotnet build controlgallery/AtomUIGallery/AtomUIGallery.csproj --no-restore
 git diff --check
 ```

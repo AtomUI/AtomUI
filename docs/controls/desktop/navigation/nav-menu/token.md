@@ -274,11 +274,11 @@ Token 变更要求：
 | 新增 NavMenuToken | 检查生成的 `NavMenuTokenKind`、AXAML 引用和默认值计算。 |
 | 修改颜色 Token | 覆盖 light / dark root、popup、inline child、header hover、selected path。 |
 | 修改背景动效 Token | 覆盖 Control Token override、Base/Inline/Horizontal header 消费和 motion disabled。 |
-| 修改间距 Token | 运行 `NavMenuLayoutTests`，覆盖 root inset、inline child gap、popup inset 和 `IsItemBackgroundEnabled` true/false。 |
+| 修改间距 Token | 临时验收 root inset、inline child gap、popup inset 和 `IsItemBackgroundEnabled` true/false。 |
 | 修改分组标题 Token | 覆盖 light/dark、root、nested、popup、Horizontal root 和 inline collapsed 标题可见性及排版。 |
 | 修改 `VerticalItemsPanelSpacing` 映射 | 覆盖 root、submenu、group 的默认 spacing，并验证显式 `NavMenu.ItemSpacing` 覆盖和纯默认视觉不变。 |
 | 修改 inline collapsed 宽度 Token | 覆盖 `InlineCollapsedWidth` 默认值、本地属性覆盖、`Mode=Inline && IsInlineCollapsed=true` 生效和 `Vertical` / `Horizontal` 不受影响。 |
 | 修改 popup Token | 覆盖 vertical/horizontal popup 背景、尺寸、padding 和 overlay popup 行为。 |
 | 修改 horizontal Token | 覆盖 active indicator、top-level margin、line height 和 dark selected background。 |
 | 删除或重命名 Token | 默认不允许；如获授权，需同步所有 AXAML 引用和生成文件。 |
-| 任意 Token | `NavigationFamilyEffectTests`（`NavMenu_Token_Has_Effect` 与隔离测试）全绿。 |
+| 任意 Token | 按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证 NavMenu 受影响状态和作用域隔离。 |

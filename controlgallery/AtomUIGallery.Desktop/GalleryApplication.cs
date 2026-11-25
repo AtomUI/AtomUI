@@ -6,7 +6,6 @@ using AtomUI;
 using AtomUI.Controls;
 using AtomUI.Desktop.Controls;
 using AtomUI.Localization;
-using AtomUI.Toolkits.GalleryBase;
 using AtomUIGallery.Localization;
 using AtomUIGallery.Workspace.Views;
 using Window = Avalonia.Controls.Window;

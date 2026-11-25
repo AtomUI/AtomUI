@@ -451,7 +451,7 @@ Part Setter 命中只证明目标属性已生效；如果最终布局仍被 owne
 - 生成的 `GroupBoxHeaderStyle` / `GroupBoxIconStyle` / `GroupBoxTitleStyle` / `GroupBoxContentStyle` 各自精确命中一个节点
   （不是 0 个、也不是多个）。
 - 缺口与背景互不干扰：在不透明 `header` 背景、半透明背景与 `Background="Transparent"` 三种情况下，标题下方都不出现被
-  还原的边框短线；该断言与既有 `GroupBoxRenderTests` 的几何排除断言一致，并在新增背景下保持成立。
+  还原的边框短线；新增背景下同样验收该几何排除条件。
 - 优先级关系成立：`GroupBoxHeaderStyle` 的 `Padding` 覆盖 `HeaderContentPadding` 基线，`GroupBoxTitleStyle` 的
   `Foreground` 覆盖 `HeaderTitleColor` / `FontSize` 投影，且不改变缺口宽度之外的行为。
 - `HeaderIcon=null` 时图标节点仍携带 marker 但 `IsVisible=false`，且不保留占位宽度。

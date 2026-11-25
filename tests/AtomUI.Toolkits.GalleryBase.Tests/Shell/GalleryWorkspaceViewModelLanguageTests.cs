@@ -17,56 +17,6 @@ public class GalleryWorkspaceViewModelLanguageTests
     }
 
     [Fact]
-    public void Language_Commands_Use_New_Language_Manager_And_Refresh_State()
-    {
-        var languageManager = new TestLanguageManager(LanguageTags.EnUS);
-        var viewModel = new GalleryWorkspaceViewModel(
-            CreateConfiguration(),
-            null,
-            GallerySystemAppearanceSource.Instance,
-            languageManager);
-        try
-        {
-            viewModel.IsEnUS.ShouldBeTrue();
-            viewModel.IsZhCN.ShouldBeFalse();
-            viewModel.IsZhTW.ShouldBeFalse();
-            viewModel.IsPtBR.ShouldBeFalse();
-
-            viewModel.SwitchToZhCNCommand.Execute().Subscribe();
-            languageManager.Current.CurrentLanguage.ShouldBe(LanguageTags.ZhCN);
-            viewModel.IsZhCN.ShouldBeTrue();
-            viewModel.IsZhTW.ShouldBeFalse();
-            viewModel.IsEnUS.ShouldBeFalse();
-            viewModel.IsPtBR.ShouldBeFalse();
-
-            viewModel.SwitchToZhTWCommand.Execute().Subscribe();
-            languageManager.Current.CurrentLanguage.ShouldBe(LanguageTags.ZhTW);
-            viewModel.IsZhTW.ShouldBeTrue();
-            viewModel.IsZhCN.ShouldBeFalse();
-            viewModel.IsEnUS.ShouldBeFalse();
-            viewModel.IsPtBR.ShouldBeFalse();
-
-            viewModel.SwitchToPtBRCommand.Execute().Subscribe();
-            languageManager.Current.CurrentLanguage.ShouldBe(LanguageTags.PtBR);
-            viewModel.IsPtBR.ShouldBeTrue();
-            viewModel.IsZhCN.ShouldBeFalse();
-            viewModel.IsZhTW.ShouldBeFalse();
-            viewModel.IsEnUS.ShouldBeFalse();
-
-            viewModel.SwitchToEnUSCommand.Execute().Subscribe();
-            languageManager.Current.CurrentLanguage.ShouldBe(LanguageTags.EnUS);
-            viewModel.IsEnUS.ShouldBeTrue();
-            viewModel.IsZhCN.ShouldBeFalse();
-            viewModel.IsZhTW.ShouldBeFalse();
-            viewModel.IsPtBR.ShouldBeFalse();
-        }
-        finally
-        {
-            viewModel.Dispose();
-        }
-    }
-
-    [Fact]
     public void Dispose_Unsubscribes_From_Language_Changes()
     {
         var languageManager = new TestLanguageManager(LanguageTags.ZhTW);

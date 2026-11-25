@@ -105,7 +105,7 @@ StartupEventSource.Log.PhaseStop(StartupPhase.CommitInitializers);
 | 不变量 | 测试 |
 |---|---|
 | 生成器为每个具体 partial 应用生成挂接；手写重写漏调 `Attach` 报 `ATOMUIGEN039`；抽象、非 partial 不生成；同名应用的生成文件不冲突 | `tests/AtomUI.Generator.Tests/Startup/ApplicationStartupHookGeneratorTests.cs` |
-| 默认主题只依赖全局 Token 与 Splash 自有类型；模板只描述结构、外观值在样式中（可被 BasedOn 局部覆盖）；`SplashWindow` 从自带资源应用窗口主题与 Splash 模板 | `tests/AtomUI.Controls.Tests/Splash/SplashDefaultThemeTests.cs` |
+| 默认主题只依赖全局 Token 与 Splash 自有类型；模板只描述结构、外观值在样式中（可被 BasedOn 局部覆盖）；`SplashWindow` 从自带资源应用窗口主题与 Splash 模板 | 受影响的 Splash 控件场景临时验收 |
 | 配置在平台就绪后、Application 构造前执行，每实例一次；允许间接构造 AvaloniaObject，内核在 Initialize 前提交并进入 Ready | `tests/AtomUI.Core.Tests/Startup/StartupContractTests.cs` |
 
 首次 Dispatcher 初始化必须另用真实独立进程验收，不能用已经初始化平台的 headless 会话替代：

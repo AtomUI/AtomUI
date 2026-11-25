@@ -157,8 +157,8 @@ Token 变更要求：
 | `ButtonSpinner.ControlWidth` | Reserved，见 ButtonSpinner token.md |
 | 输入家族 `HoverBorderColor`（PrimeNG 的悬停边框色需求） | 不新增：悬停边框由无身份的共享输入表面绘制，基元只能读取全局 Token；要让每个输入控件一致消费，需要在 LineEdit、SearchEdit、TextArea、TextBox、ButtonSpinner、NumericUpDown 以及 Select、Cascader、TreeSelect、DatePicker 等全部输入表面宿主上各加同名 Own Token，并在各自主题里按状态重新投射到表面，这正是本次迁移移除的重复状态样式。迁移后 `Controls[X].Tokens[ColorPrimaryHover]` 只改变 X 的悬停边框，已能表达该需求（例如设为 slate-400） |
 
-全部 Active Own Token 与消费的 Global Token（含共享输入基元经 `OwnerTokenResource` 读取的全局值）由
-`tests/AtomUI.Desktop.Controls.Rendering.Tests/Effect/Families/InputFamilyEffectTests` 逐项验证生效。
+受影响的 Active Own Token 与消费的 Global Token 按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验收，
+包括共享输入基元经 `OwnerTokenResource` 读取的全局值。
 
 ## 7. 验证策略
 

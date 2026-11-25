@@ -1,6 +1,6 @@
 using AtomUI.Controls;
-using Avalonia.Controls;
 using Avalonia.Media;
+using Border = Avalonia.Controls.Border;
 
 namespace AtomUI.Performance;
 

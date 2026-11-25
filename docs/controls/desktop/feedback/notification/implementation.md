@@ -258,27 +258,27 @@ Notification 的交互事件应从输入源收敛到控件级语义事件：
 
 推荐验证：
 
-- `CloseMotionExecutionTests` 验证关闭属性变化与模板重套用同时请求退出动效时只启动一次 motion，并只提交一次
+- 临时验收覆盖关闭属性变化与模板重套用同时请求退出动效时只启动一次 motion，并只提交一次
   `IsClosed=true`。
 - Feedback motion 测试验证六种 Position 的 64 DIP 方向、scale 恒等、完整时长 opacity 插值、Ant ease-in-out 参数以及
   取消后旧 actor 不提交 completion。
-- `FeedbackCardMotionCoordinatorTests` 使用真实 actor 与可控时钟验证六种 Position 的入场中关闭，旧入场清理后退出目标
+- 临时验收使用真实 actor 与可控时钟验证六种 Position 的入场中关闭，旧入场清理后退出目标
   保持到完整时长结束，且关闭只完成一次。
-- `FeedbackStackPanelTests` 覆盖阈值 `1/2/3/5`、变高卡片、关闭中的同步重排与退出快照、可见层、scale/offset、clip、
+- 临时验收覆盖阈值 `1/2/3/5`、变高卡片、关闭中的同步重排与退出快照、可见层、scale/offset、clip、
   hover 跨阈值、运行时配置和六种 Position 几何；阈值外旧项必须同步投影到最深 scale、半裁剪和 card opacity 目标。
-- `NotificationCardThemeTests` 验证内层使用 render-only motion actor；manager 生命周期测试使用 `WeakReference` 验证
+- 临时验收覆盖内层使用 render-only motion actor；manager 生命周期测试使用 `WeakReference` 验证
   dispose 后 card 与 actor 均可回收；模板测试同时验证快照 host 只包裹 `PART_Layout`，不包裹外层 Frame。
 - 折叠快照测试覆盖：首次折叠不捕获、展开到折叠最多捕获三张、目标 transform 完成释放、折叠中重新展开、关闭、
   retemplate、detach 与 motion disabled 的同步释放，以及释放后真实正文 opacity / hit-test 状态恢复。
 - manager 输入测试必须在通用 `VisualLayerManager` 与 Gallery 使用的 AtomUI Window 两条宿主路径覆盖：resize 后重新进入、
   离开，以及 resize 将右/下对齐 Stack 移出静止鼠标位置时的自动收拢。
-- `FeedbackLifetimeSchedulerTests` 以可控时钟覆盖最近 deadline、进度刷新、剩余时长、普通/Stack 暂停、空闲停表及关闭回调耗时后的重调度；
+- 临时验收以可控时钟覆盖最近 deadline、进度刷新、剩余时长、普通/Stack 暂停、空闲停表及关闭回调耗时后的重调度；
   `WeakReference` 用例验证 scheduler 保持存活时，最后一批已到期或已在关闭的项也能回收。
-- `FeedbackManagerStackTests` 覆盖无动画批量淘汰的最旧优先顺序，以及关闭回调中的 Dispose、嵌套 DestroyAll 和新增消息；
+- 临时验收覆盖无动画批量淘汰的最旧优先顺序，以及关闭回调中的 Dispose、嵌套 DestroyAll 和新增消息；
   `WeakReference` 用例验证 manager dispose 后的 manager、presenter、card、actor 与回调 owner 对象图释放；跨 manager
   激活还必须覆盖 A/B/A 顺序、Message 混合宿主、栈顶无操作快路径、单次 collection Move 和零 attach/detach。
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

@@ -255,7 +255,7 @@ child IsCheckedChanged
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - Tag 行为测试覆盖 Default、Preset、Status、Custom 四类颜色与 Filled、Solid、Outlined 三种 Variant 的完整矩阵。
 - Tag 行为测试覆盖 `info/processing` 映射、`default`、颜色清除、Variant 动态切换和本地 Brush 优先级。
 - Tag 行为测试覆盖 `Outline` 变体、`primary`/`danger`、空颜色不解析快照、颜色表按快照共享、挂树与离树期间的主题切换，以及按需关闭按钮的创建、点击与移除。
@@ -263,6 +263,6 @@ child IsCheckedChanged
 - CheckableTag 测试覆盖 pointer、keyboard、command、disabled、IsChecked TwoWay、Icon、Form 和二态 null 归一。
 - CheckableTagGroup 测试覆盖 option 归一、可取消单选、多选顺序、Default、模式切换、集合通知、事件、Form、模板重应用、detach 和容器回收。
 - Tag Semantic Part 测试：Tag 各形态（默认 / 图标 / 可关闭）marker 稳定、折叠节点 marker 保留、`IsClosable` 切换不增删 marker、Group item marker 随容器创建/prepare 就位、checked 切换与模式转换不增删 marker、owner-scoped Semantic Style 命中对应最低 public 类型（进入 Gate B 落地）。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

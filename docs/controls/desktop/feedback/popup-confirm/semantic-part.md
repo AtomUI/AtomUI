@@ -317,7 +317,7 @@ PopupConfirm 的唯一 Semantic owner 是 `PopupConfirm`。`PopupConfirm` 继承
 
 验证至少覆盖：
 
-- owner descriptor 只包含 §1 的 9 个 Part，字段值与本文一致（`tests/AtomUI.Desktop.Controls.Tests/PopupConfirm/PopupConfirmSemanticPartTests.cs`）。
+- owner descriptor 只包含 §1 的 9 个 Part，字段值与本文一致。
 - `PopupConfirmContainerTheme.axaml` 静态声明 4 个确认体 marker；`PopupConfirmTheme.axaml` 不声明任何
   弹层 marker；两者默认主题均不消费 `.semantic-*` selector。
 - 运行时解析：钉住打开后 8 个 `popup.*` 各落在正确的跨视觉根节点（弹层框体件在 `FlyoutPresenter` 子树，

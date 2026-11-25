@@ -6,6 +6,7 @@ using AtomUI.Desktop.Controls;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using AtomListView = AtomUI.Desktop.Controls.ListView;
 using IListItemData = AtomUI.Controls.Data.IListItemData;
 using ListItemData = AtomUI.Controls.Data.ListItemData;
 
@@ -14,6 +15,8 @@ namespace AtomUIGallery.ShowCases.List;
 public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
 {
     public const string LanguageId = nameof(ListShowCase);
+
+    private AtomListView? _selectionExample;
 
     public ListShowCase()
     {
@@ -49,7 +52,8 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
                     viewModel.SemanticListBoxItems   = null;
                     viewModel.OrderedSortDescriptions = null;
                     viewModel.SearchFilterValue       = null;
-                    viewModel.ClearBoundSelectedItems();
+                    _selectionExample = null;
+                    viewModel.UpdateSelectionExampleText([]);
                 }).DisposeWith(disposables);
             }
         });
@@ -63,6 +67,31 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
             e.CheckedOption.Tag is SelectionMode selectionMode)
         {
             viewModel.SelectionMode = selectionMode;
+        }
+    }
+
+    private void HandleSelectionExampleLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is AtomListView { DataContext: ListViewModel viewModel } list)
+        {
+            _selectionExample = list;
+            ResetSelectionExample(list, viewModel);
+        }
+    }
+
+    private void HandleSelectionExampleUnloaded(object? sender, RoutedEventArgs e)
+    {
+        if (ReferenceEquals(_selectionExample, sender))
+        {
+            _selectionExample = null;
+        }
+    }
+
+    private void HandleSelectionExampleChanged(object? sender, ListViewSelectionChangedEventArgs e)
+    {
+        if (ReferenceEquals(e.Source, sender) && sender is AtomListView { DataContext: ListViewModel viewModel } list)
+        {
+            viewModel.UpdateSelectionExampleText(list.SelectedItems);
         }
     }
 
@@ -158,7 +187,21 @@ public partial class ListShowCase : GalleryReactiveUserControl<ListViewModel>
     private void InitSelectionListItems(ListViewModel viewModel)
     {
         viewModel.SelectionListItems = BuildBasicListItems();
-        viewModel.ResetBoundSelectedItems();
+        if (_selectionExample is { } list)
+        {
+            ResetSelectionExample(list, viewModel);
+        }
+    }
+
+    private static void ResetSelectionExample(AtomListView list, ListViewModel viewModel)
+    {
+        list.ItemsSource = viewModel.SelectionListItems;
+        list.Selection.Clear();
+        if (viewModel.SelectionListItems is { Count: > 1 })
+        {
+            list.Selection.Select(1);
+        }
+        viewModel.UpdateSelectionExampleText(list.SelectedItems);
     }
 
     private void InitializeDisabledItems(ListViewModel viewModel)

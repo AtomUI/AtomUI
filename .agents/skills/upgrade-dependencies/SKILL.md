@@ -40,23 +40,24 @@ Record the current version, requested target version, and the file that owns eac
 
 ## Reference Source Workflow
 
-AtomUI keeps dependency source projects under `.referenceprojects`.
-
-1. Map the package family to its upstream source repository.
-2. Ensure `.referenceprojects/<RepoName>` exists.
-3. If it is missing, clone the upstream repository directly under `.referenceprojects`.
-4. Run `git fetch --tags --prune` in the reference repository.
-5. Resolve both the current version and target version to tags, branches, or commits.
-6. If a version cannot be resolved, report the exact blocker; do not guess.
-7. Inventory all changed files, then inspect the production source changes for every area that could
-   reach AtomUI. Inspect companion upstream tests to interpret source-backed behavior changes:
+1. Map the package family to its source repository. Locate the local reference before any upstream
+   source or release search. Check `.referenceprojects/<RepoName>` first, then follow the parent
+   `ReferenceProjects` lookup order in [Reference Project Source Lookup](../../../docs/engineering/contributing/reference-project-source-guidelines.md).
+   For Avalonia, the first location is `.referenceprojects/Avalonia`.
+2. Use the reference repository's local Git objects for the comparison. Fetch missing refs from
+   its configured upstream. If local lookup finds no repository, obtain the official source under
+   `.referenceprojects/<RepoName>`.
+3. Resolve the published current and target versions to exact commits. Record the reference path,
+   original refs, and commit IDs. Use NuGet package metadata to verify package versions and
+   dependency constraints, and use its source commit when available to corroborate the mapping.
+   If either version cannot be resolved, report the exact blocker.
+4. Inventory all changed files, then inspect production source changes for every area that could
+   reach AtomUI. Inspect companion upstream tests to interpret source-backed behavior changes.
 
 ```bash
 git diff <old-ref>..<new-ref> --name-status --find-renames
 git diff <old-ref>..<new-ref> -- <relevant paths>
 ```
-
-For Avalonia, use `.referenceprojects/Avalonia` when present.
 
 ## Impact Trace
 
@@ -73,6 +74,31 @@ its observable contract, and a risk-matched verification scenario. Choose the ob
 from the change: values, errors, state, notifications, ordering, lifecycle, rendering, input,
 accessibility, threading, performance, or platform behavior. Record uncertainty and unverified
 environments explicitly; do not turn an untested path into a "no impact" conclusion.
+
+## Compatibility Code Review
+
+Trace relevant upstream fixes to existing AtomUI compatibility code. Check reflection hooks and
+private-member bridges, overrides, event and lifecycle workarounds, and native adaptations such as
+P/Invoke and window-message hooks in `AtomUI.Native`. Use introducing commits and existing acceptance
+evidence to recover the original trigger and every responsibility of the affected code. Check both
+version snapshots for backported fixes. Record cleanup enabled by an older fix as an existing
+opportunity with its original version evidence.
+
+Give each affected adaptation a disposition in the upgrade evaluation and plan:
+
+- **Retire.** Upstream covers the original responsibilities and verification of the original trigger
+  supports removal. Identify implementation, callers, and trimming roots used only by the old hook.
+- **Scope a candidate.** Upstream overlaps part of the behavior or equivalent behavior still needs
+  verification. Identify the exact code that could be removed and its remaining responsibilities.
+  Plan a focused A/B check on the target version that bypasses only the candidate. Preserve the
+  original layout, input, and lifecycle conditions. Use the relevant native backend for behavior
+  owned by that backend.
+- **Retain or adapt.** State the remaining responsibility or separate execution path and identify
+  any required signature, lifecycle, or trimming adaptation.
+
+Record the upstream source location, AtomUI call site, original trigger, and verification status for
+each disposition. Use compilation for interface compatibility and scenario evidence for behavioral
+equivalence. Include proposed removals and conditional candidates in the existing plan review.
 
 ## Evaluation Checklist
 
@@ -115,6 +141,9 @@ Use this shape:
 - [ ] 6. Report residual risks and pre-existing failures.
 ```
 
+For Avalonia upgrades, put the old-version baseline before the version change and add the
+post-upgrade checks from [Avalonia Upgrade Acceptance](#avalonia-upgrade-acceptance).
+
 The user must approve the plan before implementation. Approval must be explicit, such as
 "approved", "continue", "execute this plan", or equivalent wording.
 
@@ -145,3 +174,44 @@ lifecycle. Existing full-suite, build, package, and publish checks complement th
 do not substitute for a missing impact-specific check. Before reporting completion, ensure the
 verification evidence corresponds to the final dependency version and AtomUI working tree, and list
 any platform or scenario that remains unverified.
+
+## Avalonia Upgrade Acceptance
+
+Every Avalonia upgrade requires measured before-and-after evidence that AtomUI behavior remains
+correct, performance meets the agreed acceptance limits, resources are released as expected, and
+every control passes scripted visual acceptance with no unresolved noticeable visual differences.
+
+### Before the upgrade
+
+- Map every control in the repository's current control inventory, including optional control packages,
+  to a scripted scenario. Reuse actual Gallery scenarios and use a temporary host for missing coverage.
+  Cover at least one representative state and the key interaction for each control. Add scenarios for
+  affected states and platform paths identified in the upstream source comparison. Use the
+  [AtomUI visual acceptance workflow](../atomui-visual-acceptance/SKILL.md) to drive controls and
+  capture results. Apply this section's cleanup after the upgrade comparison.
+- On the current Avalonia version, run the scripts and capture behavior assertions, screenshots, and
+  key geometry measurements. Record the platform, renderer, scale, fonts, theme, window size, data,
+  and capture timing so the same scenarios can be rerun after the upgrade.
+- Select performance and resource scenarios from the upstream impact trace. Record repeated samples
+  for relevant measures such as operation time, frame time, and allocations. Establish baseline
+  evidence for collectibility, event and timer cleanup, and native resource release after close or
+  detach. Put the sampling method, allowed variation, and pass criteria in the upgrade plan.
+
+### After the upgrade
+
+- Rerun the same scripts on the target version. Compare behavior assertions, geometry, and screenshot
+  differences per control, then review the visible differences flagged by the scripts. Investigate
+  and fix noticeable differences in style, layout, clipping, states, or motion, and rerun those scenarios.
+- Repeat the performance and resource measurements under the baseline conditions. Confirm the
+  agreed performance criteria and verify that objects and native resources are released according to
+  their contracts. Check for sustained growth across repeated open, close, reattach, or disposal
+  cycles. Run platform-owned behavior on its corresponding backend.
+- Remove the upgrade's temporary tests, scripts, probes, screenshots, and dedicated artifacts after
+  acceptance. Keep one Markdown evidence record with both versions, control coverage counts, key
+  before-and-after measurements, findings, and verification results. Run the final focused checks on
+  the changed modules after cleanup.
+
+Report the upgrade as successful only after every control passes scripted visual acceptance, the
+functional, performance, and resource-release results meet the plan's criteria, and all noticeable
+visual differences are resolved. Keep acceptance pending for any failed required scenario, missing
+measurement, or unverified required platform.

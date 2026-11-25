@@ -294,9 +294,7 @@ body 是 owner 模板 target；已声明的 rail、track 和 indicator 是 body 
 
 现有验证入口：
 
-- `tests/AtomUI.Desktop.Controls.Tests/ProgressBar/ProgressBarBehaviorTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/ProgressBarShowCasePageTests.cs`
-- `tests/AtomUIGallery.Tests/ShowCases/ProgressBarShowCaseExamples.snapshot`
+- 具体控件按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)临时验收。
 
 重点验证场景：
 

@@ -30,7 +30,6 @@
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Core" />
         <InternalsVisibleTo Include="AtomUI.Core.Tests" />
-        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Tests" />
         <InternalsVisibleTo Include="AtomUI.Localization.Tests" />
         <InternalsVisibleTo Include="AtomUI.Localization.Performance" />
         <InternalsVisibleTo Include="AtomUI.Performance" />

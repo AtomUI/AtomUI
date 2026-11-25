@@ -396,10 +396,8 @@ suffix 区默认前景色为 `ColorTextQuaternary`，下拉指示箭头（Select
 - `item` / `popup.list` 子级列 / `popup.listItem` 的 marker 在运行时容器创建路径注入
   （`SelectTagAwareTextBox` 标签创建、`CascaderView` 子级列创建、`CascaderViewLevelList` /
   `CascaderViewFilterList` 容器创建）。
-- 生成的 `Cascader*Style` 可编译并命中目标节点（见
-  `tests/AtomUI.Desktop.Controls.Tests/Cascader/CascaderSemanticPartTests.cs`）。
-- 钉住弹层在打开前抑制 light-dismiss 遮罩；重开与数据源重置后弹层部件 marker 保持（见
-  `tests/AtomUI.Desktop.Controls.Tests/Cascader/CascaderPinnedPopupTests.cs`）。
+- 生成的 `Cascader*Style` 可编译并命中目标节点。
+- 钉住弹层在打开前抑制 light-dismiss 遮罩；重开与数据源重置后弹层部件 marker 保持。
 - 状态变化（单选/多选、过滤、`IsAllowClear`、disabled）不改变 marker 身份与数量语义。
 - 默认主题不消费 `.semantic-*`，未声明用户 Semantic Style 时不增加 selector activator。
 - Gallery Semantic Parts Tab 延迟创建 Preview，弹层钉住常开并以多选预选呈现标签，13 个 Part 均可解析

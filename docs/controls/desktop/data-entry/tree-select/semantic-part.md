@@ -442,8 +442,7 @@ Setter 写在外层普通 Style 上。
 - `item` / `input`（多选）/ `popup.list` / `popup.listItem` 的 marker 在运行时创建路径注入
   （`SelectTagAwareTextBox` 标签与搜索框创建、`TreeSelect.EnsurePopupContent` 候选树创建、
   `TreeViewSelectTreeViewItem` 构造）。
-- 生成的 `TreeSelect*Style` 可编译并命中目标节点（见
-  `tests/AtomUI.Desktop.Controls.Tests/TreeSelect/TreeSelectSemanticPartTests.cs`）。
+- 生成的 `TreeSelect*Style` 可编译并命中目标节点。
 - 弹层展开与嵌套层级（`IsDefaultExpandAll`）下 `popup.listItem` marker 覆盖子级容器；重开与模板重应用
   后弹层部件 marker 保持。
 - 状态变化（单选/多选、过滤、`IsAllowClear`、disabled）不改变 marker 身份与数量语义。

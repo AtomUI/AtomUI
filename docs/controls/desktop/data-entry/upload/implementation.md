@@ -268,17 +268,17 @@ AOT 边界：
 
 | 变更范围 | 验证 |
 | --- | --- |
-| public API | `UploadRedesignContractTests` 检查属性、默认值、batch status/failure、AdmissionDecision factory 和 raw Exception 移除。 |
-| 单一状态 owner | `UploadFileStateTests` 覆盖 add、remove、reset、集合替换和外部绑定集合保持。 |
+| public API | 临时验收覆盖属性、默认值、batch status/failure、AdmissionDecision factory 和 raw Exception 移除。 |
+| 单一状态 owner | 临时验收覆盖 add、remove、reset、集合替换和外部绑定集合保持。 |
 | 队列生命周期 | `UploadSchedulerTests` 覆盖 running 计数、完成释放、cancel all、维护操作序列化、取消中途一致性和 transport 替换。 |
 | 触发器与拖拽 | 行为测试覆盖文件/目录触发、Copy/None 协商、Drop-only 数据读取、嵌套路由和 owner 委托。 |
 | 输入管线与生命周期 | fake StorageItem 覆盖目录模式、worker-thread 准入、数量策略、typed adopt/transfer、取消、异常聚合、ReplaceExisting、detach 和 lease 恰好释放一次。 |
 | 平台拖动 | Windows、macOS、X11 和 Wayland 跨进程验证文件、目录、效果反馈和异步读取。 |
 | 渲染兼容 | Light/Dark、不同缩放和自定义 Content 的截图、Measure、Arrange 与 Bounds 保持基线。 |
-| 成功自动移除 | `UploadAutoRemoveTests` 覆盖 delay 到期、remove、reset、detach 和状态变更取消。 |
-| Form 与验证 | `UploadFormValueTests` 覆盖 `FileValueMode`、set/clear 和 `DataValidationErrors`。 |
-| Gallery 示例 | `UploadShowCasePageTests` 和 snapshot 覆盖示例、本地化和源码片段。 |
-| Semantic Part | `UploadSemanticPartTests` 覆盖 descriptor、四种 `ListType`、生成 Style route 和 append trigger 排除；`UploadSemanticPartHighlightTests` 覆盖 Gallery 高亮。 |
+| 成功自动移除 | 临时验收覆盖 delay 到期、remove、reset、detach 和状态变更取消。 |
+| Form 与验证 | 临时验收覆盖 `FileValueMode`、set/clear 和 `DataValidationErrors`。 |
+| Gallery 示例 | 临时验收示例、本地化和源码片段。 |
+| Semantic Part | 临时验收 descriptor、四种 `ListType`、生成 Style route、append trigger 排除和 Gallery 高亮。 |
 | 文档卫生 | `git diff --check` 和关键术语扫描。 |
 
 文档验证命令：

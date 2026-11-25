@@ -89,7 +89,7 @@ TabControl 的控件专项模型通过 Theme 消费 Token：
 | Token 默认值 | 运行对应控件测试，走查 Light/Dark 和 Browser 主题。 |
 | Token 名称或数量 | 检查 generated TokenResource key、AXAML 引用和 token.md。 |
 | 主题映射 | 走查 hover、pressed、selected、disabled、loading 等状态视觉。 |
-| 任意 Token | `NavigationFamilyEffectTests`（TabControl / CardTabControl / TabStrip / CardTabStrip / TabItem / TabStripItem 行与隔离测试）全绿。 |
+| 任意 Token | 按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验证受影响的 TabControl / CardTabControl / TabStrip / CardTabStrip / TabItem / TabStripItem 状态及作用域隔离。 |
 | Overflow shadow | 覆盖四个 owner × 四个 placement，断言普通外阴影的方向、offset、blur、spread、颜色、尺寸及 start/end 可见性；同时验证透明绘制载体与viewport 阴影层裁剪边界与真实合成像素。 |
 
 ## 独立 Token 身份与共享计算

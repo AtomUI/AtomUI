@@ -269,16 +269,16 @@ AOT 边界：
 - `.semantic-scope-input-frame`、`.semantic-scope-prefix`、`.semantic-scope-suffix` 只能服务 LineEdit 的显式 route，不得提升为公开 Part 或默认主题 selector。
 - clear、count、prefix、suffix 的可见性和内容变化不得增删 marker；五个 selector Part 在内置 LineEdit 模板中均保持 `Single`。
 - 四个输入主题（LineEdit / TextBox / SearchEdit / TextArea）不得在 owner 层恢复 `Background` / `BorderBrush` 默认值，模板不得把这两个属性直接 `TemplateBinding` 到 frame 的 `Background` / `BorderBrush`；owner 属性值只经 `HostBackground` / `HostBorderBrush` 进入 frame，是判定“是否定制”的唯一输入。`EmbeddedTextBox` 这类需要压制 chrome 的内嵌派生在自身 ControlTheme 中显式设置 owner 值，经同一投射成为 frame 表面值。
-- root `Background` / `BorderBrush` 投射不得改变共享状态机：未定制路径 frame 无 host 伪类，rest / hover / pressed / focus / disabled 视觉与 `LineEditBorderRenderTests` 基线保持一致；定制路径冻结该属性槽的交互态变色，置空后必须完整恢复状态机。
+- root `Background` / `BorderBrush` 投射不得改变共享状态机：未定制路径 frame 无 host 伪类，rest / hover / pressed / focus / disabled 保持原有视觉；定制路径冻结该属性槽的交互态变色，置空后必须完整恢复状态机。
 - 输入控件主题不得再为 hover / focus 在 `/template/` 选择器上重复设置 frame 的表面颜色：frame 以 `OwnerTokenResource` 读取宿主的有效值，`Controls[X]` 覆盖直接生效；宿主主题上的模板选择器样式会压过 frame 自身样式（含根表面投射）。
 
 ## 10. 测试与验证
 
 验证范围：
 
-- `LineEditShowCasePageTests` 覆盖 Gallery 页面结构、示例 snapshot 和源码片段入口。
-- `LineEditSemanticPartTests` 覆盖 descriptor、静态 marker、生成 Style 命中、默认主题不消费 semantic selector、状态身份稳定和尺寸/variant 基线。
-- `AddOnContentTemplateTests` 覆盖 prefix 的 content、template-only 与 template 组合路径，防止稳定 wrapper 改变既有 AddOn 内容语义。
+- 临时验收 Gallery 页面结构、示例和源码片段入口。
+- 临时验收覆盖 descriptor、静态 marker、生成 Style 命中、默认主题不消费 semantic selector、状态身份稳定和尺寸/variant 基线。
+- 临时验收覆盖 prefix 的 content、template-only 与 template 组合路径，防止稳定 wrapper 改变既有 AddOn 内容语义。
 - 清除按钮：空文本、非空文本、read-only、TextArea 和 single-line 差异。
 - TextBox 布局：显式宽度和父布局分配宽度保持稳定，placeholder、单字符和长文本切换不改变 input frame 宽度。
 - 生命周期：基础输入、全部内部派生输入和 AutoComplete 组合宿主在 logical detach/reattach 后保持 reveal、clear、inner-right、IME preedit、viewport 和 Form feedback 连接。
@@ -288,7 +288,7 @@ AOT 边界：
 - SearchEdit：Default/Primary 搜索按钮、loading、搜索事件和 disabled。
 - TextArea：Lines、MinLines、MaxLines、IsAutoSize、IsResizable、resize 边界和字数统计。
 - 文本 viewport：clear/feedback/addon 改变内部可用宽度但 owner Bounds 不变时发布新值；模板重套用后旧 source 不再发布；TextArea scroller padding 和 presenter margin 被正确扣除。
-- root 表面：`TextInputRootBrushRelayTests` 覆盖四控件的定制值直达 frame、hover / focus 边框变色让位、focus `BoxShadow` 存活、置空恢复状态机、模板应用前赋值中继和未定制 rest 基线。
+- root 表面临时验收覆盖四控件的定制值直达 frame、hover / focus 边框变色让位、focus `BoxShadow` 存活、置空恢复状态机、模板应用前赋值中继和未定制 rest 基线。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。
 
 ## 状态动效初始化

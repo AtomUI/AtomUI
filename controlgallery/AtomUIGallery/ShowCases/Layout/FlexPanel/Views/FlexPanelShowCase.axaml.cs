@@ -10,6 +10,11 @@ using AtomFlexPanel = AtomUI.Controls.FlexPanel;
 using AtomScrollViewer = AtomUI.Desktop.Controls.ScrollViewer;
 using AtomTextBlock = AtomUI.Desktop.Controls.TextBlock;
 using AvaloniaSlider = Avalonia.Controls.Slider;
+using Flex = AtomUI.Controls.Flex;
+using FlexBasis = AtomUI.Controls.FlexBasis;
+using FlexBasisKind = AtomUI.Controls.FlexBasisKind;
+using FlexDirection = AtomUI.Controls.FlexDirection;
+using FlexWrap = AtomUI.Controls.FlexWrap;
 using NumericUpDown = AtomUI.Desktop.Controls.NumericUpDown;
 
 namespace AtomUIGallery.ShowCases.FlexPanel;

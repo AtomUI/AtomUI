@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <AvaloniaVersion>12.1.6</AvaloniaVersion>
+        <AvaloniaVersion>12.2.0</AvaloniaVersion>
         <AtomUIGalleryRuntimeVersion>10.0.14</AtomUIGalleryRuntimeVersion>
         <AtomUIVersion>6.3.0</AtomUIVersion>
     </PropertyGroup>

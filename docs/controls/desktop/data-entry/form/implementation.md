@@ -319,10 +319,10 @@ AOT 边界：
 
 现有验证入口：
 
-- `tests/AtomUI.Desktop.Controls.Tests/Form/FormBehaviorTests.cs`：覆盖默认 `OnChanged`、feedback 转发释放、验证取消、reset 取消、并行验证、stop when first failed 和 SubmitButton watch 行为。
-- `tests/AtomUI.Desktop.Controls.Tests/Form/FormCustomizableSizeTypeTests.cs`：覆盖 `CustomizableSizeType` 到新旧尺寸接口的转发。
-- `tests/AtomUI.Desktop.Controls.Tests/Form/FormSemanticPartTests.cs`：覆盖 descriptor 字段、模板 marker、Selector 命中、状态与布局矩阵、逐条消息项重建和动态增删项的 marker 生命周期。
-- `tests/AtomUIGallery.Tests/ShowCases/FormShowCasePageTests.cs`：覆盖 Gallery Form 页面结构、示例 snapshot、源码片段和本地化资源。
+- 临时验收覆盖默认 `OnChanged`、feedback 转发释放、验证取消、reset 取消、并行验证、stop when first failed 和 SubmitButton watch 行为。
+- 临时验收覆盖 `CustomizableSizeType` 到新旧尺寸接口的转发。
+- 临时验收覆盖 descriptor 字段、模板 marker、Selector 命中、状态与布局矩阵、逐条消息项重建和动态增删项的 marker 生命周期。
+- Gallery 临时验收要点：覆盖 Gallery Form 页面结构、示例 snapshot、源码片段和本地化资源。
 
 维护 Form 时建议按风险选择验证：
 

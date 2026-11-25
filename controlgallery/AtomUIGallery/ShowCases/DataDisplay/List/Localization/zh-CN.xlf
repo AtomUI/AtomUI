@@ -423,14 +423,14 @@
     </unit>
     <unit id="SelectedItemsBindingDescription">
       <segment>
-        <source>SelectedItems can be bound without an explicit Mode=TwoWay; both user selection and collection mutations stay synchronized.</source>
-        <target state="translated">SelectedItems 不需要显式设置 Mode=TwoWay；用户选择和集合变更都会保持同步。</target>
+        <source>Use Selection to select or clear items programmatically. SelectedItems reports the current selection.</source>
+        <target state="translated">使用 Selection 在代码中选择或清空选项，SelectedItems 提供当前选中的项目。</target>
       </segment>
     </unit>
     <unit id="SelectedItemsBindingTitle">
       <segment>
-        <source>SelectedItems binding</source>
-        <target state="translated">SelectedItems 绑定</target>
+        <source>Programmatic selection</source>
+        <target state="translated">通过代码选择</target>
       </segment>
     </unit>
     <unit id="SelectionDescription">

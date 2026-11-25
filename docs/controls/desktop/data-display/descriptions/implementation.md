@@ -420,8 +420,8 @@ label/content 的 Semantic Setter 命中后按 Avalonia 原生优先级覆盖同
 
 验证范围：
 
-- `DescriptionsResponsiveLayoutTests`：响应式列数、span 解析、边框切换重建视觉、重复内容 item 按位置布局。
-- `DescriptionsSemanticPartTests`：descriptor 字段、静态 marker、四种布局的运行时 label/content marker、空集合、集合增删和布局重建 cardinality。
+- 临时验收覆盖 响应式列数、span 解析、边框切换重建视觉、重复内容 item 按位置布局。
+- 临时验收覆盖 descriptor 字段、静态 marker、四种布局的运行时 label/content marker、空集合、集合增删和布局重建 cardinality。
 - Selector 测试：header/title/extra 使用一个 `/template/` 命中；label/content 使用 descriptor 的完整多段 route 命中，并
   拒绝把内部类型、ContractType 或 logical descendant 写进 selector；嵌套 Button 与嵌套 Descriptions 均不得被外层命中。
 - 尺寸回归：Large/Middle/Small 在水平 bordered 与纵向 bordered 生成视觉中使用同一 owner SizeType 基线；水平 bordered
@@ -433,5 +433,5 @@ label/content 的 Semantic Setter 命中后按 Avalonia 原生优先级覆盖同
 - Gallery Semantic Part 示例：同数据、同标题和同 bordered 配置下纵向展示 Small 与默认 Large 两个实例；两者的 root 均使用
   `Padding=10`，Small label 为黑色，默认 Large 额外使用 `#CDC1FF` 一像素 root 边框、`8` 圆角和 `#A294F9` label。
 - 修改 Token 或主题时验证 源码片段和 Gallery 示例视觉。
-- 修改控件实现时运行 `tests/AtomUI.Desktop.Controls.Tests` 中的 Descriptions 相关测试，并按影响范围扩大到完整 Desktop 控件测试。
+- 修改控件实现时按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)验收相关行为。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

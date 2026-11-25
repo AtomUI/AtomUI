@@ -62,7 +62,7 @@ ButtonSpinner 的控件专项模型通过 Theme 消费 Token：
 主题读法：`ButtonSpinnerTheme` 的全局值以 `OwnerTokenResource` 读取（它也是 NumericUpDownSpinner 的基础主题，owner 为
 NumericUpDown）；`ButtonSpinnerDecoratedBoxTheme`、`ButtonSpinnerHandleTheme`、`SizeTypeAwareIconPresenter` 的全局值读取
 所属控件的有效值，Handle 的 Own Token 与按下图标色读取 ButtonSpinner 的值（增减按钮是注册控件 IconButton）。
-全部 Active Own Token 与消费的 Global Token 由 `InputFamilyEffectTests` 逐项验证生效。
+受影响的 Active Own Token 与消费的 Global Token 按[主题生效测试规范](../../../../engineering/development/theme-effect-tests.md)验收。
 
 ## 7. 验证策略
 

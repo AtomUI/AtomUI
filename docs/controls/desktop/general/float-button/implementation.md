@@ -249,9 +249,9 @@ FloatButton 的交互事件应从输入源收敛到控件级语义事件：
 推荐验证：
 
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
 - FloatButton 命令支持变更需覆盖 host 命令执行、`CommandParameter` 转发、`CanExecute=false` 禁用、BackTop 命令路径、group child 继承 host `DataContext`、child 本地 `DataContext` 不被覆盖、attach 后新增 child 的命令绑定。
-- BackTop 进度环变更运行 `tests/AtomUI.Desktop.Controls.Tests/FloatButton/BackTopFloatButtonProgressTests.cs`，覆盖进度计算夹取、`IsShowProgress` 显隐与 host 投影。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- BackTop 进度环变更临时验收进度计算夹取、`IsShowProgress` 显隐与 host 投影。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。

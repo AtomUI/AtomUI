@@ -9,9 +9,10 @@
 | --- | --- |
 | `AtomUI.Core.Tests` | owned-service 收集、attach/rollback、逆序 dispose、Application store 生命周期 |
 | `AtomUI.Controls.Shared.Tests` | source/key、scheduler、两级 dedup、取消、cache、HTTP、安全、codec、租约 |
-| `AtomUI.Controls.Tests` | `AsyncImage`、Avatar、controller generation、fallback、Theme 与 owned/borrowed image |
-| `AtomUI.Desktop.Controls.Tests` | Previewer items、current/cover/preload 优先级、collection 同步、overlay 关闭释放 |
-| `AtomUIGallery.Tests` | Gallery AXAML/API/示例只使用 AtomUI `AsyncImage`，无第三方附加属性 |
+| `AtomUI.Controls.Tests` | SVG codec 安全配置、解码缓存与租约释放 |
+| AsyncImage 与 Avatar 临时验收 | controller generation、fallback、Theme 与 owned/borrowed image |
+| ImagePreviewer 临时验收 | Previewer items、current/cover/preload 优先级、collection 同步、overlay 关闭释放 |
+| Gallery 示例临时验收 | Gallery AXAML/API/示例使用 AtomUI `AsyncImage` |
 
 测试必须使用可控 fake clock、fake transport、barrier codec 和容量很小的真实 cache 来建立确定竞态；不得用任意 sleep 证明
 并发正确。涉及 UI 提交的测试使用 Avalonia dispatcher/test host，明确推进调度队列。

@@ -51,7 +51,8 @@ Tailwind 色板通过[色板生成脚本](../../../../scripts/generate-shadcn-ta
   Shadcn 同时核对种子和语言 Token 进入全局求值的路径。
 - **输出一致性**。以同一份变体、种子和显式覆盖比较迁移前后的语言 Token 和全局 Map / Alias 值。
   核对 Alias 对显式 Map 覆盖的读取与冻结项优先级。
-- **构建与契约**。构建三个语言包及调用其求值实现的构建和测试项目，运行
-  [Ant Design](../../../../tests/AtomUI.Desktop.Controls.Tests/Theme/AntDesignControlContractTests.cs)、
+- **构建与契约**。构建三个语言包及调用其求值实现的项目。分别运行
+  [内核设计语言契约测试](../../../../tests/AtomUI.Core.Tests/Theme/DesignLanguageContractTests.cs)、
   [PrimeNG](../../../../tests/AtomUI.DesignLanguages.PrimeNG.Tests/PrimeNGContractTests.cs) 和
-  [Shadcn](../../../../tests/AtomUI.DesignLanguages.Shadcn.Tests/ShadcnContractTests.cs) 的现有定向契约测试。
+  [Shadcn](../../../../tests/AtomUI.DesignLanguages.Shadcn.Tests/ShadcnContractTests.cs) 的定向测试。
+  Ant Design 的受影响控件取值按[主题生效测试规范](../../../engineering/development/theme-effect-tests.md)临时验收。

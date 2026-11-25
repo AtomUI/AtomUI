@@ -23,7 +23,6 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="AtomUI.Desktop.Controls.DataGrid.Tests" />
-        <InternalsVisibleTo Include="AtomUI.Desktop.Controls.Rendering.Tests" />
         <InternalsVisibleTo Include="AtomUI.Performance" />
         <InternalsVisibleTo Include="AtomUI.DataGridPerformance" />
     </ItemGroup>

@@ -93,7 +93,7 @@ FormToken 直接影响 Form、FormItem 和 FormItemDecorator 参与的表单布�
 - `FormItemTheme.axaml`
 - `FormItemDecoratorTheme.axaml`
 - Form token.md 语义说明和 Gallery 示例
-- `FormShowCasePageTests`
+- Gallery 表单示例的临时验收
 
 ## 5. 兼容性要求
 

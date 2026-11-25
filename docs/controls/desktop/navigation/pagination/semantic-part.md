@@ -270,5 +270,5 @@ selector 表达；Semantic Style 的 Setter 以 trigger 优先级同时覆盖主
   `SimplePagination.item` 与 `SimplePagination.info` 为默认 `/template/ .semantic-item` /
   `/template/ .semantic-info`，删除或重命名 scope 标记、改变 marker 类型或 cardinality 时必须同步生成
   descriptor、主题 marker、运行时代码与回归测试。
-- 运行时 marker 行为回归测试见 `tests/AtomUI.Desktop.Controls.Tests/Pagination/PaginationSemanticPartTests.cs`；
-  Gallery 预览与样式示例验证见 `tests/AtomUIGallery.Tests/ShowCases/PaginationShowCasePageTests.cs`。
+- 运行时 marker 行为按上述条件临时验收。
+- 临时验收 Gallery 预览与样式示例。

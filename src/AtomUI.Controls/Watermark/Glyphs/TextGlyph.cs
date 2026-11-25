@@ -5,6 +5,7 @@ using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 
 namespace AtomUI.Controls;
 
@@ -70,6 +71,8 @@ public class TextGlyph : WatermarkGlyph
 
     protected FormattedText? FormattedText { get; private set; }
 
+    private CultureInfo? _textCulture;
+
     static TextGlyph()
     {
         TextProperty.Changed.AddClassHandler<TextGlyph>((glyph, args) => glyph.RebuildFormatText());
@@ -88,9 +91,10 @@ public class TextGlyph : WatermarkGlyph
             return;
         }
 
+        _textCulture = CultureInfo.CurrentCulture;
         FormattedText = new FormattedText(
             Text,
-            CultureInfo.CurrentCulture,
+            _textCulture,
             FlowDirection.LeftToRight,
             new Typeface(FontFamily, FontStyle, FontWeight),
             FontSize,
@@ -139,6 +143,20 @@ public class TextGlyph : WatermarkGlyph
                 BindingPriority.Style));
     }
 
+    internal TextLayout? CreateTileTextLayout()
+    {
+        if (Text is not { Length: > 0 } text || FormattedText == null)
+        {
+            return null;
+        }
+
+        var runProperties = new GenericTextRunProperties(new Typeface(FontFamily, FontStyle, FontWeight), FontSize,
+            foregroundBrush: Foreground, cultureInfo: _textCulture);
+        var paragraphProperties = new GenericTextParagraphProperties(runProperties, TextAlignment.Center,
+            TextWrapping.WrapWithOverflow);
+        return new TextLayout(new TileTextSource(text, runProperties), paragraphProperties);
+    }
+
     // FormattedText 的布局尺寸不包含字形越界。此方法只用于确切的内置 TextGlyph，
     // 自定义子类的 Render 不受该边界约束。
     internal Rect GetDrawingBounds()
@@ -156,4 +174,12 @@ public class TextGlyph : WatermarkGlyph
     }
 
     #endregion
+
+    private sealed class TileTextSource(string text, TextRunProperties properties) : ITextSource
+    {
+        public TextRun? GetTextRun(int textSourceIndex)
+        {
+            return textSourceIndex < text.Length ? new TextCharacters(text.AsMemory(textSourceIndex), properties) : null;
+        }
+    }
 }

@@ -233,7 +233,7 @@ Gallery 的 StyleClass 示例即用此契约：在外层普通 Style 上限定�
   （`Flyout.CreatePresenter` 与 `FlyoutPresenter.OnApplyTemplate`）。
 - 默认主题不消费 `.semantic-*` selector。
 - 运行时解析：钉住打开后 `popup.root` / `popup.container` / `popup.content` / `popup.arrow` 各落在
-  正确的跨视觉根节点（见 `tests/AtomUI.Desktop.Controls.Tests/Flyouts/FlyoutSemanticPartTests.cs`）。
+  正确的跨视觉根节点。
 - 生成的 `FlyoutHostPopupXxxStyle` 可编译并实例化（`Style` 派生类型），且经 `>>` 后代路由命中代码创建的
   跨视觉根弹层节点（§4）。
 - Gallery Semantic Parts Tab 延迟创建 Preview，弹层钉住常开，5 个 Part 均可解析高亮（跨视觉根弹层根由

@@ -352,7 +352,7 @@ AbstractSelect 上的公开配置由 Select 实例拥有，主题为其提供 Se
 - `MaxCount`、`IsHideSelectedOptions`、`MaxTagCount`、`IsResponsiveTagMode`。
 - `Large/Middle/Small/Custom` 尺寸下单选输入、多选 tag、handle 和 popup 对齐。
 - native validation error、Form 扩展状态、feedback 图标、CompactSpace 边框折叠和 popup open/close 事件取消。
-- `SelectSemanticPartTests`：descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、前缀部件内联呈现、popup 部件 marker 暴露。
+- 临时验收覆盖 descriptor 十三个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中触发区目标、标签部件样式命中、前缀部件内联呈现、popup 部件 marker 暴露。
 - 文档改动至少运行 `git diff --check` 并检查相对链接存在。
 
 组件默认由主题按样式实例创建独立定义，并直接设置 OpenMotion/CloseMotion；实际 Popup 在播放前消费值类型几何，

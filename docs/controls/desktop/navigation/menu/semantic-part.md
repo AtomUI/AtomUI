@@ -266,6 +266,5 @@ Menu（horizontal）下恒为 0 实例，只有 `subMenu.*` 的两个键在子�
   `Classes.Add(<生成常量>)`，不建立 Binding 或 selector activator。
 - 复用方（ContextMenu / MenuFlyout / DropdownButton 弹层）的 marker 行为不因 plain Menu 层级隔离而改变。
 
-验证矩阵见 [Menu 桌面版实现原理](implementation.md) 的 Semantic Part 条目，以及
-`tests/AtomUI.Desktop.Controls.Tests/Menu` 下的 `MenuSemanticPartTests`（descriptor 契约）与 `MenuSemanticLevelTests`
-（真实视觉树层级、复用方边界、声明式钉住时序、模板 marker 存在性）。
+按 [Menu 桌面版实现原理](implementation.md) 的 Semantic Part 条目临时验收 descriptor、真实视觉树层级、复用方边界、
+声明式钉住时序和模板 marker。

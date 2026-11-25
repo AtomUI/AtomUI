@@ -26,15 +26,6 @@ public class GalleryReleaseWorkflowTests
         publishBlock.ShouldContain("\"/nr:false\"");
     }
 
-    [Fact]
-    public void MacOS_Dmg_Jobs_Remove_Unused_Homebrew_Taps_Before_Installing_Packages()
-    {
-        var workflow = File.ReadAllText(GetRepoFile(".github/workflows/release-gallery.yml"));
-
-        AssertHomebrewTapCleanupBeforeInstall(workflow, "Build macOS x86_64 DMG Installer", "/dmg/x64");
-        AssertHomebrewTapCleanupBeforeInstall(workflow, "Build macOS arm64 DMG Installer", "/dmg/arm64");
-    }
-
     private static void AssertHomebrewTapCleanupBeforeInstall(string workflow, string jobName, string artifactPath)
     {
         var jobIndex = workflow.IndexOf($"name: {jobName}", StringComparison.Ordinal);

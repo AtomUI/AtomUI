@@ -232,5 +232,4 @@ item 的 selection 与图标状态继续由 `IsSelected` 决定。
 - 覆盖首个 tick 前、最终 tick 后且 continuation 前、播放中反转和连续切换多个面板，验证尺寸、透明度及旧回调隔离。
 - 对多行文本、三层嵌套、Borderless / Ghost 和显式 padding 采样 1× / 2× 画面，检查文字局部坐标和结构分隔线。
 - 验证关动效、detach / reattach、模板重套用及容器回收后的当前状态，并覆盖 ColorPicker 的直接消费路径。
-- `CollapseBehaviorTests` 负责状态、输入、结构边线和生命周期；`ContentExpansionMotionTests` 与
-  `ContentExpansionBoundaryTests` 负责共享机制的帧边界、几何和执行边界。不能以 transform 非空或终态可见性替代中间帧验证。
+- 临时验收覆盖状态、输入、结构边线、生命周期及共享展开机制的中间帧、几何和执行边界。

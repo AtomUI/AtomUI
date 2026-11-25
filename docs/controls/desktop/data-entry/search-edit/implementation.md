@@ -170,9 +170,9 @@ AOT 边界：
 
 验证范围：
 
-- `SearchEditBehaviorTests` 覆盖默认 Enter 行为、按钮与 Enter 触发来源、查询文本快照和搜索中重复请求抑制。
-- `SearchEditLayoutTests` 覆盖 Custom 和内置 SizeType 下搜索按钮 frame 与输入框 frame 高度一致。
-- `CustomizableSizeTypeContractTests` 覆盖 SearchEdit 和 AutoCompleteSearchEdit 的 customizable size contract。
-- `LineEditShowCasePageTests` 覆盖 LineEdit / SearchEdit Gallery 示例结构、SearchEdit SizeType 示例和 snapshot。
+- 临时验收覆盖默认 Enter 行为、按钮与 Enter 触发来源、查询文本快照和搜索中重复请求抑制。
+- 临时验收覆盖 Custom 和内置 SizeType 下搜索按钮 frame 与输入框 frame 高度一致。
+- 临时验收覆盖 SearchEdit 和 AutoCompleteSearchEdit 的 customizable size contract。
+- 临时验收 LineEdit / SearchEdit Gallery 示例结构和 SearchEdit SizeType 示例。
 - Gallery 走查 SearchEdit 基础、状态、尺寸、Custom、loading、disabled、内部右侧内容和 AutoComplete 搜索示例。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

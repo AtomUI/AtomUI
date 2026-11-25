@@ -1032,7 +1032,7 @@ Desktop 与 Browser host 使用相同 Query、Source、snapshot 和虚拟化不�
 - Cache miss 保留旧 rows；成功一次交换，失败恢复旧 offset/slot，无 null、重复或闪白 row。
 - block pin、container reset、回收池和高度元数据在往返滚动 10,000 次后不增长。
 - 冻结列、水平虚拟化、row details 和 nested scroll chaining 保持正确。
-- 既有 `DataGridDetailExpanderColumnRecycleTests` 中的 offset、extent、首行余量、双向回收和 RowDetails 状态用例保持或加强，
+- 临时验收覆盖 offset、extent、首行余量、双向回收和 RowDetails 状态，
   不能删除或放宽断言。
 
 ### 14.4 视觉、性能与发布门禁

@@ -28,8 +28,6 @@
 | `Dialog/Themes` / `MessageBox/Themes` | 共享 Surface、Overlay presenter 和 MessageBox AXAML 结构。 |
 | `src/AtomUI.Core/Animations/Motion` | 框架时钟播放、连续替代、属性覆盖和真实任务完成。 |
 
-对应回归测试位于 `tests/AtomUI.Desktop.Controls.Tests/Dialog` 和 `tests/AtomUI.Desktop.Controls.Tests/MessageBox`。
-
 ## 3. 核心类职责
 
 - `Dialog` 只拥有最新 `IsOpen` 意图和当前 Session 引用，不拥有 presenter 视觉状态。
@@ -291,20 +289,21 @@ Dialog 内容区内的 popup 沿 placement target 解析同一 Window `TopLevel`
 
 重点测试：
 
-- `DialogSessionTests`: 状态转换、veto、forced close、异常和 presenter failure。
-- `DialogLifecycleTests`: 实例/声明式打开、取消、detach、重开、嵌套焦点和 WeakReference。
-- `OverlayDialogPresenterTests` / `DialogContentPopupLayeringTests`: mask ownership、modal/modeless 输入、栈顶路由、`IsMaskClosable` 门控、TopLevel ownership、popup/light-dismiss、chrome suppression 引用计数、完整 mask bounds、平台 body bounds、结构性最小尺寸、拖动 resize、capacity 退化、maximize/restore 和 motion。尺寸验收还须锁定自然轴往返恢复、单轴更新/resize 隔离、maximize/restore 模式保留，以及 runtime `NaN` 不重置用户几何；具体触发条件见[宿主尺寸验证矩阵](host-sizing-design.md#111-overlay-按轴尺寸验收)。
-- `OverlayDialogPresenterMotionTests`：首帧、框架时钟结束、中心回退、冻结原点、入场反向和释放后的底层属性恢复。
-- `WindowDialogPresenterTests`: Opened/Closed 原生生命周期、首帧几何、原生关闭、owner close、自然尺寸、Surface/chrome constraints 换算、native resize、placement 和资源 parent。
-- `DialogButtonBoxTests` / `DialogSurfaceTests`: 有效按钮集合、template 生命周期、内容和配置。
-- `DialogSemanticPartTests`: descriptor（`Dialog`/`MessageBox` 各 8 个部件）、四个主题的静态 marker 清单、Overlay
+- 临时验收覆盖 状态转换、veto、forced close、异常和 presenter failure。
+- 临时验收覆盖 实例/声明式打开、取消、detach、重开、嵌套焦点和 WeakReference。
+- 临时验收覆盖 mask ownership、modal/modeless 输入、栈顶路由、`IsMaskClosable` 门控、TopLevel ownership、popup/light-dismiss、chrome suppression 引用计数、完整 mask bounds、平台 body bounds、结构性最小尺寸、拖动 resize、capacity 退化、maximize/restore 和 motion。尺寸验收还须锁定自然轴往返恢复、单轴更新/resize 隔离、maximize/restore 模式保留，以及 runtime `NaN` 不重置用户几何；具体触发条件见[宿主尺寸验证矩阵](host-sizing-design.md#111-overlay-按轴尺寸验收)。
+- 临时验收覆盖 首帧、框架时钟结束、中心回退、冻结原点、入场反向和释放后的底层属性恢复。
+- 临时验收覆盖 Opened/Closed 原生生命周期、首帧几何、原生关闭、owner close、自然尺寸、Surface/chrome constraints 换算、native resize、placement 和资源 parent。
+- 临时验收覆盖 有效按钮集合、template 生命周期、内容和配置。
+- 临时验收覆盖 descriptor（`Dialog`/`MessageBox` 各 8 个部件）、四个主题的静态 marker 清单、Overlay
   宿主生成 Style 命中、`mask`/`wrapper` 的 Optional 与 Window 宿主边界、owner 逻辑父不变量、`GetCrossRoots` 上报与
   释放、嵌套会话隔离、布局型 Setter 与 structural minimum 的协调结果。
 - MessageBox tests: 派生结构、语义样式、motion anchor、重入和按钮引用释放。
-- `DialogPopupPrimitiveLayeringTests`、`DialogPopupControlFamilyTests`、`DataGridFilterDialogPopupTests` 与 `PopupEntryInventoryTests` 分别覆盖原语、控件家族、DataGrid 和入口库存契约；真实窗口证据按平台独立记录。
+- 弹层变更临时验收原语、受影响控件家族、DataGrid 过滤菜单和实际入口。真实窗口证据按平台独立记录。
 
 最终 owning TopLevel/Overlay/Popup 分层已在 Windows CSD、macOS 原生 chrome，以及 Ubuntu GNOME Wayland 环境实机测试；
 Wayland 证据仅覆盖 Dialog 内容 Popup 真实窗口人工回归。Linux X11 尚未测试。Headless 测试只能证明
 共享 managed 不变量，不能替代缺失平台的实机证据。
 
-迭代先运行 Dialog/MessageBox filter，再运行完整 `AtomUI.Desktop.Controls.Tests`、Gallery tests/build、NativeAOT publish 和 `git diff --check`。
+按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成 Dialog / MessageBox 临时验收和模块验证，
+再按影响范围执行 Gallery 构建或 NativeAOT 发布验收。

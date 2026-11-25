@@ -173,7 +173,7 @@ Window、WindowTitleBar 和其他 native host 能力由 exact identity 筛选与
 
 ```bash
 dotnet build controlgallery/AtomUIGallery.Browser/AtomUIGallery.Browser.csproj -c Debug
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj --framework net10.0 --no-restore
 git diff --check
 ```

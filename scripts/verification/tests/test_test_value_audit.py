@@ -115,8 +115,6 @@ class PermanentTestValueAuditTests(unittest.TestCase):
                 "class Tests { [Fact] void Targets() { target.Value.ShouldNotBeEmpty(); ExtractPlaceholders(target.Value).ShouldBe(expected); } }",
             "tests/Integration.Tests/PackageConsumerTests.cs":
                 "class Tests { [Fact] async Task ConsumesPackage() { await RunProcess(\"dotnet\", \"run\"); } }",
-            "tests/AtomUI.Desktop.Controls.Tests/Menu/MenuTitleBarPopupTests.cs":
-                'class Tests { [Fact] void Routing() { var source = File.ReadAllText("Menu.cs"); source.ShouldContain("_dismiss()"); } }',
             "tests/Controls.Tests/Upload/UploadFormValueTests.cs":
                 "class Tests { [Fact] void Value() { files.Length.ShouldBe(1); } }",
             "tests/Controls.Tests/Temporary/bug-123/ProbeTests.cs":

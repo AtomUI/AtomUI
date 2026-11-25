@@ -423,14 +423,14 @@
     </unit>
     <unit id="SelectedItemsBindingDescription">
       <segment>
-        <source>SelectedItems can be bound without an explicit Mode=TwoWay; both user selection and collection mutations stay synchronized.</source>
-        <target state="translated">SelectedItems can be bound without an explicit Mode=TwoWay; both user selection and collection mutations stay synchronized.</target>
+        <source>Use Selection to select or clear items programmatically. SelectedItems reports the current selection.</source>
+        <target state="translated">Use Selection para selecionar ou limpar itens por código. SelectedItems informa a seleção atual.</target>
       </segment>
     </unit>
     <unit id="SelectedItemsBindingTitle">
       <segment>
-        <source>SelectedItems binding</source>
-        <target state="translated">SelectedItems vinculação</target>
+        <source>Programmatic selection</source>
+        <target state="translated">Seleção programática</target>
       </segment>
     </unit>
     <unit id="SelectionDescription">

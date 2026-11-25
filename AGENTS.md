@@ -85,7 +85,7 @@ Read the relevant document before touching the corresponding area:
 - Mobile (separate repository) entry: [docs/architecture/systems/mobile/overview.md](docs/architecture/systems/mobile/overview.md)
 - Localization target architecture: [docs/architecture/systems/localization/overview.md](docs/architecture/systems/localization/overview.md)
 - AI collaboration and bug-fix discipline: [docs/engineering/contributing/agent-guidelines.md](docs/engineering/contributing/agent-guidelines.md)
-- Test value, temporary-first lifecycle, and mandatory feature/bug-fix acceptance: [docs/engineering/development/test-value-and-lifecycle.md](docs/engineering/development/test-value-and-lifecycle.md)
+- Core unit tests, temporary control validation, and mandatory feature/bug-fix acceptance in the [unit testing and acceptance standard](docs/engineering/development/test-value-and-lifecycle.md).
 - Reference project source lookup: [docs/engineering/contributing/reference-project-source-guidelines.md](docs/engineering/contributing/reference-project-source-guidelines.md)
 - Branch and worktree management (hard constraint): [docs/engineering/contributing/branch-and-worktree-guidelines.md](docs/engineering/contributing/branch-and-worktree-guidelines.md)
 - AOT and trimming architecture: [docs/architecture/foundations/aot-and-trimming.md](docs/architecture/foundations/aot-and-trimming.md)
@@ -116,7 +116,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 - Keep changes scoped to the user request and the ownership boundary.
 - When the user asks to reference another project's source, follow the local-first lookup order in [Reference Project Source Lookup](docs/engineering/contributing/reference-project-source-guidelines.md) before using GitHub or relying on memory.
 - Prefer root-cause fixes over trigger-point patches.
-- Every new feature and bug fix must satisfy [test value and lifecycle](docs/engineering/development/test-value-and-lifecycle.md): new tests are temporary by default, must be written in the prescribed temporary location, and must be deleted after validation. The global suite defaults to zero net-new permanent tests; exceptions require proof of independent value, global-run necessity and reasonable cost. Without before/after evidence, test disposition, cleanup and final module verification, the work is incomplete. TDD does not require permanently retaining validation code.
+- Follow the [unit testing and acceptance standard](docs/engineering/development/test-value-and-lifecycle.md) for every feature and bug fix. Reserve permanent unit tests for framework core contracts. Validate concrete controls with temporary tests and remove them after acceptance. Record before/after evidence, test disposition, cleanup and final module verification.
 - For hover, pointer, hit-testing, wheel, scrolling, clipping, or overlay bugs, preserve the original UX contract and follow the [UI input and scrolling bug discipline](docs/engineering/contributing/agent-guidelines.md#ui-输入与滚动-bug).
 - Treat AOT compatibility as a first-class design constraint for new features and bug fixes.
 - Follow the code style rule that C# control-flow bodies must always use `{}`; even a single-line body may not omit braces.
@@ -137,7 +137,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 
 1. **专用 Style 是唯一定制入口**：Semantic PART 改造中，Gallery 示例、文档示例与测试对语义部件的样式定制，必须使用源生成器产出的专用 Semantic Part Style 类（如 `FlyoutHostPopupRootStyle`、`TreeSelectPopupListStyle`）在 AXAML 声明式应用；禁止在 code-behind 获取目标节点后直接设置属性（Background / Foreground / Padding / CornerRadius 等）作为定制手段。
 2. **专用 Style 不生效等于契约缺陷，不是限制**：生成的专用 Style 未命中目标节点时，说明 `SelectorRoute`（`/template/`、`>`、`>>` 组合器）与目标节点的真实树拓扑（模板内 / 逻辑后代 / 跨视觉根代码创建节点）不匹配，必须修正 route 并补可失败的命中测试；禁止把“生成 Style 无法命中”当作限制写进文档，或改用代码回退绕过专用 Style。
-3. **测试锁定专用 Style 形态**：新增或改写 Semantic PART 演示时，页面测试 / 快照必须断言专用 Style 类与关键 Setter 值的存在，并断言不存在以 Name / Loaded / Unloaded 事件处理器为特征的代码回退。
+3. **验收专用 Style 形态**。新增或改写 Semantic PART 演示时，临时页面测试或快照必须断言专用 Style 类与关键 Setter 值存在、无以 Name / Loaded / Unloaded 事件处理器为特征的代码回退。验收后清理用例及专用快照。
 
 详细规则见 [Semantic Part 系统设计](docs/architecture/systems/theming/semantic-parts.md)。
 
@@ -147,6 +147,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
 4. **提交前必须审查注释。** 含代码变动的提交，必须按[注释规范的提交前检查要求](docs/engineering/development/code-comment-guidelines.md#8-提交前检查)核对最终暂存内容，检查通过后方可提交。
+5. **执行本地测试准入检查**。提交前通过 `python3 scripts/verification/test.py audit --staged`，并遵循[本地提交检查](docs/engineering/development/test-value-and-lifecycle.md#32-本地提交检查)。禁止通过跳过 hook 或更改 hook 配置绕过拦截。
 
 ## 分支与 Worktree 强约束（本项目生效）
 
@@ -187,7 +188,7 @@ For CI or an explicitly requested committed-branch comparison, pass `--scope cha
 
 ```bash
 dotnet test tests/AtomUI.Controls.Shared.Tests/AtomUI.Controls.Shared.Tests.csproj --framework net10.0 --no-restore
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj --framework net10.0 --no-restore
+dotnet test tests/AtomUI.Core.Tests/AtomUI.Core.Tests.csproj --framework net10.0 --no-restore
 dotnet test tests/AtomUI.Desktop.Controls.DataGrid.Tests/AtomUI.Desktop.Controls.DataGrid.Tests.csproj --framework net10.0 --no-restore
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj --framework net10.0 --no-restore
 git diff --check

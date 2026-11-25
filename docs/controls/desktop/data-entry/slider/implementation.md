@@ -22,8 +22,8 @@ Slider 基于 Avalonia `RangeBase`。`Slider` 是公共值、交互会话和 For
 - `src/AtomUI.Desktop.Controls/Slider/Themes/SliderTheme.axaml`：根模板、`PART_Track`、属性传递和方向样式。
 - `src/AtomUI.Desktop.Controls/Slider/Themes/SliderTrackTheme.axaml`：track 尺寸、mark Token 和轨道 transition。
 - `src/AtomUI.Desktop.Controls/Slider/Themes/SliderThumbTheme.axaml`：thumb 尺寸、边框、outline、focus、hover、disabled 和布局取整策略。
-- `tests/AtomUI.Desktop.Controls.Tests/Slider/SliderBehaviorTests.cs`：值计算、动态 thumb、pointer、布局和生命周期回归。
-- `tests/AtomUI.Desktop.Controls.Tests/Slider/SliderSemanticPartTests.cs`：Semantic Part descriptor、marker 数量、路由命中、元素几何与生命周期回归。
+- 临时验收覆盖值计算、动态 thumb、pointer、布局和生命周期回归。
+- 临时验收覆盖 Semantic Part descriptor、marker 数量、路由命中、元素几何与生命周期回归。
 - `controlgallery/AtomUIGallery/ShowCases/DataEntry/Slider/`：Slider Gallery 示例、ViewModel 和本地化资源。
 
 ## 3. 核心类职责
@@ -175,9 +175,9 @@ Tooltip 文本和 placement 由 Slider 在模板应用、thumb 数量变化、�
 
 ## 11. 测试与验证
 
-- `SliderBehaviorTests`：纯值计算、有限性、排序、重复值、disabled boundary、整体 offset、动态 thumb 创建/回收、templated parent、motion 同步、pointer capture 和 fractional pointer 布局。
-- `SliderSemanticPartTests`：descriptor 字段、rail / tracks / track / handle marker 数量与生命周期、`/template/ .semantic-*` 路由命中、元素几何与既有 rail / segment / range 几何一致、`IsIncluded` / `IsRangeMode` / `RangeValues` 快照 / `DisabledHandles` / orientation 切换下 marker 稳定性、单值模式 `TracksBrush` 对齐行为、元素不可命中测试与主题静态 marker 断言。
-- `RemainingFormValueBindingTests`：单值与 Range Form 值和数据验证。
+- 临时验收覆盖 纯值计算、有限性、排序、重复值、disabled boundary、整体 offset、动态 thumb 创建/回收、templated parent、motion 同步、pointer capture 和 fractional pointer 布局。
+- 临时验收覆盖 descriptor 字段、rail / tracks / track / handle marker 数量与生命周期、`/template/ .semantic-*` 路由命中、元素几何与既有 rail / segment / range 几何一致、`IsIncluded` / `IsRangeMode` / `RangeValues` 快照 / `DisabledHandles` / orientation 切换下 marker 稳定性、单值模式 `TracksBrush` 对齐行为、元素不可命中测试与主题静态 marker 断言。
+- 临时验收覆盖 单值与 Range Form 值和数据验证。
 - `AtomUIGallery.Tests` Slider 页面测试：稳定 Showcase、绑定、禁用指定 handle、多点组合结构、Semantic Part 预览与自定义语义结构的样式示例。
 - Gallery 走查：horizontal / vertical、reverse、marks、tick、Light / Dark、多点组合、禁用指定滑块，以及 100% / 125% / 150% 缩放下的 thumb 平滑度与边框清晰度。
 - 文档验证：运行目标测试、Gallery build 和 `git diff --check`。

@@ -323,7 +323,9 @@ Flyout 的修复方式：
 6. 多次强制 GC。
 7. 断言 `WeakReference.IsAlive == false`。
 
-DataGrid 测试位置：
+以下三组用例记录当次修复证据。当前资源释放场景按[单元测试与验收规范](../development/test-value-and-lifecycle.md)临时验证。
+
+DataGrid 当时的测试位置：
 
 - `tests/AtomUI.Desktop.Controls.DataGrid.Tests/Lifecycle/DataGridColumnResourceLifetimeTests.cs`
 
@@ -333,7 +335,7 @@ DataGrid 测试位置：
 - `DataGridColumnGroupItem` 不被 `Application.ResourcesChanged` root。
 - `DataGridColumn` 挂到 DataGrid 后仍能响应 Application 资源变化。
 
-NavMenu 测试位置：
+NavMenu 当时的测试位置：
 
 - `tests/AtomUI.Desktop.Controls.Tests/NavMenu/NavMenuNodeResourceLifetimeTests.cs`
 
@@ -342,7 +344,7 @@ NavMenu 测试位置：
 - `NavMenuNode` 不被 `Application.ResourcesChanged` root。
 - `NavMenuNode` 挂到 `NavMenu` 后优先使用 menu 自己的资源。
 
-Flyout 测试位置：
+Flyout 当时的测试位置：
 
 - `tests/AtomUI.Desktop.Controls.Tests/Flyouts/FlyoutResourceBindingLifetimeTests.cs`
 
@@ -442,7 +444,7 @@ RSS 分桶：
 
 ```bash
 dotnet test tests/AtomUI.Desktop.Controls.DataGrid.Tests/AtomUI.Desktop.Controls.DataGrid.Tests.csproj
-dotnet test tests/AtomUI.Desktop.Controls.Tests/AtomUI.Desktop.Controls.Tests.csproj
+python3 scripts/verification/test.py run --scope iterate --path src/AtomUI.Desktop.Controls
 dotnet build controlgallery/AtomUIGallery.Desktop/AtomUIGallery.Desktop.csproj -c Debug --framework net10.0
 dotnet test tests/AtomUIGallery.Tests/AtomUIGallery.Tests.csproj
 git diff --check

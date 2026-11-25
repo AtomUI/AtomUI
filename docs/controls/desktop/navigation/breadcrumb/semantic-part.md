@@ -89,5 +89,4 @@ item 级 Semantic Style（如 `Foreground`）不会改变链接条目的文字�
 - `separator` 是条目容器的兄弟节点而不是 `item` 的组成部分：N 个条目产生 N-1 个分隔符，最后一条目无尾随分隔符。
 - `item` 与 `separator` 的标记在 container recycle 与模板重新应用后必须恢复，不能因回收丢失。
 - 链接条目的文字颜色由内容呈现器上的 `LinkColor` Token 决定，应用侧 item 样式不得覆盖；主题默认根对齐为 `Stretch`。
-- 契约验证见 `tests/AtomUI.Desktop.Controls.Tests/Breadcrumb/BreadcrumbSemanticPartTests.cs` 与
-  `tests/AtomUI.Desktop.Controls.Tests/Breadcrumb/BreadcrumbRootFrameTests.cs`。
+- 控件临时验收覆盖语义部件和 root frame。

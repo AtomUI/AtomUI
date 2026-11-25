@@ -7,6 +7,12 @@ from functools import lru_cache
 from pathlib import Path
 
 
+_CSHARP_TRIVIA = re.compile(
+    r'(?P<comment>//[^\n]*|/\*.*?\*/)|\$*""".*?"""|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'',
+    re.S,
+)
+
+
 @lru_cache(maxsize=1024)
 def glob_regex(pattern):
     # Unlike fnmatch, **/ also matches zero directories and * never crosses /.
@@ -20,8 +26,13 @@ def matches(path, pattern):
 
 
 def scrub_csharp(source):
-    pattern = r'//[^\n]*|/\*.*?\*/|\$*""".*?"""|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\''
-    return re.sub(pattern, lambda m: " " * len(m.group()), source, flags=re.S)
+    return _CSHARP_TRIVIA.sub(lambda m: " " * len(m.group()), source)
+
+
+def csharp_comments(source):
+    for match in _CSHARP_TRIVIA.finditer(source):
+        if match["comment"] is not None:
+            yield match["comment"]
 
 
 def test_classes(source):

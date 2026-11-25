@@ -12,6 +12,7 @@ sys.dont_write_bytecode = True
 from affected.planner import Planner
 from affected.repository import Repository
 from affected.runner import run_verification, run_specialist_check
+from affected.staged_test_audit import audit_staged_tests
 
 
 def print_plan(plan):
@@ -57,6 +58,7 @@ def parser():
             command.add_argument("--configuration", choices=("Debug", "Release"), default="Debug")
     audit = sub.add_parser("audit", help="Check source ownership, suite mappings and all discovered test projects")
     audit.add_argument("--json", action="store_true")
+    audit.add_argument("--staged", action="store_true", help="Check staged test changes before a local commit")
     sub.add_parser("self-test", help="Run only the verification tool's regression tests")
     sub.add_parser("metrics", help="Show the last 100 compact verification timing records")
     check = sub.add_parser("check", help="Execute a specialist verifier and attach its evidence to current inputs")
@@ -99,6 +101,14 @@ def main(argv=None):
         history = output / "history.json"
         print(history.read_text() if history.exists() else "No verification history yet.")
         return 0
+    if args.command == "audit" and args.staged:
+        errors = audit_staged_tests(root)
+        if args.json:
+            print(json.dumps({"errors": errors}, indent=2))
+        else:
+            for error in errors:
+                print("BLOCKED: " + error, file=sys.stderr)
+        return 2 if errors else 0
     repository = Repository(root)
     policy = json.loads((root / "scripts/verification/test-policy.json").read_text())
     if args.command == "check":

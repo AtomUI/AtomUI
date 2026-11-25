@@ -28,6 +28,5 @@
 
     <ItemGroup>
         <!-- The snapshot dump format of the pre-refactor baseline. -->
-        <Compile Include="../Shared/ThemeSnapshotDump.cs" Link="ThemeSnapshotDump.cs" />
     </ItemGroup>
 </Project>

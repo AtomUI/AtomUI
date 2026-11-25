@@ -446,8 +446,7 @@ class，不影响其弹层视觉与行为。
   携带 `popup.content` / `popup.column`（×4）marker。
 - `popup.item` marker 在 `DateTimePickerPanel` 格子创建路径注入；循环与非循环滚动、
   `MinuteIncrement` / `SecondIncrement` 变化、`ClockIdentifier` 12↔24 切换与弹层重开后 marker 保持。
-- 生成的 `TimePicker*Style` / `RangeTimePicker*Style` 可编译并命中目标节点（见
-  `tests/AtomUI.Desktop.Controls.Tests/TimePicker/TimePickerSemanticPartTests.cs`）。
+- 生成的 `TimePicker*Style` / `RangeTimePicker*Style` 可编译并命中目标节点。
 - 弹层首次打开、关闭、重开与模板重套用后弹层部件 marker 保持；`IsButtonsPanelVisible=false` 时 footer
   marker 存在。
 - 状态变化（清除模式、12/24 小时制、disabled、只读）不改变 marker 身份与数量语义。

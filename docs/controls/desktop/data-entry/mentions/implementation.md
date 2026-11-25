@@ -247,7 +247,7 @@ AOT 边界：
 - `MentionsShowCasePageTests` 覆盖 Gallery 页面结构、示例 snapshot、源码片段和延迟加载规则。
 - Gallery 走查基础用法、variant、异步加载、自定义触发符、disabled/read-only、placement、status、auto-size 和 clear 示例。
 - 控件行为验证应覆盖触发符扫描、候选过滤、异步加载成功/失败/超时、键盘导航、候选提交、Form value 和模板重应用事件释放。
-- `MentionsDisabledOptionTests`：禁用候选项的容器禁用态、预选跳过前导禁用项、全部禁用时 Enter 不插入、键盘在视口内外与回绕时跳过、指针悬停/点击无效、虚拟化回收与过滤后容器启用态按数据恢复。
-- `MentionsSemanticPartTests`：descriptor 九个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中输入区目标、popup 部件 marker 暴露。
+- 临时验收覆盖 禁用候选项的容器禁用态、预选跳过前导禁用项、全部禁用时 Enter 不插入、键盘在视口内外与回绕时跳过、指针悬停/点击无效、虚拟化回收与过滤后容器启用态按数据恢复。
+- 临时验收覆盖 descriptor 九个 Part 契约、模板静态 marker 清单、默认主题不消费 semantic selector、生成 Style 命中输入区目标、popup 部件 marker 暴露。
 - Token 改动需验证 `MentionsTokenKind`、`MentionsTokenResourceExtension`、`MentionsTheme.axaml` 引用和 Token 类型、生成数据和 token.md 语义说明一致。
 - 文档改动运行 `git diff --check`，并检查相对链接存在。

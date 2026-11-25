@@ -23,6 +23,20 @@ PublishAot:
 -publishAot '${{ inputs.PublishAot }}'
 ```
 
+## 可选的 GitHub Release
+
+`CreateGitHubRelease` 默认关闭。仅构建时，六个平台产物仍可从 Actions 下载。开启后使用以下输入。
+
+- `TargetBranch` 填已存在的版本标签，例如 `v6.3.0`。标签必须与该提交的 `AtomUIVersion` 一致。
+- `BuildConfiguration` 选 `Release`，`PublishAot` 选 `true`。
+
+准备 Job 解析标签并固定提交，六个平台 Job 都构建该提交。全部成功后，独立发布 Job 下载同一次运行的六个
+artifact，核对版本、架构文件名和构建后缀。只有发布 Job 拥有 `contents: write`。
+
+新建的 Release 先保存为草稿。脚本上传六个安装包和双语 `Gallery-README.md`，逐个比对 GitHub 返回的 SHA-256，
+通过后公开 Release。同标签已有公开 Release 时，可补齐缺少的文件并保留其正文。已有同名文件的哈希不同时会报错。
+本流程创建的草稿可在失败后只重跑发布 Job，复用原产物。手工维护的草稿由其维护者发布。
+
 ## 安装包打包脚本
 
 安装包由仓库内 `controlgallery/AtomUIGallery.Desktop/scripts/packaging/` 的 PowerShell 脚本生成，不依赖外部私有工具，

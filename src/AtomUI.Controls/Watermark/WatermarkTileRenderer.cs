@@ -55,9 +55,9 @@ internal sealed class WatermarkTileRenderer
 
         // Only built-in glyphs with a known drawing extent skip invisible tiles. A custom glyph or subclass
         // may draw outside its desired size, so it keeps its existing Render contract.
-        Rect? drawingBounds = glyph.GetType() == typeof(TextGlyph)
-            ? ((TextGlyph)glyph).GetDrawingBounds()
-            : glyph.GetType() == typeof(ImageGlyph) ? new Rect(glyphSize) : null;
+        var textGlyph = glyph.GetType() == typeof(TextGlyph) ? (TextGlyph)glyph : null;
+        Rect? drawingBounds = textGlyph?.GetDrawingBounds() ??
+            (glyph.GetType() == typeof(ImageGlyph) ? new Rect(glyphSize) : null);
         if (drawingBounds is null && (horizontalOffset + columnStep <= horizontalOffset ||
                                       verticalOffset + rowStep <= verticalOffset))
         {
@@ -65,8 +65,8 @@ internal sealed class WatermarkTileRenderer
         }
 
         using (context.PushClip(new Rect(area)))
-        using (context.PushOpacity(glyph.Opacity))
         {
+            using var opacityScope = context.PushOpacity(glyph.Opacity);
             Rect? tileBounds = null;
             if (drawingBounds is { } bounds)
             {
@@ -81,6 +81,10 @@ internal sealed class WatermarkTileRenderer
             var (t, isOddRow) = tileBounds is { } rowBounds
                 ? FirstVisibleTile(verticalOffset, rowStep, -rowBounds.Bottom)
                 : (verticalOffset, false);
+            // DrawText(FormattedText) formats the lines on each call. Reuse the shaped lines for this paint pass.
+            using var textLayout = t < area.Height && horizontalOffset < area.Width
+                ? textGlyph?.CreateTileTextLayout()
+                : null;
             while (t < area.Height)
             {
                 var pushState = new DrawingContext.PushedState();
@@ -103,14 +107,14 @@ internal sealed class WatermarkTileRenderer
                             : _normalRotationMatrix;
 
                         using (context.PushTransform(Matrix.CreateTranslation(l, t)))
-                        using (context.PushTransform(m))
                         {
-                            if (hasInset)
+                            using var rotationScope = context.PushTransform(m);
+                            using var insetScope = hasInset
+                                ? context.PushTransform(Matrix.CreateTranslation(inset.X, inset.Y))
+                                : default;
+                            if (textLayout != null)
                             {
-                                using (context.PushTransform(Matrix.CreateTranslation(inset.X, inset.Y)))
-                                {
-                                    glyph.Render(context);
-                                }
+                                textLayout.Draw(context, default);
                             }
                             else
                             {

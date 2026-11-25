@@ -396,7 +396,7 @@ Avalonia 原生 `AdornerLayer` 是共享的 T2 内容装饰层，紧贴控件的
 ## 测试要求
 
 - 新增或改变 layer 归属时，应写层级回归测试，断言父层级而不是只断言 child `ZIndex`。
-- **守护测试：** 对每一类宿主（Window、PopupRoot、OverlayPopupHost、EmbeddableControlRoot、ScrollViewer 两个注入点）断言角色层按号码表排序（断言父层归属和号码），并在 Popup 开关、FullScreen 往返、模板重套用后仍然成立；它同时守护“Avalonia 不回写 `AdornerLayer.ZIndex`”这一前提。常驻实现为 `tests/AtomUI.Desktop.Controls.Tests/Primitives/LayerLadderHostOrderTests.cs`，当前覆盖 Window 宿主（含 T6 chrome 层承载 `PART_FullScreenTitleBarHost` 且模板重套用后唯一）、PopupRoot 宿主与 ScrollViewer 视口注入点；OverlayPopupHost、EmbeddableControlRoot 与 ScrollViewer 滚动内容注入点尚无常驻守护，改动这些宿主的注入路径时需补临时验证。
+- **层序验收**。按影响范围临时验证 Window、PopupRoot、OverlayPopupHost、EmbeddableControlRoot 和 ScrollViewer 两个注入点的父层归属及号码。覆盖 Popup 开关、全屏往返和模板重套用，确认 Avalonia 不回写 `AdornerLayer.ZIndex`。验证 Window 时，确认 T6 chrome 层的 `PART_FullScreenTitleBarHost` 在模板重套用后仍唯一。
 - **归属回归：** 按消费者归属表逐个断言其落层；嵌套 Drawer 复用包含层；`OpenOn` 在 T5 与 T7 之间迁移时旧层和 lease 被释放；Tour 与作用域层不会被关进表面宿主；overlay popup 从表面宿主内打开时解析到外层。
 - **遮挡与装饰：** 全屏标题栏打开时，标题栏区域的 `InputHitTest` 命中标题栏而不是吸顶 Tab、Badge、Watermark 或 FloatButton；Drawer、Message、标题栏内按钮的键盘焦点描边可见，且落在各自表面的装饰宿主中。
 - 涉及 `WindowDrawnDecorations` 时，测试必须用与 Window `TopLevel` 同级的真实 `TopLevelHost` 拓扑，不能把模拟 decorations 子树挂回 Window 内容树制造错误的 `TopLevel` 祖先。

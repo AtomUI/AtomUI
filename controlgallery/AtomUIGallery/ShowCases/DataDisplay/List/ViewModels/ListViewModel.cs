@@ -1,9 +1,7 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Reactive;
 using AtomUI.Controls;
 using AtomUI.Controls.Data;
-using Avalonia;
+using AtomUI.Desktop.Controls;
 using Avalonia.Controls;
 using ReactiveUI;
 
@@ -33,43 +31,10 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _selectionListItems, value);
     }
 
-    private ObservableCollection<IListItemData> _boundSelectedItems = [];
+    private string? _selectionExampleText;
 
-    public ObservableCollection<IListItemData> BoundSelectedItems
-    {
-        get => _boundSelectedItems;
-        set
-        {
-            var nextSelectedItems = value ?? [];
-
-            if (ReferenceEquals(_boundSelectedItems, nextSelectedItems))
-            {
-                return;
-            }
-
-            _boundSelectedItems.CollectionChanged -= HandleBoundSelectedItemsCollectionChanged;
-            this.RaiseAndSetIfChanged(ref _boundSelectedItems, nextSelectedItems);
-            _boundSelectedItems.CollectionChanged += HandleBoundSelectedItemsCollectionChanged;
-            this.RaisePropertyChanged(nameof(BoundSelectedItemsText));
-        }
-    }
-
-    public string BoundSelectedItemsText
-    {
-        get
-        {
-            if (BoundSelectedItems.Count == 0)
-            {
-                return Lang(ListShowCaseLangResourceKind.P2TextNoSelection);
-            }
-
-            return string.Join(
-                ", ",
-                BoundSelectedItems
-                    .Select(item => item.Content?.ToString())
-                    .Where(text => !string.IsNullOrWhiteSpace(text)));
-        }
-    }
+    public string SelectionExampleText =>
+        _selectionExampleText ?? ListShowCase.Lang(ListShowCaseLangResourceKind.P2TextNoSelection, "No selection");
 
     private List<IListItemData>? _listItemsWidthDisabled = [];
 
@@ -165,59 +130,34 @@ public class ListViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _semanticListBoxItems, value);
     }
 
-    public ReactiveCommand<Unit, Unit> SelectBoundSelectedItemsCommand { get; }
+    public ReactiveCommand<IListViewSelection, Unit> SelectExampleItemsCommand { get; }
 
-    public ReactiveCommand<Unit, Unit> ClearBoundSelectedItemsCommand { get; }
+    public ReactiveCommand<IListViewSelection, Unit> ClearExampleSelectionCommand { get; }
 
     public ListViewModel(IScreen screen)
     {
-        HostScreen                         = screen;
-        SelectBoundSelectedItemsCommand    = ReactiveCommand.Create(SelectBoundSelectedItems);
-        ClearBoundSelectedItemsCommand     = ReactiveCommand.Create(ClearBoundSelectedItems);
-        _boundSelectedItems.CollectionChanged += HandleBoundSelectedItemsCollectionChanged;
+        HostScreen                   = screen;
+        SelectExampleItemsCommand    = ReactiveCommand.Create<IListViewSelection>(SelectExampleItems);
+        ClearExampleSelectionCommand = ReactiveCommand.Create<IListViewSelection>(selection => selection.Clear());
     }
 
-    public void ResetBoundSelectedItems()
+    internal void UpdateSelectionExampleText(IReadOnlyList<object?> selectedItems)
     {
-        if (SelectionListItems is { Count: > 1 })
+        var text = selectedItems.Count == 0
+            ? ListShowCase.Lang(ListShowCaseLangResourceKind.P2TextNoSelection, "No selection")
+            : string.Join(", ", selectedItems.OfType<IListItemData>()
+                                            .Select(item => item.Content?.ToString())
+                                            .Where(content => !string.IsNullOrWhiteSpace(content)));
+        this.RaiseAndSetIfChanged(ref _selectionExampleText, text, nameof(SelectionExampleText));
+    }
+
+    private void SelectExampleItems(IListViewSelection selection)
+    {
+        selection.Clear();
+        if (SelectionListItems is { Count: > 3 })
         {
-            BoundSelectedItems = new ObservableCollection<IListItemData>
-            {
-                SelectionListItems[1]
-            };
-            return;
+            selection.Select(1);
+            selection.Select(3);
         }
-
-        BoundSelectedItems = [];
-    }
-
-    public void ClearBoundSelectedItems()
-    {
-        BoundSelectedItems.Clear();
-    }
-
-    private void SelectBoundSelectedItems()
-    {
-        BoundSelectedItems.Clear();
-
-        if (SelectionListItems is not { Count: > 3 })
-        {
-            return;
-        }
-
-        BoundSelectedItems.Add(SelectionListItems[1]);
-        BoundSelectedItems.Add(SelectionListItems[3]);
-    }
-
-    private void HandleBoundSelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        this.RaisePropertyChanged(nameof(BoundSelectedItemsText));
-    }
-
-    private static string Lang(ListShowCaseLangResourceKind kind)
-    {
-        return Application.Current is { } application
-            ? global::AtomUI.ApplicationExtensions.GetLocalizer(application)?.Get(kind) ?? kind.ToString()
-            : kind.ToString();
     }
 }

@@ -206,26 +206,26 @@ Message 的交互事件应从输入源收敛到控件级语义事件：
 
 推荐验证：
 
-- `CloseMotionExecutionTests` 验证关闭属性变化与模板重套用同时请求退出动效时只启动一次 motion，并只提交一次
+- 临时验收覆盖关闭属性变化与模板重套用同时请求退出动效时只启动一次 motion，并只提交一次
   `IsClosed=true`。
 - Feedback motion 测试验证 64 DIP 方向、scale 恒等、完整时长 opacity 插值、Ant ease-in-out 参数以及取消后旧 actor
   不提交 completion。
-- `FeedbackCardMotionCoordinatorTests` 使用真实 actor 与可控时钟验证六种 Position 的入场中关闭，旧入场清理后退出目标
+- 临时验收使用真实 actor 与可控时钟验证六种 Position 的入场中关闭，旧入场清理后退出目标
   保持到完整时长结束，且关闭只完成一次。
-- `FeedbackStackPanelTests` 覆盖阈值边界、最新项顺序、Message 背板、hover gap、运行时配置和 Top/Bottom 几何。
-- `MessageStackAnimationTests` 用可控动画时钟验证背板在卡片收拢期间淡入、hover 反转连续、内容宽度变化、motion / Stack
+- 临时验收覆盖阈值边界、最新项顺序、Message 背板、hover gap、运行时配置和 Top/Bottom 几何。
+- 临时验收用可控动画时钟验证背板在卡片收拢期间淡入、hover 反转连续、内容宽度变化、motion / Stack
   开关，以及空队列和展开队列不被透明背板扩高。
-- `FeedbackLifetimeSchedulerTests` 以可控时钟覆盖最近 deadline、剩余时长、普通/Stack 暂停、空闲停表及关闭回调耗时后的重调度；
+- 临时验收以可控时钟覆盖最近 deadline、剩余时长、普通/Stack 暂停、空闲停表及关闭回调耗时后的重调度；
   `WeakReference` 用例验证 scheduler 保持存活时，最后一批已到期或已在关闭的项也能回收。
 - manager 测试覆盖 Stack 开启但未 hover 的有限时长消息保持计时登记且未暂停，以及零时长 Stack 消息不创建 scheduler。
-- `FeedbackManagerStackTests` 覆盖无动画批量淘汰的最旧优先顺序，以及关闭回调中的 Dispose、嵌套 DestroyAll 和新增消息；
+- 临时验收覆盖无动画批量淘汰的最旧优先顺序，以及关闭回调中的 Dispose、嵌套 DestroyAll 和新增消息；
   `WeakReference` 用例验证 manager dispose 后的 manager、presenter、card 与回调 owner 对象图释放；跨 manager 激活还必须
   覆盖 A/B/A 顺序、Notification 混合宿主、栈顶无操作快路径、单次 collection Move 和零 attach/detach。
 - Gallery 行为测试覆盖普通与 Stack 示例 manager 隔离、Stack 控件初值、运行时切换、交替文案、局部 DestroyAll 和 detach 释放。
 - 纯文档改动运行 `git diff --check` 并检查相对链接。
-- 控件 API 或行为变更运行对应 `tests/AtomUI.Desktop.Controls.Tests` 或专用包测试。
-- DataGrid 相关变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。
-- Gallery 示例或源码片段变更运行 `tests/AtomUIGallery.Tests`。
+- 控件 API 或行为变更按[单元测试与验收规范](../../../../engineering/development/test-value-and-lifecycle.md)完成临时验收。
+- DataGrid 数据内核变更运行 `tests/AtomUI.Desktop.Controls.DataGrid.Tests`。受影响的 DataGrid 控件行为按场景临时验收。
+- Gallery 示例或源码片段变更临时验收对应页面。
 - AOT、生成器或动态数据路径变更按 Gallery NativeAOT 发布流程验证。
 
 ## 11. Semantic Part 接入

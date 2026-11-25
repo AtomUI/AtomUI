@@ -14,7 +14,7 @@ internal sealed class WaylandFramePacingRenderInterface(
     public IGeometryImpl CreateEllipseGeometry(Rect rect) => inner.CreateEllipseGeometry(rect);
     public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => inner.CreateLineGeometry(p1, p2);
     public IGeometryImpl CreateRectangleGeometry(Rect rect) => inner.CreateRectangleGeometry(rect);
-    public IStreamGeometryImpl CreateStreamGeometry() => inner.CreateStreamGeometry();
+    public IStreamGeometryBuilder CreateStreamGeometryBuilder(IGeometryImpl? source = null) => inner.CreateStreamGeometryBuilder(source);
     public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<IGeometryImpl> children) => inner.CreateGeometryGroup(fillRule, children);
     public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, IGeometryImpl g1, IGeometryImpl g2) => inner.CreateCombinedGeometry(combineMode, g1, g2);
     public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun) => inner.BuildGlyphRunGeometry(glyphRun);

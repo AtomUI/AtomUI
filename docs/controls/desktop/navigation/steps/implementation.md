@@ -29,7 +29,7 @@ Steps 的实现目标是在 `ItemsControl` 容器体系内，把根输入和 ite
 
 测试目录：
 
-- `tests/AtomUI.Desktop.Controls.Tests/Steps`：状态、Items、交互、Wave、Progress、布局、生命周期和 Semantic Part 回归测试。
+- 临时验收覆盖状态、Items、交互、Wave、Progress、布局、生命周期和 Semantic Part。
 
 Gallery 目录：
 
@@ -456,4 +456,4 @@ Semantic Part：
 - 根 `BorderDashArray` / `BorderDashOffset` 默认中性，并 TemplateBind 传播到根模板 `atom:DashedBorder`。
 - Gallery 语义预览、样式示例与四语言本地化文案。
 
-收尾运行 `StepsSemanticPartTests` / `StepsRootFrameTests` 与 Steps 定向测试、相邻 Desktop Controls 测试、Gallery 测试（含 `StepsShowCasePageTests`）和 `git diff --check`。
+收尾临时验收 Steps 语义部件、root frame 和受影响控件行为。按改动范围运行 Gallery 定向测试和 `git diff --check`。

@@ -173,8 +173,8 @@ AtomUI 自有弹层通过 Popup 原语统一继承 `SurfaceBackground=null`：
 - 17 个 runtime AXAML Popup 文件覆盖选择器、自动建议、Picker、菜单、NavMenu、Tour 与 ColorPicker 家族。
 - `Flyout.CreatePopup()`、ToolTip 和 ContextMenu 是三个共享 C# 构造路径。
 
-这些入口不写入冗余 local value。Flyout 派生与委托消费控件通过共享 `Flyout.CreatePopup()` 继承同一默认值。新增入口由
-`PopupEntryInventoryTests` 的闭集扫描捕获；只有明确需要 host-owned surface 的入口才能显式提供非空 Brush。
+这些入口不写入冗余 local value。Flyout 派生与委托消费控件通过共享 `Flyout.CreatePopup()` 继承同一默认值。
+新增入口时临时验收并核对这份清单。明确采用 host-owned surface 的入口才显式提供非空 Brush。
 
 ## 8. 输入与宿主边界
 
@@ -330,13 +330,13 @@ Popup 单向消费配置 owner 的有效 OpenMotion/CloseMotion，拥有真实�
 
 ## 11. 测试与验证
 
-- `PopupShadowTests` 验证公开 surface API、`null` 默认值、显式 renderer fill、透明 frame 和 shadow clipping。
-- `PopupPlacementTests` 与 `PopupLifecycleTests` 验证 placement、表面就绪与 `Opened` 的先后顺序、关闭动效状态、pinned 有效性门禁、显式 `ShowAt`、pending unpin、placement target/logical owner detach、跨 TopLevel target 切换和 host teardown。
-- `PopupPinnedOpenContractTests` 验证 Property 字段、CLR wrapper 和 ToolTip attached accessors 都保持 internal，且 Gallery/API/AXAML surface 不包含该能力。
-- `ToolTipPopupModeTests` 验证 host mode 和 transparent PopupRoot。
-- `DialogPopupPrimitiveLayeringTests` 验证 Direct Popup 与四类 content-owned 原语。
-- `PopupEntryInventoryTests` 守卫所有 runtime 入口、无冗余默认值覆盖和 Popup Theme 的 `null` 默认契约。
-- `DialogPopupControlFamilyTests`、DataGrid popup tests 和代表性控件测试验证家族行为与视觉所有权未变。
+- 临时验收覆盖公开 surface API、`null` 默认值、显式 renderer fill、透明 frame 和 shadow clipping。
+- 临时验收覆盖 placement、表面就绪与 `Opened` 的先后顺序、关闭动效状态、pinned 有效性门禁、显式 `ShowAt`、pending unpin、placement target/logical owner detach、跨 TopLevel target 切换和 host teardown。
+- 临时验收覆盖 Property 字段、CLR wrapper 和 ToolTip attached accessors 都保持 internal，且 Gallery/API/AXAML surface 不包含该能力。
+- 临时验收覆盖 host mode 和 transparent PopupRoot。
+- 临时验收覆盖 Direct Popup 与四类 content-owned 原语。
+- 临时验收覆盖所有 runtime 入口、无冗余默认值覆盖和 Popup Theme 的 `null` 默认契约。
+- 临时验收受影响的控件家族和 DataGrid 过滤弹层的行为及视觉所有权。
 
 实机验证状态为 Windows、macOS 已测试；Linux X11、原生 Wayland 仅验证窗口型 Popup 阴影输入穿透（见下）。
 

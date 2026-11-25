@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -50,13 +51,13 @@ public class SvgImageCodecTests
         var firstTask = Task.Run(async () => await loader.LoadAsync(
             new ImageLoadRequest(source) { DecodePixelWidth = 32, DecodePixelHeight = 32 },
             TestContext.Current.CancellationToken));
-        ImageControlTestHost.WaitUntil(() => firstTask.IsCompleted, "first HTTP SVG load");
+        WaitUntil(() => firstTask.IsCompleted, "first HTTP SVG load");
         using var first = await firstTask;
 
         var secondTask = Task.Run(async () => await loader.LoadAsync(
             new ImageLoadRequest(source) { DecodePixelWidth = 512, DecodePixelHeight = 512 },
             TestContext.Current.CancellationToken));
-        ImageControlTestHost.WaitUntil(() => secondTask.IsCompleted, "second HTTP SVG load");
+        WaitUntil(() => secondTask.IsCompleted, "second HTTP SVG load");
         using var second = await secondTask;
 
         first.IsSuccess.ShouldBeTrue();
@@ -80,7 +81,7 @@ public class SvgImageCodecTests
         var loadTask = Task.Run(async () => await loader.LoadAsync(
             new ImageLoadRequest(ImageSource.Parse("https://example.com/release.svg")),
             TestContext.Current.CancellationToken));
-        ImageControlTestHost.WaitUntil(() => loadTask.IsCompleted, "SVG release test load");
+        WaitUntil(() => loadTask.IsCompleted, "SVG release test load");
         var result = await loadTask;
         result.IsSuccess.ShouldBeTrue();
 
@@ -91,7 +92,7 @@ public class SvgImageCodecTests
                 new ImageCacheClearRequest(),
                 TestContext.Current.CancellationToken);
         }, TestContext.Current.CancellationToken);
-        ImageControlTestHost.WaitUntil(() => clearTask.IsCompleted, "background SVG release");
+        WaitUntil(() => clearTask.IsCompleted, "background SVG release");
         await clearTask;
 
         Should.NotThrow(() => Dispatcher.UIThread.RunJobs());
@@ -138,6 +139,21 @@ public class SvgImageCodecTests
                 TestContext.Current.CancellationToken));
 
         exception.Error.Code.ShouldBe(ImageLoadErrorCode.DecodeFailed);
+    }
+
+    private static void WaitUntil(Func<bool> predicate, string description)
+    {
+        var timeout = Stopwatch.StartNew();
+        while (!predicate())
+        {
+            Dispatcher.UIThread.RunJobs();
+            if (timeout.Elapsed >= TimeSpan.FromSeconds(5))
+            {
+                throw new TimeoutException($"Timed out waiting for {description}.");
+            }
+            Thread.Yield();
+        }
+        Dispatcher.UIThread.RunJobs();
     }
 
     private sealed class SvgResponseHandler(string svg) : HttpMessageHandler

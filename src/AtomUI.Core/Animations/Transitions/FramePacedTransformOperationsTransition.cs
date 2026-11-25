@@ -14,7 +14,7 @@ internal sealed class FramePacedTransformOperationsTransition : InterpolatingTra
     {
         var start = from as TransformOperations ?? TransformOperations.Identity;
         var end = to as TransformOperations ?? TransformOperations.Identity;
-        if (MotionFrameTiming.Clock is not { RefreshInterval: > 0 and var refresh } ||
+        if (MotionFrameTiming.Clock is not { TransitionSamplingInterval: > 0 and var refresh } ||
             Stopwatch.GetElapsedTime(0, refresh) is not { Ticks: > 0 } interval ||
             Duration <= interval || !(progress is >= 0 and <= 1))
         {

@@ -213,6 +213,10 @@ Gallery Release 构建、不挂调试器。
 3. 无法替换（Avalonia 内部布局变化、运行时拒绝写字段）时写一条警告日志，退回 `timeBeginPeriod(1)`：只消除多睡一帧，
    节拍仍不锁定刷新率。
 4. 渲染循环使用其他计时器（调用者改用 `WinUIComposition` 等）时什么都不做。
+5. `DwmVsyncRenderTimer` 在单屏桌面读取 DWM 的 QPC 刷新周期和消隐时间，并向共享 Motion 采样器报告
+   渲染进度。新动效启动时请求一次合成提交，让像素暂时相同的初始状态也能唤醒渲染。Windows 上的
+   Avalonia 变换过渡继续使用原有插值。桌面有多个活动屏幕、DWM 取时失败或时间样本失效时，Motion
+   回到原有采样方式。[DWM 呈现时间](https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmgetcompositiontiminginfo)
 
 维护约束：
 

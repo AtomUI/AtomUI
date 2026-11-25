@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using AtomUI.Animations;
 using Avalonia.Rendering;
 
 namespace AtomUI.Utils;
@@ -15,14 +15,19 @@ namespace AtomUI.Utils;
 /// 并且跟随 DWM 的实际合成频率，不需要提高进程计时精度。实测依据见 docs/architecture/systems/windowing/windows-live-resize.md。
 /// </remarks>
 [SupportedOSPlatform("windows")]
-internal sealed class DwmVsyncRenderTimer : IRenderTimer
+internal sealed class DwmVsyncRenderTimer : IRenderTimer, IMotionPresentationClock
 {
     private static readonly TimeSpan FallbackInterval = TimeSpan.FromMilliseconds(16);
     private static readonly long MinimumTickSpacing = Stopwatch.Frequency / 1000;
 
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private readonly AutoResetEvent _attached = new(false);
+    private readonly object _timingLock = new();
     private volatile Action<TimeSpan>? _tick;
+    private long _verticalBlank;
+    private long _refreshInterval;
+    private long _framesStarted;
+    private int _framesInFlight;
     private int _threadStarted;
     private long _lastTickStart;
 
@@ -52,6 +57,30 @@ internal sealed class DwmVsyncRenderTimer : IRenderTimer
 
     public bool RunsInBackground => true;
 
+    public event Action? FrameStarted;
+
+    public long RefreshInterval => Volatile.Read(ref _refreshInterval);
+    public long TransitionSamplingInterval => 0;
+    public long FramesStarted => Volatile.Read(ref _framesStarted);
+    public int FramesInFlight => Volatile.Read(ref _framesInFlight);
+
+    public bool RequiresInitialCompositorPulse => true;
+
+    public long? PredictPresentation(long now)
+    {
+        lock (_timingLock)
+        {
+            if (_refreshInterval <= 0)
+            {
+                return null;
+            }
+
+            return now < _verticalBlank
+                ? _verticalBlank
+                : _verticalBlank + ((now - _verticalBlank) / _refreshInterval + 1) * _refreshInterval;
+        }
+    }
+
     private void Run()
     {
         while (true)
@@ -61,7 +90,7 @@ internal sealed class DwmVsyncRenderTimer : IRenderTimer
                 _attached.WaitOne();
                 continue;
             }
-            WaitForComposition();
+            var synchronized = WaitForComposition();
             // 等待期间可能已被置空，重新读取。
             var tick = _tick;
             if (tick is null)
@@ -69,21 +98,61 @@ internal sealed class DwmVsyncRenderTimer : IRenderTimer
                 continue;
             }
             _lastTickStart = Stopwatch.GetTimestamp();
-            tick(_clock.Elapsed);
+            UpdatePresentationTiming(synchronized);
+            Interlocked.Increment(ref _framesStarted);
+            Volatile.Write(ref _framesInFlight, 1);
+            try
+            {
+                FrameStarted?.Invoke();
+                tick(_clock.Elapsed);
+            }
+            finally
+            {
+                Volatile.Write(ref _framesInFlight, 0);
+            }
         }
     }
 
-    private void WaitForComposition()
+    private bool WaitForComposition()
     {
-        var result = DwmFlush();
+        var result = DwmCompositionInterop.Flush();
         // DWM 没有在合成时（例如会话断开）DwmFlush 会失败或立即返回。距上个节拍开始不足 1 ms 说明它没有等待，
         // 此时按固定间隔睡眠，避免空转。渲染耗时接近一个刷新周期后紧接着的快速返回不属于这种情况。
         if (result < 0 || Stopwatch.GetTimestamp() - _lastTickStart < MinimumTickSpacing)
         {
             Thread.Sleep(FallbackInterval);
+            return false;
         }
+        return true;
     }
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmFlush();
+    private void UpdatePresentationTiming(bool synchronized)
+    {
+        long refreshPeriod = 0;
+        long verticalBlank = 0;
+        var reliable = synchronized &&
+                       DwmCompositionInterop.TryGetSingleMonitorTiming(out refreshPeriod, out verticalBlank) &&
+                       verticalBlank > 0 &&
+                       refreshPeriod >= MinimumTickSpacing &&
+                       refreshPeriod <= Stopwatch.Frequency / 10 &&
+                       Math.Abs(verticalBlank - _lastTickStart) <= 2 * refreshPeriod;
+
+        lock (_timingLock)
+        {
+            _verticalBlank = verticalBlank;
+            Volatile.Write(ref _refreshInterval, reliable ? refreshPeriod : 0);
+        }
+
+        if (reliable)
+        {
+            if (!ReferenceEquals(MotionFrameTiming.Clock, this))
+            {
+                MotionFrameTiming.Clock = this;
+            }
+        }
+        else if (ReferenceEquals(MotionFrameTiming.Clock, this))
+        {
+            MotionFrameTiming.Clock = null;
+        }
+    }
 }

@@ -11,8 +11,18 @@ internal interface IMotionPresentationClock
     /// <summary>The earliest presentation that content sampled at <paramref name="now"/> can reach, or null.</summary>
     long? PredictPresentation(long now);
 
+    /// <summary>
+    /// Whether a new animation must wake the renderer even if its initial sample changes no pixels.
+    /// </summary>
+    bool RequiresInitialCompositorPulse => false;
+
     /// <summary>The fixed refresh interval, or zero when unknown or variable.</summary>
     long RefreshInterval { get; }
+
+    /// <summary>
+    /// The quantization interval for Avalonia transitions, or zero to preserve their samples.
+    /// </summary>
+    long TransitionSamplingInterval => RefreshInterval;
 
     /// <summary>Frames whose draw has started; content committed before a later start is in that frame.</summary>
     long FramesStarted { get; }

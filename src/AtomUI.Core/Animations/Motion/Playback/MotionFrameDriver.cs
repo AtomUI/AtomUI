@@ -46,6 +46,11 @@ internal sealed class MotionFrameDriver : IObserver<TimeSpan>
     {
         // Like an Avalonia animation, local time starts at the first pulse delivered to this subscription.
         _subscription = GlobalClockReflection.GetGlobalClock().Subscribe(this);
+        if (MotionFrameTiming.Clock is { RequiresInitialCompositorPulse: true } clock)
+        {
+            SetPresentationClock(clock);
+            RequestCompositorPulse();
+        }
     }
 
     internal void Stop()

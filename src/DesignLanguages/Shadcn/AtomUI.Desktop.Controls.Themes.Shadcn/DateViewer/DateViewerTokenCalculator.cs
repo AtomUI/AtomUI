@@ -6,12 +6,18 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractDateViewerToken"/> layer.</summary>
+/// <summary>
+/// The Shadcn values of the shared <see cref="AbstractDateViewerToken" /> layer.
+/// </summary>
 public static class DateViewerTokenCalculator
 {
+    /// <summary>
+    /// Writes the shared panel background, date cell styling, and layout defaults to <paramref name="token" />.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractDateViewerToken token)
     {
-        token.PanelBg = global.ColorBgContainer;
+        // Let the popover or card paint the surface behind the calendar.
+        token.PanelBg = Colors.Transparent;
         token.CellHoverBg = global.ControlItemBgHover;
         token.CellRangeBg = global.ControlItemBgActive;
         token.CellCornerRadius     = global.BorderRadiusSM;

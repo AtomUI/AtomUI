@@ -14,7 +14,7 @@ DateViewerToken 为独立单值与范围面板提供默认资源。关联 [架�
 
 | 分类 | Token | 默认计算 / 语义 |
 | --- | --- | --- |
-| 表面 | PanelBg | ColorBgContainer，面板背景。 |
+| 表面 | PanelBg | 面板背景。Ant Design 与 PrimeNG 使用 `ColorBgContainer`。Shadcn 使用透明底，透出所在容器的背景。DatePicker 和 RangeDatePicker 弹层由外框绘制 `--popover` 表面。 |
 | 交互 | CellHoverBg | ControlItemBgHover，Hover 背景。 |
 | 连续范围 | CellRangeBg | ControlItemBgActive，范围/预览中段；中段文字读全局 `ControlItemColorActive`（默认 `ColorText`）。 |
 | Content 选中 | CellActiveColor | ColorPrimary，Content 呈现中今天与选中日期的文字（画在 ControlItemBgActive 上）；选中底色为实色的主题设为对比色。 |

@@ -2,6 +2,10 @@
 
 本文记录 DateViewer 家族的设计、API、主题与文档变化，不替代发布说明。
 
+## 2026-11-26
+
+- Shadcn 的 DateViewer 与 RangeDateViewer 默认使用透明底。单值和范围日期选择器的日历正文与弹层留白共用同一底色。
+
 ## 2026-11-20
 
 - Token

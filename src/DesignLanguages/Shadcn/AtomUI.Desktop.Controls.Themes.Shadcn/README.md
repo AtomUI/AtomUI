@@ -97,7 +97,7 @@ A 对标：官方有对应组件，按视觉验收口径对官方实测；B 协�
 | `CountBadgeToken` | A 对标 | Badge | Ant 公式（经 shadcn 全局 Token 着色） |
 | `DashboardProgressToken` | B 协调 | — | Ant 公式（经 shadcn 全局 Token 着色） |
 | `DatePickerToken` | A 对标 | Date Picker | shadcn 覆盖 + Ant 公式起点 |
-| `DateViewerToken` | A 对标 | Calendar | Ant 公式（经 shadcn 全局 Token 着色） |
+| `DateViewerToken` | A 对标 | Calendar | shadcn 覆盖 + Ant 公式起点 |
 | `DescriptionsToken` | B 协调 | — | shadcn 覆盖 + Ant 公式起点 |
 | `DialogToken` | A 对标 | Dialog | shadcn 覆盖 + Ant 公式起点 |
 | `DotBadgeToken` | A 对标 | Badge | Ant 公式（经 shadcn 全局 Token 着色） |
@@ -136,7 +136,7 @@ A 对标：官方有对应组件，按视觉验收口径对官方实测；B 协�
 | `QRCodeToken` | B 协调 | — | Ant 公式（经 shadcn 全局 Token 着色） |
 | `RadioButtonToken` | A 对标 | Radio Group | shadcn 覆盖 + Ant 公式起点 |
 | `RangeDatePickerToken` | A 对标 | Date Picker | Ant 公式（经 shadcn 全局 Token 着色） |
-| `RangeDateViewerToken` | A 对标 | Calendar | Ant 公式（经 shadcn 全局 Token 着色） |
+| `RangeDateViewerToken` | A 对标 | Calendar | shadcn 覆盖 + Ant 公式起点 |
 | `RangeTimePickerToken` | B 协调 | — | shadcn 覆盖 + Ant 公式起点 |
 | `RateToken` | B 协调 | — | Ant 公式（经 shadcn 全局 Token 着色） |
 | `ResetButtonToken` | A 对标 | Button | shadcn 覆盖 + Ant 公式起点 |
